@@ -1,0 +1,34 @@
+block(`RouteFilter_rules) {
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:RouteFilter),
+   clauses(`{
+// BEGIN CODE
+
+need_RouteFilterMatch(list, network, line) <-
+   need_RouteFilterPermitNetwork(list, network),
+   SetRouteFilterLine(list, line, _, _, _, _).
+
+RouteFilterFirstMatch[list, network] = matchLine <-
+   agg<<matchLine = min(line)>> RouteFilterMatch(list, network, line).
+
+RouteFilterMatch(list, network, line) <-
+   need_RouteFilterMatch(list, network, line),
+   SetRouteFilterLine(list, line, line_network_start, line_network_end, min_prefix, max_prefix),
+   Network_constructor[network_start, _, prefix_length] = network,
+   network_start >= line_network_start,
+   network_start <= line_network_end,
+   prefix_length >= min_prefix,
+   prefix_length <= max_prefix.
+
+RouteFilterPermitNetwork(list, network) <-
+   need_RouteFilterPermitNetwork(list, network),
+   RouteFilterFirstMatch[list, network] = line,
+   SetRouteFilterPermitLine(list, line).
+
+lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
+
+// END CODE 
+   })
+} <-- .
+

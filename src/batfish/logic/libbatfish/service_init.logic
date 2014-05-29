@@ -1,0 +1,612 @@
+block(`service_init) {
+   alias_all(`lb:web:delim:binding),
+   alias_all(`lb:web:delim:binding_abbr),
+   clauses(`{
+
+// Layer2
+      file_binding_by_name["GuessTopology"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "GuessTopology",
+         predicate_binding_by_name["libbatfish:Layer2:GuessTopology"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "DUMMY"
+            }
+      }.
+
+      file_binding_by_name["SamePhysicalSegment"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SamePhysicalSegment",
+         predicate_binding_by_name["libbatfish:Layer2:SamePhysicalSegment"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE1,INTERFACE1,NODE2,INTERFACE2"
+            }
+      }.
+
+      file_binding_by_name["SetSwitchportAccess"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetSwitchportAccess",
+         predicate_binding_by_name["libbatfish:Layer2:SetSwitchportAccess"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "SWITCH,INTERFACE,VLAN"
+            }
+      }.
+
+      file_binding_by_name["SetSwitchportTrunkAllows"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetSwitchportTrunkAllows",
+         predicate_binding_by_name["libbatfish:Layer2:SetSwitchportTrunkAllows"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "SWITCH,INTERFACE,VLANSTART,VLANEND"
+            }
+      }.
+
+      file_binding_by_name["SetSwitchportTrunkEncapsulation"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetSwitchportTrunkEncapsulation",
+         predicate_binding_by_name["libbatfish:Layer2:SetSwitchportTrunkEncapsulation"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "SWITCH,INTERFACE,ENCAPSULATION"
+            }
+      }.
+
+      file_binding_by_name["SetSwitchportTrunkNative"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetSwitchportTrunkNative",
+         predicate_binding_by_name["libbatfish:Layer2:SetSwitchportTrunkNative"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "SWITCH,INTERFACE,VLAN"
+            }
+      }.
+
+// DataPlane
+      file_binding_by_name["SetInterfaceFilterIn"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetInterfaceFilterIn",
+         predicate_binding_by_name["libbatfish:DataPlane:SetInterfaceFilterIn"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE,FILTER"
+            }
+      }.
+
+      file_binding_by_name["SetInterfaceFilterOut"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetInterfaceFilterOut",
+         predicate_binding_by_name["libbatfish:DataPlane:SetInterfaceFilterOut"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE,FILTER"
+            }
+      }.
+
+// Ip
+      file_binding_by_name["SetNetwork"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetNetwork",
+         predicate_binding_by_name["libbatfish:Ip:SetNetwork"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "START,END,PREFIXLENGTH"
+            }
+      }.
+
+// IpAccessList
+      file_binding_by_name["SetIpAccessListDenyLine"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetIpAccessListDenyLine",
+         predicate_binding_by_name["libbatfish:IpAccessList:SetIpAccessListDenyLine"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "LIST,LINE"
+            }
+      }.
+
+      file_binding_by_name["SetIpAccessListLine"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetIpAccessListLine",
+         predicate_binding_by_name["libbatfish:IpAccessList:SetIpAccessListLine"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "LIST,LINE,PROTOCOL,SRCIPSTART,SRCIPEND,DSTIPSTART,DSTIPEND"
+            }
+      }.
+
+      file_binding_by_name["SetIpAccessListLine_dstPortRange"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetIpAccessListLine_dstPortRange",
+         predicate_binding_by_name["libbatfish:IpAccessList:SetIpAccessListLine_dstPortRange"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "LIST,LINE,DSTPORTSTART,DSTPORTEND"
+            }
+      }.
+
+      file_binding_by_name["SetIpAccessListLine_srcPortRange"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetIpAccessListLine_srcPortRange",
+         predicate_binding_by_name["libbatfish:IpAccessList:SetIpAccessListLine_srcPortRange"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "LIST,LINE,SRCPORTSTART,SRCPORTEND"
+            }
+      }.
+
+// Interface
+      file_binding_by_name["SetActiveInt"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetActiveInt",
+         predicate_binding_by_name["libbatfish:Interface:SetActiveInt"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE"
+            }
+      }.
+
+      file_binding_by_name["SetFakeInterface"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetFakeInterface",
+         predicate_binding_by_name["libbatfish:Interface:SetFakeInterface"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE"
+            }
+      }.
+
+      file_binding_by_name["SetFlowSinkInterface"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetFlowSinkInterface",
+         predicate_binding_by_name["libbatfish:Interface:SetFlowSinkInterface"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE"
+            }
+      }.
+
+      file_binding_by_name["SetIpInt"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetIpInt",
+         predicate_binding_by_name["libbatfish:Interface:SetIpInt"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE,IP,PREFIXLENGTH"
+            }
+      }.
+
+      file_binding_by_name["SetLinkLoadLimitIn"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetLinkLoadLimitIn",
+         predicate_binding_by_name["libbatfish:Interface:SetLinkLoadLimitIn"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE,LIMIT"
+            }
+      }.
+
+      file_binding_by_name["SetLinkLoadLimitOut"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetLinkLoadLimitOut",
+         predicate_binding_by_name["libbatfish:Interface:SetLinkLoadLimitOut"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE,LIMIT"
+            }
+      }.
+
+// Traffic
+      file_binding_by_name["SetFlowOriginate"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetFlowOriginate",
+         predicate_binding_by_name["libbatfish:Traffic:SetFlowOriginate"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,SRCIP,DSTIP,SRCPORT,DSTPORT,IPPROTOCOL"
+            }
+      }.
+
+// GeneratedRoute
+      file_binding_by_name["SetGeneratedRoute_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetGeneratedRoute_flat",
+         predicate_binding_by_name["libbatfish:GeneratedRoute:SetGeneratedRoute_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,ADMIN"
+            }
+      }.
+
+      file_binding_by_name["SetGeneratedRoutePolicy_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetGeneratedRoutePolicy_flat",
+         predicate_binding_by_name["libbatfish:GeneratedRoute:SetGeneratedRoutePolicy_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP"
+            }
+      }.
+
+// Route
+      file_binding_by_name["SetStaticRoute_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetStaticRoute_flat",
+         predicate_binding_by_name["libbatfish:Route:SetStaticRoute_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,ADMIN"
+            }
+      }.
+
+// Ospf
+      file_binding_by_name["SetOspfGeneratedRoute_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetOspfGeneratedRoute_flat",
+         predicate_binding_by_name["libbatfish:Ospf:SetOspfGeneratedRoute_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH"
+            }
+      }.
+
+      file_binding_by_name["SetOspfGeneratedRoutePolicy_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetOspfGeneratedRoutePolicy_flat",
+         predicate_binding_by_name["libbatfish:Ospf:SetOspfGeneratedRoutePolicy_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP"
+            }
+      }.
+
+      file_binding_by_name["SetOspfInterface"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetOspfInterface",
+         predicate_binding_by_name["libbatfish:Ospf:SetOspfInterface"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE,AREA"
+            }
+      }.
+
+      file_binding_by_name["SetOspfInterfaceCost"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetOspfInterfaceCost",
+         predicate_binding_by_name["libbatfish:Ospf:SetOspfInterfaceCost"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE,COST"
+            }
+      }.
+
+      file_binding_by_name["SetOspfOutboundPolicyMap"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetOspfOutboundPolicyMap",
+         predicate_binding_by_name["libbatfish:Ospf:SetOspfOutboundPolicyMap"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,MAP"
+            }
+      }.
+
+      file_binding_by_name["SetOspfRouterId"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetOspfRouterId",
+         predicate_binding_by_name["libbatfish:Ospf:SetOspfRouterId"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,IP"
+            }
+      }.
+
+// CommunityList
+      file_binding_by_name["SetCommunityListLine"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetCommunityListLine",
+         predicate_binding_by_name["libbatfish:CommunityList:SetCommunityListLine"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "LIST,LINE,COMMUNITY"
+            }
+      }.
+
+      file_binding_by_name["SetCommunityListLinePermit"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetCommunityListLinePermit",
+         predicate_binding_by_name["libbatfish:CommunityList:SetCommunityListLinePermit"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "LIST,LINE"
+            }
+      }.
+
+// RouteFilter
+      file_binding_by_name["SetRouteFilterLine"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetRouteFilterLine",
+         predicate_binding_by_name["libbatfish:RouteFilter:SetRouteFilterLine"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "LIST,LINE,NETWORKSTART,NETWORKEND,MINPREFIX,MAXPREFIX"
+            }
+      }.
+
+      file_binding_by_name["SetRouteFilterPermitLine"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetRouteFilterPermitLine",
+         predicate_binding_by_name["libbatfish:RouteFilter:SetRouteFilterPermitLine"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "LIST,LINE"
+            }
+      }.
+
+// PolicyMap
+      file_binding_by_name["SetPolicyMapClauseAddCommunity"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseAddCommunity",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseAddCommunity"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,COMMUNITY"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapClauseDeleteCommunity"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseDeleteCommunity",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseDeleteCommunity"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,LIST"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapClauseDeny"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseDeny",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseDeny"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapClauseMatchCommunityList"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseMatchCommunityList",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseMatchCommunityList"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,LIST"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapClauseMatchNeighbor"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseMatchNeighbor",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseMatchNeighbor"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,NEIGHBORIP"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapClauseMatchProtocol"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseMatchProtocol",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseMatchProtocol"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,PROTOCOL"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapClauseMatchRouteFilter"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseMatchRouteFilter",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseMatchRouteFilter"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,LIST"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapClausePermit"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClausePermit",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClausePermit"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapClauseSetCommunity"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseSetCommunity",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseSetCommunity"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,COMMUNITY"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapClauseSetLocalPreference"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseSetLocalPreference",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseSetLocalPreference"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,LOCALPREF"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapClauseSetMetric"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseSetMetric",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseSetMetric"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,METRIC"
+            }
+      }.
+
+// Bgp
+      file_binding_by_name["SetBgpDefaultLocalPref"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpDefaultLocalPref",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpDefaultLocalPref"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NEIGHBORIP,LOCALPREF"
+            }
+      }.
+
+      file_binding_by_name["SetBgpExportPolicy"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpExportPolicy",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpExportPolicy"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NEIGHBORIP,MAP"
+            }
+      }.
+
+      file_binding_by_name["SetBgpGeneratedRoute_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpGeneratedRoute_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpGeneratedRoute_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH"
+            }
+      }.
+
+      file_binding_by_name["SetBgpGeneratedRoutePolicy_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpGeneratedRoutePolicy_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpGeneratedRoutePolicy_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP"
+            }
+      }.
+
+      file_binding_by_name["SetBgpImportPolicy"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpImportPolicy",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpImportPolicy"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NEIGHBORIP,MAP"
+            }
+      }.
+
+      file_binding_by_name["SetBgpNeighborDefaultMetric"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpNeighborDefaultMetric",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpNeighborDefaultMetric"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NEIGHBORIP,METRIC"
+            }
+      }.
+
+      file_binding_by_name["SetBgpNeighborGeneratedRoute_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpNeighborGeneratedRoute_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpNeighborGeneratedRoute_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NEIGHBORIP,NETWORKSTART,NETWORKEND,PREFIXLENGTH"
+            }
+      }.
+
+      file_binding_by_name["SetBgpNeighborGeneratedRoutePolicy_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpNeighborGeneratedRoutePolicy_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpNeighborGeneratedRoutePolicy_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NEIGHBORIP,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP"
+            }
+      }.
+
+      file_binding_by_name["SetBgpNeighborIp"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpNeighborIp",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpNeighborIp"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NEIGHBORIP"
+            }
+      }.
+
+      file_binding_by_name["SetBgpNeighborSendCommunity"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpNeighborSendCommunity",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpNeighborSendCommunity"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NEIGHBORIP"
+            }
+      }.
+
+      file_binding_by_name["SetBgpOriginationPolicy"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpOriginationPolicy",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpOriginationPolicy"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NEIGHBORIP,MAP"
+            }
+      }.
+
+      file_binding_by_name["SetLocalAs"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetLocalAs",
+         predicate_binding_by_name["libbatfish:Bgp:SetLocalAs"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NEIGHBORIP,LOCALAS"
+            }
+      }.
+
+      file_binding_by_name["SetRemoteAs"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetRemoteAs",
+         predicate_binding_by_name["libbatfish:Bgp:SetRemoteAs"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NEIGHBORIP,REMOTEAS"
+            }
+      }.
+
+      file_binding_by_name["SetRouteReflectorClient"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetRouteReflectorClient",
+         predicate_binding_by_name["libbatfish:Bgp:SetRouteReflectorClient"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NEIGHBORIP,CLUSTERID"
+            }
+      }.
+
+      // Node
+      file_binding_by_name["SetNodeVendor"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetNodeVendor",
+         predicate_binding_by_name["libbatfish:Node:SetNodeVendor"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,VENDOR"
+            }
+      }.
+
+   })
+} <-- .
+

@@ -1,0 +1,23 @@
+block(`CommunityList_rules) {
+   alias_all(`libbatfish:CommunityList),
+   clauses(`{
+//BEGIN CODE
+   
+CommunityListFirstMatch[list, community] = firstLine <-
+   agg<<firstLine = min(line)>> CommunityListMatch(list, line, community).
+
+CommunityListMatch(list, line, community) <-
+   SetCommunityListLine(list, line, community).
+   //Pneed_CommunityListMatch(list, line, community). //TODO: implement this
+
+CommunityListPermit(list, line, community) <-
+   CommunityListFirstMatch[list, community] = line,
+   SetCommunityListLinePermit(list, line).
+
+lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
+
+//END CODE
+   })
+} <-- .
+

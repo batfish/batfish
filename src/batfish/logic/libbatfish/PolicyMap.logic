@@ -1,0 +1,149 @@
+block(`PolicyMap) {
+   alias_all(`libbatfish:BgpAdvertisement),
+   alias_all(`libbatfish:CommunityList),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:Route),
+   alias_all(`libbatfish:RouteFilter),
+   export(`{
+// BEGIN CODE
+
+need_PolicyMapClauseMatchAdvert(map, advert)
+->
+   PolicyMap(map),
+   BgpAdvertisement(advert).
+
+need_PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) ->
+   PolicyMap(map),
+   int(clause),
+   Network(network),
+   Node(nextHop),
+   Ip(nextHopIp),
+   int(admin),
+   int(cost),
+   RoutingProtocol(protocol).
+
+PolicyMap(x),
+   PolicyMap_name(x:n)
+   ->
+   string(n).
+   
+PolicyMapClauseMatchAdvert(map, clause, advert)
+->
+   PolicyMap(map),
+   int(clause),
+   BgpAdvertisement(advert).
+
+PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) ->
+   PolicyMap(map),
+   int(clause),
+   Network(network),
+   Node(nextHop),
+   Ip(nextHopIp),
+   int(admin),
+   int(cost),
+   RoutingProtocol(protocol).
+
+PolicyMapClauseTransformAdvert(map, clause, prevAdvert, nextHopIp, localPref, originType, med, srcProtocol) ->
+   PolicyMap(map),
+   int(clause),
+   BgpAdvertisement(prevAdvert),
+   Ip(nextHopIp),
+   int(localPref),
+   OriginType(originType),
+   int(med),
+   RoutingProtocol(srcProtocol).
+
+PolicyMapFirstMatchAdvert[map, advert] = firstClause
+->
+   PolicyMap(map),
+   BgpAdvertisement(advert),
+   int(firstClause).
+
+PolicyMapFirstMatchRoute[map, network, nextHop, nextHopIp, admin, cost, protocol] = firstClause ->
+   PolicyMap(map),
+   Network(network),
+   Node(nextHop),
+   Ip(nextHopIp),
+   int(admin),
+   int(cost),
+   RoutingProtocol(protocol),
+   int(firstClause).
+
+PolicyMapHasClause(map, clause) ->
+   PolicyMap(map),
+   int(clause).
+
+PolicyMapPermitAdvert(map, clause, advert)
+->
+   PolicyMap(map),
+   int(clause),
+   BgpAdvertisement(advert).
+
+PolicyMapPermitRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) ->
+   PolicyMap(map),
+   int(clause),
+   Network(network),
+   Node(nextHop),
+   Ip(nextHopIp),
+   int(admin),
+   int(cost),
+   RoutingProtocol(protocol).
+
+SetPolicyMapClauseAddCommunity(map, clause, community) ->
+   PolicyMap(map),
+   int(clause),
+   int(community).
+   
+SetPolicyMapClauseDeleteCommunity(map, clause, list) ->
+   PolicyMap(map),
+   int(clause),
+   CommunityList(list).
+
+SetPolicyMapClauseDeny(map, clause) ->
+   PolicyMap(map),
+   int(clause).
+
+SetPolicyMapClauseMatchCommunityList(map, clause, list) ->
+   PolicyMap(map),
+   int(clause),
+   CommunityList(list).
+
+SetPolicyMapClauseMatchNeighbor(map, clause, neighborIp) ->
+   PolicyMap(map),
+   int(clause),
+   Ip(neighborIp).
+
+SetPolicyMapClauseMatchProtocol(map, clause, protocol) ->
+   PolicyMap(map),
+   int(clause),
+   RoutingProtocol(protocol).
+
+SetPolicyMapClauseMatchRouteFilter(map, clause, list) ->
+   PolicyMap(map),
+   int(clause),
+   RouteFilter(list).
+
+SetPolicyMapClausePermit(map, clause) ->
+   PolicyMap(map),
+   int(clause).
+ 
+SetPolicyMapClauseSetCommunity(map, clause, community) ->
+   PolicyMap(map),
+   int(clause),
+   int(community).
+
+SetPolicyMapClauseSetLocalPreference(map, clause, localPref) ->
+   PolicyMap(map),
+   int(clause),
+   int(localPref).
+
+SetPolicyMapClauseSetMetric(map, clause, metric) ->
+   PolicyMap(map),
+   int(clause),
+   int(metric).
+   
+// END CODE
+   })
+} <-- .
+

@@ -1,0 +1,44 @@
+block(`BgpAdvertisement_rules) {
+   alias_all(`libbatfish:BgpAdvertisement),
+   clauses(`{
+// BEGIN CODE
+
+AdvertisementType_BGP[] = x <-
+   AdvertisementType_name(x:"bgp").
+
+AdvertisementType_BGP_TI[] = x <-
+   AdvertisementType_name(x:"bgp_ti").
+
+AdvertisementType_BGP_TO[] = x <-
+   AdvertisementType_name(x:"bgp_to").
+
+AdvertisementType_IBGP[] = x <-
+   AdvertisementType_name(x:"ibgp").
+
+AdvertisementType_IBGP_TI[] = x <-
+   AdvertisementType_name(x:"ibgp_ti").
+
+AdvertisementType_IBGP_TO[] = x <-
+   AdvertisementType_name(x:"ibgp_to").
+
+BgpAdvertisement_details(type, dstIpBlock, nextHopIp, srcIp, dstIp, srcProtocol, srcNode, dstNode, localPref, med, originatorIp)
+<-
+   BgpAdvertisement_constructor[type, dstIpBlock, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol] = advert,
+   BgpAdvertisement_srcNode[advert] = srcNode,
+   BgpAdvertisement_dstNode[advert] = dstNode,
+   BgpAdvertisement_localPref[advert] = localPref,
+   BgpAdvertisement_med[advert] = med,
+   BgpAdvertisement_originatorIp[advert] = originatorIp.
+
+OriginType_IGP[] = originType <-
+   OriginType_name(originType:"igp").
+
+OriginType_EGP[] = originType <-
+   OriginType_name(originType:"egp").
+
+OriginType_INCOMPLETE[] = originType <-
+   OriginType_name(originType:"incomplete").
+
+// END CODE
+   })
+} <-- .

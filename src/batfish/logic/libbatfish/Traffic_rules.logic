@@ -1,0 +1,126 @@
+block(`Traffic_rules) {
+   alias_all(`libbatfish:DataPlane),
+   alias_all(`libbatfish:Flow),
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:IpAccessList),
+   alias_all(`libbatfish:Layer2),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:Route),
+   alias_all(`libbatfish:Traffic),
+   clauses(`{
+// BEGIN CODE
+
+FlowAccepted(flow, node) <-
+   FlowReachPostIn(flow, node),
+   Flow_dstIp[flow] = dstIp,
+   HasIp(node, dstIp).
+FlowAccepted(flow, node) <-
+   FlowReachPostOutInterface(flow, node, interface),
+   SetFlowSinkInterface(node, interface).
+
+FlowAllowedIn(flow, node, interface, filter) <-
+   FlowReachPostInInterface(flow, node, interface),
+   SetInterfaceFilterIn(node, interface, filter).
+
+FlowAllowedOut(flow, node, interface, filter) <-
+   FlowReachPostOutInterface(flow, node, interface),
+   SetInterfaceFilterOut(node, interface, filter).
+
+FlowDeniedIn(flow, node, interface, filter, line) <-
+   FlowReachPreInInterface(flow, node, interface),
+   FlowDenyIn(flow, node, interface, filter, line).   
+   
+FlowDeniedOut(flow, node, interface, filter, line) <-
+   FlowReachPreOutInterface(flow, node, interface),
+   FlowDenyOut(flow, node, interface, filter, line).   
+   
+FlowDenyIn(flow, node, interface, filter, line) <-
+   SetInterfaceFilterIn(node, interface, filter),
+   IpAccessListDeny(filter, line, flow).
+
+FlowDenyOut(flow, node, interface, filter, line) <-
+   SetInterfaceFilterOut(node, interface, filter),
+   IpAccessListDeny(filter, line, flow).
+
+FlowDropped(flow, node) <-
+   FlowDeniedIn(flow, node, _, _, _).   
+FlowDropped(flow, node) <-
+   FlowDeniedOut(flow, node, _, _, _).   
+FlowDropped(flow, node) <-
+   FlowNoRoute(flow, node).
+
+FlowInconsistent(flow) <-
+   FlowLost(flow),
+   FlowAccepted(flow, _).
+
+FlowLoop(flow, node, outInt) <-
+   FlowReach(flow, node, outInt, node, _).
+
+FlowLost(flow) <-
+   FlowDropped(flow, _) ;
+   FlowLoop(flow, _, _).
+
+FlowNoRoute(flow, node) <-
+   FlowReachPreOut(flow, node),
+   Flow_dstIp[flow] = dstIp,
+   !FibForward(node, dstIp, _).
+
+FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow,
+Flow(flow),
+Flow_dstIp[flow] = dstIp,
+Flow_dstPort[flow] = dstPort,
+Flow_ipProtocol[flow] = protocol,
+Flow_node[flow] = node,
+Flow_srcIp[flow] = srcIp,
+Flow_srcPort[flow] = srcPort
+<-
+   SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol).
+
+FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt) <-
+   FlowReachStep(flow, srcNode, srcOutInt, dstNode, dstInInt).
+FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt) <-
+   FlowReach(flow, srcNode, srcOutInt, midNode, _),
+   FlowReach(flow, midNode, _, dstNode, dstInInt). 
+
+FlowReachPostIn(flow, node) <-
+   Flow_node[flow] = node.   
+FlowReachPostIn(flow, node) <-
+   FlowReachPostInInterface(flow, node, _).
+   
+FlowReachPostInInterface(flow, node, interface) <-
+   FlowReachPreInInterface(flow, node, interface),
+   !FlowDenyIn(flow, node, interface, _, _).
+
+FlowReachPostOutInterface(flow, node, interface) <-
+   FlowReachPreOutInterface(flow, node, interface),
+   !FlowDenyOut(flow, node, interface, _, _).
+   
+FlowReachPreInInterface(flow, node, interface) <-
+   FlowReachPostOutInterface(flow, prevNode, prevInterface),
+   LanAdjacent(prevNode, prevInterface, node, interface).
+   
+FlowReachPreOut(flow, node) <-
+   FlowReachPostIn(flow, node),
+   Flow_dstIp[flow] = dstIp,
+   !HasIp(node, dstIp).
+   
+FlowReachPreOutInterface(flow, node, interface) <-
+   FlowReachPreOut(flow, node),
+   Flow_dstIp[flow] = dstIp,
+   FibForward(node, dstIp, interface).
+
+FlowReachStep(flow, srcNode, srcOutInt, dstNode, dstInInt) <-
+   FlowReachPostOutInterface(flow, srcNode, srcOutInt),
+   FlowReachPostInInterface(flow, dstNode, dstInInt),
+   LanAdjacent(srcNode, srcOutInt, dstNode, dstInInt).
+
+FlowUnknown(flow) <-
+   Flow(flow),
+   !FlowAccepted(flow, _),
+   !FlowLost(flow).
+
+// END CODE
+   })
+} <-- .
+

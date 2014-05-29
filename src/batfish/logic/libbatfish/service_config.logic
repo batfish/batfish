@@ -1,0 +1,321 @@
+block(`service_config) {
+   alias_all(`lb:web:config:service),
+   alias_all(`lb:web:config:service_abbr),
+   alias_all(`lb:web:config:delim),
+   clauses(`{
+
+      service_by_prefix["/batfish/txn/*"] = x,
+      delim_txn_service(x).
+
+// Layer2
+      service_by_prefix["/batfish/GuessTopology"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "GuessTopology"
+      }.
+
+      service_by_prefix["/batfish/SamePhysicalSegment"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SamePhysicalSegment"
+      }.
+
+      service_by_prefix["/batfish/SetSwitchportAccess"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetSwitchportAccess"
+      }.
+
+      service_by_prefix["/batfish/SetSwitchportTrunkAllows"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetSwitchportTrunkAllows"
+      }.
+
+      service_by_prefix["/batfish/SetSwitchportTrunkEncapsulation"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetSwitchportTrunkEncapsulation"
+      }.
+
+      service_by_prefix["/batfish/SetSwitchportTrunkNative"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetSwitchportTrunkNative"
+      }.
+
+// DataPlane
+      service_by_prefix["/batfish/SetInterfaceFilterIn"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetInterfaceFilterIn"
+      }.
+
+      service_by_prefix["/batfish/SetInterfaceFilterOut"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetInterfaceFilterOut"
+      }.
+
+// Ip
+      service_by_prefix["/batfish/SetNetwork"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetNetwork"
+      }.
+
+// IpAccessList
+      service_by_prefix["/batfish/SetIpAccessListDenyLine"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIpAccessListDenyLine"
+      }.
+
+      service_by_prefix["/batfish/SetIpAccessListLine"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIpAccessListLine"
+      }.
+
+      service_by_prefix["/batfish/SetIpAccessListLine_dstPortRange"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIpAccessListLine_dstPortRange"
+      }.
+
+      service_by_prefix["/batfish/SetIpAccessListLine_srcPortRange"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIpAccessListLine_srcPortRange"
+      }.
+
+// Interface
+      service_by_prefix["/batfish/SetActiveInt"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetActiveInt"
+      }.
+
+      service_by_prefix["/batfish/SetFakeInterface"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetFakeInterface"
+      }.
+
+      service_by_prefix["/batfish/SetFlowSinkInterface"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetFlowSinkInterface"
+      }.
+
+      service_by_prefix["/batfish/SetIpInt"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIpInt"
+      }.
+
+      service_by_prefix["/batfish/SetLinkLoadLimitIn"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetLinkLoadLimitIn"
+      }.
+
+      service_by_prefix["/batfish/SetLinkLoadLimitOut"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetLinkLoadLimitOut"
+      }.
+
+// Traffic
+      service_by_prefix["/batfish/SetFlowOriginate"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetFlowOriginate"
+      }.
+
+// GeneratedRoute
+      service_by_prefix["/batfish/SetGeneratedRoute_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetGeneratedRoute_flat"
+      }.
+
+      service_by_prefix["/batfish/SetGeneratedRoutePolicy_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetGeneratedRoutePolicy_flat"
+      }.
+
+// Route
+      service_by_prefix["/batfish/SetStaticRoute_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetStaticRoute_flat"
+      }.
+
+// Ospf
+      service_by_prefix["/batfish/SetOspfGeneratedRoute_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetOspfGeneratedRoute_flat"
+      }.
+
+      service_by_prefix["/batfish/SetOspfGeneratedRoutePolicy_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetOspfGeneratedRoutePolicy_flat"
+      }.
+
+      service_by_prefix["/batfish/SetOspfInterface"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetOspfInterface"
+      }.
+
+      service_by_prefix["/batfish/SetOspfInterfaceCost"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetOspfInterfaceCost"
+      }.
+
+      service_by_prefix["/batfish/SetOspfOutboundPolicyMap"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetOspfOutboundPolicyMap"
+      }.
+
+      service_by_prefix["/batfish/SetOspfRouterId"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetOspfRouterId"
+      }.
+
+// CommunityList
+      service_by_prefix["/batfish/SetCommunityListLine"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetCommunityListLine"
+      }.
+
+      service_by_prefix["/batfish/SetCommunityListLinePermit"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetCommunityListLinePermit"
+      }.
+
+// RouteFilter
+      service_by_prefix["/batfish/SetRouteFilterLine"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetRouteFilterLine"
+      }.
+
+      service_by_prefix["/batfish/SetRouteFilterPermitLine"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetRouteFilterPermitLine"
+      }.
+
+// PolicyMap
+      service_by_prefix["/batfish/SetPolicyMapClauseAddCommunity"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseAddCommunity"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseDeleteCommunity"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseDeleteCommunity"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseDeny"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseDeny"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseMatchCommunityList"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseMatchCommunityList"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseMatchNeighbor"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseMatchNeighbor"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseMatchProtocol"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseMatchProtocol"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseMatchRouteFilter"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseMatchRouteFilter"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClausePermit"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClausePermit"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseSetCommunity"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseSetCommunity"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseSetLocalPreference"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseSetLocalPreference"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseSetMetric"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseSetMetric"
+      }.
+
+// Bgp
+      service_by_prefix["/batfish/SetBgpDefaultLocalPref"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpDefaultLocalPref"
+      }.
+
+      service_by_prefix["/batfish/SetBgpExportPolicy"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpExportPolicy"
+      }.
+
+      service_by_prefix["/batfish/SetBgpGeneratedRoute_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpGeneratedRoute_flat"
+      }.
+
+      service_by_prefix["/batfish/SetBgpGeneratedRoutePolicy_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpGeneratedRoutePolicy_flat"
+      }.
+
+      service_by_prefix["/batfish/SetBgpImportPolicy"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpImportPolicy"
+      }.
+
+      service_by_prefix["/batfish/SetBgpNeighborDefaultMetric"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpNeighborDefaultMetric"
+      }.
+
+      service_by_prefix["/batfish/SetBgpNeighborGeneratedRoute_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpNeighborGeneratedRoute_flat"
+      }.
+
+      service_by_prefix["/batfish/SetBgpNeighborGeneratedRoutePolicy_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpNeighborGeneratedRoutePolicy_flat"
+      }.
+
+      service_by_prefix["/batfish/SetBgpNeighborIp"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpNeighborIp"
+      }.
+
+      service_by_prefix["/batfish/SetBgpNeighborSendCommunity"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpNeighborSendCommunity"
+      }.
+
+      service_by_prefix["/batfish/SetBgpOriginationPolicy"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpOriginationPolicy"
+      }.
+
+      service_by_prefix["/batfish/SetLocalAs"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetLocalAs"
+      }.
+
+      service_by_prefix["/batfish/SetRemoteAs"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetRemoteAs"
+      }.
+
+      service_by_prefix["/batfish/SetRouteReflectorClient"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetRouteReflectorClient"
+      }.
+
+      // Node
+      service_by_prefix["/batfish/SetNodeVendor"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetNodeVendor"
+      }.
+
+   })
+} <-- .
+

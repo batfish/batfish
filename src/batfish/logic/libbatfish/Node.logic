@@ -1,0 +1,32 @@
+block(`Node) {
+   export(`{
+// BEGIN CODE
+
+/// [Node(x)] =
+///   [x] is a node.
+Node(x),
+   Node_name(x:n)
+   ->
+   string(n).
+
+Node_NONE[] = node ->
+   Node(node).
+
+SetNodeVendor(node, vendor) ->
+   Node(node),
+   Vendor(vendor).
+
+Vendor(x),
+   Vendor_name(x:n)
+   ->
+   string(n).
+
+Vendor_CISCO[] = vendor ->
+   Vendor(vendor).   
+
+Vendor_JUNIPER[] = vendor ->
+   Vendor(vendor).
+   
+// END CODE
+   })
+} <-- .

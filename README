@@ -1,0 +1,29 @@
+Except where otherwise noted, everything in this repository is provided under the terms of the Apache 2.0 License.
+
+**************************************************
+Instructions for building and running Batfish
+**************************************************
+
+Prerequisites:
+   ant
+   java 7 jdk
+
+Building:
+   - Change directory to  <repo-root>
+   - Then you can build by running:
+      ant
+   - To clean:
+      - intermediate files (you will still be able to run afterwards):
+         ant clean
+      - all generated files
+         ant distclean
+
+Running:
+   To run, you will use the provided 'batfish' script. This script should
+   work when called from any directory.
+   - Run:
+      <repo-root>/batfish
+   For help:
+   - Run:
+      <repo-root>/batfish -help
+

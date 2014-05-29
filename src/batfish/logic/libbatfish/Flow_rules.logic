@@ -1,0 +1,18 @@
+block(`Flow_rules) {
+   alias_all(`libbatfish:Flow),
+   clauses(`{
+// BEGIN CODE
+
+IpProtocol_ANY[] = x <-
+   IpProtocol_number(x:0).
+
+IpProtocol_TCP[] = x <-
+   IpProtocol_number(x:6).
+
+IpProtocol_UDP[] = x <-
+   IpProtocol_number(x:17).
+
+// END CODE
+   })
+} <-- .
+

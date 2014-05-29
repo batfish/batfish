@@ -1,0 +1,41 @@
+block(`GeneratedRoute_rules) {
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+BestGeneratedRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
+   GeneratedRoute(node, network, contributingNetwork, admin),
+   InstalledRoute(node, contributingNetwork, nextHop, nextHopIp, _, _, _),
+   cost = 0,
+   protocol = RoutingProtocol_AGGREGATE[].
+
+BestPerProtocolRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
+   BestGeneratedRoute(node, network, nextHop, nextHopIp, admin, cost, protocol).
+
+GeneratedRoute(node, network, contributingNetwork, admin) <-
+   SetGeneratedRoute(node, network, admin),
+   SetGeneratedRoutePolicy(node, network, map),
+   InstalledRoute(node, contributingNetwork, nextHop, nextHopIp, contribAdmin, cost, protocol), 
+   PolicyMapPermitRoute(map, _, contributingNetwork, nextHop, nextHopIp, contribAdmin, cost, protocol).
+
+need_PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) <-
+   SetGeneratedRoutePolicy(node, _, map),
+   InstalledRoute(node, network, nextHop, nextHopIp, admin, cost, protocol),
+   PolicyMapHasClause(map, clause).
+
+SetGeneratedRoute(node, network, admin) <-
+   SetGeneratedRoute_flat(node, network_start, network_end, prefix_length, admin),
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+SetGeneratedRoutePolicy(node, network, map) <-
+   SetGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length, map),
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+// END CODE
+   })
+} <-- .
+

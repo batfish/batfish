@@ -1,0 +1,28 @@
+package batfish.representation.cisco;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ExpandedCommunityList {
+
+   private List<ExpandedCommunityListLine> _lines;
+   private String _name;
+
+   public ExpandedCommunityList(String name) {
+      _name = name;
+      _lines = new ArrayList<ExpandedCommunityListLine>();
+   }
+
+   public void addLine(ExpandedCommunityListLine line) {
+      _lines.add(line);
+   }
+
+   public List<ExpandedCommunityListLine> getLines() {
+      return _lines;
+   }
+
+   public String getName() {
+      return _name;
+   }
+   
+}

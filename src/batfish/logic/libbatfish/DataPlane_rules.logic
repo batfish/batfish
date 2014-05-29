@@ -1,0 +1,31 @@
+block(`DataPlane_rules) {
+   alias_all(`libbatfish:DataPlane),
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+FibForward(node, ip, interface) <-
+   !HasIp(node, ip),
+   LongestPrefixNetworkMatch(node, ip, matchNet),
+   (
+      ConnectedRoute(node, matchNet, interface) ;
+      (
+         !ConnectedRoute(node, matchNet, _),
+         InstalledRoute(node, matchNet, _, routeNextHopIp, _, _, _),
+         FibForward(node, routeNextHopIp, interface)
+      )
+   ).
+
+FibNetworkForward(node, network, interface) <-
+   InstalledRoute(node, network, _, nextHopIp, _, _, _),
+   nextHopIp != Ip_ZERO[],
+   FibForward(node, nextHopIp, interface).
+FibNetworkForward(node, network, interface) <-
+   ConnectedRoute(node, network, interface).
+
+// END CODE
+   })
+} <-- .
+

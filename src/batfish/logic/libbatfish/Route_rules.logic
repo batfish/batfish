@@ -1,0 +1,120 @@
+block(`Route_rules) {
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+BestConnectedRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
+   ConnectedRoute(node, network, _),
+   nextHop = Node_NONE[],
+   nextHopIp = Ip_ZERO[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin, 
+   cost = 0,
+   protocol = RoutingProtocol_CONNECTED[].
+
+BestPerProtocolRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
+   BestConnectedRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) ;
+   BestStaticRoute(node, network, nextHop, nextHopIp, admin, cost, protocol).
+
+BestStaticRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
+   StaticRoute(node, network, nextHop, nextHopIp, admin),
+   cost = 0,
+   protocol = RoutingProtocol_STATIC[].
+
+ConnectedRoute(node, network, interface) <-
+   IpReadyInt(node, interface, ip, prefix_length),
+   NetworkOf[ip, prefix_length] = network.
+
+InstalledRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
+   MinCostRoute(node, network, nextHop, nextHopIp, admin, cost, protocol).
+
+LongestPrefixNetworkMatch(node, ip, matchNet) <-
+   LongestPrefixNetworkMatchPrefixLength[node, ip] = maxLength,
+   NetworkMatch(node, ip, matchNet, maxLength).
+
+LongestPrefixNetworkMatchPrefixLength[node, ip] = maxLength <-
+   agg<<maxLength = max(matchLength)>>
+      NetworkMatch(node, ip, _, matchLength).
+      
+MinAdmin[node, network] =  minAdmin <-
+   agg<<minAdmin = min(admin)>> BestPerProtocolRoute(node, network, _, _, admin, _, _).
+
+MinAdminRoute(node, network, nextHop, nextHopIp, minAdmin, cost, protocol) <-
+   minAdmin = MinAdmin[node, network],
+   BestPerProtocolRoute(node, network, nextHop, nextHopIp, minAdmin, cost, protocol).
+
+MinCost[node, network] =  minCost <-
+   agg<<minCost = min(cost)>> MinAdminRoute(node, network, _, _, _, cost, _).
+
+MinCostRoute(node, network, nextHop, nextHopIp, admin, minCost, protocol) <-
+   MinAdminRoute(node, network, nextHop, nextHopIp, admin, minCost, protocol),
+   minCost = MinCost[node, network].
+
+NetworkMatch(node, ip, matchNet, matchLength) <-
+   Ip_address(ip:address),
+   Network_address[matchNet] = matchNet_start,
+   Network_prefix_length[matchNet] = matchLength,
+   Network_end[matchNet] = matchNet_end,
+   InstalledRoute(node, matchNet, _, _, _, _, _),
+   matchNet_start <= address <= matchNet_end.
+      
+RoutingProtocol_AGGREGATE[] = x <-
+   RoutingProtocol_name(x:"aggregate").   
+
+RoutingProtocol_BGP[] = x <-
+   RoutingProtocol_name(x:"bgp").
+
+RoutingProtocol_CONNECTED[] = x <-
+   RoutingProtocol_name(x:"connected").
+
+RoutingProtocol_IBGP[] = x <-
+   RoutingProtocol_name(x:"ibgp").
+
+RoutingProtocol_OSPF[] = x <-
+   RoutingProtocol_name(x:"ospf").
+
+RoutingProtocol_OSPF_IA[] = x <-
+   RoutingProtocol_name(x:"ospfIA").
+
+RoutingProtocol_OSPF_E2[] = x <-
+   RoutingProtocol_name(x:"ospfE2").
+
+RoutingProtocol_STATIC[] = x <-
+   RoutingProtocol_name(x:"static").
+
+SetStaticRoute(node, network, nextHopIp, admin) <-
+   SetStaticRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, admin),
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+// no exact match
+StaticRoute(node, network, nextHop, nextHopIp, admin) <-
+   LongestPrefixNetworkMatch(node, staticNextHopIp, matchNet),
+   SetStaticRoute(node, network, staticNextHopIp, admin),
+   InstalledRoute(node, matchNet, matchNextHop, matchNextHopIp, _, _, _),
+   !IpReadyInt(_, _, staticNextHopIp, _),
+   nextHop = matchNextHop,
+   nextHopIp = matchNextHopIp.
+/*
+// exact match
+StaticRoute(node, network, nextHop, nextHopIp, admin) <-
+   LongestPrefixNetworkMatch(node, staticNextHopIp, matchNet),
+   SetStaticRoute(node, network, staticNextHopIp, admin),
+   InstalledRoute(node, matchNet, _, _, _, _, _),
+   nextHopIp = staticNextHopIp,
+   SetIpInt(nextHop, _, staticNextHopIp, prefixLength),
+   NetworkOf[staticNextHopIp, prefixLength] = matchNet.
+*/
+
+lang:compiler:disableError:NEGATION_RECURSION[] = true.
+lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
+
+lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
+
+// END CODE
+   })
+} <-- .
+

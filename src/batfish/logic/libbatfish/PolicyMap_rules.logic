@@ -1,0 +1,134 @@
+block(`PolicyMap_rules) {
+   alias_all(`libbatfish:BgpAdvertisement),
+   alias_all(`libbatfish:CommunityList),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:RouteFilter),
+   clauses(`{
+// BEGIN CODE
+
+// policy maps for advertisements
+need_RouteFilterPermitNetwork(list, network) <-
+   need_PolicyMapClauseMatchAdvert(map, advert),
+   BgpAdvertisement_network[advert] =  network,
+   SetPolicyMapClauseMatchRouteFilter(map, _, list).
+// policy maps for routes
+need_RouteFilterPermitNetwork(list, network) <-
+   need_PolicyMapClauseMatchRoute(map, clause, network, _, _, _, _, _),
+   SetPolicyMapClauseMatchRouteFilter(map, clause, list).
+
+PolicyMapClauseMatchAdvert(map, clause, advert)
+<-
+   BgpAdvertisement_network[advert] =  dstIpBlock,
+   need_PolicyMapClauseMatchAdvert(map, advert),
+   PolicyMapHasClause(map, clause),
+   /*
+   // access list   
+   (
+      !SetPolicyMapClauseMatchAccessList(map, clause, _);
+      (
+         SetPolicyMapClauseMatchAccessList(map, clause, accessList),
+         PAccessListPermitNetwork(accessList, dstIpBlock) 
+      )
+   ),
+   */
+   // prefix list
+   (
+      !SetPolicyMapClauseMatchRouteFilter(map, clause, _) ;
+      (
+         SetPolicyMapClauseMatchRouteFilter(map, clause, filter),
+         RouteFilterPermitNetwork(filter, dstIpBlock) 
+      )
+   ),
+   (
+      !SetPolicyMapClauseMatchNeighbor(map, clause, _) ;
+      (
+         SetPolicyMapClauseMatchNeighbor(map, clause, neighborIp),
+         (
+            BgpAdvertisement_srcIp[advert] = neighborIp ;
+            BgpAdvertisement_dstIp[advert] = neighborIp
+         )
+      )
+   ),
+   (
+      !SetPolicyMapClauseMatchCommunityList(map, clause, _) ;
+      (
+         SetPolicyMapClauseMatchCommunityList(map, clause, communityList),
+         AdvertisementCommunity(advert, community),
+         CommunityListPermit(communityList, _, community) 
+      )
+   ).
+   //TODO: finish definition and replace underscores at top of rule
+   
+PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) <-
+   //TODO: complete matching here
+   need_PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol),
+   // protocol
+   (
+      !SetPolicyMapClauseMatchProtocol(map, clause, _);
+      SetPolicyMapClauseMatchProtocol(map, clause, protocol)
+   ),
+   // RouteFilter
+   (
+      !SetPolicyMapClauseMatchRouteFilter(map, clause, _);
+      (
+         SetPolicyMapClauseMatchRouteFilter(map, clause, filter),
+         RouteFilterPermitNetwork(filter, network)
+      )
+   ).
+
+PolicyMapClauseTransformAdvert(map, clause, prevAdvert, nextHopIp, localPref, originType, med, srcProtocol)
+<-
+   PolicyMapPermitAdvert(map, clause, prevAdvert),
+   BgpAdvertisement_nextHopIp[prevAdvert] =  prevNextHopIp ,
+   BgpAdvertisement_localPref[prevAdvert] =  prevLocalPref, 
+   BgpAdvertisement_originType[prevAdvert] =  prevOriginType,
+   BgpAdvertisement_med[prevAdvert] =  prevMed,
+   BgpAdvertisement_srcProtocol[prevAdvert] =  prevSrcProtocol,
+   //TODO: complete untransformed cases
+   prevNextHopIp = nextHopIp,
+   (
+      SetPolicyMapClauseSetLocalPreference(map, clause, localPref);
+      (
+         !SetPolicyMapClauseSetLocalPreference(map, clause, _),
+         prevLocalPref = localPref
+      )
+   ),
+   prevOriginType = originType,
+   (
+      SetPolicyMapClauseSetMetric(map, clause, med);
+      (
+         !SetPolicyMapClauseSetMetric(map, clause, _),
+         prevMed = med
+      )
+   ),
+   prevSrcProtocol = srcProtocol.
+
+PolicyMapFirstMatchAdvert[map, advert] = firstClause
+<-
+   agg<<firstClause = min(clause)>>
+      PolicyMapClauseMatchAdvert(map, clause, advert).
+
+PolicyMapFirstMatchRoute[map, network, nextHop, nextHopIp, admin, cost, protocol] = firstClause <-
+   agg<<firstClause = min(clause)>>
+      PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol).
+
+PolicyMapHasClause(map, clause) <-
+   SetPolicyMapClauseDeny(map, clause);
+   SetPolicyMapClausePermit(map, clause).
+
+PolicyMapPermitAdvert(map, clause, advert)
+<-
+   PolicyMapFirstMatchAdvert[map, advert] = clause,
+   SetPolicyMapClausePermit(map, clause).
+
+PolicyMapPermitRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) <-
+   PolicyMapFirstMatchRoute[map, network, nextHop, nextHopIp, admin, cost, protocol] = clause,
+   SetPolicyMapClausePermit(map, clause).
+
+lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
+
+// END CODE
+   })
+} <-- .
+

@@ -1,0 +1,51 @@
+block(`GeneratedRoute) {
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   export(`{
+// BEGIN CODE
+
+BestGeneratedRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) ->
+   Node(node),
+   Network(network),
+   Node(nextHop),
+   Ip(nextHopIp),
+   int(admin),
+   int(cost),   
+   RoutingProtocol(protocol). 
+
+GeneratedRoute(node, network, contributingNetwork, admin) ->
+   Node(node),
+   Network(network),
+   Network(contributingNetwork),
+   int(admin).
+
+SetGeneratedRoute(node, network, admin) ->
+   Node(node),
+   Network(network),
+   int(admin).
+   
+SetGeneratedRoute_flat(node, network_start, network_end, prefix_length, admin) ->
+   Node(node),
+   int(network_start),
+   int(network_end),
+   int(prefix_length),
+   int(admin).
+   
+SetGeneratedRoutePolicy(node, network, map) ->
+   Node(node),
+   Network(network),
+   PolicyMap(map).
+   
+SetGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length, map) ->
+   Node(node),
+   int(network_start),
+   int(network_end),
+   int(prefix_length),
+   PolicyMap(map).
+   
+// END CODE
+   })
+} <-- .
+

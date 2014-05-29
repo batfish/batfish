@@ -1,0 +1,82 @@
+block(`IpAccessList) {
+   alias_all(`libbatfish:Flow),
+   export(`{
+// BEGIN CODE
+
+AclDeny(list, flow) ->
+   IpAccessList(list),
+   Flow(flow).
+
+IpAccessList(list),
+   IpAccessList_name(list:name)
+   ->
+   string(name).
+
+IpAccessListDeny(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
+IpAccessListFirstMatch[list, flow] = firstMatchLine ->
+   IpAccessList(list),
+   Flow(flow),
+   int(firstMatchLine).
+
+IpAccessListLine_protocol[list, line] = protocol ->
+   IpAccessList(list),
+   int(line),
+   IpProtocol(protocol).
+   
+IpAccessListLine_srcIp_start[list, line] = srcIp_start ->
+   IpAccessList(list),
+   int(line),
+   int(srcIp_start).
+
+IpAccessListLine_srcIp_end[list, line] = srcIp_end ->
+   IpAccessList(list),
+   int(line),
+   int(srcIp_end).
+
+IpAccessListLine_dstIp_start[list, line] = dstIp_start ->
+   IpAccessList(list),
+   int(line),
+   int(dstIp_start).
+
+IpAccessListLine_dstIp_end[list, line] = dstIp_end ->
+   IpAccessList(list),
+   int(line),
+   int(dstIp_end).
+
+IpAccessListMatch(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
+SetIpAccessListDenyLine(list, line) ->
+   IpAccessList(list),
+   int(line).
+
+SetIpAccessListLine(list, line, protocol, srcIp_start, srcIp_end, dstIp_start, dstIp_end) ->
+   IpAccessList(list),
+   int(line),
+   IpProtocol(protocol),
+   int(srcIp_start),
+   int(srcIp_end),
+   int(dstIp_start),
+   int(dstIp_end).
+
+SetIpAccessListLine_dstPortRange(list, line, dstPort_start, dstPort_end) ->
+   IpAccessList(list),
+   int(line),
+   int(dstPort_start),
+   int(dstPort_end).
+
+SetIpAccessListLine_srcPortRange(list, line, srcPort_start, srcPort_end) ->
+   IpAccessList(list),
+   int(line),
+   int(srcPort_start),
+   int(srcPort_end).
+
+// END CODE
+   })
+} <-- .

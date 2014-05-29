@@ -1,0 +1,186 @@
+block(`Ospf) {
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   export(`{
+// BEGIN CODE
+
+BestOspfE2Route(node, network, nextHop, nextHopIp, admin, cost, protocol) ->
+   Node(node),
+   Network(network),
+   Node(nextHop),
+   Ip(nextHopIp),
+   int(admin),   
+   int(cost),   
+   RoutingProtocol(protocol).
+
+BestOspfIARoute(node, network, nextHop, nextHopIp, admin, cost, protocol) ->
+   Node(node),
+   Network(network),
+   Node(nextHop),
+   Ip(nextHopIp),
+   int(admin),   
+   int(cost),   
+   RoutingProtocol(protocol).
+
+/// [BestOspfRoute(node, network, nextHop, nextHopIp, admin, cost, protocol)] =
+///   Node [Node] has an ospf route to network [network] through next hop'
+///   [nextHop] at ip address [nextHopIp], with minimal administrative distance
+///   [admin], and cost [cost], received using routing protocol [protocol], and
+///   that is optimal before cost is taken into account.
+BestOspfRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) ->
+   Node(node),
+   Network(network),
+   Node(nextHop),
+   Ip(nextHopIp),
+   int(admin),   
+   int(cost),   
+   RoutingProtocol(protocol).
+
+MinCostOspfE2Route(node, network, nextHop, nextHopIp, cost, advertiser, advertiserIp, costToAdvertiser) ->
+   Node(node),
+   Network(network),
+   Node(nextHop),
+   Ip(nextHopIp),
+   int(cost),
+   Node(advertiser),
+   Ip(advertiserIp),
+   int(costToAdvertiser).
+
+MinOspfE2RouteCostToAdvertiser[node, network, advertiser] = minCostToAdvertiser ->
+   Node(node),
+   Network(network),
+   Node(advertiser),
+   int(minCostToAdvertiser).
+
+MinOspfIARouteCost[node, network] = minCost ->
+   Node(node),
+   Network(network),
+   int(minCost).
+
+MinOspfRouteCost[node, network] = minCost ->
+   Node(node),
+   Network(network),
+   int(minCost).
+
+/// [OspfE2Route(node, network, nextHop, nextHopIp, cost, hopCount, advertiser)] =
+///   Node [Node] has an ospf type E2 route to network [network] through next
+///   hop  [nextHop] at ip address [nextHopIp], with cost [cost], and ospf cost
+///   to the advertiser [costToAdvertiser].
+OspfE2Route(node, network, nextHop, nextHopIp, cost, advertiser, advertiserIp, costToAdvertiser) ->
+   Node(node),
+   Network(network),
+   Node(nextHop),
+   Ip(nextHopIp),
+   int(cost),
+   Node(advertiser),
+   Ip(advertiserIp),
+   int(costToAdvertiser).
+
+OspfExport(node, network, cost) ->
+   Node(node),
+   Network(network),
+   int(cost).
+
+OspfGeneratedRoute(node, network) ->
+   Node(node),
+   Network(network).
+   
+OspfGeneratedRoutePolicy(node, network, map) ->
+   Node(node),
+   Network(network),
+   PolicyMap(map).
+
+OspfIARoute(node, network, nextHop, nextHopIp, cost) ->
+   Node(node),
+   Network(network),
+   Node(nextHop),
+   Ip(nextHopIp),
+   int(cost).
+
+OspfNeighbors(node1, int1, cost1, node2, int2, cost2, network, area) ->
+   Node(node1),
+   Interface(int1),
+   int(cost1),
+   Node(node2),
+   Interface(int2),
+   int(cost2),
+   Network(network),
+   int(area).
+
+OspfNode(node, interface, cost, network, area) ->
+   Node(node),
+   Interface(interface),
+   int(cost),
+   Network(network),
+   int(area).
+
+OspfOutboundPolicyClauseSetMetric(map, clause, metric) ->
+   PolicyMap(map),
+   int(clause),
+   int(metric).
+
+/// [OspfRoute(node, network, nextHop, nextHopIp, cost)] =
+///   Node [Node] has an ospf route to network [network] through next hop
+///   [nextHop] at ip address [nextHopIp], with cost [cost].
+OspfRoute(node, network, nextHop, nextHopIp, cost) ->
+   Node(node),
+   Network(network),
+   Node(nextHop),
+   Ip(nextHopIp),
+   int(cost).
+
+SetOspfGeneratedRoute(node, network) ->
+   Node(node),
+   Network(network).
+   
+SetOspfGeneratedRoute_flat(node, network_start, network_end, prefix_length) ->
+   Node(node),
+   int(network_start),
+   int(network_end),
+   int(prefix_length).
+   
+SetOspfGeneratedRoutePolicy(node, network, map) ->
+   Node(node),
+   Network(network),
+   PolicyMap(map).
+
+SetOspfGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length, map) ->
+   Node(node),
+   int(network_start),
+   int(network_end),
+   int(prefix_length),
+   PolicyMap(map).
+
+/// [SetOspfInterface(node, interface, area)] =
+///   Ospf is functioning on interface [interface] on node [node] under area
+///   [area].
+SetOspfInterface(node, interface, area) ->
+   Node(node),
+   Interface(interface),
+   int(area).
+
+/// [SetOspfInterfaceCost[node, interface] = cost] =
+///   The cost of interface [interface] on node [node] with respect to protocol
+///   ospf is [cost].
+SetOspfInterfaceCost[node, interface] = cost ->
+   Node(node),
+   Interface(interface),
+   int(cost).
+
+SetOspfOutboundPolicyMap(node, map) ->
+   Node(node),
+   PolicyMap(map).
+
+/// [SetOspfRouterId(node, ip)] =
+///   The ospf router id of node [node] is [ip].
+SetOspfRouterId(node, ip) ->
+   Node(node),
+   Ip(ip).
+
+// END CODE
+   })
+} <-- .
+

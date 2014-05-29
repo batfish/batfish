@@ -1,0 +1,78 @@
+block(`IpAccessList_rules) {
+   alias_all(`libbatfish:Flow),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:IpAccessList),
+   clauses(`{
+// BEGIN CODE
+
+AclDeny(list, flow) <-
+   IpAccessListDeny(list, _, flow).
+
+IpAccessListDeny(list, line, flow) <-
+   SetIpAccessListDenyLine(list, line),
+   IpAccessListFirstMatch[list, flow] = line.
+
+IpAccessListFirstMatch[list, flow] = firstMatchLine <-
+   agg<<firstMatchLine = min(line)>>
+      IpAccessListMatch(list, line, flow).
+
+IpAccessListLine_dstIp_end[list, line] = dstIp_end,
+IpAccessListLine_dstIp_start[list, line] = dstIp_start,
+IpAccessListLine_srcIp_end[list, line] = srcIp_end,
+IpAccessListLine_srcIp_start[list, line] = srcIp_start,
+IpAccessListLine_protocol[list, line] = protocol
+<-
+   SetIpAccessListLine(list, line, protocol, srcIp_start, srcIp_end, dstIp_start, dstIp_end).
+
+IpAccessListMatch(list, line, flow) <-
+   _IpAccessListMatchSrcPort(list, line, flow).
+
+_IpAccessListMatchIps(list, line, flow) <-
+   IpAccessListLine_dstIp_end[list, line] = dstIp_end,
+   IpAccessListLine_dstIp_start[list, line] = dstIp_start,
+   IpAccessListLine_srcIp_end[list, line] = srcIp_end,
+   IpAccessListLine_srcIp_start[list, line] = srcIp_start,
+   Flow_dstIp[flow] = dstIp,
+   Ip_address(dstIp:dstIpNum),
+   dstIp_start <= dstIpNum <= dstIp_end,
+   Flow_srcIp[flow] = srcIp,
+   Ip_address(srcIp:srcIpNum),
+   srcIp_start <= srcIpNum <= srcIp_end.
+
+
+_IpAccessListMatchProtocol(list, line, flow) <-
+   _IpAccessListMatchIps(list, line, flow),
+   Flow_ipProtocol[flow] = protocol,
+   IpAccessListLine_protocol[list, line] = lineProtocol,
+   (
+      lineProtocol = protocol ;
+      lineProtocol = IpProtocol_ANY[]
+   ).
+
+_IpAccessListMatchDstPort(list, line, flow) <-
+   _IpAccessListMatchProtocol(list, line, flow),
+   (
+      !SetIpAccessListLine_dstPortRange(list, line, _, _) ;
+      (
+         Flow_dstPort[flow] = dstPort,
+         SetIpAccessListLine_dstPortRange(list, line, dstPort_start, dstPort_end),
+         dstPort_start <= dstPort <= dstPort_end
+      )
+   ).
+   
+_IpAccessListMatchSrcPort(list, line, flow) <-
+   _IpAccessListMatchDstPort(list, line, flow),
+   SetIpAccessListLine(list, line, _, _, _, _, _),
+   (
+      !SetIpAccessListLine_srcPortRange(list, line, _, _) ;
+      (
+         Flow_srcPort[flow] = srcPort,
+         SetIpAccessListLine_srcPortRange(list, line, srcPort_start, srcPort_end),
+         srcPort_start <= srcPort <= srcPort_end
+      )
+   ).
+   
+
+// END CODE
+   })
+} <-- .

@@ -1,0 +1,17 @@
+block(`Node_rules) {
+   alias_all(`libbatfish:Node),
+   clauses(`{
+// BEGIN CODE
+
+Node_NONE[] = node <-
+   Node_name(node:"(none)").
+
+Vendor_CISCO[] = vendor <-
+   Vendor_name(vendor:"cisco").   
+
+Vendor_JUNIPER[] = vendor <-
+   Vendor_name(vendor:"juniper").
+
+// END CODE
+   })
+} <-- .

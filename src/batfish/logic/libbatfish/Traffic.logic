@@ -1,0 +1,157 @@
+block(`Traffic) {
+   alias_all(`libbatfish:Flow),
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:IpAccessList),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Node),
+   export(`{
+// BEGIN CODE
+
+/// [FlowAccepted(flow, node)] =
+///   Flow [flow] was accepted by node [node].
+FlowAccepted(flow, node) ->
+   Flow(flow),
+   Node(node).
+
+FlowAllowedIn(flow, node, interface, filter) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter).
+
+FlowAllowedOut(flow, node, interface, filter) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter).
+
+/// [FlowDeniedIn(flow, node, interface, filter, line)] =
+///   Flow [flow] was denied by node [node] by incoming acl [filter], line
+///   [line] at input interface [interface].
+FlowDeniedIn(flow, node, interface, filter, line) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter),
+   int(line).
+
+/// [FlowDeniedOut(flow, node, interface, filter, line)] =
+///   Flow [flow] was denied by node [node] by outgoing acl [filter], line
+///   [line] at output interface [interface].
+FlowDeniedOut(flow, node, interface, filter, line) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter),
+   int(line).
+
+FlowDenyIn(flow, node, interface, filter, line) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter),
+   int(line).
+
+FlowDenyOut(flow, node, interface, filter, line) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter),
+   int(line).
+
+/// [FlowDropped(flow, node)] =
+///   Flow [flow] was dropped by node [node].
+FlowDropped(flow, node) ->
+   Flow(flow),
+   Node(node).
+
+/// [FlowInconsistent(flow)] =
+///   Flow [flow] has inconsistent paths.
+FlowInconsistent(flow) ->
+   Flow(flow).
+
+FlowLoop(flow, node, outInt) ->
+   Flow(flow),
+   Node(node),
+   Interface(outInt).
+
+FlowLost(flow) ->
+   Flow(flow).
+
+/// [FlowNoRoute(flow, node)] =
+///   Flow [flow] was dropped by node [node] because it had no route to
+///   [flow]'s destination.
+FlowNoRoute(flow, node) ->
+   Flow(flow),
+   Node(node).
+
+FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow ->
+   Node(node),
+   Ip(srcIp),
+   Ip(dstIp),
+   int(srcPort),
+   int(dstPort),
+   int(protocol),
+   Flow(flow).
+
+FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt) ->
+   Flow(flow),
+   Node(srcNode),
+   Interface(srcOutInt),
+   Node(dstNode),
+   Interface(dstInInt).
+
+FlowReachPostIn(flow, node) ->
+   Flow(flow),
+   Node(node).
+
+FlowReachPostInInterface(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowReachPostOutInterface(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowReachPreInInterface(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowReachPreOut(flow, node) ->
+   Flow(flow),
+   Node(node).
+
+FlowReachPreOutInterface(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowReachStep(flow, srcNode, srcOutInt, dstNode, dstInInt) ->
+   Flow(flow),
+   Node(srcNode),
+   Interface(srcOutInt),
+   Node(dstNode),
+   Interface(dstInInt).
+
+FlowUnknown(flow) ->
+   Flow(flow).
+
+SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol) ->
+   Node(node),
+   Ip(srcIp),
+   Ip(dstIp),
+   int(srcPort),
+   int(dstPort),
+   int(protocol).
+
+// END CODE
+   }),
+   //constructors
+   clauses(`{
+lang:constructor(`FlowOriginate).
+   })
+} <-- .
+

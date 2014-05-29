@@ -1,0 +1,25 @@
+block(`Interface_rules) {
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Node),
+   clauses(`{
+// BEGIN CODE
+
+HasIp(node, ip) <-
+   IpReadyInt(node, _, ip, _).
+   
+HasNetwork(node, network) <-
+   IpReadyInt(node, _, ip, prefix_length),
+   NetworkOf[ip, prefix_length] = network.
+   
+//IpOwner[ip] = node <-
+//   HasIp(node, ip).
+
+IpReadyInt(node, interface, ip, prefix_length) <-
+   SetIpInt(node, interface, ip, prefix_length),
+   SetActiveInt(node, interface).
+
+// END CODE
+   })
+} <-- .
+

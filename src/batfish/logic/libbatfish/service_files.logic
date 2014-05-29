@@ -1,0 +1,435 @@
+block(`service_files) {
+   alias_all(`lb:web:delim:schema),
+   alias_all(`lb:web:delim:schema_abbr),
+   clauses(`{
+
+// Layer2
+      file_definition_by_name["GuessTopology"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "DUMMY",
+         column_formats[] = "integer"
+      }.
+
+      file_definition_by_name["SamePhysicalSegment"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE1,INTERFACE1,NODE2,INTERFACE2",
+         column_formats[] = "string,string,string,string"
+      }.
+
+      file_definition_by_name["SetSwitchportAccess"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "SWITCH,INTERFACE,VLAN",
+         column_formats[] = "string,string,integer"
+      }.
+
+      file_definition_by_name["SetSwitchportTrunkAllows"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "SWITCH,INTERFACE,VLANSTART,VLANEND",
+         column_formats[] = "string,string,integer,integer"
+      }.
+
+      file_definition_by_name["SetSwitchportTrunkEncapsulation"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "SWITCH,INTERFACE,ENCAPSULATION",
+         column_formats[] = "string,string,string"
+      }.
+
+      file_definition_by_name["SetSwitchportTrunkNative"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "SWITCH,INTERFACE,VLAN",
+         column_formats[] = "string,string,integer"
+      }.
+
+// DataPlane
+      file_definition_by_name["SetInterfaceFilterIn"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE,FILTER",
+         column_formats[] = "string,string,string"
+      }.
+
+      file_definition_by_name["SetInterfaceFilterOut"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE,FILTER",
+         column_formats[] = "string,string,string"
+      }.
+
+// Ip
+      file_definition_by_name["SetNetwork"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "START,END,PREFIXLENGTH",
+         column_formats[] = "integer,integer,integer"
+      }.
+
+// IpAccessList
+      file_definition_by_name["SetIpAccessListDenyLine"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "LIST,LINE",
+         column_formats[] = "string,integer"
+      }.
+
+      file_definition_by_name["SetIpAccessListLine"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "LIST,LINE,PROTOCOL,SRCIPSTART,SRCIPEND,DSTIPSTART,DSTIPEND",
+         column_formats[] = "string,integer,string,integer,integer,integer,integer"
+      }.
+
+      file_definition_by_name["SetIpAccessListLine_dstPortRange"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "LIST,LINE,DSTPORTSTART,DSTPORTEND",
+         column_formats[] = "string,integer,integer,integer"
+      }.
+
+      file_definition_by_name["SetIpAccessListLine_srcPortRange"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "LIST,LINE,SRCPORTSTART,SRCPORTEND",
+         column_formats[] = "string,integer,integer,integer"
+      }.
+
+// Interface
+      file_definition_by_name["SetActiveInt"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE",
+         column_formats[] = "string,string"
+      }.
+
+      file_definition_by_name["SetFakeInterface"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE",
+         column_formats[] = "string,string"
+      }.
+
+      file_definition_by_name["SetFlowSinkInterface"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE",
+         column_formats[] = "string,string"
+      }.
+
+      file_definition_by_name["SetIpInt"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE,IP,PREFIXLENGTH",
+         column_formats[] = "string,string,integer,integer"
+      }.
+
+      file_definition_by_name["SetLinkLoadLimitIn"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE,LIMIT",
+         column_formats[] = "string,string,float"
+      }.
+
+      file_definition_by_name["SetLinkLoadLimitOut"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE,LIMIT",
+         column_formats[] = "string,string,float"
+      }.
+
+// Traffic
+      file_definition_by_name["SetFlowOriginate"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,SRCIP,DSTIP,SRCPORT,DSTPORT,IPPROTOCOL",
+         column_formats[] = "string,integer,integer,integer,integer,integer"
+      }.
+
+// GeneratedRoute
+      file_definition_by_name["SetGeneratedRoute_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,ADMIN",
+         column_formats[] = "string,integer,integer,integer,integer"
+      }.
+
+      file_definition_by_name["SetGeneratedRoutePolicy_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP",
+         column_formats[] = "string,integer,integer,integer,string"
+      }.
+
+// Route
+      file_definition_by_name["SetStaticRoute_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,ADMIN",
+         column_formats[] = "string,integer,integer,integer,integer,integer"
+      }.
+
+// Ospf
+      file_definition_by_name["SetOspfGeneratedRoute_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH",
+         column_formats[] = "string,integer,integer,integer"
+      }.
+
+      file_definition_by_name["SetOspfGeneratedRoutePolicy_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP",
+         column_formats[] = "string,integer,integer,integer,string"
+      }.
+
+      file_definition_by_name["SetOspfInterface"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE,AREA",
+         column_formats[] = "string,string,integer"
+      }.
+
+      file_definition_by_name["SetOspfInterfaceCost"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE,COST",
+         column_formats[] = "string,string,integer"
+      }.
+
+      file_definition_by_name["SetOspfOutboundPolicyMap"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,MAP",
+         column_formats[] = "string,string"
+      }.
+
+      file_definition_by_name["SetOspfRouterId"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,IP",
+         column_formats[] = "string,integer"
+      }.
+
+// CommunityList
+      file_definition_by_name["SetCommunityListLine"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "LIST,LINE,COMMUNITY",
+         column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetCommunityListLinePermit"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "LIST,LINE",
+         column_formats[] = "string,integer"
+      }.
+
+// RouteFilter
+      file_definition_by_name["SetRouteFilterLine"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "LIST,LINE,NETWORKSTART,NETWORKEND,MINPREFIX,MAXPREFIX",
+         column_formats[] = "string,integer,integer,integer,integer,integer"
+      }.
+
+      file_definition_by_name["SetRouteFilterPermitLine"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "LIST,LINE",
+         column_formats[] = "string,integer"
+      }.
+
+// PolicyMap
+      file_definition_by_name["SetPolicyMapClauseAddCommunity"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,COMMUNITY",
+         column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseDeleteCommunity"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,LIST",
+         column_formats[] = "string,integer,string"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseDeny"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE",
+         column_formats[] = "string,integer"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseMatchCommunityList"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,LIST",
+         column_formats[] = "string,integer,string"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseMatchNeighbor"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,NEIGHBORIP",
+         column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseMatchProtocol"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,PROTOCOL",
+         column_formats[] = "string,integer,string"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseMatchRouteFilter"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,LIST",
+         column_formats[] = "string,integer,string"
+      }.
+
+      file_definition_by_name["SetPolicyMapClausePermit"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE",
+         column_formats[] = "string,integer"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseSetCommunity"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,COMMUNITY",
+         column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseSetLocalPreference"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,LOCALPREF",
+         column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseSetMetric"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,METRIC",
+         column_formats[] = "string,integer,integer"
+      }.
+
+// Bgp
+      file_definition_by_name["SetBgpDefaultLocalPref"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NEIGHBORIP,LOCALPREF",
+         column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetBgpExportPolicy"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NEIGHBORIP,MAP",
+         column_formats[] = "string,integer,string"
+      }.
+
+      file_definition_by_name["SetBgpGeneratedRoute_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH",
+         column_formats[] = "string,integer,integer,integer"
+      }.
+
+      file_definition_by_name["SetBgpGeneratedRoutePolicy_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP",
+         column_formats[] = "string,integer,integer,integer,string"
+      }.
+
+      file_definition_by_name["SetBgpImportPolicy"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NEIGHBORIP,MAP",
+         column_formats[] = "string,integer,string"
+      }.
+
+      file_definition_by_name["SetBgpNeighborDefaultMetric"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NEIGHBORIP,METRIC",
+         column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetBgpNeighborGeneratedRoute_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NEIGHBORIP,NETWORKSTART,NETWORKEND,PREFIXLENGTH",
+         column_formats[] = "string,integer,integer,integer,integer"
+      }.
+
+      file_definition_by_name["SetBgpNeighborGeneratedRoutePolicy_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NEIGHBORIP,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP",
+         column_formats[] = "string,integer,integer,integer,integer,string"
+      }.
+
+      file_definition_by_name["SetBgpNeighborIp"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NEIGHBORIP",
+         column_formats[] = "string,integer"
+      }.
+
+      file_definition_by_name["SetBgpNeighborSendCommunity"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NEIGHBORIP",
+         column_formats[] = "string,integer"
+      }.
+
+      file_definition_by_name["SetBgpOriginationPolicy"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NEIGHBORIP,MAP",
+         column_formats[] = "string,integer,string"
+      }.
+      
+      file_definition_by_name["SetLocalAs"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NEIGHBORIP,LOCALAS",
+         column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetRemoteAs"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NEIGHBORIP,REMOTEAS",
+         column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetRouteReflectorClient"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NEIGHBORIP,CLUSTERID",
+         column_formats[] = "string,integer,integer"
+      }.
+      
+      // Node
+      file_definition_by_name["SetNodeVendor"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,VENDOR",
+         column_formats[] = "string,string"
+      }.
+      
+   })
+} <-- .
+

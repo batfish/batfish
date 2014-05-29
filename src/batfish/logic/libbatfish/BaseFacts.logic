@@ -1,0 +1,63 @@
+block(`BaseFacts) {
+   inactive(),
+   alias_all(`libbatfish:Bgp),
+   alias_all(`libbatfish:BgpAdvertisement),
+   alias_all(`libbatfish:Flow),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Layer2),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
++Node("(none)").
+
++AdvertisementType("bgp").
++AdvertisementType("bgp_ti").
++AdvertisementType("bgp_to").
++AdvertisementType("ibgp").
++AdvertisementType("ibgp_ti").
++AdvertisementType("ibgp_to").
+
++OriginType("igp").
++OriginType("egp").
++OriginType("incomplete").
+
++RoutingProtocol("aggregate").
++RoutingProtocol("bgp").
++RoutingProtocol("connected").
++RoutingProtocol("ibgp").
++RoutingProtocol("ospf").
++RoutingProtocol("ospfIA").
++RoutingProtocol("ospfE2").
++RoutingProtocol("static").
+
++Ip(0).
+
++Encapsulation("dot1q").
+
++IpProtocol(0). //anyip
++IpProtocol(6). //tcp
++IpProtocol(17). //udp
+
++Vendor("cisco").
++Vendor("juniper").
+
++AdministrativeDistance["cisco", "bgp"] = 20.
++AdministrativeDistance["cisco", "ibgp"] = 200.
++AdministrativeDistance["cisco", "connected"] = 0.
++AdministrativeDistance["cisco", "ospf"] = 110.
++AdministrativeDistance["cisco", "ospfIA"] = 110.
++AdministrativeDistance["cisco", "ospfE2"] = 110.
+
++AdministrativeDistance["juniper", "bgp"] = 170.
++AdministrativeDistance["juniper", "ibgp"] = 170.
++AdministrativeDistance["juniper", "connected"] = 0.
++AdministrativeDistance["juniper", "ospf"] = 10.
++AdministrativeDistance["juniper", "ospfIA"] = 10.
++AdministrativeDistance["juniper", "ospfE2"] = 150.
+
+// END CODE
+   }) //clauses
+} <-- .
+

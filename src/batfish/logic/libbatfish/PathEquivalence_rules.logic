@@ -1,0 +1,13 @@
+block(`PathEquivalence_rules) {
+   alias_all(`libbatfish:Node),
+   clauses(`{
+// BEGIN CODE
+
+PathEquivalence(node, endpoint) <-
+   Node(node),
+   Node(endpoint),
+   node = endpoint.
+
+// END CODE
+   })
+} <-- .

@@ -1,0 +1,37 @@
+block(`DataPlane) {
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:IpAccessList),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:Route),
+   export(`{
+// BEGIN CODE
+
+FibDrop(node, network) ->
+   Node(node),
+   Network(network).
+
+FibForward(node, ip, interface) -> 
+   Node(node),
+   Ip(ip),
+   Interface(interface).
+
+FibNetworkForward(node, network, interface) -> 
+   Node(node),
+   Network(network),
+   Interface(interface).
+
+SetInterfaceFilterIn(node, interface, filter) ->
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter).
+
+SetInterfaceFilterOut(node, interface, filter) ->
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter).
+
+// END CODE
+   })
+} <-- .
+
