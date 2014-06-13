@@ -9,7 +9,7 @@ Prerequisites:
    java 7 jdk
 
 Building:
-   - Change directory to  <repo-root>
+   - Change directory to <repo-root>
    - Then you can build by running:
       ant
    - To clean:
@@ -26,4 +26,8 @@ Running:
    For help:
    - Run:
       <repo-root>/batfish -help
+
+EXAMPLES:
+To dump the control plane information of the provided test rig, run:
+<repo-root>/batfish -testrig <repo-root>/test_rigs/example -dumpcp -dumpdir /path/to/dump/generated/output
 
