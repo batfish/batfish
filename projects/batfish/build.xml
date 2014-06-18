@@ -18,7 +18,7 @@
    <path id="libraries">
       <fileset dir="lib" includes="**/*.jar"/>
    </path>
-   <property name="outputJar" value="out/Batfish.jar"/>
+   <property name="outputJar" value="out/batfish.jar"/>
    <property name="lbSummary" value="bin/batfish/logic/LB_SUMMARY.lbp"/>
 
    <!-- antlr build macro -->
