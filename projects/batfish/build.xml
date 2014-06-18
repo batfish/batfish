@@ -40,7 +40,7 @@
 
    <target name="all" depends="jar" description="Build everything"/>
 
-	<target name="antlrclean" description="Delete generated antlr files">
+	<target name="grammarclean" description="Delete generated antlr files">
       <delete>
          <fileset dir="src" includes="**/*.tokens"/>
          <fileset dir="src" includes="batfish/grammar/logicblox/LogicBloxFactGrammar*.java"/>
@@ -50,6 +50,8 @@
          <fileset dir="src" includes="batfish/grammar/semantics/Semantics*.java"/>
          <fileset dir="src" includes="batfish/grammar/topology/BatfishTopology*.java"/>
          <fileset dir="src" includes="batfish/grammar/topology/GNS3Topology*.java"/>
+         <fileset dir="src" includes="batfish/grammar/z3/Constraints*.java"/>
+         <fileset dir="src" includes="batfish/grammar/z3/QueryResult*.java"/>
       </delete>
 	</target>
 
@@ -91,7 +93,7 @@
       </sequential>
    </target>
 
-   <target name="clean" depends="compileclean, antlrclean" description="Delete all intermediate files"/>
+   <target name="clean" depends="compileclean, grammarclean" description="Delete all intermediate files"/>
 
    <!--   <target name="compile" depends="grammar, lbcompile" ** CANNOT DO THIS UNTIL WE GET LICENSE TO DISTRIBUTE LOGICBLOX LIBS-->
    <target name="compile" depends="grammar"

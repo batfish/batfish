@@ -10,8 +10,5 @@ LogicBloxFactGrammar*.java
 Semantics*.java
 BatfishTopology*.java
 GNS3Topology*.java
-ConstraintsLexer.java                                                                                                                      
-ConstraintsParser.java
-QueryResultLexer.java
-QueryResultParser.java
-
+Constraints*.java
+QueryResult*.java
