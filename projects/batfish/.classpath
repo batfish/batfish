@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/antlr/antlr.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-codec.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-configuration.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-io.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-lang.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-logging.jar"/>
+	<classpathentry kind="lib" path="lib/eclipse/jetty-client.jar"/>
+	<classpathentry kind="lib" path="lib/eclipse/jetty-http.jar"/>
+	<classpathentry kind="lib" path="lib/eclipse/jetty-io.jar"/>
+	<classpathentry kind="lib" path="lib/eclipse/jetty-util.jar"/>
+	<classpathentry kind="lib" path="lib/guava/guava.jar"/>
+	<classpathentry kind="lib" path="lib/httpcomponents/fluent-hc.jar"/>
+	<classpathentry kind="lib" path="lib/httpcomponents/httpclient-cache.jar"/>
+	<classpathentry kind="lib" path="lib/httpcomponents/httpclient.jar"/>
+	<classpathentry kind="lib" path="lib/httpcomponents/httpcore.jar"/>
+	<classpathentry kind="lib" path="lib/httpcomponents/httpmime.jar"/>
+	<classpathentry kind="lib" path="lib/protobuf/protobuf.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/logicblox/lb-common-protocol.jar"/>
+	<classpathentry kind="lib" path="lib/logicblox/lb-common.jar"/>
+	<classpathentry kind="lib" path="lib/logicblox/lb-connectblox.jar"/>
+	<classpathentry kind="lib" path="lib/logicblox/lb-web-client.jar"/>
+	<classpathentry kind="lib" path="lib/antlr/antlr-4.2.2-complete.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-cli.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

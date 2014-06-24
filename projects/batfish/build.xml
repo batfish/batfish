@@ -38,6 +38,76 @@
       </sequential>
    </macrodef> 
 
+   <!-- antlr4 build macro for lexers -->
+   <macrodef name="antlr4lexer">
+      <attribute name="grammar.packagedir"/>
+      <attribute name="grammar.name"/>
+      <attribute name="antlrjar" default="lib/antlr/antlr-4.2.2-complete.jar"/>
+      <sequential>
+         <outofdate>
+            <sourcefiles>
+               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}.g4"/>
+            </sourcefiles>
+            <targetfiles>
+               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}.java"/>
+               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}.tokens"/>
+            </targetfiles>
+            <sequential>
+               <java fork="true" failonerror="true" jar="@{antlrjar}">
+                  <arg path="src/@{grammar.packagedir}/@{grammar.name}.g4"/>
+                  <arg value="-o"/>
+                  <arg path="src/@{grammar.packagedir}"/>
+                  <arg value="-encoding"/>
+                  <arg value="UTF-8"/>
+               </java>
+            </sequential>
+         </outofdate>
+      </sequential>
+   </macrodef> 
+
+   <!-- antlr4 build macro for parsers -->
+   <macrodef name="antlr4parser">
+      <attribute name="grammar.packagedir"/>
+      <attribute name="grammar.name"/>
+      <attribute name="antlrjar" default="lib/antlr/antlr-4.2.2-complete.jar"/>
+      <element name="dependencies"/>
+      <sequential>
+         <outofdate>
+            <sourcefiles>
+               <dependencies/>
+            </sourcefiles>
+            <targetfiles>
+               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}.java"/>
+               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}Listener.java"/>
+               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}Visitor.java"/>
+               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}BaseListener.java"/>
+               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}BaseVisitor.java"/>
+               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}.tokens"/>
+            </targetfiles>
+            <sequential>
+               <java fork="true" failonerror="true" jar="@{antlrjar}">
+                  <arg path="src/@{grammar.packagedir}/@{grammar.name}.g4"/>
+                  <arg value="-o"/>
+                  <arg path="src/@{grammar.packagedir}"/>
+                  <arg value="-listener"/>
+                  <arg value="-visitor"/>
+                  <arg value="-lib"/>
+                  <arg path="src/@{grammar.packagedir}"/>
+                  <arg value="-encoding"/>
+                  <arg value="UTF-8"/>
+                  <redirector>
+                     <outputfilterchain>
+                           <linecontainsregexp negate="true">
+                              <regexp pattern="warning\(109\):"/>
+                           </linecontainsregexp>
+                     </outputfilterchain>
+                  </redirector>
+               </java>
+            </sequential>
+         </outofdate>
+      </sequential>
+   </macrodef> 
+
    <target name="all" depends="jar" description="Build everything"/>
 
 	<target name="grammarclean" description="Delete generated antlr files">
@@ -151,6 +221,31 @@
          <antlr3 grammar.name="LogicBloxFactGrammar.g" grammar.packagedir="batfish/grammar/logicblox"/>
          <antlr3 grammar.name="QueryResult.g" grammar.packagedir="batfish/grammar/z3"/>
          <antlr3 grammar.name="Semantics.g" grammar.packagedir="batfish/grammar/semantics"/>
+      </parallel>
+   </target>
+
+   <target name="grammar4lexers"
+     description="Compile antlr4 lexer grammars">
+      <parallel>
+         <antlr4lexer grammar.name="CiscoGrammarCommonLexer" grammar.packagedir="batfish/grammar/cisco"/>
+      </parallel>
+   </target>
+
+   <target name="grammar4parsers" depends="grammar4lexers"
+     description="Compile antlr4 parser grammars">
+      <parallel>
+         <antlr4parser grammar.name="CiscoGrammar" grammar.packagedir="batfish/grammar/cisco">
+            <dependencies>
+               <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar.g4"/>
+               <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammarCommonLexer.tokens"/>
+               <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammarCommonParser.g4"/>
+               <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_acl.g4"/>
+               <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_bgp.g4"/>
+               <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_interface.g4"/>
+               <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_ospf.g4"/>
+               <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_routemap.g4"/>
+            </dependencies>
+         </antlr4parser>
       </parallel>
    </target>
 
