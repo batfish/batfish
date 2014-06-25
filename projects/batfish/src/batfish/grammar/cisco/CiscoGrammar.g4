@@ -9,7 +9,6 @@ options {
 
 @header {
 package batfish.grammar.cisco;
-import batfish.util.SubRange;
 }
 
 address_family_vrf_stanza
