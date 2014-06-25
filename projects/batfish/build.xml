@@ -8,7 +8,8 @@
    </taskdef>
 
    <!-- logicblox stuff -->
-   <property name="lbhome" location="/opt/logicblox"/>
+   <property environment="env"/>
+   <property name="lbhome" value="${env.LB_HOME}"/>
 
    <!-- import and configure one-jar -->
    <property name="one-jar.dir" location="one-jar"/>
