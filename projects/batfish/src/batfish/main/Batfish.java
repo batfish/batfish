@@ -30,11 +30,8 @@ import org.antlr.runtime.RecognitionException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-//TODO: uncomment after LB libs restored
-/*
 import com.logicblox.bloxweb.client.ServiceClientException;
 import com.logicblox.connect.Workspace.Relation;
-*/
 
 import batfish.grammar.ConfigurationLexer;
 import batfish.grammar.ConfigurationParser;
@@ -149,8 +146,6 @@ public class Batfish {
       printElapsedTime();
    }
 
-//TODO: uncomment after LB libs restored
-/*
    private void addStaticFacts(LogicBloxFrontend lbFrontend,
          List<String> blockNames) {
       print(0, "\n*** ADDING STATIC FACTS ***\n");
@@ -170,7 +165,7 @@ public class Batfish {
       print(1, "SUCCESS\n");
       printElapsedTime();
    }
-*/
+
    private void cleanupLogicDir() {
       if (_tmpLogicDir != null) {
          try {
@@ -351,8 +346,6 @@ public class Batfish {
       return predicateSemantics;
    }
 
-//TODO: uncomment after LB libs restored
-/*
    private void genZ3(LogicBloxFrontend lbFrontend,
          Map<String, Configuration> configurations) {
       print(0, "\n*** GENERATING Z3 LOGIC ***\n");
@@ -388,7 +381,7 @@ public class Batfish {
       printElapsedTime();
 
    }
-*/
+
    public Map<String, Configuration> getConfigurations(String testRigPath) {
       // Get generated facts from configuration files
       print(1, "\n*** PARSING CONFIGURATION FILES ***\n");
@@ -470,8 +463,6 @@ public class Batfish {
       return predicateInfo;
    }
 
-//TODO: uncomment after LB libs restored
-/*
    private Map<String, TreeSet<FibRow>> getRouteForwardingRules(
          Relation installedRoutes, LogicBloxFrontend lbFrontend) {
       Map<String, TreeSet<FibRow>> fibs = new HashMap<String, TreeSet<FibRow>>();
@@ -516,7 +507,7 @@ public class Batfish {
       }
       return fibs;
    }
-*/
+
    private Map<String, String> getSemanticsFiles() {
       final Map<String, String> semanticsFiles = new HashMap<String, String>();
       File logicDirFile = retrieveLogicDir();
@@ -543,8 +534,6 @@ public class Batfish {
       return semanticsFiles;
    }
 
-//TODO: uncomment after LB libs restored
-/*
    public Set<Edge> getTopologyEdges(LogicBloxFrontend lbFrontend) {
       Set<Edge> edges = new HashSet<Edge>();
       String qualifiedName = _predicateInfo.getPredicateNames().get(
@@ -573,12 +562,9 @@ public class Batfish {
       }
       return edges;
    }
-*/
+
    public LogicBloxFrontend initFrontend(boolean assumedToExist,
          String workspace) throws LBInitializationException {
-   return null;
-//TODO: uncomment after LB libs restored
-/*
       print(1, "\n*** STARTING CONNECTBLOX SESSION ***\n");
       resetTimer();
       LogicBloxFrontend lbFrontend = new LogicBloxFrontend(
@@ -594,7 +580,7 @@ public class Batfish {
       printElapsedTime();
       _lbFrontends.add(lbFrontend);
       return lbFrontend;
-*/
+
    }
 
    private List<Configuration> parseConfigFiles(String testRigPath) {
@@ -847,8 +833,6 @@ public class Batfish {
 
    private void postFacts(LogicBloxFrontend lbFrontend,
          Map<String, StringBuilder> factBins) {
-//TODO: uncomment after LB libs restored
-/*
       print(1, "\n*** POSTING FACTS TO BLOXWEB SERVICES ***\n");
       resetTimer();
       String ret = lbFrontend.startBloxWebServices();
@@ -870,7 +854,6 @@ public class Batfish {
       }
       print(1, "SUCCESS\n");
       printElapsedTime();
-*/
    }
 
    public void print(int logLevel, String text) {
@@ -898,8 +881,6 @@ public class Batfish {
 
    private void printPredicate(LogicBloxFrontend lbFrontend,
          String predicateName) {
-//TODO: uncomment after LB libs restored
-/*
       List<String> output;
       printPredicateSemantics(predicateName);
       String qualifiedName = _predicateInfo.getPredicateNames().get(
@@ -920,18 +901,14 @@ public class Batfish {
       catch (QueryException q) {
          error(0, q.getMessage() + "\n");
       }
-*/
    }
 
    private void printPredicateCount(LogicBloxFrontend lbFrontend,
          String predicateName) {
-//TODO: uncomment after LB libs restored
-/*
       int numRows = lbFrontend.queryPredicate(predicateName).getColumns()
             .get(0).size();
       String output = "|" + predicateName + "| = " + numRows + "\n";
       print(0, output);
-*/
    }
 
    public void printPredicateCounts(LogicBloxFrontend lbFrontend,
@@ -1127,12 +1104,9 @@ public class Batfish {
 
       // Post facts if requested
       if (_settings.getFacts()) {
-//TODO: uncomment after LB libs restored
-/*
          addStaticFacts(lbFrontend,
                Collections.singletonList(BASIC_FACTS_BLOCKNAME));
          postFacts(lbFrontend, cpFactBins);
-*/
          quit(0);
       }
 
@@ -1157,12 +1131,9 @@ public class Batfish {
       }
 
       if (_settings.getZ3()) {
-//TODO: uncomment after LB libs restored
-/*
          Map<String, Configuration> configurations = getConfigurations(_settings
                .getTestRigPath());
          genZ3(lbFrontend, configurations);
-*/
          quit(0);
       }
 

@@ -15,8 +15,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.eclipse.jetty.client.HttpClient;
 
-//TODO: uncomment after LB libs restored
-/*
 import com.logicblox.bloxweb.client.DelimImportOptions;
 import com.logicblox.bloxweb.client.DelimServiceClient;
 import com.logicblox.bloxweb.client.DelimTxn;
@@ -47,7 +45,6 @@ import com.logicblox.connect.Workspace.Relation.UInt64Column;
 import com.logicblox.connect.Workspace.Result;
 import com.logicblox.connect.Workspace.Result.Failure;
 import com.logicblox.connect.Workspace.Result.QueryPredicate;
-*/
 
 import batfish.util.Util;
 
@@ -57,8 +54,6 @@ public class LogicBloxFrontend {
    private static final String BLOXWEB_PROTOCOL = "http";
    public static final long BLOXWEB_TIMEOUT_MS = 31536000000l;
    private static final String SERVICE_DIR = "batfish";
-//TODO: uncomment after LB libs restored
-/*
    private static void closeSession(
          ConnectBloxSession<Request, Response> session) {
       try {
@@ -72,17 +67,15 @@ public class LogicBloxFrontend {
                      + e.getMessage());
       }
    }
-*/
+
    private boolean _assumedToExist;
 
-//TODO: uncomment after LB libs restored
-//   ConnectBloxSession<Request, Response> _cbSession;
+   private ConnectBloxSession<Request, Response> _cbSession;
    private EntityTable _entityTable;
    private String _regularHost;
    private int _regularPort;
 
-//TODO: uncomment after LB libs restored
-//   private ConnectBloxWorkspace _workspace;
+   private ConnectBloxWorkspace _workspace;
 
    private String _workspaceName;
 
@@ -96,9 +89,6 @@ public class LogicBloxFrontend {
    }
 
    public String addProject(String projectPath, String additionalLibraryPath) {
-      return null;
-//TODO: uncomment after LB libs restored
-/*
       AddProject ap = Workspace.Command.addProject(new File(projectPath), true,
             true, additionalLibraryPath);
       List<Workspace.Result> results = null;
@@ -115,12 +105,9 @@ public class LogicBloxFrontend {
       else {
          return results.toString();
       }
-*/
    }
 
    public void close() {
-//TODO: uncomment after LB libs restored
-/*
       if (_workspace != null && _workspace.isOpen()) {
          try {
             _workspace.close();
@@ -130,17 +117,12 @@ public class LogicBloxFrontend {
          }
       }
       closeSession(_cbSession);
-*/
    }
 
    public boolean connected() {
-      return false;
-//TODO: uncomment after LB libs restored
-//      return _cbSession != null;
+      return _cbSession != null;
    }
 
-//TODO: uncomment after LB libs restored
-/*
    private ConnectBloxSession<Request, Response> createRegularSession()
          throws LBInitializationException {
       try {
@@ -367,13 +349,11 @@ public class LogicBloxFrontend {
       }
       return tableByRows;
    }
-*/
+
    public void initEntityTable() {
       _entityTable = new EntityTable(this);
    }
 
-//TODO: uncomment after LB libs restored
-/*
    public void initialize() throws LBInitializationException {
       _cbSession = createRegularSession();
       if (!_assumedToExist) {
@@ -444,10 +424,8 @@ public class LogicBloxFrontend {
          throw new Error(failure.getMessage());
       }
    }
-*/
+
    public void removeBlock(String blockName) {
-//TODO: uncomment after LB libs restored
-/*
       try {
          Workspace.Command.RemoveBlock rem = Workspace.Command
                .removeBlock(blockName);
@@ -488,12 +466,9 @@ public class LogicBloxFrontend {
       catch (Workspace.Exception e) {
          System.err.println("Encountered error " + e.errorSort());
       }
-*/
    }
 
    public String revertDatabase(String branchName) {
-//TODO: uncomment after LB libs restored
-/*
       RevertDatabase.Builder rb = RevertDatabase.newBuilder();
       rb.setWorkspace(_workspaceName);
       rb.setOlderBranch(branchName);
@@ -515,7 +490,6 @@ public class LogicBloxFrontend {
       catch (Exception | InterruptedException | ExecutionException e) {
          return ExceptionUtils.getStackTrace(e);
       }
-*/
       return null;
    }
 
