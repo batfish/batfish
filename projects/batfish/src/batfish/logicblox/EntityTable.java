@@ -3,14 +3,12 @@ package batfish.logicblox;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-//TODO: uncomment after LB libs restored
-/*
 import com.logicblox.connect.Workspace.Relation;
 import com.logicblox.connect.Workspace.Relation.EntityColumn;
 import com.logicblox.connect.Workspace.Relation.Int64Column;
 import com.logicblox.connect.Workspace.Relation.StringColumn;
 import com.logicblox.connect.Workspace.Relation.UInt64Column;
-*/
+
 import batfish.util.Util;
 
 public class EntityTable {
@@ -39,9 +37,9 @@ public class EntityTable {
    private long[] _networkPrefixLengths;
 
    public EntityTable(LogicBloxFrontend lbf) {
-//TODO: uncomment after LB libs restored
-/*      EntityColumn ec;
 
+      EntityColumn ec;
+      
       // Network
       Relation networkIndex = lbf
             .queryPredicate("libbatfish:Ip:Network_index");
@@ -138,7 +136,6 @@ public class EntityTable {
       // get indices
       ec = (EntityColumn) currentAdvertProperty.getColumns().get(0);
       _advertIndices = ((UInt64Column) ec.getIndexColumn().unwrap()).getRows();
-*/
    }
 
    public String getBgpAdvertisement(BigInteger index) {
