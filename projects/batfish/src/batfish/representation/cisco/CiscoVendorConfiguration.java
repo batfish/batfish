@@ -124,8 +124,8 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       // add generated routes for aggregate addresses
       for (BgpNetwork aggNet : proc.getAggregateNetworks().keySet()) {
          boolean summaryOnly = proc.getAggregateNetworks().get(aggNet);
-         String prefix = aggNet.getNetworkAddress();
-         int prefixLength = Util.numSubnetBits(aggNet.getSubnetMask());
+         String prefix = aggNet.getNetworkAddress().toString();
+         int prefixLength = aggNet.getSubnetMask().numSubnetBits();
          SubRange prefixRange = new SubRange(prefixLength + 1, 32);
          LineAction prefixAction = LineAction.ACCEPT;
          String filterName = "~MATCH_SUMMARIZED_OF:" + prefix + "~";
@@ -194,8 +194,8 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          RouteFilterList filter = new RouteFilterList("~BGP_PRE_FILTER:"
                + pg.getName() + "~");
          for (BgpNetwork network : proc.getNetworks()) {
-            Ip netAdd = new Ip(network.getNetworkAddress());
-            int prefixLen = Util.numSubnetBits(network.getSubnetMask());
+            Ip netAdd = network.getNetworkAddress();
+            int prefixLen = network.getSubnetMask().numSubnetBits();
             RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
                   LineAction.ACCEPT, netAdd, prefixLen, new SubRange(prefixLen,
                         prefixLen));
@@ -360,12 +360,12 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          // sort so longest prefixes are first
          @Override
          public int compare(OspfNetwork lhs, OspfNetwork rhs) {
-            int lhsPrefixLength = Util.numSubnetBits(lhs.getSubnetMask());
-            int rhsPrefixLength = Util.numSubnetBits(rhs.getSubnetMask());
+            int lhsPrefixLength = lhs.getSubnetMask().numSubnetBits();
+            int rhsPrefixLength = rhs.getSubnetMask().numSubnetBits();
             int result = -Integer.compare(lhsPrefixLength, rhsPrefixLength);
             if (result == 0) {
-               long lhsIp = Util.ipToLong(lhs.getNetworkAddress());
-               long rhsIp = Util.ipToLong(rhs.getNetworkAddress());
+               long lhsIp = lhs.getNetworkAddress().asLong();
+               long rhsIp = rhs.getNetworkAddress().asLong();
                result = Long.compare(lhsIp, rhsIp);
             }
             return result;
@@ -377,8 +377,8 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
             continue;
          }
          for (OspfNetwork network : networks) {
-            Ip networkIp = new Ip(network.getNetworkAddress());
-            Ip networkMask = new Ip(network.getSubnetMask());
+            Ip networkIp = network.getNetworkAddress();
+            Ip networkMask = network.getSubnetMask();
             long maskedIp = interfaceIp.asLong() & networkMask.asLong();
             if (maskedIp == networkIp.asLong()) {
                // we have a longest prefix match
@@ -1002,8 +1002,8 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       newIface.setArea(iface.getArea());
       newIface.setBandwidth(iface.getBandwidth());
       if (iface.getIP() != null) {
-         newIface.setIP(new Ip(iface.getIP()));
-         newIface.setSubnetMask(new Ip(iface.getSubnetMask()));
+         newIface.setIP(iface.getIP());
+         newIface.setSubnetMask(iface.getSubnetMask());
       }
       Map<String, String> secondaryIps = iface.getSecondaryIps();
       for (String ip : secondaryIps.keySet()) {

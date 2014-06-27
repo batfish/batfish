@@ -42,4 +42,14 @@ public class Ip implements Comparable<Ip> {
    public String toString() {
       return Util.longToIp(_ip);
    }
+
+   public int numSubnetBits() {
+      int count = 0;
+      int subnetInt = (int) _ip.longValue();
+      while (subnetInt != 0) {
+         subnetInt <<= 1;
+         count++;
+      }
+      return count;
+   }
 }

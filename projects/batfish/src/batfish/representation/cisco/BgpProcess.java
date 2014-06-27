@@ -6,11 +6,13 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
+import batfish.representation.Ip;
+
 public class BgpProcess {
 
    private Set<String> _activatedNeighbors;
    private Map<BgpNetwork, Boolean> _aggregateNetworks;
-   private Long _clusterId;
+   private Ip _clusterId;
    private int _defaultMetric;
    private boolean _defaultNeighborActivate;
    private Set<BgpNetwork> _networks;
@@ -167,7 +169,7 @@ public class BgpProcess {
       return _aggregateNetworks;
    }
 
-   public Long getClusterId(){
+   public Ip getClusterId(){
       return _clusterId;
    }
 
@@ -207,8 +209,8 @@ public class BgpProcess {
       return _routerId;
    }
 
-   public void setClusterId(Long id){
-      _clusterId = id;
+   public void setClusterId(Ip clusterId){
+      _clusterId = clusterId;
    }
 
    public void setDefaultMetric(int defaultMetric) {

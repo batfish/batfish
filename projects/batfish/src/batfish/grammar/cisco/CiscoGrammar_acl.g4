@@ -6,21 +6,59 @@ options {
 	tokenVocab = CiscoGrammarCommonLexer;
 }
 
-access_list_remark_stanza
-:
-	ACCESS_LIST integer REMARK ~NEWLINE* NEWLINE
-;
-
 access_list_stanza
 :
 	standard_access_list_stanza
 	| extended_access_list_stanza
 ;
 
+extended_access_list_ip_range
+:
+	(
+		ip = IP_ADDRESS wildcard = IP_ADDRESS
+	)
+	| ANY
+	| HOST ip = IP_ADDRESS
+;
+
+extended_access_list_null_tail
+:
+	(
+		(
+			access_list_action protocol extended_access_list_ip_range port_specifier?
+			extended_access_list_ip_range port_specifier? REFLECT
+		)
+		| DYNAMIC
+		| EVALUATE
+		| REMARK
+	) ~NEWLINE* NEWLINE
+;
+
 extended_access_list_stanza
 :
-	ACCESS_LIST num = ACL_NUM_EXTENDED ala = access_list_action prot = protocol
-	srcipr = extended_access_list_ip_range
+	(
+		ACCESS_LIST firstnum = ACL_NUM_EXTENDED
+		(
+			extended_access_list_tail
+			| extended_access_list_null_tail
+		)
+		(
+			ACCESS_LIST num = ACL_NUM_EXTENDED
+			{$firstnum.text.equals($num.text)}?
+
+			(
+				extended_access_list_tail
+				| extended_access_list_null_tail
+			)
+		)*
+	)
+	| ip_access_list_extended_stanza
+;
+
+extended_access_list_tail
+:
+	ala = access_list_action prot = protocol srcipr =
+	extended_access_list_ip_range
 	(
 		alps_src = port_specifier
 	)? dstipr = extended_access_list_ip_range
@@ -36,17 +74,11 @@ extended_access_list_stanza
 		| LOG_INPUT
 		| PACKET_TOO_BIG
 		| PORT_UNREACHABLE
+		| REDIRECT
+		| TIME_EXCEEDED
 		| TTL_EXCEEDED
+		| UNREACHABLE
 	)? NEWLINE
-;
-
-extended_access_list_ip_range
-:
-	(
-		ip = IP_ADDRESS wildcard = IP_ADDRESS
-	)
-	| any = ANY
-	| HOST ip = IP_ADDRESS
 ;
 
 ip_access_list_extended_stanza
@@ -57,10 +89,9 @@ ip_access_list_extended_stanza
 		| name = ACL_NUM_EXTENDED
 	) NEWLINE
 	(
-		(
-			isl += item_ip_access_list_extended_stanza
-		)+
-	)?
+		extended_access_list_tail
+		| extended_access_list_null_tail
+	)*
 ;
 
 ip_access_list_standard_stanza
@@ -72,7 +103,8 @@ ip_access_list_standard_stanza
 	) NEWLINE
 	(
 		(
-			isl += item_ip_access_list_standard_stanza
+			standard_access_list_tail
+			| standard_access_list_null_tail
 		)+
 		| closing_comment
 	)
@@ -139,47 +171,6 @@ ip_prefix_list_line_stanza
 	)?
 ;
 
-item_ip_access_list_extended_stanza
-:
-	(
-		(
-			ala = access_list_action prot = protocol srcipr =
-			extended_access_list_ip_range
-			(
-				alps_src = port_specifier
-			)? dstipr = extended_access_list_ip_range
-			(
-				alps_dst = port_specifier
-			)?
-			(
-				ECHO_REPLY
-				| ECHO
-				| ESTABLISHED
-				| FRAGMENTS
-				| LOG
-				| PACKET_TOO_BIG
-				| PORT_UNREACHABLE
-				| REDIRECT
-				| TIME_EXCEEDED
-				| TTL_EXCEEDED
-				| UNREACHABLE
-			)? NEWLINE
-		)
-	)
-	|
-	(
-		(
-			(
-				access_list_action protocol extended_access_list_ip_range port_specifier?
-				extended_access_list_ip_range port_specifier? REFLECT
-			)
-			| DYNAMIC
-			| EVALUATE
-			| REMARK
-		) ~NEWLINE* NEWLINE
-	)
-;
-
 item_ip_access_list_standard_ip_range
 :
 	(
@@ -195,28 +186,42 @@ item_ip_access_list_standard_ip_range
 	)
 ;
 
-item_ip_access_list_standard_stanza
-:
-	(
-		ala = access_list_action ipr = item_ip_access_list_standard_ip_range NEWLINE
-	)
-	|
-	(
-		REMARK ~NEWLINE* NEWLINE
-	)
-;
-
-standard_access_list_stanza
-:
-	ACCESS_LIST num = ACL_NUM_STANDARD ala = access_list_action ipr =
-	standard_access_list_ip_range LOG? NEWLINE
-;
-
 standard_access_list_ip_range
 :
 	(
 		ip = IP_ADDRESS wildcard = IP_ADDRESS?
 	)
 	| ANY
+;
+
+standard_access_list_null_tail
+:
+	REMARK ~NEWLINE* NEWLINE
+;
+
+standard_access_list_stanza
+:
+	(
+		ACCESS_LIST firstnum = ACL_NUM_STANDARD
+		(
+			standard_access_list_tail
+			| standard_access_list_null_tail
+		)
+		(
+			ACCESS_LIST num = ACL_NUM_STANDARD
+			{$firstnum.text.equals($num.text)}?
+
+			(
+				standard_access_list_tail
+				| standard_access_list_null_tail
+			)
+		)*
+	)
+	| ip_access_list_standard_stanza
+;
+
+standard_access_list_tail
+:
+	ala = access_list_action ipr = standard_access_list_ip_range LOG? NEWLINE
 ;
 

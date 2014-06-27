@@ -1,5 +1,5 @@
 Except where otherwise noted, everything in this repository is provided under the terms of the Apache 2.0 License.
-***PROJECT IN FLUX - INSTRUCTIONS ARE WRONG***
+***PROJECT IN FLUX - INSTRUCTIONS WILL CHANGE DRAMATICALLY IN NEAR FUTURE***
 
 **************************************************
 Instructions for building and running Batfish
@@ -8,27 +8,75 @@ Instructions for building and running Batfish
 Prerequisites:
    ant
    java 7 jdk
+   logicblox 4.1.X+ (not required for all tasks)
+   z3  (Nuno Lopes's port)
+   GNU parallel
 
-Building:
-   - Change directory to <repo-root>
-   - Then you can build by running:
-      ant
-   - To clean:
-      - intermediate files (you will still be able to run afterwards):
-         ant clean
-      - all generated files
-         ant distclean
+Steps:
 
-Running:
-   To run, you will use the provided 'batfish' script. This script should
-   work when called from any directory.
-   - Run:
-      <repo-root>/batfish
-   For help:
-   - Run:
-      <repo-root>/batfish -help
+1. Install gnu parallel from http://ftp.gnu.org/gnu/parallel/parallel-latest.tar.bz2
+standard autotools install (extract, configure, make, make install)
 
-EXAMPLES:
-To dump the control plane information of the provided test rig, run:
-<repo-root>/batfish -testrig <repo-root>/test_rigs/example -dumpcp -dumpdir /path/to/dump/generated/output
+2. Install Nuno Lopes's z3 branch
+git clone https://git01.codeplex.com/forks/nunoplopes/hassel # IF YOU HAVE PROBLEMS WITH THIS STEP, JUST PULL LATEST SNAPSHOT OF 'unstable' BRANCH
+cd hassel
+./configure
+cd build
+make -j<number-of-jobs>
+make install # as administrator (sudo or whatever)
+
+3. Install LogicBlox 4.1.X and fix lb-web-server timeout
+- edit <logicblox-root>/lb-web/config/lb-web-server.conf
+- change the tcp_server_max_idle_time line to read:
+tcp_server_max_idle_time = 0
+
+4. Clone batfish
+git clone https://github.com/arifogel/batfish.git
+
+5. symlink needed logicblox libraries (they will be open-sourced soon, after which this step will no longer be necessary)
+from the README at <batfish-root>/lib/logicblox/README:
+    Until these files are open-sourced, make symlinks to or copies of them here:
+    cd <batfish-root>/lib/logicblox
+    ln -s <logicblox-home>/logicblox/lib/java/lb-common.jar
+    ln -s <logicblox-home>/logicblox/lib/java/lb-connectblox.jar
+    ln -s <logicblox-home>/logicblox/lib/java/lb-common-protocol.jar
+    ln -s <logicblox-home>/lb-web/lib/java/lb-web-client.jar
+
+6. prepare your environment for logicblox and batfish by adding the following to your .bashrc or equivalent
+    alias rlb='killall -9 lb-server; killall -9 lb-pager; lb services stop && rm -rf ~/lb_deployment/* && LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start'
+    alias slb='LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start'
+    alias klb='killall -9 lb-server; killall -9 lb-pager; lb services stop; rm -rf ~/lb_deployment/*'
+    . <batfish-root>/tools/batfish_functions.sh
+    export LB_HOME=<logicblox-root>
+rlb will kill logicblox, completely purge all logicblox data, and restart logicblox
+klb will kill logicblox and completely purge all logicblox data
+slb will start logicblox
+if you want to kill logicblox without purging data, run:
+    lb services stop
+sourcing batfish_functions.sh will give your shell access to batfish functions.
+LB_HOME is needed for ant to compile logic files.
+
+7. start logicblox
+type:
+    slb
+
+8. build batfish
+    batfish_build lbcompile #compiles logicblox logic files - logicblox must be installed - cannot interact with logicblox without this step
+    batfish_build # builds everything else
+Note that 'batfish_build' just runs 'ant' in the batfish project directory.
+You can clean all generated output with:
+   batfish_build distclean
+
+9. run batfish
+The output of this step will be placed in the current folder.
+If you want to confirm running of each subtask, run:
+    batfish_confirm_analyze /path/to/test/rig <generated-output-prefix>
+OR to run everything:
+    batfish_analyze /path/to/test/rig <generated-output-prefix>
+
+**************************************************
+Notes on running
+**************************************************
+This repository should contain an example test rig at <batfish-root>/test_rigs/example
+After running step 9 above you see the following output in the current folder:
 

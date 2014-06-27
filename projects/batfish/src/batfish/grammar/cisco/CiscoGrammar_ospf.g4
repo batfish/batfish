@@ -32,7 +32,7 @@ default_information_ro_stanza
 		(
 			METRIC_TYPE metric_type = DEC
 		)
-		| always = ALWAYS
+		| ALWAYS
 		|
 		(
 			ROUTE_MAP map = VARIABLE

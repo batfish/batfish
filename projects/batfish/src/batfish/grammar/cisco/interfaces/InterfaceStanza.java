@@ -9,7 +9,7 @@ public class InterfaceStanza implements Stanza {
    private Interface _interface; // intentionally package-visible
 
    public InterfaceStanza(String name) {
-      _interface = new Interface(name);
+      //_interface = new Interface(name);
       _interface.setBandwidth(getDefaultBandwidth(name));
    }
 

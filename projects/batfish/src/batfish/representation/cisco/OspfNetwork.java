@@ -1,22 +1,24 @@
 package batfish.representation.cisco;
 
+import batfish.representation.Ip;
+
 public class OspfNetwork {
 
-   private String _networkAddress;
-   private String _subnetMask;
+   private Ip _networkAddress;
+   private Ip _subnetMask;
    private int _area;
 
-   public OspfNetwork(String networkAddress, String subnetMask, int area) {
+   public OspfNetwork(Ip networkAddress, Ip subnetMask, int area) {
       _networkAddress = networkAddress;
       _subnetMask = subnetMask;
       _area = area;
    }
    
-   public String getNetworkAddress() {
+   public Ip getNetworkAddress() {
       return _networkAddress;
    }
    
-   public String getSubnetMask() {
+   public Ip getSubnetMask() {
       return _subnetMask;
    }
    

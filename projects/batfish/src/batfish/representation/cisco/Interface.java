@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import batfish.grammar.cisco.CiscoGrammar.Interface_stanzaContext;
+import batfish.grammar.cisco.CiscoGrammar.Ip_address_if_stanzaContext;
+import batfish.representation.Ip;
 import batfish.representation.SwitchportEncapsulationType;
 import batfish.representation.SwitchportMode;
 import batfish.util.SubRange;
@@ -16,8 +19,10 @@ public class Interface {
    private ArrayList<SubRange> _allowedVlans;
    private Integer _area;
    private Double _bandwidth;
+   private Interface_stanzaContext _context;
    private String _incomingFilter;
-   private String _ip;
+   private Ip _ip;
+   private Ip_address_if_stanzaContext _ipAddressStanzaContext;
    private String _name;
    private int _nativeVlan;
    private Integer _ospfCost;
@@ -25,7 +30,7 @@ public class Interface {
    private int _ospfHelloMultiplier;
    private String _outgoingFilter;
    private Map<String, String> _secondaryIps;
-   private String _subnet;
+   private Ip _subnet;
    private SwitchportMode _switchportMode;
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
 
@@ -65,12 +70,20 @@ public class Interface {
       return _bandwidth;
    }
 
+   public Interface_stanzaContext getContext() {
+      return _context;
+   }
+
    public String getIncomingFilter() {
       return _incomingFilter;
    }
 
-   public String getIP() {
+   public Ip getIP() {
       return _ip;
+   }
+
+   public Ip_address_if_stanzaContext getIpAddressStanzaContext() {
+      return _ipAddressStanzaContext;
    }
 
    public String getName() {
@@ -97,7 +110,11 @@ public class Interface {
       return _outgoingFilter;
    }
 
-   public String getSubnetMask() {
+   public Map<String, String> getSecondaryIps() {
+      return _secondaryIps;
+   }
+
+   public Ip getSubnetMask() {
       return _subnet;
    }
 
@@ -121,12 +138,20 @@ public class Interface {
       _bandwidth = bandwidth;
    }
 
+   public void setContext(Interface_stanzaContext context) {
+      _context = context;
+   }
+
    public void setIncomingFilter(String accessListName) {
       _incomingFilter = accessListName;
    }
 
-   public void setIP(String ip) {
+   public void setIp(Ip ip) {
       _ip = ip;
+   }
+
+   public void setIpAddressStanzaContext(Ip_address_if_stanzaContext ctx) {
+      _ipAddressStanzaContext = ctx;
    }
 
    public void setNativeVlan(int vlan) {
@@ -149,7 +174,7 @@ public class Interface {
       _outgoingFilter = accessListName;
    }
 
-   public void setSubnetMask(String subnet) {
+   public void setSubnetMask(Ip subnet) {
       _subnet = subnet;
    }
 
@@ -160,10 +185,6 @@ public class Interface {
    public void setSwitchportTrunkEncapsulation(
          SwitchportEncapsulationType encapsulation) {
       _switchportTrunkEncapsulation = encapsulation;
-   }
-
-   public Map<String, String> getSecondaryIps() {
-      return _secondaryIps;
    }
 
 }

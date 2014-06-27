@@ -22,7 +22,6 @@ public class Settings {
    private static final String ARG_COMPILE = "compile";
    private static final String ARG_COUNT = "count";
    private static final String ARG_DIFF = "diff";
-   private static final String ARG_DR = "dr";
    private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
 
    private static final String ARG_DUMP_FACTS_DIR = "dumpdir";
@@ -38,7 +37,6 @@ public class Settings {
    private static final String ARG_GUI = "gui";
    private static final String ARG_HELP = "help";
    private static final String ARG_LOG_LEVEL = "log";
-   private static final String ARG_MAX_SUBGROUP_SIZE = "max_subgroup_size";
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
@@ -71,7 +69,6 @@ public class Settings {
    private static final String DEFAULT_FLOW_PATH = "flows";
    private static final String DEFAULT_FLOW_SINK_PATH = "flow_sinks";
    private static final String DEFAULT_LOG_LEVEL = "2";
-   private static final int DEFAULT_MAX_SUBGROUP_SIZE = 100;
    private static final List<String> DEFAULT_PREDICATES = Collections
          .singletonList("InstalledRoute");
    private static final String DEFAULT_TEST_RIG_PATH = "default_test_rig";
@@ -81,7 +78,6 @@ public class Settings {
    private static final String DEFAULT_Z3_CONCRETIZER_OUTPUT_FILE = "z3-concretizer-output.smt2";
    private static final String DEFAULT_Z3_OUTPUT = "z3-dataplane-output.smt2";
    private static final String EXECUTABLE_NAME = "batfish";
-   private static final int MAX_MAX_SUBGROUP_SIZE = 100;
 
    private boolean _canExecute;
    private String _cbAHost;
@@ -94,7 +90,6 @@ public class Settings {
    private String _concretizerOutputFilePath;
    private boolean _counts;
    private boolean _diff;
-   private boolean _dr;
    private boolean _dumpControlPlaneFacts;
    private String _dumpFactsDir;
    private boolean _dumpIF;
@@ -110,7 +105,6 @@ public class Settings {
    private String _hsaInputDir;
    private String _hsaOutputDir;
    private int _logLevel;
-   private int _maxSubgroupSize;
    private boolean _noTraffic;
    private Options _options;
    private List<String> _predicates;
@@ -189,10 +183,6 @@ public class Settings {
       return _diff;
    }
 
-   public boolean getDr() {
-      return _dr;
-   }
-
    public boolean getDumpControlPlaneFacts() {
       return _dumpControlPlaneFacts;
    }
@@ -247,10 +237,6 @@ public class Settings {
 
    public int getLogLevel() {
       return _logLevel;
-   }
-
-   public int getMaxSubgroupSize() {
-      return _maxSubgroupSize;
    }
 
    public boolean getNoTraffic() {
@@ -391,13 +377,6 @@ public class Settings {
                   .create(ARG_EXIT_ON_PARSE_ERROR));
       _options
             .addOption(OptionBuilder
-                  .withArgName(ARG_MAX_SUBGROUP_SIZE)
-                  .hasOptionalArg()
-                  .withDescription(
-                        "parse UCLA distribution routers and generate department subgroups")
-                  .create(ARG_DR));
-      _options
-            .addOption(OptionBuilder
                   .withArgName("name")
                   .hasArg()
                   .withDescription(
@@ -518,14 +497,6 @@ public class Settings {
       _update = line.hasOption(ARG_UPDATE);
       _noTraffic = line.hasOption(ARG_NO_TRAFFIC);
       _exitOnParseError = line.hasOption(ARG_EXIT_ON_PARSE_ERROR);
-      _dr = line.hasOption(ARG_DR);
-      _maxSubgroupSize = Integer
-            .parseInt(line.getOptionValue(ARG_MAX_SUBGROUP_SIZE,
-                  Integer.toString(DEFAULT_MAX_SUBGROUP_SIZE)));
-      if (_maxSubgroupSize <= 0 || _maxSubgroupSize > MAX_MAX_SUBGROUP_SIZE) {
-         throw new Error("Max subgroup size must be between 1 and "
-               + MAX_MAX_SUBGROUP_SIZE);
-      }
       _z3 = line.hasOption(ARG_Z3);
       if (_z3) {
          _z3File = line.getOptionValue(ARG_Z3_OUTPUT, DEFAULT_Z3_OUTPUT);

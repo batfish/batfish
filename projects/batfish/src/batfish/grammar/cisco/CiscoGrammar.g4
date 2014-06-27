@@ -659,7 +659,6 @@ stanza
 	access_list_stanza
 	| hostname_stanza
 	| interface_stanza
-	| ip_access_list_extended_stanza
 	| ip_access_list_standard_stanza
 	| ip_as_path_access_list_stanza
 	| ip_community_list_stanza

@@ -4,17 +4,17 @@ import batfish.representation.cisco.Interface;
 
 public class IPAddressIFStanza implements IFStanza {
    
-   private String _ip;
-   private String _subnet;
+//   private String _ip;
+//   private String _subnet;
    
    public IPAddressIFStanza(String ip, String subnet) {
-      _ip = ip;
-      _subnet = subnet;
+//      _ip = ip;
+//      _subnet = subnet;
    }
    
    @Override
    public void process(Interface i) {
-      i.setIP(_ip);
-      i.setSubnetMask(_subnet);
+      //i.setIP(_ip);
+      //i.setSubnetMask(_subnet);
    }
 }

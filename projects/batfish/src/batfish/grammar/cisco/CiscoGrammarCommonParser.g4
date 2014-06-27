@@ -74,46 +74,46 @@ port_specifier
 
 port
 :
-	p = DEC
-	| p = BOOTPC
-	| p = BOOTPS
-	| p = BGP
-	| p = CMD
-	| p = DOMAIN
-	| p = FTP
-	| p = FTP_DATA
-	| p = ISAKMP
-	| p = LPD
-	| p = NETBIOS_DGM
-	| p = NETBIOS_NS
-	| p = NETBIOS_SS
-	| p = NON500_ISAKMP
-	| p = NTP
-	| p = PIM_AUTO_RP
-	| p = POP3
-	| p = SMTP
-	| p = SNMP
-	| p = SNMPTRAP
-	| p = SYSLOG
-	| p = TACACS
-	| p = TELNET
-	| p = TFTP
-	| p = WWW
+	 DEC
+	| BOOTPC
+	| BOOTPS
+	| BGP
+	| CMD
+	| DOMAIN
+	| FTP
+	| FTP_DATA
+	| ISAKMP
+	| LPD
+	| NETBIOS_DGM
+	| NETBIOS_NS
+	| NETBIOS_SS
+	| NON500_ISAKMP
+	| NTP
+	| PIM_AUTO_RP
+	| POP3
+	| SMTP
+	| SNMP
+	| SNMPTRAP
+	| SYSLOG
+	| TACACS
+	| TELNET
+	| TFTP
+	| WWW
 ;
 
 protocol
 :
-	p = DEC
-	| p = ESP
-	| p = GRE
-	| p = ICMP
-	| p = IGMP
-	| p = IP
-	| p = OSPF
-	| p = PIM
-	| p = SCTP
-	| p = TCP
-	| p = UDP
+	DEC
+	| ESP
+	| GRE
+	| ICMP
+	| IGMP
+	| IP
+	| OSPF
+	| PIM
+	| SCTP
+	| TCP
+	| UDP
 ;
 
 range

@@ -3109,8 +3109,11 @@ COMMUNITY_LIST
 
 ;
 
-COMMUNITY_LIST_NUM:
-	{enableCOMMUNITY_LIST_NUM}? F_Digit+
+COMMUNITY_LIST_NUM
+:
+	{enableCOMMUNITY_LIST_NUM}?
+
+	F_Digit+
 	{
 		int val = Integer.parseInt(getText());
 		if (1 <= val && val <= 99) {
@@ -3122,15 +3125,7 @@ COMMUNITY_LIST_NUM:
 		enableCOMMUNITY_LIST_NUM = false;
 		enableDEC = true;
 	}
-;
 
-COMMENT_LINE
-:
-	{!inComment}?
-
-	(
-		'!' .+? F_Newline
-	)
 ;
 
 COMMENT_CLOSING_LINE
@@ -3139,6 +3134,15 @@ COMMENT_CLOSING_LINE
 
 	(
 		'!' F_Newline
+	)
+;
+
+COMMENT_LINE
+:
+	{!inComment}?
+
+	(
+		'!' ~('\n' | '\r')+ F_Newline
 	)
 ;
 
@@ -3467,7 +3471,8 @@ WS
 fragment
 F_Newline
 :
-	[\n\r]+
+	'\n'
+	| '\r'
 ;
 
 fragment

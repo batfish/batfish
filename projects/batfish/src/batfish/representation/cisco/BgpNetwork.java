@@ -1,19 +1,21 @@
 package batfish.representation.cisco;
 
-public class BgpNetwork {
-	private String _networkAddress;
-	private String _subnetMask;
+import batfish.representation.Ip;
 
-	public BgpNetwork(String networkAddress, String subnetMask) {
-		_networkAddress = networkAddress;
-		_subnetMask = subnetMask;
+public class BgpNetwork {
+	private Ip _networkAddress;
+	private Ip _subnetMask;
+
+	public BgpNetwork(Ip network, Ip subnet) {
+		_networkAddress = network;
+		_subnetMask = subnet;
 	}
 
-	public String getNetworkAddress() {
+	public Ip getNetworkAddress() {
 		return _networkAddress;
 	}
 
-	public String getSubnetMask() {
+   public Ip getSubnetMask() {
 		return _subnetMask;
 	}
 

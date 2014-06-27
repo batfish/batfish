@@ -27,6 +27,7 @@ import java.util.TreeSet;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
@@ -37,8 +38,12 @@ import batfish.grammar.ConfigurationLexer;
 import batfish.grammar.ConfigurationParser;
 import batfish.grammar.TopologyLexer;
 import batfish.grammar.TopologyParser;
+import batfish.grammar.cisco.CiscoGrammar;
+import batfish.grammar.cisco.CiscoGrammar.Cisco_configurationContext;
+import batfish.grammar.cisco.CiscoGrammarCommonLexer;
 import batfish.grammar.cisco.CiscoGrammarLexer;
 import batfish.grammar.cisco.CiscoGrammarParser;
+import batfish.grammar.cisco.controlplane.CiscoControlPlaneExtractor;
 import batfish.grammar.juniper.FlatJuniperGrammarLexer;
 import batfish.grammar.juniper.FlatJuniperGrammarParser;
 import batfish.grammar.juniper.JuniperGrammarLexer;
@@ -69,7 +74,6 @@ import batfish.representation.Ip;
 import batfish.representation.Topology;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
-import batfish.ucla.DeptGenerator;
 import batfish.util.UrlZipExplorer;
 import batfish.util.StringFilter;
 import batfish.util.Util;
@@ -612,6 +616,17 @@ public class Batfish {
             lexer = new CiscoGrammarLexer(in);
             tokens = new CommonTokenStream(lexer);
             parser = new CiscoGrammarParser(tokens);
+            
+            // antlr 4 stuff
+            org.antlr.v4.runtime.CharStream stream = new org.antlr.v4.runtime.ANTLRInputStream(fileText);
+            CiscoGrammarCommonLexer lexer4 = new CiscoGrammarCommonLexer(stream);
+            org.antlr.v4.runtime.CommonTokenStream tokens4 = new org.antlr.v4.runtime.CommonTokenStream(lexer4);
+            CiscoGrammar parser4 = new CiscoGrammar(tokens4);
+            Cisco_configurationContext tree = parser4.cisco_configuration();
+            ParseTreeWalker walker = new ParseTreeWalker();
+            CiscoControlPlaneExtractor extractor = new CiscoControlPlaneExtractor();
+            walker.walk(extractor,  tree);
+            assert Boolean.TRUE;
          }
          else if ((fileText.indexOf("set version") >= 0)
                && ((fileText.indexOf("set version") == 0) || (fileText
@@ -1040,13 +1055,6 @@ public class Batfish {
 
       if (_settings.getDiff()) {
          getDiff();
-         quit(0);
-      }
-
-      if (_settings.getDr()) {
-         DeptGenerator gen = new DeptGenerator(this, _settings, SEPARATOR);
-         gen.generateDeptRouters();
-         gen.createSubgroupTestRigs();
          quit(0);
       }
 

@@ -1,11 +1,14 @@
 package batfish.representation.cisco;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import batfish.grammar.cisco.ospf.OSPFWildcardNetwork;
+import batfish.representation.Ip;
 import batfish.representation.OspfMetricType;
 import batfish.util.Util;
 
@@ -25,7 +28,7 @@ public class OspfProcess {
    private Set<String> _interfaceBlacklist;
    private Set<String> _interfaceWhitelist;
    private ArrayList<OspfNetwork> _networks;
-   private Set<Integer> _nssas;
+   private Map<Integer, Boolean> _nssas;
    private boolean _passiveInterfaceDefault;
    private int _pid;
    private boolean _redistributeConnected;
@@ -50,7 +53,7 @@ public class OspfProcess {
       _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
       _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
       _passiveInterfaceDefault = false;
-      _nssas = new HashSet<Integer>();
+      _nssas = new HashMap<Integer, Boolean>();
       _interfaceBlacklist = new HashSet<String>();
       _interfaceWhitelist = new HashSet<String>();
       _redistributeConnectedMetric = DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
@@ -66,21 +69,21 @@ public class OspfProcess {
                      .contains(iname))) {
             continue;
          }
-         String intIpStr = i.getIP();
-         if (intIpStr == null) {
+         Ip intIp = i.getIP();
+         if (intIp == null) {
             continue;
          }
          for (OSPFWildcardNetwork wn : _wildcardNetworks) {
-            long intIp = Util.ipToLong(intIpStr);
-            long intSubnet = Util.ipToLong(i.getSubnetMask());
+            long intIpAsLong = intIp.asLong();
+            long intSubnet = i.getSubnetMask().asLong();
             long wildcardNet = Util.ipToLong(wn.getNetworkAddress());
             long wildcard = Util.ipToLong(wn.getWildcard());
-            long maskedIntIp = intIp & ~wildcard;
+            long maskedIntIp = intIpAsLong & ~wildcard;
             long maskedWildcardNet = wildcardNet & ~wildcard;
             if (maskedIntIp == maskedWildcardNet) {
-               long intNetwork = intIp & intSubnet;
-               String intNetworkStr = Util.longToIp(intNetwork);
-               _networks.add(new OspfNetwork(intNetworkStr, i.getSubnetMask(),
+               long intNetwork = intIpAsLong & intSubnet;
+               Ip intNetworkIp = new Ip(intNetwork);
+               _networks.add(new OspfNetwork(intNetworkIp, i.getSubnetMask(),
                      wn.getArea()));
                break;
             }
@@ -120,7 +123,7 @@ public class OspfProcess {
       return _networks;
    }
 
-   public Set<Integer> getNssas() {
+   public Map<Integer, Boolean> getNssas() {
       return _nssas;
    }
 
