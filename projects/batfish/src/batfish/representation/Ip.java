@@ -52,4 +52,9 @@ public class Ip implements Comparable<Ip> {
       }
       return count;
    }
+
+   public Ip inverted() {
+      long invertedLong = (~_ip) & 0xFFFFFFFFl;
+      return new Ip(invertedLong);
+   }
 }

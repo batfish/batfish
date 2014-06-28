@@ -624,7 +624,7 @@ public class Batfish {
             CiscoGrammar parser4 = new CiscoGrammar(tokens4);
             Cisco_configurationContext tree = parser4.cisco_configuration();
             ParseTreeWalker walker = new ParseTreeWalker();
-            CiscoControlPlaneExtractor extractor = new CiscoControlPlaneExtractor();
+            CiscoControlPlaneExtractor extractor = new CiscoControlPlaneExtractor(fileText);
             walker.walk(extractor,  tree);
             assert Boolean.TRUE;
          }

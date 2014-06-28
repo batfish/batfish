@@ -1,25 +1,19 @@
-package batfish.grammar.cisco;
+package batfish.representation.cisco;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import batfish.grammar.cisco.CiscoGrammar.Cisco_configurationContext;
-import batfish.grammar.cisco.CiscoGrammar.Hostname_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Router_bgp_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Router_ospf_stanzaContext;
-import batfish.representation.cisco.BgpProcess;
-import batfish.representation.cisco.ExtendedAccessList;
-import batfish.representation.cisco.Interface;
-import batfish.representation.cisco.OspfProcess;
-import batfish.representation.cisco.StandardAccessList;
 
 public class CiscoConfiguration {
+   private Map<String, IpAsPathAccessList> _asPathAccessLists;
    private BgpProcess _bgpProcess;
    private Router_bgp_stanzaContext _bgpProcessContext;
    private Cisco_configurationContext _context;
    private Map<String, ExtendedAccessList> _extendedAcls;
    private String _hostname;
-   private Hostname_stanzaContext _hostnameContext;
    private Map<String, Interface> _interfaces;
    private OspfProcess _ospfProcess;
    private Router_ospf_stanzaContext _ospfProcessContext;
@@ -29,6 +23,19 @@ public class CiscoConfiguration {
       _interfaces = new HashMap<String, Interface>();
       _standardAcls = new HashMap<String, StandardAccessList>();
       _extendedAcls = new HashMap<String, ExtendedAccessList>();
+   }
+
+   public void addAsPathAccessListLine(String name, IpAsPathAccessListLine line) {
+      IpAsPathAccessList list = _asPathAccessLists.get(name);
+      if (list == null) {
+         list = new IpAsPathAccessList(name);
+         _asPathAccessLists.put(name, list);
+      }
+      list.addLine(line);
+   }
+
+   public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
+      return _asPathAccessLists;
    }
 
    public BgpProcess getBgpProcess() {
@@ -49,10 +56,6 @@ public class CiscoConfiguration {
 
    public String getHostname() {
       return _hostname;
-   }
-
-   public Hostname_stanzaContext getHostnameContext() {
-      return _hostnameContext;
    }
 
    public Map<String, Interface> getInterfaces() {
@@ -81,9 +84,8 @@ public class CiscoConfiguration {
       _context = ctx;
    }
 
-   public void setHostname(String hostname, Hostname_stanzaContext context) {
+   public void setHostname(String hostname) {
       _hostname = hostname;
-      _hostnameContext = context;
    }
 
    public void setOspfProcess(OspfProcess proc, Router_ospf_stanzaContext ctx) {

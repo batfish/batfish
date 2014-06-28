@@ -3463,7 +3463,7 @@ WS
 		' '
 		| '\t'
 		| '\u000C'
-	) -> skip
+	) -> channel(HIDDEN)
 ;
 
 // Fragments

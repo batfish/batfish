@@ -1,35 +1,77 @@
 package batfish.grammar.cisco.controlplane;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import batfish.grammar.cisco.CiscoGrammar.*;
 import batfish.grammar.cisco.*;
 import batfish.grammar.cisco.CiscoGrammar.Interface_stanzaContext;
+import batfish.grammar.cisco.CiscoGrammar.Port_specifierContext;
 import batfish.representation.Ip;
 import batfish.representation.LineAction;
 import batfish.representation.OspfMetricType;
 import batfish.representation.cisco.BgpNetwork;
 import batfish.representation.cisco.BgpProcess;
+import batfish.representation.cisco.CiscoConfiguration;
 import batfish.representation.cisco.ExtendedAccessList;
+import batfish.representation.cisco.ExtendedAccessListLine;
 import batfish.representation.cisco.Interface;
+import batfish.representation.cisco.IpAsPathAccessListLine;
 import batfish.representation.cisco.OspfProcess;
 import batfish.representation.cisco.StandardAccessList;
+import batfish.util.SubRange;
 
 public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
 
+   private static final double LOOPBACK_BANDWIDTH = 1E12; // dirty hack: just chose a very large number
+   private static final double TEN_GIGABIT_ETHERNET_BANDWIDTH = 10E9;
+   private static final double GIGABIT_ETHERNET_BANDWIDTH = 1E9;
+   private static final double FAST_ETHERNET_BANDWIDTH = 100E6;
    private CiscoConfiguration _configuration;
    private Interface _currentInterface;
    private ExtendedAccessList _currentExtendedAcl;
    private StandardAccessList _currentStandardAcl;
+   private String _text;
+
+   private static double getDefaultBandwidth(String name) {
+      Double bandwidth = null;
+      if (name.startsWith("FastEthernet")) {
+         bandwidth = FAST_ETHERNET_BANDWIDTH;
+      }
+      else if (name.startsWith("GigabitEthernet")) {
+         bandwidth = GIGABIT_ETHERNET_BANDWIDTH;
+      }
+      else if (name.startsWith("TenGigabitEthernet")) {
+         bandwidth = TEN_GIGABIT_ETHERNET_BANDWIDTH;
+      }
+      else if (name.startsWith("Vlan")) {
+         bandwidth = null;
+      }
+      else if (name.startsWith("Loopback")) {
+         bandwidth = LOOPBACK_BANDWIDTH;
+      }
+      if (bandwidth == null) {
+         bandwidth = 1.0;
+      }
+      return bandwidth;
+   }
+
+   public String getText() {
+      return _text;
+   }
+
+   public CiscoControlPlaneExtractor(String text) {
+      _text = text;
+   }
 
    public CiscoConfiguration getConfiguration() {
       return _configuration;
    }
-   
+
    public static LineAction getAccessListAction(Access_list_actionContext ctx) {
       if (ctx.PERMIT() != null) {
          return LineAction.ACCEPT;
@@ -58,7 +100,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
       return new Ip(t.getText());
    }
 
-   public static Ip getIp(Extended_access_list_ip_rangeContext ctx) {
+   public static Ip getIp(Access_list_ip_rangeContext ctx) {
       if (ctx.ip != null) {
          return toIp(ctx.ip);
       }
@@ -67,7 +109,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
       }
    }
 
-   public static Ip getWildcard(Extended_access_list_ip_rangeContext ctx) {
+   public static Ip getWildcard(Access_list_ip_rangeContext ctx) {
       if (ctx.wildcard != null) {
          return toIp(ctx.wildcard);
       }
@@ -334,34 +376,63 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    }
 
    @Override
+   public void exitExtended_access_list_tail(
+         Extended_access_list_tailContext ctx) {
+      LineAction action = getAccessListAction(ctx.ala);
+      int protocol = getProtocolNumber(ctx.prot);
+      Ip srcIp = getIp(ctx.srcipr);
+      Ip srcWildcard = getWildcard(ctx.srcipr);
+      Ip dstIp = getIp(ctx.dstipr);
+      Ip dstWildcard = getWildcard(ctx.dstipr);
+      List<SubRange> srcPortRanges = ctx.alps_src != null ? getPortRanges(ctx.alps_src)
+            : null;
+      List<SubRange> dstPortRanges = ctx.alps_dst != null ? getPortRanges(ctx.alps_dst)
+            : null;
+      ExtendedAccessListLine line = new ExtendedAccessListLine(action,
+            protocol, srcIp, srcWildcard, dstIp, dstWildcard, srcPortRanges,
+            dstPortRanges);
+      _currentExtendedAcl.addLine(line);
+   }
+
+   private static List<SubRange> getPortRanges(Port_specifierContext ps) {
+      List<SubRange> ranges = new ArrayList<SubRange>();
+      if (ps.EQ() != null) {
+         for (PortContext pc : ps.args) {
+            int port = getPortNumber(pc);
+            ranges.add(new SubRange(port, port));
+         }
+      }
+      else if (ps.GT() != null) {
+         int port = getPortNumber(ps.arg);
+         ranges.add(new SubRange(port + 1, 65535));
+      }
+      else if (ps.LT() != null) {
+         int port = getPortNumber(ps.arg);
+         ranges.add(new SubRange(0, port - 1));
+      }
+      else if (ps.RANGE() != null) {
+         int lowPort = getPortNumber(ps.arg1);
+         int highPort = getPortNumber(ps.arg2);
+         ranges.add(new SubRange(lowPort, highPort));
+      }
+      else {
+         throw new Error("bad port range");
+      }
+      return ranges;
+   }
+
+   @Override
    public void exitHostname_stanza(Hostname_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitIf_stanza(If_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitInteger(IntegerContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitInterface_name(Interface_nameContext ctx) {
-      // TODO Auto-generated method stub
-
+      _configuration.setHostname(ctx.name.getText());
    }
 
    @Override
    public void enterInterface_stanza(Interface_stanzaContext ctx) {
       String name = ctx.iname.getText();
+      double bandwidth = getDefaultBandwidth(name);
       Interface newInterface = new Interface(name);
       newInterface.setContext(ctx);
+      newInterface.setBandwidth(bandwidth);
       _configuration.getInterfaces().put(name, newInterface);
       _currentInterface = newInterface;
    }
@@ -374,22 +445,16 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    @Override
    public void exitIp_access_group_if_stanza(
          Ip_access_group_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitIp_access_list_extended_stanza(
-         Ip_access_list_extended_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitIp_access_list_standard_stanza(
-         Ip_access_list_standard_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      String name = ctx.name.getText();
+      if (ctx.IN() != null) {
+         _currentInterface.setIncomingFilter(name);
+      }
+      else if (ctx.OUT() != null) {
+         _currentInterface.setOutgoingFilter(name);         
+      }
+      else {
+         throw new Error("bad direction");
+      }
    }
 
    @Override
@@ -402,15 +467,20 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    @Override
    public void exitIp_address_secondary_if_stanza(
          Ip_address_secondary_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      // TODO implement
    }
 
    @Override
    public void exitIp_as_path_access_list_stanza(
          Ip_as_path_access_list_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      String name = ctx.name.getText();
+      LineAction action = getAccessListAction(ctx.action);
+      String regex = "";
+      for (Token remainder : ctx.remainder) {
+         regex += remainder.getText();
+      }
+      IpAsPathAccessListLine line = new IpAsPathAccessListLine(action, regex);
+      _configuration.addAsPathAccessListLine(name, line);
    }
 
    @Override
@@ -487,13 +557,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
 
    @Override
    public void exitIpv6_router_ospf_stanza(Ipv6_router_ospf_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitItem_ip_access_list_standard_ip_range(
-         Item_ip_access_list_standard_ip_rangeContext ctx) {
       // TODO Auto-generated method stub
 
    }
@@ -730,94 +793,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    @Override
    public void exitNo_neighbor_activate_af_stanza(
          No_neighbor_activate_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_af_stanza(Null_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_block_stanza(Null_block_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_block_substanza(Null_block_substanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_if_stanza(Null_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_ipv6_ro_stanza(Null_ipv6_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_rb_stanza(Null_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_rm_stanza(Null_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_ro_stanza(Null_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_standalone_af_stanza(
-         Null_standalone_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_standalone_if_stanza(
-         Null_standalone_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_standalone_rb_stanza(
-         Null_standalone_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_standalone_ro_stanza(
-         Null_standalone_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_standalone_stanza(Null_standalone_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNull_stanza(Null_stanzaContext ctx) {
       // TODO Auto-generated method stub
 
    }
@@ -1074,13 +1049,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    }
 
    @Override
-   public void exitStandard_access_list_ip_range(
-         Standard_access_list_ip_rangeContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
    public void exitStandard_access_list_stanza(
          Standard_access_list_stanzaContext ctx) {
       _currentStandardAcl = null;
@@ -1193,15 +1161,4 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
 
    }
 
-   @Override
-   public void visitErrorNode(ErrorNode arg0) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void visitTerminal(TerminalNode arg0) {
-      // TODO Auto-generated method stub
-
-   }
 }

@@ -49,26 +49,26 @@ interface_name
 port_specifier
 :
 	(
-		op = EQ
+		EQ
 		(
 			args += port
 		)+
 	)
 	|
 	(
-		op = GT arg = port
+		GT arg = port
 	)
 	|
 	(
-		op = NEQ arg = port
+		NEQ arg = port
 	)
 	|
 	(
-		op = LT arg = port
+		LT arg = port
 	)
 	|
 	(
-		op = RANGE arg1 = port arg2 = port
+		RANGE arg1 = port arg2 = port
 	)
 ;
 

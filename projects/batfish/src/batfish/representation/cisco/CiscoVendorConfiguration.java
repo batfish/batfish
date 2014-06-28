@@ -153,9 +153,11 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       // create redistribution origination policies
       PolicyMap redistributeStaticPolicyMap = null;
       if (proc.getRedistributeStatic()) {
-         redistributeStaticPolicyMap = makeRouteExportPolicy(c, "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null, 0, null, null, null, Protocol.STATIC, PolicyMapAction.PERMIT);
+         redistributeStaticPolicyMap = makeRouteExportPolicy(c,
+               "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null, 0,
+               null, null, null, Protocol.STATIC, PolicyMapAction.PERMIT);
       }
-      
+
       for (BgpPeerGroup pg : proc.getPeerGroups().values()) {
          // update source
          String updateSourceInterface = pg.getUpdateSource();
@@ -165,7 +167,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          }
          else {
             Ip sourceIp = c.getInterfaces().get(updateSourceInterface).getIP();
-            updateSource = sourceIp.toString(); 
+            updateSource = sourceIp.toString();
          }
 
          PolicyMap newInboundPolicyMap = null;
@@ -225,7 +227,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          if (proc.getRedistributeStatic()) {
             originationPolicies.add(redistributeStaticPolicyMap);
          }
-         
+
          // set up default export policy for this peer group
          GeneratedRoute defaultRoute = null;
          PolicyMap defaultOriginationPolicy = null;
@@ -335,10 +337,10 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       List<IpAccessListLine> lines = new ArrayList<IpAccessListLine>();
       for (ExtendedAccessListLine fromLine : eaList.getLines()) {
          lines.add(new IpAccessListLine(fromLine.getAction(), fromLine
-               .getProtocol(), new Ip(fromLine.getSourceIP()), new Ip(fromLine
-               .getSourceWildcard()), new Ip(fromLine.getDestinationIP()),
-               new Ip(fromLine.getDestinationWildcard()), fromLine
-                     .getSrcPortRanges(), fromLine.getDstPortRange()));
+               .getProtocol(), fromLine.getSourceIP(), fromLine
+               .getSourceWildcard(), fromLine.getDestinationIP(), fromLine
+               .getDestinationWildcard(), fromLine.getSrcPortRanges(), fromLine
+               .getDstPortRange()));
       }
       return new IpAccessList(name, lines);
    }
@@ -651,14 +653,13 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
    private static RouteFilterLine toRouteFilterLine(
          ExtendedAccessListLine fromLine) {
       LineAction action = fromLine.getAction();
-      Ip prefix = new Ip(fromLine.getSourceIP());
-      long prefixSubnet = ~(Util.ipToLong(fromLine.getSourceWildcard())) & 0xFFFFFFFF;
-      int prefixLength = Util.numSubnetBits(Util.longToIp(prefixSubnet));
-      long minSubnet = Util.ipToLong(fromLine.getDestinationIP());
+      Ip prefix = fromLine.getSourceIP();
+      int prefixLength = fromLine.getSourceWildcard().inverted().numSubnetBits();
+      long minSubnet = fromLine.getDestinationIP().asLong();
       long maxSubnet = minSubnet
-            | Util.ipToLong(fromLine.getDestinationWildcard());
-      int minPrefixLength = Util.numSubnetBits(fromLine.getDestinationIP());
-      int maxPrefixLength = Util.numSubnetBits(Util.longToIp(maxSubnet));
+            | fromLine.getDestinationWildcard().asLong();
+      int minPrefixLength = fromLine.getDestinationIP().numSubnetBits();
+      int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
       return new RouteFilterLengthRangeLine(action, prefix, prefixLength,
             new SubRange(minPrefixLength, maxPrefixLength));
    }
@@ -1105,11 +1106,11 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          if (map.getIgnore()) {
             continue;
          }
-         //TODO: replace UCLA-SPECIFIC code
+         // TODO: replace UCLA-SPECIFIC code
          if (map.getMapName().toLowerCase().endsWith("ipv6")) {
             continue;
          }
-         
+
          convertForPurpose(routingRouteMaps, map);
          PolicyMap newMap = toPolicyMap(c, map);
          c.getPolicyMaps().put(newMap.getMapName(), newMap);
@@ -1117,8 +1118,8 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
 
       // convert interfaces
       for (Interface iface : _interfaces) {
-         batfish.representation.Interface newInterface = toInterface(
-               iface, c.getIpAccessLists());
+         batfish.representation.Interface newInterface = toInterface(iface,
+               c.getIpAccessLists());
          c.getInterfaces().put(newInterface.getName(), newInterface);
       }
 
@@ -1130,8 +1131,8 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       // convert ospf process
       if (_ospfProcesses.size() > 0) {
          OspfProcess firstOspfProcess = _ospfProcesses.get(0);
-         batfish.representation.OspfProcess newOspfProcess = toOspfProcess(
-               c, firstOspfProcess);
+         batfish.representation.OspfProcess newOspfProcess = toOspfProcess(c,
+               firstOspfProcess);
          c.setOspfProcess(newOspfProcess);
       }
 

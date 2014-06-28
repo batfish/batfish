@@ -12,7 +12,7 @@ access_list_stanza
 	| extended_access_list_stanza
 ;
 
-extended_access_list_ip_range
+access_list_ip_range
 :
 	(
 		ip = IP_ADDRESS wildcard = IP_ADDRESS
@@ -25,8 +25,8 @@ extended_access_list_null_tail
 :
 	(
 		(
-			access_list_action protocol extended_access_list_ip_range port_specifier?
-			extended_access_list_ip_range port_specifier? REFLECT
+			access_list_action protocol access_list_ip_range port_specifier?
+			access_list_ip_range port_specifier? REFLECT
 		)
 		| DYNAMIC
 		| EVALUATE
@@ -58,10 +58,10 @@ extended_access_list_stanza
 extended_access_list_tail
 :
 	ala = access_list_action prot = protocol srcipr =
-	extended_access_list_ip_range
+	access_list_ip_range
 	(
 		alps_src = port_specifier
-	)? dstipr = extended_access_list_ip_range
+	)? dstipr = access_list_ip_range
 	(
 		alps_dst = port_specifier
 	)?
@@ -171,29 +171,6 @@ ip_prefix_list_line_stanza
 	)?
 ;
 
-item_ip_access_list_standard_ip_range
-:
-	(
-		ip = IP_ADDRESS
-		(
-			wildcard = IP_ADDRESS
-		)?
-	)
-	| any = ANY
-	|
-	(
-		HOST ip = IP_ADDRESS
-	)
-;
-
-standard_access_list_ip_range
-:
-	(
-		ip = IP_ADDRESS wildcard = IP_ADDRESS?
-	)
-	| ANY
-;
-
 standard_access_list_null_tail
 :
 	REMARK ~NEWLINE* NEWLINE
@@ -222,6 +199,6 @@ standard_access_list_stanza
 
 standard_access_list_tail
 :
-	ala = access_list_action ipr = standard_access_list_ip_range LOG? NEWLINE
+	ala = access_list_action ipr = access_list_ip_range LOG? NEWLINE
 ;
 
