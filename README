@@ -43,11 +43,12 @@ from the README at <batfish-root>/lib/logicblox/README:
     ln -s <logicblox-home>/lb-web/lib/java/lb-web-client.jar
 
 6. prepare your environment for logicblox and batfish by adding the following to your .bashrc or equivalent
+    export LB_HOME=<logicblox-root>
+    . <logicblox-root>/etc/profile.d/logicblox.sh
     alias rlb='killall -9 lb-server; killall -9 lb-pager; lb services stop && rm -rf ~/lb_deployment/* && LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start'
     alias slb='LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start'
     alias klb='killall -9 lb-server; killall -9 lb-pager; lb services stop; rm -rf ~/lb_deployment/*'
     . <batfish-root>/tools/batfish_functions.sh
-    export LB_HOME=<logicblox-root>
 rlb will kill logicblox, completely purge all logicblox data, and restart logicblox
 klb will kill logicblox and completely purge all logicblox data
 slb will start logicblox
@@ -55,6 +56,7 @@ if you want to kill logicblox without purging data, run:
     lb services stop
 sourcing batfish_functions.sh will give your shell access to batfish functions.
 LB_HOME is needed for ant to compile logic files.
+sourcing logicblox.sh is required to run LogicBlox
 
 7. start logicblox
 type:
@@ -78,5 +80,46 @@ OR to run everything:
 Notes on running
 **************************************************
 This repository should contain an example test rig at <batfish-root>/test_rigs/example
-After running step 9 above you see the following output in the current folder:
+After running step 9 above on the example test rig, as:
+   batfish_analyze <batfish-root>/test_rigs/example example
+you should see the following output in the current folder:
+
+example-dump (directory)
+example-flows
+example-query (directory)
+example-reach.smt2
+example-routes
+
+Much of the output is in the form of elements of LogicBlox predicates. To see the schema and comments for the LogicBlox predicates, run:
+   batfish -predhelp <predicate-name..>
+To see help for ALL predicates, including IDB (derived) predicates, use the '-predhelp' flag without arguments:
+   batfish -predhelp
+Individual predicates for a processed test rig can be dumped to stdout by running:
+   batfish -testrig </path/to/testrig> -query -predicates <predicate> [more_predicates..]
+
+example-dump:
+This folder contains files named for LogicBlox EDB (input) predicates. Note that the files in the 'example-dump' folder are in raw CSV format (with '|' as a delimiter), and may not be very legible, even with the schema.
+
+example-routes:
+This file contains dumps of the routing tables for a processed testrig, retrieved using:
+   batfish -testrig </path/to/testrig> -query -predicates InstalledRoute
+
+example-reach.smt2:
+This file contains the data plane (reachability relations) of a processed test-rig in the z3 smt-solver's 'smt2' format.
+
+example-query:
+This folder contains 4 types of files:
+   1. incons-query-<hostname>.smt2:
+      A z3 query for the z3 fixed-point datalog engine that, when appended to the example-reach.smt2 file, yields the constraints for multipath-inconsistent packets originating at <node>
+   2. incons-query-<node>.smt2.out:
+      The output of step 1
+   3. incons-constraints-<node>.smt2:
+      These files are z3 queries for the standard smt engine incorporating the constraints found in step 2. These queries should yield 0 or 1 CONCRETE packets per node that exhibit multipath inconsistency when injected at that node.
+   4. incons-constraints-<node>.smt2.out:
+      The output of step 3.
+
+example-flows:
+This file contains dumps of relevant flow predicates, retrieved using:
+   batfish -testrig </path/to/testrig> -query -predicates <flow_predicates..>
+These predicates were populated AFTER injecting the concrete packets found in example-query step 4 above into the LogicBlox network model.
 
