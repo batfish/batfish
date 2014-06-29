@@ -37,10 +37,18 @@ public class Ip implements Comparable<Ip> {
    public int hashCode() {
       return _ip.hashCode();
    }
+   
+   public Ip inverted() {
+      long invertedLong = (~_ip) & 0xFFFFFFFFl;
+      return new Ip(invertedLong);
+   }
+   
+   public String networkString(int prefixLength) {
+      return toString() + "/" + prefixLength;
+   }
 
-   @Override
-   public String toString() {
-      return Util.longToIp(_ip);
+   public String networkString(Ip mask) {
+      return toString() + "/" + mask.numSubnetBits();
    }
 
    public int numSubnetBits() {
@@ -53,8 +61,8 @@ public class Ip implements Comparable<Ip> {
       return count;
    }
 
-   public Ip inverted() {
-      long invertedLong = (~_ip) & 0xFFFFFFFFl;
-      return new Ip(invertedLong);
+   @Override
+   public String toString() {
+      return Util.longToIp(_ip);
    }
 }

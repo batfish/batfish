@@ -726,7 +726,7 @@ certificate_stanza
   QUIT NEWLINE
   ;
 
-cisco_configuration returns [CiscoConfiguration cc = new CiscoConfiguration()]
+cisco_configuration returns [CiscoConfiguration3 cc = new CiscoConfiguration3()]
   :
   (x=stanza_list COLON? END) 
                             {

@@ -57,16 +57,23 @@ ip_route_stanza
 	(
 		nexthopip = IP_ADDRESS
 		| nexthopint = interface_name
+		|
+		(
+			nexthopip = IP_ADDRESS nexthopint = interface_name
+		)
 	)
 	(
 		distance = integer
-	)?
-	(
-		TAG DEC
-	)? PERMANENT?
-	(
-		TRACK DEC
-	)? NEWLINE
+		|
+		(
+			TAG tag = DEC
+		)
+		| perm=PERMANENT
+		|
+		(
+			TRACK track=DEC
+		)
+	)* NEWLINE
 ;
 
 macro_stanza
@@ -661,9 +668,10 @@ stanza
 	| interface_stanza
 	| ip_access_list_standard_stanza
 	| ip_as_path_access_list_stanza
-	| ip_community_list_stanza
+	| ip_community_list_expanded_stanza
+	| ip_community_list_standard_stanza
 	| ip_default_gateway_stanza
-	| ip_prefix_list_line_stanza
+	| ip_prefix_list_stanza
 	| ip_route_stanza
 	| ipv6_router_ospf_stanza
 	| null_stanza

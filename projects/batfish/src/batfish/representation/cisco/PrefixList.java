@@ -3,21 +3,16 @@ package batfish.representation.cisco;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 
- * A data structure that represents a list of prefix with their prefix-length to
- * be matched
- * Used for route filter and prefix list in Juniper JunOS
- * Used for prefix list in Cisco IOS
- * 
- */
+import batfish.grammar.cisco.CiscoGrammar.Ip_prefix_list_stanzaContext;
 
 public class PrefixList {
-	//Name of the filter
-	private String _name;
+	private Ip_prefix_list_stanzaContext _context;
 	
 	//List of lines that stores the prefix
 	private List<PrefixListLine> _lines;
+
+   //Name of the filter
+	private String _name;
 
 	public PrefixList(String n) {
 		_name = n;
@@ -32,12 +27,20 @@ public class PrefixList {
 		_lines.addAll(r);
 	}
 
-	public String getName() {
-		return _name;
-	}
+	public Ip_prefix_list_stanzaContext getContext() {
+      return _context;
+   }
 
 	public List<PrefixListLine> getLines() {
 		return _lines;
 	}
 
+   public String getName() {
+		return _name;
+	}
+
+   public void setContext(Ip_prefix_list_stanzaContext ctx) {
+      _context = ctx;
+   }
+   
 }

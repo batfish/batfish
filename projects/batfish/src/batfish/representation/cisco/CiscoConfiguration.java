@@ -12,26 +12,25 @@ public class CiscoConfiguration {
    private BgpProcess _bgpProcess;
    private Router_bgp_stanzaContext _bgpProcessContext;
    private Cisco_configurationContext _context;
+   private Map<String, ExpandedCommunityList> _expandedCommunityLists;
    private Map<String, ExtendedAccessList> _extendedAcls;
    private String _hostname;
    private Map<String, Interface> _interfaces;
    private OspfProcess _ospfProcess;
    private Router_ospf_stanzaContext _ospfProcessContext;
+   private Map<String, PrefixList> _prefixLists;
    private Map<String, StandardAccessList> _standardAcls;
+   private Map<String, StandardCommunityList> _standardCommunityLists;
+   private Map<String, StaticRoute> _staticRoutes;
 
    public CiscoConfiguration() {
       _interfaces = new HashMap<String, Interface>();
       _standardAcls = new HashMap<String, StandardAccessList>();
       _extendedAcls = new HashMap<String, ExtendedAccessList>();
-   }
-
-   public void addAsPathAccessListLine(String name, IpAsPathAccessListLine line) {
-      IpAsPathAccessList list = _asPathAccessLists.get(name);
-      if (list == null) {
-         list = new IpAsPathAccessList(name);
-         _asPathAccessLists.put(name, list);
-      }
-      list.addLine(line);
+      _expandedCommunityLists = new HashMap<String, ExpandedCommunityList>();
+      _standardCommunityLists = new HashMap<String, StandardCommunityList>();
+      _prefixLists = new HashMap<String, PrefixList>();
+      _staticRoutes = new HashMap<String, StaticRoute>();
    }
 
    public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
@@ -48,6 +47,10 @@ public class CiscoConfiguration {
 
    public Cisco_configurationContext getContext() {
       return _context;
+   }
+
+   public Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
+      return _expandedCommunityLists;
    }
 
    public Map<String, ExtendedAccessList> getExtendedAcls() {
@@ -70,8 +73,20 @@ public class CiscoConfiguration {
       return _ospfProcessContext;
    }
 
+   public Map<String, PrefixList> getPrefixLists() {
+      return _prefixLists;
+   }
+
    public Map<String, StandardAccessList> getStandardAcls() {
       return _standardAcls;
+   }
+
+   public Map<String, StandardCommunityList> getStandardCommunityLists() {
+      return _standardCommunityLists;
+   }
+
+   public Map<String, StaticRoute> getStaticRoutes() {
+      return _staticRoutes;
    }
 
    public void setBgpProcess(BgpProcess bgpProcess,

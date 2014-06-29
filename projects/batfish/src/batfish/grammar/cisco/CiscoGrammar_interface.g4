@@ -8,12 +8,16 @@ options {
 
 if_stanza
 :
-	(
-		null_if_stanza
-		| ip_if_stanza
-		| switchport_if_stanza
-		| shutdown_if_stanza
-	)
+	ip_access_group_if_stanza
+	| ip_address_if_stanza
+	| ip_address_secondary_if_stanza
+	| ip_ospf_cost_if_stanza
+	| ip_ospf_dead_interval_if_stanza
+	| ip_ospf_dead_interval_minimal_if_stanza
+	| no_ip_address_if_stanza
+	| null_if_stanza
+	| shutdown_if_stanza
+	| switchport_if_stanza
 ;
 
 interface_stanza
@@ -48,17 +52,6 @@ ip_address_if_stanza
 ip_address_secondary_if_stanza
 :
 	IP ADDRESS ip = IP_ADDRESS subnet = IP_ADDRESS SECONDARY NEWLINE
-;
-
-ip_if_stanza
-:
-	ip_access_group_if_stanza
-	| ip_address_if_stanza
-	| ip_address_secondary_if_stanza
-	| no_ip_address_if_stanza
-	| ip_ospf_cost_if_stanza
-	| ip_ospf_dead_interval_if_stanza
-	| ip_ospf_dead_interval_minimal_if_stanza
 ;
 
 ip_ospf_cost_if_stanza

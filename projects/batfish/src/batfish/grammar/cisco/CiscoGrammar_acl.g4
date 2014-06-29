@@ -57,8 +57,7 @@ extended_access_list_stanza
 
 extended_access_list_tail
 :
-	ala = access_list_action prot = protocol srcipr =
-	access_list_ip_range
+	ala = access_list_action prot = protocol srcipr = access_list_ip_range
 	(
 		alps_src = port_specifier
 	)? dstipr = access_list_ip_range
@@ -112,7 +111,18 @@ ip_access_list_standard_stanza
 
 ip_as_path_access_list_stanza
 :
-	IP AS_PATH ACCESS_LIST name = DEC action = access_list_action
+	IP AS_PATH ACCESS_LIST firstname = DEC ip_as_path_access_list_tail
+	(
+		IP AS_PATH ACCESS_LIST name = DEC
+		{$firstname.text.equals($name.text)}?
+
+		ip_as_path_access_list_tail
+	)*
+;
+
+ip_as_path_access_list_tail
+:
+	action = access_list_action
 	(
 		remainder += ~NEWLINE
 	)+ NEWLINE
@@ -121,11 +131,29 @@ ip_as_path_access_list_stanza
 ip_community_list_expanded_stanza
 :
 	(
+		IP COMMUNITY_LIST
 		(
-			EXPANDED name = VARIABLE
+			EXPANDED firstname = VARIABLE
 		)
-		| name = COMMUNITY_LIST_NUM_EXPANDED
-	) ala = access_list_action
+		| firstname = COMMUNITY_LIST_NUM_EXPANDED
+	) ip_community_list_expanded_tail
+	(
+		IP COMMUNITY_LIST
+		(
+			(
+				EXPANDED name = VARIABLE
+			)
+			| name = COMMUNITY_LIST_NUM_EXPANDED
+		)
+		{$firstname.text.equals($name.text)}?
+
+		ip_community_list_expanded_tail
+	)*
+;
+
+ip_community_list_expanded_tail
+:
+	ala = access_list_action
 	(
 		remainder += ~NEWLINE
 	)+ NEWLINE
@@ -134,30 +162,49 @@ ip_community_list_expanded_stanza
 ip_community_list_standard_stanza
 :
 	(
+		IP COMMUNITY_LIST
 		(
-			STANDARD name = VARIABLE
+			STANDARD firstname = VARIABLE
 		)
-		| name = COMMUNITY_LIST_NUM_STANDARD
-	) ala = access_list_action
+		| firstname = COMMUNITY_LIST_NUM_STANDARD
+	) ip_community_list_standard_tail
+	(
+		(
+			IP COMMUNITY_LIST
+			(
+				STANDARD name = VARIABLE
+			)
+			| name = COMMUNITY_LIST_NUM_STANDARD
+		)
+		{$firstname.text.equals($name.text)}?
+
+		ip_community_list_standard_tail
+	)*
+;
+
+ip_community_list_standard_tail
+:
+	ala = access_list_action
 	(
 		communities += community
 	)+ NEWLINE
 ;
 
-ip_community_list_stanza
+ip_prefix_list_stanza
 :
-	IP COMMUNITY_LIST
+	IP PREFIX_LIST firstname = VARIABLE ip_prefix_list_tail
 	(
-		ip_community_list_expanded_stanza
-		| ip_community_list_standard_stanza
-	)
+		IP PREFIX_LIST name = VARIABLE
+		{$firstname.text.equals($name.text)}?
+
+		ip_prefix_list_tail
+	)*
 ;
 
-ip_prefix_list_line_stanza
+ip_prefix_list_tail
 :
-	IP PREFIX_LIST name = VARIABLE
 	(
-		SEQ DEC
+		SEQ seqnum=DEC
 	)? action = access_list_action prefix = IP_ADDRESS FORWARD_SLASH prefix_length
 	= integer
 	(
@@ -168,7 +215,7 @@ ip_prefix_list_line_stanza
 		(
 			LE maxpl = integer
 		)
-	)?
+	)*
 ;
 
 standard_access_list_null_tail

@@ -17,25 +17,39 @@ import batfish.representation.OspfMetricType;
 import batfish.representation.cisco.BgpNetwork;
 import batfish.representation.cisco.BgpProcess;
 import batfish.representation.cisco.CiscoConfiguration;
+import batfish.representation.cisco.ExpandedCommunityList;
+import batfish.representation.cisco.ExpandedCommunityListLine;
 import batfish.representation.cisco.ExtendedAccessList;
 import batfish.representation.cisco.ExtendedAccessListLine;
 import batfish.representation.cisco.Interface;
+import batfish.representation.cisco.IpAsPathAccessList;
 import batfish.representation.cisco.IpAsPathAccessListLine;
 import batfish.representation.cisco.OspfProcess;
+import batfish.representation.cisco.PrefixList;
+import batfish.representation.cisco.PrefixListLine;
 import batfish.representation.cisco.StandardAccessList;
+import batfish.representation.cisco.StandardCommunityList;
+import batfish.representation.cisco.StaticRoute;
 import batfish.util.SubRange;
 
 public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
 
-   private static final double LOOPBACK_BANDWIDTH = 1E12; // dirty hack: just chose a very large number
+   private static final double LOOPBACK_BANDWIDTH = 1E12; // dirty hack: just
+                                                          // chose a very large
+                                                          // number
    private static final double TEN_GIGABIT_ETHERNET_BANDWIDTH = 10E9;
    private static final double GIGABIT_ETHERNET_BANDWIDTH = 1E9;
    private static final double FAST_ETHERNET_BANDWIDTH = 100E6;
+   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
    private CiscoConfiguration _configuration;
    private Interface _currentInterface;
    private ExtendedAccessList _currentExtendedAcl;
    private StandardAccessList _currentStandardAcl;
    private String _text;
+   private IpAsPathAccessList _currentAsPathAcl;
+   private ExpandedCommunityList _currentExpandedCommunityList;
+   private StandardCommunityList _currentStandardCommunityList;
+   private PrefixList _currentPrefixList;
 
    private static double getDefaultBandwidth(String name) {
       Double bandwidth = null;
@@ -361,12 +375,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
       }
       Map<String, ExtendedAccessList> extAcls = _configuration
             .getExtendedAcls();
-      _currentExtendedAcl = extAcls.get(name);
-      if (_currentExtendedAcl == null) {
-         _currentExtendedAcl = new ExtendedAccessList(name);
-         _currentExtendedAcl.setContext(ctx);
-         extAcls.put(name, _currentExtendedAcl);
-      }
+      _currentExtendedAcl = new ExtendedAccessList(name);
+      _currentExtendedAcl.setContext(ctx);
+      extAcls.put(name, _currentExtendedAcl);
    }
 
    @Override
@@ -450,7 +461,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
          _currentInterface.setIncomingFilter(name);
       }
       else if (ctx.OUT() != null) {
-         _currentInterface.setOutgoingFilter(name);         
+         _currentInterface.setOutgoingFilter(name);
       }
       else {
          throw new Error("bad direction");
@@ -471,99 +482,175 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    }
 
    @Override
+   public void enterIp_as_path_access_list_stanza(
+         Ip_as_path_access_list_stanzaContext ctx) {
+      String name = ctx.firstname.getText();
+      _currentAsPathAcl = new IpAsPathAccessList(name);
+      _currentAsPathAcl.setContext(ctx);
+      _configuration.getAsPathAccessLists().put(name, _currentAsPathAcl);
+   }
+
+   @Override
    public void exitIp_as_path_access_list_stanza(
          Ip_as_path_access_list_stanzaContext ctx) {
-      String name = ctx.name.getText();
+      _currentAsPathAcl = null;
+   }
+
+   @Override
+   public void exitIp_as_path_access_list_tail(
+         Ip_as_path_access_list_tailContext ctx) {
       LineAction action = getAccessListAction(ctx.action);
       String regex = "";
       for (Token remainder : ctx.remainder) {
          regex += remainder.getText();
       }
       IpAsPathAccessListLine line = new IpAsPathAccessListLine(action, regex);
-      _configuration.addAsPathAccessListLine(name, line);
+      _currentAsPathAcl.addLine(line);
+   }
+
+   @Override
+   public void enterIp_community_list_expanded_stanza(
+         Ip_community_list_expanded_stanzaContext ctx) {
+      String name = ctx.firstname.getText();
+
+      _currentExpandedCommunityList = new ExpandedCommunityList(name);
+      _currentExpandedCommunityList.setContext(ctx);
+      _configuration.getExpandedCommunityLists().put(name,
+            _currentExpandedCommunityList);
    }
 
    @Override
    public void exitIp_community_list_expanded_stanza(
          Ip_community_list_expanded_stanzaContext ctx) {
-      // TODO Auto-generated method stub
+      _currentExpandedCommunityList = null;
+   }
 
+   @Override
+   public void exitIp_community_list_expanded_tail(
+         Ip_community_list_expanded_tailContext ctx) {
+      LineAction action = getAccessListAction(ctx.ala);
+      String regex = "";
+      for (Token remainder : ctx.remainder) {
+         regex += remainder.getText();
+      }
+      ExpandedCommunityListLine line = new ExpandedCommunityListLine(action,
+            regex);
+      _currentExpandedCommunityList.addLine(line);
+   }
+
+   @Override
+   public void enterIp_community_list_standard_stanza(
+         Ip_community_list_standard_stanzaContext ctx) {
+      String name = ctx.firstname.getText();
+
+      _currentStandardCommunityList = new StandardCommunityList(name);
+      _currentStandardCommunityList.setContext(ctx);
+      _configuration.getStandardCommunityLists().put(name,
+            _currentStandardCommunityList);
    }
 
    @Override
    public void exitIp_community_list_standard_stanza(
          Ip_community_list_standard_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitIp_community_list_stanza(Ip_community_list_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      _currentStandardCommunityList = null;
    }
 
    @Override
    public void exitIp_default_gateway_stanza(
          Ip_default_gateway_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitIp_if_stanza(Ip_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      // TODO implement
    }
 
    @Override
    public void exitIp_ospf_cost_if_stanza(Ip_ospf_cost_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      int cost = toInteger(ctx.cost);
+      _currentInterface.setOspfCost(cost);
    }
 
    @Override
    public void exitIp_ospf_dead_interval_if_stanza(
          Ip_ospf_dead_interval_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      int seconds = toInteger(ctx.seconds);
+      _currentInterface.setOSPFDeadInterval(seconds);
+      _currentInterface.setOSPFHelloMultiplier(0);
    }
 
    @Override
    public void exitIp_ospf_dead_interval_minimal_if_stanza(
          Ip_ospf_dead_interval_minimal_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      int multiplier = toInteger(ctx.mult);
+      _currentInterface.setOSPFDeadInterval(1);
+      _currentInterface.setOSPFHelloMultiplier(multiplier);
    }
 
    @Override
-   public void exitIp_prefix_list_line_stanza(
-         Ip_prefix_list_line_stanzaContext ctx) {
-      // TODO Auto-generated method stub
+   public void enterIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      _currentPrefixList = new PrefixList(name);
+      _currentPrefixList.setContext(ctx);
+      _configuration.getPrefixLists().put(name, _currentPrefixList);
+   }
 
+   @Override
+   public void exitIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
+      _currentPrefixList = null;
+   }
+
+   @Override
+   public void exitIp_prefix_list_tail(Ip_prefix_list_tailContext ctx) {
+      /*
+      if (ctx.seqnum != null) {
+         int seqnum = toInteger(ctx.seqnum);
+      }
+      */
+      LineAction action = getAccessListAction(ctx.action);
+      Ip prefix = toIp(ctx.prefix);
+      int prefixLength = toInteger(ctx.prefix_length);
+      int minLen = prefixLength;
+      int maxLen = 32;
+      if (ctx.minpl != null) {
+         minLen = toInteger(ctx.minpl);
+      }
+      if (ctx.maxpl != null) {
+         maxLen = toInteger(ctx.maxpl);
+      }
+      SubRange lengthRange = new SubRange(minLen, maxLen);
+      PrefixListLine line = new PrefixListLine(action, prefix, prefixLength,
+            lengthRange);
+      _currentPrefixList.addLine(line);
    }
 
    @Override
    public void exitIp_route_stanza(Ip_route_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitIpv6_ro_stanza(Ipv6_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      Ip prefix = toIp(ctx.prefix);
+      Ip mask = toIp(ctx.mask);
+      Ip nextHopIp = null;
+      String nextHopInterface = null;
+      int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
+      Integer tag = null;
+      Integer track = null;
+      boolean permanent = ctx.perm != null;
+      if (ctx.nexthopip != null) {
+         nextHopIp = toIp(ctx.nexthopip);
+      }
+      if (ctx.nexthopint != null) {
+         nextHopInterface = ctx.nexthopint.getText();
+      }
+      if (ctx.distance != null) {
+         distance = toInteger(ctx.distance);
+      }
+      if (ctx.tag != null) {
+         tag = toInteger(ctx.tag);
+      }
+      if (ctx.track != null) {
+         track = toInteger(ctx.track);
+      }
+      StaticRoute route = new StaticRoute(prefix, mask, nextHopIp, nextHopInterface, distance, tag, track, permanent);
+      _configuration.getStaticRoutes().put(prefix.networkString(mask), route);
    }
 
    @Override
    public void exitIpv6_router_ospf_stanza(Ipv6_router_ospf_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitLog_adjacency_changes_ipv6_ro_stanza(
-         Log_adjacency_changes_ipv6_ro_stanzaContext ctx) {
       // TODO Auto-generated method stub
 
    }

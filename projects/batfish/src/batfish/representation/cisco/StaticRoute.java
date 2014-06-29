@@ -1,39 +1,60 @@
 package batfish.representation.cisco;
 
-public class StaticRoute {
-   private String _prefix;
-   private String _mask;
-   private String _nextHopIp;
-   private int    _distance;
-   private String _nextHopInterface;
+import batfish.representation.Ip;
 
-   public StaticRoute(String prefix, String mask, String nextHopIp,
-         String nextHopInterface, int distance) {
+public class StaticRoute {
+   private int _distance;
+   private Ip _mask;
+   private String _nextHopInterface;
+   private Ip _nextHopIp;
+   private boolean _permanent;
+   private Ip _prefix;
+   private Integer _tag;
+   private Integer _track;
+
+   public StaticRoute(Ip prefix, Ip mask, Ip nextHopIp,
+         String nextHopInterface, int distance, Integer tag, Integer track,
+         boolean permanent) {
       _prefix = prefix;
       _mask = mask;
       _nextHopIp = nextHopIp;
       _nextHopInterface = nextHopInterface;
       _distance = distance;
+      _tag = tag;
+      _track = track;
+      _permanent = permanent;
    }
 
-   public String getPrefix() {
-      return _prefix;
+   public int getDistance() {
+      return _distance;
    }
 
-   public String getMask() {
+   public Ip getMask() {
       return _mask;
-   }
-
-   public String getNextHopIp() {
-      return _nextHopIp;
    }
 
    public String getNextHopInterface() {
       return _nextHopInterface;
    }
 
-   public int getDistance() {
-      return _distance;
+   public Ip getNextHopIp() {
+      return _nextHopIp;
+   }
+
+   public boolean getPermanent() {
+      return _permanent;
+   }
+
+   public Ip getPrefix() {
+      return _prefix;
+   }
+
+   public Integer getTag() {
+      return _tag;
+   }
+
+   public Integer getTrack() {
+      return _track;
    }
 
 }
