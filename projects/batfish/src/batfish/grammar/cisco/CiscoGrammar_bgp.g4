@@ -71,29 +71,9 @@ default_metric_rb_stanza
 	DEFAULT_METRIC metric = integer NEWLINE
 ;
 
-router_bgp_stanza
-:
-	ROUTER BGP procnum = integer NEWLINE
-	(
-		rbsl += rb_stanza
-	)+ closing_comment
-	(
-		afrbsl += address_family_rb_stanza
-	)*
-;
-
-router_id_bgp_rb_stanza
-:
-	BGP ROUTER_ID routerid = IP_ADDRESS NEWLINE
-;
-
 neighbor_activate_af_stanza
 :
-	NEIGHBOR
-	(
-		neighbor = IP_ADDRESS
-		| neighbor = VARIABLE
-	) ACTIVATE NEWLINE
+	NEIGHBOR neighbor = IP_ADDRESS ACTIVATE NEWLINE
 ;
 
 neighbor_ebgp_multihop_rb_stanza
@@ -119,12 +99,12 @@ neighbor_default_originate_af_stanza
 
 neighbor_ip_route_reflector_client_af_stanza
 :
-	NEIGHBOR IP_ADDRESS ROUTE_REFLECTOR_CLIENT NEWLINE
+	NEIGHBOR neighbor = IP_ADDRESS ROUTE_REFLECTOR_CLIENT NEWLINE
 ;
 
 neighbor_next_hop_self_rb_stanza
 :
-	NEIGHBOR IP_ADDRESS NEXT_HOP_SELF NEWLINE
+	NEIGHBOR neigbor = IP_ADDRESS NEXT_HOP_SELF NEWLINE
 ;
 
 neighbor_peer_group_assignment_af_stanza
@@ -451,4 +431,20 @@ redistribute_static_af_stanza
 redistribute_static_rb_stanza
 :
 	REDISTRIBUTE STATIC ~NEWLINE* NEWLINE
+;
+
+router_bgp_stanza
+:
+	ROUTER BGP procnum = integer NEWLINE
+	(
+		rbsl += rb_stanza
+	)+ closing_comment
+	(
+		afrbsl += address_family_rb_stanza
+	)*
+;
+
+router_id_bgp_rb_stanza
+:
+	BGP ROUTER_ID routerid = IP_ADDRESS NEWLINE
 ;

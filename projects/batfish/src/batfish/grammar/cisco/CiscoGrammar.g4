@@ -68,10 +68,10 @@ ip_route_stanza
 		(
 			TAG tag = DEC
 		)
-		| perm=PERMANENT
+		| perm = PERMANENT
 		|
 		(
-			TRACK track=DEC
+			TRACK track = DEC
 		)
 	)* NEWLINE
 ;

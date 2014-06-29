@@ -1,5 +1,6 @@
 package batfish.grammar.cisco.bgp;
 
+import batfish.representation.Ip;
 import batfish.representation.cisco.BgpPeerGroup;
 import batfish.representation.cisco.BgpProcess;
 
@@ -23,9 +24,10 @@ public class NeighborPeerGroupASAssignmentRBStanza implements RBStanza {
          BgpPeerGroup newGroup = new BgpPeerGroup(_groupName);
          newGroup.setRemoteAS(_asNum);
          if (_ip) {
-            newGroup.addNeighborAddress(_groupName);
+            Ip ip = new Ip(_groupName);
+            newGroup.addNeighborAddress(ip);
             if (p.getDefaultNeighborActivate()) {
-               p.addActivatedNeighbor(_groupName);
+               p.addActivatedNeighbor(ip);
             }
          }
          p.addPeerGroup(newGroup);

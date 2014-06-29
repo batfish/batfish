@@ -40,7 +40,7 @@ public class OspfProcess {
    private int _redistributeStaticMetric;
    private boolean _redistributeStaticSubnets;
    private double _referenceBandwidth;
-   private String _routerId;
+   private Ip _routerId;
    private List<OSPFWildcardNetwork> _wildcardNetworks;
 
    public OspfProcess(int procnum) {
@@ -167,7 +167,7 @@ public class OspfProcess {
       return _referenceBandwidth;
    }
 
-   public String getRouterId() {
+   public Ip getRouterId() {
       return _routerId;
    }
 
@@ -231,8 +231,8 @@ public class OspfProcess {
       _referenceBandwidth = referenceBandwidth;
    }
 
-   public void setRouterId(String id) {
-      _routerId = id;
+   public void setRouterId(Ip routerId) {
+      _routerId = routerId;
    }
 
 }

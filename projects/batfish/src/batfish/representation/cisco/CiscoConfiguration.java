@@ -22,6 +22,7 @@ public class CiscoConfiguration {
    private Map<String, StandardAccessList> _standardAcls;
    private Map<String, StandardCommunityList> _standardCommunityLists;
    private Map<String, StaticRoute> _staticRoutes;
+   private Map<String, RouteMap> _routeMaps;
 
    public CiscoConfiguration() {
       _interfaces = new HashMap<String, Interface>();
@@ -31,6 +32,7 @@ public class CiscoConfiguration {
       _standardCommunityLists = new HashMap<String, StandardCommunityList>();
       _prefixLists = new HashMap<String, PrefixList>();
       _staticRoutes = new HashMap<String, StaticRoute>();
+      _routeMaps = new HashMap<String, RouteMap>();
    }
 
    public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
@@ -106,6 +108,10 @@ public class CiscoConfiguration {
    public void setOspfProcess(OspfProcess proc, Router_ospf_stanzaContext ctx) {
       _ospfProcess = proc;
       _ospfProcessContext = ctx;
+   }
+
+   public Map<String, RouteMap> getRouteMaps() {
+      return _routeMaps;
    }
 
 }

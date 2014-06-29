@@ -17,18 +17,18 @@ public class AddressFamilyRBStanza implements RBStanza {
       }
       p.setDefaultMetric(_addressFamily.getDefaultMetric());
       p.addNetworks(_addressFamily.getNetworks());
-      p.addActivatedNeighbors(_addressFamily.getNeighbors());
+//      p.addActivatedNeighbors(_addressFamily.getNeighbors());
       p.addPeerGroupRouteReflectorClients(_addressFamily.getRRCPeerGroups());
       p.addSendCommunityPeerGroups(_addressFamily.getSCPeerGroups());
-      p.addPeerGroupInboundRouteMaps(_addressFamily.getInboundRouteMaps());
-      p.addPeerGroupOutboundRouteMaps(_addressFamily.getOutboundRouteMaps());
+//      p.addPeerGroupInboundRouteMaps(_addressFamily.getInboundRouteMaps());
+//      p.addPeerGroupOutboundRouteMaps(_addressFamily.getOutboundRouteMaps());
       p.addDefaultOriginateNeighbors(_addressFamily
             .getDefaultOriginateNeighbors());
       p.getAggregateNetworks().putAll(_addressFamily.getAggregateNetworks());
       p.setRedistributeStatic(_addressFamily.getRedistributeStatic());
       p.setRedistributeStaticMap(_addressFamily.getRedistributeStaticMap());
-      p.addPeerGroupInboundPrefixLists(_addressFamily.getInboundPrefixLists());
-      p.addPeerGroupMembership(_addressFamily.getPeerGroupMembership());
+//      p.addPeerGroupInboundPrefixLists(_addressFamily.getInboundPrefixLists());
+//      p.addPeerGroupMembership(_addressFamily.getPeerGroupMembership());
    }
 
    public void processStanza(AFStanza afs) {

@@ -16,28 +16,37 @@ match_as_path_access_list_rm_stanza
 
 match_community_list_rm_stanza
 :
-	MATCH COMMUNITY name_list +=
+	MATCH COMMUNITY
 	(
-		VARIABLE
-		| DEC
+		name_list +=
+		(
+			VARIABLE
+			| DEC
+		)
 	)+ NEWLINE
 ;
 
 match_ip_access_list_rm_stanza
 :
-	MATCH IP ADDRESS name_list +=
+	MATCH IP ADDRESS
 	(
-		VARIABLE
-		| DEC
+		name_list +=
+		(
+			VARIABLE
+			| DEC
+		)
 	)+ NEWLINE
 ;
 
 match_ip_prefix_list_rm_stanza
 :
-	MATCH IP ADDRESS PREFIX_LIST name_list +=
+	MATCH IP ADDRESS PREFIX_LIST
 	(
-		VARIABLE
-		| DEC
+		name_list +=
+		(
+			VARIABLE
+			| DEC
+		)
 	)+ NEWLINE
 ;
 
@@ -58,7 +67,10 @@ match_rm_stanza
 
 match_tag_rm_stanza
 :
-	MATCH TAG ~NEWLINE* NEWLINE
+	MATCH TAG
+	(
+		tag_list += DEC
+	)+ NEWLINE
 ;
 
 null_rm_stanza
@@ -78,7 +90,18 @@ rm_stanza
 
 route_map_stanza
 :
-	ROUTE_MAP name = VARIABLE rmt = access_list_action num = integer NEWLINE
+	ROUTE_MAP firstname = VARIABLE route_map_tail
+	(
+		ROUTE_MAP name = VARIABLE
+		{$firstname.text.equals($name.text)}?
+
+		route_map_tail
+	)*
+;
+
+route_map_tail
+:
+	rmt = access_list_action num = integer NEWLINE
 	(
 		rms_list += rm_stanza
 	)* closing_comment

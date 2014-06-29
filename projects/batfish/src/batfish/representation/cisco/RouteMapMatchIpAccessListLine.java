@@ -1,13 +1,17 @@
 package batfish.representation.cisco;
 
-import java.util.List;
+import java.util.Set;
 
 public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
 
-   private List<String> _listNames;
+   private Set<String> _listNames;
 
-   public RouteMapMatchIpAccessListLine(List<String> listNames) {
-      _listNames = listNames;
+   public RouteMapMatchIpAccessListLine(Set<String> names) {
+      _listNames = names;
+   }
+
+   public Set<String> getListNames() {
+      return _listNames;
    }
 
    @Override
@@ -15,8 +19,4 @@ public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
       return RouteMapMatchType.IP_ACCESS_LIST;
    }
 
-   public List<String> getListNames() {
-      return _listNames;
-   }
-   
 }

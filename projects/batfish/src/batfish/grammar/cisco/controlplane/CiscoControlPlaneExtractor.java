@@ -3,6 +3,8 @@ package batfish.grammar.cisco.controlplane;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -15,6 +17,7 @@ import batfish.representation.Ip;
 import batfish.representation.LineAction;
 import batfish.representation.OspfMetricType;
 import batfish.representation.cisco.BgpNetwork;
+import batfish.representation.cisco.BgpPeerGroup;
 import batfish.representation.cisco.BgpProcess;
 import batfish.representation.cisco.CiscoConfiguration;
 import batfish.representation.cisco.ExpandedCommunityList;
@@ -27,6 +30,13 @@ import batfish.representation.cisco.IpAsPathAccessListLine;
 import batfish.representation.cisco.OspfProcess;
 import batfish.representation.cisco.PrefixList;
 import batfish.representation.cisco.PrefixListLine;
+import batfish.representation.cisco.RouteMap;
+import batfish.representation.cisco.RouteMapClause;
+import batfish.representation.cisco.RouteMapMatchAsPathAccessListLine;
+import batfish.representation.cisco.RouteMapMatchCommunityListLine;
+import batfish.representation.cisco.RouteMapMatchIpAccessListLine;
+import batfish.representation.cisco.RouteMapMatchIpPrefixListLine;
+import batfish.representation.cisco.RouteMapMatchTagLine;
 import batfish.representation.cisco.StandardAccessList;
 import batfish.representation.cisco.StandardCommunityList;
 import batfish.representation.cisco.StaticRoute;
@@ -50,6 +60,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    private ExpandedCommunityList _currentExpandedCommunityList;
    private StandardCommunityList _currentStandardCommunityList;
    private PrefixList _currentPrefixList;
+   private RouteMap _currentRouteMap;
+   private RouteMapClause _currentRouteMapClause;
 
    private static double getDefaultBandwidth(String name) {
       Double bandwidth = null;
@@ -599,10 +611,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    @Override
    public void exitIp_prefix_list_tail(Ip_prefix_list_tailContext ctx) {
       /*
-      if (ctx.seqnum != null) {
-         int seqnum = toInteger(ctx.seqnum);
-      }
-      */
+       * if (ctx.seqnum != null) { int seqnum = toInteger(ctx.seqnum); }
+       */
       LineAction action = getAccessListAction(ctx.action);
       Ip prefix = toIp(ctx.prefix);
       int prefixLength = toInteger(ctx.prefix_length);
@@ -645,149 +655,205 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
       if (ctx.track != null) {
          track = toInteger(ctx.track);
       }
-      StaticRoute route = new StaticRoute(prefix, mask, nextHopIp, nextHopInterface, distance, tag, track, permanent);
+      StaticRoute route = new StaticRoute(prefix, mask, nextHopIp,
+            nextHopInterface, distance, tag, track, permanent);
       _configuration.getStaticRoutes().put(prefix.networkString(mask), route);
-   }
-
-   @Override
-   public void exitIpv6_router_ospf_stanza(Ipv6_router_ospf_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitMacro_stanza(Macro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
    }
 
    @Override
    public void exitMatch_as_path_access_list_rm_stanza(
          Match_as_path_access_list_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      Set<String> names = new TreeSet<String>();
+      for (Token t : ctx.name_list) {
+         names.add(t.getText());
+      }
+      RouteMapMatchAsPathAccessListLine line = new RouteMapMatchAsPathAccessListLine(
+            names);
+      _currentRouteMapClause.addMatchLine(line);
    }
 
    @Override
    public void exitMatch_community_list_rm_stanza(
          Match_community_list_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      Set<String> names = new TreeSet<String>();
+      for (Token t : ctx.name_list) {
+         names.add(t.getText());
+      }
+      RouteMapMatchCommunityListLine line = new RouteMapMatchCommunityListLine(
+            names);
+      _currentRouteMapClause.addMatchLine(line);
    }
 
    @Override
    public void exitMatch_ip_access_list_rm_stanza(
          Match_ip_access_list_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      Set<String> names = new TreeSet<String>();
+      for (Token t : ctx.name_list) {
+         names.add(t.getText());
+      }
+      RouteMapMatchIpAccessListLine line = new RouteMapMatchIpAccessListLine(
+            names);
+      _currentRouteMapClause.addMatchLine(line);
    }
 
    @Override
    public void exitMatch_ip_prefix_list_rm_stanza(
          Match_ip_prefix_list_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      Set<String> names = new TreeSet<String>();
+      for (Token t : ctx.name_list) {
+         names.add(t.getText());
+      }
+      RouteMapMatchIpPrefixListLine line = new RouteMapMatchIpPrefixListLine(
+            names);
+      _currentRouteMapClause.addMatchLine(line);
    }
 
    @Override
    public void exitMatch_ipv6_rm_stanza(Match_ipv6_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitMatch_rm_stanza(Match_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      _currentRouteMap.setIgnore(true);
    }
 
    @Override
    public void exitMatch_tag_rm_stanza(Match_tag_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      Set<Integer> tags = new TreeSet<Integer>();
+      for (Token t : ctx.tag_list) {
+         tags.add(toInteger(t));
+      }
+      RouteMapMatchTagLine line = new RouteMapMatchTagLine(tags);
+      _currentRouteMapClause.addMatchLine(line);
    }
 
    @Override
    public void exitMaximum_paths_ro_stanza(Maximum_paths_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      // TODO Implement
+      // Note that this is very difficult to enforce,
+      // and may not help the analysis without major changes
    }
 
    @Override
    public void exitNeighbor_activate_af_stanza(
          Neighbor_activate_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      Ip neighbor = toIp(ctx.neighbor);
+      _configuration.getBgpProcess().addActivatedNeighbor(neighbor);
    }
 
    @Override
    public void exitNeighbor_default_originate_af_stanza(
          Neighbor_default_originate_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      String mapName = ctx.map != null ? ctx.map.getText() : null;
+      String name = ctx.name.getText();
+      _configuration.getBgpProcess().addDefaultOriginateNeighbor(name, mapName);
    }
 
    @Override
    public void exitNeighbor_ebgp_multihop_rb_stanza(
          Neighbor_ebgp_multihop_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      // TODO implement
    }
 
    @Override
    public void exitNeighbor_ip_route_reflector_client_af_stanza(
          Neighbor_ip_route_reflector_client_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      String pgName = ctx.neighbor.getText();
+      _configuration.getBgpProcess().addPeerGroupRouteReflectorClient(pgName);
    }
 
    @Override
    public void exitNeighbor_next_hop_self_rb_stanza(
          Neighbor_next_hop_self_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      // TODO implement
    }
 
    @Override
    public void exitNeighbor_peer_group_assignment_af_stanza(
          Neighbor_peer_group_assignment_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      Ip address = toIp(ctx.address);
+      String peerGroupName = ctx.name.getText();
+      _configuration.getBgpProcess().addPeerGroupMember(address, peerGroupName);
    }
 
    @Override
    public void exitNeighbor_peer_group_assignment_rb_stanza(
          Neighbor_peer_group_assignment_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      Ip address = toIp(ctx.address);
+      String peerGroupName = ctx.name.getText();
+      _configuration.getBgpProcess().addPeerGroupMember(address, peerGroupName);
    }
 
    @Override
    public void exitNeighbor_peer_group_creation_rb_stanza(
          Neighbor_peer_group_creation_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      String name = ctx.name.getText();
+      BgpPeerGroup newGroup = new BgpPeerGroup(name);
+      BgpProcess proc = _configuration.getBgpProcess();
+      newGroup.setClusterId(proc.getClusterId());
+      proc.addPeerGroup(newGroup);
    }
 
    @Override
    public void exitNeighbor_pg_prefix_list_rb_stanza(
          Neighbor_pg_prefix_list_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      String neighbor = ctx.neighbor.getText();
+      String listName = ctx.list_name.getText();
+      BgpProcess proc = _configuration.getBgpProcess();
+      if (ctx.IN() != null) {
+         proc.addPeerGroupInboundPrefixList(neighbor, listName);
+      }
+      else if (ctx.OUT() != null) {
+         proc.addPeerGroupOutboundPrefixList(neighbor, listName);         
+      }
+      else {
+         throw new Error("bad direction");
+      }
    }
 
    @Override
    public void exitNeighbor_pg_remote_as_rb_stanza(
          Neighbor_pg_remote_as_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      BgpProcess proc = _configuration.getBgpProcess();
+      int as = toInteger(ctx.as);
+      Ip pgIp = null;
+      String peerGroupName;
+      boolean ip = ctx.pg_ip != null; 
+      if (ip) {
+         pgIp = toIp(ctx.pg_ip);
+         peerGroupName = pgIp.toString();
+      }
+      else if (ctx.pg_var != null) {
+         peerGroupName = ctx.pg_var.getText();
+      }
+      else {
+         throw new Error("bad peer group");
+      }
+      BgpPeerGroup pg = proc.getPeerGroup(peerGroupName);
+      if (pg == null) {
+         pg = new BgpPeerGroup(peerGroupName);
+         if (ip) {
+            pg.addNeighborAddress(pgIp);
+            if (proc.getDefaultNeighborActivate()) {
+               proc.addActivatedNeighbor(pgIp);
+            }
+         }
+         proc.addPeerGroup(pg);
+      }
+      pg.setRemoteAS(as);
    }
 
    @Override
    public void exitNeighbor_pg_route_map_rb_stanza(
          Neighbor_pg_route_map_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      String peerGroup = ctx.pg.getText();
+      String mapName = ctx.name.getText();
+      BgpProcess proc = _configuration.getBgpProcess();
+      if (ctx.IN() != null) {
+         proc.addPeerGroupInboundRouteMap(peerGroup, mapName);
+      }
+      else if (ctx.OUT() != null) {
+         proc.addPeerGroupOutboundRouteMap(peerGroup, mapName);         
+      }
+      else {
+         throw new Error("bad direction");
+      }
    }
 
    @Override
@@ -1005,15 +1071,31 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    }
 
    @Override
-   public void exitRo_stanza(Ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+   public void enterRoute_map_stanza(Route_map_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      _currentRouteMap = new RouteMap(name);
+      _currentRouteMap.setContext(ctx);
+      _configuration.getRouteMaps().put(name, _currentRouteMap);
    }
 
    @Override
    public void exitRoute_map_stanza(Route_map_stanzaContext ctx) {
-      // TODO Auto-generated method stub
+      _currentRouteMap = null;
+   }
 
+   @Override
+   public void enterRoute_map_tail(Route_map_tailContext ctx) {
+      int num = toInteger(ctx.num);
+      LineAction action = getAccessListAction(ctx.rmt);
+      _currentRouteMapClause = new RouteMapClause(action,
+            _currentRouteMap.getMapName(), num);
+      _currentRouteMapClause.setContext(ctx);
+      _currentRouteMap.addClause(_currentRouteMapClause);
+   }
+
+   @Override
+   public void exitRoute_map_tail(Route_map_tailContext ctx) {
+      _currentRouteMapClause = null;
    }
 
    @Override
@@ -1024,27 +1106,15 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    }
 
    @Override
-   public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
    public void exitRouter_id_bgp_rb_stanza(Router_id_bgp_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitRouter_id_ipv6_ro_stanza(Router_id_ipv6_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      Ip routerId = toIp(ctx.routerid);
+      _configuration.getBgpProcess().setRouterId(routerId);
    }
 
    @Override
    public void exitRouter_id_ro_stanza(Router_id_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      Ip routerId = toIp(ctx.ip);
+      _configuration.getOspfProcess().setRouterId(routerId);
    }
 
    @Override
@@ -1052,11 +1122,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
       int procNum = toInteger(ctx.procnum);
       OspfProcess proc = new OspfProcess(procNum);
       _configuration.setOspfProcess(proc, ctx);
-   }
-
-   @Override
-   public void exitRouter_ospf_stanza(Router_ospf_stanzaContext ctx) {
-
    }
 
    @Override

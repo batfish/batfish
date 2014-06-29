@@ -5,8 +5,11 @@ import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import batfish.grammar.cisco.CiscoGrammar.Route_map_stanzaContext;
+
 public class RouteMap {
    private NavigableMap<Integer, RouteMapClause> _clauses;
+   private Route_map_stanzaContext _context;
    private boolean _ignore;
    private String _mapName;
    
@@ -28,6 +31,10 @@ public class RouteMap {
       return _clauses;
    }
 
+   public Route_map_stanzaContext getContext() {
+      return _context;
+   }
+
    public boolean getIgnore() {
       return _ignore;
    }
@@ -36,8 +43,12 @@ public class RouteMap {
       return _mapName;
    }
 
+   public void setContext(Route_map_stanzaContext ctx) {
+      _context = ctx;
+   }
+
    public void setIgnore(boolean b) {
       _ignore = b;
    }
-
+   
 }

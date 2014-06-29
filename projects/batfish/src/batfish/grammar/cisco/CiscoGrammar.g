@@ -623,6 +623,9 @@ public List<String> getErrors() {
 package batfish.grammar.cisco;
 
 import java.util.Collections;
+import java.util.Set;
+import java.util.TreeSet;
+
 
 import batfish.grammar.ConfigurationParser;
 import batfish.grammar.cisco.bgp.*;
@@ -1152,7 +1155,7 @@ macro_stanza
 
 match_as_path_access_list_rm_stanza returns [RMStanza rms]
 @init {
-List<String> nameList = new ArrayList<String>();
+Set<String> nameList = new TreeSet<String>();
 }
   :
   (MATCH AS_PATH (name=DEC 
@@ -1167,7 +1170,7 @@ List<String> nameList = new ArrayList<String>();
 
 match_community_list_rm_stanza returns [RMStanza rms]
 @init {
-List<String> nameList = new ArrayList<String>();
+Set<String> nameList = new TreeSet<String>();
 }
   :
   (
@@ -1193,7 +1196,7 @@ List<String> nameList = new ArrayList<String>();
 
 match_ip_access_list_rm_stanza returns [RMStanza rms]
 @init {
-List<String> nameList = new ArrayList<String>();
+Set<String> nameList = new TreeSet<String>();
 }
   :
   (
@@ -1219,7 +1222,7 @@ List<String> nameList = new ArrayList<String>();
 
 match_ip_prefix_list_rm_stanza returns [RMStanza rms]
 @init {
-List<String> nameList = new ArrayList<String>();
+Set<String> nameList = new TreeSet<String>();
 }
   :
   (

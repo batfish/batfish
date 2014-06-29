@@ -44,7 +44,6 @@ import batfish.representation.SwitchportEncapsulationType;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
 import batfish.util.SubRange;
-import batfish.util.Util;
 
 public class CiscoVendorConfiguration implements VendorConfiguration {
 
@@ -116,7 +115,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          throws VendorConversionException {
       batfish.representation.BgpProcess newBgpProcess = new batfish.representation.BgpProcess();
       Map<String, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
-      Set<String> activeNeighbors = proc.getActivatedNeighbors();
+      Set<Ip> activeNeighbors = proc.getActivatedNeighbors();
       int defaultMetric = proc.getDefaultMetric();
 
       Set<PolicyMap> globalExportPolicies = new HashSet<PolicyMap>();
@@ -163,7 +162,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          String updateSourceInterface = pg.getUpdateSource();
          String updateSource = null;
          if (updateSourceInterface == null) {
-            updateSource = proc.getRouterId();
+            updateSource = proc.getRouterId().toString();
          }
          else {
             Ip sourceIp = c.getInterfaces().get(updateSourceInterface).getIP();
@@ -256,23 +255,23 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
             }
          }
 
-         Long clusterId = pg.getClusterId();
+         Ip clusterId = pg.getClusterId();
          boolean routeReflectorClient = pg.getRouteReflectorClient();
          if (routeReflectorClient) {
             if (clusterId == null) {
-               clusterId = Util.ipToLong(updateSource);
+               clusterId = new Ip(updateSource);
             }
          }
          boolean sendCommunity = pg.getSendCommunity();
-         for (String neighborAddress : pg.getNeighborAddresses()) {
+         for (Ip neighborAddress : pg.getNeighborAddresses()) {
             if (activeNeighbors.contains(neighborAddress)) {
                if (neighborAddress.equals("169.232.12.157")) {
                   System.out.print("");
                }
                BgpNeighbor newNeighbor = newBgpNeighbors.get(neighborAddress);
                if (newNeighbor == null) {
-                  newNeighbor = new BgpNeighbor(new Ip(neighborAddress));
-                  newBgpNeighbors.put(neighborAddress, newNeighbor);
+                  newNeighbor = new BgpNeighbor(neighborAddress);
+                  newBgpNeighbors.put(neighborAddress.toString(), newNeighbor);
                }
                if (newInboundPolicyMap != null) {
                   newNeighbor.addInboundPolicyMap(newInboundPolicyMap);
@@ -290,7 +289,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
                   newNeighbor.setGroupName(pg.getName());
                }
                if (routeReflectorClient) {
-                  newNeighbor.setClusterId(clusterId);
+                  newNeighbor.setClusterId(clusterId.asLong());
                }
                if (defaultRoute != null) {
                   newNeighbor.getGeneratedRoutes().add(defaultRoute);
@@ -551,7 +550,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          }
       }
       newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
-      newProcess.setRouterId(proc.getRouterId());
+      newProcess.setRouterId(proc.getRouterId().toString());
       return newProcess;
    }
 
@@ -644,6 +643,10 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          // TODO: implement
          break;
 
+      case TAG:
+         // TODO: implement
+         break;
+
       default:
          throw new Error("bad type");
       }
@@ -681,7 +684,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       RouteFilterList newRouteFilterList = new RouteFilterList(list.getName());
       for (PrefixListLine prefixListLine : list.getLines()) {
          RouteFilterLine newRouteFilterListLine = new RouteFilterLengthRangeLine(
-               prefixListLine.getAction(), new Ip(prefixListLine.getPrefix()),
+               prefixListLine.getAction(), prefixListLine.getPrefix(),
                prefixListLine.getPrefixLength(),
                prefixListLine.getLengthRange());
          newRouteFilterList.addLine(newRouteFilterListLine);
@@ -691,14 +694,10 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
 
    private static batfish.representation.StaticRoute toStaticRoute(
          Configuration c, StaticRoute staticRoute) {
-      String nextHopIpStr = staticRoute.getNextHopIp();
-      Ip nextHopIp = null;
-      if (nextHopIpStr != null) {
-         nextHopIp = new Ip(nextHopIpStr);
-      }
-      Ip prefix = new Ip(staticRoute.getPrefix());
+      Ip nextHopIp = staticRoute.getNextHopIp();
+      Ip prefix = staticRoute.getPrefix();
       String nextHopInterface = staticRoute.getNextHopInterface();
-      int prefixLength = Util.numSubnetBits(staticRoute.getMask());
+      int prefixLength = staticRoute.getMask().numSubnetBits();
       return new batfish.representation.StaticRoute(prefix, prefixLength,
             nextHopIp, nextHopInterface, staticRoute.getDistance());
 
