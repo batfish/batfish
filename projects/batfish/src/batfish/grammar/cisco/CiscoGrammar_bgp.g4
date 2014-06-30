@@ -30,6 +30,7 @@ af_stanza
 	| neighbor_route_reflector_client_af_stanza
 	| neighbor_send_community_af_stanza
 	| network_af_stanza
+	| network6_af_stanza
 	| null_af_stanza
 	| redistribute_connected_af_stanza
 	| redistribute_static_af_stanza
@@ -37,11 +38,15 @@ af_stanza
 
 aggregate_address_af_stanza
 :
-	AGGREGATE_ADDRESS network = IP_ADDRESS subnet = IP_ADDRESS SUMMARY_ONLY?
-	NEWLINE
+	aggregate_address_tail_bgp
 ;
 
 aggregate_address_rb_stanza
+:
+	aggregate_address_tail_bgp
+;
+
+aggregate_address_tail_bgp
 :
 	AGGREGATE_ADDRESS network = IP_ADDRESS subnet = IP_ADDRESS SUMMARY_ONLY?
 	NEWLINE
@@ -63,10 +68,15 @@ cluster_id_bgp_rb_stanza
 
 default_metric_af_stanza
 :
-	DEFAULT_METRIC metric = integer NEWLINE
+	default_metric_tail_bgp
 ;
 
 default_metric_rb_stanza
+:
+	default_metric_tail_bgp
+;
+
+default_metric_tail_bgp
 :
 	DEFAULT_METRIC metric = integer NEWLINE
 ;
@@ -97,11 +107,6 @@ neighbor_default_originate_af_stanza
 	)? NEWLINE
 ;
 
-neighbor_ip_route_reflector_client_af_stanza
-:
-	NEIGHBOR neighbor = IP_ADDRESS ROUTE_REFLECTOR_CLIENT NEWLINE
-;
-
 neighbor_next_hop_self_rb_stanza
 :
 	NEIGHBOR neigbor = IP_ADDRESS NEXT_HOP_SELF NEWLINE
@@ -109,13 +114,15 @@ neighbor_next_hop_self_rb_stanza
 
 neighbor_peer_group_assignment_af_stanza
 :
-	NEIGHBOR
-	(
-		address = IP_ADDRESS
-	) PEER_GROUP name = VARIABLE NEWLINE
+	neighbor_peer_group_assignment_tail_bgp
 ;
 
 neighbor_peer_group_assignment_rb_stanza
+:
+	neighbor_peer_group_assignment_tail_bgp
+;
+
+neighbor_peer_group_assignment_tail_bgp
 :
 	NEIGHBOR
 	(
@@ -128,7 +135,17 @@ neighbor_peer_group_creation_rb_stanza
 	NEIGHBOR name = VARIABLE PEER_GROUP NEWLINE
 ;
 
-neighbor_pg_prefix_list_rb_stanza
+neighbor_prefix_list_af_stanza
+:
+	neighbor_prefix_list_tail_bgp
+;
+
+neighbor_prefix_list_rb_stanza
+:
+	neighbor_prefix_list_tail_bgp
+;
+
+neighbor_prefix_list_tail_bgp
 :
 	NEIGHBOR
 	(
@@ -141,7 +158,7 @@ neighbor_pg_prefix_list_rb_stanza
 	) NEWLINE
 ;
 
-neighbor_pg_remote_as_rb_stanza
+neighbor_remote_as_rb_stanza
 :
 	NEIGHBOR
 	(
@@ -150,31 +167,23 @@ neighbor_pg_remote_as_rb_stanza
 	) REMOTE_AS as = integer NEWLINE
 ;
 
-neighbor_pg_route_map_rb_stanza
+neighbor_route_map_af_stanza
+:
+	neighbor_route_map_tail_bgp
+;
+
+neighbor_route_map_rb_stanza
+:
+	neighbor_route_map_tail_bgp
+;
+
+neighbor_route_map_tail_bgp
 :
 	NEIGHBOR
 	(
 		pg = IP_ADDRESS
 		| pg = VARIABLE
 	) ROUTE_MAP name = VARIABLE
-	(
-		IN
-		| OUT
-	) NEWLINE
-;
-
-neighbor_pg_route_reflector_client_af_stanza
-:
-	NEIGHBOR pg = VARIABLE ROUTE_REFLECTOR_CLIENT NEWLINE
-;
-
-neighbor_prefix_list_af_stanza
-:
-	NEIGHBOR
-	(
-		neighbor = IP_ADDRESS
-		| neighbor = VARIABLE
-	) PREFIX_LIST list_name = VARIABLE
 	(
 		IN
 		| OUT
@@ -190,35 +199,26 @@ neighbor_remove_private_as_af_stanza
 	) REMOVE_PRIVATE_AS NEWLINE
 ;
 
-neighbor_route_map_af_stanza
+neighbor_route_reflector_client_af_stanza
 :
 	NEIGHBOR
 	(
-		pg = IP_ADDRESS
-		| pg = VARIABLE
-	) ROUTE_MAP name = VARIABLE
-	(
-		IN
-		| OUT
-	) NEWLINE
-;
-
-neighbor_route_reflector_client_af_stanza
-:
-	neighbor_pg_route_reflector_client_af_stanza
-	| neighbor_ip_route_reflector_client_af_stanza
+		pg = VARIABLE
+		| pg = IP_ADDRESS
+	) ROUTE_REFLECTOR_CLIENT NEWLINE
 ;
 
 neighbor_send_community_af_stanza
 :
-	NEIGHBOR
-	(
-		neighbor = IP_ADDRESS
-		| neighbor = VARIABLE
-	) SEND_COMMUNITY NEWLINE
+	neighbor_send_community_tail_bgp
 ;
 
 neighbor_send_community_rb_stanza
+:
+	neighbor_send_community_tail_bgp
+;
+
+neighbor_send_community_tail_bgp
 :
 	NEIGHBOR
 	(
@@ -247,50 +247,45 @@ neighbor_update_source_rb_stanza
 
 network_af_stanza
 :
-	NETWORK
-	(
-		(
-			ip = IP_ADDRESS
-			(
-				MASK mask = IP_ADDRESS
-			)?
-		)
-		|
-		(
-			ip6 = IPV6_ADDRESS
-			(
-				FORWARD_SLASH DEC
-			)?
-		)
-	) NEWLINE
+	network_tail_bgp
 ;
 
 network_rb_stanza
 :
-	NETWORK
+	network_tail_bgp
+;
+
+network_tail_bgp
+:
+	NETWORK ip = IP_ADDRESS
 	(
-		(
-			ip = IP_ADDRESS
-			(
-				MASK mask = IP_ADDRESS
-			)?
-		)
-		|
-		(
-			ip6 = IPV6_ADDRESS
-			(
-				FORWARD_SLASH DEC
-			)?
-		)
-	) NEWLINE
+		MASK mask = IP_ADDRESS
+	)? NEWLINE
+;
+
+network6_af_stanza
+:
+	network_tail_bgp
+;
+
+network6_rb_stanza
+:
+	network_tail_bgp
+;
+
+network6_tail_bgp
+:
+	NETWORK ip6 = IPV6_ADDRESS
+	(
+		FORWARD_SLASH DEC
+	)? NEWLINE
 ;
 
 no_neighbor_activate_af_stanza
 :
 	NO NEIGHBOR
 	(
-		IP_ADDRESS
-		| VARIABLE
+		ip = IP_ADDRESS
 	) ACTIVATE NEWLINE
 ;
 
@@ -391,13 +386,14 @@ rb_stanza
 	| neighbor_next_hop_self_rb_stanza
 	| neighbor_peer_group_creation_rb_stanza
 	| neighbor_peer_group_assignment_rb_stanza
-	| neighbor_pg_prefix_list_rb_stanza
-	| neighbor_pg_remote_as_rb_stanza
-	| neighbor_pg_route_map_rb_stanza
+	| neighbor_prefix_list_rb_stanza
+	| neighbor_remote_as_rb_stanza
+	| neighbor_route_map_rb_stanza
 	| neighbor_send_community_rb_stanza
 	| neighbor_shutdown_rb_stanza
 	| neighbor_update_source_rb_stanza
 	| network_rb_stanza
+	| network6_rb_stanza
 	| null_rb_stanza
 	| redistribute_connected_rb_stanza
 	| redistribute_ospf_rb_stanza
@@ -407,30 +403,74 @@ rb_stanza
 
 redistribute_connected_af_stanza
 :
-	REDISTRIBUTE CONNECTED ~NEWLINE* NEWLINE
+	redistribute_connected_tail_bgp
 ;
 
 redistribute_connected_rb_stanza
 :
-	REDISTRIBUTE CONNECTED ~NEWLINE* NEWLINE
+	redistribute_connected_tail_bgp
+;
+
+redistribute_connected_tail_bgp
+:
+	REDISTRIBUTE CONNECTED
+	(
+		(
+			ROUTE_MAP map = VARIABLE
+		)
+		|
+		(
+			METRIC metric = DEC
+		)
+	)* NEWLINE
 ;
 
 redistribute_ospf_rb_stanza
 :
-	REDISTRIBUTE OSPF ~NEWLINE* NEWLINE
+	redistribute_ospf_tail_bgp
+;
+
+redistribute_ospf_af_stanza
+:
+	redistribute_ospf_tail_bgp
+;
+
+redistribute_ospf_tail_bgp
+:
+	REDISTRIBUTE OSPF procnum = DEC
+	(
+		(
+			ROUTE_MAP map = VARIABLE
+		)
+		|
+		(
+			METRIC metric = DEC
+		)
+	)* NEWLINE
 ;
 
 redistribute_static_af_stanza
 :
-	REDISTRIBUTE STATIC
-	(
-		ROUTE_MAP map = VARIABLE
-	) NEWLINE
+	redistribute_static_tail_bgp
 ;
 
 redistribute_static_rb_stanza
 :
-	REDISTRIBUTE STATIC ~NEWLINE* NEWLINE
+	redistribute_static_tail_bgp
+;
+
+redistribute_static_tail_bgp
+:
+	REDISTRIBUTE STATIC
+	(
+		(
+			ROUTE_MAP map = VARIABLE
+		)
+		|
+		(
+			METRIC metric = DEC
+		)
+	)* NEWLINE
 ;
 
 router_bgp_stanza

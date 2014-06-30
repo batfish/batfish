@@ -151,7 +151,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
 
       // create redistribution origination policies
       PolicyMap redistributeStaticPolicyMap = null;
-      if (proc.getRedistributeStatic()) {
+      if (proc.getRedistributionPolicies().containsKey(Protocol.STATIC)) {
          redistributeStaticPolicyMap = makeRouteExportPolicy(c,
                "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null, 0,
                null, null, null, Protocol.STATIC, PolicyMapAction.PERMIT);
@@ -223,7 +223,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          originationPolicies.add(explicitOriginationPolicyMap);
 
          // add redistribution origination policies
-         if (proc.getRedistributeStatic()) {
+         if (proc.getRedistributionPolicies().containsKey(Protocol.STATIC)) {
             originationPolicies.add(redistributeStaticPolicyMap);
          }
 
@@ -355,8 +355,9 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       batfish.representation.OspfProcess newProcess = new batfish.representation.OspfProcess();
 
       // establish areas and associated interfaces
-      HashMap<Integer, OspfArea> areas = newProcess.getAreas();
-      List<OspfNetwork> networks = proc.getNetworks();
+      Map<Long, OspfArea> areas = newProcess.getAreas();
+      List<OspfNetwork> networks = new ArrayList<OspfNetwork>();
+      networks.addAll(proc.getNetworks());
       Collections.sort(networks, new Comparator<OspfNetwork>() {
          // sort so longest prefixes are first
          @Override
@@ -383,7 +384,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
             long maskedIp = interfaceIp.asLong() & networkMask.asLong();
             if (maskedIp == networkIp.asLong()) {
                // we have a longest prefix match
-               int areaNum = network.getArea();
+               long areaNum = network.getArea();
                OspfArea newArea = areas.get(areaNum);
                if (newArea == null) {
                   newArea = new OspfArea(areaNum);
@@ -455,11 +456,13 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
 
       // policy map for redistributing connected routes
       // TODO: honor subnets option
-      if (proc.getRedistributeConnected()) {
-         int metric = proc.getRedistributeConnectedMetric();
+      OspfRedistributionPolicy rcp = proc.getRedistributionPolicies().get(
+            Protocol.CONNECTED);
+      if (rcp != null) {
+         int metric = rcp.getMetric();
          // add default export map with metric
          PolicyMap exportConnectedPolicy;
-         String mapName = proc.getRedistributeConnectedMap();
+         String mapName = rcp.getMap();
          if (mapName != null) {
             exportConnectedPolicy = c.getPolicyMaps().get(mapName);
             if (exportConnectedPolicy == null) {
@@ -488,11 +491,13 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
 
       // policy map for redistributing static routes
       // TODO: honor subnets option
-      if (proc.getRedistributeStatic()) {
-         int metric = proc.getRedistributeStaticMetric();
+      OspfRedistributionPolicy rsp = proc.getRedistributionPolicies().get(
+            Protocol.STATIC);
+      if (rsp != null) {
+         int metric = rsp.getMetric();
          // add export map with metric
          PolicyMap exportStaticPolicy;
-         String mapName = proc.getRedistributeStaticMap();
+         String mapName = rsp.getMap();
          if (mapName != null) {
             exportStaticPolicy = c.getPolicyMaps().get(mapName);
             if (exportStaticPolicy != null) { // assume for now that all maps
@@ -657,10 +662,10 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          ExtendedAccessListLine fromLine) {
       LineAction action = fromLine.getAction();
       Ip prefix = fromLine.getSourceIP();
-      int prefixLength = fromLine.getSourceWildcard().inverted().numSubnetBits();
+      int prefixLength = fromLine.getSourceWildcard().inverted()
+            .numSubnetBits();
       long minSubnet = fromLine.getDestinationIP().asLong();
-      long maxSubnet = minSubnet
-            | fromLine.getDestinationWildcard().asLong();
+      long maxSubnet = minSubnet | fromLine.getDestinationWildcard().asLong();
       int minPrefixLength = fromLine.getDestinationIP().numSubnetBits();
       int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
       return new RouteFilterLengthRangeLine(action, prefix, prefixLength,
@@ -936,18 +941,14 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       // check ospf policies
       if (_ospfProcesses.size() > 0) {
          OspfProcess oproc = _ospfProcesses.get(0);
-         currentMapName = oproc.getRedistributeConnectedMap();
-         if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-               maps.add(currentMap);
-            }
-         }
-         currentMapName = oproc.getRedistributeStaticMap();
-         if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-               maps.add(currentMap);
+         for (OspfRedistributionPolicy rp : oproc.getRedistributionPolicies()
+               .values()) {
+            currentMapName = rp.getMap();
+            if (currentMapName != null) {
+               currentMap = _routeMaps.get(currentMapName);
+               if (currentMap != null) {
+                  maps.add(currentMap);
+               }
             }
          }
          currentMapName = oproc.getDefaultInformationOriginateMap();
@@ -960,6 +961,16 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       }
       // check bgp policies
       if (_bgpProcess != null) {
+         for (BgpRedistributionPolicy rp : _bgpProcess
+               .getRedistributionPolicies().values()) {
+            currentMapName = rp.getMap();
+            if (currentMapName != null) {
+               currentMap = _routeMaps.get(currentMapName);
+               if (currentMap != null) {
+                  maps.add(currentMap);
+               }
+            }
+         }
          for (BgpPeerGroup pg : _bgpProcess.getPeerGroups().values()) {
             currentMapName = pg.getInboundRouteMap();
             if (currentMapName != null) {
@@ -1176,13 +1187,12 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       // check ospf policies
       if (_ospfProcesses.size() > 0) {
          OspfProcess oproc = _ospfProcesses.get(0);
-         currentMapName = oproc.getRedistributeConnectedMap();
-         if (containsIpAccessList(eaListName, currentMapName)) {
-            return true;
-         }
-         currentMapName = oproc.getRedistributeStaticMap();
-         if (containsIpAccessList(eaListName, currentMapName)) {
-            return true;
+         for (OspfRedistributionPolicy rp : oproc.getRedistributionPolicies()
+               .values()) {
+            currentMapName = rp.getMap();
+            if (containsIpAccessList(eaListName, currentMapName)) {
+               return true;
+            }
          }
          currentMapName = oproc.getDefaultInformationOriginateMap();
          if (containsIpAccessList(eaListName, currentMapName)) {
@@ -1191,6 +1201,13 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       }
       // check bgp policies
       if (_bgpProcess != null) {
+         for (BgpRedistributionPolicy rp : _bgpProcess
+               .getRedistributionPolicies().values()) {
+            currentMapName = rp.getMap();
+            if (containsIpAccessList(eaListName, currentMapName)) {
+               return true;
+            }
+         }
          for (BgpPeerGroup pg : _bgpProcess.getPeerGroups().values()) {
             currentMapName = pg.getInboundRouteMap();
             if (containsIpAccessList(eaListName, currentMapName)) {
@@ -1200,7 +1217,15 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
             if (containsIpAccessList(eaListName, currentMapName)) {
                return true;
             }
+            currentMapName = pg.getDefaultOriginateMap();
+            if (containsIpAccessList(eaListName, currentMapName)) {
+               return true;
+            }
          }
+         /*
+          * currentMapName = _bgpProcess.getDefaultInformationOriginateMap(); if
+          * (containsIpAccessList(eaListName, currentMapName)) { return true; }
+          */
       }
       return false;
    }

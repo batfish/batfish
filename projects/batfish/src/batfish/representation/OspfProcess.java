@@ -8,7 +8,7 @@ import java.util.Set;
 import batfish.util.Util;
 
 public class OspfProcess {
-   private HashMap<Integer, OspfArea> _areas;
+   private Map<Long, OspfArea> _areas;
    private Set<GeneratedRoute> _generatedRoutes;
    private Set<PolicyMap> _outboundPolicyMaps;
    private Double _referenceBandwidth;
@@ -19,10 +19,10 @@ public class OspfProcess {
       _outboundPolicyMaps = new LinkedHashSet<PolicyMap>();
       _referenceBandwidth = null;
       _routerId = null;
-      _areas = new HashMap<Integer, OspfArea>();
+      _areas = new HashMap<Long, OspfArea>();
    }
 
-   public HashMap<Integer, OspfArea> getAreas() {
+   public Map<Long, OspfArea> getAreas() {
       return _areas;
    }
 
@@ -70,7 +70,7 @@ public class OspfProcess {
 	   }
 
 	   //ARICHECK: ok to not print the key of this map?
-	   for (Map.Entry<Integer, OspfArea> entry : _areas.entrySet()) {
+	   for (Map.Entry<Long, OspfArea> entry : _areas.entrySet()) {
 		   retString += "\n" + entry.getValue().getIFString(indentLevel+1);
 	   }
 	   

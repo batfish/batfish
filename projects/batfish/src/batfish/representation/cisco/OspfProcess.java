@@ -1,24 +1,26 @@
 package batfish.representation.cisco;
 
-import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
-import batfish.grammar.cisco.ospf.OSPFWildcardNetwork;
+import batfish.grammar.cisco.ospf.OspfWildcardNetwork;
 import batfish.representation.Ip;
 import batfish.representation.OspfMetricType;
-import batfish.util.Util;
+import batfish.representation.Protocol;
 
 public class OspfProcess {
    private static final int DEFAULT_DEFAULT_INFORMATION_METRIC = 1;
    private static final OspfMetricType DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE = OspfMetricType.E2;
-   private static final int DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 20;
-   private static final int DEFAULT_REDISTRIBUTE_STATIC_METRIC = 20;
-   private static final double DEFAULT_REFERENCE_BANDWIDTH = 1E9; // bits per
-                                                                  // second
+
+   /**
+    * bits per second
+    */
+   private static final double DEFAULT_REFERENCE_BANDWIDTH = 1E9;
 
    private int _defaultInformationMetric;
    private OspfMetricType _defaultInformationMetricType;
@@ -27,26 +29,19 @@ public class OspfProcess {
    private String _defaultInformationOriginateMap;
    private Set<String> _interfaceBlacklist;
    private Set<String> _interfaceWhitelist;
-   private ArrayList<OspfNetwork> _networks;
+   private Set<OspfNetwork> _networks;
    private Map<Integer, Boolean> _nssas;
    private boolean _passiveInterfaceDefault;
    private int _pid;
-   private boolean _redistributeConnected;
-   private String _redistributeConnectedMap;
-   private int _redistributeConnectedMetric;
-   private boolean _redistributeConnectedSubnets;
-   private boolean _redistributeStatic;
-   private String _redistributeStaticMap;
-   private int _redistributeStaticMetric;
-   private boolean _redistributeStaticSubnets;
+   private Map<Protocol, OspfRedistributionPolicy> _redistributionPolicies;
    private double _referenceBandwidth;
    private Ip _routerId;
-   private List<OSPFWildcardNetwork> _wildcardNetworks;
+   private Set<OspfWildcardNetwork> _wildcardNetworks;
 
    public OspfProcess(int procnum) {
       _pid = procnum;
       _referenceBandwidth = DEFAULT_REFERENCE_BANDWIDTH;
-      _networks = new ArrayList<OspfNetwork>();
+      _networks = new TreeSet<OspfNetwork>();
       _defaultInformationOriginate = false;
       _defaultInformationOriginateAlways = false;
       _defaultInformationOriginateMap = null;
@@ -56,9 +51,9 @@ public class OspfProcess {
       _nssas = new HashMap<Integer, Boolean>();
       _interfaceBlacklist = new HashSet<String>();
       _interfaceWhitelist = new HashSet<String>();
-      _redistributeConnectedMetric = DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
-      _redistributeStaticMetric = DEFAULT_REDISTRIBUTE_STATIC_METRIC;
-      _wildcardNetworks = new ArrayList<OSPFWildcardNetwork>();
+      _wildcardNetworks = new TreeSet<OspfWildcardNetwork>();
+      _redistributionPolicies = new EnumMap<Protocol, OspfRedistributionPolicy>(
+            Protocol.class);
    }
 
    public void computeNetworks(List<Interface> interfaces) {
@@ -73,18 +68,17 @@ public class OspfProcess {
          if (intIp == null) {
             continue;
          }
-         for (OSPFWildcardNetwork wn : _wildcardNetworks) {
-            long intIpAsLong = intIp.asLong();
-            long intSubnet = i.getSubnetMask().asLong();
-            long wildcardNet = Util.ipToLong(wn.getNetworkAddress());
-            long wildcard = Util.ipToLong(wn.getWildcard());
-            long maskedIntIp = intIpAsLong & ~wildcard;
-            long maskedWildcardNet = wildcardNet & ~wildcard;
-            if (maskedIntIp == maskedWildcardNet) {
-               long intNetwork = intIpAsLong & intSubnet;
-               Ip intNetworkIp = new Ip(intNetwork);
-               _networks.add(new OspfNetwork(intNetworkIp, i.getSubnetMask(),
-                     wn.getArea()));
+         for (OspfWildcardNetwork wn : _wildcardNetworks) {
+            Ip wildcardAsMask = wn.getWildcard().inverted();
+            Ip intWildcardNetwork = intIp.getNetworkAddress(wildcardAsMask);
+            Ip wildcardNetwork = wn.getNetworkAddress();
+            Ip maskedWildcardNetwork = wildcardNetwork
+                  .getNetworkAddress(wildcardAsMask);
+            if (maskedWildcardNetwork == intWildcardNetwork) {
+               Ip intSubnetMask = i.getSubnetMask();
+               Ip intNetwork = intIp.getNetworkAddress(intSubnetMask);
+               _networks.add(new OspfNetwork(intNetwork, intSubnetMask, wn
+                     .getArea()));
                break;
             }
          }
@@ -119,7 +113,7 @@ public class OspfProcess {
       return _interfaceWhitelist;
    }
 
-   public List<OspfNetwork> getNetworks() {
+   public Set<OspfNetwork> getNetworks() {
       return _networks;
    }
 
@@ -131,36 +125,8 @@ public class OspfProcess {
       return _pid;
    }
 
-   public boolean getRedistributeConnected() {
-      return _redistributeConnected;
-   }
-
-   public String getRedistributeConnectedMap() {
-      return _redistributeConnectedMap;
-   }
-
-   public int getRedistributeConnectedMetric() {
-      return _redistributeConnectedMetric;
-   }
-
-   public boolean getRedistributeConnectedSubnets() {
-      return _redistributeConnectedSubnets;
-   }
-
-   public boolean getRedistributeStatic() {
-      return _redistributeStatic;
-   }
-
-   public String getRedistributeStaticMap() {
-      return _redistributeStaticMap;
-   }
-
-   public int getRedistributeStaticMetric() {
-      return _redistributeStaticMetric;
-   }
-
-   public boolean getRedistributeStaticSubnets() {
-      return _redistributeStaticSubnets;
+   public Map<Protocol, OspfRedistributionPolicy> getRedistributionPolicies() {
+      return _redistributionPolicies;
    }
 
    public double getReferenceBandwidth() {
@@ -171,7 +137,7 @@ public class OspfProcess {
       return _routerId;
    }
 
-   public List<OSPFWildcardNetwork> getWildcardNetworks() {
+   public Set<OspfWildcardNetwork> getWildcardNetworks() {
       return _wildcardNetworks;
    }
 
@@ -197,34 +163,6 @@ public class OspfProcess {
 
    public void setPassiveInterfaceDefault(boolean b) {
       _passiveInterfaceDefault = b;
-   }
-
-   public void setRedistributeConnected(boolean b) {
-      _redistributeConnected = b;
-   }
-
-   public void setRedistributeConnectedMetric(int metric) {
-      _redistributeConnectedMetric = metric;
-   }
-
-   public void setRedistributeConnectedSubnets(boolean b) {
-      _redistributeConnectedSubnets = b;
-   }
-
-   public void setRedistributeStatic(boolean b) {
-      _redistributeStatic = b;
-   }
-
-   public void setRedistributeStaticMap(String name) {
-      _redistributeStaticMap = name;
-   }
-
-   public void setRedistributeStaticMetric(int cost) {
-      _redistributeStaticMetric = cost;
-   }
-
-   public void setRedistributeStaticSubnets(boolean b) {
-      _redistributeStaticSubnets = b;
    }
 
    public void setReferenceBandwidth(double referenceBandwidth) {

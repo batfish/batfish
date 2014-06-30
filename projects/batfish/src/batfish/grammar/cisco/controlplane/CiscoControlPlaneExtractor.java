@@ -10,15 +10,18 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import batfish.grammar.cisco.CiscoGrammar.*;
+import batfish.grammar.cisco.ospf.OspfWildcardNetwork;
 import batfish.grammar.cisco.*;
 import batfish.grammar.cisco.CiscoGrammar.Interface_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Port_specifierContext;
 import batfish.representation.Ip;
 import batfish.representation.LineAction;
 import batfish.representation.OspfMetricType;
+import batfish.representation.Protocol;
 import batfish.representation.cisco.BgpNetwork;
 import batfish.representation.cisco.BgpPeerGroup;
 import batfish.representation.cisco.BgpProcess;
+import batfish.representation.cisco.BgpRedistributionPolicy;
 import batfish.representation.cisco.CiscoConfiguration;
 import batfish.representation.cisco.ExpandedCommunityList;
 import batfish.representation.cisco.ExpandedCommunityListLine;
@@ -28,6 +31,7 @@ import batfish.representation.cisco.Interface;
 import batfish.representation.cisco.IpAsPathAccessList;
 import batfish.representation.cisco.IpAsPathAccessListLine;
 import batfish.representation.cisco.OspfProcess;
+import batfish.representation.cisco.OspfRedistributionPolicy;
 import batfish.representation.cisco.PrefixList;
 import batfish.representation.cisco.PrefixListLine;
 import batfish.representation.cisco.RouteMap;
@@ -44,12 +48,6 @@ import batfish.util.SubRange;
 
 public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
 
-   private static final double LOOPBACK_BANDWIDTH = 1E12; // dirty hack: just
-                                                          // chose a very large
-                                                          // number
-   private static final double TEN_GIGABIT_ETHERNET_BANDWIDTH = 10E9;
-   private static final double GIGABIT_ETHERNET_BANDWIDTH = 1E9;
-   private static final double FAST_ETHERNET_BANDWIDTH = 100E6;
    private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
    private CiscoConfiguration _configuration;
    private Interface _currentInterface;
@@ -62,29 +60,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    private PrefixList _currentPrefixList;
    private RouteMap _currentRouteMap;
    private RouteMapClause _currentRouteMapClause;
-
-   private static double getDefaultBandwidth(String name) {
-      Double bandwidth = null;
-      if (name.startsWith("FastEthernet")) {
-         bandwidth = FAST_ETHERNET_BANDWIDTH;
-      }
-      else if (name.startsWith("GigabitEthernet")) {
-         bandwidth = GIGABIT_ETHERNET_BANDWIDTH;
-      }
-      else if (name.startsWith("TenGigabitEthernet")) {
-         bandwidth = TEN_GIGABIT_ETHERNET_BANDWIDTH;
-      }
-      else if (name.startsWith("Vlan")) {
-         bandwidth = null;
-      }
-      else if (name.startsWith("Loopback")) {
-         bandwidth = LOOPBACK_BANDWIDTH;
-      }
-      if (bandwidth == null) {
-         bandwidth = 1.0;
-      }
-      return bandwidth;
-   }
 
    public String getText() {
       return _text;
@@ -120,6 +95,14 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
 
    public static int toInteger(IntegerContext ctx) {
       return Integer.parseInt(ctx.getText());
+   }
+
+   public static long toLong(Token t) {
+      return Long.parseLong(t.getText());
+   }
+
+   public static long toLong(TerminalNode t) {
+      return Long.parseLong(t.getText());
    }
 
    public static Ip toIp(Token t) {
@@ -271,42 +254,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    }
 
    @Override
-   public void exitAddress_family_rb_stanza(Address_family_rb_stanzaContext ctx) {
-      /*
-       * BgpProcess bgpProcess = _configuration.getBgpProcess();
-       * 
-       * p.setDefaultMetric(_addressFamily.getDefaultMetric());
-       * p.addNetworks(_addressFamily.getNetworks());
-       * p.addActivatedNeighbors(_addressFamily.getNeighbors());
-       * p.addPeerGroupRouteReflectorClients(_addressFamily.getRRCPeerGroups());
-       * p.addSendCommunityPeerGroups(_addressFamily.getSCPeerGroups());
-       * p.addPeerGroupInboundRouteMaps(_addressFamily.getInboundRouteMaps());
-       * p.addPeerGroupOutboundRouteMaps(_addressFamily.getOutboundRouteMaps());
-       * p.addDefaultOriginateNeighbors(_addressFamily
-       * .getDefaultOriginateNeighbors());
-       * p.getAggregateNetworks().putAll(_addressFamily.getAggregateNetworks());
-       * p.setRedistributeStatic(_addressFamily.getRedistributeStatic());
-       * p.setRedistributeStaticMap(_addressFamily.getRedistributeStaticMap());
-       * p
-       * .addPeerGroupInboundPrefixLists(_addressFamily.getInboundPrefixLists())
-       * ; p.addPeerGroupMembership(_addressFamily.getPeerGroupMembership());
-       */
-   }
-
-   @Override
-   public void exitAggregate_address_af_stanza(
-         Aggregate_address_af_stanzaContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
-      Ip network = toIp(ctx.network);
-      Ip subnet = toIp(ctx.subnet);
-      BgpNetwork net = new BgpNetwork(network, subnet);
-      boolean summaryOnly = ctx.SUMMARY_ONLY() != null;
-      proc.getAggregateNetworks().put(net, summaryOnly);
-   }
-
-   @Override
-   public void exitAggregate_address_rb_stanza(
-         Aggregate_address_rb_stanzaContext ctx) {
+   public void exitAggregate_address_tail_bgp(
+         Aggregate_address_tail_bgpContext ctx) {
       BgpProcess proc = _configuration.getBgpProcess();
       Ip network = toIp(ctx.network);
       Ip subnet = toIp(ctx.subnet);
@@ -362,17 +311,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    }
 
    @Override
-   public void exitDefault_metric_af_stanza(Default_metric_af_stanzaContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
+   public void exitDefault_metric_tail_bgp(Default_metric_tail_bgpContext ctx) {
       int metric = toInteger(ctx.metric);
-      proc.setDefaultMetric(metric);
-   }
-
-   @Override
-   public void exitDefault_metric_rb_stanza(Default_metric_rb_stanzaContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
-      int metric = toInteger(ctx.metric);
-      proc.setDefaultMetric(metric);
+      _configuration.getBgpProcess().setDefaultMetric(metric);
    }
 
    @Override
@@ -452,7 +393,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    @Override
    public void enterInterface_stanza(Interface_stanzaContext ctx) {
       String name = ctx.iname.getText();
-      double bandwidth = getDefaultBandwidth(name);
+      double bandwidth = Interface.getDefaultBandwidth(name);
       Interface newInterface = new Interface(name);
       newInterface.setContext(ctx);
       newInterface.setBandwidth(bandwidth);
@@ -726,8 +667,10 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    @Override
    public void exitMaximum_paths_ro_stanza(Maximum_paths_ro_stanzaContext ctx) {
       // TODO Implement
-      // Note that this is very difficult to enforce,
-      // and may not help the analysis without major changes
+      /*
+       * Note that this is very difficult to enforce, and may not help the
+       * analysis without major changes
+       */
    }
 
    @Override
@@ -752,29 +695,14 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    }
 
    @Override
-   public void exitNeighbor_ip_route_reflector_client_af_stanza(
-         Neighbor_ip_route_reflector_client_af_stanzaContext ctx) {
-      String pgName = ctx.neighbor.getText();
-      _configuration.getBgpProcess().addPeerGroupRouteReflectorClient(pgName);
-   }
-
-   @Override
    public void exitNeighbor_next_hop_self_rb_stanza(
          Neighbor_next_hop_self_rb_stanzaContext ctx) {
       // TODO implement
    }
 
    @Override
-   public void exitNeighbor_peer_group_assignment_af_stanza(
-         Neighbor_peer_group_assignment_af_stanzaContext ctx) {
-      Ip address = toIp(ctx.address);
-      String peerGroupName = ctx.name.getText();
-      _configuration.getBgpProcess().addPeerGroupMember(address, peerGroupName);
-   }
-
-   @Override
-   public void exitNeighbor_peer_group_assignment_rb_stanza(
-         Neighbor_peer_group_assignment_rb_stanzaContext ctx) {
+   public void exitNeighbor_peer_group_assignment_tail_bgp(
+         Neighbor_peer_group_assignment_tail_bgpContext ctx) {
       Ip address = toIp(ctx.address);
       String peerGroupName = ctx.name.getText();
       _configuration.getBgpProcess().addPeerGroupMember(address, peerGroupName);
@@ -791,30 +719,13 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    }
 
    @Override
-   public void exitNeighbor_pg_prefix_list_rb_stanza(
-         Neighbor_pg_prefix_list_rb_stanzaContext ctx) {
-      String neighbor = ctx.neighbor.getText();
-      String listName = ctx.list_name.getText();
-      BgpProcess proc = _configuration.getBgpProcess();
-      if (ctx.IN() != null) {
-         proc.addPeerGroupInboundPrefixList(neighbor, listName);
-      }
-      else if (ctx.OUT() != null) {
-         proc.addPeerGroupOutboundPrefixList(neighbor, listName);         
-      }
-      else {
-         throw new Error("bad direction");
-      }
-   }
-
-   @Override
-   public void exitNeighbor_pg_remote_as_rb_stanza(
-         Neighbor_pg_remote_as_rb_stanzaContext ctx) {
+   public void exitNeighbor_remote_as_rb_stanza(
+         Neighbor_remote_as_rb_stanzaContext ctx) {
       BgpProcess proc = _configuration.getBgpProcess();
       int as = toInteger(ctx.as);
       Ip pgIp = null;
       String peerGroupName;
-      boolean ip = ctx.pg_ip != null; 
+      boolean ip = ctx.pg_ip != null;
       if (ip) {
          pgIp = toIp(ctx.pg_ip);
          peerGroupName = pgIp.toString();
@@ -840,16 +751,16 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    }
 
    @Override
-   public void exitNeighbor_pg_route_map_rb_stanza(
-         Neighbor_pg_route_map_rb_stanzaContext ctx) {
-      String peerGroup = ctx.pg.getText();
-      String mapName = ctx.name.getText();
+   public void exitNeighbor_prefix_list_tail_bgp(
+         Neighbor_prefix_list_tail_bgpContext ctx) {
+      String neighbor = ctx.neighbor.getText();
+      String listName = ctx.list_name.getText();
       BgpProcess proc = _configuration.getBgpProcess();
       if (ctx.IN() != null) {
-         proc.addPeerGroupInboundRouteMap(peerGroup, mapName);
+         proc.addPeerGroupInboundPrefixList(neighbor, listName);
       }
       else if (ctx.OUT() != null) {
-         proc.addPeerGroupOutboundRouteMap(peerGroup, mapName);         
+         proc.addPeerGroupOutboundPrefixList(neighbor, listName);
       }
       else {
          throw new Error("bad direction");
@@ -857,217 +768,271 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    }
 
    @Override
-   public void exitNeighbor_pg_route_reflector_client_af_stanza(
-         Neighbor_pg_route_reflector_client_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNeighbor_prefix_list_af_stanza(
-         Neighbor_prefix_list_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
    public void exitNeighbor_remove_private_as_af_stanza(
          Neighbor_remove_private_as_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      // TODO implement
    }
 
    @Override
-   public void exitNeighbor_route_map_af_stanza(
-         Neighbor_route_map_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+   public void exitNeighbor_route_map_tail_bgp(
+         Neighbor_route_map_tail_bgpContext ctx) {
+      String peerGroup = ctx.pg.getText();
+      String mapName = ctx.name.getText();
+      BgpProcess proc = _configuration.getBgpProcess();
+      if (ctx.IN() != null) {
+         proc.addPeerGroupInboundRouteMap(peerGroup, mapName);
+      }
+      else if (ctx.OUT() != null) {
+         proc.addPeerGroupOutboundRouteMap(peerGroup, mapName);
+      }
+      else {
+         throw new Error("bad direction");
+      }
    }
 
    @Override
    public void exitNeighbor_route_reflector_client_af_stanza(
          Neighbor_route_reflector_client_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      String pgName = ctx.pg.getText();
+      BgpProcess proc = _configuration.getBgpProcess();
+      proc.addPeerGroupRouteReflectorClient(pgName);
    }
 
    @Override
-   public void exitNeighbor_send_community_af_stanza(
-         Neighbor_send_community_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNeighbor_send_community_rb_stanza(
-         Neighbor_send_community_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+   public void exitNeighbor_send_community_tail_bgp(
+         Neighbor_send_community_tail_bgpContext ctx) {
+      String pgName = ctx.neighbor.getText();
+      _configuration.getBgpProcess().addSendCommunityPeerGroup(pgName);
    }
 
    @Override
    public void exitNeighbor_shutdown_rb_stanza(
          Neighbor_shutdown_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      String pgName = ctx.neighbor.getText();
+      _configuration.getBgpProcess().addShutDownNeighbor(pgName);
    }
 
    @Override
    public void exitNeighbor_update_source_rb_stanza(
          Neighbor_update_source_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      String pgName = ctx.neighbor.getText();
+      String source = ctx.source.getText();
+      _configuration.getBgpProcess().setPeerGroupUpdateSource(pgName, source);
    }
 
    @Override
-   public void exitNetwork_af_stanza(Network_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNetwork_rb_stanza(Network_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+   public void exitNetwork_tail_bgp(Network_tail_bgpContext ctx) {
+      Ip prefix = toIp(ctx.ip);
+      Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : prefix.getClassMask();
+      BgpNetwork network = new BgpNetwork(prefix, mask);
+      _configuration.getBgpProcess().getNetworks().add(network);
    }
 
    @Override
    public void exitNetwork_ro_stanza(Network_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitNo_ip_address_if_stanza(No_ip_address_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      Ip prefix = toIp(ctx.ip);
+      Ip wildcard = toIp(ctx.wildcard);
+      long area;
+      if (ctx.area_int != null) {
+         area = toLong(ctx.area_int);
+      }
+      else if (ctx.area_ip != null) {
+         area = toIp(ctx.area_ip).asLong();
+      }
+      else {
+         throw new Error("bad area");
+      }
+      OspfWildcardNetwork network = new OspfWildcardNetwork(prefix, wildcard,
+            area);
+      _configuration.getOspfProcess().getWildcardNetworks().add(network);
    }
 
    @Override
    public void exitNo_neighbor_activate_af_stanza(
          No_neighbor_activate_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      BgpProcess proc = _configuration.getBgpProcess();
+      Ip ip = toIp(ctx.ip);
+      proc.getActivatedNeighbors().remove(ip);
    }
 
    @Override
    public void exitPassive_interface_default_ro_stanza(
          Passive_interface_default_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitPassive_interface_ipv6_ro_stanza(
-         Passive_interface_ipv6_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      _configuration.getOspfProcess().setPassiveInterfaceDefault(true);
    }
 
    @Override
    public void exitPassive_interface_ro_stanza(
          Passive_interface_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitPort(PortContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitPort_specifier(Port_specifierContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitProtocol(ProtocolContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitRange(RangeContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitRb_stanza(Rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      boolean passive = ctx.NO() == null;
+      String iname = ctx.i.toString();
+      OspfProcess proc = _configuration.getOspfProcess();
+      if (passive) {
+         proc.getInterfaceBlacklist().add(iname);
+      }
+      else {
+         proc.getInterfaceWhitelist().add(iname);
+      }
    }
 
    @Override
    public void exitRedistribute_bgp_ro_stanza(
          Redistribute_bgp_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      OspfProcess proc = _configuration.getOspfProcess();
+      Protocol sourceProtocol = Protocol.BGP;
+      OspfRedistributionPolicy r = new OspfRedistributionPolicy(
+            sourceProtocol);
+      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      int as = toInteger(ctx.as);
+      r.getSpecialAttributes().put(OspfRedistributionPolicy.BGP_AS, as);
+      if (ctx.metric != null) {
+         int metric = toInteger(ctx.metric);
+         r.setMetric(metric);
+      }
+      else {
+         // TODO find default redistribution metric for bgp => ospf
+      }
+      if (ctx.map != null) {
+         String map = ctx.map.getText();
+         r.setMap(map);
+      }
+      if (ctx.type != null) {
+         int typeInt = toInteger(ctx.type);
+         OspfMetricType type = OspfMetricType.fromInteger(typeInt);
+         r.setOspfMetricType(type);
+      }
+      else {
+         r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
+      }
+      if (ctx.tag != null) {
+         long tag = toLong(ctx.tag);
+         r.setTag(tag);
+      }
+      r.setSubnets(ctx.subnets != null);
    }
 
    @Override
-   public void exitRedistribute_connected_af_stanza(
-         Redistribute_connected_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitRedistribute_connected_rb_stanza(
-         Redistribute_connected_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+   public void exitRedistribute_connected_tail_bgp(
+         Redistribute_connected_tail_bgpContext ctx) {
+      BgpProcess proc = _configuration.getBgpProcess();
+      Protocol sourceProtocol = Protocol.CONNECTED;
+      BgpRedistributionPolicy r = new BgpRedistributionPolicy(
+            sourceProtocol);
+      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      if (ctx.metric != null) {
+         int metric = toInteger(ctx.metric);
+         r.setMetric(metric);
+      }
+      if (ctx.map != null) {
+         String map = ctx.map.getText();
+         r.setMap(map);
+      }
    }
 
    @Override
    public void exitRedistribute_connected_ro_stanza(
          Redistribute_connected_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      OspfProcess proc = _configuration.getOspfProcess();
+      Protocol sourceProtocol = Protocol.CONNECTED;
+      OspfRedistributionPolicy r = new OspfRedistributionPolicy(
+            sourceProtocol);
+      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      if (ctx.metric != null) {
+         int metric = toInteger(ctx.metric);
+         r.setMetric(metric);
+      }
+      else {
+         r.setMetric(OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC);
+      }
+      if (ctx.map != null) {
+         String map = ctx.map.getText();
+         r.setMap(map);
+      }
+      if (ctx.type != null) {
+         int typeInt = toInteger(ctx.type);
+         OspfMetricType type = OspfMetricType.fromInteger(typeInt);
+         r.setOspfMetricType(type);
+      }
+      else {
+         r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
+      }
+      if (ctx.tag != null) {
+         long tag = toLong(ctx.tag);
+         r.setTag(tag);
+      }
+      r.setSubnets(ctx.subnets != null);
    }
 
    @Override
-   public void exitRedistribute_ipv6_ro_stanza(
-         Redistribute_ipv6_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+   public void exitRedistribute_ospf_tail_bgp(
+         Redistribute_ospf_tail_bgpContext ctx) {
+      BgpProcess proc = _configuration.getBgpProcess();
+      Protocol sourceProtocol = Protocol.OSPF;
+      BgpRedistributionPolicy r = new BgpRedistributionPolicy(
+            sourceProtocol);
+      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      if (ctx.metric != null) {
+         int metric = toInteger(ctx.metric);
+         r.setMetric(metric);
+      }
+      if (ctx.map != null) {
+         String map = ctx.map.getText();
+         r.setMap(map);
+      }
+      int procNum = toInteger(ctx.procnum);
+      r.getSpecialAttributes().put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
    }
 
    @Override
-   public void exitRedistribute_ospf_rb_stanza(
-         Redistribute_ospf_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitRedistribute_static_af_stanza(
-         Redistribute_static_af_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitRedistribute_static_rb_stanza(
-         Redistribute_static_rb_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+   public void exitRedistribute_static_tail_bgp(
+         Redistribute_static_tail_bgpContext ctx) {
+      BgpProcess proc = _configuration.getBgpProcess();
+      Protocol sourceProtocol = Protocol.STATIC;
+      BgpRedistributionPolicy r = new BgpRedistributionPolicy(
+            sourceProtocol);
+      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      if (ctx.metric != null) {
+         int metric = toInteger(ctx.metric);
+         r.setMetric(metric);
+      }
+      if (ctx.map != null) {
+         String map = ctx.map.getText();
+         r.setMap(map);
+      }
    }
 
    @Override
    public void exitRedistribute_static_ro_stanza(
          Redistribute_static_ro_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitRm_stanza(Rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      OspfProcess proc = _configuration.getOspfProcess();
+      Protocol sourceProtocol = Protocol.STATIC;
+      OspfRedistributionPolicy r = new OspfRedistributionPolicy(
+            sourceProtocol);
+      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      if (ctx.metric != null) {
+         int metric = toInteger(ctx.metric);
+         r.setMetric(metric);
+      }
+      else {
+         r.setMetric(OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC);
+      }
+      if (ctx.map != null) {
+         String map = ctx.map.getText();
+         r.setMap(map);
+      }
+      if (ctx.type != null) {
+         int typeInt = toInteger(ctx.type);
+         OspfMetricType type = OspfMetricType.fromInteger(typeInt);
+         r.setOspfMetricType(type);
+      }
+      else {
+         r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
+      }
+      if (ctx.tag != null) {
+         long tag = toLong(ctx.tag);
+         r.setTag(tag);
+      }
+      r.setSubnets(ctx.subnets != null);
    }
 
    @Override

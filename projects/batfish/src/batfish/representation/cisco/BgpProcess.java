@@ -1,5 +1,6 @@
 package batfish.representation.cisco;
 
+import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -7,6 +8,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 import batfish.representation.Ip;
+import batfish.representation.Protocol;
 
 public class BgpProcess {
 
@@ -18,8 +20,7 @@ public class BgpProcess {
    private Set<BgpNetwork> _networks;
    private Map<String, BgpPeerGroup> _peerGroups;
    private int _pid;
-   private boolean _redistributeStatic;
-   private String _redistributeStaticMap;
+   private Map<Protocol, BgpRedistributionPolicy> _redistributionPolicies;
    private Ip _routerId;
    private Set<String> _shutdownNeighbors;
 
@@ -32,6 +33,7 @@ public class BgpProcess {
       _aggregateNetworks = new HashMap<BgpNetwork, Boolean>();
       _shutdownNeighbors = new LinkedHashSet<String>();
       _clusterId = null;
+      _redistributionPolicies = new EnumMap<Protocol, BgpRedistributionPolicy>(Protocol.class);
    }
 
    public void addActivatedNeighbor(Ip address) {
@@ -39,12 +41,7 @@ public class BgpProcess {
          _activatedNeighbors.add(address);
       }
    }
-
-   public void addActivatedNeighbors(List<Ip> addresses) {
-      addresses.removeAll(_shutdownNeighbors);
-      _activatedNeighbors.addAll(addresses);
-   }
-
+   
    public void addDefaultOriginateNeighbor(String neighbor, String routeMapName) {
       BgpPeerGroup pg = _peerGroups.get(neighbor);
       pg.setDefaultOriginate(true);
@@ -57,14 +54,6 @@ public class BgpProcess {
          String routeMapName = defaultOriginateNeighbors.get(neighbor);
          addDefaultOriginateNeighbor(neighbor, routeMapName);
       }
-   }
-
-   public void addNetwork(BgpNetwork network) {
-      _networks.add(network);
-   }
-
-   public void addNetworks(List<BgpNetwork> networks) {
-      _networks.addAll(networks);
    }
 
    public void addPeerGroup(BgpPeerGroup peerGroup) {
@@ -114,6 +103,17 @@ public class BgpProcess {
       }
    }
 
+   public void addPeerGroupOutboundPrefixList(String peerGroupName, String listName) {
+      BgpPeerGroup pg = _peerGroups.get(peerGroupName);
+      if (pg != null) {
+         pg.setOutboundPrefixList(listName);
+      }
+      else {
+         throw new Error("Peer group: \"" + peerGroupName
+               + "\" does not exist!");
+      }
+   }
+
    public void addPeerGroupOutboundRouteMap(String peerGroupName, String mapName) {
       BgpPeerGroup pg = _peerGroups.get(peerGroupName);
       if (pg != null) {
@@ -142,8 +142,7 @@ public class BgpProcess {
       }
    }
 
-   public void addSendCommunityPeerGroups(List<String> sendCommunityPeerGroups) {
-      for (String peerGroupName : sendCommunityPeerGroups) {
+   public void addSendCommunityPeerGroup(String peerGroupName) {
          BgpPeerGroup pg = _peerGroups.get(peerGroupName);
          if (pg != null) {
             pg.setSendCommunity(true);
@@ -152,11 +151,10 @@ public class BgpProcess {
             throw new Error("Peer group: \"" + peerGroupName
                   + "\" does not exist!");
          }
-      }
    }
 
-   public void addShutDownNeighbor(String address) {
-      _shutdownNeighbors.add(address);
+   public void addShutDownNeighbor(String peerGroupName) {
+      _shutdownNeighbors.add(peerGroupName);
    }
 
    public Set<Ip> getActivatedNeighbors() {
@@ -195,12 +193,8 @@ public class BgpProcess {
       return _pid;
    }
 
-   public boolean getRedistributeStatic() {
-      return _redistributeStatic;
-   }
-
-   public String getRedistributeStaticMap() {
-      return _redistributeStaticMap;
+   public Map<Protocol, BgpRedistributionPolicy> getRedistributionPolicies() {
+      return _redistributionPolicies;
    }
 
    public Ip getRouterId() {
@@ -215,37 +209,18 @@ public class BgpProcess {
       _defaultMetric = defaultMetric;
    }
 
-   public void setPeerGroupUpdateSource(String address, String source) {
-      BgpPeerGroup pg = _peerGroups.get(address);
+   public void setPeerGroupUpdateSource(String peerGroupName, String source) {
+      BgpPeerGroup pg = _peerGroups.get(peerGroupName);
       if (pg != null) {
          pg.setUpdateSource(source);
       }
       else {
-         throw new Error("Peer group: \"" + address + "\" does not exist!");
+         throw new Error("Peer group: \"" + peerGroupName + "\" does not exist!");
       }
-   }
-
-   public void setRedistributeStatic(boolean redistributeStatic) {
-      _redistributeStatic = redistributeStatic;
-   }
-
-   public void setRedistributeStaticMap(String redistributeStaticMap) {
-      _redistributeStaticMap = redistributeStaticMap;
    }
 
    public void setRouterId(Ip routerId) {
       _routerId = routerId;
-   }
-
-   public void addPeerGroupOutboundPrefixList(String peerGroupName, String listName) {
-      BgpPeerGroup pg = _peerGroups.get(peerGroupName);
-      if (pg != null) {
-         pg.setOutboundPrefixList(listName);
-      }
-      else {
-         throw new Error("Peer group: \"" + peerGroupName
-               + "\" does not exist!");
-      }
    }
 
 }

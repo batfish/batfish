@@ -19,22 +19,6 @@ public class NetworkRBStanza implements RBStanza {
 //      _network = new BgpNetwork(_ip, _mask);
    }
 
-   public String getClassMask(String ip) {
-      String firstOctetStr = ip.substring(0, ip.indexOf("."));
-      int firstOctet = Integer.parseInt(firstOctetStr);
-      if (firstOctet <= 126) {
-         return "255.0.0.0";
-      }
-      else if (firstOctet >= 128 && firstOctet <= 191) {
-         return "255.255.0.0";
-      }
-      else if (firstOctet >= 192 && firstOctet <= 223) {
-         return "255.255.255.0";
-      }
-      else {
-         return null;
-      }
-   }
 
    @Override
    public void process(BgpProcess p) {
