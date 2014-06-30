@@ -17,7 +17,14 @@ if_stanza
 	| no_ip_address_if_stanza
 	| null_if_stanza
 	| shutdown_if_stanza
-	| switchport_if_stanza
+	| switchport_access_if_stanza
+	| switchport_trunk_native_if_stanza
+	| switchport_trunk_encapsulation_if_stanza
+	| switchport_trunk_allowed_if_stanza
+	| switchport_mode_access_stanza
+	| switchport_mode_dynamic_auto_stanza
+	| switchport_mode_dynamic_desirable_stanza
+	| switchport_mode_trunk_stanza
 ;
 
 interface_stanza
@@ -56,17 +63,17 @@ ip_address_secondary_if_stanza
 
 ip_ospf_cost_if_stanza
 :
-	IP OSPF COST cost = integer NEWLINE
+	IP OSPF COST cost = DEC NEWLINE
 ;
 
 ip_ospf_dead_interval_if_stanza
 :
-	IP OSPF DEAD_INTERVAL seconds = integer NEWLINE
+	IP OSPF DEAD_INTERVAL seconds = DEC NEWLINE
 ;
 
 ip_ospf_dead_interval_minimal_if_stanza
 :
-	IP OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = integer NEWLINE
+	IP OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = DEC NEWLINE
 ;
 
 no_ip_address_if_stanza
@@ -222,17 +229,7 @@ shutdown_if_stanza
 
 switchport_access_if_stanza
 :
-	SWITCHPORT ACCESS VLAN i = integer NEWLINE
-;
-
-switchport_if_stanza
-:
-	switchport_access_if_stanza
-	| switchport_trunk_if_stanza
-	| switchport_mode_access_stanza
-	| switchport_mode_dynamic_auto_stanza
-	| switchport_mode_dynamic_desirable_stanza
-	| switchport_mode_trunk_stanza
+	SWITCHPORT ACCESS VLAN vlan = DEC NEWLINE
 ;
 
 switchport_mode_access_stanza
@@ -262,22 +259,10 @@ switchport_trunk_allowed_if_stanza
 
 switchport_trunk_encapsulation_if_stanza
 :
-	SWITCHPORT TRUNK ENCAPSULATION
-	(
-		DOT1Q
-		| ISL
-		| NEGOTIATE
-	) NEWLINE
-;
-
-switchport_trunk_if_stanza
-:
-	switchport_trunk_native_if_stanza
-	| switchport_trunk_encapsulation_if_stanza
-	| switchport_trunk_allowed_if_stanza
+	SWITCHPORT TRUNK ENCAPSULATION e = switchport_trunk_encapsulation NEWLINE
 ;
 
 switchport_trunk_native_if_stanza
 :
-	SWITCHPORT TRUNK NATIVE VLAN i = integer NEWLINE
+	SWITCHPORT TRUNK NATIVE VLAN vlan = DEC NEWLINE
 ;

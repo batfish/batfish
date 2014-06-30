@@ -2,6 +2,7 @@ package batfish.representation.cisco;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import batfish.representation.Configuration;
 import batfish.representation.Ip;
@@ -10,24 +11,22 @@ import batfish.representation.PolicyMapSetNextHopLine;
 
 public class RouteMapSetNextHopLine extends RouteMapSetLine {
 
-   private List<String> _nextHops;
+   private Set<Ip> _nextHops;
 
-   public RouteMapSetNextHopLine(List<String> nextHops) {
+   public RouteMapSetNextHopLine(Set<Ip> nextHops) {
       _nextHops = nextHops;
    }
 
-   public List<String> getNextHops() {
+   public Set<Ip> getNextHops() {
       return _nextHops;
    }
 
    @Override
    public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
-      List<Ip> nextHopsAsIps = new ArrayList<Ip>();
-      for (String nextHop : _nextHops) {
-         nextHopsAsIps.add(new Ip(nextHop));
-      }
-      return new PolicyMapSetNextHopLine(nextHopsAsIps);
-      
+      // TODO: change to set in PolicyMapSetNextHopLine if possible
+      List<Ip> nextHopList = new ArrayList<Ip>();
+      nextHopList.addAll(_nextHops);
+      return new PolicyMapSetNextHopLine(nextHopList);
    }
    
 }

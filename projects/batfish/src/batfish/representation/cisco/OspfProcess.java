@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import batfish.grammar.cisco.ospf.OspfWildcardNetwork;
 import batfish.representation.Ip;
 import batfish.representation.OspfMetricType;
 import batfish.representation.Protocol;

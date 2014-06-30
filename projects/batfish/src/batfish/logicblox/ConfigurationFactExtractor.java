@@ -575,7 +575,6 @@ public class ConfigurationFactExtractor {
             }
 
             // set lines
-            // TODO: complete
             for (PolicyMapSetLine setLine : clause.getSetLines()) {
                switch (setLine.getType()) {
                case ADDITIVE_COMMUNITY:
@@ -592,6 +591,11 @@ public class ConfigurationFactExtractor {
                      wSetPolicyMapClauseSetCommunity.append(mapName + "|" + i
                            + "|" + community + "\n");
                   }
+                  break;
+
+               case COMMUNITY_NONE:
+                  // TODO: implement
+                  // throw new Error("not implemented");
                   break;
 
                case DELETE_COMMUNITY:
@@ -617,6 +621,11 @@ public class ConfigurationFactExtractor {
                   break;
 
                case NEXT_HOP:
+                  // TODO: implement
+                  // throw new Error("not implemented");
+                  break;
+                  
+               case AS_PATH_PREPEND:
                   // TODO: implement
                   // throw new Error("not implemented");
                   break;

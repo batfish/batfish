@@ -1,10 +1,12 @@
 package batfish.representation;
 
 public enum PolicyMapSetType {
-   LOCAL_PREFERENCE,
-   DELETE_COMMUNITY,
-   NEXT_HOP,
-   METRIC,
+   ADDITIVE_COMMUNITY,
+   AS_PATH_PREPEND,
    COMMUNITY,
-   ADDITIVE_COMMUNITY
+   COMMUNITY_NONE,
+   DELETE_COMMUNITY,
+   LOCAL_PREFERENCE,
+   METRIC,
+   NEXT_HOP
 }

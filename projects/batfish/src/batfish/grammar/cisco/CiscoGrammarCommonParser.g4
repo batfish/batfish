@@ -32,12 +32,6 @@ community
 	| com = NO_EXPORT
 ;
 
-integer
-:
-	num = DEC
-	| num = HEX
-;
-
 interface_name
 :
 	name = VARIABLE
@@ -74,7 +68,7 @@ port_specifier
 
 port
 :
-	 DEC
+	DEC
 	| BOOTPC
 	| BOOTPS
 	| BGP
@@ -129,9 +123,15 @@ range
 
 subrange
 :
-	low = integer
+	low = DEC
 	(
-		DASH high = integer
+		DASH high = DEC
 	)?
 ;
 
+switchport_trunk_encapsulation
+:
+	DOT1Q
+	| ISL
+	| NEGOTIATE
+;

@@ -220,7 +220,6 @@
      description="Compile antlr grammars">
       <parallel>
          <antlr3 grammar.name="BatfishTopology.g" grammar.packagedir="batfish/grammar/topology"/>
-         <antlr3 grammar.name="CiscoGrammar.g" grammar.packagedir="batfish/grammar/cisco"/>
          <antlr3 grammar.name="Constraints.g" grammar.packagedir="batfish/grammar/z3"/>
          <antlr3 grammar.name="FlatJuniperGrammar.g" grammar.packagedir="batfish/grammar/juniper"/>
          <antlr3 grammar.name="GNS3Topology.g" grammar.packagedir="batfish/grammar/topology"/>

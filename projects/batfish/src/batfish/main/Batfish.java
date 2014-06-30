@@ -41,8 +41,6 @@ import batfish.grammar.TopologyParser;
 import batfish.grammar.cisco.CiscoGrammar;
 import batfish.grammar.cisco.CiscoGrammar.Cisco_configurationContext;
 import batfish.grammar.cisco.CiscoGrammarCommonLexer;
-import batfish.grammar.cisco.CiscoGrammarLexer;
-import batfish.grammar.cisco.CiscoGrammarParser;
 import batfish.grammar.cisco.controlplane.CiscoControlPlaneExtractor;
 import batfish.grammar.juniper.FlatJuniperGrammarLexer;
 import batfish.grammar.juniper.FlatJuniperGrammarParser;
@@ -612,19 +610,18 @@ public class Batfish {
             currentPathIndex++;
             continue;
          }
+         CiscoControlPlaneExtractor extractor = null;
+         boolean antlr4 = false;
          if (fileText.charAt(0) == '!') {
-            lexer = new CiscoGrammarLexer(in);
-            tokens = new CommonTokenStream(lexer);
-            parser = new CiscoGrammarParser(tokens);
-            
             // antlr 4 stuff
+            antlr4 = true;
             org.antlr.v4.runtime.CharStream stream = new org.antlr.v4.runtime.ANTLRInputStream(fileText);
             CiscoGrammarCommonLexer lexer4 = new CiscoGrammarCommonLexer(stream);
             org.antlr.v4.runtime.CommonTokenStream tokens4 = new org.antlr.v4.runtime.CommonTokenStream(lexer4);
             CiscoGrammar parser4 = new CiscoGrammar(tokens4);
             Cisco_configurationContext tree = parser4.cisco_configuration();
             ParseTreeWalker walker = new ParseTreeWalker();
-            CiscoControlPlaneExtractor extractor = new CiscoControlPlaneExtractor(fileText);
+            extractor = new CiscoControlPlaneExtractor(fileText);
             walker.walk(extractor,  tree);
             assert Boolean.TRUE;
          }
@@ -646,6 +643,7 @@ public class Batfish {
          }
          String currentPath = configFilePaths[currentPathIndex]
                .getAbsolutePath();
+         if (!antlr4) {
          print(2, "Parsing: \"" + currentPath + "\"");
          try {
             vc = parser.parse_configuration();
@@ -674,7 +672,10 @@ public class Batfish {
                continue;
             }
          }
-
+         }
+         else {
+            vc = extractor.getVendorConfiguration();
+         }
          try {
             configurations.add(vc.toVendorIndependentConfiguration());
          }

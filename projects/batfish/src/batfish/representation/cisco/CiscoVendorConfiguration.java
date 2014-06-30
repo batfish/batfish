@@ -3,7 +3,6 @@ package batfish.representation.cisco;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,7 +44,8 @@ import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
 import batfish.util.SubRange;
 
-public class CiscoVendorConfiguration implements VendorConfiguration {
+public class CiscoVendorConfiguration extends CiscoConfiguration implements
+      VendorConfiguration {
 
    private static final String DEFAULT_ROUTE_FILTER_NAME = "~DEFAULT_ROUTE_FILTER~";
    private static final int MAX_ADMINISTRATIVE_COST = 32767;
@@ -265,9 +265,6 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          boolean sendCommunity = pg.getSendCommunity();
          for (Ip neighborAddress : pg.getNeighborAddresses()) {
             if (activeNeighbors.contains(neighborAddress)) {
-               if (neighborAddress.equals("169.232.12.157")) {
-                  System.out.print("");
-               }
                BgpNeighbor newNeighbor = newBgpNeighbors.get(neighborAddress);
                if (newNeighbor == null) {
                   newNeighbor = new BgpNeighbor(neighborAddress);
@@ -555,7 +552,10 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          }
       }
       newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
-      newProcess.setRouterId(proc.getRouterId().toString());
+      Ip routerId = proc.getRouterId();
+      if (routerId != null) {
+         newProcess.setRouterId(routerId.toString());
+      }
       return newProcess;
    }
 
@@ -708,153 +708,10 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
 
    }
 
-   private Map<String, IpAsPathAccessList> _asPathAccessLists;
-   private BgpProcess _bgpProcess;
    private List<String> _conversionWarnings;
-   private Map<String, ExpandedCommunityList> _expandedCommunityLists;
-   private Map<String, ExtendedAccessList> _extendedAccessLists;
-   private String _hostname;
-   private List<Interface> _interfaces;
-   private List<OspfProcess> _ospfProcesses;
-   private Map<String, PrefixList> _prefixLists;
-
-   private Map<String, RouteMap> _routeMaps;
-
-   private Map<String, StandardAccessList> _standardAccessLists;
-
-   private Map<String, StandardCommunityList> _standardCommunityLists;
-
-   private List<StaticRoute> _staticRoutes;
 
    public CiscoVendorConfiguration() {
       _conversionWarnings = new ArrayList<String>();
-      _ospfProcesses = new ArrayList<OspfProcess>();
-      _interfaces = new ArrayList<Interface>();
-      _standardAccessLists = new HashMap<String, StandardAccessList>();
-      _extendedAccessLists = new HashMap<String, ExtendedAccessList>();
-      _asPathAccessLists = new HashMap<String, IpAsPathAccessList>();
-      _staticRoutes = new ArrayList<StaticRoute>();
-      _bgpProcess = null;
-      _routeMaps = new HashMap<String, RouteMap>();
-      _prefixLists = new HashMap<String, PrefixList>();
-      _standardCommunityLists = new HashMap<String, StandardCommunityList>();
-      _expandedCommunityLists = new HashMap<String, ExpandedCommunityList>();
-   }
-
-   public void addAccessListLine(String id, StandardAccessListLine line) {
-      if (!_standardAccessLists.containsKey(id)) {
-         _standardAccessLists.put(id, new StandardAccessList(id));
-      }
-      _standardAccessLists.get(id).addLine(line);
-   }
-
-   public void addAsPathAccessListLine(String name, IpAsPathAccessListLine line) {
-      if (!_asPathAccessLists.containsKey(name)) {
-         _asPathAccessLists.put(name, new IpAsPathAccessList(name));
-      }
-      _asPathAccessLists.get(name).addLine(line);
-   }
-
-   public void addExpandedCommunityListLine(String name,
-         ExpandedCommunityListLine line) {
-      ExpandedCommunityList cl = _expandedCommunityLists.get(name);
-      if (cl == null) {
-         cl = new ExpandedCommunityList(name);
-         _expandedCommunityLists.put(name, cl);
-      }
-      cl.addLine(line);
-   }
-
-   public void addExpandedCommunityLists(List<ExpandedCommunityList> lists) {
-      for (ExpandedCommunityList ecl : lists) {
-         ExpandedCommunityList cl = _expandedCommunityLists.get(ecl.getName());
-         if (cl == null) {
-            _expandedCommunityLists.put(ecl.getName(), ecl);
-         }
-         else {
-            throw new Error("duplicate community lists");
-         }
-
-      }
-   }
-
-   public void addExtendedAccessList(ExtendedAccessList eal) {
-      if (_extendedAccessLists.containsKey(eal.getId())) {
-         throw new Error("duplicate extended access list name");
-      }
-      _extendedAccessLists.put(eal.getId(), eal);
-   }
-
-   public void addExtendedAccessListLine(String id, ExtendedAccessListLine eall) {
-      if (!_extendedAccessLists.containsKey(id)) {
-         _extendedAccessLists.put(id, new ExtendedAccessList(id));
-      }
-      _extendedAccessLists.get(id).addLine(eall);
-   }
-
-   public void addInterface(Interface interface1) {
-      _interfaces.add(interface1);
-   }
-
-   public void addOspfProcess(OspfProcess process) {
-      if (_ospfProcesses.size() > 0) {
-         throw new Error(
-               "More than one OSPF process not supported at this time");
-      }
-      _ospfProcesses.add(process);
-   }
-
-   public void addPrefixListLine(String prefixListName, PrefixListLine line) {
-      PrefixList list = _prefixLists.get(prefixListName);
-      if (list == null) {
-         list = new PrefixList(prefixListName);
-         _prefixLists.put(prefixListName, list);
-      }
-      list.addLine(line);
-   }
-
-   public void addRouteFilters(List<PrefixList> fl) {
-      for (PrefixList rf : fl) {
-         _prefixLists.put(rf.getName(), rf);
-      }
-   }
-
-   public void addRouteMapClause(RouteMapClause clause) {
-      RouteMap rm = null;
-      if (_routeMaps.containsKey(clause.getMapName())) {
-         rm = _routeMaps.get(clause.getMapName());
-         rm.addClause(clause);
-      }
-      else {
-         rm = new RouteMap(clause.getMapName());
-         rm.addClause(clause);
-         _routeMaps.put(rm.getMapName(), rm);
-      }
-      rm.setIgnore(rm.getIgnore() || clause.getIgnore());
-   }
-
-   public void addRouteMaps(List<RouteMap> ml) {
-      for (RouteMap rm : ml) {
-         _routeMaps.put(rm.getMapName(), rm);
-      }
-   }
-
-   public void addStandardCommunityListLine(String name,
-         StandardCommunityListLine line) {
-      StandardCommunityList cl = _standardCommunityLists.get(name);
-      if (cl == null) {
-         cl = new StandardCommunityList(name);
-         _standardCommunityLists.put(name, cl);
-      }
-      cl.addLine(line);
-   }
-
-   public void addStaticRoute(StaticRoute staticRoute) {
-      _staticRoutes.add(staticRoute);
-   }
-
-   public void addStaticRoutes(List<StaticRoute> staticRoutes) {
-      _staticRoutes.addAll(staticRoutes);
    }
 
    private boolean containsIpAccessList(String eaListName, String mapName) {
@@ -897,41 +754,9 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       }
    }
 
-   public Map<String, StandardAccessList> getAccessLists() {
-      return _standardAccessLists;
-   }
-
-   public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
-      return _asPathAccessLists;
-   }
-
-   public BgpProcess getBgpProcess() {
-      return _bgpProcess;
-   }
-
    @Override
    public List<String> getConversionWarnings() {
       return _conversionWarnings;
-   }
-
-   public String getHostname() {
-      return _hostname;
-   }
-
-   public List<Interface> getInterfaces() {
-      return _interfaces;
-   }
-
-   public List<OspfProcess> getOspfProcesses() {
-      return _ospfProcesses;
-   }
-
-   public Map<String, PrefixList> getRouteFilter() {
-      return _prefixLists;
-   }
-
-   public Map<String, RouteMap> getRouteMaps() {
-      return _routeMaps;
    }
 
    private Set<RouteMap> getRoutingRouteMaps() {
@@ -939,8 +764,8 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       String currentMapName;
       RouteMap currentMap;
       // check ospf policies
-      if (_ospfProcesses.size() > 0) {
-         OspfProcess oproc = _ospfProcesses.get(0);
+      if (_ospfProcess != null) {
+         OspfProcess oproc = _ospfProcess;
          for (OspfRedistributionPolicy rp : oproc.getRedistributionPolicies()
                .values()) {
             currentMapName = rp.getMap();
@@ -989,18 +814,6 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          }
       }
       return maps;
-   }
-
-   public List<StaticRoute> getStaticRoutes() {
-      return _staticRoutes;
-   }
-
-   public void setBgpProcess(BgpProcess process) {
-      _bgpProcess = process;
-   }
-
-   public void setHostname(String hostname) {
-      _hostname = hostname;
    }
 
    private batfish.representation.Interface toInterface(Interface iface,
@@ -1127,20 +940,20 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       }
 
       // convert interfaces
-      for (Interface iface : _interfaces) {
+      for (Interface iface : _interfaces.values()) {
          batfish.representation.Interface newInterface = toInterface(iface,
                c.getIpAccessLists());
          c.getInterfaces().put(newInterface.getName(), newInterface);
       }
 
       // convert static routes
-      for (StaticRoute staticRoute : _staticRoutes) {
+      for (StaticRoute staticRoute : _staticRoutes.values()) {
          c.getStaticRoutes().add(toStaticRoute(c, staticRoute));
       }
 
       // convert ospf process
-      if (_ospfProcesses.size() > 0) {
-         OspfProcess firstOspfProcess = _ospfProcesses.get(0);
+      if (_ospfProcess != null) {
+         OspfProcess firstOspfProcess = _ospfProcess;
          batfish.representation.OspfProcess newOspfProcess = toOspfProcess(c,
                firstOspfProcess);
          c.setOspfProcess(newOspfProcess);
@@ -1166,6 +979,8 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
                   PolicyMapSetCommunityLine scLine = (PolicyMapSetCommunityLine) setLine;
                   c.getCommunities().addAll(scLine.getCommunities());
                   break;
+               case AS_PATH_PREPEND:
+               case COMMUNITY_NONE:
                case DELETE_COMMUNITY:
                case LOCAL_PREFERENCE:
                case METRIC:
@@ -1185,8 +1000,8 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       String eaListName = eaList.getId();
       String currentMapName;
       // check ospf policies
-      if (_ospfProcesses.size() > 0) {
-         OspfProcess oproc = _ospfProcesses.get(0);
+      if (_ospfProcess != null) {
+         OspfProcess oproc = _ospfProcess;
          for (OspfRedistributionPolicy rp : oproc.getRedistributionPolicies()
                .values()) {
             currentMapName = rp.getMap();

@@ -206,14 +206,14 @@ ip_prefix_list_tail
 	(
 		SEQ seqnum=DEC
 	)? action = access_list_action prefix = IP_ADDRESS FORWARD_SLASH prefix_length
-	= integer
+	= DEC
 	(
 		(
-			GE minpl = integer
+			GE minpl = DEC
 		)
 		|
 		(
-			LE maxpl = integer
+			LE maxpl = DEC
 		)
 	)*
 ;

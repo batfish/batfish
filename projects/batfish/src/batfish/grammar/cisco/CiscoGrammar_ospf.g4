@@ -13,7 +13,7 @@ area_ipv6_ro_stanza
 
 area_nssa_ro_stanza
 :
-	AREA num = integer NSSA NO_SUMMARY? NEWLINE
+	AREA num = DEC NSSA NO_SUMMARY? NEWLINE
 ;
 
 default_information_ipv6_ro_stanza
@@ -49,7 +49,7 @@ ipv6_ro_stanza
 
 ipv6_router_ospf_stanza
 :
-	IPV6 ROUTER OSPF procnum = integer NEWLINE
+	IPV6 ROUTER OSPF procnum = DEC NEWLINE
 	(
 		rosl += ipv6_ro_stanza
 	)+ closing_comment
@@ -219,7 +219,7 @@ router_id_ro_stanza
 
 router_ospf_stanza
 :
-	ROUTER OSPF procnum = integer NEWLINE
+	ROUTER OSPF procnum = DEC NEWLINE
 	(
 		rosl += ro_stanza
 	)+ closing_comment

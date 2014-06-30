@@ -9,20 +9,25 @@ import java.util.TreeSet;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import batfish.grammar.ControlPlaneExtractor;
 import batfish.grammar.cisco.CiscoGrammar.*;
-import batfish.grammar.cisco.ospf.OspfWildcardNetwork;
 import batfish.grammar.cisco.*;
+import batfish.grammar.cisco.CiscoGrammar.CommunityContext;
 import batfish.grammar.cisco.CiscoGrammar.Interface_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Port_specifierContext;
 import batfish.representation.Ip;
 import batfish.representation.LineAction;
 import batfish.representation.OspfMetricType;
 import batfish.representation.Protocol;
+import batfish.representation.SwitchportEncapsulationType;
+import batfish.representation.SwitchportMode;
+import batfish.representation.VendorConfiguration;
 import batfish.representation.cisco.BgpNetwork;
 import batfish.representation.cisco.BgpPeerGroup;
 import batfish.representation.cisco.BgpProcess;
 import batfish.representation.cisco.BgpRedistributionPolicy;
 import batfish.representation.cisco.CiscoConfiguration;
+import batfish.representation.cisco.CiscoVendorConfiguration;
 import batfish.representation.cisco.ExpandedCommunityList;
 import batfish.representation.cisco.ExpandedCommunityListLine;
 import batfish.representation.cisco.ExtendedAccessList;
@@ -32,6 +37,7 @@ import batfish.representation.cisco.IpAsPathAccessList;
 import batfish.representation.cisco.IpAsPathAccessListLine;
 import batfish.representation.cisco.OspfProcess;
 import batfish.representation.cisco.OspfRedistributionPolicy;
+import batfish.representation.cisco.OspfWildcardNetwork;
 import batfish.representation.cisco.PrefixList;
 import batfish.representation.cisco.PrefixListLine;
 import batfish.representation.cisco.RouteMap;
@@ -41,15 +47,23 @@ import batfish.representation.cisco.RouteMapMatchCommunityListLine;
 import batfish.representation.cisco.RouteMapMatchIpAccessListLine;
 import batfish.representation.cisco.RouteMapMatchIpPrefixListLine;
 import batfish.representation.cisco.RouteMapMatchTagLine;
+import batfish.representation.cisco.RouteMapSetAdditiveCommunityLine;
+import batfish.representation.cisco.RouteMapSetAsPathPrependLine;
+import batfish.representation.cisco.RouteMapSetCommunityLine;
+import batfish.representation.cisco.RouteMapSetCommunityNoneLine;
+import batfish.representation.cisco.RouteMapSetDeleteCommunityLine;
+import batfish.representation.cisco.RouteMapSetLocalPreferenceLine;
+import batfish.representation.cisco.RouteMapSetMetricLine;
+import batfish.representation.cisco.RouteMapSetNextHopLine;
 import batfish.representation.cisco.StandardAccessList;
 import batfish.representation.cisco.StandardCommunityList;
 import batfish.representation.cisco.StaticRoute;
 import batfish.util.SubRange;
 
-public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
+public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener implements ControlPlaneExtractor {
 
    private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
-   private CiscoConfiguration _configuration;
+   private CiscoVendorConfiguration _configuration;
    private Interface _currentInterface;
    private ExtendedAccessList _currentExtendedAcl;
    private StandardAccessList _currentStandardAcl;
@@ -93,8 +107,68 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
       return Integer.parseInt(t.getText());
    }
 
-   public static int toInteger(IntegerContext ctx) {
-      return Integer.parseInt(ctx.getText());
+   public SwitchportEncapsulationType toEncapsulation(
+         Switchport_trunk_encapsulationContext ctx) {
+      if (ctx.DOT1Q() != null) {
+         return SwitchportEncapsulationType.DOT1Q;
+      }
+      else if (ctx.ISL() != null) {
+         return SwitchportEncapsulationType.ISL;
+      }
+      else if (ctx.NEGOTIATE() != null) {
+         return SwitchportEncapsulationType.NEGOTIATE;
+      }
+      else {
+         throw new Error("bad encapsulation");
+      }
+   }
+
+   public static long toLong(CommunityContext ctx) {
+      // TODO find correct well-known community values
+      switch (ctx.com.getType()) {
+      case CiscoGrammarCommonLexer.COLON:
+         long left = toLong(ctx.part1) << 16;
+         long right = toLong(ctx.part2);
+         return left | right;
+
+      case CiscoGrammarCommonLexer.DEC:
+         return toLong(ctx.com);
+
+      case CiscoGrammarCommonLexer.INTERNET:
+         return 0l;
+
+      case CiscoGrammarCommonLexer.LOCAL_AS:
+         return 0xFFFFFF03l;
+
+      case CiscoGrammarCommonLexer.NO_ADVERTISE:
+         return 0xFFFFFF02l;
+
+      case CiscoGrammarCommonLexer.NO_EXPORT:
+         return 0xFFFFFF01l;
+
+      default:
+         throw new Error("bad community");
+      }
+   }
+
+   public static SubRange toSubRange(SubrangeContext ctx) {
+      int low = toInteger(ctx.low);
+      if (ctx.DASH() != null) {
+         int high = toInteger(ctx.high);
+         return new SubRange(low, high);
+      }
+      else {
+         return new SubRange(low, low);
+      }
+   }
+
+   public static List<SubRange> toRange(RangeContext ctx) {
+      List<SubRange> range = new ArrayList<SubRange>();
+      for (SubrangeContext sc : ctx.range_list) {
+         SubRange sr = toSubRange(sc);
+         range.add(sr);
+      }
+      return range;
    }
 
    public static long toLong(Token t) {
@@ -279,7 +353,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
 
    @Override
    public void enterCisco_configuration(Cisco_configurationContext ctx) {
-      _configuration = new CiscoConfiguration();
+      _configuration = new CiscoVendorConfiguration();
       _configuration.setContext(ctx);
    }
 
@@ -880,8 +954,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
          Redistribute_bgp_ro_stanzaContext ctx) {
       OspfProcess proc = _configuration.getOspfProcess();
       Protocol sourceProtocol = Protocol.BGP;
-      OspfRedistributionPolicy r = new OspfRedistributionPolicy(
-            sourceProtocol);
+      OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       int as = toInteger(ctx.as);
       r.getSpecialAttributes().put(OspfRedistributionPolicy.BGP_AS, as);
@@ -916,8 +989,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
          Redistribute_connected_tail_bgpContext ctx) {
       BgpProcess proc = _configuration.getBgpProcess();
       Protocol sourceProtocol = Protocol.CONNECTED;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(
-            sourceProtocol);
+      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       if (ctx.metric != null) {
          int metric = toInteger(ctx.metric);
@@ -934,8 +1006,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
          Redistribute_connected_ro_stanzaContext ctx) {
       OspfProcess proc = _configuration.getOspfProcess();
       Protocol sourceProtocol = Protocol.CONNECTED;
-      OspfRedistributionPolicy r = new OspfRedistributionPolicy(
-            sourceProtocol);
+      OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       if (ctx.metric != null) {
          int metric = toInteger(ctx.metric);
@@ -968,8 +1039,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
          Redistribute_ospf_tail_bgpContext ctx) {
       BgpProcess proc = _configuration.getBgpProcess();
       Protocol sourceProtocol = Protocol.OSPF;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(
-            sourceProtocol);
+      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       if (ctx.metric != null) {
          int metric = toInteger(ctx.metric);
@@ -980,7 +1050,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
          r.setMap(map);
       }
       int procNum = toInteger(ctx.procnum);
-      r.getSpecialAttributes().put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
+      r.getSpecialAttributes().put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER,
+            procNum);
    }
 
    @Override
@@ -988,8 +1059,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
          Redistribute_static_tail_bgpContext ctx) {
       BgpProcess proc = _configuration.getBgpProcess();
       Protocol sourceProtocol = Protocol.STATIC;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(
-            sourceProtocol);
+      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       if (ctx.metric != null) {
          int metric = toInteger(ctx.metric);
@@ -1006,8 +1076,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
          Redistribute_static_ro_stanzaContext ctx) {
       OspfProcess proc = _configuration.getOspfProcess();
       Protocol sourceProtocol = Protocol.STATIC;
-      OspfRedistributionPolicy r = new OspfRedistributionPolicy(
-            sourceProtocol);
+      OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       if (ctx.metric != null) {
          int metric = toInteger(ctx.metric);
@@ -1092,77 +1161,97 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    @Override
    public void exitSet_as_path_prepend_rm_stanza(
          Set_as_path_prepend_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitSet_as_path_rm_stanza(Set_as_path_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      List<Integer> asList = new ArrayList<Integer>();
+      for (Token t : ctx.as_list) {
+         int as = toInteger(t);
+         asList.add(as);
+      }
+      RouteMapSetAsPathPrependLine line = new RouteMapSetAsPathPrependLine(
+            asList);
+      _currentRouteMapClause.addSetLine(line);
    }
 
    @Override
    public void exitSet_comm_list_delete_rm_stanza(
          Set_comm_list_delete_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      String name = ctx.name.getText();
+      RouteMapSetDeleteCommunityLine line = new RouteMapSetDeleteCommunityLine(
+            name);
+      _currentRouteMapClause.addSetLine(line);
    }
 
    @Override
    public void exitSet_community_additive_rm_stanza(
          Set_community_additive_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
+      List<Long> commList = new ArrayList<Long>();
+      for (CommunityContext c : ctx.comm_list) {
+         long community = toLong(c);
+         commList.add(community);
+      }
+      RouteMapSetAdditiveCommunityLine line = new RouteMapSetAdditiveCommunityLine(
+            commList);
+      _currentRouteMapClause.addSetLine(line);
+   }
 
+   @Override
+   public void exitSet_community_none_rm_stanza(
+         Set_community_none_rm_stanzaContext ctx) {
+      RouteMapSetCommunityNoneLine line = new RouteMapSetCommunityNoneLine();
+      _currentRouteMapClause.addSetLine(line);
    }
 
    @Override
    public void exitSet_community_rm_stanza(Set_community_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      List<Long> commList = new ArrayList<Long>();
+      for (CommunityContext c : ctx.comm_list) {
+         long community = toLong(c);
+         commList.add(community);
+      }
+      RouteMapSetCommunityLine line = new RouteMapSetCommunityLine(commList);
+      _currentRouteMapClause.addSetLine(line);
    }
 
    @Override
    public void exitSet_ipv6_rm_stanza(Set_ipv6_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      _currentRouteMap.setIgnore(true);
    }
 
    @Override
    public void exitSet_local_preference_rm_stanza(
          Set_local_preference_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      int localPreference = toInteger(ctx.pref);
+      RouteMapSetLocalPreferenceLine line = new RouteMapSetLocalPreferenceLine(
+            localPreference);
+      _currentRouteMapClause.addSetLine(line);
    }
 
    @Override
    public void exitSet_metric_rm_stanza(Set_metric_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      int metric = toInteger(ctx.metric);
+      RouteMapSetMetricLine line = new RouteMapSetMetricLine(metric);
+      _currentRouteMapClause.addSetLine(line);
    }
 
    @Override
    public void exitSet_next_hop_rm_stanza(Set_next_hop_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      Set<Ip> nextHops = new TreeSet<Ip>();
+      for (Token t : ctx.nexthop_list) {
+         Ip nextHop = toIp(t);
+         nextHops.add(nextHop);
+      }
+      RouteMapSetNextHopLine line = new RouteMapSetNextHopLine(nextHops);
+      _currentRouteMapClause.addSetLine(line);
    }
 
    @Override
    public void exitSet_origin_rm_stanza(Set_origin_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitSet_rm_stanza(Set_rm_stanzaContext ctx) {
-      // TODO Auto-generated method stub
+      // TODO implement
 
    }
 
    @Override
    public void exitShutdown_if_stanza(Shutdown_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      _currentInterface.setActive(false);
    }
 
    @Override
@@ -1192,90 +1281,67 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener {
    }
 
    @Override
-   public void exitStanza(StanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitSubrange(SubrangeContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
    public void exitSwitchport_access_if_stanza(
          Switchport_access_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitSwitchport_if_stanza(Switchport_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      int vlan = toInteger(ctx.vlan);
+      _currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+      _currentInterface.setAccessVlan(vlan);
    }
 
    @Override
    public void exitSwitchport_mode_access_stanza(
          Switchport_mode_access_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      _currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
    }
 
    @Override
    public void exitSwitchport_mode_dynamic_auto_stanza(
          Switchport_mode_dynamic_auto_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      _currentInterface.setSwitchportMode(SwitchportMode.DYNAMIC_AUTO);
    }
 
    @Override
    public void exitSwitchport_mode_dynamic_desirable_stanza(
          Switchport_mode_dynamic_desirable_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      _currentInterface.setSwitchportMode(SwitchportMode.DYNAMIC_DESIRABLE);
    }
 
    @Override
    public void exitSwitchport_mode_trunk_stanza(
          Switchport_mode_trunk_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      _currentInterface.setSwitchportMode(SwitchportMode.TRUNK);
    }
 
    @Override
    public void exitSwitchport_trunk_allowed_if_stanza(
          Switchport_trunk_allowed_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      List<SubRange> ranges = toRange(ctx.r);
+      _currentInterface.addAllowedRanges(ranges);
    }
 
    @Override
    public void exitSwitchport_trunk_encapsulation_if_stanza(
          Switchport_trunk_encapsulation_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitSwitchport_trunk_if_stanza(
-         Switchport_trunk_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      SwitchportEncapsulationType type = toEncapsulation(ctx.e);
+      _currentInterface.setSwitchportTrunkEncapsulation(type);
    }
 
    @Override
    public void exitSwitchport_trunk_native_if_stanza(
          Switchport_trunk_native_if_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      int vlan = toInteger(ctx.vlan);
+      _currentInterface.setNativeVlan(vlan);
    }
 
    @Override
    public void exitVrf_stanza(Vrf_stanzaContext ctx) {
       // TODO Auto-generated method stub
 
+   }
+
+   @Override
+   public VendorConfiguration getVendorConfiguration() {
+      return _configuration;
    }
 
 }

@@ -63,7 +63,7 @@ ip_route_stanza
 		)
 	)
 	(
-		distance = integer
+		distance = DEC
 		|
 		(
 			TAG tag = DEC

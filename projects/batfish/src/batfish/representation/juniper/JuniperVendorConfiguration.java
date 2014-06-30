@@ -839,6 +839,8 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
                   PolicyMapSetCommunityLine scLine = (PolicyMapSetCommunityLine) setLine;
                   c.getCommunities().addAll(scLine.getCommunities());
                   break;
+               case AS_PATH_PREPEND:
+               case COMMUNITY_NONE:
                case DELETE_COMMUNITY:
                case LOCAL_PREFERENCE:
                case METRIC:

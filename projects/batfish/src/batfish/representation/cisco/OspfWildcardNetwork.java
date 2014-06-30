@@ -1,4 +1,4 @@
-package batfish.grammar.cisco.ospf;
+package batfish.representation.cisco;
 
 import batfish.representation.Ip;
 

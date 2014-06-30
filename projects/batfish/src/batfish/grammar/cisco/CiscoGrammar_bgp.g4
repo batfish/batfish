@@ -78,7 +78,7 @@ default_metric_rb_stanza
 
 default_metric_tail_bgp
 :
-	DEFAULT_METRIC metric = integer NEWLINE
+	DEFAULT_METRIC metric = DEC NEWLINE
 ;
 
 neighbor_activate_af_stanza
@@ -92,7 +92,7 @@ neighbor_ebgp_multihop_rb_stanza
 	(
 		IP_ADDRESS
 		| VARIABLE
-	) EBGP_MULTIHOP hop = integer NEWLINE
+	) EBGP_MULTIHOP hop = DEC NEWLINE
 ;
 
 neighbor_default_originate_af_stanza
@@ -164,7 +164,7 @@ neighbor_remote_as_rb_stanza
 	(
 		pg_ip = IP_ADDRESS
 		| pg_var = VARIABLE
-	) REMOTE_AS as = integer NEWLINE
+	) REMOTE_AS as = DEC NEWLINE
 ;
 
 neighbor_route_map_af_stanza
@@ -475,7 +475,7 @@ redistribute_static_tail_bgp
 
 router_bgp_stanza
 :
-	ROUTER BGP procnum = integer NEWLINE
+	ROUTER BGP procnum = DEC NEWLINE
 	(
 		rbsl += rb_stanza
 	)+ closing_comment

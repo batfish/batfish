@@ -2154,19 +2154,10 @@ set_metric_rm_stanza returns [RMStanza rms]
                                   }
   ;
 
-set_next_hop_rm_stanza returns [RMStanza rms]
-@init {
-List<String> nextHops = new ArrayList<String>();
-}
+set_next_hop_rm_stanza returns [RMStanza rms = new NullRMStanza()]
   :
   (SET IP NEXT_HOP (nexthop=IP_ADDRESS 
-                                      {
-                                       nextHops.add(nexthop.getText());
-                                      })+ NEWLINE) 
-                                                  {
-                                                   RouteMapSetNextHopLine line = new RouteMapSetNextHopLine(nextHops);
-                                                   rms = new SetRMStanza(line);
-                                                  }
+                                      )+ NEWLINE) 
   ;
 
 set_origin_rm_stanza returns [RMStanza rms = new NullRMStanza()]
