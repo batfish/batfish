@@ -1,5 +1,9 @@
 lexer grammar CiscoGrammarCommonLexer;
 
+options {
+	superClass = DummyLexer;
+}
+
 @header {
 package batfish.grammar.cisco;
 }

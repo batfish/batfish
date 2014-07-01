@@ -98,7 +98,6 @@
                   <arg value="-o"/>
                   <arg path="src/@{grammar.packagedir}"/>
                   <arg value="-listener"/>
-                  <arg value="-visitor"/>
                   <arg value="-lib"/>
                   <arg path="src/@{grammar.packagedir}"/>
                   <arg value="-encoding"/>
