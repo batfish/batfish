@@ -612,7 +612,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener impleme
 
    @Override
    public void enterIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
-      String name = ctx.name.getText();
+      String name = ctx.firstname.getText();
       _currentPrefixList = new PrefixList(name);
       _currentPrefixList.setContext(ctx);
       _configuration.getPrefixLists().put(name, _currentPrefixList);

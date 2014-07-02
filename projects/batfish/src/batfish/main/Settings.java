@@ -42,6 +42,7 @@ public class Settings {
    private static final String ARG_PREDICATES = "predicates";
    private static final String ARG_QUERY = "query";
    private static final String ARG_QUERY_ALL = "all";
+   private static final String ARG_REDIRECT_STDERR = "redirect";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
    private static final String ARG_TEST_RIG_NAME = "testrigname";
@@ -78,7 +79,8 @@ public class Settings {
    private static final String DEFAULT_Z3_CONCRETIZER_OUTPUT_FILE = "z3-concretizer-output.smt2";
    private static final String DEFAULT_Z3_OUTPUT = "z3-dataplane-output.smt2";
    private static final String EXECUTABLE_NAME = "batfish";
-
+   
+   
    private boolean _canExecute;
    private String _cbAHost;
    private int _cbAPort;
@@ -111,6 +113,7 @@ public class Settings {
    private boolean _printSemantics;
    private boolean _query;
    private boolean _queryAll;
+   private boolean _redirectStdErr;
    private boolean _removeFacts;
    private boolean _revert;
    private String _revertBranchName;
@@ -428,6 +431,9 @@ public class Settings {
             .withArgName(ARGNAME_REVERT)
             .withDescription("revert test rig workspace to specified branch")
             .create(ARG_REVERT));
+      _options.addOption(OptionBuilder
+            .withDescription("redirect stderr to stdout")
+            .create(ARG_REDIRECT_STDERR));
    }
 
    private void parseCommandLine(String[] args) {
@@ -528,6 +534,11 @@ public class Settings {
       
       _revertBranchName = line.getOptionValue(ARG_REVERT);
       _revert = (_revertBranchName != null);
+      _redirectStdErr = line.hasOption(ARG_REDIRECT_STDERR);
+   }
+
+   public boolean redirectStdErr() {
+      return _redirectStdErr;
    }
 
    public boolean revert() {

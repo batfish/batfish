@@ -138,16 +138,15 @@ ip_community_list_expanded_stanza
 		| firstname = COMMUNITY_LIST_NUM_EXPANDED
 	) ip_community_list_expanded_tail
 	(
-		IP COMMUNITY_LIST
 		(
+			IP COMMUNITY_LIST
 			(
-				EXPANDED name = VARIABLE
-			)
-			| name = COMMUNITY_LIST_NUM_EXPANDED
+				(
+					EXPANDED exact_match[$firstname.text]
+				)
+				| exact_match[$firstname.text]
+			) ip_community_list_expanded_tail
 		)
-		{$firstname.text.equals($name.text)}?
-
-		ip_community_list_expanded_tail
 	)*
 ;
 
@@ -204,7 +203,7 @@ ip_prefix_list_stanza
 ip_prefix_list_tail
 :
 	(
-		SEQ seqnum=DEC
+		SEQ seqnum = DEC
 	)? action = access_list_action prefix = IP_ADDRESS FORWARD_SLASH prefix_length
 	= DEC
 	(

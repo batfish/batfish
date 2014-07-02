@@ -32,6 +32,16 @@ community
 	| com = NO_EXPORT
 ;
 
+exact_match [String matchText]
+:
+	{(_input.LT(1).getType() == VARIABLE || _input.LT(1).getType() == COMMUNITY_LIST_NUM_EXPANDED) && _input.LT(1).getText().equals($matchText)}?
+
+	(
+		VARIABLE
+		| COMMUNITY_LIST_NUM_EXPANDED
+	)
+;
+
 interface_name
 :
 	name = VARIABLE

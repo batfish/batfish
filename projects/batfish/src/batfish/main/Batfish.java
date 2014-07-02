@@ -1080,6 +1080,9 @@ public class Batfish {
    }
 
    public void run() {
+      if (_settings.redirectStdErr()) {
+         System.setErr(System.out);
+      }
       if (_settings.getDumpIF()) {
          dumpIF();
          quit(0);
