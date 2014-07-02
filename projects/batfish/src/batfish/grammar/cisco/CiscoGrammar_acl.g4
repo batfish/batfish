@@ -130,24 +130,52 @@ ip_as_path_access_list_tail
 
 ip_community_list_expanded_stanza
 :
+	named = ip_community_list_expanded_named_stanza
+	| numbered = ip_community_list_expanded_numbered_stanza
+;
+
+ip_community_list_expanded_named_stanza
+locals [boolean again]
+:
+	IP COMMUNITY_LIST EXPANDED name = VARIABLE ip_community_list_expanded_tail
+	{
+		$again = _input.LT(1).getType() == IP &&
+		_input.LT(2).getType() == COMMUNITY_LIST &&
+		_input.LT(3).getType() == EXPANDED &&
+		_input.LT(4).getType() == VARIABLE &&
+		_input.LT(4).getText().equals($name);
+	}
+
 	(
-		IP COMMUNITY_LIST
-		(
-			EXPANDED firstname = VARIABLE
-		)
-		| firstname = COMMUNITY_LIST_NUM_EXPANDED
-	) ip_community_list_expanded_tail
+		{$again}?
+
+		ip_community_list_expanded_named_stanza
+		|
+		{!$again}?
+
+	)
+;
+
+ip_community_list_expanded_numbered_stanza
+locals [boolean again]
+:
+	IP COMMUNITY_LIST name = COMMUNITY_LIST_NUM_EXPANDED
+	ip_community_list_expanded_tail
+	{
+		$again = _input.LT(1).getType() == IP &&
+		_input.LT(2).getType() == COMMUNITY_LIST &&
+		_input.LT(3).getType() == COMMUNITY_LIST_NUM_EXPANDED &&
+		_input.LT(3).getText().equals($name);
+	}
+
 	(
-		(
-			IP COMMUNITY_LIST
-			(
-				(
-					EXPANDED exact_match[$firstname.text]
-				)
-				| exact_match[$firstname.text]
-			) ip_community_list_expanded_tail
-		)
-	)*
+		{$again}?
+
+		ip_community_list_expanded_numbered_stanza
+		|
+		{!$again}?
+
+	)
 ;
 
 ip_community_list_expanded_tail

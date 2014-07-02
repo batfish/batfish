@@ -538,8 +538,13 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener impleme
    @Override
    public void enterIp_community_list_expanded_stanza(
          Ip_community_list_expanded_stanzaContext ctx) {
-      String name = ctx.firstname.getText();
-
+      String name;
+      if (ctx.numbered != null) {
+         name = ctx.numbered.name.getText();
+      }
+      else {
+         name = ctx.named.name.getText();
+      }
       _currentExpandedCommunityList = new ExpandedCommunityList(name);
       _currentExpandedCommunityList.setContext(ctx);
       _configuration.getExpandedCommunityLists().put(name,
