@@ -664,10 +664,9 @@ null_stanza
 
 stanza
 :
-	access_list_stanza
+	extended_access_list_stanza
 	| hostname_stanza
 	| interface_stanza
-	| ip_access_list_standard_stanza
 	| ip_as_path_access_list_stanza
 	| ip_community_list_expanded_stanza
 	| ip_community_list_standard_stanza
@@ -679,6 +678,7 @@ stanza
 	| route_map_stanza
 	| router_bgp_stanza
 	| router_ospf_stanza
+	| standard_access_list_stanza
 ;
 
 vrf_stanza

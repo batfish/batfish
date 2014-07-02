@@ -2977,7 +2977,7 @@ ACL_NUM
 	F_Digit+
 	{
 	int val = Integer.parseInt(getText());
-	if ((1 <= val && val <= 199) || (1300 <= val && val <= 1999)) {
+	if ((1 <= val && val <= 99) || (1300 <= val && val <= 1999)) {
 		_type = ACL_NUM_STANDARD;
 	}
 	else if ((100 <= val && val <= 199) || (2000 <= val && val <= 2699)) {

@@ -2,7 +2,6 @@ package batfish.grammar.cisco.controlplane;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -60,7 +59,8 @@ import batfish.representation.cisco.StandardCommunityList;
 import batfish.representation.cisco.StaticRoute;
 import batfish.util.SubRange;
 
-public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener implements ControlPlaneExtractor {
+public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
+      implements ControlPlaneExtractor {
 
    private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
    private CiscoVendorConfiguration _configuration;
@@ -394,17 +394,16 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener impleme
    public void enterExtended_access_list_stanza(
          Extended_access_list_stanzaContext ctx) {
       String name;
-      if (ctx.firstnum != null) {
-         name = Integer.toString(toInteger(ctx.firstnum));
+      if (ctx.named != null) {
+         name = ctx.named.name.getText();
       }
       else {
-         name = ctx.ip_access_list_extended_stanza().name.getText();
+         name = ctx.numbered.name.getText();
       }
-      Map<String, ExtendedAccessList> extAcls = _configuration
-            .getExtendedAcls();
       _currentExtendedAcl = new ExtendedAccessList(name);
       _currentExtendedAcl.setContext(ctx);
-      extAcls.put(name, _currentExtendedAcl);
+      _configuration
+      .getExtendedAcls().put(name, _currentExtendedAcl);
    }
 
    @Override
@@ -573,8 +572,13 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener impleme
    @Override
    public void enterIp_community_list_standard_stanza(
          Ip_community_list_standard_stanzaContext ctx) {
-      String name = ctx.firstname.getText();
-
+      String name;
+      if (ctx.numbered != null) {
+         name = ctx.numbered.name.getText();
+      }
+      else {
+         name = ctx.named.name.getText();
+      }
       _currentStandardCommunityList = new StandardCommunityList(name);
       _currentStandardCommunityList.setContext(ctx);
       _configuration.getStandardCommunityLists().put(name,
@@ -617,7 +621,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener impleme
 
    @Override
    public void enterIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
-      String name = ctx.firstname.getText();
+      String name = ctx.named.name.getText();
       _currentPrefixList = new PrefixList(name);
       _currentPrefixList.setContext(ctx);
       _configuration.getPrefixLists().put(name, _currentPrefixList);
@@ -1111,7 +1115,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener impleme
 
    @Override
    public void enterRoute_map_stanza(Route_map_stanzaContext ctx) {
-      String name = ctx.name.getText();
+      String name = ctx.named.name.getText();
       _currentRouteMap = new RouteMap(name);
       _currentRouteMap.setContext(ctx);
       _configuration.getRouteMaps().put(name, _currentRouteMap);
@@ -1269,20 +1273,15 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener impleme
    public void enterStandard_access_list_stanza(
          Standard_access_list_stanzaContext ctx) {
       String name;
-      if (ctx.firstnum != null) {
-         name = Integer.toString(toInteger(ctx.firstnum));
+      if (ctx.named != null) {
+         name = ctx.named.name.getText();
       }
       else {
-         name = ctx.ip_access_list_standard_stanza().name.getText();
+         name = ctx.numbered.name.getText();
       }
-      Map<String, StandardAccessList> standardAcls = _configuration
-            .getStandardAcls();
-      _currentStandardAcl = standardAcls.get(name);
-      if (_currentStandardAcl == null) {
-         _currentStandardAcl = new StandardAccessList(name);
-         _currentStandardAcl.setContext(ctx);
-         standardAcls.put(name, _currentStandardAcl);
-      }
+      _currentStandardAcl = new StandardAccessList(name);
+      _currentStandardAcl.setContext(ctx);
+      _configuration.getStandardAcls().put(name, _currentStandardAcl);
    }
 
    @Override

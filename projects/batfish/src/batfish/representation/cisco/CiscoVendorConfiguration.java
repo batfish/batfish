@@ -265,7 +265,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          boolean sendCommunity = pg.getSendCommunity();
          for (Ip neighborAddress : pg.getNeighborAddresses()) {
             if (activeNeighbors.contains(neighborAddress)) {
-               BgpNeighbor newNeighbor = newBgpNeighbors.get(neighborAddress);
+               BgpNeighbor newNeighbor = newBgpNeighbors.get(neighborAddress.toString());
                if (newNeighbor == null) {
                   newNeighbor = new BgpNeighbor(neighborAddress);
                   newBgpNeighbors.put(neighborAddress.toString(), newNeighbor);

@@ -88,15 +88,29 @@ rm_stanza
 	| set_rm_stanza
 ;
 
+route_map_named_stanza
+locals [boolean again]
+:
+	ROUTE_MAP name = VARIABLE route_map_tail
+	{
+		$again = _input.LT(1).getType() == ROUTE_MAP &&
+		_input.LT(2).getType() == VARIABLE &&
+		_input.LT(2).getText().equals($name);
+	}
+
+	(
+		{$again}?
+
+		route_map_named_stanza
+		|
+		{!$again}?
+
+	)
+;
+
 route_map_stanza
 :
-	ROUTE_MAP firstname = VARIABLE route_map_tail
-	(
-		ROUTE_MAP name = VARIABLE
-		{$firstname.text.equals($name.text)}?
-
-		route_map_tail
-	)*
+	named = route_map_named_stanza
 ;
 
 route_map_tail

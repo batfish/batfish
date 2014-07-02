@@ -27,6 +27,7 @@ import java.util.TreeSet;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -630,6 +631,7 @@ public class Batfish {
                   lexer4);
             CiscoGrammar parser4 = new CiscoGrammar(tokens4);
             bParser = parser4;
+            parser4.getInterpreter().setPredictionMode(PredictionMode.SLL);
             Cisco_configurationContext tree = parser4.cisco_configuration();
             ParseTreeWalker walker = new ParseTreeWalker();
             extractor = new CiscoControlPlaneExtractor(fileText);
