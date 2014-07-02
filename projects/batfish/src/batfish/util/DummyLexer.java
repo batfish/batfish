@@ -1,4 +1,4 @@
-package batfish.grammar.cisco;
+package batfish.util;
 
 import org.antlr.v4.runtime.CharStream;
 

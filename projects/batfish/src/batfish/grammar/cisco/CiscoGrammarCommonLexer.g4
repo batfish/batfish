@@ -1,7 +1,7 @@
 lexer grammar CiscoGrammarCommonLexer;
 
 options {
-	superClass = DummyLexer;
+	superClass = batfish.util.DummyLexer;
 }
 
 @header {

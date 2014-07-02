@@ -5,7 +5,7 @@ CiscoGrammarCommonParser, CiscoGrammar_acl, CiscoGrammar_bgp, CiscoGrammar_inter
 
 options {
 	tokenVocab = CiscoGrammarCommonLexer;
-	superClass = DummyParser;
+	superClass = batfish.util.DummyParser;
 }
 
 @header {
