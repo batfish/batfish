@@ -17,16 +17,7 @@
 	<property name="eclipse.jar-in-jar.dir" value="build-lib/eclipse"/>
 	<property name="temp.dir" value="temp" />	
    <path id="libraries">
-      <!-- <switch back when all antlr 3 stuff has been removed -->
-      <!-- <fileset dir="lib" includes="**/*.jar"/> -->
-      <fileset dir="lib">
-         <patternset id="libs.except.antlr4">
-            <include name="**/*.jar"/>
-            <!--
-            <exclude name="antlr/antlr.jar"/>
-            -->
-         </patternset>
-      </fileset>
+      <fileset dir="lib" includes="**/*.jar"/>
    </path>
    <property name="outputJar" value="out/batfish.jar"/>
    <property name="lbSummary" value="bin/batfish/logic/LB_SUMMARY.lbp"/>
