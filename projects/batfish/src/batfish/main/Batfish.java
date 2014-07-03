@@ -27,18 +27,24 @@ import java.util.TreeSet;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.antlr.v4.runtime.atn.PredictionMode;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import com.logicblox.bloxweb.client.ServiceClientException;
 import com.logicblox.connect.Workspace.Relation;
 
+import batfish.grammar.BatfishLexer;
+import batfish.grammar.BatfishParser;
 import batfish.grammar.ConfigurationLexer;
 import batfish.grammar.ConfigurationParser;
 import batfish.grammar.TopologyLexer;
 import batfish.grammar.TopologyParser;
-import batfish.grammar.cisco.CiscoGrammarLexer;
-import batfish.grammar.cisco.CiscoGrammarParser;
+import batfish.grammar.cisco.CiscoGrammar;
+import batfish.grammar.cisco.CiscoGrammar.Cisco_configurationContext;
+import batfish.grammar.cisco.CiscoGrammarCommonLexer;
+import batfish.grammar.cisco.controlplane.CiscoControlPlaneExtractor;
 import batfish.grammar.juniper.FlatJuniperGrammarLexer;
 import batfish.grammar.juniper.FlatJuniperGrammarParser;
 import batfish.grammar.juniper.JuniperGrammarLexer;
@@ -69,7 +75,6 @@ import batfish.representation.Ip;
 import batfish.representation.Topology;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
-import batfish.ucla.DeptGenerator;
 import batfish.util.UrlZipExplorer;
 import batfish.util.StringFilter;
 import batfish.util.Util;
@@ -599,6 +604,8 @@ public class Batfish {
       int currentPathIndex = 0;
       boolean processingError = false;
       for (String fileText : configFiles) {
+         String currentPath = configFilePaths[currentPathIndex]
+               .getAbsolutePath();
          ConfigurationParser parser = null;
          ConfigurationLexer lexer = null;
          VendorConfiguration vc = null;
@@ -608,10 +615,28 @@ public class Batfish {
             currentPathIndex++;
             continue;
          }
+         CiscoControlPlaneExtractor extractor = null;
+         boolean antlr4 = false;
+         BatfishParser bParser = null;
+         BatfishLexer bLexer = null;
          if (fileText.charAt(0) == '!') {
-            lexer = new CiscoGrammarLexer(in);
-            tokens = new CommonTokenStream(lexer);
-            parser = new CiscoGrammarParser(tokens);
+            // antlr 4 stuff
+            print(2, "Parsing: \"" + currentPath + "\"");
+            antlr4 = true;
+            org.antlr.v4.runtime.CharStream stream = new org.antlr.v4.runtime.ANTLRInputStream(
+                  fileText);
+            CiscoGrammarCommonLexer lexer4 = new CiscoGrammarCommonLexer(stream);
+            bLexer = lexer4;
+            org.antlr.v4.runtime.CommonTokenStream tokens4 = new org.antlr.v4.runtime.CommonTokenStream(
+                  lexer4);
+            CiscoGrammar parser4 = new CiscoGrammar(tokens4);
+            bParser = parser4;
+            parser4.getInterpreter().setPredictionMode(PredictionMode.SLL);
+            Cisco_configurationContext tree = parser4.cisco_configuration();
+            ParseTreeWalker walker = new ParseTreeWalker();
+            extractor = new CiscoControlPlaneExtractor(fileText);
+            walker.walk(extractor, tree);
+            assert Boolean.TRUE;
          }
          else if ((fileText.indexOf("set version") >= 0)
                && ((fileText.indexOf("set version") == 0) || (fileText
@@ -629,37 +654,59 @@ public class Batfish {
             currentPathIndex++;
             continue;
          }
-         String currentPath = configFilePaths[currentPathIndex]
-               .getAbsolutePath();
-         print(2, "Parsing: \"" + currentPath + "\"");
-         try {
-            vc = parser.parse_configuration();
+         if (!antlr4) {
+            print(2, "Parsing: \"" + currentPath + "\"");
+            try {
+               vc = parser.parse_configuration();
+            }
+            catch (Exception e) {
+               error(0, " ...ERROR\n");
+               e.printStackTrace();
+            }
+            List<String> parserErrors = parser.getErrors();
+            List<String> lexerErrors = lexer.getErrors();
+            int numErrors = parserErrors.size() + lexerErrors.size();
+            if (numErrors > 0) {
+               error(0, " ..." + numErrors + " ERROR(S)\n");
+               for (String msg : lexer.getErrors()) {
+                  error(2, "\tlexer: " + msg + "\n");
+               }
+               for (String msg : parser.getErrors()) {
+                  error(2, "\tparser: " + msg + "\n");
+               }
+               if (_settings.exitOnParseError()) {
+                  return null;
+               }
+               else {
+                  processingError = true;
+                  currentPathIndex++;
+                  continue;
+               }
+            }
          }
-         catch (Exception e) {
-            error(0, " ...ERROR\n");
-            e.printStackTrace();
+         else {
+            vc = extractor.getVendorConfiguration();
+            List<String> parserErrors = bParser.getErrors();
+            List<String> lexerErrors = bLexer.getErrors();
+            int numErrors = parserErrors.size() + lexerErrors.size();
+            if (numErrors > 0) {
+               error(0, " ..." + numErrors + " ERROR(S)\n");
+               for (String msg : lexerErrors) {
+                  error(2, "\tlexer: " + msg + "\n");
+               }
+               for (String msg : parserErrors) {
+                  error(2, "\tparser: " + msg + "\n");
+               }
+               if (_settings.exitOnParseError()) {
+                  return null;
+               }
+               else {
+                  processingError = true;
+                  currentPathIndex++;
+                  continue;
+               }
+            }
          }
-         List<String> parserErrors = parser.getErrors();
-         List<String> lexerErrors = lexer.getErrors();
-         int numErrors = parserErrors.size() + lexerErrors.size();
-         if (numErrors > 0) {
-            error(0, " ..." + numErrors + " ERROR(S)\n");
-            for (String msg : lexer.getErrors()) {
-               error(2, "\tlexer: " + msg + "\n");
-            }
-            for (String msg : parser.getErrors()) {
-               error(2, "\tparser: " + msg + "\n");
-            }
-            if (_settings.exitOnParseError()) {
-               return null;
-            }
-            else {
-               processingError = true;
-               currentPathIndex++;
-               continue;
-            }
-         }
-
          try {
             configurations.add(vc.toVendorIndependentConfiguration());
          }
@@ -698,16 +745,17 @@ public class Batfish {
    }
 
    private void parseFlowsFromConstraints(StringBuilder sw) {
-//      Path nodesPath = Paths.get(_settings.getFlowPath(), NODES_FILENAME);
-//      String nodesText = readFile(nodesPath.toFile());
-//      String[] nodes = nodesText.split("\n");
+      // Path nodesPath = Paths.get(_settings.getFlowPath(), NODES_FILENAME);
+      // String nodesText = readFile(nodesPath.toFile());
+      // String[] nodes = nodesText.split("\n");
       Path flowConstraintsDir = Paths.get(_settings.getFlowPath());
-      File[] constraintsFiles = flowConstraintsDir.toFile().listFiles(new FilenameFilter() {
-         @Override
-         public boolean accept(File dir, String filename) {
-            return filename.matches(".*constraints.*.smt2.out");
-         }
-      });
+      File[] constraintsFiles = flowConstraintsDir.toFile().listFiles(
+            new FilenameFilter() {
+               @Override
+               public boolean accept(File dir, String filename) {
+                  return filename.matches(".*constraints.*.smt2.out");
+               }
+            });
       for (File constraintsFile : constraintsFiles) {
          String flowConstraintsText = readFile(constraintsFile);
          ANTLRStringStream s = new ANTLRStringStream(flowConstraintsText);
@@ -772,7 +820,8 @@ public class Batfish {
                throw new Error("invalid variable name");
             }
          }
-         String node = constraintsFile.getName().replaceFirst(".*-([^-]*).smt2.out", "$1");
+         String node = constraintsFile.getName().replaceFirst(
+               ".*-([^-]*).smt2.out", "$1");
          String line = node + "|" + src_ip + "|" + dst_ip + "|" + src_port
                + "|" + dst_port + "|" + protocol + "\n";
          sw.append(line);
@@ -1033,6 +1082,9 @@ public class Batfish {
    }
 
    public void run() {
+      if (_settings.redirectStdErr()) {
+         System.setErr(System.out);
+      }
       if (_settings.getDumpIF()) {
          dumpIF();
          quit(0);
@@ -1040,13 +1092,6 @@ public class Batfish {
 
       if (_settings.getDiff()) {
          getDiff();
-         quit(0);
-      }
-
-      if (_settings.getDr()) {
-         DeptGenerator gen = new DeptGenerator(this, _settings, SEPARATOR);
-         gen.generateDeptRouters();
-         gen.createSubgroupTestRigs();
          quit(0);
       }
 

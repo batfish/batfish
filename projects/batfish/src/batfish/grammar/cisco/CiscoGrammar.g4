@@ -5,11 +5,11 @@ CiscoGrammarCommonParser, CiscoGrammar_acl, CiscoGrammar_bgp, CiscoGrammar_inter
 
 options {
 	tokenVocab = CiscoGrammarCommonLexer;
+	superClass = batfish.util.DummyParser;
 }
 
 @header {
 package batfish.grammar.cisco;
-import batfish.util.SubRange;
 }
 
 address_family_vrf_stanza
@@ -58,16 +58,23 @@ ip_route_stanza
 	(
 		nexthopip = IP_ADDRESS
 		| nexthopint = interface_name
+		|
+		(
+			nexthopip = IP_ADDRESS nexthopint = interface_name
+		)
 	)
 	(
-		distance = integer
-	)?
-	(
-		TAG DEC
-	)? PERMANENT?
-	(
-		TRACK DEC
-	)? NEWLINE
+		distance = DEC
+		|
+		(
+			TAG tag = DEC
+		)
+		| perm = PERMANENT
+		|
+		(
+			TRACK track = DEC
+		)
+	)* NEWLINE
 ;
 
 macro_stanza
@@ -657,21 +664,21 @@ null_stanza
 
 stanza
 :
-	access_list_stanza
+	extended_access_list_stanza
 	| hostname_stanza
 	| interface_stanza
-	| ip_access_list_extended_stanza
-	| ip_access_list_standard_stanza
 	| ip_as_path_access_list_stanza
-	| ip_community_list_stanza
+	| ip_community_list_expanded_stanza
+	| ip_community_list_standard_stanza
 	| ip_default_gateway_stanza
-	| ip_prefix_list_line_stanza
+	| ip_prefix_list_stanza
 	| ip_route_stanza
 	| ipv6_router_ospf_stanza
 	| null_stanza
 	| route_map_stanza
 	| router_bgp_stanza
 	| router_ospf_stanza
+	| standard_access_list_stanza
 ;
 
 vrf_stanza

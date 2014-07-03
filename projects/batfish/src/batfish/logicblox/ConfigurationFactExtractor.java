@@ -35,9 +35,9 @@ import batfish.representation.RouteFilterLine;
 import batfish.representation.RouteFilterList;
 import batfish.representation.StaticRoute;
 import batfish.representation.SwitchportEncapsulationType;
-import batfish.ucla.DeptGenerator;
 import batfish.util.SubRange;
 import batfish.util.Util;
+import batfish.z3.Synthesizer;
 
 public class ConfigurationFactExtractor {
    private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 10;
@@ -284,13 +284,13 @@ public class ConfigurationFactExtractor {
          String interfaceName = i.getName();
 
          // flow sinks
-         if (interfaceName.startsWith(DeptGenerator.FLOW_SINK_INTERFACE_PREFIX)) {
+         if (interfaceName.startsWith(Synthesizer.FLOW_SINK_INTERFACE_PREFIX)) {
             wSetFlowSinkInterface.append(hostname + "|" + interfaceName + "\n");
          }
 
          // fake interfaces
-         if (interfaceName.startsWith(DeptGenerator.FLOW_SINK_INTERFACE_PREFIX)
-               || interfaceName.startsWith(DeptGenerator.FAKE_INTERFACE_PREFIX)) {
+         if (interfaceName.startsWith(Synthesizer.FLOW_SINK_INTERFACE_PREFIX)
+               || interfaceName.startsWith(Synthesizer.FAKE_INTERFACE_PREFIX)) {
             wSetFakeInterface.append(hostname + "|" + interfaceName + "\n");
          }
 
@@ -575,7 +575,6 @@ public class ConfigurationFactExtractor {
             }
 
             // set lines
-            // TODO: complete
             for (PolicyMapSetLine setLine : clause.getSetLines()) {
                switch (setLine.getType()) {
                case ADDITIVE_COMMUNITY:
@@ -592,6 +591,11 @@ public class ConfigurationFactExtractor {
                      wSetPolicyMapClauseSetCommunity.append(mapName + "|" + i
                            + "|" + community + "\n");
                   }
+                  break;
+
+               case COMMUNITY_NONE:
+                  // TODO: implement
+                  // throw new Error("not implemented");
                   break;
 
                case DELETE_COMMUNITY:
@@ -617,6 +621,11 @@ public class ConfigurationFactExtractor {
                   break;
 
                case NEXT_HOP:
+                  // TODO: implement
+                  // throw new Error("not implemented");
+                  break;
+                  
+               case AS_PATH_PREPEND:
                   // TODO: implement
                   // throw new Error("not implemented");
                   break;
@@ -722,7 +731,7 @@ public class ConfigurationFactExtractor {
          if (ip != null) {
             long ipInt = ip.asLong();
             long subnet = subnetMask.asLong();
-            int prefix_length = Util.numSubnetBits(subnetMask.toString());
+            int prefix_length = subnetMask.numSubnetBits();
             long network_start = ipInt & subnet;
             long network_end = Util.getNetworkEnd(network_start, prefix_length);
             wSetNetwork.append("" + network_start + "|" + network_end + "|"

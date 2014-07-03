@@ -43,11 +43,12 @@ from the README at <batfish-root>/lib/logicblox/README:
     ln -s <logicblox-home>/lb-web/lib/java/lb-web-client.jar
 
 6. prepare your environment for logicblox and batfish by adding the following to your .bashrc or equivalent
+    export LB_HOME=<logicblox-root>
+    . <logicblox-root>/etc/profile.d/logicblox.sh
     alias rlb='killall -9 lb-server; killall -9 lb-pager; lb services stop && rm -rf ~/lb_deployment/* && LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start'
     alias slb='LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start'
     alias klb='killall -9 lb-server; killall -9 lb-pager; lb services stop; rm -rf ~/lb_deployment/*'
     . <batfish-root>/tools/batfish_functions.sh
-    export LB_HOME=<logicblox-root>
 rlb will kill logicblox, completely purge all logicblox data, and restart logicblox
 klb will kill logicblox and completely purge all logicblox data
 slb will start logicblox
@@ -55,6 +56,7 @@ if you want to kill logicblox without purging data, run:
     lb services stop
 sourcing batfish_functions.sh will give your shell access to batfish functions.
 LB_HOME is needed for ant to compile logic files.
+sourcing logicblox.sh is required to run LogicBlox
 
 7. start logicblox
 type:

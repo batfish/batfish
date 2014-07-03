@@ -17,7 +17,6 @@ import batfish.representation.Interface;
 import batfish.representation.Ip;
 import batfish.representation.IpAccessList;
 import batfish.representation.IpAccessListLine;
-import batfish.ucla.DeptGenerator;
 import batfish.util.SubRange;
 import batfish.util.Util;
 
@@ -32,7 +31,9 @@ public class Synthesizer {
    private static final int PORT_MIN = 0;
    public static final String SRC_IP_VAR = "src_ip";
    public static final String SRC_PORT_VAR = "src_port";
-
+   public static final String FAKE_INTERFACE_PREFIX = "TenGigabitEthernet200/";
+   public static final String FLOW_SINK_INTERFACE_PREFIX = "TenGigabitEthernet100/";
+ 
    private static List<String> bitvectorGE(String bv, long lb, int numBits) {
       List<String> lines = new ArrayList<String>();
       // these masks refer to nested conditions, not to bitwise and, or
@@ -189,7 +190,7 @@ public class Synthesizer {
          }
          Set<Interface> interfaces = _topologyInterfaces.get(hostname);
          String interfaceName = edge.getInt1();
-         if (interfaceName.startsWith(DeptGenerator.FAKE_INTERFACE_PREFIX)) {
+         if (interfaceName.startsWith(FAKE_INTERFACE_PREFIX)) {
             continue;
          }
          Interface i = _configurations.get(hostname).getInterfaces()
@@ -200,7 +201,7 @@ public class Synthesizer {
          Configuration c = _configurations.get(hostname);
          Map<String, Interface> nodeInterfaces = c.getInterfaces();
          for (String ifaceName : nodeInterfaces.keySet()) {
-            if (ifaceName.startsWith(DeptGenerator.FLOW_SINK_INTERFACE_PREFIX)) {
+            if (ifaceName.startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
                Interface iface = nodeInterfaces.get(ifaceName);
                if (!_topologyInterfaces.containsKey(hostname)) {
                   _topologyInterfaces.put(hostname, new TreeSet<Interface>());
@@ -253,7 +254,7 @@ public class Synthesizer {
       for (String hostname : _configurations.keySet()) {
          Configuration c = _configurations.get(hostname);
          for (String iface : c.getInterfaces().keySet()) {
-            if (iface.startsWith(DeptGenerator.FLOW_SINK_INTERFACE_PREFIX)) {
+            if (iface.startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
                String postOutIfaceName = "R_postout_iface_" + hostname + "_"
                      + iface;
                int ind = 0;
@@ -512,7 +513,7 @@ public class Synthesizer {
          _packetRelations.add(postInName);
          _packetRelations.add(preOutName);
          for (Interface i : c.getInterfaces().values()) {
-            if (i.getName().startsWith(DeptGenerator.FAKE_INTERFACE_PREFIX)
+            if (i.getName().startsWith(FAKE_INTERFACE_PREFIX)
                   || !i.getActive()) {
                continue;
             }
@@ -562,7 +563,7 @@ public class Synthesizer {
          sbPostInFwd.append(indent(pifIndent) + "(and\n");
          pifIndent++;
          for (Interface i : c.getInterfaces().values()) {
-            if (i.getName().startsWith(DeptGenerator.FAKE_INTERFACE_PREFIX)) {
+            if (i.getName().startsWith(FAKE_INTERFACE_PREFIX)) {
                continue;
             }
             Ip ip = i.getIP();
@@ -590,7 +591,7 @@ public class Synthesizer {
          for (Interface iface : interfaces) {
             int ind = 0;
             String ifaceName = iface.getName();
-            if (ifaceName.startsWith(DeptGenerator.FAKE_INTERFACE_PREFIX)) {
+            if (ifaceName.startsWith(FAKE_INTERFACE_PREFIX)) {
                continue;
             }
             String preOutIfaceName = "R_preout_iface_" + hostname + "_"
@@ -656,9 +657,9 @@ public class Synthesizer {
          for (Interface iface : interfaces) {
             int ind = 0;
             String ifaceName = iface.getName();
-            if (ifaceName.startsWith(DeptGenerator.FAKE_INTERFACE_PREFIX)
+            if (ifaceName.startsWith(FAKE_INTERFACE_PREFIX)
                   || ifaceName
-                        .startsWith(DeptGenerator.FLOW_SINK_INTERFACE_PREFIX)) {
+                        .startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
                continue;
             }
             String preInIfaceName = "R_prein_iface_" + hostname + "_"
@@ -730,7 +731,7 @@ public class Synthesizer {
          for (int i = 0; i < fib.length; i++) {
             FibRow currentRow = fib[i];
             if (currentRow.getInterface().startsWith(
-                  DeptGenerator.FAKE_INTERFACE_PREFIX)) {
+                  FAKE_INTERFACE_PREFIX)) {
                continue;
             }
             Set<FibRow> notRows = new TreeSet<FibRow>();
@@ -841,10 +842,10 @@ public class Synthesizer {
          String hostnameIn = edge.getNode2();
          String intOut = edge.getInt1();
          String intIn = edge.getInt2();
-         if (intIn.startsWith(DeptGenerator.FAKE_INTERFACE_PREFIX)
-               || intIn.startsWith(DeptGenerator.FLOW_SINK_INTERFACE_PREFIX)
-               || intOut.startsWith(DeptGenerator.FAKE_INTERFACE_PREFIX)
-               || intOut.startsWith(DeptGenerator.FLOW_SINK_INTERFACE_PREFIX)) {
+         if (intIn.startsWith(FAKE_INTERFACE_PREFIX)
+               || intIn.startsWith(FLOW_SINK_INTERFACE_PREFIX)
+               || intOut.startsWith(FAKE_INTERFACE_PREFIX)
+               || intOut.startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
             continue;
          }
 

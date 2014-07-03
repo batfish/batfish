@@ -1,5 +1,9 @@
 lexer grammar CiscoGrammarCommonLexer;
 
+options {
+	superClass = batfish.util.DummyLexer;
+}
+
 @header {
 package batfish.grammar.cisco;
 }
@@ -2973,7 +2977,7 @@ ACL_NUM
 	F_Digit+
 	{
 	int val = Integer.parseInt(getText());
-	if ((1 <= val && val <= 199) || (1300 <= val && val <= 1999)) {
+	if ((1 <= val && val <= 99) || (1300 <= val && val <= 1999)) {
 		_type = ACL_NUM_STANDARD;
 	}
 	else if ((100 <= val && val <= 199) || (2000 <= val && val <= 2699)) {
@@ -3109,8 +3113,11 @@ COMMUNITY_LIST
 
 ;
 
-COMMUNITY_LIST_NUM:
-	{enableCOMMUNITY_LIST_NUM}? F_Digit+
+COMMUNITY_LIST_NUM
+:
+	{enableCOMMUNITY_LIST_NUM}?
+
+	F_Digit+
 	{
 		int val = Integer.parseInt(getText());
 		if (1 <= val && val <= 99) {
@@ -3122,15 +3129,7 @@ COMMUNITY_LIST_NUM:
 		enableCOMMUNITY_LIST_NUM = false;
 		enableDEC = true;
 	}
-;
 
-COMMENT_LINE
-:
-	{!inComment}?
-
-	(
-		'!' .+? F_Newline
-	)
 ;
 
 COMMENT_CLOSING_LINE
@@ -3139,6 +3138,15 @@ COMMENT_CLOSING_LINE
 
 	(
 		'!' F_Newline
+	)
+;
+
+COMMENT_LINE
+:
+	{!inComment}?
+
+	(
+		'!' ~('\n' | '\r')+ F_Newline
 	)
 ;
 
@@ -3459,7 +3467,7 @@ WS
 		' '
 		| '\t'
 		| '\u000C'
-	) -> skip
+	) -> channel(HIDDEN)
 ;
 
 // Fragments
@@ -3467,7 +3475,8 @@ WS
 fragment
 F_Newline
 :
-	[\n\r]+
+	'\n'
+	| '\r'
 ;
 
 fragment

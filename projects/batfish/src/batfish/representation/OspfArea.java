@@ -8,18 +8,18 @@ import batfish.util.Util;
 public class OspfArea {
 
    private Set<Interface> _interfaces;
-   private int _number;
+   private long _number;
 
-   public OspfArea(int number) {
+   public OspfArea(long areaNum) {
       _interfaces = new LinkedHashSet<Interface>();
-      _number = number;
+      _number = areaNum;
    }
    
    public Set<Interface> getInterfaces() {
       return _interfaces;
    }
    
-   public int getNumber() {
+   public long getNumber() {
       return _number;
    }
 

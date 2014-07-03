@@ -232,7 +232,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
          newProcess.getOutboundPolicyMaps().add(map);
       }
 
-      HashMap<Integer, OspfArea> areas = newProcess.getAreas();
+      Map<Long, OspfArea> areas = newProcess.getAreas();
       List<OSPFNetwork> networks = proc.getNetworks();
       if (networks.get(0).getInterface() == null) {
 
@@ -262,7 +262,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
                Ip networkIp = new Ip(network.getNetworkAddress());
                if (interfaceIp.asLong() == networkIp.asLong()) {
                   // we have a longest prefix match
-                  int areaNum = network.getArea();
+                  long areaNum = network.getArea();
                   OspfArea newArea = areas.get(areaNum);
                   if (newArea == null) {
                      newArea = new OspfArea(areaNum);
@@ -288,7 +288,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
                }
                if (i.getName().equals(network.getInterface())) {
                   // System.out.println("match : "+i.getName());
-                  int areaNum = network.getArea();
+                  long areaNum = network.getArea();
                   OspfArea newArea = areas.get(areaNum);
                   if (newArea == null) {
                      newArea = new OspfArea(areaNum);
@@ -839,6 +839,8 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
                   PolicyMapSetCommunityLine scLine = (PolicyMapSetCommunityLine) setLine;
                   c.getCommunities().addAll(scLine.getCommunities());
                   break;
+               case AS_PATH_PREPEND:
+               case COMMUNITY_NONE:
                case DELETE_COMMUNITY:
                case LOCAL_PREFERENCE:
                case METRIC:

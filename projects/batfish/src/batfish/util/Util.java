@@ -2,6 +2,8 @@ package batfish.util;
 
 import java.util.LinkedHashSet;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 public class Util {
    public static final String FACT_BLOCK_FOOTER = "\n//FACTS END HERE\n"
          + "   }) // clauses\n" + "} <-- .\n";
@@ -29,14 +31,30 @@ public class Util {
       return output;
    }
 
+   public static String extractBits(long l, int start, int end) {
+      String s = "";
+      for (int pos = end; pos >= start; pos--) {
+         long mask = 1L << pos;
+         long bit = l & mask;
+         s += (bit != 0) ? 1 : 0;
+      }
+      return s;
+   }
+   
+   public static String getIndentString(int indentLevel) {
+	   
+	   String retString = "";
+	   
+	   for (int i=0; i< indentLevel; i++) {
+		   retString += "  ";
+	   }   
+	   
+	   return retString;
+   }
+
    public static String getIpFromIpSubnetPair(String pair) {
       int slashPos = pair.indexOf('/');
       return pair.substring(0, slashPos);
-   }
-
-   public static int getPrefixLengthFromIpSubnetPair(String pair) {
-      int slashPos = pair.indexOf('/');
-      return Integer.parseInt(pair.substring(slashPos + 1, pair.length()));
    }
 
    public static long getNetworkEnd(long networkStart, int prefix_length) {
@@ -48,24 +66,6 @@ public class Util {
       return networkEnd;
    }
 
-   public static String extractBits(long l, int start, int end) {
-      String s = "";
-      for (int pos = end; pos >= start; pos--) {
-         long mask = 1L << pos;
-         long bit = l & mask;
-         s += (bit != 0)? 1 : 0;
-      }
-      return s;
-   }
-   
-   public static int numWildcardBits(long wildcard) {
-      int numBits = 0;
-      for (long test = wildcard; test != 0; test >>= 1) {
-         numBits++;
-      }
-      return numBits;
-   }
-   
    public static String getPortName(int port) {
       switch (port) {
       case 0:
@@ -112,7 +112,12 @@ public class Util {
          return "" + port;
       }
    }
-
+   
+   public static int getPrefixLengthFromIpSubnetPair(String pair) {
+      int slashPos = pair.indexOf('/');
+      return Integer.parseInt(pair.substring(slashPos + 1, pair.length()));
+   }
+   
    public static String getProtocolName(int protocol) {
       switch (protocol) {
       case 0:
@@ -144,6 +149,12 @@ public class Util {
       return (1 << (32 - Util.numSubnetBits(string)));
    }
 
+   public static String getText(ParserRuleContext ctx, String srcText) {
+      int start = ctx.start.getStartIndex();
+      int stop = ctx.stop.getStopIndex();
+      return srcText.substring(start, stop);
+   }
+
    public static long ipToLong(String addr) {
       String[] addrArray = addr.split("\\.");
       long num = 0;
@@ -170,6 +181,14 @@ public class Util {
             + ((i >> 8) & 0xFF) + "." + (i & 0xFF);
    }
 
+   public static String longToZ3Hex16(long l) {
+      return "#x" + String.format("%04x", l);
+   }
+
+   public static String longToZ3Hex32(long l) {
+      return "#x" + String.format("%08x", l);
+   }
+
    public static int numSubnetBits(String subnet) {
       int count = 0;
       long subnetVal = Util.ipToLong(subnet);
@@ -189,6 +208,14 @@ public class Util {
       return val;
    }
 
+   public static int numWildcardBits(long wildcard) {
+      int numBits = 0;
+      for (long test = wildcard; test != 0; test >>= 1) {
+         numBits++;
+      }
+      return numBits;
+   }
+
    public static long numWildcardBitsToWildcardLong(int numBits) {
       long wildcard = 0;
       for (int i = 0; i < numBits; i++) {
@@ -196,25 +223,7 @@ public class Util {
       }
       return wildcard;
    }
-
-   private Util() {
-   }
-
-   public int nCr(int n, int r) {
-      int product = 1;
-      int rPrime;
-      if (r < n / 2) {
-         rPrime = n - r;
-      }
-      else {
-         rPrime = r;
-      }
-      for (int i = n; i > rPrime; i--) {
-         product *= i;
-      }
-      return product;
-   }
-
+   
    public static String toHSAInterfaceName(String name) {
       if (name.startsWith("xe-")) {
          String numberSection = name.substring(3);
@@ -254,24 +263,23 @@ public class Util {
          return name;
       }
    }
-   
-   public static String getIndentString(int indentLevel) {
-	   
-	   String retString = "";
-	   
-	   for (int i=0; i< indentLevel; i++) {
-		   retString += "  ";
-	   }   
-	   
-	   return retString;
+
+   private Util() {
    }
 
-   public static String longToZ3Hex32(long l) {
-      return "#x" + String.format("%08x", l);
-   }
-
-   public static String longToZ3Hex16(long l) {
-      return "#x" + String.format("%04x", l);
+   public int nCr(int n, int r) {
+      int product = 1;
+      int rPrime;
+      if (r < n / 2) {
+         rPrime = n - r;
+      }
+      else {
+         rPrime = r;
+      }
+      for (int i = n; i > rPrime; i--) {
+         product *= i;
+      }
+      return product;
    }
 
 }

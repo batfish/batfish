@@ -1,10 +1,11 @@
 package batfish.representation.cisco;
 
 public enum RouteMapMatchType {
-   IP_PREFIX_LIST,
-   IP_ACCESS_LIST,
-   COMMUNITY_LIST,
    AS_PATH_ACCESS_LIST,
+   COMMUNITY_LIST,
+   IP_ACCESS_LIST,
+   IP_PREFIX_LIST,
    NEIGHBOR,
-   PROTOCOL
+   PROTOCOL,
+   TAG
 }

@@ -1,22 +1,22 @@
 package batfish.representation.cisco;
 
-import java.util.List;
+import java.util.Set;
 
 public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
 
-   private List<String> _listNames;
+   private Set<String> _listNames;
 
-   public RouteMapMatchCommunityListLine(List<String> nameLists) {
-      _listNames = nameLists;
+   public RouteMapMatchCommunityListLine(Set<String> names) {
+      _listNames = names;
+   }
+
+   public Set<String> getListNames() {
+      return _listNames;
    }
 
    @Override
    public RouteMapMatchType getType() {
       return RouteMapMatchType.COMMUNITY_LIST;
-   }
-
-   public List<String> getListNames() {
-      return _listNames;
    }
 
 }

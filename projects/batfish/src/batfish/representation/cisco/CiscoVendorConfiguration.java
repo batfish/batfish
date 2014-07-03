@@ -3,7 +3,6 @@ package batfish.representation.cisco;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -44,9 +43,9 @@ import batfish.representation.SwitchportEncapsulationType;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
 import batfish.util.SubRange;
-import batfish.util.Util;
 
-public class CiscoVendorConfiguration implements VendorConfiguration {
+public class CiscoVendorConfiguration extends CiscoConfiguration implements
+      VendorConfiguration {
 
    private static final String DEFAULT_ROUTE_FILTER_NAME = "~DEFAULT_ROUTE_FILTER~";
    private static final int MAX_ADMINISTRATIVE_COST = 32767;
@@ -116,7 +115,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          throws VendorConversionException {
       batfish.representation.BgpProcess newBgpProcess = new batfish.representation.BgpProcess();
       Map<String, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
-      Set<String> activeNeighbors = proc.getActivatedNeighbors();
+      Set<Ip> activeNeighbors = proc.getActivatedNeighbors();
       int defaultMetric = proc.getDefaultMetric();
 
       Set<PolicyMap> globalExportPolicies = new HashSet<PolicyMap>();
@@ -124,8 +123,8 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       // add generated routes for aggregate addresses
       for (BgpNetwork aggNet : proc.getAggregateNetworks().keySet()) {
          boolean summaryOnly = proc.getAggregateNetworks().get(aggNet);
-         String prefix = aggNet.getNetworkAddress();
-         int prefixLength = Util.numSubnetBits(aggNet.getSubnetMask());
+         String prefix = aggNet.getNetworkAddress().toString();
+         int prefixLength = aggNet.getSubnetMask().numSubnetBits();
          SubRange prefixRange = new SubRange(prefixLength + 1, 32);
          LineAction prefixAction = LineAction.ACCEPT;
          String filterName = "~MATCH_SUMMARIZED_OF:" + prefix + "~";
@@ -152,20 +151,22 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
 
       // create redistribution origination policies
       PolicyMap redistributeStaticPolicyMap = null;
-      if (proc.getRedistributeStatic()) {
-         redistributeStaticPolicyMap = makeRouteExportPolicy(c, "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null, 0, null, null, null, Protocol.STATIC, PolicyMapAction.PERMIT);
+      if (proc.getRedistributionPolicies().containsKey(Protocol.STATIC)) {
+         redistributeStaticPolicyMap = makeRouteExportPolicy(c,
+               "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null, 0,
+               null, null, null, Protocol.STATIC, PolicyMapAction.PERMIT);
       }
-      
+
       for (BgpPeerGroup pg : proc.getPeerGroups().values()) {
          // update source
          String updateSourceInterface = pg.getUpdateSource();
          String updateSource = null;
          if (updateSourceInterface == null) {
-            updateSource = proc.getRouterId();
+            updateSource = proc.getRouterId().toString();
          }
          else {
             Ip sourceIp = c.getInterfaces().get(updateSourceInterface).getIP();
-            updateSource = sourceIp.toString(); 
+            updateSource = sourceIp.toString();
          }
 
          PolicyMap newInboundPolicyMap = null;
@@ -194,8 +195,8 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          RouteFilterList filter = new RouteFilterList("~BGP_PRE_FILTER:"
                + pg.getName() + "~");
          for (BgpNetwork network : proc.getNetworks()) {
-            Ip netAdd = new Ip(network.getNetworkAddress());
-            int prefixLen = Util.numSubnetBits(network.getSubnetMask());
+            Ip netAdd = network.getNetworkAddress();
+            int prefixLen = network.getSubnetMask().numSubnetBits();
             RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
                   LineAction.ACCEPT, netAdd, prefixLen, new SubRange(prefixLen,
                         prefixLen));
@@ -222,10 +223,10 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          originationPolicies.add(explicitOriginationPolicyMap);
 
          // add redistribution origination policies
-         if (proc.getRedistributeStatic()) {
+         if (proc.getRedistributionPolicies().containsKey(Protocol.STATIC)) {
             originationPolicies.add(redistributeStaticPolicyMap);
          }
-         
+
          // set up default export policy for this peer group
          GeneratedRoute defaultRoute = null;
          PolicyMap defaultOriginationPolicy = null;
@@ -254,23 +255,21 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
             }
          }
 
-         Long clusterId = pg.getClusterId();
+         Ip clusterId = pg.getClusterId();
          boolean routeReflectorClient = pg.getRouteReflectorClient();
          if (routeReflectorClient) {
             if (clusterId == null) {
-               clusterId = Util.ipToLong(updateSource);
+               clusterId = new Ip(updateSource);
             }
          }
          boolean sendCommunity = pg.getSendCommunity();
-         for (String neighborAddress : pg.getNeighborAddresses()) {
+         for (Ip neighborAddress : pg.getNeighborAddresses()) {
             if (activeNeighbors.contains(neighborAddress)) {
-               if (neighborAddress.equals("169.232.12.157")) {
-                  System.out.print("");
-               }
-               BgpNeighbor newNeighbor = newBgpNeighbors.get(neighborAddress);
+               BgpNeighbor newNeighbor = newBgpNeighbors.get(neighborAddress
+                     .toString());
                if (newNeighbor == null) {
-                  newNeighbor = new BgpNeighbor(new Ip(neighborAddress));
-                  newBgpNeighbors.put(neighborAddress, newNeighbor);
+                  newNeighbor = new BgpNeighbor(neighborAddress);
+                  newBgpNeighbors.put(neighborAddress.toString(), newNeighbor);
                }
                if (newInboundPolicyMap != null) {
                   newNeighbor.addInboundPolicyMap(newInboundPolicyMap);
@@ -288,7 +287,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
                   newNeighbor.setGroupName(pg.getName());
                }
                if (routeReflectorClient) {
-                  newNeighbor.setClusterId(clusterId);
+                  newNeighbor.setClusterId(clusterId.asLong());
                }
                if (defaultRoute != null) {
                   newNeighbor.getGeneratedRoutes().add(defaultRoute);
@@ -335,10 +334,10 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       List<IpAccessListLine> lines = new ArrayList<IpAccessListLine>();
       for (ExtendedAccessListLine fromLine : eaList.getLines()) {
          lines.add(new IpAccessListLine(fromLine.getAction(), fromLine
-               .getProtocol(), new Ip(fromLine.getSourceIP()), new Ip(fromLine
-               .getSourceWildcard()), new Ip(fromLine.getDestinationIP()),
-               new Ip(fromLine.getDestinationWildcard()), fromLine
-                     .getSrcPortRanges(), fromLine.getDstPortRange()));
+               .getProtocol(), fromLine.getSourceIP(), fromLine
+               .getSourceWildcard(), fromLine.getDestinationIP(), fromLine
+               .getDestinationWildcard(), fromLine.getSrcPortRanges(), fromLine
+               .getDstPortRange()));
       }
       return new IpAccessList(name, lines);
    }
@@ -354,18 +353,19 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       batfish.representation.OspfProcess newProcess = new batfish.representation.OspfProcess();
 
       // establish areas and associated interfaces
-      HashMap<Integer, OspfArea> areas = newProcess.getAreas();
-      List<OspfNetwork> networks = proc.getNetworks();
+      Map<Long, OspfArea> areas = newProcess.getAreas();
+      List<OspfNetwork> networks = new ArrayList<OspfNetwork>();
+      networks.addAll(proc.getNetworks());
       Collections.sort(networks, new Comparator<OspfNetwork>() {
          // sort so longest prefixes are first
          @Override
          public int compare(OspfNetwork lhs, OspfNetwork rhs) {
-            int lhsPrefixLength = Util.numSubnetBits(lhs.getSubnetMask());
-            int rhsPrefixLength = Util.numSubnetBits(rhs.getSubnetMask());
+            int lhsPrefixLength = lhs.getSubnetMask().numSubnetBits();
+            int rhsPrefixLength = rhs.getSubnetMask().numSubnetBits();
             int result = -Integer.compare(lhsPrefixLength, rhsPrefixLength);
             if (result == 0) {
-               long lhsIp = Util.ipToLong(lhs.getNetworkAddress());
-               long rhsIp = Util.ipToLong(rhs.getNetworkAddress());
+               long lhsIp = lhs.getNetworkAddress().asLong();
+               long rhsIp = rhs.getNetworkAddress().asLong();
                result = Long.compare(lhsIp, rhsIp);
             }
             return result;
@@ -377,12 +377,12 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
             continue;
          }
          for (OspfNetwork network : networks) {
-            Ip networkIp = new Ip(network.getNetworkAddress());
-            Ip networkMask = new Ip(network.getSubnetMask());
+            Ip networkIp = network.getNetworkAddress();
+            Ip networkMask = network.getSubnetMask();
             long maskedIp = interfaceIp.asLong() & networkMask.asLong();
             if (maskedIp == networkIp.asLong()) {
                // we have a longest prefix match
-               int areaNum = network.getArea();
+               long areaNum = network.getArea();
                OspfArea newArea = areas.get(areaNum);
                if (newArea == null) {
                   newArea = new OspfArea(areaNum);
@@ -454,11 +454,13 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
 
       // policy map for redistributing connected routes
       // TODO: honor subnets option
-      if (proc.getRedistributeConnected()) {
-         int metric = proc.getRedistributeConnectedMetric();
+      OspfRedistributionPolicy rcp = proc.getRedistributionPolicies().get(
+            Protocol.CONNECTED);
+      if (rcp != null) {
+         int metric = rcp.getMetric();
          // add default export map with metric
          PolicyMap exportConnectedPolicy;
-         String mapName = proc.getRedistributeConnectedMap();
+         String mapName = rcp.getMap();
          if (mapName != null) {
             exportConnectedPolicy = c.getPolicyMaps().get(mapName);
             if (exportConnectedPolicy == null) {
@@ -487,11 +489,13 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
 
       // policy map for redistributing static routes
       // TODO: honor subnets option
-      if (proc.getRedistributeStatic()) {
-         int metric = proc.getRedistributeStaticMetric();
+      OspfRedistributionPolicy rsp = proc.getRedistributionPolicies().get(
+            Protocol.STATIC);
+      if (rsp != null) {
+         int metric = rsp.getMetric();
          // add export map with metric
          PolicyMap exportStaticPolicy;
-         String mapName = proc.getRedistributeStaticMap();
+         String mapName = rsp.getMap();
          if (mapName != null) {
             exportStaticPolicy = c.getPolicyMaps().get(mapName);
             if (exportStaticPolicy != null) { // assume for now that all maps
@@ -549,14 +553,17 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          }
       }
       newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
-      newProcess.setRouterId(proc.getRouterId());
+      Ip routerId = proc.getRouterId();
+      if (routerId != null) {
+         newProcess.setRouterId(routerId.toString());
+      }
       return newProcess;
    }
 
    private static PolicyMap toPolicyMap(final Configuration c, RouteMap map)
          throws VendorConversionException {
       List<PolicyMapClause> clauses = new ArrayList<PolicyMapClause>();
-      for (RouteMapClause rmClause : map.getClauseList()) {
+      for (RouteMapClause rmClause : map.getClauses().values()) {
          clauses.add(toPolicyMapClause(c, rmClause));
       }
       return new PolicyMap(map.getMapName(), clauses);
@@ -642,6 +649,10 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          // TODO: implement
          break;
 
+      case TAG:
+         // TODO: implement
+         break;
+
       default:
          throw new Error("bad type");
       }
@@ -651,14 +662,13 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
    private static RouteFilterLine toRouteFilterLine(
          ExtendedAccessListLine fromLine) {
       LineAction action = fromLine.getAction();
-      Ip prefix = new Ip(fromLine.getSourceIP());
-      long prefixSubnet = ~(Util.ipToLong(fromLine.getSourceWildcard())) & 0xFFFFFFFF;
-      int prefixLength = Util.numSubnetBits(Util.longToIp(prefixSubnet));
-      long minSubnet = Util.ipToLong(fromLine.getDestinationIP());
-      long maxSubnet = minSubnet
-            | Util.ipToLong(fromLine.getDestinationWildcard());
-      int minPrefixLength = Util.numSubnetBits(fromLine.getDestinationIP());
-      int maxPrefixLength = Util.numSubnetBits(Util.longToIp(maxSubnet));
+      Ip prefix = fromLine.getSourceIP();
+      int prefixLength = fromLine.getSourceWildcard().inverted()
+            .numSubnetBits();
+      long minSubnet = fromLine.getDestinationIP().asLong();
+      long maxSubnet = minSubnet | fromLine.getDestinationWildcard().asLong();
+      int minPrefixLength = fromLine.getDestinationIP().numSubnetBits();
+      int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
       return new RouteFilterLengthRangeLine(action, prefix, prefixLength,
             new SubRange(minPrefixLength, maxPrefixLength));
    }
@@ -680,7 +690,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       RouteFilterList newRouteFilterList = new RouteFilterList(list.getName());
       for (PrefixListLine prefixListLine : list.getLines()) {
          RouteFilterLine newRouteFilterListLine = new RouteFilterLengthRangeLine(
-               prefixListLine.getAction(), new Ip(prefixListLine.getPrefix()),
+               prefixListLine.getAction(), prefixListLine.getPrefix(),
                prefixListLine.getPrefixLength(),
                prefixListLine.getLengthRange());
          newRouteFilterList.addLine(newRouteFilterListLine);
@@ -690,166 +700,19 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
 
    private static batfish.representation.StaticRoute toStaticRoute(
          Configuration c, StaticRoute staticRoute) {
-      String nextHopIpStr = staticRoute.getNextHopIp();
-      Ip nextHopIp = null;
-      if (nextHopIpStr != null) {
-         nextHopIp = new Ip(nextHopIpStr);
-      }
-      Ip prefix = new Ip(staticRoute.getPrefix());
+      Ip nextHopIp = staticRoute.getNextHopIp();
+      Ip prefix = staticRoute.getPrefix();
       String nextHopInterface = staticRoute.getNextHopInterface();
-      int prefixLength = Util.numSubnetBits(staticRoute.getMask());
+      int prefixLength = staticRoute.getMask().numSubnetBits();
       return new batfish.representation.StaticRoute(prefix, prefixLength,
             nextHopIp, nextHopInterface, staticRoute.getDistance());
 
    }
 
-   private Map<String, IpAsPathAccessList> _asPathAccessLists;
-   private BgpProcess _bgpProcess;
    private List<String> _conversionWarnings;
-   private Map<String, ExpandedCommunityList> _expandedCommunityLists;
-   private Map<String, ExtendedAccessList> _extendedAccessLists;
-   private String _hostname;
-   private List<Interface> _interfaces;
-   private List<OspfProcess> _ospfProcesses;
-   private Map<String, PrefixList> _prefixLists;
-
-   private Map<String, RouteMap> _routeMaps;
-
-   private Map<String, StandardAccessList> _standardAccessLists;
-
-   private Map<String, StandardCommunityList> _standardCommunityLists;
-
-   private List<StaticRoute> _staticRoutes;
 
    public CiscoVendorConfiguration() {
       _conversionWarnings = new ArrayList<String>();
-      _ospfProcesses = new ArrayList<OspfProcess>();
-      _interfaces = new ArrayList<Interface>();
-      _standardAccessLists = new HashMap<String, StandardAccessList>();
-      _extendedAccessLists = new HashMap<String, ExtendedAccessList>();
-      _asPathAccessLists = new HashMap<String, IpAsPathAccessList>();
-      _staticRoutes = new ArrayList<StaticRoute>();
-      _bgpProcess = null;
-      _routeMaps = new HashMap<String, RouteMap>();
-      _prefixLists = new HashMap<String, PrefixList>();
-      _standardCommunityLists = new HashMap<String, StandardCommunityList>();
-      _expandedCommunityLists = new HashMap<String, ExpandedCommunityList>();
-   }
-
-   public void addAccessListLine(String id, StandardAccessListLine line) {
-      if (!_standardAccessLists.containsKey(id)) {
-         _standardAccessLists.put(id, new StandardAccessList(id));
-      }
-      _standardAccessLists.get(id).addLine(line);
-   }
-
-   public void addAsPathAccessListLine(String name, IpAsPathAccessListLine line) {
-      if (!_asPathAccessLists.containsKey(name)) {
-         _asPathAccessLists.put(name, new IpAsPathAccessList(name));
-      }
-      _asPathAccessLists.get(name).addLine(line);
-   }
-
-   public void addExpandedCommunityListLine(String name,
-         ExpandedCommunityListLine line) {
-      ExpandedCommunityList cl = _expandedCommunityLists.get(name);
-      if (cl == null) {
-         cl = new ExpandedCommunityList(name);
-         _expandedCommunityLists.put(name, cl);
-      }
-      cl.addLine(line);
-   }
-
-   public void addExpandedCommunityLists(List<ExpandedCommunityList> lists) {
-      for (ExpandedCommunityList ecl : lists) {
-         ExpandedCommunityList cl = _expandedCommunityLists.get(ecl.getName());
-         if (cl == null) {
-            _expandedCommunityLists.put(ecl.getName(), ecl);
-         }
-         else {
-            throw new Error("duplicate community lists");
-         }
-
-      }
-   }
-
-   public void addExtendedAccessList(ExtendedAccessList eal) {
-      if (_extendedAccessLists.containsKey(eal.getId())) {
-         throw new Error("duplicate extended access list name");
-      }
-      _extendedAccessLists.put(eal.getId(), eal);
-   }
-
-   public void addExtendedAccessListLine(String id, ExtendedAccessListLine eall) {
-      if (!_extendedAccessLists.containsKey(id)) {
-         _extendedAccessLists.put(id, new ExtendedAccessList(id));
-      }
-      _extendedAccessLists.get(id).addLine(eall);
-   }
-
-   public void addInterface(Interface interface1) {
-      _interfaces.add(interface1);
-   }
-
-   public void addOspfProcess(OspfProcess process) {
-      if (_ospfProcesses.size() > 0) {
-         throw new Error(
-               "More than one OSPF process not supported at this time");
-      }
-      _ospfProcesses.add(process);
-   }
-
-   public void addPrefixListLine(String prefixListName, PrefixListLine line) {
-      PrefixList list = _prefixLists.get(prefixListName);
-      if (list == null) {
-         list = new PrefixList(prefixListName);
-         _prefixLists.put(prefixListName, list);
-      }
-      list.addLine(line);
-   }
-
-   public void addRouteFilters(List<PrefixList> fl) {
-      for (PrefixList rf : fl) {
-         _prefixLists.put(rf.getName(), rf);
-      }
-   }
-
-   public void addRouteMapClause(RouteMapClause clause) {
-      RouteMap rm = null;
-      if (_routeMaps.containsKey(clause.getMapName())) {
-         rm = _routeMaps.get(clause.getMapName());
-         rm.addClause(clause);
-      }
-      else {
-         rm = new RouteMap(clause.getMapName());
-         rm.addClause(clause);
-         _routeMaps.put(rm.getMapName(), rm);
-      }
-      rm.setIgnore(rm.getIgnore() || clause.getIgnore());
-   }
-
-   public void addRouteMaps(List<RouteMap> ml) {
-      for (RouteMap rm : ml) {
-         _routeMaps.put(rm.getMapName(), rm);
-      }
-   }
-
-   public void addStandardCommunityListLine(String name,
-         StandardCommunityListLine line) {
-      StandardCommunityList cl = _standardCommunityLists.get(name);
-      if (cl == null) {
-         cl = new StandardCommunityList(name);
-         _standardCommunityLists.put(name, cl);
-      }
-      cl.addLine(line);
-   }
-
-   public void addStaticRoute(StaticRoute staticRoute) {
-      _staticRoutes.add(staticRoute);
-   }
-
-   public void addStaticRoutes(List<StaticRoute> staticRoutes) {
-      _staticRoutes.addAll(staticRoutes);
    }
 
    private boolean containsIpAccessList(String eaListName, String mapName) {
@@ -858,7 +721,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          if (currentMap == null) {
             throw new Error("undefined reference to routemap: " + mapName);
          }
-         for (RouteMapClause clause : currentMap.getClauseList()) {
+         for (RouteMapClause clause : currentMap.getClauses().values()) {
             for (RouteMapMatchLine matchLine : clause.getMatchList()) {
                if (matchLine.getType() == RouteMapMatchType.IP_ACCESS_LIST) {
                   RouteMapMatchIpAccessListLine ipall = (RouteMapMatchIpAccessListLine) matchLine;
@@ -876,7 +739,7 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
 
    private void convertForPurpose(Set<RouteMap> routingRouteMaps, RouteMap map) {
       if (routingRouteMaps.contains(map)) {
-         for (RouteMapClause clause : map.getClauseList()) {
+         for (RouteMapClause clause : map.getClauses().values()) {
             List<RouteMapMatchLine> matchList = clause.getMatchList();
             for (int i = 0; i < matchList.size(); i++) {
                RouteMapMatchLine line = matchList.get(i);
@@ -892,41 +755,9 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       }
    }
 
-   public Map<String, StandardAccessList> getAccessLists() {
-      return _standardAccessLists;
-   }
-
-   public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
-      return _asPathAccessLists;
-   }
-
-   public BgpProcess getBgpProcess() {
-      return _bgpProcess;
-   }
-
    @Override
    public List<String> getConversionWarnings() {
       return _conversionWarnings;
-   }
-
-   public String getHostname() {
-      return _hostname;
-   }
-
-   public List<Interface> getInterfaces() {
-      return _interfaces;
-   }
-
-   public List<OspfProcess> getOspfProcesses() {
-      return _ospfProcesses;
-   }
-
-   public Map<String, PrefixList> getRouteFilter() {
-      return _prefixLists;
-   }
-
-   public Map<String, RouteMap> getRouteMaps() {
-      return _routeMaps;
    }
 
    private Set<RouteMap> getRoutingRouteMaps() {
@@ -934,20 +765,16 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       String currentMapName;
       RouteMap currentMap;
       // check ospf policies
-      if (_ospfProcesses.size() > 0) {
-         OspfProcess oproc = _ospfProcesses.get(0);
-         currentMapName = oproc.getRedistributeConnectedMap();
-         if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-               maps.add(currentMap);
-            }
-         }
-         currentMapName = oproc.getRedistributeStaticMap();
-         if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-               maps.add(currentMap);
+      if (_ospfProcess != null) {
+         OspfProcess oproc = _ospfProcess;
+         for (OspfRedistributionPolicy rp : oproc.getRedistributionPolicies()
+               .values()) {
+            currentMapName = rp.getMap();
+            if (currentMapName != null) {
+               currentMap = _routeMaps.get(currentMapName);
+               if (currentMap != null) {
+                  maps.add(currentMap);
+               }
             }
          }
          currentMapName = oproc.getDefaultInformationOriginateMap();
@@ -960,6 +787,16 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       }
       // check bgp policies
       if (_bgpProcess != null) {
+         for (BgpRedistributionPolicy rp : _bgpProcess
+               .getRedistributionPolicies().values()) {
+            currentMapName = rp.getMap();
+            if (currentMapName != null) {
+               currentMap = _routeMaps.get(currentMapName);
+               if (currentMap != null) {
+                  maps.add(currentMap);
+               }
+            }
+         }
          for (BgpPeerGroup pg : _bgpProcess.getPeerGroups().values()) {
             currentMapName = pg.getInboundRouteMap();
             if (currentMapName != null) {
@@ -980,18 +817,6 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       return maps;
    }
 
-   public List<StaticRoute> getStaticRoutes() {
-      return _staticRoutes;
-   }
-
-   public void setBgpProcess(BgpProcess process) {
-      _bgpProcess = process;
-   }
-
-   public void setHostname(String hostname) {
-      _hostname = hostname;
-   }
-
    private batfish.representation.Interface toInterface(Interface iface,
          Map<String, IpAccessList> ipAccessLists)
          throws VendorConversionException {
@@ -1002,8 +827,8 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       newIface.setArea(iface.getArea());
       newIface.setBandwidth(iface.getBandwidth());
       if (iface.getIP() != null) {
-         newIface.setIP(new Ip(iface.getIP()));
-         newIface.setSubnetMask(new Ip(iface.getSubnetMask()));
+         newIface.setIP(iface.getIP());
+         newIface.setSubnetMask(iface.getSubnetMask());
       }
       Map<String, String> secondaryIps = iface.getSecondaryIps();
       for (String ip : secondaryIps.keySet()) {
@@ -1077,18 +902,13 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
 
       // convert standard/extended access lists to access lists or route filter
       // lists
+      List<ExtendedAccessList> allACLs = new ArrayList<ExtendedAccessList>();
       for (StandardAccessList saList : _standardAccessLists.values()) {
          ExtendedAccessList eaList = saList.toExtendedAccessList();
-         if (usedForRouting(eaList)) {
-            RouteFilterList rfList = toRouteFilterList(eaList);
-            c.getRouteFilterLists().put(rfList.getName(), rfList);
-         }
-         else {
-            IpAccessList ipaList = toIpAccessList(eaList);
-            c.getIpAccessLists().put(ipaList.getName(), ipaList);
-         }
+         allACLs.add(eaList);
       }
-      for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
+      allACLs.addAll(_extendedAccessLists.values());
+      for (ExtendedAccessList eaList : allACLs) {
          if (usedForRouting(eaList)) {
             RouteFilterList rfList = toRouteFilterList(eaList);
             c.getRouteFilterLists().put(rfList.getName(), rfList);
@@ -1105,33 +925,33 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
          if (map.getIgnore()) {
             continue;
          }
-         //TODO: replace UCLA-SPECIFIC code
+         // TODO: replace UCLA-SPECIFIC code
          if (map.getMapName().toLowerCase().endsWith("ipv6")) {
             continue;
          }
-         
+
          convertForPurpose(routingRouteMaps, map);
          PolicyMap newMap = toPolicyMap(c, map);
          c.getPolicyMaps().put(newMap.getMapName(), newMap);
       }
 
       // convert interfaces
-      for (Interface iface : _interfaces) {
-         batfish.representation.Interface newInterface = toInterface(
-               iface, c.getIpAccessLists());
+      for (Interface iface : _interfaces.values()) {
+         batfish.representation.Interface newInterface = toInterface(iface,
+               c.getIpAccessLists());
          c.getInterfaces().put(newInterface.getName(), newInterface);
       }
 
       // convert static routes
-      for (StaticRoute staticRoute : _staticRoutes) {
+      for (StaticRoute staticRoute : _staticRoutes.values()) {
          c.getStaticRoutes().add(toStaticRoute(c, staticRoute));
       }
 
       // convert ospf process
-      if (_ospfProcesses.size() > 0) {
-         OspfProcess firstOspfProcess = _ospfProcesses.get(0);
-         batfish.representation.OspfProcess newOspfProcess = toOspfProcess(
-               c, firstOspfProcess);
+      if (_ospfProcess != null) {
+         OspfProcess firstOspfProcess = _ospfProcess;
+         batfish.representation.OspfProcess newOspfProcess = toOspfProcess(c,
+               firstOspfProcess);
          c.setOspfProcess(newOspfProcess);
       }
 
@@ -1155,6 +975,8 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
                   PolicyMapSetCommunityLine scLine = (PolicyMapSetCommunityLine) setLine;
                   c.getCommunities().addAll(scLine.getCommunities());
                   break;
+               case AS_PATH_PREPEND:
+               case COMMUNITY_NONE:
                case DELETE_COMMUNITY:
                case LOCAL_PREFERENCE:
                case METRIC:
@@ -1174,15 +996,14 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       String eaListName = eaList.getId();
       String currentMapName;
       // check ospf policies
-      if (_ospfProcesses.size() > 0) {
-         OspfProcess oproc = _ospfProcesses.get(0);
-         currentMapName = oproc.getRedistributeConnectedMap();
-         if (containsIpAccessList(eaListName, currentMapName)) {
-            return true;
-         }
-         currentMapName = oproc.getRedistributeStaticMap();
-         if (containsIpAccessList(eaListName, currentMapName)) {
-            return true;
+      if (_ospfProcess != null) {
+         OspfProcess oproc = _ospfProcess;
+         for (OspfRedistributionPolicy rp : oproc.getRedistributionPolicies()
+               .values()) {
+            currentMapName = rp.getMap();
+            if (containsIpAccessList(eaListName, currentMapName)) {
+               return true;
+            }
          }
          currentMapName = oproc.getDefaultInformationOriginateMap();
          if (containsIpAccessList(eaListName, currentMapName)) {
@@ -1191,6 +1012,13 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
       }
       // check bgp policies
       if (_bgpProcess != null) {
+         for (BgpRedistributionPolicy rp : _bgpProcess
+               .getRedistributionPolicies().values()) {
+            currentMapName = rp.getMap();
+            if (containsIpAccessList(eaListName, currentMapName)) {
+               return true;
+            }
+         }
          for (BgpPeerGroup pg : _bgpProcess.getPeerGroups().values()) {
             currentMapName = pg.getInboundRouteMap();
             if (containsIpAccessList(eaListName, currentMapName)) {
@@ -1200,7 +1028,15 @@ public class CiscoVendorConfiguration implements VendorConfiguration {
             if (containsIpAccessList(eaListName, currentMapName)) {
                return true;
             }
+            currentMapName = pg.getDefaultOriginateMap();
+            if (containsIpAccessList(eaListName, currentMapName)) {
+               return true;
+            }
          }
+         /*
+          * currentMapName = _bgpProcess.getDefaultInformationOriginateMap(); if
+          * (containsIpAccessList(eaListName, currentMapName)) { return true; }
+          */
       }
       return false;
    }

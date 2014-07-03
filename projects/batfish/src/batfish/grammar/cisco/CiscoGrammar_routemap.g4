@@ -16,28 +16,37 @@ match_as_path_access_list_rm_stanza
 
 match_community_list_rm_stanza
 :
-	MATCH COMMUNITY name_list +=
+	MATCH COMMUNITY
 	(
-		VARIABLE
-		| DEC
+		name_list +=
+		(
+			VARIABLE
+			| DEC
+		)
 	)+ NEWLINE
 ;
 
 match_ip_access_list_rm_stanza
 :
-	MATCH IP ADDRESS name_list +=
+	MATCH IP ADDRESS
 	(
-		VARIABLE
-		| DEC
+		name_list +=
+		(
+			VARIABLE
+			| DEC
+		)
 	)+ NEWLINE
 ;
 
 match_ip_prefix_list_rm_stanza
 :
-	MATCH IP ADDRESS PREFIX_LIST name_list +=
+	MATCH IP ADDRESS PREFIX_LIST
 	(
-		VARIABLE
-		| DEC
+		name_list +=
+		(
+			VARIABLE
+			| DEC
+		)
 	)+ NEWLINE
 ;
 
@@ -58,7 +67,10 @@ match_rm_stanza
 
 match_tag_rm_stanza
 :
-	MATCH TAG ~NEWLINE* NEWLINE
+	MATCH TAG
+	(
+		tag_list += DEC
+	)+ NEWLINE
 ;
 
 null_rm_stanza
@@ -76,28 +88,54 @@ rm_stanza
 	| set_rm_stanza
 ;
 
+route_map_named_stanza
+locals [boolean again]
+:
+	ROUTE_MAP name = VARIABLE route_map_tail
+	{
+		$again = _input.LT(1).getType() == ROUTE_MAP &&
+		_input.LT(2).getType() == VARIABLE &&
+		_input.LT(2).getText().equals($name.text);
+	}
+
+	(
+		{$again}?
+
+		route_map_named_stanza
+		|
+		{!$again}?
+
+	)
+;
+
 route_map_stanza
 :
-	ROUTE_MAP name = VARIABLE rmt = access_list_action num = integer NEWLINE
+	named = route_map_named_stanza
+;
+
+route_map_tail
+:
+	rmt = access_list_action num = DEC NEWLINE
 	(
 		rms_list += rm_stanza
 	)* closing_comment
-;
-
-set_as_path_rm_stanza
-:
-	SET AS_PATH
-	(
-		as_list += integer
-	)+ NEWLINE
 ;
 
 set_as_path_prepend_rm_stanza
 :
 	SET AS_PATH PREPEND
 	(
-		as_list = integer
+		as_list += DEC
 	)+ NEWLINE
+;
+
+set_comm_list_delete_rm_stanza
+:
+	SET COMM_LIST
+	(
+		name = DEC
+		| name = VARIABLE
+	) DELETE NEWLINE
 ;
 
 set_community_additive_rm_stanza
@@ -108,13 +146,9 @@ set_community_additive_rm_stanza
 	)+ ADDITIVE NEWLINE
 ;
 
-set_comm_list_delete_rm_stanza
+set_community_none_rm_stanza
 :
-	SET COMM_LIST
-	(
-		name = DEC
-		| name = VARIABLE
-	) DELETE NEWLINE
+	SET COMMUNITY NONE NEWLINE
 ;
 
 set_community_rm_stanza
@@ -132,12 +166,12 @@ set_ipv6_rm_stanza
 
 set_local_preference_rm_stanza
 :
-	SET LOCAL_PREFERENCE pref = integer NEWLINE
+	SET LOCAL_PREFERENCE pref = DEC NEWLINE
 ;
 
 set_metric_rm_stanza
 :
-	SET METRIC met = integer NEWLINE
+	SET METRIC metric = DEC NEWLINE
 ;
 
 set_next_hop_rm_stanza
@@ -155,8 +189,7 @@ set_origin_rm_stanza
 
 set_rm_stanza
 :
-	set_as_path_rm_stanza
-	| set_as_path_prepend_rm_stanza
+	set_as_path_prepend_rm_stanza
 	| set_comm_list_delete_rm_stanza
 	| set_community_rm_stanza
 	| set_community_additive_rm_stanza

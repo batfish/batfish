@@ -6,24 +6,77 @@ options {
 	tokenVocab = CiscoGrammarCommonLexer;
 }
 
-access_list_remark_stanza
+access_list_ip_range
 :
-	ACCESS_LIST integer REMARK ~NEWLINE* NEWLINE
+	(
+		ip = IP_ADDRESS wildcard = IP_ADDRESS
+	)
+	| ANY
+	| HOST ip = IP_ADDRESS
 ;
 
-access_list_stanza
+extended_access_list_named_stanza
 :
-	standard_access_list_stanza
-	| extended_access_list_stanza
+	IP ACCESS_LIST EXTENDED
+	(
+		name = VARIABLE
+		| name = ACL_NUM_EXTENDED
+	) NEWLINE
+	(
+		extended_access_list_tail
+		| extended_access_list_null_tail
+	)*
+;
+
+extended_access_list_null_tail
+:
+	(
+		(
+			access_list_action protocol access_list_ip_range port_specifier?
+			access_list_ip_range port_specifier? REFLECT
+		)
+		| DYNAMIC
+		| EVALUATE
+		| REMARK
+	) ~NEWLINE* NEWLINE
+;
+
+extended_access_list_numbered_stanza
+locals [boolean again]
+:
+	ACCESS_LIST name = ACL_NUM_EXTENDED
+	(
+		extended_access_list_tail
+		| extended_access_list_null_tail
+	)
+	{
+		$again = _input.LT(1).getType() == ACCESS_LIST &&
+		_input.LT(2).getType() == ACL_NUM_EXTENDED &&
+		_input.LT(2).getText().equals($name.text);
+	}
+
+	(
+		{$again}?
+
+		extended_access_list_numbered_stanza
+		|
+		{!$again}?
+
+	)
 ;
 
 extended_access_list_stanza
 :
-	ACCESS_LIST num = ACL_NUM_EXTENDED ala = access_list_action prot = protocol
-	srcipr = extended_access_list_ip_range
+	named = extended_access_list_named_stanza
+	| numbered = extended_access_list_numbered_stanza
+;
+
+extended_access_list_tail
+:
+	ala = access_list_action prot = protocol srcipr = access_list_ip_range
 	(
 		alps_src = port_specifier
-	)? dstipr = extended_access_list_ip_range
+	)? dstipr = access_list_ip_range
 	(
 		alps_dst = port_specifier
 	)?
@@ -36,34 +89,197 @@ extended_access_list_stanza
 		| LOG_INPUT
 		| PACKET_TOO_BIG
 		| PORT_UNREACHABLE
+		| REDIRECT
+		| TIME_EXCEEDED
 		| TTL_EXCEEDED
+		| UNREACHABLE
 	)? NEWLINE
 ;
 
-extended_access_list_ip_range
+ip_as_path_access_list_stanza
 :
+	IP AS_PATH ACCESS_LIST firstname = DEC ip_as_path_access_list_tail
 	(
-		ip = IP_ADDRESS wildcard = IP_ADDRESS
-	)
-	| any = ANY
-	| HOST ip = IP_ADDRESS
+		IP AS_PATH ACCESS_LIST name = DEC
+		{$firstname.text.equals($name.text)}?
+
+		ip_as_path_access_list_tail
+	)*
 ;
 
-ip_access_list_extended_stanza
+ip_as_path_access_list_tail
 :
-	IP ACCESS_LIST EXTENDED
+	action = access_list_action
 	(
-		name = VARIABLE
-		| name = ACL_NUM_EXTENDED
-	) NEWLINE
+		remainder += ~NEWLINE
+	)+ NEWLINE
+;
+
+ip_community_list_expanded_stanza
+:
+	named = ip_community_list_expanded_named_stanza
+	| numbered = ip_community_list_expanded_numbered_stanza
+;
+
+ip_community_list_expanded_named_stanza
+locals [boolean again]
+:
+	IP COMMUNITY_LIST EXPANDED name = VARIABLE ip_community_list_expanded_tail
+	{
+		$again = _input.LT(1).getType() == IP &&
+		_input.LT(2).getType() == COMMUNITY_LIST &&
+		_input.LT(3).getType() == EXPANDED &&
+		_input.LT(4).getType() == VARIABLE &&
+		_input.LT(4).getText().equals($name.text);
+	}
+
+	(
+		{$again}?
+
+		ip_community_list_expanded_named_stanza
+		|
+		{!$again}?
+
+	)
+;
+
+ip_community_list_expanded_numbered_stanza
+locals [boolean again]
+:
+	IP COMMUNITY_LIST name = COMMUNITY_LIST_NUM_EXPANDED
+	ip_community_list_expanded_tail
+	{
+		$again = _input.LT(1).getType() == IP &&
+		_input.LT(2).getType() == COMMUNITY_LIST &&
+		_input.LT(3).getType() == COMMUNITY_LIST_NUM_EXPANDED &&
+		_input.LT(3).getText().equals($name.text);
+	}
+
+	(
+		{$again}?
+
+		ip_community_list_expanded_numbered_stanza
+		|
+		{!$again}?
+
+	)
+;
+
+ip_community_list_expanded_tail
+:
+	ala = access_list_action
+	(
+		remainder += ~NEWLINE
+	)+ NEWLINE
+;
+
+ip_community_list_standard_stanza
+:
+	named = ip_community_list_standard_named_stanza
+	| numbered = ip_community_list_standard_numbered_stanza
+;
+
+ip_community_list_standard_named_stanza
+locals [boolean again]
+:
+	IP COMMUNITY_LIST STANDARD name = VARIABLE ip_community_list_standard_tail
+	{
+		$again = _input.LT(1).getType() == IP &&
+		_input.LT(2).getType() == COMMUNITY_LIST &&
+		_input.LT(3).getType() == STANDARD &&
+		_input.LT(4).getType() == VARIABLE &&
+		_input.LT(4).getText().equals($name.text);
+	}
+
+	(
+		{$again}?
+
+		ip_community_list_standard_named_stanza
+		|
+		{!$again}?
+
+	)
+;
+
+ip_community_list_standard_numbered_stanza
+locals [boolean again]
+:
+	IP COMMUNITY_LIST name = COMMUNITY_LIST_NUM_STANDARD
+	ip_community_list_standard_tail
+	{
+		$again = _input.LT(1).getType() == IP &&
+		_input.LT(2).getType() == COMMUNITY_LIST &&
+		_input.LT(3).getType() == COMMUNITY_LIST_NUM_STANDARD &&
+		_input.LT(3).getText().equals($name.text);
+	}
+
+	(
+		{$again}?
+
+		ip_community_list_standard_numbered_stanza
+		|
+		{!$again}?
+
+	)
+;
+
+ip_community_list_standard_tail
+:
+	ala = access_list_action
+	(
+		communities += community
+	)+ NEWLINE
+;
+
+ip_prefix_list_stanza
+:
+	named = ip_prefix_list_named_stanza
+;
+
+ip_prefix_list_named_stanza
+locals [boolean again]
+:
+	IP PREFIX_LIST name = VARIABLE ip_prefix_list_tail
+	{
+		$again = _input.LT(1).getType() == IP &&
+		_input.LT(2).getType() == PREFIX_LIST &&
+		_input.LT(3).getType() == VARIABLE &&
+		_input.LT(3).getText().equals($name.text);
+	}
+
+	(
+		{$again}?
+
+		ip_prefix_list_named_stanza
+		|
+		{!$again}?
+
+	)
+;
+
+ip_prefix_list_tail
+:
+	(
+		SEQ seqnum = DEC
+	)? action = access_list_action prefix = IP_ADDRESS FORWARD_SLASH prefix_length
+	= DEC
 	(
 		(
-			isl += item_ip_access_list_extended_stanza
-		)+
-	)?
+			GE minpl = DEC
+		)
+		|
+		(
+			LE maxpl = DEC
+		)
+	)* NEWLINE
 ;
 
-ip_access_list_standard_stanza
+standard_access_list_null_tail
+:
+	REMARK ~NEWLINE* NEWLINE
+;
+
+standard_access_list_named_stanza
 :
 	IP ACCESS_LIST STANDARD
 	(
@@ -72,151 +288,45 @@ ip_access_list_standard_stanza
 	) NEWLINE
 	(
 		(
-			isl += item_ip_access_list_standard_stanza
+			standard_access_list_tail
+			| standard_access_list_null_tail
 		)+
 		| closing_comment
 	)
 ;
 
-ip_as_path_access_list_stanza
+standard_access_list_numbered_stanza
+locals [boolean again]
 :
-	IP AS_PATH ACCESS_LIST name = DEC action = access_list_action
+	ACCESS_LIST name = ACL_NUM_STANDARD
 	(
-		remainder += ~NEWLINE
-	)+ NEWLINE
-;
-
-ip_community_list_expanded_stanza
-:
-	(
-		(
-			EXPANDED name = VARIABLE
-		)
-		| name = COMMUNITY_LIST_NUM_EXPANDED
-	) ala = access_list_action
-	(
-		remainder += ~NEWLINE
-	)+ NEWLINE
-;
-
-ip_community_list_standard_stanza
-:
-	(
-		(
-			STANDARD name = VARIABLE
-		)
-		| name = COMMUNITY_LIST_NUM_STANDARD
-	) ala = access_list_action
-	(
-		communities += community
-	)+ NEWLINE
-;
-
-ip_community_list_stanza
-:
-	IP COMMUNITY_LIST
-	(
-		ip_community_list_expanded_stanza
-		| ip_community_list_standard_stanza
+		standard_access_list_tail
+		| standard_access_list_null_tail
 	)
-;
+	{
+		$again = _input.LT(1).getType() == ACCESS_LIST &&
+		_input.LT(2).getType() == ACL_NUM_STANDARD &&
+		_input.LT(2).getText().equals($name.text);
+	}
 
-ip_prefix_list_line_stanza
-:
-	IP PREFIX_LIST name = VARIABLE
 	(
-		SEQ DEC
-	)? action = access_list_action prefix = IP_ADDRESS FORWARD_SLASH prefix_length
-	= integer
-	(
-		(
-			GE minpl = integer
-		)
+		{$again}?
+
+		standard_access_list_numbered_stanza
 		|
-		(
-			LE maxpl = integer
-		)
-	)?
-;
+		{!$again}?
 
-item_ip_access_list_extended_stanza
-:
-	(
-		(
-			ala = access_list_action prot = protocol srcipr =
-			extended_access_list_ip_range
-			(
-				alps_src = port_specifier
-			)? dstipr = extended_access_list_ip_range
-			(
-				alps_dst = port_specifier
-			)?
-			(
-				ECHO_REPLY
-				| ECHO
-				| ESTABLISHED
-				| FRAGMENTS
-				| LOG
-				| PACKET_TOO_BIG
-				| PORT_UNREACHABLE
-				| REDIRECT
-				| TIME_EXCEEDED
-				| TTL_EXCEEDED
-				| UNREACHABLE
-			)? NEWLINE
-		)
-	)
-	|
-	(
-		(
-			(
-				access_list_action protocol extended_access_list_ip_range port_specifier?
-				extended_access_list_ip_range port_specifier? REFLECT
-			)
-			| DYNAMIC
-			| EVALUATE
-			| REMARK
-		) ~NEWLINE* NEWLINE
-	)
-;
-
-item_ip_access_list_standard_ip_range
-:
-	(
-		ip = IP_ADDRESS
-		(
-			wildcard = IP_ADDRESS
-		)?
-	)
-	| any = ANY
-	|
-	(
-		HOST ip = IP_ADDRESS
-	)
-;
-
-item_ip_access_list_standard_stanza
-:
-	(
-		ala = access_list_action ipr = item_ip_access_list_standard_ip_range NEWLINE
-	)
-	|
-	(
-		REMARK ~NEWLINE* NEWLINE
 	)
 ;
 
 standard_access_list_stanza
 :
-	ACCESS_LIST num = ACL_NUM_STANDARD ala = access_list_action ipr =
-	standard_access_list_ip_range LOG? NEWLINE
+	named = standard_access_list_named_stanza
+	| numbered = standard_access_list_numbered_stanza
 ;
 
-standard_access_list_ip_range
+standard_access_list_tail
 :
-	(
-		ip = IP_ADDRESS wildcard = IP_ADDRESS?
-	)
-	| ANY
+	ala = access_list_action ipr = access_list_ip_range LOG? NEWLINE
 ;
 

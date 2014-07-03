@@ -13,7 +13,7 @@ area_ipv6_ro_stanza
 
 area_nssa_ro_stanza
 :
-	AREA num = integer NSSA NO_SUMMARY? NEWLINE
+	AREA num = DEC NSSA NO_SUMMARY? NEWLINE
 ;
 
 default_information_ipv6_ro_stanza
@@ -32,7 +32,7 @@ default_information_ro_stanza
 		(
 			METRIC_TYPE metric_type = DEC
 		)
-		| always = ALWAYS
+		| ALWAYS
 		|
 		(
 			ROUTE_MAP map = VARIABLE
@@ -49,7 +49,7 @@ ipv6_ro_stanza
 
 ipv6_router_ospf_stanza
 :
-	IPV6 ROUTER OSPF procnum = integer NEWLINE
+	IPV6 ROUTER OSPF procnum = DEC NEWLINE
 	(
 		rosl += ipv6_ro_stanza
 	)+ closing_comment
@@ -67,9 +67,9 @@ maximum_paths_ro_stanza
 
 network_ro_stanza
 :
-	NETWORK ip = IP_ADDRESS sub = IP_ADDRESS AREA
+	NETWORK ip = IP_ADDRESS wildcard = IP_ADDRESS AREA
 	(
-		area_int = integer
+		area_int = DEC
 		| area_ip = IP_ADDRESS
 	) NEWLINE
 ;
@@ -120,13 +120,25 @@ passive_interface_ro_stanza
 
 redistribute_bgp_ro_stanza
 :
-	REDISTRIBUTE BGP DEC
+	REDISTRIBUTE BGP as = DEC
 	(
-		METRIC DEC
-	)?
-	(
-		METRIC_TYPE DEC
-	)? SUBNETS? NEWLINE
+		(
+			METRIC metric = DEC
+		)
+		|
+		(
+			METRIC_TYPE type = DEC
+		)
+		|
+		(
+			ROUTE_MAP map = VARIABLE
+		)
+		| subnets = SUBNETS
+		|
+		(
+			TAG tag = DEC
+		)
+	)* NEWLINE
 ;
 
 redistribute_ipv6_ro_stanza
@@ -141,7 +153,19 @@ redistribute_connected_ro_stanza
 		(
 			METRIC metric = DEC
 		)
+		|
+		(
+			METRIC_TYPE type = DEC
+		)
+		|
+		(
+			ROUTE_MAP map = VARIABLE
+		)
 		| subnets = SUBNETS
+		|
+		(
+			TAG tag = DEC
+		)
 	)* NEWLINE
 ;
 
@@ -150,12 +174,20 @@ redistribute_static_ro_stanza
 	REDISTRIBUTE STATIC
 	(
 		(
-			METRIC cost = integer
+			METRIC metric = DEC
+		)
+		|
+		(
+			METRIC_TYPE type = DEC
+		)
+		|
+		(
+			ROUTE_MAP map = VARIABLE
 		)
 		| subnets = SUBNETS
 		|
 		(
-			ROUTE_MAP map = VARIABLE
+			TAG tag = DEC
 		)
 	)* NEWLINE
 ;
@@ -187,7 +219,7 @@ router_id_ro_stanza
 
 router_ospf_stanza
 :
-	ROUTER OSPF procnum = integer NEWLINE
+	ROUTER OSPF procnum = DEC NEWLINE
 	(
 		rosl += ro_stanza
 	)+ closing_comment

@@ -3,23 +3,26 @@ package batfish.representation.cisco;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import batfish.representation.Ip;
+
 public class BgpPeerGroup {
-   private Long _clusterId;
+   private Ip _clusterId;
    private boolean _defaultOriginate;
    private String _defaultOriginateMap;
+   private String _inboundPrefixList;
    private String _inboundRouteMap;
    private String _name;
-   private Set<String> _neighborAddresses;
+   private Set<Ip> _neighborAddresses;
+   private String _outboundPrefixList;
    private String _outboundRouteMap;
    private Integer _remoteAS;
    private boolean _routeReflectorClient;
    private boolean _sendCommunity;
    private String _updateSource;
-   private String _inboundPrefixList;
 
    public BgpPeerGroup(String name) {
       _name = name;
-      _neighborAddresses = new LinkedHashSet<String>();
+      _neighborAddresses = new LinkedHashSet<Ip>();
       _clusterId = null;
       _routeReflectorClient = false;
       _inboundPrefixList = null;
@@ -29,7 +32,11 @@ public class BgpPeerGroup {
       _remoteAS = null;
    }
 
-   public Long getClusterId() {
+   public void addNeighborAddress(Ip address) {
+      _neighborAddresses.add(address);
+   }
+
+   public Ip getClusterId() {
       return _clusterId;
    }
 
@@ -41,20 +48,24 @@ public class BgpPeerGroup {
       return _defaultOriginateMap;
    }
 
-   public String getInboundRouteMap() {
-      return _inboundRouteMap;
-   }
-
    public String getInboundPrefixList() {
       return _inboundPrefixList;
+   }
+
+   public String getInboundRouteMap() {
+      return _inboundRouteMap;
    }
 
    public String getName() {
       return _name;
    }
 
-   public Set<String> getNeighborAddresses() {
+   public Set<Ip> getNeighborAddresses() {
       return _neighborAddresses;
+   }
+
+   public String getOutboundPrefixList() {
+      return _outboundPrefixList;
    }
 
    public String getOutboundRouteMap() {
@@ -76,25 +87,29 @@ public class BgpPeerGroup {
    public String getUpdateSource() {
       return _updateSource;
    }
-
-   public void setClusterId(Long clusterId) {
-      _clusterId = clusterId;
+   
+   public void setClusterId(Ip ip) {
+      _clusterId = ip;
    }
 
    public void setDefaultOriginate(boolean b) {
       _defaultOriginate = true;
    }
-   
+
    public void setDefaultOriginateMap(String routeMapName) {
       _defaultOriginateMap = routeMapName;
+   }
+
+   public void setInboundPrefixList(String inboundPrefixList) {
+      _inboundPrefixList = inboundPrefixList;
    }
 
    public void setInboundRouteMap(String name) {
       _inboundRouteMap = name;
    }
 
-   public void addNeighborAddress(String neighborAddress) {
-      _neighborAddresses.add(neighborAddress);
+   public void setOutboundPrefixList(String listName) {
+      _outboundPrefixList = listName;
    }
 
    public void setOutboundRouteMap(String name) {
@@ -112,13 +127,9 @@ public class BgpPeerGroup {
    public void setSendCommunity(boolean sendCommunity) {
       _sendCommunity = sendCommunity;
    }
-
+   
    public void setUpdateSource(String updateSource) {
       _updateSource = updateSource;
-   }
-
-   public void setInboundPrefixList(String inboundPrefixList) {
-      _inboundPrefixList = inboundPrefixList;
    }
 
 }
