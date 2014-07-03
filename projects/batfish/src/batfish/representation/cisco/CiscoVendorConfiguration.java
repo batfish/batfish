@@ -265,7 +265,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          boolean sendCommunity = pg.getSendCommunity();
          for (Ip neighborAddress : pg.getNeighborAddresses()) {
             if (activeNeighbors.contains(neighborAddress)) {
-               BgpNeighbor newNeighbor = newBgpNeighbors.get(neighborAddress.toString());
+               BgpNeighbor newNeighbor = newBgpNeighbors.get(neighborAddress
+                     .toString());
                if (newNeighbor == null) {
                   newNeighbor = new BgpNeighbor(neighborAddress);
                   newBgpNeighbors.put(neighborAddress.toString(), newNeighbor);
@@ -562,7 +563,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
    private static PolicyMap toPolicyMap(final Configuration c, RouteMap map)
          throws VendorConversionException {
       List<PolicyMapClause> clauses = new ArrayList<PolicyMapClause>();
-      for (RouteMapClause rmClause : map.getClauseList()) {
+      for (RouteMapClause rmClause : map.getClauses().values()) {
          clauses.add(toPolicyMapClause(c, rmClause));
       }
       return new PolicyMap(map.getMapName(), clauses);
@@ -720,7 +721,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          if (currentMap == null) {
             throw new Error("undefined reference to routemap: " + mapName);
          }
-         for (RouteMapClause clause : currentMap.getClauseList()) {
+         for (RouteMapClause clause : currentMap.getClauses().values()) {
             for (RouteMapMatchLine matchLine : clause.getMatchList()) {
                if (matchLine.getType() == RouteMapMatchType.IP_ACCESS_LIST) {
                   RouteMapMatchIpAccessListLine ipall = (RouteMapMatchIpAccessListLine) matchLine;
@@ -738,7 +739,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
 
    private void convertForPurpose(Set<RouteMap> routingRouteMaps, RouteMap map) {
       if (routingRouteMaps.contains(map)) {
-         for (RouteMapClause clause : map.getClauseList()) {
+         for (RouteMapClause clause : map.getClauses().values()) {
             List<RouteMapMatchLine> matchList = clause.getMatchList();
             for (int i = 0; i < matchList.size(); i++) {
                RouteMapMatchLine line = matchList.get(i);
@@ -901,18 +902,13 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
 
       // convert standard/extended access lists to access lists or route filter
       // lists
+      List<ExtendedAccessList> allACLs = new ArrayList<ExtendedAccessList>();
       for (StandardAccessList saList : _standardAccessLists.values()) {
          ExtendedAccessList eaList = saList.toExtendedAccessList();
-         if (usedForRouting(eaList)) {
-            RouteFilterList rfList = toRouteFilterList(eaList);
-            c.getRouteFilterLists().put(rfList.getName(), rfList);
-         }
-         else {
-            IpAccessList ipaList = toIpAccessList(eaList);
-            c.getIpAccessLists().put(ipaList.getName(), ipaList);
-         }
+         allACLs.add(eaList);
       }
-      for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
+      allACLs.addAll(_extendedAccessLists.values());
+      for (ExtendedAccessList eaList : allACLs) {
          if (usedForRouting(eaList)) {
             RouteFilterList rfList = toRouteFilterList(eaList);
             c.getRouteFilterLists().put(rfList.getName(), rfList);

@@ -95,7 +95,7 @@ locals [boolean again]
 	{
 		$again = _input.LT(1).getType() == ROUTE_MAP &&
 		_input.LT(2).getType() == VARIABLE &&
-		_input.LT(2).getText().equals($name);
+		_input.LT(2).getText().equals($name.text);
 	}
 
 	(

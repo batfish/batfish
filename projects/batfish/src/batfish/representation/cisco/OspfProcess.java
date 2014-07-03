@@ -1,9 +1,9 @@
 package batfish.representation.cisco;
 
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -55,7 +55,7 @@ public class OspfProcess {
             Protocol.class);
    }
 
-   public void computeNetworks(List<Interface> interfaces) {
+   public void computeNetworks(Collection<Interface> interfaces) {
       for (Interface i : interfaces) {
          String iname = i.getName();
          if (_interfaceBlacklist.contains(iname)
@@ -73,7 +73,7 @@ public class OspfProcess {
             Ip wildcardNetwork = wn.getNetworkAddress();
             Ip maskedWildcardNetwork = wildcardNetwork
                   .getNetworkAddress(wildcardAsMask);
-            if (maskedWildcardNetwork == intWildcardNetwork) {
+            if (maskedWildcardNetwork.equals(intWildcardNetwork)) {
                Ip intSubnetMask = i.getSubnetMask();
                Ip intNetwork = intIp.getNetworkAddress(intSubnetMask);
                _networks.add(new OspfNetwork(intNetwork, intSubnetMask, wn

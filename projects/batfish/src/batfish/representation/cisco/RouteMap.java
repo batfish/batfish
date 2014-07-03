@@ -1,33 +1,23 @@
 package batfish.representation.cisco;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.NavigableMap;
+import java.util.Map;
 import java.util.TreeMap;
 
 import batfish.grammar.cisco.CiscoGrammar.Route_map_stanzaContext;
 
 public class RouteMap {
-   private NavigableMap<Integer, RouteMapClause> _clauses;
+   private Map<Integer, RouteMapClause> _clauses;
    private Route_map_stanzaContext _context;
    private boolean _ignore;
    private String _mapName;
-   
+
    public RouteMap(String name) {
       _mapName = name;
       _clauses = new TreeMap<Integer, RouteMapClause>();
       _ignore = false;
    }
-   
-   public void addClause(RouteMapClause rmc) {
-      _clauses.put(rmc.getSeqNum(), rmc);
-   }
-   
-   public List<RouteMapClause> getClauseList() {
-      return Arrays.asList(_clauses.values().toArray(new RouteMapClause[0]));
-   }
 
-   public NavigableMap<Integer, RouteMapClause> getClauseMap() {
+   public Map<Integer, RouteMapClause> getClauses() {
       return _clauses;
    }
 
@@ -50,5 +40,5 @@ public class RouteMap {
    public void setIgnore(boolean b) {
       _ignore = b;
    }
-   
+
 }

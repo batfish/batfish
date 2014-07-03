@@ -52,7 +52,7 @@ locals [boolean again]
 	{
 		$again = _input.LT(1).getType() == ACCESS_LIST &&
 		_input.LT(2).getType() == ACL_NUM_EXTENDED &&
-		_input.LT(2).getText().equals($name);
+		_input.LT(2).getText().equals($name.text);
 	}
 
 	(
@@ -130,7 +130,7 @@ locals [boolean again]
 		_input.LT(2).getType() == COMMUNITY_LIST &&
 		_input.LT(3).getType() == EXPANDED &&
 		_input.LT(4).getType() == VARIABLE &&
-		_input.LT(4).getText().equals($name);
+		_input.LT(4).getText().equals($name.text);
 	}
 
 	(
@@ -152,7 +152,7 @@ locals [boolean again]
 		$again = _input.LT(1).getType() == IP &&
 		_input.LT(2).getType() == COMMUNITY_LIST &&
 		_input.LT(3).getType() == COMMUNITY_LIST_NUM_EXPANDED &&
-		_input.LT(3).getText().equals($name);
+		_input.LT(3).getText().equals($name.text);
 	}
 
 	(
@@ -188,7 +188,7 @@ locals [boolean again]
 		_input.LT(2).getType() == COMMUNITY_LIST &&
 		_input.LT(3).getType() == STANDARD &&
 		_input.LT(4).getType() == VARIABLE &&
-		_input.LT(4).getText().equals($name);
+		_input.LT(4).getText().equals($name.text);
 	}
 
 	(
@@ -210,7 +210,7 @@ locals [boolean again]
 		$again = _input.LT(1).getType() == IP &&
 		_input.LT(2).getType() == COMMUNITY_LIST &&
 		_input.LT(3).getType() == COMMUNITY_LIST_NUM_STANDARD &&
-		_input.LT(3).getText().equals($name);
+		_input.LT(3).getText().equals($name.text);
 	}
 
 	(
@@ -244,7 +244,7 @@ locals [boolean again]
 		$again = _input.LT(1).getType() == IP &&
 		_input.LT(2).getType() == PREFIX_LIST &&
 		_input.LT(3).getType() == VARIABLE &&
-		_input.LT(3).getText().equals($name);
+		_input.LT(3).getText().equals($name.text);
 	}
 
 	(
@@ -271,7 +271,7 @@ ip_prefix_list_tail
 		(
 			LE maxpl = DEC
 		)
-	)*
+	)* NEWLINE
 ;
 
 standard_access_list_null_tail
@@ -306,7 +306,7 @@ locals [boolean again]
 	{
 		$again = _input.LT(1).getType() == ACCESS_LIST &&
 		_input.LT(2).getType() == ACL_NUM_STANDARD &&
-		_input.LT(2).getText().equals($name);
+		_input.LT(2).getText().equals($name.text);
 	}
 
 	(
