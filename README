@@ -33,14 +33,10 @@ tcp_server_max_idle_time = 0
 4. Clone batfish
 git clone https://github.com/arifogel/batfish.git
 
-5. symlink needed logicblox libraries (they will be open-sourced soon, after which this step will no longer be necessary)
-from the README at <batfish-root>/lib/logicblox/README:
-    Until these files are open-sourced, make symlinks to or copies of them here:
-    cd <batfish-root>/lib/logicblox
-    ln -s <logicblox-home>/logicblox/lib/java/lb-common.jar
-    ln -s <logicblox-home>/logicblox/lib/java/lb-connectblox.jar
-    ln -s <logicblox-home>/logicblox/lib/java/lb-common-protocol.jar
-    ln -s <logicblox-home>/lb-web/lib/java/lb-web-client.jar
+5. (CYGWIN ONLY!!!)
+Replace symlinks with contents of target files, since ant/java in Windows do not know how to handle symlinks:
+   cd projects/batfish
+   ./cygwin-ant-symlink-workaround
 
 6. prepare your environment for logicblox and batfish by adding the following to your .bashrc or equivalent
     export LB_HOME=<logicblox-root>

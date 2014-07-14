@@ -1,0 +1,8 @@
+#!/bin/bash
+find . -type l | while read SYMLINK; do
+   echo SYMLINK = "$SYMLINK"
+   TARGET=$(readlink -f $SYMLINK)
+   echo TARGET = "$TARGET"
+   rm $SYMLINK && cp -a $TARGET $SYMLINK
+done
+
