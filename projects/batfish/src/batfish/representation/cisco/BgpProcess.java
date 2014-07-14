@@ -107,6 +107,7 @@ public class BgpProcess {
          IpBgpPeerGroup ipPeerGroup = _ipPeerGroups.get(address);
          if (ipPeerGroup == null) {
             addIpPeerGroup(address);
+            ipPeerGroup = _ipPeerGroups.get(address);
          }
          ipPeerGroup.setGroupName(namedPeerGroupName);
       }
