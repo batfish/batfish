@@ -103,11 +103,17 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else if (ctx.DOMAIN() != null) {
          return 53;
       }
+      else if (ctx.EXEC() != null) {
+         return 512;
+      }
       else if (ctx.FTP() != null) {
          return 21;
       }
       else if (ctx.FTP_DATA() != null) {
          return 20;
+      }
+      else if (ctx.IDENT() != null) {
+         return 113;
       }
       else if (ctx.ISAKMP() != null) {
          return 500;
@@ -144,6 +150,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       }
       else if (ctx.SNMPTRAP() != null) {
          return 162;
+      }
+      else if (ctx.SUNRPC() != null) {
+         return 111;
       }
       else if (ctx.SYSLOG() != null) {
          return 514;

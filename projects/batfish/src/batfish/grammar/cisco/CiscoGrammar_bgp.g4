@@ -24,6 +24,7 @@ af_stanza
 	| default_metric_af_stanza
 	| neighbor_activate_af_stanza
 	| neighbor_default_originate_af_stanza
+	| neighbor_filter_list_af_stanza
 	| neighbor_peer_group_assignment_af_stanza
 	| neighbor_prefix_list_af_stanza
 	| neighbor_route_map_af_stanza
@@ -105,6 +106,20 @@ neighbor_default_originate_af_stanza
 	(
 		ROUTE_MAP map = VARIABLE
 	)? NEWLINE
+;
+
+neighbor_filter_list_af_stanza
+:
+	neighbor_filter_list_tail_bgp
+;
+
+neighbor_filter_list_tail_bgp
+:
+	NEIGHBOR neighbor = . FILTER_LIST num = DEC
+	(
+		IN
+		| OUT
+	) NEWLINE
 ;
 
 neighbor_next_hop_self_rb_stanza

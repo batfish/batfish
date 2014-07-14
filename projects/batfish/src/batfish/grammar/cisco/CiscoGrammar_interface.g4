@@ -37,11 +37,7 @@ interface_stanza
 
 ip_access_group_if_stanza
 :
-	IP ACCESS_GROUP
-	(
-		name = DEC
-		| name = VARIABLE
-	)
+	IP ACCESS_GROUP name = .
 	(
 		IN
 		| OUT
@@ -97,8 +93,10 @@ null_standalone_if_stanza
 	(
 		ARP
 		| ASYNC
+		| ATM
 		| AUTO
 		| BANDWIDTH
+		| CABLELENGTH
 		| CDP
 		| CHANNEL
 		| CHANNEL_GROUP
@@ -107,9 +105,15 @@ null_standalone_if_stanza
 		| CLOCK
 		| CRYPTO
 		| DESCRIPTION
+		|
+		(
+			DSU BANDWIDTH
+		)
 		| DUPLEX
 		| ENCAPSULATION
 		| FAIR_QUEUE
+		| FLOWCONTROL
+		| FRAMING
 		| FULL_DUPLEX
 		| GROUP_RANGE
 		| HALF_DUPLEX
@@ -130,6 +134,7 @@ null_standalone_if_stanza
 				| HELPER_ADDRESS
 				| IGMP
 				| IRDP
+				| LOAD_SHARING
 				| MROUTE_CACHE
 				| MTU
 				| MULTICAST
@@ -177,6 +182,10 @@ null_standalone_if_stanza
 		| MTU
 		| NAMEIF
 		| NEGOTIATION
+		|
+		(
+			NTP BROADCAST
+		)
 		| PEER
 		| PHYSICAL_LAYER
 		| POWER
@@ -212,6 +221,7 @@ null_standalone_if_stanza
 			)
 		)
 		| TAG_SWITCHING
+		| TCAM
 		| TRUST
 		| TUNNEL
 		| UDLD

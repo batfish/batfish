@@ -100,6 +100,15 @@ null_block_stanza
 		)
 		| GATEWAY
 		| GROUP_POLICY
+		|
+		(
+			IP
+			(
+				FLOW_TOP_TALKERS
+				| POLICY_LIST
+				| SLA
+			)
+		)
 		| IPC
 		|
 		(
@@ -162,10 +171,13 @@ null_block_substanza
 			| BRIDGE
 			| CABLELENGTH
 			| CACHE
+			| CACHE_TIMEOUT
 			| CALL
 			| CALLER_ID
 			| CAS_CUSTOM
 			| CERTIFICATE
+			| CHANNEL_GROUP
+			| CHANNELIZED
 			| CLASS
 			| CLOCK
 			| COLLECT
@@ -189,6 +201,7 @@ null_block_substanza
 			| EXPORT_PROTOCOL
 			| EXPORTER
 			| FABRIC
+			| FAIR_QUEUE
 			| FALLBACK_DN
 			| FILE_BROWSING
 			| FILE_ENTRY
@@ -229,6 +242,7 @@ null_block_substanza
 			| PARAMETERS
 			| PARENT
 			| PASSWORD_STORAGE
+			| PATH_JITTER
 			| PERMIT
 			| PICKUP
 			| POLICE
@@ -251,6 +265,7 @@ null_block_substanza
 			| REMOVED
 			| RING
 			| SCHEME
+			| SEQUENCE
 			| SERVICE
 			| SERVICE_POLICY
 			| SERVICE_TYPE
@@ -258,6 +273,7 @@ null_block_substanza
 			| SESSION_TIMEOUT
 			| SET
 			| SHUTDOWN
+			| SORT_BY
 			| SOURCE
 			| SPANNING_TREE
 			| SPEED
@@ -273,6 +289,7 @@ null_block_substanza
 			| TIMEOUTS
 			| TIMER
 			| TIMING
+			| TOP
 			| TRANSPORT
 			| TUNNEL_GROUP
 			| VIOLATE_ACTION
@@ -329,6 +346,7 @@ null_standalone_stanza
 		| BOOT
 		| BOOT_END_MARKER
 		| BOOT_START_MARKER
+		| BRIDGE
 		| CALL
 		| CALL_HOME
 		| CARD
@@ -417,8 +435,10 @@ null_standalone_stanza
 				| FORWARD_PROTOCOL
 				| FTP
 				| GRATUITOUS_ARPS
+				| HOST
 				| HOST_ROUTING
 				| HTTP
+				| ICMP
 				| IGMP
 				| LOCAL
 				| MFIB
@@ -509,6 +529,7 @@ null_standalone_stanza
 		| MLS
 		| MODE
 		| MODEM
+		| MODULE
 		| MONITOR
 		| MPLS
 		| MTA
@@ -530,6 +551,7 @@ null_standalone_stanza
 		| PERCENT
 		| PHONE_PROXY
 		| PLATFORM
+		| PORT_CHANNEL
 		| PORT_OBJECT
 		| POWER
 		| PRIORITY
@@ -664,7 +686,8 @@ null_stanza
 
 stanza
 :
-	extended_access_list_stanza
+	appletalk_access_list_stanza
+	| extended_access_list_stanza
 	| hostname_stanza
 	| interface_stanza
 	| ip_as_path_access_list_stanza
@@ -674,7 +697,9 @@ stanza
 	| ip_prefix_list_stanza
 	| ip_route_stanza
 	| ipv6_router_ospf_stanza
+	| ipx_sap_access_list_stanza
 	| null_stanza
+	| protocol_type_code_access_list_stanza
 	| route_map_stanza
 	| router_bgp_stanza
 	| router_ospf_stanza

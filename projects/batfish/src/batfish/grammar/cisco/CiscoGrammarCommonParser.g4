@@ -84,8 +84,10 @@ port
 	| BGP
 	| CMD
 	| DOMAIN
+	| EXEC
 	| FTP
 	| FTP_DATA
+	| IDENT
 	| ISAKMP
 	| LPD
 	| NETBIOS_DGM
@@ -98,6 +100,7 @@ port
 	| SMTP
 	| SNMP
 	| SNMPTRAP
+	| SUNRPC
 	| SYSLOG
 	| TACACS
 	| TELNET

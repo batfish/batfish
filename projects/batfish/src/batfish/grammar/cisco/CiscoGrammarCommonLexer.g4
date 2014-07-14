@@ -24,6 +24,7 @@ tokens {
 	ACL_NUM_EXTENDED_IPX,
 	ACL_NUM_IPX,
 	ACL_NUM_IPX_SAP,
+	ACL_NUM_PROTOCOL_TYPE_CODE,
 	ACL_NUM_STANDARD,
 	COMMUNITY_LIST_NUM_EXPANDED,
 	COMMUNITY_LIST_NUM_STANDARD
@@ -243,6 +244,11 @@ ASYNC_BOOTP
 	'async-bootp'
 ;
 
+ATM
+:
+	'atm'
+;
+
 AUDIT
 :
 	'audit'
@@ -368,14 +374,29 @@ BRIDGE
 	'bridge'
 ;
 
+BROADCAST
+:
+	'broadcast'
+;
+
 CA
 :
 	'ca'
 ;
 
+CABLE_RANGE
+:
+	'cable-range'
+;
+
 CACHE
 :
 	'cache'
+;
+
+CACHE_TIMEOUT
+:
+	'cache-timeout'
 ;
 
 CALL
@@ -446,6 +467,11 @@ CHANNEL_GROUP
 CHANNEL_PROTOCOL
 :
 	'channel-protocol'
+;
+
+CHANNELIZED
+:
+	'channelized'
 ;
 
 CIPC
@@ -673,6 +699,11 @@ DEVICE_SENSOR
 	'device-sensor'
 ;
 
+DF
+:
+	'df'
+;
+
 DHCP
 :
 	'dhcp'
@@ -771,6 +802,11 @@ DSP
 DSPFARM
 :
 	'dspfarm'
+;
+
+DSU
+:
+	'dsu'
 ;
 
 DUPLEX
@@ -978,6 +1014,11 @@ FILE_ENTRY
 	'file-entry'
 ;
 
+FILTER_LIST
+:
+	'filter-list'
+;
+
 FINGER
 :
 	'finger'
@@ -1001,6 +1042,16 @@ FLOW_CACHE
 FLOW_EXPORT
 :
 	'flow-export'
+;
+
+FLOW_TOP_TALKERS
+:
+	'flow-top-talkers'
+;
+
+FLOWCONTROL
+:
+	'flowcontrol'
 ;
 
 FORWARD_PROTOCOL
@@ -1188,6 +1239,11 @@ ICMP_OBJECT
 	'icmp-object'
 ;
 
+IDENT
+:
+	'ident'
+;
+
 IDENTITY
 :
 	'identity'
@@ -1201,6 +1257,11 @@ IGMP
 IKEV1
 :
 	'ikev1'
+;
+
+ILMI_KEEPALIVE
+:
+	'ilmi-keepalive'
 ;
 
 IN
@@ -1353,6 +1414,11 @@ LDAP_SCOPE
 	'ldap-scope'
 ;
 
+LENGTH
+:
+	'length'
+;
+
 LICENSE
 :
 	'license'
@@ -1381,6 +1447,11 @@ LLDP
 LOAD_INTERVAL
 :
 	'load-interval'
+;
+
+LOAD_SHARING
+:
+	'load-sharing'
 ;
 
 LOCAL
@@ -1586,6 +1657,11 @@ MODE
 MODEM
 :
 	'modem'
+;
+
+MODULE
+:
+	'module'
 ;
 
 MONITOR
@@ -1833,6 +1909,11 @@ OSPF
 	'ospf'
 ;
 
+OTHER_ACCESS
+:
+	'other-access'
+;
+
 OUT
 :
 	'out'
@@ -1846,6 +1927,11 @@ PACKET_TOO_BIG
 PAGER
 :
 	'pager'
+;
+
+PARAMETER_PROBLEM
+:
+	'parameter-problem'
 ;
 
 PARAMETERS
@@ -1871,6 +1957,11 @@ PASSIVE_INTERFACE
 PASSWORD_STORAGE
 :
 	'password-storage'
+;
+
+PATH_JITTER
+:
+	'path-jitter'
 ;
 
 PEER
@@ -1938,6 +2029,11 @@ POLICY
 	'policy'
 ;
 
+POLICY_LIST
+:
+	'policy-list'
+;
+
 POLICY_MAP
 :
 	'policy-map'
@@ -1951,6 +2047,11 @@ POP3
 PORT
 :
 	'port'
+;
+
+PORT_CHANNEL
+:
+	'port-channel'
 ;
 
 PORT_OBJECT
@@ -2328,6 +2429,11 @@ SEQ
 	'seq'
 ;
 
+SEQUENCE
+:
+	'sequence'
+;
+
 SERIAL
 :
 	'serial'
@@ -2421,6 +2527,11 @@ SNMP_SERVER
 SNMPTRAP
 :
 	'snmptrap'
+;
+
+SORT_BY
+:
+	'sort-by'
 ;
 
 SPE
@@ -2558,6 +2669,11 @@ SUMMARY_ONLY
 	'summary-only'
 ;
 
+SUNRPC
+:
+	'sunrpc'
+;
+
 SUPPLEMENTARY_SERVICES
 :
 	'supplementary-services'
@@ -2633,6 +2749,11 @@ TB_VLAN2
 	'tb-vlan2'
 ;
 
+TCAM
+:
+	'tcam'
+;
+
 TCP
 :
 	'tcp'
@@ -2706,6 +2827,11 @@ TIMING
 TLS_PROXY
 :
 	'tls-proxy'
+;
+
+TOP
+:
+	'top'
 ;
 
 TRACK
@@ -2982,6 +3108,9 @@ ACL_NUM
 	}
 	else if ((100 <= val && val <= 199) || (2000 <= val && val <= 2699)) {
 		_type = ACL_NUM_EXTENDED;
+	}
+	else if (200 <= val && val <= 299) {
+		_type = ACL_NUM_PROTOCOL_TYPE_CODE;
 	}
 	else if (600 <= val && val <= 699) {
 		_type = ACL_NUM_APPLETALK;

@@ -55,6 +55,11 @@ match_ipv6_rm_stanza
 	MATCH IPV6 ~NEWLINE* NEWLINE
 ;
 
+match_length_rm_stanza
+:
+	MATCH LENGTH ~NEWLINE* NEWLINE
+;
+
 match_rm_stanza
 :
 	match_as_path_access_list_rm_stanza
@@ -62,6 +67,7 @@ match_rm_stanza
 	| match_ip_access_list_rm_stanza
 	| match_ip_prefix_list_rm_stanza
 	| match_ipv6_rm_stanza
+	| match_length_rm_stanza
 	| match_tag_rm_stanza
 ;
 
@@ -159,6 +165,16 @@ set_community_rm_stanza
 	)+ NEWLINE
 ;
 
+set_interface_rm_stanza
+  :
+  SET INTERFACE ~NEWLINE* NEWLINE
+  ;
+
+set_ip_df_rm_stanza
+  :
+  SET IP DF ~NEWLINE* NEWLINE
+  ;
+
 set_ipv6_rm_stanza
 :
 	SET IPV6 ~NEWLINE* NEWLINE
@@ -193,6 +209,8 @@ set_rm_stanza
 	| set_comm_list_delete_rm_stanza
 	| set_community_rm_stanza
 	| set_community_additive_rm_stanza
+	| set_interface_rm_stanza
+	| set_ip_df_rm_stanza
 	| set_ipv6_rm_stanza
 	| set_local_preference_rm_stanza
 	| set_metric_rm_stanza

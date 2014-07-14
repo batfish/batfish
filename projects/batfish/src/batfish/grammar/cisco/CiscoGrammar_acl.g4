@@ -15,13 +15,45 @@ access_list_ip_range
 	| HOST ip = IP_ADDRESS
 ;
 
+appletalk_access_list_numbered_stanza
+locals [boolean again]
+:
+	ACCESS_LIST name = ACL_NUM_APPLETALK appletalk_access_list_null_tail
+	{
+		$again = _input.LT(1).getType() == ACCESS_LIST &&
+		_input.LT(2).getType() == ACL_NUM_APPLETALK &&
+		_input.LT(2).getText().equals($name.text);
+	}
+
+	(
+		{$again}?
+
+		appletalk_access_list_numbered_stanza
+		|
+		{!$again}?
+
+	)
+;
+
+appletalk_access_list_null_tail
+:
+	action = access_list_action
+	(
+		(
+			CABLE_RANGE ~NEWLINE*
+		)
+		| OTHER_ACCESS
+	)? NEWLINE
+;
+
+appletalk_access_list_stanza
+:
+	numbered = appletalk_access_list_numbered_stanza
+;
+
 extended_access_list_named_stanza
 :
-	IP ACCESS_LIST EXTENDED
-	(
-		name = VARIABLE
-		| name = ACL_NUM_EXTENDED
-	) NEWLINE
+	IP ACCESS_LIST EXTENDED name = . NEWLINE
 	(
 		extended_access_list_tail
 		| extended_access_list_null_tail
@@ -88,6 +120,7 @@ extended_access_list_tail
 		| LOG
 		| LOG_INPUT
 		| PACKET_TOO_BIG
+		| PARAMETER_PROBLEM
 		| PORT_UNREACHABLE
 		| REDIRECT
 		| TIME_EXCEEDED
@@ -274,6 +307,67 @@ ip_prefix_list_tail
 	)* NEWLINE
 ;
 
+ipx_sap_access_list_numbered_stanza
+locals [boolean again]
+:
+	ACCESS_LIST name = ACL_NUM_IPX_SAP ipx_sap_access_list_null_tail
+	{
+		$again = _input.LT(1).getType() == ACCESS_LIST &&
+		_input.LT(2).getType() == ACL_NUM_IPX_SAP &&
+		_input.LT(2).getText().equals($name.text);
+	}
+
+	(
+		{$again}?
+
+		ipx_sap_access_list_numbered_stanza
+		|
+		{!$again}?
+
+	)
+;
+
+ipx_sap_access_list_null_tail
+:
+	action = access_list_action ~NEWLINE* NEWLINE
+;
+
+ipx_sap_access_list_stanza
+:
+	numbered = ipx_sap_access_list_numbered_stanza
+;
+
+protocol_type_code_access_list_numbered_stanza
+locals [boolean again]
+:
+	ACCESS_LIST name = ACL_NUM_PROTOCOL_TYPE_CODE
+	protocol_type_code_access_list_null_tail
+	{
+		$again = _input.LT(1).getType() == ACCESS_LIST &&
+		_input.LT(2).getType() == ACL_NUM_PROTOCOL_TYPE_CODE &&
+		_input.LT(2).getText().equals($name.text);
+	}
+
+	(
+		{$again}?
+
+		protocol_type_code_access_list_numbered_stanza
+		|
+		{!$again}?
+
+	)
+;
+
+protocol_type_code_access_list_null_tail
+:
+	action = access_list_action ~NEWLINE* NEWLINE
+;
+
+protocol_type_code_access_list_stanza
+:
+	numbered = protocol_type_code_access_list_numbered_stanza
+;
+
 standard_access_list_null_tail
 :
 	REMARK ~NEWLINE* NEWLINE
@@ -281,11 +375,7 @@ standard_access_list_null_tail
 
 standard_access_list_named_stanza
 :
-	IP ACCESS_LIST STANDARD
-	(
-		name = VARIABLE
-		| name = ACL_NUM_STANDARD
-	) NEWLINE
+	IP ACCESS_LIST STANDARD name = . NEWLINE
 	(
 		(
 			standard_access_list_tail
