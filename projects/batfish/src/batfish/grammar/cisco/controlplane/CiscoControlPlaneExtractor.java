@@ -35,6 +35,7 @@ import batfish.representation.cisco.ExtendedAccessListLine;
 import batfish.representation.cisco.Interface;
 import batfish.representation.cisco.IpAsPathAccessList;
 import batfish.representation.cisco.IpAsPathAccessListLine;
+import batfish.representation.cisco.NamedBgpPeerGroup;
 import batfish.representation.cisco.OspfProcess;
 import batfish.representation.cisco.OspfRedistributionPolicy;
 import batfish.representation.cisco.OspfWildcardNetwork;
@@ -826,10 +827,10 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void exitNeighbor_peer_group_creation_rb_stanza(
          Neighbor_peer_group_creation_rb_stanzaContext ctx) {
       String name = ctx.name.getText();
-      BgpPeerGroup newGroup = new BgpPeerGroup(name);
       BgpProcess proc = _configuration.getBgpProcess();
+      proc.addNamedPeerGroup(name);
+      NamedBgpPeerGroup newGroup = proc.getNamedPeerGroups().get(name);
       newGroup.setClusterId(proc.getClusterId());
-      proc.addPeerGroup(newGroup);
    }
 
    @Override
@@ -869,14 +870,13 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       }
       BgpPeerGroup pg = proc.getPeerGroup(peerGroupName);
       if (pg == null) {
-         pg = new BgpPeerGroup(peerGroupName);
          if (ip) {
-            pg.addNeighborAddress(pgIp);
-            if (proc.getDefaultNeighborActivate()) {
-               proc.addActivatedNeighbor(pgIp);
-            }
+            proc.addIpPeerGroup(pgIp);
          }
-         proc.addPeerGroup(pg);
+         else {
+            proc.addNamedPeerGroup(peerGroupName);
+         }
+         pg = proc.getPeerGroup(peerGroupName);
       }
       pg.setRemoteAS(as);
    }

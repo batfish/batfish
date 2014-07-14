@@ -14,11 +14,13 @@ public class BgpProcess {
 
    private Set<Ip> _activatedNeighbors;
    private Map<BgpNetwork, Boolean> _aggregateNetworks;
+   private Map<String, BgpPeerGroup> _allPeerGroups;
    private Ip _clusterId;
    private int _defaultMetric;
    private boolean _defaultNeighborActivate;
+   private Map<Ip, IpBgpPeerGroup> _ipPeerGroups;
+   private Map<String, NamedBgpPeerGroup> _namedPeerGroups;
    private Set<BgpNetwork> _networks;
-   private Map<String, BgpPeerGroup> _peerGroups;
    private int _pid;
    private Map<Protocol, BgpRedistributionPolicy> _redistributionPolicies;
    private Ip _routerId;
@@ -26,14 +28,17 @@ public class BgpProcess {
 
    public BgpProcess(int procnum) {
       _pid = procnum;
-      _peerGroups = new HashMap<String, BgpPeerGroup>();
+      _allPeerGroups = new HashMap<String, BgpPeerGroup>();
+      _namedPeerGroups = new HashMap<String, NamedBgpPeerGroup>();
+      _ipPeerGroups = new HashMap<Ip, IpBgpPeerGroup>();
       _networks = new LinkedHashSet<BgpNetwork>();
       _activatedNeighbors = new LinkedHashSet<Ip>();
       _defaultNeighborActivate = true;
       _aggregateNetworks = new HashMap<BgpNetwork, Boolean>();
       _shutdownNeighbors = new LinkedHashSet<String>();
       _clusterId = null;
-      _redistributionPolicies = new EnumMap<Protocol, BgpRedistributionPolicy>(Protocol.class);
+      _redistributionPolicies = new EnumMap<Protocol, BgpRedistributionPolicy>(
+            Protocol.class);
    }
 
    public void addActivatedNeighbor(Ip address) {
@@ -41,9 +46,9 @@ public class BgpProcess {
          _activatedNeighbors.add(address);
       }
    }
-   
+
    public void addDefaultOriginateNeighbor(String neighbor, String routeMapName) {
-      BgpPeerGroup pg = _peerGroups.get(neighbor);
+      BgpPeerGroup pg = _allPeerGroups.get(neighbor);
       pg.setDefaultOriginate(true);
       pg.setDefaultOriginateMap(routeMapName);
    }
@@ -56,13 +61,24 @@ public class BgpProcess {
       }
    }
 
-   public void addPeerGroup(BgpPeerGroup peerGroup) {
-      _peerGroups.put(peerGroup.getName(), peerGroup);
+   public void addIpPeerGroup(Ip ip) {
+      IpBgpPeerGroup pg = new IpBgpPeerGroup(ip);
+      if (_defaultNeighborActivate) {
+         addActivatedNeighbor(ip);
+      }
+      _ipPeerGroups.put(ip, pg);
+      _allPeerGroups.put(ip.toString(), pg);
+   }
+
+   public void addNamedPeerGroup(String name) {
+      NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name);
+      _namedPeerGroups.put(name, pg);
+      _allPeerGroups.put(name, pg);
    }
 
    public void addPeerGroupInboundPrefixList(String peerGroupName,
          String listName) {
-      BgpPeerGroup pg = _peerGroups.get(peerGroupName);
+      BgpPeerGroup pg = _allPeerGroups.get(peerGroupName);
       if (pg != null) {
          pg.setInboundPrefixList(listName);
       }
@@ -73,7 +89,7 @@ public class BgpProcess {
    }
 
    public void addPeerGroupInboundRouteMap(String peerGroupName, String mapName) {
-      BgpPeerGroup pg = _peerGroups.get(peerGroupName);
+      BgpPeerGroup pg = _allPeerGroups.get(peerGroupName);
       if (pg != null) {
          pg.setInboundRouteMap(mapName);
       }
@@ -84,18 +100,15 @@ public class BgpProcess {
    }
 
    public void addPeerGroupMember(Ip address, String namedPeerGroupName) {
-      BgpPeerGroup namedPeerGroup = _peerGroups.get(namedPeerGroupName);
+      NamedBgpPeerGroup namedPeerGroup = _namedPeerGroups
+            .get(namedPeerGroupName);
       if (namedPeerGroup != null) {
          namedPeerGroup.addNeighborAddress(address);
-         if (_defaultNeighborActivate) {
-            addActivatedNeighbor(address);
+         IpBgpPeerGroup ipPeerGroup = _ipPeerGroups.get(address);
+         if (ipPeerGroup == null) {
+            addIpPeerGroup(address);
          }
-         BgpPeerGroup unnamedPeerGroup = _peerGroups.get(address.toString());
-         if (unnamedPeerGroup == null) {
-            unnamedPeerGroup = new BgpPeerGroup(address.toString());
-            unnamedPeerGroup.addNeighborAddress(address);
-            addPeerGroup(unnamedPeerGroup);
-         }
+         ipPeerGroup.setGroupName(namedPeerGroupName);
       }
       else {
          throw new Error("Peer group: \"" + namedPeerGroupName
@@ -103,8 +116,9 @@ public class BgpProcess {
       }
    }
 
-   public void addPeerGroupOutboundPrefixList(String peerGroupName, String listName) {
-      BgpPeerGroup pg = _peerGroups.get(peerGroupName);
+   public void addPeerGroupOutboundPrefixList(String peerGroupName,
+         String listName) {
+      BgpPeerGroup pg = _allPeerGroups.get(peerGroupName);
       if (pg != null) {
          pg.setOutboundPrefixList(listName);
       }
@@ -115,7 +129,7 @@ public class BgpProcess {
    }
 
    public void addPeerGroupOutboundRouteMap(String peerGroupName, String mapName) {
-      BgpPeerGroup pg = _peerGroups.get(peerGroupName);
+      BgpPeerGroup pg = _allPeerGroups.get(peerGroupName);
       if (pg != null) {
          pg.setOutboundRouteMap(mapName);
       }
@@ -126,7 +140,7 @@ public class BgpProcess {
    }
 
    public void addPeerGroupRouteReflectorClient(String peerGroupName) {
-      BgpPeerGroup pg = _peerGroups.get(peerGroupName);
+      BgpPeerGroup pg = _allPeerGroups.get(peerGroupName);
       if (pg != null) {
          pg.setRouteReflectorClient();
       }
@@ -143,14 +157,14 @@ public class BgpProcess {
    }
 
    public void addSendCommunityPeerGroup(String peerGroupName) {
-         BgpPeerGroup pg = _peerGroups.get(peerGroupName);
-         if (pg != null) {
-            pg.setSendCommunity(true);
-         }
-         else {
-            throw new Error("Peer group: \"" + peerGroupName
-                  + "\" does not exist!");
-         }
+      BgpPeerGroup pg = _allPeerGroups.get(peerGroupName);
+      if (pg != null) {
+         pg.setSendCommunity(true);
+      }
+      else {
+         throw new Error("Peer group: \"" + peerGroupName
+               + "\" does not exist!");
+      }
    }
 
    public void addShutDownNeighbor(String peerGroupName) {
@@ -165,6 +179,10 @@ public class BgpProcess {
       return _aggregateNetworks;
    }
 
+   public Map<String, BgpPeerGroup> getAllPeerGroups() {
+      return _allPeerGroups;
+   }
+
    public Ip getClusterId() {
       return _clusterId;
    }
@@ -177,16 +195,20 @@ public class BgpProcess {
       return _defaultNeighborActivate;
    }
 
+   public Map<Ip, IpBgpPeerGroup> getIpPeerGroups() {
+      return _ipPeerGroups;
+   }
+
+   public Map<String, NamedBgpPeerGroup> getNamedPeerGroups() {
+      return _namedPeerGroups;
+   }
+
    public Set<BgpNetwork> getNetworks() {
       return _networks;
    }
 
    public BgpPeerGroup getPeerGroup(String name) {
-      return _peerGroups.get(name);
-   }
-
-   public Map<String, BgpPeerGroup> getPeerGroups() {
-      return _peerGroups;
+      return _allPeerGroups.get(name);
    }
 
    public int getPid() {
@@ -210,12 +232,13 @@ public class BgpProcess {
    }
 
    public void setPeerGroupUpdateSource(String peerGroupName, String source) {
-      BgpPeerGroup pg = _peerGroups.get(peerGroupName);
+      BgpPeerGroup pg = _allPeerGroups.get(peerGroupName);
       if (pg != null) {
          pg.setUpdateSource(source);
       }
       else {
-         throw new Error("Peer group: \"" + peerGroupName + "\" does not exist!");
+         throw new Error("Peer group: \"" + peerGroupName
+               + "\" does not exist!");
       }
    }
 

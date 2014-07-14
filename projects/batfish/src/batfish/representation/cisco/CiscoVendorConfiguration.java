@@ -156,8 +156,16 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null, 0,
                null, null, null, Protocol.STATIC, PolicyMapAction.PERMIT);
       }
-
-      for (BgpPeerGroup pg : proc.getPeerGroups().values()) {
+      
+      // cause ip peer groups to inherit unset fields from owning named peer group
+      for (NamedBgpPeerGroup npg : proc.getNamedPeerGroups().values()) {
+         for (Ip address : npg.getNeighborAddresses()) {
+            IpBgpPeerGroup ipg = proc.getIpPeerGroups().get(address);
+            ipg.inheritUnsetFields(npg);
+         }
+      }
+      
+      for (IpBgpPeerGroup pg : proc.getIpPeerGroups().values()) {
          // update source
          String updateSourceInterface = pg.getUpdateSource();
          String updateSource = null;
@@ -263,14 +271,11 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             }
          }
          boolean sendCommunity = pg.getSendCommunity();
-         for (Ip neighborAddress : pg.getNeighborAddresses()) {
+            Ip neighborAddress = pg.getIp();
             if (activeNeighbors.contains(neighborAddress)) {
-               BgpNeighbor newNeighbor = newBgpNeighbors.get(neighborAddress
-                     .toString());
-               if (newNeighbor == null) {
-                  newNeighbor = new BgpNeighbor(neighborAddress);
-                  newBgpNeighbors.put(neighborAddress.toString(), newNeighbor);
-               }
+               BgpNeighbor newNeighbor = new BgpNeighbor(neighborAddress);
+               newBgpNeighbors.put(neighborAddress.toString(), newNeighbor);
+               
                if (newInboundPolicyMap != null) {
                   newNeighbor.addInboundPolicyMap(newInboundPolicyMap);
                }
@@ -283,33 +288,20 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                      newNeighbor.addOutboundPolicyMap(defaultOriginationPolicy);
                   }
                }
-               if (newNeighbor.getGroupName() == null) {
-                  newNeighbor.setGroupName(pg.getName());
-               }
+               newNeighbor.setGroupName(pg.getGroupName());
                if (routeReflectorClient) {
                   newNeighbor.setClusterId(clusterId.asLong());
                }
                if (defaultRoute != null) {
                   newNeighbor.getGeneratedRoutes().add(defaultRoute);
                }
-               if (newNeighbor.getRemoteAs() == null) {
                   newNeighbor.setRemoteAs(pg.getRemoteAS());
-               }
-               if (newNeighbor.getLocalAs() == null) {
                   newNeighbor.setLocalAs(proc.getPid());
-               }
-               if (newNeighbor.getUpdateSource() == null) {
                   newNeighbor.setUpdateSource(updateSource);
-               }
                newNeighbor.getOriginationPolicies().addAll(originationPolicies);
-               if (newNeighbor.getSendCommunity() == null) {
                   newNeighbor.setSendCommunity(sendCommunity);
-               }
-               if (newNeighbor.getDefaultMetric() == null) {
                   newNeighbor.setDefaultMetric(defaultMetric);
-               }
             }
-         }
       }
       return newBgpProcess;
    }
@@ -797,7 +789,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                }
             }
          }
-         for (BgpPeerGroup pg : _bgpProcess.getPeerGroups().values()) {
+         for (BgpPeerGroup pg : _bgpProcess.getAllPeerGroups().values()) {
             currentMapName = pg.getInboundRouteMap();
             if (currentMapName != null) {
                currentMap = _routeMaps.get(currentMapName);
@@ -1019,7 +1011,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                return true;
             }
          }
-         for (BgpPeerGroup pg : _bgpProcess.getPeerGroups().values()) {
+         for (BgpPeerGroup pg : _bgpProcess.getAllPeerGroups().values()) {
             currentMapName = pg.getInboundRouteMap();
             if (containsIpAccessList(eaListName, currentMapName)) {
                return true;

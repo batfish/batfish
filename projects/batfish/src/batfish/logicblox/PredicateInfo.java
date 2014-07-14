@@ -44,7 +44,7 @@ public class PredicateInfo {
 
       currentNames.add("libbatfish:CommunityList:AdvertisementCommunity");
       valueTypeList = new ArrayList<LBValueType>();
-      valueTypeList.add(LBValueType.ENTITY_INDEX_INT); // advert
+      valueTypeList.add(LBValueType.ENTITY_INDEX_BGP_ADVERTISEMENT); // advert
       valueTypeList.add(LBValueType.INT); // community
       updateQualifiedNameMap(currentNames);
       addValueTypes(currentNames, valueTypeList);
@@ -68,6 +68,10 @@ public class PredicateInfo {
       currentNames.clear();
 
       currentNames.add("libbatfish:Bgp:BestBgpAdvertisement");
+      currentNames.add("libbatfish:BgpAdvertisement:BgpAdvertisement");
+      currentNames.add("libbatfish:Bgp:MaxLocalPrefBgpAdvertisement");
+      currentNames.add("libbatfish:Bgp:MinAsPathLengthBgpAdvertisement");
+      currentNames.add("libbatfish:Bgp:ReceivedBgpAdvertisement");
       valueTypeList = new ArrayList<LBValueType>();
       valueTypeList.add(LBValueType.ENTITY_INDEX_BGP_ADVERTISEMENT); // advert
       updateQualifiedNameMap(currentNames);

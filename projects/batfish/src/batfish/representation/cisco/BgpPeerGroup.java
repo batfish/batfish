@@ -1,40 +1,19 @@
 package batfish.representation.cisco;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import batfish.representation.Ip;
 
-public class BgpPeerGroup {
-   private Ip _clusterId;
-   private boolean _defaultOriginate;
-   private String _defaultOriginateMap;
-   private String _inboundPrefixList;
-   private String _inboundRouteMap;
-   private String _name;
-   private Set<Ip> _neighborAddresses;
-   private String _outboundPrefixList;
-   private String _outboundRouteMap;
-   private Integer _remoteAS;
-   private boolean _routeReflectorClient;
-   private boolean _sendCommunity;
-   private String _updateSource;
-
-   public BgpPeerGroup(String name) {
-      _name = name;
-      _neighborAddresses = new LinkedHashSet<Ip>();
-      _clusterId = null;
-      _routeReflectorClient = false;
-      _inboundPrefixList = null;
-      _inboundRouteMap = null;
-      _outboundRouteMap = null;
-      _defaultOriginate = false;
-      _remoteAS = null;
-   }
-
-   public void addNeighborAddress(Ip address) {
-      _neighborAddresses.add(address);
-   }
+public abstract class BgpPeerGroup {
+   protected Ip _clusterId;
+   protected Boolean _defaultOriginate;
+   protected String _defaultOriginateMap;
+   protected String _inboundPrefixList;
+   protected String _inboundRouteMap;
+   protected String _outboundPrefixList;
+   protected String _outboundRouteMap;
+   protected Integer _remoteAS;
+   protected Boolean _routeReflectorClient;
+   protected Boolean _sendCommunity;
+   protected String _updateSource;
 
    public Ip getClusterId() {
       return _clusterId;
@@ -56,13 +35,7 @@ public class BgpPeerGroup {
       return _inboundRouteMap;
    }
 
-   public String getName() {
-      return _name;
-   }
-
-   public Set<Ip> getNeighborAddresses() {
-      return _neighborAddresses;
-   }
+   public abstract String getName();
 
    public String getOutboundPrefixList() {
       return _outboundPrefixList;
@@ -87,7 +60,7 @@ public class BgpPeerGroup {
    public String getUpdateSource() {
       return _updateSource;
    }
-   
+
    public void setClusterId(Ip ip) {
       _clusterId = ip;
    }
@@ -127,7 +100,7 @@ public class BgpPeerGroup {
    public void setSendCommunity(boolean sendCommunity) {
       _sendCommunity = sendCommunity;
    }
-   
+
    public void setUpdateSource(String updateSource) {
       _updateSource = updateSource;
    }
