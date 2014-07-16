@@ -20,7 +20,7 @@ address_family_vrf_stanza
 
 banner_stanza
 :
-	BANNER MOTD ESCAPE_C .*? ESCAPE_C NEWLINE
+	BANNER MOTD ESCAPE_C ~ESCAPE_C* ESCAPE_C NEWLINE
 ;
 
 certificate_stanza
@@ -39,7 +39,7 @@ cisco_configuration
 :
 	(
 		sl += stanza
-	)+ COLON? END
+	)+ COLON? END .*? EOF
 ;
 
 hostname_stanza
