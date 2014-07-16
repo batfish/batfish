@@ -23,6 +23,7 @@ public class Settings {
    private static final String ARG_COUNT = "count";
    private static final String ARG_DIFF = "diff";
    private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
+   private static final String ARG_ANONYMIZE = "anonymize";
 
    private static final String ARG_DUMP_FACTS_DIR = "dumpdir";
    private static final String ARG_DUMP_IF = "dumpif";
@@ -79,6 +80,7 @@ public class Settings {
    private static final String DEFAULT_Z3_CONCRETIZER_OUTPUT_FILE = "z3-concretizer-output.smt2";
    private static final String DEFAULT_Z3_OUTPUT = "z3-dataplane-output.smt2";
    private static final String EXECUTABLE_NAME = "batfish";
+   private static final String ARGNAME_ANONYMIZE = "path";
    
    
    private boolean _canExecute;
@@ -123,7 +125,9 @@ public class Settings {
    private String _workspaceName;
    private boolean _z3;
    private String _z3File;
-
+   private boolean _anonymize;
+   private String _anonymizeDir;
+   
    public Settings() {
       initOptions();
       parseCommandLine(new String[] {});
@@ -434,6 +438,11 @@ public class Settings {
       _options.addOption(OptionBuilder
             .withDescription("redirect stderr to stdout")
             .create(ARG_REDIRECT_STDERR));
+      _options.addOption(OptionBuilder
+            .hasArg()
+            .withArgName(ARGNAME_ANONYMIZE)
+            .withDescription("created anonymized versions of configs in test rig")
+            .create(ARG_ANONYMIZE));
    }
 
    private void parseCommandLine(String[] args) {
@@ -535,6 +544,10 @@ public class Settings {
       _revertBranchName = line.getOptionValue(ARG_REVERT);
       _revert = (_revertBranchName != null);
       _redirectStdErr = line.hasOption(ARG_REDIRECT_STDERR);
+      _anonymize = line.hasOption(ARG_ANONYMIZE);
+      if (_anonymize) {
+         _anonymizeDir = line.getOptionValue(ARG_ANONYMIZE);
+      }
    }
 
    public boolean redirectStdErr() {
@@ -543,6 +556,14 @@ public class Settings {
 
    public boolean revert() {
       return _revert;
+   }
+
+   public boolean getAnonymize() {
+      return _anonymize;
+   }
+   
+   public String getAnonymizeDir() {
+      return _anonymizeDir;
    }
 
 }

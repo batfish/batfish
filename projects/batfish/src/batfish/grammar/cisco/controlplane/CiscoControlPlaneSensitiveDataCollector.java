@@ -1,7 +1,5 @@
 package batfish.grammar.cisco.controlplane;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,15 +8,16 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import batfish.grammar.cisco.CiscoGrammar.*;
 import batfish.grammar.cisco.*;
+import batfish.representation.Ip;
 
 public class CiscoControlPlaneSensitiveDataCollector extends CiscoGrammarBaseListener {
 
-   private Set<String> _allVariables;
    private Map<String, String> _variableMap;
+   private Set<Ip> _ipAddresses;
    
-   public CiscoControlPlaneSensitiveDataCollector() {
-      _allVariables = new HashSet<String>();
-      _variableMap = new HashMap<String, String>();
+   public CiscoControlPlaneSensitiveDataCollector(Map<String, String> variableMap, Set<Ip> ipAddresses) {
+      _variableMap = variableMap;
+      _ipAddresses = ipAddresses;
    }
    
    @Override
@@ -28,12 +27,26 @@ public class CiscoControlPlaneSensitiveDataCollector extends CiscoGrammarBaseLis
       switch (type) {
       
       case CiscoGrammarCommonLexer.VARIABLE:
-         _allVariables.add(symbol.getText());
+         addVariable(symbol.getText());
+         break;
       
+      case CiscoGrammarCommonLexer.IP_ADDRESS:
+         Ip ip = new Ip(symbol.getText());
+         _ipAddresses.add(ip);
+         break;
+         
       default:
          break;
       }
       
+   }
+
+   private void addVariable(String var) {
+      if (!_variableMap.containsKey(var)) {
+         int num = _variableMap.size();
+         String obfuscatedVar = "obfuscated-var-" + num;
+         _variableMap.put(var, obfuscatedVar);
+      }
    }
 
    @Override
@@ -1173,12 +1186,7 @@ public class CiscoControlPlaneSensitiveDataCollector extends CiscoGrammarBaseLis
 
    @Override
    public void exitCisco_configuration(Cisco_configurationContext ctx) {
-      int i = 0;
-      for (String variable : _allVariables) {
-         String newText = "obfuscated-var-" + i;
-         _variableMap.put(variable, newText);
-         i++;
-      }
+      // TODO Auto-generated method stub
       
    }
 

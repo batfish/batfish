@@ -109,8 +109,10 @@ public class Batfish {
       initFactBins(Facts.TRAFFIC_FACT_COLUMN_HEADERS, factBins);
    }
 
-   private static void populateConfigurationFactBins(
+   private void populateConfigurationFactBins(
          List<Configuration> configurations, Map<String, StringBuilder> factBins) {
+      print(1, "\n*** EXTRACTING LOGICBLOX FACTS FROM CONFIGURATIONS ***\n");
+      resetTimer();
       Set<Long> communities = new LinkedHashSet<Long>();
       for (Configuration c : configurations) {
          communities.addAll(c.getCommunities());
@@ -120,6 +122,7 @@ public class Batfish {
                communities, factBins);
          cfe.writeFacts();
       }
+      printElapsedTime();
    }
 
    private List<LogicBloxFrontend> _lbFrontends;
@@ -171,6 +174,11 @@ public class Batfish {
       printElapsedTime();
    }
 
+   private void anonymizeConfigurations() {
+      // TODO Auto-generated method stub
+      
+   }
+   
    private void cleanupLogicDir() {
       if (_tmpLogicDir != null) {
          try {
@@ -388,14 +396,12 @@ public class Batfish {
    }
 
    public Map<String, Configuration> getConfigurations(String testRigPath) {
+      Map<File, String> configurationData = readConfigurationFiles(testRigPath);
       // Get generated facts from configuration files
-      print(1, "\n*** PARSING CONFIGURATION FILES ***\n");
-      resetTimer();
-      List<Configuration> configurations = parseConfigFiles(testRigPath);
+      List<Configuration> configurations = parseConfigFiles(configurationData);
       if (configurations == null) {
          quit(1);
       }
-      printElapsedTime();
       Map<String, Configuration> configurationMap = new TreeMap<String, Configuration>();
       for (Configuration configuration : configurations) {
          configurationMap.put(configuration.getHostname(), configuration);
@@ -404,13 +410,16 @@ public class Batfish {
    }
 
    public void getDiff() {
-      List<Configuration> firstConfigurations = parseConfigFiles(_settings
+      Map<File, String> configurationData1 = readConfigurationFiles(_settings
             .getTestRigPath());
+      Map<File, String> configurationData2 = readConfigurationFiles(_settings
+            .getSecondTestRigPath());
+
+      List<Configuration> firstConfigurations = parseConfigFiles(configurationData1);
       if (firstConfigurations == null) {
          quit(1);
       }
-      List<Configuration> secondConfigurations = parseConfigFiles(_settings
-            .getSecondTestRigPath());
+      List<Configuration> secondConfigurations = parseConfigFiles(configurationData2);
       if (secondConfigurations == null) {
          quit(1);
       }
@@ -588,31 +597,22 @@ public class Batfish {
 
    }
 
-   private List<Configuration> parseConfigFiles(String testRigPath) {
+   private List<Configuration> parseConfigFiles(
+         Map<File, String> configurationData) {
+      print(1, "\n*** PARSING CONFIGURATION FILES ***\n");
+      resetTimer();
       List<Configuration> configurations = new ArrayList<Configuration>();
-      List<String> configFiles = new ArrayList<String>();
-      File configsPath = new File(testRigPath + SEPARATOR + "configs");
-      File[] configFilePaths = configsPath.listFiles(new FilenameFilter() {
-         @Override
-         public boolean accept(File dir, String name) {
-            return !name.startsWith(".");
-         }
-      });
-      for (File file : configFilePaths) {
-         configFiles.add(readFile(file.getAbsoluteFile()));
-      }
-      int currentPathIndex = 0;
+
       boolean processingError = false;
-      for (String fileText : configFiles) {
-         String currentPath = configFilePaths[currentPathIndex]
-               .getAbsolutePath();
+      for (File currentFile : configurationData.keySet()) {
+         String fileText = configurationData.get(currentFile);
+         String currentPath = currentFile.getAbsolutePath();
          ConfigurationParser parser = null;
          ConfigurationLexer lexer = null;
          VendorConfiguration vc = null;
          ANTLRStringStream in = new ANTLRStringStream(fileText);
          CommonTokenStream tokens;
          if (fileText.length() == 0) {
-            currentPathIndex++;
             continue;
          }
          CiscoControlPlaneExtractor extractor = null;
@@ -651,7 +651,6 @@ public class Batfish {
             parser = new JuniperGrammarParser(tokens);
          }
          else {
-            currentPathIndex++;
             continue;
          }
          if (!antlr4) {
@@ -679,7 +678,6 @@ public class Batfish {
                }
                else {
                   processingError = true;
-                  currentPathIndex++;
                   continue;
                }
             }
@@ -702,7 +700,6 @@ public class Batfish {
                }
                else {
                   processingError = true;
-                  currentPathIndex++;
                   continue;
                }
             }
@@ -718,12 +715,10 @@ public class Batfish {
             }
             else {
                processingError = true;
-               currentPathIndex++;
                continue;
             }
          }
 
-         currentPathIndex++;
          List<String> conversionWarnings = vc.getConversionWarnings();
          int numWarnings = conversionWarnings.size();
          if (numWarnings > 0) {
@@ -740,6 +735,7 @@ public class Batfish {
          return null;
       }
       else {
+         printElapsedTime();
          return configurations;
       }
    }
@@ -993,6 +989,26 @@ public class Batfish {
       print(0, "Semantics: " + semantics + "\n");
    }
 
+   private Map<File, String> readConfigurationFiles(String testRigPath) {
+      print(1, "\n*** READING CONFIGURATION FILES ***\n");
+      resetTimer();
+      Map<File, String> configurationData = new TreeMap<File, String>();
+      File configsPath = Paths.get(testRigPath, "configs").toFile();
+      File[] configFilePaths = configsPath.listFiles(new FilenameFilter() {
+         @Override
+         public boolean accept(File dir, String name) {
+            return !name.startsWith(".");
+         }
+      });
+      for (File file : configFilePaths) {
+         print(2, "Reading: \"" + file.toString() + "\"\n");
+         String fileText = readFile(file.getAbsoluteFile());
+         configurationData.put(file, fileText);
+      }
+      printElapsedTime();
+      return configurationData;
+   }
+
    public void quit(int exitCode) {
       for (LogicBloxFrontend lbFrontend : _lbFrontends) {
          // Close backend threads
@@ -1085,6 +1101,12 @@ public class Batfish {
       if (_settings.redirectStdErr()) {
          System.setErr(System.out);
       }
+
+      if (_settings.getAnonymize()) {
+         anonymizeConfigurations();
+         quit(0);
+      }
+      
       if (_settings.getDumpIF()) {
          dumpIF();
          quit(0);
@@ -1215,15 +1237,15 @@ public class Batfish {
 
    public void writeConfigurationFacts(String testRigPath,
          Map<String, StringBuilder> factBins) {
+
+      Map<File, String> configurationData = readConfigurationFiles(testRigPath);
+
       // Get generated facts from configuration files
-      print(1, "\n*** PARSING CONFIGURATION FILES ***\n");
-      resetTimer();
-      List<Configuration> configurations = parseConfigFiles(testRigPath);
+      List<Configuration> configurations = parseConfigFiles(configurationData);
       if (configurations == null) {
          quit(1);
       }
       populateConfigurationFactBins(configurations, factBins);
-      printElapsedTime();
    }
 
    public void writeTopologyFacts(String testRigPath,
