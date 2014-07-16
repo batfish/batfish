@@ -190,7 +190,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   }
                }
             }
-            updateSource = proc.getRouterId().toString();
+            updateSource = processRouterId.toString();
          }
          else {
             Ip sourceIp = c.getInterfaces().get(updateSourceInterface).getIP();
