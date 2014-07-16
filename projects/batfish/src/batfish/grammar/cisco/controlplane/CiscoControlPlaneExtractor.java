@@ -800,8 +800,18 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitNeighbor_activate_af_stanza(
          Neighbor_activate_af_stanzaContext ctx) {
-      Ip neighbor = toIp(ctx.neighbor);
-      _configuration.getBgpProcess().addActivatedNeighbor(neighbor);
+      BgpProcess proc = _configuration.getBgpProcess();
+      if (ctx.neighbor != null) {
+         Ip neighbor = toIp(ctx.neighbor);
+         proc.addActivatedNeighbor(neighbor);
+      }
+      else if (ctx.pg != null) {
+         String peerGroupName = ctx.pg.getText();
+         NamedBgpPeerGroup pg = proc.getNamedPeerGroups().get(peerGroupName);
+         for (Ip neighborAddress : pg.getNeighborAddresses()) {
+            proc.addActivatedNeighbor(neighborAddress);
+         }
+      }
    }
 
    @Override

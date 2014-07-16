@@ -89,7 +89,11 @@ default_metric_tail_bgp
 
 neighbor_activate_af_stanza
 :
-	NEIGHBOR neighbor = IP_ADDRESS ACTIVATE NEWLINE
+	NEIGHBOR
+	(
+		neighbor = IP_ADDRESS
+		| pg = ~( IP_ADDRESS | NEWLINE )
+	) ACTIVATE NEWLINE
 ;
 
 neighbor_ebgp_multihop_rb_stanza
