@@ -370,7 +370,9 @@ protocol_type_code_access_list_stanza
 
 standard_access_list_null_tail
 :
-	REMARK ~NEWLINE* NEWLINE
+	(REMARK ~NEWLINE* NEWLINE)
+    | (ala = access_list_action ipr = IP_ADDRESS LOG? NEWLINE)
+
 ;
 
 standard_access_list_named_stanza
