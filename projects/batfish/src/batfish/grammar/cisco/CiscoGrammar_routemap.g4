@@ -121,10 +121,14 @@ route_map_stanza
 
 route_map_tail
 :
-	rmt = access_list_action num = DEC NEWLINE
+	rmt = access_list_action num = DEC NEWLINE route_map_tail_tail closing_comment
+;
+
+route_map_tail_tail
+:
 	(
 		rms_list += rm_stanza
-	)* closing_comment
+	)*
 ;
 
 set_as_path_prepend_rm_stanza
@@ -166,14 +170,14 @@ set_community_rm_stanza
 ;
 
 set_interface_rm_stanza
-  :
-  SET INTERFACE ~NEWLINE* NEWLINE
-  ;
+:
+	SET INTERFACE ~NEWLINE* NEWLINE
+;
 
 set_ip_df_rm_stanza
-  :
-  SET IP DF ~NEWLINE* NEWLINE
-  ;
+:
+	SET IP DF ~NEWLINE* NEWLINE
+;
 
 set_ipv6_rm_stanza
 :
