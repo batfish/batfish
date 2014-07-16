@@ -24,6 +24,7 @@ tokens {
 	ACL_NUM_EXTENDED_IPX,
 	ACL_NUM_IPX,
 	ACL_NUM_IPX_SAP,
+	ACL_NUM_OTHER,
 	ACL_NUM_PROTOCOL_TYPE_CODE,
 	ACL_NUM_STANDARD,
 	COMMUNITY_LIST_NUM_EXPANDED,
@@ -3123,6 +3124,9 @@ ACL_NUM
 	}
 	else if (1000 <= val && val <= 1099) {
 		_type = ACL_NUM_IPX_SAP;
+	}
+	else {
+		_type = ACL_NUM_OTHER;
 	}
 	enableDEC = true;
 	enableACL_NUM = false;

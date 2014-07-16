@@ -131,13 +131,28 @@ extended_access_list_tail
 
 ip_as_path_access_list_stanza
 :
-	IP AS_PATH ACCESS_LIST firstname = DEC ip_as_path_access_list_tail
-	(
-		IP AS_PATH ACCESS_LIST name = DEC
-		{$firstname.text.equals($name.text)}?
+	numbered = ip_as_path_numbered_stanza
+;
 
-		ip_as_path_access_list_tail
-	)*
+ip_as_path_numbered_stanza
+locals [boolean again]
+:
+	IP AS_PATH ACCESS_LIST name = . ip_as_path_access_list_tail
+	{
+		$again = _input.LT(1).getType() == IP &&
+		_input.LT(2).getType() == AS_PATH &&
+		_input.LT(3).getType() == ACCESS_LIST &&
+		_input.LT(4).getText().equals($name.text);
+	}
+
+	(
+		{$again}?
+
+		ip_as_path_numbered_stanza
+		|
+		{!$again}?
+
+	)
 ;
 
 ip_as_path_access_list_tail
