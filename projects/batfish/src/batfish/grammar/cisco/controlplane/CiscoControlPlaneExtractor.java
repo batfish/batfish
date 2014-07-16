@@ -376,7 +376,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void enterIp_as_path_access_list_stanza(
          Ip_as_path_access_list_stanzaContext ctx) {
-      String name = ctx.firstname.getText();
+      String name = ctx.numbered.name.getText();
       _currentAsPathAcl = new IpAsPathAccessList(name);
       _currentAsPathAcl.setContext(ctx);
       _configuration.getAsPathAccessLists().put(name, _currentAsPathAcl);

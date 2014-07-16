@@ -219,8 +219,12 @@ router_id_ro_stanza
 
 router_ospf_stanza
 :
-	ROUTER OSPF procnum = DEC NEWLINE
+	ROUTER OSPF procnum = DEC NEWLINE router_ospf_stanza_tail closing_comment
+;
+
+router_ospf_stanza_tail
+:
 	(
 		rosl += ro_stanza
-	)+ closing_comment
+	)+
 ;

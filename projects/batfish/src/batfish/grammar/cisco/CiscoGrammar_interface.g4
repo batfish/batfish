@@ -29,10 +29,14 @@ if_stanza
 
 interface_stanza
 :
-	INTERFACE iname = interface_name NEWLINE
+	INTERFACE iname = interface_name NEWLINE interface_stanza_tail closing_comment
+;
+
+interface_stanza_tail
+:
 	(
 		ifsl += if_stanza
-	)* closing_comment
+	)*
 ;
 
 ip_access_group_if_stanza

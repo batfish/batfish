@@ -12,10 +12,15 @@ address_family_rb_stanza
 	(
 		IPV4
 		| IPV6
-	) MULTICAST? NEWLINE
+	) MULTICAST? NEWLINE address_family_rb_stanza_tail EXIT_ADDRESS_FAMILY NEWLINE
+	closing_comment
+;
+
+address_family_rb_stanza_tail
+:
 	(
 		afsl += af_stanza
-	)+ EXIT_ADDRESS_FAMILY NEWLINE closing_comment
+	)+
 ;
 
 af_stanza
@@ -490,7 +495,11 @@ redistribute_static_tail_bgp
 
 router_bgp_stanza
 :
-	ROUTER BGP procnum = DEC NEWLINE
+	ROUTER BGP procnum = DEC NEWLINE router_bgp_stanza_tail
+;
+
+router_bgp_stanza_tail
+:
 	(
 		rbsl += rb_stanza
 	)+ closing_comment
