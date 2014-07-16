@@ -57,13 +57,9 @@ ip_route_stanza
 	IP ROUTE prefix = IP_ADDRESS mask = IP_ADDRESS
 	(
 		nexthopip = IP_ADDRESS
-		| nexthopint = interface_name
-		|
-		(
-			nexthopip = IP_ADDRESS nexthopint = interface_name
-		)
-	)
-	(
+		| 
+		nexthopint = interface_name
+		| 
 		distance = DEC
 		|
 		(
