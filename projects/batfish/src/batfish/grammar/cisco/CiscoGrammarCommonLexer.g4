@@ -967,7 +967,7 @@ EXPANDED
 
 EXTENDED
 :
-	'extended'
+	'extended' { enableDEC = true; enableACL_NUM = false; }
 ;
 
 FABRIC
@@ -2602,7 +2602,7 @@ SSL
 
 STANDARD
 :
-	'standard'
+	'standard' { enableDEC = true; enableACL_NUM = false; }
 ;
 
 STANDBY

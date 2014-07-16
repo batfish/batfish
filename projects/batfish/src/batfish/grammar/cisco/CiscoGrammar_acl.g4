@@ -53,11 +53,14 @@ appletalk_access_list_stanza
 
 extended_access_list_named_stanza
 :
-	IP ACCESS_LIST EXTENDED name = . NEWLINE
+	IP ACCESS_LIST EXTENDED name = ~NEWLINE NEWLINE
 	(
-		extended_access_list_tail
-		| extended_access_list_null_tail
-	)*
+		(
+			extended_access_list_tail
+			| extended_access_list_null_tail
+		)+
+		| closing_comment
+	)
 ;
 
 extended_access_list_null_tail
@@ -385,9 +388,13 @@ protocol_type_code_access_list_stanza
 
 standard_access_list_null_tail
 :
-	(REMARK ~NEWLINE* NEWLINE)
-    | (ala = access_list_action ipr = IP_ADDRESS LOG? NEWLINE)
-
+	(
+		REMARK ~NEWLINE* NEWLINE
+	)
+	|
+	(
+		ala = access_list_action ipr = IP_ADDRESS LOG? NEWLINE
+	)
 ;
 
 standard_access_list_named_stanza

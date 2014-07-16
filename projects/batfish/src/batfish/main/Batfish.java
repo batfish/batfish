@@ -633,9 +633,30 @@ public class Batfish {
             bParser = parser4;
             parser4.getInterpreter().setPredictionMode(PredictionMode.SLL);
             Cisco_configurationContext tree = parser4.cisco_configuration();
+            List<String> parserErrors = bParser.getErrors();
+            List<String> lexerErrors = bLexer.getErrors();
+            int numErrors = parserErrors.size() + lexerErrors.size();
+            if (numErrors > 0) {
+               error(0, " ..." + numErrors + " ERROR(S)\n");
+               for (String msg : lexerErrors) {
+                  error(2, "\tlexer: " + msg + "\n");
+               }
+               for (String msg : parserErrors) {
+                  error(2, "\tparser: " + msg + "\n");
+               }
+               if (_settings.exitOnParseError()) {
+                  return null;
+               }
+               else {
+                  processingError = true;
+                  currentPathIndex++;
+                  continue;
+               }
+            }
             ParseTreeWalker walker = new ParseTreeWalker();
             extractor = new CiscoControlPlaneExtractor(fileText);
             walker.walk(extractor, tree);
+            vc = extractor.getVendorConfiguration();
             assert Boolean.TRUE;
          }
          else if ((fileText.indexOf("set version") >= 0)
@@ -672,29 +693,6 @@ public class Batfish {
                   error(2, "\tlexer: " + msg + "\n");
                }
                for (String msg : parser.getErrors()) {
-                  error(2, "\tparser: " + msg + "\n");
-               }
-               if (_settings.exitOnParseError()) {
-                  return null;
-               }
-               else {
-                  processingError = true;
-                  currentPathIndex++;
-                  continue;
-               }
-            }
-         }
-         else {
-            vc = extractor.getVendorConfiguration();
-            List<String> parserErrors = bParser.getErrors();
-            List<String> lexerErrors = bLexer.getErrors();
-            int numErrors = parserErrors.size() + lexerErrors.size();
-            if (numErrors > 0) {
-               error(0, " ..." + numErrors + " ERROR(S)\n");
-               for (String msg : lexerErrors) {
-                  error(2, "\tlexer: " + msg + "\n");
-               }
-               for (String msg : parserErrors) {
                   error(2, "\tparser: " + msg + "\n");
                }
                if (_settings.exitOnParseError()) {

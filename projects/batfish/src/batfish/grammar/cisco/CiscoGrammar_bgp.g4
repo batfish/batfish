@@ -285,12 +285,12 @@ network_tail_bgp
 
 network6_af_stanza
 :
-	network_tail_bgp
+	network6_tail_bgp
 ;
 
 network6_rb_stanza
 :
-	network_tail_bgp
+	network6_tail_bgp
 ;
 
 network6_tail_bgp
