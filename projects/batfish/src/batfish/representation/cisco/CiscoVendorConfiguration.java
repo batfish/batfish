@@ -170,6 +170,26 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          String updateSourceInterface = pg.getUpdateSource();
          String updateSource = null;
          if (updateSourceInterface == null) {
+            Ip processRouterId = proc.getRouterId();
+            if (processRouterId == null) {
+               processRouterId = new Ip(0l);
+               for (String iname : c.getInterfaces().keySet()) {
+                  if (iname.startsWith("Loopback")) {
+                     Ip currentIp = c.getInterfaces().get(iname).getIP();
+                     if (currentIp.asLong() > processRouterId.asLong()) {
+                        processRouterId = currentIp;
+                     }
+                  }
+               }
+               if (processRouterId.asLong() == 0) {
+                  for (batfish.representation.Interface currentInterface : c.getInterfaces().values()) {
+                     Ip currentIp = currentInterface.getIP();
+                     if (currentIp.asLong() > processRouterId.asLong()) {
+                        processRouterId = currentIp;
+                     }
+                  }
+               }
+            }
             updateSource = proc.getRouterId().toString();
          }
          else {
