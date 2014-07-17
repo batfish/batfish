@@ -6,9 +6,15 @@ options {
 	tokenVocab = CiscoGrammarCommonLexer;
 }
 
+description_if_stanza
+:
+	DESCRIPTION M_DESCRIPTION_NON_NEWLINE* M_DESCRIPTION_NEWLINE
+;
+
 if_stanza
 :
-	ip_access_group_if_stanza
+	description_if_stanza
+	| ip_access_group_if_stanza
 	| ip_address_if_stanza
 	| ip_address_secondary_if_stanza
 	| ip_ospf_cost_if_stanza
@@ -108,7 +114,6 @@ null_standalone_if_stanza
 		| CLNS
 		| CLOCK
 		| CRYPTO
-		| DESCRIPTION
 		|
 		(
 			DSU BANDWIDTH

@@ -680,6 +680,12 @@ DES_SHA1
 	'des-sha1'
 ;
 
+DESCRIPTION
+:
+	'description' -> pushMode(M_DESCRIPTION)
+;
+
+
 DESIRABLE
 :
 	'desirable'
@@ -3300,15 +3306,6 @@ DEC
 	F_Digit+
 ;
 
-DESCRIPTION
-:
-	'description'
-	{
-                                   inComment = true;
-                                  }
-
-;
-
 DOUBLE_QUOTE
 :
 	'"'
@@ -3681,4 +3678,13 @@ F_UpperCaseLetter
 :
 	'A' .. 'Z'
 ;
+
+mode M_DESCRIPTION;
+
+M_DESCRIPTION_NEWLINE:
+
+'\n' -> popMode;
+
+M_DESCRIPTION_NON_NEWLINE:
+~'\n';
 
