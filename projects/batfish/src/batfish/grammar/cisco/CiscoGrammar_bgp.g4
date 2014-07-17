@@ -92,7 +92,7 @@ neighbor_activate_af_stanza
 	NEIGHBOR
 	(
 		neighbor = IP_ADDRESS
-		| pg = ~( IP_ADDRESS | NEWLINE )
+		| pg = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
 	) ACTIVATE NEWLINE
 ;
 

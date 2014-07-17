@@ -30,7 +30,6 @@ import batfish.representation.PolicyMapMatchIpAccessListLine;
 import batfish.representation.PolicyMapMatchLine;
 import batfish.representation.PolicyMapMatchProtocolLine;
 import batfish.representation.PolicyMapMatchRouteFilterListLine;
-import batfish.representation.PolicyMapMatchType;
 import batfish.representation.PolicyMapSetAddCommunityLine;
 import batfish.representation.PolicyMapSetCommunityLine;
 import batfish.representation.PolicyMapSetLine;
@@ -577,7 +576,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
                boolean containsRouteFilterList = false;
                for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
-                  if (matchLine.getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
+                  switch (matchLine.getType()) {
+                  case ROUTE_FILTER_LIST:
                      PolicyMapMatchRouteFilterListLine rLine = (PolicyMapMatchRouteFilterListLine) matchLine;
                      for (RouteFilterList list : rLine.getLists()) {
                         containsRouteFilterList = true;
@@ -586,8 +586,10 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                               new RouteFilterLengthRangeLine(LineAction.REJECT,
                                     new Ip("0.0.0.0"), 0, new SubRange(0, 0)));
                      }
-                  }
-                  else {
+                     break;
+                  case PROTOCOL:
+                     break;
+                  default:
                      // note: don't allow ip access lists in policies that
                      // are for prefix matching
                      // i.e. convert them, or throw error if they are used
@@ -596,13 +598,20 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   }
                }
                if (!containsRouteFilterList) {
-                  throw new Error(
-                        "Expected at least one route filter match in this clause");
+                  RouteFilterList generatedRejectDefaultRouteList = c
+                        .getRouteFilterLists()
+                        .get(OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME);
+                  if (generatedRejectDefaultRouteList == null) {
+                     generatedRejectDefaultRouteList = makeRouteFilter(
+                           OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
+                           "0.0.0.0", 0, new SubRange(0, 0), LineAction.REJECT);
+                  }
+                  Set<RouteFilterList> lists = new HashSet<RouteFilterList>();
+                  lists.add(generatedRejectDefaultRouteList);
+                  PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(lists);
+                  clause.getMatchLines().add(line);
                }
                Set<PolicyMapSetLine> setList = clause.getSetLines();
-               if (setList.size() > 0) {
-                  throw new Error("Expected no set lines here");
-               }
                clause.getMatchLines().add(matchStaticLine);
                if (!routeMapMetric) {
                   setList.add(setMetricLine);
