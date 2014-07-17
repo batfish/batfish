@@ -1054,9 +1054,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          int metric = toInteger(ctx.metric);
          r.setMetric(metric);
       }
-      else {
-         r.setMetric(OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC);
-      }
       if (ctx.map != null) {
          String map = ctx.map.getText();
          r.setMap(map);
@@ -1123,9 +1120,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       if (ctx.metric != null) {
          int metric = toInteger(ctx.metric);
          r.setMetric(metric);
-      }
-      else {
-         r.setMetric(OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC);
       }
       if (ctx.map != null) {
          String map = ctx.map.getText();
