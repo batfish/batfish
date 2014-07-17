@@ -519,18 +519,21 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
                   boolean containsRouteFilterList = false;
                   for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
-                     if (matchLine.getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
-                        PolicyMapMatchRouteFilterListLine rLine = (PolicyMapMatchRouteFilterListLine) matchLine;
-                        for (RouteFilterList list : rLine.getLists()) {
-                           containsRouteFilterList = true;
-                           list.getLines().add(
-                                 0,
-                                 new RouteFilterLengthRangeLine(
-                                       LineAction.REJECT, new Ip("0.0.0.0"), 0,
-                                       new SubRange(0, 0)));
-                        }
-                     }
-                     else {
+                     switch (matchLine.getType()) {
+                        case ROUTE_FILTER_LIST :
+                           PolicyMapMatchRouteFilterListLine rLine = (PolicyMapMatchRouteFilterListLine) matchLine;
+                           for (RouteFilterList list : rLine.getLists()) {
+                              containsRouteFilterList = true;
+                              list.getLines().add(
+                                    0,
+                                    new RouteFilterLengthRangeLine(
+                                          LineAction.REJECT, new Ip("0.0.0.0"), 0,
+                                          new SubRange(0, 0)));
+                           }
+                           break;
+                        case PROTOCOL :
+                           break;
+                        default :
                         // note: don't allow ip access lists in policies that
                         // are for prefix matching
                         // i.e. convert them, or throw error if they are used
