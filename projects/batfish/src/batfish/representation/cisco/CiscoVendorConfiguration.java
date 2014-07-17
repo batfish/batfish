@@ -589,6 +589,10 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                      break;
                   case PROTOCOL:
                      break;
+                  case AS_PATH_ACCESS_LIST:
+                  case COMMUNITY_LIST:
+                  case IP_ACCESS_LIST:
+                  case NEIGHBOR:
                   default:
                      // note: don't allow ip access lists in policies that
                      // are for prefix matching

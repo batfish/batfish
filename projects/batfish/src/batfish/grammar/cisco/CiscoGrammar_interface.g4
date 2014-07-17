@@ -8,7 +8,7 @@ options {
 
 description_if_stanza
 :
-	DESCRIPTION M_DESCRIPTION_NON_NEWLINE* M_DESCRIPTION_NEWLINE
+	description_line
 ;
 
 if_stanza

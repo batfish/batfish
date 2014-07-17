@@ -132,7 +132,7 @@ null_block_stanza
 		| VOICE
 		| VOICE_PORT
 		| VPDN_GROUP
-	) ~NEWLINE* NEWLINE null_block_substanza*
+	) ~NEWLINE* NEWLINE (null_block_substanza | description_line)*
 	(
 		closing_comment
 	)

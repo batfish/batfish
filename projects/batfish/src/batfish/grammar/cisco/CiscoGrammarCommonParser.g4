@@ -32,6 +32,11 @@ community
 	| com = NO_EXPORT
 ;
 
+description_line
+:
+	DESCRIPTION M_DESCRIPTION_NON_NEWLINE* M_DESCRIPTION_NEWLINE
+;
+
 exact_match [String matchText]
 :
 	{(_input.LT(1).getType() == VARIABLE || _input.LT(1).getType() == COMMUNITY_LIST_NUM_EXPANDED) && _input.LT(1).getText().equals($matchText)}?
