@@ -55,12 +55,9 @@ extended_access_list_named_stanza
 :
 	IP ACCESS_LIST EXTENDED name = ~NEWLINE NEWLINE
 	(
-		(
-			extended_access_list_tail
-			| extended_access_list_null_tail
-		)+
-		| closing_comment
-	)
+		extended_access_list_tail
+		| extended_access_list_null_tail
+	)*
 ;
 
 extended_access_list_null_tail
@@ -399,14 +396,11 @@ standard_access_list_null_tail
 
 standard_access_list_named_stanza
 :
-	IP ACCESS_LIST STANDARD name = . NEWLINE
+	IP ACCESS_LIST STANDARD name = ~NEWLINE NEWLINE
 	(
-		(
-			standard_access_list_tail
-			| standard_access_list_null_tail
-		)+
-		| closing_comment
-	)
+		standard_access_list_tail
+		| standard_access_list_null_tail
+	)*
 ;
 
 standard_access_list_numbered_stanza
