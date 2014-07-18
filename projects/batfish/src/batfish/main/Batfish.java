@@ -67,6 +67,7 @@ import batfish.logicblox.LBInitializationException;
 import batfish.logicblox.LBValueType;
 import batfish.logicblox.LogicBloxFrontend;
 import batfish.logicblox.PredicateInfo;
+import batfish.logicblox.ProjectFile;
 import batfish.logicblox.QueryException;
 import batfish.logicblox.TopologyFactExtractor;
 import batfish.representation.Configuration;
@@ -144,12 +145,12 @@ public class Batfish {
       print(0, "\n*** ADDING PROJECT ***\n");
       resetTimer();
       String settingsLogicDir = _settings.getLogicDir();
-      String logicDir;
+      File logicDir;
       if (settingsLogicDir != null) {
-         logicDir = settingsLogicDir;
+         logicDir = new ProjectFile(settingsLogicDir);
       }
       else {
-         logicDir = retrieveLogicDir().getAbsolutePath().toString();
+         logicDir = retrieveLogicDir().getAbsoluteFile();
       }
       String result = lbFrontend.addProject(logicDir, "");
       cleanupLogicDir();

@@ -50,37 +50,6 @@ import batfish.util.Util;
 
 public class LogicBloxFrontend {
 
-   private class ProjectFile extends File {
-
-      private String _pathname;
-      
-      public ProjectFile(String pathname) {
-         super(pathname);
-         _pathname = pathname;
-      }
-      
-      @Override
-      public File getAbsoluteFile() {
-         return this;
-      }
-      
-      @Override
-      public String getAbsolutePath() {
-         return _pathname;
-      }
-      
-      @Override
-      public File getCanonicalFile() {
-         return this;
-      }
-      
-      @Override
-      public String getCanonicalPath() {
-         return _pathname;
-      }
-
-   }
-   
    private static final String BLOXWEB_HOSTNAME = "localhost";
    private static final int BLOXWEB_PORT = 8080;
    private static final String BLOXWEB_PROTOCOL = "http";
@@ -120,9 +89,8 @@ public class LogicBloxFrontend {
       _entityTable = null;
    }
 
-   public String addProject(String projectPath, String additionalLibraryPath) {
-      File projectFile = new ProjectFile(projectPath);
-      AddProject ap = Workspace.Command.addProject(projectFile, true,
+   public String addProject(File projectPath, String additionalLibraryPath) {
+      AddProject ap = Workspace.Command.addProject(projectPath, true,
             true, additionalLibraryPath);
       List<Workspace.Result> results = null;
       try {
