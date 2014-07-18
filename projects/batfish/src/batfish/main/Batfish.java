@@ -1043,6 +1043,7 @@ public class Batfish {
 
    private File retrieveLogicDir() {
       File logicDirFile = null;
+      final String locatorFilename = LogicResourceLocator.class.getSimpleName() + ".class";
       URL logicSourceURL = LogicResourceLocator.class.getProtectionDomain()
             .getCodeSource().getLocation();
       String logicSourceString = logicSourceURL.toString();
@@ -1051,7 +1052,7 @@ public class Batfish {
          @Override
          public boolean accept(String filename) {
             return filename.endsWith(".lbb") || filename.endsWith(".lbp")
-                  || filename.endsWith(".semantics");
+                  || filename.endsWith(".semantics") || filename.endsWith(locatorFilename);
          }
       };
       if (logicSourceString.startsWith("onejar:")) {
@@ -1072,7 +1073,7 @@ public class Batfish {
                @Override
                public FileVisitResult visitFile(Path aFile,
                      BasicFileAttributes aAttrs) throws IOException {
-                  if (aFile.endsWith("LB_SUMMARY.lbp")) {
+                  if (aFile.endsWith(locatorFilename)) {
                      _projectDirectory = aFile.getParent().toString();
                      return FileVisitResult.TERMINATE;
                   }
@@ -1086,7 +1087,8 @@ public class Batfish {
             e.printStackTrace();
             quit(1);
          }
-         return new File(visitor.toString());
+         String fileString = visitor.toString();
+         return new File(fileString);
       }
       else {
          String logicPackageResourceName = LogicResourceLocator.class

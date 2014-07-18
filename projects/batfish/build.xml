@@ -298,7 +298,9 @@
          <sourcefiles>
             <fileset dir="src" includes="**/*.logic"/>
          </sourcefiles>
-         <mapper type="regexp" from="src/(.*)\.logic" to="bin/\1.semantics"/>
+         <mapper>
+            <regexpmapper from="src/(.*)\.logic" to="bin/\1.semantics" handledirsep="yes"/>
+         </mapper>
          <parallel>
             <shellscript shell="bash">
                pushd src > /dev/null

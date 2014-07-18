@@ -50,7 +50,6 @@ import batfish.util.Util;
 
 public class LogicBloxFrontend {
 
-   private static final String BLOXWEB_HOSTNAME = "localhost";
    private static final int BLOXWEB_PORT = 8080;
    private static final String BLOXWEB_PROTOCOL = "http";
    public static final long BLOXWEB_TIMEOUT_MS = 31536000000l;
@@ -379,7 +378,7 @@ public class LogicBloxFrontend {
 
    public void postFacts(Map<String, StringBuilder> factBins)
          throws ServiceClientException {
-      String base = BLOXWEB_PROTOCOL + "://" + BLOXWEB_HOSTNAME + ":"
+      String base = BLOXWEB_PROTOCOL + "://" + _lbHost + ":"
             + BLOXWEB_PORT + "/" + SERVICE_DIR + "/";
       TCPTransport transport = Transports.tcp(false);
       HttpClient client = transport.getHttpClient();
