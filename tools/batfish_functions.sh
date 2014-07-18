@@ -9,7 +9,7 @@ export BATFISH_Z3=$(which z3)
 export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.default_relation=hassel_diff fixedpoint.unbound_compressor=false fixedpoint.print_answer=true"
 
 batfish() {
-   $BATFISH $@
+   $BATFISH $BATFISH_COMMON_ARGS $@
 }
 export -f batfish
 
@@ -59,8 +59,13 @@ batfish_analyze() {
 export -f batfish_analyze
 
 batfish_build() {
+   local RESTORE_FILE='cygwin-symlink-restore-data'
    local OLD_PWD=$(pwd)
    cd $BATFISH_PATH
+   if [ "Cygwin" = "$(uname -o)" -a ! -e "$RESTORE_FILE" ]; then
+      echo "Replacing symlinks (Cygwin workaround)"
+      ./cygwin-replace-symlinks
+   fi
    ant $@ || { cd $OLD_PWD ; return 1 ; } 
    cd $OLD_PWD
 }
@@ -72,7 +77,7 @@ batfish_compile() {
    batfish_expect_args 2 $# || return 1
    local TEST_RIG=$1
    local DUMP_DIR=$2
-   $BATFISH -testrig $TEST_RIG -compile -facts -guess -ee -dumpcp -dumpdir $DUMP_DIR || return 1
+   batfish -testrig $TEST_RIG -compile -facts -guess -ee -dumpcp -dumpdir $DUMP_DIR || return 1
    date | tr -d '\n'
    echo ": END: Compute the fixed point of the control plane"
 }
@@ -374,7 +379,7 @@ batfish_generate_constraints_queries_helper() {
    local NODE=$1
    local QUERY_OUT=$PWD/incons-query-${NODE}.smt2.out
    local CONC_QUERY=$PWD/incons-constraints-${NODE}.smt2
-   $BATFISH -conc -concin $QUERY_OUT -concout $CONC_QUERY || return 1
+   batfish -conc -concin $QUERY_OUT -concout $CONC_QUERY || return 1
 }
 export -f batfish_generate_constraints_queries_helper
 
@@ -384,7 +389,7 @@ batfish_generate_z3_reachability() {
    batfish_expect_args 2 $# || return 1
    local TEST_RIG=$1
    local REACH_PATH=$2
-   $BATFISH -testrig $TEST_RIG -z3 -z3out $REACH_PATH || return 1
+   batfish -testrig $TEST_RIG -z3 -z3out $REACH_PATH || return 1
    date | tr -d '\n'
    echo ": END: Extract z3 reachability relations"
 }
@@ -504,8 +509,8 @@ batfish_inject_packets() {
    local OLD_PWD=$PWD
    #local FLOW_SINK_PATH=$TEST_RIG/flow_sinks
    cd $QUERY_PATH
-   #$BATFISH -testrig $TEST_RIG -flow -flowpath $QUERY_PATH -flowsink $FLOW_SINK_PATH -dumptraffic -dumpdir $DUMP_DIR
-   $BATFISH -testrig $TEST_RIG -flow -flowpath $QUERY_PATH -dumptraffic -dumpdir $DUMP_DIR || return 1
+   #batfish -testrig $TEST_RIG -flow -flowpath $QUERY_PATH -flowsink $FLOW_SINK_PATH -dumptraffic -dumpdir $DUMP_DIR
+   batfish -testrig $TEST_RIG -flow -flowpath $QUERY_PATH -dumptraffic -dumpdir $DUMP_DIR || return 1
    batfish_format_flows $DUMP_DIR || return 1
    cd $OLD_PWD
    date | tr -d '\n'
@@ -519,7 +524,7 @@ batfish_query_flows() {
    batfish_expect_args 2 $# || return 1
    local FLOW_RESULTS=$1
    local TEST_RIG=$2
-   $BATFISH -log 0 -testrig $TEST_RIG -query -predicates Flow FlowUnknown FlowInconsistent FlowAccepted FlowAllowedIn FlowAllowedOut FlowDropped FlowDeniedIn FlowDeniedOut FlowNoRoute FlowReachPostIn FlowReachPreOut FlowReachPreOutInterface FlowReachPostOutInterface FlowReachPreInInterface FlowReachPostInInterface FlowReach FlowReachStep FlowLost FlowLoop LanAdjacent &> $FLOW_RESULTS
+   batfish -log 0 -testrig $TEST_RIG -query -predicates Flow FlowUnknown FlowInconsistent FlowAccepted FlowAllowedIn FlowAllowedOut FlowDropped FlowDeniedIn FlowDeniedOut FlowNoRoute FlowReachPostIn FlowReachPreOut FlowReachPreOutInterface FlowReachPostOutInterface FlowReachPreInInterface FlowReachPostInInterface FlowReach FlowReachStep FlowLost FlowLoop LanAdjacent &> $FLOW_RESULTS
    date | tr -d '\n'
    echo ": END: Query flow results from LogicBlox"
 }
@@ -531,7 +536,7 @@ batfish_query_routes() {
    batfish_expect_args 2 $# || return 1
    local ROUTES=$1
    local TEST_RIG=$2
-   $BATFISH -log 0 -testrig $TEST_RIG -query -predicates InstalledRoute &> $ROUTES
+   batfish -log 0 -testrig $TEST_RIG -query -predicates InstalledRoute &> $ROUTES
    date | tr -d '\n'
    echo ": END: Query routes (informational only)"
 }
@@ -541,6 +546,22 @@ batfish_reload() {
    . $BATFISH_SOURCED_SCRIPT
 }
 export -f batfish_reload
+
+batfish_replace_symlinks() {
+   OLDPWD=$PWD
+   cd $BATFISH_PATH
+   ./cygwin-replace-symlinks
+   cd $OLDPWD
+}
+export batfish_replace_symlinks
+
+batfish_restore_symlinks() {
+   OLDPWD=$PWD
+   cd $BATFISH_PATH
+   ./cygwin-restore-symlinks
+   cd $OLDPWD
+}
+export batfish_restore_symlinks
 
 int_to_ip() {
    batfish_expect_args 1 $# || return 1

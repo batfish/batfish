@@ -1,0 +1,13 @@
+#!/bin/bash
+RESTORE_DATA=cygwin-symlink-restore-data
+if [ -e "$RESTORE_DATA" ]; then
+   while read SYMLINK_LINE; read TARGET_LINE; read ABSOLUTE_TARGET_LINE; do
+      SYMLINK="$(echo "$SYMLINK_LINE" | cut -d'=' -f2-)"
+      TARGET="$(echo "$TARGET_LINE" | cut -d'=' -f2-)"
+      echo SYMLINK="$SYMLINK"
+      echo TARGET="$TARGET"
+      rm -rf "$SYMLINK" && ln -s "$TARGET" "$SYMLINK"
+   done < "$RESTORE_DATA"
+   rm "$RESTORE_DATA"
+fi
+

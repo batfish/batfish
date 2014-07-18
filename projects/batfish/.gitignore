@@ -12,3 +12,4 @@ BatfishTopology*.java
 GNS3Topology*.java
 Constraints*.java
 QueryResult*.java
+cygwin-symlink-restore-data
