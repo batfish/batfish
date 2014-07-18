@@ -15,6 +15,7 @@ import org.apache.commons.cli.ParseException;
 
 public class Settings {
 
+   private static final String ARG_ANONYMIZE = "anonymize";
    private static final String ARG_CB_AHOST = "ahost";
    private static final String ARG_CB_APORT = "aport";
    private static final String ARG_CB_RHOST = "rhost";
@@ -23,7 +24,6 @@ public class Settings {
    private static final String ARG_COUNT = "count";
    private static final String ARG_DIFF = "diff";
    private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
-   private static final String ARG_ANONYMIZE = "anonymize";
 
    private static final String ARG_DUMP_FACTS_DIR = "dumpdir";
    private static final String ARG_DUMP_IF = "dumpif";
@@ -38,6 +38,7 @@ public class Settings {
    private static final String ARG_GUI = "gui";
    private static final String ARG_HELP = "help";
    private static final String ARG_LOG_LEVEL = "log";
+   private static final String ARG_LOGICDIR = "logicdir";
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
@@ -55,17 +56,19 @@ public class Settings {
    private static final String ARG_Z3_CONCRETIZER_INPUT_FILE = "concin";
    private static final String ARG_Z3_CONCRETIZER_OUTPUT_FILE = "concout";
    private static final String ARG_Z3_OUTPUT = "z3out";
+   private static final String ARGNAME_ANONYMIZE = "path";
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
    private static final String ARGNAME_DUMP_IF_DIR = "path";
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
+   private static final String ARGNAME_LOGICDIR = "path";
    private static final String ARGNAME_REVERT = "branch-name";
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILE = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
    private static final String ARGNAME_Z3_OUTPUT = "path";
-   private static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "55181";
-   private static final String DEFAULT_CONNECTBLOX_HOST = "localhost";
-   private static final String DEFAULT_CONNECTBLOX_REGULAR_PORT = "55179";
+   public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "55181";
+   public static final String DEFAULT_CONNECTBLOX_HOST = "localhost";
+   public static final String DEFAULT_CONNECTBLOX_REGULAR_PORT = "55179";
    private static final String DEFAULT_DUMP_FACTS_DIR = "facts";
    private static final String DEFAULT_DUMP_IF_DIR = "if";
    private static final String DEFAULT_FLOW_PATH = "flows";
@@ -80,9 +83,10 @@ public class Settings {
    private static final String DEFAULT_Z3_CONCRETIZER_OUTPUT_FILE = "z3-concretizer-output.smt2";
    private static final String DEFAULT_Z3_OUTPUT = "z3-dataplane-output.smt2";
    private static final String EXECUTABLE_NAME = "batfish";
-   private static final String ARGNAME_ANONYMIZE = "path";
    
    
+   private boolean _anonymize;
+   private String _anonymizeDir;
    private boolean _canExecute;
    private String _cbAHost;
    private int _cbAPort;
@@ -108,6 +112,7 @@ public class Settings {
    private List<String> _helpPredicates;
    private String _hsaInputDir;
    private String _hsaOutputDir;
+   private String _logicDir;
    private int _logLevel;
    private boolean _noTraffic;
    private Options _options;
@@ -125,8 +130,6 @@ public class Settings {
    private String _workspaceName;
    private boolean _z3;
    private String _z3File;
-   private boolean _anonymize;
-   private String _anonymizeDir;
    
    public Settings() {
       initOptions();
@@ -148,6 +151,14 @@ public class Settings {
 
    public boolean exitOnParseError() {
       return _exitOnParseError;
+   }
+
+   public boolean getAnonymize() {
+      return _anonymize;
+   }
+
+   public String getAnonymizeDir() {
+      return _anonymizeDir;
    }
 
    public String getBranchName() {
@@ -240,6 +251,10 @@ public class Settings {
 
    public String getHSAOutputPath() {
       return _hsaOutputDir;
+   }
+
+   public String getLogicDir() {
+      return _logicDir;
    }
 
    public int getLogLevel() {
@@ -443,6 +458,11 @@ public class Settings {
             .withArgName(ARGNAME_ANONYMIZE)
             .withDescription("created anonymized versions of configs in test rig")
             .create(ARG_ANONYMIZE));
+      _options.addOption(OptionBuilder
+            .hasArg()
+            .withArgName(ARGNAME_LOGICDIR)
+            .withDescription("set logic dir with respect to filesystem of machine running LogicBlox")
+            .create(ARG_LOGICDIR));
    }
 
    private void parseCommandLine(String[] args) {
@@ -548,22 +568,15 @@ public class Settings {
       if (_anonymize) {
          _anonymizeDir = line.getOptionValue(ARG_ANONYMIZE);
       }
+      _logicDir = line.getOptionValue(ARG_LOGICDIR, null);
    }
-
+   
    public boolean redirectStdErr() {
       return _redirectStdErr;
    }
 
    public boolean revert() {
       return _revert;
-   }
-
-   public boolean getAnonymize() {
-      return _anonymize;
-   }
-   
-   public String getAnonymizeDir() {
-      return _anonymizeDir;
    }
 
 }

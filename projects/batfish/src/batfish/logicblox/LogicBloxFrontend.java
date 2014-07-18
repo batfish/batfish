@@ -46,6 +46,7 @@ import com.logicblox.connect.Workspace.Result;
 import com.logicblox.connect.Workspace.Result.Failure;
 import com.logicblox.connect.Workspace.Result.QueryPredicate;
 
+import batfish.main.Settings;
 import batfish.util.Util;
 
 public class LogicBloxFrontend {
@@ -54,6 +55,7 @@ public class LogicBloxFrontend {
    private static final String BLOXWEB_PROTOCOL = "http";
    public static final long BLOXWEB_TIMEOUT_MS = 31536000000l;
    private static final String SERVICE_DIR = "batfish";
+
    private static void closeSession(
          ConnectBloxSession<Request, Response> session) {
       try {
@@ -497,10 +499,18 @@ public class LogicBloxFrontend {
       String stdout = null;
       String stderr = null;
       Process proc;
-      String[] execArray = {
-            "bash",
-            "-c",
-            "lb web-server load-services -w " + _workspaceName };
+      String[] execArray;
+      if (!_regularHost.equals(Settings.DEFAULT_CONNECTBLOX_HOST)) {
+         String[] sshExecArray = { "ssh", "-n", _regularHost,
+               "lb web-server load-services -w " + _workspaceName };
+         execArray = sshExecArray;
+
+      }
+      else {
+         String[] normalExecArray = { "bash", "-c",
+               "lb web-server load-services -w " + _workspaceName };
+         execArray = normalExecArray;
+      }
       try {
          proc = Runtime.getRuntime().exec(execArray);
          stdout = IOUtils.toString(proc.getInputStream());
@@ -525,9 +535,7 @@ public class LogicBloxFrontend {
       String stdout = null;
       String stderr = null;
       Process proc;
-      String[] execArray = {
-            "bash",
-            "-c",
+      String[] execArray = { "bash", "-c",
             "lb web-server unload-services -w " + _workspaceName };
       try {
          proc = Runtime.getRuntime().exec(execArray);
