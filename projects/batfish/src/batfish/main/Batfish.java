@@ -144,14 +144,14 @@ public class Batfish {
       print(0, "\n*** ADDING PROJECT ***\n");
       resetTimer();
       String settingsLogicDir = _settings.getLogicDir();
-      File logicDirFile;
+      String logicDir;
       if (settingsLogicDir != null) {
-         logicDirFile = new File(settingsLogicDir);
+         logicDir = settingsLogicDir;
       }
       else {
-         logicDirFile = retrieveLogicDir();
+         logicDir = retrieveLogicDir().getAbsolutePath().toString();
       }
-      String result = lbFrontend.addProject(logicDirFile.getAbsolutePath(), "");
+      String result = lbFrontend.addProject(logicDir, "");
       cleanupLogicDir();
       if (result != null) {
          error(0, result + "\n");
