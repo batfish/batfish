@@ -183,9 +183,9 @@ public class Batfish {
 
    private void anonymizeConfigurations() {
       // TODO Auto-generated method stub
-      
+
    }
-   
+
    private void cleanupLogicDir() {
       if (_tmpLogicDir != null) {
          try {
@@ -589,8 +589,8 @@ public class Batfish {
       print(1, "\n*** STARTING CONNECTBLOX SESSION ***\n");
       resetTimer();
       LogicBloxFrontend lbFrontend = new LogicBloxFrontend(
-            _settings.getConnectBloxRegularHost(),
-            _settings.getConnectBloxRegularPort(), workspace, assumedToExist);
+            _settings.getConnectBloxHost(), _settings.getConnectBloxPort(),
+            _settings.getSshPort(), workspace, assumedToExist);
       lbFrontend.initialize();
       if (!lbFrontend.connected()) {
          error(0,
@@ -1111,7 +1111,7 @@ public class Batfish {
          anonymizeConfigurations();
          quit(0);
       }
-      
+
       if (_settings.getDumpIF()) {
          dumpIF();
          quit(0);
@@ -1295,4 +1295,3 @@ public class Batfish {
       parseFlowsFromConstraints(wSetFlowOriginate);
    }
 }
-

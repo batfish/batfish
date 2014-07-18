@@ -47,6 +47,7 @@ public class Settings {
    private static final String ARG_REDIRECT_STDERR = "redirect";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
+   private static final String ARG_SSH_PORT = "sshport";
    private static final String ARG_TEST_RIG_NAME = "testrigname";
    private static final String ARG_TEST_RIG_PATH = "testrig";
    private static final String ARG_UPDATE = "update";
@@ -63,6 +64,7 @@ public class Settings {
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
    private static final String ARGNAME_LOGICDIR = "path";
    private static final String ARGNAME_REVERT = "branch-name";
+   private static final String ARGNAME_SSH_PORT = "port";
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILE = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
    private static final String ARGNAME_Z3_OUTPUT = "path";
@@ -83,8 +85,7 @@ public class Settings {
    private static final String DEFAULT_Z3_CONCRETIZER_OUTPUT_FILE = "z3-concretizer-output.smt2";
    private static final String DEFAULT_Z3_OUTPUT = "z3-dataplane-output.smt2";
    private static final String EXECUTABLE_NAME = "batfish";
-   
-   
+
    private boolean _anonymize;
    private String _anonymizeDir;
    private boolean _canExecute;
@@ -125,17 +126,18 @@ public class Settings {
    private boolean _revert;
    private String _revertBranchName;
    private String _secondTestRigPath;
+   private Integer _sshPort;
    private String _testRigPath;
    private boolean _update;
    private String _workspaceName;
    private boolean _z3;
    private String _z3File;
-   
+
    public Settings() {
       initOptions();
       parseCommandLine(new String[] {});
    }
-   
+
    public Settings(String[] args) {
       initOptions();
       parseCommandLine(args);
@@ -185,11 +187,11 @@ public class Settings {
       return _cbAPort;
    }
 
-   public String getConnectBloxRegularHost() {
+   public String getConnectBloxHost() {
       return _cbRHost;
    }
 
-   public int getConnectBloxRegularPort() {
+   public int getConnectBloxPort() {
       return _cbRPort;
    }
 
@@ -287,6 +289,10 @@ public class Settings {
 
    public String getSecondTestRigPath() {
       return _secondTestRigPath;
+   }
+
+   public Integer getSshPort() {
+      return _sshPort;
    }
 
    public String getTestRigPath() {
@@ -438,31 +444,33 @@ public class Settings {
             .create(ARG_DUMP_IF_DIR));
       _options.addOption(OptionBuilder.withDescription(
             "dump control plane facts").create(ARG_DUMP_CONTROL_PLANE_FACTS));
-      _options.addOption(OptionBuilder.withDescription(
-            "dump traffic facts").create(ARG_DUMP_TRAFFIC_FACTS));
-      _options.addOption(OptionBuilder
-            .hasArg()
+      _options.addOption(OptionBuilder.withDescription("dump traffic facts")
+            .create(ARG_DUMP_TRAFFIC_FACTS));
+      _options.addOption(OptionBuilder.hasArg()
             .withArgName(ARGNAME_DUMP_FACTS_DIR)
             .withDescription("directory to dump LogicBlox facts")
             .create(ARG_DUMP_FACTS_DIR));
-      _options.addOption(OptionBuilder
-            .hasArg()
-            .withArgName(ARGNAME_REVERT)
+      _options.addOption(OptionBuilder.hasArg().withArgName(ARGNAME_REVERT)
             .withDescription("revert test rig workspace to specified branch")
             .create(ARG_REVERT));
-      _options.addOption(OptionBuilder
-            .withDescription("redirect stderr to stdout")
-            .create(ARG_REDIRECT_STDERR));
+      _options.addOption(OptionBuilder.withDescription(
+            "redirect stderr to stdout").create(ARG_REDIRECT_STDERR));
       _options.addOption(OptionBuilder
             .hasArg()
             .withArgName(ARGNAME_ANONYMIZE)
-            .withDescription("created anonymized versions of configs in test rig")
+            .withDescription(
+                  "created anonymized versions of configs in test rig")
             .create(ARG_ANONYMIZE));
-      _options.addOption(OptionBuilder
-            .hasArg()
-            .withArgName(ARGNAME_LOGICDIR)
-            .withDescription("set logic dir with respect to filesystem of machine running LogicBlox")
-            .create(ARG_LOGICDIR));
+      _options
+            .addOption(OptionBuilder
+                  .hasArg()
+                  .withArgName(ARGNAME_LOGICDIR)
+                  .withDescription(
+                        "set logic dir with respect to filesystem of machine running LogicBlox")
+                  .create(ARG_LOGICDIR));
+      _options.addOption(OptionBuilder.hasArg().withArgName(ARGNAME_SSH_PORT)
+            .withDescription("ssh port of machine running LogicBlox")
+            .create(ARG_SSH_PORT));
    }
 
    private void parseCommandLine(String[] args) {
@@ -559,8 +567,9 @@ public class Settings {
       }
       _dumpControlPlaneFacts = line.hasOption(ARG_DUMP_CONTROL_PLANE_FACTS);
       _dumpTrafficFacts = line.hasOption(ARG_DUMP_TRAFFIC_FACTS);
-      _dumpFactsDir = line.getOptionValue(ARG_DUMP_FACTS_DIR, DEFAULT_DUMP_FACTS_DIR);
-      
+      _dumpFactsDir = line.getOptionValue(ARG_DUMP_FACTS_DIR,
+            DEFAULT_DUMP_FACTS_DIR);
+
       _revertBranchName = line.getOptionValue(ARG_REVERT);
       _revert = (_revertBranchName != null);
       _redirectStdErr = line.hasOption(ARG_REDIRECT_STDERR);
@@ -568,9 +577,12 @@ public class Settings {
       if (_anonymize) {
          _anonymizeDir = line.getOptionValue(ARG_ANONYMIZE);
       }
+      if (line.hasOption(ARG_SSH_PORT)) {
+         _sshPort = Integer.parseInt(line.getOptionValue(ARG_SSH_PORT));
+      }
       _logicDir = line.getOptionValue(ARG_LOGICDIR, null);
    }
-   
+
    public boolean redirectStdErr() {
       return _redirectStdErr;
    }

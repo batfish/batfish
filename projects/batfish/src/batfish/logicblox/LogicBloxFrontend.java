@@ -46,7 +46,6 @@ import com.logicblox.connect.Workspace.Result;
 import com.logicblox.connect.Workspace.Result.Failure;
 import com.logicblox.connect.Workspace.Result.QueryPredicate;
 
-import batfish.main.Settings;
 import batfish.util.Util;
 
 public class LogicBloxFrontend {
@@ -71,21 +70,20 @@ public class LogicBloxFrontend {
    }
 
    private boolean _assumedToExist;
-
    private ConnectBloxSession<Request, Response> _cbSession;
    private EntityTable _entityTable;
-   private String _regularHost;
-   private int _regularPort;
-
+   private String _lbHost;
+   private int _lbPort;
+   private Integer _sshPort;
    private ConnectBloxWorkspace _workspace;
-
    private String _workspaceName;
 
-   public LogicBloxFrontend(String regularHost, int regularPort,
+   public LogicBloxFrontend(String lbHost, int lbPort, Integer sshPort,
          String workspaceName, boolean assumedToExist) {
       _workspaceName = workspaceName;
-      _regularHost = regularHost;
-      _regularPort = regularPort;
+      _lbHost = lbHost;
+      _lbPort = lbPort;
+      _sshPort = sshPort;
       _assumedToExist = assumedToExist;
       _entityTable = null;
    }
@@ -130,8 +128,8 @@ public class LogicBloxFrontend {
       try {
          ConnectBloxSession.Builder b = ConnectBloxSession.Builder
                .newInstance();
-         b.setHost(_regularHost);
-         b.setPort(_regularPort);
+         b.setHost(_lbHost);
+         b.setPort(_lbPort);
          return b.build();
       }
       catch (ConnectBloxSession.Exception e) {
@@ -500,8 +498,8 @@ public class LogicBloxFrontend {
       String stderr = null;
       Process proc;
       String[] execArray;
-      if (!_regularHost.equals(Settings.DEFAULT_CONNECTBLOX_HOST)) {
-         String[] sshExecArray = { "ssh", "-n", _regularHost,
+      if (_sshPort != null) {
+         String[] sshExecArray = { "ssh", "-p", _sshPort.toString(), _lbHost,
                "lb web-server load-services -w " + _workspaceName };
          execArray = sshExecArray;
 
@@ -535,8 +533,18 @@ public class LogicBloxFrontend {
       String stdout = null;
       String stderr = null;
       Process proc;
-      String[] execArray = { "bash", "-c",
-            "lb web-server unload-services -w " + _workspaceName };
+      String[] execArray;
+      if (_sshPort != null) {
+         String[] sshExecArray = { "ssh", "-p", _sshPort.toString(), _lbHost,
+               "lb web-server unload-services -w " + _workspaceName };
+         execArray = sshExecArray;
+
+      }
+      else {
+         String[] normalExecArray = { "bash", "-c",
+               "lb web-server unload-services -w " + _workspaceName };
+         execArray = normalExecArray;
+      }
       try {
          proc = Runtime.getRuntime().exec(execArray);
          stdout = IOUtils.toString(proc.getInputStream());
