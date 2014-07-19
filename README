@@ -13,11 +13,13 @@ Prerequisites:
    GNU parallel
 
 Steps:
+NOTE: Some steps will begin with (SERVER), and some with (CLIENT). The SERVER is the machine running LogicBlox. The CLIENT is the machine containing the test rig and batfish binaries. If the SERVER and the CLIENT are the same machine, then run all steps (except where otherwise indicated).
+NOTE: After any step involving modifications to .bashrc or equivalent, make sure to reload your shell or take other action to load the changes.
 
-1. Install gnu parallel from http://ftp.gnu.org/gnu/parallel/parallel-latest.tar.bz2
+1. (CLIENT) Install gnu parallel from http://ftp.gnu.org/gnu/parallel/parallel-latest.tar.bz2
 standard autotools install (extract, configure, make, make install)
 
-2. Install Nuno Lopes's z3 branch
+2. (CLIENT) Install Nuno Lopes's z3 branch
 git clone https://git01.codeplex.com/forks/nunoplopes/hassel # IF YOU HAVE PROBLEMS WITH THIS STEP, JUST PULL LATEST SNAPSHOT OF 'unstable' BRANCH
 cd hassel
 ./configure
@@ -25,25 +27,23 @@ cd build
 make -j<number-of-jobs>
 make install # as administrator (sudo or whatever)
 
-3. Install LogicBlox 4.1.X and fix lb-web-server timeout
+3. (SERVER) Install LogicBlox 4.1.X and fix lb-web-server timeout
 - edit <logicblox-root>/lb-web/config/lb-web-server.conf
 - change the tcp_server_max_idle_time line to read:
 tcp_server_max_idle_time = 0
 
-4. Clone batfish
+4. (SERVER AND CLIENT) Clone batfish
 git clone https://github.com/arifogel/batfish.git
 
-5. (CYGWIN ONLY!!!)
-Replace symlinks with contents of target files, since ant/java in Windows do not know how to handle symlinks:
-   cd projects/batfish
-   ./cygwin-ant-symlink-workaround
-
-6. prepare your environment for logicblox and batfish by adding the following to your .bashrc or equivalent
-    export LB_HOME=<logicblox-root>
+5. prepare your environment for logicblox and batfish by adding the following to your .bashrc or equivalent
+#(SERVER)
+   export LB_HOME=<logicblox-root>
     . <logicblox-root>/etc/profile.d/logicblox.sh
     alias rlb='killall -9 lb-server; killall -9 lb-pager; lb services stop && rm -rf ~/lb_deployment/* && LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start'
     alias slb='LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start'
     alias klb='killall -9 lb-server; killall -9 lb-pager; lb services stop; rm -rf ~/lb_deployment/*'
+
+#(SERVER AND CLIENT)
     . <batfish-root>/tools/batfish_functions.sh
 rlb will kill logicblox, completely purge all logicblox data, and restart logicblox
 klb will kill logicblox and completely purge all logicblox data
@@ -54,18 +54,38 @@ sourcing batfish_functions.sh will give your shell access to batfish functions.
 LB_HOME is needed for ant to compile logic files.
 sourcing logicblox.sh is required to run LogicBlox
 
-7. start logicblox
+6. (SERVER) start logicblox
 type:
     slb
 
-8. build batfish
-    batfish_build lbcompile #compiles logicblox logic files - logicblox must be installed - cannot interact with logicblox without this step
-    batfish_build # builds everything else
+7. (SERVER) compile logic
+    batfish_build lbcompile
+
+8. (CLIENT) compile batfish
+    batfish_build
 Note that 'batfish_build' just runs 'ant' in the batfish project directory.
 You can clean all generated output with:
    batfish_build distclean
 
-9. run batfish
+9. ***DO THIS STEP ONLY IF CLIENT != SERVER*** (CLIENT)
+Set up your .bashrc or equivalent on your CLIENT with batfish common arguments needed to access SERVER
+NOTE the default values for the following arguments:
+-lbhost -> localhost
+-lbport -> 55179
+NOTE also that the CLIENT machine must be able to ssh into the SERVER without any intervention (use public key authentication with an ssh agent)
+NOTE finally that the built logic will reside on the SERVER at <batfish-repo-root>/projects/batfish/bin/batfish/logic
+.bashrc:
+   export BATFISH_COMMON_ARGS='-lbhost <OPTIONAL_hostname_of_SERVER> -lbport <OPTIONAL_ConnectBlox_port_on_SERVER> -sshport <MANDATORY_ssh_port_of_SERVER> -logicdir <MANDATORY_absolute_path_to_built_logic_on_SERVER_filesystem>'
+
+10. ***DO THIS STEP ONLY IF CLIENT != SERVER*** (SERVER)
+You must disable any line in your .bashrc or equivalent that prevents it from being loaded by a non-interactive ssh session. For example, on one machine the .bashrc contained the following near the top:
+   # If not running interactively, don't do anything
+   [ -z "$PS1" ] && return
+You must comment out the active line(s) as follows:
+   # If not running interactively, don't do anything
+   # [ -z "$PS1" ] && return
+
+11. run batfish
 The output of this step will be placed in the current folder.
 If you want to confirm running of each subtask, run:
     batfish_confirm_analyze /path/to/test/rig <generated-output-prefix>
