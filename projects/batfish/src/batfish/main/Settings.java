@@ -16,15 +16,12 @@ import org.apache.commons.cli.ParseException;
 public class Settings {
 
    private static final String ARG_ANONYMIZE = "anonymize";
-   private static final String ARG_CB_AHOST = "ahost";
-   private static final String ARG_CB_APORT = "aport";
-   private static final String ARG_CB_RHOST = "rhost";
-   private static final String ARG_CB_RPORT = "rport";
+   private static final String ARG_CB_HOST = "lbhost";
+   private static final String ARG_CB_PORT = "lbport";
    private static final String ARG_COMPILE = "compile";
    private static final String ARG_COUNT = "count";
    private static final String ARG_DIFF = "diff";
    private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
-
    private static final String ARG_DUMP_FACTS_DIR = "dumpdir";
    private static final String ARG_DUMP_IF = "dumpif";
    private static final String ARG_DUMP_IF_DIR = "dumpifdir";
@@ -89,10 +86,8 @@ public class Settings {
    private boolean _anonymize;
    private String _anonymizeDir;
    private boolean _canExecute;
-   private String _cbAHost;
-   private int _cbAPort;
-   private String _cbRHost;
-   private int _cbRPort;
+   private String _cbHost;
+   private int _cbPort;
    private boolean _compile;
    private boolean _concretize;
    private String _concretizerInputFilePath;
@@ -179,20 +174,12 @@ public class Settings {
       return _concretizerOutputFilePath;
    }
 
-   public String getConnectBloxAdminHost() {
-      return _cbAHost;
-   }
-
-   public int getConnectBloxAdminPort() {
-      return _cbAPort;
-   }
-
    public String getConnectBloxHost() {
-      return _cbRHost;
+      return _cbHost;
    }
 
    public int getConnectBloxPort() {
-      return _cbRPort;
+      return _cbPort;
    }
 
    public boolean getCountsOnly() {
@@ -344,20 +331,10 @@ public class Settings {
             .hasArg()
             .withDescription(
                   "hostname of ConnectBlox server for regular session")
-            .create(ARG_CB_RHOST));
+            .create(ARG_CB_HOST));
       _options.addOption(OptionBuilder.withArgName("port_number").hasArg()
             .withDescription("port of ConnectBlox server for regular session")
-            .create(ARG_CB_RPORT));
-      _options
-            .addOption(OptionBuilder
-                  .withArgName("hostname")
-                  .hasArg()
-                  .withDescription(
-                        "hostname of ConnectBlox server for admin session")
-                  .create(ARG_CB_AHOST));
-      _options.addOption(OptionBuilder.withArgName("port_number").hasArg()
-            .withDescription("port of ConnectBlox server for admin session")
-            .create(ARG_CB_APORT));
+            .create(ARG_CB_PORT));
       _options
             .addOption(OptionBuilder
                   .withArgName("number")
@@ -507,12 +484,9 @@ public class Settings {
             _helpPredicates = Arrays.asList(optionValues);
          }
       }
-      _cbRHost = line.getOptionValue(ARG_CB_RHOST, DEFAULT_CONNECTBLOX_HOST);
-      _cbAHost = line.getOptionValue(ARG_CB_AHOST, DEFAULT_CONNECTBLOX_HOST);
-      _cbRPort = Integer.parseInt(line.getOptionValue(ARG_CB_RPORT,
+      _cbHost = line.getOptionValue(ARG_CB_HOST, DEFAULT_CONNECTBLOX_HOST);
+      _cbPort = Integer.parseInt(line.getOptionValue(ARG_CB_PORT,
             DEFAULT_CONNECTBLOX_REGULAR_PORT));
-      _cbAPort = Integer.parseInt(line.getOptionValue(ARG_CB_RPORT,
-            DEFAULT_CONNECTBLOX_ADMIN_PORT));
 
       // set test rig AND corresponding workspace name
       _testRigPath = line.getOptionValue(ARG_TEST_RIG_PATH,
