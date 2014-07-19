@@ -9,6 +9,24 @@ export BATFISH_Z3=$(which z3)
 export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.default_relation=hassel_diff fixedpoint.unbound_compressor=false fixedpoint.print_answer=true"
 
 batfish() {
+   # if cygwin, shift and replace each parameter
+   if [ "Cygwin" = "$(uname -o)" ]; then
+      local NUMARGS=$#
+      local IGNORE_NEXT_ARG=no;
+      for i in $(seq 1 $NUMARGS); do
+         if [ "$IGNORE_NEXT_ARG" = "yes" ]; then
+            local IGNORE_NEXT_ARG=no
+            continue
+         fi
+         local CURRENT_ARG=$1
+         if [ "$CURRENT_ARG" = "-logicdir" ]; then
+            local IGNORE_NEXT_ARG=yes
+         fi
+         local NEW_ARG="$(cygpath -w -- $CURRENT_ARG)"
+         set -- "$@" "$NEW_ARG"
+         shift
+      done
+   fi
    $BATFISH $BATFISH_COMMON_ARGS $@
 }
 export -f batfish
