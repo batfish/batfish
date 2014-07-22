@@ -127,6 +127,15 @@ public class PredicateInfo {
       addValueTypes(currentNames, valueTypeList);
       currentNames.clear();      
       
+      currentNames.add("libbatfish:BgpAdvertisement:BgpAdvertisement_dstNode");
+      valueTypeList = new ArrayList<LBValueType>();
+      valueTypeList.add(LBValueType.ENTITY_INDEX_BGP_ADVERTISEMENT); // advert
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // node
+      updateQualifiedNameMap(currentNames);
+      addValueTypes(currentNames, valueTypeList);
+      _functions.addAll(currentNames);
+      currentNames.clear();      
+      
       currentNames.add("libbatfish:BgpAdvertisement:BgpAdvertisement_localPref");
       valueTypeList = new ArrayList<LBValueType>();
       valueTypeList.add(LBValueType.ENTITY_INDEX_INT); // advert
