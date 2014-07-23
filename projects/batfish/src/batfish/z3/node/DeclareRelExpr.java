@@ -1,15 +1,27 @@
 package batfish.z3.node;
 
-public class DeclareRelExpr extends CollapsedComplexExpr {
+import java.util.ArrayList;
+import java.util.List;
+
+public class DeclareRelExpr extends Statement implements ComplexExpr {
+
+   private List<Expr> _subExpressions;
 
    public DeclareRelExpr(String name, int... sizes) {
+      _subExpressions = new ArrayList<Expr>();
       _subExpressions.add(new IdExpr("declare-rel"));
       _subExpressions.add(new IdExpr(name));
       ListExpr listExpression = new ListExpr();
       _subExpressions.add(new ListExpr());
       for (int size : sizes) {
-         listExpression._subExpressions.add(new BitVecExpr(size));
+         listExpression.addSubExpression(new BitVecExpr(size));
       }
+      _printer = new CollapsedComplexExprPrinter(this);
+   }
+
+   @Override
+   public List<Expr> getSubExpressions() {
+      return _subExpressions;
    }
 
 }

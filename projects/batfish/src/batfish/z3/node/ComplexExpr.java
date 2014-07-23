@@ -1,18 +1,11 @@
 package batfish.z3.node;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public abstract class ComplexExpr extends Expr {
+public interface ComplexExpr {
 
-   protected List<Expr> _subExpressions;
+   List<Expr> getSubExpressions();
 
-   public ComplexExpr() {
-      _subExpressions = new ArrayList<Expr>();
-   }
-
-   public void addSubExpression(Expr subExpression) {
-      _subExpressions.add(subExpression);
-   }
-
+   //void optimize();
+   
 }

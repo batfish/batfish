@@ -1,15 +1,27 @@
 package batfish.z3.node;
 
-public class ExtractExpr extends CollapsedComplexExpr {
+import java.util.ArrayList;
+import java.util.List;
 
-   public ExtractExpr(String var, int high, int low) {
+public class ExtractExpr extends IntExpr implements ComplexExpr {
+
+   private List<Expr> _subExpressions;
+
+   public ExtractExpr(String var, int low, int high) {
+      _subExpressions = new ArrayList<Expr>();
       ListExpr listExpr = new ListExpr();
-      listExpr._subExpressions.add(new IdExpr("_"));
-      listExpr._subExpressions.add(new IdExpr("extract"));
-      listExpr._subExpressions.add(new IdExpr(Integer.toString(high)));
-      listExpr._subExpressions.add(new IdExpr(Integer.toString(low)));
+      listExpr.addSubExpression(new IdExpr("_"));
+      listExpr.addSubExpression(new IdExpr("extract"));
+      listExpr.addSubExpression(new IdExpr(Integer.toString(high)));
+      listExpr.addSubExpression(new IdExpr(Integer.toString(low)));
       _subExpressions.add(listExpr);
       _subExpressions.add(new IdExpr(var));
+      _printer = new CollapsedComplexExprPrinter(this);
    }
    
+   @Override
+   public List<Expr> getSubExpressions() {
+      return _subExpressions;
+   }
+
 }

@@ -1,18 +1,57 @@
 package batfish.z3.node;
 
-public class RuleExpr extends ExpandedComplexExpr {
+import java.util.ArrayList;
+import java.util.List;
 
-   private IfExpr _ifExpression;
-   
+public class RuleExpr extends Statement implements ComplexExpr {
+
+   private BooleanExpr _subExpression;
+   private List<Expr> _subExpressions;
+
    public RuleExpr() {
-      _subExpressions.add(new IdExpr("rule"));
-      _ifExpression = new IfExpr();
-      _subExpressions.add(_ifExpression);
+      _subExpression = new IfExpr();
+      init();
    }
-   
+
+   public RuleExpr(BooleanExpr antecedent, BooleanExpr consequent) {
+      _subExpression = new IfExpr(antecedent, consequent);
+      init();
+   }
+
+   public RuleExpr(BooleanExpr subExpression) {
+      _subExpression = subExpression;
+      init();
+   }
+
    @Override
-   public void addSubExpression(Expr subExpression) {
-      _ifExpression._subExpressions.add(subExpression);
+   public List<Expr> getSubExpressions() {
+      return _subExpressions;
    }
-   
+
+   private void init() {
+      _subExpressions = new ArrayList<Expr>();
+      _subExpressions.add(new IdExpr("rule"));
+      _subExpressions.add(_subExpression);
+      _printer = new CollapsedComplexExprPrinter(this);
+   }
+
+   @Override
+   public Statement simplify() {
+      BooleanExpr newSubExpression = _subExpression.simplify();
+      if (newSubExpression != _subExpression) {
+         if (newSubExpression == TrueExpr.INSTANCE) {
+            return new Comment("(vacuous rule)");
+         }
+         else if (newSubExpression == FalseExpr.INSTANCE) {
+            throw new Error("Unsatisfiable!");
+         }
+         else {
+            return new RuleExpr(newSubExpression);
+         }
+      }
+      else {
+         return this;
+      }
+   }
+
 }
