@@ -60,6 +60,9 @@ BgpAdvertisement_dstIp[advert] =  dstIp ->
    BgpAdvertisement(advert),
    Ip(dstIp).
 
+   
+/// [BgpAdvertisement_dstNode[advert] =  dstNode] =
+///   The destination node for advertisement [advert] is [dstNode].
 BgpAdvertisement_dstNode[advert] =  dstNode ->
    BgpAdvertisement(advert),
    Node(dstNode).
