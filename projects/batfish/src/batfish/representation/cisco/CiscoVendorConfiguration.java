@@ -177,7 +177,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                for (String iname : c.getInterfaces().keySet()) {
                   if (iname.startsWith("Loopback")) {
                      Ip currentIp = c.getInterfaces().get(iname).getIP();
-                     if (currentIp != null && currentIp.asLong() > processRouterId.asLong()) {
+                     if (currentIp != null
+                           && currentIp.asLong() > processRouterId.asLong()) {
                         processRouterId = currentIp;
                      }
                   }
@@ -186,7 +187,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   for (batfish.representation.Interface currentInterface : c
                         .getInterfaces().values()) {
                      Ip currentIp = currentInterface.getIP();
-                     if (currentIp.asLong() > processRouterId.asLong()) {
+                     if (currentIp != null
+                           && currentIp.asLong() > processRouterId.asLong()) {
                         processRouterId = currentIp;
                      }
                   }
@@ -612,7 +614,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   }
                   Set<RouteFilterList> lists = new HashSet<RouteFilterList>();
                   lists.add(generatedRejectDefaultRouteList);
-                  PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(lists);
+                  PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(
+                        lists);
                   clause.getMatchLines().add(line);
                }
                Set<PolicyMapSetLine> setList = clause.getSetLines();
