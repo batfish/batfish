@@ -490,7 +490,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitArea_nssa_ro_stanza(Area_nssa_ro_stanzaContext ctx) {
       OspfProcess proc = _configuration.getOspfProcess();
-      int area = toInteger(ctx.num);
+      //TODO-ratul: accommodate area_ip
+      int area = toInteger(ctx.area_int);
       boolean noSummary = ctx.NO_SUMMARY() != null;
       proc.getNssas().put(area, noSummary);
    }
