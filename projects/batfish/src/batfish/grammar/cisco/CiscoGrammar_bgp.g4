@@ -369,6 +369,7 @@ null_standalone_rb_stanza
 			BGP
 			(
 				DAMPENING
+				| DEFAULT
 				| GRACEFUL_RESTART
 				| LOG_NEIGHBOR_CHANGES
 			)

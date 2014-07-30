@@ -295,6 +295,11 @@ AUTO
 	'auto'
 ;
 
+AUTO_COST
+:
+	'auto-cost'
+;
+
 AUTOSELECT
 :
 	'autoselect'
@@ -578,6 +583,11 @@ CONTROLLER
 COST
 :
 	'cost'
+;
+
+COUNTER
+:
+	'counter'
 ;
 
 CPTONE
@@ -906,6 +916,11 @@ ESP
 	'esp'
 ;
 
+ESCAPE_CHARACTER
+:
+	'escape-character'
+;
+
 ESTABLISHED
 :
 	'established'
@@ -1216,6 +1231,11 @@ HOST_ROUTING
 	'host-routing'
 ;
 
+HOST_UNREACHABLE
+:
+	'host-unreachable'
+;
+
 HOSTNAME
 :
 	'hostname'
@@ -1289,6 +1309,11 @@ INBOUND
 INSPECT
 :
 	'inspect'
+;
+
+INSTANCE
+:
+	'instance'
 ;
 
 INTERNAL
@@ -1609,6 +1634,11 @@ MEMBER
 MEMORY_SIZE
 :
 	'memory-size'
+;
+
+MESSAGE_DIGEST_KEY
+:
+	'message-digest-key'
 ;
 
 MESSAGE_LENGTH
@@ -2306,6 +2336,11 @@ RESOURCE_POOL
 	'resource-pool'
 ;
 
+REVISION
+:
+	'revision'
+;
+
 REVOCATION_CHECK
 :
 	'revocation-check'
@@ -2341,6 +2376,11 @@ ROUTE_REFLECTOR_CLIENT
 	'route-reflector-client'
 ;
 
+ROUTE_TARGET
+:
+	'route-target'
+;
+
 ROUTER
 :
 	'router'
@@ -2364,6 +2404,11 @@ RSAKEYPAIR
 RTR
 :
 	'rtr'
+;
+
+RST
+:
+	'rst'
 ;
 
 SAME_SECURITY_TRAFFIC
@@ -2454,6 +2499,11 @@ SERIAL_NUMBER
 SERVER
 :
 	'server'
+;
+
+SERVER_PRIVATE
+:
+	'server-private'
 ;
 
 SERVER_TYPE
@@ -2734,6 +2784,11 @@ TACACS
 TACACS_PLUS
 :
 	'tacacs+'
+;
+
+TACACS_SERVER
+:
+	'tacacs-server'
 ;
 
 TAG
@@ -3329,6 +3384,7 @@ ESCAPE_C
 :
 	(
 		'^C'
+		| '\u0003'
 	)
 	{
    inMultilineComment = !inMultilineComment;

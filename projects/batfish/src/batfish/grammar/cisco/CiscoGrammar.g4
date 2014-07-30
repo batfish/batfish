@@ -81,7 +81,8 @@ macro_stanza
 null_block_stanza
 :
 	(
-		ARCHIVE
+		AAA
+		| ARCHIVE
 		| CONTROL_PLANE
 		| CONTROLLER
 		| DIAL_PEER
@@ -117,6 +118,7 @@ null_block_stanza
 		(
 			SCCP CCM GROUP
 		)
+		| SPANNING_TREE
 		|
 		(
 			STCAPP
@@ -191,6 +193,7 @@ null_block_substanza
 			| DNS_SERVER
 			| DS0_GROUP
 			| ENROLLMENT
+			| ESCAPE_CHARACTER
 			| EXCEED_ACTION
 			| EXEC
 			| EXEC_TIMEOUT
@@ -210,6 +213,7 @@ null_block_substanza
 			| HIDEKEYS
 			| HISTORY
 			| INSPECT
+			| INSTANCE
 			| IP
 			| IPSEC_UDP
 			| IPV6
@@ -237,6 +241,7 @@ null_block_substanza
 			| NOTIFY
 			| PARAMETERS
 			| PARENT
+			| PASSWORD
 			| PASSWORD_STORAGE
 			| PATH_JITTER
 			| PERMIT
@@ -259,9 +264,12 @@ null_block_substanza
 			| REMOTE_PORT
 			| REMOTE_SPAN
 			| REMOVED
+			| REVISION
 			| RING
+			| ROUTE_TARGET
 			| SCHEME
 			| SEQUENCE
+			| SERVER_PRIVATE
 			| SERVICE
 			| SERVICE_POLICY
 			| SERVICE_TYPE
@@ -567,6 +575,7 @@ null_standalone_stanza
 		| RESOURCE_POOL
 		| REVOCATION_CHECK
 		| ROUTE
+		| ROUTE_TARGET
 		| RSAKEYPAIR
 		| RTR
 		| SAME_SECURITY_TRAFFIC
@@ -618,6 +627,7 @@ null_standalone_stanza
 		| SYSOPT
 		| SYSTEM
 		| TABLE_MAP
+		| TACACS_SERVER
 		| TAG_SWITCHING
 		| TELNET
 		| TFTP_SERVER
