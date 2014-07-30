@@ -114,6 +114,7 @@ null_block_stanza
 		| LINE
 		| POLICY_MAP
 		| REDUNDANCY
+		| ROLE
 		|
 		(
 			SCCP CCM GROUP
@@ -267,6 +268,7 @@ null_block_substanza
 			| REVISION
 			| RING
 			| ROUTE_TARGET
+			| RULE
 			| SCHEME
 			| SEQUENCE
 			| SERVER_PRIVATE
@@ -296,6 +298,7 @@ null_block_substanza
 			| TOP
 			| TRANSPORT
 			| TUNNEL_GROUP
+			| USE_VRF			
 			| VIOLATE_ACTION
 			| VIRTUAL_TEMPLATE
 			| VPN_FILTER
@@ -394,6 +397,7 @@ null_standalone_stanza
 		| EXCEPTION
 		| FABRIC
 		| FAILOVER
+		| FEATURE
 		| FILE
 		| FIREWALL
 		| FIRMWARE
@@ -552,6 +556,7 @@ null_standalone_stanza
 		| OBJECT_GROUP
 		| PAGER
 		| PARTICIPATE
+		| PASSWORD
 		| PERCENT
 		| PHONE_PROXY
 		| PLATFORM
@@ -643,6 +648,7 @@ null_standalone_stanza
 		| UNABLE
 		| UPGRADE
 		| USER_IDENTITY
+		| USE_VRF
 		| USERNAME
 		| VALIDATION_USAGE
 		| VERSION

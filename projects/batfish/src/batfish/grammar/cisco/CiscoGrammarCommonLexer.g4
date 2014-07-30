@@ -695,7 +695,6 @@ DESCRIPTION
 	'description' -> pushMode(M_DESCRIPTION)
 ;
 
-
 DESIRABLE
 :
 	'desirable'
@@ -704,6 +703,11 @@ DESIRABLE
 DESTINATION
 :
 	'destination'
+;
+
+DETERMINISTIC_MED
+:
+	'deterministic-med'
 ;
 
 DEVICE
@@ -2356,6 +2360,11 @@ RIP
 	'rip'
 ;
 
+ROLE
+:
+	'role'
+;
+
 ROUTE
 :
 	'route'
@@ -2409,6 +2418,11 @@ RTR
 RST
 :
 	'rst'
+;
+
+RULE
+:
+	'rule'
 ;
 
 SAME_SECURITY_TRAFFIC
@@ -3001,6 +3015,11 @@ UPGRADE
 	'upgrade'
 ;
 
+USE_VRF
+:
+	'use-vrf'
+;
+
 USER_IDENTITY
 :
 	'user-identity'
@@ -3079,6 +3098,11 @@ VPDN_GROUP
 VPN
 :
 	'vpn'
+;
+
+VPNV4
+:
+	'vpnv4'
 ;
 
 VPN_FILTER
@@ -3385,6 +3409,7 @@ ESCAPE_C
 	(
 		'^C'
 		| '\u0003'
+		| '#'
 	)
 	{
    inMultilineComment = !inMultilineComment;
@@ -3627,6 +3652,7 @@ VARIABLE
 		| '+'
 		| '['
 		| ']'
+		| ':'
 		|
 		(
 			{!enableIPV6_ADDRESS}?
