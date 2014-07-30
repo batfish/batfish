@@ -113,6 +113,7 @@ null_standalone_if_stanza
 		| CHANNEL_PROTOCOL
 		| CLNS
 		| CLOCK
+		| COUNTER
 		| CRYPTO
 		|
 		(
@@ -152,6 +153,7 @@ null_standalone_if_stanza
 					OSPF
 					(
 						AUTHENTICATION
+						| MESSAGE_DIGEST_KEY 
 						| NETWORK
 						| PRIORITY
 					)

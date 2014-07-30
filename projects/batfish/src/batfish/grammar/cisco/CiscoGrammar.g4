@@ -81,7 +81,8 @@ macro_stanza
 null_block_stanza
 :
 	(
-		ARCHIVE
+		AAA
+		| ARCHIVE
 		| CONTROL_PLANE
 		| CONTROLLER
 		| DIAL_PEER
@@ -113,10 +114,12 @@ null_block_stanza
 		| LINE
 		| POLICY_MAP
 		| REDUNDANCY
+		| ROLE
 		|
 		(
 			SCCP CCM GROUP
 		)
+		| SPANNING_TREE
 		|
 		(
 			STCAPP
@@ -191,6 +194,7 @@ null_block_substanza
 			| DNS_SERVER
 			| DS0_GROUP
 			| ENROLLMENT
+			| ESCAPE_CHARACTER
 			| EXCEED_ACTION
 			| EXEC
 			| EXEC_TIMEOUT
@@ -210,6 +214,7 @@ null_block_substanza
 			| HIDEKEYS
 			| HISTORY
 			| INSPECT
+			| INSTANCE
 			| IP
 			| IPSEC_UDP
 			| IPV6
@@ -237,6 +242,7 @@ null_block_substanza
 			| NOTIFY
 			| PARAMETERS
 			| PARENT
+			| PASSWORD
 			| PASSWORD_STORAGE
 			| PATH_JITTER
 			| PERMIT
@@ -259,9 +265,13 @@ null_block_substanza
 			| REMOTE_PORT
 			| REMOTE_SPAN
 			| REMOVED
+			| REVISION
 			| RING
+			| ROUTE_TARGET
+			| RULE
 			| SCHEME
 			| SEQUENCE
+			| SERVER_PRIVATE
 			| SERVICE
 			| SERVICE_POLICY
 			| SERVICE_TYPE
@@ -288,6 +298,7 @@ null_block_substanza
 			| TOP
 			| TRANSPORT
 			| TUNNEL_GROUP
+			| USE_VRF			
 			| VIOLATE_ACTION
 			| VIRTUAL_TEMPLATE
 			| VPN_FILTER
@@ -386,6 +397,7 @@ null_standalone_stanza
 		| EXCEPTION
 		| FABRIC
 		| FAILOVER
+		| FEATURE
 		| FILE
 		| FIREWALL
 		| FIRMWARE
@@ -544,6 +556,7 @@ null_standalone_stanza
 		| OBJECT_GROUP
 		| PAGER
 		| PARTICIPATE
+		| PASSWORD
 		| PERCENT
 		| PHONE_PROXY
 		| PLATFORM
@@ -567,6 +580,7 @@ null_standalone_stanza
 		| RESOURCE_POOL
 		| REVOCATION_CHECK
 		| ROUTE
+		| ROUTE_TARGET
 		| RSAKEYPAIR
 		| RTR
 		| SAME_SECURITY_TRAFFIC
@@ -618,6 +632,7 @@ null_standalone_stanza
 		| SYSOPT
 		| SYSTEM
 		| TABLE_MAP
+		| TACACS_SERVER
 		| TAG_SWITCHING
 		| TELNET
 		| TFTP_SERVER
@@ -633,6 +648,7 @@ null_standalone_stanza
 		| UNABLE
 		| UPGRADE
 		| USER_IDENTITY
+		| USE_VRF
 		| USERNAME
 		| VALIDATION_USAGE
 		| VERSION

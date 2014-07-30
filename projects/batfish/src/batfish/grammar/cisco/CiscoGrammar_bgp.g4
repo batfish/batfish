@@ -12,7 +12,11 @@ address_family_rb_stanza
 	(
 		IPV4
 		| IPV6
-	) MULTICAST? NEWLINE address_family_rb_stanza_tail EXIT_ADDRESS_FAMILY NEWLINE
+		| VPNV4
+	) MULTICAST? 
+	(
+		VRF vrf_name = VARIABLE
+	)? NEWLINE address_family_rb_stanza_tail EXIT_ADDRESS_FAMILY NEWLINE
 	closing_comment
 ;
 
@@ -248,7 +252,7 @@ neighbor_send_community_tail_bgp
 	(
 		neighbor = IP_ADDRESS
 		| neighbor = VARIABLE
-	) SEND_COMMUNITY NEWLINE
+	) SEND_COMMUNITY EXTENDED? NEWLINE
 ;
 
 neighbor_shutdown_rb_stanza
@@ -369,6 +373,8 @@ null_standalone_rb_stanza
 			BGP
 			(
 				DAMPENING
+				| DEFAULT
+				| DETERMINISTIC_MED
 				| GRACEFUL_RESTART
 				| LOG_NEIGHBOR_CHANGES
 			)
@@ -391,6 +397,7 @@ null_standalone_rb_stanza
 						| SOFT_RECONFIGURATION
 						| TIMERS
 						| TRANSPORT
+						| VERSION
 					)
 				)
 				| IPV6_ADDRESS

@@ -295,6 +295,11 @@ AUTO
 	'auto'
 ;
 
+AUTO_COST
+:
+	'auto-cost'
+;
+
 AUTOSELECT
 :
 	'autoselect'
@@ -580,6 +585,11 @@ COST
 	'cost'
 ;
 
+COUNTER
+:
+	'counter'
+;
+
 CPTONE
 :
 	'cptone'
@@ -685,7 +695,6 @@ DESCRIPTION
 	'description' -> pushMode(M_DESCRIPTION)
 ;
 
-
 DESIRABLE
 :
 	'desirable'
@@ -694,6 +703,11 @@ DESIRABLE
 DESTINATION
 :
 	'destination'
+;
+
+DETERMINISTIC_MED
+:
+	'deterministic-med'
 ;
 
 DEVICE
@@ -904,6 +918,11 @@ ERRDISABLE
 ESP
 :
 	'esp'
+;
+
+ESCAPE_CHARACTER
+:
+	'escape-character'
 ;
 
 ESTABLISHED
@@ -1216,6 +1235,11 @@ HOST_ROUTING
 	'host-routing'
 ;
 
+HOST_UNREACHABLE
+:
+	'host-unreachable'
+;
+
 HOSTNAME
 :
 	'hostname'
@@ -1289,6 +1313,11 @@ INBOUND
 INSPECT
 :
 	'inspect'
+;
+
+INSTANCE
+:
+	'instance'
 ;
 
 INTERNAL
@@ -1609,6 +1638,11 @@ MEMBER
 MEMORY_SIZE
 :
 	'memory-size'
+;
+
+MESSAGE_DIGEST_KEY
+:
+	'message-digest-key'
 ;
 
 MESSAGE_LENGTH
@@ -2306,6 +2340,11 @@ RESOURCE_POOL
 	'resource-pool'
 ;
 
+REVISION
+:
+	'revision'
+;
+
 REVOCATION_CHECK
 :
 	'revocation-check'
@@ -2319,6 +2358,11 @@ RING
 RIP
 :
 	'rip'
+;
+
+ROLE
+:
+	'role'
 ;
 
 ROUTE
@@ -2339,6 +2383,11 @@ ROUTE_MAP
 ROUTE_REFLECTOR_CLIENT
 :
 	'route-reflector-client'
+;
+
+ROUTE_TARGET
+:
+	'route-target'
 ;
 
 ROUTER
@@ -2364,6 +2413,16 @@ RSAKEYPAIR
 RTR
 :
 	'rtr'
+;
+
+RST
+:
+	'rst'
+;
+
+RULE
+:
+	'rule'
 ;
 
 SAME_SECURITY_TRAFFIC
@@ -2454,6 +2513,11 @@ SERIAL_NUMBER
 SERVER
 :
 	'server'
+;
+
+SERVER_PRIVATE
+:
+	'server-private'
 ;
 
 SERVER_TYPE
@@ -2736,6 +2800,11 @@ TACACS_PLUS
 	'tacacs+'
 ;
 
+TACACS_SERVER
+:
+	'tacacs-server'
+;
+
 TAG
 :
 	'tag'
@@ -2946,6 +3015,11 @@ UPGRADE
 	'upgrade'
 ;
 
+USE_VRF
+:
+	'use-vrf'
+;
+
 USER_IDENTITY
 :
 	'user-identity'
@@ -3024,6 +3098,11 @@ VPDN_GROUP
 VPN
 :
 	'vpn'
+;
+
+VPNV4
+:
+	'vpnv4'
 ;
 
 VPN_FILTER
@@ -3329,6 +3408,8 @@ ESCAPE_C
 :
 	(
 		'^C'
+		| '\u0003'
+		| '#'
 	)
 	{
    inMultilineComment = !inMultilineComment;
@@ -3571,6 +3652,7 @@ VARIABLE
 		| '+'
 		| '['
 		| ']'
+		| ':'
 		|
 		(
 			{!enableIPV6_ADDRESS}?

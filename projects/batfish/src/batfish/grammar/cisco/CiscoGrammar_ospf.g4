@@ -13,7 +13,11 @@ area_ipv6_ro_stanza
 
 area_nssa_ro_stanza
 :
-	AREA num = DEC NSSA NO_SUMMARY? NEWLINE
+	AREA 
+	(
+		area_int = DEC
+		| area_ip = IP_ADDRESS
+	) NSSA NO_SUMMARY? NEWLINE
 ;
 
 default_information_ipv6_ro_stanza
@@ -94,8 +98,13 @@ null_standalone_ro_stanza
 	NO?
 	(
 		(
-			AREA DEC AUTHENTICATION
+			AREA 
+				( 
+			 		DEC
+			 		| IP_ADDRESS
+			 	) AUTHENTICATION
 		)
+		| AUTO_COST
 		| BFD
 		| DISTRIBUTE_LIST
 		| LOG_ADJACENCY_CHANGES

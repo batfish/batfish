@@ -177,7 +177,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                for (String iname : c.getInterfaces().keySet()) {
                   if (iname.startsWith("Loopback")) {
                      Ip currentIp = c.getInterfaces().get(iname).getIP();
-                     if (currentIp.asLong() > processRouterId.asLong()) {
+                     if (currentIp != null && currentIp.asLong() > processRouterId.asLong()) {
                         processRouterId = currentIp;
                      }
                   }
