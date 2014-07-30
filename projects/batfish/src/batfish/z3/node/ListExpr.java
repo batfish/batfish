@@ -9,11 +9,11 @@ public class ListExpr extends Expr implements ComplexExpr {
 
    public ListExpr() {
       _subExpressions = new ArrayList<Expr>();
+      _printer = new CollapsedComplexExprPrinter(this);
    }
 
    public void addSubExpression(Expr expr) {
       _subExpressions.add(expr);
-      _printer = new CollapsedComplexExprPrinter(this);
    }
 
    @Override

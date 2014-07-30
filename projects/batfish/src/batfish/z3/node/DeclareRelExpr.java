@@ -12,7 +12,7 @@ public class DeclareRelExpr extends Statement implements ComplexExpr {
       _subExpressions.add(new IdExpr("declare-rel"));
       _subExpressions.add(new IdExpr(name));
       ListExpr listExpression = new ListExpr();
-      _subExpressions.add(new ListExpr());
+      _subExpressions.add(listExpression);
       for (int size : sizes) {
          listExpression.addSubExpression(new BitVecExpr(size));
       }
