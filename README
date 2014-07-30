@@ -125,7 +125,7 @@ This file contains the data plane (reachability relations) of a processed test-r
 
 example-query:
 This folder contains 4 types of files:
-   1. incons-query-<hostname>.smt2:
+   1. incons-query-<node>.smt2:
       A z3 query for the z3 fixed-point datalog engine that, when appended to the example-reach.smt2 file, yields the constraints for multipath-inconsistent packets originating at <node>
    2. incons-query-<node>.smt2.out:
       The output of step 1
