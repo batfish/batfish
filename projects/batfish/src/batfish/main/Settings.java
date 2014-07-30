@@ -21,6 +21,7 @@ public class Settings {
    private static final String ARG_COMPILE = "compile";
    private static final String ARG_COUNT = "count";
    private static final String ARG_DIFF = "diff";
+   private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "no-simplify";
    private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
    private static final String ARG_DUMP_FACTS_DIR = "dumpdir";
    private static final String ARG_DUMP_IF = "dumpif";
@@ -81,6 +82,7 @@ public class Settings {
    private static final String DEFAULT_Z3_CONCRETIZER_INPUT_FILE = "z3-concretizer-input.smt2";
    private static final String DEFAULT_Z3_CONCRETIZER_OUTPUT_FILE = "z3-concretizer-output.smt2";
    private static final String DEFAULT_Z3_OUTPUT = "z3-dataplane-output.smt2";
+   private static final boolean DEFAULT_Z3_SIMPLIFY = true;
    private static final String EXECUTABLE_NAME = "batfish";
 
    private boolean _anonymize;
@@ -121,6 +123,7 @@ public class Settings {
    private boolean _revert;
    private String _revertBranchName;
    private String _secondTestRigPath;
+   private boolean _simplify;
    private Integer _sshPort;
    private String _testRigPath;
    private boolean _update;
@@ -276,6 +279,10 @@ public class Settings {
 
    public String getSecondTestRigPath() {
       return _secondTestRigPath;
+   }
+
+   public boolean getSimplify() {
+      return _simplify;
    }
 
    public Integer getSshPort() {
@@ -448,6 +455,8 @@ public class Settings {
       _options.addOption(OptionBuilder.hasArg().withArgName(ARGNAME_SSH_PORT)
             .withDescription("ssh port of machine running LogicBlox")
             .create(ARG_SSH_PORT));
+      _options.addOption(OptionBuilder.withDescription(
+            "disable z3 simplification").create(ARG_DISABLE_Z3_SIMPLIFICATION));
    }
 
    private void parseCommandLine(String[] args) {
@@ -555,6 +564,10 @@ public class Settings {
          _sshPort = Integer.parseInt(line.getOptionValue(ARG_SSH_PORT));
       }
       _logicDir = line.getOptionValue(ARG_LOGICDIR, null);
+      _simplify = DEFAULT_Z3_SIMPLIFY;
+      if (line.hasOption(ARG_DISABLE_Z3_SIMPLIFICATION)) {
+         _simplify = false;
+      };
    }
 
    public boolean redirectStdErr() {

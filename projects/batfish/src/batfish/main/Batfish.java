@@ -389,7 +389,7 @@ public class Batfish {
       print(1, "OK\n");
 
       print(1, "Synthesizing Z3 logic..");
-      Synthesizer s = new Synthesizer(configurations, fibs, topologyEdges);
+      Synthesizer s = new Synthesizer(configurations, fibs, topologyEdges, _settings.getSimplify());
       try {
          s.synthesize(_settings.getZ3File());
       }
