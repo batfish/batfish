@@ -138,16 +138,21 @@ neighbor_filter_list_tail_bgp
 
 neighbor_next_hop_self_af_stanza
 :
+	neighbor_next_hop_self_tail_bgp
+;
+
+neighbor_next_hop_self_rb_stanza
+:
+	neighbor_next_hop_self_tail_bgp
+;
+
+neighbor_next_hop_self_tail_bgp
+:
 	NEIGHBOR
 	(
 		neighbor = IP_ADDRESS
 		| neighbor = VARIABLE
 	) NEXT_HOP_SELF NEWLINE
-;
-
-neighbor_next_hop_self_rb_stanza
-:
-	NEIGHBOR neigbor = IP_ADDRESS NEXT_HOP_SELF NEWLINE
 ;
 
 neighbor_peer_group_assignment_af_stanza
