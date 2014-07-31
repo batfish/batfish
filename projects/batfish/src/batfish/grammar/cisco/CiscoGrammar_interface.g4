@@ -136,6 +136,7 @@ null_standalone_if_stanza
 				| ARP
 				| CGMP
 				| DHCP
+				| DVMRP
 				|
 				(
 					DIRECTED_BROADCAST
@@ -214,6 +215,7 @@ null_standalone_if_stanza
 		| SPEED
 		| SNMP
 		| SRR_QUEUE
+		| STACK_MIB
 		| STANDBY
 		| STORM_CONTROL
 		|
@@ -240,6 +242,7 @@ null_standalone_if_stanza
 		| VRRP
 		| WRR_QUEUE
 		| X25
+		| XCONNECT
 	) ~NEWLINE* NEWLINE
 ;
 

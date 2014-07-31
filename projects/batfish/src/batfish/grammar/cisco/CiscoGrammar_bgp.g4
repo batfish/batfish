@@ -34,6 +34,7 @@ af_stanza
 	| neighbor_activate_af_stanza
 	| neighbor_default_originate_af_stanza
 	| neighbor_filter_list_af_stanza
+	| neighbor_next_hop_self_af_stanza
 	| neighbor_peer_group_assignment_af_stanza
 	| neighbor_prefix_list_af_stanza
 	| neighbor_route_map_af_stanza
@@ -133,6 +134,15 @@ neighbor_filter_list_tail_bgp
 		IN
 		| OUT
 	) NEWLINE
+;
+
+neighbor_next_hop_self_af_stanza
+:
+	NEIGHBOR
+	(
+		neighbor = IP_ADDRESS
+		| neighbor = VARIABLE
+	) NEXT_HOP_SELF NEWLINE
 ;
 
 neighbor_next_hop_self_rb_stanza

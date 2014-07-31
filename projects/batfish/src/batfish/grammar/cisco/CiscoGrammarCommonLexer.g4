@@ -160,6 +160,11 @@ AGGREGATE_ADDRESS
 	'aggregate-address'
 ;
 
+AHP
+:
+	'ahp'
+;
+	
 ALERT_GROUP
 :
 	'alert-group'
@@ -835,6 +840,11 @@ DUPLEX
 	'duplex'
 ;
 
+DVMRP
+:
+	'dvmrp'
+;
+
 DYNAMIC
 :
 	'dynamic'
@@ -1098,6 +1108,11 @@ FRAGMENTS
 FRAMING
 :
 	'framing'
+;
+
+FREQUENCY
+:
+	'frequency'
 ;
 
 FTP
@@ -1870,6 +1885,11 @@ NEXT_HOP_SELF
 	'next-hop-self'
 ;
 
+NNTP
+:
+	'nntp'
+;
+
 NO
 :
 	'no'
@@ -1958,6 +1978,11 @@ OTHER_ACCESS
 OUT
 :
 	'out'
+;
+
+OWNER
+:
+	'owner'
 ;
 
 PACKET_TOO_BIG
@@ -2670,6 +2695,11 @@ SSL
 	'ssl'
 ;
 
+STACK_MIB
+:
+	'stack-mib'
+;
+
 STANDARD
 :
 	'standard' { enableDEC = true; enableACL_NUM = false; }
@@ -3175,10 +3205,22 @@ X29
 	'x29'
 ;
 
+XCONNECT
+:
+	'xconnect'
+;
+
 XLATE
 :
 	'xlate'
 ;
+
+// commonly used to hide password and keys
+XX_HIDE
+:
+	'xx' 'x'+
+;
+
 
 // Other Tokens
 
@@ -3681,6 +3723,7 @@ WS
 		| '\u000C'
 	) -> channel(HIDDEN)
 ;
+
 
 // Fragments
 

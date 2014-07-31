@@ -85,6 +85,7 @@ null_block_stanza
 		| ARCHIVE
 		| CONTROL_PLANE
 		| CONTROLLER
+		| CRYPTO
 		| DIAL_PEER
 		|
 		(
@@ -136,9 +137,6 @@ null_block_stanza
 		| VOICE_PORT
 		| VPDN_GROUP
 	) ~NEWLINE* NEWLINE (null_block_substanza | description_line)*
-	(
-		closing_comment
-	)
 ;
 
 null_block_substanza
@@ -401,6 +399,7 @@ null_standalone_stanza
 		| FILE
 		| FIREWALL
 		| FIRMWARE
+		| FREQUENCY
 		| FQDN
 		| FTP
 		| FTP_SERVER
@@ -408,6 +407,7 @@ null_standalone_stanza
 		| GROUP
 		| GROUP_OBJECT
 		| HASH
+		| HISTORY
 		| HOST
 		| HTTP
 		| HW_MODULE
@@ -437,6 +437,7 @@ null_standalone_stanza
 				| DOMAIN_LIST
 				| DOMAIN_LOOKUP
 				| DOMAIN_NAME
+				| DVMRP
 				| FINGER
 				| FLOW_CACHE
 				| FLOW_EXPORT
@@ -554,6 +555,7 @@ null_standalone_stanza
 		| NTP
 		| OBJECT
 		| OBJECT_GROUP
+		| OWNER
 		| PAGER
 		| PARTICIPATE
 		| PASSWORD
@@ -571,6 +573,7 @@ null_standalone_stanza
 		| PROMPT
 		| PROTOCOL_OBJECT
 		| QOS
+		| QUIT
 		| RADIUS_COMMON_PW
 		| RADIUS_SERVER
 		| RD
@@ -633,6 +636,7 @@ null_standalone_stanza
 		| SYSTEM
 		| TABLE_MAP
 		| TACACS_SERVER
+		| TAG
 		| TAG_SWITCHING
 		| TELNET
 		| TFTP_SERVER
@@ -671,6 +675,7 @@ null_standalone_stanza
 		| X25
 		| X29
 		| XLATE
+		| XX_HIDE
 	)
 	(
 		remaining_tokens += ~NEWLINE

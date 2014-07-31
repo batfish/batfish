@@ -98,6 +98,7 @@ port
 	| NETBIOS_DGM
 	| NETBIOS_NS
 	| NETBIOS_SS
+	| NNTP
 	| NON500_ISAKMP
 	| NTP
 	| PIM_AUTO_RP
@@ -115,7 +116,8 @@ port
 
 protocol
 :
-	DEC
+	AHP
+	| DEC
 	| ESP
 	| GRE
 	| ICMP
