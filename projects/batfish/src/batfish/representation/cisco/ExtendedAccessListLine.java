@@ -1,5 +1,6 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
@@ -8,7 +9,9 @@ import batfish.representation.LineAction;
 import batfish.util.SubRange;
 import batfish.util.Util;
 
-public class ExtendedAccessListLine {
+public class ExtendedAccessListLine implements Serializable {
+
+   private static final long serialVersionUID = 1L;
 
    private LineAction _action;
    private Ip _dstIp;
@@ -19,8 +22,8 @@ public class ExtendedAccessListLine {
    private List<SubRange> _srcPortRanges;
    private Ip _srcWildcard;
 
-   public ExtendedAccessListLine(LineAction action, int protocol,
-         Ip srcIp, Ip srcWildcard, Ip dstIp, Ip dstWildcard,
+   public ExtendedAccessListLine(LineAction action, int protocol, Ip srcIp,
+         Ip srcWildcard, Ip dstIp, Ip dstWildcard,
          List<SubRange> srcPortRanges, List<SubRange> dstPortRanges) {
       _action = action;
       _protocol = protocol;
@@ -83,7 +86,8 @@ public class ExtendedAccessListLine {
             + (protocolName != null ? protocolName + "(" + _protocol + ")"
                   : _protocol) + ", SourceIp:" + _srcIp + ", SourceWildcard:"
             + _srcWildcard + ", DestinationIp:" + _dstIp
-            + ", DestinationWildcard:" + _dstWildcard + ", PortRange:" + _srcPortRanges + "]";
+            + ", DestinationWildcard:" + _dstWildcard + ", PortRange:"
+            + _srcPortRanges + "]";
    }
 
 }

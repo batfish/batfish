@@ -6,6 +6,8 @@ import batfish.util.Util;
 
 public class PolicyMapSetAddCommunityLine extends PolicyMapSetLine {
 
+   private static final long serialVersionUID = 1L;
+
    private List<Long> _communities;
 
    public PolicyMapSetAddCommunityLine(List<Long> communities) {
@@ -18,20 +20,20 @@ public class PolicyMapSetAddCommunityLine extends PolicyMapSetLine {
 
    @Override
    public String getIFString(int indentLevel) {
-	   String retString = Util.getIndentString(indentLevel) + "AddCommunity";
-	   
-	   for (long comm : _communities) {
-		   retString += " " + comm;
-	   }
-	   
-	   return retString;
+      String retString = Util.getIndentString(indentLevel) + "AddCommunity";
+
+      for (long comm : _communities) {
+         retString += " " + comm;
+      }
+
+      return retString;
    }
 
    @Override
    public PolicyMapSetType getType() {
       return PolicyMapSetType.ADDITIVE_COMMUNITY;
    }
-   
+
    @Override
    public boolean sameParseTree(PolicyMapSetLine line, String prefix) {
       boolean res = (line.getType() == PolicyMapSetType.ADDITIVE_COMMUNITY);

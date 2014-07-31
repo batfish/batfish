@@ -6,6 +6,8 @@ import batfish.representation.PolicyMapSetMetricLine;
 
 public class RouteMapSetMetricLine extends RouteMapSetLine {
 
+   private static final long serialVersionUID = 1L;
+
    private int _metric;
 
    public RouteMapSetMetricLine(int metric) {
@@ -20,5 +22,5 @@ public class RouteMapSetMetricLine extends RouteMapSetLine {
    public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
       return new PolicyMapSetMetricLine(_metric);
    }
-   
+
 }

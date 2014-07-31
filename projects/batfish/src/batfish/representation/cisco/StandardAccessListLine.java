@@ -1,9 +1,14 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
+
 import batfish.representation.Ip;
 import batfish.representation.LineAction;
 
-public class StandardAccessListLine {
+public class StandardAccessListLine implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    private LineAction _action;
    private Ip _ip;
    private Ip _wildcard;

@@ -1,5 +1,6 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,15 +13,17 @@ import batfish.representation.SwitchportEncapsulationType;
 import batfish.representation.SwitchportMode;
 import batfish.util.SubRange;
 
-public class Interface {
+public class Interface implements Serializable {
 
    private static final double FAST_ETHERNET_BANDWIDTH = 100E6;
-   
+
    private static final double GIGABIT_ETHERNET_BANDWIDTH = 1E9;
+
    /**
     * dirty hack: just chose a very large number
     */
    private static final double LOOPBACK_BANDWIDTH = 1E12;
+   private static final long serialVersionUID = 1L;
    private static final double TEN_GIGABIT_ETHERNET_BANDWIDTH = 10E9;
 
    public static double getDefaultBandwidth(String name) {
@@ -45,16 +48,16 @@ public class Interface {
       }
       return bandwidth;
    }
-   
+
    private int _accessVlan;
    private boolean _active;
    private ArrayList<SubRange> _allowedVlans;
    private Integer _area;
    private Double _bandwidth;
-   private Interface_stanzaContext _context;
+   private transient Interface_stanzaContext _context;
    private String _incomingFilter;
    private Ip _ip;
-   private Ip_address_if_stanzaContext _ipAddressStanzaContext;
+   private transient Ip_address_if_stanzaContext _ipAddressStanzaContext;
    private String _name;
    private int _nativeVlan;
    private Integer _ospfCost;

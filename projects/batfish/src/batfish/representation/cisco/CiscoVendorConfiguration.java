@@ -48,11 +48,13 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       VendorConfiguration {
 
    private static final String DEFAULT_ROUTE_FILTER_NAME = "~DEFAULT_ROUTE_FILTER~";
+
    private static final int MAX_ADMINISTRATIVE_COST = 32767;
    private static final String OSPF_EXPORT_CONNECTED_POLICY_NAME = "~OSPF_EXPORT_CONNECTED_POLICY~";
    private static final String OSPF_EXPORT_DEFAULT_POLICY_NAME = "~OSPF_EXPORT_DEFAULT_ROUTE_POLICY~";
    private static final String OSPF_EXPORT_STATIC_POLICY_NAME = "~OSPF_EXPORT_STATIC_POLICY~";
    private static final String OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME = "~OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER~";
+   private static final long serialVersionUID = 1L;
    private static final String VENDOR_NAME = "cisco";
 
    private static PolicyMap makeRouteExportPolicy(Configuration c, String name,

@@ -1,5 +1,6 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,17 +8,19 @@ import batfish.grammar.cisco.CiscoGrammar.Cisco_configurationContext;
 import batfish.grammar.cisco.CiscoGrammar.Router_bgp_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Router_ospf_stanzaContext;
 
-public class CiscoConfiguration {
+public class CiscoConfiguration implements Serializable {
+
+   private static final long serialVersionUID = 1L;
    protected final Map<String, IpAsPathAccessList> _asPathAccessLists;
    protected BgpProcess _bgpProcess;
-   protected Router_bgp_stanzaContext _bgpProcessContext;
-   protected Cisco_configurationContext _context;
+   protected transient Router_bgp_stanzaContext _bgpProcessContext;
+   protected transient Cisco_configurationContext _context;
    protected final Map<String, ExpandedCommunityList> _expandedCommunityLists;
    protected final Map<String, ExtendedAccessList> _extendedAccessLists;
    protected String _hostname;
    protected final Map<String, Interface> _interfaces;
    protected OspfProcess _ospfProcess;
-   protected Router_ospf_stanzaContext _ospfProcessContext;
+   protected transient Router_ospf_stanzaContext _ospfProcessContext;
    protected final Map<String, PrefixList> _prefixLists;
    protected final Map<String, RouteMap> _routeMaps;
    protected final Map<String, StandardAccessList> _standardAccessLists;
@@ -110,7 +113,8 @@ public class CiscoConfiguration {
       _hostname = hostname;
    }
 
-   public final void setOspfProcess(OspfProcess proc, Router_ospf_stanzaContext ctx) {
+   public final void setOspfProcess(OspfProcess proc,
+         Router_ospf_stanzaContext ctx) {
       _ospfProcess = proc;
       _ospfProcessContext = ctx;
    }

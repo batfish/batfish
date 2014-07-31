@@ -4,13 +4,14 @@ import batfish.representation.OspfMetricType;
 import batfish.representation.Protocol;
 
 public class OspfRedistributionPolicy extends RedistributionPolicy {
-   
+
+   private static final long serialVersionUID = 1L;
+
    public static final String BGP_AS = "BGP_AS";
    public static final OspfMetricType DEFAULT_METRIC_TYPE = OspfMetricType.E2;
    public static final int DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 20;
    public static final int DEFAULT_REDISTRIBUTE_STATIC_METRIC = 20;
-   
-   
+
    private String _map;
    private Integer _metric;
    private OspfMetricType _metricType;

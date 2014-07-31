@@ -1,11 +1,15 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 
 import batfish.representation.Protocol;
 
-public abstract class RedistributionPolicy {
+public abstract class RedistributionPolicy implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    protected final Protocol _destinationProtocol;
    protected final Protocol _sourceProtocol;
    protected final Map<String, Object> _specialAttributes;

@@ -6,6 +6,9 @@ import batfish.util.NamedStructure;
 import batfish.util.Util;
 
 public class IpAccessList extends NamedStructure {
+
+   private static final long serialVersionUID = 1L;
+
    private List<IpAccessListLine> _lines;
 
    public IpAccessList(String name, List<IpAccessListLine> lines) {
@@ -13,28 +16,20 @@ public class IpAccessList extends NamedStructure {
       _lines = lines;
    }
 
-   public List<IpAccessListLine> getLines() {
-      return _lines;
-   }
-
-   @Override
-   public String toString() {
-      String output = super.toString() + "\n" + "Identifier: " + _name;
-      for (IpAccessListLine line : _lines) {
-         output += "\n" + line;
-      }
-      return output;
-   }
-
    public String getIFString(int indentLevel) {
 
-	   String retString = Util.getIndentString(indentLevel) + "IpAccessList " + getName();
-	   
-	   for (IpAccessListLine ipall : _lines) {
-		   retString += "\n" + ipall.getIFString(indentLevel + 1);
-	   }
-	   
-	   return retString;
+      String retString = Util.getIndentString(indentLevel) + "IpAccessList "
+            + getName();
+
+      for (IpAccessListLine ipall : _lines) {
+         retString += "\n" + ipall.getIFString(indentLevel + 1);
+      }
+
+      return retString;
+   }
+
+   public List<IpAccessListLine> getLines() {
+      return _lines;
    }
 
    public boolean sameParseTree(IpAccessList list, String prefix,
@@ -44,7 +39,7 @@ public class IpAccessList extends NamedStructure {
 
       if (_lines.size() != list._lines.size()) {
          if (display) {
-            System.out.println("IpAccessList:Lines:Size "+prefix);
+            System.out.println("IpAccessList:Lines:Size " + prefix);
          }
          return false;
       }
@@ -54,13 +49,22 @@ public class IpAccessList extends NamedStructure {
                   .equals(list._lines.get(i).toString());
             if (res == false) {
                if (display) {
-                  System.out.println("IpAccessList:Lines "+prefix);
+                  System.out.println("IpAccessList:Lines " + prefix);
                }
                finalRes = res;
             }
          }
       }
       return finalRes;
+   }
+
+   @Override
+   public String toString() {
+      String output = super.toString() + "\n" + "Identifier: " + _name;
+      for (IpAccessListLine line : _lines) {
+         output += "\n" + line;
+      }
+      return output;
    }
 
 }

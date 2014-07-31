@@ -1,8 +1,12 @@
 package batfish.representation;
 
+import java.io.Serializable;
+
 import batfish.util.Util;
 
-public class Ip implements Comparable<Ip> {
+public class Ip implements Comparable<Ip>, Serializable {
+
+   private static final long serialVersionUID = 1L;
 
    private final int _hashCode;
    private final Long _ip;

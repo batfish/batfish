@@ -6,6 +6,8 @@ import batfish.util.Util;
 
 public class PolicyMapMatchNeighborLine extends PolicyMapMatchLine {
 
+   private static final long serialVersionUID = 1L;
+
    private Ip _neighborIp;
 
    public PolicyMapMatchNeighborLine(Ip neighborIP) {
@@ -13,23 +15,26 @@ public class PolicyMapMatchNeighborLine extends PolicyMapMatchLine {
    }
 
    @Override
-   public PolicyMapMatchType getType() {
-      return PolicyMapMatchType.NEIGHBOR;
+   public String getIFString(int indentLevel) {
+      return Util.getIndentString(indentLevel) + "Neighbor " + _neighborIp;
    }
 
    public Ip getNeighborIp() {
       return _neighborIp;
    }
-   
+
    @Override
-   public String getIFString(int indentLevel) {
-	   return Util.getIndentString(indentLevel) + "Neighbor " + _neighborIp;
+   public PolicyMapMatchType getType() {
+      return PolicyMapMatchType.NEIGHBOR;
    }
+
    @Override
    public boolean sameParseTree(PolicyMapMatchLine line, String prefix) {
-      boolean res =  (line.getType() == PolicyMapMatchType.NEIGHBOR) && (_neighborIp.equals(((PolicyMapMatchNeighborLine) line)._neighborIp));
-      if(res == false){
-         System.out.println("PoliMapMatchNeighLine "+prefix);
+      boolean res = (line.getType() == PolicyMapMatchType.NEIGHBOR)
+            && (_neighborIp
+                  .equals(((PolicyMapMatchNeighborLine) line)._neighborIp));
+      if (res == false) {
+         System.out.println("PoliMapMatchNeighLine " + prefix);
       }
       return res;
    }

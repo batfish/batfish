@@ -4,6 +4,8 @@ import batfish.util.Util;
 
 public class PolicyMapSetCommunityNoneLine extends PolicyMapSetLine {
 
+   private static final long serialVersionUID = 1L;
+
    @Override
    public String getIFString(int indentLevel) {
       String retString = Util.getIndentString(indentLevel) + "NoCommunity";

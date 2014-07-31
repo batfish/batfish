@@ -43,7 +43,9 @@ import batfish.util.Util;
 
 public class JuniperVendorConfiguration implements VendorConfiguration {
 
+   private static final long serialVersionUID = 1L;
    private static final String VENDOR_NAME = "juniper";
+
    private static batfish.representation.AsPathAccessList toAsPathAccessList(
          ASPathAccessList pathList) {
       String name = pathList.getName();
@@ -53,6 +55,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       }
       return new AsPathAccessList(name, lines);
    }
+
    private static batfish.representation.BgpProcess toBgpProcess(
          final Configuration c, BGPProcess proc, int asNum) {
       batfish.representation.BgpProcess newBgpProcess = new batfish.representation.BgpProcess();
@@ -139,6 +142,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       }
       return newBgpProcess;
    }
+
    private static CommunityList toCommunityList(ExpandedCommunityList ecList) {
       List<CommunityListLine> cllList = new ArrayList<CommunityListLine>();
       for (ExpandedCommunityListLine ecll : ecList.getLines()) {
@@ -147,15 +151,17 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       CommunityList cList = new CommunityList(ecList.getName(), cllList);
       return cList;
    }
+
    private static CommunityListLine toCommunityListLine(
          ExpandedCommunityListLine eclLine) {
       return new CommunityListLine(eclLine.getAction(), eclLine.getRegex());
    }
+
    private static GeneratedRoute toGeneratedRoute(final Configuration c,
          GenerateRoute gr) {
       Set<batfish.representation.PolicyMap> newGenerationPolicies = new LinkedHashSet<batfish.representation.PolicyMap>();
-      batfish.representation.PolicyMap GenerationPolicy = c
-            .getPolicyMaps().get(gr.getPolicy());
+      batfish.representation.PolicyMap GenerationPolicy = c.getPolicyMaps()
+            .get(gr.getPolicy());
       if (GenerationPolicy != null) {
          newGenerationPolicies.add(GenerationPolicy);
       }
@@ -167,50 +173,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
             newGenerationPolicies);
       return newGeneratedRoute;
    }
-   private batfish.representation.Interface toInterface(
-         Interface iface, int as, Map<String, IpAccessList> ipAccessLists) {
-      // System.out.println("Converting Interface: " + iface.getName());
-      batfish.representation.Interface newIface = new batfish.representation.Interface(
-            iface.getName());
-      newIface.setAccessVlan(iface.getAccessVlan());
-      newIface.setActive(iface.getActive());
-      // no individual ospf area in interface
-      newIface.setArea(as);
-      newIface.setBandwidth(iface.getBandwidth());
-      // System.out.println("Ip: "+iface.getIP());
-      if (iface.getIP() != "") {
-         newIface.setIP(new Ip(iface.getIP()));
-         newIface.setSubnetMask(new Ip(iface.getSubnetMask()));
-      }
-      newIface.setNativeVlan(iface.getNativeVlan());
-      newIface.setOspfCost(iface.getOspfCost());
-      newIface.setOspfDeadInterval(iface.getOSPFDeadInterval());
-      newIface.setOspfHelloMultiplier(iface.getOSPFHelloMultiplier());
-      newIface.setSwitchportMode(iface.getSwitchportMode());
-      newIface.setSwitchportTrunkEncapsulation(iface
-            .getSwitchportTrunkEncapsulation());
-      String incomingFilterName = iface.getIncomingFilter();
-      if(incomingFilterName != null){
-         IpAccessList incomingFilter = ipAccessLists.get(incomingFilterName);
-         if (incomingFilter == null) {
-            _conversionWarnings.add("Interface: '" + iface.getName()
-                  + "' configured with non-existent incoming acl '"
-                  + incomingFilterName + "'");
-         }
-         newIface.setIncomingFilter(incomingFilter);
-      }
-      String outgoingFilterName = iface.getOutgoingFilter();
-      if(outgoingFilterName != null){
-         IpAccessList outgoingFilter = ipAccessLists.get(outgoingFilterName);
-         if (outgoingFilter == null) {
-            _conversionWarnings.add("Interface: '" + iface.getName()
-                  + "' configured with non-existent outgoing acl '"
-                  + outgoingFilterName + "'");
-         }
-         newIface.setOutgoingFilter(outgoingFilter);
-      }
-      return newIface;
-   }
+
    private static IpAccessList toIpAccessList(ExtendedAccessList eaList) {
       String name = eaList.getId();
       List<IpAccessListLine> lines = new ArrayList<IpAccessListLine>();
@@ -223,6 +186,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       }
       return new IpAccessList(name, lines);
    }
+
    private static OspfProcess toOSPFProcess(final Configuration c,
          OSPFProcess proc) {
       OspfProcess newProcess = new OspfProcess();
@@ -252,8 +216,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
             }
          });
 
-         for (batfish.representation.Interface i : c.getInterfaces()
-               .values()) {
+         for (batfish.representation.Interface i : c.getInterfaces().values()) {
             Ip interfaceIp = i.getIP();
             if (interfaceIp == null) {
                continue;
@@ -275,8 +238,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
          }
       }
       else {
-         for (batfish.representation.Interface i : c.getInterfaces()
-               .values()) {
+         for (batfish.representation.Interface i : c.getInterfaces().values()) {
             // System.out.println("name : "+i.getName());
             Ip interfaceIp = i.getIP();
             if (interfaceIp == null) {
@@ -306,6 +268,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
 
       return newProcess;
    }
+
    private static PolicyMap toPolicyMap(final Configuration c,
          PolicyStatement map) {
       List<PolicyMapClause> clauses = new ArrayList<PolicyMapClause>();
@@ -314,6 +277,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       }
       return new PolicyMap(map.getMapName(), clauses);
    }
+
    private static PolicyMapClause toPolicyMapClause(final Configuration c,
          PolicyStatementClause clause) {
       Set<PolicyMapMatchLine> matchLines = new LinkedHashSet<PolicyMapMatchLine>();
@@ -328,6 +292,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
             .getAction()), Integer.toString(clause.getSeqNum()), matchLines,
             setLines);
    }
+
    private static PolicyMapMatchLine toPolicyMapMatchLine(
          final Configuration c, PolicyStatementMatchLine matchLine) {
       PolicyMapMatchLine newLine = null;
@@ -415,12 +380,10 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
                newProtocolList.add(batfish.representation.Protocol.STATIC);
                break;
             case "direct":
-               newProtocolList
-                     .add(batfish.representation.Protocol.CONNECTED);
+               newProtocolList.add(batfish.representation.Protocol.CONNECTED);
                break;
             case "aggregate":
-               newProtocolList
-                     .add(batfish.representation.Protocol.AGGREGATE);
+               newProtocolList.add(batfish.representation.Protocol.AGGREGATE);
                break;
             default:
                break;
@@ -437,6 +400,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       }
       return newLine;
    }
+
    private static PolicyMapSetLine toPolicyMapSetLine(Configuration c,
          PolicyStatementSetLine setLine) {
       PolicyMapSetLine newLine = null;
@@ -504,6 +468,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       }
       return newLine;
    }
+
    public static batfish.representation.RouteFilterList toRouteFilterList(
          RouteFilter routeFilter) {
       RouteFilterList newRouteFilterList = new RouteFilterList(
@@ -754,6 +719,51 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       _hostname = hostname;
    }
 
+   private batfish.representation.Interface toInterface(Interface iface,
+         int as, Map<String, IpAccessList> ipAccessLists) {
+      // System.out.println("Converting Interface: " + iface.getName());
+      batfish.representation.Interface newIface = new batfish.representation.Interface(
+            iface.getName());
+      newIface.setAccessVlan(iface.getAccessVlan());
+      newIface.setActive(iface.getActive());
+      // no individual ospf area in interface
+      newIface.setArea(as);
+      newIface.setBandwidth(iface.getBandwidth());
+      // System.out.println("Ip: "+iface.getIP());
+      if (iface.getIP() != "") {
+         newIface.setIP(new Ip(iface.getIP()));
+         newIface.setSubnetMask(new Ip(iface.getSubnetMask()));
+      }
+      newIface.setNativeVlan(iface.getNativeVlan());
+      newIface.setOspfCost(iface.getOspfCost());
+      newIface.setOspfDeadInterval(iface.getOSPFDeadInterval());
+      newIface.setOspfHelloMultiplier(iface.getOSPFHelloMultiplier());
+      newIface.setSwitchportMode(iface.getSwitchportMode());
+      newIface.setSwitchportTrunkEncapsulation(iface
+            .getSwitchportTrunkEncapsulation());
+      String incomingFilterName = iface.getIncomingFilter();
+      if (incomingFilterName != null) {
+         IpAccessList incomingFilter = ipAccessLists.get(incomingFilterName);
+         if (incomingFilter == null) {
+            _conversionWarnings.add("Interface: '" + iface.getName()
+                  + "' configured with non-existent incoming acl '"
+                  + incomingFilterName + "'");
+         }
+         newIface.setIncomingFilter(incomingFilter);
+      }
+      String outgoingFilterName = iface.getOutgoingFilter();
+      if (outgoingFilterName != null) {
+         IpAccessList outgoingFilter = ipAccessLists.get(outgoingFilterName);
+         if (outgoingFilter == null) {
+            _conversionWarnings.add("Interface: '" + iface.getName()
+                  + "' configured with non-existent outgoing acl '"
+                  + outgoingFilterName + "'");
+         }
+         newIface.setOutgoingFilter(outgoingFilter);
+      }
+      return newIface;
+   }
+
    @Override
    public batfish.representation.Configuration toVendorIndependentConfiguration() {
       final Configuration c = new Configuration(_hostname);
@@ -797,15 +807,14 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
 
       // convert bgp process
       for (BGPProcess b : _bgpProcesses) {
-         batfish.representation.BgpProcess newBGP = toBgpProcess(c, b,
-               _asNum);
+         batfish.representation.BgpProcess newBGP = toBgpProcess(c, b, _asNum);
          c.setBgpProcess(newBGP);
       }
 
       // convert interfaces
       for (Interface iface : _interfaces) {
-         batfish.representation.Interface newInterface = toInterface(
-               iface, _asNum, c.getIpAccessLists());
+         batfish.representation.Interface newInterface = toInterface(iface,
+               _asNum, c.getIpAccessLists());
          c.getInterfaces().put(newInterface.getName(), newInterface);
       }
 

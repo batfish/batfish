@@ -1,8 +1,12 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
+
 import batfish.representation.Ip;
 
-public class OspfNetwork implements Comparable<OspfNetwork> {
+public class OspfNetwork implements Comparable<OspfNetwork>, Serializable {
+
+   private static final long serialVersionUID = 1L;
 
    private long _area;
    private int _hashCode;

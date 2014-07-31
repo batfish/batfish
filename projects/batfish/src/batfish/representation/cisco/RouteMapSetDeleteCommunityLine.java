@@ -7,6 +7,8 @@ import batfish.representation.PolicyMapSetLine;
 
 public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
 
+   private static final long serialVersionUID = 1L;
+
    private String _listName;
 
    public RouteMapSetDeleteCommunityLine(String listName) {

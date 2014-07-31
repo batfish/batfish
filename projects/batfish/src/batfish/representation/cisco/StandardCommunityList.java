@@ -1,13 +1,16 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import batfish.grammar.cisco.CiscoGrammar.Ip_community_list_standard_stanzaContext;
 
-public class StandardCommunityList {
+public class StandardCommunityList implements Serializable {
 
-   private Ip_community_list_standard_stanzaContext _context;
+   private static final long serialVersionUID = 1L;
+
+   private transient Ip_community_list_standard_stanzaContext _context;
    private List<StandardCommunityListLine> _lines;
    private String _name;
 
@@ -35,7 +38,7 @@ public class StandardCommunityList {
    public void setContext(Ip_community_list_standard_stanzaContext ctx) {
       _context = ctx;
    }
-   
+
    public ExpandedCommunityList toExpandedCommunityList() {
       ExpandedCommunityList newList = new ExpandedCommunityList(_name);
       for (StandardCommunityListLine line : _lines) {
@@ -51,5 +54,5 @@ public class StandardCommunityList {
       }
       return newList;
    }
-   
+
 }

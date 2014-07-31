@@ -100,11 +100,14 @@ After running step 9 above on the example test rig, as:
    batfish_analyze <batfish-root>/test_rigs/example example
 you should see the following output in the current folder:
 
+example-dp (directory)
 example-dump (directory)
 example-flows
+example-indep (directory)
 example-query (directory)
 example-reach.smt2
 example-routes
+example-vendor (directory)
 
 Much of the output is in the form of elements of LogicBlox predicates. To see the schema and comments for the LogicBlox predicates, run:
    batfish -predhelp <predicate-name..>
@@ -113,12 +116,21 @@ To see help for ALL predicates, including IDB (derived) predicates, use the '-pr
 Individual predicates for a processed test rig can be dumped to stdout by running:
    batfish -testrig </path/to/testrig> -query -predicates <predicate> [more_predicates..]
 
+ex-vendor:
+This folder contains parsed versions of the vendor configuration files, serialized into an XML-like format.
+
+ex-indep:
+This folder contains vendor-independent representations of the configurations, created by processing the vendor configuration structures. The former are also serialized into an XML-like format.
+
 example-dump:
 This folder contains files named for LogicBlox EDB (input) predicates. Note that the files in the 'example-dump' folder are in raw CSV format (with '|' as a delimiter), and may not be very legible, even with the schema.
 
 example-routes:
 This file contains dumps of the routing tables for a processed testrig, retrieved using:
    batfish -testrig </path/to/testrig> -query -predicates InstalledRoute
+
+example-dp:
+This folder contains information needed to represent the data plane. Specifically, it contains the FIBs (Forwarding Information Bases) and topology edges. This information is enough to represent the data plane when used in conjunction with the static information contained in the vendor-independent configuration structures.
 
 example-reach.smt2:
 This file contains the data plane (reachability relations) of a processed test-rig in the z3 smt-solver's 'smt2' format.
