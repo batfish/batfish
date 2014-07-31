@@ -4,6 +4,8 @@ import java.util.Set;
 
 public class RouteMapMatchAsPathAccessListLine extends RouteMapMatchLine {
 
+   private static final long serialVersionUID = 1L;
+
    private Set<String> _listNames;
 
    public RouteMapMatchAsPathAccessListLine(Set<String> names) {

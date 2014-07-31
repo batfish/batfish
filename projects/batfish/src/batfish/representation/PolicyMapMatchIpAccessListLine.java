@@ -6,6 +6,8 @@ import batfish.util.Util;
 
 public class PolicyMapMatchIpAccessListLine extends PolicyMapMatchLine {
 
+   private static final long serialVersionUID = 1L;
+
    private Set<IpAccessList> _lists;
 
    public PolicyMapMatchIpAccessListLine(Set<IpAccessList> lists) {
@@ -35,55 +37,49 @@ public class PolicyMapMatchIpAccessListLine extends PolicyMapMatchLine {
    public PolicyMapMatchType getType() {
       return PolicyMapMatchType.IP_ACCESS_LIST;
    }
-   
+
    @Override
    public boolean sameParseTree(PolicyMapMatchLine line, String prefix) {
-      boolean res = (line.getType() == PolicyMapMatchType.IP_ACCESS_LIST);  
+      boolean res = (line.getType() == PolicyMapMatchType.IP_ACCESS_LIST);
       boolean finalRes = res;
-      
-      if(res == false){
-         System.out.println("PoliMapMatchIpACLLine:Type "+prefix);
+
+      if (res == false) {
+         System.out.println("PoliMapMatchIpACLLine:Type " + prefix);
          finalRes = res;
       }
-      
+
       PolicyMapMatchIpAccessListLine ipLine = (PolicyMapMatchIpAccessListLine) line;
-      
+
       if (_lists.size() != ipLine._lists.size()) {
-         System.out.println("PoliMapMatchIpACLLine:Size "+prefix);
+         System.out.println("PoliMapMatchIpACLLine:Size " + prefix);
          return false;
       }
       else {
-         for (IpAccessList lhs : _lists){
+         for (IpAccessList lhs : _lists) {
             boolean found = false;
-            for(IpAccessList rhs : ipLine._lists){
-               if(lhs.sameParseTree(rhs, prefix, false)){
+            for (IpAccessList rhs : ipLine._lists) {
+               if (lhs.sameParseTree(rhs, prefix, false)) {
                   found = true;
                   break;
                }
             }
-            if(found == false){
-               System.out.println("PoliMapMatchIpACLLine "+prefix);
+            if (found == false) {
+               System.out.println("PoliMapMatchIpACLLine " + prefix);
                finalRes = res;
             }
          }
          /*
-         Object[] lhs = _lists.toArray();
-         Object[] rhs = ipLine._lists.toArray();
-         for (int i = 0; i < _lists.size(); i++) {
-            if((lhs[i] != null) && (rhs[i] != null)){
-               res = res && ((IpAccessList) lhs[i]).getName().equals(((IpAccessList) rhs[i]).getName());
-            }else{
-               res = res && lhs[i] == rhs[i];
-            }            
-            if(res == false){
-               System.out.print("PoliMapMatchIpACLLine ");
-               return res;
-            }
-         }
-         */
+          * Object[] lhs = _lists.toArray(); Object[] rhs =
+          * ipLine._lists.toArray(); for (int i = 0; i < _lists.size(); i++) {
+          * if((lhs[i] != null) && (rhs[i] != null)){ res = res &&
+          * ((IpAccessList) lhs[i]).getName().equals(((IpAccessList)
+          * rhs[i]).getName()); }else{ res = res && lhs[i] == rhs[i]; } if(res
+          * == false){ System.out.print("PoliMapMatchIpACLLine "); return res; }
+          * }
+          */
       }
-      
+
       return finalRes;
    }
-   
+
 }

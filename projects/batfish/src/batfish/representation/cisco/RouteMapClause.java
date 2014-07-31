@@ -1,14 +1,18 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import batfish.grammar.cisco.CiscoGrammar.Route_map_tailContext;
 import batfish.representation.LineAction;
 
-public class RouteMapClause {
+public class RouteMapClause implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    private LineAction _action;
-   private Route_map_tailContext _context;
+   private transient Route_map_tailContext _context;
    private boolean _ignore;
    private String _mapName;
    private List<RouteMapMatchLine> _matchList;
@@ -54,7 +58,7 @@ public class RouteMapClause {
    public int getSeqNum() {
       return _seqNum;
    }
-   
+
    public List<RouteMapSetLine> getSetList() {
       return _setList;
    }
@@ -62,7 +66,7 @@ public class RouteMapClause {
    public void setContext(Route_map_tailContext ctx) {
       _context = ctx;
    }
-   
+
    public void setIgnore(boolean b) {
       _ignore = b;
    }

@@ -1,8 +1,12 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
+
 import batfish.representation.Ip;
 
-public abstract class BgpPeerGroup {
+public abstract class BgpPeerGroup implements Serializable {
+
+   private static final long serialVersionUID = 1L;
    protected Ip _clusterId;
    protected Boolean _defaultOriginate;
    protected String _defaultOriginateMap;

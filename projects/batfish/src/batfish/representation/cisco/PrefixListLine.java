@@ -1,26 +1,31 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
+
 import batfish.representation.Ip;
 import batfish.representation.LineAction;
 import batfish.util.SubRange;
 
-public class PrefixListLine {
-   
+public class PrefixListLine implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    private LineAction _action;
-   
+
    private SubRange _lengthRange;
-   
+
    private Ip _prefix;
 
    private int _prefixLength;
 
-   public PrefixListLine(LineAction action, Ip prefix, int prefixLength, SubRange lengthRange) {
+   public PrefixListLine(LineAction action, Ip prefix, int prefixLength,
+         SubRange lengthRange) {
       _action = action;
       _prefix = prefix;
       _prefixLength = prefixLength;
       _lengthRange = lengthRange;
    }
-   
+
    public LineAction getAction() {
       return _action;
    }

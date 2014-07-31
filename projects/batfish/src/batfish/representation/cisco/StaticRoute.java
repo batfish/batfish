@@ -1,8 +1,13 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
+
 import batfish.representation.Ip;
 
-public class StaticRoute {
+public class StaticRoute implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    private int _distance;
    private Ip _mask;
    private String _nextHopInterface;

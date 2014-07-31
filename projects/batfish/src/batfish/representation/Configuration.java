@@ -10,6 +10,8 @@ import batfish.util.Util;
 
 public class Configuration extends NamedStructure {
 
+   private static final long serialVersionUID = 1L;
+
    private Set<GeneratedRoute> _aggregateRoutes;
    private Map<String, AsPathAccessList> _asPathAccessLists;
    private BgpProcess _bgpProcess;
@@ -68,6 +70,87 @@ public class Configuration extends NamedStructure {
       return _name;
    }
 
+   // returns a string that represents the intermediate format for this
+   // configuration object
+   public String getIFString(int indentLevel) {
+      String retString = Util.getIndentString(indentLevel) + "Configuration";
+
+      // vendor
+      retString += "\n" + Util.getIndentString(indentLevel + 1) + "Vendor "
+            + _vendor;
+
+      // IpAccessLists
+      // ARICHECK: Ok to not print the key of this map?
+      for (Map.Entry<String, IpAccessList> entry : _ipAccessLists.entrySet()) {
+         retString += "\n" + entry.getValue().getIFString(indentLevel + 1);
+      }
+
+      // CommunityLists
+      // ARICHECK: Ok to not print the key of this map?
+      for (Map.Entry<String, CommunityList> entry : _communityLists.entrySet()) {
+         retString += "\n" + entry.getValue().getIFString(indentLevel + 1);
+      }
+
+      // PolicyMaps
+      // ARICHECK: Ok to not print the key of this map?
+      for (Map.Entry<String, PolicyMap> entry : _policyMaps.entrySet()) {
+         retString += "\n" + entry.getValue().getIFString(indentLevel + 1);
+      }
+
+      // RouteFilterListsLists
+      // ARICHECK: Ok to not print the key of this map?
+      for (Map.Entry<String, RouteFilterList> entry : _routeFilterLists
+            .entrySet()) {
+         retString += "\n" + entry.getValue().getIFString(indentLevel + 1);
+      }
+
+      // interfaces
+      // ARICHECK: Ok to not print the key of this map?
+      for (Map.Entry<String, Interface> entry : _interfaces.entrySet()) {
+         retString += "\n" + entry.getValue().getIFString(indentLevel + 1);
+      }
+
+      if (_communities.size() > 0) {
+         retString += "\n" + Util.getIndentString(indentLevel + 1)
+               + "Communities";
+         for (Long community : _communities) {
+            retString += " " + community;
+         }
+      }
+
+      // static routes
+      for (StaticRoute sr : _staticRoutes) {
+         retString += "\n" + sr.getIFString(indentLevel + 1);
+      }
+
+      // connected routes
+      for (ConnectedRoute cr : _connectedRoutes) {
+         retString += "\n" + cr.getIFString(indentLevel + 1);
+      }
+
+      // generated routes
+      for (GeneratedRoute gr : _aggregateRoutes) {
+         retString += "\n" + gr.getIFString(indentLevel + 1);
+      }
+
+      // as path access lists
+      for (AsPathAccessList apal : _asPathAccessLists.values()) {
+         retString += "\n" + apal.getIFString(indentLevel + 1);
+      }
+
+      // ospf process
+      if (_ospfProcess != null) {
+         retString += "\n" + _ospfProcess.getIFString(indentLevel + 1);
+      }
+
+      // bgp process
+      if (_bgpProcess != null) {
+         retString += "\n" + _bgpProcess.getIFString(indentLevel + 1);
+      }
+
+      return retString;
+   }
+
    public Map<String, Interface> getInterfaces() {
       return _interfaces;
    }
@@ -94,97 +177,6 @@ public class Configuration extends NamedStructure {
 
    public String getVendor() {
       return _vendor;
-   }
-
-   public void setBgpProcess(BgpProcess process) {
-      _bgpProcess = process;
-   }
-
-   public void setOspfProcess(OspfProcess process) {
-      _ospfProcess = process;
-   }
-
-   public void setVendor(String vendor) {
-      _vendor = vendor;
-   }
-   
-   
-   //returns a string that represents the intermediate format for this configuration object
-   public String getIFString(int indentLevel)
-   {
-	   String retString = Util.getIndentString(indentLevel) + "Configuration";
-
-	   //vendor
-	   retString += "\n" + Util.getIndentString(indentLevel+1) + "Vendor " + _vendor;
-
-	   //IpAccessLists
-	   //ARICHECK: Ok to not print the key of this map?
-	   for (Map.Entry<String, IpAccessList> entry : _ipAccessLists.entrySet()) {
-		   retString += "\n" + entry.getValue().getIFString(indentLevel + 1);   
-	   }				   		   
-
-	   //CommunityLists
-	   //ARICHECK: Ok to not print the key of this map?
-	   for (Map.Entry<String, CommunityList> entry : _communityLists.entrySet()) {
-		   retString += "\n" + entry.getValue().getIFString(indentLevel + 1);   
-	   }				   		   
-
-	   //PolicyMaps
-	   //ARICHECK: Ok to not print the key of this map?
-	   for (Map.Entry<String, PolicyMap> entry : _policyMaps.entrySet()) {
-		   retString += "\n" + entry.getValue().getIFString(indentLevel + 1);   
-	   }				   		   
-
-	   //RouteFilterListsLists
-	   //ARICHECK: Ok to not print the key of this map?
-	   for (Map.Entry<String, RouteFilterList> entry : _routeFilterLists.entrySet()) {
-		   retString += "\n" + entry.getValue().getIFString(indentLevel + 1);   
-	   }				   		   
-
-	   //interfaces
-	   //ARICHECK: Ok to not print the key of this map?
-	   for (Map.Entry<String, Interface> entry : _interfaces.entrySet()) {
-		   retString += "\n" + entry.getValue().getIFString(indentLevel + 1);   
-	   }				   		   
-
-	   if (_communities.size() > 0) {
-		   retString += "\n" + Util.getIndentString(indentLevel+1) + "Communities";
-		   for (Long community : _communities) {
-			   retString += " " + community;
-		   }	   
-	   }
-	   
-	   //static routes
-	   for (StaticRoute sr : _staticRoutes) {
-		   retString += "\n" + sr.getIFString(indentLevel + 1);
-	   }
-
-	   //connected routes
-	   for (ConnectedRoute cr : _connectedRoutes) {
-		   retString += "\n" + cr.getIFString(indentLevel + 1);
-	   }
-
-	   //generated routes
-	   for (GeneratedRoute gr : _aggregateRoutes) {
-		   retString += "\n" + gr.getIFString(indentLevel + 1);
-	   }
-
-	   //as path access lists
-	   for ( AsPathAccessList apal : _asPathAccessLists.values()) {
-		   retString  += "\n" + apal.getIFString(indentLevel + 1);
-	   }
-
-	   //ospf process
-	   if (_ospfProcess != null) {
-		   retString += "\n" + _ospfProcess.getIFString(indentLevel + 1);
-	   }
-
-	   //bgp process
-	   if (_bgpProcess != null) {
-		   retString += "\n" + _bgpProcess.getIFString(indentLevel + 1);
-	   }
-
-	   return retString;
    }
 
    public boolean sameParseTree(Configuration c, String prefix) {
@@ -400,6 +392,18 @@ public class Configuration extends NamedStructure {
       }
 
       return finalRes;
+   }
+
+   public void setBgpProcess(BgpProcess process) {
+      _bgpProcess = process;
+   }
+
+   public void setOspfProcess(OspfProcess process) {
+      _ospfProcess = process;
+   }
+
+   public void setVendor(String vendor) {
+      _vendor = vendor;
    }
 
 }

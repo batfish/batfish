@@ -6,6 +6,8 @@ import batfish.util.Util;
 
 public class GeneratedRoute extends Route {
 
+   private static final long serialVersionUID = 1L;
+
    private int _administrativeCost;
    private AsPath _asPath;
    private Set<PolicyMap> _generationPolicies;
@@ -36,33 +38,27 @@ public class GeneratedRoute extends Route {
       return _generationPolicies;
    }
 
+   public String getIFString(int indentLevel) {
+
+      String retString = "";
+
+      retString += String.format("%s GR \n", Util.getIndentString(indentLevel));
+      retString += String.format("%s AdminCost %d",
+            Util.getIndentString(indentLevel + 1), _administrativeCost);
+      // TODO: check why we even have _asPath
+      // retString += _asPath.getIFString(Util.getIndentString(indentLevel +
+      // 1));
+
+      for (PolicyMap pm : _generationPolicies) {
+         retString += pm.getIFString(indentLevel + 1);
+      }
+
+      return retString;
+   }
+
    @Override
    public RouteType getRouteType() {
       return RouteType.AGGREGATE;
-   }
-
-   public void setAdministrativePreference(int preference) {
-      _administrativeCost = preference;
-   }
-
-   public void setAsPath(AsPath asPath) {
-      _asPath = asPath;
-   }
-
-   public String getIFString(int indentLevel) {
-
-	   String retString = "";
-
-	   retString += String.format("%s GR \n", Util.getIndentString(indentLevel));
-	   retString += String.format("%s AdminCost %d", Util.getIndentString(indentLevel + 1), _administrativeCost);
-	   // TODO: check why we even have _asPath
-	   //       retString += _asPath.getIFString(Util.getIndentString(indentLevel + 1));
-
-	   for (PolicyMap pm : _generationPolicies) {
-		   retString += pm.getIFString(indentLevel + 1);
-	   }
-	   
-	   return retString;
    }
 
    public boolean sameParseTree(GeneratedRoute gr, String prefix) {
@@ -94,7 +90,8 @@ public class GeneratedRoute extends Route {
             boolean found = false;
             for (PolicyMap rhs : gr._generationPolicies) {
                if (lhs.getMapName().equals(rhs.getMapName())) {
-                  res = lhs.sameParseTree(rhs, "GenRoute:GenPolicyMap "+prefix);
+                  res = lhs.sameParseTree(rhs, "GenRoute:GenPolicyMap "
+                        + prefix);
                   if (res == false) {
                      finalRes = false;
                   }
@@ -103,12 +100,20 @@ public class GeneratedRoute extends Route {
                }
             }
             if (found == false) {
-               System.out.println("GenRoute:GenPolicyMap:NotFound "+prefix);
+               System.out.println("GenRoute:GenPolicyMap:NotFound " + prefix);
                finalRes = false;
             }
          }
       }
       return finalRes;
+   }
+
+   public void setAdministrativePreference(int preference) {
+      _administrativeCost = preference;
+   }
+
+   public void setAsPath(AsPath asPath) {
+      _asPath = asPath;
    }
 
 }

@@ -1,12 +1,16 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import batfish.grammar.cisco.CiscoGrammar.Extended_access_list_stanzaContext;
 
-public class ExtendedAccessList {
-   private Extended_access_list_stanzaContext _context;
+public class ExtendedAccessList implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
+   private transient Extended_access_list_stanzaContext _context;
    private String _id;
    private List<ExtendedAccessListLine> _lines;
 
@@ -36,7 +40,7 @@ public class ExtendedAccessList {
    public void setContext(Extended_access_list_stanzaContext ctx) {
       _context = ctx;
    }
-   
+
    @Override
    public String toString() {
       String output = super.toString() + "\n" + "Identifier: " + _id;

@@ -11,6 +11,8 @@ import batfish.representation.PolicyMapSetNextHopLine;
 
 public class RouteMapSetNextHopLine extends RouteMapSetLine {
 
+   private static final long serialVersionUID = 1L;
+
    private Set<Ip> _nextHops;
 
    public RouteMapSetNextHopLine(Set<Ip> nextHops) {
@@ -28,5 +30,5 @@ public class RouteMapSetNextHopLine extends RouteMapSetLine {
       nextHopList.addAll(_nextHops);
       return new PolicyMapSetNextHopLine(nextHopList);
    }
-   
+
 }

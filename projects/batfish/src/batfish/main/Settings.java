@@ -1,6 +1,5 @@
 package batfish.main;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -20,8 +19,10 @@ public class Settings {
    private static final String ARG_CB_PORT = "lbport";
    private static final String ARG_COMPILE = "compile";
    private static final String ARG_COUNT = "count";
+   private static final String ARG_DATA_PLANE = "dp";
+   private static final String ARG_DATA_PLANE_DIR = "dpdir";
    private static final String ARG_DIFF = "diff";
-   private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "no-simplify";
+   private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
    private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
    private static final String ARG_DUMP_FACTS_DIR = "dumpdir";
    private static final String ARG_DUMP_IF = "dumpif";
@@ -32,7 +33,6 @@ public class Settings {
    private static final String ARG_FLOW_PATH = "flowpath";
    private static final String ARG_FLOW_SINK_PATH = "flowsink";
    private static final String ARG_FLOWS = "flow";
-   private static final String ARG_GUESS = "guess";
    private static final String ARG_GUI = "gui";
    private static final String ARG_HELP = "help";
    private static final String ARG_LOG_LEVEL = "log";
@@ -45,8 +45,11 @@ public class Settings {
    private static final String ARG_REDIRECT_STDERR = "redirect";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
+   private static final String ARG_SERIALIZE_INDEPENDENT = "si";
+   private static final String ARG_SERIALIZE_INDEPENDENT_PATH = "sipath";
+   private static final String ARG_SERIALIZE_VENDOR = "sv";
+   private static final String ARG_SERIALIZE_VENDOR_PATH = "svpath";
    private static final String ARG_SSH_PORT = "sshport";
-   private static final String ARG_TEST_RIG_NAME = "testrigname";
    private static final String ARG_TEST_RIG_PATH = "testrig";
    private static final String ARG_UPDATE = "update";
    private static final String ARG_WORKSPACE = "workspace";
@@ -56,12 +59,15 @@ public class Settings {
    private static final String ARG_Z3_CONCRETIZER_OUTPUT_FILE = "concout";
    private static final String ARG_Z3_OUTPUT = "z3out";
    private static final String ARGNAME_ANONYMIZE = "path";
+   private static final String ARGNAME_DATA_PLANE_DIR = "path";
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
    private static final String ARGNAME_DUMP_IF_DIR = "path";
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
    private static final String ARGNAME_LOGICDIR = "path";
    private static final String ARGNAME_REVERT = "branch-name";
+   private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
+   private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
    private static final String ARGNAME_SSH_PORT = "port";
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILE = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
@@ -69,6 +75,7 @@ public class Settings {
    public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "55181";
    public static final String DEFAULT_CONNECTBLOX_HOST = "localhost";
    public static final String DEFAULT_CONNECTBLOX_REGULAR_PORT = "55179";
+   private static final String DEFAULT_DATA_PLANE_DIR = "dp";
    private static final String DEFAULT_DUMP_FACTS_DIR = "facts";
    private static final String DEFAULT_DUMP_IF_DIR = "if";
    private static final String DEFAULT_FLOW_PATH = "flows";
@@ -76,9 +83,9 @@ public class Settings {
    private static final String DEFAULT_LOG_LEVEL = "2";
    private static final List<String> DEFAULT_PREDICATES = Collections
          .singletonList("InstalledRoute");
+   private static final String DEFAULT_SERIALIZE_INDEPENDENT_PATH = "serialized-independent-configs";
+   private static final String DEFAULT_SERIALIZE_VENDOR_PATH = "serialized-vendor-configs";
    private static final String DEFAULT_TEST_RIG_PATH = "default_test_rig";
-   private static final String DEFAULT_WORKSPACE_NAME = "Batfish-"
-         + System.getProperty("user.name");
    private static final String DEFAULT_Z3_CONCRETIZER_INPUT_FILE = "z3-concretizer-input.smt2";
    private static final String DEFAULT_Z3_CONCRETIZER_OUTPUT_FILE = "z3-concretizer-output.smt2";
    private static final String DEFAULT_Z3_OUTPUT = "z3-dataplane-output.smt2";
@@ -95,6 +102,8 @@ public class Settings {
    private String _concretizerInputFilePath;
    private String _concretizerOutputFilePath;
    private boolean _counts;
+   private boolean _dataPlane;
+   private String _dataPlaneDir;
    private boolean _diff;
    private boolean _dumpControlPlaneFacts;
    private String _dumpFactsDir;
@@ -106,7 +115,6 @@ public class Settings {
    private String _flowPath;
    private boolean _flows;
    private String _flowSinkPath;
-   private boolean _guessTopology;
    private List<String> _helpPredicates;
    private String _hsaInputDir;
    private String _hsaOutputDir;
@@ -123,6 +131,10 @@ public class Settings {
    private boolean _revert;
    private String _revertBranchName;
    private String _secondTestRigPath;
+   private boolean _serializeIndependent;
+   private String _serializeIndependentPath;
+   private boolean _serializeVendor;
+   private String _serializeVendorPath;
    private boolean _simplify;
    private Integer _sshPort;
    private String _testRigPath;
@@ -189,6 +201,14 @@ public class Settings {
       return _counts;
    }
 
+   public boolean getDataPlane() {
+      return _dataPlane;
+   }
+
+   public String getDataPlaneDir() {
+      return _dataPlaneDir;
+   }
+
    public boolean getDiff() {
       return _diff;
    }
@@ -227,10 +247,6 @@ public class Settings {
 
    public String getFlowSinkPath() {
       return _flowSinkPath;
-   }
-
-   public boolean getGuessTopology() {
-      return _guessTopology;
    }
 
    public List<String> getHelpPredicates() {
@@ -281,6 +297,22 @@ public class Settings {
       return _secondTestRigPath;
    }
 
+   public boolean getSerializeIndependent() {
+      return _serializeIndependent;
+   }
+
+   public String getSerializeIndependentPath() {
+      return _serializeIndependentPath;
+   }
+
+   public boolean getSerializeVendor() {
+      return _serializeVendor;
+   }
+
+   public String getSerializeVendorPath() {
+      return _serializeVendorPath;
+   }
+
    public boolean getSimplify() {
       return _simplify;
    }
@@ -299,10 +331,6 @@ public class Settings {
 
    public String getWorkspaceName() {
       return _workspaceName;
-   }
-
-   public String getWorkspacePrefix() {
-      return DEFAULT_WORKSPACE_NAME + "-testrig-";
    }
 
    public boolean getZ3() {
@@ -331,7 +359,7 @@ public class Settings {
                         + DEFAULT_TEST_RIG_PATH + "\")")
             .create(ARG_TEST_RIG_PATH));
       _options.addOption(OptionBuilder.withArgName("name").hasArg()
-            .withDescription("**DEPRECATED** name of LogicBlox workspace")
+            .withDescription("name of LogicBlox workspace")
             .create(ARG_WORKSPACE));
       _options.addOption(OptionBuilder
             .withArgName("hostname")
@@ -380,20 +408,8 @@ public class Settings {
       _options
             .addOption(OptionBuilder
                   .withDescription(
-                        "guess that all interface ips in same subnet are physically adjacent")
-                  .create(ARG_GUESS));
-      _options
-            .addOption(OptionBuilder
-                  .withDescription(
                         "exit on first parse error (otherwise will exit on last parse error)")
                   .create(ARG_EXIT_ON_PARSE_ERROR));
-      _options
-            .addOption(OptionBuilder
-                  .withArgName("name")
-                  .hasArg()
-                  .withDescription(
-                        "use specified test rig name (otherwise use tail of testrig path)")
-                  .create(ARG_TEST_RIG_NAME));
       _options.addOption(OptionBuilder.withDescription(
             "generate z3 data plane logic").create(ARG_Z3));
       _options.addOption(OptionBuilder.withArgName(ARGNAME_Z3_OUTPUT).hasArg()
@@ -457,10 +473,35 @@ public class Settings {
             .create(ARG_SSH_PORT));
       _options.addOption(OptionBuilder.withDescription(
             "disable z3 simplification").create(ARG_DISABLE_Z3_SIMPLIFICATION));
+      _options.addOption(OptionBuilder.withDescription(
+            "serialize vendor configs").create(ARG_SERIALIZE_VENDOR));
+      _options.addOption(OptionBuilder.hasArg()
+            .withArgName(ARGNAME_SERIALIZE_VENDOR_PATH)
+            .withDescription("path to read or write serialized vendor configs")
+            .create(ARG_SERIALIZE_VENDOR_PATH));
+      _options.addOption(OptionBuilder.withDescription(
+            "serialize vendor-independent configs").create(
+            ARG_SERIALIZE_INDEPENDENT));
+      _options
+            .addOption(OptionBuilder
+                  .hasArg()
+                  .withArgName(ARGNAME_SERIALIZE_INDEPENDENT_PATH)
+                  .withDescription(
+                        "path to read or write serialized vendor-independent configs")
+                  .create(ARG_SERIALIZE_INDEPENDENT_PATH));
+      _options.addOption(OptionBuilder.withDescription(
+            "compute and serialize data plane (requires logicblox)").create(
+            ARG_DATA_PLANE));
+      _options
+            .addOption(OptionBuilder
+                  .hasArg()
+                  .withArgName(ARGNAME_DATA_PLANE_DIR)
+                  .withDescription(
+                        "path to read or write serialized data plane")
+                  .create(ARG_DATA_PLANE_DIR));
    }
 
    private void parseCommandLine(String[] args) {
-      _workspaceName = DEFAULT_WORKSPACE_NAME;
       _canExecute = true;
       _printSemantics = false;
       CommandLine line = null;
@@ -485,7 +526,6 @@ public class Settings {
       _counts = line.hasOption(ARG_COUNT);
       _queryAll = line.hasOption(ARG_QUERY_ALL);
       _query = line.hasOption(ARG_QUERY);
-      _guessTopology = line.hasOption(ARG_GUESS);
       if (line.hasOption(ARG_PREDHELP)) {
          _printSemantics = true;
          String[] optionValues = line.getOptionValues(ARG_PREDHELP);
@@ -497,18 +537,10 @@ public class Settings {
       _cbPort = Integer.parseInt(line.getOptionValue(ARG_CB_PORT,
             DEFAULT_CONNECTBLOX_REGULAR_PORT));
 
-      // set test rig AND corresponding workspace name
       _testRigPath = line.getOptionValue(ARG_TEST_RIG_PATH,
             DEFAULT_TEST_RIG_PATH);
-      String testRigName = line.getOptionValue(ARG_TEST_RIG_NAME, new File(
-            _testRigPath).getName());
-      _workspaceName = getWorkspacePrefix() + testRigName;
 
-      // **DEPRECATED** set workspace name explicitly if workspace argument
-      // given
-      if (line.hasOption(ARG_WORKSPACE)) {
-         _workspaceName = line.getOptionValue(ARG_WORKSPACE);
-      }
+      _workspaceName = line.getOptionValue(ARG_WORKSPACE, null);
       _logLevel = Integer.parseInt(line.getOptionValue(ARG_LOG_LEVEL,
             DEFAULT_LOG_LEVEL));
       if (line.hasOption(ARG_PREDICATES)) {
@@ -567,7 +599,15 @@ public class Settings {
       _simplify = DEFAULT_Z3_SIMPLIFY;
       if (line.hasOption(ARG_DISABLE_Z3_SIMPLIFICATION)) {
          _simplify = false;
-      };
+      }
+      _serializeVendor = line.hasOption(ARG_SERIALIZE_VENDOR);
+      _serializeVendorPath = line.getOptionValue(ARG_SERIALIZE_VENDOR_PATH,
+            DEFAULT_SERIALIZE_VENDOR_PATH);
+      _serializeIndependent = line.hasOption(ARG_SERIALIZE_INDEPENDENT);
+      _serializeIndependentPath = line.getOptionValue(
+            ARG_SERIALIZE_INDEPENDENT_PATH, DEFAULT_SERIALIZE_INDEPENDENT_PATH);
+      _dataPlane = line.hasOption(ARG_DATA_PLANE);
+      _dataPlaneDir = line.getOptionValue(ARG_DATA_PLANE_DIR, DEFAULT_DATA_PLANE_DIR);
    }
 
    public boolean redirectStdErr() {

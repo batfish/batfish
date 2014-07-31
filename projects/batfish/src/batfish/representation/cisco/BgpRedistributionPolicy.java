@@ -1,10 +1,15 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
+
 import batfish.representation.Protocol;
 
-public class BgpRedistributionPolicy extends RedistributionPolicy {
+public class BgpRedistributionPolicy extends RedistributionPolicy implements
+      Serializable {
 
    public static final String OSPF_PROCESS_NUMBER = "OSPF_PROCESS_NUMBER";
+
+   private static final long serialVersionUID = 1L;
 
    private String _map;
    private Integer _metric;

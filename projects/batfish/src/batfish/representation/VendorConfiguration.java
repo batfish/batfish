@@ -1,8 +1,15 @@
 package batfish.representation;
 
+import java.io.Serializable;
 import java.util.List;
 
-public interface VendorConfiguration {
+public interface VendorConfiguration extends Serializable {
+
    List<String> getConversionWarnings();
-   Configuration toVendorIndependentConfiguration() throws VendorConversionException;
+
+   String getHostname();
+
+   Configuration toVendorIndependentConfiguration()
+         throws VendorConversionException;
+
 }

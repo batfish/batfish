@@ -4,6 +4,8 @@ import java.util.List;
 
 public class RouteMapMatchProtocolLine extends RouteMapMatchLine {
 
+   private static final long serialVersionUID = 1L;
+
    private List<String> _protocol;
 
    public RouteMapMatchProtocolLine(List<String> protocol) {

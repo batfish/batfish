@@ -1,10 +1,14 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
+
 import batfish.representation.Configuration;
 import batfish.representation.PolicyMapSetLine;
 
-public abstract class RouteMapSetLine {
+public abstract class RouteMapSetLine implements Serializable {
 
-	public abstract PolicyMapSetLine toPolicyMapSetLine(Configuration c);
+   private static final long serialVersionUID = 1L;
+
+   public abstract PolicyMapSetLine toPolicyMapSetLine(Configuration c);
 
 }

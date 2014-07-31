@@ -6,6 +6,8 @@ import batfish.representation.PolicyMapSetLine;
 
 public class RouteMapSetCommunityNoneLine extends RouteMapSetLine {
 
+   private static final long serialVersionUID = 1L;
+
    @Override
    public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
       return new PolicyMapSetCommunityNoneLine();

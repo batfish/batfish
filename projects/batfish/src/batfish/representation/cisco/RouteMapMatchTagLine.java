@@ -4,6 +4,8 @@ import java.util.Set;
 
 public class RouteMapMatchTagLine extends RouteMapMatchLine {
 
+   private static final long serialVersionUID = 1L;
+
    private Set<Integer> _tags;
 
    public RouteMapMatchTagLine(Set<Integer> tags) {

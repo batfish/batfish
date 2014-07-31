@@ -4,6 +4,8 @@ import java.util.Set;
 
 public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
 
+   private static final long serialVersionUID = 1L;
+
    private Set<String> _listNames;
 
    public RouteMapMatchCommunityListLine(Set<String> names) {

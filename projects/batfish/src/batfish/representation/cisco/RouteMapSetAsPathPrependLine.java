@@ -8,6 +8,8 @@ import batfish.representation.PolicyMapSetLine;
 
 public class RouteMapSetAsPathPrependLine extends RouteMapSetLine {
 
+   private static final long serialVersionUID = 1L;
+
    private List<Integer> _asList;
 
    public RouteMapSetAsPathPrependLine(List<Integer> asList) {
