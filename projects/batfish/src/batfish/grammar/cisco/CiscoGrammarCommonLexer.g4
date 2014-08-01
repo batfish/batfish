@@ -3768,5 +3768,5 @@ M_DESCRIPTION_NEWLINE:
 '\n' -> popMode;
 
 M_DESCRIPTION_NON_NEWLINE:
-~'\n';
+~'\n'+;
 

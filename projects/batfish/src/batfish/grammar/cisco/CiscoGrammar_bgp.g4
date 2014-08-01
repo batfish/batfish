@@ -102,7 +102,7 @@ neighbor_activate_af_stanza
 
 neighbor_description_rb_stanza
 :
-   NEIGHBOR DESCRIPTION (text+=M_DESCRIPTION_NON_NEWLINE)* M_DESCRIPTION_NEWLINE
+   NEIGHBOR neighbor=~NEWLINE description_line
 ;
 
 neighbor_ebgp_multihop_rb_stanza
