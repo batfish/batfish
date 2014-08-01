@@ -102,6 +102,11 @@ neighbor_activate_af_stanza
 	) ACTIVATE NEWLINE
 ;
 
+neighbor_description_rb_stanza
+:
+   NEIGHBOR ( IP_ADDRESS | IPV6_ADDRESS ) DESCRIPTION (text+=M_DESCRIPTION_NON_NEWLINE)* M_DESCRIPTION_NEWLINE
+;
+
 neighbor_ebgp_multihop_rb_stanza
 :
 	NEIGHBOR
@@ -407,8 +412,7 @@ null_standalone_rb_stanza
 						| VARIABLE
 					)
 					(
-						DESCRIPTION
-						| FALL_OVER
+						FALL_OVER
 						| PASSWORD
 						| REMOVE_PRIVATE_AS
 						| SOFT_RECONFIGURATION
@@ -430,6 +434,7 @@ rb_stanza
 	| aggregate_address_rb_stanza
 	| cluster_id_bgp_rb_stanza
 	| default_metric_rb_stanza
+	| neighbor_description_rb_stanza
 	| neighbor_ebgp_multihop_rb_stanza
 	| neighbor_next_hop_self_rb_stanza
 	| neighbor_peer_group_creation_rb_stanza
