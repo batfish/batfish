@@ -130,6 +130,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else if (ctx.NETBIOS_SS() != null) {
          return 139;
       }
+      else if (ctx.NNTP() != null) {
+    	  return 119;    	  
+      }
       else if (ctx.NON500_ISAKMP() != null) {
          return 4500;
       }
@@ -200,7 +203,10 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       return ranges;
    }
    public static int getProtocolNumber(ProtocolContext ctx) {
-      if (ctx.DEC() != null) {
+	  if (ctx.AHP() != null) {
+		  return 51;
+	  }
+	  else if (ctx.DEC() != null) {
          return toInteger(ctx.DEC());
       }
       else if (ctx.ESP() != null) {
