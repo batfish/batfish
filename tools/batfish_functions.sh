@@ -43,7 +43,7 @@ batfish_analyze() {
    fi
    local TEST_RIG=$1
    local PREFIX=$2
-   local WORKSPACE=batfish-$USER-$3
+   local WORKSPACE=batfish-$USER-$2
    local OLD_PWD=$PWD
    local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
    local QUERY_PATH=$OLD_PWD/$PREFIX-query

@@ -13,12 +13,18 @@ FlowAccepted(flow, node) ->
    Flow(flow),
    Node(node).
 
+/// [FlowAllowedIn(flow, node, interface, filter)] =
+///   Flow [flow] was allowed into interface [interface] on node [node] by
+///   access-list [filter].
 FlowAllowedIn(flow, node, interface, filter) ->
    Flow(flow),
    Node(node),
    Interface(interface),
    IpAccessList(filter).
 
+/// [FlowAllowedOut(flow, node, interface, filter)] =
+///   Flow [flow] was allowed out of  interface [interface] on node [node] by
+///   access-list [filter].
 FlowAllowedOut(flow, node, interface, filter) ->
    Flow(flow),
    Node(node),
@@ -70,11 +76,15 @@ FlowDropped(flow, node) ->
 FlowInconsistent(flow) ->
    Flow(flow).
 
+/// [FlowLoop(flow, node, outInt)] =
+///   Flow [flow] loops when sent out interface [outInt] on node [node].
 FlowLoop(flow, node, outInt) ->
    Flow(flow),
    Node(node),
    Interface(outInt).
 
+/// [FlowLost(flow)] =
+///   Flow [flow] either dropped or looped somwhere (or both).
 FlowLost(flow) ->
    Flow(flow).
 
@@ -94,6 +104,10 @@ FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow ->
    int(protocol),
    Flow(flow).
 
+/// [FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt)] =
+///   Flow [flow] is successfully sent out interface [srcOutInt] on node
+///   [srcNode], and eventually successfully enters interface [dstInInt] on
+///   node [dstNode].
 FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt) ->
    Flow(flow),
    Node(srcNode),
@@ -101,6 +115,9 @@ FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt) ->
    Node(dstNode),
    Interface(dstInInt).
 
+/// [FlowReachPostIn[flow, node] =
+///   Flow [flow] successfully enters node [node], either by originating there
+///   or being received on some interface.
 FlowReachPostIn(flow, node) ->
    Flow(flow),
    Node(node).
@@ -129,6 +146,10 @@ FlowReachPreOutInterface(flow, node, interface) ->
    Node(node),
    Interface(interface).
 
+/// [FlowReachStep(flow, srcNode, srcOutInt, dstNode, dstInInt)] =
+///   Flow [flow] is successfully sent out interface [srcOutInt] on node
+///   [srcNode] and then successfully enters interface [dstInInt] on node
+///   [dstNode].
 FlowReachStep(flow, srcNode, srcOutInt, dstNode, dstInInt) ->
    Flow(flow),
    Node(srcNode),
@@ -136,6 +157,9 @@ FlowReachStep(flow, srcNode, srcOutInt, dstNode, dstInInt) ->
    Node(dstNode),
    Interface(dstInInt).
 
+/// [FlowUnknown(flow] =
+///   Flow [flow] was neither accepted nor lost anywhere, so its disposition is
+///   unkown.
 FlowUnknown(flow) ->
    Flow(flow).
 
