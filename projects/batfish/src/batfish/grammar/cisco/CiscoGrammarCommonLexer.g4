@@ -380,6 +380,11 @@ BOOTPS
 	'bootps'
 ;
 
+BOTH
+:
+	'both'
+;
+
 BRIDGE
 :
 	'bridge'
@@ -3133,6 +3138,11 @@ VPN
 VPNV4
 :
 	'vpnv4'
+;
+
+VPNV6
+:
+	'vpnv6'
 ;
 
 VPN_FILTER
