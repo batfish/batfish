@@ -104,7 +104,7 @@ neighbor_activate_af_stanza
 
 neighbor_description_rb_stanza
 :
-   NEIGHBOR ( IP_ADDRESS | IPV6_ADDRESS ) DESCRIPTION (text+=M_DESCRIPTION_NON_NEWLINE)* M_DESCRIPTION_NEWLINE
+   NEIGHBOR ( IP_ADDRESS | IPV6_ADDRESS | VARIABLE ) DESCRIPTION (text+=M_DESCRIPTION_NON_NEWLINE)* M_DESCRIPTION_NEWLINE
 ;
 
 neighbor_ebgp_multihop_rb_stanza
