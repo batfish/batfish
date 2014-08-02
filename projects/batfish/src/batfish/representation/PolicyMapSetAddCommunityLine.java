@@ -2,8 +2,6 @@ package batfish.representation;
 
 import java.util.List;
 
-import batfish.util.Util;
-
 public class PolicyMapSetAddCommunityLine extends PolicyMapSetLine {
 
    private static final long serialVersionUID = 1L;
@@ -16,17 +14,6 @@ public class PolicyMapSetAddCommunityLine extends PolicyMapSetLine {
 
    public List<Long> getCommunities() {
       return _communities;
-   }
-
-   @Override
-   public String getIFString(int indentLevel) {
-      String retString = Util.getIndentString(indentLevel) + "AddCommunity";
-
-      for (long comm : _communities) {
-         retString += " " + comm;
-      }
-
-      return retString;
    }
 
    @Override

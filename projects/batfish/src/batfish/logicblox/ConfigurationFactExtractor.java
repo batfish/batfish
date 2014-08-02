@@ -23,6 +23,7 @@ import batfish.representation.PolicyMapMatchLine;
 import batfish.representation.PolicyMapMatchNeighborLine;
 import batfish.representation.PolicyMapMatchProtocolLine;
 import batfish.representation.PolicyMapMatchRouteFilterListLine;
+import batfish.representation.PolicyMapMatchTagLine;
 import batfish.representation.PolicyMapSetAddCommunityLine;
 import batfish.representation.PolicyMapSetCommunityLine;
 import batfish.representation.PolicyMapSetDeleteCommunityLine;
@@ -504,6 +505,8 @@ public class ConfigurationFactExtractor {
             .get("SetPolicyMapClauseSetLocalPreference");
       StringBuilder wSetPolicyMapClauseSetMetric = _factBins
             .get("SetPolicyMapClauseSetMetric");
+      StringBuilder wSetPolicyMapClauseMatchTag = _factBins
+            .get("SetPolicyMapClauseMatchTag");
       String hostname = _configuration.getHostname();
       for (PolicyMap map : _configuration.getPolicyMaps().values()) {
          String mapName = hostname + ":" + map.getMapName();
@@ -569,6 +572,14 @@ public class ConfigurationFactExtractor {
                   }
                   break;
 
+               case TAG:
+                  PolicyMapMatchTagLine pmmtl = (PolicyMapMatchTagLine) matchLine;
+                  for (Integer tag : pmmtl.getTags()) {
+                     wSetPolicyMapClauseMatchTag.append(mapName + "|" + i + "|"
+                           + tag + "\n");
+                  }
+                  break;
+
                default:
                   throw new Error("invalid match type");
                }
@@ -624,7 +635,7 @@ public class ConfigurationFactExtractor {
                   // TODO: implement
                   // throw new Error("not implemented");
                   break;
-                  
+
                case AS_PATH_PREPEND:
                   // TODO: implement
                   // throw new Error("not implemented");

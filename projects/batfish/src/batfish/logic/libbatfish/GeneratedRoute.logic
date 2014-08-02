@@ -6,20 +6,31 @@ block(`GeneratedRoute) {
    export(`{
 // BEGIN CODE
 
-BestGeneratedRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) ->
-   Node(node),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),   
-   RoutingProtocol(protocol). 
+ActiveGeneratedRoute(route, contributingRoute) ->
+   Route(route),
+   Route(contributingRoute).
 
-GeneratedRoute(node, network, contributingNetwork, admin) ->
-   Node(node),
-   Network(network),
-   Network(contributingNetwork),
-   int(admin).
+BestGeneratedRoute(route) ->
+   Route(route). 
+
+GeneratedRoute(route) ->
+   Route(route).
+
+GeneratedRoutePolicy(route, policy) ->
+   Route(route),
+   PolicyMap(policy).
+
+MinAdminContributingRoute(route, contributingRoute) ->
+   Route(route),
+   Route(contributingRoute).
+
+MinContributingRouteAddress[route] = minAddress ->
+   Route(route),
+   int(minAddress).
+
+MinContributingRouteAdmin[route] = minAdmin ->
+   Route(route),
+   int(minAdmin).
 
 SetGeneratedRoute(node, network, admin) ->
    Node(node),

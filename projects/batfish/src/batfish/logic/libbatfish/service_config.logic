@@ -219,6 +219,11 @@ block(`service_config) {
          delim_file_binding[] = "SetPolicyMapClauseMatchRouteFilter"
       }.
 
+      service_by_prefix["/batfish/SetPolicyMapClauseMatchTag"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseMatchTag"
+      }.
+
       service_by_prefix["/batfish/SetPolicyMapClausePermit"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetPolicyMapClausePermit"

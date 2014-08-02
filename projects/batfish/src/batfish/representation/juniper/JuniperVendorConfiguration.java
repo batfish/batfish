@@ -730,7 +730,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       newIface.setArea(as);
       newIface.setBandwidth(iface.getBandwidth());
       // System.out.println("Ip: "+iface.getIP());
-      if (iface.getIP() != "") {
+      if (!iface.getIP().equals("")) {
          newIface.setIP(new Ip(iface.getIP()));
          newIface.setSubnetMask(new Ip(iface.getSubnetMask()));
       }

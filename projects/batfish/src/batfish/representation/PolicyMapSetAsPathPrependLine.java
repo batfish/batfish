@@ -2,8 +2,6 @@ package batfish.representation;
 
 import java.util.List;
 
-import batfish.util.Util;
-
 public class PolicyMapSetAsPathPrependLine extends PolicyMapSetLine {
 
    private static final long serialVersionUID = 1L;
@@ -12,15 +10,6 @@ public class PolicyMapSetAsPathPrependLine extends PolicyMapSetLine {
 
    public PolicyMapSetAsPathPrependLine(List<Integer> asList) {
       _asList = asList;
-   }
-
-   @Override
-   public String getIFString(int indentLevel) {
-      String retString = Util.getIndentString(indentLevel) + "AsPathPrepend";
-      for (int as : _asList) {
-         retString += " " + as;
-      }
-      return retString;
    }
 
    @Override

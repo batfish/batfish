@@ -11,4 +11,6 @@ public abstract class RouteMapSetLine implements Serializable {
 
    public abstract PolicyMapSetLine toPolicyMapSetLine(Configuration c);
 
+   public abstract RouteMapSetType getType();
+
 }

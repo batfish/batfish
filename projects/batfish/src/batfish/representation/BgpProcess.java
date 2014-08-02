@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
-import batfish.util.Util;
-
 public class BgpProcess implements Serializable {
 
    private static final long serialVersionUID = 1L;
@@ -22,21 +20,6 @@ public class BgpProcess implements Serializable {
 
    public Set<GeneratedRoute> getGeneratedRoutes() {
       return _generatedRoutes;
-   }
-
-   public String getIFString(int indentLevel) {
-      String retString = Util.getIndentString(indentLevel) + "BgpProcess";
-
-      // ARICHECK: ok to not print the key of this map?
-      for (Map.Entry<String, BgpNeighbor> entry : _bgpNeighbors.entrySet()) {
-         retString += "\n" + entry.getValue().getIFString(indentLevel + 1);
-      }
-
-      for (GeneratedRoute gr : _generatedRoutes) {
-         retString += "\n" + gr.getIFString(indentLevel + 1);
-      }
-
-      return retString;
    }
 
    public Map<String, BgpNeighbor> getNeighbors() {

@@ -1,7 +1,5 @@
 package batfish.representation;
 
-import batfish.util.Util;
-
 public class PolicyMapSetLocalPreferenceLine extends PolicyMapSetLine {
 
    private static final long serialVersionUID = 1L;
@@ -10,12 +8,6 @@ public class PolicyMapSetLocalPreferenceLine extends PolicyMapSetLine {
 
    public PolicyMapSetLocalPreferenceLine(int localPreference) {
       _localPreference = localPreference;
-   }
-
-   @Override
-   public String getIFString(int indentLevel) {
-      return Util.getIndentString(indentLevel) + "LocalPreference "
-            + _localPreference;
    }
 
    public int getLocalPreference() {

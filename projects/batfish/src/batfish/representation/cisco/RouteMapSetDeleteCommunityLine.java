@@ -24,4 +24,10 @@ public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
       CommunityList dcList = c.getCommunityLists().get(_listName);
       return new PolicyMapSetDeleteCommunityLine(dcList);
    }
+
+   @Override
+   public RouteMapSetType getType(){
+      return RouteMapSetType.DELETE_COMMUNITY;
+   }
+   
 }

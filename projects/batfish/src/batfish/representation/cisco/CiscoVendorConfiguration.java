@@ -30,6 +30,7 @@ import batfish.representation.PolicyMapMatchIpAccessListLine;
 import batfish.representation.PolicyMapMatchLine;
 import batfish.representation.PolicyMapMatchProtocolLine;
 import batfish.representation.PolicyMapMatchRouteFilterListLine;
+import batfish.representation.PolicyMapMatchTagLine;
 import batfish.representation.PolicyMapSetAddCommunityLine;
 import batfish.representation.PolicyMapSetCommunityLine;
 import batfish.representation.PolicyMapSetLine;
@@ -153,19 +154,41 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
 
       // create redistribution origination policies
       PolicyMap redistributeStaticPolicyMap = null;
-      if (proc.getRedistributionPolicies().containsKey(Protocol.STATIC)) {
-         redistributeStaticPolicyMap = makeRouteExportPolicy(c,
-               "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null, 0,
-               null, null, null, Protocol.STATIC, PolicyMapAction.PERMIT);
+      BgpRedistributionPolicy redistributeStaticPolicy = proc
+            .getRedistributionPolicies().get(Protocol.STATIC);
+      if (redistributeStaticPolicy != null) {
+         String mapName = redistributeStaticPolicy.getMap();
+         if (mapName != null) {
+            redistributeStaticPolicyMap = c.getPolicyMaps().get(mapName);
+         }
+         else {
+            redistributeStaticPolicyMap = makeRouteExportPolicy(c,
+                  "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null,
+                  0, null, null, null, Protocol.STATIC, PolicyMapAction.PERMIT);
+         }
       }
+
+      // // cause ip peer groups to inherit unset fields from owning named peer
+      // // group
+      // for (NamedBgpPeerGroup npg : proc.getNamedPeerGroups().values()) {
+      // for (Ip address : npg.getNeighborAddresses()) {
+      // IpBgpPeerGroup ipg = proc.getIpPeerGroups().get(address);
+      // ipg.inheritUnsetFields(npg);
+      // }
+      // }
 
       // cause ip peer groups to inherit unset fields from owning named peer
       // group
-      for (NamedBgpPeerGroup npg : proc.getNamedPeerGroups().values()) {
-         for (Ip address : npg.getNeighborAddresses()) {
-            IpBgpPeerGroup ipg = proc.getIpPeerGroups().get(address);
-            ipg.inheritUnsetFields(npg);
+      for (IpBgpPeerGroup ipg : proc.getIpPeerGroups().values()) {
+         NamedBgpPeerGroup parentPeerGroup;
+         String groupName = ipg.getGroupName();
+         if (groupName != null) {
+            parentPeerGroup = proc.getNamedPeerGroups().get(groupName);
          }
+         else {
+            parentPeerGroup = NamedBgpPeerGroup.DEFAULT_INSTANCE;
+         }
+         ipg.inheritUnsetFields(parentPeerGroup);
       }
 
       for (IpBgpPeerGroup pg : proc.getIpPeerGroups().values()) {
@@ -537,7 +560,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       OspfRedistributionPolicy rsp = proc.getRedistributionPolicies().get(
             Protocol.STATIC);
       if (rsp != null) {
-         Integer metric = rcp.getMetric();
+         Integer metric = rsp.getMetric();
          boolean explicitMetric = metric != null;
          boolean routeMapMetric = false;
          // add export map with metric
@@ -591,8 +614,12 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                                     new Ip("0.0.0.0"), 0, new SubRange(0, 0)));
                      }
                      break;
+                  // allowed match lines
                   case PROTOCOL:
+                  case TAG:
                      break;
+                  
+                  // disallowed match lines
                   case AS_PATH_ACCESS_LIST:
                   case COMMUNITY_LIST:
                   case IP_ACCESS_LIST:
@@ -726,17 +753,18 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          newLine = new PolicyMapMatchRouteFilterListLine(newRouteFilterMatchSet);
          break;
 
+      case TAG:
+         RouteMapMatchTagLine tagLine = (RouteMapMatchTagLine)matchLine;
+         newLine = new PolicyMapMatchTagLine(tagLine.getTags());
+         break;
+
       case NEIGHBOR:
          // TODO: implement
-         break;
+         //break;
 
       case PROTOCOL:
          // TODO: implement
-         break;
-
-      case TAG:
-         // TODO: implement
-         break;
+         //break;
 
       default:
          throw new Error("bad type");

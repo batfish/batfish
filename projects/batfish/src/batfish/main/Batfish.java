@@ -421,33 +421,6 @@ public class Batfish {
       printElapsedTime();
    }
 
-   private void dumpIF() {
-      Path ifDirPath = Paths.get(_settings.getDumpIFDir());
-      ;
-      try {
-         Files.createDirectories(ifDirPath);
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
-      }
-      Map<String, Configuration> configs = getConfigurations(_settings
-            .getSerializeVendorPath());
-      for (Configuration config : configs.values()) {
-         String hostname = config.getHostname();
-         String configIF = config.getIFString(0);
-         String ifFilename = hostname + ".if";
-         Path ifPath = ifDirPath.resolve(ifFilename);
-         try {
-            FileUtils.writeStringToFile(ifPath.toFile(), configIF);
-         }
-         catch (IOException e) {
-            e.printStackTrace();
-            quit(1);
-         }
-      }
-   }
-
    public void error(int logLevel, String text) {
       if (_settings.getLogLevel() >= logLevel) {
          System.err.print(text);
@@ -1308,11 +1281,6 @@ public class Batfish {
          String inputPath = _settings.getSerializeVendorPath();
          String outputPath = _settings.getSerializeIndependentPath();
          serializeIndependentConfigs(inputPath, outputPath);
-         quit(0);
-      }
-
-      if (_settings.getDumpIF()) {
-         dumpIF();
          quit(0);
       }
 

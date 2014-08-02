@@ -2,6 +2,7 @@ block(`PolicyMap_rules) {
    alias_all(`libbatfish:BgpAdvertisement),
    alias_all(`libbatfish:CommunityList),
    alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
    alias_all(`libbatfish:RouteFilter),
    clauses(`{
 // BEGIN CODE
@@ -13,11 +14,11 @@ need_RouteFilterPermitNetwork(list, network) <-
    SetPolicyMapClauseMatchRouteFilter(map, _, list).
 // policy maps for routes
 need_RouteFilterPermitNetwork(list, network) <-
-   need_PolicyMapClauseMatchRoute(map, clause, network, _, _, _, _, _),
-   SetPolicyMapClauseMatchRouteFilter(map, clause, list).
+   need_PolicyMapMatchRoute(map, route),
+   Route_network[route] = network,
+   SetPolicyMapClauseMatchRouteFilter(map, _, list).
 
-PolicyMapClauseMatchAdvert(map, clause, advert)
-<-
+PolicyMapClauseMatchAdvert(map, clause, advert) <-
    BgpAdvertisement_network[advert] =  dstIpBlock,
    need_PolicyMapClauseMatchAdvert(map, advert),
    PolicyMapHasClause(map, clause),
@@ -59,20 +60,33 @@ PolicyMapClauseMatchAdvert(map, clause, advert)
    ).
    //TODO: finish definition and replace underscores at top of rule
    
-PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) <-
+PolicyMapClauseMatchRoute(map, clause, route) <-
    //TODO: complete matching here
-   need_PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol),
+   need_PolicyMapMatchRoute(map, route),
+   PolicyMapHasClause(map, clause),
    // protocol
    (
-      !SetPolicyMapClauseMatchProtocol(map, clause, _);
-      SetPolicyMapClauseMatchProtocol(map, clause, protocol)
+      !SetPolicyMapClauseMatchProtocol(map, clause, _) ;
+      (
+         Route_protocol[route] = protocol,
+         SetPolicyMapClauseMatchProtocol(map, clause, protocol)
+      )
    ),
    // RouteFilter
    (
       !SetPolicyMapClauseMatchRouteFilter(map, clause, _);
       (
          SetPolicyMapClauseMatchRouteFilter(map, clause, filter),
+         Route_network[route] = network,
          RouteFilterPermitNetwork(filter, network)
+      )
+   ),
+   // tag
+   (
+      !SetPolicyMapClauseMatchTag(map, clause, _);
+      (
+         SetPolicyMapClauseMatchTag(map, clause, tag),
+         Route_tag[route] = tag
       )
    ).
 
@@ -108,21 +122,20 @@ PolicyMapFirstMatchAdvert[map, advert] = firstClause
    agg<<firstClause = min(clause)>>
       PolicyMapClauseMatchAdvert(map, clause, advert).
 
-PolicyMapFirstMatchRoute[map, network, nextHop, nextHopIp, admin, cost, protocol] = firstClause <-
+PolicyMapFirstMatchRoute[map, route] = firstClause <-
    agg<<firstClause = min(clause)>>
-      PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol).
+      PolicyMapClauseMatchRoute(map, clause, route).
 
 PolicyMapHasClause(map, clause) <-
    SetPolicyMapClauseDeny(map, clause);
    SetPolicyMapClausePermit(map, clause).
 
-PolicyMapPermitAdvert(map, clause, advert)
-<-
+PolicyMapPermitAdvert(map, clause, advert) <-
    PolicyMapFirstMatchAdvert[map, advert] = clause,
    SetPolicyMapClausePermit(map, clause).
 
-PolicyMapPermitRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) <-
-   PolicyMapFirstMatchRoute[map, network, nextHop, nextHopIp, admin, cost, protocol] = clause,
+PolicyMapPermitRoute(map, clause, route) <-
+   PolicyMapFirstMatchRoute[map, route] = clause,
    SetPolicyMapClausePermit(map, clause).
 
 lang:compiler:disableError:AGGREGATE_RECURSION[] = true.

@@ -21,4 +21,9 @@ public class RouteMapSetAsPathLine extends RouteMapSetLine {
       return null;
    }
 
+   @Override
+   public RouteMapSetType getType() {
+      return RouteMapSetType.AS_PATH;
+   }
+
 }

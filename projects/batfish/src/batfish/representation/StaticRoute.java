@@ -1,7 +1,5 @@
 package batfish.representation;
 
-import batfish.util.Util;
-
 public class StaticRoute extends Route {
 
    private static final long serialVersionUID = 1L;
@@ -37,14 +35,6 @@ public class StaticRoute extends Route {
 
    public int getDistance() {
       return _administrativeCost;
-   }
-
-   @Override
-   public String getIFString(int indentLevel) {
-      return Util.getIndentString(indentLevel)
-            + "StaticRoute "
-            + String.format("%s AdminCost %s NextHopIface %s",
-                  getRouteString(), _administrativeCost, _nextHopInterface);
    }
 
    public String getNextHopInterface() {

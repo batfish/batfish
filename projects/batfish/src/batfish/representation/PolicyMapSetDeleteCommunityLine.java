@@ -1,7 +1,5 @@
 package batfish.representation;
 
-import batfish.util.Util;
-
 public class PolicyMapSetDeleteCommunityLine extends PolicyMapSetLine {
 
    private static final long serialVersionUID = 1L;
@@ -10,14 +8,6 @@ public class PolicyMapSetDeleteCommunityLine extends PolicyMapSetLine {
 
    public PolicyMapSetDeleteCommunityLine(CommunityList list) {
       _list = list;
-   }
-
-   @Override
-   public String getIFString(int indentLevel) {
-      String retString = Util.getIndentString(indentLevel)
-            + "DeleteCommunity\n" + _list.getIFString(indentLevel + 1);
-
-      return retString;
    }
 
    public CommunityList getList() {

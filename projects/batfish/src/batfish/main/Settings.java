@@ -221,10 +221,6 @@ public class Settings {
       return _dumpFactsDir;
    }
 
-   public boolean getDumpIF() {
-      return _dumpIF;
-   }
-
    public String getDumpIFDir() {
       return _dumpIFDir;
    }

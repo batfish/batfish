@@ -2,8 +2,6 @@ package batfish.representation;
 
 import java.util.Set;
 
-import batfish.util.Util;
-
 public class PolicyMapMatchIpAccessListLine extends PolicyMapMatchLine {
 
    private static final long serialVersionUID = 1L;
@@ -15,18 +13,6 @@ public class PolicyMapMatchIpAccessListLine extends PolicyMapMatchLine {
       if (_lists.contains(null)) {
          throw new Error("null list");
       }
-   }
-
-   @Override
-   public String getIFString(int indentLevel) {
-
-      String retString = Util.getIndentString(indentLevel) + "IpAccessList";
-
-      for (IpAccessList ipal : _lists) {
-         retString += "\n" + ipal.getIFString(indentLevel + 1);
-      }
-
-      return retString;
    }
 
    public Set<IpAccessList> getLists() {

@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import batfish.util.Util;
-
 public class BgpNeighbor implements Serializable {
 
    private static final long serialVersionUID = 1L;
@@ -61,74 +59,6 @@ public class BgpNeighbor implements Serializable {
 
    public String getGroupName() {
       return _groupName;
-   }
-
-   public String getIFString(int indentLevel) {
-
-      String retString = Util.getIndentString(indentLevel) + "BgpNeighbor";
-
-      retString += String.format("\n%s%s %s",
-            Util.getIndentString(indentLevel + 1), "Ip", _address);
-      retString += String.format("\n%s%s %s",
-            Util.getIndentString(indentLevel + 1), "ClusterId", _clusterId);
-      retString += String.format("\n%s%s %s",
-            Util.getIndentString(indentLevel + 1), "DefaultMetric",
-            _defaultMetric);
-      retString += String.format("\n%s%s %s",
-            Util.getIndentString(indentLevel + 1), "GroupName", _groupName);
-      retString += String.format("\n%s%s %s",
-            Util.getIndentString(indentLevel + 1), "LocalAs", _localAs);
-      retString += String.format("\n%s%s %s",
-            Util.getIndentString(indentLevel + 1), "RemoteAs", _remoteAs);
-      retString += String.format("\n%s%s %s",
-            Util.getIndentString(indentLevel + 1), "SendCommunity",
-            _sendCommunity);
-      retString += String.format("\n%s%s %s",
-            Util.getIndentString(indentLevel + 1), "UpdateSource",
-            _updateSource);
-
-      // generated routes
-      for (GeneratedRoute gr : _generatedRoutes) {
-         retString += "\n" + gr.getIFString(indentLevel + 1);
-      }
-
-      // inbound policy maps
-      if (_inboundPolicyMaps.size() > 0) {
-         retString += "\n" + Util.getIndentString(indentLevel + 1)
-               + "InboundPolicyMaps";
-
-         for (PolicyMap pm : _inboundPolicyMaps) {
-            // ARICHECK: can the mapname have a space in it?
-            // are all policymap declared elsewhere?
-            retString += " " + pm.getMapName();
-         }
-      }
-
-      // outbound policy maps
-      if (_outboundPolicyMaps.size() > 0) {
-         retString += "\n" + Util.getIndentString(indentLevel + 1)
-               + "OutboundPolicyMaps";
-
-         for (PolicyMap pm : _outboundPolicyMaps) {
-            // ARICHECK: can the mapname have a space in it?
-            // are all policymap declared elsewhere?
-            retString += " " + pm.getMapName();
-         }
-      }
-
-      // origination policies
-      if (_originationPolicies.size() > 0) {
-         retString += "\n" + Util.getIndentString(indentLevel + 1)
-               + "OriginationPolicies";
-
-         for (PolicyMap pm : _originationPolicies) {
-            // ARICHECK: can the mapname have a space in it?
-            // are all policymap declared elsewhere?
-            retString += " " + pm.getMapName();
-         }
-      }
-
-      return retString;
    }
 
    public Set<PolicyMap> getInboundPolicyMaps() {

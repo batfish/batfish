@@ -2,8 +2,6 @@ package batfish.representation;
 
 import java.util.Set;
 
-import batfish.util.Util;
-
 public class PolicyMapMatchAsPathAccessListLine extends PolicyMapMatchLine {
 
    private static final long serialVersionUID = 1L;
@@ -12,17 +10,6 @@ public class PolicyMapMatchAsPathAccessListLine extends PolicyMapMatchLine {
 
    public PolicyMapMatchAsPathAccessListLine(Set<AsPathAccessList> lists) {
       _lists = lists;
-   }
-
-   @Override
-   public String getIFString(int indentLevel) {
-      String retString = Util.getIndentString(indentLevel) + "AsPathAccessList";
-
-      for (AsPathAccessList apal : _lists) {
-         retString += "\n" + apal.getIFString(indentLevel + 1);
-      }
-
-      return retString;
    }
 
    public Set<AsPathAccessList> getLists() {

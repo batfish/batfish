@@ -295,6 +295,13 @@ block(`service_files) {
          column_formats[] = "string,integer,string"
       }.
 
+      file_definition_by_name["SetPolicyMapClauseMatchTag"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,TAG",
+         column_formats[] = "string,integer,integer"
+      }.
+
       file_definition_by_name["SetPolicyMapClausePermit"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",

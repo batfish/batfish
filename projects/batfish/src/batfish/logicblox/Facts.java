@@ -53,6 +53,7 @@ public class Facts {
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchNeighbor", "MAP|CLAUSE|NEIGHBORIP");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchProtocol", "MAP|CLAUSE|PROTOCOL");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchRouteFilter", "MAP|CLAUSE|LIST");
+      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchTag", "MAP|CLAUSE|TAG");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClausePermit", "MAP|CLAUSE");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseSetCommunity", "MAP|CLAUSE|COMMUNITY");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseSetLocalPreference", "MAP|CLAUSE|LOCALPREF");

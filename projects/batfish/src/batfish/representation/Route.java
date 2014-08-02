@@ -26,8 +26,6 @@ public abstract class Route implements Serializable {
 
    public abstract int getAdministrativeCost();
 
-   public abstract String getIFString(int indentLevel);
-
    public Ip getNextHopIp() {
       return _nextHopIp;
    }

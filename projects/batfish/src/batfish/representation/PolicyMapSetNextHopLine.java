@@ -2,8 +2,6 @@ package batfish.representation;
 
 import java.util.List;
 
-import batfish.util.Util;
-
 public class PolicyMapSetNextHopLine extends PolicyMapSetLine {
 
    private static final long serialVersionUID = 1L;
@@ -12,17 +10,6 @@ public class PolicyMapSetNextHopLine extends PolicyMapSetLine {
 
    public PolicyMapSetNextHopLine(List<Ip> nextHops) {
       _nextHops = nextHops;
-   }
-
-   @Override
-   public String getIFString(int indentLevel) {
-      String retString = Util.getIndentString(indentLevel) + "NextHops";
-
-      for (Ip nh : _nextHops) {
-         retString += " " + nh.toString();
-      }
-
-      return retString;
    }
 
    public List<Ip> getNextHops() {

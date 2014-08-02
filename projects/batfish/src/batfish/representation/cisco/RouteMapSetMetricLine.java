@@ -23,4 +23,9 @@ public class RouteMapSetMetricLine extends RouteMapSetLine {
       return new PolicyMapSetMetricLine(_metric);
    }
 
+   @Override
+   public RouteMapSetType getType(){
+      return RouteMapSetType.METRIC;
+   }
+   
 }

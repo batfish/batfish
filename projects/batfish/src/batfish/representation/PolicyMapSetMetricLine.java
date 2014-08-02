@@ -1,7 +1,5 @@
 package batfish.representation;
 
-import batfish.util.Util;
-
 public class PolicyMapSetMetricLine extends PolicyMapSetLine {
 
    private static final long serialVersionUID = 1L;
@@ -10,11 +8,6 @@ public class PolicyMapSetMetricLine extends PolicyMapSetLine {
 
    public PolicyMapSetMetricLine(int metric) {
       _metric = metric;
-   }
-
-   @Override
-   public String getIFString(int indentLevel) {
-      return Util.getIndentString(indentLevel) + "Metric " + _metric;
    }
 
    public int getMetric() {

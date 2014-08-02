@@ -8,41 +8,28 @@ block(`PolicyMap) {
    export(`{
 // BEGIN CODE
 
-need_PolicyMapClauseMatchAdvert(map, advert)
-->
+need_PolicyMapClauseMatchAdvert(map, advert) ->
    PolicyMap(map),
    BgpAdvertisement(advert).
 
-need_PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) ->
+need_PolicyMapMatchRoute(map, route) ->
    PolicyMap(map),
-   int(clause),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),
-   RoutingProtocol(protocol).
+   Route(route).
 
 PolicyMap(x),
    PolicyMap_name(x:n)
    ->
    string(n).
    
-PolicyMapClauseMatchAdvert(map, clause, advert)
-->
+PolicyMapClauseMatchAdvert(map, clause, advert) ->
    PolicyMap(map),
    int(clause),
    BgpAdvertisement(advert).
 
-PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) ->
+PolicyMapClauseMatchRoute(map, clause, route) ->
    PolicyMap(map),
    int(clause),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),
-   RoutingProtocol(protocol).
+   Route(route).
 
 PolicyMapClauseTransformAdvert(map, clause, prevAdvert, nextHopIp, localPref, originType, med, srcProtocol) ->
    PolicyMap(map),
@@ -60,14 +47,9 @@ PolicyMapFirstMatchAdvert[map, advert] = firstClause
    BgpAdvertisement(advert),
    int(firstClause).
 
-PolicyMapFirstMatchRoute[map, network, nextHop, nextHopIp, admin, cost, protocol] = firstClause ->
+PolicyMapFirstMatchRoute[map, route] = firstClause ->
    PolicyMap(map),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),
-   RoutingProtocol(protocol),
+   Route(route),
    int(firstClause).
 
 PolicyMapHasClause(map, clause) ->
@@ -80,15 +62,10 @@ PolicyMapPermitAdvert(map, clause, advert)
    int(clause),
    BgpAdvertisement(advert).
 
-PolicyMapPermitRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) ->
+PolicyMapPermitRoute(map, clause, route) ->
    PolicyMap(map),
    int(clause),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),
-   RoutingProtocol(protocol).
+   Route(route).
 
 SetPolicyMapClauseAddCommunity(map, clause, community) ->
    PolicyMap(map),
@@ -123,6 +100,11 @@ SetPolicyMapClauseMatchRouteFilter(map, clause, list) ->
    PolicyMap(map),
    int(clause),
    RouteFilter(list).
+
+SetPolicyMapClauseMatchTag(map, clause, tag) ->
+   PolicyMap(map),
+   int(clause),
+   int(tag).
 
 SetPolicyMapClausePermit(map, clause) ->
    PolicyMap(map),

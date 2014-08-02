@@ -2,8 +2,6 @@ package batfish.representation;
 
 import java.util.Set;
 
-import batfish.util.Util;
-
 public class PolicyMapMatchRouteFilterListLine extends PolicyMapMatchLine {
 
    private static final long serialVersionUID = 1L;
@@ -12,17 +10,6 @@ public class PolicyMapMatchRouteFilterListLine extends PolicyMapMatchLine {
 
    public PolicyMapMatchRouteFilterListLine(Set<RouteFilterList> lists) {
       _lists = lists;
-   }
-
-   @Override
-   public String getIFString(int indentLevel) {
-      String retString = Util.getIndentString(indentLevel) + "RouteFilerList";
-
-      for (RouteFilterList rfl : _lists) {
-         retString += " " + rfl.getName();
-      }
-
-      return retString;
    }
 
    public Set<RouteFilterList> getLists() {

@@ -4,7 +4,6 @@ import java.util.List;
 
 import batfish.representation.PolicyMapMatchType;
 import batfish.representation.PolicyMapMatchLine;
-import batfish.util.Util;
 
 public class PolicyMapMatchProtocolLine extends PolicyMapMatchLine {
 
@@ -14,17 +13,6 @@ public class PolicyMapMatchProtocolLine extends PolicyMapMatchLine {
 
    public PolicyMapMatchProtocolLine(List<Protocol> protocols) {
       _protocol = protocols;
-   }
-
-   @Override
-   public String getIFString(int indentLevel) {
-      String retString = Util.getIndentString(indentLevel) + "Protocol";
-
-      for (Protocol proto : _protocol) {
-         retString += " " + proto;
-      }
-
-      return retString;
    }
 
    public List<Protocol> getProtocols() {

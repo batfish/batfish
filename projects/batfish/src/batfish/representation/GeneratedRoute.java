@@ -2,8 +2,6 @@ package batfish.representation;
 
 import java.util.Set;
 
-import batfish.util.Util;
-
 public class GeneratedRoute extends Route {
 
    private static final long serialVersionUID = 1L;
@@ -36,24 +34,6 @@ public class GeneratedRoute extends Route {
 
    public Set<PolicyMap> getGenerationPolicies() {
       return _generationPolicies;
-   }
-
-   public String getIFString(int indentLevel) {
-
-      String retString = "";
-
-      retString += String.format("%s GR \n", Util.getIndentString(indentLevel));
-      retString += String.format("%s AdminCost %d",
-            Util.getIndentString(indentLevel + 1), _administrativeCost);
-      // TODO: check why we even have _asPath
-      // retString += _asPath.getIFString(Util.getIndentString(indentLevel +
-      // 1));
-
-      for (PolicyMap pm : _generationPolicies) {
-         retString += pm.getIFString(indentLevel + 1);
-      }
-
-      return retString;
    }
 
    @Override

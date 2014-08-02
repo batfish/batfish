@@ -15,6 +15,19 @@ public class BgpNetwork implements Serializable {
       _subnetMask = subnet;
    }
 
+   @Override
+   public boolean equals(Object o) {
+      if (o == null)
+         return false;
+      BgpNetwork rhs = (BgpNetwork) o;
+      return _networkAddress.equals(rhs.getNetworkAddress()) && _subnetMask.equals(rhs.getSubnetMask());
+   }
+	
+   @Override
+   public int hashCode(){
+      return _networkAddress.hashCode() | _subnetMask.hashCode();
+   }
+   
    public Ip getNetworkAddress() {
       return _networkAddress;
    }

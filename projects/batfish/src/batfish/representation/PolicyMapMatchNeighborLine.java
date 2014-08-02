@@ -2,7 +2,6 @@ package batfish.representation;
 
 import batfish.representation.PolicyMapMatchType;
 import batfish.representation.PolicyMapMatchLine;
-import batfish.util.Util;
 
 public class PolicyMapMatchNeighborLine extends PolicyMapMatchLine {
 
@@ -12,11 +11,6 @@ public class PolicyMapMatchNeighborLine extends PolicyMapMatchLine {
 
    public PolicyMapMatchNeighborLine(Ip neighborIP) {
       _neighborIp = neighborIP;
-   }
-
-   @Override
-   public String getIFString(int indentLevel) {
-      return Util.getIndentString(indentLevel) + "Neighbor " + _neighborIp;
    }
 
    public Ip getNeighborIp() {

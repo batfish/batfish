@@ -6,8 +6,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import batfish.util.Util;
-
 public class OspfProcess implements Serializable {
 
    private static final long serialVersionUID = 1L;
@@ -32,34 +30,6 @@ public class OspfProcess implements Serializable {
 
    public Set<GeneratedRoute> getGeneratedRoutes() {
       return _generatedRoutes;
-   }
-
-   public String getIFString(int indentLevel) {
-      String retString = Util.getIndentString(indentLevel) + "OspfProcess";
-
-      if (_routerId != null)
-         retString += "\n" + Util.getIndentString(indentLevel + 1)
-               + "RouterId " + _routerId;
-
-      if (_referenceBandwidth != null)
-         retString += "\n" + Util.getIndentString(indentLevel + 1)
-               + "ReferenceBandwidth " + _referenceBandwidth;
-
-      // generated routes
-      for (GeneratedRoute gr : _generatedRoutes) {
-         retString += "\n" + gr.getIFString(indentLevel + 1);
-      }
-
-      for (PolicyMap pm : _outboundPolicyMaps) {
-         retString += "\n" + pm.getIFString(indentLevel + 1);
-      }
-
-      // ARICHECK: ok to not print the key of this map?
-      for (Map.Entry<Long, OspfArea> entry : _areas.entrySet()) {
-         retString += "\n" + entry.getValue().getIFString(indentLevel + 1);
-      }
-
-      return retString;
    }
 
    public Set<PolicyMap> getOutboundPolicyMaps() {

@@ -13,4 +13,9 @@ public class RouteMapSetCommunityNoneLine extends RouteMapSetLine {
       return new PolicyMapSetCommunityNoneLine();
    }
 
+   @Override
+   public RouteMapSetType getType(){
+      return RouteMapSetType.COMMUNITY_NONE;
+   }
+   
 }

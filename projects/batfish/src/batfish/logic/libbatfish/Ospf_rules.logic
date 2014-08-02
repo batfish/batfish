@@ -9,96 +9,127 @@ block(`Ospf_rules) {
    clauses(`{
 // BEGIN CODE
 
-BestOspfE2Route(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
-   MinCostOspfE2Route(node, network, nextHop, nextHopIp, cost, _, _, _),
-   protocol = RoutingProtocol_OSPF_E2[],
-   SetNodeVendor(node, vendor),
-   AdministrativeDistance[vendor, protocol] = admin.
-
-BestOspfIARoute(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
-   protocol = RoutingProtocol_OSPF_IA[],
-   OspfIARoute(node, network, nextHop, nextHopIp, cost),
-   SetNodeVendor(node, vendor),
-   AdministrativeDistance[vendor, protocol] = admin,
-   MinOspfIARouteCost[node, network] = cost.
-
-BestOspfRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
-   protocol = RoutingProtocol_OSPF[],
-   OspfRoute(node, network, nextHop, nextHopIp, cost),
-   SetNodeVendor(node, vendor),
-   AdministrativeDistance[vendor, protocol] = admin,
-   MinOspfRouteCost[node, network] = cost.
-
-BestPerProtocolRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
-   BestOspfRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) ;
-   BestOspfE2Route(node, network, nextHop, nextHopIp, admin, cost, protocol) ;
-   BestOspfIARoute(node, network, nextHop, nextHopIp, admin, cost, protocol).
-
-MinCostOspfE2Route(node, network, nextHop, nextHopIp, cost, advertiser, advertiserIp, costToAdvertiser) <-
-   OspfE2Route(node, network, nextHop, nextHopIp, cost, advertiser, advertiserIp, costToAdvertiser),
+BestOspfE2Route(route) <-
+   OspfE2Route(route),
+   OspfRoute_advertiser[route] = advertiser,
+   OspfRoute_costToAdvertiser[route] = costToAdvertiser,
+   Route_network[route] = network,
+   Route_node[route] = node,
    MinOspfE2RouteCostToAdvertiser[node, network, advertiser] = costToAdvertiser.
 
+BestOspfIARoute(route) <-
+   OspfIARoute(route),
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   MinOspfIARouteCost[node, network] = cost.
+
+BestOspfRoute(route) <-
+   OspfRoute(route),
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   MinOspfRouteCost[node, network] = cost.
+
+BestPerProtocolRoute(route) <-
+   BestOspfRoute(route) ;
+   BestOspfE2Route(route) ;
+   BestOspfIARoute(route).
+
 MinOspfE2RouteCostToAdvertiser[node, network, advertiser] = minCostToAdvertiser <-
-   agg<<minCostToAdvertiser = min(costToAdvertiser)>> OspfE2Route(node, network, _, _, _, advertiser, _, costToAdvertiser).   
+   agg<<minCostToAdvertiser = min(costToAdvertiser)>>
+      OspfE2Route(route),
+      OspfRoute_advertiser[route] = advertiser,
+      OspfRoute_costToAdvertiser[route] = costToAdvertiser,
+      Route_network[route] = network,
+      Route_node[route] = node.   
 
 MinOspfIARouteCost[node, network] = minCost <-
-   agg<<minCost = min(cost)>> OspfIARoute(node, network, _, _, cost).
+   agg<<minCost = min(cost)>>
+      OspfIARoute(route),
+      Route_cost[route] = cost,
+      Route_network[route] = network,
+      Route_node[route] = node.
 
 MinOspfRouteCost[node, network] = minCost <-
-   agg<<minCost = min(cost)>> OspfRoute(node, network, _, _, cost).
-
-need_PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) <-
-   (
-      SetOspfOutboundPolicyMap(node, map) ;
-      SetOspfGeneratedRoutePolicy(node, _, map)
-   ),
-   InstalledRoute(node, network, nextHop, nextHopIp, admin, cost, protocol),
-   PolicyMapHasClause(map, clause).
-need_PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) <-
-   SetOspfGeneratedRoute(node, network),
-   admin = 0,
-   cost = 0,
-   nextHop = Node_NONE[],
-   nextHopIp = Ip_ZERO[],
-   protocol = RoutingProtocol_AGGREGATE[],
-   SetOspfOutboundPolicyMap(node, map),
-   PolicyMapHasClause(map, clause).
+   agg<<minCost = min(cost)>>
+      OspfRoute(route),
+      Route_cost[route] = cost,
+      Route_network[route] = network,
+      Route_node[route] = node.
 
 // (base case) import ospfE2 routes exported by ospf neighbors
-OspfE2Route(node, network, nextHop, nextHopIp, cost, advertiser, advertiserIp, costToAdvertiser) <-
+OspfE2Route(route),
+   Route(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   OspfRoute_advertiser[route] = advertiser,
+   OspfRoute_advertiserIp[route] = advertiserIp,
+   OspfRoute_costToAdvertiser[route] = costToAdvertiser,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
    !ConnectedRoute(node, network, _),
    OspfNeighbors(node, _, costToAdvertiser, nextHop, nextHopInt, _, _, _),
    IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
    advertiser = nextHop,
    SetOspfRouterId(advertiser, advertiserIp),
-   OspfExport(advertiser, network, cost).
+   OspfExport(advertiser, network, cost),
+   protocol = RoutingProtocol_OSPF_E2[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
 // (recursive case) propagate ospfE2 over ospf
-OspfE2Route(node, network, nextHop, nextHopIp, cost, advertiser, advertiserIp, costToAdvertiser) <-
+OspfE2Route(route),
+   Route(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   OspfRoute_advertiser[route] = advertiser,
+   OspfRoute_advertiserIp[route] = advertiserIp,
+   OspfRoute_costToAdvertiser[route] = costToAdvertiser,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
    !ConnectedRoute(node, network, _), // is this necessary?
    OspfNeighbors(node, _, nodeIntCost, nextHop, nextHopInt, _, _, area),
    IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
    OspfNeighbors(nextHop, _, _, secondHop, _, _, _, area),
-   MinCostOspfE2Route(nextHop, network, secondHop, _, cost, advertiser, advertiserIp, subCost),
+   BestOspfE2Route(subRoute),
+   Route_admin[subRoute] = admin,
+   Route_cost[subRoute] = cost,
+   Route_network[subRoute] = network,
+   Route_nextHopIp[subRoute] = secondHopIp,
+   Route_node[subRoute] = nextHop,
+   OspfRoute_advertiser[subRoute] = advertiser,
+   OspfRoute_advertiserIp[subRoute] = advertiserIp,
+   OspfRoute_costToAdvertiser[subRoute] = subCost,
+   HasIp(secondHop, secondHopIp),
    node != secondHop,
-   costToAdvertiser = subCost + nodeIntCost.
+   costToAdvertiser = subCost + nodeIntCost,
+   protocol = RoutingProtocol_OSPF_E2[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
 
 OspfExport(node, network, newCost) <-
    (
       (
-         InstalledRoute(node, network, nextHop, nextHopIp, admin, oldCost, protocol)/*,
-         !OspfGeneratedRoute(node, network)*/
+         InstalledRoute(route),
+         Route_cost[route] = oldCost
       ) ;
       (
-         OspfGeneratedRoute(node, network),
-         admin = 0,
-         oldCost = 0,
-         nextHop = Node_NONE[],
-         nextHopIp = Ip_ZERO[],
-         protocol = RoutingProtocol_AGGREGATE[]
+         OspfGeneratedRoute(route),
+         oldCost = 0
       )
    ),
+   Route_network[route] = network,
+   Route_node[route] = node,
    SetOspfOutboundPolicyMap(node, map),
-   PolicyMapPermitRoute(map, clause, network, nextHop, nextHopIp, admin, oldCost, protocol),
+   PolicyMapPermitRoute(map, clause, route),
    SetPolicyMapClauseSetMetric(map, clause, newCost),
    (
       !ConnectedRoute(node, network, _) ;
@@ -108,20 +139,35 @@ OspfExport(node, network, newCost) <-
       )
    ).
 
-OspfGeneratedRoute(node, network) <-
+OspfGeneratedRoute(route),
+   Route(route),
+   OspfGeneratedRoute_constructor[node, network] = route,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
    SetOspfGeneratedRoute(node, network),
    (
       !SetOspfGeneratedRoutePolicy(node, network, _) ;
       (
          SetOspfGeneratedRoutePolicy(node, network, map),
-         InstalledRoute(node, contributingNetwork, nextHop, nextHopIp, admin, cost, protocol), 
-         PolicyMapPermitRoute(map, _, contributingNetwork, nextHop, nextHopIp, admin, cost, protocol)
+         InstalledRoute(contributingRoute),
+         PolicyMapPermitRoute(map, _, contributingRoute)
       )
-   ).
-
+   ),
+   protocol = RoutingProtocol_AGGREGATE[].
 
 // distribute connected routes from another area into backbone area
-OspfIARoute(node, network, nextHop, nextHopIp, cost) <-
+OspfIARoute(route),
+   Route(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
    !ConnectedRoute(node, network, _), // is this necessary?
    OspfNeighbors(node, _, nodeIntCost, nextHop, nextHopInt, _, _, 0),
    IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
@@ -129,17 +175,38 @@ OspfIARoute(node, network, nextHop, nextHopIp, cost) <-
    SetOspfInterface(nextHop, nextHopConnectedInt, area),
    area != 0,
    SetOspfInterfaceCost[nextHop, nextHopConnectedInt] = nextHopIntCost,
-   cost = nodeIntCost + nextHopIntCost.
+   cost = nodeIntCost + nextHopIntCost,
+   protocol = RoutingProtocol_OSPF_IA[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
 // propagate ospf ia routes through backbone area
-OspfIARoute(node, network, nextHop, nextHopIp, cost) <-
+OspfIARoute(route),
+   Route(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
    !ConnectedRoute(node, network, _), // is this necessary?
    OspfNeighbors(node, _, nodeIntCost, nextHop, nextHopInt, _, _, area),
    IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
    OspfNeighbors(nextHop, _, _, secondHop, _, _, _, area),
-   BestOspfIARoute(nextHop, network, secondHop, _, _, subCost, _),
+   BestOspfIARoute(subRoute),
+   Route_cost[subRoute] = subCost,
+   Route_network[subRoute] = network,
+   Route_nextHopIp[subRoute] = secondHopIp,
+   Route_node[subRoute] = nextHop,
+   HasIp(secondHop, secondHopIp),
    area = 0,
    node != secondHop,
-   cost = subCost + nodeIntCost.
+   cost = subCost + nodeIntCost,
+   protocol = RoutingProtocol_OSPF_IA[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
+
 //TODO: OSPF IA Routes propagated from OSPF routes (not just connected routes) in another area
 
 OspfNeighbors(node1, int1, cost1, node2, int2, cost2, network, area) <-
@@ -158,23 +225,53 @@ OspfOutboundPolicyClauseSetMetric(map, clause, metric) <-
    SetPolicyMapClauseSetMetric(map, clause, metric).
 
 // (base case) connected route on ospf-enabled interface
-OspfRoute(node, network, nextHop, nextHopIp, cost) <-
+OspfRoute(route),
+   Route(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
    !ConnectedRoute(node, network, _), // is this necessary?
    OspfNeighbors(node, _, nodeIntCost, nextHop, nextHopInt, _, _, area),
    IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
    ConnectedRoute(nextHop, network, nextHopConnectedInt),
    SetOspfInterface(nextHop, nextHopConnectedInt, area),
    SetOspfInterfaceCost[nextHop, nextHopConnectedInt] = nextHopIntCost,
-   cost = nodeIntCost + nextHopIntCost.
+   cost = nodeIntCost + nextHopIntCost,
+   protocol = RoutingProtocol_OSPF[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
 // (recursive case) propagate ospf over ospf
-OspfRoute(node, network, nextHop, nextHopIp, cost) <-
+OspfRoute(route),
+   Route(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
    !ConnectedRoute(node, network, _), // is this necessary?
    OspfNeighbors(node, _, nodeIntCost, nextHop, nextHopInt, _, _, area),
    IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
    OspfNeighbors(nextHop, _, _, secondHop, _, _, _, area),
-   BestOspfRoute(nextHop, network, secondHop, _, _, subCost, _),
+   BestOspfRoute(subRoute),
+   Route_cost[subRoute] = subCost,
+   Route_network[subRoute] = network,
+   Route_nextHopIp[subRoute] = secondHopIp,
+   Route_node[subRoute] = nextHop,
+   HasIp(secondHop, secondHopIp),
    node != secondHop,
-   cost = subCost + nodeIntCost.
+   cost = subCost + nodeIntCost,
+   protocol = RoutingProtocol_OSPF[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
+
 
 SetOspfGeneratedRoute(node, network) <-
    SetOspfGeneratedRoute_flat(node, network_start, network_end, prefix_length),
@@ -188,7 +285,7 @@ lang:compiler:disableError:NEGATION_RECURSION[] = true.
 lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
 lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
 lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
-
+lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
 // END CODE
    })
 } <-- .

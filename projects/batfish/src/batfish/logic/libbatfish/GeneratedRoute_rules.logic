@@ -7,25 +7,71 @@ block(`GeneratedRoute_rules) {
    clauses(`{
 // BEGIN CODE
 
-BestGeneratedRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
-   GeneratedRoute(node, network, contributingNetwork, admin),
-   InstalledRoute(node, contributingNetwork, nextHop, nextHopIp, _, _, _),
+ActiveGeneratedRoute(route, contributingRoute) <-
+   GeneratedRoute(route),
+   GeneratedRoutePolicy(route, policy),
+   InstalledRoute(contributingRoute),
+   Route_network[contributingRoute] = contributingNetwork,
+   Route_network[route] = network,
+   Route_node[contributingRoute] = node,
+   Route_node[route] = node,
+   Network_address[contributingNetwork] = contributingAddress,
+   Network_address[network] = startAddress,
+   Network_end[network] = endAddress,
+   startAddress < contributingAddress <= endAddress,
+   PolicyMapPermitRoute(policy, _, contributingRoute).
+
+BestGeneratedRoute(route),
+   Route_nextHopIp[route] = nextHopIp
+<-
+   MinAdminContributingRoute(route, contributingRoute),
+   Route_network[contributingRoute] = contributingNetwork,
+   Route_nextHopIp[contributingRoute] = nextHopIp,
+   Network_address[contributingNetwork] = contributingAddress,
+   MinContributingRouteAddress[route] = contributingAddress.
+
+BestPerProtocolRoute(route) <-
+   BestGeneratedRoute(route).
+
+GeneratedRoute(route),
+   Route(route),
+   GeneratedRoute_constructor[node, network] = route,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   SetGeneratedRoute(node, network, admin),
    cost = 0,
    protocol = RoutingProtocol_AGGREGATE[].
+   
+GeneratedRoutePolicy(route, policy) <-
+   GeneratedRoute(route),
+   Route_network[route] = network,
+   Route_node[route] = node,
+   SetGeneratedRoutePolicy(node, network, policy).
 
-BestPerProtocolRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
-   BestGeneratedRoute(node, network, nextHop, nextHopIp, admin, cost, protocol).
+MinAdminContributingRoute(route, contributingRoute) <-
+   ActiveGeneratedRoute(route, contributingRoute),
+   Route_admin[contributingRoute] = admin,
+   MinContributingRouteAdmin[route] = admin.
+   
+MinContributingRouteAddress[route] = minAddress <-
+   agg<<minAddress = min(address)>>
+      MinAdminContributingRoute(route, contributingRoute),
+      Route_network[contributingRoute] = network,
+      Network_address[network] = address.
+   
+MinContributingRouteAdmin[route] = minAdmin <-
+   agg<<minAdmin = min(admin)>>
+      ActiveGeneratedRoute(route, contributingRoute),
+      Route_admin[contributingRoute] = admin.
 
-GeneratedRoute(node, network, contributingNetwork, admin) <-
-   SetGeneratedRoute(node, network, admin),
-   SetGeneratedRoutePolicy(node, network, map),
-   InstalledRoute(node, contributingNetwork, nextHop, nextHopIp, contribAdmin, cost, protocol), 
-   PolicyMapPermitRoute(map, _, contributingNetwork, nextHop, nextHopIp, contribAdmin, cost, protocol).
-
-need_PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) <-
+need_PolicyMapMatchRoute(map, route) <-
    SetGeneratedRoutePolicy(node, _, map),
-   InstalledRoute(node, network, nextHop, nextHopIp, admin, cost, protocol),
-   PolicyMapHasClause(map, clause).
+   InstalledRoute(route),
+   Route_node[route] = node.
 
 SetGeneratedRoute(node, network, admin) <-
    SetGeneratedRoute_flat(node, network_start, network_end, prefix_length, admin),

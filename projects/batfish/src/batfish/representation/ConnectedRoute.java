@@ -1,7 +1,5 @@
 package batfish.representation;
 
-import batfish.util.Util;
-
 public class ConnectedRoute extends Route {
 
    private static final long serialVersionUID = 1L;
@@ -27,9 +25,4 @@ public class ConnectedRoute extends Route {
             && _nextHopIp.equals(rhs._nextHopIp);
    }
 
-   @Override
-   public String getIFString(int indentLevel) {
-      return Util.getIndentString(indentLevel) + "ConnectedRoute "
-            + getRouteString();
-   }
 }

@@ -31,4 +31,9 @@ public class RouteMapSetNextHopLine extends RouteMapSetLine {
       return new PolicyMapSetNextHopLine(nextHopList);
    }
 
+   @Override
+   public RouteMapSetType getType(){
+      return RouteMapSetType.NEXT_HOP;
+   }
+   
 }

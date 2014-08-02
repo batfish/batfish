@@ -3,8 +3,6 @@ package batfish.representation;
 import java.io.Serializable;
 import java.util.List;
 
-import batfish.util.Util;
-
 public class PolicyMap implements Serializable {
 
    private static final long serialVersionUID = 1L;
@@ -19,18 +17,6 @@ public class PolicyMap implements Serializable {
 
    public List<PolicyMapClause> getClauses() {
       return _clauses;
-   }
-
-   public String getIFString(int indentLevel) {
-
-      String retString = Util.getIndentString(indentLevel) + "PolicyMap "
-            + _mapName;
-
-      for (PolicyMapClause pmc : _clauses) {
-         retString += "\n" + pmc.getIFString(indentLevel + 1);
-      }
-
-      return retString;
    }
 
    public String getMapName() {
