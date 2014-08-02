@@ -13,6 +13,7 @@ access_list_ip_range
 	)
 	| ANY
 	| HOST ip = IP_ADDRESS
+	| prefix = IP_PREFIX
 ;
 
 appletalk_access_list_numbered_stanza
@@ -352,6 +353,35 @@ ipx_sap_access_list_null_tail
 ipx_sap_access_list_stanza
 :
 	numbered = ipx_sap_access_list_numbered_stanza
+;
+
+nexus_access_list_null_tail
+:
+	num = DEC REMARK ~NEWLINE* NEWLINE
+;
+
+nexus_access_list_stanza
+:
+	IP ACCESS_LIST name = ~NEWLINE NEWLINE
+	(
+		nexus_access_list_tail
+		| nexus_access_list_null_tail
+	)*
+;
+
+nexus_access_list_tail
+:
+	num = DEC ala = access_list_action prot = protocol srcipr = access_list_ip_range
+	(
+		alps_src = port_specifier
+	)? dstipr = access_list_ip_range
+	(
+		alps_dst = port_specifier
+	)? 
+	(
+		TRACKED
+		| TTL EQ DEC
+	)? NEWLINE
 ;
 
 protocol_type_code_access_list_numbered_stanza

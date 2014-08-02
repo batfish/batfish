@@ -17,8 +17,8 @@ address_family_rb_stanza
 	) MULTICAST? 
 	(
 		VRF vrf_name = VARIABLE
-	)? NEWLINE address_family_rb_stanza_tail EXIT_ADDRESS_FAMILY NEWLINE
-	closing_comment
+	)? NEWLINE 
+	address_family_rb_stanza_tail (EXIT_ADDRESS_FAMILY NEWLINE)?
 ;
 
 address_family_rb_stanza_tail
@@ -60,7 +60,10 @@ aggregate_address_rb_stanza
 
 aggregate_address_tail_bgp
 :
-	AGGREGATE_ADDRESS network = IP_ADDRESS subnet = IP_ADDRESS SUMMARY_ONLY?
+	AGGREGATE_ADDRESS 
+	( 	network = IP_ADDRESS subnet = IP_ADDRESS 
+		| ipv6_prefix = IPV6_PREFIX
+	) SUMMARY_ONLY?
 	NEWLINE
 ;
 
@@ -306,9 +309,14 @@ network_rb_stanza
 
 network_tail_bgp
 :
-	NETWORK ip = IP_ADDRESS
-	(
-		MASK mask = IP_ADDRESS
+	NETWORK 
+	( 
+		ip = IP_ADDRESS
+		(
+			MASK mask = IP_ADDRESS
+		)?
+		|
+		prefix = IP_PREFIX
 	)? NEWLINE
 ;
 
@@ -397,6 +405,7 @@ null_standalone_rb_stanza
 				| DEFAULT
 				| DETERMINISTIC_MED
 				| GRACEFUL_RESTART
+				| LISTEN
 				| LOG_NEIGHBOR_CHANGES
 			)
 		)
@@ -413,6 +422,8 @@ null_standalone_rb_stanza
 					)
 					(
 						FALL_OVER
+						| MAXIMUM_PREFIX
+						| MAXIMUM_ROUTES
 						| PASSWORD
 						| REMOVE_PRIVATE_AS
 						| SOFT_RECONFIGURATION

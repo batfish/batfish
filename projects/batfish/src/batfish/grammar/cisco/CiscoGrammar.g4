@@ -20,7 +20,11 @@ address_family_vrf_stanza
 
 banner_stanza
 :
-	BANNER MOTD ESCAPE_C ~ESCAPE_C* ESCAPE_C NEWLINE
+	BANNER 
+	(
+		MOTD ESCAPE_C ~ESCAPE_C* ESCAPE_C
+		| LOGIN ~EOF_LITERAL* EOF_LITERAL 
+	)NEWLINE
 ;
 
 certificate_stanza
@@ -54,7 +58,7 @@ ip_default_gateway_stanza
 
 ip_route_stanza
 :
-	IP ROUTE prefix = IP_ADDRESS mask = IP_ADDRESS
+	IP ROUTE (address = IP_ADDRESS mask = IP_ADDRESS | prefix = IP_PREFIX)
 	(
 		nexthopip = IP_ADDRESS
 		| 
@@ -113,6 +117,7 @@ null_block_stanza
 			IPV6 ACCESS_LIST
 		)
 		| LINE
+		| MANAGEMENT
 		| POLICY_MAP
 		| REDUNDANCY
 		| ROLE
@@ -211,6 +216,7 @@ null_block_substanza
 			| HIDDEN_SHARES
 			| HIDEKEYS
 			| HISTORY
+			| IDLE_TIMEOUT
 			| INSPECT
 			| INSTANCE
 			| IP
@@ -449,6 +455,7 @@ null_standalone_stanza
 				| HTTP
 				| ICMP
 				| IGMP
+				| LOAD_SHARING
 				| LOCAL
 				| MFIB
 				| MROUTE
@@ -466,7 +473,10 @@ null_standalone_stanza
 					PREFIX_LIST VARIABLE
 					(
 						SEQ DEC
-					)? DESCRIPTION
+					)? 
+					(
+						access_list_action IP_PREFIX LE DEC
+					)? DESCRIPTION?
 				)
 				| PIM
 				| RADIUS
@@ -500,6 +510,7 @@ null_standalone_stanza
 				| HOST
 				| LOCAL
 				| MFIB
+				| MFIB_MODE
 				| MLD
 				| MULTICAST
 				| MULTICAST_ROUTING
@@ -597,6 +608,7 @@ null_standalone_stanza
 				| LOCAL
 			)
 		)
+		| SCHEDULE
 		| SCHEDULER
 		| SCRIPTING
 		| SECURITY
@@ -607,6 +619,7 @@ null_standalone_stanza
 		| SERVICE
 		| SERVICE_POLICY
 		| SET
+		| SFLOW
 		| SHELL
 		| SHUTDOWN
 		| SMTP_SERVER
@@ -639,6 +652,7 @@ null_standalone_stanza
 		| TAG
 		| TAG_SWITCHING
 		| TELNET
+		| TEMPLATE
 		| TFTP_SERVER
 		| THREAT_DETECTION
 		| TIMEOUT
@@ -715,6 +729,7 @@ stanza
 	| ip_route_stanza
 	| ipv6_router_ospf_stanza
 	| ipx_sap_access_list_stanza
+	| nexus_access_list_stanza
 	| null_stanza
 	| protocol_type_code_access_list_stanza
 	| route_map_stanza

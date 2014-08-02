@@ -95,6 +95,7 @@ port
 	| IDENT
 	| ISAKMP
 	| LPD
+	| MLAG
 	| NETBIOS_DGM
 	| NETBIOS_NS
 	| NETBIOS_SS
@@ -106,6 +107,7 @@ port
 	| SMTP
 	| SNMP
 	| SNMPTRAP
+	| SSH
 	| SUNRPC
 	| SYSLOG
 	| TACACS
@@ -128,6 +130,7 @@ protocol
 	| SCTP
 	| TCP
 	| UDP
+	| VRRP
 ;
 
 range

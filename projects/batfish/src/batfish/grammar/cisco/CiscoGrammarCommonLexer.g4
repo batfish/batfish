@@ -920,6 +920,11 @@ ENVIRONMENT
 	'environment'
 ;
 
+EOF_LITERAL
+:
+	'EOF'
+;
+
 EQ
 :
 	'eq'
@@ -1300,6 +1305,11 @@ IDENTITY
 	'identity'
 ;
 
+IDLE_TIMEOUT
+:
+	'idle-timeout'
+;
+
 IGMP
 :
 	'igmp'
@@ -1495,6 +1505,11 @@ LINECODE
 	'linecode'
 ;
 
+LISTEN
+:
+	'listen'
+;
+
 LLDP
 :
 	'lldp'
@@ -1600,6 +1615,11 @@ MAIN_CPU
 	'main-cpu'
 ;
 
+MANAGEMENT
+:
+	'management'
+;
+
 MANAGEMENT_ONLY
 :
 	'management-only'
@@ -1628,6 +1648,11 @@ MAXIMUM
 MAXIMUM_PATHS
 :
 	'maximum-paths'
+;
+
+MAXIMUM_ROUTES
+:
+	'maximum-routes'
 ;
 
 MAXIMUM_PREFIX
@@ -1685,6 +1710,11 @@ MFIB
 	'mfib'
 ;
 
+MFIB_MODE
+:
+	'mfib-mode'
+;
+
 MGCP
 :
 	'mgcp'
@@ -1699,6 +1729,12 @@ MINIMAL
 :
 	'minimal'
 ;
+
+MLAG
+:
+	'mlag'
+;
+
 
 MLD
 :
@@ -2470,6 +2506,11 @@ SCCP
 	'sccp'
 ;
 
+SCHEDULE
+:
+	'schedule'
+;
+
 SCHEDULER
 :
 	'scheduler'
@@ -2588,6 +2629,11 @@ SESSION_TIMEOUT
 SET
 :
 	'set'
+;
+
+SFLOW
+:
+	'sflow'
 ;
 
 SHELL
@@ -2875,6 +2921,11 @@ TELNET
 	'telnet'
 ;
 
+TEMPLATE
+:
+	'template'
+;
+
 TERMINAL_TYPE
 :
 	'terminal-type'
@@ -2950,6 +3001,11 @@ TRACK
 	'track'
 ;
 
+TRACKED
+:
+	'tracked'
+;
+
 TRANSLATE
 :
 	'translate'
@@ -2978,6 +3034,11 @@ TRUSTPOINT
 TRUSTPOOL
 :
 	'trustpool'
+;
+
+TTL
+:
+	'ttl'
 ;
 
 TTL_EXCEEDED
@@ -3276,6 +3337,16 @@ AMPERSAND
 	'&'
 ;
 
+ANGLE_BRACKET_LEFT
+:
+	'<'
+;
+
+ANGLE_BRACKET_RIGHT
+:
+	'>'
+;
+
 ARP
 :
 	'arp'
@@ -3536,6 +3607,15 @@ IP_ADDRESS
 	)
 ;
 
+IP_PREFIX
+:
+	{!inComment && enableIP_ADDRESS}?
+
+	(
+		F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit?
+	)
+;
+
 IPV6_ADDRESS
 :
 	{!inComment && enableIPV6_ADDRESS}?
@@ -3556,6 +3636,30 @@ IPV6_ADDRESS
 		(
 			F_HexDigit+
 		)?
+	)
+;
+
+IPV6_PREFIX
+:
+	{!inComment && enableIPV6_ADDRESS}?
+
+	(
+		(
+			COLON COLON
+			(
+				(
+					F_HexDigit+ COLON
+				)* F_HexDigit+
+			)?
+		)
+		|
+		(
+			F_HexDigit+ COLON COLON?
+		)+
+		(
+			F_HexDigit+
+		)?
+		'/' F_DecByte
 	)
 ;
 
