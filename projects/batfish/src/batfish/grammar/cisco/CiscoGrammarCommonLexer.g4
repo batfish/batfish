@@ -185,6 +185,11 @@ ALWAYS
 	'always'
 ;
 
+ALWAYS_COMPARE_MED
+:
+	'always-compare-med'
+;
+
 ANY
 :
 	'any'
@@ -665,6 +670,11 @@ DEFAULT_INFORMATION
 	'default-information'
 ;
 
+DEFAULT_INFORMATION_ORIGINATE
+:
+	'default-information-originate'
+;
+
 DEFAULT_METRIC
 :
 	'default-metric'
@@ -808,6 +818,11 @@ DOMAIN_LOOKUP
 DOMAIN_NAME
 :
 	'domain-name'
+;
+
+DONT_CAPABILITY_NEGOTIATE
+:
+	'dont-capability-negotiate'
 ;
 
 DOT11
@@ -1260,6 +1275,11 @@ HOST_ROUTING
 	'host-routing'
 ;
 
+HOST_UNKNOWN
+:
+	'host-unknown'
+;
+
 HOST_UNREACHABLE
 :
 	'host-unreachable'
@@ -1375,6 +1395,11 @@ IPC
 	'ipc'
 ;
 
+IPINIP
+:
+	'ipinip'
+;
+
 IPSEC
 :
 	'ipsec'
@@ -1438,6 +1463,11 @@ KEEPOUT
 KEYPAIR
 :
 	'keypair'
+;
+
+KEYRING
+:
+	'keyring'
 ;
 
 LAPB
@@ -1781,6 +1811,11 @@ MPLS
 	'mpls'
 ;
 
+MPLS_LABEL
+:
+	'mpls-label'
+;
+
 MROUTE
 :
 	'mroute'
@@ -1914,6 +1949,16 @@ NETWORK_CLOCK_SELECT
 NETWORK_OBJECT
 :
 	'network-object'
+;
+
+NETWORK_UNKNOWN
+:
+	'network-unknown'
+;
+
+NET_UNREACHABLE
+:
+	'net-unreachable'
 ;
 
 NEXT_HOP
@@ -2191,6 +2236,11 @@ PREPEND
 	'prepend'
 ;
 
+PRE_SHARED_KEY
+:
+	'pre-shared-key'
+;
+
 PRI_GROUP
 :
 	'pri-group'
@@ -2404,6 +2454,11 @@ RESOURCE
 RESOURCE_POOL
 :
 	'resource-pool'
+;
+
+REVERSE_ROUTE
+:
+	'reverse-route'
 ;
 
 REVISION
@@ -2709,6 +2764,11 @@ SOURCE_IP_ADDRESS
 SOURCE_ROUTE
 :
 	'source-route'
+;
+
+SOURCE_QUENCH
+:
+	'source-quench'
 ;
 
 SPANNING_TREE
@@ -3532,7 +3592,6 @@ ESCAPE_C
 	(
 		'^C'
 		| '\u0003'
-		| '#'
 	)
 	{
    inMultilineComment = !inMultilineComment;
@@ -3796,7 +3855,10 @@ UNDERSCORE
 
 VARIABLE
 :
-	F_Letter
+	( 
+		'_' 
+		| F_Letter
+	)
 	(
 		F_Letter
 		| F_Digit
@@ -3838,6 +3900,16 @@ WS
 	) -> channel(HIDDEN)
 ;
 
+//ANY_WORD
+//:
+//	(
+//		F_Letter 
+//		| F_Digit
+//		| '-'
+//		| '_'
+//		| '.'
+//	)+
+//;
 
 // Fragments
 

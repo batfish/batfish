@@ -17,7 +17,13 @@ area_nssa_ro_stanza
 	(
 		area_int = DEC
 		| area_ip = IP_ADDRESS
-	) NSSA NO_SUMMARY? NEWLINE
+	) 
+	NSSA 
+	(
+		NO_SUMMARY
+		| DEFAULT_INFORMATION_ORIGINATE
+	)? 
+	NEWLINE
 ;
 
 default_information_ipv6_ro_stanza

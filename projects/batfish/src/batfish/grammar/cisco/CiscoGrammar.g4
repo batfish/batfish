@@ -225,6 +225,7 @@ null_block_substanza
 			| IPV6_ADDRESS_POOL
 			| ISAKMP
 			| KEEPALIVE_ENABLE
+			| KEYRING
 			| KEYPAIR
 			| L2TP
 			| LINE
@@ -269,6 +270,7 @@ null_block_substanza
 			| REMOTE_PORT
 			| REMOTE_SPAN
 			| REMOVED
+			| REVERSE_ROUTE
 			| REVISION
 			| RING
 			| ROUTE_TARGET
@@ -522,12 +524,14 @@ null_standalone_stanza
 				| PIM
 				| PREFIX_LIST
 				| ROUTE
+				| SOURCE_ROUTE
 				| UNICAST_ROUTING
 			)
 		)
 		| ISDN
 		| KEEPOUT
 		| KEYPAIR
+		| KEYRING
 		| LDAP_BASE_DN
 		| LDAP_LOGIN
 		| LDAP_LOGIN_DN
@@ -536,6 +540,7 @@ null_standalone_stanza
 		| LICENSE
 		| LIFETIME
 		| LLDP
+		| LOCATION
 		| LOGGING
 		| MAC
 		| MAC_ADDRESS_TABLE
@@ -576,6 +581,7 @@ null_standalone_stanza
 		| PORT_CHANNEL
 		| PORT_OBJECT
 		| POWER
+		| PRE_SHARED_KEY
 		| PRIORITY
 		| PRIORITY_QUEUE
 		| PRIVILEGE
@@ -592,6 +598,7 @@ null_standalone_stanza
 		| REDIRECT_FQDN
 		| RESOURCE
 		| RESOURCE_POOL
+		| REVERSE_ROUTE
 		| REVOCATION_CHECK
 		| ROUTE
 		| ROUTE_TARGET

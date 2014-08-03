@@ -18,7 +18,9 @@ address_family_rb_stanza
 	(
 		VRF vrf_name = VARIABLE
 	)? NEWLINE 
-	address_family_rb_stanza_tail (EXIT_ADDRESS_FAMILY NEWLINE)?
+	address_family_rb_stanza_tail 
+	(EXIT_ADDRESS_FAMILY NEWLINE)?
+	closing_comment?
 ;
 
 address_family_rb_stanza_tail
@@ -34,6 +36,7 @@ af_stanza
 	| default_metric_af_stanza
 	| neighbor_activate_af_stanza
 	| neighbor_default_originate_af_stanza
+	| neighbor_description_af_stanza
 	| neighbor_filter_list_af_stanza
 	| neighbor_next_hop_self_af_stanza
 	| neighbor_peer_group_assignment_af_stanza
@@ -103,6 +106,11 @@ neighbor_activate_af_stanza
 		neighbor = IP_ADDRESS
 		| pg = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
 	) ACTIVATE NEWLINE
+;
+
+neighbor_description_af_stanza
+:
+   NEIGHBOR ( IP_ADDRESS | IPV6_ADDRESS | VARIABLE ) DESCRIPTION (text+=M_DESCRIPTION_NON_NEWLINE)* M_DESCRIPTION_NEWLINE
 ;
 
 neighbor_description_rb_stanza
@@ -336,6 +344,8 @@ network6_tail_bgp
 	(
 		FORWARD_SLASH DEC
 	)? NEWLINE
+	|
+	NETWORK IPV6_PREFIX NEWLINE
 ;
 
 no_neighbor_activate_af_stanza
@@ -382,6 +392,8 @@ null_standalone_af_stanza
 					(
 						MAXIMUM_PREFIX
 						| NEXT_HOP_SELF
+						| PASSWORD
+						| REMOTE_AS
 						| SOFT_RECONFIGURATION
 					)
 				)
@@ -401,7 +413,8 @@ null_standalone_rb_stanza
 		(
 			BGP
 			(
-				DAMPENING
+				ALWAYS_COMPARE_MED
+				| DAMPENING
 				| DEFAULT
 				| DETERMINISTIC_MED
 				| GRACEFUL_RESTART
@@ -421,7 +434,8 @@ null_standalone_rb_stanza
 						| VARIABLE
 					)
 					(
-						FALL_OVER
+						DONT_CAPABILITY_NEGOTIATE 
+						| FALL_OVER
 						| MAXIMUM_PREFIX
 						| MAXIMUM_ROUTES
 						| PASSWORD

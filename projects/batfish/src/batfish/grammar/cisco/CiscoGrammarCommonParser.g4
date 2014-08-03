@@ -125,6 +125,7 @@ protocol
 	| ICMP
 	| IGMP
 	| IP
+	| IPINIP
 	| OSPF
 	| PIM
 	| SCTP
