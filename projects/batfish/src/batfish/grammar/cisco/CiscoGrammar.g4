@@ -118,6 +118,7 @@ null_block_stanza
 		)
 		| LINE
 		| MANAGEMENT
+		| MAP_CLASS
 		| POLICY_MAP
 		| REDUNDANCY
 		| ROLE
@@ -328,6 +329,7 @@ null_standalone_stanza
 	(
 		AAA
 		| AAA_SERVER
+		| ABSOLUTE_TIMEOUT
 		| ACCESS_GROUP
 		|
 		(
@@ -399,14 +401,18 @@ null_standalone_stanza
 		| ENROLLMENT
 		| ENVIRONMENT
 		| ERRDISABLE
+		| ESCAPE_CHARACTER
 		| EVENT
 		| EXCEPTION
+		| EXEC
 		| FABRIC
 		| FAILOVER
 		| FEATURE
 		| FILE
 		| FIREWALL
 		| FIRMWARE
+		| FLOWCONTROL
+		| FRAME_RELAY
 		| FREQUENCY
 		| FQDN
 		| FTP
@@ -626,6 +632,7 @@ null_standalone_stanza
 		| SERVICE
 		| SERVICE_POLICY
 		| SET
+		| SETUP
 		| SFLOW
 		| SHELL
 		| SHUTDOWN
@@ -637,6 +644,8 @@ null_standalone_stanza
 		| SOURCE_IP_ADDRESS
 		| SPANNING_TREE
 		| SPE
+		| SPEED
+		| STOPBITS
 		| SSH
 		| SSL
 		| STATIC

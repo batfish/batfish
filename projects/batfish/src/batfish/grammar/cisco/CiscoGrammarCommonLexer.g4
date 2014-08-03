@@ -950,14 +950,14 @@ ERRDISABLE
 	'errdisable'
 ;
 
-ESP
-:
-	'esp'
-;
-
 ESCAPE_CHARACTER
 :
 	'escape-character'
+;
+
+ESP
+:
+	'esp'
 ;
 
 ESTABLISHED
@@ -1095,6 +1095,11 @@ FLOW
 	'flow'
 ;
 
+FLOWCONTROL
+:
+	'flowcontrol'
+;
+
 FLOW_CACHE
 :
 	'flow-cache'
@@ -1108,11 +1113,6 @@ FLOW_EXPORT
 FLOW_TOP_TALKERS
 :
 	'flow-top-talkers'
-;
-
-FLOWCONTROL
-:
-	'flowcontrol'
 ;
 
 FORWARD_PROTOCOL
@@ -1129,6 +1129,12 @@ FRAGMENTS
 :
 	'fragments'
 ;
+
+FRAME_RELAY
+:
+	'frame-relay'
+;
+
 
 FRAMING
 :
@@ -1658,6 +1664,11 @@ MANAGEMENT_ONLY
 MAP
 :
 	'map'
+;
+
+MAP_CLASS
+:
+	'map-class'
 ;
 
 MASK
@@ -2684,6 +2695,11 @@ SESSION_TIMEOUT
 SET
 :
 	'set'
+;
+
+SETUP
+:
+	'setup'
 ;
 
 SFLOW
