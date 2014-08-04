@@ -21,7 +21,8 @@ public class StaticROStanza extends ROStanza {
          _type = ROType.NULL;
       }
       else {
-         StaticRoute sr = new StaticRoute(ip, mask, nextip, nextint, 1);
+         //TODO don't use -1 for tag
+         StaticRoute sr = new StaticRoute(ip, mask, nextip, nextint, 1, -1);
          _staticRoutes.add(sr);
       }
    }

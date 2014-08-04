@@ -125,6 +125,11 @@ block(`service_config) {
       }.
 
 // Route
+      service_by_prefix["/batfish/SetStaticIntRoute_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetStaticIntRoute_flat"
+      }.
+
       service_by_prefix["/batfish/SetStaticRoute_flat"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetStaticRoute_flat"

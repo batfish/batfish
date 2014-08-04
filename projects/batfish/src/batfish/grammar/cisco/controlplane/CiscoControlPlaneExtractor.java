@@ -1,11 +1,13 @@
 package batfish.grammar.cisco.controlplane;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -65,6 +67,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       implements ControlPlaneExtractor {
 
    private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
+
    public static LineAction getAccessListAction(Access_list_actionContext ctx) {
       if (ctx.PERMIT() != null) {
          return LineAction.ACCEPT;
@@ -76,6 +79,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          throw new Error("bad LineAction");
       }
    }
+
    public static Ip getIp(Access_list_ip_rangeContext ctx) {
       if (ctx.ip != null) {
          return toIp(ctx.ip);
@@ -84,6 +88,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          return new Ip(0l);
       }
    }
+
    public static int getPortNumber(PortContext ctx) {
       if (ctx.DEC() != null) {
          return toInteger(ctx.DEC());
@@ -173,6 +178,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          throw new Error("bad port");
       }
    }
+
    private static List<SubRange> getPortRanges(Port_specifierContext ps) {
       List<SubRange> ranges = new ArrayList<SubRange>();
       if (ps.EQ() != null) {
@@ -199,6 +205,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       }
       return ranges;
    }
+
    public static int getProtocolNumber(ProtocolContext ctx) {
       if (ctx.DEC() != null) {
          return toInteger(ctx.DEC());
@@ -237,6 +244,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          throw new Error("bad protocol");
       }
    }
+
    public static Ip getWildcard(Access_list_ip_rangeContext ctx) {
       if (ctx.wildcard != null) {
          return toIp(ctx.wildcard);
@@ -251,17 +259,20 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          throw new Error("bad extended ip access list ip range");
       }
    }
+
    public static int toInteger(TerminalNode t) {
       return Integer.parseInt(t.getText());
    }
+
    public static int toInteger(Token t) {
       return Integer.parseInt(t.getText());
    }
+
    public static Ip toIp(Token t) {
       return new Ip(t.getText());
    }
+
    public static long toLong(CommunityContext ctx) {
-      // TODO find correct well-known community values
       switch (ctx.com.getType()) {
       case CiscoGrammarCommonLexer.COLON:
          long left = toLong(ctx.part1) << 16;
@@ -287,6 +298,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          throw new Error("bad community");
       }
    }
+
    public static long toLong(TerminalNode t) {
       return Long.parseLong(t.getText());
    }
@@ -337,8 +349,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    private String _text;
 
+   private List<String> _warnings;
+
    public CiscoControlPlaneExtractor(String text) {
       _text = text;
+      _warnings = new ArrayList<String>();
    }
 
    @Override
@@ -490,14 +505,15 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitArea_nssa_ro_stanza(Area_nssa_ro_stanzaContext ctx) {
       OspfProcess proc = _configuration.getOspfProcess();
-      int area = (ctx.area_int != null)? toInteger(ctx.area_int) : (int) toIp(ctx.area_ip).asLong();
+      int area = (ctx.area_int != null) ? toInteger(ctx.area_int) : (int) toIp(
+            ctx.area_ip).asLong();
       boolean noSummary = ctx.NO_SUMMARY() != null;
       proc.getNssas().put(area, noSummary);
    }
 
    @Override
    public void exitAuto_summary_af_stanza(Auto_summary_af_stanzaContext ctx) {
-      // TODO implement
+      todo(ctx);
    }
 
    @Override
@@ -593,7 +609,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitIp_address_secondary_if_stanza(
          Ip_address_secondary_if_stanzaContext ctx) {
-      // TODO implement
+      todo(ctx);
    }
 
    @Override
@@ -642,7 +658,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitIp_default_gateway_stanza(
          Ip_default_gateway_stanzaContext ctx) {
-      // TODO implement
+      todo(ctx);
    }
 
    @Override
@@ -790,7 +806,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void exitMaximum_paths_ro_stanza(Maximum_paths_ro_stanzaContext ctx) {
-      // TODO Implement
+      todo(ctx);
       /*
        * Note that this is very difficult to enforce, and may not help the
        * analysis without major changes
@@ -825,13 +841,13 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitNeighbor_ebgp_multihop_rb_stanza(
          Neighbor_ebgp_multihop_rb_stanzaContext ctx) {
-      // TODO implement
+      todo(ctx);
    }
 
    @Override
    public void exitNeighbor_next_hop_self_rb_stanza(
          Neighbor_next_hop_self_rb_stanzaContext ctx) {
-      // TODO implement
+      todo(ctx);
    }
 
    @Override
@@ -903,7 +919,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitNeighbor_remove_private_as_af_stanza(
          Neighbor_remove_private_as_af_stanzaContext ctx) {
-      // TODO implement
+      todo(ctx);
    }
 
    @Override
@@ -1022,7 +1038,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          r.setMetric(metric);
       }
       else {
-         // TODO find default redistribution metric for bgp => ospf
+         todo(ctx);
       }
       if (ctx.map != null) {
          String map = ctx.map.getText();
@@ -1272,8 +1288,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void exitSet_origin_rm_stanza(Set_origin_rm_stanzaContext ctx) {
-      // TODO implement
-
+      todo(ctx);
    }
 
    @Override
@@ -1342,8 +1357,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void exitVrf_stanza(Vrf_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-
+      todo(ctx);
    }
 
    public CiscoConfiguration getConfiguration() {
@@ -1357,6 +1371,30 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public VendorConfiguration getVendorConfiguration() {
       return _configuration;
+   }
+
+   public List<String> getWarnings() {
+      return _warnings;
+   }
+
+   private void todo(ParserRuleContext ctx) {
+      String prefix = "WARNING " + (_warnings.size() + 1) + ": ";
+      StringBuilder sb = new StringBuilder();
+      List<String> ruleNames = Arrays.asList(CiscoGrammar.ruleNames);
+      String ruleStack = ctx.toString(ruleNames);
+      sb.append(prefix + "Missing implementation for top (leftmost) parser rule in stack: '"
+            + ruleStack + "'.\n");
+      sb.append(prefix + "Rule context follows:\n");
+      int start = ctx.start.getStartIndex();
+      int startLine = ctx.start.getLine();
+      int end = ctx.stop.getStopIndex();
+      String ruleText = _text.substring(start, end + 1);
+      String[] ruleTextLines = ruleText.split("\\n");
+      for (int line = startLine, i = 0; i < ruleTextLines.length; line++, i++) {
+         String contextPrefix = prefix + " line " + line + ": ";
+         sb.append(contextPrefix + ruleTextLines[i] + "\n");
+      }
+      _warnings.add(sb.toString());
    }
 
    public SwitchportEncapsulationType toEncapsulation(

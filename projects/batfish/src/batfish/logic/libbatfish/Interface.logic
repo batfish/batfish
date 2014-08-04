@@ -23,7 +23,13 @@ Interface(x),
    Interface_name(x:n)
    ->
    string(n).
-   
+
+Interface_DYNAMIC[] = interface ->
+   Interface(interface).
+
+Interface_NULL[] = interface ->
+   Interface(interface).
+
 IpOwner[ip] = node ->
    Ip(ip),
    Node(node).

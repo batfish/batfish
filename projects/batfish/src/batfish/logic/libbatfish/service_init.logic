@@ -231,13 +231,23 @@ block(`service_init) {
       }.
 
 // Route
+      file_binding_by_name["SetStaticIntRoute_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetStaticIntRoute_flat",
+         predicate_binding_by_name["libbatfish:Route:SetStaticIntRoute_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,NEXTHOPINT,ADMIN,TAG"
+            }
+      }.
+
       file_binding_by_name["SetStaticRoute_flat"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
          file_binding_definition_name[] = "SetStaticRoute_flat",
          predicate_binding_by_name["libbatfish:Route:SetStaticRoute_flat"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,ADMIN"
+               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,ADMIN,TAG"
             }
       }.
 

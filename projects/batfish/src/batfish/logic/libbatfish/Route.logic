@@ -32,11 +32,6 @@ ConnectedRoute(node, network, interface) ->
    Network(network),
    Interface(interface).
 
-GeneratedRoute_constructor[node, network] = route ->
-   Node(node),
-   Network(network),
-   Route(route).
-
 /// [InstalledRoute(node, network, nextHop, nextHopIp, admin, cost, protocol)] =
 ///   TODO.
 InstalledRoute(route) ->
@@ -44,6 +39,10 @@ InstalledRoute(route) ->
 
 InterfaceRoute(route) ->
    Route(route).
+
+InterfaceRoute_nextHopInt[route] = nextHopInt ->
+   Route(route),
+   Interface(nextHopInt).
 
 InterfaceRoute_constructor[node, network, nextHopInt, protocol] = route ->
    Node(node),
@@ -94,11 +93,6 @@ NetworkMatch(node, ip, matchNet, matchLength) ->
    Network(matchNet),
    int(matchLength).
 
-OspfGeneratedRoute_constructor[node, network] = route ->
-   Node(node),
-   Network(network),
-   Route(route).
-
 /// [Route(x)] =
 ///   [x] is route.
 Route(x) -> .
@@ -122,14 +116,6 @@ Route_network[route] = network ->
    Route(route),
    Network(network).
 
-Route_nextHop[route] = nextHop ->
-   Route(route),
-   Node(nextHop).
-
-Route_nextHopInt[route] = nextHopInt ->
-   Route(route),
-   Interface(nextHopInt).
-
 Route_nextHopIp[route] = nextHopIp ->
    Route(route),
    Ip(nextHopIp).
@@ -143,6 +129,30 @@ Route_protocol[route] = protocol ->
    RoutingProtocol(protocol).
 
 Route_tag[route] = tag ->
+   Route(route),
+   int(tag).
+
+RouteDetails_admin[route] = admin ->
+   Route(route),
+   int(admin).
+
+RouteDetails_cost[route] = cost ->
+   Route(route),
+   int(cost).
+
+RouteDetails_nextHop[route] = nextHop ->
+   Route(route),
+   Node(nextHop).
+
+RouteDetails_nextHopInt[route] = nextHopInt ->
+   Route(route),
+   Interface(nextHopInt).
+
+RouteDetails_nextHopIp[route] = nextHopIp ->
+   Route(route),
+   Ip(nextHopIp).
+
+RouteDetails_tag[route] = tag ->
    Route(route),
    int(tag).
 
@@ -177,38 +187,39 @@ RoutingProtocol_OSPF_IA[] = x ->
 RoutingProtocol_STATIC[] = x ->
    RoutingProtocol(x).
 
-SetStaticIntRoute(node, network, nextHopIp, nextHopInt, admin) ->
+SetStaticIntRoute(node, network, nextHopIp, nextHopInt, admin, tag) ->
    Node(node),
    Network(network),
    Ip(nextHopIp),
    Interface(nextHopInt),
-   int(admin).
+   int(admin),
+   int(tag).
 
-SetStaticIntRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, nextHopInt, admin) ->
+SetStaticIntRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, nextHopInt, admin, tag) ->
    Node(node),
    int(network_start),
    int(network_end),
    int(prefix_length),
    Ip(nextHopIp),
    Interface(nextHopInt),
-   int(admin).
+   int(admin),
+   int(tag).
    
-/// [SetStaticRoute(node, network, nextHopIp, admin)] =
-///   Node [node] has a static route to network [network] with next hop ip
-///   [nextHopIp] and administrative distance [admin].
-SetStaticRoute(node, network, nextHopIp, admin) ->
+SetStaticRoute(node, network, nextHopIp, admin, tag) ->
    Node(node),
    Network(network),
    Ip(nextHopIp),
-   int(admin).
+   int(admin),
+   int(tag).
    
-SetStaticRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, admin) ->
+SetStaticRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, admin, tag) ->
    Node(node),
    int(network_start),
    int(network_end),
    int(prefix_length),
    Ip(nextHopIp),
-   int(admin).
+   int(admin),
+   int(tag).
    
 StaticIntRoute(route) ->
    Route(route).
@@ -221,10 +232,8 @@ StaticRoute(route) ->
 // END CODE
    }),
    clauses(`{ //constructors
-lang:constructor(`GeneratedRoute_constructor).
 lang:constructor(`InterfaceRoute_constructor).
 lang:constructor(`Route_constructor).
-lang:constructor(`OspfGeneratedRoute_constructor).
    })
 } <-- .
 

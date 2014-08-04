@@ -7,9 +7,10 @@ block(`GeneratedRoute_rules) {
    clauses(`{
 // BEGIN CODE
 
-ActiveGeneratedRoute(route, contributingRoute) <-
+ActiveGeneratedRoute(route),
+   ActiveGeneratedRouteContributor(route, contributingRoute)
+<-
    GeneratedRoute(route),
-   GeneratedRoutePolicy(route, policy),
    InstalledRoute(contributingRoute),
    Route_network[contributingRoute] = contributingNetwork,
    Route_network[route] = network,
@@ -19,9 +20,15 @@ ActiveGeneratedRoute(route, contributingRoute) <-
    Network_address[network] = startAddress,
    Network_end[network] = endAddress,
    startAddress < contributingAddress <= endAddress,
-   PolicyMapPermitRoute(policy, _, contributingRoute).
+   (
+      !GeneratedRoutePolicy(route, _) ;
+      (
+         GeneratedRoutePolicy(route, policy),
+         PolicyMapPermitRoute(policy, _, contributingRoute)
+      )
+   ).
 
-BestGeneratedRoute(route),
+BestGlobalGeneratedRoute(route),
    Route_nextHopIp[route] = nextHopIp
 <-
    MinAdminContributingRoute(route, contributingRoute),
@@ -31,11 +38,13 @@ BestGeneratedRoute(route),
    MinContributingRouteAddress[route] = contributingAddress.
 
 BestPerProtocolRoute(route) <-
-   BestGeneratedRoute(route).
+   BestGlobalGeneratedRoute(route).
 
-GeneratedRoute(route),
+GlobalGeneratedRoute(route),
    Route(route),
-   GeneratedRoute_constructor[node, network] = route,
+   GeneratedRoute_constructor[node, network, type] = route,
+   GeneratedRoute(route),
+   GeneratedRoute_type[route] = type,
    Route_admin[route] = admin,
    Route_cost[route] = cost,
    Route_network[route] = network,
@@ -43,8 +52,10 @@ GeneratedRoute(route),
    Route_protocol[route] = protocol
 <-
    SetGeneratedRoute(node, network, admin),
+   type = GeneratedRouteType_GLOBAL[],
    cost = 0,
-   protocol = RoutingProtocol_AGGREGATE[].
+   protocol = RoutingProtocol_AGGREGATE[],
+   tag = -1.
    
 GeneratedRoutePolicy(route, policy) <-
    GeneratedRoute(route),
@@ -52,8 +63,24 @@ GeneratedRoutePolicy(route, policy) <-
    Route_node[route] = node,
    SetGeneratedRoutePolicy(node, network, policy).
 
+GeneratedRouteType_AGGREGATE[] = type <-
+   GeneratedRouteType_name(type:"aggregate").
+
+GeneratedRouteType_BGP[] = type <-
+   GeneratedRouteType_name(type:"bgp").
+
+GeneratedRouteType_BGP_NEIGHBOR[] = type <-
+   GeneratedRouteType_name(type:"bgp_neighbor").
+
+GeneratedRouteType_GLOBAL[] = type <-
+   GeneratedRouteType_name(type:"global").
+
+GeneratedRouteType_OSPF[] = type <-
+   GeneratedRouteType_name(type:"ospf").
+
 MinAdminContributingRoute(route, contributingRoute) <-
-   ActiveGeneratedRoute(route, contributingRoute),
+   ActiveGeneratedRouteContributor(route, contributingRoute),
+   GlobalGeneratedRoute(route),
    Route_admin[contributingRoute] = admin,
    MinContributingRouteAdmin[route] = admin.
    
@@ -65,7 +92,8 @@ MinContributingRouteAddress[route] = minAddress <-
    
 MinContributingRouteAdmin[route] = minAdmin <-
    agg<<minAdmin = min(admin)>>
-      ActiveGeneratedRoute(route, contributingRoute),
+      ActiveGeneratedRouteContributor(route, contributingRoute),
+      GlobalGeneratedRoute(route),
       Route_admin[contributingRoute] = admin.
 
 need_PolicyMapMatchRoute(map, route) <-
@@ -80,6 +108,11 @@ SetGeneratedRoute(node, network, admin) <-
 SetGeneratedRoutePolicy(node, network, map) <-
    SetGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length, map),
    Network_constructor[network_start, network_end, prefix_length] = network.
+
+lang:compiler:disableError:NEGATION_RECURSION[] = true.
+lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
+lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
 
 // END CODE
    })

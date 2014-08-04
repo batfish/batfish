@@ -9,9 +9,13 @@ import com.logicblox.connect.Workspace.Relation.Int64Column;
 import com.logicblox.connect.Workspace.Relation.StringColumn;
 import com.logicblox.connect.Workspace.Relation.UInt64Column;
 
+import batfish.representation.Ip;
 import batfish.util.Util;
 
 public class EntityTable {
+
+   private static final String DYNAMIC_NEXT_HOP_INTERFACE_NAME = "dynamic";
+   private static final long NO_TAG = -1l;
 
    private long[] _advertDstIps;
    private String[] _advertDstNodes;
@@ -35,14 +39,23 @@ public class EntityTable {
    private long[] _networkAddresses;
    private BigInteger[] _networkIndices;
    private long[] _networkPrefixLengths;
+   private long[] _routeAdmins;
+   private long[] _routeCosts;
+   private BigInteger[] _routeIndices;
+   private BigInteger[] _routeNetworks;
+   private String[] _routeNextHopInts;
+   private long[] _routeNextHopIps;
+   private String[] _routeNextHops;
+   private String[] _routeNodes;
+   private String[] _routeProtocols;
+   private long[] _routeTags;
 
    public EntityTable(LogicBloxFrontend lbf) {
 
       EntityColumn ec;
-      
+
       // Network
-      Relation networkIndex = lbf
-            .queryPredicate("libbatfish:Ip:Network_index");
+      Relation networkIndex = lbf.queryPredicate("libbatfish:Ip:Network_index");
       ec = (EntityColumn) networkIndex.getColumns().get(0);
       _networkIndices = ((UInt64Column) ec.getIndexColumn().unwrap()).getRows();
       _networkAddresses = ((Int64Column) networkIndex.getColumns().get(1))
@@ -52,18 +65,15 @@ public class EntityTable {
 
       // Flow
       Relation currentFlowProperty;
-      currentFlowProperty = lbf
-            .queryPredicate("libbatfish:Flow:Flow_dstIp");
+      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_dstIp");
       _flowDstIps = ((Int64Column) ((EntityColumn) currentFlowProperty
             .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
 
-      currentFlowProperty = lbf
-            .queryPredicate("libbatfish:Flow:Flow_dstPort");
+      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_dstPort");
       _flowDstPorts = ((Int64Column) currentFlowProperty.getColumns().get(1))
             .getRows();
 
-      currentFlowProperty = lbf
-            .queryPredicate("libbatfish:Flow:Flow_node");
+      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_node");
       _flowNodes = ((StringColumn) ((EntityColumn) currentFlowProperty
             .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
 
@@ -72,19 +82,59 @@ public class EntityTable {
       _flowProtocols = ((Int64Column) ((EntityColumn) currentFlowProperty
             .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
 
-      currentFlowProperty = lbf
-            .queryPredicate("libbatfish:Flow:Flow_srcIp");
+      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_srcIp");
       _flowSrcIps = ((Int64Column) ((EntityColumn) currentFlowProperty
             .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
 
-      currentFlowProperty = lbf
-            .queryPredicate("libbatfish:Flow:Flow_srcPort");
+      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_srcPort");
       _flowSrcPorts = ((Int64Column) currentFlowProperty.getColumns().get(1))
             .getRows();
 
       // get indices
       ec = (EntityColumn) currentFlowProperty.getColumns().get(0);
       _flowIndices = ((UInt64Column) ec.getIndexColumn().unwrap()).getRows();
+
+      // Route
+      Relation currentRouteProperty;
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:RouteDetails_admin");
+      _routeAdmins = ((Int64Column) currentRouteProperty.getColumns().get(1))
+            .getRows();
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:RouteDetails_cost");
+      _routeCosts = ((Int64Column) currentRouteProperty.getColumns().get(1))
+            .getRows();
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:Route_network");
+      _routeNetworks = ((UInt64Column) ((EntityColumn) currentRouteProperty
+            .getColumns().get(1)).getIndexColumn().unwrap()).getRows();
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:RouteDetails_nextHop");
+      _routeNextHops = ((StringColumn) ((EntityColumn) currentRouteProperty
+            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:RouteDetails_nextHopInt");
+      _routeNextHopInts = ((StringColumn) ((EntityColumn) currentRouteProperty
+            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:RouteDetails_nextHopIp");
+      _routeNextHopIps = ((Int64Column) ((EntityColumn) currentRouteProperty
+            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      currentRouteProperty = lbf.queryPredicate("libbatfish:Route:Route_node");
+      _routeNodes = ((StringColumn) ((EntityColumn) currentRouteProperty
+            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:Route_protocol");
+      _routeProtocols = ((StringColumn) ((EntityColumn) currentRouteProperty
+            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:RouteDetails_tag");
+      _routeTags = ((Int64Column) currentRouteProperty.getColumns().get(1))
+            .getRows();
+
+      // get indices
+      ec = (EntityColumn) currentRouteProperty.getColumns().get(0);
+      _routeIndices = ((UInt64Column) ec.getIndexColumn().unwrap()).getRows();
 
       // BgpAdvertisement
       Relation currentAdvertProperty;
@@ -142,9 +192,9 @@ public class EntityTable {
       int listIndex = Arrays.binarySearch(_advertIndices, index);
       String type = _advertTypes[listIndex];
       String network = getNetwork(_advertNetworks[listIndex]);
-      String nextHopIp = Util.longToIp(_advertNextHopIps[listIndex]);
-      String srcIp = Util.longToIp(_advertSrcIps[listIndex]);
-      String dstIp = Util.longToIp(_advertDstIps[listIndex]);
+      String nextHopIp = new Ip(_advertNextHopIps[listIndex]).toString();
+      String srcIp = new Ip(_advertSrcIps[listIndex]).toString();
+      String dstIp = new Ip(_advertDstIps[listIndex]).toString();
       String srcProtocol = _advertSrcProtocols[listIndex];
       String srcNode = _advertSrcNodes[listIndex];
       String dstNode = _advertDstNodes[listIndex];
@@ -159,23 +209,52 @@ public class EntityTable {
 
    public String getFlow(BigInteger index) {
       int listIndex = Arrays.binarySearch(_flowIndices, index);
-      String srcIp = Util.longToIp(_flowSrcIps[listIndex]);
-      String dstIp = Util.longToIp(_flowDstIps[listIndex]);
+      String srcIp = new Ip(_flowSrcIps[listIndex]).toString();
+      String dstIp = new Ip(_flowDstIps[listIndex]).toString();
       String srcPort = Util.getPortName((int) _flowSrcPorts[listIndex]);
       String dstPort = Util.getPortName((int) _flowDstPorts[listIndex]);
-      String protocol = Util.getProtocolName((int)_flowProtocols[listIndex]);
+      String protocol = Util.getProtocolName((int) _flowProtocols[listIndex]);
       String node = _flowNodes[listIndex];
-      return "Flow<" + node + ", " + protocol + ", " + srcIp
-            + ", " + dstIp + ", "
-            + srcPort + ", " + dstPort 
-            + ">";
+      return "Flow<" + node + ", " + protocol + ", " + srcIp + ", " + dstIp
+            + ", " + srcPort + ", " + dstPort + ">";
    }
 
    public String getNetwork(BigInteger index) {
       int listIndex = Arrays.binarySearch(_networkIndices, index);
       long network = _networkAddresses[listIndex];
       long subnetBits = _networkPrefixLengths[listIndex];
-      return Util.longToIp(network) + "/" + subnetBits;
+      return new Ip(network).toString() + "/" + subnetBits;
+   }
+
+   public String getRoute(BigInteger index) {
+      int listIndex = Arrays.binarySearch(_routeIndices, index);
+      String node = _routeNodes[listIndex];
+      String network = getNetwork(_routeNetworks[listIndex]);
+      String nextHopInt = _routeNextHopInts[listIndex];
+      Ip nextHopIpAsIp = new Ip(_routeNextHopIps[listIndex]);
+      String nextHopIp = nextHopIpAsIp.toString();
+      String nextHop = _routeNextHops[listIndex];
+      String admin = Long.toString(_routeAdmins[listIndex]);
+      String cost = Long.toString(_routeCosts[listIndex]);
+      long tagAsLong = _routeTags[listIndex];
+      String tag = Long.toString(tagAsLong);
+      String protocol = _routeProtocols[listIndex];
+
+      // extra formatting
+      if (!nextHopInt.equals(DYNAMIC_NEXT_HOP_INTERFACE_NAME)) {
+         // static interface
+         if (nextHopIpAsIp.asLong() == 0L) {
+            nextHop = "N/A";
+            nextHopIp = "N/A";
+         }
+      }
+      if (tagAsLong == NO_TAG) {
+         tag = "none";
+      }
+
+      return "Route<" + node + ", " + network + ", " + nextHopIp + ", "
+            + nextHop + ", " + nextHopInt + ", " + admin + ", " + cost + ", "
+            + tag + ", " + protocol + ">";
    }
 
 }

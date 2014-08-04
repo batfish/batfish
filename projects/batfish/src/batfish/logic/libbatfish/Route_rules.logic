@@ -10,10 +10,11 @@ block(`Route_rules) {
 BestConnectedRoute(route),
    Route(route),
    InterfaceRoute_constructor[node, network, nextHopInt, protocol] = route,
+   InterfaceRoute(route),
+   InterfaceRoute_nextHopInt[route] = nextHopInt,
    Route_admin[route] = admin,
    Route_cost[route] = cost,
    Route_network[route] = network,
-   Route_nextHopInt[route] = nextHopInt,
    Route_node[route] = node,
    Route_protocol[route] = protocol
 <-
@@ -37,9 +38,6 @@ ConnectedRoute(node, network, interface) <-
 
 InstalledRoute(route) <-
    MinCostRoute(route).
-
-InterfaceRoute(route) <-
-   Route_nextHopInt[route] = _.
 
 LongestPrefixNetworkMatch(node, ip, matchNet) <-
    LongestPrefixNetworkMatchPrefixLength[node, ip] = maxLength,
@@ -86,20 +84,56 @@ NetworkMatch(node, ip, matchNet, matchLength) <-
    Route_network[route] = matchNet,
    Route_node[route] = node,
    matchNet_start <= address <= matchNet_end.
-      
-Route_nextHop[route] = nextHop <-
-   InstalledRoute(route),
-   Route_nextHopIp[route] = nextHopIp,
-   HasIp(nextHop, nextHopIp).
-Route_nextHop[route] = nextHop <-
-   nextHop = Node_NONE[],
-   InstalledRoute(route),
-   Route_nextHopIp[route] = nextHopIp,
-   !HasIp(_, nextHopIp).
-Route_nextHop[route] = nextHop <-
-   nextHop = Node_NONE[],
-   InstalledRoute(route),
-   Route_nextHopIp[route] = Ip_ZERO[].
+
+RouteDetails_admin[route] = admin <-
+   Route_admin[route] = admin.
+RouteDetails_admin[route] = admin <-
+   Route(route),
+   !(Route_admin[route] = _),
+   admin = -1.
+
+RouteDetails_cost[route] = cost <-
+   Route_cost[route] = cost.
+RouteDetails_cost[route] = cost <-
+   Route(route),
+   !(Route_cost[route] = _),
+   cost = -1.
+
+RouteDetails_nextHop[route] = nextHop <-
+   Route(route),
+   RouteDetails_nextHopIp[route] = nextHopIp,
+   (
+      HasIp(nextHop, nextHopIp) ;
+      (
+         nextHop = Node_NONE[],
+         !HasIp(_, nextHopIp)
+      )
+   ).
+RouteDetails_nextHop[route] = nextHop <-
+   Route(route),
+   RouteDetails_nextHopIp[route] = Ip_ZERO[],
+   nextHop = Node_NONE[].
+
+RouteDetails_nextHopInt[route] = nextHopInt <-
+   InterfaceRoute_nextHopInt[route] = nextHopInt.
+RouteDetails_nextHopInt[route] = nextHopInt <-
+   Route(route),
+   !(InterfaceRoute_nextHopInt[route] = _),
+   nextHopInt = Interface_DYNAMIC[].
+
+RouteDetails_nextHopIp[route] = nextHopIp <-
+   Route_nextHopIp[route] = nextHopIp.
+RouteDetails_nextHopIp[route] = nextHopIp <-
+   Route(route),
+   !(Route_nextHopIp[route] = _),
+   nextHopIp = Ip_ZERO[].
+
+RouteDetails_tag[route] = tag <-
+   Route_tag[route] = tag.
+RouteDetails_tag[route] = tag <-
+   Route(route),
+   !(Route_tag[route] = _),
+   tag = -1.
 
 RoutingProtocol_AGGREGATE[] = x <-
    RoutingProtocol_name(x:"aggregate").   
@@ -125,27 +159,29 @@ RoutingProtocol_OSPF_E2[] = x <-
 RoutingProtocol_STATIC[] = x <-
    RoutingProtocol_name(x:"static").
 
-SetStaticIntRoute(node, network, nextHopIp, nextHopInt, admin) <-
-   SetStaticIntRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, nextHopInt, admin),
+SetStaticIntRoute(node, network, nextHopIp, nextHopInt, admin, tag) <-
+   SetStaticIntRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, nextHopInt, admin, tag),
    Network_constructor[network_start, network_end, prefix_length] = network.
 
-SetStaticRoute(node, network, nextHopIp, admin) <-
-   SetStaticRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, admin),
+SetStaticRoute(node, network, nextHopIp, admin, tag) <-
+   SetStaticRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, admin, tag),
    Network_constructor[network_start, network_end, prefix_length] = network.
 
 // static route with next hop interface
 StaticIntRoute(route),
    Route(route),
    InterfaceRoute_constructor[node, network, nextHopInt, protocol] = route,
+   InterfaceRoute(route),
+   InterfaceRoute_nextHopInt[route] = nextHopInt,
    Route_admin[route] = admin,
    Route_cost[route] = cost,
    Route_network[route] = network,
    Route_nextHopIp[route] = nextHopIp,
-   Route_nextHopInt[route] = nextHopInt,
    Route_node[route] = node,
-   Route_protocol[route] = protocol
+   Route_protocol[route] = protocol,
+   Route_tag[route] = tag
 <-
-   SetStaticIntRoute(node, network, nextHopIp, nextHopInt, admin),
+   SetStaticIntRoute(node, network, nextHopIp, nextHopInt, admin, tag),
    cost = 0,
    protocol = RoutingProtocol_STATIC[].
 
@@ -158,23 +194,13 @@ StaticRoute(route),
    Route_network[route] = network,
    Route_nextHopIp[route] = nextHopIp,
    Route_node[route] = node,
-   Route_protocol[route] = protocol
+   Route_protocol[route] = protocol,
+   Route_tag[route] = tag
 <-
    LongestPrefixNetworkMatch(node, nextHopIp, _),
-   SetStaticRoute(node, network, nextHopIp, admin),
+   SetStaticRoute(node, network, nextHopIp, admin, tag),
    cost = 0,
    protocol = RoutingProtocol_STATIC[].
-
-/*
-// exact match
-StaticRoute(node, network, nextHop, nextHopIp, admin) <-
-   LongestPrefixNetworkMatch(node, staticNextHopIp, matchNet),
-   SetStaticRoute(node, network, staticNextHopIp, admin),
-   InstalledRoute(node, matchNet, _, _, _, _, _),
-   nextHopIp = staticNextHopIp,
-   SetIpInt(nextHop, _, staticNextHopIp, prefixLength),
-   NetworkOf[staticNextHopIp, prefixLength] = matchNet.
-*/
 
 lang:compiler:disableError:NEGATION_RECURSION[] = true.
 lang:compiler:disableWarning:NEGATION_RECURSION[] = true.

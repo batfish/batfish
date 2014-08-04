@@ -2,6 +2,7 @@ block(`Bgp_rules) {
    alias_all(`libbatfish:Bgp),
    alias_all(`libbatfish:BgpAdvertisement),
    alias_all(`libbatfish:CommunityList),
+   alias_all(`libbatfish:GeneratedRoute),
    alias_all(`libbatfish:Interface),
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:Layer2),
@@ -137,45 +138,62 @@ AdvertisementCommunity(advert, community) <-
 BestBgpAdvertisement(advert) <-
    MinAsPathLengthBgpAdvertisement(advert).
 
-BestBgpRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
-   (
-      (
-         type = AdvertisementType_BGP_TI[],
-         protocol = RoutingProtocol_BGP[]
-      );
-      (
-         type = AdvertisementType_IBGP_TI[],
-         protocol = RoutingProtocol_IBGP[]
-      )
-   ),
+BestBgpRoute(route),
+   Route(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   BestBgpRouteNetwork(network),
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   type = AdvertisementType_BGP_TI[],
+   protocol = RoutingProtocol_BGP[],
    BgpAdvertisement_type[advert] =  type,
    BgpAdvertisement_network[advert] =  network,
    BgpAdvertisement_nextHopIp[advert] =  nextHopIp,
    BgpAdvertisement_dstNode[advert] =  node,
    BgpAdvertisement_med[advert] =  cost,
-   HasIp(nextHop, nextHopIp),
    BestBgpAdvertisement(advert),
    SetNodeVendor(node, vendor),
    AdministrativeDistance[vendor, protocol] = admin.
 
-BestPerProtocolRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) <-
-   BestBgpRoute(node, network, nextHop, nextHopIp, admin, cost, protocol),
-   (
-      protocol != RoutingProtocol_IBGP[] ;
-      (
-         otherAdvertProtocol  = RoutingProtocol_BGP[],
-         !BestBgpRoute(node, network, _, _, _, _, otherAdvertProtocol) 
-      )
-   ).
+BestIbgpRoute(route),
+   Route(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   type = AdvertisementType_IBGP_TI[],
+   protocol = RoutingProtocol_IBGP[],
+   BgpAdvertisement_type[advert] =  type,
+   BgpAdvertisement_network[advert] =  network,
+   BgpAdvertisement_nextHopIp[advert] =  nextHopIp,
+   BgpAdvertisement_dstNode[advert] =  node,
+   BgpAdvertisement_med[advert] =  cost,
+   BestBgpAdvertisement(advert),
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin,
+   !BestBgpRouteNetwork(network).
+
+BestPerProtocolRoute(route) <-
+   BestBgpRoute(route) ;
+   BestIbgpRoute(route).
 
 // advertise an internally received route
 BgpAdvertisement(advert),
-BgpAdvertisement_constructor[type, dstIpBlock, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol] = advert,
+BgpAdvertisement_constructor[type, network, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol] = advert,
 BgpAdvertisement_dstIp[advert] =  dstIp,
 BgpAdvertisement_dstNode[advert] =  dstNode,
 BgpAdvertisement_localPref[advert] =  localPref,
 BgpAdvertisement_med[advert] =  med,
-BgpAdvertisement_network[advert] =  dstIpBlock,
+BgpAdvertisement_network[advert] =  network,
 BgpAdvertisement_nextHopIp[advert] =  nextHopIp,
 BgpAdvertisement_originatorIp[advert] =  originatorIp,
 BgpAdvertisement_originType[advert] =  originType,
@@ -196,7 +214,7 @@ AdvertisementPathSize[advert] = 1
       !SetBgpOriginationPolicy(srcNode, dstIp, _);
       (
          SetBgpOriginationPolicy(srcNode, dstIp, map),
-         PolicyMapPermitRoute(map, _, dstIpBlock, origNextHop, origNextHopIp, admin, cost, srcProtocol)
+         PolicyMapPermitRoute(map, _, route)
       )
    ),
    (
@@ -206,24 +224,19 @@ AdvertisementPathSize[advert] = 1
          localPref = 100
       )
    ),
+   Route_network[route] = network,
+   Route_protocol[route] = srcProtocol,
+   Route_node[route] = srcNode,
    (
+      BgpGeneratedRoute(route) ;
       (
-         /*!BgpGeneratedRoute(srcNode, dstIpBlock),
-         !BgpNeighborGeneratedRoute(srcNode, dstIp, dstIpBlock),*/
-         InstalledRoute(srcNode, dstIpBlock, origNextHop, origNextHopIp, admin, cost, srcProtocol),
+         BgpNeighborGeneratedRoute(route),
+         BgpNeighborGeneratedRoute_neighborIp[route] = dstIp
+      ) ;
+      (
+         InstalledRoute(route),
          srcProtocol != RoutingProtocol_BGP[],
          srcProtocol != RoutingProtocol_IBGP[]
-      );
-      (
-         origNextHop = Node_NONE[],
-         origNextHopIp = Ip_ZERO[],
-         admin = 0,
-         cost = 0,
-         srcProtocol = RoutingProtocol_AGGREGATE[],
-         (
-            BgpGeneratedRoute(srcNode, dstIpBlock) ;
-            BgpNeighborGeneratedRoute(srcNode, dstIp, dstIpBlock)
-         )
       )
    ).
 // advertise a transit route received through ibgp
@@ -475,27 +488,32 @@ AdvertisementPathSize[advert] = pathSize
    ),
    IbgpNeighbors(srcNode, srcIp, dstNode, dstIp).
 
-BgpGeneratedRoute(node, network) <-
+BgpGeneratedRoute(route),
+   Route(route),
+   GeneratedRoute_constructor[node, network, type] = route,
+   GeneratedRoute(route),
+   GeneratedRoute_type[route] = type,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
    SetBgpGeneratedRoute(node, network),
-   (
-      !SetBgpGeneratedRoutePolicy(node, network, _);
-      (
-         SetBgpGeneratedRoutePolicy(node, network, map),
-         InstalledRoute(node, contributingNetwork, nextHop, nextHopIp, admin, cost, protocol), 
-         PolicyMapPermitRoute(map, _, contributingNetwork, nextHop, nextHopIp, admin, cost, protocol) 
-      )
-   ).
+   type = GeneratedRouteType_BGP[],
+   protocol = RoutingProtocol_AGGREGATE[].
 
-BgpNeighborGeneratedRoute(node, neighborIp, network) <-
+BgpNeighborGeneratedRoute(route),
+   Route(route),
+   BgpNeighborGeneratedRoute_constructor[node, network, neighborIp] = route,
+   BgpNeighborGeneratedRoute_neighborIp[route] = neighborIp,
+   GeneratedRoute(route),
+   GeneratedRoute_type[route] = type,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
    SetBgpNeighborGeneratedRoute(node, neighborIp, network),
-   (
-      !SetBgpNeighborGeneratedRoutePolicy(node, neighborIp, network, _);
-      (
-         SetBgpNeighborGeneratedRoutePolicy(node, neighborIp, network, map),
-         InstalledRoute(node, contributingNetwork, nextHop, nextHopIp, admin, cost, protocol), 
-         PolicyMapPermitRoute(map, _, contributingNetwork, nextHop, nextHopIp, admin, cost, protocol) 
-      )
-   ).
+   type = GeneratedRouteType_BGP_NEIGHBOR[],
+   protocol = RoutingProtocol_AGGREGATE[].
 
 BgpNeighbors(node1, ip1, node2, ip2) <-
    IpReadyInt(node1, int1, ip1, _),
@@ -504,9 +522,23 @@ BgpNeighbors(node1, ip1, node2, ip2) <-
    SetBgpNeighborIp(node1, ip2),
    SetBgpNeighborIp(node2, ip1).
 
+GeneratedRoutePolicy(route, policy) <-
+   BgpGeneratedRoute(route),
+   Route_network[route] = network,
+   Route_node[route] = node,
+   SetBgpGeneratedRoutePolicy(node, network, policy).
+GeneratedRoutePolicy(route, policy) <-
+   BgpNeighborGeneratedRoute(route),
+   BgpNeighborGeneratedRoute_neighborIp[route] = neighborIp,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   SetBgpNeighborGeneratedRoutePolicy(node, neighborIp, network, policy).
+
 IbgpNeighborTo(node, neighbor, neighborIp) <-
    NetworkOf[neighborIp, prefix_length] = neighborNetwork,
-   InstalledRoute(node, neighborNetwork, _, _, _, _, _),
+   InstalledRoute(route),
+   Route_network[route] = neighborNetwork,
+   Route_node[route] = node,
    IpReadyInt(neighbor, _, neighborIp, prefix_length),
    SetRemoteAs(node, neighborIp, as),
    SetLocalAs(node, neighborIp, as).
@@ -564,32 +596,25 @@ need_PolicyMapClauseMatchAdvert(map, advert)
    BgpAdvertisement_type[advert] =  type,
    SetBgpImportPolicy(dstNode, srcIp, map).
 
-need_PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, srcProtocol) <-
-   PolicyMapHasClause(map, clause),
+need_PolicyMapMatchRoute(map, route) <-
    (
-      InstalledRoute(node, network, nextHop, nextHopIp, admin, cost, srcProtocol) ;
+      InstalledRoute(route) ;
+      BgpGeneratedRoute(route) ;
       (
-         (
-            SetBgpGeneratedRoute(node, network) ;
-            SetBgpNeighborGeneratedRoute(node, neighborIp, network)
-         ),
-         nextHop = Node_NONE[],
-         nextHopIp = Ip_ZERO[],
-         admin = 0,
-         cost = 0,
-         srcProtocol = RoutingProtocol_AGGREGATE[]
+         BgpNeighborGeneratedRoute(route),
+         BgpNeighborGeneratedRoute_neighborIp[route] = neighborIp
       )
    ),
+   Route_node[route] = node,
    SetBgpOriginationPolicy(node, neighborIp, map),
    BgpNeighbors(node, _, _, neighborIp).
-need_PolicyMapClauseMatchRoute(map, clause, contributingNetwork, nextHop, nextHopIp, admin, cost, protocol) <-
-   PolicyMapHasClause(map, clause),
-   InstalledRoute(node, contributingNetwork, nextHop, nextHopIp, admin, cost, protocol),
-   SetBgpGeneratedRoutePolicy(node, _, map).
-need_PolicyMapClauseMatchRoute(map, clause, contributingNetwork, nextHop, nextHopIp, admin, cost, protocol) <-
-   PolicyMapHasClause(map, clause),
-   InstalledRoute(node, contributingNetwork, nextHop, nextHopIp, admin, cost, protocol),
-   SetBgpNeighborGeneratedRoutePolicy(node, _, _, map).
+need_PolicyMapMatchRoute(map, route) <-
+   InstalledRoute(route),
+   Route_node[route] = node,
+   (
+      SetBgpGeneratedRoutePolicy(node, _, map) ;
+      SetBgpNeighborGeneratedRoutePolicy(node, _, _, map)
+   ).
 
 ReceivedBgpAdvertisement(advert) <-
    BgpAdvertisement_type[advert] =  type,

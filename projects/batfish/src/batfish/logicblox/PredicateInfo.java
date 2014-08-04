@@ -87,13 +87,7 @@ public class PredicateInfo {
       currentNames.add("libbatfish:Route:BestStaticRoute");
       currentNames.add("libbatfish:Route:InstalledRoute");
       valueTypeList = new ArrayList<LBValueType>();
-      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // node
-      valueTypeList.add(LBValueType.ENTITY_INDEX_NETWORK); // network
-      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // nextHop
-      valueTypeList.add(LBValueType.ENTITY_INDEX_IP); // nextHopIp
-      valueTypeList.add(LBValueType.INT); // admin
-      valueTypeList.add(LBValueType.INT); // cost
-      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // protocol
+      valueTypeList.add(LBValueType.ENTITY_INDEX_ROUTE); // route
       updateQualifiedNameMap(currentNames);
       addValueTypes(currentNames, valueTypeList);
       currentNames.clear();

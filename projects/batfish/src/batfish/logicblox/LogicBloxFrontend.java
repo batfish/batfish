@@ -89,8 +89,8 @@ public class LogicBloxFrontend {
    }
 
    public String addProject(File projectPath, String additionalLibraryPath) {
-      AddProject ap = Workspace.Command.addProject(projectPath, true,
-            true, additionalLibraryPath);
+      AddProject ap = Workspace.Command.addProject(projectPath, true, true,
+            additionalLibraryPath);
       List<Workspace.Result> results = null;
       try {
          results = _workspace.transaction(Collections.singletonList(ap));
@@ -264,6 +264,15 @@ public class LogicBloxFrontend {
          }
          break;
 
+      case ENTITY_INDEX_ROUTE:
+         ec = (EntityColumn) column;
+         BigInteger[] routeIndices = ((UInt64Column) ec.getIndexColumn()
+               .unwrap()).getRows();
+         for (BigInteger index : routeIndices) {
+            textColumn.add(_entityTable.getRoute(index));
+         }
+         break;
+
       default:
          throw new Error("Invalid LBValueType");
       }
@@ -378,8 +387,8 @@ public class LogicBloxFrontend {
 
    public void postFacts(Map<String, StringBuilder> factBins)
          throws ServiceClientException {
-      String base = BLOXWEB_PROTOCOL + "://" + _lbHost + ":"
-            + BLOXWEB_PORT + "/" + SERVICE_DIR + "/";
+      String base = BLOXWEB_PROTOCOL + "://" + _lbHost + ":" + BLOXWEB_PORT
+            + "/" + SERVICE_DIR + "/";
       TCPTransport transport = Transports.tcp(false);
       HttpClient client = transport.getHttpClient();
       client.setTimeout(BLOXWEB_TIMEOUT_MS);

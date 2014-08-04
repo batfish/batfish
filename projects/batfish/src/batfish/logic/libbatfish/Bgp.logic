@@ -35,23 +35,23 @@ BestBgpAdvertisement(advert) ->
 ///   [nextHop] at ip address [nextHopIp], with minimal administrative distance
 ///   [admin], and minimal cost for that administrative distance [cost], and
 ///   which is a preferred path.
-BestBgpRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) ->
+BestBgpRoute(route) ->
+   Route(route).
+
+BestIbgpRoute(route) ->
+   Route(route).
+
+BgpGeneratedRoute(route) ->
+   Route(route).
+
+BgpNeighborGeneratedRoute(route) ->
+   Route(route).
+
+BgpNeighborGeneratedRoute_constructor[node, network, neighborIp] = route ->
    Node(node),
    Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),   
-   int(cost),
-   RoutingProtocol(protocol).   
-
-BgpGeneratedRoute(node, network) ->
-   Node(node),
-   Network(network).
-
-BgpNeighborGeneratedRoute(node, neighborIp, network) ->
-   Node(node),
    Ip(neighborIp),
-   Network(network).
+   Route(route).
 
 /// [BgpNeighbors(node1, ip1, node2, ip2)] =
 ///   Node [node1] is a neighbor to [node2] at addresses [ip1] and [ip2]
@@ -202,6 +202,9 @@ SetRouteReflectorClient(node, neighborIp, clusterId) ->
    int(clusterId).
 
 // END CODE
+   }),
+   clauses(`{
+lang:constructor(`BgpNeighborGeneratedRoute_constructor).
    })
 } <-- .
 

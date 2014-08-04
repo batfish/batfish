@@ -6,12 +6,14 @@ public class StaticRoute extends Route {
 
    private int _administrativeCost;
    private String _nextHopInterface;
+   private int _tag;
 
    public StaticRoute(Ip prefix, int prefixLength, Ip nextHopIp,
-         String nextHopInterface, int administrativeCost) {
+         String nextHopInterface, int administrativeCost, int tag) {
       super(prefix, prefixLength, nextHopIp);
       _nextHopInterface = nextHopInterface;
       _administrativeCost = administrativeCost;
+      _tag = tag;
    }
 
    @Override
@@ -44,6 +46,10 @@ public class StaticRoute extends Route {
    @Override
    public RouteType getRouteType() {
       return RouteType.STATIC;
+   }
+
+   public int getTag() {
+      return _tag;
    }
 
    public boolean sameParseTree(StaticRoute route) {

@@ -96,7 +96,7 @@ public class Batfish {
    private static final String EDGES_FILENAME = "edges";
    private static final String FIBS_FILENAME = "fibs";
    // private static final String FLOW_SINK_FILENAME = "flow_sinks";
-   private static final String ROUTE_PREDICATE_NAME = "FibNetworkForward";
+   private static final String FIB_PREDICATE_NAME = "FibNetworkForward";
    private static final String SEPARATOR = System.getProperty("file.separator");
    private static final String STATIC_FACT_BLOCK_PREFIX = "libbatfish:";
    private static final String TOPOLOGY_FILENAME = "topology.net";
@@ -203,15 +203,15 @@ public class Batfish {
       Set<Edge> topologyEdges = getTopologyEdges(lbFrontend);
       print(1, "OK\n");
 
-      String installedRoutesQualifiedName = _predicateInfo.getPredicateNames()
-            .get(ROUTE_PREDICATE_NAME);
-      print(1, "Retrieving route information from LogicBlox..");
-      Relation installedRoutes = lbFrontend
-            .queryPredicate(installedRoutesQualifiedName);
+      String fibQualifiedName = _predicateInfo.getPredicateNames()
+            .get(FIB_PREDICATE_NAME);
+      print(1, "Retrieving FIB information from LogicBlox..");
+      Relation fib = lbFrontend
+            .queryPredicate(fibQualifiedName);
       print(1, "OK\n");
       print(1, "Caclulating forwarding rules..");
       Map<String, TreeSet<FibRow>> fibs = getRouteForwardingRules(
-            installedRoutes, lbFrontend);
+            fib, lbFrontend);
       print(1, "OK\n");
 
       Path fibsPath = Paths.get(_settings.getDataPlaneDir(), FIBS_FILENAME);
@@ -935,6 +935,9 @@ public class Batfish {
             ParseTreeWalker walker = new ParseTreeWalker();
             extractor = new CiscoControlPlaneExtractor(fileText);
             walker.walk(extractor, tree);
+            for (String warning : extractor.getWarnings()) {
+               error(0, warning);
+            }
             vc = extractor.getVendorConfiguration();
             assert Boolean.TRUE;
          }

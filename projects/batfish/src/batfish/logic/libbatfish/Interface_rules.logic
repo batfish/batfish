@@ -15,6 +15,12 @@ HasNetwork(node, network) <-
 //IpOwner[ip] = node <-
 //   HasIp(node, ip).
 
+Interface_DYNAMIC[] = interface <-
+   Interface_name(interface:"dynamic").
+
+Interface_NULL[] = interface <-
+   Interface_name(interface:"null").
+
 IpReadyInt(node, interface, ip, prefix_length) <-
    SetIpInt(node, interface, ip, prefix_length),
    SetActiveInt(node, interface).

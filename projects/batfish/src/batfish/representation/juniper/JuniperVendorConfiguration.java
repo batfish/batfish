@@ -519,7 +519,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       String nextHopInterface = staticRoute.getNextHopInterface();
       int prefixLength = Util.numSubnetBits(staticRoute.getMask());
       return new batfish.representation.StaticRoute(prefix, prefixLength,
-            nextHopIp, nextHopInterface, staticRoute.getDistance());
+            nextHopIp, nextHopInterface, staticRoute.getDistance(), staticRoute.getTag());
    }
 
    private int _asNum;

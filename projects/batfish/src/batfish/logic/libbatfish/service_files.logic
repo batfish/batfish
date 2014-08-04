@@ -165,11 +165,18 @@ block(`service_files) {
       }.
 
 // Route
+      file_definition_by_name["SetStaticIntRoute_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,NEXTHOPINT,ADMIN,TAG",
+         column_formats[] = "string,integer,integer,integer,integer,string,integer,integer"
+      }.
+
       file_definition_by_name["SetStaticRoute_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,ADMIN",
-         column_formats[] = "string,integer,integer,integer,integer,integer"
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,ADMIN,TAG",
+         column_formats[] = "string,integer,integer,integer,integer,integer,integer"
       }.
 
 // Ospf

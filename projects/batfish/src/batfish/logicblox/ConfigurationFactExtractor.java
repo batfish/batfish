@@ -529,8 +529,7 @@ public class ConfigurationFactExtractor {
                switch (matchLine.getType()) {
                case AS_PATH_ACCESS_LIST:
                   // TODO: implement
-                  // throw new Error("not implemented");
-                  break;
+                  throw new Error("not implemented");
 
                case COMMUNITY_LIST:
                   PolicyMapMatchCommunityListLine mclLine = (PolicyMapMatchCommunityListLine) matchLine;
@@ -542,11 +541,8 @@ public class ConfigurationFactExtractor {
                   break;
 
                case IP_ACCESS_LIST:
-                  // throw new Error("not implemented");
-                  System.err.println("WARNING: " + hostname
-                        + ": MATCH IP ACCESS LIST NOT IMPLEMENTED");
                   // TODO: implement
-                  break;
+                  throw new Error("not implemented");
 
                case NEIGHBOR:
                   PolicyMapMatchNeighborLine pmmnl = (PolicyMapMatchNeighborLine) matchLine;
@@ -606,8 +602,7 @@ public class ConfigurationFactExtractor {
 
                case COMMUNITY_NONE:
                   // TODO: implement
-                  // throw new Error("not implemented");
-                  break;
+                  throw new Error("not implemented");
 
                case DELETE_COMMUNITY:
                   PolicyMapSetDeleteCommunityLine sdcLine = (PolicyMapSetDeleteCommunityLine) setLine;
@@ -633,13 +628,11 @@ public class ConfigurationFactExtractor {
 
                case NEXT_HOP:
                   // TODO: implement
-                  // throw new Error("not implemented");
-                  break;
+                  throw new Error("not implemented");
 
                case AS_PATH_PREPEND:
                   // TODO: implement
-                  // throw new Error("not implemented");
-                  break;
+                  throw new Error("not implemented");
 
                default:
                   throw new Error("invalid set type");
@@ -756,23 +749,34 @@ public class ConfigurationFactExtractor {
    private void writeStaticRoutes() {
       StringBuilder wSetNetwork = _factBins.get("SetNetwork");
       StringBuilder wSetStaticRoute_flat = _factBins.get("SetStaticRoute_flat");
+      StringBuilder wSetStaticIntRoute_flat = _factBins
+            .get("SetStaticIntRoute_flat");
       String hostName = _configuration.getHostname();
       for (StaticRoute route : _configuration.getStaticRoutes()) {
          Ip prefix = route.getPrefix();
          Ip nextHopIp = route.getNextHopIp();
-         if (nextHopIp == null) { // use next hop interface instead
-            // TODO: do this correctly
+         if (nextHopIp == null) {
             nextHopIp = new Ip(0);
          }
          int prefix_length = route.getPrefixLength();
          long network_start = prefix.asLong();
          long network_end = Util.getNetworkEnd(network_start, prefix_length);
          int distance = route.getDistance();
+         int tag = route.getTag();
+         String nextHopInt = route.getNextHopInterface();
          wSetNetwork.append(network_start + "|" + network_end + "|"
                + prefix_length + "\n");
-         wSetStaticRoute_flat.append(hostName + "|" + network_start + "|"
-               + network_end + "|" + prefix_length + "|" + nextHopIp.asLong()
-               + "|" + distance + "\n");
+         if (nextHopInt != null) { // use next hop interface instead
+            wSetStaticIntRoute_flat.append(hostName + "|" + network_start + "|"
+                  + network_end + "|" + prefix_length + "|"
+                  + nextHopIp.asLong() + "|" + nextHopInt + "|" + distance
+                  + "|" + tag + "\n");
+         }
+         else {
+            wSetStaticRoute_flat.append(hostName + "|" + network_start + "|"
+                  + network_end + "|" + prefix_length + "|"
+                  + nextHopIp.asLong() + "|" + distance + "|" + tag + "\n");
+         }
       }
    }
 

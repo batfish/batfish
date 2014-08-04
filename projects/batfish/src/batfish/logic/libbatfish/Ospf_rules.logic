@@ -1,4 +1,5 @@
 block(`Ospf_rules) {
+   alias_all(`libbatfish:GeneratedRoute),
    alias_all(`libbatfish:Interface),
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:Layer2),
@@ -117,13 +118,10 @@ OspfE2Route(route),
 
 OspfExport(node, network, newCost) <-
    (
-      (
-         InstalledRoute(route),
-         Route_cost[route] = oldCost
-      ) ;
+      InstalledRoute(route);
       (
          OspfGeneratedRoute(route),
-         oldCost = 0
+         ActiveGeneratedRoute(route)
       )
    ),
    Route_network[route] = network,
@@ -141,21 +139,22 @@ OspfExport(node, network, newCost) <-
 
 OspfGeneratedRoute(route),
    Route(route),
-   OspfGeneratedRoute_constructor[node, network] = route,
+   GeneratedRoute_constructor[node, network, type] = route,
+   GeneratedRoute(route),
+   GeneratedRoute_type[route] = type,
    Route_network[route] = network,
    Route_node[route] = node,
    Route_protocol[route] = protocol
 <-
    SetOspfGeneratedRoute(node, network),
-   (
-      !SetOspfGeneratedRoutePolicy(node, network, _) ;
-      (
-         SetOspfGeneratedRoutePolicy(node, network, map),
-         InstalledRoute(contributingRoute),
-         PolicyMapPermitRoute(map, _, contributingRoute)
-      )
-   ),
+   type = GeneratedRouteType_OSPF[],
    protocol = RoutingProtocol_AGGREGATE[].
+
+GeneratedRoutePolicy(route, policy) <-
+   OspfGeneratedRoute(route),
+   Route_network[route] = network,
+   Route_node[route] = node,
+   SetOspfGeneratedRoutePolicy(node, network, policy).
 
 // distribute connected routes from another area into backbone area
 OspfIARoute(route),

@@ -618,7 +618,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   case PROTOCOL:
                   case TAG:
                      break;
-                  
+
                   // disallowed match lines
                   case AS_PATH_ACCESS_LIST:
                   case COMMUNITY_LIST:
@@ -754,17 +754,17 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          break;
 
       case TAG:
-         RouteMapMatchTagLine tagLine = (RouteMapMatchTagLine)matchLine;
+         RouteMapMatchTagLine tagLine = (RouteMapMatchTagLine) matchLine;
          newLine = new PolicyMapMatchTagLine(tagLine.getTags());
          break;
 
       case NEIGHBOR:
          // TODO: implement
-         //break;
+         // break;
 
       case PROTOCOL:
          // TODO: implement
-         //break;
+         // break;
 
       default:
          throw new Error("bad type");
@@ -817,8 +817,11 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       Ip prefix = staticRoute.getPrefix();
       String nextHopInterface = staticRoute.getNextHopInterface();
       int prefixLength = staticRoute.getMask().numSubnetBits();
+      Integer oldTag = staticRoute.getTag();
+      int tag;
+      tag = oldTag != null ? oldTag : -1;
       return new batfish.representation.StaticRoute(prefix, prefixLength,
-            nextHopIp, nextHopInterface, staticRoute.getDistance());
+            nextHopIp, nextHopInterface, staticRoute.getDistance(), tag);
 
    }
 
