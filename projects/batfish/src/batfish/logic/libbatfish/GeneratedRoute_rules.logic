@@ -54,8 +54,7 @@ GlobalGeneratedRoute(route),
    SetGeneratedRoute(node, network, admin),
    type = GeneratedRouteType_GLOBAL[],
    cost = 0,
-   protocol = RoutingProtocol_AGGREGATE[],
-   tag = -1.
+   protocol = RoutingProtocol_AGGREGATE[].
    
 GeneratedRoutePolicy(route, policy) <-
    GeneratedRoute(route),
