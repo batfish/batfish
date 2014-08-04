@@ -534,7 +534,9 @@ public class ConfigurationFactExtractor {
                switch (matchLine.getType()) {
                case AS_PATH_ACCESS_LIST:
                   // TODO: implement
-                  throw new Error("not implemented");
+                  //throw new Error("not implemented");
+                  System.err.println("WARNING: Policy map matching of AS path acls not implemented!");
+                  break;
 
                case COMMUNITY_LIST:
                   PolicyMapMatchCommunityListLine mclLine = (PolicyMapMatchCommunityListLine) matchLine;
@@ -547,7 +549,7 @@ public class ConfigurationFactExtractor {
 
                case IP_ACCESS_LIST:
                   // TODO: implement
-                  throw new Error("not implemented");
+                  throw new Error("ERROR: Policy map matching of IP acls (packet filtering?) not implemented!");
 
                case NEIGHBOR:
                   PolicyMapMatchNeighborLine pmmnl = (PolicyMapMatchNeighborLine) matchLine;
