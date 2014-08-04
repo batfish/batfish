@@ -249,6 +249,16 @@ block(`service_config) {
          delim_file_binding[] = "SetPolicyMapClauseSetMetric"
       }.
 
+      service_by_prefix["/batfish/SetPolicyMapClauseSetNextHopIp"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseSetNextHopIp"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseSetOriginType"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseSetOriginType"
+      }.
+
 // Bgp
       service_by_prefix["/batfish/SetBgpDefaultLocalPref"] = x,
       delim_service(x) {

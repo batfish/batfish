@@ -475,6 +475,26 @@ block(`service_init) {
             }
       }.
 
+      file_binding_by_name["SetPolicyMapClauseSetNextHopIp"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseSetNextHopIp",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseSetNextHopIp"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,NEXTHOPIP"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapClauseSetOriginType"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseSetOriginType",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseSetOriginType"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,ORIGINTYPE"
+            }
+      }.
+
 // Bgp
       file_binding_by_name["SetBgpDefaultLocalPref"] = fb,
       file_binding(fb) {

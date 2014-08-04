@@ -337,6 +337,20 @@ block(`service_files) {
          column_formats[] = "string,integer,integer"
       }.
 
+      file_definition_by_name["SetPolicyMapClauseSetNextHopIp"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,NEXTHOPIP",
+         column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseSetOriginType"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,ORIGINTYPE",
+         column_formats[] = "string,integer,string"
+      }.
+
 // Bgp
       file_definition_by_name["SetBgpDefaultLocalPref"] = fd,
       file_definition(fd) {

@@ -30,6 +30,7 @@ import batfish.representation.PolicyMapSetDeleteCommunityLine;
 import batfish.representation.PolicyMapSetLine;
 import batfish.representation.PolicyMapSetLocalPreferenceLine;
 import batfish.representation.PolicyMapSetMetricLine;
+import batfish.representation.PolicyMapSetNextHopLine;
 import batfish.representation.Protocol;
 import batfish.representation.RouteFilterLengthRangeLine;
 import batfish.representation.RouteFilterLine;
@@ -507,6 +508,10 @@ public class ConfigurationFactExtractor {
             .get("SetPolicyMapClauseSetMetric");
       StringBuilder wSetPolicyMapClauseMatchTag = _factBins
             .get("SetPolicyMapClauseMatchTag");
+      StringBuilder wSetPolicyMapClauseSetNextHopIp = _factBins
+            .get("SetPolicyMapClauseSetNextHopIp");
+      StringBuilder wSetPolicyMapClauseSetOriginType = _factBins
+            .get("SetPolicyMapClauseSetOriginType");
       String hostname = _configuration.getHostname();
       for (PolicyMap map : _configuration.getPolicyMaps().values()) {
          String mapName = hostname + ":" + map.getMapName();
@@ -592,6 +597,10 @@ public class ConfigurationFactExtractor {
                   }
                   break;
 
+               case AS_PATH_PREPEND:
+                  // TODO: implement
+                  throw new Error("not implemented");
+
                case COMMUNITY:
                   PolicyMapSetCommunityLine scLine = (PolicyMapSetCommunityLine) setLine;
                   for (Long community : scLine.getCommunities()) {
@@ -627,12 +636,12 @@ public class ConfigurationFactExtractor {
                   break;
 
                case NEXT_HOP:
-                  // TODO: implement
-                  throw new Error("not implemented");
-
-               case AS_PATH_PREPEND:
-                  // TODO: implement
-                  throw new Error("not implemented");
+                  PolicyMapSetNextHopLine pmsnhl = (PolicyMapSetNextHopLine) setLine;
+                  for (Ip nextHopIp : pmsnhl.getNextHops()) {
+                     wSetPolicyMapClauseSetNextHopIp.append(mapName + "|" + i
+                           + "|" + nextHopIp.asLong() + "\n");
+                  }
+                  break;
 
                default:
                   throw new Error("invalid set type");

@@ -99,7 +99,13 @@ PolicyMapClauseTransformAdvert(map, clause, prevAdvert, nextHopIp, localPref, or
    BgpAdvertisement_med[prevAdvert] =  prevMed,
    BgpAdvertisement_srcProtocol[prevAdvert] =  prevSrcProtocol,
    //TODO: complete untransformed cases
-   prevNextHopIp = nextHopIp,
+   (
+      SetPolicyMapClauseSetNextHopIp(map, clause, nextHopIp);
+      (
+         !SetPolicyMapClauseSetNextHopIp(map, clause, _),
+         prevNextHopIp = nextHopIp
+      )
+   ),
    (
       SetPolicyMapClauseSetLocalPreference(map, clause, localPref);
       (
@@ -107,7 +113,13 @@ PolicyMapClauseTransformAdvert(map, clause, prevAdvert, nextHopIp, localPref, or
          prevLocalPref = localPref
       )
    ),
-   prevOriginType = originType,
+   (
+      SetPolicyMapClauseSetOriginType(map, clause, originType);
+      (
+         !SetPolicyMapClauseSetOriginType(map, clause, _),
+         prevOriginType = originType
+      )
+   ),
    (
       SetPolicyMapClauseSetMetric(map, clause, med);
       (

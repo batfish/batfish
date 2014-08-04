@@ -125,6 +125,16 @@ SetPolicyMapClauseSetMetric(map, clause, metric) ->
    int(clause),
    int(metric).
    
+SetPolicyMapClauseSetNextHopIp(map, clause, nextHopIp) ->
+   PolicyMap(map),
+   int(clause),
+   Ip(nextHopIp).
+
+SetPolicyMapClauseSetOriginType(map, clause, originType) ->
+   PolicyMap(map),
+   int(clause),
+   OriginType(originType).
+
 // END CODE
    })
 } <-- .
