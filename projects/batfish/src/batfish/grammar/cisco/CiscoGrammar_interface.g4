@@ -20,6 +20,7 @@ if_stanza
 	| ip_ospf_cost_if_stanza
 	| ip_ospf_dead_interval_if_stanza
 	| ip_ospf_dead_interval_minimal_if_stanza
+	| ip_policy_if_stanza
 	| no_ip_address_if_stanza
 	| null_if_stanza
 	| shutdown_if_stanza
@@ -80,6 +81,10 @@ ip_ospf_dead_interval_if_stanza
 ip_ospf_dead_interval_minimal_if_stanza
 :
 	IP OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = DEC NEWLINE
+;
+
+ip_policy_if_stanza:
+   IP POLICY name=~NEWLINE NEWLINE
 ;
 
 no_ip_address_if_stanza

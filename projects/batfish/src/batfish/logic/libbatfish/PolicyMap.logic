@@ -1,7 +1,9 @@
 block(`PolicyMap) {
    alias_all(`libbatfish:BgpAdvertisement),
    alias_all(`libbatfish:CommunityList),
+   alias_all(`libbatfish:Flow),
    alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:IpAccessList),
    alias_all(`libbatfish:Node),
    alias_all(`libbatfish:Route),
    alias_all(`libbatfish:RouteFilter),
@@ -11,6 +13,10 @@ block(`PolicyMap) {
 need_PolicyMapClauseMatchAdvert(map, advert) ->
    PolicyMap(map),
    BgpAdvertisement(advert).
+
+need_PolicyMapMatchFlow(map, flow) ->
+   PolicyMap(map),
+   Flow(flow).
 
 need_PolicyMapMatchRoute(map, route) ->
    PolicyMap(map),
@@ -25,6 +31,11 @@ PolicyMapClauseMatchAdvert(map, clause, advert) ->
    PolicyMap(map),
    int(clause),
    BgpAdvertisement(advert).
+
+PolicyMapClauseMatchFlow(map, clause, flow) ->
+   PolicyMap(map),
+   int(clause),
+   Flow(flow).
 
 PolicyMapClauseMatchRoute(map, clause, route) ->
    PolicyMap(map),
@@ -41,10 +52,21 @@ PolicyMapClauseTransformAdvert(map, clause, prevAdvert, nextHopIp, localPref, or
    int(med),
    RoutingProtocol(srcProtocol).
 
+PolicyMapDenyFlow(map, clause, flow) ->
+   PolicyMap(map),
+   int(clause),
+   Flow(flow).
+
 PolicyMapFirstMatchAdvert[map, advert] = firstClause
 ->
    PolicyMap(map),
    BgpAdvertisement(advert),
+   int(firstClause).
+
+PolicyMapFirstMatchFlow[map, flow] = firstClause
+->
+   PolicyMap(map),
+   Flow(flow),
    int(firstClause).
 
 PolicyMapFirstMatchRoute[map, route] = firstClause ->
@@ -61,6 +83,11 @@ PolicyMapPermitAdvert(map, clause, advert)
    PolicyMap(map),
    int(clause),
    BgpAdvertisement(advert).
+
+PolicyMapPermitFlow(map, clause, flow) ->
+   PolicyMap(map),
+   int(clause),
+   Flow(flow).
 
 PolicyMapPermitRoute(map, clause, route) ->
    PolicyMap(map),
@@ -80,6 +107,11 @@ SetPolicyMapClauseDeleteCommunity(map, clause, list) ->
 SetPolicyMapClauseDeny(map, clause) ->
    PolicyMap(map),
    int(clause).
+
+SetPolicyMapClauseMatchAcl(map, clause, acl) ->
+   PolicyMap(map),
+   int(clause),
+   IpAccessList(acl).
 
 SetPolicyMapClauseMatchCommunityList(map, clause, list) ->
    PolicyMap(map),

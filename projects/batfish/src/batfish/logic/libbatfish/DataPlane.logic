@@ -3,6 +3,7 @@ block(`DataPlane) {
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:IpAccessList),
    alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
    alias_all(`libbatfish:Route),
    export(`{
 // BEGIN CODE
@@ -30,6 +31,11 @@ SetInterfaceFilterOut(node, interface, filter) ->
    Node(node),
    Interface(interface),
    IpAccessList(filter).
+
+SetInterfaceRoutingPolicy(node, interface, policy) ->
+   Node(node),
+   Interface(interface),
+   PolicyMap(policy).
 
 // END CODE
    })

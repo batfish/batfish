@@ -23,25 +23,4 @@ public class PolicyMap implements Serializable {
       return _mapName;
    }
 
-   public boolean sameParseTree(PolicyMap map, String prefix) {
-      boolean res = _mapName.equals(map._mapName);
-      boolean finalRes = res;
-
-      if (_clauses.size() != map._clauses.size()) {
-         System.out.println("PoliMap:Clause:Size " + prefix);
-         return false;
-      }
-      else {
-         for (int i = 0; i < _clauses.size(); i++) {
-            res = _clauses.get(i).sameParseTree(map._clauses.get(i),
-                  "PoliMap:Clause " + prefix);
-            if (res == false) {
-               finalRes = false;
-            }
-         }
-      }
-      return finalRes;
-
-   }
-
 }

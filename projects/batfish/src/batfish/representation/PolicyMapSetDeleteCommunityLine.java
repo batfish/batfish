@@ -19,22 +19,4 @@ public class PolicyMapSetDeleteCommunityLine extends PolicyMapSetLine {
       return PolicyMapSetType.DELETE_COMMUNITY;
    }
 
-   @Override
-   public boolean sameParseTree(PolicyMapSetLine line, String prefix) {
-      boolean res = (line.getType() == PolicyMapSetType.DELETE_COMMUNITY);
-      if (res == false) {
-         System.out.println("PoliMapSetDelCommListLine:Type " + prefix);
-         return res;
-      }
-
-      PolicyMapSetDeleteCommunityLine commLine = (PolicyMapSetDeleteCommunityLine) line;
-
-      res = (_list.getName().equals(commLine._list.getName()));
-      if (res == false) {
-         System.out.println("PoliMapSetDelCommListLine " + prefix);
-
-      }
-      return res;
-   }
-
 }

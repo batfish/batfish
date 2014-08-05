@@ -50,22 +50,4 @@ public class RouteFilterList extends NamedStructure {
       return _lines;
    }
 
-   public boolean sameParseTree(RouteFilterList list, String prefix) {
-      boolean res = _name.equals(list._name);
-      boolean finalRes = res;
-
-      if (_lines.size() != list._lines.size()) {
-         System.out.println("RouteFilterLists:Lines:Size " + prefix);
-         return false;
-      }
-      for (int i = 0; i < _lines.size(); i++) {
-         res = _lines.get(i).sameParseTree(list._lines.get(i));
-         if (res == false) {
-            System.out.println("RouteFilterLists:Lines " + prefix);
-            finalRes = false;
-         }
-      }
-      return finalRes;
-   }
-
 }

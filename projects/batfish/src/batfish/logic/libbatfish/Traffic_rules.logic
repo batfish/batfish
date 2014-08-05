@@ -6,6 +6,7 @@ block(`Traffic_rules) {
    alias_all(`libbatfish:IpAccessList),
    alias_all(`libbatfish:Layer2),
    alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
    alias_all(`libbatfish:Route),
    alias_all(`libbatfish:Traffic),
    clauses(`{
@@ -83,6 +84,15 @@ FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt) <-
    FlowReach(flow, srcNode, srcOutInt, midNode, _),
    FlowReach(flow, midNode, _, dstNode, dstInInt). 
 
+FlowPolicyDropped(flow, node, policy, clause) <-
+   FlowReachPolicyRoute(flow, node, policy),
+   PolicyMapDenyFlow(policy, clause, flow).
+
+FlowReachPolicyRoute(flow, node, policy) <-
+   FlowReachPreOut(flow, node),
+   FlowReachPostInInterface(flow, node, interface),
+   SetInterfaceRoutingPolicy(node, interface, policy).
+
 FlowReachPostIn(flow, node) <-
    Flow_node[flow] = node.   
 FlowReachPostIn(flow, node) <-
@@ -108,7 +118,20 @@ FlowReachPreOut(flow, node) <-
 FlowReachPreOutInterface(flow, node, interface) <-
    FlowReachPreOut(flow, node),
    Flow_dstIp[flow] = dstIp,
-   FibForward(node, dstIp, interface).
+   FibForward(node, dstIp, interface),
+   FlowReachPostInInterface(flow, node, inInt),
+   (
+      !SetInterfaceRoutingPolicy(node, inInt, _) ;
+      (
+         SetInterfaceRoutingPolicy(node, inInt, policy),
+         !PolicyMapClauseMatchFlow(policy, _, flow)
+      )
+   ).
+FlowReachPreOutInterface(flow, node, interface) <-
+   FlowReachPolicyRoute(flow, node, policy),
+   PolicyMapPermitFlow(policy, clause, flow),
+   SetPolicyMapClauseSetNextHopIp(policy, clause, nextHopIp),
+   FibForward(node, nextHopIp, interface).
 
 FlowReachStep(flow, srcNode, srcOutInt, dstNode, dstInInt) <-
    FlowReachPostOutInterface(flow, srcNode, srcOutInt),
@@ -119,6 +142,9 @@ FlowUnknown(flow) <-
    Flow(flow),
    !FlowAccepted(flow, _),
    !FlowLost(flow).
+
+need_PolicyMapMatchFlow(policy, flow) <-
+   FlowReachPolicyRoute(flow, _, policy).
 
 // END CODE
    })

@@ -854,6 +854,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
                case LOCAL_PREFERENCE:
                case METRIC:
                case NEXT_HOP:
+               case ORIGIN_TYPE:
                   break;
                default:
                   throw new Error("bad set type");

@@ -8,5 +8,6 @@ public enum PolicyMapSetType {
    DELETE_COMMUNITY,
    LOCAL_PREFERENCE,
    METRIC,
-   NEXT_HOP
+   NEXT_HOP,
+   ORIGIN_TYPE
 }

@@ -49,6 +49,11 @@ block(`service_config) {
          delim_file_binding[] = "SetInterfaceFilterOut"
       }.
 
+      service_by_prefix["/batfish/SetInterfaceRoutingPolicy"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetInterfaceRoutingPolicy"
+      }.
+
 // Ip
       service_by_prefix["/batfish/SetNetwork"] = x,
       delim_service(x) {

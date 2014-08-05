@@ -19,23 +19,4 @@ public class PolicyMapSetMetricLine extends PolicyMapSetLine {
       return PolicyMapSetType.METRIC;
    }
 
-   @Override
-   public boolean sameParseTree(PolicyMapSetLine line, String prefix) {
-      boolean res = (line.getType() == PolicyMapSetType.METRIC);
-      if (res == false) {
-         System.out.println("PoliMapSetMetricLine:Type " + prefix);
-         return res;
-      }
-
-      PolicyMapSetMetricLine metLine = (PolicyMapSetMetricLine) line;
-
-      res = (_metric == metLine._metric);
-
-      if (res == false) {
-         System.out.println("PoliMapSetMetricLine " + prefix);
-
-      }
-
-      return res;
-   }
 }

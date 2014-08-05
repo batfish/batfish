@@ -12,30 +12,13 @@ public class PolicyMapSetAsPathPrependLine extends PolicyMapSetLine {
       _asList = asList;
    }
 
-   @Override
-   public PolicyMapSetType getType() {
-      return PolicyMapSetType.AS_PATH_PREPEND;
+   public List<Integer> getAsList() {
+      return _asList;
    }
 
    @Override
-   public boolean sameParseTree(PolicyMapSetLine line, String prefix) {
-      if (line.getType() != PolicyMapSetType.AS_PATH_PREPEND) {
-         System.out.println("PolicyMapSetAsPathPrependLine:Type " + prefix);
-         return false;
-      }
-      PolicyMapSetAsPathPrependLine rhs = (PolicyMapSetAsPathPrependLine) line;
-      if (_asList.size() != rhs._asList.size()) {
-         System.out.println("PolicyMapSetAsPathPrependLine:Size " + prefix);
-         return false;
-      }
-      for (int i = 0; i < _asList.size(); i++) {
-         if (!_asList.get(i).equals(rhs._asList.get(i))) {
-            System.out.println("PolicyMapSetAsPathPrependLine:as[" + i + "] "
-                  + prefix);
-            return false;
-         }
-      }
-      return true;
+   public PolicyMapSetType getType() {
+      return PolicyMapSetType.AS_PATH_PREPEND;
    }
 
 }

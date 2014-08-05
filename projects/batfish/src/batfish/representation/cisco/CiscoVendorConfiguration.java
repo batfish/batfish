@@ -934,7 +934,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
    }
 
    private batfish.representation.Interface toInterface(Interface iface,
-         Map<String, IpAccessList> ipAccessLists)
+         Map<String, IpAccessList> ipAccessLists, Map<String, PolicyMap> policyMaps)
          throws VendorConversionException {
       batfish.representation.Interface newIface = new batfish.representation.Interface(
             iface.getName());
@@ -982,6 +982,16 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   + outgoingFilterName + "'");
          }
          newIface.setOutgoingFilter(outgoingFilter);
+      }
+      String routingPolicyName = iface.getRoutingPolicy();
+      if (routingPolicyName != null) {
+         PolicyMap routingPolicy = policyMaps.get(routingPolicyName);
+         if (routingPolicy == null) {
+            _conversionWarnings.add("Interface: '" + iface.getName()
+                  + "' configured with non-existent policy-routing route-map '"
+                  + routingPolicyName + "'");
+         }
+         newIface.setRoutingPolicy(routingPolicy);
       }
       return newIface;
    }
@@ -1054,7 +1064,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       // convert interfaces
       for (Interface iface : _interfaces.values()) {
          batfish.representation.Interface newInterface = toInterface(iface,
-               c.getIpAccessLists());
+               c.getIpAccessLists(), c.getPolicyMaps());
          c.getInterfaces().put(newInterface.getName(), newInterface);
       }
 
@@ -1097,6 +1107,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                case LOCAL_PREFERENCE:
                case METRIC:
                case NEXT_HOP:
+               case ORIGIN_TYPE:
                   break;
                default:
                   throw new Error("bad set type");

@@ -36,25 +36,4 @@ public class CommunityList implements Serializable {
       return _name;
    }
 
-   public boolean sameParseTree(CommunityList list, String prefix) {
-      boolean res = (_name.equals(list._name));
-      boolean finalRes = res;
-
-      if (_lines.size() != list._lines.size()) {
-         System.out.println("CommList:Line:Size " + prefix);
-         return false;
-      }
-      else {
-         for (int i = 0; i < _lines.size(); i++) {
-            res = _lines.get(i).sameParseTree(list._lines.get(i));
-            if (res == false) {
-               System.out.println("CommList:Line " + prefix);
-               finalRes = false;
-            }
-         }
-      }
-
-      return finalRes;
-   }
-
 }

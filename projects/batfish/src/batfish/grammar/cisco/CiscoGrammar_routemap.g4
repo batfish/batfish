@@ -3,222 +3,230 @@ parser grammar CiscoGrammar_routemap;
 import CiscoGrammarCommonParser;
 
 options {
-	tokenVocab = CiscoGrammarCommonLexer;
+   tokenVocab = CiscoGrammarCommonLexer;
 }
 
 match_as_path_access_list_rm_stanza
 :
-	MATCH AS_PATH
-	(
-		name_list += DEC
-	)+ NEWLINE
+   MATCH AS_PATH
+   (
+      name_list += DEC
+   )+ NEWLINE
 ;
 
 match_community_list_rm_stanza
 :
-	MATCH COMMUNITY
-	(
-		name_list +=
-		(
-			VARIABLE
-			| DEC
-		)
-	)+ NEWLINE
+   MATCH COMMUNITY
+   (
+      name_list +=
+      (
+         VARIABLE
+         | DEC
+      )
+   )+ NEWLINE
 ;
 
 match_ip_access_list_rm_stanza
 :
-	MATCH IP ADDRESS
-	(
-		name_list +=
-		(
-			VARIABLE
-			| DEC
-		)
-	)+ NEWLINE
+   MATCH IP ADDRESS
+   (
+      name_list +=
+      (
+         VARIABLE
+         | DEC
+      )
+   )+ NEWLINE
 ;
 
 match_ip_prefix_list_rm_stanza
 :
-	MATCH IP ADDRESS PREFIX_LIST
-	(
-		name_list +=
-		(
-			VARIABLE
-			| DEC
-		)
-	)+ NEWLINE
+   MATCH IP ADDRESS PREFIX_LIST
+   (
+      name_list +=
+      (
+         VARIABLE
+         | DEC
+      )
+   )+ NEWLINE
 ;
 
 match_ipv6_rm_stanza
 :
-	MATCH IPV6 ~NEWLINE* NEWLINE
+   MATCH IPV6 ~NEWLINE* NEWLINE
 ;
 
 match_length_rm_stanza
 :
-	MATCH LENGTH ~NEWLINE* NEWLINE
+   MATCH LENGTH ~NEWLINE* NEWLINE
 ;
 
 match_rm_stanza
 :
-	match_as_path_access_list_rm_stanza
-	| match_community_list_rm_stanza
-	| match_ip_access_list_rm_stanza
-	| match_ip_prefix_list_rm_stanza
-	| match_ipv6_rm_stanza
-	| match_length_rm_stanza
-	| match_tag_rm_stanza
+   match_as_path_access_list_rm_stanza
+   | match_community_list_rm_stanza
+   | match_ip_access_list_rm_stanza
+   | match_ip_prefix_list_rm_stanza
+   | match_ipv6_rm_stanza
+   | match_length_rm_stanza
+   | match_tag_rm_stanza
 ;
 
 match_tag_rm_stanza
 :
-	MATCH TAG
-	(
-		tag_list += DEC
-	)+ NEWLINE
+   MATCH TAG
+   (
+      tag_list += DEC
+   )+ NEWLINE
 ;
 
 null_rm_stanza
 :
-	NO?
-	(
-		DESCRIPTION
-	) ~NEWLINE* NEWLINE
+   NO?
+   (
+      DESCRIPTION
+   ) ~NEWLINE* NEWLINE
 ;
 
 rm_stanza
 :
-	match_rm_stanza
-	| null_rm_stanza
-	| set_rm_stanza
+   match_rm_stanza
+   | null_rm_stanza
+   | set_rm_stanza
 ;
 
 route_map_named_stanza
 locals [boolean again]
 :
-	ROUTE_MAP name = VARIABLE route_map_tail
-	{
+   ROUTE_MAP name = VARIABLE route_map_tail
+   {
 		$again = _input.LT(1).getType() == ROUTE_MAP &&
 		_input.LT(2).getType() == VARIABLE &&
 		_input.LT(2).getText().equals($name.text);
 	}
 
-	(
-		{$again}?
+   (
+      {$again}?
 
-		route_map_named_stanza
-		|
-		{!$again}?
+      route_map_named_stanza
+      |
+      {!$again}?
 
-	)
+   )
 ;
 
 route_map_stanza
 :
-	named = route_map_named_stanza
+   named = route_map_named_stanza
 ;
 
 route_map_tail
 :
-	rmt = access_list_action num = DEC NEWLINE route_map_tail_tail closing_comment
+   rmt = access_list_action num = DEC NEWLINE route_map_tail_tail
+   closing_comment
 ;
 
 route_map_tail_tail
 :
-	(
-		rms_list += rm_stanza
-	)*
+   (
+      rms_list += rm_stanza
+   )*
 ;
 
 set_as_path_prepend_rm_stanza
 :
-	SET AS_PATH PREPEND
-	(
-		as_list += DEC
-	)+ NEWLINE
+   SET AS_PATH PREPEND
+   (
+      as_list += DEC
+   )+ NEWLINE
 ;
 
 set_comm_list_delete_rm_stanza
 :
-	SET COMM_LIST
-	(
-		name = DEC
-		| name = VARIABLE
-	) DELETE NEWLINE
+   SET COMM_LIST
+   (
+      name = DEC
+      | name = VARIABLE
+   ) DELETE NEWLINE
 ;
 
 set_community_additive_rm_stanza
 :
-	SET COMMUNITY
-	(
-		comm_list += community
-	)+ ADDITIVE NEWLINE
+   SET COMMUNITY
+   (
+      comm_list += community
+   )+ ADDITIVE NEWLINE
 ;
 
 set_community_none_rm_stanza
 :
-	SET COMMUNITY NONE NEWLINE
+   SET COMMUNITY NONE NEWLINE
 ;
 
 set_community_rm_stanza
 :
-	SET COMMUNITY
-	(
-		comm_list += community
-	)+ NEWLINE
+   SET COMMUNITY
+   (
+      comm_list += community
+   )+ NEWLINE
 ;
 
 set_interface_rm_stanza
 :
-	SET INTERFACE ~NEWLINE* NEWLINE
+   SET INTERFACE ~NEWLINE* NEWLINE
 ;
 
 set_ip_df_rm_stanza
 :
-	SET IP DF ~NEWLINE* NEWLINE
+   SET IP DF ~NEWLINE* NEWLINE
 ;
 
 set_ipv6_rm_stanza
 :
-	SET IPV6 ~NEWLINE* NEWLINE
+   SET IPV6 ~NEWLINE* NEWLINE
 ;
 
 set_local_preference_rm_stanza
 :
-	SET LOCAL_PREFERENCE pref = DEC NEWLINE
+   SET LOCAL_PREFERENCE pref = DEC NEWLINE
 ;
 
 set_metric_rm_stanza
 :
-	SET METRIC metric = DEC NEWLINE
+   SET METRIC metric = DEC NEWLINE
 ;
 
 set_next_hop_rm_stanza
 :
-	SET IP NEXT_HOP
-	(
-		nexthop_list += IP_ADDRESS
-	)+ NEWLINE
+   SET IP NEXT_HOP
+   (
+      nexthop_list += IP_ADDRESS
+   )+ NEWLINE
 ;
 
 set_origin_rm_stanza
 :
-	SET ORIGIN ~NEWLINE* NEWLINE
+   SET ORIGIN
+   (
+      (
+         EGP as = DEC
+      )
+      | IGP
+      | INCOMPLETE
+   ) NEWLINE
 ;
 
 set_rm_stanza
 :
-	set_as_path_prepend_rm_stanza
-	| set_comm_list_delete_rm_stanza
-	| set_community_rm_stanza
-	| set_community_additive_rm_stanza
-	| set_interface_rm_stanza
-	| set_ip_df_rm_stanza
-	| set_ipv6_rm_stanza
-	| set_local_preference_rm_stanza
-	| set_metric_rm_stanza
-	| set_next_hop_rm_stanza
-	| set_origin_rm_stanza
+   set_as_path_prepend_rm_stanza
+   | set_comm_list_delete_rm_stanza
+   | set_community_rm_stanza
+   | set_community_additive_rm_stanza
+   | set_interface_rm_stanza
+   | set_ip_df_rm_stanza
+   | set_ipv6_rm_stanza
+   | set_local_preference_rm_stanza
+   | set_metric_rm_stanza
+   | set_next_hop_rm_stanza
+   | set_origin_rm_stanza
 ;
 

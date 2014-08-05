@@ -21,14 +21,4 @@ public class PolicyMapMatchTagLine extends PolicyMapMatchLine {
       return PolicyMapMatchType.TAG;
    }
 
-   @Override
-   public boolean sameParseTree(PolicyMapMatchLine line, String prefix) {
-      boolean res = (line.getType() == PolicyMapMatchType.TAG)
-            && (_tags.equals(((PolicyMapMatchTagLine) line)._tags));
-      if (res == false) {
-         System.out.println("PolicyMapMatchTagLine " + prefix);
-      }
-      return res;
-   }
-
 }

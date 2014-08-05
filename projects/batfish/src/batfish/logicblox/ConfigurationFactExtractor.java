@@ -14,6 +14,7 @@ import batfish.representation.Interface;
 import batfish.representation.Ip;
 import batfish.representation.IpAccessList;
 import batfish.representation.IpAccessListLine;
+import batfish.representation.OriginType;
 import batfish.representation.OspfArea;
 import batfish.representation.OspfProcess;
 import batfish.representation.PolicyMap;
@@ -31,6 +32,7 @@ import batfish.representation.PolicyMapSetLine;
 import batfish.representation.PolicyMapSetLocalPreferenceLine;
 import batfish.representation.PolicyMapSetMetricLine;
 import batfish.representation.PolicyMapSetNextHopLine;
+import batfish.representation.PolicyMapSetOriginTypeLine;
 import batfish.representation.Protocol;
 import batfish.representation.RouteFilterLengthRangeLine;
 import batfish.representation.RouteFilterLine;
@@ -281,6 +283,8 @@ public class ConfigurationFactExtractor {
             .get("SetInterfaceFilterIn");
       StringBuilder wSetInterfaceFilterOut = _factBins
             .get("SetInterfaceFilterOut");
+      StringBuilder wSetInterfaceRoutingPolicy = _factBins
+            .get("SetInterfaceRoutingPolicy");
       String hostname = _configuration.getHostname();
       for (Interface i : _configuration.getInterfaces().values()) {
          String interfaceName = i.getName();
@@ -324,6 +328,12 @@ public class ConfigurationFactExtractor {
             String filterName = hostname + ":" + outgoingFilter.getName();
             wSetInterfaceFilterOut.append(hostname + "|" + interfaceName + "|"
                   + filterName + "\n");
+         }
+         PolicyMap routingPolicy = i.getRoutingPolicy();
+         if (routingPolicy != null) {
+            String policyName = hostname + ":" + routingPolicy.getMapName();
+            wSetInterfaceRoutingPolicy.append(hostname + "|" + interfaceName + "|"
+                  + policyName + "\n");
          }
       }
    }
@@ -645,6 +655,13 @@ public class ConfigurationFactExtractor {
                   }
                   break;
 
+               case ORIGIN_TYPE:
+                  PolicyMapSetOriginTypeLine pmsotl = (PolicyMapSetOriginTypeLine) setLine;
+                  OriginType originType = pmsotl.getOriginType();
+                  wSetPolicyMapClauseSetOriginType.append(mapName + "|" + i
+                           + "|" + originType.toString() + "\n");
+                  break;
+                  
                default:
                   throw new Error("invalid set type");
                }

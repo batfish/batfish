@@ -9,13 +9,4 @@ public class PolicyMapSetCommunityNoneLine extends PolicyMapSetLine {
       return PolicyMapSetType.COMMUNITY_NONE;
    }
 
-   @Override
-   public boolean sameParseTree(PolicyMapSetLine line, String prefix) {
-      if (line.getType() != PolicyMapSetType.COMMUNITY_NONE) {
-         System.out.println("PolicyMapSetCommunityNoneLine:Type " + prefix);
-         return false;
-      }
-      return true;
-   }
-
 }

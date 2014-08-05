@@ -41,53 +41,6 @@ public class GeneratedRoute extends Route {
       return RouteType.AGGREGATE;
    }
 
-   public boolean sameParseTree(GeneratedRoute gr, String prefix) {
-      boolean res = equals(gr);
-      boolean finalRes = res;
-      res = res && (_administrativeCost == gr._administrativeCost);
-      if (res == false) {
-         System.out.println("GenRoute:AdminCost " + prefix);
-         finalRes = res;
-      }
-
-      if (_asPath != null) {
-         res = (_asPath.equals(gr._asPath));
-      }
-      else {
-         res = (gr._asPath == null);
-      }
-      if (res == false) {
-         System.out.println("GenRoute:AsPath " + prefix);
-         finalRes = res;
-      }
-
-      if (_generationPolicies.size() != gr._generationPolicies.size()) {
-         System.out.println("GenRoute:GenPolicyMap:Size " + prefix);
-         return false;
-      }
-      else {
-         for (PolicyMap lhs : _generationPolicies) {
-            boolean found = false;
-            for (PolicyMap rhs : gr._generationPolicies) {
-               if (lhs.getMapName().equals(rhs.getMapName())) {
-                  res = lhs.sameParseTree(rhs, "GenRoute:GenPolicyMap "
-                        + prefix);
-                  if (res == false) {
-                     finalRes = false;
-                  }
-                  found = true;
-                  break;
-               }
-            }
-            if (found == false) {
-               System.out.println("GenRoute:GenPolicyMap:NotFound " + prefix);
-               finalRes = false;
-            }
-         }
-      }
-      return finalRes;
-   }
-
    public void setAdministrativePreference(int preference) {
       _administrativeCost = preference;
    }

@@ -8,6 +8,4 @@ public abstract class PolicyMapSetLine implements Serializable {
 
    public abstract PolicyMapSetType getType();
 
-   public abstract boolean sameParseTree(PolicyMapSetLine line, String prefix);
-
 }

@@ -22,15 +22,4 @@ public class PolicyMapMatchNeighborLine extends PolicyMapMatchLine {
       return PolicyMapMatchType.NEIGHBOR;
    }
 
-   @Override
-   public boolean sameParseTree(PolicyMapMatchLine line, String prefix) {
-      boolean res = (line.getType() == PolicyMapMatchType.NEIGHBOR)
-            && (_neighborIp
-                  .equals(((PolicyMapMatchNeighborLine) line)._neighborIp));
-      if (res == false) {
-         System.out.println("PoliMapMatchNeighLine " + prefix);
-      }
-      return res;
-   }
-
 }

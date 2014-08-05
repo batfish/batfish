@@ -8,6 +8,4 @@ public abstract class PolicyMapMatchLine implements Serializable {
 
    public abstract PolicyMapMatchType getType();
 
-   public abstract boolean sameParseTree(PolicyMapMatchLine line, String prefix);
-
 }

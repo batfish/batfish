@@ -85,6 +85,16 @@ block(`service_init) {
             }
       }.
 
+      file_binding_by_name["SetInterfaceRoutingPolicy"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetInterfaceRoutingPolicy",
+         predicate_binding_by_name["libbatfish:DataPlane:SetInterfaceRoutingPolicy"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE,POLICY"
+            }
+      }.
+
 // Ip
       file_binding_by_name["SetNetwork"] = fb,
       file_binding(fb) {

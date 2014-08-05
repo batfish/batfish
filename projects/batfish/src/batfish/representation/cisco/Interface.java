@@ -64,8 +64,10 @@ public class Interface implements Serializable {
    private int _ospfDeadInterval;
    private int _ospfHelloMultiplier;
    private String _outgoingFilter;
+   private String _routingPolicy;
    private Map<String, String> _secondaryIps;
    private Ip _subnet;
+
    private SwitchportMode _switchportMode;
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
@@ -146,6 +148,10 @@ public class Interface implements Serializable {
       return _outgoingFilter;
    }
 
+   public String getRoutingPolicy() {
+      return _routingPolicy;
+   }
+
    public Map<String, String> getSecondaryIps() {
       return _secondaryIps;
    }
@@ -208,6 +214,10 @@ public class Interface implements Serializable {
 
    public void setOutgoingFilter(String accessListName) {
       _outgoingFilter = accessListName;
+   }
+
+   public void setRoutingPolicy(String routingPolicy) {
+      _routingPolicy = routingPolicy;
    }
 
    public void setSubnetMask(Ip subnet) {

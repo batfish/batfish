@@ -19,6 +19,7 @@ import batfish.grammar.cisco.CiscoGrammar.Interface_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Port_specifierContext;
 import batfish.representation.Ip;
 import batfish.representation.LineAction;
+import batfish.representation.OriginType;
 import batfish.representation.OspfMetricType;
 import batfish.representation.Protocol;
 import batfish.representation.SwitchportEncapsulationType;
@@ -55,9 +56,11 @@ import batfish.representation.cisco.RouteMapSetAsPathPrependLine;
 import batfish.representation.cisco.RouteMapSetCommunityLine;
 import batfish.representation.cisco.RouteMapSetCommunityNoneLine;
 import batfish.representation.cisco.RouteMapSetDeleteCommunityLine;
+import batfish.representation.cisco.RouteMapSetLine;
 import batfish.representation.cisco.RouteMapSetLocalPreferenceLine;
 import batfish.representation.cisco.RouteMapSetMetricLine;
 import batfish.representation.cisco.RouteMapSetNextHopLine;
+import batfish.representation.cisco.RouteMapSetOriginTypeLine;
 import batfish.representation.cisco.StandardAccessList;
 import batfish.representation.cisco.StandardCommunityList;
 import batfish.representation.cisco.StaticRoute;
@@ -684,6 +687,12 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
+   public void exitIp_policy_if_stanza(Ip_policy_if_stanzaContext ctx) {
+      String policyName = ctx.name.getText();
+      _currentInterface.setRoutingPolicy(policyName);
+   }
+
+   @Override
    public void exitIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
       _currentPrefixList = null;
    }
@@ -1288,7 +1297,23 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void exitSet_origin_rm_stanza(Set_origin_rm_stanzaContext ctx) {
-      todo(ctx);
+      OriginType originType;
+      Integer asNum = null;
+      if (ctx.IGP() != null) {
+         originType = OriginType.IGP;
+      }
+      else if (ctx.INCOMPLETE() != null) {
+         originType = OriginType.INCOMPLETE;
+      }
+      else if (ctx.as != null) {
+         asNum = toInteger(ctx.as);
+         originType = OriginType.EGP;
+      }
+      else {
+         throw new Error("bad origin type");
+      }
+      RouteMapSetLine line = new RouteMapSetOriginTypeLine(originType, asNum);
+      _currentRouteMapClause.addSetLine(line);
    }
 
    @Override
@@ -1382,7 +1407,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       StringBuilder sb = new StringBuilder();
       List<String> ruleNames = Arrays.asList(CiscoGrammar.ruleNames);
       String ruleStack = ctx.toString(ruleNames);
-      sb.append(prefix + "Missing implementation for top (leftmost) parser rule in stack: '"
+      sb.append(prefix
+            + "Missing implementation for top (leftmost) parser rule in stack: '"
             + ruleStack + "'.\n");
       sb.append(prefix + "Rule context follows:\n");
       int start = ctx.start.getStartIndex();

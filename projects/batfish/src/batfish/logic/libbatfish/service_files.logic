@@ -61,6 +61,13 @@ block(`service_files) {
          column_formats[] = "string,string,string"
       }.
 
+      file_definition_by_name["SetInterfaceRoutingPolicy"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE,POLICY",
+         column_formats[] = "string,string,string"
+      }.
+
 // Ip
       file_definition_by_name["SetNetwork"] = fd,
       file_definition(fd) {

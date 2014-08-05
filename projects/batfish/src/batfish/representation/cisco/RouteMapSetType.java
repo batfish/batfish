@@ -9,5 +9,6 @@ public enum RouteMapSetType {
    DELETE_COMMUNITY,
    LOCAL_PREFERENCE,
    METRIC,
-   NEXT_HOP
+   NEXT_HOP,
+   ORIGIN_TYPE
 }

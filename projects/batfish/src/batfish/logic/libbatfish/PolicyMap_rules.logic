@@ -1,6 +1,8 @@
 block(`PolicyMap_rules) {
    alias_all(`libbatfish:BgpAdvertisement),
    alias_all(`libbatfish:CommunityList),
+   alias_all(`libbatfish:Flow),
+   alias_all(`libbatfish:IpAccessList),
    alias_all(`libbatfish:PolicyMap),
    alias_all(`libbatfish:Route),
    alias_all(`libbatfish:RouteFilter),
@@ -60,6 +62,17 @@ PolicyMapClauseMatchAdvert(map, clause, advert) <-
    ).
    //TODO: finish definition and replace underscores at top of rule
    
+PolicyMapClauseMatchFlow(map, clause, flow) <-
+   need_PolicyMapMatchFlow(map, flow),
+   PolicyMapHasClause(map, clause),
+   (
+      !SetPolicyMapClauseMatchAcl(map, clause, _) ;
+      (
+         SetPolicyMapClauseMatchAcl(map, clause, acl),
+         !AclDeny(acl, flow)
+      )
+   ).
+
 PolicyMapClauseMatchRoute(map, clause, route) <-
    //TODO: complete matching here
    need_PolicyMapMatchRoute(map, route),
@@ -129,10 +142,19 @@ PolicyMapClauseTransformAdvert(map, clause, prevAdvert, nextHopIp, localPref, or
    ),
    prevSrcProtocol = srcProtocol.
 
+PolicyMapDenyFlow(map, clause, flow) <-
+   PolicyMapFirstMatchFlow[map, flow] = clause,
+   !SetPolicyMapClausePermit(map, clause).
+
 PolicyMapFirstMatchAdvert[map, advert] = firstClause
 <-
    agg<<firstClause = min(clause)>>
       PolicyMapClauseMatchAdvert(map, clause, advert).
+
+PolicyMapFirstMatchFlow[map, flow] = firstClause
+<-
+   agg<<firstClause = min(clause)>>
+      PolicyMapClauseMatchFlow(map, clause, flow).
 
 PolicyMapFirstMatchRoute[map, route] = firstClause <-
    agg<<firstClause = min(clause)>>
@@ -144,6 +166,10 @@ PolicyMapHasClause(map, clause) <-
 
 PolicyMapPermitAdvert(map, clause, advert) <-
    PolicyMapFirstMatchAdvert[map, advert] = clause,
+   SetPolicyMapClausePermit(map, clause).
+
+PolicyMapPermitFlow(map, clause, flow) <-
+   PolicyMapFirstMatchFlow[map, flow] = clause,
    SetPolicyMapClausePermit(map, clause).
 
 PolicyMapPermitRoute(map, clause, route) <-

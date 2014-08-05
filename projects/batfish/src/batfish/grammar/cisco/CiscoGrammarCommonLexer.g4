@@ -863,6 +863,11 @@ ECHO_REPLY
    'echo-reply'
 ;
 
+EGP
+:
+   'egp'
+;
+
 EMPTY
 :
    'empty'
@@ -1285,6 +1290,11 @@ IGMP
    'igmp'
 ;
 
+IGP
+:
+   'igp'
+;
+
 IKEV1
 :
    'ikev1'
@@ -1308,6 +1318,11 @@ INACTIVITY_TIMER
 INBOUND
 :
    'inbound'
+;
+
+INCOMPLETE
+:
+   'incomplete'
 ;
 
 INSPECT
