@@ -20,19 +20,12 @@ address_family_vrf_stanza
 
 banner_stanza
 :
-	BANNER MOTD ESCAPE_C ~ESCAPE_C* ESCAPE_C NEWLINE
+	BANNER MOTD ESCAPE_C ~M_MOTD_ESCAPE_C* M_MOTD_ESCAPE_C NEWLINE
 ;
 
 certificate_stanza
 :
-	CERTIFICATE ~NEWLINE* NEWLINE
-	(
-		(
-			DEC
-			| REMOVED
-			| VARIABLE
-		) ~NEWLINE* NEWLINE
-	)+ QUIT NEWLINE
+	CERTIFICATE ~M_CERTIFICATE_QUIT* M_CERTIFICATE_QUIT NEWLINE
 ;
 
 cisco_configuration
@@ -310,7 +303,7 @@ null_block_substanza
 		)
 		(
 			remaining_tokens += ~NEWLINE
-		)* NEWLINE
+		)* (NEWLINE | M_COMMENT_NEWLINE)
 	)
 ;
 
@@ -674,7 +667,7 @@ null_standalone_stanza
 	)
 	(
 		remaining_tokens += ~NEWLINE
-	)* NEWLINE
+	)* (NEWLINE | M_COMMENT_NEWLINE)
 ;
 
 null_stanza

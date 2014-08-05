@@ -388,7 +388,7 @@ protocol_type_code_access_list_stanza
 standard_access_list_null_tail
 :
 	(
-		REMARK ~NEWLINE* NEWLINE
+		REMARK remark=M_REMARK_REMARK M_REMARK_NEWLINE
 	)
 	|
 	(

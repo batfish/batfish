@@ -9,8 +9,6 @@ package batfish.grammar.cisco;
 }
 
 @members {
-boolean inComment = false;
-boolean inMultilineComment = false;
 boolean enableIPV6_ADDRESS = true;
 boolean enableIP_ADDRESS = true;
 boolean enableDEC = true;
@@ -3184,9 +3182,9 @@ XLATE
 
 ACL_NUM
 :
-	{enableACL_NUM}?
+	
 
-	F_Digit+
+	F_Digit {enableACL_NUM}? F_Digit*
 	{
 	int val = Integer.parseInt(getText());
 	if ((1 <= val && val <= 99) || (1300 <= val && val <= 1999)) {
@@ -3270,10 +3268,7 @@ BRACKET_RIGHT
 
 CABLELENGTH
 :
-	'cablelength'
-	{
-                                   inComment = true;
-                                  }
+	'cablelength' -> pushMode(M_COMMENT)
 
 ;
 
@@ -3284,12 +3279,7 @@ CARAT
 
 CERTIFICATE
 :
-	'certificate'
-	{
-                                   inComment = true;
-                                   inMultilineComment = true;
-                                  }
-
+	'certificate' -> pushMode(M_CERTIFICATE)
 ;
 
 COLON
@@ -3333,9 +3323,9 @@ COMMUNITY_LIST
 
 COMMUNITY_LIST_NUM
 :
-	{enableCOMMUNITY_LIST_NUM}?
+	
 
-	F_Digit+
+	F_Digit {enableCOMMUNITY_LIST_NUM}? F_Digit*
 	{
 		int val = Integer.parseInt(getText());
 		if (1 <= val && val <= 99) {
@@ -3352,7 +3342,7 @@ COMMUNITY_LIST_NUM
 
 COMMENT_CLOSING_LINE
 :
-	{!inComment}?
+	
 
 	(
 		'!' F_Newline
@@ -3361,11 +3351,8 @@ COMMENT_CLOSING_LINE
 
 COMMENT_LINE
 :
-	{!inComment}?
-
-	(
-		'!' ~('\n' | '\r')+ F_Newline
-	)
+	
+	'!' ~('\n' | '\r')+ F_Newline
 ;
 
 DASH
@@ -3380,9 +3367,9 @@ DOLLAR
 
 DEC
 :
-	{enableDEC}?
+	
 
-	F_Digit+
+	F_Digit {enableDEC}? F_Digit*
 ;
 
 DOUBLE_QUOTE
@@ -3392,11 +3379,7 @@ DOUBLE_QUOTE
 
 ENGINEID
 :
-	'engineid'
-	{
-                             inComment = true;
-                            }
-
+	'engineid' -> pushMode(M_COMMENT)
 ;
 
 EQUALS
@@ -3410,19 +3393,7 @@ ESCAPE_C
 		'^C'
 		| '\u0003'
 		| '#'
-	)
-	{
-   inMultilineComment = !inMultilineComment;
-   inComment = !inComment;
-  }
-
-;
-
-EXCLAMATION_MARK
-:
-	{inComment}?
-
-	'!'
+	) -> pushMode(M_MOTD)
 ;
 
 FIREWALL
@@ -3436,8 +3407,6 @@ FIREWALL
 
 FLOAT
 :
-	{!inComment}?
-
 	(
 		F_PositiveDigit* F_Digit '.' F_Digit+
 	)
@@ -3452,11 +3421,6 @@ HEX
 :
 	'0x' F_HexDigit+
 ;
-
-//HEX_STRING
-//  :
-//  {inComment || !enableIPV6_ADDRESS}?=> HEX_DIGIT+
-//  ;
 
 INTERFACE
 :
@@ -3477,20 +3441,20 @@ DES_HASH
 
 IP_ADDRESS
 :
-	{!inComment && enableIP_ADDRESS}?
 
-	(
-		F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
-	)
+	
+		F_DecByte    {enableIP_ADDRESS}?
+		'.' F_DecByte '.' F_DecByte '.' F_DecByte
+	
 ;
 
 IPV6_ADDRESS
 :
-	{!inComment && enableIPV6_ADDRESS}?
+	
 
 	(
 		(
-			COLON COLON
+			COLON {enableIPV6_ADDRESS}?COLON
 			(
 				(
 					F_HexDigit+ COLON
@@ -3499,7 +3463,7 @@ IPV6_ADDRESS
 		)
 		|
 		(
-			F_HexDigit+ COLON COLON?
+			F_HexDigit {enableIPV6_ADDRESS}? F_HexDigit* COLON COLON?
 		)+
 		(
 			F_HexDigit+
@@ -3509,60 +3473,37 @@ IPV6_ADDRESS
 
 LOCATION
 :
-	'location'
-	{
-                             inComment = true;
-                            }
-
+	'location' -> pushMode(M_COMMENT)
 ;
 
 MAC
 :
-	'mac'
-	{
-                   inComment = true;
-                  }
-
+	'mac' -> pushMode(M_COMMENT)
 ;
 
 MAC_ADDRESS
 :
-	'mac-address'
-	{
-                                   inComment = true;
-                                  }
-
+	'mac-address' -> pushMode(M_COMMENT)
 ;
 
 NAME
 :
-	'name'
-	{
-                     inComment = true;
-                    }
-
+	'name'-> pushMode(M_NAME)
 ;
 
 NEWLINE
 :
 	F_Newline
 	{
-               if (!inMultilineComment) {
-               	inComment = false;
-               	enableIPV6_ADDRESS = true;
-               	enableIP_ADDRESS = true;
-               }
-              }
+   	enableIPV6_ADDRESS = true;
+   	enableIP_ADDRESS = true;
+  }
 
 ;
 
 OUI
 :
-	'oui'
-	{
-                   inComment = true;
-                  }
-
+	'oui' -> pushMode(M_COMMENT)
 ;
 
 PAREN_LEFT
@@ -3577,11 +3518,7 @@ PAREN_RIGHT
 
 PASSWORD
 :
-	'password'
-	{
-                             inComment = true;
-                            }
-
+	'password' -> pushMode(M_COMMENT)
 ;
 
 PERCENT
@@ -3606,21 +3543,12 @@ POUND
 
 REMARK
 :
-	'remark'
-	{
-                         inComment = true;
-                        }
-
+	'remark' -> pushMode(M_REMARK)
 ;
 
 QUIT
 :
 	'quit'
-	{
-                     inMultilineComment = false;
-                     inComment = false;
-                    }
-
 ;
 
 SEMICOLON
@@ -3652,7 +3580,6 @@ VARIABLE
 		| '+'
 		| '['
 		| ']'
-		| ':'
 		|
 		(
 			{!enableIPV6_ADDRESS}?
@@ -3761,6 +3688,39 @@ F_UpperCaseLetter
 	'A' .. 'Z'
 ;
 
+mode M_CERTIFICATE;
+M_CERTIFICATE_WS
+:
+   (
+      ' '
+      | '\t'
+      | '\u000C'
+      | '\n'
+   )+
+;
+
+M_CERTIFICATE_QUIT
+:
+   'quit' -> popMode
+;
+
+M_CERTIFICATE_WORD:
+   ~(
+      ' '
+      | '\t'
+      | '\u000C'
+      | '\n'
+   )+
+;
+
+mode M_COMMENT;
+
+M_COMMENT_NEWLINE:
+'\n' -> popMode;
+
+M_COMMENT_NON_NEWLINE:
+~'\n'+;
+
 mode M_DESCRIPTION;
 
 M_DESCRIPTION_NEWLINE:
@@ -3770,3 +3730,37 @@ M_DESCRIPTION_NEWLINE:
 M_DESCRIPTION_NON_NEWLINE:
 ~'\n'+;
 
+mode M_MOTD;
+M_MOTD_ESCAPE_C:
+   (
+      '^C'
+      | '\u0003'
+      | '#'
+   ) -> popMode
+;
+
+M_MOTD_CARAT:'^';
+
+M_MOTD_NON_ESCAPE_C:
+~('^' | '\u0003' | '#')+;
+
+mode M_NAME;
+M_NAME_WS
+:
+   (
+      ' '
+      | '\t'
+      | '\u000C'
+   )+ -> channel(HIDDEN)
+;
+
+
+M_NAME_NAME:
+~'\n'+ -> popMode;
+
+mode M_REMARK;
+M_REMARK_NEWLINE:
+'\n' -> popMode;
+
+M_REMARK_REMARK:
+~'\n'+;
