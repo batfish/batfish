@@ -1,0 +1,11 @@
+!
+hostname crypto_isakmp_profile
+!
+crypto isakmp profile UPM
+   vrf VRF:MMS:RMT:UPM:1143
+   keyring VRF:MMS:RMT:UPM:1143
+   match identity address 190.0.128.110 255.255.255.255
+   reverse-route
+!
+!
+end

@@ -1,0 +1,7 @@
+!
+hostname underscore_variable
+!
+route-map JKL_MNO_PQR permit 100
+ match ip address prefix-list ABC_DEF _GHI
+!
+end

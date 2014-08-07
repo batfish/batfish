@@ -1,0 +1,12 @@
+!
+hostname banner_hash
+!
+banner motd #
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+
+Unauthorized access and/or use prohibited.
+All access and/or use subject to monitoring.
+
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+#
+end
