@@ -1480,6 +1480,11 @@ KEEPOUT
    'keepout'
 ;
 
+KEY
+:
+   'key'
+;
+
 KEYPAIR
 :
    'keypair'
@@ -3781,6 +3786,11 @@ PERIOD
    '.'
 ;
 
+PIPE
+:
+   '|'
+;
+
 PLUS
 :
    '+'
@@ -3809,6 +3819,11 @@ SEMICOLON
 SINGLE_QUOTE
 :
    '\''
+;
+
+TILDE
+:
+   '~'
 ;
 
 UNDERSCORE

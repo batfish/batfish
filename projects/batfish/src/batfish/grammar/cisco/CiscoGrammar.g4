@@ -91,8 +91,11 @@ null_block_stanza
 		(
 		   CRYPTO 
 		   (
-		      ISAKMP PROFILE
+		      ISAKMP KEY 
+		      | ISAKMP POLICY
+		      | ISAKMP PROFILE
 		      | KEYRING
+		      | MAP
 		      | PKI
 		   )
 		)
@@ -321,6 +324,7 @@ null_block_substanza
          | VPN_FILTER
          | VPN_IDLE_TIMEOUT
          | VPN_TUNNEL_PROTOCOL
+         | VRF
          | WEBVPN
          | WINS_SERVER
          | WITHOUT_CSD
