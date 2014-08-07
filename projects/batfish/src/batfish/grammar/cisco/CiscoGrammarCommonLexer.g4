@@ -693,6 +693,11 @@ DEFINITION
    'definition'
 ;
 
+DELAY
+:
+   'delay'
+;
+
 DELETE
 :
    'delete'
@@ -976,6 +981,11 @@ EVALUATE
 EVENT
 :
    'event'
+;
+
+EVENT_HANDLER
+:
+   'event-handler'
 ;
 
 EXCEED_ACTION
@@ -3109,6 +3119,11 @@ TRANSLATE
 TRANSPORT
 :
    'transport'
+;
+
+TRIGGER
+:
+   'trigger'
 ;
 
 TRUNK

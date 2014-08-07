@@ -100,6 +100,7 @@ null_block_stanza
 		   )
 		)
       | DIAL_PEER
+      | EVENT_HANDLER
       |
       (
          FLOW
@@ -169,6 +170,7 @@ null_block_substanza
          | ACCEPT_DIALIN
          | ACCESS_CLASS
          | ACCOUNTING_SERVER_GROUP
+         | ACTION
          | ACTIVATION_CHARACTER
          | ADDRESS_POOL
          | ANYCONNECT
@@ -204,6 +206,7 @@ null_block_substanza
          | DBL
          | DEFAULT_DOMAIN
          | DEFAULT_GROUP_POLICY
+         | DELAY
          | DENY
          | DESCRIPTION
          | DESTINATION
@@ -317,6 +320,7 @@ null_block_substanza
          | TIMING
          | TOP
          | TRANSPORT
+         | TRIGGER
          | TUNNEL_GROUP
          | USE_VRF
          | VIOLATE_ACTION
