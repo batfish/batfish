@@ -394,7 +394,11 @@ null_standalone_stanza
       | CRL
       |
       (
-         CRYPTO IPSEC
+         CRYPTO 
+         (
+         	IPSEC         
+         	| ISAKMP
+         )
       )
       | CTL_FILE
       | CTS
