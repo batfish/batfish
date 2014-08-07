@@ -3344,6 +3344,7 @@ VPN_TUNNEL_PROTOCOL
 VRF
 :
    'vrf'
+   {enableIPV6_ADDRESS = false;}
 ;
 
 VRRP
