@@ -1,0 +1,9 @@
+!
+hostname arista-event-handler
+!
+event-handler snmp-agentx
+   trigger onBoot
+   action bash sudo cp /mnt/flash/snmp-agentx/* /etc/snmp/
+   delay 0
+!
+end

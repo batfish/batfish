@@ -648,6 +648,11 @@ DEFAULT
    'default'
 ;
 
+DEFAULT_ACTION
+:
+   'default-action'
+;
+
 DEFAULT_DOMAIN
 :
    'default-domain'
@@ -691,6 +696,11 @@ DEFAULT_ORIGINATE
 DEFINITION
 :
    'definition'
+;
+
+DELAY
+:
+   'delay'
 ;
 
 DELETE
@@ -976,6 +986,11 @@ EVALUATE
 EVENT
 :
    'event'
+;
+
+EVENT_HANDLER
+:
+   'event-handler'
 ;
 
 EXCEED_ACTION
@@ -2071,6 +2086,11 @@ OBJECT_GROUP
    'object-group'
 ;
 
+OPENFLOW
+:
+   'openflow'
+;
+
 ORIGIN
 :
    'origin'
@@ -3111,6 +3131,11 @@ TRANSPORT
    'transport'
 ;
 
+TRIGGER
+:
+   'trigger'
+;
+
 TRUNK
 :
    'trunk'
@@ -3319,6 +3344,7 @@ VPN_TUNNEL_PROTOCOL
 VRF
 :
    'vrf'
+   {enableIPV6_ADDRESS = false;}
 ;
 
 VRRP

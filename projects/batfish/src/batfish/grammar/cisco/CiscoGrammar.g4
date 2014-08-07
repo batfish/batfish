@@ -42,7 +42,7 @@ cisco_configuration
 
 hostname_stanza
 :
-   HOSTNAME name = VARIABLE NEWLINE
+   HOSTNAME name = ~NEWLINE* NEWLINE
 ;
 
 ip_default_gateway_stanza
@@ -91,12 +91,16 @@ null_block_stanza
 		(
 		   CRYPTO 
 		   (
-		      (ISAKMP PROFILE)
+		      (ISAKMP KEY) 
+		      | (ISAKMP POLICY)
+		      | (ISAKMP PROFILE)
 		      | KEYRING
+		      | MAP
 		      | PKI
 		   )
 		)
       | DIAL_PEER
+      | EVENT_HANDLER
       |
       (
          FLOW
@@ -125,6 +129,7 @@ null_block_stanza
       | LINE
 		| MANAGEMENT
 		| MAP_CLASS
+		| OPENFLOW
       | POLICY_MAP
       | REDUNDANCY
       | ROLE
@@ -166,6 +171,7 @@ null_block_substanza
          | ACCEPT_DIALIN
          | ACCESS_CLASS
          | ACCOUNTING_SERVER_GROUP
+         | ACTION
          | ACTIVATION_CHARACTER
          | ADDRESS_POOL
          | ANYCONNECT
@@ -199,8 +205,10 @@ null_block_substanza
          | CRL
          | CRYPTO
          | DBL
+         | DEFAULT_ACTION
          | DEFAULT_DOMAIN
          | DEFAULT_GROUP_POLICY
+         | DELAY
          | DENY
          | DESCRIPTION
          | DESTINATION
@@ -314,6 +322,7 @@ null_block_substanza
          | TIMING
          | TOP
          | TRANSPORT
+         | TRIGGER
          | TUNNEL_GROUP
          | USE_VRF
          | VIOLATE_ACTION
@@ -321,6 +330,7 @@ null_block_substanza
          | VPN_FILTER
          | VPN_IDLE_TIMEOUT
          | VPN_TUNNEL_PROTOCOL
+         | VRF
          | WEBVPN
          | WINS_SERVER
          | WITHOUT_CSD
@@ -393,10 +403,8 @@ null_standalone_stanza
          CRYPTO
          (
             IPSEC
-            |
-            (
-               ISAKMP KEY
-            )
+            | (ISAKMP KEY)
+            | (ISAKMP ENABLE)
          )
       )
       | CTL_FILE

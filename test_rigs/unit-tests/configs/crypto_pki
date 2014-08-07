@@ -1,8 +1,0 @@
-!
-hostname crypto_pki
-!
-crypto pki certificate chain xxx
-  xxx
-  quit
-!
-end

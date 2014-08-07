@@ -1,7 +1,0 @@
-!
-hostname crypto_keyring
-!
-crypto keyring VRF:ABC:DEF:GHI:1234
-  pre-shared-key address 1.1.1.1 key 9Aa9#A%X9AaAAAAAa
-!
-end

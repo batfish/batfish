@@ -645,8 +645,21 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void exitIp_address_if_stanza(Ip_address_if_stanzaContext ctx) {
-      _currentInterface.setIp(new Ip(ctx.ip.getText()));
-      _currentInterface.setSubnetMask(new Ip(ctx.subnet.getText()));
+      Ip address;
+      Ip mask;
+      if (ctx.prefix != null) {
+         address = getPrefixIp(ctx.prefix);
+         int prefixLength = getPrefixLength(ctx.prefix);
+         long maskLong = Util.numSubnetBitsToSubnetLong(prefixLength);
+         mask = new Ip(maskLong);
+      }
+      else {
+         address = new Ip(ctx.ip.getText());
+         mask = new Ip(ctx.subnet.getText());
+      }
+      
+      _currentInterface.setIp(address);
+      _currentInterface.setSubnetMask(mask);
       _currentInterface.setIpAddressStanzaContext(ctx);
    }
 
