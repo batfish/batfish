@@ -1492,7 +1492,7 @@ KEEPOUT
 
 KEY
 :
-   'key'
+   'key' -> pushMode(M_KEY)
 ;
 
 KEYPAIR
@@ -3801,11 +3801,6 @@ PERIOD
    '.'
 ;
 
-PIPE
-:
-   '|'
-;
-
 PLUS
 :
    '+'
@@ -3834,11 +3829,6 @@ SEMICOLON
 SINGLE_QUOTE
 :
    '\''
-;
-
-TILDE
-:
-   '~'
 ;
 
 UNDERSCORE
@@ -4047,6 +4037,18 @@ M_DESCRIPTION_NEWLINE
 ;
 
 M_DESCRIPTION_NON_NEWLINE
+:
+   ~'\n'+
+;
+
+mode M_KEY;
+
+M_KEY_NEWLINE
+:
+   '\n' -> type(NEWLINE), popMode
+;
+
+M_KEY_NON_NEWLINE
 :
    ~'\n'+
 ;
