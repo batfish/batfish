@@ -1480,6 +1480,11 @@ KEEPOUT
    'keepout'
 ;
 
+KEY
+:
+   'key' -> pushMode(M_KEY)
+;
+
 KEYPAIR
 :
    'keypair'
@@ -4017,6 +4022,18 @@ M_DESCRIPTION_NEWLINE
 ;
 
 M_DESCRIPTION_NON_NEWLINE
+:
+   ~'\n'+
+;
+
+mode M_KEY;
+
+M_KEY_NEWLINE
+:
+   '\n' -> type(NEWLINE), popMode
+;
+
+M_KEY_NON_NEWLINE
 :
    ~'\n'+
 ;

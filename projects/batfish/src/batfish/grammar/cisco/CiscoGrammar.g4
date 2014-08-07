@@ -91,7 +91,7 @@ null_block_stanza
 		(
 		   CRYPTO 
 		   (
-		      ISAKMP PROFILE
+		      (ISAKMP PROFILE)
 		      | KEYRING
 		      | PKI
 		   )
@@ -390,7 +390,14 @@ null_standalone_stanza
       | CRL
       |
       (
-         CRYPTO IPSEC
+         CRYPTO
+         (
+            IPSEC
+            |
+            (
+               ISAKMP KEY
+            )
+         )
       )
       | CTL_FILE
       | CTS
