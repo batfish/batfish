@@ -308,10 +308,14 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    public static long toLong(CommunityContext ctx) {
       switch (ctx.com.getType()) {
-      case CiscoGrammarCommonLexer.COLON:
-         long left = toLong(ctx.part1) << 16;
-         long right = toLong(ctx.part2);
-         return left | right;
+      case CiscoGrammarCommonLexer.COMMUNITY_NUMBER:
+         String numberText = ctx.com.getText();
+         String[] parts = numberText.split(":");
+         String leftStr = parts[0];
+         String rightStr = parts[1];
+         long left = Long.parseLong(leftStr);
+         long right = Long.parseLong(rightStr);
+         return (left << 16) | right;
 
       case CiscoGrammarCommonLexer.DEC:
          return toLong(ctx.com);

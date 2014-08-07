@@ -3587,6 +3587,14 @@ COMMUNITY_LIST_NUM
 
 ;
 
+COMMUNITY_NUMBER
+:
+   F_Digit
+   {!enableIPV6_ADDRESS}?
+   
+   F_Digit* ':' F_Digit+
+;
+
 COMMENT_CLOSING_LINE
 :
    (
@@ -3850,27 +3858,49 @@ UNDERSCORE
 VARIABLE
 :
    (
-      F_Letter
-      | '_'
-   )
-   (
-      F_Letter
-      | F_Digit
-      | '-'
-      | '_'
-      | '.'
-      | '/'
-      | '&'
-      | '+'
-      | '['
-      | ']'
+      (
+         F_Digit
+         {!enableIPV6_ADDRESS}?
+         (
+            F_Letter
+            | F_Digit
+            | '-'
+            | '_'
+            | '.'
+            | '/'
+            | '&'
+            | '+'
+            | '['
+            | ']'
+            | ':'
+         )*
+      )
       |
       (
-         {!enableIPV6_ADDRESS}?
+         (
+            F_Letter
+            | '_'
+         )
+         (
+            F_Letter
+            | F_Digit
+            | '-'
+            | '_'
+            | '.'
+            | '/'
+            | '&'
+            | '+'
+            | '['
+            | ']'
+            |
+            (
+               {!enableIPV6_ADDRESS}?
 
-         ':'
+               ':'
+            )
+         )*
       )
-   )*
+   )
    {
 		if (enableACL_NUM) {
 			enableACL_NUM = false;

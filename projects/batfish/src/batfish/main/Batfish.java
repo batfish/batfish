@@ -1436,7 +1436,7 @@ public class Batfish {
       Map<File, String> configurationData = readConfigurationFiles(testRigPath);
       Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(configurationData);
       if (vendorConfigurations == null) {
-         error(0, "Exiting due to parser errors");
+         error(0, "Exiting due to parser errors\n");
          quit(1);
       }
       print(1, "\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");

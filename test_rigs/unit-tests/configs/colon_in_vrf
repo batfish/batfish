@@ -7,5 +7,4 @@ router bgp 22
     no synchronization
   exit-address-family
 !
-!
 end
