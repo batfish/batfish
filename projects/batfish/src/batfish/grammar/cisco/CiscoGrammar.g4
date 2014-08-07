@@ -42,7 +42,7 @@ cisco_configuration
 
 hostname_stanza
 :
-   HOSTNAME name = VARIABLE NEWLINE
+   HOSTNAME name = ~NEWLINE* NEWLINE
 ;
 
 ip_default_gateway_stanza
@@ -403,10 +403,8 @@ null_standalone_stanza
          CRYPTO
          (
             IPSEC
-            |
-            (
-               ISAKMP KEY
-            )
+            | (ISAKMP KEY)
+            | (ISAKMP ENABLE)
          )
       )
       | CTL_FILE
