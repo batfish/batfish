@@ -633,6 +633,19 @@ batfish_restore_symlinks() {
 }
 export batfish_restore_symlinks
 
+batfish_unit_tests_parser() {
+   batfish_expect_args 1 $# || return 1
+   local OUTPUT_DIR=$1
+   local UNIT_TEST_DIR=$BATFISH_TEST_RIG_PATH/unit-tests
+   date | tr -d '\n'
+   echo ": START UNIT TEST: Vendor configuration parser"
+   mkdir -p $OUTPUT_DIR
+   batfish -testrig $UNIT_TEST_DIR -sv -svpath $OUTPUT_DIR
+   date | tr -d '\n'
+   echo ": END UNIT TEST: Vendor configuration parser"
+}
+export -f batfish_unit_tests_parser
+
 int_to_ip() {
    batfish_expect_args 1 $# || return 1
    local INPUT=$1
