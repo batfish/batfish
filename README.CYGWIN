@@ -1,0 +1,14 @@
+SYMLINK ISSUES:
+1.
+Java (and therefore ant) under cygwin does not understand symlinks. As part of the build process, all symlink targets are copied over their respective symlinks with a call to:
+batfish_replace_symlinks
+
+To undo this (e.g. before a commit), run:
+batfish_restore_symlinks
+
+2.
+It is suggested that the following lines be added to ~/.gitconfig to avoid other symlink / windows-line-ending issues:
+
+[core]
+   symlinks = true
+   autocrlf = false
