@@ -648,6 +648,11 @@ DEFAULT
    'default'
 ;
 
+DEFAULT_ACTION
+:
+   'default-action'
+;
+
 DEFAULT_DOMAIN
 :
    'default-domain'
@@ -2079,6 +2084,11 @@ OBJECT
 OBJECT_GROUP
 :
    'object-group'
+;
+
+OPENFLOW
+:
+   'openflow'
 ;
 
 ORIGIN

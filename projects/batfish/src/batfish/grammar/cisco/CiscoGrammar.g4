@@ -129,6 +129,7 @@ null_block_stanza
       | LINE
 		| MANAGEMENT
 		| MAP_CLASS
+		| OPENFLOW
       | POLICY_MAP
       | REDUNDANCY
       | ROLE
@@ -204,6 +205,7 @@ null_block_substanza
          | CRL
          | CRYPTO
          | DBL
+         | DEFAULT_ACTION
          | DEFAULT_DOMAIN
          | DEFAULT_GROUP_POLICY
          | DELAY
