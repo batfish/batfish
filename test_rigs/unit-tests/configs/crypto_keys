@@ -1,7 +1,0 @@
-!
-hostname crypto_key
-!
-crypto isakmp key ~lRIutsm address 192.88.158.213
-crypto isakmp key 5h|7T28p address 192.88.165.34
-!
-end

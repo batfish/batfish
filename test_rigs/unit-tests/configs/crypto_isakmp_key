@@ -1,6 +1,0 @@
-!
-hostname crypto_isakmp_key
-!
-crypto isakmp key ~99a9aaa_aaaa9aa|||aaaaaaa address 1.2.3.4
-!
-end
