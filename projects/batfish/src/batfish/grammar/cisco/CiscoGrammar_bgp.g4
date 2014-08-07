@@ -418,8 +418,7 @@ null_standalone_rb_stanza
 
 rb_stanza
 :
-   address_family_rb_stanza
-   | aggregate_address_rb_stanza
+   aggregate_address_rb_stanza
    | cluster_id_bgp_rb_stanza
    | default_metric_rb_stanza
    | neighbor_description_rb_stanza
@@ -523,7 +522,7 @@ router_bgp_stanza_tail
 :
    (
       rbsl += rb_stanza
-   )+ closing_comment
+   )* closing_comment?
    (
       afrbsl += address_family_rb_stanza
    )*
