@@ -1,5 +1,5 @@
 !
-hostname ratul-misc-1
+hostname community-name-numbers
 !
 ip community-list standard 9999-RRR permit 9999:8888
 !

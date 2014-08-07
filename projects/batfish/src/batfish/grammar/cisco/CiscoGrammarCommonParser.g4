@@ -22,9 +22,7 @@ comment_stanza
 
 community
 :
-	(
-		part1 = DEC com = COLON part2 = DEC
-	)
+   com = COMMUNITY_NUMBER
 	| com = DEC
 	| com = INTERNET
 	| com = LOCAL_AS
