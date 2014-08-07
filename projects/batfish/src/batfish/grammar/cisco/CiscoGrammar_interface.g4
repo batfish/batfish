@@ -57,7 +57,7 @@ ip_access_group_if_stanza
 
 ip_address_if_stanza
 :
-	IP ADDRESS ip = IP_ADDRESS subnet = IP_ADDRESS
+	IP ADDRESS ( ip = IP_ADDRESS subnet = IP_ADDRESS | prefix = IP_PREFIX )
 	(
 		STANDBY IP_ADDRESS
 	)? NEWLINE
@@ -141,6 +141,7 @@ null_standalone_if_stanza
 				| ARP
 				| CGMP
 				| DHCP
+				| DVMRP
 				|
 				(
 					DIRECTED_BROADCAST
@@ -204,6 +205,7 @@ null_standalone_if_stanza
 		)
 		| PEER
 		| PHYSICAL_LAYER
+		| PORT_CHANNEL
 		| POWER
 		| PPP
 		| PRIORITY_QUEUE
@@ -219,6 +221,7 @@ null_standalone_if_stanza
 		| SPEED
 		| SNMP
 		| SRR_QUEUE
+		| STACK_MIB
 		| STANDBY
 		| STORM_CONTROL
 		|
@@ -245,6 +248,7 @@ null_standalone_if_stanza
 		| VRRP
 		| WRR_QUEUE
 		| X25
+		| XCONNECT
 	) ~NEWLINE* NEWLINE
 ;
 

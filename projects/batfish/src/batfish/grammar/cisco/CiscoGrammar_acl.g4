@@ -13,6 +13,7 @@ access_list_ip_range
 	)
 	| ANY
 	| HOST ip = IP_ADDRESS
+	| prefix = IP_PREFIX
 ;
 
 appletalk_access_list_numbered_stanza
@@ -117,14 +118,18 @@ extended_access_list_tail
 		| ECHO
 		| ESTABLISHED
 		| FRAGMENTS
+		| HOST_UNKNOWN
 		| HOST_UNREACHABLE
 		| LOG
 		| LOG_INPUT
+		| NETWORK_UNKNOWN
+		| NET_UNREACHABLE
 		| PACKET_TOO_BIG
 		| PARAMETER_PROBLEM
 		| PORT_UNREACHABLE
 		| REDIRECT
 		| RST
+		| SOURCE_QUENCH
 		| TIME_EXCEEDED
 		| TTL_EXCEEDED
 		| UNREACHABLE
@@ -289,7 +294,11 @@ ip_prefix_list_stanza
 ip_prefix_list_named_stanza
 locals [boolean again]
 :
-	IP PREFIX_LIST name = VARIABLE ip_prefix_list_tail
+	IP PREFIX_LIST name = VARIABLE
+	(
+	   ip_prefix_list_tail
+      | ip_prefix_list_null_tail	   
+	)
 	{
 		$again = _input.LT(1).getType() == IP &&
 		_input.LT(2).getType() == PREFIX_LIST &&
@@ -307,12 +316,16 @@ locals [boolean again]
 	)
 ;
 
+ip_prefix_list_null_tail
+:
+   description_line
+;
+
 ip_prefix_list_tail
 :
 	(
 		SEQ seqnum = DEC
-	)? action = access_list_action prefix = IP_ADDRESS FORWARD_SLASH prefix_length
-	= DEC
+	)? action = access_list_action prefix = IP_PREFIX
 	(
 		(
 			GE minpl = DEC
@@ -354,6 +367,35 @@ ipx_sap_access_list_stanza
 	numbered = ipx_sap_access_list_numbered_stanza
 ;
 
+nexus_access_list_null_tail
+:
+	num = DEC REMARK ~NEWLINE* NEWLINE
+;
+
+nexus_access_list_stanza
+:
+	IP ACCESS_LIST name = ~NEWLINE NEWLINE
+	(
+		nexus_access_list_tail
+		| nexus_access_list_null_tail
+	)*
+;
+
+nexus_access_list_tail
+:
+	num = DEC ala = access_list_action prot = protocol srcipr = access_list_ip_range
+	(
+		alps_src = port_specifier
+	)? dstipr = access_list_ip_range
+	(
+		alps_dst = port_specifier
+	)? 
+	(
+		TRACKED
+		| TTL EQ DEC
+	)? NEWLINE
+;
+
 protocol_type_code_access_list_numbered_stanza
 locals [boolean again]
 :
@@ -388,7 +430,7 @@ protocol_type_code_access_list_stanza
 standard_access_list_null_tail
 :
 	(
-		REMARK remark=M_REMARK_REMARK M_REMARK_NEWLINE
+		REMARK remark=M_REMARK_REMARK NEWLINE
 	)
 	|
 	(

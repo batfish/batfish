@@ -1,7 +1,7 @@
 lexer grammar CiscoGrammarCommonLexer;
 
 options {
-   superClass = batfish.util.DummyLexer;
+	superClass = batfish.util.DummyLexer;
 }
 
 @header {
@@ -158,6 +158,11 @@ AGGREGATE_ADDRESS
    'aggregate-address'
 ;
 
+AHP
+:
+	'ahp'
+;
+	
 ALERT_GROUP
 :
    'alert-group'
@@ -176,6 +181,11 @@ ALLOWED
 ALWAYS
 :
    'always'
+;
+
+ALWAYS_COMPARE_MED
+:
+	'always-compare-med'
 ;
 
 ANY
@@ -320,7 +330,7 @@ BANDWIDTH
 
 BANNER
 :
-   'banner'
+   'banner' -> pushMode(M_BANNER)
 ;
 
 BFD
@@ -371,6 +381,11 @@ BOOTPC
 BOOTPS
 :
    'bootps'
+;
+
+BOTH
+:
+	'both'
 ;
 
 BRIDGE
@@ -653,6 +668,11 @@ DEFAULT_INFORMATION
    'default-information'
 ;
 
+DEFAULT_INFORMATION_ORIGINATE
+:
+	'default-information-originate'
+;
+
 DEFAULT_METRIC
 :
    'default-metric'
@@ -798,6 +818,11 @@ DOMAIN_NAME
    'domain-name'
 ;
 
+DONT_CAPABILITY_NEGOTIATE
+:
+	'dont-capability-negotiate'
+;
+
 DOT11
 :
    'dot11'
@@ -831,6 +856,11 @@ DSU
 DUPLEX
 :
    'duplex'
+;
+
+DVMRP
+:
+	'dvmrp'
 ;
 
 DYNAMIC
@@ -913,19 +943,24 @@ EQ
    'eq'
 ;
 
+EOF_LITERAL
+:
+   'EOF'
+;
+
 ERRDISABLE
 :
    'errdisable'
 ;
 
-ESP
-:
-   'esp'
-;
-
 ESCAPE_CHARACTER
 :
    'escape-character'
+;
+
+ESP
+:
+   'esp'
 ;
 
 ESTABLISHED
@@ -1100,9 +1135,19 @@ FRAGMENTS
    'fragments'
 ;
 
+FRAME_RELAY
+:
+   'frame-relay'
+;
+
 FRAMING
 :
    'framing'
+;
+
+FREQUENCY
+:
+   'frequency'
 ;
 
 FTP
@@ -1240,6 +1285,11 @@ HOST_ROUTING
    'host-routing'
 ;
 
+HOST_UNKNOWN
+:
+   'host-unknown'
+;
+
 HOST_UNREACHABLE
 :
    'host-unreachable'
@@ -1283,6 +1333,11 @@ IDENT
 IDENTITY
 :
    'identity'
+;
+
+IDLE_TIMEOUT
+:
+   'idle-timeout'
 ;
 
 IGMP
@@ -1360,6 +1415,11 @@ IPC
    'ipc'
 ;
 
+IPINIP
+:
+   'ipinip'
+;
+
 IPSEC
 :
    'ipsec'
@@ -1425,6 +1485,11 @@ KEYPAIR
    'keypair'
 ;
 
+KEYRING
+:
+   'keyring'
+;
+
 LAPB
 :
    'lapb'
@@ -1488,6 +1553,11 @@ LINE
 LINECODE
 :
    'linecode'
+;
+
+LISTEN
+:
+   'listen'
 ;
 
 LLDP
@@ -1595,6 +1665,11 @@ MAIN_CPU
    'main-cpu'
 ;
 
+MANAGEMENT
+:
+   'management'
+;
+
 MANAGEMENT_ONLY
 :
    'management-only'
@@ -1603,6 +1678,11 @@ MANAGEMENT_ONLY
 MAP
 :
    'map'
+;
+
+MAP_CLASS
+:
+   'map-class'
 ;
 
 MASK
@@ -1628,6 +1708,11 @@ MAXIMUM_PATHS
 MAXIMUM_PREFIX
 :
    'maximum-prefix'
+;
+
+MAXIMUM_ROUTES
+:
+   'maximum-routes'
 ;
 
 MDIX
@@ -1680,6 +1765,11 @@ MFIB
    'mfib'
 ;
 
+MFIB_MODE
+:
+   'mfib-mode'
+;
+
 MGCP
 :
    'mgcp'
@@ -1694,6 +1784,12 @@ MINIMAL
 :
    'minimal'
 ;
+
+MLAG
+:
+   'mlag'
+;
+
 
 MLD
 :
@@ -1738,6 +1834,11 @@ MOTD
 MPLS
 :
    'mpls'
+;
+
+MPLS_LABEL
+:
+   'mpls-label'
 ;
 
 MROUTE
@@ -1840,6 +1941,11 @@ NEQ
    'neq'
 ;
 
+NET_UNREACHABLE
+:
+   'net-unreachable'
+;
+
 NETBIOS_DGM
 :
    'netbios-dgm'
@@ -1875,6 +1981,11 @@ NETWORK_OBJECT
    'network-object'
 ;
 
+NETWORK_UNKNOWN
+:
+   'network-unknown'
+;
+
 NEXT_HOP
 :
    'next-hop'
@@ -1883,6 +1994,11 @@ NEXT_HOP
 NEXT_HOP_SELF
 :
    'next-hop-self'
+;
+
+NNTP
+:
+   'nntp'
 ;
 
 NO
@@ -1973,6 +2089,11 @@ OTHER_ACCESS
 OUT
 :
    'out'
+;
+
+OWNER
+:
+   'owner'
 ;
 
 PACKET_TOO_BIG
@@ -2138,6 +2259,11 @@ PPP
 PREPEND
 :
    'prepend'
+;
+
+PRE_SHARED_KEY
+:
+   'pre-shared-key'
 ;
 
 PRI_GROUP
@@ -2355,6 +2481,11 @@ RESOURCE_POOL
    'resource-pool'
 ;
 
+REVERSE_ROUTE
+:
+   'reverse-route'
+;
+
 REVISION
 :
    'revision'
@@ -2453,6 +2584,11 @@ SAP
 SCCP
 :
    'sccp'
+;
+
+SCHEDULE
+:
+   'schedule'
 ;
 
 SCHEDULER
@@ -2575,6 +2711,16 @@ SET
    'set'
 ;
 
+SETUP
+:
+   'setup'
+;
+
+SFLOW
+:
+   'sflow'
+;
+
 SHELL
 :
    'shell'
@@ -2650,6 +2796,11 @@ SOURCE_ROUTE
    'source-route'
 ;
 
+SOURCE_QUENCH
+:
+   'source-quench'
+;
+
 SPANNING_TREE
 :
    'spanning-tree'
@@ -2685,11 +2836,14 @@ SSL
    'ssl'
 ;
 
+STACK_MIB
+:
+   'stack-mib'
+;
+
 STANDARD
 :
-   'standard'
-   { enableDEC = true; enableACL_NUM = false; }
-
+   'standard' { enableDEC = true; enableACL_NUM = false; }
 ;
 
 STANDBY
@@ -2857,6 +3011,11 @@ TELNET
    'telnet'
 ;
 
+TEMPLATE
+:
+   'template'
+;
+
 TERMINAL_TYPE
 :
    'terminal-type'
@@ -2932,6 +3091,11 @@ TRACK
    'track'
 ;
 
+TRACKED
+:
+   'tracked'
+;
+
 TRANSLATE
 :
    'translate'
@@ -2960,6 +3124,11 @@ TRUSTPOINT
 TRUSTPOOL
 :
    'trustpool'
+;
+
+TTL
+:
+   'ttl'
 ;
 
 TTL_EXCEEDED
@@ -3122,6 +3291,11 @@ VPNV4
    'vpnv4'
 ;
 
+VPNV6
+:
+   'vpnv6'
+;
+
 VPN_FILTER
 :
    'vpn-filter'
@@ -3192,10 +3366,22 @@ X29
    'x29'
 ;
 
+XCONNECT
+:
+   'xconnect'
+;
+
 XLATE
 :
    'xlate'
 ;
+
+// commonly used to hide password and keys
+XX_HIDE
+:
+   'xx' 'x'+
+;
+
 
 // Other Tokens
 
@@ -3240,6 +3426,16 @@ ACL_NUM
 AMPERSAND
 :
    '&'
+;
+
+ANGLE_BRACKET_LEFT
+:
+   '<'
+;
+
+ANGLE_BRACKET_RIGHT
+:
+   '>'
 ;
 
 ARP
@@ -3407,19 +3603,16 @@ EQUALS
 
 ESCAPE_C
 :
-   (
+(
       '^C'
       | '\u0003'
       | '#'
-   ) -> pushMode(M_MOTD)
-;
+);
 
 FIREWALL
 :
    'firewall'
-   {
-                             enableIPV6_ADDRESS = false;
-                            }
+   { enableIPV6_ADDRESS = false; }
 
 ;
 
@@ -3443,7 +3636,7 @@ HEX
 INTERFACE
 :
    'interface'
-   {enableIPV6_ADDRESS = false;}
+   { enableIPV6_ADDRESS = false; }
 
 ;
 
@@ -3457,34 +3650,70 @@ DES_HASH
    'des' ' ' F_Digit+ ' ' F_HexDigit+
 ;
 
+IP_PREFIX
+:
+   F_DecByte '.'
+   {enableIP_ADDRESS}? 
+   
+   F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit?
+;
+
 IP_ADDRESS
 :
-   F_DecByte
+   F_DecByte '.'
    {enableIP_ADDRESS}?
+   
+   F_DecByte '.' F_DecByte '.' F_DecByte
+;
 
-   '.' F_DecByte '.' F_DecByte '.' F_DecByte
+IPV6_PREFIX
+:
+   (
+      (
+         ':'
+         {enableIPV6_ADDRESS}?
+         
+         ':'
+         (
+            (
+               F_HexDigit+ ':'
+			)* F_HexDigit+
+         )?
+      )
+      |
+      (
+         F_HexDigit+
+         {enableIPV6_ADDRESS}?
+         
+         ':' ':'?
+      )+
+      (
+         F_HexDigit+
+      )?
+      '/' F_DecByte
+   )
 ;
 
 IPV6_ADDRESS
 :
    (
       (
-         COLON
+         ':'
          {enableIPV6_ADDRESS}?
 
-         COLON
+         ':'
          (
             (
-               F_HexDigit+ COLON
+               F_HexDigit+ ':'
             )* F_HexDigit+
          )?
       )
       |
       (
-         F_HexDigit
+         F_HexDigit+
          {enableIPV6_ADDRESS}?
 
-         F_HexDigit* COLON COLON?
+         ':' ':'?
       )+
       (
          F_HexDigit+
@@ -3589,7 +3818,10 @@ UNDERSCORE
 
 VARIABLE
 :
-   F_Letter
+   (
+      F_Letter
+      | '_'
+   )
    (
       F_Letter
       | F_Digit
@@ -3709,6 +3941,40 @@ F_UpperCaseLetter
    'A' .. 'Z'
 ;
 
+mode M_BANNER;
+
+M_BANNER_WS:
+   (
+      ' '
+      | '\t'
+      | '\u000C'
+   )+ -> channel(HIDDEN)
+;
+
+M_BANNER_LOGIN
+:
+   'login' -> type(LOGIN), pushMode(M_MOTD)
+;
+
+M_BANNER_MOTD
+:
+   'motd' -> type(MOTD)
+;
+
+M_BANNER_NEWLINE
+:
+   '\n' -> type(NEWLINE), popMode
+;
+
+M_BANNER_ESCAPE_C
+:
+   (
+      '^C'
+      | '\u0003'
+      | '#'
+   ) -> type(ESCAPE_C), pushMode(M_MOTD)
+;
+
 mode M_CERTIFICATE;
 
 M_CERTIFICATE_WS
@@ -3723,7 +3989,7 @@ M_CERTIFICATE_WS
 
 M_CERTIFICATE_QUIT
 :
-   'quit' -> popMode
+   'quit' -> type(QUIT), popMode
 ;
 
 M_CERTIFICATE_WORD
@@ -3735,7 +4001,7 @@ mode M_COMMENT;
 
 M_COMMENT_NEWLINE
 :
-   '\n' -> popMode
+   '\n' -> type(NEWLINE), popMode
 ;
 
 M_COMMENT_NON_NEWLINE
@@ -3747,7 +4013,7 @@ mode M_DESCRIPTION;
 
 M_DESCRIPTION_NEWLINE
 :
-   '\n' -> popMode
+   '\n' -> type(NEWLINE), popMode
 ;
 
 M_DESCRIPTION_NON_NEWLINE
@@ -3763,17 +4029,27 @@ M_MOTD_ESCAPE_C
       '^C'
       | '\u0003'
       | '#'
-   ) -> popMode
+   ) -> type(ESCAPE_C), popMode
 ;
 
-M_MOTD_CARAT
+M_MOTD_EOF
 :
-   '^'
+   'EOF' -> type(EOF_LITERAL), popMode
+;
+
+M_MOTD_WS
+:
+   (
+      ' '
+      | '\t'
+      | '\u000C'
+      | '\n'
+   )+
 ;
 
 M_MOTD_NON_ESCAPE_C
 :
-   ~( '^' | '\u0003' | '#' )+
+   ~(' ' | '\t' | '\u000C' | '\n')+
 ;
 
 mode M_NAME;
@@ -3796,7 +4072,7 @@ mode M_REMARK;
 
 M_REMARK_NEWLINE
 :
-   '\n' -> popMode
+   '\n' -> type(NEWLINE), popMode
 ;
 
 M_REMARK_REMARK

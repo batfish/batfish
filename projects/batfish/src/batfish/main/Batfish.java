@@ -936,7 +936,7 @@ public class Batfish {
             extractor = new CiscoControlPlaneExtractor(fileText);
             walker.walk(extractor, tree);
             for (String warning : extractor.getWarnings()) {
-               error(0, warning);
+               error(1, warning);
             }
             vc = extractor.getVendorConfiguration();
             assert Boolean.TRUE;
@@ -1435,6 +1435,10 @@ public class Batfish {
    private void serializeVendorConfigs(String testRigPath, String outputPath) {
       Map<File, String> configurationData = readConfigurationFiles(testRigPath);
       Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(configurationData);
+      if (vendorConfigurations == null) {
+         error(0, "Exiting due to parser errors");
+         quit(1);
+      }
       print(1, "\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       resetTimer();
       for (String name : vendorConfigurations.keySet()) {

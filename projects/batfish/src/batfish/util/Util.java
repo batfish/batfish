@@ -200,7 +200,7 @@ public class Util {
       return count;
    }
 
-   public static long numSubnetBitsToSubnetInt(int numBits) {
+   public static long numSubnetBitsToSubnetLong(int numBits) {
       long val = 0;
       for (int i = 31; i > 31 - numBits; i--) {
          val |= ((long) 1 << i);

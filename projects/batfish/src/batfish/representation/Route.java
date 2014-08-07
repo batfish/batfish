@@ -17,8 +17,8 @@ public abstract class Route implements Serializable {
       _prefix = prefix;
       _prefixLength = prefixLength;
       _nextHopIp = nextHopIp;
-      long maskLong = Util.numSubnetBitsToSubnetInt(_prefixLength);
-      _prefixMask = new Ip(Util.longToIp(maskLong));
+      long maskLong = Util.numSubnetBitsToSubnetLong(_prefixLength);
+      _prefixMask = new Ip(maskLong);
    }
 
    @Override

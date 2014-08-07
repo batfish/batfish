@@ -20,12 +20,17 @@ address_family_vrf_stanza
 
 banner_stanza
 :
-   BANNER MOTD ESCAPE_C ~M_MOTD_ESCAPE_C* M_MOTD_ESCAPE_C NEWLINE
+   BANNER
+   (
+      (MOTD ESCAPE_C ~ESCAPE_C* ESCAPE_C)
+      |
+      (LOGIN  ~EOF_LITERAL* EOF_LITERAL)
+   ) NEWLINE
 ;
 
 certificate_stanza
 :
-   CERTIFICATE ~M_CERTIFICATE_QUIT* M_CERTIFICATE_QUIT NEWLINE
+   CERTIFICATE ~QUIT* QUIT NEWLINE
 ;
 
 cisco_configuration
@@ -47,7 +52,13 @@ ip_default_gateway_stanza
 
 ip_route_stanza
 :
-   IP ROUTE prefix = IP_ADDRESS mask = IP_ADDRESS
+   IP ROUTE
+   (
+      (
+         address = IP_ADDRESS mask = IP_ADDRESS
+      )
+      | prefix=IP_PREFIX
+   )
    (
       nexthopip = IP_ADDRESS
       | nexthopint = interface_name
@@ -76,6 +87,15 @@ null_block_stanza
       | ARCHIVE
       | CONTROL_PLANE
       | CONTROLLER
+		|
+		(
+		   CRYPTO 
+		   (
+		      ISAKMP PROFILE
+		      | KEYRING
+		      | PKI
+		   )
+		)
       | DIAL_PEER
       |
       (
@@ -103,6 +123,8 @@ null_block_stanza
          IPV6 ACCESS_LIST
       )
       | LINE
+		| MANAGEMENT
+		| MAP_CLASS
       | POLICY_MAP
       | REDUNDANCY
       | ROLE
@@ -131,9 +153,6 @@ null_block_stanza
       null_block_substanza
       | description_line
    )*
-   (
-      closing_comment
-   )
 ;
 
 null_block_substanza
@@ -208,6 +227,7 @@ null_block_substanza
          | HIDDEN_SHARES
          | HIDEKEYS
          | HISTORY
+			| IDLE_TIMEOUT
          | INSPECT
          | INSTANCE
          | IP
@@ -217,6 +237,7 @@ null_block_substanza
          | ISAKMP
          | KEEPALIVE_ENABLE
          | KEYPAIR
+			| KEYRING
          | L2TP
          | LINE
          | LINECODE
@@ -260,6 +281,7 @@ null_block_substanza
          | REMOTE_PORT
          | REMOTE_SPAN
          | REMOVED
+         | REVERSE_ROUTE
          | REVISION
          | RING
          | ROUTE_TARGET
@@ -306,10 +328,7 @@ null_block_substanza
       (
          remaining_tokens += ~NEWLINE
       )*
-      (
-         NEWLINE
-         | M_COMMENT_NEWLINE
-      )
+      NEWLINE
    )
 ;
 
@@ -321,6 +340,7 @@ null_standalone_stanza
    (
       AAA
       | AAA_SERVER
+		| ABSOLUTE_TIMEOUT
       | ACCESS_GROUP
       |
       (
@@ -368,7 +388,10 @@ null_standalone_stanza
       | CONSOLE
       | CONTACT_EMAIL_ADDR
       | CRL
-      | CRYPTO
+      |
+      (
+         CRYPTO IPSEC
+      )
       | CTL_FILE
       | CTS
       | DEFAULT
@@ -392,14 +415,19 @@ null_standalone_stanza
       | ENROLLMENT
       | ENVIRONMENT
       | ERRDISABLE
+		| ESCAPE_CHARACTER
       | EVENT
       | EXCEPTION
+		| EXEC
       | FABRIC
       | FAILOVER
       | FEATURE
       | FILE
       | FIREWALL
       | FIRMWARE
+		| FLOWCONTROL
+		| FRAME_RELAY
+		| FREQUENCY
       | FQDN
       | FTP
       | FTP_SERVER
@@ -407,6 +435,7 @@ null_standalone_stanza
       | GROUP
       | GROUP_OBJECT
       | HASH
+		| HISTORY
       | HOST
       | HTTP
       | HW_MODULE
@@ -436,6 +465,7 @@ null_standalone_stanza
             | DOMAIN_LIST
             | DOMAIN_LOOKUP
             | DOMAIN_NAME
+				| DVMRP
             | FINGER
             | FLOW_CACHE
             | FLOW_EXPORT
@@ -447,6 +477,7 @@ null_standalone_stanza
             | HTTP
             | ICMP
             | IGMP
+				| LOAD_SHARING
             | LOCAL
             | MFIB
             | MROUTE
@@ -458,13 +489,6 @@ null_standalone_stanza
             |
             (
                OSPF NAME_LOOKUP
-            )
-            |
-            (
-               PREFIX_LIST VARIABLE
-               (
-                  SEQ DEC
-               )? DESCRIPTION
             )
             | PIM
             | RADIUS
@@ -498,6 +522,7 @@ null_standalone_stanza
             | HOST
             | LOCAL
             | MFIB
+				| MFIB_MODE
             | MLD
             | MULTICAST
             | MULTICAST_ROUTING
@@ -509,12 +534,14 @@ null_standalone_stanza
             | PIM
             | PREFIX_LIST
             | ROUTE
+				| SOURCE_ROUTE
             | UNICAST_ROUTING
          )
       )
       | ISDN
       | KEEPOUT
       | KEYPAIR
+		| KEYRING
       | LDAP_BASE_DN
       | LDAP_LOGIN
       | LDAP_LOGIN_DN
@@ -523,6 +550,7 @@ null_standalone_stanza
       | LICENSE
       | LIFETIME
       | LLDP
+		| LOCATION
       | LOGGING
       | MAC
       | MAC_ADDRESS_TABLE
@@ -553,6 +581,7 @@ null_standalone_stanza
       | NTP
       | OBJECT
       | OBJECT_GROUP
+		| OWNER
       | PAGER
       | PARTICIPATE
       | PASSWORD
@@ -562,6 +591,7 @@ null_standalone_stanza
       | PORT_CHANNEL
       | PORT_OBJECT
       | POWER
+		| PRE_SHARED_KEY
       | PRIORITY
       | PRIORITY_QUEUE
       | PRIVILEGE
@@ -570,6 +600,7 @@ null_standalone_stanza
       | PROMPT
       | PROTOCOL_OBJECT
       | QOS
+		| QUIT
       | RADIUS_COMMON_PW
       | RADIUS_SERVER
       | RD
@@ -577,6 +608,7 @@ null_standalone_stanza
       | REDIRECT_FQDN
       | RESOURCE
       | RESOURCE_POOL
+		| REVERSE_ROUTE
       | REVOCATION_CHECK
       | ROUTE
       | ROUTE_TARGET
@@ -593,6 +625,7 @@ null_standalone_stanza
             | LOCAL
          )
       )
+		| SCHEDULE
       | SCHEDULER
       | SCRIPTING
       | SECURITY
@@ -603,6 +636,8 @@ null_standalone_stanza
       | SERVICE
       | SERVICE_POLICY
       | SET
+		| SETUP
+		| SFLOW
       | SHELL
       | SHUTDOWN
       | SMTP_SERVER
@@ -613,6 +648,8 @@ null_standalone_stanza
       | SOURCE_IP_ADDRESS
       | SPANNING_TREE
       | SPE
+		| SPEED
+		| STOPBITS
       | SSH
       | SSL
       | STATIC
@@ -632,8 +669,10 @@ null_standalone_stanza
       | SYSTEM
       | TABLE_MAP
       | TACACS_SERVER
+		| TAG
       | TAG_SWITCHING
       | TELNET
+		| TEMPLATE
       | TFTP_SERVER
       | THREAT_DETECTION
       | TIMEOUT
@@ -670,14 +709,12 @@ null_standalone_stanza
       | X25
       | X29
       | XLATE
+		| XX_HIDE
    )
    (
       remaining_tokens += ~NEWLINE
    )*
-   (
-      NEWLINE
-      | M_COMMENT_NEWLINE
-   )
+   NEWLINE
 ;
 
 null_stanza
@@ -713,6 +750,7 @@ stanza
    | ip_route_stanza
    | ipv6_router_ospf_stanza
    | ipx_sap_access_list_stanza
+	| nexus_access_list_stanza
    | null_stanza
    | protocol_type_code_access_list_stanza
    | route_map_stanza
