@@ -153,6 +153,11 @@ AES256_SHA1
    'aes256-sha1'
 ;
 
+AGGREGATE
+:
+   'aggregate'
+;
+
 AGGREGATE_ADDRESS
 :
    'aggregate-address'
@@ -206,6 +211,11 @@ ANYCONNECT_ESSENTIALS
 AP
 :
    'ap'
+;
+
+AQM_REGISTER_FNF
+:
+   'aqm-register-fnf'
 ;
 
 ARCHIVE
@@ -901,6 +911,11 @@ DSPFARM
    'dspfarm'
 ;
 
+DSS
+:
+   'dss'
+;
+
 DSU
 :
    'dsu'
@@ -1089,6 +1104,16 @@ EXPORTER
 EXPANDED
 :
    'expanded'
+;
+
+EXTCOMM_LIST
+:
+   'extcomm-list'
+;
+
+EXTCOMMUNITY_LIST
+:
+   'extcommunity-list'
 ;
 
 EXTENDED
@@ -1477,6 +1502,11 @@ INTERNET
    'internet'
 ;
 
+INVALID_SPI_RECOVERY
+:
+   'invalid-spi-recovery'
+;
+
 IP
 :
    'ip'
@@ -1575,6 +1605,11 @@ KEYRING
 LAPB
 :
    'lapb'
+;
+
+LAST_AS
+:
+   'last-as'
 ;
 
 LE
@@ -2063,6 +2098,12 @@ NETBIOS_SS
    'netbios-ss'
 ;
 
+NETCONF
+:
+   'netconf'
+;
+
+
 NETWORK
 :
    'network'
@@ -2498,6 +2539,11 @@ RADIUS_SERVER
    'radius-server'
 ;
 
+RANDOM_DETECT
+:
+   'random-detect'
+;
+
 RANGE
 :
    'range'
@@ -2763,6 +2809,11 @@ SEND_COMMUNITY
    'send-community'
 ;
 
+SEND_LABEL
+:
+   'send-label'
+;
+
 SENDER
 :
    'sender'
@@ -2851,6 +2902,11 @@ SFLOW
 SHA1
 :
    'sha1' -> pushMode(M_SHA1)
+;
+
+SHAPE
+:
+   'shape'
 ;
 
 SHELL
@@ -3036,6 +3092,11 @@ SUBSCRIBE_TO
 SUBSCRIBE_TO_ALERT_GROUP
 :
    'subscribe-to-alert-group'
+;
+
+SUBSCRIBER
+:
+   'subscriber'
 ;
 
 SUMMARY_ONLY
@@ -3468,6 +3529,12 @@ WEBVPN
 :
    'webvpn'
 ;
+
+WEIGHT
+:
+   'weight'
+;
+
 
 WINS_SERVER
 :

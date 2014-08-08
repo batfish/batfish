@@ -134,7 +134,7 @@ route_map_tail_tail
 
 set_as_path_prepend_rm_stanza
 :
-   SET AS_PATH PREPEND
+   SET AS_PATH PREPEND LAST_AS?
    (
       as_list += DEC
    )+ NEWLINE
@@ -168,6 +168,14 @@ set_community_rm_stanza
    (
       comm_list += community
    )+ NEWLINE
+;
+
+set_extcomm_list_rm_stanza
+:
+   SET EXTCOMM_LIST
+   (
+      comm_list += community
+   )+ DELETE NEWLINE
 ;
 
 set_interface_rm_stanza
@@ -225,12 +233,18 @@ set_origin_rm_stanza
    ) NEWLINE
 ;
 
+set_weight_rm_stanza
+:
+   SET WEIGHT weight = DEC NEWLINE
+;
+
 set_rm_stanza
 :
    set_as_path_prepend_rm_stanza
    | set_comm_list_delete_rm_stanza
    | set_community_rm_stanza
    | set_community_additive_rm_stanza
+   | set_extcomm_list_rm_stanza
    | set_interface_rm_stanza
    | set_ip_df_rm_stanza
    | set_ipv6_rm_stanza
@@ -240,5 +254,6 @@ set_rm_stanza
 	| set_mpls_label_rm_stanza
    | set_next_hop_rm_stanza
    | set_origin_rm_stanza
+   | set_weight_rm_stanza
 ;
 

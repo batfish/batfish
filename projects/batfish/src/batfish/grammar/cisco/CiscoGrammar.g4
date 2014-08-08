@@ -37,7 +37,7 @@ cisco_configuration
 :
    (
       sl += stanza
-   )+ COLON? END .*? EOF
+   )+ COLON? END? .*? EOF
 ;
 
 hostname_stanza
@@ -258,6 +258,7 @@ null_block_substanza
          | LOGIN
          | MAIN_CPU
          | MATCH
+         | MAXIMUM
          | MESSAGE_LENGTH
          | MODE
          | MODEM
@@ -281,6 +282,7 @@ null_block_substanza
          | PROTOCOL
          | QUEUE_BUFFERS
          | QUEUE_LIMIT
+         | RANDOM_DETECT
          | RD
          | RECORD
          | RECORD_ENTRY
@@ -303,6 +305,7 @@ null_block_substanza
          | SESSION_LIMIT
          | SESSION_TIMEOUT
          | SET
+         | SHAPE
          | SHUTDOWN
          | SORT_BY
          | SOURCE
@@ -371,6 +374,7 @@ null_standalone_stanza
       | ANYCONNECT
       | ANYCONNECT_ESSENTIALS
       | AP
+      | AQM_REGISTER_FNF
       | ARP
       | ASA
       | ASDM
@@ -403,8 +407,9 @@ null_standalone_stanza
          CRYPTO
          (
             IPSEC
-            | (ISAKMP KEY)
             | (ISAKMP ENABLE)
+            | (ISAKMP KEY)
+            | (ISAKMP INVALID_SPI_RECOVERY)
          )
       )
       | CTL_FILE
@@ -423,6 +428,7 @@ null_standalone_stanza
       | DOT11
       | DSP
       | DSPFARM
+      | DSS
       | DYNAMIC_ACCESS_POLICY_RECORD
       | ENABLE
       | ENCR
@@ -481,6 +487,7 @@ null_standalone_stanza
             | DOMAIN_LOOKUP
             | DOMAIN_NAME
 				| DVMRP
+				| EXTCOMMUNITY_LIST
             | FINGER
             | FLOW_CACHE
             | FLOW_EXPORT
@@ -590,6 +597,7 @@ null_standalone_stanza
       | NAMES
       | NAT
       | NAT_CONTROL
+      | NETCONF
       | NETWORK_OBJECT
       | NETWORK_CLOCK_PARTICIPATE
       | NETWORK_CLOCK_SELECT
@@ -677,6 +685,7 @@ null_standalone_stanza
       )
       | SUBJECT_NAME
       | SUBNET
+      | SUBSCRIBER
       | SUBSCRIBE_TO
       | SUBSCRIBE_TO_ALERT_GROUP
       | SWITCH
@@ -776,6 +785,6 @@ stanza
 
 vrf_stanza
 :
-   VRF ~NEWLINE* NEWLINE null_block_substanza* closing_comment
+   VRF ~NEWLINE* NEWLINE null_block_substanza* closing_comment?
    address_family_vrf_stanza*
 ;

@@ -36,7 +36,7 @@ if_stanza
 
 interface_stanza
 :
-	INTERFACE iname = interface_name NEWLINE interface_stanza_tail closing_comment
+	INTERFACE iname = interface_name NEWLINE interface_stanza_tail closing_comment?
 ;
 
 interface_stanza_tail

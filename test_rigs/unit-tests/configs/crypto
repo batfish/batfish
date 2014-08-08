@@ -33,4 +33,6 @@ crypto map VPNMAP 2 ipsec-isakmp
   set isakmp-profile PBI
   match address pbi-danbury-vpn-acl
 !
+crypto isakmp invalid-spi-recovery
+!
 end
