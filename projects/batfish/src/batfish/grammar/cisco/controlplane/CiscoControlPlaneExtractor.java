@@ -216,7 +216,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public static Ip getPrefixIp(Token ipPrefixToken) {
       if (ipPrefixToken.getType() != CiscoGrammarCommonLexer.IP_PREFIX) {
          throw new Error(
-               "attempted to get prefix length from non-IP_PREFIX token");
+               "attempted to get prefix length from non-IP_PREFIX token: " + ipPrefixToken.getType());
       }
       String text = ipPrefixToken.getText();
       String[] parts = text.split("/");
@@ -228,7 +228,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public static int getPrefixLength(Token ipPrefixToken) {
       if (ipPrefixToken.getType() != CiscoGrammarCommonLexer.IP_PREFIX) {
          throw new Error(
-               "attempted to get prefix length from non-IP_PREFIX token");
+               "attempted to get prefix length from non-IP_PREFIX token: " + ipPrefixToken.getType());
       }
       String text = ipPrefixToken.getText();
       String[] parts = text.split("/");
@@ -920,6 +920,12 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
+   public void exitNeighbor_ebgp_multihop_af_stanza(
+         Neighbor_ebgp_multihop_af_stanzaContext ctx) {
+      todo(ctx);
+   }
+
+   @Override
    public void exitNeighbor_ebgp_multihop_rb_stanza(
          Neighbor_ebgp_multihop_rb_stanzaContext ctx) {
       todo(ctx);
@@ -982,8 +988,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
-   public void exitNeighbor_remote_as_rb_stanza(
-         Neighbor_remote_as_rb_stanzaContext ctx) {
+   public void exitNeighbor_remote_as_tail_bgp(
+         Neighbor_remote_as_tail_bgpContext ctx) {
       BgpProcess proc = _configuration.getBgpProcess();
       int as = toInteger(ctx.as);
       Ip pgIp = null;
@@ -1065,8 +1071,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
-   public void exitNeighbor_shutdown_rb_stanza(
-         Neighbor_shutdown_rb_stanzaContext ctx) {
+   public void exitNeighbor_shutdown_tail_bgp(
+         Neighbor_shutdown_tail_bgpContext ctx) {
       String pgName = ctx.neighbor.getText();
       _configuration.getBgpProcess().addShutDownNeighbor(pgName);
    }

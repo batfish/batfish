@@ -1043,6 +1043,16 @@ EXPANDED
    'expanded'
 ;
 
+EXTCOMM_LIST
+:
+   'extcomm-list'
+;
+
+EXTCOMMUNITY_LIST
+:
+   'extcommunity-list'
+;
+
 EXTENDED
 :
    'extended'
@@ -1513,6 +1523,11 @@ KEYRING
 LAPB
 :
    'lapb'
+;
+
+LAST_AS
+:
+   'last-as'
 ;
 
 LE
@@ -2401,6 +2416,11 @@ RADIUS_SERVER
    'radius-server'
 ;
 
+RANDOM_DETECT
+:
+   'random-detect'
+;
+
 RANGE
 :
    'range'
@@ -2745,6 +2765,12 @@ SFLOW
 :
    'sflow'
 ;
+
+SHAPE
+:
+   'shape'
+;
+
 
 SHELL
 :
@@ -3361,6 +3387,12 @@ WEBVPN
 :
    'webvpn'
 ;
+
+WEIGHT
+:
+   'weight'
+;
+
 
 WINS_SERVER
 :

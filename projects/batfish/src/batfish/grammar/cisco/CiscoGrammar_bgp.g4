@@ -37,13 +37,16 @@ af_stanza
    | neighbor_activate_af_stanza
    | neighbor_default_originate_af_stanza
    | neighbor_description_af_stanza
+   | neighbor_ebgp_multihop_af_stanza
    | neighbor_filter_list_af_stanza
    | neighbor_next_hop_self_af_stanza
    | neighbor_peer_group_assignment_af_stanza
    | neighbor_prefix_list_af_stanza
+   | neighbor_remote_as_af_stanza
    | neighbor_route_map_af_stanza
    | neighbor_route_reflector_client_af_stanza
    | neighbor_send_community_af_stanza
+   | neighbor_shutdown_af_stanza
    | network_af_stanza
    | network6_af_stanza
    | null_af_stanza
@@ -126,7 +129,17 @@ neighbor_description_tail_bgp
    NEIGHBOR neighbor = ~NEWLINE description_line
 ;
 
+neighbor_ebgp_multihop_af_stanza
+:
+   neighbor_ebgp_multihop_tail_bgp
+;
+
 neighbor_ebgp_multihop_rb_stanza
+:
+   neighbor_ebgp_multihop_tail_bgp
+;
+
+neighbor_ebgp_multihop_tail_bgp
 :
    NEIGHBOR neighbor = ~NEWLINE EBGP_MULTIHOP hop = DEC NEWLINE
 ;
@@ -219,7 +232,17 @@ neighbor_prefix_list_tail_bgp
    ) NEWLINE
 ;
 
+neighbor_remote_as_af_stanza
+:
+   neighbor_remote_as_tail_bgp
+;
+
 neighbor_remote_as_rb_stanza
+:
+   neighbor_remote_as_tail_bgp
+;
+
+neighbor_remote_as_tail_bgp
 :
    NEIGHBOR pg = ~NEWLINE REMOTE_AS as = DEC NEWLINE
 ;
@@ -280,7 +303,17 @@ neighbor_send_community_tail_bgp
    ) SEND_COMMUNITY EXTENDED? BOTH? NEWLINE
 ;
 
+neighbor_shutdown_af_stanza
+:
+   neighbor_shutdown_tail_bgp
+;
+   
 neighbor_shutdown_rb_stanza
+:
+   neighbor_shutdown_tail_bgp
+;
+   
+neighbor_shutdown_tail_bgp
 :
    NEIGHBOR
    (
@@ -372,7 +405,9 @@ null_standalone_af_stanza
          (
             MAXIMUM_PREFIX
             | NEXT_HOP_SELF
+            | PASSWORD
             | SOFT_RECONFIGURATION
+            | TIMERS
          )
       )
       | SYNCHRONIZATION

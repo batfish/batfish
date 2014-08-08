@@ -281,6 +281,7 @@ null_block_substanza
          | PROTOCOL
          | QUEUE_BUFFERS
          | QUEUE_LIMIT
+         | RANDOM_DETECT
          | RD
          | RECORD
          | RECORD_ENTRY
@@ -303,6 +304,7 @@ null_block_substanza
          | SESSION_LIMIT
          | SESSION_TIMEOUT
          | SET
+         | SHAPE
          | SHUTDOWN
          | SORT_BY
          | SOURCE
@@ -481,6 +483,7 @@ null_standalone_stanza
             | DOMAIN_LOOKUP
             | DOMAIN_NAME
 				| DVMRP
+				| EXTCOMMUNITY_LIST
             | FINGER
             | FLOW_CACHE
             | FLOW_EXPORT
