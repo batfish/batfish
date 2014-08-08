@@ -751,6 +751,11 @@ DENY
    'deny'
 ;
 
+DES
+:
+   'des' -> pushMode(M_DES) 
+;
+
 DES_SHA1
 :
    'des-sha1'
@@ -2843,6 +2848,11 @@ SFLOW
    'sflow'
 ;
 
+SHA1
+:
+   'sha1' -> pushMode(M_SHA1)
+;
+
 SHELL
 :
    'shell'
@@ -3709,16 +3719,6 @@ HEX
    '0x' F_HexDigit+
 ;
 
-SHA1_HASH
-:
-   'sha1' ' ' F_Digit+ ' ' F_HexDigit+
-;
-
-DES_HASH
-:
-   'des' ' ' F_Digit+ ' ' F_HexDigit+
-;
-
 IP_PREFIX
 :
    F_DecByte '.'
@@ -4060,6 +4060,23 @@ M_COMMENT_NON_NEWLINE
    ~'\n'+
 ;
 
+mode M_DES;
+
+M_DES_DEC_PART
+:
+   F_Digit+
+;
+
+M_DES_HEX_PART
+:
+   F_HexDigit+ -> popMode
+;
+
+M_DES_WS
+:
+   ' '+ -> channel(HIDDEN)
+;
+
 mode M_DESCRIPTION;
 
 M_DESCRIPTION_NEWLINE
@@ -4141,4 +4158,21 @@ M_REMARK_NEWLINE
 M_REMARK_REMARK
 :
    ~'\n'+
+;
+
+mode M_SHA1;
+
+M_SHA1_DEC_PART
+:
+   F_Digit+
+;
+
+M_SHA1_HEX_PART
+:
+   F_HexDigit+ -> popMode
+;
+
+M_SHA1_WS
+:
+   ' '+ -> channel(HIDDEN)
 ;
