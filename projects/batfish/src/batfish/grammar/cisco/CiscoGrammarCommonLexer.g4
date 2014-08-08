@@ -863,6 +863,11 @@ DSPFARM
    'dspfarm'
 ;
 
+DSS
+:
+   'dss'
+;
+
 DSU
 :
    'dsu'
@@ -2006,6 +2011,12 @@ NETBIOS_SS
    'netbios-ss'
 ;
 
+NETCONF
+:
+   'netconf'
+;
+
+
 NETWORK
 :
    'network'
@@ -2689,6 +2700,11 @@ SECURITY_LEVEL
 SEND_COMMUNITY
 :
    'send-community'
+;
+
+SEND_LABEL
+:
+   'send-label'
 ;
 
 SENDER

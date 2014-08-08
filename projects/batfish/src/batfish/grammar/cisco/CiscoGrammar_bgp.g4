@@ -348,7 +348,11 @@ network_tail_bgp
          )?
       )
       | prefix = IP_PREFIX
-   )? NEWLINE
+   )? 
+   (
+      ROUTE_MAP mapname = VARIABLE
+   )?
+   NEWLINE
 ;
 
 network6_af_stanza
@@ -406,6 +410,7 @@ null_standalone_af_stanza
             MAXIMUM_PREFIX
             | NEXT_HOP_SELF
             | PASSWORD
+            | SEND_LABEL
             | SOFT_RECONFIGURATION
             | TIMERS
          )

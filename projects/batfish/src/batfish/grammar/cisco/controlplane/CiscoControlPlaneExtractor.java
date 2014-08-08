@@ -1115,10 +1115,16 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void exitNetwork_tail_bgp(Network_tail_bgpContext ctx) {
-      Ip prefix = toIp(ctx.ip);
-      Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : prefix.getClassMask();
-      BgpNetwork network = new BgpNetwork(prefix, mask);
-      _configuration.getBgpProcess().getNetworks().add(network);
+      
+      if (ctx.mapname != null) {
+         todo(ctx);
+      }
+      else {
+         Ip prefix = toIp(ctx.ip);
+         Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : prefix.getClassMask();
+         BgpNetwork network = new BgpNetwork(prefix, mask);
+         _configuration.getBgpProcess().getNetworks().add(network);
+      }
    }
 
    @Override

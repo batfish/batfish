@@ -428,6 +428,7 @@ null_standalone_stanza
       | DOT11
       | DSP
       | DSPFARM
+      | DSS
       | DYNAMIC_ACCESS_POLICY_RECORD
       | ENABLE
       | ENCR
@@ -596,6 +597,7 @@ null_standalone_stanza
       | NAMES
       | NAT
       | NAT_CONTROL
+      | NETCONF
       | NETWORK_OBJECT
       | NETWORK_CLOCK_PARTICIPATE
       | NETWORK_CLOCK_SELECT
