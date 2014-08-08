@@ -153,6 +153,11 @@ AES256_SHA1
    'aes256-sha1'
 ;
 
+AGGREGATE
+:
+   'aggregate'
+;
+
 AGGREGATE_ADDRESS
 :
    'aggregate-address'

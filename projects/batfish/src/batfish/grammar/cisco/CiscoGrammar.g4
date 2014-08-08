@@ -37,7 +37,7 @@ cisco_configuration
 :
    (
       sl += stanza
-   )+ COLON? END .*? EOF
+   )+ COLON? END? .*? EOF
 ;
 
 hostname_stanza
@@ -785,6 +785,6 @@ stanza
 
 vrf_stanza
 :
-   VRF ~NEWLINE* NEWLINE null_block_substanza* closing_comment
+   VRF ~NEWLINE* NEWLINE null_block_substanza* closing_comment?
    address_family_vrf_stanza*
 ;

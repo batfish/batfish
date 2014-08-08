@@ -50,6 +50,7 @@ af_stanza
    | network_af_stanza
    | network6_af_stanza
    | null_af_stanza
+   | redistribute_aggregate_af_stanza
    | redistribute_connected_af_stanza
    | redistribute_static_af_stanza
 ;
@@ -71,6 +72,7 @@ aggregate_address_tail_bgp
       (
          network = IP_ADDRESS subnet = IP_ADDRESS
       )
+      | prefix = IP_PREFIX
       | ipv6_prefix = IPV6_PREFIX
    ) SUMMARY_ONLY? NEWLINE
 ;
@@ -443,7 +445,9 @@ null_standalone_rb_stanza
          NEIGHBOR ~NEWLINE
          (
             DESCRIPTION
+            | DONT_CAPABILITY_NEGOTIATE
             | FALL_OVER
+            | MAXIMUM_ROUTES
             | PASSWORD
             | REMOVE_PRIVATE_AS
             | SOFT_RECONFIGURATION
@@ -475,10 +479,26 @@ rb_stanza
    | network_rb_stanza
    | network6_rb_stanza
    | null_rb_stanza
+   | redistribute_aggregate_rb_stanza
    | redistribute_connected_rb_stanza
    | redistribute_ospf_rb_stanza
    | redistribute_static_rb_stanza
    | router_id_bgp_rb_stanza
+;
+
+redistribute_aggregate_af_stanza
+:
+   redistribute_aggregate_tail_bgp
+;
+
+redistribute_aggregate_rb_stanza
+:
+   redistribute_aggregate_tail_bgp
+;
+
+redistribute_aggregate_tail_bgp
+:
+   REDISTRIBUTE AGGREGATE NEWLINE
 ;
 
 redistribute_connected_af_stanza
