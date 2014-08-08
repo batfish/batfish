@@ -37,7 +37,7 @@ cisco_configuration
 :
    (
       sl += stanza
-   )+ COLON? END? .*? EOF
+   )+ COLON? END? NEWLINE* EOF
 ;
 
 hostname_stanza
