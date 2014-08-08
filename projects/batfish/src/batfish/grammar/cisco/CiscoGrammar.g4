@@ -258,6 +258,7 @@ null_block_substanza
          | LOGIN
          | MAIN_CPU
          | MATCH
+         | MAXIMUM
          | MESSAGE_LENGTH
          | MODE
          | MODEM
@@ -373,6 +374,7 @@ null_standalone_stanza
       | ANYCONNECT
       | ANYCONNECT_ESSENTIALS
       | AP
+      | AQM_REGISTER_FNF
       | ARP
       | ASA
       | ASDM
@@ -405,8 +407,9 @@ null_standalone_stanza
          CRYPTO
          (
             IPSEC
-            | (ISAKMP KEY)
             | (ISAKMP ENABLE)
+            | (ISAKMP KEY)
+            | (ISAKMP INVALID_SPI_RECOVERY)
          )
       )
       | CTL_FILE
@@ -680,6 +683,7 @@ null_standalone_stanza
       )
       | SUBJECT_NAME
       | SUBNET
+      | SUBSCRIBER
       | SUBSCRIBE_TO
       | SUBSCRIBE_TO_ALERT_GROUP
       | SWITCH

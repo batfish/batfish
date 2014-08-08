@@ -208,6 +208,11 @@ AP
    'ap'
 ;
 
+AQM_REGISTER_FNF
+:
+   'aqm-register-fnf'
+;
+
 ARCHIVE
 :
    'archive'
@@ -1423,6 +1428,11 @@ INTERNAL
 INTERNET
 :
    'internet'
+;
+
+INVALID_SPI_RECOVERY
+:
+   'invalid-spi-recovery'
 ;
 
 IP
@@ -2945,6 +2955,11 @@ SUBNETS
 SUBNET_ZERO
 :
    'subnet-zero'
+;
+
+SUBSCRIBER
+:
+   'subscriber'
 ;
 
 SUBSCRIBE_TO
