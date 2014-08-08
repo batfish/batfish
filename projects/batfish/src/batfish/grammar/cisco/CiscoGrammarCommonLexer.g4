@@ -4196,7 +4196,7 @@ M_MOTD_WS
 
 M_MOTD_NON_ESCAPE_C
 :
-   ~(' ' | '\t' | '\u000C' | '\n')+
+   ~(' ' | '\t' | '\u000C' | '\n')+?
 ;
 
 mode M_NAME;
