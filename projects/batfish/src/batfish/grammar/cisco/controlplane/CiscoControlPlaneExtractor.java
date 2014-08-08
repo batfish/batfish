@@ -576,6 +576,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
+   public void exitBanner_stanza(Banner_stanzaContext ctx) {
+      assert Boolean.TRUE;
+   }
+   
+   @Override
    public void exitCluster_id_bgp_rb_stanza(Cluster_id_bgp_rb_stanzaContext ctx) {
       BgpProcess proc = _configuration.getBgpProcess();
       Ip clusterId = toIp(ctx.id);
@@ -1144,9 +1149,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          else {
             address = toIp(ctx.ip);
             mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask();
-            BgpNetwork network = new BgpNetwork(address, mask);
-            _configuration.getBgpProcess().getNetworks().add(network);
          }
+         BgpNetwork network = new BgpNetwork(address, mask);
+         _configuration.getBgpProcess().getNetworks().add(network);
       }
    }
 
