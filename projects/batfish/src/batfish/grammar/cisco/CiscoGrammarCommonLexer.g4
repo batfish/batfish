@@ -494,6 +494,11 @@ CERTIFICATE
    'certificate' -> pushMode(M_CERTIFICATE)
 ;
 
+CFS
+:
+   'cfs'
+;
+
 CGMP
 :
    'cgmp'
@@ -1335,6 +1340,11 @@ HALF_DUPLEX
    'half-duplex'
 ;
 
+HARDWARE
+:
+   'hardware'
+;
+   
 HASH
 :
    'hash'
@@ -2058,6 +2068,16 @@ ND
    'nd'
 ;
 
+ND_NA
+:
+   'nd-na'
+;
+
+ND_NS
+:
+   'nd-ns'
+;
+
 NEGOTIATE
 :
    'negotiate'
@@ -2314,6 +2334,16 @@ PERMANENT
    'permanent'
 ;
 
+PEER_GATEWAY
+:
+   'peer-gateway'
+;
+
+PEER_KEEPALIVE
+:
+   'peer-keepalive'
+;
+   
 PERMIT
 :
    'permit'
@@ -3469,6 +3499,11 @@ VOICE_PORT
    'voice-port'
 ;
 
+VPC
+:
+   'vpc'
+;
+   
 VPDN
 :
    'vpdn'

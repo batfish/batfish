@@ -171,6 +171,7 @@ null_standalone_if_stanza
 				| REDIRECTS
 				| RIP
 				| ROUTE_CACHE
+				| ROUTER
 				| TCP
 				| UNNUMBERED
 				| UNREACHABLES
@@ -254,7 +255,7 @@ null_standalone_if_stanza
 
 shutdown_if_stanza
 :
-	SHUTDOWN NEWLINE
+	NO? SHUTDOWN NEWLINE
 ;
 
 switchport_access_if_stanza
