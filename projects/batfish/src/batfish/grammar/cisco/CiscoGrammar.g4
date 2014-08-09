@@ -96,15 +96,12 @@ null_block_stanza
          CRYPTO
          (
             (
-               ISAKMP KEY
-            )
-            |
-            (
-               ISAKMP POLICY
-            )
-            |
-            (
-               ISAKMP PROFILE
+               ISAKMP
+               (
+                  KEY
+                  | POLICY
+                  | PROFILE
+               )
             )
             | KEYRING
             | MAP
@@ -420,15 +417,12 @@ null_standalone_stanza
             IPSEC
             |
             (
-               ISAKMP ENABLE
-            )
-            |
-            (
-               ISAKMP KEY
-            )
-            |
-            (
-               ISAKMP INVALID_SPI_RECOVERY
+               ISAKMP
+               (
+                  ENABLE
+                  | KEY
+                  | INVALID_SPI_RECOVERY
+               )
             )
          )
       )
