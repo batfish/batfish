@@ -90,6 +90,7 @@ port
 	| EXEC
 	| FTP
 	| FTP_DATA
+	| HOSTNAME
 	| IDENT
 	| ISAKMP
 	| LPD

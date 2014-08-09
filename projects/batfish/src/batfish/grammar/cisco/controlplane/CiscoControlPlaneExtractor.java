@@ -121,6 +121,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else if (ctx.FTP_DATA() != null) {
          return 20;
       }
+      else if (ctx.HOSTNAME() != null) {
+         return 42;
+      }
       else if (ctx.IDENT() != null) {
          return 113;
       }
