@@ -3590,6 +3590,49 @@ XX_HIDE
 
 // Other Tokens
 
+COMMUNITY_NUMBER
+:
+   F_Digit
+   {!enableIPV6_ADDRESS}?
+   
+   F_Digit* ':' F_Digit+
+;
+
+VARIABLE
+:
+   (
+      (
+         (
+            F_Variable_RequiredVarChar {!enableIPV6_ADDRESS}? F_Variable_VarChar*
+         )
+         |
+         (
+            F_Variable_RequiredVarChar_Ipv6 {enableIPV6_ADDRESS}? F_Variable_VarChar_Ipv6*
+         )
+      )
+      |
+      (
+         (
+            F_Variable_VarChar {!enableIPV6_ADDRESS}? F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
+         )
+         |
+         (
+            F_Variable_VarChar_Ipv6 {enableIPV6_ADDRESS}? F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar_Ipv6 F_Variable_VarChar_Ipv6*
+         )
+      )
+   )
+   {
+      if (enableACL_NUM) {
+         enableACL_NUM = false;
+         enableDEC = true;
+      }
+      if (enableCOMMUNITY_LIST_NUM) {
+         enableCOMMUNITY_LIST_NUM = false;
+         enableDEC = true;
+      }
+   }
+;
+
 ACL_NUM
 :
    F_Digit
@@ -3713,14 +3756,6 @@ COMMUNITY_LIST_NUM
 
 ;
 
-COMMUNITY_NUMBER
-:
-   F_Digit
-   {!enableIPV6_ADDRESS}?
-   
-   F_Digit* ':' F_Digit+
-;
-
 COMMENT_CLOSING_LINE
 :
    (
@@ -3813,7 +3848,7 @@ IPV6_PREFIX
          (
             (
                F_HexDigit+ ':'
-			)* F_HexDigit+
+         )* F_HexDigit+
          )?
       )
       |
@@ -3851,15 +3886,15 @@ IPV6_ADDRESS
 
          ':' ':'?
       )+
-      (
-         F_HexDigit+
-      )?
    )
+   (
+      F_HexDigit+
+   )?
 ;
 
 NEWLINE
 :
-   F_Newline
+   F_Newline+
    {
    	enableIPV6_ADDRESS = true;
    	enableIP_ADDRESS = true;
@@ -3912,82 +3947,12 @@ UNDERSCORE
    '_'
 ;
 
-VARIABLE
-:
-   (
-      (
-         F_Digit
-         {!enableIPV6_ADDRESS}?
-         (
-            F_Letter
-            | F_Digit
-            | '-'
-            | '_'
-            | '.'
-            | '/'
-            | '&'
-            | '+'
-            | '['
-            | ']'
-            | ':'
-         )*
-      )
-      |
-      (
-         (
-            F_Letter
-            | '_'
-         )
-         (
-            F_Letter
-            | F_Digit
-            | '-'
-            | '_'
-            | '.'
-            | '/'
-            | '&'
-            | '+'
-            | '['
-            | ']'
-            |
-            (
-               {!enableIPV6_ADDRESS}?
-
-               ':'
-            )
-         )*
-      )
-   )
-   {
-		if (enableACL_NUM) {
-			enableACL_NUM = false;
-			enableDEC = true;
-		}
-		if (enableCOMMUNITY_LIST_NUM) {
-			enableCOMMUNITY_LIST_NUM = false;
-			enableDEC = true;
-		}
-	}
-
-;
-
 WS
 :
-   (
-      ' '
-      | '\t'
-      | '\u000C'
-   ) -> channel(HIDDEN)
+   F_Whitespace -> channel(HIDDEN)
 ;
 
 // Fragments
-
-fragment
-F_Newline
-:
-   '\n'
-   | '\r'
-;
 
 fragment
 F_DecByte
@@ -4038,6 +4003,13 @@ F_LowerCaseLetter
 ;
 
 fragment
+F_Newline
+:
+   '\n'
+   | '\r'
+;
+
+fragment
 F_PositiveHexDigit
 :
    (
@@ -4057,6 +4029,38 @@ fragment
 F_UpperCaseLetter
 :
    'A' .. 'Z'
+;
+
+fragment
+F_Variable_RequiredVarChar
+:
+   ~('0'..'9' | [ \t\n\r/.])
+;
+
+fragment
+F_Variable_RequiredVarChar_Ipv6
+:
+   ~('0'..'9' | [ \t\n\r/.:])
+;
+
+fragment
+F_Variable_VarChar
+:
+   ~[ \t\n\r/.]
+;
+
+fragment
+F_Variable_VarChar_Ipv6
+:
+   ~[ \t\n\r/:.]
+;
+
+fragment
+F_Whitespace
+:
+   ' '
+   | '\t'
+   | '\u000C'
 ;
 
 mode M_BANNER;
