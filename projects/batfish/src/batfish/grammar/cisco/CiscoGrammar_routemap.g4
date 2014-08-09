@@ -122,7 +122,6 @@ route_map_stanza
 route_map_tail
 :
    rmt = access_list_action num = DEC NEWLINE route_map_tail_tail
-   closing_comment
 ;
 
 route_map_tail_tail

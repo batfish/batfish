@@ -152,6 +152,7 @@ null_block_stanza
       )
       | VOICE
       | VOICE_PORT
+      | VPC
       | VPDN_GROUP
    ) ~NEWLINE* NEWLINE
    (
@@ -270,6 +271,8 @@ null_block_substanza
          | PASSWORD
          | PASSWORD_STORAGE
          | PATH_JITTER
+         | PEER_GATEWAY
+         | PEER_KEEPALIVE
          | PERMIT
          | PICKUP
          | POLICE
@@ -294,6 +297,7 @@ null_block_substanza
          | REVERSE_ROUTE
          | REVISION
          | RING
+         | ROLE
          | ROUTE_TARGET
          | RULE
          | SCHEME
@@ -392,6 +396,7 @@ null_standalone_stanza
       | CARD
       | CCM_MANAGER
       | CDP
+      | CFS
       | CIPC
       | CLASS_MAP
       | CLOCK
@@ -455,6 +460,7 @@ null_standalone_stanza
       | GATEKEEPER
       | GROUP
       | GROUP_OBJECT
+      | HARDWARE
       | HASH
 		| HISTORY
       | HOST
