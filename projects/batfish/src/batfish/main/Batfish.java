@@ -47,6 +47,7 @@ import batfish.grammar.BatfishLexer;
 import batfish.grammar.BatfishParser;
 import batfish.grammar.ConfigurationLexer;
 import batfish.grammar.ConfigurationParser;
+import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.TopologyLexer;
 import batfish.grammar.TopologyParser;
 import batfish.grammar.cisco.CiscoGrammar;
@@ -94,9 +95,9 @@ import batfish.z3.Synthesizer;
 public class Batfish {
    private static final String BASIC_FACTS_BLOCKNAME = "BaseFacts";
    private static final String EDGES_FILENAME = "edges";
-   private static final String FIBS_FILENAME = "fibs";
    // private static final String FLOW_SINK_FILENAME = "flow_sinks";
    private static final String FIB_PREDICATE_NAME = "FibNetworkForward";
+   private static final String FIBS_FILENAME = "fibs";
    private static final String SEPARATOR = System.getProperty("file.separator");
    private static final String STATIC_FACT_BLOCK_PREFIX = "libbatfish:";
    private static final String TOPOLOGY_FILENAME = "topology.net";
@@ -203,15 +204,14 @@ public class Batfish {
       Set<Edge> topologyEdges = getTopologyEdges(lbFrontend);
       print(1, "OK\n");
 
-      String fibQualifiedName = _predicateInfo.getPredicateNames()
-            .get(FIB_PREDICATE_NAME);
+      String fibQualifiedName = _predicateInfo.getPredicateNames().get(
+            FIB_PREDICATE_NAME);
       print(1, "Retrieving FIB information from LogicBlox..");
-      Relation fib = lbFrontend
-            .queryPredicate(fibQualifiedName);
+      Relation fib = lbFrontend.queryPredicate(fibQualifiedName);
       print(1, "OK\n");
       print(1, "Caclulating forwarding rules..");
-      Map<String, TreeSet<FibRow>> fibs = getRouteForwardingRules(
-            fib, lbFrontend);
+      Map<String, TreeSet<FibRow>> fibs = getRouteForwardingRules(fib,
+            lbFrontend);
       print(1, "OK\n");
 
       Path fibsPath = Paths.get(_settings.getDataPlaneDir(), FIBS_FILENAME);
@@ -929,11 +929,15 @@ public class Batfish {
                   continue;
                }
             }
-            else {
+            else if (!_settings.printParseTree()) {
                print(2, "...OK\n");
             }
+            else {
+               print(2, "...OK, PRINTING PARSE TREE:\n");
+               print(2, ParseTreePrettyPrinter.print(tree, parser4) + "\n\n");
+            }
+            extractor = new CiscoControlPlaneExtractor(fileText, parser4);
             ParseTreeWalker walker = new ParseTreeWalker();
-            extractor = new CiscoControlPlaneExtractor(fileText);
             walker.walk(extractor, tree);
             for (String warning : extractor.getWarnings()) {
                error(1, warning);

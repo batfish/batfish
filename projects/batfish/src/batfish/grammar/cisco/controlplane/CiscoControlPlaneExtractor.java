@@ -12,6 +12,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import batfish.grammar.ControlPlaneExtractor;
+import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.cisco.CiscoGrammar.*;
 import batfish.grammar.cisco.*;
 import batfish.grammar.cisco.CiscoGrammar.CommunityContext;
@@ -281,7 +282,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       }
       else if (ctx.VRRP() != null) {
          return 112;
-      }      
+      }
       else {
          throw new Error("bad protocol");
       }
@@ -393,13 +394,16 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    private StandardCommunityList _currentStandardCommunityList;
 
+   private CiscoGrammar _parser;
+
    private String _text;
 
    private List<String> _warnings;
 
-   public CiscoControlPlaneExtractor(String text) {
+   public CiscoControlPlaneExtractor(String text, CiscoGrammar parser) {
       _text = text;
       _warnings = new ArrayList<String>();
+      _parser = parser;
    }
 
    @Override
@@ -549,7 +553,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          proc.getAggregateNetworks().put(net, summaryOnly);
       }
       else if (ctx.prefix != null) {
-         todo(ctx);         
+         todo(ctx);
       }
       else if (ctx.ipv6_prefix != null) {
          todo(ctx);
@@ -575,11 +579,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       todo(ctx);
    }
 
-   @Override
-   public void exitBanner_stanza(Banner_stanzaContext ctx) {
-      assert Boolean.TRUE;
-   }
-   
    @Override
    public void exitCluster_id_bgp_rb_stanza(Cluster_id_bgp_rb_stanzaContext ctx) {
       BgpProcess proc = _configuration.getBgpProcess();
@@ -1587,6 +1586,13 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       for (int line = startLine, i = 0; i < ruleTextLines.length; line++, i++) {
          String contextPrefix = prefix + " line " + line + ": ";
          sb.append(contextPrefix + ruleTextLines[i] + "\n");
+      }
+      sb.append(prefix + "Parse tree follows:\n");
+      String parseTreePrefix = prefix + "PARSE TREE: ";
+      String parseTreeText = ParseTreePrettyPrinter.print(ctx, _parser);
+      String[] parseTreeLines = parseTreeText.split("\n");
+      for (String parseTreeLine : parseTreeLines) {
+         sb.append(parseTreePrefix + parseTreeLine + "\n");
       }
       _warnings.add(sb.toString());
    }
