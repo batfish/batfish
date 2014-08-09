@@ -1,0 +1,7 @@
+!
+hostname named_and_numbered_lists
+!
+route-map foo permit 1
+ match ip address 1 2 abc123 456def 5 95qrs5 4 a4
+!
+end

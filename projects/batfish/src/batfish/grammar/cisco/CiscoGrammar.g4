@@ -22,9 +22,13 @@ banner_stanza
 :
    BANNER
    (
-      (MOTD ESCAPE_C ~ESCAPE_C* ESCAPE_C)
+      (
+         MOTD ESCAPE_C ~ESCAPE_C* ESCAPE_C
+      )
       |
-      (LOGIN  ~EOF_LITERAL* EOF_LITERAL)
+      (
+         LOGIN ~EOF_LITERAL* EOF_LITERAL
+      )
    ) NEWLINE
 ;
 
@@ -57,7 +61,7 @@ ip_route_stanza
       (
          address = IP_ADDRESS mask = IP_ADDRESS
       )
-      | prefix=IP_PREFIX
+      | prefix = IP_PREFIX
    )
    (
       nexthopip = IP_ADDRESS
@@ -87,18 +91,23 @@ null_block_stanza
       | ARCHIVE
       | CONTROL_PLANE
       | CONTROLLER
-		|
-		(
-		   CRYPTO 
-		   (
-		      (ISAKMP KEY) 
-		      | (ISAKMP POLICY)
-		      | (ISAKMP PROFILE)
-		      | KEYRING
-		      | MAP
-		      | PKI
-		   )
-		)
+      |
+      (
+         CRYPTO
+         (
+            (
+               ISAKMP
+               (
+                  KEY
+                  | POLICY
+                  | PROFILE
+               )
+            )
+            | KEYRING
+            | MAP
+            | PKI
+         )
+      )
       | DIAL_PEER
       | EVENT_HANDLER
       |
@@ -127,9 +136,9 @@ null_block_stanza
          IPV6 ACCESS_LIST
       )
       | LINE
-		| MANAGEMENT
-		| MAP_CLASS
-		| OPENFLOW
+      | MANAGEMENT
+      | MAP_CLASS
+      | OPENFLOW
       | POLICY_MAP
       | REDUNDANCY
       | ROLE
@@ -236,7 +245,7 @@ null_block_substanza
          | HIDDEN_SHARES
          | HIDEKEYS
          | HISTORY
-			| IDLE_TIMEOUT
+         | IDLE_TIMEOUT
          | INSPECT
          | INSTANCE
          | IP
@@ -246,7 +255,7 @@ null_block_substanza
          | ISAKMP
          | KEEPALIVE_ENABLE
          | KEYPAIR
-			| KEYRING
+         | KEYRING
          | L2TP
          | LINE
          | LINECODE
@@ -344,8 +353,7 @@ null_block_substanza
       )
       (
          remaining_tokens += ~NEWLINE
-      )*
-      NEWLINE
+      )* NEWLINE
    )
 ;
 
@@ -357,7 +365,7 @@ null_standalone_stanza
    (
       AAA
       | AAA_SERVER
-		| ABSOLUTE_TIMEOUT
+      | ABSOLUTE_TIMEOUT
       | ACCESS_GROUP
       |
       (
@@ -412,9 +420,15 @@ null_standalone_stanza
          CRYPTO
          (
             IPSEC
-            | (ISAKMP ENABLE)
-            | (ISAKMP KEY)
-            | (ISAKMP INVALID_SPI_RECOVERY)
+            |
+            (
+               ISAKMP
+               (
+                  ENABLE
+                  | KEY
+                  | INVALID_SPI_RECOVERY
+               )
+            )
          )
       )
       | CTL_FILE
@@ -441,19 +455,19 @@ null_standalone_stanza
       | ENROLLMENT
       | ENVIRONMENT
       | ERRDISABLE
-		| ESCAPE_CHARACTER
+      | ESCAPE_CHARACTER
       | EVENT
       | EXCEPTION
-		| EXEC
+      | EXEC
       | FABRIC
       | FAILOVER
       | FEATURE
       | FILE
       | FIREWALL
       | FIRMWARE
-		| FLOWCONTROL
-		| FRAME_RELAY
-		| FREQUENCY
+      | FLOWCONTROL
+      | FRAME_RELAY
+      | FREQUENCY
       | FQDN
       | FTP
       | FTP_SERVER
@@ -462,7 +476,7 @@ null_standalone_stanza
       | GROUP_OBJECT
       | HARDWARE
       | HASH
-		| HISTORY
+      | HISTORY
       | HOST
       | HTTP
       | HW_MODULE
@@ -492,8 +506,8 @@ null_standalone_stanza
             | DOMAIN_LIST
             | DOMAIN_LOOKUP
             | DOMAIN_NAME
-				| DVMRP
-				| EXTCOMMUNITY_LIST
+            | DVMRP
+            | EXTCOMMUNITY_LIST
             | FINGER
             | FLOW_CACHE
             | FLOW_EXPORT
@@ -505,7 +519,7 @@ null_standalone_stanza
             | HTTP
             | ICMP
             | IGMP
-				| LOAD_SHARING
+            | LOAD_SHARING
             | LOCAL
             | MFIB
             | MROUTE
@@ -550,7 +564,7 @@ null_standalone_stanza
             | HOST
             | LOCAL
             | MFIB
-				| MFIB_MODE
+            | MFIB_MODE
             | MLD
             | MULTICAST
             | MULTICAST_ROUTING
@@ -562,14 +576,14 @@ null_standalone_stanza
             | PIM
             | PREFIX_LIST
             | ROUTE
-				| SOURCE_ROUTE
+            | SOURCE_ROUTE
             | UNICAST_ROUTING
          )
       )
       | ISDN
       | KEEPOUT
       | KEYPAIR
-		| KEYRING
+      | KEYRING
       | LDAP_BASE_DN
       | LDAP_LOGIN
       | LDAP_LOGIN_DN
@@ -578,7 +592,7 @@ null_standalone_stanza
       | LICENSE
       | LIFETIME
       | LLDP
-		| LOCATION
+      | LOCATION
       | LOGGING
       | MAC
       | MAC_ADDRESS_TABLE
@@ -610,7 +624,7 @@ null_standalone_stanza
       | NTP
       | OBJECT
       | OBJECT_GROUP
-		| OWNER
+      | OWNER
       | PAGER
       | PARTICIPATE
       | PASSWORD
@@ -620,7 +634,7 @@ null_standalone_stanza
       | PORT_CHANNEL
       | PORT_OBJECT
       | POWER
-		| PRE_SHARED_KEY
+      | PRE_SHARED_KEY
       | PRIORITY
       | PRIORITY_QUEUE
       | PRIVILEGE
@@ -629,7 +643,7 @@ null_standalone_stanza
       | PROMPT
       | PROTOCOL_OBJECT
       | QOS
-		| QUIT
+      | QUIT
       | RADIUS_COMMON_PW
       | RADIUS_SERVER
       | RD
@@ -637,7 +651,7 @@ null_standalone_stanza
       | REDIRECT_FQDN
       | RESOURCE
       | RESOURCE_POOL
-		| REVERSE_ROUTE
+      | REVERSE_ROUTE
       | REVOCATION_CHECK
       | ROUTE
       | ROUTE_TARGET
@@ -654,7 +668,7 @@ null_standalone_stanza
             | LOCAL
          )
       )
-		| SCHEDULE
+      | SCHEDULE
       | SCHEDULER
       | SCRIPTING
       | SECURITY
@@ -665,8 +679,8 @@ null_standalone_stanza
       | SERVICE
       | SERVICE_POLICY
       | SET
-		| SETUP
-		| SFLOW
+      | SETUP
+      | SFLOW
       | SHELL
       | SHUTDOWN
       | SMTP_SERVER
@@ -677,8 +691,8 @@ null_standalone_stanza
       | SOURCE_IP_ADDRESS
       | SPANNING_TREE
       | SPE
-		| SPEED
-		| STOPBITS
+      | SPEED
+      | STOPBITS
       | SSH
       | SSL
       | STATIC
@@ -699,10 +713,10 @@ null_standalone_stanza
       | SYSTEM
       | TABLE_MAP
       | TACACS_SERVER
-		| TAG
+      | TAG
       | TAG_SWITCHING
       | TELNET
-		| TEMPLATE
+      | TEMPLATE
       | TFTP_SERVER
       | THREAT_DETECTION
       | TIMEOUT
@@ -739,12 +753,11 @@ null_standalone_stanza
       | X25
       | X29
       | XLATE
-		| XX_HIDE
+      | XX_HIDE
    )
    (
       remaining_tokens += ~NEWLINE
-   )*
-   NEWLINE
+   )* NEWLINE
 ;
 
 null_stanza
@@ -780,7 +793,7 @@ stanza
    | ip_route_stanza
    | ipv6_router_ospf_stanza
    | ipx_sap_access_list_stanza
-	| nexus_access_list_stanza
+   | nexus_access_list_stanza
    | null_stanza
    | protocol_type_code_access_list_stanza
    | route_map_stanza

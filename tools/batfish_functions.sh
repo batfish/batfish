@@ -640,7 +640,7 @@ batfish_unit_tests_parser() {
    date | tr -d '\n'
    echo ": START UNIT TEST: Vendor configuration parser"
    mkdir -p $OUTPUT_DIR
-   batfish -testrig $UNIT_TEST_DIR -sv -svpath $OUTPUT_DIR
+   batfish -testrig $UNIT_TEST_DIR -sv -svpath $OUTPUT_DIR -ppt
    date | tr -d '\n'
    echo ": END UNIT TEST: Vendor configuration parser"
 }

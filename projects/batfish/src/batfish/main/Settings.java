@@ -40,6 +40,7 @@ public class Settings {
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
+   private static final String ARG_PRINT_PARSE_TREES = "ppt";
    private static final String ARG_QUERY = "query";
    private static final String ARG_QUERY_ALL = "all";
    private static final String ARG_REDIRECT_STDERR = "redirect";
@@ -123,6 +124,7 @@ public class Settings {
    private boolean _noTraffic;
    private Options _options;
    private List<String> _predicates;
+   private boolean _printParseTree;
    private boolean _printSemantics;
    private boolean _query;
    private boolean _queryAll;
@@ -488,13 +490,12 @@ public class Settings {
       _options.addOption(OptionBuilder.withDescription(
             "compute and serialize data plane (requires logicblox)").create(
             ARG_DATA_PLANE));
-      _options
-            .addOption(OptionBuilder
-                  .hasArg()
-                  .withArgName(ARGNAME_DATA_PLANE_DIR)
-                  .withDescription(
-                        "path to read or write serialized data plane")
-                  .create(ARG_DATA_PLANE_DIR));
+      _options.addOption(OptionBuilder.hasArg()
+            .withArgName(ARGNAME_DATA_PLANE_DIR)
+            .withDescription("path to read or write serialized data plane")
+            .create(ARG_DATA_PLANE_DIR));
+      _options.addOption(OptionBuilder.withDescription("print parse trees")
+            .create(ARG_PRINT_PARSE_TREES));
    }
 
    private void parseCommandLine(String[] args) {
@@ -603,7 +604,13 @@ public class Settings {
       _serializeIndependentPath = line.getOptionValue(
             ARG_SERIALIZE_INDEPENDENT_PATH, DEFAULT_SERIALIZE_INDEPENDENT_PATH);
       _dataPlane = line.hasOption(ARG_DATA_PLANE);
-      _dataPlaneDir = line.getOptionValue(ARG_DATA_PLANE_DIR, DEFAULT_DATA_PLANE_DIR);
+      _dataPlaneDir = line.getOptionValue(ARG_DATA_PLANE_DIR,
+            DEFAULT_DATA_PLANE_DIR);
+      _printParseTree = line.hasOption(ARG_PRINT_PARSE_TREES);
+   }
+
+   public boolean printParseTree() {
+      return _printParseTree;
    }
 
    public boolean redirectStdErr() {
