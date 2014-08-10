@@ -236,12 +236,14 @@
          <antlr4parser grammar.name="CiscoGrammar" grammar.packagedir="batfish/grammar/cisco">
             <dependencies>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar.g4"/>
+               <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar.tokens"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammarCommonLexer.tokens"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammarCommonParser.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_acl.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_bgp.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_interface.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_ospf.g4"/>
+               <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_rip.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_routemap.g4"/>
             </dependencies>
          </antlr4parser>

@@ -138,6 +138,11 @@ ADDRESS_POOL
    'address-pool'
 ;
 
+ADMINISTRATIVE_WEIGHT
+:
+   'administrative-weight'
+;
+
 ADMISSION
 :
    'admission'
@@ -151,6 +156,11 @@ AES128_SHA1
 AES256_SHA1
 :
    'aes256-sha1'
+;
+
+AESA
+:
+   'aesa'
 ;
 
 AGGREGATE
@@ -337,6 +347,16 @@ AUTO_SUMMARY
 AUTO_SYNC
 :
    'auto-sync'
+;
+
+BACKGROUND_ROUTES_ENABLE
+:
+   'background-routes-enable'
+;
+
+BACKUPCRF
+:
+   'backupcrf'
 ;
 
 BANDWIDTH
@@ -841,6 +861,11 @@ DISABLE
    'disable'
 ;
 
+DISTANCE
+:
+   'distance'
+;
+
 DISTRIBUTE_LIST
 :
    'distribute-list'
@@ -1128,6 +1153,11 @@ FABRIC
    'fabric'
 ;
 
+FACILITY_ALARM
+:
+   'facility-alarm'
+;
+
 FAILOVER
 :
    'failover'
@@ -1360,6 +1390,11 @@ HIDEKEYS
    'hidekeys'
 ;
 
+HIGH_AVAILABILITY
+:
+   'high-availability'
+;
+
 HISTORY
 :
    'history'
@@ -1552,6 +1587,11 @@ IPV6_ADDRESS_POOL
    'ipv6-address-pool'
 ;
 
+IPX
+:
+   'ipx'
+;
+
 IRDP
 :
    'irdp'
@@ -1600,6 +1640,11 @@ KEYPAIR
 KEYRING
 :
    'keyring'
+;
+
+LANE
+:
+   'lane'
 ;
 
 LAPB
@@ -1817,6 +1862,16 @@ MAP_CLASS
    'map-class'
 ;
 
+MAP_GROUP
+:
+   'map-group'
+;
+
+MAP_LIST
+:
+   'map-list'
+;
+
 MASK
 :
    'mask'
@@ -1933,6 +1988,11 @@ MLS
    'mls'
 ;
 
+MOBILITY
+:
+   'mobility'
+;
+
 MODE
 :
    'mode'
@@ -2013,6 +2073,11 @@ MULTILINK
    'multilink'
 ;
 
+MULTIPOINT
+:
+   'multipoint'
+;
+
 NAME_LOOKUP
 :
    'name-lookup'
@@ -2070,7 +2135,7 @@ NEGOTIATION
 
 NEIGHBOR
 :
-   'neighbor'
+   'neighbor' -> pushMode(M_NEIGHBOR)
 ;
 
 NEQ
@@ -2162,6 +2227,11 @@ NO_EXPORT
 NO_SUMMARY
 :
    'no-summary'
+;
+
+NODE
+:
+   'node'
 ;
 
 NON500_ISAKMP
@@ -2306,7 +2376,7 @@ PEER
 
 PEER_GROUP
 :
-   'peer-group'
+   'peer-group' -> pushMode(M_NEIGHBOR)
 ;
 
 PERMANENT
@@ -2789,6 +2859,11 @@ SCTP
    'sctp'
 ;
 
+SDM
+:
+   'sdm'
+;
+
 SECONDARY
 :
    'secondary'
@@ -2919,6 +2994,11 @@ SHUTDOWN
    'shutdown'
 ;
 
+SINGLE_ROUTER_MODE
+:
+   'single-router-mode'
+;
+
 SLA
 :
    'sla'
@@ -2964,6 +3044,11 @@ SOFT_RECONFIGURATION
    'soft-reconfiguration'
 ;
 
+SONET
+:
+   'sonet'
+;
+
 SOURCE
 :
    'source'
@@ -2992,6 +3077,11 @@ SOURCE_QUENCH
 SPANNING_TREE
 :
    'spanning-tree'
+;
+
+SPD
+:
+   'spd'
 ;
 
 SPEED
@@ -3127,6 +3217,11 @@ SWITCHBACK
 SWITCHPORT
 :
    'switchport'
+;
+
+SYNC
+:
+   'sync'
 ;
 
 SYNCHRONIZATION
@@ -3544,6 +3639,11 @@ WINS_SERVER
 WITHOUT_CSD
 :
    'without-csd'
+;
+
+WLAN
+:
+   'wlan'
 ;
 
 WRR_QUEUE
@@ -4034,25 +4134,25 @@ F_UpperCaseLetter
 fragment
 F_Variable_RequiredVarChar
 :
-   ~('0'..'9' | [ \t\n\r/.])
+   ~('0'..'9' | [ \t\n\r/.,-])
 ;
 
 fragment
 F_Variable_RequiredVarChar_Ipv6
 :
-   ~('0'..'9' | [ \t\n\r/.:])
+   ~('0'..'9' | [ \t\n\r/.,-:])
 ;
 
 fragment
 F_Variable_VarChar
 :
-   ~[ \t\n\r.]
+   ~[ \t\n\r]
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~[ \t\n\r:.]
+   ~[ \t\n\r:]
 ;
 
 fragment
@@ -4075,7 +4175,7 @@ M_BANNER_WS:
 
 M_BANNER_LOGIN
 :
-   'login' -> type(LOGIN), pushMode(M_MOTD)
+   'login' -> type(LOGIN), pushMode(M_MOTD_LOGIN)
 ;
 
 M_BANNER_MOTD
@@ -4093,8 +4193,12 @@ M_BANNER_ESCAPE_C
    (
       '^C'
       | '\u0003'
-      | '#'
-   ) -> type(ESCAPE_C), pushMode(M_MOTD)
+   ) -> type(ESCAPE_C), pushMode(M_MOTD_C)
+;
+
+M_BANNER_HASH
+:
+   '#' -> type(POUND), pushMode(M_MOTD_HASH)
 ;
 
 mode M_CERTIFICATE;
@@ -4172,23 +4276,36 @@ M_KEY_NON_NEWLINE
    ~'\n'+
 ;
 
-mode M_MOTD;
+mode M_MOTD_C;
 
-M_MOTD_ESCAPE_C
+M_MOTD_C_ESCAPE_C
 :
    (
       '^C'
       | '\u0003'
-      | '#'
    ) -> type(ESCAPE_C), popMode
 ;
 
-M_MOTD_EOF
+M_MOTD_C_NON_ESCAPE_C
 :
-   'EOF' -> type(EOF_LITERAL), popMode
+   .+?
 ;
 
-M_MOTD_WS
+mode M_MOTD_HASH;
+
+M_MOTD_HASH_HASH
+:
+   '#' -> type(POUND), popMode
+;
+
+M_MOTD_HASH_MOTD
+:
+   ~'#'+
+;
+
+mode M_MOTD_LOGIN;
+
+M_MOTD_LOGIN_WS
 :
    (
       ' '
@@ -4198,9 +4315,19 @@ M_MOTD_WS
    )+
 ;
 
-M_MOTD_NON_ESCAPE_C
+M_MOTD_LOGIN_EOF
 :
-   ~(' ' | '\t' | '\u000C' | '\n')+?
+   'EOF' -> type(EOF_LITERAL), popMode
+;
+
+M_MOTD_LOGIN_WORD
+:
+   ~(
+      ' '
+      | '\t'
+      | '\u000C'
+      | '\n'
+   )+
 ;
 
 mode M_NAME;
@@ -4219,6 +4346,58 @@ M_NAME_NAME
    ~'\n'+ -> popMode
 ;
 
+mode M_NEIGHBOR;
+
+M_NEIGHBOR_VARIABLE
+:
+   (
+      (
+            (F_Variable_RequiredVarChar_Ipv6 | '-') F_Variable_VarChar_Ipv6*
+      )
+      |
+      (
+            F_Variable_VarChar_Ipv6 F_Variable_VarChar_Ipv6* (F_Variable_RequiredVarChar_Ipv6 | '-') F_Variable_VarChar_Ipv6*
+      )
+   ) -> type(VARIABLE), popMode
+;
+
+M_NEIGHBOR_IP_ADDRESS
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type(IP_ADDRESS), popMode
+;
+
+M_NEIGHBOR_IPV6_ADDRESS
+:
+   (
+      (
+         (
+            '::'
+            (
+               (
+                  F_HexDigit+ ':'
+               )* F_HexDigit+
+            )?
+         )
+         |
+         (
+            F_HexDigit+ ':' ':'?
+         )+
+      )
+      (
+         F_HexDigit+
+      )?
+   ) -> type(IPV6_ADDRESS), popMode
+;
+
+M_NEIGHBOR_NEWLINE
+:
+   '\n' -> type(NEWLINE), popMode
+;
+
+M_NEIGHBOR_WS
+:
+   F_Whitespace -> channel(HIDDEN)
+;
 mode M_REMARK;
 
 M_REMARK_NEWLINE

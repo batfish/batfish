@@ -37,10 +37,12 @@ af_stanza
    | neighbor_activate_af_stanza
    | neighbor_default_originate_af_stanza
    | neighbor_description_af_stanza
+   | neighbor_distribute_list_af_stanza
    | neighbor_ebgp_multihop_af_stanza
    | neighbor_filter_list_af_stanza
    | neighbor_next_hop_self_af_stanza
    | neighbor_peer_group_assignment_af_stanza
+   | neighbor_peer_group_creation_af_stanza
    | neighbor_prefix_list_af_stanza
    | neighbor_remote_as_af_stanza
    | neighbor_route_map_af_stanza
@@ -116,6 +118,29 @@ neighbor_activate_af_stanza
    ) ACTIVATE NEWLINE
 ;
 
+neighbor_default_originate_af_stanza
+:
+   neighbor_default_originate_tail_bgp
+;
+
+neighbor_default_originate_rb_stanza
+:
+   neighbor_default_originate_tail_bgp
+;
+
+neighbor_default_originate_tail_bgp
+:
+   NEIGHBOR
+   (
+      ip = IP_ADDRESS
+      | ipv6 = IPV6_ADDRESS
+      | peergroup = VARIABLE
+   ) DEFAULT_ORIGINATE
+   (
+      ROUTE_MAP map = VARIABLE
+   )? NEWLINE
+;
+
 neighbor_description_af_stanza
 :
    neighbor_description_tail_bgp
@@ -131,6 +156,21 @@ neighbor_description_tail_bgp
    NEIGHBOR neighbor = ~NEWLINE description_line
 ;
 
+neighbor_distribute_list_af_stanza
+:
+   neighbor_distribute_list_tail_bgp
+;
+
+neighbor_distribute_list_rb_stanza
+:
+   neighbor_distribute_list_tail_bgp
+;
+
+neighbor_distribute_list_tail_bgp
+:
+   NEIGHBOR ~NEWLINE DISTRIBUTE_LIST ~NEWLINE* NEWLINE
+;
+
 neighbor_ebgp_multihop_af_stanza
 :
    neighbor_ebgp_multihop_tail_bgp
@@ -144,18 +184,6 @@ neighbor_ebgp_multihop_rb_stanza
 neighbor_ebgp_multihop_tail_bgp
 :
    NEIGHBOR neighbor = ~NEWLINE EBGP_MULTIHOP hop = DEC NEWLINE
-;
-
-neighbor_default_originate_af_stanza
-:
-   NEIGHBOR
-   (
-      name = IP_ADDRESS
-      | name = VARIABLE
-   ) DEFAULT_ORIGINATE
-   (
-      ROUTE_MAP map = VARIABLE
-   )? NEWLINE
 ;
 
 neighbor_filter_list_af_stanza
@@ -210,7 +238,17 @@ neighbor_peer_group_assignment_tail_bgp
    ) PEER_GROUP name = VARIABLE NEWLINE
 ;
 
+neighbor_peer_group_creation_af_stanza
+:
+   neighbor_peer_group_creation_tail_bgp
+;
+
 neighbor_peer_group_creation_rb_stanza
+:
+   neighbor_peer_group_creation_tail_bgp
+;
+
+neighbor_peer_group_creation_tail_bgp
 :
    NEIGHBOR name = VARIABLE PEER_GROUP NEWLINE
 ;
@@ -447,6 +485,7 @@ null_standalone_rb_stanza
             DESCRIPTION
             | DONT_CAPABILITY_NEGOTIATE
             | FALL_OVER
+            | MAXIMUM_PREFIX
             | MAXIMUM_ROUTES
             | PASSWORD
             | REMOVE_PRIVATE_AS
@@ -465,7 +504,9 @@ rb_stanza
    aggregate_address_rb_stanza
    | cluster_id_bgp_rb_stanza
    | default_metric_rb_stanza
+   | neighbor_default_originate_rb_stanza
    | neighbor_description_rb_stanza
+   | neighbor_distribute_list_rb_stanza
    | neighbor_ebgp_multihop_rb_stanza
    | neighbor_next_hop_self_rb_stanza
    | neighbor_peer_group_creation_rb_stanza
