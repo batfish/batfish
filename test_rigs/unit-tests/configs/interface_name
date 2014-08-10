@@ -1,0 +1,9 @@
+!
+hostname interface_name
+interface FastEthernet12/13
+!
+interface Vlan100
+!
+interface Port-channel1
+!
+end

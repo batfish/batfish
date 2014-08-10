@@ -4046,13 +4046,13 @@ F_Variable_RequiredVarChar_Ipv6
 fragment
 F_Variable_VarChar
 :
-   ~[ \t\n\r/.]
+   ~[ \t\n\r.]
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~[ \t\n\r/:.]
+   ~[ \t\n\r:.]
 ;
 
 fragment
