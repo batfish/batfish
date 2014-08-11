@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import batfish.grammar.BatfishParser;
 import batfish.grammar.ControlPlaneExtractor;
 import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.cisco.CiscoGrammar.*;
@@ -394,13 +395,13 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    private StandardCommunityList _currentStandardCommunityList;
 
-   private CiscoGrammar _parser;
+   private BatfishParser _parser;
 
    private String _text;
 
    private List<String> _warnings;
 
-   public CiscoControlPlaneExtractor(String text, CiscoGrammar parser) {
+   public CiscoControlPlaneExtractor(String text, BatfishParser parser) {
       _text = text;
       _warnings = new ArrayList<String>();
       _parser = parser;
@@ -533,7 +534,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void enterRouter_rip_stanza(Router_rip_stanzaContext ctx) {
       todo(ctx);
    }
-   
+
    @Override
    public void enterStandard_access_list_stanza(
          Standard_access_list_stanzaContext ctx) {
@@ -953,10 +954,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
-   public void exitNeighbor_distribute_list_tail_bgp(Neighbor_distribute_list_tail_bgpContext ctx) {
+   public void exitNeighbor_distribute_list_tail_bgp(
+         Neighbor_distribute_list_tail_bgpContext ctx) {
       todo(ctx);
    }
-   
+
    @Override
    public void exitNeighbor_ebgp_multihop_af_stanza(
          Neighbor_ebgp_multihop_af_stanzaContext ctx) {
@@ -1324,7 +1326,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          Redistribute_rip_ro_stanzaContext ctx) {
       todo(ctx);
    }
-   
+
    @Override
    public void exitRedistribute_static_ro_stanza(
          Redistribute_static_ro_stanzaContext ctx) {

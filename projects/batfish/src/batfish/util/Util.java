@@ -8,6 +8,15 @@ public class Util {
    public static final String FACT_BLOCK_FOOTER = "\n//FACTS END HERE\n"
          + "   }) // clauses\n" + "} <-- .\n";
 
+   public static String applyPrefix(String prefix, String msg) {
+      String[] lines = msg.split("\n");
+      StringBuilder sb = new StringBuilder();
+      for (String line : lines) {
+         sb.append(prefix + line + "\n");
+      }
+      return sb.toString();
+   }
+
    public static String clearDuplicateLines(String input) {
       String[] lines = input.split("\\n");
       LinkedHashSet<String> lineSet = new LinkedHashSet<String>(lines.length);
@@ -30,7 +39,7 @@ public class Util {
       output += "   clauses(`{\n" + "// FACTS START HERE\n\n";
       return output;
    }
-
+   
    public static String extractBits(long l, int start, int end) {
       String s = "";
       for (int pos = end; pos >= start; pos--) {
@@ -40,7 +49,7 @@ public class Util {
       }
       return s;
    }
-   
+
    public static String getIndentString(int indentLevel) {
 	   
 	   String retString = "";
@@ -65,7 +74,7 @@ public class Util {
       }
       return networkEnd;
    }
-
+   
    public static String getPortName(int port) {
       switch (port) {
       case 0:
@@ -117,7 +126,7 @@ public class Util {
       int slashPos = pair.indexOf('/');
       return Integer.parseInt(pair.substring(slashPos + 1, pair.length()));
    }
-   
+
    public static String getProtocolName(int protocol) {
       switch (protocol) {
       case 0:
@@ -215,7 +224,7 @@ public class Util {
       }
       return numBits;
    }
-
+   
    public static long numWildcardBitsToWildcardLong(int numBits) {
       long wildcard = 0;
       for (int i = 0; i < numBits; i++) {
@@ -223,7 +232,7 @@ public class Util {
       }
       return wildcard;
    }
-   
+
    public static String toHSAInterfaceName(String name) {
       if (name.startsWith("xe-")) {
          String numberSection = name.substring(3);

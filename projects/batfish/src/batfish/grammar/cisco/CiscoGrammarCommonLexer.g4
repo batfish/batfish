@@ -14,6 +14,18 @@ boolean enableIP_ADDRESS = true;
 boolean enableDEC = true;
 boolean enableACL_NUM = false;
 boolean enableCOMMUNITY_LIST_NUM = false;
+
+@Override
+public String printStateVariables() {
+   StringBuilder sb = new StringBuilder();
+   sb.append("enableIPV6_ADDRESS: " + enableIPV6_ADDRESS + "\n");
+   sb.append("enableIP_ADDRESS: " + enableIP_ADDRESS + "\n");
+   sb.append("enableDEC: " + enableDEC + "\n");
+   sb.append("enableACL_NUM: " + enableACL_NUM+ "\n");
+   sb.append("enableCOMMUNITY_LIST_NUM: " + enableCOMMUNITY_LIST_NUM + "\n");
+   return sb.toString();
+}
+
 }
 
 tokens {
