@@ -357,8 +357,9 @@ neighbor_shutdown_tail_bgp
 :
    NEIGHBOR
    (
-      neighbor = IP_ADDRESS
-      | neighbor = VARIABLE
+      ip = IP_ADDRESS
+      | ip6= IPV6_ADDRESS
+      | peergroup = VARIABLE
    ) SHUTDOWN NEWLINE
 ;
 

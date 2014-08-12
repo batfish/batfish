@@ -1113,8 +1113,18 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitNeighbor_shutdown_tail_bgp(
          Neighbor_shutdown_tail_bgpContext ctx) {
-      String pgName = ctx.neighbor.getText();
-      _configuration.getBgpProcess().addShutDownNeighbor(pgName);
+      String neighbor = null;
+      if (ctx.ip6 != null) {
+         todo(ctx);
+         return;
+      }
+      else if (ctx.ip != null){
+         neighbor = ctx.ip.getText();
+      }
+      else if (ctx.peergroup != null) {
+         neighbor = ctx.peergroup.getText();
+         _configuration.getBgpProcess().addShutDownNeighbor(neighbor);
+      }
    }
 
    @Override
