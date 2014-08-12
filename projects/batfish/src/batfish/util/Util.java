@@ -1,7 +1,5 @@
 package batfish.util;
 
-import java.util.LinkedHashSet;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 
 public class Util {
@@ -17,29 +15,6 @@ public class Util {
       return sb.toString();
    }
 
-   public static String clearDuplicateLines(String input) {
-      String[] lines = input.split("\\n");
-      LinkedHashSet<String> lineSet = new LinkedHashSet<String>(lines.length);
-      for (int i = 0; i < lines.length; i++) {
-         String line = lines[i];
-         lineSet.add(line);
-      }
-      StringBuilder writer = new StringBuilder(lineSet.toString().length());
-      for (String line : lineSet) {
-         writer.append(line + "\n");
-      }
-      return writer.toString();
-   }
-
-   public static String createFactBlockHeader(String blockName, String[] modules) {
-      String output = "block (`" + blockName + ") {\n" + "   inactive(),\n";
-      for (String module : modules) {
-         output += "   alias_all(`" + module + "),\n";
-      }
-      output += "   clauses(`{\n" + "// FACTS START HERE\n\n";
-      return output;
-   }
-   
    public static String extractBits(long l, int start, int end) {
       String s = "";
       for (int pos = end; pos >= start; pos--) {

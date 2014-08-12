@@ -893,7 +893,7 @@ public class Batfish {
          boolean antlr4 = false;
          if (fileText.charAt(0) == '!') {
             // antlr 4 stuff
-            print(2, "Parsing: \"" + currentPath + "\"");
+            print(1, "Parsing: \"" + currentPath + "\"");
             antlr4 = true;
             BatfishCombinedParser combinedParser = new CiscoCombinedParser(
                   fileText);
@@ -901,12 +901,12 @@ public class Batfish {
             List<String> errors = combinedParser.getErrors();
             int numErrors = errors.size();
             if (numErrors > 0) {
-               error(0, " ..." + numErrors + " ERROR(S)\n");
+               error(1, " ..." + numErrors + " ERROR(S)\n");
                for (int i = 0; i < numErrors; i++) {
                   String prefix = "ERROR " + (i + 1) + ": ";
                   String msg = errors.get(i);
                   String prefixedMsg = Util.applyPrefix(prefix, msg);
-                  error(2, prefixedMsg + "\n");
+                  error(1, prefixedMsg + "\n");
                }
                if (_settings.exitOnParseError()) {
                   return null;
@@ -917,11 +917,11 @@ public class Batfish {
                }
             }
             else if (!_settings.printParseTree()) {
-               print(2, "...OK\n");
+               print(1, "...OK\n");
             }
             else {
-               print(2, "...OK, PRINTING PARSE TREE:\n");
-               print(2,
+               print(0, "...OK, PRINTING PARSE TREE:\n");
+               print(0,
                      ParseTreePrettyPrinter.print(tree,
                            combinedParser.getParser())
                            + "\n\n");
@@ -931,7 +931,7 @@ public class Batfish {
             ParseTreeWalker walker = new ParseTreeWalker();
             walker.walk(extractor, tree);
             for (String warning : extractor.getWarnings()) {
-               error(1, warning);
+               error(2, warning);
             }
             vc = extractor.getVendorConfiguration();
             assert Boolean.TRUE;
@@ -1436,6 +1436,7 @@ public class Batfish {
       }
       print(1, "\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       resetTimer();
+      new File(outputPath).mkdirs();
       for (String name : vendorConfigurations.keySet()) {
          VendorConfiguration vc = vendorConfigurations.get(name);
          Path currentOutputPath = Paths.get(outputPath, name);
