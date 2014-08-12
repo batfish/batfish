@@ -1,7 +1,7 @@
 parser grammar CiscoGrammar;
 
 import
-CiscoGrammarCommonParser, CiscoGrammar_acl, CiscoGrammar_bgp, CiscoGrammar_interface, CiscoGrammar_ospf, CiscoGrammar_routemap;
+CiscoGrammarCommonParser, CiscoGrammar_acl, CiscoGrammar_bgp, CiscoGrammar_interface, CiscoGrammar_ospf, CiscoGrammar_rip, CiscoGrammar_routemap;
 
 options {
    superClass = 'batfish.grammar.BatfishParser';
@@ -23,7 +23,16 @@ banner_stanza
    BANNER
    (
       (
-         MOTD ESCAPE_C ~ESCAPE_C* ESCAPE_C
+         MOTD 
+         (
+         	(
+         		ESCAPE_C ~ESCAPE_C* ESCAPE_C
+         	)
+         	|
+         	(
+         		POUND ~POUND* POUND
+         	)
+         )   
       )
       |
       (
@@ -89,6 +98,7 @@ null_block_stanza
    (
       AAA
       | ARCHIVE
+      | ATM
       | CONTROL_PLANE
       | CONTROLLER
       |
@@ -138,6 +148,7 @@ null_block_stanza
       | LINE
       | MANAGEMENT
       | MAP_CLASS
+      | MAP_LIST
       | OPENFLOW
       | POLICY_MAP
       | REDUNDANCY
@@ -184,6 +195,8 @@ null_block_substanza
          | ACTION
          | ACTIVATION_CHARACTER
          | ADDRESS_POOL
+         | ADMINISTRATIVE_WEIGHT
+         | AESA
          | ANYCONNECT
          | ASSOCIATE
          | ASSOCIATION
@@ -194,6 +207,8 @@ null_block_substanza
          | AUTHORIZATION_SERVER_GROUP
          | AUTO_SYNC
          | AUTOSELECT
+         | BACKGROUND_ROUTES_ENABLE
+         | BACKUPCRF
          | BANDWIDTH
          | BANNER
          | BIND
@@ -244,12 +259,14 @@ null_block_substanza
          | GROUP_URL
          | HIDDEN_SHARES
          | HIDEKEYS
+         | HIGH_AVAILABILITY
          | HISTORY
          | IDLE_TIMEOUT
          | INSPECT
          | INSTANCE
          | IP
          | IPSEC_UDP
+         | IPX
          | IPV6
          | IPV6_ADDRESS_POOL
          | ISAKMP
@@ -274,6 +291,7 @@ null_block_substanza
          | MODEM
          | MTU
          | NAME
+         | NODE
          | NOTIFY
          | PARAMETERS
          | PARENT
@@ -298,6 +316,7 @@ null_block_substanza
          | RD
          | RECORD
          | RECORD_ENTRY
+         | REDISTRIBUTE
          | REMARK
          | REMOTE_IP
          | REMOTE_PORT
@@ -320,6 +339,7 @@ null_block_substanza
          | SET
          | SHAPE
          | SHUTDOWN
+         | SINGLE_ROUTER_MODE
          | SORT_BY
          | SOURCE
          | SPANNING_TREE
@@ -330,6 +350,7 @@ null_block_substanza
          | STP
          | SUBJECT_NAME
          | SWITCHBACK
+         | SYNC
          | TB_VLAN1
          | TB_VLAN2
          | TERMINAL_TYPE
@@ -419,7 +440,8 @@ null_standalone_stanza
       (
          CRYPTO
          (
-            IPSEC
+         	CA
+            | IPSEC
             |
             (
                ISAKMP
@@ -460,6 +482,7 @@ null_standalone_stanza
       | EXCEPTION
       | EXEC
       | FABRIC
+      | FACILITY_ALARM
       | FAILOVER
       | FEATURE
       | FILE
@@ -671,6 +694,7 @@ null_standalone_stanza
       | SCHEDULE
       | SCHEDULER
       | SCRIPTING
+      | SDM
       | SECURITY
       | SENDER
       | SERIAL_NUMBER
@@ -690,6 +714,7 @@ null_standalone_stanza
       | SOURCE_INTERFACE
       | SOURCE_IP_ADDRESS
       | SPANNING_TREE
+      | SPD
       | SPE
       | SPEED
       | STOPBITS
@@ -749,6 +774,7 @@ null_standalone_stanza
       | VTP
       | VOICE_CARD
       | WEBVPN
+      | WLAN
       | WSMA
       | X25
       | X29
@@ -799,6 +825,7 @@ stanza
    | route_map_stanza
    | router_bgp_stanza
    | router_ospf_stanza
+   | router_rip_stanza
    | standard_access_list_stanza
 ;
 

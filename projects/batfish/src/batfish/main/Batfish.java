@@ -33,7 +33,7 @@ import java.util.TreeSet;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import org.antlr.v4.runtime.atn.PredictionMode;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -43,16 +43,13 @@ import com.logicblox.connect.Workspace.Relation;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
-import batfish.grammar.BatfishLexer;
-import batfish.grammar.BatfishParser;
+import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ConfigurationLexer;
 import batfish.grammar.ConfigurationParser;
 import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.TopologyLexer;
 import batfish.grammar.TopologyParser;
-import batfish.grammar.cisco.CiscoGrammar;
-import batfish.grammar.cisco.CiscoGrammar.Cisco_configurationContext;
-import batfish.grammar.cisco.CiscoGrammarCommonLexer;
+import batfish.grammar.cisco.CiscoCombinedParser;
 import batfish.grammar.cisco.controlplane.CiscoControlPlaneExtractor;
 import batfish.grammar.juniper.FlatJuniperGrammarLexer;
 import batfish.grammar.juniper.FlatJuniperGrammarParser;
@@ -894,32 +891,22 @@ public class Batfish {
          }
          CiscoControlPlaneExtractor extractor = null;
          boolean antlr4 = false;
-         BatfishParser bParser = null;
-         BatfishLexer bLexer = null;
          if (fileText.charAt(0) == '!') {
             // antlr 4 stuff
             print(2, "Parsing: \"" + currentPath + "\"");
             antlr4 = true;
-            org.antlr.v4.runtime.CharStream stream = new org.antlr.v4.runtime.ANTLRInputStream(
+            BatfishCombinedParser combinedParser = new CiscoCombinedParser(
                   fileText);
-            CiscoGrammarCommonLexer lexer4 = new CiscoGrammarCommonLexer(stream);
-            bLexer = lexer4;
-            org.antlr.v4.runtime.CommonTokenStream tokens4 = new org.antlr.v4.runtime.CommonTokenStream(
-                  lexer4);
-            CiscoGrammar parser4 = new CiscoGrammar(tokens4);
-            bParser = parser4;
-            parser4.getInterpreter().setPredictionMode(PredictionMode.SLL);
-            Cisco_configurationContext tree = parser4.cisco_configuration();
-            List<String> parserErrors = bParser.getErrors();
-            List<String> lexerErrors = bLexer.getErrors();
-            int numErrors = parserErrors.size() + lexerErrors.size();
+            ParserRuleContext tree = combinedParser.parse();
+            List<String> errors = combinedParser.getErrors();
+            int numErrors = errors.size();
             if (numErrors > 0) {
                error(0, " ..." + numErrors + " ERROR(S)\n");
-               for (String msg : lexerErrors) {
-                  error(2, "\tlexer: " + msg + "\n");
-               }
-               for (String msg : parserErrors) {
-                  error(2, "\tparser: " + msg + "\n");
+               for (int i = 0; i < numErrors; i++) {
+                  String prefix = "ERROR " + (i + 1) + ": ";
+                  String msg = errors.get(i);
+                  String prefixedMsg = Util.applyPrefix(prefix, msg);
+                  error(2, prefixedMsg + "\n");
                }
                if (_settings.exitOnParseError()) {
                   return null;
@@ -934,9 +921,13 @@ public class Batfish {
             }
             else {
                print(2, "...OK, PRINTING PARSE TREE:\n");
-               print(2, ParseTreePrettyPrinter.print(tree, parser4) + "\n\n");
+               print(2,
+                     ParseTreePrettyPrinter.print(tree,
+                           combinedParser.getParser())
+                           + "\n\n");
             }
-            extractor = new CiscoControlPlaneExtractor(fileText, parser4);
+            extractor = new CiscoControlPlaneExtractor(fileText,
+                  combinedParser.getParser());
             ParseTreeWalker walker = new ParseTreeWalker();
             walker.walk(extractor, tree);
             for (String warning : extractor.getWarnings()) {

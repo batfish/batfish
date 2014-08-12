@@ -16,21 +16,23 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
       List<String> ruleNameList = Arrays.asList(grammar.getRuleNames());
       List<String> tokenNameList = Arrays.asList(grammar.getTokenNames());
       ParseTreeWalker walker = new ParseTreeWalker();
-      ParseTreePrettyPrinter printer = new ParseTreePrettyPrinter(ruleNameList,
-            tokenNameList);
+      ParseTreePrettyPrinter printer = new ParseTreePrettyPrinter(ctx,
+            ruleNameList, tokenNameList);
       walker.walk(printer, ctx);
       return printer._sb.toString();
    }
 
+   private ParserRuleContext _ctx;
    private int _indent;
    private List<String> _ruleNames;
    private StringBuilder _sb;
 
    private List<String> _tokenNames;
 
-   private ParseTreePrettyPrinter(List<String> ruleNames,
-         List<String> tokenNames) {
+   private ParseTreePrettyPrinter(ParserRuleContext ctx,
+         List<String> ruleNames, List<String> tokenNames) {
       _ruleNames = ruleNames;
+      _ctx = ctx;
       _tokenNames = tokenNames;
       _sb = new StringBuilder();
       _indent = 0;
@@ -38,7 +40,9 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
 
    @Override
    public void enterEveryRule(ParserRuleContext ctx) {
-      _sb.append("\n");
+      if (ctx != _ctx) {
+         _sb.append("\n");
+      }
       for (int i = 0; i < _indent; i++) {
          _sb.append("  ");
       }
@@ -54,12 +58,26 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
 
    @Override
    public void visitErrorNode(ErrorNode ctx) {
-      throw new Error("parse tree printer implementation error");
+      String nodeText = ctx.getText().replace("\n", "\\n");
+      _sb.append("\n");
+      for (int i = 0; i < _indent; i++) {
+         _sb.append("  ");
+      }
+      int tokenType = ctx.getSymbol().getType();
+      String tokenName;
+      if (tokenType == -1) {
+         tokenName = "EOF";
+         _sb.append(tokenName + ":" + nodeText);
+      }
+      else {
+         tokenName = _tokenNames.get(tokenType);
+         _sb.append("<ErrorNode>:" + tokenName + ":'" + nodeText + "'");
+      }
    }
 
    @Override
    public void visitTerminal(TerminalNode ctx) {
-      String nodeText = ctx.getText().replace("\n", "\\n");
+      String nodeText = ctx.getText().replace("\n", "\\n").replace("\t", "\\t");
       _sb.append("\n");
       for (int i = 0; i < _indent; i++) {
          _sb.append("  ");

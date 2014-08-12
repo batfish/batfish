@@ -184,6 +184,11 @@ redistribute_connected_ro_stanza
 	)* NEWLINE
 ;
 
+redistribute_rip_ro_stanza
+:
+	REDISTRIBUTE RIP ~NEWLINE* NEWLINE
+;
+
 redistribute_static_ro_stanza
 :
 	REDISTRIBUTE STATIC
@@ -218,6 +223,7 @@ ro_stanza
 	| passive_interface_ro_stanza
 	| redistribute_bgp_ro_stanza
 	| redistribute_connected_ro_stanza
+	| redistribute_rip_ro_stanza
 	| redistribute_static_ro_stanza
 	| router_id_ro_stanza
 ;

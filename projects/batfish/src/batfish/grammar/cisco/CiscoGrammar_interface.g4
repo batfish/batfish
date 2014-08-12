@@ -36,7 +36,7 @@ if_stanza
 
 interface_stanza
 :
-	INTERFACE iname = interface_name NEWLINE interface_stanza_tail closing_comment?
+	INTERFACE iname = interface_name MULTIPOINT? NEWLINE interface_stanza_tail closing_comment?
 ;
 
 interface_stanza_tail
@@ -183,6 +183,7 @@ null_standalone_if_stanza
 		| IPV6
 		| ISDN
 		| KEEPALIVE
+		| LANE
 		| LAPB
 		| LLDP
 		| LOAD_INTERVAL
@@ -191,10 +192,12 @@ null_standalone_if_stanza
 		| MAC_ADDRESS
 		| MACRO
 		| MANAGEMENT_ONLY
+		| MAP_GROUP
 		| MDIX
 		| MEDIA_TYPE
 		| MEMBER
 		| MLS
+		| MOBILITY
 		| MOP
 		| MPLS
 		| MTU
@@ -218,6 +221,7 @@ null_standalone_if_stanza
 		| SERIAL
 		| SERVICE_MODULE
 		| SERVICE_POLICY
+		| SONET
 		| SPANNING_TREE
 		| SPEED
 		| SNMP

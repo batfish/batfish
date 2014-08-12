@@ -10,7 +10,7 @@ public class IpAsPathAccessList implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private Ip_as_path_access_list_stanzaContext _context;
+   private transient Ip_as_path_access_list_stanzaContext _context;
    private List<IpAsPathAccessListLine> _lines;
    private String _name;
 
