@@ -27,6 +27,8 @@ public class Settings {
    private static final String ARG_DUMP_FACTS_DIR = "dumpdir";
    private static final String ARG_DUMP_IF = "dumpif";
    private static final String ARG_DUMP_IF_DIR = "dumpifdir";
+   private static final String ARG_DUMP_INTERFACE_DESCRIPTIONS = "id";
+   private static final String ARG_DUMP_INTERFACE_DESCRIPTIONS_PATH = "idpath";
    private static final String ARG_DUMP_TRAFFIC_FACTS = "dumptraffic";
    private static final String ARG_EXIT_ON_PARSE_ERROR = "ee";
    private static final String ARG_FACTS = "facts";
@@ -63,6 +65,7 @@ public class Settings {
    private static final String ARGNAME_DATA_PLANE_DIR = "path";
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
    private static final String ARGNAME_DUMP_IF_DIR = "path";
+   private static final String ARGNAME_DUMP_INTERFACE_DESCRIPTIONS_PATH = "path";
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
    private static final String ARGNAME_LOGICDIR = "path";
@@ -79,6 +82,7 @@ public class Settings {
    private static final String DEFAULT_DATA_PLANE_DIR = "dp";
    private static final String DEFAULT_DUMP_FACTS_DIR = "facts";
    private static final String DEFAULT_DUMP_IF_DIR = "if";
+   private static final String DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH = "interface_descriptions";
    private static final String DEFAULT_FLOW_PATH = "flows";
    private static final String DEFAULT_FLOW_SINK_PATH = "flow_sinks";
    private static final String DEFAULT_LOG_LEVEL = "2";
@@ -110,6 +114,8 @@ public class Settings {
    private String _dumpFactsDir;
    private boolean _dumpIF;
    private String _dumpIFDir;
+   private boolean _dumpInterfaceDescriptions;
+   private String _dumpInterfaceDescriptionsPath;
    private boolean _dumpTrafficFacts;
    private boolean _exitOnParseError;
    private boolean _facts;
@@ -161,6 +167,10 @@ public class Settings {
 
    public boolean createWorkspace() {
       return _compile;
+   }
+
+   public boolean dumpInterfaceDescriptions() {
+      return _dumpInterfaceDescriptions;
    }
 
    public boolean exitOnParseError() {
@@ -225,6 +235,10 @@ public class Settings {
 
    public String getDumpIFDir() {
       return _dumpIFDir;
+   }
+
+   public String getDumpInterfaceDescriptionsPath() {
+      return _dumpInterfaceDescriptionsPath;
    }
 
    public boolean getDumpTrafficFacts() {
@@ -496,6 +510,13 @@ public class Settings {
             .create(ARG_DATA_PLANE_DIR));
       _options.addOption(OptionBuilder.withDescription("print parse trees")
             .create(ARG_PRINT_PARSE_TREES));
+      _options.addOption(OptionBuilder.withDescription(
+            "dump interface descriptions").create(
+            ARG_DUMP_INTERFACE_DESCRIPTIONS));
+      _options.addOption(OptionBuilder.hasArg()
+            .withArgName(ARGNAME_DUMP_INTERFACE_DESCRIPTIONS_PATH)
+            .withDescription("path to read or write interface descriptions")
+            .create(ARG_DUMP_INTERFACE_DESCRIPTIONS_PATH));
    }
 
    private void parseCommandLine(String[] args) {
@@ -607,6 +628,11 @@ public class Settings {
       _dataPlaneDir = line.getOptionValue(ARG_DATA_PLANE_DIR,
             DEFAULT_DATA_PLANE_DIR);
       _printParseTree = line.hasOption(ARG_PRINT_PARSE_TREES);
+      _dumpInterfaceDescriptions = line
+            .hasOption(ARG_DUMP_INTERFACE_DESCRIPTIONS);
+      _dumpInterfaceDescriptionsPath = line.getOptionValue(
+            ARG_DUMP_INTERFACE_DESCRIPTIONS_PATH,
+            DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH);
    }
 
    public boolean printParseTree() {

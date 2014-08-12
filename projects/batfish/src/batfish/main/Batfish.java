@@ -82,6 +82,8 @@ import batfish.representation.Ip;
 import batfish.representation.Topology;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
+import batfish.representation.cisco.CiscoVendorConfiguration;
+import batfish.representation.cisco.Interface;
 import batfish.util.UrlZipExplorer;
 import batfish.util.StringFilter;
 import batfish.util.Util;
@@ -416,6 +418,37 @@ public class Batfish {
          quit(1);
       }
       printElapsedTime();
+   }
+
+   private void dumpInterfaceDescriptions(String testRigPath, String outputPath) {
+      Map<File, String> configurationData = readConfigurationFiles(testRigPath);
+      Map<String, VendorConfiguration> configs = parseVendorConfigurations(configurationData);
+      Map<String, VendorConfiguration> sortedConfigs = new TreeMap<String, VendorConfiguration>();
+      sortedConfigs.putAll(configs);
+      StringBuilder sb = new StringBuilder();
+      for (VendorConfiguration vconfig : sortedConfigs.values()) {
+         String node = vconfig.getHostname();
+         CiscoVendorConfiguration config = null;
+         try {
+            config = (CiscoVendorConfiguration)vconfig;
+         }
+         catch (ClassCastException e) {
+            continue;
+         }
+         Map<String, Interface> sortedInterfaces = new TreeMap<String, Interface>();
+         sortedInterfaces.putAll(config.getInterfaces());
+         for (Interface iface : sortedInterfaces.values()) {
+            String iname = iface.getName();
+            String description = iface.getDescription();
+            sb.append(node + " " + iname);
+            if (description != null) {
+               sb.append(" \"" + description + "\"");
+            }
+            sb.append("\n");
+         }
+      }
+      String output = sb.toString();
+      writeFile(outputPath, output);
    }
 
    public void error(int logLevel, String text) {
@@ -1275,6 +1308,13 @@ public class Batfish {
          quit(0);
       }
 
+      if (_settings.dumpInterfaceDescriptions()) {
+         String testRigPath = _settings.getTestRigPath();
+         String outputPath = _settings.getDumpInterfaceDescriptionsPath();
+         dumpInterfaceDescriptions(testRigPath, outputPath);
+         quit(0);
+      }
+
       if (_settings.getSerializeIndependent()) {
          String inputPath = _settings.getSerializeVendorPath();
          String outputPath = _settings.getSerializeIndependentPath();
@@ -1453,6 +1493,17 @@ public class Batfish {
          Map<String, StringBuilder> factBins) {
       Map<String, Configuration> configurations = deserializeConfigurations(serializedConfigPath);
       populateConfigurationFactBins(configurations.values(), factBins);
+   }
+
+   private void writeFile(String outputPath, String output) {
+      File outputFile = new File(outputPath);
+      try {
+         FileUtils.write(outputFile, output);
+      }
+      catch (IOException e) {
+         e.printStackTrace();
+         quit(1);
+      }
    }
 
    public void writeTopologyFacts(String testRigPath,

@@ -17,6 +17,7 @@ import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.cisco.CiscoGrammar.*;
 import batfish.grammar.cisco.*;
 import batfish.grammar.cisco.CiscoGrammar.CommunityContext;
+import batfish.grammar.cisco.CiscoGrammar.Description_if_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Interface_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Port_specifierContext;
 import batfish.representation.Ip;
@@ -411,6 +412,14 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void enterCisco_configuration(Cisco_configurationContext ctx) {
       _configuration = new CiscoVendorConfiguration();
       _configuration.setContext(ctx);
+   }
+
+   @Override
+   public void enterDescription_if_stanza(Description_if_stanzaContext ctx) {
+      Token descriptionToken = ctx.description_line().text;
+      String description = descriptionToken != null ? descriptionToken
+            .getText().trim() : "";
+      _currentInterface.setDescription(description);
    }
 
    @Override
@@ -1118,7 +1127,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          todo(ctx);
          return;
       }
-      else if (ctx.ip != null){
+      else if (ctx.ip != null) {
          neighbor = ctx.ip.getText();
       }
       else if (ctx.peergroup != null) {

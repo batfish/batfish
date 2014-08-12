@@ -55,6 +55,7 @@ public class Interface implements Serializable {
    private Integer _area;
    private Double _bandwidth;
    private transient Interface_stanzaContext _context;
+   private String _description;
    private String _incomingFilter;
    private Ip _ip;
    private transient Ip_address_if_stanzaContext _ipAddressStanzaContext;
@@ -66,6 +67,7 @@ public class Interface implements Serializable {
    private String _outgoingFilter;
    private String _routingPolicy;
    private Map<String, String> _secondaryIps;
+
    private Ip _subnet;
 
    private SwitchportMode _switchportMode;
@@ -110,6 +112,10 @@ public class Interface implements Serializable {
 
    public Interface_stanzaContext getContext() {
       return _context;
+   }
+
+   public String getDescription() {
+      return _description;
    }
 
    public String getIncomingFilter() {
@@ -182,6 +188,10 @@ public class Interface implements Serializable {
 
    public void setContext(Interface_stanzaContext context) {
       _context = context;
+   }
+
+   public void setDescription(String description) {
+      _description = description;
    }
 
    public void setIncomingFilter(String accessListName) {
