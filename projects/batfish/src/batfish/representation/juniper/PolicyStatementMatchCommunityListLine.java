@@ -1,20 +1,27 @@
 package batfish.representation.juniper;
 
-public class PolicyStatementMatchCommunityListLine extends PolicyStatementMatchLine {
+public class PolicyStatementMatchCommunityListLine extends PolicyStatement_MatchLine {
 
    private String _listName;
-
+   
+   /* ------------------------------ Constructor ----------------------------*/
    public PolicyStatementMatchCommunityListLine(String listName) {
       _listName = listName;
    }
-
-   @Override
-   public MatchType getType() {
-      return MatchType.COMMUNITY_LIST;
-   }
    
-   public String getListName() {
+   /* ----------------------------- Other Methods ---------------------------*/
+   
+   /* ---------------------------- Getters/Setters --------------------------*/
+   public String get_listName() {
       return _listName;
    }
+   
+   /* --------------------------- Inherited Methods -------------------------*/
+   @Override
+   public PolicyStatement_MatchType getType() {
+      return PolicyStatement_MatchType.COMMUNITY;
+   }
+   
+
 
 }

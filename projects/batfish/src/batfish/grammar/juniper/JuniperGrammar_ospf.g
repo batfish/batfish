@@ -15,164 +15,120 @@ public List<String> getErrors() {
 }
 }
 
-aop_stanza returns [AOPStanza aops]
-  :
-  (
-    x=interface_aop_stanza
-    | x=null_aop_stanza
-  )
-  
-  {
-   aops = x;
-  }
-  ;
-
-aop_stanza_list returns [List<AOPStanza> l=new ArrayList<AOPStanza>()]
-  :
-  ( (x=aop_stanza) 
-                  {
-                   l.add(x);
-                  })+
-  ;
-
-area_op_stanza returns [OPStanza ops]
+/* --- --- --- Protocol->OSPF Stanza Rules -----------------------------------------------------------*/
+ospf_p_stanza returns [PStanza ps]
 @init {
-AreaOPStanza aops = new AreaOPStanza();
+  OSPFStanza os = new OSPFStanza();
 }
   :
-  (
-    AREA
-    (
-      (i=integer) 
-                 {
-                  aops.setIDInt(i);
-                 }
-      | (ip=IP_ADDRESS) 
-                       {
-                        aops.setIDIP(ip.getText());
-                       }
-    )
-    OPEN_BRACE al=aop_stanza_list CLOSE_BRACE
-  )
-  
-  {
-   for (AOPStanza x : al) {
-   	aops.processStanza(x);
-   }
-   ops = aops;
-  }
+  (OSPF OPEN_BRACE (x=op_stanza {os.addOPStanza(x);})+ CLOSE_BRACE) 
   ;
-
-export_op_stanza returns [OPStanza ops]
-@init {
-ExportOPStanza eops = new ExportOPStanza();
-}
-  :
-  (
-    EXPORT
-    (
-      (name=VARIABLE) 
-                     {
-                      eops.addPS(name.getText());
-                     }
-      | (OPEN_BRACKET ( (name=VARIABLE) 
-                                       {
-                                        eops.addPS(name.getText());
-                                       })+ CLOSE_BRACKET)
-    )
-    SEMICOLON
-  )
-  
-  {
-   ops = eops;
-  }
-  ;
-
-import_op_stanza
-  :
-  IMPORT ~SEMICOLON SEMICOLON
-  ;
-
-interface_aop_stanza returns [AOPStanza aops]
-  :
-  (
-    INTERFACE iname=VARIABLE
-    (
-      (OPEN_BRACE substanza+ CLOSE_BRACE)
-      | SEMICOLON
-    )
-  )
-  
-  {
-   aops = new InterfaceAOPStanza(iname.getText());
-  }
-  ;
-
-network_summary_export_aop_stanza
-  :
-  NETWORK_SUMMARY_EXPORT ~SEMICOLON+ SEMICOLON
-  ;
-
-nssa_aop_stanza
-  :
-  NSSA SEMICOLON
-  ;
-
-null_aop_stanza returns [AOPStanza aops = new NullAOPStanza()]
-  :
-  network_summary_export_aop_stanza
-  | nssa_aop_stanza
-  ;
-
-null_op_stanza returns [OPStanza ops = new NullOPStanza()]
-  :
-  import_op_stanza
-  | traceoptions_op_stanza
-  ;
-
+    
+/* --- --- --- --- Protocol->OSPF Sub-Stanza Rules ---------------------------------------------------*/    
 op_stanza returns [OPStanza ops]
   :
-  (
-    x=area_op_stanza
-    | x=export_op_stanza
-    | x=null_op_stanza
-    | x=reference_bandwidth_op_stanza
+  (x=area_op_stanza
+  |x=export_op_stanza
+  |x=reference_bandwidth_op_stanza
+  |x=null_op_stanza
   )
+  { ops =x; }
+  ;
+
+/* --- --- --- --- --- Protocol->OSPF->Area Stanza Rules ---------------------------------------------*/
+area_op_stanza returns [OPStanza ops]
+@init {
+OP_AreaStanza aops = new OP_AreaStanza();
+}
+  :
+  (AREA
+  (i=integer {aops.set_areaId(i);}
+  //|ip=IP_ADDRESS {aops.set_areaIp(-1);}// TODO: Juniper docs say this can be IP but representation is set for int
+  )
+  OPEN_BRACE (x=aop_stanza {aops.addOPARStanza(x);})+ CLOSE_BRACE
+  )
+  {ops = aops;}
+  ;
   
-  {
-   ops = x;
-  }
-  ;
-
-op_stanza_list returns [List<OPStanza> opl= new ArrayList<OPStanza>()]
+/* --- --- --- --- --- Protocol->OSPF->Export Stanza Rules -------------------------------------------*/
+export_op_stanza returns [OPStanza ops]
+@init {
+OP_ExportStanza eops = new OP_ExportStanza();
+}
   :
-  ( (x=op_stanza) 
-                 {
-                  opl.add(x);
-                 })+
+  (EXPORT
+  (
+    (name=VARIABLE) {eops.addPolicy(name.getText());}
+   |(x=bracketed_list)
+    {
+      for (String s: x) {
+        eops.addPolicy(s);
+      }
+    }
+  )
+  SEMICOLON
+  )
+  {ops = eops;}
   ;
 
-ospf_p_stanza returns [PStanza ps]
-  :
-  (OSPF OPEN_BRACE opl=op_stanza_list CLOSE_BRACE) 
-                                                  {
-                                                   OSPFPStanza ops = new OSPFPStanza();
-                                                   for (OPStanza x : opl) {
-                                                   	ops.processStanza(x);
-                                                   }
-                                                   ps = ops;
-                                                  }
-  ;
-
+/* --- --- --- --- --- Protocol->OSPF->Reference Bandwidth Stanza Rules ------------------------------*/
 reference_bandwidth_op_stanza returns [OPStanza ops]
   :
-  (REFERENCE_BANDWIDTH rb=double_num SEMICOLON) 
-                                               {
-                                                ops = new ReferenceBandwidthOPStanza(rb);
-                                               }
+  (REFERENCE_BANDWIDTH rb=double_num SEMICOLON)  {ops = new OP_ReferenceBandwidthStanza(rb);}  
   ;
 
-traceoptions_op_stanza
+/* --- --- --- --- --- Protocol->OSPF->Null Stanza Rules ---------------------------------------------*/
+null_op_stanza returns [OPStanza ops]
   :
-  TRACEOPTIONS OPEN_BRACE substanza+ CLOSE_BRACE
+  (s=import_op_stanza
+  |s=traceoptions_op_stanza)
+  {ops = new OP_NullStanza(s);}
   ;
+  
+/* --- --- --- --- --- --- Protocol->OSPF->Area Sub-Stanza Rules -------------------------------------*/
+aop_stanza returns [OP_ARStanza aops]
+  :
+  (x=interface_aop_stanza
+  |x=null_aop_stanza
+  )
+  {aops =x;}
+  ;
+  
+/* --- --- --- --- --- --- Protocol->OSPF->Null Sub-Stanza Rules -------------------------------------*/
+import_op_stanza returns [String s]
+  :
+  x=IMPORT ignored_substanza {s = x.getText() + "{...}";}
+  ;
+  
+traceoptions_op_stanza returns [String s]
+  :
+  x=TRACEOPTIONS ignored_substanza {s = x.getText() + "{...}";}
+  ;
+  
+/* --- --- --- --- --- --- --- Protocol->OSPF->Area->Interface Stanza Rules --------------------------*/
+interface_aop_stanza returns [OP_ARStanza aops]
+  :
+  (INTERFACE iname=VARIABLE ignored_substanza SEMICOLON) {aops = new OPAR_InterfaceStanza(iname.getText());}
+  // TODO [Ask Ari]: shoule we really be ignoring this?
+  ;
+  
+/* --- --- --- --- --- --- --- Protocol->OSPF->Area->Null Stanza Rules -------------------------------*/
+null_aop_stanza returns [OP_ARStanza aops]
+  :
+  (s=network_summary_export_aop_stanza
+  |s=nssa_aop_stanza
+  )
+  {aops = new OPAR_NullStanza(s);}
+  ;
+
+/* --- --- --- --- --- --- --- --- Protocol->OSPF->Area->Null Sub-Stanza Rules -----------------------*/
+network_summary_export_aop_stanza returns [String s]
+  :
+  x=NETWORK_SUMMARY_EXPORT ignored_substanza SEMICOLON {s = x.getText() + "{...}";}
+  ;
+
+nssa_aop_stanza returns [String s]
+  :
+  x=NSSA SEMICOLON {s = x.getText();}
+  ;
+  

@@ -50,14 +50,15 @@ DestinationPortFromTFFStanza dpftffs = new DestinationPortFromTFFStanza();
   (
     DESTINATION_PORT
     (
-      (OPEN_BRACKET ( (p=port) 
-                              {
-                               dpftffs.addPort(p);
-                              })+ CLOSE_BRACKET SEMICOLON)
-      | (p=port SEMICOLON) 
-                          {
-                           dpftffs.addPort(p);
-                          }
+    
+      (x=bracketed_list SEMICOLON) // TODO: Semicolon?
+        {
+          for (String s: x) {
+            dpftffs.addPort(Integer.parseInt(s));
+          }
+        }
+                              
+      | (p=port SEMICOLON) {dpftffs.addPort(p);}
     )
   )
   
@@ -151,8 +152,8 @@ icmp_type_from_t_ff_stanza returns [FromTFFStanza ftffs]
 @init {
 ProtocolFromTFFStanza pftffs = new ProtocolFromTFFStanza();
 }
-  :
-  (ICMP_TYPE OPEN_BRACKET ~CLOSE_BRACKET* CLOSE_BRACKET SEMICOLON) 
+  :  
+  (ICMP_TYPE x=bracketed_list CLOSE_BRACKET SEMICOLON) 
                                                                   {
                                                                    pftffs.addProtocol(1);
                                                                    ftffs = pftffs;
@@ -267,10 +268,12 @@ ProtocolFromTFFStanza pftffs = new ProtocolFromTFFStanza();
   (
     PROTOCOL
     (
-      (OPEN_BRACKET ( (p=protocol) 
-                                  {
-                                   pftffs.addProtocol(p);
-                                  })+ CLOSE_BRACKET SEMICOLON)
+        (x=bracketed_list SEMICOLON) // TODO: Semicolon?
+        {
+          for (String s: x) {
+            pftffs.addProtocol(Integer.parseInt(s));
+          }
+        }
       | (p=protocol SEMICOLON) 
                               {
                                pftffs.addProtocol(p);
@@ -314,10 +317,12 @@ SourcePortFromTFFStanza spftffs = new SourcePortFromTFFStanza();
   (
     SOURCE_PORT
     (
-      (OPEN_BRACKET ( (p=port) 
-                              {
-                               spftffs.addPort(p);
-                              })+ CLOSE_BRACKET SEMICOLON)
+      (x=bracketed_list SEMICOLON) // TODO: Semicolon?
+        {
+          for (String s: x) {
+            spftffs.addPort(Integer.parseInt(s));
+          }
+        }
       | (p=port SEMICOLON) 
                           {
                            spftffs.addPort(p);

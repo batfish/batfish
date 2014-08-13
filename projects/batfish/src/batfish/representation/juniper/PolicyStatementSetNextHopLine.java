@@ -1,22 +1,30 @@
 package batfish.representation.juniper;
 
-import java.util.List;
+public class PolicyStatementSetNextHopLine extends PolicyStatement_SetLine {
 
-public class PolicyStatementSetNextHopLine extends PolicyStatementSetLine {
+   private String _hopName;
+   private PolicyStatement_HopType _hopType;
 
-   private List<String> _nextHops;
-
-   public PolicyStatementSetNextHopLine(List<String> nextHops) {
-      _nextHops = nextHops;
+   /* ------------------------------ Constructor ----------------------------*/
+   public PolicyStatementSetNextHopLine(String hn, PolicyStatement_HopType ht) {
+      _hopName = hn;
+      _hopType = ht;
    }
-
+   
+   /* ----------------------------- Other Methods ---------------------------*/
+   
+   /* ---------------------------- Getters/Setters --------------------------*/
+   public String get_hopName() {
+      return _hopName;
+   }
+   public PolicyStatement_HopType get_hopType() {
+      return _hopType;
+   }
+   
+   /* --------------------------- Inherited Methods -------------------------*/
    @Override
-   public SetType getSetType() {
-      return SetType.NEXT_HOP;
-   }
-
-   public List<String> getNextHops() {
-      return _nextHops;
+   public PolicyStatement_SetType getType() {
+      return PolicyStatement_SetType.NEXT_HOP;
    }
    
 }

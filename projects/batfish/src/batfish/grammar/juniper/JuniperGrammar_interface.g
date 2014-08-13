@@ -15,424 +15,303 @@ public List<String> getErrors() {
 }
 }
 
-address_family_u_stanza returns [FamilyUStanza fus]
+/* --- Interfaces Stanza Rules -----------------------------------------------------------------------*/
+interfaces_stanza returns [JStanza js]
+@init {
+  InterfacesStanza iss = new InterfacesStanza();
+}
   :
-  ADDRESS
-  (
-    x=IP_ADDRESS_WITH_MASK
-    | x=IPV6_ADDRESS_WITH_MASK
-  )
-  (
-    (SEMICOLON)
-    | (OPEN_BRACE substanza+ CLOSE_BRACE)
-  )
+  INTERFACES OPEN_BRACE 
+  (x=interface_stanza {iss.addInterfaceStanza(x);})+
+  CLOSE_BRACE
+  ;
   
+interface_stanza returns [InterfaceStanza is = new InterfaceStanza();]
+  :
+  (name=VARIABLE {is.set_name(name.getText());})?
+  OPEN_BRACE l=if_stanza_list CLOSE_BRACE  
   {
-   fus = new AddressFamilyUStanza(x.getText());
+    for (IFStanza ifs : l) {
+      is.addIFStanza(ifs);
+    }
   }
   ;
-
-aggregated_ether_options_if_stanza
+  
+if_stanza_list returns [List<IFStanza> ifsl = new ArrayList<IFStanza>()]
   :
-  AGGREGATED_ETHER_OPTIONS OPEN_BRACE substanza+ CLOSE_BRACE
+  (
+    (x=if_stanza
+    |x=inactive_if_stanza
+    ){ifsl.add(x);}
+  )+
   ;
-
-description_if_stanza
+  
+inactive_if_stanza returns [IFStanza ifs]
   :
-  DESCRIPTION ~SEMICOLON* SEMICOLON
+  INACTIVE COLON (x=if_stanza) 
+  {
+    x.set_stanzaStatus(StanzaStatusType.INACTIVE);
+    ifs=x;
+  }
+  ;
+     
+if_stanza returns [IFStanza ifs]
+  :
+  (x=disable_if_stanza
+  |x=unit_if_stanza
+  |x=null_if_stanza
+  |x=apply_groups_if_stanza
+  )
+  { ifs =x; }
+  ;
+ 
+ /* --- --- Interfaces Sub-Stanza Rules ---------------------------------------------------------------*/
+apply_groups_if_stanza returns [IFStanza ifs] // TODO: FIX!
+  :
+  ifags = apply_groups_stanza
+  {
+    IF_NullStanza ifns = new IF_NullStanza("");
+    ifs = ifns;
+  }
   ;
 
 disable_if_stanza returns [IFStanza ifs]
   :
-  (DISABLE SEMICOLON) 
-                     {
-                      ifs = new DisableIFStanza();
-                     }
-  ;
-
-enable_if_stanza
-  :
-  ENABLE SEMICOLON
-  ;
-
-family_u_stanza returns [FamilyUStanza fus]
-  :
-  (
-    x=address_family_u_stanza
-    | x=filter_family_u_stanza
-    | x=interface_mode_family_u_stanza
-    | x=native_vlan_id_family_u_stanza
-    | x=null_family_u_stanza
-    | x=vlan_id_family_u_stanza
-    | x=vlan_id_list_family_u_stanza
-    | x=vlan_members_family_u_stanza
-  )
-  
-  {
-   fus = x;
-  }
-  ;
-
-family_u_stanza_list returns [List<FamilyUStanza> fl = new ArrayList<FamilyUStanza>()]
-  :
-  ( (x=family_u_stanza) 
-                       {
-                        fl.add(x);
-                       })+
-  ;
-
-family_unit_if_stanza returns [FamilyUIFStanza fuifs]
-@init {
-FamilyType ft = null;
-}
-  :
-  FAMILY
-  (
-    (INET) 
-          {
-           ft = FamilyType.INET;
-          }
-    | (INET6) 
-             {
-              ft = FamilyType.INET6;
-             }
-    |
-    (
-      BRIDGE
-      | ETHERNET_SWITCHING
-    )
-    
-    {
-     ft = FamilyType.BRIDGE;
-    }
-  )
-  
-  {
-   fuifs = new FamilyUIFStanza(ft);
-  }
-  (
-    (OPEN_BRACE x=family_u_stanza_list CLOSE_BRACE) 
-                                                   {
-                                                    for (FamilyUStanza fus : x) {
-                                                    	fuifs.processFamilyUStanza(fus);
-                                                    }
-                                                   }
-    | SEMICOLON
-  )
-  ;
-
-filter_family_u_stanza returns [FamilyUStanza fus]
-@init {
-FilterFamilyUStanza ffus = new FilterFamilyUStanza();
-}
-  :
-  (
-    FILTER OPEN_BRACE
-    (
-      (INPUT x=VARIABLE SEMICOLON) 
-                                  {
-                                   ffus.addFilter(x.getText(), true);
-                                  }
-      | (OUTPUT x=VARIABLE SEMICOLON) 
-                                    {
-                                     ffus.addFilter(x.getText(), false);
-                                    }
-    )+
-    CLOSE_BRACE
-  )
-  
-  {
-   fus = ffus;
-  }
-  ;
-
-gigether_options_if_stanza
-  :
-  GIGETHER_OPTIONS OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-if_stanza returns [IFStanza ifs]
-  :
-  (
-    x=disable_if_stanza
-    | x=native_vlan_id_if_stanza
-    | x=null_if_stanza
-    | x=unit_if_stanza
-  )
-  
-  {
-   ifs = x;
-  }
-  ;
-
-if_stanza_list returns [List<IFStanza> ifl = new ArrayList<IFStanza>()]
-  :
-  ( (x=if_stanza) 
-                 {
-                  ifl.add(x);
-                 })+
-  ;
-
-interface_mode_family_u_stanza returns [FamilyUStanza fus]
-@init {
-SwitchportMode mode = SwitchportMode.ACCESS;
-}
-  :
-  (
-    INTERFACE_MODE
-    | PORT_MODE
-  )
-  (
-    (TRUNK) 
-           {
-            mode = SwitchportMode.TRUNK;
-           }
-    | (ACCESS) 
-              {
-               mode = SwitchportMode.ACCESS;
-              }
-  )
-  
-  {
-   fus = new InterfaceModeFamilyUStanza(mode);
-  }
-  SEMICOLON
-  ;
-
-interface_stanza returns [InterfaceStanza ifs]
-  :
-  (
-    (
-      (name=VARIABLE)
-      | (name=VLAN)
-    )
-    OPEN_BRACE ifl=if_stanza_list CLOSE_BRACE
-  )
-  
-  {
-   ifs = new InterfaceStanza(name.getText());
-   for (IFStanza iif : ifl) {
-   	ifs.processStanza(iif);
-   }
-  }
-  ;
-
-interface_stanza_list returns [List<InterfaceStanza> l = new ArrayList<InterfaceStanza>()]
-  :
-  ( ( (x=interface_stanza) 
-                          {
-                           l.add(x);
-                          }))+
-  ;
-
-interfaces_stanza returns [JStanza js]
-  :
-  (INTERFACES OPEN_BRACE l=interface_stanza_list CLOSE_BRACE) 
-                                                             {
-                                                              InterfacesStanza is = new InterfacesStanza();
-                                                              for (InterfaceStanza x : l) {
-                                                              	is.processStanza(x);
-                                                              }
-                                                              js = is;
-                                                             }
-  ;
-
-mtu_if_stanza
-  :
-  MTU ~SEMICOLON* SEMICOLON
-  ;
-
-native_vlan_id_family_u_stanza returns [FamilyUStanza fus]
-  :
-  (NATIVE_VLAN_ID id=integer SEMICOLON) 
-                                       {
-                                        fus = new NativeVlanIdFamilyUStanza(id);
-                                       }
-  ;
-
-native_vlan_id_if_stanza returns [IFStanza ifs]
-  :
-  (NATIVE_VLAN_ID id=integer SEMICOLON) 
-                                       {
-                                        ifs = new NativeVlanIdIFStanza(id);
-                                       }
-  ;
-
-no_redirects_family_u_stanza
-  :
-  NO_REDIRECTS SEMICOLON
-  ;
-
-null_family_u_stanza returns [FamilyUStanza fus = new NullFamilyUStanza()]
-  :
-  mtu_if_stanza
-  | no_redirects_family_u_stanza
-  | primary_family_u_stanza
-  | rpf_check_family_u_stanza
-  | sampling_family_u_stanza
-  ;
-
-null_if_stanza returns [IFStanza ifs=new NullIFStanza()]
-  :
-  aggregated_ether_options_if_stanza
-  | enable_if_stanza
-  | description_if_stanza
-  | gigether_options_if_stanza
-  | mtu_if_stanza
-  | traps_if_stanza
-  | vlan_tagging_if_stanza
-  ;
-
-primary_family_u_stanza
-  :
-  PRIMARY SEMICOLON
-  ;
-
-rpf_check_family_u_stanza
-  :
-  RPF_CHECK OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-sampling_family_u_stanza
-  :
-  SAMPLING OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-traps_if_stanza
-  :
-  TRAPS SEMICOLON
+  (DISABLE SEMICOLON) {ifs = new IF_DisableStanza();}
   ;
 
 unit_if_stanza returns [IFStanza ifs]
 @init {
-UnitIFStanza uifs;
+IF_UnitStanza ifus;
 }
   :
-  (
-    UNIT num=integer 
-                    {
-                     uifs = new UnitIFStanza(num);
-                    }
-    OPEN_BRACE
-    (
-      description_if_stanza
-      | (DISABLE SEMICOLON) 
-                           {
-                            uifs.setDisable();
-                           }
-      | (ARP_RESP SEMICOLON)
-      | (VLAN_ID num=integer SEMICOLON) 
-                                       {
-                                        uifs.setAccessVlan(num);
-                                       }
-      | (x=family_unit_if_stanza) 
-                                 {
-                                  uifs.processFamily(x);
-                                 }
-    )+
-    CLOSE_BRACE 
-               {
-                ifs = uifs;
-               }
-  )
-  ;
+  UNIT num=integer {ifus = new IF_UnitStanza(num);}
+  OPEN_BRACE 
+  (x=u_if_stanza {ifus.addIFUstanza(x);})+
+  CLOSE_BRACE 
+  {ifs = ifus;}
+  ;    
 
-vlan_id_family_u_stanza returns [FamilyUStanza fus]
+null_if_stanza returns [IFStanza ifs]
   :
-  (VLAN_ID num=integer SEMICOLON) 
-                                 {
-                                  fus = new VlanIdFamilyUStanza(num);
-                                 }
-  ;
-
-vlan_id_list_family_u_stanza returns [FamilyUStanza fus]
-@init {
-int end;
-VlanIdListFamilyUStanza vfus = new VlanIdListFamilyUStanza();
-}
-  :
-  (
-    VLAN_ID_LIST OPEN_BRACKET
-    (
-      (
-        (stnum=integer) 
-                       {
-                        end = stnum;
-                       }
-        ( (DASH ednum=integer) 
-                              {
-                               end = ednum;
-                              })?
-      )
-      
-      {
-       vfus.addPair(stnum, end);
-      }
-    )+
-    CLOSE_BRACKET SEMICOLON
+  ( s=aggregated_ether_options_if_stanza
+  | s=description_if_stanza
+  | s=encapsulation_if_stanza
+  | s=gigether_options_if_stanza
+  | s=mtu_if_stanza
+  | s=traps_if_stanza
+  | s=vlan_tagging_if_stanza  
   )
+  {ifs=new IF_NullStanza(s);}
+  ;
   
+/* --- --- --- Interfaces->Null Stanza Rules ---------------------------------------------------------*/ 
+aggregated_ether_options_if_stanza returns [String s]
+  :
+  x=AGGREGATED_ETHER_OPTIONS ignored_substanza {s = x.getText() + " {...}";}
+  ;
+  
+description_if_stanza returns [String s]
+  :
+  desc=description_common_stanza {s=desc;}
+  ;
+  
+encapsulation_if_stanza returns [String s]
+  :
+  enc=encapsulation_common_stanza {s=enc;}
+  ;
+  
+gigether_options_if_stanza returns [String s]
+  :
+  x=GIGETHER_OPTIONS ignored_substanza {s = x.getText() + " {...}";}
+  ;
+  
+mtu_if_stanza returns [String s] 
+  :
+  mstr = mtu_common_stanza {s=mstr;}
+  ;
+
+traps_if_stanza returns [String s]
+  :
+  x=TRAPS SEMICOLON {s = x.getText();}
+  ;
+  
+vlan_tagging_if_stanza returns [String s]
+  :
+  x=VLAN_TAGGING SEMICOLON {s = x.getText();}
+  ;
+
+/* --- --- --- Interfaces->Unit Stanza Rules ---------------------------------------------------------*/ 
+u_if_stanza returns [IF_UStanza ifus]
+  :
+  (x=apply_groups_u_if_stanza
+  |x=family_u_if_stanza
+  |x=vlanid_u_if_stanza
+  |x=null_u_if_stanza
+  )
+  {ifus=x;}
+  ;
+ 
+/* --- --- --- --- Interfaces->Unit Sub-Stanza Rules -------------------------------------------------*/
+apply_groups_u_if_stanza returns [IF_UStanza ifus] // TODO: FIX!
+  :
+  ifuags = apply_groups_stanza
   {
-   fus = vfus;
+    IFU_NullStanza ifuns = new IFU_NullStanza("");
+    ifus = ifuns;
   }
   ;
-
-vlan_members_family_u_stanza returns [FamilyUStanza fus]
+  
+family_u_if_stanza returns [IF_UStanza ifus]
 @init {
-int end;
-VlanIdListFamilyUStanza vfus = new VlanIdListFamilyUStanza();
+  
 }
   :
-  (
-    VLAN OPEN_BRACE MEMBERS
-    (
-      (
-        OPEN_BRACKET
-        (
-          (
-            (stnum=integer) 
-                           {
-                            end = stnum;
-                           }
-            ( (DASH ednum=integer) 
-                                  {
-                                   end = ednum;
-                                  })?
-          )
-          
-          {
-           vfus.addPair(stnum, end);
-          }
-        )+
-        CLOSE_BRACKET
-      )
-      |
-      (
-        (
-          (stnum=integer) 
-                         {
-                          end = stnum;
-                         }
-          ( (DASH ednum=integer) 
-                                {
-                                 end = ednum;
-                                })?
-        )
-        
-        {
-         vfus.addPair(stnum, end);
-        }
-      )
-    )
-    SEMICOLON CLOSE_BRACE
+  ft = 
+  (FAMILY
+  (INET 
+  |INET6 
+  |BRIDGE 
+  |ETHERNET_SWITCHING
   )
-  
+  )
+  (SEMICOLON
+  |(OPEN_BRACE x=fam_u_if_stanza_list CLOSE_BRACE) 
+  )
   {
-   fus = vfus;
+    ifus = new IFU_FamilyStanza(FamilyTypeFromString(ft.getText()));
   }
   ;
-
-vlan_tagging_if_stanza
+  
+vlanid_u_if_stanza returns [IF_UStanza ifus]
+  :  
+  VLAN_ID x=integer SEMICOLON {ifus = new IFU_VlanIdStanza(x);}
+  ;
+  
+null_u_if_stanza returns [IF_UStanza ifus]
   :
-  VLAN_TAGGING SEMICOLON
+  (s=description_u_if_stanza
+  |s=encapsulation_u_if_stanza
+  )
+  {ifus = new IFU_NullStanza(s);}
+  ;
+
+/* --- --- --- --- --- Interfaces->Unit->Null Stanza Rules -------------------------------------------*/  
+description_u_if_stanza returns [String s]
+  :
+  desc=description_common_stanza {s=desc;}
+  ;
+  
+encapsulation_u_if_stanza returns [String s]
+  :
+  enc=encapsulation_common_stanza {s=enc;}
+  ;
+  
+/* --- --- --- --- Interfaces->Unit->Family Stanza Rules ---------------------------------------------*/   
+fam_u_if_stanza_list returns [List<IFU_FamStanza> ifufsl = new ArrayList<IFU_FamStanza>()]
+  :
+  (x=fam_u_if_stanza {ifufsl.add(x);})+
+  ;
+  
+fam_u_if_stanza returns [IFU_FamStanza ifufs]
+  :
+  (x=address_fam_u_if_stanza 
+  |x=filter_fam_u_if_stanza
+  |x=native_vlan_id_fam_u_if_stanza
+  |x=vlan_members_fam_u_if_stanza
+  |x=null_fam_u_if_stanza
+  )
+  {ifufs = x;}
+  ;  
+  
+/* --- --- --- --- --- Interfaces->Unit->Family Sub Stanza Rules -------------------------------------*/   
+address_fam_u_if_stanza returns [IFU_FamStanza ifufs]  
+@init {
+  IFUF_AddressStanza ifufas = new IFUF_AddressStanza();
+}
+  :
+  ADDRESS {ifufas = new IFUF_AddressStanza();}
+  (x=IP_ADDRESS_WITH_MASK {ifufas.set_address(x.getText());}
+  |x=IPV6_ADDRESS_WITH_MASK 
+  {
+    ifufas.set_stanzaStatus(StanzaStatusType.IPV6);
+    ifufas.addIgnoredStatement("Address " + x.getText()); 
+  }
+  )
+  SEMICOLON
+  {ifufs = ifufas;}
+  ;
+  
+filter_fam_u_if_stanza  returns [IFU_FamStanza ifufs]
+@init {
+  IFUF_FilterStanza ifuffs = new IFUF_FilterStanza();
+}
+  :
+  FILTER OPEN_BRACE
+  (INPUT infltr=VARIABLE {ifuffs.set_inStr(infltr.getText());}
+  |OUTPUT outfltr=VARBAILE {ifuffs.set_outStr(outfltr.getText());}
+  )
+  CLOSE_BRACE 
+  {ifufs = ifuffs;}
+  ;
+  
+ native_vlan_id_fam_u_if_stanza returns [IFU_FamStanza ifufs]  
+  :
+  (NATIVE_VLAN_ID id=integer SEMICOLON) {ifufs = new IFUF_NativeVlanIdStanza(id);}
+  ; 
+  
+ vlan_members_fam_u_if_stanza returns [IFU_FamStanza ifufs]  
+  :
+  VLAN OPEN_BRACE MEMBERS
+  s = bracketed_list 
+  CLOSE_BRACE
+  {ifufs = new IFUF_VlanMembersStanza(s);}
+  ; 
+  
+ null_fam_u_if_stanza returns [IFU_FamStanza ifufs]  
+  :
+  s=mtu_fam_u_if_stanza
+  |s=port_mode_fam_u_if_stanza
+  |s=no_redirects_fam_u_if_stanza
+  |s=no_neighbor_learn_fam_u_if_stanza
+  |s=primary_fam_u_if_stanza
+  |s=rpf_check_fam_u_if_stanza
+  |s=targeted_broadcast_fam_u_if_stanza
+  {ifufs=new IFUF_NullStanza(s);}
+  ; 
+  
+/* --- --- --- --- --- --- Interfaces->Unit->Family->Null Stanza Rules -------------------------------*/     
+mtu_fam_u_if_stanza returns [String s]
+  :
+  mstr = mtu_common_stanza  {s=mstr;}
+  ;
+  
+port_mode_fam_u_if_stanza returns [String s] // TODO [P0]: should not be ignored
+  :
+  x=PORT_MODE mode=VARIABLE {s = x.getText() + " " + mode.getText();}
+  ;
+
+no_redirects_fam_u_if_stanza returns [String s]  
+  :
+  x=NO_REDIRECTS SEMICOLON {s = x.getText();}
+  ;
+  
+no_neighbor_learn_fam_u_if_stanza returns [String s]
+  : 
+  x=NO_NEIGHBOR_LEARN SEMICOLON {s = x.getText();}
+  ;
+  
+primary_fam_u_if_stanza returns [String s] 
+  :
+  x=PRIMARY SEMICOLON {s = x.getText();}
+  ;
+
+rpf_check_fam_u_if_stanza returns [String s]
+  :
+  x=RPF_CHECK ignored_substanza {s = x.getText();}
+  ;
+  
+targeted_broadcast_fam_u_if_stanza returns [String s]
+  : 
+  x=TARGETED_BROADCAST SEMICOLON {s = x.getText();}
   ;

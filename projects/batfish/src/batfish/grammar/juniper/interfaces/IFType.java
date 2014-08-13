@@ -1,8 +1,8 @@
 package batfish.grammar.juniper.interfaces;
 
 public enum IFType {
+   APPLY_GROUPS,
    DISABLE,
-   NATIVE_VLAN_ID,
    NULL,
    UNIT
 }

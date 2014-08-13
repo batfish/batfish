@@ -7,6 +7,7 @@ public class BGPNeighbor {
    private String _ip;
    private Integer _remoteAS;
    private Integer _localAS;
+   private String _localAddress;
    private List<String> _inboundPolicyStatementName;
    private List<String> _outboundPolicyStatementName;
 
@@ -24,8 +25,8 @@ public class BGPNeighbor {
       _remoteAS = remoteAS;
    }
 
-   public void setLocalAS(int localAS) {
-      _localAS = localAS;
+   public void setLocalAddress(String l) {
+      _localAddress = l;
    }
 
    public void setInboundPolicyStatement(List<String> name) {

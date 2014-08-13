@@ -24,12 +24,12 @@ public class TermFFStanza {
       switch (fs.getType()) {
       case DESTINATION_ADDRESS:
          DestinationAddressFromTFFStanza dfs = (DestinationAddressFromTFFStanza) fs;
-         _destinationAddress = dfs.getAddress();
+         _destinationAddress = dfs.get_address();
          break;
 
       case SOURCE_ADDRESS:
          SourceAddressFromTFFStanza sfs = (SourceAddressFromTFFStanza) fs;
-         _sourceAddress = sfs.getAddress();
+         _sourceAddress = sfs.get_address();
          _sourceExceptAddress = sfs.getExceptAddress();
          break;
          

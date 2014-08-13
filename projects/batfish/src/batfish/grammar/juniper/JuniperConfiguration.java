@@ -9,12 +9,14 @@ import batfish.grammar.juniper.firewall.FireWallStanza;
 import batfish.grammar.juniper.interfaces.InterfacesStanza;
 import batfish.grammar.juniper.policy_options.PolicyOptionsStanza;
 import batfish.grammar.juniper.routing_options.RoutingOptionsStanza;
+import batfish.grammar.juniper.protocols.ProtocolsStanza;
+import batfish.grammar.juniper.system.SystemStanza;
 import batfish.representation.juniper.BGPGroup;
 import batfish.representation.juniper.BGPProcess;
 import batfish.representation.juniper.JuniperVendorConfiguration;
 import batfish.representation.juniper.ExtendedAccessList;
 import batfish.representation.juniper.Interface;
-import batfish.representation.juniper.OSPFProcess;
+import batfish.representation.juniper.OSPFProcess; 
 
 public class JuniperConfiguration {
    private JuniperVendorConfiguration _configuration;
@@ -39,18 +41,18 @@ public class JuniperConfiguration {
    public void processStanza(JStanza js) {
       switch (js.getType()) {
       case FIREWALL:
-         FireWallStanza fs = (FireWallStanza) js;
+        /* FireWallStanza fs = (FireWallStanza) js;
          for (ExtendedAccessList eal : fs.getFilters()) {
             _configuration.addExtendedAccessList(eal);
-         }
+         }*/
          break;
 
       case INTERFACES:
          InterfacesStanza is = (InterfacesStanza) js;
-         for (Interface inter : is.getInterfaceList()) {
-            _configuration.addInterface(inter);
-            _interfaceAddressMap.put(inter.getName(), inter.getIP() + "/"
-                  + inter.getSubnetMask());
+         for (Interface inter : is.get_interfaces()) {
+            //_configuration.addInterface(inter);
+            _interfaceAddressMap.put(inter.get_name(), inter.get_ip() + "/"
+                  + inter.get_subnet());
          }
          break;
 
@@ -59,10 +61,10 @@ public class JuniperConfiguration {
 
       case POLICY_OPTIONS:
          PolicyOptionsStanza pos = (PolicyOptionsStanza) js;
-         _configuration.addPolicyStatements(pos.getMaps());
-         _configuration.addRouteFilters(pos.getFilters());
-         _configuration.addExpandedCommunityLists(pos.getCommunities());
-         _configuration.addAsPathAccessLists(pos.getAsPathLists());
+         _configuration.addPolicyStatements(pos.get_policyStatements());
+         /*configuration.addRouteFilters(pos.get-());*/ // TODO [P0]
+         _configuration.addCommunities(pos.get_communities());
+         _configuration.addAsPathAccessLists(pos.get_asPathLists());
          break;
 
       case PROTOCOLS:
@@ -71,15 +73,16 @@ public class JuniperConfiguration {
          // OSPF Information
          OSPFProcess ospf = new OSPFProcess(0);
          if (_routerID != null) {
-            ospf.setRouterId(_routerID);
+            ospf.set_routerId(_routerID);
          }
-         HashMap<Integer, ArrayList<String>> ospfAreaMap = ps.getOSPFAreaMap();
+         
+         HashMap<Integer, List<String>> ospfAreaMap = ps.get_ospfAreaMap();
          if (ospfAreaMap != null) {
             Set<Integer> arealist = ospfAreaMap.keySet();
             for (Integer a : arealist) {
-               ArrayList<String> iflist = ospfAreaMap.get(a);
+               List<String> iflist = ospfAreaMap.get(a);
                for (String ifname : iflist) {
-                  /*
+                  
                   String ipsub = _interfaceAddressMap.get(ifname);
                   System.out.println(ifname +" : "+ipsub);
                   if (ipsub != null) {
@@ -87,21 +90,21 @@ public class JuniperConfiguration {
                      ospf.addNetwork(iptmp[0], iptmp[1], a.intValue());
                   }
                   else {
-                     // TODO: check if the config bd02f2.lab:850 is wrong
                      System.out.println("Interface not found: " + ifname);
                   }  
-                  */                
+                              
                   ospf.addNetworkByInterface(ifname, a.intValue());
                }
             }
-            if (ps.getReferenceBandwidth() < 0) {
-               ospf.setReferenceBandwidth(DEFAULT_REFERENCE_BANDWIDTH);
+            if (ps.get_ospfReferenceBandwidth() < 0) {
+               ospf.set_referenceBandwidth(DEFAULT_REFERENCE_BANDWIDTH);
             }
             else {
-               ospf.setReferenceBandwidth(ps.getReferenceBandwidth());
+               ospf.set_referenceBandwidth(ps.get_ospfReferenceBandwidth());
             }
-            ospf.addExportPolicyStatements(ps.getOSPFExports());
+            ospf.addExportPolicyStatements(ps.get_ospfExports());
             _configuration.addOSPFProcess(ospf);
+            
          }
 
          // BGP Information
@@ -109,11 +112,11 @@ public class JuniperConfiguration {
          if (_routerID != null) {
             bgp.setRouterID(_routerID);
          }
-         if (ps.getGroupList() != null) {
-            for (BGPGroup g : ps.getGroupList()) {
-               bgp.addPeerGroup(g);
-            }
-            bgp.addActivatedNeighbors(ps.getActivatedNeighbor());
+         if (ps.get_groupList() != null) {
+        	 for (BGPGroup g : ps.get_groupList()) {
+        		 bgp.addPeerGroup(g);
+            }	
+            bgp.addActivatedNeighbors(ps.get_activatedNeighbors());
             _configuration.addBGPProcess(bgp);
          }
 
@@ -121,34 +124,33 @@ public class JuniperConfiguration {
 
       case ROUTING_OPTIONS:
          RoutingOptionsStanza ros = (RoutingOptionsStanza) js;
-         _configuration.addStaticRoutes(ros.getStaticRoutes());
-         _configuration.addGenerateRoutes(ros.getGenerateRoutes());
-         _asNum = ros.getASNum();
+         _configuration.addStaticRoutes(ros.get_staticRoutes());
+         // TODO [Ask Ari] : _configuration.addGenerateRoutes(ros.getGenerateRoutes());
+         _asNum = ros.get_asNum();
          List<BGPProcess> tmpBgp = _configuration.getBGPProcesses();
          if (!(tmpBgp.isEmpty())) {
             for (BGPProcess b : tmpBgp) {
                b.setAsNum(_asNum);
             }
          }
-         _routerID = ros.getRouterID();
-         List<OSPFProcess> tmpOspf = _configuration.getOSPFProcesses();
-         if (!(tmpOspf.isEmpty())) {
-            for (OSPFProcess o : tmpOspf) {
-               o.setRouterId(_routerID);
+         _routerID = ros.get_routerId();
+         List<OSPFProcess> ospfProcs = _configuration.getOSPFProcesses();
+         if (!(ospfProcs.isEmpty())) {
+            for (OSPFProcess o : ospfProcs) {
+               o.set_routerId(_routerID);
             }
          }
+         // TODO [Ask Ari]: _ribGRoups never gets used?
          break;
 
       case SYSTEM:
          SystemStanza ss = (SystemStanza) js;
-         _configuration.setHostname(ss.getHostName());
+         _configuration.setHostname(ss.get_hostName());
          break;
 
       default:
-         System.out.println("bad jstanza type");
-         break;
+         throw new Error("bad jstanza type");
       }
-
    }
 
    public JuniperVendorConfiguration getConfiguration() {

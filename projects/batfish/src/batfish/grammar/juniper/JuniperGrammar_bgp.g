@@ -15,366 +15,351 @@ public List<String> getErrors() {
 }
 }
 
-authentication_key_ngb_stanza
+/* --- --- --- Protocol->BGP Common Stanza Rules -----------------------------------------------------*/
+export_common_stanza returns [BGPExportList b = new BGPExportList()]
   :
-  AUTHENTICATION_KEY ~SEMICOLON+ SEMICOLON
-  ;
-
-bgp_p_stanza returns [PStanza ps]
-  :
-  (BGP OPEN_BRACE bl=bp_stanza_list CLOSE_BRACE) 
-                                                {
-                                                 BGPPStanza bps = new BGPPStanza();
-                                                 for (BPStanza x : bl) {
-                                                 	bps.processStanza(x);
-                                                 }
-                                                 ps = bps;
-                                                }
-  ;
-
-bp_stanza returns [BPStanza bps]
-  :
-  (
-    x=group_bp_stanza
-    | x=null_bp_stanza
-  )
-  
-  {
-   bps = x;
-  }
-  ;
-
-bp_stanza_list returns [List<BPStanza> blist=new ArrayList<BPStanza>()]
-  :
-  ( (x=bp_stanza) 
-                 {
-                  blist.add(x);
-                 })+
-  ;
-
-cluster_gb_stanza returns [GBStanza gbs]
-  :
-  (CLUSTER ip=IP_ADDRESS SEMICOLON) 
-                                   {
-                                    gbs = new ClusterGBStanza(ip.getText());
-                                   }
-  ;
-
-damping_bp_stanza
-  :
-  DAMPING SEMICOLON
-  ;
-
-description_ngb_stanza
-  :
-  DESCRIPTION ~SEMICOLON+ SEMICOLON
-  ;
-
-export_gb_stanza returns [GBStanza gbs]
-@init {
-ExportGBStanza egbs = new ExportGBStanza();
-}
-  :
-  (
-    EXPORT
-    (
-      (name=VARIABLE) 
-                     {
-                      egbs.addPS(name.getText());
-                     }
-      | (OPEN_BRACKET ( (name=VARIABLE) 
-                                       {
-                                        egbs.addPS(name.getText());
-                                       })+ CLOSE_BRACKET)
-    )
-    SEMICOLON
-  )
-  
-  {
-   gbs = egbs;
-  }
-  ;
-
-export_ngb_stanza returns [NGBStanza ngbs]
-@init {
-ExportNGBStanza engbs = new ExportNGBStanza();
-}
-  :
-  (
-    EXPORT
-    (
-      (name=VARIABLE) 
-                     {
-                      engbs.addPS(name.getText());
-                     }
-      | (OPEN_BRACKET ( (name=VARIABLE) 
-                                       {
-                                        engbs.addPS(name.getText());
-                                       })+ CLOSE_BRACKET)
-    )
-    SEMICOLON
-  )
-  
-  {
-   ngbs = engbs;
-  }
-  ;
-
-family_gb_stanza returns [GBStanza gbs]
-  :
-  FAMILY
-  (
-    (INET) 
-          {
-           gbs = new FamilyGBStanza(true);
-          }
-    | (INET6) 
-             {
-              gbs = new FamilyGBStanza(false);
-             }
-  )
-  OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-family_ngb_stanza
-  :
-  FAMILY
-  (
-    (INET)
-    | (INET6)
-  )
-  OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-gb_stanza returns [GBStanza gbs]
-  :
-  (
-    x=cluster_gb_stanza
-    | x=export_gb_stanza
-    | x=family_gb_stanza
-    | x=import_gb_stanza
-    | x=local_as_gb_stanza
-    | x=neighbor_gb_stanza
-    | x=null_gb_stanza
-    | x=peer_as_gb_stanza
-    | x=type_gb_stanza
-  )
-  
-  {
-   gbs = x;
-  }
-  ;
-
-gb_stanza_list returns [List<GBStanza> glist = new ArrayList<GBStanza>()]
-  :
-  ( (x=gb_stanza) 
-                 {
-                  glist.add(x);
-                 })+
-  ;
-
-group_bp_stanza returns [BPStanza bps]
-  :
-  (GROUP name=VARIABLE OPEN_BRACE l=gb_stanza_list CLOSE_BRACE) 
-                                                               {
-                                                                GroupBPStanza gbps = new GroupBPStanza(name.getText());
-                                                                for (GBStanza x : l) {
-                                                                	gbps.processStanza(x);
-                                                                }
-                                                                bps = gbps;
-                                                               }
-  ;
-
-hold_time_ngb_stanza
-  :
-  HOLD_TIME ~SEMICOLON* SEMICOLON
-  ;
-
-import_gb_stanza returns [GBStanza gbs]
-@init {
-ImportGBStanza ingbs = new ImportGBStanza();
-}
-  :
-  (
-    IMPORT
-    (
-      (name=VARIABLE) 
-                     {
-                      ingbs.addPS(name.getText());
-                     }
-      | (OPEN_BRACKET ( (name=VARIABLE) 
-                                       {
-                                        ingbs.addPS(name.getText());
-                                       })+ CLOSE_BRACKET)
-    )
-    SEMICOLON
-  )
-  
-  {
-   gbs = ingbs;
-  }
-  ;
-
-import_ngb_stanza returns [NGBStanza ngbs]
-@init {
-ImportNGBStanza ingbs = new ImportNGBStanza();
-}
-  :
-  (
-    IMPORT
-    (
-      (name=VARIABLE) 
-                     {
-                      ingbs.addPS(name.getText());
-                     }
-      | (OPEN_BRACKET ( (name=VARIABLE) 
-                                       {
-                                        ingbs.addPS(name.getText());
-                                       })+ CLOSE_BRACKET)
-    )
-    SEMICOLON
-  )
-  
-  {
-   ngbs = ingbs;
-  }
-  ;
-
-local_address_gb_stanza
-  :
-  LOCAL_ADDRESS ~SEMICOLON+ SEMICOLON
-  ;
-
-local_address_ngb_stanza
-  :
-  LOCAL_ADDRESS ~SEMICOLON+ SEMICOLON
-  ;
-
-local_as_gb_stanza returns [GBStanza gbs]
-  :
-  (LOCAL_AS num=integer SEMICOLON) 
-                                  {
-                                   gbs = new LocalASGBStanza(num);
-                                  }
-  ;
-
-local_as_ngb_stanza returns [NGBStanza ngbs]
-  :
-  (LOCAL_AS num=integer SEMICOLON) 
-                                  {
-                                   ngbs = new LocalASNGBStanza(num);
-                                  }
-  ;
-
-log_updown_bp_stanza
-  :
-  LOG_UPDOWN SEMICOLON
-  ;
-
-multihop_ngb_stanza
-  :
-  MULTIHOP OPEN_BRACE ~CLOSE_BRACE+ CLOSE_BRACE
-  ;
-
-neighbor_gb_stanza returns [GBStanza gbs]
-  :
-  (
-    NEIGHBOR
-    (
-      ip=IP_ADDRESS
-      | ip=IPV6_ADDRESS
-    )
-    OPEN_BRACE l=ngb_stanza_list CLOSE_BRACE
-  )
-  
-  {
-   NeighborGBStanza ngbs = new NeighborGBStanza(ip.getText());
-   for (NGBStanza x : l) {
-   	ngbs.processStanza(x);
+  (EXPORT 
+  (name=VARIABLE {b.AddPolicyName(name.getText());} 
+  |x=bracketed_list 
+   {
+     for (String s : x) {
+       b.AddPolicyName(s);
+     }
    }
-   gbs = ngbs;
-  }
+  )
+  SEMICOLON)
+  ; 
+
+bgp_family_common_stanza returns [BGPFamily bfs = new BGPFamily()]
+  :
+  FAMILY ignored_substanza // TODO [Ask Ari]: I'm certain these should not be ignored.
+  ;
+  
+import_common_stanza returns [BGPImportList b = new BGPImportList()]
+  :
+  (IMPORT 
+  (name=VARIABLE {b.AddPolicyName(name.getText());} 
+  |x=bracketed_list 
+   {
+     for (String s : x) {
+       b.AddPolicyName(s);
+     }
+   }
+  )
+  SEMICOLON)
+  ; 
+  
+local_address_common_stanza returns [BGPLocalAddress las]
+  :
+  LOCAL_ADDRESS 
+  (
+  ip=IP_ADDRESS {las = new BGPLocalAddress(ip.getText(),false);}
+  |ip=IPV6_ADDRESS {las = new BGPLocalAddress(ip.getText(), true);}
+  )
+  SEMICOLON
+  ; 
+  
+peer_as_common_stanza returns [BGPPeerAS pas]
+  :
+  (PEER_AS num=integer SEMICOLON) {pas = new BGPPeerAS(num);}
   ;
 
-ngb_stanza returns [NGBStanza ngbs]
+/* --- --- --- Protocol->BGP Stanza Rules ------------------------------------------------------------*/
+bgp_p_stanza returns [PStanza ps]
+ :
+  (BGP OPEN_BRACE l=bg_stanza_list CLOSE_BRACE)
+  {
+    BGPStanza bs = new BGPStanza();
+    for (BGStanza bgs : l) {
+      bs.AddBGStanza(bgs);
+    }
+  }
+  ;
+  
+bg_stanza_list returns [List<BGStanza> bgsl = new ArrayList<BGStanza>()]
   :
   (
-    x=export_ngb_stanza
-    | x=import_ngb_stanza
-    | x=local_as_ngb_stanza
-    | x=null_ngb_stanza
-    | x=peer_as_ngb_stanza
+    (x=bg_stanza
+    |x=inactive_bg_stanza
+    ){bgsl.add(x);}
+  )+
+  ;
+    
+/* --- --- --- --- Protocol->BGP Sub-Stanza Rules ----------------------------------------------------*/  
+    
+bg_stanza returns [BGStanza bgs]
+  :
+  (x=family_bg_stanza
+  |x=group_bg_stanza
+  |x=null_bg_stanza
   )
+  { bgs =x; }
+  ;
   
+inactive_bg_stanza returns [BGStanza bgs]
+  :
+  INACTIVE COLON (x=bg_stanza) 
   {
-   ngbs = x;
+    x.set_stanzaStatus(StanzaStatusType.INACTIVE);
+    bgs=x;
   }
   ;
-
-ngb_stanza_list returns [List<NGBStanza> l= new ArrayList<NGBStanza>()]
+  
+/* --- --- --- --- --- Protocol->BGP->Family Stanza Rules --------------------------------------------*/
+family_bg_stanza returns [BGStanza bgs] 
   :
-  ( (x=ngb_stanza) 
-                  {
-                   l.add(x);
-                  })+
+  x=bgp_family_common_stanza {bgs = new BG_FamilyStanza(x);} 
   ;
 
-null_bp_stanza returns [BPStanza bps=new NullBPStanza()]
+/* --- --- --- --- --- Protocol->BGP->Group Stanza Rules ---------------------------------------------*/
+group_bg_stanza returns [BGStanza bgs]
   :
-  log_updown_bp_stanza
-  | damping_bp_stanza
+  (GROUP name=VARIABLE OPEN_BRACE l=gbg_stanza_list CLOSE_BRACE)
+  {
+    BG_GroupStanza gbgs = new BG_GroupStanza(name.getText());
+    for (BG_GRStanza x : l) {
+      gbgs.AddBGGRStanza(x);
+    }
+    bgs = gbgs;
+  }
+  ;
+  
+gbg_stanza_list returns [List<BG_GRStanza> gbgl = new ArrayList<BG_GRStanza>()]
+  :(
+    (x=gbg_stanza
+    |x=inactive_gbg_stanza
+    ){gbgl.add(x);}
+  )+
+  ;
+  
+ gbg_stanza returns [BG_GRStanza gbgs]
+  :
+  (x=export_gbg_stanza
+  |x=family_gbg_stanza
+  |x=import_gbg_stanza
+  |x=local_address_gbg_stanza
+  |x=local_as_gbg_stanza
+  |x=neighbor_gbg_stanza
+  |x=peer_as_gbg_stanza
+  |x=type_gbg_stanza
+  |x=null_gbg_stanza
+  )
+  { gbgs =x; }
+  ;
+  
+ inactive_gbg_stanza returns [BG_GRStanza bgs]
+  :
+  INACTIVE COLON (x=gbg_stanza) 
+  {
+    x.set_stanzaStatus(StanzaStatusType.INACTIVE);
+    bgs=x;
+  }
+  ;
+  
+/* --- --- --- --- --- Protocol->BGP->Null Stanza Rules ----------------------------------------------*/
+null_bg_stanza returns [BGStanza bgs]
+  :
+  s=log_updown_bg_stanza
+  {bgs = new BG_NullStanza(s);}
+  ;
+  
+/* --- --- --- --- --- --- Protocol->BGP->Group Sub-Stanza Rules -------------------------------------*/
+export_gbg_stanza returns [BG_GRStanza gbgs]
+  :
+  x=export_common_stanza {BGGR_ExportStanza egbgs = new BGGR_ExportStanza(x);}
+  ; 
+  
+family_gbg_stanza returns [BG_GRStanza gbgs] 
+  :
+  x=bgp_family_common_stanza {gbgs = new BGGR_FamilyStanza(x);} 
+  ;
+  
+import_gbg_stanza returns [BG_GRStanza gbgs]
+  :
+  x=import_common_stanza {BGGR_ImportStanza egbgs = new BGGR_ImportStanza(x);}
+  ; 
+
+local_address_gbg_stanza returns [BG_GRStanza gbgs]
+  :
+  x = local_address_common_stanza {gbgs = new BGGR_LocalAddressStanza(x);}
+  ; 
+  
+local_as_gbg_stanza returns [BG_GRStanza gbgs]
+  :
+  (LOCAL_AS num=integer SEMICOLON) {gbgs = new BGGR_LocalAsStanza(num);}
+  ;
+  
+neighbor_gbg_stanza returns [BG_GRStanza gbgs]
+@init {
+  BGGR_NeighborStanza ngbgs = new BGGR_NeighborStanza();
+}
+  :
+  (NEIGHBOR
+  (ip=IP_ADDRESS
+  |ip=IPV6_ADDRESS {ngbgs.set_stanzaStatus(StanzaStatusType.IPV6);}
+  ){ngbgs.set_neighborIP(ip.getText());}
+  OPEN_BRACE (x=ngbg_stanza {ngbgs.addBGGRNStanza(x);})+ CLOSE_BRACE
+  )
+  {gbgs = ngbgs;}
+  ;
+  
+peer_as_gbg_stanza returns [BG_GRStanza gbgs]
+  :
+  (x=peer_as_common_stanza) {gbgs = new BGGR_PeerAsStanza(x);}
   ;
 
-null_gb_stanza returns [GBStanza gbs = new NullGBStanza()]
-  :
-  description_ngb_stanza
-  | local_address_gb_stanza
-  ;
-
-null_ngb_stanza returns [NGBStanza ngbs = new NullNGBStanza()]
-  :
-  authentication_key_ngb_stanza
-  | description_ngb_stanza
-  | family_ngb_stanza
-  | hold_time_ngb_stanza
-  | local_address_ngb_stanza
-  | multihop_ngb_stanza
-  | remove_private_ngb_stanza
-  ;
-
-peer_as_gb_stanza returns [GBStanza gbs]
-  :
-  (PEER_AS num=integer SEMICOLON) 
-                                 {
-                                  gbs = new PeerASGBStanza(num);
-                                 }
-  ;
-
-peer_as_ngb_stanza returns [NGBStanza ngbs]
-  :
-  (PEER_AS num=integer SEMICOLON) 
-                                 {
-                                  ngbs = new PeerASNGBStanza(num);
-                                 }
-  ;
-
-remove_private_ngb_stanza
-  :
-  REMOVE_PRIVATE SEMICOLON
-  ;
-
-type_gb_stanza returns [GBStanza gbs]
+type_gbg_stanza returns [BG_GRStanza gbgs]
   :
   TYPE
   (
-    (INTERNAL) 
-              {
-               gbs = new TypeGBStanza(false);
-              }
-    | (EXTERNAL) 
-                {
-                 gbs = new TypeGBStanza(true);
-                }
+  INTERNAL {gbgs = new BGGR_TypeStanza(false);}
+  |EXTERNAL {gbgs = new BGGR_TypeStanza(true);}
   )
   SEMICOLON
+  ; 
+
+null_gbg_stanza returns [BG_GRStanza gbgs]
+  :
+  (s=bfd_liveness_detection_gbg_stanza
+  |s=log_updown_gbg_stanza
+  |s=metric_out_gbg_stanza
+  |s=multihop_gbg_stanza
+  |s=remove_private_gbg_stanza
+  )
+  {gbgs = new BGGR_NullStanza(s);}
   ;
+  
+/* --- --- --- --- --- --- Protocol->BGP->Null Sub-Stanza Rules --------------------------------------*/
+log_updown_bg_stanza returns [String s]
+  :
+  x=log_updown_common_stanza {s=x;}
+  ;
+  
+/* --- --- --- --- --- --- --- Protocol->BGP->Group->Neighbor Stanza Rules ---------------------------*/
+ngbg_stanza returns [BGGR_NStanza ngbgs]
+  :
+  (x=export_ngbg_stanza
+  |x=family_ngbg_stanza
+  |x=import_ngbg_stanza
+  |x=local_address_ngbg_stanza
+  |x=peer_as_ngbg_stanza
+  
+  | x=null_ngbg_stanza
+  )
+  
+  {ngbgs = x;}
+  ;
+  
+/* --- --- --- --- --- --- --- Protocol->BGP->Group->Null Stanza Rules -------------------------------*/
+bfd_liveness_detection_gbg_stanza  returns [String s]
+  :
+  x = bfd_liveness_detection_common_stanza {s=x;}
+  ;
+
+log_updown_gbg_stanza returns [String s]
+  :
+  x=log_updown_common_stanza  {s=x;}
+  ;
+  
+metric_out_gbg_stanza returns [String s]
+  :
+  x=metric_out_common_stanza  {s=x;}
+  ;  
+
+multihop_gbg_stanza returns [String s]
+  :
+  x=multihop_common_stanza  {s=x;}
+  ;
+
+remove_private_gbg_stanza returns [String s]
+  :
+  x=REMOVE_PRIVATE SEMICOLON {s=x.getText();}
+  ;
+  
+/* --- --- --- --- --- --- --- --- Protocol->BGP->Group->Neighbor Sub-Stanza Rules ------------------*/
+export_ngbg_stanza returns [BGGR_NStanza ngbgs]
+  :
+  x=export_common_stanza {ngbgs = new BGGRN_ExportStanza(x);}
+  ; 
+
+family_ngbg_stanza returns [BGGR_NStanza gbgs] 
+  :
+  x=bgp_family_common_stanza {gbgs = new BGGRN_FamilyStanza(x);}
+  ;
+  
+import_ngbg_stanza returns [BGGR_NStanza ngbgs]
+  :
+  x=import_common_stanza {ngbgs = new BGGRN_ImportStanza(x);}
+  ;  
+
+local_address_ngbg_stanza returns [BGGR_NStanza ngbgs]
+  :
+  x = local_address_common_stanza {ngbgs = new BGGRN_LocalAddressStanza(x);}
+  ; 
+  
+peer_as_ngbg_stanza returns [BGGR_NStanza ngbgs]
+  :
+  (x=peer_as_common_stanza) {ngbgs = new BGGRN_PeerAsStanza(x);}
+  ;
+  
+null_ngbg_stanza returns [BGGR_NStanza ngbgs]
+  :  
+  (s=bfd_liveness_detection_ngbg_stanza
+  |s=description_ngbg_stanza
+  |s=graceful_restart_ngbg_stanza
+  |s=metric_out_ngbg_stanza
+  |s=multihop_ngbg_stanza
+  |s=multipath_ngbg_stanza
+  |s=passive_ngbg_stanza
+  )
+  {ngbgs = new BGGRN_NullStanza(s);}
+  ;
+  
+/* --- --- --- --- --- --- --- --- Protocol->BGP->Group->Neighbor->Null Stanza Rules ------------------*/
+bfd_liveness_detection_ngbg_stanza returns [String s]
+  :
+  x = bfd_liveness_detection_common_stanza  {s=x;}
+  ;
+  
+cluster_ngbg_stanza returns [String s]
+  :
+  x=CLUSTER (ip=IP_ADDRESS) SEMICOLON {s = x.getText();} // TODO [Ask Ari]: Make sure this is ok to ignore
+  ;
+
+description_ngbg_stanza returns [String s]
+  :
+  x = description_common_stanza  {s=x;}
+  ;
+  
+graceful_restart_ngbg_stanza returns [String s]
+  :
+  x=GRACEFUL_RESTART SEMICOLON {s = x.getText();}
+  ;
+  
+hold_time_ngbg_stanza returns [String s]
+  :
+  x=HOLD_TIME VARIABLE SEMICOLON {s = x.getText();}
+  ;  
+  
+metric_out_ngbg_stanza returns [String s]
+  :
+  x=metric_out_common_stanza  {s=x;}
+  ;    
+  
+multipath_ngbg_stanza returns [String s]
+  :
+  x=MULTIPATH SEMICOLON {s = x.getText();}
+  ;
+
+multihop_ngbg_stanza returns [String s]
+  :
+  x=multihop_common_stanza  {s=x;}
+  ;
+
+passive_ngbg_stanza returns [String s]
+  :
+  x=PASSIVE SEMICOLON {s = x.getText();}
+  ;  
+  
+  
+/* --- --- --- --- --- Protocol->BGP->Group Sub-Stanza Rules -------------------------------------------------------*/ 

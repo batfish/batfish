@@ -20,7 +20,7 @@ public class SourceAddressFromTFFStanza extends FromTFFStanza {
       _address.add(a);
    }
    
-   public List<String> getAddress(){
+   public List<String> get_address(){
       return _address;
    }
    

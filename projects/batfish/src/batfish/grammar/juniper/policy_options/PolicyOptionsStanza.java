@@ -5,81 +5,87 @@ import java.util.List;
 
 import batfish.grammar.juniper.JStanza;
 import batfish.grammar.juniper.JStanzaType;
+import batfish.grammar.juniper.StanzaStatusType;
 import batfish.representation.juniper.ASPathAccessList;
-import batfish.representation.juniper.ExpandedCommunityList;
-import batfish.representation.juniper.ExpandedCommunityListLine;
-import batfish.representation.juniper.RouteFilter;
+import batfish.representation.juniper.CommunityMemberList;
 import batfish.representation.juniper.PolicyStatement;
+import batfish.representation.juniper.PrefixList;
 
 public class PolicyOptionsStanza extends JStanza {
-
-   private List<PolicyStatement> _maps;
-   private List<RouteFilter> _filters;
-   private List<ExpandedCommunityList> _communities;
+   
+   private List <POStanza> _poStanzas;
+   
+   private List<CommunityMemberList> _communities;
    private List<ASPathAccessList> _asPathLists;
+   private List<PolicyStatement> _policyStatements;
+   private List<PrefixList> _prefixLists;
 
+   
+   /* ------------------------------ Constructor ----------------------------*/
    public PolicyOptionsStanza() {
-      _maps = new ArrayList<PolicyStatement>();
-      _filters = new ArrayList<RouteFilter>();
-      _communities = new ArrayList<ExpandedCommunityList>();
-      _asPathLists = new ArrayList<ASPathAccessList>();
+      _poStanzas = new ArrayList<POStanza> ();
    }
-
-   public void processStanza(POStanza ps) {
-      switch (ps.getType()) {
-      case NULL:
-         break;
-
-      case POLICY_STATEMENT:
-         PolicyStatementPOStanza psps = (PolicyStatementPOStanza) ps;
-         if (!psps.isIPv6()) {
-            _maps.add(psps.getMap());
-            _filters.addAll(psps.getRouteFilters());
-         }
-         break;
-
-      case PREFIX_LIST:
-         PrefixListPOStanza plps = (PrefixListPOStanza) ps;
-         if (!plps.isIPv6()) {
-            _filters.add(plps.getRouteFilter());
-         }
-         break;
-
-      case COMMUNITY:
-         CommunityPOStanza cps = (CommunityPOStanza) ps;
-         ExpandedCommunityList ecl = new ExpandedCommunityList(cps.getName());
-         for (ExpandedCommunityListLine ecll : cps.getLines()) {
-            ecl.addLine(ecll);
-         }
-         _communities.add(ecl);
-         break;
-
-      case AS_PATH:
-         ASPathPOStanza aps = (ASPathPOStanza)ps;
-         ASPathAccessList aal = new ASPathAccessList(aps.getName(), aps.getLines());
-         _asPathLists.add(aal);
-         break;
-         
-      default:
-         System.out.println("bad policy options stanza type");
-         break;
-      }
-   }
-
-   public List<PolicyStatement> getMaps() {
-      return _maps;
-   }
-
-   public List<RouteFilter> getFilters() {
-      return _filters;
-   }
-
-   public List<ExpandedCommunityList> getCommunities() {
-      return _communities;
+   /* ----------------------------- Other Methods ---------------------------*/
+   public void addPOStanza (POStanza p) {
+      _poStanzas.add(p);
    }
    
-   public List<ASPathAccessList> getAsPathLists(){
+   /* ---------------------------- Getters/Setters --------------------------*/
+   public List<CommunityMemberList> get_communities () {
+      return _communities;
+   }
+   public List<ASPathAccessList> get_asPathLists () {
       return _asPathLists;
+   }
+   public List<PolicyStatement> get_policyStatements () {
+      return _policyStatements;
+   }
+   public List<PrefixList> get_prefixLists () {
+      return _prefixLists;
+   }
+   
+   /* --------------------------- Inherited Methods -------------------------*/
+   public void postProcessStanza () {
+      _communities = new ArrayList<CommunityMemberList>();
+      _asPathLists = new ArrayList<ASPathAccessList>();
+      _policyStatements = new ArrayList<PolicyStatement>();
+      _prefixLists = new ArrayList<PrefixList>();
+      
+      for (POStanza pos: _poStanzas) {
+         
+         pos.postProcessStanza();
+      
+         if (pos.get_stanzaStatus() == StanzaStatusType.ACTIVE) {
+            switch (pos.getType()) {
+               case AS_PATH:
+                  PO_AsPathStanza aps = (PO_AsPathStanza) pos;
+                 _asPathLists.add(aps.get_ASPathAccessList());
+                 break;
+               case COMMUNITY:
+                  PO_CommunityStanza cps = (PO_CommunityStanza) pos;
+                 _communities.add(cps.get_community());
+                 break;
+               case PREFIX_LIST:
+                  PO_PrefixListStanza prps = (PO_PrefixListStanza) pos;
+                 _prefixLists.add(prps.get_prefixList());
+                 break;
+               case POLICY_STATEMENT:
+                  PO_PolicyStatementStanza pops = (PO_PolicyStatementStanza) pos;
+                 _policyStatements.add(pops.get_policyStatement());
+                 break;
+                 
+               case NULL:
+                  break;
+                 
+               default:
+                  System.out.println("bad policy options stanza type");
+                  break;
+            }
+         }
+         this.addIgnoredStatements(pos.get_ignoredStatements());
+      }
+      this.set_postProcessTitle("Policy Options");     
+      
    }
 
    @Override

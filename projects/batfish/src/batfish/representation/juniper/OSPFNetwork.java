@@ -5,33 +5,34 @@ public class OSPFNetwork {
    private String _networkAddress;
    private String _subnetMask;
    private String _interface;
-   private int _area;
-
+   private int _areaNum;
+   
+   /* ------------------------------ Constructor ----------------------------*/
    public OSPFNetwork(String networkAddress, String subnetMask, int area) {
       _networkAddress = networkAddress;
       _subnetMask = subnetMask;
-      _area = area;
+      _areaNum = area;
    }
-   
    public OSPFNetwork(String inf, int area){
       _interface = inf;
-      _area = area;
+      _areaNum = area;
    }
-
-   public String getNetworkAddress() {
-      return _networkAddress;
+   /* ----------------------------- Other Methods ---------------------------*/
+   
+   /* ---------------------------- Getters/Setters --------------------------*/
+   public int get_areaNum () {
+	   return _areaNum;
    }
-
-   public String getSubnetMask() {
-      return _subnetMask;
+   public String get_subnetMask () {
+	   return _subnetMask;
    }
-
-   public int getArea() {
-      return _area;
+   public String get_networkAddress () {
+	   return _networkAddress;
    }
-
-   public String getInterface() {
-      return _interface;
+   public String get_interface () {
+	   return _interface;
    }
+   
+   /* --------------------------- Inherited Methods -------------------------*/  
 
 }

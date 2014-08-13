@@ -1,23 +1,26 @@
 package batfish.representation.juniper;
 
-import java.util.List;
-
-
 public class ASPathAccessList {
-   private List<ASPathAccessListLine> _lines;
+
    private String _name;
-
-   public ASPathAccessList(String name, List<ASPathAccessListLine> lines) {
-      _lines = lines;
-      _name = name;
+   private String _regex;
+   
+   /* ------------------------------ Constructor ----------------------------*/
+   public ASPathAccessList(String n, String r) {
+      _name = n;
+      _regex = r;
    }
-
-   public List<ASPathAccessListLine> getLines() {
-      return _lines;
-   }
-
-   public String getName() {
+   
+   /* ----------------------------- Other Methods ---------------------------*/
+   
+   /* ---------------------------- Getters/Setters --------------------------*/
+   public String get_name() {
       return _name;
+   }   
+   public String get_regex() {
+      return _regex;
    }
-
+   
+   
+   /* --------------------------- Inherited Methods -------------------------*/  
 }

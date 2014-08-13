@@ -1,6 +1,11 @@
 package batfish.grammar.juniper;
 
 public enum JStanzaType {
+   
+   APPLY_GROUPS,
+   GROUPS,
+   VERSION,
+   
    FIREWALL,
    INTERFACES,
    NULL,

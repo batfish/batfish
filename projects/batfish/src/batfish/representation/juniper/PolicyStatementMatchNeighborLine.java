@@ -1,22 +1,27 @@
 package batfish.representation.juniper;
 
-import batfish.representation.juniper.MatchType;
-import batfish.representation.juniper.PolicyStatementMatchLine;
+import batfish.representation.juniper.PolicyStatement_MatchLine;
 
-public class PolicyStatementMatchNeighborLine extends PolicyStatementMatchLine {
+public class PolicyStatementMatchNeighborLine extends PolicyStatement_MatchLine {
 
    private String _neighborIp;
-
+   
+   /* ------------------------------ Constructor ----------------------------*/
    public PolicyStatementMatchNeighborLine(String neighborIP) {
       _neighborIp = neighborIP;
    }
-
-   @Override
-   public MatchType getType() {
-      return MatchType.NEIGHBOR;
-   }
-
-   public String getNeighborIp() {
+   
+   /* ----------------------------- Other Methods ---------------------------*/
+   
+   /* ---------------------------- Getters/Setters --------------------------*/
+   public String get_neighborIp() {
       return _neighborIp;
    }
+   
+   /* --------------------------- Inherited Methods -------------------------*/
+   @Override
+   public PolicyStatement_MatchType getType() {
+      return PolicyStatement_MatchType.NEIGHBOR;
+   }
+
 }

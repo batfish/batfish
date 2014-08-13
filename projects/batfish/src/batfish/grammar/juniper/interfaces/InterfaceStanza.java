@@ -1,111 +1,32 @@
 package batfish.grammar.juniper.interfaces;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import batfish.representation.SwitchportEncapsulationType;
+import batfish.grammar.juniper.StanzaWithStatus;
 import batfish.representation.juniper.Interface;
 
-public class InterfaceStanza {
-   private ArrayList<Interface> _interfaceList;
+public class InterfaceStanza extends StanzaWithStatus {
+   
    private String _name;
-   private int _nativeVlan;
-
-   public InterfaceStanza(String name) {
-      _name = name;
-      _interfaceList = new ArrayList<Interface>();
-      _nativeVlan = 0;
+   private List<IFStanza> _ifStanzas;
+   private List<String> _ignoredStatements;
+   private List<Interface> _interfaces;
+   
+   /* ------------------------------ Constructor ----------------------------*/
+   public InterfaceStanza() {
+      _name = "";
+      _ifStanzas = new ArrayList<IFStanza>();
+      _ignoredStatements = new ArrayList<String>();
+      _interfaces = new ArrayList<Interface>();
+      this.set_postProcessTitle("Interface " + _name);
    }
-
-   public void processStanza(IFStanza ifs) {
-      switch (ifs.getType()) {
-      case DISABLE:
-         Interface i = new Interface(_name);
-         i.setActive(false);
-         i.setBandwidth(getDefaultBandwidth(_name));
-         _interfaceList.add(i);
-         break;
-
-      case NULL:
-         break;
-
-      case UNIT:
-         UnitIFStanza uifs = (UnitIFStanza) ifs;
-         String u = Integer.toString(uifs.getUnitNum());
-         Interface ui = new Interface(_name + "." + u);
-         if (!uifs.getActive()) {
-            ui.setActive(false);
-         }
-         else {
-            switch (uifs.getFamilyType()) {
-            case BRIDGE:
-               ui.setSwitchportMode(uifs.getInterfaceMode());
-               switch (uifs.getInterfaceMode()) {
-               case ACCESS:
-                  ui.setAccessVlan(uifs.getAccessVlan());
-                  break;
-
-               case TRUNK:
-                  if (uifs.getNativeVlan() == 0) {
-                     ui.setNativeVlan(_nativeVlan);
-                  }
-                  else {
-                     ui.setNativeVlan(uifs.getNativeVlan());
-                  }
-                  ui.addAllowedRanges(uifs.getVlanIDList());
-                  ui.setSwitchportTrunkEncapsulation(SwitchportEncapsulationType.DOT1Q);
-                  break;
-
-               // TODO: Stanley, you should check if these dynamic modes are
-               // supported
-               // in Juniper, and make adjustments accordingly
-               case DYNAMIC_AUTO:
-               case DYNAMIC_DESIRABLE:
-               case NONE:
-                  throw new Error("not implemented");
-
-               default:
-                  System.out.println("bad switchport mode");
-                  break;
-               }
-               break;
-
-            case INET:
-               ui.setIP(uifs.getAddress());
-               ui.setSubnetMask(uifs.getSubnetMask());
-               ui.setAccessVlan(uifs.getAccessVlan());
-               ui.setIncomingFilter(uifs.getIncomingFilter());
-               ui.setOutgoingFilter(uifs.getOutgoingFilter());
-               break;
-
-            case INET6:
-               throw new Error("not implemented");
-
-            default:
-               System.out.println("bad family type");
-               break;
-            }
-         }
-         ui.setBandwidth(getDefaultBandwidth(_name));
-         _interfaceList.add(ui);
-         break;
-
-      case NATIVE_VLAN_ID:
-         NativeVlanIdIFStanza nviifs = (NativeVlanIdIFStanza) ifs;
-         for (Interface inf : _interfaceList) {
-            if (inf.getNativeVlan() == 0) {
-               inf.setNativeVlan(nviifs.getNativeVlan());
-            }
-         }
-         break;
-
-      default:
-         System.out.println("bad interface stanza type");
-         break;
-      }
-
+   
+   /* ----------------------------- Other Methods ---------------------------*/
+   public void addIFStanza (IFStanza ifs) {
+      _ifStanzas.add(ifs);
    }
-
-   private static Double getDefaultBandwidth(String name) {
+   private Double getDefaultBandwidth(String name) {
       Double bandwidth = null;
       if ((name.startsWith("fe")) || (name.startsWith("em"))) {
          bandwidth = 100E6;
@@ -124,9 +45,52 @@ public class InterfaceStanza {
       }
       return bandwidth;
    }
-
-   public ArrayList<Interface> getInterfaceList() {
-      return _interfaceList;
+   /* ---------------------------- Getters/Setters --------------------------*/
+   public void set_name (String n) {
+      _name = n;
    }
-
+   
+   public List<Interface> get_interfaces (){
+      return _interfaces;
+   }
+   
+   /* --------------------------- Inherited Methods -------------------------*/
+   public void postProcessStanza () {
+      
+      for (IFStanza ifs : _ifStanzas) {                         // process each separate sub-stanza 
+         
+         switch (ifs.getType()) {
+            case DISABLE:
+               Interface i = new Interface(_name);
+               i.set_active(false);
+               i.set_bandwidth(getDefaultBandwidth(_name));      // TODO [P1]: shouldn't this default happen in Interface?
+               _interfaces.add(i);
+               break;
+               
+            case UNIT:                                             
+               IF_UnitStanza ifus = (IF_UnitStanza) ifs;
+               ifus.postProcessStanza();
+               String u = Integer.toString(ifus.get_num());
+               Interface ui = new Interface(_name + "." + u);
+               
+               if (!ifus.get_address().isEmpty() && ifus.get_subnetMask() !=null) { 
+                  ui.set_ip(ifus.get_address());
+                  ui.set_subnet(ifus.get_subnetMask());
+                  ui.set_bandwidth(getDefaultBandwidth(_name));
+                  _interfaces.add(ui);
+               }
+               break;
+               
+            case APPLY_GROUPS:                                  // TODO [P0]: figure this out!
+               break;
+               
+            case NULL:
+               break;
+               
+         }
+         
+         _ignoredStatements.addAll(ifs.get_ignoredStatements());
+      }
+   }
 }
+         

@@ -1,6 +1,8 @@
 package batfish.grammar.juniper.interfaces;
 
-public abstract class IFStanza {
+import batfish.grammar.juniper.StanzaWithStatus;
+
+public abstract class IFStanza extends StanzaWithStatus{
 	public abstract IFType getType();
 
 }

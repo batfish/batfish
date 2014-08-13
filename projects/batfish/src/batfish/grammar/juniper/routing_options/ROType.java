@@ -1,10 +1,12 @@
 package batfish.grammar.juniper.routing_options;
 
 public enum ROType {
-   AGGREGATE,
    AS,
-   GENERATE,
-   NULL,
+   MARTIAN,
+   RIB,
+   RIB_GROUPS,
+   ROUTER_ID,
    STATIC,
-   ROUTER_ID
+   
+   NULL,
 }

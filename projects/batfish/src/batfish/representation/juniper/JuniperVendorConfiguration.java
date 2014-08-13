@@ -15,10 +15,7 @@ import batfish.representation.BgpNeighbor;
 import batfish.representation.CommunityList;
 import batfish.representation.CommunityListLine;
 import batfish.representation.Configuration;
-import batfish.representation.GeneratedRoute;
 import batfish.representation.Ip;
-import batfish.representation.IpAccessList;
-import batfish.representation.IpAccessListLine;
 import batfish.representation.LineAction;
 import batfish.representation.OspfArea;
 import batfish.representation.OspfProcess;
@@ -27,13 +24,12 @@ import batfish.representation.PolicyMapAction;
 import batfish.representation.PolicyMapClause;
 import batfish.representation.PolicyMapMatchAsPathAccessListLine;
 import batfish.representation.PolicyMapMatchCommunityListLine;
-import batfish.representation.PolicyMapMatchIpAccessListLine;
 import batfish.representation.PolicyMapMatchLine;
-import batfish.representation.PolicyMapMatchRouteFilterListLine;
 import batfish.representation.PolicyMapSetAddCommunityLine;
 import batfish.representation.PolicyMapSetCommunityLine;
 import batfish.representation.PolicyMapSetDeleteCommunityLine;
 import batfish.representation.PolicyMapSetLine;
+import batfish.representation.PolicyMapMatchNeighborLine;
 import batfish.representation.PolicyMapSetLocalPreferenceLine;
 import batfish.representation.PolicyMapSetMetricLine;
 import batfish.representation.PolicyMapSetNextHopLine;
@@ -41,23 +37,386 @@ import batfish.representation.RouteFilterList;
 import batfish.representation.VendorConfiguration;
 import batfish.util.Util;
 
+
 public class JuniperVendorConfiguration implements VendorConfiguration {
 
-   private static final long serialVersionUID = 1L;
    private static final String VENDOR_NAME = "juniper";
+   private String _hostname;
+   private int _asNum;
+   private List<String> _conversionWarnings;
 
-   private static batfish.representation.AsPathAccessList toAsPathAccessList(
-         ASPathAccessList pathList) {
-      String name = pathList.getName();
-      List<AsPathAccessListLine> lines = new ArrayList<AsPathAccessListLine>();
-      for (ASPathAccessListLine fromLine : pathList.getLines()) {
-         lines.add(new AsPathAccessListLine(fromLine.getRegex()));
-      }
-      return new AsPathAccessList(name, lines);
+   private Map<String, ASPathAccessList> _asPathAccessLists;
+   private Map<String, CommunityMemberList> _communities;
+   private Map<String, PrefixList> _prefixLists;
+   private Map<String, PolicyStatement> _policyStatements;
+
+   private List<BGPProcess> _bgpProcesses;
+   private List<OSPFProcess> _ospfProcesses;
+   private List<Interface> _interfaces;
+   private Map<String, List<StaticOptions>> _staticRoutes;
+   
+   // private Map<String, ExtendedAccessList> _extendedAccessLists; // TODO: No firewall stuff in Internet2
+   // private List<GenerateRoute> _generateRoutes; // TODO: can't figure out what these are in internet2
+   // private Map<String, RouteFilter> _routeFilters; // TODO: can't figure out what these are in internet2
+
+   public JuniperVendorConfiguration() {
+      _conversionWarnings = new ArrayList<String>();
+      _asPathAccessLists = new HashMap<String, ASPathAccessList>();
+      _communities = new HashMap<String, CommunityMemberList>();
+      _prefixLists = new HashMap<String, PrefixList>();
+      _policyStatements = new HashMap<String, PolicyStatement>();
+
+      _ospfProcesses = new ArrayList<OSPFProcess>();
+      _bgpProcesses = new ArrayList<BGPProcess>();
+      _interfaces = new ArrayList<Interface>();
+      _staticRoutes = new HashMap<String, List<StaticOptions>>();
+      
+      /*
+      _extendedAccessLists = new HashMap<String, ExtendedAccessList>();
+      _generateRoutes = new ArrayList<GenerateRoute>();
+      _routeFilters = new HashMap<String, RouteFilter>();
+      */
+
    }
 
-   private static batfish.representation.BgpProcess toBgpProcess(
-         final Configuration c, BGPProcess proc, int asNum) {
+   /* -------------------------------------- General Constructs ------------------------------------- */
+   public void setHostname(String hostname) {
+      _hostname = hostname;
+   }
+
+   /* ---------------------------------- Policy Options Constructs ---------------------------------- */
+   private static batfish.representation.AsPathAccessList toAsPathAccessList(ASPathAccessList jPathList) {
+      List<AsPathAccessListLine> lines = new ArrayList<AsPathAccessListLine>();
+      lines.add(new AsPathAccessListLine(jPathList.get_regex()));
+      return new AsPathAccessList(jPathList.get_name(), lines);
+   }
+   
+   private static batfish.representation.CommunityList toCommunityList(CommunityMemberList jCommunity) {
+      List<CommunityListLine> cs = new ArrayList<CommunityListLine>();
+      for (CommunityMemberListLine c : jCommunity.get_communityIds()) {
+         cs.add(toCommunityListLine(c));
+      }
+      CommunityList cList = new CommunityList(jCommunity.get_name(), cs);
+      return cList;
+   }
+   
+   private static batfish.representation.CommunityListLine toCommunityListLine(CommunityMemberListLine jCommLine) {
+      // TODO [Ask Ari]: Communities dont have actions and aren't regexes in Juniper...
+      return new CommunityListLine(LineAction.ACCEPT, "*");
+   }
+
+   // TODO [Ask Ari]: What to do with prefix lists?
+   
+   private static batfish.representation.PolicyMap toPolicyMap(final Configuration c, PolicyStatement jMap) {
+      List<PolicyMapClause> clauses = new ArrayList<PolicyMapClause>();
+      for (PolicyStatement_Term t : jMap.get_terms()) {
+         clauses.add(toPolicyMapClause(c, t));
+      }
+      return new PolicyMap(jMap.get_name(), clauses);
+   }
+      
+   private static batfish.representation.PolicyMapClause toPolicyMapClause(final Configuration c, PolicyStatement_Term jTerm) {
+      Set<PolicyMapMatchLine> matchLines = new LinkedHashSet<PolicyMapMatchLine>();
+      for (PolicyStatement_MatchLine fromLine : jTerm.get_matchList()) {
+         matchLines.add(toPolicyMapMatchLine(c, fromLine));
+      }
+      Set<PolicyMapSetLine> setLines = new LinkedHashSet<PolicyMapSetLine>();
+      for (PolicyStatement_SetLine fromLine : jTerm.get_setList()) {
+         setLines.add(toPolicyMapSetLine(c, fromLine));
+      }
+      return new PolicyMapClause(toPolicyMapAction(jTerm.get_lineAction()), jTerm.get_name(), matchLines, setLines);
+   }
+   
+   private static batfish.representation.PolicyMapAction toPolicyMapAction(PolicyStatement_LineAction la) {
+      switch (la) {
+      case ACCEPT:
+         return PolicyMapAction.PERMIT;
+      case REJECT:
+         return PolicyMapAction.DENY;
+      case NEXT_POLICY:
+         // TODO [Ask Ari]: Where should I handle these?
+         break;
+      case NEXT_TERM:
+         // TODO [Ask Ari]: Where should I handle these?
+         break;
+      }
+      // TODO [P0]: Remove
+      return PolicyMapAction.DENY;
+   }
+   
+   private static batfish.representation.PolicyMapMatchLine toPolicyMapMatchLine(final Configuration c, PolicyStatement_MatchLine jMatchLine) {
+      
+      PolicyMapMatchLine mLine = null;
+      
+      switch (jMatchLine.getType()) {
+      
+      case AS_PATH:
+         PolicyStatementMatchAsPathAccessListLine asPathLine = (PolicyStatementMatchAsPathAccessListLine) jMatchLine;
+         
+         Set<AsPathAccessList> newAsPathMatchSet = new LinkedHashSet<AsPathAccessList>();
+         
+         String pathListName = asPathLine.get_listName();
+         AsPathAccessList aslist = c.getAsPathAccessLists().get(pathListName);
+         if (aslist == null) {
+            throw new Error("null list");
+         }
+         newAsPathMatchSet.add(aslist);
+         mLine = new PolicyMapMatchAsPathAccessListLine(newAsPathMatchSet);
+         // TODO [Ask Ari]: I don't follow this
+         break;
+
+      case COMMUNITY:
+         PolicyStatementMatchCommunityListLine communityLine = (PolicyStatementMatchCommunityListLine) jMatchLine;
+         Set<CommunityList> newCommunityMatchSet = new LinkedHashSet<CommunityList>();
+
+         String clistName = communityLine.get_listName();
+         CommunityList clist = c.getCommunityLists().get(clistName);
+         if (clist == null) {
+            throw new Error("no such community list");
+         }
+         newCommunityMatchSet.add(clist);
+         mLine = new PolicyMapMatchCommunityListLine(newCommunityMatchSet);
+         // TODO [Ask Ari]: I don't follow this
+         break;
+         
+      case FAMILY:
+         PolicyStatementMatchFamilyLine familyLine = (PolicyStatementMatchFamilyLine) jMatchLine;
+         // TODO [P0]: need to fill in
+         break;
+         
+      case INTERFACE:
+         PolicyStatementMatchInterfaceListLine interfaceLine = (PolicyStatementMatchInterfaceListLine) jMatchLine;
+         // TODO [P0]: need to fill in
+         break;
+         
+      case NEIGHBOR:
+         PolicyStatementMatchNeighborLine neighborLine = (PolicyStatementMatchNeighborLine) jMatchLine;
+         mLine = new PolicyMapMatchNeighborLine(new Ip(neighborLine.get_neighborIp()));
+         // TODO [P0]: need to fill in
+         break;
+         
+      case PREFIX_LIST:
+         PolicyStatementMatchPrefixListLine prefixListLine = (PolicyStatementMatchPrefixListLine) jMatchLine;
+         // TODO [P0]: need to fill in
+         break;
+         
+      case PREFIX_LIST_FILTER:
+         PolicyStatementMatchPrefixListFilterLine prefixListFilterLine = (PolicyStatementMatchPrefixListFilterLine) jMatchLine;
+         // TODO [P0]: need to fill in
+         break;
+         
+      case PROTOCOL:
+         PolicyStatementMatchProtocolListLine protocolLine = (PolicyStatementMatchProtocolListLine) jMatchLine;
+         List<batfish.representation.Protocol> protocolList = new ArrayList<batfish.representation.Protocol>();
+         for (ProtocolType prot : protocolLine.get_protocls()) {
+            switch (prot) {
+            // TODO [Ask Ari]: I don't have a "direct" protocol.  Should I?
+            
+            case AGGREGATE:
+               protocolList.add(batfish.representation.Protocol.AGGREGATE);
+               break;
+            case BGP:
+               protocolList.add(batfish.representation.Protocol.BGP);
+               break;
+            case ISIS:// TODO [Ask Ari]: What to do with ISIS
+               break;
+            case MSDP:// TODO [Ask Ari]: What to do with MSDP
+               break;
+            case OSPF:
+               protocolList.add(batfish.representation.Protocol.OSPF);
+               break;
+            case STATIC:
+               protocolList.add(batfish.representation.Protocol.STATIC);
+               break;
+            default:
+               throw new Error("Bad Protocol Type");
+            }
+         }
+         mLine = new batfish.representation.PolicyMapMatchProtocolLine(protocolList);
+         break;
+         
+      case RIB_FROM:
+         PolicyStatementMatchRibFromLine ribFromLine = (PolicyStatementMatchRibFromLine) jMatchLine;
+         // TODO [P0]: need to fill in
+         break;
+         
+      case RIB_TO:
+         PolicyStatementMatchRibToLine ribToLine = (PolicyStatementMatchRibToLine) jMatchLine;
+         // TODO [P0]: need to fill in
+         break;
+         
+      case ROUTE_FILTER:
+         PolicyStatementMatchRouteFilterLine routeFilterLine = (PolicyStatementMatchRouteFilterLine) jMatchLine;
+         Set<RouteFilterList> newRouteFilterMatchSet = new LinkedHashSet<RouteFilterList>();         
+         // TODO [P0]: need to fill in
+         // TODO [Ask Ari]: How to convert FilterMatch Types to what intermediate form expects
+         break;
+         
+      case SOURCE_ADDRESS_FILTER:
+         PolicyStatementMatchSourceAddressFilterLine sourceAddressFilterLine = (PolicyStatementMatchSourceAddressFilterLine) jMatchLine;
+         // TODO [P0]: need to fill in
+         break;
+
+      default:
+         throw new Error("Bad Match Line Type");
+      }
+      return mLine;
+   }
+   
+   private static batfish.representation.PolicyMapSetLine toPolicyMapSetLine(Configuration c,PolicyStatement_SetLine jSetLine) {
+      
+      PolicyMapSetLine sLine = null;
+      
+      switch (jSetLine.getType()) {
+      
+      case AS_PATH_PREPEND:
+         PolicyStatementSetAsPathPrepend AsPathPrependLine = (PolicyStatementSetAsPathPrepend) jSetLine;
+      // TODO [P0]: need to fill in
+         break;
+      case COMMUNITY_ADD:
+         PolicyStatementSetCommunityAddLine commAddLine = (PolicyStatementSetCommunityAddLine) jSetLine;
+         
+         List<Long> addComList = new ArrayList<Long>();
+         
+         List<CommunityListLine> currCommunitiesAdd = c.getCommunityLists().get(commAddLine.get_communities()).getLines();         
+         for (CommunityListLine cll : currCommunitiesAdd) {
+            String[] splitComm = cll.getRegex().split(":");
+            long part1l = Long.parseLong(splitComm[0]);
+            long part2l = Long.parseLong(splitComm[1]);
+            long l = (part1l << 16) + part2l;
+            addComList.add(l);
+         }
+         sLine = new PolicyMapSetAddCommunityLine(addComList);
+             
+         break;
+      case COMMUNITY_DELETE:
+         PolicyStatementSetCommunityDeleteLine commDeleteLine = (PolicyStatementSetCommunityDeleteLine) jSetLine;
+
+         List<Long> delComList = new ArrayList<Long>();
+         
+         List<CommunityListLine> currCommunitiesDel = c.getCommunityLists().get(commDeleteLine.get_communities()).getLines();         
+         for (CommunityListLine cll : currCommunitiesDel) {
+            String[] splitComm = cll.getRegex().split(":");
+            long part1l = Long.parseLong(splitComm[0]);
+            long part2l = Long.parseLong(splitComm[1]);
+            long l = (part1l << 16) + part2l;
+            delComList.add(l);
+         }
+         // TODO [Ask Ari]: How do communities get deleted
+         // sLine = new PolicyMapSetDeleteCommunityLine(delComList);
+         break;
+      case COMMUNITY_SET:
+         PolicyStatementSetCommunitySetLine commSetLine = (PolicyStatementSetCommunitySetLine) jSetLine;
+
+         List<Long> setComList = new ArrayList<Long>();
+         
+         List<CommunityListLine> currCommunitiesSet = c.getCommunityLists().get(commSetLine.get_communities()).getLines();         
+         for (CommunityListLine cll : currCommunitiesSet) {
+            String[] splitComm = cll.getRegex().split(":");
+            long part1l = Long.parseLong(splitComm[0]);
+            long part2l = Long.parseLong(splitComm[1]);
+            long l = (part1l << 16) + part2l;
+            setComList.add(l);
+         }
+         sLine = new PolicyMapSetCommunityLine(setComList);
+         break;
+      case INSTALL_NEXT_HOP:
+         PolicyStatementSetInstallNextHopLine installNextHopLine = (PolicyStatementSetInstallNextHopLine) jSetLine;
+      // TODO [P0]: need to fill in
+         break;
+      case LOCAL_PREF:
+         PolicyStatementSetLocalPreferenceLine localPrefLine = (PolicyStatementSetLocalPreferenceLine) jSetLine;
+         sLine = new PolicyMapSetLocalPreferenceLine(localPrefLine.get_LocalPreference());
+         break;
+      case METRIC:
+         PolicyStatementSetMetricLine metricLine = (PolicyStatementSetMetricLine) jSetLine;
+         sLine = new PolicyMapSetMetricLine(metricLine.get_metric());
+         break;
+      case NEXT_HOP:
+         PolicyStatementSetNextHopLine nextHopLine = (PolicyStatementSetNextHopLine) jSetLine;
+         
+         
+         switch (nextHopLine.get_hopType()) {
+         case NEXTHOP_SELF:
+          //TODO [Ask Ari]: What to do here?
+            break;
+         case NEXTHOP_DISCARD:
+            //TODO [Ask Ari]: What to do here?
+              break;
+         case NEXTHOP_NAME:
+            List<Ip> nextHops = new ArrayList<Ip>();
+            nextHops.add(new Ip(nextHopLine.get_hopName()));
+            sLine = new PolicyMapSetNextHopLine(nextHops);
+            break;              
+         }
+         break;
+      default:
+         throw new Error("Bad Set line Type");
+      }
+      return sLine;
+   }
+   
+   /* -------------------------------- Policy Options Getters/Setters ------------------------------- */
+   public void addAsPathAccessLists(List<ASPathAccessList> asPathLists) {
+      for (ASPathAccessList apl : asPathLists) {
+         ASPathAccessList dupAsPathList = _asPathAccessLists.get(apl.get_name());
+         if (dupAsPathList == null) {
+            _asPathAccessLists.put(apl.get_name(), apl);
+         }
+         else {
+            throw new Error("duplicate as path lists");
+         }
+      }
+   }
+   
+   public void addCommunities(List<CommunityMemberList> commLists) {
+      for (CommunityMemberList c : commLists) {
+         CommunityMemberList dupCommList = _communities.get(c.get_name());
+         if (dupCommList == null) {
+            _communities.put(c.get_name(), c);
+         }
+         else {
+            throw new Error("duplicate community lists");
+         }
+
+      }
+   }
+   
+   public void addPrefixLists(List<PrefixList> prefixLists) {
+      for (PrefixList p : prefixLists) {
+         PrefixList dupPrefixList = _prefixLists.get(p.get_name());
+         if (dupPrefixList == null) {
+            _prefixLists.put(p.get_name(), p);
+         }
+         else {
+            throw new Error("duplicate prefix lists");
+         }
+
+      }
+   }
+   
+   public void addPolicyStatements(List<PolicyStatement> policyStatements) {
+      for (PolicyStatement ps : policyStatements) {
+         PolicyStatement dupPolicyStatement = _policyStatements.get(ps.get_name());
+         if (dupPolicyStatement == null) {
+            _policyStatements.put(ps.get_name(), ps);
+         }
+         else {
+            throw new Error("duplicate policy statements");
+         }
+
+      }
+   }
+   
+   
+   public Map<String, PolicyStatement> getPolicyStatements() {
+      return _policyStatements;
+   }   
+   
+   /* ---------------------------------------- BGP Constructs --------------------------------------- */
+   
+   private static batfish.representation.BgpProcess toBgpProcess(final Configuration c, BGPProcess proc, int asNum) {
+      
       batfish.representation.BgpProcess newBgpProcess = new batfish.representation.BgpProcess();
       Map<String, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       Set<String> activeNeighbors = new LinkedHashSet<String>(
@@ -98,7 +457,6 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
                      newNeighbor.setClusterId(clusterId);
                   }
                   else {
-                     // clusterId = Util.ipToLong(pg.getUpdateSource());
                      throw new Error(
                            " cluster id missing in juniper configuration");
                   }
@@ -142,74 +500,40 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       }
       return newBgpProcess;
    }
-
-   private static CommunityList toCommunityList(ExpandedCommunityList ecList) {
-      List<CommunityListLine> cllList = new ArrayList<CommunityListLine>();
-      for (ExpandedCommunityListLine ecll : ecList.getLines()) {
-         cllList.add(toCommunityListLine(ecll));
-      }
-      CommunityList cList = new CommunityList(ecList.getName(), cllList);
-      return cList;
+   
+  
+   /* ------------------------------------- BGP Getters/Setters ------------------------------------- */
+   public void addBGPProcess(BGPProcess process) {
+      _bgpProcesses.add(process);
+   }
+   
+      public List<BGPProcess> getBGPProcesses() {
+      return _bgpProcesses;
    }
 
-   private static CommunityListLine toCommunityListLine(
-         ExpandedCommunityListLine eclLine) {
-      return new CommunityListLine(eclLine.getAction(), eclLine.getRegex());
-   }
-
-   private static GeneratedRoute toGeneratedRoute(final Configuration c,
-         GenerateRoute gr) {
-      Set<batfish.representation.PolicyMap> newGenerationPolicies = new LinkedHashSet<batfish.representation.PolicyMap>();
-      batfish.representation.PolicyMap GenerationPolicy = c.getPolicyMaps()
-            .get(gr.getPolicy());
-      if (GenerationPolicy != null) {
-         newGenerationPolicies.add(GenerationPolicy);
-      }
-      else {
-         throw new Error("generation policy not existed");
-      }
-      GeneratedRoute newGeneratedRoute = new GeneratedRoute(new Ip(
-            gr.getPrefix()), gr.getPrefixLength(), gr.getPreference(),
-            newGenerationPolicies);
-      return newGeneratedRoute;
-   }
-
-   private static IpAccessList toIpAccessList(ExtendedAccessList eaList) {
-      String name = eaList.getId();
-      List<IpAccessListLine> lines = new ArrayList<IpAccessListLine>();
-      for (ExtendedAccessListLine fromLine : eaList.getLines()) {
-         lines.add(new IpAccessListLine(fromLine.getLineAction(), fromLine
-               .getProtocol(), new Ip(fromLine.getSourceIP()), new Ip(fromLine
-               .getSourceWildcard()), new Ip(fromLine.getDestinationIP()),
-               new Ip(fromLine.getDestinationWildcard()), fromLine
-                     .getSrcPortRanges(), fromLine.getDstPortRanges()));
-      }
-      return new IpAccessList(name, lines);
-   }
-
-   private static OspfProcess toOSPFProcess(final Configuration c,
-         OSPFProcess proc) {
+   /* --------------------------------------- OSFP Constructs --------------------------------------- */
+   private static batfish.representation.OspfProcess toOSPFProcess(final Configuration c, OSPFProcess proc) {
       OspfProcess newProcess = new OspfProcess();
 
-      for (String mapName : proc.getExportPolicyStatements()) {
+      for (String mapName : proc.get_exportPolicyStatements()) {
          PolicyMap map = c.getPolicyMaps().get(mapName);
          newProcess.getOutboundPolicyMaps().add(map);
       }
 
-      Map<Long, OspfArea> areas = newProcess.getAreas();
-      List<OSPFNetwork> networks = proc.getNetworks();
-      if (networks.get(0).getInterface() == null) {
+      HashMap<Integer, OspfArea> areas = newProcess.getAreas();
+      List<OSPFNetwork> networks = proc.get_networks();
+      if (networks.get(0).get_interface() == null) {
 
          Collections.sort(networks, new Comparator<OSPFNetwork>() {
             // sort so longest prefixes are first
             @Override
             public int compare(OSPFNetwork lhs, OSPFNetwork rhs) {
-               int lhsPrefixLength = Util.numSubnetBits(lhs.getSubnetMask());
-               int rhsPrefixLength = Util.numSubnetBits(rhs.getSubnetMask());
+               int lhsPrefixLength = Util.numSubnetBits(lhs.get_subnetMask());
+               int rhsPrefixLength = Util.numSubnetBits(rhs.get_subnetMask());
                int result = -Integer.compare(lhsPrefixLength, rhsPrefixLength);
                if (result == 0) {
-                  long lhsIp = Util.ipToLong(lhs.getNetworkAddress());
-                  long rhsIp = Util.ipToLong(rhs.getNetworkAddress());
+                  long lhsIp = Util.ipToLong(lhs.get_networkAddress());
+                  long rhsIp = Util.ipToLong(rhs.get_networkAddress());
                   result = Long.compare(lhsIp, rhsIp);
                }
                return result;
@@ -222,10 +546,10 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
                continue;
             }
             for (OSPFNetwork network : networks) {
-               Ip networkIp = new Ip(network.getNetworkAddress());
+               Ip networkIp = new Ip(network.get_networkAddress());
                if (interfaceIp.asLong() == networkIp.asLong()) {
                   // we have a longest prefix match
-                  long areaNum = network.getArea();
+                  int areaNum = network.get_areaNum();
                   OspfArea newArea = areas.get(areaNum);
                   if (newArea == null) {
                      newArea = new OspfArea(areaNum);
@@ -239,18 +563,17 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       }
       else {
          for (batfish.representation.Interface i : c.getInterfaces().values()) {
-            // System.out.println("name : "+i.getName());
             Ip interfaceIp = i.getIP();
             if (interfaceIp == null) {
                continue;
             }
-            for (OSPFNetwork network : networks) {
-               if (network.getInterface() == null) {
+            for (OSPFNetwork n : networks) {
+               if (n.get_interface() == null) {
                   throw new Error("Inconsistent implementation of OSPF Network");
                }
-               if (i.getName().equals(network.getInterface())) {
+               if (i.getName().equals(n.get_interface())) {
                   // System.out.println("match : "+i.getName());
-                  long areaNum = network.getArea();
+                  int areaNum = n.get_areaNum();
                   OspfArea newArea = areas.get(areaNum);
                   if (newArea == null) {
                      newArea = new OspfArea(areaNum);
@@ -263,253 +586,24 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
          }
       }
 
-      newProcess.setRouterId(proc.getRouterId());
-      newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
+      newProcess.setRouterId(proc.get_routerId());
+      newProcess.setReferenceBandwidth(proc.get_referenceBandwidth());
 
       return newProcess;
    }
-
-   private static PolicyMap toPolicyMap(final Configuration c,
-         PolicyStatement map) {
-      List<PolicyMapClause> clauses = new ArrayList<PolicyMapClause>();
-      for (PolicyStatementClause rmClause : map.getClauseList()) {
-         clauses.add(toPolicyMapClause(c, rmClause));
-      }
-      return new PolicyMap(map.getMapName(), clauses);
+   
+   /* ------------------------------------- OSPF Getters/Setters ------------------------------------ */
+   public List<OSPFProcess> getOSPFProcesses() {
+      return _ospfProcesses;
+   }
+   
+      public void addOSPFProcess(OSPFProcess process) {
+      _ospfProcesses.add(process);
    }
 
-   private static PolicyMapClause toPolicyMapClause(final Configuration c,
-         PolicyStatementClause clause) {
-      Set<PolicyMapMatchLine> matchLines = new LinkedHashSet<PolicyMapMatchLine>();
-      for (PolicyStatementMatchLine fromLine : clause.getMatchList()) {
-         matchLines.add(toPolicyMapMatchLine(c, fromLine));
-      }
-      Set<PolicyMapSetLine> setLines = new LinkedHashSet<PolicyMapSetLine>();
-      for (PolicyStatementSetLine fromLine : clause.getSetList()) {
-         setLines.add(toPolicyMapSetLine(c, fromLine));
-      }
-      return new PolicyMapClause(PolicyMapAction.fromLineAction(clause
-            .getAction()), Integer.toString(clause.getSeqNum()), matchLines,
-            setLines);
-   }
-
-   private static PolicyMapMatchLine toPolicyMapMatchLine(
-         final Configuration c, PolicyStatementMatchLine matchLine) {
-      PolicyMapMatchLine newLine = null;
-      switch (matchLine.getType()) {
-      case AS_PATH_ACCESS_LIST:
-         PolicyStatementMatchAsPathAccessListLine pathLine = (PolicyStatementMatchAsPathAccessListLine) matchLine;
-         Set<AsPathAccessList> newAsPathMatchSet = new LinkedHashSet<AsPathAccessList>();
-         // multiple list names not supported yet
-         // for (String pathListName : pathLine.getListNames()) {
-         // AsPathAccessList list = c.getAsPathAccessLists().get(pathListName);
-         // newAsPathMatchSet.add(list);
-         // }
-         String pathListName = pathLine.getListName();
-         AsPathAccessList aslist = c.getAsPathAccessLists().get(pathListName);
-         if (aslist == null) {
-            throw new Error("null list");
-         }
-         newAsPathMatchSet.add(aslist);
-         newLine = new PolicyMapMatchAsPathAccessListLine(newAsPathMatchSet);
-         break;
-
-      case COMMUNITY_LIST:
-         PolicyStatementMatchCommunityListLine communityLine = (PolicyStatementMatchCommunityListLine) matchLine;
-         Set<CommunityList> newCommunityMatchSet = new LinkedHashSet<CommunityList>();
-         // multiple list names not supported yet
-         // for (String listName : communityLine.getListNames()) {
-         // CommunityList list = c.getCommunityLists().get(listName);
-         // newCommunityMatchSet.add(list);
-         // }
-         String clistName = communityLine.getListName();
-         CommunityList clist = c.getCommunityLists().get(clistName);
-         if (clist == null) {
-            throw new Error("no such community list");
-         }
-         newCommunityMatchSet.add(clist);
-         newLine = new PolicyMapMatchCommunityListLine(newCommunityMatchSet);
-         break;
-
-      case IP_ACCESS_LIST:
-         PolicyStatementMatchIpAccessListLine accessLine = (PolicyStatementMatchIpAccessListLine) matchLine;
-         Set<IpAccessList> newIpAccessMatchSet = new LinkedHashSet<IpAccessList>();
-         for (String iplistName : accessLine.getListNames()) {
-            IpAccessList list = c.getIpAccessLists().get(iplistName);
-            newIpAccessMatchSet.add(list);
-         }
-         newLine = new PolicyMapMatchIpAccessListLine(newIpAccessMatchSet);
-         break;
-
-      case ROUTE_FILTER:
-         PolicyStatementMatchIpPrefixListLine prefixLine = (PolicyStatementMatchIpPrefixListLine) matchLine;
-         Set<RouteFilterList> newRouteFilterMatchSet = new LinkedHashSet<RouteFilterList>();
-         for (String prefixListName : prefixLine.getListNames()) {
-            RouteFilterList list = c.getRouteFilterLists().get(prefixListName);
-            if (list == null) {
-               // System.out.println("null for route filter: " +
-               // prefixListName);
-               // TODO : deal with ip v6 route filter
-            }
-            else {
-               newRouteFilterMatchSet.add(list);
-            }
-         }
-         newLine = new PolicyMapMatchRouteFilterListLine(newRouteFilterMatchSet);
-         break;
-
-      case NEIGHBOR:
-         PolicyStatementMatchNeighborLine neighborLine = (PolicyStatementMatchNeighborLine) matchLine;
-         newLine = new batfish.representation.PolicyMapMatchNeighborLine(
-               new Ip(neighborLine.getNeighborIp()));
-         // TODO: implement
-         break;
-
-      case PROTOCOL:
-         PolicyStatementMatchProtocolLine protocolLine = (PolicyStatementMatchProtocolLine) matchLine;
-         List<batfish.representation.Protocol> newProtocolList = new ArrayList<batfish.representation.Protocol>();
-         for (String protocol : protocolLine.getProtocl()) {
-            switch (protocol) {
-            case "ospf":
-               newProtocolList.add(batfish.representation.Protocol.OSPF);
-               break;
-            case "bgp":
-               newProtocolList.add(batfish.representation.Protocol.BGP);
-               break;
-            case "static":
-               newProtocolList.add(batfish.representation.Protocol.STATIC);
-               break;
-            case "direct":
-               newProtocolList.add(batfish.representation.Protocol.CONNECTED);
-               break;
-            case "aggregate":
-               newProtocolList.add(batfish.representation.Protocol.AGGREGATE);
-               break;
-            default:
-               break;
-
-            }
-         }
-         newLine = new batfish.representation.PolicyMapMatchProtocolLine(
-               newProtocolList);
-         // TODO: implement
-         break;
-
-      default:
-         throw new Error("bad type");
-      }
-      return newLine;
-   }
-
-   private static PolicyMapSetLine toPolicyMapSetLine(Configuration c,
-         PolicyStatementSetLine setLine) {
-      PolicyMapSetLine newLine = null;
-      switch (setLine.getSetType()) {
-      case ADDITIVE_COMMUNITY:
-         PolicyStatementSetAdditiveCommunityLine acLine = (PolicyStatementSetAdditiveCommunityLine) setLine;
-         List<Long> addComList = new ArrayList<Long>();
-         List<CommunityListLine> aLineList = c.getCommunityLists()
-               .get(acLine.getCommunities()).getLines();
-         for (CommunityListLine cll : aLineList) {
-            String[] temp = cll.getRegex().split(":");
-            long part1l = Long.parseLong(temp[0]);
-            long part2l = Long.parseLong(temp[1]);
-            long l = (part1l << 16) + part2l;
-            addComList.add(l);
-         }
-         newLine = new PolicyMapSetAddCommunityLine(addComList);
-         break;
-
-      case COMMUNITY:
-         PolicyStatementSetCommunityLine scLine = (PolicyStatementSetCommunityLine) setLine;
-         List<Long> comList = new ArrayList<Long>();
-         List<CommunityListLine> lineList = c.getCommunityLists()
-               .get(scLine.getCommunities()).getLines();
-         for (CommunityListLine cll : lineList) {
-            String[] temp = cll.getRegex().split(":");
-            long part1l = Long.parseLong(temp[0]);
-            long part2l = Long.parseLong(temp[1]);
-            long l = (part1l << 16) + part2l;
-            comList.add(l);
-         }
-         // newLine = new PolicyMapSetAddCommunityLine(comList);
-         newLine = new PolicyMapSetCommunityLine(comList);
-         break;
-
-      case DELETE_COMMUNITY:
-         PolicyStatementSetDeleteCommunityLine dcLine = (PolicyStatementSetDeleteCommunityLine) setLine;
-         CommunityList dcList = c.getCommunityLists().get(dcLine.getListName());
-         newLine = new PolicyMapSetDeleteCommunityLine(dcList);
-         break;
-
-      case LOCAL_PREFERENCE:
-         PolicyStatementSetLocalPreferenceLine slpLine = (PolicyStatementSetLocalPreferenceLine) setLine;
-         newLine = new PolicyMapSetLocalPreferenceLine(
-               slpLine.getLocalPreference());
-         break;
-
-      case METRIC:
-         PolicyStatementSetMetricLine smLine = (PolicyStatementSetMetricLine) setLine;
-         newLine = new PolicyMapSetMetricLine(smLine.getMetric());
-         break;
-
-      case NEXT_HOP:
-         PolicyStatementSetNextHopLine snhLine = (PolicyStatementSetNextHopLine) setLine;
-         List<String> nextHops = snhLine.getNextHops();
-         List<Ip> nextHopsAsIps = new ArrayList<Ip>();
-         for (String nextHop : nextHops) {
-            nextHopsAsIps.add(new Ip(nextHop));
-         }
-         newLine = new PolicyMapSetNextHopLine(nextHopsAsIps);
-         break;
-
-      default:
-         throw new Error("bad type");
-      }
-      return newLine;
-   }
-
-   public static batfish.representation.RouteFilterList toRouteFilterList(
-         RouteFilter routeFilter) {
-      RouteFilterList newRouteFilterList = new RouteFilterList(
-            routeFilter.getName());
-      for (RouteFilterLine rfLine : routeFilter.getLines()) {
-         batfish.representation.RouteFilterLine newRouteFilterListLine = null;
-         switch (rfLine.getType()) {
-         case SUBRANGE:
-            RouteFilterSubRangeLine rfSubRangeLine = (RouteFilterSubRangeLine) rfLine;
-            newRouteFilterListLine = new batfish.representation.RouteFilterLengthRangeLine(
-                  LineAction.ACCEPT, new Ip(rfSubRangeLine.getPrefix()),
-                  rfSubRangeLine.getPrefixLength(),
-                  rfSubRangeLine.getLengthRange());
-            newRouteFilterList.addLine(newRouteFilterListLine);
-            break;
-
-         case THROUGH:
-            RouteFilterThroughLine rfThroughLine = (RouteFilterThroughLine) rfLine;
-            // System.out.println(rfThroughLine.getPrefix() + " "
-            // + rfThroughLine.getPrefixLength() + " "
-            // + rfThroughLine.getSecondPrefix() + " "
-            // + rfThroughLine.getSecondPrefixLength());
-            newRouteFilterListLine = new batfish.representation.RouteFilterThroughLine(
-                  LineAction.ACCEPT, new Ip(rfThroughLine.getPrefix()),
-                  rfThroughLine.getPrefixLength(), new Ip(
-                        rfThroughLine.getSecondPrefix()),
-                  rfThroughLine.getSecondPrefixLength());
-            newRouteFilterList.addLine(newRouteFilterListLine);
-            break;
-
-         default:
-            break;
-
-         }
-      }
-      return newRouteFilterList;
-
-   }
-
-   public static batfish.representation.StaticRoute toStateRoute(
-         final Configuration c, StaticRoute staticRoute) {
+   /* ---------------------------------- Routing Options Constructs --------------------------------- */
+ 
+   public static batfish.representation.StaticRoute toStateRoute(final Configuration c, StaticRoute staticRoute) {
       String nextHopIpStr = staticRoute.getNextHopIp();
       Ip nextHopIp = null;
       if (nextHopIpStr != null) {
@@ -519,249 +613,43 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       String nextHopInterface = staticRoute.getNextHopInterface();
       int prefixLength = Util.numSubnetBits(staticRoute.getMask());
       return new batfish.representation.StaticRoute(prefix, prefixLength,
-            nextHopIp, nextHopInterface, staticRoute.getDistance(), staticRoute.getTag());
+            nextHopIp, nextHopInterface, staticRoute.getDistance());
    }
 
-   private int _asNum;
+   /* ------------------------------- Routing Options Getters/Setters ------------------------------- */
+   public void addStaticRoutes(Map<String, List<StaticOptions>> staticRoutes) {
+	   _staticRoutes.putAll(staticRoutes);
+	}
+   
 
-   private Map<String, ASPathAccessList> _asPathAccessLists;
-
-   private List<BGPProcess> _bgpProcesses;
-
-   private List<String> _conversionWarnings;
-
-   private Map<String, ExpandedCommunityList> _expandedCommunityLists;
-
-   private Map<String, ExtendedAccessList> _extendedAccessLists;
-
-   private List<GenerateRoute> _generateRoutes;
-
-   private String _hostname;
-
-   private List<Interface> _interfaces;
-
-   private List<OSPFProcess> _ospfProcesses;
-
-   private Map<String, PolicyStatement> _policyStatements;
-
-   private Map<String, RouteFilter> _routeFilters;
-
-   private List<StaticRoute> _staticRoutes;
-
-   public JuniperVendorConfiguration() {
-      _asPathAccessLists = new HashMap<String, ASPathAccessList>();
-      _bgpProcesses = new ArrayList<BGPProcess>();
-      _conversionWarnings = new ArrayList<String>();
-      _expandedCommunityLists = new HashMap<String, ExpandedCommunityList>();
-      _extendedAccessLists = new HashMap<String, ExtendedAccessList>();
-      _generateRoutes = new ArrayList<GenerateRoute>();
-      _interfaces = new ArrayList<Interface>();
-      _ospfProcesses = new ArrayList<OSPFProcess>();
-      _policyStatements = new HashMap<String, PolicyStatement>();
-      _routeFilters = new HashMap<String, RouteFilter>();
-      _staticRoutes = new ArrayList<StaticRoute>();
-
-   }
-
-   public void addAsPathAccessLists(List<ASPathAccessList> lists) {
-      for (ASPathAccessList apl : lists) {
-         ASPathAccessList l = _asPathAccessLists.get(apl.getName());
-         if (l == null) {
-            _asPathAccessLists.put(apl.getName(), apl);
-         }
-         else {
-            throw new Error("duplicate as path lists");
-         }
+   /* ------------------------------------- Interfaces Constructs ----------------------------------- */
+  private static batfish.representation.Interface toInterface(Interface iface, int as) {
+      batfish.representation.Interface newIface = new batfish.representation.Interface(iface.get_name());
+      newIface.setAccessVlan(iface.get_accessVlan());
+      newIface.setActive(iface.get_active());
+      // no individual ospf area in interface
+      newIface.setArea(as);
+      newIface.setBandwidth(iface.get_bandwidth());
+      if (iface.get_ip() != "") {
+         newIface.setIP(new Ip(iface.get_ip()));
+         newIface.setSubnetMask(new Ip(iface.get_subnet()));
       }
-
+      newIface.setNativeVlan(iface.get_nativeVlan());
+      newIface.setOspfCost(iface.get_ospfCost());
+      newIface.setOspfDeadInterval(iface.get_ospfDeadInterval());
+      newIface.setOspfHelloMultiplier(iface.get_ospfHelloMultiplier());
+      newIface.setSwitchportTrunkEncapsulation(iface.get_switchportTrunkEncapsulation());
+      return newIface;
    }
-
-   public void addBGPProcess(BGPProcess process) {
-      _bgpProcesses.add(process);
-   }
-
-   public void addExpandedCommunityListLine(String name,
-         ExpandedCommunityListLine line) {
-      ExpandedCommunityList cl = _expandedCommunityLists.get(name);
-      if (cl == null) {
-         cl = new ExpandedCommunityList(name);
-         _expandedCommunityLists.put(name, cl);
-      }
-      cl.addLine(line);
-   }
-
-   public void addExpandedCommunityLists(List<ExpandedCommunityList> lists) {
-      for (ExpandedCommunityList ecl : lists) {
-         ExpandedCommunityList cl = _expandedCommunityLists.get(ecl.getName());
-         if (cl == null) {
-            _expandedCommunityLists.put(ecl.getName(), ecl);
-         }
-         else {
-            throw new Error("duplicate community lists");
-         }
-
-      }
-   }
-
-   public void addExtendedAccessList(ExtendedAccessList eal) {
-      if (_extendedAccessLists.containsKey(eal.getId())) {
-         throw new Error("duplicate extended access list name");
-      }
-      _extendedAccessLists.put(eal.getId(), eal);
-   }
-
-   public void addExtendedAccessListLine(String id, ExtendedAccessListLine eall) {
-      if (!_extendedAccessLists.containsKey(id)) {
-         _extendedAccessLists.put(id, new ExtendedAccessList(id));
-      }
-      _extendedAccessLists.get(id).addLine(eall);
-   }
-
-   public void addGenerateRoute(GenerateRoute gr) {
-      _generateRoutes.add(gr);
-   }
-
-   public void addGenerateRoutes(List<GenerateRoute> gr) {
-      _generateRoutes.addAll(gr);
-   }
-
-   public void addInterface(Interface interface1) {
-      _interfaces.add(interface1);
-   }
-
-   public void addOSPFProcess(OSPFProcess process) {
-      _ospfProcesses.add(process);
-   }
-
-   public void addPolicyStatementClause(PolicyStatementClause clause) {
-      if (_policyStatements.containsKey(clause.getMapName())) {
-         PolicyStatement ps = _policyStatements.get(clause.getMapName());
-         ps.addClause(clause);
-      }
-      else {
-         PolicyStatement ps = new PolicyStatement(clause.getMapName());
-         ps.addClause(clause);
-         _policyStatements.put(ps.getMapName(), ps);
-      }
-
-   }
-
-   public void addPolicyStatements(List<PolicyStatement> ml) {
-      for (PolicyStatement ps : ml) {
-         _policyStatements.put(ps.getMapName(), ps);
-      }
-   }
-
-   public void addRouteFilters(List<RouteFilter> fl) {
-      for (RouteFilter rf : fl) {
-         _routeFilters.put(rf.getName(), rf);
-      }
-   }
-
-   public void addStaticRoute(StaticRoute staticRoute) {
-      _staticRoutes.add(staticRoute);
-   }
-
-   public void addStaticRoutes(List<StaticRoute> staticRoutes) {
-      _staticRoutes.addAll(staticRoutes);
-   }
-
-   public int getASNum() {
-      return _asNum;
-   }
-
-   public List<BGPProcess> getBGPProcesses() {
-      return _bgpProcesses;
+   
+   /* ---------------------------------- Interfaces Getters/Setters --------------------------------- */
+   public List<Interface> getInterfaces() {
+      return _interfaces;
    }
 
    @Override
    public List<String> getConversionWarnings() {
       return _conversionWarnings;
-   }
-
-   public Map<String, ExtendedAccessList> getExtendedAccessLists() {
-      return _extendedAccessLists;
-   }
-
-   public List<GenerateRoute> getGenerateRoutes() {
-      return _generateRoutes;
-   }
-
-   public String getHostname() {
-      return _hostname;
-   }
-
-   public List<Interface> getInterfaces() {
-      return _interfaces;
-   }
-
-   public List<OSPFProcess> getOSPFProcesses() {
-      return _ospfProcesses;
-   }
-
-   public Map<String, PolicyStatement> getPolicyStatements() {
-      return _policyStatements;
-   }
-
-   public Map<String, RouteFilter> getRouteFilter() {
-      return _routeFilters;
-   }
-
-   public List<StaticRoute> getStaticRoutes() {
-      return _staticRoutes;
-   }
-
-   public void setASNum(int as) {
-      _asNum = as;
-   }
-
-   public void setHostname(String hostname) {
-      _hostname = hostname;
-   }
-
-   private batfish.representation.Interface toInterface(Interface iface,
-         int as, Map<String, IpAccessList> ipAccessLists) {
-      // System.out.println("Converting Interface: " + iface.getName());
-      batfish.representation.Interface newIface = new batfish.representation.Interface(
-            iface.getName());
-      newIface.setAccessVlan(iface.getAccessVlan());
-      newIface.setActive(iface.getActive());
-      // no individual ospf area in interface
-      newIface.setArea(as);
-      newIface.setBandwidth(iface.getBandwidth());
-      // System.out.println("Ip: "+iface.getIP());
-      if (!iface.getIP().equals("")) {
-         newIface.setIP(new Ip(iface.getIP()));
-         newIface.setSubnetMask(new Ip(iface.getSubnetMask()));
-      }
-      newIface.setNativeVlan(iface.getNativeVlan());
-      newIface.setOspfCost(iface.getOspfCost());
-      newIface.setOspfDeadInterval(iface.getOSPFDeadInterval());
-      newIface.setOspfHelloMultiplier(iface.getOSPFHelloMultiplier());
-      newIface.setSwitchportMode(iface.getSwitchportMode());
-      newIface.setSwitchportTrunkEncapsulation(iface
-            .getSwitchportTrunkEncapsulation());
-      String incomingFilterName = iface.getIncomingFilter();
-      if (incomingFilterName != null) {
-         IpAccessList incomingFilter = ipAccessLists.get(incomingFilterName);
-         if (incomingFilter == null) {
-            _conversionWarnings.add("Interface: '" + iface.getName()
-                  + "' configured with non-existent incoming acl '"
-                  + incomingFilterName + "'");
-         }
-         newIface.setIncomingFilter(incomingFilter);
-      }
-      String outgoingFilterName = iface.getOutgoingFilter();
-      if (outgoingFilterName != null) {
-         IpAccessList outgoingFilter = ipAccessLists.get(outgoingFilterName);
-         if (outgoingFilter == null) {
-            _conversionWarnings.add("Interface: '" + iface.getName()
-                  + "' configured with non-existent outgoing acl '"
-                  + outgoingFilterName + "'");
-         }
-         newIface.setOutgoingFilter(outgoingFilter);
-      }
-      return newIface;
    }
 
    @Override
@@ -774,37 +662,21 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
          AsPathAccessList apList = toAsPathAccessList(pathList);
          c.getAsPathAccessLists().put(apList.getName(), apList);
       }
-
-      // convert expanded community lists to community lists
-      for (ExpandedCommunityList ecl : _expandedCommunityLists.values()) {
+      
+      // convert community lists to vendor independent format
+      for (CommunityMemberList ecl : _communities.values()) {
          batfish.representation.CommunityList newCommunityList = toCommunityList(ecl);
-         c.getCommunityLists()
-               .put(newCommunityList.getName(), newCommunityList);
+         c.getCommunityLists().put(newCommunityList.getName(), newCommunityList);
       }
-
-      // convert route filters to route filter lists
-      for (RouteFilter rf : _routeFilters.values()) {
-         RouteFilterList newRouteFilterList = toRouteFilterList(rf);
-         c.getRouteFilterLists().put(newRouteFilterList.getName(),
-               newRouteFilterList);
-      }
+      
+      // TODO [Ask Ari]: Convert Prefix Lists
 
       // convert policy statements to policy maps
       for (PolicyStatement ps : _policyStatements.values()) {
-         // TODO: fix this UCLA specific code
-         if (ps.getMapName().toLowerCase().endsWith("ipv6")) {
-            continue;
-         }
          batfish.representation.PolicyMap newPolicyMap = toPolicyMap(c, ps);
          c.getPolicyMaps().put(newPolicyMap.getMapName(), newPolicyMap);
       }
-
-      // convert extended access lists to access lists
-      for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
-         IpAccessList ipaList = toIpAccessList(eaList);
-         c.getIpAccessLists().put(ipaList.getName(), ipaList);
-      }
-
+      
       // convert bgp process
       for (BGPProcess b : _bgpProcesses) {
          batfish.representation.BgpProcess newBGP = toBgpProcess(c, b, _asNum);
@@ -813,17 +685,10 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
 
       // convert interfaces
       for (Interface iface : _interfaces) {
-         batfish.representation.Interface newInterface = toInterface(iface,
-               _asNum, c.getIpAccessLists());
+         batfish.representation.Interface newInterface = toInterface(iface, _asNum);
          c.getInterfaces().put(newInterface.getName(), newInterface);
       }
-
-      // convert generate routes
-      for (GenerateRoute gr : _generateRoutes) {
-         GeneratedRoute newGeneratedRoute = toGeneratedRoute(c, gr);
-         c.getGeneratedRoutes().add(newGeneratedRoute);
-      }
-
+      
       // convert ospf
       for (OSPFProcess o : _ospfProcesses) {
          batfish.representation.OspfProcess newOSPF = toOSPFProcess(c, o);
@@ -831,39 +696,172 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       }
 
       // convert static routes
-      for (StaticRoute staticRoute : _staticRoutes) {
+      //TODO: THIS NEEDS TO BE FIXED!
+/*      for (StaticRoute staticRoute : _staticRoutes) {
          c.getStaticRoutes().add(toStateRoute(c, staticRoute));
       }
-
-      // get all set and added communities
-      for (PolicyMap map : c.getPolicyMaps().values()) {
-         for (PolicyMapClause clause : map.getClauses()) {
-            for (PolicyMapSetLine setLine : clause.getSetLines()) {
-               switch (setLine.getType()) {
-               case ADDITIVE_COMMUNITY:
-                  PolicyMapSetAddCommunityLine sacLine = (PolicyMapSetAddCommunityLine) setLine;
-                  c.getCommunities().addAll(sacLine.getCommunities());
-                  break;
-               case COMMUNITY:
-                  PolicyMapSetCommunityLine scLine = (PolicyMapSetCommunityLine) setLine;
-                  c.getCommunities().addAll(scLine.getCommunities());
-                  break;
-               case AS_PATH_PREPEND:
-               case COMMUNITY_NONE:
-               case DELETE_COMMUNITY:
-               case LOCAL_PREFERENCE:
-               case METRIC:
-               case NEXT_HOP:
-               case ORIGIN_TYPE:
-                  break;
-               default:
-                  throw new Error("bad set type");
-               }
-            }
-         }
+*/      
+      /*
+      // convert route filters to route filter lists
+      for (RouteFilter rf : _routeFilters.values()) {
+         RouteFilterList newRouteFilterList = toRouteFilterList(rf);
+         c.getRouteFilterLists().put(newRouteFilterList.getName(),
+               newRouteFilterList);
       }
 
+      // convert extended access lists to access lists
+      for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
+         IpAccessList ipaList = toIpAccessList(eaList);
+         c.getIpAccessLists().put(ipaList.getName(), ipaList);
+      }
+
+      // convert generate routes
+      for (GenerateRoute gr : _generateRoutes) {
+         GeneratedRoute newGeneratedRoute = toGeneratedRoute(c, gr);
+         c.getGeneratedRoutes().add(newGeneratedRoute);
+      }
+       */
       return c;
    }
 
 }
+
+/*   public static batfish.representation.RouteFilterList toRouteFilterList(
+RouteFilter routeFilter) {
+RouteFilterList newRouteFilterList = new RouteFilterList(
+   routeFilter.getName());
+for (RouteFilterLine rfLine : routeFilter.getLines()) {
+batfish.representation.RouteFilterLine newRouteFilterListLine = null;
+switch (rfLine.getType()) {
+case SUBRANGE:
+   RouteFilterSubRangeLine rfSubRangeLine = (RouteFilterSubRangeLine) rfLine;
+   newRouteFilterListLine = new batfish.representation.RouteFilterLengthRangeLine(
+         LineAction.ACCEPT, new Ip(rfSubRangeLine.getPrefix()),
+         rfSubRangeLine.getPrefixLength(),
+         rfSubRangeLine.getLengthRange());
+   newRouteFilterList.addLine(newRouteFilterListLine);
+   break;
+
+case THROUGH:
+   RouteFilterThroughLine rfThroughLine = (RouteFilterThroughLine) rfLine;
+   // System.out.println(rfThroughLine.getPrefix() + " "
+   // + rfThroughLine.getPrefixLength() + " "
+   // + rfThroughLine.getSecondPrefix() + " "prefixLists
+   // + rfThroughLine.getSecondPrefixLength());
+   newRouteFilterListLine = new batfish.representation.RouteFilterThroughLine(
+         LineAction.ACCEPT, new Ip(rfThroughLine.getPrefix()),
+         rfThroughLine.getPrefixLength(), new Ip(
+               rfThroughLine.getSecondPrefix()),
+         rfThroughLine.getSecondPrefixLength());
+   newRouteFilterList.addLine(newRouteFilterListLine);
+   break;
+
+default:
+   break;
+
+}
+}
+return newRouteFilterList;
+
+}
+public void addRouteFilters(List<RouteFilter> fl) {
+for (RouteFilter rf : fl) {
+_routeFilters.put(rf.getName(), rf);
+}
+}
+public Map<String, RouteFilter> getRouteFilter() {
+return _routeFilters;
+}
+*/
+
+/*
+ * private static GeneratedRoute toGeneratedRoute(final Configuration c,
+      GenerateRoute gr) {
+   Set<batfish.representation.PolicyMap> newGenerationPolicies = new LinkedHashSet<batfish.representation.PolicyMap>();
+   batfish.representation.PolicyMap GenerationPolicy = c
+         .getPolicyMaps().get(gr.getPolicy());
+   if (GenerationPolicy != null) {
+      newGenerationPolicies.add(GenerationPolicy);
+   }
+   else {
+      throw new Error("generation policy not existed");
+   }
+   GeneratedRoute newGeneratedRoute = new GeneratedRoute(new Ip(
+         gr.getPrefix()), gr.getPrefixLength(), gr.getPreference(),
+         newGenerationPolicies);
+   return newGeneratedRoute;
+}
+ */
+
+/*
+ *  public void addGenerateRoute(GenerateRoute gr) {
+   _generateRoutes.add(gr);
+}
+
+public void addGenerateRoutes(List<GenerateRoute> gr) {
+   _generateRoutes.addAll(gr);
+}
+public void addStaticRoute(StaticRoute staticRoute) {
+   _staticRoutes.add(staticRoute);
+}
+
+
+public List<GenerateRoute> getGenerateRoutes() {
+   return _generateRoutes;
+}
+
+public List<StaticRoute> getStaticRoutes() {
+   return _staticRoutes;
+}
+*/
+  /*
+public void addInterface(Interface interface1) {
+   _interfaces.add(interface1);
+}
+ */
+
+/*
+ *    private static IpAccessList toIpAccessList(ExtendedAccessList eaList) {
+   String name = eaList.getId();
+   List<IpAccessListLine> lines = new ArrayList<IpAccessListLine>();
+   for (ExtendedAccessListLine fromLine : eaList.getLines()) {
+      lines.add(new IpAccessListLine(fromLine.getLineAction(), fromLine
+            .getProtocol(), new Ip(fromLine.getSourceIP()), new Ip(fromLine
+            .getSourceWildcard()), new Ip(fromLine.getDestinationIP()),
+            new Ip(fromLine.getDestinationWildcard()), fromLine
+                  .getSrcPortRanges(), fromLine.getDstPortRanges()));
+   }
+   return new IpAccessList(name, lines);
+}
+
+   public void setASNum(int as) {
+   _asNum = as;
+}
+
+
+
+   public int getASNum() {
+   return _asNum;
+}   
+
+public String getHostname() {
+   return _hostname;
+}
+
+   public void addExtendedAccessList(ExtendedAccessList eal) {
+   if (_extendedAccessLists.containsKey(eal.getId())) {
+      throw new Error("duplicate extended access list name");
+   }
+   _extendedAccessLists.put(eal.getId(), eal);
+}
+
+public void addExtendedAccessListLine(String id, ExtendedAccessListLine eall) {
+   if (!_extendedAccessLists.containsKey(id)) {
+      _extendedAccessLists.put(id, new ExtendedAccessList(id));
+   }
+   _extendedAccessLists.get(id).addLine(eall);
+}
+public Map<String, ExtendedAccessList> getExtendedAccessLists() {
+   return _extendedAccessLists;
+}
+ */

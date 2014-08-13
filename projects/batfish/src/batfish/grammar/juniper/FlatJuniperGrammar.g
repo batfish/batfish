@@ -3,7 +3,6 @@ grammar FlatJuniperGrammar;
 options {
   superClass = ConfigurationParser;
 }
-import FlatJuniperGrammar_firewall, FlatJuniperGrammar_interface, FlatJuniperGrammar_routing_options, FlatJuniperGrammar_ospf, FlatJuniperGrammar_policy_options, FlatJuniperGrammar_bgp;
 
 
 tokens {
@@ -151,13 +150,6 @@ package batfish.grammar.juniper;
 
 import batfish.grammar.ConfigurationParser;
 
-import batfish.grammar.juniper.bgp.*;
-import batfish.grammar.juniper.interfaces.*;
-import batfish.grammar.juniper.ospf.*;
-import batfish.grammar.juniper.policy_options.*;
-import batfish.grammar.juniper.routing_options.*;
-import batfish.grammar.juniper.firewall.*;
-
 import batfish.representation.VendorConfiguration;
 import batfish.representation.SwitchportMode;
 
@@ -184,12 +176,6 @@ public void displayRecognitionError(String[] tokenNames, RecognitionException e)
 public List<String> getErrors() {
 	List<String> allErrors = new ArrayList<String>();
 	allErrors.addAll(errors);
-	allErrors.addAll(gFlatJuniperGrammar_bgp.getErrors());
-	allErrors.addAll(gFlatJuniperGrammar_interface.getErrors());
-	allErrors.addAll(gFlatJuniperGrammar_ospf.getErrors());
-	allErrors.addAll(gFlatJuniperGrammar_policy_options.getErrors());
-	allErrors.addAll(gFlatJuniperGrammar_routing_options.getErrors());
-	allErrors.addAll(gFlatJuniperGrammar_firewall.getErrors());
 	return allErrors;
 }
 
@@ -210,255 +196,21 @@ juniper_configuration returns [FlatJuniperConfiguration fjc = new FlatJuniperCon
 
 j_stanza_list returns [List<JStanza> jslist = new ArrayList<JStanza>()]
   :
-  (x=j_stanza 
-             {
-              jslist.add(x);
-             })+
+  (x=j_stanza {jslist.add(x);})+
   ;
 
-j_stanza returns [JStanza js]
+j_stanza returns [JStanza js = new NullJStanza("flat")]
   :
   (
     SET
     (
-      x=firewall_stanza
-      | x=interfaces_stanza
-      | x=null_stanza
-      | x=policy_options_stanza
-      | x=protocols_stanza
-      | x=routing_options_stanza
-      | x=system_stanza
+      ~NEWLINE* NEWLINE
     )
   )
-  
-  {
-   js = x;
-  }
   ;
 
-authentication_order_sys_stanza
-  :
-  AUTHENTICATION_ORDER ~NEWLINE* NEWLINE
-  ;
 
-bridge_domains_stanza
-  :
-  BRIDGE_DOMAINS ~NEWLINE* NEWLINE
-  ;
-
-chassis_stanza
-  :
-  CHASSIS ~NEWLINE* NEWLINE
-  ;
-
-domain_name_sys_stanza
-  :
-  DOMAIN_NAME ~NEWLINE* NEWLINE
-  ;
-
-double_num returns [double i]
-  :
-  (
-    x=DEC
-    | x=HEX
-  )
-  
-  {
-   i = Double.parseDouble(x.getText());
-  }
-  ;
-
-forwarding_options_stanza
-  :
-  FORWARDING_OPTIONS ~NEWLINE+ NEWLINE
-  ;
-
-host_name_sys_stanza returns [SysStanza ss]
-  :
-  (HOST_NAME name=VARIABLE NEWLINE) 
-                                   {
-                                    ss = new HostNameSysStanza(name.getText());
-                                   }
-  ;
-
-integer returns [int i]
-  :
-  (
-    x=DEC
-    | x=HEX
-  )
-  
-  {
-   i = Integer.parseInt(x.getText());
-  }
-  ;
-
-lldp_p_stanza
-  :
-  (LLDP ~NEWLINE* NEWLINE)
-  ;
-
-login_sys_server
-  :
-  LOGIN ~NEWLINE* NEWLINE
-  ;
-
-name_server_sys_stanza
-  :
-  NAME_SERVER ~NEWLINE* NEWLINE
-  ;
-
-ntp_sys_stanza
-  :
-  NTP ~NEWLINE* NEWLINE
-  ;
-
-null_stanza returns [JStanza js = new NullJStanza()]
-  :
-  (
-    bridge_domains_stanza
-    | chassis_stanza
-    | forwarding_options_stanza
-    | services_stanza
-    | snmp_stanza
-    | version_stanza
-  )
-  ;
-
-null_p_stanza returns [PStanza ps = new NullPStanza()]
-  :
-  lldp_p_stanza
-  | ospf3_p_stanza
-  | router_advertisement_p_stanza
-  | vstp_p_stanza
-  ;
-
-null_sys_stanza returns [SysStanza ss= new NullSysStanza()]
-  :
-  authentication_order_sys_stanza
-  | domain_name_sys_stanza
-  | login_sys_server
-  | name_server_sys_stanza
-  | ntp_sys_stanza
-  | ports_sys_stanza
-  | root_authentication_sys_stanza
-  | services_sys_stanza
-  | syslog_sys_stanza
-  | tacplus_server_sys_stanza
-  | time_zone_sys_stanza
-  ;
-
-ospf3_p_stanza
-  :
-  OSPF3 ~NEWLINE* NEWLINE
-  ;
-
-p_stanza returns [PStanza ps]
-  :
-  (
-    PROTOCOLS
-    (
-      x=bgp_p_stanza
-      | x=null_p_stanza
-      | x=ospf_p_stanza
-    )
-  )
-  
-  {
-   ps = x;
-  }
-  ;
-
-ports_sys_stanza
-  :
-  PORTS ~NEWLINE* NEWLINE
-  ;
-
-protocols_stanza returns [JStanza js]
-  :
-  (pl=p_stanza) 
-               {
-                FlatProtocolsStanza ps = new FlatProtocolsStanza();
-                ps.processStanza(pl);
-                js = ps;
-               }
-  ;
-
-root_authentication_sys_stanza
-  :
-  ROOT_AUTHENTICATION ~NEWLINE* NEWLINE
-  ;
-
-router_advertisement_p_stanza
-  :
-  ROUTER_ADVERTISEMENT ~NEWLINE* NEWLINE
-  ;
-
-services_stanza
-  :
-  SERVICES ~NEWLINE* NEWLINE
-  ;
-
-services_sys_stanza
-  :
-  SERVICES ~NEWLINE* NEWLINE
-  ;
-
-snmp_stanza
-  :
-  SNMP ~NEWLINE* NEWLINE
-  ;
-
-sys_stanza returns [SysStanza ss]
-  :
-  (
-    SYSTEM
-    (
-      x=host_name_sys_stanza
-      | x=null_sys_stanza
-    )
-  )
-  
-  {
-   ss = x;
-  }
-  ;
-
-syslog_sys_stanza
-  :
-  SYSLOG ~NEWLINE* NEWLINE
-  ;
-
-system_stanza returns [JStanza js]
-  :
-  (l=sys_stanza) 
-                {
-                 SystemStanza ss = new SystemStanza();
-                 ss.processStanza(l);
-                 js = ss;
-                }
-  ;
-
-tacplus_server_sys_stanza
-  :
-  TACPLUS_SERVER ~NEWLINE* NEWLINE
-  ;
-
-time_zone_sys_stanza
-  :
-  TIME_ZONE ~NEWLINE* NEWLINE
-  ;
-
-version_stanza
-  :
-  VERSION ~NEWLINE* NEWLINE
-  ;
-
-vstp_p_stanza
-  :
-  VSTP ~NEWLINE* NEWLINE
-  ;
-
+ 
 ASTERISK
   :
   '*'

@@ -1,75 +1,102 @@
 package batfish.grammar.juniper.routing_options;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import batfish.grammar.juniper.JStanza;
 import batfish.grammar.juniper.JStanzaType;
+import batfish.grammar.juniper.bgp.BGPStanza;
+import batfish.grammar.juniper.ospf.OSPFStanza;
+import batfish.grammar.juniper.protocols.PStanza;
 import batfish.representation.juniper.GenerateRoute;
+import batfish.representation.juniper.StaticOptions;
 import batfish.representation.juniper.StaticRoute;
 
 public class RoutingOptionsStanza extends JStanza {
-   private List<GenerateRoute> _generateRoutes;
-	private List<StaticRoute> _staticRoutes;
-	private int _asNum;
-	private String _routerID;
+   
+   private List<ROStanza> _roStanzas;
+ 
+   private int _asNum;
+   private String _routerId;
 
-	public RoutingOptionsStanza() {
-	   _generateRoutes = new ArrayList<GenerateRoute>();
-		_staticRoutes = new ArrayList<StaticRoute>();
-	}
-
-	public void processStanza(ROStanza ros) {
-		
-		switch (ros.getType()) {
-		case AS:
-			AutonomousSystemROStanza asros = (AutonomousSystemROStanza) ros;
-			_asNum = asros.getASNum();
-			break;
-
-		case NULL:
-			break;
-
-		case STATIC:
-			StaticROStanza sros = (StaticROStanza) ros;
-			_staticRoutes.addAll(sros.getStaticRoutes());
-			break;
-
-		case ROUTER_ID:
-			RouterIDROStanza rros = (RouterIDROStanza) ros;
-			_routerID = rros.getRouterID();
-			break;
-			
-      case AGGREGATE:
-         break;
-         
-      case GENERATE:
-         GenerateROStanza gros = (GenerateROStanza) ros;
-         _generateRoutes.addAll(gros.getRoutes());
-         break;
-
-		default:
-			System.out.println("bad ro stanza type");
-			break;
-		}
-	}
-
-	public List<StaticRoute> getStaticRoutes() {
-		return _staticRoutes;
-	}
-	
-	public List<GenerateRoute> getGenerateRoutes() {
-      return _generateRoutes;
+   private Map<String, List<StaticOptions>> _staticRoutes;
+   private Map<String, List<String>> _ribGroups;
+   
+   /* ------------------------------ Constructor ----------------------------*/
+   public RoutingOptionsStanza() {
+      _roStanzas = new ArrayList<ROStanza> ();
+   }
+   
+   /* ----------------------------- Other Methods ---------------------------*/
+   public void AddROStanza (ROStanza ro) {
+      _roStanzas.add(ro);
    }
 
-	public int getASNum() {
-		return _asNum;
-	}
+   /* ---------------------------- Getters/Setters --------------------------*/
+   public Map<String, List<StaticOptions>> get_staticRoutes () {
+	   return _staticRoutes;
+   }
+   public int get_asNum () {
+	   return _asNum;
+   }
+   public String get_routerId () {
+	   return _routerId;
+   }
+   /* --------------------------- Inherited Methods -------------------------*/
+   public void postProcessStanza () {
+      
+      _asNum = 0;
+      _routerId = "";
+            
+      for (ROStanza rs : _roStanzas) {
+         rs.postProcessStanza();
+         switch (rs.getType()) {
+         
+         case AS:
+            RO_AutonomousSystemStanza asros = (RO_AutonomousSystemStanza) rs;
+            _asNum = asros.get_asNum();
+            break;
+            
+         case MARTIAN:
+            RO_MartiansStanza mros = (RO_MartiansStanza) rs;
+            // TODO [Ask Ari]: what to do 
+            break;
 
-	public String getRouterID() {
-		return _routerID;
-	}
+         case RIB:
+            RO_RibStanza riros = (RO_RibStanza) rs;
+            // TODO [Ask Ari]: what to do 
+            break;
+            
+         case RIB_GROUPS:
+            RO_RibGroupsStanza rgros = (RO_RibGroupsStanza) rs;
+            _ribGroups = rgros.get_groupsImports();
+            // TODO [Ask Ari]: what to do 
+            break;
+            
+         case ROUTER_ID:
+            RO_RouterIDStanza rros = (RO_RouterIDStanza) rs;
+            _routerId = rros.get_routerID();
+            break;
+            
+         case STATIC:
+            RO_StaticStanza sros = (RO_StaticStanza) rs;
+            _staticRoutes = sros.get_staticRoutes();
+            break;
 
+         case NULL:
+            break;
+
+         default:
+             throw new Error ("bad routing-options stanza type");
+         }
+
+         this.addIgnoredStatements(rs.get_ignoredStatements());
+      }
+      
+   }
+   
 	@Override
 	public JStanzaType getType() {
 		return JStanzaType.ROUTING_OPTIONS;

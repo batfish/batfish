@@ -3,31 +3,53 @@ grammar JuniperGrammar;
 options {
   superClass = ConfigurationParser;
 }
-import JuniperGrammar_firewall, JuniperGrammar_interface, JuniperGrammar_routing_options, JuniperGrammar_ospf, JuniperGrammar_policy_options, JuniperGrammar_bgp;
+import  JuniperGrammar_firewall, 
+        JuniperGrammar_groups,
+        JuniperGrammar_interface, 
+        JuniperGrammar_policy_options, 
+        JuniperGrammar_protocols, 
+        JuniperGrammar_ospf, 
+        JuniperGrammar_bgp, 
+        JuniperGrammar_routing_options,
+        JuniperGrammar_system; 
 
 
 tokens {
   ACCEPT                      = 'accept';
   ACCESS                      = 'access';
   ACCOUNTING                  = 'accounting';
+  ACTIVE                      = 'active';
   ADD                         = 'add';
   ADDRESS                     = 'address';
+  ADDRESS_MASK                = 'address-mask';
+  AGGREGATE                   = 'aggregate';
   AGGREGATED_ETHER_OPTIONS    = 'aggregated-ether-options';
+  ALLOW                       = 'allow';
+  APPLY_GROUPS                = 'apply-groups';
+  APPLY_GROUPS_EXCEPT         = 'apply-groups-except';
+  APPLY_PATH                  = 'apply-path';
   AREA                        = 'area';
   ARP_RESP                    = 'arp-resp';
   AS_PATH                     = 'as-path';
+  AS_PATH_PREPEND             = 'as-path-prepend';
   AUTHENTICATION_KEY          = 'authentication-key';
   AUTHENTICATION_ORDER        = 'authentication-order';
   AUTONOMOUS_SYSTEM           = 'autonomous-system';
+  BFD                         = 'bfd';
+  BFD_LIVENESS_DETECTION      = 'bfd-liveness-detection';
   BGP                         = 'bgp';
   BRIDGE                      = 'bridge';
   BRIDGE_DOMAINS              = 'bridge-domains';
   CHASSIS                     = 'chassis';
   CLASS                       = 'class';
+  CLASS_OF_SERVICE            = 'class-of-service';
   CLUSTER                     = 'cluster';
   COMMUNITY                   = 'community';
+  CONNECTIONS                 = 'connections';
   COUNT                       = 'count';
   DAMPING                     = 'damping';
+  DATA_REMOVED                = 'Data Removed';
+  DEFAULTS                    = 'defaults';
   DELETE                      = 'delete';
   DESCRIPTION                 = 'description';
   DESTINATION_ADDRESS         = 'destination-address';
@@ -37,7 +59,9 @@ tokens {
   DOMAIN                      = 'domain';
   DOMAIN_NAME                 = 'domain-name';
   DOMAIN_SEARCH               = 'domain-search';
+  DUMPONPANIC                 = 'dump-on-panic';
   ENABLE                      = 'enable';
+  ENCAPSULATION               = 'encapsulation';
   ETHERNET_SWITCHING          = 'ethernet-switching';
   ETHERNET_SWITCHING_OPTIONS  = 'ethernet-switching-options';
   EXACT                       = 'exact';
@@ -49,11 +73,14 @@ tokens {
   FILTER                      = 'filter';
   FIREWALL                    = 'firewall';
   FORWARDING_OPTIONS          = 'forwarding-options';
+  FORWARDING_TABLE            = 'forwarding-table';
   FROM                        = 'from';
   FTP                         = 'ftp';
   GENERATE                    = 'generate';
   GIGETHER_OPTIONS            = 'gigether-options';
+  GRACEFUL_RESTART            = 'graceful-restart';
   GROUP                       = 'group';
+  GROUPS                      = 'groups';
   HOLD_TIME                   = 'hold-time';
   HOST                        = 'host';
   HOST_NAME                   = 'host-name';
@@ -61,46 +88,74 @@ tokens {
   ICMP_TYPE                   = 'icmp-type';
   IGMP                        = 'igmp';
   IGMP_SNOOPING               = 'igmp-snooping';
+  IGP                         = 'igp';
   IMPORT                      = 'import';
+  INACTIVE                    = 'inactive';
   INET                        = 'inet';
   INET6                       = 'inet6';
+  INET_VPN                    = 'inet-vpn';
+  INET6_VPN                   = 'inet6-vpn';
   INPUT                       = 'input';
   INSTALL                     = 'install';
+  INSTALL_NEXTHOP             = 'install-nexthop';
   INTERFACE                   = 'interface';
   INTERFACE_MODE              = 'interface-mode';
   INTERFACES                  = 'interfaces';
+  INTERFACE_ROUTES            = 'interface-routes';
   INTERNAL                    = 'internal';
   IP                          = 'ip';
+  ISIS                        = 'isis';
+  ISO                         = 'iso';
+  L2_CIRCUIT                  = 'l2circuit';
+  L2_VPN                      = 'l2vpn';
   LICENSE                     = 'license';
+  LDP                         = 'ldp';
   LLDP                        = 'lldp';
   LLDP_MED                    = 'lldp-med';
+  LOAD_BALANCE                = 'load-balance';
   LOCAL_ADDRESS               = 'local-address';
   LOCAL_AS                    = 'local-as';
   LOCAL_PREFERENCE            = 'local-preference';
+  LOCATION                    = 'location';
   LOG                         = 'log';
   LOG_UPDOWN                  = 'log-updown';
   LOGIN                       = 'login';
+  LONGER                      = 'longer';
+  MARTIANS                    = 'martians';
   MAX_CONFIGURATIONS_ON_FLASH = 'max-configurations-on-flash';
   MAX_CONFIGURATION_ROLLBACKS = 'max-configuration-rollbacks';
   METRIC                      = 'metric';
+  METRIC_OUT                  = 'metric-out';
   MEMBERS                     = 'members';
   MLD                         = 'mld';
+  MPLS                        = 'mpls';
+  MSDP                        = 'msdp';
   MTU                         = 'mtu';
+  MULTICAST                   = 'multicast';
   MULTIHOP                    = 'multihop';
+  MULTIPATH                   = 'multipath';
   NAME_SERVER                 = 'name-server';
   NATIVE_VLAN_ID              = 'native-vlan-id';
   NEIGHBOR                    = 'neighbor';
   NETWORK_SUMMARY_EXPORT      = 'network-summary-export';
   NEXT                        = 'next';
   NEXT_HOP                    = 'next-hop';
+  NEXT_TABLE                  = 'next-table';
+  NO_INSTALL                  = 'no-install';
+  NO_READVERTISE              = 'no-readvertise';
   NO_REDIRECTS                = 'no-redirects';
+  NO_RESOLVE                  = 'no-resolve';
+  NO_RETAIN                   = 'no-retain';
+  NO_NEIGHBOR_LEARN           = 'no-neighbor-learn';
   NSSA                        = 'nssa';
   NTP                         = 'ntp';
   ORLONGER                    = 'orlonger';
   OSPF                        = 'ospf';
   OSPF3                       = 'ospf3';
   OUTPUT                      = 'output';
+  PASSIVE                     = 'passive';
   PEER_AS                     = 'peer-as';
+  PER_PACKET                  = 'per-packet';
   PIM                         = 'pim';
   POE                         = 'poe';
   POLICY                      = 'policy';
@@ -108,38 +163,54 @@ tokens {
   POLICY_STATEMENT            = 'policy-statement';
   PORTS                       = 'ports';
   PORT_MODE                   = 'port-mode';
+  PREFERENCE                  = 'preference';
   PREFIX_LENGTH_RANGE         = 'prefix-length-range';
   PREFIX_LIST                 = 'prefix-list';
+  PREFIX_LIST_FILTER          = 'prefix-list-filter';
   PRIMARY                     = 'primary';
   PROTOCOL                    = 'protocol';
   PROTOCOLS                   = 'protocols';
+  RADIUS_OPTIONS              = 'radius-options';
+  RADIUS_SERVER               = 'radius-server';
   READVERTISE                 = 'readvertise';
   REJECT                      = 'reject';
   REMOVE_PRIVATE              = 'remove-private';
+  REMOVED                     = 'Removed';
+  RESOLVE                     = 'resolve';
+  RETAIN                      = 'retain';
   RIB                         = 'rib';
+  RIB_GROUP                   = 'rib-group';
+  RIB_GROUPS                  = 'rib-groups';
   ROOT_AUTHENTICATION         = 'root-authentication';
   ROUTE                       = 'route';
   ROUTE_FILTER                = 'route-filter';
   ROUTER_ADVERTISEMENT        = 'router-advertisement';
   ROUTER_ID                   = 'router-id';
+  ROUTING_INSTANCES           = 'routing-instances';
   ROUTING_OPTIONS             = 'routing-options';
   RPF_CHECK                   = 'rpf-check';
   RSTP                        = 'rstp';
+  RSVP                        = 'rsvp';
   SAMPLE                      = 'sample';
   SAMPLING                    = 'sampling';
   SECURITY                    = 'security';
   SERVICES                    = 'services';
+  SELF                        = 'self';
   SET                         = 'set';
   SNMP                        = 'snmp';
   SOURCE_ADDRESS              = 'source-address';
+  SOURCE_ADDRESS_FILTER       = 'source-address-filter';
   SOURCE_PORT                 = 'source-port';
   SSH                         = 'ssh';
+  STANZA_REMOVED              = 'Stanza Removed';
   STATIC                      = 'static';
+  SUBTRACT                    = 'subtract';
   SYSLOG                      = 'syslog';
   SYSTEM                      = 'system';
   TACACS                      = 'tacacs';
   TACPLUS_SERVER              = 'tacplus-server';
   TAG                         = 'tag';
+  TARGETED_BROADCAST          = 'targeted-broadcast';
   TCP                         = 'tcp';
   TELNET                      = 'telnet';
   TERM                        = 'term';
@@ -147,12 +218,14 @@ tokens {
   THEN                        = 'then';
   THROUGH                     = 'through';
   TIME_ZONE                   = 'time-zone';
+  TO                          = 'to';
   TRACEOPTIONS                = 'traceoptions';
   TRAPS                       = 'traps';
   TRUNK                       = 'trunk';
   TYPE                        = 'type';
   UDP                         = 'udp';
   UNIT                        = 'unit';
+  UPTO                        = 'upto';
   USER                        = 'user';
   VERSION                     = 'version';
   VIRTUAL_CHASSIS             = 'virtual-chassis';
@@ -185,21 +258,30 @@ public List<String> getErrors() {
 }
 
 @parser::header {
+// TODO[P0]: check
 package batfish.grammar.juniper;
 
 import batfish.grammar.ConfigurationParser;
 
-import batfish.grammar.juniper.bgp.*;
-import batfish.grammar.juniper.interfaces.*;
-import batfish.grammar.juniper.ospf.*;
+import batfish.grammar.juniper.system.*;
+
 import batfish.grammar.juniper.policy_options.*;
-import batfish.grammar.juniper.routing_options.*;
+import batfish.grammar.juniper.protocols.*;
+import batfish.grammar.juniper.bgp.*;
+import batfish.grammar.juniper.ospf.*;
+
 import batfish.grammar.juniper.firewall.*;
+
+import batfish.grammar.juniper.groups.*;
+import batfish.grammar.juniper.interfaces.*;
+import batfish.grammar.juniper.routing_options.*;
 
 import batfish.representation.VendorConfiguration;
 import batfish.representation.SwitchportMode;
 
 import batfish.representation.juniper.*;
+import static batfish.representation.juniper.FamilyOps.*;
+import static batfish.representation.juniper.ProtocolOps.*;
 
 import batfish.util.SubRange;
 }
@@ -220,6 +302,7 @@ public void displayRecognitionError(String[] tokenNames, RecognitionException e)
 }
 
 public List<String> getErrors() {
+// TODO[P0]: check
 	List<String> allErrors = new ArrayList<String>();
 	allErrors.addAll(errors);
 	allErrors.addAll(gJuniperGrammar_bgp.getErrors());
@@ -232,73 +315,123 @@ public List<String> getErrors() {
 }
 
 public int nextIntVal() {
-	return Integer.valueOf(input.LT(1).getText());
+  return Integer.valueOf(input.LT(1).getText());
 }
 }
 
+/* JStanza Rules -------------------------------------------------------------------------------------*/
+
 juniper_configuration returns [JuniperConfiguration jc = new JuniperConfiguration()]
   :
-  (x=j_stanza_list EOF) 
-                       {
-                        for (JStanza js : x) {
-                        	jc.processStanza(js);
-                        }
-                       }
+  (x=j_stanza_list EOF)
+  {
+    for (JStanza js : x) {
+      // TODO [P0] : apply groups here
+      js.postProcessStanza();
+      jc.processStanza(js);
+    }
+  }
   ;
 
 j_stanza_list returns [List<JStanza> jslist = new ArrayList<JStanza>()]
   :
-  (x=j_stanza 
-             {
-              jslist.add(x);
-             })+
+  (x=j_stanza {jslist.add(x);})+
   ;
 
 j_stanza returns [JStanza js]
   :
-  (
-    x=firewall_stanza
-    | x=interfaces_stanza
-    | x=null_stanza
-    | x=policy_options_stanza
-    | x=protocols_stanza
-    | x=routing_options_stanza
-    | x=system_stanza
-  )
+  (x = apply_groups_stanza 
+  |x=firewall_stanza // TODO [P0]: unchecked
+  |x=protocols_stanza// TODO [P0]: unchecked
+  |x=routing_options_stanza// TODO [P0]: unchecked
+    
+  |x=groups_stanza 
+  |x=interfaces_stanza 
+  |x=policy_options_stanza
+  |x=system_stanza
   
+  |x=null_stanza
+  ) 
+  {js = x;}
+  ;
+  
+/* --- JStanza Sub-Stanza  Rules ---------------------------------------------------------------------*/
+
+null_stanza returns [JStanza js]
+  :
+  (s=chassis_stanza
+  |s=class_of_service_stanza
+  |s=forwarding_options_stanza
+  |s=services_stanza
+  |x=version_stanza
+  |s=removed_top_level_stanza
+  )
+  {js = new NullJStanza(s);}
+  ;
+
+/* --- Null Stanza Rules -------------------------------------------------------------------*/
+
+chassis_stanza returns [String s]
+  :
+  x=CHASSIS ignored_substanza {s = x.getText() + "{...}";}
+  ;
+
+class_of_service_stanza returns [String s]
+  :
+  x=CLASS_OF_SERVICE OPEN_BRACE substanza+ CLOSE_BRACE {s = x.getText() + "{...}";}
+  ;
+
+forwarding_options_stanza returns [String s]
+  :
+  x=FORWARDING_OPTIONS OPEN_BRACE substanza+ CLOSE_BRACE {s = x.getText() + "{...}";}
+  ;
+
+services_stanza returns [String s]
+  :
+  x=SERVICES ignored_substanza {s = x.getText() + "{...}";}
+  ;
+  
+version_stanza returns [String s]
+  :
+  x=VERSION y=VERSION_TOKEN SEMICOLON {s = x.getText() + " " + y.getText();}
+  ;
+  
+  
+/* Basic Rules ---------------------------------------------------------------------------------------*/
+as_id returns [String s]
+  :
+ (firstpart=VARIABLE COLON secondpart=VARIABLE) {s=firstpart.getText()+secondpart.getText();}
+  ;
+  
+bracketed_list returns [ArrayList<String> sl]
+@init {
+  String line = "";
+  sl = new ArrayList<String>();
+}
+  :
+  OPEN_BRACKET         
+  ((c1=~CLOSE_BRACKET) 
   {
-   js = x;
+    line += c1.getText(); 
+    // grab rest of member on the line
+    List<Token> tokens = ((CommonTokenStream) input).getTokens(input.LT(-1).getTokenIndex(), input.index());
+
+    // hunt for white space to find the end of this item
+    boolean hidden_channel = false;
+    for (Token t : tokens) {
+      if (t.getChannel() == Token.HIDDEN_CHANNEL) {
+        hidden_channel = true;
+      }
+    }
+                                            
+    // if white space found, line now holds next item
+    if (hidden_channel) {
+      sl.add(line);
+      line = "";
+    }
   }
-  ;
-
-accounting_sys_stanza
-  :
-  ACCOUNTING OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-authentication_order_sys_stanza
-  :
-  AUTHENTICATION_ORDER ~SEMICOLON* SEMICOLON
-  ;
-
-bridge_domains_stanza
-  :
-  BRIDGE_DOMAINS OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-chassis_stanza
-  :
-  CHASSIS OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-domain_name_sys_stanza
-  :
-  DOMAIN_NAME ~SEMICOLON* SEMICOLON
-  ;
-
-domain_search_sys_stanza
-  :
-  DOMAIN_SEARCH ~SEMICOLON* SEMICOLON
+  )+  
+  CLOSE_BRACKET
   ;
 
 double_num returns [double i]
@@ -307,88 +440,30 @@ double_num returns [double i]
     x=DEC
     | x=HEX
   )
-  
-  {
-   i = Double.parseDouble(x.getText());
-  }
+  {i = Double.parseDouble(x.getText());}
   ;
-
-ethernet_switching_options_stanza
-  :
-  ETHERNET_SWITCHING_OPTIONS OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-forwarding_options_stanza
-  :
-  FORWARDING_OPTIONS OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-host_name_sys_stanza returns [SysStanza ss]
-  :
-  (HOST_NAME name=VARIABLE SEMICOLON) 
-                                     {
-                                      ss = new HostNameSysStanza(name.getText());
-                                     }
-  ;
-
-igmp_snooping_p_stanza
-  :
-  IGMP_SNOOPING OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
+    
 integer returns [int i]
   :
   (
     x=DEC
     | x=HEX
   )
-  
+  {i = Integer.parseInt(x.getText());}
+  ;
+ 
+ string_in_double_quotes returns [String s]
+  :
+  (x = DOUBLE_QUOTED_STRING)
   {
-   i = Integer.parseInt(x.getText());
+    s = x.getText();
+    s = s.substring(1,s.length()-1);
   }
   ;
+ 
+/* Rules for Ignoring---------------------------------------------------------------------------------*/ 
 
-license_sys_stanza
-  :
-  LICENSE OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-lldp_p_stanza
-  :
-  (LLDP OPEN_BRACE substanza+ CLOSE_BRACE)
-  ;
-
-lldp_med_p_stanza
-  :
-  (LLDP_MED OPEN_BRACE substanza+ CLOSE_BRACE)
-  ;
-
-login_sys_stanza
-  :
-  LOGIN OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-max_configurations_on_flash_sys_stanza
-  :
-  MAX_CONFIGURATIONS_ON_FLASH ~SEMICOLON* SEMICOLON
-  ;
-
-max_configuration_rollbacks_sys_stanza
-  :
-  MAX_CONFIGURATION_ROLLBACKS ~SEMICOLON* SEMICOLON
-  ;
-
-mld_p_stanza
-  :
-  MLD OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-name_server_sys_stanza
-  :
-  NAME_SERVER OPEN_BRACE ~CLOSE_BRACE* CLOSE_BRACE
-  ;
-
-not_brace
+not_brace 
   :
   ~(
     OPEN_BRACE
@@ -396,147 +471,9 @@ not_brace
    )
   ;
 
-ntp_sys_stanza
-  :
-  NTP OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-null_stanza returns [JStanza js = new NullJStanza()]
-  :
-  (
-    bridge_domains_stanza
-    | chassis_stanza
-    | ethernet_switching_options_stanza
-    | forwarding_options_stanza
-    | poe_stanza
-    | security_stanza
-    | services_stanza
-    | snmp_stanza
-    | version_stanza
-    | virtual_chassis_stanza
-    | vlans_stanza
-  )
-  ;
-
-null_p_stanza returns [PStanza ps = new NullPStanza()]
-  :
-  igmp_snooping_p_stanza
-  | lldp_p_stanza
-  | lldp_med_p_stanza
-  | mld_p_stanza
-  | ospf3_p_stanza
-  | pim_p_stanza
-  | router_advertisement_p_stanza
-  | rstp_p_stanza
-  | vstp_p_stanza
-  ;
-
-null_sys_stanza returns [SysStanza ss= new NullSysStanza()]
-  :
-  accounting_sys_stanza
-  | authentication_order_sys_stanza
-  | domain_name_sys_stanza
-  | domain_search_sys_stanza
-  | login_sys_stanza
-  | license_sys_stanza
-  | max_configurations_on_flash_sys_stanza
-  | max_configuration_rollbacks_sys_stanza
-  | name_server_sys_stanza
-  | ntp_sys_stanza
-  | ports_sys_stanza
-  | root_authentication_sys_stanza
-  | services_sys_stanza
-  | syslog_sys_stanza
-  | tacplus_server_sys_stanza
-  | time_zone_sys_stanza
-  ;
-
-ospf3_p_stanza
-  :
-  OSPF3 OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-p_stanza returns [PStanza ps]
-  :
-  (
-    x=bgp_p_stanza
-    | x=null_p_stanza
-    | x=ospf_p_stanza
-  )
-  
-  {
-   ps = x;
-  }
-  ;
-
-p_stanza_list returns [List<PStanza> ps = new ArrayList<PStanza>()]
-  :
-  ( (x=p_stanza) 
-                {
-                 ps.add(x);
-                })+
-  ;
-
-pim_p_stanza
-  :
-  PIM OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-poe_stanza
-  :
-  POE OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-ports_sys_stanza
-  :
-  PORTS OPEN_BRACE ~CLOSE_BRACE* CLOSE_BRACE
-  ;
-
-protocols_stanza returns [JStanza js]
-  :
-  (PROTOCOLS OPEN_BRACE pl=p_stanza_list CLOSE_BRACE) 
-                                                     {
-                                                      ProtocolsStanza ps = new ProtocolsStanza();
-                                                      for (PStanza x : pl) {
-                                                      	ps.processStanza(x);
-                                                      }
-                                                      js = ps;
-                                                     }
-  ;
-
-root_authentication_sys_stanza
-  :
-  ROOT_AUTHENTICATION OPEN_BRACE ~CLOSE_BRACE* CLOSE_BRACE
-  ;
-
-router_advertisement_p_stanza
-  :
-  ROUTER_ADVERTISEMENT OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-rstp_p_stanza
-  :
-  RSTP OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-security_stanza
-  :
-  SECURITY OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-services_stanza
-  :
-  SERVICES OPEN_BRACE ~CLOSE_BRACE* CLOSE_BRACE
-  ;
-
-services_sys_stanza
-  :
-  SERVICES OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-snmp_stanza
-  :
-  SNMP OPEN_BRACE substanza+ CLOSE_BRACE
+ignored_substanza
+  : 
+  OPEN_BRACE substanza* CLOSE_BRACE
   ;
 
 substanza
@@ -548,78 +485,69 @@ substanza
   )
   ;
 
-sys_stanza returns [SysStanza ss]
+removed_stanza returns [String s]
   :
   (
-    x=host_name_sys_stanza
-    | x=null_sys_stanza
+    (name=VARIABLE)
+    (DATA_REMOVED
+    |STANZA_REMOVED
+    )
   )
+  {s=name.getText();}
+  ;
+
+removed_top_level_stanza returns [String s]
+  :
+  (x=VARIABLE)
+  (DATA_REMOVED
+  |STANZA_REMOVED
+  )
+  (CLOSE_BRACE)?
+  {s=x.getText() + " removed stanza";}
+  ;
   
-  {
-   ss = x;
-  }
+/*Common/Shared Stanzas ------------------------------------------------------------------------------*/
+bfd_liveness_detection_common_stanza returns [String s]
+  :
+  x=BFD_LIVENESS_DETECTION ignored_substanza {s=x.getText();}
+  ;  
+
+description_common_stanza returns [String s]
+  :
+  y=DESCRIPTION x=string_in_double_quotes SEMICOLON {s=y.getText() + " " + x;}
+  ;  
+  
+encapsulation_common_stanza returns [String s]
+  :
+  y=ENCAPSULATION x=VARIABLE SEMICOLON {s = y.getText() + " " + x.getText();}
+  ;
+  
+log_updown_common_stanza returns [String s]
+  :
+  x=LOG_UPDOWN SEMICOLON {s = x.getText();}
+  ;
+  
+metric_out_common_stanza returns [String s]
+  :
+  x = METRIC_OUT VARIABLE SEMICOLON {s = x.getText() + "{...}";}
+  ; 
+  
+mtu_common_stanza returns [String s] 
+  :
+  x=MTU i=integer SEMICOLON {s = x.getText() + " " +Integer.toString(i);}
+  ;
+  
+multihop_common_stanza returns [String s]
+  :
+  x=MULTIHOP ignored_substanza {s = x.getText() + "{...}";}
+  ;
+  
+rib_common_stanza returns [String s]
+  :
+  RIB (x=VARIABLE) SEMICOLON {s=x.getText();}
   ;
 
-sys_stanza_list returns [List<SysStanza> ssl = new ArrayList<SysStanza>()]
-  :
-  ( (x=sys_stanza) 
-                  {
-                   ssl.add(x);
-                  })+
-  ;
-
-syslog_sys_stanza
-  :
-  SYSLOG OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-system_stanza returns [JStanza js]
-  :
-  (SYSTEM OPEN_BRACE l=sys_stanza_list CLOSE_BRACE) 
-                                                   {
-                                                    SystemStanza ss = new SystemStanza();
-                                                    
-                                                    for (SysStanza s : l) {
-                                                    	ss.processStanza(s);
-                                                    }
-                                                    js = ss;
-                                                   }
-  ;
-
-tacplus_server_sys_stanza
-  :
-  TACPLUS_SERVER OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-time_zone_sys_stanza
-  :
-  TIME_ZONE ~SEMICOLON* SEMICOLON
-  ;
-
-version_stanza
-  :
-  VERSION ~SEMICOLON* SEMICOLON
-  ;
-
-virtual_chassis_stanza
-  :
-  VIRTUAL_CHASSIS OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-vlan_stanza
-  :
-  VLAN OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-vlans_stanza
-  :
-  VLANS OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
-
-vstp_p_stanza
-  :
-  VSTP OPEN_BRACE substanza+ CLOSE_BRACE
-  ;
+/*Lexing Rules ---------------------------------------------------------------------------------------*/
 
 AMPERSAND
   :
@@ -650,7 +578,7 @@ CLOSE_PAREN
   :
   ')'
   ;
-
+  
 COLON
   :
   ':'
@@ -664,12 +592,7 @@ COMMA
 DASH
   :
   '-'
-  ;
-
-DOLLAR
-  :
-  '$'
-  ;
+;
 
 DEC
   :
@@ -677,11 +600,16 @@ DEC
   | POSITIVE_DIGIT DIGIT*
   ;
 
-DOUBLE_QUOTE
+DOLLAR
   :
-  '"'
+  '$'
   ;
-
+  
+DOUBLE_QUOTED_STRING
+  :
+  DOUBLE_QUOTE ~DOUBLE_QUOTE* DOUBLE_QUOTE
+  ;
+  
 FLOAT
   :
   POSITIVE_DIGIT* DIGIT '.'
@@ -705,6 +633,16 @@ HEX
   :
   '0x' HEX_DIGIT+
   ;
+  
+INFO_REMOVED
+
+  :
+  ('Authentication ' DATA_REMOVED) // TODO: why doesnt this work with variable
+                   {
+                    skip();
+                   }
+  ;
+
 
 IP_ADDRESS
   :
@@ -738,11 +676,12 @@ LESS_THAN
 
 LINE_COMMENT
   :
-  ('#' ~'\n'* '\n') 
+  ('##' ~'\n'* '\n') 
                    {
                     $channel = HIDDEN;
                    }
   ;
+
 
 MULTILINE_COMMENT
   :
@@ -794,7 +733,7 @@ SINGLE_QUOTE
   :
   '\''
   ;
-
+    
 UNDERSCORE
   :
   '_'
@@ -815,10 +754,7 @@ VARIABLE
 
 VERSION_TOKEN
   :
-  (
-    DIGIT DIGIT* '.' DIGIT+ LETTER+
-    | DIGIT DIGIT* '.' '*'
-  )
+  DIGIT+ '.' (DIGIT | LETTER)+ '-' (DIGIT | LETTER)+
   ;
 
 WS
@@ -832,7 +768,7 @@ WS
   {
    $channel = HIDDEN;
   }
-  ;
+  ; 
 
 fragment
 CLOSE_COMMENT
@@ -842,7 +778,7 @@ CLOSE_COMMENT
 
 fragment
 DEC_BYTE
-  :
+  :// TODO: This is a hack.
   (POSITIVE_DIGIT DIGIT DIGIT)
   | (POSITIVE_DIGIT DIGIT)
   | DIGIT
@@ -852,6 +788,12 @@ fragment
 DIGIT
   :
   '0'..'9'
+  ;
+
+fragment
+DOUBLE_QUOTE
+  :
+  '"'
   ;
 
 fragment

@@ -1,20 +1,27 @@
 package batfish.representation.juniper;
 
-public class PolicyStatementMatchAsPathAccessListLine extends PolicyStatementMatchLine {
+public class PolicyStatementMatchAsPathAccessListLine extends PolicyStatement_MatchLine {
 
    private String _listName;
-
+   
+   /* ------------------------------ Constructor ----------------------------*/
    public PolicyStatementMatchAsPathAccessListLine(String listName) {
       _listName = listName;
    }
-
-   @Override
-   public MatchType getType() {
-      return MatchType.AS_PATH_ACCESS_LIST;
-   }
-
-   public String getListName() {
+   
+   /* ----------------------------- Other Methods ---------------------------*/
+   
+   /* ---------------------------- Getters/Setters --------------------------*/
+   public String get_listName() {
       return _listName;
    }
+   
+   /* --------------------------- Inherited Methods -------------------------*/
+   @Override
+   public PolicyStatement_MatchType getType() {
+      return PolicyStatement_MatchType.AS_PATH;
+   }
+
+
    
 }
