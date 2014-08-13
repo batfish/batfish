@@ -38,6 +38,10 @@ BestBgpAdvertisement(advert) ->
 BestBgpRoute(route) ->
    Route(route).
 
+BestBgpRouteNetwork(node, network) ->
+   Node(node),
+   Network(network).
+
 BestIbgpRoute(route) ->
    Route(route).
 
