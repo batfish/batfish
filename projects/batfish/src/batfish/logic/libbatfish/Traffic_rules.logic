@@ -144,7 +144,8 @@ FlowUnknown(flow) <-
    !FlowLost(flow).
 
 need_PolicyMapMatchFlow(policy, flow) <-
-   FlowReachPolicyRoute(flow, _, policy).
+   Flow(flow),
+   PolicyMap(policy).
 
 // END CODE
    })
