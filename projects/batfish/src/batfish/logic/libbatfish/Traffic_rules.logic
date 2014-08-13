@@ -119,6 +119,11 @@ FlowReachPreOutInterface(flow, node, interface) <-
    FlowReachPreOut(flow, node),
    Flow_dstIp[flow] = dstIp,
    FibForward(node, dstIp, interface),
+   Flow_node[flow] = node.
+FlowReachPreOutInterface(flow, node, interface) <-
+   FlowReachPreOut(flow, node),
+   Flow_dstIp[flow] = dstIp,
+   FibForward(node, dstIp, interface),
    FlowReachPostInInterface(flow, node, inInt),
    (
       !SetInterfaceRoutingPolicy(node, inInt, _) ;
