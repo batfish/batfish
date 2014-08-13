@@ -12,7 +12,7 @@ import org.antlr.v4.runtime.Token;
 public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
 
    public BatfishParserErrorListener(String grammarName,
-         BatfishCombinedParser parser) {
+         BatfishCombinedParser<?, ?> parser) {
       super(grammarName, parser);
    }
 

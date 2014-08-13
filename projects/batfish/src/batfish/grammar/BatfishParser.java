@@ -10,7 +10,7 @@ public abstract class BatfishParser extends Parser {
       super(input);
    }
 
-   public void initErrorListener(BatfishCombinedParser parser) {
+   public void initErrorListener(BatfishCombinedParser<?, ?> parser) {
       ANTLRErrorListener errorListener = new BatfishParserErrorListener(this
             .getClass().getSimpleName(), parser);
       removeErrorListeners();

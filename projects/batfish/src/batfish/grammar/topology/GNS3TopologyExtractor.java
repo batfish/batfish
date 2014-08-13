@@ -25,16 +25,11 @@ public class GNS3TopologyExtractor extends GNS3TopologyParserBaseListener
 
    @Override
    public void exitEdge_line(Edge_lineContext ctx) {
-      String int1 = ctx.int1.getText();
+      String int1 = convertInterfaceName(ctx.int1.getText());
       String node2 = ctx.host2.getText();
-      String int2 = ctx.int2.getText();
+      String int2 = convertInterfaceName(ctx.int2.getText());
       Edge edge = new Edge(_currentRouter, int1, node2, int2);
       _edges.add(edge);
-   }
-
-   @Override
-   public void exitRouter_line(Router_lineContext ctx) {
-      _currentRouter = null;
    }
 
    @Override
@@ -47,4 +42,8 @@ public class GNS3TopologyExtractor extends GNS3TopologyParserBaseListener
       return _topology;
    }
 
+   private String convertInterfaceName(String shortName) {
+      return shortName.replace("f","FastEthernet");
+   }
+   
 }

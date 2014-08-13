@@ -47,7 +47,7 @@ EQUALS
 
 VARIABLE
 :
-   F_VarChar+
+   (F_VarChar | ']')+
 ;
 
 fragment
@@ -83,7 +83,7 @@ F_NonNewlineChar
 fragment
 F_VarChar
 :
-   ~[\n\r \t\u000C=]
+   ~[\n\r \t\u000C=\]]
 ;
 
 fragment
@@ -97,6 +97,11 @@ mode M_Edge;
 M_Edge_EQUALS
 :
    '=' -> type(EQUALS)
+;
+
+M_Edge_NEWLINE
+:
+   F_NewlineChar+ -> type(NEWLINE), popMode
 ;
 
 M_Edge_VARIABLE

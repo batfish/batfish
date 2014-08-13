@@ -9,11 +9,11 @@ import org.antlr.v4.runtime.dfa.DFA;
 
 public abstract class BatfishGrammarErrorListener implements ANTLRErrorListener {
 
-   protected final BatfishCombinedParser _combinedParser;
+   protected final BatfishCombinedParser<?, ?> _combinedParser;
    protected final String _grammarName;
 
    public BatfishGrammarErrorListener(String grammarName,
-         BatfishCombinedParser parser) {
+         BatfishCombinedParser<?, ?> parser) {
       _grammarName = grammarName;
       _combinedParser = parser;
    }
