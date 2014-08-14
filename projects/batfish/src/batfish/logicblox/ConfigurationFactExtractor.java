@@ -14,6 +14,7 @@ import batfish.representation.Interface;
 import batfish.representation.Ip;
 import batfish.representation.IpAccessList;
 import batfish.representation.IpAccessListLine;
+import batfish.representation.OriginType;
 import batfish.representation.OspfArea;
 import batfish.representation.OspfProcess;
 import batfish.representation.PolicyMap;
@@ -30,6 +31,8 @@ import batfish.representation.PolicyMapSetDeleteCommunityLine;
 import batfish.representation.PolicyMapSetLine;
 import batfish.representation.PolicyMapSetLocalPreferenceLine;
 import batfish.representation.PolicyMapSetMetricLine;
+import batfish.representation.PolicyMapSetNextHopLine;
+import batfish.representation.PolicyMapSetOriginTypeLine;
 import batfish.representation.Protocol;
 import batfish.representation.RouteFilterLengthRangeLine;
 import batfish.representation.RouteFilterLine;
@@ -280,6 +283,8 @@ public class ConfigurationFactExtractor {
             .get("SetInterfaceFilterIn");
       StringBuilder wSetInterfaceFilterOut = _factBins
             .get("SetInterfaceFilterOut");
+      StringBuilder wSetInterfaceRoutingPolicy = _factBins
+            .get("SetInterfaceRoutingPolicy");
       String hostname = _configuration.getHostname();
       for (Interface i : _configuration.getInterfaces().values()) {
          String interfaceName = i.getName();
@@ -323,6 +328,12 @@ public class ConfigurationFactExtractor {
             String filterName = hostname + ":" + outgoingFilter.getName();
             wSetInterfaceFilterOut.append(hostname + "|" + interfaceName + "|"
                   + filterName + "\n");
+         }
+         PolicyMap routingPolicy = i.getRoutingPolicy();
+         if (routingPolicy != null) {
+            String policyName = hostname + ":" + routingPolicy.getMapName();
+            wSetInterfaceRoutingPolicy.append(hostname + "|" + interfaceName + "|"
+                  + policyName + "\n");
          }
       }
    }
@@ -505,6 +516,12 @@ public class ConfigurationFactExtractor {
             .get("SetPolicyMapClauseSetLocalPreference");
       StringBuilder wSetPolicyMapClauseSetMetric = _factBins
             .get("SetPolicyMapClauseSetMetric");
+      StringBuilder wSetPolicyMapClauseMatchTag = _factBins
+            .get("SetPolicyMapClauseMatchTag");
+      StringBuilder wSetPolicyMapClauseSetNextHopIp = _factBins
+            .get("SetPolicyMapClauseSetNextHopIp");
+      StringBuilder wSetPolicyMapClauseSetOriginType = _factBins
+            .get("SetPolicyMapClauseSetOriginType");
       String hostname = _configuration.getHostname();
       for (PolicyMap map : _configuration.getPolicyMaps().values()) {
          String mapName = hostname + ":" + map.getMapName();
@@ -527,7 +544,8 @@ public class ConfigurationFactExtractor {
                switch (matchLine.getType()) {
                case AS_PATH_ACCESS_LIST:
                   // TODO: implement
-                  // throw new Error("not implemented");
+                  //throw new Error("not implemented");
+                  System.err.println("WARNING: Policy map matching of AS path acls not implemented!");
                   break;
 
                case COMMUNITY_LIST:
@@ -540,11 +558,8 @@ public class ConfigurationFactExtractor {
                   break;
 
                case IP_ACCESS_LIST:
-                  // throw new Error("not implemented");
-                  System.err.println("WARNING: " + hostname
-                        + ": MATCH IP ACCESS LIST NOT IMPLEMENTED");
                   // TODO: implement
-                  break;
+                  throw new Error("ERROR: Policy map matching of IP acls (packet filtering?) not implemented!");
 
                case NEIGHBOR:
                   PolicyMapMatchNeighborLine pmmnl = (PolicyMapMatchNeighborLine) matchLine;
@@ -571,8 +586,11 @@ public class ConfigurationFactExtractor {
                   break;
 
                case TAG:
-                  PolicyMapMatchTagLine mtLine = (PolicyMapMatchTagLine) matchLine;
-                  //TODO: implement properly ***IMPORTANT***
+                  PolicyMapMatchTagLine pmmtl = (PolicyMapMatchTagLine) matchLine;
+                  for (Integer tag : pmmtl.getTags()) {
+                     wSetPolicyMapClauseMatchTag.append(mapName + "|" + i + "|"
+                           + tag + "\n");
+                  }
                   break;
 
                default:
@@ -591,6 +609,10 @@ public class ConfigurationFactExtractor {
                   }
                   break;
 
+               case AS_PATH_PREPEND:
+                  // TODO: implement
+                  throw new Error("not implemented");
+
                case COMMUNITY:
                   PolicyMapSetCommunityLine scLine = (PolicyMapSetCommunityLine) setLine;
                   for (Long community : scLine.getCommunities()) {
@@ -601,8 +623,7 @@ public class ConfigurationFactExtractor {
 
                case COMMUNITY_NONE:
                   // TODO: implement
-                  // throw new Error("not implemented");
-                  break;
+                  throw new Error("not implemented");
 
                case DELETE_COMMUNITY:
                   PolicyMapSetDeleteCommunityLine sdcLine = (PolicyMapSetDeleteCommunityLine) setLine;
@@ -627,15 +648,20 @@ public class ConfigurationFactExtractor {
                   break;
 
                case NEXT_HOP:
-                  // TODO: implement
-                  // throw new Error("not implemented");
-                  break;
-                  
-               case AS_PATH_PREPEND:
-                  // TODO: implement
-                  // throw new Error("not implemented");
+                  PolicyMapSetNextHopLine pmsnhl = (PolicyMapSetNextHopLine) setLine;
+                  for (Ip nextHopIp : pmsnhl.getNextHops()) {
+                     wSetPolicyMapClauseSetNextHopIp.append(mapName + "|" + i
+                           + "|" + nextHopIp.asLong() + "\n");
+                  }
                   break;
 
+               case ORIGIN_TYPE:
+                  PolicyMapSetOriginTypeLine pmsotl = (PolicyMapSetOriginTypeLine) setLine;
+                  OriginType originType = pmsotl.getOriginType();
+                  wSetPolicyMapClauseSetOriginType.append(mapName + "|" + i
+                           + "|" + originType.toString() + "\n");
+                  break;
+                  
                default:
                   throw new Error("invalid set type");
                }
@@ -751,23 +777,34 @@ public class ConfigurationFactExtractor {
    private void writeStaticRoutes() {
       StringBuilder wSetNetwork = _factBins.get("SetNetwork");
       StringBuilder wSetStaticRoute_flat = _factBins.get("SetStaticRoute_flat");
+      StringBuilder wSetStaticIntRoute_flat = _factBins
+            .get("SetStaticIntRoute_flat");
       String hostName = _configuration.getHostname();
       for (StaticRoute route : _configuration.getStaticRoutes()) {
          Ip prefix = route.getPrefix();
          Ip nextHopIp = route.getNextHopIp();
-         if (nextHopIp == null) { // use next hop interface instead
-            // TODO: do this correctly
+         if (nextHopIp == null) {
             nextHopIp = new Ip(0);
          }
          int prefix_length = route.getPrefixLength();
          long network_start = prefix.asLong();
          long network_end = Util.getNetworkEnd(network_start, prefix_length);
          int distance = route.getDistance();
+         int tag = route.getTag();
+         String nextHopInt = route.getNextHopInterface();
          wSetNetwork.append(network_start + "|" + network_end + "|"
                + prefix_length + "\n");
-         wSetStaticRoute_flat.append(hostName + "|" + network_start + "|"
-               + network_end + "|" + prefix_length + "|" + nextHopIp.asLong()
-               + "|" + distance + "\n");
+         if (nextHopInt != null) { // use next hop interface instead
+            wSetStaticIntRoute_flat.append(hostName + "|" + network_start + "|"
+                  + network_end + "|" + prefix_length + "|"
+                  + nextHopIp.asLong() + "|" + nextHopInt + "|" + distance
+                  + "|" + tag + "\n");
+         }
+         else {
+            wSetStaticRoute_flat.append(hostName + "|" + network_start + "|"
+                  + network_end + "|" + prefix_length + "|"
+                  + nextHopIp.asLong() + "|" + distance + "|" + tag + "\n");
+         }
       }
    }
 

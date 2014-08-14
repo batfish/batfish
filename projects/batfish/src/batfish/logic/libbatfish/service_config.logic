@@ -49,6 +49,11 @@ block(`service_config) {
          delim_file_binding[] = "SetInterfaceFilterOut"
       }.
 
+      service_by_prefix["/batfish/SetInterfaceRoutingPolicy"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetInterfaceRoutingPolicy"
+      }.
+
 // Ip
       service_by_prefix["/batfish/SetNetwork"] = x,
       delim_service(x) {
@@ -125,6 +130,11 @@ block(`service_config) {
       }.
 
 // Route
+      service_by_prefix["/batfish/SetStaticIntRoute_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetStaticIntRoute_flat"
+      }.
+
       service_by_prefix["/batfish/SetStaticRoute_flat"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetStaticRoute_flat"
@@ -219,6 +229,11 @@ block(`service_config) {
          delim_file_binding[] = "SetPolicyMapClauseMatchRouteFilter"
       }.
 
+      service_by_prefix["/batfish/SetPolicyMapClauseMatchTag"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseMatchTag"
+      }.
+
       service_by_prefix["/batfish/SetPolicyMapClausePermit"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetPolicyMapClausePermit"
@@ -237,6 +252,16 @@ block(`service_config) {
       service_by_prefix["/batfish/SetPolicyMapClauseSetMetric"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetPolicyMapClauseSetMetric"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseSetNextHopIp"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseSetNextHopIp"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseSetOriginType"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseSetOriginType"
       }.
 
 // Bgp

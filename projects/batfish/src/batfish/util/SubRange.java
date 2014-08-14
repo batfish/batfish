@@ -1,24 +1,29 @@
 package batfish.util;
 
-public class SubRange {
-	private int _start;
-	private int _end;
-	
-	public SubRange(int start, int end) {
-		_start = start;
-		_end = end;
-	}
-	
-	public int getStart() {
-		return _start;
-	}
-	
-	public int getEnd() {
-		return _end;
-	}
-	
-	@Override
-	public String toString() {
-	   return "[" + _start + "," + _end + "]";
-	}
+import java.io.Serializable;
+
+public class SubRange implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
+   private int _end;
+   private int _start;
+
+   public SubRange(int start, int end) {
+      _start = start;
+      _end = end;
+   }
+
+   public int getEnd() {
+      return _end;
+   }
+
+   public int getStart() {
+      return _start;
+   }
+
+   @Override
+   public String toString() {
+      return "[" + _start + "," + _end + "]";
+   }
 }

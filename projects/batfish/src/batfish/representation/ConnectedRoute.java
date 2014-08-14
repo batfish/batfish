@@ -1,8 +1,8 @@
 package batfish.representation;
 
-import batfish.util.Util;
-
 public class ConnectedRoute extends Route {
+
+   private static final long serialVersionUID = 1L;
 
    public ConnectedRoute(Ip prefix, int prefixLength, Ip nextHopIp) {
       super(prefix, prefixLength, nextHopIp);
@@ -24,9 +24,5 @@ public class ConnectedRoute extends Route {
       return _prefix.equals(rhs._prefix) && _prefixLength == rhs._prefixLength
             && _nextHopIp.equals(rhs._nextHopIp);
    }
-   
-   @Override
-   public String getIFString(int indentLevel) {
-	   return Util.getIndentString(indentLevel) +  "ConnectedRoute " + getRouteString();
-   }
+
 }

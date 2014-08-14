@@ -14,37 +14,16 @@ AdministrativeDistance[vendor, protocol] = distance ->
    RoutingProtocol(protocol),
    int(distance).
 
-BestConnectedRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) ->
-   Node(node),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),   
-   RoutingProtocol(protocol).
+BestConnectedRoute(route) ->
+   Route(route).
 
 /// [BestPerProtocol(node, network, nextHop, nextHopIp, admin, cost, protocol)] =
-///   Node [Node] has a route to network [network] through next hop [nextHop]
-///   at ip address [nextHopIp], with minimal administrative distance [admin],
-///   and cost [cost], received using routing protocol [protocol], and that is
-///   optimal before cost is taken into account.
-BestPerProtocolRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) ->
-   Node(node),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),   
-   RoutingProtocol(protocol).
+///   TODO.
+BestPerProtocolRoute(route) ->
+   Route(route).
 
-BestStaticRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) ->
-   Node(node),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),   
-   RoutingProtocol(protocol).
+BestStaticRoute(route) ->
+   Route(route).
 
 /// [ConnectedRoute(node, network)] =
 ///   Node [node] has a directly connected route to network [network] through [interface].
@@ -54,17 +33,23 @@ ConnectedRoute(node, network, interface) ->
    Interface(interface).
 
 /// [InstalledRoute(node, network, nextHop, nextHopIp, admin, cost, protocol)] =
-///   Node [node] has a route to network [network] with next hop [nextHop] at
-///   ip address [nextHopIp], with administrative distance [admin],
-///   protocol-specific cost [cost], received through protocol [protocol].
-InstalledRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) ->
+///   TODO.
+InstalledRoute(route) ->
+   Route(route).
+
+InterfaceRoute(route) ->
+   Route(route).
+
+InterfaceRoute_nextHopInt[route] = nextHopInt ->
+   Route(route),
+   Interface(nextHopInt).
+
+InterfaceRoute_constructor[node, network, nextHopInt, protocol] = route ->
    Node(node),
    Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),
-   RoutingProtocol(protocol).
+   Interface(nextHopInt),
+   RoutingProtocol(protocol),
+   Route(route).
 
 LongestPrefixNetworkMatch(node, ip, matchNet) ->
    Node(node),
@@ -85,17 +70,9 @@ MinAdmin[node, network] =  minAdmin ->
    int(minAdmin).
 
 /// [MinAdminRoute(node, network, nextHop, nextHopIp, minAdmin, cost, protocol)] =
-///   Node [Node] has a route to network [network] through next hop [nextHop]
-///   at ip address [nextHopIp], with minimal administrative distance
-///   [minAdmin], and cost [cost], received using routing protocol [protocol].
-MinAdminRoute(node, network, nextHop, nextHopIp, minAdmin, cost, protocol) ->
-   Node(node),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(minAdmin),
-   int(cost),   
-   RoutingProtocol(protocol).
+///   TODO.
+MinAdminRoute(route) ->
+   Route(route).
 
 /// [MinCost[node, network, protocol] = minCost] =
 ///   The minimum cost of any best pre-cost route from node
@@ -106,24 +83,78 @@ MinCost[node, network] =  minCost ->
    int(minCost).
 
 /// [MinCostRoute(node, network, nextHop, nextHopIp, admin, minCost, protocol)] =
-///   Node [Node] has a route to network [network] through next hop [nextHop]
-///   at ip address [nextHopIp], with minimal administrative distance [admin]
-///   and minimal cost for that administrative distance [minCost], received
-///   using routing protocol [protocol].
-MinCostRoute(node, network, nextHop, nextHopIp, admin, minCost, protocol) ->
-   Node(node),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(minCost),   
-   RoutingProtocol(protocol).
+///   TODO.
+MinCostRoute(route) ->
+   Route(route).
 
 NetworkMatch(node, ip, matchNet, matchLength) ->   
    Node(node),
    Ip(ip),
    Network(matchNet),
    int(matchLength).
+
+/// [Route(x)] =
+///   [x] is route.
+Route(x) -> .
+
+Route_admin[route] = admin ->
+   Route(route),
+   int(admin).
+
+Route_constructor[node, network, nextHopIp, protocol] = route ->
+   Node(node),
+   Network(network),
+   Ip(nextHopIp),
+   RoutingProtocol(protocol),
+   Route(route).
+
+Route_cost[route] = cost ->
+   Route(route),
+   int(cost).
+
+Route_network[route] = network ->
+   Route(route),
+   Network(network).
+
+Route_nextHopIp[route] = nextHopIp ->
+   Route(route),
+   Ip(nextHopIp).
+
+Route_node[route] = node ->
+   Route(route),
+   Node(node).
+
+Route_protocol[route] = protocol ->
+   Route(route),
+   RoutingProtocol(protocol).
+
+Route_tag[route] = tag ->
+   Route(route),
+   int(tag).
+
+RouteDetails_admin[route] = admin ->
+   Route(route),
+   int(admin).
+
+RouteDetails_cost[route] = cost ->
+   Route(route),
+   int(cost).
+
+RouteDetails_nextHop[route] = nextHop ->
+   Route(route),
+   Node(nextHop).
+
+RouteDetails_nextHopInt[route] = nextHopInt ->
+   Route(route),
+   Interface(nextHopInt).
+
+RouteDetails_nextHopIp[route] = nextHopIp ->
+   Route(route),
+   Ip(nextHopIp).
+
+RouteDetails_tag[route] = tag ->
+   Route(route),
+   int(tag).
 
 /// [RoutingProtocol(x)] =
 ///   [x] is routing protocol.
@@ -156,35 +187,53 @@ RoutingProtocol_OSPF_IA[] = x ->
 RoutingProtocol_STATIC[] = x ->
    RoutingProtocol(x).
 
-/// [SetStaticRoute(node, network, nextHopIp, admin)] =
-///   Node [node] has a static route to network [network] with next hop ip
-///   [nextHopIp] and administrative distance [admin].
-SetStaticRoute(node, network, nextHopIp, admin) ->
+SetStaticIntRoute(node, network, nextHopIp, nextHopInt, admin, tag) ->
    Node(node),
    Network(network),
    Ip(nextHopIp),
-   int(admin).
-   
-SetStaticRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, admin) ->
+   Interface(nextHopInt),
+   int(admin),
+   int(tag).
+
+SetStaticIntRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, nextHopInt, admin, tag) ->
    Node(node),
    int(network_start),
    int(network_end),
    int(prefix_length),
    Ip(nextHopIp),
-   int(admin).
+   Interface(nextHopInt),
+   int(admin),
+   int(tag).
    
-/// [StaticRoute(node, network, nextHop, nextHopIp, admin)] =
-///   Node [node] has a static route to network [network] with next hop
-///   [nextHop] at ip address [nextHopIp], administrative distance [admin], and
-///   hop count [hopCount].
-StaticRoute(node, network, nextHop, nextHopIp, admin) ->
+SetStaticRoute(node, network, nextHopIp, admin, tag) ->
    Node(node),
    Network(network),
-   Node(nextHop),
    Ip(nextHopIp),
-   int(admin).
+   int(admin),
+   int(tag).
+   
+SetStaticRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, admin, tag) ->
+   Node(node),
+   int(network_start),
+   int(network_end),
+   int(prefix_length),
+   Ip(nextHopIp),
+   int(admin),
+   int(tag).
+   
+StaticIntRoute(route) ->
+   Route(route).
+
+/// [StaticRoute(route)] =
+///   TODO.
+StaticRoute(route) ->
+   Route(route).
 
 // END CODE
+   }),
+   clauses(`{ //constructors
+lang:constructor(`InterfaceRoute_constructor).
+lang:constructor(`Route_constructor).
    })
 } <-- .
 

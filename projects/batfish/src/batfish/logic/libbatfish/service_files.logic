@@ -61,6 +61,13 @@ block(`service_files) {
          column_formats[] = "string,string,string"
       }.
 
+      file_definition_by_name["SetInterfaceRoutingPolicy"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE,POLICY",
+         column_formats[] = "string,string,string"
+      }.
+
 // Ip
       file_definition_by_name["SetNetwork"] = fd,
       file_definition(fd) {
@@ -165,11 +172,18 @@ block(`service_files) {
       }.
 
 // Route
+      file_definition_by_name["SetStaticIntRoute_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,NEXTHOPINT,ADMIN,TAG",
+         column_formats[] = "string,integer,integer,integer,integer,string,integer,integer"
+      }.
+
       file_definition_by_name["SetStaticRoute_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,ADMIN",
-         column_formats[] = "string,integer,integer,integer,integer,integer"
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,ADMIN,TAG",
+         column_formats[] = "string,integer,integer,integer,integer,integer,integer"
       }.
 
 // Ospf
@@ -295,6 +309,13 @@ block(`service_files) {
          column_formats[] = "string,integer,string"
       }.
 
+      file_definition_by_name["SetPolicyMapClauseMatchTag"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,TAG",
+         column_formats[] = "string,integer,integer"
+      }.
+
       file_definition_by_name["SetPolicyMapClausePermit"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
@@ -321,6 +342,20 @@ block(`service_files) {
          file_delimiter[] = "|",
          column_headers[] = "MAP,CLAUSE,METRIC",
          column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseSetNextHopIp"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,NEXTHOPIP",
+         column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseSetOriginType"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,ORIGINTYPE",
+         column_formats[] = "string,integer,string"
       }.
 
 // Bgp

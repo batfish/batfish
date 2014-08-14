@@ -46,11 +46,10 @@ import com.logicblox.connect.Workspace.Result;
 import com.logicblox.connect.Workspace.Result.Failure;
 import com.logicblox.connect.Workspace.Result.QueryPredicate;
 
-import batfish.main.Settings;
 import batfish.util.Util;
 
 public class LogicBloxFrontend {
-   private static final String BLOXWEB_HOSTNAME = "localhost";
+
    private static final int BLOXWEB_PORT = 8080;
    private static final String BLOXWEB_PROTOCOL = "http";
    public static final long BLOXWEB_TIMEOUT_MS = 31536000000l;
@@ -71,28 +70,27 @@ public class LogicBloxFrontend {
    }
 
    private boolean _assumedToExist;
-
    private ConnectBloxSession<Request, Response> _cbSession;
    private EntityTable _entityTable;
-   private String _regularHost;
-   private int _regularPort;
-
+   private String _lbHost;
+   private int _lbPort;
+   private Integer _sshPort;
    private ConnectBloxWorkspace _workspace;
-
    private String _workspaceName;
 
-   public LogicBloxFrontend(String regularHost, int regularPort,
+   public LogicBloxFrontend(String lbHost, int lbPort, Integer sshPort,
          String workspaceName, boolean assumedToExist) {
       _workspaceName = workspaceName;
-      _regularHost = regularHost;
-      _regularPort = regularPort;
+      _lbHost = lbHost;
+      _lbPort = lbPort;
+      _sshPort = sshPort;
       _assumedToExist = assumedToExist;
       _entityTable = null;
    }
 
-   public String addProject(String projectPath, String additionalLibraryPath) {
-      AddProject ap = Workspace.Command.addProject(new File(projectPath), true,
-            true, additionalLibraryPath);
+   public String addProject(File projectPath, String additionalLibraryPath) {
+      AddProject ap = Workspace.Command.addProject(projectPath, true, true,
+            additionalLibraryPath);
       List<Workspace.Result> results = null;
       try {
          results = _workspace.transaction(Collections.singletonList(ap));
@@ -130,8 +128,8 @@ public class LogicBloxFrontend {
       try {
          ConnectBloxSession.Builder b = ConnectBloxSession.Builder
                .newInstance();
-         b.setHost(_regularHost);
-         b.setPort(_regularPort);
+         b.setHost(_lbHost);
+         b.setPort(_lbPort);
          return b.build();
       }
       catch (ConnectBloxSession.Exception e) {
@@ -266,6 +264,15 @@ public class LogicBloxFrontend {
          }
          break;
 
+      case ENTITY_INDEX_ROUTE:
+         ec = (EntityColumn) column;
+         BigInteger[] routeIndices = ((UInt64Column) ec.getIndexColumn()
+               .unwrap()).getRows();
+         for (BigInteger index : routeIndices) {
+            textColumn.add(_entityTable.getRoute(index));
+         }
+         break;
+
       default:
          throw new Error("Invalid LBValueType");
       }
@@ -380,8 +387,8 @@ public class LogicBloxFrontend {
 
    public void postFacts(Map<String, StringBuilder> factBins)
          throws ServiceClientException {
-      String base = BLOXWEB_PROTOCOL + "://" + BLOXWEB_HOSTNAME + ":"
-            + BLOXWEB_PORT + "/" + SERVICE_DIR + "/";
+      String base = BLOXWEB_PROTOCOL + "://" + _lbHost + ":" + BLOXWEB_PORT
+            + "/" + SERVICE_DIR + "/";
       TCPTransport transport = Transports.tcp(false);
       HttpClient client = transport.getHttpClient();
       client.setTimeout(BLOXWEB_TIMEOUT_MS);
@@ -500,8 +507,8 @@ public class LogicBloxFrontend {
       String stderr = null;
       Process proc;
       String[] execArray;
-      if (!_regularHost.equals(Settings.DEFAULT_CONNECTBLOX_HOST)) {
-         String[] sshExecArray = { "ssh", "-n", _regularHost,
+      if (_sshPort != null) {
+         String[] sshExecArray = { "ssh", "-p", _sshPort.toString(), _lbHost,
                "lb web-server load-services -w " + _workspaceName };
          execArray = sshExecArray;
 
@@ -535,8 +542,18 @@ public class LogicBloxFrontend {
       String stdout = null;
       String stderr = null;
       Process proc;
-      String[] execArray = { "bash", "-c",
-            "lb web-server unload-services -w " + _workspaceName };
+      String[] execArray;
+      if (_sshPort != null) {
+         String[] sshExecArray = { "ssh", "-p", _sshPort.toString(), _lbHost,
+               "lb web-server unload-services -w " + _workspaceName };
+         execArray = sshExecArray;
+
+      }
+      else {
+         String[] normalExecArray = { "bash", "-c",
+               "lb web-server unload-services -w " + _workspaceName };
+         execArray = normalExecArray;
+      }
       try {
          proc = Runtime.getRuntime().exec(execArray);
          stdout = IOUtils.toString(proc.getInputStream());

@@ -1,8 +1,12 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
+
 import batfish.representation.Ip;
 
-public abstract class BgpPeerGroup {
+public abstract class BgpPeerGroup implements Serializable {
+
+   private static final long serialVersionUID = 1L;
    protected Ip _clusterId;
    protected Boolean _defaultOriginate;
    protected String _defaultOriginateMap;
@@ -59,6 +63,42 @@ public abstract class BgpPeerGroup {
 
    public String getUpdateSource() {
       return _updateSource;
+   }
+
+   public void inheritUnsetFields(BgpPeerGroup pg) {
+      if (_clusterId == null) {
+         _clusterId = pg.getClusterId();
+      }
+      if (_defaultOriginate == null) {
+         _defaultOriginate = pg.getDefaultOriginate();
+      }
+      if (_defaultOriginateMap == null) {
+         _defaultOriginateMap = pg.getDefaultOriginateMap();
+      }
+      if (_inboundPrefixList == null) {
+         _inboundPrefixList = pg.getInboundPrefixList();
+      }
+      if (_inboundRouteMap == null) {
+         _inboundRouteMap = pg.getInboundRouteMap();
+      }
+      if (_outboundPrefixList == null) {
+         _outboundPrefixList = pg.getOutboundPrefixList();
+      }
+      if (_outboundRouteMap == null) {
+         _outboundRouteMap = pg.getOutboundRouteMap();
+      }
+      if (_remoteAS == null) {
+         _remoteAS = pg.getRemoteAS();
+      }
+      if (_routeReflectorClient == null) {
+         _routeReflectorClient = pg.getRouteReflectorClient();
+      }
+      if (_sendCommunity == null) {
+         _sendCommunity = pg.getSendCommunity();
+      }
+      if (_updateSource == null) {
+         _updateSource = pg.getUpdateSource();
+      }
    }
 
    public void setClusterId(Ip ip) {

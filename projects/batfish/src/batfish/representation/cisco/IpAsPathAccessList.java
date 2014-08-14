@@ -1,12 +1,16 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import batfish.grammar.cisco.CiscoGrammar.Ip_as_path_access_list_stanzaContext;
 
-public class IpAsPathAccessList {
-   private Ip_as_path_access_list_stanzaContext _context;
+public class IpAsPathAccessList implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
+   private transient Ip_as_path_access_list_stanzaContext _context;
    private List<IpAsPathAccessListLine> _lines;
    private String _name;
 

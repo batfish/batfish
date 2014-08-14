@@ -3,6 +3,8 @@ block(`BaseFacts) {
    alias_all(`libbatfish:Bgp),
    alias_all(`libbatfish:BgpAdvertisement),
    alias_all(`libbatfish:Flow),
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Interface),
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:Layer2),
    alias_all(`libbatfish:Node),
@@ -18,6 +20,9 @@ block(`BaseFacts) {
 +AdvertisementType("ibgp").
 +AdvertisementType("ibgp_ti").
 +AdvertisementType("ibgp_to").
+
++Interface("dynamic").
++Interface("null").
 
 +OriginType("igp").
 +OriginType("egp").
@@ -56,6 +61,12 @@ block(`BaseFacts) {
 +AdministrativeDistance["juniper", "ospf"] = 10.
 +AdministrativeDistance["juniper", "ospfIA"] = 10.
 +AdministrativeDistance["juniper", "ospfE2"] = 150.
+
++GeneratedRouteType("aggregate").
++GeneratedRouteType("bgp").
++GeneratedRouteType("bgp_neighbor").
++GeneratedRouteType("global").
++GeneratedRouteType("ospf").
 
 // END CODE
    }) //clauses

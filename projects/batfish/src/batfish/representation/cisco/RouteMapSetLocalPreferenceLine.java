@@ -6,6 +6,8 @@ import batfish.representation.PolicyMapSetLocalPreferenceLine;
 
 public class RouteMapSetLocalPreferenceLine extends RouteMapSetLine {
 
+   private static final long serialVersionUID = 1L;
+
    private int _localPreference;
 
    public RouteMapSetLocalPreferenceLine(int localPreference) {
@@ -19,6 +21,11 @@ public class RouteMapSetLocalPreferenceLine extends RouteMapSetLine {
    @Override
    public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
       return new PolicyMapSetLocalPreferenceLine(_localPreference);
+   }
+
+   @Override
+   public RouteMapSetType getType(){
+      return RouteMapSetType.LOCAL_PREFERENCE;
    }
    
 }

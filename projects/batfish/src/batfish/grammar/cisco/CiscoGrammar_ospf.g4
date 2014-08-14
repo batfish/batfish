@@ -13,7 +13,17 @@ area_ipv6_ro_stanza
 
 area_nssa_ro_stanza
 :
-	AREA num = DEC NSSA NO_SUMMARY? NEWLINE
+	AREA 
+	(
+		area_int = DEC
+		| area_ip = IP_ADDRESS
+	) 
+	NSSA 
+	(
+		NO_SUMMARY
+		| DEFAULT_INFORMATION_ORIGINATE
+	)*
+	NEWLINE
 ;
 
 default_information_ipv6_ro_stanza
@@ -94,8 +104,13 @@ null_standalone_ro_stanza
 	NO?
 	(
 		(
-			AREA DEC AUTHENTICATION
+			AREA 
+				( 
+			 		DEC
+			 		| IP_ADDRESS
+			 	) AUTHENTICATION
 		)
+		| AUTO_COST
 		| BFD
 		| DISTRIBUTE_LIST
 		| LOG_ADJACENCY_CHANGES
@@ -169,6 +184,11 @@ redistribute_connected_ro_stanza
 	)* NEWLINE
 ;
 
+redistribute_rip_ro_stanza
+:
+	REDISTRIBUTE RIP ~NEWLINE* NEWLINE
+;
+
 redistribute_static_ro_stanza
 :
 	REDISTRIBUTE STATIC
@@ -203,6 +223,7 @@ ro_stanza
 	| passive_interface_ro_stanza
 	| redistribute_bgp_ro_stanza
 	| redistribute_connected_ro_stanza
+	| redistribute_rip_ro_stanza
 	| redistribute_static_ro_stanza
 	| router_id_ro_stanza
 ;

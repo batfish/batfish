@@ -1,0 +1,24 @@
+!
+hostname ip_access_list_with_seq
+!
+ip access-list BLAH-BLAH
+   10 permit icmp any any
+   20 permit ip any any tracked
+   30 permit ospf any any
+   40 permit tcp any any eq bgp
+   50 permit udp any any eq bootps bootpc ntp
+   60 permit tcp any any eq mlag ttl eq 255
+   70 permit udp any any eq mlag ttl eq 255
+   80 permit vrrp any any
+   90 permit ahp any any
+   100 permit pim any any
+   110 permit igmp any any
+   120 permit tcp any any range 1 10
+   130 remark REMOVED
+   140 permit udp 10.0.0.0/19 any eq snmp
+   180 permit udp host 10.0.0.0 any eq snmp
+   210 remark REMOVED
+   220 permit tcp 10.0.0.0/19 any eq ssh
+   260 permit tcp host 10.0.0.0 any eq ssh
+ip route 1.1.1.1 255.255.255.255 2.2.2.2
+end

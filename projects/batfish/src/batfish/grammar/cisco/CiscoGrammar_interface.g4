@@ -20,6 +20,7 @@ if_stanza
 	| ip_ospf_cost_if_stanza
 	| ip_ospf_dead_interval_if_stanza
 	| ip_ospf_dead_interval_minimal_if_stanza
+	| ip_policy_if_stanza
 	| no_ip_address_if_stanza
 	| null_if_stanza
 	| shutdown_if_stanza
@@ -35,7 +36,7 @@ if_stanza
 
 interface_stanza
 :
-	INTERFACE iname = interface_name NEWLINE interface_stanza_tail closing_comment
+	INTERFACE iname = interface_name MULTIPOINT? NEWLINE interface_stanza_tail closing_comment?
 ;
 
 interface_stanza_tail
@@ -56,7 +57,7 @@ ip_access_group_if_stanza
 
 ip_address_if_stanza
 :
-	IP ADDRESS ip = IP_ADDRESS subnet = IP_ADDRESS
+	IP ADDRESS ( ip = IP_ADDRESS subnet = IP_ADDRESS | prefix = IP_PREFIX )
 	(
 		STANDBY IP_ADDRESS
 	)? NEWLINE
@@ -80,6 +81,10 @@ ip_ospf_dead_interval_if_stanza
 ip_ospf_dead_interval_minimal_if_stanza
 :
 	IP OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = DEC NEWLINE
+;
+
+ip_policy_if_stanza:
+   IP POLICY name=~NEWLINE NEWLINE
 ;
 
 no_ip_address_if_stanza
@@ -113,6 +118,7 @@ null_standalone_if_stanza
 		| CHANNEL_PROTOCOL
 		| CLNS
 		| CLOCK
+		| COUNTER
 		| CRYPTO
 		|
 		(
@@ -135,6 +141,7 @@ null_standalone_if_stanza
 				| ARP
 				| CGMP
 				| DHCP
+				| DVMRP
 				|
 				(
 					DIRECTED_BROADCAST
@@ -152,6 +159,7 @@ null_standalone_if_stanza
 					OSPF
 					(
 						AUTHENTICATION
+						| MESSAGE_DIGEST_KEY 
 						| NETWORK
 						| PRIORITY
 					)
@@ -174,6 +182,7 @@ null_standalone_if_stanza
 		| IPV6
 		| ISDN
 		| KEEPALIVE
+		| LANE
 		| LAPB
 		| LLDP
 		| LOAD_INTERVAL
@@ -182,10 +191,12 @@ null_standalone_if_stanza
 		| MAC_ADDRESS
 		| MACRO
 		| MANAGEMENT_ONLY
+		| MAP_GROUP
 		| MDIX
 		| MEDIA_TYPE
 		| MEMBER
 		| MLS
+		| MOBILITY
 		| MOP
 		| MPLS
 		| MTU
@@ -197,6 +208,7 @@ null_standalone_if_stanza
 		)
 		| PEER
 		| PHYSICAL_LAYER
+		| PORT_CHANNEL
 		| POWER
 		| PPP
 		| PRIORITY_QUEUE
@@ -208,10 +220,12 @@ null_standalone_if_stanza
 		| SERIAL
 		| SERVICE_MODULE
 		| SERVICE_POLICY
+		| SONET
 		| SPANNING_TREE
 		| SPEED
 		| SNMP
 		| SRR_QUEUE
+		| STACK_MIB
 		| STANDBY
 		| STORM_CONTROL
 		|
@@ -238,6 +252,7 @@ null_standalone_if_stanza
 		| VRRP
 		| WRR_QUEUE
 		| X25
+		| XCONNECT
 	) ~NEWLINE* NEWLINE
 ;
 

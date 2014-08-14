@@ -1,48 +1,46 @@
 block(`PolicyMap) {
    alias_all(`libbatfish:BgpAdvertisement),
    alias_all(`libbatfish:CommunityList),
+   alias_all(`libbatfish:Flow),
    alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:IpAccessList),
    alias_all(`libbatfish:Node),
    alias_all(`libbatfish:Route),
    alias_all(`libbatfish:RouteFilter),
    export(`{
 // BEGIN CODE
 
-need_PolicyMapClauseMatchAdvert(map, advert)
-->
+need_PolicyMapClauseMatchAdvert(map, advert) ->
    PolicyMap(map),
    BgpAdvertisement(advert).
 
-need_PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) ->
+need_PolicyMapMatchFlow(map, flow) ->
    PolicyMap(map),
-   int(clause),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),
-   RoutingProtocol(protocol).
+   Flow(flow).
+
+need_PolicyMapMatchRoute(map, route) ->
+   PolicyMap(map),
+   Route(route).
 
 PolicyMap(x),
    PolicyMap_name(x:n)
    ->
    string(n).
    
-PolicyMapClauseMatchAdvert(map, clause, advert)
-->
+PolicyMapClauseMatchAdvert(map, clause, advert) ->
    PolicyMap(map),
    int(clause),
    BgpAdvertisement(advert).
 
-PolicyMapClauseMatchRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) ->
+PolicyMapClauseMatchFlow(map, clause, flow) ->
    PolicyMap(map),
    int(clause),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),
-   RoutingProtocol(protocol).
+   Flow(flow).
+
+PolicyMapClauseMatchRoute(map, clause, route) ->
+   PolicyMap(map),
+   int(clause),
+   Route(route).
 
 PolicyMapClauseTransformAdvert(map, clause, prevAdvert, nextHopIp, localPref, originType, med, srcProtocol) ->
    PolicyMap(map),
@@ -54,20 +52,26 @@ PolicyMapClauseTransformAdvert(map, clause, prevAdvert, nextHopIp, localPref, or
    int(med),
    RoutingProtocol(srcProtocol).
 
+PolicyMapDenyFlow(map, clause, flow) ->
+   PolicyMap(map),
+   int(clause),
+   Flow(flow).
+
 PolicyMapFirstMatchAdvert[map, advert] = firstClause
 ->
    PolicyMap(map),
    BgpAdvertisement(advert),
    int(firstClause).
 
-PolicyMapFirstMatchRoute[map, network, nextHop, nextHopIp, admin, cost, protocol] = firstClause ->
+PolicyMapFirstMatchFlow[map, flow] = firstClause
+->
    PolicyMap(map),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),
-   RoutingProtocol(protocol),
+   Flow(flow),
+   int(firstClause).
+
+PolicyMapFirstMatchRoute[map, route] = firstClause ->
+   PolicyMap(map),
+   Route(route),
    int(firstClause).
 
 PolicyMapHasClause(map, clause) ->
@@ -80,15 +84,15 @@ PolicyMapPermitAdvert(map, clause, advert)
    int(clause),
    BgpAdvertisement(advert).
 
-PolicyMapPermitRoute(map, clause, network, nextHop, nextHopIp, admin, cost, protocol) ->
+PolicyMapPermitFlow(map, clause, flow) ->
    PolicyMap(map),
    int(clause),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),
-   RoutingProtocol(protocol).
+   Flow(flow).
+
+PolicyMapPermitRoute(map, clause, route) ->
+   PolicyMap(map),
+   int(clause),
+   Route(route).
 
 SetPolicyMapClauseAddCommunity(map, clause, community) ->
    PolicyMap(map),
@@ -103,6 +107,11 @@ SetPolicyMapClauseDeleteCommunity(map, clause, list) ->
 SetPolicyMapClauseDeny(map, clause) ->
    PolicyMap(map),
    int(clause).
+
+SetPolicyMapClauseMatchAcl(map, clause, acl) ->
+   PolicyMap(map),
+   int(clause),
+   IpAccessList(acl).
 
 SetPolicyMapClauseMatchCommunityList(map, clause, list) ->
    PolicyMap(map),
@@ -124,6 +133,11 @@ SetPolicyMapClauseMatchRouteFilter(map, clause, list) ->
    int(clause),
    RouteFilter(list).
 
+SetPolicyMapClauseMatchTag(map, clause, tag) ->
+   PolicyMap(map),
+   int(clause),
+   int(tag).
+
 SetPolicyMapClausePermit(map, clause) ->
    PolicyMap(map),
    int(clause).
@@ -143,6 +157,16 @@ SetPolicyMapClauseSetMetric(map, clause, metric) ->
    int(clause),
    int(metric).
    
+SetPolicyMapClauseSetNextHopIp(map, clause, nextHopIp) ->
+   PolicyMap(map),
+   int(clause),
+   Ip(nextHopIp).
+
+SetPolicyMapClauseSetOriginType(map, clause, originType) ->
+   PolicyMap(map),
+   int(clause),
+   OriginType(originType).
+
 // END CODE
    })
 } <-- .

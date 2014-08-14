@@ -22,9 +22,7 @@ comment_stanza
 
 community
 :
-	(
-		part1 = DEC com = COLON part2 = DEC
-	)
+   com = COMMUNITY_NUMBER
 	| com = DEC
 	| com = INTERNET
 	| com = LOCAL_AS
@@ -34,7 +32,7 @@ community
 
 description_line
 :
-	DESCRIPTION M_DESCRIPTION_NON_NEWLINE* M_DESCRIPTION_NEWLINE
+	DESCRIPTION text=M_DESCRIPTION_NON_NEWLINE? NEWLINE
 ;
 
 exact_match [String matchText]
@@ -95,9 +93,11 @@ port
 	| IDENT
 	| ISAKMP
 	| LPD
+	| MLAG
 	| NETBIOS_DGM
 	| NETBIOS_NS
 	| NETBIOS_SS
+	| NNTP
 	| NON500_ISAKMP
 	| NTP
 	| PIM_AUTO_RP
@@ -105,6 +105,7 @@ port
 	| SMTP
 	| SNMP
 	| SNMPTRAP
+	| SSH
 	| SUNRPC
 	| SYSLOG
 	| TACACS
@@ -115,17 +116,20 @@ port
 
 protocol
 :
-	DEC
+	AHP
+	| DEC
 	| ESP
 	| GRE
 	| ICMP
 	| IGMP
 	| IP
+	| IPINIP
 	| OSPF
 	| PIM
 	| SCTP
 	| TCP
 	| UDP
+	| VRRP
 ;
 
 range

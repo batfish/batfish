@@ -1,0 +1,13 @@
+!
+hostname community-name-numbers
+!
+ip community-list standard 9999-RRR permit 9999:8888
+!
+route-map AAA1-BBB-CCC permit 100
+ match community 9999-RRR
+ set community no-advertise
+ set mpls-label
+ set ipv6 next-hop ::FFFF:1.2.3.4
+!
+!
+end

@@ -1,0 +1,10 @@
+!
+hostname colon_in_vrf
+!
+router bgp 22
+  address-family ipv4 vrf VRF:MMS:RMT:PBI:145
+    redistribute connected route-map RMT_PBI
+    no synchronization
+  exit-address-family
+!
+end

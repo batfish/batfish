@@ -1,5 +1,6 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -10,8 +11,9 @@ import java.util.Set;
 import batfish.representation.Ip;
 import batfish.representation.Protocol;
 
-public class BgpProcess {
+public class BgpProcess implements Serializable {
 
+   private static final long serialVersionUID = 1L;
    private Set<Ip> _activatedNeighbors;
    private Map<BgpNetwork, Boolean> _aggregateNetworks;
    private Map<String, BgpPeerGroup> _allPeerGroups;
@@ -222,6 +224,10 @@ public class BgpProcess {
 
    public Ip getRouterId() {
       return _routerId;
+   }
+   
+   public Set<String> getShutdownNeighbors(){
+      return _shutdownNeighbors;
    }
 
    public void setClusterId(Ip clusterId) {

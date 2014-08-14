@@ -6,20 +6,67 @@ block(`GeneratedRoute) {
    export(`{
 // BEGIN CODE
 
-BestGeneratedRoute(node, network, nextHop, nextHopIp, admin, cost, protocol) ->
-   Node(node),
-   Network(network),
-   Node(nextHop),
-   Ip(nextHopIp),
-   int(admin),
-   int(cost),   
-   RoutingProtocol(protocol). 
+ActiveGeneratedRoute(route) ->
+   Route(route).
 
-GeneratedRoute(node, network, contributingNetwork, admin) ->
+ActiveGeneratedContributor(route, contributingRoute) ->
+   Route(route),
+   Route(contributingRoute).
+
+BestGlobalGeneratedRoute(route) ->
+   Route(route). 
+
+GeneratedRoute(route) ->
+   Route(route).
+
+GeneratedRoute_constructor[node, network, type] = route ->
    Node(node),
    Network(network),
-   Network(contributingNetwork),
-   int(admin).
+   GeneratedRouteType(type),
+   Route(route).
+
+GeneratedRoute_type[route] = type ->
+   Route(route),
+   GeneratedRouteType(type).
+
+GeneratedRoutePolicy(route, policy) ->
+   Route(route),
+   PolicyMap(policy).
+
+GeneratedRouteType(type),
+   GeneratedRouteType_name(type:name)
+->
+   string(name).
+
+GeneratedRouteType_AGGREGATE[] = type ->
+   GeneratedRouteType(type).
+
+GeneratedRouteType_BGP[] = type ->
+   GeneratedRouteType(type).
+
+GeneratedRouteType_BGP_NEIGHBOR[] = type ->
+   GeneratedRouteType(type).
+
+GeneratedRouteType_GLOBAL[] = type ->
+   GeneratedRouteType(type).
+
+GeneratedRouteType_OSPF[] = type ->
+   GeneratedRouteType(type).
+
+GlobalGeneratedRoute(route) ->
+   Route(route).
+
+MinAdminContributingRoute(route, contributingRoute) ->
+   Route(route),
+   Route(contributingRoute).
+
+MinContributingRouteAddress[route] = minAddress ->
+   Route(route),
+   int(minAddress).
+
+MinContributingRouteAdmin[route] = minAdmin ->
+   Route(route),
+   int(minAdmin).
 
 SetGeneratedRoute(node, network, admin) ->
    Node(node),
@@ -46,6 +93,9 @@ SetGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length, ma
    PolicyMap(map).
    
 // END CODE
+   }),
+   clauses(`{
+lang:constructor(`GeneratedRoute_constructor).
    })
 } <-- .
 

@@ -1,12 +1,15 @@
 package batfish.representation;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
 import batfish.util.SubRange;
 import batfish.util.Util;
 
-public class IpAccessListLine {
+public class IpAccessListLine implements Serializable {
+
+   private static final long serialVersionUID = 1L;
 
    private LineAction _action;
    private Ip _dstIp;
@@ -56,6 +59,37 @@ public class IpAccessListLine {
       return _dstPortRanges;
    }
 
+   public String getIFString(int indentLevel) {
+
+      String dstPortStr = "-";
+
+      if (_dstPortRanges != null) {
+         dstPortStr = "";
+         for (SubRange sr : _dstPortRanges) {
+            dstPortStr += " " + sr;
+         }
+      }
+
+      String srcPortStr = "-";
+
+      if (_srcPortRanges != null) {
+         srcPortStr = "";
+         for (SubRange sr : _srcPortRanges) {
+            srcPortStr += " " + sr;
+         }
+      }
+
+      String retString = String
+            .format(
+                  "%sIpAccessListLine SrcIp %s SrcWildCard %s SrcPortStr %s DstIp %s DstWildCard %s DstPortStr %s Proto %s Action %s",
+                  Util.getIndentString(indentLevel), _srcIp, _srcWildcard,
+                  srcPortStr, _dstIp, _dstWildcard, dstPortStr, _protocol,
+                  _action);
+
+      return retString;
+
+   }
+
    public int getProtocol() {
       return _protocol;
    }
@@ -83,37 +117,6 @@ public class IpAccessListLine {
             + _srcWildcard + ", DestinationIp:" + _dstIp
             + ", DestinationWildcard:" + _dstWildcard + ", SrcPortRange:"
             + _srcPortRanges + ", DstPortRange:" + _dstPortRanges + "]";
-   }
-
-   public String getIFString(int indentLevel) {
-	   	   
-	   String dstPortStr = "-";
-	   
-	   if (_dstPortRanges != null) {
-		   dstPortStr = "";
-		   for (SubRange sr : _dstPortRanges) {
-			   dstPortStr += " " + sr;
-		   }
-	   }
-
-	   String srcPortStr = "-";
-
-	   if (_srcPortRanges != null) {
-		   srcPortStr = "";
-		   for (SubRange sr : _srcPortRanges) {
-			   srcPortStr += " " + sr;
-		   }
-	   }
-
-	   String retString = String.format("%sIpAccessListLine SrcIp %s SrcWildCard %s SrcPortStr %s DstIp %s DstWildCard %s DstPortStr %s Proto %s Action %s",
-			   Util.getIndentString(indentLevel), 
-			   _srcIp, _srcWildcard, srcPortStr, 
-			   _dstIp, _dstWildcard, dstPortStr,
-			   _protocol,
-			   _action);
-
-	   return retString;
-
    }
 
 }

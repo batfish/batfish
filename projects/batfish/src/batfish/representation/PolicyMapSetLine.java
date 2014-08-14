@@ -1,11 +1,11 @@
 package batfish.representation;
 
-public abstract class PolicyMapSetLine {
+import java.io.Serializable;
 
-	public abstract PolicyMapSetType getType();
+public abstract class PolicyMapSetLine implements Serializable {
 
-	public abstract String getIFString(int indentLevel); 
+   private static final long serialVersionUID = 1L;
 
-   public abstract boolean sameParseTree(PolicyMapSetLine line, String prefix);
+   public abstract PolicyMapSetType getType();
 
 }

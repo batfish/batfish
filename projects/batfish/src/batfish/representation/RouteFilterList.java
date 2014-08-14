@@ -9,61 +9,45 @@ import batfish.util.Util;
 /**
  * 
  * A data structure that represents a list of prefix with their prefix-length to
- * be matched
- * Used for route filter and prefix list in Juniper JunOS
- * Used for prefix list in Cisco IOS
+ * be matched Used for route filter and prefix list in Juniper JunOS Used for
+ * prefix list in Cisco IOS
  * 
  */
 
 public class RouteFilterList extends NamedStructure {
-	
-	//List of lines that stores the prefix
-	private List<RouteFilterLine> _lines;
 
-	public RouteFilterList(String name) {
-		super(name);
-		_lines = new ArrayList<RouteFilterLine>();
-	}
+   private static final long serialVersionUID = 1L;
 
-	public void addLine(RouteFilterLine r) {
-		_lines.add(r);
-	}
+   // List of lines that stores the prefix
+   private List<RouteFilterLine> _lines;
 
-	public void addLines(List<RouteFilterLine> r) {
-		_lines.addAll(r);
-	}
+   public RouteFilterList(String name) {
+      super(name);
+      _lines = new ArrayList<RouteFilterLine>();
+   }
 
-	public List<RouteFilterLine> getLines() {
-		return _lines;
-	}
+   public void addLine(RouteFilterLine r) {
+      _lines.add(r);
+   }
 
-	public String getIFString(int indentLevel) {
-		String retString = Util.getIndentString(indentLevel) + "RouteFilerList " + getName();
-		
-		for (RouteFilterLine rfl : _lines) {
-			retString += "\n" + rfl.getIFString(indentLevel + 1);
-		}
-		
-		return retString;
+   public void addLines(List<RouteFilterLine> r) {
+      _lines.addAll(r);
+   }
+
+   public String getIFString(int indentLevel) {
+      String retString = Util.getIndentString(indentLevel) + "RouteFilerList "
+            + getName();
+
+      for (RouteFilterLine rfl : _lines) {
+         retString += "\n" + rfl.getIFString(indentLevel + 1);
+      }
+
+      return retString;
 
    }
 
-   public boolean sameParseTree(RouteFilterList list, String prefix) {
-      boolean res = _name.equals(list._name);
-      boolean finalRes = res;
-      
-      if(_lines.size() != list._lines.size()){
-         System.out.println("RouteFilterLists:Lines:Size "+prefix);
-         return false;
-      }
-      for(int i=0; i < _lines.size(); i++){
-         res = _lines.get(i).sameParseTree(list._lines.get(i));
-         if(res == false){
-            System.out.println("RouteFilterLists:Lines "+prefix);
-            finalRes = false;
-         }
-      }
-      return finalRes;
+   public List<RouteFilterLine> getLines() {
+      return _lines;
    }
 
 }

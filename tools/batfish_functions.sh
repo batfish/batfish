@@ -9,7 +9,25 @@ export BATFISH_Z3=$(which z3)
 export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.default_relation=hassel_diff fixedpoint.unbound_compressor=false fixedpoint.print_answer=true"
 
 batfish() {
-   $BATFISH $@
+   # if cygwin, shift and replace each parameter
+   if [ "Cygwin" = "$(uname -o)" ]; then
+      local NUMARGS=$#
+      local IGNORE_NEXT_ARG=no;
+      for i in $(seq 1 $NUMARGS); do
+         if [ "$IGNORE_NEXT_ARG" = "yes" ]; then
+            local IGNORE_NEXT_ARG=no
+            continue
+         fi
+         local CURRENT_ARG=$1
+         if [ "$CURRENT_ARG" = "-logicdir" ]; then
+            local IGNORE_NEXT_ARG=yes
+         fi
+         local NEW_ARG="$(cygpath -w -- $CURRENT_ARG)"
+         set -- "$@" "$NEW_ARG"
+         shift
+      done
+   fi
+   $BATFISH $BATFISH_COMMON_ARGS $@
 }
 export -f batfish
 
@@ -25,24 +43,34 @@ batfish_analyze() {
    fi
    local TEST_RIG=$1
    local PREFIX=$2
+   local WORKSPACE=batfish-$USER-$2
    local OLD_PWD=$PWD
    local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
    local QUERY_PATH=$OLD_PWD/$PREFIX-query
    local DUMP_DIR=$OLD_PWD/$PREFIX-dump
    local FLOWS=$OLD_PWD/$PREFIX-flows
    local ROUTES=$OLD_PWD/$PREFIX-routes
+   local VENDOR_SERIAL_DIR=$OLD_PWD/$PREFIX-vendor
+   local INDEP_SERIAL_DIR=$OLD_PWD/$PREFIX-indep
+   local DP_DIR=$OLD_PWD/$PREFIX-dp
+
+   echo "Parse vendor configuration files and serialize vendor structures"
+   $BATFISH_CONFIRM && { batfish_serialize_vendor $TEST_RIG $VENDOR_SERIAL_DIR || return 1 ; }
+
+   echo "Parse vendor structures and serialize vendor-independent structures"
+   $BATFISH_CONFIRM && { batfish_serialize_independent $VENDOR_SERIAL_DIR $INDEP_SERIAL_DIR || return 1 ; }
 
    echo "Compute the fixed point of the control plane"
-   $BATFISH_CONFIRM && { batfish_compile $TEST_RIG $DUMP_DIR || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_compile $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR || return 1 ; }
 
-   echo "Query routes (informational only)"
-   $BATFISH_CONFIRM && { batfish_query_routes $ROUTES $TEST_RIG || return 1 ; }
+   echo "Query data plane predicates"
+   $BATFISH_CONFIRM && { batfish_query_data_plane $WORKSPACE $DP_DIR || return 1 ; }
 
    echo "Extract z3 reachability relations"
-   $BATFISH_CONFIRM && { batfish_generate_z3_reachability $TEST_RIG $REACH_PATH  || return 1 ; }                                  
+   $BATFISH_CONFIRM && { batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH  || return 1 ; }
 
    echo "Find inconsistent packet constraints"
-   $BATFISH_CONFIRM && { batfish_find_inconsistent_packet_constraints $REACH_PATH  $QUERY_PATH || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_find_inconsistent_packet_constraints $REACH_PATH $QUERY_PATH || return 1 ; }
 
    echo "Generate constraints z3 queries for concretizer"
    $BATFISH_CONFIRM && { batfish_generate_constraints_queries $QUERY_PATH || return 1 ; }
@@ -51,16 +79,21 @@ batfish_analyze() {
    $BATFISH_CONFIRM && { batfish_get_concrete_inconsistent_packets $QUERY_PATH || return 1 ; }
 
    echo "Inject concrete packets into network model"
-   $BATFISH_CONFIRM && { batfish_inject_packets $TEST_RIG $QUERY_PATH $DUMP_DIR || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_inject_packets $WORKSPACE $QUERY_PATH $DUMP_DIR || return 1 ; }
 
    echo "Query flow results from LogicBlox"
-   $BATFISH_CONFIRM && { batfish_query_flows $FLOWS $TEST_RIG || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_query_flows $FLOWS $WORKSPACE || return 1 ; }
 }
 export -f batfish_analyze
 
 batfish_build() {
+   local RESTORE_FILE='cygwin-symlink-restore-data'
    local OLD_PWD=$(pwd)
    cd $BATFISH_PATH
+   if [ "Cygwin" = "$(uname -o)" -a ! -e "$RESTORE_FILE" ]; then
+      echo "Replacing symlinks (Cygwin workaround)"
+      ./cygwin-replace-symlinks
+   fi
    ant $@ || { cd $OLD_PWD ; return 1 ; } 
    cd $OLD_PWD
 }
@@ -69,10 +102,12 @@ export -f batfish_build
 batfish_compile() {
    date | tr -d '\n'
    echo ": START: Compute the fixed point of the control plane"
-   batfish_expect_args 2 $# || return 1
-   local TEST_RIG=$1
-   local DUMP_DIR=$2
-   $BATFISH -testrig $TEST_RIG -compile -facts -guess -ee -dumpcp -dumpdir $DUMP_DIR || return 1
+   batfish_expect_args 4 $# || return 1
+   local WORKSPACE=$1
+   local TEST_RIG=$2
+   local DUMP_DIR=$3
+   local INDEP_SERIAL_DIR=$4
+   batfish -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR || return 1
    date | tr -d '\n'
    echo ": END: Compute the fixed point of the control plane"
 }
@@ -374,17 +409,18 @@ batfish_generate_constraints_queries_helper() {
    local NODE=$1
    local QUERY_OUT=$PWD/incons-query-${NODE}.smt2.out
    local CONC_QUERY=$PWD/incons-constraints-${NODE}.smt2
-   $BATFISH -conc -concin $QUERY_OUT -concout $CONC_QUERY || return 1
+   batfish -conc -concin $QUERY_OUT -concout $CONC_QUERY || return 1
 }
 export -f batfish_generate_constraints_queries_helper
 
 batfish_generate_z3_reachability() {
    date | tr -d '\n'
    echo ": START: Extract z3 reachability relations"
-   batfish_expect_args 2 $# || return 1
-   local TEST_RIG=$1
-   local REACH_PATH=$2
-   $BATFISH -testrig $TEST_RIG -z3 -z3out $REACH_PATH || return 1
+   batfish_expect_args 3 $# || return 1
+   local DP_DIR=$1
+   local INDEP_SERIAL_PATH=$2
+   local REACH_PATH=$3
+   batfish -sipath $INDEP_SERIAL_PATH -dpdir $DP_DIR -z3 -z3out $REACH_PATH || return 1
    date | tr -d '\n'
    echo ": END: Extract z3 reachability relations"
 }
@@ -498,14 +534,14 @@ batfish_inject_packets() {
    date | tr -d '\n'
    echo ": START: Inject concrete packets into network model"
    batfish_expect_args 3 $# || return 1
-   local TEST_RIG=$1
+   local WORKSPACE=$1
    local QUERY_PATH=$2
    local DUMP_DIR=$3
    local OLD_PWD=$PWD
    #local FLOW_SINK_PATH=$TEST_RIG/flow_sinks
    cd $QUERY_PATH
-   #$BATFISH -testrig $TEST_RIG -flow -flowpath $QUERY_PATH -flowsink $FLOW_SINK_PATH -dumptraffic -dumpdir $DUMP_DIR
-   $BATFISH -testrig $TEST_RIG -flow -flowpath $QUERY_PATH -dumptraffic -dumpdir $DUMP_DIR || return 1
+   #batfish -testrig $TEST_RIG -flow -flowpath $QUERY_PATH -flowsink $FLOW_SINK_PATH -dumptraffic -dumpdir $DUMP_DIR
+   batfish -workspace $WORKSPACE -flow -flowpath $QUERY_PATH -dumptraffic -dumpdir $DUMP_DIR || return 1
    batfish_format_flows $DUMP_DIR || return 1
    cd $OLD_PWD
    date | tr -d '\n'
@@ -513,13 +549,26 @@ batfish_inject_packets() {
 }
 export -f batfish_inject_packets
 
+batfish_query_data_plane() {
+   date | tr -d '\n'
+   echo ": START: Query data plane predicates"
+   batfish_expect_args 2 $# || return 1
+   local WORKSPACE=$1
+   local DP_DIR=$2
+   mkdir -p $DP_DIR
+   batfish -workspace $WORKSPACE -dp -dpdir $DP_DIR || return 1
+   date | tr -d '\n'
+   echo ": END: Query data plane predicates"
+}
+export -f batfish_query_data_plane
+
 batfish_query_flows() {
    date | tr -d '\n'
    echo ": START: Query flow results from LogicBlox"
    batfish_expect_args 2 $# || return 1
    local FLOW_RESULTS=$1
-   local TEST_RIG=$2
-   $BATFISH -log 0 -testrig $TEST_RIG -query -predicates Flow FlowUnknown FlowInconsistent FlowAccepted FlowAllowedIn FlowAllowedOut FlowDropped FlowDeniedIn FlowDeniedOut FlowNoRoute FlowReachPostIn FlowReachPreOut FlowReachPreOutInterface FlowReachPostOutInterface FlowReachPreInInterface FlowReachPostInInterface FlowReach FlowReachStep FlowLost FlowLoop LanAdjacent &> $FLOW_RESULTS
+   local WORKSPACE=$2
+   batfish -log 0 -workspace $WORKSPACE -query -predicates Flow FlowUnknown FlowInconsistent FlowAccepted FlowAllowedIn FlowAllowedOut FlowDropped FlowDeniedIn FlowDeniedOut FlowNoRoute FlowReachPostIn FlowReachPreOut FlowReachPreOutInterface FlowReachPostOutInterface FlowReachPreInInterface FlowReachPostInInterface FlowReach FlowReachStep FlowLost FlowLoop LanAdjacent &> $FLOW_RESULTS
    date | tr -d '\n'
    echo ": END: Query flow results from LogicBlox"
 }
@@ -531,7 +580,7 @@ batfish_query_routes() {
    batfish_expect_args 2 $# || return 1
    local ROUTES=$1
    local TEST_RIG=$2
-   $BATFISH -log 0 -testrig $TEST_RIG -query -predicates InstalledRoute &> $ROUTES
+   batfish -log 0 -testrig $TEST_RIG -query -predicates InstalledRoute &> $ROUTES
    date | tr -d '\n'
    echo ": END: Query routes (informational only)"
 }
@@ -541,6 +590,61 @@ batfish_reload() {
    . $BATFISH_SOURCED_SCRIPT
 }
 export -f batfish_reload
+
+batfish_replace_symlinks() {
+   OLDPWD=$PWD
+   cd $BATFISH_PATH
+   ./cygwin-replace-symlinks
+   cd $OLDPWD
+}
+export batfish_replace_symlinks
+
+batfish_serialize_independent() {
+   date | tr -d '\n'
+   echo ": START: Parse vendor structures and serialize vendor-independent structures"
+   batfish_expect_args 2 $# || return 1
+   local VENDOR_SERIAL_DIR=$1
+   local INDEP_SERIAL_DIR=$2
+   mkdir -p $INDEP_SERIAL_DIR
+   batfish -svpath $VENDOR_SERIAL_DIR -si -sipath $INDEP_SERIAL_DIR || return 1
+   date | tr -d '\n'
+   echo ": END: Parse vendor structures and serialize vendor-independent structures"
+}
+export -f batfish_serialize_independent
+
+batfish_serialize_vendor() {
+   date | tr -d '\n'
+   echo ": START: Parse vendor configuration files and serialize vendor structures"
+   batfish_expect_args 2 $# || return 1
+   local TEST_RIG=$1
+   local VENDOR_SERIAL_DIR=$2
+   mkdir -p $VENDOR_SERIAL_DIR
+   batfish -testrig $TEST_RIG -sv -svpath $VENDOR_SERIAL_DIR -ee || return 1
+   date | tr -d '\n'
+   echo ": END: Parse vendor configuration files and serialize vendor structures"
+}
+export -f batfish_serialize_vendor
+
+batfish_restore_symlinks() {
+   OLDPWD=$PWD
+   cd $BATFISH_PATH
+   ./cygwin-restore-symlinks
+   cd $OLDPWD
+}
+export batfish_restore_symlinks
+
+batfish_unit_tests_parser() {
+   batfish_expect_args 1 $# || return 1
+   local OUTPUT_DIR=$1
+   local UNIT_TEST_DIR=$BATFISH_TEST_RIG_PATH/unit-tests
+   date | tr -d '\n'
+   echo ": START UNIT TEST: Vendor configuration parser"
+   mkdir -p $OUTPUT_DIR
+   batfish -testrig $UNIT_TEST_DIR -sv -svpath $OUTPUT_DIR -ppt
+   date | tr -d '\n'
+   echo ": END UNIT TEST: Vendor configuration parser"
+}
+export -f batfish_unit_tests_parser
 
 int_to_ip() {
    batfish_expect_args 1 $# || return 1

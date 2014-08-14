@@ -7,6 +7,10 @@ import batfish.representation.Ip;
 
 public class NamedBgpPeerGroup extends BgpPeerGroup {
 
+   public static final NamedBgpPeerGroup DEFAULT_INSTANCE = new NamedBgpPeerGroup(null);
+
+   private static final long serialVersionUID = 1L;
+   
    private String _name;
    private Set<Ip> _neighborAddresses;
 

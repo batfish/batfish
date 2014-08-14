@@ -1,23 +1,33 @@
 package batfish.grammar;
 
-import java.util.List;
-
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Lexer;
 
 public abstract class BatfishLexer extends Lexer {
 
-   private final BatfishGrammarErrorListener _errorListener;
-   
    public BatfishLexer(CharStream input) {
       super(input);
-      _errorListener = new BatfishGrammarErrorListener(this.getClass().getSimpleName());
+   }
+
+   public String getMode() {
+      return this.getModeNames()[_mode];
+   }
+
+   public void initErrorListener(BatfishCombinedParser<?, ?> parser) {
+      ANTLRErrorListener errorListener = new BatfishLexerErrorListener(this
+            .getClass().getSimpleName(), parser);
       removeErrorListeners();
-      addErrorListener(_errorListener);
+      addErrorListener(errorListener);
    }
-   
-   public List<String> getErrors() {
-      return _errorListener.getErrors();
-   }
+
+   /**
+    * Print custom lexer state (should be overridden)
+    * 
+    * @return Should print custom lexer state variables and their values
+    */
+   public String printStateVariables() {
+      return "";
+   };
 
 }

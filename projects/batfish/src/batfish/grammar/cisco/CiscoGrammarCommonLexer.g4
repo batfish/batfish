@@ -1,7 +1,7 @@
 lexer grammar CiscoGrammarCommonLexer;
 
 options {
-	superClass = batfish.util.DummyLexer;
+	superClass = 'batfish.grammar.BatfishLexer';
 }
 
 @header {
@@ -9,3106 +9,3782 @@ package batfish.grammar.cisco;
 }
 
 @members {
-boolean inComment = false;
-boolean inMultilineComment = false;
 boolean enableIPV6_ADDRESS = true;
 boolean enableIP_ADDRESS = true;
 boolean enableDEC = true;
 boolean enableACL_NUM = false;
 boolean enableCOMMUNITY_LIST_NUM = false;
+
+@Override
+public String printStateVariables() {
+   StringBuilder sb = new StringBuilder();
+   sb.append("enableIPV6_ADDRESS: " + enableIPV6_ADDRESS + "\n");
+   sb.append("enableIP_ADDRESS: " + enableIP_ADDRESS + "\n");
+   sb.append("enableDEC: " + enableDEC + "\n");
+   sb.append("enableACL_NUM: " + enableACL_NUM+ "\n");
+   sb.append("enableCOMMUNITY_LIST_NUM: " + enableCOMMUNITY_LIST_NUM + "\n");
+   return sb.toString();
+}
+
 }
 
 tokens {
-	ACL_NUM_APPLETALK,
-	ACL_NUM_EXTENDED,
-	ACL_NUM_EXTENDED_IPX,
-	ACL_NUM_IPX,
-	ACL_NUM_IPX_SAP,
-	ACL_NUM_OTHER,
-	ACL_NUM_PROTOCOL_TYPE_CODE,
-	ACL_NUM_STANDARD,
-	COMMUNITY_LIST_NUM_EXPANDED,
-	COMMUNITY_LIST_NUM_STANDARD
+   ACL_NUM_APPLETALK,
+   ACL_NUM_EXTENDED,
+   ACL_NUM_EXTENDED_IPX,
+   ACL_NUM_IPX,
+   ACL_NUM_IPX_SAP,
+   ACL_NUM_OTHER,
+   ACL_NUM_PROTOCOL_TYPE_CODE,
+   ACL_NUM_STANDARD,
+   COMMUNITY_LIST_NUM_EXPANDED,
+   COMMUNITY_LIST_NUM_STANDARD
 }
 
 // Cisco Keywords
 
 AAA
 :
-	'aaa'
+   'aaa'
 ;
 
 AAA_SERVER
 :
-	'aaa-server'
+   'aaa-server'
 ;
 
 ABSOLUTE_TIMEOUT
 :
-	'absolute-timeout'
+   'absolute-timeout'
 ;
 
 ACCEPT_DIALIN
 :
-	'accept-dialin'
+   'accept-dialin'
 ;
 
 ACCESS
 :
-	'access'
+   'access'
 ;
 
 ACCESS_CLASS
 :
-	'access-class'
+   'access-class'
 ;
 
 ACCESS_GROUP
 :
-	'access-group'
+   'access-group'
 ;
 
 ACCESS_LIST
 :
-	'access-list'
-	{enableACL_NUM = true; enableDEC = false;}
+   'access-list'
+   {enableACL_NUM = true; enableDEC = false;}
 
 ;
 
 ACCESS_LOG
 :
-	'access-log'
+   'access-log'
 ;
 
 ACCOUNTING
 :
-	'accounting'
+   'accounting'
 ;
 
 ACCOUNTING_PORT
 :
-	'accounting-port'
+   'accounting-port'
 ;
 
 ACCOUNTING_SERVER_GROUP
 :
-	'accounting-server-group'
+   'accounting-server-group'
 ;
 
 ACTION
 :
-	'action'
+   'action'
 ;
 
 ACTIVATE
 :
-	'activate'
+   'activate'
 ;
 
 ACTIVATION_CHARACTER
 :
-	'activation-character'
+   'activation-character'
 ;
 
 ACTIVE
 :
-	'active'
+   'active'
 ;
 
 ADD
 :
-	'add'
+   'add'
 ;
 
 ADDITIVE
 :
-	'additive'
+   'additive'
 ;
 
 ADDRESS
 :
-	'address'
+   'address'
 ;
 
 ADDRESS_FAMILY
 :
-	'address-family'
+   'address-family'
 ;
 
 ADDRESS_POOL
 :
-	'address-pool'
+   'address-pool'
+;
+
+ADMINISTRATIVE_WEIGHT
+:
+   'administrative-weight'
 ;
 
 ADMISSION
 :
-	'admission'
+   'admission'
 ;
 
 AES128_SHA1
 :
-	'aes128-sha1'
+   'aes128-sha1'
 ;
 
 AES256_SHA1
 :
-	'aes256-sha1'
+   'aes256-sha1'
+;
+
+AESA
+:
+   'aesa'
+;
+
+AGGREGATE
+:
+   'aggregate'
 ;
 
 AGGREGATE_ADDRESS
 :
-	'aggregate-address'
+   'aggregate-address'
 ;
 
+AHP
+:
+	'ahp'
+;
+	
 ALERT_GROUP
 :
-	'alert-group'
+   'alert-group'
 ;
 
 ALIAS
 :
-	'alias'
+   'alias'
 ;
 
 ALLOWED
 :
-	'allowed'
+   'allowed'
 ;
 
 ALWAYS
 :
-	'always'
+   'always'
+;
+
+ALWAYS_COMPARE_MED
+:
+	'always-compare-med'
 ;
 
 ANY
 :
-	'any'
+   'any'
 ;
 
 ANYCONNECT
 :
-	'anyconnect'
+   'anyconnect'
 ;
 
 ANYCONNECT_ESSENTIALS
 :
-	'anyconnect-essentials'
+   'anyconnect-essentials'
 ;
 
 AP
 :
-	'ap'
+   'ap'
+;
+
+AQM_REGISTER_FNF
+:
+   'aqm-register-fnf'
 ;
 
 ARCHIVE
 :
-	'archive'
+   'archive'
 ;
 
 AREA
 :
-	'area'
+   'area'
+;
+
+ARP
+:
+   'arp'
+   { enableIPV6_ADDRESS = false; }
 ;
 
 AS_PATH
 :
-	'as-path'
+   'as-path'
 ;
 
 ASA
 :
-	'ASA'
+   'ASA'
 ;
 
 ASDM
 :
-	'asdm'
+   'asdm'
 ;
 
 ASSOCIATE
 :
-	'associate'
+   'associate'
 ;
 
 ASSOCIATION
 :
-	'association'
+   'association'
 ;
 
 ASYNC
 :
-	'async'
+   'async'
 ;
 
 ASYNC_BOOTP
 :
-	'async-bootp'
+   'async-bootp'
 ;
 
 ATM
 :
-	'atm'
+   'atm'
 ;
 
 AUDIT
 :
-	'audit'
+   'audit'
 ;
 
 AUTH_PROXY
 :
-	'auth-proxy'
+   'auth-proxy'
 ;
 
 AUTHENTICATION
 :
-	'authentication'
+   'authentication'
 ;
 
 AUTHENTICATION_PORT
 :
-	'authentication-port'
+   'authentication-port'
 ;
 
 AUTHENTICATION_SERVER_GROUP
 :
-	'authentication-server-group'
+   'authentication-server-group'
 ;
 
 AUTHORIZATION
 :
-	'authorization'
+   'authorization'
 ;
 
 AUTHORIZATION_REQUIRED
 :
-	'authorization-required'
+   'authorization-required'
 ;
 
 AUTHORIZATION_SERVER_GROUP
 :
-	'authorization-server-group'
+   'authorization-server-group'
 ;
 
 AUTO
 :
-	'auto'
+   'auto'
+;
+
+AUTO_COST
+:
+   'auto-cost'
 ;
 
 AUTOSELECT
 :
-	'autoselect'
+   'autoselect'
 ;
 
 AUTO_SUMMARY
 :
-	'auto-summary'
+   'auto-summary'
 ;
 
 AUTO_SYNC
 :
-	'auto-sync'
+   'auto-sync'
+;
+
+BACKGROUND_ROUTES_ENABLE
+:
+   'background-routes-enable'
+;
+
+BACKUPCRF
+:
+   'backupcrf'
 ;
 
 BANDWIDTH
 :
-	'bandwidth'
+   'bandwidth'
 ;
 
 BANNER
 :
-	'banner'
+   'banner' ' '+
+   (
+      'exec'
+      | 'login'
+      | 'motd'
+   ) -> pushMode(M_BANNER)
 ;
 
 BFD
 :
-	'bfd'
+   'bfd'
 ;
 
 BGP
 :
-	'bgp'
+   'bgp'
 ;
 
 BGP_COMMUNITY
 :
-	'bgp-community'
+   'bgp-community'
 ;
 
 BIND
 :
-	'bind'
+   'bind'
 ;
 
 BOOT
 :
-	'boot'
+   'boot'
 ;
 
 BOOT_END_MARKER
 :
-	'boot-end-marker'
+   'boot-end-marker'
 ;
 
 BOOT_START_MARKER
 :
-	'boot-start-marker'
+   'boot-start-marker'
 ;
 
 BOOTP
 :
-	'bootp'
+   'bootp'
 ;
 
 BOOTPC
 :
-	'bootpc'
+   'bootpc'
 ;
 
 BOOTPS
 :
-	'bootps'
+   'bootps'
+;
+
+BOTH
+:
+	'both'
 ;
 
 BRIDGE
 :
-	'bridge'
+   'bridge'
 ;
 
 BROADCAST
 :
-	'broadcast'
+   'broadcast'
 ;
 
 CA
 :
-	'ca'
+   'ca'
 ;
 
 CABLE_RANGE
 :
-	'cable-range'
+   'cable-range'
+;
+
+CABLELENGTH
+:
+   'cablelength' -> pushMode(M_COMMENT)
 ;
 
 CACHE
 :
-	'cache'
+   'cache'
 ;
 
 CACHE_TIMEOUT
 :
-	'cache-timeout'
+   'cache-timeout'
 ;
 
 CALL
 :
-	'call'
+   'call'
 ;
 
 CALL_HOME
 :
-	'call-home'
+   'call-home'
 ;
 
 CALLER_ID
 :
-	'caller-id'
+   'caller-id'
 ;
 
 CARD
 :
-	'card'
+   'card'
 ;
 
 CAS_CUSTOM
 :
-	'cas-custom'
+   'cas-custom'
 ;
 
 CCM
 :
-	'ccm'
+   'ccm'
 ;
 
 CCM_GROUP
 :
-	'ccm-group'
+   'ccm-group'
 ;
 
 CCM_MANAGER
 :
-	'ccm-manager'
+   'ccm-manager'
 ;
 
 CDP
 :
-	'cdp'
+   'cdp'
 ;
 
 CEF
 :
-	'cef'
+   'cef'
+;
+
+CERTIFICATE
+:
+   'certificate' -> pushMode(M_CERTIFICATE)
 ;
 
 CGMP
 :
-	'cgmp'
+   'cgmp'
 ;
 
 CHANNEL
 :
-	'channel'
+   'channel'
 ;
 
 CHANNEL_GROUP
 :
-	'channel-group'
+   'channel-group'
 ;
 
 CHANNEL_PROTOCOL
 :
-	'channel-protocol'
+   'channel-protocol'
 ;
 
 CHANNELIZED
 :
-	'channelized'
+   'channelized'
 ;
 
 CIPC
 :
-	'cipc'
+   'cipc'
 ;
 
 CLASS
 :
-	'class'
+   'class'
 ;
 
 CLASSLESS
 :
-	'classless'
+   'classless'
 ;
 
 CLASS_MAP
 :
-	'class-map'
+   'class-map'
 ;
 
 CLNS
 :
-	'clns'
+   'clns'
 ;
 
 CLOCK
 :
-	'clock'
+   'clock'
 ;
 
 CLUSTER
 :
-	'cluster'
+   'cluster'
 ;
 
 CLUSTER_ID
 :
-	'cluster-id'
+   'cluster-id'
 ;
 
 CMD
 :
-	'cmd'
+   'cmd'
 ;
 
 CNS
 :
-	'cns'
+   'cns'
 ;
 
 CODEC
 :
-	'codec'
+   'codec'
 ;
 
 COLLECT
 :
-	'collect'
+   'collect'
 ;
 
 COMM_LIST
 :
-	'comm-list'
+   'comm-list'
+;
+
+COMMANDER_ADDRESS
+:
+   'commander-address'
+   { enableIPV6_ADDRESS = false; }
+;
+
+COMMUNITY
+:
+   'community'
+   { enableIPV6_ADDRESS = false; }
+;
+
+COMMUNITY_LIST
+:
+   'community-list'
+   {
+      enableIPV6_ADDRESS = false;
+      enableCOMMUNITY_LIST_NUM = true;
+      enableDEC = false;
+   }
 ;
 
 CONFIG_REGISTER
 :
-	'config-register'
+   'config-register'
 ;
 
 CONFORM_ACTION
 :
-	'conform-action'
+   'conform-action'
 ;
 
 CONNECTED
 :
-	'connected'
+   'connected'
 ;
 
 CONSOLE
 :
-	'console'
+   'console'
 ;
 
 CONTACT_EMAIL_ADDR
 :
-	'contact-email-addr'
+   'contact-email-addr'
 ;
 
 CONTROL_PLANE
 :
-	'control-plane'
+   'control-plane'
 ;
 
 CONTROLLER
 :
-	'controller'
+   'controller'
 ;
 
 COST
 :
-	'cost'
+   'cost'
+;
+
+COUNTER
+:
+   'counter'
 ;
 
 CPTONE
 :
-	'cptone'
+   'cptone'
 ;
 
 CRYPTO
 :
-	'crypto'
+   'crypto'
 ;
 
 CRL
 :
-	'crl'
+   'crl'
 ;
 
 CTL_FILE
 :
-	'ctl-file'
+   'ctl-file'
 ;
 
 CTS
 :
-	'cts'
+   'cts'
 ;
 
 DAMPENING
 :
-	'dampening'
+   'dampening'
+;
+
+DATABITS
+:
+   'databits'
 ;
 
 DBL
 :
-	'dbl'
+   'dbl'
 ;
 
 DEAD_INTERVAL
 :
-	'dead-interval'
+   'dead-interval'
 ;
 
 DEFAULT
 :
-	'default'
+   'default'
+;
+
+DEFAULT_ACTION
+:
+   'default-action'
 ;
 
 DEFAULT_DOMAIN
 :
-	'default-domain'
+   'default-domain'
 ;
 
 DEFAULT_GATEWAY
 :
-	'default-gateway'
+   'default-gateway'
 ;
 
 DEFAULT_GROUP_POLICY
 :
-	'default-group-policy'
+   'default-group-policy'
 ;
 
 DEFAULT_INFORMATION
 :
-	'default-information'
+   'default-information'
+;
+
+DEFAULT_INFORMATION_ORIGINATE
+:
+	'default-information-originate'
 ;
 
 DEFAULT_METRIC
 :
-	'default-metric'
+   'default-metric'
 ;
 
 DEFAULT_NETWORK
 :
-	'default-network'
+   'default-network'
 ;
 
 DEFAULT_ORIGINATE
 :
-	'default-originate'
+   'default-originate'
 ;
 
 DEFINITION
 :
-	'definition'
+   'definition'
+;
+
+DELAY
+:
+   'delay'
 ;
 
 DELETE
 :
-	'delete'
+   'delete'
 ;
 
 DENY
 :
-	'deny'
+   'deny'
+;
+
+DES
+:
+   'des' -> pushMode(M_DES) 
 ;
 
 DES_SHA1
 :
-	'des-sha1'
+   'des-sha1'
 ;
 
 DESCRIPTION
 :
-	'description' -> pushMode(M_DESCRIPTION)
+   'description' -> pushMode(M_DESCRIPTION)
 ;
-
 
 DESIRABLE
 :
-	'desirable'
+   'desirable'
 ;
 
 DESTINATION
 :
-	'destination'
+   'destination'
+;
+
+DETERMINISTIC_MED
+:
+   'deterministic-med'
 ;
 
 DEVICE
 :
-	'device'
+   'device'
 ;
 
 DEVICE_SENSOR
 :
-	'device-sensor'
+   'device-sensor'
 ;
 
 DF
 :
-	'df'
+   'df'
 ;
 
 DHCP
 :
-	'dhcp'
+   'dhcp'
 ;
 
 DHCPD
 :
-	'dhcpd'
+   'dhcpd'
 ;
 
 DIAGNOSTIC
 :
-	'diagnostic'
+   'diagnostic'
 ;
 
 DIAL_PEER
 :
-	'dial-peer'
+   'dial-peer'
 ;
 
 DIALER_LIST
 :
-	'dialer-list'
+   'dialer-list'
 ;
 
 DIRECTED_BROADCAST
 :
-	'directed-broadcast'
+   'directed-broadcast'
 ;
 
 DISABLE
 :
-	'disable'
+   'disable'
+;
+
+DISTANCE
+:
+   'distance'
 ;
 
 DISTRIBUTE_LIST
 :
-	'distribute-list'
+   'distribute-list'
 ;
 
 DNS
 :
-	'dns'
+   'dns'
 ;
 
 DNS_GUARD
 :
-	'dns-guard'
+   'dns-guard'
 ;
 
 DNS_SERVER
 :
-	'dns-server'
+   'dns-server'
 ;
 
 DOMAIN
 :
-	'domain'
+   'domain'
 ;
 
 DOMAIN_LIST
 :
-	'domain-list'
+   'domain-list'
 ;
 
 DOMAIN_LOOKUP
 :
-	'domain-lookup'
+   'domain-lookup'
 ;
 
 DOMAIN_NAME
 :
-	'domain-name'
+   'domain-name'
+;
+
+DONT_CAPABILITY_NEGOTIATE
+:
+	'dont-capability-negotiate'
 ;
 
 DOT11
 :
-	'dot11'
+   'dot11'
 ;
 
 DOT1Q
 :
-	'dot1q'
+   'dot1q'
 ;
 
 DS0_GROUP
 :
-	'ds0-group'
+   'ds0-group'
 ;
 
 DSP
 :
-	'dsp'
+   'dsp'
 ;
 
 DSPFARM
 :
-	'dspfarm'
+   'dspfarm'
+;
+
+DSS
+:
+   'dss'
 ;
 
 DSU
 :
-	'dsu'
+   'dsu'
 ;
 
 DUPLEX
 :
-	'duplex'
+   'duplex'
+;
+
+DVMRP
+:
+	'dvmrp'
 ;
 
 DYNAMIC
 :
-	'dynamic'
+   'dynamic'
 ;
 
 DYNAMIC_ACCESS_POLICY_RECORD
 :
-	'dynamic-access-policy-record'
+   'dynamic-access-policy-record'
 ;
 
 DYNAMIC_MAP
 :
-	'dynamic-map'
+   'dynamic-map'
 ;
 
 EBGP_MULTIHOP
 :
-	'ebgp-multihop'
+   'ebgp-multihop'
 ;
 
 ECHO
 :
-	'echo'
+   'echo'
 ;
 
 ECHO_REPLY
 :
-	'echo-reply'
+   'echo-reply'
+;
+
+EGP
+:
+   'egp'
 ;
 
 EMPTY
 :
-	'empty'
+   'empty'
 ;
 
 ENABLE
 :
-	'enable'
+   'enable'
 ;
 
 ENCAPSULATION
 :
-	'encapsulation'
+   'encapsulation'
 ;
 
 ENCR
 :
-	'encr'
+   'encr'
 ;
 
 ENCRYPTION
 :
-	'encryption'
+   'encryption'
 ;
 
 END
 :
-	'end'
+   'end'
+;
+
+ENGINEID
+:
+   'engineid' -> pushMode(M_COMMENT)
 ;
 
 ENROLLMENT
 :
-	'enrollment'
+   'enrollment'
 ;
 
 ENVIRONMENT
 :
-	'environment'
+   'environment'
+;
+
+EOF_LITERAL
+:
+   'EOF'
 ;
 
 EQ
 :
-	'eq'
+   'eq'
 ;
 
 ERRDISABLE
 :
-	'errdisable'
+   'errdisable'
+;
+
+ESCAPE_CHARACTER
+:
+   'escape-character'
 ;
 
 ESP
 :
-	'esp'
+   'esp'
 ;
 
 ESTABLISHED
 :
-	'established'
+   'established'
 ;
 
 EVALUATE
 :
-	'evaluate'
+   'evaluate'
 ;
 
 EVENT
 :
-	'event'
+   'event'
+;
+
+EVENT_HANDLER
+:
+   'event-handler'
 ;
 
 EXCEED_ACTION
 :
-	'exceed-action'
+   'exceed-action'
 ;
 
 EXCEPTION
 :
-	'exception'
+   'exception'
 ;
 
 EXEC
 :
-	'exec'
+   'exec'
 ;
 
 EXEC_TIMEOUT
 :
-	'exec-timeout'
+   'exec-timeout'
 ;
 
 EXECUTE
 :
-	'execute'
+   'execute'
 ;
 
 EXIT_ADDRESS_FAMILY
 :
-	'exit-address-family'
+   'exit-address-family'
 ;
 
 EXPORT
 :
-	'export'
+   'export'
 ;
 
 EXPORT_PROTOCOL
 :
-	'export-protocol'
+   'export-protocol'
 ;
 
 EXPORTER
 :
-	'exporter'
+   'exporter'
 ;
 
 EXPANDED
 :
-	'expanded'
+   'expanded'
+;
+
+EXTCOMM_LIST
+:
+   'extcomm-list'
+;
+
+EXTCOMMUNITY_LIST
+:
+   'extcommunity-list'
 ;
 
 EXTENDED
 :
-	'extended' { enableDEC = true; enableACL_NUM = false; }
+   'extended'
+   { enableDEC = true; enableACL_NUM = false; }
+
 ;
 
 FABRIC
 :
-	'fabric'
+   'fabric'
+;
+
+FACILITY_ALARM
+:
+   'facility-alarm'
 ;
 
 FAILOVER
 :
-	'failover'
+   'failover'
 ;
 
 FAIR_QUEUE
 :
-	'fair-queue'
+   'fair-queue'
 ;
 
 FALL_OVER
 :
-	'fall-over'
+   'fall-over'
 ;
 
 FALLBACK_DN
 :
-	'fallback-dn'
+   'fallback-dn'
 ;
 
 FEATURE
 :
-	'feature'
+   'feature'
 ;
 
 FILE
 :
-	'file'
+   'file'
 ;
 
 FILE_BROWSING
 :
-	'file-browsing'
+   'file-browsing'
 ;
 
 FILE_ENTRY
 :
-	'file-entry'
+   'file-entry'
 ;
 
 FILTER_LIST
 :
-	'filter-list'
+   'filter-list'
+;
+
+FIREWALL
+:
+   'firewall'
+   { enableIPV6_ADDRESS = false; }
+
 ;
 
 FINGER
 :
-	'finger'
+   'finger'
 ;
 
 FIRMWARE
 :
-	'firmware'
+   'firmware'
 ;
 
 FLOW
 :
-	'flow'
+   'flow'
 ;
 
 FLOW_CACHE
 :
-	'flow-cache'
+   'flow-cache'
 ;
 
 FLOW_EXPORT
 :
-	'flow-export'
+   'flow-export'
 ;
 
 FLOW_TOP_TALKERS
 :
-	'flow-top-talkers'
+   'flow-top-talkers'
 ;
 
 FLOWCONTROL
 :
-	'flowcontrol'
+   'flowcontrol'
+;
+
+FLUSH_AT_ACTIVATION
+:
+   'flush-at-activation'
 ;
 
 FORWARD_PROTOCOL
 :
-	'forward-protocol'
+   'forward-protocol'
 ;
 
 FQDN
 :
-	'fqdn'
+   'fqdn'
 ;
 
 FRAGMENTS
 :
-	'fragments'
+   'fragments'
+;
+
+FRAME_RELAY
+:
+   'frame-relay'
 ;
 
 FRAMING
 :
-	'framing'
+   'framing'
+;
+
+FREQUENCY
+:
+   'frequency'
 ;
 
 FTP
 :
-	'ftp'
+   'ftp'
 ;
 
 FTP_DATA
 :
-	'ftp-data'
+   'ftp-data'
 ;
 
 FTP_SERVER
 :
-	'ftp-server'
+   'ftp-server'
 ;
 
 FULL_DUPLEX
 :
-	'full-duplex'
+   'full-duplex'
 ;
 
 GATEKEEPER
 :
-	'gatekeeper'
+   'gatekeeper'
 ;
 
 GATEWAY
 :
-	'gateway'
+   'gateway'
 ;
 
 GE
 :
-	'ge'
+   'ge'
 ;
 
 GRACEFUL_RESTART
 :
-	'graceful-restart'
+   'graceful-restart'
 ;
 
 GRATUITOUS_ARPS
 :
-	'gratuitous-arps'
+   'gratuitous-arps'
 ;
 
 GRE
 :
-	'gre'
+   'gre'
 ;
 
 GROUP
 :
-	'group'
+   'group'
 ;
 
 GROUP_ALIAS
 :
-	'group-alias'
+   'group-alias'
 ;
 
 GROUP_OBJECT
 :
-	'group-object'
+   'group-object'
 ;
 
 GROUP_POLICY
 :
-	'group-policy'
+   'group-policy'
 ;
 
 GROUP_RANGE
 :
-	'group-range'
+   'group-range'
 ;
 
 GROUP_URL
 :
-	'group-url'
+   'group-url'
 ;
 
 GT
 :
-	'gt'
+   'gt'
 ;
 
 HALF_DUPLEX
 :
-	'half-duplex'
+   'half-duplex'
 ;
 
 HASH
 :
-	'hash'
+   'hash'
 ;
 
 HELLO_MULTIPLIER
 :
-	'hello-multiplier'
+   'hello-multiplier'
 ;
 
 HELPER_ADDRESS
 :
-	'helper-address'
+   'helper-address'
 ;
 
 HIDDEN_SHARES
 :
-	'hidden-shares'
+   'hidden-shares'
 ;
 
 HIDEKEYS
 :
-	'hidekeys'
+   'hidekeys'
+;
+
+HIGH_AVAILABILITY
+:
+   'high-availability'
 ;
 
 HISTORY
 :
-	'history'
+   'history'
 ;
 
 HOLD_QUEUE
 :
-	'hold-queue'
+   'hold-queue'
 ;
 
 HOST
 :
-	'host'
+   'host'
 ;
 
 HOST_ROUTING
 :
-	'host-routing'
+   'host-routing'
+;
+
+HOST_UNKNOWN
+:
+   'host-unknown'
+;
+
+HOST_UNREACHABLE
+:
+   'host-unreachable'
 ;
 
 HOSTNAME
 :
-	'hostname'
+   'hostname'
 ;
 
 HTTP
 :
-	'http'
+   'http'
 ;
 
 HW_MODULE
 :
-	'hw-module'
+   'hw-module'
 ;
 
 ICMP
 :
-	'icmp'
+   'icmp'
 ;
 
 ICMP_ECHO
 :
-	'icmp-echo'
+   'icmp-echo'
 ;
 
 ICMP_OBJECT
 :
-	'icmp-object'
+   'icmp-object'
 ;
 
 IDENT
 :
-	'ident'
+   'ident'
 ;
 
 IDENTITY
 :
-	'identity'
+   'identity'
+;
+
+IDLE_TIMEOUT
+:
+   'idle-timeout'
 ;
 
 IGMP
 :
-	'igmp'
+   'igmp'
+;
+
+IGP
+:
+   'igp'
 ;
 
 IKEV1
 :
-	'ikev1'
+   'ikev1'
 ;
 
 ILMI_KEEPALIVE
 :
-	'ilmi-keepalive'
+   'ilmi-keepalive'
 ;
 
 IN
 :
-	'in'
+   'in'
 ;
 
 INACTIVITY_TIMER
 :
-	'inactivity-timer'
+   'inactivity-timer'
 ;
 
 INBOUND
 :
-	'inbound'
+   'inbound'
+;
+
+INCOMPLETE
+:
+   'incomplete'
 ;
 
 INSPECT
 :
-	'inspect'
+   'inspect'
+;
+
+INSTANCE
+:
+   'instance'
+;
+
+INTERFACE
+:
+   'interface'
+   { enableIPV6_ADDRESS = false; }
+
 ;
 
 INTERNAL
 :
-	'internal'
+   'internal'
 ;
 
 INTERNET
 :
-	'internet'
+   'internet'
+;
+
+INVALID_SPI_RECOVERY
+:
+   'invalid-spi-recovery'
 ;
 
 IP
 :
-	'ip'
+   'ip'
 ;
 
 IP_ADDRESS_LITERAL
 :
-	'ip-address'
+   'ip-address'
 ;
 
 IPC
 :
-	'ipc'
+   'ipc'
+;
+
+IPINIP
+:
+   'ipinip'
 ;
 
 IPSEC
 :
-	'ipsec'
+   'ipsec'
 ;
 
 IPSEC_UDP
 :
-	'ipsec-udp'
+   'ipsec-udp'
 ;
 
 IPV4
 :
-	'ipv4'
+   'ipv4'
 ;
 
 IPV6
 :
-	'ipv6'
+   'ipv6'
 ;
 
 IPV6_ADDRESS_POOL
 :
-	'ipv6-address-pool'
+   'ipv6-address-pool'
+;
+
+IPX
+:
+   'ipx'
 ;
 
 IRDP
 :
-	'irdp'
+   'irdp'
 ;
 
 ISAKMP
 :
-	'isakmp'
+   'isakmp'
 ;
 
 ISDN
 :
-	'isdn'
+   'isdn'
 ;
 
 ISL
 :
-	'isl'
+   'isl'
 ;
 
 KEEPALIVE
 :
-	'keepalive'
+   'keepalive'
 ;
 
 KEEPALIVE_ENABLE
 :
-	'keepalive-enable'
+   'keepalive-enable'
 ;
 
 KEEPOUT
 :
-	'keepout'
+   'keepout'
+;
+
+KEY
+:
+   'key' -> pushMode(M_KEY)
 ;
 
 KEYPAIR
 :
-	'keypair'
+   'keypair'
+;
+
+KEYRING
+:
+   'keyring'
+;
+
+LANE
+:
+   'lane'
 ;
 
 LAPB
 :
-	'lapb'
+   'lapb'
+;
+
+LAST_AS
+:
+   'last-as'
 ;
 
 LE
 :
-	'le'
+   'le'
 ;
 
 L2TP
 :
-	'l2tp'
+   'l2tp'
 ;
 
 LDAP_BASE_DN
 :
-	'ldap-base-dn'
+   'ldap-base-dn'
 ;
 
 LDAP_LOGIN
 :
-	'ldap-login'
+   'ldap-login'
 ;
 
 LDAP_LOGIN_DN
 :
-	'ldap-login-dn'
+   'ldap-login-dn'
 ;
 
 LDAP_NAMING_ATTRIBUTE
 :
-	'ldap-naming-attribute'
+   'ldap-naming-attribute'
 ;
 
 LDAP_SCOPE
 :
-	'ldap-scope'
+   'ldap-scope'
 ;
 
 LENGTH
 :
-	'length'
+   'length'
 ;
 
 LICENSE
 :
-	'license'
+   'license'
 ;
 
 LIFETIME
 :
-	'lifetime'
+   'lifetime'
 ;
 
 LINE
 :
-	'line'
+   'line'
 ;
 
 LINECODE
 :
-	'linecode'
+   'linecode'
+;
+
+LISTEN
+:
+   'listen'
 ;
 
 LLDP
 :
-	'lldp'
+   'lldp'
 ;
 
 LOAD_INTERVAL
 :
-	'load-interval'
+   'load-interval'
 ;
 
 LOAD_SHARING
 :
-	'load-sharing'
+   'load-sharing'
 ;
 
 LOCAL
 :
-	'local'
+   'local'
 ;
 
 LOCAL_AS
 :
-	'local-as'
+   'local-as'
 ;
 
 LOCAL_IP
 :
-	'local-ip'
+   'local-ip'
 ;
 
 LOCAL_PORT
 :
-	'local-port'
+   'local-port'
 ;
 
 LOCAL_PREFERENCE
 :
-	'local-preference'
+   'local-preference'
+;
+
+LOCATION
+:
+   'location' -> pushMode(M_COMMENT)
 ;
 
 LOG
 :
-	'log'
+   'log'
 ;
 
 LOG_ADJACENCY_CHANGES
 :
-	'log-adjacency-changes'
+   'log-adjacency-changes'
 ;
 
 LOG_INPUT
 :
-	'log-input'
+   'log-input'
 ;
 
 LOG_NEIGHBOR_CHANGES
 :
-	'log-neighbor-changes'
+   'log-neighbor-changes'
 ;
 
 LOGGING
 :
-	'logging'
+   'logging'
 ;
 
 LOGIN
 :
-	'login'
+   'login'
 ;
 
 LPD
 :
-	'lpd'
+   'lpd'
 ;
 
 LRE
 :
-	'lre'
+   'lre'
 ;
 
 LT
 :
-	'lt'
+   'lt'
+;
+
+MAC
+:
+   'mac' -> pushMode(M_COMMENT)
+;
+
+MAC_ADDRESS
+:
+   'mac-address' -> pushMode(M_COMMENT)
 ;
 
 MAC_ADDRESS_TABLE
 :
-	'mac-address-table'
+   'mac-address-table'
 ;
 
 MACRO
 :
-	'macro'
+   'macro'
 ;
 
 MAIL_SERVER
 :
-	'mail-server'
+   'mail-server'
 ;
 
 MAIN_CPU
 :
-	'main-cpu'
+   'main-cpu'
+;
+
+MANAGEMENT
+:
+   'management'
 ;
 
 MANAGEMENT_ONLY
 :
-	'management-only'
+   'management-only'
 ;
 
 MAP
 :
-	'map'
+   'map'
+;
+
+MAP_CLASS
+:
+   'map-class'
+;
+
+MAP_GROUP
+:
+   'map-group'
+;
+
+MAP_LIST
+:
+   'map-list'
 ;
 
 MASK
 :
-	'mask'
+   'mask'
 ;
 
 MATCH
 :
-	'match'
+   'match'
 ;
 
 MAXIMUM
 :
-	'maximum'
+   'maximum'
 ;
 
 MAXIMUM_PATHS
 :
-	'maximum-paths'
+   'maximum-paths'
 ;
 
 MAXIMUM_PREFIX
 :
-	'maximum-prefix'
+   'maximum-prefix'
+;
+
+MAXIMUM_ROUTES
+:
+   'maximum-routes'
 ;
 
 MDIX
 :
-	'mdix'
+   'mdix'
 ;
 
 MEDIA_TERMINATION
 :
-	'media-termination'
+   'media-termination'
 ;
 
 MEDIA_TYPE
 :
-	'media-type'
+   'media-type'
 ;
 
 MEMBER
 :
-	'member'
+   'member'
 ;
 
 MEMORY_SIZE
 :
-	'memory-size'
+   'memory-size'
+;
+
+MESSAGE_DIGEST_KEY
+:
+   'message-digest-key'
 ;
 
 MESSAGE_LENGTH
 :
-	'message-length'
+   'message-length'
 ;
 
 METRIC
 :
-	'metric'
+   'metric'
 ;
 
 METRIC_TYPE
 :
-	'metric-type'
+   'metric-type'
 ;
 
 MFIB
 :
-	'mfib'
+   'mfib'
+;
+
+MFIB_MODE
+:
+   'mfib-mode'
 ;
 
 MGCP
 :
-	'mgcp'
+   'mgcp'
 ;
 
 MICROCODE
 :
-	'microcode'
+   'microcode'
 ;
 
 MINIMAL
 :
-	'minimal'
+   'minimal'
+;
+
+MLAG
+:
+   'mlag'
 ;
 
 MLD
 :
-	'mld'
+   'mld'
 ;
 
 MLS
 :
-	'mls'
+   'mls'
+;
+
+MOBILITY
+:
+   'mobility'
 ;
 
 MODE
 :
-	'mode'
+   'mode'
 ;
 
 MODEM
 :
-	'modem'
+   'modem'
 ;
 
 MODULE
 :
-	'module'
+   'module'
 ;
 
 MONITOR
 :
-	'monitor'
+   'monitor'
 ;
 
 MOP
 :
-	'mop'
+   'mop'
 ;
 
 MOTD
 :
-	'motd'
+   'motd'
 ;
 
 MPLS
 :
-	'mpls'
+   'mpls'
+;
+
+MPLS_LABEL
+:
+   'mpls-label'
 ;
 
 MROUTE
 :
-	'mroute'
+   'mroute'
 ;
 
 MROUTE_CACHE
 :
-	'mroute-cache'
+   'mroute-cache'
 ;
 
 MSDP
 :
-	'msdp'
+   'msdp'
 ;
 
 MTA
 :
-	'mta'
+   'mta'
 ;
 
 MTU
 :
-	'mtu'
+   'mtu'
 ;
 
 MULTICAST
 :
-	'multicast'
+   'multicast'
 ;
 
 MULTICAST_ROUTING
 :
-	'multicast-routing'
+   'multicast-routing'
 ;
 
 MULTILINK
 :
-	'multilink'
+   'multilink'
+;
+
+MULTIPOINT
+:
+   'multipoint'
+;
+
+MVR
+:
+   'mvr'
 ;
 
 NAME_LOOKUP
 :
-	'name-lookup'
+   'name-lookup'
 ;
 
 NAME_SERVER
 :
-	'name-server'
+   'name-server'
 ;
 
 NAMEIF
 :
-	'nameif'
+   'nameif'
+;
+
+NAME
+:
+   'name' -> pushMode(M_NAME)
 ;
 
 NAMES
 :
-	'names'
+   'names'
 ;
 
 NAT
 :
-	'nat'
+   'nat'
 ;
 
 NAT_CONTROL
 :
-	'nat-control'
+   'nat-control'
 ;
 
 NATIVE
 :
-	'native'
+   'native'
 ;
 
 ND
 :
-	'nd'
+   'nd'
 ;
 
 NEGOTIATE
 :
-	'negotiate'
+   'negotiate'
 ;
 
 NEGOTIATION
 :
-	'negotiation'
+   'negotiation'
 ;
 
 NEIGHBOR
 :
-	'neighbor'
+   'neighbor' -> pushMode(M_NEIGHBOR)
 ;
 
 NEQ
 :
-	'neq'
+   'neq'
+;
+
+NET_UNREACHABLE
+:
+   'net-unreachable'
 ;
 
 NETBIOS_DGM
 :
-	'netbios-dgm'
+   'netbios-dgm'
 ;
 
 NETBIOS_NS
 :
-	'netbios-ns'
+   'netbios-ns'
 ;
 
 NETBIOS_SS
 :
-	'netbios-ss'
+   'netbios-ss'
+;
+
+NETCONF
+:
+   'netconf'
 ;
 
 NETWORK
 :
-	'network'
+   'network'
 ;
 
 NETWORK_CLOCK_PARTICIPATE
 :
-	'network-clock-participate'
+   'network-clock-participate'
 ;
 
 NETWORK_CLOCK_SELECT
 :
-	'network-clock-select'
+   'network-clock-select'
 ;
 
 NETWORK_OBJECT
 :
-	'network-object'
+   'network-object'
+;
+
+NETWORK_UNKNOWN
+:
+   'network-unknown'
 ;
 
 NEXT_HOP
 :
-	'next-hop'
+   'next-hop'
 ;
 
 NEXT_HOP_SELF
 :
-	'next-hop-self'
+   'next-hop-self'
+;
+
+NNTP
+:
+   'nntp'
 ;
 
 NO
 :
-	'no'
+   'no'
 ;
 
 NO_ADVERTISE
 :
-	'no-advertise'
+   'no-advertise'
 ;
 
 NO_EXPORT
 :
-	'no-export'
+   'no-export'
 ;
 
 NO_SUMMARY
 :
-	'no-summary'
+   'no-summary'
+;
+
+NODE
+:
+   'node'
 ;
 
 NON500_ISAKMP
 :
-	'non500-isakmp'
+   'non500-isakmp'
 ;
 
 NONE
 :
-	'none'
+   'none'
 ;
 
 NONEGOTIATE
 :
-	'nonegotiate'
+   'nonegotiate'
 ;
 
 NOTIFY
 :
-	'notify'
+   'notify'
 ;
 
 NSF
 :
-	'nsf'
+   'nsf'
 ;
 
 NSSA
 :
-	'nssa'
+   'nssa'
 ;
 
 NTP
 :
-	'ntp'
+   'ntp'
 ;
 
 OBJECT
 :
-	'object'
+   'object'
 ;
 
 OBJECT_GROUP
 :
-	'object-group'
+   'object-group'
+;
+
+OPENFLOW
+:
+   'openflow'
 ;
 
 ORIGIN
 :
-	'origin'
+   'origin'
 ;
 
 ORIGINATE
 :
-	'originate'
+   'originate'
 ;
 
 OSPF
 :
-	'ospf'
+   'ospf'
 ;
 
 OTHER_ACCESS
 :
-	'other-access'
+   'other-access'
+;
+
+OUI
+:
+   'oui' -> pushMode(M_COMMENT)
 ;
 
 OUT
 :
-	'out'
+   'out'
+;
+
+OWNER
+:
+   'owner'
 ;
 
 PACKET_TOO_BIG
 :
-	'packet-too-big'
+   'packet-too-big'
 ;
 
 PAGER
 :
-	'pager'
+   'pager'
 ;
 
 PARAMETER_PROBLEM
 :
-	'parameter-problem'
+   'parameter-problem'
 ;
 
 PARAMETERS
 :
-	'parameters'
+   'parameters'
 ;
 
 PARENT
 :
-	'parent'
+   'parent'
+;
+
+PARSER
+:
+   'parser'
 ;
 
 PARTICIPATE
 :
-	'participate'
+   'participate'
 ;
 
 PASSIVE_INTERFACE
 :
-	'passive-interface'
+   'passive-interface'
+;
+
+PASSWORD
+:
+   'password' -> pushMode(M_COMMENT)
 ;
 
 PASSWORD_STORAGE
 :
-	'password-storage'
+   'password-storage'
 ;
 
 PATH_JITTER
 :
-	'path-jitter'
+   'path-jitter'
 ;
 
 PEER
 :
-	'peer'
+   'peer'
 ;
 
 PEER_GROUP
 :
-	'peer-group'
+   'peer-group' -> pushMode(M_NEIGHBOR)
 ;
 
 PERMANENT
 :
-	'permanent'
+   'permanent'
 ;
 
 PERMIT
 :
-	'permit'
+   'permit'
 ;
 
 PHONE_PROXY
 :
-	'phone-proxy'
+   'phone-proxy'
 ;
 
 PHYSICAL_LAYER
 :
-	'physical-layer'
+   'physical-layer'
 ;
 
 PICKUP
 :
-	'pickup'
+   'pickup'
 ;
 
 PIM
 :
-	'pim'
+   'pim'
 ;
 
 PIM_AUTO_RP
 :
-	'pim-auto-rp'
+   'pim-auto-rp'
 ;
 
 PKI
 :
-	'pki'
+   'pki'
 ;
 
 PLATFORM
 :
-	'platform'
+   'platform'
 ;
 
 POLICE
 :
-	'police'
+   'police'
 ;
 
 POLICY
 :
-	'policy'
+   'policy'
 ;
 
 POLICY_LIST
 :
-	'policy-list'
+   'policy-list'
 ;
 
 POLICY_MAP
 :
-	'policy-map'
+   'policy-map'
 ;
 
 POP3
 :
-	'pop3'
+   'pop3'
 ;
 
 PORT
 :
-	'port'
+   'port'
 ;
 
 PORT_CHANNEL
 :
-	'port-channel'
+   'port-channel'
 ;
 
 PORT_OBJECT
 :
-	'port-object'
+   'port-object'
 ;
 
 PORT_SECURITY
 :
-	'port-security'
+   'port-security'
 ;
 
 PORT_UNREACHABLE
 :
-	'port-unreachable'
+   'port-unreachable'
 ;
 
 POWER
 :
-	'power'
+   'power'
 ;
 
 PPP
 :
-	'ppp'
+   'ppp'
 ;
 
 PREPEND
 :
-	'prepend'
+   'prepend'
+;
+
+PRE_SHARED_KEY
+:
+   'pre-shared-key'
 ;
 
 PRI_GROUP
 :
-	'pri-group'
+   'pri-group'
 ;
 
 PRIORITY
 :
-	'priority'
+   'priority'
 ;
 
 PRIORITY_QUEUE
 :
-	'priority-queue'
+   'priority-queue'
 ;
 
 PRIVATE_VLAN
 :
-	'private-vlan'
+   'private-vlan'
 ;
 
 PREFIX
 :
-	'prefix'
+   'prefix'
 ;
 
 PREFIX_LIST
 :
-	'prefix-list'
+   'prefix-list'
 ;
 
 PRIORITY_
 :
-	'priority'
+   'priority'
 ;
 
 PRIORITY_QUEUE_
 :
-	'priority-queue'
+   'priority-queue'
 ;
 
 PRIVILEGE
 :
-	'privilege'
+   'privilege'
 ;
 
 PROCESS
 :
-	'process'
+   'process'
 ;
 
 PROFILE
 :
-	'profile'
+   'profile'
 ;
 
 PROMPT
 :
-	'prompt'
+   'prompt'
 ;
 
 PROTOCOL
 :
-	'protocol'
+   'protocol'
 ;
 
 PROTOCOL_OBJECT
 :
-	'protocol-object'
+   'protocol-object'
 ;
 
 PROXY_ARP
 :
-	'proxy-arp'
+   'proxy-arp'
 ;
 
 QOS
 :
-	'qos'
+   'qos'
 ;
 
 QUEUE_BUFFERS
 :
-	'queue-buffers'
+   'queue-buffers'
 ;
 
 QUEUE_LIMIT
 :
-	'queue-limit'
+   'queue-limit'
 ;
 
 QUEUE_SET
 :
-	'queue-set'
+   'queue-set'
+;
+
+QUIT
+:
+   'quit'
 ;
 
 RADIUS
 :
-	'radius'
+   'radius'
 ;
 
 RADIUS_COMMON_PW
 :
-	'radius-common-pw'
+   'radius-common-pw'
 ;
 
 RADIUS_SERVER
 :
-	'radius-server'
+   'radius-server'
+;
+
+RANDOM_DETECT
+:
+   'random-detect'
 ;
 
 RANGE
 :
-	'range'
+   'range'
 ;
 
 RC4_SHA1
 :
-	'rc4-sha1'
+   'rc4-sha1'
 ;
 
 RCMD
 :
-	'rcmd'
+   'rcmd'
 ;
 
 RCV_QUEUE
 :
-	'rcv-queue'
+   'rcv-queue'
 ;
 
 RD
 :
-	'rd'
+   'rd'
 ;
 
 RECORD
 :
-	'record'
+   'record'
 ;
 
 RECORD_ENTRY
 :
-	'record-entry'
+   'record-entry'
 ;
 
 REDIRECT
 :
-	'redirect'
+   'redirect'
 ;
 
 REDIRECT_FQDN
 :
-	'redirect-fqdn'
+   'redirect-fqdn'
 ;
 
 REDIRECTS
 :
-	'redirects'
+   'redirects'
 ;
 
 REDISTRIBUTE
 :
-	'redistribute'
+   'redistribute'
 ;
 
 REDUNDANCY
 :
-	'redundancy'
+   'redundancy'
 ;
 
 REFLECT
 :
-	'reflect'
+   'reflect'
+;
+
+REMARK
+:
+   'remark' -> pushMode(M_REMARK)
 ;
 
 REMOTE_AS
 :
-	'remote-as'
+   'remote-as'
 ;
 
 REMOTE_IP
 :
-	'remote-ip'
+   'remote-ip'
 ;
 
 REMOTE_PORT
 :
-	'remote-port'
+   'remote-port'
 ;
 
 REMOVE_PRIVATE_AS
 :
-	'remove-private-as'
+   'remove-private-as'
 ;
 
 REMOTE_SPAN
 :
-	'remote-span'
+   'remote-span'
 ;
 
 REMOVED
 :
-	'<removed>'
+   '<removed>'
 ;
 
 RESOURCE
 :
-	'resource'
+   'resource'
 ;
 
 RESOURCE_POOL
 :
-	'resource-pool'
+   'resource-pool'
+;
+
+REVERSE_ROUTE
+:
+   'reverse-route'
+;
+
+REVISION
+:
+   'revision'
 ;
 
 REVOCATION_CHECK
 :
-	'revocation-check'
+   'revocation-check'
 ;
 
 RING
 :
-	'ring'
+   'ring'
 ;
 
 RIP
 :
-	'rip'
+   'rip'
+;
+
+ROLE
+:
+   'role'
+;
+
+ROTARY
+:
+   'rotary'
 ;
 
 ROUTE
 :
-	'route'
+   'route'
 ;
 
 ROUTE_CACHE
 :
-	'route-cache'
+   'route-cache'
 ;
 
 ROUTE_MAP
 :
-	'route-map'
+   'route-map'
 ;
 
 ROUTE_REFLECTOR_CLIENT
 :
-	'route-reflector-client'
+   'route-reflector-client'
+;
+
+ROUTE_TARGET
+:
+   'route-target'
 ;
 
 ROUTER
 :
-	'router'
+   'router'
 ;
 
 ROUTER_ID
 :
-	'router-id'
+   'router-id'
 ;
 
 ROUTING
 :
-	'routing'
+   'routing'
 ;
 
 RSAKEYPAIR
 :
-	'rsakeypair'
+   'rsakeypair'
 ;
 
 RTR
 :
-	'rtr'
+   'rtr'
+;
+
+RST
+:
+   'rst'
+;
+
+RULE
+:
+   'rule'
 ;
 
 SAME_SECURITY_TRAFFIC
 :
-	'same-security-traffic'
+   'same-security-traffic'
 ;
 
 SAP
 :
-	'sap'
+   'sap'
 ;
 
 SCCP
 :
-	'sccp'
+   'sccp'
+;
+
+SCHEDULE
+:
+   'schedule'
 ;
 
 SCHEDULER
 :
-	'scheduler'
+   'scheduler'
 ;
 
 SCHEME
 :
-	'scheme'
+   'scheme'
 ;
 
 SCP
 :
-	'scp'
+   'scp'
 ;
 
 SCRIPTING
 :
-	'scripting'
+   'scripting'
 ;
 
 SCTP
 :
-	'sctp'
+   'sctp'
+;
+
+SDM
+:
+   'sdm'
 ;
 
 SECONDARY
 :
-	'secondary'
+   'secondary'
 ;
 
 SECURITY
 :
-	'security'
+   'security'
 ;
 
 SECURITY_LEVEL
 :
-	'security-level'
+   'security-level'
 ;
 
 SEND_COMMUNITY
 :
-	'send-community'
+   'send-community'
+;
+
+SEND_LABEL
+:
+   'send-label'
 ;
 
 SENDER
 :
-	'sender'
+   'sender'
 ;
 
 SEQ
 :
-	'seq'
+   'seq'
 ;
 
 SEQUENCE
 :
-	'sequence'
+   'sequence'
 ;
 
 SERIAL
 :
-	'serial'
+   'serial'
 ;
 
 SERIAL_NUMBER
 :
-	'serial-number'
+   'serial-number'
 ;
 
 SERVER
 :
-	'server'
+   'server'
+;
+
+SERVER_PRIVATE
+:
+   'server-private'
 ;
 
 SERVER_TYPE
 :
-	'server-type'
+   'server-type'
 ;
 
 SERVICE
 :
-	'service'
+   'service'
 ;
 
 SERVICE_MODULE
 :
-	'service-module'
+   'service-module'
 ;
 
 SERVICE_POLICY
 :
-	'service-policy'
+   'service-policy'
 ;
 
 SERVICE_TYPE
 :
-	'service-type'
+   'service-type'
+;
+
+SESSION_DISCONNECT_WARNING
+:
+   'session-disconnect-warning' -> pushMode(M_COMMENT)
 ;
 
 SESSION_LIMIT
 :
-	'session-limit'
+   'session-limit'
 ;
 
 SESSION_TIMEOUT
 :
-	'session-timeout'
+   'session-timeout'
 ;
 
 SET
 :
-	'set'
+   'set'
+;
+
+SETUP
+:
+   'setup'
+;
+
+SFLOW
+:
+   'sflow'
+;
+
+SHA1
+:
+   'sha1' -> pushMode(M_SHA1)
+;
+
+SHAPE
+:
+   'shape'
 ;
 
 SHELL
 :
-	'shell'
+   'shell'
 ;
 
 SHUTDOWN
 :
-	'shutdown'
+   'shutdown'
+;
+
+SINGLE_ROUTER_MODE
+:
+   'single-router-mode'
 ;
 
 SLA
 :
-	'sla'
+   'sla'
 ;
 
 SMTP
 :
-	'smtp'
+   'smtp'
 ;
 
 SMTP_SERVER
 :
-	'smtp-server'
+   'smtp-server'
 ;
 
 SNMP
 :
-	'snmp'
+   'snmp'
 ;
 
 SNMP_SERVER
 :
-	'snmp-server'
+   'snmp-server'
 ;
 
 SNMPTRAP
 :
-	'snmptrap'
+   'snmptrap'
 ;
 
 SORT_BY
 :
-	'sort-by'
+   'sort-by'
 ;
 
 SPE
 :
-	'spe'
+   'spe'
 ;
 
 SOFT_RECONFIGURATION
 :
-	'soft-reconfiguration'
+   'soft-reconfiguration'
+;
+
+SONET
+:
+   'sonet'
 ;
 
 SOURCE
 :
-	'source'
+   'source'
 ;
 
 SOURCE_INTERFACE
 :
-	'source-interface'
+   'source-interface'
 ;
 
 SOURCE_IP_ADDRESS
 :
-	'source-ip-address'
+   'source-ip-address'
 ;
 
 SOURCE_ROUTE
 :
-	'source-route'
+   'source-route'
+;
+
+SOURCE_QUENCH
+:
+   'source-quench'
 ;
 
 SPANNING_TREE
 :
-	'spanning-tree'
+   'spanning-tree'
+;
+
+SPD
+:
+   'spd'
 ;
 
 SPEED
 :
-	'speed'
+   'speed'
 ;
 
 SPLIT_TUNNEL_NETWORK_LIST
 :
-	'split-tunnel-network-list'
+   'split-tunnel-network-list'
 ;
 
 SPLIT_TUNNEL_POLICY
 :
-	'split-tunnel-policy'
+   'split-tunnel-policy'
 ;
 
 SRR_QUEUE
 :
-	'srr-queue'
+   'srr-queue'
 ;
 
 SSH
 :
-	'ssh'
+   'ssh'
 ;
 
 SSL
 :
-	'ssl'
+   'ssl'
+;
+
+STACK_MIB
+:
+   'stack-mib'
 ;
 
 STANDARD
 :
-	'standard' { enableDEC = true; enableACL_NUM = false; }
+   'standard' { enableDEC = true; enableACL_NUM = false; }
 ;
 
 STANDBY
 :
-	'standby'
+   'standby'
 ;
 
 STATIC
 :
-	'static'
+   'static'
 ;
 
 STCAPP
 :
-	'stcapp'
+   'stcapp'
 ;
 
 STOPBITS
 :
-	'stopbits'
+   'stopbits'
 ;
 
 STORM_CONTROL
 :
-	'storm-control'
+   'storm-control'
 ;
 
 STP
 :
-	'stp'
+   'stp'
 ;
 
 SUBJECT_NAME
 :
-	'subject-name'
+   'subject-name'
 ;
 
 SUBNET
 :
-	'subnet'
+   'subnet'
 ;
 
 SUBNETS
 :
-	'subnets'
+   'subnets'
 ;
 
 SUBNET_ZERO
 :
-	'subnet-zero'
+   'subnet-zero'
 ;
 
 SUBSCRIBE_TO
 :
-	'subscribe-to'
+   'subscribe-to'
 ;
 
 SUBSCRIBE_TO_ALERT_GROUP
 :
-	'subscribe-to-alert-group'
+   'subscribe-to-alert-group'
+;
+
+SUBSCRIBER
+:
+   'subscriber'
 ;
 
 SUMMARY_ONLY
 :
-	'summary-only'
+   'summary-only'
 ;
 
 SUNRPC
 :
-	'sunrpc'
+   'sunrpc'
 ;
 
 SUPPLEMENTARY_SERVICES
 :
-	'supplementary-services'
+   'supplementary-services'
 ;
 
 SWITCH
 :
-	'switch'
+   'switch'
 ;
 
 SWITCHBACK
 :
-	'switchback'
+   'switchback'
 ;
 
 SWITCHPORT
 :
-	'switchport'
+   'switchport'
+;
+
+SYNC
+:
+   'sync'
 ;
 
 SYNCHRONIZATION
 :
-	'synchronization'
+   'synchronization'
 ;
 
 SYSLOG
 :
-	'syslog'
+   'syslog'
 ;
 
 SYSOPT
 :
-	'sysopt'
+   'sysopt'
 ;
 
 SYSTEM
 :
-	'system'
+   'system'
 ;
 
 TABLE_MAP
 :
-	'table-map'
+   'table-map'
 ;
 
 TACACS
 :
-	'tacacs'
+   'tacacs'
 ;
 
 TACACS_PLUS
 :
-	'tacacs+'
+   'tacacs+'
+;
+
+TACACS_SERVER
+:
+   'tacacs-server'
 ;
 
 TAG
 :
-	'tag'
+   'tag'
 ;
 
 TAG_SWITCHING
 :
-	'tag-switching'
+   'tag-switching'
 ;
 
 TB_VLAN1
 :
-	'tb-vlan1'
+   'tb-vlan1'
 ;
 
 TB_VLAN2
 :
-	'tb-vlan2'
+   'tb-vlan2'
 ;
 
 TCAM
 :
-	'tcam'
+   'tcam'
 ;
 
 TCP
 :
-	'tcp'
+   'tcp'
 ;
 
 TELNET
 :
-	'telnet'
+   'telnet'
+;
+
+TEMPLATE
+:
+   'template'
 ;
 
 TERMINAL_TYPE
 :
-	'terminal-type'
+   'terminal-type'
 ;
 
 TFTP
 :
-	'tftp'
+   'tftp'
 ;
 
 TFTP_SERVER
 :
-	'tftp-server'
+   'tftp-server'
 ;
 
 THREAT_DETECTION
 :
-	'threat-detection'
+   'threat-detection'
 ;
 
 THREE_DES
 :
-	'3des'
+   '3des'
 ;
 
 THREE_DES_SHA1
 :
-	'3des-sha1'
+   '3des-sha1'
 ;
 
 TIME_EXCEEDED
 :
-	'time-exceeded'
+   'time-exceeded'
 ;
 
 TIMEOUT
 :
-	'timeout'
+   'timeout'
 ;
 
 TIMEOUTS
 :
-	'timeouts'
+   'timeouts'
 ;
 
 TIMER
 :
-	'timer'
+   'timer'
 ;
 
 TIMERS
 :
-	'timers'
+   'timers'
 ;
 
 TIMING
 :
-	'timing'
+   'timing'
 ;
 
 TLS_PROXY
 :
-	'tls-proxy'
+   'tls-proxy'
 ;
 
 TOP
 :
-	'top'
+   'top'
 ;
 
 TRACK
 :
-	'track'
+   'track'
+;
+
+TRACKED
+:
+   'tracked'
 ;
 
 TRANSLATE
 :
-	'translate'
+   'translate'
 ;
 
 TRANSPORT
 :
-	'transport'
+   'transport'
+;
+
+TRIGGER
+:
+   'trigger'
 ;
 
 TRUNK
 :
-	'trunk'
+   'trunk'
 ;
 
 TRUST
 :
-	'trust'
+   'trust'
 ;
 
 TRUSTPOINT
 :
-	'trustpoint'
+   'trustpoint'
 ;
 
 TRUSTPOOL
 :
-	'trustpool'
+   'trustpool'
+;
+
+TTL
+:
+   'ttl'
 ;
 
 TTL_EXCEEDED
 :
-	'ttl-exceeded'
+   'ttl-exceeded'
 ;
 
 TUNNEL
 :
-	'tunnel'
+   'tunnel'
 ;
 
 TUNNEL_GROUP
 :
-	'tunnel-group'
+   'tunnel-group'
 ;
 
 TUNNEL_GROUP_LIST
 :
-	'tunnel-group-list'
+   'tunnel-group-list'
 ;
 
 TYPE
 :
-	'type'
+   'type'
 ;
 
 UDLD
 :
-	'udld'
+   'udld'
 ;
 
 UDP
 :
-	'udp'
+   'udp'
 ;
 
 UNABLE
 :
-	'Unable'
+   'Unable'
 ;
 
 UNICAST_ROUTING
 :
-	'unicast-routing'
+   'unicast-routing'
 ;
 
 UNNUMBERED
 :
-	'unnumbered'
+   'unnumbered'
 ;
 
 UNREACHABLE
 :
-	'unreachable'
+   'unreachable'
 ;
 
 UNREACHABLES
 :
-	'unreachables'
+   'unreachables'
 ;
 
 UPDATE_SOURCE
 :
-	'update-source'
+   'update-source'
 ;
 
 UPGRADE
 :
-	'upgrade'
+   'upgrade'
+;
+
+USE_VRF
+:
+   'use-vrf'
 ;
 
 USER_IDENTITY
 :
-	'user-identity'
+   'user-identity'
 ;
 
 USERNAME
 :
-	'username'
+   'username'
 ;
 
 VALIDATION_USAGE
 :
-	'validation-usage'
+   'validation-usage'
 ;
 
 VERIFY
 :
-	'verify'
+   'verify'
 ;
 
 VERSION
 :
-	'version'
+   'version'
 ;
 
 VIOLATE_ACTION
 :
-	'violate-action'
+   'violate-action'
 ;
 
 VIRTUAL_REASSEMBLY
 :
-	'virtual-reassembly'
+   'virtual-reassembly'
 ;
 
 VIRTUAL_TEMPLATE
 :
-	'virtual-template'
+   'virtual-template'
 ;
 
 VLAN
 :
-	'vlan'
+   'vlan'
 ;
 
 VMPS
 :
-	'vmps'
+   'vmps'
 ;
 
 VOICE
 :
-	'voice'
+   'voice'
 ;
 
 VOICE_CARD
 :
-	'voice-card'
+   'voice-card'
 ;
 
 VOICE_PORT
 :
-	'voice-port'
+   'voice-port'
 ;
 
 VPDN
 :
-	'vpdn'
+   'vpdn'
 ;
 
 VPDN_GROUP
 :
-	'vpdn-group'
+   'vpdn-group'
 ;
 
 VPN
 :
-	'vpn'
+   'vpn'
+;
+
+VPNV4
+:
+   'vpnv4'
+;
+
+VPNV6
+:
+   'vpnv6'
 ;
 
 VPN_FILTER
 :
-	'vpn-filter'
+   'vpn-filter'
 ;
 
 VPN_IDLE_TIMEOUT
 :
-	'vpn-idle-timeout'
+   'vpn-idle-timeout'
 ;
 
 VPN_TUNNEL_PROTOCOL
 :
-	'vpn-tunnel-protocol'
+   'vpn-tunnel-protocol'
 ;
 
 VRF
 :
-	'vrf'
+   'vrf'
+   {enableIPV6_ADDRESS = false;}
 ;
 
 VRRP
 :
-	'vrrp'
+   'vrrp'
 ;
 
 VTP
 :
-	'vtp'
+   'vtp'
 ;
 
 WEBVPN
 :
-	'webvpn'
+   'webvpn'
 ;
+
+WEIGHT
+:
+   'weight'
+;
+
 
 WINS_SERVER
 :
-	'wins-server'
+   'wins-server'
 ;
 
 WITHOUT_CSD
 :
-	'without-csd'
+   'without-csd'
+;
+
+WLAN
+:
+   'wlan'
 ;
 
 WRR_QUEUE
 :
-	'wrr-queue'
+   'wrr-queue'
 ;
 
 WSMA
 :
-	'wsma'
+   'wsma'
 ;
 
 WWW
 :
-	'www'
+   'www'
 ;
 
 X25
 :
-	'x25'
+   'x25'
 ;
 
 X29
 :
-	'x29'
+   'x29'
+;
+
+XCONNECT
+:
+   'xconnect'
 ;
 
 XLATE
 :
-	'xlate'
+   'xlate'
 ;
+
+// commonly used to hide password and keys
+XX_HIDE
+:
+   'xx' 'x'+
+;
+
 
 // Other Tokens
 
+COMMUNITY_NUMBER
+:
+   F_Digit
+   {!enableIPV6_ADDRESS}?
+   
+   F_Digit* ':' F_Digit+
+;
+
+VARIABLE
+:
+   (
+      (
+         (
+            F_Variable_RequiredVarChar {!enableIPV6_ADDRESS}? F_Variable_VarChar*
+         )
+         |
+         (
+            F_Variable_RequiredVarChar_Ipv6 {enableIPV6_ADDRESS}? F_Variable_VarChar_Ipv6*
+         )
+      )
+      |
+      (
+         (
+            F_Variable_VarChar {!enableIPV6_ADDRESS}? F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
+         )
+         |
+         (
+            F_Variable_VarChar_Ipv6 {enableIPV6_ADDRESS}? F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar_Ipv6 F_Variable_VarChar_Ipv6*
+         )
+      )
+   )
+   {
+      if (enableACL_NUM) {
+         enableACL_NUM = false;
+         enableDEC = true;
+      }
+      if (enableCOMMUNITY_LIST_NUM) {
+         enableCOMMUNITY_LIST_NUM = false;
+         enableDEC = true;
+      }
+   }
+;
+
 ACL_NUM
 :
-	{enableACL_NUM}?
+   F_Digit
+   {enableACL_NUM}?
 
-	F_Digit+
-	{
+   F_Digit*
+   {
 	int val = Integer.parseInt(getText());
 	if ((1 <= val && val <= 99) || (1300 <= val && val <= 1999)) {
 		_type = ACL_NUM_STANDARD;
@@ -3142,122 +3818,76 @@ ACL_NUM
 
 AMPERSAND
 :
-	'&'
+   '&'
 ;
 
-ARP
+ANGLE_BRACKET_LEFT
 :
-	'arp'
-	{
-                   enableIPV6_ADDRESS = false;
-                  }
+   '<'
+;
 
+ANGLE_BRACKET_RIGHT
+:
+   '>'
 ;
 
 ASTERISK
 :
-	'*'
+   '*'
 ;
 
 AT
 :
-	'@'
+   '@'
 ;
 
 BACKSLASH
 :
-	'\\'
+   '\\'
 ;
 
 BRACE_LEFT
 :
-	'{'
+   '{'
 ;
 
 BRACE_RIGHT
 :
-	'}'
+   '}'
 ;
 
 BRACKET_LEFT
 :
-	'['
+   '['
 ;
 
 BRACKET_RIGHT
 :
-	']'
-;
-
-CABLELENGTH
-:
-	'cablelength'
-	{
-                                   inComment = true;
-                                  }
-
+   ']'
 ;
 
 CARAT
 :
-	'^'
-;
-
-CERTIFICATE
-:
-	'certificate'
-	{
-                                   inComment = true;
-                                   inMultilineComment = true;
-                                  }
-
+   '^'
 ;
 
 COLON
 :
-	':'
+   ':'
 ;
 
 COMMA
 :
-	','
-;
-
-COMMANDER_ADDRESS
-:
-	'commander-address'
-	{
-                                               enableIPV6_ADDRESS = false;
-                                              }
-
-;
-
-COMMUNITY
-:
-	'community'
-	{
-                               enableIPV6_ADDRESS = false;
-                              }
-
-;
-
-COMMUNITY_LIST
-:
-	'community-list'
-	{
-                                         enableIPV6_ADDRESS = false;
-                                         enableCOMMUNITY_LIST_NUM = true;
-                                         enableDEC = false;
-                                        }
-
+   ','
 ;
 
 COMMUNITY_LIST_NUM
 :
-	{enableCOMMUNITY_LIST_NUM}?
+   F_Digit
+   {enableCOMMUNITY_LIST_NUM}?
 
-	F_Digit+
-	{
+   F_Digit*
+   {
 		int val = Integer.parseInt(getText());
 		if (1 <= val && val <= 99) {
 			_type = COMMUNITY_LIST_NUM_STANDARD;
@@ -3273,418 +3903,548 @@ COMMUNITY_LIST_NUM
 
 COMMENT_CLOSING_LINE
 :
-	{!inComment}?
-
-	(
-		'!' F_Newline
-	)
+   (
+      '!' F_Newline
+   )
 ;
 
 COMMENT_LINE
 :
-	{!inComment}?
-
-	(
-		'!' ~('\n' | '\r')+ F_Newline
-	)
+   '!' ~( '\n' | '\r' )+ F_Newline
 ;
 
 DASH
 :
-	'-'
+   '-'
 ;
 
 DOLLAR
 :
-	'$'
+   '$'
 ;
 
 DEC
 :
-	{enableDEC}?
+   F_Digit
+   {enableDEC}?
 
-	F_Digit+
+   F_Digit*
 ;
 
 DOUBLE_QUOTE
 :
-	'"'
-;
-
-ENGINEID
-:
-	'engineid'
-	{
-                             inComment = true;
-                            }
-
+   '"'
 ;
 
 EQUALS
 :
-	'='
+   '='
 ;
 
 ESCAPE_C
 :
-	(
-		'^C'
-	)
-	{
-   inMultilineComment = !inMultilineComment;
-   inComment = !inComment;
-  }
-
-;
-
-EXCLAMATION_MARK
-:
-	{inComment}?
-
-	'!'
-;
-
-FIREWALL
-:
-	'firewall'
-	{
-                             enableIPV6_ADDRESS = false;
-                            }
-
-;
+(
+      '^C'
+      | '\u0003'
+      | '#'
+);
 
 FLOAT
 :
-	{!inComment}?
-
-	(
-		F_PositiveDigit* F_Digit '.' F_Digit+
-	)
+   (
+      F_PositiveDigit* F_Digit '.' F_Digit+
+   )
 ;
 
 FORWARD_SLASH
 :
-	'/'
+   '/'
 ;
 
 HEX
 :
-	'0x' F_HexDigit+
+   '0x' F_HexDigit+
 ;
 
-//HEX_STRING
-//  :
-//  {inComment || !enableIPV6_ADDRESS}?=> HEX_DIGIT+
-//  ;
-
-INTERFACE
+IP_PREFIX
 :
-	'interface'
-	{enableIPV6_ADDRESS = false;}
-
-;
-
-SHA1_HASH
-:
-	'sha1' ' ' F_Digit+ ' ' F_HexDigit+
-;
-
-DES_HASH
-:
-	'des' ' ' F_Digit+ ' ' F_HexDigit+
+   F_DecByte '.'
+   {enableIP_ADDRESS}? 
+   
+   F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit?
 ;
 
 IP_ADDRESS
 :
-	{!inComment && enableIP_ADDRESS}?
+   F_DecByte '.'
+   {enableIP_ADDRESS}?
+   
+   F_DecByte '.' F_DecByte '.' F_DecByte
+;
 
-	(
-		F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
-	)
+IPV6_PREFIX
+:
+   (
+      (
+         ':'
+         {enableIPV6_ADDRESS}?
+         
+         ':'
+         (
+            (
+               F_HexDigit+ ':'
+         )* F_HexDigit+
+         )?
+      )
+      |
+      (
+         F_HexDigit+
+         {enableIPV6_ADDRESS}?
+         
+         ':' ':'?
+      )+
+      (
+         F_HexDigit+
+      )?
+      '/' F_DecByte
+   )
 ;
 
 IPV6_ADDRESS
 :
-	{!inComment && enableIPV6_ADDRESS}?
+   (
+      (
+         ':'
+         {enableIPV6_ADDRESS}?
 
-	(
-		(
-			COLON COLON
-			(
-				(
-					F_HexDigit+ COLON
-				)* F_HexDigit+
-			)?
-		)
-		|
-		(
-			F_HexDigit+ COLON COLON?
-		)+
-		(
-			F_HexDigit+
-		)?
-	)
-;
+         ':'
+         (
+            (
+               F_HexDigit+ ':'
+            )* F_HexDigit+
+         )?
+      )
+      |
+      (
+         F_HexDigit+
+         {enableIPV6_ADDRESS}?
 
-LOCATION
-:
-	'location'
-	{
-                             inComment = true;
-                            }
-
-;
-
-MAC
-:
-	'mac'
-	{
-                   inComment = true;
-                  }
-
-;
-
-MAC_ADDRESS
-:
-	'mac-address'
-	{
-                                   inComment = true;
-                                  }
-
-;
-
-NAME
-:
-	'name'
-	{
-                     inComment = true;
-                    }
-
+         ':' ':'?
+      )+
+   )
+   (
+      F_HexDigit+
+   )?
 ;
 
 NEWLINE
 :
-	F_Newline
-	{
-               if (!inMultilineComment) {
-               	inComment = false;
-               	enableIPV6_ADDRESS = true;
-               	enableIP_ADDRESS = true;
-               }
-              }
-
-;
-
-OUI
-:
-	'oui'
-	{
-                   inComment = true;
-                  }
+   F_Newline+
+   {
+   	enableIPV6_ADDRESS = true;
+   	enableIP_ADDRESS = true;
+  }
 
 ;
 
 PAREN_LEFT
 :
-	'('
+   '('
 ;
 
 PAREN_RIGHT
 :
-	')'
-;
-
-PASSWORD
-:
-	'password'
-	{
-                             inComment = true;
-                            }
-
+   ')'
 ;
 
 PERCENT
 :
-	'%'
+   '%'
 ;
 
 PERIOD
 :
-	'.'
+   '.'
 ;
 
 PLUS
 :
-	'+'
+   '+'
 ;
 
 POUND
 :
-	'#'
-;
-
-REMARK
-:
-	'remark'
-	{
-                         inComment = true;
-                        }
-
-;
-
-QUIT
-:
-	'quit'
-	{
-                     inMultilineComment = false;
-                     inComment = false;
-                    }
-
+   '#'
 ;
 
 SEMICOLON
 :
-	';'
+   ';'
 ;
 
 SINGLE_QUOTE
 :
-	'\''
+   '\''
 ;
 
 UNDERSCORE
 :
-	'_'
-;
-
-VARIABLE
-:
-	F_Letter
-	(
-		F_Letter
-		| F_Digit
-		| '-'
-		| '_'
-		| '.'
-		| '/'
-		| '&'
-		| '+'
-		| '['
-		| ']'
-		|
-		(
-			{!enableIPV6_ADDRESS}?
-
-			':'
-		)
-	)*
-	{
-		if (enableACL_NUM) {
-			enableACL_NUM = false;
-			enableDEC = true;
-		}
-		if (enableCOMMUNITY_LIST_NUM) {
-			enableCOMMUNITY_LIST_NUM = false;
-			enableDEC = true;
-		}
-	}
-
+   '_'
 ;
 
 WS
 :
-	(
-		' '
-		| '\t'
-		| '\u000C'
-	) -> channel(HIDDEN)
+   F_Whitespace -> channel(HIDDEN)
 ;
 
 // Fragments
 
 fragment
-F_Newline
-:
-	'\n'
-	| '\r'
-;
-
-fragment
 F_DecByte
 :
-	(
-		F_PositiveDigit F_Digit F_Digit
-	)
-	|
-	(
-		F_PositiveDigit F_Digit
-	)
-	| F_Digit
+   (
+      F_PositiveDigit F_Digit F_Digit
+   )
+   |
+   (
+      F_PositiveDigit F_Digit
+   )
+   | F_Digit
 ;
 
 fragment
 F_Digit
 :
-	'0' .. '9'
+   '0' .. '9'
 ;
 
 fragment
 F_HexDigit
 :
-	(
-		'0' .. '9'
-		| 'a' .. 'f'
-		| 'A' .. 'F'
-	)
+   (
+      '0' .. '9'
+      | 'a' .. 'f'
+      | 'A' .. 'F'
+   )
 ;
 
 fragment
 F_HexWord
 :
-	F_HexDigit F_HexDigit F_HexDigit F_HexDigit
+   F_HexDigit F_HexDigit F_HexDigit F_HexDigit
 ;
 
 fragment
 F_Letter
 :
-	F_LowerCaseLetter
-	| F_UpperCaseLetter
+   F_LowerCaseLetter
+   | F_UpperCaseLetter
 ;
 
 fragment
 F_LowerCaseLetter
 :
-	'a' .. 'z'
+   'a' .. 'z'
+;
+
+fragment
+F_Newline
+:
+   '\n'
+   | '\r'
 ;
 
 fragment
 F_PositiveHexDigit
 :
-	(
-		'1' .. '9'
-		| 'a' .. 'f'
-		| 'A' .. 'F'
-	)
+   (
+      '1' .. '9'
+      | 'a' .. 'f'
+      | 'A' .. 'F'
+   )
 ;
 
 fragment
 F_PositiveDigit
 :
-	'1' .. '9'
+   '1' .. '9'
 ;
 
 fragment
 F_UpperCaseLetter
 :
-	'A' .. 'Z'
+   'A' .. 'Z'
+;
+
+fragment
+F_Variable_RequiredVarChar
+:
+   ~('0'..'9' | [ \t\n\r/.,-])
+;
+
+fragment
+F_Variable_RequiredVarChar_Ipv6
+:
+   ~('0'..'9' | [ \t\n\r/.,-:])
+;
+
+fragment
+F_Variable_VarChar
+:
+   ~[ \t\n\r]
+;
+
+fragment
+F_Variable_VarChar_Ipv6
+:
+   ~[ \t\n\r:]
+;
+
+fragment
+F_Whitespace
+:
+   ' '
+   | '\t'
+   | '\u000C'
+;
+
+mode M_BANNER;
+
+M_BANNER_WS:
+   (
+      ' '
+      | '\t'
+      | '\u000C'
+   )+ -> channel(HIDDEN)
+;
+
+M_BANNER_ESCAPE_C
+:
+   (
+      '^C'
+      | '\u0003'
+   ) -> type(ESCAPE_C), mode(M_MOTD_C)
+;
+
+M_BANNER_HASH
+:
+   '#' -> type(POUND), mode(M_MOTD_HASH)
+;
+
+M_BANNER_NEWLINE
+:
+   '\n' -> type(NEWLINE), mode(M_MOTD_EOF)
+;
+
+mode M_CERTIFICATE;
+
+M_CERTIFICATE_QUIT
+:
+   'quit' -> type(QUIT), popMode
+;
+
+M_CERTIFICATE_TEXT
+:
+   (
+      ~'q'
+      | ('q' ~'u')
+      | ('qu' ~'i')
+      | ('qui' ~'t') 
+   )+
+;
+
+mode M_COMMENT;
+
+M_COMMENT_NEWLINE
+:
+   '\n' -> type(NEWLINE), popMode
+;
+
+M_COMMENT_NON_NEWLINE
+:
+   ~'\n'+
+;
+
+mode M_DES;
+
+M_DES_DEC_PART
+:
+   F_Digit+
+;
+
+M_DES_HEX_PART
+:
+   F_HexDigit+ -> popMode
+;
+
+M_DES_WS
+:
+   ' '+ -> channel(HIDDEN)
 ;
 
 mode M_DESCRIPTION;
 
-M_DESCRIPTION_NEWLINE:
+M_DESCRIPTION_NEWLINE
+:
+   '\n' -> type(NEWLINE), popMode
+;
 
-'\n' -> popMode;
+M_DESCRIPTION_NON_NEWLINE
+:
+   ~'\n'+
+;
 
-M_DESCRIPTION_NON_NEWLINE:
-~'\n';
+mode M_KEY;
 
+M_KEY_NEWLINE
+:
+   '\n' -> type(NEWLINE), popMode
+;
+
+M_KEY_NON_NEWLINE
+:
+   ~'\n'+
+;
+
+mode M_MOTD_C;
+
+M_MOTD_C_ESCAPE_C
+:
+   (
+      '^C'
+      | '\u0003'
+   ) -> type(ESCAPE_C), mode(DEFAULT_MODE)
+;
+
+M_MOTD_C_MOTD
+:
+   (
+      ('^' ~[^C\u0003])
+      | ~'^'
+   )+
+;
+
+mode M_MOTD_EOF;
+
+M_MOTD_EOF_EOF
+:
+   'EOF' -> type(EOF_LITERAL), mode(DEFAULT_MODE)
+;
+
+M_MOTD_EOF_MOTD
+:
+   (
+      ~'E'
+      | ('E' ~'O')
+      | ('EO' ~'F')
+   )+
+;
+
+mode M_MOTD_HASH;
+
+M_MOTD_HASH_HASH
+:
+   '#' -> type(POUND), mode(DEFAULT_MODE)
+;
+
+M_MOTD_HASH_MOTD
+:
+   ~'#'+
+;
+
+mode M_NAME;
+
+M_NAME_WS
+:
+   (
+      ' '
+      | '\t'
+      | '\u000C'
+   )+ -> channel(HIDDEN)
+;
+
+M_NAME_NAME
+:
+   ~'\n'+ -> popMode
+;
+
+mode M_NEIGHBOR;
+
+M_NEIGHBOR_VARIABLE
+:
+   (
+      (
+            (F_Variable_RequiredVarChar_Ipv6 | '-') F_Variable_VarChar_Ipv6*
+      )
+      |
+      (
+            F_Variable_VarChar_Ipv6 F_Variable_VarChar_Ipv6* (F_Variable_RequiredVarChar_Ipv6 | '-') F_Variable_VarChar_Ipv6*
+      )
+   ) -> type(VARIABLE), popMode
+;
+
+M_NEIGHBOR_IP_ADDRESS
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type(IP_ADDRESS), popMode
+;
+
+M_NEIGHBOR_IPV6_ADDRESS
+:
+   (
+      (
+         (
+            '::'
+            (
+               (
+                  F_HexDigit+ ':'
+               )* F_HexDigit+
+            )?
+         )
+         |
+         (
+            F_HexDigit+ ':' ':'?
+         )+
+      )
+      (
+         F_HexDigit+
+      )?
+   ) -> type(IPV6_ADDRESS), popMode
+;
+
+M_NEIGHBOR_NEWLINE
+:
+   '\n' -> type(NEWLINE), popMode
+;
+
+M_NEIGHBOR_WS
+:
+   F_Whitespace -> channel(HIDDEN)
+;
+mode M_REMARK;
+
+M_REMARK_NEWLINE
+:
+   '\n' -> type(NEWLINE), popMode
+;
+
+M_REMARK_REMARK
+:
+   ~'\n'+
+;
+
+mode M_SHA1;
+
+M_SHA1_DEC_PART
+:
+   F_Digit+
+;
+
+M_SHA1_HEX_PART
+:
+   F_HexDigit+ -> popMode
+;
+
+M_SHA1_WS
+:
+   ' '+ -> channel(HIDDEN)
+;

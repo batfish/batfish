@@ -1,5 +1,6 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -12,14 +13,18 @@ import batfish.representation.Ip;
 import batfish.representation.OspfMetricType;
 import batfish.representation.Protocol;
 
-public class OspfProcess {
+public class OspfProcess implements Serializable {
+
    private static final int DEFAULT_DEFAULT_INFORMATION_METRIC = 1;
+
    private static final OspfMetricType DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE = OspfMetricType.E2;
 
    /**
     * bits per second
     */
    private static final double DEFAULT_REFERENCE_BANDWIDTH = 1E9;
+
+   private static final long serialVersionUID = 1L;
 
    private int _defaultInformationMetric;
    private OspfMetricType _defaultInformationMetricType;

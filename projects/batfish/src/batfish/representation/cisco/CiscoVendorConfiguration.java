@@ -49,11 +49,13 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       VendorConfiguration {
 
    private static final String DEFAULT_ROUTE_FILTER_NAME = "~DEFAULT_ROUTE_FILTER~";
+
    private static final int MAX_ADMINISTRATIVE_COST = 32767;
    private static final String OSPF_EXPORT_CONNECTED_POLICY_NAME = "~OSPF_EXPORT_CONNECTED_POLICY~";
    private static final String OSPF_EXPORT_DEFAULT_POLICY_NAME = "~OSPF_EXPORT_DEFAULT_ROUTE_POLICY~";
    private static final String OSPF_EXPORT_STATIC_POLICY_NAME = "~OSPF_EXPORT_STATIC_POLICY~";
    private static final String OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME = "~OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER~";
+   private static final long serialVersionUID = 1L;
    private static final String VENDOR_NAME = "cisco";
 
    private static PolicyMap makeRouteExportPolicy(Configuration c, String name,
@@ -152,19 +154,41 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
 
       // create redistribution origination policies
       PolicyMap redistributeStaticPolicyMap = null;
-      if (proc.getRedistributionPolicies().containsKey(Protocol.STATIC)) {
-         redistributeStaticPolicyMap = makeRouteExportPolicy(c,
-               "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null, 0,
-               null, null, null, Protocol.STATIC, PolicyMapAction.PERMIT);
+      BgpRedistributionPolicy redistributeStaticPolicy = proc
+            .getRedistributionPolicies().get(Protocol.STATIC);
+      if (redistributeStaticPolicy != null) {
+         String mapName = redistributeStaticPolicy.getMap();
+         if (mapName != null) {
+            redistributeStaticPolicyMap = c.getPolicyMaps().get(mapName);
+         }
+         else {
+            redistributeStaticPolicyMap = makeRouteExportPolicy(c,
+                  "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null,
+                  0, null, null, null, Protocol.STATIC, PolicyMapAction.PERMIT);
+         }
       }
+
+      // // cause ip peer groups to inherit unset fields from owning named peer
+      // // group
+      // for (NamedBgpPeerGroup npg : proc.getNamedPeerGroups().values()) {
+      // for (Ip address : npg.getNeighborAddresses()) {
+      // IpBgpPeerGroup ipg = proc.getIpPeerGroups().get(address);
+      // ipg.inheritUnsetFields(npg);
+      // }
+      // }
 
       // cause ip peer groups to inherit unset fields from owning named peer
       // group
-      for (NamedBgpPeerGroup npg : proc.getNamedPeerGroups().values()) {
-         for (Ip address : npg.getNeighborAddresses()) {
-            IpBgpPeerGroup ipg = proc.getIpPeerGroups().get(address);
-            ipg.inheritUnsetFields(npg);
+      for (IpBgpPeerGroup ipg : proc.getIpPeerGroups().values()) {
+         NamedBgpPeerGroup parentPeerGroup;
+         String groupName = ipg.getGroupName();
+         if (groupName != null) {
+            parentPeerGroup = proc.getNamedPeerGroups().get(groupName);
          }
+         else {
+            parentPeerGroup = NamedBgpPeerGroup.DEFAULT_INSTANCE;
+         }
+         ipg.inheritUnsetFields(parentPeerGroup);
       }
 
       for (IpBgpPeerGroup pg : proc.getIpPeerGroups().values()) {
@@ -178,7 +202,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                for (String iname : c.getInterfaces().keySet()) {
                   if (iname.startsWith("Loopback")) {
                      Ip currentIp = c.getInterfaces().get(iname).getIP();
-                     if (currentIp.asLong() > processRouterId.asLong()) {
+                     if (currentIp != null
+                           && currentIp.asLong() > processRouterId.asLong()) {
                         processRouterId = currentIp;
                      }
                   }
@@ -187,7 +212,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   for (batfish.representation.Interface currentInterface : c
                         .getInterfaces().values()) {
                      Ip currentIp = currentInterface.getIP();
-                     if (currentIp.asLong() > processRouterId.asLong()) {
+                     if (currentIp != null
+                           && currentIp.asLong() > processRouterId.asLong()) {
                         processRouterId = currentIp;
                      }
                   }
@@ -534,7 +560,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       OspfRedistributionPolicy rsp = proc.getRedistributionPolicies().get(
             Protocol.STATIC);
       if (rsp != null) {
-         Integer metric = rcp.getMetric();
+         Integer metric = rsp.getMetric();
          boolean explicitMetric = metric != null;
          boolean routeMapMetric = false;
          // add export map with metric
@@ -588,11 +614,12 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                                     new Ip("0.0.0.0"), 0, new SubRange(0, 0)));
                      }
                      break;
-
-                  case TAG:
+                  // allowed match lines
                   case PROTOCOL:
+                  case TAG:
                      break;
 
+                  // disallowed match lines
                   case AS_PATH_ACCESS_LIST:
                   case COMMUNITY_LIST:
                   case IP_ACCESS_LIST:
@@ -616,7 +643,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   }
                   Set<RouteFilterList> lists = new HashSet<RouteFilterList>();
                   lists.add(generatedRejectDefaultRouteList);
-                  PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(lists);
+                  PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(
+                        lists);
                   clause.getMatchLines().add(line);
                }
                Set<PolicyMapSetLine> setList = clause.getSetLines();
@@ -729,18 +757,18 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          newLine = new PolicyMapMatchRouteFilterListLine(newRouteFilterMatchSet);
          break;
 
+      case TAG:
+         RouteMapMatchTagLine tagLine = (RouteMapMatchTagLine) matchLine;
+         newLine = new PolicyMapMatchTagLine(tagLine.getTags());
+         break;
+
       case NEIGHBOR:
          // TODO: implement
-         break;
+         // break;
 
       case PROTOCOL:
          // TODO: implement
-         break;
-
-      case TAG:
-         RouteMapMatchTagLine tagLine = (RouteMapMatchTagLine)matchLine;
-         newLine = new PolicyMapMatchTagLine(tagLine.getTags());
-         break;
+         // break;
 
       default:
          throw new Error("bad type");
@@ -793,8 +821,11 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       Ip prefix = staticRoute.getPrefix();
       String nextHopInterface = staticRoute.getNextHopInterface();
       int prefixLength = staticRoute.getMask().numSubnetBits();
+      Integer oldTag = staticRoute.getTag();
+      int tag;
+      tag = oldTag != null ? oldTag : -1;
       return new batfish.representation.StaticRoute(prefix, prefixLength,
-            nextHopIp, nextHopInterface, staticRoute.getDistance());
+            nextHopIp, nextHopInterface, staticRoute.getDistance(), tag);
 
    }
 
@@ -907,7 +938,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
    }
 
    private batfish.representation.Interface toInterface(Interface iface,
-         Map<String, IpAccessList> ipAccessLists)
+         Map<String, IpAccessList> ipAccessLists, Map<String, PolicyMap> policyMaps)
          throws VendorConversionException {
       batfish.representation.Interface newIface = new batfish.representation.Interface(
             iface.getName());
@@ -955,6 +986,16 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   + outgoingFilterName + "'");
          }
          newIface.setOutgoingFilter(outgoingFilter);
+      }
+      String routingPolicyName = iface.getRoutingPolicy();
+      if (routingPolicyName != null) {
+         PolicyMap routingPolicy = policyMaps.get(routingPolicyName);
+         if (routingPolicy == null) {
+            _conversionWarnings.add("Interface: '" + iface.getName()
+                  + "' configured with non-existent policy-routing route-map '"
+                  + routingPolicyName + "'");
+         }
+         newIface.setRoutingPolicy(routingPolicy);
       }
       return newIface;
    }
@@ -1027,7 +1068,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       // convert interfaces
       for (Interface iface : _interfaces.values()) {
          batfish.representation.Interface newInterface = toInterface(iface,
-               c.getIpAccessLists());
+               c.getIpAccessLists(), c.getPolicyMaps());
          c.getInterfaces().put(newInterface.getName(), newInterface);
       }
 
@@ -1070,6 +1111,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                case LOCAL_PREFERENCE:
                case METRIC:
                case NEXT_HOP:
+               case ORIGIN_TYPE:
                   break;
                default:
                   throw new Error("bad set type");

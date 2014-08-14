@@ -1,0 +1,12 @@
+#!/bin/bash
+RESTORE_FILE=cygwin-symlink-restore-data
+rm -f $RESTORE_FILE
+find . -type l | while read SYMLINK; do
+   echo "SYMLINK=$SYMLINK" | tee -a "$RESTORE_FILE"
+   TARGET="$(readlink $SYMLINK)"
+   echo "TARGET=$TARGET" | tee -a "$RESTORE_FILE"
+   ABSOLUTE_TARGET="$(readlink -f $SYMLINK)"
+   echo "ABSOLUTE_TARGET=$ABSOLUTE_TARGET" | tee -a "$RESTORE_FILE"
+   rm "$SYMLINK" && cp -a "$ABSOLUTE_TARGET" "$SYMLINK"
+done
+

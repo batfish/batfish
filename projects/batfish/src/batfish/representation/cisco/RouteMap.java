@@ -1,13 +1,17 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 
 import batfish.grammar.cisco.CiscoGrammar.Route_map_stanzaContext;
 
-public class RouteMap {
+public class RouteMap implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    private Map<Integer, RouteMapClause> _clauses;
-   private Route_map_stanzaContext _context;
+   private transient Route_map_stanzaContext _context;
    private boolean _ignore;
    private String _mapName;
 

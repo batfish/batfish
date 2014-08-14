@@ -1,8 +1,13 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
+
 import batfish.representation.LineAction;
 
-public class IpAsPathAccessListLine {
+public class IpAsPathAccessListLine implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    private LineAction _action;
    private String _regex;
 

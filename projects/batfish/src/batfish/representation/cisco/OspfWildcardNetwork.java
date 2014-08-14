@@ -1,8 +1,14 @@
 package batfish.representation.cisco;
 
+import java.io.Serializable;
+
 import batfish.representation.Ip;
 
-public class OspfWildcardNetwork implements Comparable<OspfWildcardNetwork> {
+public class OspfWildcardNetwork implements Comparable<OspfWildcardNetwork>,
+      Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    private long _area;
    private int _hashCode;
    private Ip _prefix;
@@ -12,8 +18,7 @@ public class OspfWildcardNetwork implements Comparable<OspfWildcardNetwork> {
       _prefix = prefix;
       _wildcard = wildcard;
       _area = area;
-      _hashCode = (prefix.networkString(_wildcard) + ":" + _area)
-            .hashCode();
+      _hashCode = (prefix.networkString(_wildcard) + ":" + _area).hashCode();
    }
 
    @Override
@@ -31,8 +36,8 @@ public class OspfWildcardNetwork implements Comparable<OspfWildcardNetwork> {
    @Override
    public boolean equals(Object o) {
       OspfWildcardNetwork rhs = (OspfWildcardNetwork) o;
-      return _prefix.equals(rhs._prefix)
-            && _wildcard.equals(rhs._wildcard) && _area == rhs._area;
+      return _prefix.equals(rhs._prefix) && _wildcard.equals(rhs._wildcard)
+            && _area == rhs._area;
    }
 
    public long getArea() {

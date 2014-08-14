@@ -8,7 +8,10 @@ JuniperGrammar*.java
 FlatJuniperGrammar*.java
 LogicBloxFactGrammar*.java
 Semantics*.java
-BatfishTopology*.java
-GNS3Topology*.java
+BatfishTopologyParser*.java
+BatfishTopologyLexer*.java
+GNS3TopologyParser*.java
+GNS3TopologyLexer*.java
 Constraints*.java
 QueryResult*.java
+cygwin-symlink-restore-data

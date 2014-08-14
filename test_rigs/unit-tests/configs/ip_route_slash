@@ -1,0 +1,6 @@
+!
+hostname ip_route_slash
+!
+ip route 1.2.3.4/32 2.3.4.5
+!
+end

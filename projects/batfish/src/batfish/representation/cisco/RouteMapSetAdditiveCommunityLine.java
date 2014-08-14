@@ -8,6 +8,8 @@ import batfish.representation.PolicyMapSetLine;
 
 public class RouteMapSetAdditiveCommunityLine extends RouteMapSetLine {
 
+   private static final long serialVersionUID = 1L;
+
    private List<Long> _communities;
 
    public RouteMapSetAdditiveCommunityLine(List<Long> communities) {
@@ -23,4 +25,9 @@ public class RouteMapSetAdditiveCommunityLine extends RouteMapSetLine {
       return new PolicyMapSetAddCommunityLine(_communities);
    }
    
+   @Override
+   public RouteMapSetType getType(){
+      return RouteMapSetType.ADDITIVE_COMMUNITY;
+   }
+
 }
