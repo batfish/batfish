@@ -96,8 +96,8 @@ public class Synthesizer {
       return hostname + "_acl_P_" + aclName;
    }
 
-   private static String getPolicyClauseMatchName(String hostname, String policyName,
-         int i) {
+   private static String getPolicyClauseMatchName(String hostname,
+         String policyName, int i) {
       return "M_policy_" + hostname + "_" + policyName + "_" + i;
    }
 
