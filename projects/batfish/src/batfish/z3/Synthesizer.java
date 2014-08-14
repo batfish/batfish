@@ -6,18 +6,25 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
 
+import batfish.dataplane.EdgeSet;
+import batfish.dataplane.FibMap;
+import batfish.dataplane.FibRow;
+import batfish.dataplane.PolicyRouteFibNodeMap;
 import batfish.representation.Configuration;
 import batfish.representation.Edge;
 import batfish.representation.Interface;
 import batfish.representation.Ip;
 import batfish.representation.IpAccessList;
 import batfish.representation.IpAccessListLine;
+import batfish.representation.PolicyMap;
+import batfish.representation.PolicyMapClause;
 import batfish.util.SubRange;
 import batfish.util.Util;
 import batfish.z3.node.AndExpr;
@@ -79,26 +86,26 @@ public class Synthesizer {
       return output;
    }
 
-   private Map<String, Configuration> _configurations;
+   private final Map<String, Configuration> _configurations;
+   private final FibMap _fibs;
+   private final Set<String> _packetRelations;
+   private final PolicyRouteFibNodeMap _prFibs;
+   private final boolean _simplify;
+   private final EdgeSet _topologyEdges;
+   private final Map<String, Set<Interface>> _topologyInterfaces;
+   private final Map<String, Integer> _varSizes;
 
-   private Map<String, TreeSet<FibRow>> _fibs;
-
-   private Set<String> _packetRelations;
-
-   private boolean _simplify;
-   private Set<Edge> _topologyEdges;
-   private Map<String, Set<Interface>> _topologyInterfaces;
-   private Map<String, Integer> _varSizes;
-
-   public Synthesizer(Map<String, Configuration> configurations,
-         Map<String, TreeSet<FibRow>> fibs, Set<Edge> topologyEdges,
-         boolean simplify) {
+   public Synthesizer(Map<String, Configuration> configurations, FibMap fibs,
+         PolicyRouteFibNodeMap prFibs, EdgeSet topologyEdges, boolean simplify) {
       _configurations = configurations;
       _fibs = fibs;
       _topologyEdges = topologyEdges;
       _packetRelations = new TreeSet<String>();
+      _prFibs = prFibs;
       _simplify = simplify;
+      _topologyInterfaces = new TreeMap<String, Set<Interface>>();
       computeTopologyInterfaces();
+      _varSizes = new LinkedHashMap<String, Integer>();
       initVarSizes();
    }
 
@@ -208,7 +215,6 @@ public class Synthesizer {
    }
 
    private void computeTopologyInterfaces() {
-      _topologyInterfaces = new TreeMap<String, Set<Interface>>();
       for (Edge edge : _topologyEdges) {
          String hostname = edge.getNode1();
          if (!_topologyInterfaces.containsKey(hostname)) {
@@ -478,6 +484,69 @@ public class Synthesizer {
       return or;
    }
 
+   private List<Statement> getPolicyRouteRules() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements.add(new Comment("Policy-based routing rules"));
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         String hostname = e.getKey();
+         Configuration c = e.getValue();
+         for (Interface iface : c.getInterfaces().values()) {
+            PolicyMap p = iface.getRoutingPolicy();
+            if (p != null) {
+               String policyName = p.getMapName();
+               List<PolicyMapClause> clauses = p.getClauses();
+               
+               /**
+                * TODO: For each clause, if we reach that clause, and it is a
+                * permit clause, then for each acl matched in the clause, if the
+                * packet is permitted by that acl, then the packet is permitted
+                * by that clause. If there are no acls to match, then the packet
+                * is perrmitted by that clause.
+                */
+               for (int i = 0; i < clauses.size(); i++) {
+
+               }
+
+               /**
+                * TODO: For each clause, if we reach that clause, and it is a
+                * deny clause, then for each acl matched in the clause, if the
+                * packet is permitted by that acl, then the packet is not
+                * permitted by the policy. If there are no acls to match, then
+                * the acl is denied by the policy
+                */
+
+               /**
+                * TODO: For each clause, if there is at least one acl to match,
+                * and the packet does not match any acls, then the packet is not
+                * matched by that clause
+                */
+
+               /**
+                * TODO: For each clause, for every next hop interface
+                * corresponding to every next hop ip set in that clause, if the
+                * packet is permitted by that clause, then it reaches
+                * preOutInterface for that interface
+                */
+
+               /**
+                * TODO: For each clause except the last, if the packet reaches
+                * that clause, and is not matched by that clause, then it
+                * reaches the next clause
+                */
+
+               /**
+                * TODO: If the packet reaches the last clause, and is not
+                * permitted by that clause, then it is not permitted by the
+                * policy.
+                */
+
+            }
+         }
+      }
+
+      return statements;
+   }
+
    private List<Statement> getPostInAcceptRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements
@@ -705,14 +774,14 @@ public class Synthesizer {
                   break;
                }
             }
-            String iface = currentRow.getInterface();
+            String ifaceName = currentRow.getInterface();
             String preOutIfaceName;
-            if (iface.equals(FibRow.DROP_INTERFACE)) {
+            if (ifaceName.equals(FibRow.DROP_INTERFACE)) {
                String dropName = DROP_RELNAME + "_" + hostname;
                preOutIfaceName = dropName;
             }
             else {
-               preOutIfaceName = "R_preout_iface_" + hostname + "_" + iface;
+               preOutIfaceName = "R_preout_iface_" + hostname + "_" + ifaceName;
             }
             _packetRelations.add(preOutIfaceName);
 
@@ -753,10 +822,27 @@ public class Synthesizer {
                conditions.addConjunct(prefixMatch);
             }
 
-            // must have reached preout
-            PacketRelExpr preOut = new PacketRelExpr(preOutName);
-            conditions.addConjunct(preOut);
-
+            Interface iface = _configurations.get(hostname).getInterfaces()
+                  .get(ifaceName);
+            PolicyMap routingPolicy = iface.getRoutingPolicy();
+            if (routingPolicy == null) {
+               /**
+                * if not policy-routed interface, must have reached preout
+                */
+               PacketRelExpr preOut = new PacketRelExpr(preOutName);
+               conditions.addConjunct(preOut);
+            }
+            else {
+               /**
+                * otherwise, if policy-routed interface, must not have been
+                * matched by any policy
+                */
+               String policyNoMatchName = "PolicyNoMatch_"
+                     + routingPolicy.getMapName();
+               PacketRelExpr policyNoMatch = new PacketRelExpr(
+                     policyNoMatchName);
+               conditions.addConjunct(policyNoMatch);
+            }
             // then we forward out specified interface (or drop)
             PacketRelExpr preOutIface = new PacketRelExpr(preOutIfaceName);
             RuleExpr rule = new RuleExpr(conditions, preOutIface);
@@ -821,7 +907,6 @@ public class Synthesizer {
    }
 
    private void initVarSizes() {
-      _varSizes = new LinkedHashMap<String, Integer>();
       _varSizes.put(SRC_IP_VAR, 32);
       _varSizes.put(DST_IP_VAR, 32);
       _varSizes.put(SRC_PORT_VAR, 16);
@@ -848,6 +933,7 @@ public class Synthesizer {
       List<Statement> postInAcceptRules = getPostInAcceptRules();
       List<Statement> postInFwdRules = getPostInFwdRules();
       List<Statement> preOutRouteRules = getPreOutRouteRules();
+      List<Statement> policyRouteRules = getPolicyRouteRules();
       List<Statement> matchAclRules = getMatchAclRules();
       List<Statement> toNeighborsRules = getToNeighborsRules();
       List<Statement> preInRules = getPreInRules();
@@ -866,6 +952,7 @@ public class Synthesizer {
       statements.addAll(postInAcceptRules);
       statements.addAll(postInFwdRules);
       statements.addAll(preOutRouteRules);
+      statements.addAll(policyRouteRules);
       statements.addAll(matchAclRules);
       statements.addAll(toNeighborsRules);
       statements.addAll(preInRules);

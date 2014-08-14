@@ -43,6 +43,12 @@ import com.logicblox.connect.Workspace.Relation;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
+import batfish.dataplane.EdgeSet;
+import batfish.dataplane.FibMap;
+import batfish.dataplane.FibRow;
+import batfish.dataplane.FibSet;
+import batfish.dataplane.PolicyRouteFibIpMap;
+import batfish.dataplane.PolicyRouteFibNodeMap;
 import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ConfigurationLexer;
 import batfish.grammar.ConfigurationParser;
@@ -87,15 +93,16 @@ import batfish.util.UrlZipExplorer;
 import batfish.util.StringFilter;
 import batfish.util.Util;
 import batfish.z3.Concretizer;
-import batfish.z3.FibRow;
 import batfish.z3.Synthesizer;
 
 public class Batfish {
    private static final String BASIC_FACTS_BLOCKNAME = "BaseFacts";
    private static final String EDGES_FILENAME = "edges";
+   private static final String FIB_POLICY_ROUTE_NEXT_HOP_PREDICATE_NAME = "FibForwardPolicyRouteNextHopIp";
    // private static final String FLOW_SINK_FILENAME = "flow_sinks";
    private static final String FIB_PREDICATE_NAME = "FibNetworkForward";
    private static final String FIBS_FILENAME = "fibs";
+   private static final String FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME = "fibs-policy-route";
    private static final String SEPARATOR = System.getProperty("file.separator");
    private static final String STATIC_FACT_BLOCK_PREFIX = "libbatfish:";
    private static final String TOPOLOGY_FILENAME = "topology.net";
@@ -198,27 +205,41 @@ public class Batfish {
       resetTimer();
 
       lbFrontend.initEntityTable();
+
       print(1, "Retrieving topology information from LogicBlox..");
       Set<Edge> topologyEdges = getTopologyEdges(lbFrontend);
       print(1, "OK\n");
 
       String fibQualifiedName = _predicateInfo.getPredicateNames().get(
             FIB_PREDICATE_NAME);
-      print(1, "Retrieving FIB information from LogicBlox..");
-      Relation fib = lbFrontend.queryPredicate(fibQualifiedName);
+      print(1, "Retrieving network FIB information from LogicBlox..");
+      Relation fibNetwork = lbFrontend.queryPredicate(fibQualifiedName);
       print(1, "OK\n");
+
+      String fibPolicyRouteNextHopQualifiedName = _predicateInfo
+            .getPredicateNames().get(FIB_POLICY_ROUTE_NEXT_HOP_PREDICATE_NAME);
+      print(1,
+            "Retrieving ip FIB information from LogicBlox for policy-routing next-hop-ips..");
+      Relation fibPolicyRouteNextHops = lbFrontend
+            .queryPredicate(fibPolicyRouteNextHopQualifiedName);
+      print(1, "OK\n");
+
       print(1, "Caclulating forwarding rules..");
-      Map<String, TreeSet<FibRow>> fibs = getRouteForwardingRules(fib,
-            lbFrontend);
+      FibMap fibs = getRouteForwardingRules(fibNetwork, lbFrontend);
+      PolicyRouteFibNodeMap policyRouteFibNodeMap = getPolicyRouteFibNodeMap(
+            fibPolicyRouteNextHops, lbFrontend);
       print(1, "OK\n");
 
       Path fibsPath = Paths.get(_settings.getDataPlaneDir(), FIBS_FILENAME);
+      Path fibsPolicyRoutePath = Paths.get(_settings.getDataPlaneDir(),
+            FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME);
       Path edgesPath = Paths.get(_settings.getDataPlaneDir(), EDGES_FILENAME);
-
       print(1, "Serializing fibs..");
       serializeObject(fibs, fibsPath.toFile());
       print(1, "OK\n");
-
+      print(1, "Serializing policy route next hop interface map..");
+      serializeObject(policyRouteFibNodeMap, fibsPolicyRoutePath.toFile());
+      print(1, "OK\n");
       print(1, "Serializing toplogy edges..");
       serializeObject(topologyEdges, edgesPath.toFile());
       print(1, "OK\n");
@@ -324,25 +345,6 @@ public class Batfish {
       return configurations;
    }
 
-   private Map<String, TreeSet<FibRow>> deserializeFibs(File fibsFile) {
-      new HashMap<String, TreeSet<FibRow>>();
-      Map<String, TreeSet<FibRow>> fibs = new HashMap<String, TreeSet<FibRow>>();
-      Object fibsObj = deserializeObject(fibsFile);
-      Map<?, ?> fibsObjCast = (Map<?, ?>) fibsObj;
-      for (Object key : fibsObjCast.keySet()) {
-         String keyString = (String) key;
-         Object value = fibsObjCast.get(key);
-         TreeSet<?> setCast = (TreeSet<?>) value;
-         TreeSet<FibRow> set = new TreeSet<FibRow>();
-         for (Object setObj : setCast) {
-            FibRow row = (FibRow) setObj;
-            set.add(row);
-         }
-         fibs.put(keyString, set);
-      }
-      return fibs;
-   }
-
    private Object deserializeObject(File inputFile) {
       XStream xstream = new XStream(new DomDriver("UTF-8"));
       FileInputStream fis;
@@ -366,17 +368,6 @@ public class Batfish {
          quit(1);
       }
       return o;
-   }
-
-   private Set<Edge> deserializeTopologyEdges(File edgesFile) {
-      Set<Edge> edges = new HashSet<Edge>();
-      Object edgesObj = deserializeObject(edgesFile);
-      Set<?> edgesObjCast = (Set<?>) edgesObj;
-      for (Object edgeObj : edgesObjCast) {
-         Edge edge = (Edge) edgeObj;
-         edges.add(edge);
-      }
-      return edges;
    }
 
    public Map<String, VendorConfiguration> deserializeVendorConfigurations(
@@ -429,7 +420,7 @@ public class Batfish {
          String node = vconfig.getHostname();
          CiscoVendorConfiguration config = null;
          try {
-            config = (CiscoVendorConfiguration)vconfig;
+            config = (CiscoVendorConfiguration) vconfig;
          }
          catch (ClassCastException e) {
             continue;
@@ -497,19 +488,26 @@ public class Batfish {
       resetTimer();
 
       Path fibsPath = Paths.get(_settings.getDataPlaneDir(), FIBS_FILENAME);
+      Path prFibsPath = Paths.get(_settings.getDataPlaneDir(),
+            FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME);
       Path edgesPath = Paths.get(_settings.getDataPlaneDir(), EDGES_FILENAME);
 
       print(1, "Deserializing fibs..");
-      Map<String, TreeSet<FibRow>> fibs = deserializeFibs(fibsPath.toFile());
+      FibMap fibs = (FibMap) deserializeObject(fibsPath.toFile());
+      print(1, "OK\n");
+
+      print(1, "Deserializing fibs..");
+      PolicyRouteFibNodeMap prFibs = (PolicyRouteFibNodeMap) deserializeObject(prFibsPath
+            .toFile());
       print(1, "OK\n");
 
       print(1, "Deserializing toplogy edges..");
-      Set<Edge> topologyEdges = deserializeTopologyEdges(edgesPath.toFile());
+      EdgeSet topologyEdges = (EdgeSet) deserializeObject(edgesPath.toFile());
       print(1, "OK\n");
 
       print(1, "Synthesizing Z3 logic..");
-      Synthesizer s = new Synthesizer(configurations, fibs, topologyEdges,
-            _settings.getSimplify());
+      Synthesizer s = new Synthesizer(configurations, fibs, prFibs,
+            topologyEdges, _settings.getSimplify());
       try {
          s.synthesize(_settings.getZ3File());
       }
@@ -587,6 +585,33 @@ public class Batfish {
       return helpPredicates;
    }
 
+   private PolicyRouteFibNodeMap getPolicyRouteFibNodeMap(
+         Relation fibPolicyRouteNextHops, LogicBloxFrontend lbFrontend) {
+      PolicyRouteFibNodeMap nodeMap = new PolicyRouteFibNodeMap();
+      List<String> nodeList = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nodeList,
+            fibPolicyRouteNextHops.getColumns().get(0));
+      List<String> ipList = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_INDEX_IP, ipList,
+            fibPolicyRouteNextHops.getColumns().get(1));
+      List<String> interfaces = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, interfaces,
+            fibPolicyRouteNextHops.getColumns().get(2));
+      int size = nodeList.size();
+      for (int i = 0; i < size; i++) {
+         String node = nodeList.get(i);
+         Ip ip = new Ip(ipList.get(i));
+         String iface = interfaces.get(i);
+         PolicyRouteFibIpMap ipMap = nodeMap.get(node);
+         if (ipMap == null) {
+            ipMap = new PolicyRouteFibIpMap();
+            nodeMap.put(node, ipMap);
+         }
+         ipMap.put(ip, iface);
+      }
+      return nodeMap;
+   }
+
    public PredicateInfo getPredicateInfo(Map<String, String> logicFiles) {
       // Get predicate semantics from rules file
       print(1, "\n*** PARSING PREDICATE SEMANTICS ***\n");
@@ -600,9 +625,9 @@ public class Batfish {
       return predicateInfo;
    }
 
-   private Map<String, TreeSet<FibRow>> getRouteForwardingRules(
-         Relation installedRoutes, LogicBloxFrontend lbFrontend) {
-      Map<String, TreeSet<FibRow>> fibs = new HashMap<String, TreeSet<FibRow>>();
+   private FibMap getRouteForwardingRules(Relation installedRoutes,
+         LogicBloxFrontend lbFrontend) {
+      FibMap fibs = new FibMap();
       List<String> nameList = new ArrayList<String>();
       lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nameList,
             installedRoutes.getColumns().get(0));
@@ -628,7 +653,7 @@ public class Batfish {
       }
       endIndices.put(currentHostname, nameList.size() - 1);
       for (String hostname : startIndices.keySet()) {
-         TreeSet<FibRow> fibRows = new TreeSet<FibRow>();
+         FibSet fibRows = new FibSet();
          fibs.put(hostname, fibRows);
          int startIndex = startIndices.get(hostname);
          int endIndex = endIndices.get(hostname);
@@ -892,10 +917,8 @@ public class Batfish {
       }
       else {
          print(0, "...OK, PRINTING PARSE TREE:\n");
-         print(0,
-               ParseTreePrettyPrinter.print(tree,
-                     parser.getParser())
-                     + "\n\n");
+         print(0, ParseTreePrettyPrinter.print(tree, parser.getParser())
+               + "\n\n");
       }
       ParseTreeWalker walker = new ParseTreeWalker();
       walker.walk(extractor, tree);
