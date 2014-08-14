@@ -96,6 +96,24 @@ public class Synthesizer {
       return hostname + "_acl_P_" + aclName;
    }
 
+   private static String getPolicyClauseMatchName(String hostname, String policyName,
+         int i) {
+      return "M_policy_" + hostname + "_" + policyName + "_" + i;
+   }
+
+   private static String getPolicyClauseNoMatchName(String hostname,
+         String policyName, int i) {
+      return "N_policy_" + hostname + "_" + policyName + "_" + i;
+   }
+
+   private static String getPolicyDenyName(String hostname, String policyName) {
+      return "P_policy_" + hostname + "_" + policyName;
+   }
+
+   private static String getPolicyPermitName(String hostname, String policyName) {
+      return "F_policy_" + hostname + "_" + policyName;
+   }
+
    private static String getPostInName(String hostname) {
       String postInName = "R_postin_" + hostname;
       return postInName;
@@ -575,28 +593,6 @@ public class Synthesizer {
       }
       or.addDisjunct(FalseExpr.INSTANCE);
       return or;
-   }
-
-   private String getPolicyClauseMatchName(String hostname, String policyName,
-         int i) {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   private String getPolicyClauseNoMatchName(String hostname,
-         String policyName, int i) {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   private String getPolicyDenyName(String hostname, String policyName) {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   private String getPolicyPermitName(String hostname, String policyName) {
-      // TODO Auto-generated method stub
-      return null;
    }
 
    private List<Statement> getPolicyRouteRules() {
