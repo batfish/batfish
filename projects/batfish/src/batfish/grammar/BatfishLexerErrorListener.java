@@ -10,7 +10,7 @@ import org.antlr.v4.runtime.Recognizer;
 public class BatfishLexerErrorListener extends BatfishGrammarErrorListener {
 
    public BatfishLexerErrorListener(String grammarName,
-         BatfishCombinedParser parser) {
+         BatfishCombinedParser<?, ?> parser) {
       super(grammarName, parser);
    }
 

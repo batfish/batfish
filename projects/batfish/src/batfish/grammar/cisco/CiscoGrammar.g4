@@ -23,20 +23,17 @@ banner_stanza
    BANNER
    (
       (
-         MOTD 
          (
-         	(
-         		ESCAPE_C ~ESCAPE_C* ESCAPE_C
-         	)
-         	|
-         	(
-         		POUND ~POUND* POUND
-         	)
-         )   
-      )
-      |
-      (
-         LOGIN ~EOF_LITERAL* EOF_LITERAL
+            ESCAPE_C ~ESCAPE_C* ESCAPE_C
+         )
+         |
+         (
+            POUND ~POUND* POUND
+         )
+         |
+         (
+            NEWLINE ~EOF_LITERAL* EOF_LITERAL
+         )
       )
    ) NEWLINE
 ;
@@ -229,6 +226,7 @@ null_block_substanza
          | CPTONE
          | CRL
          | CRYPTO
+         | DATABITS
          | DBL
          | DEFAULT_ACTION
          | DEFAULT_DOMAIN
@@ -252,6 +250,7 @@ null_block_substanza
          | FALLBACK_DN
          | FILE_BROWSING
          | FILE_ENTRY
+         | FLUSH_AT_ACTIVATION
          | FQDN
          | FRAMING
          | GROUP_ALIAS
@@ -326,6 +325,7 @@ null_block_substanza
          | REVISION
          | RING
          | ROLE
+         | ROTARY
          | ROUTE_TARGET
          | RULE
          | SCHEME
@@ -334,6 +334,7 @@ null_block_substanza
          | SERVICE
          | SERVICE_POLICY
          | SERVICE_TYPE
+         | SESSION_DISCONNECT_WARNING
          | SESSION_LIMIT
          | SESSION_TIMEOUT
          | SET
@@ -635,6 +636,7 @@ null_standalone_stanza
       | MTA
       | MTU
       | MULTILINK
+      | MVR
       | NAME_SERVER
       | NAME
       | NAMES
@@ -649,6 +651,7 @@ null_standalone_stanza
       | OBJECT_GROUP
       | OWNER
       | PAGER
+      | PARSER
       | PARTICIPATE
       | PASSWORD
       | PERCENT

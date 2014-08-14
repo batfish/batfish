@@ -17,6 +17,7 @@ import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.cisco.CiscoGrammar.*;
 import batfish.grammar.cisco.*;
 import batfish.grammar.cisco.CiscoGrammar.CommunityContext;
+import batfish.grammar.cisco.CiscoGrammar.Description_if_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Interface_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Port_specifierContext;
 import batfish.representation.Ip;
@@ -414,6 +415,14 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void enterCisco_configuration(Cisco_configurationContext ctx) {
       _configuration = new CiscoVendorConfiguration();
       _configuration.setContext(ctx);
+   }
+
+   @Override
+   public void enterDescription_if_stanza(Description_if_stanzaContext ctx) {
+      Token descriptionToken = ctx.description_line().text;
+      String description = descriptionToken != null ? descriptionToken
+            .getText().trim() : "";
+      _currentInterface.setDescription(description);
    }
 
    @Override
@@ -1116,8 +1125,18 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitNeighbor_shutdown_tail_bgp(
          Neighbor_shutdown_tail_bgpContext ctx) {
-      String pgName = ctx.neighbor.getText();
-      _configuration.getBgpProcess().addShutDownNeighbor(pgName);
+      String neighbor = null;
+      if (ctx.ip6 != null) {
+         todo(ctx);
+         return;
+      }
+      else if (ctx.ip != null) {
+         neighbor = ctx.ip.getText();
+      }
+      else if (ctx.peergroup != null) {
+         neighbor = ctx.peergroup.getText();
+         _configuration.getBgpProcess().addShutDownNeighbor(neighbor);
+      }
    }
 
    @Override

@@ -47,18 +47,17 @@ import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ConfigurationLexer;
 import batfish.grammar.ConfigurationParser;
 import batfish.grammar.ParseTreePrettyPrinter;
-import batfish.grammar.TopologyLexer;
-import batfish.grammar.TopologyParser;
 import batfish.grammar.cisco.CiscoCombinedParser;
 import batfish.grammar.cisco.controlplane.CiscoControlPlaneExtractor;
 import batfish.grammar.juniper.FlatJuniperGrammarLexer;
 import batfish.grammar.juniper.FlatJuniperGrammarParser;
 import batfish.grammar.juniper.JuniperGrammarLexer;
 import batfish.grammar.juniper.JuniperGrammarParser;
-import batfish.grammar.topology.BatfishTopologyLexer;
-import batfish.grammar.topology.BatfishTopologyParser;
-import batfish.grammar.topology.GNS3TopologyLexer;
-import batfish.grammar.topology.GNS3TopologyParser;
+import batfish.grammar.topology.BatfishTopologyCombinedParser;
+import batfish.grammar.topology.BatfishTopologyExtractor;
+import batfish.grammar.topology.GNS3TopologyCombinedParser;
+import batfish.grammar.topology.GNS3TopologyExtractor;
+import batfish.grammar.topology.TopologyExtractor;
 import batfish.grammar.z3.ConstraintsLexer;
 import batfish.grammar.z3.ConstraintsParser;
 import batfish.grammar.z3.QueryResultLexer;
@@ -82,6 +81,8 @@ import batfish.representation.Ip;
 import batfish.representation.Topology;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
+import batfish.representation.cisco.CiscoVendorConfiguration;
+import batfish.representation.cisco.Interface;
 import batfish.util.UrlZipExplorer;
 import batfish.util.StringFilter;
 import batfish.util.Util;
@@ -416,6 +417,37 @@ public class Batfish {
          quit(1);
       }
       printElapsedTime();
+   }
+
+   private void dumpInterfaceDescriptions(String testRigPath, String outputPath) {
+      Map<File, String> configurationData = readConfigurationFiles(testRigPath);
+      Map<String, VendorConfiguration> configs = parseVendorConfigurations(configurationData);
+      Map<String, VendorConfiguration> sortedConfigs = new TreeMap<String, VendorConfiguration>();
+      sortedConfigs.putAll(configs);
+      StringBuilder sb = new StringBuilder();
+      for (VendorConfiguration vconfig : sortedConfigs.values()) {
+         String node = vconfig.getHostname();
+         CiscoVendorConfiguration config = null;
+         try {
+            config = (CiscoVendorConfiguration)vconfig;
+         }
+         catch (ClassCastException e) {
+            continue;
+         }
+         Map<String, Interface> sortedInterfaces = new TreeMap<String, Interface>();
+         sortedInterfaces.putAll(config.getInterfaces());
+         for (Interface iface : sortedInterfaces.values()) {
+            String iname = iface.getName();
+            String description = iface.getDescription();
+            sb.append(node + " " + iname);
+            if (description != null) {
+               sb.append(" \"" + description + "\"");
+            }
+            sb.append("\n");
+         }
+      }
+      String output = sb.toString();
+      writeFile(outputPath, output);
    }
 
    public void error(int logLevel, String text) {
@@ -821,22 +853,18 @@ public class Batfish {
 
    private void parseTopology(String testRigPath, String topologyFileText,
          Map<String, StringBuilder> factBins) {
-      TopologyParser parser = null;
-      TopologyLexer lexer = null;
+      BatfishCombinedParser<?, ?> parser = null;
+      TopologyExtractor extractor = null;
       Topology topology = null;
-      ANTLRStringStream in = new ANTLRStringStream(topologyFileText);
-      CommonTokenStream tokens;
-      File topologyPath = new File(testRigPath + SEPARATOR + "topology.net");
+      File topologyPath = Paths.get(testRigPath, "topology.net").toFile();
       print(2, "Parsing: \"" + topologyPath.getAbsolutePath() + "\"");
       if (topologyFileText.startsWith("autostart")) {
-         lexer = new GNS3TopologyLexer(in);
-         tokens = new CommonTokenStream(lexer);
-         parser = new GNS3TopologyParser(tokens);
+         parser = new GNS3TopologyCombinedParser(topologyFileText);
+         extractor = new GNS3TopologyExtractor();
       }
       else if (topologyFileText.startsWith("CONFIGPARSER_TOPOLOGY")) {
-         lexer = new BatfishTopologyLexer(in);
-         tokens = new CommonTokenStream(lexer);
-         parser = new BatfishTopologyParser(tokens);
+         parser = new BatfishTopologyCombinedParser(topologyFileText);
+         extractor = new BatfishTopologyExtractor();
       }
       else if (topologyFileText.equals("")) {
          error(1, "...WARNING: empty topology\n");
@@ -846,26 +874,32 @@ public class Batfish {
          error(0, "...ERROR\n");
          throw new Error("Topology format error");
       }
-      try {
-         topology = parser.topology();
-      }
-      catch (Exception e) {
-         error(0, " ...ERROR\n");
-         e.printStackTrace();
-      }
-      List<String> parserErrors = parser.getErrors();
-      List<String> lexerErrors = lexer.getErrors();
-      int numErrors = parserErrors.size() + lexerErrors.size();
+      ParserRuleContext tree = parser.parse();
+      List<String> errors = parser.getErrors();
+      int numErrors = errors.size();
       if (numErrors > 0) {
-         error(0, " ..." + numErrors + " ERROR(S)\n");
-         for (String msg : lexer.getErrors()) {
-            error(2, "\tlexer: " + msg + "\n");
-         }
-         for (String msg : parser.getErrors()) {
-            error(2, "\tparser: " + msg + "\n");
+         error(1, " ..." + numErrors + " ERROR(S)\n");
+         for (int i = 0; i < numErrors; i++) {
+            String prefix = "ERROR " + (i + 1) + ": ";
+            String msg = errors.get(i);
+            String prefixedMsg = Util.applyPrefix(prefix, msg);
+            error(1, prefixedMsg + "\n");
          }
          quit(1);
       }
+      else if (!_settings.printParseTree()) {
+         print(1, "...OK\n");
+      }
+      else {
+         print(0, "...OK, PRINTING PARSE TREE:\n");
+         print(0,
+               ParseTreePrettyPrinter.print(tree,
+                     parser.getParser())
+                     + "\n\n");
+      }
+      ParseTreeWalker walker = new ParseTreeWalker();
+      walker.walk(extractor, tree);
+      topology = extractor.getTopology();
       TopologyFactExtractor tfe = new TopologyFactExtractor(topology);
       tfe.writeFacts(factBins);
       print(2, " ...OK\n");
@@ -893,20 +927,20 @@ public class Batfish {
          boolean antlr4 = false;
          if (fileText.charAt(0) == '!') {
             // antlr 4 stuff
-            print(2, "Parsing: \"" + currentPath + "\"");
+            print(1, "Parsing: \"" + currentPath + "\"");
             antlr4 = true;
-            BatfishCombinedParser combinedParser = new CiscoCombinedParser(
+            BatfishCombinedParser<?, ?> combinedParser = new CiscoCombinedParser(
                   fileText);
             ParserRuleContext tree = combinedParser.parse();
             List<String> errors = combinedParser.getErrors();
             int numErrors = errors.size();
             if (numErrors > 0) {
-               error(0, " ..." + numErrors + " ERROR(S)\n");
+               error(1, " ..." + numErrors + " ERROR(S)\n");
                for (int i = 0; i < numErrors; i++) {
                   String prefix = "ERROR " + (i + 1) + ": ";
                   String msg = errors.get(i);
                   String prefixedMsg = Util.applyPrefix(prefix, msg);
-                  error(2, prefixedMsg + "\n");
+                  error(1, prefixedMsg + "\n");
                }
                if (_settings.exitOnParseError()) {
                   return null;
@@ -917,11 +951,11 @@ public class Batfish {
                }
             }
             else if (!_settings.printParseTree()) {
-               print(2, "...OK\n");
+               print(1, "...OK\n");
             }
             else {
-               print(2, "...OK, PRINTING PARSE TREE:\n");
-               print(2,
+               print(0, "...OK, PRINTING PARSE TREE:\n");
+               print(0,
                      ParseTreePrettyPrinter.print(tree,
                            combinedParser.getParser())
                            + "\n\n");
@@ -931,7 +965,7 @@ public class Batfish {
             ParseTreeWalker walker = new ParseTreeWalker();
             walker.walk(extractor, tree);
             for (String warning : extractor.getWarnings()) {
-               error(1, warning);
+               error(2, warning);
             }
             vc = extractor.getVendorConfiguration();
             assert Boolean.TRUE;
@@ -1275,6 +1309,13 @@ public class Batfish {
          quit(0);
       }
 
+      if (_settings.dumpInterfaceDescriptions()) {
+         String testRigPath = _settings.getTestRigPath();
+         String outputPath = _settings.getDumpInterfaceDescriptionsPath();
+         dumpInterfaceDescriptions(testRigPath, outputPath);
+         quit(0);
+      }
+
       if (_settings.getSerializeIndependent()) {
          String inputPath = _settings.getSerializeVendorPath();
          String outputPath = _settings.getSerializeIndependentPath();
@@ -1436,6 +1477,7 @@ public class Batfish {
       }
       print(1, "\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       resetTimer();
+      new File(outputPath).mkdirs();
       for (String name : vendorConfigurations.keySet()) {
          VendorConfiguration vc = vendorConfigurations.get(name);
          Path currentOutputPath = Paths.get(outputPath, name);
@@ -1452,6 +1494,17 @@ public class Batfish {
          Map<String, StringBuilder> factBins) {
       Map<String, Configuration> configurations = deserializeConfigurations(serializedConfigPath);
       populateConfigurationFactBins(configurations.values(), factBins);
+   }
+
+   private void writeFile(String outputPath, String output) {
+      File outputFile = new File(outputPath);
+      try {
+         FileUtils.write(outputFile, output);
+      }
+      catch (IOException e) {
+         e.printStackTrace();
+         quit(1);
+      }
    }
 
    public void writeTopologyFacts(String testRigPath,

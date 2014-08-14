@@ -141,7 +141,7 @@ BestBgpAdvertisement(advert) <-
 BestBgpRoute(route),
    Route(route),
    Route_constructor[node, network, nextHopIp, protocol] = route,
-   BestBgpRouteNetwork(network),
+   BestBgpRouteNetwork(node, network),
    Route_admin[route] = admin,
    Route_cost[route] = cost,
    Route_network[route] = network,
@@ -180,7 +180,7 @@ BestIbgpRoute(route),
    BestBgpAdvertisement(advert),
    SetNodeVendor(node, vendor),
    AdministrativeDistance[vendor, protocol] = admin,
-   !BestBgpRouteNetwork(network).
+   !BestBgpRouteNetwork(node, network).
 
 BestPerProtocolRoute(route) <-
    BestBgpRoute(route) ;

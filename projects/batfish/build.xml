@@ -119,8 +119,10 @@
          <fileset dir="src" includes="batfish/grammar/juniper/JuniperGrammar*.java"/>
          <fileset dir="src" includes="batfish/grammar/juniper/FlatJuniperGrammar*.java"/>
          <fileset dir="src" includes="batfish/grammar/semantics/Semantics*.java"/>
-         <fileset dir="src" includes="batfish/grammar/topology/BatfishTopology*.java"/>
-         <fileset dir="src" includes="batfish/grammar/topology/GNS3Topology*.java"/>
+         <fileset dir="src" includes="batfish/grammar/topology/BatfishTopologyParser*.java"/>
+         <fileset dir="src" includes="batfish/grammar/topology/GNS3TopologyParser*.java"/>
+         <fileset dir="src" includes="batfish/grammar/topology/BatfishTopologyLexer*.java"/>
+         <fileset dir="src" includes="batfish/grammar/topology/GNS3TopologyLexer*.java"/>
          <fileset dir="src" includes="batfish/grammar/z3/Constraints*.java"/>
          <fileset dir="src" includes="batfish/grammar/z3/QueryResult*.java"/>
       </delete>
@@ -212,10 +214,8 @@
    <target name="grammar" depends="checkGrammarBuild" unless="grammarBuild.notRequired"
      description="Compile antlr grammars">
       <parallel>
-         <antlr3 grammar.name="BatfishTopology.g" grammar.packagedir="batfish/grammar/topology"/>
          <antlr3 grammar.name="Constraints.g" grammar.packagedir="batfish/grammar/z3"/>
          <antlr3 grammar.name="FlatJuniperGrammar.g" grammar.packagedir="batfish/grammar/juniper"/>
-         <antlr3 grammar.name="GNS3Topology.g" grammar.packagedir="batfish/grammar/topology"/>
          <antlr3 grammar.name="JuniperGrammar.g" grammar.packagedir="batfish/grammar/juniper"/>
          <antlr3 grammar.name="LogicBloxFactGrammar.g" grammar.packagedir="batfish/grammar/logicblox"/>
          <antlr3 grammar.name="QueryResult.g" grammar.packagedir="batfish/grammar/z3"/>
@@ -226,17 +226,32 @@
    <target name="grammar4lexers"
      description="Compile antlr4 lexer grammars">
       <parallel>
+         <antlr4lexer grammar.name="BatfishTopologyLexer" grammar.packagedir="batfish/grammar/topology"/>
          <antlr4lexer grammar.name="CiscoGrammarCommonLexer" grammar.packagedir="batfish/grammar/cisco"/>
+         <antlr4lexer grammar.name="GNS3TopologyLexer" grammar.packagedir="batfish/grammar/topology"/>
       </parallel>
    </target>
 
    <target name="grammar4parsers" depends="grammar4lexers"
      description="Compile antlr4 parser grammars">
       <parallel>
+         <antlr4parser grammar.name="BatfishTopologyParser" grammar.packagedir="batfish/grammar/topology">
+            <dependencies>
+               <fileset dir="src/batfish/grammar/topology" includes="BatfishTopologyParser.g4"/>
+               <fileset dir="src/batfish/grammar/topology" includes="BatfishTopologyLexer.g4"/>
+               <fileset dir="src/batfish/grammar/topology" includes="BatfishTopologyLexer.tokens"/>
+            </dependencies>
+         </antlr4parser>
+         <antlr4parser grammar.name="GNS3TopologyParser" grammar.packagedir="batfish/grammar/topology">
+            <dependencies>
+               <fileset dir="src/batfish/grammar/topology" includes="GNS3TopologyParser.g4"/>
+               <fileset dir="src/batfish/grammar/topology" includes="GNS3TopologyLexer.g4"/>
+               <fileset dir="src/batfish/grammar/topology" includes="GNS3TopologyLexer.tokens"/>
+            </dependencies>
+         </antlr4parser>
          <antlr4parser grammar.name="CiscoGrammar" grammar.packagedir="batfish/grammar/cisco">
             <dependencies>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar.g4"/>
-               <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar.tokens"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammarCommonLexer.tokens"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammarCommonParser.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_acl.g4"/>

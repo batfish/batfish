@@ -14,7 +14,7 @@ public abstract class BatfishLexer extends Lexer {
       return this.getModeNames()[_mode];
    }
 
-   public void initErrorListener(BatfishCombinedParser parser) {
+   public void initErrorListener(BatfishCombinedParser<?, ?> parser) {
       ANTLRErrorListener errorListener = new BatfishLexerErrorListener(this
             .getClass().getSimpleName(), parser);
       removeErrorListeners();
