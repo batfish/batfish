@@ -30,6 +30,7 @@ import batfish.representation.PolicyMapMatchIpAccessListLine;
 import batfish.representation.PolicyMapMatchLine;
 import batfish.representation.PolicyMapMatchProtocolLine;
 import batfish.representation.PolicyMapMatchRouteFilterListLine;
+import batfish.representation.PolicyMapMatchTagLine;
 import batfish.representation.PolicyMapSetAddCommunityLine;
 import batfish.representation.PolicyMapSetCommunityLine;
 import batfish.representation.PolicyMapSetLine;
@@ -587,8 +588,11 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                                     new Ip("0.0.0.0"), 0, new SubRange(0, 0)));
                      }
                      break;
+
+                  case TAG:
                   case PROTOCOL:
                      break;
+
                   case AS_PATH_ACCESS_LIST:
                   case COMMUNITY_LIST:
                   case IP_ACCESS_LIST:
@@ -653,7 +657,11 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          RouteMapClause clause) throws VendorConversionException {
       Set<PolicyMapMatchLine> matchLines = new LinkedHashSet<PolicyMapMatchLine>();
       for (RouteMapMatchLine rmMatchLine : clause.getMatchList()) {
-         matchLines.add(toPolicyMapMatchLine(c, rmMatchLine));
+         PolicyMapMatchLine matchLine = toPolicyMapMatchLine(c, rmMatchLine);
+         if (matchLine == null) {
+            throw new Error("error converting route map match line");
+         }
+         matchLines.add(matchLine);
       }
       Set<PolicyMapSetLine> setLines = new LinkedHashSet<PolicyMapSetLine>();
       for (RouteMapSetLine rmSetLine : clause.getSetList()) {
@@ -730,7 +738,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          break;
 
       case TAG:
-         // TODO: implement
+         RouteMapMatchTagLine tagLine = (RouteMapMatchTagLine)matchLine;
+         newLine = new PolicyMapMatchTagLine(tagLine.getTags());
          break;
 
       default:

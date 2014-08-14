@@ -23,6 +23,7 @@ import batfish.representation.PolicyMapMatchLine;
 import batfish.representation.PolicyMapMatchNeighborLine;
 import batfish.representation.PolicyMapMatchProtocolLine;
 import batfish.representation.PolicyMapMatchRouteFilterListLine;
+import batfish.representation.PolicyMapMatchTagLine;
 import batfish.representation.PolicyMapSetAddCommunityLine;
 import batfish.representation.PolicyMapSetCommunityLine;
 import batfish.representation.PolicyMapSetDeleteCommunityLine;
@@ -567,6 +568,11 @@ public class ConfigurationFactExtractor {
                      wSetPolicyMapClauseMatchRouteFilter.append(mapName + "|"
                            + i + "|" + rflName + "\n");
                   }
+                  break;
+
+               case TAG:
+                  PolicyMapMatchTagLine mtLine = (PolicyMapMatchTagLine) matchLine;
+                  //TODO: implement properly ***IMPORTANT***
                   break;
 
                default:
