@@ -143,7 +143,14 @@ public class Batfish {
    private void addProject(LogicBloxFrontend lbFrontend) {
       print(0, "\n*** ADDING PROJECT ***\n");
       resetTimer();
-      File logicDirFile = retrieveLogicDir();
+      String settingsLogicDir = _settings.getLogicDir();
+      File logicDirFile;
+      if (settingsLogicDir != null) {
+         logicDirFile = new File(settingsLogicDir);
+      }
+      else {
+         logicDirFile = retrieveLogicDir();
+      }
       String result = lbFrontend.addProject(logicDirFile.getAbsolutePath(), "");
       cleanupLogicDir();
       if (result != null) {
