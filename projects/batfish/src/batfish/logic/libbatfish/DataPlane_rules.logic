@@ -2,6 +2,7 @@ block(`DataPlane_rules) {
    alias_all(`libbatfish:DataPlane),
    alias_all(`libbatfish:Interface),
    alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:PolicyMap),
    alias_all(`libbatfish:Route),
    clauses(`{
 // BEGIN CODE

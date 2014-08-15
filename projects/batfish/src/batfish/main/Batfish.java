@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -207,7 +206,7 @@ public class Batfish {
       lbFrontend.initEntityTable();
 
       print(1, "Retrieving topology information from LogicBlox..");
-      Set<Edge> topologyEdges = getTopologyEdges(lbFrontend);
+      EdgeSet topologyEdges = getTopologyEdges(lbFrontend);
       print(1, "OK\n");
 
       String fibQualifiedName = _predicateInfo.getPredicateNames().get(
@@ -696,8 +695,8 @@ public class Batfish {
       return semanticsFiles;
    }
 
-   public Set<Edge> getTopologyEdges(LogicBloxFrontend lbFrontend) {
-      Set<Edge> edges = new HashSet<Edge>();
+   public EdgeSet getTopologyEdges(LogicBloxFrontend lbFrontend) {
+      EdgeSet edges = new EdgeSet();
       String qualifiedName = _predicateInfo.getPredicateNames().get(
             TOPOLOGY_PREDICATE_NAME);
       Relation topologyRelation = lbFrontend.queryPredicate(qualifiedName);
