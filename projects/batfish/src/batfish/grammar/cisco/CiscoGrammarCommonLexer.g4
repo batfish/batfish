@@ -95,6 +95,11 @@ ACCOUNTING
    'accounting'
 ;
 
+ACCOUNTING_LIST
+:
+   'accounting-list'
+;
+
 ACCOUNTING_PORT
 :
    'accounting-port'
@@ -783,6 +788,11 @@ DEFAULT_ORIGINATE
    'default-originate'
 ;
 
+DEFAULT_ROUTER
+:
+   'default-router'
+;
+
 DEFINITION
 :
    'definition'
@@ -941,6 +951,11 @@ DOT11
 DOT1Q
 :
    'dot1q'
+;
+
+DROP
+:
+   'drop'
 ;
 
 DS0_GROUP
@@ -1407,6 +1422,11 @@ HELPER_ADDRESS
    'helper-address'
 ;
 
+HIDDEN
+:
+   'hidden'
+;
+
 HIDDEN_SHARES
 :
    'hidden-shares'
@@ -1692,6 +1712,11 @@ LE
 L2TP
 :
    'l2tp'
+;
+
+L2TP_CLASS
+:
+   'l2tp-class'
 ;
 
 LDAP_BASE_DN
@@ -2604,6 +2629,11 @@ PROXY_ARP
    'proxy-arp'
 ;
 
+PSEUDOWIRE_CLASS
+:
+   'pseudowire-class'
+;
+
 QOS
 :
    'qos'
@@ -2652,6 +2682,11 @@ RANDOM_DETECT
 RANGE
 :
    'range'
+;
+
+RATE_LIMIT
+:
+   'rate-limit'
 ;
 
 RC4_SHA1
@@ -2757,6 +2792,11 @@ RESOURCE
 RESOURCE_POOL
 :
    'resource-pool'
+;
+
+RETRANSMIT
+:
+   'retransmit'
 ;
 
 REVERSE_ROUTE

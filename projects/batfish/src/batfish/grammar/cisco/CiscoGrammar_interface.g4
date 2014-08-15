@@ -214,6 +214,7 @@ null_standalone_if_stanza
 		| PRIORITY_QUEUE
 		| QOS
 		| QUEUE_SET
+		| RATE_LIMIT
 		| RCV_QUEUE
 		| ROUTE_CACHE
 		| SECURITY_LEVEL

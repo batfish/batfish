@@ -374,7 +374,7 @@ nexus_access_list_null_tail
 
 nexus_access_list_stanza
 :
-	IP ACCESS_LIST name = ~NEWLINE NEWLINE
+	IP ACCESS_LIST name = VARIABLE NEWLINE
 	(
 		nexus_access_list_tail
 		| nexus_access_list_null_tail
