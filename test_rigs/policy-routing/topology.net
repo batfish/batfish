@@ -1,0 +1,87 @@
+autostart = False
+version = 0.8.7
+[127.0.0.1:7200]
+    workingdir = /tmp
+    udp = 10001
+    [[3725]]
+        image = /home/arifogel/GNS3/Images/c3725-adventerprisek9_ivs-mz12.image
+        idlepc = 0x60b1014c
+        sparsemem = True
+        ghostios = True
+    [[ROUTER S]]
+        model = 3725
+        console = 2104
+        aux = 2504
+        cnfg = configs/S.cfg
+        f0/0 = R f1/0
+        x = -152.0
+        y = -236.0
+        z = 1.0
+    [[ROUTER R]]
+        model = 3725
+        console = 2101
+        aux = 2501
+        cnfg = configs/R.cfg
+        f0/0 = D1 f0/0
+        f0/1 = D2 f0/0
+        slot1 = NM-1FE-TX
+        f1/0 = S f0/0
+        x = -191.0
+        y = -114.0
+        z = 1.0
+    [[ROUTER D2]]
+        model = 3725
+        console = 2103
+        aux = 2503
+        cnfg = configs/D2.cfg
+        f0/0 = R f0/1
+        x = -100.0
+        y = -12.0
+        z = 1.0
+    [[ROUTER D1]]
+        model = 3725
+        console = 2102
+        aux = 2502
+        cnfg = configs/D1.cfg
+        f0/0 = R f0/0
+        x = -253.0
+        y = -17.0
+        z = 1.0
+[GNS3-DATA]
+    configs = configs
+    [[NOTE 1]]
+        text = "f0/0"
+        x = 20.8203030923
+        y = 60.1005903266
+        interface = S f0/0
+        color = "#0b0b0b"
+    [[NOTE 2]]
+        text = "f0/0"
+        x = 6.37100153959
+        y = -7.8478883842
+        interface = D2 f0/0
+        color = "#0b0b0b"
+    [[NOTE 3]]
+        text = "f0/0"
+        x = 54.542424614
+        y = -11.7034707671
+        interface = D1 f0/0
+        color = "#0b0b0b"
+    [[NOTE 4]]
+        text = "f0/1"
+        x = 59.6289984604
+        y = 51.8478883842
+        interface = R f0/1
+        color = "#0b0b0b"
+    [[NOTE 5]]
+        text = "f1/0"
+        x = 45.1796969077
+        y = -16.1005903266
+        interface = R f1/0
+        color = "#0b0b0b"
+    [[NOTE 6]]
+        text = "f0/0"
+        x = 11.457575386
+        y = 55.7034707671
+        interface = R f0/0
+        color = "#0b0b0b"

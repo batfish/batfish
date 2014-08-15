@@ -1228,7 +1228,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void exitPassive_interface_ro_stanza(
          Passive_interface_ro_stanzaContext ctx) {
       boolean passive = ctx.NO() == null;
-      String iname = ctx.i.toString();
+      String iname = ctx.i.getText();
       OspfProcess proc = _configuration.getOspfProcess();
       if (passive) {
          proc.getInterfaceBlacklist().add(iname);

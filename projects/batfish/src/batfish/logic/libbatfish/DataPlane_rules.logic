@@ -25,6 +25,10 @@ FibForward(node, ip, interface) <-
       )
    ).
 
+FibForwardPolicyRouteNextHopIp(node, ip, interface) <-
+   FibForward(node, ip, interface),
+   SetPolicyMapClauseSetNextHopIp(_, _, ip).
+   
 FibNetworkForward(node, network, interface) <-
    InstalledRoute(route),
    Route_node[route] = node,

@@ -244,9 +244,10 @@ public class PredicateInfo {
       currentNames.clear();
       
       currentNames.add("libbatfish:DataPlane:FibForward");
+      currentNames.add("libbatfish:DataPlane:FibForwardPolicyRouteNextHopIp");
       valueTypeList = new ArrayList<LBValueType>();
       valueTypeList.add(LBValueType.ENTITY_REF_STRING); // node
-      valueTypeList.add(LBValueType.ENTITY_INDEX_IP); // network
+      valueTypeList.add(LBValueType.ENTITY_INDEX_IP); // ip
       valueTypeList.add(LBValueType.ENTITY_REF_STRING); // interface
       updateQualifiedNameMap(currentNames);
       addValueTypes(currentNames, valueTypeList);
