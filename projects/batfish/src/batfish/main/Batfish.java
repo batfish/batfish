@@ -725,6 +725,23 @@ public class Batfish {
       return edges;
    }
 
+   /**
+    * Generates a topology object from inferred edges encoded in interface
+    * descriptions.
+    * 
+    * @param configurations
+    *           The vendor specific configurations.
+    * @param includeExternal
+    *           Whether to include edges to nodes for which configuration files
+    *           were not supplied (used for debugging).
+    * @return The inferred topology.
+    */
+   private Topology inferTopologyFromInterfaceDescriptions(
+         Map<String, Configuration> configurations, boolean IncludeExternal) {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
    public LogicBloxFrontend initFrontend(boolean assumedToExist,
          String workspace) throws LBInitializationException {
       print(1, "\n*** STARTING CONNECTBLOX SESSION ***\n");
@@ -1371,9 +1388,11 @@ public class Batfish {
       if (_settings.getFacts() || _settings.getDumpControlPlaneFacts()) {
          cpFactBins = new LinkedHashMap<String, StringBuilder>();
          initControlPlaneFactBins(cpFactBins);
-         writeTopologyFacts(_settings.getTestRigPath(), cpFactBins);
-         writeConfigurationFacts(_settings.getSerializeIndependentPath(),
+         Map<String, Configuration> configurations = deserializeConfigurations(_settings
+               .getSerializeIndependentPath());
+         writeTopologyFacts(_settings.getTestRigPath(), configurations,
                cpFactBins);
+         writeConfigurationFacts(configurations, cpFactBins);
          if (_settings.getDumpControlPlaneFacts()) {
             dumpFacts(cpFactBins);
          }
@@ -1513,9 +1532,9 @@ public class Batfish {
       printElapsedTime();
    }
 
-   public void writeConfigurationFacts(String serializedConfigPath,
+   public void writeConfigurationFacts(
+         Map<String, Configuration> configurations,
          Map<String, StringBuilder> factBins) {
-      Map<String, Configuration> configurations = deserializeConfigurations(serializedConfigPath);
       populateConfigurationFactBins(configurations.values(), factBins);
    }
 
@@ -1530,31 +1549,56 @@ public class Batfish {
       }
    }
 
+   @SuppressWarnings("unused")
    public void writeTopologyFacts(String testRigPath,
+         Map<String, Configuration> configurations,
          Map<String, StringBuilder> factBins) {
-      Path topologyFilePath = Paths.get(testRigPath, TOPOLOGY_FILENAME);
-      // Get generated facts from topology file
-      String topologyFileText = null;
-      boolean guess = false;
-      print(1, "*** PARSING TOPOLOGY ***\n");
-      resetTimer();
-      try {
-         topologyFileText = FileUtils.readFileToString(topologyFilePath
-               .toFile());
+      // TODO: Use flag to extract topology from interface descriptions.
+      if (true) {
+         Topology topology = inferTopologyFromInterfaceDescriptions(
+               configurations, /* Include external nodes (debug) */true);
+         // TODO: Get from flag.
+         String topologyDotFile = "/home/david/Projects/usc-configs/topology/topology.dot";
+         if (!topologyDotFile.isEmpty()) {
+            try {
+               FileOutputStream out = new FileOutputStream(topologyDotFile);
+               topology.dumpDot(out);
+               out.close();
+            }
+            catch (FileNotFoundException e) {
+               error(0, "Unable to write topology dot-file.");
+               e.printStackTrace();
+               quit(1);
+            }
+         }
       }
-      catch (FileNotFoundException e) {
-         // tell logicblox to guess adjacencies based on interface subnetworks
-         print(1, "*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
-         StringBuilder wGuessTopology = factBins.get("GuessTopology");
-         wGuessTopology.append("1\n");
-         guess = true;
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
-      }
-      if (!guess) {
-         parseTopology(testRigPath, topologyFileText, factBins);
+      else {
+         Path topologyFilePath = Paths.get(testRigPath, TOPOLOGY_FILENAME);
+         // Get generated facts from topology file
+         String topologyFileText = null;
+         boolean guess = false;
+         print(1, "*** PARSING TOPOLOGY ***\n");
+         resetTimer();
+         try {
+            topologyFileText = FileUtils.readFileToString(topologyFilePath
+                  .toFile());
+         }
+         catch (FileNotFoundException e) {
+            // tell logicblox to guess adjacencies based on interface
+            // subnetworks
+            print(1,
+                  "*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
+            StringBuilder wGuessTopology = factBins.get("GuessTopology");
+            wGuessTopology.append("1\n");
+            guess = true;
+         }
+         catch (IOException e) {
+            e.printStackTrace();
+            quit(1);
+         }
+         if (!guess) {
+            parseTopology(testRigPath, topologyFileText, factBins);
+         }
       }
       printElapsedTime();
       /*
