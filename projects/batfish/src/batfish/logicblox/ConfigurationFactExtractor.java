@@ -20,6 +20,7 @@ import batfish.representation.OspfProcess;
 import batfish.representation.PolicyMap;
 import batfish.representation.PolicyMapClause;
 import batfish.representation.PolicyMapMatchCommunityListLine;
+import batfish.representation.PolicyMapMatchIpAccessListLine;
 import batfish.representation.PolicyMapMatchLine;
 import batfish.representation.PolicyMapMatchNeighborLine;
 import batfish.representation.PolicyMapMatchProtocolLine;
@@ -500,6 +501,8 @@ public class ConfigurationFactExtractor {
             .get("SetPolicyMapClauseDeleteCommunity");
       StringBuilder wSetPolicyMapClauseDeny = _factBins
             .get("SetPolicyMapClauseDeny");
+      StringBuilder wSetPolicyMapClauseMatchAcl = _factBins
+            .get("SetPolicyMapClauseMatchAcl");
       StringBuilder wSetPolicyMapClauseMatchCommunityList = _factBins
             .get("SetPolicyMapClauseMatchCommunityList");
       StringBuilder wSetPolicyMapClauseMatchNeighbor = _factBins
@@ -558,8 +561,12 @@ public class ConfigurationFactExtractor {
                   break;
 
                case IP_ACCESS_LIST:
-                  // TODO: implement
-                  throw new Error("ERROR: Policy map matching of IP acls (packet filtering?) not implemented!");
+                  PolicyMapMatchIpAccessListLine mialLine = (PolicyMapMatchIpAccessListLine)matchLine;
+                  for (IpAccessList list : mialLine.getLists()) {
+                     String listName = hostname + ":" + list.getName();
+                     wSetPolicyMapClauseMatchAcl.append(mapName + "|" + i + "|" + listName);
+                  }
+                  break;
 
                case NEIGHBOR:
                   PolicyMapMatchNeighborLine pmmnl = (PolicyMapMatchNeighborLine) matchLine;

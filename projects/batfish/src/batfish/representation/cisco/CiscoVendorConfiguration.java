@@ -942,6 +942,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          throws VendorConversionException {
       batfish.representation.Interface newIface = new batfish.representation.Interface(
             iface.getName());
+      newIface.setDescription(iface.getDescription());
       newIface.setAccessVlan(iface.getAccessVlan());
       newIface.setActive(iface.getActive());
       newIface.setArea(iface.getArea());

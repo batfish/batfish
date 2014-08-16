@@ -17,7 +17,7 @@ FibForward(node, ip, interface) ->
    Ip(ip),
    Interface(interface).
 
-FibForwardPolicyRouteNextHopIp(node, ip, interface) <-
+FibForwardPolicyRouteNextHopIp(node, ip, interface) ->
    Node(node),
    Ip(ip),
    Interface(interface).

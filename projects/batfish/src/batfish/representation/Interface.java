@@ -17,6 +17,7 @@ public class Interface extends NamedStructure {
    private boolean _active;
    private ArrayList<SubRange> _allowedVlans;
    private Double _bandwidth;
+   private String _description;
    private IpAccessList _incomingFilter;
    private Ip _ip;
    private int _nativeVlan;
@@ -68,6 +69,10 @@ public class Interface extends NamedStructure {
 
    public double getBandwidth() {
       return _bandwidth;
+   }
+
+   public String getDescription() {
+      return _description;
    }
 
    public String getIFString(int indentLevel) {
@@ -198,6 +203,10 @@ public class Interface extends NamedStructure {
       _bandwidth = bandwidth;
    }
 
+   public void setDescription(String description) {
+      _description = description;
+   }
+
    public void setIncomingFilter(IpAccessList filter) {
       _incomingFilter = filter;
    }
@@ -229,7 +238,7 @@ public class Interface extends NamedStructure {
    public void setRoutingPolicy(PolicyMap policy) {
       _routingPolicy = policy;
    }
-   
+
    public void setSubnetMask(Ip subnet) {
       _subnet = subnet;
    }

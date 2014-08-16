@@ -48,7 +48,7 @@ import batfish.z3.node.LitIntExpr;
 import batfish.z3.node.NotExpr;
 import batfish.z3.node.OrExpr;
 import batfish.z3.node.PacketRelExpr;
-import batfish.z3.node.RelExpr;
+import batfish.z3.node.PacketRelExpr;
 import batfish.z3.node.RuleExpr;
 import batfish.z3.node.Statement;
 import batfish.z3.node.TrueExpr;
@@ -641,7 +641,7 @@ public class Synthesizer {
                      throw new Error("bad action");
                   }
 
-                  RelExpr policyClauseMatch = new RelExpr(policyClauseMatchName);
+                  PacketRelExpr policyClauseMatch = new PacketRelExpr(policyClauseMatchName);
                   if (action == PolicyMapAction.PERMIT) {
                      /**
                       * For each clause, for every next hop interface
@@ -660,7 +660,7 @@ public class Synthesizer {
                            for (String nextHopInterface : nextHopInterfaces) {
                               String preOutInterfaceName = getPreOutInterfaceName(
                                     hostname, nextHopInterface);
-                              RelExpr preOutInterface = new RelExpr(
+                              PacketRelExpr preOutInterface = new PacketRelExpr(
                                     preOutInterfaceName);
                               RuleExpr preOutRule = new RuleExpr(
                                     policyClauseMatch, preOutInterface);
@@ -673,7 +673,7 @@ public class Synthesizer {
                   /**
                    * if clausematch, then action
                    */
-                  RelExpr policyAction = new RelExpr(policyActionName);
+                  PacketRelExpr policyAction = new PacketRelExpr(policyActionName);
                   RuleExpr matchAction = new RuleExpr(policyClauseMatch,
                         policyAction);
                   statements.add(matchAction);
@@ -682,7 +682,7 @@ public class Synthesizer {
                   AndExpr noAclMatchConditions = new AndExpr();
                   String policyPrevClauseNoMatchName = getPolicyClauseNoMatchName(
                         hostname, policyName, i - 1);
-                  RelExpr prevNoMatch = new RelExpr(policyPrevClauseNoMatchName);
+                  PacketRelExpr prevNoMatch = new PacketRelExpr(policyPrevClauseNoMatchName);
                   for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
                      if (matchLine.getType() == PolicyMapMatchType.IP_ACCESS_LIST) {
                         hasMatchIp = true;
@@ -691,10 +691,10 @@ public class Synthesizer {
                            String aclName = acl.getName();
                            String aclPermitName = getPassAclName(hostname,
                                  aclName);
-                           RelExpr aclPermit = new RelExpr(aclPermitName);
+                           PacketRelExpr aclPermit = new PacketRelExpr(aclPermitName);
                            String aclDenyName = getFailAclName(hostname,
                                  aclName);
-                           RelExpr aclDeny = new RelExpr(aclDenyName);
+                           PacketRelExpr aclDeny = new PacketRelExpr(aclDenyName);
                            noAclMatchConditions.addConjunct(aclDeny);
                            RuleExpr matchRule;
                            if (i > 0) {
@@ -727,7 +727,7 @@ public class Synthesizer {
                      if (i > 0) {
                         noAclMatchConditions.addConjunct(prevNoMatch);
                      }
-                     RelExpr policyClauseNoMatch = new RelExpr(
+                     PacketRelExpr policyClauseNoMatch = new PacketRelExpr(
                            policyClauseNoMatchName);
                      RuleExpr noMatchRule = new RuleExpr(noAclMatchConditions,
                            policyClauseNoMatch);
@@ -758,8 +758,8 @@ public class Synthesizer {
                int lastIndex = p.getClauses().size() - 1;
                String noMatchLastName = getPolicyClauseNoMatchName(hostname,
                      policyName, lastIndex);
-               RelExpr noMatchLastClause = new RelExpr(noMatchLastName);
-               RelExpr policyDeny = new RelExpr(policyDenyName);
+               PacketRelExpr noMatchLastClause = new PacketRelExpr(noMatchLastName);
+               PacketRelExpr policyDeny = new PacketRelExpr(policyDenyName);
                RuleExpr noMatchDeny = new RuleExpr(noMatchLastClause,
                      policyDeny);
                statements.add(noMatchDeny);
@@ -788,7 +788,7 @@ public class Synthesizer {
             Ip ip = i.getIP();
             if (ip != null) {
                AndExpr conditions = new AndExpr();
-               RelExpr postIn = new PacketRelExpr(postInName);
+               PacketRelExpr postIn = new PacketRelExpr(postInName);
                VarIntExpr dstIpVar = new VarIntExpr(DST_IP_VAR);
                LitIntExpr dstIpLit = new LitIntExpr(ip);
                EqExpr matchDstIp = new EqExpr(dstIpVar, dstIpLit);
@@ -995,6 +995,7 @@ public class Synthesizer {
                   break;
                }
             }
+            AndExpr conditions = new AndExpr();
             String ifaceName = currentRow.getInterface();
             String preOutIfaceName;
             if (ifaceName.equals(FibRow.DROP_INTERFACE)) {
@@ -1003,10 +1004,29 @@ public class Synthesizer {
             }
             else {
                preOutIfaceName = getPreOutInterfaceName(hostname, ifaceName);
+               Interface iface = _configurations.get(hostname).getInterfaces()
+                     .get(ifaceName);
+               PolicyMap routingPolicy = iface.getRoutingPolicy();
+               if (routingPolicy == null) {
+                  /**
+                   * if not policy-routed interface, must have reached preout
+                   */
+                  PacketRelExpr preOut = new PacketRelExpr(preOutName);
+                  conditions.addConjunct(preOut);
+               }
+               else {
+                  /**
+                   * otherwise, if policy-routed interface, must not have been
+                   * matched by any policy
+                   */
+                  String policyDenyName = getPolicyDenyName(hostname,
+                        routingPolicy.getMapName());
+                  PacketRelExpr policyDeny = new PacketRelExpr(policyDenyName);
+                  conditions.addConjunct(policyDeny);
+               }
             }
             _packetRelations.add(preOutIfaceName);
 
-            AndExpr conditions = new AndExpr();
 
             // must not match more specific routes
             for (FibRow notRow : notRows) {
@@ -1043,26 +1063,6 @@ public class Synthesizer {
                conditions.addConjunct(prefixMatch);
             }
 
-            Interface iface = _configurations.get(hostname).getInterfaces()
-                  .get(ifaceName);
-            PolicyMap routingPolicy = iface.getRoutingPolicy();
-            if (routingPolicy == null) {
-               /**
-                * if not policy-routed interface, must have reached preout
-                */
-               PacketRelExpr preOut = new PacketRelExpr(preOutName);
-               conditions.addConjunct(preOut);
-            }
-            else {
-               /**
-                * otherwise, if policy-routed interface, must not have been
-                * matched by any policy
-                */
-               String policyDenyName = getPolicyDenyName(hostname,
-                     routingPolicy.getMapName());
-               PacketRelExpr policyDeny = new PacketRelExpr(policyDenyName);
-               conditions.addConjunct(policyDeny);
-            }
             // then we forward out specified interface (or drop)
             PacketRelExpr preOutIface = new PacketRelExpr(preOutIfaceName);
             RuleExpr rule = new RuleExpr(conditions, preOutIface);

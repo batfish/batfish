@@ -389,6 +389,16 @@ public class PredicateInfo {
       addValueTypes(currentNames, valueTypeList);
       currentNames.clear();      
       
+      currentNames.add("libbatfish:Traffic:FlowPolicyDropped");
+      valueTypeList = new ArrayList<LBValueType>();
+      valueTypeList.add(LBValueType.ENTITY_INDEX_FLOW); // flow
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // node
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // policy
+      valueTypeList.add(LBValueType.INT); // clause
+      updateQualifiedNameMap(currentNames);
+      addValueTypes(currentNames, valueTypeList);
+      currentNames.clear();      
+      
       currentNames.add("libbatfish:Traffic:FlowReach");
       currentNames.add("libbatfish:Traffic:FlowReachStep");
       valueTypeList = new ArrayList<LBValueType>();
@@ -401,10 +411,22 @@ public class PredicateInfo {
       addValueTypes(currentNames, valueTypeList);
       currentNames.clear();      
       
+      currentNames.add("libbatfish:Traffic:FlowReachPolicyRoute");
+      valueTypeList = new ArrayList<LBValueType>();
+      valueTypeList.add(LBValueType.ENTITY_INDEX_FLOW); // flow
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // node
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // policy
+      updateQualifiedNameMap(currentNames);
+      addValueTypes(currentNames, valueTypeList);
+      currentNames.clear();      
+      
       currentNames.add("libbatfish:Traffic:FlowReachPostInInterface");
       currentNames.add("libbatfish:Traffic:FlowReachPostOutInterface");
       currentNames.add("libbatfish:Traffic:FlowReachPreInInterface");
       currentNames.add("libbatfish:Traffic:FlowReachPreOutInterface");
+      currentNames.add("libbatfish:Traffic:FlowReachPreOutInterfaceOrigin");
+      currentNames.add("libbatfish:Traffic:FlowReachPreOutInterfacePolicyRoute");
+      currentNames.add("libbatfish:Traffic:FlowReachPreOutInterfaceStandard");
       valueTypeList = new ArrayList<LBValueType>();
       valueTypeList.add(LBValueType.ENTITY_INDEX_FLOW); // flow
       valueTypeList.add(LBValueType.ENTITY_REF_STRING); // node
@@ -619,6 +641,17 @@ public class PredicateInfo {
       addValueTypes(currentNames, valueTypeList);
       currentNames.clear();
 
+      currentNames.add("libbatfish:PolicyMap:PolicyMapClauseMatchFlow");
+      currentNames.add("libbatfish:PolicyMap:PolicyMapDenyFlow");
+      currentNames.add("libbatfish:PolicyMap:PolicyMapPermitFlow");
+      valueTypeList = new ArrayList<LBValueType>();
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // map
+      valueTypeList.add(LBValueType.INT); // clause
+      valueTypeList.add(LBValueType.ENTITY_INDEX_FLOW); // flow
+      updateQualifiedNameMap(currentNames);
+      addValueTypes(currentNames, valueTypeList);
+      currentNames.clear();
+
       currentNames.add("libbatfish:PolicyMap:need_PolicyMapClauseMatchRoute");
       currentNames.add("libbatfish:PolicyMap:PolicyMapClauseMatchRoute");
       currentNames.add("libbatfish:PolicyMap:PolicyMapPermitRoute");
@@ -740,10 +773,11 @@ public class PredicateInfo {
 
       currentNames.add("libbatfish:DataPlane:SetInterfaceFilterIn");
       currentNames.add("libbatfish:DataPlane:SetInterfaceFilterOut");
+      currentNames.add("libbatfish:DataPlane:SetInterfaceRoutingPolicy");
       valueTypeList = new ArrayList<LBValueType>();
       valueTypeList.add(LBValueType.ENTITY_REF_STRING); // node
       valueTypeList.add(LBValueType.ENTITY_REF_STRING); // interface
-      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // list
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // list / policy
       updateQualifiedNameMap(currentNames);
       addValueTypes(currentNames, valueTypeList);
       currentNames.clear();
@@ -814,6 +848,15 @@ public class PredicateInfo {
       addValueTypes(currentNames, valueTypeList);
       currentNames.clear();
 
+      currentNames.add("libbatfish:PolicyMap:SetPolicyMapClauseMatchAcl");
+      valueTypeList = new ArrayList<LBValueType>();
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // map
+      valueTypeList.add(LBValueType.INT);// clause
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // acl
+      updateQualifiedNameMap(currentNames);
+      addValueTypes(currentNames, valueTypeList);
+      currentNames.clear();
+
       currentNames.add("libbatfish:PolicyMap:SetPolicyMapClauseMatchNeighbor");
       valueTypeList = new ArrayList<LBValueType>();
       valueTypeList.add(LBValueType.ENTITY_REF_STRING); // map
@@ -836,8 +879,17 @@ public class PredicateInfo {
       currentNames.add("libbatfish:PolicyMap:SetPolicyMapClauseSetMetric");
       valueTypeList = new ArrayList<LBValueType>();
       valueTypeList.add(LBValueType.ENTITY_REF_STRING); // map
-      valueTypeList.add(LBValueType.INT);// clause
+      valueTypeList.add(LBValueType.INT); // clause
       valueTypeList.add(LBValueType.INT); // metric
+      updateQualifiedNameMap(currentNames);
+      addValueTypes(currentNames, valueTypeList);
+      currentNames.clear();
+
+      currentNames.add("libbatfish:PolicyMap:SetPolicyMapClauseSetNextHopIp");
+      valueTypeList = new ArrayList<LBValueType>();
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // map
+      valueTypeList.add(LBValueType.INT); // clause
+      valueTypeList.add(LBValueType.ENTITY_INDEX_IP); // ip
       updateQualifiedNameMap(currentNames);
       addValueTypes(currentNames, valueTypeList);
       currentNames.clear();
