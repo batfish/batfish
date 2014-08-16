@@ -563,7 +563,7 @@ public class ConfigurationFactExtractor {
                case IP_ACCESS_LIST:
                   PolicyMapMatchIpAccessListLine mialLine = (PolicyMapMatchIpAccessListLine)matchLine;
                   for (IpAccessList list : mialLine.getLists()) {
-                     String listName = list.getName();
+                     String listName = hostname + ":" + list.getName();
                      wSetPolicyMapClauseMatchAcl.append(mapName + "|" + i + "|" + listName);
                   }
                   break;

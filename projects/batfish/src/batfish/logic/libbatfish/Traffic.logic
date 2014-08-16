@@ -4,6 +4,7 @@ block(`Traffic) {
    alias_all(`libbatfish:IpAccessList),
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
    export(`{
 // BEGIN CODE
 
@@ -104,6 +105,12 @@ FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow ->
    int(protocol),
    Flow(flow).
 
+FlowPolicyDropped(flow, node, policy, clause) ->
+   Flow(flow),
+   Node(node),
+   PolicyMap(policy),
+   int(clause).
+
 /// [FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt)] =
 ///   Flow [flow] is successfully sent out interface [srcOutInt] on node
 ///   [srcNode], and eventually successfully enters interface [dstInInt] on
@@ -114,6 +121,11 @@ FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt) ->
    Interface(srcOutInt),
    Node(dstNode),
    Interface(dstInInt).
+
+FlowReachPolicyRoute(flow, node, policy) ->
+   Flow(flow),
+   Node(node),
+   PolicyMap(policy).
 
 /// [FlowReachPostIn[flow, node] =
 ///   Flow [flow] successfully enters node [node], either by originating there
@@ -142,6 +154,21 @@ FlowReachPreOut(flow, node) ->
    Node(node).
 
 FlowReachPreOutInterface(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowReachPreOutInterfaceOrigin(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowReachPreOutInterfacePolicyRoute(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowReachPreOutInterfaceStandard(flow, node, interface) ->
    Flow(flow),
    Node(node),
    Interface(interface).
