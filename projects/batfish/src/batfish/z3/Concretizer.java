@@ -21,7 +21,7 @@ public class Concretizer {
    public List<String> concretize() {
       List<String> output = new ArrayList<String>();
       StringBuilder sb = new StringBuilder();
-      sb.append(Synthesizer.getVarDecls());
+      sb.append(Synthesizer.getPacketVarDecls());
       for (Result result : _results) {
          Element e = result.getElement();
          MultilineList assertion = new MultilineList();

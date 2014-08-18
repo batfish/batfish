@@ -6,7 +6,7 @@ public class PacketRelExpr extends RelExpr {
 
    public PacketRelExpr(String name) {
       super(name);
-      for (String arg : Synthesizer.getStdArgs()) {
+      for (String arg : Synthesizer.getPacketArgs()) {
          addArgument(new VarIntExpr(arg));
       }
    }

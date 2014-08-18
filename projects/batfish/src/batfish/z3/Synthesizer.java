@@ -35,48 +35,54 @@ import batfish.representation.PolicyMapSetNextHopLine;
 import batfish.representation.PolicyMapSetType;
 import batfish.util.SubRange;
 import batfish.util.Util;
+import batfish.z3.node.AcceptExpr;
 import batfish.z3.node.AndExpr;
 import batfish.z3.node.BooleanExpr;
 import batfish.z3.node.Comment;
 import batfish.z3.node.DeclareRelExpr;
 import batfish.z3.node.DeclareVarExpr;
+import batfish.z3.node.DestinationRouteExpr;
+import batfish.z3.node.DropExpr;
 import batfish.z3.node.EqExpr;
 import batfish.z3.node.ExtractExpr;
 import batfish.z3.node.FalseExpr;
 import batfish.z3.node.IntExpr;
 import batfish.z3.node.LitIntExpr;
+import batfish.z3.node.NodeAcceptExpr;
+import batfish.z3.node.NodeDropExpr;
 import batfish.z3.node.NotExpr;
 import batfish.z3.node.OrExpr;
 import batfish.z3.node.PacketRelExpr;
-import batfish.z3.node.PacketRelExpr;
+import batfish.z3.node.PostInExpr;
+import batfish.z3.node.PostInInterfaceExpr;
+import batfish.z3.node.PostOutIfaceExpr;
+import batfish.z3.node.PostOutInterfaceExpr;
+import batfish.z3.node.PreInInterfaceExpr;
+import batfish.z3.node.PreOutExpr;
+import batfish.z3.node.PreOutInterfaceExpr;
 import batfish.z3.node.RuleExpr;
 import batfish.z3.node.Statement;
 import batfish.z3.node.TrueExpr;
 import batfish.z3.node.VarIntExpr;
 
 public class Synthesizer {
-   private static final String ACCEPT_RELNAME = "R_accept";
-   private static final String DROP_RELNAME = "R_drop";
    public static final String DST_IP_VAR = "dst_ip";
    public static final String DST_PORT_VAR = "dst_port";
    public static final String FAKE_INTERFACE_PREFIX = "TenGigabitEthernet200/";
    public static final String FLOW_SINK_INTERFACE_PREFIX = "TenGigabitEthernet100/";
+   public static final String INTERFACE_IN_VAR = "interface_in";
+   public static final String INTERFACE_OUT_VAR = "interface_out";
+   public static final String INTERFACE_VAR = "interface";
    public static final String IP_PROTOCOL_VAR = "ip_prot";
+   public static final String NODE_IN_VAR = "node_in";
+   public static final String NODE_OUT_VAR = "node_out";
+   public static final String NODE_VAR = "node";
    private static final int PORT_BITS = 16;
    private static final int PORT_MAX = 65535;
    private static final int PORT_MIN = 0;
    public static final String SRC_IP_VAR = "src_ip";
+   private static final String SRC_NODE_VAR = "src_node";
    public static final String SRC_PORT_VAR = "src_port";
-
-   private static String getAcceptName(String hostname) {
-      String acceptName = ACCEPT_RELNAME + "_" + hostname;
-      return acceptName;
-   }
-
-   private static String getDropName(String hostname) {
-      String dropName = DROP_RELNAME + "_" + hostname;
-      return dropName;
-   }
 
    private static String getFailAclName(String hostname, String aclName) {
       return hostname + "_acl_F_" + aclName;
@@ -90,6 +96,36 @@ public class Synthesizer {
    private static String getNoMatchAclName(String hostname, String aclName,
          int line) {
       return hostname + "_acl_N_" + aclName + "_" + line;
+   }
+
+   public static String[] getPacketArgs() {
+      return new String[] { SRC_NODE_VAR, SRC_IP_VAR, DST_IP_VAR, SRC_PORT_VAR,
+            DST_PORT_VAR, IP_PROTOCOL_VAR };
+   }
+
+   public static String getPacketVarDecls() {
+      StringBuilder sbVarDecl = new StringBuilder(
+            ";;; Variable Declarations\n\n");
+      sbVarDecl.append("(declare-var " + SRC_NODE_VAR + " (_ BitVec 32) )\n");
+      sbVarDecl.append("(declare-var " + SRC_IP_VAR + " (_ BitVec 32) )\n");
+      sbVarDecl.append("(declare-var " + DST_IP_VAR + " (_ BitVec 32) )\n");
+      sbVarDecl.append("(declare-var " + SRC_PORT_VAR + " (_ BitVec 16) )\n");
+      sbVarDecl.append("(declare-var " + DST_PORT_VAR + " (_ BitVec 16) )\n");
+      sbVarDecl
+            .append("(declare-var " + IP_PROTOCOL_VAR + " (_ BitVec 16) )\n");
+      sbVarDecl.append("\n");
+      return sbVarDecl.toString();
+   }
+
+   private static List<String> getPacketVars() {
+      List<String> vars = new ArrayList<String>();
+      vars.add(SRC_NODE_VAR);
+      vars.add(SRC_IP_VAR);
+      vars.add(DST_IP_VAR);
+      vars.add(SRC_PORT_VAR);
+      vars.add(DST_PORT_VAR);
+      vars.add(IP_PROTOCOL_VAR);
+      return vars;
    }
 
    private static String getPassAclName(String hostname, String aclName) {
@@ -114,51 +150,6 @@ public class Synthesizer {
       return "F_policy_" + hostname + "_" + policyName;
    }
 
-   private static String getPostInName(String hostname) {
-      String postInName = "R_postin_" + hostname;
-      return postInName;
-   }
-
-   private static String getPostOutInterfaceName(String hostname,
-         String ifaceName) {
-      String postOutIfaceName = "R_postout_iface_" + hostname + "_" + ifaceName;
-      return postOutIfaceName;
-   }
-
-   private static String getPreInInterfaceName(String hostname, String ifaceName) {
-      String preInIfaceName = "R_prein_iface_" + hostname + "_" + ifaceName;
-      return preInIfaceName;
-   }
-
-   private static String getPreOutInterfaceName(String hostname,
-         String ifaceName) {
-      String preOutIfaceName = "R_preout_iface_" + hostname + "_" + ifaceName;
-      return preOutIfaceName;
-   }
-
-   private static String getPreOutName(String hostname) {
-      String preOutName = "R_preout_" + hostname;
-      return preOutName;
-   }
-
-   public static String[] getStdArgs() {
-      return new String[] { SRC_IP_VAR, DST_IP_VAR, SRC_PORT_VAR, DST_PORT_VAR,
-            IP_PROTOCOL_VAR };
-   }
-
-   public static String getVarDecls() {
-      StringBuilder sbVarDecl = new StringBuilder(
-            ";;; Variable Declarations\n\n");
-      sbVarDecl.append("(declare-var " + SRC_IP_VAR + " (_ BitVec 32) )\n");
-      sbVarDecl.append("(declare-var " + DST_IP_VAR + " (_ BitVec 32) )\n");
-      sbVarDecl.append("(declare-var " + SRC_PORT_VAR + " (_ BitVec 16) )\n");
-      sbVarDecl.append("(declare-var " + DST_PORT_VAR + " (_ BitVec 16) )\n");
-      sbVarDecl
-            .append("(declare-var " + IP_PROTOCOL_VAR + " (_ BitVec 16) )\n");
-      sbVarDecl.append("\n");
-      return sbVarDecl.toString();
-   }
-
    public static String indent(int n) {
       String output = "";
       for (int i = 0; i < n; i++) {
@@ -167,9 +158,27 @@ public class Synthesizer {
       return output;
    }
 
+   private static boolean isLoopbackInterface(String ifaceName) {
+      String lcIfaceName = ifaceName.toLowerCase();
+      return lcIfaceName.startsWith("lo");
+   }
+
+   private static boolean isNullInterface(String ifaceName) {
+      String lcIfaceName = ifaceName.toLowerCase();
+      return lcIfaceName.startsWith("null");
+   }
+
    private final Map<String, Configuration> _configurations;
 
    private final FibMap _fibs;
+
+   private final Map<String, Integer> _interfaceNumbers;
+
+   private final int _interfaceWidth;
+
+   private final Map<String, Integer> _nodeNumbers;
+
+   private final int _nodeWidth;
 
    private final Set<String> _packetRelations;
 
@@ -194,6 +203,12 @@ public class Synthesizer {
       _topologyInterfaces = new TreeMap<String, Set<Interface>>();
       computeTopologyInterfaces();
       _varSizes = new LinkedHashMap<String, Integer>();
+      _nodeNumbers = new TreeMap<String, Integer>();
+      _interfaceNumbers = new TreeMap<String, Integer>();
+      initNodeMap();
+      _nodeWidth = Util.intWidth(_nodeNumbers.size());
+      initInterfaceMap();
+      _interfaceWidth = Util.intWidth(_interfaceNumbers.size());
       initVarSizes();
    }
 
@@ -336,13 +351,118 @@ public class Synthesizer {
    private List<Statement> getAcceptRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment("Node accept lead to universal accept"));
-      PacketRelExpr accept = new PacketRelExpr(ACCEPT_RELNAME);
-      for (String hostname : _topologyInterfaces.keySet()) {
-         String acceptName = getAcceptName(hostname);
-         _packetRelations.add(acceptName);
-         PacketRelExpr nodeAccept = new PacketRelExpr(acceptName);
-         RuleExpr connectAccepts = new RuleExpr(nodeAccept, accept);
-         statements.add(connectAccepts);
+      NodeAcceptExpr nodeAccept = new NodeAcceptExpr(NODE_VAR);
+      RuleExpr connectAccepts = new RuleExpr(nodeAccept, AcceptExpr.INSTANCE);
+      statements.add(connectAccepts);
+      return statements;
+   }
+
+   private List<Statement> getDestRouteToPreOutIfaceRules() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements
+            .add(new Comment(
+                  "Rules for sending destination routed packets to preoutIface stage"));
+      for (String hostname : _fibs.keySet()) {
+         TreeSet<FibRow> fibSet = _fibs.get(hostname);
+         FibRow firstRow = fibSet.first();
+         if (firstRow.getPrefix().asLong() != 0) {
+            // no default route, so add one that drops traffic
+            FibRow dropDefaultRow = new FibRow(new Ip(0), 0,
+                  FibRow.DROP_INTERFACE);
+            fibSet.add(dropDefaultRow);
+         }
+         FibRow[] fib = fibSet.toArray(new FibRow[] {});
+         for (int i = 0; i < fib.length; i++) {
+            FibRow currentRow = fib[i];
+            if (currentRow.getInterface().startsWith(FAKE_INTERFACE_PREFIX)) {
+               continue;
+            }
+            Set<FibRow> notRows = new TreeSet<FibRow>();
+            for (int j = i + 1; j < fib.length; j++) {
+               FibRow specificRow = fib[j];
+               long currentStart = currentRow.getPrefix().asLong();
+               long currentEnd = currentRow.getLastIp().asLong();
+               long specificStart = specificRow.getPrefix().asLong();
+               long specificEnd = specificRow.getLastIp().asLong();
+               // check whether later prefix is contained in this one
+               if (currentStart <= specificStart && specificEnd <= currentEnd) {
+                  if (currentStart == specificStart
+                        && currentEnd == specificEnd) {
+                     // load balancing
+                     continue;
+                  }
+                  if (currentRow.getInterface().equals(
+                        specificRow.getInterface())) {
+                     // no need to exclude packets matching the more specific
+                     // prefix,
+                     // since they would go out same interface
+                     continue;
+                  }
+                  // exclude packets that match a more specific prefix that
+                  // would go out a different interface
+                  notRows.add(specificRow);
+               }
+               else {
+                  break;
+               }
+            }
+            AndExpr conditions = new AndExpr();
+            DestinationRouteExpr destRoute = new DestinationRouteExpr(NODE_VAR);
+            conditions.addConjunct(destRoute);
+            String ifaceOutName = currentRow.getInterface();
+            PacketRelExpr action;
+            EqExpr nodeMatches = new EqExpr(new VarIntExpr(NODE_VAR), getNodeNumber(hostname));
+            conditions.addConjunct(nodeMatches);
+            if (ifaceOutName.equals(FibRow.DROP_INTERFACE)
+                  || isLoopbackInterface(ifaceOutName)
+                  || isNullInterface(ifaceOutName)) {
+               action = new NodeDropExpr(NODE_VAR);
+            }
+            else {
+               action = new PreOutInterfaceExpr(NODE_VAR, INTERFACE_VAR);
+               EqExpr interfaceMatches = new EqExpr(new VarIntExpr(INTERFACE_VAR), getInterfaceNumber(ifaceOutName));
+               conditions.addConjunct(interfaceMatches);
+            }
+
+            // must not match more specific routes
+            for (FibRow notRow : notRows) {
+               int prefixLength = notRow.getPrefixLength();
+               long prefix = notRow.getPrefix().asLong();
+               int first = 32 - prefixLength;
+               if (first >= 32) {
+                  continue;
+               }
+               int last = 31;
+               LitIntExpr prefixFragmentLit = new LitIntExpr(prefix, first,
+                     last);
+               IntExpr prefixFragmentExt = newExtractExpr(DST_IP_VAR, first,
+                     last);
+               NotExpr noPrefixMatch = new NotExpr();
+               EqExpr prefixMatch = new EqExpr(prefixFragmentExt,
+                     prefixFragmentLit);
+               noPrefixMatch.SetArgument(prefixMatch);
+               conditions.addConjunct(noPrefixMatch);
+            }
+
+            // must match route
+            int prefixLength = currentRow.getPrefixLength();
+            long prefix = currentRow.getPrefix().asLong();
+            int first = 32 - prefixLength;
+            if (first < 32) {
+               int last = 31;
+               LitIntExpr prefixFragmentLit = new LitIntExpr(prefix, first,
+                     last);
+               IntExpr prefixFragmentExt = newExtractExpr(DST_IP_VAR, first,
+                     last);
+               EqExpr prefixMatch = new EqExpr(prefixFragmentExt,
+                     prefixFragmentLit);
+               conditions.addConjunct(prefixMatch);
+            }
+
+            // then we forward out specified interface (or drop)
+            RuleExpr rule = new RuleExpr(conditions, action);
+            statements.add(rule);
+         }
       }
       return statements;
    }
@@ -350,14 +470,9 @@ public class Synthesizer {
    private List<Statement> getDropRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment("Node drop lead to universal drop"));
-      PacketRelExpr drop = new PacketRelExpr(DROP_RELNAME);
-      for (String hostname : _topologyInterfaces.keySet()) {
-         String dropName = getDropName(hostname);
-         _packetRelations.add(dropName);
-         PacketRelExpr nodeDrop = new PacketRelExpr(dropName);
-         RuleExpr connectDrops = new RuleExpr(nodeDrop, drop);
-         statements.add(connectDrops);
-      }
+      NodeDropExpr nodeDrop = new NodeDropExpr(NODE_VAR);
+      RuleExpr connectDrops = new RuleExpr(nodeDrop, DropExpr.INSTANCE);
+      statements.add(connectDrops);
       return statements;
    }
 
@@ -369,17 +484,32 @@ public class Synthesizer {
          Configuration c = _configurations.get(hostname);
          for (String iface : c.getInterfaces().keySet()) {
             if (iface.startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
-               String postOutIfaceName = getPostOutInterfaceName(hostname,
-                     iface);
-               PacketRelExpr postOutIface = new PacketRelExpr(postOutIfaceName);
-               String acceptName = getAcceptName(hostname);
-               PacketRelExpr accept = new PacketRelExpr(acceptName);
-               RuleExpr flowSinkAccept = new RuleExpr(postOutIface, accept);
+               AndExpr conditions = new AndExpr();
+               PostOutIfaceExpr postOutIface = new PostOutIfaceExpr(NODE_VAR,
+                     INTERFACE_VAR);
+               conditions.addConjunct(postOutIface);
+               EqExpr nodeMatches = new EqExpr(new VarIntExpr(NODE_VAR),
+                     getNodeNumber(hostname));
+               conditions.addConjunct(nodeMatches);
+               EqExpr interfaceMatches = new EqExpr(new VarIntExpr(NODE_VAR),
+                     getInterfaceNumber(iface));
+               conditions.addConjunct(interfaceMatches);
+               NodeAcceptExpr nodeAccept = new NodeAcceptExpr(NODE_VAR);
+               RuleExpr flowSinkAccept = new RuleExpr(conditions, nodeAccept);
                statements.add(flowSinkAccept);
             }
          }
       }
       return statements;
+   }
+
+   private IntExpr getInterfaceNumber(String iface) {
+      int interfaceNumber = _interfaceNumbers.get(iface);
+      return new LitIntExpr(interfaceNumber, _interfaceWidth);
+   }
+
+   public Map<String, Integer> getInterfaceNumbers() {
+      return _interfaceNumbers;
    }
 
    private List<Statement> getMatchAclRules() {
@@ -595,6 +725,15 @@ public class Synthesizer {
       return or;
    }
 
+   private IntExpr getNodeNumber(String hostname) {
+      int nodeNumber = _nodeNumbers.get(hostname);
+      return new LitIntExpr(nodeNumber, _nodeWidth);
+   }
+
+   public Map<String, Integer> getNodeNumbers() {
+      return _nodeNumbers;
+   }
+
    private List<Statement> getPolicyRouteRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment("Policy-based routing rules"));
@@ -602,7 +741,11 @@ public class Synthesizer {
          String hostname = e.getKey();
          PolicyRouteFibIpMap ipMap = _prFibs.get(hostname);
          Configuration c = e.getValue();
-         for (Interface iface : c.getInterfaces().values()) {
+         for (Entry<String, Interface> e2 : c.getInterfaces().entrySet()) {
+            String inIfaceName = e2.getKey();
+            Interface iface = e2.getValue();
+            PostInInterfaceExpr postInIface = new PostInInterfaceExpr(
+                  NODE_VAR, INTERFACE_IN_VAR);
             PolicyMap p = iface.getRoutingPolicy();
             if (p != null) {
                String policyName = p.getMapName();
@@ -640,8 +783,16 @@ public class Synthesizer {
                   default:
                      throw new Error("bad action");
                   }
-
-                  PacketRelExpr policyClauseMatch = new PacketRelExpr(policyClauseMatchName);
+                  PacketRelExpr policyClauseMatch = new PacketRelExpr(
+                        policyClauseMatchName);
+                  AndExpr preOutConditions = new AndExpr();
+                  preOutConditions.addConjunct(policyClauseMatch);
+                  preOutConditions.addConjunct(postInIface);
+                  EqExpr inIntMatches = new EqExpr(new VarIntExpr(INTERFACE_IN_VAR), getInterfaceNumber(inIfaceName));
+                  preOutConditions.addConjunct(inIntMatches);
+                  EqExpr nodeMatches = new EqExpr(new VarIntExpr(NODE_VAR), getNodeNumber(hostname));
+                  preOutConditions.addConjunct(nodeMatches);
+                  preOutConditions.addConjunct(inIntMatches);
                   if (action == PolicyMapAction.PERMIT) {
                      /**
                       * For each clause, for every next hop interface
@@ -658,22 +809,23 @@ public class Synthesizer {
                               nextHopInterfaces.add(nextHopInterface);
                            }
                            for (String nextHopInterface : nextHopInterfaces) {
-                              String preOutInterfaceName = getPreOutInterfaceName(
-                                    hostname, nextHopInterface);
-                              PacketRelExpr preOutInterface = new PacketRelExpr(
-                                    preOutInterfaceName);
+                              PreOutInterfaceExpr preOutInterface = new PreOutInterfaceExpr(
+                                    NODE_VAR,
+                                    INTERFACE_OUT_VAR);
+                              EqExpr nextHopIntMatches = new EqExpr(new VarIntExpr(INTERFACE_OUT_VAR), getInterfaceNumber(nextHopInterface));
+                              preOutConditions.addConjunct(nextHopIntMatches);
                               RuleExpr preOutRule = new RuleExpr(
-                                    policyClauseMatch, preOutInterface);
+                                    preOutConditions, preOutInterface);
                               statements.add(preOutRule);
                            }
                         }
                      }
                   }
-
                   /**
                    * if clausematch, then action
                    */
-                  PacketRelExpr policyAction = new PacketRelExpr(policyActionName);
+                  PacketRelExpr policyAction = new PacketRelExpr(
+                        policyActionName);
                   RuleExpr matchAction = new RuleExpr(policyClauseMatch,
                         policyAction);
                   statements.add(matchAction);
@@ -682,7 +834,8 @@ public class Synthesizer {
                   AndExpr noAclMatchConditions = new AndExpr();
                   String policyPrevClauseNoMatchName = getPolicyClauseNoMatchName(
                         hostname, policyName, i - 1);
-                  PacketRelExpr prevNoMatch = new PacketRelExpr(policyPrevClauseNoMatchName);
+                  PacketRelExpr prevNoMatch = new PacketRelExpr(
+                        policyPrevClauseNoMatchName);
                   for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
                      if (matchLine.getType() == PolicyMapMatchType.IP_ACCESS_LIST) {
                         hasMatchIp = true;
@@ -691,10 +844,12 @@ public class Synthesizer {
                            String aclName = acl.getName();
                            String aclPermitName = getPassAclName(hostname,
                                  aclName);
-                           PacketRelExpr aclPermit = new PacketRelExpr(aclPermitName);
+                           PacketRelExpr aclPermit = new PacketRelExpr(
+                                 aclPermitName);
                            String aclDenyName = getFailAclName(hostname,
                                  aclName);
-                           PacketRelExpr aclDeny = new PacketRelExpr(aclDenyName);
+                           PacketRelExpr aclDeny = new PacketRelExpr(
+                                 aclDenyName);
                            noAclMatchConditions.addConjunct(aclDeny);
                            RuleExpr matchRule;
                            if (i > 0) {
@@ -748,9 +903,7 @@ public class Synthesizer {
                      }
                      statements.add(trivialMatch);
                   }
-
                }
-
                /**
                 * If the packet reaches the last clause, and is not matched by
                 * that clause, then it is not permitted by the policy.
@@ -758,7 +911,8 @@ public class Synthesizer {
                int lastIndex = p.getClauses().size() - 1;
                String noMatchLastName = getPolicyClauseNoMatchName(hostname,
                      policyName, lastIndex);
-               PacketRelExpr noMatchLastClause = new PacketRelExpr(noMatchLastName);
+               PacketRelExpr noMatchLastClause = new PacketRelExpr(
+                     noMatchLastName);
                PacketRelExpr policyDeny = new PacketRelExpr(policyDenyName);
                RuleExpr noMatchDeny = new RuleExpr(noMatchLastClause,
                      policyDeny);
@@ -766,7 +920,6 @@ public class Synthesizer {
             }
          }
       }
-
       return statements;
    }
 
@@ -777,10 +930,6 @@ public class Synthesizer {
                   "for each ip address on an interface, accept if destination ip matches"));
       for (Configuration c : _configurations.values()) {
          String hostname = c.getHostname();
-         String postInName = getPostInName(hostname);
-         String preOutName = getPreOutName(hostname);
-         _packetRelations.add(postInName);
-         _packetRelations.add(preOutName);
          for (Interface i : c.getInterfaces().values()) {
             if (i.getName().startsWith(FAKE_INTERFACE_PREFIX) || !i.getActive()) {
                continue;
@@ -788,15 +937,17 @@ public class Synthesizer {
             Ip ip = i.getIP();
             if (ip != null) {
                AndExpr conditions = new AndExpr();
-               PacketRelExpr postIn = new PacketRelExpr(postInName);
+               PostInExpr postIn = new PostInExpr(NODE_VAR);
                VarIntExpr dstIpVar = new VarIntExpr(DST_IP_VAR);
                LitIntExpr dstIpLit = new LitIntExpr(ip);
                EqExpr matchDstIp = new EqExpr(dstIpVar, dstIpLit);
+               EqExpr nodeMatches = new EqExpr(new VarIntExpr(NODE_VAR),
+                     getNodeNumber(hostname));
                conditions.addConjunct(postIn);
                conditions.addConjunct(matchDstIp);
-               String acceptName = getAcceptName(hostname);
-               PacketRelExpr accept = new PacketRelExpr(acceptName);
-               RuleExpr rule = new RuleExpr(conditions, accept);
+               conditions.addConjunct(nodeMatches);
+               NodeAcceptExpr nodeAccept = new NodeAcceptExpr(NODE_VAR);
+               RuleExpr rule = new RuleExpr(conditions, nodeAccept);
                statements.add(rule);
             }
          }
@@ -812,10 +963,6 @@ public class Synthesizer {
                   "forward to preOut if for each ip address on an interface, destination ip does not match"));
       for (Configuration c : _configurations.values()) {
          String hostname = c.getHostname();
-         String postInName = getPostInName(hostname);
-         String preOutName = getPreOutName(hostname);
-         _packetRelations.add(postInName);
-         _packetRelations.add(preOutName);
          AndExpr conditions = new AndExpr();
 
          for (Interface i : c.getInterfaces().values()) {
@@ -832,12 +979,27 @@ public class Synthesizer {
                conditions.addConjunct(noMatchDstIp);
             }
          }
-         PacketRelExpr postIn = new PacketRelExpr(postInName);
+         PostInExpr postIn = new PostInExpr(NODE_VAR);
          conditions.addConjunct(postIn);
-         PacketRelExpr preOut = new PacketRelExpr(preOutName);
+         EqExpr nodeMatches = new EqExpr(new VarIntExpr(NODE_VAR),
+               getNodeNumber(hostname));
+         conditions.addConjunct(nodeMatches);
+         PreOutExpr preOut = new PreOutExpr(NODE_VAR);
          RuleExpr rule = new RuleExpr(conditions, preOut);
          statements.add(rule);
       }
+      return statements;
+   }
+
+   private List<Statement> getPostInRules() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements.add(new Comment(
+            "Rules for connecting postInInterface to postIn"));
+      PostInInterfaceExpr postInIface = new PostInInterfaceExpr(NODE_VAR,
+            INTERFACE_VAR);
+      PostInExpr postIn = new PostInExpr(NODE_VAR);
+      RuleExpr rule = new RuleExpr(postInIface, postIn);
+      statements.add(rule);
       return statements;
    }
 
@@ -852,41 +1014,40 @@ public class Synthesizer {
             if (ifaceName.startsWith(FAKE_INTERFACE_PREFIX)) {
                continue;
             }
-            String preOutIfaceName = getPreOutInterfaceName(hostname, ifaceName);
-            String postOutIfaceName = getPostOutInterfaceName(hostname,
-                  ifaceName);
-            _packetRelations.add(preOutIfaceName);
-            _packetRelations.add(postOutIfaceName);
+            EqExpr nodeMatches = new EqExpr(new VarIntExpr(NODE_VAR),
+                  getNodeNumber(hostname));
+            EqExpr interfaceMatches = new EqExpr(new VarIntExpr(INTERFACE_VAR),
+                  getInterfaceNumber(ifaceName));
             IpAccessList acl = iface.getOutgoingFilter();
 
-            BooleanExpr antecedent;
-            PacketRelExpr preOutIface = new PacketRelExpr(preOutIfaceName);
-            if (acl == null) {
-               antecedent = new PacketRelExpr(preOutIfaceName);
-            }
-            else {
+            PreOutInterfaceExpr preOutIface = new PreOutInterfaceExpr(NODE_VAR,
+                  INTERFACE_VAR);
+            AndExpr conditions = new AndExpr();
+            conditions.addConjunct(preOutIface);
+            conditions.addConjunct(nodeMatches);
+            conditions.addConjunct(interfaceMatches);
+            if (acl != null) {
                String aclName = acl.getName();
                String aclAcceptName = getPassAclName(hostname, aclName);
-               AndExpr conditions = new AndExpr();
                PacketRelExpr aclAccept = new PacketRelExpr(aclAcceptName);
-               conditions.addConjunct(preOutIface);
                conditions.addConjunct(aclAccept);
-               antecedent = conditions;
             }
-            PacketRelExpr postOutIface = new PacketRelExpr(postOutIfaceName);
-            RuleExpr preOutToPostOut = new RuleExpr(antecedent, postOutIface);
+            PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(
+                  NODE_VAR, INTERFACE_VAR);
+            RuleExpr preOutToPostOut = new RuleExpr(conditions, postOutIface);
             statements.add(preOutToPostOut);
             // failing case
             if (acl != null) {
-               String dropName = getDropName(hostname);
                String aclName = acl.getName();
                String aclFailName = getFailAclName(hostname, aclName);
                PacketRelExpr aclFail = new PacketRelExpr(aclFailName);
-               PacketRelExpr drop = new PacketRelExpr(dropName);
-               AndExpr conditions = new AndExpr();
-               conditions.addConjunct(preOutIface);
-               conditions.addConjunct(aclFail);
-               RuleExpr aclDrop = new RuleExpr(conditions, drop);
+               NodeDropExpr nodeDrop = new NodeDropExpr(NODE_VAR);
+               AndExpr failConditions = new AndExpr();
+               failConditions.addConjunct(preOutIface);
+               failConditions.addConjunct(aclFail);
+               failConditions.addConjunct(nodeMatches);
+               failConditions.addConjunct(interfaceMatches);
+               RuleExpr aclDrop = new RuleExpr(failConditions, nodeDrop);
                statements.add(aclDrop);
             }
          }
@@ -906,39 +1067,41 @@ public class Synthesizer {
                   || ifaceName.startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
                continue;
             }
-            String preInIfaceName = getPreInInterfaceName(hostname, ifaceName);
-            String postInName = getPostInName(hostname);
             IpAccessList acl = iface.getIncomingFilter();
 
-            BooleanExpr antecedent;
-            PacketRelExpr preInIface = new PacketRelExpr(preInIfaceName);
+            AndExpr conditions = new AndExpr();
+            PreInInterfaceExpr preInIface = new PreInInterfaceExpr(NODE_VAR,
+                  INTERFACE_VAR);
+            conditions.addConjunct(preInIface);
+            EqExpr nodeMatches = new EqExpr(new VarIntExpr(NODE_VAR),
+                  getNodeNumber(hostname));
+            EqExpr interfaceMatches = new EqExpr(new VarIntExpr(INTERFACE_VAR),
+                  getInterfaceNumber(ifaceName));
+            conditions.addConjunct(nodeMatches);
+            conditions.addConjunct(interfaceMatches);
             // passing/null case
-            if (acl == null) {
-               antecedent = preInIface;
-            }
-            else {
+            if (acl != null) {
                String aclName = acl.getName();
                String aclAcceptName = getPassAclName(hostname, aclName);
                PacketRelExpr aclAccept = new PacketRelExpr(aclAcceptName);
-               AndExpr conditions = new AndExpr();
-               antecedent = conditions;
-               conditions.addConjunct(preInIface);
                conditions.addConjunct(aclAccept);
             }
-            PacketRelExpr postIn = new PacketRelExpr(postInName);
-            RuleExpr preInToPostIn = new RuleExpr(antecedent, postIn);
+            PostInInterfaceExpr postInInterface = new PostInInterfaceExpr(
+                  NODE_VAR, INTERFACE_VAR);
+            RuleExpr preInToPostIn = new RuleExpr(conditions, postInInterface);
             statements.add(preInToPostIn);
             // failing case
             if (acl != null) {
-               String dropName = getDropName(hostname);
                String aclName = acl.getName();
                String aclFailName = getFailAclName(hostname, aclName);
-               PacketRelExpr drop = new PacketRelExpr(dropName);
+               NodeDropExpr nodeDrop = new NodeDropExpr(NODE_VAR);
                PacketRelExpr aclFail = new PacketRelExpr(aclFailName);
-               AndExpr conditions = new AndExpr();
-               conditions.addConjunct(preInIface);
-               conditions.addConjunct(aclFail);
-               RuleExpr aclFailDrop = new RuleExpr(conditions, drop);
+               AndExpr failConditions = new AndExpr();
+               failConditions.addConjunct(nodeMatches);
+               failConditions.addConjunct(interfaceMatches);
+               failConditions.addConjunct(preInIface);
+               failConditions.addConjunct(aclFail);
+               RuleExpr aclFailDrop = new RuleExpr(failConditions, nodeDrop);
                statements.add(aclFailDrop);
             }
          }
@@ -946,127 +1109,60 @@ public class Synthesizer {
       return statements;
    }
 
-   private List<Statement> getPreOutRouteRules() {
+   private List<Statement> getPreOutToDestRouteRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment(
-            "Rules for sending packet to preoutIface stage"));
+            "Rules for sending packets from preout to destroute stage"));
+      /**
+       * if a packet whose source node is a given node reaches preout on that node, then it
+       * reaches destroute
+       */
+      AndExpr originConditions = new AndExpr();
+      PreOutExpr preOutOrigin = new PreOutExpr(NODE_VAR);
+      originConditions.addConjunct(preOutOrigin);
+      DestinationRouteExpr destRouteOrigin = new DestinationRouteExpr(NODE_VAR);
+      EqExpr nodeIsSourceNode = new EqExpr(new VarIntExpr(NODE_VAR),
+            new VarIntExpr(SRC_NODE_VAR));
+      originConditions.addConjunct(nodeIsSourceNode);
+      RuleExpr originRule = new RuleExpr(originConditions, destRouteOrigin);
+      statements.add(originRule);
+      
       for (String hostname : _fibs.keySet()) {
-         String preOutName = getPreOutName(hostname);
-         TreeSet<FibRow> fibSet = _fibs.get(hostname);
-         FibRow firstRow = fibSet.first();
-         if (firstRow.getPrefix().asLong() != 0) {
-            // no default route, so add one that drops traffic
-            FibRow dropDefaultRow = new FibRow(new Ip(0), 0,
-                  FibRow.DROP_INTERFACE);
-            fibSet.add(dropDefaultRow);
-         }
-         FibRow[] fib = fibSet.toArray(new FibRow[] {});
-         for (int i = 0; i < fib.length; i++) {
-            FibRow currentRow = fib[i];
-            if (currentRow.getInterface().startsWith(FAKE_INTERFACE_PREFIX)) {
-               continue;
+         Configuration config = _configurations.get(hostname);
+         PreOutExpr preOut = new PreOutExpr(NODE_VAR);
+         DestinationRouteExpr destRoute = new DestinationRouteExpr(NODE_VAR);
+         /**
+          * for each non-policy-routed interface, if something reaches postin on
+          * that interface, and reaches preout, then it reaches destroute
+          */
+         /**
+          * for each policy-routed interface, if something reaches postin on
+          * that interface, and reaches preout, and fails its policy, then it
+          * reaches destroute
+          */
+         for (Entry<String, Interface> ifaceEntry : config.getInterfaces()
+               .entrySet()) {
+            AndExpr perInterfaceConditions = new AndExpr();
+            perInterfaceConditions.addConjunct(preOut);
+            String ifaceName = ifaceEntry.getKey();
+            Interface iface = ifaceEntry.getValue();
+            PolicyMap p = iface.getRoutingPolicy();
+            if (p != null) {
+               String policyName = p.getMapName();
+               String policyDenyName = getPolicyDenyName(hostname, policyName);
+               PacketRelExpr policyDeny = new PacketRelExpr(policyDenyName);
+               perInterfaceConditions.addConjunct(policyDeny);
             }
-            Set<FibRow> notRows = new TreeSet<FibRow>();
-            for (int j = i + 1; j < fib.length; j++) {
-               FibRow specificRow = fib[j];
-               long currentStart = currentRow.getPrefix().asLong();
-               long currentEnd = currentRow.getLastIp().asLong();
-               long specificStart = specificRow.getPrefix().asLong();
-               long specificEnd = specificRow.getLastIp().asLong();
-               // check whether later prefix is contained in this one
-               if (currentStart <= specificStart && specificEnd <= currentEnd) {
-                  if (currentStart == specificStart
-                        && currentEnd == specificEnd) {
-                     // load balancing
-                     continue;
-                  }
-                  if (currentRow.getInterface().equals(
-                        specificRow.getInterface())) {
-                     // no need to exclude packets matching the more specific
-                     // prefix,
-                     // since they would go out same interface
-                     continue;
-                  }
-                  // exclude packets that match a more specific prefix that
-                  // would go out a different interface
-                  notRows.add(specificRow);
-               }
-               else {
-                  break;
-               }
-            }
-            AndExpr conditions = new AndExpr();
-            String ifaceName = currentRow.getInterface();
-            String preOutIfaceName;
-            if (ifaceName.equals(FibRow.DROP_INTERFACE)) {
-               String dropName = getDropName(hostname);
-               preOutIfaceName = dropName;
-            }
-            else {
-               preOutIfaceName = getPreOutInterfaceName(hostname, ifaceName);
-               Interface iface = _configurations.get(hostname).getInterfaces()
-                     .get(ifaceName);
-               PolicyMap routingPolicy = iface.getRoutingPolicy();
-               if (routingPolicy == null) {
-                  /**
-                   * if not policy-routed interface, must have reached preout
-                   */
-                  PacketRelExpr preOut = new PacketRelExpr(preOutName);
-                  conditions.addConjunct(preOut);
-               }
-               else {
-                  /**
-                   * otherwise, if policy-routed interface, must not have been
-                   * matched by any policy
-                   */
-                  String policyDenyName = getPolicyDenyName(hostname,
-                        routingPolicy.getMapName());
-                  PacketRelExpr policyDeny = new PacketRelExpr(policyDenyName);
-                  conditions.addConjunct(policyDeny);
-               }
-            }
-            _packetRelations.add(preOutIfaceName);
-
-
-            // must not match more specific routes
-            for (FibRow notRow : notRows) {
-               int prefixLength = notRow.getPrefixLength();
-               long prefix = notRow.getPrefix().asLong();
-               int first = 32 - prefixLength;
-               if (first >= 32) {
-                  continue;
-               }
-               int last = 31;
-               LitIntExpr prefixFragmentLit = new LitIntExpr(prefix, first,
-                     last);
-               IntExpr prefixFragmentExt = newExtractExpr(DST_IP_VAR, first,
-                     last);
-               NotExpr noPrefixMatch = new NotExpr();
-               EqExpr prefixMatch = new EqExpr(prefixFragmentExt,
-                     prefixFragmentLit);
-               noPrefixMatch.SetArgument(prefixMatch);
-               conditions.addConjunct(noPrefixMatch);
-            }
-
-            // must match route
-            int prefixLength = currentRow.getPrefixLength();
-            long prefix = currentRow.getPrefix().asLong();
-            int first = 32 - prefixLength;
-            if (first < 32) {
-               int last = 31;
-               LitIntExpr prefixFragmentLit = new LitIntExpr(prefix, first,
-                     last);
-               IntExpr prefixFragmentExt = newExtractExpr(DST_IP_VAR, first,
-                     last);
-               EqExpr prefixMatch = new EqExpr(prefixFragmentExt,
-                     prefixFragmentLit);
-               conditions.addConjunct(prefixMatch);
-            }
-
-            // then we forward out specified interface (or drop)
-            PacketRelExpr preOutIface = new PacketRelExpr(preOutIfaceName);
-            RuleExpr rule = new RuleExpr(conditions, preOutIface);
-            statements.add(rule);
+            PostInInterfaceExpr postInIface = new PostInInterfaceExpr(NODE_VAR,
+                  INTERFACE_VAR);
+            perInterfaceConditions.addConjunct(postInIface);
+            EqExpr nodeMatches = new EqExpr(new VarIntExpr(NODE_VAR), getNodeNumber(hostname));
+            EqExpr interfaceMatches = new EqExpr(new VarIntExpr(INTERFACE_VAR), getInterfaceNumber(ifaceName));
+            perInterfaceConditions.addConjunct(nodeMatches);
+            perInterfaceConditions.addConjunct(interfaceMatches);
+            RuleExpr perInterfaceRule = new RuleExpr(perInterfaceConditions,
+                  destRoute);
+            statements.add(perInterfaceRule);
          }
       }
       return statements;
@@ -1074,19 +1170,41 @@ public class Synthesizer {
 
    private List<Statement> getRelDeclExprs() {
       List<Statement> statements = new ArrayList<Statement>();
-      _packetRelations.add(DROP_RELNAME);
-      _packetRelations.add(ACCEPT_RELNAME);
+      _packetRelations.add(AcceptExpr.NAME);
+      _packetRelations.add(DropExpr.NAME);
       Comment header = new Comment("Relation declarations");
       statements.add(header);
-      Integer[] sizeIntegers = _varSizes.values().toArray(new Integer[] {});
-      int[] sizes = new int[sizeIntegers.length];
-      for (int i = 0; i < sizeIntegers.length; i++) {
-         sizes[i] = sizeIntegers[i];
+      List<String> packetVars = getPacketVars();
+      List<Integer> packetRelSizes = new ArrayList<Integer>();
+      for (String packetVar : packetVars) {
+         packetRelSizes.add(_varSizes.get(packetVar));
       }
       for (String packetRelation : _packetRelations) {
-         DeclareRelExpr decl = new DeclareRelExpr(packetRelation, sizes);
+         DeclareRelExpr decl = new DeclareRelExpr(packetRelation,
+               packetRelSizes);
          statements.add(decl);
       }
+      // packet relations with additional node argument
+      List<Integer> nodeRelSizes = new ArrayList<Integer>();
+      nodeRelSizes.addAll(packetRelSizes);
+      nodeRelSizes.add(_nodeWidth);
+      statements.add(new DeclareRelExpr(NodeAcceptExpr.NAME, nodeRelSizes));
+      statements.add(new DeclareRelExpr(NodeDropExpr.NAME, nodeRelSizes));
+      statements.add(new DeclareRelExpr(PreOutExpr.NAME, nodeRelSizes));
+      statements.add(new DeclareRelExpr(PostInExpr.NAME, nodeRelSizes));
+      statements.add(new DeclareRelExpr(DestinationRouteExpr.NAME, nodeRelSizes));
+      // packet relations with additional node and interface arguments
+      List<Integer> nodeIntRelSizes = new ArrayList<Integer>();
+      nodeIntRelSizes.addAll(nodeRelSizes);
+      nodeIntRelSizes.add(_interfaceWidth);
+      statements.add(new DeclareRelExpr(PreOutInterfaceExpr.NAME,
+            nodeIntRelSizes));
+      statements.add(new DeclareRelExpr(PostOutInterfaceExpr.NAME,
+            nodeIntRelSizes));
+      statements.add(new DeclareRelExpr(PostInInterfaceExpr.NAME,
+            nodeIntRelSizes));
+      statements.add(new DeclareRelExpr(PreInInterfaceExpr.NAME,
+            nodeIntRelSizes));
       return statements;
    }
 
@@ -1105,12 +1223,21 @@ public class Synthesizer {
             continue;
          }
 
-         String postOutName = getPostOutInterfaceName(hostnameOut, intOut);
-         String preInName = getPreInInterfaceName(hostnameIn, intIn);
-         _packetRelations.add(preInName);
-         PacketRelExpr postOut = new PacketRelExpr(postOutName);
-         PacketRelExpr preIn = new PacketRelExpr(preInName);
-         RuleExpr propagateToAdjacent = new RuleExpr(postOut, preIn);
+         PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(
+               NODE_OUT_VAR, INTERFACE_OUT_VAR);
+         PreInInterfaceExpr preInIface = new PreInInterfaceExpr(
+               NODE_IN_VAR, INTERFACE_IN_VAR);
+         AndExpr conditions = new AndExpr();
+         conditions.addConjunct(postOutIface);
+         EqExpr outNodeExpr = new EqExpr(new VarIntExpr(NODE_OUT_VAR), getNodeNumber(hostnameOut));
+         EqExpr inNodeExpr = new EqExpr(new VarIntExpr(NODE_IN_VAR), getNodeNumber(hostnameIn));
+         EqExpr outIntExpr = new EqExpr(new VarIntExpr(INTERFACE_OUT_VAR), getInterfaceNumber(intOut));
+         EqExpr inIntExpr = new EqExpr(new VarIntExpr(INTERFACE_IN_VAR), getInterfaceNumber(intIn));
+         conditions.addConjunct(inNodeExpr);
+         conditions.addConjunct(outNodeExpr);
+         conditions.addConjunct(inIntExpr);
+         conditions.addConjunct(outIntExpr);
+         RuleExpr propagateToAdjacent = new RuleExpr(conditions, preInIface);
          statements.add(propagateToAdjacent);
       }
       return statements;
@@ -1126,7 +1253,36 @@ public class Synthesizer {
       return statements;
    }
 
+   private void initInterfaceMap() {
+      Set<String> interfaceNames = new TreeSet<String>();
+      for (Configuration config : _configurations.values()) {
+         for (String ifaceName : config.getInterfaces().keySet()) {
+            interfaceNames.add(ifaceName);
+         }
+      }
+      int count = 0;
+      for (String ifaceName : interfaceNames) {
+         _interfaceNumbers.put(ifaceName, count);
+         count++;
+      }
+   }
+
+   private void initNodeMap() {
+      int count = 0;
+      for (String hostname : _configurations.keySet()) {
+         _nodeNumbers.put(hostname, count);
+         count++;
+      }
+   }
+
    private void initVarSizes() {
+      _varSizes.put(SRC_NODE_VAR, _nodeWidth);
+      _varSizes.put(NODE_VAR, _nodeWidth);
+      _varSizes.put(NODE_IN_VAR, _nodeWidth);
+      _varSizes.put(NODE_OUT_VAR, _nodeWidth);
+      _varSizes.put(INTERFACE_VAR, _interfaceWidth);
+      _varSizes.put(INTERFACE_IN_VAR, _interfaceWidth);
+      _varSizes.put(INTERFACE_OUT_VAR, _interfaceWidth);
       _varSizes.put(SRC_IP_VAR, 32);
       _varSizes.put(DST_IP_VAR, 32);
       _varSizes.put(SRC_PORT_VAR, 16);
@@ -1150,9 +1306,11 @@ public class Synthesizer {
       List<Statement> dropRules = getDropRules();
       List<Statement> acceptRules = getAcceptRules();
       List<Statement> flowSinkAcceptRules = getFlowSinkAcceptRules();
+      List<Statement> postInRules = getPostInRules();
       List<Statement> postInAcceptRules = getPostInAcceptRules();
       List<Statement> postInFwdRules = getPostInFwdRules();
-      List<Statement> preOutRouteRules = getPreOutRouteRules();
+      List<Statement> preOutToDestRouteRules = getPreOutToDestRouteRules();
+      List<Statement> destRouteToPreOutIfaceRules = getDestRouteToPreOutIfaceRules();
       List<Statement> policyRouteRules = getPolicyRouteRules();
       List<Statement> matchAclRules = getMatchAclRules();
       List<Statement> toNeighborsRules = getToNeighborsRules();
@@ -1169,9 +1327,11 @@ public class Synthesizer {
       statements.addAll(dropRules);
       statements.addAll(acceptRules);
       statements.addAll(flowSinkAcceptRules);
+      statements.addAll(postInRules);
       statements.addAll(postInAcceptRules);
       statements.addAll(postInFwdRules);
-      statements.addAll(preOutRouteRules);
+      statements.addAll(preOutToDestRouteRules);
+      statements.addAll(destRouteToPreOutIfaceRules);
       statements.addAll(policyRouteRules);
       statements.addAll(matchAclRules);
       statements.addAll(toNeighborsRules);

@@ -296,7 +296,7 @@ public class Batfish {
          }
       }
       Concretizer concretizer = new Concretizer(results,
-            Synthesizer.getStdArgs());
+            Synthesizer.getPacketArgs());
       List<String> concretizerOutputs = concretizer.concretize();
       for (String co : concretizerOutputs) {
          co += "\n\n";
