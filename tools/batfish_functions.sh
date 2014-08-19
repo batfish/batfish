@@ -46,6 +46,8 @@ batfish_analyze() {
    local WORKSPACE=batfish-$USER-$2
    local OLD_PWD=$PWD
    local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
+   local INTERFACE_MAP_PATH=$OLD_PWD/$PREFIX-interface-map
+   local NODE_MAP_PATH=$OLD_PWD/$PREFIX-node-map
    local QUERY_PATH=$OLD_PWD/$PREFIX-query
    local DUMP_DIR=$OLD_PWD/$PREFIX-dump
    local FLOWS=$OLD_PWD/$PREFIX-flows
@@ -67,7 +69,7 @@ batfish_analyze() {
    $BATFISH_CONFIRM && { batfish_query_data_plane $WORKSPACE $DP_DIR || return 1 ; }
 
    echo "Extract z3 reachability relations"
-   $BATFISH_CONFIRM && { batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH  || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH $NODE_MAP_PATH $INTERFACE_MAP_PATH || return 1 ; }
 
    echo "Find inconsistent packet constraints"
    $BATFISH_CONFIRM && { batfish_find_inconsistent_packet_constraints $REACH_PATH $QUERY_PATH || return 1 ; }
@@ -416,11 +418,13 @@ export -f batfish_generate_constraints_queries_helper
 batfish_generate_z3_reachability() {
    date | tr -d '\n'
    echo ": START: Extract z3 reachability relations"
-   batfish_expect_args 3 $# || return 1
+   batfish_expect_args 5 $# || return 1
    local DP_DIR=$1
    local INDEP_SERIAL_PATH=$2
    local REACH_PATH=$3
-   batfish -sipath $INDEP_SERIAL_PATH -dpdir $DP_DIR -z3 -z3out $REACH_PATH || return 1
+   local NODE_MAP_PATH=$4
+   local INTERFACE_MAP_PATH=$5
+   batfish -sipath $INDEP_SERIAL_PATH -dpdir $DP_DIR -z3 -z3out $REACH_PATH -nmpath $NODE_MAP_PATH -impath $INTERFACE_MAP_PATH || return 1
    date | tr -d '\n'
    echo ": END: Extract z3 reachability relations"
 }
@@ -656,4 +660,15 @@ int_to_ip() {
    echo "${OCTET_3}.${OCTET_2}.${OCTET_1}.${OCTET_0}"
 }
 export -f int_to_ip
+
+ip_to_int() {
+   batfish_expect_args 1 $# || return 1
+   local INPUT=$1
+   local OCTET_0=$(echo "$INPUT" | cut -d'.' -f 4)
+   local OCTET_1=$(echo "$INPUT" | cut -d'.' -f 3)
+   local OCTET_2=$(echo "$INPUT" | cut -d'.' -f 2)
+   local OCTET_3=$(echo "$INPUT" | cut -d'.' -f 1)
+   echo $((${OCTET_3} * 16777216 + ${OCTET_2} * 65536 + ${OCTET_1} * 256 + ${OCTET_0}))
+}
+export -f ip_to_int
 

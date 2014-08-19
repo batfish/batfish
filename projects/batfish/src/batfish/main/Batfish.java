@@ -46,6 +46,8 @@ import batfish.dataplane.EdgeSet;
 import batfish.dataplane.FibMap;
 import batfish.dataplane.FibRow;
 import batfish.dataplane.FibSet;
+import batfish.dataplane.InterfaceMap;
+import batfish.dataplane.NodeMap;
 import batfish.dataplane.PolicyRouteFibIpMap;
 import batfish.dataplane.PolicyRouteFibNodeMap;
 import batfish.grammar.BatfishCombinedParser;
@@ -516,6 +518,17 @@ public class Batfish {
          quit(1);
       }
       print(1, "OK\n");
+      
+      print(1, "Serializing node-number mappings..");
+      NodeMap nodeMap =  s.getNodeNumbers();
+      serializeObject(nodeMap, new File(_settings.getNodeMapPath()));
+      print(1, "OK\n");
+
+      print(1, "Serializing interface-number mappings..");
+      InterfaceMap interfaceMap =  s.getInterfaceNumbers();
+      serializeObject(interfaceMap, new File(_settings.getInterfaceMapPath()));
+      print(1, "OK\n");
+
       printElapsedTime();
 
    }
