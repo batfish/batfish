@@ -1,7 +1,9 @@
 package batfish.z3.node;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class EqExpr extends BooleanExpr implements ComplexExpr {
 
@@ -58,6 +60,14 @@ public class EqExpr extends BooleanExpr implements ComplexExpr {
       else {
          return this;
       }
+   }
+
+   @Override
+   public Set<String> getVariables() {
+      Set<String> variables = new HashSet<String>();
+      variables.addAll(_lhs.getVariables());
+      variables.addAll(_rhs.getVariables());
+      return variables;
    }
    
 }

@@ -2,6 +2,7 @@ package batfish.z3.node;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class NotExpr extends BooleanExpr implements ComplexExpr {
 
@@ -21,6 +22,11 @@ public class NotExpr extends BooleanExpr implements ComplexExpr {
    @Override
    public List<Expr> getSubExpressions() {
       return _subExpressions;
+   }
+
+   @Override
+   public Set<String> getVariables() {
+      return _arg.getVariables();
    }
 
    private void init() {

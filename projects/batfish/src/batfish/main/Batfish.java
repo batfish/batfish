@@ -42,14 +42,16 @@ import com.logicblox.connect.Workspace.Relation;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
-import batfish.dataplane.EdgeSet;
-import batfish.dataplane.FibMap;
-import batfish.dataplane.FibRow;
-import batfish.dataplane.FibSet;
-import batfish.dataplane.InterfaceMap;
-import batfish.dataplane.NodeMap;
-import batfish.dataplane.PolicyRouteFibIpMap;
-import batfish.dataplane.PolicyRouteFibNodeMap;
+import batfish.collections.EdgeSet;
+import batfish.collections.FibMap;
+import batfish.collections.FibRow;
+import batfish.collections.FibSet;
+import batfish.collections.InterfaceMap;
+import batfish.collections.NodeMap;
+import batfish.collections.PolicyRouteFibIpMap;
+import batfish.collections.PolicyRouteFibNodeMap;
+import batfish.collections.VarIndexMap;
+import batfish.collections.VarSizeMap;
 import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ConfigurationLexer;
 import batfish.grammar.ConfigurationParser;
@@ -67,9 +69,8 @@ import batfish.grammar.topology.GNS3TopologyExtractor;
 import batfish.grammar.topology.TopologyExtractor;
 import batfish.grammar.z3.ConstraintsLexer;
 import batfish.grammar.z3.ConstraintsParser;
-import batfish.grammar.z3.QueryResultLexer;
-import batfish.grammar.z3.QueryResultParser;
-import batfish.grammar.z3.Result;
+import batfish.grammar.z3.DatalogQueryResultCombinedParser;
+import batfish.grammar.z3.DatalogQueryResultExtractor;
 import batfish.grammar.semantics.SemanticsLexer;
 import batfish.grammar.semantics.SemanticsParser;
 import batfish.logic.LogicResourceLocator;
@@ -93,7 +94,9 @@ import batfish.representation.cisco.Interface;
 import batfish.util.UrlZipExplorer;
 import batfish.util.StringFilter;
 import batfish.util.Util;
-import batfish.z3.Concretizer;
+import batfish.z3.ConcretizerQuery;
+import batfish.z3.MultipathInconsistencyQuerySynthesizer;
+import batfish.z3.QuerySynthesizer;
 import batfish.z3.Synthesizer;
 
 public class Batfish {
@@ -249,7 +252,12 @@ public class Batfish {
    }
 
    private void concretize() {
+      File varSizeMapPath = new File(_settings.getVarSizeMapPath());
+      VarSizeMap varSizeMap = (VarSizeMap) deserializeObject(varSizeMapPath);
       File queryOutputFile = new File(_settings.getConcretizerInputFilePath());
+      File varIndexMapPath = new File(_settings.getConcretizerInputFilePath()
+            + ".varIndices");
+      VarIndexMap varIndexMap = (VarIndexMap) deserializeObject(varIndexMapPath);
       String queryOutputStr = null;
       try {
          queryOutputStr = FileUtils.readFileToString(queryOutputFile);
@@ -258,57 +266,39 @@ public class Batfish {
          e1.printStackTrace();
          quit(1);
       }
-      ANTLRStringStream stream = new ANTLRStringStream(queryOutputStr);
-      QueryResultLexer lexer = new QueryResultLexer(stream);
-      CommonTokenStream tokens = new CommonTokenStream(lexer);
-      QueryResultParser parser = new QueryResultParser(tokens);
-      List<Result> results = null;
-      try {
-         results = parser.results();
-      }
-      catch (Exception e) {
-         error(0, " ...ERROR\n");
-         e.printStackTrace();
-      }
-      List<String> parserErrors = parser.getErrors();
-      List<String> lexerErrors = lexer.getErrors();
-      int numErrors = parserErrors.size() + lexerErrors.size();
+      DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
+            queryOutputStr);
+      ParserRuleContext tree = parser.parse();
+      List<String> errors = parser.getErrors();
+      int numErrors = errors.size();
       if (numErrors > 0) {
-         error(0, " ..." + numErrors + " ERROR(S)\n");
-         for (String msg : lexer.getErrors()) {
-            error(2, "\tlexer: " + msg + "\n");
-         }
-         for (String msg : parser.getErrors()) {
-            error(2, "\tparser: " + msg + "\n");
+         error(1, " ..." + numErrors + " ERROR(S)\n");
+         for (int i = 0; i < numErrors; i++) {
+            String prefix = "ERROR " + (i + 1) + ": ";
+            String msg = errors.get(i);
+            String prefixedMsg = Util.applyPrefix(prefix, msg);
+            error(1, prefixedMsg + "\n");
          }
          quit(1);
       }
-      File outputFile = new File(_settings.getConcretizerOutputFilePath());
-      outputFile.delete();
-      for (Result result : results) {
-         if (result == null) {
-            try {
-               FileUtils.write(outputFile, "unsat\n", true);
-            }
-            catch (IOException e) {
-               e.printStackTrace();
-               quit(1);
-            }
-            quit(0);
-         }
+      else if (!_settings.printParseTree()) {
+         print(1, "...OK\n");
       }
-      Concretizer concretizer = new Concretizer(results,
-            Synthesizer.getPacketArgs());
-      List<String> concretizerOutputs = concretizer.concretize();
-      for (String co : concretizerOutputs) {
-         co += "\n\n";
-         try {
-            FileUtils.write(outputFile, co, true);
-         }
-         catch (IOException e) {
-            e.printStackTrace();
-            quit(1);
-         }
+      else {
+         print(0, "...OK, PRINTING PARSE TREE:\n");
+         print(0, ParseTreePrettyPrinter.print(tree, parser.getParser())
+               + "\n\n");
+      }
+      ParseTreeWalker walker = new ParseTreeWalker();
+      DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(varSizeMap, varIndexMap);
+      walker.walk(extractor, tree);
+
+      List<ConcretizerQuery> concretizerQueries = extractor.getConcretizerQueries();
+      
+      for (int i = 0; i < concretizerQueries.size(); i++) {
+         ConcretizerQuery cq = concretizerQueries.get(i);
+         String concQueryPath = _settings.getConcretizerOutputFilePath() + "-" + i + ".smt2";
+         writeFile(concQueryPath, cq.getText());
       }
    }
 
@@ -484,6 +474,31 @@ public class Batfish {
       return predicateSemantics;
    }
 
+   private void genMultipathQuery() {
+      print(0, "\n*** GENERATING MULTIPATH-INCONSISTENCY QUERIES ***\n");
+      resetTimer();
+
+      File varSizeMapPath = new File(_settings.getVarSizeMapPath());
+      String mpiQueryPath = _settings.getMultipathInconsistencyQueryPath();
+      File varIndexMapPath = new File(mpiQueryPath + ".out.varIndices");
+      VarSizeMap varSizes = (VarSizeMap) deserializeObject(varSizeMapPath);
+      List<String> vars = new ArrayList<String>();
+      vars.addAll(varSizes.keySet());
+      QuerySynthesizer synth = new MultipathInconsistencyQuerySynthesizer(vars);
+      String queryText = synth.getQueryText();
+      VarIndexMap varIndices = synth.getVarIndices();
+
+      print(1, "Writing query to: " + mpiQueryPath);
+      writeFile(mpiQueryPath, queryText);
+      print(1, "OK\n");
+
+      print(1, "Serializing query variable index map..");
+      serializeObject(varIndices, varIndexMapPath);
+      print(1, "OK\n");
+
+      printElapsedTime();
+   }
+
    private void genZ3(Map<String, Configuration> configurations) {
       print(0, "\n*** GENERATING Z3 LOGIC ***\n");
       resetTimer();
@@ -518,19 +533,23 @@ public class Batfish {
          quit(1);
       }
       print(1, "OK\n");
-      
+
       print(1, "Serializing node-number mappings..");
-      NodeMap nodeMap =  s.getNodeNumbers();
+      NodeMap nodeMap = s.getNodeNumbers();
       serializeObject(nodeMap, new File(_settings.getNodeMapPath()));
       print(1, "OK\n");
 
       print(1, "Serializing interface-number mappings..");
-      InterfaceMap interfaceMap =  s.getInterfaceNumbers();
+      InterfaceMap interfaceMap = s.getInterfaceNumbers();
       serializeObject(interfaceMap, new File(_settings.getInterfaceMapPath()));
       print(1, "OK\n");
 
-      printElapsedTime();
+      print(1, "Serializing var-size mappings..");
+      VarSizeMap varSizes = s.getVarSizes();
+      serializeObject(varSizes, new File(_settings.getVarSizeMapPath()));
+      print(1, "OK\n");
 
+      printElapsedTime();
    }
 
    public Map<String, Configuration> getConfigurations(
@@ -1334,6 +1353,11 @@ public class Batfish {
 
       if (_settings.getAnonymize()) {
          anonymizeConfigurations();
+         quit(0);
+      }
+
+      if (_settings.getGenerateMultipathInconsistencyQuery()) {
+         genMultipathQuery();
          quit(0);
       }
 

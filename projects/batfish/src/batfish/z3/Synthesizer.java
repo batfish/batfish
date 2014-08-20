@@ -3,7 +3,6 @@ package batfish.z3;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,13 +12,14 @@ import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
 
-import batfish.dataplane.EdgeSet;
-import batfish.dataplane.FibMap;
-import batfish.dataplane.FibRow;
-import batfish.dataplane.InterfaceMap;
-import batfish.dataplane.NodeMap;
-import batfish.dataplane.PolicyRouteFibIpMap;
-import batfish.dataplane.PolicyRouteFibNodeMap;
+import batfish.collections.EdgeSet;
+import batfish.collections.FibMap;
+import batfish.collections.FibRow;
+import batfish.collections.InterfaceMap;
+import batfish.collections.NodeMap;
+import batfish.collections.PolicyRouteFibIpMap;
+import batfish.collections.PolicyRouteFibNodeMap;
+import batfish.collections.VarSizeMap;
 import batfish.representation.Configuration;
 import batfish.representation.Edge;
 import batfish.representation.Interface;
@@ -76,6 +76,8 @@ public class Synthesizer {
    public static final String INTERFACE_OUT_VAR = "interface_out";
    public static final String INTERFACE_VAR = "interface";
    public static final String IP_PROTOCOL_VAR = "ip_prot";
+   public static final String NODE_ACCEPT_VAR = "node_accept";
+   public static final String NODE_DROP_VAR = "node_drop";
    public static final String NODE_IN_VAR = "node_in";
    public static final String NODE_OUT_VAR = "node_out";
    public static final String NODE_VAR = "node";
@@ -83,7 +85,7 @@ public class Synthesizer {
    private static final int PORT_MAX = 65535;
    private static final int PORT_MIN = 0;
    public static final String SRC_IP_VAR = "src_ip";
-   private static final String SRC_NODE_VAR = "src_node";
+   public static final String SRC_NODE_VAR = "src_node";
    public static final String SRC_PORT_VAR = "src_port";
 
    private static String getAclDenyName(String hostname, String aclName) {
@@ -192,7 +194,7 @@ public class Synthesizer {
 
    private final Map<String, Set<Interface>> _topologyInterfaces;
 
-   private final Map<String, Integer> _varSizes;
+   private final VarSizeMap _varSizes;
 
    public Synthesizer(Map<String, Configuration> configurations, FibMap fibs,
          PolicyRouteFibNodeMap prFibs, EdgeSet topologyEdges, boolean simplify) {
@@ -204,7 +206,7 @@ public class Synthesizer {
       _simplify = simplify;
       _topologyInterfaces = new TreeMap<String, Set<Interface>>();
       computeTopologyInterfaces();
-      _varSizes = new LinkedHashMap<String, Integer>();
+      _varSizes = new VarSizeMap();
       _nodeNumbers = new NodeMap();
       _interfaceNumbers = new InterfaceMap();
       initNodeMap();
@@ -821,7 +823,8 @@ public class Synthesizer {
                               EqExpr nextHopIntMatches = new EqExpr(
                                     new VarIntExpr(INTERFACE_OUT_VAR),
                                     getInterfaceNumber(nextHopInterface));
-                              preOutIfaceConditions.addConjunct(nextHopIntMatches);
+                              preOutIfaceConditions
+                                    .addConjunct(nextHopIntMatches);
                               RuleExpr preOutRule = new RuleExpr(
                                     preOutIfaceConditions, preOutInterface);
                               statements.add(preOutRule);
@@ -1268,6 +1271,10 @@ public class Synthesizer {
       return statements;
    }
 
+   public VarSizeMap getVarSizes() {
+      return _varSizes;
+   }
+
    private void initInterfaceMap() {
       Set<String> interfaceNames = new TreeSet<String>();
       for (Configuration config : _configurations.values()) {
@@ -1299,6 +1306,8 @@ public class Synthesizer {
       _varSizes.put(IP_PROTOCOL_VAR, 16);
       _varSizes.put(NODE_VAR, _nodeWidth);
       _varSizes.put(INTERFACE_VAR, _interfaceWidth);
+      _varSizes.put(NODE_ACCEPT_VAR, _nodeWidth);
+      _varSizes.put(NODE_DROP_VAR, _nodeWidth);
       _varSizes.put(NODE_IN_VAR, _nodeWidth);
       _varSizes.put(NODE_OUT_VAR, _nodeWidth);
       _varSizes.put(INTERFACE_IN_VAR, _interfaceWidth);

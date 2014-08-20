@@ -40,6 +40,8 @@ public class Settings {
    private static final String ARG_INTERFACE_MAP_PATH = "impath";
    private static final String ARG_LOG_LEVEL = "log";
    private static final String ARG_LOGICDIR = "logicdir";
+   private static final String ARG_MPI = "mpi";
+   private static final String ARG_MPI_PATH = "mpipath";
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_NODE_MAP_PATH = "nmpath";
    private static final String ARG_PREDHELP = "predhelp";
@@ -57,12 +59,13 @@ public class Settings {
    private static final String ARG_SSH_PORT = "sshport";
    private static final String ARG_TEST_RIG_PATH = "testrig";
    private static final String ARG_UPDATE = "update";
+   private static final String ARG_VAR_SIZE_MAP_PATH = "vsmpath";
    private static final String ARG_WORKSPACE = "workspace";
    private static final String ARG_Z3 = "z3";
    private static final String ARG_Z3_CONCRETIZE = "conc";
    private static final String ARG_Z3_CONCRETIZER_INPUT_FILE = "concin";
    private static final String ARG_Z3_CONCRETIZER_OUTPUT_FILE = "concout";
-   private static final String ARG_Z3_OUTPUT = "z3out";
+   private static final String ARG_Z3_OUTPUT = "z3path";
    private static final String ARGNAME_ANONYMIZE = "path";
    private static final String ARGNAME_DATA_PLANE_DIR = "path";
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
@@ -72,11 +75,13 @@ public class Settings {
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
    private static final String ARGNAME_INTERFACE_MAP_PATH = "path";
    private static final String ARGNAME_LOGICDIR = "path";
+   private static final String ARGNAME_MPI_PATH = "path";
    private static final String ARGNAME_NODE_MAP_PATH = "path";
    private static final String ARGNAME_REVERT = "branch-name";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
    private static final String ARGNAME_SSH_PORT = "port";
+   private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILE = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
    private static final String ARGNAME_Z3_OUTPUT = "path";
@@ -126,12 +131,14 @@ public class Settings {
    private String _flowPath;
    private boolean _flows;
    private String _flowSinkPath;
+   private boolean _genMultipath;
    private List<String> _helpPredicates;
    private String _hsaInputDir;
    private String _hsaOutputDir;
    private String _interfaceMapPath;
    private String _logicDir;
    private int _logLevel;
+   private String _mpiPath;
    private String _nodeMapPath;
    private boolean _noTraffic;
    private Options _options;
@@ -153,16 +160,16 @@ public class Settings {
    private Integer _sshPort;
    private String _testRigPath;
    private boolean _update;
+   private String _varSizeMapPath;
    private String _workspaceName;
    private boolean _z3;
    private String _z3File;
 
-   public Settings() {
-      initOptions();
-      parseCommandLine(new String[] {});
+   public Settings() throws ParseException {
+      this(new String[] {});
    }
 
-   public Settings(String[] args) {
+   public Settings(String[] args) throws ParseException {
       initOptions();
       parseCommandLine(args);
    }
@@ -267,6 +274,10 @@ public class Settings {
       return _flowSinkPath;
    }
 
+   public boolean getGenerateMultipathInconsistencyQuery() {
+      return _genMultipath;
+   }
+
    public List<String> getHelpPredicates() {
       return _helpPredicates;
    }
@@ -289,6 +300,10 @@ public class Settings {
 
    public int getLogLevel() {
       return _logLevel;
+   }
+
+   public String getMultipathInconsistencyQueryPath() {
+      return _mpiPath;
    }
 
    public String getNodeMapPath() {
@@ -353,6 +368,10 @@ public class Settings {
 
    public boolean getUpdate() {
       return _update;
+   }
+
+   public String getVarSizeMapPath() {
+      return _varSizeMapPath;
    }
 
    public String getWorkspaceName() {
@@ -539,23 +558,28 @@ public class Settings {
             .withArgName(ARGNAME_INTERFACE_MAP_PATH)
             .withDescription("path to read or write interface-number mappings")
             .create(ARG_INTERFACE_MAP_PATH));
+      _options.addOption(OptionBuilder.hasArg()
+            .withArgName(ARGNAME_VAR_SIZE_MAP_PATH)
+            .withDescription("path to read or write var-size mappings")
+            .create(ARG_VAR_SIZE_MAP_PATH));
+      _options.addOption(OptionBuilder.withDescription(
+            "generate multipath-inconsistency query").create(
+            ARG_MPI));
+      _options.addOption(OptionBuilder.hasArg()
+            .withArgName(ARGNAME_MPI_PATH)
+            .withDescription("path to read or write multipath-inconsistency query")
+            .create(ARG_MPI_PATH));
    }
 
-   private void parseCommandLine(String[] args) {
+   private void parseCommandLine(String[] args) throws ParseException {
       _canExecute = true;
       _printSemantics = false;
       CommandLine line = null;
       CommandLineParser parser = new GnuParser();
-      try {
-         // parse the command line arguments
-         line = parser.parse(_options, args);
-      }
-      catch (ParseException exp) {
-         // oops, something went wrong
-         System.err.println("Parsing failed.  Reason: " + exp.getMessage());
-         _canExecute = false;
-         return;
-      }
+
+      // parse the command line arguments
+      line = parser.parse(_options, args);
+
       if (line.hasOption(ARG_HELP)) {
          _canExecute = false;
          // automatically generate the help statement
@@ -657,6 +681,9 @@ public class Settings {
             DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH);
       _nodeMapPath = line.getOptionValue(ARG_NODE_MAP_PATH);
       _interfaceMapPath = line.getOptionValue(ARG_INTERFACE_MAP_PATH);
+      _varSizeMapPath = line.getOptionValue(ARG_VAR_SIZE_MAP_PATH);
+      _genMultipath = line.hasOption(ARG_MPI);
+      _mpiPath = line.getOptionValue(ARG_MPI_PATH);
    }
 
    public boolean printParseTree() {

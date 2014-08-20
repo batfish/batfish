@@ -1,7 +1,9 @@
 package batfish.z3.node;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ListExpr extends Expr implements ComplexExpr {
 
@@ -20,4 +22,14 @@ public class ListExpr extends Expr implements ComplexExpr {
    public List<Expr> getSubExpressions() {
       return _subExpressions;
    }
+
+   @Override
+   public Set<String> getVariables() {
+      Set<String> variables = new HashSet<String>();
+      for (Expr subExpression : _subExpressions) {
+         variables.addAll(subExpression.getVariables());
+      }
+      return variables;
+   }
+
 }

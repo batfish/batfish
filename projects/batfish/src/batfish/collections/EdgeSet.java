@@ -1,4 +1,4 @@
-package batfish.dataplane;
+package batfish.collections;
 
 import java.util.HashSet;
 

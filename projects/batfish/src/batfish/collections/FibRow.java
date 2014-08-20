@@ -1,4 +1,4 @@
-package batfish.dataplane;
+package batfish.collections;
 
 import batfish.representation.Ip;
 import batfish.util.Util;
