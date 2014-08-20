@@ -252,27 +252,33 @@ public class Batfish {
    }
 
    private void concretize() {
+      print(0, "\n*** GENERATING Z3 CONCRETIZER QUERIES ***\n");
+      resetTimer();
+
+      print(1, "Deserializing variable size mappings..");
       File varSizeMapPath = new File(_settings.getVarSizeMapPath());
       VarSizeMap varSizeMap = (VarSizeMap) deserializeObject(varSizeMapPath);
-      File queryOutputFile = new File(_settings.getConcretizerInputFilePath());
-      File varIndexMapPath = new File(_settings.getConcretizerInputFilePath()
-            + ".varIndices");
+      print(1, "OK\n");
+
+      print(1, "Deserializing variable index mappings..");
+      String concInPath = _settings.getConcretizerInputFilePath();
+      File varIndexMapPath = new File(concInPath + ".varIndices");
       VarIndexMap varIndexMap = (VarIndexMap) deserializeObject(varIndexMapPath);
-      String queryOutputStr = null;
-      try {
-         queryOutputStr = FileUtils.readFileToString(queryOutputFile);
-      }
-      catch (IOException e1) {
-         e1.printStackTrace();
-         quit(1);
-      }
+      print(1, "OK\n");
+
+      print(1, "Reading z3 datalog query output file: \"" + concInPath + "\"..");
+      File queryOutputFile = new File(concInPath);
+      String queryOutputStr = readFile(queryOutputFile);
+      print(1, "OK\n");
+
+      print(1, "Parsing z3 datalog query output..");
       DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
             queryOutputStr);
       ParserRuleContext tree = parser.parse();
       List<String> errors = parser.getErrors();
       int numErrors = errors.size();
       if (numErrors > 0) {
-         error(1, " ..." + numErrors + " ERROR(S)\n");
+         error(1, numErrors + " ERROR(S)\n");
          for (int i = 0; i < numErrors; i++) {
             String prefix = "ERROR " + (i + 1) + ": ";
             String msg = errors.get(i);
@@ -282,24 +288,34 @@ public class Batfish {
          quit(1);
       }
       else if (!_settings.printParseTree()) {
-         print(1, "...OK\n");
+         print(1, "OK\n");
       }
       else {
-         print(0, "...OK, PRINTING PARSE TREE:\n");
+         print(0, "OK, PRINTING PARSE TREE:\n");
          print(0, ParseTreePrettyPrinter.print(tree, parser.getParser())
                + "\n\n");
       }
-      ParseTreeWalker walker = new ParseTreeWalker();
-      DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(varSizeMap, varIndexMap);
-      walker.walk(extractor, tree);
 
-      List<ConcretizerQuery> concretizerQueries = extractor.getConcretizerQueries();
-      
+      print(1, "Computing concretizer queries..");
+      ParseTreeWalker walker = new ParseTreeWalker();
+      DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(
+            varSizeMap, varIndexMap);
+      walker.walk(extractor, tree);
+      print(1, "OK\n");
+
+      List<ConcretizerQuery> concretizerQueries = extractor
+            .getConcretizerQueries();
+
       for (int i = 0; i < concretizerQueries.size(); i++) {
          ConcretizerQuery cq = concretizerQueries.get(i);
-         String concQueryPath = _settings.getConcretizerOutputFilePath() + "-" + i + ".smt2";
+         String concQueryPath = _settings.getConcretizerOutputFilePath() + "-"
+               + i + ".smt2";
+         print(1, "Writing concretizer query file: \"" + concQueryPath + "\"..");
          writeFile(concQueryPath, cq.getText());
+         print(1, "OK\n");
       }
+
+      printElapsedTime();
    }
 
    private LogicBloxFrontend connect() {
