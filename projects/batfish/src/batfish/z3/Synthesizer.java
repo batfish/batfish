@@ -57,7 +57,6 @@ import batfish.z3.node.OrExpr;
 import batfish.z3.node.PacketRelExpr;
 import batfish.z3.node.PostInExpr;
 import batfish.z3.node.PostInInterfaceExpr;
-import batfish.z3.node.PostOutIfaceExpr;
 import batfish.z3.node.PostOutInterfaceExpr;
 import batfish.z3.node.PreInInterfaceExpr;
 import batfish.z3.node.PreOutExpr;
@@ -491,13 +490,13 @@ public class Synthesizer {
          for (String iface : c.getInterfaces().keySet()) {
             if (iface.startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
                AndExpr conditions = new AndExpr();
-               PostOutIfaceExpr postOutIface = new PostOutIfaceExpr(NODE_VAR,
+               PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(NODE_VAR,
                      INTERFACE_VAR);
                conditions.addConjunct(postOutIface);
                EqExpr nodeMatches = new EqExpr(new VarIntExpr(NODE_VAR),
                      getNodeNumber(hostname));
                conditions.addConjunct(nodeMatches);
-               EqExpr interfaceMatches = new EqExpr(new VarIntExpr(NODE_VAR),
+               EqExpr interfaceMatches = new EqExpr(new VarIntExpr(INTERFACE_VAR),
                      getInterfaceNumber(iface));
                conditions.addConjunct(interfaceMatches);
                NodeAcceptExpr nodeAccept = new NodeAcceptExpr(NODE_VAR);
