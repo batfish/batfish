@@ -13,5 +13,6 @@ BatfishTopologyLexer*.java
 GNS3TopologyParser*.java
 GNS3TopologyLexer*.java
 Constraints*.java
-DatalogQueryResult*.java
+DatalogQueryResultParser*.java
+DatalogQueryResultLexer*.java
 cygwin-symlink-restore-data
