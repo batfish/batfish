@@ -54,6 +54,7 @@ public class Settings {
    private static final String ARG_REVERT = "revert";
    private static final String ARG_SERIALIZE_INDEPENDENT = "si";
    private static final String ARG_SERIALIZE_INDEPENDENT_PATH = "sipath";
+   private static final String ARG_SERIALIZE_TO_TEXT = "stext";
    private static final String ARG_SERIALIZE_VENDOR = "sv";
    private static final String ARG_SERIALIZE_VENDOR_PATH = "svpath";
    private static final String ARG_SSH_PORT = "sshport";
@@ -154,6 +155,7 @@ public class Settings {
    private String _secondTestRigPath;
    private boolean _serializeIndependent;
    private String _serializeIndependentPath;
+   private boolean _serializeToText;
    private boolean _serializeVendor;
    private String _serializeVendorPath;
    private boolean _simplify;
@@ -344,6 +346,10 @@ public class Settings {
 
    public String getSerializeIndependentPath() {
       return _serializeIndependentPath;
+   }
+
+   public boolean getSerializeToText() {
+      return _serializeToText;
    }
 
    public boolean getSerializeVendor() {
@@ -569,6 +575,9 @@ public class Settings {
             .withArgName(ARGNAME_MPI_PATH)
             .withDescription("path to read or write multipath-inconsistency query")
             .create(ARG_MPI_PATH));
+      _options.addOption(OptionBuilder.withDescription(
+            "serialize to text").create(
+            ARG_SERIALIZE_TO_TEXT));
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -684,8 +693,9 @@ public class Settings {
       _varSizeMapPath = line.getOptionValue(ARG_VAR_SIZE_MAP_PATH);
       _genMultipath = line.hasOption(ARG_MPI);
       _mpiPath = line.getOptionValue(ARG_MPI_PATH);
+      _serializeToText = line.hasOption(ARG_SERIALIZE_TO_TEXT);
    }
-
+   
    public boolean printParseTree() {
       return _printParseTree;
    }

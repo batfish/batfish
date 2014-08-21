@@ -4,6 +4,8 @@ import java.util.List;
 
 public class PolicyStatementMatchIpPrefixListLine extends PolicyStatementMatchLine {
 
+   private static final long serialVersionUID = 1L;
+   
    private List<String> _listNames;
 
    public PolicyStatementMatchIpPrefixListLine(List<String> listNames) {

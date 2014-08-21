@@ -1,10 +1,15 @@
 package batfish.collections;
 
+import java.io.Serializable;
+
 import batfish.representation.Ip;
 import batfish.util.Util;
 
-public class FibRow implements Comparable<FibRow> {
+public class FibRow implements Comparable<FibRow>, Serializable {
+
    public static final String DROP_INTERFACE = "drop";
+
+   private static final long serialVersionUID = 1L;
 
    private String _interface;
    private Ip _prefix;

@@ -1,6 +1,11 @@
 package batfish.representation.juniper;
 
-public abstract class PolicyStatementSetLine {
+import java.io.Serializable;
+
+public abstract class PolicyStatementSetLine implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
 
 	public abstract SetType getSetType();
 

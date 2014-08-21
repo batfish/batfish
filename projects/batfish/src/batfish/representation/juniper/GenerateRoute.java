@@ -1,6 +1,11 @@
 package batfish.representation.juniper;
 
-public class GenerateRoute {
+import java.io.Serializable;
+
+public class GenerateRoute implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    private String _prefix;
    private int _prefixLength;
    private String _policy;

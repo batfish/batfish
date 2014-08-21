@@ -1,5 +1,6 @@
 package batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
@@ -7,7 +8,10 @@ import batfish.representation.LineAction;
 import batfish.util.SubRange;
 import batfish.util.Util;
 
-public class ExtendedAccessListLine {
+public class ExtendedAccessListLine implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
 
    private LineAction _ala;
    private String _dstIp;

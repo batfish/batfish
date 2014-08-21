@@ -353,12 +353,18 @@ public class Batfish {
    }
 
    private Object deserializeObject(File inputFile) {
-      XStream xstream = new XStream(new DomDriver("UTF-8"));
       FileInputStream fis;
       Object o = null;
+      ObjectInputStream ois;
       try {
          fis = new FileInputStream(inputFile);
-         ObjectInputStream ois = xstream.createObjectInputStream(fis);
+         if (_settings.getSerializeToText()) {
+            XStream xstream = new XStream(new DomDriver("UTF-8"));
+            ois = xstream.createObjectInputStream(fis);
+         }
+         else {
+            ois = new ObjectInputStream(fis);
+         }
          o = ois.readObject();
          ois.close();
       }
@@ -504,7 +510,7 @@ public class Batfish {
       String queryText = synth.getQueryText();
       VarIndexMap varIndices = synth.getVarIndices();
 
-      print(1, "Writing query to: " + mpiQueryPath);
+      print(1, "Writing query to: \"" + mpiQueryPath + "\"..");
       writeFile(mpiQueryPath, queryText);
       print(1, "OK\n");
 
@@ -1525,11 +1531,17 @@ public class Batfish {
    }
 
    private void serializeObject(Object object, File outputFile) {
-      XStream xstream = new XStream(new DomDriver("UTF-8"));
       FileOutputStream fos;
+      ObjectOutputStream oos;
       try {
          fos = new FileOutputStream(outputFile);
-         ObjectOutputStream oos = xstream.createObjectOutputStream(fos);
+         if (_settings.getSerializeToText()) {
+            XStream xstream = new XStream(new DomDriver("UTF-8"));
+            oos = xstream.createObjectOutputStream(fos);
+         }
+         else {
+            oos = new ObjectOutputStream(fos);
+         }
          oos.writeObject(object);
          oos.close();
       }

@@ -7,6 +7,8 @@ import batfish.representation.juniper.PolicyStatementMatchLine;
 
 public class PolicyStatementMatchProtocolLine extends PolicyStatementMatchLine {
 
+   private static final long serialVersionUID = 1L;
+   
    private List<String> _protocol;
 
    public PolicyStatementMatchProtocolLine(List<String> protocol) {

@@ -1,11 +1,15 @@
 package batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-public class PolicyStatement {
+public class PolicyStatement implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    private NavigableMap<Integer, PolicyStatementClause> _clauses;
    private String _mapName;
 

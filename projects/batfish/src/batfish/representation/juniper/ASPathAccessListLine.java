@@ -1,6 +1,10 @@
 package batfish.representation.juniper;
 
-public class ASPathAccessListLine {
+import java.io.Serializable;
+
+public class ASPathAccessListLine implements Serializable {
+
+   private static final long serialVersionUID = 1L;
 
    private String _regex;
 

@@ -1,8 +1,12 @@
 package batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Topology {
+public class Topology implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
 	private List<Edge> _edges;
 
 	public Topology(List<Edge> edges) {

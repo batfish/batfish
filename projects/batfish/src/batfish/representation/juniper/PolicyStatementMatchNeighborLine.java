@@ -5,6 +5,8 @@ import batfish.representation.juniper.PolicyStatementMatchLine;
 
 public class PolicyStatementMatchNeighborLine extends PolicyStatementMatchLine {
 
+   private static final long serialVersionUID = 1L;
+   
    private String _neighborIp;
 
    public PolicyStatementMatchNeighborLine(String neighborIP) {
