@@ -1405,6 +1405,11 @@ HOSTNAME
    'hostname'
 ;
 
+HSRP
+:
+   'hsrp'
+;
+
 HTTP
 :
    'http'
@@ -1610,6 +1615,11 @@ KEYPAIR
 KEYRING
 :
    'keyring'
+;
+
+LACP
+:
+   'lacp'
 ;
 
 LAPB
@@ -2442,6 +2452,11 @@ POWER
 PPP
 :
    'ppp'
+;
+
+PREEMPT
+:
+   'preempt'
 ;
 
 PREPEND

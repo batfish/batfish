@@ -11,6 +11,25 @@ description_if_stanza
 	description_line
 ;
 
+hsrp_stanza
+:
+   HSRP group = DEC NEWLINE hsrp_stanza_tail
+;
+
+hsrp_stanza_tail
+:
+   (
+      hsrpcl += hsrpc_stanza
+   )*
+;
+
+hsrpc_stanza 
+:
+   preempt_stanza
+   | priority_stanza
+   | ip_address_stanza
+;
+
 if_stanza
 :
 	description_if_stanza
@@ -55,6 +74,11 @@ ip_access_group_if_stanza
 	) NEWLINE
 ;
 
+ip_address_stanza
+:
+   IP ip = IP_ADDRESS NEWLINE
+;
+
 ip_address_if_stanza
 :
 	IP ADDRESS ( ip = IP_ADDRESS subnet = IP_ADDRESS | prefix = IP_PREFIX )
@@ -95,7 +119,8 @@ no_ip_address_if_stanza
 null_if_stanza
 :
 	comment_stanza
-	|
+	| hsrp_stanza
+	| 
 	(
 		NO? SWITCHPORT NEWLINE
 	)
@@ -184,6 +209,7 @@ null_standalone_if_stanza
 		| ISDN
 		| KEEPALIVE
 		| LAPB
+		| LACP
 		| LLDP
 		| LOAD_INTERVAL
 		| LOGGING
@@ -245,12 +271,23 @@ null_standalone_if_stanza
 		| TRUST
 		| TUNNEL
 		| UDLD
+		| VPC
 		| VRF
 		| VRRP
 		| WRR_QUEUE
 		| X25
 		| XCONNECT
 	) ~NEWLINE* NEWLINE
+;
+
+preempt_stanza
+:
+   PREEMPT NEWLINE
+;
+
+priority_stanza
+:
+   PRIORITY value = DEC NEWLINE
 ;
 
 shutdown_if_stanza
