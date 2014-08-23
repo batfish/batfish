@@ -501,6 +501,9 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          Integer metric = rcp.getMetric();
          boolean explicitMetric = metric != null;
          boolean routeMapMetric = false;
+         if (!explicitMetric) {
+            metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
+         }
          // add default export map with metric
          PolicyMap exportConnectedPolicy;
          String mapName = rcp.getMap();
@@ -532,9 +535,6 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             // add a set metric line if no metric provided by route map
             if (!routeMapMetric) {
                // use default metric if no explicit metric is set
-               if (!explicitMetric) {
-                  metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
-               }
                setMetricLine = new PolicyMapSetMetricLine(metric);
             }
             for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
@@ -563,6 +563,9 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          Integer metric = rsp.getMetric();
          boolean explicitMetric = metric != null;
          boolean routeMapMetric = false;
+         if (!explicitMetric) {
+            metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_STATIC_METRIC;
+         }
          // add export map with metric
          PolicyMap exportStaticPolicy;
          String mapName = rsp.getMap();
@@ -592,9 +595,6 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             // add a set metric line if no metric provided by route map
             if (!routeMapMetric) {
                // use default metric if no explicit metric is set
-               if (!explicitMetric) {
-                  metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_STATIC_METRIC;
-               }
                setMetricLine = new PolicyMapSetMetricLine(metric);
             }
 

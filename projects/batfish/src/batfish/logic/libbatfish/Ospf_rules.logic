@@ -118,7 +118,7 @@ OspfE2Route(route),
 
 OspfExport(node, network, newCost) <-
    (
-      InstalledRoute(route);
+      InstalledRoute(route) ;
       (
          OspfGeneratedRoute(route),
          ActiveGeneratedRoute(route)
