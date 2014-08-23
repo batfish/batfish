@@ -4,9 +4,13 @@ public class AclDenyExpr extends PolicyExpr {
 
    public static String NAME = "D_acl";
 
-   public AclDenyExpr(String aclVar) {
+   public AclDenyExpr(IntExpr aclExpr) {
       super(NAME);
-      addArgument(new VarIntExpr(aclVar));
+      addArgument(aclExpr);
+   }
+
+   public AclDenyExpr(String aclVar) {
+      this(new VarIntExpr(aclVar));
    }
 
 }
