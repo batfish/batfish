@@ -46,11 +46,11 @@ import batfish.collections.EdgeSet;
 import batfish.collections.FibMap;
 import batfish.collections.FibRow;
 import batfish.collections.FibSet;
-import batfish.collections.InterfaceMap;
-import batfish.collections.NodeMap;
+import batfish.collections.InterfaceIndex;
+import batfish.collections.NodeIndex;
 import batfish.collections.PolicyRouteFibIpMap;
 import batfish.collections.PolicyRouteFibNodeMap;
-import batfish.collections.VarIndexMap;
+import batfish.collections.VarIndex;
 import batfish.collections.VarSizeMap;
 import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ConfigurationLexer;
@@ -263,7 +263,7 @@ public class Batfish {
       print(1, "Deserializing variable index mappings..");
       String concInPath = _settings.getConcretizerInputFilePath();
       File varIndexMapPath = new File(concInPath + ".varIndices");
-      VarIndexMap varIndexMap = (VarIndexMap) deserializeObject(varIndexMapPath);
+      VarIndex varIndexMap = (VarIndex) deserializeObject(varIndexMapPath);
       print(1, "OK\n");
 
       print(1, "Reading z3 datalog query output file: \"" + concInPath + "\"..");
@@ -506,9 +506,10 @@ public class Batfish {
       VarSizeMap varSizes = (VarSizeMap) deserializeObject(varSizeMapPath);
       List<String> vars = new ArrayList<String>();
       vars.addAll(varSizes.keySet());
-      QuerySynthesizer synth = new MultipathInconsistencyQuerySynthesizer(vars);
+      int nodeBits = varSizes.get(Synthesizer.SRC_NODE_VAR);
+      QuerySynthesizer synth = new MultipathInconsistencyQuerySynthesizer(vars, nodeBits);
       String queryText = synth.getQueryText();
-      VarIndexMap varIndices = synth.getVarIndices();
+      VarIndex varIndices = synth.getVarIndices();
 
       print(1, "Writing query to: \"" + mpiQueryPath + "\"..");
       writeFile(mpiQueryPath, queryText);
@@ -557,12 +558,12 @@ public class Batfish {
       print(1, "OK\n");
 
       print(1, "Serializing node-number mappings..");
-      NodeMap nodeMap = s.getNodeNumbers();
+      NodeIndex nodeMap = s.getNodeNumbers();
       serializeObject(nodeMap, new File(_settings.getNodeMapPath()));
       print(1, "OK\n");
 
       print(1, "Serializing interface-number mappings..");
-      InterfaceMap interfaceMap = s.getInterfaceNumbers();
+      InterfaceIndex interfaceMap = s.getInterfaceNumbers();
       serializeObject(interfaceMap, new File(_settings.getInterfaceMapPath()));
       print(1, "OK\n");
 

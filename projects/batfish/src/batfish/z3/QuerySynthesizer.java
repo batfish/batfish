@@ -2,14 +2,14 @@ package batfish.z3;
 
 import java.util.List;
 
-import batfish.collections.VarIndexMap;
+import batfish.collections.VarIndex;
 import batfish.z3.node.QueryExpr;
 
 public class QuerySynthesizer {
 
    private QueryExpr _query;
    private String _queryText;
-   private VarIndexMap _varIndices;
+   private VarIndex _varIndices;
    private List<String> _vars;
 
    public QuerySynthesizer(List<String> vars) {
@@ -21,7 +21,7 @@ public class QuerySynthesizer {
       return _queryText;
    }
    
-   public VarIndexMap getVarIndices() {
+   public VarIndex getVarIndices() {
       return _varIndices;
    }
    

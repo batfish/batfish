@@ -2,7 +2,7 @@ package batfish.collections;
 
 import java.util.HashMap;
 
-public class VarIndexMap extends HashMap<Integer, String> {
+public class VarIndex extends HashMap<Integer, String> {
 
    private static final long serialVersionUID = 1L;
 

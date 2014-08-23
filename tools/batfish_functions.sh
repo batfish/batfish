@@ -6,7 +6,7 @@ export BATFISH_PATH=$BATFISH_ROOT/projects/batfish
 export BATFISH_TEST_RIG_PATH=$BATFISH_ROOT/test_rigs
 export BATFISH=$BATFISH_PATH/batfish
 export BATFISH_Z3=$(which z3)
-export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.default_relation=hassel_diff fixedpoint.unbound_compressor=false fixedpoint.print_answer=true"
+export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.default_relation=hassel_diff fixedpoint.unbound_compressor=false fixedpoint.print_answer=true fixedpoint.inline_eager=false"
 
 batfish() {
    # if cygwin, shift and replace each parameter

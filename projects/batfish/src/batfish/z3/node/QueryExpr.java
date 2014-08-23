@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import batfish.collections.VarIndexMap;
+import batfish.collections.VarIndex;
 
 public class QueryExpr extends Statement implements ComplexExpr {
 
@@ -27,9 +27,9 @@ public class QueryExpr extends Statement implements ComplexExpr {
       return _subExpression.getVariables();
    }
 
-   public VarIndexMap getVarIndices(List<String> declaredVars) {
-      VarIndexMap absoluteVarIndices = new VarIndexMap();
-      VarIndexMap relativeVarIndices = new VarIndexMap();
+   public VarIndex getVarIndices(List<String> declaredVars) {
+      VarIndex absoluteVarIndices = new VarIndex();
+      VarIndex relativeVarIndices = new VarIndex();
       Set<String> vars = getVariables();
       for (String var : vars) {
          int index = Collections.binarySearch(declaredVars, var);

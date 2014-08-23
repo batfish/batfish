@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import batfish.collections.VarIndexMap;
+import batfish.collections.VarIndex;
 import batfish.collections.VarSizeMap;
 import batfish.grammar.z3.DatalogQueryResultParser.And_exprContext;
 import batfish.grammar.z3.DatalogQueryResultParser.Boolean_exprContext;
@@ -20,11 +20,11 @@ public class DatalogQueryResultExtractor extends
       DatalogQueryResultParserBaseListener {
 
    private List<ConcretizerQuery> _queries;
-   private VarIndexMap _varIndexMap;
+   private VarIndex _varIndexMap;
    private VarSizeMap _varSizeMap;
 
    public DatalogQueryResultExtractor(VarSizeMap varSizeMap,
-         VarIndexMap varIndexMap) {
+         VarIndex varIndexMap) {
       _varSizeMap = varSizeMap;
       _varIndexMap = varIndexMap;
    }
