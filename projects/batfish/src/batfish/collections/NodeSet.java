@@ -1,8 +1,8 @@
 package batfish.collections;
 
-import java.util.TreeMap;
+import java.util.TreeSet;
 
-public class NodeIndex extends TreeMap<String, Integer> {
+public class NodeSet extends TreeSet<String> {
 
    private static final long serialVersionUID = 1L;
 

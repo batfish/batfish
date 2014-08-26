@@ -7,9 +7,13 @@ public abstract class Expr {
 
    protected ExprPrinter _printer;
 
-   public Set<String> getVariables() {
-    return Collections.emptySet();
+   public Set<String> getRelations() {
+      return Collections.emptySet();
    };
+
+   public Set<String> getVariables() {
+      return Collections.emptySet();
+   }
 
    public void print(StringBuilder sb, int indent) {
       _printer.print(sb, indent);
@@ -18,6 +22,5 @@ public abstract class Expr {
    public Expr simplify() {
       return this;
    }
-
 
 }

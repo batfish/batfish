@@ -34,6 +34,15 @@ public class OrExpr extends BooleanExpr implements ComplexExpr {
    }
 
    @Override
+   public Set<String> getRelations() {
+      Set<String> relations = new HashSet<String>();
+      for (BooleanExpr disjunct : _disjuncts) {
+         relations.addAll(disjunct.getRelations());
+      }
+      return relations;
+   }
+
+   @Override
    public List<Expr> getSubExpressions() {
       return _subExpressions;
    }

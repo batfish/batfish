@@ -1,12 +1,11 @@
 package batfish.z3.node;
 
-public class NodeAcceptExpr extends PacketRelExpr {
+public class NodeAcceptExpr extends NodePacketRelExpr {
 
-   public static final String NAME = "R_node_accept";
+   public static final String BASE_NAME = "R_node_accept";
    
    public NodeAcceptExpr(String nodeArg) {
-      super(NAME);
-      addArgument(new VarIntExpr(nodeArg));
+      super(BASE_NAME, nodeArg);
    }
 
 }

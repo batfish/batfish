@@ -2,11 +2,10 @@ package batfish.z3.node;
 
 public class PolicyDenyExpr extends PolicyExpr {
 
-   public static String NAME = "D_policy";
+   public static String BASE_NAME = "D_policy";
 
-   public PolicyDenyExpr(String policyVar) {
-      super(NAME);
-      addArgument(new VarIntExpr(policyVar));
+   public PolicyDenyExpr(String hostname, String policyName) {
+      super(BASE_NAME, hostname, policyName);
    }
 
 }

@@ -2,15 +2,10 @@ package batfish.z3.node;
 
 public class AclDenyExpr extends PolicyExpr {
 
-   public static String NAME = "D_acl";
+   public static String BASE_NAME = "D_acl";
 
-   public AclDenyExpr(IntExpr aclExpr) {
-      super(NAME);
-      addArgument(aclExpr);
-   }
-
-   public AclDenyExpr(String aclVar) {
-      this(new VarIntExpr(aclVar));
+   public AclDenyExpr(String nodeName, String aclName) {
+      super(BASE_NAME, nodeName, aclName);
    }
 
 }

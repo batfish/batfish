@@ -1,16 +1,11 @@
 package batfish.z3.node;
 
-public class PostInExpr extends PacketRelExpr {
+public class PostInExpr extends NodePacketRelExpr {
 
-   public static final String NAME = "R_postin";
-
-   public PostInExpr(IntExpr hostnameExpr) {
-      super(NAME);
-      addArgument(hostnameExpr);
-   }
+   public static final String BASE_NAME = "R_postin";
 
    public PostInExpr(String hostname) {
-      this(new VarIntExpr(hostname));
+      super(BASE_NAME, hostname);
    }
 
 }

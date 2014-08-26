@@ -43,7 +43,7 @@ public class Settings {
    private static final String ARG_MPI = "mpi";
    private static final String ARG_MPI_PATH = "mpipath";
    private static final String ARG_NO_TRAFFIC = "notraffic";
-   private static final String ARG_NODE_MAP_PATH = "nmpath";
+   private static final String ARG_NODE_SET_PATH = "nodes";
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
    private static final String ARG_PRINT_PARSE_TREES = "ppt";
@@ -77,7 +77,7 @@ public class Settings {
    private static final String ARGNAME_INTERFACE_MAP_PATH = "path";
    private static final String ARGNAME_LOGICDIR = "path";
    private static final String ARGNAME_MPI_PATH = "path";
-   private static final String ARGNAME_NODE_MAP_PATH = "path";
+   private static final String ARGNAME_NODE_SET_PATH = "path";
    private static final String ARGNAME_REVERT = "branch-name";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
@@ -140,7 +140,7 @@ public class Settings {
    private String _logicDir;
    private int _logLevel;
    private String _mpiPath;
-   private String _nodeMapPath;
+   private String _nodeSetPath;
    private boolean _noTraffic;
    private Options _options;
    private List<String> _predicates;
@@ -308,8 +308,8 @@ public class Settings {
       return _mpiPath;
    }
 
-   public String getNodeMapPath() {
-      return _nodeMapPath;
+   public String getNodeSetPath() {
+      return _nodeSetPath;
    }
 
    public boolean getNoTraffic() {
@@ -557,9 +557,9 @@ public class Settings {
             .withDescription("path to read or write interface descriptions")
             .create(ARG_DUMP_INTERFACE_DESCRIPTIONS_PATH));
       _options.addOption(OptionBuilder.hasArg()
-            .withArgName(ARGNAME_NODE_MAP_PATH)
-            .withDescription("path to read or write node-number mappings")
-            .create(ARG_NODE_MAP_PATH));
+            .withArgName(ARGNAME_NODE_SET_PATH)
+            .withDescription("path to read or write node set")
+            .create(ARG_NODE_SET_PATH));
       _options.addOption(OptionBuilder.hasArg()
             .withArgName(ARGNAME_INTERFACE_MAP_PATH)
             .withDescription("path to read or write interface-number mappings")
@@ -688,7 +688,7 @@ public class Settings {
       _dumpInterfaceDescriptionsPath = line.getOptionValue(
             ARG_DUMP_INTERFACE_DESCRIPTIONS_PATH,
             DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH);
-      _nodeMapPath = line.getOptionValue(ARG_NODE_MAP_PATH);
+      _nodeSetPath = line.getOptionValue(ARG_NODE_SET_PATH);
       _interfaceMapPath = line.getOptionValue(ARG_INTERFACE_MAP_PATH);
       _varSizeMapPath = line.getOptionValue(ARG_VAR_SIZE_MAP_PATH);
       _genMultipath = line.hasOption(ARG_MPI);

@@ -23,6 +23,14 @@ public class IfExpr extends BooleanExpr implements ComplexExpr {
    }
 
    @Override
+   public Set<String> getRelations() {
+      Set<String> relations = new HashSet<String>();
+      relations.addAll(_antecedent.getRelations());
+      relations.addAll(_consequent.getRelations());
+      return relations;
+   }
+
+   @Override
    public List<Expr> getSubExpressions() {
       return _subExpressions;
    }

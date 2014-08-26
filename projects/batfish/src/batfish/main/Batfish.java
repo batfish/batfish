@@ -46,8 +46,7 @@ import batfish.collections.EdgeSet;
 import batfish.collections.FibMap;
 import batfish.collections.FibRow;
 import batfish.collections.FibSet;
-import batfish.collections.InterfaceIndex;
-import batfish.collections.NodeIndex;
+import batfish.collections.NodeSet;
 import batfish.collections.PolicyRouteFibIpMap;
 import batfish.collections.PolicyRouteFibNodeMap;
 import batfish.collections.VarIndex;
@@ -496,29 +495,36 @@ public class Batfish {
       return predicateSemantics;
    }
 
-   private void genMultipathQuery() {
+   private void genMultipathQueries() {
       print(0, "\n*** GENERATING MULTIPATH-INCONSISTENCY QUERIES ***\n");
       resetTimer();
 
-      File varSizeMapPath = new File(_settings.getVarSizeMapPath());
-      String mpiQueryPath = _settings.getMultipathInconsistencyQueryPath();
-      File varIndexMapPath = new File(mpiQueryPath + ".out.varIndices");
-      VarSizeMap varSizes = (VarSizeMap) deserializeObject(varSizeMapPath);
-      List<String> vars = new ArrayList<String>();
-      vars.addAll(varSizes.keySet());
-      int nodeBits = varSizes.get(Synthesizer.SRC_NODE_VAR);
-      QuerySynthesizer synth = new MultipathInconsistencyQuerySynthesizer(vars, nodeBits);
-      String queryText = synth.getQueryText();
-      VarIndex varIndices = synth.getVarIndices();
+      String mpiQueryBasePath = _settings.getMultipathInconsistencyQueryPath();
+      String nodeSetPath = _settings.getNodeSetPath();
+      String nodeSetTextPath = nodeSetPath + ".txt";
 
-      print(1, "Writing query to: \"" + mpiQueryPath + "\"..");
-      writeFile(mpiQueryPath, queryText);
+      print(1, "Reading node set from : \"" + nodeSetPath + "\"..");
+      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
       print(1, "OK\n");
 
-      print(1, "Serializing query variable index map..");
-      serializeObject(varIndices, varIndexMapPath);
+      for (String hostname : nodes) {
+         QuerySynthesizer synth = new MultipathInconsistencyQuerySynthesizer(
+               hostname);
+         String queryText = synth.getQueryText();
+         String mpiQueryPath = mpiQueryBasePath + "-" + hostname + ".smt2";
+         print(1, "Writing query to: \"" + mpiQueryPath + "\"..");
+         writeFile(mpiQueryPath, queryText);
+         print(1, "OK\n");
+      }
+      
+      print(1, "Writing node lines for next stage..");
+      StringBuilder sb = new StringBuilder();
+      for (String node : nodes) {
+         sb.append(node + "\n");
+      }
+      writeFile(nodeSetTextPath, sb.toString());
       print(1, "OK\n");
-
+      
       printElapsedTime();
    }
 
@@ -531,11 +537,11 @@ public class Batfish {
             FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME);
       Path edgesPath = Paths.get(_settings.getDataPlaneDir(), EDGES_FILENAME);
 
-      print(1, "Deserializing fibs..");
+      print(1, "Deserializing destination route fibs..");
       FibMap fibs = (FibMap) deserializeObject(fibsPath.toFile());
       print(1, "OK\n");
 
-      print(1, "Deserializing fibs..");
+      print(1, "Deserializing policy route fibs..");
       PolicyRouteFibNodeMap prFibs = (PolicyRouteFibNodeMap) deserializeObject(prFibsPath
             .toFile());
       print(1, "OK\n");
@@ -557,19 +563,9 @@ public class Batfish {
       }
       print(1, "OK\n");
 
-      print(1, "Serializing node-number mappings..");
-      NodeIndex nodeMap = s.getNodeNumbers();
-      serializeObject(nodeMap, new File(_settings.getNodeMapPath()));
-      print(1, "OK\n");
-
-      print(1, "Serializing interface-number mappings..");
-      InterfaceIndex interfaceMap = s.getInterfaceNumbers();
-      serializeObject(interfaceMap, new File(_settings.getInterfaceMapPath()));
-      print(1, "OK\n");
-
-      print(1, "Serializing var-size mappings..");
-      VarSizeMap varSizes = s.getVarSizes();
-      serializeObject(varSizes, new File(_settings.getVarSizeMapPath()));
+      print(1, "Serializing node set..");
+      NodeSet nodeSet = s.getNodeSet();
+      serializeObject(nodeSet, new File(_settings.getNodeSetPath()));
       print(1, "OK\n");
 
       printElapsedTime();
@@ -1380,7 +1376,7 @@ public class Batfish {
       }
 
       if (_settings.getGenerateMultipathInconsistencyQuery()) {
-         genMultipathQuery();
+         genMultipathQueries();
          quit(0);
       }
 

@@ -66,7 +66,12 @@ public class FibRow implements Comparable<FibRow>, Serializable {
 
    @Override
    public int hashCode() {
-      return (_prefix.toString() + _prefixLength).hashCode();
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + _interface.hashCode();
+      result = prime * result + _prefix.hashCode();
+      result = prime * result + _prefixLength;
+      return result;
    }
 
    @Override

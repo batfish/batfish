@@ -1,13 +1,11 @@
 package batfish.z3.node;
 
-public class AclNoMatchExpr extends PolicyExpr {
+public class AclNoMatchExpr extends PolicyClauseExpr {
 
-   public static String NAME = "N_acl";
+   public static String BASE_NAME = "N_acl";
 
-   public AclNoMatchExpr(String aclVar, String lineVar) {
-      super(NAME);
-      addArgument(new VarIntExpr(aclVar));
-      addArgument(new VarIntExpr(lineVar));
+   public AclNoMatchExpr(String nodeName, String policyName, int clause) {
+      super(BASE_NAME, nodeName, policyName, clause);
    }
 
 }

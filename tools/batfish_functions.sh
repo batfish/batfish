@@ -49,9 +49,7 @@ batfish_analyze() {
    local WORKSPACE=batfish-$USER-$2
    local OLD_PWD=$PWD
    local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
-   local INTERFACE_MAP_PATH=$OLD_PWD/$PREFIX-interface-map
-   local NODE_MAP_PATH=$OLD_PWD/$PREFIX-node-map
-   local VAR_SIZE_MAP_PATH=$OLD_PWD/$PREFIX-var-size-map
+   local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
    local QUERY_PATH=$OLD_PWD/$PREFIX-query
    local MPI_QUERY_BASE_PATH=$QUERY_PATH/multipath-inconsistency-query
    local DUMP_DIR=$OLD_PWD/$PREFIX-dump
@@ -74,10 +72,10 @@ batfish_analyze() {
    $BATFISH_CONFIRM && { batfish_query_data_plane $WORKSPACE $DP_DIR || return 1 ; }
 
    echo "Extract z3 reachability relations"
-   $BATFISH_CONFIRM && { batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH $NODE_MAP_PATH $INTERFACE_MAP_PATH $VAR_SIZE_MAP_PATH || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH $NODE_SET_PATH || return 1 ; }
 
    echo "Find multipath-inconsistent packet constraints"
-   $BATFISH_CONFIRM && { batfish_find_multipath_inconsistent_packet_constraints $REACH_PATH $QUERY_PATH $VAR_SIZE_MAP_PATH $MPI_QUERY_BASE_PATH || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_find_multipath_inconsistent_packet_constraints $REACH_PATH $QUERY_PATH $MPI_QUERY_BASE_PATH $NODE_SET_PATH || return 1 ; }
 
    echo "Generate multipath-inconsistency concretizer queries"
    $BATFISH_CONFIRM && { batfish_generate_multipath_inconsistency_concretizer_queries $MPI_QUERY_BASE_PATH $VAR_SIZE_MAP_PATH || return 1 ; }
@@ -231,23 +229,37 @@ batfish_find_multipath_inconsistent_packet_constraints() {
    batfish_expect_args 4 $# || return 1
    local REACH_PATH=$1
    local QUERY_PATH=$2
-   local VAR_SIZE_MAP_PATH=$3
-   local MPI_QUERY_BASE_PATH=$4
-   local MPI_QUERY_PATH=${MPI_QUERY_BASE_PATH}.smt2
-   local MPI_QUERY_OUTPUT_PATH=${MPI_QUERY_PATH}.out
+   local MPI_QUERY_BASE_PATH=$3
+   local NODE_SET_PATH=$4
+   local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
    local OLD_PWD=$PWD
    mkdir -p $QUERY_PATH
    cd $QUERY_PATH
-   batfish -mpi -mpipath $MPI_QUERY_PATH -vsmpath $VAR_SIZE_MAP_PATH || return 1
-   cat $REACH_PATH $MPI_QUERY_PATH | $BATFISH_Z3_DATALOG -smt2 -in > $MPI_QUERY_OUTPUT_PATH
-   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
-      return 1
-   fi
+   batfish -mpi -mpipath $MPI_QUERY_BASE_PATH -nodes $NODE_SET_PATH || return 1
+   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_find_multipath_inconsistent_packet_constraints_helper {} $REACH_PATH $MPI_QUERY_BASE_PATH
    cd $OLD_PWD
    date | tr -d '\n'
    echo ": END: Find inconsistent packet constraints"
 }
 export -f batfish_find_multipath_inconsistent_packet_constraints
+
+batfish_find_multipath_inconsistent_packet_constraints_helper() {
+   batfish_expect_args 3 $# || return 1
+   local NODE=$1
+   local REACH_PATH=$2
+   local MPI_QUERY_BASE_PATH=$3
+   date | tr -d '\n'
+   local MPI_QUERY_PATH=${MPI_QUERY_BASE_PATH}-${NODE}.smt2
+   local MPI_QUERY_OUTPUT_PATH=${MPI_QUERY_PATH}.out
+   echo ": START: Find inconsistent packet constraints for \"$NODE\" (\"$MPI_QUERY_OUTPUT_PATH\")"
+   cat $REACH_PATH $MPI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1> $MPI_QUERY_OUTPUT_PATH 2>&3
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   date | tr -d '\n'
+   echo ": END: Find inconsistent packet constraints for \"$NODE\" (\"$MPI_QUERY_OUTPUT_PATH\")"
+}
+export -f batfish_find_multipath_inconsistent_packet_constraints_helper
 
 batfish_find_lost_packet_constraints() {
    date | tr -d '\n'
@@ -399,14 +411,12 @@ export -f batfish_generate_multipath_inconsistency_concretizer_queries_helper
 batfish_generate_z3_reachability() {
    date | tr -d '\n'
    echo ": START: Extract z3 reachability relations"
-   batfish_expect_args 6 $# || return 1
+   batfish_expect_args 4 $# || return 1
    local DP_DIR=$1
    local INDEP_SERIAL_PATH=$2
    local REACH_PATH=$3
-   local NODE_MAP_PATH=$4
-   local INTERFACE_MAP_PATH=$5
-   local VAR_SIZE_MAP_PATH=$6
-   batfish -sipath $INDEP_SERIAL_PATH -dpdir $DP_DIR -z3 -z3path $REACH_PATH -nmpath $NODE_MAP_PATH -impath $INTERFACE_MAP_PATH -vsmpath $VAR_SIZE_MAP_PATH || return 1
+   local NODE_SET_PATH=$4
+   batfish -sipath $INDEP_SERIAL_PATH -dpdir $DP_DIR -z3 -z3path $REACH_PATH -nodes $NODE_SET_PATH || return 1
    date | tr -d '\n'
    echo ": END: Extract z3 reachability relations"
 }

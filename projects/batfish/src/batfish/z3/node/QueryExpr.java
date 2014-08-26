@@ -18,10 +18,15 @@ public class QueryExpr extends Statement implements ComplexExpr {
    }
 
    @Override
+   public Set<String> getRelations() {
+      return _subExpression.getRelations();
+   }
+
+   @Override
    public List<Expr> getSubExpressions() {
       return _subExpressions;
    }
-   
+
    @Override
    public Set<String> getVariables() {
       return _subExpression.getVariables();

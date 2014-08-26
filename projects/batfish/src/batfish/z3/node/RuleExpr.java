@@ -2,6 +2,7 @@ package batfish.z3.node;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class RuleExpr extends Statement implements ComplexExpr {
 
@@ -13,14 +14,19 @@ public class RuleExpr extends Statement implements ComplexExpr {
       init();
    }
 
+   public RuleExpr(BooleanExpr subExpression) {
+      _subExpression = subExpression;
+      init();
+   }
+
    public RuleExpr(BooleanExpr antecedent, BooleanExpr consequent) {
       _subExpression = new IfExpr(antecedent, consequent);
       init();
    }
 
-   public RuleExpr(BooleanExpr subExpression) {
-      _subExpression = subExpression;
-      init();
+   @Override
+   public Set<String> getRelations() {
+      return _subExpression.getRelations();
    }
 
    @Override

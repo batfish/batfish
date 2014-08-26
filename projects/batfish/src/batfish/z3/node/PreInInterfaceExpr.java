@@ -1,17 +1,11 @@
 package batfish.z3.node;
 
-public class PreInInterfaceExpr extends PacketRelExpr {
+public class PreInInterfaceExpr extends InterfacePacketRelExpr {
 
-   public static final String NAME = "R_prein_interface";
+   public static final String BASE_NAME = "R_prein_interface";
 
-   public PreInInterfaceExpr(IntExpr nodeExpr, IntExpr interfaceExpr) {
-      super(NAME);
-      addArgument(nodeExpr);
-      addArgument(interfaceExpr);
+   public PreInInterfaceExpr(String nodeName, String interfaceName) {
+      super(BASE_NAME, nodeName, interfaceName);
    }
    
-   public PreInInterfaceExpr(String nodeVar, String interfaceVar) {
-      this(new VarIntExpr(nodeVar), new VarIntExpr(interfaceVar));
-   }
-
 }

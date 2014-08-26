@@ -1,16 +1,11 @@
 package batfish.z3.node;
 
-public class DestinationRouteExpr extends PacketRelExpr {
+public class DestinationRouteExpr extends NodePacketRelExpr {
 
-   public static final String NAME = "R_destroute";
-
-   public DestinationRouteExpr(IntExpr hostnameExpr) {
-      super(NAME);
-      addArgument(hostnameExpr);
-   }
+   public static final String BASE_NAME = "R_destroute";
 
    public DestinationRouteExpr(String hostname) {
-      this(new VarIntExpr(hostname));
+      super(BASE_NAME, hostname);
    }
 
 }

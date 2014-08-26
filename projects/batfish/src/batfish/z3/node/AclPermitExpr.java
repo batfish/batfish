@@ -2,11 +2,10 @@ package batfish.z3.node;
 
 public class AclPermitExpr extends PolicyExpr {
 
-   public static String NAME = "P_acl";
+   public static String BASE_NAME = "P_acl";
 
-   public AclPermitExpr(String aclVar) {
-      super(NAME);
-      addArgument(new VarIntExpr(aclVar));
+   public AclPermitExpr(String nodeName, String aclName) {
+      super(BASE_NAME, nodeName, aclName);
    }
 
 }

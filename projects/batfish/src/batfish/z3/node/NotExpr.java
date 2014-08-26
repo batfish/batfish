@@ -20,6 +20,11 @@ public class NotExpr extends BooleanExpr implements ComplexExpr {
    }
 
    @Override
+   public Set<String> getRelations() {
+      return _arg.getRelations();
+   }
+
+   @Override
    public List<Expr> getSubExpressions() {
       return _subExpressions;
    }
