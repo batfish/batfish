@@ -78,6 +78,7 @@ public class PredicateInfo {
       addValueTypes(currentNames, valueTypeList);
       currentNames.clear();
 
+      currentNames.add("libbatfish:GeneratedRoute:ActiveGeneratedRoute");
       currentNames.add("libbatfish:Route:BestConnectedRoute");
       currentNames.add("libbatfish:GeneratedRoute:BestGeneratedRoute");
       currentNames.add("libbatfish:Ospf:BestOspfRoute");
@@ -85,6 +86,7 @@ public class PredicateInfo {
       currentNames.add("libbatfish:Ospf:BestOspfE2Route");
       currentNames.add("libbatfish:Route:BestPerProtocolRoute");
       currentNames.add("libbatfish:Route:BestStaticRoute");
+      currentNames.add("libbatfish:GeneratedRoute:GeneratedRoute");
       currentNames.add("libbatfish:Ospf:OspfE2Route");
       currentNames.add("libbatfish:Ospf:OspfRoute");
       currentNames.add("libbatfish:Route:InstalledRoute");
@@ -437,16 +439,6 @@ public class PredicateInfo {
       addValueTypes(currentNames, valueTypeList);
       currentNames.clear();
 
-      currentNames.add("libbatfish:GeneratedRoute:GeneratedRoute");
-      valueTypeList = new ArrayList<LBValueType>();
-      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // node
-      valueTypeList.add(LBValueType.ENTITY_INDEX_NETWORK); // network
-      valueTypeList.add(LBValueType.ENTITY_INDEX_NETWORK); // contributingNetwork
-      valueTypeList.add(LBValueType.INT); // admin
-      updateQualifiedNameMap(currentNames);
-      addValueTypes(currentNames, valueTypeList);
-      currentNames.clear();
-
       currentNames.add("libbatfish:Bgp:IbgpNeighbors");
       valueTypeList = new ArrayList<LBValueType>();
       valueTypeList.add(LBValueType.ENTITY_REF_STRING);// node1
@@ -562,6 +554,18 @@ public class PredicateInfo {
       currentNames.add("libbatfish:BgpAdvertisement:OriginType_EGP");
       valueTypeList = new ArrayList<LBValueType>();
       valueTypeList.add(LBValueType.ENTITY_REF_STRING); // originType
+      updateQualifiedNameMap(currentNames);
+      addValueTypes(currentNames, valueTypeList);
+      currentNames.clear();
+
+      currentNames.add("libbatfish:Ospf:OspfE2Route_constructor");
+      valueTypeList = new ArrayList<LBValueType>();
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // advertiser
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // node
+      valueTypeList.add(LBValueType.ENTITY_INDEX_NETWORK); // network
+      valueTypeList.add(LBValueType.ENTITY_INDEX_IP); // nextHopIp
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // protocol
+      valueTypeList.add(LBValueType.ENTITY_INDEX_ROUTE); // route
       updateQualifiedNameMap(currentNames);
       addValueTypes(currentNames, valueTypeList);
       currentNames.clear();

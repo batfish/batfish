@@ -126,6 +126,8 @@
          <fileset dir="src" includes="batfish/grammar/z3/Constraints*.java"/>
          <fileset dir="src" includes="batfish/grammar/z3/DatalogQueryResultParser*.java"/>
          <fileset dir="src" includes="batfish/grammar/z3/DatalogQueryResultLexer*.java"/>
+         <fileset dir="src" includes="batfish/grammar/z3/ConcretizerQueryResultParser*.java"/>
+         <fileset dir="src" includes="batfish/grammar/z3/ConcretizerQueryResultLexer*.java"/>
       </delete>
 	</target>
 
@@ -140,7 +142,7 @@
    </target>
 
    <!-- Check to see if anything that would be packaged for distribution has changed -->
-   <target name="checkJarBuild" depends="compile,semantics">
+   <target name="checkJarBuild" depends="compile,semantics,lbcompile">
       <uptodate property="jarBuild.notRequired" targetfile="${outputJar}">
          <srcfiles dir="bin" includes="**/*"/>
          <srcfiles dir="lib" includes="**/*"/>
@@ -158,11 +160,19 @@
                <mapper type="regexp" from="(.*).logic" to="../bin/\1.lbb"/>
             </mapper>
          </uptodate>
+         <condition property="lbUnavailable">
+            <not>
+               <available file="${lbhome}" type="dir"/>
+            </not>
+         </condition>
          <condition property="lbBuild.notRequired">
-            <and>
-               <isset property="lbSummary.upToDate"/>
-               <isset property="lbbFiles.upToDate"/>
-            </and>
+            <or>
+               <isset property="lbUnavailable"/>
+               <and>
+                  <isset property="lbSummary.upToDate"/>
+                  <isset property="lbbFiles.upToDate"/>
+               </and>
+            </or>
          </condition>
       </sequential>
    </target>
@@ -215,7 +225,6 @@
    <target name="grammar" depends="checkGrammarBuild" unless="grammarBuild.notRequired"
      description="Compile antlr grammars">
       <parallel>
-         <antlr3 grammar.name="Constraints.g" grammar.packagedir="batfish/grammar/z3"/>
          <antlr3 grammar.name="FlatJuniperGrammar.g" grammar.packagedir="batfish/grammar/juniper"/>
          <antlr3 grammar.name="JuniperGrammar.g" grammar.packagedir="batfish/grammar/juniper"/>
          <antlr3 grammar.name="LogicBloxFactGrammar.g" grammar.packagedir="batfish/grammar/logicblox"/>
@@ -230,6 +239,7 @@
          <antlr4lexer grammar.name="CiscoGrammarCommonLexer" grammar.packagedir="batfish/grammar/cisco"/>
          <antlr4lexer grammar.name="GNS3TopologyLexer" grammar.packagedir="batfish/grammar/topology"/>
          <antlr4lexer grammar.name="DatalogQueryResultLexer" grammar.packagedir="batfish/grammar/z3"/>
+         <antlr4lexer grammar.name="ConcretizerQueryResultLexer" grammar.packagedir="batfish/grammar/z3"/>
       </parallel>
    </target>
 
@@ -255,6 +265,13 @@
                <fileset dir="src/batfish/grammar/z3" includes="DatalogQueryResultParser.g4"/>
                <fileset dir="src/batfish/grammar/z3" includes="DatalogQueryResultLexer.g4"/>
                <fileset dir="src/batfish/grammar/z3" includes="DatalogQueryResultLexer.tokens"/>
+            </dependencies>
+         </antlr4parser>
+         <antlr4parser grammar.name="ConcretizerQueryResultParser" grammar.packagedir="batfish/grammar/z3">
+            <dependencies>
+               <fileset dir="src/batfish/grammar/z3" includes="ConcretizerQueryResultParser.g4"/>
+               <fileset dir="src/batfish/grammar/z3" includes="ConcretizerQueryResultLexer.g4"/>
+               <fileset dir="src/batfish/grammar/z3" includes="ConcretizerQueryResultLexer.tokens"/>
             </dependencies>
          </antlr4parser>
          <antlr4parser grammar.name="CiscoGrammar" grammar.packagedir="batfish/grammar/cisco">

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import batfish.collections.VarIndex;
-import batfish.collections.VarSizeMap;
 import batfish.grammar.z3.DatalogQueryResultParser.And_exprContext;
 import batfish.grammar.z3.DatalogQueryResultParser.Boolean_exprContext;
 import batfish.grammar.z3.DatalogQueryResultParser.Eq_exprContext;
@@ -14,20 +12,13 @@ import batfish.grammar.z3.DatalogQueryResultParser.Int_exprContext;
 import batfish.grammar.z3.DatalogQueryResultParser.Var_int_exprContext;
 import batfish.grammar.z3.DatalogQueryResultParser.*;
 import batfish.z3.ConcretizerQuery;
+import batfish.z3.Synthesizer;
 import batfish.z3.node.*;
 
 public class DatalogQueryResultExtractor extends
       DatalogQueryResultParserBaseListener {
 
    private List<ConcretizerQuery> _queries;
-   private VarIndex _varIndexMap;
-   private VarSizeMap _varSizeMap;
-
-   public DatalogQueryResultExtractor(VarSizeMap varSizeMap,
-         VarIndex varIndexMap) {
-      _varSizeMap = varSizeMap;
-      _varIndexMap = varIndexMap;
-   }
 
    @Override
    public void exitResult(ResultContext ctx) {
@@ -43,12 +34,12 @@ public class DatalogQueryResultExtractor extends
          if (booleanExpr instanceof OrExpr) {
             OrExpr orExpr = (OrExpr) booleanExpr;
             for (BooleanExpr disjunct : orExpr.getDisjuncts()) {
-               ConcretizerQuery cq = new ConcretizerQuery(disjunct, _varSizeMap);
+               ConcretizerQuery cq = new ConcretizerQuery(disjunct);
                _queries.add(cq);
             }
          }
          else {
-            ConcretizerQuery cq = new ConcretizerQuery(booleanExpr, _varSizeMap);
+            ConcretizerQuery cq = new ConcretizerQuery(booleanExpr);
             _queries.add(cq);
          }
       }
@@ -150,7 +141,7 @@ public class DatalogQueryResultExtractor extends
    private VarIntExpr toVarIntExpr(Var_int_exprContext ctx) {
       String varNumStr = ctx.DEC().getText();
       int varNum = Integer.parseInt(varNumStr);
-      String var = _varIndexMap.get(varNum);
+      String var = Synthesizer.PACKET_VARS.get(varNum);
       return new VarIntExpr(var);
    }
 

@@ -207,7 +207,7 @@ public class Synthesizer {
       return vars;
    }
 
-   private static List<Statement> getVarDeclExprs() {
+   public static List<Statement> getVarDeclExprs() {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment("Variable Declarations"));
       for (Entry<String, Integer> e : PACKET_VAR_SIZES.entrySet()) {
@@ -536,7 +536,7 @@ public class Synthesizer {
 
                // ** must not match previous rule **
                BooleanExpr prevNoMatch = (i > 0) ? new AclNoMatchExpr(hostname,
-                     aclName, i-1) : TrueExpr.INSTANCE;
+                     aclName, i - 1) : TrueExpr.INSTANCE;
 
                AndExpr matchLineCriteria = new AndExpr();
                matchConditions.addConjunct(matchLineCriteria);
