@@ -59,10 +59,21 @@ MinOspfRouteCost[node, network] = minCost <-
       Route_network[route] = network,
       Route_node[route] = node.
 
+need_PolicyMapMatchRoute(map, route) <-
+   SetOspfOutboundPolicyMap(node, map),
+   Route_node[route] = node,
+   (
+      InstalledRoute(route) ;
+      (
+         OspfGeneratedRoute(route),
+         ActiveGeneratedRoute(route)
+      )
+   ).
+
 // (base case) import ospfE2 routes exported by ospf neighbors
 OspfE2Route(route),
    Route(route),
-   Route_constructor[node, network, nextHopIp, protocol] = route,
+   OspfE2Route_constructor[advertiser, node, network, nextHopIp, protocol] = route,
    OspfRoute_advertiser[route] = advertiser,
    OspfRoute_advertiserIp[route] = advertiserIp,
    OspfRoute_costToAdvertiser[route] = costToAdvertiser,
@@ -85,7 +96,7 @@ OspfE2Route(route),
 // (recursive case) propagate ospfE2 over ospf
 OspfE2Route(route),
    Route(route),
-   Route_constructor[node, network, nextHopIp, protocol] = route,
+   OspfE2Route_constructor[advertiser, node, network, nextHopIp, protocol] = route,
    OspfRoute_advertiser[route] = advertiser,
    OspfRoute_advertiserIp[route] = advertiserIp,
    OspfRoute_costToAdvertiser[route] = costToAdvertiser,
