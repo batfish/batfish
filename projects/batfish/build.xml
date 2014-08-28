@@ -114,7 +114,6 @@
 	<target name="grammarclean" description="Delete generated antlr files">
       <delete>
          <fileset dir="src" includes="**/*.tokens"/>
-         <fileset dir="src" includes="batfish/grammar/logicblox/LogicBloxFactGrammar*.java"/>
          <fileset dir="src" includes="batfish/grammar/cisco/CiscoGrammar*.java"/>
          <fileset dir="src" includes="batfish/grammar/juniper/JuniperGrammar*.java"/>
          <fileset dir="src" includes="batfish/grammar/juniper/FlatJuniperGrammar*.java"/>
@@ -227,7 +226,6 @@
       <parallel>
          <antlr3 grammar.name="FlatJuniperGrammar.g" grammar.packagedir="batfish/grammar/juniper"/>
          <antlr3 grammar.name="JuniperGrammar.g" grammar.packagedir="batfish/grammar/juniper"/>
-         <antlr3 grammar.name="LogicBloxFactGrammar.g" grammar.packagedir="batfish/grammar/logicblox"/>
          <antlr3 grammar.name="Semantics.g" grammar.packagedir="batfish/grammar/semantics"/>
       </parallel>
    </target>
