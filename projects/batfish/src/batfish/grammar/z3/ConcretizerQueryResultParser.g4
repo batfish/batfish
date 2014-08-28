@@ -12,7 +12,7 @@ package batfish.grammar.z3;
 define_fun
 :
    LEFT_PAREN DEFINE_FUN var = VARIABLE LEFT_PAREN RIGHT_PAREN LEFT_PAREN
-   UNDERSCORE BITVEC size = DEC RIGHT_PAREN
+   UNDERSCORE BITVEC DEC RIGHT_PAREN
    (
       value = HEX
       | value = BIN

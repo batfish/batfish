@@ -100,7 +100,6 @@ public class Batfish {
    private static final String BASIC_FACTS_BLOCKNAME = "BaseFacts";
    private static final String EDGES_FILENAME = "edges";
    private static final String FIB_POLICY_ROUTE_NEXT_HOP_PREDICATE_NAME = "FibForwardPolicyRouteNextHopIp";
-   // private static final String FLOW_SINK_FILENAME = "flow_sinks";
    private static final String FIB_PREDICATE_NAME = "FibNetworkForward";
    private static final String FIBS_FILENAME = "fibs";
    private static final String FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME = "fibs-policy-route";
@@ -258,11 +257,9 @@ public class Batfish {
       String queryOutputStr = readFile(queryOutputFile);
       print(1, "OK\n");
 
-      print(1, "Parsing z3 datalog query output..");
       DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
             queryOutputStr);
-      ParserRuleContext tree = parser.parse();
-      postParseHelper(parser, tree);
+      ParserRuleContext tree = parse(parser, concInPath);
 
       print(1, "Computing concretizer queries..");
       ParseTreeWalker walker = new ParseTreeWalker();
@@ -763,6 +760,37 @@ public class Batfish {
 
    }
 
+   private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
+      ParserRuleContext tree = parser.parse();
+      List<String> errors = parser.getErrors();
+      int numErrors = errors.size();
+      if (numErrors > 0) {
+         error(1, numErrors + " ERROR(S)\n");
+         for (int i = 0; i < numErrors; i++) {
+            String prefix = "ERROR " + (i + 1) + ": ";
+            String msg = errors.get(i);
+            String prefixedMsg = Util.applyPrefix(prefix, msg);
+            error(1, prefixedMsg + "\n");
+         }
+         quit(1);
+      }
+      else if (!_settings.printParseTree()) {
+         print(1, "OK\n");
+      }
+      else {
+         print(0, "OK, PRINTING PARSE TREE:\n");
+         print(0, ParseTreePrettyPrinter.print(tree, parser.getParser())
+               + "\n\n");
+      }
+      return tree;
+   }
+
+   private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser,
+         String filename) {
+      print(1, "Parsing: \"" + filename + "\"..");
+      return parse(parser);
+   }
+
    private Map<String, Configuration> parseConfigurations(
          Map<String, VendorConfiguration> vendorConfigurations) {
       boolean processingError = false;
@@ -810,7 +838,7 @@ public class Batfish {
       }
    }
 
-   private void parseFlowsFromConstraints(StringBuilder sw) {
+   private void parseFlowsFromConstraints(StringBuilder sb) {
       Path flowConstraintsDir = Paths.get(_settings.getFlowPath());
       File[] constraintsFiles = flowConstraintsDir.toFile().listFiles(
             new FilenameFilter() {
@@ -821,16 +849,18 @@ public class Batfish {
             });
       for (File constraintsFile : constraintsFiles) {
          String flowConstraintsText = readFile(constraintsFile);
-         ConcretizerQueryResultCombinedParser parser = new ConcretizerQueryResultCombinedParser(flowConstraintsText);
-         ParserRuleContext tree = parser.parse();
-         postParseHelper(parser, tree);
+         print(1, "Parsing: \"" + constraintsFile.toString() + "\"");
+         ConcretizerQueryResultCombinedParser parser = new ConcretizerQueryResultCombinedParser(
+               flowConstraintsText);
+         ParserRuleContext tree = parse(parser, constraintsFile.toString());
          ParseTreeWalker walker = new ParseTreeWalker();
          ConcretizerQueryResultExtractor extractor = new ConcretizerQueryResultExtractor();
          walker.walk(extractor, tree);
-         Map<String, Long> constraints = extractor.getConstraints();
-         if (constraints == null) {
+         String node = extractor.getNode();
+         if (node == null) {
             continue;
          }
+         Map<String, Long> constraints = extractor.getConstraints();
          long src_ip = 0;
          long dst_ip = 0;
          long src_port = 0;
@@ -863,20 +893,19 @@ public class Batfish {
                throw new Error("invalid variable name");
             }
          }
-         String node = extractor.getNode();
          String line = node + "|" + src_ip + "|" + dst_ip + "|" + src_port
                + "|" + dst_port + "|" + protocol + "\n";
-         sw.append(line);
+         sb.append(line);
       }
    }
-   
+
    private void parseTopology(String testRigPath, String topologyFileText,
          Map<String, StringBuilder> factBins) {
       BatfishCombinedParser<?, ?> parser = null;
       TopologyExtractor extractor = null;
       Topology topology = null;
       File topologyPath = Paths.get(testRigPath, "topology.net").toFile();
-      print(2, "Parsing: \"" + topologyPath.getAbsolutePath() + "\"");
+      print(1, "Parsing: \"" + topologyPath.getAbsolutePath() + "\"");
       if (topologyFileText.startsWith("autostart")) {
          parser = new GNS3TopologyCombinedParser(topologyFileText);
          extractor = new GNS3TopologyExtractor();
@@ -893,14 +922,12 @@ public class Batfish {
          error(0, "...ERROR\n");
          throw new Error("Topology format error");
       }
-      ParserRuleContext tree = parser.parse();
-      postParseHelper(parser, tree);
+      ParserRuleContext tree = parse(parser);
       ParseTreeWalker walker = new ParseTreeWalker();
       walker.walk(extractor, tree);
       topology = extractor.getTopology();
       TopologyFactExtractor tfe = new TopologyFactExtractor(topology);
       tfe.writeFacts(factBins);
-      print(2, " ...OK\n");
    }
 
    private Map<String, VendorConfiguration> parseVendorConfigurations(
@@ -925,12 +952,10 @@ public class Batfish {
          boolean antlr4 = false;
          if (fileText.charAt(0) == '!') {
             // antlr 4 stuff
-            print(1, "Parsing: \"" + currentPath + "\"");
             antlr4 = true;
             BatfishCombinedParser<?, ?> combinedParser = new CiscoCombinedParser(
                   fileText);
-            ParserRuleContext tree = combinedParser.parse();
-            postParseHelper(combinedParser, tree);
+            ParserRuleContext tree = parse(combinedParser, currentPath);
             extractor = new CiscoControlPlaneExtractor(fileText,
                   combinedParser.getParser());
             ParseTreeWalker walker = new ParseTreeWalker();
@@ -1041,30 +1066,6 @@ public class Batfish {
       }
       print(1, "SUCCESS\n");
       printElapsedTime();
-   }
-
-   private void postParseHelper(BatfishCombinedParser<?,?> parser, ParserRuleContext tree) {
-      List<String> errors = parser.getErrors();
-      int numErrors = errors.size();
-      if (numErrors > 0) {
-         error(1, numErrors + " ERROR(S)\n");
-         for (int i = 0; i < numErrors; i++) {
-            String prefix = "ERROR " + (i + 1) + ": ";
-            String msg = errors.get(i);
-            String prefixedMsg = Util.applyPrefix(prefix, msg);
-            error(1, prefixedMsg + "\n");
-         }
-         quit(1);
-      }
-      else if (!_settings.printParseTree()) {
-         print(1, "OK\n");
-      }
-      else {
-         print(0, "OK, PRINTING PARSE TREE:\n");
-         print(0, ParseTreePrettyPrinter.print(tree, parser.getParser())
-               + "\n\n");
-      }
-      
    }
 
    public void print(int logLevel, String text) {

@@ -11,7 +11,7 @@ public class ExtractExpr extends IntExpr implements ComplexExpr {
 
    public ExtractExpr(String var, int low, int high) {
       _subExpressions = new ArrayList<Expr>();
-      ListExpr listExpr = new ListExpr();
+      ListExpr listExpr = new CollapsedListExpr();
       listExpr.addSubExpression(new IdExpr("_"));
       listExpr.addSubExpression(new IdExpr("extract"));
       listExpr.addSubExpression(new IdExpr(Integer.toString(high)));

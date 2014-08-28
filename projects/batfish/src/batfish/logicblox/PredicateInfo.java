@@ -737,6 +737,18 @@ public class PredicateInfo {
       addValueTypes(currentNames, valueTypeList);
       currentNames.clear();
 
+      currentNames.add("libbatfish:Traffic:SetFlowOriginate");
+      valueTypeList = new ArrayList<LBValueType>();
+      valueTypeList.add(LBValueType.ENTITY_REF_STRING); // node
+      valueTypeList.add(LBValueType.ENTITY_INDEX_IP); // srcIp
+      valueTypeList.add(LBValueType.ENTITY_INDEX_IP); // dstIp
+      valueTypeList.add(LBValueType.INT); // srcPort
+      valueTypeList.add(LBValueType.INT); // dstPort
+      valueTypeList.add(LBValueType.INT); // protocol
+      updateQualifiedNameMap(currentNames);
+      addValueTypes(currentNames, valueTypeList);
+      currentNames.clear();
+
       currentNames.add("libbatfish:GeneratedRoute:SetGeneratedRoute");
       valueTypeList = new ArrayList<LBValueType>();
       valueTypeList.add(LBValueType.ENTITY_REF_STRING); // node

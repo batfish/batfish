@@ -5,13 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ListExpr extends Expr implements ComplexExpr {
+public abstract class ListExpr extends Expr implements ComplexExpr {
 
-   private List<Expr> _subExpressions;
+   protected final List<Expr> _subExpressions;
 
    public ListExpr() {
       _subExpressions = new ArrayList<Expr>();
-      _printer = new CollapsedComplexExprPrinter(this);
    }
 
    public void addSubExpression(Expr expr) {

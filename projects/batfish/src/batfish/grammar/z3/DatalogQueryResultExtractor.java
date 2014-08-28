@@ -4,12 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import batfish.grammar.z3.DatalogQueryResultParser.And_exprContext;
-import batfish.grammar.z3.DatalogQueryResultParser.Boolean_exprContext;
-import batfish.grammar.z3.DatalogQueryResultParser.Eq_exprContext;
-import batfish.grammar.z3.DatalogQueryResultParser.Extract_exprContext;
-import batfish.grammar.z3.DatalogQueryResultParser.Int_exprContext;
-import batfish.grammar.z3.DatalogQueryResultParser.Var_int_exprContext;
 import batfish.grammar.z3.DatalogQueryResultParser.*;
 import batfish.z3.ConcretizerQuery;
 import batfish.z3.Synthesizer;
@@ -35,6 +29,23 @@ public class DatalogQueryResultExtractor extends
             OrExpr orExpr = (OrExpr) booleanExpr;
             for (BooleanExpr disjunct : orExpr.getDisjuncts()) {
                ConcretizerQuery cq = new ConcretizerQuery(disjunct);
+               _queries.add(cq);
+            }
+         }
+         else if (booleanExpr instanceof LetExpr) {
+            LetExpr letExpr = (LetExpr) booleanExpr;
+            BooleanExpr subExpr = letExpr.getExpression();
+            if (subExpr instanceof OrExpr) {
+               OrExpr orExpr = (OrExpr) subExpr;
+               for (BooleanExpr disjunct : orExpr.getDisjuncts()) {
+                  LetExpr disjunctLet = new LetExpr(letExpr.getMacroDefs(),
+                        disjunct);
+                  ConcretizerQuery cq = new ConcretizerQuery(disjunctLet);
+                  _queries.add(cq);
+               }
+            }
+            else {
+               ConcretizerQuery cq = new ConcretizerQuery(booleanExpr);
                _queries.add(cq);
             }
          }
@@ -64,6 +75,15 @@ public class DatalogQueryResultExtractor extends
       }
       else if (ctx.eq_expr() != null) {
          return toEqExpr(ctx.eq_expr());
+      }
+      else if (ctx.let_expr() != null) {
+         return toLetExpr(ctx.let_expr());
+      }
+      else if (ctx.macro_ref_expr() != null) {
+         return toMacroRefExpr(ctx.macro_ref_expr());
+      }
+      else if (ctx.not_expr() != null) {
+         return toNotExpr(ctx.not_expr());
       }
       else if (ctx.or_expr() != null) {
          return toOrExpr(ctx.or_expr());
@@ -109,6 +129,16 @@ public class DatalogQueryResultExtractor extends
       }
    }
 
+   private BooleanExpr toLetExpr(Let_exprContext ctx) {
+      List<MacroDefExpr> macroDefs = new ArrayList<MacroDefExpr>();
+      for (Macro_defContext macroDefCtx : ctx.var_defs) {
+         MacroDefExpr macroDef = toMacroDef(macroDefCtx);
+         macroDefs.add(macroDef);
+      }
+      BooleanExpr b = toBooleanExpr(ctx.boolean_expr());
+      return new LetExpr(macroDefs, b);
+   }
+
    private LitIntExpr toLitIntExpr(Lit_int_exprContext ctx) {
       long value;
       int numBits;
@@ -127,6 +157,21 @@ public class DatalogQueryResultExtractor extends
       else {
          throw new Error("bad lit int token type");
       }
+   }
+
+   private MacroDefExpr toMacroDef(Macro_defContext ctx) {
+      BooleanExpr b = toBooleanExpr(ctx.boolean_expr());
+      String macro = ctx.VARIABLE().getText();
+      return new MacroDefExpr(macro, b);
+   }
+
+   private BooleanExpr toMacroRefExpr(Macro_ref_exprContext ctx) {
+      return new MacroRefExpr(ctx.VARIABLE().toString());
+   }
+
+   private BooleanExpr toNotExpr(Not_exprContext ctx) {
+      BooleanExpr b = toBooleanExpr(ctx.boolean_expr());
+      return new NotExpr(b);
    }
 
    private OrExpr toOrExpr(Or_exprContext ctx) {

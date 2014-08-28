@@ -8,7 +8,6 @@ import batfish.z3.node.QueryExpr;
 import batfish.z3.node.RuleExpr;
 
 public class MultipathInconsistencyQuerySynthesizer implements QuerySynthesizer {
-
    private String _queryText;
 
    public MultipathInconsistencyQuerySynthesizer(String hostname) {
