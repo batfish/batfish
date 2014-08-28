@@ -73,7 +73,7 @@ need_PolicyMapMatchRoute(map, route) <-
 // (base case) import ospfE2 routes exported by ospf neighbors
 OspfE2Route(route),
    Route(route),
-   OspfE2Route_constructor[advertiser, node, network, nextHopIp, protocol] = route,
+   OspfE2Route_constructor[advertiser, costToAdvertiser, node, network, nextHopIp, protocol] = route,
    OspfRoute_advertiser[route] = advertiser,
    OspfRoute_advertiserIp[route] = advertiserIp,
    OspfRoute_costToAdvertiser[route] = costToAdvertiser,
@@ -96,7 +96,7 @@ OspfE2Route(route),
 // (recursive case) propagate ospfE2 over ospf
 OspfE2Route(route),
    Route(route),
-   OspfE2Route_constructor[advertiser, node, network, nextHopIp, protocol] = route,
+   OspfE2Route_constructor[advertiser, costToAdvertiser, node, network, nextHopIp, protocol] = route,
    OspfRoute_advertiser[route] = advertiser,
    OspfRoute_advertiserIp[route] = advertiserIp,
    OspfRoute_costToAdvertiser[route] = costToAdvertiser,
