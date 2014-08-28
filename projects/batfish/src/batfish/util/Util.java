@@ -26,14 +26,14 @@ public class Util {
    }
 
    public static String getIndentString(int indentLevel) {
-	   
-	   String retString = "";
-	   
-	   for (int i=0; i< indentLevel; i++) {
-		   retString += "  ";
-	   }   
-	   
-	   return retString;
+
+      String retString = "";
+
+      for (int i = 0; i < indentLevel; i++) {
+         retString += "  ";
+      }
+
+      return retString;
    }
 
    public static String getIpFromIpSubnetPair(String pair) {
@@ -49,7 +49,7 @@ public class Util {
       }
       return networkEnd;
    }
-   
+
    public static String getPortName(int port) {
       switch (port) {
       case 0:
@@ -96,7 +96,7 @@ public class Util {
          return "" + port;
       }
    }
-   
+
    public static int getPrefixLengthFromIpSubnetPair(String pair) {
       int slashPos = pair.indexOf('/');
       return Integer.parseInt(pair.substring(slashPos + 1, pair.length()));
@@ -137,6 +137,14 @@ public class Util {
       int start = ctx.start.getStartIndex();
       int stop = ctx.stop.getStopIndex();
       return srcText.substring(start, stop);
+   }
+
+   public static int intWidth(int n) {
+      if (n == 0)
+         return 1;
+      else {
+         return 32 - Integer.numberOfLeadingZeros(n);
+      }
    }
 
    public static long ipToLong(String addr) {
@@ -199,7 +207,7 @@ public class Util {
       }
       return numBits;
    }
-   
+
    public static long numWildcardBitsToWildcardLong(int numBits) {
       long wildcard = 0;
       for (int i = 0; i < numBits; i++) {
@@ -226,10 +234,10 @@ public class Util {
       else if (name.startsWith("fxp")) {
          String numberSection = name.substring(3);
          String[] numbers = numberSection.split("\\.");
-         return "fxp" + numbers[0] + "/" + numbers[1];         
+         return "fxp" + numbers[0] + "/" + numbers[1];
       }
       else if (name.startsWith("Vlan")) {
-         return name.replace("Vlan","Flan") + "/0";
+         return name.replace("Vlan", "Flan") + "/0";
       }
       else if (name.startsWith("Port-channel")) {
          return name.replace("Port-channel", "pc") + "/0";

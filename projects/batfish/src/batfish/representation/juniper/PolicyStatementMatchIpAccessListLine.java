@@ -4,6 +4,8 @@ import java.util.List;
 
 public class PolicyStatementMatchIpAccessListLine extends PolicyStatementMatchLine {
 
+   private static final long serialVersionUID = 1L;
+   
    private List<String> _listNames;
 
    public PolicyStatementMatchIpAccessListLine(List<String> listNames) {

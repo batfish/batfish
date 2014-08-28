@@ -1,11 +1,15 @@
 package batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
-public class BGPProcess {
+public class BGPProcess implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
 
    private int _pid;
    private String _routerID;

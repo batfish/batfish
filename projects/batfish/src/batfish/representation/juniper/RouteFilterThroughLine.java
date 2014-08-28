@@ -1,6 +1,9 @@
 package batfish.representation.juniper;
 
 public class RouteFilterThroughLine extends RouteFilterLine {
+
+   private static final long serialVersionUID = 1L;
+   
    //IP Prefix
    private String _prefix;
    

@@ -1,9 +1,13 @@
 package batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OSPFProcess {
+public class OSPFProcess implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    private int _pid;
    private ArrayList<OSPFNetwork> _networks;
    private String _routerId;

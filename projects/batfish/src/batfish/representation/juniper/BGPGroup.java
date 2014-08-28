@@ -1,9 +1,13 @@
 package batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BGPGroup {
+public class BGPGroup implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    private Long _clusterId;
    private String _name;
    private Integer _localAS;

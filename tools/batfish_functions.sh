@@ -6,7 +6,7 @@ export BATFISH_PATH=$BATFISH_ROOT/projects/batfish
 export BATFISH_TEST_RIG_PATH=$BATFISH_ROOT/test_rigs
 export BATFISH=$BATFISH_PATH/batfish
 export BATFISH_Z3=$(which z3)
-export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.default_relation=hassel_diff fixedpoint.unbound_compressor=false fixedpoint.print_answer=true"
+export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.default_relation=hassel_diff fixedpoint.unbound_compressor=false fixedpoint.print_answer=true fixedpoint.inline_eager=false"
 
 batfish() {
    # if cygwin, shift and replace each parameter
@@ -27,6 +27,9 @@ batfish() {
          shift
       done
    fi
+   if [ "$BATFISH_PRINT_CMDLINE" = "yes" ]; then
+      echo "$BATFISH $BATFISH_COMMON_ARGS $@"
+   fi
    $BATFISH $BATFISH_COMMON_ARGS $@
 }
 export -f batfish
@@ -46,7 +49,9 @@ batfish_analyze() {
    local WORKSPACE=batfish-$USER-$2
    local OLD_PWD=$PWD
    local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
+   local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
    local QUERY_PATH=$OLD_PWD/$PREFIX-query
+   local MPI_QUERY_BASE_PATH=$QUERY_PATH/multipath-inconsistency-query
    local DUMP_DIR=$OLD_PWD/$PREFIX-dump
    local FLOWS=$OLD_PWD/$PREFIX-flows
    local ROUTES=$OLD_PWD/$PREFIX-routes
@@ -67,16 +72,13 @@ batfish_analyze() {
    $BATFISH_CONFIRM && { batfish_query_data_plane $WORKSPACE $DP_DIR || return 1 ; }
 
    echo "Extract z3 reachability relations"
-   $BATFISH_CONFIRM && { batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH  || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH $NODE_SET_PATH || return 1 ; }
 
-   echo "Find inconsistent packet constraints"
-   $BATFISH_CONFIRM && { batfish_find_inconsistent_packet_constraints $REACH_PATH $QUERY_PATH || return 1 ; }
+   echo "Find multipath-inconsistent packet constraints"
+   $BATFISH_CONFIRM && { batfish_find_multipath_inconsistent_packet_constraints $REACH_PATH $QUERY_PATH $MPI_QUERY_BASE_PATH $NODE_SET_PATH || return 1 ; }
 
-   echo "Generate constraints z3 queries for concretizer"
-   $BATFISH_CONFIRM && { batfish_generate_constraints_queries $QUERY_PATH || return 1 ; }
-
-   echo "Get concrete inconsistent packets"
-   $BATFISH_CONFIRM && { batfish_get_concrete_inconsistent_packets $QUERY_PATH || return 1 ; }
+   echo "Generate multipath-inconsistency concretizer queries"
+   $BATFISH_CONFIRM && { batfish_generate_multipath_inconsistency_concretizer_queries $MPI_QUERY_BASE_PATH $NODE_SET_PATH || return 1 ; }
 
    echo "Inject concrete packets into network model"
    $BATFISH_CONFIRM && { batfish_inject_packets $WORKSPACE $QUERY_PATH $DUMP_DIR || return 1 ; }
@@ -218,55 +220,43 @@ batfish_find_failure_packet_constraints_helper() {
 }
 export -f batfish_find_failure_packet_constraints_helper
 
-batfish_find_inconsistent_packet_constraints() {
+batfish_find_multipath_inconsistent_packet_constraints() {
    date | tr -d '\n'
    echo ": START: Find inconsistent packet constraints"
-   batfish_expect_args 2 $# || return 1
+   batfish_expect_args 4 $# || return 1
    local REACH_PATH=$1
    local QUERY_PATH=$2
+   local MPI_QUERY_BASE_PATH=$3
+   local NODE_SET_PATH=$4
+   local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
    local OLD_PWD=$PWD
    mkdir -p $QUERY_PATH
    cd $QUERY_PATH
-   grep 'declare-rel' $REACH_PATH | tr ' ' '\n' | tr -d '()' | grep 'R_postin_' | sed -e 's/.*R_postin_//g' | sort -u > nodes
-   cat nodes | while read node
-   do
-      local QUERY=incons-query-${node}.smt2
-      {
-         echo "(rule (R_postin_$node src_ip dst_ip src_port dst_port ip_prot) )" ;
-         echo "(query" ;
-         echo "   (and" ;
-         echo "      (R_accept src_ip dst_ip src_port dst_port ip_prot)" ;
-         echo "      (R_drop src_ip dst_ip src_port dst_port ip_prot) ) )" ;
-      } > $QUERY
-   done
-   cat nodes | parallel --halt 2 batfish_find_inconsistent_packet_constraints_helper {} $REACH_PATH \;
-   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
-      return 1
-   fi
+   batfish -mpi -mpipath $MPI_QUERY_BASE_PATH -nodes $NODE_SET_PATH || return 1
+   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_find_multipath_inconsistent_packet_constraints_helper {} $REACH_PATH $MPI_QUERY_BASE_PATH
    cd $OLD_PWD
    date | tr -d '\n'
    echo ": END: Find inconsistent packet constraints"
 }
-export -f batfish_find_inconsistent_packet_constraints
+export -f batfish_find_multipath_inconsistent_packet_constraints
 
-batfish_find_inconsistent_packet_constraints_helper() {
-   batfish_expect_args 2 $# || return 1
+batfish_find_multipath_inconsistent_packet_constraints_helper() {
+   batfish_expect_args 3 $# || return 1
    local NODE=$1
    local REACH_PATH=$2
-   local QUERY=$PWD/incons-query-${NODE}.smt2
-   local QUERY_OUT=$PWD/incons-query-${NODE}.smt2.out
-   echo -n "   "
+   local MPI_QUERY_BASE_PATH=$3
    date | tr -d '\n'
-   echo ": START: Generate constraints for $NODE (\"$QUERY_OUT\")"
-   cat $REACH_PATH $QUERY | $BATFISH_Z3_DATALOG -smt2 -in > $QUERY_OUT
+   local MPI_QUERY_PATH=${MPI_QUERY_BASE_PATH}-${NODE}.smt2
+   local MPI_QUERY_OUTPUT_PATH=${MPI_QUERY_PATH}.out
+   echo ": START: Find inconsistent packet constraints for \"$NODE\" (\"$MPI_QUERY_OUTPUT_PATH\")"
+   cat $REACH_PATH $MPI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1> $MPI_QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
-   echo -n "   "
    date | tr -d '\n'
-   echo ": END: Generate constraints for $NODE (\"$QUERY_OUT\")"
+   echo ": END: Find inconsistent packet constraints for \"$NODE\" (\"$MPI_QUERY_OUTPUT_PATH\")"
 }
-export -f batfish_find_inconsistent_packet_constraints_helper
+export -f batfish_find_multipath_inconsistent_packet_constraints_helper
 
 batfish_find_lost_packet_constraints() {
    date | tr -d '\n'
@@ -387,40 +377,64 @@ batfish_format_flows() {
 }
 export -f batfish_format_flows
 
-batfish_generate_constraints_queries() {
+batfish_generate_multipath_inconsistency_concretizer_queries() {
    date | tr -d '\n'
-   echo ": START: Generate constraints z3 queries for concretizer"
-   batfish_expect_args 1 $# || return 1
-   local QUERY_PATH=$1
+   echo ": START: Generate multipath-inconsistency concretizer queries"
+   batfish_expect_args 2 $# || return 1
+   local MPI_QUERY_BASE_PATH=$1
+   local NODE_SET_PATH=$2
+   local QUERY_PATH="$(dirname $MPI_QUERY_BASE_PATH)"
+   local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
    local OLD_PWD=$PWD
    cd $QUERY_PATH
-   cat nodes | parallel --halt 2 batfish_generate_constraints_queries_helper {} \;
+   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_generate_multipath_inconsistency_concretizer_queries_helper {} $MPI_QUERY_BASE_PATH \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
    cd $OLD_PWD
    date | tr -d '\n'
-   echo ": END: Generate constraints z3 queries for concretizer"
+   echo ": END: Generate multipath-inconsistency concretizer queries"
 }
-export -f batfish_generate_constraints_queries
+export -f batfish_generate_multipath_inconsistency_concretizer_queries
 
-batfish_generate_constraints_queries_helper() {
-   batfish_expect_args 1 $# || return 1
+batfish_generate_multipath_inconsistency_concretizer_queries_helper() {
+   batfish_expect_args 2 $# || return 1
    local NODE=$1
-   local QUERY_OUT=$PWD/incons-query-${NODE}.smt2.out
-   local CONC_QUERY=$PWD/incons-constraints-${NODE}.smt2
-   batfish -conc -concin $QUERY_OUT -concout $CONC_QUERY || return 1
+   local MPI_QUERY_BASE_PATH=$2
+   local QUERY_OUT=${MPI_QUERY_BASE_PATH}-${NODE}.smt2.out
+   local MPI_CONCRETIZER_QUERY_BASE_PATH=${MPI_QUERY_BASE_PATH}-${NODE}-concrete
+   batfish -conc -concin $QUERY_OUT -concout $MPI_CONCRETIZER_QUERY_BASE_PATH || return 1
+   find $PWD -regextype posix-extended -regex "${MPI_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
+      parallel --halt 2 -j1 batfish_generate_multipath_inconsistency_concretizer_queries_helper_helper {} $NODE \;
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
 }
-export -f batfish_generate_constraints_queries_helper
+export -f batfish_generate_multipath_inconsistency_concretizer_queries_helper
+
+batfish_generate_multipath_inconsistency_concretizer_queries_helper_helper() {
+   batfish_expect_args 2 $# || return 1
+   local INPUT_FILE=$1
+   local NODE=$2
+   local OUTPUT_FILE=${INPUT_FILE}.out
+   local FIRST_LINE="$(head -n1 $INPUT_FILE | tr -d '\n')"
+   if [ "$FIRST_LINE" = "unsat" ]; then
+      echo unsat > $OUTPUT_FILE || return 1
+   else
+      { echo ";$NODE" ; $BATFISH_Z3 $INPUT_FILE ; } >& $OUTPUT_FILE || return 1
+   fi
+}
+export -f batfish_generate_multipath_inconsistency_concretizer_queries_helper_helper
 
 batfish_generate_z3_reachability() {
    date | tr -d '\n'
    echo ": START: Extract z3 reachability relations"
-   batfish_expect_args 3 $# || return 1
+   batfish_expect_args 4 $# || return 1
    local DP_DIR=$1
    local INDEP_SERIAL_PATH=$2
    local REACH_PATH=$3
-   batfish -sipath $INDEP_SERIAL_PATH -dpdir $DP_DIR -z3 -z3out $REACH_PATH || return 1
+   local NODE_SET_PATH=$4
+   batfish -sipath $INDEP_SERIAL_PATH -dpdir $DP_DIR -z3 -z3path $REACH_PATH -nodes $NODE_SET_PATH || return 1
    date | tr -d '\n'
    echo ": END: Extract z3 reachability relations"
 }
@@ -496,40 +510,6 @@ batfish_get_concrete_failure_packets_increased() {
 }
 export -f batfish_get_concrete_failure_packets_increased
 
-batfish_get_concrete_inconsistent_packets() {
-   date | tr -d '\n'
-   echo ": START: Get concrete inconsistent packets"
-   batfish_expect_args 1 $# || return 1
-   local QUERY_PATH=$1
-   local OLD_PWD=$PWD
-   cd $QUERY_PATH
-   cat nodes | parallel --halt 2 batfish_get_concrete_inconsistent_packets_helper {}  \;  || return 1
-   cd $OLD_PWD
-   date | tr -d '\n'
-   echo ": END: Get concrete inconsistent packets"
-}
-export -f batfish_get_concrete_inconsistent_packets
-
-batfish_get_concrete_inconsistent_packets_helper() {
-   batfish_expect_args 1 $# || return 1
-   local NODE=$1
-   local CONC_QUERY=$PWD/incons-constraints-${NODE}.smt2
-   local CONC_QUERY_OUT=$PWD/incons-constraints-${NODE}.smt2.out
-   echo -n "   "
-   date | tr -d '\n'
-   echo ": START: Get concrete inconsistent packets for $NODE (\"$CONC_QUERY_OUT\")"
-   HEADER=$(head -c5 $CONC_QUERY)
-   if [ "$HEADER" = "unsat" ]; then
-      echo unsat > $CONC_QUERY_OUT
-   else
-      $BATFISH_Z3 $CONC_QUERY > $CONC_QUERY_OUT || return 1
-   fi
-   echo -n "   "
-   date | tr -d '\n'
-   echo ": END: Get concrete inconsistent packets for $NODE (\"$CONC_QUERY_OUT\")"
-}
-export -f batfish_get_concrete_inconsistent_packets_helper
-
 batfish_inject_packets() {
    date | tr -d '\n'
    echo ": START: Inject concrete packets into network model"
@@ -538,9 +518,7 @@ batfish_inject_packets() {
    local QUERY_PATH=$2
    local DUMP_DIR=$3
    local OLD_PWD=$PWD
-   #local FLOW_SINK_PATH=$TEST_RIG/flow_sinks
    cd $QUERY_PATH
-   #batfish -testrig $TEST_RIG -flow -flowpath $QUERY_PATH -flowsink $FLOW_SINK_PATH -dumptraffic -dumpdir $DUMP_DIR
    batfish -workspace $WORKSPACE -flow -flowpath $QUERY_PATH -dumptraffic -dumpdir $DUMP_DIR || return 1
    batfish_format_flows $DUMP_DIR || return 1
    cd $OLD_PWD
@@ -656,4 +634,15 @@ int_to_ip() {
    echo "${OCTET_3}.${OCTET_2}.${OCTET_1}.${OCTET_0}"
 }
 export -f int_to_ip
+
+ip_to_int() {
+   batfish_expect_args 1 $# || return 1
+   local INPUT=$1
+   local OCTET_0=$(echo "$INPUT" | cut -d'.' -f 4)
+   local OCTET_1=$(echo "$INPUT" | cut -d'.' -f 3)
+   local OCTET_2=$(echo "$INPUT" | cut -d'.' -f 2)
+   local OCTET_3=$(echo "$INPUT" | cut -d'.' -f 1)
+   echo $((${OCTET_3} * 16777216 + ${OCTET_2} * 65536 + ${OCTET_1} * 256 + ${OCTET_0}))
+}
+export -f ip_to_int
 

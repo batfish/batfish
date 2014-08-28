@@ -1,10 +1,14 @@
 package batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.List;
 
 import batfish.representation.LineAction;
 
-public class PolicyStatementClause {
+public class PolicyStatementClause implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
 
    private String _mapName;
    private List<PolicyStatementMatchLine> _matchList;

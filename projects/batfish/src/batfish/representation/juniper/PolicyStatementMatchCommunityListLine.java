@@ -2,6 +2,8 @@ package batfish.representation.juniper;
 
 public class PolicyStatementMatchCommunityListLine extends PolicyStatementMatchLine {
 
+   private static final long serialVersionUID = 1L;
+   
    private String _listName;
 
    public PolicyStatementMatchCommunityListLine(String listName) {

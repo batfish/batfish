@@ -2,6 +2,8 @@ package batfish.representation.juniper;
 
 public class PolicyStatementSetMetricLine extends PolicyStatementSetLine {
 
+   private static final long serialVersionUID = 1L;
+   
    private int _metric;
 
    public PolicyStatementSetMetricLine(int metric) {
