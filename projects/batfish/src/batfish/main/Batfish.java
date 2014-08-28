@@ -1548,12 +1548,11 @@ public class Batfish {
       }
    }
 
-   @SuppressWarnings("unused")
    public void writeTopologyFacts(String testRigPath,
          Map<String, Configuration> configurations,
          Map<String, StringBuilder> factBins) {
       // TODO: Use flag to extract topology from interface descriptions.
-      if (true) {
+      if (Boolean.FALSE) {
          Topology topology = inferTopologyFromInterfaceDescriptions(
                configurations, /* Include external nodes (debug) */true);
          // TODO: Get from flag.
@@ -1568,6 +1567,10 @@ public class Batfish {
                error(0, "Unable to write topology dot-file.");
                e.printStackTrace();
                quit(1);
+            }
+            catch (IOException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
             }
          }
       }

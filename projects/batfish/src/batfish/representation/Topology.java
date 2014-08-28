@@ -1,6 +1,5 @@
 package batfish.representation;
 
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
