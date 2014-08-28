@@ -44,8 +44,9 @@ MinOspfRouteCost[node, network] = minCost ->
 OspfE2Route(route) ->
    Route(route).
 
-OspfE2Route_constructor[advertiser, node, network, nextHopIp, protocol] = route ->
+OspfE2Route_constructor[advertiser, costToAdvertiser, node, network, nextHopIp, protocol] = route ->
    Node(advertiser),
+   int(costToAdvertiser),
    Node(node),
    Network(network),
    Ip(nextHopIp),
