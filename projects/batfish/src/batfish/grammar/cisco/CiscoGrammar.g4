@@ -702,7 +702,7 @@ null_standalone_stanza
 		| TAG
       | TAG_SWITCHING
       | TELNET
-		| TEMPLATE
+      | TEMPLATE
       | TFTP_SERVER
       | THREAT_DETECTION
       | TIMEOUT
@@ -787,6 +787,12 @@ stanza
    | router_bgp_stanza
    | router_ospf_stanza
    | standard_access_list_stanza
+   | switching_mode_stanza
+;
+
+switching_mode_stanza
+:
+   SWITCHING_MODE ~NEWLINE* NEWLINE
 ;
 
 vrf_stanza

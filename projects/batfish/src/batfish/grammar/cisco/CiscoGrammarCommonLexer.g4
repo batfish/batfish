@@ -349,6 +349,11 @@ BANNER
    'banner' -> pushMode(M_BANNER)
 ;
 
+BESTPATH
+:
+   'bestpath'
+;
+
 BFD
 :
    'bfd'
@@ -1488,6 +1493,11 @@ INBOUND
 INCOMPLETE
 :
    'incomplete'
+;
+
+INHERIT
+:
+   'inherit'
 ;
 
 INSPECT
@@ -3169,6 +3179,11 @@ SWITCHBACK
    'switchback'
 ;
 
+SWITCHING_MODE
+:
+   'switching-mode'
+;
+
 SWITCHPORT
 :
    'switchport'
@@ -3432,6 +3447,11 @@ UNREACHABLE
 UNREACHABLES
 :
    'unreachables'
+;
+
+UNICAST
+:
+   'unicast'
 ;
 
 UPDATE_SOURCE
