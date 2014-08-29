@@ -1139,7 +1139,11 @@ public class Synthesizer {
          }
          sb.append("\n");
       }
-      FileUtils.write(z3Out, sb.toString());
+
+      // hack to fix interface names with colons
+      String output = sb.toString().replace(":", "_COLON_");
+
+      FileUtils.write(z3Out, output);
    }
 
 }

@@ -613,6 +613,14 @@ public class PredicateInfo {
       addValueTypes(currentNames, valueTypeList);
       currentNames.clear();
 
+      currentNames.add("libbatfish:Ospf:OspfRoute_costToAdvertiser");
+      valueTypeList = new ArrayList<LBValueType>();
+      valueTypeList.add(LBValueType.ENTITY_INDEX_ROUTE); // route
+      valueTypeList.add(LBValueType.INT); // costToAdvertiser
+      updateQualifiedNameMap(currentNames);
+      addValueTypes(currentNames, valueTypeList);
+      currentNames.clear();
+
       currentNames.add("libbatfish:Bgp:ParentAdvertisement");
       valueTypeList = new ArrayList<LBValueType>();
       valueTypeList.add(LBValueType.ENTITY_INDEX_INT); // parent

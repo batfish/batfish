@@ -21,10 +21,9 @@ BestOspfIARoute(route) ->
 BestOspfRoute(route) ->
    Route(route).
 
-MinOspfE2RouteCostToAdvertiser[node, network, advertiser] = minCostToAdvertiser ->
+MinOspfE2RouteCostToAdvertiser[node, network] = minCostToAdvertiser ->
    Node(node),
    Network(network),
-   Node(advertiser),
    int(minCostToAdvertiser).
 
 MinOspfIARouteCost[node, network] = minCost ->
@@ -36,6 +35,9 @@ MinOspfRouteCost[node, network] = minCost ->
    Node(node),
    Network(network),
    int(minCost).
+
+NonOspfExportableRoute(route) ->
+   Route(route).
 
 /// [OspfE2Route(node, network, nextHop, nextHopIp, cost, hopCount, advertiser)] =
 ///   Node [Node] has an ospf type E2 route to network [network] through next
@@ -96,6 +98,18 @@ OspfOutboundPolicyClauseSetMetric(map, clause, metric) ->
 ///   [nextHop] at ip address [nextHopIp], with cost [cost].
 OspfRoute(route) ->
    Route(route).
+
+OspfRoute_advertiser[route] = advertiser ->
+   Route(route),
+   Node(advertiser).
+
+OspfRoute_advertiserIp[route] = advertiserIp ->
+   Route(route),
+   Ip(advertiserIp).
+
+OspfRoute_costToAdvertiser[route] = costToAdvertiser ->
+   Route(route),
+   int(costToAdvertiser).
 
 SetOspfGeneratedRoute(node, network) ->
    Node(node),

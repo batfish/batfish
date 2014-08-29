@@ -849,7 +849,6 @@ public class Batfish {
             });
       for (File constraintsFile : constraintsFiles) {
          String flowConstraintsText = readFile(constraintsFile);
-         print(1, "Parsing: \"" + constraintsFile.toString() + "\"");
          ConcretizerQueryResultCombinedParser parser = new ConcretizerQueryResultCombinedParser(
                flowConstraintsText);
          ParserRuleContext tree = parse(parser, constraintsFile.toString());
