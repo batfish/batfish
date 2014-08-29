@@ -2,6 +2,8 @@ package batfish.representation.juniper;
 
 public class PolicyStatementSetDeleteCommunityLine extends PolicyStatementSetLine {
 
+   private static final long serialVersionUID = 1L;
+   
    private String _listName;
 
    public PolicyStatementSetDeleteCommunityLine(String listName) {

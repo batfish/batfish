@@ -51,6 +51,7 @@ public class Facts {
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseAddCommunity", "MAP|CLAUSE|COMMUNITY");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseDeleteCommunity", "MAP|CLAUSE|LIST");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseDeny", "MAP|CLAUSE");
+      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchAcl", "MAP|CLAUSE|ACL");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchCommunityList", "MAP|CLAUSE|LIST");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchNeighbor", "MAP|CLAUSE|NEIGHBORIP");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchProtocol", "MAP|CLAUSE|PROTOCOL");

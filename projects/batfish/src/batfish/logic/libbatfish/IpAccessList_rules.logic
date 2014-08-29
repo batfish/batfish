@@ -6,7 +6,12 @@ block(`IpAccessList_rules) {
 // BEGIN CODE
 
 AclDeny(list, flow) <-
-   IpAccessListDeny(list, _, flow).
+   IpAccessListDeny(list, _, flow) ;
+   (
+      Flow(flow),
+      IpAccessList(list),
+      !IpAccessListMatch(list, _, flow)
+   ).
 
 IpAccessListDeny(list, line, flow) <-
    SetIpAccessListDenyLine(list, line),

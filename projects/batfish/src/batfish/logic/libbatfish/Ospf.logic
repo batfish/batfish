@@ -44,6 +44,15 @@ MinOspfRouteCost[node, network] = minCost ->
 OspfE2Route(route) ->
    Route(route).
 
+OspfE2Route_constructor[advertiser, costToAdvertiser, node, network, nextHopIp, protocol] = route ->
+   Node(advertiser),
+   int(costToAdvertiser),
+   Node(node),
+   Network(network),
+   Ip(nextHopIp),
+   RoutingProtocol(protocol),
+   Route(route).
+
 OspfExport(node, network, cost) ->
    Node(node),
    Network(network),
@@ -137,6 +146,9 @@ SetOspfRouterId(node, ip) ->
    Ip(ip).
 
 // END CODE
+   }),
+   clauses(`{
+lang:constructor(`OspfE2Route_constructor).
    })
 } <-- .
 

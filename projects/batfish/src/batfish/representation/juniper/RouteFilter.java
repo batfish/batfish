@@ -1,5 +1,6 @@
 package batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +13,10 @@ import java.util.List;
  * 
  */
 
-public class RouteFilter {
+public class RouteFilter implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
 	//Name of the filter
 	private String _name;
 	

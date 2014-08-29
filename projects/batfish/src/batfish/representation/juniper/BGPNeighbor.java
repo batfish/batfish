@@ -1,9 +1,13 @@
 package batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BGPNeighbor {
+public class BGPNeighbor implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    private String _ip;
    private Integer _remoteAS;
    private Integer _localAS;

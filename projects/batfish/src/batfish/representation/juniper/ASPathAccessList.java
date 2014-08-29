@@ -1,9 +1,12 @@
 package batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.List;
 
+public class ASPathAccessList implements Serializable {
 
-public class ASPathAccessList {
+   private static final long serialVersionUID = 1L;
+
    private List<ASPathAccessListLine> _lines;
    private String _name;
 

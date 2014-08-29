@@ -4,6 +4,8 @@ import java.util.List;
 
 public class PolicyStatementSetNextHopLine extends PolicyStatementSetLine {
 
+   private static final long serialVersionUID = 1L;
+   
    private List<String> _nextHops;
 
    public PolicyStatementSetNextHopLine(List<String> nextHops) {

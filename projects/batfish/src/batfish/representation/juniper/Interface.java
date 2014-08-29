@@ -1,5 +1,6 @@
 package batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,10 @@ import batfish.representation.SwitchportEncapsulationType;
 import batfish.representation.SwitchportMode;
 import batfish.util.SubRange;
 
-public class Interface {
+public class Interface implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
 
    private int _accessVlan;
    private boolean _active;

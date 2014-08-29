@@ -4,6 +4,8 @@ import batfish.util.SubRange;
 
 public class RouteFilterSubRangeLine extends RouteFilterLine {
    //IP Prefix
+   private static final long serialVersionUID = 1L;
+   
    private String _prefix;
    
    private int _prefixLength;

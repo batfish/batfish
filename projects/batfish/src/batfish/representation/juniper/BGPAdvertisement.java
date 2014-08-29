@@ -1,5 +1,6 @@
 package batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -10,7 +11,10 @@ import java.util.List;
  * 
  */
 
-public class BGPAdvertisement {
+public class BGPAdvertisement implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    // / [BGPAdvertisement(destIpBlock, nextHopIp, asPath, localPref, srcIp,
    // dstIp)] =
    // / An advertisement of routes to ip block [destIpBlock] with next hop of ip

@@ -1,8 +1,13 @@
 package batfish.representation.juniper;
 
+import java.io.Serializable;
+
 import batfish.representation.LineAction;
 
-public class ExpandedCommunityListLine {
+public class ExpandedCommunityListLine implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
    private String _regex;
    private LineAction _action;
 
