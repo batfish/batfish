@@ -564,7 +564,7 @@ public class ConfigurationFactExtractor {
                   PolicyMapMatchIpAccessListLine mialLine = (PolicyMapMatchIpAccessListLine)matchLine;
                   for (IpAccessList list : mialLine.getLists()) {
                      String listName = hostname + ":" + list.getName();
-                     wSetPolicyMapClauseMatchAcl.append(mapName + "|" + i + "|" + listName);
+                     wSetPolicyMapClauseMatchAcl.append(mapName + "|" + i + "|" + listName + "\n");
                   }
                   break;
 
@@ -618,7 +618,9 @@ public class ConfigurationFactExtractor {
 
                case AS_PATH_PREPEND:
                   // TODO: implement
-                  throw new Error("not implemented");
+                  //throw new Error("not implemented");
+                  System.err.println("AS_PATH_PREPEND not implemented");
+                  break;
 
                case COMMUNITY:
                   PolicyMapSetCommunityLine scLine = (PolicyMapSetCommunityLine) setLine;
