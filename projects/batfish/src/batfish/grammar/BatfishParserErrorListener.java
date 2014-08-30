@@ -48,7 +48,8 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
       StringBuilder sb = new StringBuilder();
       sb.append("parser: " + _grammarName + ": line " + line + ":"
             + charPositionInLine + ": " + msg + "\n");
-      String offendingTokenText = printToken((Token) offendingSymbol);
+      Token offendingToken = (Token) offendingSymbol;
+      String offendingTokenText = printToken(offendingToken);
       sb.append("Offending Token: " + offendingTokenText + "\n");
       sb.append("Error parsing top (leftmost) parser rule in stack: '"
             + ruleStack + "'.\n");
@@ -57,6 +58,10 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
          Token token = tokens.get(i);
          String tokenText = printToken(token);
          sb.append(tokenText + "\n");
+      }
+      if (offendingToken.getType() == Token.EOF) {
+         sb.append("Lexer mode at EOF: " + _combinedParser.getLexer().getMode()
+               + "\n");
       }
       String error = sb.toString();
       _combinedParser.getErrors().add(error);
