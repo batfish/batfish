@@ -386,6 +386,11 @@ BANNER
    ) -> pushMode(M_BANNER)
 ;
 
+BESTPATH
+:
+   'bestpath'
+;
+
 BFD
 :
    'bfd'
@@ -1467,6 +1472,11 @@ HOSTNAME
    'hostname'
 ;
 
+HSRP
+:
+   'hsrp'
+;
+
 HTTP
 :
    'http'
@@ -1545,6 +1555,11 @@ INBOUND
 INCOMPLETE
 :
    'incomplete'
+;
+
+INHERIT
+:
+   'inherit'
 ;
 
 INSPECT
@@ -1679,11 +1694,16 @@ KEYRING
    'keyring'
 ;
 
+LACP
+:
+   'lacp'
+;
+
 LANE
 :
    'lane'
 ;
-
+   
 LAPB
 :
    'lapb'
@@ -2549,6 +2569,11 @@ PPP
    'ppp'
 ;
 
+PREEMPT
+:
+   'preempt'
+;
+
 PREPEND
 :
    'prepend'
@@ -3289,6 +3314,11 @@ SWITCHBACK
    'switchback'
 ;
 
+SWITCHING_MODE
+:
+   'switching-mode'
+;
+
 SWITCHPORT
 :
    'switchport'
@@ -3557,6 +3587,11 @@ UNREACHABLE
 UNREACHABLES
 :
    'unreachables'
+;
+
+UNICAST
+:
+   'unicast'
 ;
 
 UPDATE_SOURCE

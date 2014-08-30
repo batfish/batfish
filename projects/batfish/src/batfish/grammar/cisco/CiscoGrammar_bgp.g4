@@ -14,7 +14,11 @@ address_family_rb_stanza
       | IPV6
       | VPNV4
       | VPNV6
-   ) MULTICAST?
+   ) 
+   ( 
+      UNICAST 
+      | MULTICAST
+   )?
    (
       VRF vrf_name = VARIABLE
    )? NEWLINE address_family_rb_stanza_tail
@@ -198,6 +202,29 @@ neighbor_filter_list_tail_bgp
       IN
       | OUT
    ) NEWLINE
+;
+
+neighbor_nexus_stanza
+:
+   NEIGHBOR ~NEWLINE* NEWLINE neighbor_nexus_tail
+;
+
+neighbor_nexus_description_standalone_stanza
+:
+   DESCRIPTION ~NEWLINE* NEWLINE
+;
+
+neighbor_nexus_inherit_standalone_stanza
+:
+   INHERIT ~NEWLINE* NEWLINE
+;
+
+neighbor_nexus_tail
+:
+   (
+      neighbor_nexus_inherit_standalone_stanza
+      | neighbor_nexus_description_standalone_stanza
+   )*
 ;
 
 neighbor_next_hop_self_af_stanza
@@ -431,6 +458,7 @@ null_af_stanza
 null_rb_stanza
 :
    comment_stanza
+   | template_stanza
    | null_standalone_rb_stanza
 ;
 
@@ -444,7 +472,11 @@ null_standalone_af_stanza
       | AUTO_SUMMARY
       | BGP
       | MAXIMUM_PATHS
-      |
+      | SEND_COMMUNITY
+      | SOFT_RECONFIGURATION
+      | ROUTE_MAP
+      | MAXIMUM_PREFIX
+      | 
       (
          NEIGHBOR ~NEWLINE
          (
@@ -465,6 +497,7 @@ null_standalone_rb_stanza
    NO?
    (
       AUTO_SUMMARY
+      | BESTPATH
       |
       (
          BGP
@@ -478,6 +511,7 @@ null_standalone_rb_stanza
             | LOG_NEIGHBOR_CHANGES
          )
       )
+      | LOG_NEIGHBOR_CHANGES
       | MAXIMUM_PATHS
       |
       (
@@ -500,6 +534,22 @@ null_standalone_rb_stanza
    ) ~NEWLINE* NEWLINE
 ;
 
+null_template_stanza
+:
+   af_stanza
+   | null_template_standalone_stanza
+;
+
+null_template_standalone_stanza
+:
+   (
+      PASSWORD 
+      | REMOTE_AS
+      | UPDATE_SOURCE 
+      | EBGP_MULTIHOP
+   ) ~NEWLINE* NEWLINE
+;
+
 rb_stanza
 :
    aggregate_address_rb_stanza
@@ -509,6 +559,7 @@ rb_stanza
    | neighbor_description_rb_stanza
    | neighbor_distribute_list_rb_stanza
    | neighbor_ebgp_multihop_rb_stanza
+   | neighbor_nexus_stanza
    | neighbor_next_hop_self_rb_stanza
    | neighbor_peer_group_creation_rb_stanza
    | neighbor_peer_group_assignment_rb_stanza
@@ -624,13 +675,27 @@ router_bgp_stanza_tail
 :
    (
       rbsl += rb_stanza
+      | afrbsl += address_family_rb_stanza
    )* closing_comment?
-   (
-      afrbsl += address_family_rb_stanza
-   )*
 ;
 
 router_id_bgp_rb_stanza
 :
    BGP ROUTER_ID routerid = IP_ADDRESS NEWLINE
 ;
+
+
+
+template_stanza
+:
+   TEMPLATE PEER peername = VARIABLE NEWLINE template_stanza_tail
+;
+
+template_stanza_tail
+:
+      (
+        null_template_stanza
+      )*
+;
+
+

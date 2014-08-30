@@ -830,6 +830,12 @@ stanza
    | router_ospf_stanza
    | router_rip_stanza
    | standard_access_list_stanza
+   | switching_mode_stanza
+;
+
+switching_mode_stanza
+:
+   SWITCHING_MODE ~NEWLINE* NEWLINE
 ;
 
 vrf_stanza

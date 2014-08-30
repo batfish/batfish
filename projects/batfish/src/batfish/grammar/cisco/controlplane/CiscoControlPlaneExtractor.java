@@ -19,6 +19,7 @@ import batfish.grammar.cisco.*;
 import batfish.grammar.cisco.CiscoGrammar.CommunityContext;
 import batfish.grammar.cisco.CiscoGrammar.Description_if_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Interface_stanzaContext;
+import batfish.grammar.cisco.CiscoGrammar.Neighbor_activate_af_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Port_specifierContext;
 import batfish.representation.Ip;
 import batfish.representation.LineAction;
@@ -984,6 +985,12 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
+   public void exitNeighbor_nexus_stanza(
+         Neighbor_nexus_stanzaContext ctx) {
+      todo(ctx);
+   }
+   
+   @Override
    public void exitNeighbor_next_hop_self_rb_stanza(
          Neighbor_next_hop_self_rb_stanzaContext ctx) {
       todo(ctx);
@@ -1548,6 +1555,12 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
+   public void exitSwitching_mode_stanza(
+         Switching_mode_stanzaContext ctx) {
+      todo(ctx);
+   }
+   
+   @Override
    public void exitSwitchport_access_if_stanza(
          Switchport_access_if_stanzaContext ctx) {
       int vlan = toInteger(ctx.vlan);
@@ -1600,6 +1613,12 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       _currentInterface.setNativeVlan(vlan);
    }
 
+   @Override
+   public void exitTemplate_stanza(
+         Template_stanzaContext ctx) {
+      todo(ctx);
+   }
+   
    @Override
    public void exitVrf_stanza(Vrf_stanzaContext ctx) {
       todo(ctx);
