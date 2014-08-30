@@ -2,7 +2,6 @@ package batfish.main;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -96,7 +95,7 @@ import batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import batfish.z3.QuerySynthesizer;
 import batfish.z3.Synthesizer;
 
-public class Batfish {
+public class Batfish implements AutoCloseable {
    private static final String BASIC_FACTS_BLOCKNAME = "BaseFacts";
    private static final String EDGES_FILENAME = "edges";
    private static final String FIB_POLICY_ROUTE_NEXT_HOP_PREDICATE_NAME = "FibForwardPolicyRouteNextHopIp";
@@ -156,8 +155,7 @@ public class Batfish {
       String result = lbFrontend.addProject(logicDir, "");
       cleanupLogicDir();
       if (result != null) {
-         error(0, result + "\n");
-         quit(1);
+         throw new BatfishException(result + "\n");
       }
       print(1, "SUCCESS\n");
       printElapsedTime();
@@ -175,8 +173,7 @@ public class Batfish {
             print(1, "OK\n");
          }
          else {
-            error(0, output + "\n");
-            quit(1);
+            throw new BatfishException(output + "\n");
          }
       }
       print(1, "SUCCESS\n");
@@ -290,8 +287,7 @@ public class Batfish {
          lbFrontend = initFrontend(assumedToExist, workspaceMaster);
       }
       catch (LBInitializationException e) {
-         error(0, ExceptionUtils.getStackTrace(e));
-         quit(1);
+         throw new BatfishException("Failed to connect to LogicBlox", e);
       }
       return lbFrontend;
    }
@@ -304,6 +300,9 @@ public class Batfish {
       Map<String, Configuration> configurations = new TreeMap<String, Configuration>();
       File dir = new File(serializedConfigPath);
       File[] serializedConfigs = dir.listFiles();
+      if (serializedConfigs == null) {
+         throw new BatfishException("Error reading vendor-independent configs directory");
+      }
       for (File serializedConfig : serializedConfigs) {
          String name = serializedConfig.getName();
          print(2, "Reading config: \"" + serializedConfig + "\"");
@@ -332,17 +331,9 @@ public class Batfish {
          o = ois.readObject();
          ois.close();
       }
-      catch (FileNotFoundException e) {
-         e.printStackTrace();
-         quit(1);
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
-      }
-      catch (ClassNotFoundException e) {
-         e.printStackTrace();
-         quit(1);
+      catch (IOException | ClassNotFoundException e) {
+         throw new BatfishException("Failed to deserialize object from file: "
+               + inputFile.toString(), e);
       }
       return o;
    }
@@ -354,6 +345,9 @@ public class Batfish {
       Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<String, VendorConfiguration>();
       File dir = new File(serializedVendorConfigPath);
       File[] serializedConfigs = dir.listFiles();
+      if (serializedConfigs == null) {
+         throw new BatfishException("Error reading vendor configs directory");
+      }
       for (File serializedConfig : serializedConfigs) {
          String name = serializedConfig.getName();
          print(2, "Reading vendor config: \"" + serializedConfig + "\"");
@@ -381,8 +375,7 @@ public class Batfish {
          }
       }
       catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
+         throw new BatfishException("Failed to write fact dump file", e);
       }
       printElapsedTime();
    }
@@ -522,9 +515,7 @@ public class Batfish {
          s.synthesize(_settings.getZ3File());
       }
       catch (IOException e) {
-         error(1, "ERROR\n");
-         e.printStackTrace();
-         quit(1);
+         throw new Error("Failed to generated Z3 logic", e);
       }
       print(1, "OK\n");
 
@@ -633,7 +624,7 @@ public class Batfish {
       resetTimer();
       Map<String, String> predicateSemantics = extractPredicateSemantics(logicFiles);
       if (predicateSemantics == null) {
-         quit(1);
+         throw new BatfishException("Failed to extract predicate semantics");
       }
       PredicateInfo predicateInfo = new PredicateInfo(predicateSemantics);
       printElapsedTime();
@@ -749,9 +740,7 @@ public class Batfish {
             _settings.getSshPort(), workspace, assumedToExist);
       lbFrontend.initialize();
       if (!lbFrontend.connected()) {
-         error(0,
-               "Error connecting to ConnectBlox service. Please make sure service is running and try again.\n\n");
-         quit(1);
+         throw new BatfishException("Error connecting to ConnectBlox service. Please make sure service is running and try again.");
       }
       print(1, "SUCCESS\n");
       printElapsedTime();
@@ -772,7 +761,7 @@ public class Batfish {
             String prefixedMsg = Util.applyPrefix(prefix, msg);
             error(1, prefixedMsg + "\n");
          }
-         quit(1);
+         throw new BatfishException("Exiting due to parser errors");
       }
       else if (!_settings.printParseTree()) {
          print(1, "OK\n");
@@ -847,6 +836,9 @@ public class Batfish {
                   return filename.matches(".*-concrete-.*.smt2.out");
                }
             });
+      if (constraintsFiles == null) {
+         throw new BatfishException("Error reading flow constraints directory");
+      }
       for (File constraintsFile : constraintsFiles) {
          String flowConstraintsText = readFile(constraintsFile);
          ConcretizerQueryResultCombinedParser parser = new ConcretizerQueryResultCombinedParser(
@@ -1048,20 +1040,17 @@ public class Batfish {
       resetTimer();
       String ret = lbFrontend.startBloxWebServices();
       if (ret != null) {
-         error(0, ret + "\n");
-         quit(1);
+         throw new BatfishException("Failed to start bloxweb services: " + ret);
       }
       try {
          lbFrontend.postFacts(factBins);
       }
       catch (ServiceClientException e) {
-         e.printStackTrace();
-         quit(1);
+         throw new BatfishException("Failed to post facts to bloxweb services", e);
       }
       ret = lbFrontend.stopBloxWebServices();
       if (ret != null) {
-         error(0, ret + "\n");
-         quit(1);
+         throw new BatfishException("Failed to stop bloxweb services: " + ret);
       }
       print(1, "SUCCESS\n");
       printElapsedTime();
@@ -1155,16 +1144,6 @@ public class Batfish {
       print(0, "Semantics: " + semantics + "\n");
    }
 
-   public void quit(int exitCode) {
-      for (LogicBloxFrontend lbFrontend : _lbFrontends) {
-         // Close backend threads
-         if (lbFrontend != null && lbFrontend.connected()) {
-            lbFrontend.close();
-         }
-      }
-      System.exit(exitCode);
-   }
-
    private Map<File, String> readConfigurationFiles(String testRigPath) {
       print(1, "\n*** READING CONFIGURATION FILES ***\n");
       resetTimer();
@@ -1176,6 +1155,9 @@ public class Batfish {
             return !name.startsWith(".");
          }
       });
+      if (configFilePaths == null) {
+         throw new BatfishException("Error reading test rig configs directory");
+      }
       for (File file : configFilePaths) {
          print(2, "Reading: \"" + file.toString() + "\"\n");
          String fileText = readFile(file.getAbsoluteFile());
@@ -1191,8 +1173,8 @@ public class Batfish {
          text = FileUtils.readFileToString(file);
       }
       catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
+         throw new BatfishException("Failed to read file: " + file.toString(),
+               e);
       }
       return text;
    }
@@ -1246,8 +1228,7 @@ public class Batfish {
             _tmpLogicDir = destinationDirAsFile;
          }
          catch (IOException e) {
-            e.printStackTrace();
-            quit(1);
+            throw new BatfishException("Failed to retrieve logic dir from onejar archive", e);
          }
          String fileString = visitor.toString();
          return new File(fileString);
@@ -1260,8 +1241,7 @@ public class Batfish {
                   .getResource(logicPackageResourceName).toURI());
          }
          catch (URISyntaxException e) {
-            e.printStackTrace();
-            quit(1);
+            throw new BatfishException("Failed to resolve logic directory", e);
          }
          return logicDirFile;
       }
@@ -1275,8 +1255,7 @@ public class Batfish {
             + branchName + "\n");
       String errorResult = lbFrontend.revertDatabase(branchName);
       if (errorResult != null) {
-         error(0, errorResult + "\n");
-         quit(1);
+         throw new BatfishException("Failed to revert database: " + errorResult);
       }
    }
 
@@ -1289,48 +1268,48 @@ public class Batfish {
          Map<String, Configuration> configurations = deserializeConfigurations(_settings
                .getSerializeIndependentPath());
          genZ3(configurations);
-         quit(0);
+         return;
       }
 
       if (_settings.getAnonymize()) {
          anonymizeConfigurations();
-         quit(0);
+         return;
       }
 
       if (_settings.getGenerateMultipathInconsistencyQuery()) {
          genMultipathQueries();
-         quit(0);
+         return;
       }
 
       if (_settings.getSerializeVendor()) {
          String testRigPath = _settings.getTestRigPath();
          String outputPath = _settings.getSerializeVendorPath();
          serializeVendorConfigs(testRigPath, outputPath);
-         quit(0);
+         return;
       }
 
       if (_settings.dumpInterfaceDescriptions()) {
          String testRigPath = _settings.getTestRigPath();
          String outputPath = _settings.getDumpInterfaceDescriptionsPath();
          dumpInterfaceDescriptions(testRigPath, outputPath);
-         quit(0);
+         return;
       }
 
       if (_settings.getSerializeIndependent()) {
          String inputPath = _settings.getSerializeVendorPath();
          String outputPath = _settings.getSerializeIndependentPath();
          serializeIndependentConfigs(inputPath, outputPath);
-         quit(0);
+         return;
       }
 
       if (_settings.getDiff()) {
          getDiff();
-         quit(0);
+         return;
       }
 
       if (_settings.getConcretize()) {
          concretize();
-         quit(0);
+         return;
       }
 
       if (_settings.getQuery() || _settings.getPrintSemantics()
@@ -1340,7 +1319,7 @@ public class Batfish {
          // Print predicate semantics and quit if requested
          if (_settings.getPrintSemantics()) {
             printAllPredicateSemantics(_predicateInfo.getPredicateSemantics());
-            quit(0);
+            return;
          }
       }
 
@@ -1355,7 +1334,7 @@ public class Batfish {
             dumpFacts(cpFactBins);
          }
          if (!(_settings.getFacts() || _settings.createWorkspace())) {
-            quit(0);
+            return;
          }
       }
 
@@ -1369,14 +1348,14 @@ public class Batfish {
 
       if (_settings.revert()) {
          revert(lbFrontend);
-         quit(0);
+         return;
       }
 
       // Create new workspace (will overwrite existing) if requested
       if (_settings.createWorkspace()) {
          addProject(lbFrontend);
          if (!_settings.getFacts()) {
-            quit(0);
+            return;
          }
       }
 
@@ -1385,7 +1364,7 @@ public class Batfish {
          addStaticFacts(lbFrontend,
                Collections.singletonList(BASIC_FACTS_BLOCKNAME));
          postFacts(lbFrontend, cpFactBins);
-         quit(0);
+         return;
       }
 
       if (_settings.getQuery()) {
@@ -1405,12 +1384,12 @@ public class Batfish {
          else {
             printPredicates(lbFrontend, predicateNames);
          }
-         quit(0);
+         return;
       }
 
       if (_settings.getDataPlane()) {
          computeDataPlane(lbFrontend);
-         quit(0);
+         return;
       }
 
       Map<String, StringBuilder> trafficFactBins = null;
@@ -1424,12 +1403,10 @@ public class Batfish {
          if (_settings.getFlows()) {
             lbFrontend = connect();
             postFacts(lbFrontend, trafficFactBins);
-            quit(0);
+            return;
          }
       }
-
-      error(0, "No task performed! Run with -help flag to see usage\n");
-      quit(1);
+      throw new BatfishException("No task performed! Run with -help flag to see usage\n");
    }
 
    private void serializeIndependentConfigs(String vendorConfigPath,
@@ -1465,13 +1442,8 @@ public class Batfish {
          oos.writeObject(object);
          oos.close();
       }
-      catch (FileNotFoundException e) {
-         e.printStackTrace();
-         quit(1);
-      }
       catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
+         throw new BatfishException("Failed to serialize object to output file: " + outputFile.toString(), e);
       }
    }
 
@@ -1479,8 +1451,7 @@ public class Batfish {
       Map<File, String> configurationData = readConfigurationFiles(testRigPath);
       Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(configurationData);
       if (vendorConfigurations == null) {
-         error(0, "Exiting due to parser errors\n");
-         quit(1);
+         throw new BatfishException("Exiting due to parser errors\n");
       }
       print(1, "\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       resetTimer();
@@ -1509,8 +1480,7 @@ public class Batfish {
          FileUtils.write(outputFile, output);
       }
       catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
+         throw new BatfishException("Failed to write file: " + outputPath, e);
       }
    }
 
@@ -1522,20 +1492,15 @@ public class Batfish {
       boolean guess = false;
       print(1, "*** PARSING TOPOLOGY ***\n");
       resetTimer();
-      try {
-         topologyFileText = FileUtils.readFileToString(topologyFilePath
-               .toFile());
+      if (Files.exists(topologyFilePath)) {
+         topologyFileText = readFile(topologyFilePath.toFile());
       }
-      catch (FileNotFoundException e) {
+      else {
          // tell logicblox to guess adjacencies based on interface subnetworks
          print(1, "*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
          StringBuilder wGuessTopology = factBins.get("GuessTopology");
          wGuessTopology.append("1\n");
          guess = true;
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
       }
       if (!guess) {
          parseTopology(testRigPath, topologyFileText, factBins);
@@ -1556,5 +1521,15 @@ public class Batfish {
    private void writeTrafficFacts(Map<String, StringBuilder> factBins) {
       StringBuilder wSetFlowOriginate = factBins.get("SetFlowOriginate");
       parseFlowsFromConstraints(wSetFlowOriginate);
+   }
+
+   @Override
+   public void close() throws Exception {
+      for (LogicBloxFrontend lbFrontend : _lbFrontends) {
+         // Close backend threads
+         if (lbFrontend != null && lbFrontend.connected()) {
+            lbFrontend.close();
+         }
+      }
    }
 }

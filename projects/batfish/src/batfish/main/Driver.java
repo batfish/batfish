@@ -14,8 +14,20 @@ public class Driver {
          System.exit(1);
       }
       if (settings.canExecute()) {
-         Batfish batfish = new Batfish(settings);
-         batfish.run();
+         boolean error = false;
+         try (Batfish batfish = new Batfish(settings)) {
+            batfish.run();
+            batfish.close();
+         }
+         catch (Exception e) {
+            e.printStackTrace();
+            error = true;
+         }
+         finally {
+            if (error) {
+               System.exit(1);
+            }
+         }
       }
    }
 
