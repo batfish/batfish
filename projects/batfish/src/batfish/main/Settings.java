@@ -57,7 +57,6 @@ public class Settings {
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
    private static final String ARG_SERIALIZE_VENDOR = "sv";
    private static final String ARG_SERIALIZE_VENDOR_PATH = "svpath";
-   private static final String ARG_SSH_PORT = "sshport";
    private static final String ARG_TEST_RIG_PATH = "testrig";
    private static final String ARG_UPDATE = "update";
    private static final String ARG_VAR_SIZE_MAP_PATH = "vsmpath";
@@ -81,7 +80,6 @@ public class Settings {
    private static final String ARGNAME_REVERT = "branch-name";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
-   private static final String ARGNAME_SSH_PORT = "port";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILE = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
@@ -519,9 +517,6 @@ public class Settings {
                   .withDescription(
                         "set logic dir with respect to filesystem of machine running LogicBlox")
                   .create(ARG_LOGICDIR));
-      _options.addOption(OptionBuilder.hasArg().withArgName(ARGNAME_SSH_PORT)
-            .withDescription("ssh port of machine running LogicBlox")
-            .create(ARG_SSH_PORT));
       _options.addOption(OptionBuilder.withDescription(
             "disable z3 simplification").create(ARG_DISABLE_Z3_SIMPLIFICATION));
       _options.addOption(OptionBuilder.withDescription(
@@ -569,15 +564,15 @@ public class Settings {
             .withDescription("path to read or write var-size mappings")
             .create(ARG_VAR_SIZE_MAP_PATH));
       _options.addOption(OptionBuilder.withDescription(
-            "generate multipath-inconsistency query").create(
-            ARG_MPI));
-      _options.addOption(OptionBuilder.hasArg()
+            "generate multipath-inconsistency query").create(ARG_MPI));
+      _options.addOption(OptionBuilder
+            .hasArg()
             .withArgName(ARGNAME_MPI_PATH)
-            .withDescription("path to read or write multipath-inconsistency query")
+            .withDescription(
+                  "path to read or write multipath-inconsistency query")
             .create(ARG_MPI_PATH));
-      _options.addOption(OptionBuilder.withDescription(
-            "serialize to text").create(
-            ARG_SERIALIZE_TO_TEXT));
+      _options.addOption(OptionBuilder.withDescription("serialize to text")
+            .create(ARG_SERIALIZE_TO_TEXT));
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -665,9 +660,6 @@ public class Settings {
       if (_anonymize) {
          _anonymizeDir = line.getOptionValue(ARG_ANONYMIZE);
       }
-      if (line.hasOption(ARG_SSH_PORT)) {
-         _sshPort = Integer.parseInt(line.getOptionValue(ARG_SSH_PORT));
-      }
       _logicDir = line.getOptionValue(ARG_LOGICDIR, null);
       _simplify = DEFAULT_Z3_SIMPLIFY;
       if (line.hasOption(ARG_DISABLE_Z3_SIMPLIFICATION)) {
@@ -695,7 +687,7 @@ public class Settings {
       _mpiPath = line.getOptionValue(ARG_MPI_PATH);
       _serializeToText = line.hasOption(ARG_SERIALIZE_TO_TEXT);
    }
-   
+
    public boolean printParseTree() {
       return _printParseTree;
    }

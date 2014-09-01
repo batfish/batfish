@@ -10,14 +10,14 @@ public class Driver {
          settings = new Settings(args);
       }
       catch (ParseException e) {
-         System.err.println("batfish: Parsing command-line failed. Reason: " + e.getMessage());
+         System.err.println("batfish: Parsing command-line failed. Reason: "
+               + e.getMessage());
          System.exit(1);
       }
       if (settings.canExecute()) {
          boolean error = false;
          try (Batfish batfish = new Batfish(settings)) {
             batfish.run();
-            batfish.close();
          }
          catch (Exception e) {
             e.printStackTrace();
@@ -28,6 +28,8 @@ public class Driver {
                System.exit(1);
             }
          }
+         // Can remove this after LogicBlox updates jetty to fix non-closing threads
+         System.exit(0);
       }
    }
 

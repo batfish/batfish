@@ -2,6 +2,7 @@ package batfish.logicblox;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,9 +12,11 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.eclipse.jetty.client.ContentExchange;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.HttpExchange;
+import org.eclipse.jetty.io.ByteArrayBuffer;
 
 import com.logicblox.bloxweb.client.DelimImportOptions;
 import com.logicblox.bloxweb.client.DelimServiceClient;
@@ -46,35 +49,52 @@ import com.logicblox.connect.Workspace.Result;
 import com.logicblox.connect.Workspace.Result.Failure;
 import com.logicblox.connect.Workspace.Result.QueryPredicate;
 
+import batfish.main.BatfishException;
 import batfish.util.Util;
 
 public class LogicBloxFrontend {
 
+   private interface LbWebAdminClient {
+
+      void close();
+
+      LbWebAdminClient create(String hostname, int port);
+
+      void startServices(String workspaceName);
+
+      void stopServices(String workspaceName);
+
+   }
+
+   private static final int BLOXWEB_ADMIN_PORT = 55183;
+
+   private static final String BLOXWEB_ADMIN_URI = "lb-web/admin";
    private static final int BLOXWEB_PORT = 8080;
    private static final String BLOXWEB_PROTOCOL = "http";
    public static final long BLOXWEB_TIMEOUT_MS = 31536000000l;
+   private static final int LB_WEB_ADMIN_TIMEOUT_MS = 10000;
    private static final String SERVICE_DIR = "batfish";
 
    private static void closeSession(
          ConnectBloxSession<Request, Response> session) {
       try {
          // close down a regular session
-         if (session != null)
+         if (session != null && session.isActive())
             session.close();
       }
       catch (ConnectBloxSession.Exception e) {
-         System.err
-               .println("Encountered error while closing a ConnectBloxSession: "
-                     + e.getMessage());
+         throw new BatfishException(
+               "Encountered error while closing a ConnectBloxSession", e);
       }
    }
 
    private boolean _assumedToExist;
+
    private ConnectBloxSession<Request, Response> _cbSession;
    private EntityTable _entityTable;
    private String _lbHost;
    private int _lbPort;
-   private Integer _sshPort;
+   private final LbWebAdminClient _lbWebAdminClient;
    private ConnectBloxWorkspace _workspace;
    private String _workspaceName;
 
@@ -83,9 +103,13 @@ public class LogicBloxFrontend {
       _workspaceName = workspaceName;
       _lbHost = lbHost;
       _lbPort = lbPort;
-      _sshPort = sshPort;
       _assumedToExist = assumedToExist;
       _entityTable = null;
+      if (_workspaceName.contains("\"")) {
+         throw new BatfishException("Invalid workspace name: \""
+               + _workspaceName + "\"");
+      }
+      _lbWebAdminClient = initLbWebAdminClient();
    }
 
    public String addProject(File projectPath, String additionalLibraryPath) {
@@ -113,10 +137,13 @@ public class LogicBloxFrontend {
             _workspace.close();
          }
          catch (com.logicblox.connect.WorkspaceReader.Exception e) {
-            e.printStackTrace();
+            throw new BatfishException("Error closing workspace", e);
          }
       }
       closeSession(_cbSession);
+      if (_lbWebAdminClient != null) {
+         _lbWebAdminClient.close();
+      }
    }
 
    public boolean connected() {
@@ -373,6 +400,105 @@ public class LogicBloxFrontend {
       }
    }
 
+   private LbWebAdminClient initLbWebAdminClient() {
+      return new LbWebAdminClient() {
+
+         private HttpClient _client;
+
+         private String _hostname;
+         private int _port;
+
+         @Override
+         public void close() {
+            if (_client.isStarted()) {
+               try {
+                  _client.stop();
+               }
+               catch (java.lang.Exception e) {
+                  throw new BatfishException(
+                        "Failed to stop bloxweb admin client", e);
+               }
+            }
+         }
+
+         @Override
+         public LbWebAdminClient create(String hostname, int port) {
+            _client = new HttpClient();
+            _client.setConnectorType(HttpClient.CONNECTOR_SOCKET);
+            _client.setTimeout(LB_WEB_ADMIN_TIMEOUT_MS);
+            _client.setIdleTimeout(LB_WEB_ADMIN_TIMEOUT_MS);
+            _hostname = hostname;
+            _port = port;
+            return this;
+         }
+
+         private ContentExchange newExchange(String msg) {
+            ContentExchange exchange = new ContentExchange();
+            exchange.setMethod("POST");
+            exchange.setRequestHeader("Accept", "application/json");
+            exchange.setRequestHeader("Content-Type", "application/json");
+            exchange.setURL(BLOXWEB_PROTOCOL + "://" + _hostname + ":" + _port
+                  + "/" + BLOXWEB_ADMIN_URI);
+            exchange.setRequestContent(new ByteArrayBuffer(msg.getBytes()));
+            return exchange;
+         }
+
+         private void sendBloxwebAdminMessage(String msg) {
+            if (!_client.isStarted()) {
+               try {
+                  _client.start();
+               }
+
+               catch (java.lang.Exception e) {
+                  throw new BatfishException(
+                        "Failed to start bloxweb admin client", e);
+               }
+            }
+            ContentExchange exchange = newExchange(msg);
+            try {
+               _client.send(exchange);
+               int exchangeState = exchange.waitForDone();
+               if (exchangeState != HttpExchange.STATUS_COMPLETED) {
+                  throw new BatfishException(
+                        "Failed to send bloxweb admin message: " + msg);
+               }
+            }
+            catch (IOException | InterruptedException e) {
+               throw new BatfishException(
+                     "Failed to send bloxweb admin message: " + msg, e);
+            }
+            String response;
+            try {
+               response = exchange.getResponseContent();
+            }
+            catch (UnsupportedEncodingException e) {
+               throw new BatfishException(
+                     "Invalid lb-web admin client response encoding", e);
+            }
+            if (!response.equals("{}")) {
+               throw new BatfishException(
+                     "lb-web-server responded with failure message: "
+                           + response);
+            }
+         }
+
+         @Override
+         public void startServices(String workspaceName) {
+            String startJsonMessage = "{\"start\": {\"workspace\":[\""
+                  + _workspaceName + "\"] } }";
+            sendBloxwebAdminMessage(startJsonMessage);
+         }
+
+         @Override
+         public void stopServices(String workspaceName) {
+            String startJsonMessage = "{\"stop\": {\"workspace\":[\""
+                  + _workspaceName + "\"] } }";
+            sendBloxwebAdminMessage(startJsonMessage);
+         }
+
+      }.create(_lbHost, BLOXWEB_ADMIN_PORT);
+   }
+
    private void openWorkspace() throws LBInitializationException {
       ConnectBloxWorkspace.OpenBuilder ob = ConnectBloxWorkspace.OpenBuilder
             .newInstance(_workspaceName);
@@ -406,6 +532,13 @@ public class LogicBloxFrontend {
          currentClient.postDelimitedFile(input, transaction);
       }
       transaction.commit().result();
+      try {
+         client.stop();
+      }
+      catch (java.lang.Exception e) {
+         throw new BatfishException(
+               "Could not stop HttpClient after posting facts", e);
+      }
    }
 
    public Relation queryPredicate(String qualifiedPredicateName) {
@@ -502,76 +635,12 @@ public class LogicBloxFrontend {
       return null;
    }
 
-   public String startBloxWebServices() {
-      String stdout = null;
-      String stderr = null;
-      Process proc;
-      String[] execArray;
-      if (_sshPort != null) {
-         String[] sshExecArray = { "ssh", "-p", _sshPort.toString(), _lbHost,
-               "lb web-server load-services -w " + _workspaceName };
-         execArray = sshExecArray;
-
-      }
-      else {
-         String[] normalExecArray = { "bash", "-c",
-               "lb web-server load-services -w " + _workspaceName };
-         execArray = normalExecArray;
-      }
-      try {
-         proc = Runtime.getRuntime().exec(execArray);
-         stdout = IOUtils.toString(proc.getInputStream());
-         stderr = IOUtils.toString(proc.getErrorStream());
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-      }
-      if (stderr.length() > 0) {
-         return stderr;
-      }
-      else if (stdout.length() > 0) {
-         return stdout;
-      }
-      else {
-         return null;
-      }
-
+   public void startBloxWebServices() {
+      _lbWebAdminClient.startServices(_workspaceName);
    }
 
-   public String stopBloxWebServices() {
-      String stdout = null;
-      String stderr = null;
-      Process proc;
-      String[] execArray;
-      if (_sshPort != null) {
-         String[] sshExecArray = { "ssh", "-p", _sshPort.toString(), _lbHost,
-               "lb web-server unload-services -w " + _workspaceName };
-         execArray = sshExecArray;
-
-      }
-      else {
-         String[] normalExecArray = { "bash", "-c",
-               "lb web-server unload-services -w " + _workspaceName };
-         execArray = normalExecArray;
-      }
-      try {
-         proc = Runtime.getRuntime().exec(execArray);
-         stdout = IOUtils.toString(proc.getInputStream());
-         stderr = IOUtils.toString(proc.getErrorStream());
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-      }
-      if (stderr.length() > 0) {
-         return stderr;
-      }
-      else if (stdout.length() > 0) {
-         return stdout;
-      }
-      else {
-         return null;
-      }
-
+   public void stopBloxWebServices() {
+      _lbWebAdminClient.stopServices(_workspaceName);
    }
 
 }

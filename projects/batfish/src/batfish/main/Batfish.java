@@ -1038,20 +1038,20 @@ public class Batfish implements AutoCloseable {
          Map<String, StringBuilder> factBins) {
       print(1, "\n*** POSTING FACTS TO BLOXWEB SERVICES ***\n");
       resetTimer();
-      String ret = lbFrontend.startBloxWebServices();
-      if (ret != null) {
-         throw new BatfishException("Failed to start bloxweb services: " + ret);
-      }
+      print(1, "Starting bloxweb services..");
+      lbFrontend.startBloxWebServices();
+      print(1, "OK\n");
+      print(1, "Posting facts..");
       try {
          lbFrontend.postFacts(factBins);
       }
       catch (ServiceClientException e) {
          throw new BatfishException("Failed to post facts to bloxweb services", e);
       }
-      ret = lbFrontend.stopBloxWebServices();
-      if (ret != null) {
-         throw new BatfishException("Failed to stop bloxweb services: " + ret);
-      }
+      print(1, "OK\n");
+      print(1, "Stopping bloxweb services..");
+      lbFrontend.stopBloxWebServices();
+      print(1, "OK\n");
       print(1, "SUCCESS\n");
       printElapsedTime();
    }
