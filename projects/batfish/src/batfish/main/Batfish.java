@@ -197,6 +197,16 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   @Override
+   public void close() throws Exception {
+      for (LogicBloxFrontend lbFrontend : _lbFrontends) {
+         // Close backend threads
+         if (lbFrontend != null && lbFrontend.connected()) {
+            lbFrontend.close();
+         }
+      }
+   }
+
    private void computeDataPlane(LogicBloxFrontend lbFrontend) {
       print(0, "\n*** COMPUTING DATA PLANE STRUCTURES ***\n");
       resetTimer();
@@ -301,7 +311,8 @@ public class Batfish implements AutoCloseable {
       File dir = new File(serializedConfigPath);
       File[] serializedConfigs = dir.listFiles();
       if (serializedConfigs == null) {
-         throw new BatfishException("Error reading vendor-independent configs directory");
+         throw new BatfishException(
+               "Error reading vendor-independent configs directory");
       }
       for (File serializedConfig : serializedConfigs) {
          String name = serializedConfig.getName();
@@ -737,10 +748,12 @@ public class Batfish implements AutoCloseable {
       resetTimer();
       LogicBloxFrontend lbFrontend = new LogicBloxFrontend(
             _settings.getConnectBloxHost(), _settings.getConnectBloxPort(),
-            _settings.getSshPort(), workspace, assumedToExist);
+            _settings.getLbWebPort(), _settings.getLbWebAdminPort(), workspace,
+            assumedToExist);
       lbFrontend.initialize();
       if (!lbFrontend.connected()) {
-         throw new BatfishException("Error connecting to ConnectBlox service. Please make sure service is running and try again.");
+         throw new BatfishException(
+               "Error connecting to ConnectBlox service. Please make sure service is running and try again.");
       }
       print(1, "SUCCESS\n");
       printElapsedTime();
@@ -1046,7 +1059,8 @@ public class Batfish implements AutoCloseable {
          lbFrontend.postFacts(factBins);
       }
       catch (ServiceClientException e) {
-         throw new BatfishException("Failed to post facts to bloxweb services", e);
+         throw new BatfishException("Failed to post facts to bloxweb services",
+               e);
       }
       print(1, "OK\n");
       print(1, "Stopping bloxweb services..");
@@ -1228,7 +1242,8 @@ public class Batfish implements AutoCloseable {
             _tmpLogicDir = destinationDirAsFile;
          }
          catch (IOException e) {
-            throw new BatfishException("Failed to retrieve logic dir from onejar archive", e);
+            throw new BatfishException(
+                  "Failed to retrieve logic dir from onejar archive", e);
          }
          String fileString = visitor.toString();
          return new File(fileString);
@@ -1406,7 +1421,8 @@ public class Batfish implements AutoCloseable {
             return;
          }
       }
-      throw new BatfishException("No task performed! Run with -help flag to see usage\n");
+      throw new BatfishException(
+            "No task performed! Run with -help flag to see usage\n");
    }
 
    private void serializeIndependentConfigs(String vendorConfigPath,
@@ -1443,7 +1459,9 @@ public class Batfish implements AutoCloseable {
          oos.close();
       }
       catch (IOException e) {
-         throw new BatfishException("Failed to serialize object to output file: " + outputFile.toString(), e);
+         throw new BatfishException(
+               "Failed to serialize object to output file: "
+                     + outputFile.toString(), e);
       }
    }
 
@@ -1521,15 +1539,5 @@ public class Batfish implements AutoCloseable {
    private void writeTrafficFacts(Map<String, StringBuilder> factBins) {
       StringBuilder wSetFlowOriginate = factBins.get("SetFlowOriginate");
       parseFlowsFromConstraints(wSetFlowOriginate);
-   }
-
-   @Override
-   public void close() throws Exception {
-      for (LogicBloxFrontend lbFrontend : _lbFrontends) {
-         // Close backend threads
-         if (lbFrontend != null && lbFrontend.connected()) {
-            lbFrontend.close();
-         }
-      }
    }
 }

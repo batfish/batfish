@@ -38,6 +38,8 @@ public class Settings {
    private static final String ARG_GUI = "gui";
    private static final String ARG_HELP = "help";
    private static final String ARG_INTERFACE_MAP_PATH = "impath";
+   private static final String ARG_LB_WEB_ADMIN_PORT = "lbwebadminport";
+   private static final String ARG_LB_WEB_PORT = "lbwebport";
    private static final String ARG_LOG_LEVEL = "log";
    private static final String ARG_LOGICDIR = "logicdir";
    private static final String ARG_MPI = "mpi";
@@ -74,6 +76,8 @@ public class Settings {
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
    private static final String ARGNAME_INTERFACE_MAP_PATH = "path";
+   private static final String ARGNAME_LB_WEB_ADMIN_PORT = "port";
+   private static final String ARGNAME_LB_WEB_PORT = "port";
    private static final String ARGNAME_LOGICDIR = "path";
    private static final String ARGNAME_MPI_PATH = "path";
    private static final String ARGNAME_NODE_SET_PATH = "path";
@@ -93,6 +97,8 @@ public class Settings {
    private static final String DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH = "interface_descriptions";
    private static final String DEFAULT_FLOW_PATH = "flows";
    private static final String DEFAULT_FLOW_SINK_PATH = "flow_sinks";
+   private static final String DEFAULT_LB_WEB_ADMIN_PORT = "55183";
+   private static final String DEFAULT_LB_WEB_PORT = "8080";
    private static final String DEFAULT_LOG_LEVEL = "2";
    private static final List<String> DEFAULT_PREDICATES = Collections
          .singletonList("InstalledRoute");
@@ -135,6 +141,8 @@ public class Settings {
    private String _hsaInputDir;
    private String _hsaOutputDir;
    private String _interfaceMapPath;
+   private int _lbWebAdminPort;
+   private int _lbWebPort;
    private String _logicDir;
    private int _logLevel;
    private String _mpiPath;
@@ -157,7 +165,6 @@ public class Settings {
    private boolean _serializeVendor;
    private String _serializeVendorPath;
    private boolean _simplify;
-   private Integer _sshPort;
    private String _testRigPath;
    private boolean _update;
    private String _varSizeMapPath;
@@ -294,6 +301,14 @@ public class Settings {
       return _interfaceMapPath;
    }
 
+   public int getLbWebAdminPort() {
+      return _lbWebAdminPort;
+   }
+
+   public int getLbWebPort() {
+      return _lbWebPort;
+   }
+
    public String getLogicDir() {
       return _logicDir;
    }
@@ -362,10 +377,6 @@ public class Settings {
       return _simplify;
    }
 
-   public Integer getSshPort() {
-      return _sshPort;
-   }
-
    public String getTestRigPath() {
       return _testRigPath;
    }
@@ -419,6 +430,12 @@ public class Settings {
       _options.addOption(OptionBuilder.withArgName("port_number").hasArg()
             .withDescription("port of ConnectBlox server for regular session")
             .create(ARG_CB_PORT));
+      _options.addOption(OptionBuilder.withArgName(ARGNAME_LB_WEB_PORT)
+            .hasArg().withDescription("port of lb-web server")
+            .create(ARG_LB_WEB_PORT));
+      _options.addOption(OptionBuilder.withArgName(ARGNAME_LB_WEB_ADMIN_PORT)
+            .hasArg().withDescription("admin port lb-web server")
+            .create(ARG_LB_WEB_ADMIN_PORT));
       _options
             .addOption(OptionBuilder
                   .withArgName("number")
@@ -686,6 +703,10 @@ public class Settings {
       _genMultipath = line.hasOption(ARG_MPI);
       _mpiPath = line.getOptionValue(ARG_MPI_PATH);
       _serializeToText = line.hasOption(ARG_SERIALIZE_TO_TEXT);
+      _lbWebPort = Integer.parseInt(line.getOptionValue(ARG_LB_WEB_PORT,
+            DEFAULT_LB_WEB_PORT));
+      _lbWebAdminPort = Integer.parseInt(line.getOptionValue(
+            ARG_LB_WEB_ADMIN_PORT, DEFAULT_LB_WEB_ADMIN_PORT));
    }
 
    public boolean printParseTree() {

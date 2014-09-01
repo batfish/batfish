@@ -28,7 +28,8 @@ public class Driver {
                System.exit(1);
             }
          }
-         // Can remove this after LogicBlox updates jetty to fix non-closing threads
+         // Can remove this after LogicBlox updates jetty to fix non-closing
+         // threads
          System.exit(0);
       }
    }

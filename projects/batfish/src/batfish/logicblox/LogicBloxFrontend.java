@@ -66,13 +66,10 @@ public class LogicBloxFrontend {
 
    }
 
-   private static final int BLOXWEB_ADMIN_PORT = 55183;
-
-   private static final String BLOXWEB_ADMIN_URI = "lb-web/admin";
-   private static final int BLOXWEB_PORT = 8080;
    private static final String BLOXWEB_PROTOCOL = "http";
    public static final long BLOXWEB_TIMEOUT_MS = 31536000000l;
    private static final int LB_WEB_ADMIN_TIMEOUT_MS = 10000;
+   private static final String LB_WEB_ADMIN_URI = "lb-web/admin";
    private static final String SERVICE_DIR = "batfish";
 
    private static void closeSession(
@@ -89,20 +86,23 @@ public class LogicBloxFrontend {
    }
 
    private boolean _assumedToExist;
-
    private ConnectBloxSession<Request, Response> _cbSession;
    private EntityTable _entityTable;
    private String _lbHost;
    private int _lbPort;
    private final LbWebAdminClient _lbWebAdminClient;
+   private int _lbWebAdminPort;
+   private int _lbWebPort;
    private ConnectBloxWorkspace _workspace;
    private String _workspaceName;
 
-   public LogicBloxFrontend(String lbHost, int lbPort, Integer sshPort,
-         String workspaceName, boolean assumedToExist) {
+   public LogicBloxFrontend(String lbHost, int lbPort, int lbWebPort,
+         int lbWebAdminPort, String workspaceName, boolean assumedToExist) {
       _workspaceName = workspaceName;
       _lbHost = lbHost;
       _lbPort = lbPort;
+      _lbWebPort = lbWebPort;
+      _lbWebAdminPort = lbWebAdminPort;
       _assumedToExist = assumedToExist;
       _entityTable = null;
       if (_workspaceName.contains("\"")) {
@@ -438,7 +438,7 @@ public class LogicBloxFrontend {
             exchange.setRequestHeader("Accept", "application/json");
             exchange.setRequestHeader("Content-Type", "application/json");
             exchange.setURL(BLOXWEB_PROTOCOL + "://" + _hostname + ":" + _port
-                  + "/" + BLOXWEB_ADMIN_URI);
+                  + "/" + LB_WEB_ADMIN_URI);
             exchange.setRequestContent(new ByteArrayBuffer(msg.getBytes()));
             return exchange;
          }
@@ -496,7 +496,7 @@ public class LogicBloxFrontend {
             sendBloxwebAdminMessage(startJsonMessage);
          }
 
-      }.create(_lbHost, BLOXWEB_ADMIN_PORT);
+      }.create(_lbHost, _lbWebAdminPort);
    }
 
    private void openWorkspace() throws LBInitializationException {
@@ -513,8 +513,8 @@ public class LogicBloxFrontend {
 
    public void postFacts(Map<String, StringBuilder> factBins)
          throws ServiceClientException {
-      String base = BLOXWEB_PROTOCOL + "://" + _lbHost + ":" + BLOXWEB_PORT
-            + "/" + SERVICE_DIR + "/";
+      String base = BLOXWEB_PROTOCOL + "://" + _lbHost + ":" + _lbWebPort + "/"
+            + SERVICE_DIR + "/";
       TCPTransport transport = Transports.tcp(false);
       HttpClient client = transport.getHttpClient();
       client.setTimeout(BLOXWEB_TIMEOUT_MS);
