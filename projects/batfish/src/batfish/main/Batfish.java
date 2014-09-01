@@ -191,7 +191,8 @@ public class Batfish implements AutoCloseable {
             FileUtils.deleteDirectory(_tmpLogicDir);
          }
          catch (IOException e) {
-            e.printStackTrace();
+            throw new BatfishException(
+                  "Error cleaning up temporary logic directory", e);
          }
          _tmpLogicDir = null;
       }
@@ -1052,7 +1053,7 @@ public class Batfish implements AutoCloseable {
       print(1, "\n*** POSTING FACTS TO BLOXWEB SERVICES ***\n");
       resetTimer();
       print(1, "Starting bloxweb services..");
-      lbFrontend.startBloxWebServices();
+      lbFrontend.startLbWebServices();
       print(1, "OK\n");
       print(1, "Posting facts..");
       try {
@@ -1064,7 +1065,7 @@ public class Batfish implements AutoCloseable {
       }
       print(1, "OK\n");
       print(1, "Stopping bloxweb services..");
-      lbFrontend.stopBloxWebServices();
+      lbFrontend.stopLbWebServices();
       print(1, "OK\n");
       print(1, "SUCCESS\n");
       printElapsedTime();
@@ -1524,16 +1525,6 @@ public class Batfish implements AutoCloseable {
          parseTopology(testRigPath, topologyFileText, factBins);
       }
       printElapsedTime();
-      /*
-       * // flow sinks Path flowSinkPath = Paths.get(_settings.getTestRigPath(),
-       * FLOW_SINK_FILENAME);
-       * 
-       * StringBuilder wSetFlowSinkInterface = factBins
-       * .get("SetFlowSinkInterface"); if (Files.exists(flowSinkPath)) { try {
-       * String flowSinkInterface = FileUtils.readFileToString(flowSinkPath
-       * .toFile()); wSetFlowSinkInterface.append(flowSinkInterface); } catch
-       * (IOException e) { e.printStackTrace(); quit(1); } }
-       */
    }
 
    private void writeTrafficFacts(Map<String, StringBuilder> factBins) {
