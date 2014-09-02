@@ -30,7 +30,6 @@ import java.util.TreeSet;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
@@ -45,9 +44,13 @@ import batfish.collections.EdgeSet;
 import batfish.collections.FibMap;
 import batfish.collections.FibRow;
 import batfish.collections.FibSet;
+import batfish.collections.FunctionSet;
 import batfish.collections.NodeSet;
 import batfish.collections.PolicyRouteFibIpMap;
 import batfish.collections.PolicyRouteFibNodeMap;
+import batfish.collections.PredicateSemantics;
+import batfish.collections.PredicateValueTypeMap;
+import batfish.collections.QualifiedNameMap;
 import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ConfigurationLexer;
 import batfish.grammar.ConfigurationParser;
@@ -58,6 +61,9 @@ import batfish.grammar.juniper.FlatJuniperGrammarLexer;
 import batfish.grammar.juniper.FlatJuniperGrammarParser;
 import batfish.grammar.juniper.JuniperGrammarLexer;
 import batfish.grammar.juniper.JuniperGrammarParser;
+import batfish.grammar.logicblox.LogQLPredicateInfoExtractor;
+import batfish.grammar.logicblox.LogiQLCombinedParser;
+import batfish.grammar.logicblox.LogiQLPredicateInfoResolver;
 import batfish.grammar.topology.BatfishTopologyCombinedParser;
 import batfish.grammar.topology.BatfishTopologyExtractor;
 import batfish.grammar.topology.GNS3TopologyCombinedParser;
@@ -67,8 +73,6 @@ import batfish.grammar.z3.ConcretizerQueryResultCombinedParser;
 import batfish.grammar.z3.ConcretizerQueryResultExtractor;
 import batfish.grammar.z3.DatalogQueryResultCombinedParser;
 import batfish.grammar.z3.DatalogQueryResultExtractor;
-import batfish.grammar.semantics.SemanticsLexer;
-import batfish.grammar.semantics.SemanticsParser;
 import batfish.logic.LogicResourceLocator;
 import batfish.logicblox.ConfigurationFactExtractor;
 import batfish.logicblox.Facts;
@@ -102,6 +106,7 @@ public class Batfish implements AutoCloseable {
    private static final String FIB_PREDICATE_NAME = "FibNetworkForward";
    private static final String FIBS_FILENAME = "fibs";
    private static final String FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME = "fibs-policy-route";
+   private static final String PREDICATE_INFO_FILENAME = "predicateInfo.object";
    private static final String SEPARATOR = System.getProperty("file.separator");
    private static final String STATIC_FACT_BLOCK_PREFIX = "libbatfish:";
    private static final String TOPOLOGY_FILENAME = "topology.net";
@@ -183,6 +188,79 @@ public class Batfish implements AutoCloseable {
    private void anonymizeConfigurations() {
       // TODO Auto-generated method stub
 
+   }
+
+   /**
+    * This function extracts predicate type information from the logic files. It
+    * is meant only to be called during the build process, and should never be
+    * executed from a jar
+    */
+   private void buildPredicateInfo() {
+      Path logicBinDirPath = null;
+      URL logicSourceURL = LogicResourceLocator.class.getProtectionDomain()
+            .getCodeSource().getLocation();
+      String logicSourceString = logicSourceURL.toString();
+      if (logicSourceString.startsWith("onejar:")) {
+         throw new BatfishException(
+               "buildPredicateInfo() should never be called from within a jar");
+      }
+      String logicPackageResourceName = LogicResourceLocator.class.getPackage()
+            .getName().replace('.', SEPARATOR.charAt(0));
+      try {
+         logicBinDirPath = Paths.get(LogicResourceLocator.class.getClassLoader()
+               .getResource(logicPackageResourceName).toURI());
+      }
+      catch (URISyntaxException e) {
+         throw new BatfishException("Failed to resolve logic output directory", e);
+      }
+      Path logicSrcDirPath = Paths.get(_settings.getLogicSrcDir());
+      final Set<Path> logicFiles = new TreeSet<Path>();
+      try {
+         Files.walkFileTree(logicSrcDirPath,
+               new java.nio.file.SimpleFileVisitor<Path>() {
+                  @Override
+                  public FileVisitResult visitFile(Path file,
+                        BasicFileAttributes attrs) throws IOException {
+                     String name = file.getFileName().toString();
+                     if (!name.equals("BaseFacts.logic")
+                           && !name.endsWith("_rules.logic")
+                           && !name.startsWith("service_")
+                           && name.endsWith(".logic")) {
+                        logicFiles.add(file);
+                     }
+                     return super.visitFile(file, attrs);
+                  }
+               });
+      }
+      catch (IOException e) {
+         throw new BatfishException("Could not make list of logic files", e);
+      }
+      PredicateValueTypeMap predicateValueTypes = new PredicateValueTypeMap();
+      QualifiedNameMap qualifiedNameMap = new QualifiedNameMap();
+      FunctionSet functions = new FunctionSet();
+      PredicateSemantics predicateSemantics = new PredicateSemantics();
+      List<ParserRuleContext> trees = new ArrayList<ParserRuleContext>();
+      for (Path logicFilePath : logicFiles) {
+         String input = readFile(logicFilePath.toFile());
+         LogiQLCombinedParser parser = new LogiQLCombinedParser(input);
+         ParserRuleContext tree = parse(parser, logicFilePath.toString());
+         trees.add(tree);
+      }
+      ParseTreeWalker walker = new ParseTreeWalker();
+      for (ParserRuleContext tree : trees) {
+         LogQLPredicateInfoExtractor extractor = new LogQLPredicateInfoExtractor(
+               predicateValueTypes);
+         walker.walk(extractor, tree);
+      }
+      for (ParserRuleContext tree : trees) {
+         LogiQLPredicateInfoResolver resolver = new LogiQLPredicateInfoResolver(
+               predicateValueTypes, qualifiedNameMap, functions,
+               predicateSemantics);
+         walker.walk(resolver, tree);
+      }
+      PredicateInfo predicateInfo = new PredicateInfo(predicateSemantics, predicateValueTypes, functions, qualifiedNameMap);
+      File predicateInfoFile = logicBinDirPath.resolve(PREDICATE_INFO_FILENAME).toFile();
+      serializeObject(predicateInfo, predicateInfoFile);
    }
 
    private void cleanupLogicDir() {
@@ -430,41 +508,6 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private Map<String, String> extractPredicateSemantics(
-         Map<String, String> logicFiles) {
-      Map<String, String> predicateSemantics = new HashMap<String, String>();
-      for (String absolutePath : logicFiles.keySet()) {
-         String currentRules = logicFiles.get(absolutePath);
-         ANTLRStringStream in = new ANTLRStringStream(currentRules);
-         SemanticsLexer lexer = new SemanticsLexer(in);
-         CommonTokenStream tokens = new CommonTokenStream(lexer);
-         SemanticsParser parser = new SemanticsParser(tokens);
-         print(2, "Parsing: \"" + absolutePath + "\"");
-         try {
-            predicateSemantics.putAll(parser.predicate_semantics());
-         }
-         catch (RecognitionException e) {
-            print(2, " ...ERROR\n");
-            e.printStackTrace();
-            return null;
-         }
-         int numErrors = parser.getErrors().size() + lexer.getErrors().size();
-         if (numErrors > 0) {
-            error(0, " ..." + numErrors + " ERROR(S)\n");
-            for (String msg : lexer.getErrors()) {
-               error(2, "\tlexer: " + msg + "\n");
-            }
-            for (String msg : parser.getErrors()) {
-               error(2, "\tparser: " + msg + "\n");
-            }
-            return null;
-         }
-         print(2, " ...OK\n");
-
-      }
-      return predicateSemantics;
-   }
-
    private void genMultipathQueries() {
       print(0, "\n*** GENERATING MULTIPATH-INCONSISTENCY QUERIES ***\n");
       resetTimer();
@@ -632,15 +675,18 @@ public class Batfish implements AutoCloseable {
 
    public PredicateInfo getPredicateInfo(Map<String, String> logicFiles) {
       // Get predicate semantics from rules file
-      print(1, "\n*** PARSING PREDICATE SEMANTICS ***\n");
+      print(1, "\n*** PARSING PREDICATE INFO ***\n");
       resetTimer();
-      Map<String, String> predicateSemantics = extractPredicateSemantics(logicFiles);
-      if (predicateSemantics == null) {
-         throw new BatfishException("Failed to extract predicate semantics");
-      }
-      PredicateInfo predicateInfo = new PredicateInfo(predicateSemantics);
+      String predicateInfoPath = getPredicateInfoPath();
+      PredicateInfo predicateInfo = (PredicateInfo) deserializeObject(new File(
+            predicateInfoPath));
       printElapsedTime();
       return predicateInfo;
+   }
+
+   private String getPredicateInfoPath() {
+      File logicDir = retrieveLogicDir();
+      return Paths.get(logicDir.toString(), PREDICATE_INFO_FILENAME).toString();
    }
 
    private FibMap getRouteForwardingRules(Relation installedRoutes,
@@ -1211,7 +1257,8 @@ public class Batfish implements AutoCloseable {
          public boolean accept(String filename) {
             return filename.endsWith(".lbb") || filename.endsWith(".lbp")
                   || filename.endsWith(".semantics")
-                  || filename.endsWith(locatorFilename);
+                  || filename.endsWith(locatorFilename)
+                  || filename.endsWith(PREDICATE_INFO_FILENAME);
          }
       };
       if (logicSourceString.startsWith("onejar:")) {
@@ -1278,6 +1325,11 @@ public class Batfish implements AutoCloseable {
    public void run() {
       if (_settings.redirectStdErr()) {
          System.setErr(System.out);
+      }
+
+      if (_settings.getBuildPredicateInfo()) {
+         buildPredicateInfo();
+         return;
       }
 
       if (_settings.getZ3()) {

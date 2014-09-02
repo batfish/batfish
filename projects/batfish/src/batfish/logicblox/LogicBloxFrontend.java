@@ -197,6 +197,7 @@ public class LogicBloxFrontend {
          Column column) {
       EntityColumn ec;
       UInt64Column indexColumn;
+      try{
       switch (valueType) {
 
       case ENTITY_INDEX_IP:
@@ -296,6 +297,10 @@ public class LogicBloxFrontend {
 
       default:
          throw new Error("Invalid LBValueType");
+      }
+      }
+      catch (Option.Exception e) {
+         throw new BatfishException("Error pretty-printing logicblox query result", e);
       }
    }
 

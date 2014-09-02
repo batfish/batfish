@@ -1,5 +1,6 @@
 package batfish.main;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,7 @@ import org.apache.commons.cli.ParseException;
 public class Settings {
 
    private static final String ARG_ANONYMIZE = "anonymize";
+   private static final String ARG_BUILD_PREDICATE_INFO = "bpi";
    private static final String ARG_CB_HOST = "lbhost";
    private static final String ARG_CB_PORT = "lbport";
    private static final String ARG_COMPILE = "compile";
@@ -69,6 +71,7 @@ public class Settings {
    private static final String ARG_Z3_CONCRETIZER_OUTPUT_FILE = "concout";
    private static final String ARG_Z3_OUTPUT = "z3path";
    private static final String ARGNAME_ANONYMIZE = "path";
+   private static final String ARGNAME_BUILD_PREDICATE_INFO = "path";
    private static final String ARGNAME_DATA_PLANE_DIR = "path";
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
    private static final String ARGNAME_DUMP_IF_DIR = "path";
@@ -113,6 +116,7 @@ public class Settings {
 
    private boolean _anonymize;
    private String _anonymizeDir;
+   private boolean _buildPredicateInfo;
    private boolean _canExecute;
    private String _cbHost;
    private int _cbPort;
@@ -144,6 +148,7 @@ public class Settings {
    private int _lbWebAdminPort;
    private int _lbWebPort;
    private String _logicDir;
+   private String _logicSrcDir;
    private int _logLevel;
    private String _mpiPath;
    private String _nodeSetPath;
@@ -207,6 +212,10 @@ public class Settings {
 
    public String getBranchName() {
       return _revertBranchName;
+   }
+
+   public boolean getBuildPredicateInfo() {
+      return _buildPredicateInfo;
    }
 
    public boolean getConcretize() {
@@ -311,6 +320,10 @@ public class Settings {
 
    public String getLogicDir() {
       return _logicDir;
+   }
+
+   public String getLogicSrcDir() {
+      return _logicSrcDir;
    }
 
    public int getLogLevel() {
@@ -590,6 +603,13 @@ public class Settings {
             .create(ARG_MPI_PATH));
       _options.addOption(OptionBuilder.withDescription("serialize to text")
             .create(ARG_SERIALIZE_TO_TEXT));
+      _options
+            .addOption(OptionBuilder
+                  .hasArg()
+                  .withArgName(ARGNAME_BUILD_PREDICATE_INFO)
+                  .withDescription(
+                        "build predicate info (should only be called by ant build script) with provided input logic dir")
+                  .create(ARG_BUILD_PREDICATE_INFO));
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -707,6 +727,10 @@ public class Settings {
             DEFAULT_LB_WEB_PORT));
       _lbWebAdminPort = Integer.parseInt(line.getOptionValue(
             ARG_LB_WEB_ADMIN_PORT, DEFAULT_LB_WEB_ADMIN_PORT));
+      _buildPredicateInfo = line.hasOption(ARG_BUILD_PREDICATE_INFO);
+      if (_buildPredicateInfo) {
+         _logicSrcDir = line.getOptionValue(ARG_BUILD_PREDICATE_INFO);
+      }
    }
 
    public boolean printParseTree() {
