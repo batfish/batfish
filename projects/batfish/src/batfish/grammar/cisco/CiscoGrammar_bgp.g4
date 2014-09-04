@@ -347,18 +347,18 @@ neighbor_shutdown_af_stanza
 :
    neighbor_shutdown_tail_bgp
 ;
-   
+
 neighbor_shutdown_rb_stanza
 :
    neighbor_shutdown_tail_bgp
 ;
-   
+
 neighbor_shutdown_tail_bgp
 :
    NEIGHBOR
    (
       ip = IP_ADDRESS
-      | ip6= IPV6_ADDRESS
+      | ip6 = IPV6_ADDRESS
       | peergroup = VARIABLE
    ) SHUTDOWN NEWLINE
 ;
@@ -389,11 +389,10 @@ network_tail_bgp
          )?
       )
       | prefix = IP_PREFIX
-   )? 
+   )?
    (
       ROUTE_MAP mapname = VARIABLE
-   )?
-   NEWLINE
+   )? NEWLINE
 ;
 
 network6_af_stanza

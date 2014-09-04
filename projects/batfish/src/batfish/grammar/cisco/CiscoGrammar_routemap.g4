@@ -205,12 +205,12 @@ set_metric_rm_stanza
 
 set_metric_type_rm_stanza
 :
-	SET METRIC_TYPE type = VARIABLE NEWLINE
+   SET METRIC_TYPE type = VARIABLE NEWLINE
 ;
 
 set_mpls_label_rm_stanza
 :
-	SET MPLS_LABEL NEWLINE
+   SET MPLS_LABEL NEWLINE
 ;
 
 set_next_hop_rm_stanza
@@ -250,8 +250,8 @@ set_rm_stanza
    | set_ipv6_rm_stanza
    | set_local_preference_rm_stanza
    | set_metric_rm_stanza
-	| set_metric_type_rm_stanza
-	| set_mpls_label_rm_stanza
+   | set_metric_type_rm_stanza
+   | set_mpls_label_rm_stanza
    | set_next_hop_rm_stanza
    | set_origin_rm_stanza
    | set_weight_rm_stanza
