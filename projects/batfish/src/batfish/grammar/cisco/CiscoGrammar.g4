@@ -169,6 +169,7 @@ null_block_stanza
       )
       | VOICE
       | VOICE_PORT
+      | VPC
       | VPDN_GROUP
    ) ~NEWLINE* NEWLINE
    (
@@ -296,6 +297,8 @@ null_block_substanza
          | PASSWORD
          | PASSWORD_STORAGE
          | PATH_JITTER
+         | PEER_GATEWAY
+         | PEER_KEEPALIVE
          | PERMIT
          | PICKUP
          | POLICE
@@ -321,6 +324,7 @@ null_block_substanza
          | REVERSE_ROUTE
          | REVISION
          | RING
+         | ROLE
          | ROTARY
          | ROUTE_TARGET
          | RULE
@@ -422,6 +426,7 @@ null_standalone_stanza
       | CARD
       | CCM_MANAGER
       | CDP
+      | CFS
       | CIPC
       | CLASS_MAP
       | CLOCK
@@ -493,6 +498,7 @@ null_standalone_stanza
       | GATEKEEPER
       | GROUP
       | GROUP_OBJECT
+      | HARDWARE
       | HASH
       | HISTORY
       | HOST
@@ -824,6 +830,12 @@ stanza
    | router_ospf_stanza
    | router_rip_stanza
    | standard_access_list_stanza
+   | switching_mode_stanza
+;
+
+switching_mode_stanza
+:
+   SWITCHING_MODE ~NEWLINE* NEWLINE
 ;
 
 vrf_stanza

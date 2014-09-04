@@ -45,6 +45,8 @@ exact_match [String matchText]
 	)
 ;
 
+
+
 interface_name
 :
 	name = VARIABLE
@@ -90,6 +92,7 @@ port
 	| EXEC
 	| FTP
 	| FTP_DATA
+	| HOSTNAME
 	| IDENT
 	| ISAKMP
 	| LPD
@@ -113,6 +116,8 @@ port
 	| TFTP
 	| WWW
 ;
+
+
 
 protocol
 :

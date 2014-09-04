@@ -386,6 +386,11 @@ BANNER
    ) -> pushMode(M_BANNER)
 ;
 
+BESTPATH
+:
+   'bestpath'
+;
+
 BFD
 :
    'bfd'
@@ -529,6 +534,11 @@ CEF
 CERTIFICATE
 :
    'certificate' -> pushMode(M_CERTIFICATE)
+;
+
+CFS
+:
+   'cfs'
 ;
 
 CGMP
@@ -1392,6 +1402,11 @@ HALF_DUPLEX
    'half-duplex'
 ;
 
+HARDWARE
+:
+   'hardware'
+;
+   
 HASH
 :
    'hash'
@@ -1455,6 +1470,11 @@ HOST_UNREACHABLE
 HOSTNAME
 :
    'hostname'
+;
+
+HSRP
+:
+   'hsrp'
 ;
 
 HTTP
@@ -1535,6 +1555,11 @@ INBOUND
 INCOMPLETE
 :
    'incomplete'
+;
+
+INHERIT
+:
+   'inherit'
 ;
 
 INSPECT
@@ -1669,11 +1694,16 @@ KEYRING
    'keyring'
 ;
 
+LACP
+:
+   'lacp'
+;
+
 LANE
 :
    'lane'
 ;
-
+   
 LAPB
 :
    'lapb'
@@ -2154,6 +2184,16 @@ ND
    'nd'
 ;
 
+ND_NA
+:
+   'nd-na'
+;
+
+ND_NS
+:
+   'nd-ns'
+;
+
 NEGOTIATE
 :
    'negotiate'
@@ -2419,6 +2459,16 @@ PERMANENT
    'permanent'
 ;
 
+PEER_GATEWAY
+:
+   'peer-gateway'
+;
+
+PEER_KEEPALIVE
+:
+   'peer-keepalive'
+;
+   
 PERMIT
 :
    'permit'
@@ -2517,6 +2567,11 @@ POWER
 PPP
 :
    'ppp'
+;
+
+PREEMPT
+:
+   'preempt'
 ;
 
 PREPEND
@@ -3259,6 +3314,11 @@ SWITCHBACK
    'switchback'
 ;
 
+SWITCHING_MODE
+:
+   'switching-mode'
+;
+
 SWITCHPORT
 :
    'switchport'
@@ -3529,6 +3589,11 @@ UNREACHABLES
    'unreachables'
 ;
 
+UNICAST
+:
+   'unicast'
+;
+
 UPDATE_SOURCE
 :
    'update-source'
@@ -3609,6 +3674,11 @@ VOICE_PORT
    'voice-port'
 ;
 
+VPC
+:
+   'vpc'
+;
+   
 VPDN
 :
    'vpdn'

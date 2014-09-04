@@ -14,6 +14,7 @@ access_list_ip_range
 	| ANY
 	| HOST ip = IP_ADDRESS
 	| prefix = IP_PREFIX
+	| ipv6_prefix = IPV6_PREFIX
 ;
 
 appletalk_access_list_numbered_stanza
@@ -374,7 +375,10 @@ nexus_access_list_null_tail
 
 nexus_access_list_stanza
 :
-	IP ACCESS_LIST name = ~NEWLINE NEWLINE
+	(
+	   IP 
+	   | IPV6
+   ) ACCESS_LIST name = ~NEWLINE NEWLINE
 	(
 		nexus_access_list_tail
 		| nexus_access_list_null_tail
@@ -392,6 +396,9 @@ nexus_access_list_tail
 	)? 
 	(
 	   ESTABLISHED
+	   | ND_NA
+	   | ND_NS
+	   | PACKET_TOO_BIG
 		| TRACKED
 		| TTL EQ DEC
 	)? NEWLINE
