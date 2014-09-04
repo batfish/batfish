@@ -92,6 +92,7 @@ macro_stanza
 
 null_block_stanza
 :
+   NO?
    (
       AAA
       | ARCHIVE
@@ -106,6 +107,7 @@ null_block_stanza
                ISAKMP
                (
                   KEY
+                  | PEER
                   | POLICY
                   | PROFILE
                )
@@ -132,7 +134,13 @@ null_block_stanza
       (
          IP
          (
-            FLOW_TOP_TALKERS
+            (
+               ACCESS_LIST LOGGING
+            )
+            | ACCOUNTING_LIST
+            | DHCP
+            | FLOW_TOP_TALKERS
+            | INSPECT
             | POLICY_LIST
             | SLA
          )
@@ -142,12 +150,14 @@ null_block_stanza
       (
          IPV6 ACCESS_LIST
       )
+      | L2TP_CLASS
       | LINE
       | MANAGEMENT
       | MAP_CLASS
       | MAP_LIST
       | OPENFLOW
       | POLICY_MAP
+      | PSEUDOWIRE_CLASS
       | REDUNDANCY
       | ROLE
       |
@@ -231,13 +241,17 @@ null_block_substanza
          | DEFAULT_ACTION
          | DEFAULT_DOMAIN
          | DEFAULT_GROUP_POLICY
+         | DEFAULT_ROUTER
          | DELAY
          | DENY
          | DESCRIPTION
          | DESTINATION
          | DIAGNOSTIC
          | DNS_SERVER
+         | DROP
          | DS0_GROUP
+         | DOMAIN_NAME
+         | ENCAPSULATION
          | ENROLLMENT
          | ESCAPE_CHARACTER
          | EXCEED_ACTION
@@ -256,6 +270,7 @@ null_block_substanza
          | GROUP_ALIAS
          | GROUP_POLICY
          | GROUP_URL
+         | HIDDEN
          | HIDDEN_SHARES
          | HIDEKEYS
          | HIGH_AVAILABILITY
@@ -263,7 +278,6 @@ null_block_substanza
          | IDLE_TIMEOUT
          | INSPECT
          | INSTANCE
-         | IP
          | IPSEC_UDP
          | IPX
          | IPV6
@@ -290,6 +304,7 @@ null_block_substanza
          | MODEM
          | MTU
          | NAME
+         | NETWORK
          | NODE
          | NOTIFY
          | PARAMETERS
@@ -321,6 +336,7 @@ null_block_substanza
          | REMOTE_PORT
          | REMOTE_SPAN
          | REMOVED
+         | RETRANSMIT
          | REVERSE_ROUTE
          | REVISION
          | RING
@@ -525,7 +541,6 @@ null_standalone_stanza
             | CLASSLESS
             | DEFAULT_NETWORK
             | DEVICE
-            | DHCP
             | DOMAIN
             | DOMAIN_LIST
             | DOMAIN_LOOKUP

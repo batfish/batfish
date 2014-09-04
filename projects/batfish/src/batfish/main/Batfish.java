@@ -207,11 +207,12 @@ public class Batfish implements AutoCloseable {
       String logicPackageResourceName = LogicResourceLocator.class.getPackage()
             .getName().replace('.', SEPARATOR.charAt(0));
       try {
-         logicBinDirPath = Paths.get(LogicResourceLocator.class.getClassLoader()
-               .getResource(logicPackageResourceName).toURI());
+         logicBinDirPath = Paths.get(LogicResourceLocator.class
+               .getClassLoader().getResource(logicPackageResourceName).toURI());
       }
       catch (URISyntaxException e) {
-         throw new BatfishException("Failed to resolve logic output directory", e);
+         throw new BatfishException("Failed to resolve logic output directory",
+               e);
       }
       Path logicSrcDirPath = Paths.get(_settings.getLogicSrcDir());
       final Set<Path> logicFiles = new TreeSet<Path>();
@@ -258,8 +259,10 @@ public class Batfish implements AutoCloseable {
                predicateSemantics);
          walker.walk(resolver, tree);
       }
-      PredicateInfo predicateInfo = new PredicateInfo(predicateSemantics, predicateValueTypes, functions, qualifiedNameMap);
-      File predicateInfoFile = logicBinDirPath.resolve(PREDICATE_INFO_FILENAME).toFile();
+      PredicateInfo predicateInfo = new PredicateInfo(predicateSemantics,
+            predicateValueTypes, functions, qualifiedNameMap);
+      File predicateInfoFile = logicBinDirPath.resolve(PREDICATE_INFO_FILENAME)
+            .toFile();
       serializeObject(predicateInfo, predicateInfoFile);
    }
 
@@ -787,6 +790,23 @@ public class Batfish implements AutoCloseable {
          edges.add(newEdge);
       }
       return edges;
+   }
+
+   /**
+    * Generates a topology object from inferred edges encoded in interface
+    * descriptions.
+    * 
+    * @param configurations
+    *           The vendor specific configurations.
+    * @param includeExternal
+    *           Whether to include edges to nodes for which configuration files
+    *           were not supplied (used for debugging).
+    * @return The inferred topology.
+    */
+   private Topology inferTopologyFromInterfaceDescriptions(
+         Map<String, Configuration> configurations, boolean IncludeExternal) {
+      // TODO Auto-generated method stub
+      return null;
    }
 
    public LogicBloxFrontend initFrontend(boolean assumedToExist,
@@ -1395,9 +1415,11 @@ public class Batfish implements AutoCloseable {
       if (_settings.getFacts() || _settings.getDumpControlPlaneFacts()) {
          cpFactBins = new LinkedHashMap<String, StringBuilder>();
          initControlPlaneFactBins(cpFactBins);
-         writeTopologyFacts(_settings.getTestRigPath(), cpFactBins);
-         writeConfigurationFacts(_settings.getSerializeIndependentPath(),
+         Map<String, Configuration> configurations = deserializeConfigurations(_settings
+               .getSerializeIndependentPath());
+         writeTopologyFacts(_settings.getTestRigPath(), configurations,
                cpFactBins);
+         writeConfigurationFacts(configurations, cpFactBins);
          if (_settings.getDumpControlPlaneFacts()) {
             dumpFacts(cpFactBins);
          }
@@ -1539,9 +1561,9 @@ public class Batfish implements AutoCloseable {
       printElapsedTime();
    }
 
-   public void writeConfigurationFacts(String serializedConfigPath,
+   public void writeConfigurationFacts(
+         Map<String, Configuration> configurations,
          Map<String, StringBuilder> factBins) {
-      Map<String, Configuration> configurations = deserializeConfigurations(serializedConfigPath);
       populateConfigurationFactBins(configurations.values(), factBins);
    }
 
@@ -1556,25 +1578,48 @@ public class Batfish implements AutoCloseable {
    }
 
    public void writeTopologyFacts(String testRigPath,
+         Map<String, Configuration> configurations,
          Map<String, StringBuilder> factBins) {
-      Path topologyFilePath = Paths.get(testRigPath, TOPOLOGY_FILENAME);
-      // Get generated facts from topology file
-      String topologyFileText = null;
-      boolean guess = false;
       print(1, "*** PARSING TOPOLOGY ***\n");
       resetTimer();
-      if (Files.exists(topologyFilePath)) {
-         topologyFileText = readFile(topologyFilePath.toFile());
+      // TODO: Use flag to extract topology from interface descriptions.
+      if (Boolean.FALSE) {
+         Topology topology = inferTopologyFromInterfaceDescriptions(
+               configurations, /* Include external nodes (debug) */true);
+         // TODO: Get from flag.
+         String topologyDotFile = "/home/david/Projects/usc-configs/topology/topology.dot";
+         if (!topologyDotFile.isEmpty()) {
+            try {
+               FileOutputStream out = new FileOutputStream(topologyDotFile);
+               topology.dumpDot(out);
+               out.close();
+            }
+            catch (IOException e) {
+               throw new BatfishException("Unable to write topology dot-file.",
+                     e);
+            }
+         }
       }
       else {
-         // tell logicblox to guess adjacencies based on interface subnetworks
-         print(1, "*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
-         StringBuilder wGuessTopology = factBins.get("GuessTopology");
-         wGuessTopology.append("1\n");
-         guess = true;
-      }
-      if (!guess) {
-         parseTopology(testRigPath, topologyFileText, factBins);
+         Path topologyFilePath = Paths.get(testRigPath, TOPOLOGY_FILENAME);
+         // Get generated facts from topology file
+         String topologyFileText = null;
+         boolean guess = false;
+         if (Files.exists(topologyFilePath)) {
+            topologyFileText = readFile(topologyFilePath.toFile());
+         }
+         else {
+            // tell logicblox to guess adjacencies based on interface
+            // subnetworks
+            print(1,
+                  "*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
+            StringBuilder wGuessTopology = factBins.get("GuessTopology");
+            wGuessTopology.append("1\n");
+            guess = true;
+         }
+         if (!guess) {
+            parseTopology(testRigPath, topologyFileText, factBins);
+         }
       }
       printElapsedTime();
    }

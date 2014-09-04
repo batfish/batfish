@@ -197,110 +197,112 @@ public class LogicBloxFrontend {
          Column column) {
       EntityColumn ec;
       UInt64Column indexColumn;
-      try{
-      switch (valueType) {
+      try {
+         switch (valueType) {
 
-      case ENTITY_INDEX_IP:
-         ec = (EntityColumn) column;
-         long[] ips = ((Int64Column) ec.getRefModeColumn().unwrap()).getRows();
-         for (long ip : ips) {
-            textColumn.add(Util.longToIp(ip));
+         case ENTITY_INDEX_IP:
+            ec = (EntityColumn) column;
+            long[] ips = ((Int64Column) ec.getRefModeColumn().unwrap())
+                  .getRows();
+            for (long ip : ips) {
+               textColumn.add(Util.longToIp(ip));
+            }
+            break;
+
+         case ENTITY_INDEX_FLOW:
+            ec = (EntityColumn) column;
+            BigInteger[] flowIndices = ((UInt64Column) ec.getIndexColumn()
+                  .unwrap()).getRows();
+            for (BigInteger index : flowIndices) {
+               textColumn.add(_entityTable.getFlow(index));
+            }
+            break;
+
+         case ENTITY_INDEX_NETWORK:
+            ec = (EntityColumn) column;
+            BigInteger[] networkIndices = ((UInt64Column) ec.getIndexColumn()
+                  .unwrap()).getRows();
+            for (BigInteger index : networkIndices) {
+               textColumn.add(_entityTable.getNetwork(index));
+            }
+            break;
+
+         case ENTITY_INDEX_INT:
+            ec = (EntityColumn) column;
+            indexColumn = (UInt64Column) ec.getIndexColumn().unwrap();
+            for (BigInteger i : indexColumn.getRows()) {
+               textColumn.add(i.toString());
+            }
+            break;
+
+         case ENTITY_REF_INT:
+            ec = (EntityColumn) column;
+            long[] refIntLongs = ((Int64Column) ec.getRefModeColumn().unwrap())
+                  .getRows();
+            for (Long l : refIntLongs) {
+               textColumn.add(l.toString());
+            }
+            break;
+
+         case ENTITY_REF_STRING:
+            ec = (EntityColumn) column;
+            String[] strings = ((StringColumn) ec.getRefModeColumn().unwrap())
+                  .getRows();
+            for (String s : strings) {
+               textColumn.add(s);
+            }
+            break;
+
+         case STRING:
+            StringColumn sColumn = (StringColumn) column;
+            textColumn.addAll(Arrays.asList(sColumn.getRows()));
+            break;
+
+         case IP:
+            long[] ipsAsLongs = ((Int64Column) column).getRows();
+            for (Long ipAsLong : ipsAsLongs) {
+               textColumn.add(Util.longToIp(ipAsLong));
+            }
+            break;
+
+         case FLOAT:
+            double[] doubles = ((DoubleColumn) column).getRows();
+            for (Double d : doubles) {
+               textColumn.add(d.toString());
+            }
+            break;
+
+         case INT:
+            long[] longs = ((Int64Column) column).getRows();
+            for (Long l : longs) {
+               textColumn.add(l.toString());
+            }
+            break;
+         case ENTITY_INDEX_BGP_ADVERTISEMENT:
+            ec = (EntityColumn) column;
+            BigInteger[] advertIndices = ((UInt64Column) ec.getIndexColumn()
+                  .unwrap()).getRows();
+            for (BigInteger index : advertIndices) {
+               textColumn.add(_entityTable.getBgpAdvertisement(index));
+            }
+            break;
+
+         case ENTITY_INDEX_ROUTE:
+            ec = (EntityColumn) column;
+            BigInteger[] routeIndices = ((UInt64Column) ec.getIndexColumn()
+                  .unwrap()).getRows();
+            for (BigInteger index : routeIndices) {
+               textColumn.add(_entityTable.getRoute(index));
+            }
+            break;
+
+         default:
+            throw new Error("Invalid LBValueType");
          }
-         break;
-
-      case ENTITY_INDEX_FLOW:
-         ec = (EntityColumn) column;
-         BigInteger[] flowIndices = ((UInt64Column) ec.getIndexColumn()
-               .unwrap()).getRows();
-         for (BigInteger index : flowIndices) {
-            textColumn.add(_entityTable.getFlow(index));
-         }
-         break;
-
-      case ENTITY_INDEX_NETWORK:
-         ec = (EntityColumn) column;
-         BigInteger[] networkIndices = ((UInt64Column) ec.getIndexColumn()
-               .unwrap()).getRows();
-         for (BigInteger index : networkIndices) {
-            textColumn.add(_entityTable.getNetwork(index));
-         }
-         break;
-
-      case ENTITY_INDEX_INT:
-         ec = (EntityColumn) column;
-         indexColumn = (UInt64Column) ec.getIndexColumn().unwrap();
-         for (BigInteger i : indexColumn.getRows()) {
-            textColumn.add(i.toString());
-         }
-         break;
-
-      case ENTITY_REF_INT:
-         ec = (EntityColumn) column;
-         long[] refIntLongs = ((Int64Column) ec.getRefModeColumn().unwrap())
-               .getRows();
-         for (Long l : refIntLongs) {
-            textColumn.add(l.toString());
-         }
-         break;
-
-      case ENTITY_REF_STRING:
-         ec = (EntityColumn) column;
-         String[] strings = ((StringColumn) ec.getRefModeColumn().unwrap())
-               .getRows();
-         for (String s : strings) {
-            textColumn.add(s);
-         }
-         break;
-
-      case STRING:
-         StringColumn sColumn = (StringColumn) column;
-         textColumn.addAll(Arrays.asList(sColumn.getRows()));
-         break;
-
-      case IP:
-         long[] ipsAsLongs = ((Int64Column) column).getRows();
-         for (Long ipAsLong : ipsAsLongs) {
-            textColumn.add(Util.longToIp(ipAsLong));
-         }
-         break;
-
-      case FLOAT:
-         double[] doubles = ((DoubleColumn) column).getRows();
-         for (Double d : doubles) {
-            textColumn.add(d.toString());
-         }
-         break;
-
-      case INT:
-         long[] longs = ((Int64Column) column).getRows();
-         for (Long l : longs) {
-            textColumn.add(l.toString());
-         }
-         break;
-      case ENTITY_INDEX_BGP_ADVERTISEMENT:
-         ec = (EntityColumn) column;
-         BigInteger[] advertIndices = ((UInt64Column) ec.getIndexColumn()
-               .unwrap()).getRows();
-         for (BigInteger index : advertIndices) {
-            textColumn.add(_entityTable.getBgpAdvertisement(index));
-         }
-         break;
-
-      case ENTITY_INDEX_ROUTE:
-         ec = (EntityColumn) column;
-         BigInteger[] routeIndices = ((UInt64Column) ec.getIndexColumn()
-               .unwrap()).getRows();
-         for (BigInteger index : routeIndices) {
-            textColumn.add(_entityTable.getRoute(index));
-         }
-         break;
-
-      default:
-         throw new Error("Invalid LBValueType");
-      }
       }
       catch (Option.Exception e) {
-         throw new BatfishException("Error pretty-printing logicblox query result", e);
+         throw new BatfishException(
+               "Error pretty-printing logicblox query result", e);
       }
    }
 
