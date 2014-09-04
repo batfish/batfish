@@ -15,4 +15,6 @@ DatalogQueryResultParser*.java
 DatalogQueryResultLexer*.java
 ConcretizerQueryResultParser*.java
 ConcretizerQueryResultLexer*.java
+LogiQLParser*.java
+LogiQLLexer*.java
 cygwin-symlink-restore-data

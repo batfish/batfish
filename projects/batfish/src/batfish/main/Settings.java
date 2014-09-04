@@ -15,6 +15,7 @@ import org.apache.commons.cli.ParseException;
 public class Settings {
 
    private static final String ARG_ANONYMIZE = "anonymize";
+   private static final String ARG_BUILD_PREDICATE_INFO = "bpi";
    private static final String ARG_CB_HOST = "lbhost";
    private static final String ARG_CB_PORT = "lbport";
    private static final String ARG_COMPILE = "compile";
@@ -38,6 +39,8 @@ public class Settings {
    private static final String ARG_GUI = "gui";
    private static final String ARG_HELP = "help";
    private static final String ARG_INTERFACE_MAP_PATH = "impath";
+   private static final String ARG_LB_WEB_ADMIN_PORT = "lbwebadminport";
+   private static final String ARG_LB_WEB_PORT = "lbwebport";
    private static final String ARG_LOG_LEVEL = "log";
    private static final String ARG_LOGICDIR = "logicdir";
    private static final String ARG_MPI = "mpi";
@@ -57,7 +60,6 @@ public class Settings {
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
    private static final String ARG_SERIALIZE_VENDOR = "sv";
    private static final String ARG_SERIALIZE_VENDOR_PATH = "svpath";
-   private static final String ARG_SSH_PORT = "sshport";
    private static final String ARG_TEST_RIG_PATH = "testrig";
    private static final String ARG_UPDATE = "update";
    private static final String ARG_VAR_SIZE_MAP_PATH = "vsmpath";
@@ -68,6 +70,7 @@ public class Settings {
    private static final String ARG_Z3_CONCRETIZER_OUTPUT_FILE = "concout";
    private static final String ARG_Z3_OUTPUT = "z3path";
    private static final String ARGNAME_ANONYMIZE = "path";
+   private static final String ARGNAME_BUILD_PREDICATE_INFO = "path";
    private static final String ARGNAME_DATA_PLANE_DIR = "path";
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
    private static final String ARGNAME_DUMP_IF_DIR = "path";
@@ -75,13 +78,14 @@ public class Settings {
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
    private static final String ARGNAME_INTERFACE_MAP_PATH = "path";
+   private static final String ARGNAME_LB_WEB_ADMIN_PORT = "port";
+   private static final String ARGNAME_LB_WEB_PORT = "port";
    private static final String ARGNAME_LOGICDIR = "path";
    private static final String ARGNAME_MPI_PATH = "path";
    private static final String ARGNAME_NODE_SET_PATH = "path";
    private static final String ARGNAME_REVERT = "branch-name";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
-   private static final String ARGNAME_SSH_PORT = "port";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILE = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
@@ -95,6 +99,8 @@ public class Settings {
    private static final String DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH = "interface_descriptions";
    private static final String DEFAULT_FLOW_PATH = "flows";
    private static final String DEFAULT_FLOW_SINK_PATH = "flow_sinks";
+   private static final String DEFAULT_LB_WEB_ADMIN_PORT = "55183";
+   private static final String DEFAULT_LB_WEB_PORT = "8080";
    private static final String DEFAULT_LOG_LEVEL = "2";
    private static final List<String> DEFAULT_PREDICATES = Collections
          .singletonList("InstalledRoute");
@@ -109,6 +115,7 @@ public class Settings {
 
    private boolean _anonymize;
    private String _anonymizeDir;
+   private boolean _buildPredicateInfo;
    private boolean _canExecute;
    private String _cbHost;
    private int _cbPort;
@@ -137,7 +144,10 @@ public class Settings {
    private String _hsaInputDir;
    private String _hsaOutputDir;
    private String _interfaceMapPath;
+   private int _lbWebAdminPort;
+   private int _lbWebPort;
    private String _logicDir;
+   private String _logicSrcDir;
    private int _logLevel;
    private String _mpiPath;
    private String _nodeSetPath;
@@ -159,7 +169,6 @@ public class Settings {
    private boolean _serializeVendor;
    private String _serializeVendorPath;
    private boolean _simplify;
-   private Integer _sshPort;
    private String _testRigPath;
    private boolean _update;
    private String _varSizeMapPath;
@@ -202,6 +211,10 @@ public class Settings {
 
    public String getBranchName() {
       return _revertBranchName;
+   }
+
+   public boolean getBuildPredicateInfo() {
+      return _buildPredicateInfo;
    }
 
    public boolean getConcretize() {
@@ -296,8 +309,20 @@ public class Settings {
       return _interfaceMapPath;
    }
 
+   public int getLbWebAdminPort() {
+      return _lbWebAdminPort;
+   }
+
+   public int getLbWebPort() {
+      return _lbWebPort;
+   }
+
    public String getLogicDir() {
       return _logicDir;
+   }
+
+   public String getLogicSrcDir() {
+      return _logicSrcDir;
    }
 
    public int getLogLevel() {
@@ -364,10 +389,6 @@ public class Settings {
       return _simplify;
    }
 
-   public Integer getSshPort() {
-      return _sshPort;
-   }
-
    public String getTestRigPath() {
       return _testRigPath;
    }
@@ -421,6 +442,12 @@ public class Settings {
       _options.addOption(OptionBuilder.withArgName("port_number").hasArg()
             .withDescription("port of ConnectBlox server for regular session")
             .create(ARG_CB_PORT));
+      _options.addOption(OptionBuilder.withArgName(ARGNAME_LB_WEB_PORT)
+            .hasArg().withDescription("port of lb-web server")
+            .create(ARG_LB_WEB_PORT));
+      _options.addOption(OptionBuilder.withArgName(ARGNAME_LB_WEB_ADMIN_PORT)
+            .hasArg().withDescription("admin port lb-web server")
+            .create(ARG_LB_WEB_ADMIN_PORT));
       _options
             .addOption(OptionBuilder
                   .withArgName("number")
@@ -519,9 +546,6 @@ public class Settings {
                   .withDescription(
                         "set logic dir with respect to filesystem of machine running LogicBlox")
                   .create(ARG_LOGICDIR));
-      _options.addOption(OptionBuilder.hasArg().withArgName(ARGNAME_SSH_PORT)
-            .withDescription("ssh port of machine running LogicBlox")
-            .create(ARG_SSH_PORT));
       _options.addOption(OptionBuilder.withDescription(
             "disable z3 simplification").create(ARG_DISABLE_Z3_SIMPLIFICATION));
       _options.addOption(OptionBuilder.withDescription(
@@ -569,15 +593,22 @@ public class Settings {
             .withDescription("path to read or write var-size mappings")
             .create(ARG_VAR_SIZE_MAP_PATH));
       _options.addOption(OptionBuilder.withDescription(
-            "generate multipath-inconsistency query").create(
-            ARG_MPI));
-      _options.addOption(OptionBuilder.hasArg()
+            "generate multipath-inconsistency query").create(ARG_MPI));
+      _options.addOption(OptionBuilder
+            .hasArg()
             .withArgName(ARGNAME_MPI_PATH)
-            .withDescription("path to read or write multipath-inconsistency query")
+            .withDescription(
+                  "path to read or write multipath-inconsistency query")
             .create(ARG_MPI_PATH));
-      _options.addOption(OptionBuilder.withDescription(
-            "serialize to text").create(
-            ARG_SERIALIZE_TO_TEXT));
+      _options.addOption(OptionBuilder.withDescription("serialize to text")
+            .create(ARG_SERIALIZE_TO_TEXT));
+      _options
+            .addOption(OptionBuilder
+                  .hasArg()
+                  .withArgName(ARGNAME_BUILD_PREDICATE_INFO)
+                  .withDescription(
+                        "build predicate info (should only be called by ant build script) with provided input logic dir")
+                  .create(ARG_BUILD_PREDICATE_INFO));
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -665,9 +696,6 @@ public class Settings {
       if (_anonymize) {
          _anonymizeDir = line.getOptionValue(ARG_ANONYMIZE);
       }
-      if (line.hasOption(ARG_SSH_PORT)) {
-         _sshPort = Integer.parseInt(line.getOptionValue(ARG_SSH_PORT));
-      }
       _logicDir = line.getOptionValue(ARG_LOGICDIR, null);
       _simplify = DEFAULT_Z3_SIMPLIFY;
       if (line.hasOption(ARG_DISABLE_Z3_SIMPLIFICATION)) {
@@ -694,8 +722,16 @@ public class Settings {
       _genMultipath = line.hasOption(ARG_MPI);
       _mpiPath = line.getOptionValue(ARG_MPI_PATH);
       _serializeToText = line.hasOption(ARG_SERIALIZE_TO_TEXT);
+      _lbWebPort = Integer.parseInt(line.getOptionValue(ARG_LB_WEB_PORT,
+            DEFAULT_LB_WEB_PORT));
+      _lbWebAdminPort = Integer.parseInt(line.getOptionValue(
+            ARG_LB_WEB_ADMIN_PORT, DEFAULT_LB_WEB_ADMIN_PORT));
+      _buildPredicateInfo = line.hasOption(ARG_BUILD_PREDICATE_INFO);
+      if (_buildPredicateInfo) {
+         _logicSrcDir = line.getOptionValue(ARG_BUILD_PREDICATE_INFO);
+      }
    }
-   
+
    public boolean printParseTree() {
       return _printParseTree;
    }

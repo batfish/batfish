@@ -72,20 +72,13 @@ Set up your .bashrc or equivalent on your CLIENT with batfish common arguments n
 NOTE the default values for the following arguments:
 -lbhost -> localhost
 -lbport -> 55179
-NOTE also that the CLIENT machine must be able to ssh into the SERVER without any intervention (use public key authentication with an ssh agent)
-NOTE finally that the built logic will reside on the SERVER at <batfish-repo-root>/projects/batfish/bin/batfish/logic
+-lbwebport -> 8080
+-lbwebadminport -> 55183
+NOTE that the built logic will reside on the SERVER at <batfish-repo-root>/projects/batfish/bin/batfish/logic
 .bashrc:
-   export BATFISH_COMMON_ARGS='-lbhost <OPTIONAL_hostname_of_SERVER> -lbport <OPTIONAL_ConnectBlox_port_on_SERVER> -sshport <MANDATORY_ssh_port_of_SERVER> -logicdir <MANDATORY_absolute_path_to_built_logic_on_SERVER_filesystem>'
+   export BATFISH_COMMON_ARGS='-lbhost <OPTIONAL_hostname_of_SERVER> -lbport <OPTIONAL_ConnectBlox_port_on_SERVER> -lbwebport <OPTIONAL_lb_web_port_on_SERVER> -lbwebadminport <OPTIONAL_lb_web_admin_port_on_SERVER> -logicdir <MANDATORY_absolute_path_to_built_logic_on_SERVER_filesystem>'
 
-10. ***DO THIS STEP ONLY IF CLIENT != SERVER*** (SERVER)
-You must disable any line in your .bashrc or equivalent that prevents it from being loaded by a non-interactive ssh session. For example, on one machine the .bashrc contained the following near the top:
-   # If not running interactively, don't do anything
-   [ -z "$PS1" ] && return
-You must comment out the active line(s) as follows:
-   # If not running interactively, don't do anything
-   # [ -z "$PS1" ] && return
-
-11. run batfish
+10. run batfish
 The output of this step will be placed in the current folder.
 If you want to confirm running of each subtask, run:
     batfish_confirm_analyze /path/to/test/rig <generated-output-prefix>

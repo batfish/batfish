@@ -10,6 +10,7 @@
    <!-- logicblox stuff -->
    <property environment="env"/>
    <property name="lbhome" value="${env.LB_HOME}"/>
+   <property name="predicateInfo.file" value="bin/batfish/logic/predicateInfo.object"/>
 
    <!-- import and configure one-jar -->
    <property name="one-jar.dir" location="one-jar"/>
@@ -117,7 +118,6 @@
          <fileset dir="src" includes="batfish/grammar/cisco/CiscoGrammar*.java"/>
          <fileset dir="src" includes="batfish/grammar/juniper/JuniperGrammar*.java"/>
          <fileset dir="src" includes="batfish/grammar/juniper/FlatJuniperGrammar*.java"/>
-         <fileset dir="src" includes="batfish/grammar/semantics/Semantics*.java"/>
          <fileset dir="src" includes="batfish/grammar/topology/BatfishTopologyParser*.java"/>
          <fileset dir="src" includes="batfish/grammar/topology/GNS3TopologyParser*.java"/>
          <fileset dir="src" includes="batfish/grammar/topology/BatfishTopologyLexer*.java"/>
@@ -127,6 +127,8 @@
          <fileset dir="src" includes="batfish/grammar/z3/DatalogQueryResultLexer*.java"/>
          <fileset dir="src" includes="batfish/grammar/z3/ConcretizerQueryResultParser*.java"/>
          <fileset dir="src" includes="batfish/grammar/z3/ConcretizerQueryResultLexer*.java"/>
+         <fileset dir="src" includes="batfish/grammar/logicblox/LogiQLParser*.java"/>
+         <fileset dir="src" includes="batfish/grammar/logicblox/LogiQLLexer*.java"/>
       </delete>
 	</target>
 
@@ -141,7 +143,7 @@
    </target>
 
    <!-- Check to see if anything that would be packaged for distribution has changed -->
-   <target name="checkJarBuild" depends="compile,semantics,lbcompile">
+   <target name="checkJarBuild" depends="lbcompile,compile,predicateInfo">
       <uptodate property="jarBuild.notRequired" targetfile="${outputJar}">
          <srcfiles dir="bin" includes="**/*"/>
          <srcfiles dir="lib" includes="**/*"/>
@@ -218,7 +220,7 @@
       <delete dir="generated_logic" />
 	</target>
 
-   <target name="eclipse_post_compile" depends="grammar,lbcompile,semantics"
+   <target name="eclipse_post_compile" depends="grammar,lbcompile,predicateInfo"
       description="Last stage of eclipse compilation" />
 
    <target name="grammar" depends="checkGrammarBuild" unless="grammarBuild.notRequired"
@@ -226,7 +228,6 @@
       <parallel>
          <antlr3 grammar.name="FlatJuniperGrammar.g" grammar.packagedir="batfish/grammar/juniper"/>
          <antlr3 grammar.name="JuniperGrammar.g" grammar.packagedir="batfish/grammar/juniper"/>
-         <antlr3 grammar.name="Semantics.g" grammar.packagedir="batfish/grammar/semantics"/>
       </parallel>
    </target>
 
@@ -238,6 +239,7 @@
          <antlr4lexer grammar.name="GNS3TopologyLexer" grammar.packagedir="batfish/grammar/topology"/>
          <antlr4lexer grammar.name="DatalogQueryResultLexer" grammar.packagedir="batfish/grammar/z3"/>
          <antlr4lexer grammar.name="ConcretizerQueryResultLexer" grammar.packagedir="batfish/grammar/z3"/>
+         <antlr4lexer grammar.name="LogiQLLexer" grammar.packagedir="batfish/grammar/logicblox"/>
       </parallel>
    </target>
 
@@ -286,6 +288,13 @@
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_routemap.g4"/>
             </dependencies>
          </antlr4parser>
+         <antlr4parser grammar.name="LogiQLParser" grammar.packagedir="batfish/grammar/logicblox">
+            <dependencies>
+               <fileset dir="src/batfish/grammar/logicblox" includes="LogiQLParser.g4"/>
+               <fileset dir="src/batfish/grammar/logicblox" includes="LogiQLLexer.g4"/>
+               <fileset dir="src/batfish/grammar/logicblox" includes="LogiQLLexer.tokens"/>
+            </dependencies>
+         </antlr4parser>
       </parallel>
    </target>
 
@@ -326,33 +335,28 @@
          <arg path="bin/batfish/logic"/>
          <arg path="src/batfish/logic/batfish.project"/>
       </java>
-      <copy todir="bin">
-         <fileset dir="src" includes="**/basefacts"/>
-         <fileset dir="src" includes="**/trafficfacts"/>
-      </copy>
    </target>
 
-   <target name="semantics" description="Extract predicate semantics from logic files">
+   <target name="predicateInfo" depends="compile,lbcompile" description="Extract predicate information from logic files">
       <mkdir dir="bin"/>
       <outofdate>
          <deletetargets/>
          <sourcefiles>
             <fileset dir="src" includes="**/*.logic"/>
+            <fileset dir="src" includes="**/*.java"/>
+            <fileset dir="src" includes="**/*.g4"/>
          </sourcefiles>
-         <mapper>
-            <regexpmapper from="src/(.*)\.logic" to="bin/\1.semantics" handledirsep="yes"/>
-         </mapper>
-         <parallel>
-            <shellscript shell="bash">
-               pushd src > /dev/null
-               find . -name "*.logic" | 
-                  while read f; do 
-                     mkdir -p ../bin/$(dirname $f)
-                     grep '^///' $f > ../bin/$(dirname $f)/$(basename $f .logic).semantics
-                  done
-               popd > /dev/null
-            </shellscript>
-         </parallel>
+         <targetfiles path="${predicateInfo.file}"/>
+         <sequential>
+            <java classname="batfish.main.Driver">
+               <arg value="-bpi"/>
+               <arg value="src/batfish/logic"/>
+               <arg value="-log"/>
+               <arg value="0"/>
+               <classpath refid="libraries" />
+               <classpath path="bin"/>
+            </java>
+         </sequential>
       </outofdate>
    </target>
 
