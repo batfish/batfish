@@ -14,9 +14,9 @@ address_family_rb_stanza
       | IPV6
       | VPNV4
       | VPNV6
-   ) 
-   ( 
-      UNICAST 
+   )
+   (
+      UNICAST
       | MULTICAST
    )?
    (
@@ -374,18 +374,18 @@ neighbor_shutdown_af_stanza
 :
    neighbor_shutdown_tail_bgp
 ;
-   
+
 neighbor_shutdown_rb_stanza
 :
    neighbor_shutdown_tail_bgp
 ;
-   
+
 neighbor_shutdown_tail_bgp
 :
    NEIGHBOR
    (
       ip = IP_ADDRESS
-      | ip6= IPV6_ADDRESS
+      | ip6 = IPV6_ADDRESS
       | peergroup = VARIABLE
    ) SHUTDOWN NEWLINE
 ;
@@ -416,11 +416,10 @@ network_tail_bgp
          )?
       )
       | prefix = IP_PREFIX
-   )? 
+   )?
    (
       ROUTE_MAP mapname = VARIABLE
-   )?
-   NEWLINE
+   )? NEWLINE
 ;
 
 network6_af_stanza
@@ -476,7 +475,7 @@ null_standalone_af_stanza
       | SOFT_RECONFIGURATION
       | ROUTE_MAP
       | MAXIMUM_PREFIX
-      | 
+      |
       (
          NEIGHBOR ~NEWLINE
          (
@@ -543,9 +542,9 @@ null_template_stanza
 null_template_standalone_stanza
 :
    (
-      PASSWORD 
+      PASSWORD
       | REMOTE_AS
-      | UPDATE_SOURCE 
+      | UPDATE_SOURCE
       | EBGP_MULTIHOP
    ) ~NEWLINE* NEWLINE
 ;
@@ -684,8 +683,6 @@ router_id_bgp_rb_stanza
    BGP ROUTER_ID routerid = IP_ADDRESS NEWLINE
 ;
 
-
-
 template_stanza
 :
    TEMPLATE PEER peername = VARIABLE NEWLINE template_stanza_tail
@@ -693,9 +690,9 @@ template_stanza
 
 template_stanza_tail
 :
-      (
-        null_template_stanza
-      )*
+   (
+      null_template_stanza
+   )*
 ;
 
 

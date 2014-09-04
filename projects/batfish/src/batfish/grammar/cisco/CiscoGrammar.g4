@@ -441,7 +441,7 @@ null_standalone_stanza
       (
          CRYPTO
          (
-         	CA
+            CA
             | IPSEC
             |
             (

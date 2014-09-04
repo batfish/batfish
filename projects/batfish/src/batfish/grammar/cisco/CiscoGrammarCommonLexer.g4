@@ -1703,7 +1703,7 @@ LANE
 :
    'lane'
 ;
-   
+
 LAPB
 :
    'lapb'
@@ -3678,7 +3678,7 @@ VPC
 :
    'vpc'
 ;
-   
+
 VPDN
 :
    'vpdn'
