@@ -333,8 +333,8 @@ public class ConfigurationFactExtractor {
          PolicyMap routingPolicy = i.getRoutingPolicy();
          if (routingPolicy != null) {
             String policyName = hostname + ":" + routingPolicy.getMapName();
-            wSetInterfaceRoutingPolicy.append(hostname + "|" + interfaceName + "|"
-                  + policyName + "\n");
+            wSetInterfaceRoutingPolicy.append(hostname + "|" + interfaceName
+                  + "|" + policyName + "\n");
          }
       }
    }
@@ -547,8 +547,9 @@ public class ConfigurationFactExtractor {
                switch (matchLine.getType()) {
                case AS_PATH_ACCESS_LIST:
                   // TODO: implement
-                  //throw new Error("not implemented");
-                  System.err.println("WARNING: Policy map matching of AS path acls not implemented!");
+                  // throw new Error("not implemented");
+                  System.err
+                        .println("WARNING: Policy map matching of AS path acls not implemented!");
                   break;
 
                case COMMUNITY_LIST:
@@ -561,10 +562,11 @@ public class ConfigurationFactExtractor {
                   break;
 
                case IP_ACCESS_LIST:
-                  PolicyMapMatchIpAccessListLine mialLine = (PolicyMapMatchIpAccessListLine)matchLine;
+                  PolicyMapMatchIpAccessListLine mialLine = (PolicyMapMatchIpAccessListLine) matchLine;
                   for (IpAccessList list : mialLine.getLists()) {
                      String listName = hostname + ":" + list.getName();
-                     wSetPolicyMapClauseMatchAcl.append(mapName + "|" + i + "|" + listName + "\n");
+                     wSetPolicyMapClauseMatchAcl.append(mapName + "|" + i + "|"
+                           + listName + "\n");
                   }
                   break;
 
@@ -618,7 +620,7 @@ public class ConfigurationFactExtractor {
 
                case AS_PATH_PREPEND:
                   // TODO: implement
-                  //throw new Error("not implemented");
+                  // throw new Error("not implemented");
                   System.err.println("AS_PATH_PREPEND not implemented");
                   break;
 
@@ -668,9 +670,9 @@ public class ConfigurationFactExtractor {
                   PolicyMapSetOriginTypeLine pmsotl = (PolicyMapSetOriginTypeLine) setLine;
                   OriginType originType = pmsotl.getOriginType();
                   wSetPolicyMapClauseSetOriginType.append(mapName + "|" + i
-                           + "|" + originType.toString() + "\n");
+                        + "|" + originType.toString() + "\n");
                   break;
-                  
+
                default:
                   throw new Error("invalid set type");
                }

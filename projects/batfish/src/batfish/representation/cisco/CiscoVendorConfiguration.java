@@ -685,7 +685,11 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          RouteMapClause clause) throws VendorConversionException {
       Set<PolicyMapMatchLine> matchLines = new LinkedHashSet<PolicyMapMatchLine>();
       for (RouteMapMatchLine rmMatchLine : clause.getMatchList()) {
-         matchLines.add(toPolicyMapMatchLine(c, rmMatchLine));
+         PolicyMapMatchLine matchLine = toPolicyMapMatchLine(c, rmMatchLine);
+         if (matchLine == null) {
+            throw new Error("error converting route map match line");
+         }
+         matchLines.add(matchLine);
       }
       Set<PolicyMapSetLine> setLines = new LinkedHashSet<PolicyMapSetLine>();
       for (RouteMapSetLine rmSetLine : clause.getSetList()) {
