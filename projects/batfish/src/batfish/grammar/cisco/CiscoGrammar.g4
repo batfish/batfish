@@ -263,6 +263,7 @@ null_block_substanza
          | IDLE_TIMEOUT
          | INSPECT
          | INSTANCE
+         | INTERFACE POLICY
          | IP
          | IPSEC_UDP
          | IPX
@@ -782,6 +783,7 @@ null_standalone_stanza
       | X25
       | X29
       | XLATE
+      | XML SERVER
       | XX_HIDE
    )
    (

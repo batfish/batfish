@@ -105,6 +105,7 @@ port
 	| NTP
 	| PIM_AUTO_RP
 	| POP3
+	| RIP
 	| SMTP
 	| SNMP
 	| SNMPTRAP
@@ -124,11 +125,13 @@ protocol
 	AHP
 	| DEC
 	| ESP
+	| EIGRP
 	| GRE
 	| ICMP
 	| IGMP
 	| IP
 	| IPINIP
+	| IPV6
 	| OSPF
 	| PIM
 	| SCTP

@@ -395,7 +395,9 @@ nexus_access_list_tail
 		alps_dst = port_specifier
 	)? 
 	(
-	   ESTABLISHED
+	   ECHO_REPLY
+	   | ECHO	   
+	   | ESTABLISHED
 	   | ND_NA
 	   | ND_NS
 	   | PACKET_TOO_BIG

@@ -228,6 +228,7 @@ null_standalone_if_stanza
 		| MPLS
 		| MTU
 		| NAMEIF
+		| NEGOTIATE
 		| NEGOTIATION
 		|
 		(

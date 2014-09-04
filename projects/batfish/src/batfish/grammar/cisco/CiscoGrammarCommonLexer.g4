@@ -205,6 +205,11 @@ ALLOWED
    'allowed'
 ;
 
+ALLOWAS_IN
+:
+   'allowas-in'
+;
+
 ALWAYS
 :
    'always'
@@ -1021,6 +1026,11 @@ ECHO_REPLY
 EGP
 :
    'egp'
+;
+
+EIGRP
+:
+   'eigrp'
 ;
 
 EMPTY
@@ -1947,6 +1957,11 @@ MAXIMUM
 MAXIMUM_PATHS
 :
    'maximum-paths'
+;
+
+MAXIMUM_PEERS
+:
+   'maximum-peers'
 ;
 
 MAXIMUM_PREFIX
@@ -3794,6 +3809,11 @@ XCONNECT
 XLATE
 :
    'xlate'
+;
+
+XML
+:
+   'xml'
 ;
 
 // commonly used to hide password and keys

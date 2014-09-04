@@ -31,6 +31,7 @@ import batfish.representation.SwitchportMode;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.cisco.BgpNetwork;
 import batfish.representation.cisco.BgpPeerGroup;
+import batfish.representation.cisco.BgpPeerTemplate;
 import batfish.representation.cisco.BgpProcess;
 import batfish.representation.cisco.BgpRedistributionPolicy;
 import batfish.representation.cisco.CiscoConfiguration;
@@ -400,6 +401,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    private StandardCommunityList _currentStandardCommunityList;
 
+   private BgpPeerTemplate _currentTemplatePeer;
+   
    private BatfishParser _parser;
 
    private String _text;
@@ -503,7 +506,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       _currentPrefixList.setContext(ctx);
       _configuration.getPrefixLists().put(name, _currentPrefixList);
    }
-
+   
    @Override
    public void enterRoute_map_stanza(Route_map_stanzaContext ctx) {
       String name = ctx.named.name.getText();
@@ -563,6 +566,15 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       _configuration.getStandardAcls().put(name, _currentStandardAcl);
    }
 
+   @Override
+   public void enterTemplate_peer_stanza(
+         Template_peer_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      _currentTemplatePeer = new BgpPeerTemplate(name);
+      _currentTemplatePeer.setContext(ctx);
+      _configuration.getBgpProcess().getPeerTemplates().put(name, _currentTemplatePeer);
+   }
+   
    @Override
    public void exitAggregate_address_tail_bgp(
          Aggregate_address_tail_bgpContext ctx) {
@@ -936,7 +948,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          proc.addActivatedNeighbor(neighbor);
       }
       else if (ctx.neighbor6 != null) {
-         todo(ctx);
+         todo(ctx, "IPv6 not supported yet");
          return;
       }
       else if (ctx.pg != null) {
@@ -954,7 +966,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       String mapName = ctx.map != null ? ctx.map.getText() : null;
       String name = null;
       if (ctx.ipv6 != null) {
-         todo(ctx);
+         todo(ctx, "IPv6 not supported yet");
          return;
       }
       else if (ctx.ip != null) {
@@ -987,7 +999,31 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitNeighbor_nexus_stanza(
          Neighbor_nexus_stanzaContext ctx) {
-      todo(ctx);
+      
+      if (ctx.ip_prefix != null || ctx.ipv6_prefix != null) 
+      {
+         todo(ctx, "Prefix peering is not supported");
+         return;
+      }
+      
+      if (ctx.ipv6_address != null) 
+      {
+         todo(ctx, "IPv6 is not supported yet");
+         return;
+      }
+      
+      BgpProcess proc = _configuration.getBgpProcess();
+      Ip ip = toIp(ctx.ip_address);
+      
+      proc.addIpPeerGroup(ip);      
+
+      for (Neighbor_nexus_tailContext tCtx : ctx.tail) 
+      {
+         if (tCtx.neighbor_nexus_inherit_stanza() != null) {
+            Neighbor_nexus_inherit_stanzaContext inheritCtx = tCtx.neighbor_nexus_inherit_stanza();
+            proc.addPeerTemplateInheritance(inheritCtx.name.getText(), ip);
+         }         
+      }
    }
    
    @Override
@@ -1025,7 +1061,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          Neighbor_prefix_list_tail_bgpContext ctx) {
       switch (ctx.neighbor.getType()) {
       case CiscoGrammarCommonLexer.IPV6_ADDRESS:
-         todo(ctx);
+         todo(ctx, "Ipv6 not supported yet");
          break;
 
       case CiscoGrammarCommonLexer.IP_ADDRESS:
@@ -1061,7 +1097,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          peerGroupName = pgIp.toString();
       }
       else if (ip6) {
-         todo(ctx);
+         todo(ctx, "IPv6 not implemented yet");
          return;
       }
       else {
@@ -1094,7 +1130,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          Neighbor_route_map_tail_bgpContext ctx) {
       switch (ctx.neighbor.getType()) {
       case CiscoGrammarCommonLexer.IPV6_ADDRESS:
-         todo(ctx);
+         todo(ctx, "IPv6 not implemented yet");
          break;
 
       case CiscoGrammarCommonLexer.IP_ADDRESS:
@@ -1151,7 +1187,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          Neighbor_update_source_rb_stanzaContext ctx) {
       switch (ctx.neighbor.getType()) {
       case CiscoGrammarCommonLexer.IPV6_ADDRESS:
-         todo(ctx);
+         todo(ctx, "IPv6 not supported yet");
          break;
 
       case CiscoGrammarCommonLexer.IP_ADDRESS:
@@ -1220,7 +1256,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
       case CiscoGrammarCommonLexer.IPV6_ADDRESS:
       default:
-         todo(ctx);
+         todo(ctx, "IPv6 not supported yet");
          break;
       }
    }
@@ -1614,11 +1650,24 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
-   public void exitTemplate_stanza(
-         Template_stanzaContext ctx) {
-      todo(ctx);
+   public void exitTemplate_peer_remote_as(
+         Template_peer_remote_asContext ctx) {
+      _currentTemplatePeer.setRemoteAS(toInteger(ctx.asnum));
    }
    
+   @Override
+   public void exitTemplate_peer_stanza(
+         Template_peer_stanzaContext ctx) {
+      _currentTemplatePeer = null;
+   }
+
+   @Override
+   public void exitTemplate_peer_update_source(
+         Template_peer_update_sourceContext ctx) {
+      _currentTemplatePeer.setUpdateSource(ctx.source.getText());
+   }
+   
+
    @Override
    public void exitVrf_stanza(Vrf_stanzaContext ctx) {
       todo(ctx);
@@ -1642,6 +1691,10 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    private void todo(ParserRuleContext ctx) {
+      todo(ctx, "Unknown");
+   }
+   
+   private void todo(ParserRuleContext ctx, String reason) {
       String prefix = "WARNING " + (_warnings.size() + 1) + ": ";
       StringBuilder sb = new StringBuilder();
       List<String> ruleNames = Arrays.asList(CiscoGrammar.ruleNames);
@@ -1649,6 +1702,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       sb.append(prefix
             + "Missing implementation for top (leftmost) parser rule in stack: '"
             + ruleStack + "'.\n");
+      sb.append(prefix + "Reason: " + reason + "\n");
       sb.append(prefix + "Rule context follows:\n");
       int start = ctx.start.getStartIndex();
       int startLine = ctx.start.getLine();

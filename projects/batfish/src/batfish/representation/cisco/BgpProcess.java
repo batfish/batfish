@@ -27,12 +27,14 @@ public class BgpProcess implements Serializable {
    private Map<Protocol, BgpRedistributionPolicy> _redistributionPolicies;
    private Ip _routerId;
    private Set<String> _shutdownNeighbors;
+   private Map<String, BgpPeerTemplate> _peerTemplates;
 
    public BgpProcess(int procnum) {
       _pid = procnum;
       _allPeerGroups = new HashMap<String, BgpPeerGroup>();
       _namedPeerGroups = new HashMap<String, NamedBgpPeerGroup>();
       _ipPeerGroups = new HashMap<Ip, IpBgpPeerGroup>();
+      _peerTemplates = new HashMap<String, BgpPeerTemplate>();
       _networks = new LinkedHashSet<BgpNetwork>();
       _activatedNeighbors = new LinkedHashSet<Ip>();
       _defaultNeighborActivate = true;
@@ -159,6 +161,23 @@ public class BgpProcess implements Serializable {
       }
    }
 
+   public void addPeerTemplate(String peerTemplateName) {
+      BgpPeerTemplate pt = new BgpPeerTemplate(peerTemplateName);
+      _peerTemplates.put(peerTemplateName, pt);
+   }
+
+   public void addPeerTemplateInheritance(String peerTemplateName, Ip ipAddress) {
+      BgpPeerTemplate peerTemplate = _peerTemplates.get(peerTemplateName);      
+      if (peerTemplate != null) {
+         IpBgpPeerGroup ipPeerGroup = _ipPeerGroups.get(ipAddress);
+         ipPeerGroup.setPeerTemplateName(peerTemplateName);
+      }
+      else {
+         throw new Error("Peer template: \"" + peerTemplateName
+               + "\" does not exist!");
+      }
+   }
+   
    public void addSendCommunityPeerGroup(String peerGroupName) {
       BgpPeerGroup pg = _allPeerGroups.get(peerGroupName);
       if (pg != null) {
@@ -212,6 +231,10 @@ public class BgpProcess implements Serializable {
 
    public BgpPeerGroup getPeerGroup(String name) {
       return _allPeerGroups.get(name);
+   }
+
+   public Map<String, BgpPeerTemplate> getPeerTemplates() {
+      return _peerTemplates;
    }
 
    public int getPid() {

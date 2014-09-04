@@ -8,7 +8,8 @@ public class IpBgpPeerGroup extends BgpPeerGroup {
 
    private String _groupName;
    private Ip _ip;
-
+   private String _peerTemplateName;  //allowing for only one template for now
+   
    public IpBgpPeerGroup(Ip ip) {
       _ip = ip;
    }
@@ -21,6 +22,10 @@ public class IpBgpPeerGroup extends BgpPeerGroup {
       return _ip;
    }
 
+   public String getPeerTemplateName() {
+      return _peerTemplateName;
+   }
+
    @Override
    public String getName() {
       return _ip.toString();
@@ -30,4 +35,7 @@ public class IpBgpPeerGroup extends BgpPeerGroup {
       _groupName = name;
    }
 
+   public void setPeerTemplateName(String name) {
+      _peerTemplateName = name;
+   }
 }
