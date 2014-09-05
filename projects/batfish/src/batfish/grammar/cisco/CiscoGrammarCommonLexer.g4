@@ -4513,9 +4513,36 @@ M_NEIGHBOR_VARIABLE
    ) -> type(VARIABLE), popMode
 ;
 
+M_NEIGHBOR_IP_PREFIX
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit? -> type(IP_PREFIX), popMode
+;
+
 M_NEIGHBOR_IP_ADDRESS
 :
    F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type(IP_ADDRESS), popMode
+;
+
+M_NEIGHBOR_IPV6_PREFIX
+:
+   (
+      (
+         '::'
+         (
+            (
+               F_HexDigit+ ':'
+         )* F_HexDigit+
+         )?
+      )
+      |
+      (
+         F_HexDigit+ ':' ':'?
+      )+
+      (
+         F_HexDigit+
+      )?
+      '/' F_DecByte
+   ) -> type(IPV6_PREFIX), popMode
 ;
 
 M_NEIGHBOR_IPV6_ADDRESS
