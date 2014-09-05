@@ -1,7 +1,7 @@
 lexer grammar CiscoGrammarCommonLexer;
 
 options {
-	superClass = 'batfish.grammar.BatfishLexer';
+   superClass = 'batfish.grammar.BatfishLexer';
 }
 
 @header {
@@ -192,9 +192,9 @@ AGGREGATE_ADDRESS
 
 AHP
 :
-	'ahp'
+   'ahp'
 ;
-	
+
 ALERT_GROUP
 :
    'alert-group'
@@ -222,7 +222,7 @@ ALWAYS
 
 ALWAYS_COMPARE_MED
 :
-	'always-compare-med'
+   'always-compare-med'
 ;
 
 ANY
@@ -264,6 +264,7 @@ ARP
 :
    'arp'
    { enableIPV6_ADDRESS = false; }
+
 ;
 
 AS_PATH
@@ -453,7 +454,7 @@ BOOTPS
 
 BOTH
 :
-	'both'
+   'both'
 ;
 
 BRIDGE
@@ -645,12 +646,14 @@ COMMANDER_ADDRESS
 :
    'commander-address'
    { enableIPV6_ADDRESS = false; }
+
 ;
 
 COMMUNITY
 :
    'community'
    { enableIPV6_ADDRESS = false; }
+
 ;
 
 COMMUNITY_LIST
@@ -661,6 +664,7 @@ COMMUNITY_LIST
       enableCOMMUNITY_LIST_NUM = true;
       enableDEC = false;
    }
+
 ;
 
 CONFIG_REGISTER
@@ -785,7 +789,7 @@ DEFAULT_INFORMATION
 
 DEFAULT_INFORMATION_ORIGINATE
 :
-	'default-information-originate'
+   'default-information-originate'
 ;
 
 DEFAULT_METRIC
@@ -830,7 +834,7 @@ DENY
 
 DES
 :
-   'des' -> pushMode(M_DES) 
+   'des' -> pushMode(M_DES)
 ;
 
 DES_SHA1
@@ -955,7 +959,7 @@ DOMAIN_NAME
 
 DONT_CAPABILITY_NEGOTIATE
 :
-	'dont-capability-negotiate'
+   'dont-capability-negotiate'
 ;
 
 DOT11
@@ -1005,7 +1009,7 @@ DUPLEX
 
 DVMRP
 :
-	'dvmrp'
+   'dvmrp'
 ;
 
 DYNAMIC
@@ -1431,7 +1435,7 @@ HARDWARE
 :
    'hardware'
 ;
-   
+
 HASH
 :
    'hash'
@@ -2508,7 +2512,7 @@ PEER_KEEPALIVE
 :
    'peer-keepalive'
 ;
-   
+
 PERMIT
 :
    'permit'
@@ -3276,7 +3280,9 @@ STACK_MIB
 
 STANDARD
 :
-   'standard' { enableDEC = true; enableACL_NUM = false; }
+   'standard'
+   { enableDEC = true; enableACL_NUM = false; }
+
 ;
 
 STANDBY
@@ -3778,6 +3784,7 @@ VRF
 :
    'vrf'
    {enableIPV6_ADDRESS = false;}
+
 ;
 
 VRRP
@@ -3799,7 +3806,6 @@ WEIGHT
 :
    'weight'
 ;
-
 
 WINS_SERVER
 :
@@ -3857,11 +3863,11 @@ XML
 ;
 
 // commonly used to hide password and keys
+
 XX_HIDE
 :
    'xx' 'x'+
 ;
-
 
 // Other Tokens
 
@@ -3869,7 +3875,7 @@ COMMUNITY_NUMBER
 :
    F_Digit
    {!enableIPV6_ADDRESS}?
-   
+
    F_Digit* ':' F_Digit+
 ;
 
@@ -3878,21 +3884,34 @@ VARIABLE
    (
       (
          (
-            F_Variable_RequiredVarChar {!enableIPV6_ADDRESS}? F_Variable_VarChar*
+            F_Variable_RequiredVarChar
+            {!enableIPV6_ADDRESS}?
+
+            F_Variable_VarChar*
          )
          |
          (
-            F_Variable_RequiredVarChar_Ipv6 {enableIPV6_ADDRESS}? F_Variable_VarChar_Ipv6*
+            F_Variable_RequiredVarChar_Ipv6
+            {enableIPV6_ADDRESS}?
+
+            F_Variable_VarChar_Ipv6*
          )
       )
       |
       (
          (
-            F_Variable_VarChar {!enableIPV6_ADDRESS}? F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
+            F_Variable_VarChar
+            {!enableIPV6_ADDRESS}?
+
+            F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
          )
          |
          (
-            F_Variable_VarChar_Ipv6 {enableIPV6_ADDRESS}? F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar_Ipv6 F_Variable_VarChar_Ipv6*
+            F_Variable_VarChar_Ipv6
+            {enableIPV6_ADDRESS}?
+
+            F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar_Ipv6
+            F_Variable_VarChar_Ipv6*
          )
       )
    )
@@ -3906,6 +3925,7 @@ VARIABLE
          enableDEC = true;
       }
    }
+
 ;
 
 ACL_NUM
@@ -4073,11 +4093,12 @@ EQUALS
 
 ESCAPE_C
 :
-(
+   (
       '^C'
       | '\u0003'
       | '#'
-);
+   )
+;
 
 FLOAT
 :
@@ -4096,48 +4117,20 @@ HEX
    '0x' F_HexDigit+
 ;
 
-IP_PREFIX
-:
-   F_DecByte '.'
-   {enableIP_ADDRESS}? 
-   
-   F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit?
-;
-
 IP_ADDRESS
 :
    F_DecByte '.'
    {enableIP_ADDRESS}?
-   
+
    F_DecByte '.' F_DecByte '.' F_DecByte
 ;
 
-IPV6_PREFIX
+IP_PREFIX
 :
-   (
-      (
-         ':'
-         {enableIPV6_ADDRESS}?
-         
-         ':'
-         (
-            (
-               F_HexDigit+ ':'
-         )* F_HexDigit+
-         )?
-      )
-      |
-      (
-         F_HexDigit+
-         {enableIPV6_ADDRESS}?
-         
-         ':' ':'?
-      )+
-      (
-         F_HexDigit+
-      )?
-      '/' F_DecByte
-   )
+   F_DecByte '.'
+   {enableIP_ADDRESS}?
+
+   F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit?
 ;
 
 IPV6_ADDRESS
@@ -4165,6 +4158,33 @@ IPV6_ADDRESS
    (
       F_HexDigit+
    )?
+;
+
+IPV6_PREFIX
+:
+   (
+      (
+         ':'
+         {enableIPV6_ADDRESS}?
+
+         ':'
+         (
+            (
+               F_HexDigit+ ':'
+            )* F_HexDigit+
+         )?
+      )
+      |
+      (
+         F_HexDigit+
+         {enableIPV6_ADDRESS}?
+
+         ':' ':'?
+      )+
+      (
+         F_HexDigit+
+      )? '/' F_DecByte
+   )
 ;
 
 NEWLINE
@@ -4309,13 +4329,13 @@ F_UpperCaseLetter
 fragment
 F_Variable_RequiredVarChar
 :
-   ~('0'..'9' | [ \t\n\r/.,-])
+   ~( '0' .. '9' | [ \t\n\r/.,-] )
 ;
 
 fragment
 F_Variable_RequiredVarChar_Ipv6
 :
-   ~('0'..'9' | [ \t\n\r/.,-:])
+   ~( '0' .. '9' | [ \t\n\r/.,-:] )
 ;
 
 fragment
@@ -4340,7 +4360,8 @@ F_Whitespace
 
 mode M_BANNER;
 
-M_BANNER_WS:
+M_BANNER_WS
+:
    (
       ' '
       | '\t'
@@ -4377,9 +4398,18 @@ M_CERTIFICATE_TEXT
 :
    (
       ~'q'
-      | ('q' ~'u')
-      | ('qu' ~'i')
-      | ('qui' ~'t') 
+      |
+      (
+         'q' ~'u'
+      )
+      |
+      (
+         'qu' ~'i'
+      )
+      |
+      (
+         'qui' ~'t'
+      )
    )+
 ;
 
@@ -4449,7 +4479,9 @@ M_MOTD_C_ESCAPE_C
 M_MOTD_C_MOTD
 :
    (
-      ('^' ~[^C\u0003])
+      (
+         '^' ~[^C\u0003]
+      )
       | ~[^\u0003]
    )+
 ;
@@ -4465,8 +4497,14 @@ M_MOTD_EOF_MOTD
 :
    (
       ~'E'
-      | ('E' ~'O')
-      | ('EO' ~'F')
+      |
+      (
+         'E' ~'O'
+      )
+      |
+      (
+         'EO' ~'F'
+      )
    )+
 ;
 
@@ -4504,45 +4542,32 @@ M_NEIGHBOR_VARIABLE
 :
    (
       (
-            (F_Variable_RequiredVarChar_Ipv6 | '-') F_Variable_VarChar_Ipv6*
+         (
+            F_Variable_RequiredVarChar_Ipv6
+            | '-'
+         ) F_Variable_VarChar_Ipv6*
       )
       |
       (
-            F_Variable_VarChar_Ipv6 F_Variable_VarChar_Ipv6* (F_Variable_RequiredVarChar_Ipv6 | '-') F_Variable_VarChar_Ipv6*
+         F_Variable_VarChar_Ipv6 F_Variable_VarChar_Ipv6*
+         (
+            F_Variable_RequiredVarChar_Ipv6
+            | '-'
+         ) F_Variable_VarChar_Ipv6*
       )
    ) -> type(VARIABLE), popMode
 ;
 
-M_NEIGHBOR_IP_PREFIX
-:
-   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit? -> type(IP_PREFIX), popMode
-;
-
 M_NEIGHBOR_IP_ADDRESS
 :
-   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type(IP_ADDRESS), popMode
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type(IP_ADDRESS),
+   popMode
 ;
 
-M_NEIGHBOR_IPV6_PREFIX
+M_NEIGHBOR_IP_PREFIX
 :
-   (
-      (
-         '::'
-         (
-            (
-               F_HexDigit+ ':'
-         )* F_HexDigit+
-         )?
-      )
-      |
-      (
-         F_HexDigit+ ':' ':'?
-      )+
-      (
-         F_HexDigit+
-      )?
-      '/' F_DecByte
-   ) -> type(IPV6_PREFIX), popMode
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit? ->
+   type(IP_PREFIX), popMode
 ;
 
 M_NEIGHBOR_IPV6_ADDRESS
@@ -4565,7 +4590,28 @@ M_NEIGHBOR_IPV6_ADDRESS
       (
          F_HexDigit+
       )?
-   ) -> type(IPV6_ADDRESS), popMode
+   ) -> type ( IPV6_ADDRESS ), popMode
+;
+
+M_NEIGHBOR_IPV6_PREFIX
+:
+   (
+      (
+         '::'
+         (
+            (
+               F_HexDigit+ ':'
+            )* F_HexDigit+
+         )?
+      )
+      |
+      (
+         F_HexDigit+ ':' ':'?
+      )+
+      (
+         F_HexDigit+
+      )? '/' F_DecByte
+   ) -> type ( IPV6_PREFIX ), popMode
 ;
 
 M_NEIGHBOR_NEWLINE
@@ -4577,6 +4623,7 @@ M_NEIGHBOR_WS
 :
    F_Whitespace -> channel(HIDDEN)
 ;
+
 mode M_REMARK;
 
 M_REMARK_NEWLINE
