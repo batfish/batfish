@@ -4054,13 +4054,13 @@ COMMUNITY_LIST_NUM
 COMMENT_CLOSING_LINE
 :
    (
-      '!' F_Newline
+      '!' F_Newline+
    )
 ;
 
 COMMENT_LINE
 :
-   '!' ~( '\n' | '\r' )+ F_Newline
+   '!' F_NonNewline+ F_Newline+
 ;
 
 DASH

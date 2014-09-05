@@ -64,7 +64,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
 
    @Override
    public void visitErrorNode(ErrorNode ctx) {
-      String nodeText = ctx.getText().replace("\n", "\\n");
+      String nodeText = ctx.getText().replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r");
       _sb.append("\n");
       for (int i = 0; i < _indent; i++) {
          _sb.append("  ");
@@ -83,7 +83,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
 
    @Override
    public void visitTerminal(TerminalNode ctx) {
-      String nodeText = ctx.getText().replace("\n", "\\n").replace("\t", "\\t");
+      String nodeText = ctx.getText().replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r");
       _sb.append("\n");
       for (int i = 0; i < _indent; i++) {
          _sb.append("  ");
