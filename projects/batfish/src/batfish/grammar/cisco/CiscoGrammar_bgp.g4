@@ -729,7 +729,7 @@ template_peer_stanza_tail
 :
    (
       template_peer_remote_as
-      template_peer_update_source
+      | template_peer_update_source
       | null_template_peer_stanza
    )+
 ;
