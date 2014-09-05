@@ -4244,7 +4244,7 @@ UNDERSCORE
 
 WS
 :
-   F_Whitespace -> channel(HIDDEN)
+   F_Whitespace+ -> channel(HIDDEN)
 ;
 
 // Fragments
@@ -4300,8 +4300,13 @@ F_LowerCaseLetter
 fragment
 F_Newline
 :
-   '\n'
-   | '\r'
+   [\n\r]
+;
+
+fragment
+F_NonNewline
+:
+   ~[\n\r]
 ;
 
 fragment
@@ -4362,11 +4367,7 @@ mode M_BANNER;
 
 M_BANNER_WS
 :
-   (
-      ' '
-      | '\t'
-      | '\u000C'
-   )+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel(HIDDEN)
 ;
 
 M_BANNER_ESCAPE_C
@@ -4384,7 +4385,7 @@ M_BANNER_HASH
 
 M_BANNER_NEWLINE
 :
-   '\n' -> type(NEWLINE), mode(M_MOTD_EOF)
+   F_Newline+ -> type(NEWLINE), mode(M_MOTD_EOF)
 ;
 
 mode M_CERTIFICATE;
@@ -4417,12 +4418,12 @@ mode M_COMMENT;
 
 M_COMMENT_NEWLINE
 :
-   '\n' -> type(NEWLINE), popMode
+   F_Newline+ -> type(NEWLINE), popMode
 ;
 
 M_COMMENT_NON_NEWLINE
 :
-   ~'\n'+
+   F_NonNewline+
 ;
 
 mode M_DES;
@@ -4439,31 +4440,31 @@ M_DES_HEX_PART
 
 M_DES_WS
 :
-   ' '+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel(HIDDEN)
 ;
 
 mode M_DESCRIPTION;
 
 M_DESCRIPTION_NEWLINE
 :
-   '\n' -> type(NEWLINE), popMode
+   F_Newline+ -> type(NEWLINE), popMode
 ;
 
 M_DESCRIPTION_NON_NEWLINE
 :
-   ~'\n'+
+   F_NonNewline+
 ;
 
 mode M_KEY;
 
 M_KEY_NEWLINE
 :
-   '\n' -> type(NEWLINE), popMode
+   F_Newline+ -> type(NEWLINE), popMode
 ;
 
 M_KEY_NON_NEWLINE
 :
-   ~'\n'+
+   F_NonNewline+
 ;
 
 mode M_MOTD_C;
@@ -4524,16 +4525,12 @@ mode M_NAME;
 
 M_NAME_WS
 :
-   (
-      ' '
-      | '\t'
-      | '\u000C'
-   )+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel(HIDDEN)
 ;
 
 M_NAME_NAME
 :
-   ~'\n'+ -> popMode
+   F_NonNewline+ -> popMode
 ;
 
 mode M_NEIGHBOR;
@@ -4616,24 +4613,24 @@ M_NEIGHBOR_IPV6_PREFIX
 
 M_NEIGHBOR_NEWLINE
 :
-   '\n' -> type(NEWLINE), popMode
+   F_Newline+ -> type(NEWLINE), popMode
 ;
 
 M_NEIGHBOR_WS
 :
-   F_Whitespace -> channel(HIDDEN)
+   F_Whitespace+ -> channel(HIDDEN)
 ;
 
 mode M_REMARK;
 
 M_REMARK_NEWLINE
 :
-   '\n' -> type(NEWLINE), popMode
+   F_Newline+ -> type(NEWLINE), popMode
 ;
 
 M_REMARK_REMARK
 :
-   ~'\n'+
+   F_NonNewline+
 ;
 
 mode M_SHA1;
@@ -4650,5 +4647,5 @@ M_SHA1_HEX_PART
 
 M_SHA1_WS
 :
-   ' '+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel(HIDDEN)
 ;
