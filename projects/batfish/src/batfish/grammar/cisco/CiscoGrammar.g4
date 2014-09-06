@@ -782,6 +782,7 @@ null_standalone_stanza
          VLAN
          (
             ACCESS_LOG
+            | CONFIGURATION
             | DOT1Q
             | INTERNAL
          )

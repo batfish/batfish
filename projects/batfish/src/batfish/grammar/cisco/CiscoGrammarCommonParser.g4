@@ -117,6 +117,7 @@ protocol
    | IGMP
    | IP
    | IPINIP
+   | IPV6
    | OSPF
    | PIM
    | SCTP
