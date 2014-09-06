@@ -29,7 +29,7 @@ public class BatfishLexerErrorListener extends BatfishGrammarErrorListener {
       sb.append("Current rule starts at: line: " + ctx.getStart().getLine()
             + ", col " + ctx.getStart().getCharPositionInLine() + "\n");
       sb.append("Parse tree for current rule:\n");
-      sb.append(ParseTreePrettyPrinter.print(ctx, parser) + "\n");
+      sb.append(ParseTreePrettyPrinter.print(ctx, _combinedParser) + "\n");
       sb.append("Lexer mode: " + lexer.getMode() + "\n");
       sb.append("Lexer state variables:\n");
       sb.append(lexer.printStateVariables());

@@ -848,8 +848,7 @@ public class Batfish implements AutoCloseable {
       }
       else {
          print(0, "OK, PRINTING PARSE TREE:\n");
-         print(0, ParseTreePrettyPrinter.print(tree, parser.getParser())
-               + "\n\n");
+         print(0, ParseTreePrettyPrinter.print(tree, parser) + "\n\n");
       }
       return tree;
    }
@@ -1027,8 +1026,7 @@ public class Batfish implements AutoCloseable {
             BatfishCombinedParser<?, ?> combinedParser = new CiscoCombinedParser(
                   fileText);
             ParserRuleContext tree = parse(combinedParser, currentPath);
-            extractor = new CiscoControlPlaneExtractor(fileText,
-                  combinedParser.getParser());
+            extractor = new CiscoControlPlaneExtractor(fileText, combinedParser);
             ParseTreeWalker walker = new ParseTreeWalker();
             walker.walk(extractor, tree);
             for (String warning : extractor.getWarnings()) {

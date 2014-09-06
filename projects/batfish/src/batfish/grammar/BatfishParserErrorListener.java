@@ -17,6 +17,8 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
    }
 
    private String printToken(Token token) {
+      int modeAsInt = _combinedParser.getTokenMode(token);
+      String mode = _combinedParser.getLexer().getModeNames()[modeAsInt];
       String rawTokenText = token.getText();
       String tokenText = rawTokenText.replace("\n", "\\n").replace("\t", "\\t");
       int tokenType = token.getType();
@@ -32,7 +34,7 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
          tokenText = "'" + tokenText + "'";
       }
       return " line " + line + ":" + col + " " + channel + " " + tokenName
-            + ":" + tokenText;
+            + ":" + tokenText + "  <== mode:" + mode;
    }
 
    @Override

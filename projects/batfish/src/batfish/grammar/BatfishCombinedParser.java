@@ -8,18 +8,23 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.PredictionMode;
 
 public abstract class BatfishCombinedParser<P extends BatfishParser, L extends BatfishLexer> {
 
+   private int _currentModeStart;
    private final List<String> _errors;
    private L _lexer;
    protected P _parser;
+   private List<Integer> _tokenModes;
    protected CommonTokenStream _tokens;
    private final List<String> _warnings;
 
    public BatfishCombinedParser(Class<P> pClass, Class<L> lClass, String input) {
+      _tokenModes = new ArrayList<Integer>();
+      _currentModeStart = 0;
       _warnings = new ArrayList<String>();
       _errors = new ArrayList<String>();
       ANTLRInputStream inputStream = new ANTLRInputStream(input);
@@ -59,6 +64,16 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
       return _parser;
    }
 
+   public int getTokenMode(Token t) {
+      int tokenIndex = t.getTokenIndex();
+      if (tokenIndex < _tokenModes.size()) {
+         return _tokenModes.get(tokenIndex);
+      }
+      else {
+         return _lexer._mode;
+      }
+   }
+
    public CommonTokenStream getTokens() {
       return _tokens;
    }
@@ -68,5 +83,12 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
    }
 
    public abstract ParserRuleContext parse();
+
+   public void updateTokenModes(int mode) {
+      for (int i = _currentModeStart; i <= _tokens.size(); i++) {
+         _tokenModes.add(mode);
+      }
+      _currentModeStart = _tokens.size() + 1;
+   }
 
 }
