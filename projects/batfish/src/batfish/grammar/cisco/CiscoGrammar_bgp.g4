@@ -24,7 +24,7 @@ address_family_rb_stanza
    )? NEWLINE address_family_rb_stanza_tail
    (
       EXIT_ADDRESS_FAMILY NEWLINE
-   )? closing_comment?
+   )?
 ;
 
 address_family_rb_stanza_tail
@@ -479,16 +479,14 @@ no_neighbor_activate_af_stanza
 
 null_af_stanza
 :
-   comment_stanza
-   | neighbor_remove_private_as_af_stanza
+   neighbor_remove_private_as_af_stanza
    | no_neighbor_activate_af_stanza
    | null_standalone_af_stanza
 ;
 
 null_rb_stanza
 :
-   comment_stanza
-   | template_peer_stanza
+   template_peer_stanza
    | null_standalone_rb_stanza
 ;
 

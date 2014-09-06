@@ -4051,16 +4051,9 @@ COMMUNITY_LIST_NUM
 
 ;
 
-COMMENT_CLOSING_LINE
-:
-   (
-      '!' F_Newline+
-   )
-;
-
 COMMENT_LINE
 :
-   '!' F_NonNewline+ F_Newline+
+   '!' F_NonNewline* F_Newline+ -> channel(HIDDEN)
 ;
 
 DASH

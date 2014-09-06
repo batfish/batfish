@@ -56,7 +56,6 @@ if_stanza
 interface_stanza
 :
    INTERFACE iname = interface_name MULTIPOINT? NEWLINE interface_stanza_tail
-   closing_comment?
 ;
 
 interface_stanza_tail
@@ -124,8 +123,7 @@ no_ip_address_if_stanza
 
 null_if_stanza
 :
-   comment_stanza
-   | hsrp_stanza
+   hsrp_stanza
    |
    (
       NO? SWITCHPORT NEWLINE

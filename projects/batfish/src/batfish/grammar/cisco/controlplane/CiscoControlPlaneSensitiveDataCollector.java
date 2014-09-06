@@ -1281,18 +1281,6 @@ public class CiscoControlPlaneSensitiveDataCollector extends CiscoGrammarBaseLis
    }
 
    @Override
-   public void enterComment_stanza(Comment_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-      
-   }
-
-   @Override
-   public void exitComment_stanza(Comment_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-      
-   }
-
-   @Override
    public void enterNull_standalone_if_stanza(
          Null_standalone_if_stanzaContext ctx) {
       // TODO Auto-generated method stub
@@ -1446,18 +1434,6 @@ public class CiscoControlPlaneSensitiveDataCollector extends CiscoGrammarBaseLis
 
    @Override
    public void exitIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-      
-   }
-
-   @Override
-   public void enterClosing_comment(Closing_commentContext ctx) {
-      // TODO Auto-generated method stub
-      
-   }
-
-   @Override
-   public void exitClosing_comment(Closing_commentContext ctx) {
       // TODO Auto-generated method stub
       
    }

@@ -60,7 +60,7 @@ ipv6_router_ospf_stanza
    IPV6 ROUTER OSPF procnum = DEC NEWLINE
    (
       rosl += ipv6_ro_stanza
-   )+ closing_comment
+   )+
 ;
 
 log_adjacency_changes_ipv6_ro_stanza
@@ -85,7 +85,6 @@ network_ro_stanza
 null_ipv6_ro_stanza
 :
    area_ipv6_ro_stanza
-   | comment_stanza
    | default_information_ipv6_ro_stanza
    | log_adjacency_changes_ipv6_ro_stanza
    | router_id_ipv6_ro_stanza
@@ -93,8 +92,7 @@ null_ipv6_ro_stanza
 
 null_ro_stanza
 :
-   comment_stanza
-   | null_standalone_ro_stanza
+   null_standalone_ro_stanza
 ;
 
 null_standalone_ro_stanza

@@ -33,7 +33,7 @@ redistribute_rr_stanza
 
 router_rip_stanza
 :
-   ROUTER RIP NEWLINE rr_stanza* closing_comment
+   ROUTER RIP NEWLINE rr_stanza*
 ;
 
 rr_stanza

@@ -15,7 +15,7 @@ package batfish.grammar.cisco;
 address_family_vrf_stanza
 :
    ADDRESS_FAMILY ~NEWLINE* NEWLINE null_block_substanza* EXIT_ADDRESS_FAMILY
-   NEWLINE closing_comment
+   NEWLINE
 ;
 
 banner_stanza
@@ -87,7 +87,7 @@ ip_route_stanza
 
 macro_stanza
 :
-   MACRO ~COMMENT_CLOSING_LINE* closing_comment
+   MACRO ~NEWLINE* NEWLINE
 ;
 
 null_block_stanza
@@ -190,8 +190,6 @@ null_block_stanza
 
 null_block_substanza
 :
-   comment_stanza
-   |
    (
       NO?
       (
@@ -811,8 +809,6 @@ null_stanza
 :
    banner_stanza
    | certificate_stanza
-   | closing_comment
-   | comment_stanza
    | macro_stanza
    | null_block_stanza
    | null_standalone_stanza
@@ -858,6 +854,5 @@ switching_mode_stanza
 
 vrf_stanza
 :
-   VRF ~NEWLINE* NEWLINE null_block_substanza* closing_comment?
-   address_family_vrf_stanza*
+   VRF ~NEWLINE* NEWLINE null_block_substanza* address_family_vrf_stanza*
 ;

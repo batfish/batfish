@@ -107,12 +107,6 @@ public class CiscoControlPlanePrinter extends CiscoGrammarBaseListener {
          _sb.append("\n");
          break;
          
-      case CiscoGrammarCommonLexer.COMMENT_CLOSING_LINE:
-         indent();
-         _sb.append("!\n");
-         _beginningOfLine = true;
-         break;
-      
       default:
          if (_beginningOfLine) {
             indent();

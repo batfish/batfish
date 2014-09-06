@@ -10,16 +10,6 @@ access_list_action
    | DENY
 ;
 
-closing_comment
-:
-   COMMENT_CLOSING_LINE
-;
-
-comment_stanza
-:
-   COMMENT_LINE
-;
-
 community
 :
    com = COMMUNITY_NUMBER
