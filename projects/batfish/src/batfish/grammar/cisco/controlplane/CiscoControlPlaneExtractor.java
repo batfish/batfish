@@ -31,7 +31,7 @@ import batfish.representation.SwitchportMode;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.cisco.BgpNetwork;
 import batfish.representation.cisco.BgpPeerGroup;
-import batfish.representation.cisco.BgpPeerTemplate;
+import batfish.representation.cisco.BgpPeerTemplatePeerGroup;
 import batfish.representation.cisco.BgpProcess;
 import batfish.representation.cisco.BgpRedistributionPolicy;
 import batfish.representation.cisco.CiscoConfiguration;
@@ -401,7 +401,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    private StandardCommunityList _currentStandardCommunityList;
 
-   private BgpPeerTemplate _currentTemplatePeer;
+   private BgpPeerTemplatePeerGroup _currentTemplatePeer;
    
    private BatfishParser _parser;
 
@@ -570,7 +570,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void enterTemplate_peer_stanza(
          Template_peer_stanzaContext ctx) {
       String name = ctx.name.getText();
-      _currentTemplatePeer = new BgpPeerTemplate(name);
+      _currentTemplatePeer = new BgpPeerTemplatePeerGroup(name);
       _currentTemplatePeer.setContext(ctx);
       _configuration.getBgpProcess().getPeerTemplates().put(name, _currentTemplatePeer);
    }
