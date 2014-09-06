@@ -1,4 +1,6 @@
 !
+hostname address_family
+!
 router bgp 1
  !
  address-family ipv4
