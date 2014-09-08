@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -106,6 +107,8 @@ public class Batfish implements AutoCloseable {
    private static final String FIB_PREDICATE_NAME = "FibNetworkForward";
    private static final String FIBS_FILENAME = "fibs";
    private static final String FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME = "fibs-policy-route";
+   private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = { (byte) 0xac,
+         (byte) 0xed, (byte) 0x00, (byte) 0x05 };
    private static final String PREDICATE_INFO_FILENAME = "predicateInfo.object";
    private static final String SEPARATOR = System.getProperty("file.separator");
    private static final String STATIC_FACT_BLOCK_PREFIX = "libbatfish:";
@@ -414,7 +417,7 @@ public class Batfish implements AutoCloseable {
       ObjectInputStream ois;
       try {
          fis = new FileInputStream(inputFile);
-         if (_settings.getSerializeToText()) {
+         if (!isJavaSerializationData(inputFile)) {
             XStream xstream = new XStream(new DomDriver("UTF-8"));
             ois = xstream.createObjectInputStream(fis);
          }
@@ -827,6 +830,22 @@ public class Batfish implements AutoCloseable {
       _lbFrontends.add(lbFrontend);
       return lbFrontend;
 
+   }
+
+   private boolean isJavaSerializationData(File inputFile) {
+      try (FileInputStream i = new FileInputStream(inputFile)) {
+         int headerLength = JAVA_SERIALIZED_OBJECT_HEADER.length;
+         byte[] headerBytes = new byte[headerLength];
+         int result = i.read(headerBytes, 0, headerLength);
+         if (result != headerLength) {
+            throw new BatfishException("Read wrong number of bytes");
+         }
+         return Arrays.equals(headerBytes, JAVA_SERIALIZED_OBJECT_HEADER);
+      }
+      catch (IOException e) {
+         throw new BatfishException("Could not read header from file: "
+               + inputFile.toString(), e);
+      }
    }
 
    private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
