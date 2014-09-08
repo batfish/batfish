@@ -461,7 +461,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          name = ctx.numbered.name.getText();
       }
       _currentExtendedAcl = new ExtendedAccessList(name);
-      _currentExtendedAcl.setContext(ctx);
       _configuration.getExtendedAcls().put(name, _currentExtendedAcl);
    }
 
@@ -548,7 +547,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       String name = ctx.name.getText();
 
       _currentExtendedAcl = new ExtendedAccessList(name, ipV6);
-      //_currentExtendedAcl.setContext(ctx);
       _configuration.getExtendedAcls().put(name, _currentExtendedAcl);
    }
 

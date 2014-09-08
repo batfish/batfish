@@ -10,7 +10,6 @@ public class ExtendedAccessList implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private transient Extended_access_list_stanzaContext _context;
    private String _id;
    private List<ExtendedAccessListLine> _lines;
 
@@ -34,10 +33,6 @@ public class ExtendedAccessList implements Serializable {
       _lines.add(all);
    }
 
-   public Extended_access_list_stanzaContext getContext() {
-      return _context;
-   }
-
    public String getId() {
       return _id;
    }
@@ -50,10 +45,6 @@ public class ExtendedAccessList implements Serializable {
       return _isIpV6;
    }
    
-   public void setContext(Extended_access_list_stanzaContext ctx) {
-      _context = ctx;
-   }
-
    @Override
    public String toString() {
       String output = super.toString() + "\n" + "Identifier: " + _id;
