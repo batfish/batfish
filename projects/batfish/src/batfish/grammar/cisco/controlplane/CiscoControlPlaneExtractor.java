@@ -822,6 +822,10 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       if (ctx.maxpl != null) {
          maxLen = toInteger(ctx.maxpl);
       }
+      if (ctx.eqpl != null) {
+         minLen = toInteger(ctx.eqpl);
+         maxLen = toInteger(ctx.eqpl);
+      }
       SubRange lengthRange = new SubRange(minLen, maxLen);
       PrefixListLine line = new PrefixListLine(action, prefix, prefixLength,
             lengthRange);

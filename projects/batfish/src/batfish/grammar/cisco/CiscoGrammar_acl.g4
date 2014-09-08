@@ -335,6 +335,10 @@ ip_prefix_list_tail
       (
          LE maxpl = DEC
       )
+      |
+      (
+         EQ eqpl = DEC
+      )
    )* NEWLINE
 ;
 
