@@ -53,6 +53,35 @@ appletalk_access_list_stanza
    numbered = appletalk_access_list_numbered_stanza
 ;
 
+extended_access_list_additional_feature
+:
+   (
+      ECHO_REPLY
+      | ECHO
+      | ESTABLISHED
+      | FRAGMENTS
+      | HOST_UNKNOWN
+      | HOST_UNREACHABLE
+      | LOG
+      | LOG_INPUT
+      | ND_NA
+      | ND_NS
+      | NETWORK_UNKNOWN
+      | NET_UNREACHABLE
+      | PACKET_TOO_BIG
+      | PARAMETER_PROBLEM
+      | PORT_UNREACHABLE
+      | REDIRECT
+      | RST
+      | SOURCE_QUENCH
+      | TIME_EXCEEDED
+      | TRACKED
+      | TTL_EXCEEDED
+      | TTL EQ DEC
+      | UNREACHABLE            
+   )
+;
+
 extended_access_list_named_stanza
 :
    IP ACCESS_LIST EXTENDED name = ~NEWLINE NEWLINE
@@ -114,27 +143,7 @@ extended_access_list_tail
    (
       alps_dst = port_specifier
    )?
-   (
-      ECHO_REPLY
-      | ECHO
-      | ESTABLISHED
-      | FRAGMENTS
-      | HOST_UNKNOWN
-      | HOST_UNREACHABLE
-      | LOG
-      | LOG_INPUT
-      | NETWORK_UNKNOWN
-      | NET_UNREACHABLE
-      | PACKET_TOO_BIG
-      | PARAMETER_PROBLEM
-      | PORT_UNREACHABLE
-      | REDIRECT
-      | RST
-      | SOURCE_QUENCH
-      | TIME_EXCEEDED
-      | TTL_EXCEEDED
-      | UNREACHABLE
-   )? NEWLINE
+   feature = extended_access_list_additional_feature? NEWLINE
 ;
 
 ip_as_path_access_list_stanza
@@ -391,24 +400,29 @@ nexus_access_list_stanza
 
 nexus_access_list_tail
 :
-   num = DEC ala = access_list_action prot = protocol srcipr = access_list_ip_range
-	(
-		alps_src = port_specifier
-	)? dstipr = access_list_ip_range
-	(
-		alps_dst = port_specifier
-	)? 
-	(
-      ECHO_REPLY
-	   | ECHO	   
-	   | ESTABLISHED
-	   | ND_NA
-	   | ND_NS
-	   | PACKET_TOO_BIG
-		| TRACKED
-		| TTL EQ DEC
-	)? NEWLINE
+   num = DEC extended_access_list_tail
 ;
+
+//nexus_access_list_tail
+//:
+//   num = DEC ala = access_list_action prot = protocol srcipr = access_list_ip_range
+//	(
+//		alps_src = port_specifier
+//	)? dstipr = access_list_ip_range
+//	(
+//		alps_dst = port_specifier
+//	)? 
+//	(
+//      ECHO_REPLY
+//	   | ECHO	   
+//	   | ESTABLISHED
+//	   | ND_NA
+//	   | ND_NS
+//	   | PACKET_TOO_BIG
+//		| TRACKED
+//		| TTL EQ DEC
+//	)? NEWLINE
+//;
 
 protocol_type_code_access_list_numbered_stanza
 locals [boolean again]

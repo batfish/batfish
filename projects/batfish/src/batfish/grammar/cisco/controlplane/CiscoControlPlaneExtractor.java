@@ -93,6 +93,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       if (ctx.ip != null) {
          return toIp(ctx.ip);
       }
+      else if (ctx.prefix != null) {
+         return getPrefixIp(ctx.prefix);
+      }
       else {
          return new Ip(0l);
       }
@@ -138,6 +141,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else if (ctx.LPD() != null) {
          return 515;
       }
+      else if (ctx.MLAG() != null) {
+         return 6784;
+      }
       else if (ctx.NETBIOS_DGM() != null) {
          return 138;
       }
@@ -162,6 +168,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else if (ctx.POP3() != null) {
          return 110;
       }
+      else if (ctx.RIP() != null) {
+         return 520;
+      }
       else if (ctx.SMTP() != null) {
          return 25;
       }
@@ -170,6 +179,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       }
       else if (ctx.SNMPTRAP() != null) {
          return 162;
+      }
+      else if (ctx.SSH() != null) {
+         return 22;
       }
       else if (ctx.SUNRPC() != null) {
          return 111;
@@ -254,6 +266,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else if (ctx.AHP() != null) {
          return 51;
       }
+      else if (ctx.EIGRP() != null) {
+         return 88;
+      }
       else if (ctx.ESP() != null) {
          return 50;
       }
@@ -304,6 +319,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       }
       else if (ctx.HOST() != null) {
          return new Ip(0l);
+      }
+      else if (ctx.prefix != null) {
+         int pfxLength = getPrefixLength(ctx.prefix);
+         long ipAsLong = 0xFFFFFFFFl >>> pfxLength;
+         return new Ip(ipAsLong);         
       }
       else {
          throw new Error("bad extended ip access list ip range");
@@ -509,6 +529,24 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
+   public void enterNexus_access_list_stanza(
+         Nexus_access_list_stanzaContext ctx) {
+
+      boolean ipV6 = (ctx.IPV6() != null);
+      
+      if (ipV6) {
+         todo(ctx, "Do not handle IPv6 yet");
+      }
+      
+      String name = ctx.name.getText();
+
+      _currentExtendedAcl = new ExtendedAccessList(name, ipV6);
+      //_currentExtendedAcl.setContext(ctx);
+      _configuration.getExtendedAcls().put(name, _currentExtendedAcl);
+   }
+
+
+   @Override
    public void enterRoute_map_stanza(Route_map_stanzaContext ctx) {
       String name = ctx.named.name.getText();
       _currentRouteMap = new RouteMap(name);
@@ -656,6 +694,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitExtended_access_list_tail(
          Extended_access_list_tailContext ctx) {
+      
+      if (_currentExtendedAcl.IsIpV6()) {
+         return;
+      }
+      
       LineAction action = getAccessListAction(ctx.ala);
       int protocol = getProtocolNumber(ctx.prot);
       Ip srcIp = getIp(ctx.srcipr);
