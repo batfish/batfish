@@ -522,8 +522,15 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void enterIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
+      
+      boolean isIpV6 = (ctx.named.IPV6() != null);
+      
+      if (isIpV6) {
+         todo(ctx, "IPV6 is not supported yet");
+      }
+            
       String name = ctx.named.name.getText();
-      _currentPrefixList = new PrefixList(name);
+      _currentPrefixList = new PrefixList(name, isIpV6);
       _currentPrefixList.setContext(ctx);
       _configuration.getPrefixLists().put(name, _currentPrefixList);
    }
@@ -695,7 +702,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void exitExtended_access_list_tail(
          Extended_access_list_tailContext ctx) {
       
-      if (_currentExtendedAcl.IsIpV6()) {
+      if (_currentExtendedAcl.isIpV6()) {
          return;
       }
       
@@ -853,6 +860,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       /*
        * if (ctx.seqnum != null) { int seqnum = toInteger(ctx.seqnum); }
        */
+      
+      if (_currentPrefixList.isIpV6()) {
+         return;
+      }
+      
       LineAction action = getAccessListAction(ctx.action);
       Ip prefix = getPrefixIp(ctx.prefix);
       int prefixLength = getPrefixLength(ctx.prefix);

@@ -616,7 +616,6 @@ null_standalone_stanza
                OSPF NAME_LOOKUP
             )
             | PIM
-            | PREFIX_LIST
             | ROUTE
             | SOURCE_ROUTE
             | UNICAST_ROUTING

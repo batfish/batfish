@@ -304,13 +304,13 @@ ip_prefix_list_stanza
 ip_prefix_list_named_stanza
 locals [boolean again]
 :
-   IP PREFIX_LIST name = VARIABLE
+   (IP | IPV6) PREFIX_LIST name = VARIABLE
    (
       ip_prefix_list_tail
       | ip_prefix_list_null_tail
    )
    {
-		$again = _input.LT(1).getType() == IP &&
+		$again = (_input.LT(1).getType() == IP || _input.LT(1).getType() == IPV6) &&
 		_input.LT(2).getType() == PREFIX_LIST &&
 		_input.LT(3).getType() == VARIABLE &&
 		_input.LT(3).getText().equals($name.text);
@@ -335,7 +335,11 @@ ip_prefix_list_tail
 :
    (
       SEQ seqnum = DEC
-   )? action = access_list_action prefix = IP_PREFIX
+   )? action = access_list_action 
+   (
+      prefix = IP_PREFIX
+      | ipv6_prefix = IPV6_PREFIX
+   )
    (
       (
          GE minpl = DEC

@@ -46,7 +46,7 @@ public class ExtendedAccessList implements Serializable {
       return _lines;
    }
 
-   public boolean IsIpV6() {
+   public boolean isIpV6() {
       return _isIpV6;
    }
    
