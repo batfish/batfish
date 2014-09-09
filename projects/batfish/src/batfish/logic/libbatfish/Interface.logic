@@ -27,6 +27,9 @@ Interface(x),
 Interface_DYNAMIC[] = interface ->
    Interface(interface).
 
+Interface_FLOW_SINK_TERMINATION[] = interface ->
+   Interface(interface).
+
 Interface_NULL[] = interface ->
    Interface(interface).
 

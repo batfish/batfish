@@ -69,6 +69,7 @@ import batfish.z3.node.PostInExpr;
 import batfish.z3.node.PostInInterfaceExpr;
 import batfish.z3.node.PostOutInterfaceExpr;
 import batfish.z3.node.PreInInterfaceExpr;
+import batfish.z3.node.PreOutEdgeExpr;
 import batfish.z3.node.PreOutExpr;
 import batfish.z3.node.PreOutInterfaceExpr;
 import batfish.z3.node.RuleExpr;
@@ -241,11 +242,6 @@ public class Synthesizer {
       return lcIfaceName.startsWith("lo");
    }
 
-   private static boolean isNullInterface(String ifaceName) {
-      String lcIfaceName = ifaceName.toLowerCase();
-      return lcIfaceName.startsWith("null");
-   }
-
    private static IntExpr newExtractExpr(String var, int low, int high) {
       int varSize = PACKET_VAR_SIZES.get(var);
       return newExtractExpr(var, varSize, low, high);
@@ -327,7 +323,7 @@ public class Synthesizer {
       return statements;
    }
 
-   private List<Statement> getDestRouteToPreOutIfaceRules() {
+   private List<Statement> getDestRouteToPreOutEdgeRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements
             .add(new Comment(
@@ -338,7 +334,7 @@ public class Synthesizer {
          if (firstRow.getPrefix().asLong() != 0) {
             // no default route, so add one that drops traffic
             FibRow dropDefaultRow = new FibRow(new Ip(0), 0,
-                  FibRow.DROP_INTERFACE);
+                  FibRow.DROP_INTERFACE, "", "");
             fibSet.add(dropDefaultRow);
          }
          FibRow[] fib = fibSet.toArray(new FibRow[] {});
@@ -362,10 +358,14 @@ public class Synthesizer {
                      continue;
                   }
                   if (currentRow.getInterface().equals(
-                        specificRow.getInterface())) {
+                        specificRow.getInterface())
+                        && currentRow.getNextHop().equals(
+                              specificRow.getNextHop())
+                        && currentRow.getNextHopInterface().equals(
+                              specificRow.getNextHopInterface())) {
                      // no need to exclude packets matching the more specific
                      // prefix,
-                     // since they would go out same interface
+                     // since they would go out same edge
                      continue;
                   }
                   // exclude packets that match a more specific prefix that
@@ -383,11 +383,14 @@ public class Synthesizer {
             PacketRelExpr action;
             if (ifaceOutName.equals(FibRow.DROP_INTERFACE)
                   || isLoopbackInterface(ifaceOutName)
-                  || isNullInterface(ifaceOutName)) {
+                  || Util.isNullInterface(ifaceOutName)) {
                action = new NodeDropExpr(hostname);
             }
             else {
-               action = new PreOutInterfaceExpr(hostname, ifaceOutName);
+               String nextHop = currentRow.getNextHop();
+               String ifaceInName = currentRow.getNextHopInterface();
+               action = new PreOutEdgeExpr(hostname, ifaceOutName, nextHop,
+                     ifaceInName);
             }
 
             // must not match more specific routes
@@ -938,6 +941,28 @@ public class Synthesizer {
       return statements;
    }
 
+   private List<Statement> getPreOutEdgeToPreOutInterfaceRules() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements.add(new Comment("PreOutEdge => PreOutInterface"));
+      for (Edge edge : _topologyEdges) {
+         String hostnameOut = edge.getNode1();
+         String hostnameIn = edge.getNode2();
+         String intOut = edge.getInt1();
+         String intIn = edge.getInt2();
+         if (intIn.startsWith(FAKE_INTERFACE_PREFIX)
+               || intOut.startsWith(FAKE_INTERFACE_PREFIX)) {
+            continue;
+         }
+         PreOutEdgeExpr preOutEdge = new PreOutEdgeExpr(hostnameOut, intOut,
+               hostnameIn, intIn);
+         PreOutInterfaceExpr preOutInt = new PreOutInterfaceExpr(hostnameOut,
+               intOut);
+         RuleExpr rule = new RuleExpr(preOutEdge, preOutInt);
+         statements.add(rule);
+      }
+      return statements;
+   }
+
    private List<Statement> getPreOutInterfaceToPostOutInterfaceRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements
@@ -1062,9 +1087,14 @@ public class Synthesizer {
 
          PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(
                hostnameOut, intOut);
+         PreOutEdgeExpr preOutEdge = new PreOutEdgeExpr(hostnameOut, intOut,
+               hostnameIn, intIn);
          PreInInterfaceExpr preInIface = new PreInInterfaceExpr(hostnameIn,
                intIn);
-         RuleExpr propagateToAdjacent = new RuleExpr(postOutIface, preInIface);
+         AndExpr conditions = new AndExpr();
+         conditions.addConjunct(postOutIface);
+         conditions.addConjunct(preOutEdge);
+         RuleExpr propagateToAdjacent = new RuleExpr(conditions, preInIface);
          statements.add(propagateToAdjacent);
       }
       return statements;
@@ -1098,7 +1128,8 @@ public class Synthesizer {
       List<Statement> postInToNodeAcceptRules = getPostInToNodeAcceptRules();
       List<Statement> postInToPreOutRules = getPostInToPreOutRules();
       List<Statement> preOutToDestRouteRules = getPreOutToDestRouteRules();
-      List<Statement> destRouteToPreOutIfaceRules = getDestRouteToPreOutIfaceRules();
+      List<Statement> destRouteToPreOutEdgeRules = getDestRouteToPreOutEdgeRules();
+      List<Statement> preOutEdgeTopreOutInterfaceRules = getPreOutEdgeToPreOutInterfaceRules();
       List<Statement> policyRouteRules = getPolicyRouteRules();
       List<Statement> matchAclRules = getMatchAclRules();
       List<Statement> toNeighborsRules = getToNeighborsRules();
@@ -1113,7 +1144,8 @@ public class Synthesizer {
       rules.addAll(postInToNodeAcceptRules);
       rules.addAll(postInToPreOutRules);
       rules.addAll(preOutToDestRouteRules);
-      rules.addAll(destRouteToPreOutIfaceRules);
+      rules.addAll(destRouteToPreOutEdgeRules);
+      rules.addAll(preOutEdgeTopreOutInterfaceRules);
       rules.addAll(policyRouteRules);
       rules.addAll(matchAclRules);
       rules.addAll(toNeighborsRules);

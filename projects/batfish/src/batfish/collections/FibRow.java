@@ -12,13 +12,18 @@ public class FibRow implements Comparable<FibRow>, Serializable {
    private static final long serialVersionUID = 1L;
 
    private String _interface;
+   private String _nextHop;
+   private String _nextHopInterface;
    private Ip _prefix;
    private int _prefixLength;
 
-   public FibRow(Ip prefix, int prefixLength, String iface) {
+   public FibRow(Ip prefix, int prefixLength, String iface, String nextHop,
+         String nextHopInterface) {
       _prefix = prefix;
       _prefixLength = prefixLength;
       _interface = iface;
+      _nextHop = nextHop;
+      _nextHopInterface = nextHopInterface;
    }
 
    @Override
@@ -28,7 +33,19 @@ public class FibRow implements Comparable<FibRow>, Serializable {
          int lengthComparison = Integer.compare(_prefixLength,
                rhs._prefixLength);
          if (lengthComparison == 0) {
-            return _interface.compareTo(rhs._interface);
+            int interfaceComparison = _interface.compareTo(rhs._interface);
+            if (interfaceComparison == 0) {
+               int nextHopComparison = _nextHop.compareTo(rhs._nextHop);
+               if (nextHopComparison == 0) {
+                  return _nextHopInterface.compareTo(rhs._nextHopInterface);
+               }
+               else {
+                  return nextHopComparison;
+               }
+            }
+            else {
+               return interfaceComparison;
+            }
          }
          else {
             return lengthComparison;
@@ -56,6 +73,14 @@ public class FibRow implements Comparable<FibRow>, Serializable {
       return new Ip(lastIpAsLong);
    }
 
+   public String getNextHop() {
+      return _nextHop;
+   }
+
+   public String getNextHopInterface() {
+      return _nextHopInterface;
+   }
+
    public Ip getPrefix() {
       return _prefix;
    }
@@ -70,6 +95,8 @@ public class FibRow implements Comparable<FibRow>, Serializable {
       int result = 1;
       result = prime * result + _interface.hashCode();
       result = prime * result + _prefix.hashCode();
+      result = prime * result + _nextHop.hashCode();
+      result = prime * result + _nextHopInterface.hashCode();
       result = prime * result + _prefixLength;
       return result;
    }

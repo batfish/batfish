@@ -104,7 +104,7 @@ public class Batfish implements AutoCloseable {
    private static final String BASIC_FACTS_BLOCKNAME = "BaseFacts";
    private static final String EDGES_FILENAME = "edges";
    private static final String FIB_POLICY_ROUTE_NEXT_HOP_PREDICATE_NAME = "FibForwardPolicyRouteNextHopIp";
-   private static final String FIB_PREDICATE_NAME = "FibNetworkForward";
+   private static final String FIB_PREDICATE_NAME = "FibNetwork";
    private static final String FIBS_FILENAME = "fibs";
    private static final String FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME = "fibs-policy-route";
    private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = { (byte) 0xac,
@@ -659,7 +659,7 @@ public class Batfish implements AutoCloseable {
       lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nodeList,
             fibPolicyRouteNextHops.getColumns().get(0));
       List<String> ipList = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_INDEX_IP, ipList,
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_IP, ipList,
             fibPolicyRouteNextHops.getColumns().get(1));
       List<String> interfaces = new ArrayList<String>();
       lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, interfaces,
@@ -695,18 +695,24 @@ public class Batfish implements AutoCloseable {
       return Paths.get(logicDir.toString(), PREDICATE_INFO_FILENAME).toString();
    }
 
-   private FibMap getRouteForwardingRules(Relation installedRoutes,
+   private FibMap getRouteForwardingRules(Relation fibNetworkForward,
          LogicBloxFrontend lbFrontend) {
       FibMap fibs = new FibMap();
       List<String> nameList = new ArrayList<String>();
       lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nameList,
-            installedRoutes.getColumns().get(0));
+            fibNetworkForward.getColumns().get(0));
       List<String> networkList = new ArrayList<String>();
       lbFrontend.fillColumn(LBValueType.ENTITY_INDEX_NETWORK, networkList,
-            installedRoutes.getColumns().get(1));
-      List<String> interfaces = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, interfaces,
-            installedRoutes.getColumns().get(2));
+            fibNetworkForward.getColumns().get(1));
+      List<String> interfaceList = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, interfaceList,
+            fibNetworkForward.getColumns().get(2));
+      List<String> nextHopList = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nextHopList,
+            fibNetworkForward.getColumns().get(3));
+      List<String> nextHopIntList = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nextHopIntList,
+            fibNetworkForward.getColumns().get(4));
 
       String currentHostname = "";
       Map<String, Integer> startIndices = new HashMap<String, Integer>();
@@ -728,13 +734,17 @@ public class Batfish implements AutoCloseable {
          int startIndex = startIndices.get(hostname);
          int endIndex = endIndices.get(hostname);
          for (int i = startIndex; i <= endIndex; i++) {
-            String networkString = networkList.get(i);
-            Ip networkAddress = new Ip(
-                  Util.getIpFromIpSubnetPair(networkString));
-            int prefixLength = Util
-                  .getPrefixLengthFromIpSubnetPair(networkString);
-            String iface = interfaces.get(i);
-            fibRows.add(new FibRow(networkAddress, prefixLength, iface));
+            String networkStr = networkList.get(i);
+            String[] networkStrs = networkStr.split("/");
+            String prefixStr = networkStrs[0];
+            String prefixLengthStr = networkStrs[1];
+            Ip prefix = new Ip(prefixStr);
+            int prefixLength = Integer.parseInt(prefixLengthStr);
+            String iface = interfaceList.get(i);
+            String nextHop = nextHopList.get(i);
+            String nextHopInt = nextHopIntList.get(i);
+            fibRows.add(new FibRow(prefix, prefixLength, iface, nextHop,
+                  nextHopInt));
          }
       }
       return fibs;

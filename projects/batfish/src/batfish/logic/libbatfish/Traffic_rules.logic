@@ -50,6 +50,8 @@ FlowDropped(flow, node) <-
    FlowDeniedOut(flow, node, _, _, _).   
 FlowDropped(flow, node) <-
    FlowNoRoute(flow, node).
+FlowDropped(flow, node) <-
+   FlowNullRouted(flow, node).
 
 FlowInconsistent(flow) <-
    FlowLost(flow),
@@ -65,7 +67,12 @@ FlowLost(flow) <-
 FlowNoRoute(flow, node) <-
    FlowReachPreOut(flow, node),
    Flow_dstIp[flow] = dstIp,
-   !FibForward(node, dstIp, _).
+   !FibRoute(node, dstIp).
+
+FlowNullRouted(flow, node) <-
+   Flow_dstIp[flow] = dstIp,
+   FlowReachPreOut(flow, node),
+   FibDrop(node, dstIp).
 
 FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow,
 Flow(flow),
@@ -108,7 +115,7 @@ FlowReachPostOutInterface(flow, node, interface) <-
    
 FlowReachPreInInterface(flow, node, interface) <-
    FlowReachPostOutInterface(flow, prevNode, prevInterface),
-   LanAdjacent(prevNode, prevInterface, node, interface).
+   FlowReachPreOutEdge(flow, prevNode, prevInterface, node, interface).
    
 FlowReachPreOut(flow, node) <-
    FlowReachPostIn(flow, node),
@@ -116,26 +123,29 @@ FlowReachPreOut(flow, node) <-
    !HasIp(node, dstIp).
 
 FlowReachPreOutInterface(flow, node, interface) <-
-   FlowReachPreOutInterfaceOrigin(flow, node, interface) ;
-   FlowReachPreOutInterfaceStandard(flow, node, interface) ;
-   FlowReachPreOutInterfacePolicyRoute(flow, node, interface).
+   FlowReachPreOutEdge(flow, node, interface, _, _).
 
-FlowReachPreOutInterfaceOrigin(flow, node, interface) <-
+FlowReachPreOutEdge(flow, node, interface, nextHop, nextHopInt) <-
+   FlowReachPreOutEdgeOrigin(flow, node, interface, nextHop, nextHopInt) ;
+   FlowReachPreOutEdgeStandard(flow, node, interface, nextHop, nextHopInt) ;
+   FlowReachPreOutEdgePolicyRoute(flow, node, interface, nextHop, nextHopInt).
+
+FlowReachPreOutEdgeOrigin(flow, node, interface, nextHop, nextHopInt) <-
    FlowReachPreOut(flow, node),
    Flow_dstIp[flow] = dstIp,
-   FibForward(node, dstIp, interface),
+   FibForward(node, dstIp, interface, nextHop, nextHopInt),
    Flow_node[flow] = node.
 
-FlowReachPreOutInterfacePolicyRoute(flow, node, interface) <-
+FlowReachPreOutEdgePolicyRoute(flow, node, interface, nextHop, nextHopInt) <-
    FlowReachPolicyRoute(flow, node, policy),
    PolicyMapPermitFlow(policy, clause, flow),
    SetPolicyMapClauseSetNextHopIp(policy, clause, nextHopIp),
-   FibForward(node, nextHopIp, interface).
+   FibForward(node, nextHopIp, interface, nextHop, nextHopInt).
 
-FlowReachPreOutInterfaceStandard(flow, node, interface) <-
+FlowReachPreOutEdgeStandard(flow, node, interface, nextHop, nextHopInt) <-
    FlowReachPreOut(flow, node),
    Flow_dstIp[flow] = dstIp,
-   FibForward(node, dstIp, interface),
+   FibForward(node, dstIp, interface, nextHop, nextHopInt),
    FlowReachPostInInterface(flow, node, inInt),
    (
       !SetInterfaceRoutingPolicy(node, inInt, _) ;

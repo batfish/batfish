@@ -777,8 +777,8 @@ public class ConfigurationFactExtractor {
             int prefix_length = subnetMask.numSubnetBits();
             long network_start = ipInt & subnet;
             long network_end = Util.getNetworkEnd(network_start, prefix_length);
-            wSetNetwork.append("" + network_start + "|" + network_end + "|"
-                  + prefix_length + "\n");
+            wSetNetwork.append(network_start + "|" + network_start + "|"
+                  + network_end + "|" + prefix_length + "\n");
             wSetIpInt.append(hostname + "|" + interfaceName + "|" + ip.asLong()
                   + "|" + prefix_length + "\n");
          }
@@ -803,9 +803,12 @@ public class ConfigurationFactExtractor {
          int distance = route.getDistance();
          int tag = route.getTag();
          String nextHopInt = route.getNextHopInterface();
-         wSetNetwork.append(network_start + "|" + network_end + "|"
-               + prefix_length + "\n");
+         wSetNetwork.append(network_start + "|" + network_start + "|"
+               + network_end + "|" + prefix_length + "\n");
          if (nextHopInt != null) { // use next hop interface instead
+            if (Util.isNullInterface(nextHopInt)) {
+               nextHopInt = Util.NULL_INTERFACE_NAME;
+            }
             wSetStaticIntRoute_flat.append(hostName + "|" + network_start + "|"
                   + network_end + "|" + prefix_length + "|"
                   + nextHopIp.asLong() + "|" + nextHopInt + "|" + distance

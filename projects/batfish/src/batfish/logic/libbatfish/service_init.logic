@@ -102,7 +102,7 @@ block(`service_init) {
          file_binding_definition_name[] = "SetNetwork",
          predicate_binding_by_name["libbatfish:Ip:SetNetwork"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "START,END,PREFIXLENGTH"
+               predicate_binding_columns[] = "STARTIP,START,END,PREFIXLENGTH"
             }
       }.
 

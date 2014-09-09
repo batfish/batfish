@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 public class Util {
    public static final String FACT_BLOCK_FOOTER = "\n//FACTS END HERE\n"
          + "   }) // clauses\n" + "} <-- .\n";
+   public static final String NULL_INTERFACE_NAME = "null_interface";
 
    public static String applyPrefix(String prefix, String msg) {
       String[] lines = msg.split("\n");
@@ -160,6 +161,11 @@ public class Util {
    public static boolean isLoopback(String interfaceName) {
       return (interfaceName.startsWith("Loopback") || interfaceName
             .startsWith("lo"));
+   }
+
+   public static boolean isNullInterface(String ifaceName) {
+      String lcIfaceName = ifaceName.toLowerCase();
+      return lcIfaceName.startsWith("null");
    }
 
    public static String longToCommunity(Long l) {
