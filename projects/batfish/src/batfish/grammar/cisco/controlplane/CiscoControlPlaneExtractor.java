@@ -1077,7 +1077,12 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       Ip ip = toIp(ctx.ip_address);
 
       proc.addIpPeerGroup(ip);
-
+            
+      if (ctx.REMOTE_AS() != null) {
+         BgpPeerGroup pg = proc.getPeerGroup(ip.toString());
+         pg.setRemoteAS(toInteger(ctx.asnum));          
+      }
+      
       for (Neighbor_nexus_tailContext tCtx : ctx.tail) {
          if (tCtx.neighbor_nexus_inherit_stanza() != null) {
             Neighbor_nexus_inherit_stanzaContext inheritCtx = tCtx

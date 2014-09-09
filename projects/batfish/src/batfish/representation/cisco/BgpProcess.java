@@ -103,7 +103,7 @@ public class BgpProcess implements Serializable {
       }
    }
 
-   public void addPeerGroupMember(Ip address, String namedPeerGroupName) {
+   public void addPeerGroupMember(Ip address, String namedPeerGroupName) throws IllegalArgumentException {
       NamedBgpPeerGroup namedPeerGroup = _namedPeerGroups
             .get(namedPeerGroupName);
       if (namedPeerGroup != null) {
@@ -166,7 +166,7 @@ public class BgpProcess implements Serializable {
       _peerTemplates.put(peerTemplateName, pt);
    }
 
-   public void addPeerTemplateInheritance(String peerTemplateName, Ip ipAddress) {
+   public void addPeerTemplateInheritance(String peerTemplateName, Ip ipAddress) throws IllegalArgumentException {
       BgpPeerTemplatePeerGroup peerTemplate = _peerTemplates.get(peerTemplateName);      
       if (peerTemplate != null) {
          IpBgpPeerGroup ipPeerGroup = _ipPeerGroups.get(ipAddress);

@@ -30,7 +30,7 @@ public class IpBgpPeerGroup extends BgpPeerGroup {
       return _ip.toString();
    }
 
-   public void setGroupName(String name) throws Exception {
+   public void setGroupName(String name) throws IllegalArgumentException {
       if (_peerTemplateName != null)
       {
          throw new IllegalArgumentException("Peer Template name has been set.");
@@ -38,7 +38,7 @@ public class IpBgpPeerGroup extends BgpPeerGroup {
       _groupName = name;
    }
 
-   public void setPeerTemplateName(String name) throws Exception {
+   public void setPeerTemplateName(String name) throws IllegalArgumentException {
       if (_groupName != null)
       {
          throw new IllegalArgumentException("Group name has been set.");
