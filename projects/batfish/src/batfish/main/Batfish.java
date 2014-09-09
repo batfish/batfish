@@ -556,33 +556,48 @@ public class Batfish implements AutoCloseable {
             FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME);
       Path edgesPath = Paths.get(_settings.getDataPlaneDir(), EDGES_FILENAME);
 
-      print(1, "Deserializing destination route fibs..");
+      print(1, "Deserializing destination route fibs: \"" + fibsPath.toString()
+            + "\"..");
       FibMap fibs = (FibMap) deserializeObject(fibsPath.toFile());
       print(1, "OK\n");
 
-      print(1, "Deserializing policy route fibs..");
+      print(1, "Deserializing policy route fibs: \"" + prFibsPath.toString()
+            + "\"..");
       PolicyRouteFibNodeMap prFibs = (PolicyRouteFibNodeMap) deserializeObject(prFibsPath
             .toFile());
       print(1, "OK\n");
 
-      print(1, "Deserializing toplogy edges..");
+      print(1, "Deserializing toplogy edges: \"" + edgesPath.toString()
+            + "\"..");
       EdgeSet topologyEdges = (EdgeSet) deserializeObject(edgesPath.toFile());
       print(1, "OK\n");
 
       print(1, "Synthesizing Z3 logic..");
       Synthesizer s = new Synthesizer(configurations, fibs, prFibs,
             topologyEdges, _settings.getSimplify());
-      try {
-         s.synthesize(_settings.getZ3File());
+      String result = s.synthesize();
+      List<String> warnings = s.getWarnings();
+      int numWarnings = warnings.size();
+      if (numWarnings == 0) {
+         print(1, "OK\n");
       }
-      catch (IOException e) {
-         throw new Error("Failed to generated Z3 logic", e);
+      else {
+         for (String warning : warnings) {
+            error(1, warning);
+         }
       }
+
+      String outputPath = _settings.getZ3File();
+      print(1, "Writing Z3 logic: \"" + outputPath + "\"..");
+      File z3Out = new File(outputPath);
+      z3Out.delete();
+      writeFile(outputPath, result);
       print(1, "OK\n");
 
-      print(1, "Serializing node set..");
+      String nodeSetPath = _settings.getNodeSetPath();
+      print(1, "Serializing node set: \"" + nodeSetPath + "\"..");
       NodeSet nodeSet = s.getNodeSet();
-      serializeObject(nodeSet, new File(_settings.getNodeSetPath()));
+      serializeObject(nodeSet, new File(nodeSetPath));
       print(1, "OK\n");
 
       printElapsedTime();
@@ -1137,6 +1152,9 @@ public class Batfish implements AutoCloseable {
          ConfigurationFactExtractor cfe = new ConfigurationFactExtractor(c,
                communities, factBins);
          cfe.writeFacts();
+         for (String warning : cfe.getWarnings()) {
+            error(1, warning);
+         }
       }
       printElapsedTime();
    }

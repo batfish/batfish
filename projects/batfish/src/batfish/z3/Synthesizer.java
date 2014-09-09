@@ -1,7 +1,5 @@
 package batfish.z3;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -11,8 +9,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
-import org.apache.commons.io.FileUtils;
 
 import batfish.collections.EdgeSet;
 import batfish.collections.FibMap;
@@ -258,16 +254,12 @@ public class Synthesizer {
    }
 
    private final Map<String, Configuration> _configurations;
-
    private final FibMap _fibs;
-
    private final PolicyRouteFibNodeMap _prFibs;
-
    private final boolean _simplify;
-
    private final EdgeSet _topologyEdges;
-
    private final Map<String, Set<Interface>> _topologyInterfaces;
+   private List<String> _warnings;
 
    public Synthesizer(Map<String, Configuration> configurations, FibMap fibs,
          PolicyRouteFibNodeMap prFibs, EdgeSet topologyEdges, boolean simplify) {
@@ -278,6 +270,7 @@ public class Synthesizer {
       _prFibs = prFibs;
       _simplify = simplify;
       _topologyInterfaces = new TreeMap<String, Set<Interface>>();
+      _warnings = new ArrayList<String>();
       computeTopologyInterfaces();
    }
 
@@ -518,6 +511,18 @@ public class Synthesizer {
             List<IpAccessListLine> lines = acl.getLines();
             for (int i = 0; i < lines.size(); i++) {
                IpAccessListLine line = lines.get(i);
+               // TODO: fix
+               boolean valid = line.isValid();
+               if (!valid) {
+                  _warnings
+                        .add("WARNING: IpAccessList "
+                              + hostname
+                              + ":"
+                              + aclName
+                              + " line "
+                              + i
+                              + ": ignored (will never be matched) because we do not know how to handle non-trailing wildcard bits\n");
+               }
 
                long dstIp = line.getDestinationIP().asLong();
                int dstIpWildcardBits = Util.numWildcardBits(line
@@ -587,12 +592,14 @@ public class Synthesizer {
 
                AclMatchExpr match = new AclMatchExpr(hostname, aclName, i);
 
-               RuleExpr matchRule = new RuleExpr(matchConditions, match);
+               RuleExpr matchRule = new RuleExpr(valid ? matchConditions
+                     : FalseExpr.INSTANCE, match);
                statements.add(matchRule);
 
                // no match rule
                AndExpr noMatchConditions = new AndExpr();
-               NotExpr noMatchLineCriteria = new NotExpr(matchLineCriteria);
+               BooleanExpr noMatchLineCriteria = valid ? new NotExpr(
+                     matchLineCriteria) : TrueExpr.INSTANCE;
                noMatchConditions.addConjunct(noMatchLineCriteria);
                noMatchConditions.addConjunct(prevNoMatch);
                AclNoMatchExpr noMatch = new AclNoMatchExpr(hostname, aclName, i);
@@ -1100,6 +1107,10 @@ public class Synthesizer {
       return statements;
    }
 
+   public List<String> getWarnings() {
+      return _warnings;
+   }
+
    private void pruneInterfaces() {
       for (Configuration c : _configurations.values()) {
          Set<String> prunedInterfaces = new HashSet<String>();
@@ -1116,7 +1127,7 @@ public class Synthesizer {
       }
    }
 
-   public void synthesize(String outputFileStr) throws IOException {
+   public String synthesize() {
       List<Statement> statements = new ArrayList<Statement>();
       List<Statement> rules = new ArrayList<Statement>();
       List<Statement> varDecls = getVarDeclExprs();
@@ -1158,8 +1169,6 @@ public class Synthesizer {
       statements.addAll(relDecls);
       statements.addAll(rules);
 
-      File z3Out = new File(outputFileStr);
-      z3Out.delete();
       StringBuilder sb = new StringBuilder();
       for (Statement statement : statements) {
          if (_simplify) {
@@ -1174,8 +1183,7 @@ public class Synthesizer {
 
       // hack to fix interface names with colons
       String output = sb.toString().replace(":", "_COLON_");
-
-      FileUtils.write(z3Out, output);
+      return output;
    }
 
 }
