@@ -23,9 +23,10 @@ public class Topology implements Serializable {
    public void dumpDot(OutputStream _out) {
       PrintStream out = new PrintStream(_out);
       out.println("digraph topology {");
-      for (Edge edge : _edges) {
-         out.println("  ");
-      }
+      //TODO: complete
+//      for (Edge edge : _edges) {
+//         out.println("  ");
+//      }
       out.println("}");
    }
 

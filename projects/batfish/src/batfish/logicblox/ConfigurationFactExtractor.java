@@ -1,5 +1,6 @@
 package batfish.logicblox;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +46,7 @@ import batfish.util.Util;
 import batfish.z3.Synthesizer;
 
 public class ConfigurationFactExtractor {
+
    private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 10;
 
    private static String getLBRoutingProtocol(Protocol prot) {
@@ -77,14 +79,19 @@ public class ConfigurationFactExtractor {
 
    private Set<Long> _allCommunities;
    private Configuration _configuration;
-
    private Map<String, StringBuilder> _factBins;
+   private List<String> _warnings;
 
    public ConfigurationFactExtractor(Configuration c, Set<Long> allCommunities,
          Map<String, StringBuilder> factBins) {
       _configuration = c;
       _allCommunities = allCommunities;
       _factBins = factBins;
+      _warnings = new ArrayList<String>();
+   }
+
+   public List<String> getWarnings() {
+      return _warnings;
    }
 
    private void writeBgpGeneratedRoutes() {
@@ -354,6 +361,15 @@ public class ConfigurationFactExtractor {
          List<IpAccessListLine> lines = ipAccessList.getLines();
          for (int i = 0; i < lines.size(); i++) {
             IpAccessListLine line = lines.get(i);
+            if (!line.isValid()) {
+               _warnings
+                     .add("WARNING: IpAccessList "
+                           + name
+                           + " line "
+                           + i
+                           + ": ignored (will never be matched) because we do not know how to handle non-trailing wildcard bits\n");
+               continue;
+            }
             int protocol = line.getProtocol();
             long dstIpStart = line.getDestinationIP().asLong();
             long dstIpEnd = line.getDestinationIP()
@@ -548,8 +564,12 @@ public class ConfigurationFactExtractor {
                case AS_PATH_ACCESS_LIST:
                   // TODO: implement
                   // throw new Error("not implemented");
-                  System.err
-                        .println("WARNING: Policy map matching of AS path acls not implemented!");
+                  _warnings
+                        .add("WARNING: "
+                              + mapName
+                              + ":"
+                              + i
+                              + ": Policy map matching of AS path acls not implemented!\n");
                   break;
 
                case COMMUNITY_LIST:
@@ -621,7 +641,8 @@ public class ConfigurationFactExtractor {
                case AS_PATH_PREPEND:
                   // TODO: implement
                   // throw new Error("not implemented");
-                  System.err.println("AS_PATH_PREPEND not implemented");
+                  _warnings.add("WARNING: " + mapName + ":" + i
+                        + ": AS_PATH_PREPEND not implemented\n");
                   break;
 
                case COMMUNITY:
@@ -721,8 +742,8 @@ public class ConfigurationFactExtractor {
 
             case THROUGH:
                // throw new Error("not implemented");
-               System.err.println("WARNING: " + hostname
-                     + ": route-filter through not implemented");
+               _warnings.add("WARNING: " + filterName + ":" + i
+                     + ": route-filter through not implemented\n");
                break;
 
             default:
