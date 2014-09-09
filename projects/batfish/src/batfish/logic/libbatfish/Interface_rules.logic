@@ -18,8 +18,23 @@ HasNetwork(node, network) <-
 Interface_DYNAMIC[] = interface <-
    Interface_name(interface:"dynamic").
 
+Interface_FLOW_SINK_TERMINATION[] = interface <-
+   Interface_name(interface:"flow-sink-termination").
+
 Interface_NULL[] = interface <-
-   Interface_name(interface:"null").
+   Interface_name(interface:"null_interface").
+
+Network(network),
+   Network_address[network] = network_start,
+   Network_constructor[network_start, network_end, prefix_length] = network,
+   Network_index(network, network_start, network_end, prefix_length),
+   Network_end[network] = network_end,
+   Network_prefix_length[network] = prefix_length
+<-
+   IpReadyInt(_, _, ip, _),
+   Ip_address(ip:network_start),
+   network_end = network_start,
+   prefix_length = 32.
 
 IpReadyInt(node, interface, ip, prefix_length) <-
    SetIpInt(node, interface, ip, prefix_length),

@@ -72,8 +72,8 @@ block(`service_files) {
       file_definition_by_name["SetNetwork"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "START,END,PREFIXLENGTH",
-         column_formats[] = "integer,integer,integer"
+         column_headers[] = "STARTIP,START,END,PREFIXLENGTH",
+         column_formats[] = "integer, integer,integer,integer"
       }.
 
 // IpAccessList

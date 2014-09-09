@@ -2,49 +2,135 @@ block(`DataPlane_rules) {
    alias_all(`libbatfish:DataPlane),
    alias_all(`libbatfish:Interface),
    alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Layer2),
+   alias_all(`libbatfish:Node),
    alias_all(`libbatfish:PolicyMap),
    alias_all(`libbatfish:Route),
    clauses(`{
 // BEGIN CODE
 
-FibForward(node, ip, interface) <-
+// ip is that of a connected neighbor
+Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp),
+   FibNeighborIp(node, ip)
+<-
+   !HasIp(node, ip),
+   LanAdjacent(node, interface, nextHop, nextHopInt),
+   ConnectedRoute(node, network, interface),
+   ConnectedRoute(nextHop, network, nextHopInt),
+   IpReadyInt(nextHop, nextHopInt, ip, _),
+   ip = nextHopIp,
+   prefix_length = 32.
+// drop connected route networks since we have more specific entries for connected neighbors
+Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
+   !FibNeighborIp(node, ip),
+   LongestPrefixNetworkMatch(node, ip, matchNet),
+   prefix_length < 32,
+   BestConnectedRoute(route),
+   Route_network[route] = matchNet,
+   Network_prefix_length[matchNet] = prefix_length,
+   Route_node[route] = node,
+   interface = Interface_NULL[],
+   nextHopInt = Interface_NULL[],
+   nextHop = Node_NONE[],
+   nextHopIp = Ip_ZERO[].
+// static non-null interface-only route -- send to all adjacent neighbors
+Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    !HasIp(node, ip),
    LongestPrefixNetworkMatch(node, ip, matchNet),
    InstalledRoute(route),
+   StaticIntRoute(route),
    Route_network[route] = matchNet,
+   Network_prefix_length[matchNet] = prefix_length,
    Route_node[route] = node,
+   Route_nextHopIp[route] = routeNextHopIp,
+   routeNextHopIp = Ip_ZERO[],
+   InterfaceRoute_nextHopInt[route] = interface,
+   interface != Interface_NULL[],
+   LanAdjacent(node, interface, nextHop, nextHopInt),
+   IpReadyInt(nextHop, nextHopInt, nextHopIp, _).
+// static null interface-only route -- drop
+Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
+   !HasIp(node, ip),
+   LongestPrefixNetworkMatch(node, ip, matchNet),
+   InstalledRoute(route),
+   StaticIntRoute(route),
+   Route_network[route] = matchNet,
+   Network_prefix_length[matchNet] = prefix_length,
+   Route_node[route] = node,
+   Route_nextHopIp[route] = nextHopIp,
+   nextHop = Node_NONE[],
+   nextHopIp = Ip_ZERO[],
+   InterfaceRoute_nextHopInt[route] = interface,
+   interface = Interface_NULL[],
+   nextHopInt = Interface_NULL[].
+// static non-null interface+nextHopIp route -- send to all adjacent neighbors who would route
+//    the declared nextHopIp to an interface other than the one on which the packet was received
+Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
+   !HasIp(node, ip),
+   LongestPrefixNetworkMatch(node, ip, matchNet),
+   InstalledRoute(route),
+   StaticIntRoute(route),
+   Route_network[route] = matchNet,
+   Network_prefix_length[matchNet] = prefix_length,
+   Route_node[route] = node,
+   Route_nextHopIp[route] = routeNextHopIp,
+   nextHopIp != Ip_ZERO[],
+   InterfaceRoute_nextHopInt[route] = interface,
+   LanAdjacent(node, interface, nextHop, nextHopInt),
+   IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
    (
+      HasIp(nextHop, routeNextHopIp) ;
       (
-         // ConnectedRoute(node, matchNet, interface)
-         InterfaceRoute(route),
-         InterfaceRoute_nextHopInt[route] = interface
-      ) ;
-      (
-         !InterfaceRoute(route),
-         Route_nextHopIp[route] = routeNextHopIp,
-         FibForward(node, routeNextHopIp, interface)
+         // proxy arp case -- must be enabled
+         !HasIp(nextHop, routeNextHopIp),
+         Fib(nextHop, routeNextHopIp, _, nextHopOutInt, _, _, _),
+         nextHopOutInt != nextHopInt
       )
    ).
+// regular non-interface nextHopIp route
+Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
+   !HasIp(node, ip),
+   LongestPrefixNetworkMatch(node, ip, matchNet),
+   InstalledRoute(route),
+   !InterfaceRoute(route),
+   Route_network[route] = matchNet,
+   Network_prefix_length[matchNet] = prefix_length,
+   Route_node[route] = node,
+   Route_nextHopIp[route] = routeNextHopIp,
+   nextHopIp != Ip_ZERO[],
+   Fib(node, routeNextHopIp, _, interface, nextHop, nextHopInt, nextHopIp).
 
-FibForwardPolicyRouteNextHopIp(node, ip, interface) <-
-   FibForward(node, ip, interface),
-   SetPolicyMapClauseSetNextHopIp(_, _, ip).
-   
-FibNetworkForward(node, network, interface) <-
+FibNetwork(node, network, interface, nextHop, nextHopInt) <-
+   Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, _),
    InstalledRoute(route),
    Route_node[route] = node,
    Route_network[route] = network,
-   (
-      (
-         InterfaceRoute(route),
-         InterfaceRoute_nextHopInt[route] = interface
-      ) ;
-      (
-         !InterfaceRoute(route),
-         Route_nextHopIp[route] = nextHopIp,
-         FibForward(node, nextHopIp, interface)
-      )
-   ).
+   Network_address[network] = network_address,
+   Ip_address(ip:network_address),
+   NetworkOf[ip, prefix_length] = network.
+FibNetwork(node, network, interface, nextHop, nextHopInt) <-
+   Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, _),
+   FibNeighborIp(node, ip),
+   Network_address[network] = network_address,
+   Ip_address(ip:network_address),
+   NetworkOf[ip, prefix_length] = network.
+
+FibDrop(node, ip) <-
+   Fib(node, ip, _, dropInterface, _, _, _),
+   dropInterface = Interface_NULL[].
+
+FibForward(node, ip, interface, nextHop, nextHopInt) <-
+   Fib(node, ip, _, interface, nextHop, nextHopInt, _),
+   nextHop != Node_NONE[],
+   nextHopInt != Interface_NULL[].
+
+FibForwardPolicyRouteNextHopIp(node, ip, interface) <-
+   Fib(node, ip, _, interface, _, _, _),
+   SetPolicyMapClauseSetNextHopIp(_, _, ip).
+
+FibRoute(node, ip) <-
+   FibForward(node, ip, _, _, _) ;
+   FibDrop(node, ip).
 
 // END CODE
    })

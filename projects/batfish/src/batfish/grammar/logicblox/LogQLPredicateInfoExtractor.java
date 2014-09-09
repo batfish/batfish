@@ -40,8 +40,14 @@ public class LogQLPredicateInfoExtractor extends LogiQLParserBaseListener {
    @Override
    public void enterRefmode_decl(Refmode_declContext ctx) {
       String predicateName = ctx.refmode_predicate.getText();
-      LBValueType valueType = getTypeDeclValueType(ctx.type_decl());
-      LBValueType refType = getRefType(valueType);
+      LBValueType refType;
+      if (predicateName.equals("Ip")) {
+         refType = LBValueType.ENTITY_REF_IP;
+      }
+      else {
+         LBValueType valueType = getTypeDeclValueType(ctx.type_decl());
+         refType = getRefType(valueType);
+      }
       addPredicate(predicateName);
       addPredicateValueType(predicateName, refType);
    }
@@ -57,10 +63,6 @@ public class LogQLPredicateInfoExtractor extends LogiQLParserBaseListener {
 
       case "Flow":
          entityValueType = LBValueType.ENTITY_INDEX_FLOW;
-         break;
-
-      case "Ip":
-         entityValueType = LBValueType.ENTITY_INDEX_IP;
          break;
 
       case "Network":
@@ -89,7 +91,7 @@ public class LogQLPredicateInfoExtractor extends LogiQLParserBaseListener {
       case ENTITY_INDEX_BGP_ADVERTISEMENT:
       case ENTITY_INDEX_FLOW:
       case ENTITY_INDEX_INT:
-      case ENTITY_INDEX_IP:
+      case ENTITY_REF_IP:
       case ENTITY_INDEX_NETWORK:
       case ENTITY_INDEX_ROUTE:
       case ENTITY_REF_INT:

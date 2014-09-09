@@ -157,7 +157,7 @@ public class LogiQLPredicateInfoResolver extends LogiQLParserBaseListener {
       }
    }
 
-   private LBValueType getComplexType(String typeName) {
+   private LBValueType getNonPrimitiveType(String typeName) {
       return _predicateValueTypes.get(typeName).get(0);
    }
 
@@ -178,7 +178,7 @@ public class LogiQLPredicateInfoResolver extends LogiQLParserBaseListener {
          return LBValueType.FLOAT;
 
       default:
-         return getComplexType(typeName);
+         return getNonPrimitiveType(typeName);
       }
    }
 

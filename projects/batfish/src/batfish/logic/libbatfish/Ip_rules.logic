@@ -13,7 +13,7 @@ Network_index(network, network_start, network_end, prefix_length),
 Network_end[network] = network_end,
 Network_prefix_length[network] = prefix_length
 <-
-   SetNetwork(network_start, network_end, prefix_length).
+   SetNetwork(_, network_start, network_end, prefix_length).
 
 NetworkOf[ip, prefix_length] = network <-
    Ip_address(ip:ip_int),

@@ -200,7 +200,7 @@ public class LogicBloxFrontend {
       try {
          switch (valueType) {
 
-         case ENTITY_INDEX_IP:
+         case ENTITY_REF_IP:
             ec = (EntityColumn) column;
             long[] ips = ((Int64Column) ec.getRefModeColumn().unwrap())
                   .getRows();

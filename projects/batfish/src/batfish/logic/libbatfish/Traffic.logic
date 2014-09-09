@@ -96,6 +96,10 @@ FlowNoRoute(flow, node) ->
    Flow(flow),
    Node(node).
 
+FlowNullRouted(flow, node) ->
+   Flow(flow),
+   Node(node).
+
 FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow ->
    Node(node),
    Ip(srcIp),
@@ -153,22 +157,35 @@ FlowReachPreOut(flow, node) ->
    Flow(flow),
    Node(node).
 
+FlowReachPreOutEdge(flow, node, interface, nextHop, nextHopInt) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   Node(nextHop),
+   Interface(nextHopInt).
+
+FlowReachPreOutEdgeOrigin(flow, node, interface, nextHop, nextHopInt) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   Node(nextHop),
+   Interface(nextHopInt).
+
+FlowReachPreOutEdgePolicyRoute(flow, node, interface, nextHop, nextHopInt) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   Node(nextHop),
+   Interface(nextHopInt).
+
+FlowReachPreOutEdgeStandard(flow, node, interface, nextHop, nextHopInt) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   Node(nextHop),
+   Interface(nextHopInt).
+
 FlowReachPreOutInterface(flow, node, interface) ->
-   Flow(flow),
-   Node(node),
-   Interface(interface).
-
-FlowReachPreOutInterfaceOrigin(flow, node, interface) ->
-   Flow(flow),
-   Node(node),
-   Interface(interface).
-
-FlowReachPreOutInterfacePolicyRoute(flow, node, interface) ->
-   Flow(flow),
-   Node(node),
-   Interface(interface).
-
-FlowReachPreOutInterfaceStandard(flow, node, interface) ->
    Flow(flow),
    Node(node),
    Interface(interface).
