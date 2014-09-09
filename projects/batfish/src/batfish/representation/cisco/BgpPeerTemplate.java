@@ -1,10 +1,8 @@
 package batfish.representation.cisco;
 
 import java.io.Serializable;
-import java.util.LinkedHashSet;
 
 import batfish.grammar.cisco.CiscoGrammar.Template_peer_stanzaContext;
-import batfish.representation.Ip;
 
 //copied over from BgpPeerGroup -- contain some useless fields that should be removed -- ratul
 
