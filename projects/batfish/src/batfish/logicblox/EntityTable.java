@@ -209,14 +209,24 @@ public class EntityTable {
 
    public String getFlow(BigInteger index) {
       int listIndex = Arrays.binarySearch(_flowIndices, index);
+      String node = _flowNodes[listIndex];
       String srcIp = new Ip(_flowSrcIps[listIndex]).toString();
       String dstIp = new Ip(_flowDstIps[listIndex]).toString();
-      String srcPort = Util.getPortName((int) _flowSrcPorts[listIndex]);
-      String dstPort = Util.getPortName((int) _flowDstPorts[listIndex]);
       String protocol = Util.getProtocolName((int) _flowProtocols[listIndex]);
-      String node = _flowNodes[listIndex];
-      return "Flow<" + node + ", " + protocol + ", " + srcIp + ", " + dstIp
-            + ", " + srcPort + ", " + dstPort + ">";
+      boolean tcp = protocol.equals("tcp");
+      boolean udp = protocol.equals("udp");
+      String prefix = tcp? "Tcp": udp ? "Udp" : "";
+      StringBuilder sb = new StringBuilder();
+      sb.append(prefix);
+      sb.append("Flow<" + node + ", " + protocol + ", " + srcIp + ", " + dstIp);
+      if (tcp || udp) {
+         String srcPort = Util.getPortName((int) _flowSrcPorts[listIndex]);
+         String dstPort = Util.getPortName((int) _flowDstPorts[listIndex]);
+         sb.append(", " + srcPort + ", " + dstPort);
+      }
+      sb.append(">");
+      String output = sb.toString();
+      return output;
    }
 
    public String getNetwork(BigInteger index) {
