@@ -69,6 +69,7 @@ import batfish.z3.node.PreOutEdgeExpr;
 import batfish.z3.node.PreOutExpr;
 import batfish.z3.node.PreOutInterfaceExpr;
 import batfish.z3.node.RuleExpr;
+import batfish.z3.node.SaneExpr;
 import batfish.z3.node.Statement;
 import batfish.z3.node.TrueExpr;
 import batfish.z3.node.VarIntExpr;
@@ -78,6 +79,8 @@ public class Synthesizer {
    public static final String DST_PORT_VAR = "dst_port";
    public static final String FAKE_INTERFACE_PREFIX = "TenGigabitEthernet200/";
    public static final String FLOW_SINK_INTERFACE_PREFIX = "TenGigabitEthernet100/";
+   private static final long IP_PROTOCOL_TCP = 6;
+   private static final long IP_PROTOCOL_UDP = 17;
    public static final String IP_PROTOCOL_VAR = "ip_prot";
    public static final Map<String, Integer> PACKET_VAR_SIZES = initPacketVarSizes();
    public static final List<String> PACKET_VARS = getPacketVars();
@@ -1077,6 +1080,29 @@ public class Synthesizer {
       return statements;
    }
 
+   private List<Statement> getSane() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements.add(new Comment("Make sure packet fields make sense"));
+      EqExpr tcp = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR), new LitIntExpr(
+            IP_PROTOCOL_TCP, 16));
+      EqExpr udp = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR), new LitIntExpr(
+            IP_PROTOCOL_UDP, 16));
+      AndExpr noPortNumbers = new AndExpr();
+      EqExpr noDstPort = new EqExpr(new VarIntExpr(DST_PORT_VAR),
+            new LitIntExpr(0, 16));
+      EqExpr noSrcPort = new EqExpr(new VarIntExpr(SRC_PORT_VAR),
+            new LitIntExpr(0, 16));
+      noPortNumbers.addConjunct(noDstPort);
+      noPortNumbers.addConjunct(noSrcPort);
+      OrExpr isSane = new OrExpr();
+      isSane.addDisjunct(tcp);
+      isSane.addDisjunct(udp);
+      isSane.addDisjunct(noPortNumbers);
+      RuleExpr rule = new RuleExpr(isSane, SaneExpr.INSTANCE);
+      statements.add(rule);
+      return statements;
+   }
+
    private List<Statement> getToNeighborsRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment("Topology edge rules"));
@@ -1133,6 +1159,7 @@ public class Synthesizer {
       List<Statement> varDecls = getVarDeclExprs();
       List<Statement> dropRules = getDropRules();
       List<Statement> acceptRules = getAcceptRules();
+      List<Statement> sane = getSane();
       List<Statement> flowSinkAcceptRules = getFlowSinkAcceptRules();
       List<Statement> originateToPostInRules = getOriginateToPostInRules();
       List<Statement> postInInterfaceToPostInRules = getPostInInterfaceToPostInRules();
@@ -1149,6 +1176,7 @@ public class Synthesizer {
 
       rules.addAll(dropRules);
       rules.addAll(acceptRules);
+      rules.addAll(sane);
       rules.addAll(flowSinkAcceptRules);
       rules.addAll(originateToPostInRules);
       rules.addAll(postInInterfaceToPostInRules);
