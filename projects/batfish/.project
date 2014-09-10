@@ -16,11 +16,7 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/ant_grammars.launch</value>
-				</dictionary>
-				<dictionary>
-					<key>incclean</key>
-					<value>true</value>
+					<value>&lt;project&gt;/.externalToolBuilders/ant_eclipse_pre_compile.launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>
