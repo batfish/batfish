@@ -115,6 +115,68 @@ FlowPolicyDropped(flow, node, policy, clause) ->
    PolicyMap(policy),
    int(clause).
 
+FlowPathAcceptedEdge(flow, i, node1, int1, node2, int2, history) ->
+   Flow(flow),
+   int(i),
+   Node(node1),
+   Interface(int1),
+   Node(node2),
+   Interface(int2),
+   string(history).
+   
+FlowPathDeniedInEdge(flow, i, node1, int1, node2, int2, history, filter, line) ->
+   Flow(flow),
+   int(i),
+   Node(node1),
+   Interface(int1),
+   Node(node2),
+   Interface(int2),
+   string(history),
+   IpAccessList(filter),
+   int(line).
+   
+FlowPathDeniedOutEdge(flow, i, node1, int1, node2, int2, history, filter, line) ->
+   Flow(flow),
+   int(i),
+   Node(node1),
+   Interface(int1),
+   Node(node2),
+   Interface(int2),
+   string(history),
+   IpAccessList(filter),
+   int(line).
+
+FlowPathHistory(flow, history) ->
+   Flow(flow),
+   string(history).
+
+FlowPathIntermediateEdge(flow, i, node1, int1, node2, int2, history) ->
+   Flow(flow),
+   int(i),
+   Node(node1),
+   Interface(int1),
+   Node(node2),
+   Interface(int2),
+   string(history).
+   
+FlowPathNoRouteEdge(flow, i, node1, int1, node2, int2, history) ->
+   Flow(flow),
+   int(i),
+   Node(node1),
+   Interface(int1),
+   Node(node2),
+   Interface(int2),
+   string(history).
+   
+FlowPathNullRoutedEdge(flow, i, node1, int1, node2, int2, history) ->
+   Flow(flow),
+   int(i),
+   Node(node1),
+   Interface(int1),
+   Node(node2),
+   Interface(int2),
+   string(history).
+   
 /// [FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt)] =
 ///   Flow [flow] is successfully sent out interface [srcOutInt] on node
 ///   [srcNode], and eventually successfully enters interface [dstInInt] on

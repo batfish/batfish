@@ -169,6 +169,131 @@ need_PolicyMapMatchFlow(policy, flow) <-
    Flow(flow),
    PolicyMap(policy).
 
+FlowPathAcceptedEdge(flow, i, node1, int1, node2, int2, history) <-
+   FlowPathIntermediateEdge(flow, i, node1, int1, node2, int2, oldHistory),
+   FlowAccepted(flow, node2),
+   history = oldHistory + ":accepted".
+   
+FlowPathDeniedInEdge(flow, i, node1, int1, node2, int2, history, filter, line) <-
+   (
+      (
+         i = j + 1,
+         FlowPathIntermediateEdge(flow, j, _, _, node1, _, oldHistory),
+         history = oldHistory + "->" + currentHistory
+      ) ;
+      (
+         Flow_node[flow] = node1,
+         i = 0,
+         history = currentHistory
+      )
+   ),
+   (
+      (
+         !SetInterfaceFilterOut(node1, int1, _),
+         allowedOutStr = ""
+      ) ;
+      (
+         FlowAllowedOut(flow, node1, int1, filterOut),
+         IpAccessList_name(filterOut:filterOutStr),
+         allowedOutStr = ":allowedOut:'" + filterOutStr + "'"
+      )
+   ),
+   FlowReachPreOutEdge(flow, node1, int1, node2, int2),
+   FlowDeniedIn(flow, node2, int2, filter, line),
+   Node_name(node1:node1str),
+   Node_name(node2:node2str),
+   Interface_name(int1:int1str),
+   Interface_name(int2:int2str),
+   IpAccessList_name(filter:filterStr),
+   lineStr = int:string:convert[line],
+   currentHistory = "['" + node1str + "':'" + int1str + "'" + allowedOutStr + ", '" + node2str + "':'" + int2str + "':deniedIn:'" + filterStr + "':" + lineStr + "]".
+   
+FlowPathDeniedOutEdge(flow, i, node1, int1, node2, int2, history, filter, line) <-
+   (
+      (
+         i = j + 1,
+         FlowPathIntermediateEdge(flow, j, _, _, node1, _, oldHistory),
+         history = oldHistory + "->" + currentHistory
+      ) ;
+      (
+         Flow_node[flow] = node1,
+         i = 0,
+         history = currentHistory
+      )
+   ),
+   FlowReachPreOutEdge(flow, node1, int1, node2, int2),
+   FlowDeniedOut(flow, node1, int1, filter, line),
+   Node_name(node1:node1str),
+   Node_name(node2:node2str),
+   Interface_name(int1:int1str),
+   Interface_name(int2:int2str),
+   IpAccessList_name(filter:filterStr),
+   lineStr = int:string:convert[line],
+   currentHistory = "['" + node1str + "':'" + int1str + "':deniedOut:'" + filterStr + "':" + lineStr + ", '" + node2str + "':'" + int2str + "']".
+
+FlowPathHistory(flow, history) <-
+   FlowPathAcceptedEdge(flow, _, _, _, _, _, history) ;
+   FlowPathDeniedInEdge(flow, _, _, _, _, _, history, _, _) ;
+   FlowPathDeniedOutEdge(flow, _, _, _, _, _, history, _, _) ;
+   FlowPathNoRouteEdge(flow, _, _, _, _, _, history) ;
+   FlowPathNullRoutedEdge(flow, _, _, _, _, _, history).
+
+FlowPathIntermediateEdge(flow, i, node1, int1, node2, int2, history) <-
+   !FlowLoop(flow, _, _),
+   (
+      (
+         i = 0,
+         FlowReachPreOutEdgeOrigin(flow, node1, int1, node2, int2),
+         history = currentHistory
+      ) ;
+      (
+         i = j + 1,
+         FlowPathIntermediateEdge(flow, j, _, _, node1, _,oldHistory),
+         FlowReachPreOutEdge(flow, node1, int1, node2, int2),
+         history = oldHistory + "->" + currentHistory
+      )
+   ),
+   (
+      (
+         !SetInterfaceFilterIn(node2, int2, _),
+         allowedInStr = ""
+      ) ;
+      (
+         FlowAllowedIn(flow, node2, int2, filterIn),
+         IpAccessList_name(filterIn:filterInStr),
+         allowedInStr = ":allowedIn:'" + filterInStr + "'"
+      )
+   ),
+   (
+      (
+         !SetInterfaceFilterOut(node1, int1, _),
+         allowedOutStr = ""
+      ) ;
+      (
+         FlowAllowedOut(flow, node1, int1, filterOut),
+         IpAccessList_name(filterOut:filterOutStr),
+         allowedOutStr = ":allowedOut:'" + filterOutStr + "'"
+      )
+   ),
+   FlowReachPostOutInterface(flow, node1, int1),
+   FlowReachPostInInterface(flow, node2, int2),
+   Node_name(node1:node1str),
+   Node_name(node2:node2str),
+   Interface_name(int1:int1str),
+   Interface_name(int2:int2str),
+   currentHistory = "['" + node1str + "':'" + int1str + "'" + allowedOutStr + ", '" + node2str + "':'" + int2str + "'" + allowedInStr + "]".
+   
+FlowPathNoRouteEdge(flow, i, node1, int1, node2, int2, history) <-
+   FlowPathIntermediateEdge(flow, i, node1, int1, node2, int2, oldHistory),
+   FlowNoRoute(flow, node2),
+   history = oldHistory + ":noRoute".
+   
+FlowPathNullRoutedEdge(flow, i, node1, int1, node2, int2, history) <-
+   FlowPathIntermediateEdge(flow, i, node1, int1, node2, int2, oldHistory),
+   FlowNullRouted(flow, node2),
+   history = oldHistory + ":nullRouted".
+   
+lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
 // END CODE
    })
 } <-- .
