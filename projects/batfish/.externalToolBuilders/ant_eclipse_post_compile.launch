@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.ant.AntBuilderLaunchConfigurationType">
-<stringAttribute key="org.eclipse.ant.ui.ATTR_ANT_CLEAN_TARGETS" value="predicateinfoclean,"/>
-<stringAttribute key="org.eclipse.ant.ui.ATTR_ANT_MANUAL_TARGETS" value="eclipse_post_compile,predicateinfo,"/>
+<stringAttribute key="org.eclipse.ant.ui.ATTR_ANT_CLEAN_TARGETS" value="clean,"/>
+<stringAttribute key="org.eclipse.ant.ui.ATTR_ANT_MANUAL_TARGETS" value="eclipse_post_compile,"/>
 <booleanAttribute key="org.eclipse.ant.ui.ATTR_TARGETS_UPDATED" value="true"/>
 <booleanAttribute key="org.eclipse.ant.ui.DEFAULT_VM_INSTALL" value="false"/>
 <stringAttribute key="org.eclipse.debug.core.ATTR_REFRESH_SCOPE" value="${project}"/>
@@ -9,6 +9,7 @@
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.ant.ui.AntClasspathProvider"/>
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="batfish"/>
+<booleanAttribute key="org.eclipse.ui.externaltools.ATTR_BUILDER_ENABLED" value="true"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:/batfish/build.xml}"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_RUN_BUILD_KINDS" value="incremental,clean"/>
 <booleanAttribute key="org.eclipse.ui.externaltools.ATTR_TRIGGERS_CONFIGURED" value="true"/>

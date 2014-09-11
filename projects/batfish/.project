@@ -6,8 +6,13 @@
 	</projects>
 	<buildSpec>
 		<buildCommand>
-			<name>org.eclipse.xtext.ui.shared.xtextBuilder</name>
+			<name>org.eclipse.ui.externaltools.ExternalToolBuilder</name>
+			<triggers>full,incremental,</triggers>
 			<arguments>
+				<dictionary>
+					<key>LaunchConfigHandle</key>
+					<value>&lt;project&gt;/.externalToolBuilders/org.eclipse.xtext.ui.shared.xtextBuilder.launch</value>
+				</dictionary>
 			</arguments>
 		</buildCommand>
 		<buildCommand>
@@ -17,6 +22,10 @@
 				<dictionary>
 					<key>LaunchConfigHandle</key>
 					<value>&lt;project&gt;/.externalToolBuilders/ant_eclipse_pre_compile.launch</value>
+				</dictionary>
+				<dictionary>
+					<key>incclean</key>
+					<value>true</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>
