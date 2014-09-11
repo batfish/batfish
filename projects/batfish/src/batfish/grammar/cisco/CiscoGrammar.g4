@@ -286,6 +286,7 @@ null_block_substanza
             (
                ACCESS_CLASS
                | ACCESS_GROUP
+               | FLOW
             )
          )
          | IPSEC_UDP
