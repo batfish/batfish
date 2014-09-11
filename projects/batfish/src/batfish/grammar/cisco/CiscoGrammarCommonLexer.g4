@@ -4181,8 +4181,8 @@ IPV6_PREFIX
       )+
       (
          F_HexDigit+
-      )? '/' F_DecByte
-   )
+      )?
+   ) '/' F_DecByte
 ;
 
 NEWLINE
