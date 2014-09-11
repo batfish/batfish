@@ -78,7 +78,7 @@ extended_access_list_additional_feature
       | TRACKED
       | TTL_EXCEEDED
       | TTL EQ DEC
-      | UNREACHABLE            
+      | UNREACHABLE
    )
 ;
 
@@ -142,8 +142,7 @@ extended_access_list_tail
    )? dstipr = access_list_ip_range
    (
       alps_dst = port_specifier
-   )?
-   feature = extended_access_list_additional_feature? NEWLINE
+   )? feature = extended_access_list_additional_feature? NEWLINE
 ;
 
 ip_as_path_access_list_stanza
@@ -304,7 +303,10 @@ ip_prefix_list_stanza
 ip_prefix_list_named_stanza
 locals [boolean again]
 :
-   (IP | IPV6) PREFIX_LIST name = VARIABLE
+   (
+      IP
+      | IPV6
+   ) PREFIX_LIST name = VARIABLE
    (
       ip_prefix_list_tail
       | ip_prefix_list_null_tail
@@ -335,7 +337,7 @@ ip_prefix_list_tail
 :
    (
       SEQ seqnum = DEC
-   )? action = access_list_action 
+   )? action = access_list_action
    (
       prefix = IP_PREFIX
       | ipv6_prefix = IPV6_PREFIX

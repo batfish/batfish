@@ -211,17 +211,18 @@ neighbor_filter_list_tail_bgp
 
 neighbor_nexus_stanza
 :
-   NEIGHBOR 
+   NEIGHBOR
    (
-      ip_address = IP_ADDRESS 
-      | ipv6_address = IPV6_ADDRESS 
-      | ip_prefix = IP_PREFIX 
+      ip_address = IP_ADDRESS
+      | ipv6_address = IPV6_ADDRESS
+      | ip_prefix = IP_PREFIX
       | ipv6_prefix = IPV6_PREFIX
    )
-   (REMOTE_AS asnum = DEC)? 
-   NEWLINE
    (
-     tail += neighbor_nexus_tail
+      REMOTE_AS asnum = DEC
+   )? NEWLINE
+   (
+      tail += neighbor_nexus_tail
    )+
 ;
 
@@ -235,8 +236,7 @@ neighbor_nexus_null_tail
    (
       DESCRIPTION
       | MAXIMUM_PEERS
-   )
-   ~NEWLINE* NEWLINE
+   ) ~NEWLINE* NEWLINE
 ;
 
 neighbor_nexus_shutdown_stanza
@@ -257,7 +257,7 @@ neighbor_nexus_vrf_rb_substanza
 :
    neighbor_nexus_stanza
 ;
- 
+
 neighbor_next_hop_self_af_stanza
 :
    neighbor_next_hop_self_tail_bgp
@@ -572,7 +572,7 @@ null_template_peer_stanza
 null_template_peer_standalone_stanza
 :
    (
-      PASSWORD 
+      PASSWORD
       | REMOVE_PRIVATE_AS
       | EBGP_MULTIHOP
    ) ~NEWLINE* NEWLINE
