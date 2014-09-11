@@ -277,10 +277,13 @@ null_block_substanza
          | INSPECT
          | INSTANCE
          | INTERFACE POLICY
-         | IP
+         | (IP | IPV6)
+         (
+            ACCESS_CLASS
+            | ACCESS_GROUP
+         )
          | IPSEC_UDP
          | IPX
-         | IPV6
          | IPV6_ADDRESS_POOL
          | ISAKMP
          | KEEPALIVE_ENABLE
@@ -613,7 +616,6 @@ null_standalone_stanza
                OSPF NAME_LOOKUP
             )
             | PIM
-            | PREFIX_LIST
             | ROUTE
             | SOURCE_ROUTE
             | UNICAST_ROUTING
@@ -782,6 +784,7 @@ null_standalone_stanza
          VLAN
          (
             ACCESS_LOG
+            | CONFIGURATION
             | DOT1Q
             | INTERNAL
          )

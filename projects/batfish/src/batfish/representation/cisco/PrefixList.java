@@ -18,9 +18,17 @@ public class PrefixList implements Serializable {
    // Name of the filter
    private String _name;
 
+   private boolean _isIpV6;
+   
    public PrefixList(String n) {
       _name = n;
       _lines = new ArrayList<PrefixListLine>();
+      _isIpV6 = false;
+   }
+
+   public PrefixList(String n, boolean isIpV6) {
+      this(n);
+      _isIpV6 = isIpV6;
    }
 
    public void addLine(PrefixListLine r) {
@@ -41,6 +49,10 @@ public class PrefixList implements Serializable {
 
    public String getName() {
       return _name;
+   }
+   
+   public boolean isIpV6() {
+      return _isIpV6;
    }
 
    public void setContext(Ip_prefix_list_stanzaContext ctx) {

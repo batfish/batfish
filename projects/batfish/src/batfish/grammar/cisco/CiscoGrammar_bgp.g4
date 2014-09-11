@@ -565,7 +565,7 @@ null_standalone_rb_stanza
 
 null_template_peer_stanza
 :
-   af_stanza
+   address_family_rb_stanza
    | null_template_peer_standalone_stanza
 ;
 

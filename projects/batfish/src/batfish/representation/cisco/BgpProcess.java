@@ -27,14 +27,14 @@ public class BgpProcess implements Serializable {
    private Map<Protocol, BgpRedistributionPolicy> _redistributionPolicies;
    private Ip _routerId;
    private Set<String> _shutdownNeighbors;
-   private Map<String, BgpPeerTemplate> _peerTemplates;
+   private Map<String, BgpPeerTemplatePeerGroup> _peerTemplates;
 
    public BgpProcess(int procnum) {
       _pid = procnum;
       _allPeerGroups = new HashMap<String, BgpPeerGroup>();
       _namedPeerGroups = new HashMap<String, NamedBgpPeerGroup>();
       _ipPeerGroups = new HashMap<Ip, IpBgpPeerGroup>();
-      _peerTemplates = new HashMap<String, BgpPeerTemplate>();
+      _peerTemplates = new HashMap<String, BgpPeerTemplatePeerGroup>();
       _networks = new LinkedHashSet<BgpNetwork>();
       _activatedNeighbors = new LinkedHashSet<Ip>();
       _defaultNeighborActivate = true;
@@ -103,7 +103,7 @@ public class BgpProcess implements Serializable {
       }
    }
 
-   public void addPeerGroupMember(Ip address, String namedPeerGroupName) {
+   public void addPeerGroupMember(Ip address, String namedPeerGroupName) throws IllegalArgumentException {
       NamedBgpPeerGroup namedPeerGroup = _namedPeerGroups
             .get(namedPeerGroupName);
       if (namedPeerGroup != null) {
@@ -162,12 +162,12 @@ public class BgpProcess implements Serializable {
    }
 
    public void addPeerTemplate(String peerTemplateName) {
-      BgpPeerTemplate pt = new BgpPeerTemplate(peerTemplateName);
+      BgpPeerTemplatePeerGroup pt = new BgpPeerTemplatePeerGroup(peerTemplateName);
       _peerTemplates.put(peerTemplateName, pt);
    }
 
-   public void addPeerTemplateInheritance(String peerTemplateName, Ip ipAddress) {
-      BgpPeerTemplate peerTemplate = _peerTemplates.get(peerTemplateName);      
+   public void addPeerTemplateInheritance(String peerTemplateName, Ip ipAddress) throws IllegalArgumentException {
+      BgpPeerTemplatePeerGroup peerTemplate = _peerTemplates.get(peerTemplateName);      
       if (peerTemplate != null) {
          IpBgpPeerGroup ipPeerGroup = _ipPeerGroups.get(ipAddress);
          ipPeerGroup.setPeerTemplateName(peerTemplateName);
@@ -233,7 +233,7 @@ public class BgpProcess implements Serializable {
       return _allPeerGroups.get(name);
    }
 
-   public Map<String, BgpPeerTemplate> getPeerTemplates() {
+   public Map<String, BgpPeerTemplatePeerGroup> getPeerTemplates() {
       return _peerTemplates;
    }
 

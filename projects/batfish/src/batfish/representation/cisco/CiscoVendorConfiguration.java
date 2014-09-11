@@ -178,17 +178,24 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       // }
 
       // cause ip peer groups to inherit unset fields from owning named peer
-      // group
+      // group or peer template.
       for (IpBgpPeerGroup ipg : proc.getIpPeerGroups().values()) {
-         NamedBgpPeerGroup parentPeerGroup;
-         String groupName = ipg.getGroupName();
-         if (groupName != null) {
-            parentPeerGroup = proc.getNamedPeerGroups().get(groupName);
+         String bgpPeerTemplatePeerGroupName = ipg.getPeerTemplateName();
+         if (bgpPeerTemplatePeerGroupName != null) {
+            BgpPeerTemplatePeerGroup bgpPeerTemplatePeerGroup = proc.getPeerTemplates().get(bgpPeerTemplatePeerGroupName);
+            ipg.inheritUnsetFields(bgpPeerTemplatePeerGroup);
          }
          else {
-            parentPeerGroup = NamedBgpPeerGroup.DEFAULT_INSTANCE;
+            NamedBgpPeerGroup parentPeerGroup;
+            String groupName = ipg.getGroupName();
+            if (groupName == null) {
+               parentPeerGroup = NamedBgpPeerGroup.DEFAULT_INSTANCE;
+            }
+            else {
+               parentPeerGroup = proc.getNamedPeerGroups().get(groupName);
+            }
+            ipg.inheritUnsetFields(parentPeerGroup);
          }
-         ipg.inheritUnsetFields(parentPeerGroup);
       }
 
       for (IpBgpPeerGroup pg : proc.getIpPeerGroups().values()) {

@@ -31,7 +31,7 @@ import batfish.representation.SwitchportMode;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.cisco.BgpNetwork;
 import batfish.representation.cisco.BgpPeerGroup;
-import batfish.representation.cisco.BgpPeerTemplate;
+import batfish.representation.cisco.BgpPeerTemplatePeerGroup;
 import batfish.representation.cisco.BgpProcess;
 import batfish.representation.cisco.BgpRedistributionPolicy;
 import batfish.representation.cisco.CiscoConfiguration;
@@ -93,6 +93,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       if (ctx.ip != null) {
          return toIp(ctx.ip);
       }
+      else if (ctx.prefix != null) {
+         return getPrefixIp(ctx.prefix);
+      }
       else {
          return new Ip(0l);
       }
@@ -138,6 +141,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else if (ctx.LPD() != null) {
          return 515;
       }
+      else if (ctx.MLAG() != null) {
+         return 6784;
+      }
       else if (ctx.NETBIOS_DGM() != null) {
          return 138;
       }
@@ -162,6 +168,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else if (ctx.POP3() != null) {
          return 110;
       }
+      else if (ctx.RIP() != null) {
+         return 520;
+      }
       else if (ctx.SMTP() != null) {
          return 25;
       }
@@ -170,6 +179,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       }
       else if (ctx.SNMPTRAP() != null) {
          return 162;
+      }
+      else if (ctx.SSH() != null) {
+         return 22;
       }
       else if (ctx.SUNRPC() != null) {
          return 111;
@@ -254,6 +266,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else if (ctx.AHP() != null) {
          return 51;
       }
+      else if (ctx.EIGRP() != null) {
+         return 88;
+      }
       else if (ctx.ESP() != null) {
          return 50;
       }
@@ -304,6 +319,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       }
       else if (ctx.HOST() != null) {
          return new Ip(0l);
+      }
+      else if (ctx.prefix != null) {
+         int pfxLength = getPrefixLength(ctx.prefix);
+         long ipAsLong = 0xFFFFFFFFl >>> pfxLength;
+         return new Ip(ipAsLong);         
       }
       else {
          throw new Error("bad extended ip access list ip range");
@@ -401,7 +421,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    private StandardCommunityList _currentStandardCommunityList;
 
-   private BgpPeerTemplate _currentTemplatePeer;
+   private BgpPeerTemplatePeerGroup _currentTemplatePeer;
 
    private BatfishCombinedParser<?, ?> _parser;
 
@@ -441,7 +461,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          name = ctx.numbered.name.getText();
       }
       _currentExtendedAcl = new ExtendedAccessList(name);
-      _currentExtendedAcl.setContext(ctx);
       _configuration.getExtendedAcls().put(name, _currentExtendedAcl);
    }
 
@@ -502,11 +521,35 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void enterIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
+      
+      boolean isIpV6 = (ctx.named.IPV6() != null);
+      
+      if (isIpV6) {
+         todo(ctx, "IPV6 is not supported yet");
+      }
+            
       String name = ctx.named.name.getText();
-      _currentPrefixList = new PrefixList(name);
+      _currentPrefixList = new PrefixList(name, isIpV6);
       _currentPrefixList.setContext(ctx);
       _configuration.getPrefixLists().put(name, _currentPrefixList);
    }
+
+   @Override
+   public void enterNexus_access_list_stanza(
+         Nexus_access_list_stanzaContext ctx) {
+
+      boolean ipV6 = (ctx.IPV6() != null);
+      
+      if (ipV6) {
+         todo(ctx, "Do not handle IPv6 yet");
+      }
+      
+      String name = ctx.name.getText();
+
+      _currentExtendedAcl = new ExtendedAccessList(name, ipV6);
+      _configuration.getExtendedAcls().put(name, _currentExtendedAcl);
+   }
+
 
    @Override
    public void enterRoute_map_stanza(Route_map_stanzaContext ctx) {
@@ -570,7 +613,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void enterTemplate_peer_stanza(Template_peer_stanzaContext ctx) {
       String name = ctx.name.getText();
-      _currentTemplatePeer = new BgpPeerTemplate(name);
+      _currentTemplatePeer = new BgpPeerTemplatePeerGroup(name);
       _currentTemplatePeer.setContext(ctx);
       _configuration.getBgpProcess().getPeerTemplates()
             .put(name, _currentTemplatePeer);
@@ -656,6 +699,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitExtended_access_list_tail(
          Extended_access_list_tailContext ctx) {
+      
+      if (_currentExtendedAcl.isIpV6()) {
+         return;
+      }
+      
       LineAction action = getAccessListAction(ctx.ala);
       int protocol = getProtocolNumber(ctx.prot);
       Ip srcIp = getIp(ctx.srcipr);
@@ -810,6 +858,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       /*
        * if (ctx.seqnum != null) { int seqnum = toInteger(ctx.seqnum); }
        */
+      
+      if (_currentPrefixList.isIpV6()) {
+         return;
+      }
+      
       LineAction action = getAccessListAction(ctx.action);
       Ip prefix = getPrefixIp(ctx.prefix);
       int prefixLength = getPrefixLength(ctx.prefix);
@@ -821,6 +874,10 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       }
       if (ctx.maxpl != null) {
          maxLen = toInteger(ctx.maxpl);
+      }
+      if (ctx.eqpl != null) {
+         minLen = toInteger(ctx.eqpl);
+         maxLen = toInteger(ctx.eqpl);
       }
       SubRange lengthRange = new SubRange(minLen, maxLen);
       PrefixListLine line = new PrefixListLine(action, prefix, prefixLength,
@@ -1020,7 +1077,12 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       Ip ip = toIp(ctx.ip_address);
 
       proc.addIpPeerGroup(ip);
-
+            
+      if (ctx.REMOTE_AS() != null) {
+         BgpPeerGroup pg = proc.getPeerGroup(ip.toString());
+         pg.setRemoteAS(toInteger(ctx.asnum));          
+      }
+      
       for (Neighbor_nexus_tailContext tCtx : ctx.tail) {
          if (tCtx.neighbor_nexus_inherit_stanza() != null) {
             Neighbor_nexus_inherit_stanzaContext inheritCtx = tCtx

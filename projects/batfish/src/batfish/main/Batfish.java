@@ -1128,6 +1128,9 @@ public class Batfish implements AutoCloseable {
          }
 
          // at this point we should have a VendorConfiguration vc
+         if (vendorConfigurations.containsKey(vc.getHostname())) 
+            throw new Error("Duplicate hostname \"" + vc.getHostname() + "\" found in " + currentFile + "\n");
+            
          vendorConfigurations.put(vc.getHostname(), vc);
       }
       if (processingError) {
@@ -1551,6 +1554,7 @@ public class Batfish implements AutoCloseable {
       print(1,
             "\n*** SERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
       resetTimer();
+      new File(outputPath).mkdirs();
       for (String name : configurations.keySet()) {
          Configuration c = configurations.get(name);
          Path currentOutputPath = Paths.get(outputPath, name);

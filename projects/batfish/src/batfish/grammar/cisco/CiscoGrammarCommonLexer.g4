@@ -672,6 +672,11 @@ CONFIG_REGISTER
    'config-register'
 ;
 
+CONFIGURATION
+:
+   'configuration'
+;
+
 CONFORM_ACTION
 :
    'conform-action'
