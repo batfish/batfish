@@ -277,10 +277,16 @@ null_block_substanza
          | INSPECT
          | INSTANCE
          | INTERFACE POLICY
-         | (IP | IPV6)
+         |
          (
-            ACCESS_CLASS
-            | ACCESS_GROUP
+            (
+               IP
+               | IPV6
+            )
+            (
+               ACCESS_CLASS
+               | ACCESS_GROUP
+            )
          )
          | IPSEC_UDP
          | IPX
