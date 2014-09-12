@@ -28,10 +28,12 @@ FibForward(node, ip, interface, nextHop, nextHopInt) ->
    Node(nextHop),
    Interface(nextHopInt).
 
-FibForwardPolicyRouteNextHopIp(node, ip, interface) ->
+FibForwardPolicyRouteNextHopIp(node, ip, interface, nextHop, nextHopInt) ->
    Node(node),
    Ip(ip),
-   Interface(interface).
+   Interface(interface),
+   Node(nextHop),
+   Interface(nextHopInt).
 
 FibNeighborIp(node, ip) ->
    Node(node),

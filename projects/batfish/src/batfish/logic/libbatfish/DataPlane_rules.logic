@@ -124,8 +124,8 @@ FibForward(node, ip, interface, nextHop, nextHopInt) <-
    nextHop != Node_NONE[],
    nextHopInt != Interface_NULL[].
 
-FibForwardPolicyRouteNextHopIp(node, ip, interface) <-
-   Fib(node, ip, _, interface, _, _, _),
+FibForwardPolicyRouteNextHopIp(node, ip, interface, nextHop, nextHopInt) <-
+   Fib(node, ip, _, interface, nextHop, nextHopInt, _),
    SetPolicyMapClauseSetNextHopIp(_, _, ip).
 
 FibRoute(node, ip) <-

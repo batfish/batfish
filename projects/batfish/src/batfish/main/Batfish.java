@@ -676,20 +676,34 @@ public class Batfish implements AutoCloseable {
       List<String> ipList = new ArrayList<String>();
       lbFrontend.fillColumn(LBValueType.ENTITY_REF_IP, ipList,
             fibPolicyRouteNextHops.getColumns().get(1));
-      List<String> interfaces = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, interfaces,
+      List<String> outInterfaces = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, outInterfaces,
             fibPolicyRouteNextHops.getColumns().get(2));
+      List<String> inNodes = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, inNodes,
+            fibPolicyRouteNextHops.getColumns().get(3));
+      List<String> inInterfaces = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, inInterfaces,
+            fibPolicyRouteNextHops.getColumns().get(4));
       int size = nodeList.size();
       for (int i = 0; i < size; i++) {
-         String node = nodeList.get(i);
+         String nodeOut = nodeList.get(i);
+         String nodeIn = inNodes.get(i);
          Ip ip = new Ip(ipList.get(i));
-         String iface = interfaces.get(i);
-         PolicyRouteFibIpMap ipMap = nodeMap.get(node);
+         String ifaceOut = outInterfaces.get(i);
+         String ifaceIn = inInterfaces.get(i);
+         PolicyRouteFibIpMap ipMap = nodeMap.get(nodeOut);
          if (ipMap == null) {
             ipMap = new PolicyRouteFibIpMap();
-            nodeMap.put(node, ipMap);
+            nodeMap.put(nodeOut, ipMap);
          }
-         ipMap.put(ip, iface);
+         EdgeSet edges = ipMap.get(ip);
+         if (edges == null) {
+            edges = new EdgeSet();
+            ipMap.put(ip, edges);
+         }
+         Edge newEdge = new Edge(nodeOut, ifaceOut, nodeIn, ifaceIn);
+         edges.add(newEdge);
       }
       return nodeMap;
    }

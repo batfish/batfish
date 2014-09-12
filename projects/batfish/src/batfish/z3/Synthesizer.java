@@ -16,6 +16,7 @@ import batfish.collections.FibRow;
 import batfish.collections.NodeSet;
 import batfish.collections.PolicyRouteFibIpMap;
 import batfish.collections.PolicyRouteFibNodeMap;
+import batfish.main.BatfishException;
 import batfish.representation.Configuration;
 import batfish.representation.Edge;
 import batfish.representation.Interface;
@@ -733,28 +734,33 @@ public class Synthesizer {
                      for (PolicyMapSetLine setLine : clause.getSetLines()) {
                         if (setLine.getType() == PolicyMapSetType.NEXT_HOP) {
                            PolicyMapSetNextHopLine setNextHopLine = (PolicyMapSetNextHopLine) setLine;
-                           Set<String> nextHopInterfaces = new TreeSet<String>();
                            for (Ip nextHopIp : setNextHopLine.getNextHops()) {
-                              String nextHopInterface = ipMap.get(nextHopIp);
-                              nextHopInterfaces.add(nextHopInterface);
-                           }
-                           for (String nextHopInterface : nextHopInterfaces) {
+                              EdgeSet edges = ipMap.get(nextHopIp);
                               /**
                                * If packet reaches postin_interface on inInt,
                                * and preout, and inInt has policy, and policy
-                               * matches on out interface, then preout_interface
-                               * on out interface
+                               * matches on out interface, then preout_edge on
+                               * out interface and corresponding in interface
                                * 
                                */
-                              PreOutInterfaceExpr preOutIface = new PreOutInterfaceExpr(
-                                    hostname, nextHopInterface);
-                              AndExpr forwardConditions = new AndExpr();
-                              forwardConditions.addConjunct(postInInterface);
-                              forwardConditions.addConjunct(preOut);
-                              forwardConditions.addConjunct(match);
-                              RuleExpr preOutInterfaceRule = new RuleExpr(
-                                    forwardConditions, preOutIface);
-                              statements.add(preOutInterfaceRule);
+                              for (Edge edge : edges) {
+                                 String outInterface = edge.getInt1();
+                                 String nextHop = edge.getNode2();
+                                 String inInterface = edge.getInt2();
+                                 if (!hostname.equals(edge.getNode1())) {
+                                    throw new BatfishException("Invalid edge");
+                                 }
+                                 PreOutEdgeExpr preOutEdge = new PreOutEdgeExpr(
+                                       hostname, outInterface, nextHop,
+                                       inInterface);
+                                 AndExpr forwardConditions = new AndExpr();
+                                 forwardConditions.addConjunct(postInInterface);
+                                 forwardConditions.addConjunct(preOut);
+                                 forwardConditions.addConjunct(match);
+                                 RuleExpr preOutEdgeRule = new RuleExpr(
+                                       forwardConditions, preOutEdge);
+                                 statements.add(preOutEdgeRule);
+                              }
                            }
                         }
                      }

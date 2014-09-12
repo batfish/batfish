@@ -109,12 +109,6 @@ FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow ->
    int(protocol),
    Flow(flow).
 
-FlowPolicyDropped(flow, node, policy, clause) ->
-   Flow(flow),
-   Node(node),
-   PolicyMap(policy),
-   int(clause).
-
 FlowPathAcceptedEdge(flow, i, node1, int1, node2, int2, history) ->
    Flow(flow),
    int(i),
@@ -124,9 +118,10 @@ FlowPathAcceptedEdge(flow, i, node1, int1, node2, int2, history) ->
    Interface(int2),
    string(history).
    
-FlowPathDeniedInEdge(flow, i, node1, int1, node2, int2, history, filter, line) ->
+FlowPathDeniedInEdge(flow, i, int0, node1, int1, node2, int2, history, filter, line) ->
    Flow(flow),
    int(i),
+   Interface(int0),
    Node(node1),
    Interface(int1),
    Node(node2),
@@ -135,9 +130,10 @@ FlowPathDeniedInEdge(flow, i, node1, int1, node2, int2, history, filter, line) -
    IpAccessList(filter),
    int(line).
    
-FlowPathDeniedOutEdge(flow, i, node1, int1, node2, int2, history, filter, line) ->
+FlowPathDeniedOutEdge(flow, i, int0, node1, int1, node2, int2, history, filter, line) ->
    Flow(flow),
    int(i),
+   Interface(int0),
    Node(node1),
    Interface(int1),
    Node(node2),
@@ -150,9 +146,10 @@ FlowPathHistory(flow, history) ->
    Flow(flow),
    string(history).
 
-FlowPathIntermediateEdge(flow, i, node1, int1, node2, int2, history) ->
+FlowPathIntermediateEdge(flow, i, int0, node1, int1, node2, int2, history) ->
    Flow(flow),
    int(i),
+   Interface(int0),
    Node(node1),
    Interface(int1),
    Node(node2),
@@ -177,6 +174,12 @@ FlowPathNullRoutedEdge(flow, i, node1, int1, node2, int2, history) ->
    Interface(int2),
    string(history).
    
+FlowPolicyDenied(flow, node, policy, clause) ->
+   Flow(flow),
+   Node(node),
+   PolicyMap(policy),
+   int(clause).
+
 /// [FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt)] =
 ///   Flow [flow] is successfully sent out interface [srcOutInt] on node
 ///   [srcNode], and eventually successfully enters interface [dstInInt] on
@@ -219,30 +222,34 @@ FlowReachPreOut(flow, node) ->
    Flow(flow),
    Node(node).
 
-FlowReachPreOutEdge(flow, node, interface, nextHop, nextHopInt) ->
+FlowReachPreOutEdge(flow, node, receivedInt, interface, nextHop, nextHopInt) ->
    Flow(flow),
    Node(node),
+   Interface(receivedInt),
    Interface(interface),
    Node(nextHop),
    Interface(nextHopInt).
 
-FlowReachPreOutEdgeOrigin(flow, node, interface, nextHop, nextHopInt) ->
+FlowReachPreOutEdgeOrigin(flow, node, receivedInt, interface, nextHop, nextHopInt) ->
    Flow(flow),
    Node(node),
+   Interface(receivedInt),
    Interface(interface),
    Node(nextHop),
    Interface(nextHopInt).
 
-FlowReachPreOutEdgePolicyRoute(flow, node, interface, nextHop, nextHopInt) ->
+FlowReachPreOutEdgePolicyRoute(flow, node, receivedInt, interface, nextHop, nextHopInt) ->
    Flow(flow),
    Node(node),
+   Interface(receivedInt),
    Interface(interface),
    Node(nextHop),
    Interface(nextHopInt).
 
-FlowReachPreOutEdgeStandard(flow, node, interface, nextHop, nextHopInt) ->
+FlowReachPreOutEdgeStandard(flow, node, receivedInt, interface, nextHop, nextHopInt) ->
    Flow(flow),
    Node(node),
+   Interface(receivedInt),
    Interface(interface),
    Node(nextHop),
    Interface(nextHopInt).
