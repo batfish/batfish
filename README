@@ -107,7 +107,7 @@ Much of the output is in the form of elements of LogicBlox predicates. To see th
 To see help for ALL predicates, including IDB (derived) predicates, use the '-predhelp' flag without arguments:
    batfish -predhelp
 Individual predicates for a processed test rig can be dumped to stdout by running:
-   batfish -testrig </path/to/testrig> -query -predicates <predicate> [more_predicates..]
+   batfish_query_predicate <generated-output-prefix> <predicate>
 
 ex-vendor:
 This folder contains parsed versions of the vendor configuration files, serialized into an XML-like format.
