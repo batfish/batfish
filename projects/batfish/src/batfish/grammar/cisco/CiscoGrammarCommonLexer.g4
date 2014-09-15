@@ -697,6 +697,11 @@ CONTACT_EMAIL_ADDR
    'contact-email-addr'
 ;
 
+CONTEXT
+:
+   'context'
+;
+   
 CONTROL_PLANE
 :
    'control-plane'

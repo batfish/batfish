@@ -394,7 +394,6 @@ null_block_substanza
          | VPN_FILTER
          | VPN_IDLE_TIMEOUT
          | VPN_TUNNEL_PROTOCOL
-         | VRF
          | WEBVPN
          | WINS_SERVER
          | WITHOUT_CSD
@@ -829,6 +828,7 @@ null_stanza
          | STCAPP
       ) NEWLINE
    )
+   | vrf_context_stanza
    | vrf_stanza
 ;
 
@@ -862,7 +862,16 @@ switching_mode_stanza
    SWITCHING_MODE ~NEWLINE* NEWLINE
 ;
 
+vrf_context_stanza
+:
+   VRF CONTEXT ~NEWLINE NEWLINE
+   (
+      IP ROUTE ~NEWLINE NEWLINE
+   )*
+;
+
 vrf_stanza
 :
-   VRF ~NEWLINE* NEWLINE null_block_substanza* address_family_vrf_stanza*
+   VRF ~(NEWLINE|CONTEXT)* NEWLINE null_block_substanza* address_family_vrf_stanza*
 ;
+
