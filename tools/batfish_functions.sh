@@ -88,6 +88,58 @@ batfish_analyze() {
 }
 export -f batfish_analyze
 
+batfish_analyze_interface_failures() {
+   local TEST_RIG=$1
+   shift
+   local PREFIX=$1
+   shift
+   local MACHINES="$@"
+   local NUM_MACHINES=$#
+   if [ "$NUM_MACHINES" -eq 0 ]; then
+      local MACHINES=localhost
+      local NUM_MACHINES=1
+   fi
+   local OLD_PWD=$PWD
+   local FLOWS=$OLD_PWD/$PREFIX-flows
+   local EDGE_PREDICATE=LanAdjacent
+   local SCENARIO_BASE_DIR=$OLD_PWD/$PREFIX-interface-failure-scenarios
+   local INTERFACES=$OLD_PWD/$PREFIX-topology-interfaces
+   grep "^$EDGE_PREDICATE(" $FLOWS | cut -d'(' -f 2 | cut -d',' -f 1,2 | sort -u | tr -d ',' > $INTERFACES
+   local INDEX=1
+   local NUM_INTERFACES=$(cat $INTERFACES | wc -l)
+   local CURRENT_MACHINE=0
+   local NUM_INTERFACES_PER_MACHINE=$(($NUM_INTERFACES / $NUM_MACHINES))
+   for machine in $MACHINES; do
+      local CURRENT_MACHINE=$(($CURRENT_MACHINE + 1))
+      ssh $machine "mkdir -p $SCENARIO_BASE_DIR"
+      if [ "$CURRENT_MACHINE" -eq "$NUM_MACHINES" ]; then
+         tail -n+$INDEX $INTERFACES | ssh $machine "cat > ${INTERFACES}-local"
+         if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+            return 1
+         fi
+      else
+         sed -n -e "$INDEX,$(($INDEX + $NUM_INTERFACES_PER_MACHINE - 1))p" $INTERFACES | ssh $machine "cat > ${INTERFACES}-local"
+         if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+            return 1
+         fi
+         local INDEX=$(($INDEX + $NUM_INTERFACES_PER_MACHINE))
+      fi
+   done
+   cat $MACHINES | parallel --halt 2 ssh {} nohup bash -c "cd $OLD_PWD; batfish_analyze_interface_failures_machine $TEST_RIG $PREFIX $SCENARIO_BASE_DIR ${INTERFACES}-local" \;
+}
+export -f batfish_analyze_interface_failures
+
+batfish_analyze_interface_failures_machine() {
+   batfish_expect_args 5 $# || return 1
+   local TEST_RIG=$1
+   local PREFIX=$2
+   local SCENARIO_BASE_DIR=$3
+   local INTERFACES=$4
+   local MACHINE=$5
+   for i in $(seq 1 1000) ; do echo $@; sleep 1; done
+}
+export -f batfish_analyze_interface_failures_machine
+
 batfish_build() {
    local RESTORE_FILE='cygwin-symlink-restore-data'
    local OLD_PWD=$(pwd)
