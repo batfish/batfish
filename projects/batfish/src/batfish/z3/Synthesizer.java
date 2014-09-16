@@ -750,16 +750,25 @@ public class Synthesizer {
                                  if (!hostname.equals(edge.getNode1())) {
                                     throw new BatfishException("Invalid edge");
                                  }
-                                 PreOutEdgeExpr preOutEdge = new PreOutEdgeExpr(
-                                       hostname, outInterface, nextHop,
-                                       inInterface);
                                  AndExpr forwardConditions = new AndExpr();
                                  forwardConditions.addConjunct(postInInterface);
                                  forwardConditions.addConjunct(preOut);
                                  forwardConditions.addConjunct(match);
-                                 RuleExpr preOutEdgeRule = new RuleExpr(
-                                       forwardConditions, preOutEdge);
-                                 statements.add(preOutEdgeRule);
+                                 if (Util.isNullInterface(outInterface)) {
+                                    NodeDropExpr nodeDrop = new NodeDropExpr(
+                                          hostname);
+                                    RuleExpr dropRule = new RuleExpr(
+                                          forwardConditions, nodeDrop);
+                                    statements.add(dropRule);
+                                 }
+                                 else {
+                                    PreOutEdgeExpr preOutEdge = new PreOutEdgeExpr(
+                                          hostname, outInterface, nextHop,
+                                          inInterface);
+                                    RuleExpr preOutEdgeRule = new RuleExpr(
+                                          forwardConditions, preOutEdge);
+                                    statements.add(preOutEdgeRule);
+                                 }
                               }
                            }
                         }
