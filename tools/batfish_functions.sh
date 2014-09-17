@@ -206,7 +206,7 @@ batfish_analyze_interface_failures_machine() {
       batfish_find_interface_failure_black_hole_packet_constraints_interface $REACH_PATH $QUERY_PATH $FI_QUERY_BASE_PATH $NODE_SET_PATH $interface || return 1
 
       # Ignore packets with destination ip equal to that assigned to blacklisted interface
-      batfish_find_interface_failure_destination_ip_blacklist_constraints $WORKSPACE $DST_IP_BLACKLIST_PATH $interface
+      batfish_find_interface_failure_destination_ip_blacklist_constraints $WORKSPACE $DST_IP_BLACKLIST_PATH $interface || return 1
       
       # Generate interface-failure-inconsistency concretizer queries
       batfish_generate_interface_failure_inconsistency_concretizer_queries $ORIG_FI_QUERY_BASE_PATH $FI_QUERY_BASE_PATH $NODE_SET_PATH $interface $DST_IP_BLACKLIST_PATH || return 1
