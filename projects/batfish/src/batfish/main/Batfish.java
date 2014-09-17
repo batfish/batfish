@@ -86,16 +86,18 @@ import batfish.logicblox.QueryException;
 import batfish.logicblox.TopologyFactExtractor;
 import batfish.representation.Configuration;
 import batfish.representation.Edge;
+import batfish.representation.Interface;
 import batfish.representation.Ip;
 import batfish.representation.Topology;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
 import batfish.representation.cisco.CiscoVendorConfiguration;
-import batfish.representation.cisco.Interface;
 import batfish.util.UrlZipExplorer;
 import batfish.util.StringFilter;
 import batfish.util.Util;
 import batfish.z3.ConcretizerQuery;
+import batfish.z3.FailureInconsistencyBlackHoleQuerySynthesizer;
+import batfish.z3.FailureInconsistencyReachableQuerySynthesizer;
 import batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import batfish.z3.QuerySynthesizer;
 import batfish.z3.Synthesizer;
@@ -342,26 +344,72 @@ public class Batfish implements AutoCloseable {
    private void concretize() {
       print(0, "\n*** GENERATING Z3 CONCRETIZER QUERIES ***\n");
       resetTimer();
-      String concInPath = _settings.getConcretizerInputFilePath();
+      String[] concInPaths = _settings.getConcretizerInputFilePaths();
+      String[] negConcInPaths = _settings.getNegatedConcretizerInputFilePaths();
+      List<ConcretizerQuery> concretizerQueries = new ArrayList<ConcretizerQuery>();
+      String blacklistDstIpStr = _settings.getBlacklistDstIp();
+      if (blacklistDstIpStr != null) {
+         Ip blacklistDstIp = new Ip(blacklistDstIpStr);
+         ConcretizerQuery blacklistIpQuery = ConcretizerQuery
+               .blacklistDstIpQuery(blacklistDstIp);
+         concretizerQueries.add(blacklistIpQuery);
+      }
+      for (String concInPath : concInPaths) {
+         print(1, "Reading z3 datalog query output file: \"" + concInPath
+               + "\"..");
+         File queryOutputFile = new File(concInPath);
+         String queryOutputStr = readFile(queryOutputFile);
+         print(1, "OK\n");
 
-      print(1, "Reading z3 datalog query output file: \"" + concInPath + "\"..");
-      File queryOutputFile = new File(concInPath);
-      String queryOutputStr = readFile(queryOutputFile);
-      print(1, "OK\n");
+         DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
+               queryOutputStr);
+         ParserRuleContext tree = parse(parser, concInPath);
 
-      DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
-            queryOutputStr);
-      ParserRuleContext tree = parse(parser, concInPath);
+         print(1, "Computing concretizer queries..");
+         ParseTreeWalker walker = new ParseTreeWalker();
+         DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(
+               _settings.concretizeUnique(), false);
+         walker.walk(extractor, tree);
+         print(1, "OK\n");
 
-      print(1, "Computing concretizer queries..");
-      ParseTreeWalker walker = new ParseTreeWalker();
-      DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor();
-      walker.walk(extractor, tree);
-      print(1, "OK\n");
+         List<ConcretizerQuery> currentQueries = extractor
+               .getConcretizerQueries();
+         if (concretizerQueries.size() == 0) {
+            concretizerQueries.addAll(currentQueries);
+         }
+         else {
+            concretizerQueries = ConcretizerQuery.crossProduct(
+                  concretizerQueries, currentQueries);
+         }
+      }
+      for (String negConcInPath : negConcInPaths) {
+         print(1, "Reading z3 datalog query output file (to be negated): \""
+               + negConcInPath + "\"..");
+         File queryOutputFile = new File(negConcInPath);
+         String queryOutputStr = readFile(queryOutputFile);
+         print(1, "OK\n");
 
-      List<ConcretizerQuery> concretizerQueries = extractor
-            .getConcretizerQueries();
+         DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
+               queryOutputStr);
+         ParserRuleContext tree = parse(parser, negConcInPath);
 
+         print(1, "Computing concretizer queries..");
+         ParseTreeWalker walker = new ParseTreeWalker();
+         DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(
+               _settings.concretizeUnique(), true);
+         walker.walk(extractor, tree);
+         print(1, "OK\n");
+
+         List<ConcretizerQuery> currentQueries = extractor
+               .getConcretizerQueries();
+         if (concretizerQueries.size() == 0) {
+            concretizerQueries.addAll(currentQueries);
+         }
+         else {
+            concretizerQueries = ConcretizerQuery.crossProduct(
+                  concretizerQueries, currentQueries);
+         }
+      }
       for (int i = 0; i < concretizerQueries.size(); i++) {
          ConcretizerQuery cq = concretizerQueries.get(i);
          String concQueryPath = _settings.getConcretizerOutputFilePath() + "-"
@@ -370,7 +418,6 @@ public class Batfish implements AutoCloseable {
          writeFile(concQueryPath, cq.getText());
          print(1, "OK\n");
       }
-
       printElapsedTime();
    }
 
@@ -407,6 +454,7 @@ public class Batfish implements AutoCloseable {
          configurations.put(name, c);
          print(2, "...OK\n");
       }
+      disableBlacklistedInterface(configurations);
       printElapsedTime();
       return configurations;
    }
@@ -456,6 +504,20 @@ public class Batfish implements AutoCloseable {
       return vendorConfigurations;
    }
 
+   private void disableBlacklistedInterface(
+         Map<String, Configuration> configurations) {
+      String blacklistInterfaceString = _settings.getBlacklistInterfaceString();
+      if (blacklistInterfaceString != null) {
+         String[] blacklistInterfaceStringParts = blacklistInterfaceString
+               .split(",");
+         String blacklistInterfaceNode = blacklistInterfaceStringParts[0];
+         String blacklistInterfaceName = blacklistInterfaceStringParts[1];
+         Configuration c = configurations.get(blacklistInterfaceNode);
+         Interface i = c.getInterfaces().get(blacklistInterfaceName);
+         i.setActive(false);
+      }
+   }
+
    private void dumpFacts(Map<String, StringBuilder> factBins) {
       print(0, "\n*** DUMPING FACTS ***\n");
       resetTimer();
@@ -491,9 +553,10 @@ public class Batfish implements AutoCloseable {
          catch (ClassCastException e) {
             continue;
          }
-         Map<String, Interface> sortedInterfaces = new TreeMap<String, Interface>();
+         Map<String, batfish.representation.cisco.Interface> sortedInterfaces = new TreeMap<String, batfish.representation.cisco.Interface>();
          sortedInterfaces.putAll(config.getInterfaces());
-         for (Interface iface : sortedInterfaces.values()) {
+         for (batfish.representation.cisco.Interface iface : sortedInterfaces
+               .values()) {
             String iname = iface.getName();
             String description = iface.getDescription();
             sb.append(node + " " + iname);
@@ -512,6 +575,69 @@ public class Batfish implements AutoCloseable {
          System.err.print(text);
          System.err.flush();
       }
+   }
+
+   private void genInterfaceFailureBlackHoleQueries() {
+      print(0,
+            "\n*** GENERATING INTERFACE-FAILURE-INCONSISTENCY BLACK-HOLE QUERIES ***\n");
+      resetTimer();
+
+      String fiQueryBasePath = _settings
+            .getInterfaceFailureInconsistencyBlackHoleQueryPath();
+      String nodeSetPath = _settings.getNodeSetPath();
+      String blacklistedInterfaceString = _settings
+            .getBlacklistInterfaceString();
+
+      print(1, "Reading node set from : \"" + nodeSetPath + "\"..");
+      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
+      print(1, "OK\n");
+
+      for (String hostname : nodes) {
+         QuerySynthesizer synth = new FailureInconsistencyBlackHoleQuerySynthesizer(
+               hostname);
+         String queryText = synth.getQueryText();
+         String fiQueryPath;
+         if (blacklistedInterfaceString != null) {
+            fiQueryPath = fiQueryBasePath + "-" + blacklistedInterfaceString
+                  + "-" + hostname + ".smt2";
+         }
+         else {
+            fiQueryPath = fiQueryBasePath + "-" + hostname + ".smt2";
+         }
+
+         print(1, "Writing query to: \"" + fiQueryPath + "\"..");
+         writeFile(fiQueryPath, queryText);
+         print(1, "OK\n");
+      }
+
+      printElapsedTime();
+   }
+
+   private void genInterfaceFailureReachableQueries() {
+      print(0,
+            "\n*** GENERATING INTERFACE-FAILURE-INCONSISTENCY REACHABLE QUERIES ***\n");
+      resetTimer();
+
+      String fiQueryBasePath = _settings
+            .getInterfaceFailureInconsistencyReachableQueryPath();
+      String nodeSetPath = _settings.getNodeSetPath();
+      print(1, "Reading node set from : \"" + nodeSetPath + "\"..");
+      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
+      print(1, "OK\n");
+
+      for (String hostname : nodes) {
+         QuerySynthesizer synth = new FailureInconsistencyReachableQuerySynthesizer(
+               hostname);
+         String queryText = synth.getQueryText();
+         String fiQueryPath;
+         fiQueryPath = fiQueryBasePath + "-" + hostname + ".smt2";
+
+         print(1, "Writing query to: \"" + fiQueryPath + "\"..");
+         writeFile(fiQueryPath, queryText);
+         print(1, "OK\n");
+      }
+
+      printElapsedTime();
    }
 
    private void genMultipathQueries() {
@@ -1142,9 +1268,10 @@ public class Batfish implements AutoCloseable {
          }
 
          // at this point we should have a VendorConfiguration vc
-         if (vendorConfigurations.containsKey(vc.getHostname())) 
-            throw new Error("Duplicate hostname \"" + vc.getHostname() + "\" found in " + currentFile + "\n");
-            
+         if (vendorConfigurations.containsKey(vc.getHostname()))
+            throw new Error("Duplicate hostname \"" + vc.getHostname()
+                  + "\" found in " + currentFile + "\n");
+
          vendorConfigurations.put(vc.getHostname(), vc);
       }
       if (processingError) {
@@ -1423,6 +1550,16 @@ public class Batfish implements AutoCloseable {
 
       if (_settings.getAnonymize()) {
          anonymizeConfigurations();
+         return;
+      }
+
+      if (_settings.getInterfaceFailureInconsistencyReachableQuery()) {
+         genInterfaceFailureReachableQueries();
+         return;
+      }
+
+      if (_settings.getInterfaceFailureInconsistencyBlackHoleQuery()) {
+         genInterfaceFailureBlackHoleQueries();
          return;
       }
 

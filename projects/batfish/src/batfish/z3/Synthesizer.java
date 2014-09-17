@@ -1030,8 +1030,7 @@ public class Synthesizer {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment(
             "Rules for sending packets from preout to destroute stage"));
-      for (Entry<String, Set<Interface>> e : _topologyInterfaces.entrySet()) {
-         String hostname = e.getKey();
+      for (String hostname : _configurations.keySet()) {
          /**
           * if a packet whose source node is a given node reaches preout on that
           * node, then it reaches destroute
@@ -1044,6 +1043,11 @@ public class Synthesizer {
          originConditions.addConjunct(originate);
          RuleExpr originDestRoute = new RuleExpr(originConditions, destRoute);
          statements.add(originDestRoute);
+      }
+      for (Entry<String, Set<Interface>> e : _topologyInterfaces.entrySet()) {
+         String hostname = e.getKey();
+         PreOutExpr preOut = new PreOutExpr(hostname);
+         DestinationRouteExpr destRoute = new DestinationRouteExpr(hostname);
          Set<Interface> interfaces = e.getValue();
          for (Interface i : interfaces) {
             String ifaceName = i.getName();

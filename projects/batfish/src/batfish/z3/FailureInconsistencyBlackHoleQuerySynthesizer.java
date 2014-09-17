@@ -1,6 +1,5 @@
 package batfish.z3;
 
-import batfish.z3.node.AcceptExpr;
 import batfish.z3.node.AndExpr;
 import batfish.z3.node.DropExpr;
 import batfish.z3.node.OriginateExpr;
@@ -8,15 +7,15 @@ import batfish.z3.node.QueryExpr;
 import batfish.z3.node.RuleExpr;
 import batfish.z3.node.SaneExpr;
 
-public class MultipathInconsistencyQuerySynthesizer implements QuerySynthesizer {
+public class FailureInconsistencyBlackHoleQuerySynthesizer implements
+      QuerySynthesizer {
 
    private String _queryText;
 
-   public MultipathInconsistencyQuerySynthesizer(String hostname) {
+   public FailureInconsistencyBlackHoleQuerySynthesizer(String hostname) {
       OriginateExpr originate = new OriginateExpr(hostname);
       RuleExpr injectSymbolicPackets = new RuleExpr(originate);
       AndExpr queryConditions = new AndExpr();
-      queryConditions.addConjunct(AcceptExpr.INSTANCE);
       queryConditions.addConjunct(DropExpr.INSTANCE);
       queryConditions.addConjunct(SaneExpr.INSTANCE);
       QueryExpr query = new QueryExpr(queryConditions);
@@ -27,6 +26,7 @@ public class MultipathInconsistencyQuerySynthesizer implements QuerySynthesizer 
       sb.append("\n");
       String queryText = sb.toString();
       _queryText = queryText;
+
    }
 
    @Override

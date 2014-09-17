@@ -15,10 +15,15 @@ import org.apache.commons.cli.ParseException;
 public class Settings {
 
    private static final String ARG_ANONYMIZE = "anonymize";
+   private static final String ARG_BLACK_HOLE = "blackhole";
+   private static final String ARG_BLACK_HOLE_PATH = "blackholepath";
+   private static final String ARG_BLACKLIST_DST_IP = "blacklistdstip";
+   private static final String ARG_BLACKLIST_INTERFACE = "blint";
    private static final String ARG_BUILD_PREDICATE_INFO = "bpi";
    private static final String ARG_CB_HOST = "lbhost";
    private static final String ARG_CB_PORT = "lbport";
    private static final String ARG_COMPILE = "compile";
+   private static final String ARG_CONC_UNIQUE = "concunique";
    private static final String ARG_COUNT = "count";
    private static final String ARG_DATA_PLANE = "dp";
    private static final String ARG_DATA_PLANE_DIR = "dpdir";
@@ -52,6 +57,8 @@ public class Settings {
    private static final String ARG_PRINT_PARSE_TREES = "ppt";
    private static final String ARG_QUERY = "query";
    private static final String ARG_QUERY_ALL = "all";
+   private static final String ARG_REACH = "reach";
+   private static final String ARG_REACH_PATH = "reachpath";
    private static final String ARG_REDIRECT_STDERR = "redirect";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
@@ -66,10 +73,14 @@ public class Settings {
    private static final String ARG_WORKSPACE = "workspace";
    private static final String ARG_Z3 = "z3";
    private static final String ARG_Z3_CONCRETIZE = "conc";
-   private static final String ARG_Z3_CONCRETIZER_INPUT_FILE = "concin";
+   private static final String ARG_Z3_CONCRETIZER_INPUT_FILES = "concin";
+   private static final String ARG_Z3_CONCRETIZER_NEGATED_INPUT_FILES = "concinneg";
    private static final String ARG_Z3_CONCRETIZER_OUTPUT_FILE = "concout";
    private static final String ARG_Z3_OUTPUT = "z3path";
    private static final String ARGNAME_ANONYMIZE = "path";
+   private static final String ARGNAME_BLACK_HOLE_PATH = "path";
+   private static final String ARGNAME_BLACKLIST_DST_IP = "ip";
+   private static final String ARGNAME_BLACKLIST_INTERFACE = "node,interface";
    private static final String ARGNAME_BUILD_PREDICATE_INFO = "path";
    private static final String ARGNAME_DATA_PLANE_DIR = "path";
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
@@ -83,11 +94,13 @@ public class Settings {
    private static final String ARGNAME_LOGICDIR = "path";
    private static final String ARGNAME_MPI_PATH = "path";
    private static final String ARGNAME_NODE_SET_PATH = "path";
+   private static final String ARGNAME_REACH_PATH = "path";
    private static final String ARGNAME_REVERT = "branch-name";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
-   private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILE = "path";
+   private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILES = "paths";
+   private static final String ARGNAME_Z3_CONCRETIZER_NEGATED_INPUT_FILES = "paths";
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
    private static final String ARGNAME_Z3_OUTPUT = "path";
    public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "55181";
@@ -107,22 +120,25 @@ public class Settings {
    private static final String DEFAULT_SERIALIZE_INDEPENDENT_PATH = "serialized-independent-configs";
    private static final String DEFAULT_SERIALIZE_VENDOR_PATH = "serialized-vendor-configs";
    private static final String DEFAULT_TEST_RIG_PATH = "default_test_rig";
-   private static final String DEFAULT_Z3_CONCRETIZER_INPUT_FILE = "z3-concretizer-input.smt2";
-   private static final String DEFAULT_Z3_CONCRETIZER_OUTPUT_FILE = "z3-concretizer-output.smt2";
    private static final String DEFAULT_Z3_OUTPUT = "z3-dataplane-output.smt2";
    private static final boolean DEFAULT_Z3_SIMPLIFY = true;
    private static final String EXECUTABLE_NAME = "batfish";
 
    private boolean _anonymize;
    private String _anonymizeDir;
+   private boolean _blackHole;
+   private String _blackHolePath;
+   private String _blacklistDstIp;
+   private String _blacklistInterface;
    private boolean _buildPredicateInfo;
    private boolean _canExecute;
    private String _cbHost;
    private int _cbPort;
    private boolean _compile;
    private boolean _concretize;
-   private String _concretizerInputFilePath;
+   private String[] _concretizerInputFilePaths;
    private String _concretizerOutputFilePath;
+   private boolean _concUnique;
    private boolean _counts;
    private boolean _dataPlane;
    private String _dataPlaneDir;
@@ -150,6 +166,7 @@ public class Settings {
    private String _logicSrcDir;
    private int _logLevel;
    private String _mpiPath;
+   private String[] _negatedConcretizerInputFilePaths;
    private String _nodeSetPath;
    private boolean _noTraffic;
    private Options _options;
@@ -158,6 +175,8 @@ public class Settings {
    private boolean _printSemantics;
    private boolean _query;
    private boolean _queryAll;
+   private boolean _reach;
+   private String _reachPath;
    private boolean _redirectStdErr;
    private boolean _removeFacts;
    private boolean _revert;
@@ -189,6 +208,10 @@ public class Settings {
       return _canExecute;
    }
 
+   public boolean concretizeUnique() {
+      return _concUnique;
+   }
+
    public boolean createWorkspace() {
       return _compile;
    }
@@ -209,6 +232,14 @@ public class Settings {
       return _anonymizeDir;
    }
 
+   public String getBlacklistDstIp() {
+      return _blacklistDstIp;
+   }
+
+   public String getBlacklistInterfaceString() {
+      return _blacklistInterface;
+   }
+
    public String getBranchName() {
       return _revertBranchName;
    }
@@ -221,8 +252,8 @@ public class Settings {
       return _concretize;
    }
 
-   public String getConcretizerInputFilePath() {
-      return _concretizerInputFilePath;
+   public String[] getConcretizerInputFilePaths() {
+      return _concretizerInputFilePaths;
    }
 
    public String getConcretizerOutputFilePath() {
@@ -305,6 +336,22 @@ public class Settings {
       return _hsaOutputDir;
    }
 
+   public boolean getInterfaceFailureInconsistencyBlackHoleQuery() {
+      return _blackHole;
+   }
+
+   public String getInterfaceFailureInconsistencyBlackHoleQueryPath() {
+      return _blackHolePath;
+   }
+
+   public boolean getInterfaceFailureInconsistencyReachableQuery() {
+      return _reach;
+   }
+
+   public String getInterfaceFailureInconsistencyReachableQueryPath() {
+      return _reachPath;
+   }
+
    public String getInterfaceMapPath() {
       return _interfaceMapPath;
    }
@@ -331,6 +378,10 @@ public class Settings {
 
    public String getMultipathInconsistencyQueryPath() {
       return _mpiPath;
+   }
+
+   public String[] getNegatedConcretizerInputFilePaths() {
+      return _negatedConcretizerInputFilePaths;
    }
 
    public String getNodeSetPath() {
@@ -494,9 +545,13 @@ public class Settings {
             .withDescription("set z3 data plane logic output file")
             .create(ARG_Z3_OUTPUT));
       _options.addOption(OptionBuilder
-            .withArgName(ARGNAME_Z3_CONCRETIZER_INPUT_FILE).hasArg()
-            .withDescription("set z3 concretizer input file")
-            .create(ARG_Z3_CONCRETIZER_INPUT_FILE));
+            .withArgName(ARGNAME_Z3_CONCRETIZER_INPUT_FILES).hasArgs()
+            .withDescription("set z3 concretizer input file(s)")
+            .create(ARG_Z3_CONCRETIZER_INPUT_FILES));
+      _options.addOption(OptionBuilder
+            .withArgName(ARGNAME_Z3_CONCRETIZER_NEGATED_INPUT_FILES).hasArgs()
+            .withDescription("set z3 negated concretizer input file(s)")
+            .create(ARG_Z3_CONCRETIZER_NEGATED_INPUT_FILES));
       _options.addOption(OptionBuilder
             .withArgName(ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE).hasArg()
             .withDescription("set z3 concretizer output file")
@@ -609,6 +664,41 @@ public class Settings {
                   .withDescription(
                         "build predicate info (should only be called by ant build script) with provided input logic dir")
                   .create(ARG_BUILD_PREDICATE_INFO));
+      _options.addOption(OptionBuilder
+            .hasArg()
+            .withArgName(ARGNAME_BLACKLIST_INTERFACE)
+            .withDescription(
+                  "interface to blacklist (force inactive) during analysis")
+            .create(ARG_BLACKLIST_INTERFACE));
+      _options.addOption(OptionBuilder.withDescription(
+            "generate interface-failure-inconsistency reachable packet query")
+            .create(ARG_REACH));
+      _options
+            .addOption(OptionBuilder
+                  .hasArg()
+                  .withArgName(ARGNAME_REACH_PATH)
+                  .withDescription(
+                        "path to read or write interface-failure-inconsistency reachable packet query")
+                  .create(ARG_REACH_PATH));
+      _options.addOption(OptionBuilder.withDescription(
+            "generate interface-failure-inconsistency black-hole packet query")
+            .create(ARG_BLACK_HOLE));
+      _options.addOption(OptionBuilder.withDescription(
+            "only concretize single packet (do not break up disjunctions)")
+            .create(ARG_CONC_UNIQUE));
+      _options
+            .addOption(OptionBuilder
+                  .hasArg()
+                  .withArgName(ARGNAME_BLACK_HOLE_PATH)
+                  .withDescription(
+                        "path to read or write interface-failure-inconsistency black-hole packet query")
+                  .create(ARG_BLACK_HOLE_PATH));
+      _options.addOption(OptionBuilder
+            .hasArg()
+            .withArgName(ARGNAME_BLACKLIST_DST_IP)
+            .withDescription(
+                  "destination ip to blacklist for concretizer queries")
+            .create(ARG_BLACKLIST_DST_IP));
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -665,12 +755,12 @@ public class Settings {
       }
       _concretize = line.hasOption(ARG_Z3_CONCRETIZE);
       if (_concretize) {
-         _concretizerInputFilePath = line
-               .getOptionValue(ARG_Z3_CONCRETIZER_INPUT_FILE,
-                     DEFAULT_Z3_CONCRETIZER_INPUT_FILE);
-         _concretizerOutputFilePath = line.getOptionValue(
-               ARG_Z3_CONCRETIZER_OUTPUT_FILE,
-               DEFAULT_Z3_CONCRETIZER_OUTPUT_FILE);
+         _concretizerInputFilePaths = line
+               .getOptionValues(ARG_Z3_CONCRETIZER_INPUT_FILES);
+         _negatedConcretizerInputFilePaths = line
+               .getOptionValues(ARG_Z3_CONCRETIZER_NEGATED_INPUT_FILES);
+         _concretizerOutputFilePath = line
+               .getOptionValue(ARG_Z3_CONCRETIZER_OUTPUT_FILE);
       }
       _flows = line.hasOption(ARG_FLOWS);
       if (_flows) {
@@ -730,6 +820,13 @@ public class Settings {
       if (_buildPredicateInfo) {
          _logicSrcDir = line.getOptionValue(ARG_BUILD_PREDICATE_INFO);
       }
+      _blacklistInterface = line.getOptionValue(ARG_BLACKLIST_INTERFACE);
+      _reach = line.hasOption(ARG_REACH);
+      _reachPath = line.getOptionValue(ARG_REACH_PATH);
+      _blackHole = line.hasOption(ARG_BLACK_HOLE);
+      _blackHolePath = line.getOptionValue(ARG_BLACK_HOLE_PATH);
+      _blacklistDstIp = line.getOptionValue(ARG_BLACKLIST_DST_IP);
+      _concUnique = line.hasOption(ARG_CONC_UNIQUE);
    }
 
    public boolean printParseTree() {

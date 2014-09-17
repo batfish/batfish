@@ -12,35 +12,53 @@ import batfish.z3.node.*;
 public class DatalogQueryResultExtractor extends
       DatalogQueryResultParserBaseListener {
 
+   private static final int MAX_DISJUNCTS = 3;
+
+   private boolean _concretizeUnique;
+
+   private boolean _negate;
+
    private List<ConcretizerQuery> _queries;
+
+   public DatalogQueryResultExtractor(boolean concretizeUnique, boolean negate) {
+      _concretizeUnique = concretizeUnique;
+      _negate = negate;
+   }
 
    @Override
    public void exitResult(ResultContext ctx) {
-      if (ctx.UNSAT() != null) {
-         List<Statement> unsatStatements = Collections
-               .<Statement> singletonList(new UnsatExpr());
-         _queries = Collections.singletonList(new ConcretizerQuery(
-               unsatStatements));
-      }
-      else {
-         _queries = new ArrayList<ConcretizerQuery>();
-         BooleanExpr booleanExpr = toBooleanExpr(ctx.boolean_expr());
-         if (booleanExpr instanceof OrExpr) {
-            OrExpr orExpr = (OrExpr) booleanExpr;
-            for (BooleanExpr disjunct : orExpr.getDisjuncts()) {
-               ConcretizerQuery cq = new ConcretizerQuery(disjunct);
-               _queries.add(cq);
-            }
+      if (!_negate) {
+         if (ctx.UNSAT() != null) {
+            _queries = Collections.singletonList(ConcretizerQuery.UNSAT);
          }
-         else if (booleanExpr instanceof LetExpr) {
-            LetExpr letExpr = (LetExpr) booleanExpr;
-            BooleanExpr subExpr = letExpr.getExpression();
-            if (subExpr instanceof OrExpr) {
-               OrExpr orExpr = (OrExpr) subExpr;
-               for (BooleanExpr disjunct : orExpr.getDisjuncts()) {
-                  LetExpr disjunctLet = new LetExpr(letExpr.getMacroDefs(),
-                        disjunct);
-                  ConcretizerQuery cq = new ConcretizerQuery(disjunctLet);
+         else {
+            _queries = new ArrayList<ConcretizerQuery>();
+            BooleanExpr booleanExpr = toBooleanExpr(ctx.boolean_expr());
+            if (!_concretizeUnique && booleanExpr instanceof OrExpr) {
+               OrExpr orExpr = (OrExpr) booleanExpr;
+               List<BooleanExpr> disjuncts = orExpr.getDisjuncts();
+               for (int i = 0; i < disjuncts.size() && i < MAX_DISJUNCTS; i++) {
+                  BooleanExpr disjunct = disjuncts.get(i);
+                  ConcretizerQuery cq = new ConcretizerQuery(disjunct);
+                  _queries.add(cq);
+               }
+            }
+            else if (booleanExpr instanceof LetExpr) {
+               LetExpr letExpr = (LetExpr) booleanExpr;
+               BooleanExpr subExpr = letExpr.getExpression();
+               if (!_concretizeUnique && subExpr instanceof OrExpr) {
+                  OrExpr orExpr = (OrExpr) subExpr;
+                  List<BooleanExpr> disjuncts = orExpr.getDisjuncts();
+                  for (int i = 0; i < disjuncts.size() && i < MAX_DISJUNCTS; i++) {
+                     BooleanExpr disjunct = disjuncts.get(i);
+                     LetExpr disjunctLet = new LetExpr(letExpr.getMacroDefs(),
+                           disjunct);
+                     ConcretizerQuery cq = new ConcretizerQuery(disjunctLet);
+                     _queries.add(cq);
+                  }
+               }
+               else {
+                  ConcretizerQuery cq = new ConcretizerQuery(booleanExpr);
                   _queries.add(cq);
                }
             }
@@ -49,9 +67,50 @@ public class DatalogQueryResultExtractor extends
                _queries.add(cq);
             }
          }
+      }
+      else {
+         if (ctx.UNSAT() != null) {
+            _queries = Collections.singletonList(new ConcretizerQuery(
+                  TrueExpr.INSTANCE));
+         }
          else {
-            ConcretizerQuery cq = new ConcretizerQuery(booleanExpr);
-            _queries.add(cq);
+            _queries = new ArrayList<ConcretizerQuery>();
+            BooleanExpr booleanExpr = toBooleanExpr(ctx.boolean_expr());
+            NotExpr negation = new NotExpr(booleanExpr);
+            if (!_concretizeUnique && booleanExpr instanceof AndExpr) {
+               AndExpr andExpr = (AndExpr) booleanExpr;
+               List<BooleanExpr> conjuncts = andExpr.getConjuncts();
+               for (int i = 0; i < conjuncts.size() && i < MAX_DISJUNCTS; i++) {
+                  BooleanExpr conjunct = conjuncts.get(i);
+                  BooleanExpr disjunct = new NotExpr(conjunct);
+                  ConcretizerQuery cq = new ConcretizerQuery(disjunct);
+                  _queries.add(cq);
+               }
+            }
+            else if (booleanExpr instanceof LetExpr) {
+               LetExpr letExpr = (LetExpr) booleanExpr;
+               BooleanExpr subExpr = letExpr.getExpression();
+               if (!_concretizeUnique && subExpr instanceof AndExpr) {
+                  AndExpr andExpr = (AndExpr) subExpr;
+                  List<BooleanExpr> conjuncts = andExpr.getConjuncts();
+                  for (int i = 0; i < conjuncts.size() && i < MAX_DISJUNCTS; i++) {
+                     BooleanExpr conjunct = conjuncts.get(i);
+                     BooleanExpr disjunct = new NotExpr(conjunct);
+                     LetExpr disjunctLet = new LetExpr(letExpr.getMacroDefs(),
+                           disjunct);
+                     ConcretizerQuery cq = new ConcretizerQuery(disjunctLet);
+                     _queries.add(cq);
+                  }
+               }
+               else {
+                  ConcretizerQuery cq = new ConcretizerQuery(negation);
+                  _queries.add(cq);
+               }
+            }
+            else {
+               ConcretizerQuery cq = new ConcretizerQuery(negation);
+               _queries.add(cq);
+            }
          }
       }
    }

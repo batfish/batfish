@@ -29,6 +29,10 @@ public class AndExpr extends BooleanExpr implements ComplexExpr {
       _subExpressions.addAll(conjuncts);
    }
 
+   public List<BooleanExpr> getConjuncts() {
+      return _conjuncts;
+   }
+
    @Override
    public Set<String> getRelations() {
       Set<String> relations = new HashSet<String>();
