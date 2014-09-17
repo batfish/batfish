@@ -134,6 +134,7 @@ batfish_analyze_interface_failures() {
       fi
    done
    for machine in $MACHINES; do
+      echo "nohup ssh $machine bash --login -c \"cd $OLD_PWD; batfish_analyze_interface_failures_machine $TEST_RIG $PREFIX $SCENARIO_BASE_DIR $LOCAL_INTERFACES $WORKSPACE >& $LOG_FILE\" >& /dev/null &"
       nohup ssh $machine bash --login -c "cd $OLD_PWD; batfish_analyze_interface_failures_machine $TEST_RIG $PREFIX $SCENARIO_BASE_DIR $LOCAL_INTERFACES $WORKSPACE >& $LOG_FILE" >& /dev/null &
    done
 }
