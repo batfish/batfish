@@ -189,6 +189,9 @@ batfish_analyze_interface_failures_machine() {
       local FI_QUERY_BASE_PATH=$QUERY_PATH/interface-failure-inconsistency-query
       local DST_IP_BLACKLIST_PATH=${QUERY_PATH}/blacklist-ip-${INTERFACE_SANITIZED}
 
+      # WORKAROUND: LogicBlox uses too much memory if we do not clear its state periodically
+      batfish_nuke_reset_logicblox || return 1
+
       # Compute the fixed point of the control plane with failed interface
       batfish_compile_blacklist_interface $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $interface || return 1
 
@@ -637,6 +640,15 @@ batfish_get_concrete_failure_packets() {
    echo ": END: Get concrete inconsistent packets"
 }
 export -f batfish_get_concrete_failure_packets
+
+batfish_nuke_reset_logicblox() {
+   killall -9 lb-server || return 1
+   killall -9 lb-pager || return 1
+   lb services stop || return 1
+   rm -rf ~/lb_deployment/*
+   LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start || return 1
+}
+export -f batfish_nuke_reset_logicblox
 
 batfish_inject_packets() {
    date | tr -d '\n'
