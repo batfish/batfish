@@ -19,7 +19,7 @@ public class InterfaceStanza extends StanzaWithStatus {
       _ifStanzas = new ArrayList<IFStanza>();
       _ignoredStatements = new ArrayList<String>();
       _interfaces = new ArrayList<Interface>();
-      this.set_postProcessTitle("Interface " + _name);
+      this.set_postProcessTitle("Interface (anon)");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -48,6 +48,7 @@ public class InterfaceStanza extends StanzaWithStatus {
    /* ---------------------------- Getters/Setters --------------------------*/
    public void set_name (String n) {
       _name = n;
+      this.set_postProcessTitle("Interface " + _name);
    }
    
    public List<Interface> get_interfaces (){
