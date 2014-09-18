@@ -10,6 +10,7 @@ import static batfish.representation.juniper.SubnetOps.*;
 public class IF_UnitStanza extends IFStanza {
  
    private int _num;
+   private boolean _wildcard;
    private int _accessVlan; // TODO [P0]: does this get used
    private String _address;
    private String _subnetMask;
@@ -17,13 +18,13 @@ public class IF_UnitStanza extends IFStanza {
    private List<IF_UStanza> _ifuStanzas;
    
    /* ------------------------------ Constructor ----------------------------*/
-   public IF_UnitStanza (int i) {
-      _num = i;
+   public IF_UnitStanza () {
+      _num = 0;
+      _wildcard = false;
       _address = "";
       _subnetMask = null;
       _interfaceMode = SwitchportMode.ACCESS;
       _ifuStanzas = new ArrayList<IF_UStanza>();
-      this.set_postProcessTitle("Unit " + i);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -46,6 +47,16 @@ public class IF_UnitStanza extends IFStanza {
 
    public SwitchportMode get_interfaceMode() {
       return _interfaceMode;
+   }
+   
+   public void set_num (int i) {
+      _num = i;
+      this.set_postProcessTitle("Unit " + i);
+   }
+   
+   public void set_wildcard (boolean b) {
+      _wildcard = b;
+      this.set_postProcessTitle("Unit <*>");
    }
    
    /* --------------------------- Inherited Methods -------------------------*/
@@ -80,8 +91,7 @@ public class IF_UnitStanza extends IFStanza {
                   break;
 
                default:
-                  System.out.println("bad family type");
-                  break;
+                  throw new Error ("bad family type");
                }
             }
             break;
@@ -92,8 +102,7 @@ public class IF_UnitStanza extends IFStanza {
          case NULL:
             break;
          default:
-            System.out.println("Bad Unit Stanza Type");
-            break;
+            throw new Error ("Bad Unit Stanza Type");
          }
          addIgnoredStatements(ifus.get_ignoredStatements());
       }

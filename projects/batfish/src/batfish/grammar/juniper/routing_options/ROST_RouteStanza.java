@@ -21,9 +21,6 @@ public class ROST_RouteStanza extends RO_STStanza {
    public void AddStaticOption (StaticOptions s) {
       _staticOptions.add(s);
    }
-   public void set_ip (String i) {
-      _ip = i;
-   }
    
    /* ---------------------------- Getters/Setters --------------------------*/
    public String get_ip () {

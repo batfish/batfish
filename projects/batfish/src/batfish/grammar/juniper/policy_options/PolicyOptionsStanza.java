@@ -78,8 +78,7 @@ public class PolicyOptionsStanza extends JStanza {
                   break;
                  
                default:
-                  System.out.println("bad policy options stanza type");
-                  break;
+                  throw new Error ("bad policy options stanza type");
             }
          }
          this.addIgnoredStatements(pos.get_ignoredStatements());

@@ -17,6 +17,7 @@ import batfish.representation.juniper.JuniperVendorConfiguration;
 import batfish.representation.juniper.ExtendedAccessList;
 import batfish.representation.juniper.Interface;
 import batfish.representation.juniper.OSPFProcess; 
+import batfish.representation.juniper.Martian;
 
 public class JuniperConfiguration {
    private JuniperVendorConfiguration _configuration;
@@ -84,13 +85,12 @@ public class JuniperConfiguration {
                for (String ifname : iflist) {
                   
                   String ipsub = _interfaceAddressMap.get(ifname);
-                  System.out.println(ifname +" : "+ipsub);
                   if (ipsub != null) {
                      String[] iptmp = ipsub.split("/");
                      ospf.addNetwork(iptmp[0], iptmp[1], a.intValue());
                   }
                   else {
-                     System.out.println("Interface not found: " + ifname);
+                     throw new Error ("Interface not found: " + ifname);
                   }  
                               
                   ospf.addNetworkByInterface(ifname, a.intValue());

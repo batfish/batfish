@@ -39,9 +39,7 @@ public class SystemStanza extends JStanza {
    			break;
    
    		default:
-   			System.out.println("bad system stanza type");
-   			break;
-   		}
+   		   throw new Error ("bad system stanza type");   		}
    		addIgnoredStatements(ss.get_ignoredStatements());
 	   }
 	}
