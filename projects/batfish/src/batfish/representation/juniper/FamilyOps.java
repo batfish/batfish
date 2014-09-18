@@ -40,7 +40,7 @@ public class FamilyOps  {
    }
   
    public static FamilyType FamilyTypeFromString (String s) {
-      switch (s) {
+      switch (s.toUpperCase()) {
       case "BRIDGE": 
          return FamilyType.BRIDGE;
       case "CCC":

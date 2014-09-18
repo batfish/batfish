@@ -8,6 +8,8 @@ public enum StaticOptionsType {
    COMMUNITY,
    DISCARD,
    INSTALL_ORNO,
+   NEXT_HOP,
+   NEXT_TABLE,
    METRIC,
    PREFERENCE,
    READVERTISE_ORNO,

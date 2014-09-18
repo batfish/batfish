@@ -126,7 +126,7 @@ public class SubnetOps  {
 
       }
       else {
-         System.out.println("bad subnet value");
+         throw new Error ("bad subnet value");
       }
       return result;
    }

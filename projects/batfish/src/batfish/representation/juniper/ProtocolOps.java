@@ -8,6 +8,8 @@ public class ProtocolOps  {
          return "AGGREGATE";
       case BGP:
          return "BGP";
+      case DIRECT:
+         return "DIRECT";
       case ISIS:
          return "ISIS";
       case MSDP:
@@ -27,6 +29,8 @@ public class ProtocolOps  {
          return ProtocolType.AGGREGATE;
       case "BGP":
          return ProtocolType.BGP;
+      case "DIRECT":
+         return ProtocolType.DIRECT;
       case "ISIS":
          return ProtocolType.ISIS;
       case "MSDP":

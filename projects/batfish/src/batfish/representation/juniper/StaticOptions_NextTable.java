@@ -1,27 +1,22 @@
 package batfish.representation.juniper;
 
-import java.util.List;
-
-public class StaticOptions_Communities extends StaticOptions {
+public class StaticOptions_NextTable extends StaticOptions {
    
-   private List<String> _communities;
+   private String _nextTable;
    
    /* ------------------------------ Constructor ----------------------------*/
-   public StaticOptions_Communities (List<String> c) {
-      _communities = c;
+   public StaticOptions_NextTable (String s) {
+      _nextTable = s;
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
-   public void AddCommunity(String c) {
-      _communities.add(c);
-   }
    
    /* ---------------------------- Getters/Setters --------------------------*/
    
    /* --------------------------- Inherited Methods -------------------------*/
 	@Override
 	public StaticOptionsType getType() {
-		return StaticOptionsType.COMMUNITY;
+		return StaticOptionsType.NEXT_TABLE;
 	}
 
 }

@@ -83,6 +83,9 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
    public void setHostname(String hostname) {
       _hostname = hostname;
    }
+   public String getHostname() {
+      return _hostname;
+   }
 
    /* ---------------------------------- Policy Options Constructs ---------------------------------- */
    private static batfish.representation.AsPathAccessList toAsPathAccessList(ASPathAccessList jPathList) {
@@ -520,7 +523,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
          newProcess.getOutboundPolicyMaps().add(map);
       }
 
-      HashMap<Integer, OspfArea> areas = newProcess.getAreas();
+      Map<Long, OspfArea> areas = newProcess.getAreas();
       List<OSPFNetwork> networks = proc.get_networks();
       if (networks.get(0).get_interface() == null) {
 
@@ -553,7 +556,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
                   OspfArea newArea = areas.get(areaNum);
                   if (newArea == null) {
                      newArea = new OspfArea(areaNum);
-                     areas.put(areaNum, newArea);
+                     areas.put((long)areaNum, newArea);
                   }
                   newArea.getInterfaces().add(i);
                   break;
@@ -572,12 +575,11 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
                   throw new Error("Inconsistent implementation of OSPF Network");
                }
                if (i.getName().equals(n.get_interface())) {
-                  // System.out.println("match : "+i.getName());
                   int areaNum = n.get_areaNum();
                   OspfArea newArea = areas.get(areaNum);
                   if (newArea == null) {
                      newArea = new OspfArea(areaNum);
-                     areas.put(areaNum, newArea);
+                     areas.put((long)areaNum, newArea);
                   }
                   newArea.getInterfaces().add(i);
                   break;
@@ -612,8 +614,9 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       Ip prefix = new Ip(staticRoute.getPrefix());
       String nextHopInterface = staticRoute.getNextHopInterface();
       int prefixLength = Util.numSubnetBits(staticRoute.getMask());
+      // TODO [Ask Ari]: Added tag=0
       return new batfish.representation.StaticRoute(prefix, prefixLength,
-            nextHopIp, nextHopInterface, staticRoute.getDistance());
+            nextHopIp, nextHopInterface, staticRoute.getDistance(),0);
    }
 
    /* ------------------------------- Routing Options Getters/Setters ------------------------------- */
@@ -844,9 +847,7 @@ public void addInterface(Interface interface1) {
    return _asNum;
 }   
 
-public String getHostname() {
-   return _hostname;
-}
+
 
    public void addExtendedAccessList(ExtendedAccessList eal) {
    if (_extendedAccessLists.containsKey(eal.getId())) {
