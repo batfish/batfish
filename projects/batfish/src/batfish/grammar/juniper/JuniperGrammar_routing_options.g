@@ -47,6 +47,7 @@ autonomous_system_ro_stanza returns [ROStanza ros]
 martians_ro_stanza returns [ROStanza ros]
 @init {
   RO_MartiansStanza mros = new RO_MartiansStanza ();
+  Martian m;
 }
   :
   MARTIANS OPEN_BRACE {m = new Martian();}
@@ -65,15 +66,15 @@ martians_ro_stanza returns [ROStanza ros]
   
 rib_groups_ro_stanza returns [ROStanza ros]
   :
-  // TODO [Ask Ari]: probably am not supposed to be ignoring this stuff.
-  RIB (name=VARIABLE) ignored_substanza {ros = new RO_RibStanza(name.getText());}
+  RIB_GROUPS OPEN_BRACE {RO_RibGroupsStanza rros = new RO_RibGroupsStanza();}
+  (group_name = VARIABLE OPEN_BRACE IMPORT_RIB l=bracketed_list CLOSE_BRACE {rros.AddGroup(group_name.getText(),l);})+
+  CLOSE_BRACE
   ;
   
 rib_ro_stanza returns [ROStanza ros]
   :
-  RIB_GROUPS OPEN_BRACE {RO_RibGroupStanza rros = new RO_RibGroupsStanza();}
-  (group_name = VARIABLE OPEN_BRACE IMPORT_RIB l=bracketed_list CLOSE_BRACE {rros.AddGroup(group_name.getText(),l);})+
-  CLOSE_BRACE
+  // TODO [Ask Ari]: probably am not supposed to be ignoring this stuff.
+  RIB (name=VARIABLE) ignored_substanza {ros = new RO_RibStanza(name.getText());}
   ;
   
 router_id_ro_stanza returns [ROStanza ros]
@@ -86,7 +87,12 @@ static_ro_stanza returns [ROStanza ros]
   RO_StaticStanza sros = new RO_StaticStanza ();
 }
   :
-  (STATIC OPEN_BRACE (x=sro_stanza {sros.AddROSTStanza(x);})+ CLOSE_BRACE)                                                            
+  (STATIC OPEN_BRACE 
+  (
+  (x=sro_stanza 
+  |x=inactive_sro_stanza
+  ){sros.AddROSTStanza(x);})+ 
+  CLOSE_BRACE)                                                            
   ;
 
 null_ro_stanza returns [ROStanza ros]
@@ -100,7 +106,16 @@ null_ro_stanza returns [ROStanza ros]
   ;  
   
 /* --- --- --- Routing Options->Static Stanza Rules --------------------------------------------------*/
- sro_stanza returns [RO_STStanza sros]
+inactive_sro_stanza returns [RO_STStanza sros]
+  :
+  INACTIVE COLON (x=sro_stanza) 
+  {
+    x.set_stanzaStatus(StanzaStatusType.INACTIVE);
+    sros=x;
+  }
+  ; 
+ 
+sro_stanza returns [RO_STStanza sros]
   :
   (x=defaults_sro_stanza 
   |x=rib_group_sro_stanza
@@ -151,11 +166,15 @@ route_sro_stanza returns [RO_STStanza sros]
 ROST_RouteStanza rsros = new ROST_RouteStanza ();
 }
   :
-  ROUTE OPEN_BRACE 
+  ROUTE  
   (ip=IP_ADDRESS_WITH_MASK
-  |ip=IPV6_ADDRESS_WITH_MASK {sros.set_stanzaStatus(StanzaStatusType.IPV6);}
-  ) {sros.set_ip(ip.getText());}
-  (x=static_opts_sro_stanza {rsros.AddStaticOption(x);})+ CLOSE_BRACE 
+  |ip=IPV6_ADDRESS_WITH_MASK {rsros.set_stanzaStatus(StanzaStatusType.IPV6);}
+  ) {rsros.set_ip(ip.getText());}
+  
+  (OPEN_BRACE (x=static_opts_sro_stanza {rsros.AddStaticOption(x);})+ CLOSE_BRACE 
+  |(x=static_opts_sro_stanza {rsros.AddStaticOption(x);}) SEMICOLON
+  )
+  
   {sros = rsros;}
   ;
 
@@ -166,18 +185,30 @@ static_opts_sro_stanza returns [StaticOptions so]
   |PASSIVE {so = new StaticOptions_Active(false);}
   |DISCARD {so = new StaticOptions_Discard(true);}
   |AS_PATH x=VARIABLE {so = new StaticOptions_AsPath(x.getText());}
-  |COMMUNITY z=bracketed_list {so = new StaticOptions_Communities(z);}
+  |c=community_static_opts_sro_stanza {so = new StaticOptions_Communities(c);}
   |INSTALL {so = new StaticOptions_Install(true);}
+  |NEXT_HOP i=IP_ADDRESS {so = new StaticOptions_NextHop(i.getText());} 
+  |NEXT_TABLE v=VARIABLE {so = new StaticOptions_NextTable(v.getText());} 
   |NO_INSTALL {so = new StaticOptions_Install(false);}
-  |METRIC y=integer {so = new StaticOptions_Metric(y);}
-  |PREFERENCE y=integer {so = new StaticOptions_Preference(y);}
+  |METRIC n=integer {so = new StaticOptions_Metric(n);}
+  |PREFERENCE n=integer {so = new StaticOptions_Preference(n);}
   |READVERTISE {so = new StaticOptions_Readvertise(true);}
   |NO_READVERTISE {so = new StaticOptions_Readvertise(false);}
   |RESOLVE {so = new StaticOptions_Resolve(true);}
   |NO_RESOLVE {so = new StaticOptions_Resolve(false);}
   |RETAIN {so = new StaticOptions_Retain(true);}
   |NO_RETAIN {so = new StaticOptions_Retain(false);}
-  |TAG t=VARIABLE {so = new StaticOptions_Tag(t.getText());}
+  |TAG v=VARIABLE {so = new StaticOptions_Tag(v.getText());}
   )
   SEMICOLON
   ;
+  
+ /* --- --- --- --- --- Routing Options->Static->Defaults Stanza Rules --------------------------------*/
+community_static_opts_sro_stanza returns [ArrayList<String> l]
+   :
+   COMMUNITY 
+   (b=bracketed_list {l=b;}
+   |s=string_up_to_semicolon {l = new ArrayList<String>(); l.add(s);}
+   )
+   ;
+ 

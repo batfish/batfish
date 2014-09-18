@@ -32,7 +32,19 @@ export_common_stanza returns [BGPExportList b = new BGPExportList()]
 
 bgp_family_common_stanza returns [BGPFamily bfs = new BGPFamily()]
   :
-  FAMILY ignored_substanza // TODO [Ask Ari]: I'm certain these should not be ignored.
+  FAMILY 
+  (ft=BRIDGE 
+  |ft=CCC
+  |ft=INET
+  |ft=INET_VPN
+  |ft=INET6
+  |ft=INET6_VPN
+  |ft=ISO
+  |ft=L2_VPN
+  |ft=ETHERNET_SWITCHING
+  |ft=MPLS
+  )
+  ignored_substanza // TODO [Ask Ari]: I'm certain these should not be ignored.
   ;
   
 import_common_stanza returns [BGPImportList b = new BGPImportList()]
@@ -273,7 +285,7 @@ multihop_gbg_stanza returns [String s]
 
 remove_private_gbg_stanza returns [String s]
   :
-  x=REMOVE_PRIVATE SEMICOLON {s=x.getText();}
+  x=remove_private_common_stanza {s=x;}
   ;
   
 /* --- --- --- --- --- --- --- --- Protocol->BGP->Group->Neighbor Sub-Stanza Rules ------------------*/
@@ -305,12 +317,17 @@ peer_as_ngbg_stanza returns [BGGR_NStanza ngbgs]
 null_ngbg_stanza returns [BGGR_NStanza ngbgs]
   :  
   (s=bfd_liveness_detection_ngbg_stanza
+  |s=cluster_ngbg_stanza 
   |s=description_ngbg_stanza
   |s=graceful_restart_ngbg_stanza
+  |s=hold_time_ngbg_stanza
+  |s=local_preference_ngbg_stanza
   |s=metric_out_ngbg_stanza
   |s=multihop_ngbg_stanza
   |s=multipath_ngbg_stanza
   |s=passive_ngbg_stanza
+  |s=remove_private_ngbg_stanza
+  |s=tcp_mss_ngbg_stanza
   )
   {ngbgs = new BGGRN_NullStanza(s);}
   ;
@@ -341,6 +358,11 @@ hold_time_ngbg_stanza returns [String s]
   x=HOLD_TIME VARIABLE SEMICOLON {s = x.getText();}
   ;  
   
+local_preference_ngbg_stanza returns [String s]
+  :
+  x=LOCAL_PREFERENCE y=DEC SEMICOLON {s = x.getText() + " " + y.getText();}
+  ;  
+  
 metric_out_ngbg_stanza returns [String s]
   :
   x=metric_out_common_stanza  {s=x;}
@@ -359,6 +381,16 @@ multihop_ngbg_stanza returns [String s]
 passive_ngbg_stanza returns [String s]
   :
   x=PASSIVE SEMICOLON {s = x.getText();}
+  ;  
+
+remove_private_ngbg_stanza returns [String s]
+  :
+  x=remove_private_common_stanza {s = x;}
+  ;  
+
+tcp_mss_ngbg_stanza returns [String s]
+  :
+  x=TCP_MSS y=DEC SEMICOLON {s = x.getText() + " " + y.getText();}
   ;  
   
   

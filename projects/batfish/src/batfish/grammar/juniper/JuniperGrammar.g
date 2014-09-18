@@ -40,6 +40,7 @@ tokens {
   BGP                         = 'bgp';
   BRIDGE                      = 'bridge';
   BRIDGE_DOMAINS              = 'bridge-domains';
+  CCC                         = 'ccc';
   CHASSIS                     = 'chassis';
   CLASS                       = 'class';
   CLASS_OF_SERVICE            = 'class-of-service';
@@ -54,6 +55,7 @@ tokens {
   DESCRIPTION                 = 'description';
   DESTINATION_ADDRESS         = 'destination-address';
   DESTINATION_PORT            = 'destination-port';
+  DIRECT                      = 'direct';
   DISABLE                     = 'disable';
   DISCARD                     = 'discard';
   DOMAIN                      = 'domain';
@@ -72,6 +74,7 @@ tokens {
   FILE                        = 'file';
   FILTER                      = 'filter';
   FIREWALL                    = 'firewall';
+  FLEXIBLE_VLAN_TAGGING       = 'flexible-vlan-tagging';
   FORWARDING_OPTIONS          = 'forwarding-options';
   FORWARDING_TABLE            = 'forwarding-table';
   FROM                        = 'from';
@@ -90,12 +93,14 @@ tokens {
   IGMP_SNOOPING               = 'igmp-snooping';
   IGP                         = 'igp';
   IMPORT                      = 'import';
+  IMPORT_RIB                  = 'import-rib';
   INACTIVE                    = 'inactive';
   INET                        = 'inet';
   INET6                       = 'inet6';
   INET_VPN                    = 'inet-vpn';
   INET6_VPN                   = 'inet6-vpn';
   INPUT                       = 'input';
+  INPUT_VLAN_MAP              = 'input-vlan-map';
   INSTALL                     = 'install';
   INSTALL_NEXTHOP             = 'install-nexthop';
   INTERFACE                   = 'interface';
@@ -212,6 +217,7 @@ tokens {
   TAG                         = 'tag';
   TARGETED_BROADCAST          = 'targeted-broadcast';
   TCP                         = 'tcp';
+  TCP_MSS                     = 'tcp-mss';
   TELNET                      = 'telnet';
   TERM                        = 'term';
   TFTP                        = 'tftp';
@@ -341,9 +347,9 @@ j_stanza_list returns [List<JStanza> jslist = new ArrayList<JStanza>()]
 j_stanza returns [JStanza js]
   :
   (x = apply_groups_stanza 
-  |x=firewall_stanza // TODO [P0]: unchecked
-  |x=protocols_stanza// TODO [P0]: unchecked
-  |x=routing_options_stanza// TODO [P0]: unchecked
+  |x=firewall_stanza 
+  |x=protocols_stanza
+  |x=routing_options_stanza
     
   |x=groups_stanza 
   |x=interfaces_stanza 
@@ -362,8 +368,9 @@ null_stanza returns [JStanza js]
   (s=chassis_stanza
   |s=class_of_service_stanza
   |s=forwarding_options_stanza
+  |s=routing_instances_stanza
   |s=services_stanza
-  |x=version_stanza
+  |s=version_stanza
   |s=removed_top_level_stanza
   )
   {js = new NullJStanza(s);}
@@ -378,12 +385,17 @@ chassis_stanza returns [String s]
 
 class_of_service_stanza returns [String s]
   :
-  x=CLASS_OF_SERVICE OPEN_BRACE substanza+ CLOSE_BRACE {s = x.getText() + "{...}";}
+  x=CLASS_OF_SERVICE ignored_substanza {s = x.getText() + "{...}";}
   ;
 
 forwarding_options_stanza returns [String s]
   :
-  x=FORWARDING_OPTIONS OPEN_BRACE substanza+ CLOSE_BRACE {s = x.getText() + "{...}";}
+  x=FORWARDING_OPTIONS ignored_substanza {s = x.getText() + "{...}";}
+  ;
+  
+routing_instances_stanza returns [String s] // TODO [Ask Ari]: probably don't ignore 
+  :
+  x=ROUTING_INSTANCES ignored_substanza {s = x.getText() + "{...}";}
   ;
 
 services_stanza returns [String s]
@@ -460,6 +472,24 @@ integer returns [int i]
     s = s.substring(1,s.length()-1);
   }
   ;
+  
+string_up_to_semicolon returns [String s]
+@init{
+   String linesofar = "";
+}
+  :
+  (
+  (x = VARIABLE 
+  |x = IPV6_ADDRESS
+  |x = COLON
+  )
+  {linesofar += x.getText();}
+  )+
+  SEMICOLON
+  {
+    s = linesofar;
+  }
+  ;
  
 /* Rules for Ignoring---------------------------------------------------------------------------------*/ 
 
@@ -514,7 +544,12 @@ bfd_liveness_detection_common_stanza returns [String s]
 
 description_common_stanza returns [String s]
   :
-  y=DESCRIPTION x=string_in_double_quotes SEMICOLON {s=y.getText() + " " + x;}
+  y=DESCRIPTION 
+  (x=string_in_double_quotes
+  |x=string_up_to_semicolon
+  )
+  SEMICOLON 
+  {s=y.getText() + " " + x;}
   ;  
   
 encapsulation_common_stanza returns [String s]
@@ -540,6 +575,11 @@ mtu_common_stanza returns [String s]
 multihop_common_stanza returns [String s]
   :
   x=MULTIHOP ignored_substanza {s = x.getText() + "{...}";}
+  ;
+
+remove_private_common_stanza returns [String s]
+  :
+  x=REMOVE_PRIVATE SEMICOLON {s=x.getText();}
   ;
   
 rib_common_stanza returns [String s]
@@ -738,6 +778,11 @@ UNDERSCORE
   :
   '_'
   ;
+  
+UNIT_WILDCARD
+   :
+   '<*>'
+   ;  
 
 VARIABLE
   :

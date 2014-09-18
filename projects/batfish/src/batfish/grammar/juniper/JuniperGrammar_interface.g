@@ -82,10 +82,13 @@ disable_if_stanza returns [IFStanza ifs]
 
 unit_if_stanza returns [IFStanza ifs]
 @init {
-IF_UnitStanza ifus;
+IF_UnitStanza ifus = new IF_UnitStanza();
 }
   :
-  UNIT num=integer {ifus = new IF_UnitStanza(num);}
+  UNIT 
+  (num = integer {ifus.set_num(num);}
+  |UNIT_WILDCARD {ifus.set_wildcard(true);}
+  )
   OPEN_BRACE 
   (x=u_if_stanza {ifus.addIFUstanza(x);})+
   CLOSE_BRACE 
@@ -97,6 +100,7 @@ null_if_stanza returns [IFStanza ifs]
   ( s=aggregated_ether_options_if_stanza
   | s=description_if_stanza
   | s=encapsulation_if_stanza
+  | s=flexible_vlan_tagging_if_stanza
   | s=gigether_options_if_stanza
   | s=mtu_if_stanza
   | s=traps_if_stanza
@@ -119,6 +123,11 @@ description_if_stanza returns [String s]
 encapsulation_if_stanza returns [String s]
   :
   enc=encapsulation_common_stanza {s=enc;}
+  ;
+  
+flexible_vlan_tagging_if_stanza returns [String s]
+  :
+  x=FLEXIBLE_VLAN_TAGGING SEMICOLON {s=x.getText();}
   ;
   
 gigether_options_if_stanza returns [String s]
@@ -163,16 +172,19 @@ apply_groups_u_if_stanza returns [IF_UStanza ifus] // TODO: FIX!
   ;
   
 family_u_if_stanza returns [IF_UStanza ifus]
-@init {
-  
-}
   :
-  ft = 
+   
   (FAMILY
-  (INET 
-  |INET6 
-  |BRIDGE 
-  |ETHERNET_SWITCHING
+  (ft=BRIDGE 
+  |ft=CCC
+  |ft=INET
+  |ft=INET_VPN
+  |ft=INET6
+  |ft=INET6_VPN
+  |ft=ISO
+  |ft=L2_VPN
+  |ft=ETHERNET_SWITCHING
+  |ft=MPLS
   )
   )
   (SEMICOLON
@@ -192,6 +204,7 @@ null_u_if_stanza returns [IF_UStanza ifus]
   :
   (s=description_u_if_stanza
   |s=encapsulation_u_if_stanza
+  |s=input_vlan_map_u_if_stanza
   )
   {ifus = new IFU_NullStanza(s);}
   ;
@@ -206,11 +219,28 @@ encapsulation_u_if_stanza returns [String s]
   :
   enc=encapsulation_common_stanza {s=enc;}
   ;
+   
+input_vlan_map_u_if_stanza returns [String s] // TODO [Ask Ari]: probably not supposed to ignore this
+  :
+  i=INPUT_VLAN_MAP ignored_substanza {s = i.getText() + "{...}";}
+  ;
   
 /* --- --- --- --- Interfaces->Unit->Family Stanza Rules ---------------------------------------------*/   
 fam_u_if_stanza_list returns [List<IFU_FamStanza> ifufsl = new ArrayList<IFU_FamStanza>()]
   :
-  (x=fam_u_if_stanza {ifufsl.add(x);})+
+  (
+  (x=fam_u_if_stanza
+  |x=inactive_fam_u_if_stanza
+  ){ifufsl.add(x);})+
+  ;
+  
+inactive_fam_u_if_stanza returns [IFU_FamStanza ifufs]
+  :
+  INACTIVE COLON (x=fam_u_if_stanza) 
+  {
+    x.set_stanzaStatus(StanzaStatusType.INACTIVE);
+    ifufs=x;
+  }
   ;
   
 fam_u_if_stanza returns [IFU_FamStanza ifufs]
@@ -238,7 +268,9 @@ address_fam_u_if_stanza returns [IFU_FamStanza ifufs]
     ifufas.addIgnoredStatement("Address " + x.getText()); 
   }
   )
-  SEMICOLON
+  (SEMICOLON
+  |ignored_substanza
+  )
   {ifufs = ifufas;}
   ;
   
@@ -248,9 +280,9 @@ filter_fam_u_if_stanza  returns [IFU_FamStanza ifufs]
 }
   :
   FILTER OPEN_BRACE
-  (INPUT infltr=VARIABLE {ifuffs.set_inStr(infltr.getText());}
-  |OUTPUT outfltr=VARBAILE {ifuffs.set_outStr(outfltr.getText());}
-  )
+  (INPUT infltr=VARIABLE SEMICOLON {ifuffs.set_inStr(infltr.getText());})?
+  (OUTPUT outfltr=VARIABLE SEMICOLON {ifuffs.set_outStr(outfltr.getText());})?
+  (INACTIVE COLON inactext=VARIABLE SEMICOLON {ifuffs.addIgnoredStatement(inactext.getText());})?
   CLOSE_BRACE 
   {ifufs = ifuffs;}
   ;

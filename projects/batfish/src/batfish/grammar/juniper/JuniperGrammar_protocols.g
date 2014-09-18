@@ -118,7 +118,6 @@ mpls_p_stanza returns [String s]
 msdp_p_stanza returns [String s]
   :
   x=MSDP ignored_substanza {s = x.getText() + "{...}";}
-  MSDP OPEN_BRACE substanza+ CLOSE_BRACE
   ;
   
 ospf3_p_stanza returns [String s]

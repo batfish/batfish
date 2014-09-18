@@ -146,7 +146,9 @@ term_ps_po_stanza returns [POPS_TermStanza tpspos]
     (name=ACCEPT
     |name=ALLOW
     |name=BGP
+    |name=DIRECT
     |name=DISCARD
+    |name=INPUT
     |name=REJECT
     |name=VARIABLE
     )
@@ -360,13 +362,14 @@ POPSTFr_ProtocolStanza pftpspos = new POPSTFr_ProtocolStanza();
 }
   :
   (PROTOCOL
-    (p=AGGREGATE {pftpspos.addProtocol(ProtocolType.AGGREGATE);}
+    ((p=AGGREGATE {pftpspos.addProtocol(ProtocolType.AGGREGATE);}
     |p=BGP {pftpspos.addProtocol(ProtocolType.BGP);}
+    |p=DIRECT {pftpspos.addProtocol(ProtocolType.DIRECT);}
     |p=ISIS {pftpspos.addProtocol(ProtocolType.ISIS);}
     |p=OSPF {pftpspos.addProtocol(ProtocolType.OSPF);}
     |p=STATIC {pftpspos.addProtocol(ProtocolType.STATIC);}
     )
-    |(l=bracketed_list { for (String s : l) pftpspos.addProtocol(ProtocolTypeFromString(s));})
+    |(l=bracketed_list { for (String s : l) pftpspos.addProtocol(ProtocolTypeFromString(s));}))
   SEMICOLON)
   {ftpspos = pftpspos;}
   ;
@@ -443,7 +446,7 @@ POPSTTh_CommunityStanza cttpspos = new POPSTTh_CommunityStanza();
       |DELETE {cttpspos.set_commType(POPSTTh_CommunityType.COMM_DELETE);}
       )
       (name=VARIABLE {cttpspos.addCommName(name.getText());}
-      l=bracketed_list {cttpspos.set_commNames(l);}
+      |l=bracketed_list {cttpspos.set_commNames(l);}
       )
     )
     SEMICOLON
@@ -527,6 +530,7 @@ rib_to_t_ps_stanza returns [POPST_ToStanza ttpspos]
 match_type_filter_from_t_ps_stanza returns [POPSTTh_FilterMatchStanza fms]
 @init {
 FilterMatch fm = null;
+fms = new POPSTTh_FilterMatchStanza();
 }
   :
     (
