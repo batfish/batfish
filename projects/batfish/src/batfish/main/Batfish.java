@@ -382,32 +382,34 @@ public class Batfish implements AutoCloseable {
                   concretizerQueries, currentQueries);
          }
       }
-      for (String negConcInPath : negConcInPaths) {
-         print(1, "Reading z3 datalog query output file (to be negated): \""
-               + negConcInPath + "\"..");
-         File queryOutputFile = new File(negConcInPath);
-         String queryOutputStr = readFile(queryOutputFile);
-         print(1, "OK\n");
+      if (negConcInPaths != null) {
+         for (String negConcInPath : negConcInPaths) {
+            print(1, "Reading z3 datalog query output file (to be negated): \""
+                  + negConcInPath + "\"..");
+            File queryOutputFile = new File(negConcInPath);
+            String queryOutputStr = readFile(queryOutputFile);
+            print(1, "OK\n");
 
-         DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
-               queryOutputStr);
-         ParserRuleContext tree = parse(parser, negConcInPath);
+            DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
+                  queryOutputStr);
+            ParserRuleContext tree = parse(parser, negConcInPath);
 
-         print(1, "Computing concretizer queries..");
-         ParseTreeWalker walker = new ParseTreeWalker();
-         DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(
-               _settings.concretizeUnique(), true);
-         walker.walk(extractor, tree);
-         print(1, "OK\n");
+            print(1, "Computing concretizer queries..");
+            ParseTreeWalker walker = new ParseTreeWalker();
+            DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(
+                  _settings.concretizeUnique(), true);
+            walker.walk(extractor, tree);
+            print(1, "OK\n");
 
-         List<ConcretizerQuery> currentQueries = extractor
-               .getConcretizerQueries();
-         if (concretizerQueries.size() == 0) {
-            concretizerQueries.addAll(currentQueries);
-         }
-         else {
-            concretizerQueries = ConcretizerQuery.crossProduct(
-                  concretizerQueries, currentQueries);
+            List<ConcretizerQuery> currentQueries = extractor
+                  .getConcretizerQueries();
+            if (concretizerQueries.size() == 0) {
+               concretizerQueries.addAll(currentQueries);
+            }
+            else {
+               concretizerQueries = ConcretizerQuery.crossProduct(
+                     concretizerQueries, currentQueries);
+            }
          }
       }
       for (int i = 0; i < concretizerQueries.size(); i++) {
