@@ -183,7 +183,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       for (IpBgpPeerGroup ipg : proc.getIpPeerGroups().values()) {
          String bgpPeerTemplatePeerGroupName = ipg.getPeerTemplateName();
          if (bgpPeerTemplatePeerGroupName != null) {
-            BgpPeerTemplatePeerGroup bgpPeerTemplatePeerGroup = proc.getPeerTemplates().get(bgpPeerTemplatePeerGroupName);
+            BgpPeerTemplatePeerGroup bgpPeerTemplatePeerGroup = proc
+                  .getPeerTemplates().get(bgpPeerTemplatePeerGroupName);
             ipg.inheritUnsetFields(bgpPeerTemplatePeerGroup);
          }
          else {
@@ -468,7 +469,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                      LineAction.ACCEPT, metric, Protocol.AGGREGATE,
                      PolicyMapAction.PERMIT);
                newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
-               newProcess.getPolicyMetricTypes().put(exportDefaultPolicy, metricType);
+               newProcess.getPolicyMetricTypes().put(exportDefaultPolicy,
+                     metricType);
                generationPolicies.add(generationPolicy);
                GeneratedRoute route = new GeneratedRoute(new Ip(defaultPrefix),
                      defaultPrefixLength, MAX_ADMINISTRATIVE_COST,
@@ -486,7 +488,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             c.getPolicyMaps().put(exportDefaultPolicy.getMapName(),
                   exportDefaultPolicy);
             newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
-            newProcess.getPolicyMetricTypes().put(exportDefaultPolicy, metricType);
+            newProcess.getPolicyMetricTypes().put(exportDefaultPolicy,
+                  metricType);
             GeneratedRoute route = new GeneratedRoute(new Ip(defaultPrefix),
                   defaultPrefixLength, MAX_ADMINISTRATIVE_COST, null);
             newProcess.getGeneratedRoutes().add(route);
@@ -501,7 +504,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             c.getPolicyMaps().put(exportDefaultPolicy.getMapName(),
                   exportDefaultPolicy);
             newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
-            newProcess.getPolicyMetricTypes().put(exportDefaultPolicy, metricType);
+            newProcess.getPolicyMetricTypes().put(exportDefaultPolicy,
+                  metricType);
          }
       }
 
@@ -557,14 +561,16 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                }
             }
             newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-            newProcess.getPolicyMetricTypes().put(exportConnectedPolicy, metricType);
+            newProcess.getPolicyMetricTypes().put(exportConnectedPolicy,
+                  metricType);
          }
          else {
             exportConnectedPolicy = makeRouteExportPolicy(c,
                   OSPF_EXPORT_CONNECTED_POLICY_NAME, null, null, 0, null, null,
                   metric, Protocol.CONNECTED, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-            newProcess.getPolicyMetricTypes().put(exportConnectedPolicy, metricType);
+            newProcess.getPolicyMetricTypes().put(exportConnectedPolicy,
+                  metricType);
             c.getPolicyMaps().put(exportConnectedPolicy.getMapName(),
                   exportConnectedPolicy);
          }
@@ -670,7 +676,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                }
             }
             newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-            newProcess.getPolicyMetricTypes().put(exportStaticPolicy, metricType);
+            newProcess.getPolicyMetricTypes().put(exportStaticPolicy,
+                  metricType);
 
          }
          else { // export static routes without named policy
@@ -680,7 +687,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   "0.0.0.0", 0, new SubRange(0, 0), LineAction.REJECT, metric,
                   Protocol.STATIC, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-            newProcess.getPolicyMetricTypes().put(exportStaticPolicy, metricType);
+            newProcess.getPolicyMetricTypes().put(exportStaticPolicy,
+                  metricType);
          }
       }
       newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
@@ -957,12 +965,11 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
    }
 
    private batfish.representation.Interface toInterface(Interface iface,
-         Map<String, IpAccessList> ipAccessLists, Map<String, PolicyMap> policyMaps)
-         throws VendorConversionException {
+         Map<String, IpAccessList> ipAccessLists,
+         Map<String, PolicyMap> policyMaps) throws VendorConversionException {
       batfish.representation.Interface newIface = new batfish.representation.Interface(
             iface.getName());
       newIface.setDescription(iface.getDescription());
-      newIface.setAccessVlan(iface.getAccessVlan());
       newIface.setActive(iface.getActive());
       newIface.setArea(iface.getArea());
       newIface.setBandwidth(iface.getBandwidth());
@@ -975,10 +982,13 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          String subnet = secondaryIps.get(ip);
          newIface.getSecondaryIps().put(new Ip(ip), new Ip(subnet));
       }
-      newIface.setNativeVlan(iface.getNativeVlan());
       newIface.setOspfCost(iface.getOspfCost());
       newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
       newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
+
+      // switch settings
+      newIface.setAccessVlan(iface.getAccessVlan());
+      newIface.setNativeVlan(iface.getNativeVlan());
       newIface.setSwitchportMode(iface.getSwitchportMode());
       SwitchportEncapsulationType encapsulation = iface
             .getSwitchportTrunkEncapsulation();
@@ -987,6 +997,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          encapsulation = SwitchportEncapsulationType.DOT1Q;
       }
       newIface.setSwitchportTrunkEncapsulation(encapsulation);
+      newIface.addAllowedRanges(iface.getAllowedVlans());
+
       String incomingFilterName = iface.getIncomingFilter();
       if (incomingFilterName != null) {
          IpAccessList incomingFilter = ipAccessLists.get(incomingFilterName);

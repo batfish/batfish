@@ -7,6 +7,7 @@ block(`Layer2_rules) {
 
 LanAdjacent(node1, int1, node2, int2) <-
    SamePhysicalSegment(node1, int1, node2, int2).
+// Guessed topology
 LanAdjacent(node1, int1, node2, int2) <-
    GuessTopology(_),
    !SetFakeInterface(node1, int1),
@@ -15,6 +16,7 @@ LanAdjacent(node1, int1, node2, int2) <-
    IpReadyInt(node2, int2, ip2, prefix_length),
    NetworkOf[ip1, prefix_length] = NetworkOf[ip2, prefix_length],
    node1 != node2.
+// adjacent access vlan interfaces
 LanAdjacent(node1, int1, node2, int2) <-
    SamePhysicalSegment(node1, int1, switch, sInt1),
    SwitchportAccess(switch, sInt1, vlan),
@@ -46,6 +48,9 @@ LanAdjacent(node1, int1, node2, int2) <-
    SwitchportTrunkAllows(switch2, sInt21, vlan),
    SwitchportAccess(switch2, sInt22, vlan),
    LanAdjacent(node2, int2, switch2, sInt22).
+// vlan adjacencies
+LanAdjacent(node1, int1, node2, int2) <-
+   VlanAdjacent(node1, int1, node2, int2).
 
 SwitchportAccess(switch, interface, vlan) <-
    SetSwitchportAccess(switch, interface, vlan),
@@ -62,9 +67,20 @@ SwitchportTrunkNative(switch, interface, vlan) <-
    SetActiveInt(switch, interface).
 
 UsedVlan(vlan) <-
-   SetSwitchportAccess(_, _, vlan).
-UsedVlan(vlan) <-
-   SetSwitchportTrunkNative(_, _, vlan).
+   SetVlanInterface(_, _, vlan).
+
+VlanAdjacent(node1, vlanInt1, node2, vlanInt2) <-
+   SetVlanInterface(node1, vlanInt1, vlan),
+   SetVlanInterface(node2, vlanInt2, vlan),
+   SwitchportTrunkAllows(node1, int1, vlan),
+   SwitchportTrunkAllows(node2, int2, vlan),
+   LanAdjacent(node1, int1, node2, int2).
+VlanAdjacent(node1, vlanInt1, node2, vlanInt2) <-
+   node1 != node2,
+   node1 != node3,
+   node2 != node3,
+   VlanAdjacent(node1, vlanInt1, node3, _),
+   VlanAdjacent(node3, _, node2, vlanInt2).
 
 VlanNumber[x] = n <-
    Vlan_number(x:n).

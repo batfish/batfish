@@ -64,6 +64,16 @@ block(`service_init) {
             }
       }.
 
+      file_binding_by_name["SetVlanInterface"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetVlanInterface",
+         predicate_binding_by_name["libbatfish:Layer2:SetVlanInterface"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE,VLAN"
+            }
+      }.
+
 // DataPlane
       file_binding_by_name["SetInterfaceFilterIn"] = fb,
       file_binding(fb) {

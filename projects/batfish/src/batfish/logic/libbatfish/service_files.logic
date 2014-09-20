@@ -46,6 +46,13 @@ block(`service_files) {
          column_formats[] = "string,string,integer"
       }.
 
+      file_definition_by_name["SetVlanInterface"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE,VLAN",
+         column_formats[] = "string,string,integer"
+      }.
+
 // DataPlane
       file_definition_by_name["SetInterfaceFilterIn"] = fd,
       file_definition(fd) {

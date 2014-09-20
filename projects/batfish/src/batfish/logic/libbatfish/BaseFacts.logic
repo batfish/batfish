@@ -55,6 +55,7 @@ block(`BaseFacts) {
 +AdministrativeDistance["cisco", "connected"] = 0.
 +AdministrativeDistance["cisco", "ospf"] = 110.
 +AdministrativeDistance["cisco", "ospfIA"] = 110.
++AdministrativeDistance["cisco", "ospfE1"] = 110.
 +AdministrativeDistance["cisco", "ospfE2"] = 110.
 
 +AdministrativeDistance["juniper", "bgp"] = 170.
@@ -62,6 +63,7 @@ block(`BaseFacts) {
 +AdministrativeDistance["juniper", "connected"] = 0.
 +AdministrativeDistance["juniper", "ospf"] = 10.
 +AdministrativeDistance["juniper", "ospfIA"] = 10.
++AdministrativeDistance["juniper", "ospfE1"] = 150.
 +AdministrativeDistance["juniper", "ospfE2"] = 150.
 
 +GeneratedRouteType("aggregate").

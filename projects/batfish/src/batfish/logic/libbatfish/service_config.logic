@@ -38,6 +38,11 @@ block(`service_config) {
          delim_file_binding[] = "SetSwitchportTrunkNative"
       }.
 
+      service_by_prefix["/batfish/SetVlanInterface"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetVlanInterface"
+      }.
+
 // DataPlane
       service_by_prefix["/batfish/SetInterfaceFilterIn"] = x,
       delim_service(x) {

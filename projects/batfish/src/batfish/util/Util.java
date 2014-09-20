@@ -37,6 +37,16 @@ public class Util {
       return retString;
    }
 
+   public static Integer getInterfaceVlanNumber(String ifaceName) {
+      String prefix = "vlan";
+      String ifaceNameLower = ifaceName.toLowerCase();
+      if (ifaceNameLower.startsWith(prefix)) {
+         String vlanStr = ifaceNameLower.substring(prefix.length());
+         return Integer.parseInt(vlanStr);
+      }
+      return null;
+   }
+
    public static String getIpFromIpSubnetPair(String pair) {
       int slashPos = pair.indexOf('/');
       return pair.substring(0, slashPos);

@@ -49,7 +49,7 @@ import batfish.z3.Synthesizer;
 
 public class ConfigurationFactExtractor {
 
-   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 10;
+   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
 
    private static String getLBRoutingProtocol(Protocol prot) {
       switch (prot) {
@@ -259,6 +259,18 @@ public class ConfigurationFactExtractor {
       writeBgpGeneratedRoutes();
       writeBgpNeighborGeneratedRoutes();
       writeGeneratedRoutes();
+      writeVlanInterface();
+   }
+
+   private void writeVlanInterface() {
+      StringBuilder wSetVlanInterface = _factBins.get("SetVlanInterface");
+      String hostname = _configuration.getHostname();
+      for (String ifaceName : _configuration.getInterfaces().keySet()) {
+         Integer vlan = Util.getInterfaceVlanNumber(ifaceName);
+         if (vlan != null) {
+            wSetVlanInterface.append(hostname + "|" + ifaceName + "|" + vlan + "\n");
+         }
+      }
    }
 
    private void writeGeneratedRoutes() {
