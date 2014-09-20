@@ -230,7 +230,7 @@ public class ConfigurationFactExtractor {
                break;
 
             default:
-               throw new Error("bad action");
+               throw new BatfishException("bad action");
             }
          }
       }
@@ -391,7 +391,7 @@ public class ConfigurationFactExtractor {
                break;
 
             default:
-               throw new Error("bad action");
+               throw new BatfishException("bad action");
             }
             String protocolName = Util.getProtocolName(protocol);
             if (protocolName.equals("tcp") || protocolName.equals("udp")) {
@@ -575,13 +575,13 @@ public class ConfigurationFactExtractor {
                wSetPolicyMapClausePermit.append(mapName + "|" + i + "\n");
                break;
             default:
-               throw new Error("invalid action");
+               throw new BatfishException("invalid action");
             }
             for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
                switch (matchLine.getType()) {
                case AS_PATH_ACCESS_LIST:
                   // TODO: implement
-                  // throw new Error("not implemented");
+                  // throw new BatfishException("not implemented");
                   _warnings
                         .add("WARNING: "
                               + mapName
@@ -641,7 +641,7 @@ public class ConfigurationFactExtractor {
                   break;
 
                default:
-                  throw new Error("invalid match type");
+                  throw new BatfishException("invalid match type");
                }
             }
 
@@ -658,7 +658,7 @@ public class ConfigurationFactExtractor {
 
                case AS_PATH_PREPEND:
                   // TODO: implement
-                  // throw new Error("not implemented");
+                  // throw new BatfishException("not implemented");
                   _warnings.add("WARNING: " + mapName + ":" + i
                         + ": AS_PATH_PREPEND not implemented\n");
                   break;
@@ -673,7 +673,7 @@ public class ConfigurationFactExtractor {
 
                case COMMUNITY_NONE:
                   // TODO: implement
-                  throw new Error("not implemented");
+                  throw new BatfishException("not implemented");
 
                case DELETE_COMMUNITY:
                   PolicyMapSetDeleteCommunityLine sdcLine = (PolicyMapSetDeleteCommunityLine) setLine;
@@ -713,7 +713,7 @@ public class ConfigurationFactExtractor {
                   break;
 
                default:
-                  throw new Error("invalid set type");
+                  throw new BatfishException("invalid set type");
                }
             }
          }
@@ -754,18 +754,18 @@ public class ConfigurationFactExtractor {
                   break;
 
                default:
-                  throw new Error("bad action");
+                  throw new BatfishException("bad action");
                }
                break;
 
             case THROUGH:
-               // throw new Error("not implemented");
+               // throw new BatfishException("not implemented");
                _warnings.add("WARNING: " + filterName + ":" + i
                      + ": route-filter through not implemented\n");
                break;
 
             default:
-               throw new Error("bad line type");
+               throw new BatfishException("bad line type");
             }
 
          }
@@ -901,7 +901,7 @@ public class ConfigurationFactExtractor {
             break;
 
          default:
-            throw new Error("invalid switchport mode");
+            throw new BatfishException("invalid switchport mode");
          }
       }
    }
