@@ -269,6 +269,11 @@ block(`service_config) {
          delim_file_binding[] = "SetPolicyMapClauseSetOriginType"
       }.
 
+      service_by_prefix["/batfish/SetPolicyMapOspfExternalRouteType"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapOspfExternalRouteType"
+      }.
+
 // Bgp
       service_by_prefix["/batfish/SetBgpDefaultLocalPref"] = x,
       delim_service(x) {

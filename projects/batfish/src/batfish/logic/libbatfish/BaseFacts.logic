@@ -35,6 +35,7 @@ block(`BaseFacts) {
 +RoutingProtocol("ibgp").
 +RoutingProtocol("ospf").
 +RoutingProtocol("ospfIA").
++RoutingProtocol("ospfE1").
 +RoutingProtocol("ospfE2").
 +RoutingProtocol("static").
 

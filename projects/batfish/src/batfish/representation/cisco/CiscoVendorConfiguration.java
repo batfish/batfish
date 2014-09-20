@@ -21,6 +21,7 @@ import batfish.representation.IpAccessList;
 import batfish.representation.LineAction;
 import batfish.representation.IpAccessListLine;
 import batfish.representation.OspfArea;
+import batfish.representation.OspfMetricType;
 import batfish.representation.PolicyMap;
 import batfish.representation.PolicyMapAction;
 import batfish.representation.PolicyMapClause;
@@ -448,6 +449,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          int defaultPrefixLength = 0;
          SubRange defaultPrefixRange = new SubRange(0, 0);
          int metric = proc.getDefaultInformationMetric();
+         OspfMetricType metricType = proc.getDefaultInformationMetricType();
          // add default export map with metric
          PolicyMap exportDefaultPolicy;
          String mapName = proc.getDefaultInformationOriginateMap();
@@ -466,6 +468,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                      LineAction.ACCEPT, metric, Protocol.AGGREGATE,
                      PolicyMapAction.PERMIT);
                newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
+               newProcess.getPolicyMetricTypes().put(exportDefaultPolicy, metricType);
                generationPolicies.add(generationPolicy);
                GeneratedRoute route = new GeneratedRoute(new Ip(defaultPrefix),
                      defaultPrefixLength, MAX_ADMINISTRATIVE_COST,
@@ -483,6 +486,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             c.getPolicyMaps().put(exportDefaultPolicy.getMapName(),
                   exportDefaultPolicy);
             newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
+            newProcess.getPolicyMetricTypes().put(exportDefaultPolicy, metricType);
             GeneratedRoute route = new GeneratedRoute(new Ip(defaultPrefix),
                   defaultPrefixLength, MAX_ADMINISTRATIVE_COST, null);
             newProcess.getGeneratedRoutes().add(route);
@@ -497,6 +501,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             c.getPolicyMaps().put(exportDefaultPolicy.getMapName(),
                   exportDefaultPolicy);
             newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
+            newProcess.getPolicyMetricTypes().put(exportDefaultPolicy, metricType);
          }
       }
 
@@ -506,6 +511,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             Protocol.CONNECTED);
       if (rcp != null) {
          Integer metric = rcp.getMetric();
+         OspfMetricType metricType = rcp.getMetricType();
          boolean explicitMetric = metric != null;
          boolean routeMapMetric = false;
          if (!explicitMetric) {
@@ -551,12 +557,14 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                }
             }
             newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
+            newProcess.getPolicyMetricTypes().put(exportConnectedPolicy, metricType);
          }
          else {
             exportConnectedPolicy = makeRouteExportPolicy(c,
                   OSPF_EXPORT_CONNECTED_POLICY_NAME, null, null, 0, null, null,
                   metric, Protocol.CONNECTED, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
+            newProcess.getPolicyMetricTypes().put(exportConnectedPolicy, metricType);
             c.getPolicyMaps().put(exportConnectedPolicy.getMapName(),
                   exportConnectedPolicy);
          }
@@ -568,6 +576,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             Protocol.STATIC);
       if (rsp != null) {
          Integer metric = rsp.getMetric();
+         OspfMetricType metricType = rsp.getMetricType();
          boolean explicitMetric = metric != null;
          boolean routeMapMetric = false;
          if (!explicitMetric) {
@@ -661,6 +670,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                }
             }
             newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
+            newProcess.getPolicyMetricTypes().put(exportStaticPolicy, metricType);
+
          }
          else { // export static routes without named policy
             exportStaticPolicy = makeRouteExportPolicy(c,
@@ -669,6 +680,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   "0.0.0.0", 0, new SubRange(0, 0), LineAction.REJECT, metric,
                   Protocol.STATIC, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
+            newProcess.getPolicyMetricTypes().put(exportStaticPolicy, metricType);
          }
       }
       newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());

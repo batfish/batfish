@@ -153,6 +153,9 @@ RoutingProtocol_OSPF[] = x <-
 RoutingProtocol_OSPF_IA[] = x <-
    RoutingProtocol_name(x:"ospfIA").
 
+RoutingProtocol_OSPF_E1[] = x <-
+   RoutingProtocol_name(x:"ospfE1").
+
 RoutingProtocol_OSPF_E2[] = x <-
    RoutingProtocol_name(x:"ospfE2").
 

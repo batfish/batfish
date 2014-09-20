@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import batfish.main.BatfishException;
 import batfish.representation.BgpNeighbor;
 import batfish.representation.BgpProcess;
 import batfish.representation.CommunityList;
@@ -17,6 +18,7 @@ import batfish.representation.IpAccessList;
 import batfish.representation.IpAccessListLine;
 import batfish.representation.OriginType;
 import batfish.representation.OspfArea;
+import batfish.representation.OspfMetricType;
 import batfish.representation.OspfProcess;
 import batfish.representation.PolicyMap;
 import batfish.representation.PolicyMapClause;
@@ -488,12 +490,28 @@ public class ConfigurationFactExtractor {
    private void writeOspfOutboundPolicyMaps() {
       StringBuilder wSetOspfOutboundPolicyMap = _factBins
             .get("SetOspfOutboundPolicyMap");
+      StringBuilder wSetPolicyMapOspfExternalRouteType = _factBins
+            .get("SetPolicyMapOspfExternalRouteType");
       String hostname = _configuration.getHostname();
       OspfProcess proc = _configuration.getOspfProcess();
       if (proc != null) {
          for (PolicyMap map : proc.getOutboundPolicyMaps()) {
             String mapName = hostname + ":" + map.getMapName();
+            OspfMetricType metricType = proc.getPolicyMetricTypes().get(map);
+            String protocol = null;
+            switch (metricType) {
+            case E1:
+               protocol = "ospfE1";
+               break;
+            case E2:
+               protocol = "ospfE2";
+               break;
+            default:
+               throw new BatfishException("invalid ospf metric type");
+            }
             wSetOspfOutboundPolicyMap.append(hostname + "|" + mapName + "\n");
+            wSetPolicyMapOspfExternalRouteType.append(mapName + "|" + protocol
+                  + "\n");
          }
       }
    }

@@ -365,6 +365,13 @@ block(`service_files) {
          column_formats[] = "string,integer,string"
       }.
 
+      file_definition_by_name["SetPolicyMapOspfExternalRouteType"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,PROTOCOL",
+         column_formats[] = "string,string"
+      }.
+
 // Bgp
       file_definition_by_name["SetBgpDefaultLocalPref"] = fd,
       file_definition(fd) {

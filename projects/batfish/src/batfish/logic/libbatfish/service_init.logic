@@ -515,6 +515,16 @@ block(`service_init) {
             }
       }.
 
+      file_binding_by_name["SetPolicyMapOspfExternalRouteType"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapOspfExternalRouteType",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapOspfExternalRouteType"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,PROTOCOL"
+            }
+      }.
+
 // Bgp
       file_binding_by_name["SetBgpDefaultLocalPref"] = fb,
       file_binding(fb) {
