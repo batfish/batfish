@@ -48,7 +48,11 @@ batfish_analyze() {
    local PREFIX=$2
    local WORKSPACE=batfish-$USER-$PREFIX
    local OLD_PWD=$PWD
-   local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
+   if [ "$(echo $TEST_RIG_RELATIVE | head -c1)" = "/" ]; then
+      local TEST_RIG=$TEST_RIG_RELATIVE
+   else
+      local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
+   fi
    local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
    local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
    local QUERY_PATH=$OLD_PWD/$PREFIX-query
@@ -101,7 +105,11 @@ batfish_analyze_interface_failures() {
       local NUM_MACHINES=1
    fi
    local OLD_PWD=$PWD
-   local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
+   if [ "$(echo $TEST_RIG_RELATIVE | head -c1)" = "/" ]; then
+      local TEST_RIG=$TEST_RIG_RELATIVE
+   else
+      local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
+   fi
    local LOG_FILE=$OLD_PWD/$PREFIX-interface-failure-scenarios.log
    local FLOWS=$OLD_PWD/$PREFIX-flows
    local EDGE_PREDICATE=LanAdjacent
