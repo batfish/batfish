@@ -61,10 +61,6 @@ OspfE1Route_constructor[advertiser, node, network, nextHopIp] = route ->
    Ip(nextHopIp),
    Route(route).
 
-OspfE2Network(node, network) ->
-   Node(node),
-   Network(network).
-
 /// [OspfE2Route(node, network, nextHop, nextHopIp, cost, hopCount, advertiser)] =
 ///   Node [Node] has an ospf type E2 route to network [network] through next
 ///   hop  [nextHop] at ip address [nextHopIp], with cost [cost], and ospf cost
@@ -72,13 +68,12 @@ OspfE2Network(node, network) ->
 OspfE2Route(route) ->
    Route(route).
 
-OspfE2Route_constructor[advertiser, costToAdvertiser, node, network, nextHopIp, protocol] = route ->
+OspfE2Route_constructor[advertiser, costToAdvertiser, node, network, nextHopIp] = route ->
    Node(advertiser),
    int(costToAdvertiser),
    Node(node),
    Network(network),
    Ip(nextHopIp),
-   RoutingProtocol(protocol),
    Route(route).
 
 OspfExport(node, network, cost, protocol) ->
