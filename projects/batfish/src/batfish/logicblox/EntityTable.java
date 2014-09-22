@@ -133,6 +133,8 @@ public class EntityTable {
             .getRows();
 
       // get indices
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:Route");
       ec = (EntityColumn) currentRouteProperty.getColumns().get(0);
       _routeIndices = ((UInt64Column) ec.getIndexColumn().unwrap()).getRows();
 
