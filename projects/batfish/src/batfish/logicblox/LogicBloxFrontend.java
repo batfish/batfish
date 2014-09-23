@@ -480,7 +480,7 @@ public class LogicBloxFrontend {
    public void removeBlock(String blockName) {
       try {
          Workspace.Command.RemoveBlock rem = Workspace.Command
-               .removeBlock(blockName);
+               .removeBlock(Collections.singletonList(blockName));
 
          // Execute the command as part of a self-contained transaction
          List<Workspace.Result> results = _workspace.transaction(Collections
