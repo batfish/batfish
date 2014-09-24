@@ -931,8 +931,8 @@ batfish_get_concrete_failure_packets() {
 export -f batfish_get_concrete_failure_packets
 
 batfish_nuke_reset_logicblox() {
-   killall -9 lb-server || return 1
-   killall -9 lb-pager || return 1
+   killall -9 lb-server
+   killall -9 lb-pager
    lb services stop || return 1
    rm -rf ~/lb_deployment/*
    LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start || return 1
