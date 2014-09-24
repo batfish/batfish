@@ -2,21 +2,27 @@ package batfish.z3;
 
 import batfish.z3.node.AcceptExpr;
 import batfish.z3.node.AndExpr;
+import batfish.z3.node.NodeAcceptExpr;
 import batfish.z3.node.OriginateExpr;
 import batfish.z3.node.QueryExpr;
 import batfish.z3.node.RuleExpr;
 import batfish.z3.node.SaneExpr;
 
-public class FailureInconsistencyReachableQuerySynthesizer implements
-      QuerySynthesizer {
+public class ReachableQuerySynthesizer implements QuerySynthesizer {
 
    private String _queryText;
 
-   public FailureInconsistencyReachableQuerySynthesizer(String hostname) {
-      OriginateExpr originate = new OriginateExpr(hostname);
+   public ReachableQuerySynthesizer(String originationNode, String acceptNode) {
+      OriginateExpr originate = new OriginateExpr(originationNode);
       RuleExpr injectSymbolicPackets = new RuleExpr(originate);
       AndExpr queryConditions = new AndExpr();
-      queryConditions.addConjunct(AcceptExpr.INSTANCE);
+      if (acceptNode != null) {
+         NodeAcceptExpr nodeAccept = new NodeAcceptExpr(acceptNode);
+         queryConditions.addConjunct(nodeAccept);
+      }
+      else {
+         queryConditions.addConjunct(AcceptExpr.INSTANCE);
+      }
       queryConditions.addConjunct(SaneExpr.INSTANCE);
       QueryExpr query = new QueryExpr(queryConditions);
       StringBuilder sb = new StringBuilder();

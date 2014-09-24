@@ -97,7 +97,7 @@ import batfish.util.StringFilter;
 import batfish.util.Util;
 import batfish.z3.ConcretizerQuery;
 import batfish.z3.FailureInconsistencyBlackHoleQuerySynthesizer;
-import batfish.z3.FailureInconsistencyReachableQuerySynthesizer;
+import batfish.z3.ReachableQuerySynthesizer;
 import batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import batfish.z3.QuerySynthesizer;
 import batfish.z3.Synthesizer;
@@ -457,6 +457,7 @@ public class Batfish implements AutoCloseable {
          print(2, "...OK\n");
       }
       disableBlacklistedInterface(configurations);
+      disableBlacklistedNode(configurations);
       printElapsedTime();
       return configurations;
    }
@@ -517,6 +518,17 @@ public class Batfish implements AutoCloseable {
          Configuration c = configurations.get(blacklistInterfaceNode);
          Interface i = c.getInterfaces().get(blacklistInterfaceName);
          i.setActive(false);
+      }
+   }
+
+   private void disableBlacklistedNode(Map<String, Configuration> configurations) {
+      String blacklistNode = _settings.getBlacklistNode();
+      if (blacklistNode != null) {
+         if (!configurations.containsKey(blacklistNode)) {
+            throw new BatfishException("Cannot blacklist non-existent node: "
+                  + blacklistNode);
+         }
+         configurations.remove(blacklistNode);
       }
    }
 
@@ -615,33 +627,6 @@ public class Batfish implements AutoCloseable {
       printElapsedTime();
    }
 
-   private void genInterfaceFailureReachableQueries() {
-      print(0,
-            "\n*** GENERATING INTERFACE-FAILURE-INCONSISTENCY REACHABLE QUERIES ***\n");
-      resetTimer();
-
-      String fiQueryBasePath = _settings
-            .getInterfaceFailureInconsistencyReachableQueryPath();
-      String nodeSetPath = _settings.getNodeSetPath();
-      print(1, "Reading node set from : \"" + nodeSetPath + "\"..");
-      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
-      print(1, "OK\n");
-
-      for (String hostname : nodes) {
-         QuerySynthesizer synth = new FailureInconsistencyReachableQuerySynthesizer(
-               hostname);
-         String queryText = synth.getQueryText();
-         String fiQueryPath;
-         fiQueryPath = fiQueryBasePath + "-" + hostname + ".smt2";
-
-         print(1, "Writing query to: \"" + fiQueryPath + "\"..");
-         writeFile(fiQueryPath, queryText);
-         print(1, "OK\n");
-      }
-
-      printElapsedTime();
-   }
-
    private void genMultipathQueries() {
       print(0, "\n*** GENERATING MULTIPATH-INCONSISTENCY QUERIES ***\n");
       resetTimer();
@@ -671,6 +656,36 @@ public class Batfish implements AutoCloseable {
       }
       writeFile(nodeSetTextPath, sb.toString());
       print(1, "OK\n");
+
+      printElapsedTime();
+   }
+
+   private void genReachableQueries() {
+      print(0, "\n*** GENERATING REACHABLE QUERIES ***\n");
+      resetTimer();
+
+      String queryBasePath = _settings.getReachableQueryPath();
+      String nodeSetPath = _settings.getNodeSetPath();
+      String acceptNode = _settings.getAcceptNode();
+      String blacklistedNode = _settings.getBlacklistNode();
+      print(1, "Reading node set from : \"" + nodeSetPath + "\"..");
+      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
+      print(1, "OK\n");
+
+      for (String hostname : nodes) {
+         if (hostname.equals(acceptNode) || hostname.equals(blacklistedNode)) {
+            continue;
+         }
+         QuerySynthesizer synth = new ReachableQuerySynthesizer(hostname,
+               acceptNode);
+         String queryText = synth.getQueryText();
+         String queryPath;
+         queryPath = queryBasePath + "-" + hostname + ".smt2";
+
+         print(1, "Writing query to: \"" + queryPath + "\"..");
+         writeFile(queryPath, queryText);
+         print(1, "OK\n");
+      }
 
       printElapsedTime();
    }
@@ -1556,7 +1571,7 @@ public class Batfish implements AutoCloseable {
       }
 
       if (_settings.getInterfaceFailureInconsistencyReachableQuery()) {
-         genInterfaceFailureReachableQueries();
+         genReachableQueries();
          return;
       }
 
