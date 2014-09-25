@@ -115,7 +115,8 @@ FlowReachPostOutInterface(flow, node, interface) <-
    
 FlowReachPreInInterface(flow, node, interface) <-
    FlowReachPostOutInterface(flow, prevNode, prevInterface),
-   FlowReachPreOutEdge(flow, prevNode, _, prevInterface, node, interface).
+   FlowReachPreOutEdge(flow, prevNode, _, prevInterface, node, interface),
+   interface != Interface_FLOW_SINK_TERMINATION[].
    
 FlowReachPreOut(flow, node) <-
    FlowReachPostIn(flow, node),
