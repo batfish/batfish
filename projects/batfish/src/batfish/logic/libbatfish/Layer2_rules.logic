@@ -6,7 +6,7 @@ block(`Layer2_rules) {
 // BEGIN CODE
 
 FlowSinkInterface(node, interface) <-
-   GuessTopology(_),
+   GuessFlowSinkInterface(),
    IpReadyInt(node, interface, _, _),
    interface != Interface_DYNAMIC[],
    interface != Interface_FLOW_SINK_TERMINATION[],

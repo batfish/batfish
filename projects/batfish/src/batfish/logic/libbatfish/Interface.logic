@@ -4,6 +4,8 @@ block(`Interface) {
    export(`{
 // BEGIN CODE
 
+GuessFlowSinkInterface() -> .
+
 FlowSinkInterface(node, interface) ->
    Node(node),
    Interface(interface).

@@ -1678,6 +1678,11 @@ public class Batfish implements AutoCloseable {
          writeTopologyFacts(_settings.getTestRigPath(), configurations,
                cpFactBins);
          writeConfigurationFacts(configurations, cpFactBins);
+         String flowSinkPath = _settings.getFlowSinkPath();
+         if (flowSinkPath != null) {
+            FlowSinkSet flowSinks = (FlowSinkSet)deserializeObject(new File(flowSinkPath));
+            writeFlowSinkFacts(flowSinks, cpFactBins);
+         }
          if (_settings.getDumpControlPlaneFacts()) {
             dumpFacts(cpFactBins);
          }
@@ -1833,6 +1838,16 @@ public class Batfish implements AutoCloseable {
       }
       catch (IOException e) {
          throw new BatfishException("Failed to write file: " + outputPath, e);
+      }
+   }
+
+   private void writeFlowSinkFacts(FlowSinkSet flowSinks,
+         Map<String, StringBuilder> cpFactBins) {
+      StringBuilder sb = cpFactBins.get("wSetFlowSinkInterface");
+      for (FlowSinkInterface f : flowSinks) {
+         String node = f.getNode();
+         String iface = f.getInterface();
+         sb.append(node + "|" + iface + "\n");
       }
    }
 

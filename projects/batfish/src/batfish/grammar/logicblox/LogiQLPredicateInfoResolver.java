@@ -70,8 +70,8 @@ public class LogiQLPredicateInfoResolver extends LogiQLParserBaseListener {
 
    @Override
    public void enterBoolean_predicate_decl(Boolean_predicate_declContext ctx) {
-      String predicateName = ctx.predicate.getText();
-      addPredicate(predicateName, new LBValueTypeList());
+      _currentPredicateName = ctx.predicate.getText();
+      addSemantics(_currentPredicateName);
    }
 
    @Override

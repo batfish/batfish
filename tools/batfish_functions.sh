@@ -158,6 +158,7 @@ batfish_analyze_destination_consistency_machine() {
    local WORKSPACE=$5
    local OLD_PWD=$PWD
    local ORIG_DP_DIR=$SCENARIO_BASE_DIR/../$PREFIX-dp
+   local ORIG_FLOW_SINKS=$ORIG_DP_DIR/flow-sinks
    local ORIG_QUERY_PATH=$SCENARIO_BASE_DIR/../$PREFIX-query
    local ORIG_DI_QUERY_BASE_PATH=$ORIG_QUERY_PATH/destination-consistency-query
    local ORIG_REACH_PATH=$SCENARIO_BASE_DIR/../$PREFIX-reach.smt2
@@ -193,7 +194,7 @@ batfish_analyze_destination_consistency_machine() {
       batfish_nuke_reset_logicblox || return 1
       
       # Compute the fixed point of the control plane with failed interface
-      batfish_compile_blacklist_node $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $NODE || return 1
+      BATFISH_COMMON_ARGS="-flowsink $ORIG_FLOW_SINKS" batfish_compile_blacklist_node $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $NODE || return 1
 
       # Query data plane predicates
       batfish_query_data_plane $WORKSPACE $DP_DIR || return 1
