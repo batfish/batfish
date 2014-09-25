@@ -133,7 +133,6 @@ FibDrop(node, ip) <-
 
 FibForward(node, ip, interface, nextHop, nextHopInt) <-
    Fib(node, ip, _, interface, nextHop, nextHopInt, _),
-   nextHop != Node_NONE[],
    nextHopInt != Interface_NULL[].
 
 FibForwardPolicyRouteNextHopIp(node, ip, interface, nextHop, nextHopInt) <-
