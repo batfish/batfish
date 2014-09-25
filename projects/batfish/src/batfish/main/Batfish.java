@@ -45,6 +45,8 @@ import batfish.collections.EdgeSet;
 import batfish.collections.FibMap;
 import batfish.collections.FibRow;
 import batfish.collections.FibSet;
+import batfish.collections.FlowSinkInterface;
+import batfish.collections.FlowSinkSet;
 import batfish.collections.FunctionSet;
 import batfish.collections.NodeSet;
 import batfish.collections.PolicyRouteFibIpMap;
@@ -109,6 +111,8 @@ public class Batfish implements AutoCloseable {
    private static final String FIB_PREDICATE_NAME = "FibNetwork";
    private static final String FIBS_FILENAME = "fibs";
    private static final String FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME = "fibs-policy-route";
+   private static final Object FLOW_SINK_PREDICATE_NAME = "FlowSinkInterface";
+   private static final String FLOW_SINKS_FILENAME = "flow-sinks";
    private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = { (byte) 0xac,
          (byte) 0xed, (byte) 0x00, (byte) 0x05 };
    private static final String PREDICATE_INFO_FILENAME = "predicateInfo.object";
@@ -300,6 +304,10 @@ public class Batfish implements AutoCloseable {
 
       lbFrontend.initEntityTable();
 
+      print(1, "Retrieving flow sink information from LogicBlox..");
+      FlowSinkSet flowSinks = getFlowSinkSet(lbFrontend);
+      print(1, "OK\n");
+
       print(1, "Retrieving topology information from LogicBlox..");
       EdgeSet topologyEdges = getTopologyEdges(lbFrontend);
       print(1, "OK\n");
@@ -324,10 +332,15 @@ public class Batfish implements AutoCloseable {
             fibPolicyRouteNextHops, lbFrontend);
       print(1, "OK\n");
 
+      Path flowSinksPath = Paths.get(_settings.getDataPlaneDir(),
+            FLOW_SINKS_FILENAME);
       Path fibsPath = Paths.get(_settings.getDataPlaneDir(), FIBS_FILENAME);
       Path fibsPolicyRoutePath = Paths.get(_settings.getDataPlaneDir(),
             FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME);
       Path edgesPath = Paths.get(_settings.getDataPlaneDir(), EDGES_FILENAME);
+      print(1, "Serializing flow sink set..");
+      serializeObject(flowSinks, flowSinksPath.toFile());
+      print(1, "OK\n");
       print(1, "Serializing fibs..");
       serializeObject(fibs, fibsPath.toFile());
       print(1, "OK\n");
@@ -694,10 +707,19 @@ public class Batfish implements AutoCloseable {
       print(0, "\n*** GENERATING Z3 LOGIC ***\n");
       resetTimer();
 
+      Path flowSinkSetPath = Paths.get(_settings.getDataPlaneDir(),
+            FLOW_SINKS_FILENAME);
       Path fibsPath = Paths.get(_settings.getDataPlaneDir(), FIBS_FILENAME);
       Path prFibsPath = Paths.get(_settings.getDataPlaneDir(),
             FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME);
       Path edgesPath = Paths.get(_settings.getDataPlaneDir(), EDGES_FILENAME);
+
+      print(1,
+            "Deserializing flow sink interface set: \""
+                  + flowSinkSetPath.toString() + "\"..");
+      FlowSinkSet flowSinks = (FlowSinkSet) deserializeObject(flowSinkSetPath
+            .toFile());
+      print(1, "OK\n");
 
       print(1, "Deserializing destination route fibs: \"" + fibsPath.toString()
             + "\"..");
@@ -717,7 +739,7 @@ public class Batfish implements AutoCloseable {
 
       print(1, "Synthesizing Z3 logic..");
       Synthesizer s = new Synthesizer(configurations, fibs, prFibs,
-            topologyEdges, _settings.getSimplify());
+            topologyEdges, _settings.getSimplify(), flowSinks);
       String result = s.synthesize();
       List<String> warnings = s.getWarnings();
       int numWarnings = warnings.size();
@@ -793,6 +815,26 @@ public class Batfish implements AutoCloseable {
       long difference = System.currentTimeMillis() - beforeTime;
       double seconds = difference / 1000d;
       return seconds;
+   }
+
+   private FlowSinkSet getFlowSinkSet(LogicBloxFrontend lbFrontend) {
+      FlowSinkSet flowSinks = new FlowSinkSet();
+      String qualifiedName = _predicateInfo.getPredicateNames().get(
+            FLOW_SINK_PREDICATE_NAME);
+      Relation flowSinkRelation = lbFrontend.queryPredicate(qualifiedName);
+      List<String> nodes = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nodes,
+            flowSinkRelation.getColumns().get(0));
+      List<String> interfaces = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, interfaces,
+            flowSinkRelation.getColumns().get(1));
+      for (int i = 0; i < nodes.size(); i++) {
+         String node = nodes.get(i);
+         String iface = interfaces.get(i);
+         FlowSinkInterface f = new FlowSinkInterface(node, iface);
+         flowSinks.add(f);
+      }
+      return flowSinks;
    }
 
    private List<String> getHelpPredicates(Map<String, String> predicateSemantics) {

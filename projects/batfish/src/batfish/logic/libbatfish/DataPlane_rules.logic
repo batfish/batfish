@@ -20,19 +20,31 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp),
    IpReadyInt(nextHop, nextHopInt, ip, _),
    ip = nextHopIp,
    prefix_length = 32.
-// drop connected route networks since we have more specific entries for connected neighbors
+// drop connected route networks since we have more specific entries for connected neighbors (or terminate flow sink)
 Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    !FibNeighborIp(node, ip),
    LongestPrefixNetworkMatch(node, ip, matchNet),
    prefix_length < 32,
    BestConnectedRoute(route),
+   ConnectedRoute(node, matchNet, routeInterface),
    Route_network[route] = matchNet,
    Network_prefix_length[matchNet] = prefix_length,
    Route_node[route] = node,
-   interface = Interface_NULL[],
-   nextHopInt = Interface_NULL[],
    nextHop = Node_NONE[],
-   nextHopIp = Ip_ZERO[].
+   nextHopIp = Ip_ZERO[],
+   (
+      (
+         !FlowSinkInterface(node, routeInterface),
+         interface = Interface_NULL[],
+         nextHopInt = Interface_NULL[],
+         nextHopIp = Ip_ZERO[]
+      ) ;
+      (
+         FlowSinkInterface(node, routeInterface),
+         interface = routeInterface,
+         nextHopInt = Interface_FLOW_SINK_TERMINATION[]
+      )
+   ).
 // static non-null interface-only route -- send to all adjacent neighbors
 Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    !HasIp(node, ip),

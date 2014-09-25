@@ -2,14 +2,14 @@ package batfish.collections;
 
 import java.io.Serializable;
 
-public class Pair<T1 extends Comparable<T1>, T2 extends Comparable<T2>>
+public abstract class Pair<T1 extends Comparable<T1>, T2 extends Comparable<T2>>
       implements Serializable, Comparable<Pair<T1, T2>> {
 
    private static final long serialVersionUID = 1L;
 
-   private final T1 _t1;
+   protected final T1 _t1;
 
-   private final T2 _t2;
+   protected final T2 _t2;
 
    public Pair(T1 t1, T2 t2) {
       _t1 = t1;
@@ -47,14 +47,6 @@ public class Pair<T1 extends Comparable<T1>, T2 extends Comparable<T2>>
       else if (!_t2.equals(other._t2))
          return false;
       return true;
-   }
-
-   public T1 getLeft() {
-      return _t1;
-   }
-
-   public T2 getRight() {
-      return _t2;
    }
 
    @Override

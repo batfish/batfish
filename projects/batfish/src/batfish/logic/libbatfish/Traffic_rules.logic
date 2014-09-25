@@ -18,7 +18,7 @@ FlowAccepted(flow, node) <-
    HasIp(node, dstIp).
 FlowAccepted(flow, node) <-
    FlowReachPostOutInterface(flow, node, interface),
-   SetFlowSinkInterface(node, interface).
+   FlowSinkInterface(node, interface).
 
 FlowAllowedIn(flow, node, interface, filter) <-
    FlowReachPostInInterface(flow, node, interface),

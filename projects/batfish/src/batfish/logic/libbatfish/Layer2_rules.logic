@@ -5,6 +5,14 @@ block(`Layer2_rules) {
    clauses(`{
 // BEGIN CODE
 
+FlowSinkInterface(node, interface) <-
+   GuessTopology(_),
+   IpReadyInt(node, interface, _, _),
+   interface != Interface_DYNAMIC[],
+   interface != Interface_FLOW_SINK_TERMINATION[],
+   interface != Interface_NULL[],
+   !LanAdjacent(node, interface, _, _).
+
 LanAdjacent(node1, int1, node2, int2) <-
    !GuessTopology(_),
    SamePhysicalSegment(node1, int1, node2, int2).

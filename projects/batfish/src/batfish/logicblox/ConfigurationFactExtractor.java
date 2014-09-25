@@ -51,6 +51,8 @@ public class ConfigurationFactExtractor {
 
    private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
 
+   private static final String FLOW_SINK_INTERFACE_PREFIX = "TenGigabitEthernet100/";
+
    private static String getLBRoutingProtocol(Protocol prot) {
       switch (prot) {
       case AGGREGATE:
@@ -262,17 +264,6 @@ public class ConfigurationFactExtractor {
       writeVlanInterface();
    }
 
-   private void writeVlanInterface() {
-      StringBuilder wSetVlanInterface = _factBins.get("SetVlanInterface");
-      String hostname = _configuration.getHostname();
-      for (String ifaceName : _configuration.getInterfaces().keySet()) {
-         Integer vlan = Util.getInterfaceVlanNumber(ifaceName);
-         if (vlan != null) {
-            wSetVlanInterface.append(hostname + "|" + ifaceName + "|" + vlan + "\n");
-         }
-      }
-   }
-
    private void writeGeneratedRoutes() {
       StringBuilder wSetGeneratedRoute_flat = _factBins
             .get("SetGeneratedRoute_flat");
@@ -312,12 +303,12 @@ public class ConfigurationFactExtractor {
          String interfaceName = i.getName();
 
          // flow sinks
-         if (interfaceName.startsWith(Synthesizer.FLOW_SINK_INTERFACE_PREFIX)) {
+         if (interfaceName.startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
             wSetFlowSinkInterface.append(hostname + "|" + interfaceName + "\n");
          }
 
          // fake interfaces
-         if (interfaceName.startsWith(Synthesizer.FLOW_SINK_INTERFACE_PREFIX)
+         if (interfaceName.startsWith(FLOW_SINK_INTERFACE_PREFIX)
                || interfaceName.startsWith(Synthesizer.FAKE_INTERFACE_PREFIX)) {
             wSetFakeInterface.append(hostname + "|" + interfaceName + "\n");
          }
@@ -923,6 +914,18 @@ public class ConfigurationFactExtractor {
       String vendor = _configuration.getVendor();
       StringBuilder wSetNodeVendor = _factBins.get("SetNodeVendor");
       wSetNodeVendor.append(hostname + "|" + vendor + "\n");
+   }
+
+   private void writeVlanInterface() {
+      StringBuilder wSetVlanInterface = _factBins.get("SetVlanInterface");
+      String hostname = _configuration.getHostname();
+      for (String ifaceName : _configuration.getInterfaces().keySet()) {
+         Integer vlan = Util.getInterfaceVlanNumber(ifaceName);
+         if (vlan != null) {
+            wSetVlanInterface.append(hostname + "|" + ifaceName + "|" + vlan
+                  + "\n");
+         }
+      }
    }
 
 }

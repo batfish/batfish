@@ -5,6 +5,9 @@ block(`Interface_rules) {
    clauses(`{
 // BEGIN CODE
 
+FlowSinkInterface(node, interface) <-
+   SetFlowSinkInterface(node, interface).
+
 HasIp(node, ip) <-
    IpReadyInt(node, _, ip, _).
    
@@ -19,7 +22,7 @@ Interface_DYNAMIC[] = interface <-
    Interface_name(interface:"dynamic").
 
 Interface_FLOW_SINK_TERMINATION[] = interface <-
-   Interface_name(interface:"flow-sink-termination").
+   Interface_name(interface:"flow_sink_termination").
 
 Interface_NULL[] = interface <-
    Interface_name(interface:"null_interface").

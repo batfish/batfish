@@ -13,6 +13,8 @@ import java.util.TreeSet;
 import batfish.collections.EdgeSet;
 import batfish.collections.FibMap;
 import batfish.collections.FibRow;
+import batfish.collections.FlowSinkInterface;
+import batfish.collections.FlowSinkSet;
 import batfish.collections.NodeSet;
 import batfish.collections.PolicyRouteFibIpMap;
 import batfish.collections.PolicyRouteFibNodeMap;
@@ -79,7 +81,6 @@ public class Synthesizer {
    public static final String DST_IP_VAR = "dst_ip";
    public static final String DST_PORT_VAR = "dst_port";
    public static final String FAKE_INTERFACE_PREFIX = "TenGigabitEthernet200/";
-   public static final String FLOW_SINK_INTERFACE_PREFIX = "TenGigabitEthernet100/";
    private static final long IP_PROTOCOL_TCP = 6;
    private static final long IP_PROTOCOL_UDP = 17;
    public static final String IP_PROTOCOL_VAR = "ip_prot";
@@ -259,6 +260,7 @@ public class Synthesizer {
 
    private final Map<String, Configuration> _configurations;
    private final FibMap _fibs;
+   private FlowSinkSet _flowSinks;
    private final PolicyRouteFibNodeMap _prFibs;
    private final boolean _simplify;
    private final EdgeSet _topologyEdges;
@@ -266,7 +268,8 @@ public class Synthesizer {
    private List<String> _warnings;
 
    public Synthesizer(Map<String, Configuration> configurations, FibMap fibs,
-         PolicyRouteFibNodeMap prFibs, EdgeSet topologyEdges, boolean simplify) {
+         PolicyRouteFibNodeMap prFibs, EdgeSet topologyEdges, boolean simplify,
+         FlowSinkSet flowSinks) {
       _configurations = configurations;
       pruneInterfaces();
       _fibs = fibs;
@@ -275,6 +278,7 @@ public class Synthesizer {
       _simplify = simplify;
       _topologyInterfaces = new TreeMap<String, Set<Interface>>();
       _warnings = new ArrayList<String>();
+      _flowSinks = flowSinks;
       computeTopologyInterfaces();
    }
 
@@ -297,7 +301,7 @@ public class Synthesizer {
          Configuration c = _configurations.get(hostname);
          Map<String, Interface> nodeInterfaces = c.getInterfaces();
          for (String ifaceName : nodeInterfaces.keySet()) {
-            if (ifaceName.startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
+            if (isFlowSink(hostname, ifaceName)) {
                Interface iface = nodeInterfaces.get(ifaceName);
                if (!_topologyInterfaces.containsKey(hostname)) {
                   _topologyInterfaces.put(hostname, new TreeSet<Interface>());
@@ -453,7 +457,7 @@ public class Synthesizer {
          Set<Interface> interfaces = e.getValue();
          for (Interface i : interfaces) {
             String ifaceName = i.getName();
-            if (ifaceName.startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
+            if (isFlowSink(hostname, ifaceName)) {
                PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(
                      hostname, ifaceName);
                NodeAcceptExpr nodeAccept = new NodeAcceptExpr(hostname);
@@ -937,7 +941,7 @@ public class Synthesizer {
          for (Interface iface : interfaces) {
             String ifaceName = iface.getName();
             if (ifaceName.startsWith(FAKE_INTERFACE_PREFIX)
-                  || ifaceName.startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
+                  || isFlowSink(hostname, ifaceName)) {
                continue;
             }
             NodeDropExpr nodeDrop = new NodeDropExpr(hostname);
@@ -1131,9 +1135,9 @@ public class Synthesizer {
          String intOut = edge.getInt1();
          String intIn = edge.getInt2();
          if (intIn.startsWith(FAKE_INTERFACE_PREFIX)
-               || intIn.startsWith(FLOW_SINK_INTERFACE_PREFIX)
+               || isFlowSink(hostnameIn, intIn)
                || intOut.startsWith(FAKE_INTERFACE_PREFIX)
-               || intOut.startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
+               || isFlowSink(hostnameOut, intOut)) {
             continue;
          }
 
@@ -1154,6 +1158,11 @@ public class Synthesizer {
 
    public List<String> getWarnings() {
       return _warnings;
+   }
+
+   private boolean isFlowSink(String hostname, String ifaceName) {
+      FlowSinkInterface f = new FlowSinkInterface(hostname, ifaceName);
+      return _flowSinks.contains(f);
    }
 
    private void pruneInterfaces() {
@@ -1228,8 +1237,11 @@ public class Synthesizer {
          sb.append("\n");
       }
 
+      String output = sb.toString();
       // hack to fix interface names with colons
-      String output = sb.toString().replace(":", "_COLON_");
+      output = output.replace(":", "_COLON_");
+      // hack to fix node: "(none)"
+      output = output.replace("(none)", "_none_");
       return output;
    }
 
