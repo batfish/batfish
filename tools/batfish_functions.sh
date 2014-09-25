@@ -323,6 +323,7 @@ batfish_analyze_interface_failures_machine() {
       local DUMP_DIR=$PWD/$PREFIX-dump
       local FLOWS=$PWD/$PREFIX-flows
       local REACH_PATH=$PWD/$PREFIX-reach.smt2
+      local PREDS_PATH=$PWD/$PREFIX-preds
       local VENDOR_SERIAL_DIR=$PWD/$PREFIX-vendor
       local FI_QUERY_BASE_PATH=$QUERY_PATH/interface-failure-inconsistency-query
       local DST_IP_BLACKLIST_PATH=${QUERY_PATH}/blacklist-ip-${INTERFACE_SANITIZED}
@@ -333,6 +334,9 @@ batfish_analyze_interface_failures_machine() {
       # Compute the fixed point of the control plane with failed interface
       batfish_compile_blacklist_interface $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $interface || return 1
 
+      # Get interesting predicate data
+      batfish -log 0 -workspace $WORKSPACE -query -predicates InstalledRoute BestOspfE2Route BestOspfE1Route OspfRoute_advertiser OspfE2Route > $PREDS_PATH || return 1
+      
       # Query data plane predicates
       batfish_query_data_plane $WORKSPACE $DP_DIR || return 1
 
