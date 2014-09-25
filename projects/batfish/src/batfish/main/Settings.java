@@ -115,7 +115,6 @@ public class Settings {
    private static final String DEFAULT_DUMP_IF_DIR = "if";
    private static final String DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH = "interface_descriptions";
    private static final String DEFAULT_FLOW_PATH = "flows";
-   private static final String DEFAULT_FLOW_SINK_PATH = "flow_sinks";
    private static final String DEFAULT_LB_WEB_ADMIN_PORT = "55183";
    private static final String DEFAULT_LB_WEB_PORT = "8080";
    private static final String DEFAULT_LOG_LEVEL = "2";
@@ -791,9 +790,8 @@ public class Settings {
       _flows = line.hasOption(ARG_FLOWS);
       if (_flows) {
          _flowPath = line.getOptionValue(ARG_FLOW_PATH, DEFAULT_FLOW_PATH);
-         _flowSinkPath = line.getOptionValue(ARG_FLOW_SINK_PATH,
-               DEFAULT_FLOW_SINK_PATH);
       }
+      _flowSinkPath = line.getOptionValue(ARG_FLOW_SINK_PATH);
       _secondTestRigPath = line.getOptionValue(ARG_DIFF);
       _diff = line.hasOption(ARG_DIFF);
       _dumpIF = line.hasOption(ARG_DUMP_IF);
