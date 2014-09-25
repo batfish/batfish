@@ -22,7 +22,7 @@ block(`BaseFacts) {
 +AdvertisementType("ibgp_to").
 
 +Interface("dynamic").
-+Interface("flow-sink-termination").
++Interface("flow_sink_termination").
 +Interface("null_interface").
 
 +OriginType("igp").

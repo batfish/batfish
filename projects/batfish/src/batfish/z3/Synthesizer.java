@@ -454,18 +454,15 @@ public class Synthesizer {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment(
             "Post out flow sink interface leads to node accept"));
-      for (Entry<String, Set<Interface>> e : _topologyInterfaces.entrySet()) {
-         String hostname = e.getKey();
-         Set<Interface> interfaces = e.getValue();
-         for (Interface i : interfaces) {
-            String ifaceName = i.getName();
-            if (isFlowSink(hostname, ifaceName)) {
-               PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(
-                     hostname, ifaceName);
-               NodeAcceptExpr nodeAccept = new NodeAcceptExpr(hostname);
-               RuleExpr flowSinkAccept = new RuleExpr(postOutIface, nodeAccept);
-               statements.add(flowSinkAccept);
-            }
+      for (FlowSinkInterface f : _flowSinks) {
+         String hostname = f.getNode();
+         String ifaceName = f.getInterface();
+         if (isFlowSink(hostname, ifaceName)) {
+            PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(
+                  hostname, ifaceName);
+            NodeAcceptExpr nodeAccept = new NodeAcceptExpr(hostname);
+            RuleExpr flowSinkAccept = new RuleExpr(postOutIface, nodeAccept);
+            statements.add(flowSinkAccept);
          }
       }
       return statements;
