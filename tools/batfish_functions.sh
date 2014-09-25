@@ -199,7 +199,7 @@ batfish_analyze_destination_consistency_machine() {
       batfish_query_data_plane $WORKSPACE $DP_DIR || return 1
 
       # Extract z3 reachability relations
-      batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH $NODE_SET_PATH || return 1
+      BATFISH_COMMON_ARGS="-blnode $NODE" batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH $NODE_SET_PATH || return 1
    
       # Find destination-consistency reachable packet constraints for node for no-failure scenario
       batfish_find_destination_consistency_node_accept_packet_constraints $ORIG_REACH_PATH $QUERY_PATH $DI_QUERY_BASE_PATH $NODE_SET_PATH $NODE || return 1
