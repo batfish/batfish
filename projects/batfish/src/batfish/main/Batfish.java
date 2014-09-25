@@ -1843,7 +1843,7 @@ public class Batfish implements AutoCloseable {
 
    private void writeFlowSinkFacts(FlowSinkSet flowSinks,
          Map<String, StringBuilder> cpFactBins) {
-      StringBuilder sb = cpFactBins.get("wSetFlowSinkInterface");
+      StringBuilder sb = cpFactBins.get("SetFlowSinkInterface");
       for (FlowSinkInterface f : flowSinks) {
          String node = f.getNode();
          String iface = f.getInterface();
