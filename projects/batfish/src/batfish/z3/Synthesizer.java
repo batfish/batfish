@@ -91,7 +91,7 @@ public class Synthesizer {
    private static final int PORT_MIN = 0;
    public static final String SRC_IP_VAR = "src_ip";
    public static final String SRC_PORT_VAR = "src_port";
-   private static final String NODE_NONE_NAME = "_none_";
+   private static final String NODE_NONE_NAME = "(none)";
    private static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
 
    public static BooleanExpr bitvectorGEExpr(String bv, long lb, int numBits) {
