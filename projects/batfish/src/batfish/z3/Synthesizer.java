@@ -91,6 +91,8 @@ public class Synthesizer {
    private static final int PORT_MIN = 0;
    public static final String SRC_IP_VAR = "src_ip";
    public static final String SRC_PORT_VAR = "src_port";
+   private static final String NODE_NONE_NAME = "_none_";
+   private static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
 
    public static BooleanExpr bitvectorGEExpr(String bv, long lb, int numBits) {
       // these masks refer to nested conditions, not to bitwise and, or
@@ -973,6 +975,18 @@ public class Synthesizer {
    private List<Statement> getPreOutEdgeToPreOutInterfaceRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment("PreOutEdge => PreOutInterface"));
+      for (FlowSinkInterface f : _flowSinks) {
+         String hostnameOut = f.getNode();
+         String hostnameIn = NODE_NONE_NAME;
+         String intOut = f.getInterface();
+         String intIn = FLOW_SINK_TERMINATION_NAME;
+         PreOutEdgeExpr preOutEdge = new PreOutEdgeExpr(hostnameOut, intOut,
+               hostnameIn, intIn);
+         PreOutInterfaceExpr preOutInt = new PreOutInterfaceExpr(hostnameOut,
+               intOut);
+         RuleExpr rule = new RuleExpr(preOutEdge, preOutInt);
+         statements.add(rule);
+      }
       for (Edge edge : _topologyEdges) {
          String hostnameOut = edge.getNode1();
          String hostnameIn = edge.getNode2();
@@ -1195,7 +1209,7 @@ public class Synthesizer {
       List<Statement> postInToPreOutRules = getPostInToPreOutRules();
       List<Statement> preOutToDestRouteRules = getPreOutToDestRouteRules();
       List<Statement> destRouteToPreOutEdgeRules = getDestRouteToPreOutEdgeRules();
-      List<Statement> preOutEdgeTopreOutInterfaceRules = getPreOutEdgeToPreOutInterfaceRules();
+      List<Statement> preOutEdgeToPreOutInterfaceRules = getPreOutEdgeToPreOutInterfaceRules();
       List<Statement> policyRouteRules = getPolicyRouteRules();
       List<Statement> matchAclRules = getMatchAclRules();
       List<Statement> toNeighborsRules = getToNeighborsRules();
@@ -1212,7 +1226,7 @@ public class Synthesizer {
       rules.addAll(postInToPreOutRules);
       rules.addAll(preOutToDestRouteRules);
       rules.addAll(destRouteToPreOutEdgeRules);
-      rules.addAll(preOutEdgeTopreOutInterfaceRules);
+      rules.addAll(preOutEdgeToPreOutInterfaceRules);
       rules.addAll(policyRouteRules);
       rules.addAll(matchAclRules);
       rules.addAll(toNeighborsRules);
