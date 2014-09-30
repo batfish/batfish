@@ -323,7 +323,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else if (ctx.prefix != null) {
          int pfxLength = getPrefixLength(ctx.prefix);
          long ipAsLong = 0xFFFFFFFFl >>> pfxLength;
-         return new Ip(ipAsLong);         
+         return new Ip(ipAsLong);
       }
       else {
          throw new Error("bad extended ip access list ip range");
@@ -525,13 +525,13 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void enterIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
-      
+
       boolean isIpV6 = (ctx.named.IPV6() != null);
-      
+
       if (isIpV6) {
          todo(ctx, "IPV6 is not supported yet");
       }
-            
+
       String name = ctx.named.name.getText();
       _currentPrefixList = new PrefixList(name, isIpV6);
       _currentPrefixList.setContext(ctx);
@@ -539,21 +539,19 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
-   public void enterNexus_access_list_stanza(
-         Nexus_access_list_stanzaContext ctx) {
+   public void enterNexus_access_list_stanza(Nexus_access_list_stanzaContext ctx) {
 
       boolean ipV6 = (ctx.IPV6() != null);
-      
+
       if (ipV6) {
          todo(ctx, "Do not handle IPv6 yet");
       }
-      
+
       String name = ctx.name.getText();
 
       _currentExtendedAcl = new ExtendedAccessList(name, ipV6);
       _configuration.getExtendedAcls().put(name, _currentExtendedAcl);
    }
-
 
    @Override
    public void enterRoute_map_stanza(Route_map_stanzaContext ctx) {
@@ -703,11 +701,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitExtended_access_list_tail(
          Extended_access_list_tailContext ctx) {
-      
+
       if (_currentExtendedAcl.isIpV6()) {
          return;
       }
-      
+
       LineAction action = getAccessListAction(ctx.ala);
       int protocol = getProtocolNumber(ctx.prot);
       Ip srcIp = getIp(ctx.srcipr);
@@ -862,11 +860,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       /*
        * if (ctx.seqnum != null) { int seqnum = toInteger(ctx.seqnum); }
        */
-      
+
       if (_currentPrefixList.isIpV6()) {
          return;
       }
-      
+
       LineAction action = getAccessListAction(ctx.action);
       Ip prefix = getPrefixIp(ctx.prefix);
       int prefixLength = getPrefixLength(ctx.prefix);
@@ -1081,12 +1079,12 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       Ip ip = toIp(ctx.ip_address);
 
       proc.addIpPeerGroup(ip);
-            
+
       if (ctx.REMOTE_AS() != null) {
          BgpPeerGroup pg = proc.getPeerGroup(ip.toString());
-         pg.setRemoteAS(toInteger(ctx.asnum));          
+         pg.setRemoteAS(toInteger(ctx.asnum));
       }
-      
+
       for (Neighbor_nexus_tailContext tCtx : ctx.tail) {
          if (tCtx.neighbor_nexus_inherit_stanza() != null) {
             Neighbor_nexus_inherit_stanzaContext inheritCtx = tCtx

@@ -87,7 +87,7 @@ public class Settings {
    private static final String ARGNAME_BLACK_HOLE_PATH = "path";
    private static final String ARGNAME_BLACKLIST_DST_IP = "ip";
    private static final String ARGNAME_BLACKLIST_INTERFACE = "node,interface";
-   private static final String ARGNAME_BLACKLIST_NODE= "node";
+   private static final String ARGNAME_BLACKLIST_NODE = "node";
    private static final String ARGNAME_BUILD_PREDICATE_INFO = "path";
    private static final String ARGNAME_DATA_PLANE_DIR = "path";
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
@@ -277,7 +277,7 @@ public class Settings {
    public String getConcretizerOutputFilePath() {
       return _concretizerOutputFilePath;
    }
-   
+
    public String getConnectBloxHost() {
       return _cbHost;
    }
@@ -692,17 +692,16 @@ public class Settings {
             .withDescription(
                   "interface to blacklist (force inactive) during analysis")
             .create(ARG_BLACKLIST_INTERFACE));
-      _options.addOption(OptionBuilder
-            .hasArg()
-            .withArgName(ARGNAME_BLACKLIST_NODE)
-            .withDescription(
-                  "node to blacklist (remove from configuration structures) during analysis")
-            .create(ARG_BLACKLIST_NODE));
-      _options.addOption(OptionBuilder
-            .hasArg()
+      _options
+            .addOption(OptionBuilder
+                  .hasArg()
+                  .withArgName(ARGNAME_BLACKLIST_NODE)
+                  .withDescription(
+                        "node to blacklist (remove from configuration structures) during analysis")
+                  .create(ARG_BLACKLIST_NODE));
+      _options.addOption(OptionBuilder.hasArg()
             .withArgName(ARGNAME_ACCEPT_NODE)
-            .withDescription(
-                  "accept node for reachability query")
+            .withDescription("accept node for reachability query")
             .create(ARG_ACCEPT_NODE));
       _options.addOption(OptionBuilder.withDescription(
             "generate interface-failure-inconsistency reachable packet query")
@@ -858,7 +857,7 @@ public class Settings {
          _logicSrcDir = line.getOptionValue(ARG_BUILD_PREDICATE_INFO);
       }
       _blacklistInterface = line.getOptionValue(ARG_BLACKLIST_INTERFACE);
-      _blacklistNode= line.getOptionValue(ARG_BLACKLIST_NODE);
+      _blacklistNode = line.getOptionValue(ARG_BLACKLIST_NODE);
       _reach = line.hasOption(ARG_REACH);
       _reachPath = line.getOptionValue(ARG_REACH_PATH);
       _blackHole = line.hasOption(ARG_BLACK_HOLE);

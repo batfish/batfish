@@ -1681,7 +1681,8 @@ public class Batfish implements AutoCloseable {
          writeConfigurationFacts(configurations, cpFactBins);
          String flowSinkPath = _settings.getFlowSinkPath();
          if (flowSinkPath != null) {
-            FlowSinkSet flowSinks = (FlowSinkSet)deserializeObject(new File(flowSinkPath));
+            FlowSinkSet flowSinks = (FlowSinkSet) deserializeObject(new File(
+                  flowSinkPath));
             writeFlowSinkFacts(flowSinks, cpFactBins);
          }
          if (_settings.getDumpControlPlaneFacts()) {
