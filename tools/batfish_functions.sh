@@ -986,6 +986,19 @@ batfish_query_flows() {
 }
 export -f batfish_query_flows
 
+batfish_query_predicate() {
+   date | tr -d '\n'
+   echo ": START: Query predicate (informational only)"
+   batfish_expect_args 2 $# || return 1
+   local PREFIX=$1
+   local PREDICATE=$2
+   local WORKSPACE=batfish-$USER-$PREFIX
+   batfish -workspace $WORKSPACE -query -predicates $PREDICATE
+   date | tr -d '\n'
+   echo ": END: Query predicate (informational only)"
+}
+export -f batfish_query_predicate
+
 batfish_query_routes() {
    date | tr -d '\n'
    echo ": START: Query routes (informational only)"
