@@ -423,17 +423,21 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    private BgpPeerTemplatePeerGroup _currentTemplatePeer;
 
-   private BatfishCombinedParser<?, ?> _parser;
+   private final BatfishCombinedParser<?, ?> _parser;
 
-   private String _text;
+   private final Set<String> _rulesWithSuppressedWarnings;
 
-   private List<String> _warnings;
+   private final String _text;
+
+   private final List<String> _warnings;
 
    public CiscoControlPlaneExtractor(String text,
-         BatfishCombinedParser<?, ?> parser) {
+         BatfishCombinedParser<?, ?> parser,
+         Set<String> rulesWithSuppressedWarnings) {
       _text = text;
       _warnings = new ArrayList<String>();
       _parser = parser;
+      _rulesWithSuppressedWarnings = rulesWithSuppressedWarnings;
    }
 
    @Override
@@ -1751,6 +1755,10 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    private void todo(ParserRuleContext ctx, String reason) {
+      String ruleName = _parser.getParser().getRuleNames()[ctx.getRuleIndex()];
+      if (_rulesWithSuppressedWarnings.contains(ruleName)) {
+         return;
+      }
       String prefix = "WARNING " + (_warnings.size() + 1) + ": ";
       StringBuilder sb = new StringBuilder();
       List<String> ruleNames = Arrays.asList(CiscoGrammar.ruleNames);

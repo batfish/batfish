@@ -2,7 +2,9 @@ package batfish.main;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -64,6 +66,7 @@ public class Settings {
    private static final String ARG_REDIRECT_STDERR = "redirect";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
+   private static final String ARG_RULES_WITH_SUPPRESSED_WARNINGS = "rulenowarn";
    private static final String ARG_SERIALIZE_INDEPENDENT = "si";
    private static final String ARG_SERIALIZE_INDEPENDENT_PATH = "sipath";
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
@@ -100,6 +103,7 @@ public class Settings {
    private static final String ARGNAME_NODE_SET_PATH = "path";
    private static final String ARGNAME_REACH_PATH = "path";
    private static final String ARGNAME_REVERT = "branch-name";
+   private static final String ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS = "rule-names";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
@@ -186,6 +190,7 @@ public class Settings {
    private boolean _removeFacts;
    private boolean _revert;
    private String _revertBranchName;
+   private Set<String> _rulesWithSuppressedWarnings;
    private String _secondTestRigPath;
    private boolean _serializeIndependent;
    private String _serializeIndependentPath;
@@ -423,6 +428,10 @@ public class Settings {
 
    public boolean getRemoveFacts() {
       return _removeFacts;
+   }
+
+   public Set<String> getRulesWithSuppressedWarnings() {
+      return _rulesWithSuppressedWarnings;
    }
 
    public String getSecondTestRigPath() {
@@ -724,6 +733,10 @@ public class Settings {
             .withDescription(
                   "destination ip to blacklist for concretizer queries")
             .create(ARG_BLACKLIST_DST_IP));
+      _options.addOption(OptionBuilder
+            .withArgName(ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS).hasArgs()
+            .withDescription("suppress warnings for selected parser rules")
+            .create(ARG_RULES_WITH_SUPPRESSED_WARNINGS));
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -853,6 +866,14 @@ public class Settings {
       _blacklistDstIp = line.getOptionValue(ARG_BLACKLIST_DST_IP);
       _concUnique = line.hasOption(ARG_CONC_UNIQUE);
       _acceptNode = line.getOptionValue(ARG_ACCEPT_NODE);
+      _rulesWithSuppressedWarnings = new HashSet<String>();
+      if (line.hasOption(ARG_RULES_WITH_SUPPRESSED_WARNINGS)) {
+         String[] rulesWithSuppressedWarningsArray = line
+               .getOptionValues(ARG_RULES_WITH_SUPPRESSED_WARNINGS);
+         for (String ruleName : rulesWithSuppressedWarningsArray) {
+            _rulesWithSuppressedWarnings.add(ruleName);
+         }
+      }
    }
 
    public boolean printParseTree() {

@@ -1269,7 +1269,8 @@ public class Batfish implements AutoCloseable {
             BatfishCombinedParser<?, ?> combinedParser = new CiscoCombinedParser(
                   fileText);
             ParserRuleContext tree = parse(combinedParser, currentPath);
-            extractor = new CiscoControlPlaneExtractor(fileText, combinedParser);
+            extractor = new CiscoControlPlaneExtractor(fileText,
+                  combinedParser, _settings.getRulesWithSuppressedWarnings());
             ParseTreeWalker walker = new ParseTreeWalker();
             walker.walk(extractor, tree);
             for (String warning : extractor.getWarnings()) {
