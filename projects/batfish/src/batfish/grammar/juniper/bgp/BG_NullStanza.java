@@ -13,8 +13,7 @@ public class BG_NullStanza extends BGStanza {
    
    /* ---------------------------- Getters/Setters --------------------------*/
    
-   /* --------------------------- Inherited Methods -------------------------*/   
-
+   /* --------------------------- Inherited Methods -------------------------*/      
    @Override
    public BGType getType() {
       return BGType.NULL;

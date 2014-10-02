@@ -16,7 +16,7 @@ public class IFU_VlanIdStanza extends IF_UStanza {
       return _vlanid;
    }
    
-   /* --------------------------- Inherited Methods -------------------------*/
+   /* --------------------------- Inherited Methods -------------------------*/   
  	@Override
 	public IF_UType getType() {
 		return IF_UType.VLAN_ID;

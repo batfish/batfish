@@ -34,7 +34,6 @@ public class ROST_RouteStanza extends RO_STStanza {
    }
    
    /* --------------------------- Inherited Methods -------------------------*/ 
-
 	@Override
 	public RO_STType getType() {
 		return RO_STType.ROUTE;

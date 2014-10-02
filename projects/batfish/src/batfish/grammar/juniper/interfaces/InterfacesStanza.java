@@ -29,7 +29,9 @@ public class InterfacesStanza extends JStanza {
    }
    
    /* --------------------------- Inherited Methods -------------------------*/  
-   public void postProcessStanza () {
+   @Override
+   public void postProcessStanza() {
+      super.postProcessStanza();
       for (InterfaceStanza is : _interfaceStanzas) {
          is.postProcessStanza();
          addIgnoredStatements(is.get_ignoredStatements());

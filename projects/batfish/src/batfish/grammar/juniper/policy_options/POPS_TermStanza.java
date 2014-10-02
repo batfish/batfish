@@ -334,7 +334,8 @@ public class POPS_TermStanza extends StanzaWithStatus {
    }
    
    /* --------------------------- Inherited Methods -------------------------*/
-   public void postProcessStanza () {
+   @Override
+   public void postProcessStanza() {
       _matchList = new ArrayList<PolicyStatement_MatchLine>();
 
       _lineAction = null;

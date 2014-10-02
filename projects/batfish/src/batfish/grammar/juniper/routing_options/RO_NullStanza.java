@@ -14,8 +14,7 @@ public class RO_NullStanza extends ROStanza {
    
    /* ---------------------------- Getters/Setters --------------------------*/
    
-   /* --------------------------- Inherited Methods -------------------------*/  
-	
+   /* --------------------------- Inherited Methods -------------------------*/ 
 	@Override
 	public ROType getType() {
 		return ROType.NULL;

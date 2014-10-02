@@ -3,6 +3,7 @@ package batfish.grammar.juniper.policy_options;
 import java.util.ArrayList;
 import java.util.List;
 
+import batfish.representation.juniper.ASPathAccessList;
 import batfish.representation.juniper.ProtocolType;
 
 public class POPSTFr_ProtocolStanza extends POPST_FromStanza {

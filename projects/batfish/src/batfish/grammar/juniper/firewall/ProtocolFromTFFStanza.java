@@ -17,7 +17,6 @@ public class ProtocolFromTFFStanza extends FromTFFStanza {
    public List<Integer> getProtocols(){
       return _protocols;
    }
-
    @Override
    public FromTFFType getType() {
       return FromTFFType.PROTOCOL;

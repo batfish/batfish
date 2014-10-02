@@ -45,7 +45,8 @@ public class PolicyOptionsStanza extends JStanza {
    }
    
    /* --------------------------- Inherited Methods -------------------------*/
-   public void postProcessStanza () {
+   @Override
+   public void postProcessStanza() {
       _communities = new ArrayList<CommunityMemberList>();
       _asPathLists = new ArrayList<ASPathAccessList>();
       _policyStatements = new ArrayList<PolicyStatement>();
@@ -84,7 +85,6 @@ public class PolicyOptionsStanza extends JStanza {
          this.addIgnoredStatements(pos.get_ignoredStatements());
       }
       this.set_postProcessTitle("Policy Options");     
-      
    }
 
    @Override

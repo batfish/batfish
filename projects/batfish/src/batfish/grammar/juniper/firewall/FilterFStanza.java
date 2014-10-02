@@ -14,7 +14,7 @@ public class FilterFStanza {
    public FilterFStanza(String n) {
       _filter = new ExtendedAccessList(n);
    }
-
+   
    public void processTerm(TermFFStanza ts) {
       List<String> daList = ts.getDestinationAddress();
       List<String> saList = ts.getSourceAddress();

@@ -16,8 +16,7 @@ public class ROST_RibGroupStanza extends RO_STStanza {
       return _groupName;
    }
    
-   /* --------------------------- Inherited Methods -------------------------*/  
-
+   /* --------------------------- Inherited Methods -------------------------*/ 
    @Override
    public RO_STType getType() {
       return RO_STType.RIB_GROUP;

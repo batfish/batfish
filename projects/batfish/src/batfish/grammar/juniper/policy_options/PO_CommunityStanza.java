@@ -29,7 +29,9 @@ public class PO_CommunityStanza extends POStanza {
    }
    
    /* --------------------------- Inherited Methods -------------------------*/
-   public void postProcessStanza () {
+   @Override
+   public void postProcessStanza() {
+      super.postProcessStanza();
       List<CommunityMemberListLine> cls = new ArrayList<CommunityMemberListLine>();
       for (String c : _communityIds) {
          cls.add(new CommunityMemberListLine(c));

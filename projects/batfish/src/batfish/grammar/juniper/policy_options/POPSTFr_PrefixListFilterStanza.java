@@ -4,6 +4,7 @@ package batfish.grammar.juniper.policy_options;
 import java.util.ArrayList;
 
 import batfish.grammar.juniper.StanzaStatusType;
+import batfish.representation.juniper.ASPathAccessList;
 import batfish.representation.juniper.FilterMatch;
 
 public class POPSTFr_PrefixListFilterStanza extends POPST_FromStanza {

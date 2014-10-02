@@ -11,7 +11,7 @@ public class BGGRN_ImportStanza extends BGGR_NStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public BGGRN_ImportStanza(BGPImportList i) {
       _iList = i;
-      set_stanzaStatus(i.get_stanzaStatus());
+      //set_stanzaStatus(i.get_stanzaStatus());
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -21,7 +21,7 @@ public class BGGRN_ImportStanza extends BGGR_NStanza {
    
    /* ---------------------------- Getters/Setters --------------------------*/
    
-   /* --------------------------- Inherited Methods -------------------------*/  
+   /* --------------------------- Inherited Methods -------------------------*/   
    @Override
    public BGGR_NType getType() {
       return BGGR_NType.IMPORT;

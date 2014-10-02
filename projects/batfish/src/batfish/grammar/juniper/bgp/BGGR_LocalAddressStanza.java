@@ -9,7 +9,7 @@ public class BGGR_LocalAddressStanza extends BG_GRStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public BGGR_LocalAddressStanza(BGPLocalAddress l){
       _la = l;
-      set_stanzaStatus(l.get_stanzaStatus());
+      //set_stanzaStatus(l.get_stanzaStatus());
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -20,7 +20,6 @@ public class BGGR_LocalAddressStanza extends BG_GRStanza {
    /* ---------------------------- Getters/Setters --------------------------*/
    
    /* --------------------------- Inherited Methods -------------------------*/  
-
    @Override
    public BG_GRType getType() {      
       return BG_GRType.LOCAL_ADDRESS;

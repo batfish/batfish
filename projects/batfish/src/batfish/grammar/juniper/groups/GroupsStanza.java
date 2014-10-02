@@ -1,6 +1,5 @@
 package batfish.grammar.juniper.groups;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,10 +22,9 @@ public class GroupsStanza extends JStanza {
    
    /* ---------------------------- Getters/Setters --------------------------*/
    
-   /* --------------------------- Inherited Methods -------------------------*/
+   /* --------------------------- Inherited Methods -------------------------*/   
    @Override
    public JStanzaType getType() {
       return JStanzaType.GROUPS;
-   }
-
+   }  
 }

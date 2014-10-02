@@ -13,8 +13,7 @@ public class BGGRN_NullStanza extends BGGR_NStanza {
    
    /* ---------------------------- Getters/Setters --------------------------*/
    
-   /* --------------------------- Inherited Methods -------------------------*/   
-
+   /* --------------------------- Inherited Methods -------------------------*/    
    @Override
    public BGGR_NType getType() {
       return BGGR_NType.NULL;

@@ -3,9 +3,7 @@ package batfish.representation.juniper;
 import java.util.ArrayList;
 import java.util.List;
 
-import batfish.grammar.juniper.StanzaWithStatus;
-
-public class BGPImportList extends StanzaWithStatus {
+public class BGPImportList {
    
    private List<String> _policyNames;
    

@@ -1,8 +1,6 @@
 package batfish.representation.juniper;
 
-import batfish.grammar.juniper.StanzaWithStatus;
-
-public class BGPLocalAddress extends StanzaWithStatus {
+public class BGPLocalAddress {
    
    private String _localAddress;
    private boolean _isIPV6; // TODO HACK

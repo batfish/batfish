@@ -32,10 +32,15 @@ public class OP_AreaStanza extends OPStanza {
    }
    
    /* --------------------------- Inherited Methods -------------------------*/   
+   @Override
    public void postProcessStanza() {
+      super.postProcessStanza();
+      
       _interfaceList = new ArrayList<String>();
       
       for (OP_ARStanza aops : _opArStanzas) {
+         
+         aops.postProcessStanza();
          
          switch (aops.getType()) {
          

@@ -1,5 +1,7 @@
 package batfish.grammar.juniper.policy_options;
 
+import batfish.representation.juniper.ASPathAccessList;
+
 public class POPSTFr_PrefixListStanza extends POPST_FromStanza {
    
 	private String _listName;

@@ -18,7 +18,7 @@ public class BGGRN_PeerAsStanza extends BGGR_NStanza {
 
    /* ---------------------------- Getters/Setters --------------------------*/
    
-   /* --------------------------- Inherited Methods -------------------------*/  
+   /* --------------------------- Inherited Methods -------------------------*/   
    @Override
    public BGGR_NType getType() {
       return BGGR_NType.PEER_AS;

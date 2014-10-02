@@ -9,14 +9,14 @@ public class BGGRN_FamilyStanza extends BGGR_NStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public BGGRN_FamilyStanza (BGPFamily b) {
       _fam = b;
-      set_stanzaStatus(b.get_stanzaStatus());
+     // set_stanzaStatus(b.get_stanzaStatus());
    }
 
    /* ----------------------------- Other Methods ---------------------------*/
    
    /* ---------------------------- Getters/Setters --------------------------*/
    
-   /* --------------------------- Inherited Methods -------------------------*/  
+   /* --------------------------- Inherited Methods -------------------------*/   
 	@Override
 	public BGGR_NType getType() {
 		return BGGR_NType.FAMILY;

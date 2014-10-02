@@ -9,7 +9,7 @@ public class BGGR_FamilyStanza extends BG_GRStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public BGGR_FamilyStanza (BGPFamily b) {
       _fam = b;
-      set_stanzaStatus(b.get_stanzaStatus());
+    //  set_stanzaStatus(b.get_stanzaStatus());
    }
 
    /* ----------------------------- Other Methods ---------------------------*/

@@ -18,7 +18,7 @@ public class POPSTTh_FilterMatchStanza extends POPST_ThenStanza {
       return _filterMatch;
    }
 
-   /* --------------------------- Inherited Methods -------------------------*/	
+   /* --------------------------- Inherited Methods -------------------------*/
 	@Override
 	public POPST_ThenType getType() {
 		return POPST_ThenType.NEXT_TERM;

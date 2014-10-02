@@ -19,7 +19,6 @@ private List<SubRange> _ports;
    public List<SubRange> getPorts(){
       return _ports;
    }
-
    @Override
    public FromTFFType getType() {
       return FromTFFType.SOURCE_PORT;

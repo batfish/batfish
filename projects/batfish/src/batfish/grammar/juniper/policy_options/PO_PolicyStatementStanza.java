@@ -33,7 +33,9 @@ public class PO_PolicyStatementStanza extends POStanza {
    }
 
    /* --------------------------- Inherited Methods -------------------------*/
-   public void postProcessStanza () {
+   @Override
+   public void postProcessStanza() {
+      super.postProcessStanza();
       
       List<PolicyStatement_Term> _terms = new ArrayList<PolicyStatement_Term> ();
       

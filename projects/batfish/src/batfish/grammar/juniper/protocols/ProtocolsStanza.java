@@ -51,7 +51,9 @@ public class ProtocolsStanza extends JStanza {
 
    
    /* --------------------------- Inherited Methods -------------------------*/
+   @Override
    public void postProcessStanza() {
+      super.postProcessStanza();
       
       for (PStanza ps : _pStanzas) {
          ps.postProcessStanza();

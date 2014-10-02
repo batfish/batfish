@@ -42,7 +42,9 @@ public class BG_GroupStanza extends BGStanza {
    }
    
    /* --------------------------- Inherited Methods -------------------------*/  
+   @Override
    public void postProcessStanza() {
+      super.postProcessStanza();
 
       _group = new BGPGroup(_groupName);
       _activatedNeighbors = new ArrayList<String>();
@@ -89,7 +91,6 @@ public class BG_GroupStanza extends BGStanza {
             
          case NEIGHBOR:
             BGGR_NeighborStanza ngbs = (BGGR_NeighborStanza) bggrs;
-            ngbs.postProcessStanza();
             this.addIgnoredStatements(ngbs.get_ignoredStatements());
             if (ngbs.get_stanzaStatus() == StanzaStatusType.IPV6) {
                this.set_stanzaStatus(StanzaStatusType.IPV6);

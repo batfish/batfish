@@ -39,13 +39,17 @@ public class JuniperConfiguration {
       return _routerID;
    }
 
-   public void processStanza(JStanza js) {
+   public void postProcessStanza(JStanza js) {
       switch (js.getType()) {
       case FIREWALL:
         /* FireWallStanza fs = (FireWallStanza) js;
          for (ExtendedAccessList eal : fs.getFilters()) {
             _configuration.addExtendedAccessList(eal);
          }*/
+         break;
+         
+      case APPLY_GROUPS:
+      case GROUPS:
          break;
 
       case INTERFACES:

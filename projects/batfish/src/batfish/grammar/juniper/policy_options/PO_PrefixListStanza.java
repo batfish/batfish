@@ -36,7 +36,9 @@ public class PO_PrefixListStanza extends POStanza {
    }
 
    /* --------------------------- Inherited Methods -------------------------*/
-   public void postProcessStanza () {
+   @Override
+   public void postProcessStanza() {
+      super.postProcessStanza();
       if (get_stanzaStatus()==StanzaStatusType.IPV6) {
          addIgnoredStatement("prefix list " + _name + "(IPV6)");
       }

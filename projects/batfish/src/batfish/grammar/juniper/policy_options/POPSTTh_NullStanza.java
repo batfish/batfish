@@ -15,7 +15,6 @@ public class POPSTTh_NullStanza extends POPST_ThenStanza {
    /* ---------------------------- Getters/Setters --------------------------*/
    
    /* --------------------------- Inherited Methods -------------------------*/
-
 	@Override
 	public POPST_ThenType getType() {
 		return POPST_ThenType.NULL;

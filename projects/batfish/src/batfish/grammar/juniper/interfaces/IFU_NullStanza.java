@@ -14,7 +14,7 @@ public class IFU_NullStanza extends IF_UStanza {
    
    /* ---------------------------- Getters/Setters --------------------------*/
    
-   /* --------------------------- Inherited Methods -------------------------*/   
+   /* --------------------------- Inherited Methods -------------------------*/ 
 	@Override
 	public IF_UType getType() {
 		return IF_UType.NULL;

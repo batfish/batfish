@@ -25,5 +25,6 @@ public class GroupStanza extends StanzaWithStatus {
    public String get_name () {
       return _name;
    }
+   
    /* --------------------------- Inherited Methods -------------------------*/
 }

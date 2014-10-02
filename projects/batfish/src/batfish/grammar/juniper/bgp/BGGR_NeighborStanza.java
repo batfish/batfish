@@ -49,7 +49,9 @@ public class BGGR_NeighborStanza extends BG_GRStanza {
    }
    
    /* --------------------------- Inherited Methods -------------------------*/  
-   public void postProcessStanza () {
+   @Override
+   public void postProcessStanza() {
+      super.postProcessStanza();
       
       _exportNames = new ArrayList<String>();
       _importNames = new ArrayList<String>();

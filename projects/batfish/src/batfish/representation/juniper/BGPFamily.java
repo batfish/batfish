@@ -1,8 +1,6 @@
 package batfish.representation.juniper;
 
-import batfish.grammar.juniper.StanzaWithStatus;
-
-public class BGPFamily extends StanzaWithStatus {
+public class BGPFamily {
    
    /* ------------------------------ Constructor ----------------------------*/
 

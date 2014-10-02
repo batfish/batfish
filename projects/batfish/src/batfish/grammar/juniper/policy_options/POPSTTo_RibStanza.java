@@ -23,6 +23,7 @@ public class POPSTTo_RibStanza extends POPST_ToStanza {
    public String get_ribName () {
       return _ribName;
    }
+   
    /* --------------------------- Inherited Methods -------------------------*/
    @Override
    public POPST_ToType getType() {

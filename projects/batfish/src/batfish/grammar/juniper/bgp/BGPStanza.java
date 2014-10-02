@@ -33,7 +33,9 @@ public class BGPStanza extends PStanza {
 	}
 	
    /* --------------------------- Inherited Methods -------------------------*/ 
-	public void postProcessStanza() {
+   @Override
+   public void postProcessStanza() {
+      super.postProcessStanza();
 	   
       _groupList = new ArrayList<BGPGroup>();
       _activatedNeighbors = new ArrayList<String>();

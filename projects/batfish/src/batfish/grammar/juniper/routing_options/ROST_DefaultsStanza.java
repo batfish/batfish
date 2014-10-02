@@ -24,8 +24,7 @@ public class ROST_DefaultsStanza extends RO_STStanza {
       return _staticOptions;
    }
    
-   /* --------------------------- Inherited Methods -------------------------*/  
-
+   /* --------------------------- Inherited Methods -------------------------*/ 
 	@Override
 	public RO_STType getType() {
 		return RO_STType.DEFAULTS;

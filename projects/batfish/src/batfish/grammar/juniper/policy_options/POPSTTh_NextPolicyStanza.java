@@ -8,7 +8,7 @@ public class POPSTTh_NextPolicyStanza extends POPST_ThenStanza {
    
    /* ---------------------------- Getters/Setters --------------------------*/
    
-   /* --------------------------- Inherited Methods -------------------------*/	
+   /* --------------------------- Inherited Methods -------------------------*/
 	@Override
 	public POPST_ThenType getType() {
 		return POPST_ThenType.NEXT_POLICY;

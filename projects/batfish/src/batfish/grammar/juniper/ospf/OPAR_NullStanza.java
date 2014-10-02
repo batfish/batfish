@@ -14,7 +14,6 @@ public class OPAR_NullStanza extends OP_ARStanza {
    /* ---------------------------- Getters/Setters --------------------------*/
    
    /* --------------------------- Inherited Methods -------------------------*/  
-   
 	@Override
 	public OP_ARType getType() {
 		return OP_ARType.NULL;

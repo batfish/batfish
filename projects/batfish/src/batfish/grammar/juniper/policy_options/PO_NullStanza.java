@@ -14,7 +14,6 @@ public class PO_NullStanza extends POStanza {
    /* ---------------------------- Getters/Setters --------------------------*/
    
    /* --------------------------- Inherited Methods -------------------------*/
-
 	@Override
 	public POType getType() {
 		return POType.NULL;

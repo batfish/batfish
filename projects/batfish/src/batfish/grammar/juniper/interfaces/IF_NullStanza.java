@@ -14,7 +14,7 @@ public class IF_NullStanza extends IFStanza {
    
    /* ---------------------------- Getters/Setters --------------------------*/
    
-   /* --------------------------- Inherited Methods -------------------------*/  
+   /* --------------------------- Inherited Methods -------------------------*/     
 	@Override
 	public IFType getType() {
 		return IFType.NULL;

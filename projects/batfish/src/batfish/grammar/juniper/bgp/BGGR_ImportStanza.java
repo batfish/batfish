@@ -11,7 +11,7 @@ public class BGGR_ImportStanza extends BG_GRStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public BGGR_ImportStanza(BGPImportList i) {
       _iList = i;
-      set_stanzaStatus(i.get_stanzaStatus());
+     //(i.get_stanzaStatus());
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

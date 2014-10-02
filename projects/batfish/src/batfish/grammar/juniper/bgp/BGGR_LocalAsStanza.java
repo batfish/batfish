@@ -16,7 +16,7 @@ public class BGGR_LocalAsStanza extends BG_GRStanza {
       return _localASNum;
    }
    
-   /* --------------------------- Inherited Methods -------------------------*/  
+   /* --------------------------- Inherited Methods -------------------------*/ 
 	@Override
 	public BG_GRType getType() {
 		return BG_GRType.LOCAL_AS;

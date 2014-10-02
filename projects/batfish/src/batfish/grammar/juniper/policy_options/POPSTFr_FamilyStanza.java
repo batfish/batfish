@@ -1,6 +1,7 @@
 package batfish.grammar.juniper.policy_options;
 
 import batfish.grammar.juniper.StanzaStatusType;
+import batfish.representation.juniper.ASPathAccessList;
 import batfish.representation.juniper.FamilyType;
 
 public class POPSTFr_FamilyStanza extends POPST_FromStanza {

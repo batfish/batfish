@@ -334,7 +334,6 @@ juniper_configuration returns [JuniperConfiguration jc = new JuniperConfiguratio
     for (JStanza js : x) {
       // TODO [P0] : apply groups here
       js.postProcessStanza();
-      jc.processStanza(js);
     }
   }
   ;

@@ -12,7 +12,7 @@ public class BGGRN_ExportStanza extends BGGR_NStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public BGGRN_ExportStanza(BGPExportList e) {
       _eList = e;
-      set_stanzaStatus(e.get_stanzaStatus());
+     // set_stanzaStatus(e.get_stanzaStatus());
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -22,7 +22,7 @@ public class BGGRN_ExportStanza extends BGGR_NStanza {
    
    /* ---------------------------- Getters/Setters --------------------------*/
    
-   /* --------------------------- Inherited Methods -------------------------*/  
+   /* --------------------------- Inherited Methods -------------------------*/   
    @Override
    public BGGR_NType getType() {
       return BGGR_NType.EXPORT;

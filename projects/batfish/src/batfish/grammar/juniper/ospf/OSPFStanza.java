@@ -37,7 +37,9 @@ public class OSPFStanza extends PStanza {
    }
      
    /* --------------------------- Inherited Methods -------------------------*/ 
-   public void processStanza() {
+   @Override
+   public void postProcessStanza() {
+      super.postProcessStanza();
       
       _referenceBandwidth = -1.0;              // TODO [P1]: get rid of magic constant
       _exportPolicies = new ArrayList<String>();

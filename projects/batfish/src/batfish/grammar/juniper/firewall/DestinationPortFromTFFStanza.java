@@ -19,7 +19,6 @@ public class DestinationPortFromTFFStanza extends FromTFFStanza {
    public List<SubRange> getPorts(){
       return _ports;
    }
-
    @Override
    public FromTFFType getType() {
       return FromTFFType.DESTINATION_PORT;

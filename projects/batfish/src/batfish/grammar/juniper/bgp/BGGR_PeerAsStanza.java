@@ -9,7 +9,7 @@ public class BGGR_PeerAsStanza extends BG_GRStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public BGGR_PeerAsStanza(BGPPeerAS p) {
       _peerAs = p;
-      set_stanzaStatus(p.get_stanzaStatus());
+     // set_stanzaStatus(p.get_stanzaStatus());
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

@@ -24,6 +24,7 @@ public class ApplyGroupsStanza extends JStanza {
    /* ---------------------------- Getters/Setters --------------------------*/
    
    /* --------------------------- Inherited Methods -------------------------*/
+   
    @Override
    public JStanzaType getType() {
       return JStanzaType.APPLY_GROUPS;

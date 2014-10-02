@@ -16,7 +16,7 @@ public class OP_ReferenceBandwidthStanza extends OPStanza {
       return _referenceBandwidth;
    }
    
-   /* --------------------------- Inherited Methods -------------------------*/   
+   /* --------------------------- Inherited Methods -------------------------*/ 
 	@Override
 	public OPType getType() {
 		return OPType.REFERENCE_BANDWIDTH;

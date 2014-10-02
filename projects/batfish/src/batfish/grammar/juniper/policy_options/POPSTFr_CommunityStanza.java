@@ -3,6 +3,8 @@ package batfish.grammar.juniper.policy_options;
 import java.util.ArrayList;
 import java.util.List;
 
+import batfish.representation.juniper.ASPathAccessList;
+
 public class POPSTFr_CommunityStanza extends POPST_FromStanza {
    
    private List<String> _commNames;

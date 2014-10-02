@@ -23,7 +23,6 @@ public class BGGRN_LocalAddressStanza extends BGGR_NStanza {
    /* ---------------------------- Getters/Setters --------------------------*/
    
    /* --------------------------- Inherited Methods -------------------------*/  
-
    @Override
    public BGGR_NType getType() {      
       return BGGR_NType.LOCAL_ADDRESS;

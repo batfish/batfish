@@ -56,7 +56,9 @@ public class IFU_FamilyStanza extends IF_UStanza{
    }
    
    /* --------------------------- Inherited Methods -------------------------*/
-   public void postProcessStanza () {
+   @Override
+   public void postProcessStanza() {
+      super.postProcessStanza();
      
       if (FamilyTypeIgnored(_famType)) {                        // don't post-process if it's not a family type we care about
          addIgnoredStatement("family " + FamilyTypeToString(_famType) + "{...}");
@@ -64,6 +66,9 @@ public class IFU_FamilyStanza extends IF_UStanza{
       }
       else {
          for (IFU_FamStanza ifufam: _ifuFamStanzas) {
+            
+            ifufam.postProcessStanza();
+            
             switch (ifufam.getType()) {
             case ADDRESS:
                if (_famType != FamilyType.INET && _famType != FamilyType.INET6 &&_famType != FamilyType.ISO) {

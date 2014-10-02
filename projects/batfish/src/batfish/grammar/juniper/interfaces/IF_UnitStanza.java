@@ -60,9 +60,13 @@ public class IF_UnitStanza extends IFStanza {
    }
    
    /* --------------------------- Inherited Methods -------------------------*/
-   public void postProcessStanza () {
+   @Override
+   public void postProcessStanza() {
+      super.postProcessStanza();
       
       for (IF_UStanza ifus : _ifuStanzas) {
+         
+         ifus.postProcessStanza();
             
          switch (ifus.getType()) {
          case APPLY_GROUPS:

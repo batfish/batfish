@@ -45,7 +45,9 @@ public class RoutingOptionsStanza extends JStanza {
 	   return _routerId;
    }
    /* --------------------------- Inherited Methods -------------------------*/
-   public void postProcessStanza () {
+   @Override
+   public void postProcessStanza() {
+      super.postProcessStanza();
       
       _asNum = 0;
       _routerId = "";

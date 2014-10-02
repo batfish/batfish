@@ -27,8 +27,12 @@ public class SystemStanza extends JStanza {
    }
 	
    /* --------------------------- Inherited Methods -------------------------*/
+	@Override
 	public void postProcessStanza() {
+      super.postProcessStanza();
+      
 	   for (SysStanza ss : _sysStanzas) {
+	      ss.postProcessStanza();
    		switch (ss.getSysType()) {
    		case HOST_NAME:
    			Sys_HostNameStanza hss = (Sys_HostNameStanza) ss;

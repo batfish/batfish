@@ -56,9 +56,13 @@ public class InterfaceStanza extends StanzaWithStatus {
    }
    
    /* --------------------------- Inherited Methods -------------------------*/
-   public void postProcessStanza () {
+   @Override
+   public void postProcessStanza() {
+      super.postProcessStanza();
       
       for (IFStanza ifs : _ifStanzas) {                         // process each separate sub-stanza 
+         
+         ifs.postProcessStanza();
          
          switch (ifs.getType()) {
             case DISABLE:
@@ -70,7 +74,6 @@ public class InterfaceStanza extends StanzaWithStatus {
                
             case UNIT:                                             
                IF_UnitStanza ifus = (IF_UnitStanza) ifs;
-               ifus.postProcessStanza();
                String u = Integer.toString(ifus.get_num());
                Interface ui = new Interface(_name + "." + u);
                

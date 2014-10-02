@@ -11,17 +11,6 @@ public abstract class StanzaWithStatus {
       _aggregateWithTitle = true;
       _applyGroups = false;
    }  
-   
-   public void postProcessStanza () {
-      if (get_stanzaStatus() == StanzaStatusType.INACTIVE) {
-         addIgnoredStatement("Inactive " + _postProcessTitle);
-      }
-      else {
-         this.postProcessStanza();
-         this.aggregateIgnoredStatments(_postProcessTitle);
-      }
-      // TODO [P0] :CHECK
-   }
 
    /* ------------------------ Status-Related Members -----------------------*/
    private StanzaStatusType _stanzaStatus;
@@ -33,10 +22,26 @@ public abstract class StanzaWithStatus {
       _stanzaStatus = s;
    }
    
-   /* ----------------------- Ignoring-Related Members ----------------------*/
+   /* ---------------------- Processing-Related Members ---------------------*/
+   public void postProcessStanza () {
+      this.processIgnoredStatements();
+   }
+   
+   /* ----------------------- Ignoring-Related Members ----------------------*/  
    private List<String> _ignoredStatements;
    private String _postProcessTitle = "";
-   boolean _aggregateWithTitle;
+   boolean _aggregateWithTitle; 
+   
+   public void processIgnoredStatements () {
+      if (get_stanzaStatus() == StanzaStatusType.INACTIVE) {
+         addIgnoredStatement("Inactive " + _postProcessTitle);
+      }
+      else {
+         this.aggregateIgnoredStatments(_postProcessTitle);
+      }
+      // TODO [P0] :CHECK
+   }
+   
    
    public void set_postProcessTitle (String s) {
       _postProcessTitle = s;

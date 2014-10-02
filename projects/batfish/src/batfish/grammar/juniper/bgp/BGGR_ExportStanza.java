@@ -11,7 +11,7 @@ public class BGGR_ExportStanza extends BG_GRStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public BGGR_ExportStanza(BGPExportList e) {
       _eList = e;
-      set_stanzaStatus(e.get_stanzaStatus());
+     // set_stanzaStatus(e.get_stanzaStatus());
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

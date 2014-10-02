@@ -31,7 +31,9 @@ public class RO_StaticStanza extends ROStanza {
    }
    
    /* --------------------------- Inherited Methods -------------------------*/  
-   public void postProcessStanza () {
+   @Override
+   public void postProcessStanza() {
+      super.postProcessStanza();
       
       _staticRoutes = new HashMap<String, List<StaticOptions>> ();
       _defaultOptions = new ArrayList<StaticOptions>();

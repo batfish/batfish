@@ -22,7 +22,9 @@ public class PO_AsPathStanza extends POStanza {
    }
    
    /* --------------------------- Inherited Methods -------------------------*/
-   public void postProcessStanza () {
+   @Override
+   public void postProcessStanza() {
+      super.postProcessStanza();
       _asPathAccessList = new ASPathAccessList(_name, _regex);
    }
    

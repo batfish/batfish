@@ -14,7 +14,6 @@ public class OP_NullStanza extends OPStanza {
    /* ---------------------------- Getters/Setters --------------------------*/
    
    /* --------------------------- Inherited Methods -------------------------*/   
-
 	@Override
 	public OPType getType() {
 		return OPType.NULL;

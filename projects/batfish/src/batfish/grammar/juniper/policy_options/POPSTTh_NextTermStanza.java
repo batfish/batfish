@@ -9,7 +9,6 @@ public class POPSTTh_NextTermStanza extends POPST_ThenStanza {
    /* ---------------------------- Getters/Setters --------------------------*/
    
    /* --------------------------- Inherited Methods -------------------------*/	
-	@Override
 	public POPST_ThenType getType() {
 		return POPST_ThenType.NEXT_TERM;
 	}
