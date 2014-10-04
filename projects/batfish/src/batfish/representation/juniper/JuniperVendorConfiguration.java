@@ -21,6 +21,7 @@ import batfish.representation.IpAccessList;
 import batfish.representation.IpAccessListLine;
 import batfish.representation.LineAction;
 import batfish.representation.OspfArea;
+import batfish.representation.OspfMetricType;
 import batfish.representation.OspfProcess;
 import batfish.representation.PolicyMap;
 import batfish.representation.PolicyMapAction;
@@ -194,6 +195,9 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       for (String mapName : proc.getExportPolicyStatements()) {
          PolicyMap map = c.getPolicyMaps().get(mapName);
          newProcess.getOutboundPolicyMaps().add(map);
+
+         //TODO: support E1 external ospf routes for juniper
+         newProcess.getPolicyMetricTypes().put(map, OspfMetricType.E2);
       }
 
       Map<Long, OspfArea> areas = newProcess.getAreas();
