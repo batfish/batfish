@@ -7,6 +7,7 @@ import java.util.Map;
 
 import batfish.grammar.juniper.JStanza;
 import batfish.grammar.juniper.JStanzaType;
+import batfish.grammar.juniper.StanzaStatusType;
 import batfish.grammar.juniper.bgp.BGPStanza;
 import batfish.grammar.juniper.ospf.OSPFStanza;
 import batfish.grammar.juniper.protocols.PStanza;
@@ -27,6 +28,7 @@ public class RoutingOptionsStanza extends JStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public RoutingOptionsStanza() {
       _roStanzas = new ArrayList<ROStanza> ();
+      set_postProcessTitle("Routing Options");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -47,55 +49,59 @@ public class RoutingOptionsStanza extends JStanza {
    /* --------------------------- Inherited Methods -------------------------*/
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
       
       _asNum = 0;
       _routerId = "";
             
       for (ROStanza rs : _roStanzas) {
          rs.postProcessStanza();
-         switch (rs.getType()) {
          
-         case AS:
-            RO_AutonomousSystemStanza asros = (RO_AutonomousSystemStanza) rs;
-            _asNum = asros.get_asNum();
-            break;
+         if (rs.get_stanzaStatus() == StanzaStatusType.ACTIVE) {
+         
+            switch (rs.getType()) {
             
-         case MARTIAN:
-            RO_MartiansStanza mros = (RO_MartiansStanza) rs;
-            // TODO [Ask Ari]: what to do 
-            break;
-
-         case RIB:
-            RO_RibStanza riros = (RO_RibStanza) rs;
-            // TODO [Ask Ari]: what to do 
-            break;
-            
-         case RIB_GROUPS:
-            RO_RibGroupsStanza rgros = (RO_RibGroupsStanza) rs;
-            _ribGroups = rgros.get_groupsImports();
-            // TODO [Ask Ari]: what to do 
-            break;
-            
-         case ROUTER_ID:
-            RO_RouterIDStanza rros = (RO_RouterIDStanza) rs;
-            _routerId = rros.get_routerID();
-            break;
-            
-         case STATIC:
-            RO_StaticStanza sros = (RO_StaticStanza) rs;
-            _staticRoutes = sros.get_staticRoutes();
-            break;
-
-         case NULL:
-            break;
-
-         default:
-             throw new Error ("bad routing-options stanza type");
+            case AS:
+               RO_AutonomousSystemStanza asros = (RO_AutonomousSystemStanza) rs;
+               _asNum = asros.get_asNum();
+               break;
+               
+            case MARTIAN:
+               RO_MartiansStanza mros = (RO_MartiansStanza) rs;
+               // TODO [Ask Ari]: what to do 
+               break;
+   
+            case RIB:
+               RO_RibStanza riros = (RO_RibStanza) rs;
+               // TODO [Ask Ari]: what to do 
+               break;
+               
+            case RIB_GROUPS:
+               RO_RibGroupsStanza rgros = (RO_RibGroupsStanza) rs;
+               _ribGroups = rgros.get_groupsImports();
+               // TODO [Ask Ari]: what to do 
+               break;
+               
+            case ROUTER_ID:
+               RO_RouterIDStanza rros = (RO_RouterIDStanza) rs;
+               _routerId = rros.get_routerID();
+               break;
+               
+            case STATIC:
+               RO_StaticStanza sros = (RO_StaticStanza) rs;
+               _staticRoutes = sros.get_staticRoutes();
+               break;
+   
+            case NULL:
+               break;
+   
+            default:
+                throw new Error ("bad routing-options stanza type");
+            }
          }
-
          this.addIgnoredStatements(rs.get_ignoredStatements());
       }
+      set_alreadyAggregated(false);
+      super.postProcessStanza();
       
    }
    

@@ -12,6 +12,7 @@ public class BGGR_ImportStanza extends BG_GRStanza {
    public BGGR_ImportStanza(BGPImportList i) {
       _iList = i;
      //(i.get_stanzaStatus());
+      set_postProcessTitle("BGP Group Import List");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

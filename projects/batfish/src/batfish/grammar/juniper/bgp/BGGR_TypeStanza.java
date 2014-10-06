@@ -7,6 +7,7 @@ public class BGGR_TypeStanza extends BG_GRStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public BGGR_TypeStanza(boolean e) {
       _isExternal = e;
+      set_postProcessTitle("BGP Group Type");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

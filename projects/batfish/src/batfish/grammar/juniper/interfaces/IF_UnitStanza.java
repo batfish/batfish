@@ -62,54 +62,58 @@ public class IF_UnitStanza extends IFStanza {
    /* --------------------------- Inherited Methods -------------------------*/
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
       
       for (IF_UStanza ifus : _ifuStanzas) {
          
          ifus.postProcessStanza();
+         
+         if (ifus.get_stanzaStatus() == StanzaStatusType.ACTIVE) {
             
-         switch (ifus.getType()) {
-         case APPLY_GROUPS:
-            // TODO: [P0] WHAT TO DO
-            break;
-         case FAMILY: // TODO [P0]: This doesn't work with multiple family stanzas
-            IFU_FamilyStanza ifufs = (IFU_FamilyStanza) ifus;
-            if (ifufs.get_stanzaStatus()==StanzaStatusType.ACTIVE) {// if it's IGNORED/INACTIVE/IPV6 already noted 
-               switch (ifufs.get_famType()) {                   // ignored family types already handled
-               case ETHERNET_SWITCHING:
-                  // TODO: [P0]: What do these look like 
-                  break;
-               case INET:
-                  String tmpAdd = ifufs.get_address();
-                  if (tmpAdd != null) {
-                     _address = tmpAdd;
-                     _subnetMask = convertSubnet(ifufs.get_subnetMask());
+            switch (ifus.getType()) {
+            case APPLY_GROUPS:
+               // TODO: [P0] WHAT TO DO
+               break;
+            case FAMILY: // TODO [P0]: This doesn't work with multiple family stanzas
+               IFU_FamilyStanza ifufs = (IFU_FamilyStanza) ifus;
+               if (ifufs.get_stanzaStatus()==StanzaStatusType.ACTIVE) {// if it's IGNORED/INACTIVE/IPV6 already noted 
+                  switch (ifufs.get_famType()) {                   // ignored family types already handled
+                  case ETHERNET_SWITCHING:
+                     // TODO: [P0]: What do these look like 
+                     break;
+                  case INET:
+                     String tmpAdd = ifufs.get_address();
+                     if (tmpAdd != null) {
+                        _address = tmpAdd;
+                        _subnetMask = convertSubnet(ifufs.get_subnetMask());
+                     }
+                     // TODO [P0]: what to do with filter
+                     break;
+                  case BRIDGE:
+                  case CCC:
+                  case INET6:
+                  case ISO:
+                  case MPLS:
+                     break;
+   
+                  default:
+                     throw new Error ("bad family type");
                   }
-                  // TODO [P0]: what to do with filter
-                  break;
-               case BRIDGE:
-               case CCC:
-               case INET6:
-               case ISO:
-               case MPLS:
-                  break;
-
-               default:
-                  throw new Error ("bad family type");
                }
+               break;
+            case VLAN_ID:
+               IFU_VlanIdStanza ifuvs = (IFU_VlanIdStanza) ifus;
+               _accessVlan = ifuvs.get_vlanid(); // TODO [ask Ari] verify difference between native and access
+               break;
+            case NULL:
+               break;
+            default:
+               throw new Error ("Bad Unit Stanza Type");
             }
-            break;
-         case VLAN_ID:
-            IFU_VlanIdStanza ifuvs = (IFU_VlanIdStanza) ifus;
-            _accessVlan = ifuvs.get_vlanid(); // TODO [ask Ari] verify difference between native and access
-            break;
-         case NULL:
-            break;
-         default:
-            throw new Error ("Bad Unit Stanza Type");
          }
          addIgnoredStatements(ifus.get_ignoredStatements());
       }
+      set_alreadyAggregated(false);
+      super.postProcessStanza();
    }
                
    @Override

@@ -8,6 +8,7 @@ public class IFUF_NullStanza extends IFU_FamStanza {
    public IFUF_NullStanza (String ign) {
       this.set_stanzaStatus(StanzaStatusType.IGNORED);
       this.addIgnoredStatement(ign);
+      set_postProcessTitle("[ignored statement]");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

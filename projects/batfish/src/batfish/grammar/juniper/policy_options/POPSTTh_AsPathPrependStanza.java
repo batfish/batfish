@@ -7,6 +7,7 @@ public class POPSTTh_AsPathPrependStanza extends POPST_ThenStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public POPSTTh_AsPathPrependStanza (int i) {
       _asNum = i;
+      set_postProcessTitle("AS Path Prepend " + _asNum);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

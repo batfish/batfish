@@ -10,6 +10,7 @@ public class BGGR_FamilyStanza extends BG_GRStanza {
    public BGGR_FamilyStanza (BGPFamily b) {
       _fam = b;
     //  set_stanzaStatus(b.get_stanzaStatus());
+      set_postProcessTitle("BGP Group Family");
    }
 
    /* ----------------------------- Other Methods ---------------------------*/

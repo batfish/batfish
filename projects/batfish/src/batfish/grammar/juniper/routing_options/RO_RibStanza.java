@@ -3,7 +3,6 @@ package batfish.grammar.juniper.routing_options;
 import batfish.grammar.juniper.StanzaStatusType;
 
 public class RO_RibStanza extends ROStanza {
-
    
    private String _ribName;
    
@@ -16,6 +15,7 @@ public class RO_RibStanza extends ROStanza {
       else if (_ribName.equalsIgnoreCase("inet.3") || _ribName.equalsIgnoreCase("mpls.0")) {
          set_stanzaStatus(StanzaStatusType.IGNORED);
       }
+      set_postProcessTitle("RIB " + _ribName);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

@@ -85,6 +85,7 @@ bgp_p_stanza returns [PStanza ps]
     for (BGStanza bgs : l) {
       bs.AddBGStanza(bgs);
     }
+    ps=bs;
   }
   ;
   
@@ -178,7 +179,7 @@ null_bg_stanza returns [BGStanza bgs]
 /* --- --- --- --- --- --- Protocol->BGP->Group Sub-Stanza Rules -------------------------------------*/
 export_gbg_stanza returns [BG_GRStanza gbgs]
   :
-  x=export_common_stanza {BGGR_ExportStanza egbgs = new BGGR_ExportStanza(x);}
+  x=export_common_stanza {gbgs = new BGGR_ExportStanza(x);}
   ; 
   
 family_gbg_stanza returns [BG_GRStanza gbgs] 
@@ -188,7 +189,7 @@ family_gbg_stanza returns [BG_GRStanza gbgs]
   
 import_gbg_stanza returns [BG_GRStanza gbgs]
   :
-  x=import_common_stanza {BGGR_ImportStanza egbgs = new BGGR_ImportStanza(x);}
+  x=import_common_stanza {gbgs = new BGGR_ImportStanza(x);}
   ; 
 
 local_address_gbg_stanza returns [BG_GRStanza gbgs]
@@ -355,7 +356,7 @@ graceful_restart_ngbg_stanza returns [String s]
   
 hold_time_ngbg_stanza returns [String s]
   :
-  x=HOLD_TIME VARIABLE SEMICOLON {s = x.getText();}
+  x=HOLD_TIME i=integer SEMICOLON {s = x.getText() + " " + i;}
   ;  
   
 local_preference_ngbg_stanza returns [String s]

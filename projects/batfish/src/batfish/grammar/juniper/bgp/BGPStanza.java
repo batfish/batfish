@@ -17,6 +17,7 @@ public class BGPStanza extends PStanza {
    /* ------------------------------ Constructor ----------------------------*/
 	public BGPStanza() {
       _bgStanzas = new ArrayList<BGStanza> ();
+      set_postProcessTitle("BGP");
    }
 
    /* ----------------------------- Other Methods ---------------------------*/
@@ -35,7 +36,6 @@ public class BGPStanza extends PStanza {
    /* --------------------------- Inherited Methods -------------------------*/ 
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
 	   
       _groupList = new ArrayList<BGPGroup>();
       _activatedNeighbors = new ArrayList<String>();
@@ -70,6 +70,8 @@ public class BGPStanza extends PStanza {
          }
          this.addIgnoredStatements(bgs.get_ignoredStatements());
       }
+      set_alreadyAggregated(false);
+      super.postProcessStanza();
    }
 
 	@Override

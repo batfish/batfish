@@ -9,6 +9,7 @@ public class POPSTFr_PrefixListStanza extends POPST_FromStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public POPSTFr_PrefixListStanza(String l) {
       _listName = l;
+      set_postProcessTitle("Prefix List " + _listName);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

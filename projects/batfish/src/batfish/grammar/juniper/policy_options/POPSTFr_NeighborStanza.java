@@ -1,7 +1,5 @@
 package batfish.grammar.juniper.policy_options;
 
-import batfish.representation.juniper.ASPathAccessList;
-
 public class POPSTFr_NeighborStanza extends POPST_FromStanza {
    
 	private String _ip;
@@ -13,6 +11,7 @@ public class POPSTFr_NeighborStanza extends POPST_FromStanza {
    /* ---------------------------- Getters/Setters --------------------------*/
 	public void set_ip(String i) {
       _ip = i;
+      set_postProcessTitle("Neighbor " + _ip);
    }
    public String get_ip() {
       return _ip;

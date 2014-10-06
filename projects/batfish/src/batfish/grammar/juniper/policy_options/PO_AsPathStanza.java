@@ -12,6 +12,7 @@ public class PO_AsPathStanza extends POStanza {
    public PO_AsPathStanza(String n, String r) {
       _name = n; 
       _regex = r;
+      set_postProcessTitle("AS Path " + _name + _regex);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -24,8 +25,8 @@ public class PO_AsPathStanza extends POStanza {
    /* --------------------------- Inherited Methods -------------------------*/
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
       _asPathAccessList = new ASPathAccessList(_name, _regex);
+      super.postProcessStanza();
    }
    
    @Override

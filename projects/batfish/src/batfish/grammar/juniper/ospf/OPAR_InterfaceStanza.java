@@ -7,6 +7,7 @@ public class OPAR_InterfaceStanza extends OP_ARStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public OPAR_InterfaceStanza(String n) {
       _ifName = n;
+      set_postProcessTitle("Interface " + _ifName);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

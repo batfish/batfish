@@ -7,6 +7,7 @@ public class POPSTTh_InstallNextHopStanza extends POPST_ThenStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public POPSTTh_InstallNextHopStanza(String s) {
       _hopName = s; 
+      set_postProcessTitle("Install Next Hop " + _hopName);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

@@ -4,11 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class StanzaWithStatus {
+   private List<String> _ignoredStatements;
+   private String _postProcessTitle = "";
+   boolean _alreadyAggregated = true; 
+   
    
    public StanzaWithStatus () {
       _stanzaStatus = StanzaStatusType.ACTIVE;
       _ignoredStatements = new ArrayList<String>();
-      _aggregateWithTitle = true;
+      _alreadyAggregated = true;
       _applyGroups = false;
    }  
 
@@ -27,17 +31,19 @@ public abstract class StanzaWithStatus {
       this.processIgnoredStatements();
    }
    
-   /* ----------------------- Ignoring-Related Members ----------------------*/  
-   private List<String> _ignoredStatements;
-   private String _postProcessTitle = "";
-   boolean _aggregateWithTitle; 
-   
+   /* ----------------------- Ignoring-Related Members ----------------------*/     
    public void processIgnoredStatements () {
       if (get_stanzaStatus() == StanzaStatusType.INACTIVE) {
-         addIgnoredStatement("Inactive " + _postProcessTitle);
+         clearIgnoredStatements();
+         addIgnoredStatement("Inactive " + _postProcessTitle + "{...}");
       }
       else {
-         this.aggregateIgnoredStatments(_postProcessTitle);
+         if (!_alreadyAggregated && _ignoredStatements.size()>0) {
+            for (int i =0; i < _ignoredStatements.size(); i++) {
+               _ignoredStatements.set(i,"   "+_ignoredStatements.get(i));
+            }
+            _ignoredStatements.add(0,_postProcessTitle);
+         }
       }
       // TODO [P0] :CHECK
    }
@@ -58,18 +64,8 @@ public abstract class StanzaWithStatus {
    public void clearIgnoredStatements() {
       this._ignoredStatements.clear();
    }
-   public void set_aggregateWithTitle (boolean b) {
-      _aggregateWithTitle = b;
-   }
-   public void aggregateIgnoredStatments(String titleStatment) {
-      if (_aggregateWithTitle) {
-         if (_ignoredStatements.size()>0) {
-            for (String s : _ignoredStatements) {
-               s = "   "+ s;
-            }
-         }
-         _ignoredStatements.add(0,titleStatment);
-      }
+   public void set_alreadyAggregated (boolean b) {
+      _alreadyAggregated = b;
    }
    
    /* ---------------------- ApplyGroups-Related Members --------------------*/

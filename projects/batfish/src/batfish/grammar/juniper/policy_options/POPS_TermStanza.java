@@ -52,6 +52,8 @@ public class POPS_TermStanza extends StanzaWithStatus {
       _fromTerms = new ArrayList<POPST_FromStanza> ();
       _thenTerms = new ArrayList<POPST_ThenStanza> ();
       _toTerms = new ArrayList<POPST_ToStanza> ();
+      
+      set_postProcessTitle("Term " + _name);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -336,6 +338,7 @@ public class POPS_TermStanza extends StanzaWithStatus {
    /* --------------------------- Inherited Methods -------------------------*/
    @Override
    public void postProcessStanza() {
+      
       _matchList = new ArrayList<PolicyStatement_MatchLine>();
 
       _lineAction = null;
@@ -347,13 +350,13 @@ public class POPS_TermStanza extends StanzaWithStatus {
       if (get_stanzaStatus()==StanzaStatusType.IPV6) {       // if we ran into an IPV6 address, cut short
          clearIgnoredStatements();
          addIgnoredStatement("term " + _name + " (IPV6 Clauses) {...}");
-         set_aggregateWithTitle(false);
+         set_alreadyAggregated(true);
          return;
       }
       if (get_stanzaStatus()==StanzaStatusType.IGNORED) {       // if we ran into an IGNORED clause, cut short
          clearIgnoredStatements();
          addIgnoredStatement("term " + _name + " (Ignored Clauses) {...}");
-         set_aggregateWithTitle(false);
+         set_alreadyAggregated(true);
          return;
       }
       for (POPST_ToStanza t : _toTerms) {
@@ -362,13 +365,13 @@ public class POPS_TermStanza extends StanzaWithStatus {
       if (get_stanzaStatus()==StanzaStatusType.IPV6) {       // if we ran into an IPV6 address, cut short
          clearIgnoredStatements();
          addIgnoredStatement("term " + _name + " (IPV6 Clauses) {...}");
-         set_aggregateWithTitle(false);
+         set_alreadyAggregated(true);
          return;
       }
       if (get_stanzaStatus()==StanzaStatusType.IGNORED) {       // if we ran into an IGNORED clause, cut short
          clearIgnoredStatements();
          addIgnoredStatement("term " + _name + " (Ignored Clauses) {...}");
-         set_aggregateWithTitle(false);
+         set_alreadyAggregated(true);
          return;
       }
       for (POPST_ThenStanza t : _thenTerms) {
@@ -377,15 +380,17 @@ public class POPS_TermStanza extends StanzaWithStatus {
       if (get_stanzaStatus()==StanzaStatusType.IPV6) {       // if we ran into an IPV6 address, cut short
          clearIgnoredStatements();
          addIgnoredStatement("term " + _name + " (IPV6 Clauses) {...}");
-         set_aggregateWithTitle(false);
+         set_alreadyAggregated(true);
          return;
       }
       if (get_stanzaStatus()==StanzaStatusType.IGNORED) {       // if we ran into an IGNORED clause, cut short
          clearIgnoredStatements();
          addIgnoredStatement("term " + _name + " (Ignored Clauses) {...}");
-         set_aggregateWithTitle(false);
+         set_alreadyAggregated(true);
          return;
       }
       _term = new PolicyStatement_Term(_name, _matchList, _setList, _lineAction);
+      set_alreadyAggregated(false);
+      super.postProcessStanza();
    }
 }

@@ -8,6 +8,7 @@ public class POPSTTh_NullStanza extends POPST_ThenStanza {
    public POPSTTh_NullStanza (String ign) {
       this.set_stanzaStatus(StanzaStatusType.IGNORED);
       this.addIgnoredStatement(ign);
+      set_postProcessTitle("[ignored statement]");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

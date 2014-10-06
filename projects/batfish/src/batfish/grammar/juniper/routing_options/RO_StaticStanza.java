@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import batfish.grammar.juniper.StanzaStatusType;
 import batfish.representation.juniper.StaticOptions;
 
 public class RO_StaticStanza extends ROStanza {
@@ -17,7 +18,8 @@ public class RO_StaticStanza extends ROStanza {
    
    /* ------------------------------ Constructor ----------------------------*/
    public RO_StaticStanza() {
-      _rostStanzas= new ArrayList<RO_STStanza>();      
+      _rostStanzas= new ArrayList<RO_STStanza>();  
+      set_postProcessTitle("Static");    
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -33,7 +35,6 @@ public class RO_StaticStanza extends ROStanza {
    /* --------------------------- Inherited Methods -------------------------*/  
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
       
       _staticRoutes = new HashMap<String, List<StaticOptions>> ();
       _defaultOptions = new ArrayList<StaticOptions>();
@@ -41,32 +42,37 @@ public class RO_StaticStanza extends ROStanza {
       for (RO_STStanza rost : _rostStanzas) {
          
          rost.postProcessStanza();
-         
-         switch (rost.getType()) {
-         
-         case DEFAULTS:
-            ROST_DefaultsStanza drost = (ROST_DefaultsStanza) rost;
-            _defaultOptions.addAll(drost.get_staticOptions());
-            //TODO [Ask Ari]: what to do with these
-            break;
-            
-         case RIB_GROUP:
-            ROST_RibGroupStanza rirost = (ROST_RibGroupStanza) rost;
-            _ribGroup = rirost.get_groupName();
-            //TODO [Ask Ari]: what to do with these
-            break;
 
-         case ROUTE:
-            ROST_RouteStanza rrost = (ROST_RouteStanza) rost;
-            _staticRoutes.put(rrost.get_ip(),rrost.get_staticOptions());
-            //TODO [Ask Ari]: what to do with these
-            break;
+         if (rost.get_stanzaStatus() == StanzaStatusType.ACTIVE) {
          
-         default:
-            throw new Error("bad interface stanza type");
+            switch (rost.getType()) {
+            
+            case DEFAULTS:
+               ROST_DefaultsStanza drost = (ROST_DefaultsStanza) rost;
+               _defaultOptions.addAll(drost.get_staticOptions());
+               //TODO [Ask Ari]: what to do with these
+               break;
+               
+            case RIB_GROUP:
+               ROST_RibGroupStanza rirost = (ROST_RibGroupStanza) rost;
+               _ribGroup = rirost.get_groupName();
+               //TODO [Ask Ari]: what to do with these
+               break;
+   
+            case ROUTE:
+               ROST_RouteStanza rrost = (ROST_RouteStanza) rost;
+               _staticRoutes.put(rrost.get_ip(),rrost.get_staticOptions());
+               //TODO [Ask Ari]: what to do with these
+               break;
+            
+            default:
+               throw new Error("bad interface stanza type");
+            }
          }
          this.addIgnoredStatements(rost.get_ignoredStatements());
       }
+      set_alreadyAggregated(false);
+      super.postProcessStanza();
    }
       
 

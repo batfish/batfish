@@ -3,6 +3,7 @@ package batfish.grammar.juniper.interfaces;
 import java.util.ArrayList;
 import java.util.List;
 
+import batfish.grammar.juniper.StanzaStatusType;
 import batfish.grammar.juniper.StanzaWithStatus;
 import batfish.representation.juniper.Interface;
 
@@ -10,14 +11,12 @@ public class InterfaceStanza extends StanzaWithStatus {
    
    private String _name;
    private List<IFStanza> _ifStanzas;
-   private List<String> _ignoredStatements;
    private List<Interface> _interfaces;
    
    /* ------------------------------ Constructor ----------------------------*/
    public InterfaceStanza() {
       _name = "";
       _ifStanzas = new ArrayList<IFStanza>();
-      _ignoredStatements = new ArrayList<String>();
       _interfaces = new ArrayList<Interface>();
       this.set_postProcessTitle("Interface (anon)");
    }
@@ -58,43 +57,46 @@ public class InterfaceStanza extends StanzaWithStatus {
    /* --------------------------- Inherited Methods -------------------------*/
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
       
       for (IFStanza ifs : _ifStanzas) {                         // process each separate sub-stanza 
          
          ifs.postProcessStanza();
+
+         if (ifs.get_stanzaStatus() == StanzaStatusType.ACTIVE) {
          
-         switch (ifs.getType()) {
-            case DISABLE:
-               Interface i = new Interface(_name);
-               i.set_active(false);
-               i.set_bandwidth(getDefaultBandwidth(_name));      // TODO [P1]: shouldn't this default happen in Interface?
-               _interfaces.add(i);
-               break;
-               
-            case UNIT:                                             
-               IF_UnitStanza ifus = (IF_UnitStanza) ifs;
-               String u = Integer.toString(ifus.get_num());
-               Interface ui = new Interface(_name + "." + u);
-               
-               if (!ifus.get_address().isEmpty() && ifus.get_subnetMask() !=null) { 
-                  ui.set_ip(ifus.get_address());
-                  ui.set_subnet(ifus.get_subnetMask());
-                  ui.set_bandwidth(getDefaultBandwidth(_name));
-                  _interfaces.add(ui);
-               }
-               break;
-               
-            case APPLY_GROUPS:                                  // TODO [P0]: figure this out!
-               break;
-               
-            case NULL:
-               break;
-               
+            switch (ifs.getType()) {
+               case DISABLE:
+                  Interface i = new Interface(_name);
+                  i.set_active(false);
+                  i.set_bandwidth(getDefaultBandwidth(_name));      // TODO [P1]: shouldn't this default happen in Interface?
+                  _interfaces.add(i);
+                  break;
+                  
+               case UNIT:                                             
+                  IF_UnitStanza ifus = (IF_UnitStanza) ifs;
+                  String u = Integer.toString(ifus.get_num());
+                  Interface ui = new Interface(_name + "." + u);
+                  
+                  if (!ifus.get_address().isEmpty() && ifus.get_subnetMask() !=null) { 
+                     ui.set_ip(ifus.get_address());
+                     ui.set_subnet(ifus.get_subnetMask());
+                     ui.set_bandwidth(getDefaultBandwidth(_name));
+                     _interfaces.add(ui);
+                  }
+                  break;
+                  
+               case APPLY_GROUPS:                                  // TODO [P0]: figure this out!
+                  break;
+                  
+               case NULL:
+                  break;
+                  
+            }
          }
-         
-         _ignoredStatements.addAll(ifs.get_ignoredStatements());
+         addIgnoredStatements(ifs.get_ignoredStatements());
       }
+      set_alreadyAggregated(false);
+      super.postProcessStanza();
    }
 }
          

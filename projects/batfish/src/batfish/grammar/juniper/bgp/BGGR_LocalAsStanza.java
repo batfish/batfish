@@ -7,6 +7,7 @@ public class BGGR_LocalAsStanza extends BG_GRStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public BGGR_LocalAsStanza(int a) {
       _localASNum = a;
+      set_postProcessTitle("BGP Group Local AS " + a);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

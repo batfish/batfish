@@ -6,6 +6,7 @@ import java.util.List;
 
 import batfish.grammar.juniper.JStanza;
 import batfish.grammar.juniper.JStanzaType;
+import batfish.grammar.juniper.StanzaStatusType;
 import batfish.grammar.juniper.bgp.BGPStanza;
 import batfish.grammar.juniper.ospf.OSPFStanza;
 import batfish.representation.juniper.BGPGroup;
@@ -25,6 +26,7 @@ public class ProtocolsStanza extends JStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public ProtocolsStanza() {
       _pStanzas = new ArrayList<PStanza> ();
+      set_postProcessTitle("Protocols");
    }
    /* ----------------------------- Other Methods ---------------------------*/
    public void addPStanza (PStanza p) {
@@ -53,33 +55,37 @@ public class ProtocolsStanza extends JStanza {
    /* --------------------------- Inherited Methods -------------------------*/
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
       
       for (PStanza ps : _pStanzas) {
          ps.postProcessStanza();
-         switch (ps.getType()) {
-         case BGP:
-            BGPStanza bps = (BGPStanza) ps;
-            _groupList = bps.get_groupList();
-            _activatedNeighbors = bps.get_activatedNeighbors();
-            break;
-   
-         case OSPF:
-            OSPFStanza ops = (OSPFStanza) ps;
-            _ospfAreaMap = ops.get_areaMap();
-            _ospfReferenceBandwidth = ops.get_referenceBandwidth();
-            _ospfExports = ops.get_exportPolicies();
-            break;
-   
-         case NULL:
-            break;
-   
-         default:
-             throw new Error ("bad protocols stanza type");
+
+         if (ps.get_stanzaStatus() == StanzaStatusType.ACTIVE) {
+            switch (ps.getType()) {
+            case BGP:
+               BGPStanza bps = (BGPStanza) ps;
+               _groupList = bps.get_groupList();
+               _activatedNeighbors = bps.get_activatedNeighbors();
+               break;
+      
+            case OSPF:
+               OSPFStanza ops = (OSPFStanza) ps;
+               _ospfAreaMap = ops.get_areaMap();
+               _ospfReferenceBandwidth = ops.get_referenceBandwidth();
+               _ospfExports = ops.get_exportPolicies();
+               break;
+      
+            case NULL:
+               break;
+      
+            default:
+                throw new Error ("bad protocols stanza type");
+            }
          }
 
          this.addIgnoredStatements(ps.get_ignoredStatements());
       }
+      set_alreadyAggregated(false);
+      super.postProcessStanza();
    }
 
    @Override

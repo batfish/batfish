@@ -23,6 +23,7 @@ protocols_stanza returns [JStanza js]
 }
   :
   (PROTOCOLS OPEN_BRACE (x=p_stanza {ps.addPStanza(x);})+ CLOSE_BRACE)
+  {js = ps;}
   ;
   
 /* --- --- Protocol Sub-Stanza Rules -----------------------------------------------------------------*/

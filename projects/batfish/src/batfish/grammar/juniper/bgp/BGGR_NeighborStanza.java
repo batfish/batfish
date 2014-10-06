@@ -21,6 +21,7 @@ public class BGGR_NeighborStanza extends BG_GRStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public BGGR_NeighborStanza() {
       _bggrnStanzas = new ArrayList<BGGR_NStanza> ();
+      set_postProcessTitle("Neighbor");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -31,6 +32,7 @@ public class BGGR_NeighborStanza extends BG_GRStanza {
    /* ---------------------------- Getters/Setters --------------------------*/
    public void set_neighborIP (String ip) {
       _neighborIP = ip;
+      set_postProcessTitle("Neighbor " + _neighborIP);
    }
    public String get_neighborIP () {
       return _neighborIP;
@@ -51,7 +53,6 @@ public class BGGR_NeighborStanza extends BG_GRStanza {
    /* --------------------------- Inherited Methods -------------------------*/  
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
       
       _exportNames = new ArrayList<String>();
       _importNames = new ArrayList<String>();
@@ -61,50 +62,56 @@ public class BGGR_NeighborStanza extends BG_GRStanza {
       for (BGGR_NStanza bggrn : _bggrnStanzas) {
          
          bggrn.postProcessStanza();
-         switch (bggrn.getType()) {
          
-         case EXPORT:
-            BGGRN_ExportStanza engbs = (BGGRN_ExportStanza) bggrn;
-            _exportNames.addAll(engbs.GetExportNames());
-            break;
+         if (bggrn.get_stanzaStatus() == StanzaStatusType.ACTIVE) {
+            switch (bggrn.getType()) {
             
-         case FAMILY:
-            BGGRN_FamilyStanza fngbs = (BGGRN_FamilyStanza) bggrn;
-            // TODO [Ask Ari]: What to do with family in neighbor
-            break;
-            
-         case IMPORT:
-            BGGRN_ImportStanza ingbs = (BGGRN_ImportStanza) bggrn;
-            _importNames.addAll(ingbs.GetImportNames());
-            break;
-            
-         case LOCAL_ADDRESS:
-            BGGRN_LocalAddressStanza lngbs = (BGGRN_LocalAddressStanza) bggrn;
-            _localAddress = lngbs.GetLocalAddress();
-            if (lngbs.get_stanzaStatus() == StanzaStatusType.IPV6) {
-               this.set_stanzaStatus(StanzaStatusType.IPV6);
+            case EXPORT:
+               BGGRN_ExportStanza engbs = (BGGRN_ExportStanza) bggrn;
+               _exportNames.addAll(engbs.GetExportNames());
+               break;
+               
+            case FAMILY:
+               BGGRN_FamilyStanza fngbs = (BGGRN_FamilyStanza) bggrn;
+               // TODO [Ask Ari]: What to do with family in neighbor
+               break;
+               
+            case IMPORT:
+               BGGRN_ImportStanza ingbs = (BGGRN_ImportStanza) bggrn;
+               _importNames.addAll(ingbs.GetImportNames());
+               break;
+               
+            case LOCAL_ADDRESS:
+               BGGRN_LocalAddressStanza lngbs = (BGGRN_LocalAddressStanza) bggrn;
+               _localAddress = lngbs.GetLocalAddress();
+               if (lngbs.get_stanzaStatus() == StanzaStatusType.IPV6) {
+                  this.set_stanzaStatus(StanzaStatusType.IPV6);
+               }
+               break;
+   
+            case PEER_AS:
+               BGGRN_PeerAsStanza pngbs = (BGGRN_PeerAsStanza) bggrn;
+               _peerAS = pngbs.GetASNum();
+               break;
+   
+            case NULL:
+               break;
+   
+            default:
+               throw new Error("bad neighbor group bgp stanza type");
             }
-            break;
-
-         case PEER_AS:
-            BGGRN_PeerAsStanza pngbs = (BGGRN_PeerAsStanza) bggrn;
-            _peerAS = pngbs.GetASNum();
-            break;
-
-         case NULL:
-            break;
-
-         default:
-            throw new Error("bad neighbor group bgp stanza type");
          }
-
          this.addIgnoredStatements(bggrn.get_ignoredStatements());
       }
       if (get_stanzaStatus()==StanzaStatusType.IPV6) {       
          clearIgnoredStatements();
-         addIgnoredStatement("neighrbor " + _neighborIP + "{...}");
-         set_aggregateWithTitle(false);
+         addIgnoredStatement("Neighbor " + _neighborIP + "{...}");
+         set_alreadyAggregated(true);
       }
+      else {
+         set_alreadyAggregated(false);
+      }
+      super.postProcessStanza();
    }
    
 	@Override

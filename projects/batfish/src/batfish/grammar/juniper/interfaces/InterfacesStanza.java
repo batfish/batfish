@@ -5,6 +5,7 @@ import java.util.List;
 
 import batfish.grammar.juniper.JStanza;
 import batfish.grammar.juniper.JStanzaType;
+import batfish.grammar.juniper.StanzaStatusType;
 import batfish.representation.juniper.Interface;
 
 public class InterfacesStanza extends JStanza {
@@ -16,6 +17,7 @@ public class InterfacesStanza extends JStanza {
    public InterfacesStanza () {
       _interfaceStanzas = new ArrayList<InterfaceStanza>();
       _interfaces = new ArrayList<Interface>();
+      set_postProcessTitle("Interfaces");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -31,12 +33,16 @@ public class InterfacesStanza extends JStanza {
    /* --------------------------- Inherited Methods -------------------------*/  
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
       for (InterfaceStanza is : _interfaceStanzas) {
-         is.postProcessStanza();
+
+         if (is.get_stanzaStatus() == StanzaStatusType.ACTIVE) {
+            is.postProcessStanza();
+         }
          addIgnoredStatements(is.get_ignoredStatements());
          _interfaces.addAll(is.get_interfaces());
       }     
+      set_alreadyAggregated(false);
+      super.postProcessStanza();
    }
 
 	@Override

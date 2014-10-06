@@ -20,6 +20,7 @@ public class PO_PrefixListStanza extends POStanza {
       _name = n;
       _applyPathStr = "";
       _ipAddresses = new ArrayList<String> ();
+      set_postProcessTitle("Prefix List " + _name);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -38,7 +39,6 @@ public class PO_PrefixListStanza extends POStanza {
    /* --------------------------- Inherited Methods -------------------------*/
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
       if (get_stanzaStatus()==StanzaStatusType.IPV6) {
          addIgnoredStatement("prefix list " + _name + "(IPV6)");
       }
@@ -55,6 +55,8 @@ public class PO_PrefixListStanza extends POStanza {
          }
          _prefixList = new PrefixList(_name, _prefixes);
       }
+      set_alreadyAggregated(false);
+      super.postProcessStanza();
       
    }
    

@@ -3,6 +3,8 @@ package batfish.grammar.juniper.ospf;
 import java.util.ArrayList;
 import java.util.List;
 
+import batfish.grammar.juniper.StanzaStatusType;
+
 public class OP_AreaStanza extends OPStanza {
    
    private int _areaId;
@@ -13,6 +15,7 @@ public class OP_AreaStanza extends OPStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public OP_AreaStanza() {
       _opArStanzas = new ArrayList<OP_ARStanza>();
+      set_postProcessTitle("Area " + _areaId);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -34,7 +37,6 @@ public class OP_AreaStanza extends OPStanza {
    /* --------------------------- Inherited Methods -------------------------*/   
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
       
       _interfaceList = new ArrayList<String>();
       
@@ -42,21 +44,26 @@ public class OP_AreaStanza extends OPStanza {
          
          aops.postProcessStanza();
          
-         switch (aops.getType()) {
+         if (aops.get_stanzaStatus() == StanzaStatusType.ACTIVE) {
          
-         case INTERFACE:
-            OPAR_InterfaceStanza is = (OPAR_InterfaceStanza) aops;
-            _interfaceList.add(is.get_ifName());
-            break;
-
-         case NULL:
-            break;
-
-         default:
-            throw new Error("bad area stanza type");
+            switch (aops.getType()) {
+            
+            case INTERFACE:
+               OPAR_InterfaceStanza is = (OPAR_InterfaceStanza) aops;
+               _interfaceList.add(is.get_ifName());
+               break;
+   
+            case NULL:
+               break;
+   
+            default:
+               throw new Error("bad area stanza type");
+            }
          }
          this.addIgnoredStatements(aops.get_ignoredStatements());
       }
+      set_alreadyAggregated(false);
+      super.postProcessStanza();
    }
 	
 	

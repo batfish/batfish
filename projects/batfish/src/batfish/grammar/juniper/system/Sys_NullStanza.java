@@ -8,6 +8,7 @@ public class Sys_NullStanza extends SysStanza {
    public Sys_NullStanza (String ign) {
       set_stanzaStatus(StanzaStatusType.IGNORED);
       addIgnoredStatement(ign);
+      set_postProcessTitle("[ignored statement]");
    }
 
    /* ----------------------------- Other Methods ---------------------------*/

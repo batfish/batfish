@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import batfish.grammar.juniper.StanzaStatusType;
 import batfish.grammar.juniper.protocols.PStanza;
 import batfish.grammar.juniper.protocols.PType;
 
@@ -18,6 +19,7 @@ public class OSPFStanza extends PStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public OSPFStanza() {
       _opStanzas = new ArrayList<OPStanza>();
+      set_postProcessTitle("OSPF");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -39,7 +41,6 @@ public class OSPFStanza extends PStanza {
    /* --------------------------- Inherited Methods -------------------------*/ 
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
       
       _referenceBandwidth = -1.0;              // TODO [P1]: get rid of magic constant
       _exportPolicies = new ArrayList<String>();
@@ -47,31 +48,36 @@ public class OSPFStanza extends PStanza {
       
       for (OPStanza ops : _opStanzas) { 
          ops.postProcessStanza();
+
+         if (ops.get_stanzaStatus() == StanzaStatusType.ACTIVE) {
          
-         switch (ops.getType()) {
-         case AREA:
-            OP_AreaStanza aops = (OP_AreaStanza) ops;
-            _areaMap.put(aops.get_areaID(), aops.get_interfaceList());
-            break;
-   
-         case REFERENCE_BANDWIDTH:
-            OP_ReferenceBandwidthStanza rbops = (OP_ReferenceBandwidthStanza) ops;
-            _referenceBandwidth = rbops.getReferenceBandwidth();
-            break;
-   
-         case EXPORT:
-            OP_ExportStanza eops = (OP_ExportStanza) ops;
-            _exportPolicies.addAll(eops.get_policyNames());
-            break;
-   
-         case NULL:
-            break;
-   
-         default:
-            throw new Error("bad ospf stanza type");
+            switch (ops.getType()) {
+            case AREA:
+               OP_AreaStanza aops = (OP_AreaStanza) ops;
+               _areaMap.put(aops.get_areaID(), aops.get_interfaceList());
+               break;
+      
+            case REFERENCE_BANDWIDTH:
+               OP_ReferenceBandwidthStanza rbops = (OP_ReferenceBandwidthStanza) ops;
+               _referenceBandwidth = rbops.getReferenceBandwidth();
+               break;
+      
+            case EXPORT:
+               OP_ExportStanza eops = (OP_ExportStanza) ops;
+               _exportPolicies.addAll(eops.get_policyNames());
+               break;
+      
+            case NULL:
+               break;
+      
+            default:
+               throw new Error("bad ospf stanza type");
+            }
          }
          this.addIgnoredStatements(ops.get_ignoredStatements());
       }
+      set_alreadyAggregated(false);
+      super.postProcessStanza();
    }
 
    @Override

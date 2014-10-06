@@ -7,6 +7,7 @@ public class RO_AutonomousSystemStanza extends ROStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public RO_AutonomousSystemStanza(int as) {
       _asNum = as;
+      set_postProcessTitle("AS " + _asNum);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

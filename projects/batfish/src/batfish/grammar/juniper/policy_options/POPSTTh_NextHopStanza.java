@@ -10,6 +10,7 @@ public class POPSTTh_NextHopStanza extends POPST_ThenStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public POPSTTh_NextHopStanza() {
       _hopType = PolicyStatement_HopType.NEXTHOP_NAME;
+      set_postProcessTitle("Next Hop " + _hopName);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

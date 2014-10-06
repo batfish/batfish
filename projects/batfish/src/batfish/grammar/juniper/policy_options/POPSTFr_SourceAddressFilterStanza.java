@@ -17,6 +17,7 @@ public class POPSTFr_SourceAddressFilterStanza extends POPST_FromStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public POPSTFr_SourceAddressFilterStanza() {
       _fasl = new ArrayList<POPST_ThenStanza>();
+      set_postProcessTitle("Source Address Filter " + _prefix);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

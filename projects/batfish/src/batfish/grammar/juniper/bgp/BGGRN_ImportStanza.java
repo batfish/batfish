@@ -12,6 +12,7 @@ public class BGGRN_ImportStanza extends BGGR_NStanza {
    public BGGRN_ImportStanza(BGPImportList i) {
       _iList = i;
       //set_stanzaStatus(i.get_stanzaStatus());
+      set_postProcessTitle("BGP Group Neighbor Import List");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

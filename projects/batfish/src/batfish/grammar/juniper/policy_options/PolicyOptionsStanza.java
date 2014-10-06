@@ -24,6 +24,7 @@ public class PolicyOptionsStanza extends JStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public PolicyOptionsStanza() {
       _poStanzas = new ArrayList<POStanza> ();
+      set_postProcessTitle("Policy Options");
    }
    /* ----------------------------- Other Methods ---------------------------*/
    public void addPOStanza (POStanza p) {
@@ -84,7 +85,8 @@ public class PolicyOptionsStanza extends JStanza {
          }
          this.addIgnoredStatements(pos.get_ignoredStatements());
       }
-      this.set_postProcessTitle("Policy Options");     
+      set_alreadyAggregated(false);  
+      super.postProcessStanza();  
    }
 
    @Override

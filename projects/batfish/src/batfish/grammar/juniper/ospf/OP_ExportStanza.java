@@ -10,6 +10,7 @@ public class OP_ExportStanza extends OPStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public OP_ExportStanza() {
       _policyNames = new ArrayList<String>();
+      set_postProcessTitle("Explort List");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

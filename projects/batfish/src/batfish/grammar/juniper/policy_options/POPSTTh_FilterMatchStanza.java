@@ -13,6 +13,7 @@ public class POPSTTh_FilterMatchStanza extends POPST_ThenStanza {
    /* ---------------------------- Getters/Setters --------------------------*/
    public void set_filterMatch (FilterMatch f) {
       _filterMatch = f;
+      set_postProcessTitle("Filter Match");
    }
    public FilterMatch get_filterMatch () {
       return _filterMatch;

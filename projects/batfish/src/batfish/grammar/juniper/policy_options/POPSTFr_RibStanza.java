@@ -15,6 +15,7 @@ public class POPSTFr_RibStanza extends POPST_FromStanza {
       else if (_ribName.equalsIgnoreCase("inet.3") || _ribName.equalsIgnoreCase("mpls.0")) {
          set_stanzaStatus(StanzaStatusType.IGNORED);
       }
+      set_postProcessTitle("RIB " + s);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

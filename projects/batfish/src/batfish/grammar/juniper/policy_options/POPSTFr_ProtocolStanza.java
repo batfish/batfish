@@ -13,6 +13,7 @@ public class POPSTFr_ProtocolStanza extends POPST_FromStanza {
    /* ------------------------------ Constructor ----------------------------*/
 	public POPSTFr_ProtocolStanza() {
       _protocols = new ArrayList<ProtocolType>();
+      set_postProcessTitle("Protocol");
    }
 	
    /* ----------------------------- Other Methods ---------------------------*/

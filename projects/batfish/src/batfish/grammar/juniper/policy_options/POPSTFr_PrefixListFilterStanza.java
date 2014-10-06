@@ -17,6 +17,7 @@ public class POPSTFr_PrefixListFilterStanza extends POPST_FromStanza {
    public POPSTFr_PrefixListFilterStanza(String i) {
       _listName = i;
       _fasl = new ArrayList<POPST_ThenStanza>();
+      set_postProcessTitle("Prefix Filter List " + _listName);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

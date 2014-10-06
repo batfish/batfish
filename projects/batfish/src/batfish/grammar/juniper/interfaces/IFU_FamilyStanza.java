@@ -58,64 +58,70 @@ public class IFU_FamilyStanza extends IF_UStanza{
    /* --------------------------- Inherited Methods -------------------------*/
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
      
       if (FamilyTypeIgnored(_famType)) {                        // don't post-process if it's not a family type we care about
-         addIgnoredStatement("family " + FamilyTypeToString(_famType) + "{...}");
-         set_aggregateWithTitle(false);
+         addIgnoredStatement("Family " + FamilyTypeToString(_famType) + "{...}");
+         set_alreadyAggregated(true);
       }
       else {
          for (IFU_FamStanza ifufam: _ifuFamStanzas) {
-            
+                        
             ifufam.postProcessStanza();
             
-            switch (ifufam.getType()) {
-            case ADDRESS:
-               if (_famType != FamilyType.INET && _famType != FamilyType.INET6 &&_famType != FamilyType.ISO) {
-                  throw new Error("Unexpected Family Substanza!");
-               }
+            if (ifufam.get_stanzaStatus() == StanzaStatusType.ACTIVE) {
             
-               IFUF_AddressStanza ifufa = (IFUF_AddressStanza) ifufam;
-               _address = ifufa.get_address();
-               _subnetMask = ifufa.get_subnetMask();
+               switch (ifufam.getType()) {
+               case ADDRESS:
+                  if (_famType != FamilyType.INET && _famType != FamilyType.INET6 &&_famType != FamilyType.ISO) {
+                     throw new Error("Unexpected Family Substanza!");
+                  }
                
-               if (ifufa.get_stanzaStatus() == StanzaStatusType.IPV6) {
-                  this.set_stanzaStatus(StanzaStatusType.IPV6);
-               }
-               break;
-            
-            case FILTER:
-               if (_famType != FamilyType.INET && _famType != FamilyType.INET6) {
-                  throw new Error("Unexpected Family Substanza!");
-               }
-               // TODO [P0]: what to do with filters!
-               break;
-   
-            case NATIVE_VLAN_ID:
-               IFUF_NativeVlanIdStanza ifufn = (IFUF_NativeVlanIdStanza) ifufam;
-               _nativeVlan = ifufn.get_vlanId();
-               break;
+                  IFUF_AddressStanza ifufa = (IFUF_AddressStanza) ifufam;
+                  _address = ifufa.get_address();
+                  _subnetMask = ifufa.get_subnetMask();
+                  
+                  if (ifufa.get_stanzaStatus() == StanzaStatusType.IPV6) {
+                     this.set_stanzaStatus(StanzaStatusType.IPV6);
+                  }
+                  break;
                
-            case VLAN_MEMBERS:
-               //IFUF_VlanMembersStanza ifufv = (IFUF_VlanMembersStanza) ifufam;
-               // TODO [P0}: what to do wtih this!
-               break;
-   
-            case NULL:
-               break;
-            
-            default:
-               throw new Error("bad family stanza type");
+               case FILTER:
+                  if (_famType != FamilyType.INET && _famType != FamilyType.INET6) {
+                     throw new Error("Unexpected Family Substanza!");
+                  }
+                  // TODO [P0]: what to do with filters!
+                  break;
+      
+               case NATIVE_VLAN_ID:
+                  IFUF_NativeVlanIdStanza ifufn = (IFUF_NativeVlanIdStanza) ifufam;
+                  _nativeVlan = ifufn.get_vlanId();
+                  break;
+                  
+               case VLAN_MEMBERS:
+                  //IFUF_VlanMembersStanza ifufv = (IFUF_VlanMembersStanza) ifufam;
+                  // TODO [P0}: what to do wtih this!
+                  break;
+      
+               case NULL:
+                  break;
+               
+               default:
+                  throw new Error("bad family stanza type");
+               }
             }
             addIgnoredStatements(ifufam.get_ignoredStatements());
          }
          
          if (get_stanzaStatus()==StanzaStatusType.IPV6) {       // if we ran into an IPV6 address, cut short
             clearIgnoredStatements();
-            addIgnoredStatement("family " + FamilyTypeToString(FamilyType.INET6) + "{...}");
-            set_aggregateWithTitle(false);
+            addIgnoredStatement("Family " + FamilyTypeToString(FamilyType.INET6) + "{...}");
+            set_alreadyAggregated(true);
+         }
+         else {
+            set_alreadyAggregated(false);
          }
       }
+      super.postProcessStanza();
               
    }
 

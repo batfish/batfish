@@ -7,6 +7,7 @@ public class IFU_VlanIdStanza extends IF_UStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public IFU_VlanIdStanza (int i) {
       _vlanid = i;
+      set_postProcessTitle("Vlan ID " + i);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

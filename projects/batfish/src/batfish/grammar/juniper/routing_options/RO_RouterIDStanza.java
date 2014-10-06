@@ -7,6 +7,7 @@ public class RO_RouterIDStanza extends ROStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public RO_RouterIDStanza(String id) {
       _routerID = id;
+      set_postProcessTitle("Router ID " + _routerID);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

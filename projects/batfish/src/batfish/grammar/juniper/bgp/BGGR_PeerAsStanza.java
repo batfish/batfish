@@ -10,6 +10,7 @@ public class BGGR_PeerAsStanza extends BG_GRStanza {
    public BGGR_PeerAsStanza(BGPPeerAS p) {
       _peerAs = p;
      // set_stanzaStatus(p.get_stanzaStatus());
+      set_postProcessTitle("BGP Group Peer AS" + p);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

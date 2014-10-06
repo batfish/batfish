@@ -12,6 +12,7 @@ public class POPSTFr_CommunityStanza extends POPST_FromStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public POPSTFr_CommunityStanza() {
       _commNames = new ArrayList<String>();
+      set_postProcessTitle("Community");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

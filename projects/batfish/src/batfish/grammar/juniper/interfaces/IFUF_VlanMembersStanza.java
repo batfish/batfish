@@ -11,6 +11,7 @@ public class IFUF_VlanMembersStanza extends IFU_FamStanza {
    public IFUF_VlanMembersStanza(ArrayList<String> s) {
       _members = new ArrayList<String>();
       _members.addAll(s);
+      set_postProcessTitle("VLan Members");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

@@ -14,6 +14,7 @@ public class IFUF_AddressStanza extends IFU_FamStanza {
       String[] temp = a.split("/");
       _address = temp[0];
       _subnetMask = temp[1];
+      set_postProcessTitle("Address " + a);
    }
    
    public String get_address() {

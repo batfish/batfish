@@ -9,6 +9,7 @@ public class BG_FamilyStanza extends BGStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public BG_FamilyStanza (BGPFamily b) {
       _fam = b;
+      set_postProcessTitle("BGP Family");
    }
 
    /* ----------------------------- Other Methods ---------------------------*/

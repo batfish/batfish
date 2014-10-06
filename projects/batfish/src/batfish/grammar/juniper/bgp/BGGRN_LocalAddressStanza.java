@@ -13,6 +13,7 @@ public class BGGRN_LocalAddressStanza extends BGGR_NStanza {
       if (l.get_isIPV6()) {
     	  set_stanzaStatus(StanzaStatusType.IPV6);
       }
+      set_postProcessTitle("BGP Group Neighbor Local Address " + l);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

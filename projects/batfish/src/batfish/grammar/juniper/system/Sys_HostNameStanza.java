@@ -7,6 +7,7 @@ public class Sys_HostNameStanza extends SysStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public Sys_HostNameStanza(String name) {
       _hostName = name;
+      set_postProcessTitle("Host Name " + _hostName);
    }
    /* ----------------------------- Other Methods ---------------------------*/
    

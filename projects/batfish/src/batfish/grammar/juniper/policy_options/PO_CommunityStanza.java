@@ -16,6 +16,7 @@ public class PO_CommunityStanza extends POStanza {
    public PO_CommunityStanza(String n) {
       _name = n;
       _communityIds = new ArrayList<String> ();
+      set_postProcessTitle("Community " + _community);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -31,12 +32,13 @@ public class PO_CommunityStanza extends POStanza {
    /* --------------------------- Inherited Methods -------------------------*/
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
       List<CommunityMemberListLine> cls = new ArrayList<CommunityMemberListLine>();
       for (String c : _communityIds) {
          cls.add(new CommunityMemberListLine(c));
       }
       _community = new CommunityMemberList(_name, cls);
+      set_alreadyAggregated(false);
+      super.postProcessStanza();
    }
    
    @Override

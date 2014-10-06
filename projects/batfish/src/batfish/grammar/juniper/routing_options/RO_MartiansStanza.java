@@ -12,6 +12,7 @@ public class RO_MartiansStanza extends ROStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public RO_MartiansStanza() {
       _martians = new ArrayList<Martian> ();
+      set_postProcessTitle("Martains");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

@@ -12,6 +12,7 @@ public class POPSTFr_InterfaceStanza extends POPST_FromStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public POPSTFr_InterfaceStanza() {
       _interfaceNames = new ArrayList<String>(); 
+      set_postProcessTitle("Interface ");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

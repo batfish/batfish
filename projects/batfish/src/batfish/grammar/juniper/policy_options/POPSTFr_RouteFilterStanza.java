@@ -16,6 +16,7 @@ public class POPSTFr_RouteFilterStanza extends POPST_FromStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public POPSTFr_RouteFilterStanza() {
       _fasl = new ArrayList<POPST_ThenStanza>();
+      set_postProcessTitle("Route Filter " + _prefix);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

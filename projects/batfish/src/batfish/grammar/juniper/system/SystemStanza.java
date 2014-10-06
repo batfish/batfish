@@ -5,6 +5,7 @@ import java.util.List;
 
 import batfish.grammar.juniper.JStanza;
 import batfish.grammar.juniper.JStanzaType;
+import batfish.grammar.juniper.StanzaStatusType;
 
 public class SystemStanza extends JStanza {
    
@@ -14,6 +15,7 @@ public class SystemStanza extends JStanza {
    /* ------------------------------ Constructor ----------------------------*/
 	public SystemStanza () {
       _sysStanzas = new ArrayList<SysStanza> ();
+      set_postProcessTitle("System");
    }
 	
    /* ----------------------------- Other Methods ---------------------------*/
@@ -29,23 +31,28 @@ public class SystemStanza extends JStanza {
    /* --------------------------- Inherited Methods -------------------------*/
 	@Override
 	public void postProcessStanza() {
-      super.postProcessStanza();
       
 	   for (SysStanza ss : _sysStanzas) {
 	      ss.postProcessStanza();
-   		switch (ss.getSysType()) {
-   		case HOST_NAME:
-   			Sys_HostNameStanza hss = (Sys_HostNameStanza) ss;
-   			_hostName = hss.get_hostName();
-   			break;
-   
-   		case NULL:
-   			break;
-   
-   		default:
-   		   throw new Error ("bad system stanza type");   		}
+
+         if (ss.get_stanzaStatus() == StanzaStatusType.ACTIVE) {
+      		switch (ss.getSysType()) {
+      		case HOST_NAME:
+      			Sys_HostNameStanza hss = (Sys_HostNameStanza) ss;
+      			_hostName = hss.get_hostName();
+      			break;
+      
+      		case NULL:
+      			break;
+      
+      		default:
+      		   throw new Error ("bad system stanza type");   	
+      		}
+         }
    		addIgnoredStatements(ss.get_ignoredStatements());
 	   }
+      set_alreadyAggregated(false);
+      super.postProcessStanza();
 	}
 
 	@Override

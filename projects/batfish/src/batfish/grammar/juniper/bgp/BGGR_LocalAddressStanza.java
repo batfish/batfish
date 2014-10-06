@@ -10,6 +10,7 @@ public class BGGR_LocalAddressStanza extends BG_GRStanza {
    public BGGR_LocalAddressStanza(BGPLocalAddress l){
       _la = l;
       //set_stanzaStatus(l.get_stanzaStatus());
+      set_postProcessTitle("BGP Group Local Address " + l);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

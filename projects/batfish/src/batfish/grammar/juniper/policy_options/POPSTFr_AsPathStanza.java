@@ -9,6 +9,7 @@ public class POPSTFr_AsPathStanza extends POPST_FromStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public POPSTFr_AsPathStanza(String s) {
       _pathName = s;
+      set_postProcessTitle("AS Path " + s);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

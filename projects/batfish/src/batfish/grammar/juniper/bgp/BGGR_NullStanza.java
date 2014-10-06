@@ -8,6 +8,7 @@ public class BGGR_NullStanza extends BG_GRStanza {
    public BGGR_NullStanza (String ign) {
       this.set_stanzaStatus(StanzaStatusType.IGNORED);
       this.addIgnoredStatement(ign);
+      set_postProcessTitle("[ignored statement]");
    }
    /* ----------------------------- Other Methods ---------------------------*/
    

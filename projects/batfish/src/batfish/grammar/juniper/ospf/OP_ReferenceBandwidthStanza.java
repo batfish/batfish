@@ -7,6 +7,7 @@ public class OP_ReferenceBandwidthStanza extends OPStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public OP_ReferenceBandwidthStanza(double rb) {
       _referenceBandwidth = rb;
+      set_postProcessTitle("Reference Bandwidth " + rb);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

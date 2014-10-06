@@ -12,6 +12,7 @@ public class ROST_DefaultsStanza extends RO_STStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public ROST_DefaultsStanza () {
       _staticOptions = new ArrayList<StaticOptions> ();
+      set_postProcessTitle("Defaults");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

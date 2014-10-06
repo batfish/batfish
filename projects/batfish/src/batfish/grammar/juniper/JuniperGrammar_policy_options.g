@@ -76,6 +76,8 @@ community_po_stanza returns [POStanza pos]
       }
     }
   |(y = as_id SEMICOLON){cpos.addCommunityId(y);}
+  |(y = string_in_double_quotes SEMICOLON){cpos.addCommunityId(y);}
+  |(z = NO_EXPORT SEMICOLON){cpos.addCommunityId(z.getText());}
   )
   {pos = cpos;}
   ;
@@ -94,6 +96,7 @@ policy_statement_po_stanza returns [POStanza pos]
     (a=anon_term_ps_po_stanza {pspos.addTerm(a);})
   )
   CLOSE_BRACE
+  {pos = pspos;}
   ;
   
 prefix_list_po_stanza returns [POStanza pos]
@@ -149,6 +152,7 @@ term_ps_po_stanza returns [POPS_TermStanza tpspos]
     |name=DIRECT
     |name=DISCARD
     |name=INPUT
+    |name=NO_EXPORT
     |name=REJECT
     |name=VARIABLE
     )
@@ -181,7 +185,7 @@ subterm_ps_po_stanza returns [POPS_TermStanza tpspos]
         tpspos.addToStanza(y);
       }
     }
-    |(t=to_t_ps_stanza | t=inactive_to_t_ps_stanza) {tpspos.addThenStanza(th);}
+    |(t=to_t_ps_stanza | t=inactive_to_t_ps_stanza) {tpspos.addToStanza(t);}
     )
   )?
   (THEN
@@ -302,7 +306,16 @@ POPSTFr_CommunityStanza cftpspos = new POPSTFr_CommunityStanza();
   
 family_from_t_ps_stanza returns [POPST_FromStanza ftpspos]
   :
-  (FAMILY fam=VARIABLE SEMICOLON) 
+  (FAMILY 
+  (fam=BRIDGE 
+  |fam=ETHERNET_SWITCHING 
+  |fam=INET
+  |fam=CCC
+  |fam=ISO
+  |fam=MPLS
+  |fam=INET6
+  )
+  SEMICOLON) 
   {ftpspos = new POPSTFr_FamilyStanza(FamilyTypeFromString(fam.getText()));}
   ;
   
@@ -319,6 +332,7 @@ POPSTFr_InterfaceStanza ittpspos = new POPSTFr_InterfaceStanza();
     }
   }
   SEMICOLON
+  {ttpspos=ittpspos;}
   ;
   
 neighbor_from_t_ps_stanza returns [POPST_FromStanza ftpspos]
@@ -469,9 +483,13 @@ local_preference_then_t_ps_stanza returns [POPST_ThenStanza ttpspos]
     (
     (ADD) {lpttpspos.set_lpType(POPSTTh_LocalPreferenceType.LP_ADD);}
     |(SUBTRACT){lpttpspos.set_lpType(POPSTTh_LocalPreferenceType.LP_SUBTRACT);}
-    )
+    )?
     x=integer SEMICOLON
-  ) {lpttpspos.set_localPref(x);}
+  ) 
+  {
+     lpttpspos.set_localPref(x);
+     ttpspos = lpttpspos;
+  }
   ;
   
 metric_then_t_ps_stanza returns [POPST_ThenStanza ttpspos]

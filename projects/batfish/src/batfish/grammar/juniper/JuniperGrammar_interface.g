@@ -24,9 +24,10 @@ interfaces_stanza returns [JStanza js]
   INTERFACES OPEN_BRACE 
   (x=interface_stanza {iss.addInterfaceStanza(x);})+
   CLOSE_BRACE
+  {js =iss;}
   ;
   
-interface_stanza returns [InterfaceStanza is = new InterfaceStanza();]
+interface_stanza returns [InterfaceStanza is = new InterfaceStanza()]
   :
   (name=VARIABLE {is.set_name(name.getText());})?
   OPEN_BRACE l=if_stanza_list CLOSE_BRACE  
@@ -172,27 +173,34 @@ apply_groups_u_if_stanza returns [IF_UStanza ifus] // TODO: FIX!
   ;
   
 family_u_if_stanza returns [IF_UStanza ifus]
+@init {
+   IFU_FamilyStanza ifufs;
+}
   :
-   
   (FAMILY
-  (ft=BRIDGE 
-  |ft=CCC
-  |ft=INET
-  |ft=INET_VPN
-  |ft=INET6
-  |ft=INET6_VPN
-  |ft=ISO
-  |ft=L2_VPN
-  |ft=ETHERNET_SWITCHING
-  |ft=MPLS
-  )
+     (ft=BRIDGE 
+     |ft=CCC
+     |ft=INET
+     |ft=INET_VPN
+     |ft=INET6
+     |ft=INET6_VPN
+     |ft=ISO
+     |ft=L2_VPN
+     |ft=ETHERNET_SWITCHING
+     |ft=MPLS
+     )
+     {ifufs = new IFU_FamilyStanza(FamilyTypeFromString(ft.getText()));}
   )
   (SEMICOLON
-  |(OPEN_BRACE x=fam_u_if_stanza_list CLOSE_BRACE) 
-  )
+  |(OPEN_BRACE x=fam_u_if_stanza_list 
   {
-    ifus = new IFU_FamilyStanza(FamilyTypeFromString(ft.getText()));
-  }
+     for (IFU_FamStanza i : x) {
+        ifufs.addIFU_FamStanza(i);
+     }
+  } 
+  CLOSE_BRACE) 
+  )
+  {ifus=ifufs;}
   ;
   
 vlanid_u_if_stanza returns [IF_UStanza ifus]
@@ -280,9 +288,8 @@ filter_fam_u_if_stanza  returns [IFU_FamStanza ifufs]
 }
   :
   FILTER OPEN_BRACE
-  (INPUT infltr=VARIABLE SEMICOLON {ifuffs.set_inStr(infltr.getText());})?
-  (OUTPUT outfltr=VARIABLE SEMICOLON {ifuffs.set_outStr(outfltr.getText());})?
-  (INACTIVE COLON inactext=VARIABLE SEMICOLON {ifuffs.addIgnoredStatement(inactext.getText());})?
+  ((INACTIVE {ifuffs.set_inputInactive(true);})? INPUT infltr=VARIABLE SEMICOLON {ifuffs.set_inStr(infltr.getText());})?
+  ((INACTIVE {ifuffs.set_outputInactive(true);})? OUTPUT outfltr=VARIABLE SEMICOLON {ifuffs.set_outStr(outfltr.getText());})?
   CLOSE_BRACE 
   {ifufs = ifuffs;}
   ;
@@ -302,14 +309,14 @@ filter_fam_u_if_stanza  returns [IFU_FamStanza ifufs]
   
  null_fam_u_if_stanza returns [IFU_FamStanza ifufs]  
   :
-  s=mtu_fam_u_if_stanza
+  (s=mtu_fam_u_if_stanza
   |s=port_mode_fam_u_if_stanza
   |s=no_redirects_fam_u_if_stanza
   |s=no_neighbor_learn_fam_u_if_stanza
   |s=primary_fam_u_if_stanza
   |s=rpf_check_fam_u_if_stanza
   |s=targeted_broadcast_fam_u_if_stanza
-  {ifufs=new IFUF_NullStanza(s);}
+  ){ifufs=new IFUF_NullStanza(s);}
   ; 
   
 /* --- --- --- --- --- --- Interfaces->Unit->Family->Null Stanza Rules -------------------------------*/     

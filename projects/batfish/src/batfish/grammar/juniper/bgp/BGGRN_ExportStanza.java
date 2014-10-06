@@ -13,6 +13,7 @@ public class BGGRN_ExportStanza extends BGGR_NStanza {
    public BGGRN_ExportStanza(BGPExportList e) {
       _eList = e;
      // set_stanzaStatus(e.get_stanzaStatus());
+      set_postProcessTitle("BGP Group Neighbor Export List");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

@@ -15,6 +15,7 @@ public class ROST_RouteStanza extends RO_STStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public ROST_RouteStanza() {
       _staticOptions = new ArrayList<StaticOptions> ();
+      set_postProcessTitle("Route " + _ip);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
@@ -28,6 +29,7 @@ public class ROST_RouteStanza extends RO_STStanza {
    }  
    public void set_ip (String i) {
       _ip  =i;
+      set_postProcessTitle("route " + _ip);
    }
    public List<StaticOptions> get_staticOptions () {
       return _staticOptions;

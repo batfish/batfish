@@ -23,6 +23,7 @@ routing_options_stanza returns [JStanza js]
 }
   :
   (ROUTING_OPTIONS OPEN_BRACE (x=ro_stanza {rs.AddROStanza(x);})+ CLOSE_BRACE)
+  {js = rs;}
   ;
 
 ro_stanza returns [ROStanza ros]
@@ -65,10 +66,14 @@ martians_ro_stanza returns [ROStanza ros]
   ;
   
 rib_groups_ro_stanza returns [ROStanza ros]
+@init {
+   RO_RibGroupsStanza rros = new RO_RibGroupsStanza();
+}
   :
-  RIB_GROUPS OPEN_BRACE {RO_RibGroupsStanza rros = new RO_RibGroupsStanza();}
+  RIB_GROUPS OPEN_BRACE 
   (group_name = VARIABLE OPEN_BRACE IMPORT_RIB l=bracketed_list CLOSE_BRACE {rros.AddGroup(group_name.getText(),l);})+
   CLOSE_BRACE
+  {ros = rros;}
   ;
   
 rib_ro_stanza returns [ROStanza ros]
@@ -92,7 +97,8 @@ static_ro_stanza returns [ROStanza ros]
   (x=sro_stanza 
   |x=inactive_sro_stanza
   ){sros.AddROSTStanza(x);})+ 
-  CLOSE_BRACE)                                                            
+  CLOSE_BRACE)  
+  {ros=sros;}                                                          
   ;
 
 null_ro_stanza returns [ROStanza ros]
@@ -208,7 +214,7 @@ community_static_opts_sro_stanza returns [ArrayList<String> l]
    :
    COMMUNITY 
    (b=bracketed_list {l=b;}
-   |s=string_up_to_semicolon {l = new ArrayList<String>(); l.add(s);}
+   |s=as_id {l = new ArrayList<String>(); l.add(s);}
    )
    ;
  

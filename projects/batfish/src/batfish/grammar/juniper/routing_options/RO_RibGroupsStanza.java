@@ -11,6 +11,7 @@ public class RO_RibGroupsStanza extends ROStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public RO_RibGroupsStanza() {
       _groupsImports = new HashMap<String, List<String>> ();
+      set_postProcessTitle("RIB Groups");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

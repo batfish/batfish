@@ -8,6 +8,7 @@ public class POPSTTh_LocalPreferenceStanza extends POPST_ThenStanza {
    /* ------------------------------ Constructor ----------------------------*/
 	public POPSTTh_LocalPreferenceStanza() {
       _lpType = POPSTTh_LocalPreferenceType.LP_SET;
+      set_postProcessTitle("Local Preference " + _localPref);
    }
 	
    /* ----------------------------- Other Methods ---------------------------*/

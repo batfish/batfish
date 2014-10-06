@@ -8,6 +8,7 @@ public class P_NullStanza extends PStanza {
    public P_NullStanza (String ign) {
       this.set_stanzaStatus(StanzaStatusType.IGNORED);
       this.addIgnoredStatement(ign);
+      set_postProcessTitle("[ignored statement]");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

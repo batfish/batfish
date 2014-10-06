@@ -146,6 +146,7 @@ tokens {
   NEXT                        = 'next';
   NEXT_HOP                    = 'next-hop';
   NEXT_TABLE                  = 'next-table';
+  NO_EXPORT                   = 'no-export';
   NO_INSTALL                  = 'no-install';
   NO_READVERTISE              = 'no-readvertise';
   NO_REDIRECTS                = 'no-redirects';
@@ -215,6 +216,7 @@ tokens {
   TACACS                      = 'tacacs';
   TACPLUS_SERVER              = 'tacplus-server';
   TAG                         = 'tag';
+  TARGET                      = 'target';
   TARGETED_BROADCAST          = 'targeted-broadcast';
   TCP                         = 'tcp';
   TCP_MSS                     = 'tcp-mss';
@@ -410,8 +412,11 @@ version_stanza returns [String s]
   
 /* Basic Rules ---------------------------------------------------------------------------------------*/
 as_id returns [String s]
+@init {
+   s="";
+}
   :
- (firstpart=VARIABLE COLON secondpart=VARIABLE) {s=firstpart.getText()+secondpart.getText();}
+  (x=AS_NUM) {s=x.getText();}
   ;
   
 bracketed_list returns [ArrayList<String> sl]
@@ -517,12 +522,12 @@ substanza
 removed_stanza returns [String s]
   :
   (
-    (name=VARIABLE)
-    (DATA_REMOVED
-    |STANZA_REMOVED
+    (name=VARIABLE){s=name.getText();}
+    (DATA_REMOVED {s+="Data Removed";}
+    |STANZA_REMOVED {s+="Stanza Removed";}
     )
   )
-  {s=name.getText();}
+  
   ;
 
 removed_top_level_stanza returns [String s]
@@ -563,7 +568,7 @@ log_updown_common_stanza returns [String s]
   
 metric_out_common_stanza returns [String s]
   :
-  x = METRIC_OUT VARIABLE SEMICOLON {s = x.getText() + "{...}";}
+  x = METRIC_OUT (y=VARIABLE | y=IGP) SEMICOLON {s = x.getText() + " " + y.getText();}
   ; 
   
 mtu_common_stanza returns [String s] 
@@ -583,7 +588,7 @@ remove_private_common_stanza returns [String s]
   
 rib_common_stanza returns [String s]
   :
-  RIB (x=VARIABLE) SEMICOLON {s=x.getText();}
+  RIB x=VARIABLE SEMICOLON {s=x.getText();}
   ;
 
 /*Lexing Rules ---------------------------------------------------------------------------------------*/
@@ -591,6 +596,14 @@ rib_common_stanza returns [String s]
 AMPERSAND
   :
   '&'
+  ;
+  
+AS_NUM
+  :
+  (DEC COLON DEC)
+  |(DEC COLON ASTERISK)
+  |(DEC COLON DEC COLON DEC)
+  |(TARGET COLON DEC COLON DEC)
   ;
 
 ASTERISK

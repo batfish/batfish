@@ -16,6 +16,7 @@ public class POPSTTh_CommunityStanza extends POPST_ThenStanza {
          _commNames = new ArrayList<String> ();
       }
       _commNames.add(s);
+      set_postProcessTitle("Community");
    }
    
    /* ---------------------------- Getters/Setters --------------------------*/

@@ -7,6 +7,7 @@ public class IFUF_NativeVlanIdStanza extends IFU_FamStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public IFUF_NativeVlanIdStanza(int i) {
       _vlanId = i;
+      set_postProcessTitle("Native VLan ID " + i);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

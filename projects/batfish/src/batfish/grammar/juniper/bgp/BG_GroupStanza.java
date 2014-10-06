@@ -26,6 +26,7 @@ public class BG_GroupStanza extends BGStanza {
    public BG_GroupStanza(String n) {
       _groupName = n;
       _bggrStanzas = new ArrayList<BG_GRStanza>();
+      set_postProcessTitle("BGP Group " +n);
    }
 
    /* ----------------------------- Other Methods ---------------------------*/
@@ -44,7 +45,6 @@ public class BG_GroupStanza extends BGStanza {
    /* --------------------------- Inherited Methods -------------------------*/  
    @Override
    public void postProcessStanza() {
-      super.postProcessStanza();
 
       _group = new BGPGroup(_groupName);
       _activatedNeighbors = new ArrayList<String>();
@@ -57,71 +57,70 @@ public class BG_GroupStanza extends BGStanza {
          
          bggrs.postProcessStanza();
          
-         switch (bggrs.getType()) {
+         if (bggrs.get_stanzaStatus()==StanzaStatusType.ACTIVE) {
          
-         case EXPORT:
-            BGGR_ExportStanza egbs = (BGGR_ExportStanza) bggrs;
-            _group.setOutboundPolicyStatement(egbs.GetExportNames());
-            break;
+            switch (bggrs.getType()) {
             
-         case FAMILY:
-            BGGR_FamilyStanza fgbs = (BGGR_FamilyStanza) bggrs;
-            // TODO [Ask Ari]: what to do with family inside group
-            break;
+            case EXPORT:
+               BGGR_ExportStanza egbs = (BGGR_ExportStanza) bggrs;
+               _group.setOutboundPolicyStatement(egbs.GetExportNames());
+               break;
+               
+            case FAMILY:
+               BGGR_FamilyStanza fgbs = (BGGR_FamilyStanza) bggrs;
+               // TODO [Ask Ari]: what to do with family inside group
+               break;
+               
+            case IMPORT:
+               BGGR_ImportStanza igbs = (BGGR_ImportStanza) bggrs;
+               _group.setInboundPolicyStatement(igbs.GetImportNames());
+               break;
             
-         case IMPORT:
-            BGGR_ImportStanza igbs = (BGGR_ImportStanza) bggrs;
-            _group.setInboundPolicyStatement(igbs.GetImportNames());
-            break;
-         
-         case LOCAL_ADDRESS:
-            BGGR_LocalAddressStanza lagbs = (BGGR_LocalAddressStanza) bggrs;
-            _localAddress = lagbs.GetLocalAddress();
-            _group.setUpdateSource(_localAddress);
-            if (lagbs.get_stanzaStatus() == StanzaStatusType.IPV6) {
-               this.set_stanzaStatus(StanzaStatusType.IPV6);
+            case LOCAL_ADDRESS:
+               BGGR_LocalAddressStanza lagbs = (BGGR_LocalAddressStanza) bggrs;
+               _localAddress = lagbs.GetLocalAddress();
+               _group.setUpdateSource(_localAddress);
+               if (lagbs.get_stanzaStatus() == StanzaStatusType.IPV6) {
+                  this.set_stanzaStatus(StanzaStatusType.IPV6);
+               }
+               break;
+               
+            case LOCAL_AS:
+               BGGR_LocalAsStanza lasgbs = (BGGR_LocalAsStanza) bggrs;
+               _localAS = lasgbs.get_localASNum();
+               _group.setLocalAS(_localAS);
+               break;
+               
+            case NEIGHBOR:
+               BGGR_NeighborStanza ngbs = (BGGR_NeighborStanza) bggrs;
+               
+               _activatedNeighbors.add(ngbs.get_neighborIP());
+               BGPNeighbor bgpNeighbor = new BGPNeighbor(ngbs.get_neighborIP());
+               bgpNeighbor.setInboundPolicyStatement(ngbs.get_importNames());
+               bgpNeighbor.setOutboundPolicyStatement(ngbs.get_exportNames());
+               bgpNeighbor.setRemoteAS(ngbs.get_peerAS());
+               bgpNeighbor.setLocalAddress(ngbs.get_localAddress());
+               _group.addNeighbor(bgpNeighbor);
+               break;
+               
+            case PEER_AS:
+               BGGR_PeerAsStanza pgbs = (BGGR_PeerAsStanza) bggrs;
+               _peerAS = pgbs.GetASNum();
+               _group.setRemoteAS(_peerAS);
+               break;
+               
+            case TYPE:
+               BGGR_TypeStanza tgbs = (BGGR_TypeStanza) bggrs;
+               _isExternal = tgbs.get_isExternal();
+               _group.setIsExternal(_isExternal);
+               break;
+               
+            case NULL:
+               break;
+               
+            default:
+               throw new Error("bad group bgp stanza type");
             }
-            break;
-            
-         case LOCAL_AS:
-            BGGR_LocalAsStanza lasgbs = (BGGR_LocalAsStanza) bggrs;
-            _localAS = lasgbs.get_localASNum();
-            _group.setLocalAS(_localAS);
-            break;
-            
-         case NEIGHBOR:
-            BGGR_NeighborStanza ngbs = (BGGR_NeighborStanza) bggrs;
-            this.addIgnoredStatements(ngbs.get_ignoredStatements());
-            if (ngbs.get_stanzaStatus() == StanzaStatusType.IPV6) {
-               this.set_stanzaStatus(StanzaStatusType.IPV6);
-            }
-            
-            _activatedNeighbors.add(ngbs.get_neighborIP());
-            BGPNeighbor bgpNeighbor = new BGPNeighbor(ngbs.get_neighborIP());
-            bgpNeighbor.setInboundPolicyStatement(ngbs.get_importNames());
-            bgpNeighbor.setOutboundPolicyStatement(ngbs.get_exportNames());
-            bgpNeighbor.setRemoteAS(ngbs.get_peerAS());
-            bgpNeighbor.setLocalAddress(ngbs.get_localAddress());
-            _group.addNeighbor(bgpNeighbor);
-            break;
-            
-         case PEER_AS:
-            BGGR_PeerAsStanza pgbs = (BGGR_PeerAsStanza) bggrs;
-            _peerAS = pgbs.GetASNum();
-            _group.setRemoteAS(_peerAS);
-            break;
-            
-         case TYPE:
-            BGGR_TypeStanza tgbs = (BGGR_TypeStanza) bggrs;
-            _isExternal = tgbs.get_isExternal();
-            _group.setIsExternal(_isExternal);
-            break;
-            
-         case NULL:
-            break;
-            
-         default:
-            throw new Error("bad group bgp stanza type");
          }
          this.addIgnoredStatements(bggrs.get_ignoredStatements());
       
@@ -142,8 +141,12 @@ public class BG_GroupStanza extends BGStanza {
       if (get_stanzaStatus()==StanzaStatusType.IPV6) {       
          clearIgnoredStatements();
          addIgnoredStatement("group " + _groupName + "{...}");
-         set_aggregateWithTitle(false);
+         set_alreadyAggregated(true);
       }
+      else {
+         set_alreadyAggregated(false);
+      }
+      super.postProcessStanza();
    }
 
 

@@ -7,6 +7,7 @@ public class POPSTTh_MetricStanza extends POPST_ThenStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public POPSTTh_MetricStanza(int m) {
       _metric = m;
+      set_postProcessTitle("Metric " + _metric);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

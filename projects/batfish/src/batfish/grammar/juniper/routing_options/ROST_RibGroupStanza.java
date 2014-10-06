@@ -7,6 +7,7 @@ public class ROST_RibGroupStanza extends RO_STStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public ROST_RibGroupStanza (String g) {
       _groupName = g;
+      set_postProcessTitle("RIB Group " + g);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/

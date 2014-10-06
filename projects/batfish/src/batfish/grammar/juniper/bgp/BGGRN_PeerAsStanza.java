@@ -9,6 +9,7 @@ public class BGGRN_PeerAsStanza extends BGGR_NStanza {
    /* ------------------------------ Constructor ----------------------------*/
    public BGGRN_PeerAsStanza(BGPPeerAS p) {
       _peerAs = p;
+      set_postProcessTitle("BGP Group Neighbor Peer AS " + p);
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
