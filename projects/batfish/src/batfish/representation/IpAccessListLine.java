@@ -11,6 +11,13 @@ public class IpAccessListLine implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
+   private static boolean isValidWildcard(Ip wildcard) {
+      long w = wildcard.asLong();
+      long wp = w+1l;
+      int numTrailingZeros = Long.numberOfTrailingZeros(wp);
+      long check = 1l << numTrailingZeros;
+      return wp == check;
+   }
    private LineAction _action;
    private Ip _dstIp;
    private List<SubRange> _dstPortRanges;
@@ -18,6 +25,7 @@ public class IpAccessListLine implements Serializable {
    private int _protocol;
    private Ip _srcIp;
    private List<SubRange> _srcPortRanges;
+
    private Ip _srcWildcard;
 
    public IpAccessListLine(LineAction ala, int protocol, Ip srcIp,
@@ -104,6 +112,10 @@ public class IpAccessListLine implements Serializable {
 
    public List<SubRange> getSrcPortRanges() {
       return _srcPortRanges;
+   }
+
+   public boolean isValid() {
+      return isValidWildcard(_srcWildcard) && isValidWildcard(_dstWildcard);
    }
 
    @Override

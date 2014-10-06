@@ -1270,10 +1270,6 @@ public class CiscoControlPlaneStripper extends CiscoGrammarBaseListener {
       
    }
 
-   @Override
-   public void exitComment_stanza(Comment_stanzaContext ctx) {
-      _stanzas.remove(ctx);
-   }
 
    @Override
    public void enterNull_standalone_if_stanza(
@@ -1422,18 +1418,6 @@ public class CiscoControlPlaneStripper extends CiscoGrammarBaseListener {
 
    @Override
    public void exitIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
-      // TODO Auto-generated method stub
-      
-   }
-
-   @Override
-   public void enterClosing_comment(Closing_commentContext ctx) {
-      // TODO Auto-generated method stub
-      
-   }
-
-   @Override
-   public void exitClosing_comment(Closing_commentContext ctx) {
       // TODO Auto-generated method stub
       
    }

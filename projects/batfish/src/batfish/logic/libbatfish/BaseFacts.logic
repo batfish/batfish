@@ -22,7 +22,8 @@ block(`BaseFacts) {
 +AdvertisementType("ibgp_to").
 
 +Interface("dynamic").
-+Interface("null").
++Interface("flow_sink_termination").
++Interface("null_interface").
 
 +OriginType("igp").
 +OriginType("egp").
@@ -34,6 +35,7 @@ block(`BaseFacts) {
 +RoutingProtocol("ibgp").
 +RoutingProtocol("ospf").
 +RoutingProtocol("ospfIA").
++RoutingProtocol("ospfE1").
 +RoutingProtocol("ospfE2").
 +RoutingProtocol("static").
 
@@ -53,6 +55,7 @@ block(`BaseFacts) {
 +AdministrativeDistance["cisco", "connected"] = 0.
 +AdministrativeDistance["cisco", "ospf"] = 110.
 +AdministrativeDistance["cisco", "ospfIA"] = 110.
++AdministrativeDistance["cisco", "ospfE1"] = 110.
 +AdministrativeDistance["cisco", "ospfE2"] = 110.
 
 +AdministrativeDistance["juniper", "bgp"] = 170.
@@ -60,6 +63,7 @@ block(`BaseFacts) {
 +AdministrativeDistance["juniper", "connected"] = 0.
 +AdministrativeDistance["juniper", "ospf"] = 10.
 +AdministrativeDistance["juniper", "ospfIA"] = 10.
++AdministrativeDistance["juniper", "ospfE1"] = 150.
 +AdministrativeDistance["juniper", "ospfE2"] = 150.
 
 +GeneratedRouteType("aggregate").

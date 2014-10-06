@@ -167,6 +167,10 @@ SetPolicyMapClauseSetOriginType(map, clause, originType) ->
    int(clause),
    OriginType(originType).
 
+SetPolicyMapOspfExternalRouteType(map, protocol) ->
+   PolicyMap(map),
+   RoutingProtocol(protocol).
+
 // END CODE
    })
 } <-- .

@@ -1,9 +1,11 @@
 package batfish.logicblox;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import batfish.main.BatfishException;
 import batfish.representation.BgpNeighbor;
 import batfish.representation.BgpProcess;
 import batfish.representation.CommunityList;
@@ -16,10 +18,12 @@ import batfish.representation.IpAccessList;
 import batfish.representation.IpAccessListLine;
 import batfish.representation.OriginType;
 import batfish.representation.OspfArea;
+import batfish.representation.OspfMetricType;
 import batfish.representation.OspfProcess;
 import batfish.representation.PolicyMap;
 import batfish.representation.PolicyMapClause;
 import batfish.representation.PolicyMapMatchCommunityListLine;
+import batfish.representation.PolicyMapMatchIpAccessListLine;
 import batfish.representation.PolicyMapMatchLine;
 import batfish.representation.PolicyMapMatchNeighborLine;
 import batfish.representation.PolicyMapMatchProtocolLine;
@@ -44,7 +48,10 @@ import batfish.util.Util;
 import batfish.z3.Synthesizer;
 
 public class ConfigurationFactExtractor {
-   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 10;
+
+   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
+
+   private static final String FLOW_SINK_INTERFACE_PREFIX = "TenGigabitEthernet100/";
 
    private static String getLBRoutingProtocol(Protocol prot) {
       switch (prot) {
@@ -76,14 +83,19 @@ public class ConfigurationFactExtractor {
 
    private Set<Long> _allCommunities;
    private Configuration _configuration;
-
    private Map<String, StringBuilder> _factBins;
+   private List<String> _warnings;
 
    public ConfigurationFactExtractor(Configuration c, Set<Long> allCommunities,
          Map<String, StringBuilder> factBins) {
       _configuration = c;
       _allCommunities = allCommunities;
       _factBins = factBins;
+      _warnings = new ArrayList<String>();
+   }
+
+   public List<String> getWarnings() {
+      return _warnings;
    }
 
    private void writeBgpGeneratedRoutes() {
@@ -220,7 +232,7 @@ public class ConfigurationFactExtractor {
                break;
 
             default:
-               throw new Error("bad action");
+               throw new BatfishException("bad action");
             }
          }
       }
@@ -249,6 +261,7 @@ public class ConfigurationFactExtractor {
       writeBgpGeneratedRoutes();
       writeBgpNeighborGeneratedRoutes();
       writeGeneratedRoutes();
+      writeVlanInterface();
    }
 
    private void writeGeneratedRoutes() {
@@ -290,12 +303,12 @@ public class ConfigurationFactExtractor {
          String interfaceName = i.getName();
 
          // flow sinks
-         if (interfaceName.startsWith(Synthesizer.FLOW_SINK_INTERFACE_PREFIX)) {
+         if (interfaceName.startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
             wSetFlowSinkInterface.append(hostname + "|" + interfaceName + "\n");
          }
 
          // fake interfaces
-         if (interfaceName.startsWith(Synthesizer.FLOW_SINK_INTERFACE_PREFIX)
+         if (interfaceName.startsWith(FLOW_SINK_INTERFACE_PREFIX)
                || interfaceName.startsWith(Synthesizer.FAKE_INTERFACE_PREFIX)) {
             wSetFakeInterface.append(hostname + "|" + interfaceName + "\n");
          }
@@ -332,8 +345,8 @@ public class ConfigurationFactExtractor {
          PolicyMap routingPolicy = i.getRoutingPolicy();
          if (routingPolicy != null) {
             String policyName = hostname + ":" + routingPolicy.getMapName();
-            wSetInterfaceRoutingPolicy.append(hostname + "|" + interfaceName + "|"
-                  + policyName + "\n");
+            wSetInterfaceRoutingPolicy.append(hostname + "|" + interfaceName
+                  + "|" + policyName + "\n");
          }
       }
    }
@@ -353,6 +366,15 @@ public class ConfigurationFactExtractor {
          List<IpAccessListLine> lines = ipAccessList.getLines();
          for (int i = 0; i < lines.size(); i++) {
             IpAccessListLine line = lines.get(i);
+            if (!line.isValid()) {
+               _warnings
+                     .add("WARNING: IpAccessList "
+                           + name
+                           + " line "
+                           + i
+                           + ": ignored (will never be matched) because we do not know how to handle non-trailing wildcard bits\n");
+               continue;
+            }
             int protocol = line.getProtocol();
             long dstIpStart = line.getDestinationIP().asLong();
             long dstIpEnd = line.getDestinationIP()
@@ -372,7 +394,7 @@ public class ConfigurationFactExtractor {
                break;
 
             default:
-               throw new Error("bad action");
+               throw new BatfishException("bad action");
             }
             String protocolName = Util.getProtocolName(protocol);
             if (protocolName.equals("tcp") || protocolName.equals("udp")) {
@@ -471,12 +493,28 @@ public class ConfigurationFactExtractor {
    private void writeOspfOutboundPolicyMaps() {
       StringBuilder wSetOspfOutboundPolicyMap = _factBins
             .get("SetOspfOutboundPolicyMap");
+      StringBuilder wSetPolicyMapOspfExternalRouteType = _factBins
+            .get("SetPolicyMapOspfExternalRouteType");
       String hostname = _configuration.getHostname();
       OspfProcess proc = _configuration.getOspfProcess();
       if (proc != null) {
          for (PolicyMap map : proc.getOutboundPolicyMaps()) {
             String mapName = hostname + ":" + map.getMapName();
+            OspfMetricType metricType = proc.getPolicyMetricTypes().get(map);
+            String protocol = null;
+            switch (metricType) {
+            case E1:
+               protocol = "ospfE1";
+               break;
+            case E2:
+               protocol = "ospfE2";
+               break;
+            default:
+               throw new BatfishException("invalid ospf metric type");
+            }
             wSetOspfOutboundPolicyMap.append(hostname + "|" + mapName + "\n");
+            wSetPolicyMapOspfExternalRouteType.append(mapName + "|" + protocol
+                  + "\n");
          }
       }
    }
@@ -500,6 +538,8 @@ public class ConfigurationFactExtractor {
             .get("SetPolicyMapClauseDeleteCommunity");
       StringBuilder wSetPolicyMapClauseDeny = _factBins
             .get("SetPolicyMapClauseDeny");
+      StringBuilder wSetPolicyMapClauseMatchAcl = _factBins
+            .get("SetPolicyMapClauseMatchAcl");
       StringBuilder wSetPolicyMapClauseMatchCommunityList = _factBins
             .get("SetPolicyMapClauseMatchCommunityList");
       StringBuilder wSetPolicyMapClauseMatchNeighbor = _factBins
@@ -538,14 +578,19 @@ public class ConfigurationFactExtractor {
                wSetPolicyMapClausePermit.append(mapName + "|" + i + "\n");
                break;
             default:
-               throw new Error("invalid action");
+               throw new BatfishException("invalid action");
             }
             for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
                switch (matchLine.getType()) {
                case AS_PATH_ACCESS_LIST:
                   // TODO: implement
-                  //throw new Error("not implemented");
-                  System.err.println("WARNING: Policy map matching of AS path acls not implemented!");
+                  // throw new BatfishException("not implemented");
+                  _warnings
+                        .add("WARNING: "
+                              + mapName
+                              + ":"
+                              + i
+                              + ": Policy map matching of AS path acls not implemented!\n");
                   break;
 
                case COMMUNITY_LIST:
@@ -558,8 +603,13 @@ public class ConfigurationFactExtractor {
                   break;
 
                case IP_ACCESS_LIST:
-                  // TODO: implement
-                  throw new Error("ERROR: Policy map matching of IP acls (packet filtering?) not implemented!");
+                  PolicyMapMatchIpAccessListLine mialLine = (PolicyMapMatchIpAccessListLine) matchLine;
+                  for (IpAccessList list : mialLine.getLists()) {
+                     String listName = hostname + ":" + list.getName();
+                     wSetPolicyMapClauseMatchAcl.append(mapName + "|" + i + "|"
+                           + listName + "\n");
+                  }
+                  break;
 
                case NEIGHBOR:
                   PolicyMapMatchNeighborLine pmmnl = (PolicyMapMatchNeighborLine) matchLine;
@@ -594,7 +644,7 @@ public class ConfigurationFactExtractor {
                   break;
 
                default:
-                  throw new Error("invalid match type");
+                  throw new BatfishException("invalid match type");
                }
             }
 
@@ -611,7 +661,10 @@ public class ConfigurationFactExtractor {
 
                case AS_PATH_PREPEND:
                   // TODO: implement
-                  throw new Error("not implemented");
+                  // throw new BatfishException("not implemented");
+                  _warnings.add("WARNING: " + mapName + ":" + i
+                        + ": AS_PATH_PREPEND not implemented\n");
+                  break;
 
                case COMMUNITY:
                   PolicyMapSetCommunityLine scLine = (PolicyMapSetCommunityLine) setLine;
@@ -623,7 +676,7 @@ public class ConfigurationFactExtractor {
 
                case COMMUNITY_NONE:
                   // TODO: implement
-                  throw new Error("not implemented");
+                  throw new BatfishException("not implemented");
 
                case DELETE_COMMUNITY:
                   PolicyMapSetDeleteCommunityLine sdcLine = (PolicyMapSetDeleteCommunityLine) setLine;
@@ -659,11 +712,11 @@ public class ConfigurationFactExtractor {
                   PolicyMapSetOriginTypeLine pmsotl = (PolicyMapSetOriginTypeLine) setLine;
                   OriginType originType = pmsotl.getOriginType();
                   wSetPolicyMapClauseSetOriginType.append(mapName + "|" + i
-                           + "|" + originType.toString() + "\n");
+                        + "|" + originType.toString() + "\n");
                   break;
-                  
+
                default:
-                  throw new Error("invalid set type");
+                  throw new BatfishException("invalid set type");
                }
             }
          }
@@ -704,18 +757,18 @@ public class ConfigurationFactExtractor {
                   break;
 
                default:
-                  throw new Error("bad action");
+                  throw new BatfishException("bad action");
                }
                break;
 
             case THROUGH:
-               // throw new Error("not implemented");
-               System.err.println("WARNING: " + hostname
-                     + ": route-filter through not implemented");
+               // throw new BatfishException("not implemented");
+               _warnings.add("WARNING: " + filterName + ":" + i
+                     + ": route-filter through not implemented\n");
                break;
 
             default:
-               throw new Error("bad line type");
+               throw new BatfishException("bad line type");
             }
 
          }
@@ -766,8 +819,8 @@ public class ConfigurationFactExtractor {
             int prefix_length = subnetMask.numSubnetBits();
             long network_start = ipInt & subnet;
             long network_end = Util.getNetworkEnd(network_start, prefix_length);
-            wSetNetwork.append("" + network_start + "|" + network_end + "|"
-                  + prefix_length + "\n");
+            wSetNetwork.append(network_start + "|" + network_start + "|"
+                  + network_end + "|" + prefix_length + "\n");
             wSetIpInt.append(hostname + "|" + interfaceName + "|" + ip.asLong()
                   + "|" + prefix_length + "\n");
          }
@@ -792,9 +845,12 @@ public class ConfigurationFactExtractor {
          int distance = route.getDistance();
          int tag = route.getTag();
          String nextHopInt = route.getNextHopInterface();
-         wSetNetwork.append(network_start + "|" + network_end + "|"
-               + prefix_length + "\n");
+         wSetNetwork.append(network_start + "|" + network_start + "|"
+               + network_end + "|" + prefix_length + "\n");
          if (nextHopInt != null) { // use next hop interface instead
+            if (Util.isNullInterface(nextHopInt)) {
+               nextHopInt = Util.NULL_INTERFACE_NAME;
+            }
             wSetStaticIntRoute_flat.append(hostName + "|" + network_start + "|"
                   + network_end + "|" + prefix_length + "|"
                   + nextHopIp.asLong() + "|" + nextHopInt + "|" + distance
@@ -848,7 +904,7 @@ public class ConfigurationFactExtractor {
             break;
 
          default:
-            throw new Error("invalid switchport mode");
+            throw new BatfishException("invalid switchport mode");
          }
       }
    }
@@ -858,6 +914,18 @@ public class ConfigurationFactExtractor {
       String vendor = _configuration.getVendor();
       StringBuilder wSetNodeVendor = _factBins.get("SetNodeVendor");
       wSetNodeVendor.append(hostname + "|" + vendor + "\n");
+   }
+
+   private void writeVlanInterface() {
+      StringBuilder wSetVlanInterface = _factBins.get("SetVlanInterface");
+      String hostname = _configuration.getHostname();
+      for (String ifaceName : _configuration.getInterfaces().keySet()) {
+         Integer vlan = Util.getInterfaceVlanNumber(ifaceName);
+         if (vlan != null) {
+            wSetVlanInterface.append(hostname + "|" + ifaceName + "|" + vlan
+                  + "\n");
+         }
+      }
    }
 
 }

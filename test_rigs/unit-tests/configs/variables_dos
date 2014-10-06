@@ -1,0 +1,7 @@
+!
+hostname variables_dos
+!
+interface FastEthernet0/0
+ ip access-group ABC_def.gh_vlan789_out_20000101 out
+!
+end

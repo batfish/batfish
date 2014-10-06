@@ -2,6 +2,8 @@ package batfish.representation.juniper;
 
 public class PolicyStatementSetLocalPreferenceLine extends PolicyStatement_SetLine {
 
+   private static final long serialVersionUID = 1L;
+   
    private int _localPreference;
       
    /* ------------------------------ Constructor ----------------------------*/

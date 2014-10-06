@@ -1,5 +1,8 @@
 package batfish.z3.node;
 
+import java.util.Collections;
+import java.util.Set;
+
 public class VarIntExpr extends IntExpr {
 
    private String _var;
@@ -16,6 +19,15 @@ public class VarIntExpr extends IntExpr {
          return _var.equals(rhs._var);
       }
       return false;
+   }
+
+   public String getVariable() {
+      return _var;
+   }
+
+   @Override
+   public Set<String> getVariables() {
+      return Collections.singleton(_var);
    }
 
    @Override

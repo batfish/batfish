@@ -5,8 +5,18 @@ block(`Layer2_rules) {
    clauses(`{
 // BEGIN CODE
 
+FlowSinkInterface(node, interface) <-
+   GuessFlowSinkInterface(),
+   IpReadyInt(node, interface, _, _),
+   interface != Interface_DYNAMIC[],
+   interface != Interface_FLOW_SINK_TERMINATION[],
+   interface != Interface_NULL[],
+   !LanAdjacent(node, interface, _, _).
+
 LanAdjacent(node1, int1, node2, int2) <-
+   !GuessTopology(_),
    SamePhysicalSegment(node1, int1, node2, int2).
+// Guessed topology
 LanAdjacent(node1, int1, node2, int2) <-
    GuessTopology(_),
    !SetFakeInterface(node1, int1),
@@ -15,13 +25,17 @@ LanAdjacent(node1, int1, node2, int2) <-
    IpReadyInt(node2, int2, ip2, prefix_length),
    NetworkOf[ip1, prefix_length] = NetworkOf[ip2, prefix_length],
    node1 != node2.
+// adjacent access vlan interfaces
 LanAdjacent(node1, int1, node2, int2) <-
+   !GuessTopology(_),
+   GuessTopology(_),
    SamePhysicalSegment(node1, int1, switch, sInt1),
    SwitchportAccess(switch, sInt1, vlan),
    SwitchportAccess(switch, sInt2, vlan),
    LanAdjacent(node2, int2, switch, sInt2).
 // access vlans are trunked natively
 LanAdjacent(node1, int1, node2, int2) <-
+   !GuessTopology(_),
    SamePhysicalSegment(node1, int1, switch1, sInt11),
    SwitchportAccess(switch1, sInt11, vlan),
    SwitchportTrunkAllows(switch1, sInt12, vlan),
@@ -33,6 +47,7 @@ LanAdjacent(node1, int1, node2, int2) <-
    LanAdjacent(node2, int2, switch2, sInt22).
 // access vlans are separate from each native vlan in the trunk
 LanAdjacent(node1, int1, node2, int2) <-
+   !GuessTopology(_),
    SamePhysicalSegment(node1, int1, switch1, sInt11),
    SwitchportAccess(switch1, sInt11, vlan),
    SwitchportTrunkAllows(switch1, sInt12, vlan),
@@ -46,25 +61,45 @@ LanAdjacent(node1, int1, node2, int2) <-
    SwitchportTrunkAllows(switch2, sInt21, vlan),
    SwitchportAccess(switch2, sInt22, vlan),
    LanAdjacent(node2, int2, switch2, sInt22).
+// vlan adjacencies
+LanAdjacent(node1, int1, node2, int2) <-
+   !GuessTopology(_),
+   VlanAdjacent(node1, int1, node2, int2).
 
 SwitchportAccess(switch, interface, vlan) <-
+   !GuessTopology(_),
    SetSwitchportAccess(switch, interface, vlan),
    SetActiveInt(switch, interface).
 
 SwitchportTrunkAllows(switch, interface, vlan) <-
+   !GuessTopology(_),
    SetSwitchportTrunkAllows(switch, interface, vlanStart, vlanEnd),
    UsedVlan(vlan),
    VlanNumber[vlan] >= VlanNumber[vlanStart],
    VlanNumber[vlan] <= VlanNumber[vlanEnd].
    
 SwitchportTrunkNative(switch, interface, vlan) <-
+   !GuessTopology(_),
    SetSwitchportTrunkNative(switch, interface, vlan),
    SetActiveInt(switch, interface).
 
 UsedVlan(vlan) <-
-   SetSwitchportAccess(_, _, vlan).
-UsedVlan(vlan) <-
-   SetSwitchportTrunkNative(_, _, vlan).
+   SetVlanInterface(_, _, vlan).
+
+VlanAdjacent(node1, vlanInt1, node2, vlanInt2) <-
+   !GuessTopology(_),
+   SetVlanInterface(node1, vlanInt1, vlan),
+   SetVlanInterface(node2, vlanInt2, vlan),
+   SwitchportTrunkAllows(node1, int1, vlan),
+   SwitchportTrunkAllows(node2, int2, vlan),
+   LanAdjacent(node1, int1, node2, int2).
+VlanAdjacent(node1, vlanInt1, node2, vlanInt2) <-
+   !GuessTopology(_),
+   node1 != node2,
+   node1 != node3,
+   node2 != node3,
+   VlanAdjacent(node1, vlanInt1, node3, _),
+   VlanAdjacent(node3, _, node2, vlanInt2).
 
 VlanNumber[x] = n <-
    Vlan_number(x:n).

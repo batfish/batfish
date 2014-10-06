@@ -178,6 +178,9 @@ RoutingProtocol_IBGP[] = x ->
 RoutingProtocol_OSPF[] = x ->
    RoutingProtocol(x).
 
+RoutingProtocol_OSPF_E1[] = x ->
+   RoutingProtocol(x).
+
 RoutingProtocol_OSPF_E2[] = x ->
    RoutingProtocol(x).
 

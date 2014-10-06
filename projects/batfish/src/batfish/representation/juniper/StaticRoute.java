@@ -1,11 +1,17 @@
 package batfish.representation.juniper;
 
-public class StaticRoute {
-   private String _prefix;
+import java.io.Serializable;
+
+public class StaticRoute implements Serializable {
+
+   private static final long serialVersionUID = 1L;
+
+   private int _distance;
    private String _mask;
-   private String _nextHopIp;
-   private int    _distance;
    private String _nextHopInterface;
+   private String _nextHopIp;
+   private String _prefix;
+   private int _tag;
 
    public StaticRoute(String prefix, String mask, String nextHopIp,
          String nextHopInterface, int distance) {

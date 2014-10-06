@@ -2,7 +2,9 @@ package batfish.main;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -14,10 +16,18 @@ import org.apache.commons.cli.ParseException;
 
 public class Settings {
 
+   private static final String ARG_ACCEPT_NODE = "acceptnode";
    private static final String ARG_ANONYMIZE = "anonymize";
+   private static final String ARG_BLACK_HOLE = "blackhole";
+   private static final String ARG_BLACK_HOLE_PATH = "blackholepath";
+   private static final String ARG_BLACKLIST_DST_IP = "blacklistdstip";
+   private static final String ARG_BLACKLIST_INTERFACE = "blint";
+   private static final String ARG_BLACKLIST_NODE = "blnode";
+   private static final String ARG_BUILD_PREDICATE_INFO = "bpi";
    private static final String ARG_CB_HOST = "lbhost";
    private static final String ARG_CB_PORT = "lbport";
    private static final String ARG_COMPILE = "compile";
+   private static final String ARG_CONC_UNIQUE = "concunique";
    private static final String ARG_COUNT = "count";
    private static final String ARG_DATA_PLANE = "dp";
    private static final String ARG_DATA_PLANE_DIR = "dpdir";
@@ -37,43 +47,68 @@ public class Settings {
    private static final String ARG_FLOWS = "flow";
    private static final String ARG_GUI = "gui";
    private static final String ARG_HELP = "help";
+   private static final String ARG_INTERFACE_MAP_PATH = "impath";
+   private static final String ARG_LB_WEB_ADMIN_PORT = "lbwebadminport";
+   private static final String ARG_LB_WEB_PORT = "lbwebport";
    private static final String ARG_LOG_LEVEL = "log";
    private static final String ARG_LOGICDIR = "logicdir";
+   private static final String ARG_MPI = "mpi";
+   private static final String ARG_MPI_PATH = "mpipath";
    private static final String ARG_NO_TRAFFIC = "notraffic";
+   private static final String ARG_NODE_SET_PATH = "nodes";
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
    private static final String ARG_PRINT_PARSE_TREES = "ppt";
    private static final String ARG_QUERY = "query";
    private static final String ARG_QUERY_ALL = "all";
+   private static final String ARG_REACH = "reach";
+   private static final String ARG_REACH_PATH = "reachpath";
    private static final String ARG_REDIRECT_STDERR = "redirect";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
+   private static final String ARG_RULES_WITH_SUPPRESSED_WARNINGS = "rulenowarn";
    private static final String ARG_SERIALIZE_INDEPENDENT = "si";
    private static final String ARG_SERIALIZE_INDEPENDENT_PATH = "sipath";
+   private static final String ARG_SERIALIZE_TO_TEXT = "stext";
    private static final String ARG_SERIALIZE_VENDOR = "sv";
    private static final String ARG_SERIALIZE_VENDOR_PATH = "svpath";
-   private static final String ARG_SSH_PORT = "sshport";
    private static final String ARG_TEST_RIG_PATH = "testrig";
    private static final String ARG_UPDATE = "update";
+   private static final String ARG_VAR_SIZE_MAP_PATH = "vsmpath";
    private static final String ARG_WORKSPACE = "workspace";
    private static final String ARG_Z3 = "z3";
    private static final String ARG_Z3_CONCRETIZE = "conc";
-   private static final String ARG_Z3_CONCRETIZER_INPUT_FILE = "concin";
+   private static final String ARG_Z3_CONCRETIZER_INPUT_FILES = "concin";
+   private static final String ARG_Z3_CONCRETIZER_NEGATED_INPUT_FILES = "concinneg";
    private static final String ARG_Z3_CONCRETIZER_OUTPUT_FILE = "concout";
-   private static final String ARG_Z3_OUTPUT = "z3out";
+   private static final String ARG_Z3_OUTPUT = "z3path";
+   private static final String ARGNAME_ACCEPT_NODE = "node";
    private static final String ARGNAME_ANONYMIZE = "path";
+   private static final String ARGNAME_BLACK_HOLE_PATH = "path";
+   private static final String ARGNAME_BLACKLIST_DST_IP = "ip";
+   private static final String ARGNAME_BLACKLIST_INTERFACE = "node,interface";
+   private static final String ARGNAME_BLACKLIST_NODE = "node";
+   private static final String ARGNAME_BUILD_PREDICATE_INFO = "path";
    private static final String ARGNAME_DATA_PLANE_DIR = "path";
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
    private static final String ARGNAME_DUMP_IF_DIR = "path";
    private static final String ARGNAME_DUMP_INTERFACE_DESCRIPTIONS_PATH = "path";
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
+   private static final String ARGNAME_INTERFACE_MAP_PATH = "path";
+   private static final String ARGNAME_LB_WEB_ADMIN_PORT = "port";
+   private static final String ARGNAME_LB_WEB_PORT = "port";
    private static final String ARGNAME_LOGICDIR = "path";
+   private static final String ARGNAME_MPI_PATH = "path";
+   private static final String ARGNAME_NODE_SET_PATH = "path";
+   private static final String ARGNAME_REACH_PATH = "path";
    private static final String ARGNAME_REVERT = "branch-name";
+   private static final String ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS = "rule-names";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
-   private static final String ARGNAME_SSH_PORT = "port";
-   private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILE = "path";
+   private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
+   private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILES = "paths";
+   private static final String ARGNAME_Z3_CONCRETIZER_NEGATED_INPUT_FILES = "paths";
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
    private static final String ARGNAME_Z3_OUTPUT = "path";
    public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "55181";
@@ -84,28 +119,35 @@ public class Settings {
    private static final String DEFAULT_DUMP_IF_DIR = "if";
    private static final String DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH = "interface_descriptions";
    private static final String DEFAULT_FLOW_PATH = "flows";
-   private static final String DEFAULT_FLOW_SINK_PATH = "flow_sinks";
+   private static final String DEFAULT_LB_WEB_ADMIN_PORT = "55183";
+   private static final String DEFAULT_LB_WEB_PORT = "8080";
    private static final String DEFAULT_LOG_LEVEL = "2";
    private static final List<String> DEFAULT_PREDICATES = Collections
          .singletonList("InstalledRoute");
    private static final String DEFAULT_SERIALIZE_INDEPENDENT_PATH = "serialized-independent-configs";
    private static final String DEFAULT_SERIALIZE_VENDOR_PATH = "serialized-vendor-configs";
    private static final String DEFAULT_TEST_RIG_PATH = "default_test_rig";
-   private static final String DEFAULT_Z3_CONCRETIZER_INPUT_FILE = "z3-concretizer-input.smt2";
-   private static final String DEFAULT_Z3_CONCRETIZER_OUTPUT_FILE = "z3-concretizer-output.smt2";
    private static final String DEFAULT_Z3_OUTPUT = "z3-dataplane-output.smt2";
    private static final boolean DEFAULT_Z3_SIMPLIFY = true;
    private static final String EXECUTABLE_NAME = "batfish";
 
+   private String _acceptNode;
    private boolean _anonymize;
    private String _anonymizeDir;
+   private boolean _blackHole;
+   private String _blackHolePath;
+   private String _blacklistDstIp;
+   private String _blacklistInterface;
+   private String _blacklistNode;
+   private boolean _buildPredicateInfo;
    private boolean _canExecute;
    private String _cbHost;
    private int _cbPort;
    private boolean _compile;
    private boolean _concretize;
-   private String _concretizerInputFilePath;
+   private String[] _concretizerInputFilePaths;
    private String _concretizerOutputFilePath;
+   private boolean _concUnique;
    private boolean _counts;
    private boolean _dataPlane;
    private String _dataPlaneDir;
@@ -122,11 +164,19 @@ public class Settings {
    private String _flowPath;
    private boolean _flows;
    private String _flowSinkPath;
+   private boolean _genMultipath;
    private List<String> _helpPredicates;
    private String _hsaInputDir;
    private String _hsaOutputDir;
+   private String _interfaceMapPath;
+   private int _lbWebAdminPort;
+   private int _lbWebPort;
    private String _logicDir;
+   private String _logicSrcDir;
    private int _logLevel;
+   private String _mpiPath;
+   private String[] _negatedConcretizerInputFilePaths;
+   private String _nodeSetPath;
    private boolean _noTraffic;
    private Options _options;
    private List<String> _predicates;
@@ -134,35 +184,42 @@ public class Settings {
    private boolean _printSemantics;
    private boolean _query;
    private boolean _queryAll;
+   private boolean _reach;
+   private String _reachPath;
    private boolean _redirectStdErr;
    private boolean _removeFacts;
    private boolean _revert;
    private String _revertBranchName;
+   private Set<String> _rulesWithSuppressedWarnings;
    private String _secondTestRigPath;
    private boolean _serializeIndependent;
    private String _serializeIndependentPath;
+   private boolean _serializeToText;
    private boolean _serializeVendor;
    private String _serializeVendorPath;
    private boolean _simplify;
-   private Integer _sshPort;
    private String _testRigPath;
    private boolean _update;
+   private String _varSizeMapPath;
    private String _workspaceName;
    private boolean _z3;
    private String _z3File;
 
-   public Settings() {
-      initOptions();
-      parseCommandLine(new String[] {});
+   public Settings() throws ParseException {
+      this(new String[] {});
    }
 
-   public Settings(String[] args) {
+   public Settings(String[] args) throws ParseException {
       initOptions();
       parseCommandLine(args);
    }
 
    public boolean canExecute() {
       return _canExecute;
+   }
+
+   public boolean concretizeUnique() {
+      return _concUnique;
    }
 
    public boolean createWorkspace() {
@@ -177,6 +234,10 @@ public class Settings {
       return _exitOnParseError;
    }
 
+   public String getAcceptNode() {
+      return _acceptNode;
+   }
+
    public boolean getAnonymize() {
       return _anonymize;
    }
@@ -185,16 +246,32 @@ public class Settings {
       return _anonymizeDir;
    }
 
+   public String getBlacklistDstIp() {
+      return _blacklistDstIp;
+   }
+
+   public String getBlacklistInterfaceString() {
+      return _blacklistInterface;
+   }
+
+   public String getBlacklistNode() {
+      return _blacklistNode;
+   }
+
    public String getBranchName() {
       return _revertBranchName;
+   }
+
+   public boolean getBuildPredicateInfo() {
+      return _buildPredicateInfo;
    }
 
    public boolean getConcretize() {
       return _concretize;
    }
 
-   public String getConcretizerInputFilePath() {
-      return _concretizerInputFilePath;
+   public String[] getConcretizerInputFilePaths() {
+      return _concretizerInputFilePaths;
    }
 
    public String getConcretizerOutputFilePath() {
@@ -261,6 +338,10 @@ public class Settings {
       return _flowSinkPath;
    }
 
+   public boolean getGenerateMultipathInconsistencyQuery() {
+      return _genMultipath;
+   }
+
    public List<String> getHelpPredicates() {
       return _helpPredicates;
    }
@@ -273,12 +354,52 @@ public class Settings {
       return _hsaOutputDir;
    }
 
+   public boolean getInterfaceFailureInconsistencyBlackHoleQuery() {
+      return _blackHole;
+   }
+
+   public String getInterfaceFailureInconsistencyBlackHoleQueryPath() {
+      return _blackHolePath;
+   }
+
+   public boolean getInterfaceFailureInconsistencyReachableQuery() {
+      return _reach;
+   }
+
+   public String getInterfaceMapPath() {
+      return _interfaceMapPath;
+   }
+
+   public int getLbWebAdminPort() {
+      return _lbWebAdminPort;
+   }
+
+   public int getLbWebPort() {
+      return _lbWebPort;
+   }
+
    public String getLogicDir() {
       return _logicDir;
    }
 
+   public String getLogicSrcDir() {
+      return _logicSrcDir;
+   }
+
    public int getLogLevel() {
       return _logLevel;
+   }
+
+   public String getMultipathInconsistencyQueryPath() {
+      return _mpiPath;
+   }
+
+   public String[] getNegatedConcretizerInputFilePaths() {
+      return _negatedConcretizerInputFilePaths;
+   }
+
+   public String getNodeSetPath() {
+      return _nodeSetPath;
    }
 
    public boolean getNoTraffic() {
@@ -301,8 +422,16 @@ public class Settings {
       return _queryAll;
    }
 
+   public String getReachableQueryPath() {
+      return _reachPath;
+   }
+
    public boolean getRemoveFacts() {
       return _removeFacts;
+   }
+
+   public Set<String> getRulesWithSuppressedWarnings() {
+      return _rulesWithSuppressedWarnings;
    }
 
    public String getSecondTestRigPath() {
@@ -317,6 +446,10 @@ public class Settings {
       return _serializeIndependentPath;
    }
 
+   public boolean getSerializeToText() {
+      return _serializeToText;
+   }
+
    public boolean getSerializeVendor() {
       return _serializeVendor;
    }
@@ -329,16 +462,16 @@ public class Settings {
       return _simplify;
    }
 
-   public Integer getSshPort() {
-      return _sshPort;
-   }
-
    public String getTestRigPath() {
       return _testRigPath;
    }
 
    public boolean getUpdate() {
       return _update;
+   }
+
+   public String getVarSizeMapPath() {
+      return _varSizeMapPath;
    }
 
    public String getWorkspaceName() {
@@ -382,6 +515,12 @@ public class Settings {
       _options.addOption(OptionBuilder.withArgName("port_number").hasArg()
             .withDescription("port of ConnectBlox server for regular session")
             .create(ARG_CB_PORT));
+      _options.addOption(OptionBuilder.withArgName(ARGNAME_LB_WEB_PORT)
+            .hasArg().withDescription("port of lb-web server")
+            .create(ARG_LB_WEB_PORT));
+      _options.addOption(OptionBuilder.withArgName(ARGNAME_LB_WEB_ADMIN_PORT)
+            .hasArg().withDescription("admin port lb-web server")
+            .create(ARG_LB_WEB_ADMIN_PORT));
       _options
             .addOption(OptionBuilder
                   .withArgName("number")
@@ -428,9 +567,13 @@ public class Settings {
             .withDescription("set z3 data plane logic output file")
             .create(ARG_Z3_OUTPUT));
       _options.addOption(OptionBuilder
-            .withArgName(ARGNAME_Z3_CONCRETIZER_INPUT_FILE).hasArg()
-            .withDescription("set z3 concretizer input file")
-            .create(ARG_Z3_CONCRETIZER_INPUT_FILE));
+            .withArgName(ARGNAME_Z3_CONCRETIZER_INPUT_FILES).hasArgs()
+            .withDescription("set z3 concretizer input file(s)")
+            .create(ARG_Z3_CONCRETIZER_INPUT_FILES));
+      _options.addOption(OptionBuilder
+            .withArgName(ARGNAME_Z3_CONCRETIZER_NEGATED_INPUT_FILES).hasArgs()
+            .withDescription("set z3 negated concretizer input file(s)")
+            .create(ARG_Z3_CONCRETIZER_NEGATED_INPUT_FILES));
       _options.addOption(OptionBuilder
             .withArgName(ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE).hasArg()
             .withDescription("set z3 concretizer output file")
@@ -480,9 +623,6 @@ public class Settings {
                   .withDescription(
                         "set logic dir with respect to filesystem of machine running LogicBlox")
                   .create(ARG_LOGICDIR));
-      _options.addOption(OptionBuilder.hasArg().withArgName(ARGNAME_SSH_PORT)
-            .withDescription("ssh port of machine running LogicBlox")
-            .create(ARG_SSH_PORT));
       _options.addOption(OptionBuilder.withDescription(
             "disable z3 simplification").create(ARG_DISABLE_Z3_SIMPLIFICATION));
       _options.addOption(OptionBuilder.withDescription(
@@ -517,23 +657,96 @@ public class Settings {
             .withArgName(ARGNAME_DUMP_INTERFACE_DESCRIPTIONS_PATH)
             .withDescription("path to read or write interface descriptions")
             .create(ARG_DUMP_INTERFACE_DESCRIPTIONS_PATH));
+      _options.addOption(OptionBuilder.hasArg()
+            .withArgName(ARGNAME_NODE_SET_PATH)
+            .withDescription("path to read or write node set")
+            .create(ARG_NODE_SET_PATH));
+      _options.addOption(OptionBuilder.hasArg()
+            .withArgName(ARGNAME_INTERFACE_MAP_PATH)
+            .withDescription("path to read or write interface-number mappings")
+            .create(ARG_INTERFACE_MAP_PATH));
+      _options.addOption(OptionBuilder.hasArg()
+            .withArgName(ARGNAME_VAR_SIZE_MAP_PATH)
+            .withDescription("path to read or write var-size mappings")
+            .create(ARG_VAR_SIZE_MAP_PATH));
+      _options.addOption(OptionBuilder.withDescription(
+            "generate multipath-inconsistency query").create(ARG_MPI));
+      _options.addOption(OptionBuilder
+            .hasArg()
+            .withArgName(ARGNAME_MPI_PATH)
+            .withDescription(
+                  "path to read or write multipath-inconsistency query")
+            .create(ARG_MPI_PATH));
+      _options.addOption(OptionBuilder.withDescription("serialize to text")
+            .create(ARG_SERIALIZE_TO_TEXT));
+      _options
+            .addOption(OptionBuilder
+                  .hasArg()
+                  .withArgName(ARGNAME_BUILD_PREDICATE_INFO)
+                  .withDescription(
+                        "build predicate info (should only be called by ant build script) with provided input logic dir")
+                  .create(ARG_BUILD_PREDICATE_INFO));
+      _options.addOption(OptionBuilder
+            .hasArg()
+            .withArgName(ARGNAME_BLACKLIST_INTERFACE)
+            .withDescription(
+                  "interface to blacklist (force inactive) during analysis")
+            .create(ARG_BLACKLIST_INTERFACE));
+      _options
+            .addOption(OptionBuilder
+                  .hasArg()
+                  .withArgName(ARGNAME_BLACKLIST_NODE)
+                  .withDescription(
+                        "node to blacklist (remove from configuration structures) during analysis")
+                  .create(ARG_BLACKLIST_NODE));
+      _options.addOption(OptionBuilder.hasArg()
+            .withArgName(ARGNAME_ACCEPT_NODE)
+            .withDescription("accept node for reachability query")
+            .create(ARG_ACCEPT_NODE));
+      _options.addOption(OptionBuilder.withDescription(
+            "generate interface-failure-inconsistency reachable packet query")
+            .create(ARG_REACH));
+      _options
+            .addOption(OptionBuilder
+                  .hasArg()
+                  .withArgName(ARGNAME_REACH_PATH)
+                  .withDescription(
+                        "path to read or write interface-failure-inconsistency reachable packet query")
+                  .create(ARG_REACH_PATH));
+      _options.addOption(OptionBuilder.withDescription(
+            "generate interface-failure-inconsistency black-hole packet query")
+            .create(ARG_BLACK_HOLE));
+      _options.addOption(OptionBuilder.withDescription(
+            "only concretize single packet (do not break up disjunctions)")
+            .create(ARG_CONC_UNIQUE));
+      _options
+            .addOption(OptionBuilder
+                  .hasArg()
+                  .withArgName(ARGNAME_BLACK_HOLE_PATH)
+                  .withDescription(
+                        "path to read or write interface-failure-inconsistency black-hole packet query")
+                  .create(ARG_BLACK_HOLE_PATH));
+      _options.addOption(OptionBuilder
+            .hasArg()
+            .withArgName(ARGNAME_BLACKLIST_DST_IP)
+            .withDescription(
+                  "destination ip to blacklist for concretizer queries")
+            .create(ARG_BLACKLIST_DST_IP));
+      _options.addOption(OptionBuilder
+            .withArgName(ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS).hasArgs()
+            .withDescription("suppress warnings for selected parser rules")
+            .create(ARG_RULES_WITH_SUPPRESSED_WARNINGS));
    }
 
-   private void parseCommandLine(String[] args) {
+   private void parseCommandLine(String[] args) throws ParseException {
       _canExecute = true;
       _printSemantics = false;
       CommandLine line = null;
       CommandLineParser parser = new GnuParser();
-      try {
-         // parse the command line arguments
-         line = parser.parse(_options, args);
-      }
-      catch (ParseException exp) {
-         // oops, something went wrong
-         System.err.println("Parsing failed.  Reason: " + exp.getMessage());
-         _canExecute = false;
-         return;
-      }
+
+      // parse the command line arguments
+      line = parser.parse(_options, args);
+
       if (line.hasOption(ARG_HELP)) {
          _canExecute = false;
          // automatically generate the help statement
@@ -579,19 +792,18 @@ public class Settings {
       }
       _concretize = line.hasOption(ARG_Z3_CONCRETIZE);
       if (_concretize) {
-         _concretizerInputFilePath = line
-               .getOptionValue(ARG_Z3_CONCRETIZER_INPUT_FILE,
-                     DEFAULT_Z3_CONCRETIZER_INPUT_FILE);
-         _concretizerOutputFilePath = line.getOptionValue(
-               ARG_Z3_CONCRETIZER_OUTPUT_FILE,
-               DEFAULT_Z3_CONCRETIZER_OUTPUT_FILE);
+         _concretizerInputFilePaths = line
+               .getOptionValues(ARG_Z3_CONCRETIZER_INPUT_FILES);
+         _negatedConcretizerInputFilePaths = line
+               .getOptionValues(ARG_Z3_CONCRETIZER_NEGATED_INPUT_FILES);
+         _concretizerOutputFilePath = line
+               .getOptionValue(ARG_Z3_CONCRETIZER_OUTPUT_FILE);
       }
       _flows = line.hasOption(ARG_FLOWS);
       if (_flows) {
          _flowPath = line.getOptionValue(ARG_FLOW_PATH, DEFAULT_FLOW_PATH);
-         _flowSinkPath = line.getOptionValue(ARG_FLOW_SINK_PATH,
-               DEFAULT_FLOW_SINK_PATH);
       }
+      _flowSinkPath = line.getOptionValue(ARG_FLOW_SINK_PATH);
       _secondTestRigPath = line.getOptionValue(ARG_DIFF);
       _diff = line.hasOption(ARG_DIFF);
       _dumpIF = line.hasOption(ARG_DUMP_IF);
@@ -609,9 +821,6 @@ public class Settings {
       _anonymize = line.hasOption(ARG_ANONYMIZE);
       if (_anonymize) {
          _anonymizeDir = line.getOptionValue(ARG_ANONYMIZE);
-      }
-      if (line.hasOption(ARG_SSH_PORT)) {
-         _sshPort = Integer.parseInt(line.getOptionValue(ARG_SSH_PORT));
       }
       _logicDir = line.getOptionValue(ARG_LOGICDIR, null);
       _simplify = DEFAULT_Z3_SIMPLIFY;
@@ -633,6 +842,37 @@ public class Settings {
       _dumpInterfaceDescriptionsPath = line.getOptionValue(
             ARG_DUMP_INTERFACE_DESCRIPTIONS_PATH,
             DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH);
+      _nodeSetPath = line.getOptionValue(ARG_NODE_SET_PATH);
+      _interfaceMapPath = line.getOptionValue(ARG_INTERFACE_MAP_PATH);
+      _varSizeMapPath = line.getOptionValue(ARG_VAR_SIZE_MAP_PATH);
+      _genMultipath = line.hasOption(ARG_MPI);
+      _mpiPath = line.getOptionValue(ARG_MPI_PATH);
+      _serializeToText = line.hasOption(ARG_SERIALIZE_TO_TEXT);
+      _lbWebPort = Integer.parseInt(line.getOptionValue(ARG_LB_WEB_PORT,
+            DEFAULT_LB_WEB_PORT));
+      _lbWebAdminPort = Integer.parseInt(line.getOptionValue(
+            ARG_LB_WEB_ADMIN_PORT, DEFAULT_LB_WEB_ADMIN_PORT));
+      _buildPredicateInfo = line.hasOption(ARG_BUILD_PREDICATE_INFO);
+      if (_buildPredicateInfo) {
+         _logicSrcDir = line.getOptionValue(ARG_BUILD_PREDICATE_INFO);
+      }
+      _blacklistInterface = line.getOptionValue(ARG_BLACKLIST_INTERFACE);
+      _blacklistNode = line.getOptionValue(ARG_BLACKLIST_NODE);
+      _reach = line.hasOption(ARG_REACH);
+      _reachPath = line.getOptionValue(ARG_REACH_PATH);
+      _blackHole = line.hasOption(ARG_BLACK_HOLE);
+      _blackHolePath = line.getOptionValue(ARG_BLACK_HOLE_PATH);
+      _blacklistDstIp = line.getOptionValue(ARG_BLACKLIST_DST_IP);
+      _concUnique = line.hasOption(ARG_CONC_UNIQUE);
+      _acceptNode = line.getOptionValue(ARG_ACCEPT_NODE);
+      _rulesWithSuppressedWarnings = new HashSet<String>();
+      if (line.hasOption(ARG_RULES_WITH_SUPPRESSED_WARNINGS)) {
+         String[] rulesWithSuppressedWarningsArray = line
+               .getOptionValues(ARG_RULES_WITH_SUPPRESSED_WARNINGS);
+         for (String ruleName : rulesWithSuppressedWarningsArray) {
+            _rulesWithSuppressedWarnings.add(ruleName);
+         }
+      }
    }
 
    public boolean printParseTree() {

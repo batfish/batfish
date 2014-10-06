@@ -2,8 +2,10 @@ package batfish.representation.juniper;
 
 import java.util.List;
 
-public class PolicyStatement {
+public class PolicyStatement implements Serializable {
    
+   private static final long serialVersionUID = 1L;
+
    private String _name;
    private List<PolicyStatement_Term> _terms;
    

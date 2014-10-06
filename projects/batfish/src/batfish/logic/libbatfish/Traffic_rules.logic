@@ -18,7 +18,7 @@ FlowAccepted(flow, node) <-
    HasIp(node, dstIp).
 FlowAccepted(flow, node) <-
    FlowReachPostOutInterface(flow, node, interface),
-   SetFlowSinkInterface(node, interface).
+   FlowSinkInterface(node, interface).
 
 FlowAllowedIn(flow, node, interface, filter) <-
    FlowReachPostInInterface(flow, node, interface),
@@ -50,6 +50,8 @@ FlowDropped(flow, node) <-
    FlowDeniedOut(flow, node, _, _, _).   
 FlowDropped(flow, node) <-
    FlowNoRoute(flow, node).
+FlowDropped(flow, node) <-
+   FlowNullRouted(flow, node).
 
 FlowInconsistent(flow) <-
    FlowLost(flow),
@@ -65,7 +67,12 @@ FlowLost(flow) <-
 FlowNoRoute(flow, node) <-
    FlowReachPreOut(flow, node),
    Flow_dstIp[flow] = dstIp,
-   !FibForward(node, dstIp, _).
+   !FibRoute(node, dstIp).
+
+FlowNullRouted(flow, node) <-
+   Flow_dstIp[flow] = dstIp,
+   FlowReachPreOut(flow, node),
+   FibDrop(node, dstIp).
 
 FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow,
 Flow(flow),
@@ -84,7 +91,7 @@ FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt) <-
    FlowReach(flow, srcNode, srcOutInt, midNode, _),
    FlowReach(flow, midNode, _, dstNode, dstInInt). 
 
-FlowPolicyDropped(flow, node, policy, clause) <-
+FlowPolicyDenied(flow, node, policy, clause) <-
    FlowReachPolicyRoute(flow, node, policy),
    PolicyMapDenyFlow(policy, clause, flow).
 
@@ -108,35 +115,49 @@ FlowReachPostOutInterface(flow, node, interface) <-
    
 FlowReachPreInInterface(flow, node, interface) <-
    FlowReachPostOutInterface(flow, prevNode, prevInterface),
-   LanAdjacent(prevNode, prevInterface, node, interface).
+   FlowReachPreOutEdge(flow, prevNode, _, prevInterface, node, interface),
+   interface != Interface_FLOW_SINK_TERMINATION[].
    
 FlowReachPreOut(flow, node) <-
    FlowReachPostIn(flow, node),
    Flow_dstIp[flow] = dstIp,
    !HasIp(node, dstIp).
-   
+
 FlowReachPreOutInterface(flow, node, interface) <-
+   FlowReachPreOutEdge(flow, node, _, interface, _, _).
+
+FlowReachPreOutEdge(flow, node, receivedInt, outInt, nextHop, nextHopInt) <-
+   FlowReachPreOutEdgeOrigin(flow, node, receivedInt, outInt, nextHop, nextHopInt) ;
+   FlowReachPreOutEdgeStandard(flow, node, receivedInt, outInt, nextHop, nextHopInt) ;
+   FlowReachPreOutEdgePolicyRoute(flow, node, receivedInt, outInt, nextHop, nextHopInt).
+
+FlowReachPreOutEdgeOrigin(flow, node, receivedInt, outInt, nextHop, nextHopInt) <-
    FlowReachPreOut(flow, node),
+   receivedInt = Interface_NULL[],
    Flow_dstIp[flow] = dstIp,
-   FibForward(node, dstIp, interface),
+   FibForward(node, dstIp, outInt, nextHop, nextHopInt),
    Flow_node[flow] = node.
-FlowReachPreOutInterface(flow, node, interface) <-
-   FlowReachPreOut(flow, node),
-   Flow_dstIp[flow] = dstIp,
-   FibForward(node, dstIp, interface),
-   FlowReachPostInInterface(flow, node, inInt),
-   (
-      !SetInterfaceRoutingPolicy(node, inInt, _) ;
-      (
-         SetInterfaceRoutingPolicy(node, inInt, policy),
-         !PolicyMapClauseMatchFlow(policy, _, flow)
-      )
-   ).
-FlowReachPreOutInterface(flow, node, interface) <-
+
+FlowReachPreOutEdgePolicyRoute(flow, node, receivedInt, interface, nextHop, nextHopInt) <-
+   FlowReachPostInInterface(flow, node, receivedInt),
+   SetInterfaceRoutingPolicy(node, receivedInt, policy),
    FlowReachPolicyRoute(flow, node, policy),
    PolicyMapPermitFlow(policy, clause, flow),
    SetPolicyMapClauseSetNextHopIp(policy, clause, nextHopIp),
-   FibForward(node, nextHopIp, interface).
+   FibForwardPolicyRouteNextHopIp(node, nextHopIp, interface, nextHop, nextHopInt).
+
+FlowReachPreOutEdgeStandard(flow, node, receivedInt, outInt, nextHop, nextHopInt) <-
+   FlowReachPreOut(flow, node),
+   Flow_dstIp[flow] = dstIp,
+   FibForward(node, dstIp, outInt, nextHop, nextHopInt),
+   FlowReachPostInInterface(flow, node, receivedInt),
+   (
+      !SetInterfaceRoutingPolicy(node, receivedInt, _) ;
+      (
+         SetInterfaceRoutingPolicy(node, receivedInt, policy),
+         !PolicyMapPermitFlow(policy, _, flow)
+      )
+   ).
 
 FlowReachStep(flow, srcNode, srcOutInt, dstNode, dstInInt) <-
    FlowReachPostOutInterface(flow, srcNode, srcOutInt),
@@ -152,6 +173,133 @@ need_PolicyMapMatchFlow(policy, flow) <-
    Flow(flow),
    PolicyMap(policy).
 
+FlowPathAcceptedEdge(flow, i, node1, int1, node2, int2, history) <-
+   FlowPathIntermediateEdge(flow, i, _, node1, int1, node2, int2, oldHistory),
+   FlowAccepted(flow, node2),
+   history = oldHistory + ":accepted".
+   
+FlowPathDeniedInEdge(flow, i, receivedInt, node1, int1, node2, int2, history, filter, line) <-
+   (
+      (
+         i = j + 1,
+         FlowPathIntermediateEdge(flow, j, _, _, _, node1, receivedInt, oldHistory),
+         history = oldHistory + "->" + currentHistory
+      ) ;
+      (
+         Flow_node[flow] = node1,
+         i = 0,
+         receivedInt = Interface_NULL[],
+         history = currentHistory
+      )
+   ),
+   (
+      (
+         !SetInterfaceFilterOut(node1, int1, _),
+         allowedOutStr = ""
+      ) ;
+      (
+         FlowAllowedOut(flow, node1, int1, filterOut),
+         IpAccessList_name(filterOut:filterOutStr),
+         allowedOutStr = ":allowedOut:'" + filterOutStr + "'"
+      )
+   ),
+   FlowReachPreOutEdge(flow, node1, receivedInt, int1, node2, int2),
+   FlowDeniedIn(flow, node2, int2, filter, line),
+   Node_name(node1:node1str),
+   Node_name(node2:node2str),
+   Interface_name(int1:int1str),
+   Interface_name(int2:int2str),
+   IpAccessList_name(filter:filterStr),
+   lineStr = int:string:convert[line],
+   currentHistory = "['" + node1str + "':'" + int1str + "'" + allowedOutStr + ", '" + node2str + "':'" + int2str + "':deniedIn:'" + filterStr + "':" + lineStr + "]".
+   
+FlowPathDeniedOutEdge(flow, i, receivedInt, node1, int1, node2, int2, history, filter, line) <-
+   (
+      (
+         i = j + 1,
+         FlowPathIntermediateEdge(flow, j, _, _, _, node1, receivedInt, oldHistory),
+         history = oldHistory + "->" + currentHistory
+      ) ;
+      (
+         Flow_node[flow] = node1,
+         i = 0,
+         receivedInt = Interface_NULL[],
+         history = currentHistory
+      )
+   ),
+   FlowReachPreOutEdge(flow, node1, receivedInt, int1, node2, int2),
+   FlowDeniedOut(flow, node1, int1, filter, line),
+   Node_name(node1:node1str),
+   Node_name(node2:node2str),
+   Interface_name(int1:int1str),
+   Interface_name(int2:int2str),
+   IpAccessList_name(filter:filterStr),
+   lineStr = int:string:convert[line],
+   currentHistory = "['" + node1str + "':'" + int1str + "':deniedOut:'" + filterStr + "':" + lineStr + ", '" + node2str + "':'" + int2str + "']".
+
+FlowPathHistory(flow, history) <-
+   FlowPathAcceptedEdge(flow, _, _, _, _, _, history) ;
+   FlowPathDeniedInEdge(flow, _, _, _, _, _, _, history, _, _) ;
+   FlowPathDeniedOutEdge(flow, _, _, _, _, _, _, history, _, _) ;
+   FlowPathNoRouteEdge(flow, _, _, _, _, _, history) ;
+   FlowPathNullRoutedEdge(flow, _, _, _, _, _, history).
+
+FlowPathIntermediateEdge(flow, i, receivedInt, node1, int1, node2, int2, history) <-
+   !FlowLoop(flow, _, _),
+   (
+      (
+         i = 0,
+         FlowReachPreOutEdgeOrigin(flow, node1, receivedInt, int1, node2, int2),
+         history = currentHistory
+      ) ;
+      (
+         i = j + 1,
+         FlowPathIntermediateEdge(flow, j, _, _, _, node1, receivedInt, oldHistory),
+         FlowReachPreOutEdge(flow, node1, receivedInt, int1, node2, int2),
+         history = oldHistory + "->" + currentHistory
+      )
+   ),
+   (
+      (
+         !SetInterfaceFilterIn(node2, int2, _),
+         allowedInStr = ""
+      ) ;
+      (
+         FlowAllowedIn(flow, node2, int2, filterIn),
+         IpAccessList_name(filterIn:filterInStr),
+         allowedInStr = ":allowedIn:'" + filterInStr + "'"
+      )
+   ),
+   (
+      (
+         !SetInterfaceFilterOut(node1, int1, _),
+         allowedOutStr = ""
+      ) ;
+      (
+         FlowAllowedOut(flow, node1, int1, filterOut),
+         IpAccessList_name(filterOut:filterOutStr),
+         allowedOutStr = ":allowedOut:'" + filterOutStr + "'"
+      )
+   ),
+   FlowReachPostOutInterface(flow, node1, int1),
+   FlowReachPostInInterface(flow, node2, int2),
+   Node_name(node1:node1str),
+   Node_name(node2:node2str),
+   Interface_name(int1:int1str),
+   Interface_name(int2:int2str),
+   currentHistory = "['" + node1str + "':'" + int1str + "'" + allowedOutStr + ", '" + node2str + "':'" + int2str + "'" + allowedInStr + "]".
+   
+FlowPathNoRouteEdge(flow, i, node1, int1, node2, int2, history) <-
+   FlowPathIntermediateEdge(flow, i, _, node1, int1, node2, int2, oldHistory),
+   FlowNoRoute(flow, node2),
+   history = oldHistory + ":noRoute".
+   
+FlowPathNullRoutedEdge(flow, i, node1, int1, node2, int2, history) <-
+   FlowPathIntermediateEdge(flow, i, _, node1, int1, node2, int2, oldHistory),
+   FlowNullRouted(flow, node2),
+   history = oldHistory + ":nullRouted".
+   
+lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
 // END CODE
    })
 } <-- .

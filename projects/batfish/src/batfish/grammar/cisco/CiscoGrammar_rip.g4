@@ -8,7 +8,7 @@ options {
 
 distance_rr_stanza
 :
-   DISTANCE distance=DEC NEWLINE
+   DISTANCE distance = DEC NEWLINE
 ;
 
 distribute_list_rr_stanza
@@ -18,7 +18,7 @@ distribute_list_rr_stanza
 
 network_rr_stanza
 :
-   NETWORK network=IP_ADDRESS NEWLINE
+   NETWORK network = IP_ADDRESS NEWLINE
 ;
 
 passive_interface_rr_stanza
@@ -33,7 +33,7 @@ redistribute_rr_stanza
 
 router_rip_stanza
 :
-   ROUTER RIP NEWLINE rr_stanza* closing_comment
+   ROUTER RIP NEWLINE rr_stanza*
 ;
 
 rr_stanza

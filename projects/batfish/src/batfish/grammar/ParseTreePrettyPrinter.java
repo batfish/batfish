@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -12,15 +13,16 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 public class ParseTreePrettyPrinter implements ParseTreeListener {
 
-   public static String print(ParserRuleContext ctx, Parser grammar) {
-      List<String> ruleNameList = Arrays.asList(grammar.getRuleNames());
-      List<String> tokenNameList = Arrays.asList(grammar.getTokenNames());
+   public static String print(ParserRuleContext ctx,
+         BatfishCombinedParser<?, ?> combinedParser) {
       ParseTreeWalker walker = new ParseTreeWalker();
       ParseTreePrettyPrinter printer = new ParseTreePrettyPrinter(ctx,
-            ruleNameList, tokenNameList);
+            combinedParser);
       walker.walk(printer, ctx);
       return printer._sb.toString();
    }
+
+   private BatfishCombinedParser<?, ?> _combinedParser;
 
    private ParserRuleContext _ctx;
    private int _indent;
@@ -30,7 +32,11 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
    private List<String> _tokenNames;
 
    private ParseTreePrettyPrinter(ParserRuleContext ctx,
-         List<String> ruleNames, List<String> tokenNames) {
+         BatfishCombinedParser<?, ?> combinedParser) {
+      Parser grammar = combinedParser.getParser();
+      List<String> ruleNames = Arrays.asList(grammar.getRuleNames());
+      List<String> tokenNames = Arrays.asList(grammar.getTokenNames());
+      _combinedParser = combinedParser;
       _ruleNames = ruleNames;
       _ctx = ctx;
       _tokenNames = tokenNames;
@@ -58,7 +64,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
 
    @Override
    public void visitErrorNode(ErrorNode ctx) {
-      String nodeText = ctx.getText().replace("\n", "\\n");
+      String nodeText = ctx.getText().replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r");
       _sb.append("\n");
       for (int i = 0; i < _indent; i++) {
          _sb.append("  ");
@@ -77,12 +83,15 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
 
    @Override
    public void visitTerminal(TerminalNode ctx) {
-      String nodeText = ctx.getText().replace("\n", "\\n").replace("\t", "\\t");
+      String nodeText = ctx.getText().replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r");
       _sb.append("\n");
       for (int i = 0; i < _indent; i++) {
          _sb.append("  ");
       }
-      int tokenType = ctx.getSymbol().getType();
+      Token t = ctx.getSymbol();
+      int tokenType = t.getType();
+      int modeAsInt = _combinedParser.getTokenMode(t);
+      String mode = _combinedParser.getLexer().getModeNames()[modeAsInt];
       String tokenName;
       if (tokenType == -1) {
          tokenName = "EOF";
@@ -92,6 +101,6 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
          tokenName = _tokenNames.get(tokenType);
          _sb.append(tokenName + ":'" + nodeText + "'");
       }
+      _sb.append("  <== mode:" + mode);
    }
-
 }

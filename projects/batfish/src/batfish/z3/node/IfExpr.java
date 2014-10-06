@@ -1,7 +1,9 @@
 package batfish.z3.node;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class IfExpr extends BooleanExpr implements ComplexExpr {
 
@@ -21,8 +23,24 @@ public class IfExpr extends BooleanExpr implements ComplexExpr {
    }
 
    @Override
+   public Set<String> getRelations() {
+      Set<String> relations = new HashSet<String>();
+      relations.addAll(_antecedent.getRelations());
+      relations.addAll(_consequent.getRelations());
+      return relations;
+   }
+
+   @Override
    public List<Expr> getSubExpressions() {
       return _subExpressions;
+   }
+
+   @Override
+   public Set<String> getVariables() {
+      Set<String> variables = new HashSet<String>();
+      variables.addAll(_antecedent.getVariables());
+      variables.addAll(_consequent.getVariables());
+      return variables;
    }
 
    private void init() {

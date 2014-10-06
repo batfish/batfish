@@ -7,6 +7,9 @@ block(`Ospf) {
    export(`{
 // BEGIN CODE
 
+BestOspfE1Route(route) ->
+   Route(route).
+
 BestOspfE2Route(route) ->
    Route(route).
 
@@ -21,10 +24,14 @@ BestOspfIARoute(route) ->
 BestOspfRoute(route) ->
    Route(route).
 
-MinOspfE2RouteCostToAdvertiser[node, network, advertiser] = minCostToAdvertiser ->
+MinOspfE1RouteCost[node, network] = minCost ->
    Node(node),
    Network(network),
-   Node(advertiser),
+   int(minCost).
+
+MinOspfE2RouteCostToAdvertiser[node, network] = minCostToAdvertiser ->
+   Node(node),
+   Network(network),
    int(minCostToAdvertiser).
 
 MinOspfIARouteCost[node, network] = minCost ->
@@ -37,6 +44,23 @@ MinOspfRouteCost[node, network] = minCost ->
    Network(network),
    int(minCost).
 
+NonOspfExportableRoute(route) ->
+   Route(route).
+
+OspfE1Network(node, network) ->
+   Node(node),
+   Network(network).
+
+OspfE1Route(route) ->
+   Route(route).
+
+OspfE1Route_constructor[advertiser, node, network, nextHopIp] = route ->
+   Node(advertiser),
+   Node(node),
+   Network(network),
+   Ip(nextHopIp),
+   Route(route).
+
 /// [OspfE2Route(node, network, nextHop, nextHopIp, cost, hopCount, advertiser)] =
 ///   Node [Node] has an ospf type E2 route to network [network] through next
 ///   hop  [nextHop] at ip address [nextHopIp], with cost [cost], and ospf cost
@@ -44,10 +68,19 @@ MinOspfRouteCost[node, network] = minCost ->
 OspfE2Route(route) ->
    Route(route).
 
-OspfExport(node, network, cost) ->
+OspfE2Route_constructor[advertiser, costToAdvertiser, node, network, nextHopIp] = route ->
+   Node(advertiser),
+   int(costToAdvertiser),
    Node(node),
    Network(network),
-   int(cost).
+   Ip(nextHopIp),
+   Route(route).
+
+OspfExport(node, network, cost, protocol) ->
+   Node(node),
+   Network(network),
+   int(cost),
+   RoutingProtocol(protocol).
 
 OspfGeneratedRoute(route) ->
    Route(route).
@@ -56,6 +89,10 @@ OspfGeneratedRoutePolicy(node, network, map) ->
    Node(node),
    Network(network),
    PolicyMap(map).
+
+OspfIANetwork(node, network) ->
+   Node(node),
+   Network(network).
 
 OspfIARoute(route) ->
    Route(route).
@@ -69,6 +106,10 @@ OspfNeighbors(node1, int1, cost1, node2, int2, cost2, network, area) ->
    int(cost2),
    Network(network),
    int(area).
+
+OspfNetwork(node, network) ->
+   Node(node),
+   Network(network).
 
 OspfNode(node, interface, cost, network, area) ->
    Node(node),
@@ -87,6 +128,18 @@ OspfOutboundPolicyClauseSetMetric(map, clause, metric) ->
 ///   [nextHop] at ip address [nextHopIp], with cost [cost].
 OspfRoute(route) ->
    Route(route).
+
+OspfRoute_advertiser[route] = advertiser ->
+   Route(route),
+   Node(advertiser).
+
+OspfRoute_advertiserIp[route] = advertiserIp ->
+   Route(route),
+   Ip(advertiserIp).
+
+OspfRoute_costToAdvertiser[route] = costToAdvertiser ->
+   Route(route),
+   int(costToAdvertiser).
 
 SetOspfGeneratedRoute(node, network) ->
    Node(node),
@@ -137,6 +190,10 @@ SetOspfRouterId(node, ip) ->
    Ip(ip).
 
 // END CODE
+   }),
+   clauses(`{
+lang:constructor(`OspfE1Route_constructor).
+lang:constructor(`OspfE2Route_constructor).
    })
 } <-- .
 

@@ -4,6 +4,7 @@ block(`Traffic) {
    alias_all(`libbatfish:IpAccessList),
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
    export(`{
 // BEGIN CODE
 
@@ -95,6 +96,10 @@ FlowNoRoute(flow, node) ->
    Flow(flow),
    Node(node).
 
+FlowNullRouted(flow, node) ->
+   Flow(flow),
+   Node(node).
+
 FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow ->
    Node(node),
    Ip(srcIp),
@@ -103,6 +108,77 @@ FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow ->
    int(dstPort),
    int(protocol),
    Flow(flow).
+
+FlowPathAcceptedEdge(flow, i, node1, int1, node2, int2, history) ->
+   Flow(flow),
+   int(i),
+   Node(node1),
+   Interface(int1),
+   Node(node2),
+   Interface(int2),
+   string(history).
+   
+FlowPathDeniedInEdge(flow, i, int0, node1, int1, node2, int2, history, filter, line) ->
+   Flow(flow),
+   int(i),
+   Interface(int0),
+   Node(node1),
+   Interface(int1),
+   Node(node2),
+   Interface(int2),
+   string(history),
+   IpAccessList(filter),
+   int(line).
+   
+FlowPathDeniedOutEdge(flow, i, int0, node1, int1, node2, int2, history, filter, line) ->
+   Flow(flow),
+   int(i),
+   Interface(int0),
+   Node(node1),
+   Interface(int1),
+   Node(node2),
+   Interface(int2),
+   string(history),
+   IpAccessList(filter),
+   int(line).
+
+FlowPathHistory(flow, history) ->
+   Flow(flow),
+   string(history).
+
+FlowPathIntermediateEdge(flow, i, int0, node1, int1, node2, int2, history) ->
+   Flow(flow),
+   int(i),
+   Interface(int0),
+   Node(node1),
+   Interface(int1),
+   Node(node2),
+   Interface(int2),
+   string(history).
+   
+FlowPathNoRouteEdge(flow, i, node1, int1, node2, int2, history) ->
+   Flow(flow),
+   int(i),
+   Node(node1),
+   Interface(int1),
+   Node(node2),
+   Interface(int2),
+   string(history).
+   
+FlowPathNullRoutedEdge(flow, i, node1, int1, node2, int2, history) ->
+   Flow(flow),
+   int(i),
+   Node(node1),
+   Interface(int1),
+   Node(node2),
+   Interface(int2),
+   string(history).
+   
+FlowPolicyDenied(flow, node, policy, clause) ->
+   Flow(flow),
+   Node(node),
+   PolicyMap(policy),
+   int(clause).
 
 /// [FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt)] =
 ///   Flow [flow] is successfully sent out interface [srcOutInt] on node
@@ -114,6 +190,11 @@ FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt) ->
    Interface(srcOutInt),
    Node(dstNode),
    Interface(dstInInt).
+
+FlowReachPolicyRoute(flow, node, policy) ->
+   Flow(flow),
+   Node(node),
+   PolicyMap(policy).
 
 /// [FlowReachPostIn[flow, node] =
 ///   Flow [flow] successfully enters node [node], either by originating there
@@ -140,6 +221,38 @@ FlowReachPreInInterface(flow, node, interface) ->
 FlowReachPreOut(flow, node) ->
    Flow(flow),
    Node(node).
+
+FlowReachPreOutEdge(flow, node, receivedInt, interface, nextHop, nextHopInt) ->
+   Flow(flow),
+   Node(node),
+   Interface(receivedInt),
+   Interface(interface),
+   Node(nextHop),
+   Interface(nextHopInt).
+
+FlowReachPreOutEdgeOrigin(flow, node, receivedInt, interface, nextHop, nextHopInt) ->
+   Flow(flow),
+   Node(node),
+   Interface(receivedInt),
+   Interface(interface),
+   Node(nextHop),
+   Interface(nextHopInt).
+
+FlowReachPreOutEdgePolicyRoute(flow, node, receivedInt, interface, nextHop, nextHopInt) ->
+   Flow(flow),
+   Node(node),
+   Interface(receivedInt),
+   Interface(interface),
+   Node(nextHop),
+   Interface(nextHopInt).
+
+FlowReachPreOutEdgeStandard(flow, node, receivedInt, interface, nextHop, nextHopInt) ->
+   Flow(flow),
+   Node(node),
+   Interface(receivedInt),
+   Interface(interface),
+   Node(nextHop),
+   Interface(nextHopInt).
 
 FlowReachPreOutInterface(flow, node, interface) ->
    Flow(flow),

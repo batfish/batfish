@@ -2,7 +2,6 @@ package batfish.main;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -18,10 +17,10 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,7 +31,6 @@ import java.util.TreeSet;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
@@ -43,6 +41,19 @@ import com.logicblox.connect.Workspace.Relation;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
+import batfish.collections.EdgeSet;
+import batfish.collections.FibMap;
+import batfish.collections.FibRow;
+import batfish.collections.FibSet;
+import batfish.collections.FlowSinkInterface;
+import batfish.collections.FlowSinkSet;
+import batfish.collections.FunctionSet;
+import batfish.collections.NodeSet;
+import batfish.collections.PolicyRouteFibIpMap;
+import batfish.collections.PolicyRouteFibNodeMap;
+import batfish.collections.PredicateSemantics;
+import batfish.collections.PredicateValueTypeMap;
+import batfish.collections.QualifiedNameMap;
 import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ConfigurationLexer;
 import batfish.grammar.ConfigurationParser;
@@ -53,18 +64,18 @@ import batfish.grammar.juniper.FlatJuniperGrammarLexer;
 import batfish.grammar.juniper.FlatJuniperGrammarParser;
 import batfish.grammar.juniper.JuniperGrammarLexer;
 import batfish.grammar.juniper.JuniperGrammarParser;
+import batfish.grammar.logicblox.LogQLPredicateInfoExtractor;
+import batfish.grammar.logicblox.LogiQLCombinedParser;
+import batfish.grammar.logicblox.LogiQLPredicateInfoResolver;
 import batfish.grammar.topology.BatfishTopologyCombinedParser;
 import batfish.grammar.topology.BatfishTopologyExtractor;
 import batfish.grammar.topology.GNS3TopologyCombinedParser;
 import batfish.grammar.topology.GNS3TopologyExtractor;
 import batfish.grammar.topology.TopologyExtractor;
-import batfish.grammar.z3.ConstraintsLexer;
-import batfish.grammar.z3.ConstraintsParser;
-import batfish.grammar.z3.QueryResultLexer;
-import batfish.grammar.z3.QueryResultParser;
-import batfish.grammar.z3.Result;
-import batfish.grammar.semantics.SemanticsLexer;
-import batfish.grammar.semantics.SemanticsParser;
+import batfish.grammar.z3.ConcretizerQueryResultCombinedParser;
+import batfish.grammar.z3.ConcretizerQueryResultExtractor;
+import batfish.grammar.z3.DatalogQueryResultCombinedParser;
+import batfish.grammar.z3.DatalogQueryResultExtractor;
 import batfish.logic.LogicResourceLocator;
 import batfish.logicblox.ConfigurationFactExtractor;
 import batfish.logicblox.Facts;
@@ -77,25 +88,34 @@ import batfish.logicblox.QueryException;
 import batfish.logicblox.TopologyFactExtractor;
 import batfish.representation.Configuration;
 import batfish.representation.Edge;
+import batfish.representation.Interface;
 import batfish.representation.Ip;
 import batfish.representation.Topology;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
 import batfish.representation.cisco.CiscoVendorConfiguration;
-import batfish.representation.cisco.Interface;
 import batfish.util.UrlZipExplorer;
 import batfish.util.StringFilter;
 import batfish.util.Util;
-import batfish.z3.Concretizer;
-import batfish.z3.FibRow;
+import batfish.z3.ConcretizerQuery;
+import batfish.z3.FailureInconsistencyBlackHoleQuerySynthesizer;
+import batfish.z3.ReachableQuerySynthesizer;
+import batfish.z3.MultipathInconsistencyQuerySynthesizer;
+import batfish.z3.QuerySynthesizer;
 import batfish.z3.Synthesizer;
 
-public class Batfish {
+public class Batfish implements AutoCloseable {
    private static final String BASIC_FACTS_BLOCKNAME = "BaseFacts";
    private static final String EDGES_FILENAME = "edges";
-   // private static final String FLOW_SINK_FILENAME = "flow_sinks";
-   private static final String FIB_PREDICATE_NAME = "FibNetworkForward";
+   private static final String FIB_POLICY_ROUTE_NEXT_HOP_PREDICATE_NAME = "FibForwardPolicyRouteNextHopIp";
+   private static final String FIB_PREDICATE_NAME = "FibNetwork";
    private static final String FIBS_FILENAME = "fibs";
+   private static final String FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME = "fibs-policy-route";
+   private static final Object FLOW_SINK_PREDICATE_NAME = "FlowSinkInterface";
+   private static final String FLOW_SINKS_FILENAME = "flow-sinks";
+   private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = { (byte) 0xac,
+         (byte) 0xed, (byte) 0x00, (byte) 0x05 };
+   private static final String PREDICATE_INFO_FILENAME = "predicateInfo.object";
    private static final String SEPARATOR = System.getProperty("file.separator");
    private static final String STATIC_FACT_BLOCK_PREFIX = "libbatfish:";
    private static final String TOPOLOGY_FILENAME = "topology.net";
@@ -149,8 +169,7 @@ public class Batfish {
       String result = lbFrontend.addProject(logicDir, "");
       cleanupLogicDir();
       if (result != null) {
-         error(0, result + "\n");
-         quit(1);
+         throw new BatfishException(result + "\n");
       }
       print(1, "SUCCESS\n");
       printElapsedTime();
@@ -168,8 +187,7 @@ public class Batfish {
             print(1, "OK\n");
          }
          else {
-            error(0, output + "\n");
-            quit(1);
+            throw new BatfishException(output + "\n");
          }
       }
       print(1, "SUCCESS\n");
@@ -181,15 +199,102 @@ public class Batfish {
 
    }
 
+   /**
+    * This function extracts predicate type information from the logic files. It
+    * is meant only to be called during the build process, and should never be
+    * executed from a jar
+    */
+   private void buildPredicateInfo() {
+      Path logicBinDirPath = null;
+      URL logicSourceURL = LogicResourceLocator.class.getProtectionDomain()
+            .getCodeSource().getLocation();
+      String logicSourceString = logicSourceURL.toString();
+      if (logicSourceString.startsWith("onejar:")) {
+         throw new BatfishException(
+               "buildPredicateInfo() should never be called from within a jar");
+      }
+      String logicPackageResourceName = LogicResourceLocator.class.getPackage()
+            .getName().replace('.', SEPARATOR.charAt(0));
+      try {
+         logicBinDirPath = Paths.get(LogicResourceLocator.class
+               .getClassLoader().getResource(logicPackageResourceName).toURI());
+      }
+      catch (URISyntaxException e) {
+         throw new BatfishException("Failed to resolve logic output directory",
+               e);
+      }
+      Path logicSrcDirPath = Paths.get(_settings.getLogicSrcDir());
+      final Set<Path> logicFiles = new TreeSet<Path>();
+      try {
+         Files.walkFileTree(logicSrcDirPath,
+               new java.nio.file.SimpleFileVisitor<Path>() {
+                  @Override
+                  public FileVisitResult visitFile(Path file,
+                        BasicFileAttributes attrs) throws IOException {
+                     String name = file.getFileName().toString();
+                     if (!name.equals("BaseFacts.logic")
+                           && !name.endsWith("_rules.logic")
+                           && !name.startsWith("service_")
+                           && name.endsWith(".logic")) {
+                        logicFiles.add(file);
+                     }
+                     return super.visitFile(file, attrs);
+                  }
+               });
+      }
+      catch (IOException e) {
+         throw new BatfishException("Could not make list of logic files", e);
+      }
+      PredicateValueTypeMap predicateValueTypes = new PredicateValueTypeMap();
+      QualifiedNameMap qualifiedNameMap = new QualifiedNameMap();
+      FunctionSet functions = new FunctionSet();
+      PredicateSemantics predicateSemantics = new PredicateSemantics();
+      List<ParserRuleContext> trees = new ArrayList<ParserRuleContext>();
+      for (Path logicFilePath : logicFiles) {
+         String input = readFile(logicFilePath.toFile());
+         LogiQLCombinedParser parser = new LogiQLCombinedParser(input);
+         ParserRuleContext tree = parse(parser, logicFilePath.toString());
+         trees.add(tree);
+      }
+      ParseTreeWalker walker = new ParseTreeWalker();
+      for (ParserRuleContext tree : trees) {
+         LogQLPredicateInfoExtractor extractor = new LogQLPredicateInfoExtractor(
+               predicateValueTypes);
+         walker.walk(extractor, tree);
+      }
+      for (ParserRuleContext tree : trees) {
+         LogiQLPredicateInfoResolver resolver = new LogiQLPredicateInfoResolver(
+               predicateValueTypes, qualifiedNameMap, functions,
+               predicateSemantics);
+         walker.walk(resolver, tree);
+      }
+      PredicateInfo predicateInfo = new PredicateInfo(predicateSemantics,
+            predicateValueTypes, functions, qualifiedNameMap);
+      File predicateInfoFile = logicBinDirPath.resolve(PREDICATE_INFO_FILENAME)
+            .toFile();
+      serializeObject(predicateInfo, predicateInfoFile);
+   }
+
    private void cleanupLogicDir() {
       if (_tmpLogicDir != null) {
          try {
             FileUtils.deleteDirectory(_tmpLogicDir);
          }
          catch (IOException e) {
-            e.printStackTrace();
+            throw new BatfishException(
+                  "Error cleaning up temporary logic directory", e);
          }
          _tmpLogicDir = null;
+      }
+   }
+
+   @Override
+   public void close() throws Exception {
+      for (LogicBloxFrontend lbFrontend : _lbFrontends) {
+         // Close backend threads
+         if (lbFrontend != null && lbFrontend.connected()) {
+            lbFrontend.close();
+         }
       }
    }
 
@@ -198,27 +303,50 @@ public class Batfish {
       resetTimer();
 
       lbFrontend.initEntityTable();
+
+      print(1, "Retrieving flow sink information from LogicBlox..");
+      FlowSinkSet flowSinks = getFlowSinkSet(lbFrontend);
+      print(1, "OK\n");
+
       print(1, "Retrieving topology information from LogicBlox..");
-      Set<Edge> topologyEdges = getTopologyEdges(lbFrontend);
+      EdgeSet topologyEdges = getTopologyEdges(lbFrontend);
       print(1, "OK\n");
 
       String fibQualifiedName = _predicateInfo.getPredicateNames().get(
             FIB_PREDICATE_NAME);
-      print(1, "Retrieving FIB information from LogicBlox..");
-      Relation fib = lbFrontend.queryPredicate(fibQualifiedName);
+      print(1, "Retrieving network FIB information from LogicBlox..");
+      Relation fibNetwork = lbFrontend.queryPredicate(fibQualifiedName);
       print(1, "OK\n");
+
+      String fibPolicyRouteNextHopQualifiedName = _predicateInfo
+            .getPredicateNames().get(FIB_POLICY_ROUTE_NEXT_HOP_PREDICATE_NAME);
+      print(1,
+            "Retrieving ip FIB information from LogicBlox for policy-routing next-hop-ips..");
+      Relation fibPolicyRouteNextHops = lbFrontend
+            .queryPredicate(fibPolicyRouteNextHopQualifiedName);
+      print(1, "OK\n");
+
       print(1, "Caclulating forwarding rules..");
-      Map<String, TreeSet<FibRow>> fibs = getRouteForwardingRules(fib,
-            lbFrontend);
+      FibMap fibs = getRouteForwardingRules(fibNetwork, lbFrontend);
+      PolicyRouteFibNodeMap policyRouteFibNodeMap = getPolicyRouteFibNodeMap(
+            fibPolicyRouteNextHops, lbFrontend);
       print(1, "OK\n");
 
+      Path flowSinksPath = Paths.get(_settings.getDataPlaneDir(),
+            FLOW_SINKS_FILENAME);
       Path fibsPath = Paths.get(_settings.getDataPlaneDir(), FIBS_FILENAME);
+      Path fibsPolicyRoutePath = Paths.get(_settings.getDataPlaneDir(),
+            FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME);
       Path edgesPath = Paths.get(_settings.getDataPlaneDir(), EDGES_FILENAME);
-
+      print(1, "Serializing flow sink set..");
+      serializeObject(flowSinks, flowSinksPath.toFile());
+      print(1, "OK\n");
       print(1, "Serializing fibs..");
       serializeObject(fibs, fibsPath.toFile());
       print(1, "OK\n");
-
+      print(1, "Serializing policy route next hop interface map..");
+      serializeObject(policyRouteFibNodeMap, fibsPolicyRoutePath.toFile());
+      print(1, "OK\n");
       print(1, "Serializing toplogy edges..");
       serializeObject(topologyEdges, edgesPath.toFile());
       print(1, "OK\n");
@@ -227,67 +355,85 @@ public class Batfish {
    }
 
    private void concretize() {
-      File queryOutputFile = new File(_settings.getConcretizerInputFilePath());
-      String queryOutputStr = null;
-      try {
-         queryOutputStr = FileUtils.readFileToString(queryOutputFile);
+      print(0, "\n*** GENERATING Z3 CONCRETIZER QUERIES ***\n");
+      resetTimer();
+      String[] concInPaths = _settings.getConcretizerInputFilePaths();
+      String[] negConcInPaths = _settings.getNegatedConcretizerInputFilePaths();
+      List<ConcretizerQuery> concretizerQueries = new ArrayList<ConcretizerQuery>();
+      String blacklistDstIpStr = _settings.getBlacklistDstIp();
+      if (blacklistDstIpStr != null) {
+         Ip blacklistDstIp = new Ip(blacklistDstIpStr);
+         ConcretizerQuery blacklistIpQuery = ConcretizerQuery
+               .blacklistDstIpQuery(blacklistDstIp);
+         concretizerQueries.add(blacklistIpQuery);
       }
-      catch (IOException e1) {
-         e1.printStackTrace();
-         quit(1);
-      }
-      ANTLRStringStream stream = new ANTLRStringStream(queryOutputStr);
-      QueryResultLexer lexer = new QueryResultLexer(stream);
-      CommonTokenStream tokens = new CommonTokenStream(lexer);
-      QueryResultParser parser = new QueryResultParser(tokens);
-      List<Result> results = null;
-      try {
-         results = parser.results();
-      }
-      catch (Exception e) {
-         error(0, " ...ERROR\n");
-         e.printStackTrace();
-      }
-      List<String> parserErrors = parser.getErrors();
-      List<String> lexerErrors = lexer.getErrors();
-      int numErrors = parserErrors.size() + lexerErrors.size();
-      if (numErrors > 0) {
-         error(0, " ..." + numErrors + " ERROR(S)\n");
-         for (String msg : lexer.getErrors()) {
-            error(2, "\tlexer: " + msg + "\n");
+      for (String concInPath : concInPaths) {
+         print(1, "Reading z3 datalog query output file: \"" + concInPath
+               + "\"..");
+         File queryOutputFile = new File(concInPath);
+         String queryOutputStr = readFile(queryOutputFile);
+         print(1, "OK\n");
+
+         DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
+               queryOutputStr);
+         ParserRuleContext tree = parse(parser, concInPath);
+
+         print(1, "Computing concretizer queries..");
+         ParseTreeWalker walker = new ParseTreeWalker();
+         DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(
+               _settings.concretizeUnique(), false);
+         walker.walk(extractor, tree);
+         print(1, "OK\n");
+
+         List<ConcretizerQuery> currentQueries = extractor
+               .getConcretizerQueries();
+         if (concretizerQueries.size() == 0) {
+            concretizerQueries.addAll(currentQueries);
          }
-         for (String msg : parser.getErrors()) {
-            error(2, "\tparser: " + msg + "\n");
+         else {
+            concretizerQueries = ConcretizerQuery.crossProduct(
+                  concretizerQueries, currentQueries);
          }
-         quit(1);
       }
-      File outputFile = new File(_settings.getConcretizerOutputFilePath());
-      outputFile.delete();
-      for (Result result : results) {
-         if (result == null) {
-            try {
-               FileUtils.write(outputFile, "unsat\n", true);
+      if (negConcInPaths != null) {
+         for (String negConcInPath : negConcInPaths) {
+            print(1, "Reading z3 datalog query output file (to be negated): \""
+                  + negConcInPath + "\"..");
+            File queryOutputFile = new File(negConcInPath);
+            String queryOutputStr = readFile(queryOutputFile);
+            print(1, "OK\n");
+
+            DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
+                  queryOutputStr);
+            ParserRuleContext tree = parse(parser, negConcInPath);
+
+            print(1, "Computing concretizer queries..");
+            ParseTreeWalker walker = new ParseTreeWalker();
+            DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(
+                  _settings.concretizeUnique(), true);
+            walker.walk(extractor, tree);
+            print(1, "OK\n");
+
+            List<ConcretizerQuery> currentQueries = extractor
+                  .getConcretizerQueries();
+            if (concretizerQueries.size() == 0) {
+               concretizerQueries.addAll(currentQueries);
             }
-            catch (IOException e) {
-               e.printStackTrace();
-               quit(1);
+            else {
+               concretizerQueries = ConcretizerQuery.crossProduct(
+                     concretizerQueries, currentQueries);
             }
-            quit(0);
          }
       }
-      Concretizer concretizer = new Concretizer(results,
-            Synthesizer.getStdArgs());
-      List<String> concretizerOutputs = concretizer.concretize();
-      for (String co : concretizerOutputs) {
-         co += "\n\n";
-         try {
-            FileUtils.write(outputFile, co, true);
-         }
-         catch (IOException e) {
-            e.printStackTrace();
-            quit(1);
-         }
+      for (int i = 0; i < concretizerQueries.size(); i++) {
+         ConcretizerQuery cq = concretizerQueries.get(i);
+         String concQueryPath = _settings.getConcretizerOutputFilePath() + "-"
+               + i + ".smt2";
+         print(1, "Writing concretizer query file: \"" + concQueryPath + "\"..");
+         writeFile(concQueryPath, cq.getText());
+         print(1, "OK\n");
       }
+      printElapsedTime();
    }
 
    private LogicBloxFrontend connect() {
@@ -298,8 +444,7 @@ public class Batfish {
          lbFrontend = initFrontend(assumedToExist, workspaceMaster);
       }
       catch (LBInitializationException e) {
-         error(0, ExceptionUtils.getStackTrace(e));
-         quit(1);
+         throw new BatfishException("Failed to connect to LogicBlox", e);
       }
       return lbFrontend;
    }
@@ -312,6 +457,10 @@ public class Batfish {
       Map<String, Configuration> configurations = new TreeMap<String, Configuration>();
       File dir = new File(serializedConfigPath);
       File[] serializedConfigs = dir.listFiles();
+      if (serializedConfigs == null) {
+         throw new BatfishException(
+               "Error reading vendor-independent configs directory");
+      }
       for (File serializedConfig : serializedConfigs) {
          String name = serializedConfig.getName();
          print(2, "Reading config: \"" + serializedConfig + "\"");
@@ -320,63 +469,33 @@ public class Batfish {
          configurations.put(name, c);
          print(2, "...OK\n");
       }
+      disableBlacklistedInterface(configurations);
+      disableBlacklistedNode(configurations);
       printElapsedTime();
       return configurations;
    }
 
-   private Map<String, TreeSet<FibRow>> deserializeFibs(File fibsFile) {
-      new HashMap<String, TreeSet<FibRow>>();
-      Map<String, TreeSet<FibRow>> fibs = new HashMap<String, TreeSet<FibRow>>();
-      Object fibsObj = deserializeObject(fibsFile);
-      Map<?, ?> fibsObjCast = (Map<?, ?>) fibsObj;
-      for (Object key : fibsObjCast.keySet()) {
-         String keyString = (String) key;
-         Object value = fibsObjCast.get(key);
-         TreeSet<?> setCast = (TreeSet<?>) value;
-         TreeSet<FibRow> set = new TreeSet<FibRow>();
-         for (Object setObj : setCast) {
-            FibRow row = (FibRow) setObj;
-            set.add(row);
-         }
-         fibs.put(keyString, set);
-      }
-      return fibs;
-   }
-
    private Object deserializeObject(File inputFile) {
-      XStream xstream = new XStream(new DomDriver("UTF-8"));
       FileInputStream fis;
       Object o = null;
+      ObjectInputStream ois;
       try {
          fis = new FileInputStream(inputFile);
-         ObjectInputStream ois = xstream.createObjectInputStream(fis);
+         if (!isJavaSerializationData(inputFile)) {
+            XStream xstream = new XStream(new DomDriver("UTF-8"));
+            ois = xstream.createObjectInputStream(fis);
+         }
+         else {
+            ois = new ObjectInputStream(fis);
+         }
          o = ois.readObject();
          ois.close();
       }
-      catch (FileNotFoundException e) {
-         e.printStackTrace();
-         quit(1);
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
-      }
-      catch (ClassNotFoundException e) {
-         e.printStackTrace();
-         quit(1);
+      catch (IOException | ClassNotFoundException e) {
+         throw new BatfishException("Failed to deserialize object from file: "
+               + inputFile.toString(), e);
       }
       return o;
-   }
-
-   private Set<Edge> deserializeTopologyEdges(File edgesFile) {
-      Set<Edge> edges = new HashSet<Edge>();
-      Object edgesObj = deserializeObject(edgesFile);
-      Set<?> edgesObjCast = (Set<?>) edgesObj;
-      for (Object edgeObj : edgesObjCast) {
-         Edge edge = (Edge) edgeObj;
-         edges.add(edge);
-      }
-      return edges;
    }
 
    public Map<String, VendorConfiguration> deserializeVendorConfigurations(
@@ -386,6 +505,9 @@ public class Batfish {
       Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<String, VendorConfiguration>();
       File dir = new File(serializedVendorConfigPath);
       File[] serializedConfigs = dir.listFiles();
+      if (serializedConfigs == null) {
+         throw new BatfishException("Error reading vendor configs directory");
+      }
       for (File serializedConfig : serializedConfigs) {
          String name = serializedConfig.getName();
          print(2, "Reading vendor config: \"" + serializedConfig + "\"");
@@ -396,6 +518,31 @@ public class Batfish {
       }
       printElapsedTime();
       return vendorConfigurations;
+   }
+
+   private void disableBlacklistedInterface(
+         Map<String, Configuration> configurations) {
+      String blacklistInterfaceString = _settings.getBlacklistInterfaceString();
+      if (blacklistInterfaceString != null) {
+         String[] blacklistInterfaceStringParts = blacklistInterfaceString
+               .split(",");
+         String blacklistInterfaceNode = blacklistInterfaceStringParts[0];
+         String blacklistInterfaceName = blacklistInterfaceStringParts[1];
+         Configuration c = configurations.get(blacklistInterfaceNode);
+         Interface i = c.getInterfaces().get(blacklistInterfaceName);
+         i.setActive(false);
+      }
+   }
+
+   private void disableBlacklistedNode(Map<String, Configuration> configurations) {
+      String blacklistNode = _settings.getBlacklistNode();
+      if (blacklistNode != null) {
+         if (!configurations.containsKey(blacklistNode)) {
+            throw new BatfishException("Cannot blacklist non-existent node: "
+                  + blacklistNode);
+         }
+         configurations.remove(blacklistNode);
+      }
    }
 
    private void dumpFacts(Map<String, StringBuilder> factBins) {
@@ -413,8 +560,7 @@ public class Batfish {
          }
       }
       catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
+         throw new BatfishException("Failed to write fact dump file", e);
       }
       printElapsedTime();
    }
@@ -429,14 +575,15 @@ public class Batfish {
          String node = vconfig.getHostname();
          CiscoVendorConfiguration config = null;
          try {
-            config = (CiscoVendorConfiguration)vconfig;
+            config = (CiscoVendorConfiguration) vconfig;
          }
          catch (ClassCastException e) {
             continue;
          }
-         Map<String, Interface> sortedInterfaces = new TreeMap<String, Interface>();
+         Map<String, batfish.representation.cisco.Interface> sortedInterfaces = new TreeMap<String, batfish.representation.cisco.Interface>();
          sortedInterfaces.putAll(config.getInterfaces());
-         for (Interface iface : sortedInterfaces.values()) {
+         for (batfish.representation.cisco.Interface iface : sortedInterfaces
+               .values()) {
             String iname = iface.getName();
             String description = iface.getDescription();
             sb.append(node + " " + iname);
@@ -457,70 +604,168 @@ public class Batfish {
       }
    }
 
-   private Map<String, String> extractPredicateSemantics(
-         Map<String, String> logicFiles) {
-      Map<String, String> predicateSemantics = new HashMap<String, String>();
-      for (String absolutePath : logicFiles.keySet()) {
-         String currentRules = logicFiles.get(absolutePath);
-         ANTLRStringStream in = new ANTLRStringStream(currentRules);
-         SemanticsLexer lexer = new SemanticsLexer(in);
-         CommonTokenStream tokens = new CommonTokenStream(lexer);
-         SemanticsParser parser = new SemanticsParser(tokens);
-         print(2, "Parsing: \"" + absolutePath + "\"");
-         try {
-            predicateSemantics.putAll(parser.predicate_semantics());
-         }
-         catch (RecognitionException e) {
-            print(2, " ...ERROR\n");
-            e.printStackTrace();
-            return null;
-         }
-         int numErrors = parser.getErrors().size() + lexer.getErrors().size();
-         if (numErrors > 0) {
-            error(0, " ..." + numErrors + " ERROR(S)\n");
-            for (String msg : lexer.getErrors()) {
-               error(2, "\tlexer: " + msg + "\n");
-            }
-            for (String msg : parser.getErrors()) {
-               error(2, "\tparser: " + msg + "\n");
-            }
-            return null;
-         }
-         print(2, " ...OK\n");
+   private void genInterfaceFailureBlackHoleQueries() {
+      print(0,
+            "\n*** GENERATING INTERFACE-FAILURE-INCONSISTENCY BLACK-HOLE QUERIES ***\n");
+      resetTimer();
 
+      String fiQueryBasePath = _settings
+            .getInterfaceFailureInconsistencyBlackHoleQueryPath();
+      String nodeSetPath = _settings.getNodeSetPath();
+      String blacklistedInterfaceString = _settings
+            .getBlacklistInterfaceString();
+
+      print(1, "Reading node set from : \"" + nodeSetPath + "\"..");
+      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
+      print(1, "OK\n");
+
+      for (String hostname : nodes) {
+         QuerySynthesizer synth = new FailureInconsistencyBlackHoleQuerySynthesizer(
+               hostname);
+         String queryText = synth.getQueryText();
+         String fiQueryPath;
+         if (blacklistedInterfaceString != null) {
+            fiQueryPath = fiQueryBasePath + "-" + blacklistedInterfaceString
+                  + "-" + hostname + ".smt2";
+         }
+         else {
+            fiQueryPath = fiQueryBasePath + "-" + hostname + ".smt2";
+         }
+
+         print(1, "Writing query to: \"" + fiQueryPath + "\"..");
+         writeFile(fiQueryPath, queryText);
+         print(1, "OK\n");
       }
-      return predicateSemantics;
+
+      printElapsedTime();
+   }
+
+   private void genMultipathQueries() {
+      print(0, "\n*** GENERATING MULTIPATH-INCONSISTENCY QUERIES ***\n");
+      resetTimer();
+
+      String mpiQueryBasePath = _settings.getMultipathInconsistencyQueryPath();
+      String nodeSetPath = _settings.getNodeSetPath();
+      String nodeSetTextPath = nodeSetPath + ".txt";
+
+      print(1, "Reading node set from : \"" + nodeSetPath + "\"..");
+      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
+      print(1, "OK\n");
+
+      for (String hostname : nodes) {
+         QuerySynthesizer synth = new MultipathInconsistencyQuerySynthesizer(
+               hostname);
+         String queryText = synth.getQueryText();
+         String mpiQueryPath = mpiQueryBasePath + "-" + hostname + ".smt2";
+         print(1, "Writing query to: \"" + mpiQueryPath + "\"..");
+         writeFile(mpiQueryPath, queryText);
+         print(1, "OK\n");
+      }
+
+      print(1, "Writing node lines for next stage..");
+      StringBuilder sb = new StringBuilder();
+      for (String node : nodes) {
+         sb.append(node + "\n");
+      }
+      writeFile(nodeSetTextPath, sb.toString());
+      print(1, "OK\n");
+
+      printElapsedTime();
+   }
+
+   private void genReachableQueries() {
+      print(0, "\n*** GENERATING REACHABLE QUERIES ***\n");
+      resetTimer();
+
+      String queryBasePath = _settings.getReachableQueryPath();
+      String nodeSetPath = _settings.getNodeSetPath();
+      String acceptNode = _settings.getAcceptNode();
+      String blacklistedNode = _settings.getBlacklistNode();
+      print(1, "Reading node set from : \"" + nodeSetPath + "\"..");
+      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
+      print(1, "OK\n");
+
+      for (String hostname : nodes) {
+         if (hostname.equals(acceptNode) || hostname.equals(blacklistedNode)) {
+            continue;
+         }
+         QuerySynthesizer synth = new ReachableQuerySynthesizer(hostname,
+               acceptNode);
+         String queryText = synth.getQueryText();
+         String queryPath;
+         queryPath = queryBasePath + "-" + hostname + ".smt2";
+
+         print(1, "Writing query to: \"" + queryPath + "\"..");
+         writeFile(queryPath, queryText);
+         print(1, "OK\n");
+      }
+
+      printElapsedTime();
    }
 
    private void genZ3(Map<String, Configuration> configurations) {
       print(0, "\n*** GENERATING Z3 LOGIC ***\n");
       resetTimer();
 
+      Path flowSinkSetPath = Paths.get(_settings.getDataPlaneDir(),
+            FLOW_SINKS_FILENAME);
       Path fibsPath = Paths.get(_settings.getDataPlaneDir(), FIBS_FILENAME);
+      Path prFibsPath = Paths.get(_settings.getDataPlaneDir(),
+            FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME);
       Path edgesPath = Paths.get(_settings.getDataPlaneDir(), EDGES_FILENAME);
 
-      print(1, "Deserializing fibs..");
-      Map<String, TreeSet<FibRow>> fibs = deserializeFibs(fibsPath.toFile());
+      print(1,
+            "Deserializing flow sink interface set: \""
+                  + flowSinkSetPath.toString() + "\"..");
+      FlowSinkSet flowSinks = (FlowSinkSet) deserializeObject(flowSinkSetPath
+            .toFile());
       print(1, "OK\n");
 
-      print(1, "Deserializing toplogy edges..");
-      Set<Edge> topologyEdges = deserializeTopologyEdges(edgesPath.toFile());
+      print(1, "Deserializing destination route fibs: \"" + fibsPath.toString()
+            + "\"..");
+      FibMap fibs = (FibMap) deserializeObject(fibsPath.toFile());
+      print(1, "OK\n");
+
+      print(1, "Deserializing policy route fibs: \"" + prFibsPath.toString()
+            + "\"..");
+      PolicyRouteFibNodeMap prFibs = (PolicyRouteFibNodeMap) deserializeObject(prFibsPath
+            .toFile());
+      print(1, "OK\n");
+
+      print(1, "Deserializing toplogy edges: \"" + edgesPath.toString()
+            + "\"..");
+      EdgeSet topologyEdges = (EdgeSet) deserializeObject(edgesPath.toFile());
       print(1, "OK\n");
 
       print(1, "Synthesizing Z3 logic..");
-      Synthesizer s = new Synthesizer(configurations, fibs, topologyEdges,
-            _settings.getSimplify());
-      try {
-         s.synthesize(_settings.getZ3File());
+      Synthesizer s = new Synthesizer(configurations, fibs, prFibs,
+            topologyEdges, _settings.getSimplify(), flowSinks);
+      String result = s.synthesize();
+      List<String> warnings = s.getWarnings();
+      int numWarnings = warnings.size();
+      if (numWarnings == 0) {
+         print(1, "OK\n");
       }
-      catch (IOException e) {
-         error(1, "ERROR\n");
-         e.printStackTrace();
-         quit(1);
+      else {
+         for (String warning : warnings) {
+            error(1, warning);
+         }
       }
-      print(1, "OK\n");
-      printElapsedTime();
 
+      String outputPath = _settings.getZ3File();
+      print(1, "Writing Z3 logic: \"" + outputPath + "\"..");
+      File z3Out = new File(outputPath);
+      z3Out.delete();
+      writeFile(outputPath, result);
+      print(1, "OK\n");
+
+      String nodeSetPath = _settings.getNodeSetPath();
+      print(1, "Serializing node set: \"" + nodeSetPath + "\"..");
+      NodeSet nodeSet = s.getNodeSet();
+      serializeObject(nodeSet, new File(nodeSetPath));
+      print(1, "OK\n");
+
+      printElapsedTime();
    }
 
    public Map<String, Configuration> getConfigurations(
@@ -572,6 +817,26 @@ public class Batfish {
       return seconds;
    }
 
+   private FlowSinkSet getFlowSinkSet(LogicBloxFrontend lbFrontend) {
+      FlowSinkSet flowSinks = new FlowSinkSet();
+      String qualifiedName = _predicateInfo.getPredicateNames().get(
+            FLOW_SINK_PREDICATE_NAME);
+      Relation flowSinkRelation = lbFrontend.queryPredicate(qualifiedName);
+      List<String> nodes = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nodes,
+            flowSinkRelation.getColumns().get(0));
+      List<String> interfaces = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, interfaces,
+            flowSinkRelation.getColumns().get(1));
+      for (int i = 0; i < nodes.size(); i++) {
+         String node = nodes.get(i);
+         String iface = interfaces.get(i);
+         FlowSinkInterface f = new FlowSinkInterface(node, iface);
+         flowSinks.add(f);
+      }
+      return flowSinks;
+   }
+
    private List<String> getHelpPredicates(Map<String, String> predicateSemantics) {
       Set<String> helpPredicateSet = new LinkedHashSet<String>();
       _settings.getHelpPredicates();
@@ -587,31 +852,81 @@ public class Batfish {
       return helpPredicates;
    }
 
+   private PolicyRouteFibNodeMap getPolicyRouteFibNodeMap(
+         Relation fibPolicyRouteNextHops, LogicBloxFrontend lbFrontend) {
+      PolicyRouteFibNodeMap nodeMap = new PolicyRouteFibNodeMap();
+      List<String> nodeList = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nodeList,
+            fibPolicyRouteNextHops.getColumns().get(0));
+      List<String> ipList = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_IP, ipList,
+            fibPolicyRouteNextHops.getColumns().get(1));
+      List<String> outInterfaces = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, outInterfaces,
+            fibPolicyRouteNextHops.getColumns().get(2));
+      List<String> inNodes = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, inNodes,
+            fibPolicyRouteNextHops.getColumns().get(3));
+      List<String> inInterfaces = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, inInterfaces,
+            fibPolicyRouteNextHops.getColumns().get(4));
+      int size = nodeList.size();
+      for (int i = 0; i < size; i++) {
+         String nodeOut = nodeList.get(i);
+         String nodeIn = inNodes.get(i);
+         Ip ip = new Ip(ipList.get(i));
+         String ifaceOut = outInterfaces.get(i);
+         String ifaceIn = inInterfaces.get(i);
+         PolicyRouteFibIpMap ipMap = nodeMap.get(nodeOut);
+         if (ipMap == null) {
+            ipMap = new PolicyRouteFibIpMap();
+            nodeMap.put(nodeOut, ipMap);
+         }
+         EdgeSet edges = ipMap.get(ip);
+         if (edges == null) {
+            edges = new EdgeSet();
+            ipMap.put(ip, edges);
+         }
+         Edge newEdge = new Edge(nodeOut, ifaceOut, nodeIn, ifaceIn);
+         edges.add(newEdge);
+      }
+      return nodeMap;
+   }
+
    public PredicateInfo getPredicateInfo(Map<String, String> logicFiles) {
       // Get predicate semantics from rules file
-      print(1, "\n*** PARSING PREDICATE SEMANTICS ***\n");
+      print(1, "\n*** PARSING PREDICATE INFO ***\n");
       resetTimer();
-      Map<String, String> predicateSemantics = extractPredicateSemantics(logicFiles);
-      if (predicateSemantics == null) {
-         quit(1);
-      }
-      PredicateInfo predicateInfo = new PredicateInfo(predicateSemantics);
+      String predicateInfoPath = getPredicateInfoPath();
+      PredicateInfo predicateInfo = (PredicateInfo) deserializeObject(new File(
+            predicateInfoPath));
       printElapsedTime();
       return predicateInfo;
    }
 
-   private Map<String, TreeSet<FibRow>> getRouteForwardingRules(
-         Relation installedRoutes, LogicBloxFrontend lbFrontend) {
-      Map<String, TreeSet<FibRow>> fibs = new HashMap<String, TreeSet<FibRow>>();
+   private String getPredicateInfoPath() {
+      File logicDir = retrieveLogicDir();
+      return Paths.get(logicDir.toString(), PREDICATE_INFO_FILENAME).toString();
+   }
+
+   private FibMap getRouteForwardingRules(Relation fibNetworkForward,
+         LogicBloxFrontend lbFrontend) {
+      FibMap fibs = new FibMap();
       List<String> nameList = new ArrayList<String>();
       lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nameList,
-            installedRoutes.getColumns().get(0));
+            fibNetworkForward.getColumns().get(0));
       List<String> networkList = new ArrayList<String>();
       lbFrontend.fillColumn(LBValueType.ENTITY_INDEX_NETWORK, networkList,
-            installedRoutes.getColumns().get(1));
-      List<String> interfaces = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, interfaces,
-            installedRoutes.getColumns().get(2));
+            fibNetworkForward.getColumns().get(1));
+      List<String> interfaceList = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, interfaceList,
+            fibNetworkForward.getColumns().get(2));
+      List<String> nextHopList = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nextHopList,
+            fibNetworkForward.getColumns().get(3));
+      List<String> nextHopIntList = new ArrayList<String>();
+      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nextHopIntList,
+            fibNetworkForward.getColumns().get(4));
 
       String currentHostname = "";
       Map<String, Integer> startIndices = new HashMap<String, Integer>();
@@ -628,18 +943,22 @@ public class Batfish {
       }
       endIndices.put(currentHostname, nameList.size() - 1);
       for (String hostname : startIndices.keySet()) {
-         TreeSet<FibRow> fibRows = new TreeSet<FibRow>();
+         FibSet fibRows = new FibSet();
          fibs.put(hostname, fibRows);
          int startIndex = startIndices.get(hostname);
          int endIndex = endIndices.get(hostname);
          for (int i = startIndex; i <= endIndex; i++) {
-            String networkString = networkList.get(i);
-            Ip networkAddress = new Ip(
-                  Util.getIpFromIpSubnetPair(networkString));
-            int prefixLength = Util
-                  .getPrefixLengthFromIpSubnetPair(networkString);
-            String iface = interfaces.get(i);
-            fibRows.add(new FibRow(networkAddress, prefixLength, iface));
+            String networkStr = networkList.get(i);
+            String[] networkStrs = networkStr.split("/");
+            String prefixStr = networkStrs[0];
+            String prefixLengthStr = networkStrs[1];
+            Ip prefix = new Ip(prefixStr);
+            int prefixLength = Integer.parseInt(prefixLengthStr);
+            String iface = interfaceList.get(i);
+            String nextHop = nextHopList.get(i);
+            String nextHopInt = nextHopIntList.get(i);
+            fibRows.add(new FibRow(prefix, prefixLength, iface, nextHop,
+                  nextHopInt));
          }
       }
       return fibs;
@@ -671,8 +990,8 @@ public class Batfish {
       return semanticsFiles;
    }
 
-   public Set<Edge> getTopologyEdges(LogicBloxFrontend lbFrontend) {
-      Set<Edge> edges = new HashSet<Edge>();
+   public EdgeSet getTopologyEdges(LogicBloxFrontend lbFrontend) {
+      EdgeSet edges = new EdgeSet();
       String qualifiedName = _predicateInfo.getPredicateNames().get(
             TOPOLOGY_PREDICATE_NAME);
       Relation topologyRelation = lbFrontend.queryPredicate(qualifiedName);
@@ -700,24 +1019,87 @@ public class Batfish {
       return edges;
    }
 
+   /**
+    * Generates a topology object from inferred edges encoded in interface
+    * descriptions.
+    * 
+    * @param configurations
+    *           The vendor specific configurations.
+    * @param includeExternal
+    *           Whether to include edges to nodes for which configuration files
+    *           were not supplied (used for debugging).
+    * @return The inferred topology.
+    */
+   private Topology inferTopologyFromInterfaceDescriptions(
+         Map<String, Configuration> configurations, boolean IncludeExternal) {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
    public LogicBloxFrontend initFrontend(boolean assumedToExist,
          String workspace) throws LBInitializationException {
       print(1, "\n*** STARTING CONNECTBLOX SESSION ***\n");
       resetTimer();
       LogicBloxFrontend lbFrontend = new LogicBloxFrontend(
             _settings.getConnectBloxHost(), _settings.getConnectBloxPort(),
-            _settings.getSshPort(), workspace, assumedToExist);
+            _settings.getLbWebPort(), _settings.getLbWebAdminPort(), workspace,
+            assumedToExist);
       lbFrontend.initialize();
       if (!lbFrontend.connected()) {
-         error(0,
-               "Error connecting to ConnectBlox service. Please make sure service is running and try again.\n\n");
-         quit(1);
+         throw new BatfishException(
+               "Error connecting to ConnectBlox service. Please make sure service is running and try again.");
       }
       print(1, "SUCCESS\n");
       printElapsedTime();
       _lbFrontends.add(lbFrontend);
       return lbFrontend;
 
+   }
+
+   private boolean isJavaSerializationData(File inputFile) {
+      try (FileInputStream i = new FileInputStream(inputFile)) {
+         int headerLength = JAVA_SERIALIZED_OBJECT_HEADER.length;
+         byte[] headerBytes = new byte[headerLength];
+         int result = i.read(headerBytes, 0, headerLength);
+         if (result != headerLength) {
+            throw new BatfishException("Read wrong number of bytes");
+         }
+         return Arrays.equals(headerBytes, JAVA_SERIALIZED_OBJECT_HEADER);
+      }
+      catch (IOException e) {
+         throw new BatfishException("Could not read header from file: "
+               + inputFile.toString(), e);
+      }
+   }
+
+   private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
+      ParserRuleContext tree = parser.parse();
+      List<String> errors = parser.getErrors();
+      int numErrors = errors.size();
+      if (numErrors > 0) {
+         error(1, numErrors + " ERROR(S)\n");
+         for (int i = 0; i < numErrors; i++) {
+            String prefix = "ERROR " + (i + 1) + ": ";
+            String msg = errors.get(i);
+            String prefixedMsg = Util.applyPrefix(prefix, msg);
+            error(1, prefixedMsg + "\n");
+         }
+         throw new BatfishException("Exiting due to parser errors");
+      }
+      else if (!_settings.printParseTree()) {
+         print(1, "OK\n");
+      }
+      else {
+         print(0, "OK, PRINTING PARSE TREE:\n");
+         print(0, ParseTreePrettyPrinter.print(tree, parser) + "\n\n");
+      }
+      return tree;
+   }
+
+   private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser,
+         String filename) {
+      print(1, "Parsing: \"" + filename + "\"..");
+      return parse(parser);
    }
 
    private Map<String, Configuration> parseConfigurations(
@@ -767,50 +1149,31 @@ public class Batfish {
       }
    }
 
-   private void parseFlowsFromConstraints(StringBuilder sw) {
-      // Path nodesPath = Paths.get(_settings.getFlowPath(), NODES_FILENAME);
-      // String nodesText = readFile(nodesPath.toFile());
-      // String[] nodes = nodesText.split("\n");
+   private void parseFlowsFromConstraints(StringBuilder sb) {
       Path flowConstraintsDir = Paths.get(_settings.getFlowPath());
       File[] constraintsFiles = flowConstraintsDir.toFile().listFiles(
             new FilenameFilter() {
                @Override
                public boolean accept(File dir, String filename) {
-                  return filename.matches(".*constraints.*.smt2.out");
+                  return filename.matches(".*-concrete-.*.smt2.out");
                }
             });
+      if (constraintsFiles == null) {
+         throw new BatfishException("Error reading flow constraints directory");
+      }
       for (File constraintsFile : constraintsFiles) {
          String flowConstraintsText = readFile(constraintsFile);
-         ANTLRStringStream s = new ANTLRStringStream(flowConstraintsText);
-         ConstraintsLexer lexer = new ConstraintsLexer(s);
-         CommonTokenStream tokens = new CommonTokenStream(lexer);
-         ConstraintsParser parser = new ConstraintsParser(tokens);
-         Map<String, Long> constraints = null;
-         print(2, "Parsing: \"" + constraintsFile.getAbsolutePath() + "\"");
-         try {
-            constraints = parser.constraints();
-         }
-         catch (RecognitionException e) {
-            e.printStackTrace();
-            quit(1);
-         }
-         List<String> parserErrors = parser.getErrors();
-         List<String> lexerErrors = lexer.getErrors();
-         int numErrors = parserErrors.size() + lexerErrors.size();
-         if (numErrors > 0) {
-            error(0, " ..." + numErrors + " ERROR(S)\n");
-            for (String msg : lexer.getErrors()) {
-               error(2, "\tlexer: " + msg + "\n");
-            }
-            for (String msg : parser.getErrors()) {
-               error(2, "\tparser: " + msg + "\n");
-            }
-            quit(1);
-         }
-         print(2, " ...OK\n");
-         if (constraints == null) {
+         ConcretizerQueryResultCombinedParser parser = new ConcretizerQueryResultCombinedParser(
+               flowConstraintsText);
+         ParserRuleContext tree = parse(parser, constraintsFile.toString());
+         ParseTreeWalker walker = new ParseTreeWalker();
+         ConcretizerQueryResultExtractor extractor = new ConcretizerQueryResultExtractor();
+         walker.walk(extractor, tree);
+         String node = extractor.getNode();
+         if (node == null) {
             continue;
          }
+         Map<String, Long> constraints = extractor.getConstraints();
          long src_ip = 0;
          long dst_ip = 0;
          long src_port = 0;
@@ -843,11 +1206,9 @@ public class Batfish {
                throw new Error("invalid variable name");
             }
          }
-         String node = constraintsFile.getName().replaceFirst(
-               ".*-([^-]*).smt2.out", "$1");
          String line = node + "|" + src_ip + "|" + dst_ip + "|" + src_port
                + "|" + dst_port + "|" + protocol + "\n";
-         sw.append(line);
+         sb.append(line);
       }
    }
 
@@ -857,7 +1218,7 @@ public class Batfish {
       TopologyExtractor extractor = null;
       Topology topology = null;
       File topologyPath = Paths.get(testRigPath, "topology.net").toFile();
-      print(2, "Parsing: \"" + topologyPath.getAbsolutePath() + "\"");
+      print(1, "Parsing: \"" + topologyPath.getAbsolutePath() + "\"");
       if (topologyFileText.startsWith("autostart")) {
          parser = new GNS3TopologyCombinedParser(topologyFileText);
          extractor = new GNS3TopologyExtractor();
@@ -874,35 +1235,12 @@ public class Batfish {
          error(0, "...ERROR\n");
          throw new Error("Topology format error");
       }
-      ParserRuleContext tree = parser.parse();
-      List<String> errors = parser.getErrors();
-      int numErrors = errors.size();
-      if (numErrors > 0) {
-         error(1, " ..." + numErrors + " ERROR(S)\n");
-         for (int i = 0; i < numErrors; i++) {
-            String prefix = "ERROR " + (i + 1) + ": ";
-            String msg = errors.get(i);
-            String prefixedMsg = Util.applyPrefix(prefix, msg);
-            error(1, prefixedMsg + "\n");
-         }
-         quit(1);
-      }
-      else if (!_settings.printParseTree()) {
-         print(1, "...OK\n");
-      }
-      else {
-         print(0, "...OK, PRINTING PARSE TREE:\n");
-         print(0,
-               ParseTreePrettyPrinter.print(tree,
-                     parser.getParser())
-                     + "\n\n");
-      }
+      ParserRuleContext tree = parse(parser);
       ParseTreeWalker walker = new ParseTreeWalker();
       walker.walk(extractor, tree);
       topology = extractor.getTopology();
       TopologyFactExtractor tfe = new TopologyFactExtractor(topology);
       tfe.writeFacts(factBins);
-      print(2, " ...OK\n");
    }
 
    private Map<String, VendorConfiguration> parseVendorConfigurations(
@@ -927,41 +1265,12 @@ public class Batfish {
          boolean antlr4 = false;
          if (fileText.charAt(0) == '!') {
             // antlr 4 stuff
-            print(1, "Parsing: \"" + currentPath + "\"");
             antlr4 = true;
             BatfishCombinedParser<?, ?> combinedParser = new CiscoCombinedParser(
                   fileText);
-            ParserRuleContext tree = combinedParser.parse();
-            List<String> errors = combinedParser.getErrors();
-            int numErrors = errors.size();
-            if (numErrors > 0) {
-               error(1, " ..." + numErrors + " ERROR(S)\n");
-               for (int i = 0; i < numErrors; i++) {
-                  String prefix = "ERROR " + (i + 1) + ": ";
-                  String msg = errors.get(i);
-                  String prefixedMsg = Util.applyPrefix(prefix, msg);
-                  error(1, prefixedMsg + "\n");
-               }
-               if (_settings.exitOnParseError()) {
-                  return null;
-               }
-               else {
-                  processingError = true;
-                  continue;
-               }
-            }
-            else if (!_settings.printParseTree()) {
-               print(1, "...OK\n");
-            }
-            else {
-               print(0, "...OK, PRINTING PARSE TREE:\n");
-               print(0,
-                     ParseTreePrettyPrinter.print(tree,
-                           combinedParser.getParser())
-                           + "\n\n");
-            }
+            ParserRuleContext tree = parse(combinedParser, currentPath);
             extractor = new CiscoControlPlaneExtractor(fileText,
-                  combinedParser.getParser());
+                  combinedParser, _settings.getRulesWithSuppressedWarnings());
             ParseTreeWalker walker = new ParseTreeWalker();
             walker.walk(extractor, tree);
             for (String warning : extractor.getWarnings()) {
@@ -1019,6 +1328,10 @@ public class Batfish {
          }
 
          // at this point we should have a VendorConfiguration vc
+         if (vendorConfigurations.containsKey(vc.getHostname()))
+            throw new Error("Duplicate hostname \"" + vc.getHostname()
+                  + "\" found in " + currentFile + "\n");
+
          vendorConfigurations.put(vc.getHostname(), vc);
       }
       if (processingError) {
@@ -1043,6 +1356,9 @@ public class Batfish {
          ConfigurationFactExtractor cfe = new ConfigurationFactExtractor(c,
                communities, factBins);
          cfe.writeFacts();
+         for (String warning : cfe.getWarnings()) {
+            error(1, warning);
+         }
       }
       printElapsedTime();
    }
@@ -1051,23 +1367,21 @@ public class Batfish {
          Map<String, StringBuilder> factBins) {
       print(1, "\n*** POSTING FACTS TO BLOXWEB SERVICES ***\n");
       resetTimer();
-      String ret = lbFrontend.startBloxWebServices();
-      if (ret != null) {
-         error(0, ret + "\n");
-         quit(1);
-      }
+      print(1, "Starting bloxweb services..");
+      lbFrontend.startLbWebServices();
+      print(1, "OK\n");
+      print(1, "Posting facts..");
       try {
          lbFrontend.postFacts(factBins);
       }
       catch (ServiceClientException e) {
-         e.printStackTrace();
-         quit(1);
+         throw new BatfishException("Failed to post facts to bloxweb services",
+               e);
       }
-      ret = lbFrontend.stopBloxWebServices();
-      if (ret != null) {
-         error(0, ret + "\n");
-         quit(1);
-      }
+      print(1, "OK\n");
+      print(1, "Stopping bloxweb services..");
+      lbFrontend.stopLbWebServices();
+      print(1, "OK\n");
       print(1, "SUCCESS\n");
       printElapsedTime();
    }
@@ -1160,16 +1474,6 @@ public class Batfish {
       print(0, "Semantics: " + semantics + "\n");
    }
 
-   public void quit(int exitCode) {
-      for (LogicBloxFrontend lbFrontend : _lbFrontends) {
-         // Close backend threads
-         if (lbFrontend != null && lbFrontend.connected()) {
-            lbFrontend.close();
-         }
-      }
-      System.exit(exitCode);
-   }
-
    private Map<File, String> readConfigurationFiles(String testRigPath) {
       print(1, "\n*** READING CONFIGURATION FILES ***\n");
       resetTimer();
@@ -1181,6 +1485,9 @@ public class Batfish {
             return !name.startsWith(".");
          }
       });
+      if (configFilePaths == null) {
+         throw new BatfishException("Error reading test rig configs directory");
+      }
       for (File file : configFilePaths) {
          print(2, "Reading: \"" + file.toString() + "\"\n");
          String fileText = readFile(file.getAbsoluteFile());
@@ -1196,8 +1503,8 @@ public class Batfish {
          text = FileUtils.readFileToString(file);
       }
       catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
+         throw new BatfishException("Failed to read file: " + file.toString(),
+               e);
       }
       return text;
    }
@@ -1219,7 +1526,8 @@ public class Batfish {
          public boolean accept(String filename) {
             return filename.endsWith(".lbb") || filename.endsWith(".lbp")
                   || filename.endsWith(".semantics")
-                  || filename.endsWith(locatorFilename);
+                  || filename.endsWith(locatorFilename)
+                  || filename.endsWith(PREDICATE_INFO_FILENAME);
          }
       };
       if (logicSourceString.startsWith("onejar:")) {
@@ -1251,8 +1559,8 @@ public class Batfish {
             _tmpLogicDir = destinationDirAsFile;
          }
          catch (IOException e) {
-            e.printStackTrace();
-            quit(1);
+            throw new BatfishException(
+                  "Failed to retrieve logic dir from onejar archive", e);
          }
          String fileString = visitor.toString();
          return new File(fileString);
@@ -1265,8 +1573,7 @@ public class Batfish {
                   .getResource(logicPackageResourceName).toURI());
          }
          catch (URISyntaxException e) {
-            e.printStackTrace();
-            quit(1);
+            throw new BatfishException("Failed to resolve logic directory", e);
          }
          return logicDirFile;
       }
@@ -1280,8 +1587,7 @@ public class Batfish {
             + branchName + "\n");
       String errorResult = lbFrontend.revertDatabase(branchName);
       if (errorResult != null) {
-         error(0, errorResult + "\n");
-         quit(1);
+         throw new BatfishException("Failed to revert database: " + errorResult);
       }
    }
 
@@ -1290,47 +1596,67 @@ public class Batfish {
          System.setErr(System.out);
       }
 
+      if (_settings.getBuildPredicateInfo()) {
+         buildPredicateInfo();
+         return;
+      }
+
       if (_settings.getZ3()) {
          Map<String, Configuration> configurations = deserializeConfigurations(_settings
                .getSerializeIndependentPath());
          genZ3(configurations);
-         quit(0);
+         return;
       }
 
       if (_settings.getAnonymize()) {
          anonymizeConfigurations();
-         quit(0);
+         return;
+      }
+
+      if (_settings.getInterfaceFailureInconsistencyReachableQuery()) {
+         genReachableQueries();
+         return;
+      }
+
+      if (_settings.getInterfaceFailureInconsistencyBlackHoleQuery()) {
+         genInterfaceFailureBlackHoleQueries();
+         return;
+      }
+
+      if (_settings.getGenerateMultipathInconsistencyQuery()) {
+         genMultipathQueries();
+         return;
       }
 
       if (_settings.getSerializeVendor()) {
          String testRigPath = _settings.getTestRigPath();
          String outputPath = _settings.getSerializeVendorPath();
          serializeVendorConfigs(testRigPath, outputPath);
-         quit(0);
+         return;
       }
 
       if (_settings.dumpInterfaceDescriptions()) {
          String testRigPath = _settings.getTestRigPath();
          String outputPath = _settings.getDumpInterfaceDescriptionsPath();
          dumpInterfaceDescriptions(testRigPath, outputPath);
-         quit(0);
+         return;
       }
 
       if (_settings.getSerializeIndependent()) {
          String inputPath = _settings.getSerializeVendorPath();
          String outputPath = _settings.getSerializeIndependentPath();
          serializeIndependentConfigs(inputPath, outputPath);
-         quit(0);
+         return;
       }
 
       if (_settings.getDiff()) {
          getDiff();
-         quit(0);
+         return;
       }
 
       if (_settings.getConcretize()) {
          concretize();
-         quit(0);
+         return;
       }
 
       if (_settings.getQuery() || _settings.getPrintSemantics()
@@ -1340,7 +1666,7 @@ public class Batfish {
          // Print predicate semantics and quit if requested
          if (_settings.getPrintSemantics()) {
             printAllPredicateSemantics(_predicateInfo.getPredicateSemantics());
-            quit(0);
+            return;
          }
       }
 
@@ -1348,14 +1674,22 @@ public class Batfish {
       if (_settings.getFacts() || _settings.getDumpControlPlaneFacts()) {
          cpFactBins = new LinkedHashMap<String, StringBuilder>();
          initControlPlaneFactBins(cpFactBins);
-         writeTopologyFacts(_settings.getTestRigPath(), cpFactBins);
-         writeConfigurationFacts(_settings.getSerializeIndependentPath(),
+         Map<String, Configuration> configurations = deserializeConfigurations(_settings
+               .getSerializeIndependentPath());
+         writeTopologyFacts(_settings.getTestRigPath(), configurations,
                cpFactBins);
+         writeConfigurationFacts(configurations, cpFactBins);
+         String flowSinkPath = _settings.getFlowSinkPath();
+         if (flowSinkPath != null) {
+            FlowSinkSet flowSinks = (FlowSinkSet) deserializeObject(new File(
+                  flowSinkPath));
+            writeFlowSinkFacts(flowSinks, cpFactBins);
+         }
          if (_settings.getDumpControlPlaneFacts()) {
             dumpFacts(cpFactBins);
          }
          if (!(_settings.getFacts() || _settings.createWorkspace())) {
-            quit(0);
+            return;
          }
       }
 
@@ -1363,20 +1697,20 @@ public class Batfish {
       LogicBloxFrontend lbFrontend = null;
       if (_settings.createWorkspace() || _settings.getFacts()
             || _settings.getQuery() || _settings.getDataPlane()
-            || _settings.getFlows() || _settings.revert()) {
+            || _settings.revert()) {
          lbFrontend = connect();
       }
 
       if (_settings.revert()) {
          revert(lbFrontend);
-         quit(0);
+         return;
       }
 
       // Create new workspace (will overwrite existing) if requested
       if (_settings.createWorkspace()) {
          addProject(lbFrontend);
          if (!_settings.getFacts()) {
-            quit(0);
+            return;
          }
       }
 
@@ -1385,7 +1719,7 @@ public class Batfish {
          addStaticFacts(lbFrontend,
                Collections.singletonList(BASIC_FACTS_BLOCKNAME));
          postFacts(lbFrontend, cpFactBins);
-         quit(0);
+         return;
       }
 
       if (_settings.getQuery()) {
@@ -1405,12 +1739,12 @@ public class Batfish {
          else {
             printPredicates(lbFrontend, predicateNames);
          }
-         quit(0);
+         return;
       }
 
       if (_settings.getDataPlane()) {
          computeDataPlane(lbFrontend);
-         quit(0);
+         return;
       }
 
       Map<String, StringBuilder> trafficFactBins = null;
@@ -1422,13 +1756,13 @@ public class Batfish {
             dumpFacts(trafficFactBins);
          }
          if (_settings.getFlows()) {
+            lbFrontend = connect();
             postFacts(lbFrontend, trafficFactBins);
-            quit(0);
+            return;
          }
       }
-
-      error(0, "No task performed! Run with -help flag to see usage\n");
-      quit(1);
+      throw new BatfishException(
+            "No task performed! Run with -help flag to see usage\n");
    }
 
    private void serializeIndependentConfigs(String vendorConfigPath,
@@ -1437,6 +1771,7 @@ public class Batfish {
       print(1,
             "\n*** SERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
       resetTimer();
+      new File(outputPath).mkdirs();
       for (String name : configurations.keySet()) {
          Configuration c = configurations.get(name);
          Path currentOutputPath = Paths.get(outputPath, name);
@@ -1450,21 +1785,24 @@ public class Batfish {
    }
 
    private void serializeObject(Object object, File outputFile) {
-      XStream xstream = new XStream(new DomDriver("UTF-8"));
       FileOutputStream fos;
+      ObjectOutputStream oos;
       try {
          fos = new FileOutputStream(outputFile);
-         ObjectOutputStream oos = xstream.createObjectOutputStream(fos);
+         if (_settings.getSerializeToText()) {
+            XStream xstream = new XStream(new DomDriver("UTF-8"));
+            oos = xstream.createObjectOutputStream(fos);
+         }
+         else {
+            oos = new ObjectOutputStream(fos);
+         }
          oos.writeObject(object);
          oos.close();
       }
-      catch (FileNotFoundException e) {
-         e.printStackTrace();
-         quit(1);
-      }
       catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
+         throw new BatfishException(
+               "Failed to serialize object to output file: "
+                     + outputFile.toString(), e);
       }
    }
 
@@ -1472,8 +1810,7 @@ public class Batfish {
       Map<File, String> configurationData = readConfigurationFiles(testRigPath);
       Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(configurationData);
       if (vendorConfigurations == null) {
-         error(0, "Exiting due to parser errors\n");
-         quit(1);
+         throw new BatfishException("Exiting due to parser errors\n");
       }
       print(1, "\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       resetTimer();
@@ -1490,9 +1827,9 @@ public class Batfish {
       printElapsedTime();
    }
 
-   public void writeConfigurationFacts(String serializedConfigPath,
+   public void writeConfigurationFacts(
+         Map<String, Configuration> configurations,
          Map<String, StringBuilder> factBins) {
-      Map<String, Configuration> configurations = deserializeConfigurations(serializedConfigPath);
       populateConfigurationFactBins(configurations.values(), factBins);
    }
 
@@ -1502,48 +1839,65 @@ public class Batfish {
          FileUtils.write(outputFile, output);
       }
       catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
+         throw new BatfishException("Failed to write file: " + outputPath, e);
+      }
+   }
+
+   private void writeFlowSinkFacts(FlowSinkSet flowSinks,
+         Map<String, StringBuilder> cpFactBins) {
+      StringBuilder sb = cpFactBins.get("SetFlowSinkInterface");
+      for (FlowSinkInterface f : flowSinks) {
+         String node = f.getNode();
+         String iface = f.getInterface();
+         sb.append(node + "|" + iface + "\n");
       }
    }
 
    public void writeTopologyFacts(String testRigPath,
+         Map<String, Configuration> configurations,
          Map<String, StringBuilder> factBins) {
-      Path topologyFilePath = Paths.get(testRigPath, TOPOLOGY_FILENAME);
-      // Get generated facts from topology file
-      String topologyFileText = null;
-      boolean guess = false;
       print(1, "*** PARSING TOPOLOGY ***\n");
       resetTimer();
-      try {
-         topologyFileText = FileUtils.readFileToString(topologyFilePath
-               .toFile());
+      // TODO: Use flag to extract topology from interface descriptions.
+      if (Boolean.FALSE) {
+         Topology topology = inferTopologyFromInterfaceDescriptions(
+               configurations, /* Include external nodes (debug) */true);
+         // TODO: Get from flag.
+         String topologyDotFile = "/home/david/Projects/usc-configs/topology/topology.dot";
+         if (!topologyDotFile.isEmpty()) {
+            try {
+               FileOutputStream out = new FileOutputStream(topologyDotFile);
+               topology.dumpDot(out);
+               out.close();
+            }
+            catch (IOException e) {
+               throw new BatfishException("Unable to write topology dot-file.",
+                     e);
+            }
+         }
       }
-      catch (FileNotFoundException e) {
-         // tell logicblox to guess adjacencies based on interface subnetworks
-         print(1, "*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
-         StringBuilder wGuessTopology = factBins.get("GuessTopology");
-         wGuessTopology.append("1\n");
-         guess = true;
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-         quit(1);
-      }
-      if (!guess) {
-         parseTopology(testRigPath, topologyFileText, factBins);
+      else {
+         Path topologyFilePath = Paths.get(testRigPath, TOPOLOGY_FILENAME);
+         // Get generated facts from topology file
+         String topologyFileText = null;
+         boolean guess = false;
+         if (Files.exists(topologyFilePath)) {
+            topologyFileText = readFile(topologyFilePath.toFile());
+         }
+         else {
+            // tell logicblox to guess adjacencies based on interface
+            // subnetworks
+            print(1,
+                  "*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
+            StringBuilder wGuessTopology = factBins.get("GuessTopology");
+            wGuessTopology.append("1\n");
+            guess = true;
+         }
+         if (!guess) {
+            parseTopology(testRigPath, topologyFileText, factBins);
+         }
       }
       printElapsedTime();
-      /*
-       * // flow sinks Path flowSinkPath = Paths.get(_settings.getTestRigPath(),
-       * FLOW_SINK_FILENAME);
-       * 
-       * StringBuilder wSetFlowSinkInterface = factBins
-       * .get("SetFlowSinkInterface"); if (Files.exists(flowSinkPath)) { try {
-       * String flowSinkInterface = FileUtils.readFileToString(flowSinkPath
-       * .toFile()); wSetFlowSinkInterface.append(flowSinkInterface); } catch
-       * (IOException e) { e.printStackTrace(); quit(1); } }
-       */
    }
 
    private void writeTrafficFacts(Map<String, StringBuilder> factBins) {

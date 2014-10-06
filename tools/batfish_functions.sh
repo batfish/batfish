@@ -6,7 +6,7 @@ export BATFISH_PATH=$BATFISH_ROOT/projects/batfish
 export BATFISH_TEST_RIG_PATH=$BATFISH_ROOT/test_rigs
 export BATFISH=$BATFISH_PATH/batfish
 export BATFISH_Z3=$(which z3)
-export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.default_relation=hassel_diff fixedpoint.unbound_compressor=false fixedpoint.print_answer=true"
+export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.default_relation=hassel_diff fixedpoint.unbound_compressor=false fixedpoint.print_answer=true fixedpoint.inline_eager=false"
 
 batfish() {
    # if cygwin, shift and replace each parameter
@@ -27,6 +27,9 @@ batfish() {
          shift
       done
    fi
+   if [ "$BATFISH_PRINT_CMDLINE" = "yes" ]; then
+      echo "$BATFISH $BATFISH_COMMON_ARGS $@"
+   fi
    $BATFISH $BATFISH_COMMON_ARGS $@
 }
 export -f batfish
@@ -41,12 +44,19 @@ batfish_analyze() {
    if [ -z "$BATFISH_CONFIRM" ]; then
       local BATFISH_CONFIRM=true
    fi
-   local TEST_RIG=$1
+   local TEST_RIG_RELATIVE=$1
    local PREFIX=$2
-   local WORKSPACE=batfish-$USER-$2
+   local WORKSPACE=batfish-$USER-$PREFIX
    local OLD_PWD=$PWD
+   if [ "$(echo $TEST_RIG_RELATIVE | head -c1)" = "/" ]; then
+      local TEST_RIG=$TEST_RIG_RELATIVE
+   else
+      local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
+   fi
    local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
+   local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
    local QUERY_PATH=$OLD_PWD/$PREFIX-query
+   local MPI_QUERY_BASE_PATH=$QUERY_PATH/multipath-inconsistency-query
    local DUMP_DIR=$OLD_PWD/$PREFIX-dump
    local FLOWS=$OLD_PWD/$PREFIX-flows
    local ROUTES=$OLD_PWD/$PREFIX-routes
@@ -67,16 +77,13 @@ batfish_analyze() {
    $BATFISH_CONFIRM && { batfish_query_data_plane $WORKSPACE $DP_DIR || return 1 ; }
 
    echo "Extract z3 reachability relations"
-   $BATFISH_CONFIRM && { batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH  || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH $NODE_SET_PATH || return 1 ; }
 
-   echo "Find inconsistent packet constraints"
-   $BATFISH_CONFIRM && { batfish_find_inconsistent_packet_constraints $REACH_PATH $QUERY_PATH || return 1 ; }
+   echo "Find multipath-inconsistent packet constraints"
+   $BATFISH_CONFIRM && { batfish_find_multipath_inconsistent_packet_constraints $REACH_PATH $QUERY_PATH $MPI_QUERY_BASE_PATH $NODE_SET_PATH || return 1 ; }
 
-   echo "Generate constraints z3 queries for concretizer"
-   $BATFISH_CONFIRM && { batfish_generate_constraints_queries $QUERY_PATH || return 1 ; }
-
-   echo "Get concrete inconsistent packets"
-   $BATFISH_CONFIRM && { batfish_get_concrete_inconsistent_packets $QUERY_PATH || return 1 ; }
+   echo "Generate multipath-inconsistency concretizer queries"
+   $BATFISH_CONFIRM && { batfish_generate_multipath_inconsistency_concretizer_queries $MPI_QUERY_BASE_PATH $NODE_SET_PATH || return 1 ; }
 
    echo "Inject concrete packets into network model"
    $BATFISH_CONFIRM && { batfish_inject_packets $WORKSPACE $QUERY_PATH $DUMP_DIR || return 1 ; }
@@ -85,6 +92,276 @@ batfish_analyze() {
    $BATFISH_CONFIRM && { batfish_query_flows $FLOWS $WORKSPACE || return 1 ; }
 }
 export -f batfish_analyze
+
+batfish_analyze_destination_consistency() {
+   local TEST_RIG_RELATIVE=$1
+   shift
+   local PREFIX=$1
+   shift
+   local MACHINES="$@"
+   local NUM_MACHINES=$#
+   if [ -z "$PREFIX" ]; then
+         echo "ERROR: Empty prefix" 1>&2
+         return 1
+   fi
+   if [ "$NUM_MACHINES" -eq 0 ]; then
+      local MACHINES=localhost
+      local NUM_MACHINES=1
+   fi
+   local OLD_PWD=$PWD
+   if [ "$(echo $TEST_RIG_RELATIVE | head -c1)" = "/" ]; then
+      local TEST_RIG=$TEST_RIG_RELATIVE
+   else
+      local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
+   fi
+   local LOG_FILE=$OLD_PWD/$PREFIX-destination-consistency-scenarios.log
+   local FLOWS=$OLD_PWD/$PREFIX-flows
+   local EDGE_PREDICATE=LanAdjacent
+   local SCENARIO_BASE_DIR=$OLD_PWD/$PREFIX-destination-consistency-scenarios
+   local NODES=$OLD_PWD/$PREFIX-node-set.txt
+   
+   local INDEX=1
+   local NUM_NODES=$(cat $NODES | wc -l)
+   local CURRENT_MACHINE=0
+   local NUM_NODES_PER_MACHINE=$(($NUM_NODES / $NUM_MACHINES))
+   local WORKSPACE=batfish-${USER}-destination-consistency
+   for machine in $MACHINES; do
+      local CURRENT_MACHINE=$(($CURRENT_MACHINE + 1))
+      local LOCAL_NODES=${NODES}-local
+      ssh $machine "mkdir -p $SCENARIO_BASE_DIR"
+      if [ "$CURRENT_MACHINE" -eq "$NUM_MACHINES" ]; then
+         tail -n+$INDEX $NODES | ssh $machine "cat > $LOCAL_NODES"
+         if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+            return 1
+         fi
+      else
+         sed -n -e "$INDEX,$(($INDEX + $NUM_NODES_PER_MACHINE - 1))p" $NODES | ssh $machine "cat > ${NODES}-local"
+         if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+            return 1
+         fi
+         local INDEX=$(($INDEX + $NUM_NODES_PER_MACHINE))
+      fi
+   done
+   for machine in $MACHINES; do
+      echo "nohup ssh $machine bash --login -c \"cd $OLD_PWD || exit; pwd; batfish_analyze_destination_consistency_machine $TEST_RIG $PREFIX $SCENARIO_BASE_DIR $LOCAL_NODES $WORKSPACE >& $LOG_FILE\" >& /dev/null &"
+      nohup ssh $machine bash --login -c "pwd; echo $OLD_PWD; cd $OLD_PWD || exit; pwd; batfish_analyze_destination_consistency_machine $TEST_RIG $PREFIX $SCENARIO_BASE_DIR $LOCAL_NODES $WORKSPACE >& $LOG_FILE"  >& /dev/null &
+   done
+}
+export -f batfish_analyze_destination_consistency
+
+batfish_analyze_destination_consistency_machine() {
+   batfish_expect_args 5 $# || return 1
+   local TEST_RIG=$1
+   local PREFIX=$2
+   local SCENARIO_BASE_DIR=$3
+   local NODES=$4
+   local WORKSPACE=$5
+   local OLD_PWD=$PWD
+   local ORIG_DP_DIR=$SCENARIO_BASE_DIR/../$PREFIX-dp
+   local ORIG_FLOW_SINKS=$ORIG_DP_DIR/flow-sinks
+   local ORIG_QUERY_PATH=$SCENARIO_BASE_DIR/../$PREFIX-query
+   local ORIG_DI_QUERY_BASE_PATH=$ORIG_QUERY_PATH/destination-consistency-query
+   local ORIG_REACH_PATH=$SCENARIO_BASE_DIR/../$PREFIX-reach.smt2
+   local INDEP_SERIAL_DIR=$SCENARIO_BASE_DIR/../$PREFIX-indep
+   local NODE_SET_PATH=$SCENARIO_BASE_DIR/../$PREFIX-node-set
+   #Extract z3 reachability relations for no-failure scenario
+   cd $SCENARIO_BASE_DIR
+   batfish_generate_z3_reachability $ORIG_DP_DIR $INDEP_SERIAL_DIR $ORIG_REACH_PATH $NODE_SET_PATH || return 1
+   cd $OLD_PWD
+   cat $NODES | while read NODE; do
+      cd $SCENARIO_BASE_DIR
+      
+      # Make directory for current failure scenario
+      if [ -d "$NODE" ]; then
+         echo "Skipping node with existing output: \"${NODE}\""
+         continue
+      else
+         mkdir $NODE || return 1
+      fi
+#      mkdir -p $NODE
+      # Enter node directory
+      cd $NODE
+
+      local QUERY_PATH=$PWD/$PREFIX-query
+      local DP_DIR=$PWD/$PREFIX-dp
+      local DUMP_DIR=$PWD/$PREFIX-dump
+      local FLOWS=$PWD/$PREFIX-flows
+      local REACH_PATH=$PWD/$PREFIX-reach.smt2
+      local VENDOR_SERIAL_DIR=$PWD/$PREFIX-vendor
+      local DI_QUERY_BASE_PATH=$QUERY_PATH/destination-consistency-query
+
+      # WORKAROUND: LogicBlox uses too much memory if we do not clear its state periodically
+      batfish_nuke_reset_logicblox || return 1
+      
+      # Compute the fixed point of the control plane with failed interface
+      BATFISH_COMMON_ARGS="-flowsink $ORIG_FLOW_SINKS" batfish_compile_blacklist_node $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $NODE || return 1
+
+      # Query data plane predicates
+      batfish_query_data_plane $WORKSPACE $DP_DIR || return 1
+
+      # Extract z3 reachability relations
+      BATFISH_COMMON_ARGS="-blnode $NODE" batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH $NODE_SET_PATH || return 1
+   
+      # Find destination-consistency reachable packet constraints for node for no-failure scenario
+      batfish_find_destination_consistency_node_accept_packet_constraints $ORIG_REACH_PATH $QUERY_PATH $DI_QUERY_BASE_PATH $NODE_SET_PATH $NODE || return 1
+
+      # Find destination-consistency general reachable packet constraints for node-failure scenario
+      batfish_find_destination_consistency_accept_packet_constraints $REACH_PATH $QUERY_PATH $DI_QUERY_BASE_PATH $NODE_SET_PATH $NODE || return 1
+
+      # Generate destination-consistency concretizer queries
+      batfish_generate_destination_consistency_concretizer_queries $DI_QUERY_BASE_PATH $NODE_SET_PATH $NODE || return 1
+
+      # Inject concrete packets into network model
+      batfish_inject_packets $WORKSPACE $QUERY_PATH $DUMP_DIR || return 1
+
+      # Query flow results from LogicBlox
+      batfish_query_flows $FLOWS $WORKSPACE || return 1
+      
+   done
+   cd $OLD_PWD
+}
+export -f batfish_analyze_destination_consistency_machine
+
+batfish_analyze_interface_failures() {
+   local TEST_RIG_RELATIVE=$1
+   shift
+   local PREFIX=$1
+   shift
+   local MACHINES="$@"
+   local NUM_MACHINES=$#
+   if [ "$NUM_MACHINES" -eq 0 ]; then
+      local MACHINES=localhost
+      local NUM_MACHINES=1
+   fi
+   local OLD_PWD=$PWD
+   if [ "$(echo $TEST_RIG_RELATIVE | head -c1)" = "/" ]; then
+      local TEST_RIG=$TEST_RIG_RELATIVE
+   else
+      local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
+   fi
+   local LOG_FILE=$OLD_PWD/$PREFIX-interface-failure-scenarios.log
+   local FLOWS=$OLD_PWD/$PREFIX-flows
+   local EDGE_PREDICATE=LanAdjacent
+   local SCENARIO_BASE_DIR=$OLD_PWD/$PREFIX-interface-failure-scenarios
+   local INTERFACES=$OLD_PWD/$PREFIX-topology-interfaces
+   
+   # Extract interface lines from topology
+   grep "^$EDGE_PREDICATE(" $FLOWS | cut -d'(' -f 2 | cut -d',' -f 1,2 | tr -d ' ' | sort -u > $INTERFACES
+   
+   local INDEX=1
+   local NUM_INTERFACES=$(cat $INTERFACES | wc -l)
+   local CURRENT_MACHINE=0
+   local NUM_INTERFACES_PER_MACHINE=$(($NUM_INTERFACES / $NUM_MACHINES))
+   local WORKSPACE=batfish-${USER}-interface-failure
+   for machine in $MACHINES; do
+      local CURRENT_MACHINE=$(($CURRENT_MACHINE + 1))
+      local LOCAL_INTERFACES=${INTERFACES}-local
+      ssh $machine "mkdir -p $SCENARIO_BASE_DIR"
+      if [ "$CURRENT_MACHINE" -eq "$NUM_MACHINES" ]; then
+         tail -n+$INDEX $INTERFACES | ssh $machine "cat > $LOCAL_INTERFACES"
+         if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+            return 1
+         fi
+      else
+         sed -n -e "$INDEX,$(($INDEX + $NUM_INTERFACES_PER_MACHINE - 1))p" $INTERFACES | ssh $machine "cat > ${INTERFACES}-local"
+         if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+            return 1
+         fi
+         local INDEX=$(($INDEX + $NUM_INTERFACES_PER_MACHINE))
+      fi
+   done
+   for machine in $MACHINES; do
+      echo "nohup ssh $machine bash --login -c \"cd $OLD_PWD; batfish_analyze_interface_failures_machine $TEST_RIG $PREFIX $SCENARIO_BASE_DIR $LOCAL_INTERFACES $WORKSPACE >& $LOG_FILE\" >& /dev/null &"
+      nohup ssh $machine bash --login -c "cd $OLD_PWD; batfish_analyze_interface_failures_machine $TEST_RIG $PREFIX $SCENARIO_BASE_DIR $LOCAL_INTERFACES $WORKSPACE >& $LOG_FILE" >& /dev/null &
+   done
+}
+export -f batfish_analyze_interface_failures
+
+batfish_analyze_interface_failures_machine() {
+   batfish_expect_args 5 $# || return 1
+   local TEST_RIG=$1
+   local PREFIX=$2
+   local SCENARIO_BASE_DIR=$3
+   local INTERFACES=$4
+   local WORKSPACE=$5
+   local OLD_PWD=$PWD
+   local ORIG_DP_DIR=$SCENARIO_BASE_DIR/../$PREFIX-dp
+   local ORIG_QUERY_PATH=$SCENARIO_BASE_DIR/../$PREFIX-query
+   local ORIG_FI_QUERY_BASE_PATH=$ORIG_QUERY_PATH/interface-failure-inconsistency-query
+   local ORIG_REACH_PATH=$SCENARIO_BASE_DIR/../$PREFIX-reach.smt2
+   local INDEP_SERIAL_DIR=$SCENARIO_BASE_DIR/../$PREFIX-indep
+   local NODE_SET_PATH=$SCENARIO_BASE_DIR/../$PREFIX-node-set
+
+   #Extract z3 reachability relations for no-failure scenario
+   cd $SCENARIO_BASE_DIR
+   batfish_generate_z3_reachability $ORIG_DP_DIR $INDEP_SERIAL_DIR $ORIG_REACH_PATH $NODE_SET_PATH || return 1
+   cd $OLD_PWD
+
+   # Find failure-inconsistent reachable packet constraints for no-failure scenario
+   batfish_find_interface_failure_reachable_packet_constraints $ORIG_REACH_PATH $ORIG_QUERY_PATH $ORIG_FI_QUERY_BASE_PATH $NODE_SET_PATH || return 1
+
+   # Find failure-inconsistent black-hole packet constraints for no-failure scenario
+   batfish_find_interface_failure_black_hole_packet_constraints $ORIG_REACH_PATH $ORIG_QUERY_PATH $ORIG_FI_QUERY_BASE_PATH $NODE_SET_PATH || return 1
+
+   cat $INTERFACES | while read interface; do
+      local INTERFACE_SANITIZED=$(echo $interface | tr '/' '_')
+      cd $SCENARIO_BASE_DIR
+      
+      # Make directory for current failure scenario
+      if [ -d "$INTERFACE_SANITIZED" ]; then
+         echo "Skipping interface with existing output: \"${interface}\""
+         continue
+      else
+         mkdir $INTERFACE_SANITIZED || return 1
+      fi
+#      mkdir -p $INTERFACE_SANITIZED
+      # Enter interface directory
+      cd $INTERFACE_SANITIZED
+
+      local QUERY_PATH=$PWD/$PREFIX-query
+      local DP_DIR=$PWD/$PREFIX-dp
+      local DUMP_DIR=$PWD/$PREFIX-dump
+      local FLOWS=$PWD/$PREFIX-flows
+      local REACH_PATH=$PWD/$PREFIX-reach.smt2
+      local PREDS_PATH=$PWD/$PREFIX-preds
+      local VENDOR_SERIAL_DIR=$PWD/$PREFIX-vendor
+      local FI_QUERY_BASE_PATH=$QUERY_PATH/interface-failure-inconsistency-query
+      local DST_IP_BLACKLIST_PATH=${QUERY_PATH}/blacklist-ip-${INTERFACE_SANITIZED}
+
+      # WORKAROUND: LogicBlox uses too much memory if we do not clear its state periodically
+      batfish_nuke_reset_logicblox || return 1
+
+      # Compute the fixed point of the control plane with failed interface
+      batfish_compile_blacklist_interface $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $interface || return 1
+
+      # Get interesting predicate data
+      batfish -log 0 -workspace $WORKSPACE -query -predicates InstalledRoute BestOspfE2Route BestOspfE1Route OspfRoute_advertiser OspfE2Route > $PREDS_PATH || return 1
+      
+      # Query data plane predicates
+      batfish_query_data_plane $WORKSPACE $DP_DIR || return 1
+
+      # Extract z3 reachability relations
+      batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH $NODE_SET_PATH || return 1
+   
+      # Find failure-inconsistent black-hole packet constraints
+      batfish_find_interface_failure_black_hole_packet_constraints_interface $REACH_PATH $QUERY_PATH $FI_QUERY_BASE_PATH $NODE_SET_PATH $interface || return 1
+
+      # Ignore packets with destination ip equal to that assigned to blacklisted interface
+      batfish_find_interface_failure_destination_ip_blacklist_constraints $WORKSPACE $DST_IP_BLACKLIST_PATH $interface || return 1
+      
+      # Generate interface-failure-inconsistency concretizer queries
+      batfish_generate_interface_failure_inconsistency_concretizer_queries $ORIG_FI_QUERY_BASE_PATH $FI_QUERY_BASE_PATH $NODE_SET_PATH $interface $DST_IP_BLACKLIST_PATH || return 1
+
+      # Inject concrete packets into network model
+      batfish_inject_packets $WORKSPACE $QUERY_PATH $DUMP_DIR || return 1
+
+      # Query flow results from LogicBlox
+      batfish_query_flows $FLOWS $WORKSPACE || return 1
+      
+   done
+   cd $OLD_PWD
+}
+export -f batfish_analyze_interface_failures_machine
 
 batfish_build() {
    local RESTORE_FILE='cygwin-symlink-restore-data'
@@ -113,7 +390,37 @@ batfish_compile() {
 }
 export -f batfish_compile
 
-batfish_confirm() {                                                                                                                        
+batfish_compile_blacklist_interface() {
+   date | tr -d '\n'
+   local WORKSPACE=$1
+   local TEST_RIG=$2
+   local DUMP_DIR=$3
+   local INDEP_SERIAL_DIR=$4
+   local BLACKLISTED_INTERFACE=$5
+   echo ": START: Compute the fixed point of the control plane with blacklisted interface: $BLACKLISTED_INTERFACE"
+   batfish_expect_args 5 $# || return 1
+   batfish -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR -blint $BLACKLISTED_INTERFACE || return 1
+   date | tr -d '\n'
+   echo ": END: Compute the fixed point of the control plane with blacklisted interface: \"$BLACKLISTED_INTERFACE\""
+}
+export -f batfish_compile_blacklist_interface
+
+batfish_compile_blacklist_node() {
+   date | tr -d '\n'
+   local WORKSPACE=$1
+   local TEST_RIG=$2
+   local DUMP_DIR=$3
+   local INDEP_SERIAL_DIR=$4
+   local BLACKLISTED_NODE=$5
+   echo ": START: Compute the fixed point of the control plane with blacklisted node: $BLACKLISTED_NODE"
+   batfish_expect_args 5 $# || return 1
+   batfish -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR -blnode $BLACKLISTED_NODE || return 1
+   date | tr -d '\n'
+   echo ": END: Compute the fixed point of the control plane with blacklisted node: \"$BLACKLISTED_NODE\""
+}
+export -f batfish_compile_blacklist_node
+
+batfish_confirm() {
    # call with a prompt string or use a default
    read -r -p "${1:-Are you sure? [y/N]} " response < /dev/tty
    case $response in
@@ -131,246 +438,291 @@ batfish_expect_args() {
    local EXPECTED_NUMARGS=$1
    local ACTUAL_NUMARGS=$2
    if [ "$EXPECTED_NUMARGS" -ne "$ACTUAL_NUMARGS" ]; then
-      echo "${FUNCNAME[1]}: Expected $EXPECTED_NUMARGS arguments" >&2
+      echo "${FUNCNAME[1]}: Expected $EXPECTED_NUMARGS arguments, but got $ACTUAL_NUMARGS" >&2
       return 1
    fi   
 }
 export -f batfish_expect_args
 
-batfish_find_failure_packet_constraints() {
-   date | tr -d '\n'
-   echo ": START: Find differential reachability packet constraints"
+batfish_find_destination_consistency_accept_packet_constraints() {
    batfish_expect_args 5 $# || return 1
    local REACH_PATH=$1
-   local FAILURE_REACH_PATH=$2
-   local FAILURE_PATH=$3
-   local NUM_NETWORK_BITS=$4
-   local NETWORK_BITS=$5
+   local QUERY_PATH=$2
+   local DI_QUERY_BASE_PATH=$3
+   local NODE_SET_PATH=$4
+   local BLACKLISTED_NODE=$5
+   local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
    local OLD_PWD=$PWD
-   local FIRST_BIT=$((32 - $NUM_NETWORK_BITS))
-#   local ORIG_NODES=nodes-$
-   if [ ! -e "$REACH_PATH" ] ; then
-      echo "Missing base reachability logic: $REACH_PATH"
-      return 1
-   fi
-   if [ ! -e "$FAILURE_REACH_PATH" ] ; then
-      echo "Missing failure reachability logic: $FAILURE_RREACH_PATH"
-      return 1
-   fi
-   mkdir -p $FAILURE_PATH
-   cd $FAILURE_PATH
-   grep 'declare-rel' $REACH_PATH | tr ' ' '\n' | tr -d '()' | grep 'R_postin_' | sed -e 's/.*R_postin_//g' | sort -u > $ORIG_NODES
-   grep 'declare-rel' $FAILURE_REACH_PATH | tr ' ' '\n' | tr -d '()' | grep 'R_postin_' | sed -e 's/.*R_postin_//g' | sort -u > $FAILURE_NODES
-   cat $NODES | while read node
-   do
-      local ORIG_QUERY=failure-query-orig-${node}.smt2
-      {
-         echo "(rule (R_postin_$node src_ip dst_ip src_port dst_port ip_prot) )" ;
-         echo "(query" ;
-         echo "   (and" ;
-         echo "      (not (= ((_ extract 31 $FIRST_BIT) dst_ip) ${NETWORK_BITS}))" ;
-         echo "      (R_accept src_ip dst_ip src_port dst_port ip_prot) ) )" ;
-         echo "(query" ;
-         echo "   (and" ;
-         echo "      (not (= ((_ extract 31 $FIRST_BIT) dst_ip) ${NETWORK_BITS}))" ;
-         echo "      (R_drop src_ip dst_ip src_port dst_port ip_prot) ) )" ;
-      } > $ORIG_QUERY
-      local QUERY=failure-query-${node}.smt2
-      {
-         echo "(rule (R_postin_$node src_ip dst_ip src_port dst_port ip_prot) )" ;
-         echo "(query" ;
-         echo "   (and" ;
-         echo "      (not (= ((_ extract 31 $FIRST_BIT) dst_ip) ${NETWORK_BITS}))" ;
-         echo "      (R_drop src_ip dst_ip src_port dst_port ip_prot) ) )" ;
-         echo "(query" ;
-         echo "   (and" ;
-         echo "      (not (= ((_ extract 31 $FIRST_BIT) dst_ip) ${NETWORK_BITS}))" ;
-         echo "      (R_accept src_ip dst_ip src_port dst_port ip_prot) ) )" ;
-      } > $QUERY
-   done
-   cat $NODES | parallel --halt 2 batfish_find_failure_packet_constraints_helper {} $REACH_PATH $FAILURE_REACH_PATH \;
+   local DI_QUERY_PRED_PATH=${DI_QUERY_BASE_PATH}_accept
+   date | tr -d '\n'
+   echo ": START: Find accept packet constraints"
+   mkdir -p $QUERY_PATH
+   cd $QUERY_PATH
+   batfish -reach -reachpath $DI_QUERY_PRED_PATH -nodes $NODE_SET_PATH -blnode $BLACKLISTED_NODE || return 1
+   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_find_destination_consistency_accept_packet_constraints_helper {} $REACH_PATH $DI_QUERY_PRED_PATH $BLACKLISTED_NODE
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
    cd $OLD_PWD
    date | tr -d '\n'
-   echo ": END: Find differential reachability packet constraints"
+   echo ": END: Find accept packet constraints"
 }
-export -f batfish_find_failure_packet_constraints
+export -f batfish_find_destination_consistency_accept_packet_constraints
 
-batfish_find_failure_packet_constraints_helper() {
+batfish_find_destination_consistency_accept_packet_constraints_helper() {
+   batfish_expect_args 4 $# || return 1
+   local NODE=$1
+   local REACH_PATH=$2
+   local DI_QUERY_BASE_PATH=$3
+   local BLACKLISTED_NODE=$4
+   local DI_QUERY_PATH=${DI_QUERY_BASE_PATH}-${NODE}.smt2
+   local DI_QUERY_OUTPUT_PATH=${DI_QUERY_PATH}.out
+   if [ "$NODE" = "$BLACKLISTED_NODE" ]; then
+      return
+   fi
+   date | tr -d '\n'
+   echo ": START: Find accept packet constraints for \"$NODE\" ==> \"$DI_QUERY_OUTPUT_PATH\""
+   cat $REACH_PATH $DI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$DI_QUERY_OUTPUT_PATH 2>&3
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   date | tr -d '\n'
+   echo ": END: Find reachable packet constraints for \"$NODE\" ==> \"$DI_QUERY_OUTPUT_PATH\""
+}
+export -f batfish_find_destination_consistency_accept_packet_constraints_helper
+
+batfish_find_destination_consistency_node_accept_packet_constraints() {
+   batfish_expect_args 5 $# || return 1
+   local REACH_PATH=$1
+   local QUERY_PATH=$2
+   local DI_QUERY_BASE_PATH=$3
+   local NODE_SET_PATH=$4
+   local BLACKLIST_NODE=$5
+   local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
+   local OLD_PWD=$PWD
+   local DI_QUERY_PRED_PATH=${DI_QUERY_BASE_PATH}_node_accept_${BLACKLIST_NODE}
+   date | tr -d '\n'
+   echo ": START: Find node accept packet constraints for node: \"$BLACKLIST_NODE"
+   mkdir -p $QUERY_PATH
+   cd $QUERY_PATH
+   batfish -reach -reachpath $DI_QUERY_PRED_PATH -nodes $NODE_SET_PATH -acceptnode $BLACKLIST_NODE || return 1
+   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_find_destination_consistency_node_accept_packet_constraints_helper {} $REACH_PATH $DI_QUERY_PRED_PATH $BLACKLIST_NODE
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   cd $OLD_PWD
+   date | tr -d '\n'
+   echo ": END: Find node accept packet constraints"
+}
+export -f batfish_find_destination_consistency_node_accept_packet_constraints
+
+batfish_find_destination_consistency_node_accept_packet_constraints_helper() {
+   batfish_expect_args 4 $# || return 1
+   local NODE=$1
+   local REACH_PATH=$2
+   local DI_QUERY_BASE_PATH=$3
+   local BLACKLIST_NODE=$4
+   local DI_QUERY_PATH=${DI_QUERY_BASE_PATH}-${NODE}.smt2
+   local DI_QUERY_OUTPUT_PATH=${DI_QUERY_PATH}.out
+   if [ "$NODE" = "$BLACKLIST_NODE" ]; then
+      return
+   fi
+   date | tr -d '\n'
+   echo ": START: Find node accept packet constraints for \"$NODE\" ==> \"$DI_QUERY_OUTPUT_PATH\""
+   cat $REACH_PATH $DI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$DI_QUERY_OUTPUT_PATH 2>&3
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   date | tr -d '\n'
+   echo ": END: Find node accept packet constraints for \"$NODE\" ==> \"$DI_QUERY_OUTPUT_PATH\""
+}
+export -f batfish_find_destination_consistency_node_accept_packet_constraints_helper
+
+batfish_find_interface_failure_black_hole_packet_constraints() {
+   batfish_expect_args 4 $# || return 1
+   local BLACK_HOLE_PATH=$1
+   local QUERY_PATH=$2
+   local FI_QUERY_BASE_PATH=$3
+   local NODE_SET_PATH=$4
+   local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
+   local OLD_PWD=$PWD
+   local FI_QUERY_PRED_PATH=${FI_QUERY_BASE_PATH}_black-hole
+   date | tr -d '\n'
+   echo ": START: Find black-hole packet constraints"
+   mkdir -p $QUERY_PATH
+   cd $QUERY_PATH
+   batfish -blackhole -blackholepath $FI_QUERY_PRED_PATH -nodes $NODE_SET_PATH || return 1
+   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_find_interface_failure_black_hole_packet_constraints_helper {} $BLACK_HOLE_PATH $FI_QUERY_PRED_PATH
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   cd $OLD_PWD
+   date | tr -d '\n'
+   echo ": END: Find black-hole packet constraints"
+}
+export -f batfish_find_interface_failure_black_hole_packet_constraints
+
+batfish_find_interface_failure_black_hole_packet_constraints_helper() {
+   batfish_expect_args 3 $# || return 1
+   local NODE=$1
+   local BLACK_HOLE_PATH=$2
+   local FI_QUERY_BASE_PATH=$3
+   local FI_QUERY_PATH=${FI_QUERY_BASE_PATH}-${NODE}.smt2
+   local FI_QUERY_OUTPUT_PATH=${FI_QUERY_PATH}.out
+   date | tr -d '\n'
+   echo ": START: Find black-hole packet constraints for \"$NODE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
+   cat $BLACK_HOLE_PATH $FI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$FI_QUERY_OUTPUT_PATH 2>&3
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   date | tr -d '\n'
+   echo ": END: Find black-hole packet constraints for \"$NODE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
+}
+export -f batfish_find_interface_failure_black_hole_packet_constraints_helper
+
+batfish_find_interface_failure_black_hole_packet_constraints_interface() {
+   batfish_expect_args 5 $# || return 1
+   local REACH_PATH=$1
+   local QUERY_PATH=$2
+   local FI_QUERY_BASE_PATH=$3
+   local NODE_SET_PATH=$4
+   local BLACKLISTED_INTERFACE=$5
+   local BLACKLISTED_INTERFACE_SANITIZED=$(echo $BLACKLISTED_INTERFACE | tr '/' '_')
+   local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
+   local OLD_PWD=$PWD
+   local FI_QUERY_PRED_PATH=${FI_QUERY_BASE_PATH}_black-hole-${BLACKLISTED_INTERFACE_SANITIZED}
+   date | tr -d '\n'
+   echo ": START: Find black-hole packet constraints with blacklisted interface \"$BLACKLISTED_INTERFACE\""
+   mkdir -p $QUERY_PATH
+   cd $QUERY_PATH
+   batfish -blackhole -blackholepath $FI_QUERY_PRED_PATH -nodes $NODE_SET_PATH || return 1
+   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_find_interface_failure_black_hole_packet_constraints_interface_helper {} $REACH_PATH $FI_QUERY_PRED_PATH $BLACKLISTED_INTERFACE
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   cd $OLD_PWD
+   date | tr -d '\n'
+   echo ": END: Find black-hole packet constraints with blacklisted interface \"$BLACKLISTED_INTERFACE\""
+}
+export -f batfish_find_interface_failure_black_hole_packet_constraints_interface
+
+batfish_find_interface_failure_black_hole_packet_constraints_interface_helper() {
+   batfish_expect_args 4 $# || return 1
+   local NODE=$1
+   local REACH_PATH=$2
+   local FI_QUERY_BASE_PATH=$3
+   local BLACKLISTED_INTERFACE=$4
+   local FI_QUERY_PATH=${FI_QUERY_BASE_PATH}-${NODE}.smt2
+   local FI_QUERY_OUTPUT_PATH=${FI_QUERY_PATH}.out
+   date | tr -d '\n'
+   echo ": START: Find black-hole packet constraints for \"$NODE\" with blacklisted interface \"$BLACKLISTED_INTERFACE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
+   cat $REACH_PATH $FI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$FI_QUERY_OUTPUT_PATH 2>&3
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   date | tr -d '\n'
+   echo ": END: Find black-hole packet constraints for \"$NODE\" with blacklisted interface \"$BLACKLISTED_INTERFACE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
+}
+export -f batfish_find_interface_failure_black_hole_packet_constraints_interface_helper
+
+batfish_find_interface_failure_destination_ip_blacklist_constraints() {
+   batfish_expect_args 3 $# || return 1
+   local WORKSPACE=$1
+   local OUTPUT_PATH=$2
+   local BLACKLISTED_INTERFACE=$3
+   local BLACKLISTED_INTERFACE_SANITIZED=$(echo $BLACKLISTED_INTERFACE | tr '/' '_')
+   local INTERFACE_IP_PREDICATE=SetIpInt
+   local INTERFACE_IP_PATH=$PWD/${INTERFACE_IP_PREDICATE}.txt
+   date | tr -d '\n'
+   echo ": START: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${OUTPUT_PATH}\""
+   batfish -log 0 -workspace $WORKSPACE -query -predicates $INTERFACE_IP_PREDICATE > $INTERFACE_IP_PATH || return 1
+   head -n1 $INTERFACE_IP_PATH || return 1
+   cat $INTERFACE_IP_PATH | tr -d ' ' | grep "$BLACKLISTED_INTERFACE" | cut -d',' -f 3 > $OUTPUT_PATH
+   date | tr -d '\n'
+   echo ": END: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${OUTPUT_PATH}\""
+}
+export -f batfish_find_interface_failure_destination_ip_blacklist_constraints
+
+batfish_find_interface_failure_reachable_packet_constraints() {
+   batfish_expect_args 4 $# || return 1
+   local REACH_PATH=$1
+   local QUERY_PATH=$2
+   local FI_QUERY_BASE_PATH=$3
+   local NODE_SET_PATH=$4
+   local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
+   local OLD_PWD=$PWD
+   local FI_QUERY_PRED_PATH=${FI_QUERY_BASE_PATH}_reachable
+   date | tr -d '\n'
+   echo ": START: Find reachable packet constraints"
+   mkdir -p $QUERY_PATH
+   cd $QUERY_PATH
+   batfish -reach -reachpath $FI_QUERY_PRED_PATH -nodes $NODE_SET_PATH || return 1
+   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_find_interface_failure_reachable_packet_constraints_helper {} $REACH_PATH $FI_QUERY_PRED_PATH
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   cd $OLD_PWD
+   date | tr -d '\n'
+   echo ": END: Find reachable packet constraints"
+}
+export -f batfish_find_interface_failure_reachable_packet_constraints
+
+batfish_find_interface_failure_reachable_packet_constraints_helper() {
    batfish_expect_args 3 $# || return 1
    local NODE=$1
    local REACH_PATH=$2
-   local RREACH_PATH=$3
-   local QUERY=$PWD/failure-query-${NODE}.smt2
-   local QUERY_OUT=$PWD/failure-query-${NODE}.smt2.out
-   echo -n "   "
+   local FI_QUERY_BASE_PATH=$3
+   local FI_QUERY_PATH=${FI_QUERY_BASE_PATH}-${NODE}.smt2
+   local FI_QUERY_OUTPUT_PATH=${FI_QUERY_PATH}.out
    date | tr -d '\n'
-   echo ": START: Generate differential reachability constraints for $NODE (\"$QUERY_OUT\")"
-   cat $REACH_PATH $RREACH_PATH $QUERY | $BATFISH_Z3_DATALOG -smt2 -in > $QUERY_OUT
+   echo ": START: Find reachable packet constraints for \"$NODE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
+   cat $REACH_PATH $FI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$FI_QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
-   echo -n "   "
    date | tr -d '\n'
-   echo ": END: Generate differential reachability constraints for $NODE (\"$QUERY_OUT\")"
+   echo ": END: Find reachable packet constraints for \"$NODE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
 }
-export -f batfish_find_failure_packet_constraints_helper
+export -f batfish_find_interface_failure_reachable_packet_constraints_helper
 
-batfish_find_inconsistent_packet_constraints() {
+batfish_find_multipath_inconsistent_packet_constraints() {
    date | tr -d '\n'
    echo ": START: Find inconsistent packet constraints"
-   batfish_expect_args 2 $# || return 1
+   batfish_expect_args 4 $# || return 1
    local REACH_PATH=$1
    local QUERY_PATH=$2
+   local MPI_QUERY_BASE_PATH=$3
+   local NODE_SET_PATH=$4
+   local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
    local OLD_PWD=$PWD
    mkdir -p $QUERY_PATH
    cd $QUERY_PATH
-   grep 'declare-rel' $REACH_PATH | tr ' ' '\n' | tr -d '()' | grep 'R_postin_' | sed -e 's/.*R_postin_//g' | sort -u > nodes
-   cat nodes | while read node
-   do
-      local QUERY=incons-query-${node}.smt2
-      {
-         echo "(rule (R_postin_$node src_ip dst_ip src_port dst_port ip_prot) )" ;
-         echo "(query" ;
-         echo "   (and" ;
-         echo "      (R_accept src_ip dst_ip src_port dst_port ip_prot)" ;
-         echo "      (R_drop src_ip dst_ip src_port dst_port ip_prot) ) )" ;
-      } > $QUERY
-   done
-   cat nodes | parallel --halt 2 batfish_find_inconsistent_packet_constraints_helper {} $REACH_PATH \;
-   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
-      return 1
-   fi
+   batfish -mpi -mpipath $MPI_QUERY_BASE_PATH -nodes $NODE_SET_PATH || return 1
+   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_find_multipath_inconsistent_packet_constraints_helper {} $REACH_PATH $MPI_QUERY_BASE_PATH
    cd $OLD_PWD
    date | tr -d '\n'
    echo ": END: Find inconsistent packet constraints"
 }
-export -f batfish_find_inconsistent_packet_constraints
+export -f batfish_find_multipath_inconsistent_packet_constraints
 
-batfish_find_inconsistent_packet_constraints_helper() {
-   batfish_expect_args 2 $# || return 1
+batfish_find_multipath_inconsistent_packet_constraints_helper() {
+   batfish_expect_args 3 $# || return 1
    local NODE=$1
    local REACH_PATH=$2
-   local QUERY=$PWD/incons-query-${NODE}.smt2
-   local QUERY_OUT=$PWD/incons-query-${NODE}.smt2.out
-   echo -n "   "
+   local MPI_QUERY_BASE_PATH=$3
    date | tr -d '\n'
-   echo ": START: Generate constraints for $NODE (\"$QUERY_OUT\")"
-   cat $REACH_PATH $QUERY | $BATFISH_Z3_DATALOG -smt2 -in > $QUERY_OUT
+   local MPI_QUERY_PATH=${MPI_QUERY_BASE_PATH}-${NODE}.smt2
+   local MPI_QUERY_OUTPUT_PATH=${MPI_QUERY_PATH}.out
+   echo ": START: Find inconsistent packet constraints for \"$NODE\" (\"$MPI_QUERY_OUTPUT_PATH\")"
+   cat $REACH_PATH $MPI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1> $MPI_QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
-   echo -n "   "
    date | tr -d '\n'
-   echo ": END: Generate constraints for $NODE (\"$QUERY_OUT\")"
+   echo ": END: Find inconsistent packet constraints for \"$NODE\" (\"$MPI_QUERY_OUTPUT_PATH\")"
 }
-export -f batfish_find_inconsistent_packet_constraints_helper
+export -f batfish_find_multipath_inconsistent_packet_constraints_helper
 
-batfish_find_lost_packet_constraints() {
-   date | tr -d '\n'
-   echo ": START: Find lost packet constraints"
-   batfish_expect_args 4 $# || return 1
-   local REACH_PATH=$1
-   local QUERY_DIR=$2
-   local QUERY_NAME=$3
-   local LABEL=$4
-   local OLD_PWD=$PWD
-   local NODES=nodes-$LABEL
-   mkdir -p $QUERY_DIR
-   cd $QUERY_DIR
-   grep 'declare-rel' $REACH_PATH | tr ' ' '\n' | tr -d '()' | grep 'R_postin_' | sed -e 's/.*R_postin_//g' | sort -u > $NODES
-   cat $NODES | while read node
-   do
-      local QUERY=query-${QUERY_NAME}-${node}.smt2
-      {
-         echo "(rule (R_postin_$node src_ip dst_ip src_port dst_port ip_prot) )" ;
-         echo "(query" ;
-         echo "   (R_drop src_ip dst_ip src_port dst_port ip_prot) )" ;
-      } > $QUERY
-   done
-   cat $NODES | parallel --halt 2 batfish_find_lost_packet_constraints_helper {} $REACH_PATH $QUERY_NAME \;
-   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
-      return 1
-   fi
-   cd $OLD_PWD
-   date | tr -d '\n'
-   echo ": END: Find lost packet constraints"
-}
-export -f batfish_find_lost_packet_constraints
-
-batfish_find_lost_packet_constraints_helper() {
-   local NODE=$1
-   local REACH_PATH=$2
-   local QUERY_NAME=$3
-   local QUERY=$PWD/query-${QUERY_NAME}-${NODE}.smt2
-   local QUERY_OUT=${QUERY}.out
-   echo -n "   "
-   date | tr -d '\n'
-   echo ": START: Generate lost packet constraints for $NODE (\"$QUERY_OUT\")"
-   cat $REACH_PATH $QUERY | $BATFISH_Z3_DATALOG -smt2 -in > $QUERY_OUT
-   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
-      return 1
-   fi
-   echo -n "   "
-   date | tr -d '\n'
-   echo ": END: Generate lost packet constraints for $NODE (\"$QUERY_OUT\")"
-}
-export -f batfish_find_lost_packet_constraints_helper
- 
-batfish_find_reachability_packet_constraints() {
-   date | tr -d '\n'
-   echo ": START: Find reachability packet constraints"
-   echo "$@"
-   batfish_expect_args 4 $# || return 1
-   local REACH_PATH=$1
-   local QUERY_DIR=$2
-   local QUERY_NAME=$3
-   local LABEL=$4
-   local OLD_PWD=$PWD
-   local NODES=nodes-$LABEL
-   mkdir -p $QUERY_DIR
-   cd $QUERY_DIR
-   grep 'declare-rel' $REACH_PATH | tr ' ' '\n' | tr -d '()' | grep 'R_postin_' | sed -e 's/.*R_postin_//g' | sort -u > $NODES
-   cat $NODES | while read node
-   do
-      local QUERY=query-${QUERY_NAME}-${node}.smt2
-      {
-         echo "(rule (R_postin_$node src_ip dst_ip src_port dst_port ip_prot) )" ;
-         echo "(query" ;
-         echo "   (R_accept src_ip dst_ip src_port dst_port ip_prot) )" ;
-      } > $QUERY
-   done
-   cat $NODES | parallel --halt 2 batfish_find_reachability_packet_constraints_helper {} $REACH_PATH $QUERY_NAME \;
-   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
-      return 1
-   fi
-   cd $OLD_PWD
-   date | tr -d '\n'
-   echo ": END: Find reachability packet constraints"
-}
-export -f batfish_find_reachability_packet_constraints
-
-batfish_find_reachability_packet_constraints_helper() {
-   local NODE=$1
-   local REACH_PATH=$2
-   local QUERY_NAME=$3
-   local QUERY=$PWD/query-${QUERY_NAME}-${NODE}.smt2
-   local QUERY_OUT=${QUERY}.out
-   echo -n "   "
-   date | tr -d '\n'
-   echo ": START: Find reachability packet constraints for $NODE (\"$QUERY_OUT\")"
-   cat $REACH_PATH $QUERY | $BATFISH_Z3_DATALOG -smt2 -in > $QUERY_OUT
-   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
-      return 1
-   fi
-   echo -n "   "
-   date | tr -d '\n'
-   echo ": END: Find reachability packet constraints for $NODE (\"$QUERY_OUT\")"
-}
-export -f batfish_find_reachability_packet_constraints_helper
- 
 batfish_format_flows() {
    batfish_expect_args 1 $# || return 1
    local DUMP_DIR=$1
@@ -387,40 +739,165 @@ batfish_format_flows() {
 }
 export -f batfish_format_flows
 
-batfish_generate_constraints_queries() {
+batfish_generate_concretizer_query_output() {
+   batfish_expect_args 2 $# || return 1
+   local INPUT_FILE=$1
+   local NODE=$2
+   local OUTPUT_FILE=${INPUT_FILE}.out
    date | tr -d '\n'
-   echo ": START: Generate constraints z3 queries for concretizer"
-   batfish_expect_args 1 $# || return 1
-   local QUERY_PATH=$1
+   echo ": START: Generate concretizer output for $NODE (\"$OUTPUT_FILE\")"
+   local FIRST_LINE="$(head -n1 $INPUT_FILE | tr -d '\n')"
+   if [ "$FIRST_LINE" = "unsat" ]; then
+      echo unsat > $OUTPUT_FILE || return 1
+   else
+      { echo ";$NODE" ; $BATFISH_Z3 $INPUT_FILE ; } >& $OUTPUT_FILE
+      local SECOND_OUTPUT_LINE="$(sed -n -e '2p' $OUTPUT_FILE | tr -d '\n')"
+      if [ "$SECOND_OUTPUT_LINE" = "unsat" ]; then
+         echo "unsat" > $OUTPUT_FILE
+         else if [ ! "$SECOND_OUTPUT_LINE" = "sat" ]; then
+            return 1
+         fi
+      fi
+   fi
+   date | tr -d '\n'
+   echo ": START: Generate concretizer output for $NODE (\"$OUTPUT_FILE\")"
+}
+export -f batfish_generate_concretizer_query_output
+
+batfish_generate_destination_consistency_concretizer_queries() {
+   date | tr -d '\n'
+   echo ": START: Generate destination-consistency concretizer queries"
+   batfish_expect_args 3 $# || return 1
+   local DI_QUERY_BASE_PATH=$1
+   local NODE_SET_PATH=$2
+   local BLACKLISTED_NODE=$3
+   local QUERY_PATH="$(dirname $DI_QUERY_BASE_PATH)"
+   local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
    local OLD_PWD=$PWD
    cd $QUERY_PATH
-   cat nodes | parallel --halt 2 batfish_generate_constraints_queries_helper {} \;
+   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_generate_destination_consistency_concretizer_queries_helper {} $DI_QUERY_BASE_PATH $BLACKLISTED_NODE \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
    cd $OLD_PWD
    date | tr -d '\n'
-   echo ": END: Generate constraints z3 queries for concretizer"
+   echo ": END: Generate destination-consistency concretizer queries"
 }
-export -f batfish_generate_constraints_queries
+export -f batfish_generate_destination_consistency_concretizer_queries
 
-batfish_generate_constraints_queries_helper() {
-   batfish_expect_args 1 $# || return 1
+batfish_generate_destination_consistency_concretizer_queries_helper() {
+   batfish_expect_args 3 $# || return 1
    local NODE=$1
-   local QUERY_OUT=$PWD/incons-query-${NODE}.smt2.out
-   local CONC_QUERY=$PWD/incons-constraints-${NODE}.smt2
-   batfish -conc -concin $QUERY_OUT -concout $CONC_QUERY || return 1
+   local DI_QUERY_BASE_PATH=$2
+   local BLACKLISTED_NODE=$3
+   local QUERY_BASE=${DI_QUERY_BASE_PATH}-${BLACKLISTED_NODE}-${NODE}
+   local QUERY_OUT=${QUERY_BASE}.smt2.out
+   local DI_CONCRETIZER_QUERY_BASE_PATH=${QUERY_BASE}-concrete
+   local ACCEPT_QUERY_OUT=${DI_QUERY_BASE_PATH}_accept-${NODE}.smt2.out
+   local NODE_ACCEPT_QUERY_OUT=${DI_QUERY_BASE_PATH}_node_accept_${BLACKLISTED_NODE}-${NODE}.smt2.out
+   if [ "$NODE" = "$BLACKLISTED_NODE" ]; then
+      return
+   fi
+   batfish -conc -concin $ACCEPT_QUERY_OUT $NODE_ACCEPT_QUERY_OUT -concout $DI_CONCRETIZER_QUERY_BASE_PATH -concunique || return 1
+   find $PWD -regextype posix-extended -regex "${DI_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
+      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $NODE \;
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
 }
-export -f batfish_generate_constraints_queries_helper
+export -f batfish_generate_destination_consistency_concretizer_queries_helper
+
+batfish_generate_interface_failure_inconsistency_concretizer_queries() {
+   date | tr -d '\n'
+   echo ": START: Generate interface-failure-inconsistency concretizer queries"
+   batfish_expect_args 5 $# || return 1
+   local ORIG_FI_QUERY_BASE_PATH=$1
+   local FI_QUERY_BASE_PATH=$2
+   local NODE_SET_PATH=$3
+   local BLACKLISTED_INTERFACE=$4
+   local DST_IP_BLACKLIST_PATH=$5
+   local BLACKLISTED_IP=$(cat $DST_IP_BLACKLIST_PATH | tr -d '\n') 
+   local QUERY_PATH="$(dirname $FI_QUERY_BASE_PATH)"
+   local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
+   local OLD_PWD=$PWD
+   cd $QUERY_PATH
+   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_generate_interface_failure_inconsistency_concretizer_queries_helper {} $ORIG_FI_QUERY_BASE_PATH $FI_QUERY_BASE_PATH $BLACKLISTED_INTERFACE $BLACKLISTED_IP \;
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   cd $OLD_PWD
+   date | tr -d '\n'
+   echo ": END: Generate interface-failure-inconsistency concretizer queries"
+}
+export -f batfish_generate_interface_failure_inconsistency_concretizer_queries
+
+batfish_generate_interface_failure_inconsistency_concretizer_queries_helper() {
+   batfish_expect_args 5 $# || return 1
+   local NODE=$1
+   local ORIG_FI_QUERY_BASE_PATH=$2
+   local FI_QUERY_BASE_PATH=$3
+   local BLACKLISTED_INTERFACE=$4
+   local BLACKLISTED_IP=$5
+   local BLACKLISTED_INTERFACE_SANITIZED=$(echo $BLACKLISTED_INTERFACE | tr '/' '_')
+   local QUERY_BASE=${FI_QUERY_BASE_PATH}-${BLACKLISTED_INTERFACE_SANITIZED}-${NODE}
+   local QUERY_OUT=${QUERY_BASE}.smt2.out
+   local FI_CONCRETIZER_QUERY_BASE_PATH=${QUERY_BASE}-concrete
+   local REACHABLE_QUERY_OUT=${ORIG_FI_QUERY_BASE_PATH}_reachable-${NODE}.smt2.out
+   local BLACK_HOLE_QUERY_OUT=${ORIG_FI_QUERY_BASE_PATH}_black-hole-${NODE}.smt2.out
+   local BLACK_HOLE_INTERFACE_QUERY_OUT=${FI_QUERY_BASE_PATH}_black-hole-${BLACKLISTED_INTERFACE_SANITIZED}-${NODE}.smt2.out
+   batfish -conc -concin $REACHABLE_QUERY_OUT $BLACK_HOLE_INTERFACE_QUERY_OUT -concinneg $BLACK_HOLE_QUERY_OUT -concout $FI_CONCRETIZER_QUERY_BASE_PATH -blacklistdstip $BLACKLISTED_IP -concunique || return 1
+   find $PWD -regextype posix-extended -regex "${FI_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
+      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $NODE \;
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+}
+export -f batfish_generate_interface_failure_inconsistency_concretizer_queries_helper
+
+batfish_generate_multipath_inconsistency_concretizer_queries() {
+   date | tr -d '\n'
+   echo ": START: Generate multipath-inconsistency concretizer queries"
+   batfish_expect_args 2 $# || return 1
+   local MPI_QUERY_BASE_PATH=$1
+   local NODE_SET_PATH=$2
+   local QUERY_PATH="$(dirname $MPI_QUERY_BASE_PATH)"
+   local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
+   local OLD_PWD=$PWD
+   cd $QUERY_PATH
+   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_generate_multipath_inconsistency_concretizer_queries_helper {} $MPI_QUERY_BASE_PATH \;
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   cd $OLD_PWD
+   date | tr -d '\n'
+   echo ": END: Generate multipath-inconsistency concretizer queries"
+}
+export -f batfish_generate_multipath_inconsistency_concretizer_queries
+
+batfish_generate_multipath_inconsistency_concretizer_queries_helper() {
+   batfish_expect_args 2 $# || return 1
+   local NODE=$1
+   local MPI_QUERY_BASE_PATH=$2
+   local QUERY_OUT=${MPI_QUERY_BASE_PATH}-${NODE}.smt2.out
+   local MPI_CONCRETIZER_QUERY_BASE_PATH=${MPI_QUERY_BASE_PATH}-${NODE}-concrete
+   batfish -conc -concin $QUERY_OUT -concout $MPI_CONCRETIZER_QUERY_BASE_PATH || return 1
+   find $PWD -regextype posix-extended -regex "${MPI_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
+      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $NODE \;
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+}
+export -f batfish_generate_multipath_inconsistency_concretizer_queries_helper
 
 batfish_generate_z3_reachability() {
    date | tr -d '\n'
    echo ": START: Extract z3 reachability relations"
-   batfish_expect_args 3 $# || return 1
+   batfish_expect_args 4 $# || return 1
    local DP_DIR=$1
    local INDEP_SERIAL_PATH=$2
    local REACH_PATH=$3
-   batfish -sipath $INDEP_SERIAL_PATH -dpdir $DP_DIR -z3 -z3out $REACH_PATH || return 1
+   local NODE_SET_PATH=$4
+   batfish -sipath $INDEP_SERIAL_PATH -dpdir $DP_DIR -z3 -z3path $REACH_PATH -nodes $NODE_SET_PATH || return 1
    date | tr -d '\n'
    echo ": END: Extract z3 reachability relations"
 }
@@ -458,77 +935,14 @@ batfish_get_concrete_failure_packets() {
 }
 export -f batfish_get_concrete_failure_packets
 
-batfish_get_concrete_failure_packets_decreased() {
-   batfish_expect_args 2 $# || return 1
-   local NODE=$1
-   local FAILURE_REACH_QUERY_NAME=$2
-   local DECREASED_QUERY_NAME=decreased-$FAILURE_REACH_QUERY_NAME
-   local Z3_IN=$PWD/constraints-${DECREASED_QUERY_NAME}-${NODE}.smt2
-   local Z3_OUT=${Z3_IN}.out
-   date | tr -d '\n'
-   echo ": START: Get concrete decreased reachability packet ( $Z3_IN => $Z3_OUT"
-   $BATFISH_Z3 $Z3_IN > $Z3_OUT
-   HEADER=$(head -c5 $Z3_OUT)
-   if [ "$HEADER" = "unsat" ]; then
-      echo unsat > $Z3_OUT
-   fi
-   date | tr -d '\n'
-   echo ": END: Get concrete decreased reachability packet ( $Z3_IN => $Z3_OUT"
+batfish_nuke_reset_logicblox() {
+   killall -9 lb-server
+   killall -9 lb-pager
+   lb services stop || return 1
+   rm -rf ~/lb_deployment/*
+   LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start || return 1
 }
-export -f batfish_get_concrete_failure_packets_decreased
-
-batfish_get_concrete_failure_packets_increased() {
-   batfish_expect_args 2 $# || return 1
-   local NODE=$1
-   local FAILURE_REACH_QUERY_NAME=$2
-   local INCREASED_QUERY_NAME=increased-$FAILURE_REACH_QUERY_NAME
-   local Z3_IN=$PWD/constraints-${INCREASED_QUERY_NAME}-${NODE}.smt2
-   local Z3_OUT=${Z3_IN}.out
-   date | tr -d '\n'
-   echo ": START: Get concrete increased reachability packet ( $Z3_IN => $Z3_OUT"
-   $BATFISH_Z3 $Z3_IN > $Z3_OUT
-   HEADER=$(head -c5 $Z3_OUT)
-   if [ "$HEADER" = "unsat" ]; then
-      echo unsat > $Z3_OUT
-   fi
-   date | tr -d '\n'
-   echo ": END: Get concrete increased reachability packet ( $Z3_IN => $Z3_OUT"
-}
-export -f batfish_get_concrete_failure_packets_increased
-
-batfish_get_concrete_inconsistent_packets() {
-   date | tr -d '\n'
-   echo ": START: Get concrete inconsistent packets"
-   batfish_expect_args 1 $# || return 1
-   local QUERY_PATH=$1
-   local OLD_PWD=$PWD
-   cd $QUERY_PATH
-   cat nodes | parallel --halt 2 batfish_get_concrete_inconsistent_packets_helper {}  \;  || return 1
-   cd $OLD_PWD
-   date | tr -d '\n'
-   echo ": END: Get concrete inconsistent packets"
-}
-export -f batfish_get_concrete_inconsistent_packets
-
-batfish_get_concrete_inconsistent_packets_helper() {
-   batfish_expect_args 1 $# || return 1
-   local NODE=$1
-   local CONC_QUERY=$PWD/incons-constraints-${NODE}.smt2
-   local CONC_QUERY_OUT=$PWD/incons-constraints-${NODE}.smt2.out
-   echo -n "   "
-   date | tr -d '\n'
-   echo ": START: Get concrete inconsistent packets for $NODE (\"$CONC_QUERY_OUT\")"
-   HEADER=$(head -c5 $CONC_QUERY)
-   if [ "$HEADER" = "unsat" ]; then
-      echo unsat > $CONC_QUERY_OUT
-   else
-      $BATFISH_Z3 $CONC_QUERY > $CONC_QUERY_OUT || return 1
-   fi
-   echo -n "   "
-   date | tr -d '\n'
-   echo ": END: Get concrete inconsistent packets for $NODE (\"$CONC_QUERY_OUT\")"
-}
-export -f batfish_get_concrete_inconsistent_packets_helper
+export -f batfish_nuke_reset_logicblox
 
 batfish_inject_packets() {
    date | tr -d '\n'
@@ -538,9 +952,7 @@ batfish_inject_packets() {
    local QUERY_PATH=$2
    local DUMP_DIR=$3
    local OLD_PWD=$PWD
-   #local FLOW_SINK_PATH=$TEST_RIG/flow_sinks
    cd $QUERY_PATH
-   #batfish -testrig $TEST_RIG -flow -flowpath $QUERY_PATH -flowsink $FLOW_SINK_PATH -dumptraffic -dumpdir $DUMP_DIR
    batfish -workspace $WORKSPACE -flow -flowpath $QUERY_PATH -dumptraffic -dumpdir $DUMP_DIR || return 1
    batfish_format_flows $DUMP_DIR || return 1
    cd $OLD_PWD
@@ -568,11 +980,24 @@ batfish_query_flows() {
    batfish_expect_args 2 $# || return 1
    local FLOW_RESULTS=$1
    local WORKSPACE=$2
-   batfish -log 0 -workspace $WORKSPACE -query -predicates Flow FlowUnknown FlowInconsistent FlowAccepted FlowAllowedIn FlowAllowedOut FlowDropped FlowDeniedIn FlowDeniedOut FlowNoRoute FlowReachPostIn FlowReachPreOut FlowReachPreOutInterface FlowReachPostOutInterface FlowReachPreInInterface FlowReachPostInInterface FlowReach FlowReachStep FlowLost FlowLoop LanAdjacent &> $FLOW_RESULTS
+   batfish -log 0 -workspace $WORKSPACE -query -predicates Flow FlowUnknown FlowInconsistent FlowAccepted FlowAllowedIn FlowAllowedOut FlowDropped FlowDeniedIn FlowDeniedOut FlowNoRoute FlowNullRouted FlowPolicyDenied FlowReachPolicyRoute FlowReachPostIn FlowReachPreOut FlowReachPreOutInterface FlowReachPostOutInterface FlowReachPreOutEdgeOrigin FlowReachPreOutEdgePolicyRoute FlowReachPreOutEdgeStandard FlowReachPreOutEdge FlowReachPreInInterface FlowReachPostInInterface FlowReach FlowReachStep FlowLost FlowLoop FlowPathHistory FlowPathAcceptedEdge FlowPathDeniedOutEdge FlowPathDeniedInEdge FlowPathNoRouteEdge FlowPathNullRoutedEdge FlowPathIntermediateEdge LanAdjacent &> $FLOW_RESULTS
    date | tr -d '\n'
    echo ": END: Query flow results from LogicBlox"
 }
 export -f batfish_query_flows
+
+batfish_query_predicate() {
+   date | tr -d '\n'
+   echo ": START: Query predicate (informational only)"
+   batfish_expect_args 2 $# || return 1
+   local PREFIX=$1
+   local PREDICATE=$2
+   local WORKSPACE=batfish-$USER-$PREFIX
+   batfish -workspace $WORKSPACE -query -predicates $PREDICATE
+   date | tr -d '\n'
+   echo ": END: Query predicate (informational only)"
+}
+export -f batfish_query_predicate
 
 batfish_query_routes() {
    date | tr -d '\n'
@@ -656,4 +1081,15 @@ int_to_ip() {
    echo "${OCTET_3}.${OCTET_2}.${OCTET_1}.${OCTET_0}"
 }
 export -f int_to_ip
+
+ip_to_int() {
+   batfish_expect_args 1 $# || return 1
+   local INPUT=$1
+   local OCTET_0=$(echo "$INPUT" | cut -d'.' -f 4)
+   local OCTET_1=$(echo "$INPUT" | cut -d'.' -f 3)
+   local OCTET_2=$(echo "$INPUT" | cut -d'.' -f 2)
+   local OCTET_3=$(echo "$INPUT" | cut -d'.' -f 1)
+   echo $((${OCTET_3} * 16777216 + ${OCTET_2} * 65536 + ${OCTET_1} * 256 + ${OCTET_0}))
+}
+export -f ip_to_int
 

@@ -21,6 +21,7 @@ import batfish.representation.IpAccessList;
 import batfish.representation.LineAction;
 import batfish.representation.IpAccessListLine;
 import batfish.representation.OspfArea;
+import batfish.representation.OspfMetricType;
 import batfish.representation.PolicyMap;
 import batfish.representation.PolicyMapAction;
 import batfish.representation.PolicyMapClause;
@@ -178,17 +179,25 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       // }
 
       // cause ip peer groups to inherit unset fields from owning named peer
-      // group
+      // group or peer template.
       for (IpBgpPeerGroup ipg : proc.getIpPeerGroups().values()) {
-         NamedBgpPeerGroup parentPeerGroup;
-         String groupName = ipg.getGroupName();
-         if (groupName != null) {
-            parentPeerGroup = proc.getNamedPeerGroups().get(groupName);
+         String bgpPeerTemplatePeerGroupName = ipg.getPeerTemplateName();
+         if (bgpPeerTemplatePeerGroupName != null) {
+            BgpPeerTemplatePeerGroup bgpPeerTemplatePeerGroup = proc
+                  .getPeerTemplates().get(bgpPeerTemplatePeerGroupName);
+            ipg.inheritUnsetFields(bgpPeerTemplatePeerGroup);
          }
          else {
-            parentPeerGroup = NamedBgpPeerGroup.DEFAULT_INSTANCE;
+            NamedBgpPeerGroup parentPeerGroup;
+            String groupName = ipg.getGroupName();
+            if (groupName == null) {
+               parentPeerGroup = NamedBgpPeerGroup.DEFAULT_INSTANCE;
+            }
+            else {
+               parentPeerGroup = proc.getNamedPeerGroups().get(groupName);
+            }
+            ipg.inheritUnsetFields(parentPeerGroup);
          }
-         ipg.inheritUnsetFields(parentPeerGroup);
       }
 
       for (IpBgpPeerGroup pg : proc.getIpPeerGroups().values()) {
@@ -441,6 +450,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          int defaultPrefixLength = 0;
          SubRange defaultPrefixRange = new SubRange(0, 0);
          int metric = proc.getDefaultInformationMetric();
+         OspfMetricType metricType = proc.getDefaultInformationMetricType();
          // add default export map with metric
          PolicyMap exportDefaultPolicy;
          String mapName = proc.getDefaultInformationOriginateMap();
@@ -459,6 +469,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                      LineAction.ACCEPT, metric, Protocol.AGGREGATE,
                      PolicyMapAction.PERMIT);
                newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
+               newProcess.getPolicyMetricTypes().put(exportDefaultPolicy,
+                     metricType);
                generationPolicies.add(generationPolicy);
                GeneratedRoute route = new GeneratedRoute(new Ip(defaultPrefix),
                      defaultPrefixLength, MAX_ADMINISTRATIVE_COST,
@@ -476,6 +488,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             c.getPolicyMaps().put(exportDefaultPolicy.getMapName(),
                   exportDefaultPolicy);
             newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
+            newProcess.getPolicyMetricTypes().put(exportDefaultPolicy,
+                  metricType);
             GeneratedRoute route = new GeneratedRoute(new Ip(defaultPrefix),
                   defaultPrefixLength, MAX_ADMINISTRATIVE_COST, null);
             newProcess.getGeneratedRoutes().add(route);
@@ -490,6 +504,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             c.getPolicyMaps().put(exportDefaultPolicy.getMapName(),
                   exportDefaultPolicy);
             newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
+            newProcess.getPolicyMetricTypes().put(exportDefaultPolicy,
+                  metricType);
          }
       }
 
@@ -499,8 +515,12 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             Protocol.CONNECTED);
       if (rcp != null) {
          Integer metric = rcp.getMetric();
+         OspfMetricType metricType = rcp.getMetricType();
          boolean explicitMetric = metric != null;
          boolean routeMapMetric = false;
+         if (!explicitMetric) {
+            metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
+         }
          // add default export map with metric
          PolicyMap exportConnectedPolicy;
          String mapName = rcp.getMap();
@@ -532,9 +552,6 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             // add a set metric line if no metric provided by route map
             if (!routeMapMetric) {
                // use default metric if no explicit metric is set
-               if (!explicitMetric) {
-                  metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
-               }
                setMetricLine = new PolicyMapSetMetricLine(metric);
             }
             for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
@@ -544,12 +561,16 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                }
             }
             newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
+            newProcess.getPolicyMetricTypes().put(exportConnectedPolicy,
+                  metricType);
          }
          else {
             exportConnectedPolicy = makeRouteExportPolicy(c,
                   OSPF_EXPORT_CONNECTED_POLICY_NAME, null, null, 0, null, null,
                   metric, Protocol.CONNECTED, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
+            newProcess.getPolicyMetricTypes().put(exportConnectedPolicy,
+                  metricType);
             c.getPolicyMaps().put(exportConnectedPolicy.getMapName(),
                   exportConnectedPolicy);
          }
@@ -561,8 +582,12 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             Protocol.STATIC);
       if (rsp != null) {
          Integer metric = rsp.getMetric();
+         OspfMetricType metricType = rsp.getMetricType();
          boolean explicitMetric = metric != null;
          boolean routeMapMetric = false;
+         if (!explicitMetric) {
+            metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_STATIC_METRIC;
+         }
          // add export map with metric
          PolicyMap exportStaticPolicy;
          String mapName = rsp.getMap();
@@ -592,9 +617,6 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             // add a set metric line if no metric provided by route map
             if (!routeMapMetric) {
                // use default metric if no explicit metric is set
-               if (!explicitMetric) {
-                  metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_STATIC_METRIC;
-               }
                setMetricLine = new PolicyMapSetMetricLine(metric);
             }
 
@@ -654,6 +676,9 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                }
             }
             newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
+            newProcess.getPolicyMetricTypes().put(exportStaticPolicy,
+                  metricType);
+
          }
          else { // export static routes without named policy
             exportStaticPolicy = makeRouteExportPolicy(c,
@@ -662,6 +687,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   "0.0.0.0", 0, new SubRange(0, 0), LineAction.REJECT, metric,
                   Protocol.STATIC, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
+            newProcess.getPolicyMetricTypes().put(exportStaticPolicy,
+                  metricType);
          }
       }
       newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
@@ -685,7 +712,11 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          RouteMapClause clause) throws VendorConversionException {
       Set<PolicyMapMatchLine> matchLines = new LinkedHashSet<PolicyMapMatchLine>();
       for (RouteMapMatchLine rmMatchLine : clause.getMatchList()) {
-         matchLines.add(toPolicyMapMatchLine(c, rmMatchLine));
+         PolicyMapMatchLine matchLine = toPolicyMapMatchLine(c, rmMatchLine);
+         if (matchLine == null) {
+            throw new Error("error converting route map match line");
+         }
+         matchLines.add(matchLine);
       }
       Set<PolicyMapSetLine> setLines = new LinkedHashSet<PolicyMapSetLine>();
       for (RouteMapSetLine rmSetLine : clause.getSetList()) {
@@ -934,11 +965,11 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
    }
 
    private batfish.representation.Interface toInterface(Interface iface,
-         Map<String, IpAccessList> ipAccessLists, Map<String, PolicyMap> policyMaps)
-         throws VendorConversionException {
+         Map<String, IpAccessList> ipAccessLists,
+         Map<String, PolicyMap> policyMaps) throws VendorConversionException {
       batfish.representation.Interface newIface = new batfish.representation.Interface(
             iface.getName());
-      newIface.setAccessVlan(iface.getAccessVlan());
+      newIface.setDescription(iface.getDescription());
       newIface.setActive(iface.getActive());
       newIface.setArea(iface.getArea());
       newIface.setBandwidth(iface.getBandwidth());
@@ -951,10 +982,13 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          String subnet = secondaryIps.get(ip);
          newIface.getSecondaryIps().put(new Ip(ip), new Ip(subnet));
       }
-      newIface.setNativeVlan(iface.getNativeVlan());
       newIface.setOspfCost(iface.getOspfCost());
       newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
       newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
+
+      // switch settings
+      newIface.setAccessVlan(iface.getAccessVlan());
+      newIface.setNativeVlan(iface.getNativeVlan());
       newIface.setSwitchportMode(iface.getSwitchportMode());
       SwitchportEncapsulationType encapsulation = iface
             .getSwitchportTrunkEncapsulation();
@@ -963,6 +997,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          encapsulation = SwitchportEncapsulationType.DOT1Q;
       }
       newIface.setSwitchportTrunkEncapsulation(encapsulation);
+      newIface.addAllowedRanges(iface.getAllowedVlans());
+
       String incomingFilterName = iface.getIncomingFilter();
       if (incomingFilterName != null) {
          IpAccessList incomingFilter = ipAccessLists.get(incomingFilterName);

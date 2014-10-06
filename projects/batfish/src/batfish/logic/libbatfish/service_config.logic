@@ -38,6 +38,11 @@ block(`service_config) {
          delim_file_binding[] = "SetSwitchportTrunkNative"
       }.
 
+      service_by_prefix["/batfish/SetVlanInterface"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetVlanInterface"
+      }.
+
 // DataPlane
       service_by_prefix["/batfish/SetInterfaceFilterIn"] = x,
       delim_service(x) {
@@ -209,6 +214,11 @@ block(`service_config) {
          delim_file_binding[] = "SetPolicyMapClauseDeny"
       }.
 
+      service_by_prefix["/batfish/SetPolicyMapClauseMatchAcl"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseMatchAcl"
+      }.
+
       service_by_prefix["/batfish/SetPolicyMapClauseMatchCommunityList"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetPolicyMapClauseMatchCommunityList"
@@ -262,6 +272,11 @@ block(`service_config) {
       service_by_prefix["/batfish/SetPolicyMapClauseSetOriginType"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetPolicyMapClauseSetOriginType"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapOspfExternalRouteType"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapOspfExternalRouteType"
       }.
 
 // Bgp

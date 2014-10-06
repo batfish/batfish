@@ -5,7 +5,7 @@ block(`Bgp) {
    alias_all(`libbatfish:PolicyMap),
    alias_all(`libbatfish:Route),
    export(`{
-// BEGIN CODE
+
 
 AdvertisementClusterId(advert, clusterId) ->
    BgpAdvertisement(advert),

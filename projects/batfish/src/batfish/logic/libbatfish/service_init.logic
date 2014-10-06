@@ -64,6 +64,16 @@ block(`service_init) {
             }
       }.
 
+      file_binding_by_name["SetVlanInterface"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetVlanInterface",
+         predicate_binding_by_name["libbatfish:Layer2:SetVlanInterface"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE,VLAN"
+            }
+      }.
+
 // DataPlane
       file_binding_by_name["SetInterfaceFilterIn"] = fb,
       file_binding(fb) {
@@ -102,7 +112,7 @@ block(`service_init) {
          file_binding_definition_name[] = "SetNetwork",
          predicate_binding_by_name["libbatfish:Ip:SetNetwork"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "START,END,PREFIXLENGTH"
+               predicate_binding_columns[] = "STARTIP,START,END,PREFIXLENGTH"
             }
       }.
 
@@ -395,6 +405,16 @@ block(`service_init) {
             }
       }.
 
+      file_binding_by_name["SetPolicyMapClauseMatchAcl"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseMatchAcl",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseMatchAcl"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,ACL"
+            }
+      }.
+
       file_binding_by_name["SetPolicyMapClauseMatchCommunityList"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
@@ -502,6 +522,16 @@ block(`service_init) {
          predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseSetOriginType"] =
             predicate_binding(_) {
                predicate_binding_columns[] = "MAP,CLAUSE,ORIGINTYPE"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapOspfExternalRouteType"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapOspfExternalRouteType",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapOspfExternalRouteType"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,PROTOCOL"
             }
       }.
 

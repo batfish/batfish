@@ -45,7 +45,8 @@ NetworkOf[ip, prefix_length] = network ->
    int(prefix_length),
    Network(network).
 
-SetNetwork(network_start, network_end, prefix_length) ->
+SetNetwork(networkIp, network_start, network_end, prefix_length) ->
+   Ip(networkIp),
    int(network_start),
    int(network_end),
    int(prefix_length).

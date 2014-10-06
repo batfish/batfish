@@ -15,7 +15,7 @@ package batfish.grammar.cisco;
 address_family_vrf_stanza
 :
    ADDRESS_FAMILY ~NEWLINE* NEWLINE null_block_substanza* EXIT_ADDRESS_FAMILY
-   NEWLINE closing_comment
+   NEWLINE
 ;
 
 banner_stanza
@@ -87,11 +87,12 @@ ip_route_stanza
 
 macro_stanza
 :
-   MACRO ~COMMENT_CLOSING_LINE* closing_comment
+   MACRO ~NEWLINE* NEWLINE
 ;
 
 null_block_stanza
 :
+   NO?
    (
       AAA
       | ARCHIVE
@@ -106,6 +107,7 @@ null_block_stanza
                ISAKMP
                (
                   KEY
+                  | PEER
                   | POLICY
                   | PROFILE
                )
@@ -132,7 +134,13 @@ null_block_stanza
       (
          IP
          (
-            FLOW_TOP_TALKERS
+            (
+               ACCESS_LIST LOGGING
+            )
+            | ACCOUNTING_LIST
+            | DHCP
+            | FLOW_TOP_TALKERS
+            | INSPECT
             | POLICY_LIST
             | SLA
          )
@@ -142,12 +150,14 @@ null_block_stanza
       (
          IPV6 ACCESS_LIST
       )
+      | L2TP_CLASS
       | LINE
       | MANAGEMENT
       | MAP_CLASS
       | MAP_LIST
       | OPENFLOW
       | POLICY_MAP
+      | PSEUDOWIRE_CLASS
       | REDUNDANCY
       | ROLE
       |
@@ -169,6 +179,7 @@ null_block_stanza
       )
       | VOICE
       | VOICE_PORT
+      | VPC
       | VPDN_GROUP
    ) ~NEWLINE* NEWLINE
    (
@@ -179,8 +190,6 @@ null_block_stanza
 
 null_block_substanza
 :
-   comment_stanza
-   |
    (
       NO?
       (
@@ -230,13 +239,17 @@ null_block_substanza
          | DEFAULT_ACTION
          | DEFAULT_DOMAIN
          | DEFAULT_GROUP_POLICY
+         | DEFAULT_ROUTER
          | DELAY
          | DENY
          | DESCRIPTION
          | DESTINATION
          | DIAGNOSTIC
          | DNS_SERVER
+         | DROP
          | DS0_GROUP
+         | DOMAIN_NAME
+         | ENCAPSULATION
          | ENROLLMENT
          | ESCAPE_CHARACTER
          | EXCEED_ACTION
@@ -255,6 +268,7 @@ null_block_substanza
          | GROUP_ALIAS
          | GROUP_POLICY
          | GROUP_URL
+         | HIDDEN
          | HIDDEN_SHARES
          | HIDEKEYS
          | HIGH_AVAILABILITY
@@ -262,10 +276,21 @@ null_block_substanza
          | IDLE_TIMEOUT
          | INSPECT
          | INSTANCE
-         | IP
+         | INTERFACE POLICY
+         |
+         (
+            (
+               IP
+               | IPV6
+            )
+            (
+               ACCESS_CLASS
+               | ACCESS_GROUP
+               | FLOW
+            )
+         )
          | IPSEC_UDP
          | IPX
-         | IPV6
          | IPV6_ADDRESS_POOL
          | ISAKMP
          | KEEPALIVE_ENABLE
@@ -289,6 +314,7 @@ null_block_substanza
          | MODEM
          | MTU
          | NAME
+         | NETWORK
          | NODE
          | NOTIFY
          | PARAMETERS
@@ -296,6 +322,8 @@ null_block_substanza
          | PASSWORD
          | PASSWORD_STORAGE
          | PATH_JITTER
+         | PEER_GATEWAY
+         | PEER_KEEPALIVE
          | PERMIT
          | PICKUP
          | POLICE
@@ -318,9 +346,11 @@ null_block_substanza
          | REMOTE_PORT
          | REMOTE_SPAN
          | REMOVED
+         | RETRANSMIT
          | REVERSE_ROUTE
          | REVISION
          | RING
+         | ROLE
          | ROTARY
          | ROUTE_TARGET
          | RULE
@@ -364,7 +394,6 @@ null_block_substanza
          | VPN_FILTER
          | VPN_IDLE_TIMEOUT
          | VPN_TUNNEL_PROTOCOL
-         | VRF
          | WEBVPN
          | WINS_SERVER
          | WITHOUT_CSD
@@ -422,6 +451,7 @@ null_standalone_stanza
       | CARD
       | CCM_MANAGER
       | CDP
+      | CFS
       | CIPC
       | CLASS_MAP
       | CLOCK
@@ -436,7 +466,7 @@ null_standalone_stanza
       (
          CRYPTO
          (
-         	CA
+            CA
             | IPSEC
             |
             (
@@ -493,6 +523,7 @@ null_standalone_stanza
       | GATEKEEPER
       | GROUP
       | GROUP_OBJECT
+      | HARDWARE
       | HASH
       | HISTORY
       | HOST
@@ -519,7 +550,6 @@ null_standalone_stanza
             | CLASSLESS
             | DEFAULT_NETWORK
             | DEVICE
-            | DHCP
             | DOMAIN
             | DOMAIN_LIST
             | DOMAIN_LOOKUP
@@ -592,7 +622,6 @@ null_standalone_stanza
                OSPF NAME_LOOKUP
             )
             | PIM
-            | PREFIX_LIST
             | ROUTE
             | SOURCE_ROUTE
             | UNICAST_ROUTING
@@ -761,6 +790,7 @@ null_standalone_stanza
          VLAN
          (
             ACCESS_LOG
+            | CONFIGURATION
             | DOT1Q
             | INTERNAL
          )
@@ -776,6 +806,7 @@ null_standalone_stanza
       | X25
       | X29
       | XLATE
+      | XML SERVER
       | XX_HIDE
    )
    (
@@ -787,8 +818,6 @@ null_stanza
 :
    banner_stanza
    | certificate_stanza
-   | closing_comment
-   | comment_stanza
    | macro_stanza
    | null_block_stanza
    | null_standalone_stanza
@@ -799,6 +828,7 @@ null_stanza
          | STCAPP
       ) NEWLINE
    )
+   | vrf_context_stanza
    | vrf_stanza
 ;
 
@@ -824,10 +854,24 @@ stanza
    | router_ospf_stanza
    | router_rip_stanza
    | standard_access_list_stanza
+   | switching_mode_stanza
+;
+
+switching_mode_stanza
+:
+   SWITCHING_MODE ~NEWLINE* NEWLINE
+;
+
+vrf_context_stanza
+:
+   VRF CONTEXT ~NEWLINE NEWLINE
+   (
+      IP ROUTE ~NEWLINE NEWLINE
+   )*
 ;
 
 vrf_stanza
 :
-   VRF ~NEWLINE* NEWLINE null_block_substanza* closing_comment?
-   address_family_vrf_stanza*
+   VRF ~(NEWLINE|CONTEXT)* NEWLINE null_block_substanza* address_family_vrf_stanza*
 ;
+

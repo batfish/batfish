@@ -46,6 +46,13 @@ block(`service_files) {
          column_formats[] = "string,string,integer"
       }.
 
+      file_definition_by_name["SetVlanInterface"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE,VLAN",
+         column_formats[] = "string,string,integer"
+      }.
+
 // DataPlane
       file_definition_by_name["SetInterfaceFilterIn"] = fd,
       file_definition(fd) {
@@ -72,8 +79,8 @@ block(`service_files) {
       file_definition_by_name["SetNetwork"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "START,END,PREFIXLENGTH",
-         column_formats[] = "integer,integer,integer"
+         column_headers[] = "STARTIP,START,END,PREFIXLENGTH",
+         column_formats[] = "integer, integer,integer,integer"
       }.
 
 // IpAccessList
@@ -281,6 +288,13 @@ block(`service_files) {
          column_formats[] = "string,integer"
       }.
 
+      file_definition_by_name["SetPolicyMapClauseMatchAcl"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,ACL",
+         column_formats[] = "string,integer,string"
+      }.
+
       file_definition_by_name["SetPolicyMapClauseMatchCommunityList"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
@@ -356,6 +370,13 @@ block(`service_files) {
          file_delimiter[] = "|",
          column_headers[] = "MAP,CLAUSE,ORIGINTYPE",
          column_formats[] = "string,integer,string"
+      }.
+
+      file_definition_by_name["SetPolicyMapOspfExternalRouteType"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,PROTOCOL",
+         column_formats[] = "string,string"
       }.
 
 // Bgp

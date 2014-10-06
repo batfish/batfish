@@ -2,6 +2,7 @@ package batfish.logicblox;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,9 +12,11 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.eclipse.jetty.client.ContentExchange;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.HttpExchange;
+import org.eclipse.jetty.io.ByteArrayBuffer;
 
 import com.logicblox.bloxweb.client.DelimImportOptions;
 import com.logicblox.bloxweb.client.DelimServiceClient;
@@ -46,46 +49,55 @@ import com.logicblox.connect.Workspace.Result;
 import com.logicblox.connect.Workspace.Result.Failure;
 import com.logicblox.connect.Workspace.Result.QueryPredicate;
 
+import batfish.main.BatfishException;
 import batfish.util.Util;
 
 public class LogicBloxFrontend {
 
-   private static final int BLOXWEB_PORT = 8080;
-   private static final String BLOXWEB_PROTOCOL = "http";
-   public static final long BLOXWEB_TIMEOUT_MS = 31536000000l;
+   private static final String LB_WEB_ADMIN_URI = "/lb-web/admin";
+   private static final String LB_WEB_PROTOCOL = "http";
+   public static final long LB_WEB_TIMEOUT_MS = 31536000000l;
    private static final String SERVICE_DIR = "batfish";
 
    private static void closeSession(
          ConnectBloxSession<Request, Response> session) {
       try {
          // close down a regular session
-         if (session != null)
+         if (session != null && session.isActive())
             session.close();
       }
       catch (ConnectBloxSession.Exception e) {
-         System.err
-               .println("Encountered error while closing a ConnectBloxSession: "
-                     + e.getMessage());
+         throw new BatfishException(
+               "Encountered error while closing a ConnectBloxSession", e);
       }
    }
 
-   private boolean _assumedToExist;
+   private final boolean _assumedToExist;
    private ConnectBloxSession<Request, Response> _cbSession;
    private EntityTable _entityTable;
-   private String _lbHost;
-   private int _lbPort;
-   private Integer _sshPort;
+   private final String _lbHost;
+   private final int _lbPort;
+   private final int _lbWebAdminPort;
+   private final HttpClient _lbWebClient;
+   private int _lbWebPort;
+   private final TCPTransport _lbWebTransport;
    private ConnectBloxWorkspace _workspace;
-   private String _workspaceName;
+   private final String _workspaceName;
 
-   public LogicBloxFrontend(String lbHost, int lbPort, Integer sshPort,
-         String workspaceName, boolean assumedToExist) {
+   public LogicBloxFrontend(String lbHost, int lbPort, int lbWebPort,
+         int lbWebAdminPort, String workspaceName, boolean assumedToExist) {
       _workspaceName = workspaceName;
       _lbHost = lbHost;
       _lbPort = lbPort;
-      _sshPort = sshPort;
+      _lbWebPort = lbWebPort;
+      _lbWebAdminPort = lbWebAdminPort;
       _assumedToExist = assumedToExist;
-      _entityTable = null;
+      if (_workspaceName.contains("\"")) {
+         throw new BatfishException("Invalid workspace name: \""
+               + _workspaceName + "\"");
+      }
+      _lbWebTransport = Transports.tcp(false);
+      _lbWebClient = initLbWebClient();
    }
 
    public String addProject(File projectPath, String additionalLibraryPath) {
@@ -96,7 +108,7 @@ public class LogicBloxFrontend {
          results = _workspace.transaction(Collections.singletonList(ap));
       }
       catch (com.logicblox.connect.WorkspaceReader.Exception e) {
-         e.printStackTrace();
+         throw new BatfishException("Error adding project", e);
       }
       Result result = results.get(0);
       if (result instanceof Result.AddProject) {
@@ -113,10 +125,22 @@ public class LogicBloxFrontend {
             _workspace.close();
          }
          catch (com.logicblox.connect.WorkspaceReader.Exception e) {
-            e.printStackTrace();
+            throw new BatfishException("Error closing workspace", e);
          }
       }
       closeSession(_cbSession);
+      if (_lbWebClient != null) {
+         if (_lbWebClient.isStarted()) {
+            try {
+               _lbWebClient.stop();
+            }
+            catch (java.lang.Exception e) {
+               throw new BatfishException("Failed to stop lb-web admin client",
+                     e);
+            }
+         }
+
+      }
    }
 
    public boolean connected() {
@@ -159,11 +183,8 @@ public class LogicBloxFrontend {
          results = _workspace.transaction(Collections.singletonList(command));
       }
       catch (com.logicblox.connect.WorkspaceReader.Exception e) {
-         e.printStackTrace();
+         throw new BatfishException("Error executing named block", e);
       }
-      // Workspace.Result.ExecuteNamedBlock result =
-      // (Workspace.Result.ExecuteNamedBlock) results
-      // .get(0);
       if (results.get(0) instanceof Workspace.Result.ExecuteNamedBlock) {
          return null;
       }
@@ -176,105 +197,112 @@ public class LogicBloxFrontend {
          Column column) {
       EntityColumn ec;
       UInt64Column indexColumn;
-      switch (valueType) {
+      try {
+         switch (valueType) {
 
-      case ENTITY_INDEX_IP:
-         ec = (EntityColumn) column;
-         long[] ips = ((Int64Column) ec.getRefModeColumn().unwrap()).getRows();
-         for (long ip : ips) {
-            textColumn.add(Util.longToIp(ip));
+         case ENTITY_REF_IP:
+            ec = (EntityColumn) column;
+            long[] ips = ((Int64Column) ec.getRefModeColumn().unwrap())
+                  .getRows();
+            for (long ip : ips) {
+               textColumn.add(Util.longToIp(ip));
+            }
+            break;
+
+         case ENTITY_INDEX_FLOW:
+            ec = (EntityColumn) column;
+            BigInteger[] flowIndices = ((UInt64Column) ec.getIndexColumn()
+                  .unwrap()).getRows();
+            for (BigInteger index : flowIndices) {
+               textColumn.add(_entityTable.getFlow(index));
+            }
+            break;
+
+         case ENTITY_INDEX_NETWORK:
+            ec = (EntityColumn) column;
+            BigInteger[] networkIndices = ((UInt64Column) ec.getIndexColumn()
+                  .unwrap()).getRows();
+            for (BigInteger index : networkIndices) {
+               textColumn.add(_entityTable.getNetwork(index));
+            }
+            break;
+
+         case ENTITY_INDEX_INT:
+            ec = (EntityColumn) column;
+            indexColumn = (UInt64Column) ec.getIndexColumn().unwrap();
+            for (BigInteger i : indexColumn.getRows()) {
+               textColumn.add(i.toString());
+            }
+            break;
+
+         case ENTITY_REF_INT:
+            ec = (EntityColumn) column;
+            long[] refIntLongs = ((Int64Column) ec.getRefModeColumn().unwrap())
+                  .getRows();
+            for (Long l : refIntLongs) {
+               textColumn.add(l.toString());
+            }
+            break;
+
+         case ENTITY_REF_STRING:
+            ec = (EntityColumn) column;
+            String[] strings = ((StringColumn) ec.getRefModeColumn().unwrap())
+                  .getRows();
+            for (String s : strings) {
+               textColumn.add(s);
+            }
+            break;
+
+         case STRING:
+            StringColumn sColumn = (StringColumn) column;
+            textColumn.addAll(Arrays.asList(sColumn.getRows()));
+            break;
+
+         case IP:
+            long[] ipsAsLongs = ((Int64Column) column).getRows();
+            for (Long ipAsLong : ipsAsLongs) {
+               textColumn.add(Util.longToIp(ipAsLong));
+            }
+            break;
+
+         case FLOAT:
+            double[] doubles = ((DoubleColumn) column).getRows();
+            for (Double d : doubles) {
+               textColumn.add(d.toString());
+            }
+            break;
+
+         case INT:
+            long[] longs = ((Int64Column) column).getRows();
+            for (Long l : longs) {
+               textColumn.add(l.toString());
+            }
+            break;
+         case ENTITY_INDEX_BGP_ADVERTISEMENT:
+            ec = (EntityColumn) column;
+            BigInteger[] advertIndices = ((UInt64Column) ec.getIndexColumn()
+                  .unwrap()).getRows();
+            for (BigInteger index : advertIndices) {
+               textColumn.add(_entityTable.getBgpAdvertisement(index));
+            }
+            break;
+
+         case ENTITY_INDEX_ROUTE:
+            ec = (EntityColumn) column;
+            BigInteger[] routeIndices = ((UInt64Column) ec.getIndexColumn()
+                  .unwrap()).getRows();
+            for (BigInteger index : routeIndices) {
+               textColumn.add(_entityTable.getRoute(index));
+            }
+            break;
+
+         default:
+            throw new Error("Invalid LBValueType");
          }
-         break;
-
-      case ENTITY_INDEX_FLOW:
-         ec = (EntityColumn) column;
-         BigInteger[] flowIndices = ((UInt64Column) ec.getIndexColumn()
-               .unwrap()).getRows();
-         for (BigInteger index : flowIndices) {
-            textColumn.add(_entityTable.getFlow(index));
-         }
-         break;
-
-      case ENTITY_INDEX_NETWORK:
-         ec = (EntityColumn) column;
-         BigInteger[] networkIndices = ((UInt64Column) ec.getIndexColumn()
-               .unwrap()).getRows();
-         for (BigInteger index : networkIndices) {
-            textColumn.add(_entityTable.getNetwork(index));
-         }
-         break;
-
-      case ENTITY_INDEX_INT:
-         ec = (EntityColumn) column;
-         indexColumn = (UInt64Column) ec.getIndexColumn().unwrap();
-         for (BigInteger i : indexColumn.getRows()) {
-            textColumn.add(i.toString());
-         }
-         break;
-
-      case ENTITY_REF_INT:
-         ec = (EntityColumn) column;
-         long[] refIntLongs = ((Int64Column) ec.getRefModeColumn().unwrap())
-               .getRows();
-         for (Long l : refIntLongs) {
-            textColumn.add(l.toString());
-         }
-         break;
-
-      case ENTITY_REF_STRING:
-         ec = (EntityColumn) column;
-         String[] strings = ((StringColumn) ec.getRefModeColumn().unwrap())
-               .getRows();
-         for (String s : strings) {
-            textColumn.add(s);
-         }
-         break;
-
-      case STRING:
-         StringColumn sColumn = (StringColumn) column;
-         textColumn.addAll(Arrays.asList(sColumn.getRows()));
-         break;
-
-      case IP:
-         long[] ipsAsLongs = ((Int64Column) column).getRows();
-         for (Long ipAsLong : ipsAsLongs) {
-            textColumn.add(Util.longToIp(ipAsLong));
-         }
-         break;
-
-      case FLOAT:
-         double[] doubles = ((DoubleColumn) column).getRows();
-         for (Double d : doubles) {
-            textColumn.add(d.toString());
-         }
-         break;
-
-      case INT:
-         long[] longs = ((Int64Column) column).getRows();
-         for (Long l : longs) {
-            textColumn.add(l.toString());
-         }
-         break;
-      case ENTITY_INDEX_BGP_ADVERTISEMENT:
-         ec = (EntityColumn) column;
-         BigInteger[] advertIndices = ((UInt64Column) ec.getIndexColumn()
-               .unwrap()).getRows();
-         for (BigInteger index : advertIndices) {
-            textColumn.add(_entityTable.getBgpAdvertisement(index));
-         }
-         break;
-
-      case ENTITY_INDEX_ROUTE:
-         ec = (EntityColumn) column;
-         BigInteger[] routeIndices = ((UInt64Column) ec.getIndexColumn()
-               .unwrap()).getRows();
-         for (BigInteger index : routeIndices) {
-            textColumn.add(_entityTable.getRoute(index));
-         }
-         break;
-
-      default:
-         throw new Error("Invalid LBValueType");
+      }
+      catch (Option.Exception e) {
+         throw new BatfishException(
+               "Error pretty-printing logicblox query result", e);
       }
    }
 
@@ -373,6 +401,24 @@ public class LogicBloxFrontend {
       }
    }
 
+   private HttpClient initLbWebClient() {
+      HttpClient client = _lbWebTransport.getHttpClient();
+      client.setTimeout(LB_WEB_TIMEOUT_MS);
+      client.setIdleTimeout(LB_WEB_TIMEOUT_MS);
+      return client;
+   }
+
+   private ContentExchange newLbWebAdminExchange(String msg) {
+      ContentExchange exchange = new ContentExchange();
+      exchange.setMethod("POST");
+      exchange.setRequestHeader("Accept", "application/json");
+      exchange.setRequestHeader("Content-Type", "application/json");
+      exchange.setURL(LB_WEB_PROTOCOL + "://" + _lbHost + ":" + _lbWebAdminPort
+            + LB_WEB_ADMIN_URI);
+      exchange.setRequestContent(new ByteArrayBuffer(msg.getBytes()));
+      return exchange;
+   }
+
    private void openWorkspace() throws LBInitializationException {
       ConnectBloxWorkspace.OpenBuilder ob = ConnectBloxWorkspace.OpenBuilder
             .newInstance(_workspaceName);
@@ -387,14 +433,10 @@ public class LogicBloxFrontend {
 
    public void postFacts(Map<String, StringBuilder> factBins)
          throws ServiceClientException {
-      String base = BLOXWEB_PROTOCOL + "://" + _lbHost + ":" + BLOXWEB_PORT
-            + "/" + SERVICE_DIR + "/";
-      TCPTransport transport = Transports.tcp(false);
-      HttpClient client = transport.getHttpClient();
-      client.setTimeout(BLOXWEB_TIMEOUT_MS);
-      client.setIdleTimeout(BLOXWEB_TIMEOUT_MS);
+      String base = LB_WEB_PROTOCOL + "://" + _lbHost + ":" + _lbWebPort + "/"
+            + SERVICE_DIR + "/";
       ServiceConnector connector = ServiceConnector.create()
-            .setTransport(transport.start()).setGZIP(false);
+            .setTransport(_lbWebTransport).setGZIP(false);
       DelimTxnServiceClient txnClient = connector.setURI(base + "txn")
             .createDelimTxnClient();
       DelimTxn transaction = txnClient.start().result();
@@ -416,7 +458,8 @@ public class LogicBloxFrontend {
          results = _workspace.transaction(Collections.singletonList(qp));
       }
       catch (com.logicblox.connect.WorkspaceReader.Exception e) {
-         e.printStackTrace();
+         throw new BatfishException("Error querying predicate: "
+               + qualifiedPredicateName, e);
       }
       try {
          QueryPredicate qpr = (QueryPredicate) results.get(0);
@@ -502,76 +545,53 @@ public class LogicBloxFrontend {
       return null;
    }
 
-   public String startBloxWebServices() {
-      String stdout = null;
-      String stderr = null;
-      Process proc;
-      String[] execArray;
-      if (_sshPort != null) {
-         String[] sshExecArray = { "ssh", "-p", _sshPort.toString(), _lbHost,
-               "lb web-server load-services -w " + _workspaceName };
-         execArray = sshExecArray;
+   private void sendLbWebAdminMessage(String msg) {
+      if (!_lbWebClient.isStarted()) {
+         try {
+            _lbWebTransport.start();
+         }
 
+         catch (java.lang.Exception e) {
+            throw new BatfishException("Failed to start lb-web admin client", e);
+         }
       }
-      else {
-         String[] normalExecArray = { "bash", "-c",
-               "lb web-server load-services -w " + _workspaceName };
-         execArray = normalExecArray;
-      }
+      ContentExchange exchange = newLbWebAdminExchange(msg);
       try {
-         proc = Runtime.getRuntime().exec(execArray);
-         stdout = IOUtils.toString(proc.getInputStream());
-         stderr = IOUtils.toString(proc.getErrorStream());
+         _lbWebClient.send(exchange);
+         int exchangeState = exchange.waitForDone();
+         if (exchangeState != HttpExchange.STATUS_COMPLETED) {
+            throw new BatfishException("Failed to send lb-web admin message: "
+                  + msg);
+         }
       }
-      catch (IOException e) {
-         e.printStackTrace();
+      catch (IOException | InterruptedException e) {
+         throw new BatfishException("Failed to send lb-web admin message: "
+               + msg, e);
       }
-      if (stderr.length() > 0) {
-         return stderr;
+      String response;
+      try {
+         response = exchange.getResponseContent();
       }
-      else if (stdout.length() > 0) {
-         return stdout;
+      catch (UnsupportedEncodingException e) {
+         throw new BatfishException(
+               "Invalid lb-web admin client response encoding", e);
       }
-      else {
-         return null;
+      if (!response.equals("{}")) {
+         throw new BatfishException(
+               "lb-web-server responded with failure message: " + response);
       }
-
    }
 
-   public String stopBloxWebServices() {
-      String stdout = null;
-      String stderr = null;
-      Process proc;
-      String[] execArray;
-      if (_sshPort != null) {
-         String[] sshExecArray = { "ssh", "-p", _sshPort.toString(), _lbHost,
-               "lb web-server unload-services -w " + _workspaceName };
-         execArray = sshExecArray;
+   public void startLbWebServices() {
+      String startJsonMessage = "{\"start\": {\"workspace\":[\""
+            + _workspaceName + "\"] } }";
+      sendLbWebAdminMessage(startJsonMessage);
+   }
 
-      }
-      else {
-         String[] normalExecArray = { "bash", "-c",
-               "lb web-server unload-services -w " + _workspaceName };
-         execArray = normalExecArray;
-      }
-      try {
-         proc = Runtime.getRuntime().exec(execArray);
-         stdout = IOUtils.toString(proc.getInputStream());
-         stderr = IOUtils.toString(proc.getErrorStream());
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-      }
-      if (stderr.length() > 0) {
-         return stderr;
-      }
-      else if (stdout.length() > 0) {
-         return stdout;
-      }
-      else {
-         return null;
-      }
-
+   public void stopLbWebServices() {
+      String startJsonMessage = "{\"stop\": {\"workspace\":[\""
+            + _workspaceName + "\"] } }";
+      sendLbWebAdminMessage(startJsonMessage);
    }
 
 }
