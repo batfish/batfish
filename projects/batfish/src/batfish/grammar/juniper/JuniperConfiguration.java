@@ -1,11 +1,9 @@
 package batfish.grammar.juniper;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import batfish.grammar.juniper.firewall.FireWallStanza;
 import batfish.grammar.juniper.interfaces.InterfacesStanza;
 import batfish.grammar.juniper.policy_options.PolicyOptionsStanza;
 import batfish.grammar.juniper.routing_options.RoutingOptionsStanza;
@@ -14,10 +12,8 @@ import batfish.grammar.juniper.system.SystemStanza;
 import batfish.representation.juniper.BGPGroup;
 import batfish.representation.juniper.BGPProcess;
 import batfish.representation.juniper.JuniperVendorConfiguration;
-import batfish.representation.juniper.ExtendedAccessList;
 import batfish.representation.juniper.Interface;
-import batfish.representation.juniper.OSPFProcess; 
-import batfish.representation.juniper.Martian;
+import batfish.representation.juniper.OSPFProcess;
 
 public class JuniperConfiguration {
    private JuniperVendorConfiguration _configuration;
@@ -56,11 +52,12 @@ public class JuniperConfiguration {
          InterfacesStanza is = (InterfacesStanza) js;
          for (Interface inter : is.get_interfaces()) {
             //_configuration.addInterface(inter);
-            _interfaceAddressMap.put(inter.get_name(), inter.get_ip() + "/"
-                  + inter.get_subnet());
+            _interfaceAddressMap.put(inter.getName(), inter.getIP() + "/"
+                  + inter.getSubnetMask());
          }
          break;
 
+      case VERSION:
       case NULL:
          break;
 
@@ -78,7 +75,7 @@ public class JuniperConfiguration {
          // OSPF Information
          OSPFProcess ospf = new OSPFProcess(0);
          if (_routerID != null) {
-            ospf.set_routerId(_routerID);
+            ospf.setRouterId(_routerID);
          }
          
          HashMap<Integer, List<String>> ospfAreaMap = ps.get_ospfAreaMap();
@@ -101,10 +98,10 @@ public class JuniperConfiguration {
                }
             }
             if (ps.get_ospfReferenceBandwidth() < 0) {
-               ospf.set_referenceBandwidth(DEFAULT_REFERENCE_BANDWIDTH);
+               ospf.setReferenceBandwidth(DEFAULT_REFERENCE_BANDWIDTH);
             }
             else {
-               ospf.set_referenceBandwidth(ps.get_ospfReferenceBandwidth());
+               ospf.setReferenceBandwidth(ps.get_ospfReferenceBandwidth());
             }
             ospf.addExportPolicyStatements(ps.get_ospfExports());
             _configuration.addOSPFProcess(ospf);
@@ -141,7 +138,7 @@ public class JuniperConfiguration {
          List<OSPFProcess> ospfProcs = _configuration.getOSPFProcesses();
          if (!(ospfProcs.isEmpty())) {
             for (OSPFProcess o : ospfProcs) {
-               o.set_routerId(_routerID);
+               o.setRouterId(_routerID);
             }
          }
          // TODO [Ask Ari]: _ribGRoups never gets used?

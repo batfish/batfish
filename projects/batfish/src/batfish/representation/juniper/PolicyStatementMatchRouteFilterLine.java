@@ -2,6 +2,9 @@ package batfish.representation.juniper;
 
 public class PolicyStatementMatchRouteFilterLine extends PolicyStatement_MatchLine {
 
+   private static final long serialVersionUID = 1L;
+   
+
    private String _prefix;
    private int _prefixLength;
    private FilterMatch _filterMatch;

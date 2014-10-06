@@ -2,6 +2,8 @@ package batfish.representation.juniper;
 
 public class PolicyStatementMatchFamilyLine extends PolicyStatement_MatchLine {
 
+   private static final long serialVersionUID = 1L;
+   
    private FamilyType _famType;
    
    /* ------------------------------ Constructor ----------------------------*/

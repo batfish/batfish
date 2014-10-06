@@ -2,7 +2,7 @@ package batfish.representation.juniper;
 
 import java.io.Serializable;
 
-public class ASPathAccessList {
+public class ASPathAccessList implements Serializable {
 
    private static final long serialVersionUID = 1L;
 

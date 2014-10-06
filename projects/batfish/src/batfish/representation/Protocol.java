@@ -7,6 +7,8 @@ public enum Protocol {
    EGP,
    IBGP,
    IGP,
+   ISIS,
+   MSDP,
    OSPF,
    OSPF_E1,
    OSPF_E2,

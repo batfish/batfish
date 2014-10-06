@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import batfish.main.BatfishException;
 import batfish.representation.AsPathAccessList;
 import batfish.representation.AsPathAccessListLine;
 import batfish.representation.BgpNeighbor;
@@ -28,7 +29,6 @@ import batfish.representation.PolicyMapMatchCommunityListLine;
 import batfish.representation.PolicyMapMatchLine;
 import batfish.representation.PolicyMapSetAddCommunityLine;
 import batfish.representation.PolicyMapSetCommunityLine;
-import batfish.representation.PolicyMapSetDeleteCommunityLine;
 import batfish.representation.PolicyMapSetLine;
 import batfish.representation.PolicyMapMatchNeighborLine;
 import batfish.representation.PolicyMapSetLocalPreferenceLine;
@@ -41,7 +41,9 @@ import batfish.util.Util;
 
 public class JuniperVendorConfiguration implements VendorConfiguration {
 
+   private static final long serialVersionUID = 1L;
    private static final String VENDOR_NAME = "juniper";
+   
    private String _hostname;
    private int _asNum;
    private List<String> _conversionWarnings;
@@ -214,17 +216,19 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
          List<batfish.representation.Protocol> protocolList = new ArrayList<batfish.representation.Protocol>();
          for (ProtocolType prot : protocolLine.get_protocls()) {
             switch (prot) {
-            // TODO [Ask Ari]: I don't have a "direct" protocol.  Should I?
-            
             case AGGREGATE:
                protocolList.add(batfish.representation.Protocol.AGGREGATE);
                break;
             case BGP:
                protocolList.add(batfish.representation.Protocol.BGP);
                break;
-            case ISIS:// TODO [Ask Ari]: What to do with ISIS
+            case DIRECT:
+               protocolList.add(batfish.representation.Protocol.CONNECTED);
+            case ISIS:
+               protocolList.add(batfish.representation.Protocol.ISIS);
                break;
-            case MSDP:// TODO [Ask Ari]: What to do with MSDP
+            case MSDP:
+               protocolList.add(batfish.representation.Protocol.MSDP);
                break;
             case OSPF:
                protocolList.add(batfish.representation.Protocol.OSPF);
@@ -233,7 +237,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
                protocolList.add(batfish.representation.Protocol.STATIC);
                break;
             default:
-               throw new Error("Bad Protocol Type");
+               throw new BatfishException("Bad Protocol Type");
             }
          }
          mLine = new batfish.representation.PolicyMapMatchProtocolLine(protocolList);
@@ -519,7 +523,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
    private static batfish.representation.OspfProcess toOSPFProcess(final Configuration c, OSPFProcess proc) {
       OspfProcess newProcess = new OspfProcess();
 
-      for (String mapName : proc.get_exportPolicyStatements()) {
+      for (String mapName : proc.getExportPolicyStatements()) {
          PolicyMap map = c.getPolicyMaps().get(mapName);
          newProcess.getOutboundPolicyMaps().add(map);
 
@@ -528,7 +532,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       }
 
       Map<Long, OspfArea> areas = newProcess.getAreas();
-      List<OSPFNetwork> networks = proc.get_networks();
+      List<OSPFNetwork> networks = proc.getNetworks();
       if (networks.get(0).get_interface() == null) {
 
          Collections.sort(networks, new Comparator<OSPFNetwork>() {
@@ -592,8 +596,8 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
          }
       }
 
-      newProcess.setRouterId(proc.get_routerId());
-      newProcess.setReferenceBandwidth(proc.get_referenceBandwidth());
+      newProcess.setRouterId(proc.getRouterId());
+      newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
 
       return newProcess;
    }
@@ -631,21 +635,21 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
 
    /* ------------------------------------- Interfaces Constructs ----------------------------------- */
   private static batfish.representation.Interface toInterface(Interface iface, int as) {
-      batfish.representation.Interface newIface = new batfish.representation.Interface(iface.get_name());
-      newIface.setAccessVlan(iface.get_accessVlan());
-      newIface.setActive(iface.get_active());
+      batfish.representation.Interface newIface = new batfish.representation.Interface(iface.getName());
+      newIface.setAccessVlan(iface.getAccessVlan());
+      newIface.setActive(iface.getActive());
       // no individual ospf area in interface
       newIface.setArea(as);
-      newIface.setBandwidth(iface.get_bandwidth());
-      if (iface.get_ip() != "") {
-         newIface.setIP(new Ip(iface.get_ip()));
-         newIface.setSubnetMask(new Ip(iface.get_subnet()));
+      newIface.setBandwidth(iface.getBandwidth());
+      if (iface.getIP() != "") {
+         newIface.setIP(new Ip(iface.getIP()));
+         newIface.setSubnetMask(new Ip(iface.getSubnetMask()));
       }
-      newIface.setNativeVlan(iface.get_nativeVlan());
-      newIface.setOspfCost(iface.get_ospfCost());
-      newIface.setOspfDeadInterval(iface.get_ospfDeadInterval());
-      newIface.setOspfHelloMultiplier(iface.get_ospfHelloMultiplier());
-      newIface.setSwitchportTrunkEncapsulation(iface.get_switchportTrunkEncapsulation());
+      newIface.setNativeVlan(iface.getNativeVlan());
+      newIface.setOspfCost(iface.getOspfCost());
+      newIface.setOspfDeadInterval(iface.getOSPFDeadInterval());
+      newIface.setOspfHelloMultiplier(iface.getOSPFHelloMultiplier());
+      newIface.setSwitchportTrunkEncapsulation(iface.getSwitchportTrunkEncapsulation());
       return newIface;
    }
    

@@ -67,6 +67,10 @@ public class ConfigurationFactExtractor {
          return "ibgp";
       case IGP:
          return "igp";
+      case ISIS:
+         return "isis";
+      case MSDP:
+         return "msdp";
       case OSPF:
          return "ospf";
       case OSPF_E1:

@@ -1,12 +1,9 @@
 package batfish.grammar.juniper.bgp;
 
-import static batfish.representation.juniper.FamilyOps.FamilyTypeToString;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import batfish.grammar.juniper.StanzaStatusType;
-import batfish.representation.juniper.FamilyType;
 
 public class BGGR_NeighborStanza extends BG_GRStanza {
    

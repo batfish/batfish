@@ -2,6 +2,9 @@ package batfish.representation.juniper;
 
 public class PolicyStatementSetAsPathPrepend extends PolicyStatement_SetLine {
 
+   private static final long serialVersionUID = 1L;
+   
+
    private int _asNum;
    
    /* ------------------------------ Constructor ----------------------------*/

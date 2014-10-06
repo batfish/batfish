@@ -67,8 +67,8 @@ public class InterfaceStanza extends StanzaWithStatus {
             switch (ifs.getType()) {
                case DISABLE:
                   Interface i = new Interface(_name);
-                  i.set_active(false);
-                  i.set_bandwidth(getDefaultBandwidth(_name));      // TODO [P1]: shouldn't this default happen in Interface?
+                  i.setActive(false);
+                  i.setBandwidth(getDefaultBandwidth(_name));      // TODO [P1]: shouldn't this default happen in Interface?
                   _interfaces.add(i);
                   break;
                   
@@ -78,9 +78,9 @@ public class InterfaceStanza extends StanzaWithStatus {
                   Interface ui = new Interface(_name + "." + u);
                   
                   if (!ifus.get_address().isEmpty() && ifus.get_subnetMask() !=null) { 
-                     ui.set_ip(ifus.get_address());
-                     ui.set_subnet(ifus.get_subnetMask());
-                     ui.set_bandwidth(getDefaultBandwidth(_name));
+                     ui.setIP(ifus.get_address());
+                     ui.setSubnetMask(ifus.get_subnetMask());
+                     ui.setBandwidth(getDefaultBandwidth(_name));
                      _interfaces.add(ui);
                   }
                   break;

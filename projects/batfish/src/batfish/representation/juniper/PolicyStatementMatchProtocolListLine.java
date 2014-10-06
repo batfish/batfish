@@ -1,11 +1,11 @@
 package batfish.representation.juniper;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static batfish.representation.juniper.ProtocolOps.*;
-
 public class PolicyStatementMatchProtocolListLine extends PolicyStatement_MatchLine {
+
+   private static final long serialVersionUID = 1L;
+   
 
    private List<ProtocolType> _protocols;
    

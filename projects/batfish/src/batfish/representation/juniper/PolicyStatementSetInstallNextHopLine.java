@@ -2,6 +2,9 @@ package batfish.representation.juniper;
 
 public class PolicyStatementSetInstallNextHopLine extends PolicyStatement_SetLine {
 
+   private static final long serialVersionUID = 1L;
+   
+
    private String _hopName;
    
    /* ------------------------------ Constructor ----------------------------*/

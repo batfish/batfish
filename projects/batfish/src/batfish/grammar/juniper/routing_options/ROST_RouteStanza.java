@@ -1,9 +1,7 @@
 package batfish.grammar.juniper.routing_options;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import batfish.representation.juniper.StaticOptions;
 

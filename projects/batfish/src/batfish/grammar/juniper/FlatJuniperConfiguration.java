@@ -1,6 +1,5 @@
 package batfish.grammar.juniper;
 
-import java.util.HashMap;
 import batfish.representation.juniper.JuniperVendorConfiguration;
 
 public class FlatJuniperConfiguration {

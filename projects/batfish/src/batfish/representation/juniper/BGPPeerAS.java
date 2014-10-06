@@ -1,7 +1,5 @@
 package batfish.representation.juniper;
 
-import batfish.grammar.juniper.StanzaWithStatus;
-
 public class BGPPeerAS {
    
    private int _peerASNum;

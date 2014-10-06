@@ -2,8 +2,6 @@ package batfish.representation.juniper;
 
 import java.util.List;
 
-import batfish.representation.LineAction;
-
 public class PolicyStatement_Term {
 
    private String _name;

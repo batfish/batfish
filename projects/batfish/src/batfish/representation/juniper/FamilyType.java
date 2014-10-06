@@ -7,6 +7,5 @@ public enum FamilyType {
    INET,
    INET6,
    ISO,
-   MPLS,
-   UNKNOWN
+   MPLS
 }

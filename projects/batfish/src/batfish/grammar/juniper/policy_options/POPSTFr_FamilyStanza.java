@@ -1,7 +1,6 @@
 package batfish.grammar.juniper.policy_options;
 
 import batfish.grammar.juniper.StanzaStatusType;
-import batfish.representation.juniper.ASPathAccessList;
 import batfish.representation.juniper.FamilyOps;
 import batfish.representation.juniper.FamilyType;
 

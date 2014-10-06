@@ -2,6 +2,9 @@ package batfish.representation.juniper;
 
 public class PolicyStatementMatchRibToLine extends PolicyStatement_MatchLine {
 
+   private static final long serialVersionUID = 1L;
+   
+
    private String _ribName;
    
    /* ------------------------------ Constructor ----------------------------*/

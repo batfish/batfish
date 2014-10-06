@@ -1,5 +1,7 @@
 package batfish.representation.juniper;
 
+import batfish.main.BatfishException;
+
 public class ProtocolOps  {
    
    public static String ProtocolTypeToString (ProtocolType pt) {
@@ -40,6 +42,6 @@ public class ProtocolOps  {
       case "STATIC":
          return ProtocolType.STATIC;
       }
-      return ProtocolType.UNKNOWN;
+      throw new BatfishException("Invalid protocol string");
    }
 }

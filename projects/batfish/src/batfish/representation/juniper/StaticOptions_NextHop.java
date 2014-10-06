@@ -1,8 +1,5 @@
 package batfish.representation.juniper;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class StaticOptions_NextHop extends StaticOptions {
    
    private String _ip;

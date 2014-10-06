@@ -7,6 +7,5 @@ public enum ProtocolType {
    ISIS,
    MSDP,
    OSPF,
-   STATIC,
-   UNKNOWN
+   STATIC
 }

@@ -1,5 +1,7 @@
 package batfish.representation.juniper;
 
+import batfish.main.BatfishException;
+
 public class FamilyOps  {
    
    public static boolean FamilyTypeIgnored (FamilyType ft) {
@@ -56,6 +58,6 @@ public class FamilyOps  {
       case "MPLS":
          return FamilyType.MPLS;
       }
-      return FamilyType.UNKNOWN;
+      throw new BatfishException("Invalid family type string");
    }
 }

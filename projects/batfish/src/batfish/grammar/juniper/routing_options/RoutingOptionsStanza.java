@@ -1,19 +1,13 @@
 package batfish.grammar.juniper.routing_options;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import batfish.grammar.juniper.JStanza;
 import batfish.grammar.juniper.JStanzaType;
 import batfish.grammar.juniper.StanzaStatusType;
-import batfish.grammar.juniper.bgp.BGPStanza;
-import batfish.grammar.juniper.ospf.OSPFStanza;
-import batfish.grammar.juniper.protocols.PStanza;
-import batfish.representation.juniper.GenerateRoute;
 import batfish.representation.juniper.StaticOptions;
-import batfish.representation.juniper.StaticRoute;
 
 public class RoutingOptionsStanza extends JStanza {
    
