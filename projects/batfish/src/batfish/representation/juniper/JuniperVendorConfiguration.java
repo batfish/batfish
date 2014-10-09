@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import batfish.main.BatfishException;
 import batfish.representation.AsPathAccessList;
 import batfish.representation.AsPathAccessListLine;
 import batfish.representation.BgpNeighbor;
@@ -85,6 +86,9 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
 
                for (String inboundPSName : bn.getInboundPolicyStatement()) {
                   newInboundPolicyMap = c.getPolicyMaps().get(inboundPSName);
+                  if (newInboundPolicyMap == null) {
+                     throw new BatfishException("Invalid inbound policy: " + inboundPSName);
+                  }
                   newNeighbor.addInboundPolicyMap(newInboundPolicyMap);
                }
                PolicyMap newOutboundPolicyMap = null;
@@ -329,7 +333,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
          String clistName = communityLine.getListName();
          CommunityList clist = c.getCommunityLists().get(clistName);
          if (clist == null) {
-            throw new Error("no such community list");
+            throw new BatfishException("no such community list: " + clistName);
          }
          newCommunityMatchSet.add(clist);
          newLine = new PolicyMapMatchCommunityListLine(newCommunityMatchSet);
