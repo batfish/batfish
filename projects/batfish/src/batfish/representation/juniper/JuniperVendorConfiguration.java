@@ -344,6 +344,9 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
          Set<IpAccessList> newIpAccessMatchSet = new LinkedHashSet<IpAccessList>();
          for (String iplistName : accessLine.getListNames()) {
             IpAccessList list = c.getIpAccessLists().get(iplistName);
+            if (list == null) {
+               throw new BatfishException("Reference to undefined ip access list: " + iplistName);
+            }
             newIpAccessMatchSet.add(list);
          }
          newLine = new PolicyMapMatchIpAccessListLine(newIpAccessMatchSet);

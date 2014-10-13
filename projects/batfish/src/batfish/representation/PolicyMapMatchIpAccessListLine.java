@@ -10,9 +10,6 @@ public class PolicyMapMatchIpAccessListLine extends PolicyMapMatchLine {
 
    public PolicyMapMatchIpAccessListLine(Set<IpAccessList> lists) {
       _lists = lists;
-      if (_lists.contains(null)) {
-         throw new Error("null list");
-      }
    }
 
    public Set<IpAccessList> getLists() {
