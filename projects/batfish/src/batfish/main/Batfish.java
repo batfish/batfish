@@ -771,7 +771,7 @@ public class Batfish implements AutoCloseable {
    public Map<String, Configuration> getConfigurations(
          String serializedVendorConfigPath) {
       Map<String, VendorConfiguration> vendorConfigurations = deserializeVendorConfigurations(serializedVendorConfigPath);
-      Map<String, Configuration> configurations = parseConfigurations(vendorConfigurations);
+      Map<String, Configuration> configurations = convertConfigurations(vendorConfigurations);
       return configurations;
    }
 
@@ -1102,7 +1102,7 @@ public class Batfish implements AutoCloseable {
       return parse(parser);
    }
 
-   private Map<String, Configuration> parseConfigurations(
+   private Map<String, Configuration> convertConfigurations(
          Map<String, VendorConfiguration> vendorConfigurations) {
       boolean processingError = false;
       Map<String, Configuration> configurations = new TreeMap<String, Configuration>();
