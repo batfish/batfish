@@ -1119,11 +1119,11 @@ public class Batfish implements AutoCloseable {
          catch (VendorConversionException e) {
             error(0, "...CONVERSION ERROR\n");
             error(0, ExceptionUtils.getStackTrace(e));
+            processingError = true;
             if (_settings.exitOnParseError()) {
-               return null;
+               break;
             }
             else {
-               processingError = true;
                continue;
             }
          }
@@ -1141,7 +1141,7 @@ public class Batfish implements AutoCloseable {
          }
       }
       if (processingError) {
-         return null;
+         throw new BatfishException("Vendor conversion error(s)");
       }
       else {
          printElapsedTime();
