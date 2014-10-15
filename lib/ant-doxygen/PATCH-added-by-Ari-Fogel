@@ -1,0 +1,26 @@
+Index: src/org/doxygen/tools/DoxygenConfig.java
+===================================================================
+--- src/org/doxygen/tools/DoxygenConfig.java	(revision 160)
++++ src/org/doxygen/tools/DoxygenConfig.java	(working copy)
+@@ -150,7 +150,7 @@
+         String val = value;
+         //TODO: Some properties like FILE_PATTERNS do not like spaces though. 
+         // There must be some optional way to set the same.
+-        if (val.indexOf(' ') > -1) { val =  "\"" + val + "\""; }
++        if (!keyName.endsWith("PATTERNS") && val.indexOf(' ') > -1) { val =  "\"" + val + "\""; }
+         nestedElement.setValue(val);
+ 
+     }
+Index: src/org/doxygen/tools/DoxygenProcess.java
+===================================================================
+--- src/org/doxygen/tools/DoxygenProcess.java	(revision 160)
++++ src/org/doxygen/tools/DoxygenProcess.java	(working copy)
+@@ -184,7 +184,7 @@
+ 	 */
+ 	public final void executeDoxygenConfig(final String theConfigFilename) {
+ 		List<String> args = new ArrayList<String>();
+-		args.add(theConfigFilename);
++		args.add(DoxygenTask.CONFIG_FILE);
+ 		invokeDoxygen(args);
+ 	}
+ 
