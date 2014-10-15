@@ -71,7 +71,7 @@ rib_groups_ro_stanza returns [ROStanza ros]
 }
   :
   RIB_GROUPS OPEN_BRACE 
-  (group_name = VARIABLE OPEN_BRACE IMPORT_RIB l=bracketed_list CLOSE_BRACE {rros.AddGroup(group_name.getText(),l);})+
+  (group_name = VARIABLE OPEN_BRACE IMPORT_RIB l=bracketed_list SEMICOLON CLOSE_BRACE {rros.AddGroup(group_name.getText(),l);})+
   CLOSE_BRACE
   {ros = rros;}
   ;
@@ -178,7 +178,7 @@ ROST_RouteStanza rsros = new ROST_RouteStanza ();
   ) {rsros.set_ip(ip.getText());}
   
   (OPEN_BRACE (x=static_opts_sro_stanza {rsros.AddStaticOption(x);})+ CLOSE_BRACE 
-  |(x=static_opts_sro_stanza {rsros.AddStaticOption(x);}) SEMICOLON
+  |(x=static_opts_sro_stanza {rsros.AddStaticOption(x);}) 
   )
   
   {sros = rsros;}

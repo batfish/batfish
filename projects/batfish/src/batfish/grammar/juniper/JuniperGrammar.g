@@ -314,11 +314,14 @@ public List<String> getErrors() {
 	List<String> allErrors = new ArrayList<String>();
 	allErrors.addAll(errors);
 	allErrors.addAll(gJuniperGrammar_bgp.getErrors());
+   allErrors.addAll(gJuniperGrammar_firewall.getErrors());
+   allErrors.addAll(gJuniperGrammar_groups.getErrors());
 	allErrors.addAll(gJuniperGrammar_interface.getErrors());
 	allErrors.addAll(gJuniperGrammar_ospf.getErrors());
 	allErrors.addAll(gJuniperGrammar_policy_options.getErrors());
+   allErrors.addAll(gJuniperGrammar_protocols.getErrors());
 	allErrors.addAll(gJuniperGrammar_routing_options.getErrors());
-	allErrors.addAll(gJuniperGrammar_firewall.getErrors());
+   allErrors.addAll(gJuniperGrammar_system.getErrors());
 	return allErrors;
 }
 
@@ -334,8 +337,9 @@ juniper_configuration returns [JuniperConfiguration jc = new JuniperConfiguratio
   (x=j_stanza_list EOF)
   {
     for (JStanza js : x) {
-      // TODO [P0] : apply groups here
       js.postProcessStanza();
+      // TODO [P0] : apply groups here
+      // TODO [P0] : prefix-list->apply-paths here
     }
   }
   ;

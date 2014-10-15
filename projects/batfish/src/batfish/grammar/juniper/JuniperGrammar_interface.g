@@ -288,8 +288,8 @@ filter_fam_u_if_stanza  returns [IFU_FamStanza ifufs]
 }
   :
   FILTER OPEN_BRACE
-  ((INACTIVE {ifuffs.set_inputInactive(true);})? INPUT infltr=VARIABLE SEMICOLON {ifuffs.set_inStr(infltr.getText());})?
-  ((INACTIVE {ifuffs.set_outputInactive(true);})? OUTPUT outfltr=VARIABLE SEMICOLON {ifuffs.set_outStr(outfltr.getText());})?
+  ((INACTIVE COLON {ifuffs.set_inputInactive(true);})? INPUT infltr=VARIABLE SEMICOLON {ifuffs.set_inStr(infltr.getText());})?
+  ((INACTIVE COLON {ifuffs.set_outputInactive(true);})? OUTPUT outfltr=VARIABLE SEMICOLON {ifuffs.set_outStr(outfltr.getText());})?
   CLOSE_BRACE 
   {ifufs = ifuffs;}
   ;
