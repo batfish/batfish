@@ -2,6 +2,7 @@
 *.lbp
 bin
 out
+doc
 *.tokens
 CiscoGrammar*.java
 JuniperGrammar*.java
