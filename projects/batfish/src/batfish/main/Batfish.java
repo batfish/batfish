@@ -104,21 +104,85 @@ import batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import batfish.z3.QuerySynthesizer;
 import batfish.z3.Synthesizer;
 
+/**
+ * This class encapsulates the main control logic for Batfish.
+ */
 public class Batfish implements AutoCloseable {
+
+   /**
+    * Name of the LogiQL executable block containing basic facts that are true
+    * for any network
+    */
    private static final String BASIC_FACTS_BLOCKNAME = "BaseFacts";
+
+   /**
+    * Name of the file in which the topology of a network is serialized
+    */
    private static final String EDGES_FILENAME = "edges";
+
+   /**
+    * Name of the LogiQL data-plane predicate containing next hop information
+    * for policy-routing
+    */
    private static final String FIB_POLICY_ROUTE_NEXT_HOP_PREDICATE_NAME = "FibForwardPolicyRouteNextHopIp";
+
+   /**
+    * Name of the LogiQL data-plane predicate containing next hop information
+    * for destination-based routing
+    */
    private static final String FIB_PREDICATE_NAME = "FibNetwork";
+
+   /**
+    * Name of the file in which the destination-routing FIBs are serialized
+    */
    private static final String FIBS_FILENAME = "fibs";
+
+   /**
+    * Name of the file in which the policy-routing FIBs are serialized
+    */
    private static final String FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME = "fibs-policy-route";
-   private static final Object FLOW_SINK_PREDICATE_NAME = "FlowSinkInterface";
+
+   /**
+    * Name of the LogiQL predicate containing flow-sink interface tags
+    */
+   private static final String FLOW_SINK_PREDICATE_NAME = "FlowSinkInterface";
+
+   /**
+    * Name of the file in which derived flow-sink interface tags are serialized
+    */
    private static final String FLOW_SINKS_FILENAME = "flow-sinks";
+
+   /**
+    * A byte-array containing the first 4 bytes comprising the header for a file
+    * that is the output of java serialization
+    */
    private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = { (byte) 0xac,
          (byte) 0xed, (byte) 0x00, (byte) 0x05 };
+
+   /**
+    * The name of the LogiQL library for batfish
+    */
+   private static final String LB_BATFISH_LIBRARY_NAME = "libbatfish:";
+
+   /**
+    * The name of the file in which LogiQL predicate type-information and
+    * documentation is serialized
+    */
    private static final String PREDICATE_INFO_FILENAME = "predicateInfo.object";
+
+   /**
+    * A string containing the system-specific path separator character
+    */
    private static final String SEPARATOR = System.getProperty("file.separator");
-   private static final String STATIC_FACT_BLOCK_PREFIX = "libbatfish:";
+
+   /**
+    * The name of a topology file within a test-rig
+    */
    private static final String TOPOLOGY_FILENAME = "topology.net";
+
+   /**
+    * The name of the LogiQL predicate containing Layer-3 adjacencies
+    */
    private static final String TOPOLOGY_PREDICATE_NAME = "LanAdjacent";
 
    private static void initControlPlaneFactBins(
@@ -175,20 +239,17 @@ public class Batfish implements AutoCloseable {
       printElapsedTime();
    }
 
-   private void addStaticFacts(LogicBloxFrontend lbFrontend,
-         List<String> blockNames) {
+   private void addStaticFacts(LogicBloxFrontend lbFrontend, String blockName) {
       print(0, "\n*** ADDING STATIC FACTS ***\n");
       resetTimer();
-      for (String blockName : blockNames) {
-         print(1, "Adding " + blockName + "...");
-         String output = lbFrontend.execNamedBlock(STATIC_FACT_BLOCK_PREFIX
-               + blockName);
-         if (output == null) {
-            print(1, "OK\n");
-         }
-         else {
-            throw new BatfishException(output + "\n");
-         }
+      print(1, "Adding " + blockName + "...");
+      String output = lbFrontend.execNamedBlock(LB_BATFISH_LIBRARY_NAME + ":"
+            + blockName);
+      if (output == null) {
+         print(1, "OK\n");
+      }
+      else {
+         throw new BatfishException(output + "\n");
       }
       print(1, "SUCCESS\n");
       printElapsedTime();
@@ -447,6 +508,53 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException("Failed to connect to LogicBlox", e);
       }
       return lbFrontend;
+   }
+
+   private Map<String, Configuration> convertConfigurations(
+         Map<String, VendorConfiguration> vendorConfigurations) {
+      boolean processingError = false;
+      Map<String, Configuration> configurations = new TreeMap<String, Configuration>();
+      print(1,
+            "\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
+      resetTimer();
+      for (String name : vendorConfigurations.keySet()) {
+         print(2, "Processing: \"" + name + "\"");
+         VendorConfiguration vc = vendorConfigurations.get(name);
+         try {
+            Configuration config = vc.toVendorIndependentConfiguration();
+            configurations.put(name, config);
+         }
+         catch (VendorConversionException e) {
+            error(0, "...CONVERSION ERROR\n");
+            error(0, ExceptionUtils.getStackTrace(e));
+            processingError = true;
+            if (_settings.exitOnParseError()) {
+               break;
+            }
+            else {
+               continue;
+            }
+         }
+
+         List<String> conversionWarnings = vc.getConversionWarnings();
+         int numWarnings = conversionWarnings.size();
+         if (numWarnings > 0) {
+            print(2, "..." + numWarnings + " WARNING(S)\n");
+            for (String warning : conversionWarnings) {
+               print(2, "\tconverter: " + warning + "\n");
+            }
+         }
+         else {
+            print(2, " ...OK\n");
+         }
+      }
+      if (processingError) {
+         throw new BatfishException("Vendor conversion error(s)");
+      }
+      else {
+         printElapsedTime();
+         return configurations;
+      }
    }
 
    public Map<String, Configuration> deserializeConfigurations(
@@ -771,7 +879,7 @@ public class Batfish implements AutoCloseable {
    public Map<String, Configuration> getConfigurations(
          String serializedVendorConfigPath) {
       Map<String, VendorConfiguration> vendorConfigurations = deserializeVendorConfigurations(serializedVendorConfigPath);
-      Map<String, Configuration> configurations = parseConfigurations(vendorConfigurations);
+      Map<String, Configuration> configurations = convertConfigurations(vendorConfigurations);
       return configurations;
    }
 
@@ -1031,7 +1139,7 @@ public class Batfish implements AutoCloseable {
     * @return The inferred topology.
     */
    private Topology inferTopologyFromInterfaceDescriptions(
-         Map<String, Configuration> configurations, boolean IncludeExternal) {
+         Map<String, Configuration> configurations, boolean includeExternal) {
       // TODO Auto-generated method stub
       return null;
    }
@@ -1100,53 +1208,6 @@ public class Batfish implements AutoCloseable {
          String filename) {
       print(1, "Parsing: \"" + filename + "\"..");
       return parse(parser);
-   }
-
-   private Map<String, Configuration> parseConfigurations(
-         Map<String, VendorConfiguration> vendorConfigurations) {
-      boolean processingError = false;
-      Map<String, Configuration> configurations = new TreeMap<String, Configuration>();
-      print(1,
-            "\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
-      resetTimer();
-      for (String name : vendorConfigurations.keySet()) {
-         print(2, "Processing: \"" + name + "\"");
-         VendorConfiguration vc = vendorConfigurations.get(name);
-         try {
-            Configuration config = vc.toVendorIndependentConfiguration();
-            configurations.put(name, config);
-         }
-         catch (VendorConversionException e) {
-            error(0, "...CONVERSION ERROR\n");
-            error(0, ExceptionUtils.getStackTrace(e));
-            if (_settings.exitOnParseError()) {
-               return null;
-            }
-            else {
-               processingError = true;
-               continue;
-            }
-         }
-
-         List<String> conversionWarnings = vc.getConversionWarnings();
-         int numWarnings = conversionWarnings.size();
-         if (numWarnings > 0) {
-            print(2, "..." + numWarnings + " WARNING(S)\n");
-            for (String warning : conversionWarnings) {
-               print(2, "\tconverter: " + warning + "\n");
-            }
-         }
-         else {
-            print(2, " ...OK\n");
-         }
-      }
-      if (processingError) {
-         return null;
-      }
-      else {
-         printElapsedTime();
-         return configurations;
-      }
    }
 
    private void parseFlowsFromConstraints(StringBuilder sb) {
@@ -1716,8 +1777,7 @@ public class Batfish implements AutoCloseable {
 
       // Post facts if requested
       if (_settings.getFacts()) {
-         addStaticFacts(lbFrontend,
-               Collections.singletonList(BASIC_FACTS_BLOCKNAME));
+         addStaticFacts(lbFrontend, BASIC_FACTS_BLOCKNAME);
          postFacts(lbFrontend, cpFactBins);
          return;
       }

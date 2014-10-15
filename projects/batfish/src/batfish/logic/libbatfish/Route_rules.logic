@@ -200,7 +200,8 @@ StaticRoute(route),
    Route_protocol[route] = protocol,
    Route_tag[route] = tag
 <-
-   LongestPrefixNetworkMatch(node, nextHopIp, _),
+   LongestPrefixNetworkMatch(node, nextHopIp, matchNet),
+   network != matchNet,
    SetStaticRoute(node, network, nextHopIp, admin, tag),
    cost = 0,
    protocol = RoutingProtocol_STATIC[].

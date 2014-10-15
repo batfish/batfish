@@ -764,6 +764,9 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          Set<IpAccessList> newIpAccessMatchSet = new LinkedHashSet<IpAccessList>();
          for (String listName : accessLine.getListNames()) {
             IpAccessList list = c.getIpAccessLists().get(listName);
+            if (list == null) {
+               throw new VendorConversionException("Reference to nonexistent ip access list: "+ listName);
+            }
             newIpAccessMatchSet.add(list);
          }
          newLine = new PolicyMapMatchIpAccessListLine(newIpAccessMatchSet);

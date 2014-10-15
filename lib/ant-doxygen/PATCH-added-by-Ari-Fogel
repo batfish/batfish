@@ -1,0 +1,392 @@
+Index: build.properties
+===================================================================
+--- build.properties	(revision 160)
++++ build.properties	(working copy)
+@@ -1,5 +1,5 @@
+ ####### Ivy specific fields ###############
+-ivy.install.version=2.0.0
++ivy.install.version=2.4.0-rc1
+ ivy.jar.dir=${basedir}/.repository
+ lib.dir=${basedir}/lib
+ osu.repo=http://apache.osuosl.org/ant/ivy/
+@@ -10,5 +10,5 @@
+ 
+ 
+ #JVM source, target version
+-project.source=1.5
+-project.target=1.5
++project.source=1.7
++project.target=1.7
+Index: build.xml
+===================================================================
+--- build.xml	(revision 160)
++++ build.xml	(working copy)
+@@ -99,7 +99,7 @@
+ 	<!--	 									-->
+ 	<target name="compile" depends="init, properties, hierarchy" description="Compile the project sources.">
+ 		<javac srcdir="src" destdir="classes" classpathref="project.class.path" source="${project.source}" target="${project.target}" 
+-		debug="true" debuglevel="source,lines,vars" />
++		debug="true" debuglevel="source,lines,vars" includeantruntime="false"/>
+ 	</target>
+ 
+ 
+Index: ivy-targets.xml
+===================================================================
+--- ivy-targets.xml	(revision 160)
++++ ivy-targets.xml	(working copy)
+@@ -1,6 +1,6 @@
+ <project basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+ 	<property file="build.properties" />
+-	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
++	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy-${ivy.install.version}.jar" />
+ 	<property name="ivy.jar.zip" value="${ivy.jar.dir}/ivy.zip" />
+ 
+ 	<target name="init-ivy">
+Index: src/org/doxygen/tools/DoxygenConfig.java
+===================================================================
+--- src/org/doxygen/tools/DoxygenConfig.java	(revision 160)
++++ src/org/doxygen/tools/DoxygenConfig.java	(working copy)
+@@ -62,6 +62,7 @@
+ import java.util.Collection;
+ import java.util.SortedMap;
+ import java.util.TreeMap;
++import java.util.HashSet;
+ import java.util.Set;
+ import java.util.Properties;
+ import java.util.Map;
+@@ -81,6 +82,7 @@
+     /** List of nested properties. */
+     private Map<String, DoxygenTask.Property> taskProperties = new TreeMap<String, DoxygenTask.Property>();
+ 
++    private Set<String> weakProperties;
+ 
+ 
+ 
+@@ -113,23 +115,31 @@
+     	
+     	//since 1.5.8 of doxygen - EXPAND_TOC is changed to TOC_EXPAND . 
+     	//Until we figure out a better way - this is being commented out.
++    	 weakProperties = new HashSet<String>();
+         //setProperty("EXPAND_TOC", true);
+         //setProperty("FILE_PATTERNS", "*.java");
+         setProperty("GENERATE_LATEX", false);
++        weakProperties.add("GENERATE_LATEX");
+         setProperty("GENERATE_TREEVIEW", true);
++        weakProperties.add("GENERATE_TREEVIEW");
+         setProperty("HIDE_UNDOC_MEMBERS", true);
++        weakProperties.add("HIDE_UNDOC_MEMBERS");
+         setProperty("INLINE_SOURCES", true);
++        weakProperties.add("INLINE_SOURCES");
+         setProperty("INPUT", "src");
++        weakProperties.add("INPUT");
+         //setProperty("OPTIMIZE_OUTPUT_JAVA", true);
+         setProperty("OUTPUT_DIRECTORY", "doc");
++        weakProperties.add("OUTPUT_DIRECTORY");
+         setProperty("QUIET", true);
++        weakProperties.add("QUIET");
+         setProperty("RECURSIVE", true);
++        weakProperties.add("RECURSIVE");
+         setProperty("SOURCE_BROWSER", true);
++        weakProperties.add("SOURCE_BROWSER");
++        
+     }
+ 
+-
+-
+-
+     //----------------------------------------------------------------------
+     /** This method translates an Ant &lt;doxygen&gt; task element
+      *  into a Doxygen configuration file property name/value
+@@ -150,7 +160,7 @@
+         String val = value;
+         //TODO: Some properties like FILE_PATTERNS do not like spaces though. 
+         // There must be some optional way to set the same.
+-        if (val.indexOf(' ') > -1) { val =  "\"" + val + "\""; }
++        if (!keyName.endsWith("PATTERNS") && val.indexOf(' ') > -1) { val =  "\"" + val + "\""; }
+         nestedElement.setValue(val);
+ 
+     }
+@@ -231,14 +241,14 @@
+      *  @param theConfigFilename used by Doxygen.
+      *
+      */
+-    public final void writeDoxygenConfig(final String theConfigFilename) {
+-
++    public final String writeDoxygenConfig(final String theConfigFilename) {
+         PrintStream ps = null;
++        StringBuilder sb = new StringBuilder();
+         SortedMap<String, String> map = readDoxygenConfig(theConfigFilename);
+         cascadeDoxygenConfig(map);
+         try {
+             ps = new PrintStream(
+-                     new FileOutputStream(DoxygenTask.CONFIG_FILE));
++                     new FileOutputStream(theConfigFilename));
+             Set<String> keys = map.keySet();
+             for (String key : keys) {
+                 String param = key;
+@@ -246,9 +256,10 @@
+                 String line  = param + "\t=";
+                 if  (value != null) { line += " " + value; }
+                 ps.println(line);
++                sb.append(line + System.lineSeparator());
+             }
+             DoxygenTask.activityLog(false, "Updated Doxygen config file: "
+-                                    + "[" + DoxygenTask.CONFIG_FILE + "]");
++                                    + "[" + theConfigFilename + "]");
+         } catch (IOException ioe) {
+             throw new BuildException("Unable to update Doxygen config file: "
+                                      + "[" + theConfigFilename + "]", ioe);
+@@ -258,12 +269,33 @@
+                 ps = null;
+             }
+         }
++        return sb.toString();
+     }
+ 
++    //----------------------------------------------------------------------
++    /** This method writes and synchronizes the properties.
++     *
++     *  @test If specified, the base configuration file is not
++     *  overwritten.
++     *
++     *  @param theConfigFilename used by Doxygen.
++     *
++     */
++    public final String getUpdatedDoxygenConfig(final String theConfigFilename) {
++         StringBuilder sb = new StringBuilder();
++         SortedMap<String, String> map = readDoxygenConfig(theConfigFilename);
++         cascadeDoxygenConfig(map);
++         Set<String> keys = map.keySet();
++         for (String key : keys) {
++             String param = key;
++             String value = map.get(key);
++             String line  = param + "\t=";
++             if  (value != null) { line += " " + value; }
++             sb.append(line + System.lineSeparator());
++         }
++         return sb.toString();
++    }
+ 
+-
+-
+-
+     //----------------------------------------------------------------------
+     /** This method reads the Doxygen generated configuration file.
+      *
+@@ -324,8 +356,17 @@
+      *
+      */
+     public final void cascadeDoxygenConfig(final SortedMap<String, String> map) {
++       DoxygenTask.activityLog(true, "Doxygen properties overriding those in config:");
+     	Collection<DoxygenTask.Property> coll = taskProperties.values();
+     	for (DoxygenTask.Property nestedElement : coll) {
++    	          String key = nestedElement.getName();
++    	          if (map.containsKey(key) && weakProperties.contains(key)) {
++    	                continue;
++    	          }
++                String value = nestedElement.getValue();
++                String line  = key + "\t=";
++                if  (value != null) { line += " " + value; }
++                DoxygenTask.activityLog(true, line);
+                 map.put(nestedElement.getName(), nestedElement.getValue());
+         }
+     }
+Index: src/org/doxygen/tools/DoxygenProcess.java
+===================================================================
+--- src/org/doxygen/tools/DoxygenProcess.java	(revision 160)
++++ src/org/doxygen/tools/DoxygenProcess.java	(working copy)
+@@ -55,13 +55,22 @@
+ // $Header: /cvsroot/ant-doxygen/ant_task/src/org/doxygen/tools/Attic/DoxygenProcess.java,v 1.1.2.3 2004/01/31 01:38:56 akkumar Exp $
+ package org.doxygen.tools;
+ 
++import java.io.BufferedReader;
++import java.io.ByteArrayInputStream;
++import java.io.ByteArrayOutputStream;
+ import java.io.File;
++import java.io.FileInputStream;
++import java.io.FileOutputStream;
+ import java.io.IOException;
+-import java.io.FileInputStream;
++import java.io.InputStream;
+ import java.io.InputStreamReader;
+-import java.io.BufferedReader;
+-import java.io.FileOutputStream;
++import java.io.OutputStream;
++import java.io.PipedInputStream;
++import java.io.PipedOutputStream;
+ 
++import java.nio.charset.StandardCharsets;
++
++import java.util.Collections;
+ import java.util.List;
+ import java.util.ArrayList;
+ 
+@@ -134,7 +143,7 @@
+ 		try {
+ 			List<String> args = new ArrayList<String>();
+ 			args.add("--version");
+-			String fileVersion = invokeDoxygen(args);
++			String fileVersion = invokeDoxygen(args, null);
+ 
+ 			DoxygenTask.activityLog(false, "Detected Doxygen version:"
+ 					+ fileVersion + "  " + "Project requires version: "
+@@ -172,7 +181,7 @@
+ 		args.add("-s"); // -s == Omit comments
+ 		args.add("-g"); // -g == Generate config
+ 		args.add(theConfigFilename);
+-		invokeDoxygen(args);
++		invokeDoxygen(args, null);
+ 	}
+ 
+ 	// ----------------------------------------------------------------------
+@@ -182,10 +191,9 @@
+ 	 * @param theConfigFilename
+ 	 *            to be used by Doxygen.
+ 	 */
+-	public final void executeDoxygenConfig(final String theConfigFilename) {
+-		List<String> args = new ArrayList<String>();
+-		args.add(theConfigFilename);
+-		invokeDoxygen(args);
++	public final void executeDoxygenConfig(final String configContent) {
++	      List<String> args = Collections.singletonList("-");
++		invokeDoxygen(args, configContent);
+ 	}
+ 
+ 	// ----------------------------------------------------------------------
+@@ -208,13 +216,22 @@
+ 	 * @return a <code>String</code> value containing the the Doxygen
+ 	 *         invocation/execution output.
+ 	 */
+-	private String invokeDoxygen(final List<String> args) {
+-		String[] arguments = new String[1 + args.size()];
++	private String invokeDoxygen(final List<String> args, final String configContent) {
++		String[] arguments = new String[2];
+ 		StringBuilder res = new StringBuilder();
+ 		arguments[0] = doxygenPath;
+ 		try {
+-			Execute doxygen = new Execute(new PumpStreamHandler(
+-					new FileOutputStream(DOXY_TEMP)));
++			PumpStreamHandler streamHandler;
++			ByteArrayOutputStream bostream = new ByteArrayOutputStream();
++			if (configContent != null) {
++			   InputStream istream = new ByteArrayInputStream(configContent.getBytes(StandardCharsets.UTF_8));
++			   streamHandler = new PumpStreamHandler(bostream, bostream, istream);
++			}
++			else {
++			   streamHandler = new PumpStreamHandler(bostream);
++			}
++			Execute doxygen = new Execute(streamHandler);
++		
+ 			if (antProject != null) { 
+ 				doxygen.setWorkingDirectory(this.antProject.getBaseDir());
+ 			}
+@@ -230,12 +247,12 @@
+ 				++i;
+ 			}
+ 			DoxygenTask.activityLog(true, sb.toString());
+-
+ 			doxygen.setCommandline(arguments);
+ 			doxygen.execute();
+-
++                  byte[] outputBytes = bostream.toByteArray();
++                  
+ 			BufferedReader br = new BufferedReader(new InputStreamReader(
+-					new FileInputStream(DOXY_TEMP)));
++					new ByteArrayInputStream(outputBytes)));
+ 			String line = br.readLine();
+ 			while (line != null) {
+ 				res.append(line);
+@@ -248,22 +265,6 @@
+ 		}
+ 	}
+ 
+-	/**
+-	 * Name of the temporary file to get the version of Doxygen installed on
+-	 * system. ${user.home} used as temporary file.
+-	 * 
+-	 */
+-	public static String DOXY_TEMP = "";
+-	static {
+-		try {
+-			DOXY_TEMP = File.createTempFile("doxygen", ".log")
+-					.getAbsolutePath();
+-		} catch (Exception e) {
+-			e.printStackTrace();
+-			System.exit(1);
+-		}
+-	}
+-
+ 	/** This is the default path to the Doxygen executable. */
+ 	private String doxygenPath = "doxygen";
+ 
+Index: src/org/doxygen/tools/DoxygenTask.java
+===================================================================
+--- src/org/doxygen/tools/DoxygenTask.java	(revision 160)
++++ src/org/doxygen/tools/DoxygenTask.java	(working copy)
+@@ -76,22 +76,6 @@
+ public class DoxygenTask extends Task {
+ 
+ 	/**
+-	 * Name of the temporary configuration file that will be created in
+-	 * ${user.home}.
+-	 * 
+-	 */
+-	public static String CONFIG_FILE = "";
+-	static {
+-		try {
+-			CONFIG_FILE = File.createTempFile("doxygen", ".cfg")
+-					.getAbsolutePath();
+-		} catch (Exception e) {
+-			e.printStackTrace();
+-			System.exit(1);
+-		}
+-	}
+-
+-	/**
+ 	 * Object containing the configuration options of DoxygenConf.
+ 	 * 
+ 	 */
+@@ -152,8 +136,15 @@
+ 	 */
+ 	public final void execute() throws BuildException {
+ 		proc.checkVersion(versionCompatible);
+-		if (configFilename == null) {
+-			configFilename = CONFIG_FILE;
++		boolean providedConfig = (configFilename != null);
++		if (!providedConfig) {
++			try {
++				configFilename = File.createTempFile("doxygen", ".cfg").getAbsolutePath();
++			}
++			catch (Exception e) {
++				e.printStackTrace();
++				System.exit(1);
++			}
+ 			proc.createConfig(configFilename);
+ 			activityLog(false, "Created config file [" + configFilename + "].");
+ 		} else {
+@@ -160,13 +151,20 @@
+ 			configFilename = makePathAbsolute(configFilename);
+ 			activityLog(false, "Using config file [" + configFilename + "].");
+ 		}
+-
+-		conf.writeDoxygenConfig(configFilename); // Then we update it.
++		String updatedConfig;
++		if (providedConfig) {
++			updatedConfig = conf.getUpdatedDoxygenConfig(configFilename); // Then we get update config in a string
++		}
++		else {
++			updatedConfig = conf.writeDoxygenConfig(configFilename); // Then we update it and save it.
++		}
+ 		activityLog(true, "Executing doxygen ...");
+-		proc.executeDoxygenConfig(configFilename);
++		if (providedConfig) {
++		   proc.executeDoxygenConfig(updatedConfig);
++		}
++		else {
++		}
+ 		activityLog(true, "done");
+-		// No need to delete the config. file at all.
+-		// Let it be there for the user to know what was used.
+ 	}
+ 
+ 	// ======================================================================
