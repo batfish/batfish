@@ -471,7 +471,7 @@ integer returns [int i]
   )
   {i = Integer.parseInt(x.getText());}
   ;
- 
+  
  string_in_double_quotes returns [String s]
   :
   (x = DOUBLE_QUOTED_STRING)
@@ -723,6 +723,16 @@ IPV6_ADDRESS_WITH_MASK
     | (HEX_DIGIT+ COLON COLON?)+ (HEX_DIGIT+)?
   )
   '/' DEC_BYTE
+  ;
+  
+ISO_ADDRESS
+  :
+  DEC '.' 
+  (HEX|DEC)(HEX|DEC)(HEX|DEC)(HEX|DEC) '.'
+  (HEX|DEC)(HEX|DEC)(HEX|DEC)(HEX|DEC) '.'
+  (HEX|DEC)(HEX|DEC)(HEX|DEC)(HEX|DEC) '.'
+  (HEX|DEC)(HEX|DEC)(HEX|DEC)(HEX|DEC) '.'
+  (HEX|DEC)(HEX|DEC)
   ;
 
 LESS_THAN

@@ -275,6 +275,11 @@ address_fam_u_if_stanza returns [IFU_FamStanza ifufs]
     ifufas.set_stanzaStatus(StanzaStatusType.IPV6);
     ifufas.addIgnoredStatement("Address " + x.getText()); 
   }
+  |x=ISO_ADDRESS
+  {
+    ifufas.set_stanzaStatus(StanzaStatusType.IGNORED);
+    ifufas.addIgnoredStatement("Address " + x.getText()); 
+  }
   )
   (SEMICOLON
   |ignored_substanza
