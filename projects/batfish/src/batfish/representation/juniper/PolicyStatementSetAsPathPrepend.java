@@ -5,18 +5,19 @@ public class PolicyStatementSetAsPathPrepend extends PolicyStatement_SetLine {
    private static final long serialVersionUID = 1L;
    
 
-   private int _asNum;
+   private String _asPrepend;
+   // TODO [Ask Ari]: these are not always integers, sometimes they are multiple ASNums delimited by spaces
    
    /* ------------------------------ Constructor ----------------------------*/
-   public PolicyStatementSetAsPathPrepend(int a) {
-      _asNum = a;
+   public PolicyStatementSetAsPathPrepend(String a) {
+      _asPrepend = a;
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
    
    /* ---------------------------- Getters/Setters --------------------------*/
-   public int get_asNum () {
-      return _asNum;
+   public String get_asPrepend () {
+      return _asPrepend;
    }
    
    /* --------------------------- Inherited Methods -------------------------*/

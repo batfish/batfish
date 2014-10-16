@@ -248,7 +248,7 @@ public class POPS_TermStanza extends StanzaWithStatus {
          
       case AS_PATH_PREPEND:
          POPSTTh_AsPathPrependStanza ats = (POPSTTh_AsPathPrependStanza) ts;
-         PolicyStatement_SetLine appl = new PolicyStatementSetAsPathPrepend(ats.get_asNum());
+         PolicyStatement_SetLine appl = new PolicyStatementSetAsPathPrepend(ats.get_asNumToPrepend());
          _setList.add(appl);
          break;
          

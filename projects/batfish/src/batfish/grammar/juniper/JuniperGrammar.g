@@ -126,6 +126,7 @@ tokens {
   LOG_UPDOWN                  = 'log-updown';
   LOGIN                       = 'login';
   LONGER                      = 'longer';
+  LSP                         = 'lsp';
   MARTIANS                    = 'martians';
   MAX_CONFIGURATIONS_ON_FLASH = 'max-configurations-on-flash';
   MAX_CONFIGURATION_ROLLBACKS = 'max-configuration-rollbacks';
@@ -553,10 +554,10 @@ bfd_liveness_detection_common_stanza returns [String s]
 description_common_stanza returns [String s]
   :
   y=DESCRIPTION 
-  (x=string_in_double_quotes
+  ((x=string_in_double_quotes SEMICOLON)
   |x=string_up_to_semicolon
   )
-  SEMICOLON 
+   
   {s=y.getText() + " " + x;}
   ;  
   
@@ -604,10 +605,12 @@ AMPERSAND
   
 AS_NUM
   :
-  (DEC COLON DEC)
-  |(DEC COLON ASTERISK)
-  |(DEC COLON DEC COLON DEC)
-  |(TARGET COLON DEC COLON DEC)
+  (TARGET COLON DEC COLON DEC
+  |DEC COLON ASTERISK
+  |DEC COLON DEC 
+  |DEC COLON DEC COLON DEC
+  |DEC COLON DEC 'L' COLON DEC
+  )
   ;
 
 ASTERISK
