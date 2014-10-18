@@ -742,7 +742,7 @@ LESS_THAN
 
 LINE_COMMENT
   :
-  ('##' ~'\n'* '\n') 
+  ('#' ~'\n'* '\n')
                    {
                     $channel = HIDDEN;
                    }
