@@ -162,7 +162,7 @@ public class Batfish implements AutoCloseable {
    /**
     * The name of the LogiQL library for batfish
     */
-   private static final String LB_BATFISH_LIBRARY_NAME = "libbatfish:";
+   private static final String LB_BATFISH_LIBRARY_NAME = "libbatfish";
 
    /**
     * The name of the file in which LogiQL predicate type-information and
