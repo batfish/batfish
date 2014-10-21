@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
+/**
+ * Representing a bgp process for a particular autonomous system on a router
+ */
 public class BgpProcess implements Serializable {
 
    private static final long serialVersionUID = 1L;
