@@ -118,7 +118,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          final Configuration c, BgpProcess proc)
          throws VendorConversionException {
       batfish.representation.BgpProcess newBgpProcess = new batfish.representation.BgpProcess();
-      Map<String, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
+      Map<Ip, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       Set<Ip> activeNeighbors = proc.getActivatedNeighbors();
       int defaultMetric = proc.getDefaultMetric();
 
@@ -332,7 +332,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          Ip neighborAddress = pg.getIp();
          if (activeNeighbors.contains(neighborAddress)) {
             BgpNeighbor newNeighbor = new BgpNeighbor(neighborAddress);
-            newBgpNeighbors.put(neighborAddress.toString(), newNeighbor);
+            newBgpNeighbors.put(neighborAddress, newNeighbor);
 
             if (newInboundPolicyMap != null) {
                newNeighbor.addInboundPolicyMap(newInboundPolicyMap);

@@ -10,11 +10,11 @@ public class BgpProcess implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private Map<String, BgpNeighbor> _bgpNeighbors;
+   private Map<Ip, BgpNeighbor> _bgpNeighbors;
    private Set<GeneratedRoute> _generatedRoutes;
 
    public BgpProcess() {
-      _bgpNeighbors = new HashMap<String, BgpNeighbor>();
+      _bgpNeighbors = new HashMap<Ip, BgpNeighbor>();
       _generatedRoutes = new HashSet<GeneratedRoute>();
    }
 
@@ -22,7 +22,7 @@ public class BgpProcess implements Serializable {
       return _generatedRoutes;
    }
 
-   public Map<String, BgpNeighbor> getNeighbors() {
+   public Map<Ip, BgpNeighbor> getNeighbors() {
       return _bgpNeighbors;
    }
 

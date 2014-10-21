@@ -426,7 +426,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
    private static batfish.representation.BgpProcess toBgpProcess(final Configuration c, BGPProcess proc, int asNum) {
       
       batfish.representation.BgpProcess newBgpProcess = new batfish.representation.BgpProcess();
-      Map<String, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
+      Map<Ip, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       Set<String> activeNeighbors = new LinkedHashSet<String>(
             proc.getActivatedNeighbors());
       for (BGPGroup pg : proc.getAllPeerGroups().values()) {
