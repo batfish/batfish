@@ -482,7 +482,7 @@ batfish_find_destination_consistency_accept_packet_constraints_helper() {
    fi
    date | tr -d '\n'
    echo ": START: Find accept packet constraints for \"$NODE\" ==> \"$DI_QUERY_OUTPUT_PATH\""
-   cat $REACH_PATH $DI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$DI_QUERY_OUTPUT_PATH 2>&3
+   cat $REACH_PATH $DI_QUERY_PATH | batfish_time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$DI_QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -529,7 +529,7 @@ batfish_find_destination_consistency_node_accept_packet_constraints_helper() {
    fi
    date | tr -d '\n'
    echo ": START: Find node accept packet constraints for \"$NODE\" ==> \"$DI_QUERY_OUTPUT_PATH\""
-   cat $REACH_PATH $DI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$DI_QUERY_OUTPUT_PATH 2>&3
+   cat $REACH_PATH $DI_QUERY_PATH | batfish_time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$DI_QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -571,7 +571,7 @@ batfish_find_interface_failure_black_hole_packet_constraints_helper() {
    local FI_QUERY_OUTPUT_PATH=${FI_QUERY_PATH}.out
    date | tr -d '\n'
    echo ": START: Find black-hole packet constraints for \"$NODE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
-   cat $BLACK_HOLE_PATH $FI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$FI_QUERY_OUTPUT_PATH 2>&3
+   cat $BLACK_HOLE_PATH $FI_QUERY_PATH | batfish_time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$FI_QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -616,7 +616,7 @@ batfish_find_interface_failure_black_hole_packet_constraints_interface_helper() 
    local FI_QUERY_OUTPUT_PATH=${FI_QUERY_PATH}.out
    date | tr -d '\n'
    echo ": START: Find black-hole packet constraints for \"$NODE\" with blacklisted interface \"$BLACKLISTED_INTERFACE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
-   cat $REACH_PATH $FI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$FI_QUERY_OUTPUT_PATH 2>&3
+   cat $REACH_PATH $FI_QUERY_PATH | batfish_time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$FI_QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -676,7 +676,7 @@ batfish_find_interface_failure_reachable_packet_constraints_helper() {
    local FI_QUERY_OUTPUT_PATH=${FI_QUERY_PATH}.out
    date | tr -d '\n'
    echo ": START: Find reachable packet constraints for \"$NODE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
-   cat $REACH_PATH $FI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$FI_QUERY_OUTPUT_PATH 2>&3
+   cat $REACH_PATH $FI_QUERY_PATH | batfish_time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$FI_QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -714,7 +714,7 @@ batfish_find_multipath_inconsistent_packet_constraints_helper() {
    local MPI_QUERY_PATH=${MPI_QUERY_BASE_PATH}-${NODE}.smt2
    local MPI_QUERY_OUTPUT_PATH=${MPI_QUERY_PATH}.out
    echo ": START: Find inconsistent packet constraints for \"$NODE\" (\"$MPI_QUERY_OUTPUT_PATH\")"
-   cat $REACH_PATH $MPI_QUERY_PATH | time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1> $MPI_QUERY_OUTPUT_PATH 2>&3
+   cat $REACH_PATH $MPI_QUERY_PATH | batfish_time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1> $MPI_QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -1092,4 +1092,16 @@ ip_to_int() {
    echo $((${OCTET_3} * 16777216 + ${OCTET_2} * 65536 + ${OCTET_1} * 256 + ${OCTET_0}))
 }
 export -f ip_to_int
+
+# if the 'time' binary is not available (e.g. on cygwin it is a bash builtin), define it
+if [ -z "$(which time 2>&1)" ]; then
+   batfish_time() {
+      bash -c "time $@"
+   }
+else
+   batfish_time() {
+      time $@
+   }
+fi
+export -f batfish_time
 
