@@ -1,13 +1,28 @@
 #!/bin/bash
-RESTORE_DATA=cygwin-symlink-restore-data
+export RESTORE_DATA=cygwin-symlink-restore-data
 if [ -e "$RESTORE_DATA" ]; then
-   while read SYMLINK_LINE; read TARGET_LINE; read ABSOLUTE_TARGET_LINE; do
+   restore_symlink() {
+      RESTORE_DATA_FILE=$1
+      FILE_INDEX=$2
+      SYMLINK_LINE_OFFSET=$(($FILE_INDEX * 3 + 1))
+      TARGET_LINE_OFFSET=$(($SYMLINK_LINE_OFFSET + 1))
+      ABSOLUTE_TARGET_LINE_OFFSET=$(($SYMLINK_LINE_OFFSET + 2))
+      SYMLINK_LINE="$(sed -ne ${SYMLINK_LINE_OFFSET}p $RESTORE_DATA_FILE)"
+      TARGET_LINE="$(sed -ne ${TARGET_LINE_OFFSET}p $RESTORE_DATA_FILE)"
+      ABSOLUTE_TARGET_LINE="$(sed -ne ${ABSOLUTE_TARGET_LINE_OFFSET}p $RESTORE_DATA_FILE)"
       SYMLINK="$(echo "$SYMLINK_LINE" | cut -d'=' -f2-)"
       TARGET="$(echo "$TARGET_LINE" | cut -d'=' -f2-)"
       echo SYMLINK="$SYMLINK"
       echo TARGET="$TARGET"
       rm -rf "$SYMLINK" && ln -s "$TARGET" "$SYMLINK"
-   done < "$RESTORE_DATA"
+      echo "rm -rf \"$SYMLINK\" && ln -s \"$TARGET\" \"$SYMLINK\""
+   }
+   export -f restore_symlink
+   
+   numlines=$(wc -l < "$RESTORE_DATA")
+   count=$(($numlines / 3))
+   seq 0 $(($count - 1)) | parallel restore_symlink "$RESTORE_DATA" {} \;
    rm "$RESTORE_DATA"
+   echo "rm \"$RESTORE_DATA\""
 fi
 
