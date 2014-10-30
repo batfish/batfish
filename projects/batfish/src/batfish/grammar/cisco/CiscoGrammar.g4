@@ -97,6 +97,7 @@ null_block_stanza
       AAA
       | ARCHIVE
       | ATM
+      | CLI
       | CONTROL_PLANE
       | CONTROLLER
       |
@@ -276,7 +277,7 @@ null_block_substanza
          | IDLE_TIMEOUT
          | INSPECT
          | INSTANCE
-         | INTERFACE POLICY
+         | INTERFACE
          |
          (
             (
@@ -314,6 +315,7 @@ null_block_substanza
          | MODEM
          | MTU
          | NAME
+         | NEGOTIATE
          | NETWORK
          | NODE
          | NOTIFY
@@ -377,6 +379,7 @@ null_block_substanza
          | STP
          | SUBJECT_NAME
          | SWITCHBACK
+         | SWITCHPORT
          | SYNC
          | TB_VLAN1
          | TB_VLAN2
@@ -767,7 +770,6 @@ null_standalone_stanza
       | TAG
       | TAG_SWITCHING
       | TELNET
-      | TEMPLATE
       | TFTP_SERVER
       | THREAT_DETECTION
       | TIMEOUT

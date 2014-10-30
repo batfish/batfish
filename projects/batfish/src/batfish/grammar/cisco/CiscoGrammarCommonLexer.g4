@@ -597,6 +597,11 @@ CLASS_MAP
    'class-map'
 ;
 
+CLI
+:
+   'cli'
+;
+
 CLNS
 :
    'clns'

@@ -1711,7 +1711,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
-   public void exitTemplate_peer_remote_as(Template_peer_remote_asContext ctx) {
+   public void exitTemplate_peer_remote_as_stanza(
+         Template_peer_remote_as_stanzaContext ctx) {
       _currentTemplatePeer.setRemoteAS(toInteger(ctx.asnum));
    }
 
@@ -1721,8 +1722,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
-   public void exitTemplate_peer_update_source(
-         Template_peer_update_sourceContext ctx) {
+   public void exitTemplate_peer_update_source_stanza(
+         Template_peer_update_source_stanzaContext ctx) {
       _currentTemplatePeer.setUpdateSource(ctx.source.getText());
    }
 

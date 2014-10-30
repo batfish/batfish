@@ -43,6 +43,7 @@ af_stanza
 :
    aggregate_address_af_stanza
    | default_metric_af_stanza
+   | maximum_prefix_af_stanza
    | neighbor_activate_af_stanza
    | neighbor_default_originate_af_stanza
    | neighbor_description_af_stanza
@@ -115,6 +116,16 @@ default_metric_rb_stanza
 default_metric_tail_bgp
 :
    DEFAULT_METRIC metric = DEC NEWLINE
+;
+
+maximum_prefix_af_stanza
+:
+   maximum_prefix_tail_bgp
+;
+
+maximum_prefix_tail_bgp
+:
+   MAXIMUM_PREFIX DEC NEWLINE
 ;
 
 neighbor_activate_af_stanza
@@ -486,8 +497,7 @@ null_af_stanza
 
 null_rb_stanza
 :
-   template_peer_stanza
-   | null_standalone_rb_stanza
+   null_standalone_rb_stanza
 ;
 
 null_standalone_af_stanza
@@ -501,9 +511,6 @@ null_standalone_af_stanza
       | AUTO_SUMMARY
       | BGP
       | MAXIMUM_PATHS
-      | SEND_COMMUNITY
-      | SOFT_RECONFIGURATION
-      | ROUTE_MAP
       | MAXIMUM_PREFIX
       |
       (
@@ -517,6 +524,9 @@ null_standalone_af_stanza
             | TIMERS
          )
       )
+      | ROUTE_MAP
+      | SEND_COMMUNITY
+      | SOFT_RECONFIGURATION
       | SYNCHRONIZATION
    ) ~NEWLINE* NEWLINE
 ;
@@ -565,16 +575,16 @@ null_standalone_rb_stanza
 
 null_template_peer_stanza
 :
-   address_family_rb_stanza
-   | null_template_peer_standalone_stanza
+   null_template_peer_standalone_stanza
 ;
 
 null_template_peer_standalone_stanza
 :
    (
-      PASSWORD
-      | REMOVE_PRIVATE_AS
+      DESCRIPTION
       | EBGP_MULTIHOP
+      | PASSWORD
+      | REMOVE_PRIVATE_AS
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -605,6 +615,7 @@ rb_stanza
    | redistribute_ospf_rb_stanza
    | redistribute_static_rb_stanza
    | router_id_bgp_rb_stanza
+   | template_peer_stanza
    | vrf_rb_stanza
 ;
 
@@ -713,7 +724,7 @@ router_id_bgp_rb_stanza
    BGP ROUTER_ID routerid = IP_ADDRESS NEWLINE
 ;
 
-template_peer_remote_as
+template_peer_remote_as_stanza
 :
    REMOTE_AS asnum = DEC NEWLINE
 ;
@@ -726,13 +737,14 @@ template_peer_stanza
 template_peer_stanza_tail
 :
    (
-      template_peer_remote_as
-      | template_peer_update_source
+      template_peer_remote_as_stanza
+      | template_peer_update_source_stanza
+      | address_family_rb_stanza
       | null_template_peer_stanza
    )+
 ;
 
-template_peer_update_source
+template_peer_update_source_stanza
 :
    UPDATE_SOURCE source = VARIABLE NEWLINE
 ;
