@@ -13,11 +13,12 @@ import batfish.representation.Protocol;
 
 public class BgpProcess implements Serializable {
 
+   private static final int DEFAULT_BGP_DEFAULT_METRIC = 0;
    private static final long serialVersionUID = 1L;
+
    private Map<BgpNetwork, Boolean> _aggregateNetworks;
    private Map<String, BgpPeerGroup> _allPeerGroups;
    private Ip _clusterId;
-   private boolean _defaultNeighborActivate;
    private Map<Ip, IpBgpPeerGroup> _ipPeerGroups;
    private MasterBgpPeerGroup _masterBgpPeerGroup;
    private Map<String, NamedBgpPeerGroup> _namedPeerGroups;
@@ -32,16 +33,15 @@ public class BgpProcess implements Serializable {
       _namedPeerGroups = new HashMap<String, NamedBgpPeerGroup>();
       _ipPeerGroups = new HashMap<Ip, IpBgpPeerGroup>();
       _networks = new LinkedHashSet<BgpNetwork>();
-      _defaultNeighborActivate = true;
       _aggregateNetworks = new HashMap<BgpNetwork, Boolean>();
       _redistributionPolicies = new EnumMap<Protocol, BgpRedistributionPolicy>(
             Protocol.class);
       _masterBgpPeerGroup = new MasterBgpPeerGroup();
+      _masterBgpPeerGroup.setDefaultMetric(DEFAULT_BGP_DEFAULT_METRIC);
    }
 
    public void addIpPeerGroup(Ip ip) {
       IpBgpPeerGroup pg = new IpBgpPeerGroup(ip);
-      pg.setActive(_defaultNeighborActivate);
       _ipPeerGroups.put(ip, pg);
       _allPeerGroups.put(ip.toString(), pg);
    }
@@ -84,10 +84,6 @@ public class BgpProcess implements Serializable {
 
    public int getDefaultMetric() {
       return _masterBgpPeerGroup.getDefaultMetric();
-   }
-
-   public boolean getDefaultNeighborActivate() {
-      return _defaultNeighborActivate;
    }
 
    public Map<Ip, IpBgpPeerGroup> getIpPeerGroups() {

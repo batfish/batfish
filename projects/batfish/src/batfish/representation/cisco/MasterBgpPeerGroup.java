@@ -10,9 +10,11 @@ public class MasterBgpPeerGroup extends BgpPeerGroup {
    private static final String MASTER_BGP_PEER_GROUP_NAME = "~MASTER_BGP_PEER_GROUP~";
 
    public MasterBgpPeerGroup() {
+      _active = false;
       _defaultOriginate = false;
       _routeReflectorClient = false;
       _sendCommunity = false;
+      _shutdown = false;
    }
 
    @Override

@@ -67,6 +67,7 @@ auto_summary_bgp_tail
 bgp_tail
 :
    aggregate_address_bgp_tail
+   | activate_bgp_tail
    | cluster_id_bgp_tail
    | default_metric_bgp_tail
    | default_originate_bgp_tail
@@ -241,6 +242,7 @@ null_bgp_tail
    NO?
    (
       AUTO_SUMMARY
+      |
       (
          AGGREGATE_ADDRESS IPV6_ADDRESS
       )

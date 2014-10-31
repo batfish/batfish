@@ -519,6 +519,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
                _warnings.add("Interface: \"" + name
                      + "\" altered more than once");
             }
+            _currentInterfaces.add(newInterface);
             newInterface.setBandwidth(bandwidth);
          }
       }
@@ -1543,7 +1544,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitRoute_reflector_client_bgp_tail(
          Route_reflector_client_bgp_tailContext ctx) {
-      _currentPeerGroup.setRouteReflectorClient();
+      _currentPeerGroup.setRouteReflectorClient(true);
    }
 
    @Override

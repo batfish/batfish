@@ -34,7 +34,7 @@ public abstract class BgpPeerGroup implements Serializable {
       return _defaultMetric;
    }
 
-   public boolean getDefaultOriginate() {
+   public Boolean getDefaultOriginate() {
       return _defaultOriginate;
    }
 
@@ -64,11 +64,11 @@ public abstract class BgpPeerGroup implements Serializable {
       return _remoteAS;
    }
 
-   public boolean getRouteReflectorClient() {
+   public Boolean getRouteReflectorClient() {
       return _routeReflectorClient;
    }
 
-   public boolean getSendCommunity() {
+   public Boolean getSendCommunity() {
       return _sendCommunity;
    }
 
@@ -162,8 +162,8 @@ public abstract class BgpPeerGroup implements Serializable {
       _remoteAS = remoteAS;
    }
 
-   public void setRouteReflectorClient() {
-      _routeReflectorClient = true;
+   public void setRouteReflectorClient(boolean b) {
+      _routeReflectorClient = b;
    }
 
    public void setSendCommunity(boolean sendCommunity) {
