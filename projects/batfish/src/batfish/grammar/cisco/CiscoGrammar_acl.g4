@@ -389,7 +389,9 @@ ipx_sap_access_list_stanza
 
 nexus_access_list_null_tail
 :
-   num = DEC REMARK ~NEWLINE* NEWLINE
+   (
+      num = DEC
+   )? REMARK ~NEWLINE* NEWLINE
 ;
 
 nexus_access_list_stanza
@@ -402,33 +404,23 @@ nexus_access_list_stanza
       nexus_access_list_tail
       | nexus_access_list_null_tail
    )*
+   exit_line?
 ;
 
 nexus_access_list_tail
 :
-   num = DEC extended_access_list_tail
+   (
+      num = DEC
+   )? extended_access_list_tail
 ;
 
-//nexus_access_list_tail
-//:
-//   num = DEC ala = access_list_action prot = protocol srcipr = access_list_ip_range
-//	(
-//		alps_src = port_specifier
-//	)? dstipr = access_list_ip_range
-//	(
-//		alps_dst = port_specifier
-//	)? 
-//	(
-//      ECHO_REPLY
-//	   | ECHO	   
-//	   | ESTABLISHED
-//	   | ND_NA
-//	   | ND_NS
-//	   | PACKET_TOO_BIG
-//		| TRACKED
-//		| TTL EQ DEC
-//	)? NEWLINE
-//;
+nexus_prefix_list_stanza
+:
+   (
+      IP
+      | IPV6
+   ) PREFIX_LIST name = ~NEWLINE NEWLINE ip_prefix_list_tail*
+;
 
 protocol_type_code_access_list_numbered_stanza
 locals [boolean again]

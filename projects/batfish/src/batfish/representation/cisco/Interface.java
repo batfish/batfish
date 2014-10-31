@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import batfish.grammar.cisco.CiscoGrammar.Interface_stanzaContext;
-import batfish.grammar.cisco.CiscoGrammar.Ip_address_if_stanzaContext;
 import batfish.representation.Ip;
 import batfish.representation.SwitchportEncapsulationType;
 import batfish.representation.SwitchportMode;
@@ -54,11 +52,9 @@ public class Interface implements Serializable {
    private ArrayList<SubRange> _allowedVlans;
    private Integer _area;
    private Double _bandwidth;
-   private transient Interface_stanzaContext _context;
    private String _description;
    private String _incomingFilter;
    private Ip _ip;
-   private transient Ip_address_if_stanzaContext _ipAddressStanzaContext;
    private String _name;
    private int _nativeVlan;
    private Integer _ospfCost;
@@ -110,10 +106,6 @@ public class Interface implements Serializable {
       return _bandwidth;
    }
 
-   public Interface_stanzaContext getContext() {
-      return _context;
-   }
-
    public String getDescription() {
       return _description;
    }
@@ -124,10 +116,6 @@ public class Interface implements Serializable {
 
    public Ip getIP() {
       return _ip;
-   }
-
-   public Ip_address_if_stanzaContext getIpAddressStanzaContext() {
-      return _ipAddressStanzaContext;
    }
 
    public String getName() {
@@ -186,10 +174,6 @@ public class Interface implements Serializable {
       _bandwidth = bandwidth;
    }
 
-   public void setContext(Interface_stanzaContext context) {
-      _context = context;
-   }
-
    public void setDescription(String description) {
       _description = description;
    }
@@ -200,10 +184,6 @@ public class Interface implements Serializable {
 
    public void setIp(Ip ip) {
       _ip = ip;
-   }
-
-   public void setIpAddressStanzaContext(Ip_address_if_stanzaContext ctx) {
-      _ipAddressStanzaContext = ctx;
    }
 
    public void setNativeVlan(int vlan) {

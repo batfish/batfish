@@ -7,23 +7,23 @@ import batfish.representation.Ip;
 
 public class NamedBgpPeerGroup extends BgpPeerGroup {
 
-   public static final NamedBgpPeerGroup DEFAULT_INSTANCE = new NamedBgpPeerGroup(null);
-
    private static final long serialVersionUID = 1L;
-   
+
+   private boolean _created;
    private String _name;
    private Set<Ip> _neighborAddresses;
 
    public NamedBgpPeerGroup(String name) {
       _neighborAddresses = new LinkedHashSet<Ip>();
-      _routeReflectorClient = false;
-      _defaultOriginate = false;
-      _sendCommunity = false;
       _name = name;
    }
 
    public void addNeighborAddress(Ip address) {
       _neighborAddresses.add(address);
+   }
+
+   public boolean getCreated() {
+      return _created;
    }
 
    @Override
@@ -33,6 +33,10 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
 
    public Set<Ip> getNeighborAddresses() {
       return _neighborAddresses;
+   }
+
+   public void setCreated(boolean b) {
+      _created = b;
    }
 
 }

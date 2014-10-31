@@ -7,8 +7,8 @@ public class IpBgpPeerGroup extends BgpPeerGroup {
    private static final long serialVersionUID = 1L;
    private Ip _ip;
    private String _groupName = null;
-   private String _peerTemplateName = null;  
-   
+   private String _peerTemplateName = null;
+
    public IpBgpPeerGroup(Ip ip) {
       _ip = ip;
    }
@@ -45,4 +45,5 @@ public class IpBgpPeerGroup extends BgpPeerGroup {
       }
       _peerTemplateName = name;
    }
+
 }

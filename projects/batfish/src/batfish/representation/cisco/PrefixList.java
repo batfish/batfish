@@ -19,8 +19,8 @@ public class PrefixList implements Serializable {
    private String _name;
 
    private boolean _isIpV6;
-   
-   public PrefixList(String n) {
+
+   private PrefixList(String n) {
       _name = n;
       _lines = new ArrayList<PrefixListLine>();
       _isIpV6 = false;
@@ -50,7 +50,7 @@ public class PrefixList implements Serializable {
    public String getName() {
       return _name;
    }
-   
+
    public boolean isIpV6() {
       return _isIpV6;
    }

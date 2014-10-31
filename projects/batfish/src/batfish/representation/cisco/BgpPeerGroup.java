@@ -7,7 +7,9 @@ import batfish.representation.Ip;
 public abstract class BgpPeerGroup implements Serializable {
 
    private static final long serialVersionUID = 1L;
+   protected Boolean _active;
    protected Ip _clusterId;
+   protected Integer _defaultMetric;
    protected Boolean _defaultOriginate;
    protected String _defaultOriginateMap;
    protected String _inboundPrefixList;
@@ -17,10 +19,19 @@ public abstract class BgpPeerGroup implements Serializable {
    protected Integer _remoteAS;
    protected Boolean _routeReflectorClient;
    protected Boolean _sendCommunity;
+   protected Boolean _shutdown;
    protected String _updateSource;
+
+   public Boolean getActive() {
+      return _active;
+   }
 
    public Ip getClusterId() {
       return _clusterId;
+   }
+
+   public Integer getDefaultMetric() {
+      return _defaultMetric;
    }
 
    public boolean getDefaultOriginate() {
@@ -61,11 +72,18 @@ public abstract class BgpPeerGroup implements Serializable {
       return _sendCommunity;
    }
 
+   public Boolean getShutdown() {
+      return _shutdown;
+   }
+
    public String getUpdateSource() {
       return _updateSource;
    }
 
    public void inheritUnsetFields(BgpPeerGroup pg) {
+      if (_active == null) {
+         _active = pg.getActive();
+      }
       if (_clusterId == null) {
          _clusterId = pg.getClusterId();
       }
@@ -96,13 +114,24 @@ public abstract class BgpPeerGroup implements Serializable {
       if (_sendCommunity == null) {
          _sendCommunity = pg.getSendCommunity();
       }
+      if (_shutdown == null) {
+         _shutdown = pg.getShutdown();
+      }
       if (_updateSource == null) {
          _updateSource = pg.getUpdateSource();
       }
    }
 
+   public void setActive(boolean active) {
+      _active = active;
+   }
+
    public void setClusterId(Ip ip) {
       _clusterId = ip;
+   }
+
+   public void setDefaultMetric(int defaultMetric) {
+      _defaultMetric = defaultMetric;
    }
 
    public void setDefaultOriginate(boolean b) {
@@ -139,6 +168,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public void setSendCommunity(boolean sendCommunity) {
       _sendCommunity = sendCommunity;
+   }
+
+   public void setShutdown(boolean shutdown) {
+      _shutdown = shutdown;
    }
 
    public void setUpdateSource(String updateSource) {

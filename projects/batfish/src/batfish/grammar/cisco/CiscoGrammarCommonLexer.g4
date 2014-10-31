@@ -397,6 +397,11 @@ BANNER
    ) -> pushMode(M_BANNER)
 ;
 
+BASH
+:
+   'bash'
+;
+
 BESTPATH
 :
    'bestpath'
@@ -687,6 +692,11 @@ CONFORM_ACTION
    'conform-action'
 ;
 
+CONGESTION_CONTROL
+:
+   'congestion-control'
+;
+
 CONNECTED
 :
    'connected'
@@ -715,6 +725,11 @@ CONTROL_PLANE
 CONTROLLER
 :
    'controller'
+;
+
+COPY
+:
+   'copy'
 ;
 
 COST
@@ -1182,6 +1197,11 @@ EXECUTE
    'execute'
 ;
 
+EXIT
+:
+   'exit'
+;
+
 EXIT_ADDRESS_FAMILY
 :
    'exit-address-family'
@@ -1625,7 +1645,7 @@ INTERFACE
 :
    'interface'
    { enableIPV6_ADDRESS = false; }
-
+   -> pushMode(M_Interface)
 ;
 
 INTERNAL
@@ -2346,6 +2366,11 @@ NO
 NO_ADVERTISE
 :
    'no-advertise'
+;
+
+NO_BANNER
+:
+   'no' F_Whitespace+ 'banner'
 ;
 
 NO_EXPORT
@@ -4461,6 +4486,43 @@ M_DESCRIPTION_NEWLINE
 M_DESCRIPTION_NON_NEWLINE
 :
    F_NonNewline+
+;
+
+mode M_Interface;
+
+M_Interface_PREFIX
+:
+   F_Letter (F_Letter | '-')*
+;
+
+M_Interface_COMMA
+:
+   ',' -> type(COMMA)
+;
+
+M_Interface_DASH
+:
+   '-' -> type(DASH)
+;
+
+M_Interface_NEWLINE
+:
+   F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_Interface_NUMBER
+:
+   DEC -> type(DEC)
+;
+
+M_Interface_SLASH
+:
+   '/' -> type(FORWARD_SLASH)
+;
+
+M_Interface_WS
+:
+   F_Whitespace+ -> channel(HIDDEN)
 ;
 
 mode M_KEY;

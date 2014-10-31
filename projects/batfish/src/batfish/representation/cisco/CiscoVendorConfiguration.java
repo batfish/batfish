@@ -119,7 +119,6 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          throws VendorConversionException {
       batfish.representation.BgpProcess newBgpProcess = new batfish.representation.BgpProcess();
       Map<Ip, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
-      Set<Ip> activeNeighbors = proc.getActivatedNeighbors();
       int defaultMetric = proc.getDefaultMetric();
 
       Set<PolicyMap> globalExportPolicies = new HashSet<PolicyMap>();
@@ -179,25 +178,15 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       // }
 
       // cause ip peer groups to inherit unset fields from owning named peer
-      // group or peer template.
+      // group if it exists, and then always from process master peer group
       for (IpBgpPeerGroup ipg : proc.getIpPeerGroups().values()) {
-         String bgpPeerTemplatePeerGroupName = ipg.getPeerTemplateName();
-         if (bgpPeerTemplatePeerGroupName != null) {
-            BgpPeerTemplatePeerGroup bgpPeerTemplatePeerGroup = proc
-                  .getPeerTemplates().get(bgpPeerTemplatePeerGroupName);
-            ipg.inheritUnsetFields(bgpPeerTemplatePeerGroup);
-         }
-         else {
-            NamedBgpPeerGroup parentPeerGroup;
-            String groupName = ipg.getGroupName();
-            if (groupName == null) {
-               parentPeerGroup = NamedBgpPeerGroup.DEFAULT_INSTANCE;
-            }
-            else {
-               parentPeerGroup = proc.getNamedPeerGroups().get(groupName);
-            }
+         String groupName = ipg.getGroupName();
+         if (groupName != null) {
+            NamedBgpPeerGroup parentPeerGroup = proc.getNamedPeerGroups().get(
+                  groupName);
             ipg.inheritUnsetFields(parentPeerGroup);
          }
+         ipg.inheritUnsetFields(proc.getMasterBgpPeerGroup());
       }
 
       for (IpBgpPeerGroup pg : proc.getIpPeerGroups().values()) {
@@ -330,7 +319,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          }
          boolean sendCommunity = pg.getSendCommunity();
          Ip neighborAddress = pg.getIp();
-         if (activeNeighbors.contains(neighborAddress)) {
+         if (pg.getActive() && !pg.getShutdown()) {
             BgpNeighbor newNeighbor = new BgpNeighbor(neighborAddress);
             newBgpNeighbors.put(neighborAddress, newNeighbor);
 
@@ -765,7 +754,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          for (String listName : accessLine.getListNames()) {
             IpAccessList list = c.getIpAccessLists().get(listName);
             if (list == null) {
-               throw new VendorConversionException("Reference to nonexistent ip access list: "+ listName);
+               throw new VendorConversionException(
+                     "Reference to nonexistent ip access list: " + listName);
             }
             newIpAccessMatchSet.add(list);
          }

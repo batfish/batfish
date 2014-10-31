@@ -16,6 +16,11 @@ public class Util {
       return sb.toString();
    }
 
+   public static String escape(String offendingTokenText) {
+      return offendingTokenText.replace("\n", "\\n").replace("\t", "\\t")
+            .replace("\r", "\\r");
+   }
+
    public static String extractBits(long l, int start, int end) {
       String s = "";
       for (int pos = end; pos >= start; pos--) {

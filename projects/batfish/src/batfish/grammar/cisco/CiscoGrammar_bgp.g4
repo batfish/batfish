@@ -6,7 +6,12 @@ options {
    tokenVocab = CiscoGrammarCommonLexer;
 }
 
-address_family_rb_stanza
+activate_bgp_tail
+:
+   ACTIVATE NEWLINE
+;
+
+address_family_header
 :
    ADDRESS_FAMILY
    (
@@ -21,63 +26,28 @@ address_family_rb_stanza
    )?
    (
       VRF vrf_name = VARIABLE
-   )? NEWLINE address_family_rb_stanza_tail
+   )? NEWLINE
+;
+
+address_family_footer
+:
    (
       EXIT_ADDRESS_FAMILY NEWLINE
    )?
 ;
 
-address_family_rb_stanza_tail
+address_family_rb_stanza
 :
+   address_family_header
    (
-      afsl += af_stanza
-   )*
+      bgp_tail
+      | neighbor_rb_stanza
+      | peer_group_assignment_rb_stanza
+      | peer_group_creation_rb_stanza
+   )+ address_family_footer
 ;
 
-af_vrf_rb_substanza
-:
-   address_family_rb_stanza
-;
-
-af_stanza
-:
-   aggregate_address_af_stanza
-   | default_metric_af_stanza
-   | maximum_prefix_af_stanza
-   | neighbor_activate_af_stanza
-   | neighbor_default_originate_af_stanza
-   | neighbor_description_af_stanza
-   | neighbor_distribute_list_af_stanza
-   | neighbor_ebgp_multihop_af_stanza
-   | neighbor_filter_list_af_stanza
-   | neighbor_next_hop_self_af_stanza
-   | neighbor_peer_group_assignment_af_stanza
-   | neighbor_peer_group_creation_af_stanza
-   | neighbor_prefix_list_af_stanza
-   | neighbor_remote_as_af_stanza
-   | neighbor_route_map_af_stanza
-   | neighbor_route_reflector_client_af_stanza
-   | neighbor_send_community_af_stanza
-   | neighbor_shutdown_af_stanza
-   | network_af_stanza
-   | network6_af_stanza
-   | null_af_stanza
-   | redistribute_aggregate_af_stanza
-   | redistribute_connected_af_stanza
-   | redistribute_static_af_stanza
-;
-
-aggregate_address_af_stanza
-:
-   aggregate_address_tail_bgp
-;
-
-aggregate_address_rb_stanza
-:
-   aggregate_address_tail_bgp
-;
-
-aggregate_address_tail_bgp
+aggregate_address_bgp_tail
 :
    AGGREGATE_ADDRESS
    (
@@ -89,365 +59,109 @@ aggregate_address_tail_bgp
    ) SUMMARY_ONLY? NEWLINE
 ;
 
-auto_summary_af_stanza
+auto_summary_bgp_tail
 :
    NO? AUTO_SUMMARY NEWLINE
 ;
 
-cluster_id_bgp_rb_stanza
+bgp_tail
 :
-   BGP CLUSTER_ID
+   aggregate_address_bgp_tail
+   | cluster_id_bgp_tail
+   | default_metric_bgp_tail
+   | default_originate_bgp_tail
+   | description_bgp_tail
+   | distribute_list_bgp_tail
+   | ebgp_multihop_bgp_tail
+   | network_bgp_tail
+   | network6_bgp_tail
+   | next_hop_self_bgp_tail
+   | null_bgp_tail
+   | prefix_list_bgp_tail
+   | redistribute_aggregate_bgp_tail
+   | redistribute_connected_bgp_tail
+   | redistribute_ospf_bgp_tail
+   | redistribute_static_bgp_tail
+   | remove_private_as_bgp_tail
+   | route_map_bgp_tail
+   | route_reflector_client_bgp_tail
+   | router_id_bgp_tail
+   | send_community_bgp_tail
+   | shutdown_bgp_tail
+   | update_source_bgp_tail
+;
+
+cluster_id_bgp_tail
+:
+   CLUSTER_ID
    (
       id = DEC
       | id = IP_ADDRESS
    ) NEWLINE
 ;
 
-default_metric_af_stanza
+cluster_id_rb_stanza
 :
-   default_metric_tail_bgp
+   BGP cluster_id_bgp_tail
 ;
 
-default_metric_rb_stanza
-:
-   default_metric_tail_bgp
-;
-
-default_metric_tail_bgp
+default_metric_bgp_tail
 :
    DEFAULT_METRIC metric = DEC NEWLINE
 ;
 
-maximum_prefix_af_stanza
+default_originate_bgp_tail
 :
-   maximum_prefix_tail_bgp
-;
-
-maximum_prefix_tail_bgp
-:
-   MAXIMUM_PREFIX DEC NEWLINE
-;
-
-neighbor_activate_af_stanza
-:
-   NEIGHBOR
-   (
-      neighbor = IP_ADDRESS
-      | neighbor6 = IPV6_ADDRESS
-      | pg = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
-   ) ACTIVATE NEWLINE
-;
-
-neighbor_default_originate_af_stanza
-:
-   neighbor_default_originate_tail_bgp
-;
-
-neighbor_default_originate_rb_stanza
-:
-   neighbor_default_originate_tail_bgp
-;
-
-neighbor_default_originate_tail_bgp
-:
-   NEIGHBOR
-   (
-      ip = IP_ADDRESS
-      | ipv6 = IPV6_ADDRESS
-      | peergroup = VARIABLE
-   ) DEFAULT_ORIGINATE
+   DEFAULT_ORIGINATE
    (
       ROUTE_MAP map = VARIABLE
    )? NEWLINE
 ;
 
-neighbor_description_af_stanza
+description_bgp_tail
 :
-   neighbor_description_tail_bgp
+   description_line
 ;
 
-neighbor_description_rb_stanza
+distribute_list_bgp_tail
 :
-   neighbor_description_tail_bgp
+   DISTRIBUTE_LIST ~NEWLINE* NEWLINE
 ;
 
-neighbor_description_tail_bgp
+ebgp_multihop_bgp_tail
 :
-   NEIGHBOR neighbor = ~NEWLINE description_line
+   EBGP_MULTIHOP hop = DEC NEWLINE
 ;
 
-neighbor_distribute_list_af_stanza
+filter_list_bgp_tail
 :
-   neighbor_distribute_list_tail_bgp
-;
-
-neighbor_distribute_list_rb_stanza
-:
-   neighbor_distribute_list_tail_bgp
-;
-
-neighbor_distribute_list_tail_bgp
-:
-   NEIGHBOR ~NEWLINE DISTRIBUTE_LIST ~NEWLINE* NEWLINE
-;
-
-neighbor_ebgp_multihop_af_stanza
-:
-   neighbor_ebgp_multihop_tail_bgp
-;
-
-neighbor_ebgp_multihop_rb_stanza
-:
-   neighbor_ebgp_multihop_tail_bgp
-;
-
-neighbor_ebgp_multihop_tail_bgp
-:
-   NEIGHBOR neighbor = ~NEWLINE EBGP_MULTIHOP hop = DEC NEWLINE
-;
-
-neighbor_filter_list_af_stanza
-:
-   neighbor_filter_list_tail_bgp
-;
-
-neighbor_filter_list_tail_bgp
-:
-   NEIGHBOR neighbor = . FILTER_LIST num = DEC
+   FILTER_LIST num = DEC
    (
       IN
       | OUT
    ) NEWLINE
 ;
 
-neighbor_nexus_stanza
+maximum_prefix_bgp_tail
 :
-   NEIGHBOR
-   (
-      ip_address = IP_ADDRESS
-      | ipv6_address = IPV6_ADDRESS
-      | ip_prefix = IP_PREFIX
-      | ipv6_prefix = IPV6_PREFIX
-   )
-   (
-      REMOTE_AS asnum = DEC
-   )? NEWLINE
-   (
-      tail += neighbor_nexus_tail
-   )+
+   MAXIMUM_PREFIX DEC NEWLINE
 ;
 
-neighbor_nexus_inherit_stanza
-:
-   INHERIT PEER name = VARIABLE NEWLINE
-;
-
-neighbor_nexus_null_tail
-:
-   (
-      DESCRIPTION
-      | MAXIMUM_PEERS
-   ) ~NEWLINE* NEWLINE
-;
-
-neighbor_nexus_shutdown_stanza
-:
-   NO? SHUTDOWN NEWLINE
-;
-
-neighbor_nexus_tail
-:
-   (
-      neighbor_nexus_inherit_stanza
-      | neighbor_nexus_null_tail
-      | neighbor_nexus_shutdown_stanza
-   )
-;
-
-neighbor_nexus_vrf_rb_substanza
-:
-   neighbor_nexus_stanza
-;
-
-neighbor_next_hop_self_af_stanza
-:
-   neighbor_next_hop_self_tail_bgp
-;
-
-neighbor_next_hop_self_rb_stanza
-:
-   neighbor_next_hop_self_tail_bgp
-;
-
-neighbor_next_hop_self_tail_bgp
-:
-   NEIGHBOR
-   (
-      neighbor = IP_ADDRESS
-      | neighbor = VARIABLE
-   ) NEXT_HOP_SELF NEWLINE
-;
-
-neighbor_peer_group_assignment_af_stanza
-:
-   neighbor_peer_group_assignment_tail_bgp
-;
-
-neighbor_peer_group_assignment_rb_stanza
-:
-   neighbor_peer_group_assignment_tail_bgp
-;
-
-neighbor_peer_group_assignment_tail_bgp
-:
-   NEIGHBOR
-   (
-      address = IP_ADDRESS
-      | address6 = IPV6_ADDRESS
-   ) PEER_GROUP name = VARIABLE NEWLINE
-;
-
-neighbor_peer_group_creation_af_stanza
-:
-   neighbor_peer_group_creation_tail_bgp
-;
-
-neighbor_peer_group_creation_rb_stanza
-:
-   neighbor_peer_group_creation_tail_bgp
-;
-
-neighbor_peer_group_creation_tail_bgp
-:
-   NEIGHBOR name = VARIABLE PEER_GROUP NEWLINE
-;
-
-neighbor_prefix_list_af_stanza
-:
-   neighbor_prefix_list_tail_bgp
-;
-
-neighbor_prefix_list_rb_stanza
-:
-   neighbor_prefix_list_tail_bgp
-;
-
-neighbor_prefix_list_tail_bgp
-:
-   NEIGHBOR neighbor = ~NEWLINE PREFIX_LIST list_name = VARIABLE
-   (
-      IN
-      | OUT
-   ) NEWLINE
-;
-
-neighbor_remote_as_af_stanza
-:
-   neighbor_remote_as_tail_bgp
-;
-
-neighbor_remote_as_rb_stanza
-:
-   neighbor_remote_as_tail_bgp
-;
-
-neighbor_remote_as_tail_bgp
-:
-   NEIGHBOR pg = ~NEWLINE REMOTE_AS as = DEC NEWLINE
-;
-
-neighbor_route_map_af_stanza
-:
-   neighbor_route_map_tail_bgp
-;
-
-neighbor_route_map_rb_stanza
-:
-   neighbor_route_map_tail_bgp
-;
-
-neighbor_route_map_tail_bgp
-:
-   NEIGHBOR neighbor = ~NEWLINE ROUTE_MAP name = VARIABLE
-   (
-      IN
-      | OUT
-   ) NEWLINE
-;
-
-neighbor_remove_private_as_af_stanza
-:
-   NEIGHBOR
-   (
-      IP_ADDRESS
-      | VARIABLE
-   ) REMOVE_PRIVATE_AS NEWLINE
-;
-
-neighbor_route_reflector_client_af_stanza
-:
-   NEIGHBOR
-   (
-      pg = VARIABLE
-      | pg = IP_ADDRESS
-   ) ROUTE_REFLECTOR_CLIENT NEWLINE
-;
-
-neighbor_send_community_af_stanza
-:
-   neighbor_send_community_tail_bgp
-;
-
-neighbor_send_community_rb_stanza
-:
-   neighbor_send_community_tail_bgp
-;
-
-neighbor_send_community_tail_bgp
-:
-   NEIGHBOR
-   (
-      neighbor = IP_ADDRESS
-      | neighbor = VARIABLE
-   ) SEND_COMMUNITY EXTENDED? BOTH? NEWLINE
-;
-
-neighbor_shutdown_af_stanza
-:
-   neighbor_shutdown_tail_bgp
-;
-
-neighbor_shutdown_rb_stanza
-:
-   neighbor_shutdown_tail_bgp
-;
-
-neighbor_shutdown_tail_bgp
+neighbor_rb_stanza
 :
    NEIGHBOR
    (
       ip = IP_ADDRESS
       | ip6 = IPV6_ADDRESS
-      | peergroup = VARIABLE
-   ) SHUTDOWN NEWLINE
+      | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
+   )
+   (
+      bgp_tail
+      | remote_as_bgp_tail
+   )
 ;
 
-neighbor_update_source_rb_stanza
-:
-   NEIGHBOR neighbor = ~NEWLINE UPDATE_SOURCE source = VARIABLE NEWLINE
-;
-
-network_af_stanza
-:
-   network_tail_bgp
-;
-
-network_rb_stanza
-:
-   network_tail_bgp
-;
-
-network_tail_bgp
+network_bgp_tail
 :
    NETWORK
    (
@@ -464,17 +178,7 @@ network_tail_bgp
    )? NEWLINE
 ;
 
-network6_af_stanza
-:
-   network6_tail_bgp
-;
-
-network6_rb_stanza
-:
-   network6_tail_bgp
-;
-
-network6_tail_bgp
+network6_bgp_tail
 :
    NETWORK
    (
@@ -483,66 +187,69 @@ network6_tail_bgp
    ) NEWLINE
 ;
 
-no_neighbor_activate_af_stanza
+next_hop_self_bgp_tail
 :
-   NO NEIGHBOR pg = ~NEWLINE ACTIVATE NEWLINE
+   NEXT_HOP_SELF NEWLINE
 ;
 
-null_af_stanza
+nexus_neighbor_address_family
 :
-   neighbor_remove_private_as_af_stanza
-   | no_neighbor_activate_af_stanza
-   | null_standalone_af_stanza
-;
-
-null_rb_stanza
-:
-   null_standalone_rb_stanza
-;
-
-null_standalone_af_stanza
-:
-   NO?
+   address_family_header
    (
-      (
-         AGGREGATE_ADDRESS IPV6_ADDRESS
-      )
-      | ALLOWAS_IN
-      | AUTO_SUMMARY
-      | BGP
-      | MAXIMUM_PATHS
-      | MAXIMUM_PREFIX
-      |
-      (
-         NEIGHBOR ~NEWLINE
-         (
-            MAXIMUM_PREFIX
-            | NEXT_HOP_SELF
-            | PASSWORD
-            | SEND_LABEL
-            | SOFT_RECONFIGURATION
-            | TIMERS
-         )
-      )
-      | ROUTE_MAP
-      | SEND_COMMUNITY
-      | SOFT_RECONFIGURATION
-      | SYNCHRONIZATION
-   ) ~NEWLINE* NEWLINE
+      bgp_tail
+      | nexus_neighbor_inherit
+   )+ address_family_footer
 ;
 
-null_standalone_rb_stanza
+nexus_neighbor_inherit
+:
+   INHERIT PEER name = VARIABLE NEWLINE
+;
+
+nexus_neighbor_rb_stanza
+:
+   NEIGHBOR
+   (
+      ip_address = IP_ADDRESS
+      | ipv6_address = IPV6_ADDRESS
+      | ip_prefix = IP_PREFIX
+      | ipv6_prefix = IPV6_PREFIX
+   ) NEWLINE
+   (
+      REMOTE_AS asnum = DEC
+   )?
+   (
+      bgp_tail
+      | nexus_neighbor_address_family
+      | nexus_neighbor_inherit
+      | remote_as_bgp_tail
+   )+
+;
+
+no_neighbor_activate_rb_stanza
+:
+   NO NEIGHBOR
+   (
+      ip = IP_ADDRESS
+      | ip6 = IPV6_ADDRESS
+      | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
+   ) ACTIVATE NEWLINE
+;
+
+null_bgp_tail
 :
    NO?
    (
       AUTO_SUMMARY
+      (
+         AGGREGATE_ADDRESS IPV6_ADDRESS
+      )
       | BESTPATH
       |
       (
          BGP
          (
-            ALWAYS_COMPARE_MED
-            | DAMPENING
+            DAMPENING
             | DEFAULT
             | DETERMINISTIC_MED
             | GRACEFUL_RESTART
@@ -550,101 +257,77 @@ null_standalone_rb_stanza
             | LOG_NEIGHBOR_CHANGES
          )
       )
+      | DESCRIPTION
+      | DONT_CAPABILITY_NEGOTIATE
+      | FALL_OVER
       | LOG_NEIGHBOR_CHANGES
       | MAXIMUM_PATHS
-      |
-      (
-         NEIGHBOR ~NEWLINE
-         (
-            DESCRIPTION
-            | DONT_CAPABILITY_NEGOTIATE
-            | FALL_OVER
-            | MAXIMUM_PREFIX
-            | MAXIMUM_ROUTES
-            | PASSWORD
-            | REMOVE_PRIVATE_AS
-            | SOFT_RECONFIGURATION
-            | TIMERS
-            | TRANSPORT
-            | VERSION
-         )
-      )
-      | SYNCHRONIZATION
-   ) ~NEWLINE* NEWLINE
-;
-
-null_template_peer_stanza
-:
-   null_template_peer_standalone_stanza
-;
-
-null_template_peer_standalone_stanza
-:
-   (
-      DESCRIPTION
-      | EBGP_MULTIHOP
+      | MAXIMUM_PREFIX
+      | MAXIMUM_PREFIX
+      | MAXIMUM_ROUTES
       | PASSWORD
-      | REMOVE_PRIVATE_AS
+      | SEND_LABEL
+      | SOFT_RECONFIGURATION
+      | SYNCHRONIZATION
+      | TIMERS
+      | TRANSPORT
+      | VERSION
    ) ~NEWLINE* NEWLINE
 ;
 
-rb_stanza
+peer_group_assignment_rb_stanza
 :
-   aggregate_address_rb_stanza
-   | cluster_id_bgp_rb_stanza
-   | default_metric_rb_stanza
-   | neighbor_default_originate_rb_stanza
-   | neighbor_description_rb_stanza
-   | neighbor_distribute_list_rb_stanza
-   | neighbor_ebgp_multihop_rb_stanza
-   | neighbor_next_hop_self_rb_stanza
-   | neighbor_nexus_stanza
-   | neighbor_peer_group_creation_rb_stanza
-   | neighbor_peer_group_assignment_rb_stanza
-   | neighbor_prefix_list_rb_stanza
-   | neighbor_remote_as_rb_stanza
-   | neighbor_route_map_rb_stanza
-   | neighbor_send_community_rb_stanza
-   | neighbor_shutdown_rb_stanza
-   | neighbor_update_source_rb_stanza
-   | network_rb_stanza
-   | network6_rb_stanza
-   | null_rb_stanza
-   | redistribute_aggregate_rb_stanza
-   | redistribute_connected_rb_stanza
-   | redistribute_ospf_rb_stanza
-   | redistribute_static_rb_stanza
-   | router_id_bgp_rb_stanza
-   | template_peer_stanza
-   | vrf_rb_stanza
+   NEIGHBOR
+   (
+      address = IP_ADDRESS
+      | address6 = IPV6_ADDRESS
+   ) PEER_GROUP name = VARIABLE NEWLINE
 ;
 
-redistribute_aggregate_af_stanza
+peer_group_creation_rb_stanza
 :
-   redistribute_aggregate_tail_bgp
+   NEIGHBOR name = VARIABLE PEER_GROUP NEWLINE
 ;
 
-redistribute_aggregate_rb_stanza
+prefix_list_bgp_tail
 :
-   redistribute_aggregate_tail_bgp
+   PREFIX_LIST list_name = VARIABLE
+   (
+      IN
+      | OUT
+   ) NEWLINE
 ;
 
-redistribute_aggregate_tail_bgp
+remote_as_bgp_tail
+:
+   REMOTE_AS as = DEC NEWLINE
+;
+
+remove_private_as_bgp_tail
+:
+   REMOVE_PRIVATE_AS NEWLINE
+;
+
+route_map_bgp_tail
+:
+   ROUTE_MAP name = VARIABLE
+   (
+      IN
+      | OUT
+   ) NEWLINE
+;
+
+route_reflector_client_bgp_tail
+:
+   ROUTE_REFLECTOR_CLIENT NEWLINE
+;
+
+redistribute_aggregate_bgp_tail
 :
    REDISTRIBUTE AGGREGATE NEWLINE
 ;
 
-redistribute_connected_af_stanza
-:
-   redistribute_connected_tail_bgp
-;
-
-redistribute_connected_rb_stanza
-:
-   redistribute_connected_tail_bgp
-;
-
-redistribute_connected_tail_bgp
+redistribute_connected_bgp_tail
 :
    REDISTRIBUTE CONNECTED
    (
@@ -658,17 +341,7 @@ redistribute_connected_tail_bgp
    )* NEWLINE
 ;
 
-redistribute_ospf_rb_stanza
-:
-   redistribute_ospf_tail_bgp
-;
-
-redistribute_ospf_af_stanza
-:
-   redistribute_ospf_tail_bgp
-;
-
-redistribute_ospf_tail_bgp
+redistribute_ospf_bgp_tail
 :
    REDISTRIBUTE OSPF procnum = DEC
    (
@@ -682,17 +355,7 @@ redistribute_ospf_tail_bgp
    )* NEWLINE
 ;
 
-redistribute_static_af_stanza
-:
-   redistribute_static_tail_bgp
-;
-
-redistribute_static_rb_stanza
-:
-   redistribute_static_tail_bgp
-;
-
-redistribute_static_tail_bgp
+redistribute_static_bgp_tail
 :
    REDISTRIBUTE STATIC
    (
@@ -708,55 +371,54 @@ redistribute_static_tail_bgp
 
 router_bgp_stanza
 :
-   ROUTER BGP procnum = DEC NEWLINE router_bgp_stanza_tail
-;
-
-router_bgp_stanza_tail
-:
+   ROUTER BGP procnum = DEC NEWLINE
    (
-      rbsl += rb_stanza
-      | afrbsl += address_family_rb_stanza
-   )*
-;
-
-router_id_bgp_rb_stanza
-:
-   BGP ROUTER_ID routerid = IP_ADDRESS NEWLINE
-;
-
-template_peer_remote_as_stanza
-:
-   REMOTE_AS asnum = DEC NEWLINE
-;
-
-template_peer_stanza
-:
-   TEMPLATE PEER name = VARIABLE NEWLINE template_peer_stanza_tail
-;
-
-template_peer_stanza_tail
-:
-   (
-      template_peer_remote_as_stanza
-      | template_peer_update_source_stanza
-      | address_family_rb_stanza
-      | null_template_peer_stanza
+      address_family_rb_stanza
+      | bgp_tail
+      | neighbor_rb_stanza
+      | nexus_neighbor_rb_stanza
+      | peer_group_assignment_rb_stanza
+      | peer_group_creation_rb_stanza
+      | router_id_rb_stanza
+      | template_peer_rb_stanza
    )+
 ;
 
-template_peer_update_source_stanza
+router_id_bgp_tail
 :
-   UPDATE_SOURCE source = VARIABLE NEWLINE
+   ROUTER_ID routerid = IP_ADDRESS NEWLINE
 ;
 
-vrf_rb_stanza
+router_id_rb_stanza
 :
-   VRF VARIABLE NEWLINE vrf_rb_substanza+
+   BGP router_id_bgp_tail
 ;
 
-vrf_rb_substanza
+send_community_bgp_tail
 :
-   af_vrf_rb_substanza
-   | neighbor_nexus_vrf_rb_substanza
+   SEND_COMMUNITY EXTENDED? BOTH? NEWLINE
 ;
 
+shutdown_bgp_tail
+:
+   SHUTDOWN NEWLINE
+;
+
+template_peer_address_family
+:
+   address_family_header bgp_tail+ address_family_footer
+;
+
+template_peer_rb_stanza
+:
+   TEMPLATE PEER name = VARIABLE NEWLINE
+   (
+      bgp_tail
+      | template_peer_address_family
+   )+
+;
+
+update_source_bgp_tail
+:
+   UPDATE_SOURCE source = interface_name NEWLINE
+;

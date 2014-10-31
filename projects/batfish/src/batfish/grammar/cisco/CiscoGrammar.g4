@@ -90,6 +90,11 @@ macro_stanza
    MACRO ~NEWLINE* NEWLINE
 ;
 
+no_ip_access_list_stanza
+:
+   NO IP ACCESS_LIST ~NEWLINE* NEWLINE
+;
+
 null_block_stanza
 :
    NO?
@@ -97,9 +102,11 @@ null_block_stanza
       AAA
       | ARCHIVE
       | ATM
+      | BASH
       | CLI
       | CONTROL_PLANE
       | CONTROLLER
+      | COPY
       |
       (
          CRYPTO
@@ -144,6 +151,7 @@ null_block_stanza
             | INSPECT
             | POLICY_LIST
             | SLA
+            | SOURCE
          )
       )
       | IPC
@@ -156,6 +164,7 @@ null_block_stanza
       | MANAGEMENT
       | MAP_CLASS
       | MAP_LIST
+      | NO_BANNER
       | OPENFLOW
       | POLICY_MAP
       | PSEUDOWIRE_CLASS
@@ -232,6 +241,7 @@ null_block_substanza
          | CLOCK
          | COLLECT
          | CONFORM_ACTION
+         | CONGESTION_CONTROL
          | CPTONE
          | CRL
          | CRYPTO
@@ -821,6 +831,7 @@ null_stanza
    banner_stanza
    | certificate_stanza
    | macro_stanza
+   | no_ip_access_list_stanza
    | null_block_stanza
    | null_standalone_stanza
    |
@@ -849,6 +860,7 @@ stanza
    | ipv6_router_ospf_stanza
    | ipx_sap_access_list_stanza
    | nexus_access_list_stanza
+   | nexus_prefix_list_stanza
    | null_stanza
    | protocol_type_code_access_list_stanza
    | route_map_stanza

@@ -1551,7 +1551,7 @@ public class Batfish implements AutoCloseable {
       }
       for (File file : configFilePaths) {
          print(2, "Reading: \"" + file.toString() + "\"\n");
-         String fileText = readFile(file.getAbsoluteFile());
+         String fileText = readFile(file.getAbsoluteFile()) + "\n";
          configurationData.put(file, fileText);
       }
       printElapsedTime();
