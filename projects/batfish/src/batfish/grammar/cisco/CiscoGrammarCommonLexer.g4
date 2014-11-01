@@ -787,6 +787,11 @@ DEAD_INTERVAL
    'dead-interval'
 ;
 
+DECAP_GROUP
+:
+   'decap-group'
+;
+
 DEFAULT
 :
    'default'
@@ -970,6 +975,11 @@ DNS_SERVER
 DOMAIN
 :
    'domain'
+;
+
+DOMAIN_ID
+:
+   'domain-id'
 ;
 
 DOMAIN_LIST
@@ -1878,6 +1888,11 @@ LOCAL_AS
    'local-as'
 ;
 
+LOCAL_INTERFACE
+:
+   'local-interface'
+;
+
 LOCAL_IP
 :
    'local-ip'
@@ -2543,6 +2558,11 @@ PERMANENT
    'permanent'
 ;
 
+PEER_ADDRESS
+:
+   'peer-address'
+;
+
 PEER_GATEWAY
 :
    'peer-gateway'
@@ -2551,6 +2571,11 @@ PEER_GATEWAY
 PEER_KEEPALIVE
 :
    'peer-keepalive'
+;
+
+PEER_LINK
+:
+   'peer-link'
 ;
 
 PERMIT
@@ -2586,6 +2611,11 @@ PIM_AUTO_RP
 PKI
 :
    'pki'
+;
+
+PLAT
+:
+   'plat'
 ;
 
 PLATFORM
@@ -2861,6 +2891,11 @@ REDUNDANCY
 REFLECT
 :
    'reflect'
+;
+
+RELOAD_DELAY
+:
+   'reload-delay'
 ;
 
 REMARK
@@ -3510,6 +3545,11 @@ TEMPLATE
    'template'
 ;
 
+TERMINAL
+:
+   'terminal'
+;
+
 TERMINAL_TYPE
 :
    'terminal-type'
@@ -3650,9 +3690,19 @@ TUNNEL_GROUP_LIST
    'tunnel-group-list'
 ;
 
+TX_QUEUE
+:
+   'tx-queue'
+;
+
 TYPE
 :
    'type'
+;
+
+UC_TX_QUEUE
+:
+   'uc-tx-queue'
 ;
 
 UDLD
@@ -3743,6 +3793,11 @@ VIOLATE_ACTION
 VIRTUAL_REASSEMBLY
 :
    'virtual-reassembly'
+;
+
+VIRTUAL_ROUTER
+:
+   'virtual-router'
 ;
 
 VIRTUAL_TEMPLATE

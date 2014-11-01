@@ -42,6 +42,8 @@ address_family_rb_stanza
    (
       bgp_tail
       | neighbor_rb_stanza
+      | no_neighbor_activate_rb_stanza
+      | no_neighbor_shutdown_rb_stanza
       | peer_group_assignment_rb_stanza
       | peer_group_creation_rb_stanza
    )+ address_family_footer
@@ -195,11 +197,7 @@ next_hop_self_bgp_tail
 
 nexus_neighbor_address_family
 :
-   address_family_header
-   (
-      bgp_tail
-      | nexus_neighbor_inherit
-   )+ address_family_footer
+   address_family_header bgp_tail+ address_family_footer
 ;
 
 nexus_neighbor_inherit
@@ -215,10 +213,10 @@ nexus_neighbor_rb_stanza
       | ipv6_address = IPV6_ADDRESS
       | ip_prefix = IP_PREFIX
       | ipv6_prefix = IPV6_PREFIX
-   ) NEWLINE
+   )
    (
       REMOTE_AS asnum = DEC
-   )?
+   )? NEWLINE
    (
       bgp_tail
       | nexus_neighbor_address_family
@@ -235,6 +233,16 @@ no_neighbor_activate_rb_stanza
       | ip6 = IPV6_ADDRESS
       | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
    ) ACTIVATE NEWLINE
+;
+
+no_neighbor_shutdown_rb_stanza
+:
+   NO NEIGHBOR
+   (
+      ip = IP_ADDRESS
+      | ip6 = IPV6_ADDRESS
+      | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
+   ) SHUTDOWN NEWLINE
 ;
 
 null_bgp_tail
@@ -379,6 +387,8 @@ router_bgp_stanza
       | bgp_tail
       | neighbor_rb_stanza
       | nexus_neighbor_rb_stanza
+      | no_neighbor_activate_rb_stanza
+      | no_neighbor_shutdown_rb_stanza
       | peer_group_assignment_rb_stanza
       | peer_group_creation_rb_stanza
       | router_id_rb_stanza
@@ -416,6 +426,7 @@ template_peer_rb_stanza
    TEMPLATE PEER name = VARIABLE NEWLINE
    (
       bgp_tail
+      | remote_as_bgp_tail
       | template_peer_address_family
    )+
 ;

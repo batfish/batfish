@@ -205,6 +205,7 @@ null_standalone_if_stanza
             | UNREACHABLES
             | VERIFY
             | VIRTUAL_REASSEMBLY
+            | VIRTUAL_ROUTER
             | VRF
          )
       )
@@ -225,6 +226,7 @@ null_standalone_if_stanza
       | MDIX
       | MEDIA_TYPE
       | MEMBER
+      | MLAG
       | MLS
       | MOBILITY
       | MOP
@@ -242,9 +244,11 @@ null_standalone_if_stanza
       | PORT_CHANNEL
       | POWER
       | PPP
+      | PRIORITY
       | PRIORITY_QUEUE
       | QOS
       | QUEUE_SET
+      | RANDOM_DETECT
       | RCV_QUEUE
       | ROUTE_CACHE
       | SECURITY_LEVEL
@@ -270,6 +274,10 @@ null_standalone_if_stanza
             )
             | NONEGOTIATE
             | PORT_SECURITY
+            |
+            (
+               TRUNK GROUP
+            )
             | VOICE
             | VLAN
          )
@@ -278,6 +286,8 @@ null_standalone_if_stanza
       | TCAM
       | TRUST
       | TUNNEL
+      | TX_QUEUE
+      | UC_TX_QUEUE
       | UDLD
       | VPC
       | VRF

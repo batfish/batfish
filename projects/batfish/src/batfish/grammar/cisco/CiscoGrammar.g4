@@ -146,12 +146,14 @@ null_block_stanza
                ACCESS_LIST LOGGING
             )
             | ACCOUNTING_LIST
+            | DECAP_GROUP
             | DHCP
             | FLOW_TOP_TALKERS
             | INSPECT
             | POLICY_LIST
             | SLA
             | SOURCE
+            | VIRTUAL_ROUTER
          )
       )
       | IPC
@@ -164,8 +166,10 @@ null_block_stanza
       | MANAGEMENT
       | MAP_CLASS
       | MAP_LIST
+      | MLAG
       | NO_BANNER
       | OPENFLOW
+      | PLAT
       | POLICY_MAP
       | PSEUDOWIRE_CLASS
       | REDUNDANCY
@@ -183,6 +187,7 @@ null_block_stanza
             | SUPPLEMENTARY_SERVICES
          )
       )
+      | TERMINAL
       |
       (
          VLAN DEC
@@ -257,6 +262,7 @@ null_block_substanza
          | DESTINATION
          | DIAGNOSTIC
          | DNS_SERVER
+         | DOMAIN_ID
          | DROP
          | DS0_GROUP
          | DOMAIN_NAME
@@ -266,6 +272,7 @@ null_block_substanza
          | EXCEED_ACTION
          | EXEC
          | EXEC_TIMEOUT
+         | EXIT
          | EXPORT_PROTOCOL
          | EXPORTER
          | FABRIC
@@ -311,6 +318,7 @@ null_block_substanza
          | LINE
          | LINECODE
          | LLDP
+         | LOCAL_INTERFACE
          | LOCAL_IP
          | LOCAL_PORT
          | LOCATION
@@ -334,8 +342,10 @@ null_block_substanza
          | PASSWORD
          | PASSWORD_STORAGE
          | PATH_JITTER
+         | PEER_ADDRESS
          | PEER_GATEWAY
          | PEER_KEEPALIVE
+         | PEER_LINK
          | PERMIT
          | PICKUP
          | POLICE
@@ -353,6 +363,7 @@ null_block_substanza
          | RECORD
          | RECORD_ENTRY
          | REDISTRIBUTE
+         | RELOAD_DELAY
          | REMARK
          | REMOTE_IP
          | REMOTE_PORT
@@ -400,6 +411,8 @@ null_block_substanza
          | TOP
          | TRANSPORT
          | TRIGGER
+         | TRUNK
+         | TUNNEL
          | TUNNEL_GROUP
          | USE_VRF
          | VIOLATE_ACTION
@@ -886,6 +899,7 @@ vrf_context_stanza
 
 vrf_stanza
 :
-   VRF ~(NEWLINE|CONTEXT)* NEWLINE null_block_substanza* address_family_vrf_stanza*
+   VRF ~( NEWLINE | CONTEXT )* NEWLINE null_block_substanza*
+   address_family_vrf_stanza*
 ;
 

@@ -609,6 +609,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else if (ctx.ip6 != null) {
          todo(ctx, "Do not handle IPv6 yet");
          _currentIpv6PeerGroup = Ipv6BgpPeerGroup.INSTANCE;
+         _currentPeerGroup = _currentIpv6PeerGroup;
       }
       else if (ctx.peergroup != null) {
          String name = ctx.peergroup.getText();
@@ -654,6 +655,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       if (ctx.ipv6_address != null) {
          todo(ctx, "IPv6 is not supported yet");
          _currentIpv6PeerGroup = Ipv6BgpPeerGroup.INSTANCE;
+         _currentPeerGroup = _currentIpv6PeerGroup;
          return;
       }
       BgpProcess proc = _configuration.getBgpProcess();
@@ -765,12 +767,12 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitAggregate_address_bgp_tail(
          Aggregate_address_bgp_tailContext ctx) {
-      if (_currentPeerGroup != null) {
+      BgpProcess proc = _configuration.getBgpProcess();
+      if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
          throw new BatfishException(
                "unexpected occurrence in peer group/neighbor context");
       }
       if (ctx.network != null) {
-         BgpProcess proc = _configuration.getBgpProcess();
          Ip network = toIp(ctx.network);
          Ip subnet = toIp(ctx.subnet);
          BgpNetwork net = new BgpNetwork(network, subnet);
@@ -1265,6 +1267,25 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       }
       else if (ctx.peergroup != null) {
          throw new BatfishException("deactivating peer group unsupported");
+      }
+   }
+
+   @Override
+   public void exitNo_neighbor_shutdown_rb_stanza(
+         No_neighbor_shutdown_rb_stanzaContext ctx) {
+      BgpProcess proc = _configuration.getBgpProcess();
+      if (ctx.ip != null) {
+         Ip ip = toIp(ctx.ip);
+         IpBgpPeerGroup pg = proc.getIpPeerGroups().get(ip);
+         // TODO: see if it is always ok to set active on 'no shutdown'
+         pg.setActive(true);
+         pg.setShutdown(false);
+      }
+      else if (ctx.ip6 != null) {
+         todo(ctx, "IPv6 not supported yet");
+      }
+      else if (ctx.peergroup != null) {
+         throw new BatfishException("'no shutdown' of  peer group unsupported");
       }
    }
 

@@ -1,5 +1,9 @@
 package batfish.representation.cisco;
 
+/**
+ * BgpPeerGroup representing per-neighbor default settings before peer
+ * groups/templates/individual neighbor settings are applied
+ */
 public class MasterBgpPeerGroup extends BgpPeerGroup {
 
    /**
