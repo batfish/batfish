@@ -342,6 +342,7 @@ null_block_substanza
          | PASSWORD
          | PASSWORD_STORAGE
          | PATH_JITTER
+         | PAUSE
          | PEER_ADDRESS
          | PEER_GATEWAY
          | PEER_KEEPALIVE

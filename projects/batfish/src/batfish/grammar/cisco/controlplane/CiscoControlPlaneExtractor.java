@@ -788,6 +788,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
+   public void exitAllowas_in_bgp_tail(Allowas_in_bgp_tailContext ctx) {
+      _currentPeerGroup.SetAllowAsIn(true);
+   }
+
+   @Override
    public void exitArea_nssa_ro_stanza(Area_nssa_ro_stanzaContext ctx) {
       OspfProcess proc = _configuration.getOspfProcess();
       int area = (ctx.area_int != null) ? toInteger(ctx.area_int) : (int) toIp(
@@ -804,6 +809,25 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitAuto_summary_bgp_tail(Auto_summary_bgp_tailContext ctx) {
       todo(ctx);
+   }
+
+   @Override
+   public void exitBgp_listen_range_rb_stanza(
+         Bgp_listen_range_rb_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      BgpProcess proc = _configuration.getBgpProcess();
+      if (ctx.IP_PREFIX() != null) {
+         Ip ip = getPrefixIp(ctx.IP_PREFIX().getSymbol());
+         int prefixLength = getPrefixLength(ctx.IP_PREFIX().getSymbol());
+         proc.addNamedPeerGroup(name);
+         NamedBgpPeerGroup pg = proc.getNamedPeerGroups().get(name);
+         pg.setListenRange(ip, prefixLength);
+         int remoteAs = toInteger(ctx.as);
+         pg.setRemoteAS(remoteAs);
+      }
+      else if (ctx.IPV6_PREFIX() != null) {
+         todo(ctx, "Ipv6 not yet implemented");
+      }
    }
 
    @Override
@@ -1290,6 +1314,18 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
+   public void exitNo_redistribute_connected_rb_stanza(
+         No_redistribute_connected_rb_stanzaContext ctx) {
+      BgpProcess proc = _configuration.getBgpProcess();
+      if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
+         throw new BatfishException(
+               "do not currently handle per-neighbor redistribution policies");
+      }
+      Protocol sourceProtocol = Protocol.CONNECTED;
+      proc.getRedistributionPolicies().remove(sourceProtocol);
+   }
+
+   @Override
    public void exitPassive_interface_default_ro_stanza(
          Passive_interface_default_ro_stanzaContext ctx) {
       _configuration.getOspfProcess().setPassiveInterfaceDefault(true);
@@ -1571,6 +1607,30 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
       _currentPeerGroup = null;
+
+      // set group names for ip peer groups inside bgp listen range named peer
+      // groups
+      BgpProcess proc = _configuration.getBgpProcess();
+      for (Entry<String, NamedBgpPeerGroup> ne : proc.getNamedPeerGroups()
+            .entrySet()) {
+         NamedBgpPeerGroup npg = ne.getValue();
+         Ip listenRangeIp = npg.getListenRangeIp();
+         if (listenRangeIp != null) {
+            int prefixLength = npg.getListenRangePrefixLength();
+            for (Entry<Ip, IpBgpPeerGroup> ie : proc.getIpPeerGroups()
+                  .entrySet()) {
+               Ip ip = ie.getKey();
+               long networkStart = listenRangeIp.asLong();
+               long networkEnd = Util.getNetworkEnd(networkStart, prefixLength);
+               long ipAsLong = ip.asLong();
+               if (networkStart <= ipAsLong && ipAsLong <= networkEnd) {
+                  IpBgpPeerGroup ipg = ie.getValue();
+                  String name = ne.getKey();
+                  ipg.setGroupName(name);
+               }
+            }
+         }
+      }
    }
 
    @Override

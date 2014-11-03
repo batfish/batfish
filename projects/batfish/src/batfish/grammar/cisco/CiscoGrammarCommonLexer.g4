@@ -937,6 +937,11 @@ DIALER_LIST
    'dialer-list'
 ;
 
+DIRECT
+:
+   'direct'
+;
+
 DIRECTED_BROADCAST
 :
    'directed-broadcast'
@@ -1848,6 +1853,11 @@ LIFETIME
    'lifetime'
 ;
 
+LIMIT
+:
+   'limit'
+;
+
 LINE
 :
    'line'
@@ -2543,6 +2553,11 @@ PATH_JITTER
    'path-jitter'
 ;
 
+PAUSE
+:
+   'pause'
+;
+
 PEER
 :
    'peer'
@@ -2683,39 +2698,14 @@ PPP
    'ppp'
 ;
 
-PREEMPT
-:
-   'preempt'
-;
-
-PREPEND
-:
-   'prepend'
-;
-
 PRE_SHARED_KEY
 :
    'pre-shared-key'
 ;
 
-PRI_GROUP
+PREEMPT
 :
-   'pri-group'
-;
-
-PRIORITY
-:
-   'priority'
-;
-
-PRIORITY_QUEUE
-:
-   'priority-queue'
-;
-
-PRIVATE_VLAN
-:
-   'private-vlan'
+   'preempt'
 ;
 
 PREFIX
@@ -2728,14 +2718,34 @@ PREFIX_LIST
    'prefix-list'
 ;
 
-PRIORITY_
+PREPEND
+:
+   'prepend'
+;
+
+PRI_GROUP
+:
+   'pri-group'
+;
+
+PRIORITY
 :
    'priority'
 ;
 
-PRIORITY_QUEUE_
+PRIORITY_FLOW_CONTROL
+:
+   'priority-flow-control'
+;
+
+PRIORITY_QUEUE
 :
    'priority-queue'
+;
+
+PRIVATE_VLAN
+:
+   'private-vlan'
 ;
 
 PRIVILEGE
@@ -3747,7 +3757,7 @@ UNICAST
 
 UPDATE_SOURCE
 :
-   'update-source'
+   'update-source' -> pushMode(M_Interface)
 ;
 
 UPGRADE

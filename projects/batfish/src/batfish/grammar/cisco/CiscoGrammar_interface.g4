@@ -245,6 +245,7 @@ null_standalone_if_stanza
       | POWER
       | PPP
       | PRIORITY
+      | PRIORITY_FLOW_CONTROL
       | PRIORITY_QUEUE
       | QOS
       | QUEUE_SET

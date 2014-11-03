@@ -61,15 +61,30 @@ aggregate_address_bgp_tail
    ) SUMMARY_ONLY? NEWLINE
 ;
 
+allowas_in_bgp_tail
+:
+   ALLOWAS_IN NEWLINE
+;
+
 auto_summary_bgp_tail
 :
    NO? AUTO_SUMMARY NEWLINE
+;
+
+bgp_listen_range_rb_stanza
+:
+   BGP LISTEN RANGE
+   (
+      IP_PREFIX
+      | IPV6_PREFIX
+   ) PEER_GROUP name = ~NEWLINE REMOTE_AS as = DEC NEWLINE
 ;
 
 bgp_tail
 :
    aggregate_address_bgp_tail
    | activate_bgp_tail
+   | allowas_in_bgp_tail
    | cluster_id_bgp_tail
    | default_metric_bgp_tail
    | default_originate_bgp_tail
@@ -245,6 +260,15 @@ no_neighbor_shutdown_rb_stanza
    ) SHUTDOWN NEWLINE
 ;
 
+no_redistribute_connected_rb_stanza
+:
+   NO REDISTRIBUTE
+   (
+      CONNECTED
+      | DIRECT
+   ) ~NEWLINE* NEWLINE
+;
+
 null_bgp_tail
 :
    NO?
@@ -263,7 +287,10 @@ null_bgp_tail
             | DEFAULT
             | DETERMINISTIC_MED
             | GRACEFUL_RESTART
-            | LISTEN
+            |
+            (
+               LISTEN LIMIT
+            )
             | LOG_NEIGHBOR_CHANGES
          )
       )
@@ -339,7 +366,11 @@ redistribute_aggregate_bgp_tail
 
 redistribute_connected_bgp_tail
 :
-   REDISTRIBUTE CONNECTED
+   REDISTRIBUTE
+   (
+      CONNECTED
+      | DIRECT
+   )
    (
       (
          ROUTE_MAP map = VARIABLE
@@ -384,11 +415,13 @@ router_bgp_stanza
    ROUTER BGP procnum = DEC NEWLINE
    (
       address_family_rb_stanza
+      | bgp_listen_range_rb_stanza
       | bgp_tail
       | neighbor_rb_stanza
       | nexus_neighbor_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
+      | no_redistribute_connected_rb_stanza
       | peer_group_assignment_rb_stanza
       | peer_group_creation_rb_stanza
       | router_id_rb_stanza
