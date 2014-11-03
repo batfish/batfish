@@ -597,6 +597,25 @@ rib_common_stanza returns [String s]
 
 /*Lexing Rules ---------------------------------------------------------------------------------------*/
 
+
+
+  
+ARI_CHANGETHIS1
+  :
+  'ss ' (~';')* ';'
+  ;
+  
+ARI_CHANGETHIS2
+  :
+  '802.3ad ' (~';')* ';'
+  ;  
+  
+ARI_CHANGETHIS3
+  :
+  'family iso ' (~'}')* '}'
+  ;
+
+
 AMPERSAND
   :
   '&'
