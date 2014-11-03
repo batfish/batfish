@@ -338,7 +338,7 @@ juniper_configuration returns [JuniperConfiguration jc = new JuniperConfiguratio
   (x=j_stanza_list EOF)
   {
     for (JStanza js : x) {
-      js.postProcessStanza();
+      //js.postProcessStanza();
       // TODO [P0] : apply groups here
       // TODO [P0] : prefix-list->apply-paths here
     }
