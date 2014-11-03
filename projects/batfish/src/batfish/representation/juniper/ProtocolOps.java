@@ -21,12 +21,13 @@ public class ProtocolOps  {
       case STATIC:
          return "STATIC";
       default:
-         return "SOMETHING WENT WRONG";
+         break; // TODO:remove
       }
+      throw new BatfishException("Invalid protocol");
    }
   
    public static ProtocolType ProtocolTypeFromString (String s) {
-      switch (s) {
+      switch (s.toUpperCase()) {
       case "AGGREGATE": 
          return ProtocolType.AGGREGATE;
       case "BGP":
@@ -41,6 +42,8 @@ public class ProtocolOps  {
          return ProtocolType.OSPF;
       case "STATIC":
          return ProtocolType.STATIC;
+      default:
+          break; // TODO:remove
       }
       throw new BatfishException("Invalid protocol string");
    }

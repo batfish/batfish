@@ -68,17 +68,18 @@ community_po_stanza returns [POStanza pos]
   PO_CommunityStanza cpos;
 }
   :
-  COMMUNITY (name=VARIABLE) {cpos = new PO_CommunityStanza(name.getText());} MEMBERS
-  ((x=bracketed_list SEMICOLON)
+  (COMMUNITY (name=VARIABLE) {cpos = new PO_CommunityStanza(name.getText());} MEMBERS
+  ((x=bracketed_list
     {
       for (String s : x) {
         cpos.addCommunityId(s);
       }
-    }
-  |(y = as_id SEMICOLON){cpos.addCommunityId(y);}
-  |(y = string_in_double_quotes SEMICOLON){cpos.addCommunityId(y);}
-  |(z = NO_EXPORT SEMICOLON){cpos.addCommunityId(z.getText());}
+    })
+  |(y = as_id){cpos.addCommunityId(y);}
+  |(y = string_in_double_quotes){cpos.addCommunityId(y);}
+  |(z = NO_EXPORT){cpos.addCommunityId(z.getText());}
   )
+  SEMICOLON)
   {pos = cpos;}
   ;
   
@@ -93,7 +94,7 @@ policy_statement_po_stanza returns [POStanza pos]
      |x=term_ps_po_stanza
      ){pspos.addTerm(x);}
     )* 
-    (a=anon_term_ps_po_stanza {pspos.addTerm(a);})
+    (a=anon_term_ps_po_stanza {pspos.addTerm(a);})?
   )
   CLOSE_BRACE
   {pos = pspos;}
@@ -156,8 +157,7 @@ term_ps_po_stanza returns [POPS_TermStanza tpspos]
     |name=REJECT
     |name=VARIABLE
     )
-    OPEN_BRACE
-    (x=subterm_ps_po_stanza) {x.set_name(name.getText());}
+    OPEN_BRACE (x=subterm_ps_po_stanza {x.set_name(name.getText());}) CLOSE_BRACE
   )
   {tpspos = x;}
   ; 
@@ -168,7 +168,7 @@ subterm_ps_po_stanza returns [POPS_TermStanza tpspos]
   tpspos = new POPS_TermStanza();
 }
   :
-  (FROM
+  ((FROM
     ((OPEN_BRACE fl=from_t_ps_stanza_list CLOSE_BRACE) 
     {
       for (POPST_FromStanza x : fl) {
@@ -177,8 +177,8 @@ subterm_ps_po_stanza returns [POPS_TermStanza tpspos]
     }
     |(f=from_t_ps_stanza | f=inactive_from_t_ps_stanza) {tpspos.addFromStanza(f);}
     )
-  )?
-  (TO
+  )
+  |(TO
     ((OPEN_BRACE tol=to_t_ps_stanza_list CLOSE_BRACE) 
     {
       for (POPST_ToStanza y : tol) {
@@ -187,8 +187,8 @@ subterm_ps_po_stanza returns [POPS_TermStanza tpspos]
     }
     |(t=to_t_ps_stanza | t=inactive_to_t_ps_stanza) {tpspos.addToStanza(t);}
     )
-  )?
-  (THEN
+  )
+  |(THEN
     ((OPEN_BRACE thl=then_t_ps_stanza_list CLOSE_BRACE) 
     {
       for (POPST_ThenStanza y : thl) {
@@ -197,8 +197,7 @@ subterm_ps_po_stanza returns [POPS_TermStanza tpspos]
     }
     |(th=then_t_ps_stanza | th=inactive_then_t_ps_stanza) {tpspos.addThenStanza(th);}
     )
-  )? 
-  CLOSE_BRACE
+  ))+ 
   ;    
   
 from_t_ps_stanza_list returns [List<POPST_FromStanza> ftpsposl = new ArrayList<POPST_FromStanza>()]
@@ -356,11 +355,9 @@ prefix_list_filter_from_t_ps_stanza returns [POPST_FromStanza ftpspos]
   :
   (PREFIX_LIST_FILTER name=VARIABLE) {plfftpspos = new POPSTFr_PrefixListFilterStanza(name.getText());}
   (match_type = match_type_filter_from_t_ps_stanza {plfftpspos.set_fms(match_type);})?
-  (
-    ((prefix_action = action_filter_from_t_ps_stanza {plfftpspos.addFas(prefix_action);})? SEMICOLON)
-    |(OPEN_BRACE 
-      ((prefix_action = action_filter_from_t_ps_stanza SEMICOLON) {plfftpspos.addFas(prefix_action);})*
-      CLOSE_BRACE)
+  (SEMICOLON
+  |(prefix_action = action_filter_from_t_ps_stanza {plfftpspos.addFas(prefix_action);})
+  |(OPEN_BRACE (prefix_action = action_filter_from_t_ps_stanza {plfftpspos.addFas(prefix_action);})* CLOSE_BRACE)
   )
   {ftpspos=plfftpspos;}
   ;
@@ -405,11 +402,9 @@ route_filter_from_t_ps_stanza returns [POPST_FromStanza ftpspos]
     |(ip=IPV6_ADDRESS_WITH_MASK){rfftpspos.set_stanzaStatus(StanzaStatusType.IPV6);}
   ){rfftpspos.set_prefix(ip.getText());}
   (match_type = match_type_filter_from_t_ps_stanza {rfftpspos.set_fms(match_type);})?
-  (
-    ((prefix_action = action_filter_from_t_ps_stanza {rfftpspos.addFas(prefix_action);})? SEMICOLON)
-    |(OPEN_BRACE 
-      ((prefix_action = action_filter_from_t_ps_stanza SEMICOLON) {rfftpspos.addFas(prefix_action);})*
-      CLOSE_BRACE)
+  (SEMICOLON
+  |(prefix_action = action_filter_from_t_ps_stanza {rfftpspos.addFas(prefix_action);})
+  |(OPEN_BRACE (prefix_action = action_filter_from_t_ps_stanza {rfftpspos.addFas(prefix_action);})* CLOSE_BRACE)
   )
   )
   {ftpspos = rfftpspos;}
@@ -427,11 +422,9 @@ source_address_filter_from_t_ps_stanza returns [POPST_FromStanza ftpspos]
     |(ip=IPV6_ADDRESS_WITH_MASK){sfftpspos.set_stanzaStatus(StanzaStatusType.IPV6);}
   ){sfftpspos.set_prefix(ip.getText());}
   (match_type = match_type_filter_from_t_ps_stanza {sfftpspos.set_fms(match_type);})?
-  (
-    ((prefix_action = action_filter_from_t_ps_stanza {sfftpspos.addFas(prefix_action);})? SEMICOLON)
-    |(OPEN_BRACE 
-      ((prefix_action = action_filter_from_t_ps_stanza SEMICOLON) {sfftpspos.addFas(prefix_action);})*
-      CLOSE_BRACE)
+  (SEMICOLON
+  |(prefix_action = action_filter_from_t_ps_stanza {sfftpspos.addFas(prefix_action);})
+  |(OPEN_BRACE (prefix_action = action_filter_from_t_ps_stanza {sfftpspos.addFas(prefix_action);})* CLOSE_BRACE)
   )
   )
   {ftpspos = sfftpspos;}
@@ -445,7 +438,11 @@ accept_then_t_ps_stanza returns [POPST_ThenStanza ttpspos]
   
 as_path_prepend_then_t_ps_stanza returns [POPST_ThenStanza ttpspos]
   :
-  (AS_PATH_PREPEND (asnum = integer) SEMICOLON) {ttpspos = new POPSTTh_AsPathPrependStanza(asnum);}
+  (AS_PATH_PREPEND 
+  (asnum = integer {ttpspos = new POPSTTh_AsPathPrependStanza(asnum);}
+  |s = string_in_double_quotes {ttpspos = new POPSTTh_AsPathPrependStanza(s);}
+  ) 
+  SEMICOLON) 
   ;
 
 community_then_t_ps_stanza returns [POPST_ThenStanza ttpspos]
@@ -470,7 +467,7 @@ POPSTTh_CommunityStanza cttpspos = new POPSTTh_CommunityStanza();
   
 install_next_hop_then_t_ps_stanza returns [POPST_ThenStanza ttpspos]
   :
-  (INSTALL_NEXTHOP (name=VARIABLE) SEMICOLON) {ttpspos = new POPSTTh_InstallNextHopStanza(name.getText());}
+  (INSTALL_NEXTHOP LSP (name=VARIABLE) SEMICOLON) {ttpspos = new POPSTTh_InstallNextHopStanza(name.getText());}
   ;
 
 local_preference_then_t_ps_stanza returns [POPST_ThenStanza ttpspos]

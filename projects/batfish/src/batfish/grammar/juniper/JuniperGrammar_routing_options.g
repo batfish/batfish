@@ -71,7 +71,21 @@ rib_groups_ro_stanza returns [ROStanza ros]
 }
   :
   RIB_GROUPS OPEN_BRACE 
-  (group_name = VARIABLE OPEN_BRACE IMPORT_RIB l=bracketed_list SEMICOLON CLOSE_BRACE {rros.AddGroup(group_name.getText(),l);})+
+  (group_name = VARIABLE 
+  OPEN_BRACE 
+  IMPORT_RIB 
+  (
+    (l=bracketed_list {rros.AddGroup(group_name.getText(),l);})
+   |(s=VARIABLE 
+     {
+        ArrayList<String> sl = new ArrayList<String>();
+        sl.add(s.getText());
+        rros.AddGroup(group_name.getText(),sl);
+     }
+    )   
+  )
+  SEMICOLON 
+  CLOSE_BRACE )+
   CLOSE_BRACE
   {ros = rros;}
   ;
