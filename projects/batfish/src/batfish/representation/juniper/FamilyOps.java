@@ -15,9 +15,8 @@ public class FamilyOps  {
       case MPLS:
       case INET6:
          return true; 
-      default:
-         return false;
       }
+      throw new BatfishException("Invalid family type");
    }
   
    public static String FamilyTypeToString (FamilyType ft) {
@@ -36,9 +35,8 @@ public class FamilyOps  {
          return "ISO";
       case MPLS:
          return "MPLS";
-      default:
-         return "SOMETHING WENT WRONG";
       }
+      throw new BatfishException("Invalid family string");
    }
   
    public static FamilyType FamilyTypeFromString (String s) {
