@@ -120,6 +120,7 @@ null_block_stanza
                   | PROFILE
                )
             )
+            | KEY
             | KEYRING
             | MAP
             | PKI

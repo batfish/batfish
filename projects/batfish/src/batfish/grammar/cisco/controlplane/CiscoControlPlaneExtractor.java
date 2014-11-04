@@ -37,6 +37,7 @@ import batfish.representation.cisco.BgpProcess;
 import batfish.representation.cisco.BgpRedistributionPolicy;
 import batfish.representation.cisco.CiscoConfiguration;
 import batfish.representation.cisco.CiscoVendorConfiguration;
+import batfish.representation.cisco.DynamicBgpPeerGroup;
 import batfish.representation.cisco.ExpandedCommunityList;
 import batfish.representation.cisco.ExpandedCommunityListLine;
 import batfish.representation.cisco.ExtendedAccessList;
@@ -425,6 +426,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    private IpAsPathAccessList _currentAsPathAcl;
 
+   private DynamicBgpPeerGroup _currentDynamicPeerGroup;
+
    private ExpandedCommunityList _currentExpandedCommunityList;
 
    private ExtendedAccessList _currentExtendedAcl;
@@ -614,17 +617,28 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else if (ctx.peergroup != null) {
          String name = ctx.peergroup.getText();
          _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-         if (_currentNamedPeerGroup == null) {
-            if (create) {
-               proc.addNamedPeerGroup(name);
-               _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+         _currentDynamicPeerGroup = proc.getDynamicPeerGroups().get(name);
+         if (_currentDynamicPeerGroup == null) {
+            if (_currentNamedPeerGroup == null) {
+               if (create) {
+                  proc.addNamedPeerGroup(name);
+                  _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+               }
+               else {
+                  throw new BatfishException(
+                        "reference to undeclared peer group: \"" + name + "\"");
+               }
             }
-            else {
-               throw new BatfishException(
-                     "reference to undeclared peer group: \"" + name + "\"");
-            }
+            _currentPeerGroup = _currentNamedPeerGroup;
          }
-         _currentPeerGroup = _currentNamedPeerGroup;
+         else {
+            if (_currentNamedPeerGroup != null) {
+               throw new BatfishException(
+                     "There exist both a dynamic and named peer group named: \""
+                           + name + "\"");
+            }
+            _currentPeerGroup = _currentDynamicPeerGroup;
+         }
       }
       else {
          throw new BatfishException("unknown neighbor type");
@@ -648,24 +662,34 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void enterNexus_neighbor_rb_stanza(Nexus_neighbor_rb_stanzaContext ctx) {
-      if (ctx.ip_prefix != null || ctx.ipv6_prefix != null) {
-         todo(ctx, "Prefix peering is not supported");
-         return;
-      }
-      if (ctx.ipv6_address != null) {
+      if (ctx.ipv6_address != null || ctx.ipv6_prefix != null) {
          todo(ctx, "IPv6 is not supported yet");
          _currentIpv6PeerGroup = Ipv6BgpPeerGroup.INSTANCE;
          _currentPeerGroup = _currentIpv6PeerGroup;
          return;
       }
       BgpProcess proc = _configuration.getBgpProcess();
-      Ip ip = toIp(ctx.ip_address);
-      _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
-      if (_currentIpPeerGroup == null) {
-         proc.addIpPeerGroup(ip);
+      if (ctx.ip_address != null) {
+         Ip ip = toIp(ctx.ip_address);
          _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
+         if (_currentIpPeerGroup == null) {
+            proc.addIpPeerGroup(ip);
+            _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
+         }
+         _currentPeerGroup = _currentIpPeerGroup;
       }
-      _currentPeerGroup = _currentIpPeerGroup;
+      if (ctx.ip_prefix != null) {
+         Ip ip = getPrefixIp(ctx.ip_prefix);
+         int prefixLength = getPrefixLength(ctx.ip_prefix);
+         String prefixString = ip.networkString(prefixLength);
+         _currentDynamicPeerGroup = proc.getDynamicPeerGroups().get(
+               prefixString);
+         if (_currentDynamicPeerGroup == null) {
+            _currentDynamicPeerGroup = proc.addDynamicPeerGroup(ip,
+                  prefixLength, prefixString);
+         }
+         _currentPeerGroup = _currentDynamicPeerGroup;
+      }
       if (ctx.REMOTE_AS() != null) {
          int remoteAs = toInteger(ctx.asnum);
          _currentPeerGroup.setRemoteAS(remoteAs);
@@ -790,6 +814,16 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitAllowas_in_bgp_tail(Allowas_in_bgp_tailContext ctx) {
       _currentPeerGroup.SetAllowAsIn(true);
+      if (ctx.num != null) {
+         todo(ctx, "allowas-in number ignored and effectively infinite for now");
+      }
+   }
+
+   @Override
+   public void exitAlways_compare_med_rb_stanza(
+         Always_compare_med_rb_stanzaContext ctx) {
+      BgpProcess proc = _configuration.getBgpProcess();
+      proc.setAlwaysCompareMed(true);
    }
 
    @Override
@@ -819,9 +853,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       if (ctx.IP_PREFIX() != null) {
          Ip ip = getPrefixIp(ctx.IP_PREFIX().getSymbol());
          int prefixLength = getPrefixLength(ctx.IP_PREFIX().getSymbol());
-         proc.addNamedPeerGroup(name);
-         NamedBgpPeerGroup pg = proc.getNamedPeerGroups().get(name);
-         pg.setListenRange(ip, prefixLength);
+         DynamicBgpPeerGroup pg = proc.addDynamicPeerGroup(ip, prefixLength,
+               name);
          int remoteAs = toInteger(ctx.as);
          pg.setRemoteAS(remoteAs);
       }
@@ -1207,6 +1240,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void exitNeighbor_rb_stanza(Neighbor_rb_stanzaContext ctx) {
+      _currentDynamicPeerGroup = null;
       _currentIpPeerGroup = null;
       _currentIpv6PeerGroup = null;
       _currentNamedPeerGroup = null;
@@ -1264,7 +1298,26 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
+   public void exitNexus_neighbor_inherit(Nexus_neighbor_inheritContext ctx) {
+      BgpProcess proc = _configuration.getBgpProcess();
+      String groupName = ctx.name.getText();
+      if (_currentDynamicPeerGroup != null) {
+         _currentDynamicPeerGroup.setGroupName(groupName);
+      }
+      else if (_currentIpPeerGroup != null) {
+         _currentIpPeerGroup.setGroupName(groupName);
+      }
+      else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
+         throw new BatfishException("Invalid peer context for inheritance");
+      }
+      else {
+         todo(ctx, "inheritance not implemented for this peer type");
+      }
+   }
+
+   @Override
    public void exitNexus_neighbor_rb_stanza(Nexus_neighbor_rb_stanzaContext ctx) {
+      _currentDynamicPeerGroup = null;
       _currentIpPeerGroup = null;
       _currentIpv6PeerGroup = null;
       _currentNamedPeerGroup = null;
@@ -1607,30 +1660,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
       _currentPeerGroup = null;
-
-      // set group names for ip peer groups inside bgp listen range named peer
-      // groups
-      BgpProcess proc = _configuration.getBgpProcess();
-      for (Entry<String, NamedBgpPeerGroup> ne : proc.getNamedPeerGroups()
-            .entrySet()) {
-         NamedBgpPeerGroup npg = ne.getValue();
-         Ip listenRangeIp = npg.getListenRangeIp();
-         if (listenRangeIp != null) {
-            int prefixLength = npg.getListenRangePrefixLength();
-            for (Entry<Ip, IpBgpPeerGroup> ie : proc.getIpPeerGroups()
-                  .entrySet()) {
-               Ip ip = ie.getKey();
-               long networkStart = listenRangeIp.asLong();
-               long networkEnd = Util.getNetworkEnd(networkStart, prefixLength);
-               long ipAsLong = ip.asLong();
-               if (networkStart <= ipAsLong && ipAsLong <= networkEnd) {
-                  IpBgpPeerGroup ipg = ie.getValue();
-                  String name = ne.getKey();
-                  ipg.setGroupName(name);
-               }
-            }
-         }
-      }
    }
 
    @Override

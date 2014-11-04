@@ -18,7 +18,9 @@ public class BgpProcess implements Serializable {
 
    private Map<BgpNetwork, Boolean> _aggregateNetworks;
    private Map<String, BgpPeerGroup> _allPeerGroups;
+   private boolean _alwaysCompareMed;
    private Ip _clusterId;
+   private Map<String, DynamicBgpPeerGroup> _dynamicPeerGroups;
    private Map<Ip, IpBgpPeerGroup> _ipPeerGroups;
    private MasterBgpPeerGroup _masterBgpPeerGroup;
    private Map<String, NamedBgpPeerGroup> _namedPeerGroups;
@@ -30,6 +32,7 @@ public class BgpProcess implements Serializable {
    public BgpProcess(int procnum) {
       _pid = procnum;
       _allPeerGroups = new HashMap<String, BgpPeerGroup>();
+      _dynamicPeerGroups = new HashMap<String, DynamicBgpPeerGroup>();
       _namedPeerGroups = new HashMap<String, NamedBgpPeerGroup>();
       _ipPeerGroups = new HashMap<Ip, IpBgpPeerGroup>();
       _networks = new LinkedHashSet<BgpNetwork>();
@@ -38,6 +41,13 @@ public class BgpProcess implements Serializable {
             Protocol.class);
       _masterBgpPeerGroup = new MasterBgpPeerGroup();
       _masterBgpPeerGroup.setDefaultMetric(DEFAULT_BGP_DEFAULT_METRIC);
+   }
+
+   public DynamicBgpPeerGroup addDynamicPeerGroup(Ip ip, int prefixLength, String name) {
+         DynamicBgpPeerGroup pg = new DynamicBgpPeerGroup(ip, prefixLength, name);
+         _dynamicPeerGroups.put(name, pg);
+         _allPeerGroups.put(name, pg);
+         return pg;
    }
 
    public void addIpPeerGroup(Ip ip) {
@@ -78,12 +88,20 @@ public class BgpProcess implements Serializable {
       return _allPeerGroups;
    }
 
+   public boolean getAlwaysCompareMed() {
+      return _alwaysCompareMed;
+   }
+
    public Ip getClusterId() {
       return _clusterId;
    }
 
    public int getDefaultMetric() {
       return _masterBgpPeerGroup.getDefaultMetric();
+   }
+
+   public Map<String, DynamicBgpPeerGroup> getDynamicPeerGroups() {
+      return _dynamicPeerGroups;
    }
 
    public Map<Ip, IpBgpPeerGroup> getIpPeerGroups() {
@@ -116,6 +134,10 @@ public class BgpProcess implements Serializable {
 
    public Ip getRouterId() {
       return _routerId;
+   }
+
+   public void setAlwaysCompareMed(boolean b) {
+      _alwaysCompareMed = b;
    }
 
    public void setClusterId(Ip clusterId) {

@@ -357,11 +357,6 @@ AUTO_COST
    'auto-cost'
 ;
 
-AUTOSELECT
-:
-   'autoselect'
-;
-
 AUTO_SUMMARY
 :
    'auto-summary'
@@ -370,6 +365,16 @@ AUTO_SUMMARY
 AUTO_SYNC
 :
    'auto-sync'
+;
+
+AUTOSELECT
+:
+   'autoselect'
+;
+
+AUTOSTATE
+:
+   'autostate'
 ;
 
 BACKGROUND_ROUTES_ENABLE
@@ -780,6 +785,11 @@ DATABITS
 DBL
 :
    'dbl'
+;
+
+DCBX
+:
+   'dcbx'
 ;
 
 DEAD_INTERVAL
@@ -3050,7 +3060,7 @@ RST
 
 RULE
 :
-   'rule'
+   'rule' -> pushMode(M_Rule)
 ;
 
 SAME_SECURITY_TRAFFIC
@@ -4766,6 +4776,18 @@ M_REMARK_NEWLINE
 M_REMARK_REMARK
 :
    F_NonNewline+
+;
+
+mode M_Rule;
+
+M_Rule_LINE
+:
+   F_NonNewline+
+;
+
+M_Rule_NEWLINE
+:
+   F_Newline+ -> type(NEWLINE), popMode
 ;
 
 mode M_SHA1;

@@ -10,8 +10,6 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
    private static final long serialVersionUID = 1L;
 
    private boolean _created;
-   private Ip _listenRangeIp;
-   private Integer _listenRangePrefixLength;
 
    private String _name;
 
@@ -30,14 +28,6 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
       return _created;
    }
 
-   public Ip getListenRangeIp() {
-      return _listenRangeIp;
-   }
-
-   public Integer getListenRangePrefixLength() {
-      return _listenRangePrefixLength;
-   }
-
    @Override
    public String getName() {
       return _name;
@@ -49,11 +39,6 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
 
    public void setCreated(boolean b) {
       _created = b;
-   }
-
-   public void setListenRange(Ip ip, int prefixLength) {
-      _listenRangeIp = ip;
-      _listenRangePrefixLength = prefixLength;
    }
 
 }

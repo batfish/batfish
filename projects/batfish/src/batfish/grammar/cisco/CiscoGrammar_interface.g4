@@ -139,6 +139,7 @@ null_standalone_if_stanza
       | ASYNC
       | ATM
       | AUTO
+      | AUTOSTATE
       | BANDWIDTH
       | CABLELENGTH
       | CDP
@@ -149,6 +150,7 @@ null_standalone_if_stanza
       | CLOCK
       | COUNTER
       | CRYPTO
+      | DCBX
       |
       (
          DSU BANDWIDTH

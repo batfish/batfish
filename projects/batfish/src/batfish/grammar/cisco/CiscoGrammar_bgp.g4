@@ -63,7 +63,15 @@ aggregate_address_bgp_tail
 
 allowas_in_bgp_tail
 :
-   ALLOWAS_IN NEWLINE
+   ALLOWAS_IN
+   (
+      num = DEC
+   )? NEWLINE
+;
+
+always_compare_med_rb_stanza
+:
+   BGP ALWAYS_COMPARE_MED NEWLINE
 ;
 
 auto_summary_bgp_tail
@@ -415,6 +423,7 @@ router_bgp_stanza
    ROUTER BGP procnum = DEC NEWLINE
    (
       address_family_rb_stanza
+      | always_compare_med_rb_stanza
       | bgp_listen_range_rb_stanza
       | bgp_tail
       | neighbor_rb_stanza
