@@ -95,7 +95,7 @@ Flow_srcPort[flow] = srcPort
 <-
    DuplicateRoleFlows(_),
    SetFlowOriginate(acceptNode, srcIp, dstIp, srcPort, dstPort, protocol),
-   SetNodeRole(acceptNode, role)
+   SetNodeRole(acceptNode, role),
    SetNodeRole(node, role).
 
 
