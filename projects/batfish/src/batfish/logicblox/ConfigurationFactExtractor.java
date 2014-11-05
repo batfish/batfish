@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import batfish.collections.RoleSet;
 import batfish.main.BatfishException;
 import batfish.representation.BgpNeighbor;
 import batfish.representation.BgpProcess;
@@ -730,11 +731,13 @@ public class ConfigurationFactExtractor {
    }
 
    private void writeRoles() {
-      StringBuilder wSetNodeRole = _factBins
-            .get("SetNodeRole");
+      StringBuilder wSetNodeRole = _factBins.get("SetNodeRole");
       String hostname = _configuration.getHostname();
-      for (String role : _configuration.getRoles()) {
-         wSetNodeRole.append(hostname + "|" + role + "\n");
+      RoleSet roles = _configuration.getRoles();
+      if (roles != null) {
+         for (String role : _configuration.getRoles()) {
+            wSetNodeRole.append(hostname + "|" + role + "\n");
+         }
       }
    }
 
