@@ -78,6 +78,9 @@ batfish_analyze() {
    echo "Compute the fixed point of the control plane"
    $BATFISH_CONFIRM && { batfish_compile $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR || return 1 ; }
 
+   echo "Query routes"
+   $BATFISH_CONFIRM && { batfish_query_routes $ROUTES $WORKSPACE || return 1 ; }
+
    echo "Query data plane predicates"
    $BATFISH_CONFIRM && { batfish_query_data_plane $WORKSPACE $DP_DIR || return 1 ; }
 
@@ -403,6 +406,9 @@ batfish_analyze_role_reachability() {
 
    echo "Compute the fixed point of the control plane"
    $BATFISH_CONFIRM && { batfish_compile $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR || return 1 ; }
+
+   echo "Query routes"
+   $BATFISH_CONFIRM && { batfish_query_routes $ROUTES $WORKSPACE || return 1 ; }
 
    echo "Query data plane predicates"
    $BATFISH_CONFIRM && { batfish_query_data_plane $WORKSPACE $DP_DIR || return 1 ; }
@@ -1180,8 +1186,8 @@ batfish_query_routes() {
    echo ": START: Query routes (informational only)"
    batfish_expect_args 2 $# || return 1
    local ROUTES=$1
-   local TEST_RIG=$2
-   batfish -log 0 -testrig $TEST_RIG -query -predicates InstalledRoute &> $ROUTES
+   local WORKSPACE=$2
+   batfish -log 0 -workspace $WORKSPACE -query -predicates InstalledRoute &> $ROUTES
    date | tr -d '\n'
    echo ": END: Query routes (informational only)"
 }
