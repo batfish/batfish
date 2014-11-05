@@ -56,6 +56,7 @@ import batfish.collections.PolicyRouteFibNodeMap;
 import batfish.collections.PredicateSemantics;
 import batfish.collections.PredicateValueTypeMap;
 import batfish.collections.QualifiedNameMap;
+import batfish.collections.RoleNodeMap;
 import batfish.collections.RoleSet;
 import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ConfigurationLexer;
@@ -104,6 +105,7 @@ import batfish.util.StringFilter;
 import batfish.util.Util;
 import batfish.z3.ConcretizerQuery;
 import batfish.z3.FailureInconsistencyBlackHoleQuerySynthesizer;
+import batfish.z3.RoleReachabilityQuerySynthesizer;
 import batfish.z3.ReachableQuerySynthesizer;
 import batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import batfish.z3.QuerySynthesizer;
@@ -816,6 +818,84 @@ public class Batfish implements AutoCloseable {
       printElapsedTime();
    }
 
+   private void genRoleReachabilityQueries() {
+      print(0, "\n*** GENERATING NODE-TO-ROLE QUERIES ***\n");
+      resetTimer();
+
+      String queryBasePath = _settings.getRoleReachabilityQueryPath();
+      String nodeSetPath = _settings.getNodeSetPath();
+      String nodeSetTextPath = nodeSetPath + ".txt";
+      String roleSetTextPath = _settings.getRoleSetPath();
+      String nodeRolesPath = _settings.getNodeRolesPath();
+      String iterationsPath = nodeRolesPath + ".iterations";
+
+      print(1, "Reading node set from : \"" + nodeSetPath + "\"..");
+      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
+      print(1, "OK\n");
+
+      print(1, "Reading node roles from : \"" + nodeRolesPath + "\"..");
+      NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(new File(
+            nodeRolesPath));
+      print(1, "OK\n");
+
+      RoleNodeMap roleNodes = nodeRoles.toRoleNodeMap();
+
+      for (String hostname : nodes) {
+         for (String role : roleNodes.keySet()) {
+            QuerySynthesizer synth = new RoleReachabilityQuerySynthesizer(
+                  hostname, role);
+            String queryText = synth.getQueryText();
+            String queryPath = queryBasePath + "-" + hostname + "-" + role
+                  + ".smt2";
+            print(1, "Writing query to: \"" + queryPath + "\"..");
+            writeFile(queryPath, queryText);
+            print(1, "OK\n");
+         }
+      }
+
+      print(1, "Writing node lines for next stage..");
+      StringBuilder sbNodes = new StringBuilder();
+      for (String node : nodes) {
+         sbNodes.append(node + "\n");
+      }
+      writeFile(nodeSetTextPath, sbNodes.toString());
+      print(1, "OK\n");
+
+      StringBuilder sbRoles = new StringBuilder();
+      print(1, "Writing role lines for next stage..");
+      sbRoles = new StringBuilder();
+      for (String role : roleNodes.keySet()) {
+         sbRoles.append(role + "\n");
+      }
+      writeFile(roleSetTextPath, sbRoles.toString());
+      print(1, "OK\n");
+
+      print(1,
+            "Writing role-node-role iteration ordering lines for concretizer stage..");
+      StringBuilder sbIterations = new StringBuilder();
+      for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
+         String transmittingRole = roleNodeEntry.getKey();
+         NodeSet transmittingNodes = roleNodeEntry.getValue();
+         if (transmittingNodes.size() < 2) {
+            continue;
+         }
+         String[] tNodeArray = transmittingNodes.toArray(new String[] {});
+         String masterNode = tNodeArray[0];
+         for (int i = 1; i < tNodeArray.length; i++) {
+            String slaveNode = tNodeArray[i];
+            for (String receivingRole : roleNodes.keySet()) {
+               String iterationLine = transmittingRole + ":" + masterNode + ":"
+                     + slaveNode + ":" + receivingRole + "\n";
+               sbIterations.append(iterationLine);
+            }
+         }
+      }
+      writeFile(iterationsPath, sbIterations.toString());
+      print(1, "OK\n");
+
+      printElapsedTime();
+   }
+
    private void genZ3(Map<String, Configuration> configurations) {
       print(0, "\n*** GENERATING Z3 LOGIC ***\n");
       resetTimer();
@@ -1278,6 +1358,19 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   private NodeRoleMap parseNodeRoles(String testRigPath) {
+      Path rolePath = Paths.get(testRigPath, "node_roles");
+      String roleFileText = readFile(rolePath.toFile());
+      print(1, "Parsing: \"" + rolePath.toAbsolutePath().toString() + "\"");
+      BatfishCombinedParser<?, ?> parser = new RoleCombinedParser(roleFileText);
+      RoleExtractor extractor = new RoleExtractor();
+      ParserRuleContext tree = parse(parser);
+      ParseTreeWalker walker = new ParseTreeWalker();
+      walker.walk(extractor, tree);
+      NodeRoleMap nodeRoles = extractor.getRoleMap();
+      return nodeRoles;
+   }
+
    private void parseTopology(String testRigPath, String topologyFileText,
          Map<String, StringBuilder> factBins) {
       BatfishCombinedParser<?, ?> parser = null;
@@ -1684,6 +1777,11 @@ public class Batfish implements AutoCloseable {
          return;
       }
 
+      if (_settings.getRoleReachabilityQuery()) {
+         genRoleReachabilityQueries();
+         return;
+      }
+
       if (_settings.getInterfaceFailureInconsistencyBlackHoleQuery()) {
          genInterfaceFailureBlackHoleQueries();
          return;
@@ -1877,8 +1975,9 @@ public class Batfish implements AutoCloseable {
       if (vendorConfigurations == null) {
          throw new BatfishException("Exiting due to parser errors\n");
       }
-      NodeRoleMap nodeRoles = parseNodeRoles(testRigPath);
-      if (nodeRoles != null) {
+      String nodeRolesPath = _settings.getNodeRolesPath();
+      if (nodeRolesPath != null) {
+         NodeRoleMap nodeRoles = parseNodeRoles(testRigPath);
          for (Entry<String, VendorConfiguration> configEntry : vendorConfigurations
                .entrySet()) {
             String hostname = configEntry.getKey();
@@ -1886,7 +1985,12 @@ public class Batfish implements AutoCloseable {
             RoleSet roles = nodeRoles.get(hostname);
             config.setRoles(roles);
          }
+         print(1, "Serializing node-roles mappings: \"" + nodeRolesPath
+               + "\"..");
+         serializeObject(nodeRoles, new File(nodeRolesPath));
+         print(1, "OK\n");
       }
+
       print(1, "\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       resetTimer();
       new File(outputPath).mkdirs();
@@ -1900,25 +2004,6 @@ public class Batfish implements AutoCloseable {
          print(2, " ...OK\n");
       }
       printElapsedTime();
-   }
-
-   private NodeRoleMap parseNodeRoles(String testRigPath) {
-      Path rolePath = Paths.get(testRigPath, "node_roles");
-      String roleFileText = null;
-      if (Files.exists(rolePath)) {
-         roleFileText = readFile(rolePath.toFile());
-      }
-      else {
-         return null;
-      }
-      print(1, "Parsing: \"" + rolePath.toAbsolutePath().toString() + "\"");
-      BatfishCombinedParser<?, ?> parser = new RoleCombinedParser(roleFileText);
-      RoleExtractor extractor = new RoleExtractor();
-      ParserRuleContext tree = parse(parser);
-      ParseTreeWalker walker = new ParseTreeWalker();
-      walker.walk(extractor, tree);
-      NodeRoleMap nodeRoles = extractor.getRoleMap();
-      return nodeRoles;
    }
 
    public void writeConfigurationFacts(

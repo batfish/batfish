@@ -1,8 +1,8 @@
 package batfish.collections;
 
-import java.util.TreeSet;
+import java.util.TreeMap;
 
-public class RoleSet extends TreeSet<String> {
+public class RoleNodeMap extends TreeMap<String, NodeSet> {
 
    /**
     *

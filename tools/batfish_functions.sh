@@ -39,6 +39,11 @@ batfish_confirm_analyze() {
 }
 export -f batfish_confirm_analyze
    
+batfish_confirm_analyze_role_reachability() {
+   BATFISH_CONFIRM=batfish_confirm batfish_analyze_role_reachability $@
+}
+export -f batfish_confirm_analyze_role_reachability
+   
 batfish_analyze() {
    batfish_expect_args 2 $# || return 1
    if [ -z "$BATFISH_CONFIRM" ]; then
@@ -362,6 +367,62 @@ batfish_analyze_interface_failures_machine() {
    cd $OLD_PWD
 }
 export -f batfish_analyze_interface_failures_machine
+
+batfish_analyze_role_reachability() {
+   batfish_expect_args 2 $# || return 1
+   if [ -z "$BATFISH_CONFIRM" ]; then
+      local BATFISH_CONFIRM=true
+   fi
+   local TEST_RIG_RELATIVE=$1
+   local PREFIX=$2
+   local WORKSPACE=batfish-$USER-$PREFIX
+   local OLD_PWD=$PWD
+   if [ "$(echo $TEST_RIG_RELATIVE | head -c1)" = "/" ]; then
+      local TEST_RIG=$TEST_RIG_RELATIVE
+   else
+      local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
+   fi
+   local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
+   local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
+   local QUERY_PATH=$OLD_PWD/$PREFIX-query
+   local RR_QUERY_BASE_PATH=$QUERY_PATH/role-reachability-query
+   local DUMP_DIR=$OLD_PWD/$PREFIX-dump
+   local FLOWS=$OLD_PWD/$PREFIX-flows
+   local ROUTES=$OLD_PWD/$PREFIX-routes
+   local VENDOR_SERIAL_DIR=$OLD_PWD/$PREFIX-vendor
+   local INDEP_SERIAL_DIR=$OLD_PWD/$PREFIX-indep
+   local DP_DIR=$OLD_PWD/$PREFIX-dp
+   local NODE_ROLES_PATH=$OLD_PWD/$PREFIX-node_roles
+   local ROLE_SET_PATH=$OLD_PWD/$PREFIX-role_set
+
+   echo "Parse vendor configuration files and serialize vendor structures"
+   $BATFISH_CONFIRM && { batfish_serialize_vendor_with_roles $TEST_RIG $VENDOR_SERIAL_DIR $NODE_ROLES_PATH || return 1 ; }
+
+   echo "Parse vendor structures and serialize vendor-independent structures"
+   $BATFISH_CONFIRM && { batfish_serialize_independent $VENDOR_SERIAL_DIR $INDEP_SERIAL_DIR || return 1 ; }
+
+   echo "Compute the fixed point of the control plane"
+   $BATFISH_CONFIRM && { batfish_compile $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR || return 1 ; }
+
+   echo "Query data plane predicates"
+   $BATFISH_CONFIRM && { batfish_query_data_plane $WORKSPACE $DP_DIR || return 1 ; }
+
+   echo "Extract z3 reachability relations"
+   $BATFISH_CONFIRM && { batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH $NODE_SET_PATH || return 1 ; }
+
+   echo "Find role-reachability packet constraints"
+   $BATFISH_CONFIRM && { batfish_find_role_reachability_packet_constraints $REACH_PATH $QUERY_PATH $RR_QUERY_BASE_PATH $NODE_SET_PATH $NODE_ROLES_PATH $ROLE_SET_PATH || return 1 ; }
+
+   echo "Generate role-reachability concretizer queries"
+   $BATFISH_CONFIRM && { batfish_generate_role_reachability_concretizer_queries $RR_QUERY_BASE_PATH $NODE_ROLES_PATH || return 1 ; }
+
+   echo "Inject concrete packets into network model"
+   $BATFISH_CONFIRM && { batfish_inject_packets $WORKSPACE $QUERY_PATH $DUMP_DIR || return 1 ; }
+
+   echo "Query flow results from LogicBlox"
+   $BATFISH_CONFIRM && { batfish_query_flows $FLOWS $WORKSPACE || return 1 ; }
+}
+export -f batfish_analyze_role_reachability
 
 batfish_build() {
    local RESTORE_FILE='cygwin-symlink-restore-data'
@@ -723,6 +784,53 @@ batfish_find_multipath_inconsistent_packet_constraints_helper() {
 }
 export -f batfish_find_multipath_inconsistent_packet_constraints_helper
 
+batfish_find_role_reachability_packet_constraints() {
+   date | tr -d '\n'
+   echo ": START: Find role-reachability packet constraints"
+   batfish_expect_args 6 $# || return 1
+   local REACH_PATH=$1
+   local QUERY_PATH=$2
+   local QUERY_BASE_PATH=$3
+   local NODE_SET_PATH=$4
+   local NODE_ROLES_PATH=$5
+   local ROLE_SET_PATH=$6
+   local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
+   local OLD_PWD=$PWD
+   mkdir -p $QUERY_PATH
+   cd $QUERY_PATH
+   batfish -rr -rrpath $QUERY_BASE_PATH -nodes $NODE_SET_PATH -nrpath $NODE_ROLES_PATH -rspath $ROLE_SET_PATH || return 1
+   cat $NODE_SET_TEXT_PATH | while read NODE
+   do
+      cat $ROLE_SET_PATH | while read ROLE
+      do
+         echo "${NODE}:${ROLE}"
+      done
+   done | parallel --halt 2 batfish_find_role_reachability_packet_constraints_helper {} $REACH_PATH $QUERY_BASE_PATH
+   cd $OLD_PWD
+   date | tr -d '\n'
+   echo ": END: Find role-reachability packet constraints"
+}
+export -f batfish_find_multipath_inconsistent_packet_constraints
+
+batfish_find_role_reachability_packet_constraints_helper() {
+   batfish_expect_args 3 $# || return 1
+   local NODE=$(echo "$1" | cut -d':' -f 1)
+   local ROLE=$(echo "$1" | cut -d':' -f 2)
+   local REACH_PATH=$2
+   local QUERY_BASE_PATH=$3
+   date | tr -d '\n'
+   local QUERY_PATH=${QUERY_BASE_PATH}-${NODE}-${ROLE}.smt2
+   local QUERY_OUTPUT_PATH=${QUERY_PATH}.out
+   echo ": START: Find role-reachability packet constraints from node \"${NODE}\" to role \"${ROLE}\" (\"${QUERY_OUTPUT_PATH}\")"
+   cat $REACH_PATH $QUERY_PATH | batfish_time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1> $QUERY_OUTPUT_PATH 2>&3
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   date | tr -d '\n'
+   echo ": END: Find role-reachability packet constraints from node \"${NODE}\" to role \"${ROLE}\" (\"${QUERY_OUTPUT_PATH}\")"
+}
+export -f batfish_find_role_reachability_packet_constraints_helper
+
 batfish_format_flows() {
    batfish_expect_args 1 $# || return 1
    local DUMP_DIR=$1
@@ -760,7 +868,7 @@ batfish_generate_concretizer_query_output() {
       fi
    fi
    date | tr -d '\n'
-   echo ": START: Generate concretizer output for $NODE (\"$OUTPUT_FILE\")"
+   echo ": END: Generate concretizer output for $NODE (\"$OUTPUT_FILE\")"
 }
 export -f batfish_generate_concretizer_query_output
 
@@ -888,6 +996,57 @@ batfish_generate_multipath_inconsistency_concretizer_queries_helper() {
    fi
 }
 export -f batfish_generate_multipath_inconsistency_concretizer_queries_helper
+
+batfish_generate_role_reachability_concretizer_queries() {
+   date | tr -d '\n'
+   echo ": START: Generate role-reachability concretizer queries"
+   batfish_expect_args 2 $# || return 1
+   local QUERY_BASE_PATH=$1
+   local ROLE_NODES_PATH=$2
+   local ITERATIONS_PATH=${ROLE_NODES_PATH}.iterations
+   local QUERY_PATH="$(dirname $QUERY_BASE_PATH)"
+   local OLD_PWD=$PWD
+   cd $QUERY_PATH
+   cat $ITERATIONS_PATH | parallel --halt 2 batfish_generate_role_reachability_concretizer_queries_helper {} $QUERY_BASE_PATH \;
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   cd $OLD_PWD
+   date | tr -d '\n'
+   echo ": END: Generate role-reachability concretizer queries"
+}
+export -f batfish_generate_role_reachability_concretizer_queries
+
+batfish_generate_role_reachability_concretizer_queries_helper() {
+   batfish_expect_args 2 $# || return 1
+   local ITERATION_LINE=$1
+   local QUERY_BASE_PATH=$2
+   local TRANSMITTING_ROLE=$(echo $ITERATION_LINE | cut -d':' -f 1)
+   local MASTER_NODE=$(echo $ITERATION_LINE | cut -d':' -f 2)
+   local SLAVE_NODE=$(echo $ITERATION_LINE | cut -d':' -f 3)
+   local RECEIVING_ROLE=$(echo $ITERATION_LINE | cut -d':' -f 4)
+   local MASTER_QUERY_OUT=${QUERY_BASE_PATH}-${MASTER_NODE}-${RECEIVING_ROLE}.smt2.out
+   local SLAVE_QUERY_OUT=${QUERY_BASE_PATH}-${SLAVE_NODE}-${RECEIVING_ROLE}.smt2.out
+   local MASTER_CONCRETIZER_QUERY_BASE_PATH=${QUERY_BASE_PATH}-${MASTER_NODE}-${SLAVE_NODE}-${RECEIVING_ROLE}-concrete
+   local SLAVE_CONCRETIZER_QUERY_BASE_PATH=${QUERY_BASE_PATH}-${SLAVE_NODE}-${MASTER_NODE}-${RECEIVING_ROLE}-concrete
+   date | tr -d '\n'
+   echo ": START: Generate role-reachability concretizer queries for transmitting role \"${TRANSMITTING_ROLE}\", master node \"${MASTER_NODE}\", slave node \"${SLAVE_NODE}\", receiving role \"${RECEIVING_ROLE}\"" 
+   batfish -conc -concin $MASTER_QUERY_OUT -concinneg $SLAVE_QUERY_OUT -concunique -concout $MASTER_CONCRETIZER_QUERY_BASE_PATH || return 1
+   batfish -conc -concinneg $MASTER_QUERY_OUT -concin $SLAVE_QUERY_OUT -concunique -concout $SLAVE_CONCRETIZER_QUERY_BASE_PATH || return 1
+   find $PWD -regextype posix-extended -regex "${MASTER_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
+      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $MASTER_NODE \;
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   find $PWD -regextype posix-extended -regex "${SLAVE_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
+      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $SLAVE_NODE \;
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+   date | tr -d '\n'
+   echo ": END: Generate role-reachability concretizer queries for transmitting role \"${TRANSMITTING_ROLE}\", master node \"${MASTER_NODE}\", slave node \"${SLAVE_NODE}\", receiving role \"${RECEIVING_ROLE}\"" 
+}
+export -f batfish_generate_role_reachability_concretizer_queries_helper
 
 batfish_generate_z3_reachability() {
    date | tr -d '\n'
@@ -1049,6 +1208,20 @@ batfish_serialize_vendor() {
    echo ": END: Parse vendor configuration files and serialize vendor structures"
 }
 export -f batfish_serialize_vendor
+
+batfish_serialize_vendor_with_roles() {
+   date | tr -d '\n'
+   echo ": START: Parse vendor configuration files and serialize vendor structures"
+   batfish_expect_args 3 $# || return 1
+   local TEST_RIG=$1
+   local VENDOR_SERIAL_DIR=$2
+   local NODE_ROLES_PATH=$3
+   mkdir -p $VENDOR_SERIAL_DIR
+   batfish -testrig $TEST_RIG -sv -svpath $VENDOR_SERIAL_DIR -ee -nrpath $NODE_ROLES_PATH || return 1
+   date | tr -d '\n'
+   echo ": END: Parse vendor configuration files and serialize vendor structures"
+}
+export -f batfish_serialize_vendor_with_roles
 
 batfish_restore_symlinks() {
    OLDPWD=$PWD

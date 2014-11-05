@@ -55,6 +55,7 @@ public class Settings {
    private static final String ARG_MPI = "mpi";
    private static final String ARG_MPI_PATH = "mpipath";
    private static final String ARG_NO_TRAFFIC = "notraffic";
+   private static final String ARG_NODE_ROLES_PATH = "nrpath";
    private static final String ARG_NODE_SET_PATH = "nodes";
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
@@ -66,6 +67,9 @@ public class Settings {
    private static final String ARG_REDIRECT_STDERR = "redirect";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
+   private static final String ARG_ROLE_REACHABILITY_QUERY = "rr";
+   private static final String ARG_ROLE_REACHABILITY_QUERY_PATH = "rrpath";
+   private static final String ARG_ROLE_SET_PATH = "rspath";
    private static final String ARG_RULES_WITH_SUPPRESSED_WARNINGS = "rulenowarn";
    private static final String ARG_SERIALIZE_INDEPENDENT = "si";
    private static final String ARG_SERIALIZE_INDEPENDENT_PATH = "sipath";
@@ -100,9 +104,12 @@ public class Settings {
    private static final String ARGNAME_LB_WEB_PORT = "port";
    private static final String ARGNAME_LOGICDIR = "path";
    private static final String ARGNAME_MPI_PATH = "path";
+   private static final String ARGNAME_NODE_ROLES_PATH = "path";
    private static final String ARGNAME_NODE_SET_PATH = "path";
    private static final String ARGNAME_REACH_PATH = "path";
    private static final String ARGNAME_REVERT = "branch-name";
+   private static final String ARGNAME_ROLE_REACHABILITY_QUERY_PATH = "path";
+   private static final String ARGNAME_ROLE_SET_PATH = "path";
    private static final String ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS = "rule-names";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
@@ -176,6 +183,7 @@ public class Settings {
    private int _logLevel;
    private String _mpiPath;
    private String[] _negatedConcretizerInputFilePaths;
+   private String _nodeRolesPath;
    private String _nodeSetPath;
    private boolean _noTraffic;
    private Options _options;
@@ -190,6 +198,9 @@ public class Settings {
    private boolean _removeFacts;
    private boolean _revert;
    private String _revertBranchName;
+   private boolean _roleReachabilityQuery;
+   private String _roleReachabilityQueryPath;
+   private String _roleSetPath;
    private Set<String> _rulesWithSuppressedWarnings;
    private String _secondTestRigPath;
    private boolean _serializeIndependent;
@@ -398,6 +409,10 @@ public class Settings {
       return _negatedConcretizerInputFilePaths;
    }
 
+   public String getNodeRolesPath() {
+      return _nodeRolesPath;
+   }
+
    public String getNodeSetPath() {
       return _nodeSetPath;
    }
@@ -428,6 +443,18 @@ public class Settings {
 
    public boolean getRemoveFacts() {
       return _removeFacts;
+   }
+
+   public boolean getRoleReachabilityQuery() {
+      return _roleReachabilityQuery;
+   }
+
+   public String getRoleReachabilityQueryPath() {
+      return _roleReachabilityQueryPath;
+   }
+
+   public String getRoleSetPath() {
+      return _roleSetPath;
    }
 
    public Set<String> getRulesWithSuppressedWarnings() {
@@ -736,6 +763,21 @@ public class Settings {
             .withArgName(ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS).hasArgs()
             .withDescription("suppress warnings for selected parser rules")
             .create(ARG_RULES_WITH_SUPPRESSED_WARNINGS));
+      _options.addOption(OptionBuilder.hasArg()
+            .withArgName(ARGNAME_NODE_ROLES_PATH)
+            .withDescription("path to read or write node-role mappings")
+            .create(ARG_NODE_ROLES_PATH));
+      _options.addOption(OptionBuilder.hasArg()
+            .withArgName(ARGNAME_ROLE_REACHABILITY_QUERY_PATH)
+            .withDescription("path to read or write role-reachability queries")
+            .create(ARG_ROLE_REACHABILITY_QUERY_PATH));
+      _options.addOption(OptionBuilder.withDescription(
+            "generate role-reachability queries").create(
+            ARG_ROLE_REACHABILITY_QUERY));
+      _options.addOption(OptionBuilder.hasArg()
+            .withArgName(ARGNAME_ROLE_SET_PATH)
+            .withDescription("path to read or write role set")
+            .create(ARG_ROLE_SET_PATH));
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -873,6 +915,11 @@ public class Settings {
             _rulesWithSuppressedWarnings.add(ruleName);
          }
       }
+      _nodeRolesPath = line.getOptionValue(ARG_NODE_ROLES_PATH);
+      _roleReachabilityQueryPath = line
+            .getOptionValue(ARG_ROLE_REACHABILITY_QUERY_PATH);
+      _roleReachabilityQuery = line.hasOption(ARG_ROLE_REACHABILITY_QUERY);
+      _roleSetPath = line.getOptionValue(ARG_ROLE_SET_PATH);
    }
 
    public boolean printParseTree() {

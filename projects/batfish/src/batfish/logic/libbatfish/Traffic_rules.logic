@@ -325,7 +325,25 @@ FlowPathNullRoutedEdge(flow, i, node1, int1, node2, int2, history) <-
    FlowNullRouted(flow, node1),
    Node_name(node1:node1str),
    history = "['" + node1str + "':nullRouted]".
-   
+
+FlowRoleAccepted(flow, role) <-
+   FlowAccepted(flow, node),
+   SetNodeRole(node, role).
+
+FlowRoleInconsistent(transmittingRole, acceptedFlow, missingFlow, receivingRole) <-
+   FlowSameHeader(acceptedFlow, missingFlow),
+   Flow_node[acceptedFlow] = node1,
+   Flow_node[missingFlow] = node2,
+   SetNodeRole(node1, transmittingRole),
+   SetNodeRole(node2, transmittingRole),
+   FlowRoleAccepted(acceptedFlow, receivingRole),
+   !FlowRoleAccepted(missingFlow, receivingRole).
+
+FlowSameHeader(flow1, flow2) <-
+   FlowOriginate[node1, srcIp, dstIp, srcPort, dstPort, protocol] = flow1,
+   FlowOriginate[node2, srcIp, dstIp, srcPort, dstPort, protocol] = flow2,
+   node1 != node2.
+
 lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
 // END CODE
    })

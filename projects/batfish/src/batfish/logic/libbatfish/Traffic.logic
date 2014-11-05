@@ -276,6 +276,20 @@ FlowReachStep(flow, srcNode, srcOutInt, dstNode, dstInInt) ->
 FlowUnknown(flow) ->
    Flow(flow).
 
+FlowRoleAccepted(flow, role) <-
+   Flow(flow),
+   Role(role).
+
+FlowRoleInconsistent(transmittingRole, acceptedFlow, missingFlow, receivingRole) <-
+   Role(transmittingRole),
+   Flow(acceptedFlow),
+   Flow(missingFlow),
+   Role(receivingRole).
+
+FlowSameHeader(flow1, flow2) ->
+   Flow(flow1),
+   Flow(flow2).
+
 SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol) ->
    Node(node),
    Ip(srcIp),
