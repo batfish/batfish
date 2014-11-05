@@ -276,11 +276,11 @@ FlowReachStep(flow, srcNode, srcOutInt, dstNode, dstInInt) ->
 FlowUnknown(flow) ->
    Flow(flow).
 
-FlowRoleAccepted(flow, role) <-
+FlowRoleAccepted(flow, role) ->
    Flow(flow),
    Role(role).
 
-FlowRoleInconsistent(transmittingRole, acceptedFlow, missingFlow, receivingRole) <-
+FlowRoleInconsistent(transmittingRole, acceptedFlow, missingFlow, receivingRole) ->
    Role(transmittingRole),
    Flow(acceptedFlow),
    Flow(missingFlow),
