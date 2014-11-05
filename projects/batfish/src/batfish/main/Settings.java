@@ -40,6 +40,7 @@ public class Settings {
    private static final String ARG_DUMP_INTERFACE_DESCRIPTIONS = "id";
    private static final String ARG_DUMP_INTERFACE_DESCRIPTIONS_PATH = "idpath";
    private static final String ARG_DUMP_TRAFFIC_FACTS = "dumptraffic";
+   private static final String ARG_DUPLICATE_ROLE_FLOWS = "drf";
    private static final String ARG_EXIT_ON_PARSE_ERROR = "ee";
    private static final String ARG_FACTS = "facts";
    private static final String ARG_FLOW_PATH = "flowpath";
@@ -166,6 +167,7 @@ public class Settings {
    private boolean _dumpInterfaceDescriptions;
    private String _dumpInterfaceDescriptionsPath;
    private boolean _dumpTrafficFacts;
+   private boolean _duplicateRoleFlows;
    private boolean _exitOnParseError;
    private boolean _facts;
    private String _flowPath;
@@ -239,6 +241,10 @@ public class Settings {
 
    public boolean dumpInterfaceDescriptions() {
       return _dumpInterfaceDescriptions;
+   }
+
+   public boolean duplicateRoleFlows() {
+      return _duplicateRoleFlows;
    }
 
    public boolean exitOnParseError() {
@@ -778,6 +784,9 @@ public class Settings {
             .withArgName(ARGNAME_ROLE_SET_PATH)
             .withDescription("path to read or write role set")
             .create(ARG_ROLE_SET_PATH));
+      _options.addOption(OptionBuilder.withDescription(
+            "duplicate flows across all nodes in same role").create(
+            ARG_DUPLICATE_ROLE_FLOWS));
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -920,6 +929,7 @@ public class Settings {
             .getOptionValue(ARG_ROLE_REACHABILITY_QUERY_PATH);
       _roleReachabilityQuery = line.hasOption(ARG_ROLE_REACHABILITY_QUERY);
       _roleSetPath = line.getOptionValue(ARG_ROLE_SET_PATH);
+      _duplicateRoleFlows = line.hasOption(ARG_DUPLICATE_ROLE_FLOWS);
    }
 
    public boolean printParseTree() {

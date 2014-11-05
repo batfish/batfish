@@ -84,6 +84,20 @@ Flow_srcIp[flow] = srcIp,
 Flow_srcPort[flow] = srcPort
 <-
    SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol).
+FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow,
+Flow(flow),
+Flow_dstIp[flow] = dstIp,
+Flow_dstPort[flow] = dstPort,
+Flow_ipProtocol[flow] = protocol,
+Flow_node[flow] = node,
+Flow_srcIp[flow] = srcIp,
+Flow_srcPort[flow] = srcPort
+<-
+   DuplicateRoleFlows(_),
+   SetFlowOriginate(acceptNode, srcIp, dstIp, srcPort, dstPort, protocol),
+   SetNodeRole(acceptNode, role)
+   SetNodeRole(node, role).
+
 
 FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt) <-
    FlowReachStep(flow, srcNode, srcOutInt, dstNode, dstInInt).

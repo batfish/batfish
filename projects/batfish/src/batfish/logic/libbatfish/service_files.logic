@@ -156,6 +156,13 @@ block(`service_files) {
       }.
 
 // Traffic
+      file_definition_by_name["DuplicateRoleFlows"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "DUMMY",
+         column_formats[] = "integer"
+      }.
+
       file_definition_by_name["SetFlowOriginate"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",

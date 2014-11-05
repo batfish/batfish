@@ -219,6 +219,16 @@ block(`service_init) {
       }.
 
 // Traffic
+      file_binding_by_name["DuplicateRoleFlows"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "DuplicateRoleFlows",
+         predicate_binding_by_name["libbatfish:Traffic:DuplicateRoleFlows"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "DUMMY"
+            }
+      }.
+
       file_binding_by_name["SetFlowOriginate"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",

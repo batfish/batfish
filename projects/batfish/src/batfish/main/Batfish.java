@@ -2082,5 +2082,9 @@ public class Batfish implements AutoCloseable {
    private void writeTrafficFacts(Map<String, StringBuilder> factBins) {
       StringBuilder wSetFlowOriginate = factBins.get("SetFlowOriginate");
       parseFlowsFromConstraints(wSetFlowOriginate);
+      if (_settings.duplicateRoleFlows()) {
+         StringBuilder wDuplicateRoleFlows = factBins.get("DuplicateRoleFlows");
+         wDuplicateRoleFlows.append("1\n");
+      }
    }
 }

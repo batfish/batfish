@@ -12,6 +12,7 @@ public class Facts {
    public static final Map<String, String> TRAFFIC_FACT_COLUMN_HEADERS = Collections.unmodifiableMap(_TRAFFIC_FACT_COLUMN_HEADERS);
 
    static {
+      _TRAFFIC_FACT_COLUMN_HEADERS.put("DuplicateRoleFlows", "DUMMY");
       _TRAFFIC_FACT_COLUMN_HEADERS.put("SetFlowOriginate", "NODE|SRCIP|DSTIP|SRCPORT|DSTPORT|IPPROTOCOL");
 
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetFakeInterface", "NODE|INTERFACE");

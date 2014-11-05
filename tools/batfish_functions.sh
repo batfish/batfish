@@ -417,7 +417,7 @@ batfish_analyze_role_reachability() {
    $BATFISH_CONFIRM && { batfish_generate_role_reachability_concretizer_queries $RR_QUERY_BASE_PATH $NODE_ROLES_PATH || return 1 ; }
 
    echo "Inject concrete packets into network model"
-   $BATFISH_CONFIRM && { batfish_inject_packets $WORKSPACE $QUERY_PATH $DUMP_DIR || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_inject_packets_with_role_flow_duplication $WORKSPACE $QUERY_PATH $DUMP_DIR || return 1 ; }
 
    echo "Query flow results from LogicBlox"
    $BATFISH_CONFIRM && { batfish_query_flows $FLOWS $WORKSPACE || return 1 ; }
@@ -1119,6 +1119,23 @@ batfish_inject_packets() {
    echo ": END: Inject concrete packets into network model"
 }
 export -f batfish_inject_packets
+
+batfish_inject_packets_with_role_flow_duplication() {
+   date | tr -d '\n'
+   echo ": START: Inject concrete packets into network model"
+   batfish_expect_args 3 $# || return 1
+   local WORKSPACE=$1
+   local QUERY_PATH=$2
+   local DUMP_DIR=$3
+   local OLD_PWD=$PWD
+   cd $QUERY_PATH
+   batfish -workspace $WORKSPACE -flow -flowpath $QUERY_PATH -drf -dumptraffic -dumpdir $DUMP_DIR || return 1
+   batfish_format_flows $DUMP_DIR || return 1
+   cd $OLD_PWD
+   date | tr -d '\n'
+   echo ": END: Inject concrete packets into network model"
+}
+export -f batfish_inject_packets_with_role_flow_duplication
 
 batfish_query_data_plane() {
    date | tr -d '\n'

@@ -118,6 +118,11 @@ block(`service_config) {
       }.
 
 // Traffic
+      service_by_prefix["/batfish/DuplicateRoleFlows"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "DuplicateRoleFlows"
+      }.
+
       service_by_prefix["/batfish/SetFlowOriginate"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetFlowOriginate"
