@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class Facts {
-   
+
    private  static final Map<String, String> _CONTROL_PLANE_FACT_COLUMN_HEADERS = new TreeMap<String, String> ();
    private static final Map<String, String> _TRAFFIC_FACT_COLUMN_HEADERS = new TreeMap<String, String>();
    public static final Map<String, String> CONTROL_PLANE_FACT_COLUMN_HEADERS = Collections.unmodifiableMap(_CONTROL_PLANE_FACT_COLUMN_HEADERS);
@@ -13,7 +13,7 @@ public class Facts {
 
    static {
       _TRAFFIC_FACT_COLUMN_HEADERS.put("SetFlowOriginate", "NODE|SRCIP|DSTIP|SRCPORT|DSTPORT|IPPROTOCOL");
-      
+
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetFakeInterface", "NODE|INTERFACE");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetFlowSinkInterface", "NODE|INTERFACE");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("GuessTopology", "DUMMY");
@@ -80,8 +80,9 @@ public class Facts {
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetRemoteAs", "NODE|NEIGHBORIP|REMOTEAS");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetRouteReflectorClient", "NODE|NEIGHBORIP|CLUSTERID");
       _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetNodeVendor", "NODE|VENDOR");
+      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetNodeRole", "NODE|ROLE");
    }
-   
+
    private Facts() {
    }
 

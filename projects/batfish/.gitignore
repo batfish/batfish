@@ -8,6 +8,8 @@ CiscoGrammar*.java
 JuniperGrammar*.java
 FlatJuniperGrammar*.java
 Semantics*.java
+RoleParser*.java
+RoleLexer*.java
 BatfishTopologyParser*.java
 BatfishTopologyLexer*.java
 GNS3TopologyParser*.java

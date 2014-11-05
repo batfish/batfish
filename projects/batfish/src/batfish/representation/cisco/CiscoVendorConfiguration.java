@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import batfish.collections.RoleSet;
 import batfish.representation.GeneratedRoute;
 import batfish.representation.AsPathAccessList;
 import batfish.representation.AsPathAccessListLine;
@@ -851,6 +852,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
 
    private List<String> _conversionWarnings;
 
+   private RoleSet _roles;
+
    public CiscoVendorConfiguration() {
       _conversionWarnings = new ArrayList<String>();
    }
@@ -898,6 +901,10 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
    @Override
    public List<String> getConversionWarnings() {
       return _conversionWarnings;
+   }
+
+   public RoleSet getRoles() {
+      return _roles;
    }
 
    private Set<RouteMap> getRoutingRouteMaps() {
@@ -955,6 +962,11 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          }
       }
       return maps;
+   }
+
+   @Override
+   public void setRoles(RoleSet roles) {
+      _roles = roles;
    }
 
    private batfish.representation.Interface toInterface(Interface iface,
@@ -1030,6 +1042,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          throws VendorConversionException {
       final Configuration c = new Configuration(_hostname);
       c.setVendor(VENDOR_NAME);
+      c.setRoles(_roles);
 
       // convert as path access lists to vendor independent format
       for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {

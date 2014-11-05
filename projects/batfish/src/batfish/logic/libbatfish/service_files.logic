@@ -479,6 +479,13 @@ block(`service_files) {
       }.
       
       // Node
+      file_definition_by_name["SetNodeRole"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,ROLE",
+         column_formats[] = "string,string"
+      }.
+      
       file_definition_by_name["SetNodeVendor"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",

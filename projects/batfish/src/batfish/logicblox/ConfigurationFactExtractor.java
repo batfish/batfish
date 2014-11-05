@@ -243,6 +243,7 @@ public class ConfigurationFactExtractor {
    }
 
    public void writeFacts() {
+      writeRoles();
       writeVendor();
       writeInterfaces();
       writeIpAccessLists();
@@ -725,6 +726,15 @@ public class ConfigurationFactExtractor {
             }
          }
 
+      }
+   }
+
+   private void writeRoles() {
+      StringBuilder wSetNodeRole = _factBins
+            .get("SetNodeRole");
+      String hostname = _configuration.getHostname();
+      for (String role : _configuration.getRoles()) {
+         wSetNodeRole.append(hostname + "|" + role + "\n");
       }
    }
 

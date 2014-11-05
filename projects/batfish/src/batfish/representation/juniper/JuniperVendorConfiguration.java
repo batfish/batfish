@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import batfish.collections.RoleSet;
 import batfish.main.BatfishException;
 import batfish.representation.AsPathAccessList;
 import batfish.representation.AsPathAccessListLine;
@@ -56,6 +57,11 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
    private List<OSPFProcess> _ospfProcesses;
    private List<Interface> _interfaces;
    private Map<String, List<StaticOptions>> _staticRoutes;
+   private RoleSet _roles;
+
+   public RoleSet getRoles() {
+      return _roles;
+   }
 
    // private Map<String, ExtendedAccessList> _extendedAccessLists; // TODO: No
    // firewall stuff in Internet2
@@ -788,6 +794,11 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
        * c.getGeneratedRoutes().add(newGeneratedRoute); }
        */
       return c;
+   }
+
+   @Override
+   public void setRoles(RoleSet roles) {
+      _roles = roles;
    }
 
 }

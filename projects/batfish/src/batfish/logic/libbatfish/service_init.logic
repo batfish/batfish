@@ -677,6 +677,16 @@ block(`service_init) {
       }.
 
       // Node
+      file_binding_by_name["SetNodeRole"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetNodeRole",
+         predicate_binding_by_name["libbatfish:Node:SetNodeRole"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,ROLE"
+            }
+      }.
+
       file_binding_by_name["SetNodeVendor"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",

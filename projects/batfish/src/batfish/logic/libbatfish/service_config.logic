@@ -351,6 +351,11 @@ block(`service_config) {
       }.
 
       // Node
+      service_by_prefix["/batfish/SetNodeRole"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetNodeRole"
+      }.
+
       service_by_prefix["/batfish/SetNodeVendor"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetNodeVendor"

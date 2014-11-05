@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import batfish.collections.RoleSet;
 import batfish.util.NamedStructure;
 
 public class Configuration extends NamedStructure {
@@ -21,8 +22,10 @@ public class Configuration extends NamedStructure {
    private Map<String, IpAccessList> _ipAccessLists;
    private OspfProcess _ospfProcess;
    private Map<String, PolicyMap> _policyMaps;
+   private RoleSet _roles;
    private Map<String, RouteFilterList> _routeFilterLists;
    private Set<StaticRoute> _staticRoutes;
+
    private String _vendor;
 
    public Configuration(String hostname) {
@@ -30,15 +33,16 @@ public class Configuration extends NamedStructure {
       _asPathAccessLists = new HashMap<String, AsPathAccessList>();
       _aggregateRoutes = new LinkedHashSet<GeneratedRoute>();
       _bgpProcess = null;
+      _communities = new LinkedHashSet<Long>();
       _communityLists = new HashMap<String, CommunityList>();
       _connectedRoutes = new LinkedHashSet<ConnectedRoute>();
       _interfaces = new HashMap<String, Interface>();
       _ipAccessLists = new HashMap<String, IpAccessList>();
       _ospfProcess = null;
       _policyMaps = new HashMap<String, PolicyMap>();
+      _roles = new RoleSet();
       _routeFilterLists = new HashMap<String, RouteFilterList>();
       _staticRoutes = new LinkedHashSet<StaticRoute>();
-      _communities = new LinkedHashSet<Long>();
    }
 
    public Map<String, AsPathAccessList> getAsPathAccessLists() {
@@ -85,6 +89,10 @@ public class Configuration extends NamedStructure {
       return _policyMaps;
    }
 
+   public RoleSet getRoles() {
+      return _roles;
+   }
+
    public Map<String, RouteFilterList> getRouteFilterLists() {
       return _routeFilterLists;
    }
@@ -103,6 +111,10 @@ public class Configuration extends NamedStructure {
 
    public void setOspfProcess(OspfProcess process) {
       _ospfProcess = process;
+   }
+
+   public void setRoles(RoleSet roles) {
+      _roles = roles;
    }
 
    public void setVendor(String vendor) {

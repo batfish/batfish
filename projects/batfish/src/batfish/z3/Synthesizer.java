@@ -71,6 +71,7 @@ import batfish.z3.node.PreInInterfaceExpr;
 import batfish.z3.node.PreOutEdgeExpr;
 import batfish.z3.node.PreOutExpr;
 import batfish.z3.node.PreOutInterfaceExpr;
+import batfish.z3.node.RoleAcceptExpr;
 import batfish.z3.node.RuleExpr;
 import batfish.z3.node.SaneExpr;
 import batfish.z3.node.Statement;
@@ -81,9 +82,11 @@ public class Synthesizer {
    public static final String DST_IP_VAR = "dst_ip";
    public static final String DST_PORT_VAR = "dst_port";
    public static final String FAKE_INTERFACE_PREFIX = "TenGigabitEthernet200/";
+   private static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
    private static final long IP_PROTOCOL_TCP = 6;
    private static final long IP_PROTOCOL_UDP = 17;
    public static final String IP_PROTOCOL_VAR = "ip_prot";
+   private static final String NODE_NONE_NAME = "(none)";
    public static final Map<String, Integer> PACKET_VAR_SIZES = initPacketVarSizes();
    public static final List<String> PACKET_VARS = getPacketVars();
    private static final int PORT_BITS = 16;
@@ -91,8 +94,6 @@ public class Synthesizer {
    private static final int PORT_MIN = 0;
    public static final String SRC_IP_VAR = "src_ip";
    public static final String SRC_PORT_VAR = "src_port";
-   private static final String NODE_NONE_NAME = "(none)";
-   private static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
 
    public static BooleanExpr bitvectorGEExpr(String bv, long lb, int numBits) {
       // these masks refer to nested conditions, not to bitwise and, or
@@ -679,6 +680,22 @@ public class Synthesizer {
       return or;
    }
 
+   private List<Statement> getNodeAcceptToRoleAcceptRules() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements.add(new Comment("Connect node_accept to role_accept"));
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         String hostname = e.getKey();
+         Configuration c = e.getValue();
+         NodeAcceptExpr nodeAccept = new NodeAcceptExpr(hostname);
+         for (String role : c.getRoles()) {
+            RoleAcceptExpr roleAccept = new RoleAcceptExpr(role);
+            RuleExpr rule = new RuleExpr(roleAccept, nodeAccept);
+            statements.add(rule);
+         }
+      }
+      return statements;
+   }
+
    public NodeSet getNodeSet() {
       NodeSet nodes = new NodeSet();
       nodes.addAll(_configurations.keySet());
@@ -744,7 +761,7 @@ public class Synthesizer {
                                * and preout, and inInt has policy, and policy
                                * matches on out interface, then preout_edge on
                                * out interface and corresponding in interface
-                               * 
+                               *
                                */
                               for (Edge edge : edges) {
                                  String outInterface = edge.getInt1();
@@ -794,13 +811,13 @@ public class Synthesizer {
                    * For each clause, if we reach that clause, then if any acl
                    * in that clause permits, or there are no acls, clause, if
                    * the packet then the packet is matched by that clause.
-                   * 
+                   *
                    * If all (at least one) acls deny, then the packed is not
                    * matched by that clause
-                   * 
+                   *
                    * If there are no acls to match, then the packet is matched
                    * by that clause.
-                   * 
+                   *
                    */
                   boolean hasMatchIp = false;
                   AndExpr allAclsDeny = new AndExpr();
@@ -1075,7 +1092,7 @@ public class Synthesizer {
              * if a packet reaches postin_interface on intefrace, and interface
              * is policy-routed by policy, and policy denies, and it reaches
              * preout, then it reaches destroute
-             * 
+             *
              */
             PostInInterfaceExpr postInInterface = new PostInInterfaceExpr(
                   hostname, ifaceName);
@@ -1212,6 +1229,7 @@ public class Synthesizer {
       List<Statement> toNeighborsRules = getToNeighborsRules();
       List<Statement> preInInterfaceToPostInInterfaceRules = getPreInInterfaceToPostInInterfaceRules();
       List<Statement> preOutInterfaceToPostOutInterfaceRules = getPreOutInterfaceToPostOutInterfaceRules();
+      List<Statement> nodeAcceptToRoleAcceptRules = getNodeAcceptToRoleAcceptRules();
 
       rules.addAll(dropRules);
       rules.addAll(acceptRules);
@@ -1229,6 +1247,7 @@ public class Synthesizer {
       rules.addAll(toNeighborsRules);
       rules.addAll(preInInterfaceToPostInInterfaceRules);
       rules.addAll(preOutInterfaceToPostOutInterfaceRules);
+      rules.addAll(nodeAcceptToRoleAcceptRules);
 
       List<Statement> relDecls = getRelDeclExprs(rules);
 

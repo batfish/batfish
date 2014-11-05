@@ -12,6 +12,15 @@ Node(x),
 Node_NONE[] = node ->
    Node(node).
 
+Role(role),
+   Role_name(role:name)
+   ->
+   string(name).
+
+SetNodeRole(node, role) ->
+   Node(node),
+   Role(role).
+
 SetNodeVendor(node, vendor) ->
    Node(node),
    Vendor(vendor).

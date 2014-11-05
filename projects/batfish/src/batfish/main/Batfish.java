@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -48,12 +49,14 @@ import batfish.collections.FibSet;
 import batfish.collections.FlowSinkInterface;
 import batfish.collections.FlowSinkSet;
 import batfish.collections.FunctionSet;
+import batfish.collections.NodeRoleMap;
 import batfish.collections.NodeSet;
 import batfish.collections.PolicyRouteFibIpMap;
 import batfish.collections.PolicyRouteFibNodeMap;
 import batfish.collections.PredicateSemantics;
 import batfish.collections.PredicateValueTypeMap;
 import batfish.collections.QualifiedNameMap;
+import batfish.collections.RoleSet;
 import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ConfigurationLexer;
 import batfish.grammar.ConfigurationParser;
@@ -71,6 +74,8 @@ import batfish.grammar.topology.BatfishTopologyCombinedParser;
 import batfish.grammar.topology.BatfishTopologyExtractor;
 import batfish.grammar.topology.GNS3TopologyCombinedParser;
 import batfish.grammar.topology.GNS3TopologyExtractor;
+import batfish.grammar.topology.RoleCombinedParser;
+import batfish.grammar.topology.RoleExtractor;
 import batfish.grammar.topology.TopologyExtractor;
 import batfish.grammar.z3.ConcretizerQueryResultCombinedParser;
 import batfish.grammar.z3.ConcretizerQueryResultExtractor;
@@ -1872,6 +1877,16 @@ public class Batfish implements AutoCloseable {
       if (vendorConfigurations == null) {
          throw new BatfishException("Exiting due to parser errors\n");
       }
+      NodeRoleMap nodeRoles = parseNodeRoles(testRigPath);
+      if (nodeRoles != null) {
+         for (Entry<String, VendorConfiguration> configEntry : vendorConfigurations
+               .entrySet()) {
+            String hostname = configEntry.getKey();
+            VendorConfiguration config = configEntry.getValue();
+            RoleSet roles = nodeRoles.get(hostname);
+            config.setRoles(roles);
+         }
+      }
       print(1, "\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       resetTimer();
       new File(outputPath).mkdirs();
@@ -1885,6 +1900,25 @@ public class Batfish implements AutoCloseable {
          print(2, " ...OK\n");
       }
       printElapsedTime();
+   }
+
+   private NodeRoleMap parseNodeRoles(String testRigPath) {
+      Path rolePath = Paths.get(testRigPath, "node_roles");
+      String roleFileText = null;
+      if (Files.exists(rolePath)) {
+         roleFileText = readFile(rolePath.toFile());
+      }
+      else {
+         return null;
+      }
+      print(1, "Parsing: \"" + rolePath.toAbsolutePath().toString() + "\"");
+      BatfishCombinedParser<?, ?> parser = new RoleCombinedParser(roleFileText);
+      RoleExtractor extractor = new RoleExtractor();
+      ParserRuleContext tree = parse(parser);
+      ParseTreeWalker walker = new ParseTreeWalker();
+      walker.walk(extractor, tree);
+      NodeRoleMap nodeRoles = extractor.getRoleMap();
+      return nodeRoles;
    }
 
    public void writeConfigurationFacts(
