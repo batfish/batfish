@@ -18,6 +18,7 @@ import batfish.collections.FlowSinkSet;
 import batfish.collections.NodeSet;
 import batfish.collections.PolicyRouteFibIpMap;
 import batfish.collections.PolicyRouteFibNodeMap;
+import batfish.collections.RoleSet;
 import batfish.main.BatfishException;
 import batfish.representation.Configuration;
 import batfish.representation.Edge;
@@ -687,10 +688,13 @@ public class Synthesizer {
          String hostname = e.getKey();
          Configuration c = e.getValue();
          NodeAcceptExpr nodeAccept = new NodeAcceptExpr(hostname);
-         for (String role : c.getRoles()) {
-            RoleAcceptExpr roleAccept = new RoleAcceptExpr(role);
-            RuleExpr rule = new RuleExpr(roleAccept, nodeAccept);
-            statements.add(rule);
+         RoleSet roles = c.getRoles();
+         if (roles != null) {
+            for (String role : roles) {
+               RoleAcceptExpr roleAccept = new RoleAcceptExpr(role);
+               RuleExpr rule = new RuleExpr(nodeAccept, roleAccept);
+               statements.add(rule);
+            }
          }
       }
       return statements;
