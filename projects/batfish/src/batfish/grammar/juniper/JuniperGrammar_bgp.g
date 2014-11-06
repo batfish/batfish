@@ -35,14 +35,15 @@ bgp_family_common_stanza returns [BGPFamily bfs = new BGPFamily()]
   FAMILY 
   (ft=BRIDGE 
   |ft=CCC
+  |ft=ETHERNET_SWITCHING
   |ft=INET
   |ft=INET_VPN
   |ft=INET6
   |ft=INET6_VPN
   |ft=ISO
   |ft=L2_VPN
-  |ft=ETHERNET_SWITCHING
   |ft=MPLS
+  |ft=VPLS
   )
   ignored_substanza // TODO [Ask Ari]: I'm certain these should not be ignored.
   ;
@@ -172,7 +173,9 @@ gbg_stanza_list returns [List<BG_GRStanza> gbgl = new ArrayList<BG_GRStanza>()]
 /* --- --- --- --- --- Protocol->BGP->Null Stanza Rules ----------------------------------------------*/
 null_bg_stanza returns [BGStanza bgs]
   :
-  s=log_updown_bg_stanza
+  (s=log_updown_bg_stanza
+  |s=traceoptions_bg_stanza
+  )
   {bgs = new BG_NullStanza(s);}
   ;
   
@@ -211,7 +214,7 @@ neighbor_gbg_stanza returns [BG_GRStanza gbgs]
   (ip=IP_ADDRESS
   |ip=IPV6_ADDRESS {ngbgs.set_stanzaStatus(StanzaStatusType.IPV6);}
   ){ngbgs.set_neighborIP(ip.getText());}
-  OPEN_BRACE (x=ngbg_stanza {ngbgs.addBGGRNStanza(x);})+ CLOSE_BRACE
+  OPEN_BRACE ((x=ngbg_stanza | x=inactive_ngbg_stanza) {ngbgs.addBGGRNStanza(x);})+ CLOSE_BRACE
   )
   {gbgs = ngbgs;}
   ;
@@ -237,6 +240,7 @@ null_gbg_stanza returns [BG_GRStanza gbgs]
   |s=log_updown_gbg_stanza
   |s=metric_out_gbg_stanza
   |s=multihop_gbg_stanza
+  |s=multipath_gbg_stanza
   |s=remove_private_gbg_stanza
   )
   {gbgs = new BGGR_NullStanza(s);}
@@ -248,7 +252,22 @@ log_updown_bg_stanza returns [String s]
   x=log_updown_common_stanza {s=x;}
   ;
   
+traceoptions_bg_stanza returns [String s]
+  :
+  x=TRACEOPTIONS ignored_substanza {s=x.getText() + "{..}";}
+  ;
+  
+  
 /* --- --- --- --- --- --- --- Protocol->BGP->Group->Neighbor Stanza Rules ---------------------------*/
+inactive_ngbg_stanza returns [BGGR_NStanza ngbgs]
+  :
+  INACTIVE COLON x=ngbg_stanza  
+  {
+    x.set_stanzaStatus(StanzaStatusType.INACTIVE);
+    ngbgs=x;
+  }
+  ;
+
 ngbg_stanza returns [BGGR_NStanza ngbgs]
   :
   (x=export_ngbg_stanza
@@ -282,6 +301,11 @@ metric_out_gbg_stanza returns [String s]
 multihop_gbg_stanza returns [String s]
   :
   x=multihop_common_stanza  {s=x;}
+  ;
+
+multipath_gbg_stanza returns [String s]
+  :
+  x=MULTIPATH SEMICOLON {s=x.getText();}
   ;
 
 remove_private_gbg_stanza returns [String s]
@@ -321,6 +345,7 @@ null_ngbg_stanza returns [BGGR_NStanza ngbgs]
   |s=cluster_ngbg_stanza 
   |s=description_ngbg_stanza
   |s=graceful_restart_ngbg_stanza
+  |s=include_mp_next_hop_ngbg_stanza
   |s=hold_time_ngbg_stanza
   |s=local_preference_ngbg_stanza
   |s=metric_out_ngbg_stanza
@@ -352,6 +377,11 @@ description_ngbg_stanza returns [String s]
 graceful_restart_ngbg_stanza returns [String s]
   :
   x=GRACEFUL_RESTART SEMICOLON {s = x.getText();}
+  ;
+  
+include_mp_next_hop_ngbg_stanza returns [String s]
+  :
+  x=INCLUDE_MP_NEXT_HOP SEMICOLON {s = x.getText();}
   ;
   
 hold_time_ngbg_stanza returns [String s]

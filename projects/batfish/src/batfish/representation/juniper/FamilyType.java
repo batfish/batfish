@@ -5,7 +5,11 @@ public enum FamilyType {
    CCC,
    ETHERNET_SWITCHING,
    INET,
+   INET_VPN,
    INET6,
+   INET6_VPN,
    ISO,
-   MPLS
+   L2_VPN,
+   MPLS,
+   VPLS
 }

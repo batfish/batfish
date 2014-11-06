@@ -11,9 +11,13 @@ public class FamilyOps  {
       case INET:
          return false;
       case CCC:
-      case ISO:
-      case MPLS:
+      case INET_VPN:
       case INET6:
+      case INET6_VPN:
+      case ISO:
+      case L2_VPN:
+      case MPLS:
+      case VPLS:
          return true; 
       }
       throw new BatfishException("Invalid family type");
@@ -29,12 +33,20 @@ public class FamilyOps  {
          return "ETHERNET_SWITCHING";
       case INET:
          return "INET";
+      case INET_VPN:
+         return "INET_VPN";
       case INET6:
          return "INET6";
+      case INET6_VPN:
+         return "INET6_VPN";
       case ISO:
          return "ISO";
+      case L2_VPN:
+         return "L2_VPN";
       case MPLS:
          return "MPLS";
+      case VPLS:
+         return "VPLS";
       }
       throw new BatfishException("Invalid family string");
    }
@@ -49,12 +61,20 @@ public class FamilyOps  {
          return FamilyType.ETHERNET_SWITCHING;
       case "INET":
          return FamilyType.INET;
+      case "INET_VPN":
+         return FamilyType.INET_VPN;
       case "INET6":
          return FamilyType.INET6;
+      case "INET6_VPN":
+         return FamilyType.INET6_VPN;
       case "ISO":
          return FamilyType.ISO;
+      case "L2_VPN":
+         return FamilyType.L2_VPN;
       case "MPLS":
          return FamilyType.MPLS;
+      case "VPLS":
+         return FamilyType.VPLS;
       }
       throw new BatfishException("Invalid family type string");
    }

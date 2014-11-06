@@ -73,6 +73,10 @@ public class IF_UnitStanza extends IFStanza {
             case APPLY_GROUPS:
                // TODO: [P0] WHAT TO DO
                break;
+               
+            case DISABLE:
+               // TODO: [P0] WHAT TO DO
+               break;
             case FAMILY: // TODO [P0]: This doesn't work with multiple family stanzas
                IFU_FamilyStanza ifufs = (IFU_FamilyStanza) ifus;
                if (ifufs.get_stanzaStatus()==StanzaStatusType.ACTIVE) {// if it's IGNORED/INACTIVE/IPV6 already noted 

@@ -1,20 +1,27 @@
 package batfish.grammar.juniper.policy_options;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class POPSTFr_AsPathStanza extends POPST_FromStanza {
    
-   private String _pathName;
+   private List<String> _names;
    
    /* ------------------------------ Constructor ----------------------------*/
-   public POPSTFr_AsPathStanza(String s) {
-      _pathName = s;
-      set_postProcessTitle("AS Path " + s);
+   public POPSTFr_AsPathStanza() {
+      _names = new ArrayList<String>();
+      set_postProcessTitle("AS Path ");
    }
    
    /* ----------------------------- Other Methods ---------------------------*/
+   public void addName (String n) {
+      set_postProcessTitle(get_postProcessTitle() + n + " ");
+      _names.add(n);
+   }
    
    /* ---------------------------- Getters/Setters --------------------------*/
-   public String get_pathname() {
-      return _pathName;
+   public List<String> get_pathnames() {
+      return _names;
    }
    
    /* --------------------------- Inherited Methods -------------------------*/
