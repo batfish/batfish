@@ -1,134 +1,92 @@
 parser grammar JuniperGrammar_ospf;
 
-@members {
-private List<String> errors = new ArrayList<String>();
+import JuniperGrammarCommonParser;
 
-public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
-	String hdr = getErrorHeader(e);
-	String msg = getErrorMessage(e, tokenNames);
-	String errorMessage = "JuniperGrammar_ospf: " + hdr + " " + msg;
-	errors.add(errorMessage);
+options {
+   tokenVocab = JuniperGrammarLexer;
 }
 
-public List<String> getErrors() {
-	return errors;
-}
-}
+ospf_p_stanza
+:
+   OSPF OPEN_BRACE op_stanza+ CLOSE_BRACE
+;
 
-/* --- --- --- Protocol->OSPF Stanza Rules -----------------------------------------------------------*/
-ospf_p_stanza returns [PStanza ps]
-@init {
-  OSPFStanza os = new OSPFStanza();
-}
-  :
-  (OSPF OPEN_BRACE (x=op_stanza {os.addOPStanza(x);})+ CLOSE_BRACE) 
-  ;
-    
-/* --- --- --- --- Protocol->OSPF Sub-Stanza Rules ---------------------------------------------------*/    
-op_stanza returns [OPStanza ops]
-  :
-  (x=area_op_stanza
-  |x=export_op_stanza
-  |x=reference_bandwidth_op_stanza
-  |x=null_op_stanza
-  )
-  { ops =x; }
-  ;
+op_stanza
+:
+   area_op_stanza
+   | export_op_stanza
+   | reference_bandwidth_op_stanza
+   | null_op_stanza
+;
 
-/* --- --- --- --- --- Protocol->OSPF->Area Stanza Rules ---------------------------------------------*/
-area_op_stanza returns [OPStanza ops]
-@init {
-OP_AreaStanza aops = new OP_AreaStanza();
-}
-  :
-  (AREA
-  (i=integer {aops.set_areaId(i);}
-  //|ip=IP_ADDRESS {aops.set_areaIp(-1);}// TODO: Juniper docs say this can be IP but representation is set for int
-  )
-  OPEN_BRACE (x=aop_stanza {aops.addOPARStanza(x);})+ CLOSE_BRACE
-  )
-  {ops = aops;}
-  ;
-  
-/* --- --- --- --- --- Protocol->OSPF->Export Stanza Rules -------------------------------------------*/
-export_op_stanza returns [OPStanza ops]
-@init {
-OP_ExportStanza eops = new OP_ExportStanza();
-}
-  :
-  (EXPORT
-  (
-    (name=VARIABLE) {eops.addPolicy(name.getText());}
-   |(x=bracketed_list)
-    {
-      for (String s: x) {
-        eops.addPolicy(s);
-      }
-    }
-  )
-  SEMICOLON
-  )
-  {ops = eops;}
-  ;
+area_op_stanza
+:
+   AREA
+   (
+      DEC
+      //TODO: Juniper docs say this can be IP but representation is set for int
 
-/* --- --- --- --- --- Protocol->OSPF->Reference Bandwidth Stanza Rules ------------------------------*/
-reference_bandwidth_op_stanza returns [OPStanza ops]
-  :
-  (REFERENCE_BANDWIDTH rb=double_num SEMICOLON)  {ops = new OP_ReferenceBandwidthStanza(rb);}  
-  ;
+   ) OPEN_BRACE aop_stanza+ CLOSE_BRACE
+;
 
-/* --- --- --- --- --- Protocol->OSPF->Null Stanza Rules ---------------------------------------------*/
-null_op_stanza returns [OPStanza ops]
-  :
-  (s=import_op_stanza
-  |s=traceoptions_op_stanza)
-  {ops = new OP_NullStanza(s);}
-  ;
-  
-/* --- --- --- --- --- --- Protocol->OSPF->Area Sub-Stanza Rules -------------------------------------*/
-aop_stanza returns [OP_ARStanza aops]
-  :
-  (x=interface_aop_stanza
-  |x=null_aop_stanza
-  )
-  {aops =x;}
-  ;
-  
-/* --- --- --- --- --- --- Protocol->OSPF->Null Sub-Stanza Rules -------------------------------------*/
-import_op_stanza returns [String s]
-  :
-  x=IMPORT ignored_substanza {s = x.getText() + "{...}";}
-  ;
-  
-traceoptions_op_stanza returns [String s]
-  :
-  x=TRACEOPTIONS ignored_substanza {s = x.getText() + "{...}";}
-  ;
-  
-/* --- --- --- --- --- --- --- Protocol->OSPF->Area->Interface Stanza Rules --------------------------*/
-interface_aop_stanza returns [OP_ARStanza aops]
-  :
-  (INTERFACE iname=VARIABLE ignored_substanza SEMICOLON) {aops = new OPAR_InterfaceStanza(iname.getText());}
-  // TODO [Ask Ari]: shoule we really be ignoring this?
-  ;
-  
-/* --- --- --- --- --- --- --- Protocol->OSPF->Area->Null Stanza Rules -------------------------------*/
-null_aop_stanza returns [OP_ARStanza aops]
-  :
-  (s=network_summary_export_aop_stanza
-  |s=nssa_aop_stanza
-  )
-  {aops = new OPAR_NullStanza(s);}
-  ;
+export_op_stanza
+:
+   (
+      EXPORT
+      (
+         name = VARIABLE
+         | x = variable_list
+      ) SEMICOLON
+   )
+;
 
-/* --- --- --- --- --- --- --- --- Protocol->OSPF->Area->Null Sub-Stanza Rules -----------------------*/
-network_summary_export_aop_stanza returns [String s]
-  :
-  x=NETWORK_SUMMARY_EXPORT ignored_substanza SEMICOLON {s = x.getText() + "{...}";}
-  ;
+reference_bandwidth_op_stanza
+:
+   REFERENCE_BANDWIDTH double_num SEMICOLON
+;
 
-nssa_aop_stanza returns [String s]
-  :
-  x=NSSA SEMICOLON {s = x.getText();}
-  ;
-  
+null_op_stanza
+:
+   import_op_stanza
+   | traceoptions_op_stanza
+;
+
+aop_stanza
+:
+   interface_aop_stanza
+   | null_aop_stanza
+;
+
+import_op_stanza
+:
+   IMPORT ignored_substanza
+;
+
+traceoptions_op_stanza
+:
+   TRACEOPTIONS ignored_substanza
+;
+
+interface_aop_stanza
+:
+   INTERFACE iname = VARIABLE ignored_substanza SEMICOLON
+   // TODO [Ask Ari]: shoule we really be ignoring this?
+
+;
+
+null_aop_stanza
+:
+   network_summary_export_aop_stanza
+   | nssa_aop_stanza
+;
+
+network_summary_export_aop_stanza
+:
+   NETWORK_SUMMARY_EXPORT ignored_substanza SEMICOLON
+;
+
+nssa_aop_stanza
+:
+   NSSA SEMICOLON
+;
+ 
