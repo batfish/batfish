@@ -106,6 +106,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       prefixes.put("Management", "Management");
       prefixes.put("mgmt", "Management");
       prefixes.put("Port-channel", "Port-channel");
+      prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
+      prefixes.put("te", "TenGigabitEthernet");
       prefixes.put("Vlan", "Vlan");
       return prefixes;
    }
