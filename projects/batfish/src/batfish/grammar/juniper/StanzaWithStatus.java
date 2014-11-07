@@ -52,6 +52,9 @@ public abstract class StanzaWithStatus {
    public void set_postProcessTitle (String s) {
       _postProcessTitle = s;
    }
+   public String get_postProcessTitle () {
+      return _postProcessTitle;
+   }
    public List<String> get_ignoredStatements() {
       return _ignoredStatements;
    }

@@ -29,12 +29,14 @@ tokens {
   APPLY_GROUPS_EXCEPT         = 'apply-groups-except';
   APPLY_PATH                  = 'apply-path';
   AREA                        = 'area';
+  ARP                         = 'arp';
   ARP_RESP                    = 'arp-resp';
   AS_PATH                     = 'as-path';
   AS_PATH_PREPEND             = 'as-path-prepend';
   AUTHENTICATION_KEY          = 'authentication-key';
   AUTHENTICATION_ORDER        = 'authentication-order';
   AUTONOMOUS_SYSTEM           = 'autonomous-system';
+  BACKUP_ROUTER               = 'backup-router';
   BFD                         = 'bfd';
   BFD_LIVENESS_DETECTION      = 'bfd-liveness-detection';
   BGP                         = 'bgp';
@@ -69,7 +71,9 @@ tokens {
   EXACT                       = 'exact';
   EXCEPT                      = 'except';
   EXPORT                      = 'export';
+  EXPORT_RIB                  = 'export-rib';
   EXTERNAL                    = 'external';
+  FAIL_FILTER                 = 'fail-filter';
   FAMILY                      = 'family';
   FILE                        = 'file';
   FILTER                      = 'filter';
@@ -77,6 +81,7 @@ tokens {
   FLEXIBLE_VLAN_TAGGING       = 'flexible-vlan-tagging';
   FORWARDING_OPTIONS          = 'forwarding-options';
   FORWARDING_TABLE            = 'forwarding-table';
+  FRAMING                     = 'framing';
   FROM                        = 'from';
   FTP                         = 'ftp';
   GENERATE                    = 'generate';
@@ -95,14 +100,17 @@ tokens {
   IMPORT                      = 'import';
   IMPORT_RIB                  = 'import-rib';
   INACTIVE                    = 'inactive';
+  INCLUDE_MP_NEXT_HOP         = 'include-mp-next-hop';
   INET                        = 'inet';
   INET6                       = 'inet6';
   INET_VPN                    = 'inet-vpn';
   INET6_VPN                   = 'inet6-vpn';
+  INNER                       = 'inner';
   INPUT                       = 'input';
   INPUT_VLAN_MAP              = 'input-vlan-map';
   INSTALL                     = 'install';
   INSTALL_NEXTHOP             = 'install-nexthop';
+  INSTANCE                    = 'instance';
   INTERFACE                   = 'interface';
   INTERFACE_MODE              = 'interface-mode';
   INTERFACES                  = 'interfaces';
@@ -114,6 +122,7 @@ tokens {
   L2_CIRCUIT                  = 'l2circuit';
   L2_VPN                      = 'l2vpn';
   LICENSE                     = 'license';
+  LINK_MODE                   = 'link-mode';
   LDP                         = 'ldp';
   LLDP                        = 'lldp';
   LLDP_MED                    = 'lldp-med';
@@ -127,6 +136,7 @@ tokens {
   LOGIN                       = 'login';
   LONGER                      = 'longer';
   LSP                         = 'lsp';
+  MAC                         = 'mac';
   MARTIANS                    = 'martians';
   MAX_CONFIGURATIONS_ON_FLASH = 'max-configurations-on-flash';
   MAX_CONFIGURATION_ROLLBACKS = 'max-configuration-rollbacks';
@@ -156,15 +166,19 @@ tokens {
   NO_NEIGHBOR_LEARN           = 'no-neighbor-learn';
   NSSA                        = 'nssa';
   NTP                         = 'ntp';
+  ORIGIN                      = 'origin';
   ORLONGER                    = 'orlonger';
   OSPF                        = 'ospf';
   OSPF3                       = 'ospf3';
   OUTPUT                      = 'output';
+  OUTPUT_VLAN_MAP             = 'output-vlan-map';
+  OUTER                       = 'outer';
   PASSIVE                     = 'passive';
   PEER_AS                     = 'peer-as';
   PER_PACKET                  = 'per-packet';
   PIM                         = 'pim';
   POE                         = 'poe';
+  POLICER                     = 'policer';
   POLICY                      = 'policy';
   POLICY_OPTIONS              = 'policy-options';
   POLICY_STATEMENT            = 'policy-statement';
@@ -231,10 +245,12 @@ tokens {
   TRACEOPTIONS                = 'traceoptions';
   TRAPS                       = 'traps';
   TRUNK                       = 'trunk';
+  TUNNEL                      = 'tunnel';
   TYPE                        = 'type';
   UDP                         = 'udp';
   UNIT                        = 'unit';
   UPTO                        = 'upto';
+  URPF_LOGGING                = 'urpf-logging';
   USER                        = 'user';
   VERSION                     = 'version';
   VIRTUAL_CHASSIS             = 'virtual-chassis';
@@ -242,7 +258,9 @@ tokens {
   VLANS                       = 'vlans';
   VLAN_ID                     = 'vlan-id';
   VLAN_ID_LIST                = 'vlan-id-list';
+  VLAN_TAGS                   = 'vlan-tags';
   VLAN_TAGGING                = 'vlan-tagging';
+  VPLS                        = 'vpls';
   VSTP                        = 'vstp';
 }
 
@@ -254,15 +272,15 @@ package batfish.grammar.juniper;
 private List<String> errors = new ArrayList<String>();
 
 public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
-	String hdr = getErrorHeader(e);
-	String msg = getErrorMessage(e, tokenNames);
-	String errorMessage = hdr + " " + msg;
-	errors.add(errorMessage);
+   String hdr = getErrorHeader(e);
+   String msg = getErrorMessage(e, tokenNames);
+   String errorMessage = hdr + " " + msg;
+   errors.add(errorMessage);
 }
 
 @Override
 public List<String> getErrors() {
-	return errors;
+   return errors;
 }
 }
 
@@ -298,32 +316,32 @@ import batfish.util.SubRange;
 @parser::members {
 @Override
 public VendorConfiguration parse_configuration() throws RecognitionException {
-	return juniper_configuration().getConfiguration();
+   return juniper_configuration().getConfiguration();
 }
 
 private List<String> errors = new ArrayList<String>();
 
 public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
-	String hdr = getErrorHeader(e);
-	String msg = getErrorMessage(e, tokenNames);
-	String errorMessage = "JuniperGrammar: " + hdr + " " + msg;
-	errors.add(errorMessage);
+   String hdr = getErrorHeader(e);
+   String msg = getErrorMessage(e, tokenNames);
+   String errorMessage = "JuniperGrammar: " + hdr + " " + msg;
+   errors.add(errorMessage);
 }
 
 public List<String> getErrors() {
 // TODO[P0]: check
-	List<String> allErrors = new ArrayList<String>();
-	allErrors.addAll(errors);
-	allErrors.addAll(gJuniperGrammar_bgp.getErrors());
+   List<String> allErrors = new ArrayList<String>();
+   allErrors.addAll(errors);
+   allErrors.addAll(gJuniperGrammar_bgp.getErrors());
    allErrors.addAll(gJuniperGrammar_firewall.getErrors());
    allErrors.addAll(gJuniperGrammar_groups.getErrors());
-	allErrors.addAll(gJuniperGrammar_interface.getErrors());
-	allErrors.addAll(gJuniperGrammar_ospf.getErrors());
-	allErrors.addAll(gJuniperGrammar_policy_options.getErrors());
+   allErrors.addAll(gJuniperGrammar_interface.getErrors());
+   allErrors.addAll(gJuniperGrammar_ospf.getErrors());
+   allErrors.addAll(gJuniperGrammar_policy_options.getErrors());
    allErrors.addAll(gJuniperGrammar_protocols.getErrors());
-	allErrors.addAll(gJuniperGrammar_routing_options.getErrors());
+   allErrors.addAll(gJuniperGrammar_routing_options.getErrors());
    allErrors.addAll(gJuniperGrammar_system.getErrors());
-	return allErrors;
+   return allErrors;
 }
 
 public int nextIntVal() {
@@ -371,10 +389,13 @@ j_stanza returns [JStanza js]
 
 null_stanza returns [JStanza js]
   :
-  (s=chassis_stanza
+  (s=bridge_domains_stanza
+  |s=chassis_stanza
   |s=class_of_service_stanza
+  |s=empty_neighbor_stanza
   |s=forwarding_options_stanza
   |s=routing_instances_stanza
+  |s=security_stanza
   |s=services_stanza
   |s=version_stanza
   |s=removed_top_level_stanza
@@ -383,6 +404,10 @@ null_stanza returns [JStanza js]
   ;
 
 /* --- Null Stanza Rules -------------------------------------------------------------------*/
+bridge_domains_stanza returns [String s]
+  :
+  x=BRIDGE_DOMAINS ignored_substanza {s = x.getText() + "{...}";}
+  ;
 
 chassis_stanza returns [String s]
   :
@@ -392,6 +417,11 @@ chassis_stanza returns [String s]
 class_of_service_stanza returns [String s]
   :
   x=CLASS_OF_SERVICE ignored_substanza {s = x.getText() + "{...}";}
+  ;
+  
+empty_neighbor_stanza returns [String s]
+  :
+  x=NEIGHBOR SEMICOLON {s = x.getText() + ";";}
   ;
 
 forwarding_options_stanza returns [String s]
@@ -403,7 +433,12 @@ routing_instances_stanza returns [String s] // TODO [Ask Ari]: probably don't ig
   :
   x=ROUTING_INSTANCES ignored_substanza {s = x.getText() + "{...}";}
   ;
-
+  
+security_stanza returns [String s]
+  :
+  x=SECURITY ignored_substanza {s = x.getText() + "{...}";}
+  ;
+  
 services_stanza returns [String s]
   :
   x=SERVICES ignored_substanza {s = x.getText() + "{...}";}
@@ -491,6 +526,8 @@ string_up_to_semicolon returns [String s]
   (x = VARIABLE 
   |x = IPV6_ADDRESS
   |x = COLON
+  |x = DEC
+  |x = FORWARD_SLASH
   )
   {linesofar += x.getText();}
   )+
@@ -597,9 +634,6 @@ rib_common_stanza returns [String s]
   ;
 
 /*Lexing Rules ---------------------------------------------------------------------------------------*/
-
-
-
   
 ARI_CHANGETHIS1
   :
@@ -609,14 +643,18 @@ ARI_CHANGETHIS1
 ARI_CHANGETHIS2
   :
   '802.3ad ' (~';')* ';'
-  ;  
+  ; 
   
 ARI_CHANGETHIS3
   :
-  'family iso ' (~'}')* '}'
-  ;
-
-
+  '.*3265.*' 
+  ;  
+  
+ARI_CHANGETHIS4
+  :
+  'ae4.202' 
+  ;  
+  
 AMPERSAND
   :
   '&'
@@ -749,12 +787,12 @@ IPV6_ADDRESS_WITH_MASK
   
 ISO_ADDRESS
   :
-  DEC '.' 
-  (HEX|DEC)(HEX|DEC)(HEX|DEC)(HEX|DEC) '.'
-  (HEX|DEC)(HEX|DEC)(HEX|DEC)(HEX|DEC) '.'
-  (HEX|DEC)(HEX|DEC)(HEX|DEC)(HEX|DEC) '.'
-  (HEX|DEC)(HEX|DEC)(HEX|DEC)(HEX|DEC) '.'
-  (HEX|DEC)(HEX|DEC)
+  DIGIT DIGIT '.' 
+  DIGIT DIGIT DIGIT DIGIT '.'
+  DIGIT DIGIT DIGIT DIGIT '.'
+  DIGIT DIGIT DIGIT DIGIT '.'
+  DIGIT DIGIT DIGIT DIGIT '.'
+  DIGIT DIGIT 
   ;
 
 LESS_THAN
@@ -769,8 +807,7 @@ LINE_COMMENT
                     $channel = HIDDEN;
                    }
   ;
-
-
+  
 MULTILINE_COMMENT
   :
   OPEN_COMMENT (options {greedy=false;}: .)* CLOSE_COMMENT 

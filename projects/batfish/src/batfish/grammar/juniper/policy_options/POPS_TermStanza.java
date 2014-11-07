@@ -83,8 +83,10 @@ public class POPS_TermStanza extends StanzaWithStatus {
       switch (fs.getType()) {
       case AS_PATH:
          POPSTFr_AsPathStanza asfs = (POPSTFr_AsPathStanza) fs;
-         PolicyStatement_MatchLine ml_aspath = new PolicyStatementMatchAsPathAccessListLine(asfs.get_pathname());
-         _matchList.add(ml_aspath);
+         for (String pathname : asfs.get_pathnames()) {
+            PolicyStatement_MatchLine ml_aspath = new PolicyStatementMatchAsPathAccessListLine(pathname);
+            _matchList.add(ml_aspath);
+         }
          break;
 
       case COMMUNITY:

@@ -22,9 +22,23 @@ interfaces_stanza returns [JStanza js]
 }
   :
   INTERFACES OPEN_BRACE 
-  (x=interface_stanza {iss.addInterfaceStanza(x);})+
+  (
+    (x=interface_stanza 
+    |x=inactive_interface_stanza
+    )
+    {iss.addInterfaceStanza(x);}
+  )+
   CLOSE_BRACE
   {js =iss;}
+  ;
+  
+inactive_interface_stanza returns [InterfaceStanza is = new InterfaceStanza()]
+  :
+  INACTIVE COLON x = interface_stanza  
+  {
+    x.set_stanzaStatus(StanzaStatusType.INACTIVE);
+    is=x;
+  }
   ;
   
 interface_stanza returns [InterfaceStanza is = new InterfaceStanza()]
@@ -59,6 +73,7 @@ inactive_if_stanza returns [IFStanza ifs]
 if_stanza returns [IFStanza ifs]
   :
   (x=disable_if_stanza
+  |x=enable_if_stanza
   |x=unit_if_stanza
   |x=null_if_stanza
   |x=apply_groups_if_stanza
@@ -80,6 +95,11 @@ disable_if_stanza returns [IFStanza ifs]
   :
   (DISABLE SEMICOLON) {ifs = new IF_DisableStanza();}
   ;
+  
+enable_if_stanza returns [IFStanza ifs]
+  :
+  (ENABLE SEMICOLON) {ifs = new IF_EnableStanza();}
+  ;
 
 unit_if_stanza returns [IFStanza ifs]
 @init {
@@ -90,9 +110,13 @@ IF_UnitStanza ifus = new IF_UnitStanza();
   (num = integer {ifus.set_num(num);}
   |UNIT_WILDCARD {ifus.set_wildcard(true);}
   )
-  OPEN_BRACE 
-  (x=u_if_stanza {ifus.addIFUstanza(x);})+
-  CLOSE_BRACE 
+  (SEMICOLON
+  |(OPEN_BRACE 
+  (
+    (x=u_if_stanza |x=inactive_u_if_stanza) {ifus.addIFUstanza(x);}
+  )+
+  CLOSE_BRACE)
+  )
   {ifs = ifus;}
   ;    
 
@@ -102,7 +126,10 @@ null_if_stanza returns [IFStanza ifs]
   | s=description_if_stanza
   | s=encapsulation_if_stanza
   | s=flexible_vlan_tagging_if_stanza
+  | s=framing_if_stanza
   | s=gigether_options_if_stanza
+  | s=link_mode_if_stanza
+  | s=mac_if_stanza
   | s=mtu_if_stanza
   | s=traps_if_stanza
   | s=vlan_tagging_if_stanza  
@@ -126,6 +153,11 @@ encapsulation_if_stanza returns [String s]
   enc=encapsulation_common_stanza {s=enc;}
   ;
   
+framing_if_stanza returns [String s]
+  :
+  x=FRAMING ignored_substanza {s=x.getText() + "{...}";}
+  ;
+  
 flexible_vlan_tagging_if_stanza returns [String s]
   :
   x=FLEXIBLE_VLAN_TAGGING SEMICOLON {s=x.getText();}
@@ -134,6 +166,17 @@ flexible_vlan_tagging_if_stanza returns [String s]
 gigether_options_if_stanza returns [String s]
   :
   x=GIGETHER_OPTIONS ignored_substanza {s = x.getText() + " {...}";}
+  ;
+  
+link_mode_if_stanza returns [String s]
+  :
+  x=LINK_MODE y=VARIABLE SEMICOLON {s = x.getText() + " " + y.getText();}
+  ;
+ 
+mac_if_stanza returns [String s] 
+  :
+  // TODO [p1]: should be MAC_ADDRESS, solve with lexer modes in antlr 4
+  x=MAC y=IPV6_ADDRESS SEMICOLON {s = x.getText() + " " + y.getText();}
   ;
   
 mtu_if_stanza returns [String s] 
@@ -152,9 +195,18 @@ vlan_tagging_if_stanza returns [String s]
   ;
 
 /* --- --- --- Interfaces->Unit Stanza Rules ---------------------------------------------------------*/ 
+
+inactive_u_if_stanza returns [IF_UStanza ifus]
+  :
+  INACTIVE COLON x=u_if_stanza
+  {ifus = x;  ifus.set_stanzaStatus(StanzaStatusType.INACTIVE);}
+  ;
+  
 u_if_stanza returns [IF_UStanza ifus]
   :
   (x=apply_groups_u_if_stanza
+  |x=disable_u_if_stanza
+  |x=enable_u_if_stanza
   |x=family_u_if_stanza
   |x=vlanid_u_if_stanza
   |x=null_u_if_stanza
@@ -170,6 +222,16 @@ apply_groups_u_if_stanza returns [IF_UStanza ifus] // TODO: FIX!
     IFU_NullStanza ifuns = new IFU_NullStanza("");
     ifus = ifuns;
   }
+  ;
+
+disable_u_if_stanza returns [IF_UStanza ifus = new IFU_DisableStanza()] 
+  :
+  DISABLE SEMICOLON
+  ;
+enable_u_if_stanza returns [IF_UStanza ifus = new IFU_EnableStanza()]
+  
+  :
+  ENABLE SEMICOLON
   ;
   
 family_u_if_stanza returns [IF_UStanza ifus]
@@ -188,6 +250,8 @@ family_u_if_stanza returns [IF_UStanza ifus]
      |ft=L2_VPN
      |ft=ETHERNET_SWITCHING
      |ft=MPLS
+     |ft=VPLS
+     
      )
      {ifufs = new IFU_FamilyStanza(FamilyTypeFromString(ft.getText()));}
   )
@@ -213,6 +277,9 @@ null_u_if_stanza returns [IF_UStanza ifus]
   (s=description_u_if_stanza
   |s=encapsulation_u_if_stanza
   |s=input_vlan_map_u_if_stanza
+  |s=output_vlan_map_u_if_stanza
+  |s=tunnel_u_if_stanza
+  |s=vlan_tags_u_if_stanza
   )
   {ifus = new IFU_NullStanza(s);}
   ;
@@ -231,6 +298,26 @@ encapsulation_u_if_stanza returns [String s]
 input_vlan_map_u_if_stanza returns [String s] // TODO [Ask Ari]: probably not supposed to ignore this
   :
   i=INPUT_VLAN_MAP ignored_substanza {s = i.getText() + "{...}";}
+  ;   
+  
+output_vlan_map_u_if_stanza returns [String s] // TODO [Ask Ari]: probably not supposed to ignore this
+  :
+  i=OUTPUT_VLAN_MAP x=VARIABLE SEMICOLON {s = i.getText() + " " + x.getText();}
+  ;
+     
+tunnel_u_if_stanza returns [String s] // TODO [Ask Ari]: probably not supposed to ignore this
+  :
+  x=TUNNEL ignored_substanza {s = x.getText() + "{...}";}
+  ;
+
+vlan_tags_u_if_stanza returns [String s] // TODO [Ask Ari]: probably not supposed to ignore this
+  :
+  x=VLAN_TAGS 
+  (OUTER (integer | HEX '.' integer)
+  )?
+  (INNER (integer | HEX '.' integer)
+  )?
+  SEMICOLON {s = x.getText();}
   ;
   
 /* --- --- --- --- Interfaces->Unit->Family Stanza Rules ---------------------------------------------*/   
@@ -314,17 +401,25 @@ filter_fam_u_if_stanza  returns [IFU_FamStanza ifufs]
   
  null_fam_u_if_stanza returns [IFU_FamStanza ifufs]  
   :
-  (s=mtu_fam_u_if_stanza
+  (s=interface_mode_fam_u_if_stanza
+  |s=mtu_fam_u_if_stanza
   |s=port_mode_fam_u_if_stanza
   |s=no_redirects_fam_u_if_stanza
   |s=no_neighbor_learn_fam_u_if_stanza
+  |s=policer_fam_u_if_stanza
   |s=primary_fam_u_if_stanza
   |s=rpf_check_fam_u_if_stanza
   |s=targeted_broadcast_fam_u_if_stanza
+  |s=vlan_id_fam_u_if_stanza
   ){ifufs=new IFUF_NullStanza(s);}
   ; 
   
 /* --- --- --- --- --- --- Interfaces->Unit->Family->Null Stanza Rules -------------------------------*/     
+interface_mode_fam_u_if_stanza returns [String s] // TODO [P0]: should not be ignored
+  :
+  x=INTERFACE_MODE mode=ACCESS SEMICOLON {s = x.getText() + " " + mode.getText();}
+  ;
+  
 mtu_fam_u_if_stanza returns [String s]
   :
   mstr = mtu_common_stanza  {s=mstr;}
@@ -345,6 +440,11 @@ no_neighbor_learn_fam_u_if_stanza returns [String s]
   x=NO_NEIGHBOR_LEARN SEMICOLON {s = x.getText();}
   ;
   
+policer_fam_u_if_stanza returns [String s] 
+  :
+  x=POLICER ignored_substanza {s = x.getText() + "{...}";}
+  ;
+  
 primary_fam_u_if_stanza returns [String s] 
   :
   x=PRIMARY SEMICOLON {s = x.getText();}
@@ -352,10 +452,15 @@ primary_fam_u_if_stanza returns [String s]
 
 rpf_check_fam_u_if_stanza returns [String s]
   :
-  x=RPF_CHECK ignored_substanza {s = x.getText();}
+  x=RPF_CHECK (FAIL_FILTER)? (URPF_LOGGING)? SEMICOLON {s = x.getText();}
   ;
   
 targeted_broadcast_fam_u_if_stanza returns [String s]
   : 
   x=TARGETED_BROADCAST SEMICOLON {s = x.getText();}
+  ;
+  
+vlan_id_fam_u_if_stanza returns [String s] // TODO [P0]: should not be ignored
+  :
+  x=VLAN_ID i=integer SEMICOLON {s = x.getText() + i;}
   ;

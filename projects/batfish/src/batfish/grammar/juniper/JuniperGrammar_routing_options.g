@@ -56,7 +56,10 @@ martians_ro_stanza returns [ROStanza ros]
     (ip=IP_ADDRESS_WITH_MASK 
     |ip=IPV6_ADDRESS_WITH_MASK {m.set_isIPV6(true);}
     ){m.set_ipWithMask(ip.getText());}
-    (ORLONGER) {m.set_fm(new FilterMatch_Null(FilterMatchType.ORLONGER));}
+    (
+      (ORLONGER {m.set_fm(new FilterMatch_Null(FilterMatchType.ORLONGER));})
+      |(EXACT {m.set_fm(new FilterMatch_Null(FilterMatchType.EXACT));})
+    )
     (ALLOW? {m.set_isAllowed(true);})
     SEMICOLON
     {mros.AddMartian(m);}
@@ -73,6 +76,17 @@ rib_groups_ro_stanza returns [ROStanza ros]
   RIB_GROUPS OPEN_BRACE 
   (group_name = VARIABLE 
   OPEN_BRACE 
+  (EXPORT_RIB 
+  (
+    (l=bracketed_list {rros.AddGroup(group_name.getText(),l);})
+   |(s=VARIABLE
+     {
+        ArrayList<String> sl = new ArrayList<String>();
+        sl.add(s.getText());
+        //TODO [P0]: not adding to data structure now, figure out wtf this means
+     }
+    )   
+  )SEMICOLON)?
   IMPORT_RIB 
   (
     (l=bracketed_list {rros.AddGroup(group_name.getText(),l);})

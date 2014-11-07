@@ -22,7 +22,10 @@ GroupsStanza gs = new GroupsStanza();
 }
   :
   (GROUPS OPEN_BRACE 
-  ((x=group_stanza) {gs.addGroup(x);} )+
+  (
+    empty_neighbor_stanza
+    |(x=group_stanza {gs.addGroup(x);})
+  )+
   CLOSE_BRACE) 
   {js = gs;}
   ;

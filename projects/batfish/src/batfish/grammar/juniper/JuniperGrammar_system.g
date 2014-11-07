@@ -44,7 +44,9 @@ host_name_sys_stanza returns [SysStanza ss]
 null_sys_stanza returns [SysStanza ss]
   :
   (s=accounting_sys_stanza
+  |s=arp_sys_stanza
   |s=authentication_order_sys_stanza
+  |s=backup_router_sys_stanza
   |s=domain_name_sys_stanza
   |s=domain_search_sys_stanza
   |s=dump_on_panic_sys_stanza
@@ -74,9 +76,19 @@ accounting_sys_stanza returns [String s]
   x=ACCOUNTING ignored_substanza {s=x.getText() + "{...}";}
   ;  
   
+arp_sys_stanza returns [String s]
+  :
+  x=ARP ignored_substanza {s=x.getText() + "{...}";}
+  ; 
+  
 authentication_order_sys_stanza returns [String s]
   :
   x=AUTHENTICATION_ORDER bracketed_list SEMICOLON {s=x.getText() + "{...}";}
+  ;
+  
+backup_router_sys_stanza returns [String s]
+  :
+  x=BACKUP_ROUTER i=IP_ADDRESS SEMICOLON {s=x.getText() + " " + i.getText();}
   ;
 
 domain_name_sys_stanza returns [String s]
