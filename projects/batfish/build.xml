@@ -106,8 +106,8 @@
       <delete>
          <fileset dir="src" includes="**/*.tokens"/>
          <fileset dir="src" includes="batfish/grammar/cisco/CiscoGrammar*.java"/>
-         <fileset dir="src" includes="batfish/grammar/juniper/JuniperGrammar*.java"/>
-         <fileset dir="src" includes="batfish/grammar/juniper/FlatJuniperGrammar*.java"/>
+         <fileset dir="src" includes="batfish/grammar/juniper/JuniperGrammarLexer*.java"/>
+         <fileset dir="src" includes="batfish/grammar/juniper/JuniperGrammarParser*.java"/>
          <fileset dir="src" includes="batfish/grammar/topology/RoleParserParser*.java"/>
          <fileset dir="src" includes="batfish/grammar/topology/RoleParserLexer*.java"/>
          <fileset dir="src" includes="batfish/grammar/topology/BatfishTopologyParser*.java"/>
@@ -303,15 +303,14 @@
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_routemap.g4"/>
             </dependencies>
          </antlr4parser>
-         <antlr4parser grammar.name="JuniperGrammar" grammar.packagedir="batfish/grammar/juniper">
+         <antlr4parser grammar.name="JuniperGrammarParser" grammar.packagedir="batfish/grammar/juniper">
             <dependencies>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar.g4"/>
+               <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammarParser.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammarLexer.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammarLexer.tokens"/>
                <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammarCommonParser.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_bgp.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_firewall.g4"/>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_groups.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_interface.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_ospf.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_policy_options.g4"/>
