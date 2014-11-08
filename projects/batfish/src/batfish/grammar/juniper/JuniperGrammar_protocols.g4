@@ -8,7 +8,7 @@ options {
 
 protocols_stanza
 :
-   PROTOCOLS OPEN_BRACE = p_stanza+ CLOSE_BRACE
+   PROTOCOLS OPEN_BRACE p_stanza+ CLOSE_BRACE
 ;
 
 p_stanza

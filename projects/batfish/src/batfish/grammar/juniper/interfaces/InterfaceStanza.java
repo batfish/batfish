@@ -8,11 +8,11 @@ import batfish.grammar.juniper.StanzaWithStatus;
 import batfish.representation.juniper.Interface;
 
 public class InterfaceStanza extends StanzaWithStatus {
-   
+
    private String _name;
    private List<IFStanza> _ifStanzas;
    private List<Interface> _interfaces;
-   
+
    /* ------------------------------ Constructor ----------------------------*/
    public InterfaceStanza() {
       _name = "";
@@ -20,7 +20,7 @@ public class InterfaceStanza extends StanzaWithStatus {
       _interfaces = new ArrayList<Interface>();
       this.set_postProcessTitle("Interface (anon)");
    }
-   
+
    /* ----------------------------- Other Methods ---------------------------*/
    public void addIFStanza (IFStanza ifs) {
       _ifStanzas.add(ifs);
@@ -49,21 +49,21 @@ public class InterfaceStanza extends StanzaWithStatus {
       _name = n;
       this.set_postProcessTitle("Interface " + _name);
    }
-   
+
    public List<Interface> get_interfaces (){
       return _interfaces;
    }
-   
+
    /* --------------------------- Inherited Methods -------------------------*/
    @Override
    public void postProcessStanza() {
-      
-      for (IFStanza ifs : _ifStanzas) {                         // process each separate sub-stanza 
-         
+
+      for (IFStanza ifs : _ifStanzas) {                         // process each separate sub-stanza
+
          ifs.postProcessStanza();
 
          if (ifs.get_stanzaStatus() == StanzaStatusType.ACTIVE) {
-         
+
             switch (ifs.getType()) {
                case DISABLE:
                   Interface i = new Interface(_name);
@@ -71,26 +71,30 @@ public class InterfaceStanza extends StanzaWithStatus {
                   i.setBandwidth(getDefaultBandwidth(_name));      // TODO [P1]: shouldn't this default happen in Interface?
                   _interfaces.add(i);
                   break;
-                  
-               case UNIT:                                             
+
+               case UNIT:
                   IF_UnitStanza ifus = (IF_UnitStanza) ifs;
                   String u = Integer.toString(ifus.get_num());
                   Interface ui = new Interface(_name + "." + u);
-                  
-                  if (!ifus.get_address().isEmpty() && ifus.get_subnetMask() !=null) { 
+
+                  if (!ifus.get_address().isEmpty() && ifus.get_subnetMask() !=null) {
                      ui.setIP(ifus.get_address());
                      ui.setSubnetMask(ifus.get_subnetMask());
                      ui.setBandwidth(getDefaultBandwidth(_name));
                      _interfaces.add(ui);
                   }
                   break;
-                  
+
                case APPLY_GROUPS:                                  // TODO [P0]: figure this out!
                   break;
-                  
+
                case NULL:
                   break;
-                  
+            case ENABLE:
+               break;
+            default:
+               break;
+
             }
          }
          addIgnoredStatements(ifs.get_ignoredStatements());
@@ -99,4 +103,4 @@ public class InterfaceStanza extends StanzaWithStatus {
       super.postProcessStanza();
    }
 }
-         
+

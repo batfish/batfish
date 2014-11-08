@@ -31,31 +31,31 @@ import batfish.representation.juniper.PolicyStatement_SetLine;
 import batfish.representation.juniper.PolicyStatement_Term;
 
 public class POPS_TermStanza extends StanzaWithStatus {
-   
+
    private String _name;
    boolean _isEmpty = true;
    private List<POPST_FromStanza> _fromTerms;
    private List<POPST_ThenStanza> _thenTerms;
    private List<POPST_ToStanza> _toTerms;
-   
+
    private PolicyStatement_LineAction _lineAction;
    private List<PolicyStatement_MatchLine> _matchList;
    private List<PolicyStatement_SetLine> _setList;
-   
+
    private PolicyStatement_Term _term;
-   
-   
+
+
    /* ------------------------------ Constructor ----------------------------*/
    public POPS_TermStanza() {
       _name = "rule0"; // TODO [P1]: should this be the default name?
-      
+
       _fromTerms = new ArrayList<POPST_FromStanza> ();
       _thenTerms = new ArrayList<POPST_ThenStanza> ();
       _toTerms = new ArrayList<POPST_ToStanza> ();
-      
+
       set_postProcessTitle("Term " + _name);
    }
-   
+
    /* ----------------------------- Other Methods ---------------------------*/
    public void addFromStanza (POPST_FromStanza f) {
       _fromTerms.add(f);
@@ -68,9 +68,9 @@ public class POPS_TermStanza extends StanzaWithStatus {
    public void addToStanza (POPST_ToStanza t) {
       _toTerms.add(t);
       _isEmpty = false;
-   }   
+   }
    private void processFromStanza(POPST_FromStanza fs) {
-      
+
       if (fs.get_stanzaStatus()==StanzaStatusType.INACTIVE) {
          this.set_stanzaStatus(StanzaStatusType.INACTIVE);
          return;
@@ -120,7 +120,7 @@ public class POPS_TermStanza extends StanzaWithStatus {
          if (nfs.get_stanzaStatus() == StanzaStatusType.IPV6) {
             this.set_stanzaStatus(StanzaStatusType.IPV6);
          }
-         else {               
+         else {
             PolicyStatement_MatchLine ml_neighbor = new PolicyStatementMatchNeighborLine(nfs.get_ip());
             _matchList.add(ml_neighbor);
          }
@@ -131,7 +131,7 @@ public class POPS_TermStanza extends StanzaWithStatus {
          if (pfs.get_stanzaStatus() == StanzaStatusType.IPV6) {
             this.set_stanzaStatus(StanzaStatusType.IPV6);
          }
-         else { 
+         else {
             PolicyStatement_MatchLine ml_plf = new PolicyStatementMatchPrefixListFilterLine(pfs.get_listName(), pfs.get_fms());
             _matchList.add(ml_plf);
          }
@@ -194,12 +194,14 @@ public class POPS_TermStanza extends StanzaWithStatus {
             _matchList.add(ml_routf);
          }
          break;
+      case ORIGIN:
+      case TAG:
 
       default:
          throw new Error("bad from stanza type");
       }
    }
-   
+
    public void processToStanza(POPST_ToStanza ts) {
 
       if (ts.get_stanzaStatus()==StanzaStatusType.INACTIVE) {
@@ -225,12 +227,13 @@ public class POPS_TermStanza extends StanzaWithStatus {
             _matchList.add(ml_rib);
          }
          break;
+      case INSTANCE:
 
       default:
          throw new Error("bad to stanza type");
       }
    }
-   
+
    public void processThenStanza(POPST_ThenStanza ts) {
 
       if (ts.get_stanzaStatus()==StanzaStatusType.INACTIVE) {
@@ -243,57 +246,57 @@ public class POPS_TermStanza extends StanzaWithStatus {
       }
 
       switch (ts.getType()) {
-      
+
       case ACCEPT:
          _lineAction = PolicyStatement_LineAction.ACCEPT;
          break;
-         
+
       case AS_PATH_PREPEND:
          POPSTTh_AsPathPrependStanza ats = (POPSTTh_AsPathPrependStanza) ts;
          PolicyStatement_SetLine appl = new PolicyStatementSetAsPathPrepend(ats.get_asNumToPrepend());
          _setList.add(appl);
          break;
-         
+
       case COMMUNITY:
          POPSTTh_CommunityStanza cts = (POPSTTh_CommunityStanza) ts;
 
          switch (cts.get_commType()) {
-         
+
          case COMM_ADD:
             PolicyStatement_SetLine cal = new PolicyStatementSetCommunityAddLine(cts.get_commNames());
             _setList.add(cal);
             break;
-            
+
          case COMM_DELETE:
             PolicyStatement_SetLine cdl = new PolicyStatementSetCommunityDeleteLine(cts.get_commNames());
             _setList.add(cdl);
             break;
-            
+
          case COMM_SET:
             PolicyStatement_SetLine csl = new PolicyStatementSetCommunitySetLine(cts.get_commNames());
             _setList.add(csl);
             break;
          }
          break;
-         
+
       case INSTALL_NEXT_HOP:
          POPSTTh_InstallNextHopStanza its = (POPSTTh_InstallNextHopStanza) ts;
          PolicyStatement_SetLine inl = new PolicyStatementSetInstallNextHopLine(its.get_hopName());
          _setList.add(inl);
          break;
-         
+
       case LOCAL_PREF: // TODO: [P1]: should be null
          POPSTTh_LocalPreferenceStanza lpts = (POPSTTh_LocalPreferenceStanza) ts;
          PolicyStatement_SetLine lpnl = new PolicyStatementSetLocalPreferenceLine(lpts.get_localPref());
          _setList.add(lpnl);
          break;
-         
-      case METRIC: 
+
+      case METRIC:
          POPSTTh_MetricStanza mts = (POPSTTh_MetricStanza) ts;
          PolicyStatement_SetLine mnl = new PolicyStatementSetMetricLine(mts.get_metric());
          _setList.add(mnl);
          break;
-         
+
       case NEXT_HOP:
          POPSTTh_NextHopStanza nts = (POPSTTh_NextHopStanza) ts;
          if (nts.get_stanzaStatus() == StanzaStatusType.IPV6) {
@@ -304,28 +307,28 @@ public class POPS_TermStanza extends StanzaWithStatus {
             _setList.add(hnl);
          }
          break;
-         
+
       case NEXT_POLICY:
          _lineAction = PolicyStatement_LineAction.NEXT_POLICY;
          break;
-         
+
       case NEXT_TERM:
          _lineAction = PolicyStatement_LineAction.NEXT_TERM;
          break;
-         
+
       case REJECT:
          _lineAction = PolicyStatement_LineAction.REJECT;
          break;
-         
-      case NULL: 
+
+      case NULL:
          this.addIgnoredStatements(ts.get_ignoredStatements());
          break;
-      
+
       default:
          throw new Error("bad to stanza type");
       }
    }
-   
+
    /* ---------------------------- Getters/Setters --------------------------*/
    public void set_name(String n) {
       _name = n;
@@ -336,19 +339,19 @@ public class POPS_TermStanza extends StanzaWithStatus {
    public boolean get_isEmpty () {
       return _isEmpty;
    }
-   
+
    /* --------------------------- Inherited Methods -------------------------*/
    @Override
    public void postProcessStanza() {
-      
+
       _matchList = new ArrayList<PolicyStatement_MatchLine>();
 
       _lineAction = null;
       _setList = new ArrayList<PolicyStatement_SetLine>();
-      
+
       for (POPST_FromStanza f : _fromTerms) {
          processFromStanza(f);
-      }      
+      }
       if (get_stanzaStatus()==StanzaStatusType.IPV6) {       // if we ran into an IPV6 address, cut short
          clearIgnoredStatements();
          addIgnoredStatement("term " + _name + " (IPV6 Clauses) {...}");
@@ -363,7 +366,7 @@ public class POPS_TermStanza extends StanzaWithStatus {
       }
       for (POPST_ToStanza t : _toTerms) {
          processToStanza(t);
-      }   
+      }
       if (get_stanzaStatus()==StanzaStatusType.IPV6) {       // if we ran into an IPV6 address, cut short
          clearIgnoredStatements();
          addIgnoredStatement("term " + _name + " (IPV6 Clauses) {...}");
@@ -378,7 +381,7 @@ public class POPS_TermStanza extends StanzaWithStatus {
       }
       for (POPST_ThenStanza t : _thenTerms) {
          processThenStanza(t);
-      }   
+      }
       if (get_stanzaStatus()==StanzaStatusType.IPV6) {       // if we ran into an IPV6 address, cut short
          clearIgnoredStatements();
          addIgnoredStatement("term " + _name + " (IPV6 Clauses) {...}");

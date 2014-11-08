@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
@@ -59,13 +57,12 @@ import batfish.collections.QualifiedNameMap;
 import batfish.collections.RoleNodeMap;
 import batfish.collections.RoleSet;
 import batfish.grammar.BatfishCombinedParser;
-import batfish.grammar.ConfigurationLexer;
-import batfish.grammar.ConfigurationParser;
+import batfish.grammar.ControlPlaneExtractor;
 import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.cisco.CiscoCombinedParser;
 import batfish.grammar.cisco.controlplane.CiscoControlPlaneExtractor;
-import batfish.grammar.juniper.JuniperGrammarLexer;
-import batfish.grammar.juniper.JuniperGrammarParser;
+import batfish.grammar.juniper.JuniperControlPlaneExtractor;
+import batfish.grammar.juniper.JuniperGrammarCombinedParser;
 import batfish.grammar.logicblox.LogQLPredicateInfoExtractor;
 import batfish.grammar.logicblox.LogiQLCombinedParser;
 import batfish.grammar.logicblox.LogiQLPredicateInfoResolver;
@@ -1410,73 +1407,38 @@ public class Batfish implements AutoCloseable {
       for (File currentFile : configurationData.keySet()) {
          String fileText = configurationData.get(currentFile);
          String currentPath = currentFile.getAbsolutePath();
-         ConfigurationParser parser = null;
-         ConfigurationLexer lexer = null;
          VendorConfiguration vc = null;
-         ANTLRStringStream in = new ANTLRStringStream(fileText);
-         CommonTokenStream tokens;
          if (fileText.length() == 0) {
             continue;
          }
-         CiscoControlPlaneExtractor extractor = null;
-         boolean antlr4 = false;
+         BatfishCombinedParser<?, ?> combinedParser = null;
+         ParserRuleContext tree = null;
+         ParseTreeWalker walker = new ParseTreeWalker();
+         ControlPlaneExtractor extractor = null;
          if (fileText.charAt(0) == '!') {
-            // antlr 4 stuff
-            antlr4 = true;
-            BatfishCombinedParser<?, ?> combinedParser = new CiscoCombinedParser(
+            combinedParser = new CiscoCombinedParser(
                   fileText);
-            ParserRuleContext tree = parse(combinedParser, currentPath);
             extractor = new CiscoControlPlaneExtractor(fileText,
                   combinedParser, _settings.getRulesWithSuppressedWarnings());
-            ParseTreeWalker walker = new ParseTreeWalker();
-            walker.walk(extractor, tree);
-            for (String warning : extractor.getWarnings()) {
-               error(2, warning);
-            }
-            vc = extractor.getVendorConfiguration();
-            assert Boolean.TRUE;
          }
          else if (fileText.charAt(0) == '#') {
-            lexer = new JuniperGrammarLexer(in);
-            tokens = new CommonTokenStream(lexer);
-            parser = new JuniperGrammarParser(tokens);
+            combinedParser = new JuniperGrammarCombinedParser(
+                  fileText);
+            extractor = new JuniperControlPlaneExtractor(fileText,
+                  combinedParser, _settings.getRulesWithSuppressedWarnings());
          }
-         else {
+         else if (fileText.length() == 0) {
             continue;
          }
-         if (!antlr4) {
-            print(2, "Parsing: \"" + currentPath + "\"");
-            try {
-               vc = parser.parse_configuration();
-            }
-            catch (Exception e) {
-               error(0, " ...ERROR\n");
-               e.printStackTrace();
-            }
-            List<String> parserErrors = parser.getErrors();
-            List<String> lexerErrors = lexer.getErrors();
-            int numErrors = parserErrors.size() + lexerErrors.size();
-            if (numErrors > 0) {
-               error(0, " ..." + numErrors + " ERROR(S)\n");
-               for (String msg : lexer.getErrors()) {
-                  error(2, "\tlexer: " + msg + "\n");
-               }
-               for (String msg : parser.getErrors()) {
-                  error(2, "\tparser: " + msg + "\n");
-               }
-               if (_settings.exitOnParseError()) {
-                  return null;
-               }
-               else {
-                  processingError = true;
-                  continue;
-               }
-            }
-            else {
-               print(2, "...OK\n");
-            }
+         else {
+            throw new BatfishException("Unknown configuration format");
          }
-
+         tree = parse(combinedParser, currentPath);
+         walker.walk(extractor, tree);
+         for (String warning : extractor.getWarnings()) {
+            error(2, warning);
+         }
+         vc = extractor.getVendorConfiguration();
          // at this point we should have a VendorConfiguration vc
          if (vendorConfigurations.containsKey(vc.getHostname()))
             throw new Error("Duplicate hostname \"" + vc.getHostname()

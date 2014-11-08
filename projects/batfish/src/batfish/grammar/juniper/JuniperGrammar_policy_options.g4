@@ -133,7 +133,7 @@ subterm_ps_po_stanza
             | inactive_from_t_ps_stanza
             |
             (
-               OPEN_BRACE fl = from_t_ps_stanza_list CLOSE_BRACE
+               OPEN_BRACE from_t_ps_stanza_list CLOSE_BRACE
             )
          )
       )
@@ -144,7 +144,7 @@ subterm_ps_po_stanza
             inactive_to_t_ps_stanza
             |
             (
-               OPEN_BRACE tol = to_t_ps_stanza_list CLOSE_BRACE
+               OPEN_BRACE to_t_ps_stanza_list CLOSE_BRACE
             )
             | to_t_ps_stanza
          )
@@ -153,12 +153,12 @@ subterm_ps_po_stanza
       (
          THEN
          (
-            th = inactive_then_t_ps_stanza
+            inactive_then_t_ps_stanza
             |
             (
-               OPEN_BRACE thl = then_t_ps_stanza_list CLOSE_BRACE
+               OPEN_BRACE then_t_ps_stanza_list CLOSE_BRACE
             )
-            | th = then_t_ps_stanza
+            | then_t_ps_stanza
          )
       )
    )+
