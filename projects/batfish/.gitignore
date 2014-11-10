@@ -5,7 +5,8 @@ out
 doc
 *.tokens
 CiscoGrammar*.java
-JuniperGrammar*.java
+JuniperGrammarParser*.java
+JuniperGrammarLexer*.java
 FlatJuniperGrammar*.java
 Semantics*.java
 RoleParser*.java
