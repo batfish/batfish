@@ -6,82 +6,101 @@ import java.util.TreeMap;
 
 public class Facts {
 
-   private  static final Map<String, String> _CONTROL_PLANE_FACT_COLUMN_HEADERS = new TreeMap<String, String> ();
-   private static final Map<String, String> _TRAFFIC_FACT_COLUMN_HEADERS = new TreeMap<String, String>();
-   public static final Map<String, String> CONTROL_PLANE_FACT_COLUMN_HEADERS = Collections.unmodifiableMap(_CONTROL_PLANE_FACT_COLUMN_HEADERS);
-   public static final Map<String, String> TRAFFIC_FACT_COLUMN_HEADERS = Collections.unmodifiableMap(_TRAFFIC_FACT_COLUMN_HEADERS);
+   public static final Map<String, String> CONTROL_PLANE_FACT_COLUMN_HEADERS = getControlPlaneFactColumnHeaders();
+   public static final Map<String, String> TRAFFIC_FACT_COLUMN_HEADERS = getTrafficFactColumnHeaders();
 
-   static {
-      _TRAFFIC_FACT_COLUMN_HEADERS.put("DuplicateRoleFlows", "DUMMY");
-      _TRAFFIC_FACT_COLUMN_HEADERS.put("SetFlowOriginate", "NODE|SRCIP|DSTIP|SRCPORT|DSTPORT|IPPROTOCOL");
+   private static Map<String, String> getControlPlaneFactColumnHeaders() {
+      Map<String, String> map = new TreeMap<String, String>();
+      map.put("SetFakeInterface", "NODE|INTERFACE");
+      map.put("SetFlowSinkInterface", "NODE|INTERFACE");
+      map.put("GuessTopology", "DUMMY");
+      map.put("SamePhysicalSegment", "NODE1|INTERFACE1|NODE2|INTERFACE2");
+      map.put("SetSwitchportAccess", "SWITCH|INTERFACE|VLAN");
+      map.put("SetSwitchportTrunkAllows", "SWITCH|INTERFACE|VLANSTART|VLANEND");
+      map.put("SetSwitchportTrunkEncapsulation",
+            "SWITCH|INTERFACE|ENCAPSULATION");
+      map.put("SetSwitchportTrunkNative", "SWITCH|INTERFACE|VLAN");
+      map.put("SetVlanInterface", "NODE|INTERFACE|VLAN");
+      map.put("SetInterfaceFilterIn", "NODE|INTERFACE|FILTER");
+      map.put("SetInterfaceFilterOut", "NODE|INTERFACE|FILTER");
+      map.put("SetInterfaceRoutingPolicy", "NODE|INTERFACE|POLICY");
+      map.put("SetNetwork", "STARTIP|START|END|PREFIXLENGTH");
+      map.put("SetIpAccessListDenyLine", "LIST|LINE");
+      map.put("SetIpAccessListLine",
+            "LIST|LINE|PROTOCOL|SRCIPSTART|SRCIPEND|DSTIPSTART|DSTIPEND");
+      map.put("SetIpAccessListLine_dstPortRange",
+            "LIST|LINE|DSTPORTSTART|DSTPORTEND");
+      map.put("SetIpAccessListLine_srcPortRange",
+            "LIST|LINE|SRCPORTSTART|SRCPORTEND");
+      map.put("SetActiveInt", "NODE|INTERFACE");
+      map.put("SetIpInt", "NODE|INTERFACE|IP|PREFIXLENGTH");
+      map.put("SetLinkLoadLimitIn", "NODE|INTERFACE|LIMIT");
+      map.put("SetLinkLoadLimitOut", "NODE|INTERFACE|LIMIT");
+      map.put("SetGeneratedRoute_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|ADMIN");
+      map.put("SetGeneratedRoutePolicy_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
+      map.put("SetStaticRoute_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|NEXTHOPIP|ADMIN|TAG");
+      map.put("SetStaticIntRoute_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|NEXTHOPIP|NEXTHOPINT|ADMIN|TAG");
+      map.put("SetOspfGeneratedRoute_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
+      map.put("SetOspfGeneratedRoutePolicy_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
+      map.put("SetOspfInterface", "NODE|INTERFACE|AREA");
+      map.put("SetOspfInterfaceCost", "NODE|INTERFACE|COST");
+      map.put("SetOspfOutboundPolicyMap", "NODE|MAP");
+      map.put("SetOspfRouterId", "NODE|IP");
+      map.put("SetCommunityListLine", "LIST|LINE|COMMUNITY");
+      map.put("SetCommunityListLinePermit", "LIST|LINE");
+      map.put("SetRouteFilterLine",
+            "LIST|LINE|NETWORKSTART|NETWORKEND|MINPREFIX|MAXPREFIX");
+      map.put("SetRouteFilterPermitLine", "LIST|LINE");
+      map.put("SetPolicyMapClauseAddCommunity", "MAP|CLAUSE|COMMUNITY");
+      map.put("SetPolicyMapClauseDeleteCommunity", "MAP|CLAUSE|LIST");
+      map.put("SetPolicyMapClauseDeny", "MAP|CLAUSE");
+      map.put("SetPolicyMapClauseMatchAcl", "MAP|CLAUSE|ACL");
+      map.put("SetPolicyMapClauseMatchCommunityList", "MAP|CLAUSE|LIST");
+      map.put("SetPolicyMapClauseMatchNeighbor", "MAP|CLAUSE|NEIGHBORIP");
+      map.put("SetPolicyMapClauseMatchProtocol", "MAP|CLAUSE|PROTOCOL");
+      map.put("SetPolicyMapClauseMatchRouteFilter", "MAP|CLAUSE|LIST");
+      map.put("SetPolicyMapClauseMatchTag", "MAP|CLAUSE|TAG");
+      map.put("SetPolicyMapClausePermit", "MAP|CLAUSE");
+      map.put("SetPolicyMapClauseSetCommunity", "MAP|CLAUSE|COMMUNITY");
+      map.put("SetPolicyMapClauseSetLocalPreference", "MAP|CLAUSE|LOCALPREF");
+      map.put("SetPolicyMapClauseSetMetric", "MAP|CLAUSE|METRIC");
+      map.put("SetPolicyMapClauseSetNextHopIp", "MAP|CLAUSE|NEXTHOPIP");
+      map.put("SetPolicyMapClauseSetOriginType", "MAP|CLAUSE|ORIGINTYPE");
+      map.put("SetPolicyMapOspfExternalRouteType", "MAP|PROTOCOL");
+      map.put("SetBgpDefaultLocalPref", "NODE|NEIGHBORIP|LOCALPREF");
+      map.put("SetBgpExportPolicy", "NODE|NEIGHBORIP|MAP");
+      map.put("SetBgpGeneratedRoute_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
+      map.put("SetBgpGeneratedRoutePolicy_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
+      map.put("SetBgpImportPolicy", "NODE|NEIGHBORIP|MAP");
+      map.put("SetBgpNeighborDefaultMetric", "NODE|NEIGHBORIP|METRIC");
+      map.put("SetBgpNeighborGeneratedRoute_flat",
+            "NODE|NEIGHBORIP|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
+      map.put("SetBgpNeighborGeneratedRoutePolicy_flat",
+            "NODE|NEIGHBORIP|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
+      map.put("SetBgpNeighborIp", "NODE|NEIGHBORIP");
+      map.put("SetBgpNeighborSendCommunity", "NODE|NEIGHBORIP");
+      map.put("SetBgpOriginationPolicy", "NODE|NEIGHBORIP|MAP");
+      map.put("SetLocalAs", "NODE|NEIGHBORIP|LOCALAS");
+      map.put("SetRemoteAs", "NODE|NEIGHBORIP|REMOTEAS");
+      map.put("SetRouteReflectorClient", "NODE|NEIGHBORIP|CLUSTERID");
+      map.put("SetNodeVendor", "NODE|VENDOR");
+      map.put("SetNodeRole", "NODE|ROLE");
+      return Collections.unmodifiableMap(map);
+   }
 
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetFakeInterface", "NODE|INTERFACE");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetFlowSinkInterface", "NODE|INTERFACE");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("GuessTopology", "DUMMY");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SamePhysicalSegment", "NODE1|INTERFACE1|NODE2|INTERFACE2");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetSwitchportAccess", "SWITCH|INTERFACE|VLAN");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetSwitchportTrunkAllows", "SWITCH|INTERFACE|VLANSTART|VLANEND");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetSwitchportTrunkEncapsulation", "SWITCH|INTERFACE|ENCAPSULATION");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetSwitchportTrunkNative", "SWITCH|INTERFACE|VLAN");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetVlanInterface", "NODE|INTERFACE|VLAN");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetInterfaceFilterIn", "NODE|INTERFACE|FILTER");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetInterfaceFilterOut", "NODE|INTERFACE|FILTER");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetInterfaceRoutingPolicy", "NODE|INTERFACE|POLICY");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetNetwork", "STARTIP|START|END|PREFIXLENGTH");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetIpAccessListDenyLine", "LIST|LINE");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetIpAccessListLine", "LIST|LINE|PROTOCOL|SRCIPSTART|SRCIPEND|DSTIPSTART|DSTIPEND");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetIpAccessListLine_dstPortRange", "LIST|LINE|DSTPORTSTART|DSTPORTEND");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetIpAccessListLine_srcPortRange", "LIST|LINE|SRCPORTSTART|SRCPORTEND");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetActiveInt", "NODE|INTERFACE");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetIpInt", "NODE|INTERFACE|IP|PREFIXLENGTH");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetLinkLoadLimitIn", "NODE|INTERFACE|LIMIT");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetLinkLoadLimitOut", "NODE|INTERFACE|LIMIT");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetGeneratedRoute_flat", "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|ADMIN");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetGeneratedRoutePolicy_flat", "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetStaticRoute_flat", "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|NEXTHOPIP|ADMIN|TAG");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetStaticIntRoute_flat", "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|NEXTHOPIP|NEXTHOPINT|ADMIN|TAG");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetOspfGeneratedRoute_flat", "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetOspfGeneratedRoutePolicy_flat", "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetOspfInterface", "NODE|INTERFACE|AREA");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetOspfInterfaceCost", "NODE|INTERFACE|COST");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetOspfOutboundPolicyMap", "NODE|MAP");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetOspfRouterId", "NODE|IP");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetCommunityListLine", "LIST|LINE|COMMUNITY");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetCommunityListLinePermit", "LIST|LINE");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetRouteFilterLine", "LIST|LINE|NETWORKSTART|NETWORKEND|MINPREFIX|MAXPREFIX");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetRouteFilterPermitLine", "LIST|LINE");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseAddCommunity", "MAP|CLAUSE|COMMUNITY");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseDeleteCommunity", "MAP|CLAUSE|LIST");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseDeny", "MAP|CLAUSE");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchAcl", "MAP|CLAUSE|ACL");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchCommunityList", "MAP|CLAUSE|LIST");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchNeighbor", "MAP|CLAUSE|NEIGHBORIP");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchProtocol", "MAP|CLAUSE|PROTOCOL");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchRouteFilter", "MAP|CLAUSE|LIST");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseMatchTag", "MAP|CLAUSE|TAG");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClausePermit", "MAP|CLAUSE");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseSetCommunity", "MAP|CLAUSE|COMMUNITY");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseSetLocalPreference", "MAP|CLAUSE|LOCALPREF");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseSetMetric", "MAP|CLAUSE|METRIC");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseSetNextHopIp", "MAP|CLAUSE|NEXTHOPIP");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapClauseSetOriginType", "MAP|CLAUSE|ORIGINTYPE");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetPolicyMapOspfExternalRouteType", "MAP|PROTOCOL");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetBgpDefaultLocalPref", "NODE|NEIGHBORIP|LOCALPREF");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetBgpExportPolicy", "NODE|NEIGHBORIP|MAP");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetBgpGeneratedRoute_flat", "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetBgpGeneratedRoutePolicy_flat", "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetBgpImportPolicy", "NODE|NEIGHBORIP|MAP");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetBgpNeighborDefaultMetric", "NODE|NEIGHBORIP|METRIC");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetBgpNeighborGeneratedRoute_flat", "NODE|NEIGHBORIP|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetBgpNeighborGeneratedRoutePolicy_flat", "NODE|NEIGHBORIP|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetBgpNeighborIp", "NODE|NEIGHBORIP");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetBgpNeighborSendCommunity", "NODE|NEIGHBORIP");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetBgpOriginationPolicy", "NODE|NEIGHBORIP|MAP");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetLocalAs", "NODE|NEIGHBORIP|LOCALAS");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetRemoteAs", "NODE|NEIGHBORIP|REMOTEAS");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetRouteReflectorClient", "NODE|NEIGHBORIP|CLUSTERID");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetNodeVendor", "NODE|VENDOR");
-      _CONTROL_PLANE_FACT_COLUMN_HEADERS.put("SetNodeRole", "NODE|ROLE");
+   private static Map<String, String> getTrafficFactColumnHeaders() {
+      Map<String, String> map = new TreeMap<String, String>();
+      map.put("DuplicateRoleFlows", "DUMMY");
+      map.put("SetFlowOriginate", "NODE|SRCIP|DSTIP|SRCPORT|DSTPORT|IPPROTOCOL");
+      return Collections.unmodifiableMap(map);
    }
 
    private Facts() {
