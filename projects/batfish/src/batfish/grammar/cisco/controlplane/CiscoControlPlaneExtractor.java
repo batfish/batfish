@@ -1329,6 +1329,12 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
+   public void exitNexus_neighbor_no_shutdown(Nexus_neighbor_no_shutdownContext ctx) {
+      _currentPeerGroup.setShutdown(false);
+      _currentPeerGroup.setActive(true);
+   }
+
+   @Override
    public void exitNexus_neighbor_rb_stanza(Nexus_neighbor_rb_stanzaContext ctx) {
       _currentDynamicPeerGroup = null;
       _currentIpPeerGroup = null;
