@@ -23,6 +23,7 @@ import batfish.grammar.cisco.CiscoGrammar.Description_if_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Interface_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Port_specifierContext;
 import batfish.main.BatfishException;
+import batfish.main.PedanticBatfishException;
 import batfish.representation.Ip;
 import batfish.representation.LineAction;
 import batfish.representation.OriginType;
@@ -47,6 +48,7 @@ import batfish.representation.cisco.IpAsPathAccessList;
 import batfish.representation.cisco.IpAsPathAccessListLine;
 import batfish.representation.cisco.IpBgpPeerGroup;
 import batfish.representation.cisco.Ipv6BgpPeerGroup;
+import batfish.representation.cisco.MasterBgpPeerGroup;
 import batfish.representation.cisco.NamedBgpPeerGroup;
 import batfish.representation.cisco.OspfProcess;
 import batfish.representation.cisco.OspfRedistributionPolicy;
@@ -456,7 +458,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    private String _currentVrf;
 
+   private BgpPeerGroup _dummyPeerGroup;
+
    private final BatfishCombinedParser<?, ?> _parser;
+
+   private boolean _pedantic;
 
    private final Set<String> _rulesWithSuppressedWarnings;
 
@@ -466,11 +472,12 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    public CiscoControlPlaneExtractor(String text,
          BatfishCombinedParser<?, ?> parser,
-         Set<String> rulesWithSuppressedWarnings) {
+         Set<String> rulesWithSuppressedWarnings, boolean pedantic) {
       _text = text;
       _warnings = new ArrayList<String>();
       _parser = parser;
       _rulesWithSuppressedWarnings = rulesWithSuppressedWarnings;
+      _pedantic = pedantic;
    }
 
    @Override
@@ -605,9 +612,10 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
                _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
             }
             else {
-               throw new BatfishException(
-                     "reference to undeclared peer group: \"" + ip.toString()
-                           + "\"");
+               String message = "reference to undeclared peer group: \""
+                     + ip.toString() + "\"";
+               pedantic(message);
+               _currentPeerGroup = _dummyPeerGroup;
             }
          }
          _currentPeerGroup = _currentIpPeerGroup;
@@ -747,6 +755,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       _currentVrf = BgpProcess.MASTER_VRF_NAME;
       _configuration.getBgpProcesses().put(_currentVrf, proc);
       _currentPeerGroup = proc.getMasterBgpPeerGroup();
+      _dummyPeerGroup = new MasterBgpPeerGroup();
    }
 
    @Override
@@ -1328,7 +1337,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
-   public void exitNexus_neighbor_no_shutdown(Nexus_neighbor_no_shutdownContext ctx) {
+   public void exitNexus_neighbor_no_shutdown(
+         Nexus_neighbor_no_shutdownContext ctx) {
+      // TODO: see if it is always ok to set active on 'no shutdown'
       _currentPeerGroup.setShutdown(false);
       _currentPeerGroup.setActive(true);
    }
@@ -1360,7 +1371,14 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       if (ctx.ip != null) {
          Ip ip = toIp(ctx.ip);
          IpBgpPeerGroup pg = proc.getIpPeerGroups().get(ip);
-         pg.setActive(false);
+         if (pg == null) {
+            String message = "reference to undefined ip peer group: "
+                  + ip.toString();
+            pedantic(message);
+         }
+         else {
+            pg.setActive(false);
+         }
       }
       else if (ctx.ip6 != null) {
          todo(ctx, "IPv6 not supported yet");
@@ -1378,8 +1396,20 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          Ip ip = toIp(ctx.ip);
          IpBgpPeerGroup pg = proc.getIpPeerGroups().get(ip);
          // TODO: see if it is always ok to set active on 'no shutdown'
-         pg.setActive(true);
-         pg.setShutdown(false);
+         if (pg == null) {
+            String message = "reference to undefined ip peer group: "
+                  + ip.toString();
+            if (_pedantic) {
+               throw new BatfishException(message);
+            }
+            else {
+               _warnings.add(message);
+            }
+         }
+         else {
+            pg.setActive(true);
+            pg.setShutdown(false);
+         }
       }
       else if (ctx.ip6 != null) {
          todo(ctx, "IPv6 not supported yet");
@@ -1960,6 +1990,15 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    public List<String> getWarnings() {
       return _warnings;
+   }
+
+   private void pedantic(String msg) {
+      if (_pedantic) {
+         throw new PedanticBatfishException(msg);
+      }
+      else {
+         _warnings.add(msg);
+      }
    }
 
    private void todo(ParserRuleContext ctx) {

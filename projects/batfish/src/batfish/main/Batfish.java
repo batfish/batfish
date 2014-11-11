@@ -1442,7 +1442,8 @@ public class Batfish implements AutoCloseable {
             combinedParser = new CiscoCombinedParser(
                   fileText);
             extractor = new CiscoControlPlaneExtractor(fileText,
-                  combinedParser, _settings.getRulesWithSuppressedWarnings());
+                  combinedParser, _settings.getRulesWithSuppressedWarnings(),
+                  _settings.getPedantic());
          }
          else if (fileText.charAt(0) == '#') {
             combinedParser = new JuniperGrammarCombinedParser(

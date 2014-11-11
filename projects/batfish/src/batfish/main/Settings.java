@@ -58,6 +58,7 @@ public class Settings {
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_NODE_ROLES_PATH = "nrpath";
    private static final String ARG_NODE_SET_PATH = "nodes";
+   private static final String ARG_PEDANTIC = "pedantic";
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
    private static final String ARG_PRINT_PARSE_TREES = "ppt";
@@ -189,6 +190,7 @@ public class Settings {
    private String _nodeSetPath;
    private boolean _noTraffic;
    private Options _options;
+   private boolean _pedantic;
    private List<String> _predicates;
    private boolean _printParseTree;
    private boolean _printSemantics;
@@ -425,6 +427,10 @@ public class Settings {
 
    public boolean getNoTraffic() {
       return _noTraffic;
+   }
+
+   public boolean getPedantic() {
+      return _pedantic;
    }
 
    public List<String> getPredicates() {
@@ -782,6 +788,13 @@ public class Settings {
             ARG_DUPLICATE_ROLE_FLOWS));
       _options.addOption(OptionBuilder.hasArg().withArgName(ARGNAME_LOG_LEVEL)
             .withDescription("log4j2 log level").create(ARG_LOG_LEVEL));
+      _options
+            .addOption(OptionBuilder
+                  .withDescription(
+                        "throws "
+                              + PedanticBatfishException.class.getSimpleName()
+                              + " on some recoverable errors (e.g. bad config lines), instead of emitting warning and attempting to recover")
+                  .create(ARG_PEDANTIC));
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -924,6 +937,7 @@ public class Settings {
       _roleSetPath = line.getOptionValue(ARG_ROLE_SET_PATH);
       _duplicateRoleFlows = line.hasOption(ARG_DUPLICATE_ROLE_FLOWS);
       _logLevel = line.getOptionValue(ARG_LOG_LEVEL);
+      _pedantic = line.hasOption(ARG_PEDANTIC);
    }
 
    public boolean printParseTree() {
