@@ -476,7 +476,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void enterCisco_configuration(Cisco_configurationContext ctx) {
       _configuration = new CiscoVendorConfiguration();
-      _configuration.setContext(ctx);
    }
 
    @Override
@@ -754,7 +753,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void enterRouter_ospf_stanza(Router_ospf_stanzaContext ctx) {
       int procNum = toInteger(ctx.procnum);
       OspfProcess proc = new OspfProcess(procNum);
-      _configuration.setOspfProcess(proc, ctx);
+      _configuration.setOspfProcess(proc);
    }
 
    @Override

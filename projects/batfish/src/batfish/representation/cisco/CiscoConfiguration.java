@@ -4,21 +4,16 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import batfish.grammar.cisco.CiscoGrammar.Cisco_configurationContext;
-import batfish.grammar.cisco.CiscoGrammar.Router_ospf_stanzaContext;
-
 public class CiscoConfiguration implements Serializable {
 
    private static final long serialVersionUID = 1L;
    protected final Map<String, IpAsPathAccessList> _asPathAccessLists;
-   protected transient Cisco_configurationContext _context;
    protected final Map<String, BgpProcess> _bgpProcesses;
    protected final Map<String, ExpandedCommunityList> _expandedCommunityLists;
    protected final Map<String, ExtendedAccessList> _extendedAccessLists;
    protected String _hostname;
    protected final Map<String, Interface> _interfaces;
    protected OspfProcess _ospfProcess;
-   protected transient Router_ospf_stanzaContext _ospfProcessContext;
    protected final Map<String, PrefixList> _prefixLists;
    protected final Map<String, RouteMap> _routeMaps;
    protected final Map<String, StandardAccessList> _standardAccessLists;
@@ -40,10 +35,6 @@ public class CiscoConfiguration implements Serializable {
 
    public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
-   }
-
-   public final Cisco_configurationContext getContext() {
-      return _context;
    }
 
    public final Map<String, BgpProcess> getBgpProcesses() {
@@ -70,10 +61,6 @@ public class CiscoConfiguration implements Serializable {
       return _ospfProcess;
    }
 
-   public final Router_ospf_stanzaContext getOspfProcessContext() {
-      return _ospfProcessContext;
-   }
-
    public final Map<String, PrefixList> getPrefixLists() {
       return _prefixLists;
    }
@@ -94,18 +81,12 @@ public class CiscoConfiguration implements Serializable {
       return _staticRoutes;
    }
 
-   public final void setContext(Cisco_configurationContext ctx) {
-      _context = ctx;
-   }
-
    public final void setHostname(String hostname) {
       _hostname = hostname;
    }
 
-   public final void setOspfProcess(OspfProcess proc,
-         Router_ospf_stanzaContext ctx) {
+   public final void setOspfProcess(OspfProcess proc) {
       _ospfProcess = proc;
-      _ospfProcessContext = ctx;
    }
 
 }
