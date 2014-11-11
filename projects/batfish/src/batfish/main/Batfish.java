@@ -171,6 +171,8 @@ public class Batfish implements AutoCloseable {
     */
    private static final String LB_BATFISH_LIBRARY_NAME = "libbatfish";
 
+   private static final String LEVEL_OUTPUT = "OUTPUT";
+
    /**
     * The name of the file in which LogiQL predicate type-information and
     * documentation is serialized
@@ -1283,6 +1285,10 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   private void output(String msg) {
+      _logger.log(Level.getLevel(LEVEL_OUTPUT), msg);
+   }
+
    private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
       ParserRuleContext tree = parser.parse();
       List<String> errors = parser.getErrors();
@@ -1439,15 +1445,13 @@ public class Batfish implements AutoCloseable {
          ParseTreeWalker walker = new ParseTreeWalker();
          ControlPlaneExtractor extractor = null;
          if (fileText.charAt(0) == '!') {
-            combinedParser = new CiscoCombinedParser(
-                  fileText);
+            combinedParser = new CiscoCombinedParser(fileText);
             extractor = new CiscoControlPlaneExtractor(fileText,
                   combinedParser, _settings.getRulesWithSuppressedWarnings(),
                   _settings.getPedantic());
          }
          else if (fileText.charAt(0) == '#') {
-            combinedParser = new JuniperGrammarCombinedParser(
-                  fileText);
+            combinedParser = new JuniperGrammarCombinedParser(fileText);
             extractor = new JuniperControlPlaneExtractor(fileText,
                   combinedParser, _settings.getRulesWithSuppressedWarnings());
          }
@@ -1594,12 +1598,6 @@ public class Batfish implements AutoCloseable {
       }
       printElapsedTime();
    }
-
-   private void output(String msg) {
-      _logger.log(Level.getLevel(LEVEL_OUTPUT), msg);
-   }
-
-   private static final String LEVEL_OUTPUT = "OUTPUT";
 
    private void printPredicateSemantics(String predicateName) {
       String semantics = _predicateInfo.getPredicateSemantics(predicateName);

@@ -717,7 +717,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void enterNexus_vrf_rb_stanza(Nexus_vrf_rb_stanzaContext ctx) {
       _currentVrf = ctx.name.getText();
-      //BgpProcess masterProc = _configuration.getBgpProcesses().get(BgpProcess.MASTER_VRF_NAME);
+      // BgpProcess masterProc =
+      // _configuration.getBgpProcesses().get(BgpProcess.MASTER_VRF_NAME);
       BgpProcess proc = new BgpProcess(0); // TODO: fix vrf bgp process number
       _configuration.getBgpProcesses().put(_currentVrf, proc);
    }
@@ -1290,7 +1291,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
             mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask();
          }
          BgpNetwork network = new BgpNetwork(address, mask);
-         _configuration.getBgpProcesses().get(_currentVrf).getNetworks().add(network);
+         _configuration.getBgpProcesses().get(_currentVrf).getNetworks()
+               .add(network);
       }
    }
 
@@ -1457,8 +1459,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       if (ctx.address != null) {
          Ip address = toIp(ctx.address);
          String peerGroupName = ctx.name.getText();
-         _configuration.getBgpProcesses().get(_currentVrf).addPeerGroupMember(address,
-               peerGroupName);
+         _configuration.getBgpProcesses().get(_currentVrf)
+               .addPeerGroupMember(address, peerGroupName);
       }
       else if (ctx.address6 != null) {
          todo(ctx);
