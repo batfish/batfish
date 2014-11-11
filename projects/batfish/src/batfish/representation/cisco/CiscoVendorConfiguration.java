@@ -933,8 +933,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          }
       }
       // check bgp policies
-      if (_bgpProcess != null) {
-         for (BgpRedistributionPolicy rp : _bgpProcess
+      for (BgpProcess bgpProcess : _bgpProcesses.values()) {
+         for (BgpRedistributionPolicy rp : bgpProcess
                .getRedistributionPolicies().values()) {
             currentMapName = rp.getMap();
             if (currentMapName != null) {
@@ -944,7 +944,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                }
             }
          }
-         for (BgpPeerGroup pg : _bgpProcess.getAllPeerGroups().values()) {
+         for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups().values()) {
             currentMapName = pg.getInboundRouteMap();
             if (currentMapName != null) {
                currentMap = _routeMaps.get(currentMapName);
@@ -1124,9 +1124,11 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       }
 
       // convert bgp process
-      if (_bgpProcess != null) {
+      // TODO: process vrf bgp processes
+      BgpProcess bgpProcess = _bgpProcesses.get(BgpProcess.MASTER_VRF_NAME);
+      if (bgpProcess != null) {
          batfish.representation.BgpProcess newBgpProcess = toBgpProcess(c,
-               _bgpProcess);
+               bgpProcess);
          c.setBgpProcess(newBgpProcess);
       }
 
@@ -1180,15 +1182,15 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          }
       }
       // check bgp policies
-      if (_bgpProcess != null) {
-         for (BgpRedistributionPolicy rp : _bgpProcess
+      for (BgpProcess bgpProcess : _bgpProcesses.values()) {
+         for (BgpRedistributionPolicy rp : bgpProcess
                .getRedistributionPolicies().values()) {
             currentMapName = rp.getMap();
             if (containsIpAccessList(eaListName, currentMapName)) {
                return true;
             }
          }
-         for (BgpPeerGroup pg : _bgpProcess.getAllPeerGroups().values()) {
+         for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups().values()) {
             currentMapName = pg.getInboundRouteMap();
             if (containsIpAccessList(eaListName, currentMapName)) {
                return true;

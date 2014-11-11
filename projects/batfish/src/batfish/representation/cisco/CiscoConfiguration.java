@@ -5,16 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import batfish.grammar.cisco.CiscoGrammar.Cisco_configurationContext;
-import batfish.grammar.cisco.CiscoGrammar.Router_bgp_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Router_ospf_stanzaContext;
 
 public class CiscoConfiguration implements Serializable {
 
    private static final long serialVersionUID = 1L;
    protected final Map<String, IpAsPathAccessList> _asPathAccessLists;
-   protected BgpProcess _bgpProcess;
-   protected transient Router_bgp_stanzaContext _bgpProcessContext;
    protected transient Cisco_configurationContext _context;
+   protected final Map<String, BgpProcess> _bgpProcesses;
    protected final Map<String, ExpandedCommunityList> _expandedCommunityLists;
    protected final Map<String, ExtendedAccessList> _extendedAccessLists;
    protected String _hostname;
@@ -29,6 +27,7 @@ public class CiscoConfiguration implements Serializable {
 
    public CiscoConfiguration() {
       _asPathAccessLists = new HashMap<String, IpAsPathAccessList>();
+      _bgpProcesses = new HashMap<String, BgpProcess>();
       _expandedCommunityLists = new HashMap<String, ExpandedCommunityList>();
       _extendedAccessLists = new HashMap<String, ExtendedAccessList>();
       _interfaces = new HashMap<String, Interface>();
@@ -43,16 +42,12 @@ public class CiscoConfiguration implements Serializable {
       return _asPathAccessLists;
    }
 
-   public final BgpProcess getBgpProcess() {
-      return _bgpProcess;
-   }
-
-   public final Router_bgp_stanzaContext getBgpProcessContext() {
-      return _bgpProcessContext;
-   }
-
    public final Cisco_configurationContext getContext() {
       return _context;
+   }
+
+   public final Map<String, BgpProcess> getBgpProcesses() {
+      return _bgpProcesses;
    }
 
    public final Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
@@ -97,12 +92,6 @@ public class CiscoConfiguration implements Serializable {
 
    public final Map<String, StaticRoute> getStaticRoutes() {
       return _staticRoutes;
-   }
-
-   public final void setBgpProcess(BgpProcess bgpProcess,
-         Router_bgp_stanzaContext context) {
-      _bgpProcess = bgpProcess;
-      _bgpProcessContext = context;
    }
 
    public final void setContext(Cisco_configurationContext ctx) {

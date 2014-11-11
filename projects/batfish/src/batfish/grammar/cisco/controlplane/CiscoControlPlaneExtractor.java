@@ -454,6 +454,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    private StandardCommunityList _currentStandardCommunityList;
 
+   private String _currentVrf;
+
    private final BatfishCombinedParser<?, ?> _parser;
 
    private final Set<String> _rulesWithSuppressedWarnings;
@@ -591,7 +593,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void enterNeighbor_rb_stanza(Neighbor_rb_stanzaContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       // we must create peer group if it does not exist and this is a remote_as
       // declaration
       boolean create = ctx.remote_as_bgp_tail() != null;
@@ -670,7 +672,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          _currentPeerGroup = _currentIpv6PeerGroup;
          return;
       }
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (ctx.ip_address != null) {
          Ip ip = toIp(ctx.ip_address);
          _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
@@ -706,6 +708,14 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
+   public void enterNexus_vrf_rb_stanza(Nexus_vrf_rb_stanzaContext ctx) {
+      _currentVrf = ctx.name.getText();
+      //BgpProcess masterProc = _configuration.getBgpProcesses().get(BgpProcess.MASTER_VRF_NAME);
+      BgpProcess proc = new BgpProcess(0); // TODO: fix vrf bgp process number
+      _configuration.getBgpProcesses().put(_currentVrf, proc);
+   }
+
+   @Override
    public void enterRoute_map_stanza(Route_map_stanzaContext ctx) {
       String name = ctx.named.name.getText();
       _currentRouteMap = new RouteMap(name);
@@ -735,7 +745,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
       int procNum = toInteger(ctx.procnum);
       BgpProcess proc = new BgpProcess(procNum);
-      _configuration.setBgpProcess(proc, ctx);
+      _currentVrf = BgpProcess.MASTER_VRF_NAME;
+      _configuration.getBgpProcesses().put(_currentVrf, proc);
       _currentPeerGroup = proc.getMasterBgpPeerGroup();
    }
 
@@ -769,7 +780,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void enterTemplate_peer_rb_stanza(Template_peer_rb_stanzaContext ctx) {
       String name = ctx.name.getText();
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
       if (_currentNamedPeerGroup == null) {
          proc.addNamedPeerGroup(name);
@@ -780,7 +791,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void exitActivate_bgp_tail(Activate_bgp_tailContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
          _currentPeerGroup.setActive(true);
       }
@@ -793,7 +804,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitAggregate_address_bgp_tail(
          Aggregate_address_bgp_tailContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
          throw new BatfishException(
                "unexpected occurrence in peer group/neighbor context");
@@ -824,7 +835,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitAlways_compare_med_rb_stanza(
          Always_compare_med_rb_stanzaContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       proc.setAlwaysCompareMed(true);
    }
 
@@ -851,7 +862,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void exitBgp_listen_range_rb_stanza(
          Bgp_listen_range_rb_stanzaContext ctx) {
       String name = ctx.name.getText();
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (ctx.IP_PREFIX() != null) {
          Ip ip = getPrefixIp(ctx.IP_PREFIX().getSymbol());
          int prefixLength = getPrefixLength(ctx.IP_PREFIX().getSymbol());
@@ -1246,7 +1257,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       _currentIpPeerGroup = null;
       _currentIpv6PeerGroup = null;
       _currentNamedPeerGroup = null;
-      _currentPeerGroup = _configuration.getBgpProcess()
+      _currentPeerGroup = _configuration.getBgpProcesses().get(_currentVrf)
             .getMasterBgpPeerGroup();
    }
 
@@ -1271,7 +1282,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
             mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask();
          }
          BgpNetwork network = new BgpNetwork(address, mask);
-         _configuration.getBgpProcess().getNetworks().add(network);
+         _configuration.getBgpProcesses().get(_currentVrf).getNetworks().add(network);
       }
    }
 
@@ -1301,7 +1312,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void exitNexus_neighbor_inherit(Nexus_neighbor_inheritContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       String groupName = ctx.name.getText();
       if (_currentDynamicPeerGroup != null) {
          _currentDynamicPeerGroup.setGroupName(groupName);
@@ -1323,7 +1334,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       _currentIpPeerGroup = null;
       _currentIpv6PeerGroup = null;
       _currentNamedPeerGroup = null;
-      _currentPeerGroup = _configuration.getBgpProcess()
+      _currentPeerGroup = _configuration.getBgpProcesses().get(_currentVrf)
             .getMasterBgpPeerGroup();
    }
 
@@ -1333,9 +1344,14 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
+   public void exitNexus_vrf_rb_stanza(Nexus_vrf_rb_stanzaContext ctx) {
+      _currentVrf = BgpProcess.MASTER_VRF_NAME;
+   }
+
+   @Override
    public void exitNo_neighbor_activate_rb_stanza(
          No_neighbor_activate_rb_stanzaContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (ctx.ip != null) {
          Ip ip = toIp(ctx.ip);
          IpBgpPeerGroup pg = proc.getIpPeerGroups().get(ip);
@@ -1352,7 +1368,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitNo_neighbor_shutdown_rb_stanza(
          No_neighbor_shutdown_rb_stanzaContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (ctx.ip != null) {
          Ip ip = toIp(ctx.ip);
          IpBgpPeerGroup pg = proc.getIpPeerGroups().get(ip);
@@ -1371,7 +1387,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitNo_redistribute_connected_rb_stanza(
          No_redistribute_connected_rb_stanzaContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
@@ -1406,7 +1422,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       if (ctx.address != null) {
          Ip address = toIp(ctx.address);
          String peerGroupName = ctx.name.getText();
-         _configuration.getBgpProcess().addPeerGroupMember(address,
+         _configuration.getBgpProcesses().get(_currentVrf).addPeerGroupMember(address,
                peerGroupName);
       }
       else if (ctx.address6 != null) {
@@ -1418,7 +1434,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void exitPeer_group_creation_rb_stanza(
          Peer_group_creation_rb_stanzaContext ctx) {
       String name = ctx.name.getText();
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       proc.addNamedPeerGroup(name);
    }
 
@@ -1482,7 +1498,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitRedistribute_connected_bgp_tail(
          Redistribute_connected_bgp_tailContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
@@ -1533,7 +1549,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitRedistribute_ospf_bgp_tail(
          Redistribute_ospf_bgp_tailContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
@@ -1563,7 +1579,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitRedistribute_static_bgp_tail(
          Redistribute_static_bgp_tailContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
@@ -1613,7 +1629,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void exitRemote_as_bgp_tail(Remote_as_bgp_tailContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcess();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       int as = toInteger(ctx.as);
       if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
          _currentPeerGroup.setRemoteAS(as);
@@ -1662,12 +1678,13 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
       _currentPeerGroup = null;
+      _currentVrf = null;
    }
 
    @Override
    public void exitRouter_id_bgp_tail(Router_id_bgp_tailContext ctx) {
       Ip routerId = toIp(ctx.routerid);
-      _configuration.getBgpProcess().setRouterId(routerId);
+      _configuration.getBgpProcesses().get(_currentVrf).setRouterId(routerId);
    }
 
    @Override
@@ -1896,7 +1913,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       _currentIpPeerGroup = null;
       _currentIpv6PeerGroup = null;
       _currentNamedPeerGroup = null;
-      _currentPeerGroup = _configuration.getBgpProcess()
+      _currentPeerGroup = _configuration.getBgpProcesses().get(_currentVrf)
             .getMasterBgpPeerGroup();
    }
 
@@ -1909,11 +1926,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          String source = ctx.source.getText();
          _currentPeerGroup.setUpdateSource(source);
       }
-   }
-
-   @Override
-   public void exitVrf_stanza(Vrf_stanzaContext ctx) {
-      todo(ctx);
    }
 
    private String getCanonicalInterfaceNamePrefix(String prefix) {

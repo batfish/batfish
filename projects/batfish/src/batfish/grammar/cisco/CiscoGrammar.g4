@@ -12,12 +12,6 @@ options {
 package batfish.grammar.cisco;
 }
 
-address_family_vrf_stanza
-:
-   ADDRESS_FAMILY ~NEWLINE* NEWLINE null_block_substanza* EXIT_ADDRESS_FAMILY
-   NEWLINE
-;
-
 banner_stanza
 :
    BANNER
@@ -197,6 +191,10 @@ null_block_stanza
       | VOICE_PORT
       | VPC
       | VPDN_GROUP
+      |
+      (
+         VRF DEFINITION
+      )
    ) ~NEWLINE* NEWLINE
    (
       null_block_substanza
@@ -857,7 +855,6 @@ null_stanza
       ) NEWLINE
    )
    | vrf_context_stanza
-   | vrf_stanza
 ;
 
 stanza
@@ -897,11 +894,5 @@ vrf_context_stanza
    (
       IP ROUTE ~NEWLINE NEWLINE
    )*
-;
-
-vrf_stanza
-:
-   VRF ~( NEWLINE | CONTEXT )* NEWLINE null_block_substanza*
-   address_family_vrf_stanza*
 ;
 

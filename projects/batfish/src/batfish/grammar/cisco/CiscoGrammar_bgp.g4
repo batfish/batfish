@@ -248,6 +248,26 @@ nexus_neighbor_rb_stanza
    )+
 ;
 
+nexus_vrf_rb_stanza
+:
+   VRF name = ~NEWLINE NEWLINE
+   (
+      address_family_rb_stanza
+      | always_compare_med_rb_stanza
+      | bgp_listen_range_rb_stanza
+      | bgp_tail
+      | neighbor_rb_stanza
+      | nexus_neighbor_rb_stanza
+      | no_neighbor_activate_rb_stanza
+      | no_neighbor_shutdown_rb_stanza
+      | no_redistribute_connected_rb_stanza
+      | peer_group_assignment_rb_stanza
+      | peer_group_creation_rb_stanza
+      | router_id_rb_stanza
+      | template_peer_rb_stanza
+   )*
+;
+
 no_neighbor_activate_rb_stanza
 :
    NO NEIGHBOR
@@ -435,6 +455,7 @@ router_bgp_stanza
       | peer_group_creation_rb_stanza
       | router_id_rb_stanza
       | template_peer_rb_stanza
+      | nexus_vrf_rb_stanza
    )+
 ;
 
@@ -460,7 +481,7 @@ shutdown_bgp_tail
 
 template_peer_address_family
 :
-   address_family_header bgp_tail+ address_family_footer
+   address_family_header bgp_tail* address_family_footer
 ;
 
 template_peer_rb_stanza
