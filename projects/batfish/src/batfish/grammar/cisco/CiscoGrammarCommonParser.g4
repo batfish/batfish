@@ -45,7 +45,11 @@ interface_name
    (
       name_prefix_alpha = M_Interface_PREFIX
       (
-         name_middle_parts += DEC name_middle_parts += FORWARD_SLASH
+         name_middle_parts += DEC
+         (
+            name_middle_parts += FORWARD_SLASH
+            | name_middle_parts += PERIOD
+         )
       )* range
    )
    |

@@ -4590,6 +4590,11 @@ M_Interface_NUMBER
    DEC -> type(DEC)
 ;
 
+M_Interface_PERIOD
+:
+   '.' -> type(PERIOD)
+;
+
 M_Interface_SLASH
 :
    '/' -> type(FORWARD_SLASH)
