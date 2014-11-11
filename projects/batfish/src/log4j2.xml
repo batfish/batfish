@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+   <CustomLevels>
+      <CustomLevel name="OUTPUT" intLevel="350"/>
+   </CustomLevels>
+   <Appenders>
+      <Console name="ConsoleOut" follow="true" target="SYSTEM_OUT">
+         <PatternLayout pattern="%msg"/>
+      </Console>
+      <Console name="ConsoleErr" follow="true" target="SYSTEM_ERR">
+         <PatternLayout pattern="%msg"/>
+      </Console>
+   </Appenders>
+   <Loggers>
+      <Logger name="batfish.main.Batfish" level="DEBUG" additivity="false">
+         <AppenderRef ref="ConsoleOut"/>
+      </Logger>
+      <Root level="ERROR">
+         <AppenderRef ref="ConsoleErr"/>
+      </Root>
+   </Loggers>
+</Configuration>

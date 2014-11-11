@@ -34,6 +34,11 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import com.logicblox.bloxweb.client.ServiceClientException;
 import com.logicblox.connect.Workspace.Relation;
@@ -208,7 +213,10 @@ public class Batfish implements AutoCloseable {
 
    private List<LogicBloxFrontend> _lbFrontends;
 
+   private Logger _logger;
+
    private PredicateInfo _predicateInfo;
+
    private Settings _settings;
 
    private long _timerCount;
@@ -219,10 +227,11 @@ public class Batfish implements AutoCloseable {
       _settings = settings;
       _lbFrontends = new ArrayList<LogicBloxFrontend>();
       _tmpLogicDir = null;
+      initializeLogger();
    }
 
    private void addProject(LogicBloxFrontend lbFrontend) {
-      print(0, "\n*** ADDING PROJECT ***\n");
+      _logger.info("\n*** ADDING PROJECT ***\n");
       resetTimer();
       String settingsLogicDir = _settings.getLogicDir();
       File logicDir;
@@ -237,23 +246,23 @@ public class Batfish implements AutoCloseable {
       if (result != null) {
          throw new BatfishException(result + "\n");
       }
-      print(1, "SUCCESS\n");
+      _logger.info("SUCCESS\n");
       printElapsedTime();
    }
 
    private void addStaticFacts(LogicBloxFrontend lbFrontend, String blockName) {
-      print(0, "\n*** ADDING STATIC FACTS ***\n");
+      _logger.info("\n*** ADDING STATIC FACTS ***\n");
       resetTimer();
-      print(1, "Adding " + blockName + "...");
+      _logger.info("Adding " + blockName + "...");
       String output = lbFrontend.execNamedBlock(LB_BATFISH_LIBRARY_NAME + ":"
             + blockName);
       if (output == null) {
-         print(1, "OK\n");
+         _logger.info("OK\n");
       }
       else {
          throw new BatfishException(output + "\n");
       }
-      print(1, "SUCCESS\n");
+      _logger.info("SUCCESS\n");
       printElapsedTime();
    }
 
@@ -362,38 +371,38 @@ public class Batfish implements AutoCloseable {
    }
 
    private void computeDataPlane(LogicBloxFrontend lbFrontend) {
-      print(0, "\n*** COMPUTING DATA PLANE STRUCTURES ***\n");
+      _logger.info("\n*** COMPUTING DATA PLANE STRUCTURES ***\n");
       resetTimer();
 
       lbFrontend.initEntityTable();
 
-      print(1, "Retrieving flow sink information from LogicBlox..");
+      _logger.info("Retrieving flow sink information from LogicBlox..");
       FlowSinkSet flowSinks = getFlowSinkSet(lbFrontend);
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
-      print(1, "Retrieving topology information from LogicBlox..");
+      _logger.info("Retrieving topology information from LogicBlox..");
       EdgeSet topologyEdges = getTopologyEdges(lbFrontend);
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
       String fibQualifiedName = _predicateInfo.getPredicateNames().get(
             FIB_PREDICATE_NAME);
-      print(1, "Retrieving network FIB information from LogicBlox..");
+      _logger.info("Retrieving network FIB information from LogicBlox..");
       Relation fibNetwork = lbFrontend.queryPredicate(fibQualifiedName);
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
       String fibPolicyRouteNextHopQualifiedName = _predicateInfo
             .getPredicateNames().get(FIB_POLICY_ROUTE_NEXT_HOP_PREDICATE_NAME);
-      print(1,
-            "Retrieving ip FIB information from LogicBlox for policy-routing next-hop-ips..");
+      _logger
+            .info("Retrieving ip FIB information from LogicBlox for policy-routing next-hop-ips..");
       Relation fibPolicyRouteNextHops = lbFrontend
             .queryPredicate(fibPolicyRouteNextHopQualifiedName);
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
-      print(1, "Caclulating forwarding rules..");
+      _logger.info("Caclulating forwarding rules..");
       FibMap fibs = getRouteForwardingRules(fibNetwork, lbFrontend);
       PolicyRouteFibNodeMap policyRouteFibNodeMap = getPolicyRouteFibNodeMap(
             fibPolicyRouteNextHops, lbFrontend);
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
       Path flowSinksPath = Paths.get(_settings.getDataPlaneDir(),
             FLOW_SINKS_FILENAME);
@@ -401,24 +410,24 @@ public class Batfish implements AutoCloseable {
       Path fibsPolicyRoutePath = Paths.get(_settings.getDataPlaneDir(),
             FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME);
       Path edgesPath = Paths.get(_settings.getDataPlaneDir(), EDGES_FILENAME);
-      print(1, "Serializing flow sink set..");
+      _logger.info("Serializing flow sink set..");
       serializeObject(flowSinks, flowSinksPath.toFile());
-      print(1, "OK\n");
-      print(1, "Serializing fibs..");
+      _logger.info("OK\n");
+      _logger.info("Serializing fibs..");
       serializeObject(fibs, fibsPath.toFile());
-      print(1, "OK\n");
-      print(1, "Serializing policy route next hop interface map..");
+      _logger.info("OK\n");
+      _logger.info("Serializing policy route next hop interface map..");
       serializeObject(policyRouteFibNodeMap, fibsPolicyRoutePath.toFile());
-      print(1, "OK\n");
-      print(1, "Serializing toplogy edges..");
+      _logger.info("OK\n");
+      _logger.info("Serializing toplogy edges..");
       serializeObject(topologyEdges, edgesPath.toFile());
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
       printElapsedTime();
    }
 
    private void concretize() {
-      print(0, "\n*** GENERATING Z3 CONCRETIZER QUERIES ***\n");
+      _logger.info("\n*** GENERATING Z3 CONCRETIZER QUERIES ***\n");
       resetTimer();
       String[] concInPaths = _settings.getConcretizerInputFilePaths();
       String[] negConcInPaths = _settings.getNegatedConcretizerInputFilePaths();
@@ -431,22 +440,22 @@ public class Batfish implements AutoCloseable {
          concretizerQueries.add(blacklistIpQuery);
       }
       for (String concInPath : concInPaths) {
-         print(1, "Reading z3 datalog query output file: \"" + concInPath
+         _logger.info("Reading z3 datalog query output file: \"" + concInPath
                + "\"..");
          File queryOutputFile = new File(concInPath);
          String queryOutputStr = readFile(queryOutputFile);
-         print(1, "OK\n");
+         _logger.info("OK\n");
 
          DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
                queryOutputStr);
          ParserRuleContext tree = parse(parser, concInPath);
 
-         print(1, "Computing concretizer queries..");
+         _logger.info("Computing concretizer queries..");
          ParseTreeWalker walker = new ParseTreeWalker();
          DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(
                _settings.concretizeUnique(), false);
          walker.walk(extractor, tree);
-         print(1, "OK\n");
+         _logger.info("OK\n");
 
          List<ConcretizerQuery> currentQueries = extractor
                .getConcretizerQueries();
@@ -460,22 +469,23 @@ public class Batfish implements AutoCloseable {
       }
       if (negConcInPaths != null) {
          for (String negConcInPath : negConcInPaths) {
-            print(1, "Reading z3 datalog query output file (to be negated): \""
-                  + negConcInPath + "\"..");
+            _logger
+                  .info("Reading z3 datalog query output file (to be negated): \""
+                        + negConcInPath + "\"..");
             File queryOutputFile = new File(negConcInPath);
             String queryOutputStr = readFile(queryOutputFile);
-            print(1, "OK\n");
+            _logger.info("OK\n");
 
             DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
                   queryOutputStr);
             ParserRuleContext tree = parse(parser, negConcInPath);
 
-            print(1, "Computing concretizer queries..");
+            _logger.info("Computing concretizer queries..");
             ParseTreeWalker walker = new ParseTreeWalker();
             DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(
                   _settings.concretizeUnique(), true);
             walker.walk(extractor, tree);
-            print(1, "OK\n");
+            _logger.info("OK\n");
 
             List<ConcretizerQuery> currentQueries = extractor
                   .getConcretizerQueries();
@@ -492,9 +502,10 @@ public class Batfish implements AutoCloseable {
          ConcretizerQuery cq = concretizerQueries.get(i);
          String concQueryPath = _settings.getConcretizerOutputFilePath() + "-"
                + i + ".smt2";
-         print(1, "Writing concretizer query file: \"" + concQueryPath + "\"..");
+         _logger.info("Writing concretizer query file: \"" + concQueryPath
+               + "\"..");
          writeFile(concQueryPath, cq.getText());
-         print(1, "OK\n");
+         _logger.info("OK\n");
       }
       printElapsedTime();
    }
@@ -516,19 +527,19 @@ public class Batfish implements AutoCloseable {
          Map<String, VendorConfiguration> vendorConfigurations) {
       boolean processingError = false;
       Map<String, Configuration> configurations = new TreeMap<String, Configuration>();
-      print(1,
-            "\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
+      _logger
+            .info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
       resetTimer();
       for (String name : vendorConfigurations.keySet()) {
-         print(2, "Processing: \"" + name + "\"");
+         _logger.debug("Processing: \"" + name + "\"");
          VendorConfiguration vc = vendorConfigurations.get(name);
          try {
             Configuration config = vc.toVendorIndependentConfiguration();
             configurations.put(name, config);
          }
          catch (VendorConversionException e) {
-            error(0, "...CONVERSION ERROR\n");
-            error(0, ExceptionUtils.getStackTrace(e));
+            _logger.fatal("...CONVERSION ERROR\n");
+            _logger.fatal(ExceptionUtils.getStackTrace(e));
             processingError = true;
             if (_settings.exitOnParseError()) {
                break;
@@ -541,13 +552,13 @@ public class Batfish implements AutoCloseable {
          List<String> conversionWarnings = vc.getConversionWarnings();
          int numWarnings = conversionWarnings.size();
          if (numWarnings > 0) {
-            print(2, "..." + numWarnings + " WARNING(S)\n");
+            _logger.debug("..." + numWarnings + " WARNING(S)\n");
             for (String warning : conversionWarnings) {
-               print(2, "\tconverter: " + warning + "\n");
+               _logger.debug("\tconverter: " + warning + "\n");
             }
          }
          else {
-            print(2, " ...OK\n");
+            _logger.debug(" ...OK\n");
          }
       }
       if (processingError) {
@@ -561,8 +572,8 @@ public class Batfish implements AutoCloseable {
 
    public Map<String, Configuration> deserializeConfigurations(
          String serializedConfigPath) {
-      print(1,
-            "\n*** DESERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
+      _logger
+            .info("\n*** DESERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
       resetTimer();
       Map<String, Configuration> configurations = new TreeMap<String, Configuration>();
       File dir = new File(serializedConfigPath);
@@ -573,11 +584,11 @@ public class Batfish implements AutoCloseable {
       }
       for (File serializedConfig : serializedConfigs) {
          String name = serializedConfig.getName();
-         print(2, "Reading config: \"" + serializedConfig + "\"");
+         _logger.debug("Reading config: \"" + serializedConfig + "\"");
          Object object = deserializeObject(serializedConfig);
          Configuration c = (Configuration) object;
          configurations.put(name, c);
-         print(2, "...OK\n");
+         _logger.debug("...OK\n");
       }
       disableBlacklistedInterface(configurations);
       disableBlacklistedNode(configurations);
@@ -610,7 +621,7 @@ public class Batfish implements AutoCloseable {
 
    public Map<String, VendorConfiguration> deserializeVendorConfigurations(
          String serializedVendorConfigPath) {
-      print(1, "\n*** DESERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+      _logger.info("\n*** DESERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       resetTimer();
       Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<String, VendorConfiguration>();
       File dir = new File(serializedVendorConfigPath);
@@ -620,11 +631,11 @@ public class Batfish implements AutoCloseable {
       }
       for (File serializedConfig : serializedConfigs) {
          String name = serializedConfig.getName();
-         print(2, "Reading vendor config: \"" + serializedConfig + "\"");
+         _logger.debug("Reading vendor config: \"" + serializedConfig + "\"");
          Object object = deserializeObject(serializedConfig);
          VendorConfiguration vc = (VendorConfiguration) object;
          vendorConfigurations.put(name, vc);
-         print(2, "...OK\n");
+         _logger.debug("...OK\n");
       }
       printElapsedTime();
       return vendorConfigurations;
@@ -656,7 +667,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void dumpFacts(Map<String, StringBuilder> factBins) {
-      print(0, "\n*** DUMPING FACTS ***\n");
+      _logger.info("\n*** DUMPING FACTS ***\n");
       resetTimer();
       Path factsDir = Paths.get(_settings.getDumpFactsDir());
       try {
@@ -664,8 +675,8 @@ public class Batfish implements AutoCloseable {
          for (String factsFilename : factBins.keySet()) {
             String facts = factBins.get(factsFilename).toString();
             Path factsFilePath = factsDir.resolve(factsFilename);
-            print(1, "Writing: \"" + factsFilePath.toAbsolutePath().toString()
-                  + "\"\n");
+            _logger.info("Writing: \""
+                  + factsFilePath.toAbsolutePath().toString() + "\"\n");
             FileUtils.write(factsFilePath.toFile(), facts);
          }
       }
@@ -707,16 +718,9 @@ public class Batfish implements AutoCloseable {
       writeFile(outputPath, output);
    }
 
-   public void error(int logLevel, String text) {
-      if (_settings.getLogLevel() >= logLevel) {
-         System.err.print(text);
-         System.err.flush();
-      }
-   }
-
    private void genInterfaceFailureBlackHoleQueries() {
-      print(0,
-            "\n*** GENERATING INTERFACE-FAILURE-INCONSISTENCY BLACK-HOLE QUERIES ***\n");
+      _logger
+            .info("\n*** GENERATING INTERFACE-FAILURE-INCONSISTENCY BLACK-HOLE QUERIES ***\n");
       resetTimer();
 
       String fiQueryBasePath = _settings
@@ -725,9 +729,9 @@ public class Batfish implements AutoCloseable {
       String blacklistedInterfaceString = _settings
             .getBlacklistInterfaceString();
 
-      print(1, "Reading node set from : \"" + nodeSetPath + "\"..");
+      _logger.info("Reading node set from : \"" + nodeSetPath + "\"..");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
       for (String hostname : nodes) {
          QuerySynthesizer synth = new FailureInconsistencyBlackHoleQuerySynthesizer(
@@ -742,58 +746,58 @@ public class Batfish implements AutoCloseable {
             fiQueryPath = fiQueryBasePath + "-" + hostname + ".smt2";
          }
 
-         print(1, "Writing query to: \"" + fiQueryPath + "\"..");
+         _logger.info("Writing query to: \"" + fiQueryPath + "\"..");
          writeFile(fiQueryPath, queryText);
-         print(1, "OK\n");
+         _logger.info("OK\n");
       }
 
       printElapsedTime();
    }
 
    private void genMultipathQueries() {
-      print(0, "\n*** GENERATING MULTIPATH-INCONSISTENCY QUERIES ***\n");
+      _logger.info("\n*** GENERATING MULTIPATH-INCONSISTENCY QUERIES ***\n");
       resetTimer();
 
       String mpiQueryBasePath = _settings.getMultipathInconsistencyQueryPath();
       String nodeSetPath = _settings.getNodeSetPath();
       String nodeSetTextPath = nodeSetPath + ".txt";
 
-      print(1, "Reading node set from : \"" + nodeSetPath + "\"..");
+      _logger.info("Reading node set from : \"" + nodeSetPath + "\"..");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
       for (String hostname : nodes) {
          QuerySynthesizer synth = new MultipathInconsistencyQuerySynthesizer(
                hostname);
          String queryText = synth.getQueryText();
          String mpiQueryPath = mpiQueryBasePath + "-" + hostname + ".smt2";
-         print(1, "Writing query to: \"" + mpiQueryPath + "\"..");
+         _logger.info("Writing query to: \"" + mpiQueryPath + "\"..");
          writeFile(mpiQueryPath, queryText);
-         print(1, "OK\n");
+         _logger.info("OK\n");
       }
 
-      print(1, "Writing node lines for next stage..");
+      _logger.info("Writing node lines for next stage..");
       StringBuilder sb = new StringBuilder();
       for (String node : nodes) {
          sb.append(node + "\n");
       }
       writeFile(nodeSetTextPath, sb.toString());
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
       printElapsedTime();
    }
 
    private void genReachableQueries() {
-      print(0, "\n*** GENERATING REACHABLE QUERIES ***\n");
+      _logger.info("\n*** GENERATING REACHABLE QUERIES ***\n");
       resetTimer();
 
       String queryBasePath = _settings.getReachableQueryPath();
       String nodeSetPath = _settings.getNodeSetPath();
       String acceptNode = _settings.getAcceptNode();
       String blacklistedNode = _settings.getBlacklistNode();
-      print(1, "Reading node set from : \"" + nodeSetPath + "\"..");
+      _logger.info("Reading node set from : \"" + nodeSetPath + "\"..");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
       for (String hostname : nodes) {
          if (hostname.equals(acceptNode) || hostname.equals(blacklistedNode)) {
@@ -805,16 +809,16 @@ public class Batfish implements AutoCloseable {
          String queryPath;
          queryPath = queryBasePath + "-" + hostname + ".smt2";
 
-         print(1, "Writing query to: \"" + queryPath + "\"..");
+         _logger.info("Writing query to: \"" + queryPath + "\"..");
          writeFile(queryPath, queryText);
-         print(1, "OK\n");
+         _logger.info("OK\n");
       }
 
       printElapsedTime();
    }
 
    private void genRoleReachabilityQueries() {
-      print(0, "\n*** GENERATING NODE-TO-ROLE QUERIES ***\n");
+      _logger.info("\n*** GENERATING NODE-TO-ROLE QUERIES ***\n");
       resetTimer();
 
       String queryBasePath = _settings.getRoleReachabilityQueryPath();
@@ -824,14 +828,14 @@ public class Batfish implements AutoCloseable {
       String nodeRolesPath = _settings.getNodeRolesPath();
       String iterationsPath = nodeRolesPath + ".iterations";
 
-      print(1, "Reading node set from : \"" + nodeSetPath + "\"..");
+      _logger.info("Reading node set from : \"" + nodeSetPath + "\"..");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
-      print(1, "Reading node roles from : \"" + nodeRolesPath + "\"..");
+      _logger.info("Reading node roles from : \"" + nodeRolesPath + "\"..");
       NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(new File(
             nodeRolesPath));
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
       RoleNodeMap roleNodes = nodeRoles.toRoleNodeMap();
 
@@ -842,31 +846,31 @@ public class Batfish implements AutoCloseable {
             String queryText = synth.getQueryText();
             String queryPath = queryBasePath + "-" + hostname + "-" + role
                   + ".smt2";
-            print(1, "Writing query to: \"" + queryPath + "\"..");
+            _logger.info("Writing query to: \"" + queryPath + "\"..");
             writeFile(queryPath, queryText);
-            print(1, "OK\n");
+            _logger.info("OK\n");
          }
       }
 
-      print(1, "Writing node lines for next stage..");
+      _logger.info("Writing node lines for next stage..");
       StringBuilder sbNodes = new StringBuilder();
       for (String node : nodes) {
          sbNodes.append(node + "\n");
       }
       writeFile(nodeSetTextPath, sbNodes.toString());
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
       StringBuilder sbRoles = new StringBuilder();
-      print(1, "Writing role lines for next stage..");
+      _logger.info("Writing role lines for next stage..");
       sbRoles = new StringBuilder();
       for (String role : roleNodes.keySet()) {
          sbRoles.append(role + "\n");
       }
       writeFile(roleSetTextPath, sbRoles.toString());
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
-      print(1,
-            "Writing role-node-role iteration ordering lines for concretizer stage..");
+      _logger
+            .info("Writing role-node-role iteration ordering lines for concretizer stage..");
       StringBuilder sbIterations = new StringBuilder();
       for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
          String transmittingRole = roleNodeEntry.getKey();
@@ -886,13 +890,13 @@ public class Batfish implements AutoCloseable {
          }
       }
       writeFile(iterationsPath, sbIterations.toString());
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
       printElapsedTime();
    }
 
    private void genZ3(Map<String, Configuration> configurations) {
-      print(0, "\n*** GENERATING Z3 LOGIC ***\n");
+      _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
       resetTimer();
 
       Path flowSinkSetPath = Paths.get(_settings.getDataPlaneDir(),
@@ -902,56 +906,55 @@ public class Batfish implements AutoCloseable {
             FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME);
       Path edgesPath = Paths.get(_settings.getDataPlaneDir(), EDGES_FILENAME);
 
-      print(1,
-            "Deserializing flow sink interface set: \""
-                  + flowSinkSetPath.toString() + "\"..");
+      _logger.info("Deserializing flow sink interface set: \""
+            + flowSinkSetPath.toString() + "\"..");
       FlowSinkSet flowSinks = (FlowSinkSet) deserializeObject(flowSinkSetPath
             .toFile());
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
-      print(1, "Deserializing destination route fibs: \"" + fibsPath.toString()
-            + "\"..");
+      _logger.info("Deserializing destination route fibs: \""
+            + fibsPath.toString() + "\"..");
       FibMap fibs = (FibMap) deserializeObject(fibsPath.toFile());
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
-      print(1, "Deserializing policy route fibs: \"" + prFibsPath.toString()
-            + "\"..");
+      _logger.info("Deserializing policy route fibs: \""
+            + prFibsPath.toString() + "\"..");
       PolicyRouteFibNodeMap prFibs = (PolicyRouteFibNodeMap) deserializeObject(prFibsPath
             .toFile());
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
-      print(1, "Deserializing toplogy edges: \"" + edgesPath.toString()
+      _logger.info("Deserializing toplogy edges: \"" + edgesPath.toString()
             + "\"..");
       EdgeSet topologyEdges = (EdgeSet) deserializeObject(edgesPath.toFile());
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
-      print(1, "Synthesizing Z3 logic..");
+      _logger.info("Synthesizing Z3 logic..");
       Synthesizer s = new Synthesizer(configurations, fibs, prFibs,
             topologyEdges, _settings.getSimplify(), flowSinks);
       String result = s.synthesize();
       List<String> warnings = s.getWarnings();
       int numWarnings = warnings.size();
       if (numWarnings == 0) {
-         print(1, "OK\n");
+         _logger.info("OK\n");
       }
       else {
          for (String warning : warnings) {
-            error(1, warning);
+            _logger.warn(warning);
          }
       }
 
       String outputPath = _settings.getZ3File();
-      print(1, "Writing Z3 logic: \"" + outputPath + "\"..");
+      _logger.info("Writing Z3 logic: \"" + outputPath + "\"..");
       File z3Out = new File(outputPath);
       z3Out.delete();
       writeFile(outputPath, result);
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
       String nodeSetPath = _settings.getNodeSetPath();
-      print(1, "Serializing node set: \"" + nodeSetPath + "\"..");
+      _logger.info("Serializing node set: \"" + nodeSetPath + "\"..");
       NodeSet nodeSet = s.getNodeSet();
       serializeObject(nodeSet, new File(nodeSetPath));
-      print(1, "OK\n");
+      _logger.info("OK\n");
 
       printElapsedTime();
    }
@@ -1083,7 +1086,7 @@ public class Batfish implements AutoCloseable {
 
    public PredicateInfo getPredicateInfo(Map<String, String> logicFiles) {
       // Get predicate semantics from rules file
-      print(1, "\n*** PARSING PREDICATE INFO ***\n");
+      _logger.info("\n*** PARSING PREDICATE INFO ***\n");
       resetTimer();
       String predicateInfoPath = getPredicateInfoPath();
       PredicateInfo predicateInfo = (PredicateInfo) deserializeObject(new File(
@@ -1226,7 +1229,7 @@ public class Batfish implements AutoCloseable {
 
    public LogicBloxFrontend initFrontend(boolean assumedToExist,
          String workspace) throws LBInitializationException {
-      print(1, "\n*** STARTING CONNECTBLOX SESSION ***\n");
+      _logger.info("\n*** STARTING CONNECTBLOX SESSION ***\n");
       resetTimer();
       LogicBloxFrontend lbFrontend = new LogicBloxFrontend(
             _settings.getConnectBloxHost(), _settings.getConnectBloxPort(),
@@ -1237,11 +1240,31 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException(
                "Error connecting to ConnectBlox service. Please make sure service is running and try again.");
       }
-      print(1, "SUCCESS\n");
+      _logger.info("SUCCESS\n");
       printElapsedTime();
       _lbFrontends.add(lbFrontend);
       return lbFrontend;
 
+   }
+
+   private void initializeLogger() {
+      _logger = LogManager.getLogger();
+      if (_settings.getLogLevel() != null) {
+         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+         org.apache.logging.log4j.core.config.Configuration config = ctx
+               .getConfiguration();
+         LoggerConfig loggerConfig = config.getLoggerConfig(this.getClass()
+               .getName());
+         String logLevelStr = _settings.getLogLevel().toUpperCase();
+         Level logLevel = Level.getLevel(logLevelStr);
+         if (logLevel == null) {
+            throw new BatfishException("Invalid log level: \"" + logLevelStr
+                  + "\"");
+         }
+         loggerConfig.setLevel(logLevel);
+         ctx.updateLoggers(); // This causes all Loggers to refetch information
+                              // from their LoggerConfig.
+      }
    }
 
    private boolean isJavaSerializationData(File inputFile) {
@@ -1265,28 +1288,28 @@ public class Batfish implements AutoCloseable {
       List<String> errors = parser.getErrors();
       int numErrors = errors.size();
       if (numErrors > 0) {
-         error(1, numErrors + " ERROR(S)\n");
+         _logger.warn(numErrors + " ERROR(S)\n");
          for (int i = 0; i < numErrors; i++) {
             String prefix = "ERROR " + (i + 1) + ": ";
             String msg = errors.get(i);
             String prefixedMsg = Util.applyPrefix(prefix, msg);
-            error(1, prefixedMsg + "\n");
+            _logger.warn(prefixedMsg + "\n");
          }
          throw new BatfishException("Exiting due to parser errors");
       }
       else if (!_settings.printParseTree()) {
-         print(1, "OK\n");
+         _logger.info("OK\n");
       }
       else {
-         print(0, "OK, PRINTING PARSE TREE:\n");
-         print(0, ParseTreePrettyPrinter.print(tree, parser) + "\n\n");
+         _logger.info("OK, PRINTING PARSE TREE:\n");
+         _logger.info(ParseTreePrettyPrinter.print(tree, parser) + "\n\n");
       }
       return tree;
    }
 
    private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser,
          String filename) {
-      print(1, "Parsing: \"" + filename + "\"..");
+      _logger.info("Parsing: \"" + filename + "\"..");
       return parse(parser);
    }
 
@@ -1356,7 +1379,7 @@ public class Batfish implements AutoCloseable {
    private NodeRoleMap parseNodeRoles(String testRigPath) {
       Path rolePath = Paths.get(testRigPath, "node_roles");
       String roleFileText = readFile(rolePath.toFile());
-      print(1, "Parsing: \"" + rolePath.toAbsolutePath().toString() + "\"");
+      _logger.info("Parsing: \"" + rolePath.toAbsolutePath().toString() + "\"");
       BatfishCombinedParser<?, ?> parser = new RoleCombinedParser(roleFileText);
       RoleExtractor extractor = new RoleExtractor();
       ParserRuleContext tree = parse(parser);
@@ -1372,7 +1395,7 @@ public class Batfish implements AutoCloseable {
       TopologyExtractor extractor = null;
       Topology topology = null;
       File topologyPath = Paths.get(testRigPath, "topology.net").toFile();
-      print(1, "Parsing: \"" + topologyPath.getAbsolutePath() + "\"");
+      _logger.info("Parsing: \"" + topologyPath.getAbsolutePath() + "\"");
       if (topologyFileText.startsWith("autostart")) {
          parser = new GNS3TopologyCombinedParser(topologyFileText);
          extractor = new GNS3TopologyExtractor();
@@ -1382,11 +1405,11 @@ public class Batfish implements AutoCloseable {
          extractor = new BatfishTopologyExtractor();
       }
       else if (topologyFileText.equals("")) {
-         error(1, "...WARNING: empty topology\n");
+         _logger.warn("...WARNING: empty topology\n");
          return;
       }
       else {
-         error(0, "...ERROR\n");
+         _logger.fatal("...ERROR\n");
          throw new Error("Topology format error");
       }
       ParserRuleContext tree = parse(parser);
@@ -1399,7 +1422,7 @@ public class Batfish implements AutoCloseable {
 
    private Map<String, VendorConfiguration> parseVendorConfigurations(
          Map<File, String> configurationData) {
-      print(1, "\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
+      _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
       resetTimer();
       Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<String, VendorConfiguration>();
 
@@ -1436,7 +1459,7 @@ public class Batfish implements AutoCloseable {
          tree = parse(combinedParser, currentPath);
          walker.walk(extractor, tree);
          for (String warning : extractor.getWarnings()) {
-            error(2, warning);
+            _logger.warn(warning);
          }
          vc = extractor.getVendorConfiguration();
          // at this point we should have a VendorConfiguration vc
@@ -1458,7 +1481,8 @@ public class Batfish implements AutoCloseable {
    private void populateConfigurationFactBins(
          Collection<Configuration> configurations,
          Map<String, StringBuilder> factBins) {
-      print(1, "\n*** EXTRACTING LOGICBLOX FACTS FROM CONFIGURATIONS ***\n");
+      _logger
+            .info("\n*** EXTRACTING LOGICBLOX FACTS FROM CONFIGURATIONS ***\n");
       resetTimer();
       Set<Long> communities = new LinkedHashSet<Long>();
       for (Configuration c : configurations) {
@@ -1469,7 +1493,7 @@ public class Batfish implements AutoCloseable {
                communities, factBins);
          cfe.writeFacts();
          for (String warning : cfe.getWarnings()) {
-            error(1, warning);
+            _logger.warn(warning);
          }
       }
       printElapsedTime();
@@ -1477,12 +1501,12 @@ public class Batfish implements AutoCloseable {
 
    private void postFacts(LogicBloxFrontend lbFrontend,
          Map<String, StringBuilder> factBins) {
-      print(1, "\n*** POSTING FACTS TO BLOXWEB SERVICES ***\n");
+      _logger.info("\n*** POSTING FACTS TO BLOXWEB SERVICES ***\n");
       resetTimer();
-      print(1, "Starting bloxweb services..");
+      _logger.info("Starting bloxweb services..");
       lbFrontend.startLbWebServices();
-      print(1, "OK\n");
-      print(1, "Posting facts..");
+      _logger.info("OK\n");
+      _logger.info("Posting facts..");
       try {
          lbFrontend.postFacts(factBins);
       }
@@ -1490,35 +1514,28 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException("Failed to post facts to bloxweb services",
                e);
       }
-      print(1, "OK\n");
-      print(1, "Stopping bloxweb services..");
+      _logger.info("OK\n");
+      _logger.info("Stopping bloxweb services..");
       lbFrontend.stopLbWebServices();
-      print(1, "OK\n");
-      print(1, "SUCCESS\n");
+      _logger.info("OK\n");
+      _logger.info("SUCCESS\n");
       printElapsedTime();
-   }
-
-   public void print(int logLevel, String text) {
-      if (_settings.getLogLevel() >= logLevel) {
-         System.out.print(text);
-         System.out.flush();
-      }
    }
 
    private void printAllPredicateSemantics(
          Map<String, String> predicateSemantics) {
       // Get predicate semantics from rules file
-      print(1, "\n*** PRINTING PREDICATE SEMANTICS ***\n");
+      _logger.info("\n*** PRINTING PREDICATE SEMANTICS ***\n");
       List<String> helpPredicates = getHelpPredicates(predicateSemantics);
       for (String predicate : helpPredicates) {
          printPredicateSemantics(predicate);
-         print(0, "\n");
+         _logger.info("\n");
       }
    }
 
    private void printElapsedTime() {
       double seconds = getElapsedTime(_timerCount);
-      print(1, "Time taken for this task: " + seconds + " seconds\n");
+      _logger.info("Time taken for this task: " + seconds + " seconds\n");
    }
 
    private void printPredicate(LogicBloxFrontend lbFrontend,
@@ -1528,7 +1545,7 @@ public class Batfish implements AutoCloseable {
       String qualifiedName = _predicateInfo.getPredicateNames().get(
             predicateName);
       if (qualifiedName == null) { // predicate not found
-         error(0, "ERROR: No information for predicate: " + predicateName
+         _logger.error("ERROR: No information for predicate: " + predicateName
                + "\n");
          return;
       }
@@ -1537,11 +1554,11 @@ public class Batfish implements AutoCloseable {
          output = lbFrontend.getPredicate(_predicateInfo, relation,
                predicateName);
          for (String match : output) {
-            print(0, match);
+            output(match);
          }
       }
       catch (QueryException q) {
-         error(0, q.getMessage() + "\n");
+         _logger.fatal(q.getMessage() + "\n");
       }
    }
 
@@ -1550,17 +1567,17 @@ public class Batfish implements AutoCloseable {
       int numRows = lbFrontend.queryPredicate(predicateName).getColumns()
             .get(0).size();
       String output = "|" + predicateName + "| = " + numRows + "\n";
-      print(0, output);
+      _logger.info(output);
    }
 
    public void printPredicateCounts(LogicBloxFrontend lbFrontend,
          Set<String> predicateNames) {
       // Print predicate(s) here
-      print(0, "\n*** SUBMITTING QUERY(IES) ***\n");
+      _logger.info("\n*** SUBMITTING QUERY(IES) ***\n");
       resetTimer();
       for (String predicateName : predicateNames) {
          printPredicateCount(lbFrontend, predicateName);
-         // print(0, "\n");
+         // _logger.info("\n");
       }
       printElapsedTime();
    }
@@ -1568,26 +1585,32 @@ public class Batfish implements AutoCloseable {
    public void printPredicates(LogicBloxFrontend lbFrontend,
          Set<String> predicateNames) {
       // Print predicate(s) here
-      print(0, "\n*** SUBMITTING QUERY(IES) ***\n");
+      _logger.info("\n*** SUBMITTING QUERY(IES) ***\n");
       resetTimer();
       for (String predicateName : predicateNames) {
          printPredicate(lbFrontend, predicateName);
-         print(0, "\n");
+         output("\n");
       }
       printElapsedTime();
    }
+
+   private void output(String msg) {
+      _logger.log(Level.getLevel(LEVEL_OUTPUT), msg);
+   }
+
+   private static final String LEVEL_OUTPUT = "OUTPUT";
 
    private void printPredicateSemantics(String predicateName) {
       String semantics = _predicateInfo.getPredicateSemantics(predicateName);
       if (semantics == null) {
          semantics = "<missing>";
       }
-      print(0, "Predicate: " + predicateName + "\n");
-      print(0, "Semantics: " + semantics + "\n");
+      _logger.info("Predicate: " + predicateName + "\n");
+      _logger.info("Semantics: " + semantics + "\n");
    }
 
    private Map<File, String> readConfigurationFiles(String testRigPath) {
-      print(1, "\n*** READING CONFIGURATION FILES ***\n");
+      _logger.info("\n*** READING CONFIGURATION FILES ***\n");
       resetTimer();
       Map<File, String> configurationData = new TreeMap<File, String>();
       File configsPath = Paths.get(testRigPath, "configs").toFile();
@@ -1601,7 +1624,7 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException("Error reading test rig configs directory");
       }
       for (File file : configFilePaths) {
-         print(2, "Reading: \"" + file.toString() + "\"\n");
+         _logger.debug("Reading: \"" + file.toString() + "\"\n");
          String fileText = readFile(file.getAbsoluteFile()) + "\n";
          configurationData.put(file, fileText);
       }
@@ -1692,11 +1715,11 @@ public class Batfish implements AutoCloseable {
    }
 
    private void revert(LogicBloxFrontend lbFrontend) {
-      print(1, "\n*** REVERTING WORKSPACE ***\n");
+      _logger.info("\n*** REVERTING WORKSPACE ***\n");
       String workspaceName = new File(_settings.getTestRigPath()).getName();
       String branchName = _settings.getBranchName();
-      print(2, "Reverting workspace: \"" + workspaceName + "\" to branch: \""
-            + branchName + "\n");
+      _logger.debug("Reverting workspace: \"" + workspaceName
+            + "\" to branch: \"" + branchName + "\n");
       String errorResult = lbFrontend.revertDatabase(branchName);
       if (errorResult != null) {
          throw new BatfishException("Failed to revert database: " + errorResult);
@@ -1884,18 +1907,17 @@ public class Batfish implements AutoCloseable {
    private void serializeIndependentConfigs(String vendorConfigPath,
          String outputPath) {
       Map<String, Configuration> configurations = getConfigurations(vendorConfigPath);
-      print(1,
-            "\n*** SERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
+      _logger
+            .info("\n*** SERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
       resetTimer();
       new File(outputPath).mkdirs();
       for (String name : configurations.keySet()) {
          Configuration c = configurations.get(name);
          Path currentOutputPath = Paths.get(outputPath, name);
-         print(2,
-               "Serializing: \"" + name + "\" ==> \""
-                     + currentOutputPath.toString() + "\"");
+         _logger.info("Serializing: \"" + name + "\" ==> \""
+               + currentOutputPath.toString() + "\"");
          serializeObject(c, currentOutputPath.toFile());
-         print(2, " ...OK\n");
+         _logger.debug(" ...OK\n");
       }
       printElapsedTime();
    }
@@ -1938,23 +1960,22 @@ public class Batfish implements AutoCloseable {
             RoleSet roles = nodeRoles.get(hostname);
             config.setRoles(roles);
          }
-         print(1, "Serializing node-roles mappings: \"" + nodeRolesPath
+         _logger.info("Serializing node-roles mappings: \"" + nodeRolesPath
                + "\"..");
          serializeObject(nodeRoles, new File(nodeRolesPath));
-         print(1, "OK\n");
+         _logger.info("OK\n");
       }
 
-      print(1, "\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+      _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       resetTimer();
       new File(outputPath).mkdirs();
       for (String name : vendorConfigurations.keySet()) {
          VendorConfiguration vc = vendorConfigurations.get(name);
          Path currentOutputPath = Paths.get(outputPath, name);
-         print(2,
-               "Serializing: \"" + name + "\" ==> \""
-                     + currentOutputPath.toString() + "\"");
+         _logger.debug("Serializing: \"" + name + "\" ==> \""
+               + currentOutputPath.toString() + "\"");
          serializeObject(vc, currentOutputPath.toFile());
-         print(2, " ...OK\n");
+         _logger.debug(" ...OK\n");
       }
       printElapsedTime();
    }
@@ -1988,7 +2009,7 @@ public class Batfish implements AutoCloseable {
    public void writeTopologyFacts(String testRigPath,
          Map<String, Configuration> configurations,
          Map<String, StringBuilder> factBins) {
-      print(1, "*** PARSING TOPOLOGY ***\n");
+      _logger.info("*** PARSING TOPOLOGY ***\n");
       resetTimer();
       // TODO: Use flag to extract topology from interface descriptions.
       if (Boolean.FALSE) {
@@ -2019,8 +2040,8 @@ public class Batfish implements AutoCloseable {
          else {
             // tell logicblox to guess adjacencies based on interface
             // subnetworks
-            print(1,
-                  "*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
+            _logger
+                  .info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
             StringBuilder wGuessTopology = factBins.get("GuessTopology");
             wGuessTopology.append("1\n");
             guess = true;

@@ -25,5 +25,7 @@
 	<classpathentry kind="lib" path="lib/httpcomponents/httpmime-4.2.5.jar"/>
 	<classpathentry kind="lib" path="lib/protobuf/protobuf-2.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.7.jar"/>
+	<classpathentry kind="lib" path="lib/log4j/log4j-api-2.1.jar" sourcepath="lib/log4j/log4j-api-2.1-sources.jar"/>
+	<classpathentry kind="lib" path="lib/log4j/log4j-core-2.1.jar" sourcepath="lib/log4j/log4j-core-2.1-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

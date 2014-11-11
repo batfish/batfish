@@ -385,7 +385,7 @@
                <arg value="-bpi"/>
                <arg value="src/batfish/logic"/>
                <arg value="-log"/>
-               <arg value="0"/>
+               <arg value="WARN"/>
                <classpath refid="libraries" />
                <classpath path="bin"/>
             </java>

@@ -103,6 +103,7 @@ public class Settings {
    private static final String ARGNAME_INTERFACE_MAP_PATH = "path";
    private static final String ARGNAME_LB_WEB_ADMIN_PORT = "port";
    private static final String ARGNAME_LB_WEB_PORT = "port";
+   private static final String ARGNAME_LOG_LEVEL = "level";
    private static final String ARGNAME_LOGICDIR = "path";
    private static final String ARGNAME_MPI_PATH = "path";
    private static final String ARGNAME_NODE_ROLES_PATH = "path";
@@ -129,7 +130,6 @@ public class Settings {
    private static final String DEFAULT_FLOW_PATH = "flows";
    private static final String DEFAULT_LB_WEB_ADMIN_PORT = "55183";
    private static final String DEFAULT_LB_WEB_PORT = "8080";
-   private static final String DEFAULT_LOG_LEVEL = "2";
    private static final List<String> DEFAULT_PREDICATES = Collections
          .singletonList("InstalledRoute");
    private static final String DEFAULT_SERIALIZE_INDEPENDENT_PATH = "serialized-independent-configs";
@@ -182,7 +182,7 @@ public class Settings {
    private int _lbWebPort;
    private String _logicDir;
    private String _logicSrcDir;
-   private int _logLevel;
+   private String _logLevel;
    private String _mpiPath;
    private String[] _negatedConcretizerInputFilePaths;
    private String _nodeRolesPath;
@@ -403,7 +403,7 @@ public class Settings {
       return _logicSrcDir;
    }
 
-   public int getLogLevel() {
+   public String getLogLevel() {
       return _logLevel;
    }
 
@@ -554,13 +554,6 @@ public class Settings {
       _options.addOption(OptionBuilder.withArgName(ARGNAME_LB_WEB_ADMIN_PORT)
             .hasArg().withDescription("admin port lb-web server")
             .create(ARG_LB_WEB_ADMIN_PORT));
-      _options
-            .addOption(OptionBuilder
-                  .withArgName("number")
-                  .hasArg()
-                  .withDescription(
-                        "log level, either 0 (concise), 1 (verbose, default), or 2 (very verbose)")
-                  .create(ARG_LOG_LEVEL));
       _options
             .addOption(OptionBuilder
                   .withArgName("predicates")
@@ -787,6 +780,8 @@ public class Settings {
       _options.addOption(OptionBuilder.withDescription(
             "duplicate flows across all nodes in same role").create(
             ARG_DUPLICATE_ROLE_FLOWS));
+      _options.addOption(OptionBuilder.hasArg().withArgName(ARGNAME_LOG_LEVEL)
+            .withDescription("log4j2 log level").create(ARG_LOG_LEVEL));
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -823,8 +818,6 @@ public class Settings {
             DEFAULT_TEST_RIG_PATH);
 
       _workspaceName = line.getOptionValue(ARG_WORKSPACE, null);
-      _logLevel = Integer.parseInt(line.getOptionValue(ARG_LOG_LEVEL,
-            DEFAULT_LOG_LEVEL));
       if (line.hasOption(ARG_PREDICATES)) {
          _predicates = Arrays.asList(line.getOptionValues(ARG_PREDICATES));
       }
@@ -930,6 +923,7 @@ public class Settings {
       _roleReachabilityQuery = line.hasOption(ARG_ROLE_REACHABILITY_QUERY);
       _roleSetPath = line.getOptionValue(ARG_ROLE_SET_PATH);
       _duplicateRoleFlows = line.hasOption(ARG_DUPLICATE_ROLE_FLOWS);
+      _logLevel = line.getOptionValue(ARG_LOG_LEVEL);
    }
 
    public boolean printParseTree() {

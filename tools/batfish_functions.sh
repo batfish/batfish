@@ -343,7 +343,7 @@ batfish_analyze_interface_failures_machine() {
       batfish_compile_blacklist_interface $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $interface || return 1
 
       # Get interesting predicate data
-      batfish -log 0 -workspace $WORKSPACE -query -predicates InstalledRoute BestOspfE2Route BestOspfE1Route OspfRoute_advertiser OspfE2Route > $PREDS_PATH || return 1
+      batfish -log output -workspace $WORKSPACE -query -predicates InstalledRoute BestOspfE2Route BestOspfE1Route OspfRoute_advertiser OspfE2Route > $PREDS_PATH || return 1
       
       # Query data plane predicates
       batfish_query_data_plane $WORKSPACE $DP_DIR || return 1
@@ -702,7 +702,7 @@ batfish_find_interface_failure_destination_ip_blacklist_constraints() {
    local INTERFACE_IP_PATH=$PWD/${INTERFACE_IP_PREDICATE}.txt
    date | tr -d '\n'
    echo ": START: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${OUTPUT_PATH}\""
-   batfish -log 0 -workspace $WORKSPACE -query -predicates $INTERFACE_IP_PREDICATE > $INTERFACE_IP_PATH || return 1
+   batfish -log output -workspace $WORKSPACE -query -predicates $INTERFACE_IP_PREDICATE > $INTERFACE_IP_PATH || return 1
    head -n1 $INTERFACE_IP_PATH || return 1
    cat $INTERFACE_IP_PATH | tr -d ' ' | grep "$BLACKLISTED_INTERFACE" | cut -d',' -f 3 > $OUTPUT_PATH
    date | tr -d '\n'
@@ -1162,24 +1162,11 @@ batfish_query_flows() {
    batfish_expect_args 2 $# || return 1
    local FLOW_RESULTS=$1
    local WORKSPACE=$2
-   batfish -log 0 -workspace $WORKSPACE -query -predicates FlowRoleInconsistent FlowRoleAccepted Flow FlowUnknown FlowInconsistent FlowAccepted FlowAllowedIn FlowAllowedOut FlowDropped FlowDeniedIn FlowDeniedOut FlowNoRoute FlowNullRouted FlowPolicyDenied FlowReachPolicyRoute FlowReachPostIn FlowReachPreOut FlowReachPreOutInterface FlowReachPostOutInterface FlowReachPreOutEdgeOrigin FlowReachPreOutEdgePolicyRoute FlowReachPreOutEdgeStandard FlowReachPreOutEdge FlowReachPreInInterface FlowReachPostInInterface FlowReach FlowReachStep FlowLost FlowLoop FlowPathHistory FlowPathAcceptedEdge FlowPathDeniedOutEdge FlowPathDeniedInEdge FlowPathNoRouteEdge FlowPathNullRoutedEdge FlowPathIntermediateEdge LanAdjacent &> $FLOW_RESULTS
+   batfish -log output -workspace $WORKSPACE -query -predicates FlowRoleInconsistent FlowRoleAccepted Flow FlowUnknown FlowInconsistent FlowAccepted FlowAllowedIn FlowAllowedOut FlowDropped FlowDeniedIn FlowDeniedOut FlowNoRoute FlowNullRouted FlowPolicyDenied FlowReachPolicyRoute FlowReachPostIn FlowReachPreOut FlowReachPreOutInterface FlowReachPostOutInterface FlowReachPreOutEdgeOrigin FlowReachPreOutEdgePolicyRoute FlowReachPreOutEdgeStandard FlowReachPreOutEdge FlowReachPreInInterface FlowReachPostInInterface FlowReach FlowReachStep FlowLost FlowLoop FlowPathHistory FlowPathAcceptedEdge FlowPathDeniedOutEdge FlowPathDeniedInEdge FlowPathNoRouteEdge FlowPathNullRoutedEdge FlowPathIntermediateEdge LanAdjacent &> $FLOW_RESULTS
    date | tr -d '\n'
    echo ": END: Query flow results from LogicBlox"
 }
 export -f batfish_query_flows
-
-batfish_query_predicate() {
-   date | tr -d '\n'
-   echo ": START: Query predicate (informational only)"
-   batfish_expect_args 2 $# || return 1
-   local PREFIX=$1
-   local PREDICATE=$2
-   local WORKSPACE=batfish-$USER-$PREFIX
-   batfish -workspace $WORKSPACE -query -predicates $PREDICATE
-   date | tr -d '\n'
-   echo ": END: Query predicate (informational only)"
-}
-export -f batfish_query_predicate
 
 batfish_query_routes() {
    date | tr -d '\n'
@@ -1187,7 +1174,7 @@ batfish_query_routes() {
    batfish_expect_args 2 $# || return 1
    local ROUTES=$1
    local WORKSPACE=$2
-   batfish -log 0 -workspace $WORKSPACE -query -predicates InstalledRoute &> $ROUTES
+   batfish -log output -workspace $WORKSPACE -query -predicates InstalledRoute &> $ROUTES
    date | tr -d '\n'
    echo ": END: Query routes (informational only)"
 }
