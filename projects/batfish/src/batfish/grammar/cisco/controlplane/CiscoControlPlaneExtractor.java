@@ -98,6 +98,18 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       }
    }
 
+   private static String getCanonicalInterfaceNamePrefix(String prefix) {
+      for (Entry<String, String> e : CISCO_INTERFACE_PREFIXES.entrySet()) {
+         String matchPrefix = e.getKey();
+         String canonicalPrefix = e.getValue();
+         if (matchPrefix.toLowerCase().startsWith(prefix.toLowerCase())) {
+            return canonicalPrefix;
+         }
+      }
+      throw new BatfishException("Invalid interface name prefix: \"" + prefix
+            + "\"");
+   }
+
    private static Map<String, String> getCiscoInterfacePrefixes() {
       Map<String, String> prefixes = new LinkedHashMap<String, String>();
       prefixes.put("Ethernet", "Ethernet");
@@ -1980,18 +1992,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          String source = toInterfaceName(ctx.source);
          _currentPeerGroup.setUpdateSource(source);
       }
-   }
-
-   private String getCanonicalInterfaceNamePrefix(String prefix) {
-      for (Entry<String, String> e : CISCO_INTERFACE_PREFIXES.entrySet()) {
-         String matchPrefix = e.getKey();
-         String canonicalPrefix = e.getValue();
-         if (matchPrefix.toLowerCase().startsWith(prefix.toLowerCase())) {
-            return canonicalPrefix;
-         }
-      }
-      throw new BatfishException("Invalid interface name prefix: \"" + prefix
-            + "\"");
    }
 
    public CiscoConfiguration getConfiguration() {
