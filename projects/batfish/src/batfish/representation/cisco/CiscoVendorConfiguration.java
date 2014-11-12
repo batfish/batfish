@@ -221,8 +221,18 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             updateSource = processRouterId.toString();
          }
          else {
-            Ip sourceIp = c.getInterfaces().get(updateSourceInterface).getIP();
-            updateSource = sourceIp.toString();
+            batfish.representation.Interface sourceInterface = c
+                  .getInterfaces().get(updateSourceInterface);
+            if (sourceInterface != null) {
+               Ip sourceIp = c.getInterfaces().get(updateSourceInterface)
+                     .getIP();
+               updateSource = sourceIp.toString();
+            }
+            else {
+               throw new VendorConversionException(
+                     "reference to undefined interface: \""
+                           + updateSourceInterface + "\"");
+            }
          }
 
          PolicyMap newInboundPolicyMap = null;

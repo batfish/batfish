@@ -20,6 +20,7 @@ import batfish.grammar.cisco.CiscoGrammar.*;
 import batfish.grammar.cisco.*;
 import batfish.grammar.cisco.CiscoGrammar.CommunityContext;
 import batfish.grammar.cisco.CiscoGrammar.Description_if_stanzaContext;
+import batfish.grammar.cisco.CiscoGrammar.Interface_nameContext;
 import batfish.grammar.cisco.CiscoGrammar.Interface_stanzaContext;
 import batfish.grammar.cisco.CiscoGrammar.Port_specifierContext;
 import batfish.main.BatfishException;
@@ -361,6 +362,22 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    public static int toInteger(Token t) {
       return Integer.parseInt(t.getText());
+   }
+
+   private static String toInterfaceName(Interface_nameContext ctx) {
+      String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(ctx.name_prefix_alpha
+            .getText());
+      String name = canonicalNamePrefix;
+      for (Token part : ctx.name_middle_parts) {
+         name += part.getText();
+      }
+      if (ctx.range().range_list.size() != 1) {
+         throw new PedanticBatfishException(
+               "got interface range where single interface was expected: \""
+                     + ctx.getText() + "\"");
+      }
+      name += ctx.range().getText();
+      return name;
    }
 
    public static Ip toIp(Token t) {
@@ -1960,7 +1977,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          todo(ctx, "IPv6 not supported yet");
       }
       else {
-         String source = ctx.source.getText();
+         String source = toInterfaceName(ctx.source);
          _currentPeerGroup.setUpdateSource(source);
       }
    }
