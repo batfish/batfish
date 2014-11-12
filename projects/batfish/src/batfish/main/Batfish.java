@@ -1952,11 +1952,15 @@ public class Batfish implements AutoCloseable {
       String nodeRolesPath = _settings.getNodeRolesPath();
       if (nodeRolesPath != null) {
          NodeRoleMap nodeRoles = parseNodeRoles(testRigPath);
-         for (Entry<String, VendorConfiguration> configEntry : vendorConfigurations
-               .entrySet()) {
-            String hostname = configEntry.getKey();
-            VendorConfiguration config = configEntry.getValue();
-            RoleSet roles = nodeRoles.get(hostname);
+         for (Entry<String, RoleSet> nodeRolesEntry : nodeRoles.entrySet()) {
+            String hostname = nodeRolesEntry.getKey();
+            VendorConfiguration config = vendorConfigurations.get(hostname);
+            if (config == null) {
+               throw new BatfishException(
+                     "role set assigned to non-existent node: \"" + hostname
+                           + "\"");
+            }
+            RoleSet roles = nodeRolesEntry.getValue();
             config.setRoles(roles);
          }
          _logger.info("Serializing node-roles mappings: \"" + nodeRolesPath
