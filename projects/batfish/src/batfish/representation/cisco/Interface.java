@@ -70,6 +70,8 @@ public class Interface implements Serializable {
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
 
+   private String _vrf;
+
    public Interface(String name) {
       _name = name;
       _area = null;
@@ -162,6 +164,10 @@ public class Interface implements Serializable {
       return _switchportTrunkEncapsulation;
    }
 
+   public String getVrf() {
+      return _vrf;
+   }
+
    public void setAccessVlan(int vlan) {
       _accessVlan = vlan;
    }
@@ -221,6 +227,10 @@ public class Interface implements Serializable {
    public void setSwitchportTrunkEncapsulation(
          SwitchportEncapsulationType encapsulation) {
       _switchportTrunkEncapsulation = encapsulation;
+   }
+
+   public void setVrf(String vrf) {
+      _vrf = vrf;
    }
 
 }

@@ -51,6 +51,8 @@ if_stanza
    | switchport_mode_dynamic_auto_stanza
    | switchport_mode_dynamic_desirable_stanza
    | switchport_mode_trunk_stanza
+   | vrf_forwarding_if_stanza
+   | vrf_member_if_stanza
 ;
 
 interface_stanza
@@ -293,7 +295,6 @@ null_standalone_if_stanza
       | UC_TX_QUEUE
       | UDLD
       | VPC
-      | VRF
       | VRRP
       | WRR_QUEUE
       | X25
@@ -354,4 +355,14 @@ switchport_trunk_encapsulation_if_stanza
 switchport_trunk_native_if_stanza
 :
    SWITCHPORT TRUNK NATIVE VLAN vlan = DEC NEWLINE
+;
+
+vrf_forwarding_if_stanza
+:
+   VRF FORWARDING name=~NEWLINE NEWLINE
+;
+
+vrf_member_if_stanza
+:
+   VRF MEMBER name=~NEWLINE NEWLINE
 ;

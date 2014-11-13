@@ -1376,6 +1376,11 @@ FORWARD_PROTOCOL
    'forward-protocol'
 ;
 
+FORWARDING
+:
+   'forwarding'
+;
+
 FQDN
 :
    'fqdn'

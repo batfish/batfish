@@ -512,6 +512,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void enterCisco_configuration(Cisco_configurationContext ctx) {
       _configuration = new CiscoVendorConfiguration();
+      _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
    }
 
    @Override
@@ -624,6 +625,13 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       _currentPrefixList = new PrefixList(name, isIpV6);
       _currentPrefixList.setContext(ctx);
       _configuration.getPrefixLists().put(name, _currentPrefixList);
+   }
+
+   @Override
+   public void enterIp_route_stanza(Ip_route_stanzaContext ctx) {
+      if (ctx.vrf != null) {
+         _currentVrf = ctx.vrf.getText();
+      }
    }
 
    @Override
@@ -782,7 +790,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
       int procNum = toInteger(ctx.procnum);
       BgpProcess proc = new BgpProcess(procNum);
-      _currentVrf = BgpProcess.MASTER_VRF_NAME;
       _configuration.getBgpProcesses().put(_currentVrf, proc);
       _currentPeerGroup = proc.getMasterBgpPeerGroup();
       _dummyPeerGroup = new MasterBgpPeerGroup();
@@ -825,6 +832,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
       }
       _currentPeerGroup = _currentNamedPeerGroup;
+   }
+
+   @Override
+   public void enterVrf_context_stanza(Vrf_context_stanzaContext ctx) {
+      _currentVrf = ctx.name.getText();
    }
 
    @Override
@@ -1179,6 +1191,17 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void exitIp_route_stanza(Ip_route_stanzaContext ctx) {
+      if (ctx.vrf != null) {
+         _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
+      }
+   }
+
+   @Override
+   public void exitIp_route_tail(Ip_route_tailContext ctx) {
+      if (!_currentVrf.equals(CiscoConfiguration.MASTER_VRF_NAME)) {
+         todo(ctx, "vrfs not implemented yet");
+         return;
+      }
       Ip prefix;
       Ip mask;
       if (ctx.prefix != null) {
@@ -1215,6 +1238,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       StaticRoute route = new StaticRoute(prefix, mask, nextHopIp,
             nextHopInterface, distance, tag, track, permanent);
       _configuration.getStaticRoutes().put(prefix.networkString(mask), route);
+   }
+
+   @Override
+   public void exitIp_route_vrfc_stanza(Ip_route_vrfc_stanzaContext ctx) {
+      todo(ctx, "vrfs not implemented yet");
    }
 
    @Override
@@ -1392,7 +1420,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void exitNexus_vrf_rb_stanza(Nexus_vrf_rb_stanzaContext ctx) {
-      _currentVrf = BgpProcess.MASTER_VRF_NAME;
+      _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
    }
 
    @Override
@@ -1744,7 +1772,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    @Override
    public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
       _currentPeerGroup = null;
-      _currentVrf = null;
    }
 
    @Override
@@ -1991,6 +2018,28 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else {
          String source = toInterfaceName(ctx.source);
          _currentPeerGroup.setUpdateSource(source);
+      }
+   }
+
+   @Override
+   public void exitVrf_context_stanza(Vrf_context_stanzaContext ctx) {
+      _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
+   }
+
+   @Override
+   public void exitVrf_forwarding_if_stanza(Vrf_forwarding_if_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setVrf(name);
+         currentInterface.setIp(null);
+      }
+   }
+
+   @Override
+   public void exitVrf_member_if_stanza(Vrf_member_if_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setVrf(name);
       }
    }
 

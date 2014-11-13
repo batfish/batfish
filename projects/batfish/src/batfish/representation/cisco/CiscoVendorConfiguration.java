@@ -1115,6 +1115,10 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
 
       // convert interfaces
       for (Interface iface : _interfaces.values()) {
+         // TODO: implement vrf forwarding instead of skipping interface
+         if (iface.getVrf() != null) {
+            continue;
+         }
          batfish.representation.Interface newInterface = toInterface(iface,
                c.getIpAccessLists(), c.getPolicyMaps());
          c.getInterfaces().put(newInterface.getName(), newInterface);
@@ -1135,7 +1139,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
 
       // convert bgp process
       // TODO: process vrf bgp processes
-      BgpProcess bgpProcess = _bgpProcesses.get(BgpProcess.MASTER_VRF_NAME);
+      BgpProcess bgpProcess = _bgpProcesses.get(MASTER_VRF_NAME);
       if (bgpProcess != null) {
          batfish.representation.BgpProcess newBgpProcess = toBgpProcess(c,
                bgpProcess);

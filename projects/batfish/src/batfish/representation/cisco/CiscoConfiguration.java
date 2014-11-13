@@ -7,6 +7,8 @@ import java.util.Map;
 public class CiscoConfiguration implements Serializable {
 
    private static final long serialVersionUID = 1L;
+   public static final String MASTER_VRF_NAME = "__MASTER_VRF__";
+
    protected final Map<String, IpAsPathAccessList> _asPathAccessLists;
    protected final Map<String, BgpProcess> _bgpProcesses;
    protected final Map<String, ExpandedCommunityList> _expandedCommunityLists;

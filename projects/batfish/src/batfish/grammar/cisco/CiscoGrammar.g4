@@ -58,6 +58,13 @@ ip_route_stanza
 :
    IP ROUTE
    (
+      VRF vrf = ~NEWLINE
+   )? ip_route_tail
+;
+
+ip_route_tail
+:
+   (
       (
          address = IP_ADDRESS mask = IP_ADDRESS
       )
@@ -77,6 +84,11 @@ ip_route_stanza
          TRACK track = DEC
       )
    )* NEWLINE
+;
+
+ip_route_vrfc_stanza
+:
+   IP ROUTE ip_route_tail
 ;
 
 macro_stanza
@@ -149,6 +161,10 @@ null_block_stanza
             | SLA
             | SOURCE
             | VIRTUAL_ROUTER
+            |
+            (
+               VRF ~( FORWARDING | NEWLINE )
+            )
          )
       )
       | IPC
@@ -609,10 +625,6 @@ null_standalone_stanza
             | PIM
             | RADIUS
             | RCMD
-            |
-            (
-               ROUTE VRF
-            )
             | ROUTING //might want to use this eventually
 
             | SAP
@@ -626,7 +638,6 @@ null_standalone_stanza
             | TELNET
             | TFTP
             | VERIFY
-            | VRF
          )
       )
       | IP_ADDRESS_LITERAL
@@ -888,11 +899,13 @@ switching_mode_stanza
    SWITCHING_MODE ~NEWLINE* NEWLINE
 ;
 
+vrfc_stanza
+:
+   ip_route_vrfc_stanza
+;
+
 vrf_context_stanza
 :
-   VRF CONTEXT ~NEWLINE NEWLINE
-   (
-      IP ROUTE ~NEWLINE NEWLINE
-   )*
+   VRF CONTEXT name = ~NEWLINE NEWLINE vrfc_stanza*
 ;
 

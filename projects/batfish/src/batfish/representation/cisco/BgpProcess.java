@@ -14,7 +14,6 @@ import batfish.representation.Protocol;
 public class BgpProcess implements Serializable {
 
    private static final int DEFAULT_BGP_DEFAULT_METRIC = 0;
-   public static final String MASTER_VRF_NAME = "~MASTER_VRF~";
    private static final long serialVersionUID = 1L;
 
    private Map<BgpNetwork, Boolean> _aggregateNetworks;
