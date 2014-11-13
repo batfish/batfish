@@ -48,20 +48,35 @@ public class Interface implements Serializable {
    }
 
    private int _accessVlan;
+
    private boolean _active;
+
    private ArrayList<SubRange> _allowedVlans;
+
    private Integer _area;
+
    private Double _bandwidth;
+
    private String _description;
+
    private String _incomingFilter;
+
    private Ip _ip;
+
    private String _name;
+
    private int _nativeVlan;
+
    private Integer _ospfCost;
+
    private int _ospfDeadInterval;
+
    private int _ospfHelloMultiplier;
+
    private String _outgoingFilter;
+
    private String _routingPolicy;
+
    private Map<String, String> _secondaryIps;
 
    private Ip _subnet;
