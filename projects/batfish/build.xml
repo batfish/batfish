@@ -178,7 +178,13 @@
 		<delete dir="bin" />
 	</target>
 
-   <target name="copylogic" description="Copy logic files from src to bin for staging">
+   <target name="copylog4j" description="Copy log4j configuration from src to bin for staging">
+      <copy todir="bin">
+         <fileset dir="src" includes="log4j2.xml"/>
+      </copy>
+   </target>
+
+    <target name="copylogic" description="Copy logic files from src to bin for staging">
       <copy todir="bin">
          <fileset dir="src" includes="**/*.logic"/>
       </copy>
@@ -370,7 +376,7 @@
 
    <target name="predicateinfo" depends="compile,predicateinfolite" description="Extract predicate information from logic files"/>
 
-   <target name="predicateinfolite" depends="lbcompile" description="Extract predicate information from logic files asssuming external compiler">
+   <target name="predicateinfolite" depends="lbcompile,copylog4j" description="Extract predicate information from logic files asssuming external compiler">
       <mkdir dir="bin"/>
       <outofdate>
          <deletetargets/>
