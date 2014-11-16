@@ -188,7 +188,7 @@ BestPerProtocolRoute(route) <-
 
 // advertise an internally received route
 BgpAdvertisement(advert),
-BgpAdvertisement_constructor[type, network, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol] = advert,
+BgpAdvertisement_constructor[type, network, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType] = advert,
 BgpAdvertisement_dstIp[advert] =  dstIp,
 BgpAdvertisement_dstNode[advert] =  dstNode,
 BgpAdvertisement_localPref[advert] =  localPref,
@@ -201,7 +201,8 @@ BgpAdvertisement_srcIp[advert] =  srcIp,
 BgpAdvertisement_srcNode[advert] =  srcNode,
 BgpAdvertisement_srcProtocol[advert] =  srcProtocol,
 BgpAdvertisement_type[advert] =  type,
-AdvertisementPathSize[advert] = 1
+AdvertisementPathSize[advert] = 1,
+OriginalBgpAdvertisement(advert)
 <-
    type = AdvertisementType_BGP[],
    nextHopIp = srcIp,
@@ -239,9 +240,9 @@ AdvertisementPathSize[advert] = 1
          srcProtocol != RoutingProtocol_IBGP[]
       )
    ).
-// advertise a transit route received through ibgp
+// advertise a transit route received through ibgp or ebgp
 BgpAdvertisement(advert),
-BgpAdvertisement_constructor[type, dstIpBlock, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol] = advert,
+BgpAdvertisement_constructor[type, dstIpBlock, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType] = advert,
 BgpAdvertisement_dstIp[advert] =  dstIp,
 BgpAdvertisement_dstNode[advert] =  dstNode,
 BgpAdvertisement_localPref[advert] =  localPref,
@@ -259,7 +260,10 @@ AdvertisementPathSize[advert] = pathSize
 <-
    type = AdvertisementType_BGP[],
    originatorIp = Ip_ZERO[],
-   BgpAdvertisement_type[prevAdvert] =  AdvertisementType_IBGP_TI[],
+   (
+      BgpAdvertisement_type[prevAdvert] =  AdvertisementType_IBGP_TI[] ;
+      BgpAdvertisement_type[prevAdvert] =  AdvertisementType_BGP_TI[]
+   ),
    BgpAdvertisement_network[prevAdvert] =  dstIpBlock,
    BgpAdvertisement_nextHopIp[prevAdvert] =  origNextHopIp,
    BgpAdvertisement_srcProtocol[prevAdvert] =  srcProtocol,
@@ -281,7 +285,7 @@ AdvertisementPathSize[advert] = pathSize
    BgpNeighbors(srcNode, srcIp, dstNode, dstIp).
 // (i)bgp transformed incoming
 BgpAdvertisement(advert),
-BgpAdvertisement_constructor[type, dstIpBlock, tNextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol] = advert,
+BgpAdvertisement_constructor[type, dstIpBlock, tNextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, tOriginType] = advert,
 BgpAdvertisement_dstIp[advert] =  dstIp,
 BgpAdvertisement_dstNode[advert] =  dstNode,
 BgpAdvertisement_localPref[advert] =  tLocalPref,
@@ -349,7 +353,7 @@ AdvertisementPathSize[advert] = pathSize
    ).
 // (i)bgp transformed outgoing
 BgpAdvertisement(advert),
-BgpAdvertisement_constructor[type, dstIpBlock, tNextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol] = advert,
+BgpAdvertisement_constructor[type, dstIpBlock, tNextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, tOriginType] = advert,
 BgpAdvertisement_dstIp[advert] =  dstIp,
 BgpAdvertisement_dstNode[advert] =  dstNode,
 BgpAdvertisement_localPref[advert] =  tLocalPref,
@@ -407,7 +411,7 @@ AdvertisementPathSize[advert] = pathSize
    ).
 // ibgp advertisement from bgp
 BgpAdvertisement(advert),
-BgpAdvertisement_constructor[type, dstIpBlock, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol] = advert,
+BgpAdvertisement_constructor[type, dstIpBlock, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType] = advert,
 BgpAdvertisement_dstIp[advert] =  dstIp,
 BgpAdvertisement_dstNode[advert] =  dstNode,
 BgpAdvertisement_localPref[advert] =  localPref,
@@ -439,7 +443,7 @@ AdvertisementPathSize[advert] = pathSize
    IbgpNeighbors(srcNode, srcIp, dstNode, dstIp).
 // ibgp route reflection
 BgpAdvertisement(advert),
-BgpAdvertisement_constructor[type, dstIpBlock, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol] = advert,
+BgpAdvertisement_constructor[type, dstIpBlock, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType] = advert,
 BgpAdvertisement_dstIp[advert] =  dstIp,
 BgpAdvertisement_dstNode[advert] =  dstNode,
 BgpAdvertisement_localPref[advert] =  localPref,

@@ -96,6 +96,9 @@ MinAsPathSize[node, network] = minSize ->
    Network(network),
    int(minSize).
 
+OriginalBgpAdvertisement(advert) ->
+   BgpAdvertisement(advert).
+
 ParentAdvertisement(parent, child) ->
    BgpAdvertisement(parent),
    BgpAdvertisement(child).

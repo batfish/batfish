@@ -25,6 +25,7 @@ public class EntityTable {
    private BigInteger[] _advertNetworks;
    private long[] _advertNextHopIps;
    private long[] _advertOriginatorIps;
+   private String[] _advertOriginTypes;
    private long[] _advertSrcIps;
    private String[] _advertSrcNodes;
    private String[] _advertSrcProtocols;
@@ -133,8 +134,7 @@ public class EntityTable {
             .getRows();
 
       // get indices
-      currentRouteProperty = lbf
-            .queryPredicate("libbatfish:Route:Route");
+      currentRouteProperty = lbf.queryPredicate("libbatfish:Route:Route");
       ec = (EntityColumn) currentRouteProperty.getColumns().get(0);
       _routeIndices = ((UInt64Column) ec.getIndexColumn().unwrap()).getRows();
 
@@ -184,6 +184,10 @@ public class EntityTable {
             .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_originatorIp");
       _advertOriginatorIps = ((Int64Column) ((EntityColumn) currentAdvertProperty
             .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      currentAdvertProperty = lbf
+            .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_originType");
+      _advertOriginTypes = ((StringColumn) ((EntityColumn) currentAdvertProperty
+            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
 
       // get indices
       ec = (EntityColumn) currentAdvertProperty.getColumns().get(0);
@@ -203,10 +207,11 @@ public class EntityTable {
       String localPref = Long.toString(_advertLocalPrefs[listIndex]);
       String med = Long.toString(_advertMeds[listIndex]);
       String originatorIp = Util.longToIp(_advertOriginatorIps[listIndex]);
+      String originType = _advertOriginTypes[listIndex];
       return "BgpAdvert<" + type + ", " + network + ", " + nextHopIp + ", "
             + srcIp + ", " + dstIp + ", " + srcProtocol + ", " + srcNode + ", "
             + dstNode + ", " + localPref + ", " + med + ", " + originatorIp
-            + ">";
+            + ", " + originType + ">";
    }
 
    public String getFlow(BigInteger index) {
@@ -217,7 +222,7 @@ public class EntityTable {
       String protocol = Util.getProtocolName((int) _flowProtocols[listIndex]);
       boolean tcp = protocol.equals("tcp");
       boolean udp = protocol.equals("udp");
-      String prefix = tcp? "Tcp": udp ? "Udp" : "";
+      String prefix = tcp ? "Tcp" : udp ? "Udp" : "";
       StringBuilder sb = new StringBuilder();
       sb.append(prefix);
       sb.append("Flow<" + node + ", " + protocol + ", " + srcIp + ", " + dstIp);
