@@ -86,6 +86,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
+   private static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
+
    public static LineAction getAccessListAction(Access_list_actionContext ctx) {
       if (ctx.PERMIT() != null) {
          return LineAction.ACCEPT;
@@ -119,7 +121,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       prefixes.put("ge", "GigabitEthernet");
       prefixes.put("Loopback", "Loopback");
       prefixes.put("Management", "Management");
-      prefixes.put("mgmt", "Management");
+      prefixes.put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX);
       prefixes.put("Port-channel", "Port-channel");
       prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
       prefixes.put("te", "TenGigabitEthernet");
@@ -543,6 +545,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void enterInterface_stanza(Interface_stanzaContext ctx) {
       String nameAlpha = ctx.iname.name_prefix_alpha.getText();
       String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(nameAlpha);
+      String vrf = canonicalNamePrefix.equals(NXOS_MANAGEMENT_INTERFACE_PREFIX) ? CiscoConfiguration.MANAGEMENT_VRF_NAME
+            : CiscoConfiguration.MASTER_VRF_NAME;
       double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix);
       String namePrefix = canonicalNamePrefix;
       for (Token part : ctx.iname.name_middle_parts) {
@@ -564,6 +568,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
             }
             _currentInterfaces.add(newInterface);
             newInterface.setBandwidth(bandwidth);
+            newInterface.setVrf(vrf);
          }
       }
       if (ctx.MULTIPOINT() != null) {

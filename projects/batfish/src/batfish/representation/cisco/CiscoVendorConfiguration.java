@@ -1116,7 +1116,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       // convert interfaces
       for (Interface iface : _interfaces.values()) {
          // TODO: implement vrf forwarding instead of skipping interface
-         if (iface.getVrf() != null) {
+         if (!iface.getVrf().equals(MASTER_VRF_NAME)) {
             continue;
          }
          batfish.representation.Interface newInterface = toInterface(iface,
