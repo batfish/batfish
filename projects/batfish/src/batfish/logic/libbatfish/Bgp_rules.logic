@@ -204,7 +204,7 @@ BgpAdvertisement_srcNode[advert] =  srcNode,
 BgpAdvertisement_srcProtocol[advert] =  srcProtocol,
 BgpAdvertisement_type[advert] =  type,
 AdvertisementPathSize[advert] = 1,
-OriginalBgpAdvertisement(advert)
+OriginalBgpAdvertisementRoute[advert] = route
 <-
    type = AdvertisementType_BGP[],
    nextHopIp = srcIp,
@@ -557,6 +557,9 @@ IbgpNeighbors(node1, ip1, node2, ip2) <-
    IbgpNeighborTo(node2, node1, ip1).
 
 InstalledBgpAdvertisement(advert) <-
+   InstalledBgpAdvertisementRoute[advert] = _.
+
+InstalledBgpAdvertisementRoute[advert] = route <-
    BgpAdvertisementRoute[advert] = route,
    InstalledRoute(route).
 
@@ -628,6 +631,9 @@ need_PolicyMapMatchRoute(map, route) <-
       SetBgpGeneratedRoutePolicy(node, _, map) ;
       SetBgpNeighborGeneratedRoutePolicy(node, _, _, map)
    ).
+
+OriginalBgpAdvertisement(advert) <-
+   OriginalBgpAdvertisementRoute[advert] = _.
 
 ReceivedBgpAdvertisement(advert) <-
    BgpAdvertisement_type[advert] =  type,

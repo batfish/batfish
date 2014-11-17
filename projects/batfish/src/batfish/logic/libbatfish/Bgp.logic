@@ -87,6 +87,10 @@ IbgpNeighborTo(node, neighbor, neighborIp) ->
 InstalledBgpAdvertisement(advert) ->
    BgpAdvertisement(advert).
 
+InstalledBgpAdvertisementRoute[advert] = route ->
+   BgpAdvertisement(advert),
+   Route(route).
+
 MaxLocalPref[node, network] = maxLocalPref ->
    Node(node),
    Network(network),
@@ -105,6 +109,10 @@ MinAsPathSize[node, network] = minSize ->
 
 OriginalBgpAdvertisement(advert) ->
    BgpAdvertisement(advert).
+
+OriginalBgpAdvertisementRoute[advert] = route ->
+   BgpAdvertisement(advert),
+   Route(route).
 
 ParentAdvertisement(parent, child) ->
    BgpAdvertisement(parent),
