@@ -398,6 +398,7 @@ batfish_analyze_role_reachability() {
    local RR_QUERY_BASE_PATH=$QUERY_PATH/role-reachability-query
    local DUMP_DIR=$OLD_PWD/$PREFIX-dump
    local FLOWS=$OLD_PWD/$PREFIX-flows
+   local BGP=$OLD_PWD/$PREFIX-bgp
    local ROUTES=$OLD_PWD/$PREFIX-routes
    local VENDOR_SERIAL_DIR=$OLD_PWD/$PREFIX-vendor
    local INDEP_SERIAL_DIR=$OLD_PWD/$PREFIX-indep
@@ -416,6 +417,9 @@ batfish_analyze_role_reachability() {
 
    echo "Query routes"
    $BATFISH_CONFIRM && { batfish_query_routes $ROUTES $WORKSPACE || return 1 ; }
+
+   echo "Query bgp"
+   $BATFISH_CONFIRM && { batfish_query_bgp $BGP $WORKSPACE || return 1 ; }
 
    echo "Query data plane predicates"
    $BATFISH_CONFIRM && { batfish_query_data_plane $WORKSPACE $DP_DIR || return 1 ; }
@@ -1200,6 +1204,18 @@ batfish_inject_packets_with_role_flow_duplication() {
    echo ": END: Inject concrete packets into network model"
 }
 export -f batfish_inject_packets_with_role_flow_duplication
+
+batfish_query_bgp() {
+   batfish_date
+   echo ": START: Query bgp (informational only)"
+   batfish_expect_args 2 $# || return 1
+   local BGP=$1
+   local WORKSPACE=$2
+   batfish -log output -workspace $WORKSPACE -query -predicates BgpAdvertisement OriginalBgpAdvertisementRoute InstalledBgpAdvertisementRoute &> $BGP
+   batfish_date
+   echo ": END: Query bgp (informational only)"
+}
+export -f batfish_query_bgp
 
 batfish_query_data_plane() {
    batfish_date
