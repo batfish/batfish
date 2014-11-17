@@ -45,6 +45,10 @@ BestBgpRouteNetwork(node, network) ->
 BestIbgpRoute(route) ->
    Route(route).
 
+BgpAdvertisementRoute[advert] = route ->
+   BgpAdvertisement(advert),
+   Route(route).
+
 BgpGeneratedRoute(route) ->
    Route(route).
 
@@ -79,6 +83,9 @@ IbgpNeighborTo(node, neighbor, neighborIp) ->
    Node(node),
    Node(neighbor),
    Ip(neighborIp).
+
+InstalledBgpAdvertisement(advert) ->
+   BgpAdvertisement(advert).
 
 MaxLocalPref[node, network] = maxLocalPref ->
    Node(node),

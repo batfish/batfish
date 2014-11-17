@@ -147,7 +147,8 @@ BestBgpRoute(route),
    Route_network[route] = network,
    Route_nextHopIp[route] = nextHopIp,
    Route_node[route] = node,
-   Route_protocol[route] = protocol
+   Route_protocol[route] = protocol,
+   BgpAdvertisementRoute[advert] = route
 <-
    type = AdvertisementType_BGP_TI[],
    protocol = RoutingProtocol_BGP[],
@@ -168,7 +169,8 @@ BestIbgpRoute(route),
    Route_network[route] = network,
    Route_nextHopIp[route] = nextHopIp,
    Route_node[route] = node,
-   Route_protocol[route] = protocol
+   Route_protocol[route] = protocol,
+   BgpAdvertisementRoute[advert] = route
 <-
    type = AdvertisementType_IBGP_TI[],
    protocol = RoutingProtocol_IBGP[],
@@ -269,6 +271,7 @@ AdvertisementPathSize[advert] = pathSize
    BgpAdvertisement_srcProtocol[prevAdvert] =  srcProtocol,
    BgpAdvertisement_dstNode[prevAdvert] =  srcNode,
    AdvertisementPathSize[prevAdvert] = prevPathSize,
+   InstalledBgpAdvertisement(advert),
    pathSize = prevPathSize + 1,
    BestBgpAdvertisement(prevAdvert),
    (
@@ -440,6 +443,7 @@ AdvertisementPathSize[advert] = pathSize
    BgpAdvertisement_type[prevAdvert] =  priorType,
    AdvertisementPathSize[prevAdvert] = pathSize,
    BestBgpAdvertisement(prevAdvert),
+   InstalledBgpAdvertisement(advert),
    IbgpNeighbors(srcNode, srcIp, dstNode, dstIp).
 // ibgp route reflection
 BgpAdvertisement(advert),
@@ -472,6 +476,7 @@ AdvertisementPathSize[advert] = pathSize
    BgpAdvertisement_srcProtocol[prevAdvert] =  srcProtocol,
    BgpAdvertisement_type[prevAdvert] =  priorType,
    AdvertisementPathSize[prevAdvert] = pathSize,
+   InstalledBgpAdvertisement(advert),
    BestBgpAdvertisement(prevAdvert),
    (
       (
@@ -550,6 +555,10 @@ IbgpNeighborTo(node, neighbor, neighborIp) <-
 IbgpNeighbors(node1, ip1, node2, ip2) <-
    IbgpNeighborTo(node1, node2, ip2),
    IbgpNeighborTo(node2, node1, ip1).
+
+InstalledBgpAdvertisement(advert) <-
+   BgpAdvertisementRoute[advert] = route,
+   InstalledRoute(route).
 
 MaxLocalPref[node, network] = maxLocalPref <-
    agg<<maxLocalPref = max(localPref)>>
