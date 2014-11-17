@@ -271,7 +271,7 @@ AdvertisementPathSize[advert] = pathSize
    BgpAdvertisement_srcProtocol[prevAdvert] =  srcProtocol,
    BgpAdvertisement_dstNode[prevAdvert] =  srcNode,
    AdvertisementPathSize[prevAdvert] = prevPathSize,
-   InstalledBgpAdvertisement(advert),
+   InstalledBgpAdvertisement(prevAdvert),
    pathSize = prevPathSize + 1,
    BestBgpAdvertisement(prevAdvert),
    (
@@ -443,7 +443,7 @@ AdvertisementPathSize[advert] = pathSize
    BgpAdvertisement_type[prevAdvert] =  priorType,
    AdvertisementPathSize[prevAdvert] = pathSize,
    BestBgpAdvertisement(prevAdvert),
-   InstalledBgpAdvertisement(advert),
+   InstalledBgpAdvertisement(prevAdvert),
    IbgpNeighbors(srcNode, srcIp, dstNode, dstIp).
 // ibgp route reflection
 BgpAdvertisement(advert),
@@ -476,7 +476,7 @@ AdvertisementPathSize[advert] = pathSize
    BgpAdvertisement_srcProtocol[prevAdvert] =  srcProtocol,
    BgpAdvertisement_type[prevAdvert] =  priorType,
    AdvertisementPathSize[prevAdvert] = pathSize,
-   InstalledBgpAdvertisement(advert),
+   InstalledBgpAdvertisement(prevAdvert),
    BestBgpAdvertisement(prevAdvert),
    (
       (
