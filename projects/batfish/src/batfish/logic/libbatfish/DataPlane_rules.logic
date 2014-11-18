@@ -99,7 +99,7 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
          nextHopOutInt != nextHopInt
       )
    ).
-// regular non-interface nextHopIp route
+// regular non-interface nextHopIp route or flow sink non-interface route
 Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    !HasIp(node, ip),
    LongestPrefixNetworkMatch(node, ip, matchNet),
@@ -108,10 +108,12 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    Route_network[route] = matchNet,
    Network_prefix_length[matchNet] = prefix_length,
    Route_node[route] = node,
-   Route_nextHopIp[route] = routeNextHopIp,
    (
-      nextHopIp != Ip_ZERO[] ;
-      interface = Interface_FLOW_SINK_TERMINATION[]
+      nextHopInt = Interface_FLOW_SINK_TERMINATION[] ;
+      (
+         nextHopIp != Ip_ZERO[],
+         Route_nextHopIp[route] = routeNextHopIp
+      )
    ),
    Fib(node, routeNextHopIp, _, interface, nextHop, nextHopInt, nextHopIp).
 
