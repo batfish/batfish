@@ -1,6 +1,8 @@
 package batfish.z3;
 
 import batfish.z3.node.AndExpr;
+import batfish.z3.node.ExternalDestinationIpExpr;
+import batfish.z3.node.ExternalSourceIpExpr;
 import batfish.z3.node.OriginateExpr;
 import batfish.z3.node.QueryExpr;
 import batfish.z3.node.RoleAcceptExpr;
@@ -18,6 +20,8 @@ public class RoleReachabilityQuerySynthesizer implements QuerySynthesizer {
       AndExpr queryConditions = new AndExpr();
       queryConditions.addConjunct(roleAccept);
       queryConditions.addConjunct(SaneExpr.INSTANCE);
+      queryConditions.addConjunct(ExternalSourceIpExpr.INSTANCE);
+      queryConditions.addConjunct(ExternalDestinationIpExpr.INSTANCE);
       QueryExpr query = new QueryExpr(queryConditions);
       StringBuilder sb = new StringBuilder();
       injectSymbolicPackets.print(sb, 0);

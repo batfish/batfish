@@ -39,6 +39,8 @@ import batfish.util.SubRange;
 import batfish.util.Util;
 import batfish.z3.node.AcceptExpr;
 import batfish.z3.node.AclDenyExpr;
+import batfish.z3.node.ExternalDestinationIpExpr;
+import batfish.z3.node.ExternalSourceIpExpr;
 import batfish.z3.node.OriginateExpr;
 import batfish.z3.node.PolicyDenyExpr;
 import batfish.z3.node.PolicyExpr;
@@ -449,6 +451,68 @@ public class Synthesizer {
          RuleExpr connectDrops = new RuleExpr(nodeDrop, DropExpr.INSTANCE);
          statements.add(connectDrops);
       }
+      return statements;
+   }
+
+   private List<Statement> getExternalDstIpRules() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements
+            .add(new Comment(
+                  "Rule for matching external Source IP - one not assigned to an active interface of any provided node"));
+      Set<Ip> interfaceIps = new TreeSet<Ip>();
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         Configuration c = e.getValue();
+         for (Interface i : c.getInterfaces().values()) {
+            if (i.getActive()) {
+               Ip ip = i.getIP();
+               if (ip != null) {
+                  interfaceIps.add(ip);
+               }
+            }
+         }
+      }
+      OrExpr dstIpMatchesSomeInterfaceIp = new OrExpr();
+      for (Ip ip : interfaceIps) {
+         EqExpr dstIpMatchesSpecificInterfaceIp = new EqExpr(new VarIntExpr(
+               DST_IP_VAR), new LitIntExpr(ip));
+         dstIpMatchesSomeInterfaceIp
+               .addDisjunct(dstIpMatchesSpecificInterfaceIp);
+      }
+      NotExpr externalDstIp = new NotExpr(dstIpMatchesSomeInterfaceIp);
+      RuleExpr externalDstIpRule = new RuleExpr(externalDstIp,
+            ExternalDestinationIpExpr.INSTANCE);
+      statements.add(externalDstIpRule);
+      return statements;
+   }
+
+   private List<Statement> getExternalSrcIpRules() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements
+            .add(new Comment(
+                  "Rule for matching external Source IP - one not assigned to an active interface of any provided node"));
+      Set<Ip> interfaceIps = new TreeSet<Ip>();
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         Configuration c = e.getValue();
+         for (Interface i : c.getInterfaces().values()) {
+            if (i.getActive()) {
+               Ip ip = i.getIP();
+               if (ip != null) {
+                  interfaceIps.add(ip);
+               }
+            }
+         }
+      }
+      OrExpr srcIpMatchesSomeInterfaceIp = new OrExpr();
+      for (Ip ip : interfaceIps) {
+         EqExpr srcIpMatchesSpecificInterfaceIp = new EqExpr(new VarIntExpr(
+               SRC_IP_VAR), new LitIntExpr(ip));
+         srcIpMatchesSomeInterfaceIp
+               .addDisjunct(srcIpMatchesSpecificInterfaceIp);
+      }
+      NotExpr externalSrcIp = new NotExpr(srcIpMatchesSomeInterfaceIp);
+      RuleExpr externalSrcIpRule = new RuleExpr(externalSrcIp,
+            ExternalSourceIpExpr.INSTANCE);
+      statements.add(externalSrcIpRule);
       return statements;
    }
 
@@ -1234,6 +1298,8 @@ public class Synthesizer {
       List<Statement> preInInterfaceToPostInInterfaceRules = getPreInInterfaceToPostInInterfaceRules();
       List<Statement> preOutInterfaceToPostOutInterfaceRules = getPreOutInterfaceToPostOutInterfaceRules();
       List<Statement> nodeAcceptToRoleAcceptRules = getNodeAcceptToRoleAcceptRules();
+      List<Statement> externalSrcIpRules = getExternalSrcIpRules();
+      List<Statement> externalDstIpRules = getExternalDstIpRules();
 
       rules.addAll(dropRules);
       rules.addAll(acceptRules);
@@ -1252,6 +1318,8 @@ public class Synthesizer {
       rules.addAll(preInInterfaceToPostInInterfaceRules);
       rules.addAll(preOutInterfaceToPostOutInterfaceRules);
       rules.addAll(nodeAcceptToRoleAcceptRules);
+      rules.addAll(externalSrcIpRules);
+      rules.addAll(externalDstIpRules);
 
       List<Statement> relDecls = getRelDeclExprs(rules);
 
