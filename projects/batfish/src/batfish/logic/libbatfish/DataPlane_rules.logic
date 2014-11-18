@@ -109,7 +109,10 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    Network_prefix_length[matchNet] = prefix_length,
    Route_node[route] = node,
    Route_nextHopIp[route] = routeNextHopIp,
-   nextHopIp != Ip_ZERO[],
+   (
+      nextHopIp != Ip_ZERO[] ;
+      interface = Interface_FLOW_SINK_TERMINATION[]
+   ),
    Fib(node, routeNextHopIp, _, interface, nextHop, nextHopInt, nextHopIp).
 
 FibNetwork(node, network, interface, nextHop, nextHopInt) <-
