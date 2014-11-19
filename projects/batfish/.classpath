@@ -7,7 +7,6 @@
 	<classpathentry kind="lib" path="lib/logicblox/lb-connectblox.jar"/>
 	<classpathentry kind="lib" path="lib/logicblox/lb-web-client.jar"/>
 	<classpathentry kind="lib" path="lib/antlr/antlr-4.4-complete.jar"/>
-	<classpathentry kind="lib" path="lib/commons/commons-cli-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-codec-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-configuration-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-io-2.4.jar"/>
@@ -27,5 +26,6 @@
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.7.jar"/>
 	<classpathentry kind="lib" path="lib/log4j/log4j-api-2.1.jar" sourcepath="lib/log4j/log4j-api-2.1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/log4j/log4j-core-2.1.jar" sourcepath="lib/log4j/log4j-core-2.1-sources.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-cli-1.3-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

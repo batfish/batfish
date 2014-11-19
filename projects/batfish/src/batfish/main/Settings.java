@@ -8,9 +8,9 @@ import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -525,283 +525,280 @@ public class Settings {
       return _z3File;
    }
 
-   @SuppressWarnings("static-access")
    private void initOptions() {
       _options = new Options();
-      _options.addOption(OptionBuilder
-            .withArgName("predicates")
+      _options.addOption(Option
+            .builder()
+            .argName("predicates")
             .hasArgs()
-            .withDescription(
-                  "list of LogicBlox predicates to query (defaults to '"
-                        + DEFAULT_PREDICATES.get(0) + "')")
-            .create(ARG_PREDICATES));
-      _options.addOption(OptionBuilder
-            .withArgName("path")
+            .desc("list of LogicBlox predicates to query (defaults to '"
+                  + DEFAULT_PREDICATES.get(0) + "')").longOpt(ARG_PREDICATES)
+            .build());
+      _options.addOption(Option
+            .builder()
+            .argName("path")
             .hasArg()
-            .withDescription(
-                  "path to test rig directory (defaults to \""
-                        + DEFAULT_TEST_RIG_PATH + "\")")
-            .create(ARG_TEST_RIG_PATH));
-      _options.addOption(OptionBuilder.withArgName("name").hasArg()
-            .withDescription("name of LogicBlox workspace")
-            .create(ARG_WORKSPACE));
-      _options.addOption(OptionBuilder
-            .withArgName("hostname")
-            .hasArg()
-            .withDescription(
-                  "hostname of ConnectBlox server for regular session")
-            .create(ARG_CB_HOST));
-      _options.addOption(OptionBuilder.withArgName("port_number").hasArg()
-            .withDescription("port of ConnectBlox server for regular session")
-            .create(ARG_CB_PORT));
-      _options.addOption(OptionBuilder.withArgName(ARGNAME_LB_WEB_PORT)
-            .hasArg().withDescription("port of lb-web server")
-            .create(ARG_LB_WEB_PORT));
-      _options.addOption(OptionBuilder.withArgName(ARGNAME_LB_WEB_ADMIN_PORT)
-            .hasArg().withDescription("admin port lb-web server")
-            .create(ARG_LB_WEB_ADMIN_PORT));
+            .desc("path to test rig directory (defaults to \""
+                  + DEFAULT_TEST_RIG_PATH + "\")").longOpt(ARG_TEST_RIG_PATH)
+            .build());
       _options
-            .addOption(OptionBuilder
-                  .withArgName("predicates")
-                  .hasOptionalArgs()
-                  .withDescription(
-                        "print semantics for all predicates, or for predicates supplied as optional arguments")
-                  .create(ARG_PREDHELP));
-      _options.addOption(OptionBuilder.withDescription("print this message")
-            .create(ARG_HELP));
-      _options.addOption(OptionBuilder.withDescription("query workspace")
-            .create(ARG_QUERY));
-      _options.addOption(OptionBuilder.withDescription(
-            "return predicate cardinalities instead of contents").create(
-            ARG_COUNT));
-      _options.addOption(OptionBuilder.withDescription("query ALL predicates")
-            .create(ARG_QUERY_ALL));
-      _options.addOption(OptionBuilder.withDescription(
-            "create workspace and add project logic").create(ARG_COMPILE));
-      _options.addOption(OptionBuilder
-            .withDescription("add facts to workspace").create(ARG_FACTS));
-      _options.addOption(OptionBuilder.withDescription(
-            "remove facts instead of adding them").create(ARG_REMOVE_FACTS));
-      _options.addOption(OptionBuilder
-            .withDescription("display results in GUI").create(ARG_GUI));
-      _options.addOption(OptionBuilder.withDescription(
-            "differentially update test rig workspace").create(ARG_UPDATE));
-      _options.addOption(OptionBuilder.withDescription(
-            "do not add injected traffic facts").create(ARG_NO_TRAFFIC));
+            .addOption(Option.builder().argName("name").hasArg()
+                  .desc("name of LogicBlox workspace").longOpt(ARG_WORKSPACE)
+                  .build());
+      _options.addOption(Option.builder().argName("hostname").hasArg()
+            .desc("hostname of ConnectBlox server for regular session")
+            .longOpt(ARG_CB_HOST).build());
+      _options.addOption(Option.builder().argName("port_number").hasArg()
+            .desc("port of ConnectBlox server for regular session")
+            .longOpt(ARG_CB_PORT).build());
+      _options.addOption(Option.builder().argName(ARGNAME_LB_WEB_PORT).hasArg()
+            .desc("port of lb-web server").longOpt(ARG_LB_WEB_PORT).build());
+      _options.addOption(Option.builder().argName(ARGNAME_LB_WEB_ADMIN_PORT)
+            .hasArg().desc("admin port lb-web server")
+            .longOpt(ARG_LB_WEB_ADMIN_PORT).build());
       _options
-            .addOption(OptionBuilder
-                  .withDescription(
-                        "exit on first parse error (otherwise will exit on last parse error)")
-                  .create(ARG_EXIT_ON_PARSE_ERROR));
-      _options.addOption(OptionBuilder.withDescription(
-            "generate z3 data plane logic").create(ARG_Z3));
-      _options.addOption(OptionBuilder.withArgName(ARGNAME_Z3_OUTPUT).hasArg()
-            .withDescription("set z3 data plane logic output file")
-            .create(ARG_Z3_OUTPUT));
-      _options.addOption(OptionBuilder
-            .withArgName(ARGNAME_Z3_CONCRETIZER_INPUT_FILES).hasArgs()
-            .withDescription("set z3 concretizer input file(s)")
-            .create(ARG_Z3_CONCRETIZER_INPUT_FILES));
-      _options.addOption(OptionBuilder
-            .withArgName(ARGNAME_Z3_CONCRETIZER_NEGATED_INPUT_FILES).hasArgs()
-            .withDescription("set z3 negated concretizer input file(s)")
-            .create(ARG_Z3_CONCRETIZER_NEGATED_INPUT_FILES));
-      _options.addOption(OptionBuilder
-            .withArgName(ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE).hasArg()
-            .withDescription("set z3 concretizer output file")
-            .create(ARG_Z3_CONCRETIZER_OUTPUT_FILE));
-      _options.addOption(OptionBuilder.withDescription(
-            "create z3 logic to concretize data plane constraints").create(
-            ARG_Z3_CONCRETIZE));
-      _options.addOption(OptionBuilder.withDescription(
-            "push concrete flows into logicblox databse").create(ARG_FLOWS));
-      _options.addOption(OptionBuilder.withArgName(ARGNAME_FLOW_PATH).hasArg()
-            .withDescription("path to concrete flows").create(ARG_FLOW_PATH));
-      _options.addOption(OptionBuilder.withArgName(ARGNAME_FLOW_SINK_PATH)
-            .hasArg().withDescription("path to flow sinks")
-            .create(ARG_FLOW_SINK_PATH));
-      _options.addOption(OptionBuilder.withArgName("secondPath").hasArg()
-            .withDescription("path to test rig directory to diff with")
-            .create(ARG_DIFF));
-      _options.addOption(OptionBuilder.withDescription(
-            "dump intermediate format of configurations").create(ARG_DUMP_IF));
-      _options.addOption(OptionBuilder.withArgName(ARGNAME_DUMP_IF_DIR)
-            .hasArg()
-            .withDescription("directory to dump intermediate format files")
-            .create(ARG_DUMP_IF_DIR));
-      _options.addOption(OptionBuilder.withDescription(
-            "dump control plane facts").create(ARG_DUMP_CONTROL_PLANE_FACTS));
-      _options.addOption(OptionBuilder.withDescription("dump traffic facts")
-            .create(ARG_DUMP_TRAFFIC_FACTS));
-      _options.addOption(OptionBuilder.hasArg()
-            .withArgName(ARGNAME_DUMP_FACTS_DIR)
-            .withDescription("directory to dump LogicBlox facts")
-            .create(ARG_DUMP_FACTS_DIR));
-      _options.addOption(OptionBuilder.hasArg().withArgName(ARGNAME_REVERT)
-            .withDescription("revert test rig workspace to specified branch")
-            .create(ARG_REVERT));
-      _options.addOption(OptionBuilder.withDescription(
-            "redirect stderr to stdout").create(ARG_REDIRECT_STDERR));
-      _options.addOption(OptionBuilder
-            .hasArg()
-            .withArgName(ARGNAME_ANONYMIZE)
-            .withDescription(
-                  "created anonymized versions of configs in test rig")
-            .create(ARG_ANONYMIZE));
+            .addOption(Option
+                  .builder()
+                  .argName("predicates")
+                  .optionalArg(true)
+                  .hasArgs()
+                  .desc("print semantics for all predicates, or for predicates supplied as optional arguments")
+                  .longOpt(ARG_PREDHELP).build());
+      _options.addOption(Option.builder().desc("print this message")
+            .longOpt(ARG_HELP).build());
+      _options.addOption(Option.builder().desc("query workspace")
+            .longOpt(ARG_QUERY).build());
+      _options.addOption(Option.builder()
+            .desc("return predicate cardinalities instead of contents")
+            .longOpt(ARG_COUNT).build());
+      _options.addOption(Option.builder().desc("query ALL predicates")
+            .longOpt(ARG_QUERY_ALL).build());
+      _options.addOption(Option.builder()
+            .desc("create workspace and add project logic")
+            .longOpt(ARG_COMPILE).build());
+      _options.addOption(Option.builder().desc("add facts to workspace")
+            .longOpt(ARG_FACTS).build());
+      _options.addOption(Option.builder()
+            .desc("remove facts instead of adding them")
+            .longOpt(ARG_REMOVE_FACTS).build());
+      _options.addOption(Option.builder().desc("display results in GUI")
+            .longOpt(ARG_GUI).build());
+      _options.addOption(Option.builder()
+            .desc("differentially update test rig workspace")
+            .longOpt(ARG_UPDATE).build());
+      _options.addOption(Option.builder()
+            .desc("do not add injected traffic facts").longOpt(ARG_NO_TRAFFIC)
+            .build());
       _options
-            .addOption(OptionBuilder
+            .addOption(Option
+                  .builder()
+                  .desc("exit on first parse error (otherwise will exit on last parse error)")
+                  .longOpt(ARG_EXIT_ON_PARSE_ERROR).build());
+      _options.addOption(Option.builder().desc("generate z3 data plane logic")
+            .longOpt(ARG_Z3).build());
+      _options.addOption(Option.builder().argName(ARGNAME_Z3_OUTPUT).hasArg()
+            .desc("set z3 data plane logic output file").longOpt(ARG_Z3_OUTPUT)
+            .build());
+      _options.addOption(Option.builder()
+            .argName(ARGNAME_Z3_CONCRETIZER_INPUT_FILES).hasArgs()
+            .desc("set z3 concretizer input file(s)")
+            .longOpt(ARG_Z3_CONCRETIZER_INPUT_FILES).build());
+      _options.addOption(Option.builder()
+            .argName(ARGNAME_Z3_CONCRETIZER_NEGATED_INPUT_FILES).hasArgs()
+            .desc("set z3 negated concretizer input file(s)")
+            .longOpt(ARG_Z3_CONCRETIZER_NEGATED_INPUT_FILES).build());
+      _options.addOption(Option.builder()
+            .argName(ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE).hasArg()
+            .desc("set z3 concretizer output file")
+            .longOpt(ARG_Z3_CONCRETIZER_OUTPUT_FILE).build());
+      _options.addOption(Option.builder()
+            .desc("create z3 logic to concretize data plane constraints")
+            .longOpt(ARG_Z3_CONCRETIZE).build());
+      _options.addOption(Option.builder()
+            .desc("push concrete flows into logicblox databse")
+            .longOpt(ARG_FLOWS).build());
+      _options.addOption(Option.builder().argName(ARGNAME_FLOW_PATH).hasArg()
+            .desc("path to concrete flows").longOpt(ARG_FLOW_PATH).build());
+      _options.addOption(Option.builder().argName(ARGNAME_FLOW_SINK_PATH)
+            .hasArg().desc("path to flow sinks").longOpt(ARG_FLOW_SINK_PATH)
+            .build());
+      _options.addOption(Option.builder().argName("secondPath").hasArg()
+            .desc("path to test rig directory to diff with").longOpt(ARG_DIFF)
+            .build());
+      _options.addOption(Option.builder()
+            .desc("dump intermediate format of configurations")
+            .longOpt(ARG_DUMP_IF).build());
+      _options.addOption(Option.builder().argName(ARGNAME_DUMP_IF_DIR).hasArg()
+            .desc("directory to dump intermediate format files")
+            .longOpt(ARG_DUMP_IF_DIR).build());
+      _options.addOption(Option.builder().desc("dump control plane facts")
+            .longOpt(ARG_DUMP_CONTROL_PLANE_FACTS).build());
+      _options.addOption(Option.builder().desc("dump traffic facts")
+            .longOpt(ARG_DUMP_TRAFFIC_FACTS).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_DUMP_FACTS_DIR)
+            .desc("directory to dump LogicBlox facts")
+            .longOpt(ARG_DUMP_FACTS_DIR).build());
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_REVERT)
+            .desc("revert test rig workspace to specified branch")
+            .longOpt(ARG_REVERT).build());
+      _options.addOption(Option.builder().desc("redirect stderr to stdout")
+            .longOpt(ARG_REDIRECT_STDERR).build());
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_ANONYMIZE)
+            .desc("created anonymized versions of configs in test rig")
+            .longOpt(ARG_ANONYMIZE).build());
+      _options
+            .addOption(Option
+                  .builder()
                   .hasArg()
-                  .withArgName(ARGNAME_LOGICDIR)
-                  .withDescription(
-                        "set logic dir with respect to filesystem of machine running LogicBlox")
-                  .create(ARG_LOGICDIR));
-      _options.addOption(OptionBuilder.withDescription(
-            "disable z3 simplification").create(ARG_DISABLE_Z3_SIMPLIFICATION));
-      _options.addOption(OptionBuilder.withDescription(
-            "serialize vendor configs").create(ARG_SERIALIZE_VENDOR));
-      _options.addOption(OptionBuilder.hasArg()
-            .withArgName(ARGNAME_SERIALIZE_VENDOR_PATH)
-            .withDescription("path to read or write serialized vendor configs")
-            .create(ARG_SERIALIZE_VENDOR_PATH));
-      _options.addOption(OptionBuilder.withDescription(
-            "serialize vendor-independent configs").create(
-            ARG_SERIALIZE_INDEPENDENT));
+                  .argName(ARGNAME_LOGICDIR)
+                  .desc("set logic dir with respect to filesystem of machine running LogicBlox")
+                  .longOpt(ARG_LOGICDIR).build());
+      _options.addOption(Option.builder().desc("disable z3 simplification")
+            .longOpt(ARG_DISABLE_Z3_SIMPLIFICATION).build());
+      _options.addOption(Option.builder().desc("serialize vendor configs")
+            .longOpt(ARG_SERIALIZE_VENDOR).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_SERIALIZE_VENDOR_PATH)
+            .desc("path to read or write serialized vendor configs")
+            .longOpt(ARG_SERIALIZE_VENDOR_PATH).build());
+      _options.addOption(Option.builder()
+            .desc("serialize vendor-independent configs")
+            .longOpt(ARG_SERIALIZE_INDEPENDENT).build());
       _options
-            .addOption(OptionBuilder
+            .addOption(Option
+                  .builder()
                   .hasArg()
-                  .withArgName(ARGNAME_SERIALIZE_INDEPENDENT_PATH)
-                  .withDescription(
-                        "path to read or write serialized vendor-independent configs")
-                  .create(ARG_SERIALIZE_INDEPENDENT_PATH));
-      _options.addOption(OptionBuilder.withDescription(
-            "compute and serialize data plane (requires logicblox)").create(
-            ARG_DATA_PLANE));
-      _options.addOption(OptionBuilder.hasArg()
-            .withArgName(ARGNAME_DATA_PLANE_DIR)
-            .withDescription("path to read or write serialized data plane")
-            .create(ARG_DATA_PLANE_DIR));
-      _options.addOption(OptionBuilder.withDescription("print parse trees")
-            .create(ARG_PRINT_PARSE_TREES));
-      _options.addOption(OptionBuilder.withDescription(
-            "dump interface descriptions").create(
-            ARG_DUMP_INTERFACE_DESCRIPTIONS));
-      _options.addOption(OptionBuilder.hasArg()
-            .withArgName(ARGNAME_DUMP_INTERFACE_DESCRIPTIONS_PATH)
-            .withDescription("path to read or write interface descriptions")
-            .create(ARG_DUMP_INTERFACE_DESCRIPTIONS_PATH));
-      _options.addOption(OptionBuilder.hasArg()
-            .withArgName(ARGNAME_NODE_SET_PATH)
-            .withDescription("path to read or write node set")
-            .create(ARG_NODE_SET_PATH));
-      _options.addOption(OptionBuilder.hasArg()
-            .withArgName(ARGNAME_INTERFACE_MAP_PATH)
-            .withDescription("path to read or write interface-number mappings")
-            .create(ARG_INTERFACE_MAP_PATH));
-      _options.addOption(OptionBuilder.hasArg()
-            .withArgName(ARGNAME_VAR_SIZE_MAP_PATH)
-            .withDescription("path to read or write var-size mappings")
-            .create(ARG_VAR_SIZE_MAP_PATH));
-      _options.addOption(OptionBuilder.withDescription(
-            "generate multipath-inconsistency query").create(ARG_MPI));
-      _options.addOption(OptionBuilder
-            .hasArg()
-            .withArgName(ARGNAME_MPI_PATH)
-            .withDescription(
-                  "path to read or write multipath-inconsistency query")
-            .create(ARG_MPI_PATH));
-      _options.addOption(OptionBuilder.withDescription("serialize to text")
-            .create(ARG_SERIALIZE_TO_TEXT));
+                  .argName(ARGNAME_SERIALIZE_INDEPENDENT_PATH)
+                  .desc("path to read or write serialized vendor-independent configs")
+                  .longOpt(ARG_SERIALIZE_INDEPENDENT_PATH).build());
+      _options.addOption(Option.builder()
+            .desc("compute and serialize data plane (requires logicblox)")
+            .longOpt(ARG_DATA_PLANE).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_DATA_PLANE_DIR)
+            .desc("path to read or write serialized data plane")
+            .longOpt(ARG_DATA_PLANE_DIR).build());
+      _options.addOption(Option.builder().desc("print parse trees")
+            .longOpt(ARG_PRINT_PARSE_TREES).build());
+      _options.addOption(Option.builder().desc("dump interface descriptions")
+            .longOpt(ARG_DUMP_INTERFACE_DESCRIPTIONS).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_DUMP_INTERFACE_DESCRIPTIONS_PATH)
+            .desc("path to read or write interface descriptions")
+            .longOpt(ARG_DUMP_INTERFACE_DESCRIPTIONS_PATH).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_NODE_SET_PATH)
+            .desc("path to read or write node set").longOpt(ARG_NODE_SET_PATH)
+            .build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_INTERFACE_MAP_PATH)
+            .desc("path to read or write interface-number mappings")
+            .longOpt(ARG_INTERFACE_MAP_PATH).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_VAR_SIZE_MAP_PATH)
+            .desc("path to read or write var-size mappings")
+            .longOpt(ARG_VAR_SIZE_MAP_PATH).build());
+      _options.addOption(Option.builder()
+            .desc("generate multipath-inconsistency query").longOpt(ARG_MPI)
+            .build());
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_MPI_PATH)
+            .desc("path to read or write multipath-inconsistency query")
+            .longOpt(ARG_MPI_PATH).build());
+      _options.addOption(Option.builder().desc("serialize to text")
+            .longOpt(ARG_SERIALIZE_TO_TEXT).build());
       _options
-            .addOption(OptionBuilder
+            .addOption(Option
+                  .builder()
                   .hasArg()
-                  .withArgName(ARGNAME_BUILD_PREDICATE_INFO)
-                  .withDescription(
-                        "build predicate info (should only be called by ant build script) with provided input logic dir")
-                  .create(ARG_BUILD_PREDICATE_INFO));
-      _options.addOption(OptionBuilder
-            .hasArg()
-            .withArgName(ARGNAME_BLACKLIST_INTERFACE)
-            .withDescription(
-                  "interface to blacklist (force inactive) during analysis")
-            .create(ARG_BLACKLIST_INTERFACE));
+                  .argName(ARGNAME_BUILD_PREDICATE_INFO)
+                  .desc("build predicate info (should only be called by ant build script) with provided input logic dir")
+                  .longOpt(ARG_BUILD_PREDICATE_INFO).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_BLACKLIST_INTERFACE)
+            .desc("interface to blacklist (force inactive) during analysis")
+            .longOpt(ARG_BLACKLIST_INTERFACE).build());
       _options
-            .addOption(OptionBuilder
+            .addOption(Option
+                  .builder()
                   .hasArg()
-                  .withArgName(ARGNAME_BLACKLIST_NODE)
-                  .withDescription(
-                        "node to blacklist (remove from configuration structures) during analysis")
-                  .create(ARG_BLACKLIST_NODE));
-      _options.addOption(OptionBuilder.hasArg()
-            .withArgName(ARGNAME_ACCEPT_NODE)
-            .withDescription("accept node for reachability query")
-            .create(ARG_ACCEPT_NODE));
-      _options.addOption(OptionBuilder.withDescription(
-            "generate interface-failure-inconsistency reachable packet query")
-            .create(ARG_REACH));
+                  .argName(ARGNAME_BLACKLIST_NODE)
+                  .desc("node to blacklist (remove from configuration structures) during analysis")
+                  .longOpt(ARG_BLACKLIST_NODE).build());
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_ACCEPT_NODE)
+            .desc("accept node for reachability query")
+            .longOpt(ARG_ACCEPT_NODE).build());
       _options
-            .addOption(OptionBuilder
+            .addOption(Option
+                  .builder()
+                  .desc("generate interface-failure-inconsistency reachable packet query")
+                  .longOpt(ARG_REACH).build());
+      _options
+            .addOption(Option
+                  .builder()
                   .hasArg()
-                  .withArgName(ARGNAME_REACH_PATH)
-                  .withDescription(
-                        "path to read or write interface-failure-inconsistency reachable packet query")
-                  .create(ARG_REACH_PATH));
-      _options.addOption(OptionBuilder.withDescription(
-            "generate interface-failure-inconsistency black-hole packet query")
-            .create(ARG_BLACK_HOLE));
-      _options.addOption(OptionBuilder.withDescription(
-            "only concretize single packet (do not break up disjunctions)")
-            .create(ARG_CONC_UNIQUE));
+                  .argName(ARGNAME_REACH_PATH)
+                  .desc("path to read or write interface-failure-inconsistency reachable packet query")
+                  .longOpt(ARG_REACH_PATH).build());
       _options
-            .addOption(OptionBuilder
+            .addOption(Option
+                  .builder()
+                  .desc("generate interface-failure-inconsistency black-hole packet query")
+                  .longOpt(ARG_BLACK_HOLE).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("only concretize single packet (do not break up disjunctions)")
+                  .longOpt(ARG_CONC_UNIQUE).build());
+      _options
+            .addOption(Option
+                  .builder()
                   .hasArg()
-                  .withArgName(ARGNAME_BLACK_HOLE_PATH)
-                  .withDescription(
-                        "path to read or write interface-failure-inconsistency black-hole packet query")
-                  .create(ARG_BLACK_HOLE_PATH));
-      _options.addOption(OptionBuilder
-            .hasArg()
-            .withArgName(ARGNAME_BLACKLIST_DST_IP)
-            .withDescription(
-                  "destination ip to blacklist for concretizer queries")
-            .create(ARG_BLACKLIST_DST_IP));
-      _options.addOption(OptionBuilder
-            .withArgName(ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS).hasArgs()
-            .withDescription("suppress warnings for selected parser rules")
-            .create(ARG_RULES_WITH_SUPPRESSED_WARNINGS));
-      _options.addOption(OptionBuilder.hasArg()
-            .withArgName(ARGNAME_NODE_ROLES_PATH)
-            .withDescription("path to read or write node-role mappings")
-            .create(ARG_NODE_ROLES_PATH));
-      _options.addOption(OptionBuilder.hasArg()
-            .withArgName(ARGNAME_ROLE_REACHABILITY_QUERY_PATH)
-            .withDescription("path to read or write role-reachability queries")
-            .create(ARG_ROLE_REACHABILITY_QUERY_PATH));
-      _options.addOption(OptionBuilder.withDescription(
-            "generate role-reachability queries").create(
-            ARG_ROLE_REACHABILITY_QUERY));
-      _options.addOption(OptionBuilder.hasArg()
-            .withArgName(ARGNAME_ROLE_SET_PATH)
-            .withDescription("path to read or write role set")
-            .create(ARG_ROLE_SET_PATH));
-      _options.addOption(OptionBuilder.withDescription(
-            "duplicate flows across all nodes in same role").create(
-            ARG_DUPLICATE_ROLE_FLOWS));
-      _options.addOption(OptionBuilder.hasArg().withArgName(ARGNAME_LOG_LEVEL)
-            .withDescription("log4j2 log level").create(ARG_LOG_LEVEL));
+                  .argName(ARGNAME_BLACK_HOLE_PATH)
+                  .desc("path to read or write interface-failure-inconsistency black-hole packet query")
+                  .longOpt(ARG_BLACK_HOLE_PATH).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_BLACKLIST_DST_IP)
+            .desc("destination ip to blacklist for concretizer queries")
+            .longOpt(ARG_BLACKLIST_DST_IP).build());
+      _options.addOption(Option.builder()
+            .argName(ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS).hasArgs()
+            .desc("suppress warnings for selected parser rules")
+            .longOpt(ARG_RULES_WITH_SUPPRESSED_WARNINGS).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_NODE_ROLES_PATH)
+            .desc("path to read or write node-role mappings")
+            .longOpt(ARG_NODE_ROLES_PATH).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_ROLE_REACHABILITY_QUERY_PATH)
+            .desc("path to read or write role-reachability queries")
+            .longOpt(ARG_ROLE_REACHABILITY_QUERY_PATH).build());
+      _options.addOption(Option.builder()
+            .desc("generate role-reachability queries")
+            .longOpt(ARG_ROLE_REACHABILITY_QUERY).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_ROLE_SET_PATH)
+            .desc("path to read or write role set").longOpt(ARG_ROLE_SET_PATH)
+            .build());
+      _options.addOption(Option.builder()
+            .desc("duplicate flows across all nodes in same role")
+            .longOpt(ARG_DUPLICATE_ROLE_FLOWS).build());
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_LOG_LEVEL)
+            .desc("log4j2 log level").longOpt(ARG_LOG_LEVEL).build());
       _options
-            .addOption(OptionBuilder
-                  .withDescription(
-                        "throws "
-                              + PedanticBatfishException.class.getSimpleName()
-                              + " on some recoverable errors (e.g. bad config lines), instead of emitting warning and attempting to recover")
-                  .create(ARG_PEDANTIC));
+            .addOption(Option
+                  .builder()
+                  .desc("throws "
+                        + PedanticBatfishException.class.getSimpleName()
+                        + " on some recoverable errors (e.g. bad config lines), instead of emitting warning and attempting to recover")
+                  .longOpt(ARG_PEDANTIC).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
       _canExecute = true;
       _printSemantics = false;
       CommandLine line = null;
-      CommandLineParser parser = new GnuParser();
+      CommandLineParser parser = new DefaultParser();
 
       // parse the command line arguments
       line = parser.parse(_options, args);
