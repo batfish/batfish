@@ -185,12 +185,13 @@ public class Batfish implements AutoCloseable {
    private static final String SEPARATOR = System.getProperty("file.separator");
 
    /**
-    * The name of a topology file within a test-rig
+    * The name of the [optional] topology file within a test-rig
     */
    private static final String TOPOLOGY_FILENAME = "topology.net";
 
    /**
-    * The name of the LogiQL predicate containing Layer-3 adjacencies
+    * The name of the LogiQL predicate containing pairs of interfaces in the
+    * same LAN segment
     */
    private static final String TOPOLOGY_PREDICATE_NAME = "LanAdjacent";
 
