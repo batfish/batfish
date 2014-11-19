@@ -11,6 +11,5 @@ replace_symlink() {
 export -f replace_symlink
 
 export RESTORE_FILE=cygwin-symlink-restore-data
-rm -f $RESTORE_FILE
 find . -type l | parallel replace_symlink "{}" \; | tee -a "$RESTORE_FILE"
 
