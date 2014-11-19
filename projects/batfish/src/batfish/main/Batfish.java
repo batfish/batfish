@@ -1901,7 +1901,7 @@ public class Batfish implements AutoCloseable {
          }
       }
       throw new BatfishException(
-            "No task performed! Run with -help flag to see usage\n");
+            "No task performed! Run with -help flag to see usage");
    }
 
    private void serializeIndependentConfigs(String vendorConfigPath,
