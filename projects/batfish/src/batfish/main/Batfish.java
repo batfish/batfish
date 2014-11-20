@@ -910,6 +910,8 @@ public class Batfish implements AutoCloseable {
       String nodeRolesPath = _settings.getNodeRolesPath();
       String roleNodesPath = _settings.getRoleNodesPath();
       String iterationsPath = nodeRolesPath + ".rtiterations";
+      String constraintsIterationsPath = nodeRolesPath
+            + ".rtconstraintsiterations";
 
       _logger.info("Reading node set from : \"" + nodeSetPath + "\"..");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
@@ -931,10 +933,11 @@ public class Batfish implements AutoCloseable {
             }
             NodeSet transitNodes = transitEntry.getValue();
             for (String transitNode : transitNodes) {
-               QuerySynthesizer synth = new RoleTransitQuerySynthesizer(sourceRole, transitNode);
+               QuerySynthesizer synth = new RoleTransitQuerySynthesizer(
+                     sourceRole, transitNode);
                String queryText = synth.getQueryText();
-               String queryPath = queryBasePath + "-" + transitNode + "-" + sourceRole
-                     + ".smt2";
+               String queryPath = queryBasePath + "-" + transitNode + "-"
+                     + sourceRole + ".smt2";
                _logger.info("Writing query to: \"" + queryPath + "\"..");
                writeFile(queryPath, queryText);
                _logger.info("OK\n");
@@ -975,7 +978,30 @@ public class Batfish implements AutoCloseable {
       writeFile(roleNodesPath, sbRoleNodes.toString());
 
       _logger
-            .info("Writing role-node-role iteration ordering lines for next stage..");
+            .info("Writing transitrole-transitnode-sourcerole iteration ordering lines for constraints stage..");
+      StringBuilder sbConstraintsIterations = new StringBuilder();
+      for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
+         String transitRole = roleNodeEntry.getKey();
+         NodeSet transitNodes = roleNodeEntry.getValue();
+         if (transitNodes.size() < 2) {
+            continue;
+         }
+         for (String sourceRole : roleNodes.keySet()) {
+            if (sourceRole.equals(transitRole)) {
+               continue;
+            }
+            for (String transitNode : transitNodes) {
+               String iterationLine = transitRole + ":" + transitNode + ":"
+                     + sourceRole + "\n";
+               sbConstraintsIterations.append(iterationLine);
+            }
+         }
+      }
+      writeFile(constraintsIterationsPath, sbConstraintsIterations.toString());
+      _logger.info("OK\n");
+
+      _logger
+            .info("Writing transitrole-master-slave-sourcerole iteration ordering lines for concretizer stage..");
       StringBuilder sbIterations = new StringBuilder();
       for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
          String transitRole = roleNodeEntry.getKey();
