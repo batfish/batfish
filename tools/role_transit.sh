@@ -106,17 +106,8 @@ batfish_find_role_transit_packet_constraints() {
          rsync -av -rsh=ssh --stats --progress ${QUERY_BASE_PATH}* $MACHINE:$QUERY_PATH/ || return 1
       done
    fi
-   cat $NODE_SET_TEXT_PATH | while read NODE
-   do
-      cat $ROLE_SET_PATH | while read SOURCE_ROLE
-      do
-         echo "${NODE}:${SOURCE_ROLE}"
-      done
-      if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
-         return 1
-      fi
-   done | parallel --eta --halt 2 $SERVER_OPTS batfish_find_role_transit_packet_constraints_helper {} $REACH_PATH $QUERY_BASE_PATH
-   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 -o "${PIPESTATUS[2]}" -ne 0 ]; then
+   cat ${NODE_ROLES_PATH}.rtiterations | parallel --eta --halt 2 $SERVER_OPTS batfish_find_role_transit_packet_constraints_helper {} $REACH_PATH $QUERY_BASE_PATH
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
    if [ -n "$NUM_MACHINES" -a "$NUM_MACHINES" -gt 0 ]; then
@@ -133,20 +124,21 @@ export -f batfish_find_role_transit_packet_constraints
 
 batfish_find_role_transit_packet_constraints_helper() {
    batfish_expect_args 3 $# || return 1
-   local NODE=$(echo "$1" | cut -d':' -f 1)
-   local SOURCE_ROLE=$(echo "$1" | cut -d':' -f 2)
+   local TRANSIT_ROLE=$(echo "$1" | cut -d':' -f 1)
+   local TRANSIT_NODE=$(echo "$1" | cut -d':' -f 2)
+   local SOURCE_ROLE=$(echo "$1" | cut -d':' -f 3)
    local REACH_PATH=$2
    local QUERY_BASE_PATH=$3
    batfish_date
-   local QUERY_PATH=${QUERY_BASE_PATH}-${NODE}-${SOURCE_ROLE}.smt2
+   local QUERY_PATH=${QUERY_BASE_PATH}-${TRANSIT_NODE}-${SOURCE_ROLE}.smt2
    local QUERY_OUTPUT_PATH=${QUERY_PATH}.out
-   echo ": START: Find role-transit packet constraints from source role \"${SOURCE_ROLE}\" to node \"${NODE}\" (\"${QUERY_OUTPUT_PATH}\")"
+   echo ": START: Find role-transit packet constraints from source role \"${SOURCE_ROLE}\" to node \"${TRANSIT_NODE}\" (\"${QUERY_OUTPUT_PATH}\")"
    cat $REACH_PATH $QUERY_PATH | batfish_time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1> $QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
    batfish_date
-   echo ": END: Find role-transit packet constraints from source role \"${SOURCE_ROLE}\" to node \"${NODE}\" (\"${QUERY_OUTPUT_PATH}\")"
+   echo ": END: Find role-transit packet constraints from source role \"${SOURCE_ROLE}\" to node \"${TRANSIT_NODE}\" (\"${QUERY_OUTPUT_PATH}\")"
 }
 export -f batfish_find_role_transit_packet_constraints_helper
 

@@ -975,7 +975,7 @@ public class Batfish implements AutoCloseable {
       writeFile(roleNodesPath, sbRoleNodes.toString());
 
       _logger
-            .info("Writing role-node-role iteration ordering lines for concretizer stage..");
+            .info("Writing role-node-role iteration ordering lines for next stage..");
       StringBuilder sbIterations = new StringBuilder();
       for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
          String transitRole = roleNodeEntry.getKey();
