@@ -933,7 +933,7 @@ public class Batfish implements AutoCloseable {
             for (String transitNode : transitNodes) {
                QuerySynthesizer synth = new RoleTransitQuerySynthesizer(sourceRole, transitNode);
                String queryText = synth.getQueryText();
-               String queryPath = queryBasePath + "-" + transitRole + "-" + transitNode + "-" + sourceRole
+               String queryPath = queryBasePath + "-" + transitNode + "-" + sourceRole
                      + ".smt2";
                _logger.info("Writing query to: \"" + queryPath + "\"..");
                writeFile(queryPath, queryText);
