@@ -29,7 +29,7 @@ batfish_analyze_role_transit() {
    local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
    local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
    local QUERY_PATH=$OLD_PWD/$PREFIX-query
-   local RR_QUERY_BASE_PATH=$QUERY_PATH/role-reachability-query
+   local RT_QUERY_BASE_PATH=$QUERY_PATH/role-transit-query
    local DUMP_DIR=$OLD_PWD/$PREFIX-dump
    local FLOWS=$OLD_PWD/$PREFIX-flows
    local BGP=$OLD_PWD/$PREFIX-bgp
@@ -38,6 +38,7 @@ batfish_analyze_role_transit() {
    local INDEP_SERIAL_DIR=$OLD_PWD/$PREFIX-indep
    local DP_DIR=$OLD_PWD/$PREFIX-dp
    local NODE_ROLES_PATH=$OLD_PWD/$PREFIX-node_roles
+   local ROLE_NODES_PATH=$OLD_PWD/$PREFIX-role_nodes
    local ROLE_SET_PATH=$OLD_PWD/$PREFIX-role_set
 
    echo "Parse vendor configuration files and serialize vendor structures"
@@ -61,10 +62,10 @@ batfish_analyze_role_transit() {
    echo "Extract z3 reachability relations"
    $BATFISH_CONFIRM && { batfish_generate_z3_reachability $DP_DIR $INDEP_SERIAL_DIR $REACH_PATH $NODE_SET_PATH || return 1 ; }
 
-   echo "Find role-reachability packet constraints"
-   $BATFISH_CONFIRM && { batfish_find_role_transit_packet_constraints $REACH_PATH $QUERY_PATH $RR_QUERY_BASE_PATH $NODE_SET_PATH $NODE_ROLES_PATH $ROLE_SET_PATH "$MACHINES" "$NUM_MACHINES" || return 1 ; }
+   echo "Find role-transit packet constraints"
+   $BATFISH_CONFIRM && { batfish_find_role_transit_packet_constraints $REACH_PATH $QUERY_PATH $RT_QUERY_BASE_PATH $NODE_SET_PATH $NODE_ROLES_PATH $ROLE_NODES_PATH $ROLE_SET_PATH "$MACHINES" "$NUM_MACHINES" || return 1 ; }
 
-   echo "Generate role-reachability concretizer queries"
+   echo "Generate role-transit concretizer queries"
    $BATFISH_CONFIRM && { batfish_generate_role_transit_concretizer_queries $RR_QUERY_BASE_PATH $NODE_ROLES_PATH "$MACHINES" "$NUM_MACHINES" || return 1 ; }
 
    echo "Inject concrete packets into network model"
@@ -77,22 +78,23 @@ export -f batfish_analyze_role_transit
 
 batfish_find_role_transit_packet_constraints() {
    batfish_date
-   echo ": START: Find role-reachability packet constraints"
-   batfish_expect_args 8 $# || return 1
+   echo ": START: Find role-transit packet constraints"
+   batfish_expect_args 9 $# || return 1
    local REACH_PATH=$1
    local QUERY_PATH=$2
    local QUERY_BASE_PATH=$3
    local NODE_SET_PATH=$4
    local NODE_ROLES_PATH=$5
-   local ROLE_SET_PATH=$6
-   local MACHINES="$7"
-   local NUM_MACHINES="$8"
+   local ROLE_NODES_PATH=$6
+   local ROLE_SET_PATH=$7
+   local MACHINES="$8"
+   local NUM_MACHINES="$9"
    local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
    local OLD_PWD=$PWD
    local SERVER_OPTS=
    mkdir -p $QUERY_PATH
    cd $QUERY_PATH
-   batfish -rr -rrpath $QUERY_BASE_PATH -nodes $NODE_SET_PATH -nrpath $NODE_ROLES_PATH -rspath $ROLE_SET_PATH || return 1
+   batfish -rt -rtpath $QUERY_BASE_PATH -nodes $NODE_SET_PATH -nrpath $NODE_ROLES_PATH -rspath $ROLE_SET_PATH -rnpath $ROLE_NODES_PATH || return 1
    if [ -n "$NUM_MACHINES" -a "$NUM_MACHINES" -gt 0 ]; then
       for MACHINE in $MACHINES; do
          #set server options for GNU parallel
@@ -125,9 +127,9 @@ batfish_find_role_transit_packet_constraints() {
    fi
    cd $OLD_PWD
    batfish_date
-   echo ": END: Find role-reachability packet constraints"
+   echo ": END: Find role-transit packet constraints"
 }
-export -f batfish_find_multipath_inconsistent_packet_constraints
+export -f batfish_find_role_transit_packet_constraints
 
 batfish_find_role_transit_packet_constraints_helper() {
    batfish_expect_args 3 $# || return 1
@@ -138,25 +140,25 @@ batfish_find_role_transit_packet_constraints_helper() {
    batfish_date
    local QUERY_PATH=${QUERY_BASE_PATH}-${NODE}-${ROLE}.smt2
    local QUERY_OUTPUT_PATH=${QUERY_PATH}.out
-   echo ": START: Find role-reachability packet constraints from node \"${NODE}\" to role \"${ROLE}\" (\"${QUERY_OUTPUT_PATH}\")"
+   echo ": START: Find role-transit packet constraints from node \"${NODE}\" to role \"${ROLE}\" (\"${QUERY_OUTPUT_PATH}\")"
    cat $REACH_PATH $QUERY_PATH | batfish_time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1> $QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
    batfish_date
-   echo ": END: Find role-reachability packet constraints from node \"${NODE}\" to role \"${ROLE}\" (\"${QUERY_OUTPUT_PATH}\")"
+   echo ": END: Find role-transit packet constraints from node \"${NODE}\" to role \"${ROLE}\" (\"${QUERY_OUTPUT_PATH}\")"
 }
 export -f batfish_find_role_transit_packet_constraints_helper
 
 batfish_generate_role_transit_concretizer_queries() {
    batfish_date
-   echo ": START: Generate role-reachability concretizer queries"
+   echo ": START: Generate role-transit concretizer queries"
    batfish_expect_args 4 $# || return 1
    local QUERY_BASE_PATH=$1
    local ROLE_NODES_PATH=$2
    local MACHINES="$3"
    local NUM_MACHINES="$4"
-   local ITERATIONS_PATH=${ROLE_NODES_PATH}.iterations
+   local ITERATIONS_PATH=${ROLE_NODES_PATH}.rtiterations
    local QUERY_PATH="$(dirname $QUERY_BASE_PATH)"
    local OLD_PWD=$PWD
    cd $QUERY_PATH
@@ -181,7 +183,7 @@ batfish_generate_role_transit_concretizer_queries() {
    fi
    cd $OLD_PWD
    batfish_date
-   echo ": END: Generate role-reachability concretizer queries"
+   echo ": END: Generate role-transit concretizer queries"
 }
 export -f batfish_generate_role_transit_concretizer_queries
 
@@ -189,18 +191,18 @@ batfish_generate_role_transit_concretizer_queries_helper() {
    batfish_expect_args 2 $# || return 1
    local ITERATION_LINE=$1
    local QUERY_BASE_PATH=$2
-   local TRANSMITTING_ROLE=$(echo $ITERATION_LINE | cut -d':' -f 1)
+   local TRANSIT_ROLE=$(echo $ITERATION_LINE | cut -d':' -f 1)
    local MASTER_NODE=$(echo $ITERATION_LINE | cut -d':' -f 2)
    local SLAVE_NODE=$(echo $ITERATION_LINE | cut -d':' -f 3)
-   local RECEIVING_ROLE=$(echo $ITERATION_LINE | cut -d':' -f 4)
-   local MASTER_QUERY_OUT=${QUERY_BASE_PATH}-${MASTER_NODE}-${RECEIVING_ROLE}.smt2.out
-   local SLAVE_QUERY_OUT=${QUERY_BASE_PATH}-${SLAVE_NODE}-${RECEIVING_ROLE}.smt2.out
-   local MASTER_CONCRETIZER_QUERY_BASE_PATH=${QUERY_BASE_PATH}-${MASTER_NODE}-${SLAVE_NODE}-${RECEIVING_ROLE}-concrete
-   local SLAVE_CONCRETIZER_QUERY_BASE_PATH=${QUERY_BASE_PATH}-${SLAVE_NODE}-${MASTER_NODE}-${RECEIVING_ROLE}-concrete
+   local SOURCE_ROLE=$(echo $ITERATION_LINE | cut -d':' -f 4)
+   local MASTER_QUERY_OUT=${QUERY_BASE_PATH}-${MASTER_NODE}-${SOURCE_ROLE}.smt2.out
+   local SLAVE_QUERY_OUT=${QUERY_BASE_PATH}-${SLAVE_NODE}-${SOURCE_ROLE}.smt2.out
+   local MASTER_CONCRETIZER_QUERY_BASE_PATH=${QUERY_BASE_PATH}-${MASTER_NODE}-${SLAVE_NODE}-${SOURCE_ROLE}-concrete
+   local SLAVE_CONCRETIZER_QUERY_BASE_PATH=${QUERY_BASE_PATH}-${SLAVE_NODE}-${MASTER_NODE}-${SOURCE_ROLE}-concrete
    local QUERY_DIR=$(dirname $QUERY_BASE_PATH)
    cd $QUERY_DIR
    batfish_date
-   echo ": START: Generate role-reachability concretizer queries for transmitting role \"${TRANSMITTING_ROLE}\", master node \"${MASTER_NODE}\", slave node \"${SLAVE_NODE}\", receiving role \"${RECEIVING_ROLE}\"" 
+   echo ": START: Generate role-transit concretizer queries for transit role \"${TRANSIT_ROLE}\", master node \"${MASTER_NODE}\", slave node \"${SLAVE_NODE}\", source role \"${SOURCE_ROLE}\""
    batfish -conc -concin $MASTER_QUERY_OUT -concinneg $SLAVE_QUERY_OUT -concunique -concout $MASTER_CONCRETIZER_QUERY_BASE_PATH || return 1
    batfish -conc -concinneg $MASTER_QUERY_OUT -concin $SLAVE_QUERY_OUT -concunique -concout $SLAVE_CONCRETIZER_QUERY_BASE_PATH || return 1
    find $PWD -regextype posix-extended -regex "${MASTER_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
@@ -214,7 +216,7 @@ batfish_generate_role_transit_concretizer_queries_helper() {
       return 1
    fi
    batfish_date
-   echo ": END: Generate role-reachability concretizer queries for transmitting role \"${TRANSMITTING_ROLE}\", master node \"${MASTER_NODE}\", slave node \"${SLAVE_NODE}\", receiving role \"${RECEIVING_ROLE}\""
+   echo ": END: Generate role-transit concretizer queries for transit role \"${TRANSIT_ROLE}\", master node \"${MASTER_NODE}\", slave node \"${SLAVE_NODE}\", source role \"${SOURCE_ROLE}\""
    echo
 }
 export -f batfish_generate_role_transit_concretizer_queries_helper

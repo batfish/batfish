@@ -109,6 +109,7 @@ import batfish.z3.RoleReachabilityQuerySynthesizer;
 import batfish.z3.ReachableQuerySynthesizer;
 import batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import batfish.z3.QuerySynthesizer;
+import batfish.z3.RoleTransitQuerySynthesizer;
 import batfish.z3.Synthesizer;
 
 /**
@@ -888,6 +889,110 @@ public class Batfish implements AutoCloseable {
             for (String receivingRole : roleNodes.keySet()) {
                String iterationLine = transmittingRole + ":" + masterNode + ":"
                      + slaveNode + ":" + receivingRole + "\n";
+               sbIterations.append(iterationLine);
+            }
+         }
+      }
+      writeFile(iterationsPath, sbIterations.toString());
+      _logger.info("OK\n");
+
+      printElapsedTime();
+   }
+
+   private void genRoleTransitQueries() {
+      _logger.info("\n*** GENERATING ROLE-TO-NODE QUERIES ***\n");
+      resetTimer();
+
+      String queryBasePath = _settings.getRoleTransitQueryPath();
+      String nodeSetPath = _settings.getNodeSetPath();
+      String nodeSetTextPath = nodeSetPath + ".txt";
+      String roleSetTextPath = _settings.getRoleSetPath();
+      String nodeRolesPath = _settings.getNodeRolesPath();
+      String roleNodesPath = _settings.getRoleNodesPath();
+      String iterationsPath = nodeRolesPath + ".rtiterations";
+
+      _logger.info("Reading node set from : \"" + nodeSetPath + "\"..");
+      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
+      _logger.info("OK\n");
+
+      _logger.info("Reading node roles from : \"" + nodeRolesPath + "\"..");
+      NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(new File(
+            nodeRolesPath));
+      _logger.info("OK\n");
+
+      RoleNodeMap roleNodes = nodeRoles.toRoleNodeMap();
+
+      for (Entry<String, NodeSet> sourceEntry : roleNodes.entrySet()) {
+         String sourceRole = sourceEntry.getKey();
+         for (Entry<String, NodeSet> transitEntry : roleNodes.entrySet()) {
+            String transitRole = transitEntry.getKey();
+            if (transitRole.equals(sourceRole)) {
+               continue;
+            }
+            NodeSet transitNodes = transitEntry.getValue();
+            for (String transitNode : transitNodes) {
+               QuerySynthesizer synth = new RoleTransitQuerySynthesizer(sourceRole, transitNode);
+               String queryText = synth.getQueryText();
+               String queryPath = queryBasePath + "-" + transitRole + "-" + transitNode + "-" + sourceRole
+                     + ".smt2";
+               _logger.info("Writing query to: \"" + queryPath + "\"..");
+               writeFile(queryPath, queryText);
+               _logger.info("OK\n");
+            }
+         }
+      }
+
+      _logger.info("Writing node lines for next stage..");
+      StringBuilder sbNodes = new StringBuilder();
+      for (String node : nodes) {
+         sbNodes.append(node + "\n");
+      }
+      writeFile(nodeSetTextPath, sbNodes.toString());
+      _logger.info("OK\n");
+
+      StringBuilder sbRoles = new StringBuilder();
+      _logger.info("Writing role lines for next stage..");
+      sbRoles = new StringBuilder();
+      for (String role : roleNodes.keySet()) {
+         sbRoles.append(role + "\n");
+      }
+      writeFile(roleSetTextPath, sbRoles.toString());
+      _logger.info("OK\n");
+
+      // not actually sure if this is necessary
+      StringBuilder sbRoleNodes = new StringBuilder();
+      _logger.info("Writing role-node mappings for concretizer stage..");
+      sbRoleNodes = new StringBuilder();
+      for (Entry<String, NodeSet> e : roleNodes.entrySet()) {
+         String role = e.getKey();
+         NodeSet currentNodes = e.getValue();
+         sbRoleNodes.append(role + ":");
+         for (String node : currentNodes) {
+            sbRoleNodes.append(node + ",");
+         }
+         sbRoleNodes.append(role + "\n");
+      }
+      writeFile(roleNodesPath, sbRoleNodes.toString());
+
+      _logger
+            .info("Writing role-node-role iteration ordering lines for concretizer stage..");
+      StringBuilder sbIterations = new StringBuilder();
+      for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
+         String transitRole = roleNodeEntry.getKey();
+         NodeSet transitNodes = roleNodeEntry.getValue();
+         if (transitNodes.size() < 2) {
+            continue;
+         }
+         String[] tNodeArray = transitNodes.toArray(new String[] {});
+         String masterNode = tNodeArray[0];
+         for (int i = 1; i < tNodeArray.length; i++) {
+            String slaveNode = tNodeArray[i];
+            for (String sourceRole : roleNodes.keySet()) {
+               if (sourceRole.equals(transitRole)) {
+                  continue;
+               }
+               String iterationLine = transitRole + ":" + masterNode + ":"
+                     + slaveNode + ":" + sourceRole + "\n";
                sbIterations.append(iterationLine);
             }
          }
@@ -1755,6 +1860,11 @@ public class Batfish implements AutoCloseable {
 
       if (_settings.getRoleReachabilityQuery()) {
          genRoleReachabilityQueries();
+         return;
+      }
+
+      if (_settings.getRoleTransitQuery()) {
+         genRoleTransitQueries();
          return;
       }
 

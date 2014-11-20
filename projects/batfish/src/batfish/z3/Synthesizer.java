@@ -41,6 +41,7 @@ import batfish.z3.node.AcceptExpr;
 import batfish.z3.node.AclDenyExpr;
 import batfish.z3.node.ExternalDestinationIpExpr;
 import batfish.z3.node.ExternalSourceIpExpr;
+import batfish.z3.node.NodeTransitExpr;
 import batfish.z3.node.OriginateExpr;
 import batfish.z3.node.PolicyDenyExpr;
 import batfish.z3.node.PolicyExpr;
@@ -75,6 +76,7 @@ import batfish.z3.node.PreOutEdgeExpr;
 import batfish.z3.node.PreOutExpr;
 import batfish.z3.node.PreOutInterfaceExpr;
 import batfish.z3.node.RoleAcceptExpr;
+import batfish.z3.node.RoleOriginateExpr;
 import batfish.z3.node.RuleExpr;
 import batfish.z3.node.SaneExpr;
 import batfish.z3.node.Statement;
@@ -1015,6 +1017,23 @@ public class Synthesizer {
       return statements;
    }
 
+   private List<Statement> getPostOutIfaceToNodeTransitRules() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements.add(new Comment("Rules connecting postout_iface to node_transit"));
+      for (Entry<String, Set<Interface>> e : _topologyInterfaces.entrySet()) {
+         String hostname = e.getKey();
+         Set<Interface> interfaces = e.getValue();
+         NodeTransitExpr nodeTransit = new NodeTransitExpr(hostname);
+         for (Interface iface : interfaces) {
+            String ifaceName = iface.getName();
+            PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(hostname, ifaceName);
+            RuleExpr rule = new RuleExpr(postOutIface, nodeTransit);
+            statements.add(rule);
+         }
+      }
+      return statements;
+   }
+
    private List<Statement> getPreInInterfaceToPostInInterfaceRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements
@@ -1199,6 +1218,25 @@ public class Synthesizer {
       return statements;
    }
 
+   private List<Statement> getRoleOriginateToNodeOriginateRules() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements.add(new Comment("Rules connecting role_originate to R_originate"));
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         String hostname = e.getKey();
+         Configuration c = e.getValue();
+         OriginateExpr nodeOriginate = new OriginateExpr(hostname);
+         RoleSet roles = c.getRoles();
+         if (roles != null) {
+            for (String role : roles) {
+               RoleOriginateExpr roleOriginate = new RoleOriginateExpr(role);
+               RuleExpr rule = new RuleExpr(roleOriginate, nodeOriginate);
+               statements.add(rule);
+            }
+         }
+      }
+      return statements;
+   }
+
    private List<Statement> getSane() {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment("Make sure packet fields make sense"));
@@ -1300,6 +1338,8 @@ public class Synthesizer {
       List<Statement> nodeAcceptToRoleAcceptRules = getNodeAcceptToRoleAcceptRules();
       List<Statement> externalSrcIpRules = getExternalSrcIpRules();
       List<Statement> externalDstIpRules = getExternalDstIpRules();
+      List<Statement> postOutIfaceToNodeTransitRules = getPostOutIfaceToNodeTransitRules();
+      List<Statement> roleOriginateToNodeOriginateRules = getRoleOriginateToNodeOriginateRules();
 
       rules.addAll(dropRules);
       rules.addAll(acceptRules);
@@ -1320,6 +1360,8 @@ public class Synthesizer {
       rules.addAll(nodeAcceptToRoleAcceptRules);
       rules.addAll(externalSrcIpRules);
       rules.addAll(externalDstIpRules);
+      rules.addAll(postOutIfaceToNodeTransitRules);
+      rules.addAll(roleOriginateToNodeOriginateRules);
 
       List<Statement> relDecls = getRelDeclExprs(rules);
 

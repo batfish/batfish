@@ -69,9 +69,12 @@ public class Settings {
    private static final String ARG_REDIRECT_STDERR = "redirect";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
+   private static final String ARG_ROLE_NODES_PATH = "rnpath";
    private static final String ARG_ROLE_REACHABILITY_QUERY = "rr";
    private static final String ARG_ROLE_REACHABILITY_QUERY_PATH = "rrpath";
    private static final String ARG_ROLE_SET_PATH = "rspath";
+   private static final String ARG_ROLE_TRANSIT_QUERY = "rt";
+   private static final String ARG_ROLE_TRANSIT_QUERY_PATH = "rtpath";
    private static final String ARG_RULES_WITH_SUPPRESSED_WARNINGS = "rulenowarn";
    private static final String ARG_SERIALIZE_INDEPENDENT = "si";
    private static final String ARG_SERIALIZE_INDEPENDENT_PATH = "sipath";
@@ -111,8 +114,10 @@ public class Settings {
    private static final String ARGNAME_NODE_SET_PATH = "path";
    private static final String ARGNAME_REACH_PATH = "path";
    private static final String ARGNAME_REVERT = "branch-name";
+   private static final String ARGNAME_ROLE_NODES_PATH = "path";
    private static final String ARGNAME_ROLE_REACHABILITY_QUERY_PATH = "path";
    private static final String ARGNAME_ROLE_SET_PATH = "path";
+   private static final String ARGNAME_ROLE_TRANSIT_QUERY_PATH = "path";
    private static final String ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS = "rule-names";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
@@ -202,9 +207,12 @@ public class Settings {
    private boolean _removeFacts;
    private boolean _revert;
    private String _revertBranchName;
+   private String _roleNodesPath;
    private boolean _roleReachabilityQuery;
    private String _roleReachabilityQueryPath;
    private String _roleSetPath;
+   private boolean _roleTransitQuery;
+   private String _roleTransitQueryPath;
    private Set<String> _rulesWithSuppressedWarnings;
    private String _secondTestRigPath;
    private boolean _serializeIndependent;
@@ -457,6 +465,10 @@ public class Settings {
       return _removeFacts;
    }
 
+   public String getRoleNodesPath() {
+      return _roleNodesPath;
+   }
+
    public boolean getRoleReachabilityQuery() {
       return _roleReachabilityQuery;
    }
@@ -467,6 +479,14 @@ public class Settings {
 
    public String getRoleSetPath() {
       return _roleSetPath;
+   }
+
+   public boolean getRoleTransitQuery() {
+      return _roleTransitQuery;
+   }
+
+   public String getRoleTransitQueryPath() {
+      return _roleTransitQueryPath;
    }
 
    public Set<String> getRulesWithSuppressedWarnings() {
@@ -770,12 +790,23 @@ public class Settings {
             .desc("path to read or write node-role mappings")
             .longOpt(ARG_NODE_ROLES_PATH).build());
       _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_ROLE_NODES_PATH)
+            .desc("path to read or write role-node mappings")
+            .longOpt(ARG_ROLE_NODES_PATH).build());
+      _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_ROLE_REACHABILITY_QUERY_PATH)
             .desc("path to read or write role-reachability queries")
             .longOpt(ARG_ROLE_REACHABILITY_QUERY_PATH).build());
       _options.addOption(Option.builder()
             .desc("generate role-reachability queries")
             .longOpt(ARG_ROLE_REACHABILITY_QUERY).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_ROLE_TRANSIT_QUERY_PATH)
+            .desc("path to read or write role-transit queries")
+            .longOpt(ARG_ROLE_TRANSIT_QUERY_PATH).build());
+      _options.addOption(Option.builder()
+            .desc("generate role-transit queries")
+            .longOpt(ARG_ROLE_TRANSIT_QUERY).build());
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_ROLE_SET_PATH)
             .desc("path to read or write role set").longOpt(ARG_ROLE_SET_PATH)
@@ -928,9 +959,13 @@ public class Settings {
          }
       }
       _nodeRolesPath = line.getOptionValue(ARG_NODE_ROLES_PATH);
+      _roleNodesPath = line.getOptionValue(ARG_ROLE_NODES_PATH);
       _roleReachabilityQueryPath = line
             .getOptionValue(ARG_ROLE_REACHABILITY_QUERY_PATH);
       _roleReachabilityQuery = line.hasOption(ARG_ROLE_REACHABILITY_QUERY);
+      _roleTransitQueryPath = line
+            .getOptionValue(ARG_ROLE_TRANSIT_QUERY_PATH);
+      _roleTransitQuery = line.hasOption(ARG_ROLE_TRANSIT_QUERY);
       _roleSetPath = line.getOptionValue(ARG_ROLE_SET_PATH);
       _duplicateRoleFlows = line.hasOption(ARG_DUPLICATE_ROLE_FLOWS);
       _logLevel = line.getOptionValue(ARG_LOG_LEVEL);
