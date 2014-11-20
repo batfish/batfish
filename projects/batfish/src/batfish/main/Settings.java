@@ -69,6 +69,7 @@ public class Settings {
    private static final String ARG_REDIRECT_STDERR = "redirect";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
+   private static final String ARG_ROLE_HEADERS = "rh";
    private static final String ARG_ROLE_NODES_PATH = "rnpath";
    private static final String ARG_ROLE_REACHABILITY_QUERY = "rr";
    private static final String ARG_ROLE_REACHABILITY_QUERY_PATH = "rrpath";
@@ -207,6 +208,7 @@ public class Settings {
    private boolean _removeFacts;
    private boolean _revert;
    private String _revertBranchName;
+   private boolean _roleHeaders;
    private String _roleNodesPath;
    private boolean _roleReachabilityQuery;
    private String _roleReachabilityQueryPath;
@@ -463,6 +465,10 @@ public class Settings {
 
    public boolean getRemoveFacts() {
       return _removeFacts;
+   }
+
+   public boolean getRoleHeaders() {
+      return _roleHeaders;
    }
 
    public String getRoleNodesPath() {
@@ -804,8 +810,7 @@ public class Settings {
             .argName(ARGNAME_ROLE_TRANSIT_QUERY_PATH)
             .desc("path to read or write role-transit queries")
             .longOpt(ARG_ROLE_TRANSIT_QUERY_PATH).build());
-      _options.addOption(Option.builder()
-            .desc("generate role-transit queries")
+      _options.addOption(Option.builder().desc("generate role-transit queries")
             .longOpt(ARG_ROLE_TRANSIT_QUERY).build());
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_ROLE_SET_PATH)
@@ -823,6 +828,9 @@ public class Settings {
                         + PedanticBatfishException.class.getSimpleName()
                         + " on some recoverable errors (e.g. bad config lines), instead of emitting warning and attempting to recover")
                   .longOpt(ARG_PEDANTIC).build());
+      _options.addOption(Option.builder()
+            .desc("header of concretized z3 output refers to role, not node")
+            .longOpt(ARG_ROLE_HEADERS).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -963,13 +971,13 @@ public class Settings {
       _roleReachabilityQueryPath = line
             .getOptionValue(ARG_ROLE_REACHABILITY_QUERY_PATH);
       _roleReachabilityQuery = line.hasOption(ARG_ROLE_REACHABILITY_QUERY);
-      _roleTransitQueryPath = line
-            .getOptionValue(ARG_ROLE_TRANSIT_QUERY_PATH);
+      _roleTransitQueryPath = line.getOptionValue(ARG_ROLE_TRANSIT_QUERY_PATH);
       _roleTransitQuery = line.hasOption(ARG_ROLE_TRANSIT_QUERY);
       _roleSetPath = line.getOptionValue(ARG_ROLE_SET_PATH);
       _duplicateRoleFlows = line.hasOption(ARG_DUPLICATE_ROLE_FLOWS);
       _logLevel = line.getOptionValue(ARG_LOG_LEVEL);
       _pedantic = line.hasOption(ARG_PEDANTIC);
+      _roleHeaders = line.hasOption(ARG_ROLE_HEADERS);
    }
 
    public boolean printParseTree() {

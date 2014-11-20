@@ -66,10 +66,10 @@ batfish_analyze_role_transit() {
    $BATFISH_CONFIRM && { batfish_find_role_transit_packet_constraints $REACH_PATH $QUERY_PATH $RT_QUERY_BASE_PATH $NODE_SET_PATH $NODE_ROLES_PATH $ROLE_NODES_PATH $ROLE_SET_PATH "$MACHINES" "$NUM_MACHINES" || return 1 ; }
 
    echo "Generate role-transit concretizer queries"
-   $BATFISH_CONFIRM && { batfish_generate_role_transit_concretizer_queries $RR_QUERY_BASE_PATH $NODE_ROLES_PATH "$MACHINES" "$NUM_MACHINES" || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_generate_role_transit_concretizer_queries $RT_QUERY_BASE_PATH $NODE_ROLES_PATH "$MACHINES" "$NUM_MACHINES" || return 1 ; }
 
    echo "Inject concrete packets into network model"
-   $BATFISH_CONFIRM && { batfish_inject_packets_with_role_flow_duplication $WORKSPACE $QUERY_PATH $DUMP_DIR || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_inject_packets_with_role_headers $WORKSPACE $QUERY_PATH $DUMP_DIR || return 1 ; }
 
    echo "Query flow results from LogicBlox"
    $BATFISH_CONFIRM && { batfish_query_flows $FLOWS $WORKSPACE || return 1 ; }
@@ -198,12 +198,12 @@ batfish_generate_role_transit_concretizer_queries_helper() {
    batfish -conc -concin $MASTER_QUERY_OUT -concinneg $SLAVE_QUERY_OUT -concunique -concout $MASTER_CONCRETIZER_QUERY_BASE_PATH || return 1
    batfish -conc -concinneg $MASTER_QUERY_OUT -concin $SLAVE_QUERY_OUT -concunique -concout $SLAVE_CONCRETIZER_QUERY_BASE_PATH || return 1
    find $PWD -regextype posix-extended -regex "${MASTER_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
-      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $MASTER_NODE \;
+      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $SOURCE_ROLE \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
    find $PWD -regextype posix-extended -regex "${SLAVE_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
-      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $SLAVE_NODE \;
+      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $SOURCE_ROLE \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -213,7 +213,7 @@ batfish_generate_role_transit_concretizer_queries_helper() {
 }
 export -f batfish_generate_role_transit_concretizer_queries_helper
 
-batfish_inject_packets_with_role_flow_duplication() {
+batfish_inject_packets_with_role_headers() {
    batfish_date
    echo ": START: Inject concrete packets into network model"
    batfish_expect_args 3 $# || return 1
@@ -222,11 +222,11 @@ batfish_inject_packets_with_role_flow_duplication() {
    local DUMP_DIR=$3
    local OLD_PWD=$PWD
    cd $QUERY_PATH
-   batfish -workspace $WORKSPACE -flow -flowpath $QUERY_PATH -drf -dumptraffic -dumpdir $DUMP_DIR || return 1
+   batfish -workspace $WORKSPACE -flow -flowpath $QUERY_PATH -rh -dumptraffic -dumpdir $DUMP_DIR || return 1
    batfish_format_flows $DUMP_DIR || return 1
    cd $OLD_PWD
    batfish_date
    echo ": END: Inject concrete packets into network model"
 }
-export -f batfish_inject_packets_with_role_flow_duplication
+export -f batfish_inject_packets_with_role_headers
 

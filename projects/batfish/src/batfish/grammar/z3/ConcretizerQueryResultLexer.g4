@@ -33,9 +33,9 @@ UNSAT
    'unsat'
 ;
 
-NODE_HEADER
+ID_HEADER
 :
-   ';' -> pushMode ( M_NODE )
+   ';' -> pushMode ( M_ID )
 ;
 
 BIN
@@ -143,14 +143,14 @@ F_WhitespaceChar
    [ \t\u000C\r\n]
 ;
 
-mode M_NODE;
+mode M_ID;
 
-M_NODE_NEWLINE
+M_ID_NEWLINE
 :
    F_NewlineChar+ -> popMode , channel (HIDDEN)
 ;
 
-M_NODE_NODE
+M_ID_ID
 :
    F_NonNewlineChar+
 ;

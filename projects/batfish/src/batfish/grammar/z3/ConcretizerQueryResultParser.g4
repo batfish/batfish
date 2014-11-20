@@ -27,7 +27,7 @@ model
 result
 :
    (
-      NODE_HEADER node = M_NODE_NODE SAT model
+      ID_HEADER id = M_ID_ID SAT model
    )
    | UNSAT
 ;

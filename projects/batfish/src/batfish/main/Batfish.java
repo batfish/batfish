@@ -1451,7 +1451,8 @@ public class Batfish implements AutoCloseable {
       return parse(parser);
    }
 
-   private void parseFlowsFromConstraints(StringBuilder sb) {
+   private void parseFlowsFromConstraints(StringBuilder sb,
+         RoleNodeMap roleNodes) {
       Path flowConstraintsDir = Paths.get(_settings.getFlowPath());
       File[] constraintsFiles = flowConstraintsDir.toFile().listFiles(
             new FilenameFilter() {
@@ -1471,8 +1472,8 @@ public class Batfish implements AutoCloseable {
          ParseTreeWalker walker = new ParseTreeWalker();
          ConcretizerQueryResultExtractor extractor = new ConcretizerQueryResultExtractor();
          walker.walk(extractor, tree);
-         String node = extractor.getNode();
-         if (node == null) {
+         String id = extractor.getId();
+         if (id == null) {
             continue;
          }
          Map<String, Long> constraints = extractor.getConstraints();
@@ -1508,9 +1509,22 @@ public class Batfish implements AutoCloseable {
                throw new Error("invalid variable name");
             }
          }
-         String line = node + "|" + src_ip + "|" + dst_ip + "|" + src_port
-               + "|" + dst_port + "|" + protocol + "\n";
-         sb.append(line);
+         // TODO: cleanup dirty hack
+         if (roleNodes != null) {
+            // id is role
+            NodeSet nodes = roleNodes.get(id);
+            for (String node : nodes) {
+               String line = node + "|" + src_ip + "|" + dst_ip + "|"
+                     + src_port + "|" + dst_port + "|" + protocol + "\n";
+               sb.append(line);
+            }
+         }
+         else {
+            String node = id;
+            String line = node + "|" + src_ip + "|" + dst_ip + "|" + src_port
+                  + "|" + dst_port + "|" + protocol + "\n";
+            sb.append(line);
+         }
       }
    }
 
@@ -2195,7 +2209,14 @@ public class Batfish implements AutoCloseable {
 
    private void writeTrafficFacts(Map<String, StringBuilder> factBins) {
       StringBuilder wSetFlowOriginate = factBins.get("SetFlowOriginate");
-      parseFlowsFromConstraints(wSetFlowOriginate);
+      RoleNodeMap roleNodes = null;
+      if (_settings.getRoleHeaders()) {
+         String nodeRolesPath = _settings.getNodeRolesPath();
+         NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(new File(
+               nodeRolesPath));
+         roleNodes = nodeRoles.toRoleNodeMap();
+      }
+      parseFlowsFromConstraints(wSetFlowOriginate, roleNodes);
       if (_settings.duplicateRoleFlows()) {
          StringBuilder wDuplicateRoleFlows = factBins.get("DuplicateRoleFlows");
          wDuplicateRoleFlows.append("1\n");

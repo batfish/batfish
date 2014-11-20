@@ -9,7 +9,7 @@ public class ConcretizerQueryResultExtractor extends
       ConcretizerQueryResultParserBaseListener {
 
    private Map<String, Long> _constraints;
-   private String _node;
+   private String _id;
 
    public ConcretizerQueryResultExtractor() {
       _constraints = new HashMap<String, Long>();
@@ -33,8 +33,8 @@ public class ConcretizerQueryResultExtractor extends
    }
 
    public void exitResult(ResultContext ctx) {
-      if (ctx.node != null) {
-         _node = ctx.node.getText();
+      if (ctx.id != null) {
+         _id = ctx.id.getText();
       }
    }
 
@@ -42,8 +42,8 @@ public class ConcretizerQueryResultExtractor extends
       return _constraints;
    }
 
-   public String getNode() {
-      return _node;
+   public String getId() {
+      return _id;
    }
 
 }
