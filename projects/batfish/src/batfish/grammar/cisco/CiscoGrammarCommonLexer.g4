@@ -3305,12 +3305,6 @@ STATIC
    'static'
 ;
 
-DIRECT
-:
-   'direct'
-;
-
-
 STCAPP
 :
    'stcapp'
