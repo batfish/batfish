@@ -922,17 +922,8 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       if (ctx.track != null) {
          track = toInteger(ctx.track);
       }
-      Ip nextHopPrefix = null; // for ip loadsharing
-      Ip nextHopMask = null;
-      if (ctx.nexthopprefix != null) {
-         nextHopPrefix = getPrefixIp(ctx.nexthopprefix);
-         int prefixLength = getPrefixLength(ctx.nexthopprefix);
-         long maskLong = Util.numSubnetBitsToSubnetLong(prefixLength);
-         nextHopMask = new Ip(maskLong);
-      }
-
-      StaticRoute route = new StaticRoute(prefix, mask, nextHopIp, nextHopPrefix,
-            nextHopMask, nextHopInterface, distance, tag, track, permanent);
+      StaticRoute route = new StaticRoute(prefix, mask, nextHopIp,
+            nextHopInterface, distance, tag, track, permanent);
       _configuration.getStaticRoutes().put(prefix.networkString(mask), route);
    }
 

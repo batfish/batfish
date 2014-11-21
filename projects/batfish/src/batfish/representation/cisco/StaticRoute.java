@@ -16,17 +16,13 @@ public class StaticRoute implements Serializable {
    private Ip _prefix;
    private Integer _tag;
    private Integer _track;
-   private Ip _nextHopPrefix;
-   private Ip _nextHopMask;
 
-   public StaticRoute(Ip prefix, Ip mask, Ip nextHopIp, Ip nextHopPrefix, Ip nextHopMask,
+   public StaticRoute(Ip prefix, Ip mask, Ip nextHopIp,
          String nextHopInterface, int distance, Integer tag, Integer track,
          boolean permanent) {
       _prefix = prefix;
       _mask = mask;
       _nextHopIp = nextHopIp;
-      _nextHopPrefix = nextHopPrefix;
-      _nextHopMask = nextHopMask;
       _nextHopInterface = nextHopInterface;
       _distance = distance;
       _tag = tag;
@@ -48,14 +44,6 @@ public class StaticRoute implements Serializable {
 
    public Ip getNextHopIp() {
       return _nextHopIp;
-   }
-
-   public Ip getNextHopPrefix() {
-      return _nextHopPrefix;
-   }
-
-   public Ip getNextHopMask() {
-      return _nextHopMask;
    }
 
    public boolean getPermanent() {
