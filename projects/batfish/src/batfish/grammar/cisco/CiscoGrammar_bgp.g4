@@ -683,7 +683,7 @@ redistribute_static_rb_stanza
 
 redistribute_static_tail_bgp
 :
-   REDISTRIBUTE STATIC
+   REDISTRIBUTE (STATIC | DIRECT)
    (
       (
          ROUTE_MAP map = VARIABLE

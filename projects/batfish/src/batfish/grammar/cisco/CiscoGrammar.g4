@@ -71,6 +71,7 @@ ip_route_stanza
    )
    (
       nexthopip = IP_ADDRESS
+      | nexthopprefix = IP_PREFIX
       | nexthopint = interface_name
       | distance = DEC
       |

@@ -851,9 +851,18 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       Integer oldTag = staticRoute.getTag();
       int tag;
       tag = oldTag != null ? oldTag : -1;
-      return new batfish.representation.StaticRoute(prefix, prefixLength,
-            nextHopIp, nextHopInterface, staticRoute.getDistance(), tag);
+      Ip nextHopPrefix = staticRoute.getNextHopPrefix();
+      Ip nextHopMask = staticRoute.getNextHopMask();
+      if(nextHopPrefix == null){
+         return new batfish.representation.StaticRoute(prefix, prefixLength,
+               nextHopIp, nextHopInterface, staticRoute.getDistance(), tag);
+      }
+      else{
+         return new batfish.representation.StaticRoute(prefix, prefixLength,
+               nextHopIp, nextHopPrefix, nextHopMask, nextHopInterface, 
+               staticRoute.getDistance(), tag);
 
+      }
    }
 
    private List<String> _conversionWarnings;

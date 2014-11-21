@@ -8,9 +8,23 @@ public class StaticRoute extends Route {
    private String _nextHopInterface;
    private int _tag;
 
+   private Ip _nextHopPrefix;
+   private Ip _nextHopMask;
+
    public StaticRoute(Ip prefix, int prefixLength, Ip nextHopIp,
          String nextHopInterface, int administrativeCost, int tag) {
       super(prefix, prefixLength, nextHopIp);
+      _nextHopInterface = nextHopInterface;
+      _administrativeCost = administrativeCost;
+      _tag = tag;
+   }
+
+   public StaticRoute(Ip prefix, int prefixLength, Ip nextHopIp, 
+         Ip nextHopPrefix, Ip nextHopMask,
+         String nextHopInterface, int administrativeCost, int tag) {
+      super(prefix, prefixLength, nextHopIp);
+      _nextHopPrefix = nextHopPrefix;
+      _nextHopMask = nextHopMask;
       _nextHopInterface = nextHopInterface;
       _administrativeCost = administrativeCost;
       _tag = tag;
