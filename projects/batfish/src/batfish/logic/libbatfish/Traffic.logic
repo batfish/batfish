@@ -289,6 +289,23 @@ FlowRoleInconsistent(transmittingRole, acceptedFlow, missingFlow, receivingRole)
    Flow(missingFlow),
    Role(receivingRole).
 
+FlowRoleTransitInconsistent(srcRole, transitNode, nonTransitNode, transitRole, flow) ->
+   Role(srcRole),
+   Node(transitNode),
+   Node(nonTransitNode),
+   Role(transitRole),
+   Flow(flow).
+
+FlowRoleTransitNode(flow, srcRole, transitNode) ->
+   Flow(flow),
+   Role(srcRole),
+   Node(transitNode).
+
+FlowSameHeaderRoleTransitNode(flow, similarFlow, transitNode) ->
+   Flow(flow),
+   Flow(similarFlow),
+   Node(transitNode).
+
 FlowSameHeader(flow1, flow2) ->
    Flow(flow1),
    Flow(flow2).

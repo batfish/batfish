@@ -69,7 +69,7 @@ batfish_analyze_role_transit() {
    $BATFISH_CONFIRM && { batfish_generate_role_transit_concretizer_queries $RT_QUERY_BASE_PATH $NODE_ROLES_PATH "$MACHINES" "$NUM_MACHINES" || return 1 ; }
 
    echo "Inject concrete packets into network model"
-   $BATFISH_CONFIRM && { batfish_inject_packets_with_role_headers $WORKSPACE $QUERY_PATH $DUMP_DIR || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_inject_packets_with_role_headers $WORKSPACE $QUERY_PATH $DUMP_DIR $NODE_ROLES_PATH || return 1 ; }
 
    echo "Query flow results from LogicBlox"
    $BATFISH_CONFIRM && { batfish_query_flows $FLOWS $WORKSPACE || return 1 ; }
@@ -147,10 +147,10 @@ batfish_generate_role_transit_concretizer_queries() {
    echo ": START: Generate role-transit concretizer queries"
    batfish_expect_args 4 $# || return 1
    local QUERY_BASE_PATH=$1
-   local ROLE_NODES_PATH=$2
+   local NODE_ROLES_PATH=$2
    local MACHINES="$3"
    local NUM_MACHINES="$4"
-   local ITERATIONS_PATH=${ROLE_NODES_PATH}.rtiterations
+   local ITERATIONS_PATH=${NODE_ROLES_PATH}.rtiterations
    local QUERY_PATH="$(dirname $QUERY_BASE_PATH)"
    local OLD_PWD=$PWD
    cd $QUERY_PATH
@@ -216,13 +216,14 @@ export -f batfish_generate_role_transit_concretizer_queries_helper
 batfish_inject_packets_with_role_headers() {
    batfish_date
    echo ": START: Inject concrete packets into network model"
-   batfish_expect_args 3 $# || return 1
+   batfish_expect_args 4 $# || return 1
    local WORKSPACE=$1
    local QUERY_PATH=$2
    local DUMP_DIR=$3
+   local NODE_ROLES_PATH=$4
    local OLD_PWD=$PWD
    cd $QUERY_PATH
-   batfish -workspace $WORKSPACE -flow -flowpath $QUERY_PATH -rh -dumptraffic -dumpdir $DUMP_DIR || return 1
+   batfish -workspace $WORKSPACE -flow -flowpath $QUERY_PATH -rh -dumptraffic -dumpdir $DUMP_DIR -nrpath $NODE_ROLES_PATH || return 1
    batfish_format_flows $DUMP_DIR || return 1
    cd $OLD_PWD
    batfish_date

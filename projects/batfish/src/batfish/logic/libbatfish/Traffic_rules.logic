@@ -353,6 +353,26 @@ FlowRoleInconsistent(transmittingRole, acceptedFlow, missingFlow, receivingRole)
    FlowRoleAccepted(acceptedFlow, receivingRole),
    !FlowRoleAccepted(missingFlow, receivingRole).
 
+FlowRoleTransitInconsistent(srcRole, transitNode, nonTransitNode, transitRole, flow) <-
+   SetNodeRole(transitNode, transitRole),
+   SetNodeRole(nonTransitNode, transitRole),
+   FlowRoleTransitNode(flow, srcRole, transitNode),
+   !FlowSameHeaderRoleTransitNode(flow, _, nonTransitNode).
+
+FlowRoleTransitNode(flow, srcRole, transitNode) <-
+   Flow_node[flow] = srcNode,
+   SetNodeRole(srcNode, srcRole),
+   FlowReachPostOutInterface(flow, transitNode, _).
+
+FlowSameHeaderRoleTransitNode(flow, similarFlow, transitNode) <-
+   flow = similarFlow,
+   FlowRoleTransitNode(flow, _, transitNode).
+FlowSameHeaderRoleTransitNode(flow, similarFlow, transitNode) <-
+   FlowRoleTransitNode(flow, srcRole, transitNode),
+   Flow_node[similarFlow] = srcNode,
+   SetNodeRole(srcNode, srcRole),
+   FlowSameHeader(flow, similarFlow).
+
 FlowSameHeader(flow1, flow2) <-
    FlowOriginate[node1, srcIp, dstIp, srcPort, dstPort, protocol] = flow1,
    FlowOriginate[node2, srcIp, dstIp, srcPort, dstPort, protocol] = flow2,
