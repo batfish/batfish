@@ -357,11 +357,14 @@ FlowRoleTransitInconsistent(srcRole, transitNode, nonTransitNode, transitRole, f
    SetNodeRole(transitNode, transitRole),
    SetNodeRole(nonTransitNode, transitRole),
    FlowRoleTransitNode(flow, srcRole, transitNode),
+   srcRole != transitRole,
    !FlowSameHeaderRoleTransitNode(flow, _, nonTransitNode).
 
 FlowRoleTransitNode(flow, srcRole, transitNode) <-
    Flow_node[flow] = srcNode,
    SetNodeRole(srcNode, srcRole),
+   SetNodeRole(transitNode, transitRole),
+   srcRole != transitRole,
    FlowReachPostOutInterface(flow, transitNode, _).
 
 FlowSameHeaderRoleTransitNode(flow, similarFlow, transitNode) <-
@@ -371,6 +374,8 @@ FlowSameHeaderRoleTransitNode(flow, similarFlow, transitNode) <-
    FlowRoleTransitNode(flow, srcRole, transitNode),
    Flow_node[similarFlow] = srcNode,
    SetNodeRole(srcNode, srcRole),
+   SetNodeRole(transitNode, transitRole),
+   srcRole != transitRole,
    FlowSameHeader(flow, similarFlow).
 
 FlowSameHeader(flow1, flow2) <-
