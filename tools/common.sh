@@ -233,7 +233,7 @@ batfish_query_flows() {
    batfish_expect_args 2 $# || return 1
    local FLOW_RESULTS=$1
    local WORKSPACE=$2
-   batfish -log output -workspace $WORKSPACE -query -predicates FlowRoleInconsistent FlowRoleAccepted Flow FlowUnknown FlowInconsistent FlowAccepted FlowAllowedIn FlowAllowedOut FlowDropped FlowDeniedIn FlowDeniedOut FlowNoRoute FlowNullRouted FlowPolicyDenied FlowReachPolicyRoute FlowReachPostIn FlowReachPreOut FlowReachPreOutInterface FlowReachPostOutInterface FlowReachPreOutEdgeOrigin FlowReachPreOutEdgePolicyRoute FlowReachPreOutEdgeStandard FlowReachPreOutEdge FlowReachPreInInterface FlowReachPostInInterface FlowReach FlowReachStep FlowLost FlowLoop FlowPathHistory FlowPathAcceptedEdge FlowPathDeniedOutEdge FlowPathDeniedInEdge FlowPathNoRouteEdge FlowPathNullRoutedEdge FlowPathIntermediateEdge LanAdjacent &> $FLOW_RESULTS
+   batfish -log output -workspace $WORKSPACE -query -predicates FlowRoleInconsistent FlowRoleAccepted Flow FlowUnknown FlowInconsistent FlowAccepted FlowAllowedIn FlowAllowedOut FlowDropped FlowDeniedIn FlowDeniedOut FlowNoRoute FlowNullRouted FlowPolicyDenied FlowReachPolicyRoute FlowReachPostIn FlowReachPreOut FlowReachPreOutInterface FlowReachPostOutInterface FlowReachPreOutEdgeOrigin FlowReachPreOutEdgePolicyRoute FlowReachPreOutEdgeStandard FlowReachPreOutEdge FlowReachPreInInterface FlowReachPostInInterface FlowReach FlowReachStep FlowLost FlowLoop FlowPathHistory FlowPathAcceptedEdge FlowPathDeniedOutEdge FlowPathDeniedInEdge FlowPathNoRouteEdge FlowPathNullRoutedEdge FlowPathIntermediateEdge LanAdjacent > $FLOW_RESULTS || return 1
    batfish_date
    echo ": END: Query flow results from LogicBlox"
 }
