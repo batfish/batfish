@@ -328,7 +328,9 @@ public class Batfish implements AutoCloseable {
       List<ParserRuleContext> trees = new ArrayList<ParserRuleContext>();
       for (Path logicFilePath : logicFiles) {
          String input = readFile(logicFilePath.toFile());
-         LogiQLCombinedParser parser = new LogiQLCombinedParser(input);
+         LogiQLCombinedParser parser = new LogiQLCombinedParser(input,
+               _settings.getThrowOnParserError(),
+               _settings.getThrowOnLexerError());
          ParserRuleContext tree = parse(parser, logicFilePath.toString());
          trees.add(tree);
       }
@@ -451,7 +453,8 @@ public class Batfish implements AutoCloseable {
          _logger.info("OK\n");
 
          DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
-               queryOutputStr);
+               queryOutputStr, _settings.getThrowOnParserError(),
+               _settings.getThrowOnLexerError());
          ParserRuleContext tree = parse(parser, concInPath);
 
          _logger.info("Computing concretizer queries..");
@@ -481,7 +484,8 @@ public class Batfish implements AutoCloseable {
             _logger.info("OK\n");
 
             DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
-                  queryOutputStr);
+                  queryOutputStr, _settings.getThrowOnParserError(),
+                  _settings.getThrowOnLexerError());
             ParserRuleContext tree = parse(parser, negConcInPath);
 
             _logger.info("Computing concretizer queries..");
@@ -1467,7 +1471,8 @@ public class Batfish implements AutoCloseable {
       for (File constraintsFile : constraintsFiles) {
          String flowConstraintsText = readFile(constraintsFile);
          ConcretizerQueryResultCombinedParser parser = new ConcretizerQueryResultCombinedParser(
-               flowConstraintsText);
+               flowConstraintsText, _settings.getThrowOnParserError(),
+               _settings.getThrowOnLexerError());
          ParserRuleContext tree = parse(parser, constraintsFile.toString());
          ParseTreeWalker walker = new ParseTreeWalker();
          ConcretizerQueryResultExtractor extractor = new ConcretizerQueryResultExtractor();
@@ -1532,7 +1537,8 @@ public class Batfish implements AutoCloseable {
       Path rolePath = Paths.get(testRigPath, "node_roles");
       String roleFileText = readFile(rolePath.toFile());
       _logger.info("Parsing: \"" + rolePath.toAbsolutePath().toString() + "\"");
-      BatfishCombinedParser<?, ?> parser = new RoleCombinedParser(roleFileText);
+      BatfishCombinedParser<?, ?> parser = new RoleCombinedParser(roleFileText,
+            _settings.getThrowOnParserError(), _settings.getThrowOnLexerError());
       RoleExtractor extractor = new RoleExtractor();
       ParserRuleContext tree = parse(parser);
       ParseTreeWalker walker = new ParseTreeWalker();
@@ -1549,11 +1555,15 @@ public class Batfish implements AutoCloseable {
       File topologyPath = Paths.get(testRigPath, "topology.net").toFile();
       _logger.info("Parsing: \"" + topologyPath.getAbsolutePath() + "\"");
       if (topologyFileText.startsWith("autostart")) {
-         parser = new GNS3TopologyCombinedParser(topologyFileText);
+         parser = new GNS3TopologyCombinedParser(topologyFileText,
+               _settings.getThrowOnParserError(),
+               _settings.getThrowOnLexerError());
          extractor = new GNS3TopologyExtractor();
       }
       else if (topologyFileText.startsWith("CONFIGPARSER_TOPOLOGY")) {
-         parser = new BatfishTopologyCombinedParser(topologyFileText);
+         parser = new BatfishTopologyCombinedParser(topologyFileText,
+               _settings.getThrowOnParserError(),
+               _settings.getThrowOnLexerError());
          extractor = new BatfishTopologyExtractor();
       }
       else if (topologyFileText.equals("")) {
@@ -1591,13 +1601,17 @@ public class Batfish implements AutoCloseable {
          ParseTreeWalker walker = new ParseTreeWalker();
          ControlPlaneExtractor extractor = null;
          if (fileText.charAt(0) == '!') {
-            combinedParser = new CiscoCombinedParser(fileText);
+            combinedParser = new CiscoCombinedParser(fileText,
+                  _settings.getThrowOnParserError(),
+                  _settings.getThrowOnLexerError());
             extractor = new CiscoControlPlaneExtractor(fileText,
                   combinedParser, _settings.getRulesWithSuppressedWarnings(),
                   _settings.getPedantic());
          }
          else if (fileText.charAt(0) == '#') {
-            combinedParser = new JuniperGrammarCombinedParser(fileText);
+            combinedParser = new JuniperGrammarCombinedParser(fileText,
+                  _settings.getThrowOnParserError(),
+                  _settings.getThrowOnLexerError());
             extractor = new JuniperControlPlaneExtractor(fileText,
                   combinedParser, _settings.getRulesWithSuppressedWarnings());
          }

@@ -7,6 +7,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 
+import batfish.main.BatfishException;
+
 public class BatfishLexerErrorListener extends BatfishGrammarErrorListener {
 
    public BatfishLexerErrorListener(String grammarName,
@@ -34,7 +36,12 @@ public class BatfishLexerErrorListener extends BatfishGrammarErrorListener {
       sb.append("Lexer state variables:\n");
       sb.append(lexer.printStateVariables());
       String error = sb.toString();
-      _combinedParser.getErrors().add(error);
+      if (_combinedParser.getThrowOnLexerError()) {
+         throw new BatfishException("\n" + error);
+      }
+      else {
+         _combinedParser.getErrors().add(error);
+      }
    }
 
 }

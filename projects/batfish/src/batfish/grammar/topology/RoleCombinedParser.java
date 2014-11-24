@@ -7,8 +7,10 @@ import batfish.grammar.BatfishCombinedParser;
 public class RoleCombinedParser extends
       BatfishCombinedParser<RoleParser, RoleLexer> {
 
-   public RoleCombinedParser(String input) {
-      super(RoleParser.class, RoleLexer.class, input);
+   public RoleCombinedParser(String input, boolean throwOnParserError,
+         boolean throwOnLexerError) {
+      super(RoleParser.class, RoleLexer.class, input, throwOnParserError,
+            throwOnLexerError);
    }
 
    @Override

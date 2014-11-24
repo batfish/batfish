@@ -7,8 +7,10 @@ import batfish.grammar.BatfishCombinedParser;
 public class LogiQLCombinedParser extends
       BatfishCombinedParser<LogiQLParser, LogiQLLexer> {
 
-   public LogiQLCombinedParser(String input) {
-      super(LogiQLParser.class, LogiQLLexer.class, input);
+   public LogiQLCombinedParser(String input, boolean throwOnParserError,
+         boolean throwOnLexerError) {
+      super(LogiQLParser.class, LogiQLLexer.class, input, throwOnParserError,
+            throwOnLexerError);
    }
 
    @Override

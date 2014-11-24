@@ -7,8 +7,10 @@ import batfish.grammar.BatfishCombinedParser;
 public class JuniperGrammarCombinedParser extends
       BatfishCombinedParser<JuniperGrammarParser, JuniperGrammarLexer> {
 
-   public JuniperGrammarCombinedParser(String input) {
-      super(JuniperGrammarParser.class, JuniperGrammarLexer.class, input);
+   public JuniperGrammarCombinedParser(String input,
+         boolean throwOnParserError, boolean throwOnLexerError) {
+      super(JuniperGrammarParser.class, JuniperGrammarLexer.class, input,
+            throwOnParserError, throwOnLexerError);
    }
 
    @Override

@@ -83,6 +83,8 @@ public class Settings {
    private static final String ARG_SERIALIZE_VENDOR = "sv";
    private static final String ARG_SERIALIZE_VENDOR_PATH = "svpath";
    private static final String ARG_TEST_RIG_PATH = "testrig";
+   private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
+   private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
    private static final String ARG_UPDATE = "update";
    private static final String ARG_VAR_SIZE_MAP_PATH = "vsmpath";
    private static final String ARG_WORKSPACE = "workspace";
@@ -224,6 +226,8 @@ public class Settings {
    private String _serializeVendorPath;
    private boolean _simplify;
    private String _testRigPath;
+   private boolean _throwOnLexerError;
+   private boolean _throwOnParserError;
    private boolean _update;
    private String _varSizeMapPath;
    private String _workspaceName;
@@ -531,6 +535,14 @@ public class Settings {
       return _testRigPath;
    }
 
+   public boolean getThrowOnLexerError() {
+      return _throwOnLexerError;
+   }
+
+   public boolean getThrowOnParserError() {
+      return _throwOnParserError;
+   }
+
    public boolean getUpdate() {
       return _update;
    }
@@ -831,6 +843,12 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("header of concretized z3 output refers to role, not node")
             .longOpt(ARG_ROLE_HEADERS).build());
+      _options.addOption(Option.builder()
+            .desc("throw exception immediately on parser error")
+            .longOpt(ARG_THROW_ON_PARSER_ERROR).build());
+      _options.addOption(Option.builder()
+            .desc("throw exception immediately on lexer error")
+            .longOpt(ARG_THROW_ON_LEXER_ERROR).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -978,6 +996,8 @@ public class Settings {
       _logLevel = line.getOptionValue(ARG_LOG_LEVEL);
       _pedantic = line.hasOption(ARG_PEDANTIC);
       _roleHeaders = line.hasOption(ARG_ROLE_HEADERS);
+      _throwOnParserError = line.hasOption(ARG_THROW_ON_PARSER_ERROR);
+      _throwOnLexerError = line.hasOption(ARG_THROW_ON_LEXER_ERROR);
    }
 
    public boolean printParseTree() {

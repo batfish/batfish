@@ -7,9 +7,10 @@ import batfish.grammar.BatfishCombinedParser;
 public class DatalogQueryResultCombinedParser extends
       BatfishCombinedParser<DatalogQueryResultParser, DatalogQueryResultLexer> {
 
-   public DatalogQueryResultCombinedParser(String input) {
+   public DatalogQueryResultCombinedParser(String input,
+         boolean throwOnParserError, boolean throwOnLexerError) {
       super(DatalogQueryResultParser.class, DatalogQueryResultLexer.class,
-            input);
+            input, throwOnParserError, throwOnLexerError);
    }
 
    @Override

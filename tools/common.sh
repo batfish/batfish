@@ -284,7 +284,7 @@ batfish_serialize_vendor() {
    local TEST_RIG=$1
    local VENDOR_SERIAL_DIR=$2
    mkdir -p $VENDOR_SERIAL_DIR
-   batfish -testrig $TEST_RIG -sv -svpath $VENDOR_SERIAL_DIR -ee || return 1
+   batfish -testrig $TEST_RIG -sv -svpath $VENDOR_SERIAL_DIR -ee -throwparser -throwlexer || return 1
    batfish_date
    echo ": END: Parse vendor configuration files and serialize vendor structures"
 }
@@ -298,7 +298,7 @@ batfish_serialize_vendor_with_roles() {
    local VENDOR_SERIAL_DIR=$2
    local NODE_ROLES_PATH=$3
    mkdir -p $VENDOR_SERIAL_DIR
-   batfish -testrig $TEST_RIG -sv -svpath $VENDOR_SERIAL_DIR -ee -nrpath $NODE_ROLES_PATH || return 1
+   batfish -testrig $TEST_RIG -sv -svpath $VENDOR_SERIAL_DIR -ee -nrpath $NODE_ROLES_PATH -throwparser -throwlexer || return 1
    batfish_date
    echo ": END: Parse vendor configuration files and serialize vendor structures"
 }

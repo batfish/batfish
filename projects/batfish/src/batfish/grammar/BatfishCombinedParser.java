@@ -18,11 +18,16 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
    private final List<String> _errors;
    private L _lexer;
    protected P _parser;
+   private boolean _throwOnLexerError;
+   private boolean _throwOnParserError;
    private List<Integer> _tokenModes;
    protected CommonTokenStream _tokens;
    private final List<String> _warnings;
 
-   public BatfishCombinedParser(Class<P> pClass, Class<L> lClass, String input) {
+   public BatfishCombinedParser(Class<P> pClass, Class<L> lClass, String input,
+         boolean throwOnParserError, boolean throwOnLexerError) {
+      _throwOnParserError = throwOnParserError;
+      _throwOnLexerError = throwOnLexerError;
       _tokenModes = new ArrayList<Integer>();
       _currentModeStart = 0;
       _warnings = new ArrayList<String>();
@@ -62,6 +67,14 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
 
    public BatfishParser getParser() {
       return _parser;
+   }
+
+   public boolean getThrowOnLexerError() {
+      return _throwOnLexerError;
+   }
+
+   public boolean getThrowOnParserError() {
+      return _throwOnParserError;
    }
 
    public int getTokenMode(Token t) {

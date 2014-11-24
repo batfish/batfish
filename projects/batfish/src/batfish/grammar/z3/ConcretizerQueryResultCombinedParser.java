@@ -8,9 +8,11 @@ public class ConcretizerQueryResultCombinedParser
       extends
       BatfishCombinedParser<ConcretizerQueryResultParser, ConcretizerQueryResultLexer> {
 
-   public ConcretizerQueryResultCombinedParser(String input) {
+   public ConcretizerQueryResultCombinedParser(String input,
+         boolean throwOnParserError, boolean throwOnLexerError) {
       super(ConcretizerQueryResultParser.class,
-            ConcretizerQueryResultLexer.class, input);
+            ConcretizerQueryResultLexer.class, input, throwOnParserError,
+            throwOnLexerError);
    }
 
    @Override
