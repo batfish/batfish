@@ -267,5 +267,5 @@ variable_list
 
 version_stanza
 :
-   VERSION VERSION_TOKEN SEMICOLON
+   VERSION M_Version_VERSION_STRING SEMICOLON
 ;

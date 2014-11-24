@@ -1218,7 +1218,7 @@ USER
 
 VERSION
 :
-   'version'
+   'version' -> pushMode(M_Version)
 ;
 
 VIRTUAL_CHASSIS
@@ -1691,4 +1691,21 @@ MAC_ADDRESS
    F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit
    ':' F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':' F_HexDigit
    F_HexDigit
+;
+
+mode M_Version;
+
+M_Version_SEMICOLON
+:
+   ';' -> type(SEMICOLON), popMode
+;
+
+M_Version_VERSION_STRING
+:
+   ~[ \t\u000C\r\n;]+
+;
+
+M_Version_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
 ;
