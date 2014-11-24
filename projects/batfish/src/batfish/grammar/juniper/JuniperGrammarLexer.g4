@@ -633,7 +633,7 @@ LSP
 
 MAC
 :
-   'mac' -> pushMode (M_MacAddress)
+   'mac' -> pushMode(M_MacAddress)
 ;
 
 MARTIANS
@@ -1523,12 +1523,12 @@ LESS_THAN
 
 LINE_COMMENT
 :
-   '#' F_NonNewlineChar* F_NewlineChar+ -> channel (HIDDEN)
+   '#' F_NonNewlineChar* F_NewlineChar+ -> channel(HIDDEN)
 ;
 
 MULTILINE_COMMENT
 :
-   '/*' .*? '*/' -> channel (HIDDEN)
+   '/*' .*? '*/' -> channel(HIDDEN)
 ;
 
 OPEN_BRACE
@@ -1576,22 +1576,9 @@ UNIT_WILDCARD
    '<*>'
 ;
 
-VERSION_TOKEN
-:
-   F_Digit+ '.'
-   (
-      F_Digit
-      | F_Letter
-   )+ '-'
-   (
-      F_Digit
-      | F_Letter
-   )+
-;
-
 WS
 :
-   F_WhitespaceChar+ -> channel (HIDDEN)
+   F_WhitespaceChar+ -> channel(HIDDEN)
 ;
 
 fragment

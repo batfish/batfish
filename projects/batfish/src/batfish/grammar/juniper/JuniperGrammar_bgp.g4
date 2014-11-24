@@ -6,10 +6,29 @@ options {
    tokenVocab = JuniperGrammarLexer;
 }
 
-/* --- --- --- Protocol->BGP Common Stanza Rules -----------------------------------------------------*/
-export_common_stanza
+bfd_liveness_detection_gbg_stanza
 :
-   EXPORT list = variable_list SEMICOLON
+   bfd_liveness_detection_common_stanza
+;
+
+bfd_liveness_detection_ngbg_stanza
+:
+   bfd_liveness_detection_common_stanza
+;
+
+bg_stanza
+:
+   family_bg_stanza
+   | group_bg_stanza
+   | null_bg_stanza
+;
+
+bg_stanza_list
+:
+   (
+      bg_stanza
+      | inactive_bg_stanza
+   )+
 ;
 
 bgp_family_common_stanza
@@ -31,48 +50,38 @@ bgp_family_common_stanza
 
 ;
 
-import_common_stanza
-:
-   IMPORT list = variable_list SEMICOLON
-;
-
-local_address_common_stanza
-:
-   LOCAL_ADDRESS
-   (
-      IP_ADDRESS
-      | IPV6_ADDRESS
-   ) SEMICOLON
-;
-
-peer_as_common_stanza
-:
-   PEER_AS as = DEC SEMICOLON
-;
-
 bgp_p_stanza
 :
    BGP OPEN_BRACE bg_stanza_list CLOSE_BRACE
 ;
 
-bg_stanza_list
+cluster_ngbg_stanza
 :
+   CLUSTER
    (
-      bg_stanza
-      | inactive_bg_stanza
-   )+
+      IP_ADDRESS
+   ) SEMICOLON // TODO [Ask Ari]: Make sure this is ok to ignore
+
 ;
 
-bg_stanza
+description_ngbg_stanza
 :
-   family_bg_stanza
-   | group_bg_stanza
-   | null_bg_stanza
+   description_common_stanza
 ;
 
-inactive_bg_stanza
+export_common_stanza
 :
-   INACTIVE COLON bg_stanza
+   EXPORT list = variable_list SEMICOLON
+;
+
+export_gbg_stanza
+:
+   export_common_stanza
+;
+
+export_ngbg_stanza
+:
+   export_common_stanza
 ;
 
 family_bg_stanza
@@ -80,17 +89,14 @@ family_bg_stanza
    bgp_family_common_stanza
 ;
 
-group_bg_stanza
+family_gbg_stanza
 :
-   GROUP name = VARIABLE OPEN_BRACE gbg_stanza_list CLOSE_BRACE
+   bgp_family_common_stanza
 ;
 
-gbg_stanza_list
+family_ngbg_stanza
 :
-   (
-      gbg_stanza
-      | inactive_gbg_stanza
-   )+
+   bgp_family_common_stanza
 ;
 
 gbg_stanza
@@ -106,9 +112,96 @@ gbg_stanza
    | type_gbg_stanza
 ;
 
+gbg_stanza_list
+:
+   (
+      gbg_stanza
+      | inactive_gbg_stanza
+   )+
+;
+
+graceful_restart_ngbg_stanza
+:
+   GRACEFUL_RESTART SEMICOLON
+;
+
+group_bg_stanza
+:
+   GROUP name = VARIABLE OPEN_BRACE gbg_stanza_list CLOSE_BRACE
+;
+
+hold_time_ngbg_stanza
+:
+   HOLD_TIME DEC SEMICOLON
+;
+
+import_common_stanza
+:
+   IMPORT list = variable_list SEMICOLON
+;
+
+import_gbg_stanza
+:
+   import_common_stanza
+;
+
+import_ngbg_stanza
+:
+   import_common_stanza
+;
+
+inactive_bg_stanza
+:
+   INACTIVE COLON bg_stanza
+;
+
 inactive_gbg_stanza
 :
    INACTIVE COLON gbg_stanza
+;
+
+inactive_ngbg_stanza
+:
+   INACTIVE COLON ngbg_stanza
+;
+
+include_mp_next_hop_ngbg_stanza
+:
+   INCLUDE_MP_NEXT_HOP SEMICOLON
+;
+
+local_address_common_stanza
+:
+   LOCAL_ADDRESS
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   ) SEMICOLON
+;
+
+local_preference_ngbg_stanza
+:
+   LOCAL_PREFERENCE DEC SEMICOLON
+;
+
+log_updown_bg_stanza
+:
+   log_updown_common_stanza
+;
+
+log_updown_gbg_stanza
+:
+   log_updown_common_stanza
+;
+
+ngbg_stanza
+:
+   export_ngbg_stanza
+   | family_ngbg_stanza
+   | import_ngbg_stanza
+   | local_address_ngbg_stanza
+   | peer_as_ngbg_stanza
+   | null_ngbg_stanza
 ;
 
 null_bg_stanza
@@ -117,19 +210,19 @@ null_bg_stanza
    | traceoptions_bg_stanza
 ;
 
-export_gbg_stanza
+null_gbg_stanza
 :
-   export_common_stanza
+   bfd_liveness_detection_gbg_stanza
+   | log_updown_gbg_stanza
+   | metric_out_gbg_stanza
+   | multihop_gbg_stanza
+   | multipath_gbg_stanza
+   | remove_private_gbg_stanza
 ;
 
-family_gbg_stanza
+peer_as_common_stanza
 :
-   bgp_family_common_stanza
-;
-
-import_gbg_stanza
-:
-   import_common_stanza
+   PEER_AS as = DEC SEMICOLON
 ;
 
 local_address_gbg_stanza
@@ -140,6 +233,41 @@ local_address_gbg_stanza
 local_as_gbg_stanza
 :
    LOCAL_AS num = DEC SEMICOLON
+;
+
+local_address_ngbg_stanza
+:
+   local_address_common_stanza
+;
+
+metric_out_gbg_stanza
+:
+   metric_out_common_stanza
+;
+
+metric_out_ngbg_stanza
+:
+   metric_out_common_stanza
+;
+
+multihop_gbg_stanza
+:
+   multihop_common_stanza
+;
+
+multihop_ngbg_stanza
+:
+   multihop_common_stanza
+;
+
+multipath_gbg_stanza
+:
+   MULTIPATH SEMICOLON
+;
+
+multipath_ngbg_stanza
+:
+   MULTIPATH SEMICOLON
 ;
 
 neighbor_gbg_stanza
@@ -155,110 +283,6 @@ neighbor_gbg_stanza
          | inactive_ngbg_stanza
       )
    )+ CLOSE_BRACE
-;
-
-peer_as_gbg_stanza
-:
-   peer_as_common_stanza
-;
-
-type_gbg_stanza
-:
-   TYPE
-   (
-      INTERNAL
-      | EXTERNAL
-   ) SEMICOLON
-;
-
-null_gbg_stanza
-:
-   bfd_liveness_detection_gbg_stanza
-   | log_updown_gbg_stanza
-   | metric_out_gbg_stanza
-   | multihop_gbg_stanza
-   | multipath_gbg_stanza
-   | remove_private_gbg_stanza
-;
-
-log_updown_bg_stanza
-:
-   log_updown_common_stanza
-;
-
-traceoptions_bg_stanza
-:
-   TRACEOPTIONS ignored_substanza
-;
-
-inactive_ngbg_stanza
-:
-   INACTIVE COLON ngbg_stanza
-;
-
-ngbg_stanza
-:
-   export_ngbg_stanza
-   | family_ngbg_stanza
-   | import_ngbg_stanza
-   | local_address_ngbg_stanza
-   | peer_as_ngbg_stanza
-   | null_ngbg_stanza
-;
-
-bfd_liveness_detection_gbg_stanza
-:
-   bfd_liveness_detection_common_stanza
-;
-
-log_updown_gbg_stanza
-:
-   log_updown_common_stanza
-;
-
-metric_out_gbg_stanza
-:
-   metric_out_common_stanza
-;
-
-multihop_gbg_stanza
-:
-   multihop_common_stanza
-;
-
-multipath_gbg_stanza
-:
-   MULTIPATH SEMICOLON
-;
-
-remove_private_gbg_stanza
-:
-   remove_private_common_stanza
-;
-
-export_ngbg_stanza
-:
-   export_common_stanza
-;
-
-family_ngbg_stanza
-:
-   bgp_family_common_stanza
-;
-
-import_ngbg_stanza
-:
-   import_common_stanza
-;
-
-local_address_ngbg_stanza
-:
-   local_address_common_stanza
-;
-
-peer_as_ngbg_stanza
-:
-   peer_as_common_stanza
 ;
 
 null_ngbg_stanza
@@ -278,63 +302,24 @@ null_ngbg_stanza
    | tcp_mss_ngbg_stanza
 ;
 
-bfd_liveness_detection_ngbg_stanza
-:
-   bfd_liveness_detection_common_stanza
-;
-
-cluster_ngbg_stanza
-:
-   CLUSTER
-   (
-      IP_ADDRESS
-   ) SEMICOLON // TODO [Ask Ari]: Make sure this is ok to ignore
-
-;
-
-description_ngbg_stanza
-:
-   description_common_stanza
-;
-
-graceful_restart_ngbg_stanza
-:
-   GRACEFUL_RESTART SEMICOLON
-;
-
-include_mp_next_hop_ngbg_stanza
-:
-   INCLUDE_MP_NEXT_HOP SEMICOLON
-;
-
-hold_time_ngbg_stanza
-:
-   HOLD_TIME DEC SEMICOLON
-;
-
-local_preference_ngbg_stanza
-:
-   LOCAL_PREFERENCE DEC SEMICOLON
-;
-
-metric_out_ngbg_stanza
-:
-   metric_out_common_stanza
-;
-
-multipath_ngbg_stanza
-:
-   MULTIPATH SEMICOLON
-;
-
-multihop_ngbg_stanza
-:
-   multihop_common_stanza
-;
-
 passive_ngbg_stanza
 :
    PASSIVE SEMICOLON
+;
+
+peer_as_gbg_stanza
+:
+   peer_as_common_stanza
+;
+
+peer_as_ngbg_stanza
+:
+   peer_as_common_stanza
+;
+
+remove_private_gbg_stanza
+:
+   remove_private_common_stanza
 ;
 
 remove_private_ngbg_stanza
@@ -345,4 +330,18 @@ remove_private_ngbg_stanza
 tcp_mss_ngbg_stanza
 :
    TCP_MSS DEC SEMICOLON
+;
+
+traceoptions_bg_stanza
+:
+   TRACEOPTIONS ignored_substanza
+;
+
+type_gbg_stanza
+:
+   TYPE
+   (
+      INTERNAL
+      | EXTERNAL
+   ) SEMICOLON
 ;
