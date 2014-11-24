@@ -6,17 +6,10 @@ options {
    tokenVocab = JuniperGrammarLexer;
 }
 
-ospf_p_stanza
+aop_stanza
 :
-   OSPF OPEN_BRACE op_stanza+ CLOSE_BRACE
-;
-
-op_stanza
-:
-   area_op_stanza
-   | export_op_stanza
-   | reference_bandwidth_op_stanza
-   | null_op_stanza
+   interface_aop_stanza
+   | null_aop_stanza
 ;
 
 area_op_stanza
@@ -40,31 +33,9 @@ export_op_stanza
    )
 ;
 
-reference_bandwidth_op_stanza
-:
-   REFERENCE_BANDWIDTH double_num SEMICOLON
-;
-
-null_op_stanza
-:
-   import_op_stanza
-   | traceoptions_op_stanza
-;
-
-aop_stanza
-:
-   interface_aop_stanza
-   | null_aop_stanza
-;
-
 import_op_stanza
 :
    IMPORT ignored_substanza
-;
-
-traceoptions_op_stanza
-:
-   TRACEOPTIONS ignored_substanza
 ;
 
 interface_aop_stanza
@@ -74,19 +45,47 @@ interface_aop_stanza
 
 ;
 
+network_summary_export_aop_stanza
+:
+   NETWORK_SUMMARY_EXPORT ignored_substanza SEMICOLON
+;
+
 null_aop_stanza
 :
    network_summary_export_aop_stanza
    | nssa_aop_stanza
 ;
 
-network_summary_export_aop_stanza
+null_op_stanza
 :
-   NETWORK_SUMMARY_EXPORT ignored_substanza SEMICOLON
+   import_op_stanza
+   | traceoptions_op_stanza
 ;
 
 nssa_aop_stanza
 :
    NSSA SEMICOLON
 ;
- 
+
+op_stanza
+:
+   area_op_stanza
+   | export_op_stanza
+   | reference_bandwidth_op_stanza
+   | null_op_stanza
+;
+
+ospf_p_stanza
+:
+   OSPF OPEN_BRACE op_stanza+ CLOSE_BRACE
+;
+
+reference_bandwidth_op_stanza
+:
+   REFERENCE_BANDWIDTH double_num SEMICOLON
+;
+
+traceoptions_op_stanza
+:
+   TRACEOPTIONS ignored_substanza
+;
