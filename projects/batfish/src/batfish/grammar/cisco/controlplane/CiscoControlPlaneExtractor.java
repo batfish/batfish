@@ -11,6 +11,7 @@ import java.util.TreeSet;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import batfish.grammar.BatfishCombinedParser;
@@ -2075,6 +2076,12 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       else {
          _warnings.add(msg);
       }
+   }
+
+   @Override
+   public void processParseTree(ParserRuleContext tree) {
+      ParseTreeWalker walker = new ParseTreeWalker();
+      walker.walk(this, tree);
    }
 
    private void todo(ParserRuleContext ctx) {

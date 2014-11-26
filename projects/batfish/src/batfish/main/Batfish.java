@@ -1598,7 +1598,6 @@ public class Batfish implements AutoCloseable {
          }
          BatfishCombinedParser<?, ?> combinedParser = null;
          ParserRuleContext tree = null;
-         ParseTreeWalker walker = new ParseTreeWalker();
          ControlPlaneExtractor extractor = null;
          if (fileText.charAt(0) == '!') {
             combinedParser = new CiscoCombinedParser(fileText,
@@ -1622,7 +1621,7 @@ public class Batfish implements AutoCloseable {
             throw new BatfishException("Unknown configuration format");
          }
          tree = parse(combinedParser, currentPath);
-         walker.walk(extractor, tree);
+         extractor.processParseTree(tree);
          for (String warning : extractor.getWarnings()) {
             _logger.warn(warning);
          }
