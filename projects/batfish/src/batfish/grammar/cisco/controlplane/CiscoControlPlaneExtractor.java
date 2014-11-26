@@ -748,7 +748,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          int remoteAs = toInteger(ctx.asnum);
          _currentPeerGroup.setRemoteAS(remoteAs);
       }
-      //TODO: verify if this is correct for nexus
+      // TODO: verify if this is correct for nexus
       _currentPeerGroup.setActive(true);
       _currentPeerGroup.setShutdown(false);
    }
