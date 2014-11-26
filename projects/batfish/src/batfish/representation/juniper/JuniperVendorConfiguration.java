@@ -35,7 +35,6 @@ import batfish.representation.PolicyMapMatchNeighborLine;
 import batfish.representation.PolicyMapSetLocalPreferenceLine;
 import batfish.representation.PolicyMapSetMetricLine;
 import batfish.representation.PolicyMapSetNextHopLine;
-import batfish.representation.RouteFilterList;
 import batfish.representation.VendorConfiguration;
 import batfish.util.Util;
 
@@ -210,12 +209,12 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
          break;
 
       case FAMILY:
-         PolicyStatementMatchFamilyLine familyLine = (PolicyStatementMatchFamilyLine) jMatchLine;
+//         PolicyStatementMatchFamilyLine familyLine = (PolicyStatementMatchFamilyLine) jMatchLine;
          // TODO [P0]: need to fill in
          break;
 
       case INTERFACE:
-         PolicyStatementMatchInterfaceListLine interfaceLine = (PolicyStatementMatchInterfaceListLine) jMatchLine;
+//         PolicyStatementMatchInterfaceListLine interfaceLine = (PolicyStatementMatchInterfaceListLine) jMatchLine;
          // TODO [P0]: need to fill in
          break;
 
@@ -227,12 +226,12 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
          break;
 
       case PREFIX_LIST:
-         PolicyStatementMatchPrefixListLine prefixListLine = (PolicyStatementMatchPrefixListLine) jMatchLine;
+//         PolicyStatementMatchPrefixListLine prefixListLine = (PolicyStatementMatchPrefixListLine) jMatchLine;
          // TODO [P0]: need to fill in
          break;
 
       case PREFIX_LIST_FILTER:
-         PolicyStatementMatchPrefixListFilterLine prefixListFilterLine = (PolicyStatementMatchPrefixListFilterLine) jMatchLine;
+//         PolicyStatementMatchPrefixListFilterLine prefixListFilterLine = (PolicyStatementMatchPrefixListFilterLine) jMatchLine;
          // TODO [P0]: need to fill in
          break;
 
@@ -270,25 +269,25 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
          break;
 
       case RIB_FROM:
-         PolicyStatementMatchRibFromLine ribFromLine = (PolicyStatementMatchRibFromLine) jMatchLine;
+//         PolicyStatementMatchRibFromLine ribFromLine = (PolicyStatementMatchRibFromLine) jMatchLine;
          // TODO [P0]: need to fill in
          break;
 
       case RIB_TO:
-         PolicyStatementMatchRibToLine ribToLine = (PolicyStatementMatchRibToLine) jMatchLine;
+//         PolicyStatementMatchRibToLine ribToLine = (PolicyStatementMatchRibToLine) jMatchLine;
          // TODO [P0]: need to fill in
          break;
 
       case ROUTE_FILTER:
-         PolicyStatementMatchRouteFilterLine routeFilterLine = (PolicyStatementMatchRouteFilterLine) jMatchLine;
-         Set<RouteFilterList> newRouteFilterMatchSet = new LinkedHashSet<RouteFilterList>();
+//         PolicyStatementMatchRouteFilterLine routeFilterLine = (PolicyStatementMatchRouteFilterLine) jMatchLine;
+//         Set<RouteFilterList> newRouteFilterMatchSet = new LinkedHashSet<RouteFilterList>();
          // TODO [P0]: need to fill in
          // TODO [Ask Ari]: How to convert FilterMatch Types to what
          // intermediate form expects
          break;
 
       case SOURCE_ADDRESS_FILTER:
-         PolicyStatementMatchSourceAddressFilterLine sourceAddressFilterLine = (PolicyStatementMatchSourceAddressFilterLine) jMatchLine;
+//         PolicyStatementMatchSourceAddressFilterLine sourceAddressFilterLine = (PolicyStatementMatchSourceAddressFilterLine) jMatchLine;
          // TODO [P0]: need to fill in
          break;
 
@@ -306,7 +305,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
       switch (jSetLine.getType()) {
 
       case AS_PATH_PREPEND:
-         PolicyStatementSetAsPathPrepend AsPathPrependLine = (PolicyStatementSetAsPathPrepend) jSetLine;
+//         PolicyStatementSetAsPathPrepend AsPathPrependLine = (PolicyStatementSetAsPathPrepend) jSetLine;
          // TODO [P0]: need to fill in
          break;
       case COMMUNITY_ADD:
@@ -360,7 +359,7 @@ public class JuniperVendorConfiguration implements VendorConfiguration {
          sLine = new PolicyMapSetCommunityLine(setComList);
          break;
       case INSTALL_NEXT_HOP:
-         PolicyStatementSetInstallNextHopLine installNextHopLine = (PolicyStatementSetInstallNextHopLine) jSetLine;
+//         PolicyStatementSetInstallNextHopLine installNextHopLine = (PolicyStatementSetInstallNextHopLine) jSetLine;
          // TODO [P0]: need to fill in
          break;
       case LOCAL_PREF:

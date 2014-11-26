@@ -2,33 +2,47 @@ package batfish.representation.juniper;
 
 public class Martian {
 
+   private FilterMatch _filterMatch;
    private String _ipWithMask;
-   private FilterMatch _fm;
    private boolean _isAllowed;
-   private boolean _isIPV6;
-   
-   /* ------------------------------ Constructor ----------------------------*/
+   private boolean _isIpv6;
+
    public Martian() {
       _ipWithMask = "";
       _isAllowed = false;
-      _isIPV6 = false;
+      _isIpv6 = false;
    }
-   
-   /* ----------------------------- Other Methods ---------------------------*/
-   
-   /* ---------------------------- Getters/Setters --------------------------*/ 
-   public void set_ipWithMask (String i) {
-      _ipWithMask = i;      
+
+   public FilterMatch getFilterMatch() {
+      return _filterMatch;
    }
-   public void set_fm (FilterMatch f) {
-      _fm = f;   
+
+   public String getIpWithMask() {
+      return _ipWithMask;
    }
-   public void set_isAllowed (boolean i) {
-      _isAllowed = i;
+
+   public boolean getIsAllowed() {
+      return _isAllowed;
    }
-   public void set_isIPV6 (boolean i) {
-      _isIPV6 = i;
+
+   public boolean getIsIpv6() {
+      return _isIpv6;
    }
-   
-   /* --------------------------- Inherited Methods -------------------------*/  
+
+   public void setFilterMatch(FilterMatch filterMatch) {
+      _filterMatch = filterMatch;
+   }
+
+   public void setIpWithMask(String ipWithMask) {
+      _ipWithMask = ipWithMask;
+   }
+
+   public void setIsAllowed(boolean isAllowed) {
+      _isAllowed = isAllowed;
+   }
+
+   public void setIsIpv6(boolean isIpv6) {
+      _isIpv6 = isIpv6;
+   }
+
 }

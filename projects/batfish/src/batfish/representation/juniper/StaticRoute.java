@@ -22,24 +22,28 @@ public class StaticRoute implements Serializable {
       _distance = distance;
    }
 
-   public String getPrefix() {
-      return _prefix;
+   public int getDistance() {
+      return _distance;
    }
 
    public String getMask() {
       return _mask;
    }
 
-   public String getNextHopIp() {
-      return _nextHopIp;
-   }
-
    public String getNextHopInterface() {
       return _nextHopInterface;
    }
 
-   public int getDistance() {
-      return _distance;
+   public String getNextHopIp() {
+      return _nextHopIp;
+   }
+
+   public String getPrefix() {
+      return _prefix;
+   }
+
+   public int getTag() {
+      return _tag;
    }
 
 }

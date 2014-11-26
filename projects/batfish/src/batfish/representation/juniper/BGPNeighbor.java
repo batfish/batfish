@@ -29,8 +29,12 @@ public class BGPNeighbor implements Serializable {
       _remoteAS = remoteAS;
    }
 
-   public void setLocalAddress(String l) {
-      _localAddress = l;
+   public void setLocalAddress(String localAddress) {
+      _localAddress = localAddress;
+   }
+
+   public String getLocalAddress() {
+      return _localAddress;
    }
 
    public void setInboundPolicyStatement(List<String> name) {
