@@ -1,5 +1,8 @@
 parser grammar FlatJuniperGrammarParser;
 
+import
+FlatJuniperGrammarCommonParser, FlatJuniperGrammar_interfaces, FlatJuniperGrammar_isis, FlatJuniperGrammar_mpls, FlatJuniperGrammar_ospf, FlatJuniperGrammar_policy_options, FlatJuniperGrammar_routing_instances;
+
 options {
    superClass = 'batfish.grammar.BatfishParser';
    tokenVocab = FlatJuniperGrammarLexer;
@@ -9,50 +12,21 @@ options {
 package batfish.grammar.juniper;
 }
 
-color_statement
+configuration_ignored_substatement
 :
-   COLOR color = DEC
+   (
+      CHASSIS
+      | SYSTEM
+   ) ~NEWLINE*
 ;
 
-direction
+configuration_statement
 :
-   INPUT | OUTPUT
-;
-
-family
-:
-   INET
-   | MPLS
-;
-
-family_header
-:
-   FAMILY family
-;
-
-family_statement
-:
-   family_header family_tail
-;
-
-family_tail
-:
-   filter_statement
-;
-
-filter_header
-:
-   FILTER direction
-;
-
-filter_statement
-:
-   filter_header filter_tail
-;
-
-filter_tail
-:
-   VARIABLE
+   configuration_ignored_substatement
+   | interfaces_statement
+   | policy_options_statement
+   | protocols_statement
+   | routing_instances_statement
 ;
 
 groups_header
@@ -67,26 +41,7 @@ groups_statement
 
 groups_tail
 :
-   interfaces_statement
-;
-
-interfaces_header
-:
-   INTERFACES
-   (
-      wildcard
-      | name = VARIABLE
-   )
-;
-
-interfaces_statement
-:
-   interfaces_header interfaces_tail
-;
-
-interfaces_tail
-:
-   unit_statement
+   configuration_statement
 ;
 
 flat_juniper_configuration
@@ -94,33 +49,21 @@ flat_juniper_configuration
    set_statement+ EOF
 ;
 
-policy_options_statement
+protocols_ignored_substatement
 :
-   POLICY_OPTIONS policy_options_tail
-;
-
-policy_options_tail
-:
-   policy_statement_statement
-;
-
-policy_statement_header
-:
-   POLICY_STATEMENT
+   PROTOCOLS
    (
-      wildcard
-      | name = VARIABLE
-   )
+      LDP
+      | RSVP
+   ) ~NEWLINE*
 ;
 
-policy_statement_statement
+protocols_statement
 :
-   policy_statement_header policy_statement_tail
-;
-
-policy_statement_tail
-:
-   term_statement
+   protocols_ignored_substatement
+   | protocols_isis_statement
+   | protocols_mpls_statement
+   | protocols_ospf_statement
 ;
 
 set_statement
@@ -131,59 +74,12 @@ set_statement
 set_tail
 :
    groups_statement
-;
-
-term_header
-:
-   TERM VARIABLE
-;
-
-term_statement
-:
-   term_header term_tail
-;
-
-term_tail
-:
-   then_statement
-;
-
-then_statement
-:
-   THEN then_tail
-;
-
-then_tail
-:
-   color_statement
-;
-
-unit_header
-:
-   UNIT
-   (
-      wildcard
-      | name = VARIABLE
-   )
-;
-
-unit_statement
-:
-   unit_header unit_tail
-;
-
-unit_tail
-:
-   family_statement
+   | configuration_statement
+   | version_statement
 ;
 
 version_statement
 :
    VERSION M_Version_VERSION_STRING
-;
-
-wildcard
-:
-   WILDCARD_OPEN WILDCARD WILDCARD_CLOSE
 ;
 

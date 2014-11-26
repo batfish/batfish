@@ -317,6 +317,13 @@
                <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammarParser.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammarLexer.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammarLexer.tokens"/>
+               <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammarCommonParser.g4"/>
+               <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammar_interfaces.g4"/>
+               <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammar_isis.g4"/>
+               <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammar_mpls.g4"/>
+               <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammar_ospf.g4"/>
+               <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammar_policy_options.g4"/>
+               <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammar_routing_instances.g4"/>
             </dependencies>
          </antlr4parser>
          <antlr4parser grammar.name="JuniperGrammarParser" grammar.packagedir="batfish/grammar/juniper">

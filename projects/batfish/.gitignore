@@ -22,3 +22,6 @@ ConcretizerQueryResultLexer*.java
 LogiQLParser*.java
 LogiQLLexer*.java
 cygwin-symlink-restore-data
+ant-contrib
+ant-doxygen
+one-jar

@@ -136,6 +136,11 @@ BACKUP_ROUTER
    'backup-router'
 ;
 
+BANDWIDTH
+:
+   'bandwidth'
+;
+
 BFD
 :
    'bfd'
@@ -654,6 +659,11 @@ MAX_CONFIGURATIONS_ON_FLASH
 MAX_CONFIGURATION_ROLLBACKS
 :
    'max-configuration-rollbacks'
+;
+
+MAXIMUM_LABELS
+:
+   'maximum-labels'
 ;
 
 METRIC

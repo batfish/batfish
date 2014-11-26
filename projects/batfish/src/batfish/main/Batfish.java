@@ -66,8 +66,8 @@ import batfish.grammar.ControlPlaneExtractor;
 import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.cisco.CiscoCombinedParser;
 import batfish.grammar.cisco.controlplane.CiscoControlPlaneExtractor;
+import batfish.grammar.juniper.FlatJuniperGrammarCombinedParser;
 import batfish.grammar.juniper.JuniperControlPlaneExtractor;
-import batfish.grammar.juniper.JuniperGrammarCombinedParser;
 import batfish.grammar.logicblox.LogQLPredicateInfoExtractor;
 import batfish.grammar.logicblox.LogiQLCombinedParser;
 import batfish.grammar.logicblox.LogiQLPredicateInfoResolver;
@@ -1608,7 +1608,7 @@ public class Batfish implements AutoCloseable {
                   _settings.getPedantic());
          }
          else if (fileText.charAt(0) == '#') {
-            combinedParser = new JuniperGrammarCombinedParser(fileText,
+            combinedParser = new FlatJuniperGrammarCombinedParser(fileText,
                   _settings.getThrowOnParserError(),
                   _settings.getThrowOnLexerError());
             extractor = new JuniperControlPlaneExtractor(fileText,
