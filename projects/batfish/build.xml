@@ -106,6 +106,8 @@
       <delete>
          <fileset dir="src" includes="**/*.tokens"/>
          <fileset dir="src" includes="batfish/grammar/cisco/CiscoGrammar*.java"/>
+         <fileset dir="src" includes="batfish/grammar/juniper/FlatJuniperGrammarLexer*.java"/>
+         <fileset dir="src" includes="batfish/grammar/juniper/FlatJuniperGrammarParser*.java"/>
          <fileset dir="src" includes="batfish/grammar/juniper/JuniperGrammarLexer*.java"/>
          <fileset dir="src" includes="batfish/grammar/juniper/JuniperGrammarParser*.java"/>
          <fileset dir="src" includes="batfish/grammar/topology/RoleParserParser*.java"/>
@@ -249,6 +251,7 @@
          <antlr4lexer grammar.name="BatfishTopologyLexer" grammar.packagedir="batfish/grammar/topology"/>
          <antlr4lexer grammar.name="CiscoGrammarCommonLexer" grammar.packagedir="batfish/grammar/cisco"/>
          <antlr4lexer grammar.name="JuniperGrammarLexer" grammar.packagedir="batfish/grammar/juniper"/>
+         <antlr4lexer grammar.name="FlatJuniperGrammarLexer" grammar.packagedir="batfish/grammar/juniper"/>
          <antlr4lexer grammar.name="RoleLexer" grammar.packagedir="batfish/grammar/topology"/>
          <antlr4lexer grammar.name="GNS3TopologyLexer" grammar.packagedir="batfish/grammar/topology"/>
          <antlr4lexer grammar.name="DatalogQueryResultLexer" grammar.packagedir="batfish/grammar/z3"/>
@@ -307,6 +310,13 @@
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_ospf.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_rip.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoGrammar_routemap.g4"/>
+            </dependencies>
+         </antlr4parser>
+         <antlr4parser grammar.name="FlatJuniperGrammarParser" grammar.packagedir="batfish/grammar/juniper">
+            <dependencies>
+               <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammarParser.g4"/>
+               <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammarLexer.g4"/>
+               <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammarLexer.tokens"/>
             </dependencies>
          </antlr4parser>
          <antlr4parser grammar.name="JuniperGrammarParser" grammar.packagedir="batfish/grammar/juniper">
