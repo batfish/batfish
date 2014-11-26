@@ -1677,19 +1677,19 @@ MAC_ADDRESS
 :
    F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit
    ':' F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':' F_HexDigit
-   F_HexDigit
+   F_HexDigit -> popMode
+;
+
+M_MacAddress_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
 ;
 
 mode M_Version;
 
-M_Version_SEMICOLON
-:
-   ';' -> type(SEMICOLON), popMode
-;
-
 M_Version_VERSION_STRING
 :
-   ~[ \t\u000C\r\n;]+
+   ~[ \t\u000C\r\n;]+ -> popMode
 ;
 
 M_Version_WS
