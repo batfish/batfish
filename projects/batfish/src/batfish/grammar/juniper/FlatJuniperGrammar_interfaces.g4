@@ -6,35 +6,10 @@ options {
    tokenVocab = FlatJuniperGrammarLexer;
 }
 
-address_ifamt
-:
-   ADDRESS IP_ADDRESS_WITH_MASK
-;
-
-apply_groups_it
-:
-   apply_groups_statement
-;
-
-description_it
-:
-   description_statement
-;
-
-description_ut
-:
-   description_statement
-;
-
 direction
 :
    INPUT
    | OUTPUT
-;
-
-disable_it
-:
-   DISABLE
 ;
 
 family
@@ -43,26 +18,39 @@ family
    | MPLS
 ;
 
-family_ut_header
+famt_inet
 :
-   FAMILY
+   INET famt_inet_tail
 ;
 
-family_ut
+famt_inet_tail
 :
-   family_ut_header family_ut_tail
+   ifamt_address
+   | ifamt_filter
+   | ifamt_no_redirects
 ;
 
-family_ut_tail
+famt_inet6
 :
-   inet_famt
-   | inet6_famt
-   | mpls_famt
+   INET6 ~NEWLINE*
 ;
 
-filter_ifamt
+famt_mpls
 :
-   filter_statement
+   MPLS famt_mpls_tail
+;
+
+famt_mpls_tail
+:
+// intentional blank alternative
+
+   | mfamt_filter
+   | mfamt_maximum_labels
+;
+
+filter
+:
+   filter_header filter_tail
 ;
 
 filter_header
@@ -70,39 +58,97 @@ filter_header
    FILTER direction
 ;
 
-filter_mfamt
-:
-   filter_statement
-;
-
-filter_statement
-:
-   filter_header filter_tail
-;
-
 filter_tail
 :
    VARIABLE
 ;
 
-inet_famt
+ifamt_address
 :
-   INET inet_famt_tail
+   ADDRESS IP_ADDRESS_WITH_MASK (PRIMARY | PREFERRED)?
 ;
 
-inet_famt_tail
+ifamt_filter
 :
-   address_ifamt
-   | filter_ifamt
-   | no_redirects_ifamt
+   filter
 ;
 
-inet6_famt
+ifamt_no_redirects
 :
-   INET6 ~NEWLINE*
+   NO_REDIRECTS
 ;
 
-interfaces_header
+it_apply_groups
+:
+   s_apply_groups
+;
+
+it_description
+:
+   s_description
+;
+
+it_disable
+:
+   DISABLE
+;
+
+it_mtu
+:
+   MTU size = DEC
+;
+
+it_null
+:
+   (
+      AGGREGATED_ETHER_OPTIONS
+      | GIGETHER_OPTIONS
+   ) ~NEWLINE*
+;
+
+it_unit
+:
+   it_unit_header it_unit_tail
+;
+
+it_unit_header
+:
+   UNIT
+   (
+      wildcard
+      | num = DEC
+   )
+;
+
+it_unit_tail
+:
+   ut_description
+   | ut_family
+   | ut_null
+   | ut_vlan_id
+;
+
+it_vlan_tagging
+:
+   VLAN_TAGGING
+;
+
+mfamt_filter
+:
+   filter
+;
+
+mfamt_maximum_labels
+:
+   MAXIMUM_LABELS num = DEC
+;
+
+s_interfaces
+:
+   s_interfaces_header s_interfaces_tail
+;
+
+s_interfaces_header
 :
    INTERFACES
    (
@@ -113,82 +159,40 @@ interfaces_header
    )
 ;
 
-interfaces_statement
+s_interfaces_tail
 :
-   interfaces_header interfaces_tail
+   it_apply_groups
+   | it_description
+   | it_disable
+   | it_mtu
+   | it_null
+   | it_unit
+   | it_vlan_tagging
 ;
 
-interfaces_tail
+ut_description
 :
-   apply_groups_it
-   | description_it
-   | disable_it
-   | mtu_it
-   | null_it
-   | unit_it
-   | vlan_tagging_it
+   s_description
 ;
 
-maximum_labels_mfamt
+ut_family
 :
-   MAXIMUM_LABELS num = DEC
+   FAMILY ut_family_tail
 ;
 
-mpls_famt
+ut_family_tail
 :
-   MPLS mpls_famt_tail
+   famt_inet
+   | famt_inet6
+   | famt_mpls
 ;
 
-mpls_famt_tail
-:
-// intentional blank alternative
-
-   | filter_mfamt
-   | maximum_labels_mfamt
-;
-
-mtu_it
-:
-   MTU size = DEC
-;
-
-no_redirects_ifamt
-:
-   NO_REDIRECTS
-;
-
-null_it
-:
-   AGGREGATED_ETHER_OPTIONS ~NEWLINE*
-;
-
-null_ut
+ut_null
 :
    BANDWIDTH ~NEWLINE*
 ;
 
-unit_it_header
+ut_vlan_id
 :
-   UNIT
-   (
-      wildcard
-      | num = DEC
-   )
-;
-
-unit_it
-:
-   unit_it_header unit_it_tail
-;
-
-unit_it_tail
-:
-   description_ut
-   | family_ut
-   | null_ut
-;
-
-vlan_tagging_it
-:
-   VLAN_TAGGING
+   VLAN_ID id = DEC
 ;

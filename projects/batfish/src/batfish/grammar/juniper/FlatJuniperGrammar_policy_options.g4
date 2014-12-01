@@ -6,38 +6,22 @@ options {
    tokenVocab = FlatJuniperGrammarLexer;
 }
 
-color_tht
-:
-   COLOR color = DEC
-;
-
-from_tt
-:
-   FROM from_tt_tail
-;
-
-from_tt_tail
-:
-   interface_from_tail
-   | protocol_from_tail
-;
-
-interface_from_tail
+fromt_interface
 :
    INTERFACE VARIABLE
 ;
 
-policy_options_statement
+fromt_protocol
 :
-   POLICY_OPTIONS policy_options_tail
+   PROTOCOL protocol
 ;
 
-policy_options_tail
+pot_policy_statement
 :
-   policy_statement_pot
+   pot_policy_statement_header pot_policy_statement_tail
 ;
 
-policy_statement_pot_header
+pot_policy_statement_header
 :
    POLICY_STATEMENT
    (
@@ -46,14 +30,9 @@ policy_statement_pot_header
    )
 ;
 
-policy_statement_pot
+pot_policy_statement_tail
 :
-   policy_statement_pot_header policy_statement_pot_tail
-;
-
-policy_statement_pot_tail
-:
-   term_pst
+   pst_term
 ;
 
 protocol
@@ -61,12 +40,12 @@ protocol
    DIRECT
 ;
 
-protocol_from_tail
+pst_term
 :
-   PROTOCOL protocol
+   pst_term_header pst_term_tail
 ;
 
-term_pst_header
+pst_term_header
 :
    TERM
    (
@@ -75,24 +54,44 @@ term_pst_header
    )
 ;
 
-term_pst
+pst_term_tail
 :
-   term_pst_header term_pst_tail
+   tt_from
+   | tt_then
 ;
 
-term_pst_tail
+s_policy_options
 :
-   from_tt
-   | then_tt
+   POLICY_OPTIONS s_policy_options_tail
 ;
 
-then_tt
+s_policy_options_tail
 :
-   THEN then_tt_tail
+   pot_policy_statement
 ;
 
-then_tt_tail
+tht_color
 :
-   color_tht
+   COLOR color = DEC
 ;
 
+tt_from
+:
+   FROM tt_from_tail
+;
+
+tt_from_tail
+:
+   fromt_interface
+   | fromt_protocol
+;
+
+tt_then
+:
+   THEN tt_then_tail
+;
+
+tt_then_tail
+:
+   tht_color
+;

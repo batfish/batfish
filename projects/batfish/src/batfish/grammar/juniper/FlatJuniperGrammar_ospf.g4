@@ -6,7 +6,7 @@ options {
    tokenVocab = FlatJuniperGrammarLexer;
 }
 
-protocols_ospf_statement
+s_protocols_ospf
 :
    PROTOCOLS OSPF ~NEWLINE*
 ;

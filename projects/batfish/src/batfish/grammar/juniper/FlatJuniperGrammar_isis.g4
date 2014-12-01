@@ -6,7 +6,7 @@ options {
    tokenVocab = FlatJuniperGrammarLexer;
 }
 
-protocols_isis_statement
+s_protocols_isis
 :
    PROTOCOLS ISIS ~NEWLINE*
 ;

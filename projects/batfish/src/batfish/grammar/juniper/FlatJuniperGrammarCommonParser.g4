@@ -4,14 +4,14 @@ options {
    tokenVocab = FlatJuniperGrammarLexer;
 }
 
-apply_groups_statement
+s_apply_groups
 :
-   APPLY_GROUPS name=VARIABLE
+   APPLY_GROUPS name = VARIABLE
 ;
 
-description_statement
+s_description
 :
-   DESCRIPTION description = DOUBLE_QUOTED_STRING
+   DESCRIPTION description = M_Description_DESCRIPTION?
 ;
 
 wildcard

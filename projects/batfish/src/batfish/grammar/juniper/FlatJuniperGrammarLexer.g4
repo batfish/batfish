@@ -76,6 +76,11 @@ ALLOW
    'allow'
 ;
 
+ALWAYS_COMPARE_MED
+:
+   'always-compare-med'
+;
+
 APPLY_GROUPS
 :
    'apply-groups'
@@ -199,6 +204,10 @@ COLOR
 COMMUNITY
 :
    'community'
+   {
+      enableIPV6_ADDRESS = false;
+   }
+
 ;
 
 CONNECTIONS
@@ -233,7 +242,7 @@ DELETE
 
 DESCRIPTION
 :
-   'description'
+   'description' -> pushMode ( M_Description )
 ;
 
 DESTINATION_ADDRESS
@@ -299,6 +308,11 @@ ETHERNET_SWITCHING
 ETHERNET_SWITCHING_OPTIONS
 :
    'ethernet-switching-options'
+;
+
+EVENT_OPTIONS
+:
+   'event-options'
 ;
 
 EXACT
@@ -643,7 +657,7 @@ LSP
 
 MAC
 :
-   'mac' -> pushMode(M_MacAddress)
+   'mac' -> pushMode ( M_MacAddress )
 ;
 
 MARTIANS
@@ -796,6 +810,11 @@ NTP
    'ntp'
 ;
 
+OPTIONS
+:
+   'options'
+;
+
 ORIGIN
 :
    'origin'
@@ -834,6 +853,11 @@ OUTER
 PASSIVE
 :
    'passive'
+;
+
+PATH_SELECTION
+:
+   'path-selection'
 ;
 
 PEER_AS
@@ -889,6 +913,11 @@ PORT_MODE
 PREFERENCE
 :
    'preference'
+;
+
+PREFERRED
+:
+   'preferred'
 ;
 
 PREFIX_LENGTH_RANGE
@@ -1233,7 +1262,7 @@ USER
 
 VERSION
 :
-   'version' -> pushMode(M_Version)
+   'version' -> pushMode ( M_Version )
 ;
 
 VIRTUAL_CHASSIS
@@ -1321,46 +1350,9 @@ VARIABLE
    )
 ;
 
-ARI_CHANGETHIS1
-:
-   'ss '
-   (
-      ~';'
-   )* ';'
-;
-
-ARI_CHANGETHIS2
-:
-   '802.3ad '
-   (
-      ~';'
-   )* ';'
-;
-
-ARI_CHANGETHIS3
-:
-   '.*3265.*'
-;
-
-ARI_CHANGETHIS4
-:
-   'ae4.202'
-;
-
 AMPERSAND
 :
    '&'
-;
-
-//TODO: fix this awful rule
-
-AS_NUM
-:
-   TARGET COLON DEC COLON DEC
-   | DEC COLON ASTERISK
-   | DEC COLON DEC
-   | DEC COLON DEC COLON DEC
-   | DEC COLON DEC 'L' COLON DEC
 ;
 
 ASTERISK
@@ -1396,6 +1388,14 @@ COLON
 COMMA
 :
    ','
+;
+
+COMMUNITY_LITERAL
+:
+   F_Digit
+   {!enableIPV6_ADDRESS}?
+
+   F_Digit* ':' F_Digit+
 ;
 
 DASH
@@ -1544,6 +1544,10 @@ MULTILINE_COMMENT
 NEWLINE
 :
    F_NewlineChar+
+   {
+      enableIPV6_ADDRESS = true;
+   }
+
 ;
 
 OPEN_BRACE
@@ -1588,7 +1592,7 @@ UNDERSCORE
 
 WILDCARD_OPEN
 :
-   '<' -> pushMode(M_Wildcard)
+   '<' -> pushMode ( M_Wildcard )
 ;
 
 WS
@@ -1651,6 +1655,12 @@ F_NonNewlineChar
 ;
 
 fragment
+F_NonWhitespaceChar
+:
+   ~[ \t\u000C\r\n]
+;
+
+fragment
 F_PositiveDigit
 :
    '1' .. '9'
@@ -1684,6 +1694,23 @@ fragment
 F_WhitespaceChar
 :
    [ \t\u000C]
+;
+
+mode M_Description;
+
+M_Description_DESCRIPTION
+:
+   F_NonWhitespaceChar F_NonNewlineChar*
+;
+
+M_Description_NEWLINE
+:
+   F_NewlineChar+ -> type ( NEWLINE ) , popMode
+;
+
+M_Description_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
 ;
 
 mode M_MacAddress;

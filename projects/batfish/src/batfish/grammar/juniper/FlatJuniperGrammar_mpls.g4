@@ -6,7 +6,7 @@ options {
    tokenVocab = FlatJuniperGrammarLexer;
 }
 
-protocols_mpls_statement
+s_protocols_mpls
 :
    PROTOCOLS MPLS ~NEWLINE*
 ;
