@@ -9,7 +9,7 @@ options {
 }
 
 @header {
-package batfish.grammar.juniper;
+package batfish.grammar.flatjuniper;
 }
 
 deactivate_line

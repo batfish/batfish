@@ -16,6 +16,30 @@ ribt_static
    rot_static
 ;
 
+rit_apply_groups
+:
+   s_apply_groups
+;
+
+rit_common
+:
+   rit_apply_groups
+   | rit_routing_options
+;
+
+rit_named_routing_instance
+:
+   (
+      wildcard
+      | name = variable
+   ) rit_named_routing_instance_tail
+;
+
+rit_named_routing_instance_tail
+:
+   rit_common
+;
+
 rit_routing_options
 :
    s_routing_options
@@ -99,21 +123,18 @@ rot_static
 
 s_routing_instances
 :
-   s_routing_instances_header s_routing_instances_tail
+   ROUTING_INSTANCES s_routing_instances_tail
 ;
 
 s_routing_instances_header
 :
    ROUTING_INSTANCES
-   (
-      wildcard
-      | name = VARIABLE
-   )
 ;
 
 s_routing_instances_tail
 :
-   rit_routing_options
+   rit_common
+   | rit_named_routing_instance
 ;
 
 s_routing_options

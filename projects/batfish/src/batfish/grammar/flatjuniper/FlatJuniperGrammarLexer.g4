@@ -5,7 +5,7 @@ options {
 }
 
 @header {
-package batfish.grammar.juniper;
+package batfish.grammar.flatjuniper;
 }
 
 @members {
@@ -74,6 +74,11 @@ AGGREGATE
 AGGREGATED_ETHER_OPTIONS
 :
    'aggregated-ether-options'
+;
+
+AH
+:
+   'ah'
 ;
 
 ALLOW
@@ -164,6 +169,16 @@ BFD_LIVENESS_DETECTION
 BGP
 :
    'bgp'
+;
+
+BOOTPC
+:
+   'bootpc'
+;
+
+BOOTPS
+:
+   'bootps'
 ;
 
 BRIDGE
@@ -265,9 +280,29 @@ DESTINATION_ADDRESS
    'destination-address'
 ;
 
+DESTINATION_HOST_UNKNOWN
+:
+   'destination-host-unknown'
+;
+
+DESTINATION_NETWORK_UNKNOWN
+:
+   'destination-network-unknown'
+;
+
 DESTINATION_PORT
 :
    'destination-port'
+;
+
+DESTINATION_UNREACHABLE
+:
+   'destination-unreachable'
+;
+
+DHCP
+:
+   'dhcp'
 ;
 
 DIRECT
@@ -300,9 +335,24 @@ DOMAIN_SEARCH
    'domain-search'
 ;
 
+DSCP
+:
+   'dscp'
+;
+
 DUMPONPANIC
 :
    'dump-on-panic'
+;
+
+ECHO_REPLY
+:
+   'echo-reply'
+;
+
+ECHO_REQUEST
+:
+   'echo-request'
 ;
 
 ENABLE
@@ -313,6 +363,11 @@ ENABLE
 ENCAPSULATION
 :
    'encapsulation'
+;
+
+ESP
+:
+   'esp'
 ;
 
 ETHERNET_SWITCHING
@@ -338,6 +393,11 @@ EXACT
 EXCEPT
 :
    'except'
+;
+
+EXP
+:
+   'exp'
 ;
 
 EXPORT
@@ -395,6 +455,11 @@ FLOW
    'flow'
 ;
 
+FORWARDING_CLASS
+:
+   'forwarding-class'
+;
+
 FORWARDING_OPTIONS
 :
    'forwarding-options'
@@ -403,6 +468,11 @@ FORWARDING_OPTIONS
 FORWARDING_TABLE
 :
    'forwarding-table'
+;
+
+FRAGMENTATION_NEEDED
+:
+   'fragmentation-needed'
 ;
 
 FRAMING
@@ -435,6 +505,11 @@ GRACEFUL_RESTART
    'graceful-restart'
 ;
 
+GRE
+:
+   'gre'
+;
+
 GROUP
 :
    'group'
@@ -460,14 +535,29 @@ HOST_NAME
    'host-name'
 ;
 
+HOST_UNREACHABLE
+:
+   'host-unreachable'
+;
+
 ICMP
 :
    'icmp'
 ;
 
+ICMP_CODE
+:
+   'icmp-code'
+;
+
 ICMP_TYPE
 :
    'icmp-type'
+;
+
+ICMPV6
+:
+   'icmpv6'
 ;
 
 IGMP
@@ -563,6 +653,11 @@ INTERFACE
 INTERFACE_MODE
 :
    'interface-mode'
+;
+
+INTERFACE_SPECIFIC
+:
+   'interface-specific'
 ;
 
 INTERFACES
@@ -780,9 +875,24 @@ NEIGHBOR
    'neighbor'
 ;
 
+NEIGHBOR_ADVERTISEMENT
+:
+   'neighbor-advertisement'
+;
+
+NEIGHBOR_SOLICIT
+:
+   'neighbor-solicit'
+;
+
 NETWORK_SUMMARY_EXPORT
 :
    'network-summary-export'
+;
+
+NETWORK_UNREACHABLE
+:
+   'network-unreachable'
 ;
 
 NEXT
@@ -895,6 +1005,16 @@ OUTER
    'outer'
 ;
 
+PACKET_TOO_BIG
+:
+   'packet-too-big'
+;
+
+PARAMETER_PROBLEM
+:
+   'parameter-problem'
+;
+
 PASSIVE
 :
    'passive'
@@ -963,6 +1083,11 @@ PORTS
 PORT_MODE
 :
    'port-mode'
+;
+
+PORT_UNREACHABLE
+:
+   'port-unreachable'
 ;
 
 PREFERENCE
@@ -1175,6 +1300,11 @@ SOURCE_PREFIX_LIST
    'source-prefix-list'
 ;
 
+SOURCE_QUENCH
+:
+   'source-quench'
+;
+
 SSH
 :
    'ssh'
@@ -1235,6 +1365,11 @@ TCP
    'tcp'
 ;
 
+TCP_ESTABLISHED
+:
+   'tcp-established'
+;
+
 TCP_FLAGS
 :
    'tcp-flags'
@@ -1268,6 +1403,11 @@ THEN
 THROUGH
 :
    'through'
+;
+
+TIME_EXCEEDED
+:
+   'time-exceeded'
 ;
 
 TIME_ZONE
@@ -1318,6 +1458,11 @@ UNICAST
 UNIT
 :
    'unit'
+;
+
+UNREACHABLE
+:
+   'unreachable'
 ;
 
 UPTO
@@ -1378,6 +1523,11 @@ VLAN_TAGGING
 VPLS
 :
    'vpls'
+;
+
+VRRP
+:
+   'vrrp'
 ;
 
 VSTP

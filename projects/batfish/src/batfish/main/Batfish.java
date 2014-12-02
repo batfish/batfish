@@ -66,8 +66,8 @@ import batfish.grammar.ControlPlaneExtractor;
 import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.cisco.CiscoCombinedParser;
 import batfish.grammar.cisco.controlplane.CiscoControlPlaneExtractor;
-import batfish.grammar.juniper.FlatJuniperGrammarCombinedParser;
-import batfish.grammar.juniper.JuniperControlPlaneExtractor;
+import batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
+import batfish.grammar.flatjuniper.FlatJuniperGrammarCombinedParser;
 import batfish.grammar.logicblox.LogQLPredicateInfoExtractor;
 import batfish.grammar.logicblox.LogiQLCombinedParser;
 import batfish.grammar.logicblox.LogiQLPredicateInfoResolver;
@@ -1611,7 +1611,7 @@ public class Batfish implements AutoCloseable {
             combinedParser = new FlatJuniperGrammarCombinedParser(fileText,
                   _settings.getThrowOnParserError(),
                   _settings.getThrowOnLexerError());
-            extractor = new JuniperControlPlaneExtractor(fileText,
+            extractor = new FlatJuniperControlPlaneExtractor(fileText,
                   combinedParser, _settings.getRulesWithSuppressedWarnings());
          }
          else if (fileText.length() == 0) {
