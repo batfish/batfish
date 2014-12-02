@@ -8,5 +8,5 @@ options {
 
 s_protocols_ospf
 :
-   PROTOCOLS OSPF ~NEWLINE*
+   OSPF ~NEWLINE*
 ;

@@ -1,7 +1,7 @@
 parser grammar FlatJuniperGrammarParser;
 
 import
-FlatJuniperGrammarCommonParser, FlatJuniperGrammar_bgp, FlatJuniperGrammar_interfaces, FlatJuniperGrammar_isis, FlatJuniperGrammar_mpls, FlatJuniperGrammar_ospf, FlatJuniperGrammar_policy_options, FlatJuniperGrammar_routing_instances;
+FlatJuniperGrammarCommonParser, FlatJuniperGrammar_bgp, FlatJuniperGrammar_firewall, FlatJuniperGrammar_interfaces, FlatJuniperGrammar_isis, FlatJuniperGrammar_mpls, FlatJuniperGrammar_ospf, FlatJuniperGrammar_policy_options, FlatJuniperGrammar_routing_instances;
 
 options {
    superClass = 'batfish.grammar.BatfishParser';
@@ -12,14 +12,23 @@ options {
 package batfish.grammar.juniper;
 }
 
+deactivate_line
+:
+   DEACTIVATE set_line_tail NEWLINE
+;
+
 flat_juniper_configuration
 :
-   set_line+ EOF
+   (
+      deactivate_line
+      | set_line
+   )+ EOF
 ;
 
 statement
 :
-   s_interfaces
+   s_firewall
+   | s_interfaces
    | s_null
    | s_policy_options
    | s_protocols
@@ -46,6 +55,7 @@ s_null
 :
    (
       CHASSIS
+      | CLASS_OF_SERVICE
       | EVENT_OPTIONS
       | FORWARDING_OPTIONS
       | SNMP
@@ -69,9 +79,11 @@ s_protocols_tail
 
 s_protocols_null
 :
-   PROTOCOLS
    (
-      LDP
+      BFD
+      | LDP
+      | LLDP
+      | PIM
       | RSVP
    ) ~NEWLINE*
 ;

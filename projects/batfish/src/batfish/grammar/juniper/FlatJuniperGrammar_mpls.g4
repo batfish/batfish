@@ -8,5 +8,5 @@ options {
 
 s_protocols_mpls
 :
-   PROTOCOLS MPLS ~NEWLINE*
+   MPLS ~NEWLINE*
 ;

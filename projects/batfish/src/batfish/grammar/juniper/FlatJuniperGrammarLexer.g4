@@ -61,6 +61,11 @@ ADDRESS_MASK
    'address-mask'
 ;
 
+ADVERTISE_INACTIVE
+:
+   'advertise-inactive'
+;
+
 AGGREGATE
 :
    'aggregate'
@@ -215,6 +220,11 @@ CONNECTIONS
    'connections'
 ;
 
+COS_NEXT_HOP_MAP
+:
+   'cos-next-hop-map'
+;
+
 COUNT
 :
    'count'
@@ -225,9 +235,14 @@ DAMPING
    'damping'
 ;
 
-DATA_REMOVED
+DEACTIVATE
 :
-   'Data Removed'
+   'deactivate'
+;
+
+DEFAULT_ACTION
+:
+   'default-action'
 ;
 
 DEFAULTS
@@ -335,6 +350,11 @@ EXPORT_RIB
    'export-rib'
 ;
 
+EXPRESSION
+:
+   'expression'
+;
+
 EXTERNAL
 :
    'external'
@@ -368,6 +388,11 @@ FIREWALL
 FLEXIBLE_VLAN_TAGGING
 :
    'flexible-vlan-tagging'
+;
+
+FLOW
+:
+   'flow'
 ;
 
 FORWARDING_OPTIONS
@@ -685,6 +710,11 @@ METRIC
    'metric'
 ;
 
+METRIC2
+:
+   'metric2'
+;
+
 METRIC_OUT
 :
    'metric-out'
@@ -692,7 +722,7 @@ METRIC_OUT
 
 MEMBERS
 :
-   'members'
+   'members' -> pushMode(M_Members)
 ;
 
 MLD
@@ -730,6 +760,11 @@ MULTIPATH
    'multipath'
 ;
 
+MULTIPLIER
+:
+   'multiplier'
+;
+
 NAME_SERVER
 :
    'name-server'
@@ -753,6 +788,11 @@ NETWORK_SUMMARY_EXPORT
 NEXT
 :
    'next'
+;
+
+NEXT_HEADER
+:
+   'next-header'
 ;
 
 NEXT_HOP
@@ -810,6 +850,11 @@ NTP
    'ntp'
 ;
 
+OFFSET
+:
+   'offset'
+;
+
 OPTIONS
 :
    'options'
@@ -860,6 +905,11 @@ PATH_SELECTION
    'path-selection'
 ;
 
+PEER_ADDRESS
+:
+   'peer-address'
+;
+
 PEER_AS
 :
    'peer-as'
@@ -900,6 +950,11 @@ POLICY_STATEMENT
    'policy-statement'
 ;
 
+PORT
+:
+   'port'
+;
+
 PORTS
 :
    'ports'
@@ -923,6 +978,11 @@ PREFERRED
 PREFIX_LENGTH_RANGE
 :
    'prefix-length-range'
+;
+
+PREFIX_LIMIT
+:
+   'prefix-limit'
 ;
 
 PREFIX_LIST
@@ -1110,6 +1170,11 @@ SOURCE_PORT
    'source-port'
 ;
 
+SOURCE_PREFIX_LIST
+:
+   'source-prefix-list'
+;
+
 SSH
 :
    'ssh'
@@ -1168,6 +1233,11 @@ TARGETED_BROADCAST
 TCP
 :
    'tcp'
+;
+
+TCP_FLAGS
+:
+   'tcp-flags'
 ;
 
 TCP_MSS
@@ -1238,6 +1308,11 @@ TYPE
 UDP
 :
    'udp'
+;
+
+UNICAST
+:
+   'unicast'
 ;
 
 UNIT
@@ -1311,6 +1386,14 @@ VSTP
 ;
 
 // End of Juniper keywords
+
+COMMUNITY_LITERAL
+:
+   F_Digit
+   {!enableIPV6_ADDRESS}?
+
+   F_Digit* ':' F_Digit+
+;
 
 VARIABLE
 :
@@ -1390,14 +1473,6 @@ COMMA
    ','
 ;
 
-COMMUNITY_LITERAL
-:
-   F_Digit
-   {!enableIPV6_ADDRESS}?
-
-   F_Digit* ':' F_Digit+
-;
-
 DASH
 :
    '-'
@@ -1412,6 +1487,16 @@ DEC
 DOLLAR
 :
    '$'
+;
+
+DOUBLE_AMPERSAND
+:
+   '&&'
+;
+
+DOUBLE_PIPE
+:
+   '||'
 ;
 
 DOUBLE_QUOTED_STRING
@@ -1441,17 +1526,6 @@ GREATER_THAN
 HEX
 :
    '0x' F_HexDigit+
-;
-
-INFO_REMOVED
-:
-   (
-      'Authentication ' DATA_REMOVED
-   ) // TODO: why doesnt this work with variable
-   {
-                    skip();
-                   }
-
 ;
 
 IP_ADDRESS
@@ -1494,6 +1568,9 @@ IPV6_ADDRESS
    )
    (
       F_HexDigit+
+   )?
+   (
+     F_Digit+ '.' F_Digit+ '.' F_Digit+ '.' F_Digit+ 
    )?
 ;
 
@@ -1617,29 +1694,19 @@ F_DecByte
 fragment
 F_Digit
 :
-   '0' .. '9'
+   [0-9]
 ;
 
 fragment
 F_HexDigit
 :
-   (
-      '0' .. '9'
-      | 'a' .. 'f'
-      | 'A' .. 'F'
-   )
+   [0-9a-fA-F]
 ;
 
 fragment
 F_Letter
 :
-   (
-      'A' .. 'Z'
-   )
-   |
-   (
-      'a' .. 'z'
-   )
+   [A-Za-z]
 ;
 
 fragment
@@ -1663,31 +1730,31 @@ F_NonWhitespaceChar
 fragment
 F_PositiveDigit
 :
-   '1' .. '9'
+   [1-9]
 ;
 
 fragment
 F_Variable_RequiredVarChar
 :
-   ~( '0' .. '9' | [ \t\n\r/.,-;{}<>[\]] )
+   ~[ 0-9\t\n\r/.,\-;{}<>[\]&|()"']
 ;
 
 fragment
 F_Variable_RequiredVarChar_Ipv6
 :
-   ~( '0' .. '9' | [ \t\n\r/.,-:;{}<>[\]] )
+   ~[ 0-9\t\n\r/.,\-:;{}<>[\]&|()"']
 ;
 
 fragment
 F_Variable_VarChar
 :
-   ~[ \t\n\r;{}<>[\]]
+   ~[ \t\n\r;{}<>[\]&|()"']
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~[ \t\n\r:;{}<>[\]]
+   ~[ \t\n\r:;{}<>[\]&|()"']
 ;
 
 fragment
@@ -1723,6 +1790,33 @@ MAC_ADDRESS
 ;
 
 M_MacAddress_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_Members;
+
+NO_ADVERTISE
+:
+   'no-advertise'
+;
+
+COMMUNITY_REGEX
+:
+   [0-9:[\]\-*.]+
+;
+
+M_Members_DOUBLE_QUOTE
+:
+   '"' -> channel(HIDDEN)
+;
+
+M_Members_NEWLINE
+:
+   F_NewlineChar+ -> type(NEWLINE), popMode
+;
+
+M_Members_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;

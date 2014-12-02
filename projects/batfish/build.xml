@@ -319,6 +319,7 @@
                <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammarLexer.tokens"/>
                <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammarCommonParser.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammar_bgp.g4"/>
+               <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammar_firewall.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammar_interfaces.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammar_isis.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="FlatJuniperGrammar_mpls.g4"/>
