@@ -199,7 +199,7 @@ pot_policy_statement_header
 :
    POLICY_STATEMENT
    (
-      wildcard
+      WILDCARD
       | name = variable
    )
 ;
@@ -243,7 +243,7 @@ pst_term_header
 :
    TERM
    (
-      wildcard
+      WILDCARD
       | name = variable
    )
 ;

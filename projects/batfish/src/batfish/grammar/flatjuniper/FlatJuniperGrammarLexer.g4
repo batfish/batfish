@@ -1817,9 +1817,9 @@ UNDERSCORE
    '_'
 ;
 
-WILDCARD_OPEN
+WILDCARD
 :
-   '<' -> pushMode ( M_Wildcard )
+   '<' ~'>'* '>'
 ;
 
 WS
@@ -1981,16 +1981,4 @@ M_Version_VERSION_STRING
 M_Version_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
-;
-
-mode M_Wildcard;
-
-WILDCARD
-:
-   ~'>'+
-;
-
-WILDCARD_CLOSE
-:
-   '>' -> popMode
 ;

@@ -14,12 +14,18 @@ import batfish.representation.juniper.JuniperVendorConfiguration;
 
 public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
 
-   private List<String> _warnings;
    private JuniperVendorConfiguration _configuration;
+   private BatfishCombinedParser<?, ?> _parser;
+   private Set<String> _rulesWithSuppressedWarnings;
+   private String _text;
+   private List<String> _warnings;
 
    public FlatJuniperControlPlaneExtractor(String fileText,
          BatfishCombinedParser<?, ?> combinedParser,
          Set<String> rulesWithSuppressedWarnings) {
+      _text = fileText;
+      _parser = combinedParser;
+      _rulesWithSuppressedWarnings = rulesWithSuppressedWarnings;
       _warnings = new ArrayList<String>();
    }
 
@@ -36,14 +42,11 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
    @Override
    public void processParseTree(ParserRuleContext tree) {
       ParseTreeWalker walker = new ParseTreeWalker();
-      HierachyBuilder hb = new HierachyBuilder();
+      HierarchyBuilder hb = new HierarchyBuilder(_parser);
       walker.walk(hb, tree);
-      Hierarchy hierarchy = hb.getHierarchy();
       GroupPruner gp = new GroupPruner();
       walker.walk(gp, tree);
-      GroupApplicator ga = new GroupApplicator(hierarchy);
-      walker.walk(ga, tree);
-      ConfigurationBuilder cb = new ConfigurationBuilder();
+      ConfigurationBuilder cb = new ConfigurationBuilder(_parser, _text, _rulesWithSuppressedWarnings, _warnings);
       walker.walk(cb, tree);
       _configuration = cb.getConfiguration();
    }

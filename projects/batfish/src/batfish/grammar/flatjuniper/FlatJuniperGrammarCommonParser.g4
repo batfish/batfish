@@ -30,7 +30,7 @@ icmp_type
 
 s_apply_groups
 :
-   APPLY_GROUPS name = VARIABLE
+   APPLY_GROUPS name = variable
 ;
 
 s_description
@@ -93,10 +93,5 @@ subrange
 
 variable
 :
-   text = ~( NEWLINE | WILDCARD_OPEN )
-;
-
-wildcard
-:
-   WILDCARD_OPEN WILDCARD WILDCARD_CLOSE
+   text = ~( NEWLINE | WILDCARD )
 ;

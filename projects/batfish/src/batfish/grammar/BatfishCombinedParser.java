@@ -12,10 +12,13 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.PredictionMode;
 
+import batfish.main.BatfishException;
+
 public abstract class BatfishCombinedParser<P extends BatfishParser, L extends BatfishLexer> {
 
    private int _currentModeStart;
    private final List<String> _errors;
+   private String _input;
    private L _lexer;
    protected P _parser;
    private boolean _throwOnLexerError;
@@ -32,6 +35,7 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
       _currentModeStart = 0;
       _warnings = new ArrayList<String>();
       _errors = new ArrayList<String>();
+      _input = input;
       ANTLRInputStream inputStream = new ANTLRInputStream(input);
       try {
          _lexer = lClass.getConstructor(CharStream.class).newInstance(
@@ -40,7 +44,7 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
       catch (InstantiationException | IllegalAccessException
             | IllegalArgumentException | InvocationTargetException
             | NoSuchMethodException | SecurityException e) {
-         throw new Error(e);
+         throw new BatfishException("Error constructing lexer using reflection", e);
       }
       _lexer.initErrorListener(this);
       _tokens = new CommonTokenStream(_lexer);
@@ -61,11 +65,15 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
       return _errors;
    }
 
-   public BatfishLexer getLexer() {
+   public String getInput() {
+      return _input;
+   }
+
+   public L getLexer() {
       return _lexer;
    }
 
-   public BatfishParser getParser() {
+   public P getParser() {
       return _parser;
    }
 

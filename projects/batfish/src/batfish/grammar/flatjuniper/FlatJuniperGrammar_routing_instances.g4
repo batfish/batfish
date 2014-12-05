@@ -30,7 +30,7 @@ rit_common
 rit_named_routing_instance
 :
    (
-      wildcard
+      WILDCARD
       | name = variable
    ) rit_named_routing_instance_tail
 ;

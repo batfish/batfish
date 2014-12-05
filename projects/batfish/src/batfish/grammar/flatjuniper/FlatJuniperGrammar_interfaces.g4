@@ -115,7 +115,7 @@ it_unit_header
 :
    UNIT
    (
-      wildcard
+      WILDCARD
       | num = DEC
    )
 ;
@@ -152,7 +152,7 @@ s_interfaces_header
 :
    INTERFACES
    (
-      wildcard
+      WILDCARD
       | name = VARIABLE
       | // intentional blank
 

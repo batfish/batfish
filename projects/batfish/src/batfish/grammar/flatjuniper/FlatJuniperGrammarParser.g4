@@ -34,16 +34,17 @@ statement
    | s_protocols
    | s_routing_instances
    | s_routing_options
+   | s_system
 ;
 
 s_groups
 :
-   s_groups_header s_groups_tail
+   GROUPS s_groups_named
 ;
 
-s_groups_header
+s_groups_named
 :
-   GROUPS name = VARIABLE
+   name = variable s_groups_tail 
 ;
 
 s_groups_tail
@@ -59,7 +60,6 @@ s_null
       | EVENT_OPTIONS
       | FORWARDING_OPTIONS
       | SNMP
-      | SYSTEM
    ) ~NEWLINE*
 ;
 
@@ -88,6 +88,17 @@ s_protocols_null
    ) ~NEWLINE*
 ;
 
+s_system
+:
+   SYSTEM s_system_tail
+;
+
+s_system_tail
+:
+   st_host_name
+   | st_null
+;
+
 s_version
 :
    VERSION M_Version_VERSION_STRING
@@ -103,4 +114,28 @@ set_line_tail
    s_groups
    | statement
    | s_version
+;
+
+st_host_name
+:
+   HOST_NAME variable
+;
+
+st_null
+:
+   (
+      ACCOUNTING
+      | AUTHENTICATION_ORDER
+      | DOMAIN_NAME
+      | DOMAIN_SEARCH
+      | LOGIN
+      | NAME_SERVER
+      | NTP
+      | PORTS
+      | ROOT_AUTHENTICATION
+      | SERVICES
+      | SYSLOG
+      | TACPLUS_SERVER
+      | TIME_ZONE
+   ) ~NEWLINE*
 ;
