@@ -6,9 +6,39 @@ options {
    tokenVocab = FlatJuniperGrammarLexer;
 }
 
+gt_discard
+:
+   DISCARD
+;
+
+gt_policy
+:
+   POLICY policy = variable
+;
+
 rgt_import_rib
 :
    IMPORT_RIB rib = VARIABLE
+;
+
+ribt_generate
+:
+   ribt_generate_header ribt_generate_tail
+;
+
+ribt_generate_header
+:
+   GENERATE ROUTE
+   (
+      IP_ADDRESS_WITH_MASK
+      | IPV6_ADDRESS_WITH_MASK
+   )
+;
+
+ribt_generate_tail
+:
+   gt_discard
+   | gt_policy
 ;
 
 ribt_static
@@ -77,6 +107,7 @@ rot_null
 :
    (
       FORWARDING_TABLE
+      | MULTICAST
       | OPTIONS
    ) ~NEWLINE*
 ;
@@ -108,7 +139,8 @@ rot_rib_header
 
 rot_rib_tail
 :
-   ribt_static
+   ribt_generate
+   | ribt_static
 ;
 
 rot_router_id
@@ -118,7 +150,23 @@ rot_router_id
 
 rot_static
 :
-   STATIC ROUTE IP_ADDRESS_WITH_MASK DISCARD
+   rot_static_header rot_static_tail
+;
+
+rot_static_header
+:
+   STATIC ROUTE
+   (
+      IP_ADDRESS_WITH_MASK
+      | IPV6_ADDRESS_WITH_MASK
+   )
+;
+
+rot_static_tail
+:
+   srt_discard
+   | srt_next_hop
+   | srt_tag
 ;
 
 s_routing_instances
@@ -152,4 +200,23 @@ s_routing_options_tail
    | rot_rib_groups
    | rot_router_id
    | rot_static
+;
+
+srt_discard
+:
+   DISCARD
+;
+
+srt_next_hop
+:
+   NEXT_HOP
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   )
+;
+
+srt_tag
+:
+   TAG tag = DEC
 ;

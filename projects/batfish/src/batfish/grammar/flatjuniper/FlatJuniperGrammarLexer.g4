@@ -111,6 +111,11 @@ AREA
    'area'
 ;
 
+AREA_RANGE
+:
+   'area-range'
+;
+
 ARP
 :
    'arp'
@@ -131,6 +136,11 @@ AS_PATH_PREPEND
    'as-path-prepend'
 ;
 
+AUTHENTICATION
+:
+   'authentication'
+;
+
 AUTHENTICATION_KEY
 :
    'authentication-key'
@@ -144,6 +154,11 @@ AUTHENTICATION_ORDER
 AUTONOMOUS_SYSTEM
 :
    'autonomous-system'
+;
+
+AUTHENTICATION_TYPE
+:
+   'authentication-type'
 ;
 
 BACKUP_ROUTER
@@ -258,6 +273,16 @@ DEACTIVATE
 DEFAULT_ACTION
 :
    'default-action'
+;
+
+DEFAULT_LSA
+:
+   'default-lsa'
+;
+
+DEFAULT_METRIC
+:
+   'default-metric'
 ;
 
 DEFAULTS
@@ -670,6 +695,11 @@ INTERFACE_ROUTES
    'interface-routes'
 ;
 
+INTERFACE_TYPE
+:
+   'interface-type'
+;
+
 INTERNAL
 :
    'internal'
@@ -698,6 +728,16 @@ L2_CIRCUIT
 L2_VPN
 :
    'l2vpn'
+;
+
+LABEL_SWITCHED_PATH
+:
+   'label-switched-path'
+;
+
+LABELED_UNICAST
+:
+   'labeled-unicast'
 ;
 
 LICENSE
@@ -815,6 +855,11 @@ METRIC_OUT
    'metric-out'
 ;
 
+METRIC_TYPE
+:
+   'metric-type' -> pushMode(M_MetricType)
+;
+
 MEMBERS
 :
    'members' -> pushMode(M_Members)
@@ -853,6 +898,11 @@ MULTIHOP
 MULTIPATH
 :
    'multipath'
+;
+
+MULTIPLE_AS
+:
+   'multiple-as'
 ;
 
 MULTIPLIER
@@ -1003,6 +1053,16 @@ OUTPUT_VLAN_MAP
 OUTER
 :
    'outer'
+;
+
+OVERLOAD
+:
+   'overload'
+;
+
+P2P
+:
+   'p2p'
 ;
 
 PACKET_TOO_BIG
@@ -1425,6 +1485,11 @@ TRACEOPTIONS
    'traceoptions'
 ;
 
+TRAFFIC_ENGINEERING
+:
+   'traffic-engineering'
+;
+
 TRAPS
 :
    'traps'
@@ -1443,6 +1508,11 @@ TUNNEL
 TYPE
 :
    'type'
+;
+
+TYPE_7
+:
+   'type-7'
 ;
 
 UDP
@@ -1967,6 +2037,23 @@ M_Members_NEWLINE
 ;
 
 M_Members_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_MetricType;
+
+METRIC_TYPE_1
+:
+   '1' -> popMode
+;
+
+METRIC_TYPE_2
+:
+   '2' -> popMode
+;
+
+M_MetricType_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;

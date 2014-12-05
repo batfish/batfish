@@ -46,6 +46,7 @@ famt_mpls_tail
 
    | mfamt_filter
    | mfamt_maximum_labels
+   | mfamt_mtu
 ;
 
 filter
@@ -91,6 +92,11 @@ it_description
 it_disable
 :
    DISABLE
+;
+
+it_enable
+:
+   ENABLE
 ;
 
 it_mtu
@@ -143,6 +149,11 @@ mfamt_maximum_labels
    MAXIMUM_LABELS num = DEC
 ;
 
+mfamt_mtu
+:
+   MTU DEC
+;
+
 s_interfaces
 :
    s_interfaces_header s_interfaces_tail
@@ -164,6 +175,7 @@ s_interfaces_tail
    it_apply_groups
    | it_description
    | it_disable
+   | it_enable
    | it_mtu
    | it_null
    | it_unit

@@ -81,8 +81,10 @@ s_protocols_null
 :
    (
       BFD
+      | IGMP
       | LDP
       | LLDP
+      | MSDP
       | PIM
       | RSVP
    ) ~NEWLINE*

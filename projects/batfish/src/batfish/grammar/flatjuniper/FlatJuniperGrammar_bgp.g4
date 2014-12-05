@@ -6,6 +6,11 @@ options {
    tokenVocab = FlatJuniperGrammarLexer;
 }
 
+bfi6t_null
+:
+   LABELED_UNICAST ~NEWLINE*
+;
+
 bfi6t_unicast
 :
    UNICAST bfi6t_unicast_tail
@@ -63,7 +68,13 @@ bft_inet6
 
 bft_inet6_tail
 :
-   bfi6t_unicast
+   bfi6t_null
+   | bfi6t_unicast
+;
+
+bft_null
+:
+   INET_VPN ~NEWLINE*
 ;
 
 bt_advertise_inactive
@@ -90,6 +101,7 @@ bt_common
    | bt_null
    | bt_path_selection
    | bt_peer_as
+   | bt_remove_private
    | bt_type
 ;
 
@@ -112,6 +124,7 @@ bt_family_tail
 :
    bft_inet
    | bft_inet6
+   | bft_null
 ;
 
 bt_group
@@ -137,7 +150,11 @@ bt_import
 
 bt_local_address
 :
-   LOCAL_ADDRESS IP_ADDRESS
+   LOCAL_ADDRESS
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   )
 ;
 
 bt_local_as
@@ -147,7 +164,7 @@ bt_local_as
 
 bt_multipath
 :
-   MULTIPATH
+   MULTIPATH MULTIPLE_AS?
 ;
 
 bt_neighbor
@@ -174,7 +191,8 @@ bt_neighbor_tail
 bt_null
 :
    (
-      BFD_LIVENESS_DETECTION
+      AUTHENTICATION_KEY
+      | BFD_LIVENESS_DETECTION
       | LOG_UPDOWN
       | TRACEOPTIONS
    ) ~NEWLINE*
@@ -193,6 +211,11 @@ bt_path_selection_tail
 bt_peer_as
 :
    PEER_AS as = DEC
+;
+
+bt_remove_private
+:
+   'remove-private'
 ;
 
 bt_type
