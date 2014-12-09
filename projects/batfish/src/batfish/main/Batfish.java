@@ -1621,16 +1621,25 @@ public class Batfish implements AutoCloseable {
             throw new BatfishException("Unknown configuration format");
          }
          tree = parse(combinedParser, currentPath);
-         extractor.processParseTree(tree);
-         for (String warning : extractor.getWarnings()) {
-            _logger.warn(warning);
+         try {
+            extractor.processParseTree(tree);
+         }
+         catch (Exception e) {
+
+            throw new BatfishException(
+                  "Error post-processing parse tree of configuration file", e);
+         }
+         finally {
+            for (String warning : extractor.getWarnings()) {
+               _logger.warn(warning);
+            }
          }
          vc = extractor.getVendorConfiguration();
          // at this point we should have a VendorConfiguration vc
          String hostname = vc.getHostname();
          if (vendorConfigurations.containsKey(hostname))
-            throw new Error("Duplicate hostname \"" + vc.getHostname()
-                  + "\" found in " + currentFile + "\n");
+            throw new BatfishException("Duplicate hostname \""
+                  + vc.getHostname() + "\" found in " + currentFile + "\n");
          vendorConfigurations.put(vc.getHostname(), vc);
       }
       if (processingError) {

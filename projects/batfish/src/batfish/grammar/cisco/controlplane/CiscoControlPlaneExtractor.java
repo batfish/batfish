@@ -2082,7 +2082,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          throw new PedanticBatfishException(msg);
       }
       else {
-         _warnings.add(msg);
+         String prefix = "WARNING " + (_warnings.size() + 1) + ": PEDANTIC: ";
+         String warning = prefix + msg + "\n";
+         _warnings.add(warning);
       }
    }
 
