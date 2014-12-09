@@ -1327,6 +1327,11 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    @Override
+   public void exitMaximum_peers_bgp_tail(Maximum_peers_bgp_tailContext ctx) {
+      todo(ctx);
+   }
+
+   @Override
    public void exitNeighbor_rb_stanza(Neighbor_rb_stanzaContext ctx) {
       _currentDynamicPeerGroup = null;
       _currentIpPeerGroup = null;

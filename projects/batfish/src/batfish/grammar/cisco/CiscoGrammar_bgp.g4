@@ -99,6 +99,7 @@ bgp_tail
    | description_bgp_tail
    | distribute_list_bgp_tail
    | ebgp_multihop_bgp_tail
+   | maximum_peers_bgp_tail
    | network_bgp_tail
    | network6_bgp_tail
    | next_hop_self_bgp_tail
@@ -166,6 +167,11 @@ filter_list_bgp_tail
       IN
       | OUT
    ) NEWLINE
+;
+
+maximum_peers_bgp_tail
+:
+   MAXIMUM_PEERS DEC NEWLINE
 ;
 
 maximum_prefix_bgp_tail
