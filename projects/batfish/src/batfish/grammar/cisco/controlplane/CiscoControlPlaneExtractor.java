@@ -850,6 +850,9 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    @Override
    public void exitActivate_bgp_tail(Activate_bgp_tailContext ctx) {
+      if (_currentPeerGroup == null) {
+         return;
+      }
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
          _currentPeerGroup.setActive(true);
