@@ -213,8 +213,9 @@ null_block_stanza
       )
    ) ~NEWLINE* NEWLINE
    (
-      null_block_substanza
-      | description_line
+      description_line
+      | null_block_substanza
+      | null_vrf_substanza
    )*
 ;
 
@@ -866,6 +867,11 @@ null_stanza
       ) NEWLINE
    )
    | vrf_context_stanza
+;
+
+null_vrf_substanza
+:
+   VRF ~NEWLINE NEWLINE
 ;
 
 stanza
