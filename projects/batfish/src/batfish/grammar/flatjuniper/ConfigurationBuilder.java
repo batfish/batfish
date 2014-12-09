@@ -647,7 +647,7 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
 
    @Override
    public void enterIfamt_filter(Ifamt_filterContext ctx) {
-      // TODO Auto-generated method stub
+      assert Boolean.TRUE;
 
    }
 

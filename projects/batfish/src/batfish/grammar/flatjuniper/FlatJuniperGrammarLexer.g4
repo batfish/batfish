@@ -1440,6 +1440,11 @@ TCP_MSS
    'tcp-mss'
 ;
 
+TE_METRIC
+:
+   'te-metric'
+;
+
 TELNET
 :
    'telnet'

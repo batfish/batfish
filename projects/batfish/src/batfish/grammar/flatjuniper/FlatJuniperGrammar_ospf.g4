@@ -6,6 +6,11 @@ options {
    tokenVocab = FlatJuniperGrammarLexer;
 }
 
+ait_apply_groups_except
+:
+   s_apply_groups_except
+;
+
 ait_interface_type
 :
    INTERFACE_TYPE P2P
@@ -16,14 +21,27 @@ ait_metric
    METRIC DEC
 ;
 
+ait_null
+:
+   (
+      AUTHENTICATION
+      | BFD_LIVENESS_DETECTION
+   ) ~NEWLINE*
+;
+
+ait_passive
+:
+   PASSIVE
+;
+
+ait_te_metric
+:
+   TE_METRIC DEC
+;
+
 alt_metric
 :
    METRIC DEC
-;
-
-ait_null
-:
-   AUTHENTICATION ~NEWLINE*
 ;
 
 at_apply_groups
@@ -52,9 +70,12 @@ at_interface_header
 
 at_interface_tail
 :
-   ait_interface_type
+   ait_apply_groups_except
+   | ait_interface_type
    | ait_metric
    | ait_null
+   | ait_passive
+   | ait_te_metric
 ;
 
 at_label_switched_path

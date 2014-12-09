@@ -33,6 +33,11 @@ s_apply_groups
    APPLY_GROUPS name = variable
 ;
 
+s_apply_groups_except
+:
+   APPLY_GROUPS_EXCEPT name = variable
+;
+
 s_description
 :
    DESCRIPTION description = M_Description_DESCRIPTION?
