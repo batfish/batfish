@@ -174,6 +174,7 @@ null_block_stanza
       )
       | L2TP_CLASS
       | LINE
+      | MAC
       | MANAGEMENT
       | MAP_CLASS
       | MAP_LIST
@@ -524,6 +525,7 @@ null_standalone_stanza
       )
       | CTL_FILE
       | CTS
+      | DEC
       | DEFAULT
       | DESCRIPTION
       | DESTINATION
@@ -679,7 +681,6 @@ null_standalone_stanza
       | LLDP
       | LOCATION
       | LOGGING
-      | MAC
       | MAC_ADDRESS_TABLE
       | MAIL_SERVER
       | MATCH
