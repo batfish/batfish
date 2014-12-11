@@ -8,7 +8,7 @@ options {
 
 bfi6t_null
 :
-   LABELED_UNICAST ~NEWLINE*
+   LABELED_UNICAST s_null_filler
 ;
 
 bfi6t_unicast
@@ -25,12 +25,12 @@ bfi6t_unicast_tail
 
 bfi6ut_prefix_limit
 :
-   PREFIX_LIMIT ~NEWLINE*
+   PREFIX_LIMIT s_null_filler
 ;
 
 bfit_flow
 :
-   FLOW ~NEWLINE*
+   FLOW s_null_filler
 ;
 
 bfit_unicast
@@ -47,7 +47,7 @@ bfit_unicast_tail
 
 bfiut_prefix_limit
 :
-   PREFIX_LIMIT ~NEWLINE*
+   PREFIX_LIMIT s_null_filler
 ;
 
 bft_inet
@@ -74,7 +74,7 @@ bft_inet6_tail
 
 bft_null
 :
-   INET_VPN ~NEWLINE*
+   INET_VPN s_null_filler
 ;
 
 bt_advertise_inactive
@@ -195,7 +195,7 @@ bt_null
       | BFD_LIVENESS_DETECTION
       | LOG_UPDOWN
       | TRACEOPTIONS
-   ) ~NEWLINE*
+   ) s_null_filler
 ;
 
 bt_path_selection

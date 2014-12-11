@@ -32,7 +32,7 @@ famt_inet_tail
 
 famt_inet6
 :
-   INET6 ~NEWLINE*
+   INET6 s_null_filler
 ;
 
 famt_mpls
@@ -113,7 +113,7 @@ it_null
    (
       AGGREGATED_ETHER_OPTIONS
       | GIGETHER_OPTIONS
-   ) ~NEWLINE*
+   ) s_null_filler
 ;
 
 it_unit
@@ -205,7 +205,7 @@ ut_family_tail
 
 ut_null
 :
-   BANDWIDTH ~NEWLINE*
+   BANDWIDTH s_null_filler
 ;
 
 ut_vlan_id

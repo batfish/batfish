@@ -171,7 +171,7 @@ fwt_null
 :
    (
       POLICER
-   ) ~NEWLINE*
+   ) s_null_filler
 ;
 
 fwthent_accept
@@ -193,7 +193,7 @@ fwthent_null
       | POLICER
       | SAMPLE
       | SYSLOG
-   ) ~NEWLINE*
+   ) s_null_filler
 ;
 
 fwthent_reject

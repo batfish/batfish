@@ -47,12 +47,6 @@ public class ApplyGroupsApplicator extends FlatJuniperGrammarParserBaseListener 
    }
 
    @Override
-   public void exitFlat_juniper_configuration(
-         Flat_juniper_configurationContext ctx) {
-      _configurationContext.children = _newConfigurationLines;
-   }
-
-   @Override
    public void enterS_apply_groups(S_apply_groupsContext ctx) {
       String groupName = ctx.name.getText();
       List<ParseTree> applyGroupsLines = _hierarchy.getApplyGroupsLines(
@@ -64,8 +58,6 @@ public class ApplyGroupsApplicator extends FlatJuniperGrammarParserBaseListener 
 
    @Override
    public void enterSet_line(Set_lineContext ctx) {
-      _enablePathRecording = true;
-      _currentPath = new HierarchyPath();
       _currentSetLine = ctx;
    }
 
@@ -73,6 +65,12 @@ public class ApplyGroupsApplicator extends FlatJuniperGrammarParserBaseListener 
    public void enterSet_line_tail(Set_line_tailContext ctx) {
       _enablePathRecording = true;
       _currentPath = new HierarchyPath();
+   }
+
+   @Override
+   public void exitFlat_juniper_configuration(
+         Flat_juniper_configurationContext ctx) {
+      _configurationContext.children = _newConfigurationLines;
    }
 
    @Override

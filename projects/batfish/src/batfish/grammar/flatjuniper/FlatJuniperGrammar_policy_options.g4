@@ -382,7 +382,7 @@ tht_next_hop
 
 tht_null
 :
-   LOAD_BALANCE ~NEWLINE*
+   LOAD_BALANCE s_null_filler
 ;
 
 tht_origin

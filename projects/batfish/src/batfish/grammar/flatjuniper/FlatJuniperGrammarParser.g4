@@ -60,7 +60,7 @@ s_null
       | EVENT_OPTIONS
       | FORWARDING_OPTIONS
       | SNMP
-   ) ~NEWLINE*
+   ) s_null_filler
 ;
 
 s_protocols
@@ -87,7 +87,7 @@ s_protocols_null
       | MSDP
       | PIM
       | RSVP
-   ) ~NEWLINE*
+   ) s_null_filler
 ;
 
 s_system
@@ -139,5 +139,5 @@ st_null
       | SYSLOG
       | TACPLUS_SERVER
       | TIME_ZONE
-   ) ~NEWLINE*
+   ) s_null_filler
 ;

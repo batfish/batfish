@@ -8,5 +8,5 @@ options {
 
 s_protocols_isis
 :
-   ISIS ~NEWLINE*
+   ISIS s_null_filler
 ;

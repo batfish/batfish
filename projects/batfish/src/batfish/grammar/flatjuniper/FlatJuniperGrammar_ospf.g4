@@ -26,7 +26,7 @@ ait_null
    (
       AUTHENTICATION
       | BFD_LIVENESS_DETECTION
-   ) ~NEWLINE*
+   ) s_null_filler
 ;
 
 ait_passive
@@ -111,7 +111,7 @@ at_null
 :
    (
       AUTHENTICATION_TYPE
-   ) ~NEWLINE*
+   ) s_null_filler
 ;
 
 dlsat_default_metric
@@ -186,7 +186,7 @@ ot_null
       | REFERENCE_BANDWIDTH
       | TRACEOPTIONS
       | TRAFFIC_ENGINEERING
-   ) ~NEWLINE*
+   ) s_null_filler
 ;
 
 s_protocols_ospf

@@ -100,7 +100,7 @@ rot_autonomous_system
 
 rot_martians
 :
-   MARTIANS ~NEWLINE*
+   MARTIANS s_null_filler
 ;
 
 rot_null
@@ -109,7 +109,7 @@ rot_null
       FORWARDING_TABLE
       | MULTICAST
       | OPTIONS
-   ) ~NEWLINE*
+   ) s_null_filler
 ;
 
 rot_rib_groups

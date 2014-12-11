@@ -6,14 +6,17 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.*;
+import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.Set_lineContext;
 import batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
+import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.*;
 
-public class WildcardApplicator extends FlatJuniperGrammarParserBaseListener {
+public class ApplyPathApplicator extends FlatJuniperGrammarParserBaseListener {
 
    private Flat_juniper_configurationContext _configurationContext;
 
    private HierarchyPath _currentPath;
+
+   private Set_lineContext _currentSetLine;
 
    private boolean _enablePathRecording;
 
@@ -21,7 +24,7 @@ public class WildcardApplicator extends FlatJuniperGrammarParserBaseListener {
 
    private List<ParseTree> _newConfigurationLines;
 
-   public WildcardApplicator(Hierarchy hierarchy) {
+   public ApplyPathApplicator(Hierarchy hierarchy) {
       _hierarchy = hierarchy;
    }
 
@@ -31,6 +34,34 @@ public class WildcardApplicator extends FlatJuniperGrammarParserBaseListener {
       _configurationContext = ctx;
       _newConfigurationLines = new ArrayList<ParseTree>();
       _newConfigurationLines.addAll(ctx.children);
+   }
+
+   @Override
+   public void enterPlt_apply_path(Plt_apply_pathContext ctx) {
+      HierarchyPath applyPathPath = new HierarchyPath();
+      String pathQuoted = ctx.path.getText();
+      String pathWithoutQuotes = pathQuoted.substring(1,
+            pathQuoted.length() - 1);
+      String[] pathComponents = pathWithoutQuotes.split(" ");
+      for (String pathComponent : pathComponents) {
+         boolean isWildcard = pathComponent.charAt(0) == '<';
+         if (isWildcard) {
+            applyPathPath.addWildcardNode(pathComponent);
+         }
+         else {
+            applyPathPath.addNode(pathComponent);
+         }
+      }
+      List<ParseTree> newLines = _hierarchy.getApplyPathLines(_currentPath,
+            applyPathPath, _configurationContext);
+      int insertionIndex = _newConfigurationLines.indexOf(_currentSetLine);
+      _newConfigurationLines.remove(_currentSetLine);
+      _newConfigurationLines.addAll(insertionIndex, newLines);
+   }
+
+   @Override
+   public void enterSet_line(Set_lineContext ctx) {
+      _currentSetLine = ctx;
    }
 
    @Override
@@ -47,12 +78,7 @@ public class WildcardApplicator extends FlatJuniperGrammarParserBaseListener {
 
    @Override
    public void exitSet_line(Set_lineContext ctx) {
-      if (_currentPath.containsWildcard()) {
-         List<ParseTree> lines = _hierarchy.getMasterTree().applyWildcardPath(
-               _currentPath, _configurationContext);
-         int insertionIndex = _newConfigurationLines.indexOf(ctx);
-         _newConfigurationLines.addAll(insertionIndex, lines);
-      }
+      _currentSetLine = null;
       _currentPath = null;
    }
 
@@ -73,4 +99,5 @@ public class WildcardApplicator extends FlatJuniperGrammarParserBaseListener {
          }
       }
    }
+
 }

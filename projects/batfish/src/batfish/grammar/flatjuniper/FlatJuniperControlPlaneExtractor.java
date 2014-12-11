@@ -53,6 +53,8 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
       walker.walk(wa, tree);
       WildcardPruner wp = new WildcardPruner();
       walker.walk(wp, tree);
+      ApplyPathApplicator ap = new ApplyPathApplicator(hierarchy);
+      walker.walk(ap, tree);
       ConfigurationBuilder cb = new ConfigurationBuilder(_parser, _text,
             _rulesWithSuppressedWarnings, _warnings);
       walker.walk(cb, tree);
