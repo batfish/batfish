@@ -88,6 +88,10 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
 
    public int getTokenMode(Token t) {
       int tokenIndex = t.getTokenIndex();
+      if (tokenIndex == -1) {
+         // token probably added manually, not by parser
+         return -1;
+      }
       if (tokenIndex < _tokenModes.size()) {
          return _tokenModes.get(tokenIndex);
       }

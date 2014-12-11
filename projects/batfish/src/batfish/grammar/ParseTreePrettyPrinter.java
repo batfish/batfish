@@ -93,7 +93,13 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
       Token t = ctx.getSymbol();
       int tokenType = t.getType();
       int modeAsInt = _combinedParser.getTokenMode(t);
-      String mode = _combinedParser.getLexer().getModeNames()[modeAsInt];
+      String mode;
+      if (modeAsInt == -1) {
+         mode = "<MANUAL/UNKNOWN>";
+      }
+      else {
+         mode = _combinedParser.getLexer().getModeNames()[modeAsInt];
+      }
       String tokenName;
       if (tokenType == -1) {
          tokenName = "EOF";
