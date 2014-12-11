@@ -4,6 +4,11 @@ options {
    tokenVocab = FlatJuniperGrammarLexer;
 }
 
+s_null_filler
+:
+   ~( APPLY_GROUPS | NEWLINE )* s_apply_groups?
+;
+
 icmp_code
 :
    DESTINATION_HOST_UNKNOWN
