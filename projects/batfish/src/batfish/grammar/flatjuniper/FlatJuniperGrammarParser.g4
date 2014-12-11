@@ -44,7 +44,7 @@ s_groups
 
 s_groups_named
 :
-   name = variable s_groups_tail 
+   name = variable s_groups_tail
 ;
 
 s_groups_tail

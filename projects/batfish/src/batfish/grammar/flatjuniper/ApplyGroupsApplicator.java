@@ -16,8 +16,7 @@ import batfish.grammar.flatjuniper.Hierarchy.HierarchyTree;
 import batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.*;
 
-public class ApplyGroupsApplicator extends
-      FlatJuniperGrammarParserBaseListener {
+public class ApplyGroupsApplicator extends FlatJuniperGrammarParserBaseListener {
 
    private BatfishCombinedParser<?, ?> _combinedParser;
 
@@ -33,7 +32,8 @@ public class ApplyGroupsApplicator extends
 
    private List<ParseTree> _newConfigurationLines;
 
-   public ApplyGroupsApplicator(BatfishCombinedParser<?, ?> combinedParser, Hierarchy hierarchy) {
+   public ApplyGroupsApplicator(BatfishCombinedParser<?, ?> combinedParser,
+         Hierarchy hierarchy) {
       _combinedParser = combinedParser;
       _hierarchy = hierarchy;
    }

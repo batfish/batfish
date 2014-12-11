@@ -403,8 +403,7 @@ nexus_access_list_stanza
    (
       nexus_access_list_tail
       | nexus_access_list_null_tail
-   )*
-   exit_line?
+   )* exit_line?
 ;
 
 nexus_access_list_tail

@@ -9,8 +9,8 @@ public class FlatJuniperGrammarCombinedParser extends
 
    public FlatJuniperGrammarCombinedParser(String input,
          boolean throwOnParserError, boolean throwOnLexerError) {
-      super(FlatJuniperGrammarParser.class, FlatJuniperGrammarLexer.class, input,
-            throwOnParserError, throwOnLexerError);
+      super(FlatJuniperGrammarParser.class, FlatJuniperGrammarLexer.class,
+            input, throwOnParserError, throwOnLexerError);
    }
 
    @Override

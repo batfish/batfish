@@ -35,8 +35,8 @@ public class Hierarchy {
 
          private Set_lineContext _line;
          protected String _sourceGroup;
-         protected String _text;
          public List<String> _sourceWildcards;
+         protected String _text;
 
          private HierarchyChildNode(String text) {
             _text = text;
@@ -190,11 +190,6 @@ public class Hierarchy {
          }
 
          @Override
-         public boolean isWildcard() {
-            return true;
-         }
-
-         @Override
          public HierarchyChildNode copy() {
             return new HierarchyWildcardNode(_text);
          }
@@ -208,6 +203,11 @@ public class Hierarchy {
          public boolean isMatchedBy(HierarchyWildcardNode node) {
             // TODO: check whether this is the only way to match two wildcards
             return _text.equals(node._text);
+         }
+
+         @Override
+         public boolean isWildcard() {
+            return true;
          }
 
          @Override
@@ -370,6 +370,16 @@ public class Hierarchy {
          }
       }
 
+      private HierarchyChildNode findExactPathMatchNode(HierarchyPath path) {
+         HierarchyNode currentGroupNode = _root;
+         HierarchyChildNode matchNode = null;
+         for (HierarchyChildNode currentPathNode : path._nodes) {
+            matchNode = currentGroupNode.getChildNode(currentPathNode._text);
+            currentGroupNode = matchNode;
+         }
+         return matchNode;
+      }
+
       private Set_lineContext generateSetLine(HierarchyPath path,
             Set_lineContext generatingLine) {
          Flat_juniper_configurationContext configurationContext = (Flat_juniper_configurationContext) (generatingLine
@@ -400,16 +410,6 @@ public class Hierarchy {
          setLineTail.children.add(newStatement);
 
          return setLine;
-      }
-
-      private HierarchyChildNode findExactPathMatchNode(HierarchyPath path) {
-         HierarchyNode currentGroupNode = _root;
-         HierarchyChildNode matchNode = null;
-         for (HierarchyChildNode currentPathNode : path._nodes) {
-            matchNode = currentGroupNode.getChildNode(currentPathNode._text);
-            currentGroupNode = matchNode;
-         }
-         return matchNode;
       }
 
       public List<ParseTree> getApplyGroupsLines(HierarchyPath path,

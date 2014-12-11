@@ -66,7 +66,11 @@ filter_tail
 
 ifamt_address
 :
-   ADDRESS IP_ADDRESS_WITH_MASK (PRIMARY | PREFERRED)?
+   ADDRESS IP_ADDRESS_WITH_MASK
+   (
+      PRIMARY
+      | PREFERRED
+   )?
 ;
 
 ifamt_filter

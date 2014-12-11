@@ -44,7 +44,8 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
       catch (InstantiationException | IllegalAccessException
             | IllegalArgumentException | InvocationTargetException
             | NoSuchMethodException | SecurityException e) {
-         throw new BatfishException("Error constructing lexer using reflection", e);
+         throw new BatfishException(
+               "Error constructing lexer using reflection", e);
       }
       _lexer.initErrorListener(this);
       _tokens = new CommonTokenStream(_lexer);
