@@ -9,7 +9,6 @@ JuniperGrammarParser*.java
 JuniperGrammarLexer*.java
 FlatJuniperGrammarLexer*.java
 FlatJuniperGrammarParser*.java
-Semantics*.java
 RoleParser*.java
 RoleLexer*.java
 BatfishTopologyParser*.java
