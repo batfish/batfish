@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import batfish.collections.RoleSet;
 import batfish.representation.Configuration;
@@ -27,10 +28,13 @@ public class JuniperVendorConfiguration extends JuniperConfiguration implements
 
    private Map<String, JuniperVendorConfiguration> _routingInstances;
 
+   private Map<String, Interface> _interfaces;
+
    public JuniperVendorConfiguration() {
       _conversionWarnings = new ArrayList<String>();
       _routingInstances = new HashMap<String, JuniperVendorConfiguration>();
       _routingInstances.put(DEFAULT_ROUTING_INSTANCE, this);
+      _interfaces = new TreeMap<String, Interface>();
    }
 
    @Override
@@ -64,6 +68,10 @@ public class JuniperVendorConfiguration extends JuniperConfiguration implements
       c.setVendor(VENDOR_NAME);
       c.setRoles(_roles);
       return c;
+   }
+
+   public Map<String, Interface> getInterfaces() {
+      return _interfaces;
    }
 
 }

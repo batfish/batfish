@@ -711,10 +711,8 @@ public class JuniperVendorConfigurationOLD extends JuniperConfiguration implemen
       // no individual ospf area in interface
       newIface.setArea(as);
       newIface.setBandwidth(iface.getBandwidth());
-      if (iface.getIP() != "") {
-         newIface.setIP(new Ip(iface.getIP()));
-         newIface.setSubnetMask(new Ip(iface.getSubnetMask()));
-      }
+      newIface.setIP(iface.getIp());
+      newIface.setSubnetMask(iface.getSubnetMask());
       newIface.setNativeVlan(iface.getNativeVlan());
       newIface.setOspfCost(iface.getOspfCost());
       newIface.setOspfDeadInterval(iface.getOSPFDeadInterval());

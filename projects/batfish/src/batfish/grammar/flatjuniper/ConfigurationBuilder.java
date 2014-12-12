@@ -2,27 +2,71 @@ package batfish.grammar.flatjuniper;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ParseTreePrettyPrinter;
-import batfish.grammar.cisco.CiscoGrammar;
 import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.*;
+import batfish.main.BatfishException;
+import batfish.representation.Ip;
+import batfish.representation.juniper.Interface;
 import batfish.representation.juniper.JuniperVendorConfiguration;
 
 public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
 
+   public static Ip getPrefixIp(TerminalNode ipPrefixNode) {
+      return getPrefixIp(ipPrefixNode.getSymbol());
+   }
+
+   public static Ip getPrefixIp(Token ipPrefixToken) {
+      if (ipPrefixToken.getType() != FlatJuniperGrammarLexer.IP_ADDRESS_WITH_MASK) {
+         throw new BatfishException(
+               "attempted to get prefix length from non-IP_PREFIX token: "
+                     + ipPrefixToken.getType());
+      }
+      String text = ipPrefixToken.getText();
+      String[] parts = text.split("/");
+      String prefixIpStr = parts[0];
+      Ip prefixIp = new Ip(prefixIpStr);
+      return prefixIp;
+   }
+
+   public static int getPrefixLength(TerminalNode ipPrefixNode) {
+      return getPrefixLength(ipPrefixNode.getSymbol());
+   }
+
+   public static int getPrefixLength(Token ipPrefixToken) {
+      if (ipPrefixToken.getType() != FlatJuniperGrammarLexer.IP_ADDRESS_WITH_MASK) {
+         throw new BatfishException(
+               "attempted to get prefix length from non-IP_PREFIX token: "
+                     + ipPrefixToken.getType());
+      }
+      String text = ipPrefixToken.getText();
+      String[] parts = text.split("/");
+      String prefixLengthStr = parts[1];
+      int prefixLength = Integer.parseInt(prefixLengthStr);
+      return prefixLength;
+   }
+
    private JuniperVendorConfiguration _configuration;
+   private Interface _currentInterface;
    private JuniperVendorConfiguration _masterConfiguration;
    private BatfishCombinedParser<?, ?> _parser;
+
    private Set<String> _rulesWithSuppressedWarnings;
+
    private boolean _set;
+
    private String _text;
+
    private List<String> _warnings;
+   private Interface _currentMasterInterface;
 
    public ConfigurationBuilder(BatfishCombinedParser<?, ?> parser, String text,
          Set<String> rulesWithSuppressedWarnings, List<String> warnings) {
@@ -305,18 +349,6 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
 
    @Override
    public void enterFilter(FilterContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void enterFilter_header(Filter_headerContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void enterFilter_tail(Filter_tailContext ctx) {
       // TODO Auto-generated method stub
 
    }
@@ -640,18 +672,6 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
    }
 
    @Override
-   public void enterIfamt_address(Ifamt_addressContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void enterIfamt_filter(Ifamt_filterContext ctx) {
-      assert Boolean.TRUE;
-
-   }
-
-   @Override
    public void enterIfamt_no_redirects(Ifamt_no_redirectsContext ctx) {
       // TODO Auto-generated method stub
 
@@ -689,8 +709,13 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
 
    @Override
    public void enterIt_unit(It_unitContext ctx) {
-      // TODO Auto-generated method stub
-
+      String unit = ctx.it_unit_header().num.getText();
+      Map<String, Interface> units = _currentMasterInterface.getUnits();
+      _currentInterface = units.get(unit);
+      if (_currentInterface == null) {
+         _currentInterface = new Interface(unit);
+         units.put(unit, _currentInterface);
+      }
    }
 
    @Override
@@ -1114,8 +1139,14 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
 
    @Override
    public void enterS_interfaces(S_interfacesContext ctx) {
-      // TODO Auto-generated method stub
-
+      String ifaceName = ctx.s_interfaces_header().name.getText();
+      Map<String, Interface> interfaces = _configuration.getInterfaces();
+      _currentInterface = interfaces.get(ifaceName);
+      if (_currentInterface == null) {
+         _currentInterface = new Interface(ifaceName);
+         interfaces.put(ifaceName, _currentInterface);
+      }
+      _currentMasterInterface = _currentInterface;
    }
 
    @Override
@@ -1739,18 +1770,6 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
    }
 
    @Override
-   public void exitFilter_header(Filter_headerContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitFilter_tail(Filter_tailContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
    public void exitFlat_juniper_configuration(
          Flat_juniper_configurationContext ctx) {
       // TODO Auto-generated method stub
@@ -2070,14 +2089,24 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
 
    @Override
    public void exitIfamt_address(Ifamt_addressContext ctx) {
-      // TODO Auto-generated method stub
-
+      Ip ip = getPrefixIp(ctx.IP_ADDRESS_WITH_MASK());
+      int subnetBits = getPrefixLength(ctx.IP_ADDRESS_WITH_MASK());
+      Ip mask = new Ip(batfish.util.Util.numSubnetBitsToSubnetLong(subnetBits));
+      _currentInterface.setIp(ip);
+      _currentInterface.setSubnetMask(mask);
    }
 
    @Override
    public void exitIfamt_filter(Ifamt_filterContext ctx) {
-      // TODO Auto-generated method stub
-
+      FilterContext filter = ctx.filter();
+      String name = filter.name.getText();
+      DirectionContext direction = ctx.filter().direction();
+      if (direction.INPUT() != null) {
+         _currentInterface.setIncomingFilter(name);
+      }
+      else if (direction.OUTPUT() != null) {
+         _currentInterface.setOutgoingFilter(name);
+      }
    }
 
    @Override
@@ -2100,8 +2129,7 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
 
    @Override
    public void exitIt_disable(It_disableContext ctx) {
-      // TODO Auto-generated method stub
-
+      _currentInterface.setActive(false);
    }
 
    @Override
@@ -2118,8 +2146,7 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
 
    @Override
    public void exitIt_unit(It_unitContext ctx) {
-      // TODO Auto-generated method stub
-
+      _currentInterface = _currentMasterInterface;
    }
 
    @Override
@@ -2529,8 +2556,8 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
 
    @Override
    public void exitS_interfaces(S_interfacesContext ctx) {
-      // TODO Auto-generated method stub
-
+      _currentInterface = null;
+      _currentMasterInterface = null;
    }
 
    @Override
@@ -2900,7 +2927,7 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
       }
       String prefix = "WARNING " + (_warnings.size() + 1) + ": ";
       StringBuilder sb = new StringBuilder();
-      List<String> ruleNames = Arrays.asList(CiscoGrammar.ruleNames);
+      List<String> ruleNames = Arrays.asList(FlatJuniperGrammarParser.ruleNames);
       String ruleStack = ctx.toString(ruleNames);
       sb.append(prefix
             + "Missing implementation for top (leftmost) parser rule in stack: '"

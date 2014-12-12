@@ -51,17 +51,7 @@ famt_mpls_tail
 
 filter
 :
-   filter_header filter_tail
-;
-
-filter_header
-:
-   FILTER direction
-;
-
-filter_tail
-:
-   VARIABLE
+   FILTER direction name=variable
 ;
 
 ifamt_address
