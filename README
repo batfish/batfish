@@ -5,6 +5,9 @@ Except where otherwise noted, everything in this repository is provided under th
 Instructions for building and running Batfish
 **************************************************
 
+NOTE:
+Docker containers are available in docker/client and docker/server.
+
 Prerequisites:
    ant
    java 7 jdk
