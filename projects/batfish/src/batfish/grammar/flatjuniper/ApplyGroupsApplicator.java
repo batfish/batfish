@@ -52,7 +52,7 @@ public class ApplyGroupsApplicator extends FlatJuniperGrammarParserBaseListener 
       List<ParseTree> applyGroupsLines = _hierarchy.getApplyGroupsLines(
             groupName, _currentPath, _configurationContext);
       int insertionIndex = _newConfigurationLines.indexOf(_currentSetLine);
-      _newConfigurationLines.remove(ctx);
+      _newConfigurationLines.remove(_currentSetLine);
       _newConfigurationLines.addAll(insertionIndex, applyGroupsLines);
    }
 
