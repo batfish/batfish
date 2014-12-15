@@ -6,16 +6,31 @@ options {
    tokenVocab = FlatJuniperGrammarLexer;
 }
 
+brt_interface_mode
+:
+   INTERFACE_MODE interface_mode
+;
+
+brt_vlan_id_list
+:
+   VLAN_ID_LIST DEC
+;
+
 direction
 :
    INPUT
    | OUTPUT
 ;
 
-family
+famt_bridge
 :
-   INET
-   | MPLS
+   BRIDGE famt_bridge_tail
+;
+
+famt_bridge_tail
+:
+   brt_interface_mode
+   | brt_vlan_id_list
 ;
 
 famt_inet
@@ -25,8 +40,11 @@ famt_inet
 
 famt_inet_tail
 :
-   ifamt_address
+// intentional blank
+
+   | ifamt_address
    | ifamt_filter
+   | ifamt_mtu
    | ifamt_no_redirects
 ;
 
@@ -51,7 +69,7 @@ famt_mpls_tail
 
 filter
 :
-   FILTER direction name=variable
+   FILTER direction name = variable
 ;
 
 ifamt_address
@@ -68,9 +86,19 @@ ifamt_filter
    filter
 ;
 
+ifamt_mtu
+:
+   it_mtu
+;
+
 ifamt_no_redirects
 :
    NO_REDIRECTS
+;
+
+interface_mode
+:
+   TRUNK
 ;
 
 it_apply_groups
@@ -103,6 +131,7 @@ it_null
    (
       AGGREGATED_ETHER_OPTIONS
       | GIGETHER_OPTIONS
+      | TRAPS
    ) s_null_filler
 ;
 
@@ -188,7 +217,8 @@ ut_family
 
 ut_family_tail
 :
-   famt_inet
+   famt_bridge
+   | famt_inet
    | famt_inet6
    | famt_mpls
 ;

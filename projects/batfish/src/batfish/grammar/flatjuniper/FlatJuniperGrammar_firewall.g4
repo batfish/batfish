@@ -184,6 +184,11 @@ fwthent_discard
    DISCARD
 ;
 
+fwthent_next_term
+:
+   NEXT TERM
+;
+
 fwthent_null
 :
    (
@@ -236,6 +241,7 @@ fwtt_then_tail
    fwthent_accept
    | fwthent_discard
    | fwthent_reject
+   | fwthent_next_term
    | fwthent_null
 ;
 

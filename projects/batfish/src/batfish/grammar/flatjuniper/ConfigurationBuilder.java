@@ -313,12 +313,6 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
    }
 
    @Override
-   public void enterFamily(FamilyContext ctx) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
    public void enterFamt_inet(Famt_inetContext ctx) {
       // TODO Auto-generated method stub
 
@@ -1723,12 +1717,6 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
 
    @Override
    public void exitEveryRule(ParserRuleContext arg0) {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public void exitFamily(FamilyContext ctx) {
       // TODO Auto-generated method stub
 
    }

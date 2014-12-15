@@ -56,11 +56,13 @@ port
    | DEC
    | DHCP
    | DOMAIN
+   | FTP
    | LDP
    | NTP
    | SNMP
    | SSH
    | TACACS
+   | TELNET
 ;
 
 protocol

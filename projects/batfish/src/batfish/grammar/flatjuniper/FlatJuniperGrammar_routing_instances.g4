@@ -6,9 +6,24 @@ options {
    tokenVocab = FlatJuniperGrammarLexer;
 }
 
+agt_as_path
+:
+   AS_PATH PATH DEC
+;
+
+agt_preference
+:
+   PREFERENCE DEC
+;
+
 gt_discard
 :
    DISCARD
+;
+
+gt_metric
+:
+   METRIC DEC
 ;
 
 gt_policy
@@ -21,24 +36,29 @@ rgt_import_rib
    IMPORT_RIB rib = VARIABLE
 ;
 
-ribt_generate
+ribt_aggregate
 :
-   ribt_generate_header ribt_generate_tail
+   ribt_aggregate_header ribt_aggregate_tail
 ;
 
-ribt_generate_header
+ribt_aggregate_header
 :
-   GENERATE ROUTE
+   AGGREGATE ROUTE
    (
       IP_ADDRESS_WITH_MASK
       | IPV6_ADDRESS_WITH_MASK
    )
 ;
 
-ribt_generate_tail
+ribt_aggregate_tail
 :
-   gt_discard
-   | gt_policy
+   agt_as_path
+   | agt_preference
+;
+
+ribt_generate
+:
+   rot_generate
 ;
 
 ribt_static
@@ -103,6 +123,27 @@ rot_martians
    MARTIANS s_null_filler
 ;
 
+rot_generate
+:
+   rot_generate_header rot_generate_tail
+;
+
+rot_generate_header
+:
+   GENERATE ROUTE
+   (
+      IP_ADDRESS_WITH_MASK
+      | IPV6_ADDRESS_WITH_MASK
+   )
+;
+
+rot_generate_tail
+:
+   gt_discard
+   | gt_metric
+   | gt_policy
+;
+
 rot_null
 :
    (
@@ -139,7 +180,8 @@ rot_rib_header
 
 rot_rib_tail
 :
-   ribt_generate
+   ribt_aggregate
+   | ribt_generate
    | ribt_static
 ;
 
@@ -165,7 +207,10 @@ rot_static_header
 rot_static_tail
 :
    srt_discard
+   | srt_install
    | srt_next_hop
+   | srt_readvertise
+   | srt_reject
    | srt_tag
 ;
 
@@ -194,6 +239,7 @@ s_routing_options_tail
 :
    rot_aggregate
    | rot_autonomous_system
+   | rot_generate
    | rot_martians
    | rot_null
    | rot_rib
@@ -207,6 +253,11 @@ srt_discard
    DISCARD
 ;
 
+srt_install
+:
+   INSTALL
+;
+
 srt_next_hop
 :
    NEXT_HOP
@@ -214,6 +265,16 @@ srt_next_hop
       IP_ADDRESS
       | IPV6_ADDRESS
    )
+;
+
+srt_readvertise
+:
+   READVERTISE
+;
+
+srt_reject
+:
+   REJECT
 ;
 
 srt_tag

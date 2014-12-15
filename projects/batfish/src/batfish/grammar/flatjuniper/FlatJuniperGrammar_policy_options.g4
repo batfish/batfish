@@ -54,6 +54,15 @@ fromt_interface
    INTERFACE name = variable
 ;
 
+fromt_neighbor
+:
+   NEIGHBOR
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   )
+;
+
 fromt_policy
 :
    POLICY name = variable
@@ -89,6 +98,7 @@ fromt_route_filter_tail
       rft_exact
       | rft_orlonger
       | rft_prefix_length_range
+      | rft_through
       | rft_upto
    ) ACCEPT?
 ;
@@ -172,7 +182,7 @@ pot_as_path_header
 
 pot_as_path_tail
 :
-   regex = DOUBLE_QUOTED_STRING
+   regex = AS_PATH_REGEX
 ;
 
 pot_community
@@ -268,6 +278,15 @@ rft_orlonger
 rft_prefix_length_range
 :
    PREFIX_LENGTH_RANGE prefix_length_range
+;
+
+rft_through
+:
+   THROUGH
+   (
+      IP_ADDRESS_WITH_MASK
+      | IPV6_ADDRESS_WITH_MASK
+   )
 ;
 
 rft_upto
@@ -417,6 +436,7 @@ tt_from_tail
    | fromt_community
    | fromt_family
    | fromt_interface
+   | fromt_neighbor
    | fromt_policy
    | fromt_prefix_list
    | fromt_protocol

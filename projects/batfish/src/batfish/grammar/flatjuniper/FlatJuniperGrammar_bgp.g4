@@ -91,18 +91,25 @@ bt_common
 :
    bt_advertise_inactive
    | bt_cluster
+   | bt_damping
    | bt_description
    | bt_export
    | bt_family
    | bt_import
    | bt_local_address
    | bt_local_as
+   | bt_multihop
    | bt_multipath
    | bt_null
    | bt_path_selection
    | bt_peer_as
    | bt_remove_private
    | bt_type
+;
+
+bt_damping
+:
+   DAMPING
 ;
 
 bt_description
@@ -160,6 +167,11 @@ bt_local_address
 bt_local_as
 :
    LOCAL_AS as = DEC
+;
+
+bt_multihop
+:
+   MULTIHOP TTL DEC
 ;
 
 bt_multipath

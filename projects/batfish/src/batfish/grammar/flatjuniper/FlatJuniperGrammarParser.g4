@@ -55,10 +55,12 @@ s_groups_tail
 s_null
 :
    (
-      CHASSIS
+      BRIDGE_DOMAINS
+      | CHASSIS
       | CLASS_OF_SERVICE
       | EVENT_OPTIONS
       | FORWARDING_OPTIONS
+      | SERVICES
       | SNMP
    ) s_null_filler
 ;
@@ -75,6 +77,7 @@ s_protocols_tail
    | s_protocols_mpls
    | s_protocols_null
    | s_protocols_ospf
+   | s_protocols_ospf3
 ;
 
 s_protocols_null
@@ -86,7 +89,9 @@ s_protocols_null
       | LLDP
       | MSDP
       | PIM
+      | ROUTER_ADVERTISEMENT
       | RSVP
+      | VSTP
    ) s_null_filler
 ;
 

@@ -11,6 +11,16 @@ ait_apply_groups_except
    s_apply_groups_except
 ;
 
+ait_dead_interval
+:
+   DEAD_INTERVAL DEC
+;
+
+ait_hello_interval
+:
+   HELLO_INTERVAL DEC
+;
+
 ait_interface_type
 :
    INTERFACE_TYPE P2P
@@ -32,6 +42,11 @@ ait_null
 ait_passive
 :
    PASSIVE
+;
+
+ait_priority
+:
+   PRIORITY DEC
 ;
 
 ait_te_metric
@@ -71,10 +86,13 @@ at_interface_header
 at_interface_tail
 :
    ait_apply_groups_except
+   | ait_dead_interval
+   | ait_hello_interval
    | ait_interface_type
    | ait_metric
    | ait_null
    | ait_passive
+   | ait_priority
    | ait_te_metric
 ;
 
@@ -200,4 +218,9 @@ s_protocols_ospf_tail
    | ot_area
    | ot_export
    | ot_null
+;
+
+s_protocols_ospf3
+:
+   OSPF3 s_protocols_ospf_tail
 ;

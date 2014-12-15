@@ -128,7 +128,7 @@ ARP_RESP
 
 AS_PATH
 :
-   'as-path'
+   'as-path' -> pushMode(M_AsPath)
 ;
 
 AS_PATH_PREPEND
@@ -270,6 +270,11 @@ DEACTIVATE
    'deactivate'
 ;
 
+DEAD_INTERVAL
+:
+   'dead-interval'
+;
+
 DEFAULT_ACTION
 :
    'default-action'
@@ -297,7 +302,7 @@ DELETE
 
 DESCRIPTION
 :
-   'description' -> pushMode ( M_Description )
+   'description' -> pushMode(M_Description)
 ;
 
 DESTINATION_ADDRESS
@@ -543,6 +548,11 @@ GROUP
 GROUPS
 :
    'groups'
+;
+
+HELLO_INTERVAL
+:
+   'hello-interval'
 ;
 
 HOLD_TIME
@@ -817,7 +827,7 @@ LSP
 
 MAC
 :
-   'mac' -> pushMode ( M_MacAddress )
+   'mac' -> pushMode(M_MacAddress)
 ;
 
 MARTIANS
@@ -1080,6 +1090,11 @@ PASSIVE
    'passive'
 ;
 
+PATH
+:
+   'path'
+;
+
 PATH_SELECTION
 :
    'path-selection'
@@ -1183,6 +1198,11 @@ PREFIX_LIST_FILTER
 PRIMARY
 :
    'primary'
+;
+
+PRIORITY
+:
+   'priority'
 ;
 
 PROTOCOL
@@ -1505,6 +1525,11 @@ TRUNK
    'trunk'
 ;
 
+TTL
+:
+   'ttl'
+;
+
 TUNNEL
 :
    'tunnel'
@@ -1557,7 +1582,7 @@ USER
 
 VERSION
 :
-   'version' -> pushMode ( M_Version )
+   'version' -> pushMode(M_Version)
 ;
 
 VIRTUAL_CHASSIS
@@ -1795,7 +1820,7 @@ IPV6_ADDRESS
       F_HexDigit+
    )?
    (
-     F_Digit+ '.' F_Digit+ '.' F_Digit+ '.' F_Digit+ 
+      F_Digit+ '.' F_Digit+ '.' F_Digit+ '.' F_Digit+
    )?
 ;
 
@@ -1988,6 +2013,55 @@ F_WhitespaceChar
    [ \t\u000C]
 ;
 
+mode M_AsPath;
+
+M_AsPath_NEWLINE
+:
+   F_NewlineChar+ -> type(NEWLINE), popMode
+;
+
+M_AsPath_ORIGIN
+:
+   'origin' -> type(ORIGIN), popMode
+;
+
+M_AsPath_PATH
+:
+   'path' -> type(PATH), popMode
+;
+
+M_AsPath_VARIABLE
+:
+   F_Variable_RequiredVarChar F_Variable_VarChar* -> mode(M_AsPathRegex)
+;
+
+M_AsPath_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_AsPathRegex;
+
+AS_PATH_REGEX
+:
+   [0-9,^$[\]\-*.{}]+
+;
+
+M_AsPath_DOUBLE_QUOTE
+:
+   '"' -> channel(HIDDEN)
+;
+
+M_AsPathRegex_NEWLINE
+:
+   F_NewlineChar+ -> type(NEWLINE), popMode
+;
+
+M_AsPathRegex_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
 mode M_Description;
 
 M_Description_DESCRIPTION
@@ -1997,7 +2071,7 @@ M_Description_DESCRIPTION
 
 M_Description_NEWLINE
 :
-   F_NewlineChar+ -> type ( NEWLINE ) , popMode
+   F_NewlineChar+ -> type(NEWLINE), popMode
 ;
 
 M_Description_WS
@@ -2028,7 +2102,7 @@ NO_ADVERTISE
 
 COMMUNITY_REGEX
 :
-   [0-9:[\]\-*.]+
+   [0-9:^$[\]\-*.]+
 ;
 
 M_Members_DOUBLE_QUOTE
