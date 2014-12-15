@@ -1,8 +1,5 @@
 parser grammar JuniperGrammarParser;
 
-import
-JuniperGrammarCommonParser, JuniperGrammar_firewall, JuniperGrammar_interface, JuniperGrammar_policy_options, JuniperGrammar_protocols, JuniperGrammar_ospf, JuniperGrammar_bgp, JuniperGrammar_routing_options, JuniperGrammar_system;
-
 options {
    superClass = 'batfish.grammar.BatfishParser';
    tokenVocab = JuniperGrammarLexer;
@@ -12,55 +9,40 @@ options {
 package batfish.grammar.juniper;
 }
 
-empty_neighbor_stanza
+braced_clause
 :
-   NEIGHBOR SEMICOLON
+   OPEN_BRACE statement* CLOSE_BRACE
 ;
 
-groups_stanza
+bracketed_clause
 :
-   GROUPS OPEN_BRACE
-   (
-      empty_neighbor_stanza
-      | group_stanza
-   )+ CLOSE_BRACE
-;
-
-group_stanza
-:
-   name = VARIABLE OPEN_BRACE gr_stanza+ CLOSE_BRACE
-;
-
-gr_stanza
-:
-   firewall_stanza
-   | null_stanza
-   | policy_options_stanza
-   | protocols_stanza
-   | routing_options_stanza
-   | interfaces_stanza
-   | system_stanza
+   OPEN_BRACKET word+ CLOSE_BRACKET
 ;
 
 juniper_configuration
 :
-   j_stanza+ EOF
+   statement+ EOF
 ;
 
-j_stanza_list
+statement
 :
-   j_stanza+
+   word+
+   (
+      braced_clause
+      |
+      (
+         bracketed_clause terminator
+      )
+      | terminator
+   )
 ;
 
-j_stanza
+terminator
 :
-   apply_groups_stanza
-   | firewall_stanza
-   | protocols_stanza
-   | routing_options_stanza
-   | groups_stanza
-   | interfaces_stanza
-   | policy_options_stanza
-   | system_stanza
-   | null_stanza
+   SEMICOLON
+;
+
+word
+:
+   WORD
 ;

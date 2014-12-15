@@ -43,6 +43,9 @@ public class Settings {
    private static final String ARG_DUPLICATE_ROLE_FLOWS = "drf";
    private static final String ARG_EXIT_ON_PARSE_ERROR = "ee";
    private static final String ARG_FACTS = "facts";
+   private static final String ARG_FLATTEN = "flatten";
+   private static final String ARG_FLATTEN_DESTINATION = "flattendst";
+   private static final String ARG_FLATTEN_SOURCE = "flattensrc";
    private static final String ARG_FLOW_PATH = "flowpath";
    private static final String ARG_FLOW_SINK_PATH = "flowsink";
    private static final String ARG_FLOWS = "flow";
@@ -105,6 +108,8 @@ public class Settings {
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
    private static final String ARGNAME_DUMP_IF_DIR = "path";
    private static final String ARGNAME_DUMP_INTERFACE_DESCRIPTIONS_PATH = "path";
+   private static final String ARGNAME_FLATTEN_DESTINATION = "path";
+   private static final String ARGNAME_FLATTEN_SOURCE = "path";
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
    private static final String ARGNAME_INTERFACE_MAP_PATH = "path";
@@ -179,6 +184,9 @@ public class Settings {
    private boolean _duplicateRoleFlows;
    private boolean _exitOnParseError;
    private boolean _facts;
+   private boolean _flatten;
+   private String _flattenDestination;
+   private String _flattenSource;
    private String _flowPath;
    private boolean _flows;
    private String _flowSinkPath;
@@ -357,6 +365,18 @@ public class Settings {
 
    public boolean getFacts() {
       return _facts;
+   }
+
+   public boolean getFlatten() {
+      return _flatten;
+   }
+
+   public String getFlattenDestination() {
+      return _flattenDestination;
+   }
+
+   public String getFlattenSource() {
+      return _flattenSource;
    }
 
    public String getFlowPath() {
@@ -849,6 +869,23 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("throw exception immediately on lexer error")
             .longOpt(ARG_THROW_ON_LEXER_ERROR).build());
+      _options.addOption(Option.builder()
+            .desc("flatten hierarchical juniper configuration files")
+            .longOpt(ARG_FLATTEN).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .hasArg()
+                  .argName(ARGNAME_FLATTEN_SOURCE)
+                  .desc("path to test rig containing hierarchical juniper configurations to be flattened")
+                  .longOpt(ARG_FLATTEN_SOURCE).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .hasArg()
+                  .argName(ARGNAME_FLATTEN_DESTINATION)
+                  .desc("output path to test rig in which flat juniper (and all other) configurations will be placed")
+                  .longOpt(ARG_FLATTEN_DESTINATION).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -998,6 +1035,9 @@ public class Settings {
       _roleHeaders = line.hasOption(ARG_ROLE_HEADERS);
       _throwOnParserError = line.hasOption(ARG_THROW_ON_PARSER_ERROR);
       _throwOnLexerError = line.hasOption(ARG_THROW_ON_LEXER_ERROR);
+      _flatten = line.hasOption(ARG_FLATTEN);
+      _flattenSource = line.getOptionValue(ARG_FLATTEN_SOURCE);
+      _flattenDestination = line.getOptionValue(ARG_FLATTEN_DESTINATION);
    }
 
    public boolean printParseTree() {

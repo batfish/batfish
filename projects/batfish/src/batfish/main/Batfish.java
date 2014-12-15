@@ -68,6 +68,8 @@ import batfish.grammar.cisco.CiscoCombinedParser;
 import batfish.grammar.cisco.controlplane.CiscoControlPlaneExtractor;
 import batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
 import batfish.grammar.flatjuniper.FlatJuniperGrammarCombinedParser;
+import batfish.grammar.juniper.JuniperFlattener;
+import batfish.grammar.juniper.JuniperGrammarCombinedParser;
 import batfish.grammar.logicblox.LogQLPredicateInfoExtractor;
 import batfish.grammar.logicblox.LogiQLCombinedParser;
 import batfish.grammar.logicblox.LogiQLPredicateInfoResolver;
@@ -724,6 +726,53 @@ public class Batfish implements AutoCloseable {
       }
       String output = sb.toString();
       writeFile(outputPath, output);
+   }
+
+   private String flatten(String input) {
+      JuniperGrammarCombinedParser jparser = new JuniperGrammarCombinedParser(
+            input, _settings.getThrowOnParserError(),
+            _settings.getThrowOnLexerError());
+      ParserRuleContext jtree = jparser.parse();
+      JuniperFlattener flattener = new JuniperFlattener();
+      ParseTreeWalker walker = new ParseTreeWalker();
+      walker.walk(flattener, jtree);
+      return flattener.getFlattenedConfigurationText();
+   }
+
+   private void flatten(String inputPath, String outputPath) {
+      File inputFolder = new File(inputPath);
+      File[] configs = inputFolder.listFiles();
+      if (configs == null) {
+         throw new BatfishException("Error reading configs from input test rig");
+      }
+      try {
+         Files.createDirectories(Paths.get(outputPath));
+      }
+      catch (IOException e) {
+         throw new BatfishException(
+               "Could not create output testrig directory", e);
+      }
+      for (File config : configs) {
+         String name = config.getName();
+         _logger.debug("Reading config: \"" + config + "\"");
+         String configText = readFile(config);
+         _logger.debug("..OK\n");
+         File outputFile = Paths.get(outputPath, name).toFile();
+         String outputFileAsString = outputFile.toString();
+         if (configText.charAt(0) == '#'
+               && !configText.matches("(?m)set version.*")) {
+            _logger
+                  .debug("Flattening config to \"" + outputFileAsString + "\"");
+            String flatConfigText = flatten(configText);
+            writeFile(outputFileAsString, flatConfigText);
+         }
+         else {
+            _logger.debug("Copying unmodified config to \""
+                  + outputFileAsString + "\"");
+            writeFile(outputFileAsString, configText);
+         }
+         _logger.debug("..OK\n");
+      }
    }
 
    private void genInterfaceFailureBlackHoleQueries() {
@@ -1608,6 +1657,13 @@ public class Batfish implements AutoCloseable {
                   _settings.getPedantic());
          }
          else if (fileText.charAt(0) == '#') {
+            // either flat or hierarchical
+            if (!fileText.contains("set version")) {
+               // hierarchical
+               throw new BatfishException(
+                     "Juniper configurations must be flattened prior to this stage");
+            }
+            // flat
             combinedParser = new FlatJuniperGrammarCombinedParser(fileText,
                   _settings.getThrowOnParserError(),
                   _settings.getThrowOnLexerError());
@@ -1900,6 +1956,15 @@ public class Batfish implements AutoCloseable {
 
       if (_settings.getBuildPredicateInfo()) {
          buildPredicateInfo();
+         return;
+      }
+
+      if (_settings.getFlatten()) {
+         String flattenSource = Paths.get(_settings.getFlattenSource(),
+               "configs").toString();
+         String flattenDestination = Paths.get(
+               _settings.getFlattenDestination(), "configs").toString();
+         flatten(flattenSource, flattenDestination);
          return;
       }
 

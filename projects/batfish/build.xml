@@ -333,15 +333,6 @@
                <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammarParser.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammarLexer.g4"/>
                <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammarLexer.tokens"/>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammarCommonParser.g4"/>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_bgp.g4"/>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_firewall.g4"/>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_interface.g4"/>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_ospf.g4"/>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_policy_options.g4"/>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_protocols.g4"/>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_routing_options.g4"/>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperGrammar_system.g4"/>
             </dependencies>
          </antlr4parser>
          <antlr4parser grammar.name="LogiQLParser" grammar.packagedir="batfish/grammar/logicblox">
