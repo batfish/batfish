@@ -16,4 +16,5 @@ RUN git clone https://github.com/arifogel/batfish.git
 RUN echo ". /data/batfish/tools/batfish_functions.sh" > /etc/profile.d/Z98-batfish.sh
 RUN cd batfish && bash --login -c "batfish_build"
 
-# Remaining environment setup (pointing to batfish server, etc) should be done via docker -e flags.
+# TODO: Remaining environment setup (pointing to batfish server, etc) should be overridable via docker -e flags.
+ADD logicblox-env /etc/profile.d/Z99-logicblox-client.sh

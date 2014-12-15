@@ -1,0 +1,7 @@
+export LB_HOST=172.17.0.67
+export LB_PORT=55179
+export LB_WEB_PORT=8080
+export LB_WEB_ADMIN_PORT=55183
+export LB_LOGIC_FILE_ROOT="/data/batfish/projects/batfish/bin/batfish/logic"
+
+export BATFISH_COMMON_ARGS="-lbhost $LB_HOST -lbport $LB_PORT -lbwebport $LB_WEB_PORT -lbwebadminport $LB_WEB_ADMIN_PORT -logicdir $LB_LOGIC_FILE_ROOT"

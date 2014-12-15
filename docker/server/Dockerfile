@@ -25,5 +25,4 @@ EXPOSE 8080 8080
 # Open LogicBlox Web Admin Port
 EXPOSE 55183 55183
 
-# TODO: Run this on a machine with > 2G in /dev/shm
-# RUN bash --login slb && batfish_build lbcompile
+RUN bash --login -c "batfish_build lbcompile"
