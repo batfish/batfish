@@ -3,7 +3,7 @@ parser grammar CiscoGrammar_acl;
 import CiscoGrammarCommonParser;
 
 options {
-   tokenVocab = CiscoGrammarCommonLexer;
+   tokenVocab = CiscoGrammarLexer;
 }
 
 access_list_ip_range

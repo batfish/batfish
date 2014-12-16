@@ -3,7 +3,7 @@ parser grammar CiscoGrammar_bgp;
 import CiscoGrammarCommonParser;
 
 options {
-   tokenVocab = CiscoGrammarCommonLexer;
+   tokenVocab = CiscoGrammarLexer;
 }
 
 activate_bgp_tail

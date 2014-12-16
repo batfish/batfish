@@ -1,4 +1,4 @@
-lexer grammar CiscoGrammarCommonLexer;
+lexer grammar CiscoGrammarLexer;
 
 options {
    superClass = 'batfish.grammar.BatfishLexer';

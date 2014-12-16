@@ -3,7 +3,7 @@ parser grammar CiscoGrammar_routemap;
 import CiscoGrammarCommonParser;
 
 options {
-   tokenVocab = CiscoGrammarCommonLexer;
+   tokenVocab = CiscoGrammarLexer;
 }
 
 match_as_path_access_list_rm_stanza

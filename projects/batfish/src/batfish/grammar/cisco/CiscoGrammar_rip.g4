@@ -3,7 +3,7 @@ parser grammar CiscoGrammar_rip;
 import CiscoGrammarCommonParser;
 
 options {
-   tokenVocab = CiscoGrammarCommonLexer;
+   tokenVocab = CiscoGrammarLexer;
 }
 
 distance_rr_stanza

@@ -66,7 +66,7 @@ at_apply_groups
 
 at_area_range
 :
-   AREA_RANGE IP_ADDRESS_WITH_MASK
+   AREA_RANGE IP_PREFIX
 ;
 
 at_interface

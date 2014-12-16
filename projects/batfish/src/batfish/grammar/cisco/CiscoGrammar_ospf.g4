@@ -3,7 +3,7 @@ parser grammar CiscoGrammar_ospf;
 import CiscoGrammarCommonParser;
 
 options {
-   tokenVocab = CiscoGrammarCommonLexer;
+   tokenVocab = CiscoGrammarLexer;
 }
 
 area_ipv6_ro_stanza

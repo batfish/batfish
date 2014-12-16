@@ -74,7 +74,7 @@ filter
 
 ifamt_address
 :
-   ADDRESS IP_ADDRESS_WITH_MASK
+   ADDRESS IP_PREFIX
    (
       PRIMARY
       | PREFERRED

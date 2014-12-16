@@ -87,8 +87,8 @@ fromt_route_filter_header
 :
    ROUTE_FILTER
    (
-      IP_ADDRESS_WITH_MASK
-      | IPV6_ADDRESS_WITH_MASK
+      IP_PREFIX
+      | IPV6_PREFIX
    )
 ;
 
@@ -113,8 +113,8 @@ fromt_source_address_filter_header
 :
    SOURCE_ADDRESS_FILTER
    (
-      IP_ADDRESS_WITH_MASK
-      | IPV6_ADDRESS_WITH_MASK
+      IP_PREFIX
+      | IPV6_PREFIX
    )
 ;
 
@@ -162,12 +162,12 @@ plt_apply_path
 
 plt_network
 :
-   network = IP_ADDRESS_WITH_MASK
+   network = IP_PREFIX
 ;
 
 plt_network6
 :
-   network = IPV6_ADDRESS_WITH_MASK
+   network = IPV6_PREFIX
 ;
 
 pot_as_path
@@ -284,8 +284,8 @@ rft_through
 :
    THROUGH
    (
-      IP_ADDRESS_WITH_MASK
-      | IPV6_ADDRESS_WITH_MASK
+      IP_PREFIX
+      | IPV6_PREFIX
    )
 ;
 

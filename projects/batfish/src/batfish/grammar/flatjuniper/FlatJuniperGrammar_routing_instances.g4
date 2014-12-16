@@ -45,8 +45,8 @@ ribt_aggregate_header
 :
    AGGREGATE ROUTE
    (
-      IP_ADDRESS_WITH_MASK
-      | IPV6_ADDRESS_WITH_MASK
+      IP_PREFIX
+      | IPV6_PREFIX
    )
 ;
 
@@ -97,7 +97,7 @@ rit_routing_options
 
 rot_aggregate
 :
-   AGGREGATE ROUTE IP_ADDRESS_WITH_MASK
+   AGGREGATE ROUTE IP_PREFIX
    (
       (
          AS_PATH ORIGIN IGP
@@ -132,8 +132,8 @@ rot_generate_header
 :
    GENERATE ROUTE
    (
-      IP_ADDRESS_WITH_MASK
-      | IPV6_ADDRESS_WITH_MASK
+      IP_PREFIX
+      | IPV6_PREFIX
    )
 ;
 
@@ -194,8 +194,8 @@ rot_static_header
 :
    STATIC ROUTE
    (
-      IP_ADDRESS_WITH_MASK
-      | IPV6_ADDRESS_WITH_MASK
+      IP_PREFIX
+      | IPV6_PREFIX
    )
 ;
 

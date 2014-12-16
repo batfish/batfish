@@ -1786,7 +1786,7 @@ IP_ADDRESS
    F_DecByte '.' F_DecByte '.' F_DecByte
 ;
 
-IP_ADDRESS_WITH_MASK
+IP_PREFIX
 :
    F_DecByte '.'
    {enableIP_ADDRESS}?
@@ -1824,7 +1824,7 @@ IPV6_ADDRESS
    )?
 ;
 
-IPV6_ADDRESS_WITH_MASK
+IPV6_PREFIX
 :
    (
       (

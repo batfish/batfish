@@ -10,8 +10,8 @@ fwfromt_address
 :
    ADDRESS
    (
-      IP_ADDRESS_WITH_MASK
-      | IPV6_ADDRESS_WITH_MASK
+      IP_PREFIX
+      | IPV6_PREFIX
    )
 ;
 
@@ -19,8 +19,8 @@ fwfromt_destination_address
 :
    DESTINATION_ADDRESS
    (
-      IP_ADDRESS_WITH_MASK
-      | IPV6_ADDRESS_WITH_MASK
+      IP_PREFIX
+      | IPV6_PREFIX
    )
 ;
 
@@ -81,8 +81,8 @@ fwfromt_source_address
 :
    SOURCE_ADDRESS
    (
-      IP_ADDRESS_WITH_MASK
-      | IPV6_ADDRESS_WITH_MASK
+      IP_PREFIX
+      | IPV6_PREFIX
    )
 ;
 

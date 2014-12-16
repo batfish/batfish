@@ -3,7 +3,7 @@ parser grammar CiscoGrammar_interface;
 import CiscoGrammarCommonParser;
 
 options {
-   tokenVocab = CiscoGrammarCommonLexer;
+   tokenVocab = CiscoGrammarLexer;
 }
 
 description_if_stanza

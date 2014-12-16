@@ -103,7 +103,7 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
 
    @Override
    public void exitIfamt_address(Ifamt_addressContext ctx) {
-      Prefix prefix = new Prefix(ctx.IP_ADDRESS_WITH_MASK().getText());
+      Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
       _currentInterface.setPrefix(prefix);
    }
 
