@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-CiscoCommonParser, Cisco_acl, Cisco_bgp, Cisco_interface, Cisco_ospf, Cisco_rip, Cisco_routemap;
+Cisco_common, Cisco_acl, Cisco_bgp, Cisco_interface, Cisco_ospf, Cisco_rip, Cisco_routemap;
 
 options {
    superClass = 'batfish.grammar.BatfishParser';

@@ -275,9 +275,9 @@
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoParser.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoLexer.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="CiscoLexer.tokens"/>
-               <fileset dir="src/batfish/grammar/cisco" includes="CiscoCommonParser.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="Cisco_acl.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="Cisco_bgp.g4"/>
+               <fileset dir="src/batfish/grammar/cisco" includes="Cisco_common.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="Cisco_interface.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="Cisco_ospf.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="Cisco_rip.g4"/>
@@ -303,8 +303,8 @@
                <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniperParser.g4"/>
                <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniperLexer.g4"/>
                <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniperLexer.tokens"/>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniperCommonParser.g4"/>
                <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_bgp.g4"/>
+               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_common.g4"/>
                <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_firewall.g4"/>
                <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_interfaces.g4"/>
                <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_isis.g4"/>

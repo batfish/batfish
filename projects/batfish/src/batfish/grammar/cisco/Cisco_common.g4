@@ -1,4 +1,4 @@
-parser grammar CiscoCommonParser;
+parser grammar Cisco_common;
 
 options {
    tokenVocab = CiscoLexer;

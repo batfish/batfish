@@ -1,8 +1,6 @@
 *.lbb
 *.lbp
 *.tokens
-ant-contrib
-ant-doxygen
 bin
 cygwin-symlink-restore-data
 doc

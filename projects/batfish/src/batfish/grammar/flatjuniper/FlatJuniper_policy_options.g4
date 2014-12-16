@@ -1,6 +1,6 @@
 parser grammar FlatJuniper_policy_options;
 
-import FlatJuniperCommonParser;
+import FlatJuniper_common;
 
 options {
    tokenVocab = FlatJuniperLexer;

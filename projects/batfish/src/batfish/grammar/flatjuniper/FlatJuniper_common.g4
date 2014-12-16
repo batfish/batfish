@@ -1,4 +1,4 @@
-parser grammar FlatJuniperCommonParser;
+parser grammar FlatJuniper_common;
 
 options {
    tokenVocab = FlatJuniperLexer;

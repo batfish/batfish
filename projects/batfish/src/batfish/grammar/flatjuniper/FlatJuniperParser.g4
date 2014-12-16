@@ -1,7 +1,7 @@
 parser grammar FlatJuniperParser;
 
 import
-FlatJuniperCommonParser, FlatJuniper_bgp, FlatJuniper_firewall, FlatJuniper_interfaces, FlatJuniper_isis, FlatJuniper_mpls, FlatJuniper_ospf, FlatJuniper_policy_options, FlatJuniper_routing_instances;
+FlatJuniper_common, FlatJuniper_bgp, FlatJuniper_firewall, FlatJuniper_interfaces, FlatJuniper_isis, FlatJuniper_mpls, FlatJuniper_ospf, FlatJuniper_policy_options, FlatJuniper_routing_instances;
 
 options {
    superClass = 'batfish.grammar.BatfishParser';

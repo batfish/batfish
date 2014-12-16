@@ -1,6 +1,6 @@
 parser grammar Cisco_interface;
 
-import CiscoCommonParser;
+import Cisco_common;
 
 options {
    tokenVocab = CiscoLexer;
