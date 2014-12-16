@@ -1,14 +1,14 @@
 package batfish.grammar.cisco;
 
 import batfish.grammar.BatfishCombinedParser;
-import batfish.grammar.cisco.CiscoGrammar.Cisco_configurationContext;
+import batfish.grammar.cisco.CiscoGrammarParser.Cisco_configurationContext;
 
 public class CiscoCombinedParser extends
-      BatfishCombinedParser<CiscoGrammar, CiscoGrammarCommonLexer> {
+      BatfishCombinedParser<CiscoGrammarParser, CiscoGrammarLexer> {
 
    public CiscoCombinedParser(String input, boolean throwOnParserError,
          boolean throwOnLexerError) {
-      super(CiscoGrammar.class, CiscoGrammarCommonLexer.class, input,
+      super(CiscoGrammarParser.class, CiscoGrammarLexer.class, input,
             throwOnParserError, throwOnParserError);
    }
 

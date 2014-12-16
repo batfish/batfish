@@ -9,10 +9,10 @@ import java.util.List;
 //import org.antlr.v4.runtime.tree.TerminalNode;
 //import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 
-import batfish.grammar.cisco.CiscoGrammar.*;
+import batfish.grammar.cisco.CiscoGrammarParser.*;
 import batfish.grammar.cisco.*;
 
-public class CiscoControlPlaneStripper extends CiscoGrammarBaseListener {
+public class CiscoControlPlaneStripper extends CiscoGrammarParserBaseListener {
 /*
    @Override
    public void visitTerminal(TerminalNode t) {

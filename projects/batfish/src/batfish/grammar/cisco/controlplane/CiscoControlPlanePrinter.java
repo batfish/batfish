@@ -4,10 +4,10 @@ package batfish.grammar.cisco.controlplane;
 //import org.antlr.v4.runtime.tree.TerminalNode;
 
 //import batfish.grammar.cisco.CiscoGrammar.*;
-import batfish.grammar.cisco.CiscoGrammarBaseListener;
+import batfish.grammar.cisco.CiscoGrammarParserBaseListener;
 //import batfish.grammar.cisco.CiscoGrammarCommonLexer;
 
-public class CiscoControlPlanePrinter extends CiscoGrammarBaseListener {
+public class CiscoControlPlanePrinter extends CiscoGrammarParserBaseListener {
 
 //   private StringBuilder _sb;
 //   private int _indent;

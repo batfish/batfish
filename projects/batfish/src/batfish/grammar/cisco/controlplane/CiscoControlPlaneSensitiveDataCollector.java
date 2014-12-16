@@ -10,7 +10,7 @@ import java.util.Set;
 import batfish.grammar.cisco.*;
 import batfish.representation.Ip;
 
-public class CiscoControlPlaneSensitiveDataCollector extends CiscoGrammarBaseListener {
+public class CiscoControlPlaneSensitiveDataCollector extends CiscoGrammarParserBaseListener {
 
    private Map<String, String> _variableMap;
 //   private Set<Ip> _ipAddresses;

@@ -4,13 +4,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import batfish.grammar.cisco.CiscoGrammar.Ip_prefix_list_stanzaContext;
-
 public class PrefixList implements Serializable {
 
    private static final long serialVersionUID = 1L;
-
-   private transient Ip_prefix_list_stanzaContext _context;
 
    // List of lines that stores the prefix
    private List<PrefixListLine> _lines;
@@ -39,10 +35,6 @@ public class PrefixList implements Serializable {
       _lines.addAll(r);
    }
 
-   public Ip_prefix_list_stanzaContext getContext() {
-      return _context;
-   }
-
    public List<PrefixListLine> getLines() {
       return _lines;
    }
@@ -53,10 +45,6 @@ public class PrefixList implements Serializable {
 
    public boolean isIpV6() {
       return _isIpV6;
-   }
-
-   public void setContext(Ip_prefix_list_stanzaContext ctx) {
-      _context = ctx;
    }
 
 }

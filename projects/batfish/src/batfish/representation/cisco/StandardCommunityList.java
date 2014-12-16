@@ -4,13 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import batfish.grammar.cisco.CiscoGrammar.Ip_community_list_standard_stanzaContext;
-
 public class StandardCommunityList implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private transient Ip_community_list_standard_stanzaContext _context;
    private List<StandardCommunityListLine> _lines;
    private String _name;
 
@@ -23,20 +20,12 @@ public class StandardCommunityList implements Serializable {
       _lines.add(line);
    }
 
-   public Ip_community_list_standard_stanzaContext getContext() {
-      return _context;
-   }
-
    public List<StandardCommunityListLine> getLines() {
       return _lines;
    }
 
    public String getName() {
       return _name;
-   }
-
-   public void setContext(Ip_community_list_standard_stanzaContext ctx) {
-      _context = ctx;
    }
 
    public ExpandedCommunityList toExpandedCommunityList() {

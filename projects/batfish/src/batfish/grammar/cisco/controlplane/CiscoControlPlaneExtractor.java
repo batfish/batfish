@@ -17,13 +17,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ControlPlaneExtractor;
 import batfish.grammar.ParseTreePrettyPrinter;
-import batfish.grammar.cisco.CiscoGrammar.*;
+import batfish.grammar.cisco.CiscoGrammarParser.*;
 import batfish.grammar.cisco.*;
-import batfish.grammar.cisco.CiscoGrammar.CommunityContext;
-import batfish.grammar.cisco.CiscoGrammar.Description_if_stanzaContext;
-import batfish.grammar.cisco.CiscoGrammar.Interface_nameContext;
-import batfish.grammar.cisco.CiscoGrammar.Interface_stanzaContext;
-import batfish.grammar.cisco.CiscoGrammar.Port_specifierContext;
 import batfish.main.BatfishException;
 import batfish.main.PedanticBatfishException;
 import batfish.representation.Ip;
@@ -80,7 +75,7 @@ import batfish.representation.cisco.StaticRoute;
 import batfish.util.SubRange;
 import batfish.util.Util;
 
-public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
+public class CiscoControlPlaneExtractor extends CiscoGrammarParserBaseListener
       implements ControlPlaneExtractor {
 
    private static final Map<String, String> CISCO_INTERFACE_PREFIXES = getCiscoInterfacePrefixes();
@@ -275,7 +270,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    public static Ip getPrefixIp(Token ipPrefixToken) {
-      if (ipPrefixToken.getType() != CiscoGrammarCommonLexer.IP_PREFIX) {
+      if (ipPrefixToken.getType() != CiscoGrammarLexer.IP_PREFIX) {
          throw new BatfishException(
                "attempted to get prefix length from non-IP_PREFIX token: "
                      + ipPrefixToken.getType());
@@ -288,7 +283,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    }
 
    public static int getPrefixLength(Token ipPrefixToken) {
-      if (ipPrefixToken.getType() != CiscoGrammarCommonLexer.IP_PREFIX) {
+      if (ipPrefixToken.getType() != CiscoGrammarLexer.IP_PREFIX) {
          throw new BatfishException(
                "attempted to get prefix length from non-IP_PREFIX token: "
                      + ipPrefixToken.getType());
@@ -401,7 +396,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
    public static long toLong(CommunityContext ctx) {
       switch (ctx.com.getType()) {
-      case CiscoGrammarCommonLexer.COMMUNITY_NUMBER:
+      case CiscoGrammarLexer.COMMUNITY_NUMBER:
          String numberText = ctx.com.getText();
          String[] parts = numberText.split(":");
          String leftStr = parts[0];
@@ -410,19 +405,19 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          long right = Long.parseLong(rightStr);
          return (left << 16) | right;
 
-      case CiscoGrammarCommonLexer.DEC:
+      case CiscoGrammarLexer.DEC:
          return toLong(ctx.com);
 
-      case CiscoGrammarCommonLexer.INTERNET:
+      case CiscoGrammarLexer.INTERNET:
          return 0l;
 
-      case CiscoGrammarCommonLexer.LOCAL_AS:
+      case CiscoGrammarLexer.LOCAL_AS:
          return 0xFFFFFF03l;
 
-      case CiscoGrammarCommonLexer.NO_ADVERTISE:
+      case CiscoGrammarLexer.NO_ADVERTISE:
          return 0xFFFFFF02l;
 
-      case CiscoGrammarCommonLexer.NO_EXPORT:
+      case CiscoGrammarLexer.NO_EXPORT:
          return 0xFFFFFF01l;
 
       default:
@@ -582,7 +577,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          Ip_as_path_access_list_stanzaContext ctx) {
       String name = ctx.numbered.name.getText();
       _currentAsPathAcl = new IpAsPathAccessList(name);
-      _currentAsPathAcl.setContext(ctx);
       _configuration.getAsPathAccessLists().put(name, _currentAsPathAcl);
    }
 
@@ -597,7 +591,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          name = ctx.named.name.getText();
       }
       _currentExpandedCommunityList = new ExpandedCommunityList(name);
-      _currentExpandedCommunityList.setContext(ctx);
       _configuration.getExpandedCommunityLists().put(name,
             _currentExpandedCommunityList);
    }
@@ -613,7 +606,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          name = ctx.named.name.getText();
       }
       _currentStandardCommunityList = new StandardCommunityList(name);
-      _currentStandardCommunityList.setContext(ctx);
       _configuration.getStandardCommunityLists().put(name,
             _currentStandardCommunityList);
    }
@@ -629,7 +621,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
 
       String name = ctx.named.name.getText();
       _currentPrefixList = new PrefixList(name, isIpV6);
-      _currentPrefixList.setContext(ctx);
       _configuration.getPrefixLists().put(name, _currentPrefixList);
    }
 
@@ -773,7 +764,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
    public void enterRoute_map_stanza(Route_map_stanzaContext ctx) {
       String name = ctx.named.name.getText();
       _currentRouteMap = new RouteMap(name);
-      _currentRouteMap.setContext(ctx);
       _configuration.getRouteMaps().put(name, _currentRouteMap);
    }
 
@@ -783,7 +773,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       LineAction action = getAccessListAction(ctx.rmt);
       _currentRouteMapClause = new RouteMapClause(action,
             _currentRouteMap.getMapName(), num);
-      _currentRouteMapClause.setContext(ctx);
       Map<Integer, RouteMapClause> clauses = _currentRouteMap.getClauses();
       if (clauses.containsKey(num)) {
          throw new BatfishException("Route map '"
@@ -827,7 +816,6 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
          name = ctx.numbered.name.getText();
       }
       _currentStandardAcl = new StandardAccessList(name);
-      _currentStandardAcl.setContext(ctx);
       _configuration.getStandardAcls().put(name, _currentStandardAcl);
    }
 
@@ -2105,7 +2093,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarBaseListener
       }
       String prefix = "WARNING " + (_warnings.size() + 1) + ": ";
       StringBuilder sb = new StringBuilder();
-      List<String> ruleNames = Arrays.asList(CiscoGrammar.ruleNames);
+      List<String> ruleNames = Arrays.asList(CiscoGrammarParser.ruleNames);
       String ruleStack = ctx.toString(ruleNames);
       sb.append(prefix
             + "Missing implementation for top (leftmost) parser rule in stack: '"
