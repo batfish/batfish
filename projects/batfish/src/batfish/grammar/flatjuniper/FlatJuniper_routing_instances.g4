@@ -8,12 +8,12 @@ options {
 
 agt_as_path
 :
-   AS_PATH PATH DEC
+   AS_PATH PATH path = as_path_expr
 ;
 
 agt_preference
 :
-   PREFERENCE DEC
+   PREFERENCE preference = DEC
 ;
 
 gt_discard

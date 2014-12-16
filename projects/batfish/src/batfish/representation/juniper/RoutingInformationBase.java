@@ -2,6 +2,7 @@ package batfish.representation.juniper;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.TreeMap;
 
 import batfish.representation.Prefix;
 
@@ -34,6 +35,9 @@ public class RoutingInformationBase implements Serializable {
 
    public RoutingInformationBase(String name) {
       _name = name;
+      _aggregateRoutes = new TreeMap<Prefix, AggregateRoute>();
+      _generatedRoutes = new TreeMap<Prefix, GeneratedRoute>();
+      _staticRoutes = new TreeMap<Prefix, StaticRoute>();
    }
 
    public Map<Prefix, AggregateRoute> getAggregateRoutes() {

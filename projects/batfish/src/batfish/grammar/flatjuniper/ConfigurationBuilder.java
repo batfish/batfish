@@ -6,11 +6,16 @@ import java.util.Map;
 import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
+import batfish.representation.AsPath;
+import batfish.representation.AsSet;
 import batfish.representation.Prefix;
+import batfish.representation.juniper.AggregateRoute;
 import batfish.representation.juniper.Interface;
 import batfish.representation.juniper.JuniperVendorConfiguration;
 import batfish.representation.juniper.RoutingInformationBase;
@@ -18,7 +23,20 @@ import batfish.representation.juniper.RoutingInstance;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
+   private static final AggregateRoute DUMMY_AGGREGATE_ROUTE = new AggregateRoute(
+         Prefix.ZERO);
+
+   private static Integer toInt(TerminalNode node) {
+      return toInt(node.getSymbol());
+   }
+
+   private static int toInt(Token token) {
+      return Integer.parseInt(token.getText());
+   }
+
    private JuniperVendorConfiguration _configuration;
+
+   private AggregateRoute _currentAggregateRoute;
 
    private Interface _currentInterface;
 
@@ -54,6 +72,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_currentInterface == null) {
          _currentInterface = new Interface(unit);
          units.put(unit, _currentInterface);
+      }
+   }
+
+   @Override
+   public void enterRibt_aggregate(Ribt_aggregateContext ctx) {
+      if (ctx.IP_PREFIX() != null) {
+         Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
+         Map<Prefix, AggregateRoute> aggregateRoutes = _currentRib
+               .getAggregateRoutes();
+         _currentAggregateRoute = aggregateRoutes.get(prefix);
+         if (_currentAggregateRoute == null) {
+            _currentAggregateRoute = new AggregateRoute(prefix);
+            aggregateRoutes.put(prefix, _currentAggregateRoute);
+         }
+      }
+      else {
+         _currentAggregateRoute = DUMMY_AGGREGATE_ROUTE;
       }
    }
 
@@ -102,6 +137,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitAgt_as_path(Agt_as_pathContext ctx) {
+      AsPath asPath = toAsPath(ctx.path);
+      _currentAggregateRoute.setAsPath(asPath);
+   }
+
+   @Override
+   public void exitAgt_preference(Agt_preferenceContext ctx) {
+      int preference = toInt(ctx.preference);
+      _currentAggregateRoute.setPreference(preference);
+   }
+
+   @Override
    public void exitIfamt_address(Ifamt_addressContext ctx) {
       Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
       _currentInterface.setPrefix(prefix);
@@ -131,6 +178,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitRibt_aggregate(Ribt_aggregateContext ctx) {
+      _currentAggregateRoute = null;
+   }
+
+   @Override
    public void exitS_interfaces(S_interfacesContext ctx) {
       _currentInterface = null;
       _currentMasterInterface = null;
@@ -151,6 +203,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return _configuration;
    }
 
+   private AsPath toAsPath(As_path_exprContext path) {
+      AsPath asPath = new AsPath();
+      for (As_unitContext ctx : path.items) {
+         AsSet asSet = new AsSet();
+         if (ctx.DEC() != null) {
+            asSet.add(toInt(ctx.DEC()));
+         }
+         else {
+            for (Token token : ctx.as_set().items) {
+               asSet.add(toInt(token));
+            }
+         }
+         asPath.add(asSet);
+      }
+      return asPath;
+   }
+
    @SuppressWarnings("unused")
    private void todo(ParserRuleContext ctx) {
       todo(ctx, "Unknown");
@@ -163,8 +232,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       String prefix = "WARNING " + (_warnings.size() + 1) + ": ";
       StringBuilder sb = new StringBuilder();
-      List<String> ruleNames = Arrays
-            .asList(FlatJuniperParser.ruleNames);
+      List<String> ruleNames = Arrays.asList(FlatJuniperParser.ruleNames);
       String ruleStack = ctx.toString(ruleNames);
       sb.append(prefix
             + "Missing implementation for top (leftmost) parser rule in stack: '"

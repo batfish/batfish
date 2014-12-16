@@ -4,9 +4,25 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
-s_null_filler
+as_path_expr
 :
-   ~( APPLY_GROUPS | NEWLINE )* s_apply_groups?
+   (
+      items += as_unit
+   )+
+;
+
+as_set
+:
+   OPEN_BRACKET
+   (
+      items += DEC
+   )+ CLOSE_BRACKET
+;
+
+as_unit
+:
+   as_set
+   | DEC
 ;
 
 icmp_code
@@ -101,6 +117,11 @@ subrange
    (
       DASH high = DEC
    )?
+;
+
+s_null_filler
+:
+   ~( APPLY_GROUPS | NEWLINE )* s_apply_groups?
 ;
 
 variable

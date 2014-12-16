@@ -2027,7 +2027,7 @@ M_AsPath_ORIGIN
 
 M_AsPath_PATH
 :
-   'path' -> type(PATH), popMode
+   'path' -> type(PATH), mode(M_AsPathPath)
 ;
 
 M_AsPath_VARIABLE
@@ -2040,6 +2040,51 @@ M_AsPath_WS
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;
 
+mode M_AsPathPath;
+
+M_AsPathPath_DEC
+:
+   [0-9]+ -> type(DEC), popMode
+;
+
+M_AsPathPath_DOUBLE_QUOTE
+:
+   '"' -> channel(HIDDEN), mode(M_AsPathExpr)
+;
+
+M_AsPathPath_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+
+mode M_AsPathExpr;
+
+M_AsPathExpr_DEC
+:
+   [0-9]+ -> type(DEC)
+;
+
+M_AsPathExpr_OPEN_BRACKET
+:
+   '[' -> type(OPEN_BRACKET)
+;
+
+M_AsPathExpr_CLOSE_BRACKET
+:
+   ']' -> type(CLOSE_BRACKET)
+;
+
+M_AsPathExpr_DOUBLE_QUOTE
+:
+   '"' -> channel(HIDDEN), popMode
+;
+
+M_AsPathExpr_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
 mode M_AsPathRegex;
 
 AS_PATH_REGEX
@@ -2047,7 +2092,7 @@ AS_PATH_REGEX
    [0-9,^$[\]\-*.{}]+
 ;
 
-M_AsPath_DOUBLE_QUOTE
+M_AsPathRegex_DOUBLE_QUOTE
 :
    '"' -> channel(HIDDEN)
 ;

@@ -1,6 +1,9 @@
 package batfish.representation;
 
 public class Prefix implements Comparable<Prefix> {
+
+   public static final Prefix ZERO = new Prefix(new Ip(0l), 0);
+
    private Ip _network;
    private int _prefixLength;
 
