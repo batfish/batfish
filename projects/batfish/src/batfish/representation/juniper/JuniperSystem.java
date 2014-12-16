@@ -1,6 +1,8 @@
 package batfish.representation.juniper;
 
-public class Group extends JuniperConfiguration {
+import java.io.Serializable;
+
+public class JuniperSystem implements Serializable {
 
    /**
     *

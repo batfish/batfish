@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import batfish.representation.Ip;
+import batfish.representation.Prefix;
 import batfish.representation.SwitchportEncapsulationType;
 import batfish.representation.SwitchportMode;
 import batfish.util.SubRange;
@@ -20,15 +20,15 @@ public class Interface implements Serializable {
    private ArrayList<SubRange> _allowedVlans;
    private Double _bandwidth;
    private String _incomingFilter;
-   private Ip _ip;
    private String _name;
    private int _nativeVlan;
    private Integer _ospfCost;
    private int _ospfDeadInterval;
    private int _ospfHelloMultiplier;
    private String _outgoingFilter;
-   private Ip _subnet;
+   private Prefix _prefix;
    private SwitchportMode _switchportMode;
+
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
 
    private Map<String, Interface> _units;
@@ -67,10 +67,6 @@ public class Interface implements Serializable {
       return _incomingFilter;
    }
 
-   public Ip getIp() {
-      return _ip;
-   }
-
    public String getName() {
       return _name;
    }
@@ -83,11 +79,11 @@ public class Interface implements Serializable {
       return _ospfCost;
    }
 
-   public int getOSPFDeadInterval() {
+   public int getOspfDeadInterval() {
       return _ospfDeadInterval;
    }
 
-   public int getOSPFHelloMultiplier() {
+   public int getOspfHelloMultiplier() {
       return _ospfHelloMultiplier;
    }
 
@@ -95,8 +91,8 @@ public class Interface implements Serializable {
       return _outgoingFilter;
    }
 
-   public Ip getSubnetMask() {
-      return _subnet;
+   public Prefix getPrefix() {
+      return _prefix;
    }
 
    public SwitchportMode getSwitchportMode() {
@@ -127,10 +123,6 @@ public class Interface implements Serializable {
       _incomingFilter = accessListName;
    }
 
-   public void setIp(Ip ip) {
-      _ip = ip;
-   }
-
    public void setNativeVlan(int vlan) {
       _nativeVlan = vlan;
    }
@@ -139,11 +131,11 @@ public class Interface implements Serializable {
       _ospfCost = defaultOspfCost;
    }
 
-   public void setOSPFDeadInterval(int seconds) {
+   public void setOspfDeadInterval(int seconds) {
       _ospfDeadInterval = seconds;
    }
 
-   public void setOSPFHelloMultiplier(int multiplier) {
+   public void setOspfHelloMultiplier(int multiplier) {
       _ospfHelloMultiplier = multiplier;
    }
 
@@ -151,8 +143,8 @@ public class Interface implements Serializable {
       _outgoingFilter = accessListName;
    }
 
-   public void setSubnetMask(Ip mask) {
-      _subnet = mask;
+   public void setPrefix(Prefix prefix) {
+      _prefix = prefix;
    }
 
    public void setSwitchportMode(SwitchportMode switchportMode) {

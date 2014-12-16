@@ -1,10 +1,7 @@
 package batfish.representation.juniper;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import batfish.collections.RoleSet;
 import batfish.representation.Configuration;
@@ -14,27 +11,16 @@ import batfish.representation.VendorConversionException;
 public class JuniperVendorConfiguration extends JuniperConfiguration implements
       VendorConfiguration {
 
-   public static final String DEFAULT_ROUTING_INSTANCE = "default_routing_engine";
-
    private static final long serialVersionUID = 1L;
 
    private static final String VENDOR_NAME = "juniper";
 
    private List<String> _conversionWarnings;
 
-   private String _hostname;
-
    private RoleSet _roles;
-
-   private Map<String, JuniperVendorConfiguration> _routingInstances;
-
-   private Map<String, Interface> _interfaces;
 
    public JuniperVendorConfiguration() {
       _conversionWarnings = new ArrayList<String>();
-      _routingInstances = new HashMap<String, JuniperVendorConfiguration>();
-      _routingInstances.put(DEFAULT_ROUTING_INSTANCE, this);
-      _interfaces = new TreeMap<String, Interface>();
    }
 
    @Override
@@ -44,15 +30,7 @@ public class JuniperVendorConfiguration extends JuniperConfiguration implements
 
    @Override
    public String getHostname() {
-      return _hostname;
-   }
-
-   public Map<String, JuniperVendorConfiguration> getRoutingInstances() {
-      return _routingInstances;
-   }
-
-   public void setHostname(String hostname) {
-      _hostname = hostname;
+      return _defaultRoutingInstance.getHostname();
    }
 
    @Override
@@ -68,10 +46,6 @@ public class JuniperVendorConfiguration extends JuniperConfiguration implements
       c.setVendor(VENDOR_NAME);
       c.setRoles(_roles);
       return c;
-   }
-
-   public Map<String, Interface> getInterfaces() {
-      return _interfaces;
    }
 
 }

@@ -6,7 +6,7 @@ import java.util.List;
 
 import batfish.representation.Prefix;
 
-public class StaticRoute implements Serializable {
+public class GeneratedRoute implements Serializable {
 
    /**
    *
@@ -19,7 +19,7 @@ public class StaticRoute implements Serializable {
 
    private Prefix _prefix;
 
-   public StaticRoute(Prefix prefix) {
+   public GeneratedRoute(Prefix prefix) {
       _prefix = prefix;
       _policies = new ArrayList<String>();
    }

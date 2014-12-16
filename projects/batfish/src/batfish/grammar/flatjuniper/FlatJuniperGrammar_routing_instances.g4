@@ -170,12 +170,7 @@ rot_rib_groups_tail
 
 rot_rib
 :
-   rot_rib_header rot_rib_tail
-;
-
-rot_rib_header
-:
-   RIB name = VARIABLE
+   RIB name = VARIABLE rot_rib_tail
 ;
 
 rot_rib_tail
