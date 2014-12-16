@@ -117,12 +117,7 @@ fwft_interface_specific
 
 fwft_term
 :
-   fwft_term_header fwft_term_tail
-;
-
-fwft_term_header
-:
-   TERM variable
+   TERM name = variable fwft_term_tail
 ;
 
 fwft_term_tail
@@ -133,17 +128,12 @@ fwft_term_tail
 
 fwt_family
 :
-   fwt_family_header fwt_family_tail
-;
-
-fwt_family_header
-:
    FAMILY
    (
       INET
       | INET6
       | MPLS
-   )
+   ) fwt_family_tail
 ;
 
 fwt_family_tail
@@ -153,12 +143,7 @@ fwt_family_tail
 
 fwt_filter
 :
-   fwt_filter_header fwt_filter_tail
-;
-
-fwt_filter_header
-:
-   FILTER variable
+   FILTER name = variable fwt_filter_tail
 ;
 
 fwt_filter_tail

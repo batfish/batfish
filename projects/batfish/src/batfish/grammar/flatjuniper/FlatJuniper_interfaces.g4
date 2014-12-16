@@ -137,16 +137,11 @@ it_null
 
 it_unit
 :
-   it_unit_header it_unit_tail
-;
-
-it_unit_header
-:
    UNIT
    (
       WILDCARD
       | num = DEC
-   )
+   ) it_unit_tail
 ;
 
 it_unit_tail
@@ -179,18 +174,13 @@ mfamt_mtu
 
 s_interfaces
 :
-   s_interfaces_header s_interfaces_tail
-;
-
-s_interfaces_header
-:
    INTERFACES
    (
       WILDCARD
       | name = VARIABLE
       | // intentional blank
 
-   )
+   ) s_interfaces_tail
 ;
 
 s_interfaces_tail

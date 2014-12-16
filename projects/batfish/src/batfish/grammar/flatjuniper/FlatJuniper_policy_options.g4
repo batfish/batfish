@@ -80,16 +80,11 @@ fromt_protocol
 
 fromt_route_filter
 :
-   fromt_route_filter_header fromt_route_filter_tail
-;
-
-fromt_route_filter_header
-:
    ROUTE_FILTER
    (
       IP_PREFIX
       | IPV6_PREFIX
-   )
+   ) fromt_route_filter_tail
 ;
 
 fromt_route_filter_tail
@@ -106,16 +101,11 @@ fromt_route_filter_tail
 fromt_source_address_filter
 :
 // reference to router filter tail is intentional
-   fromt_source_address_filter_header fromt_route_filter_tail
-;
-
-fromt_source_address_filter_header
-:
    SOURCE_ADDRESS_FILTER
    (
       IP_PREFIX
       | IPV6_PREFIX
-   )
+   ) fromt_route_filter_tail
 ;
 
 fromt_tag
@@ -172,12 +162,7 @@ plt_network6
 
 pot_as_path
 :
-   pot_as_path_header pot_as_path_tail
-;
-
-pot_as_path_header
-:
-   AS_PATH variable
+   AS_PATH name = variable pot_as_path_tail
 ;
 
 pot_as_path_tail
@@ -187,12 +172,7 @@ pot_as_path_tail
 
 pot_community
 :
-   pot_community_header pot_community_tail
-;
-
-pot_community_header
-:
-   COMMUNITY name = variable
+   COMMUNITY name = variable pot_community_tail
 ;
 
 pot_community_tail
@@ -202,16 +182,11 @@ pot_community_tail
 
 pot_policy_statement
 :
-   pot_policy_statement_header pot_policy_statement_tail
-;
-
-pot_policy_statement_header
-:
    POLICY_STATEMENT
    (
       WILDCARD
       | name = variable
-   )
+   ) pot_policy_statement_tail
 ;
 
 pot_policy_statement_tail
@@ -222,12 +197,7 @@ pot_policy_statement_tail
 
 pot_prefix_list
 :
-   pot_prefix_list_header pot_prefix_list_tail
-;
-
-pot_prefix_list_header
-:
-   PREFIX_LIST name = variable
+   PREFIX_LIST name = variable pot_prefix_list_tail
 ;
 
 pot_prefix_list_tail
@@ -246,16 +216,11 @@ prefix_length_range
 
 pst_term
 :
-   pst_term_header pst_term_tail
-;
-
-pst_term_header
-:
    TERM
    (
       WILDCARD
       | name = variable
-   )
+   ) pst_term_tail
 ;
 
 pst_term_tail

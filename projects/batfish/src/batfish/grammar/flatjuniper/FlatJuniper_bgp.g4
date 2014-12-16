@@ -136,12 +136,7 @@ bt_family_tail
 
 bt_group
 :
-   bt_group_header bt_group_tail
-;
-
-bt_group_header
-:
-   GROUP name = VARIABLE
+   GROUP name = VARIABLE bt_group_tail
 ;
 
 bt_group_tail
@@ -181,16 +176,11 @@ bt_multipath
 
 bt_neighbor
 :
-   bt_neighbor_header bt_neighbor_tail
-;
-
-bt_neighbor_header
-:
    NEIGHBOR
    (
       IP_ADDRESS
       | IPV6_ADDRESS
-   )
+   ) bt_neighbor_tail
 ;
 
 bt_neighbor_tail

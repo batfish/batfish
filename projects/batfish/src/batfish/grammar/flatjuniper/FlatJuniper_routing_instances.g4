@@ -38,16 +38,11 @@ rgt_import_rib
 
 ribt_aggregate
 :
-   ribt_aggregate_header ribt_aggregate_tail
-;
-
-ribt_aggregate_header
-:
    AGGREGATE ROUTE
    (
       IP_PREFIX
       | IPV6_PREFIX
-   )
+   ) ribt_aggregate_tail
 ;
 
 ribt_aggregate_tail
@@ -125,16 +120,11 @@ rot_martians
 
 rot_generate
 :
-   rot_generate_header rot_generate_tail
-;
-
-rot_generate_header
-:
    GENERATE ROUTE
    (
       IP_PREFIX
       | IPV6_PREFIX
-   )
+   ) rot_generate_tail
 ;
 
 rot_generate_tail
@@ -155,12 +145,7 @@ rot_null
 
 rot_rib_groups
 :
-   rot_rib_groups_header rot_rib_groups_tail
-;
-
-rot_rib_groups_header
-:
-   RIB_GROUPS name = VARIABLE
+   RIB_GROUPS name = variable rot_rib_groups_tail
 ;
 
 rot_rib_groups_tail
@@ -187,16 +172,11 @@ rot_router_id
 
 rot_static
 :
-   rot_static_header rot_static_tail
-;
-
-rot_static_header
-:
    STATIC ROUTE
    (
       IP_PREFIX
       | IPV6_PREFIX
-   )
+   ) rot_static_tail
 ;
 
 rot_static_tail
@@ -212,11 +192,6 @@ rot_static_tail
 s_routing_instances
 :
    ROUTING_INSTANCES s_routing_instances_tail
-;
-
-s_routing_instances_header
-:
-   ROUTING_INSTANCES
 ;
 
 s_routing_instances_tail

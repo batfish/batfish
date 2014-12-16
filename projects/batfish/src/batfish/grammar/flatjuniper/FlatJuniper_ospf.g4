@@ -71,16 +71,11 @@ at_area_range
 
 at_interface
 :
-   at_interface_header at_interface_tail
-;
-
-at_interface_header
-:
    INTERFACE
    (
-      variable
+      name = variable
       | WILDCARD
-   )
+   ) at_interface_tail
 ;
 
 at_interface_tail
@@ -98,16 +93,11 @@ at_interface_tail
 
 at_label_switched_path
 :
-   at_label_switched_path_header at_label_switched_path_tail
-;
-
-at_label_switched_path_header
-:
    LABEL_SWITCHED_PATH
    (
-      variable
+      name = variable
       | WILDCARD
-   )
+   ) at_label_switched_path_tail
 ;
 
 at_label_switched_path_tail
@@ -170,16 +160,11 @@ ot_apply_groups
 
 ot_area
 :
-   ot_area_header ot_area_tail
-;
-
-ot_area_header
-:
    AREA
    (
-      IP_ADDRESS
+      area = IP_ADDRESS
       | WILDCARD
-   )
+   ) ot_area_tail
 ;
 
 ot_area_tail

@@ -48,7 +48,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterIt_unit(It_unitContext ctx) {
-      String unit = ctx.it_unit_header().num.getText();
+      String unit = ctx.num.getText();
       Map<String, Interface> units = _currentMasterInterface.getUnits();
       _currentInterface = units.get(unit);
       if (_currentInterface == null) {
@@ -84,7 +84,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterS_interfaces(S_interfacesContext ctx) {
-      String ifaceName = ctx.s_interfaces_header().name.getText();
+      String ifaceName = ctx.name.getText();
       Map<String, Interface> interfaces = _currentRoutingInstance
             .getInterfaces();
       _currentInterface = interfaces.get(ifaceName);
