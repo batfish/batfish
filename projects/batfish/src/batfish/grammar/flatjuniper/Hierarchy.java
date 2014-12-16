@@ -13,10 +13,10 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 
-import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.Flat_juniper_configurationContext;
-import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.Set_lineContext;
-import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.Set_line_tailContext;
-import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.StatementContext;
+import batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
+import batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
+import batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
+import batfish.grammar.flatjuniper.FlatJuniperParser.StatementContext;
 import batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import batfish.main.BatfishException;
 import batfish.main.PedanticBatfishException;
@@ -247,17 +247,17 @@ public class Hierarchy {
             }
             String newStatementText = sb.toString();
             TerminalNode set = new TerminalNodeImpl(new CommonToken(
-                  FlatJuniperGrammarLexer.SET, "set"));
+                  FlatJuniperLexer.SET, "set"));
             Set_line_tailContext setLineTail = new Set_line_tailContext(
                   setLine, -1);
             TerminalNode newline = new TerminalNodeImpl(new CommonToken(
-                  FlatJuniperGrammarLexer.NEWLINE, "\n"));
+                  FlatJuniperLexer.NEWLINE, "\n"));
             setLine.children = new ArrayList<ParseTree>();
             setLine.children.add(set);
             setLine.children.add(setLineTail);
             setLine.children.add(newline);
 
-            FlatJuniperGrammarCombinedParser parser = new FlatJuniperGrammarCombinedParser(
+            FlatJuniperCombinedParser parser = new FlatJuniperCombinedParser(
                   newStatementText, true, true);
             StatementContext newStatement = parser.getParser().statement();
             newStatement.parent = setLineTail;
@@ -394,17 +394,17 @@ public class Hierarchy {
          }
          String newStatementText = sb.toString();
          TerminalNode set = new TerminalNodeImpl(new CommonToken(
-               FlatJuniperGrammarLexer.SET, "set"));
+               FlatJuniperLexer.SET, "set"));
          Set_line_tailContext setLineTail = new Set_line_tailContext(setLine,
                -1);
          TerminalNode newline = new TerminalNodeImpl(new CommonToken(
-               FlatJuniperGrammarLexer.NEWLINE, "\n"));
+               FlatJuniperLexer.NEWLINE, "\n"));
          setLine.children = new ArrayList<ParseTree>();
          setLine.children.add(set);
          setLine.children.add(setLineTail);
          setLine.children.add(newline);
 
-         FlatJuniperGrammarCombinedParser parser = new FlatJuniperGrammarCombinedParser(
+         FlatJuniperCombinedParser parser = new FlatJuniperCombinedParser(
                newStatementText, true, true);
          StatementContext newStatement = parser.getParser().statement();
          newStatement.parent = setLineTail;

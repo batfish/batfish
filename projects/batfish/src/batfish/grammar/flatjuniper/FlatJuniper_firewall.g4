@@ -1,9 +1,9 @@
-parser grammar FlatJuniperGrammar_firewall;
+parser grammar FlatJuniper_firewall;
 
-import FlatJuniperGrammarCommonParser;
+import FlatJuniperCommonParser;
 
 options {
-   tokenVocab = FlatJuniperGrammarLexer;
+   tokenVocab = FlatJuniperLexer;
 }
 
 fwfromt_address

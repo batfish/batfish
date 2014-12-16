@@ -6,11 +6,11 @@ import java.util.Set;
 //import org.antlr.v4.runtime.Token;
 //import org.antlr.v4.runtime.tree.TerminalNode;
 
-//import batfish.grammar.cisco.CiscoGrammar.*;
+//import batfish.grammar.cisco.Cisco.*;
 import batfish.grammar.cisco.*;
 import batfish.representation.Ip;
 
-public class CiscoControlPlaneSensitiveDataCollector extends CiscoGrammarParserBaseListener {
+public class CiscoControlPlaneSensitiveDataCollector extends CiscoParserBaseListener {
 
    private Map<String, String> _variableMap;
 //   private Set<Ip> _ipAddresses;
@@ -26,11 +26,11 @@ public class CiscoControlPlaneSensitiveDataCollector extends CiscoGrammarParserB
       int type = symbol.getType();
       switch (type) {
 
-      case CiscoGrammarCommonLexer.VARIABLE:
+      case CiscoCommonLexer.VARIABLE:
          addVariable(symbol.getText());
          break;
 
-      case CiscoGrammarCommonLexer.IP_ADDRESS:
+      case CiscoCommonLexer.IP_ADDRESS:
          Ip ip = new Ip(symbol.getText());
          _ipAddresses.add(ip);
          break;

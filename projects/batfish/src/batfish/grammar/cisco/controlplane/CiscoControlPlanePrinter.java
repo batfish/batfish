@@ -3,11 +3,11 @@ package batfish.grammar.cisco.controlplane;
 //import org.antlr.v4.runtime.Token;
 //import org.antlr.v4.runtime.tree.TerminalNode;
 
-//import batfish.grammar.cisco.CiscoGrammar.*;
-import batfish.grammar.cisco.CiscoGrammarParserBaseListener;
-//import batfish.grammar.cisco.CiscoGrammarCommonLexer;
+//import batfish.grammar.cisco.Cisco.*;
+import batfish.grammar.cisco.CiscoParserBaseListener;
+//import batfish.grammar.cisco.CiscoCommonLexer;
 
-public class CiscoControlPlanePrinter extends CiscoGrammarParserBaseListener {
+public class CiscoControlPlanePrinter extends CiscoParserBaseListener {
 
 //   private StringBuilder _sb;
 //   private int _indent;
@@ -91,7 +91,7 @@ public class CiscoControlPlanePrinter extends CiscoGrammarParserBaseListener {
       int type = symbol.getType();
       switch (type) {
 
-      case CiscoGrammarCommonLexer.COMMENT_LINE:
+      case CiscoCommonLexer.COMMENT_LINE:
          if (_beginningOfLine) {
             indent();
          }
@@ -102,7 +102,7 @@ public class CiscoControlPlanePrinter extends CiscoGrammarParserBaseListener {
          _beginningOfLine = true;
          break;
 
-      case CiscoGrammarCommonLexer.NEWLINE:
+      case CiscoCommonLexer.NEWLINE:
          _beginningOfLine = true;
          _sb.append("\n");
          break;

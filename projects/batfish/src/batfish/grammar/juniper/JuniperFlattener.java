@@ -3,9 +3,9 @@ package batfish.grammar.juniper;
 import java.util.ArrayList;
 import java.util.List;
 
-import batfish.grammar.juniper.JuniperGrammarParser.*;
+import batfish.grammar.juniper.JuniperParser.*;
 
-public class JuniperFlattener extends JuniperGrammarParserBaseListener {
+public class JuniperFlattener extends JuniperParserBaseListener {
 
    private List<String> _currentBracketedWords;
    private List<String> _currentStatement;

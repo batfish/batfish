@@ -1,9 +1,9 @@
-parser grammar CiscoGrammar_rip;
+parser grammar Cisco_rip;
 
-import CiscoGrammarCommonParser;
+import CiscoCommonParser;
 
 options {
-   tokenVocab = CiscoGrammarLexer;
+   tokenVocab = CiscoLexer;
 }
 
 distance_rr_stanza

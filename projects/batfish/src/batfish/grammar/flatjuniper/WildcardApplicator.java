@@ -6,10 +6,10 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.*;
+import batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 
-public class WildcardApplicator extends FlatJuniperGrammarParserBaseListener {
+public class WildcardApplicator extends FlatJuniperParserBaseListener {
 
    private Flat_juniper_configurationContext _configurationContext;
 
@@ -65,7 +65,7 @@ public class WildcardApplicator extends FlatJuniperGrammarParserBaseListener {
    public void visitTerminal(TerminalNode node) {
       if (_enablePathRecording) {
          String text = node.getText();
-         if (node.getSymbol().getType() == FlatJuniperGrammarLexer.WILDCARD) {
+         if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
             _currentPath.addWildcardNode(text);
          }
          else {

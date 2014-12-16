@@ -1,9 +1,9 @@
-parser grammar CiscoGrammar_acl;
+parser grammar Cisco_acl;
 
-import CiscoGrammarCommonParser;
+import CiscoCommonParser;
 
 options {
-   tokenVocab = CiscoGrammarLexer;
+   tokenVocab = CiscoLexer;
 }
 
 access_list_ip_range

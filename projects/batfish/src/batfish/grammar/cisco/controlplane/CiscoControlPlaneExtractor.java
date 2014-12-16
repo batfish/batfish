@@ -17,7 +17,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ControlPlaneExtractor;
 import batfish.grammar.ParseTreePrettyPrinter;
-import batfish.grammar.cisco.CiscoGrammarParser.*;
+import batfish.grammar.cisco.CiscoParser.*;
 import batfish.grammar.cisco.*;
 import batfish.main.BatfishException;
 import batfish.main.PedanticBatfishException;
@@ -75,7 +75,7 @@ import batfish.representation.cisco.StaticRoute;
 import batfish.util.SubRange;
 import batfish.util.Util;
 
-public class CiscoControlPlaneExtractor extends CiscoGrammarParserBaseListener
+public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       implements ControlPlaneExtractor {
 
    private static final Map<String, String> CISCO_INTERFACE_PREFIXES = getCiscoInterfacePrefixes();
@@ -270,7 +270,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarParserBaseListener
    }
 
    public static Ip getPrefixIp(Token ipPrefixToken) {
-      if (ipPrefixToken.getType() != CiscoGrammarLexer.IP_PREFIX) {
+      if (ipPrefixToken.getType() != CiscoLexer.IP_PREFIX) {
          throw new BatfishException(
                "attempted to get prefix length from non-IP_PREFIX token: "
                      + ipPrefixToken.getType());
@@ -283,7 +283,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarParserBaseListener
    }
 
    public static int getPrefixLength(Token ipPrefixToken) {
-      if (ipPrefixToken.getType() != CiscoGrammarLexer.IP_PREFIX) {
+      if (ipPrefixToken.getType() != CiscoLexer.IP_PREFIX) {
          throw new BatfishException(
                "attempted to get prefix length from non-IP_PREFIX token: "
                      + ipPrefixToken.getType());
@@ -396,7 +396,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarParserBaseListener
 
    public static long toLong(CommunityContext ctx) {
       switch (ctx.com.getType()) {
-      case CiscoGrammarLexer.COMMUNITY_NUMBER:
+      case CiscoLexer.COMMUNITY_NUMBER:
          String numberText = ctx.com.getText();
          String[] parts = numberText.split(":");
          String leftStr = parts[0];
@@ -405,19 +405,19 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarParserBaseListener
          long right = Long.parseLong(rightStr);
          return (left << 16) | right;
 
-      case CiscoGrammarLexer.DEC:
+      case CiscoLexer.DEC:
          return toLong(ctx.com);
 
-      case CiscoGrammarLexer.INTERNET:
+      case CiscoLexer.INTERNET:
          return 0l;
 
-      case CiscoGrammarLexer.LOCAL_AS:
+      case CiscoLexer.LOCAL_AS:
          return 0xFFFFFF03l;
 
-      case CiscoGrammarLexer.NO_ADVERTISE:
+      case CiscoLexer.NO_ADVERTISE:
          return 0xFFFFFF02l;
 
-      case CiscoGrammarLexer.NO_EXPORT:
+      case CiscoLexer.NO_EXPORT:
          return 0xFFFFFF01l;
 
       default:
@@ -2093,7 +2093,7 @@ public class CiscoControlPlaneExtractor extends CiscoGrammarParserBaseListener
       }
       String prefix = "WARNING " + (_warnings.size() + 1) + ": ";
       StringBuilder sb = new StringBuilder();
-      List<String> ruleNames = Arrays.asList(CiscoGrammarParser.ruleNames);
+      List<String> ruleNames = Arrays.asList(CiscoParser.ruleNames);
       String ruleStack = ctx.toString(ruleNames);
       sb.append(prefix
             + "Missing implementation for top (leftmost) parser rule in stack: '"

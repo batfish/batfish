@@ -1,9 +1,9 @@
-parser grammar CiscoGrammar_routemap;
+parser grammar Cisco_routemap;
 
-import CiscoGrammarCommonParser;
+import CiscoCommonParser;
 
 options {
-   tokenVocab = CiscoGrammarLexer;
+   tokenVocab = CiscoLexer;
 }
 
 match_as_path_access_list_rm_stanza

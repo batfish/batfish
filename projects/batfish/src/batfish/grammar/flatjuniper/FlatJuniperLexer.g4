@@ -1,4 +1,4 @@
-lexer grammar FlatJuniperGrammarLexer;
+lexer grammar FlatJuniperLexer;
 
 options {
    superClass = 'batfish.grammar.BatfishLexer';

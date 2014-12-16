@@ -7,16 +7,16 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ParseTreePrettyPrinter;
-import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.*;
+import batfish.grammar.flatjuniper.FlatJuniperParser.*;
+import batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import batfish.representation.Prefix;
 import batfish.representation.juniper.Interface;
 import batfish.representation.juniper.JuniperVendorConfiguration;
 import batfish.representation.juniper.RoutingInformationBase;
 import batfish.representation.juniper.RoutingInstance;
 
-public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
+public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private JuniperVendorConfiguration _configuration;
 
@@ -28,7 +28,7 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
 
    private RoutingInstance _currentRoutingInstance;
 
-   private BatfishCombinedParser<?, ?> _parser;
+   private FlatJuniperCombinedParser _parser;
 
    private Set<String> _rulesWithSuppressedWarnings;
 
@@ -36,7 +36,7 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
 
    private List<String> _warnings;
 
-   public ConfigurationBuilder(BatfishCombinedParser<?, ?> parser, String text,
+   public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text,
          Set<String> rulesWithSuppressedWarnings, List<String> warnings) {
       _parser = parser;
       _text = text;
@@ -164,7 +164,7 @@ public class ConfigurationBuilder extends FlatJuniperGrammarParserBaseListener {
       String prefix = "WARNING " + (_warnings.size() + 1) + ": ";
       StringBuilder sb = new StringBuilder();
       List<String> ruleNames = Arrays
-            .asList(FlatJuniperGrammarParser.ruleNames);
+            .asList(FlatJuniperParser.ruleNames);
       String ruleStack = ctx.toString(ruleNames);
       sb.append(prefix
             + "Missing implementation for top (leftmost) parser rule in stack: '"

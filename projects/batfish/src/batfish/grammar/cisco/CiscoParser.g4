@@ -1,11 +1,11 @@
-parser grammar CiscoGrammarParser;
+parser grammar CiscoParser;
 
 import
-CiscoGrammarCommonParser, CiscoGrammar_acl, CiscoGrammar_bgp, CiscoGrammar_interface, CiscoGrammar_ospf, CiscoGrammar_rip, CiscoGrammar_routemap;
+CiscoCommonParser, Cisco_acl, Cisco_bgp, Cisco_interface, Cisco_ospf, Cisco_rip, Cisco_routemap;
 
 options {
    superClass = 'batfish.grammar.BatfishParser';
-   tokenVocab = CiscoGrammarLexer;
+   tokenVocab = CiscoLexer;
 }
 
 @header {

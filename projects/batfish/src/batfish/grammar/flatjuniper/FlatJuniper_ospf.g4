@@ -1,9 +1,9 @@
-parser grammar FlatJuniperGrammar_ospf;
+parser grammar FlatJuniper_ospf;
 
-import FlatJuniperGrammarCommonParser;
+import FlatJuniperCommonParser;
 
 options {
-   tokenVocab = FlatJuniperGrammarLexer;
+   tokenVocab = FlatJuniperLexer;
 }
 
 ait_apply_groups_except

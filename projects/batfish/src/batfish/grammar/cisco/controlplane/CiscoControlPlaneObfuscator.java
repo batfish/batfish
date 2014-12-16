@@ -6,10 +6,10 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 
-import batfish.grammar.cisco.CiscoGrammarParserBaseListener;
-import batfish.grammar.cisco.CiscoGrammarLexer;
+import batfish.grammar.cisco.CiscoParserBaseListener;
+import batfish.grammar.cisco.CiscoLexer;
 
-public class CiscoControlPlaneObfuscator extends CiscoGrammarParserBaseListener {
+public class CiscoControlPlaneObfuscator extends CiscoParserBaseListener {
 
    private CiscoControlPlaneSensitiveDataCollector _collector;
 
@@ -23,12 +23,12 @@ public class CiscoControlPlaneObfuscator extends CiscoGrammarParserBaseListener 
       int type = symbol.getType();
       switch (type) {
 
-      case CiscoGrammarLexer.VARIABLE:
+      case CiscoLexer.VARIABLE:
          ParserRuleContext parent = (ParserRuleContext)t.getParent().getPayload();
          int index = parent.children.indexOf(t);
          String oldText = symbol.getText();
          String newText = _collector.getObfuscatedVariable(oldText);
-         CommonToken ct = new CommonToken(CiscoGrammarLexer.VARIABLE, newText);
+         CommonToken ct = new CommonToken(CiscoLexer.VARIABLE, newText);
          TerminalNodeImpl newNode = new TerminalNodeImpl(ct);
          parent.children.remove(index);
          parent.children.add(index, newNode);

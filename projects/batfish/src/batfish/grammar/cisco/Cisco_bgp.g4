@@ -1,9 +1,9 @@
-parser grammar CiscoGrammar_bgp;
+parser grammar Cisco_bgp;
 
-import CiscoGrammarCommonParser;
+import CiscoCommonParser;
 
 options {
-   tokenVocab = CiscoGrammarLexer;
+   tokenVocab = CiscoLexer;
 }
 
 activate_bgp_tail

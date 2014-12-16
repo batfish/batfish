@@ -1,9 +1,9 @@
-parser grammar CiscoGrammar_interface;
+parser grammar Cisco_interface;
 
-import CiscoGrammarCommonParser;
+import CiscoCommonParser;
 
 options {
-   tokenVocab = CiscoGrammarLexer;
+   tokenVocab = CiscoLexer;
 }
 
 description_if_stanza

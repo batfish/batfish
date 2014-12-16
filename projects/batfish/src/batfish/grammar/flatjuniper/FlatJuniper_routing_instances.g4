@@ -1,9 +1,9 @@
-parser grammar FlatJuniperGrammar_routing_instances;
+parser grammar FlatJuniper_routing_instances;
 
-import FlatJuniperGrammarCommonParser;
+import FlatJuniperCommonParser;
 
 options {
-   tokenVocab = FlatJuniperGrammarLexer;
+   tokenVocab = FlatJuniperLexer;
 }
 
 agt_as_path

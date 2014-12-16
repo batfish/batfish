@@ -1,7 +1,7 @@
-parser grammar CiscoGrammarCommonParser;
+parser grammar CiscoCommonParser;
 
 options {
-   tokenVocab = CiscoGrammarLexer;
+   tokenVocab = CiscoLexer;
 }
 
 access_list_action

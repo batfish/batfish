@@ -1,9 +1,9 @@
-parser grammar FlatJuniperGrammar_bgp;
+parser grammar FlatJuniper_bgp;
 
-import FlatJuniperGrammarCommonParser;
+import FlatJuniperCommonParser;
 
 options {
-   tokenVocab = FlatJuniperGrammarLexer;
+   tokenVocab = FlatJuniperLexer;
 }
 
 bfi6t_null

@@ -1,9 +1,9 @@
-parser grammar FlatJuniperGrammar_policy_options;
+parser grammar FlatJuniper_policy_options;
 
-import FlatJuniperGrammarCommonParser;
+import FlatJuniperCommonParser;
 
 options {
-   tokenVocab = FlatJuniperGrammarLexer;
+   tokenVocab = FlatJuniperLexer;
 }
 
 colort_apply_groups

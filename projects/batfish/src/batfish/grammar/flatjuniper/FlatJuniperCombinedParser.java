@@ -4,12 +4,12 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import batfish.grammar.BatfishCombinedParser;
 
-public class FlatJuniperGrammarCombinedParser extends
-      BatfishCombinedParser<FlatJuniperGrammarParser, FlatJuniperGrammarLexer> {
+public class FlatJuniperCombinedParser extends
+      BatfishCombinedParser<FlatJuniperParser, FlatJuniperLexer> {
 
-   public FlatJuniperGrammarCombinedParser(String input,
+   public FlatJuniperCombinedParser(String input,
          boolean throwOnParserError, boolean throwOnLexerError) {
-      super(FlatJuniperGrammarParser.class, FlatJuniperGrammarLexer.class,
+      super(FlatJuniperParser.class, FlatJuniperLexer.class,
             input, throwOnParserError, throwOnLexerError);
    }
 

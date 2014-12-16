@@ -67,9 +67,9 @@ import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.cisco.CiscoCombinedParser;
 import batfish.grammar.cisco.controlplane.CiscoControlPlaneExtractor;
 import batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
-import batfish.grammar.flatjuniper.FlatJuniperGrammarCombinedParser;
+import batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import batfish.grammar.juniper.JuniperFlattener;
-import batfish.grammar.juniper.JuniperGrammarCombinedParser;
+import batfish.grammar.juniper.JuniperCombinedParser;
 import batfish.grammar.logicblox.LogQLPredicateInfoExtractor;
 import batfish.grammar.logicblox.LogiQLCombinedParser;
 import batfish.grammar.logicblox.LogiQLPredicateInfoResolver;
@@ -729,7 +729,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private String flatten(String input) {
-      JuniperGrammarCombinedParser jparser = new JuniperGrammarCombinedParser(
+      JuniperCombinedParser jparser = new JuniperCombinedParser(
             input, _settings.getThrowOnParserError(),
             _settings.getThrowOnLexerError());
       ParserRuleContext jtree = jparser.parse();
@@ -1649,11 +1649,12 @@ public class Batfish implements AutoCloseable {
          ParserRuleContext tree = null;
          ControlPlaneExtractor extractor = null;
          if (fileText.charAt(0) == '!') {
-            combinedParser = new CiscoCombinedParser(fileText,
+            CiscoCombinedParser ciscoParser = new CiscoCombinedParser(fileText,
                   _settings.getThrowOnParserError(),
                   _settings.getThrowOnLexerError());
-            extractor = new CiscoControlPlaneExtractor(fileText,
-                  combinedParser, _settings.getRulesWithSuppressedWarnings(),
+            combinedParser = ciscoParser;
+            extractor = new CiscoControlPlaneExtractor(fileText, ciscoParser,
+                  _settings.getRulesWithSuppressedWarnings(),
                   _settings.getPedantic());
          }
          else if (fileText.charAt(0) == '#') {
@@ -1664,11 +1665,12 @@ public class Batfish implements AutoCloseable {
                      "Juniper configurations must be flattened prior to this stage");
             }
             // flat
-            combinedParser = new FlatJuniperGrammarCombinedParser(fileText,
-                  _settings.getThrowOnParserError(),
+            FlatJuniperCombinedParser flatJuniperParser = new FlatJuniperCombinedParser(
+                  fileText, _settings.getThrowOnParserError(),
                   _settings.getThrowOnLexerError());
+            combinedParser = flatJuniperParser;
             extractor = new FlatJuniperControlPlaneExtractor(fileText,
-                  combinedParser, _settings.getRulesWithSuppressedWarnings());
+                  flatJuniperParser, _settings.getRulesWithSuppressedWarnings());
          }
          else if (fileText.length() == 0) {
             continue;

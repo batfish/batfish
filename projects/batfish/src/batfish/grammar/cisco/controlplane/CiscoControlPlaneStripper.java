@@ -9,10 +9,10 @@ import java.util.List;
 //import org.antlr.v4.runtime.tree.TerminalNode;
 //import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 
-import batfish.grammar.cisco.CiscoGrammarParser.*;
+import batfish.grammar.cisco.CiscoParser.*;
 import batfish.grammar.cisco.*;
 
-public class CiscoControlPlaneStripper extends CiscoGrammarParserBaseListener {
+public class CiscoControlPlaneStripper extends CiscoParserBaseListener {
 /*
    @Override
    public void visitTerminal(TerminalNode t) {
@@ -20,10 +20,10 @@ public class CiscoControlPlaneStripper extends CiscoGrammarParserBaseListener {
       int type = symbol.getType();
       switch (type) {
 
-      case CiscoGrammarCommonLexer.COMMENT_LINE:
+      case CiscoCommonLexer.COMMENT_LINE:
          ParserRuleContext parent = (ParserRuleContext)t.getParent().getPayload();
          int index = parent.children.indexOf(t);
-         CommonToken ct = new CommonToken(CiscoGrammarCommonLexer.COMMENT_LINE, "! (COMMENT REMOVED)\n");
+         CommonToken ct = new CommonToken(CiscoCommonLexer.COMMENT_LINE, "! (COMMENT REMOVED)\n");
          TerminalNodeImpl newNode = new TerminalNodeImpl(ct);
          parent.children.remove(index);
          parent.children.add(index, newNode);

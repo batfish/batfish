@@ -10,13 +10,13 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import batfish.grammar.BatfishCombinedParser;
-import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.Flat_juniper_configurationContext;
-import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.Set_line_tailContext;
+import batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
+import batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import batfish.grammar.flatjuniper.Hierarchy.HierarchyTree;
 import batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
-import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.*;
+import batfish.grammar.flatjuniper.FlatJuniperParser.*;
 
-public class ApplyGroupsApplicator extends FlatJuniperGrammarParserBaseListener {
+public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
    private BatfishCombinedParser<?, ?> _combinedParser;
 
@@ -88,7 +88,7 @@ public class ApplyGroupsApplicator extends FlatJuniperGrammarParserBaseListener 
       for (Token currentToken : unfilteredTokens) {
          if (currentToken.getChannel() != Lexer.HIDDEN) {
             String text = currentToken.getText();
-            if (currentToken.getType() == FlatJuniperGrammarLexer.WILDCARD) {
+            if (currentToken.getType() == FlatJuniperLexer.WILDCARD) {
                path.addWildcardNode(text);
             }
             else {
@@ -116,7 +116,7 @@ public class ApplyGroupsApplicator extends FlatJuniperGrammarParserBaseListener 
    public void visitTerminal(TerminalNode node) {
       if (_enablePathRecording) {
          String text = node.getText();
-         if (node.getSymbol().getType() == FlatJuniperGrammarLexer.WILDCARD) {
+         if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
             _currentPath.addWildcardNode(text);
          }
          else {

@@ -1,9 +1,9 @@
-parser grammar FlatJuniperGrammar_interfaces;
+parser grammar FlatJuniper_interfaces;
 
-import FlatJuniperGrammarCommonParser;
+import FlatJuniperCommonParser;
 
 options {
-   tokenVocab = FlatJuniperGrammarLexer;
+   tokenVocab = FlatJuniperLexer;
 }
 
 brt_interface_mode

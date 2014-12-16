@@ -5,10 +5,10 @@ import java.util.List;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
-import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.Set_lineContext;
-import batfish.grammar.flatjuniper.FlatJuniperGrammarParser.*;
+import batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
+import batfish.grammar.flatjuniper.FlatJuniperParser.*;
 
-public class GroupPruner extends FlatJuniperGrammarParserBaseListener {
+public class GroupPruner extends FlatJuniperParserBaseListener {
 
    private Flat_juniper_configurationContext _configurationContext;
 

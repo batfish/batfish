@@ -1,7 +1,7 @@
-parser grammar FlatJuniperGrammarCommonParser;
+parser grammar FlatJuniperCommonParser;
 
 options {
-   tokenVocab = FlatJuniperGrammarLexer;
+   tokenVocab = FlatJuniperLexer;
 }
 
 s_null_filler

@@ -7,7 +7,6 @@ import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.ControlPlaneExtractor;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.juniper.JuniperVendorConfiguration;
@@ -15,13 +14,13 @@ import batfish.representation.juniper.JuniperVendorConfiguration;
 public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
 
    private JuniperVendorConfiguration _configuration;
-   private BatfishCombinedParser<?, ?> _parser;
+   private FlatJuniperCombinedParser _parser;
    private Set<String> _rulesWithSuppressedWarnings;
    private String _text;
    private List<String> _warnings;
 
    public FlatJuniperControlPlaneExtractor(String fileText,
-         BatfishCombinedParser<?, ?> combinedParser,
+         FlatJuniperCombinedParser combinedParser,
          Set<String> rulesWithSuppressedWarnings) {
       _text = fileText;
       _parser = combinedParser;

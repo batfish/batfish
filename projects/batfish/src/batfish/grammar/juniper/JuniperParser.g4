@@ -1,8 +1,8 @@
-parser grammar JuniperGrammarParser;
+parser grammar JuniperParser;
 
 options {
    superClass = 'batfish.grammar.BatfishParser';
-   tokenVocab = JuniperGrammarLexer;
+   tokenVocab = JuniperLexer;
 }
 
 @header {
