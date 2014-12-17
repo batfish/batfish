@@ -23,7 +23,7 @@ gt_discard
 
 gt_metric
 :
-   METRIC DEC
+   METRIC metric = DEC
 ;
 
 gt_policy

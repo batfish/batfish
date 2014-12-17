@@ -14,17 +14,26 @@ import batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import batfish.representation.AsPath;
 import batfish.representation.AsSet;
+import batfish.representation.Ip;
 import batfish.representation.Prefix;
 import batfish.representation.juniper.AggregateRoute;
+import batfish.representation.juniper.BgpGroup;
+import batfish.representation.juniper.BgpGroup.BgpGroupType;
+import batfish.representation.juniper.IpBgpGroup;
+import batfish.representation.juniper.GeneratedRoute;
 import batfish.representation.juniper.Interface;
 import batfish.representation.juniper.JuniperVendorConfiguration;
+import batfish.representation.juniper.NamedBgpGroup;
 import batfish.representation.juniper.RoutingInformationBase;
 import batfish.representation.juniper.RoutingInstance;
+import batfish.representation.juniper.StaticRoute;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private static final AggregateRoute DUMMY_AGGREGATE_ROUTE = new AggregateRoute(
          Prefix.ZERO);
+
+   private static final BgpGroup DUMMY_BGP_GROUP = new BgpGroup();
 
    private static Integer toInt(TerminalNode node) {
       return toInt(node.getSymbol());
@@ -38,6 +47,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private AggregateRoute _currentAggregateRoute;
 
+   private BgpGroup _currentBgpGroup;
+
+   private GeneratedRoute _currentGeneratedRoute;
+
    private Interface _currentInterface;
 
    private Interface _currentMasterInterface;
@@ -45,6 +58,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private RoutingInformationBase _currentRib;
 
    private RoutingInstance _currentRoutingInstance;
+
+   private StaticRoute _currentStaticRoute;
 
    private FlatJuniperCombinedParser _parser;
 
@@ -62,6 +77,39 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _warnings = warnings;
       _configuration = new JuniperVendorConfiguration();
       _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
+   }
+
+   @Override
+   public void enterBt_group(Bt_groupContext ctx) {
+      String name = ctx.name.getText();
+      Map<String, NamedBgpGroup> namedBgpGroups = _currentRoutingInstance
+            .getNamedBgpGroups();
+      NamedBgpGroup namedBgpGroup = namedBgpGroups.get(name);
+      if (namedBgpGroup == null) {
+         namedBgpGroup = new NamedBgpGroup(name);
+         namedBgpGroup.setParent(_currentBgpGroup);
+         namedBgpGroups.put(name, namedBgpGroup);
+      }
+      _currentBgpGroup = namedBgpGroup;
+   }
+
+   @Override
+   public void enterBt_neighbor(Bt_neighborContext ctx) {
+      if (ctx.IP_ADDRESS() != null) {
+         Ip remoteAddress = new Ip(ctx.IP_ADDRESS().getText());
+         Map<Ip, IpBgpGroup> ipBgpGroups = _currentRoutingInstance
+               .getIpBgpGroups();
+         IpBgpGroup ipBgpGroup = ipBgpGroups.get(remoteAddress);
+         if (ipBgpGroup == null) {
+            ipBgpGroup = new IpBgpGroup(remoteAddress);
+            ipBgpGroup.setParent(_currentBgpGroup);
+            ipBgpGroups.put(remoteAddress, ipBgpGroup);
+         }
+         _currentBgpGroup = ipBgpGroup;
+      }
+      else if (ctx.IPV6_ADDRESS() != null) {
+         _currentBgpGroup = DUMMY_BGP_GROUP;
+      }
    }
 
    @Override
@@ -106,6 +154,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterRot_generate(Rot_generateContext ctx) {
+      if (ctx.IP_PREFIX() != null) {
+         Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
+         Map<Prefix, GeneratedRoute> generatedRoutes = _currentRib
+               .getGeneratedRoutes();
+         _currentGeneratedRoute = generatedRoutes.get(prefix);
+         if (_currentStaticRoute == null) {
+            _currentStaticRoute = new StaticRoute(prefix);
+            generatedRoutes.put(prefix, _currentGeneratedRoute);
+         }
+      }
+   }
+
+   @Override
    public void enterRot_rib(Rot_ribContext ctx) {
       String name = ctx.name.getText();
       Map<String, RoutingInformationBase> ribs = _currentRoutingInstance
@@ -114,6 +176,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_currentRib == null) {
          _currentRib = new RoutingInformationBase(name);
          ribs.put(name, _currentRib);
+      }
+   }
+
+   @Override
+   public void enterRot_static(Rot_staticContext ctx) {
+      if (ctx.IP_PREFIX() != null) {
+         Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
+         Map<Prefix, StaticRoute> staticRoutes = _currentRib.getStaticRoutes();
+         _currentStaticRoute = staticRoutes.get(prefix);
+         if (_currentStaticRoute == null) {
+            _currentStaticRoute = new StaticRoute(prefix);
+            staticRoutes.put(prefix, _currentStaticRoute);
+         }
       }
    }
 
@@ -128,6 +203,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          interfaces.put(ifaceName, _currentInterface);
       }
       _currentMasterInterface = _currentInterface;
+   }
+
+   @Override
+   public void enterS_protocols_bgp(S_protocols_bgpContext ctx) {
+      _currentBgpGroup = _currentRoutingInstance.getMasterBgpGroup();
    }
 
    @Override
@@ -146,6 +226,42 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitAgt_preference(Agt_preferenceContext ctx) {
       int preference = toInt(ctx.preference);
       _currentAggregateRoute.setPreference(preference);
+   }
+
+   @Override
+   public void exitBt_local_address(Bt_local_addressContext ctx) {
+      if (ctx.IP_ADDRESS() != null) {
+         Ip localAddress = new Ip(ctx.IP_ADDRESS().getText());
+         _currentBgpGroup.setLocalAddress(localAddress);
+      }
+   }
+
+   @Override
+   public void exitBt_local_as(Bt_local_asContext ctx) {
+      int localAs = toInt(ctx.as);
+      _currentBgpGroup.setLocalAs(localAs);
+   }
+
+   @Override
+   public void exitBt_type(Bt_typeContext ctx) {
+      if (ctx.INTERNAL() != null) {
+         _currentBgpGroup.setType(BgpGroupType.INTERNAL);
+      }
+      else if (ctx.EXTERNAL() != null) {
+         _currentBgpGroup.setType(BgpGroupType.EXTERNAL);
+      }
+   }
+
+   @Override
+   public void exitGt_metric(Gt_metricContext ctx) {
+      int metric = toInt(ctx.metric);
+      _currentGeneratedRoute.setMetric(metric);
+   }
+
+   @Override
+   public void exitGt_policy(Gt_policyContext ctx) {
+      String policy = ctx.policy.getText();
+      _currentGeneratedRoute.getPolicies().add(policy);
    }
 
    @Override
@@ -183,14 +299,57 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitRot_autonomous_system(Rot_autonomous_systemContext ctx) {
+      int as = toInt(ctx.as);
+      _currentRoutingInstance.setAs(as);
+   }
+
+   @Override
+   public void exitRot_generate(Rot_generateContext ctx) {
+      _currentGeneratedRoute = null;
+   }
+
+   @Override
+   public void exitRot_router_id(Rot_router_idContext ctx) {
+      Ip id = new Ip(ctx.id.getText());
+      _currentRoutingInstance.setRouterId(id);
+   }
+
+   @Override
+   public void exitRot_static(Rot_staticContext ctx) {
+      _currentStaticRoute = null;
+   }
+
+   @Override
    public void exitS_interfaces(S_interfacesContext ctx) {
       _currentInterface = null;
       _currentMasterInterface = null;
    }
 
    @Override
+   public void exitS_protocols_bgp(S_protocols_bgpContext ctx) {
+      _currentBgpGroup = null;
+   }
+
+   @Override
    public void exitS_routing_options(S_routing_optionsContext ctx) {
       _currentRib = null;
+   }
+
+   @Override
+   public void exitSrt_discard(Srt_discardContext ctx) {
+      _currentStaticRoute.setDrop(true);
+   }
+
+   @Override
+   public void exitSrt_reject(Srt_rejectContext ctx) {
+      _currentStaticRoute.setDrop(true);
+   }
+
+   @Override
+   public void exitSrt_tag(Srt_tagContext ctx) {
+      int tag = toInt(ctx.tag);
+      _currentStaticRoute.setTag(tag);
    }
 
    @Override
