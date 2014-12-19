@@ -8,19 +8,20 @@ import batfish.representation.Configuration;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
 
-public class JuniperVendorConfiguration extends JuniperConfiguration implements
-      VendorConfiguration {
+public final class JuniperVendorConfiguration extends JuniperConfiguration
+      implements VendorConfiguration {
 
    private static final long serialVersionUID = 1L;
 
    private static final String VENDOR_NAME = "juniper";
 
-   private List<String> _conversionWarnings;
+   private final List<String> _conversionWarnings;
 
-   private RoleSet _roles;
+   private final RoleSet _roles;
 
    public JuniperVendorConfiguration() {
       _conversionWarnings = new ArrayList<String>();
+      _roles = new RoleSet();
    }
 
    @Override
@@ -34,8 +35,13 @@ public class JuniperVendorConfiguration extends JuniperConfiguration implements
    }
 
    @Override
+   public RoleSet getRoles() {
+      return _roles;
+   }
+
+   @Override
    public void setRoles(RoleSet roles) {
-      _roles = roles;
+      _roles.addAll(roles);
    }
 
    @Override

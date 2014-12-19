@@ -47,8 +47,8 @@ import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
 import batfish.util.SubRange;
 
-public class CiscoVendorConfiguration extends CiscoConfiguration implements
-      VendorConfiguration {
+public final class CiscoVendorConfiguration extends CiscoConfiguration
+      implements VendorConfiguration {
 
    private static final String DEFAULT_ROUTE_FILTER_NAME = "~DEFAULT_ROUTE_FILTER~";
 
@@ -165,7 +165,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          else {
             redistributeStaticPolicyMap = makeRouteExportPolicy(c,
                   "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null,
-                  0, null, null, null, RoutingProtocol.STATIC, PolicyMapAction.PERMIT);
+                  0, null, null, null, RoutingProtocol.STATIC,
+                  PolicyMapAction.PERMIT);
          }
       }
 
@@ -289,7 +290,8 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          originationPolicies.add(explicitOriginationPolicyMap);
 
          // add redistribution origination policies
-         if (proc.getRedistributionPolicies().containsKey(RoutingProtocol.STATIC)) {
+         if (proc.getRedistributionPolicies().containsKey(
+               RoutingProtocol.STATIC)) {
             originationPolicies.add(redistributeStaticPolicyMap);
          }
 
@@ -860,12 +862,13 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
 
    }
 
-   private List<String> _conversionWarnings;
+   private final List<String> _conversionWarnings;
 
-   private RoleSet _roles;
+   private final RoleSet _roles;
 
    public CiscoVendorConfiguration() {
       _conversionWarnings = new ArrayList<String>();
+      _roles = new RoleSet();
    }
 
    private boolean containsIpAccessList(String eaListName, String mapName) {
@@ -913,6 +916,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       return _conversionWarnings;
    }
 
+   @Override
    public RoleSet getRoles() {
       return _roles;
    }
@@ -976,7 +980,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
 
    @Override
    public void setRoles(RoleSet roles) {
-      _roles = roles;
+      _roles.addAll(roles);
    }
 
    private batfish.representation.Interface toInterface(Interface iface,

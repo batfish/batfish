@@ -11,6 +11,8 @@ public interface VendorConfiguration extends Serializable {
 
    String getHostname();
 
+   RoleSet getRoles();
+
    void setRoles(RoleSet roles);
 
    Configuration toVendorIndependentConfiguration()
