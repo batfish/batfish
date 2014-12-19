@@ -3,23 +3,15 @@ package batfish.representation.juniper;
 import batfish.representation.PolicyMapMatchLine;
 import batfish.representation.Prefix;
 
-public final class FromRouteFilterUpTo extends FromRouteFilter {
+public class PsFromRouteFilterOrLonger extends PsFromRouteFilter {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   private final int _maxPrefixLength;
-
-   public int getMaxPrefixLength() {
-      return _maxPrefixLength;
-   }
-
-   public FromRouteFilterUpTo(Prefix prefix,
-         int maxPrefixLength) {
+   public PsFromRouteFilterOrLonger(Prefix prefix) {
       super(prefix);
-      _maxPrefixLength = maxPrefixLength;
    }
 
    @Override

@@ -1,23 +1,22 @@
 package batfish.representation.juniper;
 
-import batfish.representation.Ip;
 import batfish.representation.PolicyMapSetLine;
 
-public final class ThenNextHopIp extends Then {
+public final class PsThenCommunityAdd extends PsThen {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   private final Ip _nextHopIp;
+   private final String _name;
 
-   public ThenNextHopIp(Ip nextHopIp) {
-      _nextHopIp = nextHopIp;
+   public PsThenCommunityAdd(String name) {
+      _name = name;
    }
 
-   public Ip getNextHopIp() {
-      return _nextHopIp;
+   public String getName() {
+      return _name;
    }
 
    @Override

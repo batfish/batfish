@@ -21,15 +21,26 @@ import batfish.representation.RoutingProtocol;
 import batfish.representation.juniper.AggregateRoute;
 import batfish.representation.juniper.BgpGroup;
 import batfish.representation.juniper.BgpGroup.BgpGroupType;
-import batfish.representation.juniper.FromAsPath;
-import batfish.representation.juniper.FromColor;
-import batfish.representation.juniper.FromCommunity;
-import batfish.representation.juniper.FromProtocol;
-import batfish.representation.juniper.FromRouteFilterExact;
-import batfish.representation.juniper.FromRouteFilterLengthRange;
-import batfish.representation.juniper.FromRouteFilterOrLonger;
-import batfish.representation.juniper.FromRouteFilterThrough;
-import batfish.representation.juniper.FromRouteFilterUpTo;
+import batfish.representation.juniper.Family;
+import batfish.representation.juniper.FwFrom;
+import batfish.representation.juniper.FwFromDestinationAddress;
+import batfish.representation.juniper.FwFromDestinationPort;
+import batfish.representation.juniper.FwFromProtocol;
+import batfish.representation.juniper.FwFromSourceAddress;
+import batfish.representation.juniper.FwFromSourcePort;
+import batfish.representation.juniper.FwTerm;
+import batfish.representation.juniper.FwThenAccept;
+import batfish.representation.juniper.FwThenDiscard;
+import batfish.representation.juniper.PsFromAsPath;
+import batfish.representation.juniper.PsFromColor;
+import batfish.representation.juniper.PsFromCommunity;
+import batfish.representation.juniper.PsFromProtocol;
+import batfish.representation.juniper.PsFromRouteFilterExact;
+import batfish.representation.juniper.PsFromRouteFilterLengthRange;
+import batfish.representation.juniper.PsFromRouteFilterOrLonger;
+import batfish.representation.juniper.PsFromRouteFilterThrough;
+import batfish.representation.juniper.PsFromRouteFilterUpTo;
+import batfish.representation.juniper.FirewallFilter;
 import batfish.representation.juniper.IpBgpGroup;
 import batfish.representation.juniper.GeneratedRoute;
 import batfish.representation.juniper.Interface;
@@ -41,16 +52,16 @@ import batfish.representation.juniper.PrefixList;
 import batfish.representation.juniper.RoutingInformationBase;
 import batfish.representation.juniper.RoutingInstance;
 import batfish.representation.juniper.StaticRoute;
-import batfish.representation.juniper.Term;
-import batfish.representation.juniper.Then;
-import batfish.representation.juniper.ThenAccept;
-import batfish.representation.juniper.ThenCommunityAdd;
-import batfish.representation.juniper.ThenCommunityDelete;
-import batfish.representation.juniper.ThenCommunitySet;
-import batfish.representation.juniper.ThenLocalPreference;
-import batfish.representation.juniper.ThenMetric;
-import batfish.representation.juniper.ThenNextHopIp;
-import batfish.representation.juniper.ThenReject;
+import batfish.representation.juniper.PsTerm;
+import batfish.representation.juniper.PsThen;
+import batfish.representation.juniper.PsThenAccept;
+import batfish.representation.juniper.PsThenCommunityAdd;
+import batfish.representation.juniper.PsThenCommunityDelete;
+import batfish.representation.juniper.PsThenCommunitySet;
+import batfish.representation.juniper.PsThenLocalPreference;
+import batfish.representation.juniper.PsThenMetric;
+import batfish.representation.juniper.PsThenNextHopIp;
+import batfish.representation.juniper.PsThenReject;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
@@ -95,6 +106,45 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
    }
 
+   public static int getPortNumber(PortContext ctx) {
+      if (ctx.DEC() != null) {
+         return toInt(ctx.DEC());
+      }
+      else if (ctx.BOOTPC() != null) {
+         return 68;
+      }
+      else if (ctx.BOOTPS() != null) {
+         return 67;
+      }
+      else if (ctx.BGP() != null) {
+         return 179;
+      }
+      else if (ctx.DOMAIN() != null) {
+         return 53;
+      }
+      else if (ctx.FTP() != null) {
+         return 21;
+      }
+      else if (ctx.NTP() != null) {
+         return 123;
+      }
+      else if (ctx.SNMP() != null) {
+         return 161;
+      }
+      else if (ctx.SSH() != null) {
+         return 22;
+      }
+      else if (ctx.TACACS() != null) {
+         return 49;
+      }
+      else if (ctx.TELNET() != null) {
+         return 23;
+      }
+      else {
+         throw new BatfishException("missing port-number mapping");
+      }
+   }
+
    private static Integer toInt(TerminalNode node) {
       return toInt(node.getSymbol());
    }
@@ -134,6 +184,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private BgpGroup _currentBgpGroup;
 
+   private FirewallFilter _currentFilter;
+
+   private Family _currentFirewallFamily;
+
+   private FwTerm _currentFwTerm;
+
    private GeneratedRoute _currentGeneratedRoute;
 
    private Interface _currentInterface;
@@ -146,6 +202,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private PrefixList _currentPrefixList;
 
+   private PsTerm _currentPsTerm;
+
    private RoutingInformationBase _currentRib;
 
    private Prefix _currentRouteFilterPrefix;
@@ -153,8 +211,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private RoutingInstance _currentRoutingInstance;
 
    private StaticRoute _currentStaticRoute;
-
-   private Term _currentTerm;
 
    private FlatJuniperCombinedParser _parser;
 
@@ -245,6 +301,41 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterFwft_term(Fwft_termContext ctx) {
+      String name = ctx.name.getText();
+      Map<String, FwTerm> terms = _currentFilter.getTerms();
+      _currentFwTerm = terms.get(name);
+      if (_currentFwTerm == null) {
+         _currentFwTerm = new FwTerm(name);
+         terms.put(name, _currentFwTerm);
+      }
+   }
+
+   @Override
+   public void enterFwt_family(Fwt_familyContext ctx) {
+      if (ctx.INET() != null) {
+         _currentFirewallFamily = Family.INET;
+      }
+      else if (ctx.INET6() != null) {
+         _currentFirewallFamily = Family.INET6;
+      }
+      else if (ctx.MPLS() != null) {
+         _currentFirewallFamily = Family.MPLS;
+      }
+   }
+
+   @Override
+   public void enterFwt_filter(Fwt_filterContext ctx) {
+      String name = ctx.name.getText();
+      Map<String, FirewallFilter> filters = _configuration.getFirewallFilters();
+      _currentFilter = filters.get(name);
+      if (_currentFilter == null) {
+         _currentFilter = new FirewallFilter(name, _currentFirewallFamily);
+         filters.put(name, _currentFilter);
+      }
+   }
+
+   @Override
    public void enterIt_unit(It_unitContext ctx) {
       String unit = ctx.num.getText();
       Map<String, Interface> units = _currentMasterInterface.getUnits();
@@ -276,7 +367,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentPolicyStatement = new PolicyStatement(name);
          policyStatements.put(name, _currentPolicyStatement);
       }
-      _currentTerm = _currentPolicyStatement.getSingletonTerm();
+      _currentPsTerm = _currentPolicyStatement.getSingletonTerm();
    }
 
    @Override
@@ -293,11 +384,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterPst_term(Pst_termContext ctx) {
       String name = ctx.name.getText();
-      Map<String, Term> terms = _currentPolicyStatement.getTerms();
-      _currentTerm = terms.get(name);
-      if (_currentTerm == null) {
-         _currentTerm = new Term(name);
-         terms.put(name, _currentTerm);
+      Map<String, PsTerm> terms = _currentPolicyStatement.getTerms();
+      _currentPsTerm = terms.get(name);
+      if (_currentPsTerm == null) {
+         _currentPsTerm = new PsTerm(name);
+         terms.put(name, _currentPsTerm);
       }
    }
 
@@ -371,6 +462,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else if (ctx.IPV6_PREFIX() != null) {
          _currentStaticRoute = DUMMY_STATIC_ROUTE;
       }
+   }
+
+   @Override
+   public void enterS_firewall(S_firewallContext ctx) {
+      _currentFirewallFamily = Family.INET;
    }
 
    @Override
@@ -487,34 +583,99 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitFromt_as_path(Fromt_as_pathContext ctx) {
       String name = ctx.name.getText();
-      FromAsPath fromAsPath = new FromAsPath(name);
-      _currentTerm.getFroms().add(fromAsPath);
+      PsFromAsPath fromAsPath = new PsFromAsPath(name);
+      _currentPsTerm.getFroms().add(fromAsPath);
    }
 
    @Override
    public void exitFromt_color(Fromt_colorContext ctx) {
       int color = toInt(ctx.color);
-      FromColor fromColor = new FromColor(color);
-      _currentTerm.getFroms().add(fromColor);
+      PsFromColor fromColor = new PsFromColor(color);
+      _currentPsTerm.getFroms().add(fromColor);
    }
 
    @Override
    public void exitFromt_community(Fromt_communityContext ctx) {
       String name = ctx.name.getText();
-      FromCommunity fromCommunity = new FromCommunity(name);
-      _currentTerm.getFroms().add(fromCommunity);
+      PsFromCommunity fromCommunity = new PsFromCommunity(name);
+      _currentPsTerm.getFroms().add(fromCommunity);
    }
 
    @Override
    public void exitFromt_protocol(Fromt_protocolContext ctx) {
       RoutingProtocol protocol = toRoutingProtocol(ctx.protocol);
-      FromProtocol fromProtocol = new FromProtocol(protocol);
-      _currentTerm.getFroms().add(fromProtocol);
+      PsFromProtocol fromProtocol = new PsFromProtocol(protocol);
+      _currentPsTerm.getFroms().add(fromProtocol);
    }
 
    @Override
    public void exitFromt_route_filter(Fromt_route_filterContext ctx) {
       _currentRouteFilterPrefix = null;
+   }
+
+   @Override
+   public void exitFwfromt_destination_address(
+         Fwfromt_destination_addressContext ctx) {
+      if (ctx.IP_PREFIX() != null) {
+         Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
+         FwFrom from = new FwFromDestinationAddress(prefix);
+         _currentFwTerm.getFroms().add(from);
+      }
+   }
+
+   @Override
+   public void exitFwfromt_destination_port(Fwfromt_destination_portContext ctx) {
+      int port = getPortNumber(ctx.port());
+      FwFrom from = new FwFromDestinationPort(port);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_protocol(Fwfromt_protocolContext ctx) {
+      int protocol = getIpProtocolNumber(ctx.ip_protocol());
+      FwFrom from = new FwFromProtocol(protocol);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_source_address(Fwfromt_source_addressContext ctx) {
+      if (ctx.IP_PREFIX() != null) {
+         Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
+         FwFrom from = new FwFromSourceAddress(prefix);
+         _currentFwTerm.getFroms().add(from);
+      }
+   }
+
+   @Override
+   public void exitFwfromt_source_port(Fwfromt_source_portContext ctx) {
+      int port = getPortNumber(ctx.port());
+      FwFrom from = new FwFromSourcePort(port);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwft_term(Fwft_termContext ctx) {
+      _currentFwTerm = null;
+   }
+
+   @Override
+   public void exitFwt_filter(Fwt_filterContext ctx) {
+      _currentFilter = null;
+   }
+
+   @Override
+   public void exitFwthent_accept(Fwthent_acceptContext ctx) {
+      _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
+   }
+
+   @Override
+   public void exitFwthent_discard(Fwthent_discardContext ctx) {
+      _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
+   }
+
+   @Override
+   public void exitFwthent_reject(Fwthent_rejectContext ctx) {
+      _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
    }
 
    @Override
@@ -586,24 +747,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitPst_term(Pst_termContext ctx) {
-      _currentTerm = null;
+      _currentPsTerm = null;
    }
 
    @Override
    public void exitRft_exact(Rft_exactContext ctx) {
       if (_currentRouteFilterPrefix != null) {
-         FromRouteFilterExact fromRouteFilterExact = new FromRouteFilterExact(
+         PsFromRouteFilterExact fromRouteFilterExact = new PsFromRouteFilterExact(
                _currentRouteFilterPrefix);
-         _currentTerm.getFroms().add(fromRouteFilterExact);
+         _currentPsTerm.getFroms().add(fromRouteFilterExact);
       }
    }
 
    @Override
    public void exitRft_orlonger(Rft_orlongerContext ctx) {
       if (_currentRouteFilterPrefix != null) {
-         FromRouteFilterOrLonger fromRouteFilterOrLonger = new FromRouteFilterOrLonger(
+         PsFromRouteFilterOrLonger fromRouteFilterOrLonger = new PsFromRouteFilterOrLonger(
                _currentRouteFilterPrefix);
-         _currentTerm.getFroms().add(fromRouteFilterOrLonger);
+         _currentPsTerm.getFroms().add(fromRouteFilterOrLonger);
       }
    }
 
@@ -612,9 +773,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       int minPrefixLength = toInt(ctx.low);
       int maxPrefixLength = toInt(ctx.high);
       if (_currentRouteFilterPrefix != null) {
-         FromRouteFilterLengthRange fromRouteFilterLengthRange = new FromRouteFilterLengthRange(
+         PsFromRouteFilterLengthRange fromRouteFilterLengthRange = new PsFromRouteFilterLengthRange(
                _currentRouteFilterPrefix, minPrefixLength, maxPrefixLength);
-         _currentTerm.getFroms().add(fromRouteFilterLengthRange);
+         _currentPsTerm.getFroms().add(fromRouteFilterLengthRange);
       }
    }
 
@@ -622,9 +783,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitRft_through(Rft_throughContext ctx) {
       if (_currentRouteFilterPrefix != null) {
          Prefix throughPrefix = new Prefix(ctx.IP_PREFIX().getText());
-         FromRouteFilterThrough fromRouteFilterThrough = new FromRouteFilterThrough(
+         PsFromRouteFilterThrough fromRouteFilterThrough = new PsFromRouteFilterThrough(
                _currentRouteFilterPrefix, throughPrefix);
-         _currentTerm.getFroms().add(fromRouteFilterThrough);
+         _currentPsTerm.getFroms().add(fromRouteFilterThrough);
       }
    }
 
@@ -632,9 +793,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitRft_upto(Rft_uptoContext ctx) {
       int maxPrefixLength = toInt(ctx.high);
       if (_currentRouteFilterPrefix != null) {
-         FromRouteFilterUpTo fromRouteFilterUpTo = new FromRouteFilterUpTo(
+         PsFromRouteFilterUpTo fromRouteFilterUpTo = new PsFromRouteFilterUpTo(
                _currentRouteFilterPrefix, maxPrefixLength);
-         _currentTerm.getFroms().add(fromRouteFilterUpTo);
+         _currentPsTerm.getFroms().add(fromRouteFilterUpTo);
       }
    }
 
@@ -663,6 +824,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitRot_static(Rot_staticContext ctx) {
       _currentStaticRoute = null;
+   }
+
+   @Override
+   public void exitS_firewall(S_firewallContext ctx) {
+      _currentFirewallFamily = null;
    }
 
    @Override
@@ -705,61 +871,61 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitTht_accept(Tht_acceptContext ctx) {
-      _currentTerm.getThens().add(ThenAccept.INSTANCE);
+      _currentPsTerm.getThens().add(PsThenAccept.INSTANCE);
    }
 
    @Override
    public void exitTht_community_add(Tht_community_addContext ctx) {
       String name = ctx.name.getText();
-      ThenCommunityAdd then = new ThenCommunityAdd(name);
-      _currentTerm.getThens().add(then);
+      PsThenCommunityAdd then = new PsThenCommunityAdd(name);
+      _currentPsTerm.getThens().add(then);
    }
 
    @Override
    public void exitTht_community_delete(Tht_community_deleteContext ctx) {
       String name = ctx.name.getText();
-      ThenCommunityDelete then = new ThenCommunityDelete(name);
-      _currentTerm.getThens().add(then);
+      PsThenCommunityDelete then = new PsThenCommunityDelete(name);
+      _currentPsTerm.getThens().add(then);
    }
 
    @Override
    public void exitTht_community_set(Tht_community_setContext ctx) {
       String name = ctx.name.getText();
-      ThenCommunitySet then = new ThenCommunitySet(name);
-      _currentTerm.getThens().add(then);
+      PsThenCommunitySet then = new PsThenCommunitySet(name);
+      _currentPsTerm.getThens().add(then);
    }
 
    @Override
    public void exitTht_local_preference(Tht_local_preferenceContext ctx) {
       int localPreference = toInt(ctx.localpref);
-      ThenLocalPreference then = new ThenLocalPreference(localPreference);
-      _currentTerm.getThens().add(then);
+      PsThenLocalPreference then = new PsThenLocalPreference(localPreference);
+      _currentPsTerm.getThens().add(then);
    }
 
    @Override
    public void exitTht_metric(Tht_metricContext ctx) {
       int metric = toInt(ctx.metric);
-      ThenMetric then = new ThenMetric(metric);
-      _currentTerm.getThens().add(then);
+      PsThenMetric then = new PsThenMetric(metric);
+      _currentPsTerm.getThens().add(then);
    }
 
    @Override
    public void exitTht_next_hop(Tht_next_hopContext ctx) {
-      Then then;
+      PsThen then;
       if (ctx.IP_ADDRESS() != null) {
          Ip nextHopIp = new Ip(ctx.IP_ADDRESS().getText());
-         then = new ThenNextHopIp(nextHopIp);
+         then = new PsThenNextHopIp(nextHopIp);
       }
       else {
          todo(ctx, "not implemented");
          return;
       }
-      _currentTerm.getThens().add(then);
+      _currentPsTerm.getThens().add(then);
    }
 
    @Override
    public void exitTht_reject(Tht_rejectContext ctx) {
-      _currentTerm.getThens().add(ThenReject.INSTANCE);
+      _currentPsTerm.getThens().add(PsThenReject.INSTANCE);
    }
 
    public JuniperVendorConfiguration getConfiguration() {
@@ -781,11 +947,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          asPath.add(asSet);
       }
       return asPath;
-   }
-
-   @SuppressWarnings("unused")
-   private void todo(ParserRuleContext ctx) {
-      todo(ctx, "Unknown");
    }
 
    private void todo(ParserRuleContext ctx, String reason) {

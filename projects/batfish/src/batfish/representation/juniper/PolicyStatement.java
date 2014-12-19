@@ -13,26 +13,26 @@ public final class PolicyStatement implements Serializable {
 
    private final String _name;
 
-   private final Term _singletonTerm;
+   private final PsTerm _singletonTerm;
 
-   private final Map<String, Term> _terms;
+   private final Map<String, PsTerm> _terms;
 
    public PolicyStatement(String name) {
       _name = name;
       String singletonTermName = "__" + _name + "__SINGLETON__";
-      _singletonTerm = new Term(singletonTermName);
-      _terms = new LinkedHashMap<String, Term>();
+      _singletonTerm = new PsTerm(singletonTermName);
+      _terms = new LinkedHashMap<String, PsTerm>();
    }
 
    public String getName() {
       return _name;
    }
 
-   public Term getSingletonTerm() {
+   public PsTerm getSingletonTerm() {
       return _singletonTerm;
    }
 
-   public Map<String, Term> getTerms() {
+   public Map<String, PsTerm> getTerms() {
       return _terms;
    }
 

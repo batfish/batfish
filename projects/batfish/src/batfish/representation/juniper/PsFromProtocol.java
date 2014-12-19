@@ -1,17 +1,23 @@
 package batfish.representation.juniper;
 
 import batfish.representation.PolicyMapMatchLine;
-import batfish.representation.Prefix;
+import batfish.representation.RoutingProtocol;
 
-public final class FromRouteFilterExact extends FromRouteFilter {
+public final class PsFromProtocol extends PsFrom {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   public FromRouteFilterExact(Prefix prefix) {
-      super(prefix);
+   private final RoutingProtocol _protocol;
+
+   public PsFromProtocol(RoutingProtocol protocol) {
+      _protocol = protocol;
+   }
+
+   public RoutingProtocol getProtocol() {
+      return _protocol;
    }
 
    @Override

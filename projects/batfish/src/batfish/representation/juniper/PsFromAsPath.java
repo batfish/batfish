@@ -2,21 +2,21 @@ package batfish.representation.juniper;
 
 import batfish.representation.PolicyMapMatchLine;
 
-public final class FromCommunity extends From {
+public class PsFromAsPath extends PsFrom {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   private final String _name;
+   private String _asPathName;
 
-   public FromCommunity(String name) {
-      _name = name;
+   public PsFromAsPath(String asPathName) {
+      _asPathName = asPathName;
    }
 
-   public String getName() {
-      return _name;
+   public String getAsPathName() {
+      return _asPathName;
    }
 
    @Override

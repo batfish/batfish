@@ -2,16 +2,21 @@ package batfish.representation.juniper;
 
 import batfish.representation.PolicyMapSetLine;
 
-public final class ThenReject extends Then {
-
-   public static final ThenReject INSTANCE = new ThenReject();
+public final class PsThenLocalPreference extends PsThen {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   private ThenReject() {
+   private final int _localPreference;
+
+   public PsThenLocalPreference(int localPreference) {
+      _localPreference = localPreference;
+   }
+
+   public int getLocalPreference() {
+      return _localPreference;
    }
 
    @Override

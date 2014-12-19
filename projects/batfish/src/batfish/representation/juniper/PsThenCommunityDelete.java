@@ -2,7 +2,7 @@ package batfish.representation.juniper;
 
 import batfish.representation.PolicyMapSetLine;
 
-public final class ThenCommunityAdd extends Then {
+public final class PsThenCommunityDelete extends PsThen {
 
    /**
     *
@@ -11,7 +11,7 @@ public final class ThenCommunityAdd extends Then {
 
    private final String _name;
 
-   public ThenCommunityAdd(String name) {
+   public PsThenCommunityDelete(String name) {
       _name = name;
    }
 

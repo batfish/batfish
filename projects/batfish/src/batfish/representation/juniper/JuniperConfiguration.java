@@ -13,34 +13,41 @@ public class JuniperConfiguration implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   protected RoutingInstance _defaultRoutingInstance;
+   protected final RoutingInstance _defaultRoutingInstance;
 
-   private Map<String, PolicyStatement> _policyStatements;
+   protected final Map<String, FirewallFilter> _inetFilters;
 
-   private Map<String, PrefixList> _prefixLists;
+   protected final Map<String, PolicyStatement> _policyStatements;
+
+   protected final Map<String, PrefixList> _prefixLists;
 
    protected final Map<String, RoutingInstance> _routingInstances;
 
    public JuniperConfiguration() {
       _defaultRoutingInstance = new RoutingInstance(DEFAULT_ROUTING_INSTANCE);
+      _inetFilters = new TreeMap<String, FirewallFilter>();
       _prefixLists = new TreeMap<String, PrefixList>();
       _policyStatements = new TreeMap<String, PolicyStatement>();
       _routingInstances = new TreeMap<String, RoutingInstance>();
    }
 
-   public RoutingInstance getDefaultRoutingInstance() {
+   public final RoutingInstance getDefaultRoutingInstance() {
       return _defaultRoutingInstance;
    }
 
-   public Map<String, PolicyStatement> getPolicyStatements() {
+   public final Map<String, FirewallFilter> getFirewallFilters() {
+      return _inetFilters;
+   }
+
+   public final Map<String, PolicyStatement> getPolicyStatements() {
       return _policyStatements;
    }
 
-   public Map<String, PrefixList> getPrefixLists() {
+   public final Map<String, PrefixList> getPrefixLists() {
       return _prefixLists;
    }
 
-   public Map<String, RoutingInstance> getRoutingInstances() {
+   public final Map<String, RoutingInstance> getRoutingInstances() {
       return _routingInstances;
    }
 

@@ -2,21 +2,21 @@ package batfish.representation.juniper;
 
 import batfish.representation.PolicyMapSetLine;
 
-public final class ThenCommunityDelete extends Then {
+public final class PsThenMetric extends PsThen {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   private final String _name;
+   private final int _metric;
 
-   public ThenCommunityDelete(String name) {
-      _name = name;
+   public PsThenMetric(int metric) {
+      _metric = metric;
    }
 
-   public String getName() {
-      return _name;
+   public int getMetric() {
+      return _metric;
    }
 
    @Override

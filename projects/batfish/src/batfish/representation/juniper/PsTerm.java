@@ -4,26 +4,26 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public final class Term implements Serializable {
+public final class PsTerm implements Serializable {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   private final Set<From> _froms;
+   private final Set<PsFrom> _froms;
 
    private final String _name;
 
-   private final Set<Then> _thens;
+   private final Set<PsThen> _thens;
 
-   public Term(String name) {
-      _froms = new HashSet<From>();
+   public PsTerm(String name) {
+      _froms = new HashSet<PsFrom>();
       _name = name;
-      _thens = new HashSet<Then>();
+      _thens = new HashSet<PsThen>();
    }
 
-   public Set<From> getFroms() {
+   public Set<PsFrom> getFroms() {
       return _froms;
    }
 
@@ -31,7 +31,7 @@ public final class Term implements Serializable {
       return _name;
    }
 
-   public Set<Then> getThens() {
+   public Set<PsThen> getThens() {
       return _thens;
    }
 

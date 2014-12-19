@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import batfish.representation.PolicyMapSetLine;
 
-public abstract class Then implements Serializable {
+public abstract class PsThen implements Serializable {
 
    /**
     *

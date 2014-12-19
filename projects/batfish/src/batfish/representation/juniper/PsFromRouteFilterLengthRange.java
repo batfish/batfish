@@ -3,7 +3,7 @@ package batfish.representation.juniper;
 import batfish.representation.PolicyMapMatchLine;
 import batfish.representation.Prefix;
 
-public final class FromRouteFilterLengthRange extends FromRouteFilter {
+public final class PsFromRouteFilterLengthRange extends PsFromRouteFilter {
 
    /**
     *
@@ -14,7 +14,7 @@ public final class FromRouteFilterLengthRange extends FromRouteFilter {
 
    private final int _minPrefixLength;
 
-   public FromRouteFilterLengthRange(Prefix prefix, int minPrefixLength, int maxPrefixLength) {
+   public PsFromRouteFilterLengthRange(Prefix prefix, int minPrefixLength, int maxPrefixLength) {
       super(prefix);
       _minPrefixLength = minPrefixLength;
       _maxPrefixLength = maxPrefixLength;

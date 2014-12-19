@@ -1,17 +1,23 @@
 package batfish.representation.juniper;
 
+import batfish.representation.Ip;
 import batfish.representation.PolicyMapSetLine;
 
-public final class ThenAccept extends Then {
-
-   public static final ThenAccept INSTANCE = new ThenAccept();
+public final class PsThenNextHopIp extends PsThen {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   private ThenAccept() {
+   private final Ip _nextHopIp;
+
+   public PsThenNextHopIp(Ip nextHopIp) {
+      _nextHopIp = nextHopIp;
+   }
+
+   public Ip getNextHopIp() {
+      return _nextHopIp;
    }
 
    @Override
