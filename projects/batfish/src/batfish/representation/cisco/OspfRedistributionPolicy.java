@@ -1,7 +1,7 @@
 package batfish.representation.cisco;
 
 import batfish.representation.OspfMetricType;
-import batfish.representation.Protocol;
+import batfish.representation.RoutingProtocol;
 
 public class OspfRedistributionPolicy extends RedistributionPolicy {
 
@@ -18,8 +18,8 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
    private boolean _subnets;
    private Long _tag;
 
-   public OspfRedistributionPolicy(Protocol sourceProtocol) {
-      super(sourceProtocol, Protocol.OSPF);
+   public OspfRedistributionPolicy(RoutingProtocol sourceProtocol) {
+      super(sourceProtocol, RoutingProtocol.OSPF);
    }
 
    public String getMap() {

@@ -1,6 +1,8 @@
 package batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -27,6 +29,10 @@ public class RoutingInstance implements Serializable {
 
    private Map<String, NamedBgpGroup> _namedBgpGroups;
 
+   private Map<Ip, OspfArea> _ospfAreas;
+
+   private List<String> _ospfExportPolicies;
+
    private final Map<String, RoutingInformationBase> _ribs;
 
    private Ip _routerId;
@@ -39,6 +45,8 @@ public class RoutingInstance implements Serializable {
       _masterBgpGroup = new BgpGroup();
       _name = name;
       _namedBgpGroups = new TreeMap<String, NamedBgpGroup>();
+      _ospfAreas = new TreeMap<Ip, OspfArea>();
+      _ospfExportPolicies = new ArrayList<String>();
       _ribs = new TreeMap<String, RoutingInformationBase>();
       _ribs.put(RoutingInformationBase.RIB_IPV4_UNICAST,
             new RoutingInformationBase(RoutingInformationBase.RIB_IPV4_UNICAST));
@@ -82,6 +90,14 @@ public class RoutingInstance implements Serializable {
 
    public Map<String, NamedBgpGroup> getNamedBgpGroups() {
       return _namedBgpGroups;
+   }
+
+   public Map<Ip, OspfArea> getOspfAreas() {
+      return _ospfAreas;
+   }
+
+   public List<String> getOspfExportPolicies() {
+      return _ospfExportPolicies;
    }
 
    public Map<String, RoutingInformationBase> getRibs() {

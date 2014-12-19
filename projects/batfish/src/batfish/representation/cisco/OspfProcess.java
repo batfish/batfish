@@ -11,7 +11,7 @@ import java.util.TreeSet;
 
 import batfish.representation.Ip;
 import batfish.representation.OspfMetricType;
-import batfish.representation.Protocol;
+import batfish.representation.RoutingProtocol;
 
 public class OspfProcess implements Serializable {
 
@@ -37,7 +37,7 @@ public class OspfProcess implements Serializable {
    private Map<Integer, Boolean> _nssas;
    private boolean _passiveInterfaceDefault;
    private int _pid;
-   private Map<Protocol, OspfRedistributionPolicy> _redistributionPolicies;
+   private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
    private double _referenceBandwidth;
    private Ip _routerId;
    private Set<OspfWildcardNetwork> _wildcardNetworks;
@@ -56,8 +56,8 @@ public class OspfProcess implements Serializable {
       _interfaceBlacklist = new HashSet<String>();
       _interfaceWhitelist = new HashSet<String>();
       _wildcardNetworks = new TreeSet<OspfWildcardNetwork>();
-      _redistributionPolicies = new EnumMap<Protocol, OspfRedistributionPolicy>(
-            Protocol.class);
+      _redistributionPolicies = new EnumMap<RoutingProtocol, OspfRedistributionPolicy>(
+            RoutingProtocol.class);
    }
 
    public void computeNetworks(Collection<Interface> interfaces) {
@@ -129,7 +129,7 @@ public class OspfProcess implements Serializable {
       return _pid;
    }
 
-   public Map<Protocol, OspfRedistributionPolicy> getRedistributionPolicies() {
+   public Map<RoutingProtocol, OspfRedistributionPolicy> getRedistributionPolicies() {
       return _redistributionPolicies;
    }
 

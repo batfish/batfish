@@ -38,7 +38,7 @@ import batfish.representation.PolicyMapSetCommunityLine;
 import batfish.representation.PolicyMapSetLine;
 import batfish.representation.PolicyMapSetMetricLine;
 import batfish.representation.PolicyMapSetType;
-import batfish.representation.Protocol;
+import batfish.representation.RoutingProtocol;
 import batfish.representation.RouteFilterLengthRangeLine;
 import batfish.representation.RouteFilterLine;
 import batfish.representation.RouteFilterList;
@@ -63,7 +63,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
    private static PolicyMap makeRouteExportPolicy(Configuration c, String name,
          String prefixListName, String prefix, int prefixLength,
          SubRange prefixRange, LineAction prefixAction, Integer metric,
-         Protocol protocol, PolicyMapAction policyAction) {
+         RoutingProtocol protocol, PolicyMapAction policyAction) {
       Set<PolicyMapMatchLine> matchLines = new LinkedHashSet<PolicyMapMatchLine>();
       if (protocol != null) {
          PolicyMapMatchProtocolLine matchProtocolLine = new PolicyMapMatchProtocolLine(
@@ -156,7 +156,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       // create redistribution origination policies
       PolicyMap redistributeStaticPolicyMap = null;
       BgpRedistributionPolicy redistributeStaticPolicy = proc
-            .getRedistributionPolicies().get(Protocol.STATIC);
+            .getRedistributionPolicies().get(RoutingProtocol.STATIC);
       if (redistributeStaticPolicy != null) {
          String mapName = redistributeStaticPolicy.getMap();
          if (mapName != null) {
@@ -165,7 +165,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          else {
             redistributeStaticPolicyMap = makeRouteExportPolicy(c,
                   "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null,
-                  0, null, null, null, Protocol.STATIC, PolicyMapAction.PERMIT);
+                  0, null, null, null, RoutingProtocol.STATIC, PolicyMapAction.PERMIT);
          }
       }
 
@@ -289,7 +289,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          originationPolicies.add(explicitOriginationPolicyMap);
 
          // add redistribution origination policies
-         if (proc.getRedistributionPolicies().containsKey(Protocol.STATIC)) {
+         if (proc.getRedistributionPolicies().containsKey(RoutingProtocol.STATIC)) {
             originationPolicies.add(redistributeStaticPolicyMap);
          }
 
@@ -304,7 +304,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   "~BGP_DEFAULT_ROUTE_ORIGINATION_POLICY:" + pg.getName() + "~",
                   "BGP_DEFAULT_ROUTE_ORIGINATION_FILTER:" + pg.getName() + "~",
                   "0.0.0.0", 0, new SubRange(0, 0), LineAction.ACCEPT, 0,
-                  Protocol.AGGREGATE, PolicyMapAction.PERMIT);
+                  RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
             originationPolicies.add(defaultOriginationPolicy);
             String defaultOriginateMapName = pg.getDefaultOriginateMap();
             if (defaultOriginateMapName != null) { // originate contingent on
@@ -466,7 +466,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                      OSPF_EXPORT_DEFAULT_POLICY_NAME,
                      DEFAULT_ROUTE_FILTER_NAME, defaultPrefix,
                      defaultPrefixLength, defaultPrefixRange,
-                     LineAction.ACCEPT, metric, Protocol.AGGREGATE,
+                     LineAction.ACCEPT, metric, RoutingProtocol.AGGREGATE,
                      PolicyMapAction.PERMIT);
                newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
                newProcess.getPolicyMetricTypes().put(exportDefaultPolicy,
@@ -483,7 +483,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             exportDefaultPolicy = makeRouteExportPolicy(c,
                   OSPF_EXPORT_DEFAULT_POLICY_NAME, DEFAULT_ROUTE_FILTER_NAME,
                   defaultPrefix, defaultPrefixLength, defaultPrefixRange,
-                  LineAction.ACCEPT, metric, Protocol.AGGREGATE,
+                  LineAction.ACCEPT, metric, RoutingProtocol.AGGREGATE,
                   PolicyMapAction.PERMIT);
             c.getPolicyMaps().put(exportDefaultPolicy.getMapName(),
                   exportDefaultPolicy);
@@ -512,7 +512,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       // policy map for redistributing connected routes
       // TODO: honor subnets option
       OspfRedistributionPolicy rcp = proc.getRedistributionPolicies().get(
-            Protocol.CONNECTED);
+            RoutingProtocol.CONNECTED);
       if (rcp != null) {
          Integer metric = rcp.getMetric();
          OspfMetricType metricType = rcp.getMetricType();
@@ -547,7 +547,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                }
             }
             PolicyMapMatchLine matchConnectedLine = new PolicyMapMatchProtocolLine(
-                  Collections.singletonList(Protocol.CONNECTED));
+                  Collections.singletonList(RoutingProtocol.CONNECTED));
             PolicyMapSetLine setMetricLine = null;
             // add a set metric line if no metric provided by route map
             if (!routeMapMetric) {
@@ -567,7 +567,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
          else {
             exportConnectedPolicy = makeRouteExportPolicy(c,
                   OSPF_EXPORT_CONNECTED_POLICY_NAME, null, null, 0, null, null,
-                  metric, Protocol.CONNECTED, PolicyMapAction.PERMIT);
+                  metric, RoutingProtocol.CONNECTED, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
             newProcess.getPolicyMetricTypes().put(exportConnectedPolicy,
                   metricType);
@@ -579,7 +579,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
       // policy map for redistributing static routes
       // TODO: honor subnets option
       OspfRedistributionPolicy rsp = proc.getRedistributionPolicies().get(
-            Protocol.STATIC);
+            RoutingProtocol.STATIC);
       if (rsp != null) {
          Integer metric = rsp.getMetric();
          OspfMetricType metricType = rsp.getMetricType();
@@ -621,7 +621,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
             }
 
             PolicyMapMatchLine matchStaticLine = new PolicyMapMatchProtocolLine(
-                  Collections.singletonList(Protocol.STATIC));
+                  Collections.singletonList(RoutingProtocol.STATIC));
             for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
                boolean containsRouteFilterList = false;
                for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
@@ -685,7 +685,7 @@ public class CiscoVendorConfiguration extends CiscoConfiguration implements
                   OSPF_EXPORT_STATIC_POLICY_NAME,
                   OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
                   "0.0.0.0", 0, new SubRange(0, 0), LineAction.REJECT, metric,
-                  Protocol.STATIC, PolicyMapAction.PERMIT);
+                  RoutingProtocol.STATIC, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
             newProcess.getPolicyMetricTypes().put(exportStaticPolicy,
                   metricType);

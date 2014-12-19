@@ -25,7 +25,7 @@ import batfish.representation.Ip;
 import batfish.representation.LineAction;
 import batfish.representation.OriginType;
 import batfish.representation.OspfMetricType;
-import batfish.representation.Protocol;
+import batfish.representation.RoutingProtocol;
 import batfish.representation.SwitchportEncapsulationType;
 import batfish.representation.SwitchportMode;
 import batfish.representation.VendorConfiguration;
@@ -1491,7 +1491,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
       }
-      Protocol sourceProtocol = Protocol.CONNECTED;
+      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
       proc.getRedistributionPolicies().remove(sourceProtocol);
    }
 
@@ -1566,7 +1566,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitRedistribute_bgp_ro_stanza(
          Redistribute_bgp_ro_stanzaContext ctx) {
       OspfProcess proc = _configuration.getOspfProcess();
-      Protocol sourceProtocol = Protocol.BGP;
+      RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
       OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       int as = toInteger(ctx.as);
@@ -1602,7 +1602,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
       }
-      Protocol sourceProtocol = Protocol.CONNECTED;
+      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
       BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       if (ctx.metric != null) {
@@ -1619,7 +1619,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitRedistribute_connected_ro_stanza(
          Redistribute_connected_ro_stanzaContext ctx) {
       OspfProcess proc = _configuration.getOspfProcess();
-      Protocol sourceProtocol = Protocol.CONNECTED;
+      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
       OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       if (ctx.metric != null) {
@@ -1653,7 +1653,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
       }
-      Protocol sourceProtocol = Protocol.OSPF;
+      RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
       BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       if (ctx.metric != null) {
@@ -1683,7 +1683,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
       }
-      Protocol sourceProtocol = Protocol.STATIC;
+      RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
       BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       if (ctx.metric != null) {
@@ -1700,7 +1700,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitRedistribute_static_ro_stanza(
          Redistribute_static_ro_stanzaContext ctx) {
       OspfProcess proc = _configuration.getOspfProcess();
-      Protocol sourceProtocol = Protocol.STATIC;
+      RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
       OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       if (ctx.metric != null) {

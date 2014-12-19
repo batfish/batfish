@@ -1,6 +1,6 @@
 package batfish.representation;
 
-public enum Protocol {
+public enum RoutingProtocol {
    AGGREGATE,
    BGP,
    CONNECTED,

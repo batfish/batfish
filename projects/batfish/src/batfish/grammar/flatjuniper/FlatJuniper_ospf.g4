@@ -73,7 +73,7 @@ at_interface
 :
    INTERFACE
    (
-      name = variable
+      id = interface_id
       | WILDCARD
    ) at_interface_tail
 ;
@@ -179,7 +179,7 @@ ot_area_tail
 
 ot_export
 :
-   EXPORT variable
+   EXPORT name = variable
 ;
 
 ot_null

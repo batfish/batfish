@@ -682,7 +682,7 @@ INSTANCE
 
 INTERFACE
 :
-   'interface'
+   'interface' -> pushMode(M_Interface)
 ;
 
 INTERFACE_MODE
@@ -1996,6 +1996,12 @@ F_Variable_RequiredVarChar_Ipv6
 ;
 
 fragment
+F_Variable_InterfaceVarChar
+:
+   ~[ \t\n\r.,:;{}<>[\]&|()"']
+;
+
+fragment
 F_Variable_VarChar
 :
    ~[ \t\n\r;{}<>[\]&|()"']
@@ -2120,6 +2126,18 @@ M_Description_NEWLINE
 ;
 
 M_Description_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_Interface;
+
+M_Interface_VARIABLE
+:
+   F_Variable_RequiredVarChar F_Variable_InterfaceVarChar* -> type(VARIABLE), popMode
+;
+
+M_Interface_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;

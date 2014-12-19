@@ -729,9 +729,8 @@ public class Batfish implements AutoCloseable {
    }
 
    private String flatten(String input) {
-      JuniperCombinedParser jparser = new JuniperCombinedParser(
-            input, _settings.getThrowOnParserError(),
-            _settings.getThrowOnLexerError());
+      JuniperCombinedParser jparser = new JuniperCombinedParser(input,
+            _settings.getThrowOnParserError(), _settings.getThrowOnLexerError());
       ParserRuleContext jtree = jparser.parse();
       JuniperFlattener flattener = new JuniperFlattener();
       ParseTreeWalker walker = new ParseTreeWalker();
@@ -1683,7 +1682,6 @@ public class Batfish implements AutoCloseable {
             extractor.processParseTree(tree);
          }
          catch (Exception e) {
-
             throw new BatfishException(
                   "Error post-processing parse tree of configuration file", e);
          }

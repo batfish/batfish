@@ -119,7 +119,7 @@ bt_description
 
 bt_export
 :
-   EXPORT policy_expression
+   EXPORT expr = policy_expression
 ;
 
 bt_family
@@ -147,7 +147,7 @@ bt_group_tail
 
 bt_import
 :
-   IMPORT policy_expression
+   IMPORT expr = policy_expression
 ;
 
 bt_local_address
@@ -249,7 +249,7 @@ policy_expression
    pe_conjunction
    | pe_disjunction
    | pe_nested
-   | VARIABLE
+   | variable
 ;
 
 pst_always_compare_med

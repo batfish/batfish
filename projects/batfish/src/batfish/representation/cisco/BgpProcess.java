@@ -9,7 +9,7 @@ import java.util.Set;
 
 import batfish.main.BatfishException;
 import batfish.representation.Ip;
-import batfish.representation.Protocol;
+import batfish.representation.RoutingProtocol;
 
 public class BgpProcess implements Serializable {
 
@@ -26,7 +26,7 @@ public class BgpProcess implements Serializable {
    private Map<String, NamedBgpPeerGroup> _namedPeerGroups;
    private Set<BgpNetwork> _networks;
    private int _pid;
-   private Map<Protocol, BgpRedistributionPolicy> _redistributionPolicies;
+   private Map<RoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
    private Ip _routerId;
 
    public BgpProcess(int procnum) {
@@ -37,8 +37,8 @@ public class BgpProcess implements Serializable {
       _ipPeerGroups = new HashMap<Ip, IpBgpPeerGroup>();
       _networks = new LinkedHashSet<BgpNetwork>();
       _aggregateNetworks = new HashMap<BgpNetwork, Boolean>();
-      _redistributionPolicies = new EnumMap<Protocol, BgpRedistributionPolicy>(
-            Protocol.class);
+      _redistributionPolicies = new EnumMap<RoutingProtocol, BgpRedistributionPolicy>(
+            RoutingProtocol.class);
       _masterBgpPeerGroup = new MasterBgpPeerGroup();
       _masterBgpPeerGroup.setDefaultMetric(DEFAULT_BGP_DEFAULT_METRIC);
    }
@@ -128,7 +128,7 @@ public class BgpProcess implements Serializable {
       return _pid;
    }
 
-   public Map<Protocol, BgpRedistributionPolicy> getRedistributionPolicies() {
+   public Map<RoutingProtocol, BgpRedistributionPolicy> getRedistributionPolicies() {
       return _redistributionPolicies;
    }
 

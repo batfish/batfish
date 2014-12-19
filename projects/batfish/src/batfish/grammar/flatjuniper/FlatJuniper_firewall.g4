@@ -55,7 +55,7 @@ fwfromt_icmp_type
 
 fwfromt_next_header
 :
-   NEXT_HEADER protocol
+   NEXT_HEADER ip_protocol
 ;
 
 fwfromt_port
@@ -74,7 +74,7 @@ fwfromt_prefix_list
 
 fwfromt_protocol
 :
-   PROTOCOL protocol
+   PROTOCOL ip_protocol
 ;
 
 fwfromt_source_address

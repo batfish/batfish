@@ -2,7 +2,7 @@ package batfish.representation.cisco;
 
 import java.io.Serializable;
 
-import batfish.representation.Protocol;
+import batfish.representation.RoutingProtocol;
 
 public class BgpRedistributionPolicy extends RedistributionPolicy implements
       Serializable {
@@ -14,8 +14,8 @@ public class BgpRedistributionPolicy extends RedistributionPolicy implements
    private String _map;
    private Integer _metric;
 
-   public BgpRedistributionPolicy(Protocol sourceProtocol) {
-      super(sourceProtocol, Protocol.BGP);
+   public BgpRedistributionPolicy(RoutingProtocol sourceProtocol) {
+      super(sourceProtocol, RoutingProtocol.BGP);
    }
 
    public String getMap() {

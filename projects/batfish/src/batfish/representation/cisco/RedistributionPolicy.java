@@ -4,28 +4,28 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 
-import batfish.representation.Protocol;
+import batfish.representation.RoutingProtocol;
 
 public abstract class RedistributionPolicy implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   protected final Protocol _destinationProtocol;
-   protected final Protocol _sourceProtocol;
+   protected final RoutingProtocol _destinationProtocol;
+   protected final RoutingProtocol _sourceProtocol;
    protected final Map<String, Object> _specialAttributes;
 
-   public RedistributionPolicy(Protocol sourceProtocol,
-         Protocol destinationProtocol) {
+   public RedistributionPolicy(RoutingProtocol sourceProtocol,
+         RoutingProtocol destinationProtocol) {
       _sourceProtocol = sourceProtocol;
       _destinationProtocol = destinationProtocol;
       _specialAttributes = new TreeMap<String, Object>();
    }
 
-   public Protocol getDestinationProtocol() {
+   public RoutingProtocol getDestinationProtocol() {
       return _destinationProtocol;
    }
 
-   public Protocol getSourceProtocol() {
+   public RoutingProtocol getSourceProtocol() {
       return _sourceProtocol;
    }
 

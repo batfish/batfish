@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import batfish.representation.Ip;
 import batfish.representation.Prefix;
 import batfish.representation.SwitchportEncapsulationType;
 import batfish.representation.SwitchportMode;
@@ -22,11 +23,15 @@ public class Interface implements Serializable {
    private String _incomingFilter;
    private String _name;
    private int _nativeVlan;
+   private Ip _ospfArea;
    private Integer _ospfCost;
    private int _ospfDeadInterval;
    private int _ospfHelloMultiplier;
+   private boolean _ospfPassive;
    private String _outgoingFilter;
+
    private Prefix _prefix;
+
    private SwitchportMode _switchportMode;
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
@@ -75,6 +80,10 @@ public class Interface implements Serializable {
       return _nativeVlan;
    }
 
+   public Ip getOspfArea() {
+      return _ospfArea;
+   }
+
    public Integer getOspfCost() {
       return _ospfCost;
    }
@@ -85,6 +94,10 @@ public class Interface implements Serializable {
 
    public int getOspfHelloMultiplier() {
       return _ospfHelloMultiplier;
+   }
+
+   public boolean getOspfPassive() {
+      return _ospfPassive;
    }
 
    public String getOutgoingFilter() {
@@ -127,6 +140,10 @@ public class Interface implements Serializable {
       _nativeVlan = vlan;
    }
 
+   public void setOspfArea(Ip ospfArea) {
+      _ospfArea = ospfArea;
+   }
+
    public void setOspfCost(int defaultOspfCost) {
       _ospfCost = defaultOspfCost;
    }
@@ -137,6 +154,10 @@ public class Interface implements Serializable {
 
    public void setOspfHelloMultiplier(int multiplier) {
       _ospfHelloMultiplier = multiplier;
+   }
+
+   public void setOspfPassive(boolean ospfPassive) {
+      _ospfPassive = ospfPassive;
    }
 
    public void setOutgoingFilter(String accessListName) {
@@ -155,4 +176,5 @@ public class Interface implements Serializable {
          SwitchportEncapsulationType encapsulation) {
       _switchportTrunkEncapsulation = encapsulation;
    }
+
 }

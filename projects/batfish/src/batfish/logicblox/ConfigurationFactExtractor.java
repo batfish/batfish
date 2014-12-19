@@ -38,7 +38,7 @@ import batfish.representation.PolicyMapSetLocalPreferenceLine;
 import batfish.representation.PolicyMapSetMetricLine;
 import batfish.representation.PolicyMapSetNextHopLine;
 import batfish.representation.PolicyMapSetOriginTypeLine;
-import batfish.representation.Protocol;
+import batfish.representation.RoutingProtocol;
 import batfish.representation.RouteFilterLengthRangeLine;
 import batfish.representation.RouteFilterLine;
 import batfish.representation.RouteFilterList;
@@ -54,7 +54,7 @@ public class ConfigurationFactExtractor {
 
    private static final String FLOW_SINK_INTERFACE_PREFIX = "TenGigabitEthernet100/";
 
-   private static String getLBRoutingProtocol(Protocol prot) {
+   private static String getLBRoutingProtocol(RoutingProtocol prot) {
       switch (prot) {
       case AGGREGATE:
          return "aggregate";
@@ -626,7 +626,7 @@ public class ConfigurationFactExtractor {
 
                case PROTOCOL:
                   PolicyMapMatchProtocolLine pmmpl = (PolicyMapMatchProtocolLine) matchLine;
-                  for (Protocol prot : pmmpl.getProtocols()) {
+                  for (RoutingProtocol prot : pmmpl.getProtocols()) {
                      wSetPolicyMapClauseMatchProtocol.append(mapName + "|" + i
                            + "|" + getLBRoutingProtocol(prot) + "\n");
                   }

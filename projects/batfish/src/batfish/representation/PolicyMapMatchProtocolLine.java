@@ -9,13 +9,13 @@ public class PolicyMapMatchProtocolLine extends PolicyMapMatchLine {
 
    private static final long serialVersionUID = 1L;
 
-   private List<Protocol> _protocol;
+   private List<RoutingProtocol> _protocol;
 
-   public PolicyMapMatchProtocolLine(List<Protocol> protocols) {
+   public PolicyMapMatchProtocolLine(List<RoutingProtocol> protocols) {
       _protocol = protocols;
    }
 
-   public List<Protocol> getProtocols() {
+   public List<RoutingProtocol> getProtocols() {
       return _protocol;
    }
 

@@ -27,12 +27,12 @@ ct_members
 
 fromt_as_path
 :
-   AS_PATH variable
+   AS_PATH name = variable
 ;
 
 fromt_color
 :
-   COLOR DEC
+   COLOR color = DEC
 ;
 
 fromt_community
@@ -75,7 +75,7 @@ fromt_prefix_list
 
 fromt_protocol
 :
-   PROTOCOL protocol
+   PROTOCOL protocol = routing_protocol
 ;
 
 fromt_route_filter
@@ -113,36 +113,12 @@ fromt_tag
    TAG DEC
 ;
 
-met_metric
+metric_expression
 :
-   METRIC MULTIPLIER multiplier = DEC
+MULTIPLIER multiplier = DEC
    (
       OFFSET offset = DEC
    )?
-;
-
-met_metric2
-:
-   METRIC2 MULTIPLIER multiplier = DEC
-   (
-      OFFSET offset = DEC
-   )?
-;
-
-metrict_constant
-:
-   DEC
-;
-
-metrict_expression
-:
-   EXPRESSION metrict_expression_tail
-;
-
-metrict_expression_tail
-:
-   met_metric
-   | met_metric2
 ;
 
 plt_apply_path
@@ -209,11 +185,6 @@ pot_prefix_list_tail
    | plt_network6
 ;
 
-prefix_length_range
-:
-   FORWARD_SLASH low = DEC DASH FORWARD_SLASH high = DEC
-;
-
 pst_term
 :
    TERM
@@ -242,7 +213,7 @@ rft_orlonger
 
 rft_prefix_length_range
 :
-   PREFIX_LENGTH_RANGE prefix_length_range
+   PREFIX_LENGTH_RANGE FORWARD_SLASH low = DEC DASH FORWARD_SLASH high = DEC
 ;
 
 rft_through
@@ -299,22 +270,22 @@ tht_color_tail
 
 tht_community_add
 :
-   COMMUNITY ADD variable
+   COMMUNITY ADD name = variable
 ;
 
 tht_community_delete
 :
-   COMMUNITY DELETE variable
+   COMMUNITY DELETE name = variable
 ;
 
 tht_community_set
 :
-   COMMUNITY SET variable
+   COMMUNITY SET name = variable
 ;
 
 tht_cos_next_hop_map
 :
-   COS_NEXT_HOP_MAP variable
+   COS_NEXT_HOP_MAP name = variable
 ;
 
 tht_default_action_accept
@@ -334,13 +305,22 @@ tht_local_preference
 
 tht_metric
 :
-   METRIC tht_metric_tail
+   METRIC metric = DEC
 ;
 
-tht_metric_tail
+tht_metric2
 :
-   metrict_constant
-   | metrict_expression
+   METRIC2 metric2 = DEC
+;
+
+tht_metric_expression
+:
+   METRIC EXPRESSION metric_expression 
+;
+
+tht_metric2_expression
+:
+   METRIC2 EXPRESSION metric_expression
 ;
 
 tht_next_policy

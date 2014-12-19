@@ -49,6 +49,32 @@ icmp_type
    | UNREACHABLE
 ;
 
+interface_id
+:
+   name = VARIABLE
+   (
+      PERIOD unit = DEC
+   )?
+;
+
+ip_protocol
+:
+   AH
+   | DEC
+   | ESP
+   | GRE
+   | ICMP
+   | ICMPV6
+   | IGMP
+   | OSPF
+   | PIM
+   | RSVP
+   | STATIC
+   | TCP
+   | UDP
+   | VRRP
+;
+
 s_apply_groups
 :
    APPLY_GROUPS name = variable
@@ -81,34 +107,22 @@ port
    | TELNET
 ;
 
-protocol
-:
-   AGGREGATE
-   | AH
-   | BGP
-   | DEC
-   | DIRECT
-   | ESP
-   | GRE
-   | ICMP
-   | ICMPV6
-   | IGMP
-   | ISIS
-   | OSPF
-   | PIM
-   | RSVP
-   | STATIC
-   | TCP
-   | UDP
-   | VRRP
-;
-
 range
 :
    range_list += subrange
    (
       COMMA range_list += subrange
    )*
+;
+
+routing_protocol
+:
+   AGGREGATE
+   | BGP
+   | DIRECT
+   | ISIS
+   | OSPF
+   | STATIC
 ;
 
 subrange
@@ -126,5 +140,5 @@ s_null_filler
 
 variable
 :
-   text = ~( NEWLINE | WILDCARD )
+   text = ~( NEWLINE | OPEN_PAREN | OPEN_BRACKET | OPEN_BRACE | WILDCARD )
 ;
