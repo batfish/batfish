@@ -7,10 +7,11 @@ Instructions for building and running Batfish
 
 Prerequisites:
    ant
+   GNU parallel
    java 7 jdk
    logicblox 4.1.X+ (not required for all tasks)
-   z3  (Nuno Lopes's port)
-   GNU parallel
+   python
+   z3
 
 Steps:
 NOTE: Some steps will begin with (SERVER), and some with (CLIENT). The SERVER is the machine running LogicBlox. The CLIENT is the machine containing the test rig and batfish binaries. If the SERVER and the CLIENT are the same machine, then run all steps (except where otherwise indicated).
@@ -19,10 +20,10 @@ NOTE: After any step involving modifications to .bashrc or equivalent, make sure
 1. (CLIENT) Install gnu parallel from http://ftp.gnu.org/gnu/parallel/parallel-latest.tar.bz2
 standard autotools install (extract, configure, make, make install)
 
-2. (CLIENT) Install Nuno Lopes's z3 branch
-git clone https://git01.codeplex.com/forks/nunoplopes/hassel # IF YOU HAVE PROBLEMS WITH THIS STEP, JUST PULL LATEST SNAPSHOT OF 'unstable' BRANCH
-cd hassel
-./configure
+2. (CLIENT) Install z3
+git clone https://git01.codeplex.com/z3 # IF YOU HAVE PROBLEMS WITH THIS STEP, JUST PULL LATEST SNAPSHOT OF 'opt' BRANCH
+cd z3
+python scripts/mk_make.py
 cd build
 make -j<number-of-jobs>
 make install # as administrator (sudo or whatever)
