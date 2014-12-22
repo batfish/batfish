@@ -5,78 +5,82 @@ block(`IpAccessList_rules) {
    clauses(`{
 // BEGIN CODE
 
-AclDeny(list, flow) <-
-   IpAccessListDeny(list, _, flow) ;
-   (
-      Flow(flow),
-      IpAccessList(list),
-      !IpAccessListMatch(list, _, flow)
-   ).
-
 IpAccessListDeny(list, line, flow) <-
-   SetIpAccessListDenyLine(list, line),
+   SetIpAccessListLine_deny(list, line),
+   IpAccessListFirstMatch[list, flow] = line.
+
+IpAccessListPermit(list, line, flow) <-
+   SetIpAccessListLine_permit(list, line),
    IpAccessListFirstMatch[list, flow] = line.
 
 IpAccessListFirstMatch[list, flow] = firstMatchLine <-
    agg<<firstMatchLine = min(line)>>
       IpAccessListMatch(list, line, flow).
 
-IpAccessListLine_dstIp_end[list, line] = dstIp_end,
-IpAccessListLine_dstIp_start[list, line] = dstIp_start,
-IpAccessListLine_srcIp_end[list, line] = srcIp_end,
-IpAccessListLine_srcIp_start[list, line] = srcIp_start,
-IpAccessListLine_protocol[list, line] = protocol
-<-
-   SetIpAccessListLine(list, line, protocol, srcIp_start, srcIp_end, dstIp_start, dstIp_end).
+IpAccessListLine(list, line) <-
+   SetIpAccessListLine_deny(list, line) ;
+   SetIpAccessListLine_permit(list, line).
 
 IpAccessListMatch(list, line, flow) <-
-   _IpAccessListMatchSrcPort(list, line, flow).
+   IpAccessListMatchDstIp(list, line, flow),
+   IpAccessListMatchDstPort(list, line, flow),
+   IpAccessListMatchProtocol(list, line, flow),
+   IpAccessListMatchSrcIp(list, line, flow),
+   IpAccessListMatchSrcPort(list, line, flow).
 
-_IpAccessListMatchIps(list, line, flow) <-
-   IpAccessListLine_dstIp_end[list, line] = dstIp_end,
-   IpAccessListLine_dstIp_start[list, line] = dstIp_start,
-   IpAccessListLine_srcIp_end[list, line] = srcIp_end,
-   IpAccessListLine_srcIp_start[list, line] = srcIp_start,
+IpAccessListMatchDstIp(list, line, flow) <-
+   IpAccessListLine(list, line),
    Flow_dstIp[flow] = dstIp,
-   Ip_address(dstIp:dstIpNum),
-   dstIp_start <= dstIpNum <= dstIp_end,
-   Flow_srcIp[flow] = srcIp,
-   Ip_address(srcIp:srcIpNum),
-   srcIp_start <= srcIpNum <= srcIp_end.
-
-
-_IpAccessListMatchProtocol(list, line, flow) <-
-   _IpAccessListMatchIps(list, line, flow),
-   Flow_ipProtocol[flow] = protocol,
-   IpAccessListLine_protocol[list, line] = lineProtocol,
    (
-      lineProtocol = protocol ;
-      lineProtocol = IpProtocol_ANY[]
+      !SetIpAccessListLine_dstIpRange(list, line, _, _) ;
+      (
+         SetIpAccessListLine_dstIpRange(list, line, dstIp_start, dstIp_end),
+         Ip_address(dstIp:dstIpNum),
+         dstIp_start <= dstIpNum <= dstIp_end
+      )
    ).
 
-_IpAccessListMatchDstPort(list, line, flow) <-
-   _IpAccessListMatchProtocol(list, line, flow),
+IpAccessListMatchDstPort(list, line, flow) <-
+   IpAccessListLine(list, line),
+   Flow_dstPort[flow] = dstPort,
    (
       !SetIpAccessListLine_dstPortRange(list, line, _, _) ;
       (
-         Flow_dstPort[flow] = dstPort,
          SetIpAccessListLine_dstPortRange(list, line, dstPort_start, dstPort_end),
          dstPort_start <= dstPort <= dstPort_end
       )
    ).
    
-_IpAccessListMatchSrcPort(list, line, flow) <-
-   _IpAccessListMatchDstPort(list, line, flow),
-   SetIpAccessListLine(list, line, _, _, _, _, _),
+IpAccessListMatchProtocol(list, line, flow) <-
+   IpAccessListLine(list, line),
+   Flow_ipProtocol[flow] = protocol,
+   (
+      !SetIpAccessListLine_protocol(list, line, _) ;
+      SetIpAccessListLine_protocol(list, line, protocol)
+   ).
+
+IpAccessListMatchSrcIp(list, line, flow) <-
+   IpAccessListLine(list, line),
+   Flow_srcIp[flow] = srcIp,
+   (
+      !SetIpAccessListLine_srcIpRange(list, line, _, _) ;
+      (
+         SetIpAccessListLine_srcIpRange(list, line, srcIp_start, srcIp_end),
+         Ip_address(srcIp:srcIpNum),
+         srcIp_start <= srcIpNum <= srcIp_end
+      )
+   ).
+
+IpAccessListMatchSrcPort(list, line, flow) <-
+   IpAccessListLine(list, line),
+   Flow_srcPort[flow] = srcPort,
    (
       !SetIpAccessListLine_srcPortRange(list, line, _, _) ;
       (
-         Flow_srcPort[flow] = srcPort,
          SetIpAccessListLine_srcPortRange(list, line, srcPort_start, srcPort_end),
          srcPort_start <= srcPort <= srcPort_end
       )
    ).
-   
 
 // END CODE
    })

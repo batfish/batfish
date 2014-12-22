@@ -117,23 +117,23 @@ block(`service_init) {
       }.
 
 // IpAccessList
-      file_binding_by_name["SetIpAccessListDenyLine"] = fb,
+      file_binding_by_name["SetIpAccessListLine_deny"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "SetIpAccessListDenyLine",
-         predicate_binding_by_name["libbatfish:IpAccessList:SetIpAccessListDenyLine"] =
+         file_binding_definition_name[] = "SetIpAccessListLine_deny",
+         predicate_binding_by_name["libbatfish:IpAccessList:SetIpAccessListLine_deny"] =
             predicate_binding(_) {
                predicate_binding_columns[] = "LIST,LINE"
             }
       }.
 
-      file_binding_by_name["SetIpAccessListLine"] = fb,
+      file_binding_by_name["SetIpAccessListLine_dstIpRange"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "SetIpAccessListLine",
-         predicate_binding_by_name["libbatfish:IpAccessList:SetIpAccessListLine"] =
+         file_binding_definition_name[] = "SetIpAccessListLine_dstIpRange",
+         predicate_binding_by_name["libbatfish:IpAccessList:SetIpAccessListLine_dstIpRange"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "LIST,LINE,PROTOCOL,SRCIPSTART,SRCIPEND,DSTIPSTART,DSTIPEND"
+               predicate_binding_columns[] = "LIST,LINE,DSTIPSTART,DSTIPEND"
             }
       }.
 
@@ -144,6 +144,36 @@ block(`service_init) {
          predicate_binding_by_name["libbatfish:IpAccessList:SetIpAccessListLine_dstPortRange"] =
             predicate_binding(_) {
                predicate_binding_columns[] = "LIST,LINE,DSTPORTSTART,DSTPORTEND"
+            }
+      }.
+
+      file_binding_by_name["SetIpAccessListLine_permit"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetIpAccessListLine_permit",
+         predicate_binding_by_name["libbatfish:IpAccessList:SetIpAccessListLine_permit"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "LIST,LINE"
+            }
+      }.
+
+      file_binding_by_name["SetIpAccessListLine_protocol"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetIpAccessListLine_protocol",
+         predicate_binding_by_name["libbatfish:IpAccessList:SetIpAccessListLine_protocol"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "LIST,LINE,PROTOCOL"
+            }
+      }.
+
+      file_binding_by_name["SetIpAccessListLine_srcIpRange"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetIpAccessListLine_srcIpRange",
+         predicate_binding_by_name["libbatfish:IpAccessList:SetIpAccessListLine_srcIpRange"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "LIST,LINE,SRCIPSTART,SRCIPEND"
             }
       }.
 

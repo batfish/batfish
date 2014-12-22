@@ -84,24 +84,45 @@ block(`service_files) {
       }.
 
 // IpAccessList
-      file_definition_by_name["SetIpAccessListDenyLine"] = fd,
+      file_definition_by_name["SetIpAccessListLine_deny"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
          column_headers[] = "LIST,LINE",
          column_formats[] = "string,integer"
       }.
 
-      file_definition_by_name["SetIpAccessListLine"] = fd,
+      file_definition_by_name["SetIpAccessListLine_dstIpRange"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "LIST,LINE,PROTOCOL,SRCIPSTART,SRCIPEND,DSTIPSTART,DSTIPEND",
-         column_formats[] = "string,integer,string,integer,integer,integer,integer"
+         column_headers[] = "LIST,LINE,DSTIPSTART,DSTIPEND",
+         column_formats[] = "string,integer,integer,integer"
       }.
 
       file_definition_by_name["SetIpAccessListLine_dstPortRange"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
          column_headers[] = "LIST,LINE,DSTPORTSTART,DSTPORTEND",
+         column_formats[] = "string,integer,integer,integer"
+      }.
+
+      file_definition_by_name["SetIpAccessListLine_permit"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "LIST,LINE",
+         column_formats[] = "string,integer"
+      }.
+
+      file_definition_by_name["SetIpAccessListLine_protocol"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "LIST,LINE,PROTOCOL",
+         column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetIpAccessListLine_srcIpRange"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "LIST,LINE,SRCIPSTART,SRCIPEND",
          column_formats[] = "string,integer,integer,integer"
       }.
 

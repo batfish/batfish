@@ -66,19 +66,34 @@ block(`service_config) {
       }.
 
 // IpAccessList
-      service_by_prefix["/batfish/SetIpAccessListDenyLine"] = x,
+      service_by_prefix["/batfish/SetIpAccessListLine_deny"] = x,
       delim_service(x) {
-         delim_file_binding[] = "SetIpAccessListDenyLine"
+         delim_file_binding[] = "SetIpAccessListLine_deny"
       }.
 
-      service_by_prefix["/batfish/SetIpAccessListLine"] = x,
+      service_by_prefix["/batfish/SetIpAccessListLine_dstIpRange"] = x,
       delim_service(x) {
-         delim_file_binding[] = "SetIpAccessListLine"
+         delim_file_binding[] = "SetIpAccessListLine_dstIpRange"
       }.
 
       service_by_prefix["/batfish/SetIpAccessListLine_dstPortRange"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetIpAccessListLine_dstPortRange"
+      }.
+
+      service_by_prefix["/batfish/SetIpAccessListLine_permit"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIpAccessListLine_permit"
+      }.
+
+      service_by_prefix["/batfish/SetIpAccessListLine_protocol"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIpAccessListLine_protocol"
+      }.
+
+      service_by_prefix["/batfish/SetIpAccessListLine_srcIpRange"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIpAccessListLine_srcIpRange"
       }.
 
       service_by_prefix["/batfish/SetIpAccessListLine_srcPortRange"] = x,

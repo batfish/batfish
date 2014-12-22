@@ -69,7 +69,7 @@ PolicyMapClauseMatchFlow(map, clause, flow) <-
       !SetPolicyMapClauseMatchAcl(map, clause, _) ;
       (
          SetPolicyMapClauseMatchAcl(map, clause, acl),
-         !AclDeny(acl, flow)
+         IpAccessListPermit(acl, _, flow)
       )
    ).
 
