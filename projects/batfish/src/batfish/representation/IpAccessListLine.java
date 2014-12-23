@@ -1,134 +1,79 @@
 package batfish.representation;
 
 import java.io.Serializable;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import batfish.util.SubRange;
-import batfish.util.Util;
 
-public class IpAccessListLine implements Serializable {
+public final class IpAccessListLine implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private static boolean isValidWildcard(Ip wildcard) {
-      long w = wildcard.asLong();
-      long wp = w+1l;
-      int numTrailingZeros = Long.numberOfTrailingZeros(wp);
-      long check = 1l << numTrailingZeros;
-      return wp == check;
-   }
    private LineAction _action;
-   private Ip _dstIp;
+
+   private Set<Prefix> _dstIpRanges;
+
    private List<SubRange> _dstPortRanges;
-   private Ip _dstWildcard;
-   private int _protocol;
-   private Ip _srcIp;
+
+   private String _invalidMessage;
+
+   private Set<IpProtocol> _protocols;
+
+   private Set<Prefix> _srcIpRanges;
+
    private List<SubRange> _srcPortRanges;
 
-   private Ip _srcWildcard;
-
-   public IpAccessListLine(LineAction ala, int protocol, Ip srcIp,
-         Ip srcWildcard, Ip dstIp, Ip dstWildcard,
-         List<SubRange> srcPortRanges, List<SubRange> dstPortRanges) {
-      _action = ala;
-      _protocol = protocol;
-      _srcIp = srcIp;
-      _srcWildcard = srcWildcard;
-      _dstIp = dstIp;
-      _dstWildcard = dstWildcard;
-      _srcPortRanges = srcPortRanges;
-      _dstPortRanges = dstPortRanges;
-      if (srcPortRanges == null
-            && (Util.getProtocolName(protocol).equals("tcp") || Util
-                  .getProtocolName(protocol).equals("udp"))) {
-         _srcPortRanges = Collections.singletonList(new SubRange(0, 65535));
-      }
-      if (dstPortRanges == null
-            && (Util.getProtocolName(protocol).equals("tcp") || Util
-                  .getProtocolName(protocol).equals("udp"))) {
-         _dstPortRanges = Collections.singletonList(new SubRange(0, 65535));
-      }
+   public IpAccessListLine() {
+      _protocols = EnumSet.noneOf(IpProtocol.class);
+      _srcPortRanges = new ArrayList<SubRange>();;
+      _dstPortRanges = new ArrayList<SubRange>();;
    }
 
    public LineAction getAction() {
       return _action;
    }
 
-   public Ip getDestinationIP() {
-      return _dstIp;
-   }
-
-   public Ip getDestinationWildcard() {
-      return _dstWildcard;
+   public Set<Prefix> getDestinationIpRanges() {
+      return _dstIpRanges;
    }
 
    public List<SubRange> getDstPortRanges() {
       return _dstPortRanges;
    }
 
-   public String getIFString(int indentLevel) {
-
-      String dstPortStr = "-";
-
-      if (_dstPortRanges != null) {
-         dstPortStr = "";
-         for (SubRange sr : _dstPortRanges) {
-            dstPortStr += " " + sr;
-         }
-      }
-
-      String srcPortStr = "-";
-
-      if (_srcPortRanges != null) {
-         srcPortStr = "";
-         for (SubRange sr : _srcPortRanges) {
-            srcPortStr += " " + sr;
-         }
-      }
-
-      String retString = String
-            .format(
-                  "%sIpAccessListLine SrcIp %s SrcWildCard %s SrcPortStr %s DstIp %s DstWildCard %s DstPortStr %s Proto %s Action %s",
-                  Util.getIndentString(indentLevel), _srcIp, _srcWildcard,
-                  srcPortStr, _dstIp, _dstWildcard, dstPortStr, _protocol,
-                  _action);
-
-      return retString;
-
+   public String getInvalidMessage() {
+      return _invalidMessage;
    }
 
-   public int getProtocol() {
-      return _protocol;
+   public Set<IpProtocol> getProtocols() {
+      return _protocols;
    }
 
-   public Ip getSourceIP() {
-      return _srcIp;
-   }
-
-   public Ip getSourceWildcard() {
-      return _srcWildcard;
+   public Set<Prefix> getSourceIpRanges() {
+      return _srcIpRanges;
    }
 
    public List<SubRange> getSrcPortRanges() {
       return _srcPortRanges;
    }
 
-   public boolean isValid() {
-      return isValidWildcard(_srcWildcard) && isValidWildcard(_dstWildcard);
+   public void setAction(LineAction action) {
+      _action = action;
+   }
+
+   public void setInvalidMessage(String invalidMessage) {
+      _invalidMessage = invalidMessage;
    }
 
    @Override
    public String toString() {
-      String protocolName = Util.getProtocolName(_protocol);
-      return "[Action:"
-            + _action
-            + ", Protocol:"
-            + (protocolName != null ? protocolName + "(" + _protocol + ")"
-                  : _protocol) + ", SourceIp:" + _srcIp + ", SourceWildcard:"
-            + _srcWildcard + ", DestinationIp:" + _dstIp
-            + ", DestinationWildcard:" + _dstWildcard + ", SrcPortRange:"
-            + _srcPortRanges + ", DstPortRange:" + _dstPortRanges + "]";
+      return "[Action:" + _action + ", Protocols:" + _protocols.toString()
+            + ", SourceIpRanges:" + _srcIpRanges + ", DestinationIpRanges:"
+            + _dstIpRanges + ", SrcPortRanges:" + _srcPortRanges
+            + ", DstPortRanges:" + _dstPortRanges + "]";
    }
 
 }

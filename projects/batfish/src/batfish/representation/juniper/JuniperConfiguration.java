@@ -15,7 +15,7 @@ public class JuniperConfiguration implements Serializable {
 
    protected final RoutingInstance _defaultRoutingInstance;
 
-   protected final Map<String, FirewallFilter> _inetFilters;
+   protected final Map<String, FirewallFilter> _filters;
 
    protected final Map<String, PolicyStatement> _policyStatements;
 
@@ -25,7 +25,7 @@ public class JuniperConfiguration implements Serializable {
 
    public JuniperConfiguration() {
       _defaultRoutingInstance = new RoutingInstance(DEFAULT_ROUTING_INSTANCE);
-      _inetFilters = new TreeMap<String, FirewallFilter>();
+      _filters = new TreeMap<String, FirewallFilter>();
       _prefixLists = new TreeMap<String, PrefixList>();
       _policyStatements = new TreeMap<String, PolicyStatement>();
       _routingInstances = new TreeMap<String, RoutingInstance>();
@@ -36,7 +36,11 @@ public class JuniperConfiguration implements Serializable {
    }
 
    public final Map<String, FirewallFilter> getFirewallFilters() {
-      return _inetFilters;
+      return _filters;
+   }
+
+   public String getHostname() {
+      return _defaultRoutingInstance.getHostname();
    }
 
    public final Map<String, PolicyStatement> getPolicyStatements() {

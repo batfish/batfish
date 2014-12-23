@@ -1,13 +1,12 @@
 package batfish.representation.cisco;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 
 import batfish.representation.Ip;
+import batfish.representation.IpProtocol;
 import batfish.representation.LineAction;
 import batfish.util.SubRange;
-import batfish.util.Util;
 
 public class ExtendedAccessListLine implements Serializable {
 
@@ -17,13 +16,13 @@ public class ExtendedAccessListLine implements Serializable {
    private Ip _dstIp;
    private List<SubRange> _dstPortRanges;
    private Ip _dstWildcard;
-   private int _protocol;
+   private IpProtocol _protocol;
    private Ip _srcIp;
    private List<SubRange> _srcPortRanges;
    private Ip _srcWildcard;
 
-   public ExtendedAccessListLine(LineAction action, int protocol, Ip srcIp,
-         Ip srcWildcard, Ip dstIp, Ip dstWildcard,
+   public ExtendedAccessListLine(LineAction action, IpProtocol protocol,
+         Ip srcIp, Ip srcWildcard, Ip dstIp, Ip dstWildcard,
          List<SubRange> srcPortRanges, List<SubRange> dstPortRanges) {
       _action = action;
       _protocol = protocol;
@@ -33,16 +32,6 @@ public class ExtendedAccessListLine implements Serializable {
       _dstWildcard = dstWildcard;
       _srcPortRanges = srcPortRanges;
       _dstPortRanges = dstPortRanges;
-      if (srcPortRanges == null
-            && (Util.getProtocolName(protocol).equals("tcp") || Util
-                  .getProtocolName(protocol).equals("udp"))) {
-         srcPortRanges = Collections.singletonList(new SubRange(0, 65535));
-      }
-      if (dstPortRanges == null
-            && (Util.getProtocolName(protocol).equals("tcp") || Util
-                  .getProtocolName(protocol).equals("udp"))) {
-         dstPortRanges = Collections.singletonList(new SubRange(0, 65535));
-      }
    }
 
    public LineAction getAction() {
@@ -61,11 +50,11 @@ public class ExtendedAccessListLine implements Serializable {
       return _dstPortRanges;
    }
 
-   public int getProtocol() {
+   public IpProtocol getProtocol() {
       return _protocol;
    }
 
-   public Ip getSourceIP() {
+   public Ip getSourceIp() {
       return _srcIp;
    }
 
@@ -79,7 +68,7 @@ public class ExtendedAccessListLine implements Serializable {
 
    @Override
    public String toString() {
-      String protocolName = Util.getProtocolName(_protocol);
+      String protocolName = _protocol.name();
       return "[Action:"
             + _action
             + ", Protocol:"

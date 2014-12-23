@@ -26,6 +26,7 @@ import batfish.representation.Interface;
 import batfish.representation.Ip;
 import batfish.representation.IpAccessList;
 import batfish.representation.IpAccessListLine;
+import batfish.representation.IpProtocol;
 import batfish.representation.PolicyMap;
 import batfish.representation.PolicyMapAction;
 import batfish.representation.PolicyMapClause;
@@ -35,6 +36,7 @@ import batfish.representation.PolicyMapMatchType;
 import batfish.representation.PolicyMapSetLine;
 import batfish.representation.PolicyMapSetNextHopLine;
 import batfish.representation.PolicyMapSetType;
+import batfish.representation.Prefix;
 import batfish.util.SubRange;
 import batfish.util.Util;
 import batfish.z3.node.AcceptExpr;
@@ -587,31 +589,17 @@ public class Synthesizer {
             for (int i = 0; i < lines.size(); i++) {
                IpAccessListLine line = lines.get(i);
                // TODO: fix
-               boolean valid = line.isValid();
+               String invalidMessage = line.getInvalidMessage();
+               boolean valid = invalidMessage == null;
                if (!valid) {
-                  _warnings
-                        .add("WARNING: IpAccessList "
-                              + hostname
-                              + ":"
-                              + aclName
-                              + " line "
-                              + i
-                              + ": ignored (will never be matched) because we do not know how to handle non-trailing wildcard bits\n");
+                  _warnings.add("WARNING: IpAccessList " + aclName + " line "
+                        + i + ": disabled: " + invalidMessage + "\n");
                }
 
-               long dstIp = line.getDestinationIP().asLong();
-               int dstIpWildcardBits = Util.numWildcardBits(line
-                     .getDestinationWildcard().asLong());
-               int dstIpStart = dstIpWildcardBits;
-               int dstIpEnd = 31;
+               Set<Prefix> srcIpRanges = line.getSourceIpRanges();
+               Set<Prefix> dstIpRanges = line.getDestinationIpRanges();
 
-               long srcIp = line.getSourceIP().asLong();
-               int srcIpWildcardBits = Util.numWildcardBits(line
-                     .getSourceWildcard().asLong());
-               int srcIpStart = srcIpWildcardBits;
-               int srcIpEnd = 31;
-
-               long protocol = line.getProtocol();
+               Set<IpProtocol> protocols = line.getProtocols();
                List<SubRange> srcPortRanges = line.getSrcPortRanges();
                List<SubRange> dstPortRanges = line.getDstPortRanges();
 
@@ -626,29 +614,60 @@ public class Synthesizer {
                matchConditions.addConjunct(prevNoMatch);
 
                // match protocol
-               if (protocol != 0) {
-                  VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
-                  LitIntExpr protocolLit = new LitIntExpr(protocol, 16);
-                  EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
-                  matchLineCriteria.addConjunct(matchProtocol);
+               if (protocols.size() > 0) {
+                  OrExpr matchesSomeProtocol = new OrExpr();
+                  for (IpProtocol protocol : protocols) {
+                     int protocolNumber = protocol.number();
+                     VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
+                     LitIntExpr protocolLit = new LitIntExpr(protocolNumber, 16);
+                     EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
+                     matchesSomeProtocol.addDisjunct(matchProtocol);
+                  }
+                  matchLineCriteria.addConjunct(matchesSomeProtocol);
                }
+
                // match srcIp
-               if (srcIpStart < 32) {
-                  IntExpr extractSrcIp = newExtractExpr(SRC_IP_VAR, srcIpStart,
-                        srcIpEnd);
-                  LitIntExpr srcIpMatchLit = new LitIntExpr(srcIp, srcIpStart,
-                        srcIpEnd);
-                  EqExpr matchSrcIp = new EqExpr(extractSrcIp, srcIpMatchLit);
-                  matchLineCriteria.addConjunct(matchSrcIp);
+               if (srcIpRanges.size() > 0) {
+                  OrExpr matchSomesrcIpRange = new OrExpr();
+                  for (Prefix srcPrefix : srcIpRanges) {
+                     long srcIp = srcPrefix.getAddress().asLong();
+
+                     int srcIpWildcardBits = 32 - srcPrefix.getPrefixLength();
+                     int srcIpStart = srcIpWildcardBits;
+                     int srcIpEnd = 31;
+                     if (srcIpStart < 32) {
+                        IntExpr extractsrcIp = newExtractExpr(SRC_IP_VAR,
+                              srcIpStart, srcIpEnd);
+                        LitIntExpr srcIpMatchLit = new LitIntExpr(srcIp,
+                              srcIpStart, srcIpEnd);
+                        EqExpr matchsrcIp = new EqExpr(extractsrcIp,
+                              srcIpMatchLit);
+                        matchSomesrcIpRange.addDisjunct(matchsrcIp);
+                     }
+                  }
+                  matchLineCriteria.addConjunct(matchSomesrcIpRange);
                }
+
                // match dstIp
-               if (dstIpStart < 32) {
-                  IntExpr extractDstIp = newExtractExpr(DST_IP_VAR, dstIpStart,
-                        dstIpEnd);
-                  LitIntExpr dstIpMatchLit = new LitIntExpr(dstIp, dstIpStart,
-                        dstIpEnd);
-                  EqExpr matchDstIp = new EqExpr(extractDstIp, dstIpMatchLit);
-                  matchLineCriteria.addConjunct(matchDstIp);
+               if (dstIpRanges.size() > 0) {
+                  OrExpr matchSomeDstIpRange = new OrExpr();
+                  for (Prefix dstPrefix : dstIpRanges) {
+                     long dstIp = dstPrefix.getAddress().asLong();
+
+                     int dstIpWildcardBits = 32 - dstPrefix.getPrefixLength();
+                     int dstIpStart = dstIpWildcardBits;
+                     int dstIpEnd = 31;
+                     if (dstIpStart < 32) {
+                        IntExpr extractDstIp = newExtractExpr(DST_IP_VAR,
+                              dstIpStart, dstIpEnd);
+                        LitIntExpr dstIpMatchLit = new LitIntExpr(dstIp,
+                              dstIpStart, dstIpEnd);
+                        EqExpr matchDstIp = new EqExpr(extractDstIp,
+                              dstIpMatchLit);
+                        matchSomeDstIpRange.addDisjunct(matchDstIp);
+                     }
+                  }
+                  matchLineCriteria.addConjunct(matchSomeDstIpRange);
                }
 
                // match srcport
@@ -1019,14 +1038,16 @@ public class Synthesizer {
 
    private List<Statement> getPostOutIfaceToNodeTransitRules() {
       List<Statement> statements = new ArrayList<Statement>();
-      statements.add(new Comment("Rules connecting postout_iface to node_transit"));
+      statements.add(new Comment(
+            "Rules connecting postout_iface to node_transit"));
       for (Entry<String, Set<Interface>> e : _topologyInterfaces.entrySet()) {
          String hostname = e.getKey();
          Set<Interface> interfaces = e.getValue();
          NodeTransitExpr nodeTransit = new NodeTransitExpr(hostname);
          for (Interface iface : interfaces) {
             String ifaceName = iface.getName();
-            PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(hostname, ifaceName);
+            PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(
+                  hostname, ifaceName);
             RuleExpr rule = new RuleExpr(postOutIface, nodeTransit);
             statements.add(rule);
          }
@@ -1220,7 +1241,8 @@ public class Synthesizer {
 
    private List<Statement> getRoleOriginateToNodeOriginateRules() {
       List<Statement> statements = new ArrayList<Statement>();
-      statements.add(new Comment("Rules connecting role_originate to R_originate"));
+      statements.add(new Comment(
+            "Rules connecting role_originate to R_originate"));
       for (Entry<String, Configuration> e : _configurations.entrySet()) {
          String hostname = e.getKey();
          Configuration c = e.getValue();

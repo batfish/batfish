@@ -3,6 +3,7 @@ package batfish.representation.cisco;
 import java.io.Serializable;
 
 import batfish.representation.Ip;
+import batfish.representation.IpProtocol;
 import batfish.representation.LineAction;
 
 public class StandardAccessListLine implements Serializable {
@@ -32,8 +33,8 @@ public class StandardAccessListLine implements Serializable {
    }
 
    public ExtendedAccessListLine toExtendedAccessListLine() {
-      return new ExtendedAccessListLine(_action, 0, _ip, _wildcard, new Ip(0l),
-            new Ip(0xFFFFFFFFl), null, null);
+      return new ExtendedAccessListLine(_action, IpProtocol.IP, _ip, _wildcard,
+            null, null, null, null);
    }
 
 }

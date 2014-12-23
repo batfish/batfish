@@ -1399,7 +1399,7 @@ public class Batfish implements AutoCloseable {
    /**
     * Generates a topology object from inferred edges encoded in interface
     * descriptions.
-    *
+    * 
     * @param configurations
     *           The vendor specific configurations.
     * @param includeExternal
@@ -1693,9 +1693,10 @@ public class Batfish implements AutoCloseable {
          vc = extractor.getVendorConfiguration();
          // at this point we should have a VendorConfiguration vc
          String hostname = vc.getHostname();
-         if (vendorConfigurations.containsKey(hostname))
+         if (vendorConfigurations.containsKey(hostname)) {
             throw new BatfishException("Duplicate hostname \""
                   + vc.getHostname() + "\" found in " + currentFile + "\n");
+         }
          vendorConfigurations.put(vc.getHostname(), vc);
       }
       if (processingError) {
@@ -2309,4 +2310,5 @@ public class Batfish implements AutoCloseable {
          wDuplicateRoleFlows.append("1\n");
       }
    }
+
 }

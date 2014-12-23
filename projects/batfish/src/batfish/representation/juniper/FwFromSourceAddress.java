@@ -1,5 +1,6 @@
 package batfish.representation.juniper;
 
+import batfish.representation.IpAccessListLine;
 import batfish.representation.Prefix;
 
 public final class FwFromSourceAddress extends FwFrom {
@@ -17,6 +18,11 @@ public final class FwFromSourceAddress extends FwFrom {
 
    public Prefix getPrefix() {
       return _prefix;
+   }
+
+   @Override
+   public void applyTo(IpAccessListLine line) {
+      line.getSourceIpRanges().add(_prefix);
    }
 
 }

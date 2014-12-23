@@ -17,6 +17,7 @@ import batfish.representation.Interface;
 import batfish.representation.Ip;
 import batfish.representation.IpAccessList;
 import batfish.representation.IpAccessListLine;
+import batfish.representation.IpProtocol;
 import batfish.representation.OriginType;
 import batfish.representation.OspfArea;
 import batfish.representation.OspfMetricType;
@@ -38,6 +39,7 @@ import batfish.representation.PolicyMapSetLocalPreferenceLine;
 import batfish.representation.PolicyMapSetMetricLine;
 import batfish.representation.PolicyMapSetNextHopLine;
 import batfish.representation.PolicyMapSetOriginTypeLine;
+import batfish.representation.Prefix;
 import batfish.representation.RoutingProtocol;
 import batfish.representation.RouteFilterLengthRangeLine;
 import batfish.representation.RouteFilterLine;
@@ -358,11 +360,18 @@ public class ConfigurationFactExtractor {
    }
 
    private void writeIpAccessLists() {
-      StringBuilder wSetIpAccessListDenyLine = _factBins
-            .get("SetIpAccessListDenyLine");
-      StringBuilder wSetIpAccessListLine = _factBins.get("SetIpAccessListLine");
+      StringBuilder wSetIpAccessListLine_deny = _factBins
+            .get("SetIpAccessListLine_deny");
+      StringBuilder wSetIpAccessListLine_dstIpRange = _factBins
+            .get("SetIpAccessListLine_dstIpRange");
       StringBuilder wSetIpAccessListLine_dstPortRange = _factBins
             .get("SetIpAccessListLine_dstPortRange");
+      StringBuilder wSetIpAccessListLine_permit = _factBins
+            .get("SetIpAccessListLine_permit");
+      StringBuilder wSetIpAccessListLine_protocol = _factBins
+            .get("SetIpAccessListLine_protocol");
+      StringBuilder wSetIpAccessListLine_srcIpRange = _factBins
+            .get("SetIpAccessListLine_srcIpRange");
       StringBuilder wSetIpAccessListLine_srcPortRange = _factBins
             .get("SetIpAccessListLine_srcPortRange");
       for (IpAccessList ipAccessList : _configuration.getIpAccessLists()
@@ -372,50 +381,53 @@ public class ConfigurationFactExtractor {
          List<IpAccessListLine> lines = ipAccessList.getLines();
          for (int i = 0; i < lines.size(); i++) {
             IpAccessListLine line = lines.get(i);
-            if (!line.isValid()) {
-               _warnings
-                     .add("WARNING: IpAccessList "
-                           + name
-                           + " line "
-                           + i
-                           + ": ignored (will never be matched) because we do not know how to handle non-trailing wildcard bits\n");
+            String invalidMessage = line.getInvalidMessage();
+            if (invalidMessage != null) {
+               _warnings.add("WARNING: IpAccessList " + name + " line " + i
+                     + ": disabled: " + invalidMessage + "\n");
                continue;
             }
-            int protocol = line.getProtocol();
-            long dstIpStart = line.getDestinationIP().asLong();
-            long dstIpEnd = line.getDestinationIP()
-                  .getWildcardEndIp(line.getDestinationWildcard()).asLong();
-            long srcIpStart = line.getSourceIP().asLong();
-            long srcIpEnd = line.getSourceIP()
-                  .getWildcardEndIp(line.getSourceWildcard()).asLong();
-            wSetIpAccessListLine.append(name + "|" + i + "|" + protocol + "|"
-                  + srcIpStart + "|" + srcIpEnd + "|" + dstIpStart + "|"
-                  + dstIpEnd + "\n");
             switch (line.getAction()) {
             case ACCEPT:
+               wSetIpAccessListLine_permit.append(name + "|" + i + "\n");
                break;
 
             case REJECT:
-               wSetIpAccessListDenyLine.append(name + "|" + i + "\n");
+               wSetIpAccessListLine_deny.append(name + "|" + i + "\n");
                break;
 
             default:
                throw new BatfishException("bad action");
             }
-            String protocolName = Util.getProtocolName(protocol);
-            if (protocolName.equals("tcp") || protocolName.equals("udp")) {
-               for (SubRange dstPortRange : line.getDstPortRanges()) {
-                  int startPort = dstPortRange.getStart();
-                  int endPort = dstPortRange.getEnd();
-                  wSetIpAccessListLine_dstPortRange.append(name + "|" + i + "|"
-                        + startPort + "|" + endPort + "\n");
-               }
-               for (SubRange srcPortRange : line.getSrcPortRanges()) {
-                  int startPort = srcPortRange.getStart();
-                  int endPort = srcPortRange.getEnd();
-                  wSetIpAccessListLine_srcPortRange.append(name + "|" + i + "|"
-                        + startPort + "|" + endPort + "\n");
-               }
+            for (Prefix dstIpRange : line.getDestinationIpRanges()) {
+               long dstIpStart = dstIpRange.getAddress().asLong();
+               long dstIpEnd = dstIpRange.getEndAddress().asLong();
+               wSetIpAccessListLine_dstIpRange
+                     .append(name + "|" + i + "|" + dstIpStart + "|"
+                           + dstIpEnd + "\n");
+            }
+            for (SubRange dstPortRange : line.getDstPortRanges()) {
+               long startPort = dstPortRange.getStart();
+               long endPort = dstPortRange.getEnd();
+               wSetIpAccessListLine_dstPortRange.append(name + "|" + i + "|"
+                     + startPort + "|" + endPort + "\n");
+            }
+            for (IpProtocol protocol : line.getProtocols()) {
+               wSetIpAccessListLine_protocol.append(name + "|" + i + "|"
+                     + protocol.number() + "\n");
+            }
+            for (Prefix srcIpRange : line.getSourceIpRanges()) {
+               long srcIpStart = srcIpRange.getAddress().asLong();
+               long srcIpEnd = srcIpRange.getEndAddress().asLong();
+               wSetIpAccessListLine_srcIpRange
+                     .append(name + "|" + i + "|" + srcIpStart + "|"
+                           + srcIpEnd + "\n");
+            }
+            for (SubRange srcPortRange : line.getSrcPortRanges()) {
+               long startPort = srcPortRange.getStart();
+               long endPort = srcPortRange.getEnd();
+               wSetIpAccessListLine_srcPortRange.append(name + "|" + i + "|"
+                     + startPort + "|" + endPort + "\n");
             }
          }
       }
@@ -760,8 +772,8 @@ public class ConfigurationFactExtractor {
                Long network_end = Util.getNetworkEnd(network_start,
                      prefix_length);
                SubRange prefixRange = lrLine.getLengthRange();
-               int min_prefix = prefixRange.getStart();
-               int max_prefix = prefixRange.getEnd();
+               long min_prefix = prefixRange.getStart();
+               long max_prefix = prefixRange.getEnd();
                wSetRouteFilterLine.append(filterName + "|" + i + "|"
                      + network_start + "|" + network_end + "|" + min_prefix
                      + "|" + max_prefix + "\n");

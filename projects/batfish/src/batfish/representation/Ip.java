@@ -6,9 +6,14 @@ import batfish.util.Util;
 
 public class Ip implements Comparable<Ip>, Serializable {
 
+   public static final Ip MAX = new Ip(0xFFFFFFFFl);
+
    private static final long serialVersionUID = 1L;
 
+   public static final Ip ZERO = new Ip(0l);
+
    private final int _hashCode;
+
    private final Long _ip;
 
    public Ip(long ipAsLong) {
@@ -92,8 +97,17 @@ public class Ip implements Comparable<Ip>, Serializable {
       return count;
    }
 
+   public int numWildcardBits() {
+      int numBits = 0;
+      for (long test = _ip; test != 0; test >>= 1) {
+         numBits++;
+      }
+      return numBits;
+   }
+
    @Override
    public String toString() {
       return Util.longToIp(_ip);
    }
+
 }

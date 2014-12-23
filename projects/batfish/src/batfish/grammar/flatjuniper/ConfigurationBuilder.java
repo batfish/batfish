@@ -16,6 +16,7 @@ import batfish.main.BatfishException;
 import batfish.representation.AsPath;
 import batfish.representation.AsSet;
 import batfish.representation.Ip;
+import batfish.representation.IpProtocol;
 import batfish.representation.Prefix;
 import batfish.representation.RoutingProtocol;
 import batfish.representation.juniper.AggregateRoute;
@@ -73,36 +74,37 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(
          Prefix.ZERO);
 
-   private static int getIpProtocolNumber(Ip_protocolContext ctx) {
+   private static IpProtocol toIpProtocol(Ip_protocolContext ctx) {
       if (ctx.DEC() != null) {
-         return toInt(ctx.DEC());
+         int protocolNum = toInt(ctx.DEC());
+         return IpProtocol.fromNumber(protocolNum);
       }
       else if (ctx.ESP() != null) {
-         return 50;
+         return IpProtocol.ESP;
       }
       else if (ctx.GRE() != null) {
-         return 47;
+         return IpProtocol.GRE;
       }
       else if (ctx.ICMP() != null) {
-         return 1;
+         return IpProtocol.ICMP;
       }
       else if (ctx.IGMP() != null) {
-         return 2;
+         return IpProtocol.IGMP;
       }
       else if (ctx.PIM() != null) {
-         return 103;
+         return IpProtocol.PIM;
       }
       else if (ctx.TCP() != null) {
-         return 6;
+         return IpProtocol.TCP;
       }
       else if (ctx.UDP() != null) {
-         return 17;
+         return IpProtocol.UDP;
       }
       else if (ctx.VRRP() != null) {
-         return 112;
+         return IpProtocol.VRRP;
       }
       else {
-         throw new BatfishException("missing protocol-number mapping");
+         throw new BatfishException("missing protocol-enum mapping");
       }
    }
 
@@ -632,7 +634,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitFwfromt_protocol(Fwfromt_protocolContext ctx) {
-      int protocol = getIpProtocolNumber(ctx.ip_protocol());
+      IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
       FwFrom from = new FwFromProtocol(protocol);
       _currentFwTerm.getFroms().add(from);
    }

@@ -10,6 +10,7 @@ import com.logicblox.connect.Workspace.Relation.StringColumn;
 import com.logicblox.connect.Workspace.Relation.UInt64Column;
 
 import batfish.representation.Ip;
+import batfish.representation.IpProtocol;
 import batfish.util.Util;
 
 public class EntityTable {
@@ -219,7 +220,8 @@ public class EntityTable {
       String node = _flowNodes[listIndex];
       String srcIp = new Ip(_flowSrcIps[listIndex]).toString();
       String dstIp = new Ip(_flowDstIps[listIndex]).toString();
-      String protocol = Util.getProtocolName((int) _flowProtocols[listIndex]);
+      String protocol = IpProtocol
+            .fromNumber((int) (_flowProtocols[listIndex])).name();
       boolean tcp = protocol.equals("tcp");
       boolean udp = protocol.equals("udp");
       String prefix = tcp ? "Tcp" : udp ? "Udp" : "";

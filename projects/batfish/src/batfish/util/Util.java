@@ -2,6 +2,8 @@ package batfish.util;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import batfish.representation.Ip;
+
 public class Util {
    public static final String FACT_BLOCK_FOOTER = "\n//FACTS END HERE\n"
          + "   }) // clauses\n" + "} <-- .\n";
@@ -118,33 +120,6 @@ public class Util {
       return Integer.parseInt(pair.substring(slashPos + 1, pair.length()));
    }
 
-   public static String getProtocolName(int protocol) {
-      switch (protocol) {
-      case 0:
-         return "ip";
-      case 50:
-         return "esp";
-      case 47:
-         return "gre";
-      case 1:
-         return "icmp";
-      case 2:
-         return "igmp";
-      case 89:
-         return "ospf";
-      case 103:
-         return "pim";
-      case 132:
-         return "sctp";
-      case 6:
-         return "tcp";
-      case 17:
-         return "udp";
-      default:
-         return "" + protocol;
-      }
-   }
-
    public static int getSubnetDivisor(String string) {
       return (1 << (32 - Util.numSubnetBits(string)));
    }
@@ -183,6 +158,14 @@ public class Util {
       return lcIfaceName.startsWith("null");
    }
 
+   public static boolean isValidWildcard(Ip wildcard) {
+      long w = wildcard.asLong();
+      long wp = w + 1l;
+      int numTrailingZeros = Long.numberOfTrailingZeros(wp);
+      long check = 1l << numTrailingZeros;
+      return wp == check;
+   }
+
    public static String longToCommunity(Long l) {
       Long upper = l >> 16;
       Long lower = l & 0xFFFF;
@@ -219,14 +202,6 @@ public class Util {
          val |= ((long) 1 << i);
       }
       return val;
-   }
-
-   public static int numWildcardBits(long wildcard) {
-      int numBits = 0;
-      for (long test = wildcard; test != 0; test >>= 1) {
-         numBits++;
-      }
-      return numBits;
    }
 
    public static long numWildcardBitsToWildcardLong(int numBits) {

@@ -19,6 +19,7 @@ import batfish.representation.CommunityListLine;
 import batfish.representation.Configuration;
 import batfish.representation.Ip;
 import batfish.representation.IpAccessList;
+import batfish.representation.IpProtocol;
 import batfish.representation.LineAction;
 import batfish.representation.IpAccessListLine;
 import batfish.representation.OspfArea;
@@ -38,6 +39,7 @@ import batfish.representation.PolicyMapSetCommunityLine;
 import batfish.representation.PolicyMapSetLine;
 import batfish.representation.PolicyMapSetMetricLine;
 import batfish.representation.PolicyMapSetType;
+import batfish.representation.Prefix;
 import batfish.representation.RoutingProtocol;
 import batfish.representation.RouteFilterLengthRangeLine;
 import batfish.representation.RouteFilterLine;
@@ -46,6 +48,7 @@ import batfish.representation.SwitchportEncapsulationType;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
 import batfish.util.SubRange;
+import batfish.util.Util;
 
 public final class CiscoVendorConfiguration extends CiscoConfiguration
       implements VendorConfiguration {
@@ -385,11 +388,37 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       String name = eaList.getId();
       List<IpAccessListLine> lines = new ArrayList<IpAccessListLine>();
       for (ExtendedAccessListLine fromLine : eaList.getLines()) {
-         lines.add(new IpAccessListLine(fromLine.getAction(), fromLine
-               .getProtocol(), fromLine.getSourceIP(), fromLine
-               .getSourceWildcard(), fromLine.getDestinationIP(), fromLine
-               .getDestinationWildcard(), fromLine.getSrcPortRanges(), fromLine
-               .getDstPortRange()));
+         IpAccessListLine newLine = new IpAccessListLine();
+         newLine.setAction(fromLine.getAction());
+         Ip srcIp = fromLine.getSourceIp();
+         if (srcIp != null) {
+            Ip srcWildcard = fromLine.getSourceWildcard();
+            if (Util.isValidWildcard(srcWildcard)) {
+               int srcPrefixLength = 32 - srcWildcard.numWildcardBits();
+               Prefix srcPrefix = new Prefix(srcIp, srcPrefixLength);
+               newLine.getSourceIpRanges().add(srcPrefix);
+            }
+            else {
+               newLine.setInvalidMessage("Unsupported ip wildcard format");
+            }
+         }
+         Ip dstIp = fromLine.getDestinationIP();
+         if (dstIp != null) {
+            Ip dstWildcard = fromLine.getDestinationWildcard();
+            if (Util.isValidWildcard(dstWildcard)) {
+               int dstPrefixLength = 32 - dstWildcard.numWildcardBits();
+               Prefix dstPrefix = new Prefix(dstIp, dstPrefixLength);
+               newLine.getDestinationIpRanges().add(dstPrefix);
+            }
+            else {
+               newLine.setInvalidMessage("Unsupported ip wildcard format");
+            }
+         }
+         IpProtocol protocol = fromLine.getProtocol();
+         if (protocol != IpProtocol.IP) {
+            newLine.getProtocols().add(protocol);
+         }
+         lines.add(newLine);
       }
       return new IpAccessList(name, lines);
    }
@@ -812,7 +841,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private static RouteFilterLine toRouteFilterLine(
          ExtendedAccessListLine fromLine) {
       LineAction action = fromLine.getAction();
-      Ip prefix = fromLine.getSourceIP();
+      Ip prefix = fromLine.getSourceIp();
       int prefixLength = fromLine.getSourceWildcard().inverted()
             .numSubnetBits();
       long minSubnet = fromLine.getDestinationIP().asLong();

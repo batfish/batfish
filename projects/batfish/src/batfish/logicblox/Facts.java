@@ -25,11 +25,13 @@ public class Facts {
       map.put("SetInterfaceFilterOut", "NODE|INTERFACE|FILTER");
       map.put("SetInterfaceRoutingPolicy", "NODE|INTERFACE|POLICY");
       map.put("SetNetwork", "STARTIP|START|END|PREFIXLENGTH");
-      map.put("SetIpAccessListDenyLine", "LIST|LINE");
-      map.put("SetIpAccessListLine",
-            "LIST|LINE|PROTOCOL|SRCIPSTART|SRCIPEND|DSTIPSTART|DSTIPEND");
+      map.put("SetIpAccessListLine_deny", "LIST|LINE");
+      map.put("SetIpAccessListLine_dstIpRange", "LIST|LINE|DSTIPSTART|DSTIPEND");
       map.put("SetIpAccessListLine_dstPortRange",
             "LIST|LINE|DSTPORTSTART|DSTPORTEND");
+      map.put("SetIpAccessListLine_permit", "LIST|LINE");
+      map.put("SetIpAccessListLine_protocol", "LIST|LINE|PROTOCOL");
+      map.put("SetIpAccessListLine_srcIpRange", "LIST|LINE|SRCIPSTART|SRCIPEND");
       map.put("SetIpAccessListLine_srcPortRange",
             "LIST|LINE|SRCPORTSTART|SRCPORTEND");
       map.put("SetActiveInt", "NODE|INTERFACE");

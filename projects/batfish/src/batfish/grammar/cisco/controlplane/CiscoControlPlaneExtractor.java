@@ -2,6 +2,7 @@ package batfish.grammar.cisco.controlplane;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import batfish.grammar.cisco.*;
 import batfish.main.BatfishException;
 import batfish.main.PedanticBatfishException;
 import batfish.representation.Ip;
+import batfish.representation.IpProtocol;
 import batfish.representation.LineAction;
 import batfish.representation.OriginType;
 import batfish.representation.OspfMetricType;
@@ -295,54 +297,55 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return prefixLength;
    }
 
-   public static int getProtocolNumber(ProtocolContext ctx) {
+   public static IpProtocol toIpProtocol(ProtocolContext ctx) {
       if (ctx.DEC() != null) {
-         return toInteger(ctx.DEC());
+         int num = toInteger(ctx.DEC());
+         return IpProtocol.fromNumber(num);
       }
       else if (ctx.AHP() != null) {
-         return 51;
+         return IpProtocol.AHP;
       }
       else if (ctx.EIGRP() != null) {
-         return 88;
+         return IpProtocol.EIGRP;
       }
       else if (ctx.ESP() != null) {
-         return 50;
+         return IpProtocol.ESP;
       }
       else if (ctx.GRE() != null) {
-         return 47;
+         return IpProtocol.GRE;
       }
       else if (ctx.ICMP() != null) {
-         return 1;
+         return IpProtocol.ICMP;
       }
       else if (ctx.IGMP() != null) {
-         return 2;
+         return IpProtocol.IGMP;
       }
       else if (ctx.IP() != null) {
-         return 0;
+         return IpProtocol.IP;
       }
       else if (ctx.IPINIP() != null) {
-         return 4;
+         return IpProtocol.IPINIP;
       }
       else if (ctx.OSPF() != null) {
-         return 0;
+         return IpProtocol.OSPF;
       }
       else if (ctx.PIM() != null) {
-         return 103;
+         return IpProtocol.PIM;
       }
       else if (ctx.SCTP() != null) {
-         return 132;
+         return IpProtocol.SCTP;
       }
       else if (ctx.TCP() != null) {
-         return 6;
+         return IpProtocol.TCP;
       }
       else if (ctx.UDP() != null) {
-         return 17;
+         return IpProtocol.UDP;
       }
       else if (ctx.VRRP() != null) {
-         return 112;
+         return IpProtocol.VRRP;
       }
       else {
-         throw new BatfishException("bad protocol");
+         throw new BatfishException("missing token-protocol mapping");
       }
    }
 
@@ -551,7 +554,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentInterfaces = new ArrayList<Interface>();
       List<SubRange> ranges = toRange(ctx.iname.range());
       for (SubRange range : ranges) {
-         for (int i = range.getStart(); i <= range.getEnd(); i++) {
+         for (int i = (int) range.getStart(); i <= range.getEnd(); i++) {
             String name = namePrefix + i;
             Interface newInterface = _configuration.getInterfaces().get(name);
             if (newInterface == null) {
@@ -997,15 +1000,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
 
       LineAction action = getAccessListAction(ctx.ala);
-      int protocol = getProtocolNumber(ctx.prot);
+      IpProtocol protocol = toIpProtocol(ctx.prot);
       Ip srcIp = getIp(ctx.srcipr);
       Ip srcWildcard = getWildcard(ctx.srcipr);
       Ip dstIp = getIp(ctx.dstipr);
       Ip dstWildcard = getWildcard(ctx.dstipr);
       List<SubRange> srcPortRanges = ctx.alps_src != null ? getPortRanges(ctx.alps_src)
-            : null;
+            : Collections.<SubRange> emptyList();
       List<SubRange> dstPortRanges = ctx.alps_dst != null ? getPortRanges(ctx.alps_dst)
-            : null;
+            : Collections.<SubRange> emptyList();
       ExtendedAccessListLine line = new ExtendedAccessListLine(action,
             protocol, srcIp, srcWildcard, dstIp, dstWildcard, srcPortRanges,
             dstPortRanges);

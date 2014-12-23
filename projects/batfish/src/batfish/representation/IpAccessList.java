@@ -3,7 +3,6 @@ package batfish.representation;
 import java.util.List;
 
 import batfish.util.NamedStructure;
-import batfish.util.Util;
 
 public class IpAccessList extends NamedStructure {
 
@@ -14,18 +13,6 @@ public class IpAccessList extends NamedStructure {
    public IpAccessList(String name, List<IpAccessListLine> lines) {
       super(name);
       _lines = lines;
-   }
-
-   public String getIFString(int indentLevel) {
-
-      String retString = Util.getIndentString(indentLevel) + "IpAccessList "
-            + getName();
-
-      for (IpAccessListLine ipall : _lines) {
-         retString += "\n" + ipall.getIFString(indentLevel + 1);
-      }
-
-      return retString;
    }
 
    public List<IpAccessListLine> getLines() {
