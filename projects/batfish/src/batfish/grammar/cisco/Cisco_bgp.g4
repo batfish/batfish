@@ -458,6 +458,7 @@ router_bgp_stanza
       | always_compare_med_rb_stanza
       | bgp_listen_range_rb_stanza
       | bgp_tail
+      | cluster_id_rb_stanza
       | neighbor_rb_stanza
       | nexus_neighbor_rb_stanza
       | no_neighbor_activate_rb_stanza
