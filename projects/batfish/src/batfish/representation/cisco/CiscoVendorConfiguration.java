@@ -67,7 +67,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          String prefixListName, String prefix, int prefixLength,
          SubRange prefixRange, LineAction prefixAction, Integer metric,
          RoutingProtocol protocol, PolicyMapAction policyAction) {
-      Set<PolicyMapMatchLine> matchLines = new LinkedHashSet<PolicyMapMatchLine>();
+      PolicyMapClause clause = new PolicyMapClause();
+      Set<PolicyMapMatchLine> matchLines = clause.getMatchLines();
       if (protocol != null) {
          PolicyMapMatchProtocolLine matchProtocolLine = new PolicyMapMatchProtocolLine(
                Collections.singletonList(protocol));
@@ -86,14 +87,14 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                Collections.singleton(newRouteFilter));
          matchLines.add(matchRouteLine);
       }
-      Set<PolicyMapSetLine> setLines = new LinkedHashSet<PolicyMapSetLine>();
+      Set<PolicyMapSetLine> setLines = clause.getSetLines();
       if (metric != null) {
          PolicyMapSetMetricLine setMetricLine = new PolicyMapSetMetricLine(
                metric);
          setLines.add(setMetricLine);
       }
-      PolicyMapClause clause = new PolicyMapClause(policyAction, "",
-            matchLines, setLines);
+      clause.setAction(policyAction);
+      clause.setName("");
       PolicyMap output = new PolicyMap(name, Collections.singletonList(clause));
       c.getPolicyMaps().put(output.getMapName(), output);
       return output;
@@ -280,11 +281,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          rfLines.add(filter);
          PolicyMapMatchRouteFilterListLine rfLine = new PolicyMapMatchRouteFilterListLine(
                rfLines);
-         Set<PolicyMapMatchLine> matchLines = new LinkedHashSet<PolicyMapMatchLine>();
+         PolicyMapClause clause = new PolicyMapClause();
+         clause.setName("");
+         clause.setAction(PolicyMapAction.PERMIT);
+         Set<PolicyMapMatchLine> matchLines = clause.getMatchLines();
          matchLines.add(rfLine);
-         Set<PolicyMapSetLine> setLines = new LinkedHashSet<PolicyMapSetLine>();
-         PolicyMapClause clause = new PolicyMapClause(PolicyMapAction.PERMIT,
-               "", matchLines, setLines);
          clauses.add(clause);
          PolicyMap explicitOriginationPolicyMap = new PolicyMap(
                "~BGP_ADVERTISED_NETWORKS_POLICY:" + pg.getName() + "~", clauses);
@@ -747,7 +748,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
    private static PolicyMapClause toPolicyMapClause(final Configuration c,
          RouteMapClause clause) throws VendorConversionException {
-      Set<PolicyMapMatchLine> matchLines = new LinkedHashSet<PolicyMapMatchLine>();
+      PolicyMapClause pmClause = new PolicyMapClause();
+      pmClause.setAction(PolicyMapAction.fromLineAction(clause.getAction()));
+      pmClause.setName(Integer.toString(clause.getSeqNum()));
+      Set<PolicyMapMatchLine> matchLines = pmClause.getMatchLines();
       for (RouteMapMatchLine rmMatchLine : clause.getMatchList()) {
          PolicyMapMatchLine matchLine = toPolicyMapMatchLine(c, rmMatchLine);
          if (matchLine == null) {
@@ -755,13 +759,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          matchLines.add(matchLine);
       }
-      Set<PolicyMapSetLine> setLines = new LinkedHashSet<PolicyMapSetLine>();
+      Set<PolicyMapSetLine> setLines = pmClause.getSetLines();
       for (RouteMapSetLine rmSetLine : clause.getSetList()) {
          setLines.add(rmSetLine.toPolicyMapSetLine(c));
       }
-      return new PolicyMapClause(PolicyMapAction.fromLineAction(clause
-            .getAction()), Integer.toString(clause.getSeqNum()), matchLines,
-            setLines);
+      return pmClause;
    }
 
    private static PolicyMapMatchLine toPolicyMapMatchLine(

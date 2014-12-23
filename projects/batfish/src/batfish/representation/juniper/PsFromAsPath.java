@@ -1,6 +1,6 @@
 package batfish.representation.juniper;
 
-import batfish.representation.PolicyMapMatchLine;
+import batfish.representation.PolicyMapClause;
 
 public class PsFromAsPath extends PsFrom {
 
@@ -20,9 +20,8 @@ public class PsFromAsPath extends PsFrom {
    }
 
    @Override
-   public PolicyMapMatchLine toPolicyMapMatchLine() {
-      // TODO Auto-generated method stub
-      return null;
+   public void applyTo(PolicyMapClause clause) {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
 }

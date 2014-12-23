@@ -1,39 +1,48 @@
 package batfish.representation;
 
 import java.io.Serializable;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class PolicyMapClause implements Serializable {
+public final class PolicyMapClause implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private String _mapName;
-   private Set<PolicyMapMatchLine> _matchList;
-   private Set<PolicyMapSetLine> _setList;
-   private PolicyMapAction _type;
+   private PolicyMapAction _action;
 
-   public PolicyMapClause(PolicyMapAction action, String name,
-         Set<PolicyMapMatchLine> mlist, Set<PolicyMapSetLine> slist) {
-      _type = action;
-      _mapName = name;
-      _matchList = mlist;
-      _setList = slist;
+   private Set<PolicyMapMatchLine> _matchList;
+
+   private String _name;
+
+   private Set<PolicyMapSetLine> _setList;
+
+   public PolicyMapClause() {
+      _matchList = new LinkedHashSet<PolicyMapMatchLine>();
+      _setList = new LinkedHashSet<PolicyMapSetLine>();
    }
 
    public PolicyMapAction getAction() {
-      return _type;
-   }
-
-   public String getMapName() {
-      return _mapName;
+      return _action;
    }
 
    public Set<PolicyMapMatchLine> getMatchLines() {
       return _matchList;
    }
 
+   public String getName() {
+      return _name;
+   }
+
    public Set<PolicyMapSetLine> getSetLines() {
       return _setList;
+   }
+
+   public void setAction(PolicyMapAction action) {
+      _action = action;
+   }
+
+   public void setName(String name) {
+      _name = name;
    }
 
 }

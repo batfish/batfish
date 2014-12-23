@@ -1,5 +1,6 @@
 package batfish.representation.juniper;
 
+import batfish.representation.PolicyMapClause;
 import batfish.representation.PolicyMapSetLine;
 
 public final class PsThenCommunitySet extends PsThen {
@@ -23,6 +24,11 @@ public final class PsThenCommunitySet extends PsThen {
    public PolicyMapSetLine toPolicyStatmentSetLine() {
       // TODO Auto-generated method stub
       return null;
+   }
+
+   @Override
+   public void applyTo(PolicyMapClause clause) {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
 }

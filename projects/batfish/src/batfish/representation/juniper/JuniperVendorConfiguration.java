@@ -1,6 +1,8 @@
 package batfish.representation.juniper;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -9,6 +11,8 @@ import batfish.representation.Configuration;
 import batfish.representation.IpAccessList;
 import batfish.representation.IpAccessListLine;
 import batfish.representation.LineAction;
+import batfish.representation.PolicyMap;
+import batfish.representation.PolicyMapClause;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
 
@@ -57,7 +61,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             action = LineAction.REJECT;
          }
          else if (term.getThens().contains(FwThenNextTerm.INSTANCE)) {
-            //TODO: throw error if any transformation is being done
+            // TODO: throw error if any transformation is being done
             continue;
          }
          else {
@@ -73,6 +77,26 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       }
       IpAccessList list = new IpAccessList(name, lines);
       return list;
+   }
+
+   private PolicyMap toPolicyMap(PolicyStatement ps) {
+      List<PolicyMapClause> clauses = new ArrayList<PolicyMapClause>();
+      String name = ps.getName();
+      PolicyMap map = new PolicyMap(name, clauses);
+      boolean singleton = ps.getSingletonTerm() != null;
+      Collection<PsTerm> terms = singleton ? Collections.singleton(ps
+            .getSingletonTerm()) : ps.getTerms().values();
+      for (PsTerm term : terms) {
+         PolicyMapClause clause = new PolicyMapClause();
+         clause.setName(term.getName());
+         for (PsFrom from : term.getFroms()) {
+            from.applyTo(clause);
+         }
+         for (PsThen then : term.getThens()) {
+            then.applyTo(clause);
+         }
+      }
+      return map;
    }
 
    @Override
@@ -96,7 +120,12 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       }
 
       // convert policy-statements to policymaps
-
+      for (Entry<String, PolicyStatement> e : _policyStatements.entrySet()) {
+         String name = e.getKey();
+         PolicyStatement ps = e.getValue();
+         PolicyMap map = toPolicyMap(ps);
+         c.getPolicyMaps().put(name, map);
+      }
       // if (_defaultRoutingInstance.getOspfAreas().size() > 0) {
       // OspfProcess oproc = new OspfProcess();
       // for (String export_defaultRoutingInstance.getOspfExportPolicies()

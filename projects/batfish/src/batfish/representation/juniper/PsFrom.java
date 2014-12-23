@@ -2,7 +2,7 @@ package batfish.representation.juniper;
 
 import java.io.Serializable;
 
-import batfish.representation.PolicyMapMatchLine;
+import batfish.representation.PolicyMapClause;
 
 public abstract class PsFrom implements Serializable {
 
@@ -11,6 +11,6 @@ public abstract class PsFrom implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   public abstract PolicyMapMatchLine toPolicyMapMatchLine();
+   public abstract void applyTo(PolicyMapClause clause);
 
 }

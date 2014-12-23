@@ -1,6 +1,6 @@
 package batfish.representation.juniper;
 
-import batfish.representation.PolicyMapMatchLine;
+import batfish.representation.PolicyMapClause;
 import batfish.representation.Prefix;
 
 public final class PsFromRouteFilterThrough extends PsFromRouteFilter {
@@ -22,9 +22,8 @@ public final class PsFromRouteFilterThrough extends PsFromRouteFilter {
    }
 
    @Override
-   public PolicyMapMatchLine toPolicyMapMatchLine() {
-      // TODO Auto-generated method stub
-      return null;
+   public void applyTo(PolicyMapClause clause) {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
 }
