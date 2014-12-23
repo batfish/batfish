@@ -46,7 +46,7 @@ public class ExtendedAccessListLine implements Serializable {
       return _dstWildcard;
    }
 
-   public List<SubRange> getDstPortRange() {
+   public List<SubRange> getDstPortRanges() {
       return _dstPortRanges;
    }
 

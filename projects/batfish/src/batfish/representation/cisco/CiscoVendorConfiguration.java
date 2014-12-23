@@ -395,8 +395,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             Ip srcWildcard = fromLine.getSourceWildcard();
             if (Util.isValidWildcard(srcWildcard)) {
                int srcPrefixLength = 32 - srcWildcard.numWildcardBits();
-               Prefix srcPrefix = new Prefix(srcIp, srcPrefixLength);
-               newLine.getSourceIpRanges().add(srcPrefix);
+               if (srcPrefixLength > 0) {
+                  Prefix srcPrefix = new Prefix(srcIp, srcPrefixLength);
+                  newLine.getSourceIpRanges().add(srcPrefix);
+               }
             }
             else {
                newLine.setInvalidMessage("Unsupported ip wildcard format");
@@ -407,8 +409,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             Ip dstWildcard = fromLine.getDestinationWildcard();
             if (Util.isValidWildcard(dstWildcard)) {
                int dstPrefixLength = 32 - dstWildcard.numWildcardBits();
-               Prefix dstPrefix = new Prefix(dstIp, dstPrefixLength);
-               newLine.getDestinationIpRanges().add(dstPrefix);
+               if (dstPrefixLength > 0) {
+                  Prefix dstPrefix = new Prefix(dstIp, dstPrefixLength);
+                  newLine.getDestinationIpRanges().add(dstPrefix);
+               }
             }
             else {
                newLine.setInvalidMessage("Unsupported ip wildcard format");
@@ -418,6 +422,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (protocol != IpProtocol.IP) {
             newLine.getProtocols().add(protocol);
          }
+         newLine.getDstPortRanges().addAll(fromLine.getDstPortRanges());
+         newLine.getSrcPortRanges().addAll(fromLine.getSrcPortRanges());
          lines.add(newLine);
       }
       return new IpAccessList(name, lines);

@@ -1,8 +1,15 @@
 package batfish.representation;
 
+import java.io.Serializable;
+
 import batfish.util.Util;
 
-public class Prefix implements Comparable<Prefix> {
+public class Prefix implements Comparable<Prefix>, Serializable {
+
+   /**
+    *
+    */
+   private static final long serialVersionUID = 1L;
 
    public static final Prefix ZERO = new Prefix(new Ip(0l), 0);
 
