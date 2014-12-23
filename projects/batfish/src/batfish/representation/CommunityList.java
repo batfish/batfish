@@ -3,8 +3,6 @@ package batfish.representation;
 import java.io.Serializable;
 import java.util.List;
 
-import batfish.util.Util;
-
 /**
  * Represents a named access-list whose matching criteria is restricted to
  * regexes on community attributes sent with a bgp advertisement
@@ -38,17 +36,6 @@ public class CommunityList implements Serializable {
    public CommunityList(String name, List<CommunityListLine> lines) {
       _name = name;
       _lines = lines;
-   }
-
-   public String getIFString(int indentLevel) {
-      String retString = Util.getIndentString(indentLevel) + "CommunityList "
-            + _name;
-
-      for (CommunityListLine cll : _lines) {
-         retString += "\n" + cll.getIFString(indentLevel + 1);
-      }
-
-      return retString;
    }
 
    public List<CommunityListLine> getLines() {

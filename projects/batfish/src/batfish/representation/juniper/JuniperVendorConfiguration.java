@@ -13,6 +13,7 @@ import batfish.representation.IpAccessListLine;
 import batfish.representation.LineAction;
 import batfish.representation.PolicyMap;
 import batfish.representation.PolicyMapClause;
+import batfish.representation.RouteFilterList;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
 
@@ -22,6 +23,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    private static final long serialVersionUID = 1L;
 
    private static final String VENDOR_NAME = "juniper";
+
+   private Configuration _c;
 
    private final List<String> _conversionWarnings;
 
@@ -45,6 +48,19 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    @Override
    public void setRoles(RoleSet roles) {
       _roles.addAll(roles);
+   }
+
+   private batfish.representation.CommunityList toCommunityList(CommunityList cl) {
+      String name = cl.getName();
+      List<batfish.representation.CommunityListLine> newLines = new ArrayList<batfish.representation.CommunityListLine>();
+      for (CommunityListLine line : cl.getLines()) {
+         batfish.representation.CommunityListLine newLine = new batfish.representation.CommunityListLine(
+               LineAction.ACCEPT, line.getRegex());
+         newLines.add(newLine);
+      }
+      batfish.representation.CommunityList newCl = new batfish.representation.CommunityList(
+            name, newLines);
+      return newCl;
    }
 
    private IpAccessList toIpAccessList(FirewallFilter filter)
@@ -83,17 +99,18 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       List<PolicyMapClause> clauses = new ArrayList<PolicyMapClause>();
       String name = ps.getName();
       PolicyMap map = new PolicyMap(name, clauses);
-      boolean singleton = ps.getSingletonTerm() != null;
+      boolean singleton = ps.getSingletonTerm().getFroms().size() > 0
+            || ps.getSingletonTerm().getThens().size() > 0;
       Collection<PsTerm> terms = singleton ? Collections.singleton(ps
             .getSingletonTerm()) : ps.getTerms().values();
       for (PsTerm term : terms) {
          PolicyMapClause clause = new PolicyMapClause();
          clause.setName(term.getName());
          for (PsFrom from : term.getFroms()) {
-            from.applyTo(clause);
+            from.applyTo(clause, _c);
          }
          for (PsThen then : term.getThens()) {
-            then.applyTo(clause);
+            then.applyTo(clause, _c);
          }
       }
       return map;
@@ -103,9 +120,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    public Configuration toVendorIndependentConfiguration()
          throws VendorConversionException {
       String hostname = getHostname();
-      Configuration c = new Configuration(hostname);
-      c.setVendor(VENDOR_NAME);
-      c.setRoles(_roles);
+      _c = new Configuration(hostname);
+      _c.setVendor(VENDOR_NAME);
+      _c.setRoles(_roles);
 
       // convert firewall filters to ipaccesslists
       for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
@@ -116,7 +133,26 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             continue;
          }
          IpAccessList list = toIpAccessList(filter);
-         c.getIpAccessLists().put(name, list);
+         _c.getIpAccessLists().put(name, list);
+      }
+
+      // convert route filters to route filter lists
+      for (Entry<String, RouteFilter> e : _routeFilters.entrySet()) {
+         String name = e.getKey();
+         RouteFilter rf = e.getValue();
+         RouteFilterList rfl = new RouteFilterList(name);
+         for (RouteFilterLine line : rf.getLines()) {
+            line.applyTo(rfl);
+         }
+         _c.getRouteFilterLists().put(name, rfl);
+      }
+
+      // convert community lists
+      for (Entry<String, CommunityList> e : _communityLists.entrySet()) {
+         String name = e.getKey();
+         CommunityList cl = e.getValue();
+         batfish.representation.CommunityList newCl = toCommunityList(cl);
+         _c.getCommunityLists().put(name, newCl);
       }
 
       // convert policy-statements to policymaps
@@ -124,14 +160,14 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          String name = e.getKey();
          PolicyStatement ps = e.getValue();
          PolicyMap map = toPolicyMap(ps);
-         c.getPolicyMaps().put(name, map);
+         _c.getPolicyMaps().put(name, map);
       }
       // if (_defaultRoutingInstance.getOspfAreas().size() > 0) {
       // OspfProcess oproc = new OspfProcess();
       // for (String export_defaultRoutingInstance.getOspfExportPolicies()
       // }
 
-      return c;
+      return _c;
    }
 
 }

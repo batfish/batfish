@@ -1,5 +1,6 @@
 package batfish.representation.juniper;
 
+import batfish.representation.Configuration;
 import batfish.representation.PolicyMapClause;
 
 public class PsFromAsPath extends PsFrom {
@@ -15,13 +16,15 @@ public class PsFromAsPath extends PsFrom {
       _asPathName = asPathName;
    }
 
-   public String getAsPathName() {
-      return _asPathName;
+   @Override
+   public void applyTo(PolicyMapClause clause, Configuration c) {
+      // throw new
+      // UnsupportedOperationException("no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
-   @Override
-   public void applyTo(PolicyMapClause clause) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+   public String getAsPathName() {
+      return _asPathName;
    }
 
 }

@@ -71,7 +71,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       Set<PolicyMapMatchLine> matchLines = clause.getMatchLines();
       if (protocol != null) {
          PolicyMapMatchProtocolLine matchProtocolLine = new PolicyMapMatchProtocolLine(
-               Collections.singletonList(protocol));
+               protocol);
          matchLines.add(matchProtocolLine);
       }
       if (prefixListName != null) {
@@ -120,8 +120,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    }
 
    private static batfish.representation.BgpProcess toBgpProcess(
-         final Configuration c, BgpProcess proc)
-         throws VendorConversionException {
+         final Configuration c, BgpProcess proc) {
       batfish.representation.BgpProcess newBgpProcess = new batfish.representation.BgpProcess();
       Map<Ip, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       int defaultMetric = proc.getDefaultMetric();
@@ -437,7 +436,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    }
 
    private static batfish.representation.OspfProcess toOspfProcess(
-         Configuration c, OspfProcess proc) throws VendorConversionException {
+         Configuration c, OspfProcess proc) {
       batfish.representation.OspfProcess newProcess = new batfish.representation.OspfProcess();
 
       // establish areas and associated interfaces
@@ -585,7 +584,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                }
             }
             PolicyMapMatchLine matchConnectedLine = new PolicyMapMatchProtocolLine(
-                  Collections.singletonList(RoutingProtocol.CONNECTED));
+                  RoutingProtocol.CONNECTED);
             PolicyMapSetLine setMetricLine = null;
             // add a set metric line if no metric provided by route map
             if (!routeMapMetric) {
@@ -659,7 +658,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
 
             PolicyMapMatchLine matchStaticLine = new PolicyMapMatchProtocolLine(
-                  Collections.singletonList(RoutingProtocol.STATIC));
+                  RoutingProtocol.STATIC);
             for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
                boolean containsRouteFilterList = false;
                for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
@@ -737,8 +736,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return newProcess;
    }
 
-   private static PolicyMap toPolicyMap(final Configuration c, RouteMap map)
-         throws VendorConversionException {
+   private static PolicyMap toPolicyMap(final Configuration c, RouteMap map) {
       List<PolicyMapClause> clauses = new ArrayList<PolicyMapClause>();
       for (RouteMapClause rmClause : map.getClauses().values()) {
          clauses.add(toPolicyMapClause(c, rmClause));
@@ -747,7 +745,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    }
 
    private static PolicyMapClause toPolicyMapClause(final Configuration c,
-         RouteMapClause clause) throws VendorConversionException {
+         RouteMapClause clause) {
       PolicyMapClause pmClause = new PolicyMapClause();
       pmClause.setAction(PolicyMapAction.fromLineAction(clause.getAction()));
       pmClause.setName(Integer.toString(clause.getSeqNum()));
@@ -767,8 +765,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    }
 
    private static PolicyMapMatchLine toPolicyMapMatchLine(
-         final Configuration c, RouteMapMatchLine matchLine)
-         throws VendorConversionException {
+         final Configuration c, RouteMapMatchLine matchLine) {
       PolicyMapMatchLine newLine = null;
       switch (matchLine.getType()) {
       case AS_PATH_ACCESS_LIST:
@@ -1022,7 +1019,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
    private batfish.representation.Interface toInterface(Interface iface,
          Map<String, IpAccessList> ipAccessLists,
-         Map<String, PolicyMap> policyMaps) throws VendorConversionException {
+         Map<String, PolicyMap> policyMaps) {
       batfish.representation.Interface newIface = new batfish.representation.Interface(
             iface.getName());
       newIface.setDescription(iface.getDescription());
@@ -1089,8 +1086,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    }
 
    @Override
-   public Configuration toVendorIndependentConfiguration()
-         throws VendorConversionException {
+   public Configuration toVendorIndependentConfiguration() {
       final Configuration c = new Configuration(_hostname);
       c.setVendor(VENDOR_NAME);
       c.setRoles(_roles);

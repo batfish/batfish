@@ -1,7 +1,5 @@
 package batfish.representation;
 
-import java.util.List;
-
 import batfish.representation.PolicyMapMatchType;
 import batfish.representation.PolicyMapMatchLine;
 
@@ -9,13 +7,13 @@ public class PolicyMapMatchProtocolLine extends PolicyMapMatchLine {
 
    private static final long serialVersionUID = 1L;
 
-   private List<RoutingProtocol> _protocol;
+   private RoutingProtocol _protocol;
 
-   public PolicyMapMatchProtocolLine(List<RoutingProtocol> protocols) {
-      _protocol = protocols;
+   public PolicyMapMatchProtocolLine(RoutingProtocol protocol) {
+      _protocol = protocol;
    }
 
-   public List<RoutingProtocol> getProtocols() {
+   public RoutingProtocol getProtocol() {
       return _protocol;
    }
 

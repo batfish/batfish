@@ -1,7 +1,8 @@
 package batfish.representation.juniper;
 
+import batfish.representation.Configuration;
 import batfish.representation.PolicyMapClause;
-import batfish.representation.PolicyMapSetLine;
+import batfish.representation.PolicyMapSetLocalPreferenceLine;
 
 public final class PsThenLocalPreference extends PsThen {
 
@@ -16,19 +17,15 @@ public final class PsThenLocalPreference extends PsThen {
       _localPreference = localPreference;
    }
 
+   @Override
+   public void applyTo(PolicyMapClause clause, Configuration c) {
+      PolicyMapSetLocalPreferenceLine line = new PolicyMapSetLocalPreferenceLine(
+            _localPreference);
+      clause.getSetLines().add(line);
+   }
+
    public int getLocalPreference() {
       return _localPreference;
-   }
-
-   @Override
-   public PolicyMapSetLine toPolicyStatmentSetLine() {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   @Override
-   public void applyTo(PolicyMapClause clause) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
 }

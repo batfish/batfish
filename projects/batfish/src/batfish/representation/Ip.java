@@ -57,6 +57,11 @@ public class Ip implements Comparable<Ip>, Serializable {
       }
    }
 
+   public Ip getNetworkAddress(int subnetBits) {
+      long mask = Util.numSubnetBitsToSubnetLong(subnetBits);
+      return new Ip(_ip & mask);
+   }
+
    public Ip getNetworkAddress(Ip mask) {
       return new Ip(_ip & mask.asLong());
    }

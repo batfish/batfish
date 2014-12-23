@@ -1,7 +1,10 @@
 package batfish.representation.juniper;
 
+import batfish.representation.CommunityList;
+import batfish.representation.Configuration;
 import batfish.representation.PolicyMapClause;
-import batfish.representation.PolicyMapSetLine;
+import batfish.representation.PolicyMapSetDeleteCommunityLine;
+import batfish.representation.VendorConversionException;
 
 public final class PsThenCommunityDelete extends PsThen {
 
@@ -16,19 +19,20 @@ public final class PsThenCommunityDelete extends PsThen {
       _name = name;
    }
 
+   @Override
+   public void applyTo(PolicyMapClause clause, Configuration c) {
+      CommunityList list = c.getCommunityLists().get(_name);
+      if (list == null) {
+         throw new VendorConversionException("missing community list: \""
+               + _name + "\"");
+      }
+      PolicyMapSetDeleteCommunityLine line = new PolicyMapSetDeleteCommunityLine(
+            list);
+      clause.getSetLines().add(line);
+   }
+
    public String getName() {
       return _name;
-   }
-
-   @Override
-   public PolicyMapSetLine toPolicyStatmentSetLine() {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   @Override
-   public void applyTo(PolicyMapClause clause) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
 }

@@ -1,8 +1,11 @@
 package batfish.representation.juniper;
 
+import java.util.Collections;
+
+import batfish.representation.Configuration;
 import batfish.representation.Ip;
 import batfish.representation.PolicyMapClause;
-import batfish.representation.PolicyMapSetLine;
+import batfish.representation.PolicyMapSetNextHopLine;
 
 public final class PsThenNextHopIp extends PsThen {
 
@@ -17,19 +20,15 @@ public final class PsThenNextHopIp extends PsThen {
       _nextHopIp = nextHopIp;
    }
 
+   @Override
+   public void applyTo(PolicyMapClause clause, Configuration c) {
+      PolicyMapSetNextHopLine line = new PolicyMapSetNextHopLine(
+            Collections.singletonList(_nextHopIp));
+      clause.getSetLines().add(line);
+   }
+
    public Ip getNextHopIp() {
       return _nextHopIp;
-   }
-
-   @Override
-   public PolicyMapSetLine toPolicyStatmentSetLine() {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   @Override
-   public void applyTo(PolicyMapClause clause) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
 }

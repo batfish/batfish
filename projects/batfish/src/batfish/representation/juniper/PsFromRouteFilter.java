@@ -1,22 +1,39 @@
 package batfish.representation.juniper;
 
-import batfish.representation.Prefix;
+import java.util.Collections;
 
-public abstract class PsFromRouteFilter extends PsFrom {
+import batfish.representation.Configuration;
+import batfish.representation.PolicyMapClause;
+import batfish.representation.PolicyMapMatchRouteFilterListLine;
+import batfish.representation.RouteFilterList;
+import batfish.representation.VendorConversionException;
+
+public final class PsFromRouteFilter extends PsFrom {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   protected final Prefix _prefix;
+   private String _routeFilterName;
 
-   public PsFromRouteFilter(Prefix prefix) {
-      _prefix = prefix;
+   public PsFromRouteFilter(String routeFilterName) {
+      _routeFilterName = routeFilterName;
    }
 
-   public final Prefix getPrefix() {
-      return _prefix;
+   @Override
+   public void applyTo(PolicyMapClause clause, Configuration c) {
+      RouteFilterList rfl = c.getRouteFilterLists().get(_routeFilterName);
+      if (rfl == null) {
+         throw new VendorConversionException("missing route filter list: \""
+               + _routeFilterName + "\"");
+      }
+      clause.getMatchLines().add(
+            new PolicyMapMatchRouteFilterListLine(Collections.singleton(rfl)));
+   }
+
+   public String getRouteFilterName() {
+      return _routeFilterName;
    }
 
 }

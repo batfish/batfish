@@ -636,10 +636,9 @@ public class ConfigurationFactExtractor {
 
                case PROTOCOL:
                   PolicyMapMatchProtocolLine pmmpl = (PolicyMapMatchProtocolLine) matchLine;
-                  for (RoutingProtocol prot : pmmpl.getProtocols()) {
-                     wSetPolicyMapClauseMatchProtocol.append(mapName + "|" + i
-                           + "|" + getLBRoutingProtocol(prot) + "\n");
-                  }
+                  RoutingProtocol prot = pmmpl.getProtocol();
+                  wSetPolicyMapClauseMatchProtocol.append(mapName + "|" + i
+                        + "|" + getLBRoutingProtocol(prot) + "\n");
                   break;
 
                case ROUTE_FILTER_LIST:

@@ -18,6 +18,14 @@ public class Util {
       return sb.toString();
    }
 
+   public static long communityStringToLong(String str) {
+      String[] parts = str.split(":");
+      long high = Long.parseLong(parts[0]);
+      long low = Long.parseLong(parts[1]);
+      long result = low + (high << 16);
+      return result;
+   }
+
    public static String escape(String offendingTokenText) {
       return offendingTokenText.replace("\n", "\\n").replace("\t", "\\t")
             .replace("\r", "\\r");
@@ -186,6 +194,21 @@ public class Util {
       return "#x" + String.format("%08x", l);
    }
 
+   public static int nCr(int n, int r) {
+      int product = 1;
+      int rPrime;
+      if (r < n / 2) {
+         rPrime = n - r;
+      }
+      else {
+         rPrime = r;
+      }
+      for (int i = n; i > rPrime; i--) {
+         product *= i;
+      }
+      return product;
+   }
+
    public static int numSubnetBits(String subnet) {
       int count = 0;
       long subnetVal = Util.ipToLong(subnet);
@@ -213,62 +236,7 @@ public class Util {
       return wildcard;
    }
 
-   public static String toHSAInterfaceName(String name) {
-      if (name.startsWith("xe-")) {
-         String numberSection = name.substring(3);
-         String[] numbers = numberSection.split("/"); // should be three
-         return ("te" + numbers[0] + numbers[1] + numbers[2]).replace(".", "/");
-      }
-      else if (name.startsWith("irb")) {
-         String numberSection = name.substring(4);
-         return "irb" + numberSection + "/0";
-      }
-      else if (name.startsWith("lo")) {
-         String numberSection = name.substring(2);
-         String[] numbers = numberSection.split("\\.");
-         return "loopback" + numbers[0] + numbers[1];
-      }
-      else if (name.startsWith("fxp")) {
-         String numberSection = name.substring(3);
-         String[] numbers = numberSection.split("\\.");
-         return "fxp" + numbers[0] + "/" + numbers[1];
-      }
-      else if (name.startsWith("Vlan")) {
-         return name.replace("Vlan", "Flan") + "/0";
-      }
-      else if (name.startsWith("Port-channel")) {
-         return name.replace("Port-channel", "pc") + "/0";
-      }
-      else if (name.startsWith("TenGigabitEthernet")) {
-         return name.replace("TenGigabitEthernet", "te");
-      }
-      else if (name.startsWith("GigabitEthernet")) {
-         return name.replace("GigabitEthernet", "ge");
-      }
-      else if (name.startsWith("FastEthernet")) {
-         return name.replace("FastEthernet", "fe");
-      }
-      else {
-         return name;
-      }
-   }
-
    private Util() {
-   }
-
-   public int nCr(int n, int r) {
-      int product = 1;
-      int rPrime;
-      if (r < n / 2) {
-         rPrime = n - r;
-      }
-      else {
-         rPrime = r;
-      }
-      for (int i = n; i > rPrime; i--) {
-         product *= i;
-      }
-      return product;
    }
 
 }

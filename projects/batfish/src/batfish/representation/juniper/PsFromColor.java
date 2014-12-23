@@ -1,5 +1,6 @@
 package batfish.representation.juniper;
 
+import batfish.representation.Configuration;
 import batfish.representation.PolicyMapClause;
 
 public final class PsFromColor extends PsFrom {
@@ -15,13 +16,15 @@ public final class PsFromColor extends PsFrom {
       _color = color;
    }
 
-   public int getColor() {
-      return _color;
+   @Override
+   public void applyTo(PolicyMapClause clause, Configuration c) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 
-   @Override
-   public void applyTo(PolicyMapClause clause) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+   public int getColor() {
+      return _color;
    }
 
 }

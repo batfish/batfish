@@ -1,6 +1,8 @@
 package batfish.representation.juniper;
 
+import batfish.representation.Configuration;
 import batfish.representation.PolicyMapClause;
+import batfish.representation.PolicyMapMatchProtocolLine;
 import batfish.representation.RoutingProtocol;
 
 public final class PsFromProtocol extends PsFrom {
@@ -16,13 +18,13 @@ public final class PsFromProtocol extends PsFrom {
       _protocol = protocol;
    }
 
-   public RoutingProtocol getProtocol() {
-      return _protocol;
+   @Override
+   public void applyTo(PolicyMapClause clause, Configuration c) {
+      clause.getMatchLines().add(new PolicyMapMatchProtocolLine(_protocol));
    }
 
-   @Override
-   public void applyTo(PolicyMapClause clause) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+   public RoutingProtocol getProtocol() {
+      return _protocol;
    }
 
 }
