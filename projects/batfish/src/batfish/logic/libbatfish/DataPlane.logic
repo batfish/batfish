@@ -39,6 +39,11 @@ FibNeighborIp(node, ip) ->
    Node(node),
    Ip(ip).
 
+FibNeighborUnreachable(node, ip, neighborIp) ->
+   Node(node),
+   Ip(ip),
+   Ip(neighborIp).
+
 FibNetwork(node, network, interface, nextHop, nextHopInt) ->
    Node(node),
    Network(network),

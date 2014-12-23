@@ -1784,7 +1784,7 @@ public class Batfish implements AutoCloseable {
          output = lbFrontend.getPredicate(_predicateInfo, relation,
                predicateName);
          for (String match : output) {
-            output(match);
+            output(match + "\n");
          }
       }
       catch (QueryException q) {
@@ -1819,7 +1819,6 @@ public class Batfish implements AutoCloseable {
       resetTimer();
       for (String predicateName : predicateNames) {
          printPredicate(lbFrontend, predicateName);
-         output("\n");
       }
       printElapsedTime();
    }
@@ -1829,6 +1828,7 @@ public class Batfish implements AutoCloseable {
       if (semantics == null) {
          semantics = "<missing>";
       }
+      _logger.info("\n");
       _logger.info("Predicate: " + predicateName + "\n");
       _logger.info("Semantics: " + semantics + "\n");
    }

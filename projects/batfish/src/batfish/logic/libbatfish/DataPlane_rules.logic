@@ -31,18 +31,18 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    Network_prefix_length[matchNet] = prefix_length,
    Route_node[route] = node,
    nextHop = Node_NONE[],
-   nextHopIp = Ip_ZERO[],
    (
       (
          !FlowSinkInterface(node, routeInterface),
          interface = Interface_NULL[],
          nextHopInt = Interface_NULL[],
-         nextHopIp = Ip_ZERO[]
+         nextHopIp = ip
       ) ;
       (
          FlowSinkInterface(node, routeInterface),
          interface = routeInterface,
-         nextHopInt = Interface_FLOW_SINK_TERMINATION[]
+         nextHopInt = Interface_FLOW_SINK_TERMINATION[],
+         nextHopIp = Ip_ZERO[]
       )
    ).
 // static non-null interface-only route -- send to all adjacent neighbors
@@ -143,6 +143,11 @@ FibForward(node, ip, interface, nextHop, nextHopInt) <-
 FibForwardPolicyRouteNextHopIp(node, ip, interface, nextHop, nextHopInt) <-
    Fib(node, ip, _, interface, nextHop, nextHopInt, _),
    SetPolicyMapClauseSetNextHopIp(_, _, ip).
+
+FibNeighborUnreachable(node, ip, neighborIp) <-
+   Fib(node, ip, _, dropInterface, _, _, neighborIp),
+   dropInterface = Interface_NULL[],
+   neighborIp != Ip_ZERO[].
 
 FibRoute(node, ip) <-
    FibForward(node, ip, _, _, _) ;

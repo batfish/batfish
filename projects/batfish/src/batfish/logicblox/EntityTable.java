@@ -220,10 +220,10 @@ public class EntityTable {
       String node = _flowNodes[listIndex];
       String srcIp = new Ip(_flowSrcIps[listIndex]).toString();
       String dstIp = new Ip(_flowDstIps[listIndex]).toString();
-      String protocol = IpProtocol
-            .fromNumber((int) (_flowProtocols[listIndex])).name();
-      boolean tcp = protocol.equals("tcp");
-      boolean udp = protocol.equals("udp");
+      IpProtocol protocol = IpProtocol
+            .fromNumber((int) (_flowProtocols[listIndex]));
+      boolean tcp = protocol == IpProtocol.TCP;
+      boolean udp = protocol == IpProtocol.UDP;
       String prefix = tcp ? "Tcp" : udp ? "Udp" : "";
       StringBuilder sb = new StringBuilder();
       sb.append(prefix);

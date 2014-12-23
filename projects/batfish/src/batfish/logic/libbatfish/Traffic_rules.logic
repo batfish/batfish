@@ -49,9 +49,16 @@ FlowDropped(flow, node) <-
 FlowDropped(flow, node) <-
    FlowDeniedOut(flow, node, _, _, _).   
 FlowDropped(flow, node) <-
+   FlowNeighborUnreachable(flow, node, _).
+FlowDropped(flow, node) <-
    FlowNoRoute(flow, node).
 FlowDropped(flow, node) <-
    FlowNullRouted(flow, node).
+
+FlowNeighborUnreachable(flow, node, neighborIp) <-
+   Flow_dstIp[flow] = dstIp,
+   FlowReachPreOut(flow, node),
+   FibNeighborUnreachable(node, dstIp, neighborIp).
 
 FlowInconsistent(flow) <-
    FlowLost(flow),
@@ -72,7 +79,8 @@ FlowNoRoute(flow, node) <-
 FlowNullRouted(flow, node) <-
    Flow_dstIp[flow] = dstIp,
    FlowReachPreOut(flow, node),
-   FibDrop(node, dstIp).
+   FibDrop(node, dstIp),
+   !FibNeighborUnreachable(node, dstIp, _).
 
 FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow,
 Flow(flow),
@@ -264,6 +272,7 @@ FlowPathHistory(flow, history) <-
    FlowPathAcceptedEdge(flow, _, _, _, _, _, history) ;
    FlowPathDeniedInEdge(flow, _, _, _, _, _, _, history, _, _) ;
    FlowPathDeniedOutEdge(flow, _, _, _, _, _, _, history, _, _) ;
+   FlowPathNeighborUnreachableEdge(flow, _, _, _, _, _, history) ;
    FlowPathNoRouteEdge(flow, _, _, _, _, _, history) ;
    FlowPathNullRoutedEdge(flow, _, _, _, _, _, history).
 
@@ -312,6 +321,20 @@ FlowPathIntermediateEdge(flow, i, receivedInt, node1, int1, node2, int2, history
    Interface_name(int2:int2str),
    currentHistory = "['" + node1str + "':'" + int1str + "'" + allowedOutStr + ", '" + node2str + "':'" + int2str + "'" + allowedInStr + "]".
    
+FlowPathNeighborUnreachableEdge(flow, i, node1, int1, node2, int2, history) <-
+   FlowPathIntermediateEdge(flow, i, _, node1, int1, node2, int2, oldHistory),
+   FlowNeighborUnreachable(flow, node2, _),
+   history = oldHistory + ":neighborUnreachable".
+FlowPathNeighborUnreachableEdge(flow, i, node1, int1, node2, int2, history) <-
+   !FlowPathIntermediateEdge(flow, _, _, _, _, node1, _, _),
+   node2 = Node_NONE[],
+   i = 0,
+   int1 = Interface_NULL[],
+   int2 = Interface_NULL[],
+   FlowNeighborUnreachable(flow, node1, _),
+   Node_name(node1:node1str),
+   history = "['" + node1str + "':neighborUnreachable]".
+
 FlowPathNoRouteEdge(flow, i, node1, int1, node2, int2, history) <-
    FlowPathIntermediateEdge(flow, i, _, node1, int1, node2, int2, oldHistory),
    FlowNoRoute(flow, node2),

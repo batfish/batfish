@@ -346,7 +346,7 @@ public class LogicBloxFrontend {
             }
             outputLine = outputLine.substring(0, outputLine.length() - 2);
             value = textRow.get(textRow.size() - 1);
-            outputLine += "] = " + value + "\n";
+            outputLine += "] = " + value;
             output.add(outputLine);
          }
       }
@@ -357,7 +357,7 @@ public class LogicBloxFrontend {
                outputLine += value + ", ";
             }
             outputLine = outputLine.substring(0, outputLine.length() - 2);
-            outputLine += ")\n";
+            outputLine += ")";
             output.add(outputLine);
          }
       }

@@ -92,6 +92,11 @@ FlowLoop(flow, node, outInt) ->
 FlowLost(flow) ->
    Flow(flow).
 
+FlowNeighborUnreachable(flow, node, neighborIp) ->
+   Flow(flow),
+   Node(node),
+   Ip(neighborIp).
+
 /// [FlowNoRoute(flow, node)] =
 ///   Flow [flow] was dropped by node [node] because it had no route to
 ///   [flow]'s destination.
@@ -158,7 +163,16 @@ FlowPathIntermediateEdge(flow, i, int0, node1, int1, node2, int2, history) ->
    Node(node2),
    Interface(int2),
    string(history).
-   
+
+FlowPathNeighborUnreachableEdge(flow, i, node1, int1, node2, int2, history) ->
+   Flow(flow),
+   int(i),
+   Node(node1),
+   Interface(int1),
+   Node(node2),
+   Interface(int2),
+   string(history).
+
 FlowPathNoRouteEdge(flow, i, node1, int1, node2, int2, history) ->
    Flow(flow),
    int(i),
