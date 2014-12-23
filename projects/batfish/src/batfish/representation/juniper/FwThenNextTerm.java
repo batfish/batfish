@@ -1,5 +1,5 @@
 package batfish.representation.juniper;
 
-public enum FwThenDiscard implements FwThen {
+public enum FwThenNextTerm implements FwThen {
    INSTANCE
 }

@@ -56,6 +56,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          else if (term.getThens().contains(FwThenDiscard.INSTANCE)) {
             action = LineAction.REJECT;
          }
+         else if (term.getThens().contains(FwThenNextTerm.INSTANCE)) {
+            //TODO: throw error if any transformation is being done
+            continue;
+         }
          else {
             throw new VendorConversionException(
                   "not sure what to do without corresponding access list action from firewall filter term");

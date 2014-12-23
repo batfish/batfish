@@ -32,6 +32,7 @@ import batfish.representation.juniper.FwFromSourcePort;
 import batfish.representation.juniper.FwTerm;
 import batfish.representation.juniper.FwThenAccept;
 import batfish.representation.juniper.FwThenDiscard;
+import batfish.representation.juniper.FwThenNextTerm;
 import batfish.representation.juniper.PsFromAsPath;
 import batfish.representation.juniper.PsFromColor;
 import batfish.representation.juniper.PsFromCommunity;
@@ -674,6 +675,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitFwthent_discard(Fwthent_discardContext ctx) {
       _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
+   }
+
+   @Override
+   public void exitFwthent_next_term(Fwthent_next_termContext ctx) {
+      _currentFwTerm.getThens().add(FwThenNextTerm.INSTANCE);
    }
 
    @Override

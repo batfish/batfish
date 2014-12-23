@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import batfish.util.SubRange;
 
@@ -28,10 +29,10 @@ public final class IpAccessListLine implements Serializable {
 
    public IpAccessListLine() {
       _protocols = EnumSet.noneOf(IpProtocol.class);
-      _srcPortRanges = new ArrayList<SubRange>();
-      ;
+      _dstIpRanges = new TreeSet<Prefix>();
       _dstPortRanges = new ArrayList<SubRange>();
-      ;
+      _srcIpRanges = new TreeSet<Prefix>();
+      _srcPortRanges = new ArrayList<SubRange>();
    }
 
    public LineAction getAction() {
