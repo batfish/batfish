@@ -8,13 +8,13 @@ public class PrefixList implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
+   private boolean _isIpV6;
+
    // List of lines that stores the prefix
    private List<PrefixListLine> _lines;
 
    // Name of the filter
    private String _name;
-
-   private boolean _isIpV6;
 
    private PrefixList(String n) {
       _name = n;

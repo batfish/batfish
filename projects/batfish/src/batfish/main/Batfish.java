@@ -1399,7 +1399,7 @@ public class Batfish implements AutoCloseable {
    /**
     * Generates a topology object from inferred edges encoded in interface
     * descriptions.
-    * 
+    *
     * @param configurations
     *           The vendor specific configurations.
     * @param includeExternal

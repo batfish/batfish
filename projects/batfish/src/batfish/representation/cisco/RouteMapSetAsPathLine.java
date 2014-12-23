@@ -16,14 +16,14 @@ public class RouteMapSetAsPathLine extends RouteMapSetLine {
    }
 
    @Override
-   public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
-      // TODO Auto-generated method stub
-      return null;
+   public RouteMapSetType getType() {
+      return RouteMapSetType.AS_PATH;
    }
 
    @Override
-   public RouteMapSetType getType() {
-      return RouteMapSetType.AS_PATH;
+   public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
+      // TODO Auto-generated method stub
+      return null;
    }
 
 }

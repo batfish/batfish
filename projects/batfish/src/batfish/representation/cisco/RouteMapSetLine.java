@@ -9,8 +9,8 @@ public abstract class RouteMapSetLine implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   public abstract PolicyMapSetLine toPolicyMapSetLine(Configuration c);
-
    public abstract RouteMapSetType getType();
+
+   public abstract PolicyMapSetLine toPolicyMapSetLine(Configuration c);
 
 }

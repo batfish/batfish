@@ -28,8 +28,10 @@ public final class IpAccessListLine implements Serializable {
 
    public IpAccessListLine() {
       _protocols = EnumSet.noneOf(IpProtocol.class);
-      _srcPortRanges = new ArrayList<SubRange>();;
-      _dstPortRanges = new ArrayList<SubRange>();;
+      _srcPortRanges = new ArrayList<SubRange>();
+      ;
+      _dstPortRanges = new ArrayList<SubRange>();
+      ;
    }
 
    public LineAction getAction() {

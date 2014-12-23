@@ -19,13 +19,13 @@ public class RouteMapSetLocalPreferenceLine extends RouteMapSetLine {
    }
 
    @Override
+   public RouteMapSetType getType() {
+      return RouteMapSetType.LOCAL_PREFERENCE;
+   }
+
+   @Override
    public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
       return new PolicyMapSetLocalPreferenceLine(_localPreference);
    }
 
-   @Override
-   public RouteMapSetType getType(){
-      return RouteMapSetType.LOCAL_PREFERENCE;
-   }
-   
 }

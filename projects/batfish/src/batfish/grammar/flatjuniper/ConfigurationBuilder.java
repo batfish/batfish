@@ -74,40 +74,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(
          Prefix.ZERO);
 
-   private static IpProtocol toIpProtocol(Ip_protocolContext ctx) {
-      if (ctx.DEC() != null) {
-         int protocolNum = toInt(ctx.DEC());
-         return IpProtocol.fromNumber(protocolNum);
-      }
-      else if (ctx.ESP() != null) {
-         return IpProtocol.ESP;
-      }
-      else if (ctx.GRE() != null) {
-         return IpProtocol.GRE;
-      }
-      else if (ctx.ICMP() != null) {
-         return IpProtocol.ICMP;
-      }
-      else if (ctx.IGMP() != null) {
-         return IpProtocol.IGMP;
-      }
-      else if (ctx.PIM() != null) {
-         return IpProtocol.PIM;
-      }
-      else if (ctx.TCP() != null) {
-         return IpProtocol.TCP;
-      }
-      else if (ctx.UDP() != null) {
-         return IpProtocol.UDP;
-      }
-      else if (ctx.VRRP() != null) {
-         return IpProtocol.VRRP;
-      }
-      else {
-         throw new BatfishException("missing protocol-enum mapping");
-      }
-   }
-
    public static int getPortNumber(PortContext ctx) {
       if (ctx.DEC() != null) {
          return toInt(ctx.DEC());
@@ -155,6 +121,40 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return Integer.parseInt(token.getText());
    }
 
+   private static IpProtocol toIpProtocol(Ip_protocolContext ctx) {
+      if (ctx.DEC() != null) {
+         int protocolNum = toInt(ctx.DEC());
+         return IpProtocol.fromNumber(protocolNum);
+      }
+      else if (ctx.ESP() != null) {
+         return IpProtocol.ESP;
+      }
+      else if (ctx.GRE() != null) {
+         return IpProtocol.GRE;
+      }
+      else if (ctx.ICMP() != null) {
+         return IpProtocol.ICMP;
+      }
+      else if (ctx.IGMP() != null) {
+         return IpProtocol.IGMP;
+      }
+      else if (ctx.PIM() != null) {
+         return IpProtocol.PIM;
+      }
+      else if (ctx.TCP() != null) {
+         return IpProtocol.TCP;
+      }
+      else if (ctx.UDP() != null) {
+         return IpProtocol.UDP;
+      }
+      else if (ctx.VRRP() != null) {
+         return IpProtocol.VRRP;
+      }
+      else {
+         throw new BatfishException("missing protocol-enum mapping");
+      }
+   }
+
    private static RoutingProtocol toRoutingProtocol(Routing_protocolContext ctx) {
       if (ctx.AGGREGATE() != null) {
          return RoutingProtocol.AGGREGATE;
@@ -174,8 +174,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else if (ctx.STATIC() != null) {
          return RoutingProtocol.STATIC;
       }
-      else
+      else {
          throw new BatfishException("missing routing protocol-enum mapping");
+      }
    }
 
    private JuniperVendorConfiguration _configuration;

@@ -15,19 +15,19 @@ public class RouteMapSetAsPathPrependLine extends RouteMapSetLine {
    public RouteMapSetAsPathPrependLine(List<Integer> asList) {
       _asList = asList;
    }
-   
-   public List<Integer> getAsList(){
+
+   public List<Integer> getAsList() {
       return _asList;
+   }
+
+   @Override
+   public RouteMapSetType getType() {
+      return RouteMapSetType.AS_PATH_PREPEND;
    }
 
    @Override
    public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
       return new PolicyMapSetAsPathPrependLine(_asList);
    }
-   
-   @Override
-   public RouteMapSetType getType(){
-      return RouteMapSetType.AS_PATH_PREPEND;
-   }
-   
+
 }

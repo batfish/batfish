@@ -18,6 +18,10 @@ public class GNS3TopologyExtractor extends GNS3TopologyParserBaseListener
       _edges = new ArrayList<Edge>();
    }
 
+   private String convertInterfaceName(String shortName) {
+      return shortName.replace("f", "FastEthernet");
+   }
+
    @Override
    public void enterRouter_line(Router_lineContext ctx) {
       _currentRouter = ctx.name.getText();
@@ -42,8 +46,4 @@ public class GNS3TopologyExtractor extends GNS3TopologyParserBaseListener
       return _topology;
    }
 
-   private String convertInterfaceName(String shortName) {
-      return shortName.replace("f","FastEthernet");
-   }
-   
 }

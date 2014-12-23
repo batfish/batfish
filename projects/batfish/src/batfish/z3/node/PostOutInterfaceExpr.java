@@ -7,5 +7,5 @@ public class PostOutInterfaceExpr extends InterfacePacketRelExpr {
    public PostOutInterfaceExpr(String nodeName, String interfaceName) {
       super(BASE_NAME, nodeName, interfaceName);
    }
-   
+
 }

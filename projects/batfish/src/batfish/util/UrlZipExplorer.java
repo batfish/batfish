@@ -25,6 +25,26 @@ public class UrlZipExplorer {
       initListing();
    }
 
+   public void extractFiles(StringFilter filter, File destinationDir)
+         throws IOException {
+      _stream = new ZipInputStream(_url.openStream());
+      ZipEntry ze = null;
+      while ((ze = _stream.getNextEntry()) != null) {
+         String entryName = ze.getName();
+         if (filter.accept(entryName)) {
+            Path dstPath = Paths.get(destinationDir.getAbsolutePath(),
+                  entryName);
+            File parentDir = dstPath.toFile().getParentFile();
+            parentDir.mkdirs();
+            Files.copy(_stream, dstPath);
+         }
+      }
+   }
+
+   public InputStream getInputStream() {
+      return _stream;
+   }
+
    private void initListing() throws IOException {
       _stream = new ZipInputStream(_url.openStream());
       ZipEntry ze = null;
@@ -55,25 +75,5 @@ public class UrlZipExplorer {
          }
       }
       throw new FileNotFoundException(name);
-   }
-
-   public InputStream getInputStream() {
-      return _stream;
-   }
-
-   public void extractFiles(StringFilter filter, File destinationDir)
-         throws IOException {
-      _stream = new ZipInputStream(_url.openStream());
-      ZipEntry ze = null;
-      while ((ze = _stream.getNextEntry()) != null) {
-         String entryName = ze.getName();
-         if (filter.accept(entryName)) {
-            Path dstPath = Paths.get(destinationDir.getAbsolutePath(),
-                  entryName);
-            File parentDir = dstPath.toFile().getParentFile();
-            parentDir.mkdirs();
-            Files.copy(_stream, dstPath);
-         }
-      }
    }
 }

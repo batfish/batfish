@@ -43,11 +43,12 @@ public class BgpProcess implements Serializable {
       _masterBgpPeerGroup.setDefaultMetric(DEFAULT_BGP_DEFAULT_METRIC);
    }
 
-   public DynamicBgpPeerGroup addDynamicPeerGroup(Ip ip, int prefixLength, String name) {
-         DynamicBgpPeerGroup pg = new DynamicBgpPeerGroup(ip, prefixLength, name);
-         _dynamicPeerGroups.put(name, pg);
-         _allPeerGroups.put(name, pg);
-         return pg;
+   public DynamicBgpPeerGroup addDynamicPeerGroup(Ip ip, int prefixLength,
+         String name) {
+      DynamicBgpPeerGroup pg = new DynamicBgpPeerGroup(ip, prefixLength, name);
+      _dynamicPeerGroups.put(name, pg);
+      _allPeerGroups.put(name, pg);
+      return pg;
    }
 
    public void addIpPeerGroup(Ip ip) {

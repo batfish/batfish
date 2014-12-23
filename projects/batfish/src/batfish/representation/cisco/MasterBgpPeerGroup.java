@@ -6,12 +6,12 @@ package batfish.representation.cisco;
  */
 public class MasterBgpPeerGroup extends BgpPeerGroup {
 
+   private static final String MASTER_BGP_PEER_GROUP_NAME = "~MASTER_BGP_PEER_GROUP~";
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
-
-   private static final String MASTER_BGP_PEER_GROUP_NAME = "~MASTER_BGP_PEER_GROUP~";
 
    public MasterBgpPeerGroup() {
       _active = false;

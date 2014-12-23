@@ -27,6 +27,14 @@ public class EqExpr extends BooleanExpr implements ComplexExpr {
       return _subExpressions;
    }
 
+   @Override
+   public Set<String> getVariables() {
+      Set<String> variables = new HashSet<String>();
+      variables.addAll(_lhs.getVariables());
+      variables.addAll(_rhs.getVariables());
+      return variables;
+   }
+
    private void init() {
       _subExpressions = new ArrayList<Expr>();
       _printer = new CollapsedComplexExprPrinter(this);
@@ -62,12 +70,4 @@ public class EqExpr extends BooleanExpr implements ComplexExpr {
       }
    }
 
-   @Override
-   public Set<String> getVariables() {
-      Set<String> variables = new HashSet<String>();
-      variables.addAll(_lhs.getVariables());
-      variables.addAll(_rhs.getVariables());
-      return variables;
-   }
-   
 }

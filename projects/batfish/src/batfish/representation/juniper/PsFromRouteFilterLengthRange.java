@@ -14,7 +14,8 @@ public final class PsFromRouteFilterLengthRange extends PsFromRouteFilter {
 
    private final int _minPrefixLength;
 
-   public PsFromRouteFilterLengthRange(Prefix prefix, int minPrefixLength, int maxPrefixLength) {
+   public PsFromRouteFilterLengthRange(Prefix prefix, int minPrefixLength,
+         int maxPrefixLength) {
       super(prefix);
       _minPrefixLength = minPrefixLength;
       _maxPrefixLength = maxPrefixLength;

@@ -24,6 +24,11 @@ public class RouteMapSetNextHopLine extends RouteMapSetLine {
    }
 
    @Override
+   public RouteMapSetType getType() {
+      return RouteMapSetType.NEXT_HOP;
+   }
+
+   @Override
    public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
       // TODO: change to set in PolicyMapSetNextHopLine if possible
       List<Ip> nextHopList = new ArrayList<Ip>();
@@ -31,9 +36,4 @@ public class RouteMapSetNextHopLine extends RouteMapSetLine {
       return new PolicyMapSetNextHopLine(nextHopList);
    }
 
-   @Override
-   public RouteMapSetType getType(){
-      return RouteMapSetType.NEXT_HOP;
-   }
-   
 }

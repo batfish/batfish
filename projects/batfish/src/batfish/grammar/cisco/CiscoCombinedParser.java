@@ -8,8 +8,8 @@ public class CiscoCombinedParser extends
 
    public CiscoCombinedParser(String input, boolean throwOnParserError,
          boolean throwOnLexerError) {
-      super(CiscoParser.class, CiscoLexer.class, input,
-            throwOnParserError, throwOnParserError);
+      super(CiscoParser.class, CiscoLexer.class, input, throwOnParserError,
+            throwOnParserError);
    }
 
    @Override

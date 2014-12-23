@@ -915,4 +915,3 @@ vrf_context_stanza
 :
    VRF CONTEXT name = ~NEWLINE NEWLINE vrfc_stanza*
 ;
-

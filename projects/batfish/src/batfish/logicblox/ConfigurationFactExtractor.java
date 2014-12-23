@@ -402,9 +402,8 @@ public class ConfigurationFactExtractor {
             for (Prefix dstIpRange : line.getDestinationIpRanges()) {
                long dstIpStart = dstIpRange.getAddress().asLong();
                long dstIpEnd = dstIpRange.getEndAddress().asLong();
-               wSetIpAccessListLine_dstIpRange
-                     .append(name + "|" + i + "|" + dstIpStart + "|"
-                           + dstIpEnd + "\n");
+               wSetIpAccessListLine_dstIpRange.append(name + "|" + i + "|"
+                     + dstIpStart + "|" + dstIpEnd + "\n");
             }
             for (SubRange dstPortRange : line.getDstPortRanges()) {
                long startPort = dstPortRange.getStart();
@@ -419,9 +418,8 @@ public class ConfigurationFactExtractor {
             for (Prefix srcIpRange : line.getSourceIpRanges()) {
                long srcIpStart = srcIpRange.getAddress().asLong();
                long srcIpEnd = srcIpRange.getEndAddress().asLong();
-               wSetIpAccessListLine_srcIpRange
-                     .append(name + "|" + i + "|" + srcIpStart + "|"
-                           + srcIpEnd + "\n");
+               wSetIpAccessListLine_srcIpRange.append(name + "|" + i + "|"
+                     + srcIpStart + "|" + srcIpEnd + "\n");
             }
             for (SubRange srcPortRange : line.getSrcPortRanges()) {
                long startPort = srcPortRange.getStart();

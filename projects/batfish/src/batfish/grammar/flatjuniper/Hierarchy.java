@@ -64,6 +64,7 @@ public class Hierarchy {
             return new HierarchyLiteralNode(_text);
          }
 
+         @Override
          public boolean isMatchedBy(HierarchyLiteralNode node) {
             return _text.equals(node._text);
          }

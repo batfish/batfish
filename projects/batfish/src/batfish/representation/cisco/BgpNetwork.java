@@ -17,23 +17,25 @@ public class BgpNetwork implements Serializable {
 
    @Override
    public boolean equals(Object o) {
-      if (o == null)
+      if (o == null) {
          return false;
+      }
       BgpNetwork rhs = (BgpNetwork) o;
-      return _networkAddress.equals(rhs.getNetworkAddress()) && _subnetMask.equals(rhs.getSubnetMask());
+      return _networkAddress.equals(rhs.getNetworkAddress())
+            && _subnetMask.equals(rhs.getSubnetMask());
    }
-	
-   @Override
-   public int hashCode(){
-      return _networkAddress.hashCode() | _subnetMask.hashCode();
-   }
-   
+
    public Ip getNetworkAddress() {
       return _networkAddress;
    }
 
    public Ip getSubnetMask() {
       return _subnetMask;
+   }
+
+   @Override
+   public int hashCode() {
+      return _networkAddress.hashCode() | _subnetMask.hashCode();
    }
 
 }

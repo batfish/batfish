@@ -29,7 +29,9 @@ public class CommunityList implements Serializable {
    private String _name;
 
    /**
-    * Constructs a CommunityList with the given name for {@link #_name}, and lines for {@link #_lines}
+    * Constructs a CommunityList with the given name for {@link #_name}, and
+    * lines for {@link #_lines}
+    *
     * @param name
     * @param lines
     */

@@ -43,6 +43,10 @@ public class Prefix implements Comparable<Prefix> {
       return _address;
    }
 
+   public Ip getEndAddress() {
+      return new Ip(Util.getNetworkEnd(_address.asLong(), _prefixLength));
+   }
+
    public int getPrefixLength() {
       return _prefixLength;
    }
@@ -65,9 +69,5 @@ public class Prefix implements Comparable<Prefix> {
    @Override
    public String toString() {
       return _address.toString() + "/" + _prefixLength;
-   }
-
-   public Ip getEndAddress() {
-      return new Ip(Util.getNetworkEnd(_address.asLong(), _prefixLength));
    }
 }

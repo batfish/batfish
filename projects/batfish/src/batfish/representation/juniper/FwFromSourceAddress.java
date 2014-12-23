@@ -16,13 +16,13 @@ public final class FwFromSourceAddress extends FwFrom {
       _prefix = prefix;
    }
 
-   public Prefix getPrefix() {
-      return _prefix;
-   }
-
    @Override
    public void applyTo(IpAccessListLine line) {
       line.getSourceIpRanges().add(_prefix);
+   }
+
+   public Prefix getPrefix() {
+      return _prefix;
    }
 
 }

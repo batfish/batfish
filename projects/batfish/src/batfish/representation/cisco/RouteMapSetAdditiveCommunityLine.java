@@ -21,13 +21,13 @@ public class RouteMapSetAdditiveCommunityLine extends RouteMapSetLine {
    }
 
    @Override
+   public RouteMapSetType getType() {
+      return RouteMapSetType.ADDITIVE_COMMUNITY;
+   }
+
+   @Override
    public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
       return new PolicyMapSetAddCommunityLine(_communities);
-   }
-   
-   @Override
-   public RouteMapSetType getType(){
-      return RouteMapSetType.ADDITIVE_COMMUNITY;
    }
 
 }

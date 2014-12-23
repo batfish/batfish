@@ -56,6 +56,11 @@ public class LogiQLPredicateInfoResolver extends LogiQLParserBaseListener {
       _qualifiedNameMap.put(predicateName, qualifiedPredicateName);
    }
 
+   private void addQualifiedPredicate(String predicateName) {
+      String qualifiedPredicateName = getQualifiedPredicateName(predicateName);
+      _qualifiedNameMap.put(predicateName, qualifiedPredicateName);
+   }
+
    private void addSemantics(String predicateName) {
       if (_currentPredicateSemantics != null) {
          _predicateSemantics.put(predicateName, _currentPredicateSemantics);
@@ -79,11 +84,6 @@ public class LogiQLPredicateInfoResolver extends LogiQLParserBaseListener {
       String predicateName = ctx.predicate.getText();
       addSemantics(predicateName);
       addQualifiedPredicate(predicateName);
-   }
-
-   private void addQualifiedPredicate(String predicateName) {
-      String qualifiedPredicateName = getQualifiedPredicateName(predicateName);
-      _qualifiedNameMap.put(predicateName, qualifiedPredicateName);
    }
 
    @Override

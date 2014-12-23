@@ -7,5 +7,5 @@ public class PreOutInterfaceExpr extends InterfacePacketRelExpr {
    public PreOutInterfaceExpr(String nodeName, String interfaceName) {
       super(BASE_NAME, nodeName, interfaceName);
    }
-   
+
 }

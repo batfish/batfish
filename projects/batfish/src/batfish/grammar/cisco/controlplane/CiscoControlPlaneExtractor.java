@@ -297,6 +297,54 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return prefixLength;
    }
 
+   public static Ip getWildcard(Access_list_ip_rangeContext ctx) {
+      if (ctx.wildcard != null) {
+         return toIp(ctx.wildcard);
+      }
+      else if (ctx.ANY() != null) {
+         return new Ip(0xFFFFFFFFl);
+      }
+      else if (ctx.HOST() != null) {
+         return new Ip(0l);
+      }
+      else if (ctx.prefix != null) {
+         int pfxLength = getPrefixLength(ctx.prefix);
+         long ipAsLong = 0xFFFFFFFFl >>> pfxLength;
+         return new Ip(ipAsLong);
+      }
+      else {
+         throw new BatfishException("bad extended ip access list ip range");
+      }
+   }
+
+   public static int toInteger(TerminalNode t) {
+      return Integer.parseInt(t.getText());
+   }
+
+   public static int toInteger(Token t) {
+      return Integer.parseInt(t.getText());
+   }
+
+   private static String toInterfaceName(Interface_nameContext ctx) {
+      String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(ctx.name_prefix_alpha
+            .getText());
+      String name = canonicalNamePrefix;
+      for (Token part : ctx.name_middle_parts) {
+         name += part.getText();
+      }
+      if (ctx.range().range_list.size() != 1) {
+         throw new PedanticBatfishException(
+               "got interface range where single interface was expected: \""
+                     + ctx.getText() + "\"");
+      }
+      name += ctx.range().getText();
+      return name;
+   }
+
+   public static Ip toIp(Token t) {
+      return new Ip(t.getText());
+   }
+
    public static IpProtocol toIpProtocol(ProtocolContext ctx) {
       if (ctx.DEC() != null) {
          int num = toInteger(ctx.DEC());
@@ -347,54 +395,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          throw new BatfishException("missing token-protocol mapping");
       }
-   }
-
-   public static Ip getWildcard(Access_list_ip_rangeContext ctx) {
-      if (ctx.wildcard != null) {
-         return toIp(ctx.wildcard);
-      }
-      else if (ctx.ANY() != null) {
-         return new Ip(0xFFFFFFFFl);
-      }
-      else if (ctx.HOST() != null) {
-         return new Ip(0l);
-      }
-      else if (ctx.prefix != null) {
-         int pfxLength = getPrefixLength(ctx.prefix);
-         long ipAsLong = 0xFFFFFFFFl >>> pfxLength;
-         return new Ip(ipAsLong);
-      }
-      else {
-         throw new BatfishException("bad extended ip access list ip range");
-      }
-   }
-
-   public static int toInteger(TerminalNode t) {
-      return Integer.parseInt(t.getText());
-   }
-
-   public static int toInteger(Token t) {
-      return Integer.parseInt(t.getText());
-   }
-
-   private static String toInterfaceName(Interface_nameContext ctx) {
-      String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(ctx.name_prefix_alpha
-            .getText());
-      String name = canonicalNamePrefix;
-      for (Token part : ctx.name_middle_parts) {
-         name += part.getText();
-      }
-      if (ctx.range().range_list.size() != 1) {
-         throw new PedanticBatfishException(
-               "got interface range where single interface was expected: \""
-                     + ctx.getText() + "\"");
-      }
-      name += ctx.range().getText();
-      return name;
-   }
-
-   public static Ip toIp(Token t) {
-      return new Ip(t.getText());
    }
 
    public static long toLong(CommunityContext ctx) {
@@ -554,7 +554,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentInterfaces = new ArrayList<Interface>();
       List<SubRange> ranges = toRange(ctx.iname.range());
       for (SubRange range : ranges) {
-         for (int i = (int) range.getStart(); i <= range.getEnd(); i++) {
+         for (int i = range.getStart(); i <= range.getEnd(); i++) {
             String name = namePrefix + i;
             Interface newInterface = _configuration.getInterfaces().get(name);
             if (newInterface == null) {
@@ -2064,6 +2064,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return _configuration;
    }
 
+   @Override
    public List<String> getWarnings() {
       return _warnings;
    }

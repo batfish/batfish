@@ -29,23 +29,29 @@ public abstract class Pair<T1 extends Comparable<T1>, T2 extends Comparable<T2>>
 
    @Override
    public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
          return true;
-      if (obj == null)
+      }
+      if (obj == null) {
          return false;
+      }
       Pair<?, ?> other = (Pair<?, ?>) obj;
       if (_t1 == null) {
-         if (other._t1 != null)
+         if (other._t1 != null) {
             return false;
+         }
       }
-      else if (!_t1.equals(other._t1))
+      else if (!_t1.equals(other._t1)) {
          return false;
+      }
       if (_t2 == null) {
-         if (other._t2 != null)
+         if (other._t2 != null) {
             return false;
+         }
       }
-      else if (!_t2.equals(other._t2))
+      else if (!_t2.equals(other._t2)) {
          return false;
+      }
       return true;
    }
 

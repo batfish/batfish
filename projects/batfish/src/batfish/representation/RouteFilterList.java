@@ -7,11 +7,11 @@ import batfish.util.NamedStructure;
 import batfish.util.Util;
 
 /**
- * 
+ *
  * A data structure that represents a list of prefix with their prefix-length to
  * be matched Used for route filter and prefix list in Juniper JunOS Used for
  * prefix list in Cisco IOS
- * 
+ *
  */
 
 public class RouteFilterList extends NamedStructure {

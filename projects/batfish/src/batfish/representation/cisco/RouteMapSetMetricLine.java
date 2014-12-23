@@ -19,13 +19,13 @@ public class RouteMapSetMetricLine extends RouteMapSetLine {
    }
 
    @Override
+   public RouteMapSetType getType() {
+      return RouteMapSetType.METRIC;
+   }
+
+   @Override
    public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
       return new PolicyMapSetMetricLine(_metric);
    }
 
-   @Override
-   public RouteMapSetType getType(){
-      return RouteMapSetType.METRIC;
-   }
-   
 }

@@ -16,13 +16,13 @@ public final class FwFromDestinationPort extends FwFrom {
       _port = port;
    }
 
-   public int getPort() {
-      return _port;
-   }
-
    @Override
    public void applyTo(IpAccessListLine line) {
       line.getDstPortRanges().add(new SubRange(_port, _port));
+   }
+
+   public int getPort() {
+      return _port;
    }
 
 }

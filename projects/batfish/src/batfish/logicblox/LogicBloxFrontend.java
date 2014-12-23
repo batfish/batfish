@@ -63,8 +63,9 @@ public class LogicBloxFrontend {
          ConnectBloxSession<Request, Response> session) {
       try {
          // close down a regular session
-         if (session != null && session.isActive())
+         if (session != null && session.isActive()) {
             session.close();
+         }
       }
       catch (ConnectBloxSession.Exception e) {
          throw new BatfishException(

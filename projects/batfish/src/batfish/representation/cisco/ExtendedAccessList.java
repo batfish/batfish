@@ -20,11 +20,10 @@ public class ExtendedAccessList implements Serializable {
       _isIpV6 = false;
    }
 
-   public ExtendedAccessList(String id, boolean isIpV6 )  {
+   public ExtendedAccessList(String id, boolean isIpV6) {
       this(id);
       _isIpV6 = isIpV6;
    }
-
 
    public void addLine(ExtendedAccessListLine all) {
       _lines.add(all);

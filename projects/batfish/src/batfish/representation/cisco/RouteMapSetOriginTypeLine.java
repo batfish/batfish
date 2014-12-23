@@ -24,12 +24,12 @@ public class RouteMapSetOriginTypeLine extends RouteMapSetLine {
    public OriginType getOriginType() {
       return _originType;
    }
-   
+
    @Override
    public RouteMapSetType getType() {
       return RouteMapSetType.ORIGIN_TYPE;
    }
-   
+
    @Override
    public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
       return new PolicyMapSetOriginTypeLine(_originType);

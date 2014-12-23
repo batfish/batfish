@@ -17,16 +17,17 @@ public class Topology implements Serializable {
 
    /**
     * Dumps the topology as a dot-file for debugging.
-    * 
-    * @param out The output stream to dump to.
+    *
+    * @param out
+    *           The output stream to dump to.
     */
    public void dumpDot(OutputStream _out) {
       PrintStream out = new PrintStream(_out);
       out.println("digraph topology {");
-      //TODO: complete
-//      for (Edge edge : _edges) {
-//         out.println("  ");
-//      }
+      // TODO: complete
+      // for (Edge edge : _edges) {
+      // out.println("  ");
+      // }
       out.println("}");
    }
 

@@ -9,13 +9,13 @@ public class PolicyMapSetOriginTypeLine extends PolicyMapSetLine {
       _originType = originType;
    }
 
+   public OriginType getOriginType() {
+      return _originType;
+   }
+
    @Override
    public PolicyMapSetType getType() {
       return PolicyMapSetType.ORIGIN_TYPE;
-   }
-
-   public OriginType getOriginType() {
-      return _originType;
    }
 
 }

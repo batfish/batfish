@@ -9,13 +9,13 @@ public class RouteMapSetCommunityNoneLine extends RouteMapSetLine {
    private static final long serialVersionUID = 1L;
 
    @Override
+   public RouteMapSetType getType() {
+      return RouteMapSetType.COMMUNITY_NONE;
+   }
+
+   @Override
    public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
       return new PolicyMapSetCommunityNoneLine();
    }
 
-   @Override
-   public RouteMapSetType getType(){
-      return RouteMapSetType.COMMUNITY_NONE;
-   }
-   
 }

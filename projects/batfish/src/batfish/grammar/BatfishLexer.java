@@ -32,7 +32,7 @@ public abstract class BatfishLexer extends Lexer {
 
    /**
     * Print custom lexer state (should be overridden)
-    * 
+    *
     * @return Should print custom lexer state variables and their values
     */
    public String printStateVariables() {

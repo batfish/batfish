@@ -16,7 +16,7 @@ public class BatfishTopologyExtractor extends BatfishTopologyParserBaseListener
    public BatfishTopologyExtractor() {
       _edges = new ArrayList<Edge>();
    }
-   
+
    @Override
    public void exitEdge_line(Edge_lineContext ctx) {
       String node1 = ctx.node1.getText();
@@ -26,12 +26,12 @@ public class BatfishTopologyExtractor extends BatfishTopologyParserBaseListener
       Edge edge = new Edge(node1, int1, node2, int2);
       _edges.add(edge);
    }
-   
+
    @Override
    public void exitTopology(TopologyContext ctx) {
       _topology = new Topology(_edges);
    }
-   
+
    @Override
    public Topology getTopology() {
       return _topology;

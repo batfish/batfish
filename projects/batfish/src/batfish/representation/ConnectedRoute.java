@@ -9,6 +9,13 @@ public class ConnectedRoute extends Route {
    }
 
    @Override
+   public boolean equals(Object o) {
+      ConnectedRoute rhs = (ConnectedRoute) o;
+      return _prefix.equals(rhs._prefix) && _prefixLength == rhs._prefixLength
+            && _nextHopIp.equals(rhs._nextHopIp);
+   }
+
+   @Override
    public int getAdministrativeCost() {
       return 0;
    }
@@ -16,13 +23,6 @@ public class ConnectedRoute extends Route {
    @Override
    public RouteType getRouteType() {
       return RouteType.CONNECTED;
-   }
-
-   @Override
-   public boolean equals(Object o) {
-      ConnectedRoute rhs = (ConnectedRoute) o;
-      return _prefix.equals(rhs._prefix) && _prefixLength == rhs._prefixLength
-            && _nextHopIp.equals(rhs._nextHopIp);
    }
 
 }

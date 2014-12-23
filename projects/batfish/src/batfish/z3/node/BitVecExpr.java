@@ -6,7 +6,7 @@ import java.util.List;
 public class BitVecExpr extends TypeExpr implements ComplexExpr {
 
    private List<Expr> _subExpressions;
-   
+
    public BitVecExpr(int size) {
       _subExpressions = new ArrayList<Expr>();
       _subExpressions.add(new IdExpr("_"));

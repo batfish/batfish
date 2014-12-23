@@ -13,7 +13,8 @@ public class CiscoControlPlaneObfuscator extends CiscoParserBaseListener {
 
    private CiscoControlPlaneSensitiveDataCollector _collector;
 
-   public CiscoControlPlaneObfuscator(CiscoControlPlaneSensitiveDataCollector collector) {
+   public CiscoControlPlaneObfuscator(
+         CiscoControlPlaneSensitiveDataCollector collector) {
       _collector = collector;
    }
 
@@ -24,7 +25,8 @@ public class CiscoControlPlaneObfuscator extends CiscoParserBaseListener {
       switch (type) {
 
       case CiscoLexer.VARIABLE:
-         ParserRuleContext parent = (ParserRuleContext)t.getParent().getPayload();
+         ParserRuleContext parent = (ParserRuleContext) t.getParent()
+               .getPayload();
          int index = parent.children.indexOf(t);
          String oldText = symbol.getText();
          String newText = _collector.getObfuscatedVariable(oldText);

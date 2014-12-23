@@ -131,8 +131,9 @@ public class Util {
    }
 
    public static int intWidth(int n) {
-      if (n == 0)
+      if (n == 0) {
          return 1;
+      }
       else {
          return 32 - Integer.numberOfLeadingZeros(n);
       }

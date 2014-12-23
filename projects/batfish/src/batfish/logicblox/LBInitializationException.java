@@ -2,6 +2,11 @@ package batfish.logicblox;
 
 public class LBInitializationException extends Exception {
 
+   /**
+    *
+    */
+   private static final long serialVersionUID = -7187289109861214346L;
+
    public LBInitializationException(Throwable cause) {
       super(cause);
    }
@@ -9,10 +14,5 @@ public class LBInitializationException extends Exception {
    public boolean workspaceDoesNotExist() {
       return this.getMessage().contains("' does not exist.");
    }
-   
-   /**
-    * 
-    */
-   private static final long serialVersionUID = -7187289109861214346L;
 
 }

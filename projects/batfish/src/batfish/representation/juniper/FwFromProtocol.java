@@ -16,13 +16,13 @@ public final class FwFromProtocol extends FwFrom {
       _protocol = protocol;
    }
 
-   public IpProtocol getProtocol() {
-      return _protocol;
-   }
-
    @Override
    public void applyTo(IpAccessListLine line) {
       line.getProtocols().add(_protocol);
+   }
+
+   public IpProtocol getProtocol() {
+      return _protocol;
    }
 
 }
