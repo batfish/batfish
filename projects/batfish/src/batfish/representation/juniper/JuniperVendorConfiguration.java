@@ -4,13 +4,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import batfish.collections.RoleSet;
 import batfish.representation.Configuration;
+import batfish.representation.Ip;
 import batfish.representation.IpAccessList;
 import batfish.representation.IpAccessListLine;
 import batfish.representation.LineAction;
+import batfish.representation.OspfProcess;
 import batfish.representation.PolicyMap;
 import batfish.representation.PolicyMapClause;
 import batfish.representation.RouteFilterList;
@@ -33,6 +36,44 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    public JuniperVendorConfiguration() {
       _conversionWarnings = new ArrayList<String>();
       _roles = new RoleSet();
+   }
+
+   private OspfProcess createOspfProcess() {
+      OspfProcess newProc = new OspfProcess();
+      // export policies
+      for (String exportPolicyName : _defaultRoutingInstance
+            .getOspfExportPolicies()) {
+         PolicyMap exportPolicy = _c.getPolicyMaps().get(exportPolicyName);
+         newProc.getOutboundPolicyMaps().add(exportPolicy);
+      }
+      // areas
+      Map<Long, batfish.representation.OspfArea> newAreas = newProc.getAreas();
+      for (Entry<Ip, OspfArea> e : _defaultRoutingInstance.getOspfAreas()
+            .entrySet()) {
+         Ip areaIp = e.getKey();
+         long areaLong = areaIp.asLong();
+         // OspfArea area = e.getValue();
+         batfish.representation.OspfArea newArea = new batfish.representation.OspfArea(
+               areaLong);
+         newAreas.put(areaLong, newArea);
+      }
+      // place interfaces into areas
+      for (Entry<String, Interface> e : _defaultRoutingInstance.getInterfaces()
+            .entrySet()) {
+         String name = e.getKey();
+         Interface iface = e.getValue();
+         batfish.representation.Interface newIface = _c.getInterfaces().get(
+               name);
+         Ip ospfArea = iface.getOspfArea();
+         if (ospfArea != null) {
+            long ospfAreaLong = ospfArea.asLong();
+            batfish.representation.OspfArea newArea = newAreas
+                  .get(ospfAreaLong);
+            newArea.getInterfaces().add(newIface);
+         }
+      }
+      newProc.setRouterId(_defaultRoutingInstance.getRouterId());
+      return newProc;
    }
 
    @Override
@@ -61,6 +102,41 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       batfish.representation.CommunityList newCl = new batfish.representation.CommunityList(
             name, newLines);
       return newCl;
+   }
+
+   private batfish.representation.Interface toInterface(Interface iface) {
+      String name = iface.getName();
+      batfish.representation.Interface newIface = new batfish.representation.Interface(
+            name);
+      String inAclName = iface.getIncomingFilter();
+      if (inAclName != null) {
+         IpAccessList inAcl = _c.getIpAccessLists().get(inAclName);
+         if (inAcl == null) {
+            throw new VendorConversionException("missing incoming acl: \""
+                  + inAclName + "\"");
+         }
+         newIface.setIncomingFilter(inAcl);
+      }
+      String outAclName = iface.getOutgoingFilter();
+      if (outAclName != null) {
+         IpAccessList outAcl = _c.getIpAccessLists().get(outAclName);
+         if (outAcl == null) {
+            throw new VendorConversionException("missing outgoing acl: \""
+                  + outAclName + "\"");
+         }
+         newIface.setOutgoingFilter(outAcl);
+      }
+      if (iface.getPrefix() != null) {
+         newIface.setIp(iface.getPrefix().getAddress());
+         newIface.setSubnetMask(iface.getPrefix().getSubnetMask());
+      }
+      newIface.setActive(iface.getActive());
+      newIface.setAccessVlan(iface.getAccessVlan());
+      newIface.setNativeVlan(iface.getNativeVlan());
+      newIface.setSwitchportMode(iface.getSwitchportMode());
+      newIface.setSwitchportTrunkEncapsulation(iface
+            .getSwitchportTrunkEncapsulation());
+      return newIface;
    }
 
    private IpAccessList toIpAccessList(FirewallFilter filter)
@@ -162,12 +238,22 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          PolicyMap map = toPolicyMap(ps);
          _c.getPolicyMaps().put(name, map);
       }
-      // if (_defaultRoutingInstance.getOspfAreas().size() > 0) {
-      // OspfProcess oproc = new OspfProcess();
-      // for (String export_defaultRoutingInstance.getOspfExportPolicies()
-      // }
+
+      // convert interfaces
+      for (Entry<String, Interface> e : _defaultRoutingInstance.getInterfaces()
+            .entrySet()) {
+         String name = e.getKey();
+         Interface iface = e.getValue();
+         batfish.representation.Interface newIface = toInterface(iface);
+         _c.getInterfaces().put(name, newIface);
+      }
+
+      // create ospf process
+      if (_defaultRoutingInstance.getOspfAreas().size() > 0) {
+         OspfProcess oproc = createOspfProcess();
+         _c.setOspfProcess(oproc);
+      }
 
       return _c;
    }
-
 }

@@ -16,7 +16,7 @@ public class OspfProcess implements Serializable {
    private Set<PolicyMap> _outboundPolicyMaps;
    private Map<PolicyMap, OspfMetricType> _policyMetricTypes;
    private Double _referenceBandwidth;
-   private String _routerId;
+   private Ip _routerId;
 
    public OspfProcess() {
       _generatedRoutes = new LinkedHashSet<GeneratedRoute>();
@@ -47,7 +47,7 @@ public class OspfProcess implements Serializable {
       return _referenceBandwidth;
    }
 
-   public String getRouterId() {
+   public Ip getRouterId() {
       return _routerId;
    }
 
@@ -55,7 +55,7 @@ public class OspfProcess implements Serializable {
       _referenceBandwidth = referenceBandwidth;
    }
 
-   public void setRouterId(String id) {
+   public void setRouterId(Ip id) {
       _routerId = id;
    }
 

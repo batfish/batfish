@@ -730,9 +730,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       }
       newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
       Ip routerId = proc.getRouterId();
-      if (routerId != null) {
-         newProcess.setRouterId(routerId.toString());
-      }
+      newProcess.setRouterId(routerId);
       return newProcess;
    }
 
@@ -1027,7 +1025,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       newIface.setArea(iface.getArea());
       newIface.setBandwidth(iface.getBandwidth());
       if (iface.getIP() != null) {
-         newIface.setIP(iface.getIP());
+         newIface.setIp(iface.getIP());
          newIface.setSubnetMask(iface.getSubnetMask());
       }
       Map<String, String> secondaryIps = iface.getSecondaryIps();

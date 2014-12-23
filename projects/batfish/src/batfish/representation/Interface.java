@@ -7,7 +7,6 @@ import java.util.Map;
 
 import batfish.util.NamedStructure;
 import batfish.util.SubRange;
-import batfish.util.Util;
 
 public class Interface extends NamedStructure {
 
@@ -73,70 +72,6 @@ public class Interface extends NamedStructure {
 
    public String getDescription() {
       return _description;
-   }
-
-   public String getIFString(int indentLevel) {
-      String retString = Util.getIndentString(indentLevel) + "Interface "
-            + getName();
-
-      retString += String.format("\n%sActive %s",
-            Util.getIndentString(indentLevel + 1), _active);
-      retString += String.format("\n%sIp %s",
-            Util.getIndentString(indentLevel + 1), _ip);
-      retString += String.format("\n%sSubnet %s",
-            Util.getIndentString(indentLevel + 1), _subnet);
-      retString += String.format("\n%sBandwidth %s",
-            Util.getIndentString(indentLevel + 1), _bandwidth);
-
-      retString += String.format("\n%sSwitchportMode %s",
-            Util.getIndentString(indentLevel + 1), _switchportMode);
-      retString += String.format("\n%sSwitchportEncapsulationType %s",
-            Util.getIndentString(indentLevel + 1),
-            _switchportTrunkEncapsulation);
-
-      retString += String.format("\n%sOspfArea %s",
-            Util.getIndentString(indentLevel + 1), _ospfArea);
-      retString += String.format("\n%sOspfCost %s",
-            Util.getIndentString(indentLevel + 1), _ospfCost);
-      retString += String.format("\n%sOspfDeadInterval %s",
-            Util.getIndentString(indentLevel + 1), _ospfDeadInterval);
-      retString += String.format("\n%sOspfHelloMultiplier %s",
-            Util.getIndentString(indentLevel + 1), _ospfHelloMultiplier);
-
-      retString += String.format("\n%sAccessVlan %s",
-            Util.getIndentString(indentLevel + 1), _accessVlan);
-      retString += String.format("\n%sNativeVlan %s",
-            Util.getIndentString(indentLevel + 1), _nativeVlan);
-
-      if (_allowedVlans.size() > 0) {
-         retString += "\n" + Util.getIndentString(indentLevel + 1)
-               + "AllowedVlans";
-
-         for (SubRange sr : _allowedVlans) {
-            retString += " " + sr.toString();
-         }
-      }
-
-      if (_incomingFilter != null) {
-         retString += "\n" + Util.getIndentString(indentLevel + 1)
-               + "IncomingFilter " + _incomingFilter.getName();
-      }
-
-      if (_outgoingFilter != null) {
-         retString += "\n" + Util.getIndentString(indentLevel + 1)
-               + "OutgoingFilter " + _outgoingFilter.getName();
-      }
-
-      if (_secondaryIps.size() > 0) {
-         for (Map.Entry<Ip, Ip> entry : _secondaryIps.entrySet()) {
-            retString += "\n"
-                  + Util.getIndentString(indentLevel + 1)
-                  + String.format("SecondaryIp %s %s", entry.getKey(),
-                        entry.getValue());
-         }
-      }
-
-      return retString;
    }
 
    public IpAccessList getIncomingFilter() {
@@ -211,7 +146,7 @@ public class Interface extends NamedStructure {
       _incomingFilter = filter;
    }
 
-   public void setIP(Ip ip) {
+   public void setIp(Ip ip) {
       _ip = ip;
    }
 

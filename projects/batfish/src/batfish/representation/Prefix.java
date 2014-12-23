@@ -64,6 +64,10 @@ public class Prefix implements Comparable<Prefix>, Serializable {
       return new Ip(wildcardLong);
    }
 
+   public Ip getSubnetMask() {
+      return new Ip(Util.numSubnetBitsToSubnetLong(_prefixLength));
+   }
+
    @Override
    public int hashCode() {
       final int prime = 31;

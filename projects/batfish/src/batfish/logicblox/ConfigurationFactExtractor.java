@@ -540,9 +540,9 @@ public class ConfigurationFactExtractor {
       String hostname = _configuration.getHostname();
       OspfProcess proc = _configuration.getOspfProcess();
       if (proc != null) {
-         String id = proc.getRouterId();
+         Ip id = proc.getRouterId();
          if (id != null) {
-            wSetOspfRouterId.append(hostname + "|" + Util.ipToLong(id) + "\n");
+            wSetOspfRouterId.append(hostname + "|" + id.asLong() + "\n");
          }
       }
    }
