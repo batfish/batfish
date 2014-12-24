@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import batfish.representation.Ip;
 import batfish.representation.Prefix;
 
 public class StaticRoute implements Serializable {
@@ -16,6 +17,10 @@ public class StaticRoute implements Serializable {
    private boolean _drop;
 
    private int _metric;
+
+   private String _nextHopInterface;
+
+   private Ip _nextHopIp;
 
    private List<String> _policies;
 
@@ -36,6 +41,14 @@ public class StaticRoute implements Serializable {
       return _metric;
    }
 
+   public String getNextHopInterface() {
+      return _nextHopInterface;
+   }
+
+   public Ip getNextHopIp() {
+      return _nextHopIp;
+   }
+
    public List<String> getPolicies() {
       return _policies;
    }
@@ -54,6 +67,14 @@ public class StaticRoute implements Serializable {
 
    public void setMetric(int metric) {
       _metric = metric;
+   }
+
+   public void setNextHopInterface(String nextHopInterface) {
+      _nextHopInterface = nextHopInterface;
+   }
+
+   public void setNextHopIp(Ip nextHopIp) {
+      _nextHopIp = nextHopIp;
    }
 
    public void setTag(int tag) {

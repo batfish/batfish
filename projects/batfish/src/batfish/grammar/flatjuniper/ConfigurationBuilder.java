@@ -253,6 +253,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (ctx.id.unit != null) {
          unit = ctx.id.unit.getText();
       }
+      String unitFullName = name + "." + unit;
       Map<String, Interface> interfaces = _currentRoutingInstance
             .getInterfaces();
       _currentOspfInterface = interfaces.get(name);
@@ -262,10 +263,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       if (unit != null) {
          Map<String, Interface> units = _currentOspfInterface.getUnits();
-         _currentOspfInterface = units.get(unit);
+         _currentOspfInterface = units.get(unitFullName);
          if (_currentOspfInterface == null) {
-            _currentOspfInterface = new Interface(unit);
-            units.put(unit, _currentOspfInterface);
+            _currentOspfInterface = new Interface(unitFullName);
+            units.put(unitFullName, _currentOspfInterface);
          }
       }
       Ip currentArea = _currentArea.getAreaIp();
@@ -364,11 +365,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterIt_unit(It_unitContext ctx) {
       String unit = ctx.num.getText();
+      String unitFullName = _currentMasterInterface.getName() + "." + unit;
       Map<String, Interface> units = _currentMasterInterface.getUnits();
-      _currentInterface = units.get(unit);
+      _currentInterface = units.get(unitFullName);
       if (_currentInterface == null) {
-         _currentInterface = new Interface(unit);
-         units.put(unit, _currentInterface);
+         _currentInterface = new Interface(unitFullName);
+         units.put(unitFullName, _currentInterface);
       }
    }
 

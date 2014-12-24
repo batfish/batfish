@@ -95,7 +95,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       }
       clause.setAction(policyAction);
       clause.setName("");
-      PolicyMap output = new PolicyMap(name, Collections.singletonList(clause));
+      PolicyMap output = new PolicyMap(name);
+      output.getClauses().add(clause);
       c.getPolicyMaps().put(output.getMapName(), output);
       return output;
    }
@@ -275,7 +276,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          c.getRouteFilterLists().put(filter.getName(), filter);
 
          // add prefilter policy for explicitly advertised networks
-         List<PolicyMapClause> clauses = new ArrayList<PolicyMapClause>();
          Set<RouteFilterList> rfLines = new LinkedHashSet<RouteFilterList>();
          rfLines.add(filter);
          PolicyMapMatchRouteFilterListLine rfLine = new PolicyMapMatchRouteFilterListLine(
@@ -285,9 +285,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          clause.setAction(PolicyMapAction.PERMIT);
          Set<PolicyMapMatchLine> matchLines = clause.getMatchLines();
          matchLines.add(rfLine);
-         clauses.add(clause);
          PolicyMap explicitOriginationPolicyMap = new PolicyMap(
-               "~BGP_ADVERTISED_NETWORKS_POLICY:" + pg.getName() + "~", clauses);
+               "~BGP_ADVERTISED_NETWORKS_POLICY:" + pg.getName() + "~");
+         explicitOriginationPolicyMap.getClauses().add(clause);
          c.getPolicyMaps().put(explicitOriginationPolicyMap.getMapName(),
                explicitOriginationPolicyMap);
          originationPolicies.add(explicitOriginationPolicyMap);
@@ -735,11 +735,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    }
 
    private static PolicyMap toPolicyMap(final Configuration c, RouteMap map) {
-      List<PolicyMapClause> clauses = new ArrayList<PolicyMapClause>();
+      PolicyMap output = new PolicyMap(map.getMapName());
       for (RouteMapClause rmClause : map.getClauses().values()) {
-         clauses.add(toPolicyMapClause(c, rmClause));
+         output.getClauses().add(toPolicyMapClause(c, rmClause));
       }
-      return new PolicyMap(map.getMapName(), clauses);
+      return output;
    }
 
    private static PolicyMapClause toPolicyMapClause(final Configuration c,

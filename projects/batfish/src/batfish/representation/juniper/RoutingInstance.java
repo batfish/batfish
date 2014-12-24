@@ -10,6 +10,8 @@ import batfish.representation.Ip;
 
 public class RoutingInstance implements Serializable {
 
+   private static final double DEFAULT_OSPF_REFERENCE_BANDWIDTH = 1E8;
+
    /**
     *
     */
@@ -33,6 +35,8 @@ public class RoutingInstance implements Serializable {
 
    private List<String> _ospfExportPolicies;
 
+   private double _ospfReferenceBandwidth;
+
    private final Map<String, RoutingInformationBase> _ribs;
 
    private Ip _routerId;
@@ -47,6 +51,7 @@ public class RoutingInstance implements Serializable {
       _namedBgpGroups = new TreeMap<String, NamedBgpGroup>();
       _ospfAreas = new TreeMap<Ip, OspfArea>();
       _ospfExportPolicies = new ArrayList<String>();
+      _ospfReferenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
       _ribs = new TreeMap<String, RoutingInformationBase>();
       _ribs.put(RoutingInformationBase.RIB_IPV4_UNICAST,
             new RoutingInformationBase(RoutingInformationBase.RIB_IPV4_UNICAST));
@@ -100,6 +105,10 @@ public class RoutingInstance implements Serializable {
       return _ospfExportPolicies;
    }
 
+   public double getOspfReferenceBandwidth() {
+      return _ospfReferenceBandwidth;
+   }
+
    public Map<String, RoutingInformationBase> getRibs() {
       return _ribs;
    }
@@ -118,6 +127,10 @@ public class RoutingInstance implements Serializable {
 
    public void setHostname(String hostname) {
       _hostname = hostname;
+   }
+
+   public void setOspfReferenceBandwidth(double ospfReferenceBandwidth) {
+      _ospfReferenceBandwidth = ospfReferenceBandwidth;
    }
 
    public void setRouterId(Ip routerId) {

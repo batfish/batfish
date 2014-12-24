@@ -3,9 +3,11 @@ package batfish.representation.juniper;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import batfish.collections.RoleSet;
 import batfish.representation.Configuration;
@@ -13,12 +15,19 @@ import batfish.representation.Ip;
 import batfish.representation.IpAccessList;
 import batfish.representation.IpAccessListLine;
 import batfish.representation.LineAction;
+import batfish.representation.OspfMetricType;
 import batfish.representation.OspfProcess;
 import batfish.representation.PolicyMap;
+import batfish.representation.PolicyMapAction;
 import batfish.representation.PolicyMapClause;
+import batfish.representation.PolicyMapMatchLine;
+import batfish.representation.PolicyMapMatchRouteFilterListLine;
+import batfish.representation.RouteFilterLengthRangeLine;
 import batfish.representation.RouteFilterList;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
+import batfish.util.SubRange;
+import batfish.util.Util;
 
 public final class JuniperVendorConfiguration extends JuniperConfiguration
       implements VendorConfiguration {
@@ -45,6 +54,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             .getOspfExportPolicies()) {
          PolicyMap exportPolicy = _c.getPolicyMaps().get(exportPolicyName);
          newProc.getOutboundPolicyMaps().add(exportPolicy);
+         // TODO: support type E1
+         newProc.getPolicyMetricTypes().put(exportPolicy, OspfMetricType.E2);
       }
       // areas
       Map<Long, batfish.representation.OspfArea> newAreas = newProc.getAreas();
@@ -62,17 +73,16 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             .entrySet()) {
          String name = e.getKey();
          Interface iface = e.getValue();
-         batfish.representation.Interface newIface = _c.getInterfaces().get(
-               name);
-         Ip ospfArea = iface.getOspfArea();
-         if (ospfArea != null) {
-            long ospfAreaLong = ospfArea.asLong();
-            batfish.representation.OspfArea newArea = newAreas
-                  .get(ospfAreaLong);
-            newArea.getInterfaces().add(newIface);
+         placeInterfaceIntoArea(newAreas, name, iface);
+         for (Entry<String, Interface> eUnit : iface.getUnits().entrySet()) {
+            String unitName = eUnit.getKey();
+            Interface unitIface = eUnit.getValue();
+            placeInterfaceIntoArea(newAreas, unitName, unitIface);
          }
       }
       newProc.setRouterId(_defaultRoutingInstance.getRouterId());
+      newProc.setReferenceBandwidth(_defaultRoutingInstance
+            .getOspfReferenceBandwidth());
       return newProc;
    }
 
@@ -86,9 +96,48 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return _roles;
    }
 
+   private void placeInterfaceIntoArea(
+         Map<Long, batfish.representation.OspfArea> newAreas, String name,
+         Interface iface) {
+      batfish.representation.Interface newIface = _c.getInterfaces().get(name);
+      Ip ospfArea = iface.getOspfArea();
+      if (ospfArea != null) {
+         long ospfAreaLong = ospfArea.asLong();
+         batfish.representation.OspfArea newArea = newAreas.get(ospfAreaLong);
+         newArea.getInterfaces().add(newIface);
+      }
+   }
+
    @Override
    public void setRoles(RoleSet roles) {
       _roles.addAll(roles);
+   }
+
+   private batfish.representation.GeneratedRoute toAggregateRoute(
+         AggregateRoute route) {
+      Ip prefix = route.getPrefix().getAddress();
+      int prefixLength = route.getPrefix().getPrefixLength();
+      int administrativeCost = route.getMetric();
+      String policyNameSuffix = route.getPrefix().toString().replace('/', '_')
+            .replace('.', '_');
+      String policyName = "~AGGREGATE_" + policyNameSuffix + "~";
+      PolicyMap policy = new PolicyMap(policyName);
+      PolicyMapClause clause = new PolicyMapClause();
+      policy.getClauses().add(clause);
+      clause.setAction(PolicyMapAction.PERMIT);
+      String rflName = "~AGGREGATE_" + policyNameSuffix + "_RF~";
+      RouteFilterList rfList = new RouteFilterList(rflName);
+      rfList.addLine(new RouteFilterLengthRangeLine(LineAction.ACCEPT, prefix,
+            prefixLength, new SubRange(prefixLength + 1, 32)));
+      PolicyMapMatchLine matchLine = new PolicyMapMatchRouteFilterListLine(
+            Collections.singleton(rfList));
+      clause.getMatchLines().add(matchLine);
+      Set<PolicyMap> policies = Collections.singleton(policy);
+      batfish.representation.GeneratedRoute newRoute = new batfish.representation.GeneratedRoute(
+            prefix, prefixLength, administrativeCost, policies);
+      _c.getPolicyMaps().put(policyName, policy);
+      _c.getRouteFilterLists().put(rflName, rfList);
+      return newRoute;
    }
 
    private batfish.representation.CommunityList toCommunityList(CommunityList cl) {
@@ -102,6 +151,25 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       batfish.representation.CommunityList newCl = new batfish.representation.CommunityList(
             name, newLines);
       return newCl;
+   }
+
+   private batfish.representation.GeneratedRoute toGeneratedRoute(
+         GeneratedRoute route) {
+      Ip prefix = route.getPrefix().getAddress();
+      int prefixLength = route.getPrefix().getPrefixLength();
+      int administrativeCost = route.getMetric();
+      Set<PolicyMap> policies = new LinkedHashSet<PolicyMap>();
+      for (String policyName : route.getPolicies()) {
+         PolicyMap policy = _c.getPolicyMaps().get(policyName);
+         if (policy == null) {
+            throw new VendorConversionException(
+                  "missing generated route policy: \"" + policyName + "\"");
+         }
+         policies.add(policy);
+      }
+      batfish.representation.GeneratedRoute newRoute = new batfish.representation.GeneratedRoute(
+            prefix, prefixLength, administrativeCost, policies);
+      return newRoute;
    }
 
    private batfish.representation.Interface toInterface(Interface iface) {
@@ -136,6 +204,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       newIface.setSwitchportMode(iface.getSwitchportMode());
       newIface.setSwitchportTrunkEncapsulation(iface
             .getSwitchportTrunkEncapsulation());
+      newIface.setBandwidth(iface.getBandwidth());
       return newIface;
    }
 
@@ -172,9 +241,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    }
 
    private PolicyMap toPolicyMap(PolicyStatement ps) {
-      List<PolicyMapClause> clauses = new ArrayList<PolicyMapClause>();
       String name = ps.getName();
-      PolicyMap map = new PolicyMap(name, clauses);
+      PolicyMap map = new PolicyMap(name);
       boolean singleton = ps.getSingletonTerm().getFroms().size() > 0
             || ps.getSingletonTerm().getThens().size() > 0;
       Collection<PsTerm> terms = singleton ? Collections.singleton(ps
@@ -190,6 +258,20 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          }
       }
       return map;
+   }
+
+   private batfish.representation.StaticRoute toStaticRoute(StaticRoute route) {
+      Ip prefix = route.getPrefix().getAddress();
+      int prefixLength = route.getPrefix().getPrefixLength();
+      Ip nextHopIp = route.getNextHopIp();
+      String nextHopInterface = route.getDrop() ? Util.NULL_INTERFACE_NAME
+            : route.getNextHopInterface();
+      int administrativeCost = route.getMetric();
+      Integer tag = route.getTag();
+      batfish.representation.StaticRoute newStaticRoute = new batfish.representation.StaticRoute(
+            prefix, prefixLength, nextHopIp, nextHopInterface,
+            administrativeCost, tag);
+      return newStaticRoute;
    }
 
    @Override
@@ -246,6 +328,36 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          Interface iface = e.getValue();
          batfish.representation.Interface newIface = toInterface(iface);
          _c.getInterfaces().put(name, newIface);
+         for (Entry<String, Interface> eUnit : iface.getUnits().entrySet()) {
+            String unitName = eUnit.getKey();
+            Interface unitIface = eUnit.getValue();
+            batfish.representation.Interface newUnitIface = toInterface(unitIface);
+            _c.getInterfaces().put(unitName, newUnitIface);
+         }
+      }
+
+      // static routes
+      for (StaticRoute route : _defaultRoutingInstance.getRibs()
+            .get(RoutingInformationBase.RIB_IPV4_UNICAST).getStaticRoutes()
+            .values()) {
+         batfish.representation.StaticRoute newStaticRoute = toStaticRoute(route);
+         _c.getStaticRoutes().add(newStaticRoute);
+      }
+
+      // aggregate routes
+      for (AggregateRoute route : _defaultRoutingInstance.getRibs()
+            .get(RoutingInformationBase.RIB_IPV4_UNICAST).getAggregateRoutes()
+            .values()) {
+         batfish.representation.GeneratedRoute newAggregateRoute = toAggregateRoute(route);
+         _c.getGeneratedRoutes().add(newAggregateRoute);
+      }
+
+      // generated routes
+      for (GeneratedRoute route : _defaultRoutingInstance.getRibs()
+            .get(RoutingInformationBase.RIB_IPV4_UNICAST).getGeneratedRoutes()
+            .values()) {
+         batfish.representation.GeneratedRoute newGeneratedRoute = toGeneratedRoute(route);
+         _c.getGeneratedRoutes().add(newGeneratedRoute);
       }
 
       // create ospf process

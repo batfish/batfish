@@ -1,6 +1,7 @@
 package batfish.representation;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PolicyMap implements Serializable {
@@ -17,7 +18,7 @@ public class PolicyMap implements Serializable {
     * If the matching clause is a deny clause, or if there is no matching
     * clause, then the policy denies the route.
     */
-   private List<PolicyMapClause> _clauses;
+   private final List<PolicyMapClause> _clauses;
 
    /**
     * The configuration-local name identifying this policy.
@@ -29,11 +30,10 @@ public class PolicyMap implements Serializable {
     * of clauses for {@link #_clauses}.
     *
     * @param name
-    * @param clauses
     */
-   public PolicyMap(String name, List<PolicyMapClause> clauses) {
+   public PolicyMap(String name) {
       _mapName = name;
-      _clauses = clauses;
+      _clauses = new ArrayList<PolicyMapClause>();
    }
 
    /**

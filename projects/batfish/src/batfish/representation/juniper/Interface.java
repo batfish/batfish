@@ -16,18 +16,45 @@ public class Interface implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
+   private static double getDefaultBandwidthByName(String name) {
+      if (name.startsWith("xe")) {
+         return 1E10;
+      }
+      else if (name.startsWith("ge")) {
+         return 1E9;
+      }
+      else if (name.startsWith("fe")) {
+         return 1E8;
+      }
+      else {
+         return 1E12;
+      }
+   }
+
    private int _accessVlan;
+
    private boolean _active;
+
    private ArrayList<SubRange> _allowedVlans;
-   private Double _bandwidth;
+
+   private double _bandwidth;
+
    private String _incomingFilter;
+
    private String _name;
+
    private int _nativeVlan;
+
    private Ip _ospfArea;
+
    private Integer _ospfCost;
+
    private int _ospfDeadInterval;
+
    private int _ospfHelloMultiplier;
+
    private boolean _ospfPassive;
+
    private String _outgoingFilter;
 
    private Prefix _prefix;
@@ -41,6 +68,7 @@ public class Interface implements Serializable {
    public Interface(String name) {
       _name = name;
       _active = true;
+      _bandwidth = getDefaultBandwidthByName(name);
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
       _allowedVlans = new ArrayList<SubRange>();
