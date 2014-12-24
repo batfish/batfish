@@ -112,6 +112,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private static Map<String, String> getCiscoInterfacePrefixes() {
       Map<String, String> prefixes = new LinkedHashMap<String, String>();
+      prefixes.put("ATM", "ATM");
       prefixes.put("Ethernet", "Ethernet");
       prefixes.put("FastEthernet", "FastEthernet");
       prefixes.put("fe", "FastEthernet");
@@ -120,9 +121,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("Loopback", "Loopback");
       prefixes.put("Management", "Management");
       prefixes.put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX);
+      prefixes.put("Null", "Null");
       prefixes.put("Port-channel", "Port-channel");
+      prefixes.put("Serial", "Serial");
       prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
       prefixes.put("te", "TenGigabitEthernet");
+      prefixes.put("Tunnel", "Tunnel");
       prefixes.put("Vlan", "Vlan");
       return prefixes;
    }

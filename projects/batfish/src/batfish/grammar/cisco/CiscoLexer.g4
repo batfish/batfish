@@ -4575,6 +4575,11 @@ M_Interface_PREFIX
    F_Letter (F_Letter | '-')*
 ;
 
+M_Interface_COLON
+:
+   ':' -> type(COLON)
+;
+
 M_Interface_COMMA
 :
    ',' -> type(COMMA)
