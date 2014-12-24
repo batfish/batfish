@@ -45,7 +45,8 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
          nextHopIp = Ip_ZERO[]
       )
    ).
-// static non-null interface-only route -- send to all adjacent neighbors
+// static non-null interface-only route -- send to all adjacent neighbors who would route
+//    the ip itself to an interface other than the one on which the packet was received
 Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    !HasIp(node, ip),
    LongestPrefixNetworkMatch(node, ip, matchNet),
@@ -59,7 +60,16 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    InterfaceRoute_nextHopInt[route] = interface,
    interface != Interface_NULL[],
    LanAdjacent(node, interface, nextHop, nextHopInt),
-   IpReadyInt(nextHop, nextHopInt, nextHopIp, _).
+   IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
+   (
+      HasIp(nextHop, ip) ;
+      (
+         // proxy arp case -- must be enabled
+         !HasIp(nextHop, ip),
+         Fib(nextHop, ip, _, nextHopOutInt, _, _, _),
+         nextHopOutInt != nextHopInt
+      )
+   ).
 // static null interface-only route -- drop
 Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    !HasIp(node, ip),
@@ -108,13 +118,14 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    Route_network[route] = matchNet,
    Network_prefix_length[matchNet] = prefix_length,
    Route_node[route] = node,
-   (
+   /*(
       nextHopInt = Interface_FLOW_SINK_TERMINATION[] ;
       (
          nextHopIp != Ip_ZERO[],
-         Route_nextHopIp[route] = routeNextHopIp
+         
       )
-   ),
+   ),*/
+   Route_nextHopIp[route] = routeNextHopIp,
    Fib(node, routeNextHopIp, _, interface, nextHop, nextHopInt, nextHopIp).
 
 FibNetwork(node, network, interface, nextHop, nextHopInt) <-
