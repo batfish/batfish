@@ -628,7 +628,7 @@ public class Synthesizer {
 
                // match srcIp
                if (srcIpRanges.size() > 0) {
-                  OrExpr matchSomesrcIpRange = new OrExpr();
+                  OrExpr matchSomeSrcIpRange = new OrExpr();
                   for (Prefix srcPrefix : srcIpRanges) {
                      long srcIp = srcPrefix.getAddress().asLong();
 
@@ -642,10 +642,13 @@ public class Synthesizer {
                               srcIpStart, srcIpEnd);
                         EqExpr matchsrcIp = new EqExpr(extractsrcIp,
                               srcIpMatchLit);
-                        matchSomesrcIpRange.addDisjunct(matchsrcIp);
+                        matchSomeSrcIpRange.addDisjunct(matchsrcIp);
+                     }
+                     else {
+                        matchSomeSrcIpRange.addDisjunct(TrueExpr.INSTANCE);
                      }
                   }
-                  matchLineCriteria.addConjunct(matchSomesrcIpRange);
+                  matchLineCriteria.addConjunct(matchSomeSrcIpRange);
                }
 
                // match dstIp
@@ -665,6 +668,9 @@ public class Synthesizer {
                         EqExpr matchDstIp = new EqExpr(extractDstIp,
                               dstIpMatchLit);
                         matchSomeDstIpRange.addDisjunct(matchDstIp);
+                     }
+                     else {
+                        matchSomeDstIpRange.addDisjunct(TrueExpr.INSTANCE);
                      }
                   }
                   matchLineCriteria.addConjunct(matchSomeDstIpRange);
