@@ -49,6 +49,7 @@ interface_name
          (
             name_middle_parts += FORWARD_SLASH
             | name_middle_parts += PERIOD
+            | name_middle_parts += COLON
          )
       )* range
    )

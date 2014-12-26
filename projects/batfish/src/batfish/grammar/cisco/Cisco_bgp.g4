@@ -190,6 +190,7 @@ neighbor_rb_stanza
    (
       bgp_tail
       | remote_as_bgp_tail
+      | filter_list_bgp_tail
    )
 ;
 
