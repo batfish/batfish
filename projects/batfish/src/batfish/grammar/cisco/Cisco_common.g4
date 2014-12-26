@@ -170,3 +170,8 @@ switchport_trunk_encapsulation
    | ISL
    | NEGOTIATE
 ;
+
+variable
+:
+   ~NEWLINE
+;
