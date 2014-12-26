@@ -10,6 +10,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import batfish.collections.RoleSet;
+import batfish.representation.BgpNeighbor;
+import batfish.representation.BgpProcess;
 import batfish.representation.Configuration;
 import batfish.representation.Ip;
 import batfish.representation.IpAccessList;
@@ -45,6 +47,36 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    public JuniperVendorConfiguration() {
       _conversionWarnings = new ArrayList<String>();
       _roles = new RoleSet();
+   }
+
+   private BgpProcess createBgpProcess() {
+      BgpProcess proc = new BgpProcess();
+      for (Entry<Ip, IpBgpGroup> e : _defaultRoutingInstance.getIpBgpGroups().entrySet()) {
+         Ip ip = e.getKey();
+         IpBgpGroup ig = e.getValue();
+         ig.cascadeInheritance();
+         BgpNeighbor neighbor = new BgpNeighbor(ip);
+         // import policies
+         for (String importPolicyName : ig.getExportPolicies()) {
+            PolicyMap importPolicy = _c.getPolicyMaps().get(importPolicyName);
+            if (importPolicy == null) {
+               throw new VendorConversionException("missing bgp import policy: \"" + importPolicyName + "\"");
+            }
+            neighbor.addInboundPolicyMap(importPolicy);
+         }
+         // export policies
+         for (String exportPolicyName : ig.getExportPolicies()) {
+            PolicyMap exportPolicy = _c.getPolicyMaps().get(exportPolicyName);
+            if (exportPolicy == null) {
+               throw new VendorConversionException("missing bgp export policy: \"" + exportPolicyName + "\"");
+            }
+            neighbor.addOutboundPolicyMap(exportPolicy);
+         }
+         neighbor.setLocalAs(ig.getLocalAs());
+         neighbor.setRemoteAs(ig.getPeerAs());
+         proc.getNeighbors().put(ip, neighbor);
+      }
+      return proc;
    }
 
    private OspfProcess createOspfProcess() {
@@ -364,6 +396,13 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       if (_defaultRoutingInstance.getOspfAreas().size() > 0) {
          OspfProcess oproc = createOspfProcess();
          _c.setOspfProcess(oproc);
+      }
+
+      // create bgp process
+      if (_defaultRoutingInstance.getNamedBgpGroups().size() > 0
+            || _defaultRoutingInstance.getIpBgpGroups().size() > 0) {
+         BgpProcess proc = createBgpProcess();
+         _c.setBgpProcess(proc);
       }
 
       return _c;
