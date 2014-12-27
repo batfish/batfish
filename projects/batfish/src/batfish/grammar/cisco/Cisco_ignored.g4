@@ -103,7 +103,6 @@ null_block_stanza
       | VOICE_PORT
       | VPC
       | VPDN_GROUP
-      |
    ) ~NEWLINE* NEWLINE
    (
       description_line
@@ -202,7 +201,6 @@ null_block_substanza
          | IDLE_TIMEOUT
          | INSPECT
          | INSTANCE
-         | INTERFACE
          |
          (
             (
