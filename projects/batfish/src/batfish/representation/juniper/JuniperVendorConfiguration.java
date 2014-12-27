@@ -88,6 +88,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             neighbor.setRemoteAs(ig.getPeerAs());
          }
 
+         // TODO: find out if there is a juniper equivalent of cisco send-community
+         neighbor.setSendCommunity(true);
+
          proc.getNeighbors().put(ip, neighbor);
       }
       return proc;
