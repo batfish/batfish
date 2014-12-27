@@ -28,6 +28,7 @@ import batfish.representation.RouteFilterLengthRangeLine;
 import batfish.representation.RouteFilterList;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
+import batfish.representation.juniper.BgpGroup.BgpGroupType;
 import batfish.util.SubRange;
 import batfish.util.Util;
 
@@ -51,6 +52,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
    private BgpProcess createBgpProcess() {
       BgpProcess proc = new BgpProcess();
+      BgpGroup mg = _defaultRoutingInstance.getMasterBgpGroup();
+      if (mg.getLocalAs() == null) {
+         mg.setLocalAs(_defaultRoutingInstance.getAs());
+      }
       for (Entry<Ip, IpBgpGroup> e : _defaultRoutingInstance.getIpBgpGroups().entrySet()) {
          Ip ip = e.getKey();
          IpBgpGroup ig = e.getValue();
@@ -72,8 +77,17 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             }
             neighbor.addOutboundPolicyMap(exportPolicy);
          }
+         // inherit local-as
          neighbor.setLocalAs(ig.getLocalAs());
-         neighbor.setRemoteAs(ig.getPeerAs());
+
+         // inherit peer-as, or use local-as if internal
+         if (ig.getType() == BgpGroupType.INTERNAL) {
+            neighbor.setRemoteAs(ig.getLocalAs());
+         }
+         else {
+            neighbor.setRemoteAs(ig.getPeerAs());
+         }
+
          proc.getNeighbors().put(ip, neighbor);
       }
       return proc;
