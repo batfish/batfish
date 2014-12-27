@@ -306,6 +306,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       for (PsTerm term : terms) {
          PolicyMapClause clause = new PolicyMapClause();
          clause.setName(term.getName());
+         map.getClauses().add(clause);
          for (PsFrom from : term.getFroms()) {
             from.applyTo(clause, _c);
          }
