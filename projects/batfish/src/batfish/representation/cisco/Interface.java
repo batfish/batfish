@@ -24,6 +24,8 @@ public class Interface implements Serializable {
    private static final long serialVersionUID = 1L;
    private static final double TEN_GIGABIT_ETHERNET_BANDWIDTH = 10E9;
 
+   private static final double DEFAULT_INTERFACE_BANDWIDTH = 1E12;
+
    public static double getDefaultBandwidth(String name) {
       Double bandwidth = null;
       if (name.startsWith("FastEthernet")) {
@@ -42,7 +44,7 @@ public class Interface implements Serializable {
          bandwidth = LOOPBACK_BANDWIDTH;
       }
       if (bandwidth == null) {
-         bandwidth = 1.0;
+         bandwidth = DEFAULT_INTERFACE_BANDWIDTH;
       }
       return bandwidth;
    }
