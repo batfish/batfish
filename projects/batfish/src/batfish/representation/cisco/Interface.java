@@ -13,18 +13,18 @@ import batfish.util.SubRange;
 
 public class Interface implements Serializable {
 
+   private static final double DEFAULT_INTERFACE_BANDWIDTH = 1E12;
+
    private static final double FAST_ETHERNET_BANDWIDTH = 100E6;
 
    private static final double GIGABIT_ETHERNET_BANDWIDTH = 1E9;
-
    /**
     * dirty hack: just chose a very large number
     */
    private static final double LOOPBACK_BANDWIDTH = 1E12;
    private static final long serialVersionUID = 1L;
-   private static final double TEN_GIGABIT_ETHERNET_BANDWIDTH = 10E9;
 
-   private static final double DEFAULT_INTERFACE_BANDWIDTH = 1E12;
+   private static final double TEN_GIGABIT_ETHERNET_BANDWIDTH = 10E9;
 
    public static double getDefaultBandwidth(String name) {
       Double bandwidth = null;

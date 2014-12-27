@@ -56,7 +56,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       if (mg.getLocalAs() == null) {
          mg.setLocalAs(_defaultRoutingInstance.getAs());
       }
-      for (Entry<Ip, IpBgpGroup> e : _defaultRoutingInstance.getIpBgpGroups().entrySet()) {
+      for (Entry<Ip, IpBgpGroup> e : _defaultRoutingInstance.getIpBgpGroups()
+            .entrySet()) {
          Ip ip = e.getKey();
          IpBgpGroup ig = e.getValue();
          ig.cascadeInheritance();
@@ -65,7 +66,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          for (String importPolicyName : ig.getExportPolicies()) {
             PolicyMap importPolicy = _c.getPolicyMaps().get(importPolicyName);
             if (importPolicy == null) {
-               throw new VendorConversionException("missing bgp import policy: \"" + importPolicyName + "\"");
+               throw new VendorConversionException(
+                     "missing bgp import policy: \"" + importPolicyName + "\"");
             }
             neighbor.addInboundPolicyMap(importPolicy);
          }
@@ -73,7 +75,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          for (String exportPolicyName : ig.getExportPolicies()) {
             PolicyMap exportPolicy = _c.getPolicyMaps().get(exportPolicyName);
             if (exportPolicy == null) {
-               throw new VendorConversionException("missing bgp export policy: \"" + exportPolicyName + "\"");
+               throw new VendorConversionException(
+                     "missing bgp export policy: \"" + exportPolicyName + "\"");
             }
             neighbor.addOutboundPolicyMap(exportPolicy);
          }
@@ -91,7 +94,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          // TODO: implement better behavior than setting default metric to 0
          neighbor.setDefaultMetric(0);
 
-         // TODO: find out if there is a juniper equivalent of cisco send-community
+         // TODO: find out if there is a juniper equivalent of cisco
+         // send-community
          neighbor.setSendCommunity(true);
 
          proc.getNeighbors().put(ip, neighbor);

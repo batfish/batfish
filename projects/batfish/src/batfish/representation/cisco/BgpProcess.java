@@ -20,6 +20,7 @@ public class BgpProcess implements Serializable {
    private Map<String, BgpPeerGroup> _allPeerGroups;
    private boolean _alwaysCompareMed;
    private Ip _clusterId;
+   private boolean _defaultIpv4Activate;
    private Map<String, DynamicBgpPeerGroup> _dynamicPeerGroups;
    private Map<Ip, IpBgpPeerGroup> _ipPeerGroups;
    private MasterBgpPeerGroup _masterBgpPeerGroup;
@@ -28,7 +29,6 @@ public class BgpProcess implements Serializable {
    private int _pid;
    private Map<RoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
    private Ip _routerId;
-   private boolean _defaultIpv4Activate;
 
    public BgpProcess(int procnum) {
       _pid = procnum;
