@@ -28,10 +28,12 @@ public class BgpProcess implements Serializable {
    private int _pid;
    private Map<RoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
    private Ip _routerId;
+   private boolean _defaultIpv4Activate;
 
    public BgpProcess(int procnum) {
       _pid = procnum;
       _allPeerGroups = new HashMap<String, BgpPeerGroup>();
+      _defaultIpv4Activate = true;
       _dynamicPeerGroups = new HashMap<String, DynamicBgpPeerGroup>();
       _namedPeerGroups = new HashMap<String, NamedBgpPeerGroup>();
       _ipPeerGroups = new HashMap<Ip, IpBgpPeerGroup>();
@@ -53,6 +55,9 @@ public class BgpProcess implements Serializable {
 
    public void addIpPeerGroup(Ip ip) {
       IpBgpPeerGroup pg = new IpBgpPeerGroup(ip);
+      if (_defaultIpv4Activate) {
+         pg.setActive(true);
+      }
       _ipPeerGroups.put(ip, pg);
       _allPeerGroups.put(ip.toString(), pg);
    }
