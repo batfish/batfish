@@ -19,6 +19,7 @@ batfish_analyze() {
    else
       local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
    fi
+   local BGP=$OLD_PWD/$PREFIX-bgp
    local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
    local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
    local QUERY_PATH=$OLD_PWD/$PREFIX-query
@@ -41,6 +42,9 @@ batfish_analyze() {
 
    echo "Query routes"
    $BATFISH_CONFIRM && { batfish_query_routes $ROUTES $WORKSPACE || return 1 ; }
+
+   echo "Query bgp"
+   $BATFISH_CONFIRM && { batfish_query_bgp $BGP $WORKSPACE || return 1 ; }
 
    echo "Query data plane predicates"
    $BATFISH_CONFIRM && { batfish_query_data_plane $WORKSPACE $DP_DIR || return 1 ; }
