@@ -88,6 +88,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             neighbor.setRemoteAs(ig.getPeerAs());
          }
 
+         // TODO: implement better behavior than setting default metric to 0
+         neighbor.setDefaultMetric(0);
+
          // TODO: find out if there is a juniper equivalent of cisco send-community
          neighbor.setSendCommunity(true);
 
