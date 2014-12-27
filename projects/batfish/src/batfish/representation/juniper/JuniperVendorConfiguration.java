@@ -63,7 +63,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          ig.cascadeInheritance();
          BgpNeighbor neighbor = new BgpNeighbor(ip);
          // import policies
-         for (String importPolicyName : ig.getExportPolicies()) {
+         for (String importPolicyName : ig.getImportPolicies()) {
             PolicyMap importPolicy = _c.getPolicyMaps().get(importPolicyName);
             if (importPolicy == null) {
                throw new VendorConversionException(
