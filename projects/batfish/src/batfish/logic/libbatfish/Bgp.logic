@@ -110,7 +110,7 @@ MinAsPathSize[node, network] = minSize ->
 OriginalBgpAdvertisement(advert) ->
    BgpAdvertisement(advert).
 
-OriginalBgpAdvertisementRoute[advert] = route ->
+OriginalBgpAdvertisementRoute(advert, route) ->
    BgpAdvertisement(advert),
    Route(route).
 
