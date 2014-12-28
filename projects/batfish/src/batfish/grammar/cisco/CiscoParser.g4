@@ -60,7 +60,7 @@ hostname_stanza
 
 ip_default_gateway_stanza
 :
-   IP DEFAULT_GATEWAY gateway = IP_ADDRESS
+   IP DEFAULT_GATEWAY gateway = IP_ADDRESS NEWLINE
 ;
 
 ip_route_stanza
