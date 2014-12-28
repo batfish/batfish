@@ -23,6 +23,7 @@ standard autotools install (extract, configure, make, make install)
 2. (CLIENT) Install z3
 git clone https://git01.codeplex.com/z3 # IF YOU HAVE PROBLEMS WITH THIS STEP, JUST PULL LATEST SNAPSHOT OF 'opt' BRANCH
 cd z3
+git checkout opt # skip if you just downloaded a snapshot
 python scripts/mk_make.py
 cd build
 make -j<number-of-jobs>
