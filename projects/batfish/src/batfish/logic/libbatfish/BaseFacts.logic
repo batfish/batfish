@@ -43,7 +43,7 @@ block(`BaseFacts) {
 
 +Encapsulation("dot1q").
 
-+IpProtocol(0). //anyip
++IpProtocol(256). //anyip
 +IpProtocol(6). //tcp
 +IpProtocol(17). //udp
 

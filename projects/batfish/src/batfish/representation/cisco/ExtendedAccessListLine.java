@@ -69,12 +69,9 @@ public class ExtendedAccessListLine implements Serializable {
    @Override
    public String toString() {
       String protocolName = _protocol.name();
-      return "[Action:"
-            + _action
-            + ", Protocol:"
-            + (protocolName != null ? protocolName + "(" + _protocol + ")"
-                  : _protocol) + ", SourceIp:" + _srcIp + ", SourceWildcard:"
-            + _srcWildcard + ", DestinationIp:" + _dstIp
+      return "[Action:" + _action + ", Protocol:" + protocolName + "("
+            + _protocol.number() + ")" + ", SourceIp:" + _srcIp
+            + ", SourceWildcard:" + _srcWildcard + ", DestinationIp:" + _dstIp
             + ", DestinationWildcard:" + _dstWildcard + ", PortRange:"
             + _srcPortRanges + "]";
    }

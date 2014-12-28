@@ -14,8 +14,6 @@ public class StandardAccessList implements Serializable {
    public StandardAccessList(String id) {
       _id = id;
       _lines = new ArrayList<StandardAccessListLine>();
-      // _lines.add(new StandardAccessListLine(LineAction.REJECT, "0.0.0.0",
-      // "255.255.255.255"));
    }
 
    public void addLine(StandardAccessListLine all) {

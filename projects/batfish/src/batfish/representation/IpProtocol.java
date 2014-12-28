@@ -18,7 +18,7 @@ public enum IpProtocol {
 
    IGMP(2),
 
-   IP(0),
+   IP(256),
 
    IPINIP(4),
 

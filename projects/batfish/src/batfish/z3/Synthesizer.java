@@ -90,8 +90,7 @@ public class Synthesizer {
    public static final String DST_PORT_VAR = "dst_port";
    public static final String FAKE_INTERFACE_PREFIX = "TenGigabitEthernet200/";
    private static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
-   private static final long IP_PROTOCOL_TCP = 6;
-   private static final long IP_PROTOCOL_UDP = 17;
+   private static final int IP_BITS = 32;
    public static final String IP_PROTOCOL_VAR = "ip_prot";
    private static final String NODE_NONE_NAME = "(none)";
    public static final Map<String, Integer> PACKET_VAR_SIZES = initPacketVarSizes();
@@ -99,6 +98,7 @@ public class Synthesizer {
    private static final int PORT_BITS = 16;
    private static final int PORT_MAX = 65535;
    private static final int PORT_MIN = 0;
+   private static final int PROTOCOL_BITS = 9;
    public static final String SRC_IP_VAR = "src_ip";
    public static final String SRC_PORT_VAR = "src_port";
 
@@ -240,11 +240,11 @@ public class Synthesizer {
 
    private static Map<String, Integer> initPacketVarSizes() {
       Map<String, Integer> varSizes = new LinkedHashMap<String, Integer>();
-      varSizes.put(SRC_IP_VAR, 32);
-      varSizes.put(DST_IP_VAR, 32);
-      varSizes.put(SRC_PORT_VAR, 16);
-      varSizes.put(DST_PORT_VAR, 16);
-      varSizes.put(IP_PROTOCOL_VAR, 16);
+      varSizes.put(SRC_IP_VAR, IP_BITS);
+      varSizes.put(DST_IP_VAR, IP_BITS);
+      varSizes.put(SRC_PORT_VAR, PORT_BITS);
+      varSizes.put(DST_PORT_VAR, PORT_BITS);
+      varSizes.put(IP_PROTOCOL_VAR, PROTOCOL_BITS);
       return varSizes;
    }
 
@@ -408,11 +408,11 @@ public class Synthesizer {
             for (FibRow notRow : notRows) {
                int prefixLength = notRow.getPrefixLength();
                long prefix = notRow.getPrefix().asLong();
-               int first = 32 - prefixLength;
-               if (first >= 32) {
+               int first = IP_BITS - prefixLength;
+               if (first >= IP_BITS) {
                   continue;
                }
-               int last = 31;
+               int last = IP_BITS - 1;
                LitIntExpr prefixFragmentLit = new LitIntExpr(prefix, first,
                      last);
                IntExpr prefixFragmentExt = newExtractExpr(DST_IP_VAR, first,
@@ -427,9 +427,9 @@ public class Synthesizer {
             // must match route
             int prefixLength = currentRow.getPrefixLength();
             long prefix = currentRow.getPrefix().asLong();
-            int first = 32 - prefixLength;
-            if (first < 32) {
-               int last = 31;
+            int first = IP_BITS - prefixLength;
+            if (first < IP_BITS) {
+               int last = IP_BITS - 1;
                LitIntExpr prefixFragmentLit = new LitIntExpr(prefix, first,
                      last);
                IntExpr prefixFragmentExt = newExtractExpr(DST_IP_VAR, first,
@@ -619,7 +619,8 @@ public class Synthesizer {
                   for (IpProtocol protocol : protocols) {
                      int protocolNumber = protocol.number();
                      VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
-                     LitIntExpr protocolLit = new LitIntExpr(protocolNumber, 16);
+                     LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+                           PROTOCOL_BITS);
                      EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
                      matchesSomeProtocol.addDisjunct(matchProtocol);
                   }
@@ -632,10 +633,11 @@ public class Synthesizer {
                   for (Prefix srcPrefix : srcIpRanges) {
                      long srcIp = srcPrefix.getAddress().asLong();
 
-                     int srcIpWildcardBits = 32 - srcPrefix.getPrefixLength();
+                     int srcIpWildcardBits = IP_BITS
+                           - srcPrefix.getPrefixLength();
                      int srcIpStart = srcIpWildcardBits;
-                     int srcIpEnd = 31;
-                     if (srcIpStart < 32) {
+                     int srcIpEnd = IP_BITS - 1;
+                     if (srcIpStart < IP_BITS) {
                         IntExpr extractsrcIp = newExtractExpr(SRC_IP_VAR,
                               srcIpStart, srcIpEnd);
                         LitIntExpr srcIpMatchLit = new LitIntExpr(srcIp,
@@ -657,10 +659,11 @@ public class Synthesizer {
                   for (Prefix dstPrefix : dstIpRanges) {
                      long dstIp = dstPrefix.getAddress().asLong();
 
-                     int dstIpWildcardBits = 32 - dstPrefix.getPrefixLength();
+                     int dstIpWildcardBits = IP_BITS
+                           - dstPrefix.getPrefixLength();
                      int dstIpStart = dstIpWildcardBits;
-                     int dstIpEnd = 31;
-                     if (dstIpStart < 32) {
+                     int dstIpEnd = IP_BITS - 1;
+                     if (dstIpStart < IP_BITS) {
                         IntExpr extractDstIp = newExtractExpr(DST_IP_VAR,
                               dstIpStart, dstIpEnd);
                         LitIntExpr dstIpMatchLit = new LitIntExpr(dstIp,
@@ -745,7 +748,7 @@ public class Synthesizer {
          long high = srcPortRange.getEnd();
          if (low == high) {
             VarIntExpr portVarExpr = new VarIntExpr(portVar);
-            LitIntExpr portLitExpr = new LitIntExpr(low, 16);
+            LitIntExpr portLitExpr = new LitIntExpr(low, PORT_BITS);
             EqExpr exactMatch = new EqExpr(portVarExpr, portLitExpr);
             or.addDisjunct(exactMatch);
          }
@@ -1269,14 +1272,14 @@ public class Synthesizer {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment("Make sure packet fields make sense"));
       EqExpr tcp = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR), new LitIntExpr(
-            IP_PROTOCOL_TCP, 16));
+            IpProtocol.TCP.number(), PROTOCOL_BITS));
       EqExpr udp = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR), new LitIntExpr(
-            IP_PROTOCOL_UDP, 16));
+            IpProtocol.UDP.number(), PROTOCOL_BITS));
       AndExpr noPortNumbers = new AndExpr();
       EqExpr noDstPort = new EqExpr(new VarIntExpr(DST_PORT_VAR),
-            new LitIntExpr(0, 16));
+            new LitIntExpr(0, PORT_BITS));
       EqExpr noSrcPort = new EqExpr(new VarIntExpr(SRC_PORT_VAR),
-            new LitIntExpr(0, 16));
+            new LitIntExpr(0, PORT_BITS));
       noPortNumbers.addConjunct(noDstPort);
       noPortNumbers.addConjunct(noSrcPort);
       OrExpr isSane = new OrExpr();
