@@ -24,6 +24,7 @@ import batfish.representation.PolicyMapAction;
 import batfish.representation.PolicyMapClause;
 import batfish.representation.PolicyMapMatchLine;
 import batfish.representation.PolicyMapMatchRouteFilterListLine;
+import batfish.representation.Prefix;
 import batfish.representation.RouteFilterLengthRangeLine;
 import batfish.representation.RouteFilterList;
 import batfish.representation.VendorConfiguration;
@@ -349,6 +350,21 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          }
          IpAccessList list = toIpAccessList(filter);
          _c.getIpAccessLists().put(name, list);
+      }
+
+      // convert prefix lists to route filter lists
+      for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
+         String name = e.getKey();
+         PrefixList pl = e.getValue();
+         RouteFilterList rfl = new RouteFilterList(name);
+         for (Prefix prefix : pl.getPrefixes()) {
+            int prefixLength = prefix.getPrefixLength();
+            RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
+                  LineAction.ACCEPT, prefix.getAddress(), prefixLength,
+                  new SubRange(prefixLength, prefixLength));
+            rfl.addLine(line);
+         }
+         _c.getRouteFilterLists().put(name, rfl);
       }
 
       // convert route filters to route filter lists

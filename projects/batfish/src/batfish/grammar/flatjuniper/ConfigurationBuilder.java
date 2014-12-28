@@ -36,9 +36,11 @@ import batfish.representation.juniper.FwTerm;
 import batfish.representation.juniper.FwThenAccept;
 import batfish.representation.juniper.FwThenDiscard;
 import batfish.representation.juniper.FwThenNextTerm;
+import batfish.representation.juniper.PsFrom;
 import batfish.representation.juniper.PsFromAsPath;
 import batfish.representation.juniper.PsFromColor;
 import batfish.representation.juniper.PsFromCommunity;
+import batfish.representation.juniper.PsFromPrefixList;
 import batfish.representation.juniper.PsFromProtocol;
 import batfish.representation.juniper.PsFromRouteFilter;
 import batfish.representation.juniper.RouteFilterLineExact;
@@ -653,6 +655,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String name = ctx.name.getText();
       PsFromCommunity fromCommunity = new PsFromCommunity(name);
       _currentPsTerm.getFroms().add(fromCommunity);
+   }
+
+   @Override
+   public void exitFromt_prefix_list(Fromt_prefix_listContext ctx) {
+      String name = ctx.name.getText();
+      PsFrom from = new PsFromPrefixList(name);
+      _currentPsTerm.getFroms().add(from);
    }
 
    @Override
