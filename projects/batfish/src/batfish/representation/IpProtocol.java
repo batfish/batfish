@@ -3,6 +3,8 @@ package batfish.representation;
 import java.util.HashMap;
 import java.util.Map;
 
+import batfish.main.BatfishException;
+
 public enum IpProtocol {
    AHP(51),
 
@@ -43,7 +45,12 @@ public enum IpProtocol {
    }
 
    public static IpProtocol fromNumber(int number) {
-      return NUMBER_TO_PROTOCOL_MAP.get(number);
+      IpProtocol ret = NUMBER_TO_PROTOCOL_MAP.get(number);
+      if (ret == null) {
+         throw new BatfishException("missing enumeration for protocol number: "
+               + number);
+      }
+      return ret;
    }
 
    private int _number;
