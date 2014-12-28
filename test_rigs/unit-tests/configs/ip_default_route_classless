@@ -1,0 +1,6 @@
+!
+hostname test
+!
+ip default-gateway 128.125.253.254
+ip classless
+!
