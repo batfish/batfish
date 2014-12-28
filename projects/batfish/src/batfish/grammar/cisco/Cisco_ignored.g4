@@ -107,6 +107,7 @@ null_block_stanza
    (
       description_line
       | null_block_substanza
+      | null_block_substanza_full
    )*
 ;
 
@@ -335,6 +336,15 @@ null_block_substanza
          remaining_tokens += ~NEWLINE
       )* NEWLINE
    )
+;
+
+null_block_substanza_full
+:
+   (
+      (
+         VRF variable
+      )
+   ) NEWLINE
 ;
 
 null_standalone_stanza
