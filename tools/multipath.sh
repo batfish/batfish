@@ -20,6 +20,7 @@ batfish_analyze() {
       local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
    fi
    local BGP=$OLD_PWD/$PREFIX-bgp
+   local OSPF=$OLD_PWD/$PREFIX-ospf
    local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
    local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
    local QUERY_PATH=$OLD_PWD/$PREFIX-query
@@ -45,6 +46,9 @@ batfish_analyze() {
 
    echo "Query bgp"
    $BATFISH_CONFIRM && { batfish_query_bgp $BGP $WORKSPACE || return 1 ; }
+
+   echo "Query ospf"
+   $BATFISH_CONFIRM && { batfish_query_ospf $OSPF $WORKSPACE || return 1 ; }
 
    echo "Query data plane predicates"
    $BATFISH_CONFIRM && { batfish_query_data_plane $WORKSPACE $DP_DIR || return 1 ; }

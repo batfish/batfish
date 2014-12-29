@@ -208,7 +208,7 @@ batfish_query_bgp() {
    batfish_expect_args 2 $# || return 1
    local BGP=$1
    local WORKSPACE=$2
-   batfish -log output -workspace $WORKSPACE -query -predicates BgpAdvertisement OriginalBgpAdvertisementRoute InstalledBgpAdvertisementRoute &> $BGP
+   batfish -log output -workspace $WORKSPACE -query -predicates BgpAdvertisement OriginalBgpAdvertisementRoute InstalledBgpAdvertisementRoute BgpNeighbors IbgpNeighbors BgpGeneratedRoute BgpNeighborGeneratedRoute &> $BGP
    batfish_date
    echo ": END: Query bgp (informational only)"
 }
@@ -239,13 +239,37 @@ batfish_query_flows() {
 }
 export -f batfish_query_flows
 
+batfish_query_ospf() {
+   batfish_date
+   echo ": START: Query ospf (informational only)"
+   batfish_expect_args 2 $# || return 1
+   local OSPF=$1
+   local WORKSPACE=$2
+   batfish -log output -workspace $WORKSPACE -query -predicates OspfRoute OspfExport OspfE1Route OspfE2Route OspfIARoute BestOspfE1Route BestOspfE2Route BestOspfRoute BestOspfIARoute SetOspfGeneratedRoute OspfGeneratedRoute &> $OSPF
+   batfish_date
+   echo ": END: Query ospf (informational only)"
+}
+export -f batfish_query_ospf
+
+batfish_query_policy() {
+   batfish_date
+   echo ": START: Query policy (informational only)"
+   batfish_expect_args 2 $# || return 1
+   local OSPF=$1
+   local WORKSPACE=$2
+   batfish -log output -workspace $WORKSPACE -query -predicates PolicyMapPermitRoute PolicyMapDenyRoute PolicyMapPermitAdvert PolicyMapDenyAdvert &> $OSPF
+   batfish_date
+   echo ": END: Query policy (informational only)"
+}
+export -f batfish_query_policy
+
 batfish_query_routes() {
    batfish_date
    echo ": START: Query routes (informational only)"
    batfish_expect_args 2 $# || return 1
    local ROUTES=$1
    local WORKSPACE=$2
-   batfish -log output -workspace $WORKSPACE -query -predicates InstalledRoute &> $ROUTES
+   batfish -log output -workspace $WORKSPACE -query -predicates InstalledRoute ActiveGeneratedRoute &> $ROUTES
    batfish_date
    echo ": END: Query routes (informational only)"
 }
