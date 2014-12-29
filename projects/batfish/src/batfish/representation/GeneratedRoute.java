@@ -10,6 +10,8 @@ public class GeneratedRoute extends Route {
 
    private AsPath _asPath;
 
+   private boolean _discard;
+
    private Set<PolicyMap> _generationPolicies;
 
    private Integer _metric;
@@ -36,6 +38,10 @@ public class GeneratedRoute extends Route {
       return _asPath;
    }
 
+   public boolean getDiscard() {
+      return _discard;
+   }
+
    public Set<PolicyMap> getGenerationPolicies() {
       return _generationPolicies;
    }
@@ -55,6 +61,10 @@ public class GeneratedRoute extends Route {
 
    public void setAsPath(AsPath asPath) {
       _asPath = asPath;
+   }
+
+   public void setDiscard(boolean discard) {
+      _discard = discard;
    }
 
    public void setMetric(int metric) {

@@ -275,6 +275,8 @@ public class ConfigurationFactExtractor {
    private void writeGeneratedRoutes() {
       StringBuilder wSetGeneratedRoute_flat = _factBins
             .get("SetGeneratedRoute_flat");
+      StringBuilder wSetGeneratedRouteDiscard_flat = _factBins
+            .get("SetGeneratedRouteDiscard_flat");
       StringBuilder wSetGeneratedRouteMetric_flat = _factBins
             .get("SetGeneratedRouteMetric_flat");
       StringBuilder wSetGeneratedRoutePolicy_flat = _factBins
@@ -288,6 +290,11 @@ public class ConfigurationFactExtractor {
                + network_end + "|" + prefix_length + "|"
                + gr.getAdministrativeCost() + "\n");
          Integer metric = gr.getMetric();
+         if (gr.getDiscard()) {
+            wSetGeneratedRouteDiscard_flat.append(hostname + "|"
+                  + network_start + "|" + network_end + "|" + prefix_length
+                  + "\n");
+         }
          if (metric != null) {
             wSetGeneratedRouteMetric_flat.append(hostname + "|" + network_start
                   + "|" + network_end + "|" + prefix_length + "|" + metric

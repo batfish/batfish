@@ -199,6 +199,13 @@ block(`service_files) {
          column_formats[] = "string,integer,integer,integer,integer"
       }.
 
+      file_definition_by_name["SetGeneratedRouteDiscard_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH",
+         column_formats[] = "string,integer,integer,integer"
+      }.
+
       file_definition_by_name["SetGeneratedRouteMetric_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",

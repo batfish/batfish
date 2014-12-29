@@ -1,5 +1,6 @@
 block(`GeneratedRoute_rules) {
    alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Interface),
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:Node),
    alias_all(`libbatfish:PolicyMap),
@@ -29,9 +30,27 @@ ActiveGeneratedRoute(route),
    ).
 
 BestGlobalGeneratedRoute(route),
+   InterfaceRoute(route),
+   InterfaceRoute_nextHopInt[route] = nextHopInt,
    Route_nextHopIp[route] = nextHopIp
 <-
    MinAdminContributingRoute(route, contributingRoute),
+   SetGeneratedRouteDiscard(node, network),
+   nextHopInt = Interface_NULL[],
+   nextHopIp = Ip_ZERO[],
+   Route_node[route] = node,
+   Route_network[route] = network,
+   Route_network[contributingRoute] = contributingNetwork,
+   Network_address[contributingNetwork] = contributingAddress,
+   MinContributingRouteAddress[route] = contributingAddress.
+
+BestGlobalGeneratedRoute(route),
+   BestGlobalGeneratedRoute_nextHopIp(route, nextHopIp)
+<-
+   MinAdminContributingRoute(route, contributingRoute),
+   !SetGeneratedRouteDiscard(node, network),
+   Route_node[route] = node,
+   Route_network[route] = network,
    Route_network[contributingRoute] = contributingNetwork,
    Route_nextHopIp[contributingRoute] = nextHopIp,
    Network_address[contributingNetwork] = contributingAddress,
@@ -89,6 +108,11 @@ MinAdminContributingRoute(route, contributingRoute) <-
    Route_admin[contributingRoute] = admin,
    MinContributingRouteAdmin[route] = admin.
 
+MinBestGlobalGeneratedRoute_nextHopIpInt[route] = minNextHopIpInt <-
+   agg<<minNextHopIpInt = min(nextHopIpInt)>>
+      BestGlobalGeneratedRoute_nextHopIp(route, nextHopIp),
+      Ip_address(nextHopIp:nextHopIpInt).
+
 MinContributingRouteAddress[route] = minAddress <-
    agg<<minAddress = min(address)>>
       MinAdminContributingRoute(route, contributingRoute),
@@ -106,8 +130,16 @@ need_PolicyMapMatchRoute(map, route) <-
    InstalledRoute(route),
    Route_node[route] = node.
 
+Route_nextHopIp[route] = nextHopIp <-
+   MinBestGlobalGeneratedRoute_nextHopIpInt[route] = nextHopIpInt,
+   Ip_address(nextHopIp:nextHopIpInt).
+
 SetGeneratedRoute(node, network, admin) <-
    SetGeneratedRoute_flat(node, network_start, network_end, prefix_length, admin),
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+SetGeneratedRouteDiscard(node, network) <-
+   SetGeneratedRouteDiscard_flat(node, network_start, network_end, prefix_length),
    Network_constructor[network_start, network_end, prefix_length] = network.
 
 SetGeneratedRouteMetric(node, network, metric) <-

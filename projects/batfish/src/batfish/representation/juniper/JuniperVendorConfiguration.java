@@ -194,6 +194,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       Set<PolicyMap> policies = Collections.singleton(policy);
       batfish.representation.GeneratedRoute newRoute = new batfish.representation.GeneratedRoute(
             prefix, prefixLength, administrativeCost, policies);
+      newRoute.setDiscard(true);
       _c.getPolicyMaps().put(policyName, policy);
       _c.getRouteFilterLists().put(rflName, rfList);
       return newRoute;
