@@ -404,7 +404,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                newLine.setInvalidMessage("Unsupported ip wildcard format");
             }
          }
-         Ip dstIp = fromLine.getDestinationIP();
+         Ip dstIp = fromLine.getDestinationIp();
          if (dstIp != null) {
             Ip dstWildcard = fromLine.getDestinationWildcard();
             if (Util.isValidWildcard(dstWildcard)) {
@@ -847,9 +847,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       Ip prefix = fromLine.getSourceIp();
       int prefixLength = fromLine.getSourceWildcard().inverted()
             .numSubnetBits();
-      long minSubnet = fromLine.getDestinationIP().asLong();
+      long minSubnet = fromLine.getDestinationIp().asLong();
       long maxSubnet = minSubnet | fromLine.getDestinationWildcard().asLong();
-      int minPrefixLength = fromLine.getDestinationIP().numSubnetBits();
+      int minPrefixLength = fromLine.getDestinationIp().numSubnetBits();
       int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
       return new RouteFilterLengthRangeLine(action, prefix, prefixLength,
             new SubRange(minPrefixLength, maxPrefixLength));

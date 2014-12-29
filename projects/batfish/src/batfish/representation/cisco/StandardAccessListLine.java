@@ -1,10 +1,12 @@
 package batfish.representation.cisco;
 
 import java.io.Serializable;
+import java.util.Collections;
 
 import batfish.representation.Ip;
 import batfish.representation.IpProtocol;
 import batfish.representation.LineAction;
+import batfish.util.SubRange;
 
 public class StandardAccessListLine implements Serializable {
 
@@ -34,7 +36,8 @@ public class StandardAccessListLine implements Serializable {
 
    public ExtendedAccessListLine toExtendedAccessListLine() {
       return new ExtendedAccessListLine(_action, IpProtocol.IP, _ip, _wildcard,
-            null, null, null, null);
+            Ip.ZERO, Ip.MAX, Collections.<SubRange> emptyList(),
+            Collections.<SubRange> emptyList());
    }
 
 }

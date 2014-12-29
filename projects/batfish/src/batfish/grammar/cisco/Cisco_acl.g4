@@ -465,7 +465,7 @@ standard_access_list_null_tail
 
 standard_access_list_named_stanza
 :
-   IP ACCESS_LIST STANDARD name = ~NEWLINE NEWLINE
+   IP ACCESS_LIST STANDARD name = variable NEWLINE
    (
       standard_access_list_tail
       | standard_access_list_null_tail

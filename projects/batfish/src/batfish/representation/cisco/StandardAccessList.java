@@ -9,6 +9,9 @@ public class StandardAccessList implements Serializable {
    private static final long serialVersionUID = 1L;
 
    private String _id;
+
+   private boolean _isIpv6;
+
    private List<StandardAccessListLine> _lines;
 
    public StandardAccessList(String id) {
@@ -26,6 +29,14 @@ public class StandardAccessList implements Serializable {
 
    public List<StandardAccessListLine> getLines() {
       return _lines;
+   }
+
+   public boolean isIpV6() {
+      return _isIpv6;
+   }
+
+   public void setIpv6(boolean isIpv6) {
+      _isIpv6 = isIpv6;
    }
 
    public ExtendedAccessList toExtendedAccessList() {

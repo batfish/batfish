@@ -72,6 +72,7 @@ import batfish.representation.cisco.RouteMapSetMetricLine;
 import batfish.representation.cisco.RouteMapSetNextHopLine;
 import batfish.representation.cisco.RouteMapSetOriginTypeLine;
 import batfish.representation.cisco.StandardAccessList;
+import batfish.representation.cisco.StandardAccessListLine;
 import batfish.representation.cisco.StandardCommunityList;
 import batfish.representation.cisco.StaticRoute;
 import batfish.util.SubRange;
@@ -1937,6 +1938,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitStandard_access_list_stanza(
          Standard_access_list_stanzaContext ctx) {
       _currentStandardAcl = null;
+   }
+
+   @Override
+   public void exitStandard_access_list_tail(
+         Standard_access_list_tailContext ctx) {
+
+      if (_currentStandardAcl.isIpV6()) {
+         return;
+      }
+
+      LineAction action = getAccessListAction(ctx.ala);
+      Ip srcIp = getIp(ctx.ipr);
+      Ip srcWildcard = getWildcard(ctx.ipr);
+      StandardAccessListLine line = new StandardAccessListLine(action, srcIp,
+            srcWildcard);
+      _currentStandardAcl.addLine(line);
    }
 
    @Override

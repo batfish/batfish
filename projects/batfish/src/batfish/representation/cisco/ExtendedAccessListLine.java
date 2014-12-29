@@ -38,7 +38,7 @@ public class ExtendedAccessListLine implements Serializable {
       return _action;
    }
 
-   public Ip getDestinationIP() {
+   public Ip getDestinationIp() {
       return _dstIp;
    }
 
