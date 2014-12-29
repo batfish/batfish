@@ -48,7 +48,6 @@ public class OspfProcess implements Serializable {
       _networks = new TreeSet<OspfNetwork>();
       _defaultInformationOriginate = false;
       _defaultInformationOriginateAlways = false;
-      _defaultInformationOriginateMap = null;
       _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
       _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
       _passiveInterfaceDefault = false;

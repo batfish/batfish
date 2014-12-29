@@ -19,6 +19,10 @@ RouteFilter(x),
    ->
    string(n).
    
+RouteFilterDenyNetwork(list, network) ->
+   RouteFilter(list),
+   Network(network).
+
 RouteFilterFirstMatch[list, network] = matchLine ->
    RouteFilter(list),
    Network(network),

@@ -53,8 +53,14 @@ GlobalGeneratedRoute(route),
 <-
    SetGeneratedRoute(node, network, admin),
    type = GeneratedRouteType_GLOBAL[],
-   cost = 0,
-   protocol = RoutingProtocol_AGGREGATE[].
+   protocol = RoutingProtocol_AGGREGATE[],
+   (
+      SetGeneratedRouteMetric(node, network, cost) ;
+      (
+         !SetGeneratedRouteMetric(node, network, _),
+         cost = 0
+      )
+   ).
    
 GeneratedRoutePolicy(route, policy) <-
    GeneratedRoute(route),
@@ -102,6 +108,10 @@ need_PolicyMapMatchRoute(map, route) <-
 
 SetGeneratedRoute(node, network, admin) <-
    SetGeneratedRoute_flat(node, network_start, network_end, prefix_length, admin),
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+SetGeneratedRouteMetric(node, network, metric) <-
+   SetGeneratedRouteMetric_flat(node, network_start, network_end, prefix_length, metric),
    Network_constructor[network_start, network_end, prefix_length] = network.
 
 SetGeneratedRoutePolicy(node, network, map) <-

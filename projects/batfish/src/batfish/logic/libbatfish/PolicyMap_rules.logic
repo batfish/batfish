@@ -11,7 +11,7 @@ block(`PolicyMap_rules) {
 
 // policy maps for advertisements
 need_RouteFilterPermitNetwork(list, network) <-
-   need_PolicyMapClauseMatchAdvert(map, advert),
+   need_PolicyMapMatchAdvert(map, advert),
    BgpAdvertisement_network[advert] =  network,
    SetPolicyMapClauseMatchRouteFilter(map, _, list).
 // policy maps for routes
@@ -22,7 +22,7 @@ need_RouteFilterPermitNetwork(list, network) <-
 
 PolicyMapClauseMatchAdvert(map, clause, advert) <-
    BgpAdvertisement_network[advert] =  dstIpBlock,
-   need_PolicyMapClauseMatchAdvert(map, advert),
+   need_PolicyMapMatchAdvert(map, advert),
    PolicyMapHasClause(map, clause),
    /*
    // access list   
@@ -142,9 +142,26 @@ PolicyMapClauseTransformAdvert(map, clause, prevAdvert, nextHopIp, localPref, or
    ),
    prevSrcProtocol = srcProtocol.
 
-PolicyMapDenyFlow(map, clause, flow) <-
+PolicyMapDenyAdvert(map, advert) <-
+   PolicyMapFirstMatchAdvert[map, advert] = clause,
+   !SetPolicyMapClausePermit(map, clause).
+PolicyMapDenyAdvert(map, advert) <-
+   need_PolicyMapMatchAdvert(map, advert),
+   !PolicyMapClauseMatchAdvert(map, _, advert).
+
+PolicyMapDenyFlow(map, flow) <-
    PolicyMapFirstMatchFlow[map, flow] = clause,
    !SetPolicyMapClausePermit(map, clause).
+PolicyMapDenyFlow(map, flow) <-
+   need_PolicyMapMatchFlow(map, flow),
+   !PolicyMapClauseMatchFlow(map, _, flow).
+
+PolicyMapDenyRoute(map, route) <-
+   PolicyMapFirstMatchRoute[map, route] = clause,
+   !SetPolicyMapClausePermit(map, clause).
+PolicyMapDenyRoute(map, route) <-
+   need_PolicyMapMatchRoute(map, route),
+   !PolicyMapClauseMatchRoute(map, _, route).
 
 PolicyMapFirstMatchAdvert[map, advert] = firstClause
 <-

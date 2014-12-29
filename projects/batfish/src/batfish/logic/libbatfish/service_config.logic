@@ -149,6 +149,11 @@ block(`service_config) {
          delim_file_binding[] = "SetGeneratedRoute_flat"
       }.
 
+      service_by_prefix["/batfish/SetGeneratedRouteMetric_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetGeneratedRouteMetric_flat"
+      }.
+
       service_by_prefix["/batfish/SetGeneratedRoutePolicy_flat"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetGeneratedRoutePolicy_flat"

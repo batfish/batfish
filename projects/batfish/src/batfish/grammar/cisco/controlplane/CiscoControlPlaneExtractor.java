@@ -944,6 +944,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitDefault_information_ro_stanza(
          Default_information_ro_stanzaContext ctx) {
       OspfProcess proc = _configuration.getOspfProcess();
+      proc.setDefaultInformationOriginate(true);
       boolean always = ctx.ALWAYS().size() > 0;
       proc.setDefaultInformationOriginateAlways(always);
       if (ctx.metric != null) {

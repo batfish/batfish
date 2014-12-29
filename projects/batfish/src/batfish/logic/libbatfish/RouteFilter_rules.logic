@@ -8,6 +8,11 @@ need_RouteFilterMatch(list, network, line) <-
    need_RouteFilterPermitNetwork(list, network),
    SetRouteFilterLine(list, line, _, _, _, _).
 
+RouteFilterDenyNetwork(list, network) <-
+   need_RouteFilterPermitNetwork(list, network),
+   RouteFilterFirstMatch[list, network] = line,
+   !SetRouteFilterPermitLine(list, line).
+
 RouteFilterFirstMatch[list, network] = matchLine <-
    agg<<matchLine = min(line)>> RouteFilterMatch(list, network, line).
 

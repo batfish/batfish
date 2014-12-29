@@ -113,9 +113,9 @@ FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt) <-
    FlowReach(flow, srcNode, srcOutInt, midNode, _),
    FlowReach(flow, midNode, _, dstNode, dstInInt). 
 
-FlowPolicyDenied(flow, node, policy, clause) <-
+FlowPolicyDenied(flow, node, policy) <-
    FlowReachPolicyRoute(flow, node, policy),
-   PolicyMapDenyFlow(policy, clause, flow).
+   PolicyMapDenyFlow(policy, flow).
 
 FlowReachPolicyRoute(flow, node, policy) <-
    FlowReachPreOut(flow, node),

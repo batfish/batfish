@@ -40,6 +40,8 @@ public class Facts {
       map.put("SetLinkLoadLimitOut", "NODE|INTERFACE|LIMIT");
       map.put("SetGeneratedRoute_flat",
             "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|ADMIN");
+      map.put("SetGeneratedRouteMetric_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|METRIC");
       map.put("SetGeneratedRoutePolicy_flat",
             "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
       map.put("SetStaticRoute_flat",

@@ -10,7 +10,7 @@ block(`PolicyMap) {
    export(`{
 // BEGIN CODE
 
-need_PolicyMapClauseMatchAdvert(map, advert) ->
+need_PolicyMapMatchAdvert(map, advert) ->
    PolicyMap(map),
    BgpAdvertisement(advert).
 
@@ -52,19 +52,24 @@ PolicyMapClauseTransformAdvert(map, clause, prevAdvert, nextHopIp, localPref, or
    int(med),
    RoutingProtocol(srcProtocol).
 
-PolicyMapDenyFlow(map, clause, flow) ->
+PolicyMapDenyAdvert(map, advert) ->
    PolicyMap(map),
-   int(clause),
+   BgpAdvertisement(advert).
+
+PolicyMapDenyFlow(map, flow) ->
+   PolicyMap(map),
    Flow(flow).
 
-PolicyMapFirstMatchAdvert[map, advert] = firstClause
-->
+PolicyMapDenyRoute(map, route) ->
+   PolicyMap(map),
+   Route(route).
+
+PolicyMapFirstMatchAdvert[map, advert] = firstClause ->
    PolicyMap(map),
    BgpAdvertisement(advert),
    int(firstClause).
 
-PolicyMapFirstMatchFlow[map, flow] = firstClause
-->
+PolicyMapFirstMatchFlow[map, flow] = firstClause ->
    PolicyMap(map),
    Flow(flow),
    int(firstClause).
@@ -78,8 +83,7 @@ PolicyMapHasClause(map, clause) ->
    PolicyMap(map),
    int(clause).
 
-PolicyMapPermitAdvert(map, clause, advert)
-->
+PolicyMapPermitAdvert(map, clause, advert) ->
    PolicyMap(map),
    int(clause),
    BgpAdvertisement(advert).

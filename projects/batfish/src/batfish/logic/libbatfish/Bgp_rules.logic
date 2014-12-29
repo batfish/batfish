@@ -231,8 +231,12 @@ OriginalBgpAdvertisementRoute(advert, route)
    Route_protocol[route] = srcProtocol,
    Route_node[route] = srcNode,
    (
-      BgpGeneratedRoute(route) ;
       (
+         ActiveGeneratedRoute(route),
+         BgpGeneratedRoute(route)
+      ) ;
+      (
+         ActiveGeneratedRoute(route),
          BgpNeighborGeneratedRoute(route),
          BgpNeighborGeneratedRoute_neighborIp[route] = dstIp
       ) ;
@@ -591,7 +595,7 @@ MinAsPathSize[node, network] = minSize <-
       BgpAdvertisement_network[advert] =  network,
       AdvertisementPathSize[advert] = size.
 
-need_PolicyMapClauseMatchAdvert(map, advert)
+need_PolicyMapMatchAdvert(map, advert)
 <-
    (
       type = AdvertisementType_BGP[] ;
@@ -601,7 +605,7 @@ need_PolicyMapClauseMatchAdvert(map, advert)
    BgpAdvertisement_dstIp[advert] =  dstIp,
    BgpAdvertisement_type[advert] =  type,
    SetBgpExportPolicy(srcNode, dstIp, map).
-need_PolicyMapClauseMatchAdvert(map, advert)
+need_PolicyMapMatchAdvert(map, advert)
 <-
    (
       type = AdvertisementType_BGP_TO[] ;

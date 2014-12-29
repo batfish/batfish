@@ -7,8 +7,12 @@ public class GeneratedRoute extends Route {
    private static final long serialVersionUID = 1L;
 
    private int _administrativeCost;
+
    private AsPath _asPath;
+
    private Set<PolicyMap> _generationPolicies;
+
+   private Integer _metric;
 
    public GeneratedRoute(Ip prefix, int prefixLength, int administrativeCost,
          Set<PolicyMap> generationPolicyMaps) {
@@ -36,6 +40,10 @@ public class GeneratedRoute extends Route {
       return _generationPolicies;
    }
 
+   public Integer getMetric() {
+      return _metric;
+   }
+
    @Override
    public RouteType getRouteType() {
       return RouteType.AGGREGATE;
@@ -47,6 +55,10 @@ public class GeneratedRoute extends Route {
 
    public void setAsPath(AsPath asPath) {
       _asPath = asPath;
+   }
+
+   public void setMetric(int metric) {
+      _metric = metric;
    }
 
 }

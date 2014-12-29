@@ -280,6 +280,16 @@ block(`service_init) {
             }
       }.
 
+      file_binding_by_name["SetGeneratedRouteMetric_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetGeneratedRouteMetric_flat",
+         predicate_binding_by_name["libbatfish:GeneratedRoute:SetGeneratedRouteMetric_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,METRIC"
+            }
+      }.
+
       file_binding_by_name["SetGeneratedRoutePolicy_flat"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",

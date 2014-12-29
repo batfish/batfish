@@ -79,7 +79,19 @@ SetGeneratedRoute_flat(node, network_start, network_end, prefix_length, admin) -
    int(network_end),
    int(prefix_length),
    int(admin).
-   
+
+SetGeneratedRouteMetric(node, network, metric) ->
+   Node(node),
+   Network(network),
+   int(metric).
+
+SetGeneratedRouteMetric_flat(node, network_start, network_end, prefix_length, metric) ->
+   Node(node),
+   int(network_start),
+   int(network_end),
+   int(prefix_length),
+   int(metric).
+
 SetGeneratedRoutePolicy(node, network, map) ->
    Node(node),
    Network(network),

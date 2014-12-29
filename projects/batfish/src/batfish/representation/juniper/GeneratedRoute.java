@@ -13,11 +13,13 @@ public class GeneratedRoute implements Serializable {
    */
    private static final long serialVersionUID = 1L;
 
-   private int _metric;
+   private Integer _metric;
 
-   private List<String> _policies;
+   private final List<String> _policies;
 
-   private Prefix _prefix;
+   private Integer _preference;
+
+   private final Prefix _prefix;
 
    public GeneratedRoute(Prefix prefix) {
       _prefix = prefix;
@@ -32,12 +34,20 @@ public class GeneratedRoute implements Serializable {
       return _policies;
    }
 
+   public Integer getPreference() {
+      return _preference;
+   }
+
    public Prefix getPrefix() {
       return _prefix;
    }
 
    public void setMetric(int metric) {
       _metric = metric;
+   }
+
+   public void setPreference(int preference) {
+      _preference = preference;
    }
 
 }

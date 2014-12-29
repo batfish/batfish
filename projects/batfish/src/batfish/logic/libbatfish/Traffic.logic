@@ -191,11 +191,10 @@ FlowPathNullRoutedEdge(flow, i, node1, int1, node2, int2, history) ->
    Interface(int2),
    string(history).
    
-FlowPolicyDenied(flow, node, policy, clause) ->
+FlowPolicyDenied(flow, node, policy) ->
    Flow(flow),
    Node(node),
-   PolicyMap(policy),
-   int(clause).
+   PolicyMap(policy).
 
 /// [FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt)] =
 ///   Flow [flow] is successfully sent out interface [srcOutInt] on node

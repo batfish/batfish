@@ -36,6 +36,8 @@ import batfish.util.Util;
 public final class JuniperVendorConfiguration extends JuniperConfiguration
       implements VendorConfiguration {
 
+   private static final int DEFAULT_AGGREGATE_ROUTE_PREFERENCE = 130;
+
    private static final long serialVersionUID = 1L;
 
    private static final String VENDOR_NAME = "juniper";
@@ -214,7 +216,11 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          GeneratedRoute route) {
       Ip prefix = route.getPrefix().getAddress();
       int prefixLength = route.getPrefix().getPrefixLength();
-      int administrativeCost = route.getMetric();
+      Integer administrativeCost = route.getPreference();
+      if (administrativeCost == null) {
+         administrativeCost = DEFAULT_AGGREGATE_ROUTE_PREFERENCE;
+      }
+      Integer metric = route.getMetric();
       Set<PolicyMap> policies = new LinkedHashSet<PolicyMap>();
       for (String policyName : route.getPolicies()) {
          PolicyMap policy = _c.getPolicyMaps().get(policyName);
@@ -226,6 +232,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       }
       batfish.representation.GeneratedRoute newRoute = new batfish.representation.GeneratedRoute(
             prefix, prefixLength, administrativeCost, policies);
+      newRoute.setMetric(metric);
       return newRoute;
    }
 
