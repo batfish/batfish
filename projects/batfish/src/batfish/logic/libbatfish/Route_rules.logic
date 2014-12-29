@@ -46,7 +46,7 @@ LongestPrefixNetworkMatch(node, ip, matchNet) <-
 LongestPrefixNetworkMatchPrefixLength[node, ip] = maxLength <-
    agg<<maxLength = max(matchLength)>>
       NetworkMatch(node, ip, _, matchLength).
-      
+
 MinAdmin[node, network] =  minAdmin <-
    agg<<minAdmin = min(admin)>>
       BestPerProtocolRoute(route),
@@ -60,7 +60,7 @@ MinAdminRoute(route) <-
    Route_admin[route] = minAdmin,
    Route_network[route] = network,
    Route_node[route] = node.
-   
+
 MinCost[node, network] =  minCost <-
    agg<<minCost = min(cost)>>
       MinAdminRoute(route),

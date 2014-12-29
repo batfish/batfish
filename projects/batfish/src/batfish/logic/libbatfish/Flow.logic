@@ -12,11 +12,11 @@ Flow(x) -> .
 Flow_dstIp[flow] = dstIp ->
    Flow(flow),
    Ip(dstIp).
-   
+
 Flow_dstPort[flow] = dstPort ->
    Flow(flow),
    int(dstPort).
-   
+
 Flow_ipProtocol[flow] = protocol ->
    Flow(flow),
    IpProtocol(protocol).
@@ -24,15 +24,15 @@ Flow_ipProtocol[flow] = protocol ->
 Flow_node[flow] = node ->
    Flow(flow),
    Node(node).
-   
+
 Flow_srcIp[flow] = srcIp ->
    Flow(flow),
    Ip(srcIp).
-   
+
 Flow_srcPort[flow] = srcPort ->
    Flow(flow),
    int(srcPort).
-   
+
 /// [IpProtocol(x)] =
 ///   [x] is an ip protocol.
 IpProtocol(x),

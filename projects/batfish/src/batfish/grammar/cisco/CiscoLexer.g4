@@ -721,7 +721,7 @@ CONTEXT
 :
    'context'
 ;
-   
+
 CONTROL_PLANE
 :
    'control-plane'

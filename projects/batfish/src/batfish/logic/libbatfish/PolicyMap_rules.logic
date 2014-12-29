@@ -61,7 +61,7 @@ PolicyMapClauseMatchAdvert(map, clause, advert) <-
       )
    ).
    //TODO: finish definition and replace underscores at top of rule
-   
+
 PolicyMapClauseMatchFlow(map, clause, flow) <-
    need_PolicyMapMatchFlow(map, flow),
    PolicyMapHasClause(map, clause),

@@ -13,11 +13,11 @@ FlowSinkInterface(node, interface) <-
 
 HasIp(node, ip) <-
    IpReadyInt(node, _, ip, _).
-   
+
 HasNetwork(node, network) <-
    IpReadyInt(node, _, ip, prefix_length),
    NetworkOf[ip, prefix_length] = network.
-   
+
 //IpOwner[ip] = node <-
 //   HasIp(node, ip).
 

@@ -14,7 +14,7 @@ CommunityList(x),
    CommunityList_name(x:n)
    ->
    string(n).
-   
+
 CommunityListFirstMatch[list, community] = firstLine ->
    CommunityList(list),
    int(community),

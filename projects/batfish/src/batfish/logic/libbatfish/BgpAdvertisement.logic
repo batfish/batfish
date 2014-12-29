@@ -62,7 +62,7 @@ BgpAdvertisement_dstIp[advert] =  dstIp ->
    BgpAdvertisement(advert),
    Ip(dstIp).
 
-   
+
 /// [BgpAdvertisement_dstNode[advert] =  dstNode] =
 ///   The destination node for advertisement [advert] is [dstNode].
 BgpAdvertisement_dstNode[advert] =  dstNode ->
@@ -122,7 +122,7 @@ OriginType_EGP[] = originType ->
 
 OriginType_INCOMPLETE[] = originType ->
    OriginType(originType).
-   
+
 // END CODE
    }),
    clauses(`{ //constructors

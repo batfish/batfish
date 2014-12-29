@@ -2,7 +2,7 @@ block(`CommunityList_rules) {
    alias_all(`libbatfish:CommunityList),
    clauses(`{
 //BEGIN CODE
-   
+
 CommunityListFirstMatch[list, community] = firstLine <-
    agg<<firstLine = min(line)>> CommunityListMatch(list, line, community).
 

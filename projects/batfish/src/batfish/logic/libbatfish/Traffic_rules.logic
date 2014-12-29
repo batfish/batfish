@@ -31,11 +31,11 @@ FlowAllowedOut(flow, node, interface, filter) <-
 FlowDeniedIn(flow, node, interface, filter, line) <-
    FlowReachPreInInterface(flow, node, interface),
    FlowDenyIn(flow, node, interface, filter, line).   
-   
+
 FlowDeniedOut(flow, node, interface, filter, line) <-
    FlowReachPreOutInterface(flow, node, interface),
    FlowDenyOut(flow, node, interface, filter, line).   
-   
+
 FlowDenyIn(flow, node, interface, filter, line) <-
    SetInterfaceFilterIn(node, interface, filter),
    IpAccessListDeny(filter, line, flow).
@@ -106,7 +106,6 @@ Flow_srcPort[flow] = srcPort
    SetNodeRole(acceptNode, role),
    SetNodeRole(node, role).
 
-
 FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt) <-
    FlowReachStep(flow, srcNode, srcOutInt, dstNode, dstInInt).
 FlowReach(flow, srcNode, srcOutInt, dstNode, dstInInt) <-
@@ -126,7 +125,7 @@ FlowReachPostIn(flow, node) <-
    Flow_node[flow] = node.   
 FlowReachPostIn(flow, node) <-
    FlowReachPostInInterface(flow, node, _).
-   
+
 FlowReachPostInInterface(flow, node, interface) <-
    FlowReachPreInInterface(flow, node, interface),
    !FlowDenyIn(flow, node, interface, _, _).
@@ -134,12 +133,12 @@ FlowReachPostInInterface(flow, node, interface) <-
 FlowReachPostOutInterface(flow, node, interface) <-
    FlowReachPreOutInterface(flow, node, interface),
    !FlowDenyOut(flow, node, interface, _, _).
-   
+
 FlowReachPreInInterface(flow, node, interface) <-
    FlowReachPostOutInterface(flow, prevNode, prevInterface),
    FlowReachPreOutEdge(flow, prevNode, _, prevInterface, node, interface),
    interface != Interface_FLOW_SINK_TERMINATION[].
-   
+
 FlowReachPreOut(flow, node) <-
    FlowReachPostIn(flow, node),
    Flow_dstIp[flow] = dstIp,
@@ -243,7 +242,7 @@ FlowPathDeniedInEdge(flow, i, receivedInt, node1, int1, node2, int2, history, fi
    IpAccessList_name(filter:filterStr),
    lineStr = int:string:convert[line],
    currentHistory = "['" + node1str + "':'" + int1str + "'" + allowedOutStr + ", '" + node2str + "':'" + int2str + "':deniedIn:'" + filterStr + "':" + lineStr + "]".
-   
+
 FlowPathDeniedOutEdge(flow, i, receivedInt, node1, int1, node2, int2, history, filter, line) <-
    (
       (
@@ -320,7 +319,7 @@ FlowPathIntermediateEdge(flow, i, receivedInt, node1, int1, node2, int2, history
    Interface_name(int1:int1str),
    Interface_name(int2:int2str),
    currentHistory = "['" + node1str + "':'" + int1str + "'" + allowedOutStr + ", '" + node2str + "':'" + int2str + "'" + allowedInStr + "]".
-   
+
 FlowPathNeighborUnreachableEdge(flow, i, node1, int1, node2, int2, history) <-
    FlowPathIntermediateEdge(flow, i, _, node1, int1, node2, int2, oldHistory),
    FlowNeighborUnreachable(flow, node2, _),
@@ -348,7 +347,7 @@ FlowPathNoRouteEdge(flow, i, node1, int1, node2, int2, history) <-
    FlowNoRoute(flow, node1),
    Node_name(node1:node1str),
    history = "['" + node1str + "':noRoute]".
-   
+
 FlowPathNullRoutedEdge(flow, i, node1, int1, node2, int2, history) <-
    FlowPathIntermediateEdge(flow, i, _, node1, int1, node2, int2, oldHistory),
    FlowNullRouted(flow, node2),

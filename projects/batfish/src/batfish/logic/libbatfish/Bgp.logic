@@ -192,16 +192,16 @@ SetBgpNeighborGeneratedRoutePolicy_flat(node, neighborIp, network_start, network
 SetBgpNeighborIp(node, ip) ->
    Node(node),
    Ip(ip).
- 
+
 SetBgpNeighborSendCommunity(node, neighborIp) ->
    Node(node),
    Ip(neighborIp).
-   
+
 SetBgpOriginationPolicy(node, neighborIp, map) ->
    Node(node),
    Ip(neighborIp),
    PolicyMap(map).
-   
+
 /// [SetLocalAs(node, neighborIp, localAs)] =
 ///   Node [node] is part of autonomous system [as] according to its neighbor
 ///   at ip [neighborIp].

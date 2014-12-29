@@ -72,7 +72,7 @@ SetGeneratedRoute(node, network, admin) ->
    Node(node),
    Network(network),
    int(admin).
-   
+
 SetGeneratedRoute_flat(node, network_start, network_end, prefix_length, admin) ->
    Node(node),
    int(network_start),
@@ -96,14 +96,14 @@ SetGeneratedRoutePolicy(node, network, map) ->
    Node(node),
    Network(network),
    PolicyMap(map).
-   
+
 SetGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length, map) ->
    Node(node),
    int(network_start),
    int(network_end),
    int(prefix_length),
    PolicyMap(map).
-   
+
 // END CODE
    }),
    clauses(`{

@@ -125,7 +125,7 @@ FlowPathAcceptedEdge(flow, i, node1, int1, node2, int2, history) ->
    Node(node2),
    Interface(int2),
    string(history).
-   
+
 FlowPathDeniedInEdge(flow, i, int0, node1, int1, node2, int2, history, filter, line) ->
    Flow(flow),
    int(i),
@@ -137,7 +137,7 @@ FlowPathDeniedInEdge(flow, i, int0, node1, int1, node2, int2, history, filter, l
    string(history),
    IpAccessList(filter),
    int(line).
-   
+
 FlowPathDeniedOutEdge(flow, i, int0, node1, int1, node2, int2, history, filter, line) ->
    Flow(flow),
    int(i),
@@ -181,7 +181,7 @@ FlowPathNoRouteEdge(flow, i, node1, int1, node2, int2, history) ->
    Node(node2),
    Interface(int2),
    string(history).
-   
+
 FlowPathNullRoutedEdge(flow, i, node1, int1, node2, int2, history) ->
    Flow(flow),
    int(i),
@@ -190,7 +190,7 @@ FlowPathNullRoutedEdge(flow, i, node1, int1, node2, int2, history) ->
    Node(node2),
    Interface(int2),
    string(history).
-   
+
 FlowPolicyDenied(flow, node, policy) ->
    Flow(flow),
    Node(node),

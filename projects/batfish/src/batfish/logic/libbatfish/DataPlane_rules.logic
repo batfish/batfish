@@ -122,7 +122,7 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
       nextHopInt = Interface_FLOW_SINK_TERMINATION[] ;
       (
          nextHopIp != Ip_ZERO[],
-         
+
       )
    ),*/
    Route_nextHopIp[route] = routeNextHopIp,

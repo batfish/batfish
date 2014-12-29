@@ -60,7 +60,7 @@ LongestPrefixNetworkMatchPrefixLength[node, ip] = maxLength ->
    Node(node),
    Ip(ip),
    int(maxLength).
-   
+
 /// [MinAdmin[node, network] = minAdmin] =
 ///   The minimum administrative distance of any route from node [node] to
 ///   network [network] is [minAdmin].
@@ -207,14 +207,14 @@ SetStaticIntRoute_flat(node, network_start, network_end, prefix_length, nextHopI
    Interface(nextHopInt),
    int(admin),
    int(tag).
-   
+
 SetStaticRoute(node, network, nextHopIp, admin, tag) ->
    Node(node),
    Network(network),
    Ip(nextHopIp),
    int(admin),
    int(tag).
-   
+
 SetStaticRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, admin, tag) ->
    Node(node),
    int(network_start),
@@ -223,7 +223,7 @@ SetStaticRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, 
    Ip(nextHopIp),
    int(admin),
    int(tag).
-   
+
 StaticIntRoute(route) ->
    Route(route).
 

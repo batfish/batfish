@@ -8,7 +8,7 @@ Ip(x),
    Ip_address(x:n)
    ->
    int(n).
-   
+
 Ip_ZERO[] = ip ->
    Ip(ip).
 
@@ -29,11 +29,11 @@ Network_address[network] = network_start ->
 Network_end[network] = network_end ->
    Network(network),
    int(network_end).
-   
+
 Network_prefix_length[network] = prefix_length ->
    Network(network),
    int(prefix_length).
-   
+
 Network_index(network, network_start, network_end, prefix_length) ->
    Network(network),
    int(network_start),

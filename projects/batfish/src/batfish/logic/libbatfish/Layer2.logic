@@ -13,7 +13,7 @@ Encapsulation(x),
 
 GuessTopology(dummy) ->
    int(dummy).
-   
+
 /// [LanAdjacent(node1, int1, node2, int2)] =
 ///   Interface [int1] on node [node1] and interface [int2] on node [node2] are
 ///   in the same broadcast domain.
@@ -117,7 +117,7 @@ VlanAdjacent(node1, vlanInt1, node2, vlanInt2) ->
 VlanNumber[vlan] = n ->
    Vlan(vlan),
    int(n).
-   
+
 // END CODE
    })
 } <-- .

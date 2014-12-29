@@ -50,7 +50,7 @@ IpAccessListMatchDstPort(list, line, flow) <-
          dstPort_start <= dstPort <= dstPort_end
       )
    ).
-   
+
 IpAccessListMatchProtocol(list, line, flow) <-
    IpAccessListLine(list, line),
    Flow_ipProtocol[flow] = protocol,

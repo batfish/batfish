@@ -77,7 +77,7 @@ SwitchportTrunkAllows(switch, interface, vlan) <-
    UsedVlan(vlan),
    VlanNumber[vlan] >= VlanNumber[vlanStart],
    VlanNumber[vlan] <= VlanNumber[vlanEnd].
-   
+
 SwitchportTrunkNative(switch, interface, vlan) <-
    !GuessTopology(_),
    SetSwitchportTrunkNative(switch, interface, vlan),

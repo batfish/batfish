@@ -15,7 +15,7 @@ FlowSinkInterface(node, interface) ->
 HasIp(node, ip) ->
    Node(node),
    Ip(ip).
-   
+
 /// [HasNetwork(node, network)] =
 ///   Some interface on node [node] is configured with an ip whose network
 ///   address is [network].
@@ -42,7 +42,7 @@ Interface_NULL[] = interface ->
 IpOwner[ip] = node ->
    Ip(ip),
    Node(node).
-   
+
 /// [IpReadyInt(node, interface, ip, prefix_length)] =
 ///   Node [node] has interface [interface] configured with ip [ip] with prefix
 ///   length [prefix_length], and [interface] is active.
@@ -61,11 +61,11 @@ SetActiveInt(node, interface) ->
 SetFakeInterface(node, interface) ->
    Node(node),
    Interface(interface).
-   
+
 SetFlowSinkInterface(node, interface) ->
    Node(node),
    Interface(interface).
-   
+
 /// [SetIpInt(node, interface, ip, prefix_length)] =
 ///   Node [node] has interface [interface] configured with ip [ip] with prefix
 ///   length [prefix_length].

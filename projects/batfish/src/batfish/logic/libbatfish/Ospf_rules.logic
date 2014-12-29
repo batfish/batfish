@@ -322,7 +322,7 @@ OspfNode(node, interface, cost, network, area) <-
    SetOspfInterfaceCost[node, interface] = cost,
    SetOspfInterface(node, interface, area),
    NetworkOf[ip, prefix_length] = network.
-   
+
 OspfOutboundPolicyClauseSetMetric(map, clause, metric) <-
    SetOspfOutboundPolicyMap(_, map),
    SetPolicyMapClauseSetMetric(map, clause, metric).

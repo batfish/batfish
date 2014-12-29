@@ -663,7 +663,7 @@ SetBgpNeighborGeneratedRoutePolicy(node, neighborIp, network, map) <-
    Network_constructor[network_start, network_end, prefix_length] = network.
 
 lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
-   
+
 lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
 lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
 

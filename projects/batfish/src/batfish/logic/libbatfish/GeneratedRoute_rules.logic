@@ -61,7 +61,7 @@ GlobalGeneratedRoute(route),
          cost = 0
       )
    ).
-   
+
 GeneratedRoutePolicy(route, policy) <-
    GeneratedRoute(route),
    Route_network[route] = network,
@@ -88,13 +88,13 @@ MinAdminContributingRoute(route, contributingRoute) <-
    GlobalGeneratedRoute(route),
    Route_admin[contributingRoute] = admin,
    MinContributingRouteAdmin[route] = admin.
-   
+
 MinContributingRouteAddress[route] = minAddress <-
    agg<<minAddress = min(address)>>
       MinAdminContributingRoute(route, contributingRoute),
       Route_network[contributingRoute] = network,
       Network_address[network] = address.
-   
+
 MinContributingRouteAdmin[route] = minAdmin <-
    agg<<minAdmin = min(admin)>>
       ActiveGeneratedRouteContributor(route, contributingRoute),
