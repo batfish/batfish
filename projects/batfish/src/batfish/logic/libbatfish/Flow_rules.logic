@@ -4,7 +4,7 @@ block(`Flow_rules) {
 // BEGIN CODE
 
 IpProtocol_ANY[] = x <-
-   IpProtocol_number(x:0).
+   IpProtocol_number(x:256).
 
 IpProtocol_TCP[] = x <-
    IpProtocol_number(x:6).
