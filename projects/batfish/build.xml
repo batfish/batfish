@@ -139,12 +139,13 @@
          <uptodate property="lbSummary.upToDate" targetfile="${lbSummary}">
             <srcfiles dir="src" includes="**/*.logic"/>
          </uptodate>
-         <uptodate property="lbbFiles.upToDate">
-            <srcfiles dir="src" includes="**/*.logic"/>
-            <mapper>
-               <mapper type="regexp" from="(.*).logic" to="../bin/\1.lbb"/>
-            </mapper>
-         </uptodate>
+         <outofdate property="lbbFiles.outOfDate">
+            <deletetargets/>
+            <sourcefiles>
+               <fileset dir="src" includes="**/*.logic"/>
+            </sourcefiles>
+            <mapper type="regexp" from="src/(.*).logic" to="bin/\1.lbb"/>
+         </outofdate>
          <condition property="lbUnavailable">
             <not>
                <available file="${lbhome}" type="dir"/>
@@ -155,7 +156,9 @@
                <isset property="lbUnavailable"/>
                <and>
                   <isset property="lbSummary.upToDate"/>
-                  <isset property="lbbFiles.upToDate"/>
+                  <not>
+                     <isset property="lbbFiles.outOfDate"/>
+                  </not>
                </and>
             </or>
          </condition>
