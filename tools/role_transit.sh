@@ -25,6 +25,9 @@ batfish_analyze_role_transit() {
    else
       local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
    fi
+   local QUERY_PATH=$OLD_PWD/$PREFIX-query
+   local RT_QUERY_BASE_PATH=$QUERY_PATH/role-transit-query
+
    local BGP=$OLD_PWD/$PREFIX-bgp
    local DP_DIR=$OLD_PWD/$PREFIX-dp
    local DUMP_DIR=$OLD_PWD/$PREFIX-dump
@@ -32,11 +35,9 @@ batfish_analyze_role_transit() {
    local INDEP_SERIAL_DIR=$OLD_PWD/$PREFIX-indep
    local NODE_ROLES_PATH=$OLD_PWD/$PREFIX-node_roles
    local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
-   local QUERY_PATH=$OLD_PWD/$PREFIX-query
    local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
    local ROLE_NODES_PATH=$OLD_PWD/$PREFIX-role_nodes
    local ROLE_SET_PATH=$OLD_PWD/$PREFIX-role_set
-   local RT_QUERY_BASE_PATH=$QUERY_PATH/role-transit-query
    local ROUTES=$OLD_PWD/$PREFIX-routes
    local VENDOR_SERIAL_DIR=$OLD_PWD/$PREFIX-vendor
    local WORKSPACE=batfish-$USER-$PREFIX

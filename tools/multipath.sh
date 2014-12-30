@@ -25,15 +25,16 @@ batfish_analyze() {
    else
       local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
    fi
+   local QUERY_PATH=$OLD_PWD/$PREFIX-query
+   local MPI_QUERY_BASE_PATH=$QUERY_PATH/multipath-inconsistency-query
+
    local BGP=$OLD_PWD/$PREFIX-bgp
    local DP_DIR=$OLD_PWD/$PREFIX-dp
    local DUMP_DIR=$OLD_PWD/$PREFIX-dump
    local FLOWS=$OLD_PWD/$PREFIX-flows
    local INDEP_SERIAL_DIR=$OLD_PWD/$PREFIX-indep
-   local MPI_QUERY_BASE_PATH=$QUERY_PATH/multipath-inconsistency-query
    local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
    local OSPF=$OLD_PWD/$PREFIX-ospf
-   local QUERY_PATH=$OLD_PWD/$PREFIX-query
    local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
    local ROUTES=$OLD_PWD/$PREFIX-routes
    local VENDOR_SERIAL_DIR=$OLD_PWD/$PREFIX-vendor
@@ -127,13 +128,13 @@ batfish_find_multipath_inconsistent_packet_constraints_helper() {
    batfish_date
    local QUERY_PATH=${QUERY_BASE_PATH}-${NODE}.smt2
    local QUERY_OUTPUT_PATH=${QUERY_PATH}.out
-   echo ": START: Find inconsistent packet constraints for \"$NODE\" (\"$QUERY_OUTPUT_PATH\")"
+   echo ": START: Find inconsistent packet constraints for \"${NODE}\" (\"${QUERY_OUTPUT_PATH}\")"
    cat $REACH_PATH $QUERY_PATH | batfish_time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1> $QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
    batfish_date
-   echo ": END: Find inconsistent packet constraints for \"$NODE\" (\"$QUERY_OUTPUT_PATH\")"
+   echo ": END: Find inconsistent packet constraints for \"$NODE\" (\"${QUERY_OUTPUT_PATH}\")"
 }
 export -f batfish_find_multipath_inconsistent_packet_constraints_helper
 
