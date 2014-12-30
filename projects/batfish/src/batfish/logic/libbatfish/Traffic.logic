@@ -329,7 +329,7 @@ SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol) ->
    Ip(dstIp),
    int(srcPort),
    int(dstPort),
-   int(protocol).
+   IpProtocol(protocol).
 
 // END CODE
    }),
