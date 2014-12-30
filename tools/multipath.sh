@@ -181,12 +181,19 @@ batfish_generate_multipath_inconsistency_concretizer_queries_helper() {
    local QUERY_BASE_PATH=$2
    local QUERY_OUT=${QUERY_BASE_PATH}-${NODE}.smt2.out
    local CONCRETIZER_QUERY_BASE_PATH=${QUERY_BASE_PATH}-${NODE}-concrete
+   local QUERY_DIR=$(dirname $QUERY_BASE_PATH)
+   cd $QUERY_DIR
+   batfish_date
+   echo ": START: Generate multipath-inconsistency concretizer queries for node \"${NODE}\""
    batfish -conc -concin $QUERY_OUT -concout $CONCRETIZER_QUERY_BASE_PATH || return 1
    find $PWD -regextype posix-extended -regex "${CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
       parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $NODE \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
+   batfish_date
+   echo ": END: Generate multipath-inconsistency concretizer queries for node \"${NODE}\""
+   echo
 }
 export -f batfish_generate_multipath_inconsistency_concretizer_queries_helper
 
