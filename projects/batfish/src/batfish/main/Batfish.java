@@ -98,6 +98,7 @@ import batfish.representation.Configuration;
 import batfish.representation.Edge;
 import batfish.representation.Interface;
 import batfish.representation.Ip;
+import batfish.representation.IpProtocol;
 import batfish.representation.Topology;
 import batfish.representation.VendorConfiguration;
 import batfish.representation.VendorConversionException;
@@ -1534,7 +1535,7 @@ public class Batfish implements AutoCloseable {
          long dst_ip = 0;
          long src_port = 0;
          long dst_port = 0;
-         long protocol = 0;
+         long protocol = IpProtocol.IP.number();
          for (String varName : constraints.keySet()) {
             Long value = constraints.get(varName);
             switch (varName) {
