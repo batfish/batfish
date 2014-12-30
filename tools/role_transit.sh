@@ -19,27 +19,27 @@ batfish_analyze_role_transit() {
    if [ -z "$BATFISH_CONFIRM" ]; then
       local BATFISH_CONFIRM=true
    fi
-   local WORKSPACE=batfish-$USER-$PREFIX
    local OLD_PWD=$PWD
    if [ "$(echo $TEST_RIG_RELATIVE | head -c1)" = "/" ]; then
       local TEST_RIG=$TEST_RIG_RELATIVE
    else
       local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
    fi
-   local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
-   local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
-   local QUERY_PATH=$OLD_PWD/$PREFIX-query
-   local RT_QUERY_BASE_PATH=$QUERY_PATH/role-transit-query
+   local BGP=$OLD_PWD/$PREFIX-bgp
+   local DP_DIR=$OLD_PWD/$PREFIX-dp
    local DUMP_DIR=$OLD_PWD/$PREFIX-dump
    local FLOWS=$OLD_PWD/$PREFIX-flows
-   local BGP=$OLD_PWD/$PREFIX-bgp
-   local ROUTES=$OLD_PWD/$PREFIX-routes
-   local VENDOR_SERIAL_DIR=$OLD_PWD/$PREFIX-vendor
    local INDEP_SERIAL_DIR=$OLD_PWD/$PREFIX-indep
-   local DP_DIR=$OLD_PWD/$PREFIX-dp
    local NODE_ROLES_PATH=$OLD_PWD/$PREFIX-node_roles
+   local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
+   local QUERY_PATH=$OLD_PWD/$PREFIX-query
+   local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
    local ROLE_NODES_PATH=$OLD_PWD/$PREFIX-role_nodes
    local ROLE_SET_PATH=$OLD_PWD/$PREFIX-role_set
+   local RT_QUERY_BASE_PATH=$QUERY_PATH/role-transit-query
+   local ROUTES=$OLD_PWD/$PREFIX-routes
+   local VENDOR_SERIAL_DIR=$OLD_PWD/$PREFIX-vendor
+   local WORKSPACE=batfish-$USER-$PREFIX
 
    echo "Parse vendor configuration files and serialize vendor structures"
    $BATFISH_CONFIRM && { batfish_serialize_vendor_with_roles $TEST_RIG $VENDOR_SERIAL_DIR $NODE_ROLES_PATH || return 1 ; }
