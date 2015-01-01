@@ -73,6 +73,7 @@ FlowLost(flow) <-
 
 FlowMatchRoute(flow, route) <-
    Flow_dstIp[flow] = dstIp,
+   Flow_node[flow] = node,
    FlowReachPostIn(flow, node),
    LongestPrefixNetworkMatch(node, dstIp, network),
    Route_node[route] = node,
