@@ -34,6 +34,7 @@ AdvertisementClusterId(advert, clusterId) <-
 AdvertisementPath(advert, index, as)
 <-
    index = 0,
+   OriginalBgpAdvertisement(advert),
    BgpAdvertisement_type[advert] =  type,
    BgpAdvertisement_srcNode[advert] =  srcNode,
    BgpAdvertisement_dstIp[advert] =  dstIp,
