@@ -283,7 +283,6 @@ FlowPathHistory(flow, history) <-
    FlowPathNullRoutedEdge(flow, _, _, _, _, _, history).
 
 FlowPathIntermediateEdge(flow, i, receivedInt, node1, int1, node2, int2, history) <-
-   !FlowLoop(flow, _, _),
    (
       (
          i = 0,
@@ -292,6 +291,7 @@ FlowPathIntermediateEdge(flow, i, receivedInt, node1, int1, node2, int2, history
       ) ;
       (
          i = j + 1,
+         !FlowLoop(flow, _, _),
          FlowPathIntermediateEdge(flow, j, _, _, _, node1, receivedInt, oldHistory),
          FlowReachPreOutEdge(flow, node1, receivedInt, int1, node2, int2),
          history = oldHistory + ";" + currentHistory
