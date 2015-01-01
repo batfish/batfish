@@ -112,6 +112,7 @@ public class ConfigurationFactExtractor {
             .get("SetBgpGeneratedRoute_flat");
       StringBuilder wSetBgpGeneratedRoutePolicy_flat = _factBins
             .get("SetBgpGeneratedRoutePolicy_flat");
+      StringBuilder wSetNetwork = _factBins.get("SetNetwork");
       if (proc != null) {
          for (GeneratedRoute gr : proc.getGeneratedRoutes()) {
             long network_start = gr.getPrefix().asLong();
@@ -119,6 +120,8 @@ public class ConfigurationFactExtractor {
             long network_end = Util.getNetworkEnd(network_start, prefix_length);
             wSetBgpGeneratedRoute_flat.append(hostname + "|" + network_start
                   + "|" + network_end + "|" + prefix_length + "\n");
+            wSetNetwork.append(network_start + "|" + network_start + "|"
+                  + network_end + "|" + prefix_length + "\n");
             for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
                String gpName = hostname + ":" + generationPolicy.getMapName();
                wSetBgpGeneratedRoutePolicy_flat.append(hostname + "|"
@@ -281,6 +284,7 @@ public class ConfigurationFactExtractor {
             .get("SetGeneratedRouteMetric_flat");
       StringBuilder wSetGeneratedRoutePolicy_flat = _factBins
             .get("SetGeneratedRoutePolicy_flat");
+      StringBuilder wSetNetwork = _factBins.get("SetNetwork");
       String hostname = _configuration.getHostname();
       for (GeneratedRoute gr : _configuration.getGeneratedRoutes()) {
          long network_start = gr.getPrefix().asLong();
@@ -289,6 +293,8 @@ public class ConfigurationFactExtractor {
          wSetGeneratedRoute_flat.append(hostname + "|" + network_start + "|"
                + network_end + "|" + prefix_length + "|"
                + gr.getAdministrativeCost() + "\n");
+         wSetNetwork.append(network_start + "|" + network_start + "|"
+               + network_end + "|" + prefix_length + "\n");
          Integer metric = gr.getMetric();
          if (gr.getDiscard()) {
             wSetGeneratedRouteDiscard_flat.append(hostname + "|"
@@ -487,6 +493,7 @@ public class ConfigurationFactExtractor {
             .get("SetOspfGeneratedRoute_flat");
       StringBuilder wSetOspfGeneratedRoutePolicy_flat = _factBins
             .get("SetOspfGeneratedRoutePolicy_flat");
+      StringBuilder wSetNetwork = _factBins.get("SetNetwork");
       String hostname = _configuration.getHostname();
       OspfProcess proc = _configuration.getOspfProcess();
       if (proc != null) {
@@ -496,6 +503,8 @@ public class ConfigurationFactExtractor {
             long network_end = Util.getNetworkEnd(network_start, prefix_length);
             wSetOspfGeneratedRoute_flat.append(hostname + "|" + network_start
                   + "|" + network_end + "|" + prefix_length + "\n");
+            wSetNetwork.append(network_start + "|" + network_start + "|"
+                  + network_end + "|" + prefix_length + "\n");
             for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
                String gpName = hostname + ":" + generationPolicy.getMapName();
                wSetOspfGeneratedRoutePolicy_flat.append(hostname + "|"
