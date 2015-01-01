@@ -213,7 +213,7 @@ FlowPathDeniedInEdge(flow, i, receivedInt, node1, int1, node2, int2, history, fi
       (
          i = j + 1,
          FlowPathIntermediateEdge(flow, j, _, _, _, node1, receivedInt, oldHistory),
-         history = oldHistory + "->" + currentHistory
+         history = oldHistory + ";" + currentHistory
       ) ;
       (
          Flow_node[flow] = node1,
@@ -241,14 +241,14 @@ FlowPathDeniedInEdge(flow, i, receivedInt, node1, int1, node2, int2, history, fi
    Interface_name(int2:int2str),
    IpAccessList_name(filter:filterStr),
    lineStr = int:string:convert[line],
-   currentHistory = "['" + node1str + "':'" + int1str + "'" + allowedOutStr + ", '" + node2str + "':'" + int2str + "':deniedIn:'" + filterStr + "':" + lineStr + "]".
+   currentHistory = "['" + node1str + "':'" + int1str + "'" + allowedOutStr + "-> '" + node2str + "':'" + int2str + "':deniedIn:'" + filterStr + "':" + lineStr + "]".
 
 FlowPathDeniedOutEdge(flow, i, receivedInt, node1, int1, node2, int2, history, filter, line) <-
    (
       (
          i = j + 1,
          FlowPathIntermediateEdge(flow, j, _, _, _, node1, receivedInt, oldHistory),
-         history = oldHistory + "->" + currentHistory
+         history = oldHistory + ";" + currentHistory
       ) ;
       (
          Flow_node[flow] = node1,
@@ -265,7 +265,7 @@ FlowPathDeniedOutEdge(flow, i, receivedInt, node1, int1, node2, int2, history, f
    Interface_name(int2:int2str),
    IpAccessList_name(filter:filterStr),
    lineStr = int:string:convert[line],
-   currentHistory = "['" + node1str + "':'" + int1str + "':deniedOut:'" + filterStr + "':" + lineStr + ", '" + node2str + "':'" + int2str + "']".
+   currentHistory = "['" + node1str + "':'" + int1str + "':deniedOut:'" + filterStr + "':" + lineStr + "-> '" + node2str + "':'" + int2str + "']".
 
 FlowPathHistory(flow, history) <-
    FlowPathAcceptedEdge(flow, _, _, _, _, _, history) ;
@@ -287,7 +287,7 @@ FlowPathIntermediateEdge(flow, i, receivedInt, node1, int1, node2, int2, history
          i = j + 1,
          FlowPathIntermediateEdge(flow, j, _, _, _, node1, receivedInt, oldHistory),
          FlowReachPreOutEdge(flow, node1, receivedInt, int1, node2, int2),
-         history = oldHistory + "->" + currentHistory
+         history = oldHistory + ";" + currentHistory
       )
    ),
    (
@@ -318,7 +318,7 @@ FlowPathIntermediateEdge(flow, i, receivedInt, node1, int1, node2, int2, history
    Node_name(node2:node2str),
    Interface_name(int1:int1str),
    Interface_name(int2:int2str),
-   currentHistory = "['" + node1str + "':'" + int1str + "'" + allowedOutStr + ", '" + node2str + "':'" + int2str + "'" + allowedInStr + "]".
+   currentHistory = "['" + node1str + "':'" + int1str + "'" + allowedOutStr + "-> '" + node2str + "':'" + int2str + "'" + allowedInStr + "]".
 
 FlowPathNeighborUnreachableEdge(flow, i, node1, int1, node2, int2, history) <-
    FlowPathIntermediateEdge(flow, i, _, node1, int1, node2, int2, oldHistory),
