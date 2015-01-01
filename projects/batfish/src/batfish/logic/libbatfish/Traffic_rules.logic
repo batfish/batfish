@@ -71,6 +71,13 @@ FlowLost(flow) <-
    FlowDropped(flow, _) ;
    FlowLoop(flow, _, _).
 
+FlowMatchRoute(flow, route) <-
+   Flow_dstIp[flow] = dstIp,
+   FlowReachPostIn(flow, node),
+   LongestPrefixNetworkMatch(node, dstIp, network),
+   Route_node[route] = node,
+   Route_network[route] = network.
+
 FlowNoRoute(flow, node) <-
    FlowReachPreOut(flow, node),
    Flow_dstIp[flow] = dstIp,

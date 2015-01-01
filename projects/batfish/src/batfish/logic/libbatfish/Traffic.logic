@@ -5,6 +5,7 @@ block(`Traffic) {
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:Node),
    alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
    export(`{
 // BEGIN CODE
 
@@ -91,6 +92,10 @@ FlowLoop(flow, node, outInt) ->
 ///   Flow [flow] either dropped or looped somwhere (or both).
 FlowLost(flow) ->
    Flow(flow).
+
+FlowMatchRoute(flow, route) ->
+   Flow(flow),
+   Route(route).
 
 FlowNeighborUnreachable(flow, node, neighborIp) ->
    Flow(flow),
