@@ -27,6 +27,7 @@ import batfish.representation.IpProtocol;
 import batfish.representation.LineAction;
 import batfish.representation.OriginType;
 import batfish.representation.OspfMetricType;
+import batfish.representation.Prefix;
 import batfish.representation.RoutingProtocol;
 import batfish.representation.SwitchportEncapsulationType;
 import batfish.representation.SwitchportMode;
@@ -867,15 +868,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException(
                "unexpected occurrence in peer group/neighbor context");
       }
+      boolean summaryOnly = ctx.SUMMARY_ONLY() != null;
       if (ctx.network != null) {
          Ip network = toIp(ctx.network);
          Ip subnet = toIp(ctx.subnet);
          BgpNetwork net = new BgpNetwork(network, subnet);
-         boolean summaryOnly = ctx.SUMMARY_ONLY() != null;
          proc.getAggregateNetworks().put(net, summaryOnly);
       }
       else if (ctx.prefix != null) {
-         todo(ctx);
+         Prefix prefix = new Prefix(ctx.prefix.getText());
+         Ip network = prefix.getAddress();
+         Ip subnet = prefix.getSubnetMask();
+         BgpNetwork net = new BgpNetwork(network, subnet);
+         proc.getAggregateNetworks().put(net, summaryOnly);
       }
       else if (ctx.ipv6_prefix != null) {
          todo(ctx);
