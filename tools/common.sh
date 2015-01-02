@@ -208,7 +208,7 @@ batfish_query_bgp() {
    batfish_expect_args 2 $# || return 1
    local BGP=$1
    local WORKSPACE=$2
-   batfish -log output -workspace $WORKSPACE -query -predicates BgpAdvertisement OriginalBgpAdvertisementRoute InstalledBgpAdvertisementRoute BgpNeighbors IbgpNeighbors BgpGeneratedRoute BgpNeighborGeneratedRoute &> $BGP
+   batfish -log output -workspace $WORKSPACE -query -predicates BgpAdvertisement OriginalBgpAdvertisementRoute InstalledBgpAdvertisementRoute BgpNeighbors IbgpNeighbors BgpGeneratedRoute BgpNeighborGeneratedRoute AdvertisementPath AdvertisementPathSize &> $BGP
    batfish_date
    echo ": END: Query bgp (informational only)"
 }
