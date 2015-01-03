@@ -257,7 +257,7 @@ batfish_query_policy() {
    batfish_expect_args 2 $# || return 1
    local OSPF=$1
    local WORKSPACE=$2
-   batfish -log output -workspace $WORKSPACE -query -predicates PolicyMapPermitRoute PolicyMapDenyRoute PolicyMapPermitAdvert PolicyMapDenyAdvert &> $OSPF
+   batfish -log output -workspace $WORKSPACE -query -predicates PolicyMapPermitRoute PolicyMapDenyRoute PolicyMapPermitAdvert PolicyMapDenyAdvert AsPathPermitAdvert AsPathDenyAdvert AsPathLineMatchEmpty AsPathLineMatchAs AsPathLineMatchAsAtBeginning AsPathLineMatchAsPair AsPathLineMatchAsPairAtBeginning &> $OSPF
    batfish_date
    echo ": END: Query policy (informational only)"
 }
