@@ -76,7 +76,8 @@ AsPathLineMatchAsPairAtBeginning(asPath, line, advert) <-
 AsPathLineMatchEmpty(asPath, line, advert) <-
    need_AsPathMatchAdvert(asPath, advert),
    SetAsPathLineMatchEmpty(asPath, line),
-   !AdvertisementPath(advert, _, _).
+   AdvertisementPathSize[advert] = size,
+   size = 0.
 
 AsPathPermitAdvert(asPath, advert) <-
    AsPathFirstMatchAdvert[asPath, advert] = line,
@@ -84,8 +85,6 @@ AsPathPermitAdvert(asPath, advert) <-
 
 lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
 lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
-lang:compiler:disableError:NEGATION_RECURSION[] = true.
-lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
 
 // END CODE
    })
