@@ -14,6 +14,7 @@ null_block_stanza
       | ARCHIVE
       | ATM
       | BASH
+      | CLASS_MAP
       | CLI
       | CONTROL_PLANE
       | CONTROLLER
@@ -396,7 +397,6 @@ null_standalone_stanza
       | CDP
       | CFS
       | CIPC
-      | CLASS_MAP
       | CLOCK
       | CLUSTER
       | CNS
@@ -582,7 +582,6 @@ null_standalone_stanza
       | LOGGING
       | MAC_ADDRESS_TABLE
       | MAIL_SERVER
-      | MATCH
       | MAXIMUM
       | MEDIA_TERMINATION
       | MEMORY_SIZE
@@ -656,7 +655,6 @@ null_standalone_stanza
       | SERVER_TYPE
       | SERVICE
       | SERVICE_POLICY
-      | SET
       | SETUP
       | SFLOW
       | SHELL
