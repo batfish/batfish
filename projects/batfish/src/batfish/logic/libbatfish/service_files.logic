@@ -535,6 +535,56 @@ block(`service_files) {
          column_formats[] = "string,string"
       }.
 
+      // AsPath
+      file_definition_by_name["SetAsPathLineDeny"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "ASPATH,LINE",
+         column_formats[] = "string,integer"
+      }.
+
+      file_definition_by_name["SetAsPathLineMatchAs"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "ASPATH,LINE,ASLOW,ASHIGH",
+         column_formats[] = "string,integer,integer,integer"
+      }.
+
+      file_definition_by_name["SetAsPathLineMatchAsAtBeginning"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "ASPATH,LINE,ASLOW,ASHIGH",
+         column_formats[] = "string,integer,integer,integer"
+      }.
+
+      file_definition_by_name["SetAsPathLineMatchAsPair"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "ASPATH,LINE,AS1LOW,AS1HIGH,AS2LOW,AS2HIGH",
+         column_formats[] = "string,integer,integer,integer,integer,integer"
+      }.
+
+      file_definition_by_name["SetAsPathLineMatchAsPairAtBeginning"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "ASPATH,LINE,AS1LOW,AS1HIGH,AS2LOW,AS2HIGH",
+         column_formats[] = "string,integer,integer,integer,integer,integer"
+      }.
+
+      file_definition_by_name["SetAsPathLineMatchEmpty"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "ASPATH,LINE",
+         column_formats[] = "string,integer"
+      }.
+
+      file_definition_by_name["SetAsPathLinePermit"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "ASPATH,LINE",
+         column_formats[] = "string,integer"
+      }.
+
    })
 } <-- .
 

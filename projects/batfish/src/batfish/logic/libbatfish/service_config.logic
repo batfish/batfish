@@ -391,6 +391,42 @@ block(`service_config) {
          delim_file_binding[] = "SetNodeVendor"
       }.
 
+      // AsPath
+      service_by_prefix["/batfish/SetAsPathLineDeny"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetAsPathLineDeny"
+      }.
+
+      service_by_prefix["/batfish/SetAsPathLineMatchAs"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetAsPathLineMatchAs"
+      }.
+
+      service_by_prefix["/batfish/SetAsPathLineMatchAsAtBeginning"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetAsPathLineMatchAsAtBeginning"
+      }.
+
+      service_by_prefix["/batfish/SetAsPathLineMatchAsPair"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetAsPathLineMatchAsPair"
+      }.
+
+      service_by_prefix["/batfish/SetAsPathLineMatchAsPairAtBeginning"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetAsPathLineMatchAsPairAtBeginning"
+      }.
+
+      service_by_prefix["/batfish/SetAsPathLineMatchEmpty"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetAsPathLineMatchEmpty"
+      }.
+
+      service_by_prefix["/batfish/SetAsPathLinePermit"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetAsPathLinePermit"
+      }.
+
    })
 } <-- .
 

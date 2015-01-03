@@ -99,6 +99,13 @@ public class Facts {
       map.put("SetRouteReflectorClient", "NODE|NEIGHBORIP|CLUSTERID");
       map.put("SetNodeVendor", "NODE|VENDOR");
       map.put("SetNodeRole", "NODE|ROLE");
+      map.put("SetAsPathLineDeny", "ASPATH|LINE");
+      map.put("SetAsPathLineMatchAs", "ASPATH|LINE|ASLOW|ASHIGH");
+      map.put("SetAsPathLineMatchAsAtBeginning", "ASPATH|LINE|ASLOW|ASHIGH");
+      map.put("SetAsPathLineMatchAsPair", "ASPATH|LINE|AS1LOW|AS1HIGH|AS2LOW|AS2HIGH");
+      map.put("SetAsPathLineMatchAsPairAtBeginning", "ASPATH|LINE|AS1LOW|AS1HIGH|AS2LOW|AS2HIGH");
+      map.put("SetAsPathLineMatchEmpty", "ASPATH|LINE");
+      map.put("SetAsPathLinePermit", "ASPATH|LINE");
       return Collections.unmodifiableMap(map);
    }
 

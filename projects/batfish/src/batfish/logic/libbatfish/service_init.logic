@@ -757,6 +757,76 @@ block(`service_init) {
             }
       }.
 
+      // AsPath
+      file_binding_by_name["SetAsPathLineDeny"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetAsPathLineDeny",
+         predicate_binding_by_name["libbatfish:AsPath:SetAsPathLineDeny"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "ASPATH,LINE"
+            }
+      }.
+
+      file_binding_by_name["SetAsPathLineMatchAs"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetAsPathLineMatchAs",
+         predicate_binding_by_name["libbatfish:AsPath:SetAsPathLineMatchAs"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "ASPATH,LINE,ASLOW,ASHIGH"
+            }
+      }.
+
+      file_binding_by_name["SetAsPathLineMatchAsAtBeginning"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetAsPathLineMatchAsAtBeginning",
+         predicate_binding_by_name["libbatfish:AsPath:SetAsPathLineMatchAsAtBeginning"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "ASPATH,LINE,ASLOW,ASHIGH"
+            }
+      }.
+
+      file_binding_by_name["SetAsPathLineMatchAsPair"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetAsPathLineMatchAsPair",
+         predicate_binding_by_name["libbatfish:AsPath:SetAsPathLineMatchAsPair"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "ASPATH,LINE,AS1LOW,AS1HIGH,AS2LOW,AS2HIGH"
+            }
+      }.
+
+      file_binding_by_name["SetAsPathLineMatchAsPairAtBeginning"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetAsPathLineMatchAsPairAtBeginning",
+         predicate_binding_by_name["libbatfish:AsPath:SetAsPathLineMatchAsPairAtBeginning"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "ASPATH,LINE,AS1LOW,AS1HIGH,AS2LOW,AS2HIGH"
+            }
+      }.
+
+      file_binding_by_name["SetAsPathLineMatchEmpty"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetAsPathLineMatchEmpty",
+         predicate_binding_by_name["libbatfish:AsPath:SetAsPathLineMatchEmpty"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "ASPATH,LINE"
+            }
+      }.
+
+      file_binding_by_name["SetAsPathLinePermit"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetAsPathLinePermit",
+         predicate_binding_by_name["libbatfish:AsPath:SetAsPathLinePermit"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "ASPATH,LINE"
+            }
+      }.
+
    })
 } <-- .
-
