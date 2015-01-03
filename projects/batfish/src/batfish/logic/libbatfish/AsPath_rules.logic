@@ -1,0 +1,87 @@
+block(`AsPath_rules) {
+   clauses(`{
+// BEGIN CODE
+
+AsPathDenyAdvert(asPath, advert) <-
+   AsPathFirstMatchAdvert[asPath, advert] = line,
+   SetAsPathLineDeny(asPath, line).
+AsPathDenyAdvert(asPath, advert) <-
+   need_AsPathMatchAdvert(asPath, advert),
+   !(AsPathFirstMatchAdvert[asPath, advert] = _).
+
+AsPathFirstMatchAdvert[asPath, advert] = matchLine <-
+   agg<<matchLine = min(line)>>
+      AsPathLineMatchAdvert(asPath, line, advert).
+
+AsPathLineMatchAdvert(asPath, line, advert) <-
+   AsPathLineMatchAs(asPath, line, advert) ;
+   AsPathLineMatchAsAtBeginning(asPath, line, advert) ;
+   AsPathLineMatchAsPair(asPath, line, advert) ;
+   AsPathLineMatchAsPairAtBeginning(asPath, line, advert) ;
+   AsPathLineMatchEmpty(asPath, line, advert).
+
+AsPathLineMatchAs(asPath, line, advert) <-
+   need_AsPathMatchAdvert(asPath, advert),
+   SetAsPathLineMatchAs(asPath, line, asLow, asHigh),
+   AdvertisementPath(advert, _, as),
+   AutonomousSystem_number(as:asNum),
+   AutonomousSystem_number(asLow:asLowNum),
+   AutonomousSystem_number(asHigh:asHighNum),
+   asLowNum <= asNum <= asHighNum.
+
+AsPathLineMatchAsAtBeginning(asPath, line, advert) <-
+   need_AsPathMatchAdvert(asPath, advert),
+   SetAsPathLineMatchAsAtBeginning(asPath, line, asLow, asHigh),
+   AdvertisementPath(advert, index, as),
+   AutonomousSystem_number(as:asNum),
+   AutonomousSystem_number(asLow:asLowNum),
+   AutonomousSystem_number(asHigh:asHighNum),
+   asLowNum <= asNum <= asHighNum,
+   AdvertisementPathSize[advert] = size,
+   index = size - 1.
+
+AsPathLineMatchAsPair(asPath, line, advert) <-
+   need_AsPathMatchAdvert(asPath, advert),
+   SetAsPathLineMatchAsPair(asPath, line, as1Low, as1High, as2Low, as2High),
+   AdvertisementPath(advert, index1, as1),
+   AdvertisementPath(advert, index2, as2),
+   AutonomousSystem_number(as1:as1Num),
+   AutonomousSystem_number(as1Low:as1LowNum),
+   AutonomousSystem_number(as1High:as1HighNum),
+   AutonomousSystem_number(as2:as2Num),
+   AutonomousSystem_number(as2Low:as2LowNum),
+   AutonomousSystem_number(as2High:as2HighNum),
+   as1LowNum <= as1Num <= as1HighNum,
+   as2LowNum <= as2Num <= as2HighNum,
+   index2 = index1 - 1.
+
+AsPathLineMatchAsPairAtBeginning(asPath, line, advert) <-
+   need_AsPathMatchAdvert(asPath, advert),
+   SetAsPathLineMatchAsPairAtBeginning(asPath, line, as1Low, as1High, as2Low, as2High),
+   AdvertisementPath(advert, index1, as1),
+   AdvertisementPath(advert, index2, as2),
+   AutonomousSystem_number(as1:as1Num),
+   AutonomousSystem_number(as1Low:as1LowNum),
+   AutonomousSystem_number(as1High:as1HighNum),
+   AutonomousSystem_number(as2:as2Num),
+   AutonomousSystem_number(as2Low:as2LowNum),
+   AutonomousSystem_number(as2High:as2HighNum),
+   as1LowNum <= as1Num <= as1HighNum,
+   as2LowNum <= as2Num <= as2HighNum,
+   index2 = index1 + 1,
+   AdvertisementPathSize[advert] = size,
+   index1 = size - 1.
+
+AsPathLineMatchEmpty(asPath, line, advert) <-
+   need_AsPathMatchAdvert(asPath, advert),
+   SetAsPathLineMatchEmpty(asPath, line),
+   !AdvertisementPath(advert, _, _).
+
+AsPathPermitAdvert(asPath, line, advert) <-
+   need_AsPathMatchMatchAdvert(asPath, advert),
+   AsPathFirstMatchAdvert[asPath, advert] = line,
+   SetAsPathLinePermit(asPath, line).
+
+// END CODE
+   })
+} <-- .

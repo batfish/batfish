@@ -1,11 +1,11 @@
 block(`Bgp) {
+   alias_all(`libbatfish:AsPath),
    alias_all(`libbatfish:BgpAdvertisement),
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:Node),
    alias_all(`libbatfish:PolicyMap),
    alias_all(`libbatfish:Route),
    export(`{
-
 
 AdvertisementClusterId(advert, clusterId) ->
    BgpAdvertisement(advert),
@@ -19,13 +19,6 @@ AdvertisementPath(advert, index, as) ->
 AdvertisementPathSize[advert] = size ->
    BgpAdvertisement(advert),
    int(size).
-
-/// [AutonomousSystem(x)] =
-///   [x] is an autonomous system.
-AutonomousSystem(x),
-   AutonomousSystem_number(x:n)
-   ->
-   int(n).
 
 BestBgpAdvertisement(advert) ->
    BgpAdvertisement(advert).
