@@ -1,4 +1,5 @@
 block(`AsPath_rules) {
+   alias_all(`libbatfish:AsPath),
    clauses(`{
 // BEGIN CODE
 
@@ -77,8 +78,7 @@ AsPathLineMatchEmpty(asPath, line, advert) <-
    SetAsPathLineMatchEmpty(asPath, line),
    !AdvertisementPath(advert, _, _).
 
-AsPathPermitAdvert(asPath, line, advert) <-
-   need_AsPathMatchMatchAdvert(asPath, advert),
+AsPathPermitAdvert(asPath, advert) <-
    AsPathFirstMatchAdvert[asPath, advert] = line,
    SetAsPathLinePermit(asPath, line).
 

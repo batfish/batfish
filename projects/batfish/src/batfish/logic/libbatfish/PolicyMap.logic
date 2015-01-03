@@ -1,4 +1,5 @@
 block(`PolicyMap) {
+   alias_all(`libbatfish:AsPath),
    alias_all(`libbatfish:BgpAdvertisement),
    alias_all(`libbatfish:CommunityList),
    alias_all(`libbatfish:Flow),
@@ -116,6 +117,11 @@ SetPolicyMapClauseMatchAcl(map, clause, acl) ->
    PolicyMap(map),
    int(clause),
    IpAccessList(acl).
+
+SetPolicyMapClauseMatchAsPath(map, clause, asPath) ->
+   PolicyMap(map),
+   int(clause),
+   AsPath(asPath).
 
 SetPolicyMapClauseMatchCommunityList(map, clause, list) ->
    PolicyMap(map),

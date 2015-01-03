@@ -7,6 +7,15 @@ need_AsPathMatchAdvert(asPath, advert) ->
    AsPath(asPath),
    BgpAdvertisement(advert).
 
+AdvertisementPath(advert, index, as) ->
+   BgpAdvertisement(advert),
+   int(index),
+   AutonomousSystem(as).
+
+AdvertisementPathSize[advert] = size ->
+   BgpAdvertisement(advert),
+   int(size).
+
 AsPath(asPath),
    AsPath_name(asPath:name)
 ->
@@ -51,9 +60,8 @@ AsPathLineMatchEmpty(asPath, line, advert) ->
    int(line),
    BgpAdvertisement(advert).
 
-AsPathPermitAdvert(asPath, line, advert) ->
+AsPathPermitAdvert(asPath, advert) ->
    AsPath(asPath),
-   int(line),
    BgpAdvertisement(advert).
 
 /// [AutonomousSystem(x)] =

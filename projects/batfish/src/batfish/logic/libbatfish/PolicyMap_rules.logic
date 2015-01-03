@@ -1,4 +1,5 @@
 block(`PolicyMap_rules) {
+   alias_all(`libbatfish:AsPath),
    alias_all(`libbatfish:BgpAdvertisement),
    alias_all(`libbatfish:CommunityList),
    alias_all(`libbatfish:Flow),
@@ -8,6 +9,10 @@ block(`PolicyMap_rules) {
    alias_all(`libbatfish:RouteFilter),
    clauses(`{
 // BEGIN CODE
+
+need_AsPathMatchAdvert(asPath, advert) <-
+   need_PolicyMapMatchAdvert(map, advert),
+   SetPolicyMapClauseMatchAsPath(map, _, asPath).
 
 // policy maps for advertisements
 need_RouteFilterPermitNetwork(list, network) <-
@@ -21,24 +26,20 @@ need_RouteFilterPermitNetwork(list, network) <-
    SetPolicyMapClauseMatchRouteFilter(map, _, list).
 
 PolicyMapClauseMatchAdvert(map, clause, advert) <-
-   BgpAdvertisement_network[advert] =  dstIpBlock,
    need_PolicyMapMatchAdvert(map, advert),
    PolicyMapHasClause(map, clause),
-   /*
-   // access list   
    (
-      !SetPolicyMapClauseMatchAccessList(map, clause, _);
+      !SetPolicyMapClauseMatchAsPath(map, clause, _) ;
       (
-         SetPolicyMapClauseMatchAccessList(map, clause, accessList),
-         PAccessListPermitNetwork(accessList, dstIpBlock) 
+         SetPolicyMapClauseMatchAsPath(map, clause, asPath),
+         AsPathPermitAdvert(asPath, advert)
       )
    ),
-   */
-   // prefix list
    (
       !SetPolicyMapClauseMatchRouteFilter(map, clause, _) ;
       (
          SetPolicyMapClauseMatchRouteFilter(map, clause, filter),
+         BgpAdvertisement_network[advert] = dstIpBlock,
          RouteFilterPermitNetwork(filter, dstIpBlock) 
       )
    ),

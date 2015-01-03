@@ -11,15 +11,6 @@ AdvertisementClusterId(advert, clusterId) ->
    BgpAdvertisement(advert),
    int(clusterId).
 
-AdvertisementPath(advert, index, as) ->
-   BgpAdvertisement(advert),
-   int(index),
-   AutonomousSystem(as).
-
-AdvertisementPathSize[advert] = size ->
-   BgpAdvertisement(advert),
-   int(size).
-
 BestBgpAdvertisement(advert) ->
    BgpAdvertisement(advert).
 
