@@ -4480,25 +4480,47 @@ mode M_AsPath;
 
 M_AsPath_ACCESS_LIST
 :
-   'access-list' -> type(ACCESS_LIST)
+   'access-list' -> type(ACCESS_LIST), mode(M_AsPathAccessList)
 ;
 
 M_AsPath_DEC
 :
+   F_Digit+ -> type(DEC), popMode
+;
+
+M_AsPath_VARIABLE
+:
+   F_Variable_RequiredVarChar F_Variable_VarChar* -> type(VARIABLE), popMode
+;
+
+M_AsPath_WS
+:
+   F_Whitespace+ -> channel(HIDDEN)
+;
+
+mode M_AsPathAccessList;
+
+M_AsPathAccessList_DEC
+:
    F_Digit+ -> type(DEC)
 ;
 
-M_AsPath_DENY
+M_AsPathAccessList_DENY
 :
    'deny' -> type(DENY), mode(M_AsPathRegex)
 ;
 
-M_AsPath_PERMIT
+M_AsPathAccessList_PERMIT
 :
    'permit' -> type(PERMIT), mode(M_AsPathRegex)
 ;
 
-M_AsPath_WS
+M_AsPathAccessList_VARIABLE
+:
+   F_Variable_RequiredVarChar F_Variable_VarChar* -> type(VARIABLE)
+;
+
+M_AsPathAccessList_WS
 :
    F_Whitespace+ -> channel(HIDDEN)
 ;
