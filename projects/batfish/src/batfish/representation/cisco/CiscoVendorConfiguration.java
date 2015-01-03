@@ -12,7 +12,6 @@ import java.util.Set;
 import batfish.collections.RoleSet;
 import batfish.representation.GeneratedRoute;
 import batfish.representation.AsPathAccessList;
-import batfish.representation.AsPathAccessListLine;
 import batfish.representation.BgpNeighbor;
 import batfish.representation.CommunityList;
 import batfish.representation.CommunityListLine;
@@ -112,12 +111,12 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
    private static AsPathAccessList toAsPathAccessList(
          IpAsPathAccessList pathList) {
-      String name = "" + pathList.getName();
-      List<AsPathAccessListLine> lines = new ArrayList<AsPathAccessListLine>();
+      String name = pathList.getName();
+      AsPathAccessList newList = new AsPathAccessList(name);
       for (IpAsPathAccessListLine fromLine : pathList.getLines()) {
-         lines.add(new AsPathAccessListLine(fromLine.getRegex()));
+         fromLine.applyTo(newList);
       }
-      return new AsPathAccessList(name, lines);
+      return newList;
    }
 
    private static batfish.representation.BgpProcess toBgpProcess(

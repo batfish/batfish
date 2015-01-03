@@ -3,10 +3,13 @@ package batfish.logicblox;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import batfish.collections.RoleSet;
 import batfish.main.BatfishException;
+import batfish.representation.AsPathAccessList;
+import batfish.representation.AsPathAccessListLine;
 import batfish.representation.BgpNeighbor;
 import batfish.representation.BgpProcess;
 import batfish.representation.CommunityList;
@@ -24,6 +27,7 @@ import batfish.representation.OspfMetricType;
 import batfish.representation.OspfProcess;
 import batfish.representation.PolicyMap;
 import batfish.representation.PolicyMapClause;
+import batfish.representation.PolicyMapMatchAsPathAccessListLine;
 import batfish.representation.PolicyMapMatchCommunityListLine;
 import batfish.representation.PolicyMapMatchIpAccessListLine;
 import batfish.representation.PolicyMapMatchLine;
@@ -103,6 +107,80 @@ public class ConfigurationFactExtractor {
 
    public List<String> getWarnings() {
       return _warnings;
+   }
+
+   private void writeAsPaths() {
+      StringBuilder wSetAsPathLineDeny = _factBins.get("SetAsPathLineDeny");
+      StringBuilder wSetAsPathLineMatchAs = _factBins
+            .get("SetAsPathLineMatchAs");
+      StringBuilder wSetAsPathLineMatchAsAtBeginning = _factBins
+            .get("SetAsPathLineMatchAsAtBeginning");
+      StringBuilder wSetAsPathLineMatchAsPair = _factBins
+            .get("SetAsPathLineMatchAsPair");
+      StringBuilder wSetAsPathLineMatchAsPairAtBeginning = _factBins
+            .get("SetAsPathLineMatchAsPairAtBeginning");
+      StringBuilder wSetAsPathLineMatchEmpty = _factBins
+            .get("SetAsPathLineMatchEmpty");
+      StringBuilder wSetAsPathLinePermit = _factBins.get("SetAsPathLinePermit");
+      String hostname = _configuration.getHostname();
+      for (Entry<String, AsPathAccessList> e : _configuration
+            .getAsPathAccessLists().entrySet()) {
+         String asPathName = hostname + ":" + e.getKey();
+         AsPathAccessList asPath = e.getValue();
+         List<AsPathAccessListLine> lines = asPath.getLines();
+         for (int i = 0; i < lines.size(); i++) {
+            AsPathAccessListLine line = lines.get(i);
+            switch (line.getAction()) {
+            case ACCEPT:
+               wSetAsPathLinePermit.append(asPathName + "|" + i + "\n");
+               break;
+
+            case REJECT:
+               wSetAsPathLineDeny.append(asPathName + "|" + i + "\n");
+               break;
+
+            default:
+               throw new BatfishException("Bad action");
+            }
+            SubRange as1Range = line.getAs1Range();
+            SubRange as2Range = line.getAs2Range();
+            boolean atBeginning = line.getAtBeginning();
+            if (as2Range != null) {
+               // we are dealing with a pair to match
+               int as1Low = as1Range.getStart();
+               int as1High = as1Range.getEnd();
+               int as2Low = as2Range.getStart();
+               int as2High = as2Range.getEnd();
+               if (atBeginning) {
+                  wSetAsPathLineMatchAsPairAtBeginning.append(asPathName + "|"
+                        + i + "|" + as1Low + "|" + as1High + "|" + as2Low + "|"
+                        + as2High + "\n");
+               }
+               else {
+                  wSetAsPathLineMatchAsPair.append(asPathName + "|" + i + "|"
+                        + as1Low + "|" + as1High + "|" + as2Low + "|" + as2High
+                        + "\n");
+               }
+            }
+            else if (as1Range != null) {
+               // we are dealing with a single as to match
+               int asLow = as1Range.getStart();
+               int asHigh = as1Range.getEnd();
+               if (atBeginning) {
+                  wSetAsPathLineMatchAsAtBeginning.append(asPathName + "|" + i
+                        + "|" + asLow + "|" + asHigh + "\n");
+               }
+               else {
+                  wSetAsPathLineMatchAs.append(asPathName + "|" + i + "|"
+                        + asLow + "|" + asHigh + "\n");
+               }
+            }
+            if (line.getMatchEmpty()) {
+               // we allow an empty match
+               wSetAsPathLineMatchEmpty.append(asPathName + "|" + i + "\n");
+            }
+         }
+      }
    }
 
    private void writeBgpGeneratedRoutes() {
@@ -273,6 +351,7 @@ public class ConfigurationFactExtractor {
       writeBgpNeighborGeneratedRoutes();
       writeGeneratedRoutes();
       writeVlanInterface();
+      writeAsPaths();
    }
 
    private void writeGeneratedRoutes() {
@@ -578,6 +657,8 @@ public class ConfigurationFactExtractor {
             .get("SetPolicyMapClauseDeleteCommunity");
       StringBuilder wSetPolicyMapClauseDeny = _factBins
             .get("SetPolicyMapClauseDeny");
+      StringBuilder wSetPolicyMapClauseMatchAsPath = _factBins
+            .get("SetPolicyMapClauseMatchAsPath");
       StringBuilder wSetPolicyMapClauseMatchAcl = _factBins
             .get("SetPolicyMapClauseMatchAcl");
       StringBuilder wSetPolicyMapClauseMatchCommunityList = _factBins
@@ -622,15 +703,14 @@ public class ConfigurationFactExtractor {
             }
             for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
                switch (matchLine.getType()) {
+
                case AS_PATH_ACCESS_LIST:
-                  // TODO: implement
-                  // throw new BatfishException("not implemented");
-                  _warnings
-                        .add("WARNING: "
-                              + mapName
-                              + ":"
-                              + i
-                              + ": Policy map matching of AS path acls not implemented!\n");
+                  PolicyMapMatchAsPathAccessListLine matchAsPathLine = (PolicyMapMatchAsPathAccessListLine) matchLine;
+                  for (AsPathAccessList asPath : matchAsPathLine.getLists()) {
+                     String asPathName = asPath.getName();
+                     wSetPolicyMapClauseMatchAsPath.append(mapName + "|" + i
+                           + "|" + asPathName + "\n");
+                  }
                   break;
 
                case COMMUNITY_LIST:

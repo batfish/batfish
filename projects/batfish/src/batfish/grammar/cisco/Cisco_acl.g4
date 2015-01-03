@@ -53,6 +53,20 @@ appletalk_access_list_stanza
    numbered = appletalk_access_list_numbered_stanza
 ;
 
+as_path_regex
+:
+   CARAT?
+   (
+      ranges += as_path_regex_range ASTERISK?
+   )* DOLLAR?
+;
+
+as_path_regex_range
+:
+   DEC
+   | PERIOD
+;
+
 extended_access_list_additional_feature
 :
    (
@@ -173,10 +187,7 @@ locals [boolean again]
 
 ip_as_path_access_list_tail
 :
-   action = access_list_action
-   (
-      remainder += ~NEWLINE
-   )+ NEWLINE
+   action = access_list_action as_path_regex NEWLINE
 ;
 
 ip_community_list_expanded_stanza

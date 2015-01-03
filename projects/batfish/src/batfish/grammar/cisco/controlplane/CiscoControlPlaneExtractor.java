@@ -20,6 +20,7 @@ import batfish.grammar.ControlPlaneExtractor;
 import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.cisco.CiscoParser.*;
 import batfish.grammar.cisco.*;
+import batfish.grammar.cisco.CiscoParser.As_path_regex_rangeContext;
 import batfish.main.BatfishException;
 import batfish.main.PedanticBatfishException;
 import batfish.representation.Ip;
@@ -449,6 +450,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          range.add(sr);
       }
       return range;
+   }
+
+   private static SubRange toSubrange(As_path_regex_rangeContext ctx) {
+      if (ctx.DEC() != null) {
+         int as = toInteger(ctx.DEC());
+         return new SubRange(as, as);
+      }
+      else if (ctx.PERIOD() != null) {
+         return new SubRange(0, 65535);
+      }
+      else {
+         throw new BatfishException("Invalid as path regex range");
+      }
    }
 
    public static SubRange toSubRange(SubrangeContext ctx) {
@@ -1091,11 +1105,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIp_as_path_access_list_tail(
          Ip_as_path_access_list_tailContext ctx) {
       LineAction action = getAccessListAction(ctx.action);
-      String regex = "";
-      for (Token remainder : ctx.remainder) {
-         regex += remainder.getText();
+      As_path_regexContext asPath = ctx.as_path_regex();
+      IpAsPathAccessListLine line = new IpAsPathAccessListLine(action);
+      boolean atBeginning = asPath.CARAT() != null;
+      boolean matchEmpty = asPath.ranges.size() == asPath.ASTERISK().size();
+      line.setAtBeginning(atBeginning);
+      line.setMatchEmpty(matchEmpty);
+      switch (asPath.ranges.size()) {
+      case 0:
+         break;
+
+      case 2:
+         As_path_regex_rangeContext range2ctx = asPath.ranges.get(1);
+         SubRange asRange2 = toSubrange(range2ctx);
+         line.setAs2Range(asRange2);
+      case 1:
+         As_path_regex_rangeContext range1ctx = asPath.ranges.get(0);
+         SubRange asRange1 = toSubrange(range1ctx);
+         line.setAs1Range(asRange1);
+
+      default:
+         throw new BatfishException(
+               "Do not currently support more than two AS'es in Cisco as-path regexes");
       }
-      IpAsPathAccessListLine line = new IpAsPathAccessListLine(action, regex);
       _currentAsPathAcl.addLine(line);
    }
 

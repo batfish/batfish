@@ -269,7 +269,7 @@ ARP
 
 AS_PATH
 :
-   'as-path'
+   'as-path' -> pushMode(M_AsPath)
 ;
 
 ASA
@@ -4474,6 +4474,80 @@ F_Whitespace
    ' '
    | '\t'
    | '\u000C'
+;
+
+mode M_AsPath;
+
+M_AsPath_ACCESS_LIST
+:
+   'access-list' -> type(ACCESS_LIST)
+;
+
+M_AsPath_DEC
+:
+   F_Digit+ -> type(DEC)
+;
+
+M_AsPath_DENY
+:
+   'deny' -> type(DENY), mode(M_AsPathRegex)
+;
+
+M_AsPath_PERMIT
+:
+   'permit' -> type(PERMIT), mode(M_AsPathRegex)
+;
+
+M_AsPath_WS
+:
+   F_Whitespace+ -> channel(HIDDEN)
+;
+
+mode M_AsPathRegex;
+
+M_AsPathRegex_ASTERISK
+:
+   '*' -> type(ASTERISK)
+;
+
+M_AsPathRegex_CARAT
+:
+   '^' -> type(CARAT)
+;
+
+M_AsPathRegex_DEC
+:
+   F_Digit+ -> type(DEC)
+;
+
+M_AsPathRegex_DOLLAR
+:
+   '$' -> type(DOLLAR)
+;
+
+M_AsPathRegex_DOUBLE_QUOTE
+:
+   '"' -> channel(HIDDEN)
+;
+
+M_AsPathRegex_NEWLINE
+:
+   F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_AsPathRegex_PERIOD
+:
+   '.' -> type(PERIOD)
+;
+
+M_AsPathRegex_UNDERSCORE
+:
+   '_' -> channel(HIDDEN)
+;
+
+M_AsPathRegex_WS
+:
+   F_Whitespace+ -> channel(HIDDEN)
 ;
 
 mode M_BANNER;
