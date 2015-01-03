@@ -8,7 +8,7 @@ AsPathDenyAdvert(asPath, advert) <-
    SetAsPathLineDeny(asPath, line).
 AsPathDenyAdvert(asPath, advert) <-
    need_AsPathMatchAdvert(asPath, advert),
-   !(AsPathFirstMatchAdvert[asPath, advert] = _).
+   !AsPathLineMatchAdvert(asPath, _, advert).
 
 AsPathFirstMatchAdvert[asPath, advert] = matchLine <-
    agg<<matchLine = min(line)>>
@@ -81,6 +81,11 @@ AsPathLineMatchEmpty(asPath, line, advert) <-
 AsPathPermitAdvert(asPath, advert) <-
    AsPathFirstMatchAdvert[asPath, advert] = line,
    SetAsPathLinePermit(asPath, line).
+
+lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableError:NEGATION_RECURSION[] = true.
+lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
 
 // END CODE
    })
