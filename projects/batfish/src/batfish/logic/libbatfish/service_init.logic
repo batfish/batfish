@@ -475,6 +475,16 @@ block(`service_init) {
             }
       }.
 
+      file_binding_by_name["SetPolicyMapClauseMatchAsPath"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseMatchAsPath",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseMatchAsPath"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,ASPATH"
+            }
+      }.
+
       file_binding_by_name["SetPolicyMapClauseMatchCommunityList"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",

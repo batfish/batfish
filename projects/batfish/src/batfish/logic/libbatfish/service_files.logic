@@ -337,6 +337,13 @@ block(`service_files) {
          column_formats[] = "string,integer,string"
       }.
 
+      file_definition_by_name["SetPolicyMapClauseMatchAsPath"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,ASPATH",
+         column_formats[] = "string,integer,string"
+      }.
+
       file_definition_by_name["SetPolicyMapClauseMatchCommunityList"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
