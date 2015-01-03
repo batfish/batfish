@@ -67,6 +67,7 @@ public class Facts {
       map.put("SetPolicyMapClauseDeleteCommunity", "MAP|CLAUSE|LIST");
       map.put("SetPolicyMapClauseDeny", "MAP|CLAUSE");
       map.put("SetPolicyMapClauseMatchAcl", "MAP|CLAUSE|ACL");
+      map.put("SetPolicyMapClauseMatchAsPath", "MAP|CLAUSE|ACL");
       map.put("SetPolicyMapClauseMatchCommunityList", "MAP|CLAUSE|LIST");
       map.put("SetPolicyMapClauseMatchNeighbor", "MAP|CLAUSE|NEIGHBORIP");
       map.put("SetPolicyMapClauseMatchProtocol", "MAP|CLAUSE|PROTOCOL");
