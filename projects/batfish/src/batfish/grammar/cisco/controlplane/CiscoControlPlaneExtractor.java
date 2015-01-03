@@ -1295,8 +1295,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitMatch_as_path_access_list_rm_stanza(
          Match_as_path_access_list_rm_stanzaContext ctx) {
       Set<String> names = new TreeSet<String>();
-      for (Token t : ctx.name_list) {
-         names.add(t.getText());
+      for (VariableContext name : ctx.name_list) {
+         names.add(name.getText());
       }
       RouteMapMatchAsPathAccessListLine line = new RouteMapMatchAsPathAccessListLine(
             names);

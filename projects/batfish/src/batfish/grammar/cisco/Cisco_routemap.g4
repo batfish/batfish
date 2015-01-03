@@ -10,7 +10,7 @@ match_as_path_access_list_rm_stanza
 :
    MATCH AS_PATH
    (
-      name_list += DEC
+      name_list += variable
    )+ NEWLINE
 ;
 
