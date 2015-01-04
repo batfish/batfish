@@ -1123,6 +1123,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          As_path_regex_rangeContext range1ctx = asPath.ranges.get(0);
          SubRange asRange1 = toSubrange(range1ctx);
          line.setAs1Range(asRange1);
+         break;
 
       default:
          throw new BatfishException(
