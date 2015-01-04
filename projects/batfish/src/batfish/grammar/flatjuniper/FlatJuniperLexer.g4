@@ -2137,6 +2137,11 @@ M_Interface_VARIABLE
    F_Variable_RequiredVarChar F_Variable_InterfaceVarChar* -> type(VARIABLE), popMode
 ;
 
+M_Interface_WILDCARD
+:
+   '<' ~'>'* '>' -> type(WILDCARD), popMode
+;
+
 M_Interface_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
