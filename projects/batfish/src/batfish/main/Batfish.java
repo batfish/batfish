@@ -1661,8 +1661,17 @@ public class Batfish implements AutoCloseable {
             // either flat or hierarchical
             if (!fileText.contains("set version")) {
                // hierarchical
-               throw new BatfishException(
-                     "Juniper configurations must be flattened prior to this stage");
+               if (_settings.flattenOnTheFly()) {
+                  _logger
+                        .warn("Flattening: \""
+                              + currentPath
+                              + "\" on-the-fly; line-numbers reported for this file will be spurious\n");
+                  fileText = flatten(fileText);
+               }
+               else {
+                  throw new BatfishException(
+                        "Juniper configurations must be flattened prior to this stage");
+               }
             }
             // flat
             FlatJuniperCombinedParser flatJuniperParser = new FlatJuniperCombinedParser(

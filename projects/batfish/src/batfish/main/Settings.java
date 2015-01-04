@@ -45,6 +45,7 @@ public class Settings {
    private static final String ARG_FACTS = "facts";
    private static final String ARG_FLATTEN = "flatten";
    private static final String ARG_FLATTEN_DESTINATION = "flattendst";
+   private static final String ARG_FLATTEN_ON_THE_FLY = "flattenonthefly";
    private static final String ARG_FLATTEN_SOURCE = "flattensrc";
    private static final String ARG_FLOW_PATH = "flowpath";
    private static final String ARG_FLOW_SINK_PATH = "flowsink";
@@ -186,6 +187,7 @@ public class Settings {
    private boolean _facts;
    private boolean _flatten;
    private String _flattenDestination;
+   private boolean _flattenOnTheFly;
    private String _flattenSource;
    private String _flowPath;
    private boolean _flows;
@@ -273,6 +275,10 @@ public class Settings {
 
    public boolean exitOnParseError() {
       return _exitOnParseError;
+   }
+
+   public boolean flattenOnTheFly() {
+      return _flattenOnTheFly;
    }
 
    public String getAcceptNode() {
@@ -886,6 +892,9 @@ public class Settings {
                   .argName(ARGNAME_FLATTEN_DESTINATION)
                   .desc("output path to test rig in which flat juniper (and all other) configurations will be placed")
                   .longOpt(ARG_FLATTEN_DESTINATION).build());
+      _options.addOption(Option.builder()
+            .desc("flatten hierarchical juniper configuration files on-the-fly (line number references will be spurious)")
+            .longOpt(ARG_FLATTEN_ON_THE_FLY).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1038,6 +1047,7 @@ public class Settings {
       _flatten = line.hasOption(ARG_FLATTEN);
       _flattenSource = line.getOptionValue(ARG_FLATTEN_SOURCE);
       _flattenDestination = line.getOptionValue(ARG_FLATTEN_DESTINATION);
+      _flattenOnTheFly = line.hasOption(ARG_FLATTEN_ON_THE_FLY);
    }
 
    public boolean printParseTree() {
