@@ -78,8 +78,8 @@ NOTE the default values for the following arguments:
 -lbwebadminport -> 55183
 NOTE that the built logic will reside on the SERVER at <batfish-repo-root>/projects/batfish/bin/batfish/logic
 .bashrc:
-   export BATFISH_COMMON_ARGS='-lbhost <OPTIONAL_hostname_of_SERVER> -lbport <OPTIONAL_ConnectBlox_port_on_SERVER> -lbwebport <OPTIONAL_lb_web_port_on_SERVER> -lbwebadminport <OPTIONAL_lb_web_admin_port_on_SERVER> -logicdir <MANDATORY_absolute_path_to_built_logic_on_SERVER_filesystem>'
-
+   export BATFISH_REMOTE_LOGIC_DIR=<MANDATORY_absolute_path_to_built_logic_on_SERVER_filesystem>'
+   export BATFISH_COMMON_ARGS='-lbhost <OPTIONAL_hostname_of_SERVER> -lbport <OPTIONAL_ConnectBlox_port_on_SERVER> -lbwebport <OPTIONAL_lb_web_port_on_SERVER> -lbwebadminport <OPTIONAL_lb_web_admin_port_on_SERVER>
 10. run batfish
 The output of this step will be placed in the current folder.
 If you want to confirm running of each subtask, run:

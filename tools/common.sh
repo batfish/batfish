@@ -54,7 +54,10 @@ batfish_compile() {
    local TEST_RIG=$2
    local DUMP_DIR=$3
    local INDEP_SERIAL_DIR=$4
-   batfish -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR || return 1
+   if [ -n "${BATFISH_REMOTE_LOGIC_DIR}" ]; then
+      local LOGIC_DIR_ARG="-logicdir ${BATFISH_REMOTE_LOGIC_DIR}"
+   fi
+   batfish -workspace $LOGIC_DIR_ARG $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane"
 }
