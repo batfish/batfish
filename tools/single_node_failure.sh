@@ -14,4 +14,3 @@ batfish_compile_blacklist_node() {
    echo ": END: Compute the fixed point of the control plane with blacklisted node: \"$BLACKLISTED_NODE\""
 }
 export -f batfish_compile_blacklist_node
-
