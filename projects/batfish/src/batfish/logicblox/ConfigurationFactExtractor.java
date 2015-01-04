@@ -707,7 +707,7 @@ public class ConfigurationFactExtractor {
                case AS_PATH_ACCESS_LIST:
                   PolicyMapMatchAsPathAccessListLine matchAsPathLine = (PolicyMapMatchAsPathAccessListLine) matchLine;
                   for (AsPathAccessList asPath : matchAsPathLine.getLists()) {
-                     String asPathName = asPath.getName();
+                     String asPathName = hostname + ":" + asPath.getName();
                      wSetPolicyMapClauseMatchAsPath.append(mapName + "|" + i
                            + "|" + asPathName + "\n");
                   }
