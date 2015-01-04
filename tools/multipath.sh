@@ -35,6 +35,7 @@ batfish_analyze() {
    local INDEP_SERIAL_DIR=$OLD_PWD/$PREFIX-indep
    local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
    local OSPF=$OLD_PWD/$PREFIX-ospf
+   local POLICY=$OLD_PWD/$PREFIX-policy
    local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
    local ROUTES=$OLD_PWD/$PREFIX-routes
    local VENDOR_SERIAL_DIR=$OLD_PWD/$PREFIX-vendor
@@ -49,14 +50,17 @@ batfish_analyze() {
    echo "Compute the fixed point of the control plane"
    $BATFISH_CONFIRM && { batfish_compile $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR || return 1 ; }
 
-   echo "Query routes"
-   $BATFISH_CONFIRM && { batfish_query_routes $ROUTES $WORKSPACE || return 1 ; }
-
    echo "Query bgp"
    $BATFISH_CONFIRM && { batfish_query_bgp $BGP $WORKSPACE || return 1 ; }
 
    echo "Query ospf"
    $BATFISH_CONFIRM && { batfish_query_ospf $OSPF $WORKSPACE || return 1 ; }
+
+   echo "Query policy"
+   $BATFISH_CONFIRM && { batfish_query_policy $POLICY $WORKSPACE || return 1 ; }
+
+   echo "Query routes"
+   $BATFISH_CONFIRM && { batfish_query_routes $ROUTES $WORKSPACE || return 1 ; }
 
    echo "Query data plane predicates"
    $BATFISH_CONFIRM && { batfish_query_data_plane $WORKSPACE $DP_DIR || return 1 ; }
