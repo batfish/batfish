@@ -154,10 +154,16 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
       // create policy for denying suppressed summary-only networks
       PolicyMap suppressSummaryOnly = null;
+      PolicyMap suppressSummaryOnlyDenyOnMatch = null;
       if (summaryOnlyNetworks.size() > 0) {
          String suppressSummaryOnlyName = "~SUPRESS_SUMMARY_ONLY~";
+         String suppressSummaryOnlyDenyOnMatchName = "~SUPRESS_SUMMARY_ONLY_DENY_ON_MATCH~";
          suppressSummaryOnly = new PolicyMap(suppressSummaryOnlyName);
+         suppressSummaryOnlyDenyOnMatch = new PolicyMap(
+               suppressSummaryOnlyDenyOnMatchName);
          c.getPolicyMaps().put(suppressSummaryOnlyName, suppressSummaryOnly);
+         c.getPolicyMaps().put(suppressSummaryOnlyDenyOnMatchName,
+               suppressSummaryOnlyDenyOnMatch);
          String matchSuppressedSummaryOnlyRoutesName = "~MATCH_SUPPRESSED_SUMMARY_ONLY~";
          RouteFilterList matchSuppressedSummaryOnlyRoutes = new RouteFilterList(
                matchSuppressedSummaryOnlyRoutesName);
@@ -174,10 +180,22 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
                Collections.singleton(matchSuppressedSummaryOnlyRoutes));
-         PolicyMapClause clause = new PolicyMapClause();
-         clause.setAction(PolicyMapAction.PERMIT);
-         clause.getMatchLines().add(matchLine);
-         suppressSummaryOnly.getClauses().add(clause);
+         PolicyMapClause suppressSummaryOnlyClause = new PolicyMapClause();
+         suppressSummaryOnlyClause.setAction(PolicyMapAction.PERMIT);
+         suppressSummaryOnlyClause.getMatchLines().add(matchLine);
+         suppressSummaryOnly.getClauses().add(suppressSummaryOnlyClause);
+         PolicyMapClause suppressSummaryOnlyDenyOnMatchDenyClause = new PolicyMapClause();
+         suppressSummaryOnlyDenyOnMatchDenyClause
+               .setAction(PolicyMapAction.DENY);
+         suppressSummaryOnlyDenyOnMatchDenyClause.getMatchLines()
+               .add(matchLine);
+         suppressSummaryOnlyDenyOnMatch.getClauses().add(
+               suppressSummaryOnlyDenyOnMatchDenyClause);
+         PolicyMapClause suppressSummaryOnlyDenyOnMatchPermitClause = new PolicyMapClause();
+         suppressSummaryOnlyDenyOnMatchPermitClause
+               .setAction(PolicyMapAction.PERMIT);
+         suppressSummaryOnlyDenyOnMatch.getClauses().add(
+               suppressSummaryOnlyDenyOnMatchPermitClause);
       }
 
       // create redistribution origination policies
@@ -287,7 +305,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                newOutboundPolicyMap = outboundRouteMap;
             }
             else {
-               String outboundPolicyName = "~COMPOSITE_OUTBOUND_POLICY:" + pg.getName() + "~";
+               String outboundPolicyName = "~COMPOSITE_OUTBOUND_POLICY:"
+                     + pg.getName() + "~";
                newOutboundPolicyMap = new PolicyMap(outboundPolicyName);
                c.getPolicyMaps().put(outboundPolicyName, newOutboundPolicyMap);
                PolicyMapClause denyClause = new PolicyMapClause();
@@ -305,14 +324,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          else {
-            newOutboundPolicyMap = suppressSummaryOnly;
-            if (suppressSummaryOnly != null) {
-               suppressSummaryOnly.getClauses().get(0)
-                     .setAction(PolicyMapAction.DENY);
-               PolicyMapClause permitClause = new PolicyMapClause();
-               permitClause.setAction(PolicyMapAction.PERMIT);
-               suppressSummaryOnly.getClauses().add(permitClause);
-            }
+            newOutboundPolicyMap = suppressSummaryOnlyDenyOnMatch;
          }
 
          Set<PolicyMap> originationPolicies = new LinkedHashSet<PolicyMap>();
