@@ -287,7 +287,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                newOutboundPolicyMap = outboundRouteMap;
             }
             else {
-               String outboundPolicyName = "~COMPOSITE_OUTBOUND_POLICY~";
+               String outboundPolicyName = "~COMPOSITE_OUTBOUND_POLICY:" + pg.getName() + "~";
                newOutboundPolicyMap = new PolicyMap(outboundPolicyName);
                c.getPolicyMaps().put(outboundPolicyName, newOutboundPolicyMap);
                PolicyMapClause denyClause = new PolicyMapClause();
