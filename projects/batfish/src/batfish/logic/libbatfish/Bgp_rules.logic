@@ -107,15 +107,26 @@ AdvertisementCommunity(advert, community) <-
          SetBgpExportPolicy(srcNode, dstIp, map),
          PolicyMapPermitAdvert(map, clause, prevAdvert),
          (
-            SetPolicyMapClauseAddCommunity(map, clause, community) ;
-            SetPolicyMapClauseSetCommunity(map, clause, community) ;
+            (
+               !SetPolicyMapClauseMatchPolicy(map, clause, _),
+               clause = transformingClause,
+               map = transformingMap
+            ) ;
+            (
+               SetPolicyMapClauseMatchPolicy(map, clause, transformingMap),
+               PolicyMapPermitAdvert(transformingMap, transformingClause, prevAdvert)
+            )
+         ),
+         (
+            SetPolicyMapClauseAddCommunity(transformingMap, transformingClause, community) ;
+            SetPolicyMapClauseSetCommunity(transformingMap, transformingClause, community) ;
             (
                AdvertisementCommunity(prevAdvert, community),
-               !SetPolicyMapClauseSetCommunity(map, clause, _),
+               !SetPolicyMapClauseSetCommunity(transformingMap, transformingClause, _),
                (
-                  !SetPolicyMapClauseDeleteCommunity(map, clause, _) ;
+                  !SetPolicyMapClauseDeleteCommunity(transformingMap, transformingClause, _) ;
                   (
-                     SetPolicyMapClauseDeleteCommunity(map, clause, deleteList),
+                     SetPolicyMapClauseDeleteCommunity(transformingMap, transformingClause, deleteList),
                      !CommunityListPermit(deleteList, _, community)
                   )
                )
@@ -208,13 +219,6 @@ OriginalBgpAdvertisementRoute(advert, route)
    originType = OriginType_IGP[],
    SetBgpNeighborDefaultMetric(srcNode, dstIp, med),
    (
-      !SetBgpOriginationPolicy(srcNode, dstIp, _);
-      (
-         SetBgpOriginationPolicy(srcNode, dstIp, map),
-         PolicyMapPermitRoute(map, _, route)
-      )
-   ),
-   (
       SetBgpDefaultLocalPref(srcNode, dstIp, localPref);
       (
          !SetBgpDefaultLocalPref(srcNode, dstIp, _),
@@ -237,7 +241,14 @@ OriginalBgpAdvertisementRoute(advert, route)
       (
          InstalledRoute(route),
          srcProtocol != RoutingProtocol_BGP[],
-         srcProtocol != RoutingProtocol_IBGP[]
+         srcProtocol != RoutingProtocol_IBGP[],
+         (
+            !SetBgpOriginationPolicy(srcNode, dstIp, _);
+            (
+               SetBgpOriginationPolicy(srcNode, dstIp, map),
+               PolicyMapPermitRoute(map, _, route)
+            )
+         )
       )
    ).
 // advertise a transit route received through ibgp or ebgp
@@ -400,7 +411,18 @@ AdvertisementPathSize[advert] = pathSize
       (
          SetBgpExportPolicy(srcNode, dstIp, map),
          PolicyMapPermitAdvert(map, clause, prevAdvert),
-         PolicyMapClauseTransformAdvert(map, clause, prevAdvert, tNextHopIp,
+         (
+            (
+               !SetPolicyMapClauseMatchPolicy(map, clause, _),
+               transformingClause = clause,
+               transformingMap = map
+            ) ;
+            (
+               SetPolicyMapClauseMatchPolicy(map, clause, transformingMap),
+               PolicyMapPermitAdvert(transformingMap, transformingClause, prevAdvert)
+            )
+         ),
+         PolicyMapClauseTransformAdvert(transformingMap, transformingClause, prevAdvert, tNextHopIp,
             tLocalPref, tOriginType, tMed, tSrcProtocol)
       );
       (
