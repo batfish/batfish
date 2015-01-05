@@ -4,20 +4,18 @@ block(`RouteFilter_rules) {
    clauses(`{
 // BEGIN CODE
 
-need_RouteFilterMatch(list, network, line) <-
-   need_RouteFilterPermitNetwork(list, network),
-   SetRouteFilterLine(list, line, _, _, _, _).
-
 RouteFilterDenyNetwork(list, network) <-
-   need_RouteFilterPermitNetwork(list, network),
    RouteFilterFirstMatch[list, network] = line,
    !SetRouteFilterPermitLine(list, line).
+RouteFilterDenyNetwork(list, network) <-
+   need_RouteFilterMatchNetwork(list, network),
+   !RouteFilterMatch(list, network, _).
 
 RouteFilterFirstMatch[list, network] = matchLine <-
    agg<<matchLine = min(line)>> RouteFilterMatch(list, network, line).
 
 RouteFilterMatch(list, network, line) <-
-   need_RouteFilterMatch(list, network, line),
+   need_RouteFilterMatchNetwork(list, network),
    SetRouteFilterLine(list, line, line_network_start, line_network_end, min_prefix, max_prefix),
    Network_constructor[network_start, _, prefix_length] = network,
    network_start >= line_network_start,
@@ -26,7 +24,6 @@ RouteFilterMatch(list, network, line) <-
    prefix_length <= max_prefix.
 
 RouteFilterPermitNetwork(list, network) <-
-   need_RouteFilterPermitNetwork(list, network),
    RouteFilterFirstMatch[list, network] = line,
    SetRouteFilterPermitLine(list, line).
 

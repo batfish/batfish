@@ -23,12 +23,12 @@ need_PolicyMapMatchRoute(map, route) <-
    SetPolicyMapClauseMatchPolicy(referringMap, _, map).
 
 // policy maps for advertisements
-need_RouteFilterPermitNetwork(list, network) <-
+need_RouteFilterMatchNetwork(list, network) <-
    need_PolicyMapMatchAdvert(map, advert),
    BgpAdvertisement_network[advert] =  network,
    SetPolicyMapClauseMatchRouteFilter(map, _, list).
 // policy maps for routes
-need_RouteFilterPermitNetwork(list, network) <-
+need_RouteFilterMatchNetwork(list, network) <-
    need_PolicyMapMatchRoute(map, route),
    Route_network[route] = network,
    SetPolicyMapClauseMatchRouteFilter(map, _, list).

@@ -3,12 +3,7 @@ block(`RouteFilter) {
    export(`{
 // BEGIN CODE
 
-need_RouteFilterMatch(list, network, line) ->
-   RouteFilter(list),
-   Network(network),
-   int(line).
-
-need_RouteFilterPermitNetwork(list, network) ->
+need_RouteFilterMatchNetwork(list, network) ->
    RouteFilter(list),
    Network(network).
 
