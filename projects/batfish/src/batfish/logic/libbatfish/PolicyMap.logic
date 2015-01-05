@@ -133,6 +133,11 @@ SetPolicyMapClauseMatchNeighbor(map, clause, neighborIp) ->
    int(clause),
    Ip(neighborIp).
 
+SetPolicyMapClauseMatchPolicy(map, clause, policy) ->
+   PolicyMap(map),
+   int(clause),
+   PolicyMap(policy).
+
 SetPolicyMapClauseMatchProtocol(map, clause, protocol) ->
    PolicyMap(map),
    int(clause),

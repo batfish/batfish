@@ -505,6 +505,16 @@ block(`service_init) {
             }
       }.
 
+      file_binding_by_name["SetPolicyMapClauseMatchPolicy"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseMatchPolicy",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseMatchPolicy"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,POLICY"
+            }
+      }.
+
       file_binding_by_name["SetPolicyMapClauseMatchProtocol"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",

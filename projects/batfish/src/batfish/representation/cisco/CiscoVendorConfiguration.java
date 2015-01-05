@@ -30,6 +30,7 @@ import batfish.representation.PolicyMapMatchAsPathAccessListLine;
 import batfish.representation.PolicyMapMatchCommunityListLine;
 import batfish.representation.PolicyMapMatchIpAccessListLine;
 import batfish.representation.PolicyMapMatchLine;
+import batfish.representation.PolicyMapMatchPolicyLine;
 import batfish.representation.PolicyMapMatchProtocolLine;
 import batfish.representation.PolicyMapMatchRouteFilterListLine;
 import batfish.representation.PolicyMapMatchTagLine;
@@ -125,7 +126,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       Map<Ip, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       int defaultMetric = proc.getDefaultMetric();
 
-      Set<PolicyMap> globalExportPolicies = new HashSet<PolicyMap>();
+      Set<BgpNetwork> summaryOnlyNetworks = new HashSet<BgpNetwork>();
 
       // add generated routes for aggregate addresses
       for (BgpNetwork aggNet : proc.getAggregateNetworks().keySet()) {
@@ -136,12 +137,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          LineAction prefixAction = LineAction.ACCEPT;
          String filterName = "~MATCH_SUMMARIZED_OF:" + prefix + "~";
          if (summaryOnly) {
-            // we need to filter out more specific networks
-            String policyName = "~DENY_SUMMARIZED_OF:" + prefix + "~";
-            PolicyMap denySummarizedRoutes = makeRouteExportPolicy(c,
-                  policyName, filterName, prefix, prefixLength, prefixRange,
-                  prefixAction, null, null, PolicyMapAction.DENY);
-            globalExportPolicies.add(denySummarizedRoutes);
+            summaryOnlyNetworks.add(aggNet);
          }
 
          // create generation policy for aggregate network
@@ -154,6 +150,34 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          GeneratedRoute gr = new GeneratedRoute(new Ip(prefix), prefixLength,
                0, generationPolicies);
          newBgpProcess.getGeneratedRoutes().add(gr);
+      }
+
+      // create policy for denying suppressed summary-only networks
+      PolicyMap suppressSummaryOnly = null;
+      if (summaryOnlyNetworks.size() > 0) {
+         String suppressSummaryOnlyName = "~SUPRESS_SUMMARY_ONLY~";
+         suppressSummaryOnly = new PolicyMap(suppressSummaryOnlyName);
+         c.getPolicyMaps().put(suppressSummaryOnlyName, suppressSummaryOnly);
+         String matchSuppressedSummaryOnlyRoutesName = "~MATCH_SUPPRESSED_SUMMARY_ONLY~";
+         RouteFilterList matchSuppressedSummaryOnlyRoutes = new RouteFilterList(
+               matchSuppressedSummaryOnlyRoutesName);
+         c.getRouteFilterLists().put(matchSuppressedSummaryOnlyRoutesName,
+               matchSuppressedSummaryOnlyRoutes);
+         for (BgpNetwork summaryOnlyNetwork : summaryOnlyNetworks) {
+            Ip prefix = summaryOnlyNetwork.getNetworkAddress();
+            int prefixLength = summaryOnlyNetwork.getSubnetMask()
+                  .numSubnetBits();
+            RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
+                  LineAction.ACCEPT, prefix, prefixLength, new SubRange(
+                        prefixLength + 1, 32));
+            matchSuppressedSummaryOnlyRoutes.addLine(line);
+         }
+         PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
+               Collections.singleton(matchSuppressedSummaryOnlyRoutes));
+         PolicyMapClause clause = new PolicyMapClause();
+         clause.setAction(PolicyMapAction.PERMIT);
+         clause.getMatchLines().add(matchLine);
+         suppressSummaryOnly.getClauses().add(clause);
       }
 
       // create redistribution origination policies
@@ -252,11 +276,42 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          PolicyMap newOutboundPolicyMap = null;
          String outboundRouteMapName = pg.getOutboundRouteMap();
          if (outboundRouteMapName != null) {
-            newOutboundPolicyMap = c.getPolicyMaps().get(outboundRouteMapName);
-            if (newOutboundPolicyMap == null) {
+            PolicyMap outboundRouteMap = c.getPolicyMaps().get(
+                  outboundRouteMapName);
+            if (outboundRouteMap == null) {
                throw new VendorConversionException(
                      "undefined reference to outbound policy map: "
                            + outboundRouteMapName);
+            }
+            if (suppressSummaryOnly == null) {
+               newOutboundPolicyMap = outboundRouteMap;
+            }
+            else {
+               String outboundPolicyName = "~COMPOSITE_OUTBOUND_POLICY~";
+               newOutboundPolicyMap = new PolicyMap(outboundPolicyName);
+               c.getPolicyMaps().put(outboundPolicyName, newOutboundPolicyMap);
+               PolicyMapClause denyClause = new PolicyMapClause();
+               PolicyMapMatchPolicyLine matchSuppressPolicyLine = new PolicyMapMatchPolicyLine(
+                     suppressSummaryOnly);
+               denyClause.getMatchLines().add(matchSuppressPolicyLine);
+               denyClause.setAction(PolicyMapAction.DENY);
+               newOutboundPolicyMap.getClauses().add(denyClause);
+               PolicyMapClause permitClause = new PolicyMapClause();
+               permitClause.setAction(PolicyMapAction.PERMIT);
+               PolicyMapMatchPolicyLine matchOutboundPolicyLine = new PolicyMapMatchPolicyLine(
+                     outboundRouteMap);
+               permitClause.getMatchLines().add(matchOutboundPolicyLine);
+               newOutboundPolicyMap.getClauses().add(permitClause);
+            }
+         }
+         else {
+            newOutboundPolicyMap = suppressSummaryOnly;
+            if (suppressSummaryOnly != null) {
+               suppressSummaryOnly.getClauses().get(0)
+                     .setAction(PolicyMapAction.DENY);
+               PolicyMapClause permitClause = new PolicyMapClause();
+               permitClause.setAction(PolicyMapAction.PERMIT);
+               suppressSummaryOnly.getClauses().add(permitClause);
             }
          }
 
@@ -343,9 +398,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
             if (newOutboundPolicyMap != null) {
                newNeighbor.addOutboundPolicyMap(newOutboundPolicyMap);
-               for (PolicyMap map : globalExportPolicies) {
-                  newNeighbor.addOutboundPolicyMap(map);
-               }
                if (defaultOriginationPolicy != null) {
                   newNeighbor.addOutboundPolicyMap(defaultOriginationPolicy);
                }
@@ -682,12 +734,14 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   case COMMUNITY_LIST:
                   case IP_ACCESS_LIST:
                   case NEIGHBOR:
+                  case POLICY:
                   default:
                      // note: don't allow ip access lists in policies that
                      // are for prefix matching
                      // i.e. convert them, or throw error if they are used
                      // ambiguously
-                     throw new Error("Unexpected match line type");
+                     throw new VendorConversionException(
+                           "Unexpected match line type");
                   }
                }
                if (!containsRouteFilterList) {

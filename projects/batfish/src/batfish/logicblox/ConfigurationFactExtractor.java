@@ -32,6 +32,7 @@ import batfish.representation.PolicyMapMatchCommunityListLine;
 import batfish.representation.PolicyMapMatchIpAccessListLine;
 import batfish.representation.PolicyMapMatchLine;
 import batfish.representation.PolicyMapMatchNeighborLine;
+import batfish.representation.PolicyMapMatchPolicyLine;
 import batfish.representation.PolicyMapMatchProtocolLine;
 import batfish.representation.PolicyMapMatchRouteFilterListLine;
 import batfish.representation.PolicyMapMatchTagLine;
@@ -665,6 +666,8 @@ public class ConfigurationFactExtractor {
             .get("SetPolicyMapClauseMatchCommunityList");
       StringBuilder wSetPolicyMapClauseMatchNeighbor = _factBins
             .get("SetPolicyMapClauseMatchNeighbor");
+      StringBuilder wSetPolicyMapClauseMatchPolicy = _factBins
+            .get("SetPolicyMapClauseMatchPolicy");
       StringBuilder wSetPolicyMapClauseMatchProtocol = _factBins
             .get("SetPolicyMapClauseMatchProtocol");
       StringBuilder wSetPolicyMapClauseMatchRouteFilter = _factBins
@@ -736,6 +739,14 @@ public class ConfigurationFactExtractor {
                   long neighborIp = pmmnl.getNeighborIp().asLong();
                   wSetPolicyMapClauseMatchNeighbor.append(mapName + "|" + i
                         + "|" + neighborIp + "\n");
+                  break;
+
+               case POLICY:
+                  PolicyMapMatchPolicyLine matchPolicyLine = (PolicyMapMatchPolicyLine) matchLine;
+                  PolicyMap policy = matchPolicyLine.getPolicy();
+                  String policyName = hostname + ":" + policy.getMapName();
+                  wSetPolicyMapClauseMatchPolicy.append(mapName + "|" + i + "|"
+                        + policyName + "\n");
                   break;
 
                case PROTOCOL:

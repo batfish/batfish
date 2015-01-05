@@ -14,6 +14,14 @@ need_AsPathMatchAdvert(asPath, advert) <-
    need_PolicyMapMatchAdvert(map, advert),
    SetPolicyMapClauseMatchAsPath(map, _, asPath).
 
+need_PolicyMapMatchAdvert(map, advert) <-
+   need_PolicyMapMatchAdvert(referringMap, advert),
+   SetPolicyMapClauseMatchPolicy(referringMap, _, map).
+
+need_PolicyMapMatchRoute(map, route) <-
+   need_PolicyMapMatchRoute(referringMap, route),
+   SetPolicyMapClauseMatchPolicy(referringMap, _, map).
+
 // policy maps for advertisements
 need_RouteFilterPermitNetwork(list, network) <-
    need_PolicyMapMatchAdvert(map, advert),
@@ -51,6 +59,13 @@ PolicyMapClauseMatchAdvert(map, clause, advert) <-
             BgpAdvertisement_srcIp[advert] = neighborIp ;
             BgpAdvertisement_dstIp[advert] = neighborIp
          )
+      )
+   ),
+   (
+      !SetPolicyMapClauseMatchPolicy(map, clause, _) ;
+      (
+         SetPolicyMapClauseMatchPolicy(map, clause, policy),
+         PolicyMapPermitAdvert(policy, _, advert)
       )
    ),
    (
