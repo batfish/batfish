@@ -1,0 +1,6 @@
+!
+hostname test
+!
+route-map rmap permit 10
+  set as-path prepend 1
+!
