@@ -4488,6 +4488,11 @@ M_AsPath_DEC
    F_Digit+ -> type(DEC), popMode
 ;
 
+M_AsPath_PREPEND
+:
+   'prepend' -> type(PREPEND), popMode
+;
+
 M_AsPath_VARIABLE
 :
    F_Variable_RequiredVarChar F_Variable_VarChar* -> type(VARIABLE), popMode
