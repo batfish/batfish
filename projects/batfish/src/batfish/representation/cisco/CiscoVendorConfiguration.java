@@ -63,6 +63,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private static final long serialVersionUID = 1L;
    private static final String VENDOR_NAME = "cisco";
 
+   private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
+
    private static PolicyMap makeRouteExportPolicy(Configuration c, String name,
          String prefixListName, String prefix, int prefixLength,
          SubRange prefixRange, LineAction prefixAction, Integer metric,
@@ -148,7 +150,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          Set<PolicyMap> generationPolicies = new HashSet<PolicyMap>();
          generationPolicies.add(generationPolicy);
          GeneratedRoute gr = new GeneratedRoute(new Ip(prefix), prefixLength,
-               0, generationPolicies);
+               CISCO_AGGREGATE_ROUTE_ADMIN_COST, generationPolicies);
          gr.setDiscard(true);
          c.getGeneratedRoutes().add(gr);
       }
