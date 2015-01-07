@@ -149,7 +149,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          generationPolicies.add(generationPolicy);
          GeneratedRoute gr = new GeneratedRoute(new Ip(prefix), prefixLength,
                0, generationPolicies);
-         newBgpProcess.getGeneratedRoutes().add(gr);
+         gr.setDiscard(true);
+         c.getGeneratedRoutes().add(gr);
       }
 
       // create policy for denying suppressed summary-only networks
