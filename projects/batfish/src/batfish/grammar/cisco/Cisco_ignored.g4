@@ -205,6 +205,10 @@ null_block_substanza
          | INSTANCE
          |
          (
+            INTERFACE POLICY
+         )
+         |
+         (
             (
                IP
                | IPV6

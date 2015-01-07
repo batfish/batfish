@@ -4671,6 +4671,11 @@ M_DESCRIPTION_NON_NEWLINE
 
 mode M_Interface;
 
+M_Interface_POLICY
+:
+   'policy' -> type(POLICY), popMode
+;
+
 M_Interface_PREFIX
 :
    F_Letter (F_Letter | '-')*
