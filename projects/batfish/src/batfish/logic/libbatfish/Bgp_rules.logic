@@ -208,7 +208,8 @@ BgpAdvertisement_srcIp[advert] = srcIp,
 BgpAdvertisement_srcNode[advert] = srcNode,
 BgpAdvertisement_srcProtocol[advert] = srcProtocol,
 BgpAdvertisement_type[advert] = type,
-OriginalBgpAdvertisementRoute(advert, route)
+OriginalBgpAdvertisementRoute(advert, route),
+OriginatedBgpNetwork(srcNode, network)
 <-
    type = AdvertisementType_BGP[],
    pathSize = 0,
@@ -594,6 +595,7 @@ MaxLocalPref[node, network] = maxLocalPref <-
 
 MaxLocalPrefBgpAdvertisement(advert) <-
    ReceivedBgpAdvertisement(advert),
+   !OriginatedBgpNetwork(node, network),
    BgpAdvertisement_dstNode[advert] = node,
    BgpAdvertisement_localPref[advert] = localPref,
    BgpAdvertisement_network[advert] = network,

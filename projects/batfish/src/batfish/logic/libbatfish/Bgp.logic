@@ -98,6 +98,10 @@ OriginalBgpAdvertisementRoute(advert, route) ->
    BgpAdvertisement(advert),
    Route(route).
 
+OriginatedBgpNetwork(node, network) ->
+   Node(node),
+   Network(network).
+
 ParentAdvertisement(parent, child) ->
    BgpAdvertisement(parent),
    BgpAdvertisement(child).
