@@ -395,14 +395,14 @@ public class Batfish implements AutoCloseable {
 
       String fibQualifiedName = _predicateInfo.getPredicateNames().get(
             FIB_PREDICATE_NAME);
-      _logger.info("Retrieving network FIB information from LogicBlox..");
+      _logger.info("Retrieving destination-routing FIB information from LogicBlox..");
       Relation fibNetwork = lbFrontend.queryPredicate(fibQualifiedName);
       _logger.info("OK\n");
 
       String fibPolicyRouteNextHopQualifiedName = _predicateInfo
             .getPredicateNames().get(FIB_POLICY_ROUTE_NEXT_HOP_PREDICATE_NAME);
       _logger
-            .info("Retrieving ip FIB information from LogicBlox for policy-routing next-hop-ips..");
+            .info("Retrieving policy-routing  FIB information from LogicBlox..");
       Relation fibPolicyRouteNextHops = lbFrontend
             .queryPredicate(fibPolicyRouteNextHopQualifiedName);
       _logger.info("OK\n");
