@@ -91,6 +91,7 @@ null_block_stanza
       | POLICY_MAP
       | PSEUDOWIRE_CLASS
       | REDUNDANCY
+      | RMON
       | ROLE
       | SCCP
       | SPANNING_TREE
@@ -98,6 +99,7 @@ null_block_stanza
       | TEMPLATE
       | TERMINAL
       | TRANSCEIVER
+      | VDC
       |
       (
          VLAN DEC
@@ -233,6 +235,7 @@ null_block_substanza
          | KEYPAIR
          | KEYRING
          | L2TP
+         | LIMIT_RESOURCE
          | LINE
          | LINECODE
          | LLDP

@@ -1878,6 +1878,11 @@ LIMIT
    'limit'
 ;
 
+LIMIT_RESOURCE
+:
+   'limit-resource'
+;
+
 LINE
 :
    'line'
@@ -2868,6 +2873,11 @@ RATE_LIMIT
    'rate-limit'
 ;
 
+RATE_MODE
+:
+   'rate-mode'
+;
+
 RC4_SHA1
 :
    'rc4-sha1'
@@ -3006,6 +3016,11 @@ RING
 RIP
 :
    'rip'
+;
+
+RMON
+:
+   'rmon'
 ;
 
 ROLE
@@ -3818,6 +3833,11 @@ USERNAME
 VALIDATION_USAGE
 :
    'validation-usage'
+;
+
+VDC
+:
+   'vdc'
 ;
 
 VERIFY

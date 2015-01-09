@@ -262,6 +262,7 @@ null_standalone_if_stanza
       | QOS
       | QUEUE_SET
       | RANDOM_DETECT
+      | RATE_MODE
       | RCV_QUEUE
       | ROUTE_CACHE
       | SECURITY_LEVEL
