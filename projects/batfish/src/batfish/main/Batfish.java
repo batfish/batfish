@@ -1648,7 +1648,8 @@ public class Batfish implements AutoCloseable {
          BatfishCombinedParser<?, ?> combinedParser = null;
          ParserRuleContext tree = null;
          ControlPlaneExtractor extractor = null;
-         if (fileText.charAt(0) == '!') {
+         char firstChar = fileText.trim().charAt(0);
+         if (firstChar == '!') {
             CiscoCombinedParser ciscoParser = new CiscoCombinedParser(fileText,
                   _settings.getThrowOnParserError(),
                   _settings.getThrowOnLexerError());
@@ -1657,7 +1658,7 @@ public class Batfish implements AutoCloseable {
                   _settings.getRulesWithSuppressedWarnings(),
                   _settings.getPedantic());
          }
-         else if (fileText.charAt(0) == '#') {
+         else if (firstChar == '#') {
             // either flat or hierarchical
             if (!fileText.contains("set version")) {
                // hierarchical
@@ -1680,9 +1681,6 @@ public class Batfish implements AutoCloseable {
             combinedParser = flatJuniperParser;
             extractor = new FlatJuniperControlPlaneExtractor(fileText,
                   flatJuniperParser, _settings.getRulesWithSuppressedWarnings());
-         }
-         else if (fileText.length() == 0) {
-            continue;
          }
          else {
             throw new BatfishException("Unknown configuration format");
