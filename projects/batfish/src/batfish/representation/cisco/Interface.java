@@ -2,11 +2,12 @@ package batfish.representation.cisco;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import batfish.representation.Ip;
+import batfish.representation.Prefix;
 import batfish.representation.SwitchportEncapsulationType;
 import batfish.representation.SwitchportMode;
 import batfish.util.SubRange;
@@ -79,7 +80,7 @@ public class Interface implements Serializable {
 
    private String _routingPolicy;
 
-   private Map<String, String> _secondaryIps;
+   private Set<Prefix> _secondaryPrefixes;
 
    private Ip _subnet;
 
@@ -97,8 +98,8 @@ public class Interface implements Serializable {
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
       _allowedVlans = new ArrayList<SubRange>();
-      _secondaryIps = new HashMap<String, String>();
       _ospfCost = null;
+      _secondaryPrefixes = new LinkedHashSet<Prefix>();
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
@@ -165,8 +166,8 @@ public class Interface implements Serializable {
       return _routingPolicy;
    }
 
-   public Map<String, String> getSecondaryIps() {
-      return _secondaryIps;
+   public Set<Prefix> getSecondaryPrefixes() {
+      return _secondaryPrefixes;
    }
 
    public Ip getSubnetMask() {

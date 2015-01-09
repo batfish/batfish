@@ -1134,7 +1134,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitIp_address_secondary_if_stanza(
          Ip_address_secondary_if_stanzaContext ctx) {
-      todo(ctx);
+      Ip address;
+      Ip mask;
+      Prefix prefix;
+      if (ctx.prefix != null) {
+         prefix = new Prefix(ctx.prefix.getText());
+      }
+      else {
+         address = new Ip(ctx.ip.getText());
+         mask = new Ip(ctx.subnet.getText());
+         prefix = new Prefix(address, mask.numSubnetBits());
+      }
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.getSecondaryPrefixes().add(prefix);
+      }
    }
 
    @Override

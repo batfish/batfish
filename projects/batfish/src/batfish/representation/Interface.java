@@ -1,9 +1,9 @@
 package batfish.representation;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import batfish.util.NamedStructure;
 import batfish.util.SubRange;
@@ -26,7 +26,7 @@ public class Interface extends NamedStructure {
    private int _ospfHelloMultiplier;
    private IpAccessList _outgoingFilter;
    private PolicyMap _routingPolicy;
-   private Map<Ip, Ip> _secondaryIps;
+   private Set<Prefix> _secondaryPrefixes;
    private Ip _subnet;
    private SwitchportMode _switchportMode;
 
@@ -43,7 +43,7 @@ public class Interface extends NamedStructure {
       _ospfArea = null;
       _incomingFilter = null;
       _outgoingFilter = null;
-      _secondaryIps = new HashMap<Ip, Ip>();
+      _secondaryPrefixes = new HashSet<Prefix>();
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
@@ -106,8 +106,8 @@ public class Interface extends NamedStructure {
       return _routingPolicy;
    }
 
-   public Map<Ip, Ip> getSecondaryIps() {
-      return _secondaryIps;
+   public Set<Prefix> getSecondaryPrefixes() {
+      return _secondaryPrefixes;
    }
 
    public Ip getSubnetMask() {

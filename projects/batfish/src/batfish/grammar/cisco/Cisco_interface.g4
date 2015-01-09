@@ -85,7 +85,9 @@ ip_address_if_stanza
 :
    IP ADDRESS
    (
-      ip = IP_ADDRESS subnet = IP_ADDRESS
+      (
+         ip = IP_ADDRESS subnet = IP_ADDRESS
+      )
       | prefix = IP_PREFIX
    )
    (
@@ -95,7 +97,13 @@ ip_address_if_stanza
 
 ip_address_secondary_if_stanza
 :
-   IP ADDRESS ip = IP_ADDRESS subnet = IP_ADDRESS SECONDARY NEWLINE
+   IP ADDRESS
+   (
+      (
+         ip = IP_ADDRESS subnet = IP_ADDRESS
+      )
+      | prefix = IP_PREFIX
+   ) SECONDARY NEWLINE
 ;
 
 ip_ospf_cost_if_stanza

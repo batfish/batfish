@@ -1096,11 +1096,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          newIface.setIp(iface.getIP());
          newIface.setSubnetMask(iface.getSubnetMask());
       }
-      Map<String, String> secondaryIps = iface.getSecondaryIps();
-      for (String ip : secondaryIps.keySet()) {
-         String subnet = secondaryIps.get(ip);
-         newIface.getSecondaryIps().put(new Ip(ip), new Ip(subnet));
-      }
+      newIface.getSecondaryPrefixes().addAll(iface.getSecondaryPrefixes());
       newIface.setOspfCost(iface.getOspfCost());
       newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
       newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
