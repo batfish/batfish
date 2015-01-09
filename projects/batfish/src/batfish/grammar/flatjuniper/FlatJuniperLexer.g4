@@ -31,6 +31,11 @@ ACCEPT
    'accept'
 ;
 
+ACCEPT_DATA
+:
+   'accept-data'
+;
+
 ACCESS
 :
    'access'
@@ -1190,6 +1195,11 @@ PORT_UNREACHABLE
    'port-unreachable'
 ;
 
+PREEMPT
+:
+   'preempt'
+;
+
 PREFERENCE
 :
    'preference'
@@ -1228,6 +1238,11 @@ PRIMARY
 PRIORITY
 :
    'priority'
+;
+
+PRIORITY_COST
+:
+   'priority-cost'
 ;
 
 PROTOCOL
@@ -1545,6 +1560,11 @@ TRACEOPTIONS
    'traceoptions'
 ;
 
+TRACK
+:
+   'track'
+;
+
 TRAFFIC_ENGINEERING
 :
    'traffic-engineering'
@@ -1620,6 +1640,11 @@ VERSION
    'version' -> pushMode(M_Version)
 ;
 
+VIRTUAL_ADDRESS
+:
+   'virtual-address'
+;
+
 VIRTUAL_CHASSIS
 :
    'virtual-chassis'
@@ -1688,6 +1713,11 @@ VRF_TARGET
 VRRP
 :
    'vrrp'
+;
+
+VRRP_GROUP
+:
+   'vrrp-group'
 ;
 
 VSTP

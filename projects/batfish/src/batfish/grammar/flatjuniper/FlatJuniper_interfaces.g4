@@ -72,13 +72,40 @@ filter
    FILTER direction name = variable
 ;
 
+ifamat_preferred
+:
+   PREFERRED
+;
+
+ifamat_primary
+:
+   PRIMARY
+;
+
+ifamat_vrrp_group
+:
+   VRRP_GROUP name = variable ifamat_vrrp_group_tail
+;
+
+ifamat_vrrp_group_tail
+:
+   ivrrpt_accept_data
+   | ivrrpt_preempt
+   | ivrrpt_priority
+   | ivrrpt_track
+   | ivrrpt_virtual_address
+;
+
 ifamt_address
 :
-   ADDRESS IP_PREFIX
-   (
-      PRIMARY
-      | PREFERRED
-   )?
+   ADDRESS IP_PREFIX ifamt_address_tail?
+;
+
+ifamt_address_tail
+:
+   ifamat_preferred
+   | ifamat_primary
+   | ifamat_vrrp_group
 ;
 
 ifamt_filter
@@ -158,6 +185,51 @@ it_unit_tail
 it_vlan_tagging
 :
    VLAN_TAGGING
+;
+
+ivrrpt_accept_data
+:
+   ACCEPT_DATA
+;
+
+ivrrpt_preempt
+:
+   PREEMPT
+;
+
+ivrrpt_priority
+:
+   PRIORITY DEC
+;
+
+ivrrpt_track
+:
+   TRACK ivrrpt_track_tail
+;
+
+ivrrpt_track_tail
+:
+   ivrrptt_interface
+;
+
+ivrrpt_virtual_address
+:
+   VIRTUAL_ADDRESS IP_ADDRESS
+;
+
+ivrrptt_interface
+:
+   INTERFACE interface_id ivrrptt_interface_tail
+;
+
+ivrrptt_interface_tail
+:
+   ivrrptti_priority_cost
+;
+
+ivrrptti_priority_cost
+:
+   PRIORITY_COST cost = DEC
 ;
 
 mfamt_filter
