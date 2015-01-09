@@ -95,6 +95,7 @@ null_block_stanza
       | SCCP
       | SPANNING_TREE
       | STCAPP
+      | TEMPLATE
       | TERMINAL
       |
       (
@@ -217,6 +218,10 @@ null_block_substanza
                ACCESS_CLASS
                | ACCESS_GROUP
                | FLOW
+               |
+               (
+                  VRF FORWARDING
+               )
             )
          )
          | IPSEC_UDP
@@ -292,6 +297,7 @@ null_block_substanza
          | RULE
          | SCHEME
          | SEQUENCE
+         | SERVER
          | SERVER_PRIVATE
          | SERVICE
          | SERVICE_POLICY

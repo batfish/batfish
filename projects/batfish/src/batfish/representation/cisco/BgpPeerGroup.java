@@ -18,6 +18,7 @@ public abstract class BgpPeerGroup implements Serializable {
    protected String _outboundPrefixList;
    protected String _outboundRouteMap;
    protected Integer _remoteAS;
+   private Boolean _removePrivateAs;
    protected Boolean _routeReflectorClient;
    protected Boolean _sendCommunity;
    protected Boolean _shutdown;
@@ -67,6 +68,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public Integer getRemoteAS() {
       return _remoteAS;
+   }
+
+   public Boolean getRemovePrivateAs() {
+      return _removePrivateAs;
    }
 
    public Boolean getRouteReflectorClient() {
@@ -169,6 +174,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public void setRemoteAS(int remoteAS) {
       _remoteAS = remoteAS;
+   }
+
+   public void setRemovePrivateAs(boolean removePrivateAs) {
+      _removePrivateAs = removePrivateAs;
    }
 
    public void setRouteReflectorClient(boolean b) {

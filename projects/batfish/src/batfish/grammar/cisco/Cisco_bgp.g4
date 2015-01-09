@@ -85,7 +85,10 @@ bgp_listen_range_rb_stanza
    (
       IP_PREFIX
       | IPV6_PREFIX
-   ) PEER_GROUP name = ~NEWLINE REMOTE_AS as = DEC NEWLINE
+   ) PEER_GROUP name = variable
+   (
+      REMOTE_AS as = DEC
+   )? NEWLINE
 ;
 
 bgp_tail
@@ -169,6 +172,11 @@ filter_list_bgp_tail
    ) NEWLINE
 ;
 
+inherit_peer_session_bgp_tail
+:
+   INHERIT PEER_SESSION name = variable NEWLINE
+;
+
 maximum_peers_bgp_tail
 :
    MAXIMUM_PEERS DEC NEWLINE
@@ -189,8 +197,9 @@ neighbor_rb_stanza
    )
    (
       bgp_tail
-      | remote_as_bgp_tail
+      | inherit_peer_session_bgp_tail
       | filter_list_bgp_tail
+      | remote_as_bgp_tail
    )
 ;
 
@@ -278,6 +287,7 @@ nexus_vrf_rb_stanza
       | peer_group_creation_rb_stanza
       | router_id_rb_stanza
       | template_peer_rb_stanza
+      | template_peer_session_rb_stanza
    )*
 ;
 
@@ -469,6 +479,7 @@ router_bgp_stanza
       | peer_group_creation_rb_stanza
       | router_id_rb_stanza
       | template_peer_rb_stanza
+      | template_peer_session_rb_stanza
       | nexus_vrf_rb_stanza
    )+
 ;
@@ -506,6 +517,15 @@ template_peer_rb_stanza
       | remote_as_bgp_tail
       | template_peer_address_family
    )+
+;
+
+template_peer_session_rb_stanza
+:
+   TEMPLATE PEER_SESSION name = VARIABLE NEWLINE
+   (
+      bgp_tail
+      | remote_as_bgp_tail
+   )+ EXIT_PEER_SESSION NEWLINE
 ;
 
 update_source_bgp_tail

@@ -9,6 +9,7 @@ import java.util.Set;
 
 import batfish.main.BatfishException;
 import batfish.representation.Ip;
+import batfish.representation.Prefix;
 import batfish.representation.RoutingProtocol;
 
 public class BgpProcess implements Serializable {
@@ -21,7 +22,7 @@ public class BgpProcess implements Serializable {
    private boolean _alwaysCompareMed;
    private Ip _clusterId;
    private boolean _defaultIpv4Activate;
-   private Map<String, DynamicBgpPeerGroup> _dynamicPeerGroups;
+   private Map<Prefix, DynamicBgpPeerGroup> _dynamicPeerGroups;
    private Map<Ip, IpBgpPeerGroup> _ipPeerGroups;
    private MasterBgpPeerGroup _masterBgpPeerGroup;
    private Map<String, NamedBgpPeerGroup> _namedPeerGroups;
@@ -34,7 +35,7 @@ public class BgpProcess implements Serializable {
       _pid = procnum;
       _allPeerGroups = new HashMap<String, BgpPeerGroup>();
       _defaultIpv4Activate = true;
-      _dynamicPeerGroups = new HashMap<String, DynamicBgpPeerGroup>();
+      _dynamicPeerGroups = new HashMap<Prefix, DynamicBgpPeerGroup>();
       _namedPeerGroups = new HashMap<String, NamedBgpPeerGroup>();
       _ipPeerGroups = new HashMap<Ip, IpBgpPeerGroup>();
       _networks = new LinkedHashSet<BgpNetwork>();
@@ -45,11 +46,10 @@ public class BgpProcess implements Serializable {
       _masterBgpPeerGroup.setDefaultMetric(DEFAULT_BGP_DEFAULT_METRIC);
    }
 
-   public DynamicBgpPeerGroup addDynamicPeerGroup(Ip ip, int prefixLength,
-         String name) {
-      DynamicBgpPeerGroup pg = new DynamicBgpPeerGroup(ip, prefixLength, name);
-      _dynamicPeerGroups.put(name, pg);
-      _allPeerGroups.put(name, pg);
+   public DynamicBgpPeerGroup addDynamicPeerGroup(Prefix prefix) {
+      DynamicBgpPeerGroup pg = new DynamicBgpPeerGroup(prefix);
+      _dynamicPeerGroups.put(prefix, pg);
+      _allPeerGroups.put(prefix.toString(), pg);
       return pg;
    }
 
@@ -106,7 +106,7 @@ public class BgpProcess implements Serializable {
       return _masterBgpPeerGroup.getDefaultMetric();
    }
 
-   public Map<String, DynamicBgpPeerGroup> getDynamicPeerGroups() {
+   public Map<Prefix, DynamicBgpPeerGroup> getDynamicPeerGroups() {
       return _dynamicPeerGroups;
    }
 

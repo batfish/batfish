@@ -659,7 +659,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       // we must create peer group if it does not exist and this is a remote_as
       // declaration
-      boolean create = ctx.remote_as_bgp_tail() != null;
+      boolean create = ctx.remote_as_bgp_tail() != null
+            || ctx.inherit_peer_session_bgp_tail() != null;
       if (ctx.ip != null) {
          Ip ip = toIp(ctx.ip);
          _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
@@ -749,12 +750,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.ip_prefix != null) {
          Ip ip = getPrefixIp(ctx.ip_prefix);
          int prefixLength = getPrefixLength(ctx.ip_prefix);
-         String prefixString = ip.networkString(prefixLength);
-         _currentDynamicPeerGroup = proc.getDynamicPeerGroups().get(
-               prefixString);
+         Prefix prefix = new Prefix(ip, prefixLength);
+         _currentDynamicPeerGroup = proc.getDynamicPeerGroups().get(prefix);
          if (_currentDynamicPeerGroup == null) {
-            _currentDynamicPeerGroup = proc.addDynamicPeerGroup(ip,
-                  prefixLength, prefixString);
+            _currentDynamicPeerGroup = proc.addDynamicPeerGroup(prefix);
          }
          _currentPeerGroup = _currentDynamicPeerGroup;
       }
@@ -855,6 +854,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterTemplate_peer_session_rb_stanza(
+         Template_peer_session_rb_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
+      _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+      if (_currentNamedPeerGroup == null) {
+         proc.addNamedPeerGroup(name);
+         _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+      }
+      _currentPeerGroup = _currentNamedPeerGroup;
+   }
+
+   @Override
    public void enterVrf_context_stanza(Vrf_context_stanzaContext ctx) {
       _currentVrf = ctx.name.getText();
    }
@@ -943,10 +955,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.IP_PREFIX() != null) {
          Ip ip = getPrefixIp(ctx.IP_PREFIX().getSymbol());
          int prefixLength = getPrefixLength(ctx.IP_PREFIX().getSymbol());
-         DynamicBgpPeerGroup pg = proc.addDynamicPeerGroup(ip, prefixLength,
-               name);
-         int remoteAs = toInteger(ctx.as);
-         pg.setRemoteAS(remoteAs);
+         Prefix prefix = new Prefix(ip, prefixLength);
+         DynamicBgpPeerGroup pg = proc.addDynamicPeerGroup(prefix);
+         NamedBgpPeerGroup namedGroup = proc.getNamedPeerGroups().get(name);
+         if (namedGroup == null) {
+            proc.addNamedPeerGroup(name);
+            namedGroup = proc.getNamedPeerGroups().get(name);
+         }
+         namedGroup.addNeighborPrefix(prefix);
+         if (ctx.as != null) {
+            int remoteAs = toInteger(ctx.as);
+            pg.setRemoteAS(remoteAs);
+         }
       }
       else if (ctx.IPV6_PREFIX() != null) {
          todo(ctx, "Ipv6 not yet implemented");
@@ -1043,6 +1063,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitHostname_stanza(Hostname_stanzaContext ctx) {
       _configuration.setHostname(ctx.name.getText());
+   }
+
+   @Override
+   public void exitInherit_peer_session_bgp_tail(
+         Inherit_peer_session_bgp_tailContext ctx) {
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
+      String groupName = ctx.name.getText();
+      if (_currentIpPeerGroup != null) {
+         _currentIpPeerGroup.setGroupName(groupName);
+      }
+      else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
+         throw new BatfishException("Invalid peer context for inheritance");
+      }
+      else {
+         todo(ctx, "inheritance not implemented for this peer type");
+      }
    }
 
    @Override
@@ -1433,10 +1469,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitNexus_neighbor_inherit(Nexus_neighbor_inheritContext ctx) {
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       String groupName = ctx.name.getText();
-      if (_currentDynamicPeerGroup != null) {
-         _currentDynamicPeerGroup.setGroupName(groupName);
-      }
-      else if (_currentIpPeerGroup != null) {
+      if (_currentIpPeerGroup != null) {
          _currentIpPeerGroup.setGroupName(groupName);
       }
       else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
@@ -1581,7 +1614,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Peer_group_creation_rb_stanzaContext ctx) {
       String name = ctx.name.getText();
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
-      proc.addNamedPeerGroup(name);
+      if (proc.getNamedPeerGroups().get(name) == null) {
+         proc.addNamedPeerGroup(name);
+      }
    }
 
    @Override
@@ -1788,7 +1823,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitRemove_private_as_bgp_tail(
          Remove_private_as_bgp_tailContext ctx) {
-      todo(ctx);
+      _currentPeerGroup.setRemovePrivateAs(true);
    }
 
    @Override
@@ -2071,6 +2106,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitTemplate_peer_rb_stanza(Template_peer_rb_stanzaContext ctx) {
+      _currentIpPeerGroup = null;
+      _currentIpv6PeerGroup = null;
+      _currentNamedPeerGroup = null;
+      _currentPeerGroup = _configuration.getBgpProcesses().get(_currentVrf)
+            .getMasterBgpPeerGroup();
+   }
+
+   @Override
+   public void exitTemplate_peer_session_rb_stanza(
+         Template_peer_session_rb_stanzaContext ctx) {
       _currentIpPeerGroup = null;
       _currentIpv6PeerGroup = null;
       _currentNamedPeerGroup = null;

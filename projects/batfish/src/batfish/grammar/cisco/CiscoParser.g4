@@ -18,7 +18,12 @@ address_family_vrfd_stanza
    (
       IPV4
       | IPV6
-   ) NEWLINE EXIT_ADDRESS_FAMILY NEWLINE
+   ) NEWLINE afvrfd_stanza* EXIT_ADDRESS_FAMILY NEWLINE
+;
+
+afvrfd_stanza
+:
+   null_afvrfd_stanza
 ;
 
 banner_stanza
@@ -120,6 +125,19 @@ null_stanza
    | null_standalone_stanza
 ;
 
+null_afvrfd_stanza
+:
+   MAXIMUM ~NEWLINE* NEWLINE
+;
+
+null_vrfd_stanza
+:
+   (
+      RD
+      | ROUTE_TARGET
+   ) ~NEWLINE* NEWLINE
+;
+
 stanza
 :
    appletalk_access_list_stanza
@@ -171,4 +189,5 @@ vrfc_stanza
 vrfd_stanza
 :
    address_family_vrfd_stanza
+   | null_vrfd_stanza
 ;

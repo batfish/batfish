@@ -1,6 +1,6 @@
 package batfish.representation.cisco;
 
-import batfish.representation.Ip;
+import batfish.representation.Prefix;
 
 public class DynamicBgpPeerGroup extends BgpPeerGroup {
 
@@ -8,36 +8,18 @@ public class DynamicBgpPeerGroup extends BgpPeerGroup {
     *
     */
    private static final long serialVersionUID = 1L;
-   private String _groupName;
-   private String _name;
-   private Ip _prefix;
-   private int _prefixLength;
+   private Prefix _prefix;
 
-   public DynamicBgpPeerGroup(Ip prefix, int prefixLength, String name) {
-      _name = name;
+   public DynamicBgpPeerGroup(Prefix prefix) {
       _prefix = prefix;
-      _prefixLength = prefixLength;
    }
 
-   public String getGroupName() {
-      return _groupName;
-   }
-
-   @Override
    public String getName() {
-      return _name;
+      return _prefix.toString();
    }
 
-   public Ip getPrefix() {
+   public Prefix getPrefix() {
       return _prefix;
-   }
-
-   public int getPrefixLength() {
-      return _prefixLength;
-   }
-
-   public void setGroupName(String groupName) {
-      _groupName = groupName;
    }
 
 }

@@ -1232,6 +1232,11 @@ EXIT_ADDRESS_FAMILY
    'exit-address-family'
 ;
 
+EXIT_PEER_SESSION
+:
+   'exit-peer-session'
+;
+
 EXPORT
 :
    'export'
@@ -2606,6 +2611,11 @@ PEER_KEEPALIVE
 PEER_LINK
 :
    'peer-link'
+;
+
+PEER_SESSION
+:
+   'peer-session'
 ;
 
 PERMIT
