@@ -3,6 +3,9 @@ block(`Node_rules) {
    clauses(`{
 // BEGIN CODE
 
+Node_AMBIGUOUS[] = node <-
+   Node_name(node:"(ambiguous)").
+
 Node_NONE[] = node <-
    Node_name(node:"(none)").
 

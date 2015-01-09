@@ -18,9 +18,6 @@ HasNetwork(node, network) <-
    IpReadyInt(node, _, ip, prefix_length),
    NetworkOf[ip, prefix_length] = network.
 
-//IpOwner[ip] = node <-
-//   HasIp(node, ip).
-
 Interface_DYNAMIC[] = interface <-
    Interface_name(interface:"dynamic").
 
@@ -29,6 +26,10 @@ Interface_FLOW_SINK_TERMINATION[] = interface <-
 
 Interface_NULL[] = interface <-
    Interface_name(interface:"null_interface").
+
+IpCount[ip] = cnt <-
+   agg<<cnt = count()>>
+      HasIp(_, ip).
 
 Network(network),
    Network_address[network] = network_start,

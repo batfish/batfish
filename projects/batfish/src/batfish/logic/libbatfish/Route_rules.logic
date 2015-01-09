@@ -102,8 +102,16 @@ RouteDetails_cost[route] = cost <-
 RouteDetails_nextHop[route] = nextHop <-
    Route(route),
    RouteDetails_nextHopIp[route] = nextHopIp,
+   IpCount[nextHopIp] = ipCount,
    (
-      HasIp(nextHop, nextHopIp) ;
+      (
+         HasIp(nextHop, nextHopIp),
+         ipCount = 1
+      ) ;
+      (
+         ipCount > 1,
+         nextHop = Node_AMBIGUOUS[]
+      ) ;
       (
          nextHop = Node_NONE[],
          !HasIp(_, nextHopIp)

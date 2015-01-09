@@ -39,9 +39,9 @@ Interface_FLOW_SINK_TERMINATION[] = interface ->
 Interface_NULL[] = interface ->
    Interface(interface).
 
-IpOwner[ip] = node ->
+IpCount[ip] = cnt ->
    Ip(ip),
-   Node(node).
+   int(cnt).
 
 /// [IpReadyInt(node, interface, ip, prefix_length)] =
 ///   Node [node] has interface [interface] configured with ip [ip] with prefix

@@ -9,6 +9,9 @@ Node(x),
    ->
    string(n).
 
+Node_AMBIGUOUS[] = node ->
+   Node(node).
+
 Node_NONE[] = node ->
    Node(node).
 
