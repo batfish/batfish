@@ -780,6 +780,11 @@ LABELED_UNICAST
    'labeled-unicast'
 ;
 
+LAN
+:
+   'lan'
+;
+
 LDP_SYNCHRONIZATION
 :
    'ldp-synchronization'
@@ -1158,6 +1163,11 @@ PIM
 POE
 :
    'poe'
+;
+
+POINT_TO_POINT
+:
+   'point-to-point'
 ;
 
 POLICER

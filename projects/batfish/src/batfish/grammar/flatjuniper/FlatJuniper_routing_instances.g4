@@ -31,6 +31,50 @@ gt_policy
    POLICY policy = variable
 ;
 
+irfit_export
+:
+   EXPORT
+   (
+      LAN
+      | POINT_TO_POINT
+   )
+;
+
+irft_inet
+:
+   INET irft_inet_tail
+;
+
+irft_inet_tail
+:
+   irfit_export
+;
+
+irrgt_inet
+:
+   INET name = variable
+;
+
+irt_family
+:
+   FAMILY irt_family_tail
+;
+
+irt_family_tail
+:
+   irft_inet
+;
+
+irt_rib_group
+:
+   RIB_GROUP irt_rib_group_tail
+;
+
+irt_rib_group_tail
+:
+   irrgt_inet
+;
+
 rgt_import_policy
 :
    IMPORT_POLICY name = variable
@@ -203,6 +247,17 @@ rot_generate_tail
    | gt_policy
 ;
 
+rot_interface_routes
+:
+   INTERFACE_ROUTES rot_interface_routes_tail
+;
+
+rot_interface_routes_tail
+:
+   irt_family
+   | irt_rib_group
+;
+
 rot_null
 :
    (
@@ -254,6 +309,7 @@ rot_static_tail
    srt_discard
    | srt_install
    | srt_next_hop
+   | srt_next_table
    | srt_readvertise
    | srt_reject
    | srt_tag
@@ -281,6 +337,7 @@ s_routing_options_tail
    | rot_auto_export
    | rot_autonomous_system
    | rot_generate
+   | rot_interface_routes
    | rot_martians
    | rot_null
    | rot_rib
@@ -306,6 +363,11 @@ srt_next_hop
       IP_ADDRESS
       | IPV6_ADDRESS
    )
+;
+
+srt_next_table
+:
+   NEXT_TABLE name = variable
 ;
 
 srt_readvertise
