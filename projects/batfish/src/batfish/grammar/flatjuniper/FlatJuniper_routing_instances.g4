@@ -31,9 +31,14 @@ gt_policy
    POLICY policy = variable
 ;
 
+rgt_import_policy
+:
+   IMPORT_POLICY name = variable
+;
+
 rgt_import_rib
 :
-   IMPORT_RIB rib = VARIABLE
+   IMPORT_RIB rib = variable
 ;
 
 ribt_aggregate
@@ -214,7 +219,8 @@ rot_rib_groups
 
 rot_rib_groups_tail
 :
-   rgt_import_rib
+   rgt_import_policy
+   | rgt_import_rib
 ;
 
 rot_rib

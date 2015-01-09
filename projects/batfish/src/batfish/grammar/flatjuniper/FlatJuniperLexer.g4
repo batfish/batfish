@@ -630,6 +630,11 @@ IMPORT
    'import'
 ;
 
+IMPORT_POLICY
+:
+   'import-policy'
+;
+
 IMPORT_RIB
 :
    'import-rib'
