@@ -147,7 +147,9 @@ it_unit
 
 it_unit_tail
 :
-   ut_description
+// intentional blank
+
+   | ut_description
    | ut_family
    | ut_null
    | ut_vlan_id

@@ -118,7 +118,9 @@ at_nssa
 
 at_nssa_tail
 :
-   nssat_default_lsa
+// intentional blank
+
+   | nssat_default_lsa
 ;
 
 at_null
