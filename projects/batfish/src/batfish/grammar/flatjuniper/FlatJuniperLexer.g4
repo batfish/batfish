@@ -161,6 +161,11 @@ AUTHENTICATION_TYPE
    'authentication-type'
 ;
 
+AUTO_EXPORT
+:
+   'auto-export'
+;
+
 BACKUP_ROUTER
 :
    'backup-router'
@@ -680,6 +685,11 @@ INSTANCE
    'instance'
 ;
 
+INSTANCE_TYPE
+:
+   'instance-type'
+;
+
 INTERFACE
 :
    'interface' -> pushMode(M_Interface)
@@ -728,6 +738,11 @@ ISIS
 ISO
 :
    'iso'
+;
+
+L
+:
+   'L'
 ;
 
 L2_CIRCUIT
@@ -1290,6 +1305,11 @@ ROUTE
    'route'
 ;
 
+ROUTE_DISTINGUISHER
+:
+   'route-distinguisher'
+;
+
 ROUTE_FILTER
 :
    'route-filter'
@@ -1628,6 +1648,31 @@ VLAN_TAGGING
 VPLS
 :
    'vpls'
+;
+
+VRF
+:
+   'vrf'
+;
+
+VRF_EXPORT
+:
+   'vrf-export'
+;
+
+VRF_IMPORT
+:
+   'vrf-import'
+;
+
+VRF_TABLE_LABEL
+:
+   'vrf-table-label'
+;
+
+VRF_TARGET
+:
+   'vrf-target' -> pushMode(M_VrfTarget)
 ;
 
 VRRP
@@ -2210,7 +2255,7 @@ M_Members_DOUBLE_QUOTE
 
 M_Members_L
 :
-   'L'
+   'L' -> type(L)
 ;
 
 M_Members_NEWLINE
@@ -2268,6 +2313,53 @@ M_Version_VERSION_STRING
 ;
 
 M_Version_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_VrfTarget;
+
+M_VrfTarget_COLON
+:
+   ':' -> type(COLON)
+;
+
+M_VrfTarget_DEC
+:
+   F_Digit+ -> type(DEC)
+;
+
+M_VrfTarget_EXPORT
+:
+   'export' -> type(EXPORT)
+;
+
+M_VrfTarget_IMPORT
+:
+   'import' -> type(IMPORT)
+;
+
+M_VrfTarget_L
+:
+   'L' -> type(L)
+;
+
+M_VrfTarget_NEWLINE
+:
+   F_NewlineChar+ -> type(NEWLINE), popMode
+;
+
+M_VrfTarget_PERIOD
+:
+   '.' -> type(PERIOD)
+;
+
+M_VrfTarget_TARGET
+:
+   'target' -> type(TARGET)
+;
+
+M_VrfTarget_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;

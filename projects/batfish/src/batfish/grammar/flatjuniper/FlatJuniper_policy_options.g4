@@ -6,26 +6,6 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
-af_as
-:
-   DEC M_Members_L
-;
-
-af_dec
-:
-   DEC
-;
-
-af_dotted_as
-:
-   DEC PERIOD DEC
-;
-
-af_ip
-:
-   DEC PERIOD DEC PERIOD DEC PERIOD DEC
-;
-
 colort_apply_groups
 :
    s_apply_groups
@@ -51,24 +31,6 @@ ct_members
 
       | community_regex
    )
-;
-
-ec_target
-:
-   TARGET COLON ecaf_target COLON assigned_number = DEC
-;
-
-ecaf_target
-:
-   af_as
-   | af_dec
-   | af_dotted_as
-   | af_ip
-;
-
-extended_community
-:
-   ec_target
 ;
 
 fromt_as_path

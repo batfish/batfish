@@ -314,6 +314,7 @@
                <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_isis.g4"/>
                <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_mpls.g4"/>
                <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_ospf.g4"/>
+               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_protocols.g4"/>
                <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_policy_options.g4"/>
                <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_routing_instances.g4"/>
             </dependencies>

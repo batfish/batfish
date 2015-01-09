@@ -1,7 +1,7 @@
 parser grammar FlatJuniperParser;
 
 import
-FlatJuniper_common, FlatJuniper_bgp, FlatJuniper_firewall, FlatJuniper_interfaces, FlatJuniper_isis, FlatJuniper_mpls, FlatJuniper_ospf, FlatJuniper_policy_options, FlatJuniper_routing_instances;
+FlatJuniper_common, FlatJuniper_firewall, FlatJuniper_interfaces, FlatJuniper_policy_options, FlatJuniper_protocols, FlatJuniper_routing_instances;
 
 options {
    superClass = 'batfish.grammar.BatfishParser';
@@ -62,36 +62,6 @@ s_null
       | FORWARDING_OPTIONS
       | SERVICES
       | SNMP
-   ) s_null_filler
-;
-
-s_protocols
-:
-   PROTOCOLS s_protocols_tail
-;
-
-s_protocols_tail
-:
-   s_protocols_bgp
-   | s_protocols_isis
-   | s_protocols_mpls
-   | s_protocols_null
-   | s_protocols_ospf
-   | s_protocols_ospf3
-;
-
-s_protocols_null
-:
-   (
-      BFD
-      | IGMP
-      | LDP
-      | LLDP
-      | MSDP
-      | PIM
-      | ROUTER_ADVERTISEMENT
-      | RSVP
-      | VSTP
    ) s_null_filler
 ;
 

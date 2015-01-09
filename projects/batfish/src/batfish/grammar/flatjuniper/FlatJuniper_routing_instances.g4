@@ -1,6 +1,6 @@
 parser grammar FlatJuniper_routing_instances;
 
-import FlatJuniper_common;
+import FlatJuniper_common, FlatJuniper_protocols;
 
 options {
    tokenVocab = FlatJuniperLexer;
@@ -69,7 +69,23 @@ rit_apply_groups
 rit_common
 :
    rit_apply_groups
+   | rit_description
    | rit_routing_options
+;
+
+rit_description
+:
+   s_description
+;
+
+rit_instance_type
+:
+   INSTANCE_TYPE VRF
+;
+
+rit_interface
+:
+   INTERFACE id = interface_id
 ;
 
 rit_named_routing_instance
@@ -83,11 +99,54 @@ rit_named_routing_instance
 rit_named_routing_instance_tail
 :
    rit_common
+   | rit_instance_type
+   | rit_interface
+   | rit_protocols
+   | rit_route_distinguisher
+   | rit_vrf_export
+   | rit_vrf_import
+   | rit_vrf_table_label
+   | rit_vrf_target
+;
+
+rit_protocols
+:
+   s_protocols
+;
+
+rit_route_distinguisher
+:
+   ROUTE_DISTINGUISHER IP_ADDRESS COLON DEC
 ;
 
 rit_routing_options
 :
    s_routing_options
+;
+
+rit_vrf_export
+:
+   VRF_EXPORT name = variable
+;
+
+rit_vrf_import
+:
+   VRF_IMPORT name = variable
+;
+
+rit_vrf_table_label
+:
+   VRF_TABLE_LABEL
+;
+
+rit_vrf_target
+:
+   VRF_TARGET rit_vrf_target_tail
+;
+
+rit_vrf_target_tail
+:
+   vtt_export
 ;
 
 rot_aggregate
@@ -106,6 +165,11 @@ rot_aggregate
          TAG tag = DEC
       )
    )*
+;
+
+rot_auto_export
+:
+   AUTO_EXPORT
 ;
 
 rot_autonomous_system
@@ -208,6 +272,7 @@ s_routing_options
 s_routing_options_tail
 :
    rot_aggregate
+   | rot_auto_export
    | rot_autonomous_system
    | rot_generate
    | rot_martians
@@ -250,4 +315,9 @@ srt_reject
 srt_tag
 :
    TAG tag = DEC
+;
+
+vtt_export
+:
+   EXPORT extended_community
 ;
