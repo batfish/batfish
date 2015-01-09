@@ -123,7 +123,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          return 23;
       }
       else {
-         throw new BatfishException("missing port-number mapping");
+         throw new BatfishException("missing port-number mapping for port: \""
+               + ctx.getText() + "\"");
       }
    }
 
