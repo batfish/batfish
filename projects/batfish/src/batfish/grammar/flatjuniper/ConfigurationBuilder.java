@@ -40,6 +40,7 @@ import batfish.representation.juniper.PsFrom;
 import batfish.representation.juniper.PsFromAsPath;
 import batfish.representation.juniper.PsFromColor;
 import batfish.representation.juniper.PsFromCommunity;
+import batfish.representation.juniper.PsFromInterface;
 import batfish.representation.juniper.PsFromPrefixList;
 import batfish.representation.juniper.PsFromProtocol;
 import batfish.representation.juniper.PsFromRouteFilter;
@@ -656,6 +657,37 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       PsFromCommunity fromCommunity = new PsFromCommunity(name);
       _currentPsTerm.getFroms().add(fromCommunity);
    }
+
+   @Override
+   public void exitFromt_interface(Fromt_interfaceContext ctx) {
+      String name = ctx.id.name.getText();
+      String unit = null;
+      if (ctx.id.unit != null) {
+         unit = ctx.id.unit.getText();
+      }
+      String unitFullName = name + "." + unit;
+      Map<String, Interface> interfaces = _currentRoutingInstance
+            .getInterfaces();
+      Interface iface = interfaces.get(name);
+      if (iface == null) {
+         iface = new Interface(name);
+         interfaces.put(name, iface);
+      }
+      PsFrom from;
+      if (unit != null) {
+         Map<String, Interface> units = iface.getUnits();
+         iface = units.get(unitFullName);
+         if (iface == null) {
+            iface = new Interface(unitFullName);
+            units.put(unitFullName, iface);
+         }
+         from = new PsFromInterface(unitFullName);
+      }
+      else {
+         from = new PsFromInterface(name);
+      }
+      _currentPsTerm.getFroms().add(from);
+   };
 
    @Override
    public void exitFromt_prefix_list(Fromt_prefix_listContext ctx) {

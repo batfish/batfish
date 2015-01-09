@@ -51,7 +51,7 @@ fromt_family
 
 fromt_interface
 :
-   INTERFACE name = variable
+   INTERFACE id = interface_id
 ;
 
 fromt_neighbor
