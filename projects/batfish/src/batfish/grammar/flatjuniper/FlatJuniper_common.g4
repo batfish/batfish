@@ -139,6 +139,7 @@ port
    | FTP
    | LDP
    | NTP
+   | SMTP
    | SNMP
    | SSH
    | TACACS

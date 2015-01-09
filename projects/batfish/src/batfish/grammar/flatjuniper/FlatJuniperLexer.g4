@@ -1385,6 +1385,11 @@ SET
    'set'
 ;
 
+SMTP
+:
+   'smtp'
+;
+
 SNMP
 :
    'snmp'

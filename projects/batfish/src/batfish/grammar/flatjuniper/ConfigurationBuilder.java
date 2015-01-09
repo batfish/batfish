@@ -107,6 +107,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else if (ctx.NTP() != null) {
          return 123;
       }
+      else if (ctx.SMTP() != null) {
+         return 25;
+      }
       else if (ctx.SNMP() != null) {
          return 161;
       }
