@@ -1021,6 +1021,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitDefault_shutdown_bgp_tail(
+         Default_shutdown_bgp_tailContext ctx) {
+      _currentPeerGroup.setShutdown(true);
+   }
+
+   @Override
    public void exitDistribute_list_bgp_tail(Distribute_list_bgp_tailContext ctx) {
       todo(ctx);
    }

@@ -99,6 +99,7 @@ bgp_tail
    | cluster_id_bgp_tail
    | default_metric_bgp_tail
    | default_originate_bgp_tail
+   | default_shutdown_bgp_tail
    | description_bgp_tail
    | distribute_list_bgp_tail
    | ebgp_multihop_bgp_tail
@@ -146,6 +147,11 @@ default_originate_bgp_tail
    (
       ROUTE_MAP map = VARIABLE
    )? NEWLINE
+;
+
+default_shutdown_bgp_tail
+:
+   DEFAULT SHUTDOWN NEWLINE
 ;
 
 description_bgp_tail
