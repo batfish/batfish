@@ -131,6 +131,7 @@ it_null
    (
       AGGREGATED_ETHER_OPTIONS
       | GIGETHER_OPTIONS
+      | TRACEOPTIONS
       | TRAPS
    ) s_null_filler
 ;
