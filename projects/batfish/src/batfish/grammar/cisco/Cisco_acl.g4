@@ -402,7 +402,11 @@ nexus_access_list_null_tail
 :
    (
       num = DEC
-   )? REMARK ~NEWLINE* NEWLINE
+   )?
+   (
+      REMARK
+      | STATISTICS
+   ) ~NEWLINE* NEWLINE
 ;
 
 nexus_access_list_stanza

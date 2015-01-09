@@ -3405,6 +3405,11 @@ STATIC
    'static'
 ;
 
+STATISTICS
+:
+   'statistics'
+;
+
 STCAPP
 :
    'stcapp'
