@@ -161,7 +161,7 @@ fromt_tag
 
 metric_expression
 :
-MULTIPLIER multiplier = DEC
+   MULTIPLIER multiplier = DEC
    (
       OFFSET offset = DEC
    )?
@@ -366,7 +366,7 @@ tht_metric2
 
 tht_metric_expression
 :
-   METRIC EXPRESSION metric_expression 
+   METRIC EXPRESSION metric_expression
 ;
 
 tht_metric2_expression
