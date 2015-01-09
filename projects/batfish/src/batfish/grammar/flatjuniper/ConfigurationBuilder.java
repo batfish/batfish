@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
+import batfish.grammar.flatjuniper.FlatJuniperParser.Named_communityContext;
 import batfish.main.BatfishException;
 import batfish.representation.AsPath;
 import batfish.representation.AsSet;
@@ -119,6 +120,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       else {
          throw new BatfishException("missing port-number mapping");
+      }
+   }
+
+   private static long toCommunityLong(Named_communityContext ctx) {
+      if (ctx.NO_ADVERTISE() != null) {
+         return 0xFFFFFF02l;
+      }
+      else {
+         throw new BatfishException(
+               "missing named-community-to-long mapping for: \""
+                     + ctx.getText() + "\"");
       }
    }
 
@@ -625,15 +637,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitCt_members(Ct_membersContext ctx) {
-      if (ctx.COMMUNITY_REGEX() != null) {
+      if (ctx.community_regex() != null) {
          _currentCommunityList.getLines().add(
-               new CommunityListLine(ctx.COMMUNITY_REGEX().getText()));
+               new CommunityListLine(ctx.community_regex().getText()));
       }
-      else if (ctx.NO_ADVERTISE() != null) {
-         long communityVal = 0xFFFFFF02l;
+      else if (ctx.named_community() != null) {
+         long communityVal = toCommunityLong(ctx.named_community());
          String communityStr = batfish.util.Util.longToCommunity(communityVal);
          _currentCommunityList.getLines().add(
                new CommunityListLine(communityStr));
+      }
+      else if (ctx.extended_community() != null) {
+         todo(ctx, "extended communities not currently supported");
       }
    }
 

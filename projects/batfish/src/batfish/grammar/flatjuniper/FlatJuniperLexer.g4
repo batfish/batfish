@@ -2163,14 +2163,39 @@ M_MacAddress_WS
 
 mode M_Members;
 
-NO_ADVERTISE
+M_Members_ASTERISK
 :
-   'no-advertise'
+   '*' -> type(ASTERISK)
 ;
 
-COMMUNITY_REGEX
+M_Members_CARAT
 :
-   [0-9:^$[\]\-*.]+
+   '^' -> type(CARAT)
+;
+
+M_Members_CLOSE_BRACKET
+:
+   ']' -> type(CLOSE_BRACKET)
+;
+
+M_Members_COLON
+:
+   ':' -> type(COLON)
+;
+
+M_Members_DASH
+:
+   '-' -> type(DASH)
+;
+
+M_Members_DEC
+:
+   F_Digit+ -> type(DEC)
+;
+
+M_Members_DOLLAR
+:
+   '$' -> type(DOLLAR)
 ;
 
 M_Members_DOUBLE_QUOTE
@@ -2178,9 +2203,34 @@ M_Members_DOUBLE_QUOTE
    '"' -> channel(HIDDEN)
 ;
 
+M_Members_L
+:
+   'L'
+;
+
 M_Members_NEWLINE
 :
    F_NewlineChar+ -> type(NEWLINE), popMode
+;
+
+NO_ADVERTISE
+:
+   'no-advertise'
+;
+
+M_Members_OPEN_BRACKET
+:
+   '[' -> type(OPEN_BRACKET)
+;
+
+M_Members_PERIOD
+:
+   '.' -> type(PERIOD)
+;
+
+M_Members_TARGET
+:
+   'target' -> type(TARGET)
 ;
 
 M_Members_WS
