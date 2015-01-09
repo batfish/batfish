@@ -69,7 +69,7 @@ interface_stanza_tail
 
 ip_access_group_if_stanza
 :
-   IP ACCESS_GROUP name = .
+   IP PORT? ACCESS_GROUP name = .
    (
       IN
       | OUT
