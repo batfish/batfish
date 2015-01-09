@@ -26,6 +26,11 @@ ait_interface_type
    INTERFACE_TYPE P2P
 ;
 
+ait_ldp_synchronization
+:
+   LDP_SYNCHRONIZATION
+;
+
 ait_metric
 :
    METRIC DEC
@@ -84,6 +89,7 @@ at_interface_tail
    | ait_dead_interval
    | ait_hello_interval
    | ait_interface_type
+   | ait_ldp_synchronization
    | ait_metric
    | ait_null
    | ait_passive

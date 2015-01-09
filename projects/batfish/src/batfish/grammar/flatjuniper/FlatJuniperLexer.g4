@@ -750,6 +750,11 @@ LABELED_UNICAST
    'labeled-unicast'
 ;
 
+LDP_SYNCHRONIZATION
+:
+   'ldp-synchronization'
+;
+
 LICENSE
 :
    'license'
