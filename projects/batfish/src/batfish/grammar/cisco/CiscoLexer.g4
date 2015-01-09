@@ -4711,9 +4711,19 @@ M_DESCRIPTION_NON_NEWLINE
 
 mode M_Interface;
 
+M_Interface_DOLLAR
+:
+   '$' -> type(DOLLAR), popMode
+;
+
 M_Interface_POLICY
 :
    'policy' -> type(POLICY), popMode
+;
+
+M_Interface_MODULE
+:
+   'module' -> type(MODULE)
 ;
 
 M_Interface_PREFIX
