@@ -12,12 +12,16 @@ public class RoutingInstance implements Serializable {
 
    private static final double DEFAULT_OSPF_REFERENCE_BANDWIDTH = 1E8;
 
+   private static final String MASTER_INTERFACE_NAME = "MASTER_INTERFACE";
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
    private Integer _as;
+
+   private final Interface _globalMasterInterface;
 
    private String _hostname;
 
@@ -47,6 +51,7 @@ public class RoutingInstance implements Serializable {
       _interfaces = new TreeMap<String, Interface>();
       _ipBgpGroups = new TreeMap<Ip, IpBgpGroup>();
       _masterBgpGroup = new BgpGroup();
+      _globalMasterInterface = new Interface(MASTER_INTERFACE_NAME);
       _name = name;
       _namedBgpGroups = new TreeMap<String, NamedBgpGroup>();
       _ospfAreas = new TreeMap<Ip, OspfArea>();
@@ -71,6 +76,10 @@ public class RoutingInstance implements Serializable {
 
    public Integer getAs() {
       return _as;
+   }
+
+   public Interface getGlobalMasterInterface() {
+      return _globalMasterInterface;
    }
 
    public String getHostname() {

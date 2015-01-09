@@ -535,13 +535,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterS_interfaces(S_interfacesContext ctx) {
-      String ifaceName = ctx.name.getText();
-      Map<String, Interface> interfaces = _currentRoutingInstance
-            .getInterfaces();
-      _currentInterface = interfaces.get(ifaceName);
-      if (_currentInterface == null) {
-         _currentInterface = new Interface(ifaceName);
-         interfaces.put(ifaceName, _currentInterface);
+      if (ctx.name == null) {
+         _currentInterface = _currentRoutingInstance.getGlobalMasterInterface();
+      }
+      else {
+         String ifaceName = ctx.name.getText();
+         Map<String, Interface> interfaces = _currentRoutingInstance
+               .getInterfaces();
+         _currentInterface = interfaces.get(ifaceName);
+         if (_currentInterface == null) {
+            _currentInterface = new Interface(ifaceName);
+            interfaces.put(ifaceName, _currentInterface);
+         }
       }
       _currentMasterInterface = _currentInterface;
    }
