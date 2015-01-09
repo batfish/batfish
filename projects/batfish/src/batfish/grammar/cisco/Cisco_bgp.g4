@@ -44,6 +44,7 @@ address_family_rb_stanza
       | neighbor_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
+      | null_no_neighbor_rb_stanza
       | peer_group_assignment_rb_stanza
       | peer_group_creation_rb_stanza
    )+ address_family_footer
@@ -289,6 +290,7 @@ nexus_vrf_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | no_redistribute_connected_rb_stanza
+      | null_no_neighbor_rb_stanza
       | peer_group_assignment_rb_stanza
       | peer_group_creation_rb_stanza
       | router_id_rb_stanza
@@ -367,6 +369,16 @@ null_bgp_tail
       | TRANSPORT
       | VERSION
    ) ~NEWLINE* NEWLINE
+;
+
+null_no_neighbor_rb_stanza
+:
+   NO NEIGHBOR
+   (
+      ip = IP_ADDRESS
+      | ip6 = IPV6_ADDRESS
+      | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
+   ) null_bgp_tail
 ;
 
 peer_group_assignment_rb_stanza
@@ -481,6 +493,7 @@ router_bgp_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | no_redistribute_connected_rb_stanza
+      | null_no_neighbor_rb_stanza
       | peer_group_assignment_rb_stanza
       | peer_group_creation_rb_stanza
       | router_id_rb_stanza
