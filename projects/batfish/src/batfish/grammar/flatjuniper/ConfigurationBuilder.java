@@ -160,8 +160,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else if (ctx.IGMP() != null) {
          return IpProtocol.IGMP;
       }
+      else if (ctx.OSPF() != null) {
+         return IpProtocol.OSPF;
+      }
       else if (ctx.PIM() != null) {
          return IpProtocol.PIM;
+      }
+      else if (ctx.RSVP() != null) {
+         return IpProtocol.RSVP;
       }
       else if (ctx.TCP() != null) {
          return IpProtocol.TCP;
@@ -173,7 +179,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          return IpProtocol.VRRP;
       }
       else {
-         throw new BatfishException("missing protocol-enum mapping");
+         throw new BatfishException(
+               "missing protocol-enum mapping for protocol: \"" + ctx.getText()
+                     + "\"");
       }
    }
 
