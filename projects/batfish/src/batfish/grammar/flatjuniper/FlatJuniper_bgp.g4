@@ -82,6 +82,11 @@ bt_advertise_inactive
    ADVERTISE_INACTIVE
 ;
 
+bt_as_override
+:
+   AS_OVERRIDE
+;
+
 bt_cluster
 :
    CLUSTER IP_ADDRESS
@@ -90,6 +95,7 @@ bt_cluster
 bt_common
 :
    bt_advertise_inactive
+   | bt_as_override
    | bt_cluster
    | bt_damping
    | bt_description
