@@ -97,6 +97,7 @@ null_block_stanza
       | STCAPP
       | TEMPLATE
       | TERMINAL
+      | TRANSCEIVER
       |
       (
          VLAN DEC

@@ -3670,6 +3670,11 @@ TRACKED
    'tracked'
 ;
 
+TRANSCEIVER
+:
+   'transceiver'
+;
+
 TRANSLATE
 :
    'translate'
