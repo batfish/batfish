@@ -10,19 +10,23 @@ public final class FwFromDestinationPort extends FwFrom {
     */
    private static final long serialVersionUID = 1L;
 
-   private final int _port;
+   private final SubRange _portRange;
 
    public FwFromDestinationPort(int port) {
-      _port = port;
+      _portRange = new SubRange(port, port);
+   }
+
+   public FwFromDestinationPort(SubRange subrange) {
+      _portRange = subrange;
    }
 
    @Override
    public void applyTo(IpAccessListLine line) {
-      line.getDstPortRanges().add(new SubRange(_port, _port));
+      line.getDstPortRanges().add(_portRange);
    }
 
-   public int getPort() {
-      return _port;
+   public SubRange getPortRange() {
+      return _portRange;
    }
 
 }

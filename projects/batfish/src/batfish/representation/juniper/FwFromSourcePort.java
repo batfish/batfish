@@ -6,23 +6,27 @@ import batfish.util.SubRange;
 public final class FwFromSourcePort extends FwFrom {
 
    /**
-    *
-    */
+       *
+       */
    private static final long serialVersionUID = 1L;
 
-   private final int _port;
+   private final SubRange _portRange;
 
    public FwFromSourcePort(int port) {
-      _port = port;
+      _portRange = new SubRange(port, port);
+   }
+
+   public FwFromSourcePort(SubRange subrange) {
+      _portRange = subrange;
    }
 
    @Override
    public void applyTo(IpAccessListLine line) {
-      line.getSrcPortRanges().add(new SubRange(_port, _port));
+      line.getSrcPortRanges().add(_portRange);
    }
 
-   public int getPort() {
-      return _port;
+   public SubRange getPortRange() {
+      return _portRange;
    }
 
 }

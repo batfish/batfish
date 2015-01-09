@@ -73,6 +73,7 @@ import batfish.representation.juniper.PsThenLocalPreference;
 import batfish.representation.juniper.PsThenMetric;
 import batfish.representation.juniper.PsThenNextHopIp;
 import batfish.representation.juniper.PsThenReject;
+import batfish.util.SubRange;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
@@ -736,9 +737,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitFwfromt_destination_port(Fwfromt_destination_portContext ctx) {
-      int port = getPortNumber(ctx.port());
-      FwFrom from = new FwFromDestinationPort(port);
-      _currentFwTerm.getFroms().add(from);
+      if (ctx.port() != null) {
+         int port = getPortNumber(ctx.port());
+         FwFrom from = new FwFromDestinationPort(port);
+         _currentFwTerm.getFroms().add(from);
+      }
+      else if (ctx.range() != null) {
+         for (SubrangeContext subrangeContext : ctx.range().range_list) {
+            int low = toInt(subrangeContext.low);
+            int high = toInt(subrangeContext.high);
+            SubRange subrange = new SubRange(low, high);
+            FwFrom from = new FwFromDestinationPort(subrange);
+            _currentFwTerm.getFroms().add(from);
+         }
+      }
    }
 
    @Override
@@ -759,9 +771,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitFwfromt_source_port(Fwfromt_source_portContext ctx) {
-      int port = getPortNumber(ctx.port());
-      FwFrom from = new FwFromSourcePort(port);
-      _currentFwTerm.getFroms().add(from);
+      if (ctx.port() != null) {
+         int port = getPortNumber(ctx.port());
+         FwFrom from = new FwFromSourcePort(port);
+         _currentFwTerm.getFroms().add(from);
+      }
+      else if (ctx.range() != null) {
+         for (SubrangeContext subrangeContext : ctx.range().range_list) {
+            int low = toInt(subrangeContext.low);
+            int high = toInt(subrangeContext.high);
+            SubRange subrange = new SubRange(low, high);
+            FwFrom from = new FwFromSourcePort(subrange);
+            _currentFwTerm.getFroms().add(from);
+         }
+      }
    }
 
    @Override
