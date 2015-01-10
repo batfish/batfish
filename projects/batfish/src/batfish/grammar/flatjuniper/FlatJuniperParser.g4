@@ -19,10 +19,11 @@ deactivate_line
 
 flat_juniper_configuration
 :
+   NEWLINE?
    (
       deactivate_line
       | set_line
-   )+ EOF
+   )+ NEWLINE? EOF
 ;
 
 statement

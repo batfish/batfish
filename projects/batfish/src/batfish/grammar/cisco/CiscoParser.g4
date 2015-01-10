@@ -53,9 +53,10 @@ certificate_stanza
 
 cisco_configuration
 :
+   NEWLINE?
    (
       sl += stanza
-   )+ COLON? END? NEWLINE* EOF
+   )+ COLON? END? NEWLINE? EOF
 ;
 
 hostname_stanza
