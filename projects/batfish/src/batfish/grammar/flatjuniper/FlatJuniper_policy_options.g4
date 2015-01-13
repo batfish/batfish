@@ -106,6 +106,11 @@ fromt_route_filter_tail
    ) ACCEPT?
 ;
 
+fromt_route_type
+:
+   ROUTE_TYPE EXTERNAL
+;
+
 fromt_source_address_filter
 :
 // reference to router filter tail is intentional
@@ -399,6 +404,7 @@ tt_from_tail
    | fromt_prefix_list
    | fromt_protocol
    | fromt_route_filter
+   | fromt_route_type
    | fromt_source_address_filter
    | fromt_tag
 ;

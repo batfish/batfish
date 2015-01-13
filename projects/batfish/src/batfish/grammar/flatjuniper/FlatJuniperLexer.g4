@@ -1350,6 +1350,11 @@ ROUTE_FILTER
    'route-filter'
 ;
 
+ROUTE_TYPE
+:
+   'route-type'
+;
+
 ROUTER_ADVERTISEMENT
 :
    'router-advertisement'
