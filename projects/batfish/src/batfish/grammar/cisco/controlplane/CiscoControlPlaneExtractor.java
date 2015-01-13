@@ -117,6 +117,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Map<String, String> prefixes = new LinkedHashMap<String, String>();
       prefixes.put("ATM", "ATM");
       prefixes.put("cmp-mgmt", "cmp-mgmt");
+      prefixes.put("Embedded-Service-Engine", "Embedded-Service-Engine");
       prefixes.put("Ethernet", "Ethernet");
       prefixes.put("FastEthernet", "FastEthernet");
       prefixes.put("fe", "FastEthernet");
