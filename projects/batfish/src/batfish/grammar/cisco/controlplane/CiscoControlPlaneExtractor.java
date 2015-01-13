@@ -1484,6 +1484,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitNext_hop_self_bgp_tail(Next_hop_self_bgp_tailContext ctx) {
       todo(ctx);
+      // note that this rule matches "no next-hop-self"
    }
 
    @Override

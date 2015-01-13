@@ -238,7 +238,7 @@ network6_bgp_tail
 
 next_hop_self_bgp_tail
 :
-   NEXT_HOP_SELF NEWLINE
+   NO? NEXT_HOP_SELF NEWLINE
 ;
 
 nexus_neighbor_address_family
