@@ -85,42 +85,46 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(
          Prefix.ZERO);
 
-   public static int getPortNumber(PortContext ctx) {
+   public static SubRange getPortRange(PortContext ctx) {
       if (ctx.DEC() != null) {
-         return toInt(ctx.DEC());
+         int port = toInt(ctx.DEC());
+         return new SubRange(port, port);
       }
       else if (ctx.BOOTPC() != null) {
-         return 68;
+         return new SubRange(68, 68);
       }
       else if (ctx.BOOTPS() != null) {
-         return 67;
+         return new SubRange(67, 67);
       }
       else if (ctx.BGP() != null) {
-         return 179;
+         return new SubRange(179, 179);
+      }
+      else if (ctx.DHCP() != null) {
+         return new SubRange(67, 68);
       }
       else if (ctx.DOMAIN() != null) {
-         return 53;
+         return new SubRange(53, 53);
       }
       else if (ctx.FTP() != null) {
-         return 21;
+         return new SubRange(21, 21);
       }
       else if (ctx.NTP() != null) {
-         return 123;
+         return new SubRange(123, 123);
       }
       else if (ctx.SMTP() != null) {
-         return 25;
+         return new SubRange(25, 25);
       }
       else if (ctx.SNMP() != null) {
-         return 161;
+         return new SubRange(161, 161);
       }
       else if (ctx.SSH() != null) {
-         return 22;
+         return new SubRange(22, 22);
       }
       else if (ctx.TACACS() != null) {
-         return 49;
+         return new SubRange(49, 49);
       }
       else if (ctx.TELNET() != null) {
-         return 23;
+         return new SubRange(23, 23);
       }
       else {
          throw new BatfishException("missing port-number mapping for port: \""
@@ -755,8 +759,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitFwfromt_destination_port(Fwfromt_destination_portContext ctx) {
       if (ctx.port() != null) {
-         int port = getPortNumber(ctx.port());
-         FwFrom from = new FwFromDestinationPort(port);
+         SubRange subrange = getPortRange(ctx.port());
+         FwFrom from = new FwFromDestinationPort(subrange);
          _currentFwTerm.getFroms().add(from);
       }
       else if (ctx.range() != null) {
@@ -789,8 +793,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitFwfromt_source_port(Fwfromt_source_portContext ctx) {
       if (ctx.port() != null) {
-         int port = getPortNumber(ctx.port());
-         FwFrom from = new FwFromSourcePort(port);
+         SubRange subrange = getPortRange(ctx.port());
+         FwFrom from = new FwFromSourcePort(subrange);
          _currentFwTerm.getFroms().add(from);
       }
       else if (ctx.range() != null) {
