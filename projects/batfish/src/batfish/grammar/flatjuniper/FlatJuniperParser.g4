@@ -104,6 +104,7 @@ st_null
    (
       ACCOUNTING
       | AUTHENTICATION_ORDER
+      | BACKUP_ROUTER
       | DOMAIN_NAME
       | DOMAIN_SEARCH
       | LOGIN
