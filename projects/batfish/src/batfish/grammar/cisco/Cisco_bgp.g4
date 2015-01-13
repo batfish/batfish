@@ -47,7 +47,7 @@ address_family_rb_stanza
       | null_no_neighbor_rb_stanza
       | peer_group_assignment_rb_stanza
       | peer_group_creation_rb_stanza
-   )+ address_family_footer
+   )* address_family_footer
 ;
 
 aggregate_address_bgp_tail
@@ -243,7 +243,7 @@ next_hop_self_bgp_tail
 
 nexus_neighbor_address_family
 :
-   address_family_header bgp_tail+ address_family_footer
+   address_family_header bgp_tail* address_family_footer
 ;
 
 nexus_neighbor_inherit
