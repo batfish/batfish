@@ -981,7 +981,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       if (mapName != null) {
          RouteMap currentMap = _routeMaps.get(mapName);
          if (currentMap == null) {
-            throw new Error("undefined reference to routemap: " + mapName);
+            throw new VendorConversionException(
+                  "undefined reference to routemap: " + mapName);
          }
          for (RouteMapClause clause : currentMap.getClauses().values()) {
             for (RouteMapMatchLine matchLine : clause.getMatchList()) {
