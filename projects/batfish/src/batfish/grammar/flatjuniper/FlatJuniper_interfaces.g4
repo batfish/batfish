@@ -72,6 +72,11 @@ filter
    FILTER direction name = variable
 ;
 
+ifamat_master_only
+:
+   MASTER_ONLY
+;
+
 ifamat_preferred
 :
    PREFERRED
@@ -103,7 +108,8 @@ ifamt_address
 
 ifamt_address_tail
 :
-   ifamat_preferred
+   ifamat_master_only
+   | ifamat_preferred
    | ifamat_primary
    | ifamat_vrrp_group
 ;

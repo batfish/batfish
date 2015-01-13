@@ -875,6 +875,11 @@ MARTIANS
    'martians'
 ;
 
+MASTER_ONLY
+:
+   'master-only'
+;
+
 MAX_CONFIGURATIONS_ON_FLASH
 :
    'max-configurations-on-flash'
