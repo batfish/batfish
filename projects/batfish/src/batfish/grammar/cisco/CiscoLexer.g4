@@ -267,6 +267,11 @@ ARP
 
 ;
 
+AS_OVERRIDE
+:
+   'as-override'
+;
+
 AS_PATH
 :
    'as-path' -> pushMode(M_AsPath)
