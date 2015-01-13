@@ -265,6 +265,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          int port = getPortNumber(ps.arg);
          ranges.add(new SubRange(port + 1, 65535));
       }
+      else if (ps.NEQ() != null) {
+         int port = getPortNumber(ps.arg);
+         SubRange beforeRange = new SubRange(0, port - 1);
+         SubRange afterRange = new SubRange(port + 1, 65535);
+         ranges.add(beforeRange);
+         ranges.add(afterRange);
+      }
       else if (ps.LT() != null) {
          int port = getPortNumber(ps.arg);
          ranges.add(new SubRange(0, port - 1));
