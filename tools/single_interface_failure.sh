@@ -148,11 +148,11 @@ batfish_compile_blacklist_interface() {
    local DUMP_DIR=$3
    local INDEP_SERIAL_DIR=$4
    local BLACKLISTED_INTERFACE=$5
-   echo ": START: Compute the fixed point of the control plane with blacklisted interface: $BLACKLISTED_INTERFACE"
+   echo ": START: Compute the fixed point of the control plane with blacklisted interface: \"${BLACKLISTED_INTERFACE}\""
    batfish_expect_args 5 $# || return 1
    batfish -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR -blint $BLACKLISTED_INTERFACE || return 1
    batfish_date
-   echo ": END: Compute the fixed point of the control plane with blacklisted interface: \"$BLACKLISTED_INTERFACE\""
+   echo ": END: Compute the fixed point of the control plane with blacklisted interface: \"${BLACKLISTED_INTERFACE}\""
 }
 export -f batfish_compile_blacklist_interface
 
@@ -188,13 +188,13 @@ batfish_find_interface_failure_black_hole_packet_constraints_helper() {
    local FI_QUERY_PATH=${FI_QUERY_BASE_PATH}-${NODE}.smt2
    local FI_QUERY_OUTPUT_PATH=${FI_QUERY_PATH}.out
    batfish_date
-   echo ": START: Find black-hole packet constraints for \"$NODE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
+   echo ": START: Find black-hole packet constraints for \"${NODE}\" ==> \"${FI_QUERY_OUTPUT_PATH}\""
    cat $BLACK_HOLE_PATH $FI_QUERY_PATH | batfish_time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$FI_QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
    batfish_date
-   echo ": END: Find black-hole packet constraints for \"$NODE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
+   echo ": END: Find black-hole packet constraints for \"${NODE}\" ==> \"${FI_QUERY_OUTPUT_PATH}\""
 }
 export -f batfish_find_interface_failure_black_hole_packet_constraints_helper
 
@@ -210,7 +210,7 @@ batfish_find_interface_failure_black_hole_packet_constraints_interface() {
    local OLD_PWD=$PWD
    local FI_QUERY_PRED_PATH=${FI_QUERY_BASE_PATH}_black-hole-${BLACKLISTED_INTERFACE_SANITIZED}
    batfish_date
-   echo ": START: Find black-hole packet constraints with blacklisted interface \"$BLACKLISTED_INTERFACE\""
+   echo ": START: Find black-hole packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\""
    mkdir -p $QUERY_PATH
    cd $QUERY_PATH
    batfish -blackhole -blackholepath $FI_QUERY_PRED_PATH -nodes $NODE_SET_PATH || return 1
@@ -220,7 +220,7 @@ batfish_find_interface_failure_black_hole_packet_constraints_interface() {
    fi
    cd $OLD_PWD
    batfish_date
-   echo ": END: Find black-hole packet constraints with blacklisted interface \"$BLACKLISTED_INTERFACE\""
+   echo ": END: Find black-hole packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\""
 }
 export -f batfish_find_interface_failure_black_hole_packet_constraints_interface
 
@@ -233,13 +233,13 @@ batfish_find_interface_failure_black_hole_packet_constraints_interface_helper() 
    local FI_QUERY_PATH=${FI_QUERY_BASE_PATH}-${NODE}.smt2
    local FI_QUERY_OUTPUT_PATH=${FI_QUERY_PATH}.out
    batfish_date
-   echo ": START: Find black-hole packet constraints for \"$NODE\" with blacklisted interface \"$BLACKLISTED_INTERFACE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
+   echo ": START: Find black-hole packet constraints for \"${NODE}\" with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${FI_QUERY_OUTPUT_PATH}\""
    cat $REACH_PATH $FI_QUERY_PATH | batfish_time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$FI_QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
    batfish_date
-   echo ": END: Find black-hole packet constraints for \"$NODE\" with blacklisted interface \"$BLACKLISTED_INTERFACE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
+   echo ": END: Find black-hole packet constraints for \"${NODE}\" with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${FI_QUERY_OUTPUT_PATH}\""
 }
 export -f batfish_find_interface_failure_black_hole_packet_constraints_interface_helper
 
@@ -293,13 +293,13 @@ batfish_find_interface_failure_reachable_packet_constraints_helper() {
    local FI_QUERY_PATH=${FI_QUERY_BASE_PATH}-${NODE}.smt2
    local FI_QUERY_OUTPUT_PATH=${FI_QUERY_PATH}.out
    batfish_date
-   echo ": START: Find reachable packet constraints for \"$NODE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
+   echo ": START: Find reachable packet constraints for \"${NODE}\" ==> \"${FI_QUERY_OUTPUT_PATH}\""
    cat $REACH_PATH $FI_QUERY_PATH | batfish_time $BATFISH_Z3_DATALOG -smt2 -in 3>&1 1>$FI_QUERY_OUTPUT_PATH 2>&3
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
    batfish_date
-   echo ": END: Find reachable packet constraints for \"$NODE\" ==> \"$FI_QUERY_OUTPUT_PATH\""
+   echo ": END: Find reachable packet constraints for \"${NODE}\" ==> \"${FI_QUERY_OUTPUT_PATH}\""
 }
 export -f batfish_find_interface_failure_reachable_packet_constraints_helper
 
@@ -349,4 +349,3 @@ batfish_generate_interface_failure_inconsistency_concretizer_queries_helper() {
    fi
 }
 export -f batfish_generate_interface_failure_inconsistency_concretizer_queries_helper
-
