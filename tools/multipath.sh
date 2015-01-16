@@ -110,10 +110,10 @@ batfish_find_multipath_inconsistent_packet_constraints() {
       done
    fi
    sort -R $NODE_SET_TEXT_PATH | parallel --eta --halt 2 $SERVER_OPTS batfish_find_multipath_inconsistent_packet_constraints_helper {} $REACH_PATH $QUERY_BASE_PATH
-   set -x
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
+   set -x
    if [ -n "$NUM_MACHINES" -a "$NUM_MACHINES" -gt 0 ]; then
       for MACHINE in $MACHINES; do
          # copy output files from remote machines
