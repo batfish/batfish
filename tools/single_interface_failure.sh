@@ -170,7 +170,7 @@ batfish_find_interface_failure_black_hole_packet_constraints() {
    mkdir -p $QUERY_PATH
    cd $QUERY_PATH
    batfish -blackhole -blackholepath $FI_QUERY_PRED_PATH -nodes $NODE_SET_PATH || return 1
-   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_find_interface_failure_black_hole_packet_constraints_helper {} $BLACK_HOLE_PATH $FI_QUERY_PRED_PATH
+   cat $NODE_SET_TEXT_PATH | $BATFISH_PARALLEL batfish_find_interface_failure_black_hole_packet_constraints_helper {} $BLACK_HOLE_PATH $FI_QUERY_PRED_PATH
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -214,7 +214,7 @@ batfish_find_interface_failure_black_hole_packet_constraints_interface() {
    mkdir -p $QUERY_PATH
    cd $QUERY_PATH
    batfish -blackhole -blackholepath $FI_QUERY_PRED_PATH -nodes $NODE_SET_PATH || return 1
-   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_find_interface_failure_black_hole_packet_constraints_interface_helper {} $REACH_PATH $FI_QUERY_PRED_PATH $BLACKLISTED_INTERFACE
+   cat $NODE_SET_TEXT_PATH | $BATFISH_PARALLEL batfish_find_interface_failure_black_hole_packet_constraints_interface_helper {} $REACH_PATH $FI_QUERY_PRED_PATH $BLACKLISTED_INTERFACE
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -275,7 +275,7 @@ batfish_find_interface_failure_reachable_packet_constraints() {
    mkdir -p $QUERY_PATH
    cd $QUERY_PATH
    batfish -reach -reachpath $FI_QUERY_PRED_PATH -nodes $NODE_SET_PATH || return 1
-   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_find_interface_failure_reachable_packet_constraints_helper {} $REACH_PATH $FI_QUERY_PRED_PATH
+   cat $NODE_SET_TEXT_PATH | $BATFISH_PARALLEL batfish_find_interface_failure_reachable_packet_constraints_helper {} $REACH_PATH $FI_QUERY_PRED_PATH
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -317,7 +317,7 @@ batfish_generate_interface_failure_inconsistency_concretizer_queries() {
    local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
    local OLD_PWD=$PWD
    cd $QUERY_PATH
-   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_generate_interface_failure_inconsistency_concretizer_queries_helper {} $ORIG_FI_QUERY_BASE_PATH $FI_QUERY_BASE_PATH $BLACKLISTED_INTERFACE $BLACKLISTED_IP \;
+   cat $NODE_SET_TEXT_PATH | $BATFISH_PARALLEL batfish_generate_interface_failure_inconsistency_concretizer_queries_helper {} $ORIG_FI_QUERY_BASE_PATH $FI_QUERY_BASE_PATH $BLACKLISTED_INTERFACE $BLACKLISTED_IP \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -343,7 +343,7 @@ batfish_generate_interface_failure_inconsistency_concretizer_queries_helper() {
    local BLACK_HOLE_INTERFACE_QUERY_OUT=${FI_QUERY_BASE_PATH}_black-hole-${BLACKLISTED_INTERFACE_SANITIZED}-${NODE}.smt2.out
    batfish -conc -concin $REACHABLE_QUERY_OUT $BLACK_HOLE_INTERFACE_QUERY_OUT -concinneg $BLACK_HOLE_QUERY_OUT -concout $FI_CONCRETIZER_QUERY_BASE_PATH -blacklistdstip $BLACKLISTED_IP -concunique || return 1
    find $PWD -regextype posix-extended -regex "${FI_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
-      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $NODE \;
+      $BATFISH_NESTED_PARALLEL batfish_generate_concretizer_query_output {} $NODE \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi

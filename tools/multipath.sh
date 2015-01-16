@@ -108,7 +108,7 @@ batfish_find_multipath_inconsistent_packet_constraints() {
          rsync -av -rsh=ssh --stats --progress ${QUERY_BASE_PATH}* $MACHINE:$QUERY_PATH/ || return 1
       done
    fi
-   sort -R $NODE_SET_TEXT_PATH | parallel -v --tag --eta --halt 2 $SERVER_OPTS batfish_find_multipath_inconsistent_packet_constraints_helper {} $REACH_PATH $QUERY_BASE_PATH
+   sort -R $NODE_SET_TEXT_PATH | $BATFISH_PARALLEL $SERVER_OPTS batfish_find_multipath_inconsistent_packet_constraints_helper {} $REACH_PATH $QUERY_BASE_PATH
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -163,7 +163,7 @@ batfish_generate_multipath_inconsistency_concretizer_queries() {
          rsync -av -rsh=ssh --stats --progress $QUERY_PATH/. $MACHINE:$QUERY_PATH/. || return 1
       done
    fi
-   cat $NODE_SET_TEXT_PATH | parallel --eta --halt 2 $SERVER_OPTS batfish_generate_multipath_inconsistency_concretizer_queries_helper {} $QUERY_BASE_PATH \;
+   cat $NODE_SET_TEXT_PATH | $BATFISH_PARALLEL $SERVER_OPTS batfish_generate_multipath_inconsistency_concretizer_queries_helper {} $QUERY_BASE_PATH \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -191,7 +191,7 @@ batfish_generate_multipath_inconsistency_concretizer_queries_helper() {
    echo ": START: Generate multipath-inconsistency concretizer queries for node \"${NODE}\""
    batfish -conc -concin $QUERY_OUT -concout $CONCRETIZER_QUERY_BASE_PATH || return 1
    find $PWD -regextype posix-extended -regex "${CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
-      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $NODE \;
+      $BATFISH_NESTED_PARALLEL batfish_generate_concretizer_query_output {} $NODE \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi

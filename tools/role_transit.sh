@@ -115,7 +115,7 @@ batfish_find_role_transit_packet_constraints() {
          rsync -av -rsh=ssh --stats --progress ${QUERY_BASE_PATH}* $MACHINE:$QUERY_PATH/ || return 1
       done
    fi
-   sort -R ${NODE_ROLES_PATH}.rtconstraintsiterations | parallel --eta --halt 2 $SERVER_OPTS batfish_find_role_transit_packet_constraints_helper {} $REACH_PATH $QUERY_BASE_PATH
+   sort -R ${NODE_ROLES_PATH}.rtconstraintsiterations | $BATFISH_PARALLEL $SERVER_OPTS batfish_find_role_transit_packet_constraints_helper {} $REACH_PATH $QUERY_BASE_PATH
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -172,7 +172,7 @@ batfish_generate_role_transit_concretizer_queries() {
          rsync -av -rsh=ssh --stats --progress $QUERY_PATH/. $MACHINE:$QUERY_PATH/. || return 1
       done
    fi
-   cat $ITERATIONS_PATH | parallel --eta --halt 2 $SERVER_OPTS batfish_generate_role_transit_concretizer_queries_helper {} $QUERY_BASE_PATH \;
+   sort -R $ITERATIONS_PATH | $BATFISH_PARALLEL $SERVER_OPTS batfish_generate_role_transit_concretizer_queries_helper {} $QUERY_BASE_PATH \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -207,12 +207,12 @@ batfish_generate_role_transit_concretizer_queries_helper() {
    batfish -conc -concin $MASTER_QUERY_OUT -concinneg $SLAVE_QUERY_OUT -concunique -concout $MASTER_CONCRETIZER_QUERY_BASE_PATH || return 1
    batfish -conc -concinneg $MASTER_QUERY_OUT -concin $SLAVE_QUERY_OUT -concunique -concout $SLAVE_CONCRETIZER_QUERY_BASE_PATH || return 1
    find $PWD -regextype posix-extended -regex "${MASTER_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
-      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $SOURCE_ROLE \;
+      $BATFISH_NESTED_PARALLEL batfish_generate_concretizer_query_output {} $SOURCE_ROLE \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
    find $PWD -regextype posix-extended -regex "${SLAVE_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
-      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $SOURCE_ROLE \;
+      $BATFISH_NESTED_PARALLEL batfish_generate_concretizer_query_output {} $SOURCE_ROLE \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi

@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 
+which z3 > /dev/null || return
+which parallel > /dev/null || return
+
 export BATFISH_ROOT="$BATFISH_TOOLS_PATH/.."
 export BATFISH_PATH="$BATFISH_ROOT/projects/batfish"
 export BATFISH_TEST_RIG_PATH="$BATFISH_ROOT/test_rigs"
 export BATFISH="$BATFISH_PATH/batfish"
-export BATFISH_Z3="$(which z3)"
+export BATFISH_Z3=z3
 export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.datalog.default_relation=doc fixedpoint.print.answer=true"
+export BATFISH_PARALLEL='parallel --tag -v --eta --halt 2'
+export BATFISH_NESTED_PARALLEL='parallel --tag -v --halt 2 -j1'
 
 batfish() {
    # if cygwin, shift and replace each parameter
@@ -182,11 +187,11 @@ batfish_get_concrete_failure_packets() {
       return 1
    fi
    cd $FAILURE_QUERY_PATH
-   cat $NODES | parallel --halt 2 batfish_get_concrete_failure_packets_decreased {} $FAILURE_REACH_QUERY_NAME \;
+   cat $NODES | $BATFISH_PARALLEL batfish_get_concrete_failure_packets_decreased {} $FAILURE_REACH_QUERY_NAME \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
-   cat $FAILURE_NODES | parallel --halt 2 batfish_get_concrete_failure_packets_increased {} $FAILURE_REACH_QUERY_NAME \;
+   cat $FAILURE_NODES | $BATFISH_PARALLEL batfish_get_concrete_failure_packets_increased {} $FAILURE_REACH_QUERY_NAME \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi

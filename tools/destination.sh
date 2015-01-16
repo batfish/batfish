@@ -144,7 +144,7 @@ batfish_find_destination_consistency_accept_packet_constraints() {
    mkdir -p $QUERY_PATH
    cd $QUERY_PATH
    batfish -reach -reachpath $DI_QUERY_PRED_PATH -nodes $NODE_SET_PATH -blnode $BLACKLISTED_NODE || return 1
-   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_find_destination_consistency_accept_packet_constraints_helper {} $REACH_PATH $DI_QUERY_PRED_PATH $BLACKLISTED_NODE
+   cat $NODE_SET_TEXT_PATH | $BATFISH_PARALLEL batfish_find_destination_consistency_accept_packet_constraints_helper {} $REACH_PATH $DI_QUERY_PRED_PATH $BLACKLISTED_NODE
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -191,7 +191,7 @@ batfish_find_destination_consistency_node_accept_packet_constraints() {
    mkdir -p $QUERY_PATH
    cd $QUERY_PATH
    batfish -reach -reachpath $DI_QUERY_PRED_PATH -nodes $NODE_SET_PATH -acceptnode $BLACKLIST_NODE || return 1
-   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_find_destination_consistency_node_accept_packet_constraints_helper {} $REACH_PATH $DI_QUERY_PRED_PATH $BLACKLIST_NODE
+   cat $NODE_SET_TEXT_PATH | $BATFISH_PARALLEL batfish_find_destination_consistency_node_accept_packet_constraints_helper {} $REACH_PATH $DI_QUERY_PRED_PATH $BLACKLIST_NODE
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -234,7 +234,7 @@ batfish_generate_destination_consistency_concretizer_queries() {
    local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
    local OLD_PWD=$PWD
    cd $QUERY_PATH
-   cat $NODE_SET_TEXT_PATH | parallel --halt 2 batfish_generate_destination_consistency_concretizer_queries_helper {} $DI_QUERY_BASE_PATH $BLACKLISTED_NODE \;
+   cat $NODE_SET_TEXT_PATH | $BATFISH_PARALLEL batfish_generate_destination_consistency_concretizer_queries_helper {} $DI_QUERY_BASE_PATH $BLACKLISTED_NODE \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -259,7 +259,7 @@ batfish_generate_destination_consistency_concretizer_queries_helper() {
    fi
    batfish -conc -concin $ACCEPT_QUERY_OUT $NODE_ACCEPT_QUERY_OUT -concout $DI_CONCRETIZER_QUERY_BASE_PATH -concunique || return 1
    find $PWD -regextype posix-extended -regex "${DI_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
-      parallel --halt 2 -j1 batfish_generate_concretizer_query_output {} $NODE \;
+      $BATFISH_NESTED_PARALLEL batfish_generate_concretizer_query_output {} $NODE \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
