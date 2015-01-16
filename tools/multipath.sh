@@ -83,6 +83,7 @@ batfish_analyze() {
 export -f batfish_analyze
 
 batfish_find_multipath_inconsistent_packet_constraints() {
+   set -x
    batfish_date
    echo ": START: Find inconsistent packet constraints"
    batfish_expect_args 6 $# || return 1
@@ -109,6 +110,7 @@ batfish_find_multipath_inconsistent_packet_constraints() {
       done
    fi
    sort -R $NODE_SET_TEXT_PATH | parallel --eta --halt 2 $SERVER_OPTS batfish_find_multipath_inconsistent_packet_constraints_helper {} $REACH_PATH $QUERY_BASE_PATH
+   set -x
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -121,10 +123,12 @@ batfish_find_multipath_inconsistent_packet_constraints() {
    cd $OLD_PWD
    batfish_date
    echo ": END: Find inconsistent packet constraints"
+   set +x
 }
 export -f batfish_find_multipath_inconsistent_packet_constraints
 
 batfish_find_multipath_inconsistent_packet_constraints_helper() {
+   set -x
    batfish_expect_args 3 $# || return 1
    local NODE=$1
    local REACH_PATH=$2
@@ -139,6 +143,7 @@ batfish_find_multipath_inconsistent_packet_constraints_helper() {
    fi
    batfish_date
    echo ": END: Find inconsistent packet constraints for \"$NODE\" (\"${QUERY_OUTPUT_PATH}\")"
+   set +x
 }
 export -f batfish_find_multipath_inconsistent_packet_constraints_helper
 
