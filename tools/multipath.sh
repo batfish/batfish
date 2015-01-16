@@ -108,7 +108,7 @@ batfish_find_multipath_inconsistent_packet_constraints() {
          rsync -av -rsh=ssh --stats --progress ${QUERY_BASE_PATH}* $MACHINE:$QUERY_PATH/ || return 1
       done
    fi
-   sort -R $NODE_SET_TEXT_PATH | parallel -v -v --eta --halt 2 $SERVER_OPTS batfish_find_multipath_inconsistent_packet_constraints_helper {} $REACH_PATH $QUERY_BASE_PATH
+   sort -R $NODE_SET_TEXT_PATH | parallel -v --tag --eta --halt 2 $SERVER_OPTS batfish_find_multipath_inconsistent_packet_constraints_helper {} $REACH_PATH $QUERY_BASE_PATH
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
