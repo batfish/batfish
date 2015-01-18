@@ -441,12 +441,16 @@ public class Batfish implements AutoCloseable {
       String[] concInPaths = _settings.getConcretizerInputFilePaths();
       String[] negConcInPaths = _settings.getNegatedConcretizerInputFilePaths();
       List<ConcretizerQuery> concretizerQueries = new ArrayList<ConcretizerQuery>();
-      String blacklistDstIpStr = _settings.getBlacklistDstIp();
-      if (blacklistDstIpStr != null) {
-         Ip blacklistDstIp = new Ip(blacklistDstIpStr);
-         ConcretizerQuery blacklistIpQuery = ConcretizerQuery
-               .blacklistDstIpQuery(blacklistDstIp);
-         concretizerQueries.add(blacklistIpQuery);
+      String blacklistDstIpPath = _settings.getBlacklistDstIpPath();
+      if (blacklistDstIpPath != null) {
+         String blacklistDstIpFileText = readFile(new File(blacklistDstIpPath));
+         String[] blacklistDstpIps = blacklistDstIpFileText.split("\n");
+         for (String blacklistDstIpStr : blacklistDstpIps) {
+            Ip blacklistDstIp = new Ip(blacklistDstIpStr);
+            ConcretizerQuery blacklistIpQuery = ConcretizerQuery
+                  .blacklistDstIpQuery(blacklistDstIp);
+            concretizerQueries.add(blacklistIpQuery);
+         }
       }
       for (String concInPath : concInPaths) {
          _logger.info("Reading z3 datalog query output file: \"" + concInPath
@@ -673,7 +677,10 @@ public class Batfish implements AutoCloseable {
             throw new BatfishException("Cannot blacklist non-existent node: "
                   + blacklistNode);
          }
-         configurations.remove(blacklistNode);
+         Configuration configuration = configurations.get(blacklistNode);
+         for (Interface iface : configuration.getInterfaces().values()) {
+            iface.setActive(false);
+         }
       }
    }
 
@@ -775,16 +782,12 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void genInterfaceFailureBlackHoleQueries() {
-      _logger
-            .info("\n*** GENERATING INTERFACE-FAILURE-INCONSISTENCY BLACK-HOLE QUERIES ***\n");
+   private void genBlackHoleQueries() {
+      _logger.info("\n*** GENERATING BLACK-HOLE QUERIES ***\n");
       resetTimer();
 
-      String fiQueryBasePath = _settings
-            .getInterfaceFailureInconsistencyBlackHoleQueryPath();
+      String fiQueryBasePath = _settings.getBlackHoleQueryPath();
       String nodeSetPath = _settings.getNodeSetPath();
-      String blacklistedInterfaceString = _settings
-            .getBlacklistInterfaceString();
 
       _logger.info("Reading node set from : \"" + nodeSetPath + "\"..");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
@@ -795,13 +798,7 @@ public class Batfish implements AutoCloseable {
                hostname);
          String queryText = synth.getQueryText();
          String fiQueryPath;
-         if (blacklistedInterfaceString != null) {
-            fiQueryPath = fiQueryBasePath + "-" + blacklistedInterfaceString
-                  + "-" + hostname + ".smt2";
-         }
-         else {
-            fiQueryPath = fiQueryBasePath + "-" + hostname + ".smt2";
-         }
+         fiQueryPath = fiQueryBasePath + "-" + hostname + ".smt2";
 
          _logger.info("Writing query to: \"" + fiQueryPath + "\"..");
          writeFile(fiQueryPath, queryText);
@@ -2005,7 +2002,7 @@ public class Batfish implements AutoCloseable {
       }
 
       if (_settings.getInterfaceFailureInconsistencyBlackHoleQuery()) {
-         genInterfaceFailureBlackHoleQueries();
+         genBlackHoleQueries();
          return;
       }
 

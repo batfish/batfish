@@ -20,7 +20,7 @@ public class Settings {
    private static final String ARG_ANONYMIZE = "anonymize";
    private static final String ARG_BLACK_HOLE = "blackhole";
    private static final String ARG_BLACK_HOLE_PATH = "blackholepath";
-   private static final String ARG_BLACKLIST_DST_IP = "blacklistdstip";
+   private static final String ARG_BLACKLIST_DST_IP_PATH = "blacklistdstippath";
    private static final String ARG_BLACKLIST_INTERFACE = "blint";
    private static final String ARG_BLACKLIST_NODE = "blnode";
    private static final String ARG_BUILD_PREDICATE_INFO = "bpi";
@@ -159,7 +159,7 @@ public class Settings {
    private String _anonymizeDir;
    private boolean _blackHole;
    private String _blackHolePath;
-   private String _blacklistDstIp;
+   private String _blacklistDstIpPath;
    private String _blacklistInterface;
    private String _blacklistNode;
    private boolean _buildPredicateInfo;
@@ -293,8 +293,12 @@ public class Settings {
       return _anonymizeDir;
    }
 
-   public String getBlacklistDstIp() {
-      return _blacklistDstIp;
+   public String getBlackHoleQueryPath() {
+      return _blackHolePath;
+   }
+
+   public String getBlacklistDstIpPath() {
+      return _blacklistDstIpPath;
    }
 
    public String getBlacklistInterfaceString() {
@@ -415,10 +419,6 @@ public class Settings {
 
    public boolean getInterfaceFailureInconsistencyBlackHoleQuery() {
       return _blackHole;
-   }
-
-   public String getInterfaceFailureInconsistencyBlackHoleQueryPath() {
-      return _blackHolePath;
    }
 
    public boolean getInterfaceFailureInconsistencyReachableQuery() {
@@ -824,7 +824,7 @@ public class Settings {
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_BLACKLIST_DST_IP)
             .desc("destination ip to blacklist for concretizer queries")
-            .longOpt(ARG_BLACKLIST_DST_IP).build());
+            .longOpt(ARG_BLACKLIST_DST_IP_PATH).build());
       _options.addOption(Option.builder()
             .argName(ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS).hasArgs()
             .desc("suppress warnings for selected parser rules")
@@ -1019,7 +1019,7 @@ public class Settings {
       _reachPath = line.getOptionValue(ARG_REACH_PATH);
       _blackHole = line.hasOption(ARG_BLACK_HOLE);
       _blackHolePath = line.getOptionValue(ARG_BLACK_HOLE_PATH);
-      _blacklistDstIp = line.getOptionValue(ARG_BLACKLIST_DST_IP);
+      _blacklistDstIpPath = line.getOptionValue(ARG_BLACKLIST_DST_IP_PATH);
       _concUnique = line.hasOption(ARG_CONC_UNIQUE);
       _acceptNode = line.getOptionValue(ARG_ACCEPT_NODE);
       _rulesWithSuppressedWarnings = new HashSet<String>();

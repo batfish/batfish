@@ -255,7 +255,7 @@ batfish_find_interface_failure_destination_ip_blacklist_constraints() {
    echo ": START: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${OUTPUT_PATH}\""
    batfish -log output -workspace $WORKSPACE -query -predicates $INTERFACE_IP_PREDICATE > $INTERFACE_IP_PATH || return 1
    head -n1 $INTERFACE_IP_PATH || return 1
-   cat $INTERFACE_IP_PATH | tr -d ' ' | grep "$BLACKLISTED_INTERFACE" | cut -d',' -f 3 > $OUTPUT_PATH
+   cat $INTERFACE_IP_PATH | tr -d ' ' | grep "(${BLACKLISTED_INTERFACE}," | cut -d',' -f 3 > $OUTPUT_PATH
    batfish_date
    echo ": END: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${OUTPUT_PATH}\""
 }
@@ -312,12 +312,11 @@ batfish_generate_interface_failure_inconsistency_concretizer_queries() {
    local NODE_SET_PATH=$3
    local BLACKLISTED_INTERFACE=$4
    local DST_IP_BLACKLIST_PATH=$5
-   local BLACKLISTED_IP=$(cat $DST_IP_BLACKLIST_PATH | tr -d '\n') 
    local QUERY_PATH="$(dirname $FI_QUERY_BASE_PATH)"
    local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
    local OLD_PWD=$PWD
    cd $QUERY_PATH
-   cat $NODE_SET_TEXT_PATH | $BATFISH_PARALLEL batfish_generate_interface_failure_inconsistency_concretizer_queries_helper {} $ORIG_FI_QUERY_BASE_PATH $FI_QUERY_BASE_PATH $BLACKLISTED_INTERFACE $BLACKLISTED_IP \;
+   cat $NODE_SET_TEXT_PATH | $BATFISH_PARALLEL batfish_generate_interface_failure_inconsistency_concretizer_queries_helper {} $ORIG_FI_QUERY_BASE_PATH $FI_QUERY_BASE_PATH $BLACKLISTED_INTERFACE $DST_IP_BLACKLIST_PATH \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -333,7 +332,7 @@ batfish_generate_interface_failure_inconsistency_concretizer_queries_helper() {
    local ORIG_FI_QUERY_BASE_PATH=$2
    local FI_QUERY_BASE_PATH=$3
    local BLACKLISTED_INTERFACE=$4
-   local BLACKLISTED_IP=$5
+   local DST_IP_BLACKLIST_PATH=$5
    local BLACKLISTED_INTERFACE_SANITIZED=$(echo $BLACKLISTED_INTERFACE | tr '/' '_')
    local QUERY_BASE=${FI_QUERY_BASE_PATH}-${BLACKLISTED_INTERFACE_SANITIZED}-${NODE}
    local QUERY_OUT=${QUERY_BASE}.smt2.out
@@ -341,7 +340,7 @@ batfish_generate_interface_failure_inconsistency_concretizer_queries_helper() {
    local REACHABLE_QUERY_OUT=${ORIG_FI_QUERY_BASE_PATH}_reachable-${NODE}.smt2.out
    local BLACK_HOLE_QUERY_OUT=${ORIG_FI_QUERY_BASE_PATH}_black-hole-${NODE}.smt2.out
    local BLACK_HOLE_INTERFACE_QUERY_OUT=${FI_QUERY_BASE_PATH}_black-hole-${BLACKLISTED_INTERFACE_SANITIZED}-${NODE}.smt2.out
-   batfish -conc -concin $REACHABLE_QUERY_OUT $BLACK_HOLE_INTERFACE_QUERY_OUT -concinneg $BLACK_HOLE_QUERY_OUT -concout $FI_CONCRETIZER_QUERY_BASE_PATH -blacklistdstip $BLACKLISTED_IP -concunique || return 1
+   batfish -conc -concin $REACHABLE_QUERY_OUT $BLACK_HOLE_INTERFACE_QUERY_OUT -concinneg $BLACK_HOLE_QUERY_OUT -concout $FI_CONCRETIZER_QUERY_BASE_PATH -blacklistdstippath $DST_IP_BLACKLIST_PATH -concunique || return 1
    find $PWD -regextype posix-extended -regex "${FI_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
       $BATFISH_NESTED_PARALLEL batfish_generate_concretizer_query_output {} $NODE \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
