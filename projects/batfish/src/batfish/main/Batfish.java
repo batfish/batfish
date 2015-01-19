@@ -445,13 +445,18 @@ public class Batfish implements AutoCloseable {
       String blacklistDstIpPath = _settings.getBlacklistDstIpPath();
       if (blacklistDstIpPath != null) {
          String blacklistDstIpFileText = readFile(new File(blacklistDstIpPath));
-         String[] blacklistDstpIps = blacklistDstIpFileText.split("\n");
-         for (String blacklistDstIpStr : blacklistDstpIps) {
+         String[] blacklistDstpIpStrs = blacklistDstIpFileText.split("\n");
+         Set<Ip> blacklistDstIps = new TreeSet<Ip>();
+         for (String blacklistDstIpStr : blacklistDstpIpStrs) {
             Ip blacklistDstIp = new Ip(blacklistDstIpStr);
-            ConcretizerQuery blacklistIpQuery = ConcretizerQuery
-                  .blacklistDstIpQuery(blacklistDstIp);
-            concretizerQueries.add(blacklistIpQuery);
+            blacklistDstIps.add(blacklistDstIp);
          }
+         if (blacklistDstIps.size() == 0) {
+            _logger.warn("Warning: empty set of blacklisted destination ips\n");
+         }
+         ConcretizerQuery blacklistIpQuery = ConcretizerQuery
+               .blacklistDstIpQuery(blacklistDstIps);
+         concretizerQueries.add(blacklistIpQuery);
       }
       for (String concInPath : concInPaths) {
          _logger.info("Reading z3 datalog query output file: \"" + concInPath
