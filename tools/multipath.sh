@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-batfish_confirm_analyze() {
-   BATFISH_CONFIRM=batfish_confirm batfish_analyze $@
+batfish_confirm_analyze_multipath() {
+   BATFISH_CONFIRM=batfish_confirm batfish_analyze_multipath $@
 }
-export -f batfish_confirm_analyze
+export -f batfish_confirm_analyze_multipath
    
-batfish_analyze() {
+batfish_analyze_multipath() {
    local TEST_RIG_RELATIVE=$1
    shift
    local PREFIX=$1
@@ -80,7 +80,7 @@ batfish_analyze() {
    echo "Query flow results from LogicBlox"
    $BATFISH_CONFIRM && { batfish_query_flows $FLOWS $WORKSPACE || return 1 ; }
 }
-export -f batfish_analyze
+export -f batfish_analyze_multipath
 
 batfish_find_multipath_inconsistent_packet_constraints() {
    batfish_date

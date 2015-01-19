@@ -70,6 +70,8 @@ batfish_analyze_interface_failures_machine() {
    local INDEP_SERIAL_DIR=$SCENARIO_BASE_DIR/../$PREFIX-indep
    local NODE_SET_PATH=$SCENARIO_BASE_DIR/../$PREFIX-node-set
 
+   local ORIG_FLOW_SINKS=$ORIG_DP_DIR/flow-sinks
+
    #Extract z3 reachability relations for no-failure scenario
    cd $SCENARIO_BASE_DIR
    batfish_generate_z3_reachability $ORIG_DP_DIR $INDEP_SERIAL_DIR $ORIG_REACH_PATH $NODE_SET_PATH || return 1
@@ -110,7 +112,7 @@ batfish_analyze_interface_failures_machine() {
       batfish_nuke_reset_logicblox || return 1
 
       # Compute the fixed point of the control plane with failed interface
-      batfish_compile_blacklist_interface $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $interface || return 1
+      batfish_compile_blacklist_interface $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $interface $ORIG_FLOW_SINKS || return 1
 
       # Get interesting predicate data
       batfish -log output -workspace $WORKSPACE -query -predicates InstalledRoute BestOspfE2Route BestOspfE1Route OspfRoute_advertiser OspfE2Route > $PREDS_PATH || return 1
@@ -148,9 +150,10 @@ batfish_compile_blacklist_interface() {
    local DUMP_DIR=$3
    local INDEP_SERIAL_DIR=$4
    local BLACKLISTED_INTERFACE=$5
+   local ORIG_FLOW_SINKS=$6
    echo ": START: Compute the fixed point of the control plane with blacklisted interface: \"${BLACKLISTED_INTERFACE}\""
-   batfish_expect_args 5 $# || return 1
-   batfish -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR -blint $BLACKLISTED_INTERFACE || return 1
+   batfish_expect_args 6 $# || return 1
+   batfish -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR -blint $BLACKLISTED_INTERFACE -flowsink $ORIG_FLOW_SINKS || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane with blacklisted interface: \"${BLACKLISTED_INTERFACE}\""
 }
@@ -246,18 +249,18 @@ export -f batfish_find_interface_failure_black_hole_packet_constraints_interface
 batfish_find_interface_failure_destination_ip_blacklist_constraints() {
    batfish_expect_args 3 $# || return 1
    local WORKSPACE=$1
-   local OUTPUT_PATH=$2
+   local DST_IP_BLACKLIST_PATH=$2
    local BLACKLISTED_INTERFACE=$3
    local BLACKLISTED_INTERFACE_SANITIZED=$(echo $BLACKLISTED_INTERFACE | tr '/' '_')
    local INTERFACE_IP_PREDICATE=SetIpInt
    local INTERFACE_IP_PATH=$PWD/${INTERFACE_IP_PREDICATE}.txt
    batfish_date
-   echo ": START: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${OUTPUT_PATH}\""
+   echo ": START: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${DST_IP_BLACKLIST_PATH}\""
    batfish -log output -workspace $WORKSPACE -query -predicates $INTERFACE_IP_PREDICATE > $INTERFACE_IP_PATH || return 1
    head -n1 $INTERFACE_IP_PATH || return 1
-   cat $INTERFACE_IP_PATH | tr -d ' ' | grep "$BLACKLISTED_INTERFACE" | cut -d',' -f 3 > $OUTPUT_PATH
+   cat $INTERFACE_IP_PATH | tr -d ' ' | grep "(${BLACKLISTED_INTERFACE}," | cut -d',' -f 3 > $DST_IP_BLACKLIST_PATH
    batfish_date
-   echo ": END: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${OUTPUT_PATH}\""
+   echo ": END: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${DST_IP_BLACKLIST_PATH}\""
 }
 export -f batfish_find_interface_failure_destination_ip_blacklist_constraints
 
@@ -312,12 +315,11 @@ batfish_generate_interface_failure_inconsistency_concretizer_queries() {
    local NODE_SET_PATH=$3
    local BLACKLISTED_INTERFACE=$4
    local DST_IP_BLACKLIST_PATH=$5
-   local BLACKLISTED_IP=$(cat $DST_IP_BLACKLIST_PATH | tr -d '\n') 
    local QUERY_PATH="$(dirname $FI_QUERY_BASE_PATH)"
    local NODE_SET_TEXT_PATH=${NODE_SET_PATH}.txt
    local OLD_PWD=$PWD
    cd $QUERY_PATH
-   cat $NODE_SET_TEXT_PATH | $BATFISH_PARALLEL batfish_generate_interface_failure_inconsistency_concretizer_queries_helper {} $ORIG_FI_QUERY_BASE_PATH $FI_QUERY_BASE_PATH $BLACKLISTED_INTERFACE $BLACKLISTED_IP \;
+   cat $NODE_SET_TEXT_PATH | $BATFISH_PARALLEL batfish_generate_interface_failure_inconsistency_concretizer_queries_helper {} $ORIG_FI_QUERY_BASE_PATH $FI_QUERY_BASE_PATH $BLACKLISTED_INTERFACE $DST_IP_BLACKLIST_PATH \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -333,7 +335,7 @@ batfish_generate_interface_failure_inconsistency_concretizer_queries_helper() {
    local ORIG_FI_QUERY_BASE_PATH=$2
    local FI_QUERY_BASE_PATH=$3
    local BLACKLISTED_INTERFACE=$4
-   local BLACKLISTED_IP=$5
+   local DST_IP_BLACKLIST_PATH=$5
    local BLACKLISTED_INTERFACE_SANITIZED=$(echo $BLACKLISTED_INTERFACE | tr '/' '_')
    local QUERY_BASE=${FI_QUERY_BASE_PATH}-${BLACKLISTED_INTERFACE_SANITIZED}-${NODE}
    local QUERY_OUT=${QUERY_BASE}.smt2.out
@@ -341,7 +343,7 @@ batfish_generate_interface_failure_inconsistency_concretizer_queries_helper() {
    local REACHABLE_QUERY_OUT=${ORIG_FI_QUERY_BASE_PATH}_reachable-${NODE}.smt2.out
    local BLACK_HOLE_QUERY_OUT=${ORIG_FI_QUERY_BASE_PATH}_black-hole-${NODE}.smt2.out
    local BLACK_HOLE_INTERFACE_QUERY_OUT=${FI_QUERY_BASE_PATH}_black-hole-${BLACKLISTED_INTERFACE_SANITIZED}-${NODE}.smt2.out
-   batfish -conc -concin $REACHABLE_QUERY_OUT $BLACK_HOLE_INTERFACE_QUERY_OUT -concinneg $BLACK_HOLE_QUERY_OUT -concout $FI_CONCRETIZER_QUERY_BASE_PATH -blacklistdstip $BLACKLISTED_IP -concunique || return 1
+   batfish -conc -concin $REACHABLE_QUERY_OUT $BLACK_HOLE_INTERFACE_QUERY_OUT -concinneg $BLACK_HOLE_QUERY_OUT -concout $FI_CONCRETIZER_QUERY_BASE_PATH -blacklistdstippath $DST_IP_BLACKLIST_PATH -concunique || return 1
    find $PWD -regextype posix-extended -regex "${FI_CONCRETIZER_QUERY_BASE_PATH}-[0-9]+.smt2" | \
       $BATFISH_NESTED_PARALLEL batfish_generate_concretizer_query_output {} $NODE \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then

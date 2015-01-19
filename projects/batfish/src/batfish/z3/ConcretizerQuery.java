@@ -3,8 +3,10 @@ package batfish.z3;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import batfish.representation.Ip;
+import batfish.z3.node.AndExpr;
 import batfish.z3.node.AssertExpr;
 import batfish.z3.node.BooleanExpr;
 import batfish.z3.node.CheckSatExpr;
@@ -21,11 +23,15 @@ public class ConcretizerQuery {
    public static final ConcretizerQuery UNSAT = new ConcretizerQuery(
          Collections.<Statement> singletonList(new UnsatExpr()));;
 
-   public static ConcretizerQuery blacklistDstIpQuery(Ip blacklistDstIp) {
-      EqExpr hasBlacklistedDstIp = new EqExpr(new VarIntExpr(
-            Synthesizer.DST_IP_VAR), new LitIntExpr(blacklistDstIp));
-      NotExpr not = new NotExpr(hasBlacklistedDstIp);
-      return new ConcretizerQuery(not);
+   public static ConcretizerQuery blacklistDstIpQuery(Set<Ip> blacklistDstIps) {
+      AndExpr conditions = new AndExpr();
+      for (Ip blacklistDstIp : blacklistDstIps) {
+         EqExpr hasBlacklistedDstIp = new EqExpr(new VarIntExpr(
+               Synthesizer.DST_IP_VAR), new LitIntExpr(blacklistDstIp));
+         NotExpr not = new NotExpr(hasBlacklistedDstIp);
+         conditions.addConjunct(not);
+      }
+      return new ConcretizerQuery(conditions);
    }
 
    public static List<ConcretizerQuery> crossProduct(
