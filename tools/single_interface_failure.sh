@@ -246,18 +246,18 @@ export -f batfish_find_interface_failure_black_hole_packet_constraints_interface
 batfish_find_interface_failure_destination_ip_blacklist_constraints() {
    batfish_expect_args 3 $# || return 1
    local WORKSPACE=$1
-   local OUTPUT_PATH=$2
+   local DST_IP_BLACKLIST_PATH=$2
    local BLACKLISTED_INTERFACE=$3
    local BLACKLISTED_INTERFACE_SANITIZED=$(echo $BLACKLISTED_INTERFACE | tr '/' '_')
    local INTERFACE_IP_PREDICATE=SetIpInt
    local INTERFACE_IP_PATH=$PWD/${INTERFACE_IP_PREDICATE}.txt
    batfish_date
-   echo ": START: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${OUTPUT_PATH}\""
+   echo ": START: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${DST_IP_BLACKLIST_PATH}\""
    batfish -log output -workspace $WORKSPACE -query -predicates $INTERFACE_IP_PREDICATE > $INTERFACE_IP_PATH || return 1
    head -n1 $INTERFACE_IP_PATH || return 1
-   cat $INTERFACE_IP_PATH | tr -d ' ' | grep "(${BLACKLISTED_INTERFACE}," | cut -d',' -f 3 > $OUTPUT_PATH
+   cat $INTERFACE_IP_PATH | tr -d ' ' | grep "(${BLACKLISTED_INTERFACE}," | cut -d',' -f 3 > $DST_IP_BLACKLIST_PATH
    batfish_date
-   echo ": END: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${OUTPUT_PATH}\""
+   echo ": END: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${DST_IP_BLACKLIST_PATH}\""
 }
 export -f batfish_find_interface_failure_destination_ip_blacklist_constraints
 
