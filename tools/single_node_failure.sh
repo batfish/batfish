@@ -66,6 +66,8 @@ batfish_analyze_node_failures_machine() {
    local INDEP_SERIAL_DIR=$SCENARIO_BASE_DIR/../$PREFIX-indep
    local NODE_SET_PATH=$SCENARIO_BASE_DIR/../$PREFIX-node-set
 
+   local ORIG_FLOW_SINKS=$ORIG_DP_DIR/flow-sinks
+
    #Extract z3 reachability relations for no-failure scenario
    cd $SCENARIO_BASE_DIR
    batfish_generate_z3_reachability $ORIG_DP_DIR $INDEP_SERIAL_DIR $ORIG_REACH_PATH $NODE_SET_PATH || return 1
@@ -109,7 +111,7 @@ batfish_analyze_node_failures_machine() {
       batfish_nuke_reset_logicblox || return 1
 
       # Compute the fixed point of the control plane with failed node
-      batfish_compile_blacklist_node $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $node || return 1
+      batfish_compile_blacklist_node $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $node $ORIG_FLOW_SINKS || return 1
 
       # Query bgp
       batfish_query_bgp $BGP $WORKSPACE || return 1
@@ -156,9 +158,10 @@ batfish_compile_blacklist_node() {
    local DUMP_DIR=$3
    local INDEP_SERIAL_DIR=$4
    local BLACKLISTED_NODE=$5
+   local ORIG_FLOW_SINKS=$6
    echo ": START: Compute the fixed point of the control plane with blacklisted node: \"${BLACKLISTED_NODE}\""
-   batfish_expect_args 5 $# || return 1
-   batfish -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR -blnode $BLACKLISTED_NODE || return 1
+   batfish_expect_args 6 $# || return 1
+   batfish -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR -blnode $BLACKLISTED_NODE -flowsink $ORIG_FLOW_SINKS || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane with blacklisted node: \"${BLACKLISTED_NODE}\""
 }

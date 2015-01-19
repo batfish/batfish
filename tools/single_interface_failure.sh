@@ -70,6 +70,8 @@ batfish_analyze_interface_failures_machine() {
    local INDEP_SERIAL_DIR=$SCENARIO_BASE_DIR/../$PREFIX-indep
    local NODE_SET_PATH=$SCENARIO_BASE_DIR/../$PREFIX-node-set
 
+   local ORIG_FLOW_SINKS=$ORIG_DP_DIR/flow-sinks
+
    #Extract z3 reachability relations for no-failure scenario
    cd $SCENARIO_BASE_DIR
    batfish_generate_z3_reachability $ORIG_DP_DIR $INDEP_SERIAL_DIR $ORIG_REACH_PATH $NODE_SET_PATH || return 1
@@ -110,7 +112,7 @@ batfish_analyze_interface_failures_machine() {
       batfish_nuke_reset_logicblox || return 1
 
       # Compute the fixed point of the control plane with failed interface
-      batfish_compile_blacklist_interface $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $interface || return 1
+      batfish_compile_blacklist_interface $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $interface $ORIG_FLOW_SINKS || return 1
 
       # Get interesting predicate data
       batfish -log output -workspace $WORKSPACE -query -predicates InstalledRoute BestOspfE2Route BestOspfE1Route OspfRoute_advertiser OspfE2Route > $PREDS_PATH || return 1
@@ -148,9 +150,10 @@ batfish_compile_blacklist_interface() {
    local DUMP_DIR=$3
    local INDEP_SERIAL_DIR=$4
    local BLACKLISTED_INTERFACE=$5
+   local ORIG_FLOW_SINKS=$6
    echo ": START: Compute the fixed point of the control plane with blacklisted interface: $BLACKLISTED_INTERFACE"
-   batfish_expect_args 5 $# || return 1
-   batfish -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR -blint $BLACKLISTED_INTERFACE || return 1
+   batfish_expect_args 6 $# || return 1
+   batfish -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR -blint $BLACKLISTED_INTERFACE -flowsink $ORIG_FLOW_SINKS || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane with blacklisted interface: \"$BLACKLISTED_INTERFACE\""
 }
