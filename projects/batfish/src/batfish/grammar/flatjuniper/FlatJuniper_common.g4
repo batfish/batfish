@@ -45,6 +45,11 @@ as_unit
    | DEC
 ;
 
+ec_literal
+:
+   DEC COLON DEC COLON DEC
+;
+
 ec_target
 :
    TARGET COLON ecaf_target COLON assigned_number = DEC
@@ -60,7 +65,8 @@ ecaf_target
 
 extended_community
 :
-   ec_target
+   ec_literal
+   | ec_target
 ;
 
 icmp_code
