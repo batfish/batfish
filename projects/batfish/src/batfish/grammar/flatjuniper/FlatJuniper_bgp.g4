@@ -42,7 +42,13 @@ bfit_unicast_tail
 :
 //intentional blank
 
+   | bfiut_add_path
    | bfiut_prefix_limit
+;
+
+bfiut_add_path
+:
+   ADD_PATH RECEIVE
 ;
 
 bfiut_prefix_limit
@@ -74,7 +80,10 @@ bft_inet6_tail
 
 bft_null
 :
-   INET_VPN s_null_filler
+   (
+      INET_VPN
+      | INET6_VPN
+   ) s_null_filler
 ;
 
 bt_advertise_inactive
@@ -145,7 +154,7 @@ bt_group
    GROUP
    (
       name = variable
-      |  WILDCARD
+      | WILDCARD
    ) bt_group_tail
 ;
 

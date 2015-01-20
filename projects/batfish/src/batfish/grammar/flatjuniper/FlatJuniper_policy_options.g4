@@ -6,6 +6,11 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+base_community_regex
+:
+   ~( COLON | NEWLINE )+ COLON ~( COLON | NEWLINE )+
+;
+
 colort_apply_groups
 :
    s_apply_groups
@@ -18,7 +23,9 @@ colort_color
 
 community_regex
 :
-   ~( COLON | NEWLINE )+ COLON ~( COLON | NEWLINE )+
+   (
+      base_community_regex PIPE
+   )* base_community_regex
 ;
 
 ct_members
@@ -69,6 +76,11 @@ fromt_neighbor
       IP_ADDRESS
       | IPV6_ADDRESS
    )
+;
+
+fromt_null
+:
+   PREFIX_LIST_FILTER s_null_filler
 ;
 
 fromt_policy
@@ -319,6 +331,11 @@ tht_default_action_reject
    DEFAULT_ACTION REJECT
 ;
 
+tht_external
+:
+   EXTERNAL TYPE DEC
+;
+
 tht_local_preference
 :
    LOCAL_PREFERENCE localpref = DEC
@@ -403,6 +420,7 @@ tt_from_tail
    | fromt_family
    | fromt_interface
    | fromt_neighbor
+   | fromt_null
    | fromt_policy
    | fromt_prefix_list
    | fromt_protocol
@@ -428,6 +446,7 @@ tt_then_tail
    | tht_cos_next_hop_map
    | tht_default_action_accept
    | tht_default_action_reject
+   | tht_external
    | tht_local_preference
    | tht_metric
    | tht_next_hop

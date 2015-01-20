@@ -192,6 +192,21 @@ ot_export
    EXPORT name = variable
 ;
 
+ot_external_preference
+:
+   EXTERNAL_PREFERENCE DEC
+;
+
+ot_import
+:
+   IMPORT name = variable
+;
+
+ot_no_active_backbone
+:
+   NO_ACTIVE_BACKBONE
+;
+
 ot_null
 :
    (
@@ -212,6 +227,9 @@ s_protocols_ospf_tail
    ot_apply_groups
    | ot_area
    | ot_export
+   | ot_external_preference
+   | ot_import
+   | ot_no_active_backbone
    | ot_null
 ;
 

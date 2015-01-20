@@ -58,6 +58,11 @@ fwfromt_next_header
    NEXT_HEADER ip_protocol
 ;
 
+fwfromt_null
+:
+   IS_FRAGMENT s_null_filler
+;
+
 fwfromt_port
 :
    PORT
@@ -178,9 +183,11 @@ fwthent_null
 :
    (
       COUNT
+      | DSCP
       | FORWARDING_CLASS
       | LOG
       | POLICER
+      | ROUTING_INSTANCE
       | SAMPLE
       | SYSLOG
    ) s_null_filler
@@ -206,6 +213,7 @@ fwtt_from_tail
    | fwfromt_icmp_code
    | fwfromt_icmp_type
    | fwfromt_next_header
+   | fwfromt_null
    | fwfromt_port
    | fwfromt_prefix_list
    | fwfromt_protocol

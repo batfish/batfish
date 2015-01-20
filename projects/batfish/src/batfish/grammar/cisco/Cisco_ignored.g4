@@ -293,6 +293,7 @@ null_block_substanza
          | REMOTE_PORT
          | REMOTE_SPAN
          | REMOVED
+         | REQUEST_DATA_SIZE
          | RETRANSMIT
          | REVERSE_ROUTE
          | REVISION
@@ -334,11 +335,13 @@ null_block_substanza
          | TIMER
          | TIMING
          | TOP
+         | TOS
          | TRANSPORT
          | TRIGGER
          | TRUNK
          | TUNNEL
          | TUNNEL_GROUP
+         | UDP_JITTER
          | USE_VRF
          | VIOLATE_ACTION
          | VIRTUAL_TEMPLATE

@@ -24,6 +24,10 @@ public String printStateVariables() {
 
 }
 
+tokens {
+   PIPE
+}
+
 // Juniper Keywords
 
 ACCEPT
@@ -54,6 +58,11 @@ ACTIVE
 ADD
 :
    'add'
+;
+
+ADD_PATH
+:
+   'add-path'
 ;
 
 ADDRESS
@@ -280,6 +289,11 @@ DAMPING
    'damping'
 ;
 
+DDOS_PROTECTION
+:
+   'ddos-protection'
+;
+
 DEACTIVATE
 :
    'deactivate'
@@ -465,6 +479,11 @@ EXTERNAL
    'external'
 ;
 
+EXTERNAL_PREFERENCE
+:
+   'external-preference'
+;
+
 FAIL_FILTER
 :
    'fail-filter'
@@ -557,7 +576,7 @@ GRE
 
 GROUP
 :
-   'group'
+   'group' -> pushMode(M_VarOrWildcard)
 ;
 
 GROUPS
@@ -743,6 +762,11 @@ INTERNAL
 IP
 :
    'ip'
+;
+
+IS_FRAGMENT
+:
+   'is-fragment'
 ;
 
 ISIS
@@ -1020,6 +1044,11 @@ NEXT_TABLE
    'next-table'
 ;
 
+NO_ACTIVE_BACKBONE
+:
+   'no-active-backbone'
+;
+
 NO_EXPORT
 :
    'no-export'
@@ -1290,6 +1319,11 @@ READVERTISE
    'readvertise'
 ;
 
+RECEIVE
+:
+   'receive'
+;
+
 REFERENCE_BANDWIDTH
 :
    'reference-bandwidth'
@@ -1368,6 +1402,11 @@ ROUTER_ADVERTISEMENT
 ROUTER_ID
 :
    'router-id'
+;
+
+ROUTING_INSTANCE
+:
+   'routing-instance'
 ;
 
 ROUTING_INSTANCES
@@ -2210,7 +2249,7 @@ mode M_AsPathRegex;
 
 AS_PATH_REGEX
 :
-   [0-9,^$[\]\-*.{}]+
+   [0-9,^$[\]\-*.{}+|()] [0-9,^$[\]\-*.{}+|() ]*
 ;
 
 M_AsPathRegex_DOUBLE_QUOTE
@@ -2293,6 +2332,11 @@ M_Members_CLOSE_BRACKET
    ']' -> type(CLOSE_BRACKET)
 ;
 
+M_Members_CLOSE_PAREN
+:
+   ')' -> type(CLOSE_PAREN)
+;
+
 M_Members_COLON
 :
    ':' -> type(COLON)
@@ -2338,9 +2382,19 @@ M_Members_OPEN_BRACKET
    '[' -> type(OPEN_BRACKET)
 ;
 
+M_Members_OPEN_PAREN
+:
+   '(' -> type(OPEN_PAREN)
+;
+
 M_Members_PERIOD
 :
    '.' -> type(PERIOD)
+;
+
+M_Members_PIPE
+:
+   '|' -> type(PIPE)
 ;
 
 M_Members_TARGET
@@ -2366,6 +2420,23 @@ METRIC_TYPE_2
 ;
 
 M_MetricType_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_VarOrWildcard;
+
+M_VarOrWildcard_VARIABLE
+:
+   ~[ \t\u000C\r\n<]+ -> type(VARIABLE), popMode
+;
+
+M_VarOrWildcard_WILDCARD
+:
+   '<' ~'>'* '>' -> type(WILDCARD), popMode
+;
+
+M_VarOrWildcard_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;

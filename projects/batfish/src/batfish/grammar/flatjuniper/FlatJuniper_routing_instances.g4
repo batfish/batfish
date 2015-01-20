@@ -50,9 +50,19 @@ irft_inet_tail
    irfit_export
 ;
 
+irft_null
+:
+   INET6 s_null_filler
+;
+
 irrgt_inet
 :
    INET name = variable
+;
+
+irrgt_null
+:
+   INET6 s_null_filler
 ;
 
 irt_family
@@ -63,6 +73,7 @@ irt_family
 irt_family_tail
 :
    irft_inet
+   | irft_null
 ;
 
 irt_rib_group
@@ -73,6 +84,7 @@ irt_rib_group
 irt_rib_group_tail
 :
    irrgt_inet
+   | irrgt_null
 ;
 
 rgt_import_policy
@@ -195,7 +207,8 @@ rit_vrf_target
 
 rit_vrf_target_tail
 :
-   vtt_export
+   vtt_community
+   | vtt_export
 ;
 
 rot_aggregate
@@ -263,6 +276,7 @@ rot_null
    (
       FORWARDING_TABLE
       | MULTICAST
+      | MULTIPATH
       | OPTIONS
    ) s_null_filler
 ;
@@ -383,6 +397,11 @@ srt_reject
 srt_tag
 :
    TAG tag = DEC
+;
+
+vtt_community
+:
+   extended_community
 ;
 
 vtt_export

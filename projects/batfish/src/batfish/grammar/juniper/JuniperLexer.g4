@@ -34,6 +34,11 @@ CLOSE_BRACKET
    ']'
 ;
 
+CLOSE_PAREN
+:
+   ')'
+;
+
 LINE_COMMENT
 :
    '#' F_NonNewlineChar* F_NewlineChar+ -> channel(HIDDEN)
@@ -54,6 +59,11 @@ OPEN_BRACKET
    '['
 ;
 
+OPEN_PAREN
+:
+   '('
+;
+
 SEMICOLON
 :
    ';'
@@ -62,6 +72,7 @@ SEMICOLON
 WORD
 :
    F_QuotedString
+   | F_ParenString
    | F_WordChar+
 ;
 
@@ -83,6 +94,12 @@ F_NonNewlineChar
 ;
 
 fragment
+F_ParenString
+:
+   '(' ~')'* ')'
+;
+
+fragment
 F_QuotedString
 :
    '"' ~'"'* '"'
@@ -97,5 +114,5 @@ F_WhitespaceChar
 fragment
 F_WordChar
 :
-   ~[ \t\u000C\r\n;{}[\]"#]
+   ~[ \t\u000C\r\n;{}[\]"#()]
 ;

@@ -53,6 +53,11 @@ famt_inet6
    INET6 s_null_filler
 ;
 
+famt_iso
+:
+   ISO s_null_filler
+;
+
 famt_mpls
 :
    MPLS famt_mpls_tail
@@ -299,6 +304,7 @@ ut_family_tail
    famt_bridge
    | famt_inet
    | famt_inet6
+   | famt_iso
    | famt_mpls
 ;
 

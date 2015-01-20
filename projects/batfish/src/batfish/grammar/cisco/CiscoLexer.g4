@@ -2988,6 +2988,11 @@ REMOVED
    '<removed>'
 ;
 
+REQUEST_DATA_SIZE
+:
+   'request-data-size'
+;
+
 RESOURCE
 :
    'resource'
@@ -3685,6 +3690,11 @@ TOP
    'top'
 ;
 
+TOS
+:
+   'tos'
+;
+
 TRACK
 :
    'track'
@@ -3783,6 +3793,11 @@ UDLD
 UDP
 :
    'udp'
+;
+
+UDP_JITTER
+:
+   'udp-jitter'
 ;
 
 UNABLE

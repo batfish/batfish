@@ -157,6 +157,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          int protocolNum = toInt(ctx.DEC());
          return IpProtocol.fromNumber(protocolNum);
       }
+      else if (ctx.AH() != null) {
+         return IpProtocol.AHP;
+      }
       else if (ctx.ESP() != null) {
          return IpProtocol.ESP;
       }
