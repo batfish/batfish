@@ -139,6 +139,11 @@ it_apply_groups
    s_apply_groups
 ;
 
+it_apply_groups_except
+:
+   s_apply_groups_except
+;
+
 it_description
 :
    s_description
@@ -267,6 +272,7 @@ s_interfaces
 s_interfaces_tail
 :
    it_apply_groups
+   | it_apply_groups_except
    | it_description
    | it_disable
    | it_enable
