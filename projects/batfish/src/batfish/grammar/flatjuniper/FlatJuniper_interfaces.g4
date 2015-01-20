@@ -168,6 +168,7 @@ it_null
 :
    (
       AGGREGATED_ETHER_OPTIONS
+      | ENCAPSULATION
       | GIGETHER_OPTIONS
       | TRACEOPTIONS
       | TRAPS
