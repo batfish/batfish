@@ -33,7 +33,7 @@ import batfish.representation.RoutingProtocol;
 import batfish.representation.SwitchportEncapsulationType;
 import batfish.representation.SwitchportMode;
 import batfish.representation.VendorConfiguration;
-import batfish.representation.cisco.BgpNetwork;
+import batfish.representation.cisco.BgpAggregateNetwork;
 import batfish.representation.cisco.BgpPeerGroup;
 import batfish.representation.cisco.BgpProcess;
 import batfish.representation.cisco.BgpRedistributionPolicy;
@@ -905,18 +905,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                "unexpected occurrence in peer group/neighbor context");
       }
       boolean summaryOnly = ctx.SUMMARY_ONLY() != null;
-      if (ctx.network != null) {
-         Ip network = toIp(ctx.network);
-         Ip subnet = toIp(ctx.subnet);
-         BgpNetwork net = new BgpNetwork(network, subnet);
-         proc.getAggregateNetworks().put(net, summaryOnly);
-      }
-      else if (ctx.prefix != null) {
-         Prefix prefix = new Prefix(ctx.prefix.getText());
-         Ip network = prefix.getAddress();
-         Ip subnet = prefix.getSubnetMask();
-         BgpNetwork net = new BgpNetwork(network, subnet);
-         proc.getAggregateNetworks().put(net, summaryOnly);
+      boolean asSet = ctx.AS_SET() != null;
+      if (ctx.network != null || ctx.prefix != null) {
+         // ipv4
+         Prefix prefix;
+         if (ctx.network != null) {
+            Ip network = toIp(ctx.network);
+            Ip subnet = toIp(ctx.subnet);
+            int prefixLength = subnet.numSubnetBits();
+            prefix = new Prefix(network, prefixLength);
+         }
+         else {
+            // ctx.prefix != null
+            prefix = new Prefix(ctx.prefix.getText());
+         }
+         BgpAggregateNetwork net = new BgpAggregateNetwork(prefix);
+         net.setAsSet(asSet);
+         net.setSummaryOnly(summaryOnly);
+         proc.getAggregateNetworks().put(prefix, net);
       }
       else if (ctx.ipv6_prefix != null) {
          todo(ctx);
@@ -1280,8 +1286,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
 
       LineAction action = getAccessListAction(ctx.action);
-      Ip prefix = getPrefixIp(ctx.prefix);
-      int prefixLength = getPrefixLength(ctx.prefix);
+      Prefix prefix = new Prefix(ctx.prefix.getText());
+      int prefixLength = prefix.getPrefixLength();
       int minLen = prefixLength;
       int maxLen = prefixLength;
       if (ctx.minpl != null) {
@@ -1296,8 +1302,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          maxLen = toInteger(ctx.eqpl);
       }
       SubRange lengthRange = new SubRange(minLen, maxLen);
-      PrefixListLine line = new PrefixListLine(action, prefix, prefixLength,
-            lengthRange);
+      PrefixListLine line = new PrefixListLine(action, prefix, lengthRange);
       _currentPrefixList.addLine(line);
    }
 
@@ -1314,17 +1319,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          todo(ctx, "vrfs not implemented yet");
          return;
       }
-      Ip prefix;
-      Ip mask;
+      Prefix prefix;
       if (ctx.prefix != null) {
-         prefix = getPrefixIp(ctx.prefix);
-         int prefixLength = getPrefixLength(ctx.prefix);
-         long maskLong = Util.numSubnetBitsToSubnetLong(prefixLength);
-         mask = new Ip(maskLong);
+         prefix = new Prefix(ctx.prefix.getText());
       }
       else {
-         prefix = toIp(ctx.address);
-         mask = toIp(ctx.mask);
+         Ip address = toIp(ctx.address);
+         Ip mask = toIp(ctx.mask);
+         int prefixLength = mask.numSubnetBits();
+         prefix = new Prefix(address, prefixLength);
       }
       Ip nextHopIp = null;
       String nextHopInterface = null;
@@ -1347,9 +1350,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.track != null) {
          track = toInteger(ctx.track);
       }
-      StaticRoute route = new StaticRoute(prefix, mask, nextHopIp,
-            nextHopInterface, distance, tag, track, permanent);
-      _configuration.getStaticRoutes().put(prefix.networkString(mask), route);
+      StaticRoute route = new StaticRoute(prefix, nextHopIp, nextHopInterface,
+            distance, tag, track, permanent);
+      _configuration.getStaticRoutes().add(route);
    }
 
    @Override
@@ -1446,27 +1449,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitNetwork_bgp_tail(Network_bgp_tailContext ctx) {
-
       if (ctx.mapname != null) {
          todo(ctx);
       }
       else {
-         Ip address;
-         Ip mask;
+         Prefix prefix;
 
          if (ctx.prefix != null) {
-            address = getPrefixIp(ctx.prefix);
-            int prefixLength = getPrefixLength(ctx.prefix);
-            long maskLong = Util.numSubnetBitsToSubnetLong(prefixLength);
-            mask = new Ip(maskLong);
+            prefix = new Prefix(ctx.prefix.getText());
          }
          else {
-            address = toIp(ctx.ip);
-            mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask();
+            Ip address = toIp(ctx.ip);
+            Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address
+                  .getClassMask();
+            int prefixLength = mask.numSubnetBits();
+            prefix = new Prefix(address, prefixLength);
          }
-         BgpNetwork network = new BgpNetwork(address, mask);
          _configuration.getBgpProcesses().get(_currentVrf).getNetworks()
-               .add(network);
+               .add(prefix);
       }
    }
 

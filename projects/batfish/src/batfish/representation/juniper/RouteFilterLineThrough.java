@@ -28,8 +28,9 @@ public final class RouteFilterLineThrough extends RouteFilterLine {
       for (int i = low; i <= high; i++) {
          Ip currentNetworkAddress = _throughPrefix.getAddress()
                .getNetworkAddress(i);
+         Prefix currentPrefix = new Prefix(currentNetworkAddress, i);
          RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
-               LineAction.ACCEPT, currentNetworkAddress, i, new SubRange(i, i));
+               LineAction.ACCEPT, currentPrefix, new SubRange(i, i));
          rfl.addLine(line);
       }
    }

@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import batfish.collections.RoleSet;
@@ -72,9 +73,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private static final String VENDOR_NAME = "cisco";
 
    private static PolicyMap makeRouteExportPolicy(Configuration c, String name,
-         String prefixListName, String prefix, int prefixLength,
-         SubRange prefixRange, LineAction prefixAction, Integer metric,
-         RoutingProtocol protocol, PolicyMapAction policyAction) {
+         String prefixListName, Prefix prefix, SubRange prefixRange,
+         LineAction prefixAction, Integer metric, RoutingProtocol protocol,
+         PolicyMapAction policyAction) {
       PolicyMapClause clause = new PolicyMapClause();
       Set<PolicyMapMatchLine> matchLines = clause.getMatchLines();
       if (protocol != null) {
@@ -87,7 +88,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                prefixListName);
          if (newRouteFilter == null) {
             newRouteFilter = makeRouteFilter(prefixListName, prefix,
-                  prefixLength, prefixRange, prefixAction);
+                  prefixRange, prefixAction);
             c.getRouteFilterLists().put(newRouteFilter.getName(),
                   newRouteFilter);
          }
@@ -109,11 +110,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return output;
    }
 
-   private static RouteFilterList makeRouteFilter(String name, String prefix,
-         int prefixLength, SubRange prefixRange, LineAction prefixAction) {
+   private static RouteFilterList makeRouteFilter(String name, Prefix prefix,
+         SubRange prefixRange, LineAction prefixAction) {
       RouteFilterList list = new RouteFilterList(name);
       RouteFilterLine line = new RouteFilterLengthRangeLine(prefixAction,
-            new Ip(prefix), prefixLength, prefixRange);
+            prefix, prefixRange);
       list.addLine(line);
       return list;
    }
@@ -134,28 +135,31 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       Map<Ip, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       int defaultMetric = proc.getDefaultMetric();
 
-      Set<BgpNetwork> summaryOnlyNetworks = new HashSet<BgpNetwork>();
+      Set<BgpAggregateNetwork> summaryOnlyNetworks = new HashSet<BgpAggregateNetwork>();
 
       // add generated routes for aggregate addresses
-      for (BgpNetwork aggNet : proc.getAggregateNetworks().keySet()) {
-         boolean summaryOnly = proc.getAggregateNetworks().get(aggNet);
-         String prefix = aggNet.getNetworkAddress().toString();
-         int prefixLength = aggNet.getSubnetMask().numSubnetBits();
+      for (Entry<Prefix, BgpAggregateNetwork> e : proc.getAggregateNetworks()
+            .entrySet()) {
+         Prefix prefix = e.getKey();
+         BgpAggregateNetwork aggNet = e.getValue();
+         boolean summaryOnly = aggNet.getSummaryOnly();
+         int prefixLength = prefix.getPrefixLength();
          SubRange prefixRange = new SubRange(prefixLength + 1, 32);
          LineAction prefixAction = LineAction.ACCEPT;
-         String filterName = "~MATCH_SUMMARIZED_OF:" + prefix + "~";
+         String filterName = "~MATCH_SUMMARIZED_OF:" + prefix.toString() + "~";
          if (summaryOnly) {
             summaryOnlyNetworks.add(aggNet);
          }
 
          // create generation policy for aggregate network
-         String generationPolicyName = "~AGGREGATE_ROUTE_GEN:" + prefix + "~";
+         String generationPolicyName = "~AGGREGATE_ROUTE_GEN:"
+               + prefix.toString() + "~";
          PolicyMap generationPolicy = makeRouteExportPolicy(c,
-               generationPolicyName, filterName, prefix, prefixLength,
-               prefixRange, prefixAction, null, null, PolicyMapAction.PERMIT);
+               generationPolicyName, filterName, prefix, prefixRange,
+               prefixAction, null, null, PolicyMapAction.PERMIT);
          Set<PolicyMap> generationPolicies = new HashSet<PolicyMap>();
          generationPolicies.add(generationPolicy);
-         GeneratedRoute gr = new GeneratedRoute(new Ip(prefix), prefixLength,
+         GeneratedRoute gr = new GeneratedRoute(prefix,
                CISCO_AGGREGATE_ROUTE_ADMIN_COST, generationPolicies);
          gr.setDiscard(true);
          c.getGeneratedRoutes().add(gr);
@@ -178,13 +182,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                matchSuppressedSummaryOnlyRoutesName);
          c.getRouteFilterLists().put(matchSuppressedSummaryOnlyRoutesName,
                matchSuppressedSummaryOnlyRoutes);
-         for (BgpNetwork summaryOnlyNetwork : summaryOnlyNetworks) {
-            Ip prefix = summaryOnlyNetwork.getNetworkAddress();
-            int prefixLength = summaryOnlyNetwork.getSubnetMask()
-                  .numSubnetBits();
+         for (BgpAggregateNetwork summaryOnlyNetwork : summaryOnlyNetworks) {
+            Prefix prefix = summaryOnlyNetwork.getPrefix();
+            int prefixLength = prefix.getPrefixLength();
             RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
-                  LineAction.ACCEPT, prefix, prefixLength, new SubRange(
-                        prefixLength + 1, 32));
+                  LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, 32));
             matchSuppressedSummaryOnlyRoutes.addLine(line);
          }
          PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
@@ -219,7 +221,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          else {
             redistributeStaticPolicyMap = makeRouteExportPolicy(c,
                   "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null,
-                  0, null, null, null, RoutingProtocol.STATIC,
+                  null, null, null, RoutingProtocol.STATIC,
                   PolicyMapAction.PERMIT);
          }
       }
@@ -340,12 +342,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          // create origination prefilter from listed advertised networks
          RouteFilterList filter = new RouteFilterList("~BGP_PRE_FILTER:"
                + pg.getName() + "~");
-         for (BgpNetwork network : proc.getNetworks()) {
-            Ip netAdd = network.getNetworkAddress();
-            int prefixLen = network.getSubnetMask().numSubnetBits();
+         for (Prefix prefix : proc.getNetworks()) {
+            int prefixLen = prefix.getPrefixLength();
             RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
-                  LineAction.ACCEPT, netAdd, prefixLen, new SubRange(prefixLen,
-                        prefixLen));
+                  LineAction.ACCEPT, prefix, new SubRange(prefixLen, prefixLen));
             filter.addLine(line);
          }
          c.getRouteFilterLists().put(filter.getName(), filter);
@@ -377,13 +377,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          GeneratedRoute defaultRoute = null;
          PolicyMap defaultOriginationPolicy = null;
          if (pg.getDefaultOriginate()) {
-            defaultRoute = new GeneratedRoute(new Ip("0.0.0.0"), 0,
+            defaultRoute = new GeneratedRoute(Prefix.ZERO,
                   MAX_ADMINISTRATIVE_COST, new LinkedHashSet<PolicyMap>());
             defaultOriginationPolicy = makeRouteExportPolicy(
                   c,
                   "~BGP_DEFAULT_ROUTE_ORIGINATION_POLICY:" + pg.getName() + "~",
                   "BGP_DEFAULT_ROUTE_ORIGINATION_FILTER:" + pg.getName() + "~",
-                  "0.0.0.0", 0, new SubRange(0, 0), LineAction.ACCEPT, 0,
+                  Prefix.ZERO, new SubRange(0, 0), LineAction.ACCEPT, 0,
                   RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
             originationPolicies.add(defaultOriginationPolicy);
             String defaultOriginateMapName = pg.getDefaultOriginateMap();
@@ -555,8 +555,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
       // policy map for default information
       if (proc.getDefaultInformationOriginate()) {
-         String defaultPrefix = "0.0.0.0";
-         int defaultPrefixLength = 0;
          SubRange defaultPrefixRange = new SubRange(0, 0);
          int metric = proc.getDefaultInformationMetric();
          OspfMetricType metricType = proc.getDefaultInformationMetricType();
@@ -573,17 +571,15 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             else {
                exportDefaultPolicy = makeRouteExportPolicy(c,
                      OSPF_EXPORT_DEFAULT_POLICY_NAME,
-                     DEFAULT_ROUTE_FILTER_NAME, defaultPrefix,
-                     defaultPrefixLength, defaultPrefixRange,
-                     LineAction.ACCEPT, metric, RoutingProtocol.AGGREGATE,
-                     PolicyMapAction.PERMIT);
+                     DEFAULT_ROUTE_FILTER_NAME, Prefix.ZERO,
+                     defaultPrefixRange, LineAction.ACCEPT, metric,
+                     RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
                newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
                newProcess.getPolicyMetricTypes().put(exportDefaultPolicy,
                      metricType);
                generationPolicies.add(generationPolicy);
-               GeneratedRoute route = new GeneratedRoute(new Ip(defaultPrefix),
-                     defaultPrefixLength, MAX_ADMINISTRATIVE_COST,
-                     generationPolicies);
+               GeneratedRoute route = new GeneratedRoute(Prefix.ZERO,
+                     MAX_ADMINISTRATIVE_COST, generationPolicies);
                newProcess.getGeneratedRoutes().add(route);
             }
          }
@@ -591,16 +587,15 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             // add generated aggregate with no precondition
             exportDefaultPolicy = makeRouteExportPolicy(c,
                   OSPF_EXPORT_DEFAULT_POLICY_NAME, DEFAULT_ROUTE_FILTER_NAME,
-                  defaultPrefix, defaultPrefixLength, defaultPrefixRange,
-                  LineAction.ACCEPT, metric, RoutingProtocol.AGGREGATE,
-                  PolicyMapAction.PERMIT);
+                  Prefix.ZERO, defaultPrefixRange, LineAction.ACCEPT, metric,
+                  RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
             c.getPolicyMaps().put(exportDefaultPolicy.getMapName(),
                   exportDefaultPolicy);
             newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
             newProcess.getPolicyMetricTypes().put(exportDefaultPolicy,
                   metricType);
-            GeneratedRoute route = new GeneratedRoute(new Ip(defaultPrefix),
-                  defaultPrefixLength, MAX_ADMINISTRATIVE_COST, null);
+            GeneratedRoute route = new GeneratedRoute(Prefix.ZERO,
+                  MAX_ADMINISTRATIVE_COST, null);
             newProcess.getGeneratedRoutes().add(route);
          }
          else {
@@ -608,8 +603,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             // just redistribute any existing default route with the new metric
             exportDefaultPolicy = makeRouteExportPolicy(c,
                   OSPF_EXPORT_DEFAULT_POLICY_NAME, DEFAULT_ROUTE_FILTER_NAME,
-                  defaultPrefix, defaultPrefixLength, defaultPrefixRange,
-                  LineAction.ACCEPT, metric, null, PolicyMapAction.PERMIT);
+                  Prefix.ZERO, defaultPrefixRange, LineAction.ACCEPT, metric,
+                  null, PolicyMapAction.PERMIT);
             c.getPolicyMaps().put(exportDefaultPolicy.getMapName(),
                   exportDefaultPolicy);
             newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
@@ -675,7 +670,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          else {
             exportConnectedPolicy = makeRouteExportPolicy(c,
-                  OSPF_EXPORT_CONNECTED_POLICY_NAME, null, null, 0, null, null,
+                  OSPF_EXPORT_CONNECTED_POLICY_NAME, null, null, null, null,
                   metric, RoutingProtocol.CONNECTED, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
             newProcess.getPolicyMetricTypes().put(exportConnectedPolicy,
@@ -742,7 +737,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                         list.getLines().add(
                               0,
                               new RouteFilterLengthRangeLine(LineAction.REJECT,
-                                    new Ip("0.0.0.0"), 0, new SubRange(0, 0)));
+                                    Prefix.ZERO, new SubRange(0, 0)));
                      }
                      break;
                   // allowed match lines
@@ -772,7 +767,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   if (generatedRejectDefaultRouteList == null) {
                      generatedRejectDefaultRouteList = makeRouteFilter(
                            OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
-                           "0.0.0.0", 0, new SubRange(0, 0), LineAction.REJECT);
+                           Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT);
                   }
                   Set<RouteFilterList> lists = new HashSet<RouteFilterList>();
                   lists.add(generatedRejectDefaultRouteList);
@@ -795,7 +790,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             exportStaticPolicy = makeRouteExportPolicy(c,
                   OSPF_EXPORT_STATIC_POLICY_NAME,
                   OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
-                  "0.0.0.0", 0, new SubRange(0, 0), LineAction.REJECT, metric,
+                  Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT, metric,
                   RoutingProtocol.STATIC, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
             newProcess.getPolicyMetricTypes().put(exportStaticPolicy,
@@ -918,15 +913,16 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private static RouteFilterLine toRouteFilterLine(
          ExtendedAccessListLine fromLine) {
       LineAction action = fromLine.getAction();
-      Ip prefix = fromLine.getSourceIp();
+      Ip ip = fromLine.getSourceIp();
       int prefixLength = fromLine.getSourceWildcard().inverted()
             .numSubnetBits();
+      Prefix prefix = new Prefix(ip, prefixLength);
       long minSubnet = fromLine.getDestinationIp().asLong();
       long maxSubnet = minSubnet | fromLine.getDestinationWildcard().asLong();
       int minPrefixLength = fromLine.getDestinationIp().numSubnetBits();
       int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
-      return new RouteFilterLengthRangeLine(action, prefix, prefixLength,
-            new SubRange(minPrefixLength, maxPrefixLength));
+      return new RouteFilterLengthRangeLine(action, prefix, new SubRange(
+            minPrefixLength, maxPrefixLength));
    }
 
    private static RouteFilterList toRouteFilterList(ExtendedAccessList eaList) {
@@ -947,7 +943,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       for (PrefixListLine prefixListLine : list.getLines()) {
          RouteFilterLine newRouteFilterListLine = new RouteFilterLengthRangeLine(
                prefixListLine.getAction(), prefixListLine.getPrefix(),
-               prefixListLine.getPrefixLength(),
                prefixListLine.getLengthRange());
          newRouteFilterList.addLine(newRouteFilterListLine);
       }
@@ -957,15 +952,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private static batfish.representation.StaticRoute toStaticRoute(
          Configuration c, StaticRoute staticRoute) {
       Ip nextHopIp = staticRoute.getNextHopIp();
-      Ip prefix = staticRoute.getPrefix();
+      Prefix prefix = staticRoute.getPrefix();
       String nextHopInterface = staticRoute.getNextHopInterface();
-      int prefixLength = staticRoute.getMask().numSubnetBits();
       Integer oldTag = staticRoute.getTag();
       int tag;
       tag = oldTag != null ? oldTag : -1;
-      return new batfish.representation.StaticRoute(prefix, prefixLength,
-            nextHopIp, nextHopInterface, staticRoute.getDistance(), tag);
-
+      return new batfish.representation.StaticRoute(prefix, nextHopIp,
+            nextHopInterface, staticRoute.getDistance(), tag);
    }
 
    private final List<String> _conversionWarnings;
@@ -1231,7 +1224,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       }
 
       // convert static routes
-      for (StaticRoute staticRoute : _staticRoutes.values()) {
+      for (StaticRoute staticRoute : _staticRoutes) {
          c.getStaticRoutes().add(toStaticRoute(c, staticRoute));
       }
 

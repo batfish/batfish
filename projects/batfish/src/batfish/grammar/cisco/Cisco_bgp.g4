@@ -59,7 +59,7 @@ aggregate_address_bgp_tail
       )
       | prefix = IP_PREFIX
       | ipv6_prefix = IPV6_PREFIX
-   ) SUMMARY_ONLY? NEWLINE
+   ) AS_SET? SUMMARY_ONLY? NEWLINE
 ;
 
 allowas_in_bgp_tail

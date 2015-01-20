@@ -17,7 +17,7 @@ public class BgpProcess implements Serializable {
    private static final int DEFAULT_BGP_DEFAULT_METRIC = 0;
    private static final long serialVersionUID = 1L;
 
-   private Map<BgpNetwork, Boolean> _aggregateNetworks;
+   private Map<Prefix, BgpAggregateNetwork> _aggregateNetworks;
    private Map<String, BgpPeerGroup> _allPeerGroups;
    private boolean _alwaysCompareMed;
    private Ip _clusterId;
@@ -26,7 +26,7 @@ public class BgpProcess implements Serializable {
    private Map<Ip, IpBgpPeerGroup> _ipPeerGroups;
    private MasterBgpPeerGroup _masterBgpPeerGroup;
    private Map<String, NamedBgpPeerGroup> _namedPeerGroups;
-   private Set<BgpNetwork> _networks;
+   private Set<Prefix> _networks;
    private int _pid;
    private Map<RoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
    private Ip _routerId;
@@ -38,8 +38,8 @@ public class BgpProcess implements Serializable {
       _dynamicPeerGroups = new HashMap<Prefix, DynamicBgpPeerGroup>();
       _namedPeerGroups = new HashMap<String, NamedBgpPeerGroup>();
       _ipPeerGroups = new HashMap<Ip, IpBgpPeerGroup>();
-      _networks = new LinkedHashSet<BgpNetwork>();
-      _aggregateNetworks = new HashMap<BgpNetwork, Boolean>();
+      _networks = new LinkedHashSet<Prefix>();
+      _aggregateNetworks = new HashMap<Prefix, BgpAggregateNetwork>();
       _redistributionPolicies = new EnumMap<RoutingProtocol, BgpRedistributionPolicy>(
             RoutingProtocol.class);
       _masterBgpPeerGroup = new MasterBgpPeerGroup();
@@ -86,7 +86,7 @@ public class BgpProcess implements Serializable {
       }
    }
 
-   public Map<BgpNetwork, Boolean> getAggregateNetworks() {
+   public Map<Prefix, BgpAggregateNetwork> getAggregateNetworks() {
       return _aggregateNetworks;
    }
 
@@ -122,7 +122,7 @@ public class BgpProcess implements Serializable {
       return _namedPeerGroups;
    }
 
-   public Set<BgpNetwork> getNetworks() {
+   public Set<Prefix> getNetworks() {
       return _networks;
    }
 

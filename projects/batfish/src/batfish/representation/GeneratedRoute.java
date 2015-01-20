@@ -16,9 +16,9 @@ public class GeneratedRoute extends Route {
 
    private Integer _metric;
 
-   public GeneratedRoute(Ip prefix, int prefixLength, int administrativeCost,
+   public GeneratedRoute(Prefix prefix, int administrativeCost,
          Set<PolicyMap> generationPolicyMaps) {
-      super(prefix, prefixLength, null);
+      super(prefix, null);
       _administrativeCost = administrativeCost;
       _generationPolicies = generationPolicyMaps;
    }
@@ -26,7 +26,7 @@ public class GeneratedRoute extends Route {
    @Override
    public boolean equals(Object o) {
       GeneratedRoute rhs = (GeneratedRoute) o;
-      return _prefix.equals(rhs._prefix) && _prefixLength == rhs._prefixLength;
+      return _prefix.equals(rhs._prefix);
    }
 
    @Override
@@ -53,6 +53,11 @@ public class GeneratedRoute extends Route {
    @Override
    public RouteType getRouteType() {
       return RouteType.AGGREGATE;
+   }
+
+   @Override
+   public int hashCode() {
+      return _prefix.hashCode();
    }
 
    public void setAdministrativePreference(int preference) {

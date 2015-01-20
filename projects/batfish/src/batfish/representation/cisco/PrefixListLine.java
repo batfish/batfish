@@ -2,8 +2,8 @@ package batfish.representation.cisco;
 
 import java.io.Serializable;
 
-import batfish.representation.Ip;
 import batfish.representation.LineAction;
+import batfish.representation.Prefix;
 import batfish.util.SubRange;
 
 public class PrefixListLine implements Serializable {
@@ -14,15 +14,11 @@ public class PrefixListLine implements Serializable {
 
    private SubRange _lengthRange;
 
-   private Ip _prefix;
+   private Prefix _prefix;
 
-   private int _prefixLength;
-
-   public PrefixListLine(LineAction action, Ip prefix, int prefixLength,
-         SubRange lengthRange) {
+   public PrefixListLine(LineAction action, Prefix prefix, SubRange lengthRange) {
       _action = action;
       _prefix = prefix;
-      _prefixLength = prefixLength;
       _lengthRange = lengthRange;
    }
 
@@ -34,12 +30,8 @@ public class PrefixListLine implements Serializable {
       return _lengthRange;
    }
 
-   public Ip getPrefix() {
+   public Prefix getPrefix() {
       return _prefix;
-   }
-
-   public int getPrefixLength() {
-      return _prefixLength;
    }
 
 }

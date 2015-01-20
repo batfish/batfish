@@ -4,15 +4,14 @@ public class ConnectedRoute extends Route {
 
    private static final long serialVersionUID = 1L;
 
-   public ConnectedRoute(Ip prefix, int prefixLength, Ip nextHopIp) {
-      super(prefix, prefixLength, nextHopIp);
+   public ConnectedRoute(Prefix prefix, Ip nextHopIp) {
+      super(prefix, nextHopIp);
    }
 
    @Override
    public boolean equals(Object o) {
       ConnectedRoute rhs = (ConnectedRoute) o;
-      return _prefix.equals(rhs._prefix) && _prefixLength == rhs._prefixLength
-            && _nextHopIp.equals(rhs._nextHopIp);
+      return _prefix.equals(rhs._prefix) && _nextHopIp.equals(rhs._nextHopIp);
    }
 
    @Override

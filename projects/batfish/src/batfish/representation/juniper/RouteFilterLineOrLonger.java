@@ -21,8 +21,7 @@ public class RouteFilterLineOrLonger extends RouteFilterLine {
    public void applyTo(RouteFilterList rfl) {
       int prefixLength = _prefix.getPrefixLength();
       RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
-            LineAction.ACCEPT, _prefix.getAddress(), prefixLength,
-            new SubRange(prefixLength, 32));
+            LineAction.ACCEPT, _prefix, new SubRange(prefixLength, 32));
       rfl.addLine(line);
    }
 

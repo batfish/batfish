@@ -3,25 +3,23 @@ package batfish.representation.cisco;
 import java.io.Serializable;
 
 import batfish.representation.Ip;
+import batfish.representation.Prefix;
 
 public class StaticRoute implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
    private int _distance;
-   private Ip _mask;
    private String _nextHopInterface;
    private Ip _nextHopIp;
    private boolean _permanent;
-   private Ip _prefix;
+   private Prefix _prefix;
    private Integer _tag;
    private Integer _track;
 
-   public StaticRoute(Ip prefix, Ip mask, Ip nextHopIp,
-         String nextHopInterface, int distance, Integer tag, Integer track,
-         boolean permanent) {
+   public StaticRoute(Prefix prefix, Ip nextHopIp, String nextHopInterface,
+         int distance, Integer tag, Integer track, boolean permanent) {
       _prefix = prefix;
-      _mask = mask;
       _nextHopIp = nextHopIp;
       _nextHopInterface = nextHopInterface;
       _distance = distance;
@@ -30,12 +28,26 @@ public class StaticRoute implements Serializable {
       _permanent = permanent;
    }
 
-   public int getDistance() {
-      return _distance;
+   @Override
+   public boolean equals(Object o) {
+      StaticRoute rhs = (StaticRoute) o;
+      boolean res = _prefix.equals(rhs._prefix);
+      if (_nextHopIp != null) {
+         res = res && _nextHopIp.equals(rhs._nextHopIp);
+      }
+      else {
+         res = res && rhs._nextHopIp == null;
+      }
+      if (_nextHopInterface != null) {
+         return res && _nextHopInterface.equals(rhs._nextHopInterface);
+      }
+      else {
+         return res && rhs._nextHopInterface == null;
+      }
    }
 
-   public Ip getMask() {
-      return _mask;
+   public int getDistance() {
+      return _distance;
    }
 
    public String getNextHopInterface() {
@@ -50,7 +62,7 @@ public class StaticRoute implements Serializable {
       return _permanent;
    }
 
-   public Ip getPrefix() {
+   public Prefix getPrefix() {
       return _prefix;
    }
 
@@ -60,6 +72,18 @@ public class StaticRoute implements Serializable {
 
    public Integer getTrack() {
       return _track;
+   }
+
+   @Override
+   public int hashCode() {
+      int code = _prefix.hashCode();
+      if (_nextHopInterface != null) {
+         code = code * 31 + _nextHopInterface.hashCode();
+      }
+      if (_nextHopIp != null) {
+         code = code * 31 + _nextHopIp.hashCode();
+      }
+      return code;
    }
 
 }

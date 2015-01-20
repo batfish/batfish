@@ -277,6 +277,11 @@ AS_PATH
    'as-path' -> pushMode(M_AsPath)
 ;
 
+AS_SET
+:
+   'as-set'
+;
+
 ASA
 :
    'ASA'

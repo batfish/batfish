@@ -21,7 +21,7 @@ public final class RouteFilterLineExact extends RouteFilterLine {
    public void applyTo(RouteFilterList rfl) {
       int prefixLength = _prefix.getPrefixLength();
       RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
-            LineAction.ACCEPT, _prefix.getAddress(), prefixLength,
+            LineAction.ACCEPT, _prefix,
             new SubRange(prefixLength, prefixLength));
       rfl.addLine(line);
    }

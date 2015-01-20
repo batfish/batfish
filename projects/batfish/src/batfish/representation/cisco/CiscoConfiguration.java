@@ -2,7 +2,9 @@ package batfish.representation.cisco;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class CiscoConfiguration implements Serializable {
 
@@ -21,7 +23,7 @@ public class CiscoConfiguration implements Serializable {
    protected final Map<String, RouteMap> _routeMaps;
    protected final Map<String, StandardAccessList> _standardAccessLists;
    protected final Map<String, StandardCommunityList> _standardCommunityLists;
-   protected final Map<String, StaticRoute> _staticRoutes;
+   protected final HashSet<StaticRoute> _staticRoutes;
 
    public CiscoConfiguration() {
       _asPathAccessLists = new HashMap<String, IpAsPathAccessList>();
@@ -33,7 +35,7 @@ public class CiscoConfiguration implements Serializable {
       _routeMaps = new HashMap<String, RouteMap>();
       _standardAccessLists = new HashMap<String, StandardAccessList>();
       _standardCommunityLists = new HashMap<String, StandardCommunityList>();
-      _staticRoutes = new HashMap<String, StaticRoute>();
+      _staticRoutes = new HashSet<StaticRoute>();
    }
 
    public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
@@ -80,7 +82,7 @@ public class CiscoConfiguration implements Serializable {
       return _standardCommunityLists;
    }
 
-   public final Map<String, StaticRoute> getStaticRoutes() {
+   public final Set<StaticRoute> getStaticRoutes() {
       return _staticRoutes;
    }
 

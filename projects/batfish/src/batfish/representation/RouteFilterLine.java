@@ -16,10 +16,6 @@ public abstract class RouteFilterLine implements Serializable {
       return _action;
    }
 
-   public abstract String getIFString(int indentLevel);
-
    public abstract RouteFilterLineType getType();
-
-   public abstract boolean sameParseTree(RouteFilterLine routeFilterLine);
 
 }

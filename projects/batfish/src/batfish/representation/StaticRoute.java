@@ -8,9 +8,9 @@ public class StaticRoute extends Route {
    private String _nextHopInterface;
    private int _tag;
 
-   public StaticRoute(Ip prefix, int prefixLength, Ip nextHopIp,
-         String nextHopInterface, int administrativeCost, int tag) {
-      super(prefix, prefixLength, nextHopIp);
+   public StaticRoute(Prefix prefix, Ip nextHopIp, String nextHopInterface,
+         int administrativeCost, int tag) {
+      super(prefix, nextHopIp);
       _nextHopInterface = nextHopInterface;
       _administrativeCost = administrativeCost;
       _tag = tag;
@@ -19,23 +19,23 @@ public class StaticRoute extends Route {
    @Override
    public boolean equals(Object o) {
       StaticRoute rhs = (StaticRoute) o;
-      boolean res = _prefix.equals(rhs._prefix)
-            && _prefixLength == rhs._prefixLength;
+      boolean res = _prefix.equals(rhs._prefix);
       if (_nextHopIp != null) {
-         return res && _nextHopIp.equals(rhs._nextHopIp);
+         res = res && _nextHopIp.equals(rhs._nextHopIp);
       }
       else {
-         return res && rhs._nextHopIp == null;
+         res = res && rhs._nextHopIp == null;
       }
-
+      if (_nextHopInterface != null) {
+         return res && _nextHopInterface.equals(rhs._nextHopInterface);
+      }
+      else {
+         return res && rhs._nextHopInterface == null;
+      }
    }
 
    @Override
    public int getAdministrativeCost() {
-      return _administrativeCost;
-   }
-
-   public int getDistance() {
       return _administrativeCost;
    }
 
@@ -52,16 +52,16 @@ public class StaticRoute extends Route {
       return _tag;
    }
 
-   public boolean sameParseTree(StaticRoute route) {
-      boolean res = equals(route)
-            && (_administrativeCost == route._administrativeCost);
+   @Override
+   public int hashCode() {
+      int code = _prefix.hashCode();
       if (_nextHopInterface != null) {
-         return res && _nextHopInterface.equals(route._nextHopInterface);
+         code = code * 31 + _nextHopInterface.hashCode();
       }
-      else {
-         return res && route._nextHopInterface == null;
+      if (_nextHopIp != null) {
+         code = code * 31 + _nextHopIp.hashCode();
       }
-
+      return code;
    }
 
 }

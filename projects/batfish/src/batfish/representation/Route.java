@@ -2,23 +2,17 @@ package batfish.representation;
 
 import java.io.Serializable;
 
-import batfish.util.Util;
-
 public abstract class Route implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
    protected Ip _nextHopIp;
-   protected Ip _prefix;
-   protected int _prefixLength;
-   protected Ip _prefixMask;
 
-   public Route(Ip prefix, int prefixLength, Ip nextHopIp) {
+   protected Prefix _prefix;
+
+   public Route(Prefix prefix, Ip nextHopIp) {
       _prefix = prefix;
-      _prefixLength = prefixLength;
       _nextHopIp = nextHopIp;
-      long maskLong = Util.numSubnetBitsToSubnetLong(_prefixLength);
-      _prefixMask = new Ip(maskLong);
    }
 
    @Override
@@ -30,22 +24,8 @@ public abstract class Route implements Serializable {
       return _nextHopIp;
    }
 
-   public Ip getPrefix() {
+   public Prefix getPrefix() {
       return _prefix;
-   }
-
-   public int getPrefixLength() {
-      return _prefixLength;
-   }
-
-   public Ip getPrefixMask() {
-      return _prefixMask;
-   }
-
-   public String getRouteString() {
-      return String.format(
-            "Prefix %s PrefixLength %s PrefixMask %s NextHop %s", _prefix,
-            _prefixLength, _prefixMask, _nextHopIp);
    }
 
    public abstract RouteType getRouteType();

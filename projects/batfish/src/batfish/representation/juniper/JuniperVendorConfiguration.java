@@ -174,8 +174,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
    private batfish.representation.GeneratedRoute toAggregateRoute(
          AggregateRoute route) {
-      Ip prefix = route.getPrefix().getAddress();
-      int prefixLength = route.getPrefix().getPrefixLength();
+      Prefix prefix = route.getPrefix();
+      int prefixLength = prefix.getPrefixLength();
       int administrativeCost = route.getMetric();
       String policyNameSuffix = route.getPrefix().toString().replace('/', '_')
             .replace('.', '_');
@@ -187,13 +187,13 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       String rflName = "~AGGREGATE_" + policyNameSuffix + "_RF~";
       RouteFilterList rfList = new RouteFilterList(rflName);
       rfList.addLine(new RouteFilterLengthRangeLine(LineAction.ACCEPT, prefix,
-            prefixLength, new SubRange(prefixLength + 1, 32)));
+            new SubRange(prefixLength + 1, 32)));
       PolicyMapMatchLine matchLine = new PolicyMapMatchRouteFilterListLine(
             Collections.singleton(rfList));
       clause.getMatchLines().add(matchLine);
       Set<PolicyMap> policies = Collections.singleton(policy);
       batfish.representation.GeneratedRoute newRoute = new batfish.representation.GeneratedRoute(
-            prefix, prefixLength, administrativeCost, policies);
+            prefix, administrativeCost, policies);
       newRoute.setDiscard(true);
       _c.getPolicyMaps().put(policyName, policy);
       _c.getRouteFilterLists().put(rflName, rfList);
@@ -215,8 +215,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
    private batfish.representation.GeneratedRoute toGeneratedRoute(
          GeneratedRoute route) {
-      Ip prefix = route.getPrefix().getAddress();
-      int prefixLength = route.getPrefix().getPrefixLength();
+      Prefix prefix = route.getPrefix();
       Integer administrativeCost = route.getPreference();
       if (administrativeCost == null) {
          administrativeCost = DEFAULT_AGGREGATE_ROUTE_PREFERENCE;
@@ -232,7 +231,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          policies.add(policy);
       }
       batfish.representation.GeneratedRoute newRoute = new batfish.representation.GeneratedRoute(
-            prefix, prefixLength, administrativeCost, policies);
+            prefix, administrativeCost, policies);
       newRoute.setMetric(metric);
       return newRoute;
    }
@@ -356,16 +355,14 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    }
 
    private batfish.representation.StaticRoute toStaticRoute(StaticRoute route) {
-      Ip prefix = route.getPrefix().getAddress();
-      int prefixLength = route.getPrefix().getPrefixLength();
+      Prefix prefix = route.getPrefix();
       Ip nextHopIp = route.getNextHopIp();
       String nextHopInterface = route.getDrop() ? Util.NULL_INTERFACE_NAME
             : route.getNextHopInterface();
       int administrativeCost = route.getMetric();
       Integer tag = route.getTag();
       batfish.representation.StaticRoute newStaticRoute = new batfish.representation.StaticRoute(
-            prefix, prefixLength, nextHopIp, nextHopInterface,
-            administrativeCost, tag);
+            prefix, nextHopIp, nextHopInterface, administrativeCost, tag);
       return newStaticRoute;
    }
 
@@ -397,8 +394,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          for (Prefix prefix : pl.getPrefixes()) {
             int prefixLength = prefix.getPrefixLength();
             RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
-                  LineAction.ACCEPT, prefix.getAddress(), prefixLength,
-                  new SubRange(prefixLength, prefixLength));
+                  LineAction.ACCEPT, prefix, new SubRange(prefixLength,
+                        prefixLength));
             rfl.addLine(line);
          }
          _c.getRouteFilterLists().put(name, rfl);

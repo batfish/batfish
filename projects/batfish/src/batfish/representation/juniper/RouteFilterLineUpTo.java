@@ -24,8 +24,8 @@ public final class RouteFilterLineUpTo extends RouteFilterLine {
    public void applyTo(RouteFilterList rfl) {
       int prefixLength = _prefix.getPrefixLength();
       RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
-            LineAction.ACCEPT, _prefix.getAddress(), prefixLength,
-            new SubRange(prefixLength, _maxPrefixLength));
+            LineAction.ACCEPT, _prefix, new SubRange(prefixLength,
+                  _maxPrefixLength));
       rfl.addLine(line);
    }
 
