@@ -892,9 +892,11 @@ public class Settings {
                   .argName(ARGNAME_FLATTEN_DESTINATION)
                   .desc("output path to test rig in which flat juniper (and all other) configurations will be placed")
                   .longOpt(ARG_FLATTEN_DESTINATION).build());
-      _options.addOption(Option.builder()
-            .desc("flatten hierarchical juniper configuration files on-the-fly (line number references will be spurious)")
-            .longOpt(ARG_FLATTEN_ON_THE_FLY).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("flatten hierarchical juniper configuration files on-the-fly (line number references will be spurious)")
+                  .longOpt(ARG_FLATTEN_ON_THE_FLY).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {

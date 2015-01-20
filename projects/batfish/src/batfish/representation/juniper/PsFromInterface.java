@@ -19,7 +19,8 @@ public final class PsFromInterface extends PsFrom {
    @Override
    public void applyTo(PolicyMapClause clause, Configuration c) {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated method stub
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 
    public String getName() {
