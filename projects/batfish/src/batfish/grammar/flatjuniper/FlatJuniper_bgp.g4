@@ -205,6 +205,7 @@ bt_null
    (
       AUTHENTICATION_KEY
       | BFD_LIVENESS_DETECTION
+      | HOLD_TIME
       | LOG_UPDOWN
       | TRACEOPTIONS
    ) s_null_filler
