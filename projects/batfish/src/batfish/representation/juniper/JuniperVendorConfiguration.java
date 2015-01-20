@@ -315,13 +315,42 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       for (PsTerm term : terms) {
          PolicyMapClause clause = new PolicyMapClause();
          clause.setName(term.getName());
-         map.getClauses().add(clause);
          for (PsFrom from : term.getFroms()) {
+            if (from instanceof PsFromRouteFilter) {
+               int actionLineCounter = 0;
+               PsFromRouteFilter fromRouteFilter = (PsFromRouteFilter) from;
+               String routeFilterName = fromRouteFilter.getRouteFilterName();
+               RouteFilter rf = _routeFilters.get(routeFilterName);
+               for (RouteFilterLine line : rf.getLines()) {
+                  if (line.getThens().size() > 0) {
+                     String lineListName = name + "_ACTION_LINE_"
+                           + actionLineCounter;
+                     RouteFilterList lineSpecificList = new RouteFilterList(
+                           lineListName);
+                     line.applyTo(lineSpecificList);
+                     actionLineCounter++;
+                     _c.getRouteFilterLists().put(lineListName,
+                           lineSpecificList);
+                     PolicyMapClause lineSpecificClause = new PolicyMapClause();
+                     String lineSpecificClauseName = routeFilterName
+                           + "_ACTION_LINE_" + actionLineCounter;
+                     lineSpecificClause.setName(lineSpecificClauseName);
+                     PolicyMapMatchRouteFilterListLine matchRflLine = new PolicyMapMatchRouteFilterListLine(
+                           Collections.singleton(lineSpecificList));
+                     lineSpecificClause.getMatchLines().add(matchRflLine);
+                     for (PsThen then : line.getThens()) {
+                        then.applyTo(lineSpecificClause, _c);
+                     }
+                     map.getClauses().add(lineSpecificClause);
+                  }
+               }
+            }
             from.applyTo(clause, _c);
          }
          for (PsThen then : term.getThens()) {
             then.applyTo(clause, _c);
          }
+         map.getClauses().add(clause);
       }
       return map;
    }
@@ -381,7 +410,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          RouteFilter rf = e.getValue();
          RouteFilterList rfl = new RouteFilterList(name);
          for (RouteFilterLine line : rf.getLines()) {
-            line.applyTo(rfl);
+            if (line.getThens().size() == 0) {
+               line.applyTo(rfl);
+            }
          }
          _c.getRouteFilterLists().put(name, rfl);
       }

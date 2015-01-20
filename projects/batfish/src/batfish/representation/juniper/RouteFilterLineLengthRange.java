@@ -34,12 +34,35 @@ public final class RouteFilterLineLengthRange extends RouteFilterLine {
 
    }
 
+   @Override
+   public boolean equals(Object o) {
+      if (!this.getClass().equals(o.getClass())) {
+         return false;
+      }
+      else {
+         RouteFilterLineLengthRange rhs = (RouteFilterLineLengthRange) o;
+         return _prefix.equals(rhs._prefix)
+               && _minPrefixLength == rhs._minPrefixLength
+               && _maxPrefixLength == rhs._maxPrefixLength;
+      }
+   }
+
    public int getMaxPrefixLength() {
       return _maxPrefixLength;
    }
 
    public int getMinPrefixLength() {
       return _minPrefixLength;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + _maxPrefixLength;
+      result = prime * result + _minPrefixLength;
+      result = prime * result + _prefix.hashCode();
+      return result;
    }
 
 }

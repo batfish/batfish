@@ -26,4 +26,20 @@ public class RouteFilterLineOrLonger extends RouteFilterLine {
       rfl.addLine(line);
    }
 
+   @Override
+   public boolean equals(Object o) {
+      if (!this.getClass().equals(o.getClass())) {
+         return false;
+      }
+      else {
+         RouteFilterLineOrLonger rhs = (RouteFilterLineOrLonger) o;
+         return _prefix.equals(rhs._prefix);
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return _prefix.hashCode();
+   }
+
 }

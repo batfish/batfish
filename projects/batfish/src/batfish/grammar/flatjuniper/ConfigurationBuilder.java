@@ -45,6 +45,7 @@ import batfish.representation.juniper.PsFromInterface;
 import batfish.representation.juniper.PsFromPrefixList;
 import batfish.representation.juniper.PsFromProtocol;
 import batfish.representation.juniper.PsFromRouteFilter;
+import batfish.representation.juniper.RouteFilterLine;
 import batfish.representation.juniper.RouteFilterLineExact;
 import batfish.representation.juniper.RouteFilterLineLengthRange;
 import batfish.representation.juniper.RouteFilterLineOrLonger;
@@ -247,9 +248,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private PsTerm _currentPsTerm;
 
+   private Set<PsThen> _currentPsThens;
+
    private RoutingInformationBase _currentRib;
 
    private RouteFilter _currentRouteFilter;
+
+   private RouteFilterLine _currentRouteFilterLine;
 
    private Prefix _currentRouteFilterPrefix;
 
@@ -360,6 +365,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterFromt_route_filter_then(Fromt_route_filter_thenContext ctx) {
+      RouteFilterLine line = _currentRouteFilterLine;
+      _currentPsThens = line.getThens();
+   }
+
+   @Override
    public void enterFwft_term(Fwft_termContext ctx) {
       String name = ctx.name.getText();
       Map<String, FwTerm> terms = _currentFilter.getTerms();
@@ -440,6 +451,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          policyStatements.put(name, _currentPolicyStatement);
       }
       _currentPsTerm = _currentPolicyStatement.getSingletonTerm();
+      _currentPsThens = _currentPsTerm.getThens();
    }
 
    @Override
@@ -462,6 +474,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentPsTerm = new PsTerm(name);
          terms.put(name, _currentPsTerm);
       }
+      _currentPsThens = _currentPsTerm.getThens();
    }
 
    @Override
@@ -724,7 +737,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          from = new PsFromInterface(name);
       }
       _currentPsTerm.getFroms().add(from);
-   };
+   }
 
    @Override
    public void exitFromt_prefix_list(Fromt_prefix_listContext ctx) {
@@ -744,6 +757,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitFromt_route_filter(Fromt_route_filterContext ctx) {
       _currentRouteFilterPrefix = null;
       _currentRouteFilter = null;
+      _currentRouteFilterLine = null;
+   }
+
+   @Override
+   public void exitFromt_route_filter_then(Fromt_route_filter_thenContext ctx) {
+      _currentPsThens = _currentPsTerm.getThens();
    }
 
    @Override
@@ -911,8 +930,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitPst_term(Pst_termContext ctx) {
+   public void exitPst_term_tail(Pst_term_tailContext ctx) {
       _currentPsTerm = null;
+      _currentPsThens = null;
    }
 
    @Override
@@ -920,7 +940,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_currentRouteFilterPrefix != null) {
          RouteFilterLineExact fromRouteFilterExact = new RouteFilterLineExact(
                _currentRouteFilterPrefix);
-         _currentRouteFilter.getLines().add(fromRouteFilterExact);
+         _currentRouteFilterLine = _currentRouteFilter
+               .insertLine(fromRouteFilterExact);
       }
    }
 
@@ -929,7 +950,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_currentRouteFilterPrefix != null) {
          RouteFilterLineOrLonger fromRouteFilterOrLonger = new RouteFilterLineOrLonger(
                _currentRouteFilterPrefix);
-         _currentRouteFilter.getLines().add(fromRouteFilterOrLonger);
+         _currentRouteFilterLine = _currentRouteFilter
+               .insertLine(fromRouteFilterOrLonger);
       }
    }
 
@@ -940,7 +962,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_currentRouteFilterPrefix != null) {
          RouteFilterLineLengthRange fromRouteFilterLengthRange = new RouteFilterLineLengthRange(
                _currentRouteFilterPrefix, minPrefixLength, maxPrefixLength);
-         _currentRouteFilter.getLines().add(fromRouteFilterLengthRange);
+         _currentRouteFilterLine = _currentRouteFilter
+               .insertLine(fromRouteFilterLengthRange);
       }
    }
 
@@ -950,7 +973,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          Prefix throughPrefix = new Prefix(ctx.IP_PREFIX().getText());
          RouteFilterLineThrough fromRouteFilterThrough = new RouteFilterLineThrough(
                _currentRouteFilterPrefix, throughPrefix);
-         _currentRouteFilter.getLines().add(fromRouteFilterThrough);
+         _currentRouteFilterLine = _currentRouteFilter
+               .insertLine(fromRouteFilterThrough);
       }
    }
 
@@ -960,7 +984,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_currentRouteFilterPrefix != null) {
          RouteFilterLineUpTo fromRouteFilterUpTo = new RouteFilterLineUpTo(
                _currentRouteFilterPrefix, maxPrefixLength);
-         _currentRouteFilter.getLines().add(fromRouteFilterUpTo);
+         _currentRouteFilterLine = _currentRouteFilter
+               .insertLine(fromRouteFilterUpTo);
       }
    }
 
@@ -1036,42 +1061,42 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitTht_accept(Tht_acceptContext ctx) {
-      _currentPsTerm.getThens().add(PsThenAccept.INSTANCE);
+      _currentPsThens.add(PsThenAccept.INSTANCE);
    }
 
    @Override
    public void exitTht_community_add(Tht_community_addContext ctx) {
       String name = ctx.name.getText();
       PsThenCommunityAdd then = new PsThenCommunityAdd(name);
-      _currentPsTerm.getThens().add(then);
+      _currentPsThens.add(then);
    }
 
    @Override
    public void exitTht_community_delete(Tht_community_deleteContext ctx) {
       String name = ctx.name.getText();
       PsThenCommunityDelete then = new PsThenCommunityDelete(name);
-      _currentPsTerm.getThens().add(then);
+      _currentPsThens.add(then);
    }
 
    @Override
    public void exitTht_community_set(Tht_community_setContext ctx) {
       String name = ctx.name.getText();
       PsThenCommunitySet then = new PsThenCommunitySet(name);
-      _currentPsTerm.getThens().add(then);
+      _currentPsThens.add(then);
    }
 
    @Override
    public void exitTht_local_preference(Tht_local_preferenceContext ctx) {
       int localPreference = toInt(ctx.localpref);
       PsThenLocalPreference then = new PsThenLocalPreference(localPreference);
-      _currentPsTerm.getThens().add(then);
+      _currentPsThens.add(then);
    }
 
    @Override
    public void exitTht_metric(Tht_metricContext ctx) {
       int metric = toInt(ctx.metric);
       PsThenMetric then = new PsThenMetric(metric);
-      _currentPsTerm.getThens().add(then);
+      _currentPsThens.add(then);
    }
 
    @Override
@@ -1085,12 +1110,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          todo(ctx, "not implemented");
          return;
       }
-      _currentPsTerm.getThens().add(then);
+      _currentPsThens.add(then);
    }
 
    @Override
    public void exitTht_reject(Tht_rejectContext ctx) {
-      _currentPsTerm.getThens().add(PsThenReject.INSTANCE);
+      _currentPsThens.add(PsThenReject.INSTANCE);
    }
 
    public JuniperVendorConfiguration getConfiguration() {

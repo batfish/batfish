@@ -26,4 +26,20 @@ public final class RouteFilterLineExact extends RouteFilterLine {
       rfl.addLine(line);
    }
 
+   @Override
+   public boolean equals(Object o) {
+      if (!this.getClass().equals(o.getClass())) {
+         return false;
+      }
+      else {
+         RouteFilterLineExact rhs = (RouteFilterLineExact) o;
+         return _prefix.equals(rhs._prefix);
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return _prefix.hashCode();
+   }
+
 }

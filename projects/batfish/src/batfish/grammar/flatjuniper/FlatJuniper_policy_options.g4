@@ -92,18 +92,21 @@ fromt_route_filter
    (
       IP_PREFIX
       | IPV6_PREFIX
-   ) fromt_route_filter_tail
+   ) fromt_route_filter_tail then = fromt_route_filter_then?
 ;
 
 fromt_route_filter_tail
 :
-   (
-      rft_exact
-      | rft_orlonger
-      | rft_prefix_length_range
-      | rft_through
-      | rft_upto
-   ) ACCEPT?
+   rft_exact
+   | rft_orlonger
+   | rft_prefix_length_range
+   | rft_through
+   | rft_upto
+;
+
+fromt_route_filter_then
+:
+   tt_then_tail
 ;
 
 fromt_route_type

@@ -34,8 +34,29 @@ public final class RouteFilterLineThrough extends RouteFilterLine {
       }
    }
 
+   @Override
+   public boolean equals(Object o) {
+      if (!this.getClass().equals(o.getClass())) {
+         return false;
+      }
+      else {
+         RouteFilterLineThrough rhs = (RouteFilterLineThrough) o;
+         return _prefix.equals(rhs._prefix)
+               && _throughPrefix.equals(rhs._throughPrefix);
+      }
+   }
+
    public Prefix getThroughPrefix() {
       return _throughPrefix;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + _throughPrefix.hashCode();
+      result = prime * result + _prefix.hashCode();
+      return result;
    }
 
 }
