@@ -26,6 +26,7 @@ s_protocols_null
    (
       BFD
       | IGMP
+      | L2CIRCUIT
       | LDP
       | LLDP
       | MSDP

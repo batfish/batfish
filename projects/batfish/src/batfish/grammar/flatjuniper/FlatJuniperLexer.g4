@@ -760,7 +760,7 @@ L
    'L'
 ;
 
-L2_CIRCUIT
+L2CIRCUIT
 :
    'l2circuit'
 ;
