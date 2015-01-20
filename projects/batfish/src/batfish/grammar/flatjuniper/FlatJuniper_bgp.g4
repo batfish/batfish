@@ -142,7 +142,11 @@ bt_family_tail
 
 bt_group
 :
-   GROUP name = VARIABLE bt_group_tail
+   GROUP
+   (
+      name = variable
+      |  WILDCARD
+   ) bt_group_tail
 ;
 
 bt_group_tail
