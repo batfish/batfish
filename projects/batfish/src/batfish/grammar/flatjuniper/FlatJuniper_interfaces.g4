@@ -168,6 +168,7 @@ it_null
 :
    (
       AGGREGATED_ETHER_OPTIONS
+      | BANDWIDTH
       | ENCAPSULATION
       | GIGETHER_OPTIONS
       | TRACEOPTIONS
@@ -303,7 +304,7 @@ ut_family_tail
 
 ut_null
 :
-   BANDWIDTH s_null_filler
+   it_null
 ;
 
 ut_vlan_id
