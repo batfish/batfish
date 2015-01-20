@@ -85,7 +85,9 @@ at_interface
 
 at_interface_tail
 :
-   ait_apply_groups_except
+// intentional blank
+
+   | ait_apply_groups_except
    | ait_dead_interval
    | ait_hello_interval
    | ait_interface_type
