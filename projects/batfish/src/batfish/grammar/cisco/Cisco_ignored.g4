@@ -23,6 +23,8 @@ null_block_stanza
       (
          CRYPTO
          (
+            IPSEC
+            |
             (
                ISAKMP
                (
@@ -424,7 +426,6 @@ null_standalone_stanza
          CRYPTO
          (
             CA
-            | IPSEC
             |
             (
                ISAKMP
