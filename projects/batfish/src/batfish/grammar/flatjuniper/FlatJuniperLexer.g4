@@ -765,7 +765,7 @@ L2CIRCUIT
    'l2circuit'
 ;
 
-L2_VPN
+L2VPN
 :
    'l2vpn'
 ;

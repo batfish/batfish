@@ -1,6 +1,7 @@
 parser grammar FlatJuniper_protocols;
 
-import FlatJuniper_common, FlatJuniper_bgp, FlatJuniper_isis, FlatJuniper_mpls, FlatJuniper_ospf;
+import
+FlatJuniper_common, FlatJuniper_bgp, FlatJuniper_isis, FlatJuniper_mpls, FlatJuniper_ospf;
 
 options {
    tokenVocab = FlatJuniperLexer;
