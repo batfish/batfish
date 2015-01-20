@@ -101,7 +101,7 @@ batfish_analyze_destination_consistency_machine() {
       batfish_nuke_reset_logicblox || return 1
       
       # Compute the fixed point of the control plane with failed interface
-      BATFISH_COMMON_ARGS="$BATFISH_COMMON_ARGS -flowsink $ORIG_FLOW_SINKS" batfish_compile_blacklist_node $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $NODE || return 1
+      batfish_compile_blacklist_node $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $NODE $ORIG_FLOW_SINKS || return 1
 
       # Query data plane predicates
       batfish_query_data_plane $WORKSPACE $DP_DIR || return 1
