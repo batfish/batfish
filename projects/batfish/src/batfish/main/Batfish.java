@@ -745,7 +745,7 @@ public class Batfish implements AutoCloseable {
    private String flatten(String input) {
       JuniperCombinedParser jparser = new JuniperCombinedParser(input,
             _settings.getThrowOnParserError(), _settings.getThrowOnLexerError());
-      ParserRuleContext jtree = jparser.parse();
+      ParserRuleContext jtree = parse(jparser);
       JuniperFlattener flattener = new JuniperFlattener();
       ParseTreeWalker walker = new ParseTreeWalker();
       walker.walk(flattener, jtree);
@@ -774,17 +774,17 @@ public class Batfish implements AutoCloseable {
          String outputFileAsString = outputFile.toString();
          if (configText.charAt(0) == '#'
                && !configText.matches("(?m)set version.*")) {
-            _logger
-                  .debug("Flattening config to \"" + outputFileAsString + "\"");
+            _logger.debug("Flattening config to \"" + outputFileAsString
+                  + "\"..");
             String flatConfigText = flatten(configText);
             writeFile(outputFileAsString, flatConfigText);
          }
          else {
             _logger.debug("Copying unmodified config to \""
-                  + outputFileAsString + "\"");
+                  + outputFileAsString + "\"..");
             writeFile(outputFileAsString, configText);
+            _logger.debug("OK\n");
          }
-         _logger.debug("..OK\n");
       }
    }
 

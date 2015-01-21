@@ -39,6 +39,11 @@ CLOSE_PAREN
    ')'
 ;
 
+INACTIVE
+:
+   'inactive:'
+;
+
 LINE_COMMENT
 :
    '#' F_NonNewlineChar* F_NewlineChar+ -> channel(HIDDEN)

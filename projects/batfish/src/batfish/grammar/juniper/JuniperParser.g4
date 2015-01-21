@@ -26,7 +26,7 @@ juniper_configuration
 
 statement
 :
-   word+
+   INACTIVE? word+
    (
       braced_clause
       |
