@@ -2598,6 +2598,11 @@ PEER
    'peer'
 ;
 
+PEER_CONFIG_CHECK_BYPASS
+:
+   'peer-config-check-bypass'
+;
+
 PEER_GROUP
 :
    'peer-group' -> pushMode(M_NEIGHBOR)
@@ -2731,6 +2736,11 @@ PORT_UNREACHABLE
 POWER
 :
    'power'
+;
+
+POWEROFF
+:
+   'poweroff'
 ;
 
 PPP

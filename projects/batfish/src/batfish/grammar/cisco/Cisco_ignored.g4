@@ -91,6 +91,7 @@ null_block_stanza
       | OPENFLOW
       | PLAT
       | POLICY_MAP
+      | POWEROFF
       | PSEUDOWIRE_CLASS
       | REDUNDANCY
       | RMON
@@ -267,6 +268,7 @@ null_block_substanza
          | PATH_JITTER
          | PAUSE
          | PEER_ADDRESS
+         | PEER_CONFIG_CHECK_BYPASS
          | PEER_GATEWAY
          | PEER_KEEPALIVE
          | PEER_LINK
