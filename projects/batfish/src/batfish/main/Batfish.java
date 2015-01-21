@@ -2226,9 +2226,9 @@ public class Batfish implements AutoCloseable {
          VendorConfiguration vc = vendorConfigurations.get(name);
          Path currentOutputPath = Paths.get(outputPath, name);
          _logger.debug("Serializing: \"" + name + "\" ==> \""
-               + currentOutputPath.toString() + "\"");
+               + currentOutputPath.toString() + "\"..");
          serializeObject(vc, currentOutputPath.toFile());
-         _logger.debug(" ...OK\n");
+         _logger.debug("OK\n");
       }
       printElapsedTime();
    }
