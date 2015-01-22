@@ -326,6 +326,7 @@ rot_static_tail
    | srt_next_table
    | srt_readvertise
    | srt_reject
+   | srt_resolve
    | srt_tag
 ;
 
@@ -392,6 +393,11 @@ srt_readvertise
 srt_reject
 :
    REJECT
+;
+
+srt_resolve
+:
+   RESOLVE
 ;
 
 srt_tag
