@@ -42,6 +42,7 @@ null_block_stanza
       )
       | DIAL_PEER
       | EVENT_HANDLER
+      | FEX
       |
       (
          FLOW
@@ -274,6 +275,7 @@ null_block_substanza
          | PEER_LINK
          | PERMIT
          | PICKUP
+         | PINNING
          | POLICE
          | POLICY_MAP
          | PORT

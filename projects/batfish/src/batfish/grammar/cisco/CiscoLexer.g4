@@ -1319,6 +1319,11 @@ FEATURE
    'feature'
 ;
 
+FEX
+:
+   'fex'
+;
+
 FILE
 :
    'file'
@@ -2666,6 +2671,11 @@ PIM
 PIM_AUTO_RP
 :
    'pim-auto-rp'
+;
+
+PINNING
+:
+   'pinning'
 ;
 
 PKI
