@@ -1686,7 +1686,9 @@ public class Batfish implements AutoCloseable {
                   flatJuniperParser, _settings.getRulesWithSuppressedWarnings());
          }
          else {
-            throw new BatfishException("Unknown configuration format");
+            throw new BatfishException(
+                  "Unknown configuration format for file: \"" + currentPath
+                        + "\"");
          }
          tree = parse(combinedParser, currentPath);
          try {
@@ -1694,7 +1696,8 @@ public class Batfish implements AutoCloseable {
          }
          catch (Exception e) {
             throw new BatfishException(
-                  "Error post-processing parse tree of configuration file", e);
+                  "Error post-processing parse tree of configuration file: \""
+                        + currentPath + "\"", e);
          }
          finally {
             for (String warning : extractor.getWarnings()) {
