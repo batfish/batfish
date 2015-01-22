@@ -109,6 +109,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else if (ctx.FTP() != null) {
          return new SubRange(21, 21);
       }
+      else if (ctx.HTTP() != null) {
+         return new SubRange(80, 80);
+      }
+      else if (ctx.NETBIOS_DGM() != null) {
+         return new SubRange(138, 138);
+      }
+      else if (ctx.NETBIOS_NS() != null) {
+         return new SubRange(137, 137);
+      }
       else if (ctx.NTP() != null) {
          return new SubRange(123, 123);
       }
@@ -121,11 +130,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else if (ctx.SSH() != null) {
          return new SubRange(22, 22);
       }
+      else if (ctx.SYSLOG() != null) {
+         return new SubRange(514, 514);
+      }
       else if (ctx.TACACS() != null) {
          return new SubRange(49, 49);
       }
       else if (ctx.TELNET() != null) {
          return new SubRange(23, 23);
+      }
+      else if (ctx.TFTP() != null) {
+         return new SubRange(69, 69);
       }
       else {
          throw new BatfishException("missing port-number mapping for port: \""

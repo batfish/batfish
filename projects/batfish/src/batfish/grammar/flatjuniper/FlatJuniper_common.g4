@@ -144,13 +144,18 @@ port
    | DHCP
    | DOMAIN
    | FTP
+   | HTTP
    | LDP
+   | NETBIOS_DGM
+   | NETBIOS_NS
    | NTP
    | SMTP
    | SNMP
    | SSH
+   | SYSLOG
    | TACACS
    | TELNET
+   | TFTP
 ;
 
 range

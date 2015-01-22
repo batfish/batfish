@@ -614,6 +614,11 @@ HOST_UNREACHABLE
    'host-unreachable'
 ;
 
+HTTP
+:
+   'http'
+;
+
 ICMP
 :
    'icmp'
@@ -1022,6 +1027,16 @@ NEIGHBOR_ADVERTISEMENT
 NEIGHBOR_SOLICIT
 :
    'neighbor-solicit'
+;
+
+NETBIOS_DGM
+:
+   'netbios-dgm'
+;
+
+NETBIOS_NS
+:
+   'netbios-ns'
 ;
 
 NETWORK_SUMMARY_EXPORT
