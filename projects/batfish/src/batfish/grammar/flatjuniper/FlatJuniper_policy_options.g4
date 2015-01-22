@@ -169,6 +169,11 @@ plt_network6
    network = IPV6_PREFIX
 ;
 
+pot_apply_groups
+:
+   s_apply_groups
+;
+
 pot_as_path
 :
    AS_PATH name = variable pot_as_path_tail
@@ -270,7 +275,8 @@ s_policy_options
 
 s_policy_options_tail
 :
-   pot_as_path
+   pot_apply_groups
+   | pot_as_path
    | pot_community
    | pot_policy_statement
    | pot_prefix_list

@@ -50,7 +50,9 @@ s_groups_named
 
 s_groups_tail
 :
-   statement
+// intentional blank
+
+   | statement
 ;
 
 s_null

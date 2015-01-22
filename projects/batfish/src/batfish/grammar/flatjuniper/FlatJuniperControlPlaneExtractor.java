@@ -21,11 +21,12 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
 
    public FlatJuniperControlPlaneExtractor(String fileText,
          FlatJuniperCombinedParser combinedParser,
-         Set<String> rulesWithSuppressedWarnings) {
+         Set<String> rulesWithSuppressedWarnings, boolean pedantic) {
       _text = fileText;
       _parser = combinedParser;
       _rulesWithSuppressedWarnings = rulesWithSuppressedWarnings;
       _warnings = new ArrayList<String>();
+      _pedantic = pedantic;
    }
 
    @Override
@@ -44,7 +45,8 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
       ParseTreeWalker walker = new ParseTreeWalker();
       InitialTreeBuilder tb = new InitialTreeBuilder(hierarchy);
       walker.walk(tb, tree);
-      ApplyGroupsApplicator hb = new ApplyGroupsApplicator(_parser, hierarchy);
+      ApplyGroupsApplicator hb = new ApplyGroupsApplicator(_parser, hierarchy,
+            _warnings, _pedantic);
       walker.walk(hb, tree);
       GroupPruner gp = new GroupPruner();
       walker.walk(gp, tree);

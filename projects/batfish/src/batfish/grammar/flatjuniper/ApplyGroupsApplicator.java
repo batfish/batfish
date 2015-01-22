@@ -15,6 +15,8 @@ import batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import batfish.grammar.flatjuniper.Hierarchy.HierarchyTree;
 import batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import batfish.grammar.flatjuniper.FlatJuniperParser.*;
+import batfish.main.BatfishException;
+import batfish.main.PedanticBatfishException;
 
 public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
@@ -32,10 +34,16 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
    private List<ParseTree> _newConfigurationLines;
 
+   private final boolean _pedantic;
+
+   private final List<String> _warnings;
+
    public ApplyGroupsApplicator(BatfishCombinedParser<?, ?> combinedParser,
-         Hierarchy hierarchy) {
+         Hierarchy hierarchy, List<String> warnings, boolean pedantic) {
       _combinedParser = combinedParser;
       _hierarchy = hierarchy;
+      _pedantic = pedantic;
+      _warnings = warnings;
    }
 
    @Override
@@ -49,11 +57,23 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
    @Override
    public void enterS_apply_groups(S_apply_groupsContext ctx) {
       String groupName = ctx.name.getText();
-      List<ParseTree> applyGroupsLines = _hierarchy.getApplyGroupsLines(
-            groupName, _currentPath, _configurationContext);
-      int insertionIndex = _newConfigurationLines.indexOf(_currentSetLine);
-      _newConfigurationLines.remove(_currentSetLine);
-      _newConfigurationLines.addAll(insertionIndex, applyGroupsLines);
+      try {
+         List<ParseTree> applyGroupsLines = _hierarchy.getApplyGroupsLines(
+               groupName, _currentPath, _configurationContext);
+         int insertionIndex = _newConfigurationLines.indexOf(_currentSetLine);
+         _newConfigurationLines.remove(_currentSetLine);
+         _newConfigurationLines.addAll(insertionIndex, applyGroupsLines);
+      }
+      catch (PedanticBatfishException e) {
+         String message = "Exception processing apply-groups statement";
+         if (_pedantic) {
+            throw new BatfishException(message, e);
+         }
+         else {
+            message += ": " + e.getMessage();
+            _warnings.add(message);
+         }
+      }
    }
 
    @Override
@@ -76,10 +96,13 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
    @Override
    public void exitS_groups_named(S_groups_namedContext ctx) {
       String groupName = ctx.name.getText();
-      StatementContext statement = ctx.s_groups_tail().statement();
       HierarchyTree tree = _hierarchy.getTree(groupName);
       if (tree == null) {
          tree = _hierarchy.newTree(groupName);
+      }
+      StatementContext statement = ctx.s_groups_tail().statement();
+      if (statement == null) {
+         return;
       }
       Interval interval = ctx.s_groups_tail().getSourceInterval();
       List<Token> unfilteredTokens = _combinedParser.getTokens().getTokens(

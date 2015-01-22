@@ -1683,7 +1683,9 @@ public class Batfish implements AutoCloseable {
                   _settings.getThrowOnLexerError());
             combinedParser = flatJuniperParser;
             extractor = new FlatJuniperControlPlaneExtractor(fileText,
-                  flatJuniperParser, _settings.getRulesWithSuppressedWarnings());
+                  flatJuniperParser,
+                  _settings.getRulesWithSuppressedWarnings(),
+                  _settings.getPedantic());
          }
          else {
             throw new BatfishException(
