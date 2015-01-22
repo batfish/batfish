@@ -195,6 +195,7 @@ it_unit_tail
 // intentional blank
 
    | ut_description
+   | ut_disable
    | ut_family
    | ut_null
    | ut_vlan_id
@@ -292,6 +293,11 @@ s_interfaces_tail
 ut_description
 :
    s_description
+;
+
+ut_disable
+:
+   it_disable
 ;
 
 ut_family
