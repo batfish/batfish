@@ -14,10 +14,11 @@ import batfish.representation.juniper.JuniperVendorConfiguration;
 public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
 
    private JuniperVendorConfiguration _configuration;
-   private FlatJuniperCombinedParser _parser;
-   private Set<String> _rulesWithSuppressedWarnings;
-   private String _text;
-   private List<String> _warnings;
+   private final FlatJuniperCombinedParser _parser;
+   private final boolean _pedantic;
+   private final Set<String> _rulesWithSuppressedWarnings;
+   private final String _text;
+   private final List<String> _warnings;
 
    public FlatJuniperControlPlaneExtractor(String fileText,
          FlatJuniperCombinedParser combinedParser,

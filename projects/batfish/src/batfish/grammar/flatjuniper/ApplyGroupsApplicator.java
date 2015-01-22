@@ -9,7 +9,6 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import batfish.grammar.BatfishCombinedParser;
 import batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import batfish.grammar.flatjuniper.Hierarchy.HierarchyTree;
@@ -20,7 +19,7 @@ import batfish.main.PedanticBatfishException;
 
 public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
-   private BatfishCombinedParser<?, ?> _combinedParser;
+   private final FlatJuniperCombinedParser _combinedParser;
 
    private Flat_juniper_configurationContext _configurationContext;
 
@@ -30,7 +29,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
    private boolean _enablePathRecording;
 
-   private Hierarchy _hierarchy;
+   private final Hierarchy _hierarchy;
 
    private List<ParseTree> _newConfigurationLines;
 
@@ -38,7 +37,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
    private final List<String> _warnings;
 
-   public ApplyGroupsApplicator(BatfishCombinedParser<?, ?> combinedParser,
+   public ApplyGroupsApplicator(FlatJuniperCombinedParser combinedParser,
          Hierarchy hierarchy, List<String> warnings, boolean pedantic) {
       _combinedParser = combinedParser;
       _hierarchy = hierarchy;
