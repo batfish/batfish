@@ -150,6 +150,11 @@ AS_PATH
    'as-path' -> pushMode(M_AsPath)
 ;
 
+AS_PATH_EXPAND
+:
+   'as-path-expand'
+;
+
 AS_PATH_PREPEND
 :
    'as-path-prepend'
@@ -807,6 +812,11 @@ LABELED_UNICAST
 LAN
 :
    'lan'
+;
+
+LAST_AS
+:
+   'last-as'
 ;
 
 LDP_SYNCHRONIZATION

@@ -281,6 +281,11 @@ tht_accept
    ACCEPT
 ;
 
+tht_as_path_expand
+:
+   AS_PATH_EXPAND LAST_AS COUNT DEC
+;
+
 tht_as_path_prepend
 :
    AS_PATH_PREPEND
@@ -438,6 +443,7 @@ tt_then
 tt_then_tail
 :
    tht_accept
+   | tht_as_path_expand
    | tht_as_path_prepend
    | tht_color
    | tht_community_add
