@@ -149,6 +149,20 @@ it_apply_groups_except
    s_apply_groups_except
 ;
 
+it_common
+:
+   it_apply_groups
+   | it_apply_groups_except
+   | it_description
+   | it_disable
+   | it_enable
+   | it_family
+   | it_mtu
+   | it_null
+   | it_vlan_id
+   | it_vlan_tagging
+;
+
 it_description
 :
    s_description
@@ -162,6 +176,20 @@ it_disable
 it_enable
 :
    ENABLE
+;
+
+it_family
+:
+   FAMILY it_family_tail
+;
+
+it_family_tail
+:
+   famt_bridge
+   | famt_inet
+   | famt_inet6
+   | famt_iso
+   | famt_mpls
 ;
 
 it_mtu
@@ -193,12 +221,12 @@ it_unit
 it_unit_tail
 :
 // intentional blank
+   | it_common
+;
 
-   | ut_description
-   | ut_disable
-   | ut_family
-   | ut_null
-   | ut_vlan_id
+it_vlan_id
+:
+   VLAN_ID id = DEC
 ;
 
 it_vlan_tagging
@@ -279,47 +307,6 @@ s_interfaces
 
 s_interfaces_tail
 :
-   it_apply_groups
-   | it_apply_groups_except
-   | it_description
-   | it_disable
-   | it_enable
-   | it_mtu
-   | it_null
+   it_common
    | it_unit
-   | it_vlan_tagging
-;
-
-ut_description
-:
-   s_description
-;
-
-ut_disable
-:
-   it_disable
-;
-
-ut_family
-:
-   FAMILY ut_family_tail
-;
-
-ut_family_tail
-:
-   famt_bridge
-   | famt_inet
-   | famt_inet6
-   | famt_iso
-   | famt_mpls
-;
-
-ut_null
-:
-   it_null
-;
-
-ut_vlan_id
-:
-   VLAN_ID id = DEC
 ;

@@ -897,6 +897,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitIt_enable(It_enableContext ctx) {
+      _currentInterface.setActive(true);
+   }
+
+   @Override
    public void exitIt_unit(It_unitContext ctx) {
       _currentInterface = _currentMasterInterface;
    }
