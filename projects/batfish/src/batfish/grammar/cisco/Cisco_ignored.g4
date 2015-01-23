@@ -88,6 +88,7 @@ null_block_stanza
       | MAP_CLASS
       | MAP_LIST
       | MLAG
+      | MODULE
       | NO_BANNER
       | OPENFLOW
       | PLAT
@@ -165,6 +166,7 @@ null_block_substanza
          | CONFORM_ACTION
          | CONGESTION_CONTROL
          | CPTONE
+         | CREDENTIALS
          | CRL
          | CRYPTO
          | DATABITS
@@ -190,9 +192,11 @@ null_block_substanza
          | EXEC
          | EXEC_TIMEOUT
          | EXIT
+         | EXPECT
          | EXPORT_PROTOCOL
          | EXPORTER
          | FABRIC
+         | FAILED
          | FAIR_QUEUE
          | FALLBACK_DN
          | FILE_BROWSING
@@ -200,6 +204,8 @@ null_block_substanza
          | FLUSH_AT_ACTIVATION
          | FQDN
          | FRAMING
+         | FT
+         | GATEWAY
          | GROUP_ALIAS
          | GROUP_POLICY
          | GROUP_URL
@@ -208,13 +214,16 @@ null_block_substanza
          | HIDEKEYS
          | HIGH_AVAILABILITY
          | HISTORY
+         | IDLE
          | IDLE_TIMEOUT
+         | INSERVICE
          | INSPECT
          | INSTANCE
          |
          (
             INTERFACE POLICY
          )
+         | INTERVAL
          |
          (
             (
@@ -224,6 +233,7 @@ null_block_substanza
             (
                ACCESS_CLASS
                | ACCESS_GROUP
+               | ADDRESS
                | FLOW
                |
                (
@@ -258,10 +268,12 @@ null_block_substanza
          | MODEM
          | MTU
          | NAME
+         | NAT
          | NEGOTIATE
          | NETWORK
          | NODE
          | NOTIFY
+         | OPEN
          | PARAMETERS
          | PARENT
          | PASSWORD
@@ -274,20 +286,25 @@ null_block_substanza
          | PEER_KEEPALIVE
          | PEER_LINK
          | PERMIT
+         | PERSISTENT
          | PICKUP
          | PINNING
          | POLICE
          | POLICY_MAP
          | PORT
+         | PREEMPT
          | PREFIX
          | PRI_GROUP
          | PRIORITY
          | PRIVILEGE
+         | PROBE
          | PROTOCOL
          | QUEUE_BUFFERS
          | QUEUE_LIMIT
          | RANDOM_DETECT
          | RD
+         | REAL
+         | RECEIVE
          | RECORD
          | RECORD_ENTRY
          | REDISTRIBUTE
@@ -297,18 +314,22 @@ null_block_substanza
          | REMOTE_PORT
          | REMOTE_SPAN
          | REMOVED
+         | REQUEST
          | REQUEST_DATA_SIZE
          | RETRANSMIT
+         | RETRIES
          | REVERSE_ROUTE
          | REVISION
          | RING
          | ROLE
          | ROTARY
+         | ROUTE
          | ROUTE_TARGET
          | RULE
          | SCHEME
          | SEQUENCE
          | SERVER
+         | SERVERFARM
          | SERVER_PRIVATE
          | SERVICE
          | SERVICE_POLICY
@@ -348,13 +369,16 @@ null_block_substanza
          | UDP_JITTER
          | USE_VRF
          | VIOLATE_ACTION
+         | VIRTUAL
          | VIRTUAL_TEMPLATE
          | VPN_FILTER
          | VPN_IDLE_TIMEOUT
          | VPN_TUNNEL_PROTOCOL
+         | VSERVER
          | WEBVPN
          | WINS_SERVER
          | WITHOUT_CSD
+         | XML_CONFIG
       )
       (
          remaining_tokens += ~NEWLINE
@@ -365,6 +389,10 @@ null_block_substanza
 null_block_substanza_full
 :
    (
+      (
+         VLAN DEC CLIENT
+      )
+      |
       (
          VRF variable
       )
@@ -612,7 +640,6 @@ null_standalone_stanza
       | MLS
       | MODE
       | MODEM
-      | MODULE
       | MONITOR
       | MPLS
       | MTA

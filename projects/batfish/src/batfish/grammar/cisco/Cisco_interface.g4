@@ -156,6 +156,7 @@ null_standalone_if_stanza
       | CHANNEL
       | CHANNEL_GROUP
       | CHANNEL_PROTOCOL
+      | CLASS
       | CLNS
       | CLOCK
       | COUNTER
@@ -169,6 +170,7 @@ null_standalone_if_stanza
       | ENCAPSULATION
       | FAIR_QUEUE
       | FLOWCONTROL
+      | FRAME_RELAY
       | FRAMING
       | FULL_DUPLEX
       | GROUP_RANGE
@@ -262,6 +264,7 @@ null_standalone_if_stanza
       | QOS
       | QUEUE_SET
       | RANDOM_DETECT
+      | RATE_LIMIT
       | RATE_MODE
       | RCV_QUEUE
       | ROUTE_CACHE

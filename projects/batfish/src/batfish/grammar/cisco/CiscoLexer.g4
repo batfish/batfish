@@ -622,6 +622,11 @@ CLI
    'cli'
 ;
 
+CLIENT
+:
+   'client'
+;
+
 CLNS
 :
    'clns'
@@ -760,6 +765,11 @@ COUNTER
 CPTONE
 :
    'cptone'
+;
+
+CREDENTIALS
+:
+   'credentials'
 ;
 
 CRYPTO
@@ -1247,6 +1257,11 @@ EXIT_PEER_SESSION
    'exit-peer-session'
 ;
 
+EXPECT
+:
+   'expect'
+;
+
 EXPORT
 :
    'export'
@@ -1292,6 +1307,11 @@ FABRIC
 FACILITY_ALARM
 :
    'facility-alarm'
+;
+
+FAILED
+:
+   'failed'
 ;
 
 FAILOVER
@@ -1424,6 +1444,11 @@ FRAMING
 FREQUENCY
 :
    'frequency'
+;
+
+FT
+:
+   'ft'
 ;
 
 FTP
@@ -1631,6 +1656,11 @@ IDENTITY
    'identity'
 ;
 
+IDLE
+:
+   'idle'
+;
+
 IDLE_TIMEOUT
 :
    'idle-timeout'
@@ -1681,6 +1711,11 @@ INHERIT
    'inherit'
 ;
 
+INSERVICE
+:
+   'inservice'
+;
+
 INSPECT
 :
    'inspect'
@@ -1706,6 +1741,11 @@ INTERNAL
 INTERNET
 :
    'internet'
+;
+
+INTERVAL
+:
+   'interval'
 ;
 
 INVALID_SPI_RECOVERY
@@ -2498,6 +2538,11 @@ OBJECT_GROUP
    'object-group'
 ;
 
+OPEN
+:
+   'open'
+;
+
 OPENFLOW
 :
    'openflow'
@@ -2646,6 +2691,11 @@ PEER_SESSION
 PERMIT
 :
    'permit'
+;
+
+PERSISTENT
+:
+   'persistent'
 ;
 
 PHONE_PROXY
@@ -2813,6 +2863,11 @@ PRIVILEGE
    'privilege'
 ;
 
+PROBE
+:
+   'probe'
+;
+
 PROCESS
 :
    'process'
@@ -2928,6 +2983,16 @@ RD
    'rd'
 ;
 
+REAL
+:
+   'real'
+;
+
+RECEIVE
+:
+   'receive'
+;
+
 RECORD
 :
    'record'
@@ -3008,6 +3073,11 @@ REMOVED
    '<removed>'
 ;
 
+REQUEST
+:
+   'request'
+;
+
 REQUEST_DATA_SIZE
 :
    'request-data-size'
@@ -3026,6 +3096,11 @@ RESOURCE_POOL
 RETRANSMIT
 :
    'retransmit'
+;
+
+RETRIES
+:
+   'retries'
 ;
 
 REVERSE_ROUTE
@@ -3231,6 +3306,11 @@ SERIAL_NUMBER
 SERVER
 :
    'server'
+;
+
+SERVERFARM
+:
+   'serverfarm'
 ;
 
 SERVER_PRIVATE
@@ -3900,6 +3980,11 @@ VIOLATE_ACTION
    'violate-action'
 ;
 
+VIRTUAL
+:
+   'virtual'
+;
+
 VIRTUAL_REASSEMBLY
 :
    'virtual-reassembly'
@@ -3997,6 +4082,11 @@ VRRP
    'vrrp'
 ;
 
+VSERVER
+:
+   'vserver'
+;
+
 VTP
 :
    'vtp'
@@ -4065,6 +4155,11 @@ XLATE
 XML
 :
    'xml'
+;
+
+XML_CONFIG
+:
+   'xml-config'
 ;
 
 // commonly used to hide password and keys
