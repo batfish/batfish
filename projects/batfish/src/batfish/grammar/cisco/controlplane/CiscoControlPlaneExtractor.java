@@ -248,6 +248,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else if (ctx.TFTP() != null) {
          return 69;
       }
+      else if (ctx.WHOIS() != null) {
+         return 43;
+      }
       else if (ctx.WWW() != null) {
          return 80;
       }
