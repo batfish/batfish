@@ -18,6 +18,8 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
 
    private Set<Prefix> _neighborPrefixes;
 
+   private String _peerSession;
+
    public NamedBgpPeerGroup(String name) {
       _neighborAddresses = new LinkedHashSet<Ip>();
       _neighborPrefixes = new LinkedHashSet<Prefix>();
@@ -41,16 +43,16 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
       return _name;
    }
 
-   public Set<Ip> getNeighborAddresses() {
-      return _neighborAddresses;
-   }
-
-   public Set<Prefix> getNeighborPrefixes() {
-      return _neighborPrefixes;
+   public String getPeerSession() {
+      return _peerSession;
    }
 
    public void setCreated(boolean b) {
       _created = b;
+   }
+
+   public void setPeerSession(String peerSession) {
+      _peerSession = peerSession;
    }
 
 }

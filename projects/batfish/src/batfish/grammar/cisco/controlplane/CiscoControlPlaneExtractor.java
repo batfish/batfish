@@ -507,6 +507,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private BgpPeerGroup _currentPeerGroup;
 
+   private NamedBgpPeerGroup _currentPeerSession;
+
    private PrefixList _currentPrefixList;
 
    private RouteMap _currentRouteMap;
@@ -869,12 +871,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Template_peer_session_rb_stanzaContext ctx) {
       String name = ctx.name.getText();
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
-      _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-      if (_currentNamedPeerGroup == null) {
-         proc.addNamedPeerGroup(name);
-         _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+      _currentPeerSession = proc.getPeerSessions().get(name);
+      if (_currentPeerSession == null) {
+         proc.addPeerSession(name);
+         _currentPeerSession = proc.getPeerSessions().get(name);
       }
-      _currentPeerGroup = _currentNamedPeerGroup;
+      _currentPeerGroup = _currentPeerSession;
    }
 
    @Override
@@ -1095,6 +1097,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String groupName = ctx.name.getText();
       if (_currentIpPeerGroup != null) {
          _currentIpPeerGroup.setGroupName(groupName);
+      }
+      else if (_currentNamedPeerGroup != null) {
+         _currentNamedPeerGroup.setPeerSession(groupName);
       }
       else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
          throw new BatfishException("Invalid peer context for inheritance");
@@ -2150,6 +2155,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentIpPeerGroup = null;
       _currentIpv6PeerGroup = null;
       _currentNamedPeerGroup = null;
+      _currentPeerSession = null;
       _currentPeerGroup = _configuration.getBgpProcesses().get(_currentVrf)
             .getMasterBgpPeerGroup();
    }

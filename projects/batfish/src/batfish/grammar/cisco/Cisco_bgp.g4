@@ -539,6 +539,7 @@ template_peer_rb_stanza
    TEMPLATE PEER name = VARIABLE NEWLINE
    (
       bgp_tail
+      | inherit_peer_session_bgp_tail
       | no_shutdown_rb_stanza
       | remote_as_bgp_tail
       | template_peer_address_family

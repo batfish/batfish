@@ -2,6 +2,7 @@ package batfish.representation.cisco;
 
 import java.io.Serializable;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.HashMap;
@@ -18,7 +19,7 @@ public class BgpProcess implements Serializable {
    private static final long serialVersionUID = 1L;
 
    private Map<Prefix, BgpAggregateNetwork> _aggregateNetworks;
-   private Map<String, BgpPeerGroup> _allPeerGroups;
+   private Set<BgpPeerGroup> _allPeerGroups;
    private boolean _alwaysCompareMed;
    private Ip _clusterId;
    private boolean _defaultIpv4Activate;
@@ -27,19 +28,21 @@ public class BgpProcess implements Serializable {
    private MasterBgpPeerGroup _masterBgpPeerGroup;
    private Map<String, NamedBgpPeerGroup> _namedPeerGroups;
    private Set<Prefix> _networks;
+   private Map<String, NamedBgpPeerGroup> _peerSessions;
    private int _pid;
    private Map<RoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
    private Ip _routerId;
 
    public BgpProcess(int procnum) {
       _pid = procnum;
-      _allPeerGroups = new HashMap<String, BgpPeerGroup>();
+      _allPeerGroups = new HashSet<BgpPeerGroup>();
       _defaultIpv4Activate = true;
       _dynamicPeerGroups = new HashMap<Prefix, DynamicBgpPeerGroup>();
       _namedPeerGroups = new HashMap<String, NamedBgpPeerGroup>();
       _ipPeerGroups = new HashMap<Ip, IpBgpPeerGroup>();
       _networks = new LinkedHashSet<Prefix>();
       _aggregateNetworks = new HashMap<Prefix, BgpAggregateNetwork>();
+      _peerSessions = new HashMap<String, NamedBgpPeerGroup>();
       _redistributionPolicies = new EnumMap<RoutingProtocol, BgpRedistributionPolicy>(
             RoutingProtocol.class);
       _masterBgpPeerGroup = new MasterBgpPeerGroup();
@@ -49,7 +52,7 @@ public class BgpProcess implements Serializable {
    public DynamicBgpPeerGroup addDynamicPeerGroup(Prefix prefix) {
       DynamicBgpPeerGroup pg = new DynamicBgpPeerGroup(prefix);
       _dynamicPeerGroups.put(prefix, pg);
-      _allPeerGroups.put(prefix.toString(), pg);
+      _allPeerGroups.add(pg);
       return pg;
    }
 
@@ -59,13 +62,13 @@ public class BgpProcess implements Serializable {
          pg.setActive(true);
       }
       _ipPeerGroups.put(ip, pg);
-      _allPeerGroups.put(ip.toString(), pg);
+      _allPeerGroups.add(pg);
    }
 
    public void addNamedPeerGroup(String name) {
       NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name);
       _namedPeerGroups.put(name, pg);
-      _allPeerGroups.put(name, pg);
+      _allPeerGroups.add(pg);
    }
 
    public void addPeerGroupMember(Ip address, String namedPeerGroupName) {
@@ -86,11 +89,17 @@ public class BgpProcess implements Serializable {
       }
    }
 
+   public void addPeerSession(String name) {
+      NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name);
+      _peerSessions.put(name, pg);
+      _allPeerGroups.add(pg);
+   }
+
    public Map<Prefix, BgpAggregateNetwork> getAggregateNetworks() {
       return _aggregateNetworks;
    }
 
-   public Map<String, BgpPeerGroup> getAllPeerGroups() {
+   public Set<BgpPeerGroup> getAllPeerGroups() {
       return _allPeerGroups;
    }
 
@@ -126,8 +135,8 @@ public class BgpProcess implements Serializable {
       return _networks;
    }
 
-   public BgpPeerGroup getPeerGroup(String name) {
-      return _allPeerGroups.get(name);
+   public Map<String, NamedBgpPeerGroup> getPeerSessions() {
+      return _peerSessions;
    }
 
    public int getPid() {

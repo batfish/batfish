@@ -129,318 +129,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return newList;
    }
 
-   private static batfish.representation.BgpProcess toBgpProcess(
-         final Configuration c, BgpProcess proc) {
-      batfish.representation.BgpProcess newBgpProcess = new batfish.representation.BgpProcess();
-      Map<Ip, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
-      int defaultMetric = proc.getDefaultMetric();
-
-      Set<BgpAggregateNetwork> summaryOnlyNetworks = new HashSet<BgpAggregateNetwork>();
-
-      // add generated routes for aggregate addresses
-      for (Entry<Prefix, BgpAggregateNetwork> e : proc.getAggregateNetworks()
-            .entrySet()) {
-         Prefix prefix = e.getKey();
-         BgpAggregateNetwork aggNet = e.getValue();
-         boolean summaryOnly = aggNet.getSummaryOnly();
-         int prefixLength = prefix.getPrefixLength();
-         SubRange prefixRange = new SubRange(prefixLength + 1, 32);
-         LineAction prefixAction = LineAction.ACCEPT;
-         String filterName = "~MATCH_SUMMARIZED_OF:" + prefix.toString() + "~";
-         if (summaryOnly) {
-            summaryOnlyNetworks.add(aggNet);
-         }
-
-         // create generation policy for aggregate network
-         String generationPolicyName = "~AGGREGATE_ROUTE_GEN:"
-               + prefix.toString() + "~";
-         PolicyMap generationPolicy = makeRouteExportPolicy(c,
-               generationPolicyName, filterName, prefix, prefixRange,
-               prefixAction, null, null, PolicyMapAction.PERMIT);
-         Set<PolicyMap> generationPolicies = new HashSet<PolicyMap>();
-         generationPolicies.add(generationPolicy);
-         GeneratedRoute gr = new GeneratedRoute(prefix,
-               CISCO_AGGREGATE_ROUTE_ADMIN_COST, generationPolicies);
-         gr.setDiscard(true);
-         c.getGeneratedRoutes().add(gr);
-      }
-
-      // create policy for denying suppressed summary-only networks
-      PolicyMap suppressSummaryOnly = null;
-      PolicyMap suppressSummaryOnlyDenyOnMatch = null;
-      if (summaryOnlyNetworks.size() > 0) {
-         String suppressSummaryOnlyName = "~SUPRESS_SUMMARY_ONLY~";
-         String suppressSummaryOnlyDenyOnMatchName = "~SUPRESS_SUMMARY_ONLY_DENY_ON_MATCH~";
-         suppressSummaryOnly = new PolicyMap(suppressSummaryOnlyName);
-         suppressSummaryOnlyDenyOnMatch = new PolicyMap(
-               suppressSummaryOnlyDenyOnMatchName);
-         c.getPolicyMaps().put(suppressSummaryOnlyName, suppressSummaryOnly);
-         c.getPolicyMaps().put(suppressSummaryOnlyDenyOnMatchName,
-               suppressSummaryOnlyDenyOnMatch);
-         String matchSuppressedSummaryOnlyRoutesName = "~MATCH_SUPPRESSED_SUMMARY_ONLY~";
-         RouteFilterList matchSuppressedSummaryOnlyRoutes = new RouteFilterList(
-               matchSuppressedSummaryOnlyRoutesName);
-         c.getRouteFilterLists().put(matchSuppressedSummaryOnlyRoutesName,
-               matchSuppressedSummaryOnlyRoutes);
-         for (BgpAggregateNetwork summaryOnlyNetwork : summaryOnlyNetworks) {
-            Prefix prefix = summaryOnlyNetwork.getPrefix();
-            int prefixLength = prefix.getPrefixLength();
-            RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
-                  LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, 32));
-            matchSuppressedSummaryOnlyRoutes.addLine(line);
-         }
-         PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
-               Collections.singleton(matchSuppressedSummaryOnlyRoutes));
-         PolicyMapClause suppressSummaryOnlyClause = new PolicyMapClause();
-         suppressSummaryOnlyClause.setAction(PolicyMapAction.PERMIT);
-         suppressSummaryOnlyClause.getMatchLines().add(matchLine);
-         suppressSummaryOnly.getClauses().add(suppressSummaryOnlyClause);
-         PolicyMapClause suppressSummaryOnlyDenyOnMatchDenyClause = new PolicyMapClause();
-         suppressSummaryOnlyDenyOnMatchDenyClause
-               .setAction(PolicyMapAction.DENY);
-         suppressSummaryOnlyDenyOnMatchDenyClause.getMatchLines()
-               .add(matchLine);
-         suppressSummaryOnlyDenyOnMatch.getClauses().add(
-               suppressSummaryOnlyDenyOnMatchDenyClause);
-         PolicyMapClause suppressSummaryOnlyDenyOnMatchPermitClause = new PolicyMapClause();
-         suppressSummaryOnlyDenyOnMatchPermitClause
-               .setAction(PolicyMapAction.PERMIT);
-         suppressSummaryOnlyDenyOnMatch.getClauses().add(
-               suppressSummaryOnlyDenyOnMatchPermitClause);
-      }
-
-      // create redistribution origination policies
-      PolicyMap redistributeStaticPolicyMap = null;
-      BgpRedistributionPolicy redistributeStaticPolicy = proc
-            .getRedistributionPolicies().get(RoutingProtocol.STATIC);
-      if (redistributeStaticPolicy != null) {
-         String mapName = redistributeStaticPolicy.getMap();
-         if (mapName != null) {
-            redistributeStaticPolicyMap = c.getPolicyMaps().get(mapName);
-         }
-         else {
-            redistributeStaticPolicyMap = makeRouteExportPolicy(c,
-                  "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null,
-                  null, null, null, RoutingProtocol.STATIC,
-                  PolicyMapAction.PERMIT);
-         }
-      }
-
-      // // cause ip peer groups to inherit unset fields from owning named peer
-      // // group
-      // for (NamedBgpPeerGroup npg : proc.getNamedPeerGroups().values()) {
-      // for (Ip address : npg.getNeighborAddresses()) {
-      // IpBgpPeerGroup ipg = proc.getIpPeerGroups().get(address);
-      // ipg.inheritUnsetFields(npg);
-      // }
-      // }
-
-      // cause ip peer groups to inherit unset fields from owning named peer
-      // group if it exists, and then always from process master peer group
-      for (IpBgpPeerGroup ipg : proc.getIpPeerGroups().values()) {
-         String groupName = ipg.getGroupName();
-         if (groupName != null) {
-            NamedBgpPeerGroup parentPeerGroup = proc.getNamedPeerGroups().get(
-                  groupName);
-            ipg.inheritUnsetFields(parentPeerGroup);
-         }
-         ipg.inheritUnsetFields(proc.getMasterBgpPeerGroup());
-      }
-
-      for (IpBgpPeerGroup pg : proc.getIpPeerGroups().values()) {
-         // update source
-         String updateSourceInterface = pg.getUpdateSource();
-         String updateSource = null;
-         if (updateSourceInterface == null) {
-            Ip processRouterId = proc.getRouterId();
-            if (processRouterId == null) {
-               processRouterId = new Ip(0l);
-               for (String iname : c.getInterfaces().keySet()) {
-                  if (iname.startsWith("Loopback")) {
-                     Ip currentIp = c.getInterfaces().get(iname).getIP();
-                     if (currentIp != null
-                           && currentIp.asLong() > processRouterId.asLong()) {
-                        processRouterId = currentIp;
-                     }
-                  }
-               }
-               if (processRouterId.asLong() == 0) {
-                  for (batfish.representation.Interface currentInterface : c
-                        .getInterfaces().values()) {
-                     Ip currentIp = currentInterface.getIP();
-                     if (currentIp != null
-                           && currentIp.asLong() > processRouterId.asLong()) {
-                        processRouterId = currentIp;
-                     }
-                  }
-               }
-            }
-            updateSource = processRouterId.toString();
-         }
-         else {
-            batfish.representation.Interface sourceInterface = c
-                  .getInterfaces().get(updateSourceInterface);
-            if (sourceInterface != null) {
-               Ip sourceIp = c.getInterfaces().get(updateSourceInterface)
-                     .getIP();
-               updateSource = sourceIp.toString();
-            }
-            else {
-               throw new VendorConversionException(
-                     "reference to undefined interface: \""
-                           + updateSourceInterface + "\"");
-            }
-         }
-
-         PolicyMap newInboundPolicyMap = null;
-         String inboundRouteMapName = pg.getInboundRouteMap();
-         if (inboundRouteMapName != null) {
-            newInboundPolicyMap = c.getPolicyMaps().get(inboundRouteMapName);
-            if (newInboundPolicyMap == null) {
-               throw new VendorConversionException(
-                     "undefined reference to inbound policy map: "
-                           + inboundRouteMapName);
-            }
-         }
-         PolicyMap newOutboundPolicyMap = null;
-         String outboundRouteMapName = pg.getOutboundRouteMap();
-         if (outboundRouteMapName != null) {
-            PolicyMap outboundRouteMap = c.getPolicyMaps().get(
-                  outboundRouteMapName);
-            if (outboundRouteMap == null) {
-               throw new VendorConversionException(
-                     "undefined reference to outbound policy map: "
-                           + outboundRouteMapName);
-            }
-            if (suppressSummaryOnly == null) {
-               newOutboundPolicyMap = outboundRouteMap;
-            }
-            else {
-               String outboundPolicyName = "~COMPOSITE_OUTBOUND_POLICY:"
-                     + pg.getName() + "~";
-               newOutboundPolicyMap = new PolicyMap(outboundPolicyName);
-               c.getPolicyMaps().put(outboundPolicyName, newOutboundPolicyMap);
-               PolicyMapClause denyClause = new PolicyMapClause();
-               PolicyMapMatchPolicyLine matchSuppressPolicyLine = new PolicyMapMatchPolicyLine(
-                     suppressSummaryOnly);
-               denyClause.getMatchLines().add(matchSuppressPolicyLine);
-               denyClause.setAction(PolicyMapAction.DENY);
-               newOutboundPolicyMap.getClauses().add(denyClause);
-               PolicyMapClause permitClause = new PolicyMapClause();
-               permitClause.setAction(PolicyMapAction.PERMIT);
-               PolicyMapMatchPolicyLine matchOutboundPolicyLine = new PolicyMapMatchPolicyLine(
-                     outboundRouteMap);
-               permitClause.getMatchLines().add(matchOutboundPolicyLine);
-               newOutboundPolicyMap.getClauses().add(permitClause);
-            }
-         }
-         else {
-            newOutboundPolicyMap = suppressSummaryOnlyDenyOnMatch;
-         }
-
-         Set<PolicyMap> originationPolicies = new LinkedHashSet<PolicyMap>();
-         // create origination prefilter from listed advertised networks
-         RouteFilterList filter = new RouteFilterList("~BGP_PRE_FILTER:"
-               + pg.getName() + "~");
-         for (Prefix prefix : proc.getNetworks()) {
-            int prefixLen = prefix.getPrefixLength();
-            RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
-                  LineAction.ACCEPT, prefix, new SubRange(prefixLen, prefixLen));
-            filter.addLine(line);
-         }
-         c.getRouteFilterLists().put(filter.getName(), filter);
-
-         // add prefilter policy for explicitly advertised networks
-         Set<RouteFilterList> rfLines = new LinkedHashSet<RouteFilterList>();
-         rfLines.add(filter);
-         PolicyMapMatchRouteFilterListLine rfLine = new PolicyMapMatchRouteFilterListLine(
-               rfLines);
-         PolicyMapClause clause = new PolicyMapClause();
-         clause.setName("");
-         clause.setAction(PolicyMapAction.PERMIT);
-         Set<PolicyMapMatchLine> matchLines = clause.getMatchLines();
-         matchLines.add(rfLine);
-         PolicyMap explicitOriginationPolicyMap = new PolicyMap(
-               "~BGP_ADVERTISED_NETWORKS_POLICY:" + pg.getName() + "~");
-         explicitOriginationPolicyMap.getClauses().add(clause);
-         c.getPolicyMaps().put(explicitOriginationPolicyMap.getMapName(),
-               explicitOriginationPolicyMap);
-         originationPolicies.add(explicitOriginationPolicyMap);
-
-         // add redistribution origination policies
-         if (proc.getRedistributionPolicies().containsKey(
-               RoutingProtocol.STATIC)) {
-            originationPolicies.add(redistributeStaticPolicyMap);
-         }
-
-         // set up default export policy for this peer group
-         GeneratedRoute defaultRoute = null;
-         PolicyMap defaultOriginationPolicy = null;
-         if (pg.getDefaultOriginate()) {
-            defaultRoute = new GeneratedRoute(Prefix.ZERO,
-                  MAX_ADMINISTRATIVE_COST, new LinkedHashSet<PolicyMap>());
-            defaultOriginationPolicy = makeRouteExportPolicy(
-                  c,
-                  "~BGP_DEFAULT_ROUTE_ORIGINATION_POLICY:" + pg.getName() + "~",
-                  "BGP_DEFAULT_ROUTE_ORIGINATION_FILTER:" + pg.getName() + "~",
-                  Prefix.ZERO, new SubRange(0, 0), LineAction.ACCEPT, 0,
-                  RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
-            originationPolicies.add(defaultOriginationPolicy);
-            String defaultOriginateMapName = pg.getDefaultOriginateMap();
-            if (defaultOriginateMapName != null) { // originate contingent on
-                                                   // generation policy
-               PolicyMap defaultRouteGenerationPolicy = c.getPolicyMaps().get(
-                     defaultOriginateMapName);
-               if (defaultRouteGenerationPolicy == null) {
-                  throw new VendorConversionException(
-                        "undefined reference to generated route policy map: "
-                              + defaultOriginateMapName);
-               }
-               defaultRoute.getGenerationPolicies().add(
-                     defaultRouteGenerationPolicy);
-            }
-         }
-
-         Ip clusterId = pg.getClusterId();
-         boolean routeReflectorClient = pg.getRouteReflectorClient();
-         if (routeReflectorClient) {
-            if (clusterId == null) {
-               clusterId = new Ip(updateSource);
-            }
-         }
-         boolean sendCommunity = pg.getSendCommunity();
-         Ip neighborAddress = pg.getIp();
-         if (pg.getActive() && !pg.getShutdown()) {
-            BgpNeighbor newNeighbor = new BgpNeighbor(neighborAddress);
-            newBgpNeighbors.put(neighborAddress, newNeighbor);
-
-            if (newInboundPolicyMap != null) {
-               newNeighbor.addInboundPolicyMap(newInboundPolicyMap);
-            }
-            if (newOutboundPolicyMap != null) {
-               newNeighbor.addOutboundPolicyMap(newOutboundPolicyMap);
-               if (defaultOriginationPolicy != null) {
-                  newNeighbor.addOutboundPolicyMap(defaultOriginationPolicy);
-               }
-            }
-            newNeighbor.setGroupName(pg.getGroupName());
-            if (routeReflectorClient) {
-               newNeighbor.setClusterId(clusterId.asLong());
-            }
-            if (defaultRoute != null) {
-               newNeighbor.getGeneratedRoutes().add(defaultRoute);
-            }
-            newNeighbor.setRemoteAs(pg.getRemoteAS());
-            newNeighbor.setLocalAs(proc.getPid());
-            newNeighbor.setUpdateSource(updateSource);
-            newNeighbor.getOriginationPolicies().addAll(originationPolicies);
-            newNeighbor.setSendCommunity(sendCommunity);
-            newNeighbor.setDefaultMetric(defaultMetric);
-         }
-      }
-      return newBgpProcess;
-   }
-
    private static CommunityList toCommunityList(ExpandedCommunityList ecList) {
       List<CommunityListLine> cllList = new ArrayList<CommunityListLine>();
       for (ExpandedCommunityListLine ecll : ecList.getLines()) {
@@ -1058,7 +746,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                }
             }
          }
-         for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups().values()) {
+         for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
             currentMapName = pg.getInboundRouteMap();
             if (currentMapName != null) {
                currentMap = _routeMaps.get(currentMapName);
@@ -1081,6 +769,336 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    @Override
    public void setRoles(RoleSet roles) {
       _roles.addAll(roles);
+   }
+
+   private batfish.representation.BgpProcess toBgpProcess(
+         final Configuration c, BgpProcess proc) {
+      batfish.representation.BgpProcess newBgpProcess = new batfish.representation.BgpProcess();
+      Map<Ip, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
+      int defaultMetric = proc.getDefaultMetric();
+
+      Set<BgpAggregateNetwork> summaryOnlyNetworks = new HashSet<BgpAggregateNetwork>();
+
+      // add generated routes for aggregate addresses
+      for (Entry<Prefix, BgpAggregateNetwork> e : proc.getAggregateNetworks()
+            .entrySet()) {
+         Prefix prefix = e.getKey();
+         BgpAggregateNetwork aggNet = e.getValue();
+         boolean summaryOnly = aggNet.getSummaryOnly();
+         int prefixLength = prefix.getPrefixLength();
+         SubRange prefixRange = new SubRange(prefixLength + 1, 32);
+         LineAction prefixAction = LineAction.ACCEPT;
+         String filterName = "~MATCH_SUMMARIZED_OF:" + prefix.toString() + "~";
+         if (summaryOnly) {
+            summaryOnlyNetworks.add(aggNet);
+         }
+
+         // create generation policy for aggregate network
+         String generationPolicyName = "~AGGREGATE_ROUTE_GEN:"
+               + prefix.toString() + "~";
+         PolicyMap generationPolicy = makeRouteExportPolicy(c,
+               generationPolicyName, filterName, prefix, prefixRange,
+               prefixAction, null, null, PolicyMapAction.PERMIT);
+         Set<PolicyMap> generationPolicies = new HashSet<PolicyMap>();
+         generationPolicies.add(generationPolicy);
+         GeneratedRoute gr = new GeneratedRoute(prefix,
+               CISCO_AGGREGATE_ROUTE_ADMIN_COST, generationPolicies);
+         gr.setDiscard(true);
+         c.getGeneratedRoutes().add(gr);
+      }
+
+      // create policy for denying suppressed summary-only networks
+      PolicyMap suppressSummaryOnly = null;
+      PolicyMap suppressSummaryOnlyDenyOnMatch = null;
+      if (summaryOnlyNetworks.size() > 0) {
+         String suppressSummaryOnlyName = "~SUPRESS_SUMMARY_ONLY~";
+         String suppressSummaryOnlyDenyOnMatchName = "~SUPRESS_SUMMARY_ONLY_DENY_ON_MATCH~";
+         suppressSummaryOnly = new PolicyMap(suppressSummaryOnlyName);
+         suppressSummaryOnlyDenyOnMatch = new PolicyMap(
+               suppressSummaryOnlyDenyOnMatchName);
+         c.getPolicyMaps().put(suppressSummaryOnlyName, suppressSummaryOnly);
+         c.getPolicyMaps().put(suppressSummaryOnlyDenyOnMatchName,
+               suppressSummaryOnlyDenyOnMatch);
+         String matchSuppressedSummaryOnlyRoutesName = "~MATCH_SUPPRESSED_SUMMARY_ONLY~";
+         RouteFilterList matchSuppressedSummaryOnlyRoutes = new RouteFilterList(
+               matchSuppressedSummaryOnlyRoutesName);
+         c.getRouteFilterLists().put(matchSuppressedSummaryOnlyRoutesName,
+               matchSuppressedSummaryOnlyRoutes);
+         for (BgpAggregateNetwork summaryOnlyNetwork : summaryOnlyNetworks) {
+            Prefix prefix = summaryOnlyNetwork.getPrefix();
+            int prefixLength = prefix.getPrefixLength();
+            RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
+                  LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, 32));
+            matchSuppressedSummaryOnlyRoutes.addLine(line);
+         }
+         PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
+               Collections.singleton(matchSuppressedSummaryOnlyRoutes));
+         PolicyMapClause suppressSummaryOnlyClause = new PolicyMapClause();
+         suppressSummaryOnlyClause.setAction(PolicyMapAction.PERMIT);
+         suppressSummaryOnlyClause.getMatchLines().add(matchLine);
+         suppressSummaryOnly.getClauses().add(suppressSummaryOnlyClause);
+         PolicyMapClause suppressSummaryOnlyDenyOnMatchDenyClause = new PolicyMapClause();
+         suppressSummaryOnlyDenyOnMatchDenyClause
+               .setAction(PolicyMapAction.DENY);
+         suppressSummaryOnlyDenyOnMatchDenyClause.getMatchLines()
+               .add(matchLine);
+         suppressSummaryOnlyDenyOnMatch.getClauses().add(
+               suppressSummaryOnlyDenyOnMatchDenyClause);
+         PolicyMapClause suppressSummaryOnlyDenyOnMatchPermitClause = new PolicyMapClause();
+         suppressSummaryOnlyDenyOnMatchPermitClause
+               .setAction(PolicyMapAction.PERMIT);
+         suppressSummaryOnlyDenyOnMatch.getClauses().add(
+               suppressSummaryOnlyDenyOnMatchPermitClause);
+      }
+
+      // create redistribution origination policies
+      PolicyMap redistributeStaticPolicyMap = null;
+      BgpRedistributionPolicy redistributeStaticPolicy = proc
+            .getRedistributionPolicies().get(RoutingProtocol.STATIC);
+      if (redistributeStaticPolicy != null) {
+         String mapName = redistributeStaticPolicy.getMap();
+         if (mapName != null) {
+            redistributeStaticPolicyMap = c.getPolicyMaps().get(mapName);
+         }
+         else {
+            redistributeStaticPolicyMap = makeRouteExportPolicy(c,
+                  "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null,
+                  null, null, null, RoutingProtocol.STATIC,
+                  PolicyMapAction.PERMIT);
+         }
+      }
+
+      // // cause ip peer groups to inherit unset fields from owning named peer
+      // // group
+      // for (NamedBgpPeerGroup npg : proc.getNamedPeerGroups().values()) {
+      // for (Ip address : npg.getNeighborAddresses()) {
+      // IpBgpPeerGroup ipg = proc.getIpPeerGroups().get(address);
+      // ipg.inheritUnsetFields(npg);
+      // }
+      // }
+
+      // cause ip peer groups to inherit unset fields from owning named peer
+      // group if it exists, and then always from process master peer group
+      for (Entry<String, NamedBgpPeerGroup> e : proc.getNamedPeerGroups()
+            .entrySet()) {
+         String namedPeerGroupName = e.getKey();
+         NamedBgpPeerGroup namedPeerGroup = e.getValue();
+         String peerSessionName = namedPeerGroup.getPeerSession();
+         if (peerSessionName != null) {
+            NamedBgpPeerGroup peerSession = proc.getPeerSessions().get(
+                  peerSessionName);
+            if (peerSession == null) {
+               _conversionWarnings.add("peer group \"" + namedPeerGroupName
+                     + "\" inherits from non-existent peer-session: \""
+                     + peerSessionName + "\"");
+            }
+            else {
+               namedPeerGroup.inheritUnsetFields(peerSession);
+            }
+         }
+      }
+      for (IpBgpPeerGroup ipg : proc.getIpPeerGroups().values()) {
+         String groupName = ipg.getGroupName();
+         if (groupName != null) {
+            NamedBgpPeerGroup parentPeerGroup = proc.getNamedPeerGroups().get(
+                  groupName);
+            ipg.inheritUnsetFields(parentPeerGroup);
+         }
+         ipg.inheritUnsetFields(proc.getMasterBgpPeerGroup());
+      }
+
+      for (IpBgpPeerGroup pg : proc.getIpPeerGroups().values()) {
+         // update source
+         String updateSourceInterface = pg.getUpdateSource();
+         String updateSource = null;
+         if (updateSourceInterface == null) {
+            Ip processRouterId = proc.getRouterId();
+            if (processRouterId == null) {
+               processRouterId = new Ip(0l);
+               for (String iname : c.getInterfaces().keySet()) {
+                  if (iname.startsWith("Loopback")) {
+                     Ip currentIp = c.getInterfaces().get(iname).getIP();
+                     if (currentIp != null
+                           && currentIp.asLong() > processRouterId.asLong()) {
+                        processRouterId = currentIp;
+                     }
+                  }
+               }
+               if (processRouterId.asLong() == 0) {
+                  for (batfish.representation.Interface currentInterface : c
+                        .getInterfaces().values()) {
+                     Ip currentIp = currentInterface.getIP();
+                     if (currentIp != null
+                           && currentIp.asLong() > processRouterId.asLong()) {
+                        processRouterId = currentIp;
+                     }
+                  }
+               }
+            }
+            updateSource = processRouterId.toString();
+         }
+         else {
+            batfish.representation.Interface sourceInterface = c
+                  .getInterfaces().get(updateSourceInterface);
+            if (sourceInterface != null) {
+               Ip sourceIp = c.getInterfaces().get(updateSourceInterface)
+                     .getIP();
+               updateSource = sourceIp.toString();
+            }
+            else {
+               throw new VendorConversionException(
+                     "reference to undefined interface: \""
+                           + updateSourceInterface + "\"");
+            }
+         }
+
+         PolicyMap newInboundPolicyMap = null;
+         String inboundRouteMapName = pg.getInboundRouteMap();
+         if (inboundRouteMapName != null) {
+            newInboundPolicyMap = c.getPolicyMaps().get(inboundRouteMapName);
+            if (newInboundPolicyMap == null) {
+               throw new VendorConversionException(
+                     "undefined reference to inbound policy map: "
+                           + inboundRouteMapName);
+            }
+         }
+         PolicyMap newOutboundPolicyMap = null;
+         String outboundRouteMapName = pg.getOutboundRouteMap();
+         if (outboundRouteMapName != null) {
+            PolicyMap outboundRouteMap = c.getPolicyMaps().get(
+                  outboundRouteMapName);
+            if (outboundRouteMap == null) {
+               throw new VendorConversionException(
+                     "undefined reference to outbound policy map: "
+                           + outboundRouteMapName);
+            }
+            if (suppressSummaryOnly == null) {
+               newOutboundPolicyMap = outboundRouteMap;
+            }
+            else {
+               String outboundPolicyName = "~COMPOSITE_OUTBOUND_POLICY:"
+                     + pg.getName() + "~";
+               newOutboundPolicyMap = new PolicyMap(outboundPolicyName);
+               c.getPolicyMaps().put(outboundPolicyName, newOutboundPolicyMap);
+               PolicyMapClause denyClause = new PolicyMapClause();
+               PolicyMapMatchPolicyLine matchSuppressPolicyLine = new PolicyMapMatchPolicyLine(
+                     suppressSummaryOnly);
+               denyClause.getMatchLines().add(matchSuppressPolicyLine);
+               denyClause.setAction(PolicyMapAction.DENY);
+               newOutboundPolicyMap.getClauses().add(denyClause);
+               PolicyMapClause permitClause = new PolicyMapClause();
+               permitClause.setAction(PolicyMapAction.PERMIT);
+               PolicyMapMatchPolicyLine matchOutboundPolicyLine = new PolicyMapMatchPolicyLine(
+                     outboundRouteMap);
+               permitClause.getMatchLines().add(matchOutboundPolicyLine);
+               newOutboundPolicyMap.getClauses().add(permitClause);
+            }
+         }
+         else {
+            newOutboundPolicyMap = suppressSummaryOnlyDenyOnMatch;
+         }
+
+         Set<PolicyMap> originationPolicies = new LinkedHashSet<PolicyMap>();
+         // create origination prefilter from listed advertised networks
+         RouteFilterList filter = new RouteFilterList("~BGP_PRE_FILTER:"
+               + pg.getName() + "~");
+         for (Prefix prefix : proc.getNetworks()) {
+            int prefixLen = prefix.getPrefixLength();
+            RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
+                  LineAction.ACCEPT, prefix, new SubRange(prefixLen, prefixLen));
+            filter.addLine(line);
+         }
+         c.getRouteFilterLists().put(filter.getName(), filter);
+
+         // add prefilter policy for explicitly advertised networks
+         Set<RouteFilterList> rfLines = new LinkedHashSet<RouteFilterList>();
+         rfLines.add(filter);
+         PolicyMapMatchRouteFilterListLine rfLine = new PolicyMapMatchRouteFilterListLine(
+               rfLines);
+         PolicyMapClause clause = new PolicyMapClause();
+         clause.setName("");
+         clause.setAction(PolicyMapAction.PERMIT);
+         Set<PolicyMapMatchLine> matchLines = clause.getMatchLines();
+         matchLines.add(rfLine);
+         PolicyMap explicitOriginationPolicyMap = new PolicyMap(
+               "~BGP_ADVERTISED_NETWORKS_POLICY:" + pg.getName() + "~");
+         explicitOriginationPolicyMap.getClauses().add(clause);
+         c.getPolicyMaps().put(explicitOriginationPolicyMap.getMapName(),
+               explicitOriginationPolicyMap);
+         originationPolicies.add(explicitOriginationPolicyMap);
+
+         // add redistribution origination policies
+         if (proc.getRedistributionPolicies().containsKey(
+               RoutingProtocol.STATIC)) {
+            originationPolicies.add(redistributeStaticPolicyMap);
+         }
+
+         // set up default export policy for this peer group
+         GeneratedRoute defaultRoute = null;
+         PolicyMap defaultOriginationPolicy = null;
+         if (pg.getDefaultOriginate()) {
+            defaultRoute = new GeneratedRoute(Prefix.ZERO,
+                  MAX_ADMINISTRATIVE_COST, new LinkedHashSet<PolicyMap>());
+            defaultOriginationPolicy = makeRouteExportPolicy(
+                  c,
+                  "~BGP_DEFAULT_ROUTE_ORIGINATION_POLICY:" + pg.getName() + "~",
+                  "BGP_DEFAULT_ROUTE_ORIGINATION_FILTER:" + pg.getName() + "~",
+                  Prefix.ZERO, new SubRange(0, 0), LineAction.ACCEPT, 0,
+                  RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
+            originationPolicies.add(defaultOriginationPolicy);
+            String defaultOriginateMapName = pg.getDefaultOriginateMap();
+            if (defaultOriginateMapName != null) { // originate contingent on
+                                                   // generation policy
+               PolicyMap defaultRouteGenerationPolicy = c.getPolicyMaps().get(
+                     defaultOriginateMapName);
+               if (defaultRouteGenerationPolicy == null) {
+                  throw new VendorConversionException(
+                        "undefined reference to generated route policy map: "
+                              + defaultOriginateMapName);
+               }
+               defaultRoute.getGenerationPolicies().add(
+                     defaultRouteGenerationPolicy);
+            }
+         }
+
+         Ip clusterId = pg.getClusterId();
+         boolean routeReflectorClient = pg.getRouteReflectorClient();
+         if (routeReflectorClient) {
+            if (clusterId == null) {
+               clusterId = new Ip(updateSource);
+            }
+         }
+         boolean sendCommunity = pg.getSendCommunity();
+         Ip neighborAddress = pg.getIp();
+         if (pg.getActive() && !pg.getShutdown()) {
+            BgpNeighbor newNeighbor = new BgpNeighbor(neighborAddress);
+            newBgpNeighbors.put(neighborAddress, newNeighbor);
+
+            if (newInboundPolicyMap != null) {
+               newNeighbor.addInboundPolicyMap(newInboundPolicyMap);
+            }
+            if (newOutboundPolicyMap != null) {
+               newNeighbor.addOutboundPolicyMap(newOutboundPolicyMap);
+               if (defaultOriginationPolicy != null) {
+                  newNeighbor.addOutboundPolicyMap(defaultOriginationPolicy);
+               }
+            }
+            newNeighbor.setGroupName(pg.getGroupName());
+            if (routeReflectorClient) {
+               newNeighbor.setClusterId(clusterId.asLong());
+            }
+            if (defaultRoute != null) {
+               newNeighbor.getGeneratedRoutes().add(defaultRoute);
+            }
+            newNeighbor.setRemoteAs(pg.getRemoteAS());
+            newNeighbor.setLocalAs(proc.getPid());
+            newNeighbor.setUpdateSource(updateSource);
+            newNeighbor.getOriginationPolicies().addAll(originationPolicies);
+            newNeighbor.setSendCommunity(sendCommunity);
+            newNeighbor.setDefaultMetric(defaultMetric);
+         }
+      }
+      return newBgpProcess;
    }
 
    private batfish.representation.Interface toInterface(Interface iface,
@@ -1303,7 +1321,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                return true;
             }
          }
-         for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups().values()) {
+         for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
             currentMapName = pg.getInboundRouteMap();
             if (containsIpAccessList(eaListName, currentMapName)) {
                return true;
