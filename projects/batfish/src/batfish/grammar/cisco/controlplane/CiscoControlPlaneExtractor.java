@@ -20,7 +20,6 @@ import batfish.grammar.ControlPlaneExtractor;
 import batfish.grammar.ParseTreePrettyPrinter;
 import batfish.grammar.cisco.CiscoParser.*;
 import batfish.grammar.cisco.*;
-import batfish.grammar.cisco.CiscoParser.As_path_regex_rangeContext;
 import batfish.main.BatfishException;
 import batfish.main.PedanticBatfishException;
 import batfish.representation.Ip;
@@ -1612,6 +1611,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       // TODO: see if it is always ok to set active on 'no shutdown'
       _currentPeerGroup.setShutdown(false);
       _currentPeerGroup.setActive(true);
+   }
+
+   @Override
+   public void exitNull_as_path_regex(Null_as_path_regexContext ctx) {
+      pedantic("as-path regexes this complicated are not supported yet");
    }
 
    @Override

@@ -187,7 +187,11 @@ locals [boolean again]
 
 ip_as_path_access_list_tail
 :
-   action = access_list_action as_path_regex NEWLINE
+   action = access_list_action
+   (
+      as_path_regex
+      | null_as_path_regex
+   ) NEWLINE
 ;
 
 ip_community_list_expanded_stanza
@@ -434,6 +438,11 @@ nexus_prefix_list_stanza
       IP
       | IPV6
    ) PREFIX_LIST name = ~NEWLINE NEWLINE ip_prefix_list_tail*
+;
+
+null_as_path_regex
+:
+   ~NEWLINE*
 ;
 
 protocol_type_code_access_list_numbered_stanza

@@ -38,7 +38,8 @@ tokens {
    ACL_NUM_PROTOCOL_TYPE_CODE,
    ACL_NUM_STANDARD,
    COMMUNITY_LIST_NUM_EXPANDED,
-   COMMUNITY_LIST_NUM_STANDARD
+   COMMUNITY_LIST_NUM_STANDARD,
+   PIPE
 }
 
 // Cisco Keywords
@@ -4727,9 +4728,24 @@ M_AsPathRegex_ASTERISK
    '*' -> type(ASTERISK)
 ;
 
+M_AsPathRegex_BRACKET_LEFT
+:
+   '[' -> type(BRACKET_LEFT)
+;
+
+M_AsPathRegex_BRACKET_RIGHT
+:
+   ']' -> type(BRACKET_RIGHT)
+;
+
 M_AsPathRegex_CARAT
 :
    '^' -> type(CARAT)
+;
+
+M_AsPathRegex_DASH
+:
+   '-' -> type(DASH)
 ;
 
 M_AsPathRegex_DEC
@@ -4752,9 +4768,29 @@ M_AsPathRegex_NEWLINE
    F_Newline+ -> type(NEWLINE), popMode
 ;
 
+M_AsPathRegex_PAREN_LEFT
+:
+   '(' -> type(PAREN_LEFT)
+;
+
+M_AsPathRegex_PAREN_RIGHT
+:
+   ')' -> type(PAREN_RIGHT)
+;
+
 M_AsPathRegex_PERIOD
 :
    '.' -> type(PERIOD)
+;
+
+M_AsPathRegex_PIPE
+:
+   '|' -> type(PIPE)
+;
+
+M_AsPathRegex_PLUS
+:
+   '+' -> type(PLUS)
 ;
 
 M_AsPathRegex_UNDERSCORE
