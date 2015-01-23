@@ -2743,6 +2743,11 @@ PLATFORM
    'platform'
 ;
 
+POINT_TO_POINT
+:
+   'point-to-point'
+;
+
 POLICE
 :
    'police'
@@ -4856,6 +4861,11 @@ M_Interface_DOLLAR
    '$' -> type(DOLLAR), popMode
 ;
 
+M_Interface_POINT_TO_POINT
+:
+   'point-to-point' -> type(POINT_TO_POINT), popMode
+;
+
 M_Interface_POLICY
 :
    'policy' -> type(POLICY), popMode
@@ -4866,9 +4876,9 @@ M_Interface_MODULE
    'module' -> type(MODULE)
 ;
 
-M_Interface_PREFIX
+M_Interface_MULTIPOINT
 :
-   F_Letter (F_Letter | '-')*
+   'multipoint' -> type(MULTIPOINT), popMode
 ;
 
 M_Interface_COLON
@@ -4899,6 +4909,11 @@ M_Interface_NUMBER
 M_Interface_PERIOD
 :
    '.' -> type(PERIOD)
+;
+
+M_Interface_PREFIX
+:
+   F_Letter (F_Letter | '-')*
 ;
 
 M_Interface_SLASH

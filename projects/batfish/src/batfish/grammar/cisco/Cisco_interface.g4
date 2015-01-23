@@ -57,7 +57,11 @@ if_stanza
 
 interface_stanza
 :
-   INTERFACE iname = interface_name MULTIPOINT? NEWLINE interface_stanza_tail
+   INTERFACE iname = interface_name
+   (
+      MULTIPOINT
+      | POINT_TO_POINT
+   )? NEWLINE interface_stanza_tail
 ;
 
 interface_stanza_tail
