@@ -257,11 +257,6 @@ nexus_neighbor_inherit
    INHERIT PEER name = VARIABLE NEWLINE
 ;
 
-nexus_neighbor_no_shutdown
-:
-   NO SHUTDOWN NEWLINE
-;
-
 nexus_neighbor_rb_stanza
 :
    NEIGHBOR
@@ -278,7 +273,7 @@ nexus_neighbor_rb_stanza
       bgp_tail
       | nexus_neighbor_address_family
       | nexus_neighbor_inherit
-      | nexus_neighbor_no_shutdown
+      | no_shutdown_rb_stanza
       | remote_as_bgp_tail
    )+
 ;
@@ -332,6 +327,11 @@ no_redistribute_connected_rb_stanza
       CONNECTED
       | DIRECT
    ) ~NEWLINE* NEWLINE
+;
+
+no_shutdown_rb_stanza
+:
+   NO SHUTDOWN NEWLINE
 ;
 
 null_bgp_tail
@@ -539,6 +539,7 @@ template_peer_rb_stanza
    TEMPLATE PEER name = VARIABLE NEWLINE
    (
       bgp_tail
+      | no_shutdown_rb_stanza
       | remote_as_bgp_tail
       | template_peer_address_family
    )+

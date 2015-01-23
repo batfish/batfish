@@ -680,7 +680,6 @@ null_standalone_stanza
       | SETUP
       | SFLOW
       | SHELL
-      | SHUTDOWN
       | SMTP_SERVER
       | SNMP
       | SNMP_SERVER

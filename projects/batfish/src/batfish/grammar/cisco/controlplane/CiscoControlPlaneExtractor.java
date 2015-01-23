@@ -1512,14 +1512,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitNexus_neighbor_no_shutdown(
-         Nexus_neighbor_no_shutdownContext ctx) {
-      // TODO: see if it is always ok to set active on 'no shutdown'
-      _currentPeerGroup.setShutdown(false);
-      _currentPeerGroup.setActive(true);
-   }
-
-   @Override
    public void exitNexus_neighbor_rb_stanza(Nexus_neighbor_rb_stanzaContext ctx) {
       _currentDynamicPeerGroup = null;
       _currentIpPeerGroup = null;
@@ -1604,6 +1596,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
       proc.getRedistributionPolicies().remove(sourceProtocol);
+   }
+
+   @Override
+   public void exitNo_shutdown_rb_stanza(
+         No_shutdown_rb_stanzaContext ctx) {
+      // TODO: see if it is always ok to set active on 'no shutdown'
+      _currentPeerGroup.setShutdown(false);
+      _currentPeerGroup.setActive(true);
    }
 
    @Override
