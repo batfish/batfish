@@ -90,7 +90,7 @@ public class Synthesizer {
    public static final String DST_PORT_VAR = "dst_port";
    public static final String FAKE_INTERFACE_PREFIX = "TenGigabitEthernet200/";
    private static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
-   private static final int IP_BITS = 32;
+   public static final int IP_BITS = 32;
    public static final String IP_PROTOCOL_VAR = "ip_prot";
    private static final String NODE_NONE_NAME = "(none)";
    public static final Map<String, Integer> PACKET_VAR_SIZES = initPacketVarSizes();
