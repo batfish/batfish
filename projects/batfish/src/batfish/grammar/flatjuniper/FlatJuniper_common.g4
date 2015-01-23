@@ -145,6 +145,7 @@ port
    | DOMAIN
    | FTP
    | HTTP
+   | HTTPS
    | LDP
    | NETBIOS_DGM
    | NETBIOS_NS

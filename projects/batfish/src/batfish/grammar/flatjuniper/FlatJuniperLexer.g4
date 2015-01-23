@@ -619,6 +619,11 @@ HTTP
    'http'
 ;
 
+HTTPS
+:
+   'https'
+;
+
 ICMP
 :
    'icmp'

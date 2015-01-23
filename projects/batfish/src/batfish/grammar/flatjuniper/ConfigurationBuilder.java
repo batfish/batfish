@@ -112,6 +112,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else if (ctx.HTTP() != null) {
          return new SubRange(80, 80);
       }
+      else if (ctx.HTTPS() != null) {
+         return new SubRange(443, 443);
+      }
       else if (ctx.NETBIOS_DGM() != null) {
          return new SubRange(138, 138);
       }
