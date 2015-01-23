@@ -1605,8 +1605,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitNo_shutdown_rb_stanza(
-         No_shutdown_rb_stanzaContext ctx) {
+   public void exitNo_shutdown_rb_stanza(No_shutdown_rb_stanzaContext ctx) {
       // TODO: see if it is always ok to set active on 'no shutdown'
       _currentPeerGroup.setShutdown(false);
       _currentPeerGroup.setActive(true);
