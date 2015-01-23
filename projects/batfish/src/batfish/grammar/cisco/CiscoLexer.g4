@@ -2119,6 +2119,11 @@ MATCH
    'match'
 ;
 
+MAX_METRIC
+:
+   'max-metric'
+;
+
 MAXIMUM
 :
    'maximum'
