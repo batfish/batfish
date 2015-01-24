@@ -248,6 +248,7 @@ set_rm_stanza
    | set_comm_list_delete_rm_stanza
    | set_community_rm_stanza
    | set_community_additive_rm_stanza
+   | set_community_none_rm_stanza
    | set_extcomm_list_rm_stanza
    | set_interface_rm_stanza
    | set_ip_df_rm_stanza
