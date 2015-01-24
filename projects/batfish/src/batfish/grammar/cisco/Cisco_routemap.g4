@@ -212,6 +212,11 @@ set_mpls_label_rm_stanza
    SET MPLS_LABEL NEWLINE
 ;
 
+set_next_hop_peer_address_stanza
+:
+   SET IP NEXT_HOP PEER_ADDRESS NEWLINE
+;
+
 set_next_hop_rm_stanza
 :
    SET IP NEXT_HOP
@@ -251,6 +256,7 @@ set_rm_stanza
    | set_metric_rm_stanza
    | set_metric_type_rm_stanza
    | set_mpls_label_rm_stanza
+   | set_next_hop_peer_address_stanza
    | set_next_hop_rm_stanza
    | set_origin_rm_stanza
    | set_weight_rm_stanza
