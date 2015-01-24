@@ -1871,6 +1871,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitRoute_map_bgp_tail(Route_map_bgp_tailContext ctx) {
+      if (_currentPeerGroup == null) {
+         return;
+      }
       String mapName = ctx.name.getText();
       if (ctx.IN() != null) {
          _currentPeerGroup.setInboundRouteMap(mapName);
