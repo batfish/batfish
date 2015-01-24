@@ -25,9 +25,10 @@ hsrp_stanza_tail
 
 hsrpc_stanza
 :
-   preempt_stanza
-   | priority_stanza
-   | ip_address_stanza
+   ip_address_hsrpc_stanza
+   | preempt_hsrpc_stanza
+   | priority_hsprc_stanza
+   | track_hsrpc_stanza
 ;
 
 if_stanza
@@ -80,7 +81,7 @@ ip_access_group_if_stanza
    ) NEWLINE
 ;
 
-ip_address_stanza
+ip_address_hsrpc_stanza
 :
    IP ip = IP_ADDRESS NEWLINE
 ;
@@ -318,12 +319,12 @@ null_standalone_if_stanza
    ) ~NEWLINE* NEWLINE
 ;
 
-preempt_stanza
+preempt_hsrpc_stanza
 :
    PREEMPT NEWLINE
 ;
 
-priority_stanza
+priority_hsprc_stanza
 :
    PRIORITY value = DEC NEWLINE
 ;
@@ -371,6 +372,11 @@ switchport_trunk_encapsulation_if_stanza
 switchport_trunk_native_if_stanza
 :
    SWITCHPORT TRUNK NATIVE VLAN vlan = DEC NEWLINE
+;
+
+track_hsrpc_stanza
+:
+   TRACK ~NEWLINE* NEWLINE
 ;
 
 vrf_forwarding_if_stanza
