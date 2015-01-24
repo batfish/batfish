@@ -630,6 +630,11 @@ CLIENT
    'client'
 ;
 
+CLIENT_GROUP
+:
+   'client-group'
+;
+
 CLNS
 :
    'clns'
@@ -1564,6 +1569,11 @@ HASH
    'hash'
 ;
 
+HEARTBEAT_TIME
+:
+   'heartbeat-time'
+;
+
 HELLO_MULTIPLIER
 :
    'hello-multiplier'
@@ -2391,6 +2401,11 @@ NATIVE
    'native'
 ;
 
+NATPOOL
+:
+   'natpool'
+;
+
 ND
 :
    'nd'
@@ -2844,6 +2859,11 @@ PPP
 PRE_SHARED_KEY
 :
    'pre-shared-key'
+;
+
+PREDICTOR
+:
+   'predictor'
 ;
 
 PREEMPT
@@ -3576,6 +3596,11 @@ STATISTICS
 STCAPP
 :
    'stcapp'
+;
+
+STICKY
+:
+   'sticky'
 ;
 
 STOPBITS

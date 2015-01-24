@@ -161,6 +161,7 @@ null_block_substanza
          | CHANNEL_GROUP
          | CHANNELIZED
          | CLASS
+         | CLIENT_GROUP
          | CLOCK
          | COLLECT
          | CONFORM_ACTION
@@ -197,6 +198,7 @@ null_block_substanza
          | EXPORTER
          | FABRIC
          | FAILED
+         | FAILOVER
          | FAIR_QUEUE
          | FALLBACK_DN
          | FILE_BROWSING
@@ -209,6 +211,7 @@ null_block_substanza
          | GROUP_ALIAS
          | GROUP_POLICY
          | GROUP_URL
+         | HEARTBEAT_TIME
          | HIDDEN
          | HIDDEN_SHARES
          | HIDEKEYS
@@ -268,6 +271,7 @@ null_block_substanza
          | MTU
          | NAME
          | NAT
+         | NATPOOL
          | NEGOTIATE
          | NETWORK
          | NODE
@@ -289,8 +293,10 @@ null_block_substanza
          | PICKUP
          | PINNING
          | POLICE
+         | POLICY
          | POLICY_MAP
          | PORT
+         | PREDICTOR
          | PREEMPT
          | PREFIX
          | PRI_GROUP
@@ -346,6 +352,7 @@ null_block_substanza
          | SPEED
          | SPLIT_TUNNEL_NETWORK_LIST
          | SPLIT_TUNNEL_POLICY
+         | STICKY
          | STOPBITS
          | STP
          | SUBJECT_NAME
@@ -389,7 +396,11 @@ null_block_substanza_full
 :
    (
       (
-         VLAN DEC CLIENT
+         VLAN DEC
+         (
+            CLIENT
+            | SERVER
+         )
       )
       |
       (
