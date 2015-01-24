@@ -348,7 +348,8 @@ null_bgp_tail
       (
          BGP
          (
-            DAMPENING
+            BESTPATH
+            | DAMPENING
             | DEFAULT
             | DETERMINISTIC_MED
             | GRACEFUL_RESTART
