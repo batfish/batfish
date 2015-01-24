@@ -1060,6 +1060,11 @@ DS0_GROUP
    'ds0-group'
 ;
 
+DSCP
+:
+   'dscp'
+;
+
 DSP
 :
    'dsp'

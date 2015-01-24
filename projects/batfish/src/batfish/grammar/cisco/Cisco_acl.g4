@@ -70,7 +70,10 @@ as_path_regex_range
 extended_access_list_additional_feature
 :
    (
-      ECHO_REPLY
+      (
+         DSCP variable
+      )
+      | ECHO_REPLY
       | ECHO
       | ESTABLISHED
       | FRAGMENTS
