@@ -251,6 +251,7 @@ null_block_substanza
          | KEYRING
          | L2TP
          | LEASE
+         | LENGTH
          | LIMIT_RESOURCE
          | LINE
          | LINECODE

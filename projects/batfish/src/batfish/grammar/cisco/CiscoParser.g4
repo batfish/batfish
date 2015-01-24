@@ -98,6 +98,10 @@ ip_route_tail
       (
          TRACK track = DEC
       )
+      |
+      (
+         NAME variable
+      )
    )* NEWLINE
 ;
 
