@@ -543,7 +543,7 @@ template_peer_rb_stanza
       | no_shutdown_rb_stanza
       | remote_as_bgp_tail
       | template_peer_address_family
-   )+
+   )*
 ;
 
 template_peer_session_rb_stanza
