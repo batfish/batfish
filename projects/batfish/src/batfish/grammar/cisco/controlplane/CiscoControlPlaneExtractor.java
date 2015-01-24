@@ -1186,6 +1186,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Ip_as_path_access_list_tailContext ctx) {
       LineAction action = getAccessListAction(ctx.action);
       As_path_regexContext asPath = ctx.as_path_regex();
+      if (asPath == null) {
+         // not an as-path we can use right now
+         return;
+      }
       IpAsPathAccessListLine line = new IpAsPathAccessListLine(action);
       boolean atBeginning = asPath.CARAT() != null;
       boolean matchEmpty = asPath.ranges.size() == asPath.ASTERISK().size();

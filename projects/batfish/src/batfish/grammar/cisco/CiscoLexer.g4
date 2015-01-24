@@ -39,6 +39,8 @@ tokens {
    ACL_NUM_STANDARD,
    COMMUNITY_LIST_NUM_EXPANDED,
    COMMUNITY_LIST_NUM_STANDARD,
+   PAREN_LEFT_LITERAL,
+   PAREN_RIGHT_LITERAL,
    PIPE
 }
 
@@ -4788,9 +4790,19 @@ M_AsPathRegex_PAREN_LEFT
    '(' -> type(PAREN_LEFT)
 ;
 
+M_AsPathRegex_PAREN_LEFT_LITERAL
+:
+   '\\(' -> type(PAREN_LEFT_LITERAL)
+;
+
 M_AsPathRegex_PAREN_RIGHT
 :
    ')' -> type(PAREN_RIGHT)
+;
+
+M_AsPathRegex_PAREN_RIGHT_LITERAL
+:
+   '\\)' -> type(PAREN_RIGHT_LITERAL)
 ;
 
 M_AsPathRegex_PERIOD
