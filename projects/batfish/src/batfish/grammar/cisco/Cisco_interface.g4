@@ -178,6 +178,7 @@ null_standalone_if_stanza
       | FRAME_RELAY
       | FRAMING
       | FULL_DUPLEX
+      | GLBP
       | GROUP_RANGE
       | HALF_DUPLEX
       | HOLD_QUEUE
