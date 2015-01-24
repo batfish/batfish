@@ -1687,6 +1687,11 @@ ILMI_KEEPALIVE
    'ilmi-keepalive'
 ;
 
+IMPORT
+:
+   'import'
+;
+
 IN
 :
    'in'
@@ -1854,6 +1859,16 @@ KEYRING
    'keyring'
 ;
 
+L2TP
+:
+   'l2tp'
+;
+
+L2TP_CLASS
+:
+   'l2tp-class'
+;
+
 LACP
 :
    'lacp'
@@ -1879,14 +1894,9 @@ LE
    'le'
 ;
 
-L2TP
+LEASE
 :
-   'l2tp'
-;
-
-L2TP_CLASS
-:
-   'l2tp-class'
+   'lease'
 ;
 
 LDAP_BASE_DN

@@ -216,6 +216,7 @@ null_block_substanza
          | HISTORY
          | IDLE
          | IDLE_TIMEOUT
+         | IMPORT
          | INSERVICE
          | INSPECT
          | INSTANCE
@@ -249,6 +250,7 @@ null_block_substanza
          | KEYPAIR
          | KEYRING
          | L2TP
+         | LEASE
          | LIMIT_RESOURCE
          | LINE
          | LINECODE
