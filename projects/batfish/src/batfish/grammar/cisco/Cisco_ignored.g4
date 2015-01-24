@@ -72,7 +72,7 @@ null_block_stanza
             | VIRTUAL_ROUTER
             |
             (
-               VRF ~( FORWARDING | NEWLINE )
+               VRF ~NEWLINE
             )
          )
       )
@@ -236,10 +236,6 @@ null_block_substanza
                | ACCESS_GROUP
                | ADDRESS
                | FLOW
-               |
-               (
-                  VRF FORWARDING
-               )
             )
          )
          | IPSEC_UDP
