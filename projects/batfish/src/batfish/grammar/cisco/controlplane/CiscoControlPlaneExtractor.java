@@ -2179,7 +2179,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitUpdate_source_bgp_tail(Update_source_bgp_tailContext ctx) {
-      if (_currentIpv6PeerGroup != null) {
+      if (_currentPeerGroup == null) {
+         return;
+      }
+      else if (_currentIpv6PeerGroup != null) {
          todo(ctx, "IPv6 not supported yet");
       }
       else {
