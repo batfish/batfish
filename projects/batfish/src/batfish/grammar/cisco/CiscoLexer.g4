@@ -2121,6 +2121,11 @@ MAC_ADDRESS_TABLE
    'mac-address-table'
 ;
 
+MAC_LEARN
+:
+   'mac-learn'
+;
+
 MACRO
 :
    'macro'

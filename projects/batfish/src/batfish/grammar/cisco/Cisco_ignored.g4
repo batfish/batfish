@@ -89,6 +89,7 @@ null_block_stanza
       | L2TP_CLASS
       | LINE
       | MAC
+      | MAC_LEARN
       | MANAGEMENT
       | MAP_CLASS
       | MAP_LIST
