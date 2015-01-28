@@ -1434,6 +1434,11 @@ FORWARD_PROTOCOL
    'forward-protocol'
 ;
 
+FORWARDER
+:
+   'forwarder'
+;
+
 FORWARDING
 :
    'forwarding'
@@ -1994,6 +1999,11 @@ LISTEN
 LLDP
 :
    'lldp'
+;
+
+LOAD_BALANCING
+:
+   'load-balancing'
 ;
 
 LOAD_INTERVAL
@@ -4168,6 +4178,11 @@ WEBVPN
 WEIGHT
 :
    'weight'
+;
+
+WEIGHTING
+:
+   'weighting'
 ;
 
 WHOIS

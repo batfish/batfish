@@ -103,6 +103,8 @@ null_block_stanza
       | SCCP
       | SPANNING_TREE
       | STCAPP
+      | TACACS
+      | TACACS_SERVER
       | TEMPLATE
       | TERMINAL
       | TRANSCEIVER
@@ -741,7 +743,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SYSOPT
       | SYSTEM
       | TABLE_MAP
-      | TACACS_SERVER
       | TAG
       | TAG_SWITCHING
       | TELNET

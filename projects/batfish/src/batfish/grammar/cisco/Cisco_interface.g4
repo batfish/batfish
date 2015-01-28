@@ -176,6 +176,7 @@ null_standalone_if_stanza
       | ENCAPSULATION
       | FAIR_QUEUE
       | FLOWCONTROL
+      | FORWARDER
       | FRAME_RELAY
       | FRAMING
       | FULL_DUPLEX
@@ -199,6 +200,7 @@ null_standalone_if_stanza
             | FLOW
             | HELPER_ADDRESS
             | IGMP
+            | IP_ADDRESS
             | IRDP
             | LOAD_SHARING
             | MROUTE_CACHE
@@ -237,6 +239,7 @@ null_standalone_if_stanza
       | LAPB
       | LACP
       | LLDP
+      | LOAD_BALANCING
       | LOAD_INTERVAL
       | LOGGING
       | LRE
@@ -266,6 +269,7 @@ null_standalone_if_stanza
       | PORT_CHANNEL
       | POWER
       | PPP
+      | PREEMPT
       | PRIORITY
       | PRIORITY_FLOW_CONTROL
       | PRIORITY_QUEUE
@@ -317,6 +321,7 @@ null_standalone_if_stanza
       | UDLD
       | VPC
       | VRRP
+      | WEIGHTING
       | WRR_QUEUE
       | X25
       | XCONNECT
