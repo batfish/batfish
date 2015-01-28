@@ -903,8 +903,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitAggregate_address_bgp_tail(
-         Aggregate_address_bgp_tailContext ctx) {
+   public void exitAggregate_address_rb_stanza(
+         Aggregate_address_rb_stanzaContext ctx) {
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
          throw new BatfishException(

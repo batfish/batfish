@@ -40,7 +40,8 @@ address_family_rb_stanza
 :
    address_family_header
    (
-      bgp_tail
+      aggregate_address_rb_stanza
+      | bgp_tail
       | neighbor_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
@@ -50,7 +51,7 @@ address_family_rb_stanza
    )* address_family_footer
 ;
 
-aggregate_address_bgp_tail
+aggregate_address_rb_stanza
 :
    AGGREGATE_ADDRESS
    (
@@ -99,8 +100,7 @@ bgp_listen_range_rb_stanza
 
 bgp_tail
 :
-   aggregate_address_bgp_tail
-   | activate_bgp_tail
+   activate_bgp_tail
    | allowas_in_bgp_tail
    | as_override_bgp_tail
    | cluster_id_bgp_tail
