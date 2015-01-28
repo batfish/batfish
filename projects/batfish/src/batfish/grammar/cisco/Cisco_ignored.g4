@@ -20,27 +20,31 @@ null_block_stanza
       | CONTROL_PLANE
       | CONTROLLER
       | COPY
-      |
-      (
-         CRYPTO
-         (
-            IPSEC
-            |
-            (
-               ISAKMP
-               (
-                  KEY
-                  | PEER
-                  | POLICY
-                  | PROFILE
-               )
-            )
-            | KEY
-            | KEYRING
-            | MAP
-            | PKI
-         )
-      )
+      | CRYPTO
+      //      (
+      //         CRYPTO
+      //         (
+      //            CA
+      //            | IPSEC
+      //            |
+      //            (
+      //               ISAKMP
+      //               (
+      //                  ENABLE
+      //                  | INVALID_SPI_RECOVERY
+      //                  | KEY
+      //                  | PEER
+      //                  | POLICY
+      //                  | PROFILE
+      //               )
+      //            )
+      //            | KEY
+      //            | KEYRING
+      //            | MAP
+      //            | PKI
+      //         )
+      //      )
+
       | DIAL_PEER
       | EVENT_HANDLER
       | FEX
@@ -180,7 +184,6 @@ null_block_substanza
          | CPTONE
          | CREDENTIALS
          | CRL
-         | CRYPTO
          | DATABITS
          | DBL
          | DEFAULT_ACTION
@@ -487,22 +490,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | CONSOLE
       | CONTACT_EMAIL_ADDR
       | CRL
-      |
-      (
-         CRYPTO
-         (
-            CA
-            |
-            (
-               ISAKMP
-               (
-                  ENABLE
-                  | KEY
-                  | INVALID_SPI_RECOVERY
-               )
-            )
-         )
-      )
       | CTL_FILE
       | CTS
       | DEC
