@@ -52,6 +52,7 @@ null_block_stanza
             | RECORD
          )
       )
+      | GATEKEEPER
       | GATEWAY
       | GROUP_POLICY
       |
@@ -526,7 +527,6 @@ null_standalone_stanza
       | FQDN
       | FTP
       | FTP_SERVER
-      | GATEKEEPER
       | GROUP
       | GROUP_OBJECT
       | HARDWARE
