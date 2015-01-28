@@ -610,6 +610,11 @@ CHANNELIZED
    'channelized'
 ;
 
+CHAT_SCRIPT
+:
+   'chat-script'
+;
+
 CIPC
 :
    'cipc'
@@ -3891,6 +3896,11 @@ TOP
 TOS
 :
    'tos'
+;
+
+TRACE
+:
+   'trace'
 ;
 
 TRACK

@@ -14,6 +14,7 @@ null_block_stanza
       | ARCHIVE
       | ATM
       | BASH
+      | CHAT_SCRIPT
       | CLASS_MAP
       | CLI
       | CONTROL_PLANE
@@ -112,6 +113,7 @@ null_block_stanza
       | TACACS_SERVER
       | TEMPLATE
       | TERMINAL
+      | TRACE
       | TRANSCEIVER
       | VDC
       |
