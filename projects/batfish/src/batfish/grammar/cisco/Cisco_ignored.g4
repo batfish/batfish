@@ -198,6 +198,7 @@ null_block_substanza
          | DS0_GROUP
          | DOMAIN_NAME
          | ENCAPSULATION
+         | ENCRYPTION
          | ENROLLMENT
          | ESCAPE_CHARACTER
          | EXCEED_ACTION
@@ -236,6 +237,7 @@ null_block_substanza
          | INSERVICE
          | INSPECT
          | INSTANCE
+         | INTEGRITY
          |
          (
             INTERFACE POLICY
@@ -296,6 +298,7 @@ null_block_substanza
          | PASSWORD_STORAGE
          | PATH_JITTER
          | PAUSE
+         | PEER
          | PEER_ADDRESS
          | PEER_CONFIG_CHECK_BYPASS
          | PEER_GATEWAY
@@ -316,6 +319,7 @@ null_block_substanza
          | PRIORITY
          | PRIVILEGE
          | PROBE
+         | PROPOSAL
          | PROTOCOL
          | QUEUE_BUFFERS
          | QUEUE_LIMIT
@@ -520,7 +524,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | DYNAMIC_ACCESS_POLICY_RECORD
       | ENABLE
       | ENCR
-      | ENCRYPTION
       | ENROLLMENT
       | ENVIRONMENT
       | ERRDISABLE

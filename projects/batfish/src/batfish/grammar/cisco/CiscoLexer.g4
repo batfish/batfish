@@ -1784,6 +1784,11 @@ INSTANCE
    'instance'
 ;
 
+INTEGRITY
+:
+   'integrity'
+;
+
 INTERFACE
 :
    'interface'
@@ -2974,6 +2979,11 @@ PROFILE
 PROMPT
 :
    'prompt'
+;
+
+PROPOSAL
+:
+   'proposal'
 ;
 
 PROTOCOL
