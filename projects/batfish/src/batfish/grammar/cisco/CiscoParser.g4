@@ -127,7 +127,7 @@ null_stanza
    | macro_stanza
    | no_ip_access_list_stanza
    | null_block_stanza
-   | null_standalone_stanza
+   | null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
 ;
 
 null_afvrfd_stanza
