@@ -367,6 +367,7 @@ null_block_substanza
          | TB_VLAN1
          | TB_VLAN2
          | TERMINAL_TYPE
+         | TIMEOUT
          | TIMEOUTS
          | TIMER
          | TIMING
@@ -748,7 +749,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | TELNET
       | TFTP_SERVER
       | THREAT_DETECTION
-      | TIMEOUT
       | TLS_PROXY
       | TRACK
       | TRANSLATE
