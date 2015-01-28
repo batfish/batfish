@@ -1235,6 +1235,11 @@ EVENT_HANDLER
    'event-handler'
 ;
 
+EVENT_HISTORY
+:
+   'event-history'
+;
+
 EXCEED_ACTION
 :
    'exceed-action'

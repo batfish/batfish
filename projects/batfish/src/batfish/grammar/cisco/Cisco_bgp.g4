@@ -362,6 +362,7 @@ null_bgp_tail
       )
       | DESCRIPTION
       | DONT_CAPABILITY_NEGOTIATE
+      | EVENT_HISTORY
       | FALL_OVER
       | LOG_NEIGHBOR_CHANGES
       | MAXIMUM_PATHS
