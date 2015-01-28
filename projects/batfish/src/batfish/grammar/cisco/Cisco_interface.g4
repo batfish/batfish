@@ -190,6 +190,7 @@ null_standalone_if_stanza
          (
             ACCOUNTING
             | ARP
+            | BROADCAST_ADDRESS
             | CGMP
             | DHCP
             | DVMRP

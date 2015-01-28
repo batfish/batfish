@@ -247,6 +247,10 @@ public class Hierarchy {
                sb.append(pathNode._text + " ");
             }
             String newStatementText = sb.toString();
+            // get rid of last " ", which matters for tokens where whitespace is
+            // not ignored
+            newStatementText = newStatementText.substring(0,
+                  newStatementText.length() - 1);
             TerminalNode set = new TerminalNodeImpl(new CommonToken(
                   FlatJuniperLexer.SET, "set"));
             Set_line_tailContext setLineTail = new Set_line_tailContext(
