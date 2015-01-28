@@ -217,6 +217,7 @@ null_block_substanza
          | FLUSH_AT_ACTIVATION
          | FQDN
          | FRAMING
+         | FREQUENCY
          | FT
          | GATEWAY
          | GROUP_ALIAS
@@ -228,6 +229,7 @@ null_block_substanza
          | HIDEKEYS
          | HIGH_AVAILABILITY
          | HISTORY
+         | ICMP_ECHO
          | IDLE
          | IDLE_TIMEOUT
          | IMPORT
@@ -371,8 +373,10 @@ null_block_substanza
          | SWITCHBACK
          | SWITCHPORT
          | SYNC
+         | TAG
          | TB_VLAN1
          | TB_VLAN2
+         | TCP_CONNECT
          | TERMINAL_TYPE
          | TIMEOUT
          | TIMEOUTS
@@ -533,7 +537,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | FIRMWARE
       | FLOWCONTROL
       | FRAME_RELAY
-      | FREQUENCY
       | FQDN
       | FTP
       | FTP_SERVER
@@ -546,7 +549,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | HTTP
       | HW_MODULE
       | ICMP
-      | ICMP_ECHO
       | ICMP_OBJECT
       | IDENTITY
       | INACTIVITY_TIMER
@@ -751,7 +753,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SYSOPT
       | SYSTEM
       | TABLE_MAP
-      | TAG
       | TAG_SWITCHING
       | TELNET
       | TFTP_SERVER

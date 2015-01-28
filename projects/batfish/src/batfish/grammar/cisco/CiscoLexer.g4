@@ -3808,6 +3808,11 @@ TCP
    'tcp'
 ;
 
+TCP_CONNECT
+:
+   'tcp-connect'
+;
+
 TELNET
 :
    'telnet'
