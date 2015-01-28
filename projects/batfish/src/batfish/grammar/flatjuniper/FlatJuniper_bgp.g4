@@ -138,6 +138,11 @@ bt_description
    s_description
 ;
 
+bt_enable
+:
+   ENABLE
+;
+
 bt_export
 :
    EXPORT expr = policy_expression
@@ -291,6 +296,7 @@ s_protocols_bgp
 s_protocols_bgp_tail
 :
    bt_common
+   | bt_enable
    | bt_group
    | bt_neighbor
 ;
