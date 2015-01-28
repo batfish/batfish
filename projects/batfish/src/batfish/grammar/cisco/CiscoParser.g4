@@ -88,6 +88,7 @@ ip_route_tail
    (
       nexthopip = IP_ADDRESS
       | nexthopint = interface_name
+      | nexthopprefix = IP_PREFIX
       | distance = DEC
       |
       (

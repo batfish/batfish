@@ -1351,6 +1351,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.nexthopip != null) {
          nextHopIp = toIp(ctx.nexthopip);
       }
+      else if (ctx.nexthopprefix != null) {
+         nextHopIp = getPrefixIp(ctx.nexthopprefix);
+      }
       if (ctx.nexthopint != null) {
          nextHopInterface = ctx.nexthopint.getText();
       }
