@@ -311,14 +311,30 @@ rot_router_id
 
 rot_static
 :
-   STATIC ROUTE
-   (
-      IP_PREFIX
-      | IPV6_PREFIX
-   ) rot_static_tail
+   STATIC rot_static_tail
 ;
 
 rot_static_tail
+:
+   rst_rib_group
+   | rst_route
+;
+
+rst_rib_group
+:
+   RIB_GROUP name = variable
+;
+
+rst_route
+:
+   ROUTE
+   (
+      IP_PREFIX
+      | IPV6_PREFIX
+   ) rst_route_tail
+;
+
+rst_route_tail
 :
    srt_discard
    | srt_install

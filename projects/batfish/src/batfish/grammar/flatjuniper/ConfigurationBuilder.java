@@ -555,7 +555,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterRot_static(Rot_staticContext ctx) {
+   public void enterRst_route(Rst_routeContext ctx) {
       if (ctx.IP_PREFIX() != null) {
          Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
          Map<Prefix, StaticRoute> staticRoutes = _currentRib.getStaticRoutes();

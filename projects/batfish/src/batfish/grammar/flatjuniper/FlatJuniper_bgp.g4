@@ -44,6 +44,7 @@ bfit_unicast_tail
 
    | bfiut_add_path
    | bfiut_prefix_limit
+   | bfiut_rib_group
 ;
 
 bfiut_add_path
@@ -54,6 +55,11 @@ bfiut_add_path
 bfiut_prefix_limit
 :
    PREFIX_LIMIT s_null_filler
+;
+
+bfiut_rib_group
+:
+   RIB_GROUP name = variable
 ;
 
 bft_inet
