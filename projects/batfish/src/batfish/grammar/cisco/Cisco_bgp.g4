@@ -341,7 +341,11 @@ null_bgp_tail
       AUTO_SUMMARY
       |
       (
-         AGGREGATE_ADDRESS IPV6_ADDRESS
+         AGGREGATE_ADDRESS
+         (
+            IPV6_ADDRESS
+            | IPV6_PREFIX
+         )
       )
       | BESTPATH
       |

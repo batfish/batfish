@@ -1434,6 +1434,11 @@ FLUSH_AT_ACTIVATION
    'flush-at-activation'
 ;
 
+FORCE
+:
+   'force'
+;
+
 FORWARD_PROTOCOL
 :
    'forward-protocol'

@@ -80,7 +80,11 @@ null_block_stanza
       | IPC
       |
       (
-         IPV6 ACCESS_LIST
+         IPV6
+         (
+            ACCESS_LIST
+            | HARDWARE
+         )
       )
       | L2TP_CLASS
       | LINE
