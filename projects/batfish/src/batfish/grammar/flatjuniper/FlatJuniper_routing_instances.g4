@@ -162,12 +162,26 @@ rit_named_routing_instance_tail
    rit_common
    | rit_instance_type
    | rit_interface
+   | rit_null
    | rit_protocols
    | rit_route_distinguisher
    | rit_vrf_export
    | rit_vrf_import
    | rit_vrf_table_label
    | rit_vrf_target
+;
+
+rit_null
+:
+   (
+      BRIDGE_DOMAINS
+      | CHASSIS
+      | CLASS_OF_SERVICE
+      | EVENT_OPTIONS
+      | FORWARDING_OPTIONS
+      | SERVICES
+      | SNMP
+   ) s_null_filler
 ;
 
 rit_protocols

@@ -57,15 +57,7 @@ s_groups_tail
 
 s_null
 :
-   (
-      BRIDGE_DOMAINS
-      | CHASSIS
-      | CLASS_OF_SERVICE
-      | EVENT_OPTIONS
-      | FORWARDING_OPTIONS
-      | SERVICES
-      | SNMP
-   ) s_null_filler
+   rit_null
 ;
 
 s_system
