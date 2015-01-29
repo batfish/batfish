@@ -5184,26 +5184,6 @@ M_NAME_NAME
 
 mode M_NEIGHBOR;
 
-M_NEIGHBOR_VARIABLE
-:
-   (
-      (
-         (
-            F_Variable_RequiredVarChar_Ipv6
-            | '-'
-         ) F_Variable_VarChar_Ipv6*
-      )
-      |
-      (
-         F_Variable_VarChar_Ipv6 F_Variable_VarChar_Ipv6*
-         (
-            F_Variable_RequiredVarChar_Ipv6
-            | '-'
-         ) F_Variable_VarChar_Ipv6*
-      )
-   ) -> type(VARIABLE), popMode
-;
-
 M_NEIGHBOR_IP_ADDRESS
 :
    F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type(IP_ADDRESS),
@@ -5258,6 +5238,11 @@ M_NEIGHBOR_IPV6_PREFIX
          F_HexDigit+
       )? '/' F_DecByte
    ) -> type ( IPV6_PREFIX ), popMode
+;
+
+M_NEIGHBOR_VARIABLE
+:
+   F_Variable_VarChar -> type(VARIABLE), popMode
 ;
 
 M_NEIGHBOR_NEWLINE
