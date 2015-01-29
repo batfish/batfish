@@ -374,6 +374,10 @@ null_bgp_tail
       | MAXIMUM_PREFIX
       | MAXIMUM_ROUTES
       | PASSWORD
+      |
+      (
+         NO ROUTE_MAP
+      )
       | SEND_LABEL
       | SOFT_RECONFIGURATION
       | SYNCHRONIZATION
