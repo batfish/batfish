@@ -25,6 +25,7 @@ import batfish.main.PedanticBatfishException;
 import batfish.representation.Ip;
 import batfish.representation.IpProtocol;
 import batfish.representation.LineAction;
+import batfish.representation.NamedPort;
 import batfish.representation.OriginType;
 import batfish.representation.OspfMetricType;
 import batfish.representation.Prefix;
@@ -150,114 +151,233 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
+   public static NamedPort getNamedPort(PortContext ctx) {
+      if (ctx.AOL() != null) {
+         return NamedPort.AOL;
+      }
+      else if (ctx.BGP() != null) {
+         return NamedPort.BGP;
+      }
+      else if (ctx.BIFF() != null) {
+         return NamedPort.BIFFudp_OR_EXECtcp;
+      }
+      else if (ctx.BOOTPC() != null) {
+         return NamedPort.BOOTPC;
+      }
+      else if (ctx.BOOTPS() != null) {
+         return NamedPort.BOOTPS_OR_DHCP;
+      }
+      else if (ctx.CHARGEN() != null) {
+         return NamedPort.CHARGEN;
+      }
+      else if (ctx.CITRIX_ICA() != null) {
+         return NamedPort.CITRIX_ICA;
+      }
+      else if (ctx.CMD() != null) {
+         return NamedPort.CMDtcp_OR_SYSLOGudp;
+      }
+      else if (ctx.CTIQBE() != null) {
+         return NamedPort.CTIQBE;
+      }
+      else if (ctx.DAYTIME() != null) {
+         return NamedPort.DAYTIME;
+      }
+      else if (ctx.DISCARD() != null) {
+         return NamedPort.DISCARD;
+      }
+      else if (ctx.DNSIX() != null) {
+         return NamedPort.DNSIX;
+      }
+      else if (ctx.DOMAIN() != null) {
+         return NamedPort.DOMAIN;
+      }
+      else if (ctx.ECHO() != null) {
+         return NamedPort.ECHO;
+      }
+      else if (ctx.EXEC() != null) {
+         return NamedPort.BIFFudp_OR_EXECtcp;
+      }
+      else if (ctx.FINGER() != null) {
+         return NamedPort.FINGER;
+      }
+      else if (ctx.FTP() != null) {
+         return NamedPort.FTP;
+      }
+      else if (ctx.FTP_DATA() != null) {
+         return NamedPort.FTP_DATA;
+      }
+      else if (ctx.GOPHER() != null) {
+         return NamedPort.GOPHER;
+      }
+      else if (ctx.H323() != null) {
+         return NamedPort.H323;
+      }
+      else if (ctx.HTTPS() != null) {
+         return NamedPort.HTTPS;
+      }
+      else if (ctx.HOSTNAME() != null) {
+         return NamedPort.HOSTNAME;
+      }
+      else if (ctx.IDENT() != null) {
+         return NamedPort.IDENT;
+      }
+      else if (ctx.IMAP4() != null) {
+         return NamedPort.IMAP;
+      }
+      else if (ctx.IRC() != null) {
+         return NamedPort.IRC;
+      }
+      else if (ctx.ISAKMP() != null) {
+         return NamedPort.ISAKMP;
+      }
+      else if (ctx.KERBEROS() != null) {
+         return NamedPort.KERBEROS;
+      }
+      else if (ctx.KLOGIN() != null) {
+         return NamedPort.KLOGIN;
+      }
+      else if (ctx.KSHELL() != null) {
+         return NamedPort.KSHELL;
+      }
+      else if (ctx.LDAP() != null) {
+         return NamedPort.LDAP;
+      }
+      else if (ctx.LDAPS() != null) {
+         return NamedPort.LDAPS;
+      }
+      else if (ctx.LPD() != null) {
+         return NamedPort.LPD;
+      }
+      else if (ctx.LOGIN() != null) {
+         return NamedPort.LOGINtcp_OR_WHOudp;
+      }
+      else if (ctx.LOTUSNOTES() != null) {
+         return NamedPort.LOTUSNOTES;
+      }
+      else if (ctx.MLAG() != null) {
+         return NamedPort.MLAG;
+      }
+      else if (ctx.MOBILE_IP() != null) {
+         return NamedPort.MOBILE_IP_AGENT;
+      }
+      else if (ctx.NAMESERVER() != null) {
+         return NamedPort.NAMESERVER;
+      }
+      else if (ctx.NETBIOS_DGM() != null) {
+         return NamedPort.NETBIOS_DGM;
+      }
+      else if (ctx.NETBIOS_NS() != null) {
+         return NamedPort.NETBIOS_NS;
+      }
+      else if (ctx.NETBIOS_SS() != null) {
+         return NamedPort.NETBIOS_SSN;
+      }
+      else if (ctx.NETBIOS_SSN() != null) {
+         return NamedPort.NETBIOS_SSN;
+      }
+      else if (ctx.NNTP() != null) {
+         return NamedPort.NNTP;
+      }
+      else if (ctx.NON500_ISAKMP() != null) {
+         return NamedPort.NON500_ISAKMP;
+      }
+      else if (ctx.NTP() != null) {
+         return NamedPort.NTP;
+      }
+      else if (ctx.PCANYWHERE_DATA() != null) {
+         return NamedPort.PCANYWHERE_DATA;
+      }
+      else if (ctx.PCANYWHERE_STATUS() != null) {
+         return NamedPort.PCANYWHERE_STATUS;
+      }
+      else if (ctx.PIM_AUTO_RP() != null) {
+         return NamedPort.PIM_AUTO_RP;
+      }
+      else if (ctx.POP2() != null) {
+         return NamedPort.POP2;
+      }
+      else if (ctx.POP3() != null) {
+         return NamedPort.POP3;
+      }
+      else if (ctx.PPTP() != null) {
+         return NamedPort.PPTP;
+      }
+      else if (ctx.RADIUS() != null) {
+         return NamedPort.RADIUS_CISCO;
+      }
+      else if (ctx.RADIUS_ACCT() != null) {
+         return NamedPort.RADIUS_ACCT_CISCO;
+      }
+      else if (ctx.RIP() != null) {
+         return NamedPort.RIP;
+      }
+      else if (ctx.SECUREID_UDP() != null) {
+         return NamedPort.SECUREID_UDP;
+      }
+      else if (ctx.SMTP() != null) {
+         return NamedPort.SMTP;
+      }
+      else if (ctx.SNMP() != null) {
+         return NamedPort.SNMP;
+      }
+      else if (ctx.SNMPTRAP() != null) {
+         return NamedPort.SNMPTRAP;
+      }
+      else if (ctx.SQLNET() != null) {
+         return NamedPort.SQLNET;
+      }
+      else if (ctx.SSH() != null) {
+         return NamedPort.SSH;
+      }
+      else if (ctx.SUNRPC() != null) {
+         return NamedPort.SUNRPC;
+      }
+      else if (ctx.SYSLOG() != null) {
+         return NamedPort.CMDtcp_OR_SYSLOGudp;
+      }
+      else if (ctx.TACACS() != null) {
+         return NamedPort.TACACS;
+      }
+      else if (ctx.TALK() != null) {
+         return NamedPort.TALK;
+      }
+      else if (ctx.TELNET() != null) {
+         return NamedPort.TELNET;
+      }
+      else if (ctx.TFTP() != null) {
+         return NamedPort.TFTP;
+      }
+      else if (ctx.TIME() != null) {
+         return NamedPort.TIME;
+      }
+      else if (ctx.UUCP() != null) {
+         return NamedPort.UUCP;
+      }
+      else if (ctx.WHO() != null) {
+         return NamedPort.LOGINtcp_OR_WHOudp;
+      }
+      else if (ctx.WHOIS() != null) {
+         return NamedPort.WHOIS;
+      }
+      else if (ctx.WWW() != null) {
+         return NamedPort.HTTP;
+      }
+      else if (ctx.XDMCP() != null) {
+         return NamedPort.XDMCP;
+      }
+      else {
+         throw new BatfishException("missing port-number mapping for port: \""
+               + ctx.getText() + "\"");
+      }
+   }
+
    public static int getPortNumber(PortContext ctx) {
       if (ctx.DEC() != null) {
          return toInteger(ctx.DEC());
       }
-      else if (ctx.BOOTPC() != null) {
-         return 68;
-      }
-      else if (ctx.BOOTPS() != null) {
-         return 67;
-      }
-      else if (ctx.BGP() != null) {
-         return 179;
-      }
-      else if (ctx.CMD() != null) {
-         return 514;
-      }
-      else if (ctx.DOMAIN() != null) {
-         return 53;
-      }
-      else if (ctx.EXEC() != null) {
-         return 512;
-      }
-      else if (ctx.FTP() != null) {
-         return 21;
-      }
-      else if (ctx.FTP_DATA() != null) {
-         return 20;
-      }
-      else if (ctx.HOSTNAME() != null) {
-         return 42;
-      }
-      else if (ctx.IDENT() != null) {
-         return 113;
-      }
-      else if (ctx.ISAKMP() != null) {
-         return 500;
-      }
-      else if (ctx.LPD() != null) {
-         return 515;
-      }
-      else if (ctx.MLAG() != null) {
-         return 6784;
-      }
-      else if (ctx.NAMESERVER() != null) {
-         return 42;
-      }
-      else if (ctx.NETBIOS_DGM() != null) {
-         return 138;
-      }
-      else if (ctx.NETBIOS_NS() != null) {
-         return 137;
-      }
-      else if (ctx.NETBIOS_SS() != null) {
-         return 139;
-      }
-      else if (ctx.NNTP() != null) {
-         return 119;
-      }
-      else if (ctx.NON500_ISAKMP() != null) {
-         return 4500;
-      }
-      else if (ctx.NTP() != null) {
-         return 123;
-      }
-      else if (ctx.PIM_AUTO_RP() != null) {
-         return 496;
-      }
-      else if (ctx.POP3() != null) {
-         return 110;
-      }
-      else if (ctx.RIP() != null) {
-         return 520;
-      }
-      else if (ctx.SMTP() != null) {
-         return 25;
-      }
-      else if (ctx.SNMP() != null) {
-         return 161;
-      }
-      else if (ctx.SNMPTRAP() != null) {
-         return 162;
-      }
-      else if (ctx.SSH() != null) {
-         return 22;
-      }
-      else if (ctx.SUNRPC() != null) {
-         return 111;
-      }
-      else if (ctx.SYSLOG() != null) {
-         return 514;
-      }
-      else if (ctx.TACACS() != null) {
-         return 49;
-      }
-      else if (ctx.TELNET() != null) {
-         return 23;
-      }
-      else if (ctx.TFTP() != null) {
-         return 69;
-      }
-      else if (ctx.WHOIS() != null) {
-         return 43;
-      }
-      else if (ctx.WWW() != null) {
-         return 80;
-      }
       else {
-         throw new BatfishException("bad port");
+         NamedPort namedPort = getNamedPort(ctx);
+         return namedPort.number();
       }
    }
 

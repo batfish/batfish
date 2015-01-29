@@ -19,6 +19,7 @@ import batfish.representation.AsPath;
 import batfish.representation.AsSet;
 import batfish.representation.Ip;
 import batfish.representation.IpProtocol;
+import batfish.representation.NamedPort;
 import batfish.representation.Prefix;
 import batfish.representation.RoutingProtocol;
 import batfish.representation.juniper.AggregateRoute;
@@ -86,68 +87,204 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(
          Prefix.ZERO);
 
-   public static SubRange getPortRange(PortContext ctx) {
-      if (ctx.DEC() != null) {
-         int port = toInt(ctx.DEC());
-         return new SubRange(port, port);
-      }
-      else if (ctx.BOOTPC() != null) {
-         return new SubRange(68, 68);
-      }
-      else if (ctx.BOOTPS() != null) {
-         return new SubRange(67, 67);
+   public static NamedPort getNamedPort(PortContext ctx) {
+      if (ctx.AFS() != null) {
+         return NamedPort.AFS;
       }
       else if (ctx.BGP() != null) {
-         return new SubRange(179, 179);
+         return NamedPort.BGP;
+      }
+      else if (ctx.BIFF() != null) {
+         return NamedPort.BIFFudp_OR_EXECtcp;
+      }
+      else if (ctx.BOOTPC() != null) {
+         return NamedPort.BOOTPC;
+      }
+      else if (ctx.BOOTPS() != null) {
+         return NamedPort.BOOTPS_OR_DHCP;
+      }
+      else if (ctx.CMD() != null) {
+         return NamedPort.CMDtcp_OR_SYSLOGudp;
+      }
+      else if (ctx.CVSPSERVER() != null) {
+         return NamedPort.CVSPSERVER;
       }
       else if (ctx.DHCP() != null) {
-         return new SubRange(67, 68);
+         return NamedPort.BOOTPS_OR_DHCP;
       }
       else if (ctx.DOMAIN() != null) {
-         return new SubRange(53, 53);
+         return NamedPort.DOMAIN;
+      }
+      else if (ctx.EKLOGIN() != null) {
+         return NamedPort.EKLOGIN;
+      }
+      else if (ctx.EKSHELL() != null) {
+         return NamedPort.EKSHELL;
+      }
+      else if (ctx.EXEC() != null) {
+         return NamedPort.BIFFudp_OR_EXECtcp;
+      }
+      else if (ctx.FINGER() != null) {
+         return NamedPort.FINGER;
       }
       else if (ctx.FTP() != null) {
-         return new SubRange(21, 21);
+         return NamedPort.FTP;
+      }
+      else if (ctx.FTP_DATA() != null) {
+         return NamedPort.FTP_DATA;
       }
       else if (ctx.HTTP() != null) {
-         return new SubRange(80, 80);
+         return NamedPort.HTTP;
       }
       else if (ctx.HTTPS() != null) {
-         return new SubRange(443, 443);
+         return NamedPort.HTTPS;
+      }
+      else if (ctx.IDENT() != null) {
+         return NamedPort.IDENT;
+      }
+      else if (ctx.IMAP() != null) {
+         return NamedPort.IMAP;
+      }
+      else if (ctx.KERBEROS_SEC() != null) {
+         return NamedPort.KERBEROS_SEC;
+      }
+      else if (ctx.KLOGIN() != null) {
+         return NamedPort.KLOGIN;
+      }
+      else if (ctx.KPASSWD() != null) {
+         return NamedPort.KPASSWD;
+      }
+      else if (ctx.KRB_PROP() != null) {
+         return NamedPort.KRB_PROP;
+      }
+      else if (ctx.KRBUPDATE() != null) {
+         return NamedPort.KRBUPDATE;
+      }
+      else if (ctx.KSHELL() != null) {
+         return NamedPort.KSHELL;
+      }
+      else if (ctx.LDAP() != null) {
+         return NamedPort.LDAP;
+      }
+      else if (ctx.LDP() != null) {
+         return NamedPort.LDP;
+      }
+      else if (ctx.LOGIN() != null) {
+         return NamedPort.LOGINtcp_OR_WHOudp;
+      }
+      else if (ctx.MOBILEIP_AGENT() != null) {
+         return NamedPort.MOBILE_IP_AGENT;
+      }
+      else if (ctx.MOBILIP_MN() != null) {
+         return NamedPort.MOBILE_IP_MN;
+      }
+      else if (ctx.MSDP() != null) {
+         return NamedPort.MSDP;
       }
       else if (ctx.NETBIOS_DGM() != null) {
-         return new SubRange(138, 138);
+         return NamedPort.NETBIOS_DGM;
       }
       else if (ctx.NETBIOS_NS() != null) {
-         return new SubRange(137, 137);
+         return NamedPort.NETBIOS_NS;
+      }
+      else if (ctx.NETBIOS_SSN() != null) {
+         return NamedPort.NETBIOS_SSN;
+      }
+      else if (ctx.NFSD() != null) {
+         return NamedPort.NFSD;
+      }
+      else if (ctx.NNTP() != null) {
+         return NamedPort.NNTP;
+      }
+      else if (ctx.NTALK() != null) {
+         return NamedPort.NTALK;
       }
       else if (ctx.NTP() != null) {
-         return new SubRange(123, 123);
+         return NamedPort.NTP;
+      }
+      else if (ctx.POP3() != null) {
+         return NamedPort.POP3;
+      }
+      else if (ctx.PPTP() != null) {
+         return NamedPort.PPTP;
+      }
+      else if (ctx.PRINTER() != null) {
+         return NamedPort.LDP;
+      }
+      else if (ctx.RADACCT() != null) {
+         return NamedPort.RADIUS_JUNIPER;
+      }
+      else if (ctx.RADIUS() != null) {
+         return NamedPort.RADIUS_JUNIPER;
+      }
+      else if (ctx.RIP() != null) {
+         return NamedPort.RIP;
+      }
+      else if (ctx.RKINIT() != null) {
+         return NamedPort.RKINIT;
       }
       else if (ctx.SMTP() != null) {
-         return new SubRange(25, 25);
+         return NamedPort.SMTP;
       }
       else if (ctx.SNMP() != null) {
-         return new SubRange(161, 161);
+         return NamedPort.SNMP;
+      }
+      else if (ctx.SNMPTRAP() != null) {
+         return NamedPort.SNMPTRAP;
+      }
+      else if (ctx.SNPP() != null) {
+         return NamedPort.SNPP;
+      }
+      else if (ctx.SOCKS() != null) {
+         return NamedPort.SOCKS;
       }
       else if (ctx.SSH() != null) {
-         return new SubRange(22, 22);
+         return NamedPort.SSH;
+      }
+      else if (ctx.SUNRPC() != null) {
+         return NamedPort.SUNRPC;
       }
       else if (ctx.SYSLOG() != null) {
-         return new SubRange(514, 514);
+         return NamedPort.CMDtcp_OR_SYSLOGudp;
       }
       else if (ctx.TACACS() != null) {
-         return new SubRange(49, 49);
+         return NamedPort.TACACS;
+      }
+      else if (ctx.TACACS_DS() != null) {
+         return NamedPort.TACACS_DS;
+      }
+      else if (ctx.TALK() != null) {
+         return NamedPort.TALK;
       }
       else if (ctx.TELNET() != null) {
-         return new SubRange(23, 23);
+         return NamedPort.TELNET;
       }
       else if (ctx.TFTP() != null) {
-         return new SubRange(69, 69);
+         return NamedPort.TFTP;
+      }
+      else if (ctx.TIMED() != null) {
+         return NamedPort.TIMED;
+      }
+      else if (ctx.WHO() != null) {
+         return NamedPort.LOGINtcp_OR_WHOudp;
+      }
+      else if (ctx.XDMCP() != null) {
+         return NamedPort.XDMCP;
       }
       else {
          throw new BatfishException("missing port-number mapping for port: \""
                + ctx.getText() + "\"");
+      }
+   }
+
+   public static int getPortNumber(PortContext ctx) {
+      if (ctx.DEC() != null) {
+         int port = toInt(ctx.DEC());
+         return port;
+      }
+      else {
+         NamedPort namedPort = getNamedPort(ctx);
+         return namedPort.number();
       }
    }
 
@@ -826,7 +963,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitFwfromt_destination_port(Fwfromt_destination_portContext ctx) {
       if (ctx.port() != null) {
-         SubRange subrange = getPortRange(ctx.port());
+         int port = getPortNumber(ctx.port());
+         SubRange subrange = new SubRange(port, port);
          FwFrom from = new FwFromDestinationPort(subrange);
          _currentFwTerm.getFroms().add(from);
       }
@@ -860,7 +998,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitFwfromt_source_port(Fwfromt_source_portContext ctx) {
       if (ctx.port() != null) {
-         SubRange subrange = getPortRange(ctx.port());
+         int port = getPortNumber(ctx.port());
+         SubRange subrange = new SubRange(port, port);
          FwFrom from = new FwFromSourcePort(subrange);
          _currentFwTerm.getFroms().add(from);
       }

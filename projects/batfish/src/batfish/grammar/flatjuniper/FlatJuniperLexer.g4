@@ -80,6 +80,11 @@ ADVERTISE_INACTIVE
    'advertise-inactive'
 ;
 
+AFS
+:
+   'afs'
+;
+
 AGGREGATE
 :
    'aggregate'
@@ -215,6 +220,11 @@ BGP
    'bgp'
 ;
 
+BIFF
+:
+   'biff'
+;
+
 BOOTPC
 :
    'bootpc'
@@ -260,6 +270,11 @@ CLUSTER
    'cluster'
 ;
 
+CMD
+:
+   'cmd'
+;
+
 COLOR
 :
    'color'
@@ -287,6 +302,11 @@ COS_NEXT_HOP_MAP
 COUNT
 :
    'count'
+;
+
+CVSPSERVER
+:
+   'cvspserver'
 ;
 
 DAMPING
@@ -429,6 +449,16 @@ EGP
    'egp'
 ;
 
+EKLOGIN
+:
+   'eklogin'
+;
+
+EKSHELL
+:
+   'ekshell'
+;
+
 ENABLE
 :
    'enable'
@@ -467,6 +497,11 @@ EXACT
 EXCEPT
 :
    'except'
+;
+
+EXEC
+:
+   'exec'
 ;
 
 EXP
@@ -517,6 +552,11 @@ FILE
 FILTER
 :
    'filter'
+;
+
+FINGER
+:
+   'finger'
 ;
 
 FIREWALL
@@ -572,6 +612,11 @@ FROM
 FTP
 :
    'ftp'
+;
+
+FTP_DATA
+:
+   'ftp-data'
 ;
 
 GENERATE
@@ -669,6 +714,11 @@ ICMPV6
    'icmpv6'
 ;
 
+IDENT
+:
+   'ident'
+;
+
 IGMP
 :
    'igmp'
@@ -682,6 +732,11 @@ IGMP_SNOOPING
 IGP
 :
    'igp'
+;
+
+IMAP
+:
+   'imap'
 ;
 
 IMPORT
@@ -829,6 +884,36 @@ ISO
    'iso'
 ;
 
+KERBEROS_SEC
+:
+   'kerberos-sec'
+;
+
+KLOGIN
+:
+   'klogin'
+;
+
+KPASSWD
+:
+   'kpasswd'
+;
+
+KRB_PROP
+:
+   'krb-prop'
+;
+
+KRBUPDATE
+:
+   'krbupdate'
+;
+
+KSHELL
+:
+   'kshell'
+;
+
 L
 :
    'L'
@@ -877,6 +962,11 @@ LICENSE
 LINK_MODE
 :
    'link-mode'
+;
+
+LDAP
+:
+   'ldap'
 ;
 
 LDP
@@ -1004,6 +1094,16 @@ MLD
    'mld'
 ;
 
+MOBILEIP_AGENT
+:
+   'mobileip-agent'
+;
+
+MOBILIP_MN
+:
+   'mobilip-mn'
+;
+
 MPLS
 :
    'mpls'
@@ -1079,6 +1179,11 @@ NETBIOS_NS
    'netbios-ns'
 ;
 
+NETBIOS_SSN
+:
+   'netbios-ssn'
+;
+
 NETWORK_SUMMARY_EXPORT
 :
    'network-summary-export'
@@ -1107,6 +1212,21 @@ NEXT_HOP
 NEXT_TABLE
 :
    'next-table'
+;
+
+NFSD
+:
+   'nfsd'
+;
+
+NNTP
+:
+   'nntp'
+;
+
+NTALK
+:
+   'ntalk'
 ;
 
 NO_ACTIVE_BACKBONE
@@ -1289,6 +1409,11 @@ POLICY_STATEMENT
    'policy-statement'
 ;
 
+POP3
+:
+   'pop3'
+;
+
 PORT
 :
    'port'
@@ -1307,6 +1432,11 @@ PORT_MODE
 PORT_UNREACHABLE
 :
    'port-unreachable'
+;
+
+PPTP
+:
+   'pptp'
 ;
 
 PREEMPT
@@ -1349,6 +1479,11 @@ PRIMARY
    'primary'
 ;
 
+PRINTER
+:
+   'printer'
+;
+
 PRIORITY
 :
    'priority'
@@ -1367,6 +1502,16 @@ PROTOCOL
 PROTOCOLS
 :
    'protocols'
+;
+
+RADACCT
+:
+   'radacct'
+;
+
+RADIUS
+:
+   'radius'
 ;
 
 RADIUS_OPTIONS
@@ -1432,6 +1577,16 @@ RIB_GROUP
 RIB_GROUPS
 :
    'rib-groups'
+;
+
+RIP
+:
+   'rip'
+;
+
+RKINIT
+:
+   'rkinit'
 ;
 
 ROOT_AUTHENTICATION
@@ -1544,6 +1699,21 @@ SNMP
    'snmp'
 ;
 
+SNMPTRAP
+:
+   'snmptrap'
+;
+
+SNPP
+:
+   'snpp'
+;
+
+SOCKS
+:
+   'socks'
+;
+
 SOURCE_ADDRESS
 :
    'source-address'
@@ -1589,6 +1759,11 @@ SUBTRACT
    'subtract'
 ;
 
+SUNRPC
+:
+   'sunrpc'
+;
+
 SYSLOG
 :
    'syslog'
@@ -1604,6 +1779,11 @@ TACACS
    'tacacs'
 ;
 
+TACACS_DS
+:
+   'tacacs-ds'
+;
+
 TACPLUS_SERVER
 :
    'tacplus-server'
@@ -1612,6 +1792,11 @@ TACPLUS_SERVER
 TAG
 :
    'tag'
+;
+
+TALK
+:
+   'talk'
 ;
 
 TARGET
@@ -1682,6 +1867,11 @@ TIME_EXCEEDED
 TIME_ZONE
 :
    'time-zone'
+;
+
+TIMED
+:
+   'timed'
 ;
 
 TO
@@ -1857,6 +2047,16 @@ VRRP_GROUP
 VSTP
 :
    'vstp'
+;
+
+WHO
+:
+   'who'
+;
+
+XDMCP
+:
+   'xdmcp'
 ;
 
 // End of Juniper keywords

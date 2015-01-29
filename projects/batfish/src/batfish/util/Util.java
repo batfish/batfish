@@ -76,53 +76,6 @@ public class Util {
       return networkEnd;
    }
 
-   public static String getPortName(int port) {
-      switch (port) {
-      case 0:
-         return "any";
-      case 179:
-         return "bgp";
-      case 68:
-         return "bootpc";
-      case 67:
-         return "bootps";
-      case 53:
-         return "dns";
-      case 21:
-         return "ftp";
-      case 20:
-         return "ftp-data";
-      case 500:
-         return "isakmp";
-      case 515:
-         return "lpd";
-      case 138:
-         return "netbios-dgm";
-      case 137:
-         return "netbios-ns";
-      case 139:
-         return "netbios-ss";
-      case 4500:
-         return "non500-isakmp";
-      case 123:
-         return "ntp";
-      case 496:
-         return "pim-auto-rp";
-      case 161:
-         return "snmp";
-      case 49:
-         return "tacacs";
-      case 23:
-         return "telnet";
-      case 69:
-         return "tftp";
-      case 80:
-         return "www";
-      default:
-         return "" + port;
-      }
-   }
-
    public static int getPrefixLengthFromIpSubnetPair(String pair) {
       int slashPos = pair.indexOf('/');
       return Integer.parseInt(pair.substring(slashPos + 1, pair.length()));

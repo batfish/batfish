@@ -144,26 +144,68 @@ s_description
 
 port
 :
-   BGP
+   AFS
+   | BGP
+   | BIFF
    | BOOTPC
    | BOOTPS
+   | CMD
+   | CVSPSERVER
    | DEC
    | DHCP
    | DOMAIN
+   | EKLOGIN
+   | EKSHELL
+   | EXEC
+   | FINGER
    | FTP
+   | FTP_DATA
    | HTTP
    | HTTPS
+   | IDENT
+   | IMAP
+   | KERBEROS_SEC
+   | KLOGIN
+   | KPASSWD
+   | KRB_PROP
+   | KRBUPDATE
+   | KSHELL
+   | LDAP
    | LDP
+   | LOGIN
+   | MOBILEIP_AGENT
+   | MOBILIP_MN
+   | MSDP
    | NETBIOS_DGM
    | NETBIOS_NS
+   | NETBIOS_SSN
+   | NFSD
+   | NNTP
+   | NTALK
    | NTP
+   | POP3
+   | PPTP
+   | PRINTER
+   | RADACCT
+   | RADIUS
+   | RIP
+   | RKINIT
    | SMTP
    | SNMP
+   | SNMPTRAP
+   | SNPP
+   | SOCKS
    | SSH
+   | SUNRPC
    | SYSLOG
    | TACACS
+   | TACACS_DS
+   | TALK
    | TELNET
    | TFTP
+   | TIMED
+   | WHO
+   | XDMCP
 ;
 
 range

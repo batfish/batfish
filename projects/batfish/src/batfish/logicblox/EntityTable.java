@@ -11,6 +11,7 @@ import com.logicblox.connect.Workspace.Relation.UInt64Column;
 
 import batfish.representation.Ip;
 import batfish.representation.IpProtocol;
+import batfish.representation.NamedPort;
 import batfish.util.Util;
 
 public class EntityTable {
@@ -224,14 +225,17 @@ public class EntityTable {
             .fromNumber((int) (_flowProtocols[listIndex]));
       boolean tcp = protocol == IpProtocol.TCP;
       boolean udp = protocol == IpProtocol.UDP;
-      String prefix = tcp ? "Tcp" : udp ? "Udp" : "";
       StringBuilder sb = new StringBuilder();
-      sb.append(prefix);
       sb.append("Flow<" + node + ", " + protocol + ", " + srcIp + ", " + dstIp);
       if (tcp || udp) {
-         String srcPort = Util.getPortName((int) _flowSrcPorts[listIndex]);
-         String dstPort = Util.getPortName((int) _flowDstPorts[listIndex]);
+         String srcPort = NamedPort
+               .nameFromNumber((int) _flowSrcPorts[listIndex]);
+         String dstPort = NamedPort
+               .nameFromNumber((int) _flowDstPorts[listIndex]);
          sb.append(", " + srcPort + ", " + dstPort);
+      }
+      else {
+         sb.append("N/A, N/A");
       }
       sb.append(">");
       String output = sb.toString();

@@ -94,40 +94,78 @@ port_specifier
 port
 :
    DEC
+   | AOL
+   | BGP
+   | BIFF
    | BOOTPC
    | BOOTPS
-   | BGP
+   | CHARGEN
+   | CITRIX_ICA
    | CMD
+   | CTIQBE
+   | DAYTIME
+   | DISCARD
+   | DNSIX
    | DOMAIN
+   | ECHO
    | EXEC
+   | FINGER
    | FTP
    | FTP_DATA
+   | GOPHER
+   | H323
+   | HTTPS
    | HOSTNAME
    | IDENT
+   | IMAP4
+   | IRC
    | ISAKMP
+   | KERBEROS
+   | KLOGIN
+   | KSHELL
+   | LDAP
+   | LDAPS
    | LPD
+   | LOGIN
+   | LOTUSNOTES
+   | MOBILE_IP
    | MLAG
    | NAMESERVER
    | NETBIOS_DGM
    | NETBIOS_NS
    | NETBIOS_SS
+   | NETBIOS_SSN
    | NNTP
+   | NTP
    | NON500_ISAKMP
    | NTP
+   | PCANYWHERE_DATA
+   | PCANYWHERE_STATUS
    | PIM_AUTO_RP
+   | POP2
    | POP3
+   | PPTP
+   | RADIUS
+   | RADIUS_ACCT
    | RIP
+   | SECUREID_UDP
    | SMTP
    | SNMP
    | SNMPTRAP
+   | SQLNET
    | SSH
    | SUNRPC
    | SYSLOG
    | TACACS
+   | TALK
    | TELNET
    | TFTP
+   | TIME
+   | UUCP
+   | WHO
    | WHOIS
    | WWW
+   | XDMCP
 ;
 
 protocol

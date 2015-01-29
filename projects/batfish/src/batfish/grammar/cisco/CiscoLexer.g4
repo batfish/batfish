@@ -248,6 +248,11 @@ ANYCONNECT_ESSENTIALS
    'anyconnect-essentials'
 ;
 
+AOL
+:
+   'aol'
+;
+
 AP
 :
    'ap'
@@ -450,6 +455,11 @@ BGP_COMMUNITY
    'bgp-community'
 ;
 
+BIFF
+:
+   'biff'
+;
+
 BIND
 :
    'bind'
@@ -615,6 +625,11 @@ CHANNELIZED
    'channelized'
 ;
 
+CHARGEN
+:
+   'chargen'
+;
+
 CHAT_SCRIPT
 :
    'chat-script'
@@ -623,6 +638,11 @@ CHAT_SCRIPT
 CIPC
 :
    'cipc'
+;
+
+CITRIX_ICA
+:
+   'citrix-ica'
 ;
 
 CLASS
@@ -810,6 +830,11 @@ CRL
    'crl'
 ;
 
+CTIQBE
+:
+   'ctiqbe'
+;
+
 CTL_FILE
 :
    'ctl-file'
@@ -828,6 +853,11 @@ DAMPENING
 DATABITS
 :
    'databits'
+;
+
+DAYTIME
+:
+   'daytime'
 ;
 
 DBL
@@ -1010,6 +1040,11 @@ DISABLE
    'disable'
 ;
 
+DISCARD
+:
+   'discard'
+;
+
 DISTANCE
 :
    'distance'
@@ -1033,6 +1068,11 @@ DNS_GUARD
 DNS_SERVER
 :
    'dns-server'
+;
+
+DNSIX
+:
+   'dnsix'
 ;
 
 DOMAIN
@@ -1544,6 +1584,11 @@ GLBP
    'glbp'
 ;
 
+GOPHER
+:
+   'gopher'
+;
+
 GRACEFUL_RESTART
 :
    'graceful-restart'
@@ -1592,6 +1637,11 @@ GROUP_URL
 GT
 :
    'gt'
+;
+
+H323
+:
+   'h323'
 ;
 
 HALF_DUPLEX
@@ -1689,6 +1739,11 @@ HTTP
    'http'
 ;
 
+HTTPS
+:
+   'https'
+;
+
 HW_MODULE
 :
    'hw-module'
@@ -1747,6 +1802,11 @@ IKEV1
 ILMI_KEEPALIVE
 :
    'ilmi-keepalive'
+;
+
+IMAP4
+:
+   'imap4'
 ;
 
 IMPORT
@@ -1876,6 +1936,11 @@ IPX
    'ipx'
 ;
 
+IRC
+:
+   'irc'
+;
+
 IRDP
 :
    'irdp'
@@ -1911,6 +1976,11 @@ KEEPOUT
    'keepout'
 ;
 
+KERBEROS
+:
+   'kerberos'
+;
+
 KEY
 :
    'key' -> pushMode(M_KEY)
@@ -1926,9 +1996,19 @@ KEYRING
    'keyring'
 ;
 
+KLOGIN
+:
+   'klogin'
+;
+
 KRON
 :
    'kron'
+;
+
+KSHELL
+:
+   'kshell'
 ;
 
 L2TP
@@ -1959,6 +2039,16 @@ LAPB
 LAST_AS
 :
    'last-as'
+;
+
+LDAP
+:
+   'ldap'
+;
+
+LDAPS
+:
+   'ldaps'
 ;
 
 LE
@@ -2119,6 +2209,11 @@ LOGGING
 LOGIN
 :
    'login'
+;
+
+LOTUSNOTES
+:
+   'lotusnotes'
 ;
 
 LPD
@@ -2326,6 +2421,11 @@ MLS
    'mls'
 ;
 
+MOBILE_IP
+:
+   'mobile-ip'
+;
+
 MOBILITY
 :
    'mobility'
@@ -2524,6 +2624,11 @@ NETBIOS_NS
 NETBIOS_SS
 :
    'netbios-ss'
+;
+
+NETBIOS_SSN
+:
+   'netbios-ssn'
 ;
 
 NETCONF
@@ -2751,6 +2856,16 @@ PAUSE
    'pause'
 ;
 
+PCANYWHERE_DATA
+:
+   'pcanywhere-data'
+;
+
+PCANYWHERE_STATUS
+:
+   'pcanywhere-status'
+;
+
 PEER
 :
    'peer'
@@ -2876,6 +2991,11 @@ POLICY_MAP
    'policy-map'
 ;
 
+POP2
+:
+   'pop2'
+;
+
 POP3
 :
    'pop3'
@@ -2919,6 +3039,11 @@ POWEROFF
 PPP
 :
    'ppp'
+;
+
+PPTP
+:
+   'pptp'
 ;
 
 PRE_SHARED_KEY
@@ -3059,6 +3184,11 @@ QUIT
 RADIUS
 :
    'radius'
+;
+
+RADIUS_ACCT
+:
+   'radius-acct'
 ;
 
 RADIUS_COMMON_PW
@@ -3396,6 +3526,11 @@ SECONDARY
    'secondary'
 ;
 
+SECUREID_UDP
+:
+   'secureid-udp'
+;
+
 SECURITY
 :
    'security'
@@ -3641,6 +3776,11 @@ SPLIT_TUNNEL_POLICY
    'split-tunnel-policy'
 ;
 
+SQLNET
+:
+   'sqlnet'
+;
+
 SRR_QUEUE
 :
    'srr-queue'
@@ -3838,6 +3978,11 @@ TAG_SWITCHING
    'tag-switching'
 ;
 
+TALK
+:
+   'talk'
+;
+
 TB_VLAN1
 :
    'tb-vlan1'
@@ -3906,6 +4051,11 @@ THREE_DES
 THREE_DES_SHA1
 :
    '3des-sha1'
+;
+
+TIME
+:
+   'time'
 ;
 
 TIME_EXCEEDED
@@ -4118,6 +4268,11 @@ USERNAME
    'username'
 ;
 
+UUCP
+:
+   'uucp'
+;
+
 VALIDATION_USAGE
 :
    'validation-usage'
@@ -4270,6 +4425,11 @@ WEIGHTING
    'weighting'
 ;
 
+WHO
+:
+   'who'
+;
+
 WHOIS
 :
    'whois'
@@ -4318,6 +4478,11 @@ X29
 XCONNECT
 :
    'xconnect'
+;
+
+XDMCP
+:
+   'xdmcp'
 ;
 
 XLATE
