@@ -26,6 +26,18 @@ match_community_list_rm_stanza
    )+ NEWLINE
 ;
 
+match_extcommunity_rm_stanza
+:
+   MATCH EXTCOMMUNITY
+   (
+      name_list +=
+      (
+         VARIABLE
+         | DEC
+      )
+   )+ NEWLINE
+;
+
 match_ip_access_list_rm_stanza
 :
    MATCH IP ADDRESS
@@ -64,6 +76,7 @@ match_rm_stanza
 :
    match_as_path_access_list_rm_stanza
    | match_community_list_rm_stanza
+   | match_extcommunity_rm_stanza
    | match_ip_access_list_rm_stanza
    | match_ip_prefix_list_rm_stanza
    | match_ipv6_rm_stanza

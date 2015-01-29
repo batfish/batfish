@@ -1325,6 +1325,11 @@ EXTCOMM_LIST
    'extcomm-list'
 ;
 
+EXTCOMMUNITY
+:
+   'extcommunity'
+;
+
 EXTCOMMUNITY_LIST
 :
    'extcommunity-list'
