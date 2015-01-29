@@ -46,6 +46,7 @@ famt_inet_tail
    | ifamt_filter
    | ifamt_mtu
    | ifamt_no_redirects
+   | ifamt_null
 ;
 
 famt_inet6
@@ -132,6 +133,11 @@ ifamt_mtu
 ifamt_no_redirects
 :
    NO_REDIRECTS
+;
+
+ifamt_null
+:
+   SAMPLING s_null_filler
 ;
 
 interface_mode
