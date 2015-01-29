@@ -2441,6 +2441,11 @@ NAMES
    'names'
 ;
 
+NAMESERVER
+:
+   'nameserver'
+;
+
 NAT
 :
    'nat'

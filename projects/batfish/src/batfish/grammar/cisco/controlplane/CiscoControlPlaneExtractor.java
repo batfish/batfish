@@ -193,6 +193,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else if (ctx.MLAG() != null) {
          return 6784;
       }
+      else if (ctx.NAMESERVER() != null) {
+         return 42;
+      }
       else if (ctx.NETBIOS_DGM() != null) {
          return 138;
       }
