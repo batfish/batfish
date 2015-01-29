@@ -150,6 +150,7 @@ null_block_substanza
          | ACCOUNTING_SERVER_GROUP
          | ACTION
          | ACTIVATION_CHARACTER
+         | ADDRESS
          | ADDRESS_POOL
          | ADMINISTRATIVE_WEIGHT
          | AESA
@@ -319,6 +320,7 @@ null_block_substanza
          | POLICY_MAP
          | PORT
          | PREDICTOR
+         | PRE_SHARED_KEY
          | PREEMPT
          | PREFIX
          | PRI_GROUP
@@ -336,6 +338,7 @@ null_block_substanza
          | RECORD
          | RECORD_ENTRY
          | REDISTRIBUTE
+         | RELOAD
          | RELOAD_DELAY
          | REMARK
          | REMOTE_IP
@@ -460,7 +463,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | ACCOUNTING_PORT
       | ACTION
       | ACTIVE
-      | ADDRESS
       | ALERT_GROUP
       | ALIAS
       | ANYCONNECT
@@ -686,7 +688,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | PORT_CHANNEL
       | PORT_OBJECT
       | POWER
-      | PRE_SHARED_KEY
       | PRIORITY
       | PRIORITY_QUEUE
       | PRIVILEGE
