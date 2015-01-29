@@ -111,6 +111,7 @@ null_block_stanza
       | REDUNDANCY
       | RMON
       | ROLE
+      | SAMPLER
       | SCCP
       | SFLOW
       | SPANNING_TREE

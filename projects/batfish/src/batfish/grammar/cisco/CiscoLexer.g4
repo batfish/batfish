@@ -3316,6 +3316,11 @@ SAME_SECURITY_TRAFFIC
    'same-security-traffic'
 ;
 
+SAMPLER
+:
+   'sampler'
+;
+
 SAP
 :
    'sap'
