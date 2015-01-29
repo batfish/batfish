@@ -3006,6 +3006,11 @@ PSEUDOWIRE_CLASS
    'pseudowire-class'
 ;
 
+PTP
+:
+   'ptp'
+;
+
 QOS
 :
    'qos'

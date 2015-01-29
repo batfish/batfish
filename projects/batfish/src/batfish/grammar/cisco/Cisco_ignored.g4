@@ -107,10 +107,12 @@ null_block_stanza
       | POLICY_MAP
       | POWEROFF
       | PSEUDOWIRE_CLASS
+      | PTP
       | REDUNDANCY
       | RMON
       | ROLE
       | SCCP
+      | SFLOW
       | SPANNING_TREE
       | STCAPP
       | TACACS
@@ -394,6 +396,7 @@ null_block_substanza
          | TRANSPORT
          | TRIGGER
          | TRUNK
+         | TRUST
          | TUNNEL
          | TUNNEL_GROUP
          | UDP_JITTER
@@ -718,7 +721,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SERVICE
       | SERVICE_POLICY
       | SETUP
-      | SFLOW
       | SHELL
       | SMTP_SERVER
       | SNMP
