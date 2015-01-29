@@ -4500,13 +4500,6 @@ XML_CONFIG
    'xml-config'
 ;
 
-// commonly used to hide password and keys
-
-XX_HIDE
-:
-   'xx' 'x'+
-;
-
 // Other Tokens
 
 COMMUNITY_NUMBER

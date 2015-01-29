@@ -791,7 +791,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | X29
       | XLATE
       | XML SERVER
-      | XX_HIDE
    )
    (
       remaining_tokens += ~NEWLINE
