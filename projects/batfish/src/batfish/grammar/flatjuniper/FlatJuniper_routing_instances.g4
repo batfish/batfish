@@ -223,6 +223,7 @@ rit_vrf_target_tail
 :
    vtt_community
    | vtt_export
+   | vtt_import
 ;
 
 rot_aggregate
@@ -443,4 +444,9 @@ vtt_community
 vtt_export
 :
    EXPORT extended_community
+;
+
+vtt_import
+:
+   IMPORT extended_community
 ;
