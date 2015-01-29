@@ -92,6 +92,7 @@ null_block_stanza
             | HARDWARE
          )
       )
+      | KRON
       | L2TP_CLASS
       | LINE
       | MAC
@@ -318,6 +319,7 @@ null_block_substanza
          | PINNING
          | POLICE
          | POLICY
+         | POLICY_LIST
          | POLICY_MAP
          | PORT
          | PREDICTOR
@@ -387,6 +389,7 @@ null_block_substanza
          | SWITCHBACK
          | SWITCHPORT
          | SYNC
+         | SYSTEM_PRIORITY
          | TAG
          | TB_VLAN1
          | TB_VLAN2

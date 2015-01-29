@@ -1921,6 +1921,11 @@ KEYRING
    'keyring'
 ;
 
+KRON
+:
+   'kron'
+;
+
 L2TP
 :
    'l2tp'
@@ -3786,6 +3791,11 @@ SYSOPT
 SYSTEM
 :
    'system'
+;
+
+SYSTEM_PRIORITY
+:
+   'system-priority'
 ;
 
 TABLE_MAP
