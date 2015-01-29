@@ -178,17 +178,41 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else if (ctx.AH() != null) {
          return IpProtocol.AHP;
       }
+      else if (ctx.DSTOPTS() != null) {
+         return IpProtocol.IPv6_Opts;
+      }
+      else if (ctx.EGP() != null) {
+         return IpProtocol.EGP;
+      }
       else if (ctx.ESP() != null) {
          return IpProtocol.ESP;
+      }
+      else if (ctx.FRAGMENT() != null) {
+         return IpProtocol.IPv6_Frag;
       }
       else if (ctx.GRE() != null) {
          return IpProtocol.GRE;
       }
+      else if (ctx.HOP_BY_HOP() != null) {
+         return IpProtocol.HOPOPT;
+      }
       else if (ctx.ICMP() != null) {
          return IpProtocol.ICMP;
       }
+      else if (ctx.ICMP6() != null) {
+         return IpProtocol.IPv6_ICMP;
+      }
+      else if (ctx.ICMPV6() != null) {
+         return IpProtocol.IPv6_ICMP;
+      }
       else if (ctx.IGMP() != null) {
          return IpProtocol.IGMP;
+      }
+      else if (ctx.IPIP() != null) {
+         return IpProtocol.IPINIP;
+      }
+      else if (ctx.IPV6() != null) {
+         return IpProtocol.IPv6;
       }
       else if (ctx.OSPF() != null) {
          return IpProtocol.OSPF;
@@ -198,6 +222,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       else if (ctx.RSVP() != null) {
          return IpProtocol.RSVP;
+      }
+      else if (ctx.SCTP() != null) {
+         return IpProtocol.SCTP;
       }
       else if (ctx.TCP() != null) {
          return IpProtocol.TCP;

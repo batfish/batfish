@@ -404,6 +404,11 @@ DSCP
    'dscp'
 ;
 
+DSTOPTS
+:
+   'dstopts'
+;
+
 DUMPONPANIC
 :
    'dump-on-panic'
@@ -417,6 +422,11 @@ ECHO_REPLY
 ECHO_REQUEST
 :
    'echo-request'
+;
+
+EGP
+:
+   'egp'
 ;
 
 ENABLE
@@ -539,6 +549,11 @@ FORWARDING_TABLE
    'forwarding-table'
 ;
 
+FRAGMENT
+:
+   'fragment'
+;
+
 FRAGMENTATION_NEEDED
 :
    'fragmentation-needed'
@@ -599,6 +614,11 @@ HOLD_TIME
    'hold-time'
 ;
 
+HOP_BY_HOP
+:
+   'hop-by-hop'
+;
+
 HOST
 :
    'host'
@@ -637,6 +657,11 @@ ICMP_CODE
 ICMP_TYPE
 :
    'icmp-type'
+;
+
+ICMP6
+:
+   'icmp6'
 ;
 
 ICMPV6
@@ -777,6 +802,16 @@ INTERNAL
 IP
 :
    'ip'
+;
+
+IPIP
+:
+   'ipip'
+;
+
+IPV6
+:
+   'ipv6'
 ;
 
 IS_FRAGMENT
@@ -1472,6 +1507,11 @@ SAMPLE
 SAMPLING
 :
    'sampling'
+;
+
+SCTP
+:
+   'sctp'
 ;
 
 SECURITY
