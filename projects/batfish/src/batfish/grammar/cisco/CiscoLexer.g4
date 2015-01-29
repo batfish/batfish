@@ -5250,9 +5250,9 @@ M_NEIGHBOR_IPV6_PREFIX
    ) -> type ( IPV6_PREFIX ), popMode
 ;
 
-M_NEIGHBOR_VARIABLE
+M_Neighbor_VARIABLE
 :
-   F_Variable_VarChar -> type(VARIABLE), popMode
+   F_Variable_VarChar+ -> type(VARIABLE), popMode
 ;
 
 M_NEIGHBOR_NEWLINE
