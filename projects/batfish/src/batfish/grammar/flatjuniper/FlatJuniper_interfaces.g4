@@ -212,6 +212,7 @@ it_null
       | GIGETHER_OPTIONS
       | TRACEOPTIONS
       | TRAPS
+      | TUNNEL
    ) s_null_filler
 ;
 
