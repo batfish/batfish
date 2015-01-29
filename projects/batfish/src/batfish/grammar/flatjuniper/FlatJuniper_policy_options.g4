@@ -40,6 +40,11 @@ ct_members
    )
 ;
 
+fromt_area
+:
+   AREA area = IP_ADDRESS
+;
+
 fromt_as_path
 :
    AS_PATH name = variable
@@ -425,7 +430,8 @@ tt_from
 
 tt_from_tail
 :
-   fromt_as_path
+   fromt_area
+   | fromt_as_path
    | fromt_color
    | fromt_community
    | fromt_family
