@@ -68,6 +68,7 @@ null_block_stanza
                ACCESS_LIST LOGGING
             )
             | ACCOUNTING_LIST
+            | ACCOUNTING_THRESHOLD
             | DECAP_GROUP
             | DHCP
             | FLOW_TOP_TALKERS
