@@ -219,6 +219,7 @@ null_standalone_if_stanza
                (
                   AUTHENTICATION
                   | MESSAGE_DIGEST_KEY
+                  | MTU_IGNORE
                   | NETWORK
                   | PRIORITY
                )

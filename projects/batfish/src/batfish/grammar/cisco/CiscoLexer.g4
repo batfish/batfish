@@ -2496,6 +2496,11 @@ MTU
    'mtu'
 ;
 
+MTU_IGNORE
+:
+   'mtu-ignore'
+;
+
 MULTICAST
 :
    'multicast'
