@@ -112,6 +112,7 @@ bgp_tail
    | description_bgp_tail
    | distribute_list_bgp_tail
    | ebgp_multihop_bgp_tail
+   | local_as_bgp_tail
    | maximum_peers_bgp_tail
    | network_bgp_tail
    | network6_bgp_tail
@@ -190,6 +191,11 @@ filter_list_bgp_tail
 inherit_peer_session_bgp_tail
 :
    INHERIT PEER_SESSION name = variable NEWLINE
+;
+
+local_as_bgp_tail
+:
+   LOCAL_AS as = DEC NEWLINE
 ;
 
 maximum_peers_bgp_tail
