@@ -33,6 +33,11 @@ fwfromt_destination_port
    )
 ;
 
+fwfromt_destination_prefix_list
+:
+   DESTINATION_PREFIX_LIST variable
+;
+
 fwfromt_dscp
 :
    DSCP variable
@@ -208,6 +213,7 @@ fwtt_from_tail
    fwfromt_address
    | fwfromt_destination_address
    | fwfromt_destination_port
+   | fwfromt_destination_prefix_list
    | fwfromt_dscp
    | fwfromt_exp
    | fwfromt_icmp_code

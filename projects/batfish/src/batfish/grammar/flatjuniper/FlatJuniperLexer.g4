@@ -379,6 +379,11 @@ DESTINATION_PORT
    'destination-port'
 ;
 
+DESTINATION_PREFIX_LIST
+:
+   'destination-prefix-list'
+;
+
 DESTINATION_UNREACHABLE
 :
    'destination-unreachable'
