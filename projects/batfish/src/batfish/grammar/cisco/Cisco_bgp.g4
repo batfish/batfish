@@ -15,7 +15,9 @@ address_family_header
 :
    ADDRESS_FAMILY
    (
-      IPV4
+      (
+         IPV4 MDT?
+      )
       | IPV6
       | VPNV4
       | VPNV6

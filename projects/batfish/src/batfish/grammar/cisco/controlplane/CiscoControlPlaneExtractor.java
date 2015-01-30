@@ -653,6 +653,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private boolean _pedantic;
 
+   private BgpPeerGroup _preAddressFamilyPeerGroup;
+
    private final Set<String> _rulesWithSuppressedWarnings;
 
    private final String _text;
@@ -667,6 +669,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _parser = parser;
       _rulesWithSuppressedWarnings = rulesWithSuppressedWarnings;
       _pedantic = pedantic;
+   }
+
+   @Override
+   public void enterAddress_family_header(Address_family_headerContext ctx) {
+      if (_preAddressFamilyPeerGroup != null) {
+         throw new BatfishException("should not happen");
+      }
+      _preAddressFamilyPeerGroup = _currentPeerGroup;
+      if (ctx.VPNV4() != null || ctx.VPNV6() != null || ctx.IPV6() != null
+            || ctx.MDT() != null || ctx.MULTICAST() != null
+            || ctx.VRF() != null) {
+         _currentPeerGroup = _dummyPeerGroup;
+      }
    }
 
    @Override
@@ -1023,6 +1038,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException(
                "no peer or peer group to activate in this context");
       }
+   }
+
+   @Override
+   public void exitAddress_family_header(Address_family_headerContext ctx) {
+      _currentPeerGroup = _preAddressFamilyPeerGroup;
+      _preAddressFamilyPeerGroup = null;
    }
 
    @Override

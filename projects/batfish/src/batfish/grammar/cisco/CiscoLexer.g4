@@ -2341,6 +2341,11 @@ MDIX
    'mdix'
 ;
 
+MDT
+:
+   'mdt'
+;
+
 MEDIA_TERMINATION
 :
    'media-termination'
