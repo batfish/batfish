@@ -324,7 +324,7 @@ locals [boolean again]
    (
       IP
       | IPV6
-   ) PREFIX_LIST name = VARIABLE
+   ) PREFIX_LIST name = ~NEWLINE
    (
       ip_prefix_list_tail
       | ip_prefix_list_null_tail
@@ -332,7 +332,7 @@ locals [boolean again]
    {
 		$again = (_input.LT(1).getType() == IP || _input.LT(1).getType() == IPV6) &&
 		_input.LT(2).getType() == PREFIX_LIST &&
-		_input.LT(3).getType() == VARIABLE &&
+		_input.LT(3).getType() != NEWLINE &&
 		_input.LT(3).getText().equals($name.text);
 	}
 
@@ -440,7 +440,7 @@ nexus_prefix_list_stanza
    (
       IP
       | IPV6
-   ) PREFIX_LIST name = ~NEWLINE NEWLINE ip_prefix_list_tail*
+   ) PREFIX_LIST name = variable NEWLINE ip_prefix_list_tail*
 ;
 
 null_as_path_regex
