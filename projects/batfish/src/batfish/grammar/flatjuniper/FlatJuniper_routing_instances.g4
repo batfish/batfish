@@ -351,10 +351,12 @@ rst_route
 
 rst_route_tail
 :
-   srt_discard
+   srt_active
+   | srt_discard
    | srt_install
    | srt_next_hop
    | srt_next_table
+   | srt_passive
    | srt_readvertise
    | srt_reject
    | srt_resolve
@@ -392,6 +394,11 @@ s_routing_options_tail
    | rot_static
 ;
 
+srt_active
+:
+   ACTIVE
+;
+
 srt_discard
 :
    DISCARD
@@ -414,6 +421,11 @@ srt_next_hop
 srt_next_table
 :
    NEXT_TABLE name = variable
+;
+
+srt_passive
+:
+   PASSIVE
 ;
 
 srt_readvertise
