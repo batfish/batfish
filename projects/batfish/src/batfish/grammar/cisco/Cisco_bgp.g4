@@ -547,6 +547,7 @@ router_bgp_stanza
    ROUTER BGP procnum = DEC NEWLINE
    (
       address_family_rb_stanza
+      | aggregate_address_rb_stanza
       | always_compare_med_rb_stanza
       | bgp_listen_range_rb_stanza
       | bgp_tail
