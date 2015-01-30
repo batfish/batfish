@@ -129,7 +129,7 @@ ip_ospf_dead_interval_minimal_if_stanza
 
 ip_ospf_passive_interface_if_stanza
 :
-   IP OSPF PASSIVE_INTERFACE NEWLINE
+   NO? IP OSPF PASSIVE_INTERFACE NEWLINE
 ;
 
 ip_policy_if_stanza
