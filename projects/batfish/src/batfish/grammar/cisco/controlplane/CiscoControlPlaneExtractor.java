@@ -1333,8 +1333,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          break;
 
       default:
-         throw new BatfishException(
-               "Do not currently support more than two AS'es in Cisco as-path regexes");
+         pedantic("Do not currently support more than two AS'es in Cisco as-path regexes");
       }
       _currentAsPathAcl.addLine(line);
    }
