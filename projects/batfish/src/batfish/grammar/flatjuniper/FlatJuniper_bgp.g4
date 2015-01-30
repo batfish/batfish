@@ -92,6 +92,11 @@ bft_null
    ) s_null_filler
 ;
 
+bmt_ttl
+:
+   TTL DEC
+;
+
 bt_advertise_inactive
 :
    ADVERTISE_INACTIVE
@@ -196,7 +201,14 @@ bt_local_as
 
 bt_multihop
 :
-   MULTIHOP TTL DEC
+   MULTIHOP bt_multihop_tail
+;
+
+bt_multihop_tail
+:
+// intentional blank
+
+   | bmt_ttl
 ;
 
 bt_multipath
