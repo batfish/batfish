@@ -1709,6 +1709,10 @@ public class Batfish implements AutoCloseable {
          vc = extractor.getVendorConfiguration();
          // at this point we should have a VendorConfiguration vc
          String hostname = vc.getHostname();
+         if (hostname == null) {
+            throw new BatfishException("No hostname set in file: \""
+                  + currentFile + "\"");
+         }
          if (vendorConfigurations.containsKey(hostname)) {
             throw new BatfishException("Duplicate hostname \""
                   + vc.getHostname() + "\" found in " + currentFile + "\n");
