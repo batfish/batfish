@@ -1789,6 +1789,11 @@ IGMP
    'igmp'
 ;
 
+IGNORE
+:
+   'ignore'
+;
+
 IGP
 :
    'igp'

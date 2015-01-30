@@ -194,6 +194,7 @@ null_standalone_if_stanza
       (
          HSRP VERSION
       )
+      | IGNORE
       |
       (
          IP
