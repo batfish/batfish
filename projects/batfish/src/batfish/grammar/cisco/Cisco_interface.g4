@@ -192,6 +192,10 @@ null_standalone_if_stanza
       | HOLD_QUEUE
       |
       (
+         HSRP VERSION
+      )
+      |
+      (
          IP
          (
             ACCOUNTING
