@@ -128,15 +128,14 @@ port
    | LPD
    | LOGIN
    | LOTUSNOTES
-   | MOBILE_IP
    | MLAG
+   | MOBILE_IP
    | NAMESERVER
    | NETBIOS_DGM
    | NETBIOS_NS
    | NETBIOS_SS
    | NETBIOS_SSN
    | NNTP
-   | NTP
    | NON500_ISAKMP
    | NTP
    | PCANYWHERE_DATA
