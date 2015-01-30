@@ -2031,6 +2031,11 @@ LACP
    'lacp'
 ;
 
+LAN
+:
+   'lan'
+;
+
 LANE
 :
    'lane'

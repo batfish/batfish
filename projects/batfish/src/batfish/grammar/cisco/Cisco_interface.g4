@@ -354,7 +354,7 @@ priority_hsprc_stanza
 
 shutdown_if_stanza
 :
-   NO? SHUTDOWN FORCE? NEWLINE
+   NO? SHUTDOWN FORCE? LAN? NEWLINE
 ;
 
 switchport_access_if_stanza
