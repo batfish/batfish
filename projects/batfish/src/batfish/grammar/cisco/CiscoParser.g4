@@ -61,7 +61,10 @@ cisco_configuration
 
 hostname_stanza
 :
-   HOSTNAME name = ~NEWLINE* NEWLINE
+   (
+      HOSTNAME
+      | SWITCHNAME
+   ) name = ~NEWLINE* NEWLINE
 ;
 
 ip_default_gateway_stanza

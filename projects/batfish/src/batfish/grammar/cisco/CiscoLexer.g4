@@ -3913,6 +3913,11 @@ SWITCHING_MODE
    'switching-mode'
 ;
 
+SWITCHNAME
+:
+   'switchname'
+;
+
 SWITCHPORT
 :
    'switchport'
