@@ -645,7 +645,10 @@ template_peer_session_rb_stanza
    (
       bgp_tail
       | remote_as_bgp_tail
-   )+ EXIT_PEER_SESSION NEWLINE
+   )*
+   (
+      EXIT_PEER_SESSION NEWLINE
+   )?
 ;
 
 update_source_bgp_tail
