@@ -2681,6 +2681,11 @@ NEXT_HOP_SELF
    'next-hop-self'
 ;
 
+NEXTHOP
+:
+   'nexthop'
+;
+
 NNTP
 :
    'nntp'

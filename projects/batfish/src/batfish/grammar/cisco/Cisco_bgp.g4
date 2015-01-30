@@ -364,6 +364,7 @@ null_bgp_tail
                LISTEN LIMIT
             )
             | LOG_NEIGHBOR_CHANGES
+            | NEXTHOP
          )
       )
       | DESCRIPTION
