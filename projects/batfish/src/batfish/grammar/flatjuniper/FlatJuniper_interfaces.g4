@@ -33,6 +33,11 @@ famt_bridge_tail
    | brt_vlan_id_list
 ;
 
+famt_ccc
+:
+   CCC s_null_filler
+;
+
 famt_inet
 :
    INET famt_inet_tail
@@ -192,6 +197,7 @@ it_family
 it_family_tail
 :
    famt_bridge
+   | famt_ccc
    | famt_inet
    | famt_inet6
    | famt_iso
