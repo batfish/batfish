@@ -382,11 +382,15 @@ null_bgp_tail
       | MAXIMUM_PREFIX
       | MAXIMUM_PREFIX
       | MAXIMUM_ROUTES
-      | PASSWORD
       |
       (
-         NO ROUTE_MAP
+         NO
+         (
+            REMOTE_AS
+            | ROUTE_MAP
+         )
       )
+      | PASSWORD
       | SEND_LABEL
       | SOFT_RECONFIGURATION
       | SYNCHRONIZATION
