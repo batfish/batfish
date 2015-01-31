@@ -249,8 +249,9 @@ public class Hierarchy {
             String newStatementText = sb.toString();
             // get rid of last " ", which matters for tokens where whitespace is
             // not ignored
-            newStatementText = newStatementText.substring(0,
-                  newStatementText.length() - 1);
+            newStatementText = "set "
+                  + newStatementText
+                        .substring(0, newStatementText.length() - 1) + "\n";
             TerminalNode set = new TerminalNodeImpl(new CommonToken(
                   FlatJuniperLexer.SET, "set"));
             Set_line_tailContext setLineTail = new Set_line_tailContext(
@@ -264,7 +265,11 @@ public class Hierarchy {
 
             FlatJuniperCombinedParser parser = new FlatJuniperCombinedParser(
                   newStatementText, true, true);
-            StatementContext newStatement = parser.getParser().statement();
+            Flat_juniper_configurationContext newConfiguration = parser
+                  .getParser().flat_juniper_configuration();
+            // StatementContext newStatement = parser.getParser().statement();
+            StatementContext newStatement = newConfiguration.set_line(0)
+                  .set_line_tail().statement();
             newStatement.parent = setLineTail;
 
             setLineTail.children = new ArrayList<ParseTree>();
@@ -398,6 +403,9 @@ public class Hierarchy {
             sb.append(pathNode._text + " ");
          }
          String newStatementText = sb.toString();
+         newStatementText = "set "
+               + newStatementText.substring(0, newStatementText.length() - 1)
+               + "\n";
          TerminalNode set = new TerminalNodeImpl(new CommonToken(
                FlatJuniperLexer.SET, "set"));
          Set_line_tailContext setLineTail = new Set_line_tailContext(setLine,
@@ -411,7 +419,10 @@ public class Hierarchy {
 
          FlatJuniperCombinedParser parser = new FlatJuniperCombinedParser(
                newStatementText, true, true);
-         StatementContext newStatement = parser.getParser().statement();
+         Flat_juniper_configurationContext newConfiguration = parser
+               .getParser().flat_juniper_configuration();
+         StatementContext newStatement = newConfiguration.set_line(0)
+               .set_line_tail().statement();
          newStatement.parent = setLineTail;
 
          setLineTail.children = new ArrayList<ParseTree>();
