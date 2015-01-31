@@ -92,6 +92,7 @@ null_block_stanza
             | HARDWARE
          )
       )
+      | KEY
       | KRON
       | L2TP_CLASS
       | LINE
@@ -270,6 +271,7 @@ null_block_substanza
          | IPV6_ADDRESS_POOL
          | ISAKMP
          | KEEPALIVE_ENABLE
+         | KEY_STRING
          | KEYPAIR
          | KEYRING
          | L2TP

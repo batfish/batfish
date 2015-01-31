@@ -2019,7 +2019,12 @@ KERBEROS
 
 KEY
 :
-   'key' -> pushMode(M_KEY)
+   'key' -> pushMode(M_Key)
+;
+
+KEY_STRING
+:
+   'key-string'
 ;
 
 KEYPAIR
@@ -5435,14 +5440,14 @@ M_ISO_Address_WS
    F_Whitespace+ -> channel(HIDDEN)
 ;
 
-mode M_KEY;
+mode M_Key;
 
-M_KEY_NEWLINE
+M_Key_NEWLINE
 :
    F_Newline+ -> type(NEWLINE), popMode
 ;
 
-M_KEY_NON_NEWLINE
+M_Key_NON_NEWLINE
 :
    F_NonNewline+
 ;
