@@ -234,6 +234,7 @@ it_unit
 it_unit_tail
 :
 // intentional blank
+
    | it_common
 ;
 
