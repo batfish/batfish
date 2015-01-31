@@ -2566,6 +2566,11 @@ M_Description_WS
 
 mode M_Interface;
 
+M_Interface_QUOTE
+:
+   '"' -> channel(HIDDEN), mode(M_InterfaceQuote)
+;
+
 M_Interface_VARIABLE
 :
    F_Variable_RequiredVarChar F_Variable_InterfaceVarChar* -> type(VARIABLE), popMode
@@ -2579,6 +2584,22 @@ M_Interface_WILDCARD
 M_Interface_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_InterfaceQuote;
+M_InterfaceQuote_QUOTE
+:
+   '"' -> channel(HIDDEN), popMode
+;
+
+M_InterfaceQuote_VARIABLE
+:
+   F_Variable_RequiredVarChar F_Variable_InterfaceVarChar* -> type(VARIABLE)
+;
+
+M_InterfaceQuote_WILDCARD
+:
+   '<' ~'>'* '>' -> type(WILDCARD)
 ;
 
 mode M_MacAddress;
