@@ -358,6 +358,7 @@ rst_route_tail
    | srt_next_table
    | srt_no_readvertise
    | srt_passive
+   | srt_preference
    | srt_readvertise
    | srt_reject
    | srt_resolve
@@ -432,6 +433,11 @@ srt_no_readvertise
 srt_passive
 :
    PASSIVE
+;
+
+srt_preference
+:
+   PREFERENCE pref = DEC
 ;
 
 srt_readvertise
