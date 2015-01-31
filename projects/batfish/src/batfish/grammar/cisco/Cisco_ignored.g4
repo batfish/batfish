@@ -124,6 +124,7 @@ null_block_stanza
       | TEMPLATE
       | TERMINAL
       | TRACE
+      | TRACK
       | TRANSCEIVER
       | VDC
       |
@@ -302,6 +303,7 @@ null_block_substanza
          | NETWORK
          | NODE
          | NOTIFY
+         | OBJECT
          | OPEN
          | PARAMETERS
          | PARENT
@@ -397,6 +399,7 @@ null_block_substanza
          | TB_VLAN2
          | TCP_CONNECT
          | TERMINAL_TYPE
+         | THRESHOLD
          | TIMEOUT
          | TIMEOUTS
          | TIMER
@@ -681,7 +684,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | NETWORK_CLOCK_PARTICIPATE
       | NETWORK_CLOCK_SELECT
       | NTP
-      | OBJECT
       | OBJECT_GROUP
       | OWNER
       | PAGER
@@ -758,7 +760,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | TFTP_SERVER
       | THREAT_DETECTION
       | TLS_PROXY
-      | TRACK
       | TRANSLATE
       | TRANSPORT
       | TUNNEL_GROUP_LIST
