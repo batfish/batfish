@@ -250,6 +250,11 @@ set_origin_rm_stanza
    ) NEWLINE
 ;
 
+set_tag_rm_stanza
+:
+   SET TAG tag = DEC NEWLINE
+;
+
 set_weight_rm_stanza
 :
    SET WEIGHT weight = DEC NEWLINE
@@ -273,6 +278,7 @@ set_rm_stanza
    | set_next_hop_peer_address_stanza
    | set_next_hop_rm_stanza
    | set_origin_rm_stanza
+   | set_tag_rm_stanza
    | set_weight_rm_stanza
 ;
 
