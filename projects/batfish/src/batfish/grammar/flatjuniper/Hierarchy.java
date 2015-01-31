@@ -460,8 +460,14 @@ public class Hierarchy {
          List<ParseTree> lines = new ArrayList<ParseTree>();
          List<String> prefixes = getApplyPathPrefixes(applyPathPath);
          for (String prefix : prefixes) {
-            boolean ipv6 = prefix.contains(":");
-            String prefixWithMask = prefix + (ipv6 ? "/32" : "/64");
+            String prefixWithMask;
+            if (prefix.contains("/")) {
+               prefixWithMask = prefix;
+            }
+            else {
+               boolean ipv6 = prefix.contains(":");
+               prefixWithMask = prefix + (ipv6 ? "/64" : "/32");
+            }
             basePath.addNode(prefixWithMask);
             Set_lineContext setLine = generateSetLine(basePath,
                   configurationContext);
