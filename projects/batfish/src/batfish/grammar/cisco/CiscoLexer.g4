@@ -2797,6 +2797,11 @@ NO_EXPORT
    'no-export'
 ;
 
+NO_PREPEND
+:
+   'no-prepend'
+;
+
 NO_SUMMARY
 :
    'no-summary'
@@ -3445,6 +3450,11 @@ REMOTE_SPAN
 REMOVED
 :
    '<removed>'
+;
+
+REPLACE_AS
+:
+   'replace-as'
 ;
 
 REQUEST

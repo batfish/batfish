@@ -195,7 +195,11 @@ inherit_peer_session_bgp_tail
 
 local_as_bgp_tail
 :
-   LOCAL_AS as = DEC NEWLINE
+   LOCAL_AS as = DEC
+   (
+      NO_PREPEND
+      | REPLACE_AS
+   )* NEWLINE
 ;
 
 maximum_peers_bgp_tail
