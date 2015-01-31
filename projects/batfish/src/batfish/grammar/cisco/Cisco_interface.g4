@@ -42,6 +42,10 @@ if_stanza
    | ip_ospf_dead_interval_minimal_if_stanza
    | ip_ospf_passive_interface_if_stanza
    | ip_policy_if_stanza
+   | isis_circuit_type_if_stanza
+   | isis_metric_if_stanza
+   | isis_network_if_stanza
+   | isis_tag_if_stanza
    | no_ip_address_if_stanza
    | null_if_stanza
    | shutdown_if_stanza
@@ -135,6 +139,26 @@ ip_ospf_passive_interface_if_stanza
 ip_policy_if_stanza
 :
    IP POLICY ROUTE_MAP name = ~NEWLINE NEWLINE
+;
+
+isis_circuit_type_if_stanza
+:
+   ISIS CIRCUIT_TYPE LEVEL_2_ONLY NEWLINE
+;
+
+isis_metric_if_stanza
+:
+   ISIS METRIC metric = DEC NEWLINE
+;
+
+isis_network_if_stanza
+:
+   ISIS NETWORK POINT_TO_POINT NEWLINE
+;
+
+isis_tag_if_stanza
+:
+   ISIS TAG tag = DEC NEWLINE
 ;
 
 no_ip_address_if_stanza
@@ -248,6 +272,14 @@ null_standalone_if_stanza
       )
       | IPV6
       | ISDN
+      |
+      (
+         ISIS
+         (
+            AUTHENTICATION
+            | LSP_INTERVAL
+         )
+      )
       | KEEPALIVE
       | LANE
       | LAPB

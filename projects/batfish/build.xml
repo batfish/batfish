@@ -283,6 +283,7 @@
                <fileset dir="src/batfish/grammar/cisco" includes="Cisco_common.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="Cisco_ignored.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="Cisco_interface.g4"/>
+               <fileset dir="src/batfish/grammar/cisco" includes="Cisco_isis.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="Cisco_ospf.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="Cisco_rip.g4"/>
                <fileset dir="src/batfish/grammar/cisco" includes="Cisco_routemap.g4"/>

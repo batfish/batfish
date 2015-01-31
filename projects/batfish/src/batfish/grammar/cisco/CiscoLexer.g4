@@ -39,6 +39,7 @@ tokens {
    ACL_NUM_STANDARD,
    COMMUNITY_LIST_NUM_EXPANDED,
    COMMUNITY_LIST_NUM_STANDARD,
+   ISO_ADDRESS,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
    PIPE
@@ -171,6 +172,11 @@ ADMINISTRATIVE_WEIGHT
 ADMISSION
 :
    'admission'
+;
+
+ADVERTISE
+:
+   'advertise'
 ;
 
 AES128_SHA1
@@ -638,6 +644,11 @@ CHAT_SCRIPT
 CIPC
 :
    'cipc'
+;
+
+CIRCUIT_TYPE
+:
+   'circuit-type'
 ;
 
 CITRIX_ICA
@@ -1417,6 +1428,11 @@ FALLBACK_DN
    'fallback-dn'
 ;
 
+FAST_FLOOD
+:
+   'fast-flood'
+;
+
 FEATURE
 :
    'feature'
@@ -1662,6 +1678,11 @@ HASH
 HEARTBEAT_TIME
 :
    'heartbeat-time'
+;
+
+HELLO
+:
+   'hello'
 ;
 
 HELLO_MULTIPLIER
@@ -1961,6 +1982,16 @@ ISDN
    'isdn'
 ;
 
+IS_TYPE
+:
+   'is-type'
+;
+
+ISIS
+:
+   'isis'
+;
+
 ISL
 :
    'isl'
@@ -2069,6 +2100,16 @@ LE
 LEASE
 :
    'lease'
+;
+
+LEVEL_2
+:
+   'level-2'
+;
+
+LEVEL_2_ONLY
+:
+   'level-2-only'
 ;
 
 LDAP_BASE_DN
@@ -2236,6 +2277,21 @@ LRE
    'lre'
 ;
 
+LSP_GEN_INTERVAL
+:
+   'lsp-gen-interval'
+;
+
+LSP_INTERVAL
+:
+   'lsp-interval'
+;
+
+LSP_REFRESH_INTERVAL
+:
+   'lsp-refresh-interval'
+;
+
 LT
 :
    'lt'
@@ -2316,6 +2372,11 @@ MATCH
    'match'
 ;
 
+MAX_LSP_LIFETIME
+:
+   'max-lsp-lifetime'
+;
+
 MAX_METRIC
 :
    'max-metric'
@@ -2389,6 +2450,11 @@ MESSAGE_LENGTH
 METRIC
 :
    'metric'
+;
+
+METRIC_STYLE
+:
+   'metric-style'
 ;
 
 METRIC_TYPE
@@ -2626,6 +2692,11 @@ NEQ
    'neq'
 ;
 
+NET
+:
+   'net' -> pushMode(M_ISO_Address)
+;
+
 NET_UNREACHABLE
 :
    'net-unreachable'
@@ -2861,6 +2932,11 @@ PASSIVE_INTERFACE
    'passive-interface'
 ;
 
+PASSIVE_ONLY
+:
+   'passive-only'
+;
+
 PASSWORD
 :
    'password' -> pushMode(M_COMMENT)
@@ -3069,6 +3145,11 @@ PPP
 PPTP
 :
    'pptp'
+;
+
+PRC_INTERVAL
+:
+   'prc-interval'
 ;
 
 PRE_SHARED_KEY
@@ -3661,6 +3742,11 @@ SET
    'set'
 ;
 
+SET_OVERLOAD_BIT
+:
+   'set-overload-bit'
+;
+
 SETUP
 :
    'setup'
@@ -3739,6 +3825,11 @@ SORT_BY
 SPE
 :
    'spe'
+;
+
+SPF_INTERVAL
+:
+   'spf-interval'
 ;
 
 SOFT_RECONFIGURATION
@@ -4463,6 +4554,11 @@ WHO
 WHOIS
 :
    'whois'
+;
+
+WIDE
+:
+   'wide'
 ;
 
 WINS_SERVER
@@ -5323,6 +5419,18 @@ M_Interface_SLASH
 ;
 
 M_Interface_WS
+:
+   F_Whitespace+ -> channel(HIDDEN)
+;
+
+mode M_ISO_Address;
+
+M_ISO_Address_ISO_ADDRESS
+:
+   F_HexDigit+ ('.' F_HexDigit+)+ -> type(ISO_ADDRESS), popMode
+;
+
+M_ISO_Address_WS
 :
    F_Whitespace+ -> channel(HIDDEN)
 ;
