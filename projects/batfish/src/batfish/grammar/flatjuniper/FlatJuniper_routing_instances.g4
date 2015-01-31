@@ -356,6 +356,7 @@ rst_route_tail
    | srt_install
    | srt_next_hop
    | srt_next_table
+   | srt_no_readvertise
    | srt_passive
    | srt_readvertise
    | srt_reject
@@ -421,6 +422,11 @@ srt_next_hop
 srt_next_table
 :
    NEXT_TABLE name = variable
+;
+
+srt_no_readvertise
+:
+   NO_READVERTISE
 ;
 
 srt_passive
