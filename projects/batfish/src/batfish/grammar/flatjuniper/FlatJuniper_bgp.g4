@@ -92,6 +92,11 @@ bft_null
    ) s_null_filler
 ;
 
+bmt_no_nexthop_change
+:
+   NO_NEXTHOP_CHANGE
+;
+
 bmt_ttl
 :
    TTL DEC
@@ -208,6 +213,7 @@ bt_multihop_tail
 :
 // intentional blank
 
+   | bmt_no_nexthop_change
    | bmt_ttl
 ;
 

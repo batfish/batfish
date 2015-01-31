@@ -1249,6 +1249,11 @@ NO_INSTALL
    'no-install'
 ;
 
+NO_NEXTHOP_CHANGE
+:
+   'no-nexthop-change'
+;
+
 NO_READVERTISE
 :
    'no-readvertise'
