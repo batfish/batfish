@@ -136,8 +136,8 @@ cluster_id_bgp_tail
 :
    CLUSTER_ID
    (
-      id = DEC
-      | id = IP_ADDRESS
+      DEC
+      | IP_ADDRESS
    ) NEWLINE
 ;
 

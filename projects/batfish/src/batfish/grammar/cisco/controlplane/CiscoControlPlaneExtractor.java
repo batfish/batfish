@@ -489,6 +489,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return new Ip(t.getText());
    }
 
+   public static Ip toIp(TerminalNode t) {
+      return new Ip(t.getText());
+   }
+
    public static IpProtocol toIpProtocol(ProtocolContext ctx) {
       if (ctx.DEC() != null) {
          int num = toInteger(ctx.DEC());
@@ -1149,7 +1153,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitCluster_id_bgp_tail(Cluster_id_bgp_tailContext ctx) {
-      Ip clusterId = toIp(ctx.id);
+      Ip clusterId = null;
+      if (ctx.DEC() != null) {
+         long ipAsLong = Long.parseLong(ctx.DEC().getText());
+         clusterId = new Ip(ipAsLong);
+      }
+      else if (ctx.IP_ADDRESS() != null) {
+         clusterId = toIp(ctx.IP_ADDRESS());
+      }
       _currentPeerGroup.setClusterId(clusterId);
    }
 
