@@ -12,7 +12,6 @@ import com.logicblox.connect.Workspace.Relation.UInt64Column;
 import batfish.representation.Ip;
 import batfish.representation.IpProtocol;
 import batfish.representation.NamedPort;
-import batfish.util.Util;
 
 public class EntityTable {
 
@@ -208,7 +207,7 @@ public class EntityTable {
       String dstNode = _advertDstNodes[listIndex];
       String localPref = Long.toString(_advertLocalPrefs[listIndex]);
       String med = Long.toString(_advertMeds[listIndex]);
-      String originatorIp = Util.longToIp(_advertOriginatorIps[listIndex]);
+      String originatorIp = new Ip(_advertOriginatorIps[listIndex]).toString();
       String originType = _advertOriginTypes[listIndex];
       return "BgpAdvert<" + type + ", " + network + ", " + nextHopIp + ", "
             + srcIp + ", " + dstIp + ", " + srcProtocol + ", " + srcNode + ", "

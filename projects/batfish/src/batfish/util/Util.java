@@ -120,34 +120,6 @@ public class Util {
       return upper.toString() + ":" + lower;
    }
 
-   public static String longToIp(long i) {
-      return ((i >> 24) & 0xFF) + "." + ((i >> 16) & 0xFF) + "."
-            + ((i >> 8) & 0xFF) + "." + (i & 0xFF);
-   }
-
-   public static String longToZ3Hex16(long l) {
-      return "#x" + String.format("%04x", l);
-   }
-
-   public static String longToZ3Hex32(long l) {
-      return "#x" + String.format("%08x", l);
-   }
-
-   public static int nCr(int n, int r) {
-      int product = 1;
-      int rPrime;
-      if (r < n / 2) {
-         rPrime = n - r;
-      }
-      else {
-         rPrime = r;
-      }
-      for (int i = n; i > rPrime; i--) {
-         product *= i;
-      }
-      return product;
-   }
-
    public static long numSubnetBitsToSubnetLong(int numBits) {
       long val = 0;
       for (int i = 31; i > 31 - numBits; i--) {

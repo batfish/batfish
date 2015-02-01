@@ -122,7 +122,9 @@ public class Ip implements Comparable<Ip>, Serializable {
 
    @Override
    public String toString() {
-      return Util.longToIp(_ip);
+      return ((_ip >> 24) & 0xFF) + "." + ((_ip >> 16) & 0xFF) + "."
+            + ((_ip >> 8) & 0xFF) + "." + (_ip & 0xFF);
+
    }
 
 }

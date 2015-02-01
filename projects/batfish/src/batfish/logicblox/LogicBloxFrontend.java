@@ -50,7 +50,7 @@ import com.logicblox.connect.Workspace.Result.Failure;
 import com.logicblox.connect.Workspace.Result.QueryPredicate;
 
 import batfish.main.BatfishException;
-import batfish.util.Util;
+import batfish.representation.Ip;
 
 public class LogicBloxFrontend {
 
@@ -205,8 +205,8 @@ public class LogicBloxFrontend {
             ec = (EntityColumn) column;
             long[] ips = ((Int64Column) ec.getRefModeColumn().unwrap())
                   .getRows();
-            for (long ip : ips) {
-               textColumn.add(Util.longToIp(ip));
+            for (long ipAsLong : ips) {
+               textColumn.add(new Ip(ipAsLong).toString());
             }
             break;
 
@@ -262,7 +262,7 @@ public class LogicBloxFrontend {
          case IP:
             long[] ipsAsLongs = ((Int64Column) column).getRows();
             for (Long ipAsLong : ipsAsLongs) {
-               textColumn.add(Util.longToIp(ipAsLong));
+               textColumn.add(new Ip(ipAsLong).toString());
             }
             break;
 
