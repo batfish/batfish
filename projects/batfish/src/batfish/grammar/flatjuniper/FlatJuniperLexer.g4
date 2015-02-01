@@ -839,6 +839,11 @@ INTERFACE_SPECIFIC
    'interface-specific'
 ;
 
+INTERFACE_TRANSMIT_STATISTICS
+:
+   'interface-transmit-statistics'
+;
+
 INTERFACES
 :
    'interfaces'
