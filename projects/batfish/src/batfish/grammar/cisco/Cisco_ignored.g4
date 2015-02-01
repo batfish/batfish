@@ -211,6 +211,7 @@ null_block_substanza
          | ENCAPSULATION
          | ENCRYPTION
          | ENROLLMENT
+         | ERSPAN_ID
          | ESCAPE_CHARACTER
          | EXCEED_ACTION
          | EXEC

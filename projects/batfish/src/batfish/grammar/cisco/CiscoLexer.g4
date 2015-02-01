@@ -1271,6 +1271,11 @@ ERRDISABLE
    'errdisable'
 ;
 
+ERSPAN_ID
+:
+   'erspan-id'
+;
+
 ESCAPE_CHARACTER
 :
    'escape-character'
