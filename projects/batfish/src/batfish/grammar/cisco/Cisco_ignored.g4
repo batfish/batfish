@@ -105,6 +105,7 @@ null_block_stanza
       | MODULE
       | MONITOR
       | NO_BANNER
+      | ONE
       | OPENFLOW
       | PLAT
       | POLICY_MAP
