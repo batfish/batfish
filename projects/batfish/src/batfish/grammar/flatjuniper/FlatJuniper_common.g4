@@ -222,6 +222,7 @@ routing_protocol
    | BGP
    | DIRECT
    | ISIS
+   | LOCAL
    | OSPF
    | STATIC
 ;

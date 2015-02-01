@@ -999,6 +999,11 @@ LOAD_BALANCE
    'load-balance'
 ;
 
+LOCAL
+:
+   'local'
+;
+
 LOCAL_ADDRESS
 :
    'local-address'

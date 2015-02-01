@@ -392,6 +392,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else if (ctx.ISIS() != null) {
          return RoutingProtocol.ISIS;
       }
+      else if (ctx.LOCAL() != null) {
+         return RoutingProtocol.LOCAL;
+      }
       else if (ctx.OSPF() != null) {
          return RoutingProtocol.OSPF;
       }
