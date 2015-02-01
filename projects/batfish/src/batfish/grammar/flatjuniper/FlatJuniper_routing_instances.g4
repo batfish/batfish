@@ -357,11 +357,13 @@ rst_route_tail
    | srt_next_hop
    | srt_next_table
    | srt_no_readvertise
+   | srt_no_retain
    | srt_passive
    | srt_preference
    | srt_readvertise
    | srt_reject
    | srt_resolve
+   | srt_retain
    | srt_tag
 ;
 
@@ -430,6 +432,11 @@ srt_no_readvertise
    NO_READVERTISE
 ;
 
+srt_no_retain
+:
+   NO_RETAIN
+;
+
 srt_passive
 :
    PASSIVE
@@ -453,6 +460,11 @@ srt_reject
 srt_resolve
 :
    RESOLVE
+;
+
+srt_retain
+:
+   RETAIN
 ;
 
 srt_tag
