@@ -116,10 +116,10 @@ rm_stanza
 route_map_named_stanza
 locals [boolean again]
 :
-   ROUTE_MAP name = VARIABLE route_map_tail
+   ROUTE_MAP name = ~NEWLINE route_map_tail
    {
 		$again = _input.LT(1).getType() == ROUTE_MAP &&
-		_input.LT(2).getType() == VARIABLE &&
+		_input.LT(2).getType() != NEWLINE &&
 		_input.LT(2).getText().equals($name.text);
 	}
 
