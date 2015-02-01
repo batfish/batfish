@@ -1378,7 +1378,7 @@ EXTCOMM_LIST
 
 EXTCOMMUNITY
 :
-   'extcommunity'
+   'extcommunity' -> pushMode(M_Extcommunity)
 ;
 
 EXTCOMMUNITY_LIST
@@ -3587,6 +3587,11 @@ RST
    'rst'
 ;
 
+RT
+:
+   'rt'
+;
+
 RULE
 :
    'rule' -> pushMode(M_Rule)
@@ -5374,6 +5379,33 @@ M_DESCRIPTION_NEWLINE
 M_DESCRIPTION_NON_NEWLINE
 :
    F_NonNewline+
+;
+
+mode M_Extcommunity;
+
+M_Extcommunity_COLON
+:
+   ':' -> type(COLON)
+;
+
+M_Extcommunity_DEC
+:
+   F_Digit+ -> type(DEC)
+;
+
+M_ExtCommunity_NEWLINE
+:
+   F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_Extcommunity_RT
+:
+   'rt' -> type(RT)
+;
+
+M_Extcommunity_WS
+:
+   F_Whitespace+ -> channel(HIDDEN)
 ;
 
 mode M_Interface;

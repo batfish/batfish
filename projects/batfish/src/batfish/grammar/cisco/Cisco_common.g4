@@ -25,6 +25,11 @@ description_line
    DESCRIPTION text = M_DESCRIPTION_NON_NEWLINE? NEWLINE
 ;
 
+ec_literal
+:
+   DEC COLON DEC
+;
+
 exact_match [String matchText]
 :
    {(_input.LT(1).getType() == VARIABLE || _input.LT(1).getType() == COMMUNITY_LIST_NUM_EXPANDED) && _input.LT(1).getText().equals($matchText)}?
@@ -39,6 +44,13 @@ exit_line
 :
    EXIT NEWLINE
 ;
+
+extended_community
+:
+   ec_literal
+;
+
+
 
 interface_name
 :

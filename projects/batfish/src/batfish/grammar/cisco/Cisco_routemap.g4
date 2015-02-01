@@ -190,6 +190,15 @@ set_extcomm_list_rm_stanza
    )+ DELETE NEWLINE
 ;
 
+set_extcommunity_rm_stanza
+:
+   SET EXTCOMMUNITY
+   (
+      COST
+      | RT
+   ) extended_community NEWLINE
+;
+
 set_interface_rm_stanza
 :
    SET INTERFACE ~NEWLINE* NEWLINE
@@ -268,6 +277,7 @@ set_rm_stanza
    | set_community_additive_rm_stanza
    | set_community_none_rm_stanza
    | set_extcomm_list_rm_stanza
+   | set_extcommunity_rm_stanza
    | set_interface_rm_stanza
    | set_ip_df_rm_stanza
    | set_ipv6_rm_stanza
