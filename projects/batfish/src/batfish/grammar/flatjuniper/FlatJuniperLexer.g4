@@ -2571,6 +2571,11 @@ M_Description_WS
 
 mode M_Interface;
 
+M_Interface_INTERFACE
+:
+   'interface' -> type(INTERFACE)
+;
+
 M_Interface_QUOTE
 :
    '"' -> channel(HIDDEN), mode(M_InterfaceQuote)
