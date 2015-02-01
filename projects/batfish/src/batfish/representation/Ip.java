@@ -12,6 +12,16 @@ public class Ip implements Comparable<Ip>, Serializable {
 
    public static final Ip ZERO = new Ip(0l);
 
+   private static long ipStrToLong(String addr) {
+      String[] addrArray = addr.split("\\.");
+      long num = 0;
+      for (int i = 0; i < addrArray.length; i++) {
+         int power = 3 - i;
+         num += ((Integer.parseInt(addrArray[i]) % 256 * Math.pow(256, power)));
+      }
+      return num;
+   }
+
    private final int _hashCode;
 
    private final Long _ip;
@@ -22,7 +32,7 @@ public class Ip implements Comparable<Ip>, Serializable {
    }
 
    public Ip(String ipAsString) {
-      _ip = Util.ipToLong(ipAsString);
+      _ip = ipStrToLong(ipAsString);
       _hashCode = _ip.hashCode();
    }
 

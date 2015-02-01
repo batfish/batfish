@@ -81,10 +81,6 @@ public class Util {
       return Integer.parseInt(pair.substring(slashPos + 1, pair.length()));
    }
 
-   public static int getSubnetDivisor(String string) {
-      return (1 << (32 - Util.numSubnetBits(string)));
-   }
-
    public static String getText(ParserRuleContext ctx, String srcText) {
       int start = ctx.start.getStartIndex();
       int stop = ctx.stop.getStopIndex();
@@ -98,16 +94,6 @@ public class Util {
       else {
          return 32 - Integer.numberOfLeadingZeros(n);
       }
-   }
-
-   public static long ipToLong(String addr) {
-      String[] addrArray = addr.split("\\.");
-      long num = 0;
-      for (int i = 0; i < addrArray.length; i++) {
-         int power = 3 - i;
-         num += ((Integer.parseInt(addrArray[i]) % 256 * Math.pow(256, power)));
-      }
-      return num;
    }
 
    public static boolean isLoopback(String interfaceName) {
@@ -160,17 +146,6 @@ public class Util {
          product *= i;
       }
       return product;
-   }
-
-   public static int numSubnetBits(String subnet) {
-      int count = 0;
-      long subnetVal = Util.ipToLong(subnet);
-      int subnetInt = (int) subnetVal;
-      while (subnetInt != 0) {
-         subnetInt <<= 1;
-         count++;
-      }
-      return count;
    }
 
    public static long numSubnetBitsToSubnetLong(int numBits) {
