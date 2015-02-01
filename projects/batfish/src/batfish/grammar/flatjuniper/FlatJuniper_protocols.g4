@@ -30,6 +30,7 @@ s_protocols_null
       | L2CIRCUIT
       | LDP
       | LLDP
+      | MLD
       | MSDP
       | PIM
       | ROUTER_ADVERTISEMENT
