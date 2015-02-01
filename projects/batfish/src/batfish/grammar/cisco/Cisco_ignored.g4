@@ -220,6 +220,7 @@ null_block_substanza
          | EXEC_TIMEOUT
          | EXIT
          | EXPECT
+         | EXPORT
          | EXPORT_PROTOCOL
          | EXPORTER
          | FABRIC
