@@ -307,6 +307,7 @@ null_block_substanza
          | OPEN
          | PARAMETERS
          | PARENT
+         | PARITY
          | PASSWORD
          | PASSWORD_STORAGE
          | PATH_JITTER

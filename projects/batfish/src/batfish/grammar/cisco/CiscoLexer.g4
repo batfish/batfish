@@ -2927,6 +2927,11 @@ PARENT
    'parent'
 ;
 
+PARITY
+:
+   'parity'
+;
+
 PARSER
 :
    'parser'
