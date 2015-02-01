@@ -4044,6 +4044,11 @@ SUPPLEMENTARY_SERVICES
    'supplementary-services'
 ;
 
+SVCLC
+:
+   'svclc'
+;
+
 SWITCH
 :
    'switch'

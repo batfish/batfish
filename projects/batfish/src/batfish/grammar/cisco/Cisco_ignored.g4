@@ -119,6 +119,7 @@ null_block_stanza
       | SFLOW
       | SPANNING_TREE
       | STCAPP
+      | SVCLC
       | TACACS
       | TACACS_SERVER
       | TEMPLATE
