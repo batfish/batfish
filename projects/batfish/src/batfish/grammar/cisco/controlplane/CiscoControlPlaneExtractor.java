@@ -631,6 +631,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private NamedBgpPeerGroup _currentNamedPeerGroup;
 
+   private OspfProcess _currentOspfProcess;
+
    private BgpPeerGroup _currentPeerGroup;
 
    private NamedBgpPeerGroup _currentPeerSession;
@@ -972,8 +974,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterRouter_ospf_stanza(Router_ospf_stanzaContext ctx) {
       int procNum = toInteger(ctx.procnum);
-      OspfProcess proc = new OspfProcess(procNum);
-      _configuration.setOspfProcess(proc);
+      _currentOspfProcess = new OspfProcess(procNum);
+      if (ctx.vrf != null) {
+         todo(ctx, "ospf vrf process not implemented yet");
+      }
+      else {
+         _configuration.setOspfProcess(_currentOspfProcess);
+      }
+
    }
 
    @Override
@@ -1096,7 +1104,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitArea_nssa_ro_stanza(Area_nssa_ro_stanzaContext ctx) {
-      OspfProcess proc = _configuration.getOspfProcess();
+      OspfProcess proc = _currentOspfProcess;
       int area = (ctx.area_int != null) ? toInteger(ctx.area_int) : (int) toIp(
             ctx.area_ip).asLong();
       boolean noSummary = ctx.NO_SUMMARY() != null;
@@ -1148,7 +1156,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitDefault_information_ro_stanza(
          Default_information_ro_stanzaContext ctx) {
-      OspfProcess proc = _configuration.getOspfProcess();
+      OspfProcess proc = _currentOspfProcess;
       proc.setDefaultInformationOriginate(true);
       boolean always = ctx.ALWAYS().size() > 0;
       proc.setDefaultInformationOriginateAlways(always);
@@ -1645,7 +1653,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       OspfWildcardNetwork network = new OspfWildcardNetwork(prefix, wildcard,
             area);
-      _configuration.getOspfProcess().getWildcardNetworks().add(network);
+      _currentOspfProcess.getWildcardNetworks().add(network);
    }
 
    @Override
@@ -1771,7 +1779,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitPassive_interface_default_ro_stanza(
          Passive_interface_default_ro_stanzaContext ctx) {
-      _configuration.getOspfProcess().setPassiveInterfaceDefault(true);
+      _currentOspfProcess.setPassiveInterfaceDefault(true);
    }
 
    @Override
@@ -1779,7 +1787,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Passive_interface_ro_stanzaContext ctx) {
       boolean passive = ctx.NO() == null;
       String iname = ctx.i.getText();
-      OspfProcess proc = _configuration.getOspfProcess();
+      OspfProcess proc = _currentOspfProcess;
       if (passive) {
          proc.getInterfaceBlacklist().add(iname);
       }
@@ -1840,7 +1848,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitRedistribute_bgp_ro_stanza(
          Redistribute_bgp_ro_stanzaContext ctx) {
-      OspfProcess proc = _configuration.getOspfProcess();
+      OspfProcess proc = _currentOspfProcess;
       RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
       OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
@@ -1893,7 +1901,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitRedistribute_connected_ro_stanza(
          Redistribute_connected_ro_stanzaContext ctx) {
-      OspfProcess proc = _configuration.getOspfProcess();
+      OspfProcess proc = _currentOspfProcess;
       RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
       OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
@@ -1974,7 +1982,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitRedistribute_static_ro_stanza(
          Redistribute_static_ro_stanzaContext ctx) {
-      OspfProcess proc = _configuration.getOspfProcess();
+      OspfProcess proc = _currentOspfProcess;
       RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
       OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
@@ -2066,13 +2074,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitRouter_id_ro_stanza(Router_id_ro_stanzaContext ctx) {
       Ip routerId = toIp(ctx.ip);
-      _configuration.getOspfProcess().setRouterId(routerId);
+      _currentOspfProcess.setRouterId(routerId);
    }
 
    @Override
    public void exitRouter_ospf_stanza(Router_ospf_stanzaContext ctx) {
-      _configuration.getOspfProcess().computeNetworks(
-            _configuration.getInterfaces().values());
+      _currentOspfProcess.computeNetworks(_configuration.getInterfaces()
+            .values());
+      _currentOspfProcess = null;
    }
 
    @Override

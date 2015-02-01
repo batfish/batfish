@@ -237,7 +237,10 @@ router_id_ro_stanza
 
 router_ospf_stanza
 :
-   ROUTER OSPF procnum = DEC NEWLINE router_ospf_stanza_tail
+   ROUTER OSPF procnum = DEC
+   (
+      VRF vrf = variable
+   )? NEWLINE router_ospf_stanza_tail
 ;
 
 router_ospf_stanza_tail
