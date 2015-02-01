@@ -485,11 +485,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return name;
    }
 
-   public static Ip toIp(Token t) {
+   public static Ip toIp(TerminalNode t) {
       return new Ip(t.getText());
    }
 
-   public static Ip toIp(TerminalNode t) {
+   public static Ip toIp(Token t) {
       return new Ip(t.getText());
    }
 
