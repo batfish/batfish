@@ -50,8 +50,6 @@ extended_community
    ec_literal
 ;
 
-
-
 interface_name
 :
    (
