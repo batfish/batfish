@@ -661,6 +661,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private BgpPeerGroup _preAddressFamilyPeerGroup;
 
+   private boolean _printParseTree;
+
    private final Set<String> _rulesWithSuppressedWarnings;
 
    private final String _text;
@@ -669,12 +671,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    public CiscoControlPlaneExtractor(String text,
          BatfishCombinedParser<?, ?> parser,
-         Set<String> rulesWithSuppressedWarnings, boolean pedantic) {
+         Set<String> rulesWithSuppressedWarnings, boolean pedantic,
+         boolean printParseTree) {
       _text = text;
       _warnings = new ArrayList<String>();
       _parser = parser;
       _rulesWithSuppressedWarnings = rulesWithSuppressedWarnings;
       _pedantic = pedantic;
+      _printParseTree = printParseTree;
    }
 
    @Override
@@ -2441,12 +2445,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          String contextPrefix = prefix + " line " + line + ": ";
          sb.append(contextPrefix + ruleTextLines[i] + "\n");
       }
-      sb.append(prefix + "Parse tree follows:\n");
-      String parseTreePrefix = prefix + "PARSE TREE: ";
-      String parseTreeText = ParseTreePrettyPrinter.print(ctx, _parser);
-      String[] parseTreeLines = parseTreeText.split("\n");
-      for (String parseTreeLine : parseTreeLines) {
-         sb.append(parseTreePrefix + parseTreeLine + "\n");
+      if (_printParseTree) {
+         sb.append(prefix + "Parse tree follows:\n");
+         String parseTreePrefix = prefix + "PARSE TREE: ";
+         String parseTreeText = ParseTreePrettyPrinter.print(ctx, _parser);
+         String[] parseTreeLines = parseTreeText.split("\n");
+         for (String parseTreeLine : parseTreeLines) {
+            sb.append(parseTreePrefix + parseTreeLine + "\n");
+         }
       }
       _warnings.add(sb.toString());
    }

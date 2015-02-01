@@ -1659,7 +1659,7 @@ public class Batfish implements AutoCloseable {
             combinedParser = ciscoParser;
             extractor = new CiscoControlPlaneExtractor(fileText, ciscoParser,
                   _settings.getRulesWithSuppressedWarnings(),
-                  _settings.getPedantic());
+                  _settings.getPedantic(), _settings.printParseTree());
          }
          else if (firstChar == '#') {
             // either flat or hierarchical
