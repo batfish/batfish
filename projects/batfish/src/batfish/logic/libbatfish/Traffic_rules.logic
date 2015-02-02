@@ -60,7 +60,7 @@ FlowNeighborUnreachable(flow, node, neighborIp) <-
    FlowReachPreOut(flow, node),
    FibNeighborUnreachable(node, dstIp, neighborIp).
 
-FlowInconsistent(flow) <-
+FlowMultipathInconsistent(flow) <-
    FlowLost(flow),
    FlowAccepted(flow, _).
 

@@ -76,9 +76,9 @@ FlowDropped(flow, node) ->
    Flow(flow),
    Node(node).
 
-/// [FlowInconsistent(flow)] =
+/// [FlowMultipathInconsistent(flow)] =
 ///   Flow [flow] has inconsistent paths.
-FlowInconsistent(flow) ->
+FlowMultipathInconsistent(flow) ->
    Flow(flow).
 
 /// [FlowLoop(flow, node, outInt)] =
