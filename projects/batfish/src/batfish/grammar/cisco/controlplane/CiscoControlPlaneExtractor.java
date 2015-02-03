@@ -22,6 +22,8 @@ import batfish.grammar.cisco.CiscoParser.*;
 import batfish.grammar.cisco.*;
 import batfish.main.BatfishException;
 import batfish.main.PedanticBatfishException;
+import batfish.main.RedFlagBatfishException;
+import batfish.main.UnimplementedBatfishException;
 import batfish.representation.Ip;
 import batfish.representation.IpProtocol;
 import batfish.representation.LineAction;
@@ -477,7 +479,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          name += part.getText();
       }
       if (ctx.range().range_list.size() != 1) {
-         throw new PedanticBatfishException(
+         throw new RedFlagBatfishException(
                "got interface range where single interface was expected: \""
                      + ctx.getText() + "\"");
       }
@@ -657,27 +659,50 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private final BatfishCombinedParser<?, ?> _parser;
 
-   private boolean _pedantic;
+   private final boolean _pedanticAsError;
+
+   private final boolean _pedanticRecord;
+
+   private final List<String> _pedanticWarnings;
 
    private BgpPeerGroup _preAddressFamilyPeerGroup;
 
    private boolean _printParseTree;
 
+   private boolean _redFlagAsError;
+
+   private final boolean _redFlagRecord;
+
+   private List<String> _redFlagWarnings;
+
    private final Set<String> _rulesWithSuppressedWarnings;
 
    private final String _text;
 
-   private final List<String> _warnings;
+   private final boolean _unimplementedAsError;
+
+   private final boolean _unimplementedRecord;
+
+   private final List<String> _unimplementedWarnings;
 
    public CiscoControlPlaneExtractor(String text,
          BatfishCombinedParser<?, ?> parser,
-         Set<String> rulesWithSuppressedWarnings, boolean pedantic,
-         boolean printParseTree) {
+         Set<String> rulesWithSuppressedWarnings, boolean redFlagRecord,
+         boolean redFlagAsError, boolean recordUnimplementedWarnings,
+         boolean unimplementedAsError, boolean pedanticRecord,
+         boolean pedanticAsError, boolean printParseTree) {
       _text = text;
-      _warnings = new ArrayList<String>();
+      _pedanticAsError = pedanticAsError;
+      _pedanticRecord = pedanticRecord;
+      _pedanticWarnings = new ArrayList<String>();
+      _redFlagAsError = redFlagAsError;
+      _redFlagRecord = redFlagRecord;
+      _redFlagWarnings = new ArrayList<String>();
+      _unimplementedAsError = unimplementedAsError;
+      _unimplementedRecord = recordUnimplementedWarnings;
+      _unimplementedWarnings = new ArrayList<String>();
       _parser = parser;
       _rulesWithSuppressedWarnings = rulesWithSuppressedWarnings;
-      _pedantic = pedantic;
       _printParseTree = printParseTree;
    }
 
@@ -746,8 +771,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                _configuration.getInterfaces().put(name, newInterface);
             }
             else {
-               _warnings.add("Interface: \"" + name
-                     + "\" altered more than once");
+               pedantic("Interface: \"" + name + "\" altered more than once");
             }
             _currentInterfaces.add(newInterface);
             newInterface.setBandwidth(bandwidth);
@@ -836,7 +860,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             else {
                String message = "reference to undeclared peer group: \""
                      + ip.toString() + "\"";
-               pedantic(message);
+               redFlag(message);
                _currentPeerGroup = _dummyPeerGroup;
             }
          }
@@ -1377,7 +1401,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          break;
 
       default:
-         pedantic("Do not currently support more than two AS'es in Cisco as-path regexes");
+         redFlag("Do not currently support more than two AS'es in Cisco as-path regexes");
       }
       _currentAsPathAcl.addLine(line);
    }
@@ -1722,7 +1746,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          if (pg == null) {
             String message = "reference to undefined ip peer group: "
                   + ip.toString();
-            pedantic(message);
+            redFlag(message);
          }
          else {
             pg.setActive(false);
@@ -1747,12 +1771,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          if (pg == null) {
             String message = "reference to undefined ip peer group: "
                   + ip.toString();
-            if (_pedantic) {
-               throw new BatfishException(message);
-            }
-            else {
-               _warnings.add(message);
-            }
+            redFlag(message);
          }
          else {
             pg.setActive(true);
@@ -1788,7 +1807,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitNull_as_path_regex(Null_as_path_regexContext ctx) {
-      pedantic("as-path regexes this complicated are not supported yet");
+      redFlag("as-path regexes this complicated are not supported yet");
    }
 
    @Override
@@ -2387,8 +2406,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return _configuration;
    }
 
+   @Override
+   public List<String> getPedanticWarnings() {
+      return _pedanticWarnings;
+   }
+
+   @Override
+   public List<String> getRedFlagWarnings() {
+      return _redFlagWarnings;
+   }
+
    public String getText() {
       return _text;
+   }
+
+   @Override
+   public List<String> getUnimplementedWarnings() {
+      return _unimplementedWarnings;
    }
 
    @Override
@@ -2396,19 +2430,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return _configuration;
    }
 
-   @Override
-   public List<String> getWarnings() {
-      return _warnings;
-   }
-
    private void pedantic(String msg) {
-      if (_pedantic) {
+      if (_pedanticAsError) {
          throw new PedanticBatfishException(msg);
       }
-      else {
-         String prefix = "WARNING " + (_warnings.size() + 1) + ": PEDANTIC: ";
+      else if (_pedanticRecord) {
+         String prefix = "WARNING " + (_pedanticWarnings.size() + 1)
+               + ": PEDANTIC: ";
          String warning = prefix + msg + "\n";
-         _warnings.add(warning);
+         _pedanticWarnings.add(warning);
       }
    }
 
@@ -2418,16 +2448,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       walker.walk(this, tree);
    }
 
+   private void redFlag(String msg) {
+      if (_redFlagAsError) {
+         throw new RedFlagBatfishException(msg);
+      }
+      else if (_redFlagRecord) {
+         String prefix = "WARNING " + (_redFlagWarnings.size() + 1)
+               + ": RED FLAG: ";
+         String warning = prefix + msg + "\n";
+         _redFlagWarnings.add(warning);
+      }
+   }
+
    private void todo(ParserRuleContext ctx) {
       todo(ctx, "Unknown");
    }
 
    private void todo(ParserRuleContext ctx, String reason) {
+      if (!_unimplementedRecord && !_unimplementedAsError) {
+         return;
+      }
       String ruleName = _parser.getParser().getRuleNames()[ctx.getRuleIndex()];
       if (_rulesWithSuppressedWarnings.contains(ruleName)) {
          return;
       }
-      String prefix = "WARNING " + (_warnings.size() + 1) + ": ";
+      String prefix = "WARNING: UNIMPLEMENTED: "
+            + (_unimplementedWarnings.size() + 1) + ": ";
       StringBuilder sb = new StringBuilder();
       List<String> ruleNames = Arrays.asList(CiscoParser.ruleNames);
       String ruleStack = ctx.toString(ruleNames);
@@ -2454,7 +2500,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             sb.append(parseTreePrefix + parseTreeLine + "\n");
          }
       }
-      _warnings.add(sb.toString());
+      String warning = sb.toString();
+      if (_unimplementedAsError) {
+         throw new UnimplementedBatfishException(warning);
+      }
+      else {
+         _unimplementedWarnings.add(sb.toString());
+      }
    }
 
    public SwitchportEncapsulationType toEncapsulation(

@@ -177,6 +177,12 @@ public class Batfish implements AutoCloseable {
 
    private static final String LEVEL_OUTPUT = "OUTPUT";
 
+   private static final String LEVEL_PEDANTIC = "PEDANTIC";
+
+   private static final String LEVEL_REDFLAG = "REDFLAG";
+
+   private static final String LEVEL_UNIMPLEMENTED = "UNIMPLEMENTED";
+
    /**
     * The name of the file in which LogiQL predicate type-information and
     * documentation is serialized
@@ -1659,7 +1665,18 @@ public class Batfish implements AutoCloseable {
             combinedParser = ciscoParser;
             extractor = new CiscoControlPlaneExtractor(fileText, ciscoParser,
                   _settings.getRulesWithSuppressedWarnings(),
-                  _settings.getPedantic(), _settings.printParseTree());
+                  _settings.getRedFlagRecord()
+                        && _logger.getLevel().isLessSpecificThan(
+                              Level.getLevel(LEVEL_REDFLAG)),
+                  _settings.getRedFlagAsError(),
+                  _settings.getUnimplementedRecord()
+                        && _logger.getLevel().isLessSpecificThan(
+                              Level.getLevel(LEVEL_UNIMPLEMENTED)),
+                  _settings.getUnimplementedAsError(),
+                  _settings.getPedanticRecord()
+                        && _logger.getLevel().isLessSpecificThan(
+                              Level.getLevel(LEVEL_PEDANTIC)),
+                  _settings.getPedanticAsError(), _settings.printParseTree());
          }
          else if (firstChar == '#') {
             // either flat or hierarchical
@@ -1685,7 +1702,18 @@ public class Batfish implements AutoCloseable {
             extractor = new FlatJuniperControlPlaneExtractor(fileText,
                   flatJuniperParser,
                   _settings.getRulesWithSuppressedWarnings(),
-                  _settings.getPedantic());
+                  _settings.getRedFlagRecord()
+                        && _logger.getLevel().isLessSpecificThan(
+                              Level.getLevel(LEVEL_REDFLAG)),
+                  _settings.getRedFlagAsError(),
+                  _settings.getUnimplementedRecord()
+                        && _logger.getLevel().isLessSpecificThan(
+                              Level.getLevel(LEVEL_UNIMPLEMENTED)),
+                  _settings.getUnimplementedAsError(),
+                  _settings.getPedanticRecord()
+                        && _logger.getLevel().isLessSpecificThan(
+                              Level.getLevel(LEVEL_PEDANTIC)),
+                  _settings.getPedanticAsError(), _settings.printParseTree());
          }
          else {
             throw new BatfishException(
@@ -1702,8 +1730,14 @@ public class Batfish implements AutoCloseable {
                         + currentPath + "\"", e);
          }
          finally {
-            for (String warning : extractor.getWarnings()) {
-               _logger.warn(warning);
+            for (String warning : extractor.getRedFlagWarnings()) {
+               redflag(warning);
+            }
+            for (String warning : extractor.getUnimplementedWarnings()) {
+               unimplemented(warning);
+            }
+            for (String warning : extractor.getPedanticWarnings()) {
+               pedantic(warning);
             }
          }
          vc = extractor.getVendorConfiguration();
@@ -1726,6 +1760,10 @@ public class Batfish implements AutoCloseable {
          printElapsedTime();
          return vendorConfigurations;
       }
+   }
+
+   private void pedantic(String msg) {
+      _logger.log(Level.getLevel(LEVEL_PEDANTIC), msg);
    }
 
    private void populateConfigurationFactBins(
@@ -1886,6 +1924,10 @@ public class Batfish implements AutoCloseable {
                e);
       }
       return text;
+   }
+
+   private void redflag(String msg) {
+      _logger.log(Level.getLevel(LEVEL_REDFLAG), msg);
    }
 
    private void resetTimer() {
@@ -2240,6 +2282,10 @@ public class Batfish implements AutoCloseable {
          _logger.debug("OK\n");
       }
       printElapsedTime();
+   }
+
+   private void unimplemented(String msg) {
+      _logger.log(Level.getLevel(LEVEL_UNIMPLEMENTED), msg);
    }
 
    public void writeConfigurationFacts(

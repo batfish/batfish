@@ -1,5 +1,6 @@
 package batfish.grammar.flatjuniper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +16,9 @@ import batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import batfish.grammar.flatjuniper.FlatJuniperParser.Named_communityContext;
 import batfish.main.BatfishException;
+import batfish.main.PedanticBatfishException;
+import batfish.main.RedFlagBatfishException;
+import batfish.main.UnimplementedBatfishException;
 import batfish.representation.AsPath;
 import batfish.representation.AsSet;
 import batfish.representation.Ip;
@@ -452,23 +456,53 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private FlatJuniperCombinedParser _parser;
 
-   private Set<String> _rulesWithSuppressedWarnings;
+   private final boolean _pedanticAsError;
+
+   private final boolean _pedanticRecord;
+
+   private final List<String> _pedanticWarnings;
+
+   private final boolean _printParseTree;
+
+   private final boolean _redFlagAsError;
+
+   private final boolean _redFlagRecord;
+
+   private final List<String> _redFlagWarnings;
+
+   private final Set<String> _rulesWithSuppressedWarnings;
 
    private final Map<PsTerm, RouteFilter> _termRouteFilters;
 
-   private String _text;
+   private final String _text;
 
-   private List<String> _warnings;
+   private final boolean _unimplementedAsError;
+
+   private final boolean _unimplementedRecord;
+
+   private final List<String> _unimplementedWarnings;
 
    public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text,
-         Set<String> rulesWithSuppressedWarnings, List<String> warnings) {
+         Set<String> rulesWithSuppressedWarnings, boolean redFlagRecord,
+         boolean redFlagAsError, boolean unimplementedRecord,
+         boolean unimplementedAsError, boolean pedanticRecord,
+         boolean pedanticAsError, boolean printParseTree) {
       _parser = parser;
       _text = text;
       _rulesWithSuppressedWarnings = rulesWithSuppressedWarnings;
-      _warnings = warnings;
       _configuration = new JuniperVendorConfiguration();
       _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
       _termRouteFilters = new HashMap<PsTerm, RouteFilter>();
+      _pedanticAsError = pedanticAsError;
+      _pedanticRecord = pedanticRecord;
+      _pedanticWarnings = new ArrayList<String>();
+      _redFlagAsError = redFlagAsError;
+      _redFlagRecord = redFlagRecord;
+      _redFlagWarnings = new ArrayList<String>();
+      _unimplementedAsError = unimplementedAsError;
+      _unimplementedRecord = unimplementedRecord;
+      _unimplementedWarnings = new ArrayList<String>();
+      _printParseTree = printParseTree;
    }
 
    @Override
@@ -1317,6 +1351,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return _configuration;
    }
 
+   @SuppressWarnings("unused")
+   private void pedantic(String msg) {
+      if (_pedanticAsError) {
+         throw new PedanticBatfishException(msg);
+      }
+      else if (_pedanticRecord) {
+         String prefix = "WARNING " + (_pedanticWarnings.size() + 1)
+               + ": PEDANTIC: ";
+         String warning = prefix + msg + "\n";
+         _pedanticWarnings.add(warning);
+      }
+   }
+
+   @SuppressWarnings("unused")
+   private void redFlag(String msg) {
+      if (_redFlagAsError) {
+         throw new RedFlagBatfishException(msg);
+      }
+      else if (_redFlagRecord) {
+         String prefix = "WARNING " + (_redFlagWarnings.size() + 1)
+               + ": RED FLAG: ";
+         String warning = prefix + msg + "\n";
+         _redFlagWarnings.add(warning);
+      }
+   }
+
    private AsPath toAsPath(As_path_exprContext path) {
       AsPath asPath = new AsPath();
       for (As_unitContext ctx : path.items) {
@@ -1335,11 +1395,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    private void todo(ParserRuleContext ctx, String reason) {
+      if (!_unimplementedRecord && !_unimplementedAsError) {
+         return;
+      }
       String ruleName = _parser.getParser().getRuleNames()[ctx.getRuleIndex()];
       if (_rulesWithSuppressedWarnings.contains(ruleName)) {
          return;
       }
-      String prefix = "WARNING " + (_warnings.size() + 1) + ": ";
+      String prefix = "WARNING: UNIMPLEMENTED: "
+            + (_unimplementedWarnings.size() + 1) + ": ";
       StringBuilder sb = new StringBuilder();
       List<String> ruleNames = Arrays.asList(FlatJuniperParser.ruleNames);
       String ruleStack = ctx.toString(ruleNames);
@@ -1357,14 +1421,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          String contextPrefix = prefix + " line " + line + ": ";
          sb.append(contextPrefix + ruleTextLines[i] + "\n");
       }
-      sb.append(prefix + "Parse tree follows:\n");
-      String parseTreePrefix = prefix + "PARSE TREE: ";
-      String parseTreeText = ParseTreePrettyPrinter.print(ctx, _parser);
-      String[] parseTreeLines = parseTreeText.split("\n");
-      for (String parseTreeLine : parseTreeLines) {
-         sb.append(parseTreePrefix + parseTreeLine + "\n");
+      if (_printParseTree) {
+         sb.append(prefix + "Parse tree follows:\n");
+         String parseTreePrefix = prefix + "PARSE TREE: ";
+         String parseTreeText = ParseTreePrettyPrinter.print(ctx, _parser);
+         String[] parseTreeLines = parseTreeText.split("\n");
+         for (String parseTreeLine : parseTreeLines) {
+            sb.append(parseTreePrefix + parseTreeLine + "\n");
+         }
       }
-      _warnings.add(sb.toString());
+      String warning = sb.toString();
+      if (_unimplementedAsError) {
+         throw new UnimplementedBatfishException(warning);
+      }
+      else {
+         _unimplementedWarnings.add(warning);
+      }
    }
 
 }

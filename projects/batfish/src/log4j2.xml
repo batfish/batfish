@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
    <CustomLevels>
-      <CustomLevel name="OUTPUT" intLevel="350"/>
+      <CustomLevel name="OUTPUT" intLevel="220"/>
+      <CustomLevel name="REDFLAG" intLevel="250"/>
+      <CustomLevel name="UNIMPLEMENTED" intLevel="270"/>
+      <CustomLevel name="PEDANTIC" intLevel="550"/>
    </CustomLevels>
    <Appenders>
       <Console name="ConsoleOut" follow="true" target="SYSTEM_OUT">

@@ -15,29 +15,58 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
 
    private JuniperVendorConfiguration _configuration;
    private final FlatJuniperCombinedParser _parser;
-   private final boolean _pedantic;
+   private final boolean _pedanticAsError;
+   private final boolean _pedanticRecord;
+   private final List<String> _pedanticWarnings;
+   private final boolean _printParseTree;
+   private final boolean _redFlagAsError;
+   private final boolean _redFlagRecord;
+   private final List<String> _redFlagWarnings;
    private final Set<String> _rulesWithSuppressedWarnings;
    private final String _text;
-   private final List<String> _warnings;
+   private final boolean _unimplementedAsError;
+   private final boolean _unimplementedRecord;
+   private final List<String> _unimplementedWarnings;
 
    public FlatJuniperControlPlaneExtractor(String fileText,
          FlatJuniperCombinedParser combinedParser,
-         Set<String> rulesWithSuppressedWarnings, boolean pedantic) {
+         Set<String> rulesWithSuppressedWarnings, boolean redFlagRecord,
+         boolean redFlagAsError, boolean unimplementedRecord,
+         boolean unimplementedAsError, boolean pedanticRecord,
+         boolean pedanticAsError, boolean printParseTree) {
       _text = fileText;
       _parser = combinedParser;
       _rulesWithSuppressedWarnings = rulesWithSuppressedWarnings;
-      _warnings = new ArrayList<String>();
-      _pedantic = pedantic;
+      _pedanticAsError = pedanticAsError;
+      _pedanticRecord = pedanticRecord;
+      _pedanticWarnings = new ArrayList<String>();
+      _redFlagAsError = redFlagAsError;
+      _redFlagRecord = redFlagRecord;
+      _redFlagWarnings = new ArrayList<String>();
+      _unimplementedAsError = unimplementedAsError;
+      _unimplementedRecord = unimplementedRecord;
+      _unimplementedWarnings = new ArrayList<String>();
+      _printParseTree = printParseTree;
+   }
+
+   @Override
+   public List<String> getPedanticWarnings() {
+      return _pedanticWarnings;
+   }
+
+   @Override
+   public List<String> getRedFlagWarnings() {
+      return _redFlagWarnings;
+   }
+
+   @Override
+   public List<String> getUnimplementedWarnings() {
+      return _unimplementedWarnings;
    }
 
    @Override
    public VendorConfiguration getVendorConfiguration() {
       return _configuration;
-   }
-
-   @Override
-   public List<String> getWarnings() {
-      return _warnings;
    }
 
    @Override
@@ -47,7 +76,7 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
       InitialTreeBuilder tb = new InitialTreeBuilder(hierarchy);
       walker.walk(tb, tree);
       ApplyGroupsApplicator hb = new ApplyGroupsApplicator(_parser, hierarchy,
-            _warnings, _pedantic);
+            _redFlagWarnings, _redFlagAsError);
       walker.walk(hb, tree);
       GroupPruner gp = new GroupPruner();
       walker.walk(gp, tree);
@@ -58,7 +87,9 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
       ApplyPathApplicator ap = new ApplyPathApplicator(hierarchy);
       walker.walk(ap, tree);
       ConfigurationBuilder cb = new ConfigurationBuilder(_parser, _text,
-            _rulesWithSuppressedWarnings, _warnings);
+            _rulesWithSuppressedWarnings, _redFlagRecord, _redFlagAsError,
+            _unimplementedRecord, _unimplementedAsError, _pedanticRecord,
+            _pedanticAsError, _printParseTree);
       walker.walk(cb, tree);
       _configuration = cb.getConfiguration();
    }

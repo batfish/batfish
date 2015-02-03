@@ -15,7 +15,7 @@ import batfish.grammar.flatjuniper.Hierarchy.HierarchyTree;
 import batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import batfish.main.BatfishException;
-import batfish.main.PedanticBatfishException;
+import batfish.main.RedFlagBatfishException;
 
 public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
@@ -33,16 +33,17 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
    private List<ParseTree> _newConfigurationLines;
 
-   private final boolean _pedantic;
+   private final boolean _redFlagAsError;
 
-   private final List<String> _warnings;
+   private final List<String> _redFlagWarnings;
 
    public ApplyGroupsApplicator(FlatJuniperCombinedParser combinedParser,
-         Hierarchy hierarchy, List<String> warnings, boolean pedantic) {
+         Hierarchy hierarchy, List<String> redFlagWarnings,
+         boolean redFlagAsError) {
       _combinedParser = combinedParser;
       _hierarchy = hierarchy;
-      _pedantic = pedantic;
-      _warnings = warnings;
+      _redFlagAsError = redFlagAsError;
+      _redFlagWarnings = redFlagWarnings;
    }
 
    @Override
@@ -63,14 +64,14 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
          _newConfigurationLines.remove(_currentSetLine);
          _newConfigurationLines.addAll(insertionIndex, applyGroupsLines);
       }
-      catch (PedanticBatfishException e) {
+      catch (BatfishException e) {
          String message = "Exception processing apply-groups statement";
-         if (_pedantic) {
-            throw new BatfishException(message, e);
+         if (_redFlagAsError) {
+            throw new RedFlagBatfishException(message, e);
          }
          else {
             message += ": " + e.getMessage();
-            _warnings.add(message);
+            _redFlagWarnings.add(message);
          }
       }
    }

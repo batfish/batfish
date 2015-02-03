@@ -8,9 +8,13 @@ import batfish.representation.VendorConfiguration;
 
 public interface ControlPlaneExtractor {
 
-   VendorConfiguration getVendorConfiguration();
+   List<String> getPedanticWarnings();
 
-   List<String> getWarnings();
+   List<String> getRedFlagWarnings();
+
+   List<String> getUnimplementedWarnings();
+
+   VendorConfiguration getVendorConfiguration();
 
    void processParseTree(ParserRuleContext tree);
 

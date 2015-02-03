@@ -62,7 +62,8 @@ public class Settings {
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_NODE_ROLES_PATH = "nrpath";
    private static final String ARG_NODE_SET_PATH = "nodes";
-   private static final String ARG_PEDANTIC = "pedantic";
+   private static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
+   private static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
    private static final String ARG_PRINT_PARSE_TREES = "ppt";
@@ -70,6 +71,8 @@ public class Settings {
    private static final String ARG_QUERY_ALL = "all";
    private static final String ARG_REACH = "reach";
    private static final String ARG_REACH_PATH = "reachpath";
+   private static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
+   private static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
    private static final String ARG_REDIRECT_STDERR = "redirect";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
@@ -89,6 +92,8 @@ public class Settings {
    private static final String ARG_TEST_RIG_PATH = "testrig";
    private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
    private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
+   private static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
+   private static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
    private static final String ARG_UPDATE = "update";
    private static final String ARG_VAR_SIZE_MAP_PATH = "vsmpath";
    private static final String ARG_WORKSPACE = "workspace";
@@ -208,7 +213,8 @@ public class Settings {
    private String _nodeSetPath;
    private boolean _noTraffic;
    private Options _options;
-   private boolean _pedantic;
+   private boolean _pedanticAsError;
+   private boolean _pedanticRecord;
    private List<String> _predicates;
    private boolean _printParseTree;
    private boolean _printSemantics;
@@ -216,6 +222,8 @@ public class Settings {
    private boolean _queryAll;
    private boolean _reach;
    private String _reachPath;
+   private boolean _redFlagAsError;
+   private boolean _redFlagRecord;
    private boolean _redirectStdErr;
    private boolean _removeFacts;
    private boolean _revert;
@@ -238,6 +246,8 @@ public class Settings {
    private String _testRigPath;
    private boolean _throwOnLexerError;
    private boolean _throwOnParserError;
+   private boolean _unimplementedAsError;
+   private boolean _unimplementedRecord;
    private boolean _update;
    private String _varSizeMapPath;
    private String _workspaceName;
@@ -469,8 +479,12 @@ public class Settings {
       return _noTraffic;
    }
 
-   public boolean getPedantic() {
-      return _pedantic;
+   public boolean getPedanticAsError() {
+      return _pedanticAsError;
+   }
+
+   public boolean getPedanticRecord() {
+      return _pedanticRecord;
    }
 
    public List<String> getPredicates() {
@@ -491,6 +505,14 @@ public class Settings {
 
    public String getReachableQueryPath() {
       return _reachPath;
+   }
+
+   public boolean getRedFlagAsError() {
+      return _redFlagAsError;
+   }
+
+   public boolean getRedFlagRecord() {
+      return _redFlagRecord;
    }
 
    public boolean getRemoveFacts() {
@@ -567,6 +589,14 @@ public class Settings {
 
    public boolean getThrowOnParserError() {
       return _throwOnParserError;
+   }
+
+   public boolean getUnimplementedAsError() {
+      return _unimplementedAsError;
+   }
+
+   public boolean getUnimplementedRecord() {
+      return _unimplementedRecord;
    }
 
    public boolean getUpdate() {
@@ -859,13 +889,6 @@ public class Settings {
             .longOpt(ARG_DUPLICATE_ROLE_FLOWS).build());
       _options.addOption(Option.builder().hasArg().argName(ARGNAME_LOG_LEVEL)
             .desc("log4j2 log level").longOpt(ARG_LOG_LEVEL).build());
-      _options
-            .addOption(Option
-                  .builder()
-                  .desc("throws "
-                        + PedanticBatfishException.class.getSimpleName()
-                        + " on some recoverable errors (e.g. bad config lines), instead of emitting warning and attempting to recover")
-                  .longOpt(ARG_PEDANTIC).build());
       _options.addOption(Option.builder()
             .desc("header of concretized z3 output refers to role, not node")
             .longOpt(ARG_ROLE_HEADERS).build());
@@ -897,6 +920,34 @@ public class Settings {
                   .builder()
                   .desc("flatten hierarchical juniper configuration files on-the-fly (line number references will be spurious)")
                   .longOpt(ARG_FLATTEN_ON_THE_FLY).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("throws "
+                        + PedanticBatfishException.class.getSimpleName()
+                        + " for likely harmless warnings (e.g. deviation from good configuration style), instead of emitting warning and continuing")
+                  .longOpt(ARG_PEDANTIC_AS_ERROR).build());
+      _options.addOption(Option.builder().desc("suppresses pedantic warnings")
+            .longOpt(ARG_RED_FLAG_SUPPRESS).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("throws "
+                        + RedFlagBatfishException.class.getSimpleName()
+                        + " on some recoverable errors (e.g. bad config lines), instead of emitting warning and attempting to recover")
+                  .longOpt(ARG_RED_FLAG_AS_ERROR).build());
+      _options.addOption(Option.builder().desc("suppresses red-flag warnings")
+            .longOpt(ARG_RED_FLAG_SUPPRESS).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("throws "
+                        + UnimplementedBatfishException.class.getSimpleName()
+                        + " when encountering unimplemented configuration directives, instead of emitting warning and ignoring")
+                  .longOpt(ARG_UNIMPLEMENTED_AS_ERROR).build());
+      _options.addOption(Option.builder()
+            .desc("suppresses unimplemented-configuration-directive warnings")
+            .longOpt(ARG_UNIMPLEMENTED_SUPPRESS).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1042,7 +1093,6 @@ public class Settings {
       _roleSetPath = line.getOptionValue(ARG_ROLE_SET_PATH);
       _duplicateRoleFlows = line.hasOption(ARG_DUPLICATE_ROLE_FLOWS);
       _logLevel = line.getOptionValue(ARG_LOG_LEVEL);
-      _pedantic = line.hasOption(ARG_PEDANTIC);
       _roleHeaders = line.hasOption(ARG_ROLE_HEADERS);
       _throwOnParserError = line.hasOption(ARG_THROW_ON_PARSER_ERROR);
       _throwOnLexerError = line.hasOption(ARG_THROW_ON_LEXER_ERROR);
@@ -1050,6 +1100,12 @@ public class Settings {
       _flattenSource = line.getOptionValue(ARG_FLATTEN_SOURCE);
       _flattenDestination = line.getOptionValue(ARG_FLATTEN_DESTINATION);
       _flattenOnTheFly = line.hasOption(ARG_FLATTEN_ON_THE_FLY);
+      _pedanticAsError = line.hasOption(ARG_PEDANTIC_AS_ERROR);
+      _pedanticRecord = !line.hasOption(ARG_PEDANTIC_SUPPRESS);
+      _redFlagAsError = line.hasOption(ARG_RED_FLAG_AS_ERROR);
+      _redFlagRecord = !line.hasOption(ARG_RED_FLAG_SUPPRESS);
+      _unimplementedAsError = line.hasOption(ARG_UNIMPLEMENTED_AS_ERROR);
+      _unimplementedRecord = !line.hasOption(ARG_UNIMPLEMENTED_SUPPRESS);
    }
 
    public boolean printParseTree() {

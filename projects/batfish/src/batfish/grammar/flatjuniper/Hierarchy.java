@@ -19,7 +19,7 @@ import batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import batfish.grammar.flatjuniper.FlatJuniperParser.StatementContext;
 import batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import batfish.main.BatfishException;
-import batfish.main.PedanticBatfishException;
+import batfish.main.RedFlagBatfishException;
 
 public class Hierarchy {
 
@@ -441,7 +441,7 @@ public class Hierarchy {
             matchNode = currentGroupNode
                   .getFirstMatchingChildNode(currentPathNode);
             if (matchNode == null) {
-               throw new PedanticBatfishException(
+               throw new RedFlagBatfishException(
                      "Apply-groups invocation without matching path");
             }
             currentGroupNode = matchNode;
