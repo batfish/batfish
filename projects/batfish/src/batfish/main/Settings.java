@@ -928,7 +928,7 @@ public class Settings {
                         + " for likely harmless warnings (e.g. deviation from good configuration style), instead of emitting warning and continuing")
                   .longOpt(ARG_PEDANTIC_AS_ERROR).build());
       _options.addOption(Option.builder().desc("suppresses pedantic warnings")
-            .longOpt(ARG_RED_FLAG_SUPPRESS).build());
+            .longOpt(ARG_PEDANTIC_SUPPRESS).build());
       _options
             .addOption(Option
                   .builder()
