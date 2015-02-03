@@ -1488,14 +1488,14 @@ public class Batfish implements AutoCloseable {
       List<String> errors = parser.getErrors();
       int numErrors = errors.size();
       if (numErrors > 0) {
-         _logger.warn(numErrors + " ERROR(S)\n");
+         _logger.error(numErrors + " ERROR(S)\n");
          for (int i = 0; i < numErrors; i++) {
             String prefix = "ERROR " + (i + 1) + ": ";
             String msg = errors.get(i);
             String prefixedMsg = Util.applyPrefix(prefix, msg);
-            _logger.warn(prefixedMsg + "\n");
+            _logger.error(prefixedMsg + "\n");
          }
-         throw new ParserBatfishException("Exiting due to parser errors");
+         throw new ParserBatfishException("Parser error(s)");
       }
       else if (!_settings.printParseTree()) {
          _logger.info("OK\n");
@@ -1717,7 +1717,7 @@ public class Batfish implements AutoCloseable {
          }
          else {
             String error = "Unknown configuration format for file: \""
-                  + currentPath + "\"";
+                  + currentPath + "\"\n";
             if (_settings.exitOnParseError()) {
                throw new BatfishException(error);
             }
@@ -1732,27 +1732,26 @@ public class Batfish implements AutoCloseable {
             extractor.processParseTree(tree);
          }
          catch (ParserBatfishException e) {
+            String error = "Error parsing configuration file: \"" + currentPath
+                  + "\"";
             if (_settings.exitOnParseError()) {
-               throw new BatfishException("Exiting on first parse error", e);
+               throw new BatfishException(error, e);
             }
             else {
-               _logger.error("Error parsing configuration file: \""
-                     + currentPath + "\":\n");
+               _logger.error(error + ":\n");
                _logger.error(ExceptionUtils.getStackTrace(e));
                processingError = true;
                continue;
             }
          }
          catch (Exception e) {
+            String error = "Error post-processing parse tree of configuration file: \""
+                  + currentPath + "\"";
             if (_settings.exitOnParseError()) {
-               throw new BatfishException(
-                     "Error post-processing parse tree of configuration file: \""
-                           + currentPath + "\"", e);
+               throw new BatfishException(error, e);
             }
             else {
-               _logger
-                     .error("Error post-processing parse tree of configuration file: \""
-                           + currentPath + "\":\n");
+               _logger.error(error + ":\n");
                _logger.error(ExceptionUtils.getStackTrace(e));
                processingError = true;
                continue;
