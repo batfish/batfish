@@ -1495,7 +1495,7 @@ public class Batfish implements AutoCloseable {
             String prefixedMsg = Util.applyPrefix(prefix, msg);
             _logger.warn(prefixedMsg + "\n");
          }
-         throw new BatfishException("Exiting due to parser errors");
+         throw new ParserBatfishException("Exiting due to parser errors");
       }
       else if (!_settings.printParseTree()) {
          _logger.info("OK\n");
@@ -1720,14 +1720,36 @@ public class Batfish implements AutoCloseable {
                   "Unknown configuration format for file: \"" + currentPath
                         + "\"");
          }
-         tree = parse(combinedParser, currentPath);
          try {
+            tree = parse(combinedParser, currentPath);
             extractor.processParseTree(tree);
          }
+         catch (ParserBatfishException e) {
+            if (_settings.exitOnParseError()) {
+               throw new BatfishException("Exiting on first parse error", e);
+            }
+            else {
+               _logger.error("Error parsing configuration file: \""
+                     + currentPath + "\":\n");
+               _logger.error(ExceptionUtils.getStackTrace(e));
+               processingError = true;
+               continue;
+            }
+         }
          catch (Exception e) {
-            throw new BatfishException(
-                  "Error post-processing parse tree of configuration file: \""
-                        + currentPath + "\"", e);
+            if (_settings.exitOnParseError()) {
+               throw new BatfishException(
+                     "Error post-processing parse tree of configuration file: \""
+                           + currentPath + "\"", e);
+            }
+            else {
+               _logger
+                     .error("Error post-processing parse tree of configuration file: \""
+                           + currentPath + "\":\n");
+               _logger.error(ExceptionUtils.getStackTrace(e));
+               processingError = true;
+               continue;
+            }
          }
          finally {
             for (String warning : extractor.getRedFlagWarnings()) {
@@ -1744,12 +1766,27 @@ public class Batfish implements AutoCloseable {
          // at this point we should have a VendorConfiguration vc
          String hostname = vc.getHostname();
          if (hostname == null) {
-            throw new BatfishException("No hostname set in file: \""
-                  + currentFile + "\"");
+            String error = "No hostname set in file: \"" + currentFile + "\"\n";
+            if (_settings.exitOnParseError()) {
+               throw new BatfishException(error);
+            }
+            else {
+               _logger.error(error);
+               processingError = true;
+               continue;
+            }
          }
          if (vendorConfigurations.containsKey(hostname)) {
-            throw new BatfishException("Duplicate hostname \""
-                  + vc.getHostname() + "\" found in " + currentFile + "\n");
+            String error = "Duplicate hostname \"" + vc.getHostname()
+                  + "\" found in " + currentFile + "\n";
+            if (_settings.exitOnParseError()) {
+               throw new BatfishException(error);
+            }
+            else {
+               _logger.error(error);
+               processingError = true;
+               continue;
+            }
          }
          vendorConfigurations.put(vc.getHostname(), vc);
       }
