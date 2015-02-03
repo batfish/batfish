@@ -1716,9 +1716,16 @@ public class Batfish implements AutoCloseable {
                   _settings.getPedanticAsError(), _settings.printParseTree());
          }
          else {
-            throw new BatfishException(
-                  "Unknown configuration format for file: \"" + currentPath
-                        + "\"");
+            String error = "Unknown configuration format for file: \""
+                  + currentPath + "\"";
+            if (_settings.exitOnParseError()) {
+               throw new BatfishException(error);
+            }
+            else {
+               _logger.error(error);
+               processingError = true;
+               continue;
+            }
          }
          try {
             tree = parse(combinedParser, currentPath);
