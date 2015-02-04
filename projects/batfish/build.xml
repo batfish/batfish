@@ -378,7 +378,7 @@
    </target>
 
    <target name="lbcompile" depends="checkLogicBloxCompile" unless="lbBuild.notRequired" description="Compile logicblox code">
-      <java fork="true" failonerror="true" jar="${lbhome}/logicblox/lib/java/lb-compiler.jar">
+      <java fork="true" failonerror="true" jar="${lbhome}/lib/java/lb-compiler.jar">
          <env key="LB_LIBRARY_PATH" value="${lbhome}/workbook-framework/share:${lbhome}/lb-web/share"/>
          <jvmarg value="-Xmx4000m"/>
          <jvmarg value="-Xss2048k"/>
