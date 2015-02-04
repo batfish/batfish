@@ -104,9 +104,9 @@ RouteDetails_nextHop[route] = nextHop <-
    RouteDetails_nextHopIp[route] = nextHopIp,
    (
       (
-         IpCount[nextHopIp] = ipCount,
+         IpCount[nextHopIp] = ipCountOne,
          HasIp(nextHop, nextHopIp),
-         ipCount = 1
+         ipCountOne = 1
       ) ;
       (
          IpCount[nextHopIp] = ipCount,
@@ -220,6 +220,9 @@ lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
 
 lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
 lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
+
+lang:compiler:error:ENTITY_CREATION_RECURSION[]=false.
+lang:compiler:warning:ENTITY_CREATION_RECURSION[]=false.
 
 // END CODE
    })
