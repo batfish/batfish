@@ -163,6 +163,15 @@ public class Hierarchy {
             return _containsWildcard;
          }
 
+         public String pathString() {
+            StringBuilder sb = new StringBuilder();
+            for (HierarchyChildNode node : _nodes) {
+               sb.append(node._text + " ");
+            }
+            String out = sb.toString().trim();
+            return out;
+         }
+
          public void setStatement(StatementContext statement) {
             _statement = statement;
          }
@@ -185,7 +194,8 @@ public class Hierarchy {
          private HierarchyWildcardNode(String text) {
             super(text);
             if (text.charAt(0) != '<' || text.charAt(text.length() - 1) != '>') {
-               throw new BatfishException("Improperly-formatted wildcard");
+               throw new BatfishException("Improperly-formatted wildcard: "
+                     + text);
             }
             _wildcard = text.substring(1, text.length() - 1);
          }
@@ -437,13 +447,19 @@ public class Hierarchy {
          List<ParseTree> lines = new ArrayList<ParseTree>();
          HierarchyNode currentGroupNode = _root;
          HierarchyChildNode matchNode = null;
+         HierarchyPath partialMatch = new HierarchyPath();
          for (HierarchyChildNode currentPathNode : path._nodes) {
             matchNode = currentGroupNode
                   .getFirstMatchingChildNode(currentPathNode);
             if (matchNode == null) {
-               throw new RedFlagBatfishException(
-                     "Apply-groups invocation without matching path");
+               String message = "No matching path";
+               if (partialMatch._nodes.size() > 0) {
+                  message += ": Partial path match within applied group: \""
+                        + partialMatch.pathString() + "\"";
+               }
+               throw new RedFlagBatfishException(message);
             }
+            partialMatch._nodes.add(matchNode);
             currentGroupNode = matchNode;
          }
 
@@ -533,6 +549,10 @@ public class Hierarchy {
          HierarchyPath path,
          Flat_juniper_configurationContext configurationContext) {
       HierarchyTree tree = _trees.get(groupName);
+      if (tree == null) {
+         throw new RedFlagBatfishException("No such group: \"" + groupName
+               + "\"");
+      }
       return tree.getApplyGroupsLines(path, configurationContext, _masterTree);
    }
 

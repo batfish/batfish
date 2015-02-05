@@ -35,14 +35,17 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
    private final boolean _redFlagAsError;
 
+   private boolean _redFlagRecord;
+
    private final List<String> _redFlagWarnings;
 
    public ApplyGroupsApplicator(FlatJuniperCombinedParser combinedParser,
          Hierarchy hierarchy, List<String> redFlagWarnings,
-         boolean redFlagAsError) {
+         boolean redFlagRecord, boolean redFlagAsError) {
       _combinedParser = combinedParser;
       _hierarchy = hierarchy;
       _redFlagAsError = redFlagAsError;
+      _redFlagRecord = redFlagRecord;
       _redFlagWarnings = redFlagWarnings;
    }
 
@@ -65,14 +68,12 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
          _newConfigurationLines.addAll(insertionIndex, applyGroupsLines);
       }
       catch (BatfishException e) {
-         String message = "Exception processing apply-groups statement";
-         if (_redFlagAsError) {
-            throw new RedFlagBatfishException(message, e);
-         }
-         else {
-            message += ": " + e.getMessage();
-            _redFlagWarnings.add(message);
-         }
+         String message = "Exception processing apply-groups statement at path: \""
+               + _currentPath.pathString()
+               + "\" with group \""
+               + groupName
+               + "\": " + e.getMessage();
+         redFlag(message);
       }
    }
 
@@ -133,6 +134,18 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
    @Override
    public void exitSet_line_tail(Set_line_tailContext ctx) {
       _enablePathRecording = false;
+   }
+
+   private void redFlag(String msg) {
+      if (_redFlagAsError) {
+         throw new RedFlagBatfishException(msg);
+      }
+      else if (_redFlagRecord) {
+         String prefix = "WARNING " + (_redFlagWarnings.size() + 1)
+               + ": RED FLAG: ";
+         String warning = prefix + msg + "\n";
+         _redFlagWarnings.add(warning);
+      }
    }
 
    @Override

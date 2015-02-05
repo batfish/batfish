@@ -76,7 +76,7 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
       InitialTreeBuilder tb = new InitialTreeBuilder(hierarchy);
       walker.walk(tb, tree);
       ApplyGroupsApplicator hb = new ApplyGroupsApplicator(_parser, hierarchy,
-            _redFlagWarnings, _redFlagAsError);
+            _redFlagWarnings, _redFlagRecord, _redFlagAsError);
       walker.walk(hb, tree);
       GroupPruner gp = new GroupPruner();
       walker.walk(gp, tree);
