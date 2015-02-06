@@ -23,4 +23,16 @@ public abstract class Expr {
       return this;
    }
 
+   @Override
+   public String toString() {
+      if (_printer == null) {
+         return "(printer_uninitialized:" + super.toString() + ")";
+      }
+      else {
+         StringBuilder sb = new StringBuilder();
+         print(sb, 0);
+         return sb.toString();
+      }
+   }
+
 }
