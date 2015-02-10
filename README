@@ -17,7 +17,7 @@ Steps:
 NOTE: Some steps will begin with (SERVER), and some with (CLIENT). The SERVER is the machine running LogicBlox. The CLIENT is the machine containing the test rig and batfish binaries. If the SERVER and the CLIENT are the same machine, then run all steps (except where otherwise indicated).
 NOTE: After any step involving modifications to .bashrc or equivalent, make sure to reload your shell or take other action to load the changes.
 
-1. (CLIENT) Install gnu parallel from http://ftp.gnu.org/gnu/parallel/parallel-latest.tar.bz2
+1. (CLIENT) Install gnu parallel 20150109 or later (20150109 available at <http://alpha.gnu.org/gnu/parallel/paralell-20150109.tar.bz2>)
 standard autotools install (extract, configure, make, make install)
 
 2. (CLIENT) Install z3
@@ -41,9 +41,9 @@ git clone https://github.com/arifogel/batfish.git
 #(SERVER)
    export LB_HOME=<logicblox-root>
     . <logicblox-root>/etc/profile.d/logicblox.sh
-    alias rlb='killall -9 lb-server; killall -9 lb-pager; lb services stop && rm -rf ~/lb_deployment/* && LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start'
-    alias slb='LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start'
-    alias klb='killall -9 lb-server; killall -9 lb-pager; lb services stop; rm -rf ~/lb_deployment/*'
+    alias rlb="killall -9 lb-server; killall -9 lb-pager; lb services stop && rm -rf ~/lb_deployment/* /run/shm/LB_${USER} && LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start"
+    alias slb="LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start"
+    alias klb="killall -9 lb-server; killall -9 lb-pager; lb services stop; rm -rf ~/lb_deployment/* /run/shm/LB_${USER}"
 
 #(SERVER AND CLIENT)
     . <batfish-root>/tools/batfish_functions.sh
@@ -92,7 +92,7 @@ Notes on running
 **************************************************
 This repository should contain an example test rig at <batfish-root>/test_rigs/example
 After running step 9 above on the example test rig, as:
-   batfish_analyze <batfish-root>/test_rigs/example example
+   batfish_analyze_multipath <batfish-root>/test_rigs/example example
 you should see the following output in the current folder:
 
 example-dp (directory)
