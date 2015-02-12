@@ -1081,7 +1081,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitAddress_family_header(Address_family_headerContext ctx) {
+   public void exitAddress_family_rb_stanza(Address_family_rb_stanzaContext ctx) {
       _currentPeerGroup = _preAddressFamilyPeerGroup;
       _preAddressFamilyPeerGroup = null;
    }
@@ -1699,6 +1699,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitNext_hop_self_bgp_tail(Next_hop_self_bgp_tailContext ctx) {
       todo(ctx);
       // note that this rule matches "no next-hop-self"
+   }
+
+   @Override
+   public void exitNexus_neighbor_address_family(Nexus_neighbor_address_familyContext ctx) {
+      _currentPeerGroup = _preAddressFamilyPeerGroup;
+      _preAddressFamilyPeerGroup = null;
    }
 
    @Override
@@ -2344,6 +2350,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       for (Interface currentInterface : _currentInterfaces) {
          currentInterface.setNativeVlan(vlan);
       }
+   }
+
+   @Override
+   public void exitTemplate_peer_address_family(Template_peer_address_familyContext ctx) {
+      _currentPeerGroup = _preAddressFamilyPeerGroup;
+      _preAddressFamilyPeerGroup = null;
    }
 
    @Override

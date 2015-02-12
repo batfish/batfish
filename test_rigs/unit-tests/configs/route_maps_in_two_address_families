@@ -6,13 +6,11 @@ router bgp 1
     address-family ipv4 unicast
       send-community
       route-map FROM_ABC_V4 in
-      route-map TO_ABC_V4 out
       maximum-prefix 200 90
       soft-reconfiguration inbound
     address-family ipv6 unicast
       send-community
       route-map FROM_ABC_V6 in
-      route-map TO_ABC_V6 out
       maximum-prefix 200 90
       soft-reconfiguration inbound
     neighbor 1.1.1.1 remote-as 2
