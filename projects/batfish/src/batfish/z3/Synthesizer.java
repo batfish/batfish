@@ -77,6 +77,7 @@ import batfish.z3.node.PreInInterfaceExpr;
 import batfish.z3.node.PreOutEdgeExpr;
 import batfish.z3.node.PreOutExpr;
 import batfish.z3.node.PreOutInterfaceExpr;
+import batfish.z3.node.QueryRelationExpr;
 import batfish.z3.node.RoleAcceptExpr;
 import batfish.z3.node.RoleOriginateExpr;
 import batfish.z3.node.RuleExpr;
@@ -1239,6 +1240,7 @@ public class Synthesizer {
       for (Statement existingStatement : existingStatements) {
          relations.addAll(existingStatement.getRelations());
       }
+      relations.add(QueryRelationExpr.NAME);
       for (String packetRel : relations) {
          List<Integer> sizes = new ArrayList<Integer>();
          sizes.addAll(PACKET_VAR_SIZES.values());
