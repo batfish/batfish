@@ -137,7 +137,6 @@ batfish_generate_concretizer_query_output() {
    local OUTPUT_FILE=${INPUT_FILE}.out
    batfish_date
    echo ": START: Generate concretizer output for $NODE (\"$OUTPUT_FILE\")"
-   if [ 
    local FIRST_LINE="$(head -n1 $INPUT_FILE | tr -d '\n')"
    if [ "$FIRST_LINE" = "unsat" ]; then
       echo unsat > $OUTPUT_FILE || return 1
