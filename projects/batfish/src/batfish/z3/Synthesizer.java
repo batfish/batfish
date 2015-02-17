@@ -770,6 +770,7 @@ public class Synthesizer {
                return TrueExpr.INSTANCE;
             }
             and.addConjunct(TrueExpr.INSTANCE);
+            or.addDisjunct(and);
          }
       }
       or.addDisjunct(FalseExpr.INSTANCE);
