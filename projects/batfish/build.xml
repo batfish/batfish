@@ -17,7 +17,7 @@
    <!-- logicblox stuff -->
    <property environment="env"/>
    <property name="lbhome" value="${env.LB_HOME}"/>
-   <property name="predicateInfo.file" value="bin/batfish/logic/predicateInfo.object"/>
+   <property name="predicateInfo.file" value="bin/org/batfish/logic/predicateInfo.object"/>
 
    <!-- import and configure one-jar -->
    <property name="one-jar.dir" location="one-jar"/>
@@ -28,7 +28,7 @@
       <fileset dir="lib" includes="**/*.jar"/>
    </path>
    <property name="outputJar" value="out/batfish.jar"/>
-   <property name="lbSummary" value="bin/batfish/logic/LB_SUMMARY.lbp"/>
+   <property name="lbSummary" value="bin/org/batfish/logic/LB_SUMMARY.lbp"/>
 
    <!-- antlr4 build macro for lexers -->
    <macrodef name="antlr4lexer">
@@ -105,24 +105,24 @@
 	<target name="grammarclean" description="Delete generated antlr files">
       <delete>
          <fileset dir="src" includes="**/*.tokens"/>
-         <fileset dir="src" includes="batfish/grammar/cisco/CiscoLexer*.java"/>
-         <fileset dir="src" includes="batfish/grammar/cisco/CiscoParser*.java"/>
-         <fileset dir="src" includes="batfish/grammar/flatjuniper/FlatJuniperLexer*.java"/>
-         <fileset dir="src" includes="batfish/grammar/flatjuniper/FlatJuniperParser*.java"/>
-         <fileset dir="src" includes="batfish/grammar/juniper/JuniperLexer*.java"/>
-         <fileset dir="src" includes="batfish/grammar/juniper/JuniperParser*.java"/>
-         <fileset dir="src" includes="batfish/grammar/topology/RoleLexer*.java"/>
-         <fileset dir="src" includes="batfish/grammar/topology/RoleParser*.java"/>
-         <fileset dir="src" includes="batfish/grammar/topology/BatfishTopologyLexer*.java"/>
-         <fileset dir="src" includes="batfish/grammar/topology/BatfishTopologyParser*.java"/>
-         <fileset dir="src" includes="batfish/grammar/topology/GNS3TopologyLexer*.java"/>
-         <fileset dir="src" includes="batfish/grammar/topology/GNS3TopologyParser*.java"/>
-         <fileset dir="src" includes="batfish/grammar/z3/DatalogQueryResultLexer*.java"/>
-         <fileset dir="src" includes="batfish/grammar/z3/DatalogQueryResultParser*.java"/>
-         <fileset dir="src" includes="batfish/grammar/z3/ConcretizerQueryResultLexer*.java"/>
-         <fileset dir="src" includes="batfish/grammar/z3/ConcretizerQueryResultParser*.java"/>
-         <fileset dir="src" includes="batfish/grammar/logicblox/LogiQLLexer*.java"/>
-         <fileset dir="src" includes="batfish/grammar/logicblox/LogiQLParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/cisco/CiscoLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/cisco/CiscoParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/flatjuniper/FlatJuniperLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/flatjuniper/FlatJuniperParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/juniper/JuniperLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/juniper/JuniperParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/topology/RoleLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/topology/RoleParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/topology/BatfishTopologyLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/topology/BatfishTopologyParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/topology/GNS3TopologyLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/topology/GNS3TopologyParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/z3/DatalogQueryResultLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/z3/DatalogQueryResultParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/z3/ConcretizerQueryResultLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/z3/ConcretizerQueryResultParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/logicblox/LogiQLLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/logicblox/LogiQLParser*.java"/>
       </delete>
 	</target>
 
@@ -251,101 +251,101 @@
    <target name="grammar4lexers"
      description="Compile antlr4 lexer grammars">
       <parallel>
-         <antlr4lexer grammar.name="BatfishTopologyLexer" grammar.packagedir="batfish/grammar/topology"/>
-         <antlr4lexer grammar.name="CiscoLexer" grammar.packagedir="batfish/grammar/cisco"/>
-         <antlr4lexer grammar.name="ConcretizerQueryResultLexer" grammar.packagedir="batfish/grammar/z3"/>
-         <antlr4lexer grammar.name="DatalogQueryResultLexer" grammar.packagedir="batfish/grammar/z3"/>
-         <antlr4lexer grammar.name="FlatJuniperLexer" grammar.packagedir="batfish/grammar/flatjuniper"/>
-         <antlr4lexer grammar.name="GNS3TopologyLexer" grammar.packagedir="batfish/grammar/topology"/>
-         <antlr4lexer grammar.name="JuniperLexer" grammar.packagedir="batfish/grammar/juniper"/>
-         <antlr4lexer grammar.name="LogiQLLexer" grammar.packagedir="batfish/grammar/logicblox"/>
-         <antlr4lexer grammar.name="RoleLexer" grammar.packagedir="batfish/grammar/topology"/>
+         <antlr4lexer grammar.name="BatfishTopologyLexer" grammar.packagedir="org/batfish/grammar/topology"/>
+         <antlr4lexer grammar.name="CiscoLexer" grammar.packagedir="org/batfish/grammar/cisco"/>
+         <antlr4lexer grammar.name="ConcretizerQueryResultLexer" grammar.packagedir="org/batfish/grammar/z3"/>
+         <antlr4lexer grammar.name="DatalogQueryResultLexer" grammar.packagedir="org/batfish/grammar/z3"/>
+         <antlr4lexer grammar.name="FlatJuniperLexer" grammar.packagedir="org/batfish/grammar/flatjuniper"/>
+         <antlr4lexer grammar.name="GNS3TopologyLexer" grammar.packagedir="org/batfish/grammar/topology"/>
+         <antlr4lexer grammar.name="JuniperLexer" grammar.packagedir="org/batfish/grammar/juniper"/>
+         <antlr4lexer grammar.name="LogiQLLexer" grammar.packagedir="org/batfish/grammar/logicblox"/>
+         <antlr4lexer grammar.name="RoleLexer" grammar.packagedir="org/batfish/grammar/topology"/>
       </parallel>
    </target>
 
    <target name="grammar4parsers" depends="grammar4lexers"
      description="Compile antlr4 parser grammars">
       <parallel>
-         <antlr4parser grammar.name="BatfishTopologyParser" grammar.packagedir="batfish/grammar/topology">
+         <antlr4parser grammar.name="BatfishTopologyParser" grammar.packagedir="org/batfish/grammar/topology">
             <dependencies>
-               <fileset dir="src/batfish/grammar/topology" includes="BatfishTopologyParser.g4"/>
-               <fileset dir="src/batfish/grammar/topology" includes="BatfishTopologyLexer.g4"/>
-               <fileset dir="src/batfish/grammar/topology" includes="BatfishTopologyLexer.tokens"/>
+               <fileset dir="src/org/batfish/grammar/topology" includes="BatfishTopologyParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/topology" includes="BatfishTopologyLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/topology" includes="BatfishTopologyLexer.tokens"/>
             </dependencies>
          </antlr4parser>
-         <antlr4parser grammar.name="CiscoParser" grammar.packagedir="batfish/grammar/cisco">
+         <antlr4parser grammar.name="CiscoParser" grammar.packagedir="org/batfish/grammar/cisco">
             <dependencies>
-               <fileset dir="src/batfish/grammar/cisco" includes="CiscoParser.g4"/>
-               <fileset dir="src/batfish/grammar/cisco" includes="CiscoLexer.g4"/>
-               <fileset dir="src/batfish/grammar/cisco" includes="CiscoLexer.tokens"/>
-               <fileset dir="src/batfish/grammar/cisco" includes="Cisco_acl.g4"/>
-               <fileset dir="src/batfish/grammar/cisco" includes="Cisco_bgp.g4"/>
-               <fileset dir="src/batfish/grammar/cisco" includes="Cisco_common.g4"/>
-               <fileset dir="src/batfish/grammar/cisco" includes="Cisco_ignored.g4"/>
-               <fileset dir="src/batfish/grammar/cisco" includes="Cisco_interface.g4"/>
-               <fileset dir="src/batfish/grammar/cisco" includes="Cisco_isis.g4"/>
-               <fileset dir="src/batfish/grammar/cisco" includes="Cisco_ospf.g4"/>
-               <fileset dir="src/batfish/grammar/cisco" includes="Cisco_rip.g4"/>
-               <fileset dir="src/batfish/grammar/cisco" includes="Cisco_routemap.g4"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="CiscoParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="CiscoLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="CiscoLexer.tokens"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_acl.g4"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_bgp.g4"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_common.g4"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_ignored.g4"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_interface.g4"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_isis.g4"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_ospf.g4"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_rip.g4"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_routemap.g4"/>
             </dependencies>
          </antlr4parser>
-         <antlr4parser grammar.name="ConcretizerQueryResultParser" grammar.packagedir="batfish/grammar/z3">
+         <antlr4parser grammar.name="ConcretizerQueryResultParser" grammar.packagedir="org/batfish/grammar/z3">
             <dependencies>
-               <fileset dir="src/batfish/grammar/z3" includes="ConcretizerQueryResultParser.g4"/>
-               <fileset dir="src/batfish/grammar/z3" includes="ConcretizerQueryResultLexer.g4"/>
-               <fileset dir="src/batfish/grammar/z3" includes="ConcretizerQueryResultLexer.tokens"/>
+               <fileset dir="src/org/batfish/grammar/z3" includes="ConcretizerQueryResultParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/z3" includes="ConcretizerQueryResultLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/z3" includes="ConcretizerQueryResultLexer.tokens"/>
             </dependencies>
          </antlr4parser>
-         <antlr4parser grammar.name="DatalogQueryResultParser" grammar.packagedir="batfish/grammar/z3">
+         <antlr4parser grammar.name="DatalogQueryResultParser" grammar.packagedir="org/batfish/grammar/z3">
             <dependencies>
-               <fileset dir="src/batfish/grammar/z3" includes="DatalogQueryResultParser.g4"/>
-               <fileset dir="src/batfish/grammar/z3" includes="DatalogQueryResultLexer.g4"/>
-               <fileset dir="src/batfish/grammar/z3" includes="DatalogQueryResultLexer.tokens"/>
+               <fileset dir="src/org/batfish/grammar/z3" includes="DatalogQueryResultParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/z3" includes="DatalogQueryResultLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/z3" includes="DatalogQueryResultLexer.tokens"/>
             </dependencies>
          </antlr4parser>
-         <antlr4parser grammar.name="FlatJuniperParser" grammar.packagedir="batfish/grammar/flatjuniper">
+         <antlr4parser grammar.name="FlatJuniperParser" grammar.packagedir="org/batfish/grammar/flatjuniper">
             <dependencies>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniperParser.g4"/>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniperLexer.g4"/>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniperLexer.tokens"/>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_bgp.g4"/>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_common.g4"/>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_firewall.g4"/>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_interfaces.g4"/>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_isis.g4"/>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_mpls.g4"/>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_ospf.g4"/>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_protocols.g4"/>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_policy_options.g4"/>
-               <fileset dir="src/batfish/grammar/flatjuniper" includes="FlatJuniper_routing_instances.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniperParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniperLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniperLexer.tokens"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_bgp.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_common.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_firewall.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_interfaces.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_isis.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_mpls.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_ospf.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_protocols.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_policy_options.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_routing_instances.g4"/>
             </dependencies>
          </antlr4parser>
-         <antlr4parser grammar.name="GNS3TopologyParser" grammar.packagedir="batfish/grammar/topology">
+         <antlr4parser grammar.name="GNS3TopologyParser" grammar.packagedir="org/batfish/grammar/topology">
             <dependencies>
-               <fileset dir="src/batfish/grammar/topology" includes="GNS3TopologyParser.g4"/>
-               <fileset dir="src/batfish/grammar/topology" includes="GNS3TopologyLexer.g4"/>
-               <fileset dir="src/batfish/grammar/topology" includes="GNS3TopologyLexer.tokens"/>
+               <fileset dir="src/org/batfish/grammar/topology" includes="GNS3TopologyParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/topology" includes="GNS3TopologyLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/topology" includes="GNS3TopologyLexer.tokens"/>
             </dependencies>
          </antlr4parser>
-         <antlr4parser grammar.name="JuniperParser" grammar.packagedir="batfish/grammar/juniper">
+         <antlr4parser grammar.name="JuniperParser" grammar.packagedir="org/batfish/grammar/juniper">
             <dependencies>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperParser.g4"/>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperLexer.g4"/>
-               <fileset dir="src/batfish/grammar/juniper" includes="JuniperLexer.tokens"/>
+               <fileset dir="src/org/batfish/grammar/juniper" includes="JuniperParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/juniper" includes="JuniperLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/juniper" includes="JuniperLexer.tokens"/>
             </dependencies>
          </antlr4parser>
-         <antlr4parser grammar.name="LogiQLParser" grammar.packagedir="batfish/grammar/logicblox">
+         <antlr4parser grammar.name="LogiQLParser" grammar.packagedir="org/batfish/grammar/logicblox">
             <dependencies>
-               <fileset dir="src/batfish/grammar/logicblox" includes="LogiQLParser.g4"/>
-               <fileset dir="src/batfish/grammar/logicblox" includes="LogiQLLexer.g4"/>
-               <fileset dir="src/batfish/grammar/logicblox" includes="LogiQLLexer.tokens"/>
+               <fileset dir="src/org/batfish/grammar/logicblox" includes="LogiQLParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/logicblox" includes="LogiQLLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/logicblox" includes="LogiQLLexer.tokens"/>
             </dependencies>
          </antlr4parser>
-         <antlr4parser grammar.name="RoleParser" grammar.packagedir="batfish/grammar/topology">
+         <antlr4parser grammar.name="RoleParser" grammar.packagedir="org/batfish/grammar/topology">
             <dependencies>
-               <fileset dir="src/batfish/grammar/topology" includes="RoleParser.g4"/>
-               <fileset dir="src/batfish/grammar/topology" includes="RoleLexer.g4"/>
-               <fileset dir="src/batfish/grammar/topology" includes="RoleLexer.tokens"/>
+               <fileset dir="src/org/batfish/grammar/topology" includes="RoleParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/topology" includes="RoleLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/topology" includes="RoleLexer.tokens"/>
             </dependencies>
          </antlr4parser>
       </parallel>
@@ -356,8 +356,8 @@
       <mkdir dir="out"/>
       <one-jar destfile="${outputJar}">
          <manifest>
-            <attribute name="Main-Class" value="batfish.main.Boot"/>
-            <attribute name="One-Jar-Main-Class" value="batfish.main.Driver"/>
+            <attribute name="Main-Class" value="org.batfish.main.Boot"/>
+            <attribute name="One-Jar-Main-Class" value="org.batfish.main.Driver"/>
             <attribute name="One-Jar-URL-Factory" value="com.simontuffs.onejar.JarClassLoader$OneJarURLFactory"/>
          </manifest>
          <main>
@@ -386,7 +386,7 @@
          <arg value="compileProject"/>
          <arg value="-outDir"/>
          <arg path="bin/batfish/logic"/>
-         <arg path="src/batfish/logic/batfish.project"/>
+         <arg path="src/org/batfish/logic/batfish.project"/>
       </java>
    </target>
 
@@ -403,9 +403,9 @@
          </sourcefiles>
          <targetfiles path="${predicateInfo.file}"/>
          <sequential>
-            <java classname="batfish.main.Driver" fork="true">
+            <java classname="org.batfish.main.Driver" fork="true">
                <arg value="-bpi"/>
-               <arg value="src/batfish/logic"/>
+               <arg value="src/org/batfish/logic"/>
                <arg value="-log"/>
                <arg value="WARN"/>
                <classpath refid="libraries" />

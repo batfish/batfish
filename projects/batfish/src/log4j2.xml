@@ -15,7 +15,7 @@
       </Console>
    </Appenders>
    <Loggers>
-      <Logger name="batfish.main.Batfish" level="DEBUG" additivity="false">
+      <Logger name="org.batfish.main.Batfish" level="DEBUG" additivity="false">
          <AppenderRef ref="ConsoleOut"/>
       </Logger>
       <Root level="ERROR">

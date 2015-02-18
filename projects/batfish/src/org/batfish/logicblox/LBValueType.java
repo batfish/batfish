@@ -1,0 +1,16 @@
+package org.batfish.logicblox;
+
+public enum LBValueType {
+   ENTITY_INDEX_BGP_ADVERTISEMENT,
+   ENTITY_INDEX_FLOW,
+   ENTITY_INDEX_INT,
+   ENTITY_INDEX_NETWORK,
+   ENTITY_INDEX_ROUTE,
+   ENTITY_REF_INT,
+   ENTITY_REF_IP,
+   ENTITY_REF_STRING,
+   FLOAT,
+   INT,
+   IP,
+   STRING
+}
