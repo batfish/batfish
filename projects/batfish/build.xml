@@ -385,7 +385,7 @@
          <jvmarg value="-Djava.library.path=${lbhome}/logicblox/lib"/>
          <arg value="compileProject"/>
          <arg value="-outDir"/>
-         <arg path="bin/batfish/logic"/>
+         <arg path="bin/org/batfish/logic"/>
          <arg path="src/org/batfish/logic/batfish.project"/>
       </java>
    </target>
