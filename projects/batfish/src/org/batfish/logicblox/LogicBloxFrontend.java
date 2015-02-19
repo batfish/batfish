@@ -56,7 +56,7 @@ public class LogicBloxFrontend {
    private static final String LB_WEB_ADMIN_URI = "/lb-web/admin";
    private static final String LB_WEB_PROTOCOL = "http";
    public static final long LB_WEB_TIMEOUT_MS = 31536000000l;
-   private static final String SERVICE_DIR = "org.batfish";
+   private static final String SERVICE_DIR = "batfish";
 
    private static void closeSession(
          ConnectBloxSession<Request, Response> session) {
