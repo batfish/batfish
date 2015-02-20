@@ -1089,32 +1089,35 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitAggregate_address_rb_stanza(
          Aggregate_address_rb_stanzaContext ctx) {
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
-      if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
+      if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
+         boolean summaryOnly = ctx.SUMMARY_ONLY() != null;
+         boolean asSet = ctx.AS_SET() != null;
+         if (ctx.network != null || ctx.prefix != null) {
+            // ipv4
+            Prefix prefix;
+            if (ctx.network != null) {
+               Ip network = toIp(ctx.network);
+               Ip subnet = toIp(ctx.subnet);
+               int prefixLength = subnet.numSubnetBits();
+               prefix = new Prefix(network, prefixLength);
+            }
+            else {
+               // ctx.prefix != null
+               prefix = new Prefix(ctx.prefix.getText());
+            }
+            BgpAggregateNetwork net = new BgpAggregateNetwork(prefix);
+            net.setAsSet(asSet);
+            net.setSummaryOnly(summaryOnly);
+            proc.getAggregateNetworks().put(prefix, net);
+         }
+         else if (ctx.ipv6_prefix != null) {
+            todo(ctx);
+         }
+      }
+      else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
          throw new BatfishException(
                "unexpected occurrence in peer group/neighbor context");
-      }
-      boolean summaryOnly = ctx.SUMMARY_ONLY() != null;
-      boolean asSet = ctx.AS_SET() != null;
-      if (ctx.network != null || ctx.prefix != null) {
-         // ipv4
-         Prefix prefix;
-         if (ctx.network != null) {
-            Ip network = toIp(ctx.network);
-            Ip subnet = toIp(ctx.subnet);
-            int prefixLength = subnet.numSubnetBits();
-            prefix = new Prefix(network, prefixLength);
-         }
-         else {
-            // ctx.prefix != null
-            prefix = new Prefix(ctx.prefix.getText());
-         }
-         BgpAggregateNetwork net = new BgpAggregateNetwork(prefix);
-         net.setAsSet(asSet);
-         net.setSummaryOnly(summaryOnly);
-         proc.getAggregateNetworks().put(prefix, net);
-      }
-      else if (ctx.ipv6_prefix != null) {
-         todo(ctx);
+
       }
    }
 
