@@ -1704,7 +1704,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitNexus_neighbor_address_family(Nexus_neighbor_address_familyContext ctx) {
+   public void exitNexus_neighbor_address_family(
+         Nexus_neighbor_address_familyContext ctx) {
       _currentPeerGroup = _preAddressFamilyPeerGroup;
       _preAddressFamilyPeerGroup = null;
    }
@@ -2363,7 +2364,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitTemplate_peer_address_family(Template_peer_address_familyContext ctx) {
+   public void exitTemplate_peer_address_family(
+         Template_peer_address_familyContext ctx) {
       _currentPeerGroup = _preAddressFamilyPeerGroup;
       _preAddressFamilyPeerGroup = null;
    }
