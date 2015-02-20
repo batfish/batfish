@@ -1798,12 +1798,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitNo_redistribute_connected_rb_stanza(
          No_redistribute_connected_rb_stanzaContext ctx) {
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
-      if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
+      if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
+         RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
+         proc.getRedistributionPolicies().remove(sourceProtocol);
+      }
+      else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
       }
-      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
-      proc.getRedistributionPolicies().remove(sourceProtocol);
    }
 
    @Override
@@ -1923,20 +1925,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitRedistribute_connected_bgp_tail(
          Redistribute_connected_bgp_tailContext ctx) {
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
-      if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
+      if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
+         RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
+         BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
+         proc.getRedistributionPolicies().put(sourceProtocol, r);
+         if (ctx.metric != null) {
+            int metric = toInteger(ctx.metric);
+            r.setMetric(metric);
+         }
+         if (ctx.map != null) {
+            String map = ctx.map.getText();
+            r.setMap(map);
+         }
+      }
+      else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
-      }
-      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
-      if (ctx.metric != null) {
-         int metric = toInteger(ctx.metric);
-         r.setMetric(metric);
-      }
-      if (ctx.map != null) {
-         String map = ctx.map.getText();
-         r.setMap(map);
       }
    }
 
@@ -1974,24 +1978,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitRedistribute_ospf_bgp_tail(
          Redistribute_ospf_bgp_tailContext ctx) {
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
-      if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
+      if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
+         RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
+         BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
+         proc.getRedistributionPolicies().put(sourceProtocol, r);
+         if (ctx.metric != null) {
+            int metric = toInteger(ctx.metric);
+            r.setMetric(metric);
+         }
+         if (ctx.map != null) {
+            String map = ctx.map.getText();
+            r.setMap(map);
+         }
+         int procNum = toInteger(ctx.procnum);
+         r.getSpecialAttributes().put(
+               BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
+      }
+      else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
       }
-      RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
-      if (ctx.metric != null) {
-         int metric = toInteger(ctx.metric);
-         r.setMetric(metric);
-      }
-      if (ctx.map != null) {
-         String map = ctx.map.getText();
-         r.setMap(map);
-      }
-      int procNum = toInteger(ctx.procnum);
-      r.getSpecialAttributes().put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER,
-            procNum);
    }
 
    @Override
@@ -2004,20 +2010,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitRedistribute_static_bgp_tail(
          Redistribute_static_bgp_tailContext ctx) {
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
-      if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
+      if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
+         RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
+         BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
+         proc.getRedistributionPolicies().put(sourceProtocol, r);
+         if (ctx.metric != null) {
+            int metric = toInteger(ctx.metric);
+            r.setMetric(metric);
+         }
+         if (ctx.map != null) {
+            String map = ctx.map.getText();
+            r.setMap(map);
+         }
+      }
+      else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
-      }
-      RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
-      if (ctx.metric != null) {
-         int metric = toInteger(ctx.metric);
-         r.setMetric(metric);
-      }
-      if (ctx.map != null) {
-         String map = ctx.map.getText();
-         r.setMap(map);
       }
    }
 
