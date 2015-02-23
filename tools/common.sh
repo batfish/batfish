@@ -399,7 +399,7 @@ batfish_serialize_vendor() {
    local TEST_RIG=$1
    local VENDOR_SERIAL_DIR=$2
    mkdir -p $VENDOR_SERIAL_DIR
-   batfish -testrig $TEST_RIG -sv -svpath $VENDOR_SERIAL_DIR -ee -throwparser -throwlexer || return 1
+   batfish --testrig $TEST_RIG --sv --svpath $VENDOR_SERIAL_DIR --ee --throwparser --throwlexer --unimplementedsuppress || return 1
    batfish_date
    echo ": END: Parse vendor configuration files and serialize vendor structures"
 }
