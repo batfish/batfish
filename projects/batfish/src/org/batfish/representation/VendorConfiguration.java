@@ -1,21 +1,21 @@
 package org.batfish.representation;
 
 import java.io.Serializable;
-import java.util.List;
 
 import org.batfish.collections.RoleSet;
+import org.batfish.main.Warnings;
 
 public interface VendorConfiguration extends Serializable {
-
-   List<String> getConversionWarnings();
 
    String getHostname();
 
    RoleSet getRoles();
 
+   Warnings getWarnings();
+
    void setRoles(RoleSet roles);
 
-   Configuration toVendorIndependentConfiguration()
+   Configuration toVendorIndependentConfiguration(Warnings warnings)
          throws VendorConversionException;
 
 }

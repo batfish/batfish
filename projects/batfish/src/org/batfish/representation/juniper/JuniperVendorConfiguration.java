@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.batfish.collections.RoleSet;
+import org.batfish.main.Warnings;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
@@ -44,12 +45,11 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
    private Configuration _c;
 
-   private final List<String> _conversionWarnings;
-
    private final RoleSet _roles;
 
+   private transient Warnings _w;
+
    public JuniperVendorConfiguration() {
-      _conversionWarnings = new ArrayList<String>();
       _roles = new RoleSet();
    }
 
@@ -146,13 +146,13 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    }
 
    @Override
-   public List<String> getConversionWarnings() {
-      return _conversionWarnings;
+   public RoleSet getRoles() {
+      return _roles;
    }
 
    @Override
-   public RoleSet getRoles() {
-      return _roles;
+   public Warnings getWarnings() {
+      return _w;
    }
 
    private void placeInterfaceIntoArea(
@@ -367,8 +367,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    }
 
    @Override
-   public Configuration toVendorIndependentConfiguration()
+   public Configuration toVendorIndependentConfiguration(Warnings warnings)
          throws VendorConversionException {
+      _w = warnings;
       String hostname = getHostname();
       _c = new Configuration(hostname);
       _c.setVendor(VENDOR_NAME);

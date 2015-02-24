@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.batfish.collections.RoleSet;
+import org.batfish.main.Warnings;
 import org.batfish.representation.AsPathAccessList;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.CommunityList;
@@ -649,12 +650,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             nextHopInterface, staticRoute.getDistance(), tag);
    }
 
-   private final List<String> _conversionWarnings;
-
    private final RoleSet _roles;
 
+   private transient Warnings _w;
+
    public CiscoVendorConfiguration() {
-      _conversionWarnings = new ArrayList<String>();
       _roles = new RoleSet();
    }
 
@@ -697,11 +697,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
       }
-   }
-
-   @Override
-   public List<String> getConversionWarnings() {
-      return _conversionWarnings;
    }
 
    @Override
@@ -764,6 +759,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
       }
       return maps;
+   }
+
+   @Override
+   public Warnings getWarnings() {
+      return _w;
    }
 
    @Override
@@ -868,15 +868,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
       }
 
-      // // cause ip peer groups to inherit unset fields from owning named peer
-      // // group
-      // for (NamedBgpPeerGroup npg : proc.getNamedPeerGroups().values()) {
-      // for (Ip address : npg.getNeighborAddresses()) {
-      // IpBgpPeerGroup ipg = proc.getIpPeerGroups().get(address);
-      // ipg.inheritUnsetFields(npg);
-      // }
-      // }
-
       // cause ip peer groups to inherit unset fields from owning named peer
       // group if it exists, and then always from process master peer group
       for (Entry<String, NamedBgpPeerGroup> e : proc.getNamedPeerGroups()
@@ -888,7 +879,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             NamedBgpPeerGroup peerSession = proc.getPeerSessions().get(
                   peerSessionName);
             if (peerSession == null) {
-               _conversionWarnings.add("peer group \"" + namedPeerGroupName
+               _w.redFlag("peer group \"" + namedPeerGroupName
                      + "\" inherits from non-existent peer-session: \""
                      + peerSessionName + "\"");
             }
@@ -1071,6 +1062,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          boolean sendCommunity = pg.getSendCommunity();
          Ip neighborAddress = pg.getIp();
          if (pg.getActive() && !pg.getShutdown()) {
+            if (pg.getRemoteAS() == null) {
+               _w.redFlag("No remote-as set for peer: " + pg.getName());
+               continue;
+            }
             BgpNeighbor newNeighbor = new BgpNeighbor(neighborAddress);
             newBgpNeighbors.put(neighborAddress, newNeighbor);
 
@@ -1136,7 +1131,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       if (incomingFilterName != null) {
          IpAccessList incomingFilter = ipAccessLists.get(incomingFilterName);
          if (incomingFilter == null) {
-            _conversionWarnings.add("Interface: '" + iface.getName()
+            _w.redFlag("Interface: '" + iface.getName()
                   + "' configured with non-existent incoming acl '"
                   + incomingFilterName + "'");
          }
@@ -1146,7 +1141,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       if (outgoingFilterName != null) {
          IpAccessList outgoingFilter = ipAccessLists.get(outgoingFilterName);
          if (outgoingFilter == null) {
-            _conversionWarnings.add("Interface: '" + iface.getName()
+            _w.redFlag("Interface: '" + iface.getName()
                   + "' configured with non-existent outgoing acl '"
                   + outgoingFilterName + "'");
          }
@@ -1156,7 +1151,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       if (routingPolicyName != null) {
          PolicyMap routingPolicy = policyMaps.get(routingPolicyName);
          if (routingPolicy == null) {
-            _conversionWarnings.add("Interface: '" + iface.getName()
+            _w.redFlag("Interface: '" + iface.getName()
                   + "' configured with non-existent policy-routing route-map '"
                   + routingPolicyName + "'");
          }
@@ -1166,7 +1161,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    }
 
    @Override
-   public Configuration toVendorIndependentConfiguration() {
+   public Configuration toVendorIndependentConfiguration(Warnings warnings) {
+      _w = warnings;
       final Configuration c = new Configuration(_hostname);
       c.setVendor(VENDOR_NAME);
       c.setRoles(_roles);
@@ -1249,8 +1245,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       // convert ospf process
       if (_ospfProcess != null) {
          OspfProcess firstOspfProcess = _ospfProcess;
-         org.batfish.representation.OspfProcess newOspfProcess = toOspfProcess(c,
-               firstOspfProcess);
+         org.batfish.representation.OspfProcess newOspfProcess = toOspfProcess(
+               c, firstOspfProcess);
          c.setOspfProcess(newOspfProcess);
       }
 

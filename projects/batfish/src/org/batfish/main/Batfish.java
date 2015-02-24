@@ -95,7 +95,6 @@ import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 import org.batfish.representation.Topology;
 import org.batfish.representation.VendorConfiguration;
-import org.batfish.representation.VendorConversionException;
 import org.batfish.representation.cisco.CiscoVendorConfiguration;
 import org.batfish.util.StringFilter;
 import org.batfish.util.UrlZipExplorer;
@@ -556,14 +555,25 @@ public class Batfish implements AutoCloseable {
       _logger
             .info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
       resetTimer();
+      boolean pedanticAsError = _settings.getPedanticAsError();
+      boolean pedanticRecord = _settings.getPedanticRecord();
+      boolean redFlagAsError = _settings.getRedFlagAsError();
+      boolean redFlagRecord = _settings.getRedFlagRecord();
+      boolean unimplementedAsError = _settings.getUnimplementedAsError();
+      boolean unimplementedRecord = _settings.getUnimplementedRecord();
       for (String name : vendorConfigurations.keySet()) {
          _logger.debug("Processing: \"" + name + "\"");
          VendorConfiguration vc = vendorConfigurations.get(name);
+         Warnings warnings = new Warnings(pedanticAsError, pedanticRecord,
+               redFlagAsError, redFlagRecord, unimplementedAsError,
+               unimplementedRecord);
          try {
-            Configuration config = vc.toVendorIndependentConfiguration();
+            Configuration config = vc
+                  .toVendorIndependentConfiguration(warnings);
             configurations.put(name, config);
+            _logger.debug(" ...OK\n");
          }
-         catch (VendorConversionException e) {
+         catch (BatfishException e) {
             _logger.fatal("...CONVERSION ERROR\n");
             _logger.fatal(ExceptionUtils.getStackTrace(e));
             processingError = true;
@@ -574,17 +584,16 @@ public class Batfish implements AutoCloseable {
                continue;
             }
          }
-
-         List<String> conversionWarnings = vc.getConversionWarnings();
-         int numWarnings = conversionWarnings.size();
-         if (numWarnings > 0) {
-            _logger.debug("..." + numWarnings + " WARNING(S)\n");
-            for (String warning : conversionWarnings) {
-               _logger.debug("\tconverter: " + warning + "\n");
+         finally {
+            for (String warning : warnings.getRedFlagWarnings()) {
+               redflag(warning);
             }
-         }
-         else {
-            _logger.debug(" ...OK\n");
+            for (String warning : warnings.getUnimplementedWarnings()) {
+               unimplemented(warning);
+            }
+            for (String warning : warnings.getPedanticWarnings()) {
+               pedantic(warning);
+            }
          }
       }
       if (processingError) {
@@ -1728,7 +1737,9 @@ public class Batfish implements AutoCloseable {
          }
          try {
             tree = parse(combinedParser, currentPath);
+            _logger.info("\tPost-processing..");
             extractor.processParseTree(tree);
+            _logger.info("OK\n");
          }
          catch (ParserBatfishException e) {
             String error = "Error parsing configuration file: \"" + currentPath
