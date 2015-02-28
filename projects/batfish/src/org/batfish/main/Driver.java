@@ -2,6 +2,8 @@ package org.batfish.main;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,21 +20,16 @@ public class Driver {
    private static final String BASE_URI = "http://localhost/batfish";
    private static final int SERVICE_PORT = 9999;
    
+   private static boolean _idle = true;
+   
    private static URI getBaseURI() {
        return UriBuilder.fromUri(BASE_URI).port(SERVICE_PORT).build();
    }
 
-//   public static ResourceConfig createApp() {
-//       return new ResourceConfig().
-//               register(new JettisonFeature()).
-//               packages("org.batfish.main");
-//   }
-
    public static ResourceConfig createApp() {
-      return new ResourceConfig(Service.class);
+      return new ResourceConfig(Service.class).register(new JettisonFeature());
   }
 
-   @SuppressWarnings({"ResultOfMethodCallIgnored"})
    public static void main(String[] args) {
       Settings settings = null;
       try {
@@ -49,6 +46,7 @@ public class Driver {
          
          HttpServer _server = GrizzlyHttpServerFactory.createHttpServer(getBaseURI(), createApp());
          
+         //this is temporary; we should probably sleep indefinitely
          try {
              System.in.read();
           }
@@ -63,6 +61,39 @@ public class Driver {
       }
    }
    
+   public static List<String> RunBatfish(String[] args) {
+      final Settings settings;
+      try {
+         settings = new Settings(args);
+      }
+      catch (ParseException e) {
+         return Arrays.asList("failure", "Parsing command-line failed: " + e.getMessage());
+      }
+
+      if (settings.canExecute()) {
+         if (claimIdle()) {
+
+            //run batfish on a new thread and set idle to true when done
+            Thread thread = new Thread(){
+               public void run(){
+                     RunBatfish(settings);
+                     makeIdle();
+               }
+             };
+
+             thread.start();
+             
+            return Arrays.asList("success", "running now");            
+         }
+         else {
+            return Arrays.asList("failure", "Not idle");            
+         }            
+      }
+      else {
+         return Arrays.asList("failure", "Non-executable command");
+      }
+   }
+   
    private static void RunBatfish(Settings settings) {
       boolean error = false;
       try (Batfish batfish = new Batfish(settings)) {
@@ -73,10 +104,26 @@ public class Driver {
          error = true;
       }
       finally {
-         if (error) {
+         if (error && ! settings.runInServiceMode()) {
             System.exit(1);
          }
       }
    }
 
+   private static synchronized boolean claimIdle() {
+      if (_idle) {
+         _idle = false;
+         return true;
+      }
+      
+      return false;
+   }
+   
+   private static void makeIdle() {
+      _idle = true;
+   }
+
+   public static boolean getIdle(){
+      return _idle;
+   }
 }
