@@ -89,6 +89,7 @@ public class Settings {
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
    private static final String ARG_SERIALIZE_VENDOR = "sv";
    private static final String ARG_SERIALIZE_VENDOR_PATH = "svpath";
+   private static final String ARG_SERVICE_MODE = "servicemode";
    private static final String ARG_TEST_RIG_PATH = "testrig";
    private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
    private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
@@ -236,6 +237,7 @@ public class Settings {
    private boolean _roleTransitQuery;
    private String _roleTransitQueryPath;
    private Set<String> _rulesWithSuppressedWarnings;
+   private boolean _runInServiceMode;
    private String _secondTestRigPath;
    private boolean _serializeIndependent;
    private String _serializeIndependentPath;
@@ -801,6 +803,8 @@ public class Settings {
             .longOpt(ARG_MPI_PATH).build());
       _options.addOption(Option.builder().desc("serialize to text")
             .longOpt(ARG_SERIALIZE_TO_TEXT).build());
+      _options.addOption(Option.builder().desc("run in service mode")
+            .longOpt(ARG_SERVICE_MODE).build());
       _options
             .addOption(Option
                   .builder()
@@ -952,6 +956,7 @@ public class Settings {
 
    private void parseCommandLine(String[] args) throws ParseException {
       _canExecute = true;
+      _runInServiceMode = false;
       _printSemantics = false;
       CommandLine line = null;
       CommandLineParser parser = new DefaultParser();
@@ -966,6 +971,7 @@ public class Settings {
          formatter.printHelp(EXECUTABLE_NAME, _options);
          return;
       }
+      _runInServiceMode = line.hasOption(ARG_SERVICE_MODE);
       _counts = line.hasOption(ARG_COUNT);
       _queryAll = line.hasOption(ARG_QUERY_ALL);
       _query = line.hasOption(ARG_QUERY);
@@ -1118,6 +1124,10 @@ public class Settings {
 
    public boolean revert() {
       return _revert;
+   }
+
+   public boolean runInServiceMode() {      
+      return _runInServiceMode;
    }
 
 }
