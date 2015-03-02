@@ -15,7 +15,7 @@ import javax.ws.rs.Produces;
 
 import org.codehaus.jettison.json.JSONArray;
 
-@Path("/service")
+@Path("/batfishservice")
 public class Service {
 
    @GET
@@ -24,8 +24,7 @@ public class Service {
       return new JSONArray(
             Arrays.asList(
                   "",
-                  "this is batfish service. \n \n"
-                        + "../application.wadl (relative to the URL you entered) will show supported methods"));
+                  "Batfish service: enter ../application.wadl (relative to your URL) to see supported methods"));
    }
 
    @GET

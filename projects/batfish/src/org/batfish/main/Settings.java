@@ -90,6 +90,8 @@ public class Settings {
    private static final String ARG_SERIALIZE_VENDOR = "sv";
    private static final String ARG_SERIALIZE_VENDOR_PATH = "svpath";
    private static final String ARG_SERVICE_MODE = "servicemode";
+   private static final String ARG_SERVICE_PORT = "serviceport";
+   private static final String ARG_SERVICE_URL = "serviceurl";
    private static final String ARG_TEST_RIG_PATH = "testrig";
    private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
    private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
@@ -155,6 +157,8 @@ public class Settings {
          .singletonList("InstalledRoute");
    private static final String DEFAULT_SERIALIZE_INDEPENDENT_PATH = "serialized-independent-configs";
    private static final String DEFAULT_SERIALIZE_VENDOR_PATH = "serialized-vendor-configs";
+   private static final String DEFAULT_SERVICE_PORT = "9999";
+   private static final String DEFAULT_SERVICE_URL = "http://localhost";
    private static final String DEFAULT_TEST_RIG_PATH = "default_test_rig";
    private static final String DEFAULT_Z3_OUTPUT = "z3-dataplane-output.smt2";
    private static final boolean DEFAULT_Z3_SIMPLIFY = true;
@@ -244,6 +248,8 @@ public class Settings {
    private boolean _serializeToText;
    private boolean _serializeVendor;
    private String _serializeVendorPath;
+   private int _servicePort;
+   private String _serviceUrl;
    private boolean _simplify;
    private String _testRigPath;
    private boolean _throwOnLexerError;
@@ -577,6 +583,14 @@ public class Settings {
       return _serializeVendorPath;
    }
 
+   public int getServicePort() {
+      return _servicePort;
+   }
+   
+   public String getServiceUrl() {
+      return _serviceUrl;
+   }
+
    public boolean getSimplify() {
       return _simplify;
    }
@@ -805,6 +819,12 @@ public class Settings {
             .longOpt(ARG_SERIALIZE_TO_TEXT).build());
       _options.addOption(Option.builder().desc("run in service mode")
             .longOpt(ARG_SERVICE_MODE).build());
+      _options.addOption(Option.builder().argName("port_number").hasArg()
+            .desc("port for batfish service")
+            .longOpt(ARG_SERVICE_PORT).build());
+      _options.addOption(Option.builder().argName("base_url").hasArg()
+            .desc("base url for batfish service")
+            .longOpt(ARG_SERVICE_URL).build());
       _options
             .addOption(Option
                   .builder()
@@ -972,6 +992,9 @@ public class Settings {
          return;
       }
       _runInServiceMode = line.hasOption(ARG_SERVICE_MODE);
+      _servicePort = Integer.parseInt(line.getOptionValue(ARG_SERVICE_PORT,
+            DEFAULT_SERVICE_PORT));
+      _serviceUrl = line.getOptionValue(ARG_SERVICE_URL, DEFAULT_SERVICE_URL);
       _counts = line.hasOption(ARG_COUNT);
       _queryAll = line.hasOption(ARG_QUERY_ALL);
       _query = line.hasOption(ARG_QUERY);

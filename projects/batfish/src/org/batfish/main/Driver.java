@@ -18,18 +18,9 @@ import org.glassfish.jersey.server.ResourceConfig;
 public class Driver {
 
    private static final String BASE_URI = "http://localhost/batfish";
-   private static final int SERVICE_PORT = 9999;
    
    private static boolean _idle = true;
    
-   private static URI getBaseURI() {
-       return UriBuilder.fromUri(BASE_URI).port(SERVICE_PORT).build();
-   }
-
-   public static ResourceConfig createApp() {
-      return new ResourceConfig(Service.class).register(new JettisonFeature());
-  }
-
    public static void main(String[] args) {
       Settings settings = null;
       try {
@@ -42,9 +33,13 @@ public class Driver {
       }
       if (settings.runInServiceMode()) {
 
-         System.out.println(String.format("Starting server at %s\n", getBaseURI()));
+         URI baseUri = UriBuilder.fromUri(settings.getServiceUrl()).port(settings.getServicePort()).build();
          
-         HttpServer _server = GrizzlyHttpServerFactory.createHttpServer(getBaseURI(), createApp());
+         System.out.println(String.format("Starting server at %s\n", baseUri));
+         
+         ResourceConfig rc = new ResourceConfig(Service.class).register(new JettisonFeature());
+         
+         HttpServer _server = GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
          
          //this is temporary; we should probably sleep indefinitely
          try {
