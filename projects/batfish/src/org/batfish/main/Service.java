@@ -31,7 +31,7 @@ public class Service {
    @Path("getstatus")
    @Produces("application/json")
    public JSONArray getStatus() {
-      return new JSONArray(Arrays.asList("", Driver.getIdle()));
+      return new JSONArray(Arrays.asList("", "idle = " + Driver.getIdle()));
    }
 
    @GET
