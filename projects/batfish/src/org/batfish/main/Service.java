@@ -29,14 +29,14 @@ public class Service {
 
    @GET
    @Path("getstatus")
-   @Produces("application/json")
+   @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
       return new JSONArray(Arrays.asList("", "idle = " + Driver.getIdle()));
    }
 
    @GET
    @Path("run")
-   @Produces("application/json")
+   @Produces(MediaType.APPLICATION_JSON)
    public JSONArray run(@Context UriInfo ui) {
       try {
          MultivaluedMap<String, String> queryParams = ui.getQueryParameters();

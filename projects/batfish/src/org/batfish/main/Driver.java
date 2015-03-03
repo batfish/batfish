@@ -17,8 +17,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 public class Driver {
 
-   private static final String BASE_URI = "http://localhost/batfish";
-   
    private static boolean _idle = true;
    
    public static void main(String[] args) {
