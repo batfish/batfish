@@ -373,7 +373,7 @@ export -f batfish_reload
 
 batfish_replace_symlinks() {
    OLDPWD=$PWD
-   cd $BATFISH_PATH
+   cd $BATFISH_PATH/..
    ./cygwin-replace-symlinks
    cd $OLDPWD
 }
@@ -421,7 +421,7 @@ export -f batfish_serialize_vendor_with_roles
 
 batfish_restore_symlinks() {
    OLDPWD=$PWD
-   cd $BATFISH_PATH
+   cd $BATFISH_PATH/..
    ./cygwin-restore-symlinks
    cd $OLDPWD
 }
