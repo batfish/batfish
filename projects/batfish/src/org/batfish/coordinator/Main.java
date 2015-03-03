@@ -7,7 +7,6 @@ import java.util.Date;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.cli.ParseException;
-import org.batfish.main.Service;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;

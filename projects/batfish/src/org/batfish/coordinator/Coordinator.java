@@ -2,76 +2,42 @@ package org.batfish.coordinator;
 
 import java.util.Date;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.queue.CloudQueue;
-import com.microsoft.azure.storage.queue.CloudQueueClient;
-import com.microsoft.azure.storage.queue.CloudQueueMessage;
-
 public class Coordinator {
 
-   private CloudQueue _queueAssignedWork;
-   private CloudQueue _queueUnassignedWork;
-   private CloudQueue _queueCompletedWork;   
-   private String _storageConnectionString;
+   //this needs to be generalized to host things elsewhere
+   private static final boolean UseAzureQueues = true;
+   
+   private WorkQueue _queueAssignedWork;
+   private WorkQueue _queueUnassignedWork;
+   private WorkQueue _queueCompletedWork;   
+   private Settings _settings;
    
    public Coordinator(Settings settings) {
       
-      _storageConnectionString = String.format("DefaultEndpointsProtocol=%s;AccountName=%s;AccountKey=%s",
-                 settings.getStorageProtocol(), settings.getStorageAccountName(), settings.getStorageAccountKey());
+      this._settings = settings;
+      
+      if (UseAzureQueues) {
+         String storageConnectionString = String.format(
+               "DefaultEndpointsProtocol=%s;AccountName=%s;AccountKey=%s",
+               settings.getStorageProtocol(), settings.getStorageAccountName(),
+               settings.getStorageAccountKey());
 
-      _queueAssignedWork = getQueue(settings.getQueueAssignedWork());
-      _queueCompletedWork = getQueue(settings.getQueueCompletedWork());
-      _queueUnassignedWork = getQueue(settings.getQueueUnassignedWork());
-            
+         _queueAssignedWork = new AzureQueue(settings.getQueueAssignedWork(),
+               storageConnectionString);
+         _queueCompletedWork = new AzureQueue(settings.getQueueCompletedWork(),
+               storageConnectionString);
+         _queueUnassignedWork = new AzureQueue(
+               settings.getQueueUnassignedWork(), storageConnectionString);
+      }
    }
-
-   private CloudQueue getQueue(String queueName) {
-      try {
-         // Retrieve storage account from connection-string.
-         CloudStorageAccount storageAccount = CloudStorageAccount
-               .parse(_storageConnectionString);
-
-         // Create the queue client.
-         CloudQueueClient queueClient = storageAccount.createCloudQueueClient();
-
-         // Retrieve a reference to a queue.
-         CloudQueue queue = queueClient.getQueueReference(queueName);
-
-         // Create the queue if it doesn't already exist.
-         queue.createIfNotExists();
-
-         return queue;
-      }
-      catch (Exception e) {
-         // Output the stack trace.
-         e.printStackTrace();
-      }
-
-      return null;
-   }
-   
-   private long getQueueLength(CloudQueue queue) {
-      try {
-         // Download the approximate message count from the server.
-         queue.downloadAttributes();
-
-         // Retrieve the newly cached approximate message count.
-         return queue.getApproximateMessageCount();
-      }
-      catch (Exception e) {
-         e.printStackTrace();
-         return -1;
-      }
-
-   }
-   
+      
    public String getWorkStatus() {
     
       String retString = "";
       
-      retString += "Length of unassigned work queue = " + getQueueLength(_queueUnassignedWork) + "\n";
-      retString += "Length of assigned work queue = " + getQueueLength(_queueAssignedWork) + "\n";
-      retString += "Length of completed work queue = " + getQueueLength(_queueCompletedWork);
+      retString += "Length of unassigned work queue = " + _queueUnassignedWork.getLength() + "\n";
+      retString += "Length of assigned work queue = " + _queueAssignedWork.getLength() + "\n";
+      retString += "Length of completed work queue = " + _queueCompletedWork.getLength();
       
       return retString;
    }
