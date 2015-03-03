@@ -1,0 +1,1 @@
+../../../../lib/jaxrs-ri/third-party-license-readme.txt

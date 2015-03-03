@@ -2,8 +2,6 @@ package org.batfish.coordinator;
 
 // Include the following imports to use queue APIs.
 import java.net.URI;
-import java.util.Date;
-
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.cli.ParseException;
@@ -11,9 +9,6 @@ import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
-
-import com.microsoft.azure.storage.*;
-import com.microsoft.azure.storage.queue.*;
 
 public class Main {
 

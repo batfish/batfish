@@ -1,7 +1,5 @@
 package org.batfish.coordinator;
 
-import java.util.Date;
-
 public class Coordinator {
 
    //this needs to be generalized to host things elsewhere
