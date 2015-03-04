@@ -93,7 +93,7 @@
       <one-jar destfile="${outputJar}">
          <manifest>
             <attribute name="Main-Class" value="org.batfish.main.Boot"/>
-            <attribute name="One-Jar-Main-Class" value="org.batfish.main.Driver"/>
+            <attribute name="One-Jar-Main-Class" value="org.batfish.coordinator.Main"/>
             <attribute name="One-Jar-URL-Factory" value="com.simontuffs.onejar.JarClassLoader$OneJarURLFactory"/>
          </manifest>
          <main>

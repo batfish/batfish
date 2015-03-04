@@ -12,6 +12,9 @@ export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.data
 export BATFISH_PARALLEL='parallel --tag -v --eta --halt 2'
 export BATFISH_NESTED_PARALLEL='parallel --tag -v --halt 2 -j1'
 
+export COORDINATOR_PATH="$BATFISH_ROOT/projects/coordinator"
+export COORDINATOR="$COORDINATOR_PATH/coordinator"
+
 batfish() {
    # if cygwin, shift and replace each parameter
    if [ "Cygwin" = "$(uname -o)" ]; then
@@ -41,11 +44,12 @@ export -f batfish
 batfish_build() {
    local RESTORE_FILE='cygwin-symlink-restore-data'
    local OLD_PWD=$(pwd)
-   cd $BATFISH_PATH
+   cd $BATFISH_PATH/..
    if [ "Cygwin" = "$(uname -o)" -a ! -e "$RESTORE_FILE" ]; then
       echo "Replacing symlinks (Cygwin workaround)"
       ./cygwin-replace-symlinks
    fi
+   cd $BATFISH_PATH
    ant $@ || { cd $OLD_PWD ; return 1 ; } 
    cd $OLD_PWD
 }
@@ -473,3 +477,36 @@ else
    }
 fi
 export -f batfish_time
+
+coordinator() {
+   # if cygwin, shift and replace each parameter
+   if [ "Cygwin" = "$(uname -o)" ]; then
+      local NUMARGS=$#
+      for i in $(seq 1 $NUMARGS); do
+         local CURRENT_ARG=$1
+         local NEW_ARG="$(cygpath -w -- $CURRENT_ARG)"
+         set -- "$@" "$NEW_ARG"
+         shift
+      done
+   fi
+   if [ "$COORDINATOR_PRINT_CMDLINE" = "yes" ]; then
+      echo "$COORDINATOR $COORDINATOR_COMMON_ARGS $@"
+   fi
+   $COORDINATOR $COORDINATOR_COMMON_ARGS $@
+}
+export -f coordinator
+
+coordinator_build() {
+   local RESTORE_FILE='cygwin-symlink-restore-data'
+   local OLD_PWD=$(pwd)
+   cd $COORDINATOR_PATH/..
+   if [ "Cygwin" = "$(uname -o)" -a ! -e "$RESTORE_FILE" ]; then
+      echo "Replacing symlinks (Cygwin workaround)"
+      ./cygwin-replace-symlinks
+   fi
+   cd $COORDINATOR_PATH
+   ant $@ || { cd $OLD_PWD ; return 1 ; } 
+   cd $OLD_PWD
+}
+export -f coordinator_build
+
