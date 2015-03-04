@@ -586,7 +586,7 @@ public class Settings {
    public int getServicePort() {
       return _servicePort;
    }
-   
+
    public String getServiceUrl() {
       return _serviceUrl;
    }
@@ -819,12 +819,13 @@ public class Settings {
             .longOpt(ARG_SERIALIZE_TO_TEXT).build());
       _options.addOption(Option.builder().desc("run in service mode")
             .longOpt(ARG_SERVICE_MODE).build());
-      _options.addOption(Option.builder().argName("port_number").hasArg()
-            .desc("port for batfish service")
-            .longOpt(ARG_SERVICE_PORT).build());
+      _options
+            .addOption(Option.builder().argName("port_number").hasArg()
+                  .desc("port for batfish service").longOpt(ARG_SERVICE_PORT)
+                  .build());
       _options.addOption(Option.builder().argName("base_url").hasArg()
-            .desc("base url for batfish service")
-            .longOpt(ARG_SERVICE_URL).build());
+            .desc("base url for batfish service").longOpt(ARG_SERVICE_URL)
+            .build());
       _options
             .addOption(Option
                   .builder()
@@ -1149,7 +1150,7 @@ public class Settings {
       return _revert;
    }
 
-   public boolean runInServiceMode() {      
+   public boolean runInServiceMode() {
       return _runInServiceMode;
    }
 

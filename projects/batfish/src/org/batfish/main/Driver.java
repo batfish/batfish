@@ -19,6 +19,19 @@ public class Driver {
 
    private static boolean _idle = true;
 
+   private static synchronized boolean claimIdle() {
+      if (_idle) {
+         _idle = false;
+         return true;
+      }
+
+      return false;
+   }
+
+   public static boolean getIdle() {
+      return _idle;
+   }
+
    public static void main(String[] args) {
       Settings settings = null;
       try {
@@ -59,38 +72,8 @@ public class Driver {
       }
    }
 
-   public static List<String> RunBatfish(String[] args) {
-      final Settings settings;
-      try {
-         settings = new Settings(args);
-      }
-      catch (ParseException e) {
-         return Arrays.asList("failure",
-               "Parsing command-line failed: " + e.getMessage());
-      }
-
-      if (settings.canExecute()) {
-         if (claimIdle()) {
-
-            // run batfish on a new thread and set idle to true when done
-            Thread thread = new Thread() {
-               public void run() {
-                  RunBatfish(settings);
-                  makeIdle();
-               }
-            };
-
-            thread.start();
-
-            return Arrays.asList("success", "running now");
-         }
-         else {
-            return Arrays.asList("failure", "Not idle");
-         }
-      }
-      else {
-         return Arrays.asList("failure", "Non-executable command");
-      }
+   private static void makeIdle() {
+      _idle = true;
    }
 
    private static void RunBatfish(Settings settings) {
@@ -109,20 +92,38 @@ public class Driver {
       }
    }
 
-   private static synchronized boolean claimIdle() {
-      if (_idle) {
-         _idle = false;
-         return true;
+   public static List<String> RunBatfish(String[] args) {
+      final Settings settings;
+      try {
+         settings = new Settings(args);
+      }
+      catch (ParseException e) {
+         return Arrays.asList("failure",
+               "Parsing command-line failed: " + e.getMessage());
       }
 
-      return false;
-   }
+      if (settings.canExecute()) {
+         if (claimIdle()) {
 
-   private static void makeIdle() {
-      _idle = true;
-   }
+            // run batfish on a new thread and set idle to true when done
+            Thread thread = new Thread() {
+               @Override
+               public void run() {
+                  RunBatfish(settings);
+                  makeIdle();
+               }
+            };
 
-   public static boolean getIdle() {
-      return _idle;
+            thread.start();
+
+            return Arrays.asList("success", "running now");
+         }
+         else {
+            return Arrays.asList("failure", "Not idle");
+         }
+      }
+      else {
+         return Arrays.asList("failure", "Non-executable command");
+      }
    }
 }

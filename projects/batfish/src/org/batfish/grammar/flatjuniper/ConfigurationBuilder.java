@@ -898,7 +898,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       else if (ctx.named_community() != null) {
          long communityVal = toCommunityLong(ctx.named_community());
-         String communityStr = org.batfish.util.Util.longToCommunity(communityVal);
+         String communityStr = org.batfish.util.Util
+               .longToCommunity(communityVal);
          _currentCommunityList.getLines().add(
                new CommunityListLine(communityStr));
       }

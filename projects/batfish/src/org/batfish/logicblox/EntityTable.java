@@ -225,7 +225,8 @@ public class EntityTable {
       boolean tcp = protocol == IpProtocol.TCP;
       boolean udp = protocol == IpProtocol.UDP;
       StringBuilder sb = new StringBuilder();
-      sb.append("Flow<" + node + ", " + protocol + ", " + srcIp + ", " + dstIp + ", ");
+      sb.append("Flow<" + node + ", " + protocol + ", " + srcIp + ", " + dstIp
+            + ", ");
       if (tcp || udp) {
          String srcPort = NamedPort
                .nameFromNumber((int) _flowSrcPorts[listIndex]);

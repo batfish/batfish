@@ -9,7 +9,6 @@ import java.util.List;
 //import org.antlr.v4.runtime.tree.TerminalNode;
 //import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 
-
 import org.batfish.grammar.cisco.*;
 import org.batfish.grammar.cisco.CiscoParser.*;
 

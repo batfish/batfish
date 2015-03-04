@@ -22,8 +22,8 @@ public final class PsThenCommunitySet extends PsThen {
 
    @Override
    public void applyTo(PolicyMapClause clause, Configuration c) {
-      org.batfish.representation.CommunityList list = c.getCommunityLists().get(
-            _name);
+      org.batfish.representation.CommunityList list = c.getCommunityLists()
+            .get(_name);
       String regex = list.getLines().get(0).getRegex();
       // assuming this is a valid community list for setting, the regex value
       // just retrieved should just be an explicit community

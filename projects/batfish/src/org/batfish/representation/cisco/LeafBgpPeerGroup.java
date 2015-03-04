@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 public abstract class LeafBgpPeerGroup extends BgpPeerGroup {
 
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
 
