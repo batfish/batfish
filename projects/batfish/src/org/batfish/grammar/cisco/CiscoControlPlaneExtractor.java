@@ -1,4 +1,4 @@
-package org.batfish.grammar.cisco.controlplane;
+package org.batfish.grammar.cisco;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,7 +17,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.cisco.*;
 import org.batfish.grammar.cisco.CiscoParser.*;
 import org.batfish.main.BatfishException;
 import org.batfish.main.PedanticBatfishException;

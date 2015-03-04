@@ -59,7 +59,7 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
-import org.batfish.grammar.cisco.controlplane.CiscoControlPlaneExtractor;
+import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
