@@ -320,14 +320,14 @@ block(`service_config) {
       }.
 
 // Bgp
-      service_by_prefix["/batfish/SetBgpDefaultLocalPref"] = x,
+      service_by_prefix["/batfish/SetBgpDefaultLocalPref_flat"] = x,
       delim_service(x) {
-         delim_file_binding[] = "SetBgpDefaultLocalPref"
+         delim_file_binding[] = "SetBgpDefaultLocalPref_flat"
       }.
 
-      service_by_prefix["/batfish/SetBgpExportPolicy"] = x,
+      service_by_prefix["/batfish/SetBgpExportPolicy_flat"] = x,
       delim_service(x) {
-         delim_file_binding[] = "SetBgpExportPolicy"
+         delim_file_binding[] = "SetBgpExportPolicy_flat"
       }.
 
       service_by_prefix["/batfish/SetBgpGeneratedRoute_flat"] = x,
@@ -340,14 +340,14 @@ block(`service_config) {
          delim_file_binding[] = "SetBgpGeneratedRoutePolicy_flat"
       }.
 
-      service_by_prefix["/batfish/SetBgpImportPolicy"] = x,
+      service_by_prefix["/batfish/SetBgpImportPolicy_flat"] = x,
       delim_service(x) {
-         delim_file_binding[] = "SetBgpImportPolicy"
+         delim_file_binding[] = "SetBgpImportPolicy_flat"
       }.
 
-      service_by_prefix["/batfish/SetBgpNeighborDefaultMetric"] = x,
+      service_by_prefix["/batfish/SetBgpNeighborDefaultMetric_flat"] = x,
       delim_service(x) {
-         delim_file_binding[] = "SetBgpNeighborDefaultMetric"
+         delim_file_binding[] = "SetBgpNeighborDefaultMetric_flat"
       }.
 
       service_by_prefix["/batfish/SetBgpNeighborGeneratedRoute_flat"] = x,
@@ -360,34 +360,34 @@ block(`service_config) {
          delim_file_binding[] = "SetBgpNeighborGeneratedRoutePolicy_flat"
       }.
 
-      service_by_prefix["/batfish/SetBgpNeighborIp"] = x,
+      service_by_prefix["/batfish/SetBgpNeighborNetwork_flat"] = x,
       delim_service(x) {
-         delim_file_binding[] = "SetBgpNeighborIp"
+         delim_file_binding[] = "SetBgpNeighborNetwork_flat"
       }.
 
-      service_by_prefix["/batfish/SetBgpNeighborSendCommunity"] = x,
+      service_by_prefix["/batfish/SetBgpNeighborSendCommunity_flat"] = x,
       delim_service(x) {
-         delim_file_binding[] = "SetBgpNeighborSendCommunity"
+         delim_file_binding[] = "SetBgpNeighborSendCommunity_flat"
       }.
 
-      service_by_prefix["/batfish/SetBgpOriginationPolicy"] = x,
+      service_by_prefix["/batfish/SetBgpOriginationPolicy_flat"] = x,
       delim_service(x) {
-         delim_file_binding[] = "SetBgpOriginationPolicy"
+         delim_file_binding[] = "SetBgpOriginationPolicy_flat"
       }.
 
-      service_by_prefix["/batfish/SetLocalAs"] = x,
+      service_by_prefix["/batfish/SetLocalAs_flat"] = x,
       delim_service(x) {
-         delim_file_binding[] = "SetLocalAs"
+         delim_file_binding[] = "SetLocalAs_flat"
       }.
 
-      service_by_prefix["/batfish/SetRemoteAs"] = x,
+      service_by_prefix["/batfish/SetRemoteAs_flat"] = x,
       delim_service(x) {
-         delim_file_binding[] = "SetRemoteAs"
+         delim_file_binding[] = "SetRemoteAs_flat"
       }.
 
-      service_by_prefix["/batfish/SetRouteReflectorClient"] = x,
+      service_by_prefix["/batfish/SetRouteReflectorClient_flat"] = x,
       delim_service(x) {
-         delim_file_binding[] = "SetRouteReflectorClient"
+         delim_file_binding[] = "SetRouteReflectorClient_flat"
       }.
 
       // Node

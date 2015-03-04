@@ -222,22 +222,27 @@ public class ConfigurationFactExtractor {
             .get("SetBgpNeighborGeneratedRoutePolicy_flat");
       if (proc != null) {
          for (BgpNeighbor neighbor : proc.getNeighbors().values()) {
-            Long neighborIp = neighbor.getAddress().asLong();
+            Prefix neighborPrefix = neighbor.getPrefix();
+            long neighborPrefixStart = neighborPrefix.getAddress().asLong();
+            long neighborPrefixEnd = neighborPrefix.getEndAddress().asLong();
+            int neighborPrefixLength = neighborPrefix.getPrefixLength();
             for (GeneratedRoute gr : neighbor.getGeneratedRoutes()) {
                long network_start = gr.getPrefix().getAddress().asLong();
                int prefix_length = gr.getPrefix().getPrefixLength();
                long network_end = Util.getNetworkEnd(network_start,
                      prefix_length);
                wSetBgpNeighborGeneratedRoute_flat.append(hostname + "|"
-                     + neighborIp + "|" + network_start + "|" + network_end
-                     + "|" + prefix_length + "\n");
+                     + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                     + neighborPrefixLength + "|" + network_start + "|"
+                     + network_end + "|" + prefix_length + "\n");
                for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
                   String gpName = hostname + ":"
                         + generationPolicy.getMapName();
                   wSetBgpNeighborGeneratedRoutePolicy_flat.append(hostname
-                        + "|" + neighborIp + "|" + network_start + "|"
-                        + network_end + "|" + prefix_length + "|" + gpName
-                        + "\n");
+                        + "|" + neighborPrefixStart + "|" + neighborPrefixEnd
+                        + "|" + neighborPrefixLength + "|" + network_start
+                        + "|" + network_end + "|" + prefix_length + "|"
+                        + gpName + "\n");
                }
             }
          }
@@ -245,36 +250,44 @@ public class ConfigurationFactExtractor {
    }
 
    private void writeBgpNeighborPolicies() {
-      StringBuilder wSetBgpImportPolicy = _factBins.get("SetBgpImportPolicy");
-      StringBuilder wSetBgpExportPolicy = _factBins.get("SetBgpExportPolicy");
+      StringBuilder wSetBgpImportPolicy = _factBins
+            .get("SetBgpImportPolicy_flat");
+      StringBuilder wSetBgpExportPolicy = _factBins
+            .get("SetBgpExportPolicy_flat");
       String hostname = _configuration.getHostname();
       BgpProcess proc = _configuration.getBgpProcess();
       if (proc != null) {
          for (BgpNeighbor neighbor : proc.getNeighbors().values()) {
-            Ip neighborAddress = neighbor.getAddress();
+            Prefix neighborPrefix = neighbor.getPrefix();
+            long neighborPrefixStart = neighborPrefix.getAddress().asLong();
+            long neighborPrefixEnd = neighborPrefix.getEndAddress().asLong();
+            int neighborPrefixLength = neighborPrefix.getPrefixLength();
             for (PolicyMap inboundMap : neighbor.getInboundPolicyMaps()) {
                String inboundMapName = hostname + ":" + inboundMap.getMapName();
-               wSetBgpImportPolicy.append(hostname + "|"
-                     + neighborAddress.asLong() + "|" + inboundMapName + "\n");
+               wSetBgpImportPolicy.append(hostname + "|" + neighborPrefixStart
+                     + "|" + neighborPrefixEnd + "|" + neighborPrefixLength
+                     + "|" + inboundMapName + "\n");
             }
             for (PolicyMap outboundMap : neighbor.getOutboundPolicyMaps()) {
                String outboundMapName = hostname + ":"
                      + outboundMap.getMapName();
-               wSetBgpExportPolicy.append(hostname + "|"
-                     + neighborAddress.asLong() + "|" + outboundMapName + "\n");
+               wSetBgpExportPolicy.append(hostname + "|" + neighborPrefixStart
+                     + "|" + neighborPrefixEnd + "|" + neighborPrefixLength
+                     + "|" + outboundMapName + "\n");
             }
          }
       }
    }
 
    private void writeBgpNeighbors() {
-      StringBuilder wSetBgpNeighborIp = _factBins.get("SetBgpNeighborIp");
-      StringBuilder wSetLocalAs = _factBins.get("SetLocalAs");
-      StringBuilder wSetRemoteAs = _factBins.get("SetRemoteAs");
+      StringBuilder wSetBgpNeighborIp = _factBins
+            .get("SetBgpNeighborNetwork_flat");
+      StringBuilder wSetLocalAs = _factBins.get("SetLocalAs_flat");
+      StringBuilder wSetRemoteAs = _factBins.get("SetRemoteAs_flat");
       StringBuilder wSetBgpNeighborDefaultMetric = _factBins
-            .get("SetBgpNeighborDefaultMetric");
+            .get("SetBgpNeighborDefaultMetric_flat");
       StringBuilder wSetBgpNeighborSendCommunity = _factBins
-            .get("SetBgpNeighborSendCommunity");
+            .get("SetBgpNeighborSendCommunity_flat");
       String hostname = _configuration.getHostname();
       BgpProcess proc = _configuration.getBgpProcess();
       if (proc != null) {
@@ -282,18 +295,48 @@ public class ConfigurationFactExtractor {
             int remoteAs = neighbor.getRemoteAs();
             int localAs = neighbor.getLocalAs();
             int defaultMetric = neighbor.getDefaultMetric();
-            Ip neighborIp = neighbor.getAddress();
-            wSetBgpNeighborIp.append(hostname + "|" + neighborIp.asLong()
-                  + "\n");
-            wSetLocalAs.append(hostname + "|" + neighborIp.asLong() + "|"
+            Prefix neighborPrefix = neighbor.getPrefix();
+            long neighborPrefixStart = neighborPrefix.getAddress().asLong();
+            long neighborPrefixEnd = neighborPrefix.getEndAddress().asLong();
+            int neighborPrefixLength = neighborPrefix.getPrefixLength();
+            wSetBgpNeighborIp.append(hostname + "|" + neighborPrefixStart + "|"
+                  + neighborPrefixEnd + "|" + neighborPrefixLength + "\n");
+            wSetLocalAs.append(hostname + "|" + neighborPrefixStart + "|"
+                  + neighborPrefixEnd + "|" + neighborPrefixLength + "|"
                   + localAs + "\n");
-            wSetRemoteAs.append(hostname + "|" + neighborIp.asLong() + "|"
+            wSetRemoteAs.append(hostname + "|" + neighborPrefixStart + "|"
+                  + neighborPrefixEnd + "|" + neighborPrefixLength + "|"
                   + remoteAs + "\n");
             wSetBgpNeighborDefaultMetric.append(hostname + "|"
-                  + neighborIp.asLong() + "|" + defaultMetric + "\n");
+                  + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                  + neighborPrefixLength + "|" + defaultMetric + "\n");
             if (neighbor.getSendCommunity()) {
                wSetBgpNeighborSendCommunity.append(hostname + "|"
-                     + neighborIp.asLong() + "\n");
+                     + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                     + neighborPrefixLength + "\n");
+            }
+         }
+      }
+   }
+
+   private void writeBgpOriginationPolicies() {
+      StringBuilder wSetBgpOriginationPolicy = _factBins
+            .get("SetBgpOriginationPolicy_flat");
+      String hostname = _configuration.getHostname();
+      BgpProcess proc = _configuration.getBgpProcess();
+      if (proc != null) {
+         for (BgpNeighbor neighbor : proc.getNeighbors().values()) {
+            Prefix neighborPrefix = neighbor.getPrefix();
+            long neighborPrefixStart = neighborPrefix.getAddress().asLong();
+            long neighborPrefixEnd = neighborPrefix.getEndAddress().asLong();
+            int neighborPrefixLength = neighborPrefix.getPrefixLength();
+            for (PolicyMap originationPolicy : neighbor
+                  .getOriginationPolicies()) {
+               String policyName = hostname + ":"
+                     + originationPolicy.getMapName();
+               wSetBgpOriginationPolicy.append(hostname + "|"
+                     + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                     + neighborPrefixLength + "|" + policyName + "\n");
             }
          }
       }
@@ -348,7 +391,7 @@ public class ConfigurationFactExtractor {
       writePolicyMaps();
       writeBgpNeighbors();
       writeRouteFilters();
-      writeOriginationPolicies();
+      writeBgpOriginationPolicies();
       writeCommunityLists();
       writeBgpGeneratedRoutes();
       writeBgpNeighborGeneratedRoutes();
@@ -548,25 +591,6 @@ public class ConfigurationFactExtractor {
                + limit + "\n");
          wSetLinkLoadLimitOut.append(hostname + "|" + interfaceName + "|"
                + limit + "\n");
-      }
-   }
-
-   private void writeOriginationPolicies() {
-      StringBuilder wSetBgpOriginationPolicy = _factBins
-            .get("SetBgpOriginationPolicy");
-      String hostname = _configuration.getHostname();
-      BgpProcess proc = _configuration.getBgpProcess();
-      if (proc != null) {
-         for (BgpNeighbor neighbor : proc.getNeighbors().values()) {
-            for (PolicyMap originationPolicy : neighbor
-                  .getOriginationPolicies()) {
-               String policyName = hostname + ":"
-                     + originationPolicy.getMapName();
-               Long neighborIp = neighbor.getAddress().asLong();
-               wSetBgpOriginationPolicy.append(hostname + "|" + neighborIp
-                     + "|" + policyName + "\n");
-            }
-         }
       }
    }
 
@@ -920,18 +944,22 @@ public class ConfigurationFactExtractor {
 
    private void writeRouteReflectorClients() {
       StringBuilder wSetRouteReflectorClient = _factBins
-            .get("SetRouteReflectorClient");
+            .get("SetRouteReflectorClient_flat");
       String hostname = _configuration.getHostname();
       BgpProcess proc = _configuration.getBgpProcess();
       if (proc != null) {
          for (BgpNeighbor neighbor : proc.getNeighbors().values()) {
+            Prefix neighborPrefix = neighbor.getPrefix();
+            long neighborPrefixStart = neighborPrefix.getAddress().asLong();
+            long neighborPrefixEnd = neighborPrefix.getEndAddress().asLong();
+            int neighborPrefixLength = neighborPrefix.getPrefixLength();
             Long clusterId = neighbor.getClusterId();
             if (clusterId == null) {
                continue;
             }
-            Ip neighborIp = neighbor.getAddress();
             wSetRouteReflectorClient.append(hostname + "|"
-                  + neighborIp.asLong() + "|" + clusterId + "\n");
+                  + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                  + neighborPrefixLength + "|" + clusterId + "\n");
          }
       }
    }

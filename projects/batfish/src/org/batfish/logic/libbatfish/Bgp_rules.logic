@@ -29,7 +29,7 @@ AdvertisementClusterId(advert, clusterId) <-
    BgpAdvertisement_srcNode[advert] = srcNode,
    BgpAdvertisement_dstIp[advert] = dstIp,
    originatorIp != Ip_ZERO[],
-   SetRouteReflectorClient(srcNode, dstIp, clusterId).
+   RouteReflectorClient(srcNode, dstIp, clusterId).
 
 // append as to path for bgp route advertisement
 AdvertisementPath(advert, index, as) <-
@@ -40,7 +40,7 @@ AdvertisementPath(advert, index, as) <-
    ParentAdvertisement(prevAdvert, advert),
    AdvertisementPathSize[prevAdvert] = prevPathSize,
    index = prevPathSize,
-   SetRemoteAs(dstNode, srcIp, as).
+   RemoteAs(dstNode, srcIp, as).
 // copy old path elements
 AdvertisementPath(advert, index, as) <-
    ParentAdvertisement(prevAdvert, advert),
@@ -61,14 +61,14 @@ AdvertisementCommunity(advert, community) <-
       priorType = AdvertisementType_BGP_TO[] ;
       priorType = AdvertisementType_IBGP_TO[]
    ),
-   SetBgpNeighborSendCommunity(dstNode, srcIp),
+   BgpNeighborSendCommunity(dstNode, srcIp),
    BgpAdvertisement_type[prevAdvert] = priorType,
    BgpAdvertisement_dstNode[prevAdvert] = dstNode,
    BgpAdvertisement_srcIp[prevAdvert] = srcIp,
    ParentAdvertisement(prevAdvert, advert),
    (
       (
-         SetBgpImportPolicy(dstNode, srcIp, map),
+         BgpImportPolicy(dstNode, srcIp, map),
          PolicyMapPermitAdvert(map, clause, prevAdvert),
          (
             SetPolicyMapClauseAddCommunity(map, clause, community) ;
@@ -87,7 +87,7 @@ AdvertisementCommunity(advert, community) <-
          )
       ) ;
       (
-         !SetBgpImportPolicy(dstNode, srcIp, _),
+         !BgpImportPolicy(dstNode, srcIp, _),
          AdvertisementCommunity(prevAdvert, community)
       )
    ).
@@ -97,14 +97,14 @@ AdvertisementCommunity(advert, community) <-
       priorType = AdvertisementType_BGP[] ;
       priorType = AdvertisementType_IBGP[]
    ),
-   SetBgpNeighborSendCommunity(srcNode, dstIp),
+   BgpNeighborSendCommunity(srcNode, dstIp),
    BgpAdvertisement_type[prevAdvert] = priorType,
    BgpAdvertisement_srcNode[prevAdvert] = srcNode,
    BgpAdvertisement_dstIp[prevAdvert] = dstIp,
    ParentAdvertisement(prevAdvert, advert),
    (
       (
-         SetBgpExportPolicy(srcNode, dstIp, map),
+         BgpExportPolicy(srcNode, dstIp, map),
          PolicyMapPermitAdvert(map, clause, prevAdvert),
          (
             (
@@ -134,7 +134,7 @@ AdvertisementCommunity(advert, community) <-
          )
       ) ;
       (
-         !SetBgpExportPolicy(srcNode, dstIp, _),
+         !BgpExportPolicy(srcNode, dstIp, _),
          AdvertisementCommunity(prevAdvert, community)
       )
    ).
@@ -216,13 +216,13 @@ OriginatedBgpNetwork(srcNode, network)
    nextHopIp = srcIp,
    originatorIp = Ip_ZERO[],
    BgpNeighbors(srcNode, srcIp, dstNode, dstIp),
-   SetBgpNeighborIp(srcNode, dstIp),
+   BgpNeighborIp(srcNode, dstIp),
    originType = OriginType_IGP[],
-   SetBgpNeighborDefaultMetric(srcNode, dstIp, med),
+   BgpNeighborDefaultMetric(srcNode, dstIp, med),
    (
-      SetBgpDefaultLocalPref(srcNode, dstIp, localPref);
+      BgpDefaultLocalPref(srcNode, dstIp, localPref) ;
       (
-         !SetBgpDefaultLocalPref(srcNode, dstIp, _),
+         !BgpDefaultLocalPref(srcNode, dstIp, _),
          localPref = 100
       )
    ),
@@ -244,9 +244,9 @@ OriginatedBgpNetwork(srcNode, network)
          srcProtocol != RoutingProtocol_BGP[],
          srcProtocol != RoutingProtocol_IBGP[],
          (
-            !SetBgpOriginationPolicy(srcNode, dstIp, _);
+            !BgpOriginationPolicy(srcNode, dstIp, _);
             (
-               SetBgpOriginationPolicy(srcNode, dstIp, map),
+               BgpOriginationPolicy(srcNode, dstIp, map),
                PolicyMapPermitRoute(map, _, route)
             )
          )
@@ -285,14 +285,14 @@ AdvertisementPathSize[advert] = pathSize
    pathSize = prevPathSize,
    BestBgpAdvertisement(prevAdvert),
    (
-      SetBgpDefaultLocalPref(srcNode, dstIp, localPref);
+      BgpDefaultLocalPref(srcNode, dstIp, localPref);
       (
-         !SetBgpDefaultLocalPref(srcNode, dstIp, _),
+         !BgpDefaultLocalPref(srcNode, dstIp, _),
          localPref = 100
       )
    ),
    originType = OriginType_EGP[],
-   SetBgpNeighborDefaultMetric(srcNode, dstIp, med),
+   BgpNeighborDefaultMetric(srcNode, dstIp, med),
    nextHopIp = srcIp,
    origNextHopIp != dstIp,
    BgpNeighbors(srcNode, srcIp, dstNode, dstIp).
@@ -325,14 +325,14 @@ AdvertisementPathSize[advert] = pathSize
       )
    ),
    (
-      !SetRouteReflectorClient(dstNode, srcIp, _) ;
+      !RouteReflectorClient(dstNode, srcIp, _) ;
       (
-         SetRouteReflectorClient(dstNode, _, clusterId),
+         RouteReflectorClient(dstNode, _, clusterId),
          !AdvertisementClusterId(prevAdvert, clusterId)
       )
    ),
    !HasIp(dstNode, originatorIp),
-   SetLocalAs(dstNode, srcIp, receiverAs),
+   LocalAs(dstNode, srcIp, receiverAs),
    !AdvertisementPath(prevAdvert, _, receiverAs),
    BgpAdvertisement_dstIp[prevAdvert] = dstIp,
    BgpAdvertisement_dstNode[prevAdvert] = dstNode,
@@ -347,16 +347,16 @@ AdvertisementPathSize[advert] = pathSize
    BgpAdvertisement_srcProtocol[prevAdvert] = srcProtocol,
    BgpAdvertisement_type[prevAdvert] = priorType,
    AdvertisementPathSize[prevAdvert] = pathSize,
-   SetBgpNeighborIp(dstNode, srcIp),
+   BgpNeighborIp(dstNode, srcIp),
    (
       (
-         SetBgpImportPolicy(dstNode, srcIp, map),
+         BgpImportPolicy(dstNode, srcIp, map),
          PolicyMapPermitAdvert(map, clause, prevAdvert),
          PolicyMapClauseTransformAdvert(map, clause, prevAdvert, tNextHopIp,
             tLocalPref, tOriginType, tMed, tSrcProtocol)
       );
       (
-         !SetBgpImportPolicy(dstNode, srcIp, _),
+         !BgpImportPolicy(dstNode, srcIp, _),
          tNextHopIp = nextHopIp,
          tLocalPref = localPref,
          tOriginType = originType,
@@ -407,10 +407,10 @@ AdvertisementPathSize[advert] = pathSize
    BgpAdvertisement_srcProtocol[prevAdvert] = srcProtocol,
    BgpAdvertisement_type[prevAdvert] = priorType,
    AdvertisementPathSize[prevAdvert] = prevPathSize,
-   SetBgpNeighborIp(srcNode, dstIp),
+   BgpNeighborIp(srcNode, dstIp),
    (
       (
-         SetBgpExportPolicy(srcNode, dstIp, map),
+         BgpExportPolicy(srcNode, dstIp, map),
          PolicyMapPermitAdvert(map, clause, prevAdvert),
          (
             (
@@ -427,7 +427,7 @@ AdvertisementPathSize[advert] = pathSize
             tLocalPref, tOriginType, tMed, tSrcProtocol)
       );
       (
-         !SetBgpExportPolicy(srcNode, dstIp, _),
+         !BgpExportPolicy(srcNode, dstIp, _),
          tNextHopIp = nextHopIp,
          tLocalPref = localPref,
          tOriginType = originType,
@@ -512,13 +512,21 @@ AdvertisementPathSize[advert] = pathSize
       )
    ),
    (
-      SetRouteReflectorClient(srcNode, senderIp, _) ;
+      RouteReflectorClient(srcNode, senderIp, _) ;
       (
-         !SetRouteReflectorClient(srcNode, senderIp, _),
-         SetRouteReflectorClient(srcNode, dstIp, _)
+         !RouteReflectorClient(srcNode, senderIp, _),
+         RouteReflectorClient(srcNode, dstIp, _)
       )
    ),
    IbgpNeighbors(srcNode, srcIp, dstNode, dstIp).
+
+BgpDefaultLocalPref(node, neighborIp, localPref) <-
+   SetBgpDefaultLocalPref(node, neighborNetwork, localPref),
+   NetworkOf[neighborIp, _] = neighborNetwork.
+
+BgpExportPolicy(node, neighborIp, map) <-
+   SetBgpExportPolicy(node, neighborNetwork, map),
+   NetworkOf[neighborIp, _] = neighborNetwork.
 
 BgpGeneratedRoute(route),
    Route(route),
@@ -533,6 +541,14 @@ BgpGeneratedRoute(route),
    type = GeneratedRouteType_BGP[],
    protocol = RoutingProtocol_AGGREGATE[].
 
+BgpImportPolicy(node, neighborIp, map) <-
+   SetBgpImportPolicy(node, neighborNetwork, map),
+   NetworkOf[neighborIp, _] = neighborNetwork.
+
+BgpNeighborDefaultMetric(node, neighborIp, metric) <-
+   SetBgpNeighborDefaultMetric(node, neighborNetwork, metric),
+   NetworkOf[neighborIp, _] = neighborNetwork.
+
 BgpNeighborGeneratedRoute(route),
    Route(route),
    BgpNeighborGeneratedRoute_constructor[node, network, neighborIp] = route,
@@ -543,16 +559,32 @@ BgpNeighborGeneratedRoute(route),
    Route_node[route] = node,
    Route_protocol[route] = protocol
 <-
-   SetBgpNeighborGeneratedRoute(node, neighborIp, network),
+   BgpNeighborGeneratedRouteIp(node, neighborIp, network),
    type = GeneratedRouteType_BGP_NEIGHBOR[],
    protocol = RoutingProtocol_AGGREGATE[].
+
+BgpNeighborGeneratedRouteIp(node, neighborIp, network) <-
+   SetBgpNeighborGeneratedRoute(node, neighborNetwork, network),
+   NetworkOf[neighborIp, _] = neighborNetwork.
+
+BgpNeighborGeneratedRoutePolicy(node, neighborIp, network, map) <-
+   SetBgpNeighborGeneratedRoutePolicy(node, neighborNetwork, network, map),
+   NetworkOf[neighborIp, _] = neighborNetwork.
+
+BgpNeighborIp(node, neighborIp) <-
+   SetBgpNeighborNetwork(node, neighborNetwork),
+   NetworkOf[neighborIp, _] = neighborNetwork.
 
 BgpNeighbors(node1, ip1, node2, ip2) <-
    IpReadyInt(node1, int1, ip1, _),
    IpReadyInt(node2, int2, ip2, _),
    LanAdjacent(node1, int1, node2, int2),
-   SetBgpNeighborIp(node1, ip2),
-   SetBgpNeighborIp(node2, ip1).
+   BgpNeighborIp(node1, ip2),
+   BgpNeighborIp(node2, ip1).
+
+BgpOriginationPolicy(node, neighborIp, map) <-
+   SetBgpOriginationPolicy(node, neighborNetwork, map),
+   NetworkOf[neighborIp, _] = neighborNetwork.
 
 GeneratedRoutePolicy(route, policy) <-
    BgpGeneratedRoute(route),
@@ -564,7 +596,7 @@ GeneratedRoutePolicy(route, policy) <-
    BgpNeighborGeneratedRoute_neighborIp[route] = neighborIp,
    Route_network[route] = network,
    Route_node[route] = node,
-   SetBgpNeighborGeneratedRoutePolicy(node, neighborIp, network, policy).
+   BgpNeighborGeneratedRoutePolicy(node, neighborIp, network, policy).
 
 IbgpNeighborTo(node, neighbor, neighborIp) <-
    NetworkOf[neighborIp, prefix_length] = neighborNetwork,
@@ -572,8 +604,8 @@ IbgpNeighborTo(node, neighbor, neighborIp) <-
    Route_network[route] = neighborNetwork,
    Route_node[route] = node,
    IpReadyInt(neighbor, _, neighborIp, prefix_length),
-   SetRemoteAs(node, neighborIp, as),
-   SetLocalAs(node, neighborIp, as).
+   RemoteAs(node, neighborIp, as),
+   LocalAs(node, neighborIp, as).
 
 IbgpNeighbors(node1, ip1, node2, ip2) <-
    IbgpNeighborTo(node1, node2, ip2),
@@ -585,6 +617,10 @@ InstalledBgpAdvertisement(advert) <-
 InstalledBgpAdvertisementRoute[advert] = route <-
    BgpAdvertisementRoute[advert] = route,
    InstalledRoute(route).
+
+LocalAs(node, neighborIp, localAs) <-
+   SetLocalAs(node, neighborNetwork, localAs),
+   NetworkOf[neighborIp, _] = neighborNetwork.
 
 MaxLocalPref[node, network] = maxLocalPref <-
    agg<<maxLocalPref = max(localPref)>>
@@ -624,7 +660,7 @@ need_PolicyMapMatchAdvert(map, advert)
    BgpAdvertisement_srcNode[advert] = srcNode,
    BgpAdvertisement_dstIp[advert] = dstIp,
    BgpAdvertisement_type[advert] = type,
-   SetBgpExportPolicy(srcNode, dstIp, map).
+   BgpExportPolicy(srcNode, dstIp, map).
 need_PolicyMapMatchAdvert(map, advert)
 <-
    (
@@ -634,7 +670,7 @@ need_PolicyMapMatchAdvert(map, advert)
    BgpAdvertisement_dstNode[advert] = dstNode,
    BgpAdvertisement_srcIp[advert] = srcIp,
    BgpAdvertisement_type[advert] = type,
-   SetBgpImportPolicy(dstNode, srcIp, map).
+   BgpImportPolicy(dstNode, srcIp, map).
 
 need_PolicyMapMatchRoute(map, route) <-
    (
@@ -646,14 +682,14 @@ need_PolicyMapMatchRoute(map, route) <-
       )
    ),
    Route_node[route] = node,
-   SetBgpOriginationPolicy(node, neighborIp, map),
+   BgpOriginationPolicy(node, neighborIp, map),
    BgpNeighbors(node, _, _, neighborIp).
 need_PolicyMapMatchRoute(map, route) <-
    InstalledRoute(route),
    Route_node[route] = node,
    (
       SetBgpGeneratedRoutePolicy(node, _, map) ;
-      SetBgpNeighborGeneratedRoutePolicy(node, _, _, map)
+      BgpNeighborGeneratedRoutePolicy(node, _, _, map)
    ).
 
 OriginalBgpAdvertisement(advert) <-
@@ -666,6 +702,22 @@ ReceivedBgpAdvertisement(advert) <-
       type = AdvertisementType_IBGP_TI[]
    ).
 
+RemoteAs(node, neighborIp, remoteAs) <-
+   SetRemoteAs(node, neighborNetwork, remoteAs),
+   NetworkOf[neighborIp, _] = neighborNetwork.
+
+RouteReflectorClient(node, neighborIp, clusterId) <-
+   SetRouteReflectorClient(node, neighborNetwork, clusterId),
+   NetworkOf[neighborIp, _] = neighborNetwork.
+
+SetBgpDefaultLocalPref(node, neighborNetwork, localPref) <-
+   SetBgpDefaultLocalPref_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, localPref),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
+
+SetBgpExportPolicy(node, neighborNetwork, map) <-
+   SetBgpExportPolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, map),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
+
 SetBgpGeneratedRoute(node, network) <-
    SetBgpGeneratedRoute_flat(node, network_start, network_end, prefix_length),
    Network_constructor[network_start, network_end, prefix_length] = network.
@@ -674,13 +726,47 @@ SetBgpGeneratedRoutePolicy(node, network, map) <-
    SetBgpGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length, map),
    Network_constructor[network_start, network_end, prefix_length] = network.
 
-SetBgpNeighborGeneratedRoute(node, neighborIp, network) <-
-   SetBgpNeighborGeneratedRoute_flat(node, neighborIp, network_start, network_end, prefix_length),
+SetBgpImportPolicy(node, neighborNetwork, map) <-
+   SetBgpImportPolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, map),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
+
+SetBgpNeighborDefaultMetric(node, neighborNetwork, metric) <-
+   SetBgpNeighborDefaultMetric_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, metric),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
+
+SetBgpNeighborGeneratedRoute(node, neighborNetwork, network) <-
+   SetBgpNeighborGeneratedRoute_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, network_start, network_end, prefix_length),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork,
    Network_constructor[network_start, network_end, prefix_length] = network.
 
-SetBgpNeighborGeneratedRoutePolicy(node, neighborIp, network, map) <-
-   SetBgpNeighborGeneratedRoutePolicy_flat(node, neighborIp, network_start, network_end, prefix_length, map),
+SetBgpNeighborGeneratedRoutePolicy(node, neighborNetwork, network, map) <-
+   SetBgpNeighborGeneratedRoutePolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, network_start, network_end, prefix_length, map),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork,
    Network_constructor[network_start, network_end, prefix_length] = network.
+
+SetBgpNeighborNetwork(node, neighborNetwork) <-
+   SetBgpNeighborNetwork_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
+
+SetBgpNeighborSendCommunity(node, neighborNetwork) <-
+   SetBgpNeighborSendCommunity_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
+
+SetBgpOriginationPolicy(node, neighborNetwork, map) <-
+   SetBgpOriginationPolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, map),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
+
+SetLocalAs(node, neighborNetwork, localAs) <-
+   SetLocalAs_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, localAs),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
+
+SetRemoteAs(node, neighborNetwork, remoteAs) <-
+   SetRemoteAs_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, remoteAs),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
+
+SetRouteReflectorClient(node, neighborNetwork, clusterId) <-
+   SetRouteReflectorClient_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, clusterId),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
 
 lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
 

@@ -873,28 +873,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else if (ctx.peergroup != null) {
          String name = ctx.peergroup.getText();
          _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-         _currentDynamicPeerGroup = proc.getDynamicPeerGroups().get(name);
-         if (_currentDynamicPeerGroup == null) {
-            if (_currentNamedPeerGroup == null) {
-               if (create) {
-                  proc.addNamedPeerGroup(name);
-                  _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-               }
-               else {
-                  throw new BatfishException(
-                        "reference to undeclared peer group: \"" + name + "\"");
-               }
+         if (_currentNamedPeerGroup == null) {
+            if (create) {
+               proc.addNamedPeerGroup(name);
+               _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
             }
-            _currentPeerGroup = _currentNamedPeerGroup;
-         }
-         else {
-            if (_currentNamedPeerGroup != null) {
+            else {
                throw new BatfishException(
-                     "There exist both a dynamic and named peer group named: \""
-                           + name + "\"");
+                     "reference to undeclared peer group: \"" + name + "\"");
             }
-            _currentPeerGroup = _currentDynamicPeerGroup;
          }
+         _currentPeerGroup = _currentNamedPeerGroup;
       }
       else {
          throw new BatfishException("unknown neighbor type");
@@ -1716,6 +1705,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String groupName = ctx.name.getText();
       if (_currentIpPeerGroup != null) {
          _currentIpPeerGroup.setGroupName(groupName);
+      }
+      else if (_currentDynamicPeerGroup != null) {
+         _currentDynamicPeerGroup.setGroupName(groupName);
       }
       else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
          throw new BatfishException("Invalid peer context for inheritance");

@@ -2,7 +2,7 @@ package org.batfish.representation.cisco;
 
 import org.batfish.representation.Prefix;
 
-public class DynamicBgpPeerGroup extends BgpPeerGroup {
+public class DynamicBgpPeerGroup extends LeafBgpPeerGroup {
 
    /**
     *

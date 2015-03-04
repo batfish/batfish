@@ -101,7 +101,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          // send-community
          neighbor.setSendCommunity(true);
 
-         proc.getNeighbors().put(ip, neighbor);
+         proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
       }
       return proc;
    }
@@ -117,7 +117,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          newProc.getPolicyMetricTypes().put(exportPolicy, OspfMetricType.E2);
       }
       // areas
-      Map<Long, org.batfish.representation.OspfArea> newAreas = newProc.getAreas();
+      Map<Long, org.batfish.representation.OspfArea> newAreas = newProc
+            .getAreas();
       for (Entry<Ip, OspfArea> e : _defaultRoutingInstance.getOspfAreas()
             .entrySet()) {
          Ip areaIp = e.getKey();
@@ -158,11 +159,13 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    private void placeInterfaceIntoArea(
          Map<Long, org.batfish.representation.OspfArea> newAreas, String name,
          Interface iface) {
-      org.batfish.representation.Interface newIface = _c.getInterfaces().get(name);
+      org.batfish.representation.Interface newIface = _c.getInterfaces().get(
+            name);
       Ip ospfArea = iface.getOspfArea();
       if (ospfArea != null) {
          long ospfAreaLong = ospfArea.asLong();
-         org.batfish.representation.OspfArea newArea = newAreas.get(ospfAreaLong);
+         org.batfish.representation.OspfArea newArea = newAreas
+               .get(ospfAreaLong);
          newArea.getInterfaces().add(newIface);
       }
    }
@@ -200,7 +203,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return newRoute;
    }
 
-   private org.batfish.representation.CommunityList toCommunityList(CommunityList cl) {
+   private org.batfish.representation.CommunityList toCommunityList(
+         CommunityList cl) {
       String name = cl.getName();
       List<org.batfish.representation.CommunityListLine> newLines = new ArrayList<org.batfish.representation.CommunityListLine>();
       for (CommunityListLine line : cl.getLines()) {
@@ -354,7 +358,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return map;
    }
 
-   private org.batfish.representation.StaticRoute toStaticRoute(StaticRoute route) {
+   private org.batfish.representation.StaticRoute toStaticRoute(
+         StaticRoute route) {
       Prefix prefix = route.getPrefix();
       Ip nextHopIp = route.getNextHopIp();
       String nextHopInterface = route.getDrop() ? Util.NULL_INTERFACE_NAME

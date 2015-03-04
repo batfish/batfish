@@ -33,8 +33,28 @@ BgpAdvertisementRoute[advert] = route ->
    BgpAdvertisement(advert),
    Route(route).
 
+BgpDefaultLocalPref(node, neighborIp, localPref) ->
+   Node(node),
+   Ip(neighborIp),
+   int(localPref).
+
+BgpExportPolicy(node, neighborIp, map) ->
+   Node(node),
+   Ip(neighborIp),
+   PolicyMap(map).
+
 BgpGeneratedRoute(route) ->
    Route(route).
+
+BgpImportPolicy(node, neighborIp, map) ->
+   Node(node),
+   Ip(neighborIp),
+   PolicyMap(map).
+
+BgpNeighborDefaultMetric(node, neighborIp, metric) ->
+   Node(node),
+   Ip(neighborIp),
+   int(metric).
 
 BgpNeighborGeneratedRoute(route) ->
    Route(route).
@@ -45,6 +65,21 @@ BgpNeighborGeneratedRoute_constructor[node, network, neighborIp] = route ->
    Ip(neighborIp),
    Route(route).
 
+BgpNeighborGeneratedRoutePolicy(node, neighborIp, network, map) ->
+   Node(node),
+   Ip(neighborIp),
+   Network(network),
+   PolicyMap(map).
+
+BgpNeighborIp(node, neighborIp) ->
+   Node(node),
+   Ip(neighborIp).
+
+BgpNeighborIpGeneratedRoute(node, neighborIp, network) ->
+   Node(node),
+   Ip(neighborIp),
+   Network(network).
+
 /// [BgpNeighbors(node1, ip1, node2, ip2)] =
 ///   Node [node1] is a neighbor to [node2] at addresses [ip1] and [ip2]
 ///   respectively.
@@ -53,6 +88,15 @@ BgpNeighbors(node1, ip1, node2, ip2) ->
    Ip(ip1),
    Node(node2),
    Ip(ip2).
+
+BgpNeighborSendCommunity(node, neighborIp) ->
+   Node(node),
+   Ip(neighborIp).
+
+BgpOriginationPolicy(node, neighborIp, map) ->
+   Node(node),
+   Ip(neighborIp),
+   PolicyMap(map).
 
 /// [IbgpNeighbors(node1, ip1, node2, ip2)] =
 ///   Node [node1] is an ibgp neighbor to [node2] at addresses [ip1] and [ip2]
@@ -74,6 +118,11 @@ InstalledBgpAdvertisement(advert) ->
 InstalledBgpAdvertisementRoute[advert] = route ->
    BgpAdvertisement(advert),
    Route(route).
+
+LocalAs(node, neighborIp, localAs) ->
+   Node(node),
+   Ip(neighborIp),
+   AutonomousSystem(localAs).
 
 MaxLocalPref[node, network] = maxLocalPref ->
    Node(node),
@@ -109,14 +158,38 @@ ParentAdvertisement(parent, child) ->
 ReceivedBgpAdvertisement(advert) ->
    BgpAdvertisement(advert).
 
-SetBgpDefaultLocalPref(node, neighborIp, localPref) ->
+RemoteAs(node, neighborIp, remoteAs) ->
    Node(node),
    Ip(neighborIp),
+   AutonomousSystem(remoteAs).
+
+RouteReflectorClient(node, neighborIp, clusterId) ->
+   Node(node),
+   Ip(neighborIp),
+   int(clusterId).
+
+SetBgpDefaultLocalPref(node, neighborNetwork, localPref) ->
+   Node(node),
+   Network(neighborNetwork),
    int(localPref).
 
-SetBgpExportPolicy(node, neighborIp, map) ->
+SetBgpDefaultLocalPref_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, localPref) ->
    Node(node),
-   Ip(neighborIp),
+   int(neighborNetwork_start),
+   int(neighborNetwork_end),
+   int(neighborNetwork_prefix_length),
+   int(localPref).
+
+SetBgpExportPolicy(node, neighborNetwork, map) ->
+   Node(node),
+   Network(neighborNetwork),
+   PolicyMap(map).
+
+SetBgpExportPolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, map) ->
+   Node(node),
+   int(neighborNetwork_start),
+   int(neighborNetwork_end),
+   int(neighborNetwork_prefix_length),
    PolicyMap(map).
 
 SetBgpGeneratedRoute(node, network) ->
@@ -141,74 +214,132 @@ SetBgpGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length,
    int(prefix_length),
    PolicyMap(map).
 
-SetBgpImportPolicy(node, neighborIp, map) ->
+SetBgpImportPolicy(node, neighborNetwork, map) ->
    Node(node),
-   Ip(neighborIp),
+   Network(neighborNetwork),
    PolicyMap(map).
 
-SetBgpNeighborDefaultMetric(node, neighborIp, metric) ->
+SetBgpImportPolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, map) ->
    Node(node),
-   Ip(neighborIp),
+   int(neighborNetwork_start),
+   int(neighborNetwork_end),
+   int(neighborNetwork_prefix_length),
+   PolicyMap(map).
+
+SetBgpNeighborDefaultMetric(node, neighborNetwork, metric) ->
+   Node(node),
+   Network(neighborNetwork),
    int(metric).
 
-SetBgpNeighborGeneratedRoute(node, neighborIp, network) ->
+SetBgpNeighborDefaultMetric_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, metric) ->
    Node(node),
-   Ip(neighborIp),
+   int(neighborNetwork_start),
+   int(neighborNetwork_end),
+   int(neighborNetwork_prefix_length),
+   int(metric).
+
+SetBgpNeighborGeneratedRoute(node, neighborNetwork, network) ->
+   Node(node),
+   Network(neighborNetwork),
    Network(network).
 
-SetBgpNeighborGeneratedRoute_flat(node, neighborIp, network_start, network_end, prefix_length) ->
+SetBgpNeighborGeneratedRoute_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, network_start, network_end, prefix_length) ->
    Node(node),
-   Ip(neighborIp),
+   int(neighborNetwork_start),
+   int(neighborNetwork_end),
+   int(neighborNetwork_prefix_length),
    int(network_start),
    int(network_end),
    int(prefix_length).
 
-SetBgpNeighborGeneratedRoutePolicy(node, neighborIp, network, map) ->
+SetBgpNeighborGeneratedRoutePolicy(node, neighborNetwork, network, map) ->
    Node(node),
-   Ip(neighborIp),
+   Network(neighborNetwork),
    Network(network),
    PolicyMap(map).
 
-SetBgpNeighborGeneratedRoutePolicy_flat(node, neighborIp, network_start, network_end, prefix_length, map) ->
+SetBgpNeighborGeneratedRoutePolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, network_start, network_end, prefix_length, map) ->
    Node(node),
-   Ip(neighborIp),
+   int(neighborNetwork_start),
+   int(neighborNetwork_end),
+   int(neighborNetwork_prefix_length),
    int(network_start),
    int(network_end),
    int(prefix_length),
    PolicyMap(map).
 
-SetBgpNeighborIp(node, ip) ->
+SetBgpNeighborNetwork(node, neighborNetwork) ->
    Node(node),
-   Ip(ip).
+   Network(neighborNetwork).
 
-SetBgpNeighborSendCommunity(node, neighborIp) ->
+SetBgpNeighborNetwork_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length) ->
    Node(node),
-   Ip(neighborIp).
+   int(neighborNetwork_start),
+   int(neighborNetwork_end),
+   int(neighborNetwork_prefix_length).
 
-SetBgpOriginationPolicy(node, neighborIp, map) ->
+SetBgpNeighborSendCommunity(node, neighborNetwork) ->
    Node(node),
-   Ip(neighborIp),
+   Network(neighborNetwork).
+
+SetBgpNeighborSendCommunity_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length) ->
+   Node(node),
+   int(neighborNetwork_start),
+   int(neighborNetwork_end),
+   int(neighborNetwork_prefix_length).
+
+SetBgpOriginationPolicy(node, neighborNetwork, map) ->
+   Node(node),
+   Network(neighborNetwork),
    PolicyMap(map).
+
+SetBgpOriginationPolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, map) ->
+   Node(node),
+   int(neighborNetwork_start),
+   int(neighborNetwork_end),
+   int(neighborNetwork_prefix_length),
+   PolicyMap(map).
+
+SetLocalAs(node, neighborNetwork, localAs) ->
+   Node(node),
+   Network(neighborNetwork),
+   AutonomousSystem(localAs).
 
 /// [SetLocalAs(node, neighborIp, localAs)] =
 ///   Node [node] is part of autonomous system [as] according to its neighbor
 ///   at ip [neighborIp].
-SetLocalAs(node, neighborIp, localAs) ->
+SetLocalAs_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, localAs) ->
    Node(node),
-   Ip(neighborIp),
+   int(neighborNetwork_start),
+   int(neighborNetwork_end),
+   int(neighborNetwork_prefix_length),
    AutonomousSystem(localAs).
 
-SetRemoteAs(node, neighborIp, remoteAs) ->
+SetRemoteAs(node, neighborNetwork, remoteAs) ->
    Node(node),
-   Ip(neighborIp),
+   Network(neighborNetwork),
    AutonomousSystem(remoteAs).
+
+SetRemoteAs_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, remoteAs) ->
+   Node(node),
+   int(neighborNetwork_start),
+   int(neighborNetwork_end),
+   int(neighborNetwork_prefix_length),
+   AutonomousSystem(remoteAs).
+
+SetRouteReflectorClient(node, neighborNetwork, clusterId) ->
+   Node(node),
+   Network(neighborNetwork),
+   int(clusterId).
 
 /// [SetRouteReflectorClient(node, neighborIp, clusterId)] =
 ///   Node [node] has designated its neighbor at ip [neighborIp] to be a route
 ///   reflector client in the cluster identified by [clusterId].
-SetRouteReflectorClient(node, neighborIp, clusterId) ->
+SetRouteReflectorClient_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, clusterId) ->
    Node(node),
-   Ip(neighborIp),
+   int(neighborNetwork_start),
+   int(neighborNetwork_end),
+   int(neighborNetwork_prefix_length),
    int(clusterId).
 
 // END CODE
