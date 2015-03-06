@@ -566,7 +566,7 @@ public class Batfish implements AutoCloseable {
          VendorConfiguration vc = vendorConfigurations.get(name);
          Warnings warnings = new Warnings(pedanticAsError, pedanticRecord,
                redFlagAsError, redFlagRecord, unimplementedAsError,
-               unimplementedRecord);
+               unimplementedRecord, false);
          try {
             Configuration config = vc
                   .toVendorIndependentConfiguration(warnings);
@@ -1665,6 +1665,18 @@ public class Batfish implements AutoCloseable {
          BatfishCombinedParser<?, ?> combinedParser = null;
          ParserRuleContext tree = null;
          ControlPlaneExtractor extractor = null;
+         Warnings warnings = new Warnings(_settings.getRedFlagRecord()
+               && _logger.getLevel().isLessSpecificThan(
+                     Level.getLevel(LEVEL_REDFLAG)),
+               _settings.getRedFlagAsError(),
+               _settings.getUnimplementedRecord()
+                     && _logger.getLevel().isLessSpecificThan(
+                           Level.getLevel(LEVEL_UNIMPLEMENTED)),
+               _settings.getUnimplementedAsError(),
+               _settings.getPedanticRecord()
+                     && _logger.getLevel().isLessSpecificThan(
+                           Level.getLevel(LEVEL_PEDANTIC)),
+               _settings.getPedanticAsError(), _settings.printParseTree());
          char firstChar = fileText.trim().charAt(0);
          if (firstChar == '!') {
             CiscoCombinedParser ciscoParser = new CiscoCombinedParser(fileText,
@@ -1672,19 +1684,7 @@ public class Batfish implements AutoCloseable {
                   _settings.getThrowOnLexerError());
             combinedParser = ciscoParser;
             extractor = new CiscoControlPlaneExtractor(fileText, ciscoParser,
-                  _settings.getRulesWithSuppressedWarnings(),
-                  _settings.getRedFlagRecord()
-                        && _logger.getLevel().isLessSpecificThan(
-                              Level.getLevel(LEVEL_REDFLAG)),
-                  _settings.getRedFlagAsError(),
-                  _settings.getUnimplementedRecord()
-                        && _logger.getLevel().isLessSpecificThan(
-                              Level.getLevel(LEVEL_UNIMPLEMENTED)),
-                  _settings.getUnimplementedAsError(),
-                  _settings.getPedanticRecord()
-                        && _logger.getLevel().isLessSpecificThan(
-                              Level.getLevel(LEVEL_PEDANTIC)),
-                  _settings.getPedanticAsError(), _settings.printParseTree());
+                  warnings);
          }
          else if (firstChar == '#') {
             // either flat or hierarchical
@@ -1708,20 +1708,7 @@ public class Batfish implements AutoCloseable {
                   _settings.getThrowOnLexerError());
             combinedParser = flatJuniperParser;
             extractor = new FlatJuniperControlPlaneExtractor(fileText,
-                  flatJuniperParser,
-                  _settings.getRulesWithSuppressedWarnings(),
-                  _settings.getRedFlagRecord()
-                        && _logger.getLevel().isLessSpecificThan(
-                              Level.getLevel(LEVEL_REDFLAG)),
-                  _settings.getRedFlagAsError(),
-                  _settings.getUnimplementedRecord()
-                        && _logger.getLevel().isLessSpecificThan(
-                              Level.getLevel(LEVEL_UNIMPLEMENTED)),
-                  _settings.getUnimplementedAsError(),
-                  _settings.getPedanticRecord()
-                        && _logger.getLevel().isLessSpecificThan(
-                              Level.getLevel(LEVEL_PEDANTIC)),
-                  _settings.getPedanticAsError(), _settings.printParseTree());
+                  flatJuniperParser, warnings);
          }
          else {
             String error = "Unknown configuration format for file: \""
@@ -1768,13 +1755,13 @@ public class Batfish implements AutoCloseable {
             }
          }
          finally {
-            for (String warning : extractor.getRedFlagWarnings()) {
+            for (String warning : warnings.getRedFlagWarnings()) {
                redflag(warning);
             }
-            for (String warning : extractor.getUnimplementedWarnings()) {
+            for (String warning : warnings.getUnimplementedWarnings()) {
                unimplemented(warning);
             }
-            for (String warning : extractor.getPedanticWarnings()) {
+            for (String warning : warnings.getPedanticWarnings()) {
                pedantic(warning);
             }
          }

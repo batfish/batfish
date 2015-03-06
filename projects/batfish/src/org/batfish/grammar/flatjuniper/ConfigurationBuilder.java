@@ -1,22 +1,16 @@
 package org.batfish.grammar.flatjuniper;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.main.BatfishException;
-import org.batfish.main.PedanticBatfishException;
-import org.batfish.main.RedFlagBatfishException;
-import org.batfish.main.UnimplementedBatfishException;
+import org.batfish.main.Warnings;
 import org.batfish.representation.AsPath;
 import org.batfish.representation.AsSet;
 import org.batfish.representation.Ip;
@@ -454,53 +448,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private FlatJuniperCombinedParser _parser;
 
-   private final boolean _pedanticAsError;
-
-   private final boolean _pedanticRecord;
-
-   private final List<String> _pedanticWarnings;
-
-   private final boolean _printParseTree;
-
-   private final boolean _redFlagAsError;
-
-   private final boolean _redFlagRecord;
-
-   private final List<String> _redFlagWarnings;
-
-   private final Set<String> _rulesWithSuppressedWarnings;
-
    private final Map<PsTerm, RouteFilter> _termRouteFilters;
 
    private final String _text;
 
-   private final boolean _unimplementedAsError;
-
-   private final boolean _unimplementedRecord;
-
-   private final List<String> _unimplementedWarnings;
+   private final Warnings _w;
 
    public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text,
-         Set<String> rulesWithSuppressedWarnings, boolean redFlagRecord,
-         boolean redFlagAsError, boolean unimplementedRecord,
-         boolean unimplementedAsError, boolean pedanticRecord,
-         boolean pedanticAsError, boolean printParseTree) {
+         Warnings warnings) {
       _parser = parser;
       _text = text;
-      _rulesWithSuppressedWarnings = rulesWithSuppressedWarnings;
       _configuration = new JuniperVendorConfiguration();
       _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
       _termRouteFilters = new HashMap<PsTerm, RouteFilter>();
-      _pedanticAsError = pedanticAsError;
-      _pedanticRecord = pedanticRecord;
-      _pedanticWarnings = new ArrayList<String>();
-      _redFlagAsError = redFlagAsError;
-      _redFlagRecord = redFlagRecord;
-      _redFlagWarnings = new ArrayList<String>();
-      _unimplementedAsError = unimplementedAsError;
-      _unimplementedRecord = unimplementedRecord;
-      _unimplementedWarnings = new ArrayList<String>();
-      _printParseTree = printParseTree;
+      _w = warnings;
    }
 
    @Override
@@ -1350,32 +1311,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return _configuration;
    }
 
-   @SuppressWarnings("unused")
-   private void pedantic(String msg) {
-      if (_pedanticAsError) {
-         throw new PedanticBatfishException(msg);
-      }
-      else if (_pedanticRecord) {
-         String prefix = "WARNING " + (_pedanticWarnings.size() + 1)
-               + ": PEDANTIC: ";
-         String warning = prefix + msg + "\n";
-         _pedanticWarnings.add(warning);
-      }
-   }
-
-   @SuppressWarnings("unused")
-   private void redFlag(String msg) {
-      if (_redFlagAsError) {
-         throw new RedFlagBatfishException(msg);
-      }
-      else if (_redFlagRecord) {
-         String prefix = "WARNING " + (_redFlagWarnings.size() + 1)
-               + ": RED FLAG: ";
-         String warning = prefix + msg + "\n";
-         _redFlagWarnings.add(warning);
-      }
-   }
-
    private AsPath toAsPath(As_path_exprContext path) {
       AsPath asPath = new AsPath();
       for (As_unitContext ctx : path.items) {
@@ -1393,49 +1328,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return asPath;
    }
 
-   private void todo(ParserRuleContext ctx, String reason) {
-      if (!_unimplementedRecord && !_unimplementedAsError) {
-         return;
-      }
-      String ruleName = _parser.getParser().getRuleNames()[ctx.getRuleIndex()];
-      if (_rulesWithSuppressedWarnings.contains(ruleName)) {
-         return;
-      }
-      String prefix = "WARNING: UNIMPLEMENTED: "
-            + (_unimplementedWarnings.size() + 1) + ": ";
-      StringBuilder sb = new StringBuilder();
-      List<String> ruleNames = Arrays.asList(FlatJuniperParser.ruleNames);
-      String ruleStack = ctx.toString(ruleNames);
-      sb.append(prefix
-            + "Missing implementation for top (leftmost) parser rule in stack: '"
-            + ruleStack + "'.\n");
-      sb.append(prefix + "Reason: " + reason + "\n");
-      sb.append(prefix + "Rule context follows:\n");
-      int start = ctx.start.getStartIndex();
-      int startLine = ctx.start.getLine();
-      int end = ctx.stop.getStopIndex();
-      String ruleText = _text.substring(start, end + 1);
-      String[] ruleTextLines = ruleText.split("\\n");
-      for (int line = startLine, i = 0; i < ruleTextLines.length; line++, i++) {
-         String contextPrefix = prefix + " line " + line + ": ";
-         sb.append(contextPrefix + ruleTextLines[i] + "\n");
-      }
-      if (_printParseTree) {
-         sb.append(prefix + "Parse tree follows:\n");
-         String parseTreePrefix = prefix + "PARSE TREE: ";
-         String parseTreeText = ParseTreePrettyPrinter.print(ctx, _parser);
-         String[] parseTreeLines = parseTreeText.split("\n");
-         for (String parseTreeLine : parseTreeLines) {
-            sb.append(parseTreePrefix + parseTreeLine + "\n");
-         }
-      }
-      String warning = sb.toString();
-      if (_unimplementedAsError) {
-         throw new UnimplementedBatfishException(warning);
-      }
-      else {
-         _unimplementedWarnings.add(warning);
-      }
+   private void todo(ParserRuleContext ctx, String feature) {
+      _w.todo(ctx, feature, _parser, _text);
    }
 
 }

@@ -12,7 +12,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.main.BatfishException;
-import org.batfish.main.RedFlagBatfishException;
+import org.batfish.main.Warnings;
 
 public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
@@ -30,20 +30,13 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
    private List<ParseTree> _newConfigurationLines;
 
-   private final boolean _redFlagAsError;
-
-   private boolean _redFlagRecord;
-
-   private final List<String> _redFlagWarnings;
+   private final Warnings _w;
 
    public ApplyGroupsApplicator(FlatJuniperCombinedParser combinedParser,
-         Hierarchy hierarchy, List<String> redFlagWarnings,
-         boolean redFlagRecord, boolean redFlagAsError) {
+         Hierarchy hierarchy, Warnings warnings) {
       _combinedParser = combinedParser;
       _hierarchy = hierarchy;
-      _redFlagAsError = redFlagAsError;
-      _redFlagRecord = redFlagRecord;
-      _redFlagWarnings = redFlagWarnings;
+      _w = warnings;
    }
 
    @Override
@@ -70,7 +63,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
                + "\" with group \""
                + groupName
                + "\": " + e.getMessage();
-         redFlag(message);
+         _w.redFlag(message);
       }
    }
 
@@ -131,18 +124,6 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
    @Override
    public void exitSet_line_tail(Set_line_tailContext ctx) {
       _enablePathRecording = false;
-   }
-
-   private void redFlag(String msg) {
-      if (_redFlagAsError) {
-         throw new RedFlagBatfishException(msg);
-      }
-      else if (_redFlagRecord) {
-         String prefix = "WARNING " + (_redFlagWarnings.size() + 1)
-               + ": RED FLAG: ";
-         String warning = prefix + msg + "\n";
-         _redFlagWarnings.add(warning);
-      }
    }
 
    @Override
