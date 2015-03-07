@@ -2,9 +2,7 @@ package org.batfish.main;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -52,6 +50,7 @@ public class Settings {
    private static final String ARG_FLOWS = "flow";
    private static final String ARG_GUI = "gui";
    private static final String ARG_HELP = "help";
+   private static final String ARG_HISTOGRAM = "histogram";
    private static final String ARG_INTERFACE_MAP_PATH = "impath";
    private static final String ARG_LB_WEB_ADMIN_PORT = "lbwebadminport";
    private static final String ARG_LB_WEB_PORT = "lbwebport";
@@ -83,7 +82,6 @@ public class Settings {
    private static final String ARG_ROLE_SET_PATH = "rspath";
    private static final String ARG_ROLE_TRANSIT_QUERY = "rt";
    private static final String ARG_ROLE_TRANSIT_QUERY_PATH = "rtpath";
-   private static final String ARG_RULES_WITH_SUPPRESSED_WARNINGS = "rulenowarn";
    private static final String ARG_SERIALIZE_INDEPENDENT = "si";
    private static final String ARG_SERIALIZE_INDEPENDENT_PATH = "sipath";
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
@@ -135,7 +133,6 @@ public class Settings {
    private static final String ARGNAME_ROLE_REACHABILITY_QUERY_PATH = "path";
    private static final String ARGNAME_ROLE_SET_PATH = "path";
    private static final String ARGNAME_ROLE_TRANSIT_QUERY_PATH = "path";
-   private static final String ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS = "rule-names";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
@@ -204,6 +201,7 @@ public class Settings {
    private String _flowSinkPath;
    private boolean _genMultipath;
    private List<String> _helpPredicates;
+   private boolean _histogram;
    private String _hsaInputDir;
    private String _hsaOutputDir;
    private String _interfaceMapPath;
@@ -240,7 +238,6 @@ public class Settings {
    private String _roleSetPath;
    private boolean _roleTransitQuery;
    private String _roleTransitQueryPath;
-   private Set<String> _rulesWithSuppressedWarnings;
    private boolean _runInServiceMode;
    private String _secondTestRigPath;
    private boolean _serializeIndependent;
@@ -427,6 +424,10 @@ public class Settings {
       return _helpPredicates;
    }
 
+   public boolean getHistogram() {
+      return _histogram;
+   }
+
    public String getHSAInputPath() {
       return _hsaInputDir;
    }
@@ -553,10 +554,6 @@ public class Settings {
 
    public String getRoleTransitQueryPath() {
       return _roleTransitQueryPath;
-   }
-
-   public Set<String> getRulesWithSuppressedWarnings() {
-      return _rulesWithSuppressedWarnings;
    }
 
    public String getSecondTestRigPath() {
@@ -880,10 +877,6 @@ public class Settings {
             .argName(ARGNAME_BLACKLIST_DST_IP)
             .desc("destination ip to blacklist for concretizer queries")
             .longOpt(ARG_BLACKLIST_DST_IP_PATH).build());
-      _options.addOption(Option.builder()
-            .argName(ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS).hasArgs()
-            .desc("suppress warnings for selected parser rules")
-            .longOpt(ARG_RULES_WITH_SUPPRESSED_WARNINGS).build());
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_NODE_ROLES_PATH)
             .desc("path to read or write node-role mappings")
@@ -973,6 +966,10 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("suppresses unimplemented-configuration-directive warnings")
             .longOpt(ARG_UNIMPLEMENTED_SUPPRESS).build());
+      _options.addOption(Option.builder()
+            .desc("build histogram of unimplemented features")
+            .longOpt(ARG_HISTOGRAM).build());
+
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1105,14 +1102,6 @@ public class Settings {
       _blacklistDstIpPath = line.getOptionValue(ARG_BLACKLIST_DST_IP_PATH);
       _concUnique = line.hasOption(ARG_CONC_UNIQUE);
       _acceptNode = line.getOptionValue(ARG_ACCEPT_NODE);
-      _rulesWithSuppressedWarnings = new HashSet<String>();
-      if (line.hasOption(ARG_RULES_WITH_SUPPRESSED_WARNINGS)) {
-         String[] rulesWithSuppressedWarningsArray = line
-               .getOptionValues(ARG_RULES_WITH_SUPPRESSED_WARNINGS);
-         for (String ruleName : rulesWithSuppressedWarningsArray) {
-            _rulesWithSuppressedWarnings.add(ruleName);
-         }
-      }
       _nodeRolesPath = line.getOptionValue(ARG_NODE_ROLES_PATH);
       _roleNodesPath = line.getOptionValue(ARG_ROLE_NODES_PATH);
       _roleReachabilityQueryPath = line
@@ -1136,6 +1125,7 @@ public class Settings {
       _redFlagRecord = !line.hasOption(ARG_RED_FLAG_SUPPRESS);
       _unimplementedAsError = line.hasOption(ARG_UNIMPLEMENTED_AS_ERROR);
       _unimplementedRecord = !line.hasOption(ARG_UNIMPLEMENTED_SUPPRESS);
+      _histogram = line.hasOption(ARG_HISTOGRAM);
    }
 
    public boolean printParseTree() {

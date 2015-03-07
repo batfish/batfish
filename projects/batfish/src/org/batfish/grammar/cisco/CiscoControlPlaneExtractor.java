@@ -84,7 +84,49 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
-   private static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
+   private static final String F_ALLOWAS_IN_NUMBER = "bgp -  allowas-in with number - ignored and effectively infinite for now";
+
+   private static final String F_BGP_AUTO_SUMMARY = "bgp - auto-summary";
+
+   private static final String F_BGP_INHERIT_PEER_OTHER = "bgp - inherit peer - inheritance not implemented for this peer type";
+
+   private static final String F_BGP_INHERIT_PEER_SESSION_OTHER = "bgp - inherit peer-session - inheritance not implemented for this peer type";
+
+   private static final String F_BGP_MAXIMUM_PEERS = "bgp - maximum-peers";
+
+   private static final String F_BGP_NEIGHBOR_DISTRIBUTE_LIST = "bgp - neighbor distribute-list";
+
+   private static final String F_BGP_NETWORK_ROUTE_MAP = "bgp - network with route-map";
+
+   private static final String F_BGP_NEXT_HOP_SELF = "bgp - (no) next-hop-self";
+
+   private static final String F_BGP_REDISTRIBUTE_AGGREGATE = "bgp - redistribute aggregate";
+
+   private static final String F_EBGP_MULTIHOP = "bgp - ebgp multihop";
+
+   private static final String F_INTERFACE_MULTIPOINT = "interface multipoint";
+
+   private static final String F_IP_DEFAULT_GATEWAY = "ip default-gateway";
+
+   private static final String F_IP_ROUTE_VRF = "ip route vrf / vrf - ip route";
+
+   private static final String F_IPV6 = "ipv6 - other";
+
+   private static final String F_OSPF_AREA_NSSA = "ospf - not-so-stubby areas";
+
+   private static final String F_OSPF_MAXIMUM_PATHS = "ospf - maximum-paths";
+
+   private static final String F_OSPF_REDISTRIBUTE_RIP = "ospf - redistribute rip";
+
+   private static final String F_OSPF_VRF = "router ospf vrf";
+
+   private static final String F_RIP = "rip";
+
+   private static final String F_ROUTE_MAP_SET_METRIC_TYPE = "route-map - set metric-type";
+
+   private static final String F_SWITCHING_MODE = "switching-mode";
+
+   private static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";;
 
    public static LineAction getAccessListAction(Access_list_actionContext ctx) {
       if (ctx.PERMIT() != null) {
@@ -658,12 +700,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private final String _text;
 
+   private final Set<String> _unimplementedFeatures;
+
    private final Warnings _w;
 
    public CiscoControlPlaneExtractor(String text,
          BatfishCombinedParser<?, ?> parser, Warnings warnings) {
       _text = text;
       _parser = parser;
+      _unimplementedFeatures = new TreeSet<String>();
       _w = warnings;
    }
 
@@ -682,7 +727,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterCisco_configuration(Cisco_configurationContext ctx) {
-      _configuration = new CiscoVendorConfiguration();
+      _configuration = new CiscoVendorConfiguration(_unimplementedFeatures);
       _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
    }
 
@@ -740,7 +785,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          }
       }
       if (ctx.MULTIPOINT() != null) {
-         todo(ctx);
+         todo(ctx, F_INTERFACE_MULTIPOINT);
       }
    }
 
@@ -788,7 +833,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       boolean isIpV6 = (ctx.named.IPV6() != null);
 
       if (isIpV6) {
-         todo(ctx, "IPV6 is not supported yet");
+         todo(ctx, F_IPV6);
       }
 
       String name = ctx.named.name.getText();
@@ -828,7 +873,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _currentPeerGroup = _currentIpPeerGroup;
       }
       else if (ctx.ip6 != null) {
-         todo(ctx, "Do not handle IPv6 yet");
+         todo(ctx, F_IPV6);
          _currentIpv6PeerGroup = Ipv6BgpPeerGroup.INSTANCE;
          _currentPeerGroup = _currentIpv6PeerGroup;
       }
@@ -858,7 +903,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       boolean ipV6 = (ctx.IPV6() != null);
 
       if (ipV6) {
-         todo(ctx, "Do not handle IPv6 yet");
+         todo(ctx, F_IPV6);
       }
 
       String name = ctx.name.getText();
@@ -870,7 +915,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterNexus_neighbor_rb_stanza(Nexus_neighbor_rb_stanzaContext ctx) {
       if (ctx.ipv6_address != null || ctx.ipv6_prefix != null) {
-         todo(ctx, "IPv6 is not supported yet");
+         todo(ctx, F_IPV6);
          _currentIpv6PeerGroup = Ipv6BgpPeerGroup.INSTANCE;
          _currentPeerGroup = _currentIpv6PeerGroup;
          return;
@@ -958,7 +1003,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int procNum = toInteger(ctx.procnum);
       _currentOspfProcess = new OspfProcess(procNum);
       if (ctx.vrf != null) {
-         todo(ctx, "ospf vrf process not implemented yet");
+         todo(ctx, F_OSPF_VRF);
       }
       else {
          _configuration.setOspfProcess(_currentOspfProcess);
@@ -968,7 +1013,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterRouter_rip_stanza(Router_rip_stanzaContext ctx) {
-      todo(ctx);
+      todo(ctx, F_RIP);
    }
 
    @Override
@@ -1062,7 +1107,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             proc.getAggregateNetworks().put(prefix, net);
          }
          else if (ctx.ipv6_prefix != null) {
-            todo(ctx);
+            todo(ctx, F_IPV6);
          }
       }
       else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
@@ -1076,7 +1121,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitAllowas_in_bgp_tail(Allowas_in_bgp_tailContext ctx) {
       _currentPeerGroup.SetAllowAsIn(true);
       if (ctx.num != null) {
-         todo(ctx, "allowas-in number ignored and effectively infinite for now");
+         todo(ctx, F_ALLOWAS_IN_NUMBER);
       }
    }
 
@@ -1095,15 +1140,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       boolean noSummary = ctx.NO_SUMMARY() != null;
       boolean defaultOriginate = ctx.DEFAULT_INFORMATION_ORIGINATE() != null;
       if (defaultOriginate) {
-         // TODO: implement
-         todo(ctx);
+         todo(ctx, F_OSPF_AREA_NSSA);
       }
       proc.getNssas().put(area, noSummary);
    }
 
    @Override
    public void exitAuto_summary_bgp_tail(Auto_summary_bgp_tailContext ctx) {
-      todo(ctx);
+      todo(ctx, F_BGP_AUTO_SUMMARY);
    }
 
    @Override
@@ -1128,7 +1172,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          }
       }
       else if (ctx.IPV6_PREFIX() != null) {
-         todo(ctx, "Ipv6 not yet implemented");
+         todo(ctx, F_IPV6);
       }
    }
 
@@ -1177,7 +1221,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Default_originate_bgp_tailContext ctx) {
       String mapName = ctx.map != null ? ctx.map.getText() : null;
       if (_currentIpv6PeerGroup != null) {
-         todo(ctx, "IPv6 not supported yet");
+         todo(ctx, F_IPV6);
          return;
       }
       else {
@@ -1194,12 +1238,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitDistribute_list_bgp_tail(Distribute_list_bgp_tailContext ctx) {
-      todo(ctx);
+      todo(ctx, F_BGP_NEIGHBOR_DISTRIBUTE_LIST);
    }
 
    @Override
    public void exitEbgp_multihop_bgp_tail(Ebgp_multihop_bgp_tailContext ctx) {
-      todo(ctx);
+      todo(ctx, F_EBGP_MULTIHOP);
    }
 
    @Override
@@ -1252,7 +1296,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException("Invalid peer context for inheritance");
       }
       else {
-         todo(ctx, "inheritance not implemented for this peer type");
+         todo(ctx, F_BGP_INHERIT_PEER_SESSION_OTHER);
       }
    }
 
@@ -1387,7 +1431,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitIp_default_gateway_stanza(
          Ip_default_gateway_stanzaContext ctx) {
-      todo(ctx);
+      todo(ctx, F_IP_DEFAULT_GATEWAY);
    }
 
    @Override
@@ -1472,7 +1516,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitIp_route_tail(Ip_route_tailContext ctx) {
       if (!_currentVrf.equals(CiscoConfiguration.MASTER_VRF_NAME)) {
-         todo(ctx, "vrfs not implemented yet");
+         todo(ctx, F_IP_ROUTE_VRF);
          return;
       }
       Prefix prefix;
@@ -1516,7 +1560,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitIp_route_vrfc_stanza(Ip_route_vrfc_stanzaContext ctx) {
-      todo(ctx, "vrfs not implemented yet");
+      todo(ctx, F_IP_ROUTE_VRF);
    }
 
    @Override
@@ -1584,7 +1628,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitMaximum_paths_ro_stanza(Maximum_paths_ro_stanzaContext ctx) {
-      todo(ctx);
+      todo(ctx, F_OSPF_MAXIMUM_PATHS);
       /*
        * Note that this is very difficult to enforce, and may not help the
        * analysis without major changes
@@ -1593,7 +1637,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitMaximum_peers_bgp_tail(Maximum_peers_bgp_tailContext ctx) {
-      todo(ctx);
+      todo(ctx, F_BGP_MAXIMUM_PEERS);
    }
 
    @Override
@@ -1609,7 +1653,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitNetwork_bgp_tail(Network_bgp_tailContext ctx) {
       if (ctx.mapname != null) {
-         todo(ctx);
+         todo(ctx, F_BGP_NETWORK_ROUTE_MAP);
       }
       else {
          Prefix prefix;
@@ -1650,7 +1694,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitNext_hop_self_bgp_tail(Next_hop_self_bgp_tailContext ctx) {
-      todo(ctx);
+      todo(ctx, F_BGP_NEXT_HOP_SELF);
       // note that this rule matches "no next-hop-self"
    }
 
@@ -1675,7 +1719,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException("Invalid peer context for inheritance");
       }
       else {
-         todo(ctx, "inheritance not implemented for this peer type");
+         todo(ctx, F_BGP_INHERIT_PEER_OTHER);
       }
    }
 
@@ -1716,7 +1760,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          }
       }
       else if (ctx.ip6 != null) {
-         todo(ctx, "IPv6 not supported yet");
+         todo(ctx, F_IPV6);
       }
       else if (ctx.peergroup != null) {
          throw new BatfishException("deactivating peer group unsupported");
@@ -1742,7 +1786,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          }
       }
       else if (ctx.ip6 != null) {
-         todo(ctx, "IPv6 not supported yet");
+         todo(ctx, F_IPV6);
       }
       else if (ctx.peergroup != null) {
          throw new BatfishException("'no shutdown' of  peer group unsupported");
@@ -1805,7 +1849,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                .addPeerGroupMember(address, peerGroupName);
       }
       else if (ctx.address6 != null) {
-         todo(ctx);
+         todo(ctx, F_IPV6);
       }
    }
 
@@ -1822,7 +1866,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitPrefix_list_bgp_tail(Prefix_list_bgp_tailContext ctx) {
       if (_currentIpv6PeerGroup != null) {
-         todo(ctx, "Ipv6 not supported yet");
+         todo(ctx, F_IPV6);
       }
       else {
          String listName = ctx.list_name.getText();
@@ -1841,7 +1885,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitRedistribute_aggregate_bgp_tail(
          Redistribute_aggregate_bgp_tailContext ctx) {
-      todo(ctx);
+      todo(ctx, F_BGP_REDISTRIBUTE_AGGREGATE);
    }
 
    @Override
@@ -1958,7 +2002,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitRedistribute_rip_ro_stanza(
          Redistribute_rip_ro_stanzaContext ctx) {
-      todo(ctx);
+      todo(ctx, F_OSPF_REDISTRIBUTE_RIP);
    }
 
    @Override
@@ -2171,7 +2215,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitSet_metric_type_rm_stanza(
          Set_metric_type_rm_stanzaContext ctx) {
-      todo(ctx);
+      todo(ctx, F_ROUTE_MAP_SET_METRIC_TYPE);
    }
 
    @Override
@@ -2245,7 +2289,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitSwitching_mode_stanza(Switching_mode_stanzaContext ctx) {
-      todo(ctx);
+      todo(ctx, F_SWITCHING_MODE);
    }
 
    @Override
@@ -2350,7 +2394,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return;
       }
       else if (_currentIpv6PeerGroup != null) {
-         todo(ctx, "IPv6 not supported yet");
+         todo(ctx, F_IPV6);
       }
       else {
          String source = toInterfaceName(ctx.source);
@@ -2389,6 +2433,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public Set<String> getUnimplementedFeatures() {
+      return _unimplementedFeatures;
+   }
+
+   @Override
    public VendorConfiguration getVendorConfiguration() {
       return _configuration;
    }
@@ -2399,12 +2448,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       walker.walk(this, tree);
    }
 
-   private void todo(ParserRuleContext ctx) {
-      todo(ctx, "Unknown");
-   }
-
    private void todo(ParserRuleContext ctx, String feature) {
       _w.todo(ctx, feature, _parser, _text);
+      _unimplementedFeatures.add("Cisco: " + feature);
    }
 
    public SwitchportEncapsulationType toEncapsulation(

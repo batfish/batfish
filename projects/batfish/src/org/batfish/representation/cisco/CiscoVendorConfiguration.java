@@ -652,10 +652,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
    private final RoleSet _roles;
 
+   private transient Set<String> _unimplementedFeatures;
+
    private transient Warnings _w;
 
-   public CiscoVendorConfiguration() {
+   public CiscoVendorConfiguration(Set<String> unimplementedFeatures) {
       _roles = new RoleSet();
+      _unimplementedFeatures = unimplementedFeatures;
    }
 
    private boolean containsIpAccessList(String eaListName, String mapName) {
@@ -759,6 +762,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
       }
       return maps;
+   }
+
+   @Override
+   public Set<String> getUnimplementedFeatures() {
+      return _unimplementedFeatures;
    }
 
    @Override

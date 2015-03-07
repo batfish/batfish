@@ -452,15 +452,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private final String _text;
 
+   private final Set<String> _unimplementedFeatures;
+
    private final Warnings _w;
 
    public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text,
-         Warnings warnings) {
+         Warnings warnings, Set<String> unimplementedFeatures) {
       _parser = parser;
       _text = text;
-      _configuration = new JuniperVendorConfiguration();
+      _configuration = new JuniperVendorConfiguration(unimplementedFeatures);
       _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
       _termRouteFilters = new HashMap<PsTerm, RouteFilter>();
+      _unimplementedFeatures = unimplementedFeatures;
       _w = warnings;
    }
 
@@ -1330,6 +1333,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private void todo(ParserRuleContext ctx, String feature) {
       _w.todo(ctx, feature, _parser, _text);
+      _unimplementedFeatures.add("Juniper: " + feature);
    }
 
 }

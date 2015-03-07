@@ -1,5 +1,8 @@
 package org.batfish.grammar.flatjuniper;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
@@ -15,13 +18,21 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
 
    private final String _text;
 
+   private final Set<String> _unimplementedFeatures;
+
    private final Warnings _w;
 
    public FlatJuniperControlPlaneExtractor(String fileText,
          FlatJuniperCombinedParser combinedParser, Warnings warnings) {
       _text = fileText;
+      _unimplementedFeatures = new TreeSet<String>();
       _parser = combinedParser;
       _w = warnings;
+   }
+
+   @Override
+   public Set<String> getUnimplementedFeatures() {
+      return _unimplementedFeatures;
    }
 
    @Override
@@ -46,7 +57,8 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
       walker.walk(wp, tree);
       ApplyPathApplicator ap = new ApplyPathApplicator(hierarchy);
       walker.walk(ap, tree);
-      ConfigurationBuilder cb = new ConfigurationBuilder(_parser, _text, _w);
+      ConfigurationBuilder cb = new ConfigurationBuilder(_parser, _text, _w,
+            _unimplementedFeatures);
       walker.walk(cb, tree);
       _configuration = cb.getConfiguration();
    }

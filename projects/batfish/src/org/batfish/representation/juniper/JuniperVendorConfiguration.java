@@ -47,10 +47,13 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
    private final RoleSet _roles;
 
+   private transient Set<String> _unimplementedFeatures;
+
    private transient Warnings _w;
 
-   public JuniperVendorConfiguration() {
+   public JuniperVendorConfiguration(Set<String> unimplementedFeatures) {
       _roles = new RoleSet();
+      _unimplementedFeatures = unimplementedFeatures;
    }
 
    private BgpProcess createBgpProcess() {
@@ -149,6 +152,11 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    @Override
    public RoleSet getRoles() {
       return _roles;
+   }
+
+   @Override
+   public Set<String> getUnimplementedFeatures() {
+      return _unimplementedFeatures;
    }
 
    @Override
@@ -490,4 +498,5 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
       return _c;
    }
+
 }

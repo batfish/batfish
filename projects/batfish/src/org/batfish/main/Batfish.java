@@ -46,6 +46,7 @@ import org.batfish.collections.FibSet;
 import org.batfish.collections.FlowSinkInterface;
 import org.batfish.collections.FlowSinkSet;
 import org.batfish.collections.FunctionSet;
+import org.batfish.collections.MultiSet;
 import org.batfish.collections.NodeRoleMap;
 import org.batfish.collections.NodeSet;
 import org.batfish.collections.PolicyRouteFibIpMap;
@@ -55,6 +56,7 @@ import org.batfish.collections.PredicateValueTypeMap;
 import org.batfish.collections.QualifiedNameMap;
 import org.batfish.collections.RoleNodeMap;
 import org.batfish.collections.RoleSet;
+import org.batfish.collections.TreeMultiSet;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
@@ -1414,6 +1416,22 @@ public class Batfish implements AutoCloseable {
       return edges;
    }
 
+   private void histogram(String testRigPath) {
+      Map<File, String> configurationData = readConfigurationFiles(testRigPath);
+      Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(configurationData);
+      _logger.info("Building feature histogram..");
+      MultiSet<String> histogram = new TreeMultiSet<String>();
+      for (VendorConfiguration vc : vendorConfigurations.values()) {
+         Set<String> unimplementedFeatures = vc.getUnimplementedFeatures();
+         histogram.add(unimplementedFeatures);
+      }
+      _logger.info("OK\n");
+      for (String feature : histogram.elements()) {
+         int count = histogram.count(feature);
+         output(feature + ": " + count + "\n");
+      }
+   }
+
    /**
     * Generates a topology object from inferred edges encoded in interface
     * descriptions.
@@ -2059,6 +2077,11 @@ public class Batfish implements AutoCloseable {
 
       if (_settings.getBuildPredicateInfo()) {
          buildPredicateInfo();
+         return;
+      }
+
+      if (_settings.getHistogram()) {
+         histogram(_settings.getTestRigPath());
          return;
       }
 
