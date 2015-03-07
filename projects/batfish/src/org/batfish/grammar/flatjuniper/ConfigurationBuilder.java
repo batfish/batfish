@@ -83,6 +83,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(
          Prefix.ZERO);
 
+   private static final String F_COMPLEX_POLICY = "boolean combination of policy-statements";
+
+   private static final String F_EXTENDED_COMMUNITY = "extended communities";
+
+   private static final String F_POLICY_TERM_THEN_NEXT_HOP = "policy-statement - term - then - next-hop";
+
    public static NamedPort getNamedPort(PortContext ctx) {
       if (ctx.AFS() != null) {
          return NamedPort.AFS;
@@ -803,7 +809,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentBgpGroup.getExportPolicies().add(name);
       }
       else {
-         todo(ctx, "complex policy expressions unsupported at this time");
+         todo(ctx, F_COMPLEX_POLICY);
       }
    }
 
@@ -815,7 +821,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentBgpGroup.getImportPolicies().add(name);
       }
       else {
-         todo(ctx, "complex policy expressions unsupported at this time");
+         todo(ctx, F_COMPLEX_POLICY);
       }
    }
 
@@ -868,7 +874,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                new CommunityListLine(communityStr));
       }
       else if (ctx.extended_community() != null) {
-         todo(ctx, "extended communities not currently supported");
+         todo(ctx, F_EXTENDED_COMMUNITY);
       }
    }
 
@@ -1299,7 +1305,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          then = new PsThenNextHopIp(nextHopIp);
       }
       else {
-         todo(ctx, "not implemented");
+         todo(ctx, F_POLICY_TERM_THEN_NEXT_HOP);
          return;
       }
       _currentPsThens.add(then);
