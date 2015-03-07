@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-which z3 > /dev/null || return
-which parallel > /dev/null || return
+which z3 > /dev/null || return 1
+which parallel > /dev/null || return 1
 
 export BATFISH_ROOT="$BATFISH_TOOLS_PATH/.."
 export BATFISH_PATH="$BATFISH_ROOT/projects/batfish"
