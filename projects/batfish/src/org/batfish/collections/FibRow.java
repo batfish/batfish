@@ -2,8 +2,7 @@ package org.batfish.collections;
 
 import java.io.Serializable;
 
-import org.batfish.representation.Ip;
-import org.batfish.util.Util;
+import org.batfish.representation.Prefix;
 
 public class FibRow implements Comparable<FibRow>, Serializable {
 
@@ -14,13 +13,11 @@ public class FibRow implements Comparable<FibRow>, Serializable {
    private String _interface;
    private String _nextHop;
    private String _nextHopInterface;
-   private Ip _prefix;
-   private int _prefixLength;
+   private Prefix _prefix;
 
-   public FibRow(Ip prefix, int prefixLength, String iface, String nextHop,
+   public FibRow(Prefix prefix, String iface, String nextHop,
          String nextHopInterface) {
       _prefix = prefix;
-      _prefixLength = prefixLength;
       _interface = iface;
       _nextHop = nextHop;
       _nextHopInterface = nextHopInterface;
@@ -28,10 +25,11 @@ public class FibRow implements Comparable<FibRow>, Serializable {
 
    @Override
    public int compareTo(FibRow rhs) {
-      int prefixComparison = _prefix.compareTo(rhs._prefix);
+      int prefixComparison = _prefix.getAddress().compareTo(
+            rhs._prefix.getAddress());
       if (prefixComparison == 0) {
-         int lengthComparison = Integer.compare(_prefixLength,
-               rhs._prefixLength);
+         int lengthComparison = Integer.compare(_prefix.getPrefixLength(),
+               rhs._prefix.getPrefixLength());
          if (lengthComparison == 0) {
             int interfaceComparison = _interface.compareTo(rhs._interface);
             if (interfaceComparison == 0) {
@@ -59,18 +57,11 @@ public class FibRow implements Comparable<FibRow>, Serializable {
    @Override
    public boolean equals(Object o) {
       FibRow rhs = (FibRow) o;
-      return (_prefix.equals(rhs._prefix) && _prefixLength == rhs._prefixLength && _interface
-            .equals(rhs._interface));
+      return (_prefix.equals(rhs._prefix) && _interface.equals(rhs._interface));
    }
 
    public String getInterface() {
       return _interface;
-   }
-
-   public Ip getLastIp() {
-      long prefix = _prefix.asLong();
-      long lastIpAsLong = Util.getNetworkEnd(prefix, _prefixLength);
-      return new Ip(lastIpAsLong);
    }
 
    public String getNextHop() {
@@ -81,12 +72,8 @@ public class FibRow implements Comparable<FibRow>, Serializable {
       return _nextHopInterface;
    }
 
-   public Ip getPrefix() {
+   public Prefix getPrefix() {
       return _prefix;
-   }
-
-   public int getPrefixLength() {
-      return _prefixLength;
    }
 
    @Override
@@ -97,14 +84,12 @@ public class FibRow implements Comparable<FibRow>, Serializable {
       result = prime * result + _prefix.hashCode();
       result = prime * result + _nextHop.hashCode();
       result = prime * result + _nextHopInterface.hashCode();
-      result = prime * result + _prefixLength;
       return result;
    }
 
    @Override
    public String toString() {
-      return String.format("%-19s", _prefix.toString() + "/" + _prefixLength)
-            + _interface;
+      return String.format("%-19s", _prefix.toString()) + _interface;
    }
 
 }

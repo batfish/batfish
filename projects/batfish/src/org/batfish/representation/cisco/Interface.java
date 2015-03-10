@@ -6,7 +6,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.batfish.representation.Ip;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.SwitchportMode;
@@ -64,8 +63,6 @@ public class Interface implements Serializable {
 
    private String _incomingFilter;
 
-   private Ip _ip;
-
    private String _name;
 
    private int _nativeVlan;
@@ -78,11 +75,11 @@ public class Interface implements Serializable {
 
    private String _outgoingFilter;
 
+   private Prefix _prefix;
+
    private String _routingPolicy;
 
    private Set<Prefix> _secondaryPrefixes;
-
-   private Ip _subnet;
 
    private SwitchportMode _switchportMode;
 
@@ -93,7 +90,6 @@ public class Interface implements Serializable {
    public Interface(String name) {
       _name = name;
       _area = null;
-      _ip = null;
       _active = true;
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
@@ -134,10 +130,6 @@ public class Interface implements Serializable {
       return _incomingFilter;
    }
 
-   public Ip getIP() {
-      return _ip;
-   }
-
    public String getName() {
       return _name;
    }
@@ -162,16 +154,16 @@ public class Interface implements Serializable {
       return _outgoingFilter;
    }
 
+   public Prefix getPrefix() {
+      return _prefix;
+   }
+
    public String getRoutingPolicy() {
       return _routingPolicy;
    }
 
    public Set<Prefix> getSecondaryPrefixes() {
       return _secondaryPrefixes;
-   }
-
-   public Ip getSubnetMask() {
-      return _subnet;
    }
 
    public SwitchportMode getSwitchportMode() {
@@ -206,10 +198,6 @@ public class Interface implements Serializable {
       _incomingFilter = accessListName;
    }
 
-   public void setIp(Ip ip) {
-      _ip = ip;
-   }
-
    public void setNativeVlan(int vlan) {
       _nativeVlan = vlan;
    }
@@ -230,12 +218,12 @@ public class Interface implements Serializable {
       _outgoingFilter = accessListName;
    }
 
-   public void setRoutingPolicy(String routingPolicy) {
-      _routingPolicy = routingPolicy;
+   public void setPrefix(Prefix prefix) {
+      _prefix = prefix;
    }
 
-   public void setSubnetMask(Ip subnet) {
-      _subnet = subnet;
+   public void setRoutingPolicy(String routingPolicy) {
+      _routingPolicy = routingPolicy;
    }
 
    public void setSwitchportMode(SwitchportMode switchportMode) {

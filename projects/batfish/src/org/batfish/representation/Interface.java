@@ -18,23 +18,21 @@ public class Interface extends NamedStructure {
    private Double _bandwidth;
    private String _description;
    private IpAccessList _incomingFilter;
-   private Ip _ip;
    private int _nativeVlan;
    private Integer _ospfArea;
    private Integer _ospfCost;
    private int _ospfDeadInterval;
    private int _ospfHelloMultiplier;
    private IpAccessList _outgoingFilter;
+   private Prefix _prefix;
    private PolicyMap _routingPolicy;
    private Set<Prefix> _secondaryPrefixes;
-   private Ip _subnet;
    private SwitchportMode _switchportMode;
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
 
    public Interface(String name) {
       super(name);
-      _ip = null;
       _active = true;
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
@@ -78,10 +76,6 @@ public class Interface extends NamedStructure {
       return _incomingFilter;
    }
 
-   public Ip getIP() {
-      return _ip;
-   }
-
    public int getNativeVlan() {
       return _nativeVlan;
    }
@@ -102,16 +96,16 @@ public class Interface extends NamedStructure {
       return _outgoingFilter;
    }
 
+   public Prefix getPrefix() {
+      return _prefix;
+   }
+
    public PolicyMap getRoutingPolicy() {
       return _routingPolicy;
    }
 
    public Set<Prefix> getSecondaryPrefixes() {
       return _secondaryPrefixes;
-   }
-
-   public Ip getSubnetMask() {
-      return _subnet;
    }
 
    public SwitchportMode getSwitchportMode() {
@@ -146,10 +140,6 @@ public class Interface extends NamedStructure {
       _incomingFilter = filter;
    }
 
-   public void setIp(Ip ip) {
-      _ip = ip;
-   }
-
    public void setNativeVlan(int vlan) {
       _nativeVlan = vlan;
    }
@@ -170,12 +160,12 @@ public class Interface extends NamedStructure {
       _outgoingFilter = filter;
    }
 
-   public void setRoutingPolicy(PolicyMap policy) {
-      _routingPolicy = policy;
+   public void setPrefix(Prefix prefix) {
+      _prefix = prefix;
    }
 
-   public void setSubnetMask(Ip subnet) {
-      _subnet = subnet;
+   public void setRoutingPolicy(PolicyMap policy) {
+      _routingPolicy = policy;
    }
 
    public void setSwitchportMode(SwitchportMode switchportMode) {

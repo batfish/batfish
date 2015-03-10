@@ -13,12 +13,27 @@ public class Prefix implements Comparable<Prefix>, Serializable {
 
    public static final Prefix ZERO = new Prefix(new Ip(0l), 0);
 
+   private static long getNetworkEnd(long networkStart, int prefix_length) {
+      long networkEnd = networkStart;
+      int ones_length = 32 - prefix_length;
+      for (int i = 0; i < ones_length; i++) {
+         networkEnd |= ((long) 1 << i);
+      }
+      return networkEnd;
+   }
+
    private Ip _address;
+
    private int _prefixLength;
 
    public Prefix(Ip network, int prefixLength) {
       _address = network;
       _prefixLength = prefixLength;
+   }
+
+   public Prefix(Ip address, Ip mask) {
+      _address = address;
+      _prefixLength = mask.numSubnetBits();
    }
 
    public Prefix(String text) {
@@ -51,7 +66,11 @@ public class Prefix implements Comparable<Prefix>, Serializable {
    }
 
    public Ip getEndAddress() {
-      return new Ip(Util.getNetworkEnd(_address.asLong(), _prefixLength));
+      return new Ip(getNetworkEnd(_address.asLong(), _prefixLength));
+   }
+
+   public Ip getNetworkAddress() {
+      return _address.getNetworkAddress(_prefixLength);
    }
 
    public int getPrefixLength() {
@@ -65,7 +84,7 @@ public class Prefix implements Comparable<Prefix>, Serializable {
    }
 
    public Ip getSubnetMask() {
-      return new Ip(Util.numSubnetBitsToSubnetLong(_prefixLength));
+      return Ip.numSubnetBitsToSubnetMask(_prefixLength);
    }
 
    @Override

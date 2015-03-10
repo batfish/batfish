@@ -95,6 +95,7 @@ import org.batfish.representation.Edge;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.Prefix;
 import org.batfish.representation.Topology;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.cisco.CiscoVendorConfiguration;
@@ -1346,16 +1347,11 @@ public class Batfish implements AutoCloseable {
          int endIndex = endIndices.get(hostname);
          for (int i = startIndex; i <= endIndex; i++) {
             String networkStr = networkList.get(i);
-            String[] networkStrs = networkStr.split("/");
-            String prefixStr = networkStrs[0];
-            String prefixLengthStr = networkStrs[1];
-            Ip prefix = new Ip(prefixStr);
-            int prefixLength = Integer.parseInt(prefixLengthStr);
+            Prefix prefix = new Prefix(networkStr);
             String iface = interfaceList.get(i);
             String nextHop = nextHopList.get(i);
             String nextHopInt = nextHopIntList.get(i);
-            fibRows.add(new FibRow(prefix, prefixLength, iface, nextHop,
-                  nextHopInt));
+            fibRows.add(new FibRow(prefix, iface, nextHop, nextHopInt));
          }
       }
       return fibs;

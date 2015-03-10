@@ -2,7 +2,7 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 
-import org.batfish.representation.Ip;
+import org.batfish.representation.Prefix;
 
 public class OspfNetwork implements Comparable<OspfNetwork>, Serializable {
 
@@ -10,25 +10,19 @@ public class OspfNetwork implements Comparable<OspfNetwork>, Serializable {
 
    private long _area;
    private int _hashCode;
-   private Ip _networkAddress;
-   private Ip _subnetMask;
+   private Prefix _prefix;
 
-   public OspfNetwork(Ip networkAddress, Ip subnetMask, long area) {
-      _networkAddress = networkAddress;
-      _subnetMask = subnetMask;
+   public OspfNetwork(Prefix prefix, long area) {
+      _prefix = prefix;
       _area = area;
-      _hashCode = (networkAddress.networkString(_subnetMask) + ":" + _area)
-            .hashCode();
+      _hashCode = (_prefix.toString() + ":" + _area).hashCode();
    }
 
    @Override
    public int compareTo(OspfNetwork rhs) {
-      int ret = _networkAddress.compareTo(rhs._networkAddress);
+      int ret = _prefix.compareTo(rhs._prefix);
       if (ret == 0) {
-         ret = _subnetMask.compareTo(rhs._subnetMask);
-         if (ret == 0) {
-            ret = Long.compare(_area, rhs._area);
-         }
+         ret = Long.compare(_area, rhs._area);
       }
       return ret;
    }
@@ -36,20 +30,15 @@ public class OspfNetwork implements Comparable<OspfNetwork>, Serializable {
    @Override
    public boolean equals(Object o) {
       OspfNetwork rhs = (OspfNetwork) o;
-      return _networkAddress.equals(rhs._networkAddress)
-            && _subnetMask.equals(rhs._subnetMask) && _area == rhs._area;
+      return _prefix.equals(rhs._prefix) && _area == rhs._area;
    }
 
    public long getArea() {
       return _area;
    }
 
-   public Ip getNetworkAddress() {
-      return _networkAddress;
-   }
-
-   public Ip getSubnetMask() {
-      return _subnetMask;
+   public Prefix getPrefix() {
+      return _prefix;
    }
 
    @Override

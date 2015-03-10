@@ -208,27 +208,28 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          // sort so longest prefixes are first
          @Override
          public int compare(OspfNetwork lhs, OspfNetwork rhs) {
-            int lhsPrefixLength = lhs.getSubnetMask().numSubnetBits();
-            int rhsPrefixLength = rhs.getSubnetMask().numSubnetBits();
+            int lhsPrefixLength = lhs.getPrefix().getPrefixLength();
+            int rhsPrefixLength = rhs.getPrefix().getPrefixLength();
             int result = -Integer.compare(lhsPrefixLength, rhsPrefixLength);
             if (result == 0) {
-               long lhsIp = lhs.getNetworkAddress().asLong();
-               long rhsIp = rhs.getNetworkAddress().asLong();
+               long lhsIp = lhs.getPrefix().getAddress().asLong();
+               long rhsIp = rhs.getPrefix().getAddress().asLong();
                result = Long.compare(lhsIp, rhsIp);
             }
             return result;
          }
       });
       for (org.batfish.representation.Interface i : c.getInterfaces().values()) {
-         Ip interfaceIp = i.getIP();
-         if (interfaceIp == null) {
+         Prefix interfacePrefix = i.getPrefix();
+         if (interfacePrefix == null) {
             continue;
          }
          for (OspfNetwork network : networks) {
-            Ip networkIp = network.getNetworkAddress();
-            Ip networkMask = network.getSubnetMask();
-            long maskedIp = interfaceIp.asLong() & networkMask.asLong();
-            if (maskedIp == networkIp.asLong()) {
+            Prefix networkPrefix = network.getPrefix();
+            Ip networkAddress = networkPrefix.getAddress();
+            Ip maskedInterfaceAddress = interfacePrefix.getAddress()
+                  .getNetworkAddress(networkPrefix.getPrefixLength());
+            if (maskedInterfaceAddress.equals(networkAddress)) {
                // we have a longest prefix match
                long areaNum = network.getArea();
                OspfArea newArea = areas.get(areaNum);
@@ -919,20 +920,24 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                processRouterId = new Ip(0l);
                for (String iname : c.getInterfaces().keySet()) {
                   if (iname.startsWith("Loopback")) {
-                     Ip currentIp = c.getInterfaces().get(iname).getIP();
-                     if (currentIp != null
-                           && currentIp.asLong() > processRouterId.asLong()) {
-                        processRouterId = currentIp;
+                     Prefix prefix = c.getInterfaces().get(iname).getPrefix();
+                     if (prefix != null) {
+                        Ip currentIp = prefix.getAddress();
+                        if (currentIp.asLong() > processRouterId.asLong()) {
+                           processRouterId = currentIp;
+                        }
                      }
                   }
                }
                if (processRouterId.asLong() == 0) {
                   for (org.batfish.representation.Interface currentInterface : c
                         .getInterfaces().values()) {
-                     Ip currentIp = currentInterface.getIP();
-                     if (currentIp != null
-                           && currentIp.asLong() > processRouterId.asLong()) {
-                        processRouterId = currentIp;
+                     Prefix prefix = currentInterface.getPrefix();
+                     if (prefix != null) {
+                        Ip currentIp = prefix.getAddress();
+                        if (currentIp.asLong() > processRouterId.asLong()) {
+                           processRouterId = currentIp;
+                        }
                      }
                   }
                }
@@ -943,9 +948,18 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             org.batfish.representation.Interface sourceInterface = c
                   .getInterfaces().get(updateSourceInterface);
             if (sourceInterface != null) {
-               Ip sourceIp = c.getInterfaces().get(updateSourceInterface)
-                     .getIP();
-               updateSource = sourceIp.toString();
+               Prefix prefix = c.getInterfaces().get(updateSourceInterface)
+                     .getPrefix();
+               if (prefix != null) {
+                  Ip sourceIp = prefix.getAddress();
+                  updateSource = sourceIp.toString();
+               }
+               else {
+                  throw new VendorConversionException(
+                        "bgp update source interface: \""
+                              + updateSourceInterface
+                              + "\" not assigned an ip address");
+               }
             }
             else {
                throw new VendorConversionException(
@@ -1131,9 +1145,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       newIface.setActive(iface.getActive());
       newIface.setArea(iface.getArea());
       newIface.setBandwidth(iface.getBandwidth());
-      if (iface.getIP() != null) {
-         newIface.setIp(iface.getIP());
-         newIface.setSubnetMask(iface.getSubnetMask());
+      if (iface.getPrefix() != null) {
+         newIface.setPrefix(iface.getPrefix());
       }
       newIface.getSecondaryPrefixes().addAll(iface.getSecondaryPrefixes());
       newIface.setOspfCost(iface.getOspfCost());

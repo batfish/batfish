@@ -75,7 +75,6 @@ import org.batfish.representation.cisco.StandardAccessListLine;
 import org.batfish.representation.cisco.StandardCommunityList;
 import org.batfish.representation.cisco.StaticRoute;
 import org.batfish.util.SubRange;
-import org.batfish.util.Util;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       implements ControlPlaneExtractor {
@@ -1326,21 +1325,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitIp_address_if_stanza(Ip_address_if_stanzaContext ctx) {
-      Ip address;
-      Ip mask;
+      Prefix prefix;
       if (ctx.prefix != null) {
-         address = getPrefixIp(ctx.prefix);
-         int prefixLength = getPrefixLength(ctx.prefix);
-         long maskLong = Util.numSubnetBitsToSubnetLong(prefixLength);
-         mask = new Ip(maskLong);
+         prefix = new Prefix(ctx.prefix.getText());
       }
       else {
-         address = new Ip(ctx.ip.getText());
-         mask = new Ip(ctx.subnet.getText());
+         Ip address = new Ip(ctx.ip.getText());
+         Ip mask = new Ip(ctx.subnet.getText());
+         prefix = new Prefix(address, mask);
       }
       for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setIp(address);
-         currentInterface.setSubnetMask(mask);
+         currentInterface.setPrefix(prefix);
       }
    }
 
@@ -2412,7 +2407,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String name = ctx.name.getText();
       for (Interface currentInterface : _currentInterfaces) {
          currentInterface.setVrf(name);
-         currentInterface.setIp(null);
+         currentInterface.setPrefix(null);
       }
    }
 

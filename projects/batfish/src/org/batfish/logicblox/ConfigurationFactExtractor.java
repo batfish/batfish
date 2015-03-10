@@ -198,7 +198,7 @@ public class ConfigurationFactExtractor {
          for (GeneratedRoute gr : proc.getGeneratedRoutes()) {
             long network_start = gr.getPrefix().getAddress().asLong();
             int prefix_length = gr.getPrefix().getPrefixLength();
-            long network_end = Util.getNetworkEnd(network_start, prefix_length);
+            long network_end = gr.getPrefix().getEndAddress().asLong();
             wSetBgpGeneratedRoute_flat.append(hostname + "|" + network_start
                   + "|" + network_end + "|" + prefix_length + "\n");
             wSetNetwork.append(network_start + "|" + network_start + "|"
@@ -229,8 +229,7 @@ public class ConfigurationFactExtractor {
             for (GeneratedRoute gr : neighbor.getGeneratedRoutes()) {
                long network_start = gr.getPrefix().getAddress().asLong();
                int prefix_length = gr.getPrefix().getPrefixLength();
-               long network_end = Util.getNetworkEnd(network_start,
-                     prefix_length);
+               long network_end = gr.getPrefix().getEndAddress().asLong();
                wSetBgpNeighborGeneratedRoute_flat.append(hostname + "|"
                      + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                      + neighborPrefixLength + "|" + network_start + "|"
@@ -414,7 +413,7 @@ public class ConfigurationFactExtractor {
       for (GeneratedRoute gr : _configuration.getGeneratedRoutes()) {
          long network_start = gr.getPrefix().getAddress().asLong();
          int prefix_length = gr.getPrefix().getPrefixLength();
-         long network_end = Util.getNetworkEnd(network_start, prefix_length);
+         long network_end = gr.getPrefix().getEndAddress().asLong();
          wSetGeneratedRoute_flat.append(hostname + "|" + network_start + "|"
                + network_end + "|" + prefix_length + "|"
                + gr.getAdministrativeCost() + "\n");
@@ -606,7 +605,7 @@ public class ConfigurationFactExtractor {
          for (GeneratedRoute gr : proc.getGeneratedRoutes()) {
             long network_start = gr.getPrefix().getAddress().asLong();
             int prefix_length = gr.getPrefix().getPrefixLength();
-            long network_end = Util.getNetworkEnd(network_start, prefix_length);
+            long network_end = gr.getPrefix().getEndAddress().asLong();
             wSetOspfGeneratedRoute_flat.append(hostname + "|" + network_start
                   + "|" + network_end + "|" + prefix_length + "\n");
             wSetNetwork.append(network_start + "|" + network_start + "|"
@@ -905,10 +904,8 @@ public class ConfigurationFactExtractor {
             switch (line.getType()) {
             case LENGTH_RANGE:
                RouteFilterLengthRangeLine lrLine = (RouteFilterLengthRangeLine) line;
-               int prefix_length = lrLine.getPrefix().getPrefixLength();
                Long network_start = lrLine.getPrefix().getAddress().asLong();
-               Long network_end = Util.getNetworkEnd(network_start,
-                     prefix_length);
+               Long network_end = lrLine.getPrefix().getEndAddress().asLong();
                SubRange prefixRange = lrLine.getLengthRange();
                long min_prefix = prefixRange.getStart();
                long max_prefix = prefixRange.getEnd();
@@ -982,17 +979,15 @@ public class ConfigurationFactExtractor {
       StringBuilder wSetIpInt = _factBins.get("SetIpInt");
       for (Interface i : _configuration.getInterfaces().values()) {
          String interfaceName = i.getName();
-         Ip ip = i.getIP();
-         Ip subnetMask = i.getSubnetMask();
-         if (ip != null) {
-            long ipInt = ip.asLong();
-            long subnet = subnetMask.asLong();
-            int prefix_length = subnetMask.numSubnetBits();
-            long network_start = ipInt & subnet;
-            long network_end = Util.getNetworkEnd(network_start, prefix_length);
+         Prefix prefix = i.getPrefix();
+         if (prefix != null) {
+            long address = prefix.getAddress().asLong();
+            int prefix_length = prefix.getPrefixLength();
+            long network_start = prefix.getNetworkAddress().asLong();
+            long network_end = prefix.getEndAddress().asLong();
             wSetNetwork.append(network_start + "|" + network_start + "|"
                   + network_end + "|" + prefix_length + "\n");
-            wSetIpInt.append(hostname + "|" + interfaceName + "|" + ip.asLong()
+            wSetIpInt.append(hostname + "|" + interfaceName + "|" + address
                   + "|" + prefix_length + "\n");
          }
       }
@@ -1010,9 +1005,9 @@ public class ConfigurationFactExtractor {
          if (nextHopIp == null) {
             nextHopIp = new Ip(0);
          }
-         int prefix_length = route.getPrefix().getPrefixLength();
+         int prefix_length = prefix.getPrefixLength();
          long network_start = prefix.getAddress().asLong();
-         long network_end = Util.getNetworkEnd(network_start, prefix_length);
+         long network_end = prefix.getEndAddress().asLong();
          int distance = route.getAdministrativeCost();
          int tag = route.getTag();
          String nextHopInt = route.getNextHopInterface();

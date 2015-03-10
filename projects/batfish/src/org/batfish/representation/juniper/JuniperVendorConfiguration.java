@@ -271,8 +271,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          newIface.setOutgoingFilter(outAcl);
       }
       if (iface.getPrefix() != null) {
-         newIface.setIp(iface.getPrefix().getAddress());
-         newIface.setSubnetMask(iface.getPrefix().getSubnetMask());
+         newIface.setPrefix(iface.getPrefix());
       }
       newIface.setActive(iface.getActive());
       newIface.setAccessVlan(iface.getAccessVlan());
