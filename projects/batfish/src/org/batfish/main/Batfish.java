@@ -909,8 +909,19 @@ public class Batfish implements AutoCloseable {
                if (matcher.find()) {
                   String hostname = matcher.group(1);
                   if (configs.containsKey(hostname)) {
-                     throw new BatfishException("stub: \"" + hostname
-                           + "\" already exists in network under analysis");
+                     Configuration duplicateConfig = configs.get(hostname);
+                     if (!duplicateConfig.getRoles().contains(STUB_ROLE)
+                           || duplicateConfig.getRoles().size() != 1) {
+                        throw new BatfishException(
+                              "A non-generated node with hostname: \""
+                                    + hostname
+                                    + "\" already exists in network under analysis");
+                     }
+                     else {
+                        _logger
+                              .warn("WARNING: Overwriting previously generated node: \""
+                                    + hostname + "\"\n");
+                     }
                   }
                   found = true;
                   Configuration stub = stubConfigurations.get(hostname);
