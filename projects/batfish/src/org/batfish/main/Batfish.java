@@ -853,6 +853,18 @@ public class Batfish implements AutoCloseable {
       Pattern pattern = Pattern.compile(interfaceDescriptionRegex);
       Map<String, Configuration> stubConfigurations = new TreeMap<String, Configuration>();
 
+      _logger.info("\n*** GENERATING STUBS ***\n");
+      resetTimer();
+
+      // load old node-roles to be updated at end
+      RoleSet stubRoles = new RoleSet();
+      stubRoles.add(STUB_ROLE);
+      File nodeRolesPath = new File(_settings.getNodeRolesPath());
+      _logger.info("Deserializing old node-roles mappings: \"" + nodeRolesPath
+            + "\" ...");
+      NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(nodeRolesPath);
+      _logger.info("OK\n");
+
       // create origination policy common to all stubs
       String stubOriginationPolicyName = "~STUB_ORIGINATION_POLICY~";
       PolicyMap stubOriginationPolicy = new PolicyMap(stubOriginationPolicyName);
@@ -937,9 +949,8 @@ public class Batfish implements AutoCloseable {
                      stub.getRouteFilterLists().put(
                            stubOriginationRouteFilterListName, rf);
                      stub.setVendor(CiscoVendorConfiguration.VENDOR_NAME);
-                     RoleSet stubRoles = new RoleSet();
-                     stubRoles.add(STUB_ROLE);
                      stub.setRoles(stubRoles);
+                     nodeRoles.put(hostname, stubRoles);
                   }
 
                   // create interface that will on which peering will occur
@@ -980,7 +991,16 @@ public class Batfish implements AutoCloseable {
             }
          }
       }
+      // write updated node-roles mappings to disk
+      _logger.info("Serializing updated node-roles mappings: \""
+            + nodeRolesPath + "\" ...");
+      serializeObject(nodeRoles, nodeRolesPath);
+      _logger.info("OK\n");
+      printElapsedTime();
+
+      // write stubs to disk
       serializeIndependentConfigs(stubConfigurations, configPath);
+
    }
 
    private void genMultipathQueries() {
