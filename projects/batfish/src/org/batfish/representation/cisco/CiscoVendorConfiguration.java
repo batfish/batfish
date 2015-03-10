@@ -42,7 +42,6 @@ import org.batfish.representation.PolicyMapSetLine;
 import org.batfish.representation.PolicyMapSetMetricLine;
 import org.batfish.representation.PolicyMapSetType;
 import org.batfish.representation.Prefix;
-import org.batfish.representation.RouteFilterLengthRangeLine;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
@@ -71,7 +70,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
    private static final long serialVersionUID = 1L;
 
-   private static final String VENDOR_NAME = "cisco";
+   public static final String VENDOR_NAME = "cisco";
 
    private static PolicyMap makeRouteExportPolicy(Configuration c, String name,
          String prefixListName, Prefix prefix, SubRange prefixRange,
@@ -114,8 +113,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private static RouteFilterList makeRouteFilter(String name, Prefix prefix,
          SubRange prefixRange, LineAction prefixAction) {
       RouteFilterList list = new RouteFilterList(name);
-      RouteFilterLine line = new RouteFilterLengthRangeLine(prefixAction,
-            prefix, prefixRange);
+      RouteFilterLine line = new RouteFilterLine(prefixAction, prefix,
+            prefixRange);
       list.addLine(line);
       return list;
    }
@@ -426,7 +425,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                         containsRouteFilterList = true;
                         list.getLines().add(
                               0,
-                              new RouteFilterLengthRangeLine(LineAction.REJECT,
+                              new RouteFilterLine(LineAction.REJECT,
                                     Prefix.ZERO, new SubRange(0, 0)));
                      }
                      break;
@@ -611,8 +610,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       long maxSubnet = minSubnet | fromLine.getDestinationWildcard().asLong();
       int minPrefixLength = fromLine.getDestinationIp().numSubnetBits();
       int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
-      return new RouteFilterLengthRangeLine(action, prefix, new SubRange(
-            minPrefixLength, maxPrefixLength));
+      return new RouteFilterLine(action, prefix, new SubRange(minPrefixLength,
+            maxPrefixLength));
    }
 
    private static RouteFilterList toRouteFilterList(ExtendedAccessList eaList) {
@@ -631,7 +630,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private static RouteFilterList toRouteFilterList(PrefixList list) {
       RouteFilterList newRouteFilterList = new RouteFilterList(list.getName());
       for (PrefixListLine prefixListLine : list.getLines()) {
-         RouteFilterLine newRouteFilterListLine = new RouteFilterLengthRangeLine(
+         RouteFilterLine newRouteFilterListLine = new RouteFilterLine(
                prefixListLine.getAction(), prefixListLine.getPrefix(),
                prefixListLine.getLengthRange());
          newRouteFilterList.addLine(newRouteFilterListLine);
@@ -836,8 +835,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          for (BgpAggregateNetwork summaryOnlyNetwork : summaryOnlyNetworks) {
             Prefix prefix = summaryOnlyNetwork.getPrefix();
             int prefixLength = prefix.getPrefixLength();
-            RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
-                  LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, 32));
+            RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT,
+                  prefix, new SubRange(prefixLength + 1, 32));
             matchSuppressedSummaryOnlyRoutes.addLine(line);
          }
          PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
@@ -1020,8 +1019,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                + lpg.getName() + "~");
          for (Prefix prefix : proc.getNetworks()) {
             int prefixLen = prefix.getPrefixLength();
-            RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
-                  LineAction.ACCEPT, prefix, new SubRange(prefixLen, prefixLen));
+            RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT,
+                  prefix, new SubRange(prefixLen, prefixLen));
             filter.addLine(line);
          }
          c.getRouteFilterLists().put(filter.getName(), filter);

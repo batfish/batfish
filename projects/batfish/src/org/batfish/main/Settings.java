@@ -48,6 +48,10 @@ public class Settings {
    private static final String ARG_FLOW_PATH = "flowpath";
    private static final String ARG_FLOW_SINK_PATH = "flowsink";
    private static final String ARG_FLOWS = "flow";
+   private static final String ARG_GENERATE_STUBS = "gs";
+   private static final String ARG_GENERATE_STUBS_INPUT_ROLE = "gsinputrole";
+   private static final String ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX = "gsidregex";
+   private static final String ARG_GENERATE_STUBS_REMOTE_AS = "gsremoteas";
    private static final String ARG_GUI = "gui";
    private static final String ARG_HELP = "help";
    private static final String ARG_HISTOGRAM = "histogram";
@@ -119,6 +123,9 @@ public class Settings {
    private static final String ARGNAME_FLATTEN_SOURCE = "path";
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
+   private static final String ARGNAME_GENERATE_STUBS_INPUT_ROLE = "role";
+   private static final String ARGNAME_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX = "java-regex";
+   private static final String ARGNAME_GENERATE_STUBS_REMOTE_AS = "as";
    private static final String ARGNAME_INTERFACE_MAP_PATH = "path";
    private static final String ARGNAME_LB_WEB_ADMIN_PORT = "port";
    private static final String ARGNAME_LB_WEB_PORT = "port";
@@ -199,6 +206,10 @@ public class Settings {
    private String _flowPath;
    private boolean _flows;
    private String _flowSinkPath;
+   private boolean _generateStubs;
+   private String _generateStubsInputRole;
+   private String _generateStubsInterfaceDescriptionRegex;
+   private Integer _generateStubsRemoteAs;
    private boolean _genMultipath;
    private List<String> _helpPredicates;
    private boolean _histogram;
@@ -418,6 +429,22 @@ public class Settings {
 
    public boolean getGenerateMultipathInconsistencyQuery() {
       return _genMultipath;
+   }
+
+   public boolean getGenerateStubs() {
+      return _generateStubs;
+   }
+
+   public String getGenerateStubsInputRole() {
+      return _generateStubsInputRole;
+   }
+
+   public String getGenerateStubsInterfaceDescriptionRegex() {
+      return _generateStubsInterfaceDescriptionRegex;
+   }
+
+   public int getGenerateStubsRemoteAs() {
+      return _generateStubsRemoteAs;
    }
 
    public List<String> getHelpPredicates() {
@@ -969,7 +996,24 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("build histogram of unimplemented features")
             .longOpt(ARG_HISTOGRAM).build());
-
+      _options.addOption(Option.builder().desc("generate stubs")
+            .longOpt(ARG_GENERATE_STUBS).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_GENERATE_STUBS_INPUT_ROLE)
+            .desc("input role for which to generate stubs")
+            .longOpt(ARG_GENERATE_STUBS_INPUT_ROLE).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .hasArg()
+                  .argName(ARGNAME_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX)
+                  .desc("java regex to extract hostname of generated stub from description of adjacent interface")
+                  .longOpt(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX)
+                  .build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_GENERATE_STUBS_REMOTE_AS)
+            .desc("autonomous system number of stubs to be generated")
+            .longOpt(ARG_GENERATE_STUBS_REMOTE_AS).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1126,6 +1170,15 @@ public class Settings {
       _unimplementedAsError = line.hasOption(ARG_UNIMPLEMENTED_AS_ERROR);
       _unimplementedRecord = !line.hasOption(ARG_UNIMPLEMENTED_SUPPRESS);
       _histogram = line.hasOption(ARG_HISTOGRAM);
+      _generateStubs = line.hasOption(ARG_GENERATE_STUBS);
+      _generateStubsInputRole = line
+            .getOptionValue(ARG_GENERATE_STUBS_INPUT_ROLE);
+      _generateStubsInterfaceDescriptionRegex = line
+            .getOptionValue(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
+      if (line.hasOption(ARG_GENERATE_STUBS_REMOTE_AS)) {
+         _generateStubsRemoteAs = Integer.parseInt(line
+               .getOptionValue(ARG_GENERATE_STUBS_REMOTE_AS));
+      }
    }
 
    public boolean printParseTree() {

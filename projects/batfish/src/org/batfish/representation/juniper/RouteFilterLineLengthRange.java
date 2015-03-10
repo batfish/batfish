@@ -2,7 +2,6 @@ package org.batfish.representation.juniper;
 
 import org.batfish.representation.LineAction;
 import org.batfish.representation.Prefix;
-import org.batfish.representation.RouteFilterLengthRangeLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.util.SubRange;
 
@@ -26,7 +25,7 @@ public final class RouteFilterLineLengthRange extends RouteFilterLine {
 
    @Override
    public void applyTo(RouteFilterList rfl) {
-      RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
+      org.batfish.representation.RouteFilterLine line = new org.batfish.representation.RouteFilterLine(
             LineAction.ACCEPT, _prefix, new SubRange(_minPrefixLength,
                   _maxPrefixLength));
       rfl.addLine(line);

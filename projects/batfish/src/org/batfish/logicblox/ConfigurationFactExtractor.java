@@ -45,7 +45,6 @@ import org.batfish.representation.PolicyMapSetMetricLine;
 import org.batfish.representation.PolicyMapSetNextHopLine;
 import org.batfish.representation.PolicyMapSetOriginTypeLine;
 import org.batfish.representation.Prefix;
-import org.batfish.representation.RouteFilterLengthRangeLine;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
@@ -901,40 +900,25 @@ public class ConfigurationFactExtractor {
          List<RouteFilterLine> lines = filter.getLines();
          for (int i = 0; i < lines.size(); i++) {
             RouteFilterLine line = lines.get(i);
-            switch (line.getType()) {
-            case LENGTH_RANGE:
-               RouteFilterLengthRangeLine lrLine = (RouteFilterLengthRangeLine) line;
-               Long network_start = lrLine.getPrefix().getAddress().asLong();
-               Long network_end = lrLine.getPrefix().getEndAddress().asLong();
-               SubRange prefixRange = lrLine.getLengthRange();
-               long min_prefix = prefixRange.getStart();
-               long max_prefix = prefixRange.getEnd();
-               wSetRouteFilterLine.append(filterName + "|" + i + "|"
-                     + network_start + "|" + network_end + "|" + min_prefix
-                     + "|" + max_prefix + "\n");
-               switch (lrLine.getAction()) {
-               case ACCEPT:
-                  wSetRouteFilterPermitLine.append(filterName + "|" + i + "\n");
-                  break;
-
-               case REJECT:
-                  break;
-
-               default:
-                  throw new BatfishException("bad action");
-               }
+            Long network_start = line.getPrefix().getAddress().asLong();
+            Long network_end = line.getPrefix().getEndAddress().asLong();
+            SubRange prefixRange = line.getLengthRange();
+            long min_prefix = prefixRange.getStart();
+            long max_prefix = prefixRange.getEnd();
+            wSetRouteFilterLine.append(filterName + "|" + i + "|"
+                  + network_start + "|" + network_end + "|" + min_prefix + "|"
+                  + max_prefix + "\n");
+            switch (line.getAction()) {
+            case ACCEPT:
+               wSetRouteFilterPermitLine.append(filterName + "|" + i + "\n");
                break;
 
-            case THROUGH:
-               // throw new BatfishException("not implemented");
-               _warnings.add("WARNING: " + filterName + ":" + i
-                     + ": route-filter through not implemented\n");
+            case REJECT:
                break;
 
             default:
-               throw new BatfishException("bad line type");
+               throw new BatfishException("bad action");
             }
-
          }
       }
    }

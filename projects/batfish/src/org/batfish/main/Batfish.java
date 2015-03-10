@@ -26,6 +26,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -90,16 +92,25 @@ import org.batfish.logicblox.PredicateInfo;
 import org.batfish.logicblox.ProjectFile;
 import org.batfish.logicblox.QueryException;
 import org.batfish.logicblox.TopologyFactExtractor;
+import org.batfish.representation.BgpNeighbor;
+import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.Edge;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.LineAction;
+import org.batfish.representation.PolicyMap;
+import org.batfish.representation.PolicyMapClause;
+import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
 import org.batfish.representation.Prefix;
+import org.batfish.representation.RouteFilterLine;
+import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.Topology;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.cisco.CiscoVendorConfiguration;
 import org.batfish.util.StringFilter;
+import org.batfish.util.SubRange;
 import org.batfish.util.UrlZipExplorer;
 import org.batfish.util.Util;
 import org.batfish.z3.ConcretizerQuery;
@@ -194,6 +205,11 @@ public class Batfish implements AutoCloseable {
     * A string containing the system-specific path separator character
     */
    private static final String SEPARATOR = System.getProperty("file.separator");
+
+   /**
+    * Role name for generated stubs
+    */
+   private static final String STUB_ROLE = "generated_stubs";
 
    /**
     * The name of the [optional] topology file within a test-rig
@@ -829,6 +845,130 @@ public class Batfish implements AutoCloseable {
       }
 
       printElapsedTime();
+   }
+
+   private void generateStubs(String inputRole, int stubAs,
+         String interfaceDescriptionRegex, String configPath) {
+      Map<String, Configuration> configs = deserializeConfigurations(configPath);
+      Pattern pattern = Pattern.compile(interfaceDescriptionRegex);
+      Map<String, Configuration> stubConfigurations = new TreeMap<String, Configuration>();
+
+      // create origination policy common to all stubs
+      String stubOriginationPolicyName = "~STUB_ORIGINATION_POLICY~";
+      PolicyMap stubOriginationPolicy = new PolicyMap(stubOriginationPolicyName);
+      PolicyMapClause clause = new PolicyMapClause();
+      stubOriginationPolicy.getClauses().add(clause);
+      String stubOriginationRouteFilterListName = "~STUB_ORIGINATION_ROUTE_FILTER~";
+      RouteFilterList rf = new RouteFilterList(
+            stubOriginationRouteFilterListName);
+      RouteFilterLine rfl = new RouteFilterLine(LineAction.ACCEPT, Prefix.ZERO,
+            new SubRange(0, 0));
+      rf.addLine(rfl);
+      PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
+            Collections.singleton(rf));
+      clause.getMatchLines().add(matchLine);
+
+      // create flow sink interface common to all stubs
+      String flowSinkName = "TenGibabitEthernet100/100";
+      Interface flowSink = new Interface(flowSinkName);
+      flowSink.setPrefix(Prefix.ZERO);
+      flowSink.setActive(true);
+
+      for (Configuration config : configs.values()) {
+         if (!config.getRoles().contains(inputRole)) {
+            continue;
+         }
+         for (BgpNeighbor neighbor : config.getBgpProcess().getNeighbors()
+               .values()) {
+            if (!neighbor.getRemoteAs().equals(stubAs)) {
+               continue;
+            }
+            Prefix neighborPrefix = neighbor.getPrefix();
+            if (neighborPrefix.getPrefixLength() != 32) {
+               throw new BatfishException(
+                     "do not currently handle generating stubs based on dynamic bgp sessions");
+            }
+            Ip neighborAddress = neighborPrefix.getAddress();
+            int edgeAs = neighbor.getLocalAs();
+            /*
+             * Now that we have the ip address of the stub, we want to find the
+             * interface that connects to it. We will extract the hostname for
+             * the stub from the description of this interface using the
+             * supplied regex.
+             */
+            boolean found = false;
+            for (Interface iface : config.getInterfaces().values()) {
+               Prefix prefix = iface.getPrefix();
+               if (prefix == null || !prefix.contains(neighborAddress)) {
+                  continue;
+               }
+               // the neighbor address falls within the network assigned to this
+               // interface, so now we check the description
+               String description = iface.getDescription();
+               Matcher matcher = pattern.matcher(description);
+               if (matcher.find()) {
+                  String hostname = matcher.group(1);
+                  if (configs.containsKey(hostname)) {
+                     throw new BatfishException("stub: \"" + hostname
+                           + "\" already exists in network under analysis");
+                  }
+                  found = true;
+                  Configuration stub = stubConfigurations.get(hostname);
+
+                  // create stub if it doesn't exist yet
+                  if (stub == null) {
+                     stub = new Configuration(hostname);
+                     stubConfigurations.put(hostname, stub);
+                     stub.getInterfaces().put(flowSinkName, flowSink);
+                     stub.setBgpProcess(new BgpProcess());
+                     stub.getPolicyMaps().put(stubOriginationPolicyName,
+                           stubOriginationPolicy);
+                     stub.getRouteFilterLists().put(
+                           stubOriginationRouteFilterListName, rf);
+                     stub.setVendor(CiscoVendorConfiguration.VENDOR_NAME);
+                     RoleSet stubRoles = new RoleSet();
+                     stubRoles.add(STUB_ROLE);
+                     stub.setRoles(stubRoles);
+                  }
+
+                  // create interface that will on which peering will occur
+                  Map<String, Interface> stubInterfaces = stub.getInterfaces();
+                  String stubInterfaceName = "TenGigabitEthernet0/"
+                        + (stubInterfaces.size() - 1);
+                  Interface stubInterface = new Interface(stubInterfaceName);
+                  stubInterfaces.put(stubInterfaceName, stubInterface);
+                  stubInterface.setPrefix(new Prefix(neighborAddress, prefix
+                        .getPrefixLength()));
+                  stubInterface.setActive(true);
+
+                  // create neighbor within bgp process
+                  BgpNeighbor edgeNeighbor = new BgpNeighbor(prefix);
+                  edgeNeighbor.getOriginationPolicies().add(
+                        stubOriginationPolicy);
+                  edgeNeighbor.setRemoteAs(edgeAs);
+                  edgeNeighbor.setLocalAs(stubAs);
+                  edgeNeighbor.setSendCommunity(true);
+                  stub.getBgpProcess().getNeighbors()
+                        .put(edgeNeighbor.getPrefix(), edgeNeighbor);
+                  break;
+               }
+               else {
+                  throw new BatfishException(
+                        "Unable to derive stub hostname from interface description: \""
+                              + description + "\" using regex: \""
+                              + interfaceDescriptionRegex + "\"");
+               }
+            }
+            if (!found) {
+               throw new BatfishException(
+                     "Could not determine stub hostname corresponding to ip: \""
+                           + neighborAddress.toString()
+                           + "\" listed as neighbor on router: \""
+                           + config.getHostname() + "\"");
+            }
+         }
+      }
+      serializeIndependentConfigs(stubConfigurations, configPath);
    }
 
    private void genMultipathQueries() {
@@ -2090,6 +2230,16 @@ public class Batfish implements AutoCloseable {
          return;
       }
 
+      if (_settings.getGenerateStubs()) {
+         String configPath = _settings.getSerializeIndependentPath();
+         String inputRole = _settings.getGenerateStubsInputRole();
+         String interfaceDescriptionRegex = _settings
+               .getGenerateStubsInterfaceDescriptionRegex();
+         int stubAs = _settings.getGenerateStubsRemoteAs();
+         generateStubs(inputRole, stubAs, interfaceDescriptionRegex, configPath);
+         return;
+      }
+
       if (_settings.getZ3()) {
          Map<String, Configuration> configurations = deserializeConfigurations(_settings
                .getSerializeIndependentPath());
@@ -2263,9 +2413,8 @@ public class Batfish implements AutoCloseable {
             "No task performed! Run with -help flag to see usage");
    }
 
-   private void serializeIndependentConfigs(String vendorConfigPath,
-         String outputPath) {
-      Map<String, Configuration> configurations = getConfigurations(vendorConfigPath);
+   private void serializeIndependentConfigs(
+         Map<String, Configuration> configurations, String outputPath) {
       _logger
             .info("\n*** SERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
       resetTimer();
@@ -2279,6 +2428,12 @@ public class Batfish implements AutoCloseable {
          _logger.debug(" ...OK\n");
       }
       printElapsedTime();
+   }
+
+   private void serializeIndependentConfigs(String vendorConfigPath,
+         String outputPath) {
+      Map<String, Configuration> configurations = getConfigurations(vendorConfigPath);
+      serializeIndependentConfigs(configurations, outputPath);
    }
 
    private void serializeObject(Object object, File outputFile) {

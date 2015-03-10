@@ -51,6 +51,13 @@ public class Prefix implements Comparable<Prefix>, Serializable {
       return Integer.compare(_prefixLength, rhs._prefixLength);
    }
 
+   public boolean contains(Ip ip) {
+      long start = getNetworkAddress().asLong();
+      long end = getEndAddress().asLong();
+      long ipAsLong = ip.asLong();
+      return (start <= ipAsLong && ipAsLong <= end);
+   }
+
    @Override
    public boolean equals(Object obj) {
       if (this == obj) {

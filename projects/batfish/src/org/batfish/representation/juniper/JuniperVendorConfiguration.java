@@ -26,7 +26,6 @@ import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
 import org.batfish.representation.Prefix;
-import org.batfish.representation.RouteFilterLengthRangeLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.VendorConversionException;
@@ -197,8 +196,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       clause.setAction(PolicyMapAction.PERMIT);
       String rflName = "~AGGREGATE_" + policyNameSuffix + "_RF~";
       RouteFilterList rfList = new RouteFilterList(rflName);
-      rfList.addLine(new RouteFilterLengthRangeLine(LineAction.ACCEPT, prefix,
-            new SubRange(prefixLength + 1, 32)));
+      rfList.addLine(new org.batfish.representation.RouteFilterLine(
+            LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, 32)));
       PolicyMapMatchLine matchLine = new PolicyMapMatchRouteFilterListLine(
             Collections.singleton(rfList));
       clause.getMatchLines().add(matchLine);
@@ -406,7 +405,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          RouteFilterList rfl = new RouteFilterList(name);
          for (Prefix prefix : pl.getPrefixes()) {
             int prefixLength = prefix.getPrefixLength();
-            RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
+            org.batfish.representation.RouteFilterLine line = new org.batfish.representation.RouteFilterLine(
                   LineAction.ACCEPT, prefix, new SubRange(prefixLength,
                         prefixLength));
             rfl.addLine(line);
