@@ -1,7 +1,12 @@
 package org.batfish.coordinator;
 
+import java.util.HashMap;
+import java.util.List;
+
 public class Coordinator {
 
+   public enum WorkerStatus { IDLE, BUSY, UNREACHABLE }
+   
    //this needs to be generalized to host things elsewhere
    private static final boolean UseAzureQueues = true;
    
@@ -9,6 +14,8 @@ public class Coordinator {
    private WorkQueue _queueUnassignedWork;
    private WorkQueue _queueCompletedWork;   
    private Settings _settings;
+   
+   private HashMap<String,String> workerPool;
    
    public Coordinator(Settings settings) {
       
@@ -27,6 +34,8 @@ public class Coordinator {
          _queueUnassignedWork = new AzureQueue(
                settings.getQueueUnassignedWork(), storageConnectionString);
       }
+      
+      workerPool = new HashMap<String, String>();
    }
       
    public String getWorkStatus() {
@@ -47,5 +56,21 @@ public class Coordinator {
       catch (Exception e) {
          e.printStackTrace();
       }
+   }
+
+   public synchronized void addToPool(String worker) {
+      // TODO: actually poll for status instead of assuming idle
+      workerPool.put(worker, WorkerStatus.IDLE.toString());
+   }
+
+   public synchronized void deleteFromPool(String worker) {
+      if (workerPool.containsKey(worker)) {
+         workerPool.remove(worker);
+      }
+   }
+
+   public synchronized HashMap<String, String> getPoolStatus() {
+      HashMap<String, String> copy = new HashMap<String, String> (workerPool);
+      return copy;
    }
 }
