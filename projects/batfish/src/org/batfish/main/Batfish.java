@@ -886,6 +886,7 @@ public class Batfish implements AutoCloseable {
       Interface flowSink = new Interface(flowSinkName);
       flowSink.setPrefix(Prefix.ZERO);
       flowSink.setActive(true);
+      flowSink.setBandwidth(10E9d);
 
       Set<String> skipWarningNodes = new HashSet<String>();
 
