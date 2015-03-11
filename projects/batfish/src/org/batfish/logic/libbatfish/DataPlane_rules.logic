@@ -42,7 +42,7 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
          FlowSinkInterface(node, routeInterface),
          interface = routeInterface,
          nextHopInt = Interface_FLOW_SINK_TERMINATION[],
-         nextHopIp = Ip_ZERO[]
+         nextHopIp = Ip_NONE[]
       )
    ).
 // static non-null interface-only route -- send to all adjacent neighbors who would route
@@ -56,7 +56,7 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    Network_prefix_length[matchNet] = prefix_length,
    Route_node[route] = node,
    Route_nextHopIp[route] = routeNextHopIp,
-   routeNextHopIp = Ip_ZERO[],
+   routeNextHopIp = Ip_NONE[],
    InterfaceRoute_nextHopInt[route] = interface,
    interface != Interface_NULL[],
    LanAdjacent(node, interface, nextHop, nextHopInt),
@@ -81,7 +81,7 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    Route_node[route] = node,
    Route_nextHopIp[route] = nextHopIp,
    nextHop = Node_NONE[],
-   nextHopIp = Ip_ZERO[],
+   nextHopIp = Ip_NONE[],
    InterfaceRoute_nextHopInt[route] = interface,
    interface = Interface_NULL[],
    nextHopInt = Interface_NULL[].
@@ -96,7 +96,7 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    Network_prefix_length[matchNet] = prefix_length,
    Route_node[route] = node,
    Route_nextHopIp[route] = routeNextHopIp,
-   nextHopIp != Ip_ZERO[],
+   nextHopIp != Ip_NONE[],
    InterfaceRoute_nextHopInt[route] = interface,
    LanAdjacent(node, interface, nextHop, nextHopInt),
    IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
@@ -158,7 +158,7 @@ FibForwardPolicyRouteNextHopIp(node, ip, interface, nextHop, nextHopInt) <-
 FibNeighborUnreachable(node, ip, neighborIp) <-
    Fib(node, ip, _, dropInterface, _, _, neighborIp),
    dropInterface = Interface_NULL[],
-   neighborIp != Ip_ZERO[].
+   neighborIp != Ip_NONE[].
 
 FibRoute(node, ip) <-
    FibForward(node, ip, _, _, _) ;

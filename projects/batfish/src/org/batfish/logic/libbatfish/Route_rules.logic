@@ -120,7 +120,7 @@ RouteDetails_nextHop[route] = nextHop <-
    ).
 RouteDetails_nextHop[route] = nextHop <-
    Route(route),
-   RouteDetails_nextHopIp[route] = Ip_ZERO[],
+   RouteDetails_nextHopIp[route] = Ip_NONE[],
    nextHop = Node_NONE[].
 
 RouteDetails_nextHopInt[route] = nextHopInt <-
@@ -135,7 +135,7 @@ RouteDetails_nextHopIp[route] = nextHopIp <-
 RouteDetails_nextHopIp[route] = nextHopIp <-
    Route(route),
    !(Route_nextHopIp[route] = _),
-   nextHopIp = Ip_ZERO[].
+   nextHopIp = Ip_NONE[].
 
 RouteDetails_tag[route] = tag <-
    Route_tag[route] = tag.

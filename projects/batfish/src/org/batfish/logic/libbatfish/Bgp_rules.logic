@@ -28,7 +28,7 @@ AdvertisementClusterId(advert, clusterId) <-
    BgpAdvertisement_originatorIp[advert] = originatorIp,
    BgpAdvertisement_srcNode[advert] = srcNode,
    BgpAdvertisement_dstIp[advert] = dstIp,
-   originatorIp != Ip_ZERO[],
+   originatorIp != Ip_NONE[],
    RouteReflectorClient(srcNode, dstIp, clusterId).
 
 // append as to path for bgp route advertisement
@@ -214,7 +214,7 @@ OriginatedBgpNetwork(srcNode, network)
    type = AdvertisementType_BGP[],
    pathSize = 0,
    nextHopIp = srcIp,
-   originatorIp = Ip_ZERO[],
+   originatorIp = Ip_NONE[],
    BgpNeighbors(srcNode, srcIp, dstNode, dstIp),
    BgpNeighborIp(srcNode, dstIp),
    originType = OriginType_IGP[],
@@ -271,7 +271,7 @@ ParentAdvertisement(prevAdvert, advert),
 AdvertisementPathSize[advert] = pathSize
 <-
    type = AdvertisementType_BGP[],
-   originatorIp = Ip_ZERO[],
+   originatorIp = Ip_NONE[],
    (
       BgpAdvertisement_type[prevAdvert] = AdvertisementType_IBGP_TI[] ;
       BgpAdvertisement_type[prevAdvert] = AdvertisementType_BGP_TI[]
@@ -455,7 +455,7 @@ AdvertisementPathSize[advert] = pathSize
 <-
    type = AdvertisementType_IBGP[],
    priorType = AdvertisementType_BGP_TI[],
-   originatorIp = Ip_ZERO[],
+   originatorIp = Ip_NONE[],
    BgpAdvertisement_dstNode[prevAdvert] = srcNode,
    BgpAdvertisement_localPref[prevAdvert] = localPref,
    BgpAdvertisement_med[prevAdvert] = med,
@@ -503,11 +503,11 @@ AdvertisementPathSize[advert] = pathSize
    BestBgpAdvertisement(prevAdvert),
    (
       (
-         Ip_ZERO[] != prevOriginatorIp,
+         Ip_NONE[] != prevOriginatorIp,
          originatorIp = prevOriginatorIp
       ) ;
       (
-         Ip_ZERO[] = prevOriginatorIp,
+         Ip_NONE[] = prevOriginatorIp,
          originatorIp = senderIp
       )
    ),

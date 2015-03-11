@@ -3,6 +3,9 @@ block(`Ip_rules) {
    clauses(`{
 // BEGIN CODE
 
+Ip_NONE[] = ip <-
+   Ip_address(ip:-1).
+
 Ip_ZERO[] = ip <-
    Ip_address(ip:0).
 

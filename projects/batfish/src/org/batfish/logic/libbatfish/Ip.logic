@@ -9,6 +9,9 @@ Ip(x),
    ->
    int(n).
 
+Ip_NONE[] = ip ->
+   Ip(ip).
+
 Ip_ZERO[] = ip ->
    Ip(ip).
 
