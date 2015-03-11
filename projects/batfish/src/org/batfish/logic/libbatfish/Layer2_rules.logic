@@ -24,7 +24,8 @@ LanAdjacent(node1, int1, node2, int2) <-
    IpReadyInt(node1, int1, ip1, prefix_length),
    IpReadyInt(node2, int2, ip2, prefix_length),
    NetworkOf[ip1, prefix_length] = NetworkOf[ip2, prefix_length],
-   node1 != node2.
+   node1 != node2,
+   ip1 != ip2.
 // adjacent access vlan interfaces
 LanAdjacent(node1, int1, node2, int2) <-
    !GuessTopology(_),
