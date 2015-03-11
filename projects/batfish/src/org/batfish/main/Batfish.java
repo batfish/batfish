@@ -102,6 +102,7 @@ import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.PolicyMap;
+import org.batfish.representation.PolicyMapAction;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
 import org.batfish.representation.Prefix;
@@ -880,6 +881,7 @@ public class Batfish implements AutoCloseable {
       PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
             Collections.singleton(rf));
       clause.getMatchLines().add(matchLine);
+      clause.setAction(PolicyMapAction.PERMIT);
 
       // create flow sink interface common to all stubs
       String flowSinkName = "TenGibabitEthernet100/100";
