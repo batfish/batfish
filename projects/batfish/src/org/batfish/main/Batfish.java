@@ -980,6 +980,7 @@ public class Batfish implements AutoCloseable {
                   edgeNeighbor.setRemoteAs(edgeAs);
                   edgeNeighbor.setLocalAs(stubAs);
                   edgeNeighbor.setSendCommunity(true);
+                  edgeNeighbor.setDefaultMetric(0);
                   stub.getBgpProcess().getNeighbors()
                         .put(edgeNeighbor.getPrefix(), edgeNeighbor);
                   break;
