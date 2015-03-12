@@ -391,6 +391,9 @@ lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
 lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
 lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
 lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
+lang:compiler:error:ENTITY_CREATION_RECURSION[]=false.
+lang:compiler:warning:ENTITY_CREATION_RECURSION[]=false.
+
 // END CODE
    })
 } <-- .
