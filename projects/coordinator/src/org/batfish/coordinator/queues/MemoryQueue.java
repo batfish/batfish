@@ -2,7 +2,7 @@ package org.batfish.coordinator.queues;
 
 import java.util.LinkedList;
 
-import org.batfish.coordinator.WorkItem;
+import org.batfish.common.WorkItem;
 import org.batfish.coordinator.WorkQueue;
 
 public class MemoryQueue implements WorkQueue {
@@ -15,5 +15,10 @@ public class MemoryQueue implements WorkQueue {
    
    public long getLength() {
       return _queue.size();
+   }
+
+   @Override
+   public boolean enque(WorkItem workItem) {
+      return _queue.add(workItem);
    }
 }

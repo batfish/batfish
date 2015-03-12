@@ -12,6 +12,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.batfish.common.BatfishServiceConstants;
+import org.batfish.common.WorkItem;
 import org.batfish.coordinator.queues.AzureQueue;
 import org.batfish.coordinator.queues.MemoryQueue;
 import org.codehaus.jettison.json.JSONArray;
@@ -159,5 +160,9 @@ public class Coordinator {
          System.err.printf("exception: %s\n", e.getStackTrace().toString());
          updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
       }
+   }
+
+   public boolean queueWork(WorkItem workItem) {
+      return _queueUnassignedWork.enque(workItem);
    }
  }

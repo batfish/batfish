@@ -99,13 +99,27 @@ public class Service {
    @GET
    @Path(CoordinatorConstants.SERVICE_QUEUE_WORK)
    @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray queueWork() {
+   public JSONArray queueWork(@Context UriInfo ui) {
          try {
-                HashMap<String, String> poolStatus = Main.getCoordinator().getPoolStatus();
-                
-                JSONObject obj = new JSONObject(poolStatus);
-                
-                return new JSONArray(Arrays.asList("", obj.toString()));
+            MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
+
+            WorkItem workItem = new WorkItem();
+            
+            for (MultivaluedMap.Entry<String, List<String>> entry : queryParams
+                  .entrySet()) {
+                  
+               if (entry.getKey().equals("id")) {
+                  workItem.setId(entry.getValue().get(0));
+               }
+               else {                  
+                  workItem.addRequestParam(entry.getKey(), entry.getValue().get(0));
+               }
+               
+            }
+             
+            boolean result = Main.getCoordinator().queueWork(workItem);
+                  
+            return new JSONArray(Arrays.asList("", result));
          }
          catch (Exception e) {
             return new JSONArray(Arrays.asList("failure", e.getMessage()));
