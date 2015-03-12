@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="one-jar/dist/one-jar-ant-task-0.97.jar"/>
+	<classpathentry kind="lib" path="one-jar/dist/one-jar-boot-0.97.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/azure/azure-storage-2.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-cli-1.3-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-container-grizzly2-http-2.16.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-server.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/javax.ws.rs-api-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/grizzly/grizzly-http-all-2.3.18.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jettison-1.3.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-media-json-jettison-2.16.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/aopalliance-repackaged-2.4.0-b09.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/asm-debug-all-5.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/hk2-api-2.4.0-b09.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/hk2-locator-2.4.0-b09.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/hk2-utils-2.4.0-b09.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/javassist-3.18.1-GA.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/javax.annotation-api-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/javax.inject-2.4.0-b09.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/javax.servlet-api-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/javax.ws.rs-api-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jaxb-api-2.2.7.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-client.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-common.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-container-grizzly2-http-2.16.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-container-servlet.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-container-servlet-core.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-guava-2.16.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-media-jaxb.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-media-json-jettison-2.16.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-server.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jettison-1.3.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/org.osgi.core-4.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/osgi-resource-locator-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/persistence-api-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/validation-api-1.1.0.Final.jar"/>
+   <classpathentry combineaccessrules="false" kind="src" path="/batfish-common-protocol"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
