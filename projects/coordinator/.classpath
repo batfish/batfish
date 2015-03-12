@@ -37,5 +37,6 @@
 	<classpathentry kind="lib" path="D:/Users/ratul/work/netver/batfish/projects/coordinator/lib/jaxrs-ri/osgi-resource-locator-1.0.1.jar"/>
 	<classpathentry kind="lib" path="D:/Users/ratul/work/netver/batfish/projects/coordinator/lib/jaxrs-ri/persistence-api-1.0.jar"/>
 	<classpathentry kind="lib" path="D:/Users/ratul/work/netver/batfish/projects/coordinator/lib/jaxrs-ri/validation-api-1.1.0.Final.jar"/>
+   <classpathentry combineaccessrules="false" kind="src" path="/batfish-common-protocol"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

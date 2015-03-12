@@ -42,7 +42,6 @@ import org.batfish.representation.PolicyMapSetLine;
 import org.batfish.representation.PolicyMapSetMetricLine;
 import org.batfish.representation.PolicyMapSetType;
 import org.batfish.representation.Prefix;
-import org.batfish.representation.RouteFilterLengthRangeLine;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
@@ -71,7 +70,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
    private static final long serialVersionUID = 1L;
 
-   private static final String VENDOR_NAME = "cisco";
+   public static final String VENDOR_NAME = "cisco";
 
    private static PolicyMap makeRouteExportPolicy(Configuration c, String name,
          String prefixListName, Prefix prefix, SubRange prefixRange,
@@ -114,8 +113,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private static RouteFilterList makeRouteFilter(String name, Prefix prefix,
          SubRange prefixRange, LineAction prefixAction) {
       RouteFilterList list = new RouteFilterList(name);
-      RouteFilterLine line = new RouteFilterLengthRangeLine(prefixAction,
-            prefix, prefixRange);
+      RouteFilterLine line = new RouteFilterLine(prefixAction, prefix,
+            prefixRange);
       list.addLine(line);
       return list;
    }
@@ -208,27 +207,28 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          // sort so longest prefixes are first
          @Override
          public int compare(OspfNetwork lhs, OspfNetwork rhs) {
-            int lhsPrefixLength = lhs.getSubnetMask().numSubnetBits();
-            int rhsPrefixLength = rhs.getSubnetMask().numSubnetBits();
+            int lhsPrefixLength = lhs.getPrefix().getPrefixLength();
+            int rhsPrefixLength = rhs.getPrefix().getPrefixLength();
             int result = -Integer.compare(lhsPrefixLength, rhsPrefixLength);
             if (result == 0) {
-               long lhsIp = lhs.getNetworkAddress().asLong();
-               long rhsIp = rhs.getNetworkAddress().asLong();
+               long lhsIp = lhs.getPrefix().getAddress().asLong();
+               long rhsIp = rhs.getPrefix().getAddress().asLong();
                result = Long.compare(lhsIp, rhsIp);
             }
             return result;
          }
       });
       for (org.batfish.representation.Interface i : c.getInterfaces().values()) {
-         Ip interfaceIp = i.getIP();
-         if (interfaceIp == null) {
+         Prefix interfacePrefix = i.getPrefix();
+         if (interfacePrefix == null) {
             continue;
          }
          for (OspfNetwork network : networks) {
-            Ip networkIp = network.getNetworkAddress();
-            Ip networkMask = network.getSubnetMask();
-            long maskedIp = interfaceIp.asLong() & networkMask.asLong();
-            if (maskedIp == networkIp.asLong()) {
+            Prefix networkPrefix = network.getPrefix();
+            Ip networkAddress = networkPrefix.getAddress();
+            Ip maskedInterfaceAddress = interfacePrefix.getAddress()
+                  .getNetworkAddress(networkPrefix.getPrefixLength());
+            if (maskedInterfaceAddress.equals(networkAddress)) {
                // we have a longest prefix match
                long areaNum = network.getArea();
                OspfArea newArea = areas.get(areaNum);
@@ -425,7 +425,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                         containsRouteFilterList = true;
                         list.getLines().add(
                               0,
-                              new RouteFilterLengthRangeLine(LineAction.REJECT,
+                              new RouteFilterLine(LineAction.REJECT,
                                     Prefix.ZERO, new SubRange(0, 0)));
                      }
                      break;
@@ -610,8 +610,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       long maxSubnet = minSubnet | fromLine.getDestinationWildcard().asLong();
       int minPrefixLength = fromLine.getDestinationIp().numSubnetBits();
       int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
-      return new RouteFilterLengthRangeLine(action, prefix, new SubRange(
-            minPrefixLength, maxPrefixLength));
+      return new RouteFilterLine(action, prefix, new SubRange(minPrefixLength,
+            maxPrefixLength));
    }
 
    private static RouteFilterList toRouteFilterList(ExtendedAccessList eaList) {
@@ -630,7 +630,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private static RouteFilterList toRouteFilterList(PrefixList list) {
       RouteFilterList newRouteFilterList = new RouteFilterList(list.getName());
       for (PrefixListLine prefixListLine : list.getLines()) {
-         RouteFilterLine newRouteFilterListLine = new RouteFilterLengthRangeLine(
+         RouteFilterLine newRouteFilterListLine = new RouteFilterLine(
                prefixListLine.getAction(), prefixListLine.getPrefix(),
                prefixListLine.getLengthRange());
          newRouteFilterList.addLine(newRouteFilterListLine);
@@ -652,10 +652,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
    private final RoleSet _roles;
 
+   private transient Set<String> _unimplementedFeatures;
+
    private transient Warnings _w;
 
-   public CiscoVendorConfiguration() {
+   public CiscoVendorConfiguration(Set<String> unimplementedFeatures) {
       _roles = new RoleSet();
+      _unimplementedFeatures = unimplementedFeatures;
    }
 
    private boolean containsIpAccessList(String eaListName, String mapName) {
@@ -762,6 +765,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    }
 
    @Override
+   public Set<String> getUnimplementedFeatures() {
+      return _unimplementedFeatures;
+   }
+
+   @Override
    public Warnings getWarnings() {
       return _w;
    }
@@ -774,7 +782,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private org.batfish.representation.BgpProcess toBgpProcess(
          final Configuration c, BgpProcess proc) {
       org.batfish.representation.BgpProcess newBgpProcess = new org.batfish.representation.BgpProcess();
-      Map<Ip, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
+      Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       int defaultMetric = proc.getDefaultMetric();
 
       Set<BgpAggregateNetwork> summaryOnlyNetworks = new HashSet<BgpAggregateNetwork>();
@@ -827,8 +835,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          for (BgpAggregateNetwork summaryOnlyNetwork : summaryOnlyNetworks) {
             Prefix prefix = summaryOnlyNetwork.getPrefix();
             int prefixLength = prefix.getPrefixLength();
-            RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
-                  LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, 32));
+            RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT,
+                  prefix, new SubRange(prefixLength + 1, 32));
             matchSuppressedSummaryOnlyRoutes.addLine(line);
          }
          PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
@@ -888,19 +896,22 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
       }
-      for (IpBgpPeerGroup ipg : proc.getIpPeerGroups().values()) {
-         String groupName = ipg.getGroupName();
+      Set<LeafBgpPeerGroup> leafGroups = new LinkedHashSet<LeafBgpPeerGroup>();
+      leafGroups.addAll(proc.getIpPeerGroups().values());
+      leafGroups.addAll(proc.getDynamicPeerGroups().values());
+      for (LeafBgpPeerGroup lpg : leafGroups) {
+         String groupName = lpg.getGroupName();
          if (groupName != null) {
             NamedBgpPeerGroup parentPeerGroup = proc.getNamedPeerGroups().get(
                   groupName);
-            ipg.inheritUnsetFields(parentPeerGroup);
+            lpg.inheritUnsetFields(parentPeerGroup);
          }
-         ipg.inheritUnsetFields(proc.getMasterBgpPeerGroup());
+         lpg.inheritUnsetFields(proc.getMasterBgpPeerGroup());
       }
 
-      for (IpBgpPeerGroup pg : proc.getIpPeerGroups().values()) {
+      for (LeafBgpPeerGroup lpg : leafGroups) {
          // update source
-         String updateSourceInterface = pg.getUpdateSource();
+         String updateSourceInterface = lpg.getUpdateSource();
          String updateSource = null;
          if (updateSourceInterface == null) {
             Ip processRouterId = proc.getRouterId();
@@ -908,20 +919,24 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                processRouterId = new Ip(0l);
                for (String iname : c.getInterfaces().keySet()) {
                   if (iname.startsWith("Loopback")) {
-                     Ip currentIp = c.getInterfaces().get(iname).getIP();
-                     if (currentIp != null
-                           && currentIp.asLong() > processRouterId.asLong()) {
-                        processRouterId = currentIp;
+                     Prefix prefix = c.getInterfaces().get(iname).getPrefix();
+                     if (prefix != null) {
+                        Ip currentIp = prefix.getAddress();
+                        if (currentIp.asLong() > processRouterId.asLong()) {
+                           processRouterId = currentIp;
+                        }
                      }
                   }
                }
                if (processRouterId.asLong() == 0) {
                   for (org.batfish.representation.Interface currentInterface : c
                         .getInterfaces().values()) {
-                     Ip currentIp = currentInterface.getIP();
-                     if (currentIp != null
-                           && currentIp.asLong() > processRouterId.asLong()) {
-                        processRouterId = currentIp;
+                     Prefix prefix = currentInterface.getPrefix();
+                     if (prefix != null) {
+                        Ip currentIp = prefix.getAddress();
+                        if (currentIp.asLong() > processRouterId.asLong()) {
+                           processRouterId = currentIp;
+                        }
                      }
                   }
                }
@@ -932,9 +947,18 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             org.batfish.representation.Interface sourceInterface = c
                   .getInterfaces().get(updateSourceInterface);
             if (sourceInterface != null) {
-               Ip sourceIp = c.getInterfaces().get(updateSourceInterface)
-                     .getIP();
-               updateSource = sourceIp.toString();
+               Prefix prefix = c.getInterfaces().get(updateSourceInterface)
+                     .getPrefix();
+               if (prefix != null) {
+                  Ip sourceIp = prefix.getAddress();
+                  updateSource = sourceIp.toString();
+               }
+               else {
+                  throw new VendorConversionException(
+                        "bgp update source interface: \""
+                              + updateSourceInterface
+                              + "\" not assigned an ip address");
+               }
             }
             else {
                throw new VendorConversionException(
@@ -944,7 +968,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
 
          PolicyMap newInboundPolicyMap = null;
-         String inboundRouteMapName = pg.getInboundRouteMap();
+         String inboundRouteMapName = lpg.getInboundRouteMap();
          if (inboundRouteMapName != null) {
             newInboundPolicyMap = c.getPolicyMaps().get(inboundRouteMapName);
             if (newInboundPolicyMap == null) {
@@ -954,7 +978,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          PolicyMap newOutboundPolicyMap = null;
-         String outboundRouteMapName = pg.getOutboundRouteMap();
+         String outboundRouteMapName = lpg.getOutboundRouteMap();
          if (outboundRouteMapName != null) {
             PolicyMap outboundRouteMap = c.getPolicyMaps().get(
                   outboundRouteMapName);
@@ -968,7 +992,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
             else {
                String outboundPolicyName = "~COMPOSITE_OUTBOUND_POLICY:"
-                     + pg.getName() + "~";
+                     + lpg.getName() + "~";
                newOutboundPolicyMap = new PolicyMap(outboundPolicyName);
                c.getPolicyMaps().put(outboundPolicyName, newOutboundPolicyMap);
                PolicyMapClause denyClause = new PolicyMapClause();
@@ -992,11 +1016,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          Set<PolicyMap> originationPolicies = new LinkedHashSet<PolicyMap>();
          // create origination prefilter from listed advertised networks
          RouteFilterList filter = new RouteFilterList("~BGP_PRE_FILTER:"
-               + pg.getName() + "~");
+               + lpg.getName() + "~");
          for (Prefix prefix : proc.getNetworks()) {
             int prefixLen = prefix.getPrefixLength();
-            RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
-                  LineAction.ACCEPT, prefix, new SubRange(prefixLen, prefixLen));
+            RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT,
+                  prefix, new SubRange(prefixLen, prefixLen));
             filter.addLine(line);
          }
          c.getRouteFilterLists().put(filter.getName(), filter);
@@ -1012,7 +1036,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          Set<PolicyMapMatchLine> matchLines = clause.getMatchLines();
          matchLines.add(rfLine);
          PolicyMap explicitOriginationPolicyMap = new PolicyMap(
-               "~BGP_ADVERTISED_NETWORKS_POLICY:" + pg.getName() + "~");
+               "~BGP_ADVERTISED_NETWORKS_POLICY:" + lpg.getName() + "~");
          explicitOriginationPolicyMap.getClauses().add(clause);
          c.getPolicyMaps().put(explicitOriginationPolicyMap.getMapName(),
                explicitOriginationPolicyMap);
@@ -1027,17 +1051,18 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          // set up default export policy for this peer group
          GeneratedRoute defaultRoute = null;
          PolicyMap defaultOriginationPolicy = null;
-         if (pg.getDefaultOriginate()) {
+         if (lpg.getDefaultOriginate()) {
             defaultRoute = new GeneratedRoute(Prefix.ZERO,
                   MAX_ADMINISTRATIVE_COST, new LinkedHashSet<PolicyMap>());
             defaultOriginationPolicy = makeRouteExportPolicy(
                   c,
-                  "~BGP_DEFAULT_ROUTE_ORIGINATION_POLICY:" + pg.getName() + "~",
-                  "BGP_DEFAULT_ROUTE_ORIGINATION_FILTER:" + pg.getName() + "~",
+                  "~BGP_DEFAULT_ROUTE_ORIGINATION_POLICY:" + lpg.getName()
+                        + "~",
+                  "BGP_DEFAULT_ROUTE_ORIGINATION_FILTER:" + lpg.getName() + "~",
                   Prefix.ZERO, new SubRange(0, 0), LineAction.ACCEPT, 0,
                   RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
             originationPolicies.add(defaultOriginationPolicy);
-            String defaultOriginateMapName = pg.getDefaultOriginateMap();
+            String defaultOriginateMapName = lpg.getDefaultOriginateMap();
             if (defaultOriginateMapName != null) { // originate contingent on
                                                    // generation policy
                PolicyMap defaultRouteGenerationPolicy = c.getPolicyMaps().get(
@@ -1052,22 +1077,36 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
 
-         Ip clusterId = pg.getClusterId();
-         boolean routeReflectorClient = pg.getRouteReflectorClient();
+         Ip clusterId = lpg.getClusterId();
+         boolean routeReflectorClient = lpg.getRouteReflectorClient();
          if (routeReflectorClient) {
             if (clusterId == null) {
                clusterId = new Ip(updateSource);
             }
          }
-         boolean sendCommunity = pg.getSendCommunity();
-         Ip neighborAddress = pg.getIp();
-         if (pg.getActive() && !pg.getShutdown()) {
-            if (pg.getRemoteAS() == null) {
-               _w.redFlag("No remote-as set for peer: " + pg.getName());
+         boolean sendCommunity = lpg.getSendCommunity();
+         if (lpg.getActive() && !lpg.getShutdown()) {
+            if (lpg.getRemoteAS() == null) {
+               _w.redFlag("No remote-as set for peer: " + lpg.getName());
                continue;
             }
-            BgpNeighbor newNeighbor = new BgpNeighbor(neighborAddress);
-            newBgpNeighbors.put(neighborAddress, newNeighbor);
+
+            BgpNeighbor newNeighbor;
+            if (lpg instanceof IpBgpPeerGroup) {
+               IpBgpPeerGroup ipg = (IpBgpPeerGroup) lpg;
+               Ip neighborAddress = ipg.getIp();
+               newNeighbor = new BgpNeighbor(neighborAddress);
+            }
+            else if (lpg instanceof DynamicBgpPeerGroup) {
+               DynamicBgpPeerGroup dpg = (DynamicBgpPeerGroup) lpg;
+               Prefix neighborAddressRange = dpg.getPrefix();
+               newNeighbor = new BgpNeighbor(neighborAddressRange);
+            }
+            else {
+               throw new VendorConversionException(
+                     "Invalid BGP leaf neighbor type");
+            }
+            newBgpNeighbors.put(newNeighbor.getPrefix(), newNeighbor);
 
             if (newInboundPolicyMap != null) {
                newNeighbor.addInboundPolicyMap(newInboundPolicyMap);
@@ -1078,14 +1117,14 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   newNeighbor.addOutboundPolicyMap(defaultOriginationPolicy);
                }
             }
-            newNeighbor.setGroupName(pg.getGroupName());
+            newNeighbor.setGroupName(lpg.getGroupName());
             if (routeReflectorClient) {
                newNeighbor.setClusterId(clusterId.asLong());
             }
             if (defaultRoute != null) {
                newNeighbor.getGeneratedRoutes().add(defaultRoute);
             }
-            newNeighbor.setRemoteAs(pg.getRemoteAS());
+            newNeighbor.setRemoteAs(lpg.getRemoteAS());
             newNeighbor.setLocalAs(proc.getPid());
             newNeighbor.setUpdateSource(updateSource);
             newNeighbor.getOriginationPolicies().addAll(originationPolicies);
@@ -1105,9 +1144,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       newIface.setActive(iface.getActive());
       newIface.setArea(iface.getArea());
       newIface.setBandwidth(iface.getBandwidth());
-      if (iface.getIP() != null) {
-         newIface.setIp(iface.getIP());
-         newIface.setSubnetMask(iface.getSubnetMask());
+      if (iface.getPrefix() != null) {
+         newIface.setPrefix(iface.getPrefix());
       }
       newIface.getSecondaryPrefixes().addAll(iface.getSecondaryPrefixes());
       newIface.setOspfCost(iface.getOspfCost());

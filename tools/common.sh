@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-which z3 > /dev/null || return
-which parallel > /dev/null || return
+which z3 > /dev/null || return 1
+which parallel > /dev/null || return 1
 
 export BATFISH_ROOT="$BATFISH_TOOLS_PATH/.."
 export BATFISH_PATH="$BATFISH_ROOT/projects/batfish"
@@ -14,6 +14,9 @@ export BATFISH_NESTED_PARALLEL='parallel --tag -v --halt 2 -j1'
 
 export COORDINATOR_PATH="$BATFISH_ROOT/projects/coordinator"
 export COORDINATOR="$COORDINATOR_PATH/coordinator"
+
+export COMMON_PATH="$BATFISH_ROOT/projects/batfish-common-protocol"
+export COMMON_JAR="$COMMON_PATH/out/batfish-common-protocol.jar"
 
 batfish() {
    # if cygwin, shift and replace each parameter
@@ -48,6 +51,9 @@ batfish_build() {
    if [ "Cygwin" = "$(uname -o)" -a ! -e "$RESTORE_FILE" ]; then
       echo "Replacing symlinks (Cygwin workaround)"
       ./cygwin-replace-symlinks
+   fi
+   if [ ! -e "$COMMON_JAR" ]; then
+      common_build
    fi
    cd $BATFISH_PATH
    ant $@ || { cd $OLD_PWD ; return 1 ; } 
@@ -504,9 +510,26 @@ coordinator_build() {
       echo "Replacing symlinks (Cygwin workaround)"
       ./cygwin-replace-symlinks
    fi
+   if [ ! -e "$COMMON_JAR" ]; then
+      common_build
+   fi
    cd $COORDINATOR_PATH
    ant $@ || { cd $OLD_PWD ; return 1 ; } 
    cd $OLD_PWD
 }
 export -f coordinator_build
+
+common_build() {
+   local RESTORE_FILE='cygwin-symlink-restore-data'
+   local OLD_PWD=$(pwd)
+   cd $COMMON_PATH/..
+   if [ "Cygwin" = "$(uname -o)" -a ! -e "$RESTORE_FILE" ]; then
+      echo "Replacing symlinks (Cygwin workaround)"
+      ./cygwin-replace-symlinks
+   fi
+   cd $COMMON_PATH
+   ant $@ || { cd $OLD_PWD ; return 1 ; }
+   cd $OLD_PWD
+}
+export -f common_build
 

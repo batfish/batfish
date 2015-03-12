@@ -2,8 +2,6 @@ package org.batfish.representation;
 
 import java.io.Serializable;
 
-import org.batfish.util.Util;
-
 public class Ip implements Comparable<Ip>, Serializable {
 
    public static final Ip MAX = new Ip(0xFFFFFFFFl);
@@ -20,6 +18,19 @@ public class Ip implements Comparable<Ip>, Serializable {
          num += ((Integer.parseInt(addrArray[i]) % 256 * Math.pow(256, power)));
       }
       return num;
+   }
+
+   private static long numSubnetBitsToSubnetLong(int numBits) {
+      long val = 0;
+      for (int i = 31; i > 31 - numBits; i--) {
+         val |= ((long) 1 << i);
+      }
+      return val;
+   }
+
+   public static Ip numSubnetBitsToSubnetMask(int numBits) {
+      long mask = numSubnetBitsToSubnetLong(numBits);
+      return new Ip(mask);
    }
 
    private final int _hashCode;
@@ -68,7 +79,7 @@ public class Ip implements Comparable<Ip>, Serializable {
    }
 
    public Ip getNetworkAddress(int subnetBits) {
-      long mask = Util.numSubnetBitsToSubnetLong(subnetBits);
+      long mask = numSubnetBitsToSubnetLong(subnetBits);
       return new Ip(_ip & mask);
    }
 

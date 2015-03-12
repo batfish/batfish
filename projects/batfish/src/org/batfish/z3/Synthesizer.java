@@ -343,9 +343,9 @@ public class Synthesizer {
       for (String hostname : _fibs.keySet()) {
          TreeSet<FibRow> fibSet = _fibs.get(hostname);
          FibRow firstRow = fibSet.first();
-         if (firstRow.getPrefix().asLong() != 0) {
+         if (!firstRow.getPrefix().equals(Prefix.ZERO)) {
             // no default route, so add one that drops traffic
-            FibRow dropDefaultRow = new FibRow(new Ip(0), 0,
+            FibRow dropDefaultRow = new FibRow(Prefix.ZERO,
                   FibRow.DROP_INTERFACE, "", "");
             fibSet.add(dropDefaultRow);
          }
@@ -358,10 +358,13 @@ public class Synthesizer {
             Set<FibRow> notRows = new TreeSet<FibRow>();
             for (int j = i + 1; j < fib.length; j++) {
                FibRow specificRow = fib[j];
-               long currentStart = currentRow.getPrefix().asLong();
-               long currentEnd = currentRow.getLastIp().asLong();
-               long specificStart = specificRow.getPrefix().asLong();
-               long specificEnd = specificRow.getLastIp().asLong();
+               long currentStart = currentRow.getPrefix().getAddress().asLong();
+               long currentEnd = currentRow.getPrefix().getEndAddress()
+                     .asLong();
+               long specificStart = specificRow.getPrefix().getAddress()
+                     .asLong();
+               long specificEnd = specificRow.getPrefix().getEndAddress()
+                     .asLong();
                // check whether later prefix is contained in this one
                if (currentStart <= specificStart && specificEnd <= currentEnd) {
                   if (currentStart == specificStart
@@ -407,8 +410,8 @@ public class Synthesizer {
 
             // must not match more specific routes
             for (FibRow notRow : notRows) {
-               int prefixLength = notRow.getPrefixLength();
-               long prefix = notRow.getPrefix().asLong();
+               int prefixLength = notRow.getPrefix().getPrefixLength();
+               long prefix = notRow.getPrefix().getAddress().asLong();
                int first = IP_BITS - prefixLength;
                if (first >= IP_BITS) {
                   continue;
@@ -426,8 +429,8 @@ public class Synthesizer {
             }
 
             // must match route
-            int prefixLength = currentRow.getPrefixLength();
-            long prefix = currentRow.getPrefix().asLong();
+            int prefixLength = currentRow.getPrefix().getPrefixLength();
+            long prefix = currentRow.getPrefix().getAddress().asLong();
             int first = IP_BITS - prefixLength;
             if (first < IP_BITS) {
                int last = IP_BITS - 1;
@@ -469,8 +472,9 @@ public class Synthesizer {
          Configuration c = e.getValue();
          for (Interface i : c.getInterfaces().values()) {
             if (i.getActive()) {
-               Ip ip = i.getIP();
-               if (ip != null) {
+               Prefix prefix = i.getPrefix();
+               if (prefix != null) {
+                  Ip ip = prefix.getAddress();
                   interfaceIps.add(ip);
                }
             }
@@ -500,8 +504,9 @@ public class Synthesizer {
          Configuration c = e.getValue();
          for (Interface i : c.getInterfaces().values()) {
             if (i.getActive()) {
-               Ip ip = i.getIP();
-               if (ip != null) {
+               Prefix prefix = i.getPrefix();
+               if (prefix != null) {
+                  Ip ip = prefix.getAddress();
                   interfaceIps.add(ip);
                }
             }
@@ -549,7 +554,7 @@ public class Synthesizer {
          Map<String, IpAccessList> aclMap = new TreeMap<String, IpAccessList>();
          Set<Interface> interfaces = _topologyInterfaces.get(hostname);
          for (Interface iface : interfaces) {
-            if (iface.getIP() != null) {
+            if (iface.getPrefix() != null) {
                IpAccessList aclIn = iface.getIncomingFilter();
                IpAccessList aclOut = iface.getOutgoingFilter();
                PolicyMap routePolicy = iface.getRoutingPolicy();
@@ -1000,8 +1005,9 @@ public class Synthesizer {
          String hostname = c.getHostname();
          OrExpr someDstIpMatches = new OrExpr();
          for (Interface i : c.getInterfaces().values()) {
-            Ip ip = i.getIP();
-            if (ip != null) {
+            Prefix prefix = i.getPrefix();
+            if (prefix != null) {
+               Ip ip = prefix.getAddress();
                EqExpr dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR),
                      new LitIntExpr(ip));
                someDstIpMatches.addDisjunct(dstIpMatches);
@@ -1028,8 +1034,9 @@ public class Synthesizer {
          String hostname = c.getHostname();
          OrExpr someDstIpMatch = new OrExpr();
          for (Interface i : c.getInterfaces().values()) {
-            Ip ip = i.getIP();
-            if (ip != null) {
+            Prefix prefix = i.getPrefix();
+            if (prefix != null) {
+               Ip ip = prefix.getAddress();
                EqExpr dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR),
                      new LitIntExpr(ip));
                someDstIpMatch.addDisjunct(dstIpMatches);

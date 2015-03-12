@@ -61,25 +61,6 @@ public class Util {
       return null;
    }
 
-   public static String getIpFromIpSubnetPair(String pair) {
-      int slashPos = pair.indexOf('/');
-      return pair.substring(0, slashPos);
-   }
-
-   public static long getNetworkEnd(long networkStart, int prefix_length) {
-      long networkEnd = networkStart;
-      int ones_length = 32 - prefix_length;
-      for (int i = 0; i < ones_length; i++) {
-         networkEnd |= ((long) 1 << i);
-      }
-      return networkEnd;
-   }
-
-   public static int getPrefixLengthFromIpSubnetPair(String pair) {
-      int slashPos = pair.indexOf('/');
-      return Integer.parseInt(pair.substring(slashPos + 1, pair.length()));
-   }
-
    public static String getText(ParserRuleContext ctx, String srcText) {
       int start = ctx.start.getStartIndex();
       int stop = ctx.stop.getStopIndex();
@@ -117,14 +98,6 @@ public class Util {
       Long upper = l >> 16;
       Long lower = l & 0xFFFF;
       return upper.toString() + ":" + lower;
-   }
-
-   public static long numSubnetBitsToSubnetLong(int numBits) {
-      long val = 0;
-      for (int i = 31; i > 31 - numBits; i--) {
-         val |= ((long) 1 << i);
-      }
-      return val;
    }
 
    public static long numWildcardBitsToWildcardLong(int numBits) {

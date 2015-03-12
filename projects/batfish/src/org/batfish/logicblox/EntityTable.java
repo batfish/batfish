@@ -17,6 +17,7 @@ public class EntityTable {
 
    private static final String DYNAMIC_NEXT_HOP_INTERFACE_NAME = "dynamic";
    private static final long NO_TAG = -1l;
+   private static final long IP_NONE_L = 0;
 
    private long[] _advertDstIps;
    private String[] _advertDstNodes;
@@ -225,7 +226,8 @@ public class EntityTable {
       boolean tcp = protocol == IpProtocol.TCP;
       boolean udp = protocol == IpProtocol.UDP;
       StringBuilder sb = new StringBuilder();
-      sb.append("Flow<" + node + ", " + protocol + ", " + srcIp + ", " + dstIp + ", ");
+      sb.append("Flow<" + node + ", " + protocol + ", " + srcIp + ", " + dstIp
+            + ", ");
       if (tcp || udp) {
          String srcPort = NamedPort
                .nameFromNumber((int) _flowSrcPorts[listIndex]);
@@ -253,8 +255,12 @@ public class EntityTable {
       String node = _routeNodes[listIndex];
       String network = getNetwork(_routeNetworks[listIndex]);
       String nextHopInt = _routeNextHopInts[listIndex];
-      Ip nextHopIpAsIp = new Ip(_routeNextHopIps[listIndex]);
-      String nextHopIp = nextHopIpAsIp.toString();
+      long nextHopIpAsLong = _routeNextHopIps[listIndex];
+      String nextHopIp = null;
+      if (nextHopIpAsLong != IP_NONE_L) {
+         Ip nextHopIpAsIp = new Ip(nextHopIpAsLong);
+         nextHopIp = nextHopIpAsIp.toString();
+      }
       String nextHop = _routeNextHops[listIndex];
       String admin = Long.toString(_routeAdmins[listIndex]);
       String cost = Long.toString(_routeCosts[listIndex]);
@@ -265,7 +271,7 @@ public class EntityTable {
       // extra formatting
       if (!nextHopInt.equals(DYNAMIC_NEXT_HOP_INTERFACE_NAME)) {
          // static interface
-         if (nextHopIpAsIp.asLong() == 0L) {
+         if (nextHopIpAsLong == IP_NONE_L) {
             nextHop = "N/A";
             nextHopIp = "N/A";
          }

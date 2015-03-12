@@ -2,9 +2,7 @@ package org.batfish.main;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -50,8 +48,13 @@ public class Settings {
    private static final String ARG_FLOW_PATH = "flowpath";
    private static final String ARG_FLOW_SINK_PATH = "flowsink";
    private static final String ARG_FLOWS = "flow";
+   private static final String ARG_GENERATE_STUBS = "gs";
+   private static final String ARG_GENERATE_STUBS_INPUT_ROLE = "gsinputrole";
+   private static final String ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX = "gsidregex";
+   private static final String ARG_GENERATE_STUBS_REMOTE_AS = "gsremoteas";
    private static final String ARG_GUI = "gui";
    private static final String ARG_HELP = "help";
+   private static final String ARG_HISTOGRAM = "histogram";
    private static final String ARG_INTERFACE_MAP_PATH = "impath";
    private static final String ARG_LB_WEB_ADMIN_PORT = "lbwebadminport";
    private static final String ARG_LB_WEB_PORT = "lbwebport";
@@ -83,7 +86,6 @@ public class Settings {
    private static final String ARG_ROLE_SET_PATH = "rspath";
    private static final String ARG_ROLE_TRANSIT_QUERY = "rt";
    private static final String ARG_ROLE_TRANSIT_QUERY_PATH = "rtpath";
-   private static final String ARG_RULES_WITH_SUPPRESSED_WARNINGS = "rulenowarn";
    private static final String ARG_SERIALIZE_INDEPENDENT = "si";
    private static final String ARG_SERIALIZE_INDEPENDENT_PATH = "sipath";
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
@@ -121,6 +123,9 @@ public class Settings {
    private static final String ARGNAME_FLATTEN_SOURCE = "path";
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
+   private static final String ARGNAME_GENERATE_STUBS_INPUT_ROLE = "role";
+   private static final String ARGNAME_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX = "java-regex";
+   private static final String ARGNAME_GENERATE_STUBS_REMOTE_AS = "as";
    private static final String ARGNAME_INTERFACE_MAP_PATH = "path";
    private static final String ARGNAME_LB_WEB_ADMIN_PORT = "port";
    private static final String ARGNAME_LB_WEB_PORT = "port";
@@ -135,7 +140,6 @@ public class Settings {
    private static final String ARGNAME_ROLE_REACHABILITY_QUERY_PATH = "path";
    private static final String ARGNAME_ROLE_SET_PATH = "path";
    private static final String ARGNAME_ROLE_TRANSIT_QUERY_PATH = "path";
-   private static final String ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS = "rule-names";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
@@ -202,8 +206,13 @@ public class Settings {
    private String _flowPath;
    private boolean _flows;
    private String _flowSinkPath;
+   private boolean _generateStubs;
+   private String _generateStubsInputRole;
+   private String _generateStubsInterfaceDescriptionRegex;
+   private Integer _generateStubsRemoteAs;
    private boolean _genMultipath;
    private List<String> _helpPredicates;
+   private boolean _histogram;
    private String _hsaInputDir;
    private String _hsaOutputDir;
    private String _interfaceMapPath;
@@ -240,7 +249,6 @@ public class Settings {
    private String _roleSetPath;
    private boolean _roleTransitQuery;
    private String _roleTransitQueryPath;
-   private Set<String> _rulesWithSuppressedWarnings;
    private boolean _runInServiceMode;
    private String _secondTestRigPath;
    private boolean _serializeIndependent;
@@ -423,8 +431,28 @@ public class Settings {
       return _genMultipath;
    }
 
+   public boolean getGenerateStubs() {
+      return _generateStubs;
+   }
+
+   public String getGenerateStubsInputRole() {
+      return _generateStubsInputRole;
+   }
+
+   public String getGenerateStubsInterfaceDescriptionRegex() {
+      return _generateStubsInterfaceDescriptionRegex;
+   }
+
+   public int getGenerateStubsRemoteAs() {
+      return _generateStubsRemoteAs;
+   }
+
    public List<String> getHelpPredicates() {
       return _helpPredicates;
+   }
+
+   public boolean getHistogram() {
+      return _histogram;
    }
 
    public String getHSAInputPath() {
@@ -555,10 +583,6 @@ public class Settings {
       return _roleTransitQueryPath;
    }
 
-   public Set<String> getRulesWithSuppressedWarnings() {
-      return _rulesWithSuppressedWarnings;
-   }
-
    public String getSecondTestRigPath() {
       return _secondTestRigPath;
    }
@@ -586,7 +610,7 @@ public class Settings {
    public int getServicePort() {
       return _servicePort;
    }
-   
+
    public String getServiceUrl() {
       return _serviceUrl;
    }
@@ -819,12 +843,13 @@ public class Settings {
             .longOpt(ARG_SERIALIZE_TO_TEXT).build());
       _options.addOption(Option.builder().desc("run in service mode")
             .longOpt(ARG_SERVICE_MODE).build());
-      _options.addOption(Option.builder().argName("port_number").hasArg()
-            .desc("port for batfish service")
-            .longOpt(ARG_SERVICE_PORT).build());
+      _options
+            .addOption(Option.builder().argName("port_number").hasArg()
+                  .desc("port for batfish service").longOpt(ARG_SERVICE_PORT)
+                  .build());
       _options.addOption(Option.builder().argName("base_url").hasArg()
-            .desc("base url for batfish service")
-            .longOpt(ARG_SERVICE_URL).build());
+            .desc("base url for batfish service").longOpt(ARG_SERVICE_URL)
+            .build());
       _options
             .addOption(Option
                   .builder()
@@ -879,10 +904,6 @@ public class Settings {
             .argName(ARGNAME_BLACKLIST_DST_IP)
             .desc("destination ip to blacklist for concretizer queries")
             .longOpt(ARG_BLACKLIST_DST_IP_PATH).build());
-      _options.addOption(Option.builder()
-            .argName(ARGNAME_RULES_WITH_SUPPRESSED_WARNINGS).hasArgs()
-            .desc("suppress warnings for selected parser rules")
-            .longOpt(ARG_RULES_WITH_SUPPRESSED_WARNINGS).build());
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_NODE_ROLES_PATH)
             .desc("path to read or write node-role mappings")
@@ -972,6 +993,27 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("suppresses unimplemented-configuration-directive warnings")
             .longOpt(ARG_UNIMPLEMENTED_SUPPRESS).build());
+      _options.addOption(Option.builder()
+            .desc("build histogram of unimplemented features")
+            .longOpt(ARG_HISTOGRAM).build());
+      _options.addOption(Option.builder().desc("generate stubs")
+            .longOpt(ARG_GENERATE_STUBS).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_GENERATE_STUBS_INPUT_ROLE)
+            .desc("input role for which to generate stubs")
+            .longOpt(ARG_GENERATE_STUBS_INPUT_ROLE).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .hasArg()
+                  .argName(ARGNAME_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX)
+                  .desc("java regex to extract hostname of generated stub from description of adjacent interface")
+                  .longOpt(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX)
+                  .build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_GENERATE_STUBS_REMOTE_AS)
+            .desc("autonomous system number of stubs to be generated")
+            .longOpt(ARG_GENERATE_STUBS_REMOTE_AS).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1104,14 +1146,6 @@ public class Settings {
       _blacklistDstIpPath = line.getOptionValue(ARG_BLACKLIST_DST_IP_PATH);
       _concUnique = line.hasOption(ARG_CONC_UNIQUE);
       _acceptNode = line.getOptionValue(ARG_ACCEPT_NODE);
-      _rulesWithSuppressedWarnings = new HashSet<String>();
-      if (line.hasOption(ARG_RULES_WITH_SUPPRESSED_WARNINGS)) {
-         String[] rulesWithSuppressedWarningsArray = line
-               .getOptionValues(ARG_RULES_WITH_SUPPRESSED_WARNINGS);
-         for (String ruleName : rulesWithSuppressedWarningsArray) {
-            _rulesWithSuppressedWarnings.add(ruleName);
-         }
-      }
       _nodeRolesPath = line.getOptionValue(ARG_NODE_ROLES_PATH);
       _roleNodesPath = line.getOptionValue(ARG_ROLE_NODES_PATH);
       _roleReachabilityQueryPath = line
@@ -1135,6 +1169,16 @@ public class Settings {
       _redFlagRecord = !line.hasOption(ARG_RED_FLAG_SUPPRESS);
       _unimplementedAsError = line.hasOption(ARG_UNIMPLEMENTED_AS_ERROR);
       _unimplementedRecord = !line.hasOption(ARG_UNIMPLEMENTED_SUPPRESS);
+      _histogram = line.hasOption(ARG_HISTOGRAM);
+      _generateStubs = line.hasOption(ARG_GENERATE_STUBS);
+      _generateStubsInputRole = line
+            .getOptionValue(ARG_GENERATE_STUBS_INPUT_ROLE);
+      _generateStubsInterfaceDescriptionRegex = line
+            .getOptionValue(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
+      if (line.hasOption(ARG_GENERATE_STUBS_REMOTE_AS)) {
+         _generateStubsRemoteAs = Integer.parseInt(line
+               .getOptionValue(ARG_GENERATE_STUBS_REMOTE_AS));
+      }
    }
 
    public boolean printParseTree() {
@@ -1149,7 +1193,7 @@ public class Settings {
       return _revert;
    }
 
-   public boolean runInServiceMode() {      
+   public boolean runInServiceMode() {
       return _runInServiceMode;
    }
 

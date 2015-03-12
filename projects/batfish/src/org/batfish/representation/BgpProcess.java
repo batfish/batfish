@@ -18,9 +18,9 @@ public class BgpProcess implements Serializable {
 
    /**
     * A map of all the bgp neighbors with which the router owning this process
-    * is configured to peer, keyed by ip address
+    * is configured to peer, keyed by prefix
     */
-   private Map<Ip, BgpNeighbor> _bgpNeighbors;
+   private Map<Prefix, BgpNeighbor> _bgpNeighbors;
 
    /**
     * The set of <i>neighbor-independent</i> generated routes that may be
@@ -33,7 +33,7 @@ public class BgpProcess implements Serializable {
     * Constructs a BgpProcess
     */
    public BgpProcess() {
-      _bgpNeighbors = new HashMap<Ip, BgpNeighbor>();
+      _bgpNeighbors = new HashMap<Prefix, BgpNeighbor>();
       _generatedRoutes = new HashSet<GeneratedRoute>();
    }
 
@@ -47,7 +47,7 @@ public class BgpProcess implements Serializable {
    /**
     * @return {@link #_bgpNeighbors}
     */
-   public Map<Ip, BgpNeighbor> getNeighbors() {
+   public Map<Prefix, BgpNeighbor> getNeighbors() {
       return _bgpNeighbors;
    }
 

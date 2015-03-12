@@ -436,18 +436,18 @@ block(`service_files) {
       }.
 
 // Bgp
-      file_definition_by_name["SetBgpDefaultLocalPref"] = fd,
+      file_definition_by_name["SetBgpDefaultLocalPref_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NEIGHBORIP,LOCALPREF",
-         column_formats[] = "string,integer,integer"
+         column_headers[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,LOCALPREF",
+         column_formats[] = "string,integer,integer,integer,integer"
       }.
 
-      file_definition_by_name["SetBgpExportPolicy"] = fd,
+      file_definition_by_name["SetBgpExportPolicy_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NEIGHBORIP,MAP",
-         column_formats[] = "string,integer,string"
+         column_headers[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,MAP",
+         column_formats[] = "string,integer,integer,integer,string"
       }.
 
       file_definition_by_name["SetBgpGeneratedRoute_flat"] = fd,
@@ -464,74 +464,74 @@ block(`service_files) {
          column_formats[] = "string,integer,integer,integer,string"
       }.
 
-      file_definition_by_name["SetBgpImportPolicy"] = fd,
+      file_definition_by_name["SetBgpImportPolicy_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NEIGHBORIP,MAP",
-         column_formats[] = "string,integer,string"
+         column_headers[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,MAP",
+         column_formats[] = "string,integer,integer,integer,string"
       }.
 
-      file_definition_by_name["SetBgpNeighborDefaultMetric"] = fd,
+      file_definition_by_name["SetBgpNeighborDefaultMetric_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NEIGHBORIP,METRIC",
-         column_formats[] = "string,integer,integer"
+         column_headers[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,METRIC",
+         column_formats[] = "string,integer,integer,integer,integer"
       }.
 
       file_definition_by_name["SetBgpNeighborGeneratedRoute_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NEIGHBORIP,NETWORKSTART,NETWORKEND,PREFIXLENGTH",
-         column_formats[] = "string,integer,integer,integer,integer"
+         column_headers[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,NETWORKSTART,NETWORKEND,PREFIXLENGTH",
+         column_formats[] = "string,integer,integer,integer,integer,integer,integer"
       }.
 
       file_definition_by_name["SetBgpNeighborGeneratedRoutePolicy_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NEIGHBORIP,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP",
-         column_formats[] = "string,integer,integer,integer,integer,string"
+         column_headers[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP",
+         column_formats[] = "string,integer,integer,integer,integer,integer,integer,string"
       }.
 
-      file_definition_by_name["SetBgpNeighborIp"] = fd,
+      file_definition_by_name["SetBgpNeighborNetwork_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NEIGHBORIP",
-         column_formats[] = "string,integer"
+         column_headers[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH",
+         column_formats[] = "string,integer,integer,integer"
       }.
 
-      file_definition_by_name["SetBgpNeighborSendCommunity"] = fd,
+      file_definition_by_name["SetBgpNeighborSendCommunity_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NEIGHBORIP",
-         column_formats[] = "string,integer"
+         column_headers[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH",
+         column_formats[] = "string,integer,integer,integer"
       }.
 
-      file_definition_by_name["SetBgpOriginationPolicy"] = fd,
+      file_definition_by_name["SetBgpOriginationPolicy_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NEIGHBORIP,MAP",
-         column_formats[] = "string,integer,string"
+         column_headers[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,MAP",
+         column_formats[] = "string,integer,integer,integer,string"
       }.
 
-      file_definition_by_name["SetLocalAs"] = fd,
+      file_definition_by_name["SetLocalAs_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NEIGHBORIP,LOCALAS",
-         column_formats[] = "string,integer,integer"
+         column_headers[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,LOCALAS",
+         column_formats[] = "string,integer,integer,integer,integer"
       }.
 
-      file_definition_by_name["SetRemoteAs"] = fd,
+      file_definition_by_name["SetRemoteAs_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NEIGHBORIP,REMOTEAS",
-         column_formats[] = "string,integer,integer"
+         column_headers[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,REMOTEAS",
+         column_formats[] = "string,integer,integer,integer,integer"
       }.
 
-      file_definition_by_name["SetRouteReflectorClient"] = fd,
+      file_definition_by_name["SetRouteReflectorClient_flat"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,NEIGHBORIP,CLUSTERID",
-         column_formats[] = "string,integer,integer"
+         column_headers[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,CLUSTERID",
+         column_formats[] = "string,integer,integer,integer,integer"
       }.
 
       // Node

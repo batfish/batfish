@@ -26,7 +26,6 @@ import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
 import org.batfish.representation.Prefix;
-import org.batfish.representation.RouteFilterLengthRangeLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.VendorConversionException;
@@ -47,10 +46,13 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
    private final RoleSet _roles;
 
+   private transient Set<String> _unimplementedFeatures;
+
    private transient Warnings _w;
 
-   public JuniperVendorConfiguration() {
+   public JuniperVendorConfiguration(Set<String> unimplementedFeatures) {
       _roles = new RoleSet();
+      _unimplementedFeatures = unimplementedFeatures;
    }
 
    private BgpProcess createBgpProcess() {
@@ -101,7 +103,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          // send-community
          neighbor.setSendCommunity(true);
 
-         proc.getNeighbors().put(ip, neighbor);
+         proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
       }
       return proc;
    }
@@ -117,7 +119,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          newProc.getPolicyMetricTypes().put(exportPolicy, OspfMetricType.E2);
       }
       // areas
-      Map<Long, org.batfish.representation.OspfArea> newAreas = newProc.getAreas();
+      Map<Long, org.batfish.representation.OspfArea> newAreas = newProc
+            .getAreas();
       for (Entry<Ip, OspfArea> e : _defaultRoutingInstance.getOspfAreas()
             .entrySet()) {
          Ip areaIp = e.getKey();
@@ -151,6 +154,11 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    }
 
    @Override
+   public Set<String> getUnimplementedFeatures() {
+      return _unimplementedFeatures;
+   }
+
+   @Override
    public Warnings getWarnings() {
       return _w;
    }
@@ -158,11 +166,13 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    private void placeInterfaceIntoArea(
          Map<Long, org.batfish.representation.OspfArea> newAreas, String name,
          Interface iface) {
-      org.batfish.representation.Interface newIface = _c.getInterfaces().get(name);
+      org.batfish.representation.Interface newIface = _c.getInterfaces().get(
+            name);
       Ip ospfArea = iface.getOspfArea();
       if (ospfArea != null) {
          long ospfAreaLong = ospfArea.asLong();
-         org.batfish.representation.OspfArea newArea = newAreas.get(ospfAreaLong);
+         org.batfish.representation.OspfArea newArea = newAreas
+               .get(ospfAreaLong);
          newArea.getInterfaces().add(newIface);
       }
    }
@@ -186,8 +196,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       clause.setAction(PolicyMapAction.PERMIT);
       String rflName = "~AGGREGATE_" + policyNameSuffix + "_RF~";
       RouteFilterList rfList = new RouteFilterList(rflName);
-      rfList.addLine(new RouteFilterLengthRangeLine(LineAction.ACCEPT, prefix,
-            new SubRange(prefixLength + 1, 32)));
+      rfList.addLine(new org.batfish.representation.RouteFilterLine(
+            LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, 32)));
       PolicyMapMatchLine matchLine = new PolicyMapMatchRouteFilterListLine(
             Collections.singleton(rfList));
       clause.getMatchLines().add(matchLine);
@@ -200,7 +210,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return newRoute;
    }
 
-   private org.batfish.representation.CommunityList toCommunityList(CommunityList cl) {
+   private org.batfish.representation.CommunityList toCommunityList(
+         CommunityList cl) {
       String name = cl.getName();
       List<org.batfish.representation.CommunityListLine> newLines = new ArrayList<org.batfish.representation.CommunityListLine>();
       for (CommunityListLine line : cl.getLines()) {
@@ -259,8 +270,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          newIface.setOutgoingFilter(outAcl);
       }
       if (iface.getPrefix() != null) {
-         newIface.setIp(iface.getPrefix().getAddress());
-         newIface.setSubnetMask(iface.getPrefix().getSubnetMask());
+         newIface.setPrefix(iface.getPrefix());
       }
       newIface.setActive(iface.getActive());
       newIface.setAccessVlan(iface.getAccessVlan());
@@ -354,7 +364,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return map;
    }
 
-   private org.batfish.representation.StaticRoute toStaticRoute(StaticRoute route) {
+   private org.batfish.representation.StaticRoute toStaticRoute(
+         StaticRoute route) {
       Prefix prefix = route.getPrefix();
       Ip nextHopIp = route.getNextHopIp();
       String nextHopInterface = route.getDrop() ? Util.NULL_INTERFACE_NAME
@@ -394,7 +405,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          RouteFilterList rfl = new RouteFilterList(name);
          for (Prefix prefix : pl.getPrefixes()) {
             int prefixLength = prefix.getPrefixLength();
-            RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
+            org.batfish.representation.RouteFilterLine line = new org.batfish.representation.RouteFilterLine(
                   LineAction.ACCEPT, prefix, new SubRange(prefixLength,
                         prefixLength));
             rfl.addLine(line);
@@ -485,4 +496,5 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
       return _c;
    }
+
 }

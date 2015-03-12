@@ -3,7 +3,6 @@ package org.batfish.representation.juniper;
 import org.batfish.representation.Ip;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.Prefix;
-import org.batfish.representation.RouteFilterLengthRangeLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.util.SubRange;
 
@@ -29,7 +28,7 @@ public final class RouteFilterLineThrough extends RouteFilterLine {
          Ip currentNetworkAddress = _throughPrefix.getAddress()
                .getNetworkAddress(i);
          Prefix currentPrefix = new Prefix(currentNetworkAddress, i);
-         RouteFilterLengthRangeLine line = new RouteFilterLengthRangeLine(
+         org.batfish.representation.RouteFilterLine line = new org.batfish.representation.RouteFilterLine(
                LineAction.ACCEPT, currentPrefix, new SubRange(i, i));
          rfl.addLine(line);
       }

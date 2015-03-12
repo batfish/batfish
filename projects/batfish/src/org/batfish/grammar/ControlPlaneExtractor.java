@@ -1,17 +1,13 @@
 package org.batfish.grammar;
 
-import java.util.List;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.representation.VendorConfiguration;
 
 public interface ControlPlaneExtractor {
 
-   List<String> getPedanticWarnings();
-
-   List<String> getRedFlagWarnings();
-
-   List<String> getUnimplementedWarnings();
+   Set<String> getUnimplementedFeatures();
 
    VendorConfiguration getVendorConfiguration();
 

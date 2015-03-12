@@ -21,6 +21,7 @@
 	<property name="temp.dir" value="temp" />	
    <path id="libraries">
       <fileset dir="lib" includes="**/*.jar"/>
+      <fileset dir="../batfish-common-protocol/out" includes="batfish-common-protocol.jar"/>
    </path>
    <property name="outputJar" value="out/coordinator.jar"/>
 
@@ -31,6 +32,7 @@
       <uptodate property="jarBuild.notRequired" targetfile="${outputJar}">
          <srcfiles dir="bin" includes="**/*"/>
          <srcfiles dir="lib" includes="**/*"/>
+         <srcfiles dir="../batfish-common-protocol/out" includes="batfish-common-protocol.jar"/>
       </uptodate>
    </target>
 
@@ -101,6 +103,7 @@
          </main>
          <lib>
             <fileset dir="lib" includes="**/*" />
+            <fileset dir="../batfish-common-protocol/out" includes="batfish-common-protocol.jar"/>
          </lib>
 		</one-jar>
 		<delete dir="${temp.dir}" />

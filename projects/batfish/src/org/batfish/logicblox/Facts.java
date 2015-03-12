@@ -81,24 +81,41 @@ public class Facts {
       map.put("SetPolicyMapClauseSetNextHopIp", "MAP|CLAUSE|NEXTHOPIP");
       map.put("SetPolicyMapClauseSetOriginType", "MAP|CLAUSE|ORIGINTYPE");
       map.put("SetPolicyMapOspfExternalRouteType", "MAP|PROTOCOL");
-      map.put("SetBgpDefaultLocalPref", "NODE|NEIGHBORIP|LOCALPREF");
-      map.put("SetBgpExportPolicy", "NODE|NEIGHBORIP|MAP");
+      map.put(
+            "SetBgpDefaultLocalPref_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|LOCALPREF");
+      map.put("SetBgpExportPolicy_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|MAP");
       map.put("SetBgpGeneratedRoute_flat",
             "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
       map.put("SetBgpGeneratedRoutePolicy_flat",
             "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
-      map.put("SetBgpImportPolicy", "NODE|NEIGHBORIP|MAP");
-      map.put("SetBgpNeighborDefaultMetric", "NODE|NEIGHBORIP|METRIC");
-      map.put("SetBgpNeighborGeneratedRoute_flat",
-            "NODE|NEIGHBORIP|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
-      map.put("SetBgpNeighborGeneratedRoutePolicy_flat",
-            "NODE|NEIGHBORIP|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
-      map.put("SetBgpNeighborIp", "NODE|NEIGHBORIP");
-      map.put("SetBgpNeighborSendCommunity", "NODE|NEIGHBORIP");
-      map.put("SetBgpOriginationPolicy", "NODE|NEIGHBORIP|MAP");
-      map.put("SetLocalAs", "NODE|NEIGHBORIP|LOCALAS");
-      map.put("SetRemoteAs", "NODE|NEIGHBORIP|REMOTEAS");
-      map.put("SetRouteReflectorClient", "NODE|NEIGHBORIP|CLUSTERID");
+      map.put("SetBgpImportPolicy_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|MAP");
+      map.put(
+            "SetBgpNeighborDefaultMetric_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|METRIC");
+      map.put(
+            "SetBgpNeighborGeneratedRoute_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
+      map.put(
+            "SetBgpNeighborGeneratedRoutePolicy_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
+      map.put("SetBgpNeighborNetwork_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH");
+      map.put("SetBgpNeighborSendCommunity_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH");
+      map.put("SetBgpOriginationPolicy_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|MAP");
+      map.put(
+            "SetLocalAs_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|LOCALAS");
+      map.put(
+            "SetRemoteAs_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|REMOTEAS");
+      map.put(
+            "SetRouteReflectorClient_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|CLUSTERID");
       map.put("SetNodeVendor", "NODE|VENDOR");
       map.put("SetNodeRole", "NODE|ROLE");
       map.put("SetAsPathLineDeny", "ASPATH|LINE");

@@ -21,11 +21,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -46,6 +49,7 @@ import org.batfish.collections.FibSet;
 import org.batfish.collections.FlowSinkInterface;
 import org.batfish.collections.FlowSinkSet;
 import org.batfish.collections.FunctionSet;
+import org.batfish.collections.MultiSet;
 import org.batfish.collections.NodeRoleMap;
 import org.batfish.collections.NodeSet;
 import org.batfish.collections.PolicyRouteFibIpMap;
@@ -55,11 +59,12 @@ import org.batfish.collections.PredicateValueTypeMap;
 import org.batfish.collections.QualifiedNameMap;
 import org.batfish.collections.RoleNodeMap;
 import org.batfish.collections.RoleSet;
+import org.batfish.collections.TreeMultiSet;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
-import org.batfish.grammar.cisco.controlplane.CiscoControlPlaneExtractor;
+import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
@@ -88,15 +93,26 @@ import org.batfish.logicblox.PredicateInfo;
 import org.batfish.logicblox.ProjectFile;
 import org.batfish.logicblox.QueryException;
 import org.batfish.logicblox.TopologyFactExtractor;
+import org.batfish.representation.BgpNeighbor;
+import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.Edge;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.LineAction;
+import org.batfish.representation.PolicyMap;
+import org.batfish.representation.PolicyMapAction;
+import org.batfish.representation.PolicyMapClause;
+import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
+import org.batfish.representation.Prefix;
+import org.batfish.representation.RouteFilterLine;
+import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.Topology;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.cisco.CiscoVendorConfiguration;
 import org.batfish.util.StringFilter;
+import org.batfish.util.SubRange;
 import org.batfish.util.UrlZipExplorer;
 import org.batfish.util.Util;
 import org.batfish.z3.ConcretizerQuery;
@@ -193,6 +209,11 @@ public class Batfish implements AutoCloseable {
    private static final String SEPARATOR = System.getProperty("file.separator");
 
    /**
+    * Role name for generated stubs
+    */
+   private static final String STUB_ROLE = "generated_stubs";
+
+   /**
     * The name of the [optional] topology file within a test-rig
     */
    private static final String TOPOLOGY_FILENAME = "topology.net";
@@ -264,7 +285,7 @@ public class Batfish implements AutoCloseable {
    private void addStaticFacts(LogicBloxFrontend lbFrontend, String blockName) {
       _logger.info("\n*** ADDING STATIC FACTS ***\n");
       resetTimer();
-      _logger.info("Adding " + blockName + "...");
+      _logger.info("Adding " + blockName + "....");
       String output = lbFrontend.execNamedBlock(LB_BATFISH_LIBRARY_NAME + ":"
             + blockName);
       if (output == null) {
@@ -389,30 +410,30 @@ public class Batfish implements AutoCloseable {
 
       lbFrontend.initEntityTable();
 
-      _logger.info("Retrieving flow sink information from LogicBlox..");
+      _logger.info("Retrieving flow sink information from LogicBlox...");
       FlowSinkSet flowSinks = getFlowSinkSet(lbFrontend);
       _logger.info("OK\n");
 
-      _logger.info("Retrieving topology information from LogicBlox..");
+      _logger.info("Retrieving topology information from LogicBlox...");
       EdgeSet topologyEdges = getTopologyEdges(lbFrontend);
       _logger.info("OK\n");
 
       String fibQualifiedName = _predicateInfo.getPredicateNames().get(
             FIB_PREDICATE_NAME);
       _logger
-            .info("Retrieving destination-routing FIB information from LogicBlox..");
+            .info("Retrieving destination-routing FIB information from LogicBlox...");
       Relation fibNetwork = lbFrontend.queryPredicate(fibQualifiedName);
       _logger.info("OK\n");
 
       String fibPolicyRouteNextHopQualifiedName = _predicateInfo
             .getPredicateNames().get(FIB_POLICY_ROUTE_NEXT_HOP_PREDICATE_NAME);
       _logger
-            .info("Retrieving policy-routing  FIB information from LogicBlox..");
+            .info("Retrieving policy-routing  FIB information from LogicBlox...");
       Relation fibPolicyRouteNextHops = lbFrontend
             .queryPredicate(fibPolicyRouteNextHopQualifiedName);
       _logger.info("OK\n");
 
-      _logger.info("Caclulating forwarding rules..");
+      _logger.info("Caclulating forwarding rules...");
       FibMap fibs = getRouteForwardingRules(fibNetwork, lbFrontend);
       PolicyRouteFibNodeMap policyRouteFibNodeMap = getPolicyRouteFibNodeMap(
             fibPolicyRouteNextHops, lbFrontend);
@@ -424,16 +445,16 @@ public class Batfish implements AutoCloseable {
       Path fibsPolicyRoutePath = Paths.get(_settings.getDataPlaneDir(),
             FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME);
       Path edgesPath = Paths.get(_settings.getDataPlaneDir(), EDGES_FILENAME);
-      _logger.info("Serializing flow sink set..");
+      _logger.info("Serializing flow sink set...");
       serializeObject(flowSinks, flowSinksPath.toFile());
       _logger.info("OK\n");
-      _logger.info("Serializing fibs..");
+      _logger.info("Serializing fibs...");
       serializeObject(fibs, fibsPath.toFile());
       _logger.info("OK\n");
-      _logger.info("Serializing policy route next hop interface map..");
+      _logger.info("Serializing policy route next hop interface map...");
       serializeObject(policyRouteFibNodeMap, fibsPolicyRoutePath.toFile());
       _logger.info("OK\n");
-      _logger.info("Serializing toplogy edges..");
+      _logger.info("Serializing toplogy edges...");
       serializeObject(topologyEdges, edgesPath.toFile());
       _logger.info("OK\n");
 
@@ -464,7 +485,7 @@ public class Batfish implements AutoCloseable {
       }
       for (String concInPath : concInPaths) {
          _logger.info("Reading z3 datalog query output file: \"" + concInPath
-               + "\"..");
+               + "\"...");
          File queryOutputFile = new File(concInPath);
          String queryOutputStr = readFile(queryOutputFile);
          _logger.info("OK\n");
@@ -474,7 +495,7 @@ public class Batfish implements AutoCloseable {
                _settings.getThrowOnLexerError());
          ParserRuleContext tree = parse(parser, concInPath);
 
-         _logger.info("Computing concretizer queries..");
+         _logger.info("Computing concretizer queries...");
          ParseTreeWalker walker = new ParseTreeWalker();
          DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(
                _settings.concretizeUnique(), false);
@@ -495,7 +516,7 @@ public class Batfish implements AutoCloseable {
          for (String negConcInPath : negConcInPaths) {
             _logger
                   .info("Reading z3 datalog query output file (to be negated): \""
-                        + negConcInPath + "\"..");
+                        + negConcInPath + "\"...");
             File queryOutputFile = new File(negConcInPath);
             String queryOutputStr = readFile(queryOutputFile);
             _logger.info("OK\n");
@@ -505,7 +526,7 @@ public class Batfish implements AutoCloseable {
                   _settings.getThrowOnLexerError());
             ParserRuleContext tree = parse(parser, negConcInPath);
 
-            _logger.info("Computing concretizer queries..");
+            _logger.info("Computing concretizer queries...");
             ParseTreeWalker walker = new ParseTreeWalker();
             DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(
                   _settings.concretizeUnique(), true);
@@ -528,7 +549,7 @@ public class Batfish implements AutoCloseable {
          String concQueryPath = _settings.getConcretizerOutputFilePath() + "-"
                + i + ".smt2";
          _logger.info("Writing concretizer query file: \"" + concQueryPath
-               + "\"..");
+               + "\"...");
          writeFile(concQueryPath, cq.getText());
          _logger.info("OK\n");
       }
@@ -566,7 +587,7 @@ public class Batfish implements AutoCloseable {
          VendorConfiguration vc = vendorConfigurations.get(name);
          Warnings warnings = new Warnings(pedanticAsError, pedanticRecord,
                redFlagAsError, redFlagRecord, unimplementedAsError,
-               unimplementedRecord);
+               unimplementedRecord, false);
          try {
             Configuration config = vc
                   .toVendorIndependentConfiguration(warnings);
@@ -623,7 +644,7 @@ public class Batfish implements AutoCloseable {
          Object object = deserializeObject(serializedConfig);
          Configuration c = (Configuration) object;
          configurations.put(name, c);
-         _logger.debug("...OK\n");
+         _logger.debug(" ...OK\n");
       }
       disableBlacklistedInterface(configurations);
       disableBlacklistedNode(configurations);
@@ -789,13 +810,13 @@ public class Batfish implements AutoCloseable {
          if (configText.charAt(0) == '#'
                && !configText.matches("(?m)set version.*")) {
             _logger.debug("Flattening config to \"" + outputFileAsString
-                  + "\"..");
+                  + "\"...");
             String flatConfigText = flatten(configText);
             writeFile(outputFileAsString, flatConfigText);
          }
          else {
             _logger.debug("Copying unmodified config to \""
-                  + outputFileAsString + "\"..");
+                  + outputFileAsString + "\"...");
             writeFile(outputFileAsString, configText);
             _logger.debug("OK\n");
          }
@@ -809,7 +830,7 @@ public class Batfish implements AutoCloseable {
       String fiQueryBasePath = _settings.getBlackHoleQueryPath();
       String nodeSetPath = _settings.getNodeSetPath();
 
-      _logger.info("Reading node set from : \"" + nodeSetPath + "\"..");
+      _logger.info("Reading node set from : \"" + nodeSetPath + "\"...");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
       _logger.info("OK\n");
 
@@ -820,12 +841,176 @@ public class Batfish implements AutoCloseable {
          String fiQueryPath;
          fiQueryPath = fiQueryBasePath + "-" + hostname + ".smt2";
 
-         _logger.info("Writing query to: \"" + fiQueryPath + "\"..");
+         _logger.info("Writing query to: \"" + fiQueryPath + "\"...");
          writeFile(fiQueryPath, queryText);
          _logger.info("OK\n");
       }
 
       printElapsedTime();
+   }
+
+   private void generateStubs(String inputRole, int stubAs,
+         String interfaceDescriptionRegex, String configPath) {
+      Map<String, Configuration> configs = deserializeConfigurations(configPath);
+      Pattern pattern = Pattern.compile(interfaceDescriptionRegex);
+      Map<String, Configuration> stubConfigurations = new TreeMap<String, Configuration>();
+
+      _logger.info("\n*** GENERATING STUBS ***\n");
+      resetTimer();
+
+      // load old node-roles to be updated at end
+      RoleSet stubRoles = new RoleSet();
+      stubRoles.add(STUB_ROLE);
+      File nodeRolesPath = new File(_settings.getNodeRolesPath());
+      _logger.info("Deserializing old node-roles mappings: \"" + nodeRolesPath
+            + "\" ...");
+      NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(nodeRolesPath);
+      _logger.info("OK\n");
+
+      // create origination policy common to all stubs
+      String stubOriginationPolicyName = "~STUB_ORIGINATION_POLICY~";
+      PolicyMap stubOriginationPolicy = new PolicyMap(stubOriginationPolicyName);
+      PolicyMapClause clause = new PolicyMapClause();
+      stubOriginationPolicy.getClauses().add(clause);
+      String stubOriginationRouteFilterListName = "~STUB_ORIGINATION_ROUTE_FILTER~";
+      RouteFilterList rf = new RouteFilterList(
+            stubOriginationRouteFilterListName);
+      RouteFilterLine rfl = new RouteFilterLine(LineAction.ACCEPT, Prefix.ZERO,
+            new SubRange(0, 0));
+      rf.addLine(rfl);
+      PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
+            Collections.singleton(rf));
+      clause.getMatchLines().add(matchLine);
+      clause.setAction(PolicyMapAction.PERMIT);
+
+      // create flow sink interface common to all stubs
+      String flowSinkName = "TenGibabitEthernet100/100";
+      Interface flowSink = new Interface(flowSinkName);
+      flowSink.setPrefix(Prefix.ZERO);
+      flowSink.setActive(true);
+      flowSink.setBandwidth(10E9d);
+
+      Set<String> skipWarningNodes = new HashSet<String>();
+
+      for (Configuration config : configs.values()) {
+         if (!config.getRoles().contains(inputRole)) {
+            continue;
+         }
+         for (BgpNeighbor neighbor : config.getBgpProcess().getNeighbors()
+               .values()) {
+            if (!neighbor.getRemoteAs().equals(stubAs)) {
+               continue;
+            }
+            Prefix neighborPrefix = neighbor.getPrefix();
+            if (neighborPrefix.getPrefixLength() != 32) {
+               throw new BatfishException(
+                     "do not currently handle generating stubs based on dynamic bgp sessions");
+            }
+            Ip neighborAddress = neighborPrefix.getAddress();
+            int edgeAs = neighbor.getLocalAs();
+            /*
+             * Now that we have the ip address of the stub, we want to find the
+             * interface that connects to it. We will extract the hostname for
+             * the stub from the description of this interface using the
+             * supplied regex.
+             */
+            boolean found = false;
+            for (Interface iface : config.getInterfaces().values()) {
+               Prefix prefix = iface.getPrefix();
+               if (prefix == null || !prefix.contains(neighborAddress)) {
+                  continue;
+               }
+               // the neighbor address falls within the network assigned to this
+               // interface, so now we check the description
+               String description = iface.getDescription();
+               Matcher matcher = pattern.matcher(description);
+               if (matcher.find()) {
+                  String hostname = matcher.group(1);
+                  if (configs.containsKey(hostname)) {
+                     Configuration duplicateConfig = configs.get(hostname);
+                     if (!duplicateConfig.getRoles().contains(STUB_ROLE)
+                           || duplicateConfig.getRoles().size() != 1) {
+                        throw new BatfishException(
+                              "A non-generated node with hostname: \""
+                                    + hostname
+                                    + "\" already exists in network under analysis");
+                     }
+                     else {
+                        if (!skipWarningNodes.contains(hostname)) {
+                           _logger
+                                 .warn("WARNING: Overwriting previously generated node: \""
+                                       + hostname + "\"\n");
+                           skipWarningNodes.add(hostname);
+                        }
+                     }
+                  }
+                  found = true;
+                  Configuration stub = stubConfigurations.get(hostname);
+
+                  // create stub if it doesn't exist yet
+                  if (stub == null) {
+                     stub = new Configuration(hostname);
+                     stubConfigurations.put(hostname, stub);
+                     stub.getInterfaces().put(flowSinkName, flowSink);
+                     stub.setBgpProcess(new BgpProcess());
+                     stub.getPolicyMaps().put(stubOriginationPolicyName,
+                           stubOriginationPolicy);
+                     stub.getRouteFilterLists().put(
+                           stubOriginationRouteFilterListName, rf);
+                     stub.setVendor(CiscoVendorConfiguration.VENDOR_NAME);
+                     stub.setRoles(stubRoles);
+                     nodeRoles.put(hostname, stubRoles);
+                  }
+
+                  // create interface that will on which peering will occur
+                  Map<String, Interface> stubInterfaces = stub.getInterfaces();
+                  String stubInterfaceName = "TenGigabitEthernet0/"
+                        + (stubInterfaces.size() - 1);
+                  Interface stubInterface = new Interface(stubInterfaceName);
+                  stubInterfaces.put(stubInterfaceName, stubInterface);
+                  stubInterface.setPrefix(new Prefix(neighborAddress, prefix
+                        .getPrefixLength()));
+                  stubInterface.setActive(true);
+                  stubInterface.setBandwidth(10E9d);
+
+                  // create neighbor within bgp process
+                  BgpNeighbor edgeNeighbor = new BgpNeighbor(prefix);
+                  edgeNeighbor.getOriginationPolicies().add(
+                        stubOriginationPolicy);
+                  edgeNeighbor.setRemoteAs(edgeAs);
+                  edgeNeighbor.setLocalAs(stubAs);
+                  edgeNeighbor.setSendCommunity(true);
+                  edgeNeighbor.setDefaultMetric(0);
+                  stub.getBgpProcess().getNeighbors()
+                        .put(edgeNeighbor.getPrefix(), edgeNeighbor);
+                  break;
+               }
+               else {
+                  throw new BatfishException(
+                        "Unable to derive stub hostname from interface description: \""
+                              + description + "\" using regex: \""
+                              + interfaceDescriptionRegex + "\"");
+               }
+            }
+            if (!found) {
+               throw new BatfishException(
+                     "Could not determine stub hostname corresponding to ip: \""
+                           + neighborAddress.toString()
+                           + "\" listed as neighbor on router: \""
+                           + config.getHostname() + "\"");
+            }
+         }
+      }
+      // write updated node-roles mappings to disk
+      _logger.info("Serializing updated node-roles mappings: \""
+            + nodeRolesPath + "\" ...");
+      serializeObject(nodeRoles, nodeRolesPath);
+      _logger.info("OK\n");
+      printElapsedTime();
+
+      // write stubs to disk
+      serializeIndependentConfigs(stubConfigurations, configPath);
+
    }
 
    private void genMultipathQueries() {
@@ -836,7 +1021,7 @@ public class Batfish implements AutoCloseable {
       String nodeSetPath = _settings.getNodeSetPath();
       String nodeSetTextPath = nodeSetPath + ".txt";
 
-      _logger.info("Reading node set from : \"" + nodeSetPath + "\"..");
+      _logger.info("Reading node set from : \"" + nodeSetPath + "\"...");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
       _logger.info("OK\n");
 
@@ -845,12 +1030,12 @@ public class Batfish implements AutoCloseable {
                hostname);
          String queryText = synth.getQueryText();
          String mpiQueryPath = mpiQueryBasePath + "-" + hostname + ".smt2";
-         _logger.info("Writing query to: \"" + mpiQueryPath + "\"..");
+         _logger.info("Writing query to: \"" + mpiQueryPath + "\"...");
          writeFile(mpiQueryPath, queryText);
          _logger.info("OK\n");
       }
 
-      _logger.info("Writing node lines for next stage..");
+      _logger.info("Writing node lines for next stage...");
       StringBuilder sb = new StringBuilder();
       for (String node : nodes) {
          sb.append(node + "\n");
@@ -869,7 +1054,7 @@ public class Batfish implements AutoCloseable {
       String nodeSetPath = _settings.getNodeSetPath();
       String acceptNode = _settings.getAcceptNode();
       String blacklistedNode = _settings.getBlacklistNode();
-      _logger.info("Reading node set from : \"" + nodeSetPath + "\"..");
+      _logger.info("Reading node set from : \"" + nodeSetPath + "\"...");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
       _logger.info("OK\n");
 
@@ -883,7 +1068,7 @@ public class Batfish implements AutoCloseable {
          String queryPath;
          queryPath = queryBasePath + "-" + hostname + ".smt2";
 
-         _logger.info("Writing query to: \"" + queryPath + "\"..");
+         _logger.info("Writing query to: \"" + queryPath + "\"...");
          writeFile(queryPath, queryText);
          _logger.info("OK\n");
       }
@@ -902,11 +1087,11 @@ public class Batfish implements AutoCloseable {
       String nodeRolesPath = _settings.getNodeRolesPath();
       String iterationsPath = nodeRolesPath + ".iterations";
 
-      _logger.info("Reading node set from : \"" + nodeSetPath + "\"..");
+      _logger.info("Reading node set from : \"" + nodeSetPath + "\"...");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
       _logger.info("OK\n");
 
-      _logger.info("Reading node roles from : \"" + nodeRolesPath + "\"..");
+      _logger.info("Reading node roles from : \"" + nodeRolesPath + "\"...");
       NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(new File(
             nodeRolesPath));
       _logger.info("OK\n");
@@ -920,13 +1105,13 @@ public class Batfish implements AutoCloseable {
             String queryText = synth.getQueryText();
             String queryPath = queryBasePath + "-" + hostname + "-" + role
                   + ".smt2";
-            _logger.info("Writing query to: \"" + queryPath + "\"..");
+            _logger.info("Writing query to: \"" + queryPath + "\"...");
             writeFile(queryPath, queryText);
             _logger.info("OK\n");
          }
       }
 
-      _logger.info("Writing node lines for next stage..");
+      _logger.info("Writing node lines for next stage...");
       StringBuilder sbNodes = new StringBuilder();
       for (String node : nodes) {
          sbNodes.append(node + "\n");
@@ -935,7 +1120,7 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
 
       StringBuilder sbRoles = new StringBuilder();
-      _logger.info("Writing role lines for next stage..");
+      _logger.info("Writing role lines for next stage...");
       sbRoles = new StringBuilder();
       for (String role : roleNodes.keySet()) {
          sbRoles.append(role + "\n");
@@ -944,7 +1129,7 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
 
       _logger
-            .info("Writing role-node-role iteration ordering lines for concretizer stage..");
+            .info("Writing role-node-role iteration ordering lines for concretizer stage...");
       StringBuilder sbIterations = new StringBuilder();
       for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
          String transmittingRole = roleNodeEntry.getKey();
@@ -983,11 +1168,11 @@ public class Batfish implements AutoCloseable {
       String constraintsIterationsPath = nodeRolesPath
             + ".rtconstraintsiterations";
 
-      _logger.info("Reading node set from : \"" + nodeSetPath + "\"..");
+      _logger.info("Reading node set from : \"" + nodeSetPath + "\"...");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
       _logger.info("OK\n");
 
-      _logger.info("Reading node roles from : \"" + nodeRolesPath + "\"..");
+      _logger.info("Reading node roles from : \"" + nodeRolesPath + "\"...");
       NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(new File(
             nodeRolesPath));
       _logger.info("OK\n");
@@ -1008,14 +1193,14 @@ public class Batfish implements AutoCloseable {
                String queryText = synth.getQueryText();
                String queryPath = queryBasePath + "-" + transitNode + "-"
                      + sourceRole + ".smt2";
-               _logger.info("Writing query to: \"" + queryPath + "\"..");
+               _logger.info("Writing query to: \"" + queryPath + "\"...");
                writeFile(queryPath, queryText);
                _logger.info("OK\n");
             }
          }
       }
 
-      _logger.info("Writing node lines for next stage..");
+      _logger.info("Writing node lines for next stage...");
       StringBuilder sbNodes = new StringBuilder();
       for (String node : nodes) {
          sbNodes.append(node + "\n");
@@ -1024,7 +1209,7 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
 
       StringBuilder sbRoles = new StringBuilder();
-      _logger.info("Writing role lines for next stage..");
+      _logger.info("Writing role lines for next stage...");
       sbRoles = new StringBuilder();
       for (String role : roleNodes.keySet()) {
          sbRoles.append(role + "\n");
@@ -1034,7 +1219,7 @@ public class Batfish implements AutoCloseable {
 
       // not actually sure if this is necessary
       StringBuilder sbRoleNodes = new StringBuilder();
-      _logger.info("Writing role-node mappings for concretizer stage..");
+      _logger.info("Writing role-node mappings for concretizer stage...");
       sbRoleNodes = new StringBuilder();
       for (Entry<String, NodeSet> e : roleNodes.entrySet()) {
          String role = e.getKey();
@@ -1048,7 +1233,7 @@ public class Batfish implements AutoCloseable {
       writeFile(roleNodesPath, sbRoleNodes.toString());
 
       _logger
-            .info("Writing transitrole-transitnode-sourcerole iteration ordering lines for constraints stage..");
+            .info("Writing transitrole-transitnode-sourcerole iteration ordering lines for constraints stage...");
       StringBuilder sbConstraintsIterations = new StringBuilder();
       for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
          String transitRole = roleNodeEntry.getKey();
@@ -1071,7 +1256,7 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
 
       _logger
-            .info("Writing transitrole-master-slave-sourcerole iteration ordering lines for concretizer stage..");
+            .info("Writing transitrole-master-slave-sourcerole iteration ordering lines for concretizer stage...");
       StringBuilder sbIterations = new StringBuilder();
       for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
          String transitRole = roleNodeEntry.getKey();
@@ -1111,28 +1296,28 @@ public class Batfish implements AutoCloseable {
       Path edgesPath = Paths.get(_settings.getDataPlaneDir(), EDGES_FILENAME);
 
       _logger.info("Deserializing flow sink interface set: \""
-            + flowSinkSetPath.toString() + "\"..");
+            + flowSinkSetPath.toString() + "\"...");
       FlowSinkSet flowSinks = (FlowSinkSet) deserializeObject(flowSinkSetPath
             .toFile());
       _logger.info("OK\n");
 
       _logger.info("Deserializing destination route fibs: \""
-            + fibsPath.toString() + "\"..");
+            + fibsPath.toString() + "\"...");
       FibMap fibs = (FibMap) deserializeObject(fibsPath.toFile());
       _logger.info("OK\n");
 
       _logger.info("Deserializing policy route fibs: \""
-            + prFibsPath.toString() + "\"..");
+            + prFibsPath.toString() + "\"...");
       PolicyRouteFibNodeMap prFibs = (PolicyRouteFibNodeMap) deserializeObject(prFibsPath
             .toFile());
       _logger.info("OK\n");
 
       _logger.info("Deserializing toplogy edges: \"" + edgesPath.toString()
-            + "\"..");
+            + "\"...");
       EdgeSet topologyEdges = (EdgeSet) deserializeObject(edgesPath.toFile());
       _logger.info("OK\n");
 
-      _logger.info("Synthesizing Z3 logic..");
+      _logger.info("Synthesizing Z3 logic...");
       Synthesizer s = new Synthesizer(configurations, fibs, prFibs,
             topologyEdges, _settings.getSimplify(), flowSinks);
       String result = s.synthesize();
@@ -1148,14 +1333,14 @@ public class Batfish implements AutoCloseable {
       }
 
       String outputPath = _settings.getZ3File();
-      _logger.info("Writing Z3 logic: \"" + outputPath + "\"..");
+      _logger.info("Writing Z3 logic: \"" + outputPath + "\"...");
       File z3Out = new File(outputPath);
       z3Out.delete();
       writeFile(outputPath, result);
       _logger.info("OK\n");
 
       String nodeSetPath = _settings.getNodeSetPath();
-      _logger.info("Serializing node set: \"" + nodeSetPath + "\"..");
+      _logger.info("Serializing node set: \"" + nodeSetPath + "\"...");
       NodeSet nodeSet = s.getNodeSet();
       serializeObject(nodeSet, new File(nodeSetPath));
       _logger.info("OK\n");
@@ -1344,16 +1529,11 @@ public class Batfish implements AutoCloseable {
          int endIndex = endIndices.get(hostname);
          for (int i = startIndex; i <= endIndex; i++) {
             String networkStr = networkList.get(i);
-            String[] networkStrs = networkStr.split("/");
-            String prefixStr = networkStrs[0];
-            String prefixLengthStr = networkStrs[1];
-            Ip prefix = new Ip(prefixStr);
-            int prefixLength = Integer.parseInt(prefixLengthStr);
+            Prefix prefix = new Prefix(networkStr);
             String iface = interfaceList.get(i);
             String nextHop = nextHopList.get(i);
             String nextHopInt = nextHopIntList.get(i);
-            fibRows.add(new FibRow(prefix, prefixLength, iface, nextHop,
-                  nextHopInt));
+            fibRows.add(new FibRow(prefix, iface, nextHop, nextHopInt));
          }
       }
       return fibs;
@@ -1412,6 +1592,22 @@ public class Batfish implements AutoCloseable {
          edges.add(newEdge);
       }
       return edges;
+   }
+
+   private void histogram(String testRigPath) {
+      Map<File, String> configurationData = readConfigurationFiles(testRigPath);
+      Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(configurationData);
+      _logger.info("Building feature histogram...");
+      MultiSet<String> histogram = new TreeMultiSet<String>();
+      for (VendorConfiguration vc : vendorConfigurations.values()) {
+         Set<String> unimplementedFeatures = vc.getUnimplementedFeatures();
+         histogram.add(unimplementedFeatures);
+      }
+      _logger.info("OK\n");
+      for (String feature : histogram.elements()) {
+         int count = histogram.count(feature);
+         output(feature + ": " + count + "\n");
+      }
    }
 
    /**
@@ -1517,7 +1713,7 @@ public class Batfish implements AutoCloseable {
 
    private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser,
          String filename) {
-      _logger.info("Parsing: \"" + filename + "\"..");
+      _logger.info("Parsing: \"" + filename + "\"...");
       return parse(parser);
    }
 
@@ -1665,6 +1861,18 @@ public class Batfish implements AutoCloseable {
          BatfishCombinedParser<?, ?> combinedParser = null;
          ParserRuleContext tree = null;
          ControlPlaneExtractor extractor = null;
+         Warnings warnings = new Warnings(_settings.getRedFlagRecord()
+               && _logger.getLevel().isLessSpecificThan(
+                     Level.getLevel(LEVEL_REDFLAG)),
+               _settings.getRedFlagAsError(),
+               _settings.getUnimplementedRecord()
+                     && _logger.getLevel().isLessSpecificThan(
+                           Level.getLevel(LEVEL_UNIMPLEMENTED)),
+               _settings.getUnimplementedAsError(),
+               _settings.getPedanticRecord()
+                     && _logger.getLevel().isLessSpecificThan(
+                           Level.getLevel(LEVEL_PEDANTIC)),
+               _settings.getPedanticAsError(), _settings.printParseTree());
          char firstChar = fileText.trim().charAt(0);
          if (firstChar == '!') {
             CiscoCombinedParser ciscoParser = new CiscoCombinedParser(fileText,
@@ -1672,19 +1880,7 @@ public class Batfish implements AutoCloseable {
                   _settings.getThrowOnLexerError());
             combinedParser = ciscoParser;
             extractor = new CiscoControlPlaneExtractor(fileText, ciscoParser,
-                  _settings.getRulesWithSuppressedWarnings(),
-                  _settings.getRedFlagRecord()
-                        && _logger.getLevel().isLessSpecificThan(
-                              Level.getLevel(LEVEL_REDFLAG)),
-                  _settings.getRedFlagAsError(),
-                  _settings.getUnimplementedRecord()
-                        && _logger.getLevel().isLessSpecificThan(
-                              Level.getLevel(LEVEL_UNIMPLEMENTED)),
-                  _settings.getUnimplementedAsError(),
-                  _settings.getPedanticRecord()
-                        && _logger.getLevel().isLessSpecificThan(
-                              Level.getLevel(LEVEL_PEDANTIC)),
-                  _settings.getPedanticAsError(), _settings.printParseTree());
+                  warnings);
          }
          else if (firstChar == '#') {
             // either flat or hierarchical
@@ -1708,20 +1904,7 @@ public class Batfish implements AutoCloseable {
                   _settings.getThrowOnLexerError());
             combinedParser = flatJuniperParser;
             extractor = new FlatJuniperControlPlaneExtractor(fileText,
-                  flatJuniperParser,
-                  _settings.getRulesWithSuppressedWarnings(),
-                  _settings.getRedFlagRecord()
-                        && _logger.getLevel().isLessSpecificThan(
-                              Level.getLevel(LEVEL_REDFLAG)),
-                  _settings.getRedFlagAsError(),
-                  _settings.getUnimplementedRecord()
-                        && _logger.getLevel().isLessSpecificThan(
-                              Level.getLevel(LEVEL_UNIMPLEMENTED)),
-                  _settings.getUnimplementedAsError(),
-                  _settings.getPedanticRecord()
-                        && _logger.getLevel().isLessSpecificThan(
-                              Level.getLevel(LEVEL_PEDANTIC)),
-                  _settings.getPedanticAsError(), _settings.printParseTree());
+                  flatJuniperParser, warnings);
          }
          else {
             String error = "Unknown configuration format for file: \""
@@ -1737,7 +1920,7 @@ public class Batfish implements AutoCloseable {
          }
          try {
             tree = parse(combinedParser, currentPath);
-            _logger.info("\tPost-processing..");
+            _logger.info("\tPost-processing...");
             extractor.processParseTree(tree);
             _logger.info("OK\n");
          }
@@ -1768,13 +1951,13 @@ public class Batfish implements AutoCloseable {
             }
          }
          finally {
-            for (String warning : extractor.getRedFlagWarnings()) {
+            for (String warning : warnings.getRedFlagWarnings()) {
                redflag(warning);
             }
-            for (String warning : extractor.getUnimplementedWarnings()) {
+            for (String warning : warnings.getUnimplementedWarnings()) {
                unimplemented(warning);
             }
-            for (String warning : extractor.getPedanticWarnings()) {
+            for (String warning : warnings.getPedanticWarnings()) {
                pedantic(warning);
             }
          }
@@ -1844,10 +2027,10 @@ public class Batfish implements AutoCloseable {
          Map<String, StringBuilder> factBins) {
       _logger.info("\n*** POSTING FACTS TO BLOXWEB SERVICES ***\n");
       resetTimer();
-      _logger.info("Starting bloxweb services..");
+      _logger.info("Starting bloxweb services...");
       lbFrontend.startLbWebServices();
       _logger.info("OK\n");
-      _logger.info("Posting facts..");
+      _logger.info("Posting facts...");
       try {
          lbFrontend.postFacts(factBins);
       }
@@ -1856,7 +2039,7 @@ public class Batfish implements AutoCloseable {
                e);
       }
       _logger.info("OK\n");
-      _logger.info("Stopping bloxweb services..");
+      _logger.info("Stopping bloxweb services...");
       lbFrontend.stopLbWebServices();
       _logger.info("OK\n");
       _logger.info("SUCCESS\n");
@@ -2075,12 +2258,27 @@ public class Batfish implements AutoCloseable {
          return;
       }
 
+      if (_settings.getHistogram()) {
+         histogram(_settings.getTestRigPath());
+         return;
+      }
+
       if (_settings.getFlatten()) {
          String flattenSource = Paths.get(_settings.getFlattenSource(),
                "configs").toString();
          String flattenDestination = Paths.get(
                _settings.getFlattenDestination(), "configs").toString();
          flatten(flattenSource, flattenDestination);
+         return;
+      }
+
+      if (_settings.getGenerateStubs()) {
+         String configPath = _settings.getSerializeIndependentPath();
+         String inputRole = _settings.getGenerateStubsInputRole();
+         String interfaceDescriptionRegex = _settings
+               .getGenerateStubsInterfaceDescriptionRegex();
+         int stubAs = _settings.getGenerateStubsRemoteAs();
+         generateStubs(inputRole, stubAs, interfaceDescriptionRegex, configPath);
          return;
       }
 
@@ -2257,9 +2455,8 @@ public class Batfish implements AutoCloseable {
             "No task performed! Run with -help flag to see usage");
    }
 
-   private void serializeIndependentConfigs(String vendorConfigPath,
-         String outputPath) {
-      Map<String, Configuration> configurations = getConfigurations(vendorConfigPath);
+   private void serializeIndependentConfigs(
+         Map<String, Configuration> configurations, String outputPath) {
       _logger
             .info("\n*** SERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
       resetTimer();
@@ -2273,6 +2470,12 @@ public class Batfish implements AutoCloseable {
          _logger.debug(" ...OK\n");
       }
       printElapsedTime();
+   }
+
+   private void serializeIndependentConfigs(String vendorConfigPath,
+         String outputPath) {
+      Map<String, Configuration> configurations = getConfigurations(vendorConfigPath);
+      serializeIndependentConfigs(configurations, outputPath);
    }
 
    private void serializeObject(Object object, File outputFile) {
@@ -2318,7 +2521,7 @@ public class Batfish implements AutoCloseable {
             config.setRoles(roles);
          }
          _logger.info("Serializing node-roles mappings: \"" + nodeRolesPath
-               + "\"..");
+               + "\"...");
          serializeObject(nodeRoles, new File(nodeRolesPath));
          _logger.info("OK\n");
       }
@@ -2330,7 +2533,7 @@ public class Batfish implements AutoCloseable {
          VendorConfiguration vc = vendorConfigurations.get(name);
          Path currentOutputPath = Paths.get(outputPath, name);
          _logger.debug("Serializing: \"" + name + "\" ==> \""
-               + currentOutputPath.toString() + "\"..");
+               + currentOutputPath.toString() + "\"...");
          serializeObject(vc, currentOutputPath.toFile());
          _logger.debug("OK\n");
       }

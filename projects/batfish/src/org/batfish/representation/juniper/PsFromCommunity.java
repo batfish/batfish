@@ -22,8 +22,8 @@ public final class PsFromCommunity extends PsFrom {
 
    @Override
    public void applyTo(PolicyMapClause clause, Configuration c) {
-      org.batfish.representation.CommunityList list = c.getCommunityLists().get(
-            _name);
+      org.batfish.representation.CommunityList list = c.getCommunityLists()
+            .get(_name);
       if (list == null) {
          throw new VendorConversionException("missing community list: \""
                + _name + "\"");

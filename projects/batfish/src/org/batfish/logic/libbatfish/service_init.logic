@@ -616,23 +616,23 @@ block(`service_init) {
       }.
 
 // Bgp
-      file_binding_by_name["SetBgpDefaultLocalPref"] = fb,
+      file_binding_by_name["SetBgpDefaultLocalPref_flat"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "SetBgpDefaultLocalPref",
-         predicate_binding_by_name["libbatfish:Bgp:SetBgpDefaultLocalPref"] =
+         file_binding_definition_name[] = "SetBgpDefaultLocalPref_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpDefaultLocalPref_flat"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,NEIGHBORIP,LOCALPREF"
+               predicate_binding_columns[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,LOCALPREF"
             }
       }.
 
-      file_binding_by_name["SetBgpExportPolicy"] = fb,
+      file_binding_by_name["SetBgpExportPolicy_flat"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "SetBgpExportPolicy",
-         predicate_binding_by_name["libbatfish:Bgp:SetBgpExportPolicy"] =
+         file_binding_definition_name[] = "SetBgpExportPolicy_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpExportPolicy_flat"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,NEIGHBORIP,MAP"
+               predicate_binding_columns[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,MAP"
             }
       }.
 
@@ -656,23 +656,23 @@ block(`service_init) {
             }
       }.
 
-      file_binding_by_name["SetBgpImportPolicy"] = fb,
+      file_binding_by_name["SetBgpImportPolicy_flat"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "SetBgpImportPolicy",
-         predicate_binding_by_name["libbatfish:Bgp:SetBgpImportPolicy"] =
+         file_binding_definition_name[] = "SetBgpImportPolicy_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpImportPolicy_flat"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,NEIGHBORIP,MAP"
+               predicate_binding_columns[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,MAP"
             }
       }.
 
-      file_binding_by_name["SetBgpNeighborDefaultMetric"] = fb,
+      file_binding_by_name["SetBgpNeighborDefaultMetric_flat"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "SetBgpNeighborDefaultMetric",
-         predicate_binding_by_name["libbatfish:Bgp:SetBgpNeighborDefaultMetric"] =
+         file_binding_definition_name[] = "SetBgpNeighborDefaultMetric_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpNeighborDefaultMetric_flat"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,NEIGHBORIP,METRIC"
+               predicate_binding_columns[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,METRIC"
             }
       }.
 
@@ -682,7 +682,7 @@ block(`service_init) {
          file_binding_definition_name[] = "SetBgpNeighborGeneratedRoute_flat",
          predicate_binding_by_name["libbatfish:Bgp:SetBgpNeighborGeneratedRoute_flat"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,NEIGHBORIP,NETWORKSTART,NETWORKEND,PREFIXLENGTH"
+               predicate_binding_columns[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,NETWORKSTART,NETWORKEND,PREFIXLENGTH"
             }
       }.
 
@@ -692,67 +692,67 @@ block(`service_init) {
          file_binding_definition_name[] = "SetBgpNeighborGeneratedRoutePolicy_flat",
          predicate_binding_by_name["libbatfish:Bgp:SetBgpNeighborGeneratedRoutePolicy_flat"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,NEIGHBORIP,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP"
+               predicate_binding_columns[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP"
             }
       }.
 
-      file_binding_by_name["SetBgpNeighborIp"] = fb,
+      file_binding_by_name["SetBgpNeighborNetwork_flat"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "SetBgpNeighborIp",
-         predicate_binding_by_name["libbatfish:Bgp:SetBgpNeighborIp"] =
+         file_binding_definition_name[] = "SetBgpNeighborNetwork_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpNeighborNetwork_flat"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,NEIGHBORIP"
+               predicate_binding_columns[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH"
             }
       }.
 
-      file_binding_by_name["SetBgpNeighborSendCommunity"] = fb,
+      file_binding_by_name["SetBgpNeighborSendCommunity_flat"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "SetBgpNeighborSendCommunity",
-         predicate_binding_by_name["libbatfish:Bgp:SetBgpNeighborSendCommunity"] =
+         file_binding_definition_name[] = "SetBgpNeighborSendCommunity_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpNeighborSendCommunity_flat"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,NEIGHBORIP"
+               predicate_binding_columns[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH"
             }
       }.
 
-      file_binding_by_name["SetBgpOriginationPolicy"] = fb,
+      file_binding_by_name["SetBgpOriginationPolicy_flat"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "SetBgpOriginationPolicy",
-         predicate_binding_by_name["libbatfish:Bgp:SetBgpOriginationPolicy"] =
+         file_binding_definition_name[] = "SetBgpOriginationPolicy_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetBgpOriginationPolicy_flat"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,NEIGHBORIP,MAP"
+               predicate_binding_columns[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,MAP"
             }
       }.
 
-      file_binding_by_name["SetLocalAs"] = fb,
+      file_binding_by_name["SetLocalAs_flat"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "SetLocalAs",
-         predicate_binding_by_name["libbatfish:Bgp:SetLocalAs"] =
+         file_binding_definition_name[] = "SetLocalAs_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetLocalAs_flat"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,NEIGHBORIP,LOCALAS"
+               predicate_binding_columns[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,LOCALAS"
             }
       }.
 
-      file_binding_by_name["SetRemoteAs"] = fb,
+      file_binding_by_name["SetRemoteAs_flat"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "SetRemoteAs",
-         predicate_binding_by_name["libbatfish:Bgp:SetRemoteAs"] =
+         file_binding_definition_name[] = "SetRemoteAs_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetRemoteAs_flat"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,NEIGHBORIP,REMOTEAS"
+               predicate_binding_columns[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,REMOTEAS"
             }
       }.
 
-      file_binding_by_name["SetRouteReflectorClient"] = fb,
+      file_binding_by_name["SetRouteReflectorClient_flat"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "SetRouteReflectorClient",
-         predicate_binding_by_name["libbatfish:Bgp:SetRouteReflectorClient"] =
+         file_binding_definition_name[] = "SetRouteReflectorClient_flat",
+         predicate_binding_by_name["libbatfish:Bgp:SetRouteReflectorClient_flat"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,NEIGHBORIP,CLUSTERID"
+               predicate_binding_columns[] = "NODE,NEIGHBORNETWORKSTART,NEIGHBORNETWORKEND,NEIGHBORNETWORKPREFIXLENGTH,CLUSTERID"
             }
       }.
 
