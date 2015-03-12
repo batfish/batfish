@@ -1,4 +1,6 @@
-package org.batfish.coordinator;
+package org.batfish.coordinator.queues;
+
+import org.batfish.coordinator.WorkQueue;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.queue.CloudQueue;
