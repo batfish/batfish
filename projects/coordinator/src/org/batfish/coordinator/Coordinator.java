@@ -117,8 +117,8 @@ public class Coordinator {
       try {
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               worker, BatfishServiceConstants.BATFISH_SERVICE_BASE,
-               BatfishServiceConstants.BATFISH_SERVICE_GETSTATUS));
+               worker, BatfishServiceConstants.SERVICE_BASE,
+               BatfishServiceConstants.SERVICE_GETSTATUS));
          Invocation.Builder invocationBuilder = webTarget
                .request(MediaType.APPLICATION_JSON);
          Response response = invocationBuilder.get();

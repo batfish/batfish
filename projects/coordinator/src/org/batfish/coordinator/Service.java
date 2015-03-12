@@ -18,7 +18,7 @@ import org.batfish.common.*;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
-@Path(BatfishCoordinatorConstants.BATFISH_COORDINATOR_SERVICE_BASE)
+@Path(CoordinatorConstants.SERVICE_BASE)
 public class Service {
 
    @GET
@@ -31,7 +31,7 @@ public class Service {
    }
 
    @GET
-   @Path(BatfishCoordinatorConstants.BATFISH_COORDINATOR_SERVICE_GETSTATUS)
+   @Path(CoordinatorConstants.SERVICE_GETSTATUS)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
       return new JSONArray(Arrays.asList("", Main.getCoordinator().getWorkStatus()));
@@ -39,7 +39,7 @@ public class Service {
    
    //functions for pool management
    @GET
-   @Path(BatfishCoordinatorConstants.BATFISH_COORDINATOR_SERVICE_UPDATEPOOL)
+   @Path(CoordinatorConstants.SERVICE_UPDATEPOOL)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray updatePool(@Context UriInfo ui) {
       try {
@@ -81,7 +81,7 @@ public class Service {
    }
    
    @GET
-   @Path(BatfishCoordinatorConstants.BATFISH_COORDINATOR_SERVICE_GETPOOLSTATUS)
+   @Path(CoordinatorConstants.SERVICE_GETPOOLSTATUS)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getPoolStatus() {
          try {
@@ -95,4 +95,21 @@ public class Service {
             return new JSONArray(Arrays.asList("failure", e.getMessage()));
          }   
    }      
+   
+   @GET
+   @Path(CoordinatorConstants.SERVICE_QUEUE_WORK)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray queueWork() {
+         try {
+                HashMap<String, String> poolStatus = Main.getCoordinator().getPoolStatus();
+                
+                JSONObject obj = new JSONObject(poolStatus);
+                
+                return new JSONArray(Arrays.asList("", obj.toString()));
+         }
+         catch (Exception e) {
+            return new JSONArray(Arrays.asList("failure", e.getMessage()));
+         }   
+   }      
+
 }

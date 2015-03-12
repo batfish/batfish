@@ -15,9 +15,9 @@ import javax.ws.rs.Produces;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.batfish.constants.Constants;
+import org.batfish.common.BatfishServiceConstants;
 
-@Path(Constants.BATFISH_SERVICE_BASE)
+@Path(BatfishServiceConstants.SERVICE_BASE)
 public class Service {
 
    @GET
@@ -30,7 +30,7 @@ public class Service {
    }
 
    @GET
-   @Path(Constants.BATFISH_SERVICE_GETSTATUS)
+   @Path(BatfishServiceConstants.SERVICE_GETSTATUS)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
       try {
@@ -42,7 +42,7 @@ public class Service {
    }
 
    @GET
-   @Path(Constants.BATFISH_SERVICE_RUN)
+   @Path(BatfishServiceConstants.SERVICE_RUN)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray run(@Context UriInfo ui) {
       try {
