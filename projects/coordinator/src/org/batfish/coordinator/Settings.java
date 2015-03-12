@@ -11,6 +11,7 @@ public class Settings {
 
    private static final String ARG_QUEUE_ASSIGNED_WORK = "q_assignedwork";
    private static final String ARG_QUEUE_COMPLETED_WORK = "q_completedwork";
+   private static final String ARG_QUEUE_TYPE = "qtype";
    private static final String ARG_QUEUE_UNASSIGNED_WORK = "q_unassignedwork";
    private static final String ARG_SERVICE_PORT = "serviceport";
    private static final String ARG_SERVICE_URL = "serviceurl";
@@ -21,6 +22,7 @@ public class Settings {
 
    private static final String DEFAULT_QUEUE_ASSIGNED_WORK = "batfishassignedwork";
    private static final String DEFAULT_QUEUE_COMPLETED_WORK = "batfishcompletedwork";
+   private static final String DEFAULT_QUEUE_TYPE = "memory";
    private static final String DEFAULT_QUEUE_UNASSIGNED_WORK = "batfishunassignedwork";
    private static final String DEFAULT_SERVICE_PORT = "9998";
    private static final String DEFAULT_SERVICE_URL = "http://localhost";
@@ -31,6 +33,7 @@ public class Settings {
    private Options _options;
    private String _queueAssignedWork;
    private String _queueCompletedWork;
+   private WorkQueue.Type _queueType;
    private String _queueUnassignedWork;
    private int _servicePort;
    private String _serviceUrl;
@@ -53,6 +56,10 @@ public class Settings {
 
    public String getQueueCompletedWork() {
       return _queueCompletedWork;
+   }
+
+   public WorkQueue.Type getQueueType() {
+      return _queueType;
    }
 
    public String getQueueUnassignedWork() {
@@ -85,8 +92,11 @@ public class Settings {
             .desc("port for batfish service")
             .longOpt(ARG_SERVICE_PORT).build());
       _options.addOption(Option.builder().argName("base_url").hasArg()
-            .desc("base url for batfish service")
+            .desc("base url for coordinator service")
             .longOpt(ARG_SERVICE_URL).build());
+      _options.addOption(Option.builder().argName("qtype").hasArg()
+            .desc("queue type to use {azure, memory}")
+            .longOpt(ARG_QUEUE_TYPE).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -98,6 +108,7 @@ public class Settings {
 
       _queueAssignedWork = line.getOptionValue(ARG_QUEUE_ASSIGNED_WORK, DEFAULT_QUEUE_ASSIGNED_WORK);
       _queueCompletedWork = line.getOptionValue(ARG_QUEUE_COMPLETED_WORK, DEFAULT_QUEUE_COMPLETED_WORK);
+      _queueType = WorkQueue.Type.valueOf(line.getOptionValue(ARG_QUEUE_TYPE, DEFAULT_QUEUE_TYPE));
       _queueUnassignedWork = line.getOptionValue(ARG_QUEUE_UNASSIGNED_WORK, DEFAULT_QUEUE_UNASSIGNED_WORK);
       _servicePort = Integer.parseInt(line.getOptionValue(ARG_SERVICE_PORT, DEFAULT_SERVICE_PORT));
       _serviceUrl = line.getOptionValue(ARG_SERVICE_URL, DEFAULT_SERVICE_URL);

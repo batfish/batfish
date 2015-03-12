@@ -10,10 +10,14 @@
    <!-- import ant-doxygen -->
    <taskdef resource="org/doxygen/tools/antlib.xml">
       <classpath>
-         <pathelement location="ant-doxygen/ant_doxygen.jar" />
+         <pathelement location="ant-doxygen/ant_doxygen.jar" />      	
       </classpath>
    </taskdef>
 
+   <path id="libraries">
+      <fileset dir="lib" includes="**/*.jar"/>
+   </path>
+	
    <target name="all" depends="jar" description="Build everything"/>
 
    <property name="outputJar" value="out/batfish-common-protocol.jar"/>
@@ -33,6 +37,7 @@
       <mkdir dir="bin"/>
       <javac destdir="bin" includes="**/*.java" debug="true" includeantruntime="false" source="1.7" target="1.7">
          <src path="src" />
+         <classpath refid="libraries" />
       </javac>
 	</target>
 

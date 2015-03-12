@@ -1,4 +1,7 @@
-package org.batfish.coordinator;
+package org.batfish.coordinator.queues;
+
+import org.batfish.common.WorkItem;
+import org.batfish.coordinator.WorkQueue;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.queue.CloudQueue;
@@ -40,5 +43,10 @@ public class AzureQueue implements WorkQueue {
          e.printStackTrace();
          return -1;
       }
+   }
+
+   @Override
+   public boolean enque(WorkItem workItem) {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 }
