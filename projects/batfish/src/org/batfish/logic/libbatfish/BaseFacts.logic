@@ -41,6 +41,7 @@ block(`BaseFacts) {
 +RoutingProtocol("static").
 
 +Ip(0).
++Ip(-1).
 
 +Encapsulation("dot1q").
 
