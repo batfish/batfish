@@ -11,14 +11,13 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.batfish.coordinator.azurequeue.AzureQueue;
+import org.batfish.common.BatfishServiceConstants;
+import org.batfish.coordinator.queues.AzureQueue;
+import org.batfish.coordinator.queues.MemoryQueue;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
 public class Coordinator {
-
-   //this needs to be generalized to host things elsewhere
-   private static final boolean UseAzureQueues = true;
    
    private WorkQueue _queueAssignedWork;
    private WorkQueue _queueUnassignedWork;
@@ -32,7 +31,7 @@ public class Coordinator {
       
       this._settings = settings;
       
-      if (UseAzureQueues) {
+      if (_settings.getQueueType() == WorkQueue.Type.azure) {
          String storageConnectionString = String.format(
                "DefaultEndpointsProtocol=%s;AccountName=%s;AccountKey=%s",
                settings.getStorageProtocol(), settings.getStorageAccountName(),
@@ -45,6 +44,16 @@ public class Coordinator {
          _queueUnassignedWork = new AzureQueue(
                settings.getQueueUnassignedWork(), storageConnectionString);
       }
+      else if (_settings.getQueueType() == WorkQueue.Type.memory) {
+         _queueAssignedWork = new MemoryQueue();
+         _queueCompletedWork = new MemoryQueue();
+         _queueUnassignedWork = new MemoryQueue();       
+      }
+      else {
+         System.err.println("unsupported queue type: " + _settings.getQueueType());
+         System.exit(1);
+      }
+      
       
       workerPool = new HashMap<String, WorkerStatus>();
    }
@@ -108,8 +117,8 @@ public class Coordinator {
       try {
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               worker, Constants.BATFISH_SERVICE_BASE,
-               Constants.BATFISH_SERVICE_GETSTATUS));
+               worker, BatfishServiceConstants.BATFISH_SERVICE_BASE,
+               BatfishServiceConstants.BATFISH_SERVICE_GETSTATUS));
          Invocation.Builder invocationBuilder = webTarget
                .request(MediaType.APPLICATION_JSON);
          Response response = invocationBuilder.get();

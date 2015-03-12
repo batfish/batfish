@@ -2,7 +2,7 @@ package org.batfish.coordinator;
 
 public interface WorkQueue {   
    
-   public enum Type {Azure, Memory}
+   public enum Type {azure, memory}
    
    long getLength();   
 }

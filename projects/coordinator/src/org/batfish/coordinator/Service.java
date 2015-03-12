@@ -13,10 +13,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import org.batfish.common.*;
+
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
-@Path(Constants.BATFISH_COORDINATOR_SERVICE_BASE)
+@Path(BatfishCoordinatorConstants.BATFISH_COORDINATOR_SERVICE_BASE)
 public class Service {
 
    @GET
@@ -29,7 +31,7 @@ public class Service {
    }
 
    @GET
-   @Path(Constants.BATFISH_COORDINATOR_SERVICE_GETSTATUS)
+   @Path(BatfishCoordinatorConstants.BATFISH_COORDINATOR_SERVICE_GETSTATUS)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
       return new JSONArray(Arrays.asList("", Main.getCoordinator().getWorkStatus()));
@@ -37,7 +39,7 @@ public class Service {
    
    //functions for pool management
    @GET
-   @Path(Constants.BATFISH_COORDINATOR_SERVICE_UPDATEPOOL)
+   @Path(BatfishCoordinatorConstants.BATFISH_COORDINATOR_SERVICE_UPDATEPOOL)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray updatePool(@Context UriInfo ui) {
       try {
@@ -79,7 +81,7 @@ public class Service {
    }
    
    @GET
-   @Path(Constants.BATFISH_COORDINATOR_SERVICE_GETPOOLSTATUS)
+   @Path(BatfishCoordinatorConstants.BATFISH_COORDINATOR_SERVICE_GETPOOLSTATUS)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getPoolStatus() {
          try {
