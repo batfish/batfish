@@ -13,8 +13,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+import org.batfish.common.BatfishServiceConstants;
 
-@Path("/batfishservice")
+@Path(BatfishServiceConstants.SERVICE_BASE)
 public class Service {
 
    @GET
@@ -27,14 +30,19 @@ public class Service {
    }
 
    @GET
-   @Path("getstatus")
+   @Path(BatfishServiceConstants.SERVICE_GETSTATUS)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
-      return new JSONArray(Arrays.asList("", "idle = " + Driver.getIdle()));
+      try {
+         return new JSONArray(Arrays.asList("", (new JSONObject().put("idle", Driver.getIdle())).toString()));
+      }
+      catch (Exception e) {
+         return new JSONArray(Arrays.asList("failure", e.getMessage()));
+      }
    }
 
    @GET
-   @Path("run")
+   @Path(BatfishServiceConstants.SERVICE_RUN)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray run(@Context UriInfo ui) {
       try {

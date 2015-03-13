@@ -12,6 +12,9 @@ export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.data
 export BATFISH_PARALLEL='parallel --tag -v --eta --halt 2'
 export BATFISH_NESTED_PARALLEL='parallel --tag -v --halt 2 -j1'
 
+export BATFISH_CLIENT_PATH="$BATFISH_ROOT/projects/batfish-client"
+export BATFISH_CLIENT="$BATFISH_CLIENT_PATH/batfish-client"
+
 export COORDINATOR_PATH="$BATFISH_ROOT/projects/coordinator"
 export COORDINATOR="$COORDINATOR_PATH/coordinator"
 
@@ -501,6 +504,41 @@ coordinator() {
    $COORDINATOR $COORDINATOR_COMMON_ARGS $@
 }
 export -f coordinator
+
+batfish-client() {
+   # if cygwin, shift and replace each parameter
+   if [ "Cygwin" = "$(uname -o)" ]; then
+      local NUMARGS=$#
+      for i in $(seq 1 $NUMARGS); do
+         local CURRENT_ARG=$1
+         local NEW_ARG="$(cygpath -w -- $CURRENT_ARG)"
+         set -- "$@" "$NEW_ARG"
+         shift
+      done
+   fi
+   if [ "$BATFISH_CLIENT_PRINT_CMDLINE" = "yes" ]; then
+      echo "$BATFISH_CLIENT $BATFISH_CLIENT_COMMON_ARGS $@"
+   fi
+   $BATFISH_CLIENT $BATFISH_CLIENT_COMMON_ARGS $@
+}
+export -f batfish-client
+
+client_build() {
+   local RESTORE_FILE='cygwin-symlink-restore-data'
+   local OLD_PWD=$(pwd)
+   cd $BATFISH_CLIENT_PATH/..
+   if [ "Cygwin" = "$(uname -o)" -a ! -e "$RESTORE_FILE" ]; then
+      echo "Replacing symlinks (Cygwin workaround)"
+      ./cygwin-replace-symlinks
+   fi
+   if [ ! -e "$COMMON_JAR" ]; then
+      common_build
+   fi
+   cd $BATFISH_CLIENT_PATH
+   ant $@ || { cd $OLD_PWD ; return 1 ; } 
+   cd $OLD_PWD
+}
+export -f client_build
 
 coordinator_build() {
    local RESTORE_FILE='cygwin-symlink-restore-data'

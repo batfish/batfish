@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/javax.ws.rs-api-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-container-grizzly2-http-2.16.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-media-json-jettison-2.16.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-server.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jettison-1.3.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/batfish-common-protocol"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
