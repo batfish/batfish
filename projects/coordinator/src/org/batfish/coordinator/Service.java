@@ -14,7 +14,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import org.batfish.common.*;
-
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -103,23 +102,25 @@ public class Service {
          try {
             MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
 
-            WorkItem workItem = new WorkItem();
-            
             for (MultivaluedMap.Entry<String, List<String>> entry : queryParams
                   .entrySet()) {
                   
-               if (entry.getKey().equals("id")) {
-                  workItem.setId(entry.getValue().get(0));
-               }
-               else {                  
-                  workItem.addRequestParam(entry.getKey(), entry.getValue().get(0));
-               }
-               
-            }
-             
-            boolean result = Main.getCoordinator().queueWork(workItem);
+               if (entry.getKey().equals(CoordinatorConstants.SERVICE_QUEUE_WORK_KEY)) {
+                  System.out.printf("work: %s\n", entry.getValue());
+
+                  WorkItem workItem = new WorkItem(entry.getValue().get(0));
+
+                  boolean result = Main.getCoordinator().queueWork(workItem);
                   
-            return new JSONArray(Arrays.asList("", result));
+                  return new JSONArray(Arrays.asList("", result));
+               }
+               else {
+                  System.out.println("Unknown key in work: " + entry.getKey());
+               }
+            }
+            
+            return new JSONArray(Arrays.asList("failure", "work not found"));            
+             
          }
          catch (Exception e) {
             return new JSONArray(Arrays.asList("failure", e.getMessage()));

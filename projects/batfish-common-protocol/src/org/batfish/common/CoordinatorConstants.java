@@ -8,4 +8,5 @@ public class CoordinatorConstants {
    public static final String SERVICE_GETPOOLSTATUS = "getpoolstatus";  
    public static final String SERVICE_QUEUE_WORK = "queuework";
 
+   public static final String SERVICE_QUEUE_WORK_KEY = "work";
 }
