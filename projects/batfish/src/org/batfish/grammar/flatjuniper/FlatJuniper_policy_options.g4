@@ -355,6 +355,11 @@ tht_external
    EXTERNAL TYPE DEC
 ;
 
+tht_install_nexthop
+:
+   INSTALL_NEXTHOP s_null_filler
+;
+
 tht_local_preference
 :
    LOCAL_PREFERENCE localpref = DEC
@@ -468,6 +473,7 @@ tt_then_tail
    | tht_default_action_accept
    | tht_default_action_reject
    | tht_external
+   | tht_install_nexthop
    | tht_local_preference
    | tht_metric
    | tht_metric_expression
