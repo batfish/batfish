@@ -148,7 +148,10 @@ fromt_tag
 
 metric_expression
 :
-   MULTIPLIER multiplier = DEC
+   (
+      METRIC
+      | METRIC2
+   ) MULTIPLIER multiplier = DEC
    (
       OFFSET offset = DEC
    )?
@@ -467,6 +470,9 @@ tt_then_tail
    | tht_external
    | tht_local_preference
    | tht_metric
+   | tht_metric_expression
+   | tht_metric2
+   | tht_metric2_expression
    | tht_next_hop
    | tht_next_policy
    | tht_next_term
