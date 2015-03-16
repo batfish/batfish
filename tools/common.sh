@@ -48,21 +48,16 @@ batfish() {
 export -f batfish
 
 batfish_build() {
-   local RESTORE_FILE='cygwin-symlink-restore-data'
-   local OLD_PWD=$(pwd)
-   cd $BATFISH_PATH/..
-   if [ "Cygwin" = "$(uname -o)" -a ! -e "$RESTORE_FILE" ]; then
-      echo "Replacing symlinks (Cygwin workaround)"
-      ./cygwin-replace-symlinks
-   fi
-   if [ ! -e "$COMMON_JAR" ]; then
-      common_build
-   fi
-   cd $BATFISH_PATH
-   ant $@ || { cd $OLD_PWD ; return 1 ; } 
-   cd $OLD_PWD
+   bash -c _batfish_build || return 1
 }
 export -f batfish_build
+
+_batfish_build() {
+   common_build || return 1
+   cd $BATFISH_PATH
+   ant $@ || return 1
+}
+export -f _batfish_build
 
 batfish_compile() {
    batfish_date
@@ -385,12 +380,37 @@ batfish_reload() {
 export -f batfish_reload
 
 batfish_replace_symlinks() {
-   OLDPWD=$PWD
-   cd $BATFISH_PATH/..
-   ./cygwin-replace-symlinks
-   cd $OLDPWD
+   if [ "Cygwin" = "$(uname -o)" ]; then
+      bash -c _batfish_replace_symlinks || return 1
+   fi
 }
-export batfish_replace_symlinks
+export -f batfish_replace_symlinks
+
+_batfish_replace_symlinks() {
+   cd $BATFISH_ROOT
+   if [ -d ".git" ]; then
+      echo "(Cygwin workaround) Updating git index to ignore changes to symlinks"
+      git update-index --assume-unchanged $(find . -type l) || return 1
+   fi
+   echo "(Cygwin workaround) Replacing symlinks"
+   find . -type l | parallel _batfish_replace_symlink "{}" \;
+   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
+      return 1
+   fi
+}
+export -f _batfish_replace_symlinks
+
+_batfish_replace_symlink() {
+   SYMLINK=$1
+   echo "SYMLINK=$SYMLINK"
+   TARGET="$(readlink $SYMLINK)"
+   echo "TARGET=$TARGET"
+   ABSOLUTE_TARGET="$(readlink -f $SYMLINK)"
+   echo "ABSOLUTE_TARGET=$ABSOLUTE_TARGET"
+   rm "$SYMLINK" || return 1
+   cp -a "$ABSOLUTE_TARGET" "$SYMLINK" || return 1
+}
+export -f _batfish_replace_symlink
 
 batfish_serialize_independent() {
    batfish_date
@@ -431,14 +451,6 @@ batfish_serialize_vendor_with_roles() {
    echo ": END: Parse vendor configuration files and serialize vendor structures"
 }
 export -f batfish_serialize_vendor_with_roles
-
-batfish_restore_symlinks() {
-   OLDPWD=$PWD
-   cd $BATFISH_PATH/..
-   ./cygwin-restore-symlinks
-   cd $OLDPWD
-}
-export batfish_restore_symlinks
 
 batfish_unit_tests_parser() {
    batfish_expect_args 1 $# || return 1
@@ -524,50 +536,37 @@ batfish-client() {
 export -f batfish-client
 
 client_build() {
-   local RESTORE_FILE='cygwin-symlink-restore-data'
-   local OLD_PWD=$(pwd)
-   cd $BATFISH_CLIENT_PATH/..
-   if [ "Cygwin" = "$(uname -o)" -a ! -e "$RESTORE_FILE" ]; then
-      echo "Replacing symlinks (Cygwin workaround)"
-      ./cygwin-replace-symlinks
-   fi
-   if [ ! -e "$COMMON_JAR" ]; then
-      common_build
-   fi
-   cd $BATFISH_CLIENT_PATH
-   ant $@ || { cd $OLD_PWD ; return 1 ; } 
-   cd $OLD_PWD
+   bash -c _client_build || return 1
 }
-export -f client_build
+
+_client_build() {
+   common_build || return 1
+   cd $BATFISH_CLIENT_PATH
+   ant $@ || return 1
+}
+export -f _client_build
 
 coordinator_build() {
-   local RESTORE_FILE='cygwin-symlink-restore-data'
-   local OLD_PWD=$(pwd)
-   cd $COORDINATOR_PATH/..
-   if [ "Cygwin" = "$(uname -o)" -a ! -e "$RESTORE_FILE" ]; then
-      echo "Replacing symlinks (Cygwin workaround)"
-      ./cygwin-replace-symlinks
-   fi
-   if [ ! -e "$COMMON_JAR" ]; then
-      common_build
-   fi
-   cd $COORDINATOR_PATH
-   ant $@ || { cd $OLD_PWD ; return 1 ; } 
-   cd $OLD_PWD
+   bash -c _coordinator_build || return 1
 }
 export -f coordinator_build
 
+_coordinator_build() {
+   common_build || return 1
+   cd $COORDINATOR_PATH
+   ant $@ || return 1 
+}
+export -f _coordinator_build
+
 common_build() {
-   local RESTORE_FILE='cygwin-symlink-restore-data'
-   local OLD_PWD=$(pwd)
-   cd $COMMON_PATH/..
-   if [ "Cygwin" = "$(uname -o)" -a ! -e "$RESTORE_FILE" ]; then
-      echo "Replacing symlinks (Cygwin workaround)"
-      ./cygwin-replace-symlinks
-   fi
-   cd $COMMON_PATH
-   ant $@ || { cd $OLD_PWD ; return 1 ; }
-   cd $OLD_PWD
+   bash -c _common_build || return 1
 }
 export -f common_build
+
+_common_build() {
+   batfish_replace_symlinks || return 1
+   cd $COMMON_PATH
+   ant $@ || return 1
+}
+export -f _common_build
 
