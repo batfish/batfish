@@ -1584,6 +1584,11 @@ RESOLVE
    'resolve'
 ;
 
+RESTRICT
+:
+   'restrict'
+;
+
 RETAIN
 :
    'retain'

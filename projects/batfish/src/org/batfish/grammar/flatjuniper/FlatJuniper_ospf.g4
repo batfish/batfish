@@ -64,6 +64,11 @@ alt_metric
    METRIC DEC
 ;
 
+art_restrict
+:
+   RESTRICT
+;
+
 at_apply_groups
 :
    s_apply_groups
@@ -71,7 +76,14 @@ at_apply_groups
 
 at_area_range
 :
-   AREA_RANGE IP_PREFIX
+   AREA_RANGE IP_PREFIX at_area_range_tail
+;
+
+at_area_range_tail
+:
+// intentional blank
+
+   | art_restrict
 ;
 
 at_interface
@@ -122,6 +134,7 @@ at_nssa_tail
 :
 // intentional blank
 
+   | nssat_area_range
    | nssat_default_lsa
 ;
 
@@ -149,6 +162,11 @@ dlsat_metric_type
 dlsat_type_7
 :
    TYPE_7
+;
+
+nssat_area_range
+:
+   at_area_range
 ;
 
 nssat_default_lsa
