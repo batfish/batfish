@@ -89,6 +89,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private static final String F_POLICY_TERM_THEN_NEXT_HOP = "policy-statement - term - then - next-hop";
 
+   private static final String F_IPV6 = "ipv6 - other";
+
    public static NamedPort getNamedPort(PortContext ctx) {
       if (ctx.AFS() != null) {
          return NamedPort.AFS;
@@ -557,8 +559,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterFromt_route_filter_then(Fromt_route_filter_thenContext ctx) {
-      RouteFilterLine line = _currentRouteFilterLine;
-      _currentPsThens = line.getThens();
+      if (_currentRouteFilterPrefix != null) { // not ipv6
+         RouteFilterLine line = _currentRouteFilterLine;
+         _currentPsThens = line.getThens();
+      }
    }
 
    @Override
@@ -709,6 +713,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             _currentGeneratedRoute = new GeneratedRoute(prefix);
             generatedRoutes.put(prefix, _currentGeneratedRoute);
          }
+      }
+      else if (ctx.IPV6_PREFIX() != null) {
+         todo(ctx, F_IPV6);
       }
    }
 
@@ -1059,8 +1066,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitGt_policy(Gt_policyContext ctx) {
-      String policy = ctx.policy.getText();
-      _currentGeneratedRoute.getPolicies().add(policy);
+      if (_currentGeneratedRoute != null) { // not ipv6
+         String policy = ctx.policy.getText();
+         _currentGeneratedRoute.getPolicies().add(policy);
+      }
    }
 
    @Override
@@ -1135,8 +1144,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitRft_exact(Rft_exactContext ctx) {
-      if (_currentRouteFilterPrefix != null) {
+   public void enterRft_exact(Rft_exactContext ctx) {
+      if (_currentRouteFilterPrefix != null) { // not ipv6
          RouteFilterLineExact fromRouteFilterExact = new RouteFilterLineExact(
                _currentRouteFilterPrefix);
          _currentRouteFilterLine = _currentRouteFilter
@@ -1145,8 +1154,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitRft_orlonger(Rft_orlongerContext ctx) {
-      if (_currentRouteFilterPrefix != null) {
+   public void enterRft_orlonger(Rft_orlongerContext ctx) {
+      if (_currentRouteFilterPrefix != null) { // not ipv6
          RouteFilterLineOrLonger fromRouteFilterOrLonger = new RouteFilterLineOrLonger(
                _currentRouteFilterPrefix);
          _currentRouteFilterLine = _currentRouteFilter
@@ -1155,10 +1164,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitRft_prefix_length_range(Rft_prefix_length_rangeContext ctx) {
+   public void enterRft_prefix_length_range(Rft_prefix_length_rangeContext ctx) {
       int minPrefixLength = toInt(ctx.low);
       int maxPrefixLength = toInt(ctx.high);
-      if (_currentRouteFilterPrefix != null) {
+      if (_currentRouteFilterPrefix != null) { // not ipv6
          RouteFilterLineLengthRange fromRouteFilterLengthRange = new RouteFilterLineLengthRange(
                _currentRouteFilterPrefix, minPrefixLength, maxPrefixLength);
          _currentRouteFilterLine = _currentRouteFilter
@@ -1167,8 +1176,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitRft_through(Rft_throughContext ctx) {
-      if (_currentRouteFilterPrefix != null) {
+   public void enterRft_through(Rft_throughContext ctx) {
+      if (_currentRouteFilterPrefix != null) { // not ipv6
          Prefix throughPrefix = new Prefix(ctx.IP_PREFIX().getText());
          RouteFilterLineThrough fromRouteFilterThrough = new RouteFilterLineThrough(
                _currentRouteFilterPrefix, throughPrefix);
@@ -1178,9 +1187,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitRft_upto(Rft_uptoContext ctx) {
+   public void enterRft_upto(Rft_uptoContext ctx) {
       int maxPrefixLength = toInt(ctx.high);
-      if (_currentRouteFilterPrefix != null) {
+      if (_currentRouteFilterPrefix != null) { // not ipv6
          RouteFilterLineUpTo fromRouteFilterUpTo = new RouteFilterLineUpTo(
                _currentRouteFilterPrefix, maxPrefixLength);
          _currentRouteFilterLine = _currentRouteFilter
