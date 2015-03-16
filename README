@@ -79,7 +79,7 @@ NOTE the default values for the following arguments:
 -lbport -> 55179
 -lbwebport -> 8080
 -lbwebadminport -> 55183
-NOTE that the built logic will reside on the SERVER at <batfish-repo-root>/projects/batfish/bin/batfish/logic
+NOTE that the built logic will reside on the SERVER at <batfish-repo-root>/projects/batfish/bin/org/batfish/logic
 .bashrc:
    export BATFISH_REMOTE_LOGIC_DIR=<MANDATORY_absolute_path_to_built_logic_on_SERVER_filesystem>'
    export BATFISH_COMMON_ARGS='-lbhost <OPTIONAL_hostname_of_SERVER> -lbport <OPTIONAL_ConnectBlox_port_on_SERVER> -lbwebport <OPTIONAL_lb_web_port_on_SERVER> -lbwebadminport <OPTIONAL_lb_web_admin_port_on_SERVER>

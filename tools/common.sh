@@ -25,17 +25,18 @@ batfish() {
    # if cygwin, shift and replace each parameter
    if [ "Cygwin" = "$(uname -o)" ]; then
       local NUMARGS=$#
-      local IGNORE_NEXT_ARG=no;
+      local IGNORE_CURRENT_ARG=no;
       for i in $(seq 1 $NUMARGS); do
-         if [ "$IGNORE_NEXT_ARG" = "yes" ]; then
-            local IGNORE_NEXT_ARG=no
-            continue
-         fi
          local CURRENT_ARG=$1
-         if [ "$CURRENT_ARG" = "-logicdir" ]; then
-            local IGNORE_NEXT_ARG=yes
+         if [ "$IGNORE_CURRENT_ARG" = "yes" ]; then
+            local NEW_ARG="$CURRENT_ARG"
+            local IGNORE_CURRENT_ARG=no
+         else
+            local NEW_ARG="$(cygpath -w -- $CURRENT_ARG)"
          fi
-         local NEW_ARG="$(cygpath -w -- $CURRENT_ARG)"
+         if [ "$CURRENT_ARG" = "-logicdir" ]; then
+            local IGNORE_CURRENT_ARG=yes
+         fi
          set -- "$@" "$NEW_ARG"
          shift
       done
@@ -70,7 +71,7 @@ batfish_compile() {
    if [ -n "${BATFISH_REMOTE_LOGIC_DIR}" ]; then
       local LOGIC_DIR_ARG="-logicdir ${BATFISH_REMOTE_LOGIC_DIR}"
    fi
-   batfish -workspace $LOGIC_DIR_ARG $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR || return 1
+   batfish $LOGIC_DIR_ARG -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane"
 }
