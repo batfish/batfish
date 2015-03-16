@@ -1329,6 +1329,11 @@ OSPF3
    'ospf3'
 ;
 
+OUT_DELAY
+:
+   'out-delay'
+;
+
 OUTPUT
 :
    'output'

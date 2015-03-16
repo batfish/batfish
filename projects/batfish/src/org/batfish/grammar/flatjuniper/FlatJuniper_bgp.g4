@@ -245,6 +245,7 @@ bt_null
       | BFD_LIVENESS_DETECTION
       | HOLD_TIME
       | LOG_UPDOWN
+      | OUT_DELAY
       | TRACEOPTIONS
    ) s_null_filler
 ;
