@@ -14,8 +14,20 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
 
    private Hierarchy _hierarchy;
 
+   private boolean _reenablePathRecording;
+
    public InitialTreeBuilder(Hierarchy hierarchy) {
       _hierarchy = hierarchy;
+   }
+
+   @Override
+   public void enterInterface_id(Interface_idContext ctx) {
+      if (_enablePathRecording && ctx.unit != null) {
+         _enablePathRecording = false;
+         _reenablePathRecording = true;
+         String text = ctx.getText();
+         _currentPath.addNode(text);
+      }
    }
 
    @Override
@@ -37,6 +49,14 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
    public void enterSet_line_tail(Set_line_tailContext ctx) {
       _enablePathRecording = true;
       _currentPath = new HierarchyPath();
+   }
+
+   @Override
+   public void exitInterface_id(Interface_idContext ctx) {
+      if (_reenablePathRecording) {
+         _enablePathRecording = true;
+         _reenablePathRecording = false;
+      }
    }
 
    @Override

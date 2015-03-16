@@ -499,7 +499,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Ip currentArea = _currentArea.getAreaIp();
       Ip interfaceArea = _currentOspfInterface.getOspfArea();
       if (interfaceArea != null && !currentArea.equals(interfaceArea)) {
-         throw new BatfishException("Interface assigned to multiple areas");
+         throw new BatfishException("Interface: \"" + unitFullName
+               + "\" assigned to multiple areas");
       }
       _currentOspfInterface.setOspfArea(currentArea);
    }

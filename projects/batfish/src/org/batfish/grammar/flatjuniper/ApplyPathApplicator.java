@@ -22,6 +22,8 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
 
    private List<ParseTree> _newConfigurationLines;
 
+   private boolean _reenablePathRecording;
+
    public ApplyPathApplicator(Hierarchy hierarchy) {
       _hierarchy = hierarchy;
    }
@@ -95,6 +97,24 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
          else {
             _currentPath.addNode(text);
          }
+      }
+   }
+
+   @Override
+   public void exitInterface_id(Interface_idContext ctx) {
+      if (_reenablePathRecording) {
+         _enablePathRecording = true;
+         _reenablePathRecording = false;
+      }
+   }
+
+   @Override
+   public void enterInterface_id(Interface_idContext ctx) {
+      if (_enablePathRecording && ctx.unit != null) {
+         _enablePathRecording = false;
+         _reenablePathRecording = true;
+         String text = ctx.getText();
+         _currentPath.addNode(text);
       }
    }
 
