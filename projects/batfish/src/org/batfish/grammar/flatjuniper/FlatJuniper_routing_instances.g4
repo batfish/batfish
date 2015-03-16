@@ -352,6 +352,7 @@ rst_route
 rst_route_tail
 :
    srt_active
+   | srt_community
    | srt_discard
    | srt_install
    | srt_next_hop
@@ -401,6 +402,11 @@ s_routing_options_tail
 srt_active
 :
    ACTIVE
+;
+
+srt_community
+:
+   COMMUNITY COMMUNITY_LITERAL
 ;
 
 srt_discard
