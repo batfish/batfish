@@ -39,7 +39,7 @@ public class Driver {
       }
       catch (ParseException e) {
          System.err
-               .println("org.batfish: Parsing command-line failed. Reason: "
+               .println("batfish: Parsing command-line failed. Reason: "
                      + e.getMessage());
          System.exit(1);
       }
