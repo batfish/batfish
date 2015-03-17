@@ -313,6 +313,7 @@ null_standalone_if_stanza
       | PEER
       | PHYSICAL_LAYER
       | PORT_CHANNEL
+      | POS
       | POWER
       | PPP
       | PREEMPT

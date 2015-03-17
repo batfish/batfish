@@ -3157,6 +3157,11 @@ PORT_UNREACHABLE
    'port-unreachable'
 ;
 
+POS
+:
+   'pos'
+;
+
 POWER
 :
    'power'
