@@ -6,6 +6,11 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+ip_policy_list_stanza
+:
+   IP POLICY_LIST name = variable access_list_action NEWLINE match_rm_stanza*
+;
+
 match_as_path_access_list_rm_stanza
 :
    MATCH AS_PATH
@@ -77,6 +82,14 @@ match_length_rm_stanza
    MATCH LENGTH ~NEWLINE* NEWLINE
 ;
 
+match_policy_list_rm_stanza
+:
+   MATCH POLICY_LIST
+   (
+      name_list += variable
+   )+ NEWLINE
+;
+
 match_rm_stanza
 :
    match_as_path_access_list_rm_stanza
@@ -87,6 +100,7 @@ match_rm_stanza
    | match_ip_prefix_list_rm_stanza
    | match_ipv6_rm_stanza
    | match_length_rm_stanza
+   | match_policy_list_rm_stanza
    | match_tag_rm_stanza
 ;
 
