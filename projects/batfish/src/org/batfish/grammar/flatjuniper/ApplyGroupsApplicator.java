@@ -80,6 +80,11 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterS_apply_groups_except(S_apply_groups_exceptContext ctx) {
+      _newConfigurationLines.remove(_currentSetLine);
+   }
+
+   @Override
    public void enterSet_line(Set_lineContext ctx) {
       _currentSetLine = ctx;
    }
