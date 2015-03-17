@@ -196,6 +196,7 @@ null_standalone_if_stanza
       | CLNS
       | CLOCK
       | COUNTER
+      | CRC
       | CRYPTO
       | DCBX
       |

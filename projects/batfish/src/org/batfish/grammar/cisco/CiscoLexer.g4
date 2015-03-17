@@ -826,6 +826,11 @@ CPTONE
    'cptone'
 ;
 
+CRC
+:
+   'crc'
+;
+
 CREDENTIALS
 :
    'credentials'
