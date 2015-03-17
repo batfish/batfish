@@ -88,6 +88,7 @@
                   <arg path="src/@{grammar.packagedir}"/>
                   <arg value="-encoding"/>
                   <arg value="UTF-8"/>
+                  <arg value="-Werror"/>
                   <redirector>
                      <outputfilterchain>
                            <linecontainsregexp negate="true">
