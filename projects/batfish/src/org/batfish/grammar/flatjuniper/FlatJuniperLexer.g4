@@ -2626,6 +2626,11 @@ M_Interface_WILDCARD
    '<' ~'>'* '>' -> type(WILDCARD), popMode
 ;
 
+M_Interface_IP_ADDRESS
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type(IP_ADDRESS), popMode
+;
+
 M_Interface_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)

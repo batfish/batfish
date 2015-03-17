@@ -435,6 +435,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private Interface _currentInterface;
 
+   private Prefix _currentInterfacePrefix;
+
    private Interface _currentMasterInterface;
 
    private Interface _currentOspfInterface;
@@ -482,34 +484,60 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterAt_interface(At_interfaceContext ctx) {
-      String name = ctx.id.name.getText();
-      String unit = null;
-      if (ctx.id.unit != null) {
-         unit = ctx.id.unit.getText();
-      }
-      String unitFullName = name + "." + unit;
       Map<String, Interface> interfaces = _currentRoutingInstance
             .getInterfaces();
-      _currentOspfInterface = interfaces.get(name);
-      if (_currentOspfInterface == null) {
-         _currentOspfInterface = new Interface(name);
-         interfaces.put(name, _currentOspfInterface);
-      }
-      if (unit != null) {
-         Map<String, Interface> units = _currentOspfInterface.getUnits();
-         _currentOspfInterface = units.get(unitFullName);
+      String unitFullName = null;
+      if (ctx.ip != null) {
+         Ip ip = new Ip(ctx.ip.getText());
+         for (Interface iface : interfaces.values()) {
+            for (Interface unit : iface.getUnits().values()) {
+               if (unit.getAllPrefixIps().contains(ip)) {
+                  _currentOspfInterface = unit;
+                  unitFullName = unit.getName();
+               }
+            }
+         }
          if (_currentOspfInterface == null) {
-            _currentOspfInterface = new Interface(unitFullName);
-            units.put(unitFullName, _currentOspfInterface);
+            throw new BatfishException(
+                  "Could not find interface with ip address: " + ip.toString());
+         }
+      }
+      else {
+         String name = ctx.id.name.getText();
+         String unit = null;
+         if (ctx.id.unit != null) {
+            unit = ctx.id.unit.getText();
+         }
+         unitFullName = name + "." + unit;
+         _currentOspfInterface = interfaces.get(name);
+         if (_currentOspfInterface == null) {
+            _currentOspfInterface = new Interface(name);
+            interfaces.put(name, _currentOspfInterface);
+         }
+         if (unit != null) {
+            Map<String, Interface> units = _currentOspfInterface.getUnits();
+            _currentOspfInterface = units.get(unitFullName);
+            if (_currentOspfInterface == null) {
+               _currentOspfInterface = new Interface(unitFullName);
+               units.put(unitFullName, _currentOspfInterface);
+            }
          }
       }
       Ip currentArea = _currentArea.getAreaIp();
-      Ip interfaceArea = _currentOspfInterface.getOspfArea();
-      if (interfaceArea != null && !currentArea.equals(interfaceArea)) {
-         throw new BatfishException("Interface: \"" + unitFullName
-               + "\" assigned to multiple areas");
+      if (ctx.at_interface_tail() != null
+            && ctx.at_interface_tail().ait_passive() != null) {
+         _currentOspfInterface.getOspfPassiveAreas().add(currentArea);
       }
-      _currentOspfInterface.setOspfArea(currentArea);
+      else {
+         Ip interfaceActiveArea = _currentOspfInterface.getOspfActiveArea();
+         if (interfaceActiveArea != null
+               && !currentArea.equals(interfaceActiveArea)) {
+            throw new BatfishException("Interface: \""
+                  + unitFullName.toString()
+                  + "\" assigned to multiple active areas");
+         }
+         _currentOspfInterface.setOspfActiveArea(currentArea);
+      }
    }
 
    @Override
@@ -603,6 +631,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentFilter = new FirewallFilter(name, _currentFirewallFamily);
          filters.put(name, _currentFilter);
       }
+   }
+
+   @Override
+   public void enterIfamt_address(Ifamt_addressContext ctx) {
+      Set<Prefix> allPrefixes = _currentInterface.getAllPrefixes();
+      Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
+      _currentInterfacePrefix = prefix;
+      if (_currentInterface.getPrimaryPrefix() == null) {
+         _currentInterface.setPrimaryPrefix(prefix);
+      }
+      if (_currentInterface.getPreferredPrefix() == null) {
+         _currentInterface.setPreferredPrefix(prefix);
+      }
+      allPrefixes.add(prefix);
+      Ip ip = prefix.getAddress();
+      _currentInterface.getAllPrefixIps().add(ip);
    }
 
    @Override
@@ -860,11 +904,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitAgt_preference(Agt_preferenceContext ctx) {
       int preference = toInt(ctx.preference);
       _currentAggregateRoute.setPreference(preference);
-   }
-
-   @Override
-   public void exitAit_passive(Ait_passiveContext ctx) {
-      _currentOspfInterface.setOspfPassive(true);
    }
 
    @Override
@@ -1136,9 +1175,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitIfamat_preferred(Ifamat_preferredContext ctx) {
+      _currentInterface.setPreferredPrefix(_currentInterfacePrefix);
+   }
+
+   @Override
+   public void exitIfamat_primary(Ifamat_primaryContext ctx) {
+      _currentInterface.setPrimaryPrefix(_currentInterfacePrefix);
+   }
+
+   @Override
    public void exitIfamt_address(Ifamt_addressContext ctx) {
-      Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
-      _currentInterface.setPrefix(prefix);
+      _currentInterfacePrefix = null;
    }
 
    @Override
