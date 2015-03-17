@@ -246,7 +246,7 @@ set_metric_rm_stanza
 
 set_metric_type_rm_stanza
 :
-   SET METRIC_TYPE type = VARIABLE NEWLINE
+   SET METRIC_TYPE type = variable NEWLINE
 ;
 
 set_mpls_label_rm_stanza
