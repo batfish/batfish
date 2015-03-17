@@ -1044,6 +1044,11 @@ LONGER
    'longer'
 ;
 
+LOOPS
+:
+   'loops'
+;
+
 LSP
 :
    'lsp'
@@ -1517,6 +1522,11 @@ PRIORITY
 PRIORITY_COST
 :
    'priority-cost'
+;
+
+PRIVATE
+:
+   'private'
 ;
 
 PROTOCOL

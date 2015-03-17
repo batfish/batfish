@@ -201,7 +201,14 @@ bt_local_address
 
 bt_local_as
 :
-   LOCAL_AS as = DEC
+   LOCAL_AS bt_local_as_tail
+;
+
+bt_local_as_tail
+:
+   last_loops
+   | last_number
+   | last_private
 ;
 
 bt_multihop
@@ -277,6 +284,21 @@ bt_type
       EXTERNAL
       | INTERNAL
    )
+;
+
+last_loops
+:
+   LOOPS DEC
+;
+
+last_number
+:
+   as = DEC
+;
+
+last_private
+:
+   PRIVATE
 ;
 
 pe_conjunction

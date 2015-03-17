@@ -91,6 +91,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private static final String F_IPV6 = "ipv6 - other";
 
+   private static final String F_BGP_LOCAL_AS_LOOPS = "protocols - bgp - group? - local-as - loops";
+
+   private static final String F_BGP_LOCAL_AS_PRIVATE = "protocols - bgp - group? - local-as - private";
+
    public static NamedPort getNamedPort(PortContext ctx) {
       if (ctx.AFS() != null) {
          return NamedPort.AFS;
@@ -842,10 +846,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitBt_local_as(Bt_local_asContext ctx) {
+   public void exitLast_number(Last_numberContext ctx) {
       int localAs = toInt(ctx.as);
       _currentBgpGroup.setLocalAs(localAs);
    }
+
+   @Override
+   public void exitLast_loops(Last_loopsContext ctx) {
+      todo(ctx, F_BGP_LOCAL_AS_LOOPS);
+   }
+
+   @Override
+   public void exitLast_private(Last_privateContext ctx) {
+      todo(ctx, F_BGP_LOCAL_AS_PRIVATE);
+   }
+
+
 
    @Override
    public void exitBt_peer_as(Bt_peer_asContext ctx) {
