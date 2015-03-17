@@ -1299,6 +1299,11 @@ NO_NEIGHBOR_LEARN
    'no-neighbor-learn'
 ;
 
+NO_TRAPS
+:
+   'no-traps'
+;
+
 NSSA
 :
    'nssa'
