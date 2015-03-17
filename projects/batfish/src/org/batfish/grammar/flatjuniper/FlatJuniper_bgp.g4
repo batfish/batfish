@@ -107,6 +107,11 @@ bt_advertise_inactive
    ADVERTISE_INACTIVE
 ;
 
+bt_apply_groups
+:
+   s_apply_groups
+;
+
 bt_as_override
 :
    AS_OVERRIDE
@@ -120,6 +125,7 @@ bt_cluster
 bt_common
 :
    bt_advertise_inactive
+   | bt_apply_groups
    | bt_as_override
    | bt_cluster
    | bt_damping
