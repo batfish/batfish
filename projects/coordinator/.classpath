@@ -34,5 +34,7 @@
 	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-container-grizzly2-http-2.16.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-media-json-jettison-2.16.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-server.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-media-multipart-2.17.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/mimepull-1.9.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

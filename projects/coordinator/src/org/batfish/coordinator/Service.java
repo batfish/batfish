@@ -1,6 +1,8 @@
 package org.batfish.coordinator;
 
-import java.util.ArrayList;
+import org.batfish.common.*;
+
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -9,13 +11,17 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-import org.batfish.common.*;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Path(CoordinatorConstants.SERVICE_BASE)
 public class Service {
@@ -126,5 +132,24 @@ public class Service {
             return new JSONArray(Arrays.asList("failure", e.getMessage()));
          }   
    }      
+
+   @POST
+   @Path(CoordinatorConstants.SERVICE_UPLOAD_TESTRIG)
+   @Consumes(MediaType.MULTIPART_FORM_DATA)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray uploadTestRig(
+         @FormDataParam(CoordinatorConstants.SERVICE_UPLOAD_TESTRIG_NAME_KEY) String name,
+         @FormDataParam(CoordinatorConstants.SERVICE_UPLOAD_TESTRIG_ZIPFILE_KEY) InputStream fileStream) {
+      try {
+
+         Main.getCoordinator().uploadTestrig(name, fileStream);
+
+         return new JSONArray(
+               Arrays.asList("", "successfully uploaded testrig"));
+      }
+      catch (Exception e) {
+         return new JSONArray(Arrays.asList("failure", e.getMessage()));
+      }
+   }
 
 }

@@ -18,6 +18,7 @@ public class Settings {
    private static final String ARG_STORAGE_ACCOUNT_KEY = "storageaccountkey";
    private static final String ARG_STORAGE_ACCOUNT_NAME = "storageaccountname";
    private static final String ARG_STORAGE_PROTOCOL = "storageprotocol";
+   private static final String ARG_TESTRIG_STORAGE_LOCATION = "testrigstorage";
 
 
    private static final String DEFAULT_QUEUE_ASSIGNED_WORK = "batfishassignedwork";
@@ -29,6 +30,7 @@ public class Settings {
    private static final String DEFAULT_STORAGE_ACCOUNT_KEY = "zRTT++dVryOWXJyAM7NM0TuQcu0Y23BgCQfkt7xh2f/Mm+r6c8/XtPTY0xxaF6tPSACJiuACsjotDeNIVyXM8Q==";
    private static final String DEFAULT_STORAGE_ACCOUNT_NAME = "testdrive";
    private static final String DEFAULT_STORAGE_PROTOCOL = "http";
+   private static final String DEFAULT_TESTRIG_STORAGE_LOCATION = ".";
 
    private Options _options;
    private String _queueAssignedWork;
@@ -40,6 +42,7 @@ public class Settings {
    private String _storageAccountName;
    private String _storageAccountKey;
    private String _storageProtocol;
+   private String _testrigStorageLocation;
 
    public Settings() throws ParseException {
       this(new String[] {});
@@ -85,6 +88,10 @@ public class Settings {
    public String getStorageProtocol() {
       return _storageProtocol;
    }
+   
+   public String getTestrigStorageLocation() {
+      return _testrigStorageLocation;
+   }
 
    private void initOptions() {
       _options = new Options();
@@ -97,6 +104,9 @@ public class Settings {
       _options.addOption(Option.builder().argName("qtype").hasArg()
             .desc("queue type to use {azure, memory}")
             .longOpt(ARG_QUEUE_TYPE).build());
+      _options.addOption(Option.builder().argName("testrig_storage_location").hasArg()
+            .desc("where to store test rigs")
+            .longOpt(ARG_TESTRIG_STORAGE_LOCATION).build());      
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -115,5 +125,6 @@ public class Settings {
       _storageAccountKey = line.getOptionValue(ARG_STORAGE_ACCOUNT_KEY, DEFAULT_STORAGE_ACCOUNT_KEY);
       _storageAccountName = line.getOptionValue(ARG_STORAGE_ACCOUNT_NAME, DEFAULT_STORAGE_ACCOUNT_NAME);
       _storageProtocol = line.getOptionValue(ARG_STORAGE_PROTOCOL, DEFAULT_STORAGE_PROTOCOL);
+      _testrigStorageLocation = line.getOptionValue(ARG_TESTRIG_STORAGE_LOCATION, DEFAULT_TESTRIG_STORAGE_LOCATION);
    }
 }
