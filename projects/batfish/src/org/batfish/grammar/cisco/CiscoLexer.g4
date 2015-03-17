@@ -2842,6 +2842,11 @@ NONEGOTIATE
    'nonegotiate'
 ;
 
+NOT_ADVERTISE
+:
+   'not-advertise'
+;
+
 NOTIFY
 :
    'notify'
@@ -4047,6 +4052,11 @@ SUBSCRIBE_TO_ALERT_GROUP
 SUBSCRIBER
 :
    'subscriber'
+;
+
+SUMMARY_ADDRESS
+:
+   'summary-address'
 ;
 
 SUMMARY_ONLY

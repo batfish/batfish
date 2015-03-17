@@ -223,6 +223,7 @@ ro_stanza
    | redistribute_rip_ro_stanza
    | redistribute_static_ro_stanza
    | router_id_ro_stanza
+   | summary_address_ro_stanza
 ;
 
 router_id_ipv6_ro_stanza
@@ -248,4 +249,10 @@ router_ospf_stanza_tail
    (
       rosl += ro_stanza
    )+
+;
+
+summary_address_ro_stanza
+:
+   SUMMARY_ADDRESS network = IP_ADDRESS mask = IP_ADDRESS NOT_ADVERTISE?
+   NEWLINE
 ;
