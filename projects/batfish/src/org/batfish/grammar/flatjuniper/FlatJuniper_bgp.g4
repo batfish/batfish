@@ -303,12 +303,18 @@ last_private
 
 pe_conjunction
 :
-   OPEN_PAREN policy_expression DOUBLE_AMPERSAND policy_expression CLOSE_PAREN
+   OPEN_PAREN policy_expression
+   (
+      DOUBLE_AMPERSAND policy_expression
+   )+ CLOSE_PAREN
 ;
 
 pe_disjunction
 :
-   OPEN_PAREN policy_expression DOUBLE_PIPE policy_expression CLOSE_PAREN
+   OPEN_PAREN policy_expression
+   (
+      DOUBLE_PIPE policy_expression
+   )+ CLOSE_PAREN
 ;
 
 pe_nested
