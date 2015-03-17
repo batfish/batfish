@@ -6,6 +6,7 @@ import java.util.List;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -26,21 +27,23 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
    private BatfishCombinedParser<?, ?> _combinedParser;
 
    private ParserRuleContext _ctx;
+
    private int _indent;
+
    private List<String> _ruleNames;
+
    private StringBuilder _sb;
 
-   private List<String> _tokenNames;
+   private Vocabulary _vocabulary;
 
    private ParseTreePrettyPrinter(ParserRuleContext ctx,
          BatfishCombinedParser<?, ?> combinedParser) {
       Parser grammar = combinedParser.getParser();
       List<String> ruleNames = Arrays.asList(grammar.getRuleNames());
-      List<String> tokenNames = Arrays.asList(grammar.getTokenNames());
+      _vocabulary = grammar.getVocabulary();
       _combinedParser = combinedParser;
       _ruleNames = ruleNames;
       _ctx = ctx;
-      _tokenNames = tokenNames;
       _sb = new StringBuilder();
       _indent = 0;
    }
@@ -77,7 +80,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
          _sb.append(tokenName + ":" + nodeText);
       }
       else {
-         tokenName = _tokenNames.get(tokenType);
+         tokenName = _vocabulary.getSymbolicName(tokenType);
          _sb.append("<ErrorNode>:" + tokenName + ":'" + nodeText + "'");
       }
    }
@@ -105,7 +108,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
          _sb.append(tokenName + ":" + nodeText);
       }
       else {
-         tokenName = _tokenNames.get(tokenType);
+         tokenName = _vocabulary.getSymbolicName(tokenType);
          _sb.append(tokenName + ":'" + nodeText + "'");
       }
       _sb.append("  <== mode:" + mode);
