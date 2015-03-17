@@ -1241,6 +1241,11 @@ END
    'end'
 ;
 
+ENFORCE_FIRST_AS
+:
+   'enforce-first-as'
+;
+
 ENGINEID
 :
    'engineid' -> pushMode(M_COMMENT)
