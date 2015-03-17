@@ -32,7 +32,8 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
          tokenName = "EOF";
       }
       else {
-         tokenName = _combinedParser.getParser().getVocabulary().getSymbolicName(tokenType);
+         tokenName = _combinedParser.getParser().getVocabulary()
+               .getSymbolicName(tokenType);
          tokenText = "'" + tokenText + "'";
       }
       return " line " + line + ":" + col + " " + channel + " " + tokenName

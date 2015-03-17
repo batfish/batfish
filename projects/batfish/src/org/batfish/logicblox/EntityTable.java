@@ -16,41 +16,75 @@ import com.logicblox.connect.Workspace.Relation.UInt64Column;
 public class EntityTable {
 
    private static final String DYNAMIC_NEXT_HOP_INTERFACE_NAME = "dynamic";
-   private static final long NO_TAG = -1l;
+
    private static final long IP_NONE_L = 0;
 
+   private static final long NO_TAG = -1l;
+
    private long[] _advertDstIps;
+
    private String[] _advertDstNodes;
+
    private BigInteger[] _advertIndices;
+
    private long[] _advertLocalPrefs;
+
    private long[] _advertMeds;
+
    private BigInteger[] _advertNetworks;
+
    private long[] _advertNextHopIps;
+
    private long[] _advertOriginatorIps;
+
    private String[] _advertOriginTypes;
+
    private long[] _advertSrcIps;
+
    private String[] _advertSrcNodes;
+
    private String[] _advertSrcProtocols;
+
    private String[] _advertTypes;
+
    private long[] _flowDstIps;
+
    private long[] _flowDstPorts;
+
    private BigInteger[] _flowIndices;
+
    private String[] _flowNodes;
+
    private long[] _flowProtocols;
+
    private long[] _flowSrcIps;
+
    private long[] _flowSrcPorts;
+
    private long[] _networkAddresses;
+
    private BigInteger[] _networkIndices;
+
    private long[] _networkPrefixLengths;
+
    private long[] _routeAdmins;
+
    private long[] _routeCosts;
+
    private BigInteger[] _routeIndices;
+
    private BigInteger[] _routeNetworks;
+
    private String[] _routeNextHopInts;
+
    private long[] _routeNextHopIps;
+
    private String[] _routeNextHops;
+
    private String[] _routeNodes;
+
    private String[] _routeProtocols;
+
    private long[] _routeTags;
 
    public EntityTable(LogicBloxFrontend lbf) {

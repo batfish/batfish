@@ -37,6 +37,16 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterInterface_id(Interface_idContext ctx) {
+      if (_enablePathRecording && ctx.unit != null) {
+         _enablePathRecording = false;
+         _reenablePathRecording = true;
+         String text = ctx.getText();
+         _currentPath.addNode(text);
+      }
+   }
+
+   @Override
    public void enterPlt_apply_path(Plt_apply_pathContext ctx) {
       HierarchyPath applyPathPath = new HierarchyPath();
       String pathQuoted = ctx.path.getText();
@@ -77,6 +87,14 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitInterface_id(Interface_idContext ctx) {
+      if (_reenablePathRecording) {
+         _enablePathRecording = true;
+         _reenablePathRecording = false;
+      }
+   }
+
+   @Override
    public void exitSet_line(Set_lineContext ctx) {
       _currentSetLine = null;
       _currentPath = null;
@@ -97,24 +115,6 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
          else {
             _currentPath.addNode(text);
          }
-      }
-   }
-
-   @Override
-   public void exitInterface_id(Interface_idContext ctx) {
-      if (_reenablePathRecording) {
-         _enablePathRecording = true;
-         _reenablePathRecording = false;
-      }
-   }
-
-   @Override
-   public void enterInterface_id(Interface_idContext ctx) {
-      if (_enablePathRecording && ctx.unit != null) {
-         _enablePathRecording = false;
-         _reenablePathRecording = true;
-         String text = ctx.getText();
-         _currentPath.addNode(text);
       }
    }
 
