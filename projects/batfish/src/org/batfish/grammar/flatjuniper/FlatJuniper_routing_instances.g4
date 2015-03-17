@@ -314,7 +314,9 @@ rot_rib
 
 rot_rib_tail
 :
-   ribt_aggregate
+// intentional blank
+
+   | ribt_aggregate
    | ribt_generate
    | ribt_static
 ;
