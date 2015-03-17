@@ -64,6 +64,7 @@ import org.batfish.representation.juniper.RouteFilter;
 import org.batfish.representation.juniper.RouteFilterLine;
 import org.batfish.representation.juniper.RouteFilterLineExact;
 import org.batfish.representation.juniper.RouteFilterLineLengthRange;
+import org.batfish.representation.juniper.RouteFilterLineLonger;
 import org.batfish.representation.juniper.RouteFilterLineOrLonger;
 import org.batfish.representation.juniper.RouteFilterLineThrough;
 import org.batfish.representation.juniper.RouteFilterLineUpTo;
@@ -1166,6 +1167,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                _currentRouteFilterPrefix);
          _currentRouteFilterLine = _currentRouteFilter
                .insertLine(fromRouteFilterExact);
+      }
+   }
+
+   @Override
+   public void enterRft_longer(Rft_longerContext ctx) {
+      if (_currentRouteFilterPrefix != null) { // not ipv6
+         RouteFilterLineLonger fromRouteFilterOrLonger = new RouteFilterLineLonger(
+               _currentRouteFilterPrefix);
+         _currentRouteFilterLine = _currentRouteFilter
+               .insertLine(fromRouteFilterOrLonger);
       }
    }
 

@@ -115,6 +115,7 @@ fromt_route_filter
 fromt_route_filter_tail
 :
    rft_exact
+   | rft_longer
    | rft_orlonger
    | rft_prefix_length_range
    | rft_through
@@ -250,6 +251,11 @@ pst_term_tail
 rft_exact
 :
    EXACT
+;
+
+rft_longer
+:
+   LONGER
 ;
 
 rft_orlonger
