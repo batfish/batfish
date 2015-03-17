@@ -1,6 +1,7 @@
 package org.batfish.coordinator.queues;
 
 import java.util.LinkedList;
+import java.util.UUID;
 
 import org.batfish.common.WorkItem;
 import org.batfish.coordinator.WorkQueue;
@@ -18,7 +19,24 @@ public class MemoryQueue implements WorkQueue {
    }
 
    @Override
-   public boolean enque(WorkItem workItem) {
+   public synchronized boolean enque(WorkItem workItem) throws Exception {
+      
+      if (getWorkItem(workItem.getId()) != null) {
+         throw new Exception("Attempt to insert a duplicate work item!");
+      }
+      
       return _queue.add(workItem);
+   }
+
+   @Override
+   public synchronized WorkItem getWorkItem(UUID workItemId) {
+      
+      for (WorkItem wItem : _queue) {
+         if (wItem.getId().equals(workItemId)) {
+            return wItem;
+         }
+      }    
+      
+      return null;
    }
 }

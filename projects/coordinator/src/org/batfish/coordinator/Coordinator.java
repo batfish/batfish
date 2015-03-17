@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -166,7 +167,7 @@ public class Coordinator {
       }
    }
 
-   public boolean queueWork(WorkItem workItem) {
+   public boolean queueWork(WorkItem workItem) throws Exception {
       return _queueUnassignedWork.enque(workItem);
    }
 
@@ -193,5 +194,8 @@ public class Coordinator {
          }
       }
    }
-   
+
+   public WorkItem getWorkItem(UUID workItemId) {
+       return _queueUnassignedWork.getWorkItem(workItemId);
+   }   
  }

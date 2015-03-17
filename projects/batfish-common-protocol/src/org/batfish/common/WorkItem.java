@@ -51,6 +51,14 @@ public class WorkItem {
       }
    }
 
+   public UUID getId() {
+      return _id;
+   }
+   
+   public StatusCode getStatus() {
+      return _status;
+   }
+   
    public void setId(String idString) {
       _id = UUID.fromString(idString);
    }

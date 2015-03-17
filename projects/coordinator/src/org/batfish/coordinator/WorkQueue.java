@@ -1,5 +1,7 @@
 package org.batfish.coordinator;
 
+import java.util.UUID;
+
 import org.batfish.common.WorkItem;
 
 public interface WorkQueue {   
@@ -8,5 +10,7 @@ public interface WorkQueue {
    
    long getLength();
 
-   boolean enque(WorkItem workItem);   
+   boolean enque(WorkItem workItem) throws Exception;
+
+   WorkItem getWorkItem(UUID workItemId);   
 }
