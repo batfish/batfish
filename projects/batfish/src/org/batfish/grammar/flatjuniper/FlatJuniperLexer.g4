@@ -1164,6 +1164,11 @@ MULTIPLIER
    'multiplier'
 ;
 
+MULTISERVICE_OPTIONS
+:
+   'multiservice-options'
+;
+
 NAME_SERVER
 :
    'name-server'
