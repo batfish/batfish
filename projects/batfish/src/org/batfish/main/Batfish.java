@@ -40,6 +40,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.batfish.collections.EdgeSet;
@@ -223,6 +224,12 @@ public class Batfish implements AutoCloseable {
     * same LAN segment
     */
    private static final String TOPOLOGY_PREDICATE_NAME = "LanAdjacent";
+
+   private static final String LOG_FILE_KEY = "LOG_FILE";
+
+   private static final String ROUTING_KEY_NAME = "ROUTINGKEY";
+
+   private static final String SLAVE_ROUTING_KEY_VALUE = "slave";
 
    private static void initControlPlaneFactBins(
          Map<String, StringBuilder> factBins) {
@@ -1648,7 +1655,12 @@ public class Batfish implements AutoCloseable {
    }
 
    private void initializeLogger() {
-      _logger = LogManager.getLogger();
+      _logger = LogManager.getLogger(Driver.MAIN_LOGGER);
+      String logFile = _settings.getLogFile();
+      if (logFile != null) {
+         ThreadContext.put(ROUTING_KEY_NAME, SLAVE_ROUTING_KEY_VALUE);
+         ThreadContext.put(LOG_FILE_KEY, logFile);
+      }
       if (_settings.getLogLevel() != null) {
          LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
          org.apache.logging.log4j.core.config.Configuration config = ctx

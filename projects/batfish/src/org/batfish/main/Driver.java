@@ -4,18 +4,21 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 public class Driver {
+
+   public static final String MAIN_LOGGER = "MainLogger";
 
    private static boolean _idle = true;
 
@@ -33,6 +36,8 @@ public class Driver {
    }
 
    public static void main(String[] args) {
+      Logger logger = LogManager.getLogger(MAIN_LOGGER);
+
       Settings settings = null;
       try {
          settings = new Settings(args);
@@ -60,8 +65,8 @@ public class Driver {
             System.in.read();
          }
          catch (IOException ex) {
-            Logger.getLogger(Driver.class.getName())
-                  .log(Level.SEVERE, null, ex);
+            String stackTrace = ExceptionUtils.getFullStackTrace(ex);
+            logger.error(stackTrace);
          }
 
          _server.shutdownNow();
@@ -76,12 +81,14 @@ public class Driver {
    }
 
    private static void RunBatfish(Settings settings) {
+      Logger logger = LogManager.getLogger(MAIN_LOGGER);
       boolean error = false;
       try (Batfish batfish = new Batfish(settings)) {
          batfish.run();
       }
       catch (Exception e) {
-         e.printStackTrace();
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         logger.error(stackTrace);
          error = true;
       }
       finally {

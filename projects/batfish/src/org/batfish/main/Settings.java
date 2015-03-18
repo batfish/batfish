@@ -58,6 +58,7 @@ public class Settings {
    private static final String ARG_INTERFACE_MAP_PATH = "impath";
    private static final String ARG_LB_WEB_ADMIN_PORT = "lbwebadminport";
    private static final String ARG_LB_WEB_PORT = "lbwebport";
+   private static final String ARG_LOG_FILE = "logfile";
    private static final String ARG_LOG_LEVEL = "log";
    private static final String ARG_LOGICDIR = "logicdir";
    private static final String ARG_MPI = "mpi";
@@ -129,6 +130,7 @@ public class Settings {
    private static final String ARGNAME_INTERFACE_MAP_PATH = "path";
    private static final String ARGNAME_LB_WEB_ADMIN_PORT = "port";
    private static final String ARGNAME_LB_WEB_PORT = "port";
+   private static final String ARGNAME_LOG_FILE = "path";
    private static final String ARGNAME_LOG_LEVEL = "level";
    private static final String ARGNAME_LOGICDIR = "path";
    private static final String ARGNAME_MPI_PATH = "path";
@@ -218,6 +220,7 @@ public class Settings {
    private String _interfaceMapPath;
    private int _lbWebAdminPort;
    private int _lbWebPort;
+   private String _logFile;
    private String _logicDir;
    private String _logicSrcDir;
    private String _logLevel;
@@ -481,6 +484,10 @@ public class Settings {
 
    public int getLbWebPort() {
       return _lbWebPort;
+   }
+
+   public String getLogFile() {
+      return _logFile;
    }
 
    public String getLogicDir() {
@@ -1014,6 +1021,8 @@ public class Settings {
             .argName(ARGNAME_GENERATE_STUBS_REMOTE_AS)
             .desc("autonomous system number of stubs to be generated")
             .longOpt(ARG_GENERATE_STUBS_REMOTE_AS).build());
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_LOG_FILE)
+            .desc("path to log file").longOpt(ARG_LOG_FILE).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1179,6 +1188,7 @@ public class Settings {
          _generateStubsRemoteAs = Integer.parseInt(line
                .getOptionValue(ARG_GENERATE_STUBS_REMOTE_AS));
       }
+      _logFile = line.getOptionValue(ARG_LOG_FILE);
    }
 
    public boolean printParseTree() {
