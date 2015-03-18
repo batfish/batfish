@@ -1,24 +1,29 @@
 package org.batfish.coordinator;
 
-import java.util.ArrayList;
+import org.batfish.common.*;
+
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-import org.batfish.common.*;
-
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
-@Path(CoordinatorConstants.SERVICE_BASE)
+@Path(CoordinatorConstants.SERVICE_BASE_RESOURCE)
 public class Service {
 
    @GET
@@ -31,7 +36,7 @@ public class Service {
    }
 
    @GET
-   @Path(CoordinatorConstants.SERVICE_GETSTATUS)
+   @Path(CoordinatorConstants.SERVICE_GETSTATUS_RESOURCE)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
       return new JSONArray(Arrays.asList("", Main.getCoordinator().getWorkStatus()));
@@ -39,7 +44,7 @@ public class Service {
    
    //functions for pool management
    @GET
-   @Path(CoordinatorConstants.SERVICE_UPDATEPOOL)
+   @Path(CoordinatorConstants.SERVICE_UPDATEPOOL_RESOURCE)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray updatePool(@Context UriInfo ui) {
       try {
@@ -81,7 +86,7 @@ public class Service {
    }
    
    @GET
-   @Path(CoordinatorConstants.SERVICE_GETPOOLSTATUS)
+   @Path(CoordinatorConstants.SERVICE_GETPOOLSTATUS_RESOURCE)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getPoolStatus() {
          try {
@@ -97,33 +102,94 @@ public class Service {
    }      
    
    @GET
-   @Path(CoordinatorConstants.SERVICE_QUEUE_WORK)
+   @Path(CoordinatorConstants.SERVICE_QUEUE_WORK_RESOURCE)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray queueWork(@Context UriInfo ui) {
          try {
             MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
 
-            WorkItem workItem = new WorkItem();
-            
             for (MultivaluedMap.Entry<String, List<String>> entry : queryParams
                   .entrySet()) {
                   
-               if (entry.getKey().equals("id")) {
-                  workItem.setId(entry.getValue().get(0));
-               }
-               else {                  
-                  workItem.addRequestParam(entry.getKey(), entry.getValue().get(0));
-               }
-               
-            }
-             
-            boolean result = Main.getCoordinator().queueWork(workItem);
+               if (entry.getKey().equals(CoordinatorConstants.SERVICE_QUEUE_WORK_PATH)) {
+                  System.out.printf("work: %s\n", entry.getValue());
+
+                  WorkItem workItem = new WorkItem(entry.getValue().get(0));
+
+                  boolean result = Main.getCoordinator().queueWork(workItem);
                   
-            return new JSONArray(Arrays.asList("", result));
+                  return new JSONArray(Arrays.asList("", result));
+               }
+               else {
+                  System.out.println("Unknown key in work: " + entry.getKey());
+               }
+            }
+            
+            return new JSONArray(Arrays.asList("failure", "work not found"));            
+             
          }
          catch (Exception e) {
             return new JSONArray(Arrays.asList("failure", e.getMessage()));
          }   
    }      
+
+   @GET
+   @Path(CoordinatorConstants.SERVICE_WORK_STATUS_CHECK_RESOURCE)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray workStatusCheck(@Context UriInfo ui) {
+      try {
+         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
+
+         for (MultivaluedMap.Entry<String, List<String>> entry : queryParams
+               .entrySet()) {
+
+            if (entry.getKey().equals(
+                  CoordinatorConstants.SERVICE_WORK_STATUS_CHECK_PATH)) {
+               System.out.printf("workid: %s\n", entry.getValue());
+
+               WorkItem wItem = Main.getCoordinator().getWorkItem(
+                     UUID.fromString(entry.getValue().get(0)));
+
+               if (wItem == null) {
+                  return new JSONArray(Arrays.asList("failure",
+                        "work item not found"));
+               }
+               else {
+                  return new JSONArray(Arrays.asList("", wItem.toJsonString()));
+               }
+            }
+            else {
+               System.out.println("Unknown key in work status check: "
+                     + entry.getKey());
+            }
+         }
+
+         return new JSONArray(Arrays.asList("failure",
+               "work status check path not found"));
+
+      }
+      catch (Exception e) {
+         return new JSONArray(Arrays.asList("failure", e.getMessage()));
+      }
+   }
+
+   @POST
+   @Path(CoordinatorConstants.SERVICE_UPLOAD_TESTRIG_RESOURCE)
+   @Consumes(MediaType.MULTIPART_FORM_DATA)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray uploadTestRig(
+         @FormDataParam(CoordinatorConstants.SERVICE_TESTRIG_NAME_KEY) String name,
+         @FormDataParam(CoordinatorConstants.SERVICE_TESTRIG_ZIPFILE_KEY) InputStream fileStream) {
+      try {
+
+         Main.getCoordinator().uploadTestrig(name, fileStream);
+
+         return new JSONArray(
+               Arrays.asList("", "successfully uploaded testrig"));
+      }
+      catch (Exception e) {
+         return new JSONArray(Arrays.asList("failure", e.getMessage()));
+      }
+   }
 
 }

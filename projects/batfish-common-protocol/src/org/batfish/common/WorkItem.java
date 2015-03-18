@@ -1,5 +1,6 @@
 package org.batfish.common;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.UUID;
@@ -27,12 +28,14 @@ public class WorkItem {
 
       JSONArray array = new JSONArray(jsonString);
       
-      _id = UUID.fromString(array.get(0).toString());      
+      _id = UUID.fromString(array.get(0).toString());  
+      _status = StatusCode.valueOf(array.get(1).toString());
+
       _requestParams = new HashMap<String, String>();
       _responseParams = new HashMap<String, String>();
 
-      JSONObject requestObject = new JSONObject(array.get(1).toString());      
-      JSONObject responseObject = new JSONObject(array.get(2).toString());
+      JSONObject requestObject = new JSONObject(array.get(2).toString());      
+      JSONObject responseObject = new JSONObject(array.get(3).toString());
       
       PopulateHashMap(_requestParams, requestObject);      
       PopulateHashMap(_responseParams, responseObject);      
@@ -48,11 +51,26 @@ public class WorkItem {
       }
    }
 
+   public UUID getId() {
+      return _id;
+   }
+   
+   public StatusCode getStatus() {
+      return _status;
+   }
+   
    public void setId(String idString) {
       _id = UUID.fromString(idString);
    }
 
    public void addRequestParam(String key, String value) {
       _requestParams.put(key,  value);
+   }
+   
+   public String toJsonString() {
+      JSONObject requestObject = new JSONObject(_requestParams);
+      JSONObject responseObject = new JSONObject(_responseParams);      
+      JSONArray array = new JSONArray(Arrays.asList(_id, _status, requestObject.toString(), responseObject.toString()));
+      return array.toString();
    }
 }

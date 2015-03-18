@@ -1,7 +1,12 @@
 package org.batfish.coordinator;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -162,7 +167,35 @@ public class Coordinator {
       }
    }
 
-   public boolean queueWork(WorkItem workItem) {
+   public boolean queueWork(WorkItem workItem) throws Exception {
       return _queueUnassignedWork.enque(workItem);
    }
+
+
+   public void uploadTestrig(String name, InputStream fileStream) throws Exception {
+
+      File testrigDir = new File(_settings.getTestrigStorageLocation() + "/" + name);
+
+      if (testrigDir.exists()) {
+         throw new Exception("test rig with the same name exists");
+      }
+
+      if (!testrigDir.mkdirs()) {
+         throw new Exception("failed to create directory "
+               + testrigDir.getAbsolutePath());
+      }
+
+      try (OutputStream fileOutputStream = new FileOutputStream(
+            testrigDir.getAbsolutePath() + "/" + name + ".zip")) {
+         int read = 0;
+         final byte[] bytes = new byte[1024];
+         while ((read = fileStream.read(bytes)) != -1) {
+            fileOutputStream.write(bytes, 0, read);
+         }
+      }
+   }
+
+   public WorkItem getWorkItem(UUID workItemId) {
+       return _queueUnassignedWork.getWorkItem(workItemId);
+   }   
  }
