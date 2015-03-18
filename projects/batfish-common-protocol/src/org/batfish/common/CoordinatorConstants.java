@@ -9,10 +9,12 @@ public class CoordinatorConstants {
    public static final String SERVICE_UPLOAD_TESTRIG_RESOURCE = "uploadtestrig";
    public static final String SERVICE_QUEUE_WORK_RESOURCE = "queuework";
    public static final String SERVICE_WORK_STATUS_CHECK_RESOURCE = "checkworkstatus";
+   public static final String SERVICE_GET_OBJECT_RESOURCE = "getobject";
 
    public static final String SERVICE_WORK_STATUS_CHECK_PATH = "workid";
    public static final String SERVICE_QUEUE_WORK_PATH = "workitem";
-
+   public static final String SERVICE_GET_OBJECT_PATH = "object";
+   
    public static final String SERVICE_TESTRIG_NAME_KEY = "testrigname";
    public static final String SERVICE_TESTRIG_ZIPFILE_KEY = "testrigzipfile"; 
    public static final String SERVICE_COMMAND_KEY = "command";
