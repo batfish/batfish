@@ -169,6 +169,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX);
       prefixes.put("Null", "Null");
       prefixes.put("Port-channel", "Port-channel");
+      prefixes.put("POS", "POS");
       prefixes.put("Serial", "Serial");
       prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
       prefixes.put("te", "TenGigabitEthernet");

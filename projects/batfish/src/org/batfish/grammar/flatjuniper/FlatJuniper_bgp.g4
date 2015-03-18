@@ -107,6 +107,11 @@ bt_advertise_inactive
    ADVERTISE_INACTIVE
 ;
 
+bt_apply_groups
+:
+   s_apply_groups
+;
+
 bt_as_override
 :
    AS_OVERRIDE
@@ -120,6 +125,7 @@ bt_cluster
 bt_common
 :
    bt_advertise_inactive
+   | bt_apply_groups
    | bt_as_override
    | bt_cluster
    | bt_damping
@@ -201,7 +207,14 @@ bt_local_address
 
 bt_local_as
 :
-   LOCAL_AS as = DEC
+   LOCAL_AS bt_local_as_tail
+;
+
+bt_local_as_tail
+:
+   last_loops
+   | last_number
+   | last_private
 ;
 
 bt_multihop
@@ -245,6 +258,7 @@ bt_null
       | BFD_LIVENESS_DETECTION
       | HOLD_TIME
       | LOG_UPDOWN
+      | OUT_DELAY
       | TRACEOPTIONS
    ) s_null_filler
 ;
@@ -278,14 +292,35 @@ bt_type
    )
 ;
 
+last_loops
+:
+   LOOPS DEC
+;
+
+last_number
+:
+   as = DEC
+;
+
+last_private
+:
+   PRIVATE
+;
+
 pe_conjunction
 :
-   OPEN_PAREN policy_expression DOUBLE_AMPERSAND policy_expression CLOSE_PAREN
+   OPEN_PAREN policy_expression
+   (
+      DOUBLE_AMPERSAND policy_expression
+   )+ CLOSE_PAREN
 ;
 
 pe_disjunction
 :
-   OPEN_PAREN policy_expression DOUBLE_PIPE policy_expression CLOSE_PAREN
+   OPEN_PAREN policy_expression
+   (
+      DOUBLE_PIPE policy_expression
+   )+ CLOSE_PAREN
 ;
 
 pe_nested

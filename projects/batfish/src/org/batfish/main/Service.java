@@ -34,7 +34,8 @@ public class Service {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
       try {
-         return new JSONArray(Arrays.asList("", (new JSONObject().put("idle", Driver.getIdle())).toString()));
+         return new JSONArray(Arrays.asList("",
+               (new JSONObject().put("idle", Driver.getIdle())).toString()));
       }
       catch (Exception e) {
          return new JSONArray(Arrays.asList("failure", e.getMessage()));

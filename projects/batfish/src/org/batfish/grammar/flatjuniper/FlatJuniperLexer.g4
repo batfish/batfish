@@ -1044,6 +1044,11 @@ LONGER
    'longer'
 ;
 
+LOOPS
+:
+   'loops'
+;
+
 LSP
 :
    'lsp'
@@ -1157,6 +1162,11 @@ MULTIPLE_AS
 MULTIPLIER
 :
    'multiplier'
+;
+
+MULTISERVICE_OPTIONS
+:
+   'multiservice-options'
 ;
 
 NAME_SERVER
@@ -1289,6 +1299,11 @@ NO_NEIGHBOR_LEARN
    'no-neighbor-learn'
 ;
 
+NO_TRAPS
+:
+   'no-traps'
+;
+
 NSSA
 :
    'nssa'
@@ -1327,6 +1342,11 @@ OSPF
 OSPF3
 :
    'ospf3'
+;
+
+OUT_DELAY
+:
+   'out-delay'
 ;
 
 OUTPUT
@@ -1514,6 +1534,11 @@ PRIORITY_COST
    'priority-cost'
 ;
 
+PRIVATE
+:
+   'private'
+;
+
 PROTOCOL
 :
    'protocol'
@@ -1577,6 +1602,11 @@ REMOVED
 RESOLVE
 :
    'resolve'
+;
+
+RESTRICT
+:
+   'restrict'
 ;
 
 RETAIN
@@ -2594,6 +2624,11 @@ M_Interface_VARIABLE
 M_Interface_WILDCARD
 :
    '<' ~'>'* '>' -> type(WILDCARD), popMode
+;
+
+M_Interface_IP_ADDRESS
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type(IP_ADDRESS), popMode
 ;
 
 M_Interface_WS

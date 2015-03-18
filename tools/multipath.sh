@@ -83,6 +83,12 @@ batfish_analyze_multipath() {
 export -f batfish_analyze_multipath
 
 batfish_find_multipath_inconsistent_packet_constraints() {
+   local _CMD=_batfish_find_multipath_inconsistent_packet_constraints
+   bash -c "$_CMD \"\$@\"" $_CMD "$@" || return 1
+}
+export -f batfish_find_multipath_inconsistent_packet_constraints
+
+_batfish_find_multipath_inconsistent_packet_constraints() {
    batfish_date
    echo ": START: Find inconsistent packet constraints"
    batfish_expect_args 6 $# || return 1
@@ -122,7 +128,7 @@ batfish_find_multipath_inconsistent_packet_constraints() {
    batfish_date
    echo ": END: Find inconsistent packet constraints"
 }
-export -f batfish_find_multipath_inconsistent_packet_constraints
+export -f _batfish_find_multipath_inconsistent_packet_constraints
 
 batfish_find_multipath_inconsistent_packet_constraints_helper() {
    batfish_expect_args 3 $# || return 1
@@ -143,6 +149,12 @@ batfish_find_multipath_inconsistent_packet_constraints_helper() {
 export -f batfish_find_multipath_inconsistent_packet_constraints_helper
 
 batfish_generate_multipath_inconsistency_concretizer_queries() {
+   local _CMD=_batfish_generate_multipath_inconsistency_concretizer_queries
+   bash -c "$_CMD \"\$@\"" $_CMD "$@" || return 1
+}
+export -f batfish_generate_multipath_inconsistency_concretizer_queries
+
+_batfish_generate_multipath_inconsistency_concretizer_queries() {
    batfish_date
    echo ": START: Generate multipath-inconsistency concretizer queries"
    batfish_expect_args 4 $# || return 1
@@ -177,7 +189,7 @@ batfish_generate_multipath_inconsistency_concretizer_queries() {
    batfish_date
    echo ": END: Generate multipath-inconsistency concretizer queries"
 }
-export -f batfish_generate_multipath_inconsistency_concretizer_queries
+export -f _batfish_generate_multipath_inconsistency_concretizer_queries
 
 batfish_generate_multipath_inconsistency_concretizer_queries_helper() {
    batfish_expect_args 2 $# || return 1

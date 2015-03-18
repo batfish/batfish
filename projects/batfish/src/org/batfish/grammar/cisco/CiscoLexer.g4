@@ -826,6 +826,11 @@ CPTONE
    'cptone'
 ;
 
+CRC
+:
+   'crc'
+;
+
 CREDENTIALS
 :
    'credentials'
@@ -1239,6 +1244,11 @@ ENCRYPTION
 END
 :
    'end'
+;
+
+ENFORCE_FIRST_AS
+:
+   'enforce-first-as'
 ;
 
 ENGINEID
@@ -2832,6 +2842,11 @@ NONEGOTIATE
    'nonegotiate'
 ;
 
+NOT_ADVERTISE
+:
+   'not-advertise'
+;
+
 NOTIFY
 :
    'notify'
@@ -3150,6 +3165,11 @@ PORT_SECURITY
 PORT_UNREACHABLE
 :
    'port-unreachable'
+;
+
+POS
+:
+   'pos'
 ;
 
 POWER
@@ -4032,6 +4052,11 @@ SUBSCRIBE_TO_ALERT_GROUP
 SUBSCRIBER
 :
    'subscriber'
+;
+
+SUMMARY_ADDRESS
+:
+   'summary-address'
 ;
 
 SUMMARY_ONLY

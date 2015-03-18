@@ -115,6 +115,7 @@ fromt_route_filter
 fromt_route_filter_tail
 :
    rft_exact
+   | rft_longer
    | rft_orlonger
    | rft_prefix_length_range
    | rft_through
@@ -148,7 +149,10 @@ fromt_tag
 
 metric_expression
 :
-   MULTIPLIER multiplier = DEC
+   (
+      METRIC
+      | METRIC2
+   ) MULTIPLIER multiplier = DEC
    (
       OFFSET offset = DEC
    )?
@@ -247,6 +251,11 @@ pst_term_tail
 rft_exact
 :
    EXACT
+;
+
+rft_longer
+:
+   LONGER
 ;
 
 rft_orlonger
@@ -350,6 +359,11 @@ tht_default_action_reject
 tht_external
 :
    EXTERNAL TYPE DEC
+;
+
+tht_install_nexthop
+:
+   INSTALL_NEXTHOP s_null_filler
 ;
 
 tht_local_preference
@@ -465,8 +479,12 @@ tt_then_tail
    | tht_default_action_accept
    | tht_default_action_reject
    | tht_external
+   | tht_install_nexthop
    | tht_local_preference
    | tht_metric
+   | tht_metric_expression
+   | tht_metric2
+   | tht_metric2_expression
    | tht_next_hop
    | tht_next_policy
    | tht_next_term

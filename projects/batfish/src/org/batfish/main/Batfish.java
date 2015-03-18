@@ -1688,7 +1688,13 @@ public class Batfish implements AutoCloseable {
    }
 
    private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
-      ParserRuleContext tree = parser.parse();
+      ParserRuleContext tree;
+      try {
+         tree = parser.parse();
+      }
+      catch (BatfishException e) {
+         throw new ParserBatfishException("Parser error", e);
+      }
       List<String> errors = parser.getErrors();
       int numErrors = errors.size();
       if (numErrors > 0) {

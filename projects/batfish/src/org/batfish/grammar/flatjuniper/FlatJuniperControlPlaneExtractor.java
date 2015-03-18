@@ -44,6 +44,8 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
    public void processParseTree(ParserRuleContext tree) {
       Hierarchy hierarchy = new Hierarchy();
       ParseTreeWalker walker = new ParseTreeWalker();
+      DeactivatePruner dp = new DeactivatePruner();
+      walker.walk(dp, tree);
       InitialTreeBuilder tb = new InitialTreeBuilder(hierarchy);
       walker.walk(tb, tree);
       ApplyGroupsApplicator hb = new ApplyGroupsApplicator(_parser, hierarchy,

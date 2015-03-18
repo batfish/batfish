@@ -346,6 +346,11 @@ nexus_vrf_rb_stanza
    )*
 ;
 
+no_bgp_enforce_first_as_stanza
+:
+   NO BGP ENFORCE_FIRST_AS NEWLINE
+;
+
 no_neighbor_activate_rb_stanza
 :
    NO NEIGHBOR
@@ -558,6 +563,7 @@ router_bgp_stanza
       | cluster_id_rb_stanza
       | neighbor_rb_stanza
       | nexus_neighbor_rb_stanza
+      | no_bgp_enforce_first_as_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | no_redistribute_connected_rb_stanza

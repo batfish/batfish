@@ -196,6 +196,7 @@ null_standalone_if_stanza
       | CLNS
       | CLOCK
       | COUNTER
+      | CRC
       | CRYPTO
       | DCBX
       |
@@ -313,6 +314,7 @@ null_standalone_if_stanza
       | PEER
       | PHYSICAL_LAYER
       | PORT_CHANNEL
+      | POS
       | POWER
       | PPP
       | PREEMPT

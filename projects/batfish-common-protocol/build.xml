@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Batfish" basedir="." default="all">
-   <!-- import antlr-contrib -->
+   <!-- import ant-contrib -->
    <taskdef resource="net/sf/antcontrib/antlib.xml">
       <classpath>
          <pathelement location="ant-contrib/ant-contrib-dev.jar"/>

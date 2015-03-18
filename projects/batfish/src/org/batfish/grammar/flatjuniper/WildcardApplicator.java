@@ -20,6 +20,8 @@ public class WildcardApplicator extends FlatJuniperParserBaseListener {
 
    private List<ParseTree> _newConfigurationLines;
 
+   private boolean _reenablePathRecording;
+
    public WildcardApplicator(Hierarchy hierarchy) {
       _hierarchy = hierarchy;
    }
@@ -33,6 +35,16 @@ public class WildcardApplicator extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterInterface_id(Interface_idContext ctx) {
+      if (_enablePathRecording && ctx.unit != null) {
+         _enablePathRecording = false;
+         _reenablePathRecording = true;
+         String text = ctx.getText();
+         _currentPath.addNode(text);
+      }
+   }
+
+   @Override
    public void enterSet_line_tail(Set_line_tailContext ctx) {
       _enablePathRecording = true;
       _currentPath = new HierarchyPath();
@@ -42,6 +54,14 @@ public class WildcardApplicator extends FlatJuniperParserBaseListener {
    public void exitFlat_juniper_configuration(
          Flat_juniper_configurationContext ctx) {
       _configurationContext.children = _newConfigurationLines;
+   }
+
+   @Override
+   public void exitInterface_id(Interface_idContext ctx) {
+      if (_reenablePathRecording) {
+         _enablePathRecording = true;
+         _reenablePathRecording = false;
+      }
    }
 
    @Override
@@ -72,4 +92,5 @@ public class WildcardApplicator extends FlatJuniperParserBaseListener {
          }
       }
    }
+
 }

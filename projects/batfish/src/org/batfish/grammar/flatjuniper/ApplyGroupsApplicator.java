@@ -30,6 +30,8 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
    private List<ParseTree> _newConfigurationLines;
 
+   private boolean _reenablePathRecording;
+
    private final Warnings _w;
 
    public ApplyGroupsApplicator(FlatJuniperCombinedParser combinedParser,
@@ -45,6 +47,16 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
       _configurationContext = ctx;
       _newConfigurationLines = new ArrayList<ParseTree>();
       _newConfigurationLines.addAll(ctx.children);
+   }
+
+   @Override
+   public void enterInterface_id(Interface_idContext ctx) {
+      if (_enablePathRecording && ctx.unit != null) {
+         _enablePathRecording = false;
+         _reenablePathRecording = true;
+         String text = ctx.getText();
+         _currentPath.addNode(text);
+      }
    }
 
    @Override
@@ -68,6 +80,11 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterS_apply_groups_except(S_apply_groups_exceptContext ctx) {
+      _newConfigurationLines.remove(_currentSetLine);
+   }
+
+   @Override
    public void enterSet_line(Set_lineContext ctx) {
       _currentSetLine = ctx;
    }
@@ -82,6 +99,14 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
    public void exitFlat_juniper_configuration(
          Flat_juniper_configurationContext ctx) {
       _configurationContext.children = _newConfigurationLines;
+   }
+
+   @Override
+   public void exitInterface_id(Interface_idContext ctx) {
+      if (_reenablePathRecording) {
+         _enablePathRecording = true;
+         _reenablePathRecording = false;
+      }
    }
 
    @Override
@@ -116,7 +141,6 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitSet_line(Set_lineContext ctx) {
-      _hierarchy.getMasterTree().addPath(_currentPath, ctx, null);
       _currentSetLine = null;
       _currentPath = null;
    }

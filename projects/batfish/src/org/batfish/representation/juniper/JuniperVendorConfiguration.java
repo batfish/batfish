@@ -168,7 +168,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          Interface iface) {
       org.batfish.representation.Interface newIface = _c.getInterfaces().get(
             name);
-      Ip ospfArea = iface.getOspfArea();
+      Ip ospfArea = iface.getOspfActiveArea();
       if (ospfArea != null) {
          long ospfAreaLong = ospfArea.asLong();
          org.batfish.representation.OspfArea newArea = newAreas
@@ -269,8 +269,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          }
          newIface.setOutgoingFilter(outAcl);
       }
-      if (iface.getPrefix() != null) {
-         newIface.setPrefix(iface.getPrefix());
+      if (iface.getPrimaryPrefix() != null) {
+         newIface.setPrefix(iface.getPrimaryPrefix());
       }
       newIface.setActive(iface.getActive());
       newIface.setAccessVlan(iface.getAccessVlan());

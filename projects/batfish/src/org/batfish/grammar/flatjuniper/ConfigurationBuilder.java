@@ -64,6 +64,7 @@ import org.batfish.representation.juniper.RouteFilter;
 import org.batfish.representation.juniper.RouteFilterLine;
 import org.batfish.representation.juniper.RouteFilterLineExact;
 import org.batfish.representation.juniper.RouteFilterLineLengthRange;
+import org.batfish.representation.juniper.RouteFilterLineLonger;
 import org.batfish.representation.juniper.RouteFilterLineOrLonger;
 import org.batfish.representation.juniper.RouteFilterLineThrough;
 import org.batfish.representation.juniper.RouteFilterLineUpTo;
@@ -83,9 +84,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(
          Prefix.ZERO);
 
+   private static final String F_BGP_LOCAL_AS_LOOPS = "protocols - bgp - group? - local-as - loops";
+
+   private static final String F_BGP_LOCAL_AS_PRIVATE = "protocols - bgp - group? - local-as - private";
+
    private static final String F_COMPLEX_POLICY = "boolean combination of policy-statements";
 
    private static final String F_EXTENDED_COMMUNITY = "extended communities";
+
+   private static final String F_IPV6 = "ipv6 - other";
 
    private static final String F_POLICY_TERM_THEN_NEXT_HOP = "policy-statement - term - then - next-hop";
 
@@ -428,6 +435,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private Interface _currentInterface;
 
+   private Prefix _currentInterfacePrefix;
+
    private Interface _currentMasterInterface;
 
    private Interface _currentOspfInterface;
@@ -475,33 +484,60 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterAt_interface(At_interfaceContext ctx) {
-      String name = ctx.id.name.getText();
-      String unit = null;
-      if (ctx.id.unit != null) {
-         unit = ctx.id.unit.getText();
-      }
-      String unitFullName = name + "." + unit;
       Map<String, Interface> interfaces = _currentRoutingInstance
             .getInterfaces();
-      _currentOspfInterface = interfaces.get(name);
-      if (_currentOspfInterface == null) {
-         _currentOspfInterface = new Interface(name);
-         interfaces.put(name, _currentOspfInterface);
-      }
-      if (unit != null) {
-         Map<String, Interface> units = _currentOspfInterface.getUnits();
-         _currentOspfInterface = units.get(unitFullName);
+      String unitFullName = null;
+      if (ctx.ip != null) {
+         Ip ip = new Ip(ctx.ip.getText());
+         for (Interface iface : interfaces.values()) {
+            for (Interface unit : iface.getUnits().values()) {
+               if (unit.getAllPrefixIps().contains(ip)) {
+                  _currentOspfInterface = unit;
+                  unitFullName = unit.getName();
+               }
+            }
+         }
          if (_currentOspfInterface == null) {
-            _currentOspfInterface = new Interface(unitFullName);
-            units.put(unitFullName, _currentOspfInterface);
+            throw new BatfishException(
+                  "Could not find interface with ip address: " + ip.toString());
+         }
+      }
+      else {
+         String name = ctx.id.name.getText();
+         String unit = null;
+         if (ctx.id.unit != null) {
+            unit = ctx.id.unit.getText();
+         }
+         unitFullName = name + "." + unit;
+         _currentOspfInterface = interfaces.get(name);
+         if (_currentOspfInterface == null) {
+            _currentOspfInterface = new Interface(name);
+            interfaces.put(name, _currentOspfInterface);
+         }
+         if (unit != null) {
+            Map<String, Interface> units = _currentOspfInterface.getUnits();
+            _currentOspfInterface = units.get(unitFullName);
+            if (_currentOspfInterface == null) {
+               _currentOspfInterface = new Interface(unitFullName);
+               units.put(unitFullName, _currentOspfInterface);
+            }
          }
       }
       Ip currentArea = _currentArea.getAreaIp();
-      Ip interfaceArea = _currentOspfInterface.getOspfArea();
-      if (interfaceArea != null && !currentArea.equals(interfaceArea)) {
-         throw new BatfishException("Interface assigned to multiple areas");
+      if (ctx.at_interface_tail() != null
+            && ctx.at_interface_tail().ait_passive() != null) {
+         _currentOspfInterface.getOspfPassiveAreas().add(currentArea);
       }
-      _currentOspfInterface.setOspfArea(currentArea);
+      else {
+         Ip interfaceActiveArea = _currentOspfInterface.getOspfActiveArea();
+         if (interfaceActiveArea != null
+               && !currentArea.equals(interfaceActiveArea)) {
+            throw new BatfishException("Interface: \""
+                  + unitFullName.toString()
+                  + "\" assigned to multiple active areas");
+         }
+         _currentOspfInterface.setOspfActiveArea(currentArea);
+      }
    }
 
    @Override
@@ -556,8 +592,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterFromt_route_filter_then(Fromt_route_filter_thenContext ctx) {
-      RouteFilterLine line = _currentRouteFilterLine;
-      _currentPsThens = line.getThens();
+      if (_currentRouteFilterPrefix != null) { // not ipv6
+         RouteFilterLine line = _currentRouteFilterLine;
+         _currentPsThens = line.getThens();
+      }
    }
 
    @Override
@@ -593,6 +631,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentFilter = new FirewallFilter(name, _currentFirewallFamily);
          filters.put(name, _currentFilter);
       }
+   }
+
+   @Override
+   public void enterIfamt_address(Ifamt_addressContext ctx) {
+      Set<Prefix> allPrefixes = _currentInterface.getAllPrefixes();
+      Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
+      _currentInterfacePrefix = prefix;
+      if (_currentInterface.getPrimaryPrefix() == null) {
+         _currentInterface.setPrimaryPrefix(prefix);
+      }
+      if (_currentInterface.getPreferredPrefix() == null) {
+         _currentInterface.setPreferredPrefix(prefix);
+      }
+      allPrefixes.add(prefix);
+      Ip ip = prefix.getAddress();
+      _currentInterface.getAllPrefixIps().add(ip);
    }
 
    @Override
@@ -668,6 +722,70 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterRft_exact(Rft_exactContext ctx) {
+      if (_currentRouteFilterPrefix != null) { // not ipv6
+         RouteFilterLineExact fromRouteFilterExact = new RouteFilterLineExact(
+               _currentRouteFilterPrefix);
+         _currentRouteFilterLine = _currentRouteFilter
+               .insertLine(fromRouteFilterExact);
+      }
+   }
+
+   @Override
+   public void enterRft_longer(Rft_longerContext ctx) {
+      if (_currentRouteFilterPrefix != null) { // not ipv6
+         RouteFilterLineLonger fromRouteFilterOrLonger = new RouteFilterLineLonger(
+               _currentRouteFilterPrefix);
+         _currentRouteFilterLine = _currentRouteFilter
+               .insertLine(fromRouteFilterOrLonger);
+      }
+   }
+
+   @Override
+   public void enterRft_orlonger(Rft_orlongerContext ctx) {
+      if (_currentRouteFilterPrefix != null) { // not ipv6
+         RouteFilterLineOrLonger fromRouteFilterOrLonger = new RouteFilterLineOrLonger(
+               _currentRouteFilterPrefix);
+         _currentRouteFilterLine = _currentRouteFilter
+               .insertLine(fromRouteFilterOrLonger);
+      }
+   }
+
+   @Override
+   public void enterRft_prefix_length_range(Rft_prefix_length_rangeContext ctx) {
+      int minPrefixLength = toInt(ctx.low);
+      int maxPrefixLength = toInt(ctx.high);
+      if (_currentRouteFilterPrefix != null) { // not ipv6
+         RouteFilterLineLengthRange fromRouteFilterLengthRange = new RouteFilterLineLengthRange(
+               _currentRouteFilterPrefix, minPrefixLength, maxPrefixLength);
+         _currentRouteFilterLine = _currentRouteFilter
+               .insertLine(fromRouteFilterLengthRange);
+      }
+   }
+
+   @Override
+   public void enterRft_through(Rft_throughContext ctx) {
+      if (_currentRouteFilterPrefix != null) { // not ipv6
+         Prefix throughPrefix = new Prefix(ctx.IP_PREFIX().getText());
+         RouteFilterLineThrough fromRouteFilterThrough = new RouteFilterLineThrough(
+               _currentRouteFilterPrefix, throughPrefix);
+         _currentRouteFilterLine = _currentRouteFilter
+               .insertLine(fromRouteFilterThrough);
+      }
+   }
+
+   @Override
+   public void enterRft_upto(Rft_uptoContext ctx) {
+      int maxPrefixLength = toInt(ctx.high);
+      if (_currentRouteFilterPrefix != null) { // not ipv6
+         RouteFilterLineUpTo fromRouteFilterUpTo = new RouteFilterLineUpTo(
+               _currentRouteFilterPrefix, maxPrefixLength);
+         _currentRouteFilterLine = _currentRouteFilter
+               .insertLine(fromRouteFilterUpTo);
+      }
+   }
+
+   @Override
    public void enterRibt_aggregate(Ribt_aggregateContext ctx) {
       if (ctx.IP_PREFIX() != null) {
          Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
@@ -708,6 +826,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             _currentGeneratedRoute = new GeneratedRoute(prefix);
             generatedRoutes.put(prefix, _currentGeneratedRoute);
          }
+      }
+      else if (ctx.IPV6_PREFIX() != null) {
+         todo(ctx, F_IPV6);
       }
    }
 
@@ -786,11 +907,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitAit_passive(Ait_passiveContext ctx) {
-      _currentOspfInterface.setOspfPassive(true);
-   }
-
-   @Override
    public void exitAt_interface(At_interfaceContext ctx) {
       _currentOspfInterface = null;
    }
@@ -831,12 +947,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          Ip localAddress = new Ip(ctx.IP_ADDRESS().getText());
          _currentBgpGroup.setLocalAddress(localAddress);
       }
-   }
-
-   @Override
-   public void exitBt_local_as(Bt_local_asContext ctx) {
-      int localAs = toInt(ctx.as);
-      _currentBgpGroup.setLocalAs(localAs);
    }
 
    @Override
@@ -1058,14 +1168,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitGt_policy(Gt_policyContext ctx) {
-      String policy = ctx.policy.getText();
-      _currentGeneratedRoute.getPolicies().add(policy);
+      if (_currentGeneratedRoute != null) { // not ipv6
+         String policy = ctx.policy.getText();
+         _currentGeneratedRoute.getPolicies().add(policy);
+      }
+   }
+
+   @Override
+   public void exitIfamat_preferred(Ifamat_preferredContext ctx) {
+      _currentInterface.setPreferredPrefix(_currentInterfacePrefix);
+   }
+
+   @Override
+   public void exitIfamat_primary(Ifamat_primaryContext ctx) {
+      _currentInterface.setPrimaryPrefix(_currentInterfacePrefix);
    }
 
    @Override
    public void exitIfamt_address(Ifamt_addressContext ctx) {
-      Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
-      _currentInterface.setPrefix(prefix);
+      _currentInterfacePrefix = null;
    }
 
    @Override
@@ -1094,6 +1215,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitIt_unit(It_unitContext ctx) {
       _currentInterface = _currentMasterInterface;
+   }
+
+   @Override
+   public void exitLast_loops(Last_loopsContext ctx) {
+      todo(ctx, F_BGP_LOCAL_AS_LOOPS);
+   }
+
+   @Override
+   public void exitLast_number(Last_numberContext ctx) {
+      int localAs = toInt(ctx.as);
+      _currentBgpGroup.setLocalAs(localAs);
+   }
+
+   @Override
+   public void exitLast_private(Last_privateContext ctx) {
+      todo(ctx, F_BGP_LOCAL_AS_PRIVATE);
    }
 
    @Override
@@ -1131,60 +1268,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitPst_term_tail(Pst_term_tailContext ctx) {
       _currentPsTerm = null;
       _currentPsThens = null;
-   }
-
-   @Override
-   public void exitRft_exact(Rft_exactContext ctx) {
-      if (_currentRouteFilterPrefix != null) {
-         RouteFilterLineExact fromRouteFilterExact = new RouteFilterLineExact(
-               _currentRouteFilterPrefix);
-         _currentRouteFilterLine = _currentRouteFilter
-               .insertLine(fromRouteFilterExact);
-      }
-   }
-
-   @Override
-   public void exitRft_orlonger(Rft_orlongerContext ctx) {
-      if (_currentRouteFilterPrefix != null) {
-         RouteFilterLineOrLonger fromRouteFilterOrLonger = new RouteFilterLineOrLonger(
-               _currentRouteFilterPrefix);
-         _currentRouteFilterLine = _currentRouteFilter
-               .insertLine(fromRouteFilterOrLonger);
-      }
-   }
-
-   @Override
-   public void exitRft_prefix_length_range(Rft_prefix_length_rangeContext ctx) {
-      int minPrefixLength = toInt(ctx.low);
-      int maxPrefixLength = toInt(ctx.high);
-      if (_currentRouteFilterPrefix != null) {
-         RouteFilterLineLengthRange fromRouteFilterLengthRange = new RouteFilterLineLengthRange(
-               _currentRouteFilterPrefix, minPrefixLength, maxPrefixLength);
-         _currentRouteFilterLine = _currentRouteFilter
-               .insertLine(fromRouteFilterLengthRange);
-      }
-   }
-
-   @Override
-   public void exitRft_through(Rft_throughContext ctx) {
-      if (_currentRouteFilterPrefix != null) {
-         Prefix throughPrefix = new Prefix(ctx.IP_PREFIX().getText());
-         RouteFilterLineThrough fromRouteFilterThrough = new RouteFilterLineThrough(
-               _currentRouteFilterPrefix, throughPrefix);
-         _currentRouteFilterLine = _currentRouteFilter
-               .insertLine(fromRouteFilterThrough);
-      }
-   }
-
-   @Override
-   public void exitRft_upto(Rft_uptoContext ctx) {
-      int maxPrefixLength = toInt(ctx.high);
-      if (_currentRouteFilterPrefix != null) {
-         RouteFilterLineUpTo fromRouteFilterUpTo = new RouteFilterLineUpTo(
-               _currentRouteFilterPrefix, maxPrefixLength);
-         _currentRouteFilterLine = _currentRouteFilter
-               .insertLine(fromRouteFilterUpTo);
-      }
    }
 
    @Override

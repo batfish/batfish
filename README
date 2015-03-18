@@ -32,9 +32,9 @@ cd build
 make -j<number-of-jobs>
 make install # as administrator (sudo or whatever)
 
-3. (SERVER) Install LogicBlox 4.1.X and fix lb-web-server timeout
+3. (SERVER) Install LogicBlox >= 4.1.9 and fix lb-web-server timeout
 - edit <logicblox-root>/lb-web/config/lb-web-server.conf
-- change the tcp_server_max_idle_time line to read:
+- change all tcp_server_max_idle_time lines to read:
 tcp_server_max_idle_time = 0
 
 4. (SERVER AND CLIENT) Clone batfish
@@ -68,7 +68,7 @@ type:
 
 8. (CLIENT) compile batfish
     batfish_build
-Note that 'batfish_build' just runs 'ant' in the batfish project directory.
+Note that 'batfish_build' runs 'ant' in the batfish project directory with corresponding args.
 You can clean all generated output with:
    batfish_build distclean
 
@@ -79,7 +79,7 @@ NOTE the default values for the following arguments:
 -lbport -> 55179
 -lbwebport -> 8080
 -lbwebadminport -> 55183
-NOTE that the built logic will reside on the SERVER at <batfish-repo-root>/projects/batfish/bin/batfish/logic
+NOTE that the built logic will reside on the SERVER at <batfish-repo-root>/projects/batfish/bin/org/batfish/logic
 .bashrc:
    export BATFISH_REMOTE_LOGIC_DIR=<MANDATORY_absolute_path_to_built_logic_on_SERVER_filesystem>'
    export BATFISH_COMMON_ARGS='-lbhost <OPTIONAL_hostname_of_SERVER> -lbport <OPTIONAL_ConnectBlox_port_on_SERVER> -lbwebport <OPTIONAL_lb_web_port_on_SERVER> -lbwebadminport <OPTIONAL_lb_web_admin_port_on_SERVER>
