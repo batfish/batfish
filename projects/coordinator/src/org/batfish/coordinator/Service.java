@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import org.batfish.common.*;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.UUID;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -192,4 +194,53 @@ public class Service {
       }
    }
 
+   @GET
+   @Path(CoordinatorConstants.SERVICE_GET_OBJECT_RESOURCE)
+   @Produces(MediaType.APPLICATION_OCTET_STREAM)
+   public Response getObject(@Context UriInfo ui) {
+      try {
+         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
+
+         for (MultivaluedMap.Entry<String, List<String>> entry : queryParams
+               .entrySet()) {
+
+            if (entry.getKey().equals(
+                  CoordinatorConstants.SERVICE_GET_OBJECT_PATH)) {
+               System.out.printf("object: %s\n", entry.getValue());
+
+               String objectName = entry.getValue().get(0);
+               
+               File file = Main.getCoordinator().getObject(objectName);
+
+               if (file == null) {
+                  return Response.status(Response.Status.NOT_FOUND)
+                        .entity("File not found")
+                        .type(MediaType.TEXT_PLAIN)
+                        .build();
+               }
+
+               return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
+                     .header("Content-Disposition", "attachment; filename=\"" + objectName + "\"")
+                     .build();
+            }
+            else {
+               System.out.println("Unknown key in work status check: "
+                     + entry.getKey());
+            }
+         }
+
+         //object not specified
+         return Response.status(Response.Status.BAD_REQUEST)
+               .entity("Object not specified")
+               .type(MediaType.TEXT_PLAIN)
+               .build();
+      }
+      catch (Exception e) {
+         e.printStackTrace();
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+               .entity(e.getCause())
+               .type(MediaType.TEXT_PLAIN)
+               .build();
+      }
+   }
 }

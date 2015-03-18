@@ -197,5 +197,15 @@ public class Coordinator {
 
    public WorkItem getWorkItem(UUID workItemId) {
        return _queueUnassignedWork.getWorkItem(workItemId);
+   }
+
+   public File getObject(String objectName) {
+      File file = new File(_settings.getTestrigStorageLocation() + "/" + objectName);
+      
+      if (file.isFile()) {
+         return file;
+      }
+
+      return null;
    }   
  }

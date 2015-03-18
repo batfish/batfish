@@ -1,6 +1,7 @@
 package org.batfish.client;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -31,36 +32,41 @@ public class SampleClient {
 
       _coordinator = coordinator;
       
-      UploadTestrig(testrigName, testrigZipfileName);
+//      UploadTestrig(testrigName, testrigZipfileName);
+//      
+//      //send parsing command
+//      HashMap<String, String> parseRequestParamMap = new HashMap<String, String>();      
+//      parseRequestParamMap.put(CoordinatorConstants.SERVICE_COMMAND_KEY, CoordinatorConstants.SERVICE_COMMAND_PARSE_KEY);
+//      parseRequestParamMap.put(CoordinatorConstants.SERVICE_TESTRIG_NAME_KEY, testrigName);
+//      
+//      UUID parseWorkUUID = queueWork(parseRequestParamMap);
+//      
+//      if (parseWorkUUID == null) {
+//         return;
+//      }
+//
+//      //wait until the work is done
+//      WorkItem wItem = null;
+//      
+//      while (wItem == null || wItem.getStatus() != WorkItem.StatusCode.DONE) {
+//         wItem = IsWorkCompleted(parseWorkUUID);               
+//     
+//         if (wItem != null) {
+//            System.out.printf("workItem: %s\n", wItem.toJsonString());
+//         }
+//         
+//        try {
+//            Thread.sleep(10 * 1000);                 
+//        } catch(InterruptedException ex) {
+//           System.err.printf("sleeping interrupted");
+//           ex.printStackTrace();
+//           return;
+//        }         
+//      }
       
-      //send parsing command
-      HashMap<String, String> parseRequestParamMap = new HashMap<String, String>();      
-      parseRequestParamMap.put(CoordinatorConstants.SERVICE_COMMAND_KEY, CoordinatorConstants.SERVICE_COMMAND_PARSE_KEY);
-      parseRequestParamMap.put(CoordinatorConstants.SERVICE_TESTRIG_NAME_KEY, testrigName);
+      //get the results
+      getObject("dummytestrigname", "build.xml");
       
-      UUID parseWorkUUID = queueWork(parseRequestParamMap);
-      
-      if (parseWorkUUID == null) {
-         return;
-      }
-
-      WorkItem wItem = null;
-      
-      while (wItem == null || wItem.getStatus() != WorkItem.StatusCode.DONE) {
-         wItem = IsWorkCompleted(parseWorkUUID);               
-     
-         if (wItem != null) {
-            System.out.printf("workItem: %s\n", wItem.toJsonString());
-         }
-         
-        try {
-            Thread.sleep(10 * 1000);                 
-        } catch(InterruptedException ex) {
-           System.err.printf("sleeping interrupted");
-           ex.printStackTrace();
-           return;
-        }         
-      } 
    }
    
    private WorkItem IsWorkCompleted(UUID parseWorkUUID) {
@@ -167,9 +173,7 @@ public class SampleClient {
                _coordinator, CoordinatorConstants.SERVICE_BASE_RESOURCE, CoordinatorConstants.SERVICE_QUEUE_WORK_RESOURCE))
                .queryParam(CoordinatorConstants.SERVICE_QUEUE_WORK_PATH, 
                            UriComponent.encode(wItem.toJsonString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
-         Invocation.Builder invocationBuilder = webTarget
-               .request(MediaType.APPLICATION_JSON);
-         Response response = invocationBuilder.get();
+         Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
          
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
@@ -194,4 +198,40 @@ public class SampleClient {
          return null;
       }
    }
+   
+   private boolean getObject(String testrigName, String zipfileName) {
+      try {
+
+         Client client = ClientBuilder.newBuilder()
+               .register(MultiPartFeature.class).build();
+         WebTarget webTarget = client.target(String.format("http://%s%s/%s",
+               _coordinator, CoordinatorConstants.SERVICE_BASE_RESOURCE,
+               CoordinatorConstants.SERVICE_GET_OBJECT_RESOURCE))
+               .queryParam(CoordinatorConstants.SERVICE_GET_OBJECT_PATH, zipfileName);
+
+         Response response = webTarget.request(MediaType.APPLICATION_OCTET_STREAM).get();
+
+         System.out.println(response.getStatus() + " "
+               + response.getStatusInfo() + " " + response);
+
+         if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+            File inFile = response.readEntity(File.class);
+            File outFile = new File(zipfileName + ".zip");
+            
+            inFile.renameTo(outFile);
+            
+            FileWriter fr = new FileWriter(inFile);
+            fr.flush();
+            fr.close();
+         }
+
+         return true;
+      }
+      catch (Exception e) {
+         System.err.printf("Exception when uploading test rig to %s using (%s, %s)\n", _coordinator, testrigName, zipfileName);
+         e.printStackTrace();
+         return false;
+      }
+   }
+
 }
