@@ -68,6 +68,7 @@ public class Driver {
          HttpServer _server = GrizzlyHttpServerFactory.createHttpServer(
                baseUri, rc);
 
+         //sleep indefinitely, in 10 minute chunks
          try {
             while (true) {
                Thread.sleep(10 * 60 * 1000);  //10 minutes

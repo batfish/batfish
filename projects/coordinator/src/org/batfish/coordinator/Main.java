@@ -6,7 +6,7 @@ import java.net.URI;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.cli.ParseException;
-import org.glassfish.grizzly.http.server.HttpServer;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -14,38 +14,74 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 public class Main {
 
-   private static Coordinator _coordinator;
+   private static Settings _settings;
+   private static PoolMgr _poolManager;
+   private static WorkMgr _workManager;
    
    public static void main(String[] args) {
 
-      Settings settings = null;
+      _settings = null;
       try {
-         settings = new Settings(args);
+         _settings = new Settings(args);
       }
       catch (ParseException e) {
          System.err.println("org.batfish.coordinator: Parsing command-line failed. Reason: "
                + e.getMessage());
          System.exit(1);
       }
-      
-      URI baseUri = UriBuilder.fromUri(settings.getServiceUrl())
-            .port(settings.getServicePort()).build();
+
+      //start the pool manager service
+      URI poolMgrUri = UriBuilder.fromUri("http://" + _settings.getServiceHost())
+            .port(_settings.getServicePoolPort()).build();
 
       System.out
-            .println(String.format("Starting coordinator at %s\n", baseUri));
+            .println(String.format("Starting pool manager at %s\n", poolMgrUri));
 
-      ResourceConfig rc = new ResourceConfig(Service.class)
+      ResourceConfig rcPool = new ResourceConfig(PoolMgrService.class)
             .register(new JettisonFeature())
             .register(MultiPartFeature.class);
 
-      HttpServer _server = GrizzlyHttpServerFactory.createHttpServer(baseUri,
-            rc);
+      GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool);
 
-      _coordinator = new Coordinator(settings);
-      _coordinator.run();
+      //start the work manager service
+      URI workMgrUri = UriBuilder.fromUri("http://" + _settings.getServiceHost())
+            .port(_settings.getServiceWorkPort()).build();
+
+      System.out
+            .println(String.format("Starting work manager at %s\n", workMgrUri));
+
+      ResourceConfig rcWork = new ResourceConfig(WorkMgrService.class)
+            .register(new JettisonFeature())
+            .register(MultiPartFeature.class);
+
+      GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork);
+
+      //start the two managers
+      _poolManager = new PoolMgr();
+      _workManager = new WorkMgr();
+      
+      //sleep indefinitely, in 10 minute chunks
+      try {
+         while (true) {
+            Thread.sleep(10 * 60 * 1000);  //10 minutes
+            System.out.println("Still alive ....");
+         }
+      }
+      catch (Exception ex) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(ex);
+         System.err.println(stackTrace);
+      }
    }
    
-   public static Coordinator getCoordinator() {
-      return _coordinator;
+   public static PoolMgr getPoolMgr() {
+      return _poolManager;
+   }
+   
+   public static WorkMgr getWorkMgr() {
+      return _workManager;
+   }
+   
+   public static Settings getSettings() {
+      return _settings;
    }
 }
