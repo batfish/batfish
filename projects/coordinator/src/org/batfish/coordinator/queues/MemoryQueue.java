@@ -6,6 +6,9 @@ import java.util.UUID;
 import org.batfish.coordinator.QueuedWork;
 import org.batfish.coordinator.WorkQueue;
 
+// we don't synchronize on this queue
+// all synchronization is in inside WorkQueueMgr
+
 public class MemoryQueue implements WorkQueue {
    
    private LinkedList<QueuedWork> _queue;
@@ -14,20 +17,18 @@ public class MemoryQueue implements WorkQueue {
          _queue = new LinkedList<QueuedWork>();
    }
    
+   @Override
    public long getLength() {
       return _queue.size();
    }
 
-   public synchronized boolean enque(QueuedWork work) throws Exception {
-      
-      if (getWork(work.getWorkItem().getId()) != null) {
-         throw new Exception("Attempt to insert a duplicate work item!");
-      }
-      
+   @Override
+   public boolean enque(QueuedWork work) {
       return _queue.add(work);
    }
 
-   public synchronized QueuedWork getWork(UUID workItemId) {
+   @Override
+   public QueuedWork getWork(UUID workItemId) {
       
       for (QueuedWork work : _queue) {
          if (work.getWorkItem().getId().equals(workItemId)) {
@@ -36,5 +37,13 @@ public class MemoryQueue implements WorkQueue {
       }    
       
       return null;
+   }
+
+   @Override
+   public QueuedWork deque() {
+      if (_queue.size() == 0) 
+         return null;
+      
+      return _queue.pop();
    }
 }

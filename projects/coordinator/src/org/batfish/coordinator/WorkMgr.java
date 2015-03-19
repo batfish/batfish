@@ -28,58 +28,38 @@ import org.batfish.common.BatfishConstants.WorkStatus;
 import org.batfish.coordinator.queues.AzureQueue;
 import org.batfish.coordinator.queues.MemoryQueue;
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 public class WorkMgr {
    
-   private WorkQueue _queueAssignedWork;
-   private WorkQueue _queueUnassignedWork;
-   private WorkQueue _queueCompletedWork;   
+   private WorkQueueMgr _workQueueMgr;
    
    public WorkMgr() {
-      
-      if (Main.getSettings().getQueueType() == WorkQueue.Type.azure) {
-         String storageConnectionString = String.format(
-               "DefaultEndpointsProtocol=%s;AccountName=%s;AccountKey=%s",
-               Main.getSettings().getStorageProtocol(), 
-               Main.getSettings().getStorageAccountName(),
-               Main.getSettings().getStorageAccountKey());
 
-         _queueAssignedWork = new AzureQueue(Main.getSettings().getQueueAssignedWork(),
-               storageConnectionString);
-         _queueCompletedWork = new AzureQueue(Main.getSettings().getQueueCompletedWork(),
-               storageConnectionString);
-         _queueUnassignedWork = new AzureQueue(
-               Main.getSettings().getQueueUnassignedWork(), storageConnectionString);
-      }
-      else if (Main.getSettings().getQueueType() == WorkQueue.Type.memory) {
-         _queueAssignedWork = new MemoryQueue();
-         _queueCompletedWork = new MemoryQueue();
-         _queueUnassignedWork = new MemoryQueue();       
-      }
-      else {
-         System.err.println("unsupported queue type: " + Main.getSettings().getQueueType());
-         System.exit(1);
-      }                  
+      _workQueueMgr = new WorkQueueMgr();
+      
+      Runnable assignWorkTask = new AssignWorkTask(this);
+      Executors.newScheduledThreadPool(1)
+            .scheduleWithFixedDelay(assignWorkTask, 0, Main.getSettings().getPeriodAssignWorkMs(), TimeUnit.MILLISECONDS);
+
+      Runnable checkWorkTask = new CheckWorkTask(this);
+      Executors.newScheduledThreadPool(1)
+            .scheduleWithFixedDelay(checkWorkTask, 0, Main.getSettings().getPeriodCheckWorkMs(), TimeUnit.MILLISECONDS);
    }
-      
-   public String getWorkStatus() {
-    
-      String retString = "";
-      
-      retString += "Length of unassigned work queue = " + _queueUnassignedWork.getLength() + "\n";
-      retString += "Length of assigned work queue = " + _queueAssignedWork.getLength() + "\n";
-      retString += "Length of completed work queue = " + _queueCompletedWork.getLength();
-      
-      return retString;
+   
+   public JSONObject getWorkQueueStatusJson() throws JSONException {
+      return _workQueueMgr.getStatusJson();
    }
    
    public boolean queueWork(WorkItem workItem) throws Exception {
+      
       QueuedWork work = new QueuedWork(workItem);
-      boolean success = _queueUnassignedWork.enque(work);
+
+      boolean success = _workQueueMgr.queueUnassignedWork(work);                                      
       
       //if this was the only job on the queue, trigger AssignWork on another thread
-      if (success &&  _queueUnassignedWork.getLength() == 1) {
+      if (success &&  _workQueueMgr.getLength(WorkQueueMgr.QueueType.UNASSIGNED) == 1) {
          
          Thread thread = new Thread() {
             public void run() {
@@ -95,9 +75,36 @@ public class WorkMgr {
 
 
    private void AssignWork() {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+
+//      boolean assigned = false;
+//      
+//      QueuedWork work = _queueUnassignedWork.deque();
+//      String idleWorker = Main.getPoolMgr().getIdleWorker();
+//
+//      if (work != null && idleWorker != null) {
+//         assigned = AssignWork(work, idleWorker);
+//      }
+//      else if (work == null) {
+//         System.out.println("AssignWork: No unassigned work");
+//         return;         
+//      }
+//      else if (idleWorker == null) {
+//         System.out.println("AssignWork: No idle worker");         
+//         return;                  
+//      }
+//         
+//      //if we didn't succeed, return the work to the queue and the worker to the pool manager
+//      if (!assigned) {
+//         if (work != null) {
+//            _queueUnassignedWork.enque(work);
+//         }
+//         
+//      }
+//      
    }
 
+   private void CheckWork() {
+   }
 
    public void uploadTestrig(String name, InputStream fileStream) throws Exception {
 
@@ -122,8 +129,8 @@ public class WorkMgr {
       }
    }
 
-   public WorkItem getWorkItem(UUID workItemId) {
-       return _queueUnassignedWork.getWork(workItemId).getWorkItem();
+   public QueuedWork getWork(UUID workItemId) {
+      return _workQueueMgr.getWork(workItemId);
    }
 
    public File getObject(String objectName) {
@@ -135,4 +142,36 @@ public class WorkMgr {
 
       return null;
    }   
+   
+   final class AssignWorkTask implements Runnable {
+      
+      private WorkMgr _workMgr;
+      
+      public AssignWorkTask(WorkMgr workMgr) {
+         _workMgr = workMgr;
+      }
+      
+      @Override
+      public void run() {
+         System.out.println(new Date() + " Assigning work");
+         _workMgr.AssignWork();
+      }
+   }
+
+   final class CheckWorkTask implements Runnable {
+      
+      private WorkMgr _workMgr;
+      
+      public CheckWorkTask(WorkMgr workMgr) {
+         _workMgr = workMgr;
+      }
+      
+      @Override
+      public void run() {
+         System.out.println(new Date() + " Checking work");
+         _workMgr.CheckWork();
+      }
+   }
  }
+
+

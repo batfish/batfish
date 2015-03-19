@@ -133,20 +133,36 @@ public class PoolMgr {
          updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
       }
    }
- }
 
+   public synchronized String getIdleWorker() {
+      
+      for (Entry<String,WorkerStatus> workerEntry : workerPool.entrySet()) {
+         if (workerEntry.getValue().getStatus() == WorkerStatus.StatusCode.IDLE) {            
 
-final class WorkerStatusRefreshTask implements Runnable {
-   
-   PoolMgr _coordinator;
-   
-   public WorkerStatusRefreshTask(PoolMgr coordinator) {
-      _coordinator = coordinator;
+            //we found an idle worker; mark it busy, assuming that work assignment will succeed
+            //if the assignment fails, next refresh cycle will fix things
+            //if we don't mark it busy, we run the risk of it being handed out in response to two requests (one of which will then fail)
+            
+            updateWorkerStatus(workerEntry.getKey(), WorkerStatus.StatusCode.BUSY);            
+            return workerEntry.getKey();
+         }
+      }
+      
+      return null;
    }
-   
-   @Override
-   public void run() {
-      System.out.println(new Date() + " Firing work status refresh");
-      _coordinator.RefreshWorkerStatus();
+
+   final class WorkerStatusRefreshTask implements Runnable {
+
+      PoolMgr _coordinator;
+
+      public WorkerStatusRefreshTask(PoolMgr coordinator) {
+         _coordinator = coordinator;
+      }
+
+      @Override
+      public void run() {
+         System.out.println(new Date() + " Firing work status refresh");
+         _coordinator.RefreshWorkerStatus();
+      }
    }
 }

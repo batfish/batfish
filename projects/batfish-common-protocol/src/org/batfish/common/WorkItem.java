@@ -9,17 +9,13 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class WorkItem {   
-   public enum StatusCode { NEW, INPROGRESS, DONE }
-
+public class WorkItem {
    private UUID _id;
-   private StatusCode _status;
    private HashMap<String, String> _requestParams;
    private HashMap<String, String> _responseParams;
    
    public WorkItem() {
       _id = UUID.randomUUID();
-      _status = StatusCode.NEW;
       _requestParams = new HashMap<String, String>();
       _responseParams = new HashMap<String, String>();
    }
@@ -29,7 +25,6 @@ public class WorkItem {
       JSONArray array = new JSONArray(jsonString);
       
       _id = UUID.fromString(array.get(0).toString());  
-      _status = StatusCode.valueOf(array.get(1).toString());
 
       _requestParams = new HashMap<String, String>();
       _responseParams = new HashMap<String, String>();
@@ -55,10 +50,6 @@ public class WorkItem {
       return _id;
    }
    
-   public StatusCode getStatus() {
-      return _status;
-   }
-   
    public void setId(String idString) {
       _id = UUID.fromString(idString);
    }
@@ -70,7 +61,7 @@ public class WorkItem {
    public String toJsonString() {
       JSONObject requestObject = new JSONObject(_requestParams);
       JSONObject responseObject = new JSONObject(_responseParams);      
-      JSONArray array = new JSONArray(Arrays.asList(_id, _status, requestObject.toString(), responseObject.toString()));
+      JSONArray array = new JSONArray(Arrays.asList(_id, requestObject.toString(), responseObject.toString()));
       return array.toString();
    }
 }

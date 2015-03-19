@@ -18,8 +18,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Path(CoordinatorConstants.SERVICE_BASE_WORK_MGR)
@@ -35,10 +37,16 @@ public class WorkMgrService {
    }
 
    @GET
-   @Path(CoordinatorConstants.SERVICE_WORK_GETSTATUS_RESOURCE)
+   @Path(CoordinatorConstants.SERVICE_WORK_GET_WORK_QUEUE_STATUS_RESOURCE)
    @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray getStatus() {
-      return new JSONArray(Arrays.asList("", Main.getWorkMgr().getWorkStatus()));
+   public JSONArray getWorkQueueStatus() {
+      try {
+         return new JSONArray(Arrays.asList("", Main.getWorkMgr()
+               .getWorkQueueStatusJson()));
+      }
+      catch (Exception e) {
+         return new JSONArray(Arrays.asList("failure", e.getMessage()));
+      }
    }
    
    @GET
@@ -74,39 +82,26 @@ public class WorkMgrService {
    }      
 
    @GET
-   @Path(CoordinatorConstants.SERVICE_WORK_STATUS_CHECK_RESOURCE)
+   @Path(CoordinatorConstants.SERVICE_WORK_GET_WORK_STATUS_RESOURCE)
    @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray workStatusCheck(@Context UriInfo ui) {
+   public JSONArray getWorkStatus(@QueryParam(CoordinatorConstants.SERVICE_WORKID_KEY) String workId) {
       try {
-         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
 
-         for (MultivaluedMap.Entry<String, List<String>> entry : queryParams
-               .entrySet()) {
-
-            if (entry.getKey().equals(
-                  CoordinatorConstants.SERVICE_WORK_STATUS_CHECK_PATH)) {
-               System.out.printf("workid: %s\n", entry.getValue());
-
-               WorkItem wItem = Main.getWorkMgr().getWorkItem(
-                     UUID.fromString(entry.getValue().get(0)));
-
-               if (wItem == null) {
-                  return new JSONArray(Arrays.asList("failure",
-                        "work item not found"));
-               }
-               else {
-                  return new JSONArray(Arrays.asList("", wItem.toJsonString()));
-               }
-            }
-            else {
-               System.out.println("Unknown key in work status check: "
-                     + entry.getKey());
-            }
+         if (workId == null || workId.equals("")) {
+            return new JSONArray(Arrays.asList("failure", "workid not supplied"));            
          }
+         
+         QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
 
-         return new JSONArray(Arrays.asList("failure",
-               "work status check path not found"));
-
+         if (work == null) {
+            return new JSONArray(Arrays.asList("failure",
+                  "work with the specified id not found"));
+         }
+         else {
+            return new JSONArray(
+                  Arrays.asList("", (new JSONObject().put("status", work
+                        .getStatus().toString()))));
+         }
       }
       catch (Exception e) {
          return new JSONArray(Arrays.asList("failure", e.getMessage()));

@@ -12,5 +12,7 @@ public interface WorkQueue {
 
    boolean enque(QueuedWork qWork) throws Exception;
 
+   QueuedWork deque();
+   
    QueuedWork getWork(UUID workItemId);   
 }
