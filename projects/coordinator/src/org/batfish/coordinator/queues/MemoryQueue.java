@@ -3,40 +3,47 @@ package org.batfish.coordinator.queues;
 import java.util.LinkedList;
 import java.util.UUID;
 
-import org.batfish.common.WorkItem;
+import org.batfish.coordinator.QueuedWork;
 import org.batfish.coordinator.WorkQueue;
+
+// we don't synchronize on this queue
+// all synchronization is in inside WorkQueueMgr
 
 public class MemoryQueue implements WorkQueue {
    
-   private LinkedList<WorkItem> _queue;
+   private LinkedList<QueuedWork> _queue;
 
    public MemoryQueue() {
-         _queue = new LinkedList<WorkItem>();
+         _queue = new LinkedList<QueuedWork>();
    }
    
+   @Override
    public long getLength() {
       return _queue.size();
    }
 
    @Override
-   public synchronized boolean enque(WorkItem workItem) throws Exception {
-      
-      if (getWorkItem(workItem.getId()) != null) {
-         throw new Exception("Attempt to insert a duplicate work item!");
-      }
-      
-      return _queue.add(workItem);
+   public boolean enque(QueuedWork work) {
+      return _queue.add(work);
    }
 
    @Override
-   public synchronized WorkItem getWorkItem(UUID workItemId) {
+   public QueuedWork getWork(UUID workItemId) {
       
-      for (WorkItem wItem : _queue) {
-         if (wItem.getId().equals(workItemId)) {
-            return wItem;
+      for (QueuedWork work : _queue) {
+         if (work.getWorkItem().getId().equals(workItemId)) {
+            return work;
          }
       }    
       
       return null;
+   }
+
+   @Override
+   public QueuedWork deque() {
+      if (_queue.size() == 0) 
+         return null;
+      
+      return _queue.pop();
    }
 }

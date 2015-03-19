@@ -2,22 +2,28 @@ package org.batfish.common;
 
 public class CoordinatorConstants {
    
-   public static final String SERVICE_BASE_RESOURCE = "/batfishcoordinator";
-   public static final String SERVICE_GETSTATUS_RESOURCE = "getstatus";
-   public static final String SERVICE_UPDATEPOOL_RESOURCE = "updatepool";  
-   public static final String SERVICE_GETPOOLSTATUS_RESOURCE = "getpoolstatus";  
-   public static final String SERVICE_UPLOAD_TESTRIG_RESOURCE = "uploadtestrig";
-   public static final String SERVICE_QUEUE_WORK_RESOURCE = "queuework";
-   public static final String SERVICE_WORK_STATUS_CHECK_RESOURCE = "checkworkstatus";
-   public static final String SERVICE_GET_OBJECT_RESOURCE = "getobject";
-
-   public static final String SERVICE_WORK_STATUS_CHECK_PATH = "workid";
-   public static final String SERVICE_QUEUE_WORK_PATH = "workitem";
-   public static final String SERVICE_GET_OBJECT_PATH = "object";
+   public static final String SERVICE_BASE_POOL_MGR = "/batfishpoolmgr";
+   public static final String SERVICE_BASE_WORK_MGR = "/batfishworkmgr";
    
+   public static final String SERVICE_POOL_GETSTATUS_RESOURCE = "getstatus";
+   public static final String SERVICE_POOL_UPDATE_RESOURCE = "updatepool";  
+
+   public static final String SERVICE_WORK_GET_WORK_QUEUE_STATUS_RESOURCE = "getworkqueuestatus";  
+   public static final String SERVICE_WORK_UPLOAD_TESTRIG_RESOURCE = "uploadtestrig";
+   public static final String SERVICE_WORK_QUEUE_WORK_RESOURCE = "queuework";
+   public static final String SERVICE_WORK_GET_WORK_STATUS_RESOURCE = "getworkstatus";
+   public static final String SERVICE_WORK_GET_OBJECT_RESOURCE = "getobject";
+
+   public static final String SERVICE_WORK_QUEUE_WORK_PATH = "workitem";
+   public static final String SERVICE_WORK_GET_OBJECT_PATH = "object";
+   
+   public static final String SERVICE_WORKID_KEY = "workid";
    public static final String SERVICE_TESTRIG_NAME_KEY = "testrigname";
    public static final String SERVICE_TESTRIG_ZIPFILE_KEY = "testrigzipfile"; 
    public static final String SERVICE_COMMAND_KEY = "command";
    public static final String SERVICE_COMMAND_PARSE_KEY = "parse";
    public static final String SERVICE_WORKSPACE_NAME_KEY = "workspace";
+   
+   //trying to assign occurs when we are in the middle of trying to assign this work
+   public enum WorkStatusCode { UNASSIGNED, TRYINGTOASSIGN, ASSIGNED, TERMINATEDNORMALLY, TERMINATEDABNORMALLY }
 }

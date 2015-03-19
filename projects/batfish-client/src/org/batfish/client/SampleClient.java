@@ -74,7 +74,7 @@ public class SampleClient {
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client
                .target( String.format("http://%s%s/%s", 
-                     _coordinator, CoordinatorConstants.SERVICE_BASE_RESOURCE, CoordinatorConstants.SERVICE_WORK_STATUS_CHECK_RESOURCE))
+                     _coordinator, CoordinatorConstants.SERVICE_BASE_WORK_MGR, CoordinatorConstants.SERVICE_WORK_STATUS_CHECK_RESOURCE))
                .queryParam(CoordinatorConstants.SERVICE_WORK_STATUS_CHECK_PATH, 
                      UriComponent.encode(parseWorkUUID.toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
          Invocation.Builder invocationBuilder = webTarget
@@ -117,8 +117,8 @@ public class SampleClient {
          Client client = ClientBuilder.newBuilder()
                .register(MultiPartFeature.class).build();
          WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               _coordinator, CoordinatorConstants.SERVICE_BASE_RESOURCE,
-               CoordinatorConstants.SERVICE_UPLOAD_TESTRIG_RESOURCE));
+               _coordinator, CoordinatorConstants.SERVICE_BASE_WORK_MGR,
+               CoordinatorConstants.SERVICE_WORK_UPLOAD_TESTRIG_RESOURCE));
 
          MultiPart multiPart = new MultiPart();
          multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -170,8 +170,8 @@ public class SampleClient {
       try {                  
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               _coordinator, CoordinatorConstants.SERVICE_BASE_RESOURCE, CoordinatorConstants.SERVICE_QUEUE_WORK_RESOURCE))
-               .queryParam(CoordinatorConstants.SERVICE_QUEUE_WORK_PATH, 
+               _coordinator, CoordinatorConstants.SERVICE_BASE_WORK_MGR, CoordinatorConstants.SERVICE_WORK_QUEUE_WORK_RESOURCE))
+               .queryParam(CoordinatorConstants.SERVICE_WORK_QUEUE_WORK_PATH, 
                            UriComponent.encode(wItem.toJsonString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
          Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
          
@@ -205,9 +205,9 @@ public class SampleClient {
          Client client = ClientBuilder.newBuilder()
                .register(MultiPartFeature.class).build();
          WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               _coordinator, CoordinatorConstants.SERVICE_BASE_RESOURCE,
-               CoordinatorConstants.SERVICE_GET_OBJECT_RESOURCE))
-               .queryParam(CoordinatorConstants.SERVICE_GET_OBJECT_PATH, zipfileName);
+               _coordinator, CoordinatorConstants.SERVICE_BASE_WORK_MGR,
+               CoordinatorConstants.SERVICE_WORK_GET_OBJECT_RESOURCE))
+               .queryParam(CoordinatorConstants.SERVICE_WORK_GET_OBJECT_PATH, zipfileName);
 
          Response response = webTarget.request(MediaType.APPLICATION_OCTET_STREAM).get();
 
@@ -233,5 +233,4 @@ public class SampleClient {
          return false;
       }
    }
-
 }

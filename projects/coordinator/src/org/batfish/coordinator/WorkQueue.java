@@ -10,7 +10,9 @@ public interface WorkQueue {
    
    long getLength();
 
-   boolean enque(WorkItem workItem) throws Exception;
+   boolean enque(QueuedWork qWork) throws Exception;
 
-   WorkItem getWorkItem(UUID workItemId);   
+   QueuedWork deque();
+   
+   QueuedWork getWork(UUID workItemId);   
 }
