@@ -15,7 +15,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.batfish.common.BatfishConstants.WorkStatus;
+import org.batfish.common.BatfishConstants.TaskkStatus;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -26,7 +26,7 @@ public class Driver {
    public static final String MAIN_LOGGER = "MainLogger";
 
    private static boolean _idle = true;
-   private static HashMap<String,Work> _workLog;
+   private static HashMap<String,Task> _taskLog;
 
    private static synchronized boolean claimIdle() {
       if (_idle) {
@@ -44,7 +44,7 @@ public class Driver {
    public static void main(String[] args) {
       Logger logger = LogManager.getLogger(MAIN_LOGGER);
 
-      _workLog = new HashMap<String,Work>();
+      _taskLog = new HashMap<String,Task>();
             
       Settings settings = null;
       try {
@@ -106,7 +106,7 @@ public class Driver {
       return noError;
    }
 
-   public static List<String> RunBatfishThroughService(String workId, String[] args) {
+   public static List<String> RunBatfishThroughService(String taskId, String[] args) {
       final Settings settings;
       try {
          settings = new Settings(args);
@@ -119,10 +119,10 @@ public class Driver {
       if (settings.canExecute()) {
          if (claimIdle()) {
 
-            final Work work = new Work(args);
+            final Task task = new Task(args);
             
             try {
-               LogWork(workId, work);
+               logTask(taskId, task);
             }
             catch (Exception e) {
                return Arrays.asList("failure", e.getMessage());
@@ -132,14 +132,14 @@ public class Driver {
             Thread thread = new Thread() {
                @Override
                public void run() {
-                  work.setStatus(WorkStatus.InProgress);
+                  task.setStatus(TaskkStatus.InProgress);
                   if (RunBatfish(settings)) {
-                     work.setStatus(WorkStatus.TerminatedNormally);
+                     task.setStatus(TaskkStatus.TerminatedNormally);
                   }
                   else {
-                     work.setStatus(WorkStatus.TerminatedAbnormally);
+                     task.setStatus(TaskkStatus.TerminatedAbnormally);
                   }
-                  work.setTerminated();
+                  task.setTerminated();
                   makeIdle();
                }
             };
@@ -157,18 +157,18 @@ public class Driver {
       }
    }
    
-   private synchronized static void LogWork(String workId, Work work) throws Exception {
-      if (_workLog.containsKey(workId)) {
-         throw new Exception("duplicate UUID for work");
+   private synchronized static void logTask(String taskId, Task task) throws Exception {
+      if (_taskLog.containsKey(taskId)) {
+         throw new Exception("duplicate UUID for task");
       }
       else {
-         _workLog.put(workId, work);
+         _taskLog.put(taskId, task);
       }
    }
    
-   synchronized static Work getWorkFromLog(String workId) {
-      if (_workLog.containsKey(workId)) {
-         return _workLog.get(workId);
+   synchronized static Task getTaskkFromLog(String taskId) {
+      if (_taskLog.containsKey(taskId)) {
+         return _taskLog.get(taskId);
       }
       else {
          return null;

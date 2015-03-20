@@ -44,4 +44,8 @@ public class QueuedWork {
    public WorkItem getWorkItem() {
       return _workItem;
    }
+
+   public void setStatus(WorkStatusCode status) {
+      _status = status;
+   }
 }

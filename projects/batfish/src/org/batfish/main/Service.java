@@ -17,7 +17,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.batfish.common.BatfishConstants;
-import org.batfish.common.BatfishConstants.WorkStatus;
+import org.batfish.common.BatfishConstants.TaskkStatus;
 
 @Path(BatfishConstants.SERVICE_BASE_RESOURCE)
 public class Service {
@@ -45,24 +45,24 @@ public class Service {
    }
 
    @GET
-   @Path(BatfishConstants.SERVICE_GETWORKSTATUS_RESOURCE)
+   @Path(BatfishConstants.SERVICE_GETTASKSTATUS_RESOURCE)
    @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray getWorkStatus(@QueryParam(BatfishConstants.SERVICE_WORKID_KEY) String workId) {
+   public JSONArray getTaskStatus(@QueryParam(BatfishConstants.SERVICE_TASKID_KEY) String taskId) {
       try {
          
-         if (workId == null || workId.equals("")) {
-            return new JSONArray(Arrays.asList("failure", "workid not supplied"));            
+         if (taskId == null || taskId.equals("")) {
+            return new JSONArray(Arrays.asList("failure", "taskid not supplied"));            
          }
 
-         Work work = Driver.getWorkFromLog(workId);
+         Task task = Driver.getTaskkFromLog(taskId);
 
-         if (work == null) {
+         if (task == null) {
             return new JSONArray(Arrays.asList("",
-                  (new JSONObject().put("status", WorkStatus.Unknown.toString()).toString())));
+                  (new JSONObject().put("status", TaskkStatus.Unknown.toString()).toString())));
          }
          
          return new JSONArray(Arrays.asList("",
-               (new JSONObject().put("status", Driver.getWorkFromLog(workId).getStatus().toString()).toString())));
+               (new JSONObject().put("status", Driver.getTaskkFromLog(taskId).getStatus().toString()).toString())));
       }
       catch (Exception e) {
          return new JSONArray(Arrays.asList("failure", e.getMessage()));
@@ -78,16 +78,16 @@ public class Service {
 
          List<String> argsList = new ArrayList<String>();
 
-         String workId = null;
+         String taskId = null;
          
          for (MultivaluedMap.Entry<String, List<String>> entry : queryParams
                .entrySet()) {
             System.out.printf("key = %s value = %s\n", entry.getKey(),
                   entry.getValue());
 
-            //pull out the special key corresponding to workid
-            if (entry.getKey().equals(BatfishConstants.SERVICE_WORKID_KEY)) {
-               workId = entry.getValue().get(0);
+            //pull out the special key corresponding to taskid
+            if (entry.getKey().equals(BatfishConstants.SERVICE_TASKID_KEY)) {
+               taskId = entry.getValue().get(0);
             }
             else {
                argsList.add("-" + entry.getKey());
@@ -102,16 +102,16 @@ public class Service {
             }
          }
 
-         if (workId == null) {
+         if (taskId == null) {
             return new JSONArray(Arrays.asList("failure",
-                  "WorkId was not supplied"));
+                  "TaskId was not supplied"));
          }
          
          String[] args = argsList.toArray(new String[argsList.size()]);
 
          System.out.printf("Will run with args: %s\n", Arrays.toString(args));
 
-         return new JSONArray(Driver.RunBatfishThroughService(workId, args));
+         return new JSONArray(Driver.RunBatfishThroughService(taskId, args));
       }
       catch (Exception e) {
          return new JSONArray(Arrays.asList("failure", e.getMessage()));

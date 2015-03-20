@@ -9,10 +9,9 @@ import org.apache.commons.cli.ParseException;
 
 public class Settings {
 
-   private static final String ARG_QUEUE_ASSIGNED_WORK = "q_assignedwork";
+   private static final String ARG_QUEUE_INCOMPLETE_WORK = "q_incompletework";
    private static final String ARG_QUEUE_COMPLETED_WORK = "q_completedwork";
    private static final String ARG_QUEUE_TYPE = "qtype";
-   private static final String ARG_QUEUE_UNASSIGNED_WORK = "q_unassignedwork";
    private static final String ARG_SERVICE_POOL_PORT = "servicepoolport";
    private static final String ARG_SERVICE_WORK_PORT = "serviceworkport";
    private static final String ARG_SERVICE_HOST = "servicehost";
@@ -26,10 +25,9 @@ public class Settings {
    private static final String ARG_PERIOD_CHECK_WORK = "periodcheckwork";
 
 
-   private static final String DEFAULT_QUEUE_ASSIGNED_WORK = "batfishassignedwork";
+   private static final String DEFAULT_QUEUE_INCOMPLETE_WORK = "batfishincompletework";
    private static final String DEFAULT_QUEUE_COMPLETED_WORK = "batfishcompletedwork";
    private static final String DEFAULT_QUEUE_TYPE = "memory";
-   private static final String DEFAULT_QUEUE_UNASSIGNED_WORK = "batfishunassignedwork";
    private static final String DEFAULT_SERVICE_POOL_PORT = "9998";
    private static final String DEFAULT_SERVICE_WORK_PORT = "9997";
    private static final String DEFAULT_SERVICE_HOST = "localhost";
@@ -43,10 +41,9 @@ public class Settings {
    private static final String DEFAULT_PERIOD_CHECK_WORK = "5000"; //5 seconds
    
    private Options _options;
-   private String _queueAssignedWork;
+   private String _queuIncompleteWork;
    private String _queueCompletedWork;
    private WorkQueue.Type _queueType;
-   private String _queueUnassignedWork;
    private int _servicePoolPort;
    private int _serviceWorkPort;
    private String _serviceHost;
@@ -80,8 +77,8 @@ public class Settings {
       return _periodCheckWorkMs;
    }
    
-   public String getQueueAssignedWork() {
-      return _queueAssignedWork;
+   public String getQueueIncompleteWork() {
+      return _queuIncompleteWork;
    }
 
    public String getQueueCompletedWork() {
@@ -92,10 +89,6 @@ public class Settings {
       return _queueType;
    }
 
-   public String getQueueUnassignedWork() {
-      return _queueUnassignedWork;
-   }
-   
    public int getServicePoolPort() {
       return _servicePoolPort;
    }
@@ -159,9 +152,8 @@ public class Settings {
       // parse the command line arguments
       line = parser.parse(_options, args);
 
-      _queueAssignedWork = line.getOptionValue(ARG_QUEUE_ASSIGNED_WORK, DEFAULT_QUEUE_ASSIGNED_WORK);
+      _queuIncompleteWork = line.getOptionValue(ARG_QUEUE_INCOMPLETE_WORK, DEFAULT_QUEUE_INCOMPLETE_WORK);
       _queueCompletedWork = line.getOptionValue(ARG_QUEUE_COMPLETED_WORK, DEFAULT_QUEUE_COMPLETED_WORK);
-      _queueUnassignedWork = line.getOptionValue(ARG_QUEUE_UNASSIGNED_WORK, DEFAULT_QUEUE_UNASSIGNED_WORK);
 
       _queueType = WorkQueue.Type.valueOf(line.getOptionValue(ARG_QUEUE_TYPE, DEFAULT_QUEUE_TYPE));
 

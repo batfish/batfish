@@ -1,8 +1,8 @@
 package org.batfish.coordinator.queues;
 
+import java.util.Iterator;
 import java.util.UUID;
 
-import org.batfish.common.WorkItem;
 import org.batfish.coordinator.QueuedWork;
 import org.batfish.coordinator.WorkQueue;
 
@@ -55,6 +55,21 @@ public class AzureQueue implements WorkQueue {
 
    @Override
    public QueuedWork getWork(UUID workItemId) {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+   }
+
+   @Override
+   public Iterator<QueuedWork> iterator() {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+   }
+
+   @Override
+   public QueuedWork deque() {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+   }
+
+   @Override
+   public boolean delete(QueuedWork qWork) {
       throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 }

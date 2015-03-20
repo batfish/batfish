@@ -1,28 +1,27 @@
 package org.batfish.main;
 
-import java.util.Collection;
 import java.util.Date;
 
-import org.batfish.common.BatfishConstants.WorkStatus;
+import org.batfish.common.BatfishConstants.TaskkStatus;
 
-public class Work {
+public class Task {
    String[] _args;
    Date _obtained;
    Date _terminated;
-   WorkStatus _status;
+   TaskkStatus _status;
 
-   public Work(String[] args) {
+   public Task(String[] args) {
       this._args = args;
       _obtained = new Date();
       _terminated = null;
-      _status = WorkStatus.Unscheduled;
+      _status = TaskkStatus.Unscheduled;
    }
 
-   public WorkStatus getStatus() {
+   public TaskkStatus getStatus() {
       return _status;
    }
 
-   public void setStatus(WorkStatus status) {
+   public void setStatus(TaskkStatus status) {
       _status = status;
    }
    

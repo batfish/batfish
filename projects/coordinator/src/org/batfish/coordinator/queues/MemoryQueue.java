@@ -9,28 +9,23 @@ import org.batfish.coordinator.WorkQueue;
 // we don't synchronize on this queue
 // all synchronization is in inside WorkQueueMgr
 
-public class MemoryQueue implements WorkQueue {
+public class MemoryQueue extends LinkedList<QueuedWork> implements WorkQueue {
    
-   private LinkedList<QueuedWork> _queue;
+   private static final long serialVersionUID = -6556862067531610584L;
 
-   public MemoryQueue() {
-         _queue = new LinkedList<QueuedWork>();
-   }
-   
    @Override
    public long getLength() {
-      return _queue.size();
+      return size();
    }
 
    @Override
    public boolean enque(QueuedWork work) {
-      return _queue.add(work);
+      return add(work);
    }
 
    @Override
-   public QueuedWork getWork(UUID workItemId) {
-      
-      for (QueuedWork work : _queue) {
+   public QueuedWork getWork(UUID workItemId) {      
+      for (QueuedWork work : this) {
          if (work.getWorkItem().getId().equals(workItemId)) {
             return work;
          }
@@ -41,9 +36,16 @@ public class MemoryQueue implements WorkQueue {
 
    @Override
    public QueuedWork deque() {
-      if (_queue.size() == 0) 
+      if (size() == 0) 
          return null;
       
-      return _queue.pop();
+      return pop();
    }
+
+   @Override
+   public boolean delete(QueuedWork qWork) {
+      return remove(qWork);
+   }
+   
+   
 }
