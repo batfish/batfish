@@ -17,7 +17,7 @@ public class EntityTable {
 
    private static final String DYNAMIC_NEXT_HOP_INTERFACE_NAME = "dynamic";
 
-   private static final long IP_NONE_L = 0;
+   private static final long IP_NONE_L = -1l;
 
    private static final long NO_TAG = -1l;
 
