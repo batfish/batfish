@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import java.util.UUID;
 
+import org.batfish.common.CoordinatorConstants.WorkStatusCode;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.queues.AzureQueue;
 import org.batfish.coordinator.queues.MemoryQueue;
@@ -13,10 +14,9 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class WorkQueueMgr {
 
-   public enum QueueType {ASSIGNED, UNASSIGNED, COMPLETED}
+   public enum QueueType {INCOMPLETE, COMPLETED}
 
-   private WorkQueue _queueAssignedWork;
-   private WorkQueue _queueUnassignedWork;
+   private WorkQueue _queueIncompleteWork;
    private WorkQueue _queueCompletedWork;
 
    public WorkQueueMgr() {
@@ -27,17 +27,14 @@ public class WorkQueueMgr {
                      .getStorageAccountName(), Main.getSettings()
                      .getStorageAccountKey());
 
-         _queueAssignedWork = new AzureQueue(Main.getSettings()
-               .getQueueAssignedWork(), storageConnectionString);
          _queueCompletedWork = new AzureQueue(Main.getSettings()
                .getQueueCompletedWork(), storageConnectionString);
-         _queueUnassignedWork = new AzureQueue(Main.getSettings()
-               .getQueueUnassignedWork(), storageConnectionString);
+         _queueIncompleteWork = new AzureQueue(Main.getSettings()
+               .getQueueIncompleteWork(), storageConnectionString);
       }
       else if (Main.getSettings().getQueueType() == WorkQueue.Type.memory) {
-         _queueAssignedWork = new MemoryQueue();
          _queueCompletedWork = new MemoryQueue();
-         _queueUnassignedWork = new MemoryQueue();
+         _queueIncompleteWork = new MemoryQueue();
       }
       else {
          System.err.println("unsupported queue type: "
@@ -50,8 +47,7 @@ public class WorkQueueMgr {
       
       JSONObject jObject = new JSONObject();
       
-      jObject.put("unassigned-works", _queueUnassignedWork.getLength()); 
-      jObject.put("assigned-works", _queueAssignedWork.getLength()); 
+      jObject.put("incomplete-works", _queueIncompleteWork.getLength()); 
       jObject.put("completed-works", _queueCompletedWork.getLength()); 
       
       return jObject;
@@ -65,46 +61,67 @@ public class WorkQueueMgr {
          throw new Exception("Duplicate id for work");
       }
       
-      return _queueUnassignedWork.enque(work);
+      return _queueIncompleteWork.enque(work);
    }
    
    public synchronized QueuedWork getWork(UUID workId) {
-      //first, look for the work item in the assigned queue (most likely to be found there?)
-      //if not found there, in the unassigned queue
-      //if still not found, in the completed queue
-      QueuedWork work = getWork(workId, QueueType.ASSIGNED);
+      QueuedWork work = getWork(workId, QueueType.INCOMPLETE);
       if (work == null) {
-         work = getWork(workId, QueueType.UNASSIGNED);
-         if (work == null) {
-            work = getWork(workId, QueueType.COMPLETED);
-         }
-      }
-      
+         work = getWork(workId, QueueType.COMPLETED);
+      }      
       return work;
    }
    
    private synchronized QueuedWork getWork(UUID workId, QueueType qType) {
       switch (qType) {
-         case ASSIGNED:
-            return _queueAssignedWork.getWork(workId);
          case COMPLETED:
             return _queueCompletedWork.getWork(workId);
-         case UNASSIGNED:
-            return _queueUnassignedWork.getWork(workId);     
+         case INCOMPLETE:
+            return _queueIncompleteWork.getWork(workId);     
       }            
       return null;
    }
 
    public synchronized long getLength(QueueType qType) {
       switch (qType) {
-      case ASSIGNED:
-         return _queueAssignedWork.getLength();
       case COMPLETED:
          return _queueCompletedWork.getLength();
-      case UNASSIGNED:
-         return _queueUnassignedWork.getLength();
+      case INCOMPLETE:
+         return _queueIncompleteWork.getLength();
       }
       return -1;
    }
 
+   public synchronized QueuedWork getWorkForAssignment() {
+      
+      for (QueuedWork work : _queueIncompleteWork) {
+         if (work.getStatus() == WorkStatusCode.UNASSIGNED) {
+            work.setStatus(WorkStatusCode.TRYINGTOASSIGN);
+            return work;
+         }         
+      }
+      
+      return null;
+   }
+ 
+   public QueuedWork getWorkForChecking() {
+      
+      for (QueuedWork work : _queueIncompleteWork) {
+         if (work.getStatus() == WorkStatusCode.ASSIGNED) {
+            work.setStatus(WorkStatusCode.CHECKINGTERMINATION);
+            return work;
+         }         
+      }
+      
+      return null;
+   }
+   
+   public synchronized void markAssignmentResult(QueuedWork work, boolean assignmentSuccessful) {
+         work.setStatus(assignmentSuccessful? WorkStatusCode.ASSIGNED : WorkStatusCode.UNASSIGNED);
+   }
+   
+   public synchronized void makeWorkUnassigned(QueuedWork work) {
+      work.setStatus(WorkStatusCode.UNASSIGNED);
+   }
 }
+ 

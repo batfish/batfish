@@ -4,7 +4,7 @@ import java.util.Date;
 
 public class WorkerStatus {
 
-   public enum StatusCode { IDLE, BUSY, UNREACHABLE, UNKNOWN }
+   public enum StatusCode { IDLE, TRYINGTOASSIGN, BUSY, UNREACHABLE, UNKNOWN }
 
    private StatusCode _statusCode;
    private Date _lastUpdated;

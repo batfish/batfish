@@ -24,6 +24,12 @@ public class CoordinatorConstants {
    public static final String SERVICE_COMMAND_PARSE_KEY = "parse";
    public static final String SERVICE_WORKSPACE_NAME_KEY = "workspace";
    
-   //trying to assign occurs when we are in the middle of trying to assign this work
-   public enum WorkStatusCode { UNASSIGNED, TRYINGTOASSIGN, ASSIGNED, TERMINATEDNORMALLY, TERMINATEDABNORMALLY }
+   public enum WorkStatusCode {
+      UNASSIGNED,
+      TRYINGTOASSIGN,
+      ASSIGNED,
+      CHECKINGTERMINATION,
+      TERMINATEDNORMALLY,
+      TERMINATEDABNORMALLY
+   }
 }

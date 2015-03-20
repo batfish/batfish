@@ -2,9 +2,7 @@ package org.batfish.coordinator;
 
 import java.util.UUID;
 
-import org.batfish.common.WorkItem;
-
-public interface WorkQueue {   
+public interface WorkQueue extends Iterable<QueuedWork> {   
    
    public enum Type {azure, memory}
    
@@ -12,6 +10,8 @@ public interface WorkQueue {
 
    boolean enque(QueuedWork qWork) throws Exception;
 
+   boolean delete(QueuedWork qWork);
+   
    QueuedWork deque();
    
    QueuedWork getWork(UUID workItemId);   

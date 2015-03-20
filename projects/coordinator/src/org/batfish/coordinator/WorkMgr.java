@@ -24,7 +24,7 @@ import javax.ws.rs.core.Response;
 
 import org.batfish.common.BatfishConstants;
 import org.batfish.common.WorkItem;
-import org.batfish.common.BatfishConstants.WorkStatus;
+import org.batfish.common.BatfishConstants.TaskkStatus;
 import org.batfish.coordinator.queues.AzureQueue;
 import org.batfish.coordinator.queues.MemoryQueue;
 import org.codehaus.jettison.json.JSONArray;
@@ -58,8 +58,8 @@ public class WorkMgr {
 
       boolean success = _workQueueMgr.queueUnassignedWork(work);                                      
       
-      //if this was the only job on the queue, trigger AssignWork on another thread
-      if (success &&  _workQueueMgr.getLength(WorkQueueMgr.QueueType.UNASSIGNED) == 1) {
+      //as an optimization trigger AssignWork to see if we can schedule this (or another) work
+      if (success) {
          
          Thread thread = new Thread() {
             public void run() {
@@ -76,36 +76,64 @@ public class WorkMgr {
 
    private void AssignWork() {
 
-//      boolean assigned = false;
-//      
-//      QueuedWork work = _queueUnassignedWork.deque();
-//      String idleWorker = Main.getPoolMgr().getIdleWorker();
-//
-//      if (work != null && idleWorker != null) {
-//         assigned = AssignWork(work, idleWorker);
-//      }
-//      else if (work == null) {
-//         System.out.println("AssignWork: No unassigned work");
-//         return;         
-//      }
-//      else if (idleWorker == null) {
-//         System.out.println("AssignWork: No idle worker");         
-//         return;                  
-//      }
-//         
-//      //if we didn't succeed, return the work to the queue and the worker to the pool manager
-//      if (!assigned) {
-//         if (work != null) {
-//            _queueUnassignedWork.enque(work);
-//         }
-//         
-//      }
-//      
+      QueuedWork work = _workQueueMgr.getWorkForAssignment();
+
+      //get out if no work was found
+      if (work == null) {
+         System.out.println("AssignWork: No unassigned work");
+         return;
+      }
+
+      String idleWorker = Main.getPoolMgr().getWorkerForAssignment();
+
+      //get out if no idle worker was found, but release the work first
+      if (idleWorker == null) {
+         _workQueueMgr.markAssignmentResult(work, false);
+
+         System.out.println("AssignWork: No idle worker");
+         return;
+      }
+      
+      AssignWork(work, idleWorker);
+   }
+
+   private void AssignWork(QueuedWork work, String idleWorker) {
+      boolean assigned = false;
+      
+      //TODO: DO WORK HERE
+      
+       // mark the assignment results accordingly
+      _workQueueMgr.markAssignmentResult(work, assigned);
+      Main.getPoolMgr().markAssignmentResult(idleWorker, assigned);
+
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
    private void CheckWork() {
+
+      QueuedWork work = _workQueueMgr.getWorkForChecking();
+      
+      if (work == null) {
+         System.out.println("CheckWork: No assigned work");
+         return;
+      }
+
+      String assignedWorker = work.getAssignedWorker();
+      
+      if (assignedWorker == null) {
+         System.out.println("ERROR: no assinged worker for assigned work");         
+         _workQueueMgr.makeWorkUnassigned(work);         
+         return;
+      }
+      
+      CheckWork(work, assignedWorker);
    }
 
+   private void CheckWork(QueuedWork work, String worker) {
+      //TODO: DO WORK HERE
+      
+   }
+   
    public void uploadTestrig(String name, InputStream fileStream) throws Exception {
 
       File testrigDir = new File(Main.getSettings().getTestrigStorageLocation() + "/" + name);

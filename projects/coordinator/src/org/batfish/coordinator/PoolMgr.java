@@ -85,6 +85,13 @@ public class PoolMgr {
          RefreshWorkerStatus(worker);
       }      
    }
+   
+   public WorkerStatus getWorkerStatus(String worker) {
+      if (workerPool.containsKey(worker))
+         return workerPool.get(worker);
+      else 
+         return null;      
+   }
 
    private void RefreshWorkerStatus(String worker) {
       try {
@@ -118,11 +125,11 @@ public class PoolMgr {
          
          boolean status = jObj.getBoolean("idle");
          
-         if (status)
-            updateWorkerStatus(worker, WorkerStatus.StatusCode.IDLE);
-         else 
-            updateWorkerStatus(worker, WorkerStatus.StatusCode.BUSY);
-         
+         //update the status, except leave the ones with TRYINGTOASSIGN alone
+         if (getWorkerStatus(worker).getStatus() != WorkerStatus.StatusCode.TRYINGTOASSIGN) {
+            updateWorkerStatus(worker, 
+                  status? WorkerStatus.StatusCode.IDLE : WorkerStatus.StatusCode.BUSY);
+         }
       }
       catch (ProcessingException e) {
          System.err.printf("unable to connect to %s: %s\n", worker, e.getStackTrace().toString());
@@ -134,16 +141,11 @@ public class PoolMgr {
       }
    }
 
-   public synchronized String getIdleWorker() {
+   public synchronized String getWorkerForAssignment() {
       
       for (Entry<String,WorkerStatus> workerEntry : workerPool.entrySet()) {
          if (workerEntry.getValue().getStatus() == WorkerStatus.StatusCode.IDLE) {            
-
-            //we found an idle worker; mark it busy, assuming that work assignment will succeed
-            //if the assignment fails, next refresh cycle will fix things
-            //if we don't mark it busy, we run the risk of it being handed out in response to two requests (one of which will then fail)
-            
-            updateWorkerStatus(workerEntry.getKey(), WorkerStatus.StatusCode.BUSY);            
+            updateWorkerStatus(workerEntry.getKey(), WorkerStatus.StatusCode.TRYINGTOASSIGN);            
             return workerEntry.getKey();
          }
       }
@@ -164,5 +166,10 @@ public class PoolMgr {
          System.out.println(new Date() + " Firing work status refresh");
          _coordinator.RefreshWorkerStatus();
       }
+   }
+
+   public void markAssignmentResult(String worker, boolean assignmentSuccessful) {
+         updateWorkerStatus(worker, 
+               assignmentSuccessful? WorkerStatus.StatusCode.BUSY : WorkerStatus.StatusCode.IDLE);     
    }
 }
