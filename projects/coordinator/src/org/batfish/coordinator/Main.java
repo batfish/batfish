@@ -7,6 +7,8 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -20,14 +22,18 @@ public class Main {
    private static PoolMgr _poolManager;
    private static WorkMgr _workManager;
    
+   private static Logger _logger;
+   
    public static void main(String[] args) {
 
+      _logger = LogManager.getLogger(MAIN_LOGGER);
+      
       _settings = null;
       try {
          _settings = new Settings(args);
       }
       catch (ParseException e) {
-         System.err.println("org.batfish.coordinator: Parsing command-line failed. Reason: "
+         _logger.fatal("org.batfish.coordinator: Parsing command-line failed. Reason: "
                + e.getMessage());
          System.exit(1);
       }
@@ -36,8 +42,7 @@ public class Main {
       URI poolMgrUri = UriBuilder.fromUri("http://" + _settings.getServiceHost())
             .port(_settings.getServicePoolPort()).build();
 
-      System.out
-            .println(String.format("Starting pool manager at %s\n", poolMgrUri));
+      _logger.info("Starting pool manager at " + poolMgrUri + "\n");
 
       ResourceConfig rcPool = new ResourceConfig(PoolMgrService.class)
             .register(new JettisonFeature())
@@ -49,8 +54,7 @@ public class Main {
       URI workMgrUri = UriBuilder.fromUri("http://" + _settings.getServiceHost())
             .port(_settings.getServiceWorkPort()).build();
 
-      System.out
-            .println(String.format("Starting work manager at %s\n", workMgrUri));
+      _logger.info("Starting work manager at " + workMgrUri + "\n");
 
       ResourceConfig rcWork = new ResourceConfig(WorkMgrService.class)
             .register(new JettisonFeature())
@@ -66,7 +70,7 @@ public class Main {
       try {
          while (true) {
             Thread.sleep(10 * 60 * 1000);  //10 minutes
-            System.out.println("Still alive ....");
+            _logger.info("Still alive ....\n");
          }
       }
       catch (Exception ex) {
