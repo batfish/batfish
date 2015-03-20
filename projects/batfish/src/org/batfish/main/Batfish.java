@@ -51,6 +51,7 @@ import org.batfish.collections.FlowSinkInterface;
 import org.batfish.collections.FlowSinkSet;
 import org.batfish.collections.FunctionSet;
 import org.batfish.collections.MultiSet;
+import org.batfish.collections.NodeInterfacePair;
 import org.batfish.collections.NodeRoleMap;
 import org.batfish.collections.NodeSet;
 import org.batfish.collections.PolicyRouteFibIpMap;
@@ -102,6 +103,8 @@ import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 import org.batfish.representation.LineAction;
+import org.batfish.representation.OspfArea;
+import org.batfish.representation.OspfProcess;
 import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapAction;
 import org.batfish.representation.PolicyMapClause;
@@ -178,6 +181,8 @@ public class Batfish implements AutoCloseable {
     */
    private static final String FLOW_SINKS_FILENAME = "flow-sinks";
 
+   private static final String GEN_OSPF_STARTING_IP = "10.0.0.0";
+
    /**
     * A byte-array containing the first 4 bytes comprising the header for a file
     * that is the output of java serialization
@@ -198,16 +203,22 @@ public class Batfish implements AutoCloseable {
 
    private static final String LEVEL_UNIMPLEMENTED = "UNIMPLEMENTED";
 
+   private static final String LOG_FILE_KEY = "LOG_FILE";
+
    /**
     * The name of the file in which LogiQL predicate type-information and
     * documentation is serialized
     */
    private static final String PREDICATE_INFO_FILENAME = "predicateInfo.object";
 
+   private static final String ROUTING_KEY_NAME = "ROUTINGKEY";
+
    /**
     * A string containing the system-specific path separator character
     */
    private static final String SEPARATOR = System.getProperty("file.separator");
+
+   private static final String SLAVE_ROUTING_KEY_VALUE = "slave";
 
    /**
     * Role name for generated stubs
@@ -224,12 +235,6 @@ public class Batfish implements AutoCloseable {
     * same LAN segment
     */
    private static final String TOPOLOGY_PREDICATE_NAME = "LanAdjacent";
-
-   private static final String LOG_FILE_KEY = "LOG_FILE";
-
-   private static final String ROUTING_KEY_NAME = "ROUTINGKEY";
-
-   private static final String SLAVE_ROUTING_KEY_VALUE = "slave";
 
    private static void initControlPlaneFactBins(
          Map<String, StringBuilder> factBins) {
@@ -854,6 +859,87 @@ public class Batfish implements AutoCloseable {
       }
 
       printElapsedTime();
+   }
+
+   private void generateOspfConfigs(String topologyPath, String outputPath) {
+      File topologyFilePath = new File(topologyPath);
+      Topology topology = parseTopology(topologyFilePath);
+      Map<String, Configuration> configs = new TreeMap<String, Configuration>();
+      NodeSet allNodes = new NodeSet();
+      Map<NodeInterfacePair, Set<NodeInterfacePair>> interfaceMap = new HashMap<NodeInterfacePair, Set<NodeInterfacePair>>();
+      // first we collect set of all mentioned nodes, and build mapping from
+      // each interface to the set of interfaces that connect to each other
+      for (Edge edge : topology.getEdges()) {
+         allNodes.add(edge.getNode1());
+         allNodes.add(edge.getNode2());
+         NodeInterfacePair interface1 = new NodeInterfacePair(edge.getNode1(),
+               edge.getInt1());
+         NodeInterfacePair interface2 = new NodeInterfacePair(edge.getNode2(),
+               edge.getInt2());
+         Set<NodeInterfacePair> interfaceSet = interfaceMap.get(interface1);
+         if (interfaceSet == null) {
+            interfaceSet = new HashSet<NodeInterfacePair>();
+         }
+         interfaceMap.put(interface1, interfaceSet);
+         interfaceMap.put(interface2, interfaceSet);
+         interfaceSet.add(interface1);
+         interfaceSet.add(interface2);
+      }
+      // then we create configs for every mentioned node
+      for (String hostname : allNodes) {
+         Configuration config = new Configuration(hostname);
+         configs.put(hostname, config);
+      }
+      // Now we create interfaces for each edge and record the number of
+      // neighbors so we know how large to make the subnet
+      long currentStartingIpAsLong = new Ip(GEN_OSPF_STARTING_IP).asLong();
+      Set<Set<NodeInterfacePair>> interfaceSets = new HashSet<Set<NodeInterfacePair>>();
+      interfaceSets.addAll(interfaceMap.values());
+      for (Set<NodeInterfacePair> interfaceSet : interfaceSets) {
+         int numInterfaces = interfaceSet.size();
+         if (numInterfaces < 2) {
+            throw new BatfishException(
+                  "The following interface set contains less than two interfaces: "
+                        + interfaceSet.toString());
+         }
+         int numHostBits = 0;
+         for (int shiftedValue = numInterfaces - 1; shiftedValue != 0; shiftedValue >>= 1, numHostBits++) {
+         }
+         int subnetBits = 32 - numHostBits;
+         int offset = 0;
+         for (NodeInterfacePair currentPair : interfaceSet) {
+            Ip ip = new Ip(currentStartingIpAsLong + offset);
+            Prefix prefix = new Prefix(ip, subnetBits);
+            String ifaceName = currentPair.getInterface();
+            Interface iface = new Interface(ifaceName);
+            iface.setPrefix(prefix);
+
+            // dirty hack for setting bandwidth for now
+            double ciscoBandwidth = org.batfish.representation.cisco.Interface
+                  .getDefaultBandwidth(ifaceName);
+            double juniperBandwidth = org.batfish.representation.juniper.Interface
+                  .getDefaultBandwidthByName(ifaceName);
+            double bandwidth = Math.min(ciscoBandwidth, juniperBandwidth);
+            iface.setBandwidth(bandwidth);
+
+            String hostname = currentPair.getHostname();
+            Configuration config = configs.get(hostname);
+            config.getInterfaces().put(ifaceName, iface);
+            offset++;
+         }
+         currentStartingIpAsLong += (1 << numHostBits);
+      }
+      for (Configuration config : configs.values()) {
+         // use cisco arbitrarily
+         config.setVendor(CiscoVendorConfiguration.VENDOR_NAME);
+         OspfProcess proc = new OspfProcess();
+         long backboneArea = 0;
+         OspfArea area = new OspfArea(backboneArea);
+         proc.getAreas().put(backboneArea, area);
+         area.getInterfaces().addAll(config.getInterfaces().values());
+      }
+
+      serializeIndependentConfigs(configs, outputPath);
    }
 
    private void generateStubs(String inputRole, int stubAs,
@@ -1617,23 +1703,6 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   /**
-    * Generates a topology object from inferred edges encoded in interface
-    * descriptions.
-    *
-    * @param configurations
-    *           The vendor specific configurations.
-    * @param includeExternal
-    *           Whether to include edges to nodes for which configuration files
-    *           were not supplied (used for debugging).
-    * @return The inferred topology.
-    */
-   private Topology inferTopologyFromInterfaceDescriptions(
-         Map<String, Configuration> configurations, boolean includeExternal) {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
    public LogicBloxFrontend initFrontend(boolean assumedToExist,
          String workspace) throws LBInitializationException {
       _logger.info("\n*** STARTING CONNECTBLOX SESSION ***\n");
@@ -1827,13 +1896,14 @@ public class Batfish implements AutoCloseable {
       return nodeRoles;
    }
 
-   private void parseTopology(String testRigPath, String topologyFileText,
-         Map<String, StringBuilder> factBins) {
+   private Topology parseTopology(File topologyFilePath) {
+      _logger.info("*** PARSING TOPOLOGY ***\n");
+      resetTimer();
+      String topologyFileText = readFile(topologyFilePath);
       BatfishCombinedParser<?, ?> parser = null;
       TopologyExtractor extractor = null;
-      Topology topology = null;
-      File topologyPath = Paths.get(testRigPath, "topology.net").toFile();
-      _logger.info("Parsing: \"" + topologyPath.getAbsolutePath() + "\"");
+      _logger.info("Parsing: \""
+            + topologyFilePath.getAbsolutePath().toString() + "\"");
       if (topologyFileText.startsWith("autostart")) {
          parser = new GNS3TopologyCombinedParser(topologyFileText,
                _settings.getThrowOnParserError(),
@@ -1847,19 +1917,18 @@ public class Batfish implements AutoCloseable {
          extractor = new BatfishTopologyExtractor();
       }
       else if (topologyFileText.equals("")) {
-         _logger.warn("...WARNING: empty topology\n");
-         return;
+         throw new BatfishException("...ERROR: empty topology\n");
       }
       else {
          _logger.fatal("...ERROR\n");
-         throw new Error("Topology format error");
+         throw new BatfishException("Topology format error");
       }
       ParserRuleContext tree = parse(parser);
       ParseTreeWalker walker = new ParseTreeWalker();
       walker.walk(extractor, tree);
-      topology = extractor.getTopology();
-      TopologyFactExtractor tfe = new TopologyFactExtractor(topology);
-      tfe.writeFacts(factBins);
+      Topology topology = extractor.getTopology();
+      printElapsedTime();
+      return topology;
    }
 
    private Map<String, VendorConfiguration> parseVendorConfigurations(
@@ -2145,6 +2214,14 @@ public class Batfish implements AutoCloseable {
       _logger.info("Semantics: " + semantics + "\n");
    }
 
+   private void processTopology(File topologyFilePath,
+         Map<String, StringBuilder> factBins) {
+      Topology topology = null;
+      topology = parseTopology(topologyFilePath);
+      TopologyFactExtractor tfe = new TopologyFactExtractor(topology);
+      tfe.writeFacts(factBins);
+   }
+
    private Map<File, String> readConfigurationFiles(String testRigPath) {
       _logger.info("\n*** READING CONFIGURATION FILES ***\n");
       resetTimer();
@@ -2278,6 +2355,12 @@ public class Batfish implements AutoCloseable {
 
       if (_settings.getHistogram()) {
          histogram(_settings.getTestRigPath());
+         return;
+      }
+
+      if (_settings.getGenerateOspfTopologyPath() != null) {
+         generateOspfConfigs(_settings.getGenerateOspfTopologyPath(),
+               _settings.getSerializeIndependentPath());
          return;
       }
 
@@ -2591,48 +2674,19 @@ public class Batfish implements AutoCloseable {
    public void writeTopologyFacts(String testRigPath,
          Map<String, Configuration> configurations,
          Map<String, StringBuilder> factBins) {
-      _logger.info("*** PARSING TOPOLOGY ***\n");
-      resetTimer();
-      // TODO: Use flag to extract topology from interface descriptions.
-      if (Boolean.FALSE) {
-         Topology topology = inferTopologyFromInterfaceDescriptions(
-               configurations, /* Include external nodes (debug) */true);
-         // TODO: Get from flag.
-         String topologyDotFile = "/home/david/Projects/usc-configs/topology/topology.dot";
-         if (!topologyDotFile.isEmpty()) {
-            try {
-               FileOutputStream out = new FileOutputStream(topologyDotFile);
-               topology.dumpDot(out);
-               out.close();
-            }
-            catch (IOException e) {
-               throw new BatfishException("Unable to write topology dot-file.",
-                     e);
-            }
-         }
+      Path topologyFilePath = Paths.get(testRigPath, TOPOLOGY_FILENAME);
+      // Get generated facts from topology file
+      if (Files.exists(topologyFilePath)) {
+         processTopology(topologyFilePath.toFile(), factBins);
       }
       else {
-         Path topologyFilePath = Paths.get(testRigPath, TOPOLOGY_FILENAME);
-         // Get generated facts from topology file
-         String topologyFileText = null;
-         boolean guess = false;
-         if (Files.exists(topologyFilePath)) {
-            topologyFileText = readFile(topologyFilePath.toFile());
-         }
-         else {
-            // tell logicblox to guess adjacencies based on interface
-            // subnetworks
-            _logger
-                  .info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
-            StringBuilder wGuessTopology = factBins.get("GuessTopology");
-            wGuessTopology.append("1\n");
-            guess = true;
-         }
-         if (!guess) {
-            parseTopology(testRigPath, topologyFileText, factBins);
-         }
+         // tell logicblox to guess adjacencies based on interface
+         // subnetworks
+         _logger
+               .info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
+         StringBuilder wGuessTopology = factBins.get("GuessTopology");
+         wGuessTopology.append("1\n");
       }
-      printElapsedTime();
    }
 
    private void writeTrafficFacts(Map<String, StringBuilder> factBins) {

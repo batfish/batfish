@@ -19,7 +19,7 @@ public class Interface implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private static double getDefaultBandwidthByName(String name) {
+   public static double getDefaultBandwidthByName(String name) {
       if (name.startsWith("xe")) {
          return 1E10;
       }

@@ -48,6 +48,7 @@ public class Settings {
    private static final String ARG_FLOW_PATH = "flowpath";
    private static final String ARG_FLOW_SINK_PATH = "flowsink";
    private static final String ARG_FLOWS = "flow";
+   private static final String ARG_GEN_OSPF = "genospf";
    private static final String ARG_GENERATE_STUBS = "gs";
    private static final String ARG_GENERATE_STUBS_INPUT_ROLE = "gsinputrole";
    private static final String ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX = "gsidregex";
@@ -124,6 +125,7 @@ public class Settings {
    private static final String ARGNAME_FLATTEN_SOURCE = "path";
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
+   private static final String ARGNAME_GEN_OSPF = "path";
    private static final String ARGNAME_GENERATE_STUBS_INPUT_ROLE = "role";
    private static final String ARGNAME_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX = "java-regex";
    private static final String ARGNAME_GENERATE_STUBS_REMOTE_AS = "as";
@@ -213,6 +215,7 @@ public class Settings {
    private String _generateStubsInterfaceDescriptionRegex;
    private Integer _generateStubsRemoteAs;
    private boolean _genMultipath;
+   private String _genOspfTopology;
    private List<String> _helpPredicates;
    private boolean _histogram;
    private String _hsaInputDir;
@@ -432,6 +435,10 @@ public class Settings {
 
    public boolean getGenerateMultipathInconsistencyQuery() {
       return _genMultipath;
+   }
+
+   public String getGenerateOspfTopologyPath() {
+      return _genOspfTopology;
    }
 
    public boolean getGenerateStubs() {
@@ -1023,6 +1030,9 @@ public class Settings {
             .longOpt(ARG_GENERATE_STUBS_REMOTE_AS).build());
       _options.addOption(Option.builder().hasArg().argName(ARGNAME_LOG_FILE)
             .desc("path to log file").longOpt(ARG_LOG_FILE).build());
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_GEN_OSPF)
+            .desc("generate ospf configs from specified topology")
+            .longOpt(ARG_GEN_OSPF).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1189,6 +1199,7 @@ public class Settings {
                .getOptionValue(ARG_GENERATE_STUBS_REMOTE_AS));
       }
       _logFile = line.getOptionValue(ARG_LOG_FILE);
+      _genOspfTopology = line.getOptionValue(ARG_GEN_OSPF);
    }
 
    public boolean printParseTree() {
