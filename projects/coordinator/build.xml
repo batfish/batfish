@@ -38,6 +38,12 @@
 
    <target name="clean" depends="compileclean" description="Delete all intermediate files"/>
 
+   <target name="copylog4j" description="Copy log4j configuration from src to bin for staging">
+      <copy todir="bin">
+         <fileset dir="src" includes="log4j2.xml"/>
+      </copy>
+   </target>
+
    <target name="compile"
     description=
      "Compile all Java files">
@@ -89,7 +95,7 @@
       </sequential>
    </target>
 
-   <target name="jar" depends="checkJarBuild" unless="jarBuild.notRequired"
+   <target name="jar" depends="checkJarBuild,copylog4j" unless="jarBuild.notRequired"
      description="Produce distribution all-in-one jar">
       <mkdir dir="out"/>
       <one-jar destfile="${outputJar}">
