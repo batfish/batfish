@@ -9,6 +9,8 @@ import org.apache.commons.cli.ParseException;
 
 public class Settings {
 
+   private static final String ARG_LOG_FILE = "logfile";
+
    private static final String ARG_QUEUE_INCOMPLETE_WORK = "q_incompletework";
    private static final String ARG_QUEUE_COMPLETED_WORK = "q_completedwork";
    private static final String ARG_QUEUE_TYPE = "qtype";
@@ -19,7 +21,7 @@ public class Settings {
    private static final String ARG_STORAGE_ACCOUNT_NAME = "storageaccountname";
    private static final String ARG_STORAGE_PROTOCOL = "storageprotocol";
    private static final String ARG_TESTRIG_STORAGE_LOCATION = "testrigstorage";
-   
+
    private static final String ARG_PERIOD_WORKER_STATUS_REFRESH = "periodworkerrefresh";
    private static final String ARG_PERIOD_ASSIGN_WORK = "periodassignwork";
    private static final String ARG_PERIOD_CHECK_WORK = "periodcheckwork";
@@ -39,7 +41,7 @@ public class Settings {
    private static final String DEFAULT_PERIOD_WORKER_STATUS_REFRESH = "10000"; //10 seconds
    private static final String DEFAULT_PERIOD_ASSIGN_WORK = "1000"; //1 seconds
    private static final String DEFAULT_PERIOD_CHECK_WORK = "5000"; //5 seconds
-   
+
    private Options _options;
    private String _queuIncompleteWork;
    private String _queueCompletedWork;
@@ -51,11 +53,12 @@ public class Settings {
    private String _storageAccountKey;
    private String _storageProtocol;
    private String _testrigStorageLocation;
-   
+
    private long _periodWorkerStatusRefreshMs;
    private long _periodAssignWorkMs;
    private long _periodCheckWorkMs;
-   
+   private String _logFile;
+
    public Settings() throws ParseException {
       this(new String[] {});
    }
@@ -65,18 +68,21 @@ public class Settings {
       parseCommandLine(args);
    }
 
+   public String getLogFile() {
+      return _logFile;
+   }
    public long getPeriodWorkerStatusRefreshMs() {
       return _periodWorkerStatusRefreshMs;
    }
-   
+
    public long getPeriodAssignWorkMs() {
       return _periodAssignWorkMs;
    }
-   
+
    public long getPeriodCheckWorkMs() {
       return _periodCheckWorkMs;
    }
-   
+
    public String getQueueIncompleteWork() {
       return _queuIncompleteWork;
    }
@@ -112,7 +118,7 @@ public class Settings {
    public String getStorageProtocol() {
       return _storageProtocol;
    }
-   
+
    public String getTestrigStorageLocation() {
       return _testrigStorageLocation;
    }
@@ -133,16 +139,19 @@ public class Settings {
             .longOpt(ARG_QUEUE_TYPE).build());
       _options.addOption(Option.builder().argName("testrig_storage_location").hasArg()
             .desc("where to store test rigs")
-            .longOpt(ARG_TESTRIG_STORAGE_LOCATION).build());      
+            .longOpt(ARG_TESTRIG_STORAGE_LOCATION).build());
       _options.addOption(Option.builder().argName("period_worker_status_refresh_ms").hasArg()
             .desc("period with which to check worker status (ms)")
-            .longOpt(ARG_PERIOD_WORKER_STATUS_REFRESH).build());      
+            .longOpt(ARG_PERIOD_WORKER_STATUS_REFRESH).build());
       _options.addOption(Option.builder().argName("period_assign_work_ms").hasArg()
             .desc("period with which to assign work (ms)")
-            .longOpt(ARG_PERIOD_ASSIGN_WORK).build());      
+            .longOpt(ARG_PERIOD_ASSIGN_WORK).build());
       _options.addOption(Option.builder().argName("period_check_work_ms").hasArg()
             .desc("period with which to check work (ms)")
-            .longOpt(ARG_PERIOD_CHECK_WORK).build());      
+            .longOpt(ARG_PERIOD_CHECK_WORK).build());
+      _options.addOption(Option.builder().argName("path").hasArg()
+            .desc("send output to specified log file")
+            .longOpt(ARG_LOG_FILE).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -160,15 +169,18 @@ public class Settings {
       _servicePoolPort = Integer.parseInt(line.getOptionValue(ARG_SERVICE_POOL_PORT, DEFAULT_SERVICE_POOL_PORT));
       _serviceWorkPort = Integer.parseInt(line.getOptionValue(ARG_SERVICE_WORK_PORT, DEFAULT_SERVICE_WORK_PORT));
       _serviceHost = line.getOptionValue(ARG_SERVICE_HOST, DEFAULT_SERVICE_HOST);
-      
+
       _storageAccountKey = line.getOptionValue(ARG_STORAGE_ACCOUNT_KEY, DEFAULT_STORAGE_ACCOUNT_KEY);
       _storageAccountName = line.getOptionValue(ARG_STORAGE_ACCOUNT_NAME, DEFAULT_STORAGE_ACCOUNT_NAME);
       _storageProtocol = line.getOptionValue(ARG_STORAGE_PROTOCOL, DEFAULT_STORAGE_PROTOCOL);
-      
+
       _testrigStorageLocation = line.getOptionValue(ARG_TESTRIG_STORAGE_LOCATION, DEFAULT_TESTRIG_STORAGE_LOCATION);
-      
+
       _periodWorkerStatusRefreshMs = Long.parseLong(line.getOptionValue(ARG_PERIOD_WORKER_STATUS_REFRESH, DEFAULT_PERIOD_WORKER_STATUS_REFRESH));
       _periodAssignWorkMs = Long.parseLong(line.getOptionValue(ARG_PERIOD_ASSIGN_WORK, DEFAULT_PERIOD_ASSIGN_WORK));
       _periodCheckWorkMs = Long.parseLong(line.getOptionValue(ARG_PERIOD_CHECK_WORK, DEFAULT_PERIOD_CHECK_WORK));
+
+      _logFile = line.getOptionValue(ARG_LOG_FILE);
    }
+
 }

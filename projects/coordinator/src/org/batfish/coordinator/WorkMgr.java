@@ -22,6 +22,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishConstants;
 import org.batfish.common.WorkItem;
 import org.batfish.common.BatfishConstants.TaskkStatus;
@@ -32,35 +33,40 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 public class WorkMgr {
-   
-   private WorkQueueMgr _workQueueMgr;
-   
-   public WorkMgr() {
 
+   private WorkQueueMgr _workQueueMgr;
+   private Logger _logger;
+
+   public WorkMgr() {
+      _logger = Main.initializeLogger();
       _workQueueMgr = new WorkQueueMgr();
-      
+
       Runnable assignWorkTask = new AssignWorkTask(this);
-      Executors.newScheduledThreadPool(1)
-            .scheduleWithFixedDelay(assignWorkTask, 0, Main.getSettings().getPeriodAssignWorkMs(), TimeUnit.MILLISECONDS);
+      Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(
+            assignWorkTask, 0, Main.getSettings().getPeriodAssignWorkMs(),
+            TimeUnit.MILLISECONDS);
 
       Runnable checkWorkTask = new CheckWorkTask(this);
       Executors.newScheduledThreadPool(1)
-            .scheduleWithFixedDelay(checkWorkTask, 0, Main.getSettings().getPeriodCheckWorkMs(), TimeUnit.MILLISECONDS);
+            .scheduleWithFixedDelay(checkWorkTask, 0,
+                  Main.getSettings().getPeriodCheckWorkMs(),
+                  TimeUnit.MILLISECONDS);
    }
-   
+
    public JSONObject getWorkQueueStatusJson() throws JSONException {
       return _workQueueMgr.getStatusJson();
    }
-   
+
    public boolean queueWork(WorkItem workItem) throws Exception {
-      
+
       QueuedWork work = new QueuedWork(workItem);
 
-      boolean success = _workQueueMgr.queueUnassignedWork(work);                                      
-      
-      //as an optimization trigger AssignWork to see if we can schedule this (or another) work
+      boolean success = _workQueueMgr.queueUnassignedWork(work);
+
+      // as an optimization trigger AssignWork to see if we can schedule this
+      // (or another) work
       if (success) {
-         
+
          Thread thread = new Thread() {
             public void run() {
                AssignWork();
@@ -69,74 +75,77 @@ public class WorkMgr {
 
          thread.start();
       }
-      
+
       return success;
    }
-
 
    private void AssignWork() {
 
       QueuedWork work = _workQueueMgr.getWorkForAssignment();
 
-      //get out if no work was found
+      // get out if no work was found
       if (work == null) {
-         System.out.println("AssignWork: No unassigned work");
+         _logger.info("AssignWork: No unassigned work\n");
          return;
       }
 
       String idleWorker = Main.getPoolMgr().getWorkerForAssignment();
 
-      //get out if no idle worker was found, but release the work first
+      // get out if no idle worker was found, but release the work first
       if (idleWorker == null) {
          _workQueueMgr.markAssignmentResult(work, false);
 
-         System.out.println("AssignWork: No idle worker");
+         _logger.info("AssignWork: No idle worker\n");
          return;
       }
-      
+
       AssignWork(work, idleWorker);
    }
 
    private void AssignWork(QueuedWork work, String idleWorker) {
       boolean assigned = false;
-      
-      //TODO: DO WORK HERE
-      
-       // mark the assignment results accordingly
+
+      // TODO: DO WORK HERE
+
+      // mark the assignment results accordingly
       _workQueueMgr.markAssignmentResult(work, assigned);
       Main.getPoolMgr().markAssignmentResult(idleWorker, assigned);
 
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 
    private void CheckWork() {
 
       QueuedWork work = _workQueueMgr.getWorkForChecking();
-      
+
       if (work == null) {
-         System.out.println("CheckWork: No assigned work");
+         _logger.info("CheckWork: No assigned work\n");
          return;
       }
 
       String assignedWorker = work.getAssignedWorker();
-      
+
       if (assignedWorker == null) {
-         System.out.println("ERROR: no assinged worker for assigned work");         
-         _workQueueMgr.makeWorkUnassigned(work);         
+         _logger.info("ERROR: no assinged worker for assigned work\n");
+         _workQueueMgr.makeWorkUnassigned(work);
          return;
       }
-      
+
       CheckWork(work, assignedWorker);
    }
 
    private void CheckWork(QueuedWork work, String worker) {
-      //TODO: DO WORK HERE
-      
-   }
-   
-   public void uploadTestrig(String name, InputStream fileStream) throws Exception {
+      // TODO: DO WORK HERE
 
-      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation() + "/" + name);
+   }
+
+   public void uploadTestrig(String name, InputStream fileStream)
+         throws Exception {
+
+      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
+            + "/" + name);
 
       if (testrigDir.exists()) {
          throw new Exception("test rig with the same name exists");
@@ -162,44 +171,45 @@ public class WorkMgr {
    }
 
    public File getObject(String objectName) {
-      File file = new File(Main.getSettings().getTestrigStorageLocation() + "/" + objectName);
-      
+      File file = new File(Main.getSettings().getTestrigStorageLocation() + "/"
+            + objectName);
+
       if (file.isFile()) {
          return file;
       }
 
       return null;
-   }   
-   
+   }
+
    final class AssignWorkTask implements Runnable {
-      
+
       private WorkMgr _workMgr;
-      
+
       public AssignWorkTask(WorkMgr workMgr) {
          _workMgr = workMgr;
       }
-      
+
       @Override
       public void run() {
-         System.out.println(new Date() + " Assigning work");
+         _logger = Main.initializeLogger();
+         _logger.info("Assigning work\n");
          _workMgr.AssignWork();
       }
    }
 
    final class CheckWorkTask implements Runnable {
-      
+
       private WorkMgr _workMgr;
-      
+
       public CheckWorkTask(WorkMgr workMgr) {
          _workMgr = workMgr;
       }
-      
+
       @Override
       public void run() {
-         System.out.println(new Date() + " Checking work");
+         _logger = Main.initializeLogger();
+         _logger.info("Checking work\n");
          _workMgr.CheckWork();
       }
    }
- }
-
-
+}

@@ -2,17 +2,17 @@
 <Configuration status="WARN">
    <Appenders>
       <Console name="ConsoleErr" follow="true" target="SYSTEM_ERR">
-         <PatternLayout pattern="%msg"/>
+         <PatternLayout pattern="%d: %msg"/>
       </Console>
       <Console name="ConsoleOut" follow="true" target="SYSTEM_OUT">
-         <PatternLayout pattern="%msg"/>
+         <PatternLayout pattern="%d: %msg"/>
       </Console>
       <Routing name="Routing">
          <Routes pattern="$${ctx:ROUTINGKEY}">
             <!-- This route is chosen if ThreadContext has value "slave" for key ROUTINGKEY. -->
             <Route key="slave">
                <File name="slaveFile" fileName="${ctx:LOG_FILE}">
-                  <PatternLayout pattern="%msg"/>
+                  <PatternLayout pattern="%d: %msg"/>
                </File>
             </Route>
             <!-- This route is chosen if ThreadContext key ROUTINGKEY has not been modified -->

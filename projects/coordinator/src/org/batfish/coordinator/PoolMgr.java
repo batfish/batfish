@@ -1,6 +1,5 @@
 package org.batfish.coordinator;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,29 +16,33 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishConstants;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
 public class PoolMgr {
-   
-   //the key should be of the form <ip or hostname>:<port>
-   private HashMap<String,WorkerStatus> workerPool;
-   
+
+   // the key should be of the form <ip or hostname>:<port>
+   private HashMap<String, WorkerStatus> workerPool;
+   private Logger _logger;
+
    public PoolMgr() {
-      
+      _logger = Main.initializeLogger();
       workerPool = new HashMap<String, WorkerStatus>();
-      
+
       Runnable workerStatusRefreshTask = new WorkerStatusRefreshTask(this);
       ScheduledFuture<?> future = Executors.newScheduledThreadPool(1)
-            .scheduleWithFixedDelay(workerStatusRefreshTask, 0, Main.getSettings().getPeriodWorkerStatusRefreshMs(), TimeUnit.MILLISECONDS);
-      
+            .scheduleWithFixedDelay(workerStatusRefreshTask, 0,
+                  Main.getSettings().getPeriodWorkerStatusRefreshMs(),
+                  TimeUnit.MILLISECONDS);
+
    }
-      
+
    public synchronized void addToPool(final String worker) {
-      //start out as unknown and trigger refresh in the background
+      // start out as unknown and trigger refresh in the background
       workerPool.put(worker, new WorkerStatus(WorkerStatus.StatusCode.UNKNOWN));
-      
+
       Thread thread = new Thread() {
          public void run() {
             RefreshWorkerStatus(worker);
@@ -55,42 +58,43 @@ public class PoolMgr {
       }
    }
 
-   private synchronized void updateWorkerStatus(String worker, WorkerStatus.StatusCode statusCode) {
+   private synchronized void updateWorkerStatus(String worker,
+         WorkerStatus.StatusCode statusCode) {
       if (workerPool.containsKey(worker)) {
          workerPool.get(worker).UpdateStatus(statusCode);
       }
    }
 
    public synchronized HashMap<String, String> getPoolStatus() {
-      HashMap<String, String> copy = new HashMap<String, String> ();
+      HashMap<String, String> copy = new HashMap<String, String>();
 
       for (Entry<String, WorkerStatus> entry : workerPool.entrySet()) {
-           copy.put(entry.getKey(), entry.getValue().toString());
+         copy.put(entry.getKey(), entry.getValue().toString());
       }
-      
-     return copy;
+
+      return copy;
    }
 
    private synchronized List<String> getAllWorkers() {
       List<String> workers = new LinkedList<String>();
       for (String worker : workerPool.keySet()) {
-          workers.add(worker);
+         workers.add(worker);
       }
       return workers;
    }
-   
+
    public void RefreshWorkerStatus() {
       List<String> workers = getAllWorkers();
       for (String worker : workers) {
          RefreshWorkerStatus(worker);
-      }      
+      }
    }
-   
+
    public WorkerStatus getWorkerStatus(String worker) {
       if (workerPool.containsKey(worker))
          return workerPool.get(worker);
-      else 
-         return null;      
+      else
+         return null;
    }
 
    private void RefreshWorkerStatus(String worker) {
@@ -105,51 +109,57 @@ public class PoolMgr {
 
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
-         System.out.printf("response: %s [%s] [%s]\n", array.toString(),
-               array.get(0), array.get(1));
+         _logger.info(String.format("response: %s [%s] [%s]\n",
+               array.toString(), array.get(0), array.get(1)));
 
          if (!array.get(0).equals("")) {
-            System.err.printf("got error while refreshing status: %s %s\n",
-                  array.get(0), array.get(1));
+
+            _logger.error(String.format(
+                  "got error while refreshing status: %s %s\n", array.get(0),
+                  array.get(1)));
             updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
             return;
          }
 
          JSONObject jObj = new JSONObject(array.get(1).toString());
-         
+
          if (!jObj.has("idle")) {
-            System.err.printf("did not see idle key in json response\n");
+            _logger.error(String
+                  .format("did not see idle key in json response\n"));
             updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
-            return;            
+            return;
          }
-         
+
          boolean status = jObj.getBoolean("idle");
-         
-         //update the status, except leave the ones with TRYINGTOASSIGN alone
+
+         // update the status, except leave the ones with TRYINGTOASSIGN alone
          if (getWorkerStatus(worker).getStatus() != WorkerStatus.StatusCode.TRYINGTOASSIGN) {
-            updateWorkerStatus(worker, 
-                  status? WorkerStatus.StatusCode.IDLE : WorkerStatus.StatusCode.BUSY);
+            updateWorkerStatus(worker, status ? WorkerStatus.StatusCode.IDLE
+                  : WorkerStatus.StatusCode.BUSY);
          }
       }
       catch (ProcessingException e) {
-         System.err.printf("unable to connect to %s: %s\n", worker, e.getStackTrace().toString());
-         updateWorkerStatus(worker, WorkerStatus.StatusCode.UNREACHABLE);         
+         _logger.error(String.format("unable to connect to %s: %s\n", worker, e
+               .getStackTrace().toString()));
+         updateWorkerStatus(worker, WorkerStatus.StatusCode.UNREACHABLE);
       }
       catch (Exception e) {
-         System.err.printf("exception: %s\n", e.getStackTrace().toString());
+         _logger.error(String.format("exception: %s\n", e.getStackTrace()
+               .toString()));
          updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
       }
    }
 
    public synchronized String getWorkerForAssignment() {
-      
-      for (Entry<String,WorkerStatus> workerEntry : workerPool.entrySet()) {
-         if (workerEntry.getValue().getStatus() == WorkerStatus.StatusCode.IDLE) {            
-            updateWorkerStatus(workerEntry.getKey(), WorkerStatus.StatusCode.TRYINGTOASSIGN);            
+
+      for (Entry<String, WorkerStatus> workerEntry : workerPool.entrySet()) {
+         if (workerEntry.getValue().getStatus() == WorkerStatus.StatusCode.IDLE) {
+            updateWorkerStatus(workerEntry.getKey(),
+                  WorkerStatus.StatusCode.TRYINGTOASSIGN);
             return workerEntry.getKey();
          }
       }
-      
+
       return null;
    }
 
@@ -163,13 +173,15 @@ public class PoolMgr {
 
       @Override
       public void run() {
-         System.out.println(new Date() + " Firing work status refresh");
+         _logger = Main.initializeLogger();
+         _logger.info("Firing work status refresh\n");
          _coordinator.RefreshWorkerStatus();
       }
    }
 
    public void markAssignmentResult(String worker, boolean assignmentSuccessful) {
-         updateWorkerStatus(worker, 
-               assignmentSuccessful? WorkerStatus.StatusCode.BUSY : WorkerStatus.StatusCode.IDLE);     
+      updateWorkerStatus(worker,
+            assignmentSuccessful ? WorkerStatus.StatusCode.BUSY
+                  : WorkerStatus.StatusCode.IDLE);
    }
 }
