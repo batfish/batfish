@@ -933,6 +933,8 @@ public class Batfish implements AutoCloseable {
          // use cisco arbitrarily
          config.setVendor(CiscoVendorConfiguration.VENDOR_NAME);
          OspfProcess proc = new OspfProcess();
+         config.setOspfProcess(proc);
+         proc.setReferenceBandwidth(org.batfish.representation.cisco.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH);
          long backboneArea = 0;
          OspfArea area = new OspfArea(backboneArea);
          proc.getAreas().put(backboneArea, area);

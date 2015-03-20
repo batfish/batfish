@@ -23,7 +23,7 @@ public class OspfProcess implements Serializable {
    /**
     * bits per second
     */
-   private static final double DEFAULT_REFERENCE_BANDWIDTH = 1E9;
+   public static final double DEFAULT_REFERENCE_BANDWIDTH = 1E9;
 
    private static final long serialVersionUID = 1L;
 
