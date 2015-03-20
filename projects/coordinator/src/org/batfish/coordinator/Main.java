@@ -14,6 +14,8 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 public class Main {
 
+   public static final String MAIN_LOGGER = "MainLogger";
+
    private static Settings _settings;
    private static PoolMgr _poolManager;
    private static WorkMgr _workManager;
