@@ -74,8 +74,8 @@ public class SampleClient {
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client
                .target( String.format("http://%s%s/%s", 
-                     _coordinator, CoordinatorConstants.SERVICE_BASE_WORK_MGR, CoordinatorConstants.SERVICE_WORK_STATUS_CHECK_RESOURCE))
-               .queryParam(CoordinatorConstants.SERVICE_WORK_STATUS_CHECK_PATH, 
+                     _coordinator, CoordinatorConstants.SERVICE_BASE_WORK_MGR, CoordinatorConstants.SERVICE_WORK_GET_WORK_STATUS_RESOURCE))
+               .queryParam(CoordinatorConstants.SERVICE_WORKID_KEY, 
                      UriComponent.encode(parseWorkUUID.toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
          Invocation.Builder invocationBuilder = webTarget
                .request(MediaType.APPLICATION_JSON);
@@ -207,7 +207,7 @@ public class SampleClient {
          WebTarget webTarget = client.target(String.format("http://%s%s/%s",
                _coordinator, CoordinatorConstants.SERVICE_BASE_WORK_MGR,
                CoordinatorConstants.SERVICE_WORK_GET_OBJECT_RESOURCE))
-               .queryParam(CoordinatorConstants.SERVICE_WORK_GET_OBJECT_PATH, zipfileName);
+               .queryParam(CoordinatorConstants.SERVICE_WORK_OBJECT_KEY, zipfileName);
 
          Response response = webTarget.request(MediaType.APPLICATION_OCTET_STREAM).get();
 

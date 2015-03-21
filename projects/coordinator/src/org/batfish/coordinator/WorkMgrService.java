@@ -149,7 +149,7 @@ public class WorkMgrService {
    @Path(CoordinatorConstants.SERVICE_WORK_GET_OBJECT_RESOURCE)
    @Produces(MediaType.APPLICATION_OCTET_STREAM)
    public Response getObject(
-         @QueryParam(CoordinatorConstants.SERVICE_WORK_GET_OBJECT_KEY) String objectName) {
+         @QueryParam(CoordinatorConstants.SERVICE_WORK_OBJECT_KEY) String objectName) {
       try {
          _logger.info("WMS:getObject " + objectName + "\n");
 

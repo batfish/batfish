@@ -16,7 +16,7 @@ public class CoordinatorConstants {
 
    public static final String SERVICE_WORK_QUEUE_WORK_PATH = "workitem";
    
-   public static final String SERVICE_WORK_GET_OBJECT_KEY = "object";
+   public static final String SERVICE_WORK_OBJECT_KEY = "object";
    public static final String SERVICE_WORKID_KEY = "workid";
    public static final String SERVICE_TESTRIG_NAME_KEY = "testrigname";
    public static final String SERVICE_TESTRIG_ZIPFILE_KEY = "testrigzipfile"; 
