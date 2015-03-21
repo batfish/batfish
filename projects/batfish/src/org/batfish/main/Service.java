@@ -17,7 +17,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.batfish.common.BatfishConstants;
-import org.batfish.common.BatfishConstants.TaskkStatus;
+import org.batfish.common.BatfishConstants.TaskStatus;
 
 @Path(BatfishConstants.SERVICE_BASE_RESOURCE)
 public class Service {
@@ -58,7 +58,7 @@ public class Service {
 
          if (task == null) {
             return new JSONArray(Arrays.asList("",
-                  (new JSONObject().put("status", TaskkStatus.Unknown.toString()).toString())));
+                  (new JSONObject().put("status", TaskStatus.Unknown.toString()).toString())));
          }
          
          return new JSONArray(Arrays.asList("",
@@ -70,9 +70,9 @@ public class Service {
    }
 
    @GET
-   @Path(BatfishConstants.SERVICE_RUN_RESOURCE)
+   @Path(BatfishConstants.SERVICE_RUNTASK_RESOURCE)
    @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray run(@Context UriInfo ui) {
+   public JSONArray runTask(@Context UriInfo ui) {
       try {
          MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
 

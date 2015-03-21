@@ -4,14 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.ProcessingException;
@@ -22,15 +16,15 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishConstants;
+import org.batfish.common.CoordinatorConstants;
 import org.batfish.common.WorkItem;
-import org.batfish.common.BatfishConstants.TaskkStatus;
-import org.batfish.coordinator.queues.AzureQueue;
-import org.batfish.coordinator.queues.MemoryQueue;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.jersey.uri.UriComponent;
 
 public class WorkMgr {
 
@@ -41,12 +35,12 @@ public class WorkMgr {
       _logger = Main.initializeLogger();
       _workQueueMgr = new WorkQueueMgr();
 
-      Runnable assignWorkTask = new AssignWorkTask(this);
+      Runnable assignWorkTask = new AssignWorkTask();
       Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(
             assignWorkTask, 0, Main.getSettings().getPeriodAssignWorkMs(),
             TimeUnit.MILLISECONDS);
 
-      Runnable checkWorkTask = new CheckWorkTask(this);
+      Runnable checkWorkTask = new CheckTaskTask();
       Executors.newScheduledThreadPool(1)
             .scheduleWithFixedDelay(checkWorkTask, 0,
                   Main.getSettings().getPeriodCheckWorkMs(),
@@ -59,20 +53,16 @@ public class WorkMgr {
 
    public boolean queueWork(WorkItem workItem) throws Exception {
 
-      QueuedWork work = new QueuedWork(workItem);
-
-      boolean success = _workQueueMgr.queueUnassignedWork(work);
+      boolean success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem));
 
       // as an optimization trigger AssignWork to see if we can schedule this
       // (or another) work
       if (success) {
-
          Thread thread = new Thread() {
             public void run() {
                AssignWork();
             }
          };
-
          thread.start();
       }
 
@@ -81,11 +71,13 @@ public class WorkMgr {
 
    private void AssignWork() {
 
+      _logger.info("WM:AssignWork entered\n");
+
       QueuedWork work = _workQueueMgr.getWorkForAssignment();
 
       // get out if no work was found
       if (work == null) {
-         _logger.info("AssignWork: No unassigned work\n");
+         _logger.info("WM:AssignWork: No unassigned work\n");
          return;
       }
 
@@ -93,52 +85,139 @@ public class WorkMgr {
 
       // get out if no idle worker was found, but release the work first
       if (idleWorker == null) {
-         _workQueueMgr.markAssignmentResult(work, false);
+         _workQueueMgr.markAssignmentFailure(work);
 
-         _logger.info("AssignWork: No idle worker\n");
+         _logger.info("WM:AssignWork: No idle worker\n");
          return;
       }
 
       AssignWork(work, idleWorker);
    }
 
-   private void AssignWork(QueuedWork work, String idleWorker) {
+   private void AssignWork(QueuedWork work, String worker) {
+
+      _logger.info("WM:AssignWork: Trying to assign " + work + " to " + worker + " \n");
+
       boolean assigned = false;
+      
+      try {
+         Client client = ClientBuilder.newClient();
+         WebTarget webTarget = client.target(
+               String.format("http://%s%s/%s", worker,
+                     BatfishConstants.SERVICE_BASE_RESOURCE,
+                     BatfishConstants.SERVICE_RUNTASK_RESOURCE)).queryParam(
+               BatfishConstants.SERVICE_TASKID_KEY,
+               UriComponent.encode(work.getId().toString() + "&" + work.getWorkItem().toTask(), 
+                     UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
+         Response response = webTarget
+               .request(MediaType.APPLICATION_JSON)
+               .get();
 
-      // TODO: DO WORK HERE
+         String sobj = response.readEntity(String.class);
+         JSONArray array = new JSONArray(sobj);
+         _logger.info(String.format("WM:AssignWork: response: %s [%s] [%s]\n",
+               array.toString(), array.get(0), array.get(1)));
 
+         if (!array.get(0).equals("")) {
+            _logger.error(String.format(
+                  "ERROR in assigning task: %s %s\n", array.get(0), array.get(1)));
+         }
+         else {
+            assigned = true;
+         }
+      }
+      catch (ProcessingException e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error(String.format("unable to connect to %s: %s\n", worker, stackTrace));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error(String.format("exception: %s\n", stackTrace));
+      }
+      
       // mark the assignment results accordingly
-      _workQueueMgr.markAssignmentResult(work, assigned);
-      Main.getPoolMgr().markAssignmentResult(idleWorker, assigned);
-
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      if (assigned) {
+         _workQueueMgr.markAssignmentSuccess(work, worker);
+      }
+      else {
+         _workQueueMgr.markAssignmentFailure(work);
+      }
+      
+      Main.getPoolMgr().markAssignmentResult(worker, assigned);
    }
 
-   private void CheckWork() {
+   private void checkTask() {
+
+      _logger.info("WM:checkTask entered\n");
 
       QueuedWork work = _workQueueMgr.getWorkForChecking();
 
       if (work == null) {
-         _logger.info("CheckWork: No assigned work\n");
+         _logger.info("WM:checkTask: No assigned work\n");
          return;
       }
 
       String assignedWorker = work.getAssignedWorker();
 
       if (assignedWorker == null) {
-         _logger.info("ERROR: no assinged worker for assigned work\n");
+         _logger.error("WM:CheckWork no assinged worker for " + work + "\n");
          _workQueueMgr.makeWorkUnassigned(work);
          return;
       }
 
-      CheckWork(work, assignedWorker);
+      checkTask(work, assignedWorker);
    }
 
-   private void CheckWork(QueuedWork work, String worker) {
-      // TODO: DO WORK HERE
+   private void checkTask(QueuedWork work, String worker) {
+      _logger.info("WM:CheckWork: Trying to check " + work + " on " + worker + " \n");
 
+      BatfishConstants.TaskStatus status = BatfishConstants.TaskStatus.UnreachableOrBadResponse;
+
+      try {
+         Client client = ClientBuilder.newClient();
+         WebTarget webTarget = client.target(String.format("http://%s%s/%s",
+               worker, BatfishConstants.SERVICE_BASE_RESOURCE,
+               BatfishConstants.SERVICE_GETTASKSTATUS_RESOURCE))
+               .queryParam(BatfishConstants.SERVICE_TASKID_KEY, 
+                     UriComponent.encode(work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
+         Response response = webTarget
+               .request(MediaType.APPLICATION_JSON)
+               .get();
+
+         String sobj = response.readEntity(String.class);
+         JSONArray array = new JSONArray(sobj);
+         _logger.info(String.format("response: %s [%s] [%s]\n",
+               array.toString(), array.get(0), array.get(1)));
+
+         if (!array.get(0).equals("")) {
+            _logger.error(String.format(
+                  "got error while refreshing status: %s %s\n", array.get(0),
+                  array.get(1)));
+         }
+         else {
+
+            JSONObject jObj = new JSONObject(array.get(1).toString());
+
+            if (!jObj.has("status")) {
+               _logger.error(String
+                     .format("did not see status key in json response\n"));
+            }
+            else {
+               status = BatfishConstants.TaskStatus.valueOf(jObj
+                     .getString("status"));
+            }
+         }
+      }
+      catch (ProcessingException e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error(String.format("unable to connect to %s: %s\n", worker, stackTrace));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error(String.format("exception: %s\n", stackTrace));
+      }
+      
+      _workQueueMgr.processStatusCheckResult(work, status);
    }
 
    public void uploadTestrig(String name, InputStream fileStream)
@@ -182,34 +261,16 @@ public class WorkMgr {
    }
 
    final class AssignWorkTask implements Runnable {
-
-      private WorkMgr _workMgr;
-
-      public AssignWorkTask(WorkMgr workMgr) {
-         _workMgr = workMgr;
-      }
-
       @Override
       public void run() {
-         _logger = Main.initializeLogger();
-         _logger.info("Assigning work\n");
-         _workMgr.AssignWork();
+         Main.getWorkMgr().AssignWork();
       }
    }
 
-   final class CheckWorkTask implements Runnable {
-
-      private WorkMgr _workMgr;
-
-      public CheckWorkTask(WorkMgr workMgr) {
-         _workMgr = workMgr;
-      }
-
+   final class CheckTaskTask implements Runnable {
       @Override
       public void run() {
-         _logger = Main.initializeLogger();
-         _logger.info("Checking work\n");
-         _workMgr.CheckWork();
+         Main.getWorkMgr().checkTask();
       }
    }
 }

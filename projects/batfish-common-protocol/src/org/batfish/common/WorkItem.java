@@ -64,4 +64,8 @@ public class WorkItem {
       JSONArray array = new JSONArray(Arrays.asList(_id, requestObject.toString(), responseObject.toString()));
       return array.toString();
    }
+
+   public String toTask() {
+      return "help";
+   }
 }

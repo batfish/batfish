@@ -23,7 +23,7 @@ import org.codehaus.jettison.json.JSONObject;
 @Path(CoordinatorConstants.SERVICE_BASE_POOL_MGR)
 public class PoolMgrService {
 
-   Logger _logger = LogManager.getLogger(Main.MAIN_LOGGER);
+   Logger _logger = Main.initializeLogger();
    
    @GET
    @Produces(MediaType.APPLICATION_JSON)
