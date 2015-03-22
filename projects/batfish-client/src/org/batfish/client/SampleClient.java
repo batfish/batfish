@@ -166,7 +166,7 @@ public class SampleClient {
          System.out.printf("response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
-         if (!array.get(0).equals("")) {
+         if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
             System.err.printf("got error while uploading test rig: %s %s\n",
                   array.get(0), array.get(1));
             return false;
@@ -213,8 +213,8 @@ public class SampleClient {
          System.out.printf("response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
-         if (!array.get(0).equals("")) {
-            System.err.printf("got error while refreshing status: %s %s\n",
+         if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
+            System.err.printf("got error while queuing work: %s %s\n",
                   array.get(0), array.get(1));
             return null;
          }
