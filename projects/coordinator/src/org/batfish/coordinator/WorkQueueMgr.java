@@ -4,8 +4,8 @@ import java.util.UUID;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
-import org.batfish.common.BatfishConstants.TaskStatus;
-import org.batfish.common.CoordinatorConstants.WorkStatusCode;
+import org.batfish.common.BfConsts.TaskStatus;
+import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.coordinator.queues.AzureQueue;
 import org.batfish.coordinator.queues.MemoryQueue;
 import org.codehaus.jettison.json.JSONException;
@@ -46,13 +46,20 @@ public class WorkQueueMgr {
       }
    }
    
-   public JSONObject getStatusJson() throws JSONException {
+   public synchronized JSONObject getStatusJson() throws JSONException {
       
-      JSONObject jObject = new JSONObject();
-      
-      jObject.put("incomplete-works", _queueIncompleteWork.getLength()); 
+      JSONObject jObject = new JSONObject();      
+
+      jObject.put("incomplete-works", _queueIncompleteWork.getLength());       
+      for (QueuedWork work : _queueIncompleteWork) {
+         jObject.put(work.getId().toString(), work.toString());         
+      }
+
       jObject.put("completed-works", _queueCompletedWork.getLength()); 
-      
+      for (QueuedWork work : _queueCompletedWork) {
+         jObject.put(work.getId().toString(), work.toString());         
+      }
+
       return jObject;
    }
 

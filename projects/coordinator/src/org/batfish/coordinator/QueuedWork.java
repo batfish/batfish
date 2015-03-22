@@ -3,8 +3,8 @@ package org.batfish.coordinator;
 import java.util.Date;
 import java.util.UUID;
 
-import org.batfish.common.BatfishConstants.TaskStatus;
-import org.batfish.common.CoordinatorConstants.WorkStatusCode;
+import org.batfish.common.BfConsts.TaskStatus;
+import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.WorkItem;
 
 public class QueuedWork {

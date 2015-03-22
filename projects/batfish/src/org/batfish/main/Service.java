@@ -16,10 +16,10 @@ import javax.ws.rs.QueryParam;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.batfish.common.BatfishConstants;
-import org.batfish.common.BatfishConstants.TaskStatus;
+import org.batfish.common.BfConsts;
+import org.batfish.common.BfConsts.TaskStatus;
 
-@Path(BatfishConstants.SERVICE_BASE_RESOURCE)
+@Path(BfConsts.SVC_BASE_RSC)
 public class Service {
 
    @GET
@@ -27,50 +27,50 @@ public class Service {
    public JSONArray getInfo() {
       return new JSONArray(
             Arrays.asList(
-                  "",
+                  BfConsts.SVC_SUCCESS_KEY,
                   "Batfish service: enter ../application.wadl (relative to your URL) to see supported methods"));
    }
 
    @GET
-   @Path(BatfishConstants.SERVICE_GETSTATUS_RESOURCE)
+   @Path(BfConsts.SVC_GET_STATUS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
       try {
-         return new JSONArray(Arrays.asList("",
+         return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY,
                (new JSONObject().put("idle", Driver.getIdle())).toString()));
       }
       catch (Exception e) {
-         return new JSONArray(Arrays.asList("failure", e.getMessage()));
+         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
    }
 
    @GET
-   @Path(BatfishConstants.SERVICE_GETTASKSTATUS_RESOURCE)
+   @Path(BfConsts.SVC_GET_TASKSTATUS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray getTaskStatus(@QueryParam(BatfishConstants.SERVICE_TASKID_KEY) String taskId) {
+   public JSONArray getTaskStatus(@QueryParam(BfConsts.SVC_TASKID_KEY) String taskId) {
       try {
          
          if (taskId == null || taskId.equals("")) {
-            return new JSONArray(Arrays.asList("failure", "taskid not supplied"));            
+            return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "taskid not supplied"));            
          }
 
          Task task = Driver.getTaskkFromLog(taskId);
 
          if (task == null) {
-            return new JSONArray(Arrays.asList("",
+            return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY,
                   (new JSONObject().put("status", TaskStatus.Unknown.toString()).toString())));
          }
          
-         return new JSONArray(Arrays.asList("",
+         return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY,
                (new JSONObject().put("status", Driver.getTaskkFromLog(taskId).getStatus().toString()).toString())));
       }
       catch (Exception e) {
-         return new JSONArray(Arrays.asList("failure", e.getMessage()));
+         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
    }
 
    @GET
-   @Path(BatfishConstants.SERVICE_RUNTASK_RESOURCE)
+   @Path(BfConsts.SVC_RUN_TASK_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray runTask(@Context UriInfo ui) {
       try {
@@ -86,7 +86,7 @@ public class Service {
                   entry.getValue());
 
             //pull out the special key corresponding to taskid
-            if (entry.getKey().equals(BatfishConstants.SERVICE_TASKID_KEY)) {
+            if (entry.getKey().equals(BfConsts.SVC_TASKID_KEY)) {
                taskId = entry.getValue().get(0);
             }
             else {
@@ -103,7 +103,7 @@ public class Service {
          }
 
          if (taskId == null) {
-            return new JSONArray(Arrays.asList("failure",
+            return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY,
                   "TaskId was not supplied"));
          }
          
@@ -114,7 +114,7 @@ public class Service {
          return new JSONArray(Driver.RunBatfishThroughService(taskId, args));
       }
       catch (Exception e) {
-         return new JSONArray(Arrays.asList("failure", e.getMessage()));
+         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
    }
 }

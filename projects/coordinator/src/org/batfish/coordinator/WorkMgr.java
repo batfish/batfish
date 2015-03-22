@@ -18,8 +18,8 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
-import org.batfish.common.BatfishConstants;
-import org.batfish.common.CoordinatorConstants;
+import org.batfish.common.BfConsts;
+import org.batfish.common.CoordConsts;
 import org.batfish.common.WorkItem;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -47,7 +47,7 @@ public class WorkMgr {
                   TimeUnit.MILLISECONDS);
    }
 
-   public JSONObject getWorkQueueStatusJson() throws JSONException {
+   public JSONObject getStatusJson() throws JSONException {
       return _workQueueMgr.getStatusJson();
    }
 
@@ -101,29 +101,42 @@ public class WorkMgr {
       boolean assigned = false;
       
       try {
+         
+         //get the task and add other standard stuff
+         JSONObject task = work.getWorkItem().toTask();
+         task.put("datadir", Main.getSettings().getTestrigStorageLocation());
+         task.put("logfile", work.getId().toString() + ".log");
+         
          Client client = ClientBuilder.newClient();
-         WebTarget webTarget = client.target(
-               String.format("http://%s%s/%s", worker,
-                     BatfishConstants.SERVICE_BASE_RESOURCE,
-                     BatfishConstants.SERVICE_RUNTASK_RESOURCE)).queryParam(
-               BatfishConstants.SERVICE_TASKID_KEY,
-               UriComponent.encode(work.getId().toString() + "&" + work.getWorkItem().toTask(), 
-                     UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
+         WebTarget webTarget = client.target(String.format("http://%s%s/%s", worker,
+                     BfConsts.SVC_BASE_RSC, BfConsts.SVC_RUN_TASK_RSC))
+              .queryParam(BfConsts.SVC_TASKID_KEY,
+                   UriComponent.encode(work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED))
+              .queryParam(BfConsts.SVC_TASKID_KEY, 
+                    UriComponent.encode(task.toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
+
          Response response = webTarget
                .request(MediaType.APPLICATION_JSON)
                .get();
 
-         String sobj = response.readEntity(String.class);
-         JSONArray array = new JSONArray(sobj);
-         _logger.info(String.format("WM:AssignWork: response: %s [%s] [%s]\n",
-               array.toString(), array.get(0), array.get(1)));
-
-         if (!array.get(0).equals("")) {
-            _logger.error(String.format(
-                  "ERROR in assigning task: %s %s\n", array.get(0), array.get(1)));
+         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            _logger.error("WM:AssignWork: Got non-OK response "
+                  + response.getStatus() + "\n");
          }
          else {
-            assigned = true;
+            String sobj = response.readEntity(String.class);
+            JSONArray array = new JSONArray(sobj);
+            _logger.info(String.format(
+                  "WM:AssignWork: response: %s [%s] [%s]\n", array.toString(),
+                  array.get(0), array.get(1)));
+
+            if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
+               _logger.error(String.format("ERROR in assigning task: %s %s\n",
+                     array.get(0), array.get(1)));
+            }
+            else {
+               assigned = true;
+            }
          }
       }
       catch (ProcessingException e) {
@@ -171,40 +184,46 @@ public class WorkMgr {
    private void checkTask(QueuedWork work, String worker) {
       _logger.info("WM:CheckWork: Trying to check " + work + " on " + worker + " \n");
 
-      BatfishConstants.TaskStatus status = BatfishConstants.TaskStatus.UnreachableOrBadResponse;
+      BfConsts.TaskStatus status = BfConsts.TaskStatus.UnreachableOrBadResponse;
 
       try {
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               worker, BatfishConstants.SERVICE_BASE_RESOURCE,
-               BatfishConstants.SERVICE_GETTASKSTATUS_RESOURCE))
-               .queryParam(BatfishConstants.SERVICE_TASKID_KEY, 
+               worker, BfConsts.SVC_BASE_RSC,
+               BfConsts.SVC_GET_TASKSTATUS_RSC))
+               .queryParam(BfConsts.SVC_TASKID_KEY, 
                      UriComponent.encode(work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
          Response response = webTarget
                .request(MediaType.APPLICATION_JSON)
                .get();
 
-         String sobj = response.readEntity(String.class);
-         JSONArray array = new JSONArray(sobj);
-         _logger.info(String.format("response: %s [%s] [%s]\n",
-               array.toString(), array.get(0), array.get(1)));
-
-         if (!array.get(0).equals("")) {
-            _logger.error(String.format(
-                  "got error while refreshing status: %s %s\n", array.get(0),
-                  array.get(1)));
+         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            _logger.error("WM:CheckTask: Got non-OK response "
+                  + response.getStatus() + "\n");
          }
          else {
+            String sobj = response.readEntity(String.class);
+            JSONArray array = new JSONArray(sobj);
+            _logger.info(String.format("response: %s [%s] [%s]\n",
+                  array.toString(), array.get(0), array.get(1)));
 
-            JSONObject jObj = new JSONObject(array.get(1).toString());
-
-            if (!jObj.has("status")) {
-               _logger.error(String
-                     .format("did not see status key in json response\n"));
+            if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
+               _logger.error(String.format(
+                     "got error while refreshing status: %s %s\n",
+                     array.get(0), array.get(1)));
             }
             else {
-               status = BatfishConstants.TaskStatus.valueOf(jObj
-                     .getString("status"));
+
+               JSONObject jObj = new JSONObject(array.get(1).toString());
+
+               if (!jObj.has("status")) {
+                  _logger.error(String
+                        .format("did not see status key in json response\n"));
+               }
+               else {
+                  status = BfConsts.TaskStatus.valueOf(jObj
+                        .getString("status"));
+               }
             }
          }
       }

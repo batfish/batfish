@@ -11,6 +11,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.batfish.common.BfConsts;
 
 public class Settings {
 
@@ -165,7 +166,7 @@ public class Settings {
          .singletonList("InstalledRoute");
    private static final String DEFAULT_SERIALIZE_INDEPENDENT_PATH = "serialized-independent-configs";
    private static final String DEFAULT_SERIALIZE_VENDOR_PATH = "serialized-vendor-configs";
-   private static final String DEFAULT_SERVICE_PORT = "9999";
+   private static final String DEFAULT_SERVICE_PORT = BfConsts.SVC_PORT.toString();
    private static final String DEFAULT_SERVICE_URL = "http://localhost";
    private static final String DEFAULT_TEST_RIG_PATH = "default_test_rig";
    private static final String DEFAULT_Z3_OUTPUT = "z3-dataplane-output.smt2";

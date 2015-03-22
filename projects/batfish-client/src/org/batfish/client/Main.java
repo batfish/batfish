@@ -1,11 +1,13 @@
 package org.batfish.client;
 
+import org.batfish.common.CoordConsts;
+
 public class Main {
 
    public static void main(String[] args) {
     
       //default values
-      String coordinator = "localhost:9998";
+      String coordinator = "localhost:" + CoordConsts.SVC_WORK_PORT;
       String testrigName = "sample";
       String testrigZipfileName = "sample.zip";
 

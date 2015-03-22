@@ -2,7 +2,7 @@ package org.batfish.main;
 
 import java.util.Date;
 
-import org.batfish.common.BatfishConstants.TaskStatus;
+import org.batfish.common.BfConsts.TaskStatus;
 
 public class Task {
    String[] _args;
