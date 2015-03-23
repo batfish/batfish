@@ -7,8 +7,8 @@ import org.batfish.common.BatfishConstants.TaskkStatus;
 public class Task {
    String[] _args;
    Date _obtained;
-   Date _terminated;
    TaskkStatus _status;
+   Date _terminated;
 
    public Task(String[] args) {
       this._args = args;
@@ -24,7 +24,7 @@ public class Task {
    public void setStatus(TaskkStatus status) {
       _status = status;
    }
-   
+
    public void setTerminated() {
       _terminated = new Date();
    }

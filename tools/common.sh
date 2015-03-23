@@ -227,7 +227,7 @@ batfish_query_bgp() {
    batfish_expect_args 2 $# || return 1
    local BGP=$1
    local WORKSPACE=$2
-   batfish -log output -workspace $WORKSPACE -query -predicates \
+   batfish -loglevel output -workspace $WORKSPACE -query -predicates \
       AdvertisementPath \
       AdvertisementPathSize \
       BgpAdvertisement \
@@ -262,7 +262,7 @@ batfish_query_flows() {
    batfish_expect_args 2 $# || return 1
    local FLOW_RESULTS=$1
    local WORKSPACE=$2
-   batfish -log output -workspace $WORKSPACE -query -predicates \
+   batfish -loglevel output -workspace $WORKSPACE -query -predicates \
       Flow \
       FlowAccepted \
       FlowAllowedIn \
@@ -318,7 +318,7 @@ batfish_query_ospf() {
    batfish_expect_args 2 $# || return 1
    local OSPF=$1
    local WORKSPACE=$2
-   batfish -log output -workspace $WORKSPACE -query -predicates \
+   batfish -loglevel output -workspace $WORKSPACE -query -predicates \
       BestOspfE1Route \
       BestOspfE2Route \
       BestOspfIARoute \
@@ -342,7 +342,7 @@ batfish_query_policy() {
    batfish_expect_args 2 $# || return 1
    local POLICY=$1
    local WORKSPACE=$2
-   batfish -log output -workspace $WORKSPACE -query -predicates \
+   batfish -loglevel output -workspace $WORKSPACE -query -predicates \
       AsPathDenyAdvert \
       AsPathLineMatchAs \
       AsPathLineMatchAsAtBeginning \
@@ -366,7 +366,7 @@ batfish_query_routes() {
    batfish_expect_args 2 $# || return 1
    local ROUTES=$1
    local WORKSPACE=$2
-   batfish -log output -workspace $WORKSPACE -query -predicates \
+   batfish -loglevel output -workspace $WORKSPACE -query -predicates \
       ActiveGeneratedRoute \
       InstalledRoute \
       &> $ROUTES
