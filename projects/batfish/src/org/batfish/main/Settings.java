@@ -29,7 +29,6 @@ public class Settings {
    private static final String ARG_COUNT = "count";
    private static final String ARG_DATA_PLANE = "dp";
    private static final String ARG_DATA_PLANE_DIR = "dpdir";
-   private static final String ARG_DIFF = "diff";
    private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
    private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
    private static final String ARG_DUMP_FACTS_DIR = "dumpdir";
@@ -194,7 +193,6 @@ public class Settings {
    private boolean _counts;
    private boolean _dataPlane;
    private String _dataPlaneDir;
-   private boolean _diff;
    private boolean _dumpControlPlaneFacts;
    private String _dumpFactsDir;
    private boolean _dumpIF;
@@ -259,7 +257,6 @@ public class Settings {
    private boolean _roleTransitQuery;
    private String _roleTransitQueryPath;
    private boolean _runInServiceMode;
-   private String _secondTestRigPath;
    private boolean _serializeIndependent;
    private String _serializeIndependentPath;
    private boolean _serializeToText;
@@ -383,10 +380,6 @@ public class Settings {
 
    public String getDataPlaneDir() {
       return _dataPlaneDir;
-   }
-
-   public boolean getDiff() {
-      return _diff;
    }
 
    public boolean getDumpControlPlaneFacts() {
@@ -605,10 +598,6 @@ public class Settings {
       return _roleTransitQueryPath;
    }
 
-   public String getSecondTestRigPath() {
-      return _secondTestRigPath;
-   }
-
    public boolean getSerializeIndependent() {
       return _serializeIndependent;
    }
@@ -781,9 +770,6 @@ public class Settings {
             .desc("path to concrete flows").longOpt(ARG_FLOW_PATH).build());
       _options.addOption(Option.builder().argName(ARGNAME_FLOW_SINK_PATH)
             .hasArg().desc("path to flow sinks").longOpt(ARG_FLOW_SINK_PATH)
-            .build());
-      _options.addOption(Option.builder().argName("secondPath").hasArg()
-            .desc("path to test rig directory to diff with").longOpt(ARG_DIFF)
             .build());
       _options.addOption(Option.builder()
             .desc("dump intermediate format of configurations")
@@ -1119,8 +1105,6 @@ public class Settings {
          _flowPath = line.getOptionValue(ARG_FLOW_PATH, DEFAULT_FLOW_PATH);
       }
       _flowSinkPath = line.getOptionValue(ARG_FLOW_SINK_PATH);
-      _secondTestRigPath = line.getOptionValue(ARG_DIFF);
-      _diff = line.hasOption(ARG_DIFF);
       _dumpIF = line.hasOption(ARG_DUMP_IF);
       if (_dumpIF) {
          _dumpIFDir = line.getOptionValue(ARG_DUMP_IF_DIR, DEFAULT_DUMP_IF_DIR);

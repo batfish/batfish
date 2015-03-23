@@ -1,20 +1,15 @@
 package org.batfish.main;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishConstants.TaskkStatus;
-import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -88,8 +83,7 @@ public class Driver {
          ResourceConfig rc = new ResourceConfig(Service.class)
                .register(new JettisonFeature());
 
-         HttpServer _server = GrizzlyHttpServerFactory.createHttpServer(
-               baseUri, rc);
+         GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
 
          // sleep indefinitely, in 10 minute chunks
          try {

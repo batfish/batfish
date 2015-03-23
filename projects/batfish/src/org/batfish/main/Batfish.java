@@ -1430,42 +1430,6 @@ public class Batfish implements AutoCloseable {
       return configurations;
    }
 
-   public void getDiff() {
-      // Map<File, String> configurationData1 = readConfigurationFiles(_settings
-      // .getTestRigPath());
-      // Map<File, String> configurationData2 = readConfigurationFiles(_settings
-      // .getSecondTestRigPath());
-      //
-      // List<Configuration> firstConfigurations =
-      // parseConfigFiles(configurationData1);
-      // if (firstConfigurations == null) {
-      // quit(1);
-      // }
-      // List<Configuration> secondConfigurations =
-      // parseConfigFiles(configurationData2);
-      // if (secondConfigurations == null) {
-      // quit(1);
-      // }
-      // if (firstConfigurations.size() != secondConfigurations.size()) {
-      // System.out.println("Size MISMATCH");
-      // quit(1);
-      // }
-      // Collections.sort(firstConfigurations);
-      // Collections.sort(secondConfigurations);
-      // boolean finalRes = true;
-      // for (int i = 0; i < firstConfigurations.size(); i++) {
-      // boolean res = (firstConfigurations.get(i).sameParseTree(
-      // secondConfigurations.get(i), firstConfigurations.get(i)
-      // .getName() + " MISMATCH"));
-      // if (res == false) {
-      // finalRes = false;
-      // }
-      // }
-      // if (finalRes == true) {
-      // System.out.println("MATCH");
-      // }
-   }
-
    private double getElapsedTime(long beforeTime) {
       long difference = System.currentTimeMillis() - beforeTime;
       double seconds = difference / 1000d;
@@ -2377,11 +2341,6 @@ public class Batfish implements AutoCloseable {
          String inputPath = _settings.getSerializeVendorPath();
          String outputPath = _settings.getSerializeIndependentPath();
          serializeIndependentConfigs(inputPath, outputPath);
-         return;
-      }
-
-      if (_settings.getDiff()) {
-         getDiff();
          return;
       }
 
