@@ -37,12 +37,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.batfish.collections.EdgeSet;
 import org.batfish.collections.FibMap;
 import org.batfish.collections.FibRow;
@@ -195,30 +189,16 @@ public class Batfish implements AutoCloseable {
     */
    private static final String LB_BATFISH_LIBRARY_NAME = "libbatfish";
 
-   private static final String LEVEL_OUTPUT = "OUTPUT";
-
-   private static final String LEVEL_PEDANTIC = "PEDANTIC";
-
-   private static final String LEVEL_REDFLAG = "REDFLAG";
-
-   private static final String LEVEL_UNIMPLEMENTED = "UNIMPLEMENTED";
-
-   private static final String LOG_FILE_KEY = "LOG_FILE";
-
    /**
     * The name of the file in which LogiQL predicate type-information and
     * documentation is serialized
     */
    private static final String PREDICATE_INFO_FILENAME = "predicateInfo.object";
 
-   private static final String ROUTING_KEY_NAME = "ROUTINGKEY";
-
    /**
     * A string containing the system-specific path separator character
     */
    private static final String SEPARATOR = System.getProperty("file.separator");
-
-   private static final String SLAVE_ROUTING_KEY_VALUE = "slave";
 
    /**
     * Role name for generated stubs
@@ -257,7 +237,7 @@ public class Batfish implements AutoCloseable {
 
    private List<LogicBloxFrontend> _lbFrontends;
 
-   private Logger _logger;
+   private BatfishLogger _logger;
 
    private PredicateInfo _predicateInfo;
 
@@ -269,9 +249,9 @@ public class Batfish implements AutoCloseable {
 
    public Batfish(Settings settings) {
       _settings = settings;
+      _logger = _settings.getLogger();
       _lbFrontends = new ArrayList<LogicBloxFrontend>();
       _tmpLogicDir = null;
-      initializeLogger();
    }
 
    private void addProject(LogicBloxFrontend lbFrontend) {
@@ -619,13 +599,13 @@ public class Batfish implements AutoCloseable {
          }
          finally {
             for (String warning : warnings.getRedFlagWarnings()) {
-               redflag(warning);
+               _logger.redflag(warning);
             }
             for (String warning : warnings.getUnimplementedWarnings()) {
-               unimplemented(warning);
+               _logger.unimplemented(warning);
             }
             for (String warning : warnings.getPedanticWarnings()) {
-               pedantic(warning);
+               _logger.pedantic(warning);
             }
          }
       }
@@ -1450,42 +1430,6 @@ public class Batfish implements AutoCloseable {
       return configurations;
    }
 
-   public void getDiff() {
-      // Map<File, String> configurationData1 = readConfigurationFiles(_settings
-      // .getTestRigPath());
-      // Map<File, String> configurationData2 = readConfigurationFiles(_settings
-      // .getSecondTestRigPath());
-      //
-      // List<Configuration> firstConfigurations =
-      // parseConfigFiles(configurationData1);
-      // if (firstConfigurations == null) {
-      // quit(1);
-      // }
-      // List<Configuration> secondConfigurations =
-      // parseConfigFiles(configurationData2);
-      // if (secondConfigurations == null) {
-      // quit(1);
-      // }
-      // if (firstConfigurations.size() != secondConfigurations.size()) {
-      // System.out.println("Size MISMATCH");
-      // quit(1);
-      // }
-      // Collections.sort(firstConfigurations);
-      // Collections.sort(secondConfigurations);
-      // boolean finalRes = true;
-      // for (int i = 0; i < firstConfigurations.size(); i++) {
-      // boolean res = (firstConfigurations.get(i).sameParseTree(
-      // secondConfigurations.get(i), firstConfigurations.get(i)
-      // .getName() + " MISMATCH"));
-      // if (res == false) {
-      // finalRes = false;
-      // }
-      // }
-      // if (finalRes == true) {
-      // System.out.println("MATCH");
-      // }
-   }
-
    private double getElapsedTime(long beforeTime) {
       long difference = System.currentTimeMillis() - beforeTime;
       double seconds = difference / 1000d;
@@ -1701,7 +1645,7 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
       for (String feature : histogram.elements()) {
          int count = histogram.count(feature);
-         output(feature + ": " + count + "\n");
+         _logger.output(feature + ": " + count + "\n");
       }
    }
 
@@ -1712,7 +1656,7 @@ public class Batfish implements AutoCloseable {
       LogicBloxFrontend lbFrontend = new LogicBloxFrontend(
             _settings.getConnectBloxHost(), _settings.getConnectBloxPort(),
             _settings.getLbWebPort(), _settings.getLbWebAdminPort(), workspace,
-            assumedToExist);
+            assumedToExist, _logger);
       lbFrontend.initialize();
       if (!lbFrontend.connected()) {
          throw new BatfishException(
@@ -1723,31 +1667,6 @@ public class Batfish implements AutoCloseable {
       _lbFrontends.add(lbFrontend);
       return lbFrontend;
 
-   }
-
-   private void initializeLogger() {
-      _logger = LogManager.getLogger(Driver.MAIN_LOGGER);
-      String logFile = _settings.getLogFile();
-      if (logFile != null) {
-         ThreadContext.put(ROUTING_KEY_NAME, SLAVE_ROUTING_KEY_VALUE);
-         ThreadContext.put(LOG_FILE_KEY, logFile);
-      }
-      if (_settings.getLogLevel() != null) {
-         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-         org.apache.logging.log4j.core.config.Configuration config = ctx
-               .getConfiguration();
-         LoggerConfig loggerConfig = config.getLoggerConfig(this.getClass()
-               .getName());
-         String logLevelStr = _settings.getLogLevel().toUpperCase();
-         Level logLevel = Level.getLevel(logLevelStr);
-         if (logLevel == null) {
-            throw new BatfishException("Invalid log level: \"" + logLevelStr
-                  + "\"");
-         }
-         loggerConfig.setLevel(logLevel);
-         ctx.updateLoggers(); // This causes all Loggers to refetch information
-                              // from their LoggerConfig.
-      }
    }
 
    private boolean isJavaSerializationData(File inputFile) {
@@ -1764,10 +1683,6 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException("Could not read header from file: "
                + inputFile.toString(), e);
       }
-   }
-
-   private void output(String msg) {
-      _logger.log(Level.getLevel(LEVEL_OUTPUT), msg);
    }
 
    private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
@@ -1951,16 +1866,13 @@ public class Batfish implements AutoCloseable {
          ParserRuleContext tree = null;
          ControlPlaneExtractor extractor = null;
          Warnings warnings = new Warnings(_settings.getRedFlagRecord()
-               && _logger.getLevel().isLessSpecificThan(
-                     Level.getLevel(LEVEL_REDFLAG)),
+               && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
                _settings.getRedFlagAsError(),
                _settings.getUnimplementedRecord()
-                     && _logger.getLevel().isLessSpecificThan(
-                           Level.getLevel(LEVEL_UNIMPLEMENTED)),
+                     && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
                _settings.getUnimplementedAsError(),
                _settings.getPedanticRecord()
-                     && _logger.getLevel().isLessSpecificThan(
-                           Level.getLevel(LEVEL_PEDANTIC)),
+                     && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
                _settings.getPedanticAsError(), _settings.printParseTree());
          char firstChar = fileText.trim().charAt(0);
          if (firstChar == '!') {
@@ -2041,13 +1953,13 @@ public class Batfish implements AutoCloseable {
          }
          finally {
             for (String warning : warnings.getRedFlagWarnings()) {
-               redflag(warning);
+               _logger.redflag(warning);
             }
             for (String warning : warnings.getUnimplementedWarnings()) {
-               unimplemented(warning);
+               _logger.unimplemented(warning);
             }
             for (String warning : warnings.getPedanticWarnings()) {
-               pedantic(warning);
+               _logger.pedantic(warning);
             }
          }
          vc = extractor.getVendorConfiguration();
@@ -2085,10 +1997,6 @@ public class Batfish implements AutoCloseable {
          printElapsedTime();
          return vendorConfigurations;
       }
-   }
-
-   private void pedantic(String msg) {
-      _logger.log(Level.getLevel(LEVEL_PEDANTIC), msg);
    }
 
    private void populateConfigurationFactBins(
@@ -2167,7 +2075,7 @@ public class Batfish implements AutoCloseable {
          output = lbFrontend.getPredicate(_predicateInfo, relation,
                predicateName);
          for (String match : output) {
-            output(match + "\n");
+            _logger.output(match + "\n");
          }
       }
       catch (QueryException q) {
@@ -2259,10 +2167,6 @@ public class Batfish implements AutoCloseable {
       return text;
    }
 
-   private void redflag(String msg) {
-      _logger.log(Level.getLevel(LEVEL_REDFLAG), msg);
-   }
-
    private void resetTimer() {
       _timerCount = System.currentTimeMillis();
    }
@@ -2346,9 +2250,6 @@ public class Batfish implements AutoCloseable {
    }
 
    public void run() {
-      if (_settings.redirectStdErr()) {
-         System.setErr(System.out);
-      }
 
       if (_settings.getBuildPredicateInfo()) {
          buildPredicateInfo();
@@ -2440,11 +2341,6 @@ public class Batfish implements AutoCloseable {
          String inputPath = _settings.getSerializeVendorPath();
          String outputPath = _settings.getSerializeIndependentPath();
          serializeIndependentConfigs(inputPath, outputPath);
-         return;
-      }
-
-      if (_settings.getDiff()) {
-         getDiff();
          return;
       }
 
@@ -2641,10 +2537,6 @@ public class Batfish implements AutoCloseable {
          _logger.debug("OK\n");
       }
       printElapsedTime();
-   }
-
-   private void unimplemented(String msg) {
-      _logger.log(Level.getLevel(LEVEL_UNIMPLEMENTED), msg);
    }
 
    public void writeConfigurationFacts(

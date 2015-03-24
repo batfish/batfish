@@ -115,7 +115,7 @@ batfish_analyze_interface_failures_machine() {
       batfish_compile_blacklist_interface $WORKSPACE $TEST_RIG $DUMP_DIR $INDEP_SERIAL_DIR $interface $ORIG_FLOW_SINKS || return 1
 
       # Get interesting predicate data
-      batfish -log output -workspace $WORKSPACE -query -predicates InstalledRoute BestOspfE2Route BestOspfE1Route OspfRoute_advertiser OspfE2Route > $PREDS_PATH || return 1
+      batfish -loglevel output -workspace $WORKSPACE -query -predicates InstalledRoute BestOspfE2Route BestOspfE1Route OspfRoute_advertiser OspfE2Route > $PREDS_PATH || return 1
       
       # Query data plane predicates
       batfish_query_data_plane $WORKSPACE $DP_DIR || return 1
@@ -256,7 +256,7 @@ batfish_find_interface_failure_destination_ip_blacklist_constraints() {
    local INTERFACE_IP_PATH=$PWD/${INTERFACE_IP_PREDICATE}.txt
    batfish_date
    echo ": START: Find destination ip blacklist packet constraints with blacklisted interface \"${BLACKLISTED_INTERFACE}\" ==> \"${DST_IP_BLACKLIST_PATH}\""
-   batfish -log output -workspace $WORKSPACE -query -predicates $INTERFACE_IP_PREDICATE > $INTERFACE_IP_PATH || return 1
+   batfish -loglevel output -workspace $WORKSPACE -query -predicates $INTERFACE_IP_PREDICATE > $INTERFACE_IP_PATH || return 1
    head -n1 $INTERFACE_IP_PATH || return 1
    cat $INTERFACE_IP_PATH | tr -d ' ' | grep "(${BLACKLISTED_INTERFACE}," | cut -d',' -f 3 > $DST_IP_BLACKLIST_PATH
    batfish_date

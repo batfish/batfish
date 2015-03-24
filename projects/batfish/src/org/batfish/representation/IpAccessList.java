@@ -19,32 +19,6 @@ public class IpAccessList extends NamedStructure {
       return _lines;
    }
 
-   public boolean sameParseTree(IpAccessList list, String prefix,
-         boolean display) {
-      boolean res = true;
-      boolean finalRes = res;
-
-      if (_lines.size() != list._lines.size()) {
-         if (display) {
-            System.out.println("IpAccessList:Lines:Size " + prefix);
-         }
-         return false;
-      }
-      else {
-         for (int i = 0; i < _lines.size(); i++) {
-            res = _lines.get(i).toString()
-                  .equals(list._lines.get(i).toString());
-            if (res == false) {
-               if (display) {
-                  System.out.println("IpAccessList:Lines " + prefix);
-               }
-               finalRes = res;
-            }
-         }
-      }
-      return finalRes;
-   }
-
    @Override
    public String toString() {
       String output = super.toString() + "\n" + "Identifier: " + _name;

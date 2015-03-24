@@ -267,7 +267,7 @@ batfish_find_node_failure_destination_ip_blacklist_constraints() {
    local INTERFACE_IP_PATH=$PWD/${INTERFACE_IP_PREDICATE}.txt
    batfish_date
    echo ": START: Find destination ip blacklist packet constraints with blacklisted node \"${BLACKLISTED_NODE}\" ==> \"${OUTPUT_PATH}\""
-   batfish -log output -workspace $WORKSPACE -query -predicates $INTERFACE_IP_PREDICATE > $INTERFACE_IP_PATH || return 1
+   batfish -loglevel output -workspace $WORKSPACE -query -predicates $INTERFACE_IP_PREDICATE > $INTERFACE_IP_PATH || return 1
    head -n1 $INTERFACE_IP_PATH || return 1
    cat $INTERFACE_IP_PATH | tr -d ' ' | grep "(${BLACKLISTED_NODE}," | cut -d',' -f 3 > $OUTPUT_PATH
    batfish_date

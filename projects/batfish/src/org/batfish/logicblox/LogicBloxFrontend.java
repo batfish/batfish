@@ -14,6 +14,7 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.main.BatfishException;
+import org.batfish.main.BatfishLogger;
 import org.batfish.representation.Ip;
 import org.eclipse.jetty.client.ContentExchange;
 import org.eclipse.jetty.client.HttpClient;
@@ -81,11 +82,14 @@ public class LogicBloxFrontend {
    private final HttpClient _lbWebClient;
    private int _lbWebPort;
    private final TCPTransport _lbWebTransport;
+   private BatfishLogger _logger;
    private ConnectBloxWorkspace _workspace;
    private final String _workspaceName;
 
    public LogicBloxFrontend(String lbHost, int lbPort, int lbWebPort,
-         int lbWebAdminPort, String workspaceName, boolean assumedToExist) {
+         int lbWebAdminPort, String workspaceName, boolean assumedToExist,
+         BatfishLogger logger) {
+      _logger = logger;
       _workspaceName = workspaceName;
       _lbHost = lbHost;
       _lbPort = lbPort;
@@ -490,33 +494,32 @@ public class LogicBloxFrontend {
             Workspace.Result result = results.get(0);
             if (result instanceof Workspace.Result.Failure) {
                Workspace.Result.Failure failResult = (Workspace.Result.Failure) result;
-               System.err.println("RemoveBlock failed: "
-                     + failResult.getMessage());
+               _logger.error("RemoveBlock failed: " + failResult.getMessage()
+                     + "\n");
             }
             else if (result instanceof Workspace.Result.AddBlock) {
                Workspace.Result.AddBlock addResult = (Workspace.Result.AddBlock) result;
                Option<CommonProto.CompilationProblems> optProblems = addResult
                      .getProblems();
                if (optProblems.isSome()) {
-                  System.err.println("There were problems removing the block: "
-                        + optProblems.unwrap());
+                  _logger.error("There were problems removing the block: "
+                        + optProblems.unwrap() + "\n");
                }
                else {
-                  System.out
-                        .println("Block successfully removed from workspace!");
+                  _logger.info("Block successfully removed from workspace!\n");
                }
             }
             else {
-               System.err.println("Unexpected result "
-                     + result.getClass().getName() + "!");
+               _logger.info("Unexpected result " + result.getClass().getName()
+                     + "!\n");
             }
          }
          else {
-            System.err.println("Incorrect number of results!");
+            _logger.error("Incorrect number of results!\n");
          }
       }
       catch (Workspace.Exception e) {
-         System.err.println("Encountered error " + e.errorSort());
+         _logger.error("Encountered error " + e.errorSort() + "\n");
       }
    }
 

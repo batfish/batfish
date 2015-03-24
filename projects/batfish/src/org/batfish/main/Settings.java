@@ -30,7 +30,6 @@ public class Settings {
    private static final String ARG_COUNT = "count";
    private static final String ARG_DATA_PLANE = "dp";
    private static final String ARG_DATA_PLANE_DIR = "dpdir";
-   private static final String ARG_DIFF = "diff";
    private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
    private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
    private static final String ARG_DUMP_FACTS_DIR = "dumpdir";
@@ -61,7 +60,7 @@ public class Settings {
    private static final String ARG_LB_WEB_ADMIN_PORT = "lbwebadminport";
    private static final String ARG_LB_WEB_PORT = "lbwebport";
    private static final String ARG_LOG_FILE = "logfile";
-   private static final String ARG_LOG_LEVEL = "log";
+   private static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_LOGICDIR = "logicdir";
    private static final String ARG_MPI = "mpi";
    private static final String ARG_MPI_PATH = "mpipath";
@@ -100,6 +99,7 @@ public class Settings {
    private static final String ARG_TEST_RIG_PATH = "testrig";
    private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
    private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
+   private static final String ARG_TIMESTAMP = "timestamp";
    private static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
    private static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
    private static final String ARG_UPDATE = "update";
@@ -162,6 +162,7 @@ public class Settings {
    private static final String DEFAULT_FLOW_PATH = "flows";
    private static final String DEFAULT_LB_WEB_ADMIN_PORT = "55183";
    private static final String DEFAULT_LB_WEB_PORT = "8080";
+   private static final String DEFAULT_LOG_LEVEL = "debug";
    private static final List<String> DEFAULT_PREDICATES = Collections
          .singletonList("InstalledRoute");
    private static final String DEFAULT_SERIALIZE_INDEPENDENT_PATH = "serialized-independent-configs";
@@ -193,7 +194,6 @@ public class Settings {
    private boolean _counts;
    private boolean _dataPlane;
    private String _dataPlaneDir;
-   private boolean _diff;
    private boolean _dumpControlPlaneFacts;
    private String _dumpFactsDir;
    private boolean _dumpIF;
@@ -225,6 +225,7 @@ public class Settings {
    private int _lbWebAdminPort;
    private int _lbWebPort;
    private String _logFile;
+   private BatfishLogger _logger;
    private String _logicDir;
    private String _logicSrcDir;
    private String _logLevel;
@@ -257,7 +258,6 @@ public class Settings {
    private boolean _roleTransitQuery;
    private String _roleTransitQueryPath;
    private boolean _runInServiceMode;
-   private String _secondTestRigPath;
    private boolean _serializeIndependent;
    private String _serializeIndependentPath;
    private boolean _serializeToText;
@@ -269,6 +269,7 @@ public class Settings {
    private String _testRigPath;
    private boolean _throwOnLexerError;
    private boolean _throwOnParserError;
+   private boolean _timestamp;
    private boolean _unimplementedAsError;
    private boolean _unimplementedRecord;
    private boolean _update;
@@ -380,10 +381,6 @@ public class Settings {
 
    public String getDataPlaneDir() {
       return _dataPlaneDir;
-   }
-
-   public boolean getDiff() {
-      return _diff;
    }
 
    public boolean getDumpControlPlaneFacts() {
@@ -498,6 +495,10 @@ public class Settings {
       return _logFile;
    }
 
+   public BatfishLogger getLogger() {
+      return _logger;
+   }
+
    public String getLogicDir() {
       return _logicDir;
    }
@@ -598,10 +599,6 @@ public class Settings {
       return _roleTransitQueryPath;
    }
 
-   public String getSecondTestRigPath() {
-      return _secondTestRigPath;
-   }
-
    public boolean getSerializeIndependent() {
       return _serializeIndependent;
    }
@@ -644,6 +641,10 @@ public class Settings {
 
    public boolean getThrowOnParserError() {
       return _throwOnParserError;
+   }
+
+   public boolean getTimestamp() {
+      return _timestamp;
    }
 
    public boolean getUnimplementedAsError() {
@@ -770,9 +771,6 @@ public class Settings {
             .desc("path to concrete flows").longOpt(ARG_FLOW_PATH).build());
       _options.addOption(Option.builder().argName(ARGNAME_FLOW_SINK_PATH)
             .hasArg().desc("path to flow sinks").longOpt(ARG_FLOW_SINK_PATH)
-            .build());
-      _options.addOption(Option.builder().argName("secondPath").hasArg()
-            .desc("path to test rig directory to diff with").longOpt(ARG_DIFF)
             .build());
       _options.addOption(Option.builder()
             .desc("dump intermediate format of configurations")
@@ -948,7 +946,7 @@ public class Settings {
             .desc("duplicate flows across all nodes in same role")
             .longOpt(ARG_DUPLICATE_ROLE_FLOWS).build());
       _options.addOption(Option.builder().hasArg().argName(ARGNAME_LOG_LEVEL)
-            .desc("log4j2 log level").longOpt(ARG_LOG_LEVEL).build());
+            .desc("log level").longOpt(ARG_LOG_LEVEL).build());
       _options.addOption(Option.builder()
             .desc("header of concretized z3 output refers to role, not node")
             .longOpt(ARG_ROLE_HEADERS).build());
@@ -1030,10 +1028,13 @@ public class Settings {
             .desc("autonomous system number of stubs to be generated")
             .longOpt(ARG_GENERATE_STUBS_REMOTE_AS).build());
       _options.addOption(Option.builder().hasArg().argName(ARGNAME_LOG_FILE)
-            .desc("path to log file").longOpt(ARG_LOG_FILE).build());
+            .desc("path to main log file").longOpt(ARG_LOG_FILE).build());
       _options.addOption(Option.builder().hasArg().argName(ARGNAME_GEN_OSPF)
             .desc("generate ospf configs from specified topology")
             .longOpt(ARG_GEN_OSPF).build());
+      _options.addOption(Option.builder()
+            .desc("print timestamps in log messages").longOpt(ARG_TIMESTAMP)
+            .build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1105,8 +1106,6 @@ public class Settings {
          _flowPath = line.getOptionValue(ARG_FLOW_PATH, DEFAULT_FLOW_PATH);
       }
       _flowSinkPath = line.getOptionValue(ARG_FLOW_SINK_PATH);
-      _secondTestRigPath = line.getOptionValue(ARG_DIFF);
-      _diff = line.hasOption(ARG_DIFF);
       _dumpIF = line.hasOption(ARG_DUMP_IF);
       if (_dumpIF) {
          _dumpIFDir = line.getOptionValue(ARG_DUMP_IF_DIR, DEFAULT_DUMP_IF_DIR);
@@ -1175,7 +1174,7 @@ public class Settings {
       _roleTransitQuery = line.hasOption(ARG_ROLE_TRANSIT_QUERY);
       _roleSetPath = line.getOptionValue(ARG_ROLE_SET_PATH);
       _duplicateRoleFlows = line.hasOption(ARG_DUPLICATE_ROLE_FLOWS);
-      _logLevel = line.getOptionValue(ARG_LOG_LEVEL);
+      _logLevel = line.getOptionValue(ARG_LOG_LEVEL, DEFAULT_LOG_LEVEL);
       _roleHeaders = line.hasOption(ARG_ROLE_HEADERS);
       _throwOnParserError = line.hasOption(ARG_THROW_ON_PARSER_ERROR);
       _throwOnLexerError = line.hasOption(ARG_THROW_ON_LEXER_ERROR);
@@ -1201,6 +1200,7 @@ public class Settings {
       }
       _logFile = line.getOptionValue(ARG_LOG_FILE);
       _genOspfTopology = line.getOptionValue(ARG_GEN_OSPF);
+      _timestamp = line.hasOption(ARG_TIMESTAMP);
    }
 
    public boolean printParseTree() {
@@ -1217,6 +1217,10 @@ public class Settings {
 
    public boolean runInServiceMode() {
       return _runInServiceMode;
+   }
+
+   public void setLogger(BatfishLogger logger) {
+      _logger = logger;
    }
 
 }

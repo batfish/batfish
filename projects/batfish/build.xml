@@ -409,7 +409,7 @@
             <java classname="org.batfish.main.Driver" fork="true">
                <arg value="-bpi"/>
                <arg value="src/org/batfish/logic"/>
-               <arg value="-log"/>
+               <arg value="-loglevel"/>
                <arg value="WARN"/>
                <classpath refid="libraries" />
                <classpath path="bin"/>

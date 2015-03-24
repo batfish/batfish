@@ -7,8 +7,8 @@ import org.batfish.common.BfConsts.TaskStatus;
 public class Task {
    String[] _args;
    Date _obtained;
+   TaskkStatus _status;
    Date _terminated;
-   TaskStatus _status;
 
    public Task(String[] args) {
       this._args = args;
@@ -24,7 +24,7 @@ public class Task {
    public void setStatus(TaskStatus status) {
       _status = status;
    }
-   
+
    public void setTerminated() {
       _terminated = new Date();
    }
