@@ -3,6 +3,7 @@ package org.batfish.main;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -17,6 +18,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.batfish.common.BfConsts;
+import org.batfish.common.WorkItem;
 import org.batfish.common.BfConsts.TaskStatus;
 
 @Path(BfConsts.SVC_BASE_RSC)
@@ -72,39 +74,31 @@ public class Service {
    @GET
    @Path(BfConsts.SVC_RUN_TASK_RSC)
    @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray runTask(@Context UriInfo ui) {
+   public JSONArray runTask(
+         @QueryParam(BfConsts.SVC_TASKID_KEY) String taskId,
+         @QueryParam(BfConsts.SVC_TASK_KEY) String task) {
       try {
-         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
 
-         List<String> argsList = new ArrayList<String>();
-
-         String taskId = null;
-         
-         for (MultivaluedMap.Entry<String, List<String>> entry : queryParams
-               .entrySet()) {
-            System.out.printf("key = %s value = %s\n", entry.getKey(),
-                  entry.getValue());
-
-            //pull out the special key corresponding to taskid
-            if (entry.getKey().equals(BfConsts.SVC_TASKID_KEY)) {
-               taskId = entry.getValue().get(0);
-            }
-            else {
-               argsList.add("-" + entry.getKey());
-
-               for (String value : entry.getValue()) {
-                  // don't add empty values; occurs for options that have no
-                  // value
-                  if (!value.equals("")) {
-                     argsList.add(value);
-                  }
-               }
-            }
+         if (taskId == null || taskId.equals("")) {
+            return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "taskid not supplied"));            
          }
 
-         if (taskId == null) {
-            return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY,
-                  "TaskId was not supplied"));
+         if (task == null || task.equals("")) {
+            return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "task not supplied"));            
+         }
+
+         List<String> argsList = new ArrayList<String>();
+         
+         WorkItem workItem = new WorkItem(task);
+         
+         for (Entry<String, String> entry : workItem.getRequestParams()
+               .entrySet()) {
+
+            argsList.add("-" + entry.getKey());
+
+            if (entry.getValue() != null && !entry.getValue().equals("")) {
+               argsList.add(entry.getValue());
+            }
          }
          
          String[] args = argsList.toArray(new String[argsList.size()]);

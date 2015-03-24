@@ -112,7 +112,7 @@ public class WorkMgr {
                      BfConsts.SVC_BASE_RSC, BfConsts.SVC_RUN_TASK_RSC))
               .queryParam(BfConsts.SVC_TASKID_KEY,
                    UriComponent.encode(work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED))
-              .queryParam(BfConsts.SVC_TASKID_KEY, 
+              .queryParam(BfConsts.SVC_TASK_KEY, 
                     UriComponent.encode(task.toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
 
          Response response = webTarget

@@ -58,6 +58,10 @@ public class WorkItem {
       _requestParams.put(key,  value);
    }
    
+   public HashMap<String,String> getRequestParams() {
+      return _requestParams;
+   }
+   
    public String toJsonString() {
       JSONObject requestObject = new JSONObject(_requestParams);
       JSONObject responseObject = new JSONObject(_responseParams);      
