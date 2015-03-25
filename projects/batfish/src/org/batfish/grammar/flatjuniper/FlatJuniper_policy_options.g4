@@ -386,6 +386,11 @@ tht_metric
    METRIC metric = DEC
 ;
 
+tht_metric_add
+:
+   METRIC ADD metric = DEC
+;
+
 tht_metric2
 :
    METRIC2 metric2 = DEC
@@ -497,6 +502,7 @@ tt_then_tail
    | tht_install_nexthop
    | tht_local_preference
    | tht_metric
+   | tht_metric_add
    | tht_metric_expression
    | tht_metric_igp
    | tht_metric2
