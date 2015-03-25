@@ -102,6 +102,11 @@ bmt_ttl
    TTL DEC
 ;
 
+bpast_as
+:
+   as = DEC
+;
+
 bt_advertise_inactive
 :
    ADVERTISE_INACTIVE
@@ -278,7 +283,14 @@ bt_path_selection_tail
 
 bt_peer_as
 :
-   PEER_AS as = DEC
+   PEER_AS bt_peer_as_tail
+;
+
+bt_peer_as_tail
+:
+   // intentional blank
+   |
+   bpast_as
 ;
 
 bt_remove_private

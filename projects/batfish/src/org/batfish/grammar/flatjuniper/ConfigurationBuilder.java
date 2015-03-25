@@ -912,6 +912,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitBpast_as(Bpast_asContext ctx) {
+      int peerAs = toInt(ctx.as);
+      _currentBgpGroup.setPeerAs(peerAs);
+   }
+
+   @Override
    public void exitBt_description(Bt_descriptionContext ctx) {
       String description = ctx.s_description().description.getText();
       _currentBgpGroup.setDescription(description);
@@ -947,12 +953,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          Ip localAddress = new Ip(ctx.IP_ADDRESS().getText());
          _currentBgpGroup.setLocalAddress(localAddress);
       }
-   }
-
-   @Override
-   public void exitBt_peer_as(Bt_peer_asContext ctx) {
-      int peerAs = toInt(ctx.as);
-      _currentBgpGroup.setPeerAs(peerAs);
    }
 
    @Override
