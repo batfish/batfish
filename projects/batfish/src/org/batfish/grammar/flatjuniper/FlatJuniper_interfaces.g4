@@ -189,6 +189,7 @@ it_common
    | it_family
    | it_mtu
    | it_null
+   | it_speed
    | it_vlan_id
    | it_vlan_tagging
 ;
@@ -255,6 +256,11 @@ it_null
       | TRAPS
       | TUNNEL
    ) s_null_filler
+;
+
+it_speed
+:
+   SPEED DEC speed_abbreviation
 ;
 
 it_unit
@@ -362,4 +368,9 @@ s_interfaces_tail
    | it_flexible_vlan_tagging
    | it_native_vlan_id
    | it_unit
+;
+
+speed_abbreviation
+:
+   G
 ;

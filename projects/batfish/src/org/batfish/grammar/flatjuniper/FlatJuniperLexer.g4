@@ -634,6 +634,11 @@ FTP_DATA
    'ftp-data'
 ;
 
+G
+:
+   'g'
+;
+
 GENERATE
 :
    'generate'
@@ -1849,6 +1854,11 @@ SOURCE_QUENCH
    'source-quench'
 ;
 
+SPEED
+:
+   'speed' -> pushMode(M_Speed)
+;
+
 SSH
 :
    'ssh'
@@ -2847,6 +2857,23 @@ METRIC_TYPE_2
 ;
 
 M_MetricType_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_Speed;
+
+M_Speed_DEC
+:
+   F_Digit+ -> type(DEC)
+;
+
+M_Speed_G
+:
+   'g' -> type(G), popMode
+;
+
+M_Speed_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;
