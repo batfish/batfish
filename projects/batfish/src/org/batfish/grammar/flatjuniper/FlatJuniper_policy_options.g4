@@ -168,6 +168,11 @@ plt_apply_path
    APPLY_PATH path = DOUBLE_QUOTED_STRING
 ;
 
+plt_ip6
+:
+   ip6 = IPV6_ADDRESS
+;
+
 plt_network
 :
    network = IP_PREFIX
