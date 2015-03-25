@@ -809,6 +809,11 @@ INPUT
    'input'
 ;
 
+INPUT_LIST
+:
+   'input-list'
+;
+
 INPUT_VLAN_MAP
 :
    'input-vlan-map'
@@ -1367,6 +1372,11 @@ OUT_DELAY
 OUTPUT
 :
    'output'
+;
+
+OUTPUT_LIST
+:
+   'output-list'
 ;
 
 OUTPUT_VLAN_MAP

@@ -19,7 +19,9 @@ brt_vlan_id_list
 direction
 :
    INPUT
+   | INPUT_LIST
    | OUTPUT
+   | OUTPUT_LIST
 ;
 
 famt_bridge
