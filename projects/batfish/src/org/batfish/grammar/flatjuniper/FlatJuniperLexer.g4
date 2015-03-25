@@ -1784,6 +1784,11 @@ SOCKS
    'socks'
 ;
 
+SONET_OPTIONS
+:
+   'sonet-options'
+;
+
 SOURCE_ADDRESS
 :
    'source-address'
