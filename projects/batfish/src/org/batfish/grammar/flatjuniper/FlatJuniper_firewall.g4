@@ -146,7 +146,8 @@ fwt_family
 :
    FAMILY
    (
-      INET
+      CCC
+      | INET
       | INET6
       | MPLS
    ) fwt_family_tail
