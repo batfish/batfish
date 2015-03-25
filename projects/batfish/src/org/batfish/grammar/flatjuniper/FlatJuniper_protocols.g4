@@ -28,6 +28,7 @@ s_protocols_null
       BFD
       | IGMP
       | L2CIRCUIT
+      | LACP
       | LDP
       | LLDP
       | MLD

@@ -949,6 +949,11 @@ LABELED_UNICAST
    'labeled-unicast'
 ;
 
+LACP
+:
+   'lacp'
+;
+
 LAN
 :
    'lan'
