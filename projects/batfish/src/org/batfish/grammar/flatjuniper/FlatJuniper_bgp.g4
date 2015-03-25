@@ -135,6 +135,7 @@ bt_common
    | bt_cluster
    | bt_damping
    | bt_description
+   | bt_disable_4byte_as
    | bt_export
    | bt_family
    | bt_import
@@ -157,6 +158,11 @@ bt_damping
 bt_description
 :
    s_description
+;
+
+bt_disable_4byte_as
+:
+   DISABLE_4BYTE_AS
 ;
 
 bt_enable

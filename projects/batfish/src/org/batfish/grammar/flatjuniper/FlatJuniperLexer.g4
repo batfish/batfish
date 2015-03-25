@@ -409,6 +409,11 @@ DISABLE
    'disable'
 ;
 
+DISABLE_4BYTE_AS
+:
+   'disable-4byte-as'
+;
+
 DISCARD
 :
    'discard'
