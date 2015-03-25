@@ -2734,6 +2734,11 @@ M_Members_CARAT
    '^' -> type(CARAT)
 ;
 
+M_Members_CLOSE_BRACE
+:
+   '}' -> type(CLOSE_BRACE)
+;
+
 M_Members_CLOSE_BRACKET
 :
    ']' -> type(CLOSE_BRACKET)
@@ -2782,6 +2787,11 @@ M_Members_NEWLINE
 NO_ADVERTISE
 :
    'no-advertise'
+;
+
+M_Members_OPEN_BRACE
+:
+   '{' -> type(OPEN_BRACE)
 ;
 
 M_Members_OPEN_BRACKET
