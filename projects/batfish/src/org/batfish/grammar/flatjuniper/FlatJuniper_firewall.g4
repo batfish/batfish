@@ -35,7 +35,7 @@ fwfromt_destination_port
 
 fwfromt_destination_prefix_list
 :
-   DESTINATION_PREFIX_LIST variable
+   DESTINATION_PREFIX_LIST variable EXCEPT?
 ;
 
 fwfromt_dscp
