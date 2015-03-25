@@ -1192,13 +1192,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitIfamt_filter(Ifamt_filterContext ctx) {
       FilterContext filter = ctx.filter();
-      String name = filter.name.getText();
-      DirectionContext direction = ctx.filter().direction();
-      if (direction.INPUT() != null) {
-         _currentInterface.setIncomingFilter(name);
-      }
-      else if (direction.OUTPUT() != null) {
-         _currentInterface.setOutgoingFilter(name);
+      if (filter.filter_tail() != null) {
+         if (filter.filter_tail().ft_direction() != null) {
+            Ft_directionContext ftd = filter.filter_tail().ft_direction();
+            String name = ftd.name.getText();
+            DirectionContext direction = ftd.direction();
+            if (direction.INPUT() != null) {
+               _currentInterface.setIncomingFilter(name);
+            }
+            else if (direction.OUTPUT() != null) {
+               _currentInterface.setOutgoingFilter(name);
+            }
+         }
       }
    }
 

@@ -80,7 +80,19 @@ famt_mpls_tail
 
 filter
 :
-   FILTER direction name = variable
+   FILTER filter_tail
+;
+
+filter_tail
+:
+// intentional blank
+
+   | ft_direction
+;
+
+ft_direction
+:
+   direction name = variable
 ;
 
 ifamat_master_only
