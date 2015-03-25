@@ -156,7 +156,10 @@ ifamt_no_redirects
 
 ifamt_null
 :
-   SAMPLING s_null_filler
+   (
+      SAMPLING
+      | SERVICE
+   ) s_null_filler
 ;
 
 interface_mode

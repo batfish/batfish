@@ -1759,6 +1759,16 @@ SECURITY
    'security'
 ;
 
+SERVICE
+:
+   'service'
+;
+
+SERVICE_FILTER
+:
+   'service-filter'
+;
+
 SERVICES
 :
    'services'

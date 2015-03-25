@@ -136,6 +136,12 @@ fwft_term_tail
    | fwtt_then
 ;
 
+fwt_common
+:
+   fwt_filter
+   | fwt_null
+;
+
 fwt_family
 :
    FAMILY
@@ -148,7 +154,7 @@ fwt_family
 
 fwt_family_tail
 :
-   fwt_filter
+   fwt_common
 ;
 
 fwt_filter
@@ -166,6 +172,7 @@ fwt_null
 :
    (
       POLICER
+      | SERVICE_FILTER
    ) s_null_filler
 ;
 
@@ -251,7 +258,6 @@ s_firewall
 
 s_firewall_tail
 :
-   fwt_family
-   | fwt_filter
-   | fwt_null
+   fwt_common
+   | fwt_family
 ;
