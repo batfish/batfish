@@ -31,7 +31,9 @@ famt_bridge
 
 famt_bridge_tail
 :
-   brt_interface_mode
+// intentional blank
+
+   | brt_interface_mode
    | brt_vlan_id_list
 ;
 
