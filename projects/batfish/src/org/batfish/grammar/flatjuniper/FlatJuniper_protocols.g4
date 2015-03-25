@@ -33,6 +33,7 @@ s_protocols_null
       | LLDP
       | MLD
       | MSDP
+      | MSTP
       | PIM
       | ROUTER_ADVERTISEMENT
       | RSVP

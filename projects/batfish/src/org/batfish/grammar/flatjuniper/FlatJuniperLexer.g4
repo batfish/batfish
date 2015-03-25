@@ -1154,6 +1154,11 @@ MSDP
    'msdp'
 ;
 
+MSTP
+:
+   'mstp'
+;
+
 MTU
 :
    'mtu'
