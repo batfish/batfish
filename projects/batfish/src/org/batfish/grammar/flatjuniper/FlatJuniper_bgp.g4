@@ -214,7 +214,8 @@ bt_local_as
 
 bt_local_as_tail
 :
-   last_loops
+   last_alias
+   | last_loops
    | last_number
    | last_private
 ;
@@ -292,6 +293,11 @@ bt_type
       EXTERNAL
       | INTERNAL
    )
+;
+
+last_alias
+:
+   ALIAS
 ;
 
 last_loops

@@ -100,6 +100,11 @@ AH
    'ah'
 ;
 
+ALIAS
+:
+   'alias'
+;
+
 ALLOW
 :
    'allow'
