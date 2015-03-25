@@ -386,6 +386,11 @@ tht_metric_expression
    METRIC EXPRESSION metric_expression
 ;
 
+tht_metric_igp
+:
+   METRIC IGP
+;
+
 tht_metric2_expression
 :
    METRIC2 EXPRESSION metric_expression
@@ -483,6 +488,7 @@ tt_then_tail
    | tht_local_preference
    | tht_metric
    | tht_metric_expression
+   | tht_metric_igp
    | tht_metric2
    | tht_metric2_expression
    | tht_next_hop
