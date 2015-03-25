@@ -1574,6 +1574,11 @@ PRIVATE
    'private'
 ;
 
+PROCESSES
+:
+   'processes'
+;
+
 PROTOCOL
 :
    'protocol'

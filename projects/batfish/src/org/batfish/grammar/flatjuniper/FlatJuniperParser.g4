@@ -106,6 +106,7 @@ st_null
       | NAME_SERVER
       | NTP
       | PORTS
+      | PROCESSES
       | ROOT_AUTHENTICATION
       | SCRIPTS
       | SERVICES
