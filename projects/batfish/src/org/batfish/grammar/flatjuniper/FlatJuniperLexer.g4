@@ -2344,10 +2344,13 @@ IPV6_PREFIX
 
          ':' ':'?
       )+
-      (
-         F_HexDigit+
-      )?
-   ) '/' F_DecByte
+   )
+   (
+      F_HexDigit+
+   )?
+   (
+      F_Digit+ '.' F_Digit+ '.' F_Digit+ '.' F_Digit+
+   )? '/' F_DecByte
 ;
 
 ISO_ADDRESS
