@@ -1749,6 +1749,11 @@ SAMPLING
    'sampling'
 ;
 
+SCRIPTS
+:
+   'scripts'
+;
+
 SCTP
 :
    'sctp'

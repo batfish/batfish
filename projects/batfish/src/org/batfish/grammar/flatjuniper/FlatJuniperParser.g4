@@ -107,6 +107,7 @@ st_null
       | NTP
       | PORTS
       | ROOT_AUTHENTICATION
+      | SCRIPTS
       | SERVICES
       | SYSLOG
       | TACPLUS_SERVER
