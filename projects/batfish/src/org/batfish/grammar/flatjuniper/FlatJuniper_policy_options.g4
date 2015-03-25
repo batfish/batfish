@@ -47,7 +47,10 @@ fromt_area
 
 fromt_as_path
 :
-   AS_PATH name = variable
+   AS_PATH
+   (
+      name = variable
+   )?
 ;
 
 fromt_color
