@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
@@ -74,7 +75,10 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
                + _currentPath.pathString()
                + "\" with group \""
                + groupName
-               + "\": " + e.getMessage();
+               + "\": "
+               + e.getMessage()
+               + ": caused by: "
+               + ExceptionUtils.getFullStackTrace(e);
          _w.redFlag(message);
       }
    }
