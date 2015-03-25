@@ -233,6 +233,11 @@ it_mtu
    MTU size = DEC
 ;
 
+it_native_vlan_id
+:
+   NATIVE_VLAN_ID id = DEC
+;
+
 it_null
 :
    (
@@ -353,5 +358,6 @@ s_interfaces_tail
 :
    it_common
    | it_flexible_vlan_tagging
+   | it_native_vlan_id
    | it_unit
 ;
