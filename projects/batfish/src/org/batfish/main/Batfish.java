@@ -1865,15 +1865,15 @@ public class Batfish implements AutoCloseable {
          BatfishCombinedParser<?, ?> combinedParser = null;
          ParserRuleContext tree = null;
          ControlPlaneExtractor extractor = null;
-         Warnings warnings = new Warnings(_settings.getRedFlagRecord()
-               && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
-               _settings.getRedFlagAsError(),
-               _settings.getUnimplementedRecord()
-                     && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-               _settings.getUnimplementedAsError(),
+         Warnings warnings = new Warnings(_settings.getPedanticAsError(),
                _settings.getPedanticRecord()
                      && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
-               _settings.getPedanticAsError(), _settings.printParseTree());
+               _settings.getRedFlagAsError(), _settings.getRedFlagRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
+               _settings.getUnimplementedAsError(),
+               _settings.getUnimplementedRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
+               _settings.printParseTree());
          char firstChar = fileText.trim().charAt(0);
          if (firstChar == '!') {
             CiscoCombinedParser ciscoParser = new CiscoCombinedParser(fileText,
