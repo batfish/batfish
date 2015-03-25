@@ -223,6 +223,11 @@ it_family_tail
    | famt_mpls
 ;
 
+it_flexible_vlan_tagging
+:
+   FLEXIBLE_VLAN_TAGGING
+;
+
 it_mtu
 :
    MTU size = DEC
@@ -347,5 +352,6 @@ s_interfaces
 s_interfaces_tail
 :
    it_common
+   | it_flexible_vlan_tagging
    | it_unit
 ;
