@@ -2522,7 +2522,7 @@ M_AsPath_PATH
 
 M_AsPath_VARIABLE
 :
-   F_Variable_RequiredVarChar F_Variable_VarChar* -> mode(M_AsPathRegex)
+   (F_Digit | F_Variable_RequiredVarChar) F_Variable_VarChar* -> type(VARIABLE), mode(M_AsPathRegex)
 ;
 
 M_AsPath_WS
