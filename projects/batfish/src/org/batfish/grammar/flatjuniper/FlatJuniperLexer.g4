@@ -2540,7 +2540,10 @@ M_AsPath_PATH
 
 M_AsPath_VARIABLE
 :
-   (F_Digit | F_Variable_RequiredVarChar) F_Variable_VarChar* -> type(VARIABLE), mode(M_AsPathRegex)
+   (
+      F_Digit
+      | F_Variable_RequiredVarChar
+   ) F_Variable_VarChar* -> type(VARIABLE), mode(M_AsPathRegex)
 ;
 
 M_AsPath_WS
@@ -2564,7 +2567,6 @@ M_AsPathPath_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;
-
 
 mode M_AsPathExpr;
 
@@ -2665,6 +2667,7 @@ M_Interface_WS
 ;
 
 mode M_InterfaceQuote;
+
 M_InterfaceQuote_QUOTE
 :
    '"' -> channel(HIDDEN), popMode
