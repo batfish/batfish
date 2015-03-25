@@ -248,7 +248,9 @@ pst_term
 
 pst_term_tail
 :
-   tt_apply_groups
+// intentional blank
+
+   | tt_apply_groups
    | tt_from
    | tt_then
 ;

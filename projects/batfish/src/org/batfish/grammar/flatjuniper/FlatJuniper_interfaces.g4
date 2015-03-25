@@ -356,7 +356,9 @@ s_interfaces
 
 s_interfaces_tail
 :
-   it_common
+// intentional blank
+
+   | it_common
    | it_flexible_vlan_tagging
    | it_native_vlan_id
    | it_unit
