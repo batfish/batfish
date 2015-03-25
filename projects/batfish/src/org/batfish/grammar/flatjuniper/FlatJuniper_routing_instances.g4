@@ -293,6 +293,7 @@ rot_null
       | MULTICAST
       | MULTIPATH
       | OPTIONS
+      | PPM
    ) s_null_filler
 ;
 

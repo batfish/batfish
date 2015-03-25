@@ -1489,6 +1489,11 @@ PORT_UNREACHABLE
    'port-unreachable'
 ;
 
+PPM
+:
+   'ppm'
+;
+
 PPTP
 :
    'pptp'
