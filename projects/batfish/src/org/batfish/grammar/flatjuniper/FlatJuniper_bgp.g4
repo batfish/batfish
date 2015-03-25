@@ -187,7 +187,9 @@ bt_group
 
 bt_group_tail
 :
-   bt_common
+// intentional blank
+
+   | bt_common
    | bt_neighbor
 ;
 
