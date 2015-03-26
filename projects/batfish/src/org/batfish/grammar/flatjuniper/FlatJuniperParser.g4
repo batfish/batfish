@@ -28,7 +28,8 @@ flat_juniper_configuration
 
 statement
 :
-   s_firewall
+   s_apply_groups
+   | s_firewall
    | s_interfaces
    | s_null
    | s_policy_options
