@@ -103,6 +103,7 @@ st_null
       | DDOS_PROTECTION
       | DOMAIN_NAME
       | DOMAIN_SEARCH
+      | LICENSE
       | LOGIN
       | NAME_SERVER
       | NTP
