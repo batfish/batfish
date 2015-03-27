@@ -58,7 +58,12 @@ s_groups_tail
 
 s_null
 :
-   rit_null
+   (
+      (
+         SECURITY
+      ) s_null_filler
+   )
+   | rit_null
 ;
 
 s_system
