@@ -1629,6 +1629,11 @@ RECEIVE
    'receive'
 ;
 
+REDUNDANT_ETHER_OPTIONS
+:
+   'redundant-ether-options'
+;
+
 REFERENCE_BANDWIDTH
 :
    'reference-bandwidth'
