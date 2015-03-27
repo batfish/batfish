@@ -2031,6 +2031,9 @@ public class Batfish implements AutoCloseable {
             return ConfigurationFormat.CISCO;
          }
       }
+      else if (fileText.contains("set hostname")) {
+         return ConfigurationFormat.JUNIPER_SWITCH;
+      }
       else if (firstChar == '#') {
          if (fileText.contains("set version")) {
             return ConfigurationFormat.FLAT_JUNIPER;
