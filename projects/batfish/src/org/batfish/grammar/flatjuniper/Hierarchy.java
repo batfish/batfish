@@ -1,6 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -240,11 +241,11 @@ public class Hierarchy {
          _root = new HierarchyRootNode();
       }
 
-      private void addGroupPaths(HierarchyChildNode currentGroupNode,
+      private void addGroupPaths(Set_lineContext groupLine,
+            Collection<HierarchyChildNode> currentGroupChildren,
             HierarchyTree masterTree, HierarchyPath path,
             List<ParseTree> lines,
             Flat_juniper_configurationContext configurationContext) {
-         Set_lineContext groupLine = currentGroupNode._line;
          if (groupLine != null) {
             Set_lineContext setLine = new Set_lineContext(configurationContext,
                   -1);
@@ -285,12 +286,11 @@ public class Hierarchy {
             setLineTail.children.add(newStatement);
             lines.add(setLine);
          }
-         for (HierarchyChildNode childNode : currentGroupNode.getChildren()
-               .values()) {
+         for (HierarchyChildNode childNode : currentGroupChildren) {
             HierarchyChildNode newPathNode = childNode.copy();
             path._nodes.add(newPathNode);
-            addGroupPaths(childNode, masterTree, path, lines,
-                  configurationContext);
+            addGroupPaths(childNode._line, childNode.getChildren().values(),
+                  masterTree, path, lines, configurationContext);
             path._nodes.remove(path._nodes.size() - 1);
          }
       }
@@ -447,25 +447,33 @@ public class Hierarchy {
          HierarchyNode currentGroupNode = _root;
          HierarchyChildNode matchNode = null;
          HierarchyPath partialMatch = new HierarchyPath();
-         for (HierarchyChildNode currentPathNode : path._nodes) {
-            matchNode = currentGroupNode
-                  .getFirstMatchingChildNode(currentPathNode);
-            if (matchNode == null) {
-               String message = "No matching path";
-               if (partialMatch._nodes.size() > 0) {
-                  message += ": Partial path match within applied group: \""
-                        + partialMatch.pathString() + "\"";
-               }
-               throw new RedFlagBatfishException(message);
-            }
-            partialMatch._nodes.add(matchNode);
-            currentGroupNode = matchNode;
+         if (path._nodes.size() == 0) {
+            addGroupPaths(null, _root.getChildren().values(), masterTree, path,
+                  lines, configurationContext);
          }
+         else {
+            for (HierarchyChildNode currentPathNode : path._nodes) {
+               matchNode = currentGroupNode
+                     .getFirstMatchingChildNode(currentPathNode);
+               if (matchNode == null) {
+                  String message = "No matching path";
+                  if (partialMatch._nodes.size() > 0) {
+                     message += ": Partial path match within applied group: \""
+                           + partialMatch.pathString() + "\"";
+                  }
+                  throw new RedFlagBatfishException(message);
+               }
+               partialMatch._nodes.add(matchNode);
+               currentGroupNode = matchNode;
+            }
 
-         // at this point, matchNode is the node in the group tree whose
-         // children must be added to the main tree with substitutions applied
-         // according to the supplied path
-         addGroupPaths(matchNode, masterTree, path, lines, configurationContext);
+            // at this point, matchNode is the node in the group tree whose
+            // children must be added to the main tree with substitutions
+            // applied
+            // according to the supplied path
+            addGroupPaths(matchNode._line, matchNode.getChildren().values(),
+                  masterTree, path, lines, configurationContext);
+         }
          return lines;
       }
 
