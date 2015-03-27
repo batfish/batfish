@@ -48,9 +48,13 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
       walker.walk(dp, tree);
       InitialTreeBuilder tb = new InitialTreeBuilder(hierarchy);
       walker.walk(tb, tree);
-      ApplyGroupsApplicator hb = new ApplyGroupsApplicator(_parser, hierarchy,
-            _w);
-      walker.walk(hb, tree);
+      GroupTreeBuilder gb = new GroupTreeBuilder(_parser, hierarchy);
+      walker.walk(gb, tree);
+      ApplyGroupsApplicator hb;
+      do {
+         hb = new ApplyGroupsApplicator(_parser, hierarchy, _w);
+         walker.walk(hb, tree);
+      } while (hb.getChanged());
       GroupPruner gp = new GroupPruner();
       walker.walk(gp, tree);
       WildcardApplicator wa = new WildcardApplicator(hierarchy);
