@@ -1915,7 +1915,7 @@ public class Batfish implements AutoCloseable {
             String unsupportedError = "Unsupported configuration format: \""
                   + format.toString() + "\" for file: \"" + currentPath
                   + "\"\n";
-            if (_settings.exitOnParseError()) {
+            if (!_settings.ignoreUnsupported() && _settings.exitOnParseError()) {
                throw new BatfishException(unsupportedError);
             }
             else {

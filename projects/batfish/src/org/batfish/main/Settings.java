@@ -55,6 +55,7 @@ public class Settings {
    private static final String ARG_GUI = "gui";
    private static final String ARG_HELP = "help";
    private static final String ARG_HISTOGRAM = "histogram";
+   private static final String ARG_IGNORE_UNSUPPORTED = "ignoreunsupported";
    private static final String ARG_INTERFACE_MAP_PATH = "impath";
    private static final String ARG_LB_WEB_ADMIN_PORT = "lbwebadminport";
    private static final String ARG_LB_WEB_PORT = "lbwebport";
@@ -220,6 +221,7 @@ public class Settings {
    private boolean _histogram;
    private String _hsaInputDir;
    private String _hsaOutputDir;
+   private boolean _ignoreUnsupported;
    private String _interfaceMapPath;
    private int _lbWebAdminPort;
    private int _lbWebPort;
@@ -674,6 +676,10 @@ public class Settings {
       return _z3File;
    }
 
+   public boolean ignoreUnsupported() {
+      return _ignoreUnsupported;
+   }
+
    private void initOptions() {
       _options = new Options();
       _options.addOption(Option
@@ -1034,6 +1040,11 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("print timestamps in log messages").longOpt(ARG_TIMESTAMP)
             .build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("ignore configuration files with unsupported format instead of crashing")
+                  .longOpt(ARG_IGNORE_UNSUPPORTED).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1200,6 +1211,7 @@ public class Settings {
       _logFile = line.getOptionValue(ARG_LOG_FILE);
       _genOspfTopology = line.getOptionValue(ARG_GEN_OSPF);
       _timestamp = line.hasOption(ARG_TIMESTAMP);
+      _ignoreUnsupported = line.hasOption(ARG_IGNORE_UNSUPPORTED);
    }
 
    public boolean printParseTree() {
