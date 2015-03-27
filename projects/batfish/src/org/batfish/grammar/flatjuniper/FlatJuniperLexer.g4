@@ -549,6 +549,11 @@ EXTERNAL_PREFERENCE
    'external-preference'
 ;
 
+FABRIC_OPTIONS
+:
+   'fabric-options'
+;
+
 FAIL_FILTER
 :
    'fail-filter'
