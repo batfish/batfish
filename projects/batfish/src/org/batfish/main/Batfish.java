@@ -1918,11 +1918,14 @@ public class Batfish implements AutoCloseable {
             if (!_settings.ignoreUnsupported() && _settings.exitOnParseError()) {
                throw new BatfishException(unsupportedError);
             }
-            else {
-               _logger.error(unsupportedError);
+            else if (!_settings.ignoreUnsupported()) {
                processingError = true;
-               continue;
+               _logger.error(unsupportedError);
             }
+            else {
+               _logger.warn(unsupportedError);
+            }
+            continue;
 
          case UNKNOWN:
          default:
