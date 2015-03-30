@@ -20,10 +20,10 @@ import javax.ws.rs.Produces;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
-@Path(CoordinatorConstants.SERVICE_BASE_POOL_MGR)
+@Path(CoordConsts.SVC_BASE_POOL_MGR)
 public class PoolMgrService {
 
-   Logger _logger = LogManager.getLogger(Main.MAIN_LOGGER);
+   Logger _logger = Main.initializeLogger();
    
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -31,30 +31,30 @@ public class PoolMgrService {
       _logger.info("PMS:getInfo\n");
       return new JSONArray(
             Arrays.asList(
-                  "",
+                  CoordConsts.SVC_SUCCESS_KEY,
                   "Batfish coordinator: enter ../application.wadl (relative to your URL) to see supported methods"));
    }
 
    @GET
-   @Path(CoordinatorConstants.SERVICE_POOL_GETSTATUS_RESOURCE)
+   @Path(CoordConsts.SVC_POOL_GETSTATUS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
       try {
          _logger.info("PMS:getStatus\n");
          HashMap<String, String> poolStatus = Main.getPoolMgr().getPoolStatus();
          JSONObject obj = new JSONObject(poolStatus);
-         return new JSONArray(Arrays.asList("", obj.toString()));
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, obj.toString()));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("PMS:getStatus exception: " + stackTrace);
-         return new JSONArray(Arrays.asList("failure", e.getMessage()));
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
    }   
    
    //functions for pool management
    @GET
-   @Path(CoordinatorConstants.SERVICE_POOL_UPDATE_RESOURCE)
+   @Path(CoordConsts.SVC_POOL_UPDATE_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray updatePool(@Context UriInfo ui) {
       try {
@@ -83,7 +83,7 @@ public class PoolMgrService {
                }
             }
             else {
-               return new JSONArray(Arrays.asList("failure",
+               return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                      "Got unknown command " + entry.getKey()
                            + ". Other commands may have been applied."));
             }
@@ -92,9 +92,9 @@ public class PoolMgrService {
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("PMS:updatePool exception: " + stackTrace);
-         return new JSONArray(Arrays.asList("failure", e.getMessage()));
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
 
-      return new JSONArray(Arrays.asList("", "done"));
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, "done"));
    }   
 }

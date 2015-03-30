@@ -6,6 +6,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.batfish.common.CoordConsts;
 
 public class Settings {
 
@@ -30,8 +31,8 @@ public class Settings {
    private static final String DEFAULT_QUEUE_INCOMPLETE_WORK = "batfishincompletework";
    private static final String DEFAULT_QUEUE_COMPLETED_WORK = "batfishcompletedwork";
    private static final String DEFAULT_QUEUE_TYPE = "memory";
-   private static final String DEFAULT_SERVICE_POOL_PORT = "9998";
-   private static final String DEFAULT_SERVICE_WORK_PORT = "9997";
+   private static final String DEFAULT_SERVICE_POOL_PORT = CoordConsts.SVC_POOL_PORT.toString();
+   private static final String DEFAULT_SERVICE_WORK_PORT = CoordConsts.SVC_WORK_PORT.toString();
    private static final String DEFAULT_SERVICE_HOST = "localhost";
    private static final String DEFAULT_STORAGE_ACCOUNT_KEY = "zRTT++dVryOWXJyAM7NM0TuQcu0Y23BgCQfkt7xh2f/Mm+r6c8/XtPTY0xxaF6tPSACJiuACsjotDeNIVyXM8Q==";
    private static final String DEFAULT_STORAGE_ACCOUNT_NAME = "testdrive";

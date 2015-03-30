@@ -84,6 +84,7 @@ public class Main {
       _poolManager = new PoolMgr();
       _workManager = new WorkMgr();
 
+      
       //sleep indefinitely, in 10 minute chunks
       try {
          while (true) {

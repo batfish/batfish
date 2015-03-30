@@ -16,8 +16,9 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
-import org.batfish.common.BatfishConstants;
+import org.batfish.common.BfConsts;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -31,11 +32,11 @@ public class PoolMgr {
       _logger = Main.initializeLogger();
       workerPool = new HashMap<String, WorkerStatus>();
 
-      Runnable workerStatusRefreshTask = new WorkerStatusRefreshTask(this);
-      ScheduledFuture<?> future = Executors.newScheduledThreadPool(1)
-            .scheduleWithFixedDelay(workerStatusRefreshTask, 0,
-                  Main.getSettings().getPeriodWorkerStatusRefreshMs(),
-                  TimeUnit.MILLISECONDS);
+      Runnable workerStatusRefreshTask = new WorkerStatusRefreshTask();
+      Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(
+            workerStatusRefreshTask, 0,
+            Main.getSettings().getPeriodWorkerStatusRefreshMs(),
+            TimeUnit.MILLISECONDS);
 
    }
 
@@ -84,6 +85,7 @@ public class PoolMgr {
    }
 
    public void RefreshWorkerStatus() {
+      _logger.info("PM:RefreshWorkerStatus: entered\n");
       List<String> workers = getAllWorkers();
       for (String worker : workers) {
          RefreshWorkerStatus(worker);
@@ -98,54 +100,62 @@ public class PoolMgr {
    }
 
    private void RefreshWorkerStatus(String worker) {
+      _logger.info("PM:RefreshWorkerStatus: refreshing status of " + worker +"\n");
+
       try {
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               worker, BatfishConstants.SERVICE_BASE_RESOURCE,
-               BatfishConstants.SERVICE_GETSTATUS_RESOURCE));
+               worker, BfConsts.SVC_BASE_RSC,
+               BfConsts.SVC_GET_STATUS_RSC));
          Invocation.Builder invocationBuilder = webTarget
                .request(MediaType.APPLICATION_JSON);
          Response response = invocationBuilder.get();
 
-         String sobj = response.readEntity(String.class);
-         JSONArray array = new JSONArray(sobj);
-         _logger.info(String.format("response: %s [%s] [%s]\n",
-               array.toString(), array.get(0), array.get(1)));
-
-         if (!array.get(0).equals("")) {
-
-            _logger.error(String.format(
-                  "got error while refreshing status: %s %s\n", array.get(0),
-                  array.get(1)));
-            updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
-            return;
+         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            _logger.error("PM:RefreshWorkerStatus: Got non-OK response "
+                  + response.getStatus() + "\n");
          }
+         else {
+            String sobj = response.readEntity(String.class);
+            JSONArray array = new JSONArray(sobj);
+            _logger.info(String.format("response: %s [%s] [%s]\n",
+                  array.toString(), array.get(0), array.get(1)));
 
-         JSONObject jObj = new JSONObject(array.get(1).toString());
+            if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
+               _logger.error(String.format(
+                     "got error while refreshing status: %s %s\n",
+                     array.get(0), array.get(1)));
+               updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
+               return;
+            }
 
-         if (!jObj.has("idle")) {
-            _logger.error(String
-                  .format("did not see idle key in json response\n"));
-            updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
-            return;
-         }
+            JSONObject jObj = new JSONObject(array.get(1).toString());
 
-         boolean status = jObj.getBoolean("idle");
+            if (!jObj.has("idle")) {
+               _logger.error(String
+                     .format("did not see idle key in json response\n"));
+               updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
+               return;
+            }
 
-         // update the status, except leave the ones with TRYINGTOASSIGN alone
-         if (getWorkerStatus(worker).getStatus() != WorkerStatus.StatusCode.TRYINGTOASSIGN) {
-            updateWorkerStatus(worker, status ? WorkerStatus.StatusCode.IDLE
-                  : WorkerStatus.StatusCode.BUSY);
+            boolean status = jObj.getBoolean("idle");
+
+            // update the status, except leave the ones with TRYINGTOASSIGN
+            // alone
+            if (getWorkerStatus(worker).getStatus() != WorkerStatus.StatusCode.TRYINGTOASSIGN) {
+               updateWorkerStatus(worker, status ? WorkerStatus.StatusCode.IDLE
+                     : WorkerStatus.StatusCode.BUSY);
+            }
          }
       }
       catch (ProcessingException e) {
-         _logger.error(String.format("unable to connect to %s: %s\n", worker, e
-               .getStackTrace().toString()));
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error(String.format("unable to connect to %s: %s\n", worker, stackTrace));
          updateWorkerStatus(worker, WorkerStatus.StatusCode.UNREACHABLE);
       }
       catch (Exception e) {
-         _logger.error(String.format("exception: %s\n", e.getStackTrace()
-               .toString()));
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error(String.format("exception: %s\n", stackTrace));
          updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
       }
    }
@@ -163,25 +173,16 @@ public class PoolMgr {
       return null;
    }
 
-   final class WorkerStatusRefreshTask implements Runnable {
-
-      PoolMgr _coordinator;
-
-      public WorkerStatusRefreshTask(PoolMgr coordinator) {
-         _coordinator = coordinator;
-      }
-
-      @Override
-      public void run() {
-         _logger = Main.initializeLogger();
-         _logger.info("Firing work status refresh\n");
-         _coordinator.RefreshWorkerStatus();
-      }
-   }
-
    public void markAssignmentResult(String worker, boolean assignmentSuccessful) {
       updateWorkerStatus(worker,
             assignmentSuccessful ? WorkerStatus.StatusCode.BUSY
                   : WorkerStatus.StatusCode.IDLE);
+   }
+
+   final class WorkerStatusRefreshTask implements Runnable {
+      @Override
+      public void run() {
+         Main.getPoolMgr().RefreshWorkerStatus();
+      }
    }
 }

@@ -2,26 +2,26 @@ package org.batfish.main;
 
 import java.util.Date;
 
-import org.batfish.common.BatfishConstants.TaskkStatus;
+import org.batfish.common.BfConsts.TaskStatus;
 
 public class Task {
    String[] _args;
    Date _obtained;
-   TaskkStatus _status;
+   TaskStatus _status;
    Date _terminated;
 
    public Task(String[] args) {
       this._args = args;
       _obtained = new Date();
       _terminated = null;
-      _status = TaskkStatus.Unscheduled;
+      _status = TaskStatus.Unscheduled;
    }
 
-   public TaskkStatus getStatus() {
+   public TaskStatus getStatus() {
       return _status;
    }
 
-   public void setStatus(TaskkStatus status) {
+   public void setStatus(TaskStatus status) {
       _status = status;
    }
 

@@ -9,7 +9,8 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.batfish.common.BatfishConstants.TaskkStatus;
+import org.batfish.common.BfConsts.TaskStatus;
+import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -152,12 +153,12 @@ public class Driver {
             Thread thread = new Thread() {
                @Override
                public void run() {
-                  task.setStatus(TaskkStatus.InProgress);
+                  task.setStatus(TaskStatus.InProgress);
                   if (RunBatfish(settings)) {
-                     task.setStatus(TaskkStatus.TerminatedNormally);
+                     task.setStatus(TaskStatus.TerminatedNormally);
                   }
                   else {
-                     task.setStatus(TaskkStatus.TerminatedAbnormally);
+                     task.setStatus(TaskStatus.TerminatedAbnormally);
                   }
                   task.setTerminated();
                   makeIdle();
@@ -166,7 +167,7 @@ public class Driver {
 
             thread.start();
 
-            return Arrays.asList("success", "running now");
+            return Arrays.asList("", "running now");
          }
          else {
             return Arrays.asList("failure", "Not idle");

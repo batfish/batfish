@@ -29,8 +29,8 @@ public class WorkItem {
       _requestParams = new HashMap<String, String>();
       _responseParams = new HashMap<String, String>();
 
-      JSONObject requestObject = new JSONObject(array.get(2).toString());      
-      JSONObject responseObject = new JSONObject(array.get(3).toString());
+      JSONObject requestObject = new JSONObject(array.get(1).toString());      
+      JSONObject responseObject = new JSONObject(array.get(2).toString());
       
       PopulateHashMap(_requestParams, requestObject);      
       PopulateHashMap(_responseParams, responseObject);      
@@ -58,10 +58,18 @@ public class WorkItem {
       _requestParams.put(key,  value);
    }
    
+   public HashMap<String,String> getRequestParams() {
+      return _requestParams;
+   }
+   
    public String toJsonString() {
       JSONObject requestObject = new JSONObject(_requestParams);
       JSONObject responseObject = new JSONObject(_responseParams);      
       JSONArray array = new JSONArray(Arrays.asList(_id, requestObject.toString(), responseObject.toString()));
       return array.toString();
+   }
+
+   public JSONObject toTask() {
+      return new JSONObject(_requestParams);
    }
 }
