@@ -1076,6 +1076,7 @@ public class Settings {
          _canExecute = false;
          // automatically generate the help statement
          HelpFormatter formatter = new HelpFormatter();
+         formatter.setLongOptPrefix("-");
          formatter.printHelp(EXECUTABLE_NAME, _options);
          return;
       }
