@@ -1070,6 +1070,8 @@ public class Settings {
       // parse the command line arguments
       line = parser.parse(_options, args);
 
+      _logLevel = line.getOptionValue(ARG_LOG_LEVEL, DEFAULT_LOG_LEVEL);
+      _logFile = line.getOptionValue(ARG_LOG_FILE);
       if (line.hasOption(ARG_HELP)) {
          _canExecute = false;
          // automatically generate the help statement
@@ -1197,7 +1199,6 @@ public class Settings {
       _roleTransitQuery = line.hasOption(ARG_ROLE_TRANSIT_QUERY);
       _roleSetPath = line.getOptionValue(ARG_ROLE_SET_PATH);
       _duplicateRoleFlows = line.hasOption(ARG_DUPLICATE_ROLE_FLOWS);
-      _logLevel = line.getOptionValue(ARG_LOG_LEVEL, DEFAULT_LOG_LEVEL);
       _roleHeaders = line.hasOption(ARG_ROLE_HEADERS);
       _throwOnParserError = line.hasOption(ARG_THROW_ON_PARSER_ERROR);
       _throwOnLexerError = line.hasOption(ARG_THROW_ON_LEXER_ERROR);
@@ -1221,7 +1222,6 @@ public class Settings {
          _generateStubsRemoteAs = Integer.parseInt(line
                .getOptionValue(ARG_GENERATE_STUBS_REMOTE_AS));
       }
-      _logFile = line.getOptionValue(ARG_LOG_FILE);
       _genOspfTopology = line.getOptionValue(ARG_GEN_OSPF);
       _timestamp = line.hasOption(ARG_TIMESTAMP);
       _ignoreUnsupported = line.hasOption(ARG_IGNORE_UNSUPPORTED);
