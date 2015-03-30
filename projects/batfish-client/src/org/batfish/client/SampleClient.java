@@ -91,9 +91,9 @@ public class SampleClient {
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             System.err.printf("Did not get an OK response\n");
-            return null;            
+            return null;
          }
-         
+
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
          System.out.printf("response: %s [%s] [%s]\n", array.toString(),
@@ -158,9 +158,9 @@ public class SampleClient {
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             System.err.printf("UploadTestrig: Did not get an OK response\n");
-            return false;            
+            return false;
          }
-         
+
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
          System.out.printf("response: %s [%s] [%s]\n", array.toString(),
@@ -205,9 +205,9 @@ public class SampleClient {
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             System.err.printf("QueueWork: Did not get an OK response\n");
-            return null;            
+            return null;
          }
-         
+
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
          System.out.printf("response: %s [%s] [%s]\n", array.toString(),
@@ -252,7 +252,7 @@ public class SampleClient {
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             System.err.printf("GetObject: Did not get an OK response\n");
-            return false;            
+            return false;
          }
 
          File inFile = response.readEntity(File.class);

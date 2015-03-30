@@ -7,14 +7,14 @@ public class CoordConsts {
 
    public static final String SVC_SUCCESS_KEY = "success";
    public static final String SVC_FAILURE_KEY = "failure";
-   
+
    public static final String SVC_BASE_POOL_MGR = "/batfishpoolmgr";
    public static final String SVC_BASE_WORK_MGR = "/batfishworkmgr";
-   
-   public static final String SVC_POOL_GETSTATUS_RSC = "getstatus";
-   public static final String SVC_POOL_UPDATE_RSC = "updatepool";  
 
-   public static final String SVC_WORK_GETSTATUS_RSC = "getstatus";  
+   public static final String SVC_POOL_GETSTATUS_RSC = "getstatus";
+   public static final String SVC_POOL_UPDATE_RSC = "updatepool";
+
+   public static final String SVC_WORK_GETSTATUS_RSC = "getstatus";
    public static final String SVC_WORK_UPLOAD_TESTRIG_RSC = "uploadtestrig";
    public static final String SVC_WORK_QUEUE_WORK_RSC = "queuework";
    public static final String SVC_WORK_GET_WORKSTATUS_RSC = "getworkstatus";
@@ -25,10 +25,10 @@ public class CoordConsts {
    public static final String SVC_WORKSTATUS_KEY = "workstatus";
    public static final String SVC_WORKITEM_KEY = "workitem";
    public static final String SVC_TESTRIG_NAME_KEY = "testrigname";
-   public static final String SVC_TESTRIG_ZIPFILE_KEY = "testrigzipfile"; 
+   public static final String SVC_TESTRIG_ZIPFILE_KEY = "testrigzipfile";
    public static final String SVC_COMMAND_PARSE_KEY = "si";
    public static final String SVC_WORKSPACE_NAME_KEY = "workspace";
-   
+
    public enum WorkStatusCode {
       UNASSIGNED,
       TRYINGTOASSIGN,

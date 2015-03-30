@@ -24,7 +24,7 @@ import org.codehaus.jettison.json.JSONObject;
 public class PoolMgrService {
 
    Logger _logger = Main.initializeLogger();
-   
+
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getInfo() {
@@ -50,8 +50,8 @@ public class PoolMgrService {
          _logger.error("PMS:getStatus exception: " + stackTrace);
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
-   }   
-   
+   }
+
    //functions for pool management
    @GET
    @Path(CoordConsts.SVC_POOL_UPDATE_RSC)
@@ -96,5 +96,5 @@ public class PoolMgrService {
       }
 
       return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, "done"));
-   }   
+   }
 }
