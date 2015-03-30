@@ -17,6 +17,7 @@ public class Settings {
 
    private static final String ARG_ACCEPT_NODE = "acceptnode";
    private static final String ARG_ANONYMIZE = "anonymize";
+   private static final String ARG_AUTO_BASE_DIR = "autobasedir";
    private static final String ARG_BLACK_HOLE = "blackhole";
    private static final String ARG_BLACK_HOLE_PATH = "blackholepath";
    private static final String ARG_BLACKLIST_DST_IP_PATH = "blacklistdstippath";
@@ -114,6 +115,7 @@ public class Settings {
    private static final String ARG_Z3_OUTPUT = "z3path";
    private static final String ARGNAME_ACCEPT_NODE = "node";
    private static final String ARGNAME_ANONYMIZE = "path";
+   private static final String ARGNAME_AUTO_BASE_DIR = "path";
    private static final String ARGNAME_BLACK_HOLE_PATH = "path";
    private static final String ARGNAME_BLACKLIST_DST_IP = "ip";
    private static final String ARGNAME_BLACKLIST_INTERFACE = "node,interface";
@@ -178,6 +180,7 @@ public class Settings {
    private String _acceptNode;
    private boolean _anonymize;
    private String _anonymizeDir;
+   private String _autoBaseDir;
    private boolean _blackHole;
    private String _blackHolePath;
    private String _blacklistDstIpPath;
@@ -327,6 +330,10 @@ public class Settings {
 
    public String getAnonymizeDir() {
       return _anonymizeDir;
+   }
+
+   public String getAutoBaseDir() {
+      return _autoBaseDir;
    }
 
    public String getBlackHoleQueryPath() {
@@ -1046,6 +1053,10 @@ public class Settings {
                   .builder()
                   .desc("ignore configuration files with unsupported format instead of crashing")
                   .longOpt(ARG_IGNORE_UNSUPPORTED).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_AUTO_BASE_DIR)
+            .desc("path to base dir for automatic i/o path selection")
+            .longOpt(ARG_AUTO_BASE_DIR).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1213,6 +1224,7 @@ public class Settings {
       _genOspfTopology = line.getOptionValue(ARG_GEN_OSPF);
       _timestamp = line.hasOption(ARG_TIMESTAMP);
       _ignoreUnsupported = line.hasOption(ARG_IGNORE_UNSUPPORTED);
+      _autoBaseDir = line.getOptionValue(ARG_AUTO_BASE_DIR);
    }
 
    public boolean printParseTree() {
@@ -1231,8 +1243,24 @@ public class Settings {
       return _runInServiceMode;
    }
 
+   public void setDumpFactsDir(String path) {
+      _dumpFactsDir = path;
+   }
+
    public void setLogger(BatfishLogger logger) {
       _logger = logger;
+   }
+
+   public void setSerializeIndependentPath(String path) {
+      _serializeIndependentPath = path;
+   }
+
+   public void setSerializeVendorPath(String path) {
+      _serializeVendorPath = path;
+   }
+
+   public void setTestRigPath(String path) {
+      _testRigPath = path;
    }
 
 }
