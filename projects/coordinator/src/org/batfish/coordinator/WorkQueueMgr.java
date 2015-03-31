@@ -164,10 +164,12 @@ public class WorkQueueMgr {
          work.setStatus((status == TaskStatus.TerminatedNormally) ? WorkStatusCode.TERMINATEDNORMALLY
                : WorkStatusCode.TERMINATEDABNORMALLY);
          work.recordTaskStatusCheckResult(status);
+         break;
       case Unknown:
          // we mark this unassigned, so we try to schedule it again
          work.setStatus(WorkStatusCode.UNASSIGNED);
          work.clearAssignment();
+         break;
       case UnreachableOrBadResponse:
          if (work.getLastTaskCheckedStatus() == TaskStatus.UnreachableOrBadResponse) {
             // if we saw the same thing last time around, free the task to be

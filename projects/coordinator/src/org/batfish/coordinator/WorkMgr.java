@@ -21,6 +21,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.UnzipUtility;
 import org.batfish.common.WorkItem;
+import org.batfish.common.AppZip;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -104,8 +105,9 @@ public class WorkMgr {
          
          //get the task and add other standard stuff
          JSONObject task = work.getWorkItem().toTask();
-         task.put("datadir", Main.getSettings().getTestrigStorageLocation());
-         task.put("logfile", work.getId().toString() + ".log");
+         File autobasedir = new File(Main.getSettings().getTestrigStorageLocation() + "/" + work.getWorkItem().getTestrigName());
+         task.put("autobasedir", autobasedir.getAbsolutePath());
+         task.put("logfile", autobasedir.getAbsolutePath() + "/" + work.getId().toString() + ".log");
          
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client.target(String.format("http://%s%s/%s", worker,
@@ -133,6 +135,8 @@ public class WorkMgr {
             if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
                _logger.error(String.format("ERROR in assigning task: %s %s\n",
                      array.get(0), array.get(1)));
+               
+               //TODO: mark failed tasks as terminatedabnormally
             }
             else {
                assigned = true;
@@ -254,7 +258,7 @@ public class WorkMgr {
                + testrigDir.getAbsolutePath());
       }
 
-      String zipFile = testrigDir.getAbsolutePath() + "/" + CoordConsts.UPLOADED_RIG_DIR + ".zip";
+      String zipFile = testrigDir.getAbsolutePath() + "/" + BfConsts.RELPATH_TEST_RIG_DIR + ".zip";
       
       try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
          int read = 0;
@@ -265,7 +269,7 @@ public class WorkMgr {
       }
       
       //now unzip
-      File unzipDir = new File(testrigDir.getAbsolutePath() + "/" + CoordConsts.UPLOADED_RIG_DIR);
+      File unzipDir = new File(testrigDir.getAbsolutePath() + "/" + BfConsts.RELPATH_TEST_RIG_DIR);
       UnzipUtility unzipper = new UnzipUtility();
       unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
       
@@ -307,14 +311,26 @@ public class WorkMgr {
       return _workQueueMgr.getWork(workItemId);
    }
 
-   public File getObject(String objectName) {
+   public File getObject(String testrigName, String objectName) {
       File file = new File(Main.getSettings().getTestrigStorageLocation() + "/"
-            + objectName);
+            + testrigName + "/" + objectName);
 
       if (file.isFile()) {
          return file;
       }
-
+      else if (file.isDirectory()) {
+         File zipfile = new File(file.getAbsolutePath() + ".zip");
+         
+         if (zipfile.exists()) {
+            zipfile.delete();
+         }
+         
+         AppZip appZip = new AppZip();
+         appZip.zip(file.getAbsolutePath(), zipfile.getAbsolutePath());
+         
+         return zipfile;         
+      }
+      
       return null;
    }
 

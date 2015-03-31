@@ -155,7 +155,7 @@ public class Driver {
                logTask(taskId, task);
             }
             catch (Exception e) {
-               return Arrays.asList("failure", e.getMessage());
+               return Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage());
             }
 
             // run batfish on a new thread and set idle to true when done
@@ -176,14 +176,14 @@ public class Driver {
 
             thread.start();
 
-            return Arrays.asList("", "running now");
+            return Arrays.asList(BfConsts.SVC_SUCCESS_KEY, "running now");
          }
          else {
-            return Arrays.asList("failure", "Not idle");
+            return Arrays.asList(BfConsts.SVC_FAILURE_KEY, "Not idle");
          }
       }
       else {
-         return Arrays.asList("failure", "Non-executable command");
+         return Arrays.asList(BfConsts.SVC_FAILURE_KEY, "Non-executable command");
       }
    }
 }

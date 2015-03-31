@@ -13,6 +13,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.batfish.common.BfConsts;
@@ -70,15 +71,10 @@ public class SampleClient {
       }
 
       // send parsing command
-      HashMap<String, String> parseRequestParamMap = new HashMap<String, String>();
-      parseRequestParamMap.put(CoordConsts.SVC_COMMAND_PARSE_KEY, "");
-      parseRequestParamMap.put(CoordConsts.SVC_TESTRIG_NAME_KEY, testrigName);
+      WorkItem wItem = new WorkItem(testrigName);
+      wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
 
-      UUID parseWorkUUID = queueWork(parseRequestParamMap);
-
-      if (parseWorkUUID == null) {
-         return;
-      }
+      boolean queued = queueWork(wItem);
 
       System.out.println("Press any key to start checking work status");
 
@@ -89,7 +85,7 @@ public class SampleClient {
          e.printStackTrace();
       }
 
-      WorkStatusCode status = getWorkStatus(parseWorkUUID);
+      WorkStatusCode status = getWorkStatus(wItem.getId());
 
       while (status != WorkStatusCode.TERMINATEDABNORMALLY
             && status != WorkStatusCode.TERMINATEDNORMALLY) {
@@ -105,10 +101,12 @@ public class SampleClient {
             break;
          }
 
-         status = getWorkStatus(parseWorkUUID);
+         status = getWorkStatus(wItem.getId());
       }
 
       System.out.printf("final status: %s\n", status);
+
+      System.out.println("Press any key to fetch results");
 
       try {
          System.in.read();
@@ -118,8 +116,10 @@ public class SampleClient {
       }
 
       // get the results
-      getObject("dummytestrigname", "build.xml");
-
+      String logFile = wItem.getId() + ".log";
+      //String logFile = "5ea3d4d3-682c-4c8b-8418-08f36fa3e638.log";
+      getObject(testrigName, logFile);
+      getObject(testrigName, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
    }
 
    private boolean addLocalBatfishWorker() {
@@ -276,13 +276,7 @@ public class SampleClient {
       }
    }
 
-   private UUID queueWork(Map<String, String> requestParamMap) {
-
-      WorkItem wItem = new WorkItem();
-
-      for (String key : requestParamMap.keySet()) {
-         wItem.addRequestParam(key, requestParamMap.get(key));
-      }
+   private boolean queueWork(WorkItem wItem) {
 
       try {
          Client client = ClientBuilder.newClient();
@@ -298,7 +292,7 @@ public class SampleClient {
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             System.err.printf("QueueWork: Did not get an OK response\n");
-            return null;            
+            return false;            
          }
          
          String sobj = response.readEntity(String.class);
@@ -309,33 +303,32 @@ public class SampleClient {
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
             System.err.printf("got error while queuing work: %s %s\n",
                   array.get(0), array.get(1));
-            return null;
+            return false;
          }
 
-         return wItem.getId();
+         return true;
       }
       catch (ProcessingException e) {
          System.err.printf("unable to connect to %s: %s\n", _workMgr, e
                .getStackTrace().toString());
-         return null;
+         return false;
       }
       catch (Exception e) {
          System.err.printf("exception: ");
          e.printStackTrace();
-         return null;
+         return false;
       }
    }
 
-   private boolean getObject(String testrigName, String zipfileName) {
+   private boolean getObject(String testrigName, String objectName) {
       try {
 
          Client client = ClientBuilder.newBuilder()
                .register(MultiPartFeature.class).build();
-         WebTarget webTarget = client.target(
-               String.format("http://%s%s/%s", _workMgr,
-                     CoordConsts.SVC_BASE_WORK_MGR,
-                     CoordConsts.SVC_WORK_GET_OBJECT_RSC)).queryParam(
-               CoordConsts.SVC_WORK_OBJECT_KEY, zipfileName);
+         WebTarget webTarget = client.target(String.format("http://%s%s/%s", _workMgr,
+                     CoordConsts.SVC_BASE_WORK_MGR, CoordConsts.SVC_WORK_GET_OBJECT_RSC))
+               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY, testrigName)
+               .queryParam(CoordConsts.SVC_WORK_OBJECT_KEY, objectName);
 
          Response response = webTarget.request(
                MediaType.APPLICATION_OCTET_STREAM).get();
@@ -348,8 +341,20 @@ public class SampleClient {
             return false;            
          }
 
+         //see if we have a filename header
+         String outFileStr = objectName;
+
+         MultivaluedMap<String, String> headers = response.getStringHeaders();
+         
+         if (headers.containsKey(CoordConsts.SVC_WORK_FILENAME_HDR)) {
+            String value = headers.getFirst(CoordConsts.SVC_WORK_FILENAME_HDR);
+            if (value != null && !value.equals("")) {
+               outFileStr = value;
+            }
+         }
+         
          File inFile = response.readEntity(File.class);
-         File outFile = new File(zipfileName + ".zip");
+         File outFile = new File(outFileStr);
 
          inFile.renameTo(outFile);
 
@@ -362,7 +367,7 @@ public class SampleClient {
       catch (Exception e) {
          System.err.printf(
                "Exception when uploading test rig to %s using (%s, %s)\n",
-               _workMgr, testrigName, zipfileName);
+               _workMgr, testrigName, objectName);
          e.printStackTrace();
          return false;
       }

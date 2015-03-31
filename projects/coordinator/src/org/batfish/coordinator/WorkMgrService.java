@@ -70,7 +70,7 @@ public class WorkMgrService {
                   "work item not supplied"));
          }
 
-         WorkItem workItem = new WorkItem(workItemStr);
+         WorkItem workItem = WorkItem.FromJsonString(workItemStr);
 
          boolean result = Main.getWorkMgr().queueWork(workItem);
 
@@ -141,17 +141,23 @@ public class WorkMgrService {
    @Path(CoordConsts.SVC_WORK_GET_OBJECT_RSC)
    @Produces(MediaType.APPLICATION_OCTET_STREAM)
    public Response getObject(
+         @QueryParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
          @QueryParam(CoordConsts.SVC_WORK_OBJECT_KEY) String objectName) {
       try {
-         _logger.info("WMS:getObject " + objectName + "\n");
+         _logger.info("WMS:getObject " + testrigName + " --> " + objectName + "\n");
 
+         if (testrigName == null || testrigName.equals("")) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                  .entity("testrigname not supplied").type(MediaType.TEXT_PLAIN)
+                  .build();
+         }
          if (objectName == null || objectName.equals("")) {
             return Response.status(Response.Status.BAD_REQUEST)
                   .entity("objectname not supplied").type(MediaType.TEXT_PLAIN)
                   .build();
          }
 
-         File file = Main.getWorkMgr().getObject(objectName);
+         File file = Main.getWorkMgr().getObject(testrigName, objectName);
 
          if (file == null) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -161,7 +167,9 @@ public class WorkMgrService {
          return Response
                .ok(file, MediaType.APPLICATION_OCTET_STREAM)
                .header("Content-Disposition",
-                     "attachment; filename=\"" + objectName + "\"").build();
+                     "attachment; filename=\"" + file.getName() + "\"")
+               .header(CoordConsts.SVC_WORK_FILENAME_HDR, file.getName())
+               .build();
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);

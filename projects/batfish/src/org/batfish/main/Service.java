@@ -40,7 +40,6 @@ public class Service {
    @Path(BfConsts.SVC_GET_STATUS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
-      _logger.info("BFS:getStatus\n");
       try {
          return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY,
                (new JSONObject().put("idle", Driver.getIdle())).toString()));

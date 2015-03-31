@@ -11,32 +11,46 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class WorkItem {
    private UUID _id;
+   private String _testrigName;
    private HashMap<String, String> _requestParams;
    private HashMap<String, String> _responseParams;
 
-   public WorkItem() {
+   public WorkItem(String testrigName) {
       _id = UUID.randomUUID();
+      _testrigName = testrigName;
       _requestParams = new HashMap<String, String>();
       _responseParams = new HashMap<String, String>();
    }
 
-   public WorkItem(String jsonString) throws JSONException {
+   public WorkItem(UUID id, String testrigName, 
+         HashMap<String, String> reqParams, HashMap<String, String> resParams) {
+      _id = id;
+      _testrigName = testrigName;
+      _requestParams = reqParams;
+      _responseParams = resParams;
+   }
+
+   public static WorkItem FromJsonString(String jsonString) throws JSONException {
 
       JSONArray array = new JSONArray(jsonString);
 
-      _id = UUID.fromString(array.get(0).toString());
+      UUID id = UUID.fromString(array.get(0).toString());
 
-      _requestParams = new HashMap<String, String>();
-      _responseParams = new HashMap<String, String>();
+      String testrigName = array.get(1).toString();
+      
+      HashMap<String, String> requestParams = new HashMap<String, String>();
+      HashMap<String, String> responseParams = new HashMap<String, String>();
 
-      JSONObject requestObject = new JSONObject(array.get(1).toString());
-      JSONObject responseObject = new JSONObject(array.get(2).toString());
+      JSONObject requestObject = new JSONObject(array.get(2).toString());
+      JSONObject responseObject = new JSONObject(array.get(3).toString());
 
-      PopulateHashMap(_requestParams, requestObject);
-      PopulateHashMap(_responseParams, responseObject);
+      PopulateHashMap(requestParams, requestObject);
+      PopulateHashMap(responseParams, responseObject);
+      
+      return new WorkItem(id, testrigName, requestParams, responseParams);
    }
 
-   private void PopulateHashMap(HashMap<String, String> map,
+   private static void PopulateHashMap(HashMap<String, String> map,
          JSONObject jsonObject) throws JSONException {
 
       Iterator<?> keys = jsonObject.keys();
@@ -63,10 +77,14 @@ public class WorkItem {
       return _requestParams;
    }
 
+   public String getTestrigName() {
+      return _testrigName;
+   }
+
    public String toJsonString() {
       JSONObject requestObject = new JSONObject(_requestParams);
       JSONObject responseObject = new JSONObject(_responseParams);
-      JSONArray array = new JSONArray(Arrays.asList(_id,
+      JSONArray array = new JSONArray(Arrays.asList(_id, _testrigName,
             requestObject.toString(), responseObject.toString()));
       return array.toString();
    }
