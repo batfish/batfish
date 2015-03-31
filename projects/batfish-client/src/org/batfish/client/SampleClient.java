@@ -36,57 +36,53 @@ public class SampleClient {
    public SampleClient(String workMgr, String poolMgr, String testrigName,
          String testrigZipfileName) {
 
-      _workMgr = workMgr;
-      _poolMgr = poolMgr;
-
-      System.out.println("Press any key to add local batfish worker");
-      
       try {
+         _workMgr = workMgr;
+         _poolMgr = poolMgr;
+
+         System.out.println("\nPress any key to add local batfish worker");
          System.in.read();
+
+         addLocalBatfishWorker();
+
+         
+         System.out.println("\nPress any key to upload test rig:" + testrigName
+               + " / " + testrigZipfileName);
+         System.in.read();
+
+         uploadTestrig(testrigName, testrigZipfileName);
+
+         
+         System.out.println("Press any key to trigger vendor specific parsing");
+         System.in.read();
+         
+         doWork(testrigName, BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "", BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
+
+         
+         System.out.println("Press any key to trigger vendor independent parsing");
+         System.in.read();
+         
+         doWork(testrigName, BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "", BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+         
       }
-      catch (IOException e) {
+      catch (Exception e) {
          e.printStackTrace();
       }
-      
-      addLocalBatfishWorker();
-      
-      System.out.println("Press any key to upload test rig:" + testrigName + " / " + testrigZipfileName);
+   }
 
-      try {
-         System.in.read();
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-      }
 
-      uploadTestrig(testrigName, testrigZipfileName);
+   private void doWork(String testrigName, String commandKey, String commandValue, String resultsDir) throws Exception {
 
-      System.out.println("Press any key to submit work");
-
-      try {
-         System.in.read();
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-      }
-
-      // send parsing command
       WorkItem wItem = new WorkItem(testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
+      wItem.addRequestParam(commandKey, commandValue);
 
       //bad command for testing
-      wItem.addRequestParam("badcommand", "");
+      //wItem.addRequestParam("badcommand", "");
 
       queueWork(wItem);
 
       System.out.println("Press any key to start checking work status");
-
-      try {
-         System.in.read();
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-      }
+      System.in.read();
 
       WorkStatusCode status = getWorkStatus(wItem.getId());
 
@@ -96,14 +92,7 @@ public class SampleClient {
 
          System.out.printf("status: %s\n", status);
 
-         try {
-            Thread.sleep(10 * 1000);
-         }
-         catch (InterruptedException ex) {
-            System.err.printf("sleeping interrupted");
-            ex.printStackTrace();
-            break;
-         }
+         Thread.sleep(10 * 1000);
 
          status = getWorkStatus(wItem.getId());
       }
@@ -111,21 +100,15 @@ public class SampleClient {
       System.out.printf("final status: %s\n", status);
 
       System.out.println("Press any key to fetch results");
-
-      try {
-         System.in.read();
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-      }
+      System.in.read();
 
       // get the results
       String logFile = wItem.getId() + ".log";
       //String logFile = "5ea3d4d3-682c-4c8b-8418-08f36fa3e638.log";
       getObject(testrigName, logFile);
-      getObject(testrigName, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
+      getObject(testrigName, resultsDir);
    }
-
+      
    private boolean addLocalBatfishWorker() {
       try {
          Client client = ClientBuilder.newClient();

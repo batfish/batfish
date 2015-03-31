@@ -37,16 +37,20 @@ public class WorkMgr {
       _logger = Main.initializeLogger();
       _workQueueMgr = new WorkQueueMgr();
 
-      Runnable assignWorkTask = new AssignWorkTask();
-      Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(
-            assignWorkTask, 0, Main.getSettings().getPeriodAssignWorkMs(),
-            TimeUnit.MILLISECONDS);
-
+      //for some bizarre reason, this ordering of scheduling checktask before assignwork, is important
+      //in the other order, assignwork never fires
+      //TODO: track this down
       Runnable checkWorkTask = new CheckTaskTask();
       Executors.newScheduledThreadPool(1)
             .scheduleWithFixedDelay(checkWorkTask, 0,
                   Main.getSettings().getPeriodCheckWorkMs(),
                   TimeUnit.MILLISECONDS);
+
+      Runnable assignWorkTask = new AssignWorkTask();
+      Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(
+            assignWorkTask, 0, Main.getSettings().getPeriodAssignWorkMs(),
+            TimeUnit.MILLISECONDS);
+
    }
 
    public JSONObject getStatusJson() throws JSONException {
@@ -72,8 +76,6 @@ public class WorkMgr {
    }
 
    private void AssignWork() {
-
-      _logger.info("WM:AssignWork entered\n");
 
       QueuedWork work = _workQueueMgr.getWorkForAssignment();
 
@@ -169,8 +171,6 @@ public class WorkMgr {
    }
 
    private void checkTask() {
-
-      _logger.info("WM:checkTask entered\n");
 
       QueuedWork work = _workQueueMgr.getWorkForChecking();
 
