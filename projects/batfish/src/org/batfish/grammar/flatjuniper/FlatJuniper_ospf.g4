@@ -6,6 +6,11 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+ait_apply_groups
+:
+   s_apply_groups
+;
+
 ait_apply_groups_except
 :
    s_apply_groups_except
@@ -100,6 +105,7 @@ at_interface_tail
 :
 // intentional blank
 
+   | ait_apply_groups
    | ait_apply_groups_except
    | ait_dead_interval
    | ait_hello_interval

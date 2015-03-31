@@ -47,7 +47,10 @@ fromt_area
 
 fromt_as_path
 :
-   AS_PATH name = variable
+   AS_PATH
+   (
+      name = variable
+   )?
 ;
 
 fromt_color
@@ -168,6 +171,11 @@ plt_apply_path
    APPLY_PATH path = DOUBLE_QUOTED_STRING
 ;
 
+plt_ip6
+:
+   ip6 = IPV6_ADDRESS
+;
+
 plt_network
 :
    network = IP_PREFIX
@@ -243,7 +251,9 @@ pst_term
 
 pst_term_tail
 :
-   tt_apply_groups
+// intentional blank
+
+   | tt_apply_groups
    | tt_from
    | tt_then
 ;
@@ -376,6 +386,11 @@ tht_metric
    METRIC metric = DEC
 ;
 
+tht_metric_add
+:
+   METRIC ADD metric = DEC
+;
+
 tht_metric2
 :
    METRIC2 metric2 = DEC
@@ -384,6 +399,11 @@ tht_metric2
 tht_metric_expression
 :
    METRIC EXPRESSION metric_expression
+;
+
+tht_metric_igp
+:
+   METRIC IGP
 ;
 
 tht_metric2_expression
@@ -482,7 +502,9 @@ tt_then_tail
    | tht_install_nexthop
    | tht_local_preference
    | tht_metric
+   | tht_metric_add
    | tht_metric_expression
+   | tht_metric_igp
    | tht_metric2
    | tht_metric2_expression
    | tht_next_hop

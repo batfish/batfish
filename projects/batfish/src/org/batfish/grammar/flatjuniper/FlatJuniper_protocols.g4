@@ -28,10 +28,12 @@ s_protocols_null
       BFD
       | IGMP
       | L2CIRCUIT
+      | LACP
       | LDP
       | LLDP
       | MLD
       | MSDP
+      | MSTP
       | PIM
       | ROUTER_ADVERTISEMENT
       | RSVP

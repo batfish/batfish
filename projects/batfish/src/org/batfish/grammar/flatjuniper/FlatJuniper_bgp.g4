@@ -102,6 +102,11 @@ bmt_ttl
    TTL DEC
 ;
 
+bpast_as
+:
+   as = DEC
+;
+
 bt_advertise_inactive
 :
    ADVERTISE_INACTIVE
@@ -130,6 +135,7 @@ bt_common
    | bt_cluster
    | bt_damping
    | bt_description
+   | bt_disable_4byte_as
    | bt_export
    | bt_family
    | bt_import
@@ -152,6 +158,11 @@ bt_damping
 bt_description
 :
    s_description
+;
+
+bt_disable_4byte_as
+:
+   DISABLE_4BYTE_AS
 ;
 
 bt_enable
@@ -187,7 +198,9 @@ bt_group
 
 bt_group_tail
 :
-   bt_common
+// intentional blank
+
+   | bt_common
    | bt_neighbor
 ;
 
@@ -212,7 +225,8 @@ bt_local_as
 
 bt_local_as_tail
 :
-   last_loops
+   last_alias
+   | last_loops
    | last_number
    | last_private
 ;
@@ -275,7 +289,14 @@ bt_path_selection_tail
 
 bt_peer_as
 :
-   PEER_AS as = DEC
+   PEER_AS bt_peer_as_tail
+;
+
+bt_peer_as_tail
+:
+   // intentional blank
+   |
+   bpast_as
 ;
 
 bt_remove_private
@@ -290,6 +311,11 @@ bt_type
       EXTERNAL
       | INTERNAL
    )
+;
+
+last_alias
+:
+   ALIAS
 ;
 
 last_loops

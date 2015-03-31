@@ -19,7 +19,9 @@ brt_vlan_id_list
 direction
 :
    INPUT
+   | INPUT_LIST
    | OUTPUT
+   | OUTPUT_LIST
 ;
 
 famt_bridge
@@ -29,7 +31,9 @@ famt_bridge
 
 famt_bridge_tail
 :
-   brt_interface_mode
+// intentional blank
+
+   | brt_interface_mode
    | brt_vlan_id_list
 ;
 
@@ -80,7 +84,19 @@ famt_mpls_tail
 
 filter
 :
-   FILTER direction name = variable
+   FILTER filter_tail
+;
+
+filter_tail
+:
+// intentional blank
+
+   | ft_direction
+;
+
+ft_direction
+:
+   direction name = variable
 ;
 
 ifamat_master_only
@@ -142,7 +158,10 @@ ifamt_no_redirects
 
 ifamt_null
 :
-   SAMPLING s_null_filler
+   (
+      SAMPLING
+      | SERVICE
+   ) s_null_filler
 ;
 
 interface_mode
@@ -170,6 +189,7 @@ it_common
    | it_family
    | it_mtu
    | it_null
+   | it_speed
    | it_vlan_id
    | it_vlan_tagging
 ;
@@ -204,9 +224,19 @@ it_family_tail
    | famt_mpls
 ;
 
+it_flexible_vlan_tagging
+:
+   FLEXIBLE_VLAN_TAGGING
+;
+
 it_mtu
 :
    MTU size = DEC
+;
+
+it_native_vlan_id
+:
+   NATIVE_VLAN_ID id = DEC
 ;
 
 it_null
@@ -215,15 +245,24 @@ it_null
       AGGREGATED_ETHER_OPTIONS
       | BANDWIDTH
       | ENCAPSULATION
+      | FABRIC_OPTIONS
       | FRAMING
       | GIGETHER_OPTIONS
+      | HOLD_TIME
       | INTERFACE_TRANSMIT_STATISTICS
       | MULTISERVICE_OPTIONS
       | NO_TRAPS
+      | REDUNDANT_ETHER_OPTIONS
+      | SONET_OPTIONS
       | TRACEOPTIONS
       | TRAPS
       | TUNNEL
    ) s_null_filler
+;
+
+it_speed
+:
+   SPEED DEC speed_abbreviation
 ;
 
 it_unit
@@ -325,6 +364,15 @@ s_interfaces
 
 s_interfaces_tail
 :
-   it_common
+// intentional blank
+
+   | it_common
+   | it_flexible_vlan_tagging
+   | it_native_vlan_id
    | it_unit
+;
+
+speed_abbreviation
+:
+   G
 ;

@@ -100,6 +100,11 @@ AH
    'ah'
 ;
 
+ALIAS
+:
+   'alias'
+;
+
 ALLOW
 :
    'allow'
@@ -404,6 +409,11 @@ DISABLE
    'disable'
 ;
 
+DISABLE_4BYTE_AS
+:
+   'disable-4byte-as'
+;
+
 DISCARD
 :
    'discard'
@@ -539,6 +549,11 @@ EXTERNAL_PREFERENCE
    'external-preference'
 ;
 
+FABRIC_OPTIONS
+:
+   'fabric-options'
+;
+
 FAIL_FILTER
 :
    'fail-filter'
@@ -622,6 +637,11 @@ FTP
 FTP_DATA
 :
    'ftp-data'
+;
+
+G
+:
+   'g'
 ;
 
 GENERATE
@@ -799,6 +819,11 @@ INPUT
    'input'
 ;
 
+INPUT_LIST
+:
+   'input-list'
+;
+
 INPUT_VLAN_MAP
 :
    'input-vlan-map'
@@ -947,6 +972,11 @@ LABEL_SWITCHED_PATH
 LABELED_UNICAST
 :
    'labeled-unicast'
+;
+
+LACP
+:
+   'lacp'
 ;
 
 LAN
@@ -1132,6 +1162,11 @@ MPLS
 MSDP
 :
    'msdp'
+;
+
+MSTP
+:
+   'mstp'
 ;
 
 MTU
@@ -1354,6 +1389,11 @@ OUTPUT
    'output'
 ;
 
+OUTPUT_LIST
+:
+   'output-list'
+;
+
 OUTPUT_VLAN_MAP
 :
    'output-vlan-map'
@@ -1474,6 +1514,11 @@ PORT_UNREACHABLE
    'port-unreachable'
 ;
 
+PPM
+:
+   'ppm'
+;
+
 PPTP
 :
    'pptp'
@@ -1539,6 +1584,11 @@ PRIVATE
    'private'
 ;
 
+PROCESSES
+:
+   'processes'
+;
+
 PROTOCOL
 :
    'protocol'
@@ -1577,6 +1627,11 @@ READVERTISE
 RECEIVE
 :
    'receive'
+;
+
+REDUNDANT_ETHER_OPTIONS
+:
+   'redundant-ether-options'
 ;
 
 REFERENCE_BANDWIDTH
@@ -1714,6 +1769,11 @@ SAMPLING
    'sampling'
 ;
 
+SCRIPTS
+:
+   'scripts'
+;
+
 SCTP
 :
    'sctp'
@@ -1722,6 +1782,16 @@ SCTP
 SECURITY
 :
    'security'
+;
+
+SERVICE
+:
+   'service'
+;
+
+SERVICE_FILTER
+:
+   'service-filter'
 ;
 
 SERVICES
@@ -1764,6 +1834,11 @@ SOCKS
    'socks'
 ;
 
+SONET_OPTIONS
+:
+   'sonet-options'
+;
+
 SOURCE_ADDRESS
 :
    'source-address'
@@ -1787,6 +1862,11 @@ SOURCE_PREFIX_LIST
 SOURCE_QUENCH
 :
    'source-quench'
+;
+
+SPEED
+:
+   'speed' -> pushMode(M_Speed)
 ;
 
 SSH
@@ -2319,10 +2399,13 @@ IPV6_PREFIX
 
          ':' ':'?
       )+
-      (
-         F_HexDigit+
-      )?
-   ) '/' F_DecByte
+   )
+   (
+      F_HexDigit+
+   )?
+   (
+      F_Digit+ '.' F_Digit+ '.' F_Digit+ '.' F_Digit+
+   )? '/' F_DecByte
 ;
 
 ISO_ADDRESS
@@ -2512,7 +2595,10 @@ M_AsPath_PATH
 
 M_AsPath_VARIABLE
 :
-   F_Variable_RequiredVarChar F_Variable_VarChar* -> mode(M_AsPathRegex)
+   (
+      F_Digit
+      | F_Variable_RequiredVarChar
+   ) F_Variable_VarChar* -> type(VARIABLE), mode(M_AsPathRegex)
 ;
 
 M_AsPath_WS
@@ -2536,7 +2622,6 @@ M_AsPathPath_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;
-
 
 mode M_AsPathExpr;
 
@@ -2569,7 +2654,7 @@ mode M_AsPathRegex;
 
 AS_PATH_REGEX
 :
-   [0-9,^$[\]\-*.{}+|()] [0-9,^$[\]\-*.{}+|() ]*
+   [0-9,^$[\]\-*.{}+|()] [0-9,^$[\]\-*.{}+|() _]*
 ;
 
 M_AsPathRegex_DOUBLE_QUOTE
@@ -2637,6 +2722,7 @@ M_Interface_WS
 ;
 
 mode M_InterfaceQuote;
+
 M_InterfaceQuote_QUOTE
 :
    '"' -> channel(HIDDEN), popMode
@@ -2676,6 +2762,11 @@ M_Members_ASTERISK
 M_Members_CARAT
 :
    '^' -> type(CARAT)
+;
+
+M_Members_CLOSE_BRACE
+:
+   '}' -> type(CLOSE_BRACE)
 ;
 
 M_Members_CLOSE_BRACKET
@@ -2728,6 +2819,11 @@ NO_ADVERTISE
    'no-advertise'
 ;
 
+M_Members_OPEN_BRACE
+:
+   '{' -> type(OPEN_BRACE)
+;
+
 M_Members_OPEN_BRACKET
 :
    '[' -> type(OPEN_BRACKET)
@@ -2771,6 +2867,23 @@ METRIC_TYPE_2
 ;
 
 M_MetricType_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_Speed;
+
+M_Speed_DEC
+:
+   F_Digit+ -> type(DEC)
+;
+
+M_Speed_G
+:
+   'g' -> type(G), popMode
+;
+
+M_Speed_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;

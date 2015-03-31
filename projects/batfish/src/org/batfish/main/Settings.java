@@ -17,6 +17,7 @@ public class Settings {
 
    private static final String ARG_ACCEPT_NODE = "acceptnode";
    private static final String ARG_ANONYMIZE = "anonymize";
+   private static final String ARG_AUTO_BASE_DIR = "autobasedir";
    private static final String ARG_BLACK_HOLE = "blackhole";
    private static final String ARG_BLACK_HOLE_PATH = "blackholepath";
    private static final String ARG_BLACKLIST_DST_IP_PATH = "blacklistdstippath";
@@ -56,6 +57,7 @@ public class Settings {
    private static final String ARG_GUI = "gui";
    private static final String ARG_HELP = "help";
    private static final String ARG_HISTOGRAM = "histogram";
+   private static final String ARG_IGNORE_UNSUPPORTED = "ignoreunsupported";
    private static final String ARG_INTERFACE_MAP_PATH = "impath";
    private static final String ARG_LB_WEB_ADMIN_PORT = "lbwebadminport";
    private static final String ARG_LB_WEB_PORT = "lbwebport";
@@ -113,6 +115,7 @@ public class Settings {
    private static final String ARG_Z3_OUTPUT = "z3path";
    private static final String ARGNAME_ACCEPT_NODE = "node";
    private static final String ARGNAME_ANONYMIZE = "path";
+   private static final String ARGNAME_AUTO_BASE_DIR = "path";
    private static final String ARGNAME_BLACK_HOLE_PATH = "path";
    private static final String ARGNAME_BLACKLIST_DST_IP = "ip";
    private static final String ARGNAME_BLACKLIST_INTERFACE = "node,interface";
@@ -167,7 +170,8 @@ public class Settings {
          .singletonList("InstalledRoute");
    private static final String DEFAULT_SERIALIZE_INDEPENDENT_PATH = "serialized-independent-configs";
    private static final String DEFAULT_SERIALIZE_VENDOR_PATH = "serialized-vendor-configs";
-   private static final String DEFAULT_SERVICE_PORT = BfConsts.SVC_PORT.toString();
+   private static final String DEFAULT_SERVICE_PORT = BfConsts.SVC_PORT
+         .toString();
    private static final String DEFAULT_SERVICE_URL = "http://localhost";
    private static final String DEFAULT_TEST_RIG_PATH = "default_test_rig";
    private static final String DEFAULT_Z3_OUTPUT = "z3-dataplane-output.smt2";
@@ -177,6 +181,7 @@ public class Settings {
    private String _acceptNode;
    private boolean _anonymize;
    private String _anonymizeDir;
+   private String _autoBaseDir;
    private boolean _blackHole;
    private String _blackHolePath;
    private String _blacklistDstIpPath;
@@ -221,6 +226,7 @@ public class Settings {
    private boolean _histogram;
    private String _hsaInputDir;
    private String _hsaOutputDir;
+   private boolean _ignoreUnsupported;
    private String _interfaceMapPath;
    private int _lbWebAdminPort;
    private int _lbWebPort;
@@ -325,6 +331,10 @@ public class Settings {
 
    public String getAnonymizeDir() {
       return _anonymizeDir;
+   }
+
+   public String getAutoBaseDir() {
+      return _autoBaseDir;
    }
 
    public String getBlackHoleQueryPath() {
@@ -673,6 +683,10 @@ public class Settings {
 
    public String getZ3File() {
       return _z3File;
+   }
+
+   public boolean ignoreUnsupported() {
+      return _ignoreUnsupported;
    }
 
    private void initOptions() {
@@ -1035,6 +1049,15 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("print timestamps in log messages").longOpt(ARG_TIMESTAMP)
             .build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("ignore configuration files with unsupported format instead of crashing")
+                  .longOpt(ARG_IGNORE_UNSUPPORTED).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_AUTO_BASE_DIR)
+            .desc("path to base dir for automatic i/o path selection")
+            .longOpt(ARG_AUTO_BASE_DIR).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1047,10 +1070,13 @@ public class Settings {
       // parse the command line arguments
       line = parser.parse(_options, args);
 
+      _logLevel = line.getOptionValue(ARG_LOG_LEVEL, DEFAULT_LOG_LEVEL);
+      _logFile = line.getOptionValue(ARG_LOG_FILE);
       if (line.hasOption(ARG_HELP)) {
          _canExecute = false;
          // automatically generate the help statement
          HelpFormatter formatter = new HelpFormatter();
+         formatter.setLongOptPrefix("-");
          formatter.printHelp(EXECUTABLE_NAME, _options);
          return;
       }
@@ -1174,7 +1200,6 @@ public class Settings {
       _roleTransitQuery = line.hasOption(ARG_ROLE_TRANSIT_QUERY);
       _roleSetPath = line.getOptionValue(ARG_ROLE_SET_PATH);
       _duplicateRoleFlows = line.hasOption(ARG_DUPLICATE_ROLE_FLOWS);
-      _logLevel = line.getOptionValue(ARG_LOG_LEVEL, DEFAULT_LOG_LEVEL);
       _roleHeaders = line.hasOption(ARG_ROLE_HEADERS);
       _throwOnParserError = line.hasOption(ARG_THROW_ON_PARSER_ERROR);
       _throwOnLexerError = line.hasOption(ARG_THROW_ON_LEXER_ERROR);
@@ -1198,9 +1223,10 @@ public class Settings {
          _generateStubsRemoteAs = Integer.parseInt(line
                .getOptionValue(ARG_GENERATE_STUBS_REMOTE_AS));
       }
-      _logFile = line.getOptionValue(ARG_LOG_FILE);
       _genOspfTopology = line.getOptionValue(ARG_GEN_OSPF);
       _timestamp = line.hasOption(ARG_TIMESTAMP);
+      _ignoreUnsupported = line.hasOption(ARG_IGNORE_UNSUPPORTED);
+      _autoBaseDir = line.getOptionValue(ARG_AUTO_BASE_DIR);
    }
 
    public boolean printParseTree() {
@@ -1219,8 +1245,24 @@ public class Settings {
       return _runInServiceMode;
    }
 
+   public void setDumpFactsDir(String path) {
+      _dumpFactsDir = path;
+   }
+
    public void setLogger(BatfishLogger logger) {
       _logger = logger;
+   }
+
+   public void setSerializeIndependentPath(String path) {
+      _serializeIndependentPath = path;
+   }
+
+   public void setSerializeVendorPath(String path) {
+      _serializeVendorPath = path;
+   }
+
+   public void setTestRigPath(String path) {
+      _testRigPath = path;
    }
 
 }

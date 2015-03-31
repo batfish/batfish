@@ -1865,60 +1865,82 @@ public class Batfish implements AutoCloseable {
          BatfishCombinedParser<?, ?> combinedParser = null;
          ParserRuleContext tree = null;
          ControlPlaneExtractor extractor = null;
-         Warnings warnings = new Warnings(_settings.getRedFlagRecord()
-               && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
-               _settings.getRedFlagAsError(),
-               _settings.getUnimplementedRecord()
-                     && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-               _settings.getUnimplementedAsError(),
+         Warnings warnings = new Warnings(_settings.getPedanticAsError(),
                _settings.getPedanticRecord()
                      && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
-               _settings.getPedanticAsError(), _settings.printParseTree());
-         char firstChar = fileText.trim().charAt(0);
-         if (firstChar == '!') {
+               _settings.getRedFlagAsError(), _settings.getRedFlagRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
+               _settings.getUnimplementedAsError(),
+               _settings.getUnimplementedRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
+               _settings.printParseTree());
+         ConfigurationFormat format = identifyConfigurationFormat(fileText);
+
+         switch (format) {
+
+         case ARISTA:
+         case CISCO:
             CiscoCombinedParser ciscoParser = new CiscoCombinedParser(fileText,
                   _settings.getThrowOnParserError(),
                   _settings.getThrowOnLexerError());
             combinedParser = ciscoParser;
             extractor = new CiscoControlPlaneExtractor(fileText, ciscoParser,
                   warnings);
-         }
-         else if (firstChar == '#') {
-            // either flat or hierarchical
-            if (!fileText.contains("set version")) {
-               // hierarchical
-               if (_settings.flattenOnTheFly()) {
-                  _logger
-                        .warn("Flattening: \""
-                              + currentPath
-                              + "\" on-the-fly; line-numbers reported for this file will be spurious\n");
-                  fileText = flatten(fileText);
-               }
-               else {
-                  throw new BatfishException(
-                        "Juniper configurations must be flattened prior to this stage");
-               }
+            break;
+
+         case JUNIPER:
+            if (_settings.flattenOnTheFly()) {
+               _logger
+                     .warn("Flattening: \""
+                           + currentPath
+                           + "\" on-the-fly; line-numbers reported for this file will be spurious\n");
+               fileText = flatten(fileText);
             }
-            // flat
+            else {
+               throw new BatfishException(
+                     "Juniper configurations must be flattened prior to this stage");
+            }
+            // MISSING BREAK IS INTENTIONAL
+         case FLAT_JUNIPER:
             FlatJuniperCombinedParser flatJuniperParser = new FlatJuniperCombinedParser(
                   fileText, _settings.getThrowOnParserError(),
                   _settings.getThrowOnLexerError());
             combinedParser = flatJuniperParser;
             extractor = new FlatJuniperControlPlaneExtractor(fileText,
                   flatJuniperParser, warnings);
-         }
-         else {
-            String error = "Unknown configuration format for file: \""
-                  + currentPath + "\"\n";
-            if (_settings.exitOnParseError()) {
-               throw new BatfishException(error);
+            break;
+
+         case JUNIPER_SWITCH:
+         case VXWORKS:
+            String unsupportedError = "Unsupported configuration format: \""
+                  + format.toString() + "\" for file: \"" + currentPath
+                  + "\"\n";
+            if (!_settings.ignoreUnsupported() && _settings.exitOnParseError()) {
+               throw new BatfishException(unsupportedError);
+            }
+            else if (!_settings.ignoreUnsupported()) {
+               processingError = true;
+               _logger.error(unsupportedError);
             }
             else {
-               _logger.error(error);
+               _logger.warn(unsupportedError);
+            }
+            continue;
+
+         case UNKNOWN:
+         default:
+            String unknownError = "Unknown configuration format for file: \""
+                  + currentPath + "\"\n";
+            if (_settings.exitOnParseError()) {
+               throw new BatfishException(unknownError);
+            }
+            else {
+               _logger.error(unknownError);
                processingError = true;
                continue;
             }
          }
+
          try {
             tree = parse(combinedParser, currentPath);
             _logger.info("\tPost-processing...");
@@ -1996,6 +2018,32 @@ public class Batfish implements AutoCloseable {
       else {
          printElapsedTime();
          return vendorConfigurations;
+      }
+   }
+
+   private ConfigurationFormat identifyConfigurationFormat(String fileText) {
+      char firstChar = fileText.trim().charAt(0);
+      if (firstChar == '!') {
+         if (fileText.contains("set prompt")) {
+            return ConfigurationFormat.VXWORKS;
+         }
+         else {
+            return ConfigurationFormat.CISCO;
+         }
+      }
+      else if (fileText.contains("set hostname")) {
+         return ConfigurationFormat.JUNIPER_SWITCH;
+      }
+      else if (firstChar == '#') {
+         if (fileText.contains("set version")) {
+            return ConfigurationFormat.FLAT_JUNIPER;
+         }
+         else {
+            return ConfigurationFormat.JUNIPER;
+         }
+      }
+      else {
+         return ConfigurationFormat.UNKNOWN;
       }
    }
 

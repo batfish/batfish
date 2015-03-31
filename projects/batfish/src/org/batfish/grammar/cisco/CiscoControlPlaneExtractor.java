@@ -1759,7 +1759,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          todo(ctx, F_IPV6);
       }
       else if (ctx.peergroup != null) {
-         throw new BatfishException("deactivating peer group unsupported");
+         String pgName = ctx.peergroup.getText();
+         NamedBgpPeerGroup npg = proc.getNamedPeerGroups().get(pgName);
+         npg.setActive(false);
+         for (IpBgpPeerGroup ipg : proc.getIpPeerGroups().values()) {
+            String currentGroupName = ipg.getGroupName();
+            if (currentGroupName != null && currentGroupName.equals(pgName)) {
+               ipg.setActive(false);
+            }
+         }
       }
    }
 

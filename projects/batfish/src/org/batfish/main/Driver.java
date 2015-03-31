@@ -1,6 +1,7 @@
 package org.batfish.main;
 
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -9,8 +10,8 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
-import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -134,6 +135,14 @@ public class Driver {
       catch (ParseException e) {
          return Arrays.asList("failure",
                "Parsing command-line failed: " + e.getMessage());
+      }
+
+      String baseDir = settings.getAutoBaseDir();
+      if (baseDir != null) {
+         settings.setSerializeIndependentPath(Paths.get(baseDir, BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR).toString());
+         settings.setSerializeVendorPath(Paths.get(baseDir, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR).toString());
+         settings.setTestRigPath(Paths.get(baseDir, BfConsts.RELPATH_TEST_RIG_DIR).toString());
+         settings.setDumpFactsDir(Paths.get(baseDir, BfConsts.RELPATH_FACT_DUMP_DIR).toString());
       }
 
       if (settings.canExecute()) {

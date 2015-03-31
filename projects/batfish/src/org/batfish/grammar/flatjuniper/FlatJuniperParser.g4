@@ -28,7 +28,8 @@ flat_juniper_configuration
 
 statement
 :
-   s_firewall
+   s_apply_groups
+   | s_firewall
    | s_interfaces
    | s_null
    | s_policy_options
@@ -57,7 +58,12 @@ s_groups_tail
 
 s_null
 :
-   rit_null
+   (
+      (
+         SECURITY
+      ) s_null_filler
+   )
+   | rit_null
 ;
 
 s_system
@@ -102,11 +108,14 @@ st_null
       | DDOS_PROTECTION
       | DOMAIN_NAME
       | DOMAIN_SEARCH
+      | LICENSE
       | LOGIN
       | NAME_SERVER
       | NTP
       | PORTS
+      | PROCESSES
       | ROOT_AUTHENTICATION
+      | SCRIPTS
       | SERVICES
       | SYSLOG
       | TACPLUS_SERVER
