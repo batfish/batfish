@@ -15,6 +15,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BfConsts;
@@ -99,6 +100,7 @@ public class WorkMgr {
 
       _logger.info("WM:AssignWork: Trying to assign " + work + " to " + worker + " \n");
 
+      boolean assignmentError = false;
       boolean assigned = false;
       
       try {
@@ -136,7 +138,7 @@ public class WorkMgr {
                _logger.error(String.format("ERROR in assigning task: %s %s\n",
                      array.get(0), array.get(1)));
                
-               //TODO: mark failed tasks as terminatedabnormally
+               assignmentError = true;
             }
             else {
                assigned = true;
@@ -152,8 +154,11 @@ public class WorkMgr {
          _logger.error(String.format("exception: %s\n", stackTrace));
       }
       
-      // mark the assignment results accordingly
-      if (assigned) {
+      // mark the assignment results for both work and worker
+      if (assignmentError) {
+         _workQueueMgr.markAssignmentError(work);
+      }
+      else if (assigned) {
          _workQueueMgr.markAssignmentSuccess(work, worker);
       }
       else {
@@ -279,6 +284,7 @@ public class WorkMgr {
       File[] fileList = unzipDir.listFiles();
       
       if (fileList.length != 1 || !fileList[0].isDirectory()) {
+         FileUtils.deleteDirectory(testrigDir);
          throw new Exception("Unexpected packaging of test rig. There should be just one top-level folder");
       }
       
@@ -293,7 +299,8 @@ public class WorkMgr {
       }
       
       if (!foundConfigs) {
-         throw new Exception("Unexpected packaging of test rig. Did not find configs folder inside the top-level folder");         
+        FileUtils.deleteDirectory(testrigDir);
+        throw new Exception("Unexpected packaging of test rig. Did not find configs folder inside the top-level folder");         
       }
        
       //things look ok, now make the move

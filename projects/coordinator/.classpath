@@ -39,5 +39,6 @@
 	<classpathentry kind="lib" path="lib/commons/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/log4j/log4j-api-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/log4j/log4j-core-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-io-2.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

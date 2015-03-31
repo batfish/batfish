@@ -125,7 +125,22 @@ public class WorkQueueMgr {
       
       return null;
    }
-   
+
+   //when assignment attempt ends in error, we do not try to reassign
+   public synchronized void markAssignmentError(QueuedWork work) {
+      // move the work to completed queue
+      _queueIncompleteWork.delete(work);
+      try {
+         _queueCompletedWork.enque(work);
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("Could not put work on completed queue. Work = "
+               + work + "\nException = " + stackTrace);
+      }
+      work.setStatus(WorkStatusCode.ASSIGNMENTERROR);
+   }
+
    public synchronized void markAssignmentFailure(QueuedWork work) {
          work.setStatus(WorkStatusCode.UNASSIGNED);
    }

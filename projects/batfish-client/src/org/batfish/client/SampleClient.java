@@ -74,7 +74,10 @@ public class SampleClient {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
 
-      boolean queued = queueWork(wItem);
+      //bad command for testing
+      wItem.addRequestParam("badcommand", "");
+
+      queueWork(wItem);
 
       System.out.println("Press any key to start checking work status");
 
@@ -88,7 +91,8 @@ public class SampleClient {
       WorkStatusCode status = getWorkStatus(wItem.getId());
 
       while (status != WorkStatusCode.TERMINATEDABNORMALLY
-            && status != WorkStatusCode.TERMINATEDNORMALLY) {
+            && status != WorkStatusCode.TERMINATEDNORMALLY 
+            && status != WorkStatusCode.ASSIGNMENTERROR) {
 
          System.out.printf("status: %s\n", status);
 
