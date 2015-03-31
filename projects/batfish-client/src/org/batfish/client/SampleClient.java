@@ -2,6 +2,7 @@ package org.batfish.client;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -14,6 +15,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.WorkItem;
@@ -27,14 +29,45 @@ import org.glassfish.jersey.uri.UriComponent;
 
 public class SampleClient {
 
-   private String _coordinator;
+   private String _workMgr;
+   private String _poolMgr;
 
-   public SampleClient(String coordinator, String testrigName,
+   public SampleClient(String workMgr, String poolMgr, String testrigName,
          String testrigZipfileName) {
 
-      _coordinator = coordinator;
+      _workMgr = workMgr;
+      _poolMgr = poolMgr;
+
+      System.out.println("Press any key to add local batfish worker");
+      
+      try {
+         System.in.read();
+      }
+      catch (IOException e) {
+         e.printStackTrace();
+      }
+      
+      addLocalBatfishWorker();
+      
+      System.out.println("Press any key to upload test rig:" + testrigName + " / " + testrigZipfileName);
+
+      try {
+         System.in.read();
+      }
+      catch (IOException e) {
+         e.printStackTrace();
+      }
 
       uploadTestrig(testrigName, testrigZipfileName);
+
+      System.out.println("Press any key to submit work");
+
+      try {
+         System.in.read();
+      }
+      catch (IOException e) {
+         e.printStackTrace();
+      }
 
       // send parsing command
       HashMap<String, String> parseRequestParamMap = new HashMap<String, String>();
@@ -45,6 +78,15 @@ public class SampleClient {
 
       if (parseWorkUUID == null) {
          return;
+      }
+
+      System.out.println("Press any key to start checking work status");
+
+      try {
+         System.in.read();
+      }
+      catch (IOException e) {
+         e.printStackTrace();
       }
 
       WorkStatusCode status = getWorkStatus(parseWorkUUID);
@@ -68,16 +110,67 @@ public class SampleClient {
 
       System.out.printf("final status: %s\n", status);
 
+      try {
+         System.in.read();
+      }
+      catch (IOException e) {
+         e.printStackTrace();
+      }
+
       // get the results
       getObject("dummytestrigname", "build.xml");
 
+   }
+
+   private boolean addLocalBatfishWorker() {
+      try {
+         Client client = ClientBuilder.newClient();
+         WebTarget webTarget = client.target(
+               String.format("http://%s%s/%s", _poolMgr,
+                     CoordConsts.SVC_BASE_POOL_MGR,
+                     CoordConsts.SVC_POOL_UPDATE_RSC))
+                     .queryParam("add", "localhost:" + BfConsts.SVC_PORT);
+         Response response = webTarget.request(MediaType.APPLICATION_JSON)
+               .get();
+
+         System.out.println(response.getStatus() + " "
+               + response.getStatusInfo() + " " + response);
+
+         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            System.err.printf("Did not get an OK response\n");
+            return false;            
+         }
+         
+         String sobj = response.readEntity(String.class);
+         JSONArray array = new JSONArray(sobj);
+         System.out.printf("response: %s [%s] [%s]\n", array.toString(),
+               array.get(0), array.get(1));
+
+         if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
+            System.err.printf("got error while checking work status: %s %s\n",
+                  array.get(0), array.get(1));
+            return false;
+         }
+
+         return true;
+      }
+      catch (ProcessingException e) {
+         System.err.printf("unable to connect to %s: %s\n", _workMgr, e
+               .getStackTrace().toString());
+         return false;
+      }
+      catch (Exception e) {
+         System.err.printf("exception: ");
+         e.printStackTrace();
+         return false;
+      }
    }
 
    private WorkStatusCode getWorkStatus(UUID parseWorkUUID) {
       try {
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client.target(
-               String.format("http://%s%s/%s", _coordinator,
+               String.format("http://%s%s/%s", _workMgr,
                      CoordConsts.SVC_BASE_WORK_MGR,
                      CoordConsts.SVC_WORK_GET_WORKSTATUS_RSC)).queryParam(
                CoordConsts.SVC_WORKID_KEY,
@@ -117,7 +210,7 @@ public class SampleClient {
                .getString(CoordConsts.SVC_WORKSTATUS_KEY));
       }
       catch (ProcessingException e) {
-         System.err.printf("unable to connect to %s: %s\n", _coordinator, e
+         System.err.printf("unable to connect to %s: %s\n", _workMgr, e
                .getStackTrace().toString());
          return null;
       }
@@ -134,7 +227,7 @@ public class SampleClient {
          Client client = ClientBuilder.newBuilder()
                .register(MultiPartFeature.class).build();
          WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               _coordinator, CoordConsts.SVC_BASE_WORK_MGR,
+               _workMgr, CoordConsts.SVC_BASE_WORK_MGR,
                CoordConsts.SVC_WORK_UPLOAD_TESTRIG_RSC));
 
          MultiPart multiPart = new MultiPart();
@@ -177,7 +270,7 @@ public class SampleClient {
       catch (Exception e) {
          System.err.printf(
                "Exception when uploading test rig to %s using (%s, %s)\n",
-               _coordinator, testrigName, zipfileName);
+               _workMgr, testrigName, zipfileName);
          e.printStackTrace();
          return false;
       }
@@ -194,7 +287,7 @@ public class SampleClient {
       try {
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client.target(
-               String.format("http://%s%s/%s", _coordinator,
+               String.format("http://%s%s/%s", _workMgr,
                      CoordConsts.SVC_BASE_WORK_MGR,
                      CoordConsts.SVC_WORK_QUEUE_WORK_RSC)).queryParam(
                CoordConsts.SVC_WORKITEM_KEY,
@@ -222,7 +315,7 @@ public class SampleClient {
          return wItem.getId();
       }
       catch (ProcessingException e) {
-         System.err.printf("unable to connect to %s: %s\n", _coordinator, e
+         System.err.printf("unable to connect to %s: %s\n", _workMgr, e
                .getStackTrace().toString());
          return null;
       }
@@ -239,7 +332,7 @@ public class SampleClient {
          Client client = ClientBuilder.newBuilder()
                .register(MultiPartFeature.class).build();
          WebTarget webTarget = client.target(
-               String.format("http://%s%s/%s", _coordinator,
+               String.format("http://%s%s/%s", _workMgr,
                      CoordConsts.SVC_BASE_WORK_MGR,
                      CoordConsts.SVC_WORK_GET_OBJECT_RSC)).queryParam(
                CoordConsts.SVC_WORK_OBJECT_KEY, zipfileName);
@@ -269,7 +362,7 @@ public class SampleClient {
       catch (Exception e) {
          System.err.printf(
                "Exception when uploading test rig to %s using (%s, %s)\n",
-               _coordinator, testrigName, zipfileName);
+               _workMgr, testrigName, zipfileName);
          e.printStackTrace();
          return false;
       }

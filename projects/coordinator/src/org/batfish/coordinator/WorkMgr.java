@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -20,6 +19,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.UnzipUtility;
 import org.batfish.common.WorkItem;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -254,14 +254,53 @@ public class WorkMgr {
                + testrigDir.getAbsolutePath());
       }
 
-      try (OutputStream fileOutputStream = new FileOutputStream(
-            testrigDir.getAbsolutePath() + "/" + name + ".zip")) {
+      String zipFile = testrigDir.getAbsolutePath() + "/" + CoordConsts.UPLOADED_RIG_DIR + ".zip";
+      
+      try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
          int read = 0;
          final byte[] bytes = new byte[1024];
          while ((read = fileStream.read(bytes)) != -1) {
             fileOutputStream.write(bytes, 0, read);
          }
       }
+      
+      //now unzip
+      File unzipDir = new File(testrigDir.getAbsolutePath() + "/" + CoordConsts.UPLOADED_RIG_DIR);
+      UnzipUtility unzipper = new UnzipUtility();
+      unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
+      
+      //sanity check what we got
+      // 1. there should be just one top-level folder
+      // 2. there should be a directory called configs in that folder
+      File[] fileList = unzipDir.listFiles();
+      
+      if (fileList.length != 1 || !fileList[0].isDirectory()) {
+         throw new Exception("Unexpected packaging of test rig. There should be just one top-level folder");
+      }
+      
+      File[] subFileList = fileList[0].listFiles();
+      
+      boolean foundConfigs = false;
+      for (File file : subFileList) {
+         if (file.isDirectory() && file.getName().equals("configs")) {
+            foundConfigs = true;
+            break;
+         }
+      }
+      
+      if (!foundConfigs) {
+         throw new Exception("Unexpected packaging of test rig. Did not find configs folder inside the top-level folder");         
+      }
+       
+      //things look ok, now make the move
+      for (File file : subFileList) {
+         String target = unzipDir + "/" + file.getName();
+         file.renameTo(new File(target));
+      }
+      
+      //delete the empty directory and the zip file
+      fileList[0].delete();
+      new File(zipFile).delete();      
    }
 
    public QueuedWork getWork(UUID workItemId) {

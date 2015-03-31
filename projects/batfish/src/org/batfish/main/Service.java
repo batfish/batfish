@@ -2,6 +2,7 @@ package org.batfish.main;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -24,6 +25,8 @@ import org.batfish.common.BfConsts.TaskStatus;
 @Path(BfConsts.SVC_BASE_RSC)
 public class Service {
 
+   BatfishLogger _logger = Driver.getMainLogger();
+   
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getInfo() {
@@ -37,6 +40,7 @@ public class Service {
    @Path(BfConsts.SVC_GET_STATUS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
+      _logger.info("BFS:getStatus\n");
       try {
          return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY,
                (new JSONObject().put("idle", Driver.getIdle())).toString()));
@@ -50,6 +54,7 @@ public class Service {
    @Path(BfConsts.SVC_GET_TASKSTATUS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getTaskStatus(@QueryParam(BfConsts.SVC_TASKID_KEY) String taskId) {
+      _logger.info("BFS:getTaskStatus " + taskId + "\n");
       try {
          
          if (taskId == null || taskId.equals("")) {
@@ -77,6 +82,7 @@ public class Service {
    public JSONArray runTask(
          @QueryParam(BfConsts.SVC_TASKID_KEY) String taskId,
          @QueryParam(BfConsts.SVC_TASK_KEY) String task) {
+      _logger.info("BFS:runTask(" + taskId + ", " + task +")\n");
       try {
 
          if (taskId == null || taskId.equals("")) {
@@ -89,21 +95,24 @@ public class Service {
 
          List<String> argsList = new ArrayList<String>();
          
-         WorkItem workItem = new WorkItem(task);
+         JSONObject taskObj = new JSONObject(task);
+         Iterator<?> keys = taskObj.keys();
          
-         for (Entry<String, String> entry : workItem.getRequestParams()
-               .entrySet()) {
+         while (keys.hasNext()) {
 
-            argsList.add("-" + entry.getKey());
+            String key = (String) keys.next();
+            String value = taskObj.getString(key);
+            
+            argsList.add("-" + key);
 
-            if (entry.getValue() != null && !entry.getValue().equals("")) {
-               argsList.add(entry.getValue());
+            if (value != null && ! value.equals("")) {
+               argsList.add(value);
             }
          }
          
          String[] args = argsList.toArray(new String[argsList.size()]);
 
-         System.out.printf("Will run with args: %s\n", Arrays.toString(args));
+         _logger.info("Will run with args: " + Arrays.toString(args) + "\n");
 
          return new JSONArray(Driver.RunBatfishThroughService(taskId, args));
       }

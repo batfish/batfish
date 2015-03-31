@@ -28,6 +28,8 @@ public class CoordConsts {
    public static final String SVC_TESTRIG_ZIPFILE_KEY = "testrigzipfile"; 
    public static final String SVC_COMMAND_PARSE_KEY = "si";
    public static final String SVC_WORKSPACE_NAME_KEY = "workspace";
+
+   public static final String UPLOADED_RIG_DIR = "uploaded-rig";
    
    public enum WorkStatusCode {
       UNASSIGNED,

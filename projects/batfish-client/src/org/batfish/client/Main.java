@@ -7,19 +7,20 @@ public class Main {
    public static void main(String[] args) {
     
       //default values
-      String coordinator = "localhost:" + CoordConsts.SVC_WORK_PORT;
-      String testrigName = "sample";
-      String testrigZipfileName = "sample.zip";
+      String workMgr = "localhost:" + CoordConsts.SVC_WORK_PORT;
+      String poolMgr = "localhost:" + CoordConsts.SVC_POOL_PORT;
+      String testrigName = "example";
+      String testrigZipfileName = "example.zip";
 
       //if arguments are supplied
-      if (args.length == 3) {
-         
-         coordinator = args[0];
-         testrigName = args[1];
-         testrigZipfileName = args[2];      
+      if (args.length == 4) {         
+         workMgr = args[0];
+         poolMgr = args[1];
+         testrigName = args[2];
+         testrigZipfileName = args[3];      
       }
       
-      SampleClient client = new SampleClient(coordinator, testrigName, testrigZipfileName);
+      SampleClient client = new SampleClient(workMgr, poolMgr, testrigName, testrigZipfileName);
                  
    }
 }

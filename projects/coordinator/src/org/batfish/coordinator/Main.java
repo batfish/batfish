@@ -24,7 +24,6 @@ public class Main {
 
    private static String LOG_FILE = null;
 
-
    private static Settings _settings;
    private static PoolMgr _poolManager;
    private static WorkMgr _workManager;
