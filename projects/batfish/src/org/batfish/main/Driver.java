@@ -146,8 +146,9 @@ public class Driver {
       }
 
       if (settings.canExecute()) {
-         settings.setLogger(new BatfishLogger(settings));
          if (claimIdle()) {
+            final BatfishLogger jobLogger = new BatfishLogger(settings);
+            settings.setLogger(jobLogger);
 
             final Task task = new Task(args);
 
@@ -170,6 +171,7 @@ public class Driver {
                      task.setStatus(TaskStatus.TerminatedAbnormally);
                   }
                   task.setTerminated();
+                  jobLogger.close();
                   makeIdle();
                }
             };

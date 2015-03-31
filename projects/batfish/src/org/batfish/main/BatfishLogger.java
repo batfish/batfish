@@ -64,6 +64,8 @@ public class BatfishLogger {
 
    private int _level;
 
+   private String _logFile;
+
    private PrintStream _ps;
 
    private boolean _timestamp;
@@ -72,10 +74,10 @@ public class BatfishLogger {
       _timestamp = settings.getTimestamp();
       String levelStr = settings.getLogLevel();
       initializeLogLevel(levelStr);
-      String logFile = settings.getLogFile();
-      if (logFile != null) {
+      _logFile = settings.getLogFile();
+      if (_logFile != null) {
          try {
-            _ps = new PrintStream(logFile);
+            _ps = new PrintStream(_logFile);
          }
          catch (FileNotFoundException e) {
             throw new BatfishException("Could not create logfile", e);
@@ -83,6 +85,12 @@ public class BatfishLogger {
       }
       else {
          _ps = System.out;
+      }
+   }
+
+   public void close() {
+      if (_logFile != null) {
+         _ps.close();
       }
    }
 
