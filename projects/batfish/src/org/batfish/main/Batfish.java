@@ -1654,6 +1654,32 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   private ConfigurationFormat identifyConfigurationFormat(String fileText) {
+      char firstChar = fileText.trim().charAt(0);
+      if (firstChar == '!') {
+         if (fileText.contains("set prompt")) {
+            return ConfigurationFormat.VXWORKS;
+         }
+         else {
+            return ConfigurationFormat.CISCO;
+         }
+      }
+      else if (fileText.contains("set hostname")) {
+         return ConfigurationFormat.JUNIPER_SWITCH;
+      }
+      else if (firstChar == '#') {
+         if (fileText.contains("set version")) {
+            return ConfigurationFormat.FLAT_JUNIPER;
+         }
+         else {
+            return ConfigurationFormat.JUNIPER;
+         }
+      }
+      else {
+         return ConfigurationFormat.UNKNOWN;
+      }
+   }
+
    public LogicBloxFrontend initFrontend(boolean assumedToExist,
          String workspace) throws LBInitializationException {
       _logger.info("\n*** STARTING CONNECTBLOX SESSION ***\n");
@@ -2023,32 +2049,6 @@ public class Batfish implements AutoCloseable {
       else {
          printElapsedTime();
          return vendorConfigurations;
-      }
-   }
-
-   private ConfigurationFormat identifyConfigurationFormat(String fileText) {
-      char firstChar = fileText.trim().charAt(0);
-      if (firstChar == '!') {
-         if (fileText.contains("set prompt")) {
-            return ConfigurationFormat.VXWORKS;
-         }
-         else {
-            return ConfigurationFormat.CISCO;
-         }
-      }
-      else if (fileText.contains("set hostname")) {
-         return ConfigurationFormat.JUNIPER_SWITCH;
-      }
-      else if (firstChar == '#') {
-         if (fileText.contains("set version")) {
-            return ConfigurationFormat.FLAT_JUNIPER;
-         }
-         else {
-            return ConfigurationFormat.JUNIPER;
-         }
-      }
-      else {
-         return ConfigurationFormat.UNKNOWN;
       }
    }
 
