@@ -151,6 +151,9 @@ public class Driver {
             settings.setDumpFactsDir(envPath.resolve(BfConsts.RELPATH_FACT_DUMP_DIR).toString());
             settings.setDataPlaneDir(envPath.resolve(BfConsts.RELPATH_DATA_PLANE_DIR).toString());
             settings.setJobLogicBloxHostnamePath(envPath.resolve(BfConsts.RELPATH_LB_HOSTNAME_PATH).toString());
+            String workspaceBasename = Paths.get(baseDir).getFileName().toString();
+            String workspaceName = workspaceBasename + ":" + envName;
+            settings.setWorkspaceName(workspaceName);
          }
       }
 

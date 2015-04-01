@@ -1314,4 +1314,8 @@ public class Settings {
       _testRigPath = path;
    }
 
+   public void setWorkspaceName(String name) {
+      _workspaceName = name;
+   }
+
 }
