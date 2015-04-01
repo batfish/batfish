@@ -40,6 +40,7 @@ public class Settings {
    private static final String ARG_DUMP_INTERFACE_DESCRIPTIONS_PATH = "idpath";
    private static final String ARG_DUMP_TRAFFIC_FACTS = "dumptraffic";
    private static final String ARG_DUPLICATE_ROLE_FLOWS = "drf";
+   private static final String ARG_ENVIRONMENT_NAME = "env";
    private static final String ARG_EXIT_ON_PARSE_ERROR = "ee";
    private static final String ARG_FACTS = "facts";
    private static final String ARG_FLATTEN = "flatten";
@@ -95,6 +96,7 @@ public class Settings {
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
    private static final String ARG_SERIALIZE_VENDOR = "sv";
    private static final String ARG_SERIALIZE_VENDOR_PATH = "svpath";
+   private static final String ARG_SERVICE_LOGICBLOX_HOSTNAME = "servicelbhostname";
    private static final String ARG_SERVICE_MODE = "servicemode";
    private static final String ARG_SERVICE_PORT = "serviceport";
    private static final String ARG_SERVICE_URL = "serviceurl";
@@ -125,6 +127,7 @@ public class Settings {
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
    private static final String ARGNAME_DUMP_IF_DIR = "path";
    private static final String ARGNAME_DUMP_INTERFACE_DESCRIPTIONS_PATH = "path";
+   private static final String ARGNAME_ENVIRONMENT_NAME = "name";
    private static final String ARGNAME_FLATTEN_DESTINATION = "path";
    private static final String ARGNAME_FLATTEN_SOURCE = "path";
    private static final String ARGNAME_FLOW_PATH = "path";
@@ -150,6 +153,7 @@ public class Settings {
    private static final String ARGNAME_ROLE_TRANSIT_QUERY_PATH = "path";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
+   private static final String ARGNAME_SERVICE_LOGICBLOX_HOSTNAME = "hostname";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILES = "paths";
    private static final String ARGNAME_Z3_CONCRETIZER_NEGATED_INPUT_FILES = "paths";
@@ -207,6 +211,7 @@ public class Settings {
    private String _dumpInterfaceDescriptionsPath;
    private boolean _dumpTrafficFacts;
    private boolean _duplicateRoleFlows;
+   private String _environmentName;
    private boolean _exitOnParseError;
    private boolean _facts;
    private boolean _flatten;
@@ -228,6 +233,7 @@ public class Settings {
    private String _hsaOutputDir;
    private boolean _ignoreUnsupported;
    private String _interfaceMapPath;
+   private String _jobLogicBloxHostnamePath;
    private int _lbWebAdminPort;
    private int _lbWebPort;
    private String _logFile;
@@ -269,6 +275,7 @@ public class Settings {
    private boolean _serializeToText;
    private boolean _serializeVendor;
    private String _serializeVendorPath;
+   private String _serviceLogicBloxHostname;
    private int _servicePort;
    private String _serviceUrl;
    private boolean _simplify;
@@ -413,6 +420,10 @@ public class Settings {
       return _dumpTrafficFacts;
    }
 
+   public String getEnvironmentName() {
+      return _environmentName;
+   }
+
    public boolean getFacts() {
       return _facts;
    }
@@ -491,6 +502,10 @@ public class Settings {
 
    public String getInterfaceMapPath() {
       return _interfaceMapPath;
+   }
+
+   public String getJobLogicBloxHostnamePath() {
+      return _jobLogicBloxHostnamePath;
    }
 
    public int getLbWebAdminPort() {
@@ -627,6 +642,10 @@ public class Settings {
 
    public String getSerializeVendorPath() {
       return _serializeVendorPath;
+   }
+
+   public String getServiceLogicBloxHostname() {
+      return _serviceLogicBloxHostname;
    }
 
    public int getServicePort() {
@@ -1058,6 +1077,17 @@ public class Settings {
             .argName(ARGNAME_AUTO_BASE_DIR)
             .desc("path to base dir for automatic i/o path selection")
             .longOpt(ARG_AUTO_BASE_DIR).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_ENVIRONMENT_NAME)
+            .desc("name of environment to use").longOpt(ARG_ENVIRONMENT_NAME)
+            .build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .hasArg()
+                  .argName(ARGNAME_SERVICE_LOGICBLOX_HOSTNAME)
+                  .desc("hostname of of LogicBlox server to be used by batfish service when creating workspaces")
+                  .longOpt(ARG_SERVICE_LOGICBLOX_HOSTNAME).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1227,6 +1257,9 @@ public class Settings {
       _timestamp = line.hasOption(ARG_TIMESTAMP);
       _ignoreUnsupported = line.hasOption(ARG_IGNORE_UNSUPPORTED);
       _autoBaseDir = line.getOptionValue(ARG_AUTO_BASE_DIR);
+      _environmentName = line.getOptionValue(ARG_ENVIRONMENT_NAME);
+      _serviceLogicBloxHostname = line
+            .getOptionValue(ARG_SERVICE_LOGICBLOX_HOSTNAME);
    }
 
    public boolean printParseTree() {
@@ -1245,8 +1278,20 @@ public class Settings {
       return _runInServiceMode;
    }
 
+   public void setConnectBloxHost(String hostname) {
+      _cbHost = hostname;
+   }
+
+   public void setDataPlaneDir(String path) {
+      _dataPlaneDir = path;
+   }
+
    public void setDumpFactsDir(String path) {
       _dumpFactsDir = path;
+   }
+
+   public void setJobLogicBloxHostnamePath(String path) {
+      _jobLogicBloxHostnamePath = path;
    }
 
    public void setLogger(BatfishLogger logger) {
@@ -1261,8 +1306,16 @@ public class Settings {
       _serializeVendorPath = path;
    }
 
+   public void setServiceLogicBloxHostname(String hostname) {
+      _serviceLogicBloxHostname = hostname;
+   }
+
    public void setTestRigPath(String path) {
       _testRigPath = path;
+   }
+
+   public void setWorkspaceName(String name) {
+      _workspaceName = name;
    }
 
 }

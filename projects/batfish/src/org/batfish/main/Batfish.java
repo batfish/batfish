@@ -551,6 +551,11 @@ public class Batfish implements AutoCloseable {
    private LogicBloxFrontend connect() {
       boolean assumedToExist = !_settings.createWorkspace();
       String workspaceMaster = _settings.getWorkspaceName();
+      if (assumedToExist) {
+         String lbHostname = readFile(new File(
+               _settings.getJobLogicBloxHostnamePath()));
+         _settings.setConnectBloxHost(lbHostname);
+      }
       LogicBloxFrontend lbFrontend = null;
       try {
          lbFrontend = initFrontend(assumedToExist, workspaceMaster);
@@ -1649,6 +1654,32 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   private ConfigurationFormat identifyConfigurationFormat(String fileText) {
+      char firstChar = fileText.trim().charAt(0);
+      if (firstChar == '!') {
+         if (fileText.contains("set prompt")) {
+            return ConfigurationFormat.VXWORKS;
+         }
+         else {
+            return ConfigurationFormat.CISCO;
+         }
+      }
+      else if (fileText.contains("set hostname")) {
+         return ConfigurationFormat.JUNIPER_SWITCH;
+      }
+      else if (firstChar == '#') {
+         if (fileText.contains("set version")) {
+            return ConfigurationFormat.FLAT_JUNIPER;
+         }
+         else {
+            return ConfigurationFormat.JUNIPER;
+         }
+      }
+      else {
+         return ConfigurationFormat.UNKNOWN;
+      }
+   }
+
    public LogicBloxFrontend initFrontend(boolean assumedToExist,
          String workspace) throws LBInitializationException {
       _logger.info("\n*** STARTING CONNECTBLOX SESSION ***\n");
@@ -2018,32 +2049,6 @@ public class Batfish implements AutoCloseable {
       else {
          printElapsedTime();
          return vendorConfigurations;
-      }
-   }
-
-   private ConfigurationFormat identifyConfigurationFormat(String fileText) {
-      char firstChar = fileText.trim().charAt(0);
-      if (firstChar == '!') {
-         if (fileText.contains("set prompt")) {
-            return ConfigurationFormat.VXWORKS;
-         }
-         else {
-            return ConfigurationFormat.CISCO;
-         }
-      }
-      else if (fileText.contains("set hostname")) {
-         return ConfigurationFormat.JUNIPER_SWITCH;
-      }
-      else if (firstChar == '#') {
-         if (fileText.contains("set version")) {
-            return ConfigurationFormat.FLAT_JUNIPER;
-         }
-         else {
-            return ConfigurationFormat.JUNIPER;
-         }
-      }
-      else {
-         return ConfigurationFormat.UNKNOWN;
       }
    }
 
@@ -2447,6 +2452,11 @@ public class Batfish implements AutoCloseable {
       // Create new workspace (will overwrite existing) if requested
       if (_settings.createWorkspace()) {
          addProject(lbFrontend);
+         String lbHostnamePath = _settings.getJobLogicBloxHostnamePath();
+         String lbHostname = _settings.getServiceLogicBloxHostname();
+         if (lbHostnamePath != null && lbHostname != null) {
+            writeFile(lbHostnamePath, lbHostname);
+         }
          if (!_settings.getFacts()) {
             return;
          }
