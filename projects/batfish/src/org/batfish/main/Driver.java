@@ -91,7 +91,6 @@ public class Driver {
          try {
             while (true) {
                Thread.sleep(10 * 60 * 1000); // 10 minutes
-               _mainLogger.info("Still alive ....");
             }
          }
          catch (Exception ex) {

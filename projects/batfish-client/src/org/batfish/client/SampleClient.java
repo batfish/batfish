@@ -63,7 +63,12 @@ public class SampleClient {
          System.in.read();
          
          doWork(testrigName, BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "", BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+
+         System.out.println("Press any key to trigger fact generation");
+         System.in.read();
          
+         doWork(testrigName, BfConsts.COMMAND_GENERATE_FACT, "", BfConsts.RELPATH_FACT_DUMP_DIR);
+
       }
       catch (Exception e) {
          e.printStackTrace();

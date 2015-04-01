@@ -40,16 +40,16 @@ public class WorkMgr {
       //for some bizarre reason, this ordering of scheduling checktask before assignwork, is important
       //in the other order, assignwork never fires
       //TODO: track this down
-      Runnable checkWorkTask = new CheckTaskTask();
-      Executors.newScheduledThreadPool(1)
-            .scheduleWithFixedDelay(checkWorkTask, 0,
-                  Main.getSettings().getPeriodCheckWorkMs(),
-                  TimeUnit.MILLISECONDS);
-
       Runnable assignWorkTask = new AssignWorkTask();
-      Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(
+      Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
             assignWorkTask, 0, Main.getSettings().getPeriodAssignWorkMs(),
             TimeUnit.MILLISECONDS);
+
+      Runnable checkWorkTask = new CheckTaskTask();
+      Executors.newScheduledThreadPool(1)
+            .scheduleAtFixedRate(checkWorkTask, 0,
+                  Main.getSettings().getPeriodCheckWorkMs(),
+                  TimeUnit.MILLISECONDS);
 
    }
 
@@ -112,6 +112,7 @@ public class WorkMgr {
          File autobasedir = new File(Main.getSettings().getTestrigStorageLocation() + "/" + work.getWorkItem().getTestrigName());
          task.put("autobasedir", autobasedir.getAbsolutePath());
          task.put("logfile", autobasedir.getAbsolutePath() + "/" + work.getId().toString() + ".log");
+         task.put("timestamp", "");
          
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client.target(String.format("http://%s%s/%s", worker,
