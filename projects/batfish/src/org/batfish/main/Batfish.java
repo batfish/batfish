@@ -551,6 +551,11 @@ public class Batfish implements AutoCloseable {
    private LogicBloxFrontend connect() {
       boolean assumedToExist = !_settings.createWorkspace();
       String workspaceMaster = _settings.getWorkspaceName();
+      if (assumedToExist) {
+         String lbHostname = readFile(new File(
+               _settings.getJobLogicBloxHostnamePath()));
+         _settings.setConnectBloxHost(lbHostname);
+      }
       LogicBloxFrontend lbFrontend = null;
       try {
          lbFrontend = initFrontend(assumedToExist, workspaceMaster);
@@ -2447,6 +2452,11 @@ public class Batfish implements AutoCloseable {
       // Create new workspace (will overwrite existing) if requested
       if (_settings.createWorkspace()) {
          addProject(lbFrontend);
+         String lbHostnamePath = _settings.getJobLogicBloxHostnamePath();
+         String lbHostname = _settings.getServiceLogicBloxHostname();
+         if (lbHostnamePath != null && lbHostname != null) {
+            writeFile(lbHostnamePath, lbHostname);
+         }
          if (!_settings.getFacts()) {
             return;
          }

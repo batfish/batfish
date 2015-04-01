@@ -1,6 +1,7 @@
 package org.batfish.main;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,6 +24,8 @@ public class Driver {
    private static BatfishLogger _mainLogger = null;
 
    private static HashMap<String, Task> _taskLog;
+
+   private static Settings _mainSettings = null;
 
    private static synchronized boolean claimIdle() {
       if (_idle) {
@@ -63,22 +66,21 @@ public class Driver {
    public static void main(String[] args) {
       _taskLog = new HashMap<String, Task>();
 
-      Settings settings = null;
       try {
-         settings = new Settings(args);
+         _mainSettings  = new Settings(args);
       }
       catch (ParseException e) {
          System.err.println("batfish: Parsing command-line failed. Reason: "
                + e.getMessage());
          System.exit(1);
       }
-      _mainLogger = new BatfishLogger(settings);
+      _mainLogger = new BatfishLogger(_mainSettings);
       System.setErr(_mainLogger.getPrintStream());
       System.setOut(_mainLogger.getPrintStream());
-      settings.setLogger(_mainLogger);
-      if (settings.runInServiceMode()) {
-         URI baseUri = UriBuilder.fromUri(settings.getServiceUrl())
-               .port(settings.getServicePort()).build();
+      _mainSettings.setLogger(_mainLogger);
+      if (_mainSettings.runInServiceMode()) {
+         URI baseUri = UriBuilder.fromUri(_mainSettings.getServiceUrl())
+               .port(_mainSettings.getServicePort()).build();
 
          _mainLogger.output(String.format("Starting server at %s\n", baseUri));
 
@@ -99,9 +101,9 @@ public class Driver {
             _mainLogger.error(stackTrace);
          }
       }
-      else if (settings.canExecute()) {
-         settings.setLogger(_mainLogger);
-         if (!RunBatfish(settings)) {
+      else if (_mainSettings.canExecute()) {
+         _mainSettings.setLogger(_mainLogger);
+         if (!RunBatfish(_mainSettings)) {
             System.exit(1);
          }
       }
@@ -142,7 +144,14 @@ public class Driver {
          settings.setSerializeIndependentPath(Paths.get(baseDir, BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR).toString());
          settings.setSerializeVendorPath(Paths.get(baseDir, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR).toString());
          settings.setTestRigPath(Paths.get(baseDir, BfConsts.RELPATH_TEST_RIG_DIR).toString());
-         settings.setDumpFactsDir(Paths.get(baseDir, BfConsts.RELPATH_FACT_DUMP_DIR).toString());
+         settings.setServiceLogicBloxHostname(_mainSettings.getServiceLogicBloxHostname());
+         String envName = settings.getEnvironmentName();
+         if (envName != null) {
+            Path envPath = Paths.get(baseDir, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
+            settings.setDumpFactsDir(envPath.resolve(BfConsts.RELPATH_FACT_DUMP_DIR).toString());
+            settings.setDataPlaneDir(envPath.resolve(BfConsts.RELPATH_DATA_PLANE_DIR).toString());
+            settings.setJobLogicBloxHostnamePath(envPath.resolve(BfConsts.RELPATH_LB_HOSTNAME_PATH).toString());
+         }
       }
 
       if (settings.canExecute()) {
