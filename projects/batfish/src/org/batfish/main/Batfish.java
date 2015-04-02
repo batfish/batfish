@@ -552,9 +552,12 @@ public class Batfish implements AutoCloseable {
       boolean assumedToExist = !_settings.createWorkspace();
       String workspaceMaster = _settings.getWorkspaceName();
       if (assumedToExist) {
-         String lbHostname = readFile(new File(
-               _settings.getJobLogicBloxHostnamePath()));
-         _settings.setConnectBloxHost(lbHostname);
+         String jobLogicBloxHostnamePath = _settings
+               .getJobLogicBloxHostnamePath();
+         if (jobLogicBloxHostnamePath != null) {
+            String lbHostname = readFile(new File(jobLogicBloxHostnamePath));
+            _settings.setConnectBloxHost(lbHostname);
+         }
       }
       LogicBloxFrontend lbFrontend = null;
       try {
