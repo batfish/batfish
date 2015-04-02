@@ -119,11 +119,11 @@ public class WorkMgrService {
    @Path(CoordConsts.SVC_WORK_UPLOAD_TESTRIG_RSC)
    @Consumes(MediaType.MULTIPART_FORM_DATA)
    @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray uploadTestRig(
+   public JSONArray uploadTestrig(
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String name,
-         @FormDataParam(CoordConsts.SVC_TESTRIG_ZIPFILE_KEY) InputStream fileStream) {
+         @FormDataParam(CoordConsts.SVC_ZIPFILE_KEY) InputStream fileStream) {
       try {
-         _logger.info("WMS:uploadTestRig " + name + "\n");
+         _logger.info("WMS:uploadTestrig " + name + "\n");
 
          Main.getWorkMgr().uploadTestrig(name, fileStream);
 
@@ -132,7 +132,30 @@ public class WorkMgrService {
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
-         _logger.error("WMS:uploadTestRig exception: " + stackTrace);
+         _logger.error("WMS:uploadTestrig exception: " + stackTrace);
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+   }
+
+   @POST
+   @Path(CoordConsts.SVC_WORK_UPLOAD_ENV_RSC)
+   @Consumes(MediaType.MULTIPART_FORM_DATA)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray uploadEnvironment(
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
+         @FormDataParam(CoordConsts.SVC_ENV_NAME_KEY) String envName,
+         @FormDataParam(CoordConsts.SVC_ZIPFILE_KEY) InputStream fileStream) {
+      try {
+         _logger.info("WMS:uploadEnvironment " + testrigName + " / " + envName + "\n");
+
+         Main.getWorkMgr().uploadEnvironment(testrigName, envName, fileStream);
+
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, "successfully uploaded environment"));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:uploadEnvironment exception: " + stackTrace);
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
    }

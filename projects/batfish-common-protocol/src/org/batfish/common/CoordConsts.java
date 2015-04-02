@@ -16,6 +16,7 @@ public class CoordConsts {
 
    public static final String SVC_WORK_GETSTATUS_RSC = "getstatus";  
    public static final String SVC_WORK_UPLOAD_TESTRIG_RSC = "uploadtestrig";
+   public static final String SVC_WORK_UPLOAD_ENV_RSC = "uploadenvironment";
    public static final String SVC_WORK_QUEUE_WORK_RSC = "queuework";
    public static final String SVC_WORK_GET_WORKSTATUS_RSC = "getworkstatus";
    public static final String SVC_WORK_GET_OBJECT_RSC = "getobject";
@@ -24,8 +25,9 @@ public class CoordConsts {
    public static final String SVC_WORKID_KEY = "workid";
    public static final String SVC_WORKSTATUS_KEY = "workstatus";
    public static final String SVC_WORKITEM_KEY = "workitem";
+   public static final String SVC_ENV_NAME_KEY = "envname";
    public static final String SVC_TESTRIG_NAME_KEY = "testrigname";
-   public static final String SVC_TESTRIG_ZIPFILE_KEY = "testrigzipfile"; 
+   public static final String SVC_ZIPFILE_KEY = "zipfile"; 
    public static final String SVC_WORKSPACE_NAME_KEY = "workspace";
 
    public static final String SVC_WORK_FILENAME_HDR = "FileName";

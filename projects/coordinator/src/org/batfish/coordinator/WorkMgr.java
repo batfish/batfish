@@ -315,6 +315,64 @@ public class WorkMgr {
       new File(zipFile).delete();      
    }
 
+   public void uploadEnvironment(String testrigName, String envName, InputStream fileStream)
+         throws Exception {
+
+      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
+            + "/" + testrigName);
+      
+      if (!testrigDir.exists()) {
+         throw new Exception("testrig " + testrigName + "does not exist");
+      }
+
+      File envDir = new File(testrigDir.getAbsolutePath()+ "/" + BfConsts.RELPATH_ENVIRONMENTS_DIR + "/" + envName);
+
+      if (envDir.exists()) {
+         throw new Exception("environment " + envName + "exists for testrig " + testrigName);
+      }
+
+      if (!envDir.mkdirs()) {
+         throw new Exception("failed to create directory "
+               + envDir.getAbsolutePath());
+      }
+
+      String zipFile = envDir.getAbsolutePath() + "/tmp" + ".zip";
+      
+      try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
+         int read = 0;
+         final byte[] bytes = new byte[1024];
+         while ((read = fileStream.read(bytes)) != -1) {
+            fileOutputStream.write(bytes, 0, read);
+         }
+      }
+      
+      //now unzip
+      File unzipDir = new File(envDir.getAbsolutePath() + "/" + BfConsts.RELPATH_ENV_DIR);
+      UnzipUtility unzipper = new UnzipUtility();
+      unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
+      
+      //sanity check what we got
+      // 1. there should be just one top-level folder
+      File[] fileList = unzipDir.listFiles();
+      
+      if (fileList.length != 1 || !fileList[0].isDirectory()) {
+         FileUtils.deleteDirectory(envDir);
+         throw new Exception("Unexpected packaging of environment. There should be just one top-level folder");
+      }
+      
+      File[] subFileList = fileList[0].listFiles();
+      
+      //things look ok, now make the move
+      for (File file : subFileList) {
+         String target = unzipDir + "/" + file.getName();
+         file.renameTo(new File(target));
+      }
+      
+    //delete the empty directory and the zip file
+      fileList[0].delete();
+      new File(zipFile).delete();      
+   }
+
    public QueuedWork getWork(UUID workItemId) {
       return _workQueueMgr.getWork(workItemId);
    }

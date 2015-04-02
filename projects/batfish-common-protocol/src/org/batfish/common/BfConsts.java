@@ -12,6 +12,7 @@ public class BfConsts {
    }
 
    public static final String RELPATH_DATA_PLANE_DIR = "dp";
+   public static final String RELPATH_ENV_DIR = "env";
    public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
    public static final String RELPATH_FACT_DUMP_DIR = "dump";
    public static final String RELPATH_LB_HOSTNAME_PATH = "lb";

@@ -11,6 +11,8 @@ public class Main {
       String poolMgr = "localhost:" + CoordConsts.SVC_POOL_PORT;
       String testrigName = "example";
       String testrigZipfileName = "example.zip";
+      String envName = "default";
+      String envZipfileName = "default.zip";
 
       //if arguments are supplied
       if (args.length == 4) {         
@@ -20,7 +22,7 @@ public class Main {
          testrigZipfileName = args[3];      
       }
       
-      SampleClient client = new SampleClient(workMgr, poolMgr, testrigName, testrigZipfileName);
+      SampleClient client = new SampleClient(workMgr, poolMgr, testrigName, testrigZipfileName, envName, envZipfileName);
                  
    }
 }
