@@ -433,6 +433,7 @@ public class Batfish implements AutoCloseable {
 
       Path flowSinksPath = Paths.get(_settings.getDataPlaneDir(),
             FLOW_SINKS_FILENAME);
+      new File(_settings.getDataPlaneDir()).mkdirs();
       Path fibsPath = Paths.get(_settings.getDataPlaneDir(), FIBS_FILENAME);
       Path fibsPolicyRoutePath = Paths.get(_settings.getDataPlaneDir(),
             FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME);
@@ -557,6 +558,13 @@ public class Batfish implements AutoCloseable {
          if (jobLogicBloxHostnamePath != null) {
             String lbHostname = readFile(new File(jobLogicBloxHostnamePath));
             _settings.setConnectBloxHost(lbHostname);
+         }
+      }
+      else {
+         String serviceLogicBloxHostname = _settings
+               .getServiceLogicBloxHostname();
+         if (serviceLogicBloxHostname != null) {
+            _settings.setConnectBloxHost(serviceLogicBloxHostname);
          }
       }
       LogicBloxFrontend lbFrontend = null;

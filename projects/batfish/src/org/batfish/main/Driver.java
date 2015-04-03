@@ -144,6 +144,7 @@ public class Driver {
          settings.setSerializeVendorPath(Paths.get(baseDir, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR).toString());
          settings.setTestRigPath(Paths.get(baseDir, BfConsts.RELPATH_TEST_RIG_DIR).toString());
          settings.setServiceLogicBloxHostname(_mainSettings.getServiceLogicBloxHostname());
+         settings.setLogicDir(_mainSettings.getLogicDir());
          String envName = settings.getEnvironmentName();
          if (envName != null) {
             Path envPath = Paths.get(baseDir, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);

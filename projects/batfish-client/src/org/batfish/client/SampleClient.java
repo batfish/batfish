@@ -3,6 +3,7 @@ package org.batfish.client;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -40,38 +41,50 @@ public class SampleClient {
          _workMgr = workMgr;
          _poolMgr = poolMgr;
 
-//         System.out.println("\nPress any key to add local batfish worker");
-//         System.in.read();
-//
-//         addLocalBatfishWorker();
-//
-         
-         System.out.println("\nPress any key to upload test rig:" + testrigName
-               + " / " + testrigZipfileName);
+         System.out.println("\nPress any key to add local batfish worker");
          System.in.read();
 
-         uploadTestrig(testrigName, testrigZipfileName);
+         addLocalBatfishWorker();
          
-//         System.out.println("Press any key to trigger vendor specific parsing");
+//         System.out.println("\nPress any key to upload test rig:" + testrigName
+//               + " / " + testrigZipfileName);
 //         System.in.read();
+//         uploadTestrig(testrigName, testrigZipfileName);
 //         
+//         System.out.println("Press any key to trigger vendor specific parsing");
+//         System.in.read();         
 //         doWork(testrigName, BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "", BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
-//
 //         
 //         System.out.println("Press any key to trigger vendor independent parsing");
-//         System.in.read();
-//         
+//         System.in.read();         
 //         doWork(testrigName, BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "", BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
 //
-////         System.out.println("Press any key to trigger fact generation");
-////         System.in.read();
-////         
-////         doWork(testrigName, BfConsts.COMMAND_GENERATE_FACT, "", BfConsts.RELPATH_FACT_DUMP_DIR);
-//
-         System.out.println("Press any key to upload environment");
+//         System.out.println("Press any key to upload environment");
+//         System.in.read();         
+//         uploadEnvironment(testrigName, envName, envZipfileName);
+//         
+//       System.out.println("Press any key to trigger fact generation");
+//       System.in.read();         
+//       WorkItem wItem = new WorkItem(testrigName);
+//       wItem.addRequestParam(BfConsts.COMMAND_GENERATE_FACT, "");
+//       wItem.addRequestParam(BfConsts.COMMAND_ENV, envName);
+//       doWork(testrigName,  wItem, Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName, BfConsts.RELPATH_FACT_DUMP_DIR).toString());
+
+//         System.out.println("Press any key to generate the data plane");
+//         System.in.read();
+//         WorkItem wItem2 = new WorkItem(testrigName);
+//         wItem2.addRequestParam(BfConsts.COMMAND_COMPILE, "");
+//         wItem2.addRequestParam(BfConsts.COMMAND_FACTS, "");
+//         wItem2.addRequestParam(BfConsts.COMMAND_ENV, envName);
+//         doWork(testrigName, wItem2, null);
+
+         System.out.println("Press any key to get the data plane");
          System.in.read();
-         
-         uploadEnvironment(testrigName, envName, envZipfileName);
+         WorkItem wItem3 = new WorkItem(testrigName);
+         wItem3.addRequestParam(BfConsts.COMMAND_DUMP_DP, envName);
+         wItem3.addRequestParam(BfConsts.COMMAND_ENV, envName);
+         doWork(testrigName, wItem3, Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName, BfConsts.RELPATH_DATA_PLANE_DIR).toString());
+
       }
       catch (Exception e) {
          e.printStackTrace();
@@ -83,6 +96,11 @@ public class SampleClient {
 
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(commandKey, commandValue);
+      
+      doWork(testrigName, wItem, resultsDir);
+   }
+   
+   private void doWork(String testrigName, WorkItem wItem, String resultsDir) throws Exception {
 
       //bad command for testing
       //wItem.addRequestParam("badcommand", "");
@@ -107,14 +125,16 @@ public class SampleClient {
 
       System.out.printf("final status: %s\n", status);
 
-      System.out.println("Press any key to fetch results");
-      System.in.read();
+//      System.out.println("Press any key to fetch results");
+//      System.in.read();
 
       // get the results
       String logFile = wItem.getId() + ".log";
       //String logFile = "5ea3d4d3-682c-4c8b-8418-08f36fa3e638.log";
       getObject(testrigName, logFile);
-      getObject(testrigName, resultsDir);
+      
+      if (resultsDir != null)
+         getObject(testrigName, resultsDir);
    }
       
    private boolean addLocalBatfishWorker() {
@@ -408,8 +428,11 @@ public class SampleClient {
             }
          }
          
+         File outdir = new File("client");
+         outdir.mkdirs();
+         
          File inFile = response.readEntity(File.class);
-         File outFile = new File(outFileStr);
+         File outFile = new File(outdir.getAbsolutePath() + "/" + outFileStr);
 
          inFile.renameTo(outFile);
 

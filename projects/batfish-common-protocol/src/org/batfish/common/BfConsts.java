@@ -33,8 +33,12 @@ public class BfConsts {
    public static final String SVC_TASK_KEY = "task";
    public static final String SVC_TASKID_KEY = "taskid";
 
+   public static final String COMMAND_COMPILE = "compile";
    public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
    public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
    public static final String COMMAND_GENERATE_FACT = "dumpcp";
+   public static final String COMMAND_FACTS = "facts";
+   public static final String COMMAND_ENV = "env";
+   public static final String COMMAND_DUMP_DP = "dp";
 
 }
