@@ -373,6 +373,38 @@ public class WorkMgr {
       new File(zipFile).delete();      
    }
 
+   public void uploadQuestion(String testrigName, String qName, InputStream fileStream)
+         throws Exception {
+
+      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
+            + "/" + testrigName);
+      
+      if (!testrigDir.exists()) {
+         throw new Exception("testrig " + testrigName + "does not exist");
+      }
+
+      File qDir = new File(testrigDir.getAbsolutePath()+ "/" + BfConsts.RELPATH_QUESTIONS_DIR + "/" + qName);
+
+      if (qDir.exists()) {
+         throw new Exception("question " + qName + "exists for testrig " + testrigName);
+      }
+
+      if (!qDir.mkdirs()) {
+         throw new Exception("failed to create directory "
+               + qDir.getAbsolutePath());
+      }
+
+      String file = qDir.getAbsolutePath() + "/" + BfConsts.RELPATH_QUESTION_FILE;
+      
+      try (OutputStream fileOutputStream = new FileOutputStream(file)) {
+         int read = 0;
+         final byte[] bytes = new byte[1024];
+         while ((read = fileStream.read(bytes)) != -1) {
+            fileOutputStream.write(bytes, 0, read);
+         }
+      }     
+   }
+
    public QueuedWork getWork(UUID workItemId) {
       return _workQueueMgr.getWork(workItemId);
    }

@@ -16,9 +16,12 @@ public class BfConsts {
    public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
    public static final String RELPATH_FACT_DUMP_DIR = "dump";
    public static final String RELPATH_LB_HOSTNAME_PATH = "lb";
+   public static final String RELPATH_QUESTIONS_DIR = "questions";
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
    public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
    public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
+
+   public static final String RELPATH_QUESTION_FILE = "question";
 
    public static final String SVC_BASE_RSC = "/batfishservice";
    public static final String SVC_FAILURE_KEY = "failure";

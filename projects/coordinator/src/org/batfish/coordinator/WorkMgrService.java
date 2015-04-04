@@ -160,6 +160,28 @@ public class WorkMgrService {
       }
    }
 
+   @POST
+   @Path(CoordConsts.SVC_WORK_UPLOAD_QUESTION_RSC)
+   @Consumes(MediaType.MULTIPART_FORM_DATA)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray uploadQuestion(
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
+         @FormDataParam(CoordConsts.SVC_QUESTION_NAME_KEY) String qName,
+         @FormDataParam(CoordConsts.SVC_FILE_KEY) InputStream fileStream) {
+      try {
+         _logger.info("WMS:uploadQuestion " + testrigName + " / " + qName + "\n");
+
+         Main.getWorkMgr().uploadQuestion(testrigName, qName, fileStream);
+
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, "successfully uploaded question"));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:uploadQuestion exception: " + stackTrace);
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+   }
    @GET
    @Path(CoordConsts.SVC_WORK_GET_OBJECT_RSC)
    @Produces(MediaType.APPLICATION_OCTET_STREAM)

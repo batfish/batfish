@@ -34,18 +34,20 @@ public class SampleClient {
    private String _workMgr;
    private String _poolMgr;
 
-   public SampleClient(String workMgr, String poolMgr, String testrigName,
-         String testrigZipfileName, String envName, String envZipfileName) {
+   public SampleClient(String workMgr, String poolMgr, 
+                       String testrigName, String testrigZipfileName, 
+                       String envName, String envZipfileName,
+                       String questionName, String questionFileName) {
 
       try {
          _workMgr = workMgr;
          _poolMgr = poolMgr;
 
-         System.out.println("\nPress any key to add local batfish worker");
-         System.in.read();
-
-         addLocalBatfishWorker();
-         
+//         System.out.println("\nPress any key to add local batfish worker");
+//         System.in.read();
+//
+//         addLocalBatfishWorker();
+//         
 //         System.out.println("\nPress any key to upload test rig:" + testrigName
 //               + " / " + testrigZipfileName);
 //         System.in.read();
@@ -78,13 +80,17 @@ public class SampleClient {
 //         wItem2.addRequestParam(BfConsts.COMMAND_ENV, envName);
 //         doWork(testrigName, wItem2, null);
 
-         System.out.println("Press any key to get the data plane");
-         System.in.read();
-         WorkItem wItem3 = new WorkItem(testrigName);
-         wItem3.addRequestParam(BfConsts.COMMAND_DUMP_DP, envName);
-         wItem3.addRequestParam(BfConsts.COMMAND_ENV, envName);
-         doWork(testrigName, wItem3, Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName, BfConsts.RELPATH_DATA_PLANE_DIR).toString());
+//         System.out.println("Press any key to get the data plane");
+//         System.in.read();
+//         WorkItem wItem3 = new WorkItem(testrigName);
+//         wItem3.addRequestParam(BfConsts.COMMAND_DUMP_DP, envName);
+//         wItem3.addRequestParam(BfConsts.COMMAND_ENV, envName);
+//         doWork(testrigName, wItem3, Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName, BfConsts.RELPATH_DATA_PLANE_DIR).toString());
 
+       System.out.println("Press any key to upload question");
+       System.in.read();         
+       uploadQuestion(testrigName, questionName, questionFileName);
+                
       }
       catch (Exception e) {
          e.printStackTrace();
@@ -346,6 +352,66 @@ public class SampleClient {
          System.err.printf(
                "Exception when uploading environment to %s using (%s, %s, %s)\n",
                _workMgr, testrigName, envName, zipfileName);
+         e.printStackTrace();
+         return false;
+      }
+   }
+
+   private boolean uploadQuestion(String testrigName, String qName, String fileName) {
+      try {
+
+         Client client = ClientBuilder.newBuilder()
+               .register(MultiPartFeature.class).build();
+         WebTarget webTarget = client.target(String.format("http://%s%s/%s",
+               _workMgr, CoordConsts.SVC_BASE_WORK_MGR,
+               CoordConsts.SVC_WORK_UPLOAD_QUESTION_RSC));
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         FormDataBodyPart testrigNameBodyPart = new FormDataBodyPart(
+               CoordConsts.SVC_TESTRIG_NAME_KEY, testrigName,
+               MediaType.TEXT_PLAIN_TYPE);
+         multiPart.bodyPart(testrigNameBodyPart);
+
+         FormDataBodyPart qNameBodyPart = new FormDataBodyPart(
+               CoordConsts.SVC_QUESTION_NAME_KEY, qName,
+               MediaType.TEXT_PLAIN_TYPE);
+         multiPart.bodyPart(qNameBodyPart);
+
+         FileDataBodyPart fileDataBodyPart = new FileDataBodyPart(
+               CoordConsts.SVC_FILE_KEY, new File(fileName),
+               MediaType.APPLICATION_OCTET_STREAM_TYPE);
+         multiPart.bodyPart(fileDataBodyPart);
+
+         Response response = webTarget.request(MediaType.APPLICATION_JSON)
+               .post(Entity.entity(multiPart, multiPart.getMediaType()));
+
+         System.out.println(response.getStatus() + " "
+               + response.getStatusInfo() + " " + response);
+
+         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            System.err.printf("UploadQuestion: Did not get an OK response\n");
+            return false;            
+         }
+         
+         String sobj = response.readEntity(String.class);
+         JSONArray array = new JSONArray(sobj);
+         System.out.printf("response: %s [%s] [%s]\n", array.toString(),
+               array.get(0), array.get(1));
+
+         if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
+            System.err.printf("got error while uploading environment: %s %s\n",
+                  array.get(0), array.get(1));
+            return false;
+         }
+
+         return true;
+      }
+      catch (Exception e) {
+         System.err.printf(
+               "Exception when uploading question to %s using (%s, %s, %s)\n",
+               _workMgr, testrigName, qName, fileName);
          e.printStackTrace();
          return false;
       }
