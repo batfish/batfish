@@ -14,7 +14,15 @@ package org.batfish.grammar.flatjuniper;
 
 deactivate_line
 :
-   DEACTIVATE set_line_tail NEWLINE
+   DEACTIVATE deactivate_line_tail NEWLINE
+;
+
+deactivate_line_tail
+:
+   (
+      interface_id
+      | ~NEWLINE
+   )*
 ;
 
 flat_juniper_configuration

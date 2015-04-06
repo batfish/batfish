@@ -6,7 +6,7 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 
-public class DeactivatePruner extends FlatJuniperParserBaseListener {
+public class DeactivateLinePruner extends FlatJuniperParserBaseListener {
 
    private Flat_juniper_configurationContext _configurationContext;
 

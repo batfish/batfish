@@ -169,6 +169,34 @@ interface_mode
    TRUNK
 ;
 
+intt_apply_groups
+:
+   s_apply_groups
+;
+
+intt_named
+:
+   (
+      WILDCARD
+      | name = VARIABLE
+   ) intt_named_tail
+;
+
+intt_named_tail
+:
+   it_common
+   | it_flexible_vlan_tagging
+   | it_native_vlan_id
+   | it_unit
+;
+
+intt_null
+:
+   (
+      TRACEOPTIONS
+   ) s_null_filler
+;
+
 it_apply_groups
 :
    s_apply_groups
@@ -254,7 +282,6 @@ it_null
       | NO_TRAPS
       | REDUNDANT_ETHER_OPTIONS
       | SONET_OPTIONS
-      | TRACEOPTIONS
       | TRAPS
       | TUNNEL
    ) s_null_filler
@@ -353,23 +380,14 @@ mfamt_mtu
 
 s_interfaces
 :
-   INTERFACES
-   (
-      WILDCARD
-      | name = VARIABLE
-      | // intentional blank
-
-   ) s_interfaces_tail
+   INTERFACES s_interfaces_tail
 ;
 
 s_interfaces_tail
 :
-// intentional blank
-
-   | it_common
-   | it_flexible_vlan_tagging
-   | it_native_vlan_id
-   | it_unit
+   intt_apply_groups
+   | intt_named
+   | intt_null
 ;
 
 speed_abbreviation

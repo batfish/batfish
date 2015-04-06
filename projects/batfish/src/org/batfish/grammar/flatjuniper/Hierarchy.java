@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
@@ -394,6 +395,27 @@ public class Hierarchy {
          }
       }
 
+      public boolean containsPathPrefixOf(HierarchyPath path) {
+         Map<String, HierarchyChildNode> currentChildren = _root.getChildren();
+         List<HierarchyChildNode> pathNodes = path._nodes;
+         for (HierarchyChildNode currentPathNode : pathNodes) {
+            HierarchyChildNode treeMatchNode = currentChildren
+                  .get(currentPathNode._text);
+            if (treeMatchNode != null) {
+               if (treeMatchNode.getChildren().size() == 0) {
+                  return true;
+               }
+               else {
+                  currentChildren = treeMatchNode.getChildren();
+               }
+            }
+            else {
+               break;
+            }
+         }
+         return false;
+      }
+
       private HierarchyChildNode findExactPathMatchNode(HierarchyPath path) {
          HierarchyNode currentGroupNode = _root;
          HierarchyChildNode matchNode = null;
@@ -532,12 +554,19 @@ public class Hierarchy {
          return _groupName;
       }
 
+      public void pruneAfterPath(HierarchyPath path) {
+         HierarchyChildNode pathEnd = findExactPathMatchNode(path);
+         pathEnd.getChildren().clear();
+      }
+
       public void setApplyGroupsExcept(HierarchyPath path, String groupName) {
          HierarchyChildNode node = findExactPathMatchNode(path);
          node.addBlacklistedGroup(groupName);
       }
 
    }
+
+   private HierarchyTree _deactivateTree;
 
    private HierarchyTree _masterTree;
 
@@ -546,6 +575,15 @@ public class Hierarchy {
    public Hierarchy() {
       _trees = new HashMap<String, HierarchyTree>();
       _masterTree = new HierarchyTree(null);
+      _deactivateTree = new HierarchyTree(null);
+   }
+
+   public void addDeactivatePath(HierarchyPath path, Deactivate_lineContext ctx) {
+      if (isDeactivated(path)) {
+         return;
+      }
+      _deactivateTree.addPath(path, null, null);
+      _deactivateTree.pruneAfterPath(path);
    }
 
    public void addMasterPath(HierarchyPath path, Set_lineContext ctx) {
@@ -576,6 +614,10 @@ public class Hierarchy {
 
    public HierarchyTree getTree(String groupName) {
       return _trees.get(groupName);
+   }
+
+   public boolean isDeactivated(HierarchyPath path) {
+      return _deactivateTree.containsPathPrefixOf(path);
    }
 
    public HierarchyTree newTree(String groupName) {

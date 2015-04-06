@@ -650,6 +650,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterIntt_named(Intt_namedContext ctx) {
+      if (ctx.name == null) {
+         _currentInterface = _currentRoutingInstance.getGlobalMasterInterface();
+      }
+      else {
+         String ifaceName = ctx.name.getText();
+         Map<String, Interface> interfaces = _currentRoutingInstance
+               .getInterfaces();
+         _currentInterface = interfaces.get(ifaceName);
+         if (_currentInterface == null) {
+            _currentInterface = new Interface(ifaceName);
+            interfaces.put(ifaceName, _currentInterface);
+         }
+      }
+      _currentMasterInterface = _currentInterface;
+   }
+
+   @Override
    public void enterIt_unit(It_unitContext ctx) {
       String unit = ctx.num.getText();
       String unitFullName = _currentMasterInterface.getName() + "." + unit;
@@ -863,24 +881,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterS_firewall(S_firewallContext ctx) {
       _currentFirewallFamily = Family.INET;
-   }
-
-   @Override
-   public void enterS_interfaces(S_interfacesContext ctx) {
-      if (ctx.name == null) {
-         _currentInterface = _currentRoutingInstance.getGlobalMasterInterface();
-      }
-      else {
-         String ifaceName = ctx.name.getText();
-         Map<String, Interface> interfaces = _currentRoutingInstance
-               .getInterfaces();
-         _currentInterface = interfaces.get(ifaceName);
-         if (_currentInterface == null) {
-            _currentInterface = new Interface(ifaceName);
-            interfaces.put(ifaceName, _currentInterface);
-         }
-      }
-      _currentMasterInterface = _currentInterface;
    }
 
    @Override
@@ -1208,6 +1208,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitIntt_named(Intt_namedContext ctx) {
+      _currentInterface = null;
+      _currentMasterInterface = null;
+   }
+
+   @Override
    public void exitIt_disable(It_disableContext ctx) {
       _currentInterface.setActive(false);
    }
@@ -1305,12 +1311,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitS_firewall(S_firewallContext ctx) {
       _currentFirewallFamily = null;
-   }
-
-   @Override
-   public void exitS_interfaces(S_interfacesContext ctx) {
-      _currentInterface = null;
-      _currentMasterInterface = null;
    }
 
    @Override
