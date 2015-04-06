@@ -1551,7 +1551,7 @@ PREFIX_LIMIT
 
 PREFIX_LIST
 :
-   'prefix-list'
+   'prefix-list' -> pushMode(M_PrefixListName)
 ;
 
 PREFIX_LIST_FILTER
@@ -2850,6 +2850,18 @@ M_Members_TARGET
 ;
 
 M_Members_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_PrefixListName;
+
+M_PrefixLsitName_VARIABLE
+:
+      ~[ \t\n\r&|()"]+ -> type(VARIABLE), popMode
+;
+
+M_PrefixListName_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;
