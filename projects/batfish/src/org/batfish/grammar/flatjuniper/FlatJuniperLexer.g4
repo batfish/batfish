@@ -1084,6 +1084,11 @@ LSP
    'lsp'
 ;
 
+LSP_LIFETIME
+:
+   'lsp-lifetime'
+;
+
 MAC
 :
    'mac' -> pushMode(M_MacAddress)
