@@ -11,6 +11,10 @@ public class LBInitializationException extends Exception {
       super(cause);
    }
 
+   public LBInitializationException(String msg, Exception e) {
+      super(msg, e);
+   }
+
    public boolean workspaceDoesNotExist() {
       return this.getMessage().contains("' does not exist.");
    }

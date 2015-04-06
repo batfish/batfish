@@ -40,16 +40,16 @@ public class WorkMgr {
       //for some bizarre reason, this ordering of scheduling checktask before assignwork, is important
       //in the other order, assignwork never fires
       //TODO: track this down
-      Runnable checkWorkTask = new CheckTaskTask();
-      Executors.newScheduledThreadPool(1)
-            .scheduleWithFixedDelay(checkWorkTask, 0,
-                  Main.getSettings().getPeriodCheckWorkMs(),
-                  TimeUnit.MILLISECONDS);
-
       Runnable assignWorkTask = new AssignWorkTask();
-      Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(
+      Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
             assignWorkTask, 0, Main.getSettings().getPeriodAssignWorkMs(),
             TimeUnit.MILLISECONDS);
+
+      Runnable checkWorkTask = new CheckTaskTask();
+      Executors.newScheduledThreadPool(1)
+            .scheduleAtFixedRate(checkWorkTask, 0,
+                  Main.getSettings().getPeriodCheckWorkMs(),
+                  TimeUnit.MILLISECONDS);
 
    }
 
@@ -112,6 +112,7 @@ public class WorkMgr {
          File autobasedir = new File(Main.getSettings().getTestrigStorageLocation() + "/" + work.getWorkItem().getTestrigName());
          task.put("autobasedir", autobasedir.getAbsolutePath());
          task.put("logfile", autobasedir.getAbsolutePath() + "/" + work.getId().toString() + ".log");
+         task.put("timestamp", "");
          
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client.target(String.format("http://%s%s/%s", worker,
@@ -312,6 +313,96 @@ public class WorkMgr {
       //delete the empty directory and the zip file
       fileList[0].delete();
       new File(zipFile).delete();      
+   }
+
+   public void uploadEnvironment(String testrigName, String envName, InputStream fileStream)
+         throws Exception {
+
+      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
+            + "/" + testrigName);
+      
+      if (!testrigDir.exists()) {
+         throw new Exception("testrig " + testrigName + "does not exist");
+      }
+
+      File envDir = new File(testrigDir.getAbsolutePath()+ "/" + BfConsts.RELPATH_ENVIRONMENTS_DIR + "/" + envName);
+
+      if (envDir.exists()) {
+         throw new Exception("environment " + envName + "exists for testrig " + testrigName);
+      }
+
+      if (!envDir.mkdirs()) {
+         throw new Exception("failed to create directory "
+               + envDir.getAbsolutePath());
+      }
+
+      String zipFile = envDir.getAbsolutePath() + "/tmp" + ".zip";
+      
+      try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
+         int read = 0;
+         final byte[] bytes = new byte[1024];
+         while ((read = fileStream.read(bytes)) != -1) {
+            fileOutputStream.write(bytes, 0, read);
+         }
+      }
+      
+      //now unzip
+      File unzipDir = new File(envDir.getAbsolutePath() + "/" + BfConsts.RELPATH_ENV_DIR);
+      UnzipUtility unzipper = new UnzipUtility();
+      unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
+      
+      //sanity check what we got
+      // 1. there should be just one top-level folder
+      File[] fileList = unzipDir.listFiles();
+      
+      if (fileList.length != 1 || !fileList[0].isDirectory()) {
+         FileUtils.deleteDirectory(envDir);
+         throw new Exception("Unexpected packaging of environment. There should be just one top-level folder");
+      }
+      
+      File[] subFileList = fileList[0].listFiles();
+      
+      //things look ok, now make the move
+      for (File file : subFileList) {
+         String target = unzipDir + "/" + file.getName();
+         file.renameTo(new File(target));
+      }
+      
+    //delete the empty directory and the zip file
+      fileList[0].delete();
+      new File(zipFile).delete();      
+   }
+
+   public void uploadQuestion(String testrigName, String qName, InputStream fileStream)
+         throws Exception {
+
+      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
+            + "/" + testrigName);
+      
+      if (!testrigDir.exists()) {
+         throw new Exception("testrig " + testrigName + "does not exist");
+      }
+
+      File qDir = new File(testrigDir.getAbsolutePath()+ "/" + BfConsts.RELPATH_QUESTIONS_DIR + "/" + qName);
+
+      if (qDir.exists()) {
+         throw new Exception("question " + qName + "exists for testrig " + testrigName);
+      }
+
+      if (!qDir.mkdirs()) {
+         throw new Exception("failed to create directory "
+               + qDir.getAbsolutePath());
+      }
+
+      String file = qDir.getAbsolutePath() + "/" + BfConsts.RELPATH_QUESTION_FILE;
+      
+      try (OutputStream fileOutputStream = new FileOutputStream(file)) {
+         int read = 0;
+         final byte[] bytes = new byte[1024];
+         while ((read = fileStream.read(bytes)) != -1) {
+            fileOutputStream.write(bytes, 0, read);
+         }
+      }     
    }
 
    public QueuedWork getWork(UUID workItemId) {

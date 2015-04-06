@@ -1318,4 +1318,8 @@ public class Settings {
       _workspaceName = name;
    }
 
+   public void setLogicDir(String logicDir) {
+      _logicDir = logicDir;
+   }
+
 }

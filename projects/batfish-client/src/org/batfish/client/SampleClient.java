@@ -3,6 +3,7 @@ package org.batfish.client;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -33,37 +34,63 @@ public class SampleClient {
    private String _workMgr;
    private String _poolMgr;
 
-   public SampleClient(String workMgr, String poolMgr, String testrigName,
-         String testrigZipfileName) {
+   public SampleClient(String workMgr, String poolMgr, 
+                       String testrigName, String testrigZipfileName, 
+                       String envName, String envZipfileName,
+                       String questionName, String questionFileName) {
 
       try {
          _workMgr = workMgr;
          _poolMgr = poolMgr;
 
-         System.out.println("\nPress any key to add local batfish worker");
-         System.in.read();
+//         System.out.println("\nPress any key to add local batfish worker");
+//         System.in.read();
+//
+//         addLocalBatfishWorker();
+//         
+//         System.out.println("\nPress any key to upload test rig:" + testrigName
+//               + " / " + testrigZipfileName);
+//         System.in.read();
+//         uploadTestrig(testrigName, testrigZipfileName);
+//         
+//         System.out.println("Press any key to trigger vendor specific parsing");
+//         System.in.read();         
+//         doWork(testrigName, BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "", BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
+//         
+//         System.out.println("Press any key to trigger vendor independent parsing");
+//         System.in.read();         
+//         doWork(testrigName, BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "", BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+//
+//         System.out.println("Press any key to upload environment");
+//         System.in.read();         
+//         uploadEnvironment(testrigName, envName, envZipfileName);
+//         
+//       System.out.println("Press any key to trigger fact generation");
+//       System.in.read();         
+//       WorkItem wItem = new WorkItem(testrigName);
+//       wItem.addRequestParam(BfConsts.COMMAND_GENERATE_FACT, "");
+//       wItem.addRequestParam(BfConsts.COMMAND_ENV, envName);
+//       doWork(testrigName,  wItem, Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName, BfConsts.RELPATH_FACT_DUMP_DIR).toString());
 
-         addLocalBatfishWorker();
+//         System.out.println("Press any key to generate the data plane");
+//         System.in.read();
+//         WorkItem wItem2 = new WorkItem(testrigName);
+//         wItem2.addRequestParam(BfConsts.COMMAND_COMPILE, "");
+//         wItem2.addRequestParam(BfConsts.COMMAND_FACTS, "");
+//         wItem2.addRequestParam(BfConsts.COMMAND_ENV, envName);
+//         doWork(testrigName, wItem2, null);
 
-         
-         System.out.println("\nPress any key to upload test rig:" + testrigName
-               + " / " + testrigZipfileName);
-         System.in.read();
+//         System.out.println("Press any key to get the data plane");
+//         System.in.read();
+//         WorkItem wItem3 = new WorkItem(testrigName);
+//         wItem3.addRequestParam(BfConsts.COMMAND_DUMP_DP, envName);
+//         wItem3.addRequestParam(BfConsts.COMMAND_ENV, envName);
+//         doWork(testrigName, wItem3, Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName, BfConsts.RELPATH_DATA_PLANE_DIR).toString());
 
-         uploadTestrig(testrigName, testrigZipfileName);
-
-         
-         System.out.println("Press any key to trigger vendor specific parsing");
-         System.in.read();
-         
-         doWork(testrigName, BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "", BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
-
-         
-         System.out.println("Press any key to trigger vendor independent parsing");
-         System.in.read();
-         
-         doWork(testrigName, BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "", BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
-         
+       System.out.println("Press any key to upload question");
+       System.in.read();         
+       uploadQuestion(testrigName, questionName, questionFileName);
+                
       }
       catch (Exception e) {
          e.printStackTrace();
@@ -75,6 +102,11 @@ public class SampleClient {
 
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(commandKey, commandValue);
+      
+      doWork(testrigName, wItem, resultsDir);
+   }
+   
+   private void doWork(String testrigName, WorkItem wItem, String resultsDir) throws Exception {
 
       //bad command for testing
       //wItem.addRequestParam("badcommand", "");
@@ -99,14 +131,16 @@ public class SampleClient {
 
       System.out.printf("final status: %s\n", status);
 
-      System.out.println("Press any key to fetch results");
-      System.in.read();
+//      System.out.println("Press any key to fetch results");
+//      System.in.read();
 
       // get the results
       String logFile = wItem.getId() + ".log";
       //String logFile = "5ea3d4d3-682c-4c8b-8418-08f36fa3e638.log";
       getObject(testrigName, logFile);
-      getObject(testrigName, resultsDir);
+      
+      if (resultsDir != null)
+         getObject(testrigName, resultsDir);
    }
       
    private boolean addLocalBatfishWorker() {
@@ -226,7 +260,7 @@ public class SampleClient {
          multiPart.bodyPart(testrigNameBodyPart);
 
          FileDataBodyPart fileDataBodyPart = new FileDataBodyPart(
-               CoordConsts.SVC_TESTRIG_ZIPFILE_KEY, new File(zipfileName),
+               CoordConsts.SVC_ZIPFILE_KEY, new File(zipfileName),
                MediaType.APPLICATION_OCTET_STREAM_TYPE);
          multiPart.bodyPart(fileDataBodyPart);
 
@@ -258,6 +292,126 @@ public class SampleClient {
          System.err.printf(
                "Exception when uploading test rig to %s using (%s, %s)\n",
                _workMgr, testrigName, zipfileName);
+         e.printStackTrace();
+         return false;
+      }
+   }
+
+   private boolean uploadEnvironment(String testrigName, String envName, String zipfileName) {
+      try {
+
+         Client client = ClientBuilder.newBuilder()
+               .register(MultiPartFeature.class).build();
+         WebTarget webTarget = client.target(String.format("http://%s%s/%s",
+               _workMgr, CoordConsts.SVC_BASE_WORK_MGR,
+               CoordConsts.SVC_WORK_UPLOAD_ENV_RSC));
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         FormDataBodyPart testrigNameBodyPart = new FormDataBodyPart(
+               CoordConsts.SVC_TESTRIG_NAME_KEY, testrigName,
+               MediaType.TEXT_PLAIN_TYPE);
+         multiPart.bodyPart(testrigNameBodyPart);
+
+         FormDataBodyPart envNameBodyPart = new FormDataBodyPart(
+               CoordConsts.SVC_ENV_NAME_KEY, envName,
+               MediaType.TEXT_PLAIN_TYPE);
+         multiPart.bodyPart(envNameBodyPart);
+
+         FileDataBodyPart fileDataBodyPart = new FileDataBodyPart(
+               CoordConsts.SVC_ZIPFILE_KEY, new File(zipfileName),
+               MediaType.APPLICATION_OCTET_STREAM_TYPE);
+         multiPart.bodyPart(fileDataBodyPart);
+
+         Response response = webTarget.request(MediaType.APPLICATION_JSON)
+               .post(Entity.entity(multiPart, multiPart.getMediaType()));
+
+         System.out.println(response.getStatus() + " "
+               + response.getStatusInfo() + " " + response);
+
+         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            System.err.printf("UploadEnvironment: Did not get an OK response\n");
+            return false;            
+         }
+         
+         String sobj = response.readEntity(String.class);
+         JSONArray array = new JSONArray(sobj);
+         System.out.printf("response: %s [%s] [%s]\n", array.toString(),
+               array.get(0), array.get(1));
+
+         if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
+            System.err.printf("got error while uploading environment: %s %s\n",
+                  array.get(0), array.get(1));
+            return false;
+         }
+
+         return true;
+      }
+      catch (Exception e) {
+         System.err.printf(
+               "Exception when uploading environment to %s using (%s, %s, %s)\n",
+               _workMgr, testrigName, envName, zipfileName);
+         e.printStackTrace();
+         return false;
+      }
+   }
+
+   private boolean uploadQuestion(String testrigName, String qName, String fileName) {
+      try {
+
+         Client client = ClientBuilder.newBuilder()
+               .register(MultiPartFeature.class).build();
+         WebTarget webTarget = client.target(String.format("http://%s%s/%s",
+               _workMgr, CoordConsts.SVC_BASE_WORK_MGR,
+               CoordConsts.SVC_WORK_UPLOAD_QUESTION_RSC));
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         FormDataBodyPart testrigNameBodyPart = new FormDataBodyPart(
+               CoordConsts.SVC_TESTRIG_NAME_KEY, testrigName,
+               MediaType.TEXT_PLAIN_TYPE);
+         multiPart.bodyPart(testrigNameBodyPart);
+
+         FormDataBodyPart qNameBodyPart = new FormDataBodyPart(
+               CoordConsts.SVC_QUESTION_NAME_KEY, qName,
+               MediaType.TEXT_PLAIN_TYPE);
+         multiPart.bodyPart(qNameBodyPart);
+
+         FileDataBodyPart fileDataBodyPart = new FileDataBodyPart(
+               CoordConsts.SVC_FILE_KEY, new File(fileName),
+               MediaType.APPLICATION_OCTET_STREAM_TYPE);
+         multiPart.bodyPart(fileDataBodyPart);
+
+         Response response = webTarget.request(MediaType.APPLICATION_JSON)
+               .post(Entity.entity(multiPart, multiPart.getMediaType()));
+
+         System.out.println(response.getStatus() + " "
+               + response.getStatusInfo() + " " + response);
+
+         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            System.err.printf("UploadQuestion: Did not get an OK response\n");
+            return false;            
+         }
+         
+         String sobj = response.readEntity(String.class);
+         JSONArray array = new JSONArray(sobj);
+         System.out.printf("response: %s [%s] [%s]\n", array.toString(),
+               array.get(0), array.get(1));
+
+         if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
+            System.err.printf("got error while uploading environment: %s %s\n",
+                  array.get(0), array.get(1));
+            return false;
+         }
+
+         return true;
+      }
+      catch (Exception e) {
+         System.err.printf(
+               "Exception when uploading question to %s using (%s, %s, %s)\n",
+               _workMgr, testrigName, qName, fileName);
          e.printStackTrace();
          return false;
       }
@@ -340,8 +494,11 @@ public class SampleClient {
             }
          }
          
+         File outdir = new File("client");
+         outdir.mkdirs();
+         
          File inFile = response.readEntity(File.class);
-         File outFile = new File(outFileStr);
+         File outFile = new File(outdir.getAbsolutePath() + "/" + outFileStr);
 
          inFile.renameTo(outFile);
 
