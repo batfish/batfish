@@ -312,10 +312,15 @@ public class Batfish implements AutoCloseable {
 
    private void answerMultipath(Question question) {
       String environmentName = question.getMasterEnvironment();
-      Path envPath = Paths.get(_settings.getAutoBaseDir(), BfConsts.RELPATH_ENVIRONMENTS_DIR, environmentName);
-      Path queryPath = Paths.get(_settings.getAutoBaseDir(), BfConsts.RELPATH_QUESTIONS_DIR, _settings.getQuestionName(), BfConsts.RELPATH_QUERIES_DIR);
-      _settings.setMultipathInconsistencyQueryPath(queryPath.resolve(BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX).toString());
-      _settings.setNodeSetPath(envPath.resolve(BfConsts.RELPATH_ENV_NODE_SET).toString());
+      Path envPath = Paths.get(_settings.getAutoBaseDir(),
+            BfConsts.RELPATH_ENVIRONMENTS_DIR, environmentName);
+      Path queryPath = Paths.get(_settings.getAutoBaseDir(),
+            BfConsts.RELPATH_QUESTIONS_DIR, _settings.getQuestionName(),
+            BfConsts.RELPATH_QUERIES_DIR);
+      _settings.setMultipathInconsistencyQueryPath(queryPath.resolve(
+            BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX).toString());
+      _settings.setNodeSetPath(envPath.resolve(BfConsts.RELPATH_ENV_NODE_SET)
+            .toString());
       genMultipathQueries();
    }
 
@@ -1409,7 +1414,8 @@ public class Batfish implements AutoCloseable {
       }
       String nodeSetPath = _settings.getNodeSetPath();
       if (nodeSetPath == null) {
-         throw new BatfishException("Need to specify output path for serialized set of nodes in environment");
+         throw new BatfishException(
+               "Need to specify output path for serialized set of nodes in environment");
       }
 
       Path flowSinkSetPath = Paths.get(_settings.getDataPlaneDir(),
