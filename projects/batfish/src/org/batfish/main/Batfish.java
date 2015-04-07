@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -27,6 +28,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Set;
@@ -120,6 +126,8 @@ import org.batfish.util.Util;
 import org.batfish.z3.ConcretizerQuery;
 import org.batfish.z3.FailureInconsistencyBlackHoleQuerySynthesizer;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
+import org.batfish.z3.NodJob;
+import org.batfish.z3.NodJobResult;
 import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachableQuerySynthesizer;
 import org.batfish.z3.RoleReachabilityQuerySynthesizer;
@@ -128,6 +136,8 @@ import org.batfish.z3.Synthesizer;
 
 import com.logicblox.bloxweb.client.ServiceClientException;
 import com.logicblox.connect.Workspace.Relation;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Z3Exception;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
@@ -314,14 +324,50 @@ public class Batfish implements AutoCloseable {
       String environmentName = question.getMasterEnvironment();
       Path envPath = Paths.get(_settings.getAutoBaseDir(),
             BfConsts.RELPATH_ENVIRONMENTS_DIR, environmentName);
-      Path queryPath = Paths.get(_settings.getAutoBaseDir(),
+      Path queryDir = Paths.get(_settings.getAutoBaseDir(),
             BfConsts.RELPATH_QUESTIONS_DIR, _settings.getQuestionName(),
             BfConsts.RELPATH_QUERIES_DIR);
-      _settings.setMultipathInconsistencyQueryPath(queryPath.resolve(
+      Path dataPlanePath = envPath.resolve(BfConsts.RELPATH_Z3_DATA_PLANE_FILE);
+      _settings.setMultipathInconsistencyQueryPath(queryDir.resolve(
             BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX).toString());
       _settings.setNodeSetPath(envPath.resolve(BfConsts.RELPATH_ENV_NODE_SET)
             .toString());
       genMultipathQueries();
+      Set<Path> queryPaths = getMultipathQueryPaths(queryDir);
+      computeNodOutput(dataPlanePath, queryPaths);
+   }
+
+   private void computeNodOutput(Path dataPlanePath, Set<Path> queryPaths) {
+      int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
+//      ExecutorService pool = Executors.newFixedThreadPool(numConcurrentThreads);
+      ExecutorService pool = Executors.newSingleThreadExecutor();
+      Set<NodJob> jobs = new HashSet<NodJob>();
+      for (final Path queryPath : queryPaths) {
+         NodJob job = new NodJob(dataPlanePath, queryPath);
+         jobs.add(job);
+      }
+      List<Future<NodJobResult>> results;
+      try {
+         results = pool.invokeAll(jobs);
+      }
+      catch (InterruptedException e) {
+         throw new BatfishException("Nod executor service interrupted", e);
+      }
+      for (Future<NodJobResult> future : results) {
+         try {
+            NodJobResult result = future.get();
+            if (result == NodJobResult.FAILURE) {
+               throw new BatfishException("Failure running nod job");
+            }
+         }
+         catch (InterruptedException e) {
+            throw new BatfishException("Nod job interrupted");
+         }
+         catch (ExecutionException e) {
+            throw new BatfishException("Could not execute nod job");
+         }
+      }
+      pool.shutdown();
    }
 
    /**
@@ -1522,6 +1568,29 @@ public class Batfish implements AutoCloseable {
       helpPredicates.addAll(helpPredicateSet);
       Collections.sort(helpPredicates);
       return helpPredicates;
+   }
+
+   private Set<Path> getMultipathQueryPaths(Path directory) {
+      Set<Path> queryPaths = new TreeSet<Path>();
+      try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
+            directory, new DirectoryStream.Filter<Path>() {
+               @Override
+               public boolean accept(Path path) throws IOException {
+                  String filename = path.getFileName().toString();
+                  return filename
+                        .startsWith(BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX)
+                        && filename.endsWith(".smt2");
+               }
+            })) {
+         for (Path path : directoryStream) {
+            queryPaths.add(path);
+         }
+      }
+      catch (IOException ex) {
+         throw new BatfishException(
+               "Could not list files in queries directory", ex);
+      }
+      return queryPaths;
    }
 
    private PolicyRouteFibNodeMap getPolicyRouteFibNodeMap(
