@@ -102,6 +102,7 @@ public class Driver {
       }
       else if (_mainSettings.canExecute()) {
          _mainSettings.setLogger(_mainLogger);
+         applyAutoBaseDir(_mainSettings);
          if (!RunBatfish(_mainSettings)) {
             System.exit(1);
          }
@@ -138,24 +139,7 @@ public class Driver {
                "Parsing command-line failed: " + e.getMessage());
       }
 
-      String baseDir = settings.getAutoBaseDir();
-      if (baseDir != null) {
-         settings.setSerializeIndependentPath(Paths.get(baseDir, BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR).toString());
-         settings.setSerializeVendorPath(Paths.get(baseDir, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR).toString());
-         settings.setTestRigPath(Paths.get(baseDir, BfConsts.RELPATH_TEST_RIG_DIR).toString());
-         settings.setServiceLogicBloxHostname(_mainSettings.getServiceLogicBloxHostname());
-         settings.setLogicDir(_mainSettings.getLogicDir());
-         String envName = settings.getEnvironmentName();
-         if (envName != null) {
-            Path envPath = Paths.get(baseDir, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
-            settings.setDumpFactsDir(envPath.resolve(BfConsts.RELPATH_FACT_DUMP_DIR).toString());
-            settings.setDataPlaneDir(envPath.resolve(BfConsts.RELPATH_DATA_PLANE_DIR).toString());
-            settings.setJobLogicBloxHostnamePath(envPath.resolve(BfConsts.RELPATH_LB_HOSTNAME_PATH).toString());
-            String workspaceBasename = Paths.get(baseDir).getFileName().toString();
-            String workspaceName = workspaceBasename + ":" + envName;
-            settings.setWorkspaceName(workspaceName);
-         }
-      }
+      applyAutoBaseDir(settings);
 
       if (settings.canExecute()) {
          if (claimIdle()) {
@@ -198,6 +182,34 @@ public class Driver {
       }
       else {
          return Arrays.asList(BfConsts.SVC_FAILURE_KEY, "Non-executable command");
+      }
+   }
+
+   private static void applyAutoBaseDir(final Settings settings) {
+      String baseDir = settings.getAutoBaseDir();
+      if (baseDir != null) {
+         settings.setSerializeIndependentPath(Paths.get(baseDir, BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR).toString());
+         settings.setSerializeVendorPath(Paths.get(baseDir, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR).toString());
+         settings.setTestRigPath(Paths.get(baseDir, BfConsts.RELPATH_TEST_RIG_DIR).toString());
+         settings.setServiceLogicBloxHostname(_mainSettings.getServiceLogicBloxHostname());
+         settings.setLogicDir(_mainSettings.getLogicDir());
+         String envName = settings.getEnvironmentName();
+         if (envName != null) {
+            Path envPath = Paths.get(baseDir, BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
+            settings.setDumpFactsDir(envPath.resolve(BfConsts.RELPATH_FACT_DUMP_DIR).toString());
+            settings.setDataPlaneDir(envPath.resolve(BfConsts.RELPATH_DATA_PLANE_DIR).toString());
+            settings.setJobLogicBloxHostnamePath(envPath.resolve(BfConsts.RELPATH_LB_HOSTNAME_PATH).toString());
+            String workspaceBasename = Paths.get(baseDir).getFileName().toString();
+            String workspaceName = workspaceBasename + ":" + envName;
+            settings.setWorkspaceName(workspaceName);
+            settings.setNodeSetPath(envPath.resolve(BfConsts.RELPATH_ENV_NODE_SET).toString());
+            settings.setZ3DataPlaneFile(envPath.resolve(BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString());
+         }
+         String questionName = settings.getQuestionName();
+         if (questionName != null) {
+            Path questionPath = Paths.get(baseDir, BfConsts.RELPATH_QUESTIONS_DIR, questionName);
+            settings.setQuestionPath(questionPath.resolve(BfConsts.RELPATH_QUESTION_FILE).toString());
+         }
       }
    }
 }

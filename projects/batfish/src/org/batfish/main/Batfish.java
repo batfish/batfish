@@ -56,6 +56,7 @@ import org.batfish.collections.QualifiedNameMap;
 import org.batfish.collections.RoleNodeMap;
 import org.batfish.collections.RoleSet;
 import org.batfish.collections.TreeMultiSet;
+import org.batfish.common.BfConsts;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
@@ -68,6 +69,8 @@ import org.batfish.grammar.juniper.JuniperFlattener;
 import org.batfish.grammar.logicblox.LogQLPredicateInfoExtractor;
 import org.batfish.grammar.logicblox.LogiQLCombinedParser;
 import org.batfish.grammar.logicblox.LogiQLPredicateInfoResolver;
+import org.batfish.grammar.question.QuestionCombinedParser;
+import org.batfish.grammar.question.QuestionExtractor;
 import org.batfish.grammar.topology.BatfishTopologyCombinedParser;
 import org.batfish.grammar.topology.BatfishTopologyExtractor;
 import org.batfish.grammar.topology.GNS3TopologyCombinedParser;
@@ -89,6 +92,7 @@ import org.batfish.logicblox.PredicateInfo;
 import org.batfish.logicblox.ProjectFile;
 import org.batfish.logicblox.QueryException;
 import org.batfish.logicblox.TopologyFactExtractor;
+import org.batfish.question.Question;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
@@ -293,6 +297,26 @@ public class Batfish implements AutoCloseable {
    private void anonymizeConfigurations() {
       // TODO Auto-generated method stub
 
+   }
+
+   private void answer(String questionPath) {
+      Question question = parseQuestion(questionPath);
+      switch (question.getType()) {
+      case MULTIPATH:
+         answerMultipath(question);
+         break;
+      default:
+         throw new BatfishException("Unknown question type");
+      }
+   }
+
+   private void answerMultipath(Question question) {
+      String environmentName = question.getMasterEnvironment();
+      Path envPath = Paths.get(_settings.getAutoBaseDir(), BfConsts.RELPATH_ENVIRONMENTS_DIR, environmentName);
+      Path queryPath = Paths.get(_settings.getAutoBaseDir(), BfConsts.RELPATH_QUESTIONS_DIR, _settings.getQuestionName(), BfConsts.RELPATH_QUERIES_DIR);
+      _settings.setMultipathInconsistencyQueryPath(queryPath.resolve(BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX).toString());
+      _settings.setNodeSetPath(envPath.resolve(BfConsts.RELPATH_ENV_NODE_SET).toString());
+      genMultipathQueries();
    }
 
    /**
@@ -1379,6 +1403,15 @@ public class Batfish implements AutoCloseable {
       _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
       resetTimer();
 
+      String outputPath = _settings.getZ3File();
+      if (outputPath == null) {
+         throw new BatfishException("Need to specify output path for z3 logic");
+      }
+      String nodeSetPath = _settings.getNodeSetPath();
+      if (nodeSetPath == null) {
+         throw new BatfishException("Need to specify output path for serialized set of nodes in environment");
+      }
+
       Path flowSinkSetPath = Paths.get(_settings.getDataPlaneDir(),
             FLOW_SINKS_FILENAME);
       Path fibsPath = Paths.get(_settings.getDataPlaneDir(), FIBS_FILENAME);
@@ -1423,14 +1456,12 @@ public class Batfish implements AutoCloseable {
          }
       }
 
-      String outputPath = _settings.getZ3File();
       _logger.info("Writing Z3 logic: \"" + outputPath + "\"...");
       File z3Out = new File(outputPath);
       z3Out.delete();
       writeFile(outputPath, result);
       _logger.info("OK\n");
 
-      String nodeSetPath = _settings.getNodeSetPath();
       _logger.info("Serializing node set: \"" + nodeSetPath + "\"...");
       NodeSet nodeSet = s.getNodeSet();
       serializeObject(nodeSet, new File(nodeSetPath));
@@ -1853,6 +1884,32 @@ public class Batfish implements AutoCloseable {
       walker.walk(extractor, tree);
       NodeRoleMap nodeRoles = extractor.getRoleMap();
       return nodeRoles;
+   }
+
+   private Question parseQuestion(String questionPath) {
+      File questionFile = new File(questionPath);
+      _logger.info("Reading question file: \"" + questionPath + "\"...");
+      String questionText = readFile(questionFile);
+      _logger.info("OK\n");
+      QuestionCombinedParser parser = new QuestionCombinedParser(questionText,
+            _settings.getThrowOnParserError(), _settings.getThrowOnLexerError());
+      QuestionExtractor extractor = new QuestionExtractor();
+      try {
+         ParserRuleContext tree = parse(parser, questionPath);
+         _logger.info("\tPost-processing...");
+         extractor.processParseTree(tree);
+         _logger.info("OK\n");
+      }
+      catch (ParserBatfishException e) {
+         String error = "Error parsing question: \"" + questionPath + "\"";
+         throw new BatfishException(error, e);
+      }
+      catch (Exception e) {
+         String error = "Error post-processing parse tree of question file: \""
+               + questionPath + "\"";
+         throw new BatfishException(error, e);
+      }
+      return extractor.getQuestion();
    }
 
    private Topology parseTopology(File topologyFilePath) {
@@ -2314,6 +2371,12 @@ public class Batfish implements AutoCloseable {
    }
 
    public void run() {
+
+      if (_settings.getAnswer()) {
+         String questionPath = _settings.getQuestionPath();
+         answer(questionPath);
+         return;
+      }
 
       if (_settings.getBuildPredicateInfo()) {
          buildPredicateInfo();

@@ -145,6 +145,7 @@ public class Settings {
    private static final String ARGNAME_MPI_PATH = "path";
    private static final String ARGNAME_NODE_ROLES_PATH = "path";
    private static final String ARGNAME_NODE_SET_PATH = "path";
+   private static final String ARGNAME_QUESTION_NAME = "name";
    private static final String ARGNAME_REACH_PATH = "path";
    private static final String ARGNAME_REVERT = "branch-name";
    private static final String ARGNAME_ROLE_NODES_PATH = "path";
@@ -178,13 +179,13 @@ public class Settings {
          .toString();
    private static final String DEFAULT_SERVICE_URL = "http://localhost";
    private static final String DEFAULT_TEST_RIG_PATH = "default_test_rig";
-   private static final String DEFAULT_Z3_OUTPUT = "z3-dataplane-output.smt2";
    private static final boolean DEFAULT_Z3_SIMPLIFY = true;
    private static final String EXECUTABLE_NAME = "batfish";
 
    private String _acceptNode;
    private boolean _anonymize;
    private String _anonymizeDir;
+   private boolean _answer;
    private String _autoBaseDir;
    private boolean _blackHole;
    private String _blackHolePath;
@@ -254,6 +255,8 @@ public class Settings {
    private boolean _printSemantics;
    private boolean _query;
    private boolean _queryAll;
+   private String _questionName;
+   private String _questionPath;
    private boolean _reach;
    private String _reachPath;
    private boolean _redFlagAsError;
@@ -338,6 +341,10 @@ public class Settings {
 
    public String getAnonymizeDir() {
       return _anonymizeDir;
+   }
+
+   public boolean getAnswer() {
+      return _answer;
    }
 
    public String getAutoBaseDir() {
@@ -578,6 +585,14 @@ public class Settings {
 
    public boolean getQueryAll() {
       return _queryAll;
+   }
+
+   public String getQuestionName() {
+      return _questionName;
+   }
+
+   public String getQuestionPath() {
+      return _questionPath;
    }
 
    public String getReachableQueryPath() {
@@ -1088,6 +1103,11 @@ public class Settings {
                   .argName(ARGNAME_SERVICE_LOGICBLOX_HOSTNAME)
                   .desc("hostname of of LogicBlox server to be used by batfish service when creating workspaces")
                   .longOpt(ARG_SERVICE_LOGICBLOX_HOSTNAME).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_QUESTION_NAME).desc("name of question")
+            .longOpt(BfConsts.ARG_QUESTION_NAME).build());
+      _options.addOption(Option.builder().desc("answer provided question")
+            .longOpt(BfConsts.COMMAND_ANSWER).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1146,7 +1166,7 @@ public class Settings {
       _exitOnParseError = line.hasOption(ARG_EXIT_ON_PARSE_ERROR);
       _z3 = line.hasOption(ARG_Z3);
       if (_z3) {
-         _z3File = line.getOptionValue(ARG_Z3_OUTPUT, DEFAULT_Z3_OUTPUT);
+         _z3File = line.getOptionValue(ARG_Z3_OUTPUT);
       }
       _concretize = line.hasOption(ARG_Z3_CONCRETIZE);
       if (_concretize) {
@@ -1260,6 +1280,8 @@ public class Settings {
       _environmentName = line.getOptionValue(ARG_ENVIRONMENT_NAME);
       _serviceLogicBloxHostname = line
             .getOptionValue(ARG_SERVICE_LOGICBLOX_HOSTNAME);
+      _questionName = line.getOptionValue(BfConsts.ARG_QUESTION_NAME);
+      _answer = line.hasOption(BfConsts.COMMAND_ANSWER);
    }
 
    public boolean printParseTree() {
@@ -1298,6 +1320,22 @@ public class Settings {
       _logger = logger;
    }
 
+   public void setLogicDir(String logicDir) {
+      _logicDir = logicDir;
+   }
+
+   public void setMultipathInconsistencyQueryPath(String path) {
+      _mpiPath = path;
+   }
+
+   public void setNodeSetPath(String nodeSetPath) {
+      _nodeSetPath = nodeSetPath;
+   }
+
+   public void setQuestionPath(String questionPath) {
+      _questionPath = questionPath;
+   }
+
    public void setSerializeIndependentPath(String path) {
       _serializeIndependentPath = path;
    }
@@ -1318,8 +1356,8 @@ public class Settings {
       _workspaceName = name;
    }
 
-   public void setLogicDir(String logicDir) {
-      _logicDir = logicDir;
+   public void setZ3DataPlaneFile(String path) {
+      _z3File = path;
    }
 
 }
