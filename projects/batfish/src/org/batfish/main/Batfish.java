@@ -862,7 +862,7 @@ public class Batfish implements AutoCloseable {
       String fiQueryBasePath = _settings.getBlackHoleQueryPath();
       String nodeSetPath = _settings.getNodeSetPath();
 
-      _logger.info("Reading node set from : \"" + nodeSetPath + "\"...");
+      _logger.info("Reading node set from: \"" + nodeSetPath + "\"...");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
       _logger.info("OK\n");
 
@@ -1136,7 +1136,7 @@ public class Batfish implements AutoCloseable {
       String nodeSetPath = _settings.getNodeSetPath();
       String nodeSetTextPath = nodeSetPath + ".txt";
 
-      _logger.info("Reading node set from : \"" + nodeSetPath + "\"...");
+      _logger.info("Reading node set from: \"" + nodeSetPath + "\"...");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
       _logger.info("OK\n");
 
@@ -1169,7 +1169,7 @@ public class Batfish implements AutoCloseable {
       String nodeSetPath = _settings.getNodeSetPath();
       String acceptNode = _settings.getAcceptNode();
       String blacklistedNode = _settings.getBlacklistNode();
-      _logger.info("Reading node set from : \"" + nodeSetPath + "\"...");
+      _logger.info("Reading node set from: \"" + nodeSetPath + "\"...");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
       _logger.info("OK\n");
 
@@ -1202,11 +1202,11 @@ public class Batfish implements AutoCloseable {
       String nodeRolesPath = _settings.getNodeRolesPath();
       String iterationsPath = nodeRolesPath + ".iterations";
 
-      _logger.info("Reading node set from : \"" + nodeSetPath + "\"...");
+      _logger.info("Reading node set from: \"" + nodeSetPath + "\"...");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
       _logger.info("OK\n");
 
-      _logger.info("Reading node roles from : \"" + nodeRolesPath + "\"...");
+      _logger.info("Reading node roles from: \"" + nodeRolesPath + "\"...");
       NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(new File(
             nodeRolesPath));
       _logger.info("OK\n");
@@ -1283,11 +1283,11 @@ public class Batfish implements AutoCloseable {
       String constraintsIterationsPath = nodeRolesPath
             + ".rtconstraintsiterations";
 
-      _logger.info("Reading node set from : \"" + nodeSetPath + "\"...");
+      _logger.info("Reading node set from: \"" + nodeSetPath + "\"...");
       NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
       _logger.info("OK\n");
 
-      _logger.info("Reading node roles from : \"" + nodeRolesPath + "\"...");
+      _logger.info("Reading node roles from: \"" + nodeRolesPath + "\"...");
       NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(new File(
             nodeRolesPath));
       _logger.info("OK\n");
