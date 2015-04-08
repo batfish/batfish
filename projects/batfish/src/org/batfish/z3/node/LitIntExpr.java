@@ -1,6 +1,10 @@
 package org.batfish.z3.node;
 
 import org.batfish.representation.Ip;
+import org.batfish.z3.NodProgram;
+
+import com.microsoft.z3.BitVecExpr;
+import com.microsoft.z3.Z3Exception;
 
 public class LitIntExpr extends IntExpr {
 
@@ -56,6 +60,11 @@ public class LitIntExpr extends IntExpr {
          }
       }
       _printer = new SimpleExprPrinter(_numString);
+   }
+
+   @Override
+   public BitVecExpr toExpr(NodProgram nodProgram) throws Z3Exception {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
 }

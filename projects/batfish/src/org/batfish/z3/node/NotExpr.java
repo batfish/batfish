@@ -4,6 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.batfish.z3.NodProgram;
+
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Z3Exception;
+
 public class NotExpr extends BooleanExpr implements ComplexExpr {
 
    private BooleanExpr _arg;
@@ -65,6 +71,11 @@ public class NotExpr extends BooleanExpr implements ComplexExpr {
       else {
          return this;
       }
+   }
+
+   @Override
+   public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
 }

@@ -163,7 +163,6 @@ public class Settings {
    public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "55181";
    public static final String DEFAULT_CONNECTBLOX_HOST = "localhost";
    public static final String DEFAULT_CONNECTBLOX_REGULAR_PORT = "55179";
-   private static final String DEFAULT_DATA_PLANE_DIR = "dp";
    private static final String DEFAULT_DUMP_FACTS_DIR = "facts";
    private static final String DEFAULT_DUMP_IF_DIR = "if";
    private static final String DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH = "interface_descriptions";
@@ -1210,8 +1209,7 @@ public class Settings {
       _serializeIndependentPath = line.getOptionValue(
             ARG_SERIALIZE_INDEPENDENT_PATH, DEFAULT_SERIALIZE_INDEPENDENT_PATH);
       _dataPlane = line.hasOption(ARG_DATA_PLANE);
-      _dataPlaneDir = line.getOptionValue(ARG_DATA_PLANE_DIR,
-            DEFAULT_DATA_PLANE_DIR);
+      _dataPlaneDir = line.getOptionValue(ARG_DATA_PLANE_DIR);
       _printParseTree = line.hasOption(ARG_PRINT_PARSE_TREES);
       _dumpInterfaceDescriptions = line
             .hasOption(ARG_DUMP_INTERFACE_DESCRIPTIONS);

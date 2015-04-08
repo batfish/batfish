@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.batfish.z3.NodProgram;
+
+import com.microsoft.z3.BitVecExpr;
+import com.microsoft.z3.Z3Exception;
+
 public class ExtractExpr extends IntExpr implements ComplexExpr {
 
    private List<Expr> _subExpressions;
@@ -30,6 +35,11 @@ public class ExtractExpr extends IntExpr implements ComplexExpr {
    @Override
    public Set<String> getVariables() {
       return _var.getVariables();
+   }
+
+   @Override
+   public BitVecExpr toExpr(NodProgram nodProgram) throws Z3Exception {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
 }

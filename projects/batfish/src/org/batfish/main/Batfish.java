@@ -28,7 +28,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -128,6 +127,7 @@ import org.batfish.z3.FailureInconsistencyBlackHoleQuerySynthesizer;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodJob;
 import org.batfish.z3.NodJobResult;
+import org.batfish.z3.NodProgram;
 import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachableQuerySynthesizer;
 import org.batfish.z3.RoleReachabilityQuerySynthesizer;
@@ -327,23 +327,38 @@ public class Batfish implements AutoCloseable {
       Path queryDir = Paths.get(_settings.getAutoBaseDir(),
             BfConsts.RELPATH_QUESTIONS_DIR, _settings.getQuestionName(),
             BfConsts.RELPATH_QUERIES_DIR);
-      Path dataPlanePath = envPath.resolve(BfConsts.RELPATH_Z3_DATA_PLANE_FILE);
       _settings.setMultipathInconsistencyQueryPath(queryDir.resolve(
             BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX).toString());
       _settings.setNodeSetPath(envPath.resolve(BfConsts.RELPATH_ENV_NODE_SET)
             .toString());
+      _settings.setDataPlaneDir(envPath.resolve(BfConsts.RELPATH_DATA_PLANE_DIR).toString());
       genMultipathQueries();
-      Set<Path> queryPaths = getMultipathQueryPaths(queryDir);
-      computeNodOutput(dataPlanePath, queryPaths);
+      List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
+      Map<String, Configuration> configurations = deserializeConfigurations(_settings
+            .getSerializeIndependentPath());
+      try {
+         Context ctx = new Context();
+         NodProgram dataPlane = synthesizeDataPlane(configurations, ctx);
+         for (String node : configurations.keySet()) {
+            MultipathInconsistencyQuerySynthesizer query = new MultipathInconsistencyQuerySynthesizer(
+                  node);
+            queries.add(query);
+         }
+         computeNodOutput(dataPlane, queries);
+      }
+      catch (Z3Exception e) {
+         throw new BatfishException("Error creating nod programs", e);
+      }
    }
 
-   private void computeNodOutput(Path dataPlanePath, Set<Path> queryPaths) {
+   private void computeNodOutput(NodProgram dataPlane,
+         List<QuerySynthesizer> queries) {
       int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
-      ExecutorService pool = Executors.newFixedThreadPool(numConcurrentThreads);
-      // ExecutorService pool = Executors.newSingleThreadExecutor();
+//      ExecutorService pool = Executors.newFixedThreadPool(numConcurrentThreads);
+       ExecutorService pool = Executors.newSingleThreadExecutor();
       Set<NodJob> jobs = new HashSet<NodJob>();
-      for (final Path queryPath : queryPaths) {
-         NodJob job = new NodJob(dataPlanePath, queryPath);
+      for (final QuerySynthesizer query : queries) {
+         NodJob job = new NodJob(dataPlane, query);
          jobs.add(job);
       }
       List<Future<NodJobResult>> results;
@@ -1455,6 +1470,64 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
 
       printElapsedTime();
+   }
+
+   private NodProgram synthesizeDataPlane(
+         Map<String, Configuration> configurations, Context ctx)
+         throws Z3Exception {
+      _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
+      resetTimer();
+
+      String dataPlaneDir = _settings.getDataPlaneDir();
+      if (dataPlaneDir == null) {
+         throw new BatfishException("Data plane dir not set");
+      }
+      Path flowSinkSetPath = Paths.get(dataPlaneDir, FLOW_SINKS_FILENAME);
+      Path fibsPath = Paths.get(dataPlaneDir, FIBS_FILENAME);
+      Path prFibsPath = Paths.get(dataPlaneDir,
+            FIBS_POLICY_ROUTE_NEXT_HOP_FILENAME);
+      Path edgesPath = Paths.get(dataPlaneDir, EDGES_FILENAME);
+
+      _logger.info("Deserializing flow sink interface set: \""
+            + flowSinkSetPath.toString() + "\"...");
+      FlowSinkSet flowSinks = (FlowSinkSet) deserializeObject(flowSinkSetPath
+            .toFile());
+      _logger.info("OK\n");
+
+      _logger.info("Deserializing destination route fibs: \""
+            + fibsPath.toString() + "\"...");
+      FibMap fibs = (FibMap) deserializeObject(fibsPath.toFile());
+      _logger.info("OK\n");
+
+      _logger.info("Deserializing policy route fibs: \""
+            + prFibsPath.toString() + "\"...");
+      PolicyRouteFibNodeMap prFibs = (PolicyRouteFibNodeMap) deserializeObject(prFibsPath
+            .toFile());
+      _logger.info("OK\n");
+
+      _logger.info("Deserializing toplogy edges: \"" + edgesPath.toString()
+            + "\"...");
+      EdgeSet topologyEdges = (EdgeSet) deserializeObject(edgesPath.toFile());
+      _logger.info("OK\n");
+
+      _logger.info("Synthesizing Z3 logic...");
+      Synthesizer s = new Synthesizer(configurations, fibs, prFibs,
+            topologyEdges, _settings.getSimplify(), flowSinks);
+
+      NodProgram nodProgram = s.synthesizeNodProgram(ctx);
+
+      List<String> warnings = s.getWarnings();
+      int numWarnings = warnings.size();
+      if (numWarnings == 0) {
+         _logger.info("OK\n");
+      }
+      else {
+         for (String warning : warnings) {
+            _logger.warn(warning);
+         }
+      }
+      printElapsedTime();
+      return nodProgram;
    }
 
    private void genZ3(Map<String, Configuration> configurations) {

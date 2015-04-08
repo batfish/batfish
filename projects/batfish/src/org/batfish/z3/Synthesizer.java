@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -85,6 +86,11 @@ import org.batfish.z3.node.SaneExpr;
 import org.batfish.z3.node.Statement;
 import org.batfish.z3.node.TrueExpr;
 import org.batfish.z3.node.VarIntExpr;
+
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.FuncDecl;
+import com.microsoft.z3.Z3Exception;
 
 public class Synthesizer {
    public static final String DST_IP_VAR = "dst_ip";
@@ -210,6 +216,17 @@ public class Synthesizer {
       return leExpr;
    }
 
+   public static List<Statement> getDeclareVarExprs() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements.add(new Comment("Variable Declarations"));
+      for (Entry<String, Integer> e : PACKET_VAR_SIZES.entrySet()) {
+         String var = e.getKey();
+         int size = e.getValue();
+         statements.add(new DeclareVarExpr(var, size));
+      }
+      return statements;
+   }
+
    private static List<String> getPacketVars() {
       List<String> vars = new ArrayList<String>();
       vars.add(SRC_IP_VAR);
@@ -218,6 +235,23 @@ public class Synthesizer {
       vars.add(DST_PORT_VAR);
       vars.add(IP_PROTOCOL_VAR);
       return vars;
+   }
+
+   public static Map<String, FuncDecl> getRelDeclFuncDecls(
+         List<Statement> existingStatements, Context ctx) throws Z3Exception {
+      Map<String, FuncDecl> funcDecls = new LinkedHashMap<String, FuncDecl>();
+      Set<String> relations = new TreeSet<String>();
+      for (Statement existingStatement : existingStatements) {
+         relations.addAll(existingStatement.getRelations());
+      }
+      relations.add(QueryRelationExpr.NAME);
+      for (String packetRel : relations) {
+         List<Integer> sizes = new ArrayList<Integer>();
+         sizes.addAll(PACKET_VAR_SIZES.values());
+         DeclareRelExpr declaration = new DeclareRelExpr(packetRel, sizes);
+         funcDecls.put(packetRel, declaration.toFuncDecl(ctx));
+      }
+      return funcDecls;
    }
 
    public static List<Statement> getVarDeclExprs() {
@@ -268,14 +302,15 @@ public class Synthesizer {
          return new ExtractExpr(var, low, high);
       }
    }
-
    private final Map<String, Configuration> _configurations;
    private final FibMap _fibs;
    private FlowSinkSet _flowSinks;
    private final PolicyRouteFibNodeMap _prFibs;
    private final boolean _simplify;
    private final EdgeSet _topologyEdges;
+
    private final Map<String, Set<Interface>> _topologyInterfaces;
+
    private List<String> _warnings;
 
    public Synthesizer(Map<String, Configuration> configurations, FibMap fibs,
@@ -1414,6 +1449,7 @@ public class Synthesizer {
       for (Statement statement : statements) {
          if (_simplify) {
             Statement simplifiedStatement = statement.simplify();
+
             simplifiedStatement.print(sb, 0);
          }
          else {
@@ -1428,6 +1464,69 @@ public class Synthesizer {
       // hack to fix node: "(none)"
       output = output.replace("(none)", "_none_");
       return output;
+   }
+
+   public NodProgram synthesizeNodProgram(Context ctx) throws Z3Exception {
+      NodProgram nodProgram = new NodProgram(ctx);
+
+      List<Statement> ruleStatements = new ArrayList<Statement>();
+      List<Statement> dropRules = getDropRules();
+      List<Statement> acceptRules = getAcceptRules();
+      List<Statement> sane = getSane();
+      List<Statement> flowSinkAcceptRules = getFlowSinkAcceptRules();
+      List<Statement> originateToPostInRules = getOriginateToPostInRules();
+      List<Statement> postInInterfaceToPostInRules = getPostInInterfaceToPostInRules();
+      List<Statement> postInToNodeAcceptRules = getPostInToNodeAcceptRules();
+      List<Statement> postInToPreOutRules = getPostInToPreOutRules();
+      List<Statement> preOutToDestRouteRules = getPreOutToDestRouteRules();
+      List<Statement> destRouteToPreOutEdgeRules = getDestRouteToPreOutEdgeRules();
+      List<Statement> preOutEdgeToPreOutInterfaceRules = getPreOutEdgeToPreOutInterfaceRules();
+      List<Statement> policyRouteRules = getPolicyRouteRules();
+      List<Statement> matchAclRules = getMatchAclRules();
+      List<Statement> toNeighborsRules = getToNeighborsRules();
+      List<Statement> preInInterfaceToPostInInterfaceRules = getPreInInterfaceToPostInInterfaceRules();
+      List<Statement> preOutInterfaceToPostOutInterfaceRules = getPreOutInterfaceToPostOutInterfaceRules();
+      List<Statement> nodeAcceptToRoleAcceptRules = getNodeAcceptToRoleAcceptRules();
+      List<Statement> externalSrcIpRules = getExternalSrcIpRules();
+      List<Statement> externalDstIpRules = getExternalDstIpRules();
+      List<Statement> postOutIfaceToNodeTransitRules = getPostOutIfaceToNodeTransitRules();
+      List<Statement> roleOriginateToNodeOriginateRules = getRoleOriginateToNodeOriginateRules();
+
+      ruleStatements.addAll(dropRules);
+      ruleStatements.addAll(acceptRules);
+      ruleStatements.addAll(sane);
+      ruleStatements.addAll(flowSinkAcceptRules);
+      ruleStatements.addAll(originateToPostInRules);
+      ruleStatements.addAll(postInInterfaceToPostInRules);
+      ruleStatements.addAll(postInToNodeAcceptRules);
+      ruleStatements.addAll(postInToPreOutRules);
+      ruleStatements.addAll(preOutToDestRouteRules);
+      ruleStatements.addAll(destRouteToPreOutEdgeRules);
+      ruleStatements.addAll(preOutEdgeToPreOutInterfaceRules);
+      ruleStatements.addAll(policyRouteRules);
+      ruleStatements.addAll(matchAclRules);
+      ruleStatements.addAll(toNeighborsRules);
+      ruleStatements.addAll(preInInterfaceToPostInInterfaceRules);
+      ruleStatements.addAll(preOutInterfaceToPostOutInterfaceRules);
+      ruleStatements.addAll(nodeAcceptToRoleAcceptRules);
+      ruleStatements.addAll(externalSrcIpRules);
+      ruleStatements.addAll(externalDstIpRules);
+      ruleStatements.addAll(postOutIfaceToNodeTransitRules);
+      ruleStatements.addAll(roleOriginateToNodeOriginateRules);
+
+      Map<String, FuncDecl> relDeclFuncDecls = getRelDeclFuncDecls(
+            ruleStatements, ctx);
+      nodProgram.getRelationDeclarations().putAll(relDeclFuncDecls);
+      nodProgram.getVariables().putAll(PACKET_VAR_SIZES);
+      List<BoolExpr> rules = nodProgram.getRules();
+      for (Statement statement : ruleStatements) {
+         if (statement instanceof RuleExpr) {
+            RuleExpr ruleExpr = (RuleExpr) statement;
+            BoolExpr rule = ruleExpr.toBoolExpr(nodProgram);
+            rules.add(rule);
+         }
+      }
+      return nodProgram;
    }
 
 }

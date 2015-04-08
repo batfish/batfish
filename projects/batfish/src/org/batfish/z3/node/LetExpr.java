@@ -3,6 +3,12 @@ package org.batfish.z3.node;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.batfish.z3.NodProgram;
+
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Z3Exception;
+
 public class LetExpr extends BooleanExpr implements ComplexExpr {
 
    private BooleanExpr _expression;
@@ -39,6 +45,11 @@ public class LetExpr extends BooleanExpr implements ComplexExpr {
       for (MacroDefExpr macroDefExpr : _macroDefs) {
          list.addSubExpression(macroDefExpr);
       }
+   }
+
+   @Override
+   public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
 }

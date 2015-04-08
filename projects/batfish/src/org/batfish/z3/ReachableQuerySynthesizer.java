@@ -9,6 +9,9 @@ import org.batfish.z3.node.QueryRelationExpr;
 import org.batfish.z3.node.RuleExpr;
 import org.batfish.z3.node.SaneExpr;
 
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Z3Exception;
+
 public class ReachableQuerySynthesizer implements QuerySynthesizer {
 
    private String _queryText;
@@ -43,6 +46,11 @@ public class ReachableQuerySynthesizer implements QuerySynthesizer {
    @Override
    public String getQueryText() {
       return _queryText;
+   }
+
+   @Override
+   public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
 }
