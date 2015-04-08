@@ -339,8 +339,8 @@ public class Batfish implements AutoCloseable {
 
    private void computeNodOutput(Path dataPlanePath, Set<Path> queryPaths) {
       int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
-//      ExecutorService pool = Executors.newFixedThreadPool(numConcurrentThreads);
-      ExecutorService pool = Executors.newSingleThreadExecutor();
+      ExecutorService pool = Executors.newFixedThreadPool(numConcurrentThreads);
+      // ExecutorService pool = Executors.newSingleThreadExecutor();
       Set<NodJob> jobs = new HashSet<NodJob>();
       for (final Path queryPath : queryPaths) {
          NodJob job = new NodJob(dataPlanePath, queryPath);
@@ -356,15 +356,22 @@ public class Batfish implements AutoCloseable {
       for (Future<NodJobResult> future : results) {
          try {
             NodJobResult result = future.get();
-            if (result == NodJobResult.FAILURE) {
-               throw new BatfishException("Failure running nod job");
+            if (!result.terminatedSuccessfully()) {
+               Throwable failureCause = result.getFailureCause();
+               if (failureCause != null) {
+                  throw new BatfishException("Failure running nod job",
+                        failureCause);
+               }
+               else {
+                  throw new BatfishException("Unknown failure running nod job");
+               }
             }
          }
          catch (InterruptedException e) {
-            throw new BatfishException("Nod job interrupted");
+            throw new BatfishException("Nod job interrupted", e);
          }
          catch (ExecutionException e) {
-            throw new BatfishException("Could not execute nod job");
+            throw new BatfishException("Could not execute nod job", e);
          }
       }
       pool.shutdown();
