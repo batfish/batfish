@@ -1,15 +1,23 @@
 package org.batfish.z3;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class NodJobResult {
 
    private Throwable _failureCause;
 
-   private String _result;
+   private Set<String> _flowLines;
 
    private boolean _successful;
 
-   public NodJobResult(String result) {
-      _result = result;
+   public NodJobResult() {
+      _successful = true;
+      _flowLines = new HashSet<String>();
+   }
+
+   public NodJobResult(Set<String> flowLines) {
+      _flowLines = flowLines;
       _successful = true;
    }
 
@@ -22,8 +30,8 @@ public class NodJobResult {
       return _failureCause;
    }
 
-   public String getResult() {
-      return _result;
+   public Set<String> getFlowLines() {
+      return _flowLines;
    }
 
    public boolean terminatedSuccessfully() {

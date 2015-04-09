@@ -94,7 +94,8 @@ public class SampleClient {
                Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
                      BfConsts.RELPATH_DATA_PLANE_DIR).toString());
 
-         System.out.println("Press any key to create the z3 data plane encoding");
+         System.out
+               .println("Press any key to create the z3 data plane encoding");
          System.in.read();
          WorkItem wItem5 = new WorkItem(testrigName);
          wItem5.addRequestParam(BfConsts.COMMAND_SYNTHESIZE_Z3_DATA_PLANE, "");
@@ -115,6 +116,27 @@ public class SampleClient {
          wItem4.addRequestParam(BfConsts.COMMAND_ANSWER, "");
          wItem4.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
          doWork(testrigName, wItem4, null);
+
+         System.out.println("Press any key to post the flows to LogicBlox");
+         System.in.read();
+         WorkItem wItem6 = new WorkItem(testrigName);
+         wItem6.addRequestParam(BfConsts.COMMAND_POST_FLOWS, "");
+         wItem6.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
+         wItem6.addRequestParam(BfConsts.COMMAND_ENV, envName);
+         doWork(testrigName, wItem6, null);
+
+         System.out.println("Press any key to get flow traces");
+         System.in.read();
+         WorkItem wItem7 = new WorkItem(testrigName);
+         wItem7.addRequestParam(BfConsts.COMMAND_QUERY, "");
+         wItem7.addRequestParam(BfConsts.ARG_PREDICATES,
+               BfConsts.PREDICATE_FLOW_PATH_HISTORY);
+         wItem7.addRequestParam(BfConsts.COMMAND_ENV, envName);
+         doWork(
+               testrigName,
+               wItem7,
+               Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
+                     BfConsts.RELPATH_QUERY_DUMP_DIR).toString());
 
       }
       catch (Exception e) {

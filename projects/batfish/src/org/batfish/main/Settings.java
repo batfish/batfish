@@ -163,7 +163,6 @@ public class Settings {
    public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "55181";
    public static final String DEFAULT_CONNECTBLOX_HOST = "localhost";
    public static final String DEFAULT_CONNECTBLOX_REGULAR_PORT = "55179";
-   private static final String DEFAULT_DUMP_FACTS_DIR = "facts";
    private static final String DEFAULT_DUMP_IF_DIR = "if";
    private static final String DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH = "interface_descriptions";
    private static final String DEFAULT_FLOW_PATH = "flows";
@@ -249,11 +248,13 @@ public class Settings {
    private Options _options;
    private boolean _pedanticAsError;
    private boolean _pedanticRecord;
+   private boolean _postFlows;
    private List<String> _predicates;
    private boolean _printParseTree;
    private boolean _printSemantics;
    private boolean _query;
    private boolean _queryAll;
+   private String _queryDumpDir;
    private String _questionName;
    private String _questionPath;
    private boolean _reach;
@@ -285,6 +286,7 @@ public class Settings {
    private boolean _throwOnLexerError;
    private boolean _throwOnParserError;
    private boolean _timestamp;
+   private String _trafficFactDumpDir;
    private boolean _unimplementedAsError;
    private boolean _unimplementedRecord;
    private boolean _update;
@@ -570,6 +572,10 @@ public class Settings {
       return _pedanticRecord;
    }
 
+   public boolean getPostFlows() {
+      return _postFlows;
+   }
+
    public List<String> getPredicates() {
       return _predicates;
    }
@@ -584,6 +590,10 @@ public class Settings {
 
    public boolean getQueryAll() {
       return _queryAll;
+   }
+
+   public String getQueryDumpDir() {
+      return _queryDumpDir;
    }
 
    public String getQuestionName() {
@@ -688,6 +698,10 @@ public class Settings {
 
    public boolean getTimestamp() {
       return _timestamp;
+   }
+
+   public String getTrafficFactDumpDir() {
+      return _trafficFactDumpDir;
    }
 
    public boolean getUnimplementedAsError() {
@@ -1107,6 +1121,8 @@ public class Settings {
             .longOpt(BfConsts.ARG_QUESTION_NAME).build());
       _options.addOption(Option.builder().desc("answer provided question")
             .longOpt(BfConsts.COMMAND_ANSWER).build());
+      _options.addOption(Option.builder().desc("post dumped flows to logicblox")
+            .longOpt(BfConsts.COMMAND_POST_FLOWS).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1187,9 +1203,7 @@ public class Settings {
       }
       _dumpControlPlaneFacts = line.hasOption(ARG_DUMP_CONTROL_PLANE_FACTS);
       _dumpTrafficFacts = line.hasOption(ARG_DUMP_TRAFFIC_FACTS);
-      _dumpFactsDir = line.getOptionValue(ARG_DUMP_FACTS_DIR,
-            DEFAULT_DUMP_FACTS_DIR);
-
+      _dumpFactsDir = line.getOptionValue(ARG_DUMP_FACTS_DIR);
       _revertBranchName = line.getOptionValue(ARG_REVERT);
       _revert = (_revertBranchName != null);
       _redirectStdErr = line.hasOption(ARG_REDIRECT_STDERR);
@@ -1280,6 +1294,7 @@ public class Settings {
             .getOptionValue(ARG_SERVICE_LOGICBLOX_HOSTNAME);
       _questionName = line.getOptionValue(BfConsts.ARG_QUESTION_NAME);
       _answer = line.hasOption(BfConsts.COMMAND_ANSWER);
+      _postFlows = line.hasOption(BfConsts.COMMAND_POST_FLOWS);
    }
 
    public boolean printParseTree() {
@@ -1330,6 +1345,10 @@ public class Settings {
       _nodeSetPath = nodeSetPath;
    }
 
+   public void setQueryDumpDir(String path) {
+      _queryDumpDir = path;
+   }
+
    public void setQuestionPath(String questionPath) {
       _questionPath = questionPath;
    }
@@ -1348,6 +1367,10 @@ public class Settings {
 
    public void setTestRigPath(String path) {
       _testRigPath = path;
+   }
+
+   public void setTrafficFactDumpDir(String path) {
+      _trafficFactDumpDir = path;
    }
 
    public void setWorkspaceName(String name) {

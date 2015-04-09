@@ -12,7 +12,6 @@ import org.batfish.z3.node.RuleExpr;
 import org.batfish.z3.node.SaneExpr;
 
 import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
 import com.microsoft.z3.Z3Exception;
 
 public class MultipathInconsistencyQuerySynthesizer implements QuerySynthesizer {
@@ -35,11 +34,13 @@ public class MultipathInconsistencyQuerySynthesizer implements QuerySynthesizer 
       queryConditions.addConjunct(SaneExpr.INSTANCE);
       RuleExpr queryRule = new RuleExpr(queryConditions,
             QueryRelationExpr.INSTANCE);
-      QueryExpr query = new QueryExpr(QueryRelationExpr.INSTANCE);
       List<BoolExpr> rules = program.getRules();
-      rules.add(injectSymbolicPackets.toBoolExpr(baseProgram));
+      BoolExpr injectSymbolicPacketsBoolExpr = injectSymbolicPackets.toBoolExpr(baseProgram);
+      rules.add(injectSymbolicPacketsBoolExpr);
       rules.add(queryRule.toBoolExpr(baseProgram));
-      program.getQueries().add(query.toBoolExpr(baseProgram));
+      QueryExpr query = new QueryExpr(QueryRelationExpr.INSTANCE);
+      BoolExpr queryBoolExpr = query.toBoolExpr(baseProgram);
+      program.getQueries().add(queryBoolExpr);
       return program;
    }
 

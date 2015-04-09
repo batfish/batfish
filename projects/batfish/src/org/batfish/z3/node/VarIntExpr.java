@@ -5,8 +5,6 @@ import java.util.Set;
 
 import org.batfish.z3.NodProgram;
 
-import com.microsoft.z3.BitVecExpr;
-import com.microsoft.z3.Context;
 import com.microsoft.z3.Z3Exception;
 
 public class VarIntExpr extends IntExpr {
@@ -42,12 +40,9 @@ public class VarIntExpr extends IntExpr {
    }
 
    @Override
-   public com.microsoft.z3.Expr toExpr(NodProgram nodProgram)
+   public com.microsoft.z3.BitVecExpr toBitVecExpr(NodProgram nodProgram)
          throws Z3Exception {
-      Context ctx = nodProgram.getContext();
-      int size = nodProgram.getVariables().get(_var);
-      com.microsoft.z3.Expr result = ctx.mkConst(_var, ctx.mkBitVecSort(size));
-      return result;
+      return nodProgram.getVariables().get(_var);
    }
 
 }

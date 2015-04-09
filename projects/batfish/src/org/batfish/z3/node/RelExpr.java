@@ -57,7 +57,7 @@ public class RelExpr extends BooleanExpr implements ComplexExpr {
       FuncDecl funcDecl = nodProgram.getRelationDeclarations().get(_name);
       List<com.microsoft.z3.Expr> args = new ArrayList<com.microsoft.z3.Expr>();
       for (IntExpr arg : _args) {
-         args.add(arg.toExpr(nodProgram));
+         args.add(arg.toBitVecExpr(nodProgram));
       }
       com.microsoft.z3.Expr result = ctx.mkApp(funcDecl, args.toArray(new com.microsoft.z3.Expr[]{}));
       return (BoolExpr)result;

@@ -1,7 +1,6 @@
 package org.batfish.z3;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -87,6 +86,7 @@ import org.batfish.z3.node.Statement;
 import org.batfish.z3.node.TrueExpr;
 import org.batfish.z3.node.VarIntExpr;
 
+import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.FuncDecl;
@@ -302,6 +302,7 @@ public class Synthesizer {
          return new ExtractExpr(var, low, high);
       }
    }
+
    private final Map<String, Configuration> _configurations;
    private final FibMap _fibs;
    private FlowSinkSet _flowSinks;
@@ -1517,7 +1518,21 @@ public class Synthesizer {
       Map<String, FuncDecl> relDeclFuncDecls = getRelDeclFuncDecls(
             ruleStatements, ctx);
       nodProgram.getRelationDeclarations().putAll(relDeclFuncDecls);
-      nodProgram.getVariables().putAll(PACKET_VAR_SIZES);
+      Map<String, BitVecExpr> variables = nodProgram.getVariables();
+      Map<String, BitVecExpr> variablesAsConsts = nodProgram
+            .getVariablesAsConsts();
+      int deBruinIndex = 0;
+      for (Entry<String, Integer> e : PACKET_VAR_SIZES.entrySet()) {
+         String var = e.getKey();
+         int size = e.getValue();
+         BitVecExpr varExpr = (BitVecExpr) ctx.mkBound(deBruinIndex,
+               ctx.mkBitVecSort(size));
+         BitVecExpr varAsConstExpr = (BitVecExpr) ctx.mkConst(var,
+               ctx.mkBitVecSort(size));
+         variables.put(var, varExpr);
+         variablesAsConsts.put(var, varAsConstExpr);
+         deBruinIndex++;
+      }
       List<BoolExpr> rules = nodProgram.getRules();
       for (Statement statement : ruleStatements) {
          if (statement instanceof RuleExpr) {

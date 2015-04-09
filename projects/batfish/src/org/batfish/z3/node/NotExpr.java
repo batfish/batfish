@@ -75,7 +75,10 @@ public class NotExpr extends BooleanExpr implements ComplexExpr {
 
    @Override
    public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+      Context ctx = nodProgram.getContext();
+      BoolExpr arg = _arg.toBoolExpr(nodProgram);
+      BoolExpr result = ctx.mkNot(arg);
+      return result;
    }
 
 }

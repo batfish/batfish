@@ -10,7 +10,6 @@ import org.batfish.z3.node.RoleAcceptExpr;
 import org.batfish.z3.node.RuleExpr;
 import org.batfish.z3.node.SaneExpr;
 
-import com.microsoft.z3.Context;
 import com.microsoft.z3.Z3Exception;
 
 public class RoleReachabilityQuerySynthesizer implements QuerySynthesizer {

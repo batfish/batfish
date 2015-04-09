@@ -12,6 +12,7 @@ public class BfConsts {
    }
 
    public static final String ARG_QUESTION_NAME = "questionname";
+   public static final String ARG_PREDICATES = "predicates";
 
    public static final String COMMAND_ANSWER = "answer";
    public static final String COMMAND_COMPILE = "compile";
@@ -21,22 +22,29 @@ public class BfConsts {
    public static final String COMMAND_GENERATE_FACT = "dumpcp";
    public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
    public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
+   public static final String COMMAND_POST_FLOWS = "postflows";
+   public static final String COMMAND_QUERY = "query";
    public static final String COMMAND_SYNTHESIZE_Z3_DATA_PLANE = "z3";
+
+   public static final String PREDICATE_FLOW_PATH_HISTORY = "FlowPathHistory";
 
    public static final String RELPATH_DATA_PLANE_DIR = "dp";
    public static final String RELPATH_ENV_DIR = "env";
    public static final String RELPATH_ENV_NODE_SET = "env-node-set";
    public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
    public static final String RELPATH_FACT_DUMP_DIR = "dump";
+   public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
    public static final String RELPATH_LB_HOSTNAME_PATH = "lb";
    public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";
    public static final String RELPATH_QUERIES_DIR = "queries";
+   public static final String RELPATH_QUERY_DUMP_DIR = "querydump";
    public static final String RELPATH_QUESTION_FILE = "question";
    public static final String RELPATH_QUESTIONS_DIR = "questions";
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
    public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
    public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
    public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
+
 
    public static final String SVC_BASE_RSC = "/batfishservice";
    public static final String SVC_FAILURE_KEY = "failure";
@@ -48,4 +56,4 @@ public class BfConsts {
    public static final String SVC_TASK_KEY = "task";
    public static final String SVC_TASKID_KEY = "taskid";
 
-}
+   }

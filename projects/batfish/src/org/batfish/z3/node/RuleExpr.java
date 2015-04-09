@@ -7,7 +7,6 @@ import java.util.Set;
 import org.batfish.z3.NodProgram;
 
 import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
 import com.microsoft.z3.Z3Exception;
 
 public class RuleExpr extends Statement implements ComplexExpr {

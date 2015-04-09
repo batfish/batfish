@@ -78,7 +78,11 @@ public class EqExpr extends BooleanExpr implements ComplexExpr {
 
    @Override
    public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+      Context ctx = nodProgram.getContext();
+      com.microsoft.z3.Expr lhs = _lhs.toBitVecExpr(nodProgram);
+      com.microsoft.z3.Expr rhs = _rhs.toBitVecExpr(nodProgram);
+      BoolExpr result = ctx.mkEq(lhs, rhs);
+      return result;
    }
 
 }

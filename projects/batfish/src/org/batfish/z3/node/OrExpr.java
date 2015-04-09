@@ -127,7 +127,14 @@ public class OrExpr extends BooleanExpr implements ComplexExpr {
 
    @Override
    public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+      Context ctx = nodProgram.getContext();
+      List<BoolExpr> args = new ArrayList<BoolExpr>();
+      for (BooleanExpr disjunct : _disjuncts) {
+         BoolExpr be = disjunct.toBoolExpr(nodProgram);
+         args.add(be);
+      }
+      BoolExpr result = ctx.mkOr(args.toArray(new BoolExpr[] {}));
+      return result;
    }
 
 }
