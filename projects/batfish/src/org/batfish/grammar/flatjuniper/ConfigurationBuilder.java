@@ -37,6 +37,9 @@ import org.batfish.representation.juniper.FwThenNextTerm;
 import org.batfish.representation.juniper.GeneratedRoute;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.IpBgpGroup;
+import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
+import org.batfish.representation.juniper.IsisLevelSettings;
+import org.batfish.representation.juniper.IsisSettings;
 import org.batfish.representation.juniper.JuniperVendorConfiguration;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.OspfArea;
@@ -437,6 +440,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private Prefix _currentInterfacePrefix;
 
+   private Interface _currentIsisInterface;
+
+   private IsisInterfaceLevelSettings _currentIsisInterfaceLevelSettings;
+
+   private IsisLevelSettings _currentIsisLevelSettings;
+
    private Interface _currentMasterInterface;
 
    private Interface _currentOspfInterface;
@@ -665,6 +674,68 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          }
       }
       _currentMasterInterface = _currentInterface;
+   }
+
+   @Override
+   public void enterIsisit_level(Isisit_levelContext ctx) {
+      int level = toInt(ctx.DEC());
+      switch (level) {
+      case 1:
+         _currentIsisInterfaceLevelSettings = _currentIsisInterface
+               .getIsisSettings().getLevel1Settings();
+         break;
+      case 2:
+         _currentIsisInterfaceLevelSettings = _currentIsisInterface
+               .getIsisSettings().getLevel2Settings();
+         break;
+      default:
+         throw new BatfishException("invalid IS-IS level: " + level);
+      }
+      _currentIsisInterfaceLevelSettings.setEnabled(true);
+   }
+
+   @Override
+   public void enterIsist_interface(Isist_interfaceContext ctx) {
+      Map<String, Interface> interfaces = _currentRoutingInstance
+            .getInterfaces();
+      String unitFullName = null;
+      String name = ctx.id.name.getText();
+      String unit = null;
+      if (ctx.id.unit != null) {
+         unit = ctx.id.unit.getText();
+      }
+      unitFullName = name + "." + unit;
+      _currentIsisInterface = interfaces.get(name);
+      if (_currentIsisInterface == null) {
+         _currentIsisInterface = new Interface(name);
+         interfaces.put(name, _currentIsisInterface);
+      }
+      if (unit != null) {
+         Map<String, Interface> units = _currentIsisInterface.getUnits();
+         _currentIsisInterface = units.get(unitFullName);
+         if (_currentIsisInterface == null) {
+            _currentIsisInterface = new Interface(unitFullName);
+            units.put(unitFullName, _currentIsisInterface);
+         }
+      }
+      _currentIsisInterface.getIsisSettings().setEnabled(true);
+   }
+
+   @Override
+   public void enterIsist_level(Isist_levelContext ctx) {
+      IsisSettings isisSettings = _currentRoutingInstance.getIsisSettings();
+      int level = toInt(ctx.DEC());
+      switch (level) {
+      case 1:
+         _currentIsisLevelSettings = isisSettings.getLevel1Settings();
+         break;
+      case 2:
+         _currentIsisLevelSettings = isisSettings.getLevel2Settings();
+         break;
+      default:
+         throw new BatfishException("invalid level: " + level);
+      }
+      _currentIsisLevelSettings.setEnabled(true);
    }
 
    @Override
@@ -1211,6 +1282,85 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitIntt_named(Intt_namedContext ctx) {
       _currentInterface = null;
       _currentMasterInterface = null;
+   }
+
+   @Override
+   public void exitIsisilt_enable(Isisilt_enableContext ctx) {
+      _currentIsisInterfaceLevelSettings.setEnabled(true);
+   }
+
+   @Override
+   public void exitIsisilt_metric(Isisilt_metricContext ctx) {
+      int metric = toInt(ctx.DEC());
+      _currentIsisInterfaceLevelSettings.setMetric(metric);
+   }
+
+   @Override
+   public void exitIsisilt_te_metric(Isisilt_te_metricContext ctx) {
+      int teMetric = toInt(ctx.DEC());
+      _currentIsisInterfaceLevelSettings.setTeMetric(teMetric);
+   }
+
+   @Override
+   public void exitIsisit_level(Isisit_levelContext ctx) {
+      _currentIsisInterfaceLevelSettings = null;
+   }
+
+   @Override
+   public void exitIsisit_passive(Isisit_passiveContext ctx) {
+      _currentIsisInterface.getIsisSettings().setPassive(true);
+   }
+
+   @Override
+   public void exitIsisit_point_to_point(Isisit_point_to_pointContext ctx) {
+      _currentIsisInterface.getIsisSettings().setPointToPoint(true);
+   }
+
+   @Override
+   public void exitIsislt_disable(Isislt_disableContext ctx) {
+      _currentIsisLevelSettings.setEnabled(false);
+   }
+
+   @Override
+   public void exitIsislt_wide_metrics_only(Isislt_wide_metrics_onlyContext ctx) {
+      _currentIsisLevelSettings.setWideMetricsOnly(true);
+   }
+
+   @Override
+   public void exitIsist_export(Isist_exportContext ctx) {
+      String policy = ctx.name.getText();
+      _currentRoutingInstance.getIsisSettings().setExportPolicy(policy);
+   }
+
+   @Override
+   public void exitIsist_interface(Isist_interfaceContext ctx) {
+      _currentIsisInterface = null;
+   }
+
+   @Override
+   public void exitIsist_level(Isist_levelContext ctx) {
+      _currentIsisLevelSettings = null;
+   }
+
+   @Override
+   public void exitIsist_no_ipv4_routing(Isist_no_ipv4_routingContext ctx) {
+      _currentRoutingInstance.getIsisSettings().setNoIpv4Routing(true);
+   }
+
+   @Override
+   public void exitIsistet_credibility_protocol_preference(
+         Isistet_credibility_protocol_preferenceContext ctx) {
+      _currentRoutingInstance.getIsisSettings().setTrafficEngineeringCredibilityProtocolPreference(true);
+   }
+
+   @Override
+   public void exitIsistet_family_shortcuts(Isistet_family_shortcutsContext ctx) {
+      if (ctx.INET6() != null) {
+         todo(ctx, F_IPV6);
+      }
+      else { // ipv4
+         _currentRoutingInstance.getIsisSettings().setTrafficEngineeringShortcuts(true);
+      }
    }
 
    @Override
