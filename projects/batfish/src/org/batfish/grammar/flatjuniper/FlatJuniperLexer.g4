@@ -309,6 +309,11 @@ COUNT
    'count'
 ;
 
+CREDIBILITY_PROTOCOL_PREFERENCE
+:
+   'credibility-protocol-preference'
+;
+
 CVSPSERVER
 :
    'cvspserver'
@@ -674,6 +679,16 @@ GROUPS
    'groups'
 ;
 
+HELLO_AUTHENTICATION_KEY
+:
+   'hello-authentication-key'
+;
+
+HELLO_AUTHENTICATION_TYPE
+:
+   'hello-authentication-type'
+;
+
 HELLO_INTERVAL
 :
    'hello-interval'
@@ -1014,6 +1029,11 @@ LDP
    'ldp'
 ;
 
+LEVEL
+:
+   'level'
+;
+
 LLDP
 :
    'lldp'
@@ -1082,6 +1102,11 @@ LOOPS
 LSP
 :
    'lsp'
+;
+
+LSP_INTERVAL
+:
+   'lsp-interval'
 ;
 
 LSP_LIFETIME
@@ -1307,6 +1332,11 @@ NO_EXPORT
 NO_INSTALL
 :
    'no-install'
+;
+
+NO_IPV4_ROUTING
+:
+   'no-ipv4-routing'
 ;
 
 NO_NEXTHOP_CHANGE
@@ -1542,6 +1572,11 @@ PREFERENCE
 PREFERRED
 :
    'preferred'
+;
+
+PREFIX_EXPORT_LIMIT
+:
+   'prefix-export-limit'
 ;
 
 PREFIX_LENGTH_RANGE
@@ -1814,6 +1849,11 @@ SET
    'set'
 ;
 
+SHORTCUTS
+:
+   'shortcuts'
+;
+
 SMTP
 :
    'smtp'
@@ -1872,6 +1912,11 @@ SOURCE_QUENCH
 SPEED
 :
    'speed' -> pushMode(M_Speed)
+;
+
+SPF_OPTIONS
+:
+   'spf-options'
 ;
 
 SSH
@@ -2187,6 +2232,11 @@ VSTP
 WHO
 :
    'who'
+;
+
+WIDE_METRICS_ONLY
+:
+   'wide-metrics-only'
 ;
 
 XDMCP

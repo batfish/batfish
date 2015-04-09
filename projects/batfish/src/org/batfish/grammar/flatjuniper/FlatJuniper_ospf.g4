@@ -238,8 +238,24 @@ ot_null
       OVERLOAD
       | REFERENCE_BANDWIDTH
       | TRACEOPTIONS
-      | TRAFFIC_ENGINEERING
    ) s_null_filler
+;
+
+ot_traffic_engineering
+:
+   TRAFFIC_ENGINEERING ot_traffic_engineering_tail
+;
+
+ot_traffic_engineering_tail
+:
+// intentional blank
+
+   | otet_credibility_protocol_preference
+;
+
+otet_credibility_protocol_preference
+:
+   CREDIBILITY_PROTOCOL_PREFERENCE
 ;
 
 s_protocols_ospf
@@ -256,6 +272,7 @@ s_protocols_ospf_tail
    | ot_import
    | ot_no_active_backbone
    | ot_null
+   | ot_traffic_engineering
 ;
 
 s_protocols_ospf3
