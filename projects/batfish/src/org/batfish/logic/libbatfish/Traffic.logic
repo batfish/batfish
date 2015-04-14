@@ -119,7 +119,7 @@ FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow ->
    Ip(dstIp),
    int(srcPort),
    int(dstPort),
-   int(protocol),
+   IpProtocol(protocol),
    Flow(flow).
 
 FlowPathAcceptedEdge(flow, i, node1, int1, node2, int2, history) ->
