@@ -4,11 +4,40 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.batfish.collections.Pair;
+
 public class BatfishLogger {
+
+   public class BatfishLoggerHistory extends ArrayList<HistoryItem> {
+      /**
+       *
+       */
+      private static final long serialVersionUID = 1L;
+   }
+
+   private class HistoryItem extends Pair<Integer, String> {
+      /**
+       *
+       */
+      private static final long serialVersionUID = 1L;
+
+      private HistoryItem(int i, String s) {
+         super(i, s);
+      }
+
+      public int getLevel() {
+         return _t1;
+      }
+
+      public String getMessage() {
+         return _t2;
+      }
+   }
 
    public static final int LEVEL_DEBUG = 500;
 
@@ -62,6 +91,8 @@ public class BatfishLogger {
       return levels;
    }
 
+   private final BatfishLoggerHistory _history;
+
    private int _level;
 
    private String _logFile;
@@ -71,6 +102,7 @@ public class BatfishLogger {
    private boolean _timestamp;
 
    public BatfishLogger(Settings settings) {
+      _history = null;
       _timestamp = settings.getTimestamp();
       String levelStr = settings.getLogLevel();
       initializeLogLevel(levelStr);
@@ -85,6 +117,20 @@ public class BatfishLogger {
       }
       else {
          _ps = System.out;
+      }
+   }
+
+   public BatfishLogger(String logLevel, boolean timestamp) {
+      _timestamp = timestamp;
+      initializeLogLevel(logLevel);
+      _history = new BatfishLoggerHistory();
+   }
+
+   public void append(BatfishLoggerHistory history) {
+      for (HistoryItem item : history) {
+         int level = item.getLevel();
+         String msg = item.getMessage();
+         write(level, msg);
       }
    }
 
@@ -104,6 +150,10 @@ public class BatfishLogger {
 
    public void fatal(String msg) {
       write(LEVEL_FATAL, msg);
+   }
+
+   public BatfishLoggerHistory getHistory() {
+      return _history;
    }
 
    public PrintStream getPrintStream() {
@@ -154,7 +204,12 @@ public class BatfishLogger {
          else {
             outputMsg = msg;
          }
-         _ps.print(outputMsg);
+         if (_ps != null) {
+            _ps.print(outputMsg);
+         }
+         else {
+            _history.add(new HistoryItem(level, msg));
+         }
       }
    }
 
