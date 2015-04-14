@@ -34,6 +34,10 @@ block(`BaseFacts) {
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"bgp").
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"connected").
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ibgp").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"isisL1").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"isisL2").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"isisEL1").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"isisEL2").
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ospf").
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ospfIA").
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ospfE1").
@@ -52,6 +56,35 @@ block(`BaseFacts) {
 +Vendor(vendor), +Vendor_name(vendor:"arista").
 +Vendor(vendor), +Vendor_name(vendor:"cisco").
 +Vendor(vendor), +Vendor_name(vendor:"juniper").
+
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"bgp"),
+   distance = 200.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"ibgp"),
+   distance = 200.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"connected"),
+   distance = 0.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"ospf"),
+   distance = 110.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"ospfIA"),
+   distance = 110.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"ospfE1"),
+   distance = 110.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"ospfE2"),
+   distance = 110.
 
 +AdministrativeDistance[vendor, protocol] = distance <-
    +Vendor_name(vendor:"cisco"),
@@ -94,6 +127,22 @@ block(`BaseFacts) {
    +Vendor_name(vendor:"juniper"),
    +RoutingProtocol_name(protocol:"connected"),
    distance = 0.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"isisL1"),
+   distance = 15.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"isisL2"),
+   distance = 18.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"isisEL1"),
+   distance = 160.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"isisEL2"),
+   distance = 165.
 +AdministrativeDistance[vendor, protocol] = distance <-
    +Vendor_name(vendor:"juniper"),
    +RoutingProtocol_name(protocol:"ospf"),
