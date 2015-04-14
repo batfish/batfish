@@ -29,8 +29,20 @@ public class ParseVendorConfigurationJob implements
          if (fileText.contains("set prompt")) {
             return ConfigurationFormat.VXWORKS;
          }
+         else if (fileText.contains("boot system flash")) {
+            return ConfigurationFormat.ARISTA;
+         }
          else {
-            return ConfigurationFormat.CISCO;
+            String[] lines = fileText.split("\\n");
+            for (String line : lines) {
+               String trimmedLine = line.trim();
+               if (!trimmedLine.startsWith("!") && line.startsWith("version")) {
+                  return ConfigurationFormat.CISCO;
+               }
+               else {
+                  break;
+               }
+            }
          }
       }
       else if (fileText.contains("set hostname")) {
@@ -44,9 +56,7 @@ public class ParseVendorConfigurationJob implements
             return ConfigurationFormat.JUNIPER;
          }
       }
-      else {
-         return ConfigurationFormat.UNKNOWN;
-      }
+      return ConfigurationFormat.UNKNOWN;
    }
 
    private File _file;
@@ -168,6 +178,7 @@ public class ParseVendorConfigurationJob implements
          }
       }
       vc = extractor.getVendorConfiguration();
+      vc.setVendor(format);
       // at this point we should have a VendorConfiguration vc
       String hostname = vc.getHostname();
       if (hostname == null) {

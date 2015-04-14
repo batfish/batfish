@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.batfish.collections.RoleSet;
+import org.batfish.main.ConfigurationFormat;
 import org.batfish.util.NamedStructure;
 
 public class Configuration extends NamedStructure {
@@ -13,20 +14,32 @@ public class Configuration extends NamedStructure {
    private static final long serialVersionUID = 1L;
 
    private Set<GeneratedRoute> _aggregateRoutes;
+
    private Map<String, AsPathAccessList> _asPathAccessLists;
+
    private BgpProcess _bgpProcess;
+
    private Set<Long> _communities;
+
    private Map<String, CommunityList> _communityLists;
+
    private Set<ConnectedRoute> _connectedRoutes;
+
    private Map<String, Interface> _interfaces;
+
    private Map<String, IpAccessList> _ipAccessLists;
+
    private OspfProcess _ospfProcess;
+
    private Map<String, PolicyMap> _policyMaps;
+
    private RoleSet _roles;
+
    private Map<String, RouteFilterList> _routeFilterLists;
+
    private Set<StaticRoute> _staticRoutes;
 
-   private String _vendor;
+   private ConfigurationFormat _vendor;
 
    public Configuration(String hostname) {
       super(hostname);
@@ -101,7 +114,7 @@ public class Configuration extends NamedStructure {
       return _staticRoutes;
    }
 
-   public String getVendor() {
+   public ConfigurationFormat getVendor() {
       return _vendor;
    }
 
@@ -117,7 +130,7 @@ public class Configuration extends NamedStructure {
       _roles = roles;
    }
 
-   public void setVendor(String vendor) {
+   public void setVendor(ConfigurationFormat vendor) {
       _vendor = vendor;
    }
 

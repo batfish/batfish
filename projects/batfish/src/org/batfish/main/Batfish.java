@@ -1084,7 +1084,7 @@ public class Batfish implements AutoCloseable {
       }
       for (Configuration config : configs.values()) {
          // use cisco arbitrarily
-         config.setVendor(CiscoVendorConfiguration.VENDOR_NAME);
+         config.setVendor(ConfigurationFormat.CISCO);
          OspfProcess proc = new OspfProcess();
          config.setOspfProcess(proc);
          proc.setReferenceBandwidth(org.batfish.representation.cisco.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH);
@@ -1205,7 +1205,7 @@ public class Batfish implements AutoCloseable {
                            stubOriginationPolicy);
                      stub.getRouteFilterLists().put(
                            stubOriginationRouteFilterListName, rf);
-                     stub.setVendor(CiscoVendorConfiguration.VENDOR_NAME);
+                     stub.setVendor(ConfigurationFormat.CISCO);
                      stub.setRoles(stubRoles);
                      nodeRoles.put(hostname, stubRoles);
                   }

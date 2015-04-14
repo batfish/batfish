@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.batfish.collections.RoleSet;
+import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.BgpProcess;
@@ -40,13 +41,13 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
    private static final long serialVersionUID = 1L;
 
-   private static final String VENDOR_NAME = "juniper";
-
    private Configuration _c;
 
    private final RoleSet _roles;
 
    private transient Set<String> _unimplementedFeatures;
+
+   private ConfigurationFormat _vendor;
 
    private transient Warnings _w;
 
@@ -180,6 +181,11 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    @Override
    public void setRoles(RoleSet roles) {
       _roles.addAll(roles);
+   }
+
+   @Override
+   public void setVendor(ConfigurationFormat format) {
+      _vendor = format;
    }
 
    private org.batfish.representation.GeneratedRoute toAggregateRoute(
@@ -383,7 +389,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       _w = warnings;
       String hostname = getHostname();
       _c = new Configuration(hostname);
-      _c.setVendor(VENDOR_NAME);
+      _c.setVendor(_vendor);
       _c.setRoles(_roles);
 
       // convert firewall filters to ipaccesslists

@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.batfish.collections.RoleSet;
+import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 import org.batfish.representation.AsPathAccessList;
 import org.batfish.representation.BgpNeighbor;
@@ -654,6 +655,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
    private transient Set<String> _unimplementedFeatures;
 
+   private ConfigurationFormat _vendor;
+
    private transient Warnings _w;
 
    public CiscoVendorConfiguration(Set<String> unimplementedFeatures) {
@@ -777,6 +780,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    @Override
    public void setRoles(RoleSet roles) {
       _roles.addAll(roles);
+   }
+
+   @Override
+   public void setVendor(ConfigurationFormat format) {
+      _vendor = format;
    }
 
    private org.batfish.representation.BgpProcess toBgpProcess(
@@ -1202,7 +1210,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    public Configuration toVendorIndependentConfiguration(Warnings warnings) {
       _w = warnings;
       final Configuration c = new Configuration(_hostname);
-      c.setVendor(VENDOR_NAME);
+      c.setVendor(_vendor);
       c.setRoles(_roles);
 
       // convert as path access lists to vendor independent format

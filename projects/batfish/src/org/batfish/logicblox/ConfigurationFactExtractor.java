@@ -1061,7 +1061,7 @@ public class ConfigurationFactExtractor {
 
    private void writeVendor() {
       String hostname = _configuration.getHostname();
-      String vendor = _configuration.getVendor();
+      String vendor = _configuration.getVendor().getVendorString();
       StringBuilder wSetNodeVendor = _factBins.get("SetNodeVendor");
       wSetNodeVendor.append(hostname + "|" + vendor + "\n");
    }
