@@ -36,7 +36,10 @@ public class ParseVendorConfigurationJob implements
             String[] lines = fileText.split("\\n");
             for (String line : lines) {
                String trimmedLine = line.trim();
-               if (!trimmedLine.startsWith("!") && line.startsWith("version")) {
+               if (trimmedLine.length() == 0 || trimmedLine.startsWith("!")) {
+                  continue;
+               }
+               if (line.startsWith("version")) {
                   return ConfigurationFormat.CISCO;
                }
                else {
