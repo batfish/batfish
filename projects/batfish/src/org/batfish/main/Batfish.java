@@ -2147,6 +2147,7 @@ public class Batfish implements AutoCloseable {
             }
          }
       }
+      pool.shutdown();
       if (processingError) {
          return null;
       }
