@@ -9,7 +9,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -63,12 +62,7 @@ import org.batfish.collections.RoleSet;
 import org.batfish.collections.TreeMultiSet;
 import org.batfish.common.BfConsts;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.cisco.CiscoCombinedParser;
-import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
-import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
-import org.batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
 import org.batfish.grammar.logicblox.LogQLPredicateInfoExtractor;
@@ -87,6 +81,8 @@ import org.batfish.grammar.z3.ConcretizerQueryResultCombinedParser;
 import org.batfish.grammar.z3.ConcretizerQueryResultExtractor;
 import org.batfish.grammar.z3.DatalogQueryResultCombinedParser;
 import org.batfish.grammar.z3.DatalogQueryResultExtractor;
+import org.batfish.job.ParseVendorConfigurationJob;
+import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.logic.LogicResourceLocator;
 import org.batfish.logicblox.ConfigurationFactExtractor;
 import org.batfish.logicblox.Facts;
@@ -229,6 +225,19 @@ public class Batfish implements AutoCloseable {
     */
    private static final String TOPOLOGY_PREDICATE_NAME = "LanAdjacent";
 
+   private static final long JOB_POLLING_PERIOD_MS = 1000l;
+
+   public static String flatten(String input, BatfishLogger logger,
+         Settings settings) {
+      JuniperCombinedParser jparser = new JuniperCombinedParser(input,
+            settings.getThrowOnParserError(), settings.getThrowOnLexerError());
+      ParserRuleContext jtree = parse(jparser, logger, settings);
+      JuniperFlattener flattener = new JuniperFlattener();
+      ParseTreeWalker walker = new ParseTreeWalker();
+      walker.walk(flattener, jtree);
+      return flattener.getFlattenedConfigurationText();
+   }
+
    private static void initControlPlaneFactBins(
          Map<String, StringBuilder> factBins) {
       initFactBins(Facts.CONTROL_PLANE_FACT_COLUMN_HEADERS, factBins);
@@ -246,6 +255,43 @@ public class Batfish implements AutoCloseable {
 
    private static void initTrafficFactBins(Map<String, StringBuilder> factBins) {
       initFactBins(Facts.TRAFFIC_FACT_COLUMN_HEADERS, factBins);
+   }
+
+   public static ParserRuleContext parse(BatfishCombinedParser<?, ?> parser,
+         BatfishLogger logger, Settings settings) {
+      ParserRuleContext tree;
+      try {
+         tree = parser.parse();
+      }
+      catch (BatfishException e) {
+         throw new ParserBatfishException("Parser error", e);
+      }
+      List<String> errors = parser.getErrors();
+      int numErrors = errors.size();
+      if (numErrors > 0) {
+         logger.error(numErrors + " ERROR(S)\n");
+         for (int i = 0; i < numErrors; i++) {
+            String prefix = "ERROR " + (i + 1) + ": ";
+            String msg = errors.get(i);
+            String prefixedMsg = Util.applyPrefix(prefix, msg);
+            logger.error(prefixedMsg + "\n");
+         }
+         throw new ParserBatfishException("Parser error(s)");
+      }
+      else if (!settings.printParseTree()) {
+         logger.info("OK\n");
+      }
+      else {
+         logger.info("OK, PRINTING PARSE TREE:\n");
+         logger.info(ParseTreePrettyPrinter.print(tree, parser) + "\n\n");
+      }
+      return tree;
+   }
+
+   public static ParserRuleContext parse(BatfishCombinedParser<?, ?> parser,
+         String filename, BatfishLogger logger, Settings settings) {
+      logger.info("Parsing: \"" + filename + "\"...");
+      return parse(parser, logger, settings);
    }
 
    private List<LogicBloxFrontend> _lbFrontends;
@@ -529,7 +575,7 @@ public class Batfish implements AutoCloseable {
       Set<String> facts = new TreeSet<String>();
       int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
       ExecutorService pool = Executors.newFixedThreadPool(numConcurrentThreads);
-//       ExecutorService pool = Executors.newSingleThreadExecutor();
+      // ExecutorService pool = Executors.newSingleThreadExecutor();
       Set<NodJob> jobs = new HashSet<NodJob>();
       for (final QuerySynthesizer query : queries) {
          NodeSet nodes = queryNodes.get(query);
@@ -903,13 +949,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private String flatten(String input) {
-      JuniperCombinedParser jparser = new JuniperCombinedParser(input,
-            _settings.getThrowOnParserError(), _settings.getThrowOnLexerError());
-      ParserRuleContext jtree = parse(jparser);
-      JuniperFlattener flattener = new JuniperFlattener();
-      ParseTreeWalker walker = new ParseTreeWalker();
-      walker.walk(flattener, jtree);
-      return flattener.getFlattenedConfigurationText();
+      return flatten(input, _logger, _settings);
    }
 
    private void flatten(String inputPath, String outputPath) {
@@ -1044,7 +1084,7 @@ public class Batfish implements AutoCloseable {
       }
       for (Configuration config : configs.values()) {
          // use cisco arbitrarily
-         config.setVendor(CiscoVendorConfiguration.VENDOR_NAME);
+         config.setVendor(ConfigurationFormat.CISCO);
          OspfProcess proc = new OspfProcess();
          config.setOspfProcess(proc);
          proc.setReferenceBandwidth(org.batfish.representation.cisco.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH);
@@ -1165,7 +1205,7 @@ public class Batfish implements AutoCloseable {
                            stubOriginationPolicy);
                      stub.getRouteFilterLists().put(
                            stubOriginationRouteFilterListName, rf);
-                     stub.setVendor(CiscoVendorConfiguration.VENDOR_NAME);
+                     stub.setVendor(ConfigurationFormat.CISCO);
                      stub.setRoles(stubRoles);
                      nodeRoles.put(hostname, stubRoles);
                   }
@@ -1577,6 +1617,29 @@ public class Batfish implements AutoCloseable {
       return seconds;
    }
 
+   // private Set<Path> getMultipathQueryPaths(Path directory) {
+   // Set<Path> queryPaths = new TreeSet<Path>();
+   // try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
+   // directory, new DirectoryStream.Filter<Path>() {
+   // @Override
+   // public boolean accept(Path path) throws IOException {
+   // String filename = path.getFileName().toString();
+   // return filename
+   // .startsWith(BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX)
+   // && filename.endsWith(".smt2");
+   // }
+   // })) {
+   // for (Path path : directoryStream) {
+   // queryPaths.add(path);
+   // }
+   // }
+   // catch (IOException ex) {
+   // throw new BatfishException(
+   // "Could not list files in queries directory", ex);
+   // }
+   // return queryPaths;
+   // }
+
    private FlowSinkSet getFlowSinkSet(LogicBloxFrontend lbFrontend) {
       FlowSinkSet flowSinks = new FlowSinkSet();
       String qualifiedName = _predicateInfo.getPredicateNames().get(
@@ -1611,29 +1674,6 @@ public class Batfish implements AutoCloseable {
       Collections.sort(helpPredicates);
       return helpPredicates;
    }
-
-//   private Set<Path> getMultipathQueryPaths(Path directory) {
-//      Set<Path> queryPaths = new TreeSet<Path>();
-//      try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
-//            directory, new DirectoryStream.Filter<Path>() {
-//               @Override
-//               public boolean accept(Path path) throws IOException {
-//                  String filename = path.getFileName().toString();
-//                  return filename
-//                        .startsWith(BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX)
-//                        && filename.endsWith(".smt2");
-//               }
-//            })) {
-//         for (Path path : directoryStream) {
-//            queryPaths.add(path);
-//         }
-//      }
-//      catch (IOException ex) {
-//         throw new BatfishException(
-//               "Could not list files in queries directory", ex);
-//      }
-//      return queryPaths;
-//   }
 
    private PolicyRouteFibNodeMap getPolicyRouteFibNodeMap(
          Relation fibPolicyRouteNextHops, LogicBloxFrontend lbFrontend) {
@@ -1813,32 +1853,6 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private ConfigurationFormat identifyConfigurationFormat(String fileText) {
-      char firstChar = fileText.trim().charAt(0);
-      if (firstChar == '!') {
-         if (fileText.contains("set prompt")) {
-            return ConfigurationFormat.VXWORKS;
-         }
-         else {
-            return ConfigurationFormat.CISCO;
-         }
-      }
-      else if (fileText.contains("set hostname")) {
-         return ConfigurationFormat.JUNIPER_SWITCH;
-      }
-      else if (firstChar == '#') {
-         if (fileText.contains("set version")) {
-            return ConfigurationFormat.FLAT_JUNIPER;
-         }
-         else {
-            return ConfigurationFormat.JUNIPER;
-         }
-      }
-      else {
-         return ConfigurationFormat.UNKNOWN;
-      }
-   }
-
    public LogicBloxFrontend initFrontend(boolean assumedToExist,
          String workspace) throws LBInitializationException {
       _logger.info("\n*** STARTING CONNECTBLOX SESSION ***\n");
@@ -1876,33 +1890,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
-      ParserRuleContext tree;
-      try {
-         tree = parser.parse();
-      }
-      catch (BatfishException e) {
-         throw new ParserBatfishException("Parser error", e);
-      }
-      List<String> errors = parser.getErrors();
-      int numErrors = errors.size();
-      if (numErrors > 0) {
-         _logger.error(numErrors + " ERROR(S)\n");
-         for (int i = 0; i < numErrors; i++) {
-            String prefix = "ERROR " + (i + 1) + ": ";
-            String msg = errors.get(i);
-            String prefixedMsg = Util.applyPrefix(prefix, msg);
-            _logger.error(prefixedMsg + "\n");
-         }
-         throw new ParserBatfishException("Parser error(s)");
-      }
-      else if (!_settings.printParseTree()) {
-         _logger.info("OK\n");
-      }
-      else {
-         _logger.info("OK, PRINTING PARSE TREE:\n");
-         _logger.info(ParseTreePrettyPrinter.print(tree, parser) + "\n\n");
-      }
-      return tree;
+      return parse(parser, _logger, _settings);
    }
 
    private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser,
@@ -2068,19 +2056,21 @@ public class Batfish implements AutoCloseable {
          Map<File, String> configurationData) {
       _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
       resetTimer();
+
+      ExecutorService pool;
+      if (_settings.getParseParallel()) {
+         int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
+         pool = Executors.newFixedThreadPool(numConcurrentThreads);
+      }
+      else {
+         pool = Executors.newSingleThreadExecutor();
+      }
+
       Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<String, VendorConfiguration>();
+      List<ParseVendorConfigurationJob> jobs = new ArrayList<ParseVendorConfigurationJob>();
 
       boolean processingError = false;
       for (File currentFile : configurationData.keySet()) {
-         String fileText = configurationData.get(currentFile);
-         String currentPath = currentFile.getAbsolutePath();
-         VendorConfiguration vc = null;
-         if (fileText.length() == 0) {
-            continue;
-         }
-         BatfishCombinedParser<?, ?> combinedParser = null;
-         ParserRuleContext tree = null;
-         ControlPlaneExtractor extractor = null;
          Warnings warnings = new Warnings(_settings.getPedanticAsError(),
                _settings.getPedanticRecord()
                      && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
@@ -2090,144 +2080,74 @@ public class Batfish implements AutoCloseable {
                _settings.getUnimplementedRecord()
                      && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
                _settings.printParseTree());
-         ConfigurationFormat format = identifyConfigurationFormat(fileText);
-
-         switch (format) {
-
-         case ARISTA:
-         case CISCO:
-            CiscoCombinedParser ciscoParser = new CiscoCombinedParser(fileText,
-                  _settings.getThrowOnParserError(),
-                  _settings.getThrowOnLexerError());
-            combinedParser = ciscoParser;
-            extractor = new CiscoControlPlaneExtractor(fileText, ciscoParser,
-                  warnings);
-            break;
-
-         case JUNIPER:
-            if (_settings.flattenOnTheFly()) {
-               _logger
-                     .warn("Flattening: \""
-                           + currentPath
-                           + "\" on-the-fly; line-numbers reported for this file will be spurious\n");
-               fileText = flatten(fileText);
-            }
-            else {
-               throw new BatfishException(
-                     "Juniper configurations must be flattened prior to this stage");
-            }
-            // MISSING BREAK IS INTENTIONAL
-         case FLAT_JUNIPER:
-            FlatJuniperCombinedParser flatJuniperParser = new FlatJuniperCombinedParser(
-                  fileText, _settings.getThrowOnParserError(),
-                  _settings.getThrowOnLexerError());
-            combinedParser = flatJuniperParser;
-            extractor = new FlatJuniperControlPlaneExtractor(fileText,
-                  flatJuniperParser, warnings);
-            break;
-
-         case JUNIPER_SWITCH:
-         case VXWORKS:
-            String unsupportedError = "Unsupported configuration format: \""
-                  + format.toString() + "\" for file: \"" + currentPath
-                  + "\"\n";
-            if (!_settings.ignoreUnsupported() && _settings.exitOnParseError()) {
-               throw new BatfishException(unsupportedError);
-            }
-            else if (!_settings.ignoreUnsupported()) {
-               processingError = true;
-               _logger.error(unsupportedError);
-            }
-            else {
-               _logger.warn(unsupportedError);
-            }
-            continue;
-
-         case UNKNOWN:
-         default:
-            String unknownError = "Unknown configuration format for file: \""
-                  + currentPath + "\"\n";
-            if (_settings.exitOnParseError()) {
-               throw new BatfishException(unknownError);
-            }
-            else {
-               _logger.error(unknownError);
-               processingError = true;
-               continue;
-            }
-         }
-
-         try {
-            tree = parse(combinedParser, currentPath);
-            _logger.info("\tPost-processing...");
-            extractor.processParseTree(tree);
-            _logger.info("OK\n");
-         }
-         catch (ParserBatfishException e) {
-            String error = "Error parsing configuration file: \"" + currentPath
-                  + "\"";
-            if (_settings.exitOnParseError()) {
-               throw new BatfishException(error, e);
-            }
-            else {
-               _logger.error(error + ":\n");
-               _logger.error(ExceptionUtils.getStackTrace(e));
-               processingError = true;
-               continue;
-            }
-         }
-         catch (Exception e) {
-            String error = "Error post-processing parse tree of configuration file: \""
-                  + currentPath + "\"";
-            if (_settings.exitOnParseError()) {
-               throw new BatfishException(error, e);
-            }
-            else {
-               _logger.error(error + ":\n");
-               _logger.error(ExceptionUtils.getStackTrace(e));
-               processingError = true;
-               continue;
-            }
-         }
-         finally {
-            for (String warning : warnings.getRedFlagWarnings()) {
-               _logger.redflag(warning);
-            }
-            for (String warning : warnings.getUnimplementedWarnings()) {
-               _logger.unimplemented(warning);
-            }
-            for (String warning : warnings.getPedanticWarnings()) {
-               _logger.pedantic(warning);
-            }
-         }
-         vc = extractor.getVendorConfiguration();
-         // at this point we should have a VendorConfiguration vc
-         String hostname = vc.getHostname();
-         if (hostname == null) {
-            String error = "No hostname set in file: \"" + currentFile + "\"\n";
-            if (_settings.exitOnParseError()) {
-               throw new BatfishException(error);
-            }
-            else {
-               _logger.error(error);
-               processingError = true;
-               continue;
-            }
-         }
-         if (vendorConfigurations.containsKey(hostname)) {
-            String error = "Duplicate hostname \"" + vc.getHostname()
-                  + "\" found in " + currentFile + "\n";
-            if (_settings.exitOnParseError()) {
-               throw new BatfishException(error);
-            }
-            else {
-               _logger.error(error);
-               processingError = true;
-               continue;
-            }
-         }
-         vendorConfigurations.put(vc.getHostname(), vc);
+         String fileText = configurationData.get(currentFile);
+         ParseVendorConfigurationJob job = new ParseVendorConfigurationJob(
+               _settings, fileText, currentFile, warnings);
+         jobs.add(job);
       }
+      List<Future<ParseVendorConfigurationResult>> futures = new ArrayList<Future<ParseVendorConfigurationResult>>();
+      for (ParseVendorConfigurationJob job : jobs) {
+         Future<ParseVendorConfigurationResult> future = pool.submit(job);
+         futures.add(future);
+      }
+//      try {
+//         futures = pool.invokeAll(jobs);
+//      }
+//      catch (InterruptedException e) {
+//         throw new BatfishException("Error invoking parse jobs", e);
+//      }
+      while (!futures.isEmpty()) {
+         List<Future<ParseVendorConfigurationResult>> currentFutures = new ArrayList<Future<ParseVendorConfigurationResult>>();
+         currentFutures.addAll(futures);
+         for (Future<ParseVendorConfigurationResult> future : currentFutures) {
+            if (future.isDone()) {
+               futures.remove(future);
+               ParseVendorConfigurationResult result = null;
+               try {
+                  result = future.get();
+               }
+               catch (InterruptedException | ExecutionException e) {
+                  throw new BatfishException("Error executing parse job", e);
+               }
+               _logger.append(result.getHistory());
+               Throwable failureCause = result.getFailureCause();
+               if (failureCause != null) {
+                  if (_settings.exitOnParseError()) {
+                     throw new BatfishException("Failed parse job",
+                           failureCause);
+                  }
+                  else {
+                     processingError = true;
+                  }
+               }
+               else {
+                  VendorConfiguration vc = result.getVendorConfiguration();
+                  if (vc != null) {
+                     String hostname = vc.getHostname();
+                     if (vendorConfigurations.containsKey(hostname)) {
+                        throw new BatfishException("Duplicate hostname: "
+                              + hostname);
+                     }
+                     else {
+                        vendorConfigurations.put(hostname, vc);
+                     }
+                  }
+               }
+            }
+            else {
+               continue;
+            }
+         }
+         if (!futures.isEmpty()) {
+            try {
+               Thread.sleep(JOB_POLLING_PERIOD_MS);
+            }
+            catch (InterruptedException e) {
+               throw new BatfishException("interrupted while sleeping", e);
+            }
+         }
+      }
+      pool.shutdown();
       if (processingError) {
          return null;
       }

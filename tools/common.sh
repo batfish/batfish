@@ -49,14 +49,14 @@ batfish() {
 export -f batfish
 
 batfish_build() {
-   bash -c _batfish_build || return 1
+   bash -c '_batfish_build "$@"' _batfish_build "$@" || return 1
 }
 export -f batfish_build
 
 _batfish_build() {
    common_build || return 1
    cd $BATFISH_PATH
-   ant $@ || return 1
+   ant "$@" || return 1
 }
 export -f _batfish_build
 
@@ -537,37 +537,37 @@ batfish-client() {
 export -f batfish-client
 
 client_build() {
-   bash -c _client_build || return 1
+   bash -c '_client_build "$@"' _client_build "$@" || return 1
 }
 
 _client_build() {
    common_build || return 1
    cd $BATFISH_CLIENT_PATH
-   ant $@ || return 1
+   ant "$@" || return 1
 }
 export -f _client_build
 
 coordinator_build() {
-   bash -c _coordinator_build || return 1
+   bash -c '_coordinator_build "$@"' _coordinator_build "$@" || return 1
 }
 export -f coordinator_build
 
 _coordinator_build() {
    common_build || return 1
    cd $COORDINATOR_PATH
-   ant $@ || return 1 
+   ant "$@" || return 1
 }
 export -f _coordinator_build
 
 common_build() {
-   bash -c _common_build || return 1
+   bash -c '_common_build "$@"' _common_build "$@" || return 1
 }
 export -f common_build
 
 _common_build() {
    batfish_replace_symlinks || return 1
    cd $COMMON_PATH
-   ant $@ || return 1
+   ant "$@" || return 1
 }
 export -f _common_build
 

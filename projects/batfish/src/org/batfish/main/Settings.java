@@ -70,6 +70,7 @@ public class Settings {
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_NODE_ROLES_PATH = "nrpath";
    private static final String ARG_NODE_SET_PATH = "nodes";
+   private static final String ARG_PARSE_PARALLEL = "parseparallel";
    private static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
    private static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
    private static final String ARG_PREDHELP = "predhelp";
@@ -246,6 +247,7 @@ public class Settings {
    private String _nodeSetPath;
    private boolean _noTraffic;
    private Options _options;
+   private boolean _parseParallel;
    private boolean _pedanticAsError;
    private boolean _pedanticRecord;
    private boolean _postFlows;
@@ -562,6 +564,10 @@ public class Settings {
 
    public boolean getNoTraffic() {
       return _noTraffic;
+   }
+
+   public boolean getParseParallel() {
+      return _parseParallel;
    }
 
    public boolean getPedanticAsError() {
@@ -1123,6 +1129,8 @@ public class Settings {
             .longOpt(BfConsts.COMMAND_ANSWER).build());
       _options.addOption(Option.builder().desc("post dumped flows to logicblox")
             .longOpt(BfConsts.COMMAND_POST_FLOWS).build());
+      _options.addOption(Option.builder().desc("parse configs in parallel")
+            .longOpt(ARG_PARSE_PARALLEL).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1295,6 +1303,7 @@ public class Settings {
       _questionName = line.getOptionValue(BfConsts.ARG_QUESTION_NAME);
       _answer = line.hasOption(BfConsts.COMMAND_ANSWER);
       _postFlows = line.hasOption(BfConsts.COMMAND_POST_FLOWS);
+      _parseParallel = line.hasOption(ARG_PARSE_PARALLEL);
    }
 
    public boolean printParseTree() {

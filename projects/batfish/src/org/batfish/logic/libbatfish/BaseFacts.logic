@@ -12,67 +12,159 @@ block(`BaseFacts) {
    clauses(`{
 // BEGIN CODE
 
-+Node("(none)").
-+Node("(ambiguous)").
++Node(node), +Node_name(node:"(none)").
++Node(node), +Node_name(node:"(ambiguous)").
 
-+AdvertisementType("bgp").
-+AdvertisementType("bgp_ti").
-+AdvertisementType("bgp_to").
-+AdvertisementType("ibgp").
-+AdvertisementType("ibgp_ti").
-+AdvertisementType("ibgp_to").
++AdvertisementType(type), +AdvertisementType_name(type:"bgp").
++AdvertisementType(type), +AdvertisementType_name(type:"bgp_ti").
++AdvertisementType(type), +AdvertisementType_name(type:"bgp_to").
++AdvertisementType(type), +AdvertisementType_name(type:"ibgp").
++AdvertisementType(type), +AdvertisementType_name(type:"ibgp_ti").
++AdvertisementType(type), +AdvertisementType_name(type:"ibgp_to").
 
-+Interface("dynamic").
-+Interface("flow_sink_termination").
-+Interface("null_interface").
++Interface(interface), +Interface_name(interface:"dynamic").
++Interface(interface), +Interface_name(interface:"flow_sink_termination").
++Interface(interface), +Interface_name(interface:"null_interface").
 
-+OriginType("igp").
-+OriginType("egp").
-+OriginType("incomplete").
++OriginType(type), +OriginType_name(type:"igp").
++OriginType(type), +OriginType_name(type:"egp").
++OriginType(type), +OriginType_name(type:"incomplete").
 
-+RoutingProtocol("aggregate").
-+RoutingProtocol("bgp").
-+RoutingProtocol("connected").
-+RoutingProtocol("ibgp").
-+RoutingProtocol("ospf").
-+RoutingProtocol("ospfIA").
-+RoutingProtocol("ospfE1").
-+RoutingProtocol("ospfE2").
-+RoutingProtocol("static").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"aggregate").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"bgp").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"connected").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ibgp").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"isisL1").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"isisL2").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"isisEL1").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"isisEL2").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ospf").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ospfIA").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ospfE1").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ospfE2").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"static").
 
-+Ip(0).
-+Ip(-1).
++Ip(ip), +Ip_address(ip:0).
++Ip(ip), +Ip_address(ip:-1).
 
-+Encapsulation("dot1q").
++Encapsulation(encapsulation), +Encapsulation_name(encapsulation:"dot1q").
 
-+IpProtocol(256). //anyip
-+IpProtocol(6). //tcp
-+IpProtocol(17). //udp
++IpProtocol(protocol), +IpProtocol_number(protocol:256). //anyip
++IpProtocol(protocol), +IpProtocol_number(protocol:6). //tcp
++IpProtocol(protocol), +IpProtocol_number(protocol:17). //udp
 
-+Vendor("cisco").
-+Vendor("juniper").
++Vendor(vendor), +Vendor_name(vendor:"arista").
++Vendor(vendor), +Vendor_name(vendor:"cisco").
++Vendor(vendor), +Vendor_name(vendor:"juniper").
 
-+AdministrativeDistance["cisco", "bgp"] = 20.
-+AdministrativeDistance["cisco", "ibgp"] = 200.
-+AdministrativeDistance["cisco", "connected"] = 0.
-+AdministrativeDistance["cisco", "ospf"] = 110.
-+AdministrativeDistance["cisco", "ospfIA"] = 110.
-+AdministrativeDistance["cisco", "ospfE1"] = 110.
-+AdministrativeDistance["cisco", "ospfE2"] = 110.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"bgp"),
+   distance = 200.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"ibgp"),
+   distance = 200.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"connected"),
+   distance = 0.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"ospf"),
+   distance = 110.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"ospfIA"),
+   distance = 110.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"ospfE1"),
+   distance = 110.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"arista"),
+   +RoutingProtocol_name(protocol:"ospfE2"),
+   distance = 110.
 
-+AdministrativeDistance["juniper", "bgp"] = 170.
-+AdministrativeDistance["juniper", "ibgp"] = 170.
-+AdministrativeDistance["juniper", "connected"] = 0.
-+AdministrativeDistance["juniper", "ospf"] = 10.
-+AdministrativeDistance["juniper", "ospfIA"] = 10.
-+AdministrativeDistance["juniper", "ospfE1"] = 150.
-+AdministrativeDistance["juniper", "ospfE2"] = 150.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"cisco"),
+   +RoutingProtocol_name(protocol:"bgp"),
+   distance = 20.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"cisco"),
+   +RoutingProtocol_name(protocol:"ibgp"),
+   distance = 200.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"cisco"),
+   +RoutingProtocol_name(protocol:"connected"),
+   distance = 0.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"cisco"),
+   +RoutingProtocol_name(protocol:"ospf"),
+   distance = 110.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"cisco"),
+   +RoutingProtocol_name(protocol:"ospfIA"),
+   distance = 110.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"cisco"),
+   +RoutingProtocol_name(protocol:"ospfE1"),
+   distance = 110.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"cisco"),
+   +RoutingProtocol_name(protocol:"ospfE2"),
+   distance = 110.
 
-+GeneratedRouteType("aggregate").
-+GeneratedRouteType("bgp").
-+GeneratedRouteType("bgp_neighbor").
-+GeneratedRouteType("global").
-+GeneratedRouteType("ospf").
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"bgp"),
+   distance = 170.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"ibgp"),
+   distance = 170.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"connected"),
+   distance = 0.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"isisL1"),
+   distance = 15.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"isisL2"),
+   distance = 18.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"isisEL1"),
+   distance = 160.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"isisEL2"),
+   distance = 165.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"ospf"),
+   distance = 10.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"ospfIA"),
+   distance = 10.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"ospfE1"),
+   distance = 150.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"juniper"),
+   +RoutingProtocol_name(protocol:"ospfE2"),
+   distance = 150.
+
++GeneratedRouteType(type), +GeneratedRouteType_name(type:"aggregate").
++GeneratedRouteType(type), +GeneratedRouteType_name(type:"bgp").
++GeneratedRouteType(type), +GeneratedRouteType_name(type:"bgp_neighbor").
++GeneratedRouteType(type), +GeneratedRouteType_name(type:"global").
++GeneratedRouteType(type), +GeneratedRouteType_name(type:"ospf").
 
 // END CODE
    }) //clauses

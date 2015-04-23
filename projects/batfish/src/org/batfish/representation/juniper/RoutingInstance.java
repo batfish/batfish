@@ -29,6 +29,8 @@ public class RoutingInstance implements Serializable {
 
    private Map<Ip, IpBgpGroup> _ipBgpGroups;
 
+   private final IsisSettings _isisSettings;
+
    private BgpGroup _masterBgpGroup;
 
    private String _name;
@@ -48,6 +50,7 @@ public class RoutingInstance implements Serializable {
    private final JuniperSystem _system;
 
    public RoutingInstance(String name) {
+      _isisSettings = new IsisSettings();
       _interfaces = new TreeMap<String, Interface>();
       _ipBgpGroups = new TreeMap<Ip, IpBgpGroup>();
       _masterBgpGroup = new BgpGroup();
@@ -92,6 +95,10 @@ public class RoutingInstance implements Serializable {
 
    public Map<Ip, IpBgpGroup> getIpBgpGroups() {
       return _ipBgpGroups;
+   }
+
+   public IsisSettings getIsisSettings() {
+      return _isisSettings;
    }
 
    public BgpGroup getMasterBgpGroup() {

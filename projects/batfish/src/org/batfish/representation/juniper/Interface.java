@@ -48,6 +48,8 @@ public class Interface implements Serializable {
 
    private String _incomingFilter;
 
+   private final IsisInterfaceSettings _isisSettings;
+
    private String _name;
 
    private int _nativeVlan;
@@ -80,6 +82,7 @@ public class Interface implements Serializable {
       _allPrefixes = new LinkedHashSet<Prefix>();
       _allPrefixIps = new LinkedHashSet<Ip>();
       _bandwidth = getDefaultBandwidthByName(name);
+      _isisSettings = new IsisInterfaceSettings();
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
       _allowedVlans = new ArrayList<SubRange>();
@@ -118,6 +121,10 @@ public class Interface implements Serializable {
 
    public String getIncomingFilter() {
       return _incomingFilter;
+   }
+
+   public IsisInterfaceSettings getIsisSettings() {
+      return _isisSettings;
    }
 
    public String getName() {

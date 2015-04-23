@@ -85,14 +85,14 @@ isist_apply_groups
 
 isist_export
 :
-   EXPORT variable
+   EXPORT name = variable
 ;
 
 isist_interface
 :
    INTERFACE
    (
-      interface_id
+      id = interface_id
       | WILDCARD
    ) isist_interface_tail
 ;
@@ -146,12 +146,7 @@ isist_traffic_engineering
 isist_traffic_engineering_tail
 :
    isistet_credibility_protocol_preference
-   | isistet_family
-;
-
-isisteft_shortcuts
-:
-   SHORTCUTS
+   | isistet_family_shortcuts
 ;
 
 isistet_credibility_protocol_preference
@@ -159,18 +154,13 @@ isistet_credibility_protocol_preference
    CREDIBILITY_PROTOCOL_PREFERENCE
 ;
 
-isistet_family
+isistet_family_shortcuts
 :
    FAMILY
    (
       INET
       | INET6
-   ) isistet_family_tail
-;
-
-isistet_family_tail
-:
-   isisteft_shortcuts
+   ) SHORTCUTS
 ;
 
 s_protocols_isis

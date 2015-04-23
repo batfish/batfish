@@ -1,11 +1,21 @@
 package org.batfish.main;
 
 public enum ConfigurationFormat {
-   ARISTA,
-   CISCO,
-   FLAT_JUNIPER,
-   JUNIPER,
-   JUNIPER_SWITCH,
-   UNKNOWN,
-   VXWORKS;
+   ARISTA("arista"),
+   CISCO("cisco"),
+   FLAT_JUNIPER("juniper"),
+   JUNIPER("juniper"),
+   JUNIPER_SWITCH("juniper"),
+   UNKNOWN("unknown"),
+   VXWORKS("vxworks");
+
+   private String _vendorString;
+
+   private ConfigurationFormat(String vendorString) {
+      _vendorString = vendorString;
+   }
+
+   public String getVendorString() {
+      return _vendorString;
+   }
 }
