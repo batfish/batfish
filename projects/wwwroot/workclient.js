@@ -1,17 +1,17 @@
 ﻿
 $(document).ready(
     function () {
-        fnGetWorkStatus();
+        fnGetCoordinatorWorkQueueStatus();
     }
 );
 
 // -------------------------------------------------
 
-function fnGetWorkStatus() {
-    bfGetJson("GetWorkStatus", SVC_WORK_MGR_ROOT + SVC_WORK_GETSTATUS_RSC, cbGetWorkStatus);
+function fnGetCoordinatorWorkQueueStatus() {
+    bfGetJson("GetCoordinatorWorkQueueStatus", SVC_WORK_MGR_ROOT + SVC_WORK_GETSTATUS_RSC, cbGetCoordinatorWorkQueueStatus);
 }
 
-function cbGetWorkStatus(result) {
+function cbGetCoordinatorWorkQueueStatus(taskname, result) {
 
     if (result[0] === SVC_SUCCESS_KEY) {
         var cWorks = result[1]["completed-works"];
@@ -19,9 +19,11 @@ function cbGetWorkStatus(result) {
 
         jQuery("#txtCompletedWorks").val(cWorks);
         jQuery("#txtIncompleteWorks").val(iWorks);
+
+        bfUpdateDebugInfo("Coordinator work queue status refreshed");
     }
     else {
-        UpdateDebugInfo("GetWorkStatusFailed: " + result[1]);
+        alert(taskname + "failed: " + result[1]);
     }
 }
 
@@ -35,18 +37,10 @@ function fnAddWorker() {
         return;
     }
 
-    bfGetJson("AddWorker", SVC_POOL_MGR_ROOT + SVC_POOL_UPDATE_RSC + "?add=" + worker, cbAddWorker);
+    bfGetJson("AddWorker-" + worker, SVC_POOL_MGR_ROOT + SVC_POOL_UPDATE_RSC + "?add=" + worker, bfGenericCallback);
 }
 
-function cbAddWorker(result) {
-    if (result[0] === SVC_SUCCESS_KEY) {
-        UpdateDebugInfo("Worker added successfully");
-    }
-    else {
-        UpdateDebugInfo("Worker addition failed: " + result[1]);
-    }
-}
-
+// -----------------------------------------------
 
 function fnUploadTestrig() {
 
@@ -73,17 +67,30 @@ function fnUploadTestrig() {
 
 // -----------------------------------doWork-----------------------
 
-var uuidCurrWork;
-var currWorkChecker;
-
 function fnDoWork(worktype) {
 
-    uuidCurrWork = guid();
+    var uuidCurrWork = guid();
 
     //set the guid of the text field
-    jQuery("#txtDoWorkGuid").val(uuidCurrWork);
+    jQuery("#txtWorkGuid").val(uuidCurrWork);
 
     var testrigName = jQuery("#txtTestrigName").val();
+    if (testrigName == "") {
+        alert("Testrig name is empty");
+        return;
+    }
+
+    var envName = jQuery("#txtEnvironmentName").val();
+    if (envName == "" && worktype.substring(0, 6) == "vendor") { //vendor* worktype does not need an environment
+        alert("Environment name is empty");
+        return;
+    }
+
+    var questionName = jQuery("#txtQuestionName").val();
+    if (questionName == "" && (worktype == "answerquestion" || worktype == "postflows")) { 
+        alert("Question name is empty");
+        return;
+    }
 
     var reqParams = {};
 
@@ -96,86 +103,51 @@ function fnDoWork(worktype) {
             break;
         case "generatefacts":
             reqParams[COMMAND_GENERATE_FACT] = "";
-            reqParams[COMMAND_ENV] = jQuery("#txtEnvironmentName").val();
+            reqParams[COMMAND_ENV] = envName
             break;
         case "generatedataplane":
             reqParams[COMMAND_COMPILE] = "";
             reqParams[COMMAND_FACTS] = "";
-            reqParams[COMMAND_ENV] = jQuery("#txtEnvironmentName").val();
+            reqParams[COMMAND_ENV] = envName;
             break;
         case "getdataplane":
             reqParams[COMMAND_DUMP_DP] = "";
-            reqParams[COMMAND_ENV] = jQuery("#txtEnvironmentName").val();
+            reqParams[COMMAND_ENV] = envName;
             break;
         case "getz3encoding":
             reqParams[COMMAND_SYNTHESIZE_Z3_DATA_PLANE] = "";
-            reqParams[COMMAND_ENV] = jQuery("#txtEnvironmentName").val();
+            reqParams[COMMAND_ENV] = envName;
             break;
         case "answerquestion":
             reqParams[COMMAND_ANSWER] = "";
-            reqParams[ARG_QUESTION_NAME] = jQuery("#txtQuestionName").val();
+            reqParams[ARG_QUESTION_NAME] = questionName;
             break;
         case "postflows":
             reqParams[COMMAND_POST_FLOWS] = "";
-            reqParams[ARG_QUESTION_NAME] = jQuery("#txtQuestionName").val();
-            reqParams[COMMAND_ENV] = jQuery("#txtEnvironmentName").val();
+            reqParams[ARG_QUESTION_NAME] = questionName;
+            reqParams[COMMAND_ENV] = envName;
             break;
         case "getflowtraces":
-            reqParams[COMMAND_POST_FLOWS] = "";
+            reqParams[COMMAND_QUERY] = "";
             reqParams[ARG_PREDICATES] = PREDICATE_FLOW_PATH_HISTORY;
-            reqParams[COMMAND_ENV] = jQuery("#txtEnvironmentName").val();
+            reqParams[COMMAND_ENV] = envName;
             break;
         default:
-            UpdateDebugInfo("failed: unsupported work command", worktype);
+            alert("Unsupported work command", worktype);
     }
 
     var workItem = JSON.stringify([uuidCurrWork, testrigName, reqParams, {}]);
 
-    //if we had an old work checker, kill it before queuing this work
-    window.clearTimeout(currWorkChecker);
-
-    new ServiceHelper().Get(SVC_WORK_MGR_ROOT + SVC_WORK_QUEUE_WORK_RSC + "?" + SVC_WORKITEM_KEY + "=" + workItem, cbDoWork);
+    bfGetJson("DoWork" + worktype, SVC_WORK_MGR_ROOT + SVC_WORK_QUEUE_WORK_RSC + "?" + SVC_WORKITEM_KEY + "=" + workItem, cbDoWork);
 }
 
-function cbDoWork(context, result) {
+function cbDoWork(taskname, result) {
     if (result[0] === SVC_SUCCESS_KEY) {
-        UpdateDebugInfo("Work queued. Will continue checking.");
-        currWorkChecker = window.setTimeout(fnCheckWork, 10 * 1000);
+        bfUpdateDebugInfo(taskname + " succeeded. Will start polling for status");
+        fnCheckWork();
     }
     else {
-        UpdateDebugInfo("Work queuing failed: " + result[1]);
-    }
-}
-
-function fnCheckWork() {
-    new ServiceHelper().Get(SVC_WORK_MGR_ROOT + SVC_WORK_GET_WORKSTATUS_RSC + "?" + SVC_WORKID_KEY + "=" + uuidCurrWork, cbCheckWork);
-}
-
-function cbCheckWork(context, result) {
-    if (result[0] === SVC_SUCCESS_KEY) {
-        UpdateDebugInfo(context, "Work checking succeeded");
-
-        var status = result[1][SVC_WORKSTATUS_KEY];
-        jQuery("#txtCheckWorkStatus").val(status);
-
-        switch (status) {
-            case "TERMINATEDNORMALLY":
-            case "TERMINATEDABNORMALLY":
-                break;
-            case "UNASSIGNED":
-            case "TRYINGTOASSIGN":
-            case "ASSIGNED":
-            case "ASSIGNMENTERROR":
-            case "CHECKINGSTATUS":
-                //fire again
-                currWorkChecker = window.setTimeout(fnCheckWork, 10 * 1000);
-                break;
-            default:
-                UpdateDebugInfo("Got unknown status: ", status);
-        }        
-    }
-    else {
-        UpdateDebugInfo("Work queuing failed: " + result[1]);
+        alert("Work queuing failed: " + result[1]);
     }
 }
 
@@ -189,21 +161,70 @@ function guid() {
       s4() + '-' + s4() + s4() + s4();
 }
 
+// --------------------------------
+
+var currWorkChecker;
+
+function fnCheckWork() {
+
+    //delete any old work checker
+    window.clearTimeout(currWorkChecker);
+
+    var uuid = jQuery("#txtWorkGuid").val();
+    if (uuid == "") {
+        alert("Work GUID is empty. Cannot check status");
+        return;
+    }
+
+    bfGetJson("Checkwork-" + uuid, SVC_WORK_MGR_ROOT + SVC_WORK_GET_WORKSTATUS_RSC + "?" + SVC_WORKID_KEY + "=" + uuid, cbCheckWork);
+}
+
+function cbCheckWork(taskname, result) {
+    if (result[0] === SVC_SUCCESS_KEY) {
+
+        var status = result[1][SVC_WORKSTATUS_KEY];
+
+        bfUpdateDebugInfo(taskname + " returned with response " + status);
+
+        jQuery("#txtCheckWorkStatus").val(status);
+
+        switch (status) {
+            case "TERMINATEDNORMALLY":
+            case "TERMINATEDABNORMALLY":
+            case "ASSIGNMENTERROR":
+                break;
+            case "UNASSIGNED":
+            case "TRYINGTOASSIGN":
+            case "ASSIGNED":
+            case "CHECKINGSTATUS":
+                //fire again
+                currWorkChecker = window.setTimeout(fnCheckWork, 10 * 1000);
+                break;
+            default:
+                bfUpdateDebugInfo("Got unknown work status: ", status);
+        }        
+    }
+    else {
+        bfUpdateDebugInfo("Work status check failed: " + result[1]);
+    }
+}
+
+// ----------------------------------------------------------------
+
 function fnGetLog() {
     var testrigName = jQuery("#txtTestrigName").val();
-    var uuidWork = jQuery("#txtDoWorkGuid").val();
-
-    //sanity check what we got
     if (testrigName == "") {
-        UpdateDebugInfo("Cannot fetch log. Testrig name is empty");
-        return;
-    }
-    if (uuidWork == "") {
-        UpdateDebugInfo("Cannot fetch log. Testrig name is empty");
+        alert("Testrig name is empty.");
         return;
     }
 
-    helperGetObject(testrigName, uuidWork + ".log");
+    var uuidWork = jQuery("#txtWorkGuid").val();
+    if (uuidWork == "") {
+        alert("Work GUID is empty");
+        return;
+    }
+
+    bfGetObject(testrigName, uuidWork + ".log");
 }
 
 function fnGetObject(worktype) {
@@ -211,17 +232,17 @@ function fnGetObject(worktype) {
     var testrigName = jQuery("#txtTestrigName").val();
 
     if (testrigName == "") {
-        UpdateDebugInfo("Cannot fetch result. Testrig name is empty");
+        alert("Testrig name is empty");
         return;
     }
 
     var envName = jQuery("#txtEnvironmentName").val();
     if (envName == "" && worktype.substring(0, 6) == "vendor") { //vendor* worktype does not need an environment
-        UpdateDebugInfo("Cannot fetch result for", worktype, "Environment name is empty");
+        alert("Environment name is empty");
         return;
     }
 
-    var objectName = "unknown";
+    var objectName = ""; 
 
     switch (worktype) {
         case "vendorspecific":
@@ -243,96 +264,115 @@ function fnGetObject(worktype) {
             objectName = [RELPATH_ENVIRONMENTS_DIR, envName, RELPATH_QUERY_DUMP_DIR].join("/");
             break;
         default:
-            UpdateDebugInfo("failed: unsupported worktype for get result", worktype);
+            alert("Unsupported worktype for get result", worktype);
     }
 
-    helperGetObject(testrigName, objectName);
+    if (objectName == "") { 
+        alert("Could not determine the right object name to fetch");
+        return;
+    }
+
+    bfGetObject(testrigName, objectName);
 }
 
-function helperGetObject(testrigName, objectName) {
-    var uri = encodeURI(SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?" + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY + "=" + objectName);
-    window.location.assign(uri);
-}
+// ------------------------------------
 
 function fnUploadEnvironment() {
-    var data = new FormData();
-    data.append(SVC_TESTRIG_NAME_KEY, jQuery("#txtTestrigName").val());
-    data.append(SVC_ENV_NAME_KEY, jQuery("#txtEnvironmentName").val());
-    data.append(SVC_ZIPFILE_KEY, jQuery("#fileUploadEnvironment").get(0).files[0]);
 
-    jQuery.ajax({
-        url: SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_ENV_RSC,
-        type: "POST",
-        contentType: false,
-        processData: false,
-        data: data,
-
-        error: function (_, textStatus, errorThrown) {
-            UpdateDebugInfo("Environment upload failed:", textStatus, errorThrown);
-            console.log(textStatus, errorThrown);
-        },
-        success: function (response, textStatus) {
-            if (response[0] === SVC_SUCCESS_KEY) {
-                UpdateDebugInfo("Environment uploaded");
-            }
-            else {
-                UpdateDebugInfo("Environment upload failed: " + response[1]);
-            }
-        }
-    });
-}
-
-function fnUploadQuestion() {
-    var data = new FormData();
-    data.append(SVC_TESTRIG_NAME_KEY, jQuery("#txtTestrigName").val());
-    data.append(SVC_QUESTION_NAME_KEY, jQuery("#txtQuestionName").val());
-    data.append(SVC_FILE_KEY, jQuery("#fileUploadQuestion").get(0).files[0]);
-
-    jQuery.ajax({
-        url: SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_QUESTION_RSC,
-        type: "POST",
-        contentType: false,
-        processData: false,
-        data: data,
-
-        error: function (_, textStatus, errorThrown) {
-            UpdateDebugInfo("Question upload failed:", textStatus, errorThrown);
-            console.log(textStatus, errorThrown);
-        },
-        success: function (response, textStatus) {
-            if (response[0] === SVC_SUCCESS_KEY) {
-                UpdateDebugInfo("Question uploaded");
-            }
-            else {
-                UpdateDebugInfo("Question upload failed: " + response[1]);
-            }
-        }
-    });
-}
-
-
-//function UpdateDebugInfo(object, string) {
-//    if ($("#divDebugInfo").is(':hidden'))
-//          return;
-//    $("#divDebugInfo").html(string);
-//}
-
-var debugLog = [];
-var maxLogEntries = 10;
-
-function UpdateDebugInfo(string) {
-
-    debugLog.push(bfGetTimestamp() + " " + string);
-
-    while (debugLog.length > maxLogEntries) {
-        debugLog.shift();
+    var testrigName = jQuery("#txtTestrigName").val();
+    if (testrigName == "") {
+        alert("Specify a testrig name");
+        return;
     }
 
-    $("#divDebugInfo").html(debugLog.join("<br/>"));
+    var envName = jQuery("#txtEnvironmentName").val();
+    if (envName == "") {
+        alert("Specify an environment name");
+        return;
+    }
+
+    var envFile = jQuery("#fileUploadEnvironment").get(0).files[0];
+    if (typeof envFile === 'undefined') {
+        alert("Select an environment file");
+        return;
+    }
+
+    var data = new FormData();
+    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
+    data.append(SVC_ENV_NAME_KEY, envName);
+    data.append(SVC_ZIPFILE_KEY, envFile);
+
+    bfUploadData("UploadEnvironment-" + envName, SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_ENV_RSC, data);
+
+    //jQuery.ajax({
+    //    url: SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_ENV_RSC,
+    //    type: "POST",
+    //    contentType: false,
+    //    processData: false,
+    //    data: data,
+
+    //    error: function (_, textStatus, errorThrown) {
+    //        bfUpdateDebugInfo("Environment upload failed:", textStatus, errorThrown);
+    //        console.log(textStatus, errorThrown);
+    //    },
+    //    success: function (response, textStatus) {
+    //        if (response[0] === SVC_SUCCESS_KEY) {
+    //            bfUpdateDebugInfo("Environment uploaded");
+    //        }
+    //        else {
+    //            bfUpdateDebugInfo("Environment upload failed: " + response[1]);
+    //        }
+    //    }
+    //});
 }
 
-function bfGetTimestamp() {
-    var now = new Date();
-    var time = [now.getHours(), now.getMinutes(), now.getSeconds()];
-    return time.join(":");
+// ------------------------------
+
+function fnUploadQuestion() {
+
+    var testrigName = jQuery("#txtTestrigName").val();
+    if (testrigName == "") {
+        alert("Specify a testrig name");
+        return;
+    }
+
+    var qName = jQuery("#txtQuestionName").val();
+    if (qName == "") {
+        alert("Specify a question name");
+        return;
+    }
+
+    var qFile = jQuery("#fileUploadQuestion").get(0).files[0];
+    if (typeof qFile === 'undefined') {
+        alert("Select a question file");
+        return;
+    }
+
+    var data = new FormData();
+    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
+    data.append(SVC_QUESTION_NAME_KEY, qName);
+    data.append(SVC_FILE_KEY, qFile);
+
+    bfUploadData("UploadQuestion-" + qName, SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_QUESTION_RSC, data);
+
+    //jQuery.ajax({
+    //    url: SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_QUESTION_RSC,
+    //    type: "POST",
+    //    contentType: false,
+    //    processData: false,
+    //    data: data,
+
+    //    error: function (_, textStatus, errorThrown) {
+    //        bfUpdateDebugInfo("Question upload failed:", textStatus, errorThrown);
+    //        console.log(textStatus, errorThrown);
+    //    },
+    //    success: function (response, textStatus) {
+    //        if (response[0] === SVC_SUCCESS_KEY) {
+    //            bfUpdateDebugInfo("Question uploaded");
+    //        }
+    //        else {
+    //            bfUpdateDebugInfo("Question upload failed: " + response[1]);
+    //        }
+    //    }
+    //});
 }

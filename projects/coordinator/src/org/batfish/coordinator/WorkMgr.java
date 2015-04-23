@@ -69,6 +69,13 @@ public class WorkMgr {
 
    public boolean queueWork(WorkItem workItem) throws Exception {
 
+      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
+            + "/" + workItem.getTestrigName());
+
+      if (workItem.getTestrigName().isEmpty() || !testrigDir.exists()) {
+         throw new Exception("Non-existent testrig");
+      }
+
       boolean success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem));
 
       // as an optimization trigger AssignWork to see if we can schedule this

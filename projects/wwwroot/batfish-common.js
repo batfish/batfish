@@ -81,6 +81,21 @@ var RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
 var RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 var RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
+function bfUpdateCoordinatorLocation() {
+
+    var coordinatorHost = jQuery("#txtCoordinatorHost").val();
+
+    if (coordinatorHost == "") {
+        alert("Specify a coordinator host");
+        return;
+    }
+
+    SVC_WORK_MGR_ROOT = "http://" + coordinatorHost + ":9997/batfishworkmgr/";
+    SVC_POOL_MGR_ROOT = "http://" + coordinatorHost + ":9998/batfishpoolmgr/";
+
+    bfUpdateDebugInfo("Coordinator host is updated to " + coordinatorHost);
+}
+
 function bfUploadData(taskname, url_parm, data) {
     console.log("bfUploadData: ", taskname, url_parm);
     jQuery.ajax({
@@ -95,7 +110,7 @@ function bfUploadData(taskname, url_parm, data) {
         },
         success: function (response, textStatus) {
             if (response[0] === SVC_SUCCESS_KEY) {
-                UpdateDebugInfo(taskname + " succeeded");
+                bfUpdateDebugInfo(taskname + " succeeded");
             }
             else {
                 alert(taskname + " failed: " + response[1]);
@@ -112,11 +127,46 @@ function bfGetJson(taskname, url_parm, callback) {
         dataType: "json", //Expected data format from server
 
         error: function (_, textStatus, errorThrown) {
-            UpdateDebugInfo(taskname + " failed: ", textStatus, errorThrown);
+            alert(taskname + " failed: ", textStatus, errorThrown);
         },
         success: function (response, textStatus) {
             console.log("bfGetJsonResponse: ", taskname, JSON.stringify(response));
-            callback(response);
+            callback(taskname, response);
         }
     });
+}
+
+function bfGetObject(testrigName, objectName) {
+    var uri = encodeURI(SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?" + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY + "=" + objectName);
+    window.location.assign(uri);
+}
+
+function bfGenericCallback(taskname, result) {
+    if (result[0] === SVC_SUCCESS_KEY) {
+        bfUpdateDebugInfo(taskname + " succeeded");
+    }
+    else {
+        alert(taskname + "failed: " + result[1]);
+    }
+}
+
+
+var debugLog = [];
+var maxLogEntries = 10;
+
+function bfUpdateDebugInfo(string) {
+
+    debugLog.push(bfGetTimestamp() + " " + string);
+
+    while (debugLog.length > maxLogEntries) {
+        debugLog.shift();
+    }
+
+    $("#divDebugInfo").html(debugLog.join("<br/>"));
+}
+
+function bfGetTimestamp() {
+    var now = new Date();
+    var time = [now.getHours(), now.getMinutes(), now.getSeconds()];
+    return time.join(":");
 }
