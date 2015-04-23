@@ -104,7 +104,7 @@ public class SampleClient {
                testrigName,
                wItem5,
                Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
-                     BfConsts.RELPATH_DATA_PLANE_DIR).toString());
+                     BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString());
 
          System.out.println("Press any key to upload question");
          System.in.read();
