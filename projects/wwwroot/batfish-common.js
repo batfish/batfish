@@ -81,6 +81,28 @@ var RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
 var RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 var RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
+function bfUploadData(taskname, data) {
+
+    jQuery.ajax({
+        url: SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_TESTRIG_RSC,
+        type: "POST",
+        contentType: false,
+        processData: false,
+        data: data,
+
+        error: function (_, textStatus, errorThrown) {
+            UpdateDebugInfo(taskname + " failed: ", textStatus, errorThrown);
+        },
+        success: function (response, textStatus) {
+            if (response[0] === SVC_SUCCESS_KEY) {
+                UpdateDebugInfo(taskname + " succeeded");
+            }
+            else {
+                UpdateDebugInfo(taskname + " failed: " + response[1]);
+            }
+        }
+    });
+}
 
 function ServiceHelper() {
 
@@ -129,7 +151,7 @@ function ServiceHelper() {
         var FailedServiceCallback = this.FailedServiceCallback;
         var Context = this;
 
-        UpdateDebugInfo(this, 'calling: ' + this.DataType + " URL: " + this.Url + " Data: " + this.Data);
+        UpdateDebugInfo('calling: ' + this.DataType + " URL: " + this.Url + " Data: " + this.Data);
 
 
         //var data = new FormData();
@@ -156,7 +178,7 @@ function ServiceHelper() {
 
     this.FailedServiceCallback = function (context, result) {
         ShowDebugInfo();
-        UpdateDebugInfo(this, 'failed: ' + context.DataType + " URL: " + context.Url + " Data: " + context.Data + "result: " + result.status + ' ' + result.statusText);
+        UpdateDebugInfo('failed: ' + context.DataType + " URL: " + context.Url + " Data: " + context.Data + "result: " + result.status + ' ' + result.statusText);
     }
 
     this.SucceededServiceCallback = function (context, result) {

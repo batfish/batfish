@@ -1,7 +1,6 @@
 ﻿
 $(document).ready(
     function () {
-        UpdateDebugInfo(this, "document loaded");
         new ServiceHelper().Get(SVC_WORK_MGR_ROOT + SVC_WORK_GETSTATUS_RSC, cbGetWorkStatus);
     }
 );
@@ -9,10 +8,10 @@ $(document).ready(
 function cbGetWorkStatus(context, result) {
 
     if (result[0] === SVC_SUCCESS_KEY) {
-        UpdateDebugInfo(context, "WorkStatus: " + result[1]["completed-works"] + " / " + result[1]["incomplete-works"]);
+        UpdateDebugInfo("WorkStatus: " + result[1]["completed-works"] + " / " + result[1]["incomplete-works"]);
     }
     else {
-        UpdateDebugInfo(this, "GetWorkStatusCallback: " + result[0] + " " + result[1]);
+        UpdateDebugInfo("GetWorkStatusCallback: " + result[0] + " " + result[1]);
     }
 }
 
@@ -23,56 +22,37 @@ function fnAddWorker() {
 
 function cbAddWorker(context, result) {
     if (result[0] === SVC_SUCCESS_KEY) {
-        UpdateDebugInfo(context, "Worked added");
+        UpdateDebugInfo("Worked added");
     }
     else {
-        UpdateDebugInfo(this, "Worker addition failed: " + result[1]);
+        UpdateDebugInfo("Worker addition failed: " + result[1]);
     }
 }
 
 
-//function fnUploadTestrig() {
-
-////    var dataParam = function () {
-//        var data = new FormData();
-//        data.append(SVC_TESTRIG_NAME_KEY, jQuery("#txtUploadTestrig").val());
-//        data.append(SVC_ZIPFILE_KEY, jQuery("#fileUploadTestrig").get(0).files[0]);
-////        return data;
-//        // Or simply return new FormData(jQuery("form")[0]);
-////    }();
- 
-//    new ServiceHelper().Upload(SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_TESTRIG_RSC, data, cbUploadTestrig);
-//}
-
-// ------------------ uploadEnvironment------------------
-
 //code roughly based on http://www.thefourtheye.in/2013/10/file-upload-with-jquery-and-ajax.html
 
 function fnUploadTestrig() {
+
+    var testrigName = jQuery("#txtTestrigName").val();
+
+    if (testrigName == "") {
+        UpdateDebugInfo("Cannot upload testrig. Testrig name is empty");
+        return;
+    }
+
+    var testrigFile = jQuery("#fileUploadTestrig").get(0).files[0];
+
+    if (typeof testrigFile === 'undefined') {
+        UpdateDebugInfo("Testrig file is not supplied");
+        return;
+    }
+
     var data = new FormData();
-    data.append(SVC_TESTRIG_NAME_KEY, jQuery("#txtTestrigName").val());
-    data.append(SVC_ZIPFILE_KEY, jQuery("#fileUploadTestrig").get(0).files[0]);
+    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
+    data.append(SVC_ZIPFILE_KEY, testrigFile);
 
-    jQuery.ajax({
-        url: SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_TESTRIG_RSC,
-        type: "POST",
-        contentType: false,
-        processData: false,
-        data: data,
-
-        error: function (_, textStatus, errorThrown) {
-            UpdateDebugInfo("Testrig upload failed:", textStatus, errorThrown);
-            console.log(textStatus, errorThrown);
-        },
-        success: function (response, textStatus) {
-            if (response[0] === SVC_SUCCESS_KEY) {
-                UpdateDebugInfo(this, "Testrig uploaded");
-            }
-            else {
-                UpdateDebugInfo(this, "Testrig upload failed: " + response[1]);
-            }
-        }
-    });
+    bfUploadData("UploadTestrig " + testrigName, data);
 }
 
 // -----------------------------------doWork-----------------------
@@ -143,11 +123,11 @@ function fnDoWork(worktype) {
 
 function cbDoWork(context, result) {
     if (result[0] === SVC_SUCCESS_KEY) {
-        UpdateDebugInfo(context, "Work queued. Will continue checking.");
+        UpdateDebugInfo("Work queued. Will continue checking.");
         currWorkChecker = window.setTimeout(fnCheckWork, 10 * 1000);
     }
     else {
-        UpdateDebugInfo(this, "Work queuing failed: " + result[1]);
+        UpdateDebugInfo("Work queuing failed: " + result[1]);
     }
 }
 
@@ -179,7 +159,7 @@ function cbCheckWork(context, result) {
         }        
     }
     else {
-        UpdateDebugInfo(this, "Work queuing failed: " + result[1]);
+        UpdateDebugInfo("Work queuing failed: " + result[1]);
     }
 }
 
@@ -194,7 +174,19 @@ function guid() {
 }
 
 function fnGetLog() {
+    var testrigName = jQuery("#txtTestrigName").val();
     var uuidWork = jQuery("#txtDoWorkGuid").val();
+
+    //sanity check what we got
+    if (testrigName == "") {
+        UpdateDebugInfo("Cannot fetch log. Testrig name is empty");
+        return;
+    }
+    if (uuidWork == "") {
+        UpdateDebugInfo("Cannot fetch log. Testrig name is empty");
+        return;
+    }
+
     helperGetObject(testrigName, uuidWork + ".log");
 }
 
@@ -202,8 +194,16 @@ function fnGetObject(worktype) {
 
     var testrigName = jQuery("#txtTestrigName").val();
 
-    //this need not be properly populated for all worktypes
+    if (testrigName == "") {
+        UpdateDebugInfo("Cannot fetch result. Testrig name is empty");
+        return;
+    }
+
     var envName = jQuery("#txtEnvironmentName").val();
+    if (envName == "" && worktype.substring(0, 6) == "vendor") { //vendor* worktype does not need an environment
+        UpdateDebugInfo("Cannot fetch result for", worktype, "Environment name is empty");
+        return;
+    }
 
     var objectName = "unknown";
 
@@ -234,32 +234,9 @@ function fnGetObject(worktype) {
 }
 
 function helperGetObject(testrigName, objectName) {
-    //    new ServiceHelper().Get(SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?" + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY + "=" + objectName, cbGetObject);
-    //jQuery.ajax({
-    //    url: SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?" + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY + "=" + objectName,
-    //    type: "GET",
-
-    //    error: function (_, textStatus, errorThrown) {
-    //        UpdateDebugInfo("Get object failed:", textStatus, errorThrown);
-    //    },
-    //    success: function (response, textStatus) {
-    //        cbGetObject(response, textStatus);
-    //    }
-    //});
-
     var uri = encodeURI(SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?" + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY + "=" + objectName);
     window.location.assign(uri);
 }
-
-function cbGetObject(context, result) {
-    if (result[0] === SVC_SUCCESS_KEY) {
-        UpdateDebugInfo(context, "Got object");
-    }
-    else {
-        UpdateDebugInfo(this, "Getting object failed: " + result[1]);
-    }
-}
-
 
 function fnUploadEnvironment() {
     var data = new FormData();
@@ -280,10 +257,10 @@ function fnUploadEnvironment() {
         },
         success: function (response, textStatus) {
             if (response[0] === SVC_SUCCESS_KEY) {
-                UpdateDebugInfo(this, "Environment uploaded");
+                UpdateDebugInfo("Environment uploaded");
             }
             else {
-                UpdateDebugInfo(this, "Environment upload failed: " + response[1]);
+                UpdateDebugInfo("Environment upload failed: " + response[1]);
             }
         }
     });
@@ -308,24 +285,38 @@ function fnUploadQuestion() {
         },
         success: function (response, textStatus) {
             if (response[0] === SVC_SUCCESS_KEY) {
-                UpdateDebugInfo(this, "Question uploaded");
+                UpdateDebugInfo("Question uploaded");
             }
             else {
-                UpdateDebugInfo(this, "Question upload failed: " + response[1]);
+                UpdateDebugInfo("Question upload failed: " + response[1]);
             }
         }
     });
 }
 
 
-    //By convention we add div with this id: divDebugInfo to the bottom of pages as place to display debugging info
-    function UpdateDebugInfo(object, string) {
-        if ($("#divDebugInfo").is(':hidden'))
-            return;
-        $("#divDebugInfo").html(string);
+//function UpdateDebugInfo(object, string) {
+//    if ($("#divDebugInfo").is(':hidden'))
+//          return;
+//    $("#divDebugInfo").html(string);
+//}
+
+var debugLog = [];
+var maxLogEntries = 10;
+
+function UpdateDebugInfo(string) {
+
+    debugLog.push(bfGetTimestamp() + " " + string);
+
+    while (debugLog.length > maxLogEntries) {
+        debugLog.shift();
     }
 
-    function ShowDebugInfo() {
-        $("#divDebugInfo").show();
-    }
+    $("#divDebugInfo").html(debugLog.join("<br/>"));
+}
 
+function bfGetTimestamp() {
+    var now = new Date();
+    var time = [now.getHours(), now.getMinutes(), now.getSeconds()];
+    return time.join(":");
+}

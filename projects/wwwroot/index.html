@@ -42,7 +42,7 @@
 
         <br /><br />
         Environment name
-        <input type="text" id="txtEnvironmentName" />
+        <input type="text" id="txtEnvironmentName" value="default"/>
         Environment file
         <input type="file" id="fileUploadEnvironment" />
         <input type="button" id="btnUploadEnvironment" value="Upload environment" onclick="fnUploadEnvironment()" />
@@ -85,12 +85,13 @@
         <br />
         Status of issued work
             <input type="text" id="txtCheckWorkStatus" />
+        <input type="button" value="Get log" onclick="fnGetLog()" />
     </form>
 
     <hr />
 
     <!-- Change display style to 'normal' to show debug information and 'none' to turn it off  -->    
-    <h2>Debug information: </h2>
+    <b>Debug information: </b>
     <div class="divClassSection" id="divDebugInfo" style="display: normal">
     </div>
 </body>
