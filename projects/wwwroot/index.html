@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Batfish batfish batfish</title>
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.11.2.min.js"></script>
+    <script src="batfish-common.js"></script>
+    <script src="workclient.js"></script>
+</head>
+<body>
+    <h1>Welcome to batfish
+    </h1>
+
+    <div class="divClassSection" id="divAddWorker" style="display: normal">
+        <form>
+            Worker
+            <input type="text" id="txtAddWorker" value="localhost:9999" />
+            <input type="button" id="btnAddWorker" value="Add worker" onclick="fnAddWorker()" />
+        </form>
+    </div>
+
+    <hr />
+
+    <form>
+        Testrig name
+        <input type="text" id="txtTestrigName" value="example" />
+    </form>
+
+    <br />
+
+    <form>
+        Testrig file
+        <input type="file" id="fileUploadTestrig" />
+        <input type="button" id="btnUploadTestrig" value="Upload testrig" onclick="fnUploadTestrig()" />
+
+        <br /><br />
+        <input type="button" id="btnWorkVendorSpecific" value="Work: Parse vendor specific" onclick="fnDoWork('vendorspecific')" />
+
+        <br /><br />
+        <input type="button" id="btnWorkVendorIndependent" value="Work: Parse vendor independent" onclick="fnDoWork('vendorindependent')" />
+
+        <br /><br />
+        Environment name
+        <input type="text" id="txtEnvironmentName" />
+        Environment file
+        <input type="file" id="fileUploadEnvironment" />
+        <input type="button" id="btnUploadEnvironment" value="Upload environment" onclick="fnUploadEnvironment()" />
+
+        <br /><br />
+        <input type="button" id="btnWorkGenerateFact" value="Work: Generate facts" onclick="fnDoWork('generatefacts')" />
+
+        <br /><br />
+        GUID of issued work
+            <input type="text" id="txtDoWorkGuid" />
+        <br />
+        Status of issued work
+            <input type="text" id="txtCheckWorkStatus" />
+    </form>
+
+    <hr />
+
+    <!-- Change display style to 'normal' to show debug information and 'none' to turn it off  -->    
+    <h2>Debug information: </h2>
+    <div class="divClassSection" id="divDebugInfo" style="display: normal">
+    </div>
+</body>
+</html>

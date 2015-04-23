@@ -1,14 +1,12 @@
 package org.batfish.coordinator;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.*;
 
 import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import javax.ws.rs.core.Context;
@@ -31,7 +29,56 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 public class WorkMgrService {
 
    Logger _logger = Main.initializeLogger();
-   
+
+//   @GET
+//   @Path("test")
+//   @Produces(MediaType.APPLICATION_JSON)
+//   public Response test() {
+//      try {
+//      _logger.info("WMS:getInfo\n");
+//      JSONArray id = new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, Main.getWorkMgr()
+//            .getStatusJson()));
+//      
+//      return Response.ok()
+//            .entity(id)
+////            .header("Access-Control-Allow-Origin","*")
+//            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+//            .allow("OPTIONS")
+//            .build();
+//      }
+//      catch (Exception e) {
+//         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+//         _logger.error("WMS:getWorkQueueStatus exception: " + stackTrace);
+//         return Response.serverError().build();
+//      }
+//   }
+
+   @GET
+   @Path("test")
+   @Produces(MediaType.TEXT_PLAIN)
+   public String test() {
+      try {
+      _logger.info("WMS:getInfo\n");
+      JSONArray id = new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, Main.getWorkMgr()
+            .getStatusJson()));
+
+      return id.toString();
+      
+//      return Response.ok()
+//            .entity(id)
+////            .header("Access-Control-Allow-Origin","*")
+//            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+//            .allow("OPTIONS")
+//            .build();
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:getWorkQueueStatus exception: " + stackTrace);
+//         return Response.serverError().build();
+         return "got error";
+      }
+   }
+
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getInfo() {
@@ -125,6 +172,10 @@ public class WorkMgrService {
       try {
          _logger.info("WMS:uploadTestrig " + name + "\n");
 
+         if (name == null || name.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, "Testrig name not supplied"));
+         }
+         
          Main.getWorkMgr().uploadTestrig(name, fileStream);
 
          return new JSONArray(

@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.ProcessingException;
@@ -33,6 +35,15 @@ public class WorkMgr {
    private WorkQueueMgr _workQueueMgr;
    private Logger _logger;
 
+//   private Runnable _checkWorkTask;
+//   private Runnable _assignWorkTask;
+//   
+//   private ScheduledExecutorService _checkService;
+//   private ScheduledExecutorService _assignService;
+//   
+//   private ScheduledFuture<?> _checkFuture;
+//   private ScheduledFuture<?> _assignFuture;
+   
    public WorkMgr() {
       _logger = Main.initializeLogger();
       _workQueueMgr = new WorkQueueMgr();
@@ -40,16 +51,15 @@ public class WorkMgr {
       //for some bizarre reason, this ordering of scheduling checktask before assignwork, is important
       //in the other order, assignwork never fires
       //TODO: track this down
-      Runnable assignWorkTask = new AssignWorkTask();
+//      _checkWorkTask = new CheckTaskTask();
+//      _checkService = Executors.newScheduledThreadPool(1);
+//      _checkFuture = _checkService.scheduleAtFixedRate(_checkWorkTask, 0,
+//                  Main.getSettings().getPeriodCheckWorkMs(),
+//                  TimeUnit.MILLISECONDS);
+      
       Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
-            assignWorkTask, 0, Main.getSettings().getPeriodAssignWorkMs(),
-            TimeUnit.MILLISECONDS);
-
-      Runnable checkWorkTask = new CheckTaskTask();
-      Executors.newScheduledThreadPool(1)
-            .scheduleAtFixedRate(checkWorkTask, 0,
-                  Main.getSettings().getPeriodCheckWorkMs(),
-                  TimeUnit.MILLISECONDS);
+            new AssignWorkTask(), 0,
+            Main.getSettings().getPeriodAssignWorkMs(), TimeUnit.MILLISECONDS);
 
    }
 
@@ -66,7 +76,7 @@ public class WorkMgr {
       if (success) {
          Thread thread = new Thread() {
             public void run() {
-               AssignWork();
+               assignWork();
             }
          };
          thread.start();
@@ -75,30 +85,35 @@ public class WorkMgr {
       return success;
    }
 
-   private void AssignWork() {
+   private void assignWork() {
 
-      QueuedWork work = _workQueueMgr.getWorkForAssignment();
+      try {
+         QueuedWork work = _workQueueMgr.getWorkForAssignment();
 
-      // get out if no work was found
-      if (work == null) {
-         _logger.info("WM:AssignWork: No unassigned work\n");
-         return;
+         // get out if no work was found
+         if (work == null) {
+//            _logger.info("WM:AssignWork: No unassigned work\n");
+            return;
+         }
+
+         String idleWorker = Main.getPoolMgr().getWorkerForAssignment();
+
+         // get out if no idle worker was found, but release the work first
+         if (idleWorker == null) {
+            _workQueueMgr.markAssignmentFailure(work);
+
+            _logger.info("WM:AssignWork: No idle worker\n");
+            return;
+         }
+
+         assignWork(work, idleWorker);
       }
-
-      String idleWorker = Main.getPoolMgr().getWorkerForAssignment();
-
-      // get out if no idle worker was found, but release the work first
-      if (idleWorker == null) {
-         _workQueueMgr.markAssignmentFailure(work);
-
-         _logger.info("WM:AssignWork: No idle worker\n");
-         return;
+      catch (Exception e) {
+         _logger.error("Got exception in assignWork: " + e.getMessage());
       }
-
-      AssignWork(work, idleWorker);
    }
 
-   private void AssignWork(QueuedWork work, String worker) {
+   private void assignWork(QueuedWork work, String worker) {
 
       _logger.info("WM:AssignWork: Trying to assign " + work + " to " + worker + " \n");
 
@@ -173,22 +188,27 @@ public class WorkMgr {
 
    private void checkTask() {
 
-      QueuedWork work = _workQueueMgr.getWorkForChecking();
+      try {
+         QueuedWork work = _workQueueMgr.getWorkForChecking();
 
-      if (work == null) {
-         _logger.info("WM:checkTask: No assigned work\n");
-         return;
+         if (work == null) {
+//            _logger.info("WM:checkTask: No assigned work\n");
+            return;
+         }
+
+         String assignedWorker = work.getAssignedWorker();
+
+         if (assignedWorker == null) {
+            _logger.error("WM:CheckWork no assinged worker for " + work + "\n");
+            _workQueueMgr.makeWorkUnassigned(work);
+            return;
+         }
+
+         checkTask(work, assignedWorker);
       }
-
-      String assignedWorker = work.getAssignedWorker();
-
-      if (assignedWorker == null) {
-         _logger.error("WM:CheckWork no assinged worker for " + work + "\n");
-         _workQueueMgr.makeWorkUnassigned(work);
-         return;
+      catch (Exception e) {
+         _logger.error("Got exception in assignWork: " + e.getMessage());
       }
-
-      checkTask(work, assignedWorker);
    }
 
    private void checkTask(QueuedWork work, String worker) {
@@ -435,7 +455,8 @@ public class WorkMgr {
    final class AssignWorkTask implements Runnable {
       @Override
       public void run() {
-         Main.getWorkMgr().AssignWork();
+         Main.getWorkMgr().checkTask();
+         Main.getWorkMgr().assignWork();
       }
    }
 

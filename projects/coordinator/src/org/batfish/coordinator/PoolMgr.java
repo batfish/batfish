@@ -46,7 +46,7 @@ public class PoolMgr {
 
       Thread thread = new Thread() {
          public void run() {
-            RefreshWorkerStatus(worker);
+            refreshWorkerStatus(worker);
          }
       };
 
@@ -84,11 +84,11 @@ public class PoolMgr {
       return workers;
    }
 
-   public void RefreshWorkerStatus() {
-      _logger.info("PM:RefreshWorkerStatus: entered\n");
+   public void refreshWorkerStatus() {
+      //_logger.info("PM:RefreshWorkerStatus: entered\n");
       List<String> workers = getAllWorkers();
       for (String worker : workers) {
-         RefreshWorkerStatus(worker);
+         refreshWorkerStatus(worker);
       }
    }
 
@@ -99,7 +99,7 @@ public class PoolMgr {
          return null;
    }
 
-   private void RefreshWorkerStatus(String worker) {
+   private void refreshWorkerStatus(String worker) {
       _logger.info("PM:RefreshWorkerStatus: refreshing status of " + worker +"\n");
 
       try {
@@ -182,7 +182,7 @@ public class PoolMgr {
    final class WorkerStatusRefreshTask implements Runnable {
       @Override
       public void run() {
-         Main.getPoolMgr().RefreshWorkerStatus();
+         Main.getPoolMgr().refreshWorkerStatus();
       }
    }
 }
