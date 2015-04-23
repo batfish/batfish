@@ -64,7 +64,7 @@ public class SampleClient {
          System.in.read();
          uploadEnvironment(testrigName, envName, envZipfileName);
 
-         System.out.println("Press any key to trigger fact generation");
+         System.out.println("Press any key to generate facts");
          System.in.read();
          WorkItem wItem = new WorkItem(testrigName);
          wItem.addRequestParam(BfConsts.COMMAND_GENERATE_FACT, "");
@@ -104,7 +104,7 @@ public class SampleClient {
                testrigName,
                wItem5,
                Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
-                     BfConsts.RELPATH_DATA_PLANE_DIR).toString());
+                     BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString());
 
          System.out.println("Press any key to upload question");
          System.in.read();

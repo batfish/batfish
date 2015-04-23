@@ -34,9 +34,11 @@
 
         <br /><br />
         <input type="button" id="btnWorkVendorSpecific" value="Work: Parse vendor specific" onclick="fnDoWork('vendorspecific')" />
+        <input type="button" id="btnGetObjectVendorSpecific" value="Get result" onclick="fnGetObject('vendorspecific')" />
 
         <br /><br />
         <input type="button" id="btnWorkVendorIndependent" value="Work: Parse vendor independent" onclick="fnDoWork('vendorindependent')" />
+        <input type="button" id="btnGetObjectVendorIndependent" value="Get result" onclick="fnGetObject('vendorindependent')" />
 
         <br /><br />
         Environment name
@@ -46,7 +48,36 @@
         <input type="button" id="btnUploadEnvironment" value="Upload environment" onclick="fnUploadEnvironment()" />
 
         <br /><br />
-        <input type="button" id="btnWorkGenerateFact" value="Work: Generate facts" onclick="fnDoWork('generatefacts')" />
+        <input type="button" id="btnWorkGenerateFacts" value="Work: Generate facts" onclick="fnDoWork('generatefacts')" />
+        <input type="button" id="btnGetObjectGenerateFacts" value="Get result" onclick="fnGetObject('generatefacts')" />
+
+        <br /><br />
+        <input type="button" id="btnWorkGenerateDataPlane" value="Work: Generate data plane" onclick="fnDoWork('generatedataplane')" />
+
+        <br /><br />
+        <input type="button" id="btnWorkGetDataPlane" value="Work: Get data plane" onclick="fnDoWork('getdataplane')" />
+        <input type="button" id="btnGetObjectGetDataPlane" value="Get result" onclick="fnGetObject('getdataplane')" />
+
+        <br /><br />
+        <input type="button" id="btnWorkGetZ3Encoding" value="Work: Get z3 encoding" onclick="fnDoWork('getz3encoding')" />
+        <input type="button" id="btnGetObjectGetZ3Encoding" value="Get result" onclick="fnGetObject('getz3encoding')" />
+
+        <br /><br />
+        Question name
+        <input type="text" id="txtQuestionName" />
+        Question file
+        <input type="file" id="fileUploadQuestion" />
+        <input type="button" id="btnUploadQuestion" value="Upload question" onclick="fnUploadQuestion()" />
+
+        <br /><br />
+        <input type="button" id="btnWorkAnswerQuestion" value="Work: Answer question" onclick="fnDoWork('answerquestion')" />
+
+        <br /><br />
+        <input type="button" id="btnPostFlows" value="Work: Post flows to LB" onclick="fnDoWork('postflows')" />
+
+        <br /><br />
+        <input type="button" id="btnGetFlowTraces" value="Work: Get flow traces" onclick="fnDoWork('getflowtraces')" />
+        <input type="button" id="btnGetObjectGetFlowTraces" value="Get result" onclick="fnGetObject('getflowtraces')" />
 
         <br /><br />
         GUID of issued work

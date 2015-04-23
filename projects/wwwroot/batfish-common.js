@@ -47,6 +47,9 @@ var SVC_WORKSPACE_NAME_KEY = "workspace";
 //make sure they are in sync with what is there
 //
 
+var ARG_QUESTION_NAME = "questionname";
+var ARG_PREDICATES = "predicates";
+
 var COMMAND_ANSWER = "answer";
 var COMMAND_COMPILE = "compile";
 var COMMAND_DUMP_DP = "dp";

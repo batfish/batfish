@@ -102,6 +102,33 @@ function fnDoWork(worktype) {
             reqParams[COMMAND_GENERATE_FACT] = "";
             reqParams[COMMAND_ENV] = jQuery("#txtEnvironmentName").val();
             break;
+        case "generatedataplane":
+            reqParams[COMMAND_COMPILE] = "";
+            reqParams[COMMAND_FACTS] = "";
+            reqParams[COMMAND_ENV] = jQuery("#txtEnvironmentName").val();
+            break;
+        case "getdataplane":
+            reqParams[COMMAND_DUMP_DP] = "";
+            reqParams[COMMAND_ENV] = jQuery("#txtEnvironmentName").val();
+            break;
+        case "getz3encoding":
+            reqParams[COMMAND_SYNTHESIZE_Z3_DATA_PLANE] = "";
+            reqParams[COMMAND_ENV] = jQuery("#txtEnvironmentName").val();
+            break;
+        case "answerquestion":
+            reqParams[COMMAND_ANSWER] = "";
+            reqParams[ARG_QUESTION_NAME] = jQuery("#txtQuestionName").val();
+            break;
+        case "postflows":
+            reqParams[COMMAND_POST_FLOWS] = "";
+            reqParams[ARG_QUESTION_NAME] = jQuery("#txtQuestionName").val();
+            reqParams[COMMAND_ENV] = jQuery("#txtEnvironmentName").val();
+            break;
+        case "getflowtraces":
+            reqParams[COMMAND_POST_FLOWS] = "";
+            reqParams[ARG_PREDICATES] = PREDICATE_FLOW_PATH_HISTORY;
+            reqParams[COMMAND_ENV] = jQuery("#txtEnvironmentName").val();
+            break;
         default:
             UpdateDebugInfo("failed: unsupported work command", worktype);
     }
@@ -166,6 +193,73 @@ function guid() {
       s4() + '-' + s4() + s4() + s4();
 }
 
+function fnGetLog() {
+    var uuidWork = jQuery("#txtDoWorkGuid").val();
+    helperGetObject(testrigName, uuidWork + ".log");
+}
+
+function fnGetObject(worktype) {
+
+    var testrigName = jQuery("#txtTestrigName").val();
+
+    //this need not be properly populated for all worktypes
+    var envName = jQuery("#txtEnvironmentName").val();
+
+    var objectName = "unknown";
+
+    switch (worktype) {
+        case "vendorspecific":
+            objectName = RELPATH_VENDOR_SPECIFIC_CONFIG_DIR;
+            break;
+        case "vendorindependent":
+            objectName = RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR;
+            break;
+        case "generatefacts":
+            objectName = [RELPATH_ENVIRONMENTS_DIR, envName, RELPATH_FACT_DUMP_DIR].join("/");
+            break;
+        case "getdataplane":
+            objectName = [RELPATH_ENVIRONMENTS_DIR, envName, RELPATH_DATA_PLANE_DIR].join("/");
+            break;
+        case "getz3encoding":
+            objectName = [RELPATH_ENVIRONMENTS_DIR, envName, RELPATH_Z3_DATA_PLANE_FILE].join("/");
+            break;
+        case "getflowtraces":
+            objectName = [RELPATH_ENVIRONMENTS_DIR, envName, RELPATH_QUERY_DUMP_DIR].join("/");
+            break;
+        default:
+            UpdateDebugInfo("failed: unsupported worktype for get result", worktype);
+    }
+
+    helperGetObject(testrigName, objectName);
+}
+
+function helperGetObject(testrigName, objectName) {
+    //    new ServiceHelper().Get(SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?" + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY + "=" + objectName, cbGetObject);
+    //jQuery.ajax({
+    //    url: SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?" + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY + "=" + objectName,
+    //    type: "GET",
+
+    //    error: function (_, textStatus, errorThrown) {
+    //        UpdateDebugInfo("Get object failed:", textStatus, errorThrown);
+    //    },
+    //    success: function (response, textStatus) {
+    //        cbGetObject(response, textStatus);
+    //    }
+    //});
+
+    var uri = encodeURI(SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?" + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY + "=" + objectName);
+    window.location.assign(uri);
+}
+
+function cbGetObject(context, result) {
+    if (result[0] === SVC_SUCCESS_KEY) {
+        UpdateDebugInfo(context, "Got object");
+    }
+    else {
+        UpdateDebugInfo(this, "Getting object failed: " + result[1]);
+    }
+}
+
 
 function fnUploadEnvironment() {
     var data = new FormData();
@@ -190,6 +284,34 @@ function fnUploadEnvironment() {
             }
             else {
                 UpdateDebugInfo(this, "Environment upload failed: " + response[1]);
+            }
+        }
+    });
+}
+
+function fnUploadQuestion() {
+    var data = new FormData();
+    data.append(SVC_TESTRIG_NAME_KEY, jQuery("#txtTestrigName").val());
+    data.append(SVC_QUESTION_NAME_KEY, jQuery("#txtQuestionName").val());
+    data.append(SVC_FILE_KEY, jQuery("#fileUploadQuestion").get(0).files[0]);
+
+    jQuery.ajax({
+        url: SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_QUESTION_RSC,
+        type: "POST",
+        contentType: false,
+        processData: false,
+        data: data,
+
+        error: function (_, textStatus, errorThrown) {
+            UpdateDebugInfo("Question upload failed:", textStatus, errorThrown);
+            console.log(textStatus, errorThrown);
+        },
+        success: function (response, textStatus) {
+            if (response[0] === SVC_SUCCESS_KEY) {
+                UpdateDebugInfo(this, "Question uploaded");
+            }
+            else {
+                UpdateDebugInfo(this, "Question upload failed: " + response[1]);
             }
         }
     });
