@@ -1,28 +1,46 @@
 ﻿
 $(document).ready(
     function () {
-        new ServiceHelper().Get(SVC_WORK_MGR_ROOT + SVC_WORK_GETSTATUS_RSC, cbGetWorkStatus);
+        fnGetWorkStatus();
     }
 );
 
-function cbGetWorkStatus(context, result) {
+// -------------------------------------------------
+
+function fnGetWorkStatus() {
+    bfGetJson("GetWorkStatus", SVC_WORK_MGR_ROOT + SVC_WORK_GETSTATUS_RSC, cbGetWorkStatus);
+}
+
+function cbGetWorkStatus(result) {
 
     if (result[0] === SVC_SUCCESS_KEY) {
-        UpdateDebugInfo("WorkStatus: " + result[1]["completed-works"] + " / " + result[1]["incomplete-works"]);
+        var cWorks = result[1]["completed-works"];
+        var iWorks = result[1]["incomplete-works"];
+
+        jQuery("#txtCompletedWorks").val(cWorks);
+        jQuery("#txtIncompleteWorks").val(iWorks);
     }
     else {
-        UpdateDebugInfo("GetWorkStatusCallback: " + result[0] + " " + result[1]);
+        UpdateDebugInfo("GetWorkStatusFailed: " + result[1]);
     }
 }
+
+// -------------------------------------------------
 
 function fnAddWorker() {
     var worker = jQuery("#txtAddWorker").val();
-    new ServiceHelper().Get(SVC_POOL_MGR_ROOT + SVC_POOL_UPDATE_RSC + "?add=" + worker, cbAddWorker);
+
+    if (worker == "") {
+        alert("Specify a worker first");
+        return;
+    }
+
+    bfGetJson("AddWorker", SVC_POOL_MGR_ROOT + SVC_POOL_UPDATE_RSC + "?add=" + worker, cbAddWorker);
 }
 
-function cbAddWorker(context, result) {
+function cbAddWorker(result) {
     if (result[0] === SVC_SUCCESS_KEY) {
-        UpdateDebugInfo("Worked added");
+        UpdateDebugInfo("Worker added successfully");
     }
     else {
         UpdateDebugInfo("Worker addition failed: " + result[1]);
@@ -30,21 +48,19 @@ function cbAddWorker(context, result) {
 }
 
 
-//code roughly based on http://www.thefourtheye.in/2013/10/file-upload-with-jquery-and-ajax.html
-
 function fnUploadTestrig() {
 
     var testrigName = jQuery("#txtTestrigName").val();
 
     if (testrigName == "") {
-        UpdateDebugInfo("Cannot upload testrig. Testrig name is empty");
+        alert("Specify a testrig name");
         return;
     }
 
     var testrigFile = jQuery("#fileUploadTestrig").get(0).files[0];
 
     if (typeof testrigFile === 'undefined') {
-        UpdateDebugInfo("Testrig file is not supplied");
+        alert("Select a testrig file");
         return;
     }
 
@@ -52,7 +68,7 @@ function fnUploadTestrig() {
     data.append(SVC_TESTRIG_NAME_KEY, testrigName);
     data.append(SVC_ZIPFILE_KEY, testrigFile);
 
-    bfUploadData("UploadTestrig " + testrigName, data);
+    bfUploadData("UploadTestrig " + testrigName, SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_TESTRIG_RSC, data);
 }
 
 // -----------------------------------doWork-----------------------

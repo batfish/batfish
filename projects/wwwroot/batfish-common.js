@@ -10,9 +10,9 @@ var SVC_SUCCESS_KEY = "success";
 var SVC_FAILURE_KEY = "failure";
 
 var SVC_POOL_GETSTATUS_RSC = "getstatus";
-var SVC_POOL_UPDATE_RSC = "updatepool";  
+var SVC_POOL_UPDATE_RSC = "updatepool";
 
-var SVC_WORK_GETSTATUS_RSC = "getstatus";  
+var SVC_WORK_GETSTATUS_RSC = "getstatus";
 var SVC_WORK_UPLOAD_ENV_RSC = "uploadenvironment";
 var SVC_WORK_UPLOAD_QUESTION_RSC = "uploadquestion";
 var SVC_WORK_UPLOAD_TESTRIG_RSC = "uploadtestrig";
@@ -27,8 +27,8 @@ var SVC_WORKITEM_KEY = "workitem";
 var SVC_ENV_NAME_KEY = "envname";
 var SVC_QUESTION_NAME_KEY = "questionname";
 var SVC_TESTRIG_NAME_KEY = "testrigname";
-var SVC_FILE_KEY = "file"; 
-var SVC_ZIPFILE_KEY = "zipfile"; 
+var SVC_FILE_KEY = "file";
+var SVC_ZIPFILE_KEY = "zipfile";
 var SVC_WORKSPACE_NAME_KEY = "workspace";
 
 var SVC_WORK_OBJECT_KEY = "object";
@@ -38,8 +38,8 @@ var SVC_WORKITEM_KEY = "workitem";
 var SVC_ENV_NAME_KEY = "envname";
 var SVC_QUESTION_NAME_KEY = "questionname";
 var SVC_TESTRIG_NAME_KEY = "testrigname";
-var SVC_FILE_KEY = "file"; 
-var SVC_ZIPFILE_KEY = "zipfile"; 
+var SVC_FILE_KEY = "file";
+var SVC_ZIPFILE_KEY = "zipfile";
 var SVC_WORKSPACE_NAME_KEY = "workspace";
 
 //
@@ -81,113 +81,42 @@ var RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
 var RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 var RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
-function bfUploadData(taskname, data) {
-
+function bfUploadData(taskname, url_parm, data) {
+    console.log("bfUploadData: ", taskname, url_parm);
     jQuery.ajax({
-        url: SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_TESTRIG_RSC,
+        url: url_parm,
         type: "POST",
         contentType: false,
         processData: false,
         data: data,
 
         error: function (_, textStatus, errorThrown) {
-            UpdateDebugInfo(taskname + " failed: ", textStatus, errorThrown);
+            alert(taskname + " failed: ", textStatus, errorThrown);
         },
         success: function (response, textStatus) {
             if (response[0] === SVC_SUCCESS_KEY) {
                 UpdateDebugInfo(taskname + " succeeded");
             }
             else {
-                UpdateDebugInfo(taskname + " failed: " + response[1]);
+                alert(taskname + " failed: " + response[1]);
             }
         }
     });
 }
 
-function ServiceHelper() {
+function bfGetJson(taskname, url_parm, callback) {
+    console.log("bfGetJsonRequest: ", taskname, url_parm);
+    $.ajax({
+        type: "GET", //GET or POST or PUT or DELETE verb
+        url: url_parm, // Location of the service
+        dataType: "json", //Expected data format from server
 
-    this.ClearFields = function () {
-        this.Type = null;
-        this.Url = null;
-        this.Data = null;
-        this.ContentType = null;
-        this.DataType = null;
-        this.ProcessData = null;
-        this.Callback = null;
-    }
-
-
-    this.Get = function (url_parm, callback) {
-        this.Call("GET", url_parm, "", "application/json; charset=utf-8", "json", true, callback);
-    }
-
-    this.Upload = function (url_parm, data_parm, callback) {
-        this.Call("POST", url_parm, data_parm, false, "json", false, callback);
-    }
-
-    this.Call = function (type, url_parm, data_parm, content_type, data_type, process_data, callback) {
-        this.Type = type;
-        this.Url = url_parm;
-        this.Data = data_parm;
-        this.ContentType = content_type;
-        this.DataType = data_type;
-        this.ProcessData = process_data;
-        this.Callback = callback;
-        this.CallService();
-    }
-
-
-    // Function to call WCF  Service       
-    this.CallService = function () {
-        var Type = this.Type;
-        var Url = this.Url;
-        var Data = this.Data;
-        var ContentType = this.ContentType;
-        var DataType = this.DataType;
-        var ProcessData = this.ProcessData;
-        var Callback = this.Callback;
-
-        var SucceededServiceCallback = this.SucceededServiceCallback;
-        var FailedServiceCallback = this.FailedServiceCallback;
-        var Context = this;
-
-        UpdateDebugInfo('calling: ' + this.DataType + " URL: " + this.Url + " Data: " + this.Data);
-
-
-        //var data = new FormData();
-        //data.append(SVC_TESTRIG_NAME_KEY, jQuery("#txtUploadTestrig").val());
-        //data.append(SVC_ZIPFILE_KEY, jQuery("#fileUploadTestrig").get(0).files[0]);
-
-        $.ajax({
-            type: Type, //GET or POST or PUT or DELETE verb
-            url: Url, // Location of the service
-            data: Data, //Data sent to server
-            contentType: ContentType, // content type sent to server
-            dataType: DataType, //Expected data format from server
-            processdata: ProcessData, //True or False
-
-            success: function (msg) {//On Successfull service call
-                SucceededServiceCallback(this, msg);
-            },
-            error: function (msg) {
-                this.FailedServiceCallback(this, msg);
-            },
-            context: Context
-        });
-    }
-
-    this.FailedServiceCallback = function (context, result) {
-        ShowDebugInfo();
-        UpdateDebugInfo('failed: ' + context.DataType + " URL: " + context.Url + " Data: " + context.Data + "result: " + result.status + ' ' + result.statusText);
-    }
-
-    this.SucceededServiceCallback = function (context, result) {
-        //if (null != context) {
-        //    UpdateDebugInfo(context, "succeeded: " + context.DataType + " URL: " + context.Url + " Data: " + context.Data + " Result: " + result);
-        //}
-        //if (context != null && context.DataType == "json" && result != null && context.Callback != null) {
-        if (context != null && context.Callback != null) {
-                context.Callback(context, result);
+        error: function (_, textStatus, errorThrown) {
+            UpdateDebugInfo(taskname + " failed: ", textStatus, errorThrown);
+        },
+        success: function (response, textStatus) {
+            console.log("bfGetJsonResponse: ", taskname, JSON.stringify(response));
+            callback(response);
         }
-    }
+    });
 }

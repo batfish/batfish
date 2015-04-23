@@ -10,6 +10,18 @@
     <h1>Welcome to batfish
     </h1>
 
+    <div class="divClassSection" id="divWorkStatus" style="display: normal">
+        <form>
+            Completed works
+            <input type="text" disabled id="txtCompletedWorks" size="4"/>
+            Incomplete works
+            <input type="text" disabled id="txtIncompleteWorks" size="4"/>
+            <input type="button" id="btnGetWorkStatus" value="Get work status" onclick="fnGetWorkStatus()" />
+        </form>
+    </div>
+
+   <hr />
+
     <div class="divClassSection" id="divAddWorker" style="display: normal">
         <form>
             Worker
@@ -84,7 +96,7 @@
             <input type="text" id="txtDoWorkGuid" />
         <br />
         Status of issued work
-            <input type="text" id="txtCheckWorkStatus" />
+            <input type="text" disabled id="txtCheckWorkStatus" />
         <input type="button" value="Get log" onclick="fnGetLog()" />
     </form>
 
