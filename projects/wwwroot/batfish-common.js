@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 var SVC_WORK_MGR_ROOT = "http://localhost:9997/batfishworkmgr/";
 var SVC_POOL_MGR_ROOT = "http://localhost:9998/batfishpoolmgr/";
 
