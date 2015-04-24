@@ -11,6 +11,11 @@ public class BfConsts {
       Unscheduled
    }
 
+   //
+   //IMPORTANT
+   // if you change the value of these constants, 
+   // ensure that the clients (including the javascript client) are up to date
+   //
    public static final String ARG_QUESTION_NAME = "questionname";
    public static final String ARG_PREDICATES = "predicates";
 

@@ -188,38 +188,45 @@ public class Driver {
 
       if (settings.canExecute()) {
          if (claimIdle()) {
-            final BatfishLogger jobLogger = new BatfishLogger(settings);
-            settings.setLogger(jobLogger);
 
-            final Task task = new Task(args);
-
+            //lets put a try-catch around all the code around claimIdle
+            //so that we never the worker non-idle accidentally
+            
             try {
+
+               final BatfishLogger jobLogger = new BatfishLogger(settings);
+               settings.setLogger(jobLogger);
+
+               final Task task = new Task(args);
+
                logTask(taskId, task);
+
+               // run batfish on a new thread and set idle to true when done
+               Thread thread = new Thread() {
+                  @Override
+                  public void run() {
+                     task.setStatus(TaskStatus.InProgress);
+                     if (RunBatfish(settings)) {
+                        task.setStatus(TaskStatus.TerminatedNormally);
+                     }
+                     else {
+                        task.setStatus(TaskStatus.TerminatedAbnormally);
+                     }
+                     task.setTerminated();
+                     jobLogger.close();
+                     makeIdle();
+                  }
+               };
+
+               thread.start();
+
+               return Arrays.asList(BfConsts.SVC_SUCCESS_KEY, "running now");
             }
-            catch (Exception e) {
+            catch (Exception e) {    
+               _mainLogger.error("Exception while running task: " + e.getMessage());
+               makeIdle();               
                return Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage());
             }
-
-            // run batfish on a new thread and set idle to true when done
-            Thread thread = new Thread() {
-               @Override
-               public void run() {
-                  task.setStatus(TaskStatus.InProgress);
-                  if (RunBatfish(settings)) {
-                     task.setStatus(TaskStatus.TerminatedNormally);
-                  }
-                  else {
-                     task.setStatus(TaskStatus.TerminatedAbnormally);
-                  }
-                  task.setTerminated();
-                  jobLogger.close();
-                  makeIdle();
-               }
-            };
-
-            thread.start();
-
-            return Arrays.asList(BfConsts.SVC_SUCCESS_KEY, "running now");
          }
          else {
             return Arrays.asList(BfConsts.SVC_FAILURE_KEY, "Not idle");

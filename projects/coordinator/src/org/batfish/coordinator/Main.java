@@ -63,8 +63,9 @@ public class Main {
 
       ResourceConfig rcPool = new ResourceConfig(PoolMgrService.class)
             .register(new JettisonFeature())
-            .register(MultiPartFeature.class);
-
+            .register(MultiPartFeature.class)
+            .register(org.batfish.coordinator.CrossDomainFilter.class);
+      
       GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool);
 
       //start the work manager service
@@ -75,7 +76,22 @@ public class Main {
 
       ResourceConfig rcWork = new ResourceConfig(WorkMgrService.class)
             .register(new JettisonFeature())
-            .register(MultiPartFeature.class);
+            .register(MultiPartFeature.class)
+            .register(org.batfish.coordinator.CrossDomainFilter.class);
+
+//      rcPool.getProperties().put(
+//            "com.sun.jersey.spi.container.ContainerResponseFilters",
+//            "org.batfish.coordinator.CrossDomainFilter"
+//        );
+
+//      ResourceConfig rcWork = new ResourceConfig(WorkMgrService.class);
+//      rcWork.getProperties().put(
+//            "com.sun.jersey.spi.container.ContainerResponseFilters",
+//            "org.batfish.coordinator.CrossDomainFilter");
+//      
+//      rcWork.register(new JettisonFeature())
+//      .register(MultiPartFeature.class);
+
 
       GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork);
 

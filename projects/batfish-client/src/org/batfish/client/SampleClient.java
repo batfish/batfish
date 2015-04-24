@@ -64,7 +64,7 @@ public class SampleClient {
          System.in.read();
          uploadEnvironment(testrigName, envName, envZipfileName);
 
-         System.out.println("Press any key to trigger fact generation");
+         System.out.println("Press any key to generate facts");
          System.in.read();
          WorkItem wItem = new WorkItem(testrigName);
          wItem.addRequestParam(BfConsts.COMMAND_GENERATE_FACT, "");

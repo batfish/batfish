@@ -2,6 +2,10 @@ package org.batfish.common;
 
 public class CoordConsts {
 
+   // IMPORTANT: 
+   // If you change the values of any of these constants, 
+   // make sure that the javascript code is updated too
+
    public static final Integer SVC_POOL_PORT = 9998;
    public static final Integer SVC_WORK_PORT = 9997;
 
