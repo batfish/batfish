@@ -117,7 +117,7 @@ batfish_format_flows() {
       local SRCPORT=$(echo $line | cut -d'|' -f 4)
       local DSTPORT=$(echo $line | cut -d'|' -f 5)
       local PROT=$(echo $line | cut -d'|' -f 6)
-      echo "Node=$NODE, SrcIp=$SRCIP, DstIp=$DSTIP, SRCPORT=$SRCPORT, DSTPORT=$DSTPORT, PROT=$PROT"
+      echo "Node=$NODE, SrcIp=$SRCIP, DstIp=$DSTIP, SrcPort=$SRCPORT, DstPort=$DSTPORT, IpProtocol=$PROT"
    done > $DUMP_DIR/SetFlowOriginate.formatted
 }
 export -f batfish_format_flows
