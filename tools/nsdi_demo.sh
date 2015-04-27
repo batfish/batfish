@@ -1,9 +1,9 @@
-batfish_nsdi_demo() {
-   BATFISH_CONFIRM=batfish_confirm _batfish_nsdi_demo $@
+batfish_nsdi_demo_computation() {
+   BATFISH_CONFIRM=batfish_confirm _batfish_nsdi_demo_computation $@
 }
-export -f batfish_nsdi_demo
+export -f batfish_nsdi_demo_computation
 
-_batfish_nsdi_demo() {
+_batfish_nsdi_demo_computation() {
    local PREFIX=demo
    local NUM_MACHINES=0
    if [ -z "$PREFIX" ]; then
@@ -46,12 +46,6 @@ _batfish_nsdi_demo() {
       batfish -sipath $INDEP_SERIAL_DIR -dumpcp -dumpdir $DUMP_DIR || return 1 ;
    }
 
-   echo "Stage 1 View Results"
-   $BATFISH_CONFIRM && \
-   {
-      tail -n+2 $DUMP_DIR/$STAGE1_PREDICATE | sed 's/|/, /g' | sed "s/^\(.*\)\$/$STAGE1_PREDICATE(\\1)./g" | less ;
-   }
-
    echo "Stage 2 Computation"
    $BATFISH_CONFIRM && \
    {
@@ -61,18 +55,14 @@ _batfish_nsdi_demo() {
       echo "Query bgp"
       batfish_query_bgp $BGP $WORKSPACE || return 1 ;
 
+      echo "Query bgp"
+      batfish_query_ospf $OSPF $WORKSPACE || return 1 ;
+
       echo "Query routes"
       batfish_query_routes $ROUTES $WORKSPACE || return 1 ;
 
       echo "Query data plane predicates"
       batfish_query_data_plane $WORKSPACE $DP_DIR || return 1 ;
-   }
-
-   echo "Stage 2 View Results"
-   $BATFISH_CONFIRM && \
-   {
-      grep '^InstalledRoute(' $ROUTES | less ;
-      grep '^BgpAdvertisement(' $BGP | less ;
    }
 
    echo "Stage 3 Computation"
@@ -94,13 +84,6 @@ _batfish_nsdi_demo() {
       batfish_format_flows $DUMP_DIR
    }
 
-   echo "Stage 3 View Results"
-   $BATFISH_CONFIRM && \
-   {
-      less $(find $QUERY_PATH -type f -not -name '*concrete*' -and -name '*.smt2' | head -n1)
-      less $DUMP_DIR/SetFlowOriginate.formatted
-   }
-
    echo "Stage 4 Computation"
    $BATFISH_CONFIRM && \
    {
@@ -111,6 +94,65 @@ _batfish_nsdi_demo() {
       batfish_query_flows $FLOWS $WORKSPACE || return 1 ;
    }
 
+}
+export -f _batfish_nsdi_demo_computation
+
+batfish_nsdi_demo_results() {
+   BATFISH_CONFIRM=batfish_confirm _batfish_nsdi_demo_results $@
+}
+export -f batfish_nsdi_demo_results
+
+_batfish_nsdi_demo_results() {
+   local PREFIX=demo
+   local NUM_MACHINES=0
+   if [ -z "$PREFIX" ]; then
+         echo "ERROR: Empty prefix" 1>&2
+         return 1
+   fi
+   if [ -z "$BATFISH_CONFIRM" ]; then
+      local BATFISH_CONFIRM=true
+   fi
+   local OLD_PWD=$PWD
+   local TEST_RIG=$BATFISH_TEST_RIG_PATH/example
+   local QUERY_PATH=$OLD_PWD/$PREFIX-query
+   local MPI_QUERY_BASE_PATH=$QUERY_PATH/multipath-inconsistency-query
+
+   local BGP=$OLD_PWD/$PREFIX-bgp
+   local DP_DIR=$OLD_PWD/$PREFIX-dp
+   local DUMP_DIR=$OLD_PWD/$PREFIX-dump
+   local FLOWS=$OLD_PWD/$PREFIX-flows
+   local INDEP_SERIAL_DIR=$OLD_PWD/$PREFIX-indep
+   local NODE_SET_PATH=$OLD_PWD/$PREFIX-node-set
+   local OSPF=$OLD_PWD/$PREFIX-ospf
+   local POLICY=$OLD_PWD/$PREFIX-policy
+   local REACH_PATH=$OLD_PWD/$PREFIX-reach.smt2
+   local ROUTES=$OLD_PWD/$PREFIX-routes
+   local VENDOR_SERIAL_DIR=$OLD_PWD/$PREFIX-vendor
+   local WORKSPACE=batfish-$USER-$PREFIX
+
+   local STAGE1_PREDICATE=SetOspfInterfaceCost
+
+   echo "Stage 1 View Results"
+   $BATFISH_CONFIRM && \
+   {
+      tail -n+2 $DUMP_DIR/$STAGE1_PREDICATE | sed 's/|/, /g' | sed "s/^\(.*\)\$/$STAGE1_PREDICATE(\\1)./g" | less ;
+   }
+
+   echo "Stage 2 View Results"
+   $BATFISH_CONFIRM && \
+   {
+      grep '^OspfExport(' $OSPF | sort | less ;
+      grep '^InstalledRoute(' $ROUTES | sort | less ;
+      grep '^BgpAdvertisement(' $BGP | sort | less ;
+   }
+
+   echo "Stage 3 View Results"
+   $BATFISH_CONFIRM && \
+   {
+      less $(find $QUERY_PATH -type f -not -name '*concrete*' -and -name '*.smt2' | head -n1)
+      less $DUMP_DIR/SetFlowOriginate.formatted
+   }
+
    echo "Stage 4 View Results"
    $BATFISH_CONFIRM && \
    {
@@ -118,4 +160,4 @@ _batfish_nsdi_demo() {
    }
 
 }
-export -f _batfish_nsdi_demo
+export -f _batfish_nsdi_demo_results
