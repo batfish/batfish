@@ -582,6 +582,10 @@ BgpNeighbors(node1, ip1, node2, ip2) <-
    BgpNeighborIp(node1, ip2),
    BgpNeighborIp(node2, ip1).
 
+BgpNeighborSendCommunity(node, neighborIp) <-
+   SetBgpNeighborSendCommunity(node, neighborNetwork),
+   NetworkOf[neighborIp, _] = neighborNetwork.
+
 BgpOriginationPolicy(node, neighborIp, map) <-
    SetBgpOriginationPolicy(node, neighborNetwork, map),
    NetworkOf[neighborIp, _] = neighborNetwork.
