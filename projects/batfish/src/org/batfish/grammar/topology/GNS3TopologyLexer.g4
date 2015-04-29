@@ -107,7 +107,7 @@ M_Edge_NEWLINE
 
 M_Edge_VARIABLE
 :
-   F_VarChar+ -> type ( VARIABLE ) , popMode
+   F_VarChar+ -> type (VARIABLE) , popMode
 ;
 
 M_Edge_WS
@@ -119,7 +119,7 @@ mode M_Router;
 
 M_Router_VARIABLE
 :
-   F_VarChar+ -> type ( VARIABLE ) , popMode
+   F_VarChar+ -> type (VARIABLE) , popMode
 ;
 
 M_Router_WS
