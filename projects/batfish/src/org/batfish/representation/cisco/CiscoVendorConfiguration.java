@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -197,7 +198,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    }
 
    private static org.batfish.representation.OspfProcess toOspfProcess(
-         Configuration c, OspfProcess proc) {
+         Configuration c, CiscoConfiguration oldConfig) {
+      OspfProcess proc = oldConfig.getOspfProcess();
       org.batfish.representation.OspfProcess newProcess = new org.batfish.representation.OspfProcess();
 
       // establish areas and associated interfaces
@@ -489,6 +491,40 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       }
       newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
       Ip routerId = proc.getRouterId();
+      if (routerId == null) {
+         Map<String, Interface> interfacesToCheck;
+         Map<String, Interface> allInterfaces = oldConfig.getInterfaces();
+         Map<String, Interface> loopbackInterfaces = new HashMap<String, Interface>();
+         for (Entry<String, Interface> e : allInterfaces.entrySet()) {
+            String ifaceName = e.getKey();
+            Interface iface = e.getValue();
+            if (ifaceName.toLowerCase().startsWith("loopback")) {
+               loopbackInterfaces.put(ifaceName, iface);
+            }
+         }
+         if (loopbackInterfaces.isEmpty()) {
+            interfacesToCheck = allInterfaces;
+         }
+         else {
+            interfacesToCheck = loopbackInterfaces;
+         }
+         Ip highestIp = Ip.ZERO;
+         for (Interface iface : interfacesToCheck.values()) {
+            Prefix prefix = iface.getPrefix();
+            if (prefix == null) {
+               continue;
+            }
+            Ip ip = prefix.getAddress();
+            if (highestIp.asLong() < ip.asLong()) {
+               highestIp = ip;
+            }
+         }
+         if (highestIp == Ip.ZERO) {
+            throw new VendorConversionException(
+                  "No candidates for OSPF router-id");
+         }
+         routerId = highestIp;
+      }
       newProcess.setRouterId(routerId);
       return newProcess;
    }
@@ -1290,9 +1326,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
       // convert ospf process
       if (_ospfProcess != null) {
-         OspfProcess firstOspfProcess = _ospfProcess;
          org.batfish.representation.OspfProcess newOspfProcess = toOspfProcess(
-               c, firstOspfProcess);
+               c, this);
          c.setOspfProcess(newOspfProcess);
       }
 
