@@ -118,6 +118,12 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       RouteFilterLine line = new RouteFilterLine(prefixAction, prefix,
             prefixRange);
       list.addLine(line);
+      // TODO: FIX TERRIBLE HACK!!!
+      if (prefixAction == LineAction.REJECT) {
+         RouteFilterLine acceptLine = new RouteFilterLine(LineAction.ACCEPT,
+               Prefix.ZERO, new SubRange(0, 32));
+         list.addLine(acceptLine);
+      }
       return list;
    }
 
