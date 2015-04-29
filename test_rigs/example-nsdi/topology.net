@@ -1,0 +1,259 @@
+autostart = False
+version = 0.8.7
+[127.0.0.1:7202]
+    workingdir = C:\Users\v-arif\AppData\Local\Temp
+    udp = 10201
+    [[3725]]
+        image = C:\Users\v-arif\GNS3\Images\c3725-adventerprisek9_ivs-mz12.image
+        idlepc = 0x60b1014c
+        sparsemem = True
+        ghostios = True
+    [[ROUTER c3]]
+        model = 3725
+        console = 2111
+        aux = 2511
+        cnfg = configs\c3.cfg
+        f0/0 = c1 f0/1
+        f0/1 = c2 f0/1
+        x = -707.0
+        y = -38.0
+        z = 1.0
+[127.0.0.1:7200]
+    workingdir = C:\Users\v-arif\AppData\Local\Temp
+    udp = 10001
+    [[3725]]
+        image = C:\Users\v-arif\GNS3\Images\c3725-adventerprisek9_ivs-mz12.image
+        idlepc = 0x60b1014c
+        sparsemem = True
+        ghostios = True
+    [[ROUTER n1]]
+        model = 3725
+        console = 2105
+        aux = 2505
+        cnfg = configs\n1.cfg
+        f0/0 = n2 f1/0
+        f0/1 = n3 f0/1
+        slot1 = NM-1FE-TX
+        f1/0 = c2 f0/0
+        x = -292.0
+        y = 58.0
+        z = 1.0
+    [[ROUTER n3]]
+        model = 3725
+        console = 2103
+        aux = 2503
+        cnfg = configs\n3.cfg
+        f0/0 = n2 f2/0
+        f0/1 = n1 f0/1
+        slot1 = NM-1FE-TX
+        f1/0 = n4 f0/0
+        slot2 = NM-1FE-TX
+        f2/0 = p1 f0/0
+        x = -89.0
+        y = 60.0
+        z = 1.0
+    [[ROUTER n4]]
+        model = 3725
+        console = 2106
+        aux = 2506
+        cnfg = configs\n4.cfg
+        f0/0 = n3 f1/0
+        x = -65.0
+        y = 187.0
+        z = 1.0
+    [[ROUTER n2]]
+        model = 3725
+        console = 2104
+        aux = 2504
+        cnfg = configs\n2.cfg
+        f0/0 = n10 f0/0
+        f0/1 = c1 f0/0
+        slot1 = NM-1FE-TX
+        f1/0 = n1 f0/0
+        slot2 = NM-1FE-TX
+        f2/0 = n3 f0/0
+        x = -198.0
+        y = -58.0
+        z = 1.0
+[127.0.0.1:7201]
+    workingdir = C:\Users\v-arif\AppData\Local\Temp
+    udp = 10101
+    [[3725]]
+        image = C:\Users\v-arif\GNS3\Images\c3725-adventerprisek9_ivs-mz12.image
+        idlepc = 0x60b1014c
+        sparsemem = True
+        ghostios = True
+    [[ROUTER n10]]
+        model = 3725
+        console = 2110
+        aux = 2510
+        cnfg = configs\n10.cfg
+        f0/0 = n2 f0/0
+        x = -74.0
+        y = -156.0
+        z = 1.0
+    [[ROUTER p1]]
+        model = 3725
+        console = 2109
+        aux = 2509
+        cnfg = configs\p1.cfg
+        f0/0 = n3 f2/0
+        x = 293.0
+        y = 55.0
+        z = 1.0
+    [[ROUTER c2]]
+        model = 3725
+        console = 2108
+        aux = 2508
+        cnfg = configs\c2.cfg
+        f0/0 = n1 f1/0
+        f0/1 = c3 f0/1
+        x = -602.0
+        y = 40.0
+        z = 1.0
+    [[ROUTER c1]]
+        model = 3725
+        console = 2107
+        aux = 2507
+        cnfg = configs\c1.cfg
+        f0/0 = n2 f0/1
+        f0/1 = c3 f0/0
+        x = -565.0
+        y = -66.0
+        z = 1.0
+[GNS3-DATA]
+    configs = configs
+    [[NOTE 1]]
+        text = "C"
+        x = -698.0
+        y = 140.5
+        font = "MS Shell Dlg 2,20,-1,5,75,0,0,0,0,0"
+    [[NOTE 2]]
+        text = "P"
+        x = 279.0
+        y = 125.5
+        font = "MS Shell Dlg 2,20,-1,5,75,0,0,0,0,0"
+    [[NOTE 3]]
+        text = "N"
+        x = -214.0
+        y = 134.5
+        font = "MS Shell Dlg 2,20,-1,5,75,0,0,0,0,0"
+    [[NOTE 4]]
+        text = "f0/0"
+        x = 72.2443421195
+        y = 14.2616790187
+        interface = c3 f0/0
+    [[NOTE 5]]
+        text = "f0/1"
+        x = 65.1097539182
+        y = 45.8529600535
+        interface = c3 f0/1
+    [[NOTE 6]]
+        text = "f0/0"
+        x = 1.6176501596
+        y = 46.8021797126
+        interface = n10 f0/0
+    [[NOTE 7]]
+        text = "f0/0"
+        x = -6.99657399904
+        y = 22.5235153665
+        interface = p1 f0/0
+    [[NOTE 8]]
+        text = "f0/1"
+        x = 0.890246081822
+        y = -1.8529600535
+        interface = c2 f0/1
+    [[NOTE 9]]
+        text = "f0/0"
+        x = 72.9327402657
+        y = 24.3186752412
+        interface = c2 f0/0
+    [[NOTE 10]]
+        text = "f0/1"
+        x = -6.24434211947
+        y = 29.7383209813
+        interface = c1 f0/1
+    [[NOTE 11]]
+        text = "f0/0"
+        x = 72.990500011
+        y = 22.8717275207
+        interface = c1 f0/0
+    [[NOTE 12]]
+        text = "f0/0"
+        x = 25.5724087993
+        y = -17.3043367703
+        interface = n4 f0/0
+    [[NOTE 13]]
+        text = "f1/0"
+        x = -6.93274026567
+        y = 19.6813247588
+        interface = n1 f1/0
+    [[NOTE 14]]
+        text = "f0/0"
+        x = 58.1833399311
+        y = -9.07731310644
+        interface = n1 f0/0
+    [[NOTE 15]]
+        text = "f0/1"
+        x = 72.9980588178
+        y = 22.394069545
+        interface = n1 f0/1
+    [[NOTE 16]]
+        text = "f0/0"
+        x = 64.3823498404
+        y = -2.80217971257
+        interface = n2 f0/0
+    [[NOTE 17]]
+        text = "f0/1"
+        x = -6.990500011
+        y = 21.1282724793
+        interface = n2 f0/1
+    [[NOTE 18]]
+        text = "f2/0"
+        x = 60.1415444903
+        y = 51.3825894482
+        interface = n2 f2/0
+    [[NOTE 19]]
+        text = "f1/0"
+        x = 7.81666006892
+        y = 53.0773131064
+        interface = n2 f1/0
+    [[NOTE 20]]
+        text = "f1/0"
+        x = 40.4275912007
+        y = 61.3043367703
+        interface = n3 f1/0
+    [[NOTE 21]]
+        text = "f2/0"
+        x = 72.996573999
+        y = 21.4764846335
+        interface = n3 f2/0
+    [[NOTE 22]]
+        text = "f0/0"
+        x = 5.85845550971
+        y = -7.3825894482
+        interface = n3 f0/0
+    [[NOTE 23]]
+        text = "f0/1"
+        x = -6.99805881782
+        y = 21.605930455
+        interface = n3 f0/1
+    [[SHAPE 1]]
+        type = rectangle
+        x = 215.0
+        y = -7.0
+        width = 200.0
+        height = 199.0
+    [[SHAPE 2]]
+        type = ellipse
+        x = -325.0
+        y = -193.0
+        width = 474.0
+        height = 463.0
+    [[SHAPE 3]]
+        type = rectangle
+        x = -785.0
+        y = -99.0
+        width = 411.0
+        height = 226.0
+        z = -1.0
