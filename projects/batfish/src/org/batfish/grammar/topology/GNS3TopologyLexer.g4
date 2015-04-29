@@ -45,9 +45,10 @@ EQUALS
    '='
 ;
 
+// SHOULD NOT NEED LAST ALTERNATIVE.. NEED TO REPORT ERROR
 VARIABLE
 :
-   (F_VarChar | ']')+
+   (F_VarChar | ']' | '\\')+
 ;
 
 fragment
