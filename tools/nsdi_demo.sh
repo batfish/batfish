@@ -14,7 +14,7 @@ _batfish_nsdi_demo_computation() {
       local BATFISH_CONFIRM=true
    fi
    local OLD_PWD=$PWD
-   local TEST_RIG=$BATFISH_TEST_RIG_PATH/example
+   local TEST_RIG=$BATFISH_TEST_RIG_PATH/example-nsdi
    local QUERY_PATH=$OLD_PWD/$PREFIX-query
    local MPI_QUERY_BASE_PATH=$QUERY_PATH/multipath-inconsistency-query
 
@@ -113,7 +113,7 @@ _batfish_nsdi_demo_results() {
       local BATFISH_CONFIRM=true
    fi
    local OLD_PWD=$PWD
-   local TEST_RIG=$BATFISH_TEST_RIG_PATH/example
+   local TEST_RIG=$BATFISH_TEST_RIG_PATH/example-nsdi
    local QUERY_PATH=$OLD_PWD/$PREFIX-query
    local MPI_QUERY_BASE_PATH=$QUERY_PATH/multipath-inconsistency-query
 
