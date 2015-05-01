@@ -2,8 +2,10 @@
 BATFISH_CLIENT=${BASH_SOURCE[0]}
 BATFISH_CLIENT_PATH=$(dirname $BATFISH_CLIENT)
 BATFISH_CLIENT_JAR=$BATFISH_CLIENT_PATH/out/batfish-client.jar
+BATFISH_CLIENT_JAVA_ARGS=
 if [ "$(uname -o)" = "Cygwin" ]; then
    BATFISH_CLIENT_JAR="$(cygpath -w $BATFISH_CLIENT_JAR)"
+   BATFISH_CLIENT_JAVA_ARGS="-Djline.terminal=jline.UnixTerminal"
 fi
-java -jar "$BATFISH_CLIENT_JAR" $@
+java $BATFISH_CLIENT_JAVA_ARGS -jar "$BATFISH_CLIENT_JAR" $@
 
