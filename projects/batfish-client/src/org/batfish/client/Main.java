@@ -27,16 +27,16 @@ public class Main {
          String workerToAdd = "localhost:" + BfConsts.SVC_PORT;
 
          // if arguments are supplied
-         if (args.length == 9) {
-            workMgr = args[0];
-            poolMgr = args[1];
-            testrigName = args[2];
-            testrigZipfileName = args[3];
-            envName = args[4];
-            envZipfileName = args[5];
-            questionName = args[6];
-            questionFilename = args[7];
-            workerToAdd = args[8];
+         if (args.length == 10) {
+            workMgr = args[1];
+            poolMgr = args[2];
+            testrigName = args[3];
+            testrigZipfileName = args[4];
+            envName = args[5];
+            envZipfileName = args[6];
+            questionName = args[7];
+            questionFilename = args[8];
+            workerToAdd = args[9];
          }
 
          new BatchClient(workMgr, poolMgr, testrigName, testrigZipfileName,
@@ -44,7 +44,15 @@ public class Main {
                workerToAdd);
       }
       else {
-         new InteractiveClient(new String[] { "simple" });
+         String workMgr = "localhost:" + CoordConsts.SVC_WORK_PORT;
+         String poolMgr = "localhost:" + CoordConsts.SVC_POOL_PORT;
+         
+         if (args.length == 3) {
+            workMgr = args[1];
+            poolMgr = args[2];
+         }
+         
+         new InteractiveClient(workMgr, poolMgr);
       }
    }
 }
