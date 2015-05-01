@@ -30,5 +30,6 @@
 	<classpathentry kind="lib" path="lib/jaxrs-ri/validation-api-1.1.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-media-multipart-2.17.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/mimepull-1.9.5.jar"/>
+	<classpathentry kind="lib" path="lib/jline2/jline-2.13-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
