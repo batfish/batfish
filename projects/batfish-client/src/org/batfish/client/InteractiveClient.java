@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
+
+import org.batfish.common.WorkItem;
+import org.batfish.common.CoordConsts.WorkStatusCode;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
@@ -166,10 +170,33 @@ public class InteractiveClient {
 
       try {
          switch (words[0]) {
-         case "add-worker":
+         case "add-worker": {
             boolean result = _poolHelper.addBatfishWorker(words[1]);
             out.println("Result: " + result);
             break;
+         }
+         case "upload-testrig": {
+            boolean result = _workHelper.uploadTestrig(words[1], words[2]);
+            out.println("Result: " + result);
+            break;
+         }
+         case "parse-vendor-specific": {
+            WorkItem wItem = _workHelper.getWorkItemParseVendorSpecific(words[1]);
+            out.println("work-id is " + wItem.getId());
+            boolean result = _workHelper.queueWork(wItem);
+            out.println("Queuing result: " + result);
+            break;
+         }
+         case "get-work-status": {
+            WorkStatusCode status = _workHelper.getWorkStatus(UUID.fromString(words[1]));
+            out.println("Result: " + status);
+            break;
+         }
+         case "get-object": {
+            boolean result = _workHelper.getObject(words[1], words[2]);
+            out.println("Result: " + result);
+            break;
+         }
          default:
             out.println("Unsupported command " + words[0]);
          }
