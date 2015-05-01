@@ -193,7 +193,17 @@ StaticIntRoute(route),
    Route_protocol[route] = protocol,
    Route_tag[route] = tag
 <-
-   SetStaticIntRoute(node, network, nextHopIp, nextHopInt, admin, tag),
+   SetStaticIntRoute(node, network, configuredNextHopIp, nextHopInt, admin, tag),
+   (
+      (
+         configuredNextHopIp = Ip_ZERO[],
+         nextHopIp = Ip_NONE[]
+      ) ;
+      (
+         configuredNextHopIp != Ip_ZERO[],
+         nextHopIp = configuredNextHopIp
+      )
+   ),
    cost = 0,
    protocol = RoutingProtocol_STATIC[].
 

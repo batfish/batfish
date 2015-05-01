@@ -143,20 +143,21 @@ _batfish_nsdi_demo_results() {
    {
       grep '^OspfExport(' $OSPF | sort | less ;
       grep '^InstalledRoute(' $ROUTES | sort | less ;
+      grep '^InstalledRoute(' $ROUTES | sort | grep '10.0.0.0/24' | less ;
       grep '^BgpAdvertisement(' $BGP | sort | less ;
    }
 
    echo "Stage 3 View Results"
    $BATFISH_CONFIRM && \
    {
-      less $(find $QUERY_PATH -type f -not -name '*concrete*' -and -name '*.smt2' | head -n1)
+      #less $(find $QUERY_PATH -type f -not -name '*concrete*' -and -name '*.smt2' | head -n1)
       less $DUMP_DIR/SetFlowOriginate.formatted
    }
 
    echo "Stage 4 View Results"
    $BATFISH_CONFIRM && \
    {
-      sort $FLOWS | grep '^FlowPathHistory(' | less ;
+      sort $FLOWS | grep '^FlowPathHistory(' | sed -e 's/;/\n\t/g' | sed -e 's/\([^:]*\))/\n\1)\n/g' | sed -e 's/, \[/,\n\t[/g' | sed -e 's/Flow/\nFlow/g' | less ;
    }
 
 }
