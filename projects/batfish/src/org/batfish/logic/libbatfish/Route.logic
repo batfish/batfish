@@ -175,6 +175,12 @@ RoutingProtocol_CONNECTED[] = x ->
 RoutingProtocol_IBGP[] = x ->
    RoutingProtocol(x).
 
+RoutingProtocol_ISIS_L1[] = x ->
+   RoutingProtocol(x).
+
+RoutingProtocol_ISIS_L2[] = x ->
+   RoutingProtocol(x).
+
 RoutingProtocol_OSPF[] = x ->
    RoutingProtocol(x).
 

@@ -693,6 +693,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             nextHopInterface, staticRoute.getDistance(), tag);
    }
 
+   private IsisProcess _isisProcess;
+
    private final RoleSet _roles;
 
    private transient Set<String> _unimplementedFeatures;
@@ -745,6 +747,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
       }
+   }
+
+   public IsisProcess getIsisProcess() {
+      return _isisProcess;
    }
 
    @Override
@@ -817,6 +823,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    @Override
    public Warnings getWarnings() {
       return _w;
+   }
+
+   public void setIsisProcess(IsisProcess isisProcess) {
+      _isisProcess = isisProcess;
    }
 
    @Override

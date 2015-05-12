@@ -156,6 +156,12 @@ RoutingProtocol_CONNECTED[] = x <-
 RoutingProtocol_IBGP[] = x <-
    RoutingProtocol_name(x:"ibgp").
 
+RoutingProtocol_ISIS_L1[] = x <-
+   RoutingProtocol_name(x:"isisL1").
+
+RoutingProtocol_ISIS_L2[] = x <-
+   RoutingProtocol_name(x:"isisL2").
+
 RoutingProtocol_OSPF[] = x <-
    RoutingProtocol_name(x:"ospf").
 

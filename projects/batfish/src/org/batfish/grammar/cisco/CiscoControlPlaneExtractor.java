@@ -21,6 +21,8 @@ import org.batfish.main.RedFlagBatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.IsisLevel;
+import org.batfish.representation.IsoAddress;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.NamedPort;
 import org.batfish.representation.OriginType;
@@ -46,6 +48,7 @@ import org.batfish.representation.cisco.IpAsPathAccessList;
 import org.batfish.representation.cisco.IpAsPathAccessListLine;
 import org.batfish.representation.cisco.IpBgpPeerGroup;
 import org.batfish.representation.cisco.Ipv6BgpPeerGroup;
+import org.batfish.representation.cisco.IsisProcess;
 import org.batfish.representation.cisco.MasterBgpPeerGroup;
 import org.batfish.representation.cisco.NamedBgpPeerGroup;
 import org.batfish.representation.cisco.OspfProcess;
@@ -849,6 +852,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterIs_type_is_stanza(Is_type_is_stanzaContext ctx) {
+      IsisProcess proc = _configuration.getIsisProcess();
+      if (ctx.LEVEL_1() != null) {
+         proc.setLevel(IsisLevel.LEVEL_1);
+      }
+      else if (ctx.LEVEL_2_ONLY() != null) {
+         proc.setLevel(IsisLevel.LEVEL_2);
+      }
+      else {
+         throw new BatfishException("Unsupported is-type");
+      }
+   }
+
+   @Override
    public void enterNeighbor_rb_stanza(Neighbor_rb_stanzaContext ctx) {
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       // we must create peer group if it does not exist and this is a remote_as
@@ -895,6 +912,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          throw new BatfishException("unknown neighbor type");
       }
+   }
+
+   @Override
+   public void enterNet_is_stanza(Net_is_stanzaContext ctx) {
+      IsisProcess proc = _configuration.getIsisProcess();
+      IsoAddress isoAddress = new IsoAddress(ctx.ISO_ADDRESS().getText());
+      proc.setNetAddress(isoAddress);
    }
 
    @Override
@@ -996,6 +1020,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.getBgpProcesses().put(_currentVrf, proc);
       _currentPeerGroup = proc.getMasterBgpPeerGroup();
       _dummyPeerGroup = new MasterBgpPeerGroup();
+   }
+
+   @Override
+   public void enterRouter_isis_stanza(Router_isis_stanzaContext ctx) {
+      IsisProcess proc = new IsisProcess();
+      _configuration.setIsisProcess(proc);
+      proc.setLevel(IsisLevel.LEVEL_1_2);
    }
 
    @Override
@@ -2451,7 +2482,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       ParseTreeWalker walker = new ParseTreeWalker();
       walker.walk(this, tree);
    }
-
+   
    private void todo(ParserRuleContext ctx, String feature) {
       _w.todo(ctx, feature, _parser, _text);
       _unimplementedFeatures.add("Cisco: " + feature);
@@ -2472,5 +2503,5 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException("bad encapsulation");
       }
    }
-
+   
 }

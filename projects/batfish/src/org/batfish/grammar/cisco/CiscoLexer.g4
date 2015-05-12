@@ -2122,6 +2122,11 @@ LEASE
    'lease'
 ;
 
+LEVEL_1
+:
+   'level-1'
+;
+
 LEVEL_2
 :
    'level-2'
