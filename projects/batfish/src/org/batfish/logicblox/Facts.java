@@ -80,6 +80,7 @@ public class Facts {
       map.put("SetPolicyMapClauseSetMetric", "MAP|CLAUSE|METRIC");
       map.put("SetPolicyMapClauseSetNextHopIp", "MAP|CLAUSE|NEXTHOPIP");
       map.put("SetPolicyMapClauseSetOriginType", "MAP|CLAUSE|ORIGINTYPE");
+      map.put("SetPolicyMapIsisExternalRouteType", "MAP|PROTOCOL");
       map.put("SetPolicyMapOspfExternalRouteType", "MAP|PROTOCOL");
       map.put(
             "SetBgpDefaultLocalPref_flat",
@@ -127,6 +128,11 @@ public class Facts {
             "ASPATH|LINE|AS1LOW|AS1HIGH|AS2LOW|AS2HIGH");
       map.put("SetAsPathLineMatchEmpty", "ASPATH|LINE");
       map.put("SetAsPathLinePermit", "ASPATH|LINE");
+      map.put("SetIsisOutboundPolicyMap", "NODE|POLICY");
+      map.put("SetIsisL1Node", "NODE");
+      map.put("SetIsisL2Node", "NODE");
+      map.put("SetIsisArea", "NODE|AREA");
+      map.put("SetIsisInterfaceCost", "NODE|INTERFACE|COST");
       return Collections.unmodifiableMap(map);
    }
 

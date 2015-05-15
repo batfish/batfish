@@ -21,6 +21,7 @@ import org.batfish.main.RedFlagBatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.IsisLevel;
 import org.batfish.representation.IsoAddress;
 import org.batfish.representation.LineAction;
@@ -49,6 +50,7 @@ import org.batfish.representation.cisco.IpAsPathAccessListLine;
 import org.batfish.representation.cisco.IpBgpPeerGroup;
 import org.batfish.representation.cisco.Ipv6BgpPeerGroup;
 import org.batfish.representation.cisco.IsisProcess;
+import org.batfish.representation.cisco.IsisRedistributionPolicy;
 import org.batfish.representation.cisco.MasterBgpPeerGroup;
 import org.batfish.representation.cisco.NamedBgpPeerGroup;
 import org.batfish.representation.cisco.OspfProcess;
@@ -1591,6 +1593,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIp_router_isis_if_stanza(Ip_router_isis_if_stanzaContext ctx) {
+      for (Interface iface : _currentInterfaces) {
+         iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
+      }
+   }
+
+   @Override
+   public void exitIsis_metric_if_stanza(Isis_metric_if_stanzaContext ctx) {
+      int metric = toInteger(ctx.metric);
+      for (Interface iface : _currentInterfaces) {
+         iface.setIsisCost(metric);
+      }
+   }
+
+   @Override
    public void exitMatch_as_path_access_list_rm_stanza(
          Match_as_path_access_list_rm_stanzaContext ctx) {
       Set<String> names = new TreeSet<String>();
@@ -2006,6 +2023,64 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          r.setTag(tag);
       }
       r.setSubnets(ctx.subnets != null);
+   }
+
+   @Override
+   public void exitRedistribute_connected_is_stanza(
+         Redistribute_connected_is_stanzaContext ctx) {
+      IsisProcess proc = _configuration.getIsisProcess();
+      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
+      IsisRedistributionPolicy r = new IsisRedistributionPolicy(sourceProtocol);
+      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      if (ctx.metric != null) {
+         int metric = toInteger(ctx.metric);
+         r.setMetric(metric);
+      }
+      if (ctx.map != null) {
+         String map = ctx.map.getText();
+         r.setMap(map);
+      }
+      if (ctx.LEVEL_1() != null) {
+         r.setLevel(IsisLevel.LEVEL_1);
+      }
+      else if (ctx.LEVEL_2() != null) {
+         r.setLevel(IsisLevel.LEVEL_2);
+      }
+      else if (ctx.LEVEL_1_2() != null) {
+         r.setLevel(IsisLevel.LEVEL_2);
+      }
+      else {
+         r.setLevel(IsisRedistributionPolicy.DEFAULT_LEVEL);
+      }
+   }
+
+   @Override
+   public void exitRedistribute_static_is_stanza(
+         Redistribute_static_is_stanzaContext ctx) {
+      IsisProcess proc = _configuration.getIsisProcess();
+      RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
+      IsisRedistributionPolicy r = new IsisRedistributionPolicy(sourceProtocol);
+      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      if (ctx.metric != null) {
+         int metric = toInteger(ctx.metric);
+         r.setMetric(metric);
+      }
+      if (ctx.map != null) {
+         String map = ctx.map.getText();
+         r.setMap(map);
+      }
+      if (ctx.LEVEL_1() != null) {
+         r.setLevel(IsisLevel.LEVEL_1);
+      }
+      else if (ctx.LEVEL_2() != null) {
+         r.setLevel(IsisLevel.LEVEL_2);
+      }
+      else if (ctx.LEVEL_1_2() != null) {
+         r.setLevel(IsisLevel.LEVEL_2);
+      }
+      else {
+         r.setLevel(IsisRedistributionPolicy.DEFAULT_LEVEL);
+      }
    }
 
    @Override

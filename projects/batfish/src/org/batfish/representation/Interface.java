@@ -18,6 +18,8 @@ public class Interface extends NamedStructure {
    private Double _bandwidth;
    private String _description;
    private IpAccessList _incomingFilter;
+   private Integer _isisCost;
+   private IsisInterfaceMode _isisInterfaceMode;
    private int _nativeVlan;
    private Integer _ospfArea;
    private Integer _ospfCost;
@@ -74,6 +76,14 @@ public class Interface extends NamedStructure {
 
    public IpAccessList getIncomingFilter() {
       return _incomingFilter;
+   }
+
+   public Integer getIsisCost() {
+      return _isisCost;
+   }
+
+   public IsisInterfaceMode getIsisInterfaceMode() {
+      return _isisInterfaceMode;
    }
 
    public int getNativeVlan() {
@@ -138,6 +148,14 @@ public class Interface extends NamedStructure {
 
    public void setIncomingFilter(IpAccessList filter) {
       _incomingFilter = filter;
+   }
+
+   public void setIsisCost(Integer isisCost) {
+      _isisCost = isisCost;
+   }
+
+   public void setIsisInterfaceMode(IsisInterfaceMode mode) {
+      _isisInterfaceMode = mode;
    }
 
    public void setNativeVlan(int vlan) {

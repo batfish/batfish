@@ -1,6 +1,7 @@
 package org.batfish.logicblox;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,6 +22,9 @@ import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.IsisInterfaceMode;
+import org.batfish.representation.IsisLevel;
+import org.batfish.representation.IsisProcess;
 import org.batfish.representation.OriginType;
 import org.batfish.representation.OspfArea;
 import org.batfish.representation.OspfMetricType;
@@ -396,6 +400,8 @@ public class ConfigurationFactExtractor {
       writeGeneratedRoutes();
       writeVlanInterface();
       writeAsPaths();
+      writeIsis();
+      writeIsisOutboundPolicyMaps();
    }
 
    private void writeGeneratedRoutes() {
@@ -571,6 +577,90 @@ public class ConfigurationFactExtractor {
                wSetIpAccessListLine_srcPortRange.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
             }
+         }
+      }
+   }
+
+   private void writeIsis() {
+      StringBuilder wSetIsisL1Node = _factBins.get("SetIsisL1Node");
+      StringBuilder wSetIsisL2Node = _factBins.get("SetIsisL2Node");
+      StringBuilder wSetIsisArea = _factBins.get("SetIsisArea");
+      StringBuilder wSetIsisInterfaceCost = _factBins
+            .get("SetIsisInterfaceCost");
+      String hostname = _configuration.getHostname();
+      IsisProcess proc = _configuration.getIsisProcess();
+      if (proc != null) {
+         for (Interface iface : _configuration.getInterfaces().values()) {
+            IsisInterfaceMode mode = iface.getIsisInterfaceMode();
+            if (mode == IsisInterfaceMode.ACTIVE) {
+               Integer isisCost = iface.getIsisCost();
+               if (isisCost == null) {
+                  isisCost = IsisProcess.DEFAULT_ISIS_INTERFACE_COST;
+               }
+               String ifaceName = iface.getName();
+               wSetIsisInterfaceCost.append(hostname + "|" + ifaceName + "|"
+                     + isisCost + "\n");
+
+            }
+         }
+         boolean level1 = false;
+         boolean level2 = false;
+         switch (proc.getLevel()) {
+         case LEVEL_1:
+            level1 = true;
+            break;
+         case LEVEL_1_2:
+            level1 = true;
+            level2 = true;
+            break;
+         case LEVEL_2:
+            level2 = true;
+            break;
+         default:
+            throw new BatfishException("Invalid IS-IS level");
+         }
+         if (level1) {
+            wSetIsisL1Node.append(hostname + "\n");
+         }
+         if (level2) {
+            wSetIsisL2Node.append(hostname + "\n");
+         }
+         String area = proc.getNetAddress().getAreaIdStr();
+         wSetIsisArea.append(hostname + "|" + area + "\n");
+      }
+   }
+
+   private void writeIsisOutboundPolicyMaps() {
+      StringBuilder wSetIsisOutboundPolicyMap = _factBins
+            .get("SetIsisOutboundPolicyMap");
+      StringBuilder wSetPolicyMapIsisExternalRouteType = _factBins
+            .get("SetPolicyMapIsisExternalRouteType");
+      String hostname = _configuration.getHostname();
+      IsisProcess proc = _configuration.getIsisProcess();
+      if (proc != null) {
+         for (PolicyMap map : proc.getOutboundPolicyMaps()) {
+            String mapName = hostname + ":" + map.getMapName();
+            IsisLevel exportLevel = proc.getPolicyExportLevels().get(map);
+            Set<String> levels = new HashSet<String>();
+            switch (exportLevel) {
+            case LEVEL_1:
+               levels.add("isisL1");
+               break;
+            case LEVEL_2:
+               levels.add("isisL2");
+               break;
+            case LEVEL_1_2:
+               levels.add("isisL1");
+               levels.add("isisL2");
+               break;
+            default:
+               throw new BatfishException("invalid IS-IS level");
+            }
+            for (String level : levels) {
+               wSetPolicyMapIsisExternalRouteType.append(mapName + "|" + level
+                     + "\n");
+            }
+            wSetIsisOutboundPolicyMap.append(hostname + "|" + mapName + "\n");
          }
       }
    }

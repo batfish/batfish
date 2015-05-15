@@ -428,6 +428,13 @@ block(`service_files) {
          column_formats[] = "string,integer,string"
       }.
 
+      file_definition_by_name["SetPolicyMapIsisExternalRouteType"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,PROTOCOL",
+         column_formats[] = "string,string"
+      }.
+
       file_definition_by_name["SetPolicyMapOspfExternalRouteType"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
@@ -597,6 +604,42 @@ block(`service_files) {
          file_delimiter[] = "|",
          column_headers[] = "ASPATH,LINE",
          column_formats[] = "string,integer"
+      }.
+
+      // Isis
+      file_definition_by_name["SetIsisArea"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,AREA",
+         column_formats[] = "string,integer"
+      }.
+
+      file_definition_by_name["SetIsisInterfaceCost"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE,COST",
+         column_formats[] = "string,string,integer"
+      }.
+
+      file_definition_by_name["SetIsisOutboundPolicyMap"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,POLICY",
+         column_formats[] = "string,string"
+      }.
+
+      file_definition_by_name["SetIsisL1Node"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE",
+         column_formats[] = "string"
+      }.
+
+      file_definition_by_name["SetIsisL2Node"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE",
+         column_formats[] = "string"
       }.
 
    })

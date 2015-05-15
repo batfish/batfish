@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.SwitchportMode;
@@ -63,6 +64,8 @@ public class Interface implements Serializable {
 
    private String _incomingFilter;
 
+   private Integer _isisCost;
+
    private String _name;
 
    private int _nativeVlan;
@@ -87,6 +90,16 @@ public class Interface implements Serializable {
 
    private String _vrf;
 
+   private IsisInterfaceMode _isisInterfaceMode;
+
+   public void setIsisInterfaceMode(IsisInterfaceMode mode) {
+      _isisInterfaceMode = mode;
+   }
+   
+   public IsisInterfaceMode getIsisInterfaceMode() {
+      return _isisInterfaceMode;
+   }
+   
    public Interface(String name) {
       _name = name;
       _area = null;
@@ -96,6 +109,7 @@ public class Interface implements Serializable {
       _allowedVlans = new ArrayList<SubRange>();
       _ospfCost = null;
       _secondaryPrefixes = new LinkedHashSet<Prefix>();
+      _isisInterfaceMode = IsisInterfaceMode.UNSET;
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
@@ -128,6 +142,10 @@ public class Interface implements Serializable {
 
    public String getIncomingFilter() {
       return _incomingFilter;
+   }
+
+   public Integer getIsisCost() {
+      return _isisCost;
    }
 
    public String getName() {
@@ -196,6 +214,10 @@ public class Interface implements Serializable {
 
    public void setIncomingFilter(String accessListName) {
       _incomingFilter = accessListName;
+   }
+
+   public void setIsisCost(Integer isisCost) {
+      _isisCost = isisCost;
    }
 
    public void setNativeVlan(int vlan) {

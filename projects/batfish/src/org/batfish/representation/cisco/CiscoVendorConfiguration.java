@@ -24,6 +24,7 @@ import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.IsisLevel;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.OspfArea;
 import org.batfish.representation.OspfMetricType;
@@ -59,6 +60,12 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
    private static final String DEFAULT_ROUTE_FILTER_NAME = "~DEFAULT_ROUTE_FILTER~";
+
+   private static final String ISIS_EXPORT_CONNECTED_POLICY_NAME = "~ISIS_EXPORT_CONNECTED_POLICY~";
+
+   private static final String ISIS_EXPORT_STATIC_POLICY_NAME = "~ISIS_EXPORT_STATIC_POLICY~";
+
+   private static final String ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME = "~ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER~";
 
    private static final int MAX_ADMINISTRATIVE_COST = 32767;
 
@@ -195,6 +202,200 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          lines.add(newLine);
       }
       return new IpAccessList(name, lines);
+   }
+
+   private static org.batfish.representation.IsisProcess toIsisProcess(
+         Configuration c, CiscoConfiguration oldConfig) {
+      IsisProcess proc = oldConfig.getIsisProcess();
+      org.batfish.representation.IsisProcess newProcess = new org.batfish.representation.IsisProcess();
+
+      newProcess.setNetAddress(proc.getNetAddress());
+      newProcess.setLevel(proc.getLevel());
+
+      // policy map for redistributing connected routes
+      // TODO: honor subnets option
+      IsisRedistributionPolicy rcp = proc.getRedistributionPolicies().get(
+            RoutingProtocol.CONNECTED);
+      if (rcp != null) {
+         Integer metric = rcp.getMetric();
+         IsisLevel exportLevel = rcp.getLevel();
+         boolean explicitMetric = metric != null;
+         boolean routeMapMetric = false;
+         if (!explicitMetric) {
+            metric = IsisRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
+         }
+         // add default export map with metric
+         PolicyMap exportConnectedPolicy;
+         String mapName = rcp.getMap();
+         if (mapName != null) {
+            exportConnectedPolicy = c.getPolicyMaps().get(mapName);
+            if (exportConnectedPolicy == null) {
+               throw new VendorConversionException(
+                     "undefined reference to policy map: " + mapName);
+            }
+            // crash if both an explicit metric is set and one exists in the
+            // route map
+            for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
+               for (PolicyMapSetLine line : clause.getSetLines()) {
+                  if (line.getType() == PolicyMapSetType.METRIC) {
+                     if (explicitMetric) {
+                        throw new Error(
+                              "Explicit redistribution metric set while route map also contains set metric line");
+                     }
+                     else {
+                        routeMapMetric = true;
+                        break;
+                     }
+                  }
+               }
+            }
+            PolicyMapMatchLine matchConnectedLine = new PolicyMapMatchProtocolLine(
+                  RoutingProtocol.CONNECTED);
+            PolicyMapSetLine setMetricLine = null;
+            // add a set metric line if no metric provided by route map
+            if (!routeMapMetric) {
+               // use default metric if no explicit metric is set
+               setMetricLine = new PolicyMapSetMetricLine(metric);
+            }
+            for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
+               clause.getMatchLines().add(matchConnectedLine);
+               if (!routeMapMetric) {
+                  clause.getSetLines().add(setMetricLine);
+               }
+            }
+            newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
+            newProcess.getPolicyExportLevels().put(exportConnectedPolicy,
+                  exportLevel);
+         }
+         else {
+            exportConnectedPolicy = makeRouteExportPolicy(c,
+                  ISIS_EXPORT_CONNECTED_POLICY_NAME, null, null, null, null,
+                  metric, RoutingProtocol.CONNECTED, PolicyMapAction.PERMIT);
+            newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
+            newProcess.getPolicyExportLevels().put(exportConnectedPolicy,
+                  exportLevel);
+            c.getPolicyMaps().put(exportConnectedPolicy.getMapName(),
+                  exportConnectedPolicy);
+         }
+      }
+
+      // policy map for redistributing static routes
+      // TODO: honor subnets option
+      IsisRedistributionPolicy rsp = proc.getRedistributionPolicies().get(
+            RoutingProtocol.STATIC);
+      if (rsp != null) {
+         Integer metric = rsp.getMetric();
+         IsisLevel exportLevel = rsp.getLevel();
+         boolean explicitMetric = metric != null;
+         boolean routeMapMetric = false;
+         if (!explicitMetric) {
+            metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_STATIC_METRIC;
+         }
+         // add export map with metric
+         PolicyMap exportStaticPolicy;
+         String mapName = rsp.getMap();
+         if (mapName != null) {
+            exportStaticPolicy = c.getPolicyMaps().get(mapName);
+            if (exportStaticPolicy == null) {
+               throw new VendorConversionException(
+                     "undefined reference to policy map: " + mapName);
+            }
+            // crash if both an explicit metric is set and one exists in the
+            // route map
+            for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
+               for (PolicyMapSetLine line : clause.getSetLines()) {
+                  if (line.getType() == PolicyMapSetType.METRIC) {
+                     if (explicitMetric) {
+                        throw new Error(
+                              "Explicit redistribution metric set while route map also contains set metric line");
+                     }
+                     else {
+                        routeMapMetric = true;
+                        break;
+                     }
+                  }
+               }
+            }
+            PolicyMapSetLine setMetricLine = null;
+            // add a set metric line if no metric provided by route map
+            if (!routeMapMetric) {
+               // use default metric if no explicit metric is set
+               setMetricLine = new PolicyMapSetMetricLine(metric);
+            }
+
+            PolicyMapMatchLine matchStaticLine = new PolicyMapMatchProtocolLine(
+                  RoutingProtocol.STATIC);
+            for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
+               boolean containsRouteFilterList = false;
+               for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
+                  switch (matchLine.getType()) {
+                  case ROUTE_FILTER_LIST:
+                     PolicyMapMatchRouteFilterListLine rLine = (PolicyMapMatchRouteFilterListLine) matchLine;
+                     for (RouteFilterList list : rLine.getLists()) {
+                        containsRouteFilterList = true;
+                        list.getLines().add(
+                              0,
+                              new RouteFilterLine(LineAction.REJECT,
+                                    Prefix.ZERO, new SubRange(0, 0)));
+                     }
+                     break;
+                  // allowed match lines
+                  case PROTOCOL:
+                  case TAG:
+                     break;
+
+                  // disallowed match lines
+                  case AS_PATH_ACCESS_LIST:
+                  case COMMUNITY_LIST:
+                  case IP_ACCESS_LIST:
+                  case NEIGHBOR:
+                  case POLICY:
+                  default:
+                     // note: don't allow ip access lists in policies that
+                     // are for prefix matching
+                     // i.e. convert them, or throw error if they are used
+                     // ambiguously
+                     throw new VendorConversionException(
+                           "Unexpected match line type");
+                  }
+               }
+               if (!containsRouteFilterList) {
+                  RouteFilterList generatedRejectDefaultRouteList = c
+                        .getRouteFilterLists()
+                        .get(ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME);
+                  if (generatedRejectDefaultRouteList == null) {
+                     generatedRejectDefaultRouteList = makeRouteFilter(
+                           ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
+                           Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT);
+                  }
+                  Set<RouteFilterList> lists = new HashSet<RouteFilterList>();
+                  lists.add(generatedRejectDefaultRouteList);
+                  PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(
+                        lists);
+                  clause.getMatchLines().add(line);
+               }
+               Set<PolicyMapSetLine> setList = clause.getSetLines();
+               clause.getMatchLines().add(matchStaticLine);
+               if (!routeMapMetric) {
+                  setList.add(setMetricLine);
+               }
+            }
+            newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
+            newProcess.getPolicyExportLevels().put(exportStaticPolicy,
+                  exportLevel);
+
+         }
+         else { // export static routes without named policy
+            exportStaticPolicy = makeRouteExportPolicy(c,
+                  ISIS_EXPORT_STATIC_POLICY_NAME,
+                  ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
+                  Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT, metric,
+                  RoutingProtocol.STATIC, PolicyMapAction.PERMIT);
+            newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
+            newProcess.getPolicyExportLevels().put(exportStaticPolicy,
+                  exportLevel);
+         }
+      }      return newProcess;
    }
 
    private static String toJavaRegex(String ciscoRegex) {
@@ -693,8 +894,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             nextHopInterface, staticRoute.getDistance(), tag);
    }
 
-   private IsisProcess _isisProcess;
-
    private final RoleSet _roles;
 
    private transient Set<String> _unimplementedFeatures;
@@ -747,10 +946,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
       }
-   }
-
-   public IsisProcess getIsisProcess() {
-      return _isisProcess;
    }
 
    @Override
@@ -823,10 +1018,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    @Override
    public Warnings getWarnings() {
       return _w;
-   }
-
-   public void setIsisProcess(IsisProcess isisProcess) {
-      _isisProcess = isisProcess;
    }
 
    @Override
@@ -1208,6 +1399,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          newIface.setPrefix(iface.getPrefix());
       }
       newIface.getSecondaryPrefixes().addAll(iface.getSecondaryPrefixes());
+      newIface.setIsisCost(iface.getIsisCost());
+      newIface.setIsisInterfaceMode(iface.getIsisInterfaceMode());
       newIface.setOspfCost(iface.getOspfCost());
       newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
       newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
@@ -1345,6 +1538,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          org.batfish.representation.OspfProcess newOspfProcess = toOspfProcess(
                c, this);
          c.setOspfProcess(newOspfProcess);
+      }
+
+      // convert isis process
+      if (_isisProcess != null) {
+         org.batfish.representation.IsisProcess newIsisProcess = toIsisProcess(
+               c, this);
+         c.setIsisProcess(newIsisProcess);
       }
 
       // convert bgp process

@@ -2,6 +2,7 @@ block(`Isis) {
    alias_all(`libbatfish:Interface),
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
    alias_all(`libbatfish:Route),
    export(`{
 // BEGIN CODE
@@ -57,17 +58,18 @@ IsisL2Neighbors(node1, int1, cost1, node2, int2, cost2) ->
    Interface(int2),
    int(cost2).
 
-IsisIANeighbors(node1, int1, cost1, node2, int2, cost2) ->
-   Node(node1),
-   Interface(int1),
-   int(cost1),
-   Node(node2),
-   Interface(int2),
-   int(cost2).
-
 IsisL2Network(node, network) ->
    Node(node),
    Network(network).
+
+SetIsisArea(node, area) ->
+   Node(node),
+   int(area).
+
+SetIsisInterfaceCost[node, interface] = cost ->
+   Node(node),
+   Interface(interface),
+   int(cost).
 
 SetIsisL1Node(node) ->
    Node(node).
@@ -75,18 +77,9 @@ SetIsisL1Node(node) ->
 SetIsisL2Node(node) ->
    Node(node).
 
-SetIsisInterface(node, interface) ->
+SetIsisOutboundPolicyMap(node, map) ->
    Node(node),
-   Interface(interface).
-
-SetIsisInterfaceCost[node, interface] = cost ->
-   Node(node),
-   Interface(interface),
-   int(cost).
-
-SetIsisArea(node, area) ->
-   Node(node),
-   int(area).
+   PolicyMap(map).
 
 SetIsisSystemId(node, systemId) ->
    Node(node),

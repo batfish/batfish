@@ -4,6 +4,7 @@ block(`Isis_rules) {
    alias_all(`libbatfish:Isis),
    alias_all(`libbatfish:Layer2),
    alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
    alias_all(`libbatfish:Route),
    clauses(`{
 // BEGIN CODE
@@ -24,7 +25,8 @@ BestIsisL2Route(route),
    Route_cost[route] = cost,
    Route_network[route] = network,
    Route_node[route] = node,
-   MinIsisL2RouteCost[node, network] = cost.
+   MinIsisL2RouteCost[node, network] = cost,
+   !IsisL1Network(node, network).
 
 BestPerProtocolRoute(route) <-
    BestIsisL1Route(route) ;
@@ -44,6 +46,28 @@ MinIsisL2RouteCost[node, network] = minCost <-
       Route_network[route] = network,
       Route_node[route] = node.
 
+need_PolicyMapMatchRoute(map, route) <-
+   SetIsisOutboundPolicyMap(node, map),
+   Route_node[route] = node,
+   InstalledRoute(route).
+
+IsisExport(node, network, newCost, protocol) <-
+   InstalledRoute(route),
+   !NonIsisExportableRoute(route),
+   Route_network[route] = network,
+   Route_node[route] = node,
+   SetIsisOutboundPolicyMap(node, map),
+   SetPolicyMapIsisExternalRouteType(map, protocol),
+   PolicyMapPermitRoute(map, clause, route),
+   SetPolicyMapClauseSetMetric(map, clause, newCost),
+   (
+      !ConnectedRoute(node, network, _) ;
+      (
+         ConnectedRoute(node, network, interface),
+         !SetIsisInterfaceCost[node, interface] = _
+      )
+   ).
+
 IsisL1Neighbors(node1, int1, cost1, node2, int2, cost2) <-
    SetIsisL1Node(node1),
    SetIsisL1Node(node2),
@@ -56,18 +80,8 @@ IsisL1Neighbors(node1, int1, cost1, node2, int2, cost2) <-
 IsisL2Neighbors(node1, int1, cost1, node2, int2, cost2) <-
    SetIsisL2Node(node1),
    SetIsisL2Node(node2),
-   SetIsisArea(node1, area),
-   SetIsisArea(node2, area),
-   LanAdjacent(node1, int1, node2, int2),
-   SetIsisInterfaceCost(node1, int1, cost1),
-   SetIsisInterfaceCost(node2, int2, cost2).
-
-IsisIANeighbors(node1, int1, cost1, node2, int2, cost2) <-
-   SetIsisL2Node(node1),
-   SetIsisL2Node(node2),
-   SetIsisArea(node1, area1),
-   SetIsisArea(node2, area2),
-   area1 != area2,
+   SetIsisArea(node1, _),
+   SetIsisArea(node2, _),
    LanAdjacent(node1, int1, node2, int2),
    SetIsisInterfaceCost(node1, int1, cost1),
    SetIsisInterfaceCost(node2, int2, cost2).
@@ -90,6 +104,27 @@ IsisL1Route(route),
    ConnectedRoute(nextHop, network, nextHopConnectedInt),
    SetIsisInterfaceCost[nextHop, nextHopConnectedInt] = nextHopIntCost,
    cost = nodeIntCost + nextHopIntCost,
+   protocol = RoutingProtocol_ISIS_L1[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
+// (base case - import routes exported into L1 by L1 neighbors
+IsisL1Route(route),
+   Route(route),
+   NonIsisExportableRoute(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   !ConnectedRoute(node, network, _),
+   IsisL1Neighbors(node, _, nodeIntCost, nextHop, nextHopInt, _),
+   IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
+   node != nextHop,
+   IsisExport(nextHop, network, exportCost, protocol),
+   cost = exportCost + nodeIntCost,
    protocol = RoutingProtocol_ISIS_L1[],
    SetNodeVendor(node, vendor),
    AdministrativeDistance[vendor, protocol] = admin.
@@ -142,7 +177,51 @@ IsisL2Route(route),
    protocol = RoutingProtocol_ISIS_L2[],
    SetNodeVendor(node, vendor),
    AdministrativeDistance[vendor, protocol] = admin.
-// (recursive case) propagate ospf over ospf
+// (base case - import routes exported into L2 by L2 neighbors
+IsisL2Route(route),
+   Route(route),
+   NonIsisExportableRoute(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   !ConnectedRoute(node, network, _),
+   IsisL2Neighbors(node, _, nodeIntCost, nextHop, nextHopInt, _),
+   IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
+   node != nextHop,
+   IsisExport(nextHop, network, exportCost, protocol),
+   cost = exportCost + nodeIntCost,
+   protocol = RoutingProtocol_ISIS_L2[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
+// (base - leak L1 Routes into L2)
+IsisL2Route(route),
+   Route(route),
+   NonIsisExportableRoute(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   !ConnectedRoute(node, network, _), // is this necessary?
+   IsisL2Neighbors(node, _, nodeIntCost, nextHop, nextHopInt, _),
+   IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
+   BestIsisL1Route(l1Route),
+   Route_cost[l1Route] = l1RouteCost,
+   Route_network[l1Route] = network,
+   Route_node[l1Route] = nextHop,
+   cost = nodeIntCost + l1RouteCost,
+   protocol = RoutingProtocol_ISIS_L2[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
+// (recursive (forward L2 Routes)
 IsisL2Route(route),
    Route(route),
    NonIsisExportableRoute(route),
