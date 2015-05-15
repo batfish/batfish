@@ -1127,7 +1127,8 @@ public class Settings {
             .longOpt(BfConsts.ARG_QUESTION_NAME).build());
       _options.addOption(Option.builder().desc("answer provided question")
             .longOpt(BfConsts.COMMAND_ANSWER).build());
-      _options.addOption(Option.builder().desc("post dumped flows to logicblox")
+      _options.addOption(Option.builder()
+            .desc("post dumped flows to logicblox")
             .longOpt(BfConsts.COMMAND_POST_FLOWS).build());
       _options.addOption(Option.builder().desc("parse configs in parallel")
             .longOpt(ARG_PARSE_PARALLEL).build());

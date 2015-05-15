@@ -395,7 +395,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             newProcess.getPolicyExportLevels().put(exportStaticPolicy,
                   exportLevel);
          }
-      }      return newProcess;
+      }
+      return newProcess;
    }
 
    private static String toJavaRegex(String ciscoRegex) {

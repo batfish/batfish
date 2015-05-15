@@ -7,7 +7,8 @@ import org.batfish.grammar.question.QuestionParser.Multipath_questionContext;
 import org.batfish.question.Question;
 import org.batfish.question.QuestionType;
 
-public class QuestionExtractor extends QuestionParserBaseListener implements BatfishExtractor {
+public class QuestionExtractor extends QuestionParserBaseListener implements
+      BatfishExtractor {
 
    private Question _question;
 

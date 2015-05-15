@@ -189,9 +189,9 @@ public class Driver {
       if (settings.canExecute()) {
          if (claimIdle()) {
 
-            //lets put a try-catch around all the code around claimIdle
-            //so that we never the worker non-idle accidentally
-            
+            // lets put a try-catch around all the code around claimIdle
+            // so that we never the worker non-idle accidentally
+
             try {
 
                final BatfishLogger jobLogger = new BatfishLogger(settings);
@@ -222,9 +222,10 @@ public class Driver {
 
                return Arrays.asList(BfConsts.SVC_SUCCESS_KEY, "running now");
             }
-            catch (Exception e) {    
-               _mainLogger.error("Exception while running task: " + e.getMessage());
-               makeIdle();               
+            catch (Exception e) {
+               _mainLogger.error("Exception while running task: "
+                     + e.getMessage());
+               makeIdle();
                return Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage());
             }
          }

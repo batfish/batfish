@@ -6,7 +6,7 @@ import java.math.BigInteger;
 public final class IsoAddress implements Serializable {
 
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
 
@@ -93,7 +93,7 @@ public final class IsoAddress implements Serializable {
    public long getSystemId() {
       return _systemId;
    }
-   
+
    public String getSystemIdStr() {
       String systemIdStr = Long.toHexString(_systemId);
       int leadingZeros = 12 - systemIdStr.length();
@@ -106,7 +106,7 @@ public final class IsoAddress implements Serializable {
       parts[2] = systemIdStr.substring(8, 12);
       return parts[0] + "." + parts[1] + "." + parts[2];
    }
-   
+
    @Override
    public int hashCode() {
       final int prime = 31;

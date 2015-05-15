@@ -11,7 +11,7 @@ public class IsisProcess implements Serializable {
    public static final int DEFAULT_ISIS_INTERFACE_COST = 10;
 
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
 

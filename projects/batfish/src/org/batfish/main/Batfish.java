@@ -193,6 +193,8 @@ public class Batfish implements AutoCloseable {
    private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = { (byte) 0xac,
          (byte) 0xed, (byte) 0x00, (byte) 0x05 };
 
+   private static final long JOB_POLLING_PERIOD_MS = 1000l;
+
    /**
     * The name of the LogiQL library for org.batfish
     */
@@ -224,8 +226,6 @@ public class Batfish implements AutoCloseable {
     * same LAN segment
     */
    private static final String TOPOLOGY_PREDICATE_NAME = "LanAdjacent";
-
-   private static final long JOB_POLLING_PERIOD_MS = 1000l;
 
    public static String flatten(String input, BatfishLogger logger,
          Settings settings) {
@@ -2090,12 +2090,12 @@ public class Batfish implements AutoCloseable {
          Future<ParseVendorConfigurationResult> future = pool.submit(job);
          futures.add(future);
       }
-//      try {
-//         futures = pool.invokeAll(jobs);
-//      }
-//      catch (InterruptedException e) {
-//         throw new BatfishException("Error invoking parse jobs", e);
-//      }
+      // try {
+      // futures = pool.invokeAll(jobs);
+      // }
+      // catch (InterruptedException e) {
+      // throw new BatfishException("Error invoking parse jobs", e);
+      // }
       while (!futures.isEmpty()) {
          List<Future<ParseVendorConfigurationResult>> currentFutures = new ArrayList<Future<ParseVendorConfigurationResult>>();
          currentFutures.addAll(futures);

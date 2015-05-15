@@ -11,7 +11,7 @@ import org.batfish.representation.RoutingProtocol;
 public class IsisProcess implements Serializable {
 
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
 

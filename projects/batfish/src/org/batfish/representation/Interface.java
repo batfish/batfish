@@ -28,7 +28,9 @@ public class Interface extends NamedStructure {
    private IpAccessList _outgoingFilter;
    private Prefix _prefix;
    private PolicyMap _routingPolicy;
+
    private Set<Prefix> _secondaryPrefixes;
+
    private SwitchportMode _switchportMode;
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
@@ -194,5 +196,4 @@ public class Interface extends NamedStructure {
          SwitchportEncapsulationType encapsulation) {
       _switchportTrunkEncapsulation = encapsulation;
    }
-
 }

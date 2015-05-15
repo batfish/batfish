@@ -8,14 +8,21 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
    public static final String BGP_AS = "BGP_AS";
 
    public static final OspfMetricType DEFAULT_METRIC_TYPE = OspfMetricType.E2;
+
    public static final int DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 20;
+
    public static final int DEFAULT_REDISTRIBUTE_STATIC_METRIC = 20;
+
    private static final long serialVersionUID = 1L;
 
    private String _map;
+
    private Integer _metric;
+
    private OspfMetricType _metricType;
+
    private boolean _subnets;
+
    private Long _tag;
 
    public OspfRedistributionPolicy(RoutingProtocol sourceProtocol) {

@@ -130,7 +130,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private static final String F_SWITCHING_MODE = "switching-mode";
 
-   private static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";;
+   private static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 
    public static LineAction getAccessListAction(Access_list_actionContext ctx) {
       if (ctx.PERMIT() != null) {
@@ -1476,8 +1476,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Ip_ospf_dead_interval_if_stanzaContext ctx) {
       int seconds = toInteger(ctx.seconds);
       for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setOSPFDeadInterval(seconds);
-         currentInterface.setOSPFHelloMultiplier(0);
+         currentInterface.setOspfDeadInterval(seconds);
+         currentInterface.setOspfHelloMultiplier(0);
       }
    }
 
@@ -1486,8 +1486,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Ip_ospf_dead_interval_minimal_if_stanzaContext ctx) {
       int multiplier = toInteger(ctx.mult);
       for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setOSPFDeadInterval(1);
-         currentInterface.setOSPFHelloMultiplier(multiplier);
+         currentInterface.setOspfDeadInterval(1);
+         currentInterface.setOspfHelloMultiplier(multiplier);
       }
    }
 
@@ -1996,36 +1996,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitRedistribute_connected_ro_stanza(
-         Redistribute_connected_ro_stanzaContext ctx) {
-      OspfProcess proc = _currentOspfProcess;
-      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
-      OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
-      if (ctx.metric != null) {
-         int metric = toInteger(ctx.metric);
-         r.setMetric(metric);
-      }
-      if (ctx.map != null) {
-         String map = ctx.map.getText();
-         r.setMap(map);
-      }
-      if (ctx.type != null) {
-         int typeInt = toInteger(ctx.type);
-         OspfMetricType type = OspfMetricType.fromInteger(typeInt);
-         r.setOspfMetricType(type);
-      }
-      else {
-         r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-      }
-      if (ctx.tag != null) {
-         long tag = toLong(ctx.tag);
-         r.setTag(tag);
-      }
-      r.setSubnets(ctx.subnets != null);
-   }
-
-   @Override
    public void exitRedistribute_connected_is_stanza(
          Redistribute_connected_is_stanzaContext ctx) {
       IsisProcess proc = _configuration.getIsisProcess();
@@ -2055,11 +2025,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitRedistribute_static_is_stanza(
-         Redistribute_static_is_stanzaContext ctx) {
-      IsisProcess proc = _configuration.getIsisProcess();
-      RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
-      IsisRedistributionPolicy r = new IsisRedistributionPolicy(sourceProtocol);
+   public void exitRedistribute_connected_ro_stanza(
+         Redistribute_connected_ro_stanzaContext ctx) {
+      OspfProcess proc = _currentOspfProcess;
+      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
+      OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       if (ctx.metric != null) {
          int metric = toInteger(ctx.metric);
@@ -2069,18 +2039,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          String map = ctx.map.getText();
          r.setMap(map);
       }
-      if (ctx.LEVEL_1() != null) {
-         r.setLevel(IsisLevel.LEVEL_1);
-      }
-      else if (ctx.LEVEL_2() != null) {
-         r.setLevel(IsisLevel.LEVEL_2);
-      }
-      else if (ctx.LEVEL_1_2() != null) {
-         r.setLevel(IsisLevel.LEVEL_2);
+      if (ctx.type != null) {
+         int typeInt = toInteger(ctx.type);
+         OspfMetricType type = OspfMetricType.fromInteger(typeInt);
+         r.setOspfMetricType(type);
       }
       else {
-         r.setLevel(IsisRedistributionPolicy.DEFAULT_LEVEL);
+         r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
       }
+      if (ctx.tag != null) {
+         long tag = toLong(ctx.tag);
+         r.setTag(tag);
+      }
+      r.setSubnets(ctx.subnets != null);
    }
 
    @Override
@@ -2135,6 +2106,35 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
+      }
+   }
+
+   @Override
+   public void exitRedistribute_static_is_stanza(
+         Redistribute_static_is_stanzaContext ctx) {
+      IsisProcess proc = _configuration.getIsisProcess();
+      RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
+      IsisRedistributionPolicy r = new IsisRedistributionPolicy(sourceProtocol);
+      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      if (ctx.metric != null) {
+         int metric = toInteger(ctx.metric);
+         r.setMetric(metric);
+      }
+      if (ctx.map != null) {
+         String map = ctx.map.getText();
+         r.setMap(map);
+      }
+      if (ctx.LEVEL_1() != null) {
+         r.setLevel(IsisLevel.LEVEL_1);
+      }
+      else if (ctx.LEVEL_2() != null) {
+         r.setLevel(IsisLevel.LEVEL_2);
+      }
+      else if (ctx.LEVEL_1_2() != null) {
+         r.setLevel(IsisLevel.LEVEL_2);
+      }
+      else {
+         r.setLevel(IsisRedistributionPolicy.DEFAULT_LEVEL);
       }
    }
 
@@ -2557,7 +2557,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       ParseTreeWalker walker = new ParseTreeWalker();
       walker.walk(this, tree);
    }
-   
+
    private void todo(ParserRuleContext ctx, String feature) {
       _w.todo(ctx, feature, _parser, _text);
       _unimplementedFeatures.add("Cisco: " + feature);
@@ -2578,5 +2578,5 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException("bad encapsulation");
       }
    }
-   
+
 }

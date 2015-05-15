@@ -1350,7 +1350,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitIsistet_credibility_protocol_preference(
          Isistet_credibility_protocol_preferenceContext ctx) {
-      _currentRoutingInstance.getIsisSettings().setTrafficEngineeringCredibilityProtocolPreference(true);
+      _currentRoutingInstance.getIsisSettings()
+            .setTrafficEngineeringCredibilityProtocolPreference(true);
    }
 
    @Override
@@ -1359,7 +1360,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          todo(ctx, F_IPV6);
       }
       else { // ipv4
-         _currentRoutingInstance.getIsisSettings().setTrafficEngineeringShortcuts(true);
+         _currentRoutingInstance.getIsisSettings()
+               .setTrafficEngineeringShortcuts(true);
       }
    }
 
