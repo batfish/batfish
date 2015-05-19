@@ -448,14 +448,19 @@ block(`service_config) {
          delim_file_binding[] = "SetIsisArea"
       }.
 
+      service_by_prefix["/batfish/SetIsisGeneratedRoute_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIsisGeneratedRoute_flat"
+      }.
+
+      service_by_prefix["/batfish/SetIsisGeneratedRoutePolicy_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIsisGeneratedRoutePolicy_flat"
+      }.
+
       service_by_prefix["/batfish/SetIsisInterfaceCost"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetIsisInterfaceCost"
-      }.
-
-      service_by_prefix["/batfish/SetIsisOutboundPolicyMap"] = x,
-      delim_service(x) {
-         delim_file_binding[] = "SetIsisOutboundPolicyMap"
       }.
 
       service_by_prefix["/batfish/SetIsisL1Node"] = x,
@@ -468,6 +473,10 @@ block(`service_config) {
          delim_file_binding[] = "SetIsisL2Node"
       }.
 
+      service_by_prefix["/batfish/SetIsisOutboundPolicyMap"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIsisOutboundPolicyMap"
+      }.
 
    })
 } <-- .

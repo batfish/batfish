@@ -1,4 +1,5 @@
 block(`Isis_rules) {
+   alias_all(`libbatfish:GeneratedRoute),
    alias_all(`libbatfish:Interface),
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:Isis),
@@ -52,14 +53,26 @@ need_PolicyMapMatchRoute(map, route) <-
    InstalledRoute(route).
 
 IsisExport(node, network, newCost, protocol) <-
-   InstalledRoute(route),
+   (
+      InstalledRoute(route) ;
+      (
+         IsisGeneratedRoute(route),
+         ActiveGeneratedRoute(route)
+      )
+   ),
    !NonIsisExportableRoute(route),
    Route_network[route] = network,
    Route_node[route] = node,
    SetIsisOutboundPolicyMap(node, map),
    SetPolicyMapIsisExternalRouteType(map, protocol),
    PolicyMapPermitRoute(map, clause, route),
-   SetPolicyMapClauseSetMetric(map, clause, newCost),
+   (
+      SetPolicyMapClauseSetMetric(map, clause, newCost) ;
+      (
+         !SetPolicyMapClauseSetMetric(map, clause, _),
+         Route_cost[route] = newCost
+      )
+   ),
    (
       !ConnectedRoute(node, network, _) ;
       (
@@ -67,6 +80,25 @@ IsisExport(node, network, newCost, protocol) <-
          !SetIsisInterfaceCost[node, interface] = _
       )
    ).
+
+IsisGeneratedRoute(route),
+   Route(route),
+   GeneratedRoute_constructor[node, network, type] = route,
+   GeneratedRoute(route),
+   GeneratedRoute_type[route] = type,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   SetIsisGeneratedRoute(node, network),
+   type = GeneratedRouteType_ISIS[],
+   protocol = RoutingProtocol_AGGREGATE[].
+
+GeneratedRoutePolicy(route, policy) <-
+   IsisGeneratedRoute(route),
+   Route_network[route] = network,
+   Route_node[route] = node,
+   SetIsisGeneratedRoutePolicy(node, network, policy).
 
 IsisL1Neighbors(node1, int1, cost1, node2, int2, cost2) <-
    SetIsisL1Node(node1),
@@ -248,6 +280,14 @@ IsisL2Route(route),
    protocol = RoutingProtocol_ISIS_L2[],
    SetNodeVendor(node, vendor),
    AdministrativeDistance[vendor, protocol] = admin.
+
+SetIsisGeneratedRoute(node, network) <-
+   SetIsisGeneratedRoute_flat(node, network_start, network_end, prefix_length),
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+SetIsisGeneratedRoutePolicy(node, network, map) <-
+   SetIsisGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length, map),
+   Network_constructor[network_start, network_end, prefix_length] = network.
 
 lang:compiler:disableError:NEGATION_RECURSION[] = true.
 lang:compiler:disableWarning:NEGATION_RECURSION[] = true.

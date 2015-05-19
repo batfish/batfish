@@ -15,6 +15,8 @@ public class IsisProcess implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
+   private Set<GeneratedRoute> _generatedRoutes;
+
    private IsisLevel _level;
 
    private IsoAddress _netAddress;
@@ -24,8 +26,13 @@ public class IsisProcess implements Serializable {
    private Map<PolicyMap, IsisLevel> _policyExportLevels;
 
    public IsisProcess() {
+      _generatedRoutes = new LinkedHashSet<GeneratedRoute>();
       _policyExportLevels = new LinkedHashMap<PolicyMap, IsisLevel>();
       _outboundPolicyMaps = new LinkedHashSet<PolicyMap>();
+   }
+
+   public Set<GeneratedRoute> getGeneratedRoutes() {
+      return _generatedRoutes;
    }
 
    public IsisLevel getLevel() {

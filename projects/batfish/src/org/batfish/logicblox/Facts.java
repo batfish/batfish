@@ -128,11 +128,15 @@ public class Facts {
             "ASPATH|LINE|AS1LOW|AS1HIGH|AS2LOW|AS2HIGH");
       map.put("SetAsPathLineMatchEmpty", "ASPATH|LINE");
       map.put("SetAsPathLinePermit", "ASPATH|LINE");
-      map.put("SetIsisOutboundPolicyMap", "NODE|POLICY");
+      map.put("SetIsisArea", "NODE|AREA");
+      map.put("SetIsisGeneratedRoute_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
+      map.put("SetIsisGeneratedRoutePolicy_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
+      map.put("SetIsisInterfaceCost", "NODE|INTERFACE|COST");
       map.put("SetIsisL1Node", "NODE");
       map.put("SetIsisL2Node", "NODE");
-      map.put("SetIsisArea", "NODE|AREA");
-      map.put("SetIsisInterfaceCost", "NODE|INTERFACE|COST");
+      map.put("SetIsisOutboundPolicyMap", "NODE|POLICY");
       return Collections.unmodifiableMap(map);
    }
 

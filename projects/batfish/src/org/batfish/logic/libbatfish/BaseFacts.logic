@@ -180,6 +180,7 @@ block(`BaseFacts) {
 +GeneratedRouteType(type), +GeneratedRouteType_name(type:"bgp").
 +GeneratedRouteType(type), +GeneratedRouteType_name(type:"bgp_neighbor").
 +GeneratedRouteType(type), +GeneratedRouteType_name(type:"global").
++GeneratedRouteType(type), +GeneratedRouteType_name(type:"isis").
 +GeneratedRouteType(type), +GeneratedRouteType_name(type:"ospf").
 
 // END CODE

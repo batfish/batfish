@@ -26,6 +26,9 @@ MinIsisL2RouteCost[node, network] = minCost ->
 NonIsisExportableRoute(route) ->
    Route(route).
 
+IsisGeneratedRoute(route) ->
+   Route(route).
+
 IsisL1Network(node, network) ->
    Node(node),
    Network(network).
@@ -65,6 +68,28 @@ IsisL2Network(node, network) ->
 SetIsisArea(node, area) ->
    Node(node),
    int(area).
+
+SetIsisGeneratedRoute(node, network) ->
+   Node(node),
+   Network(network).
+
+SetIsisGeneratedRoute_flat(node, network_start, network_end, prefix_length) ->
+   Node(node),
+   int(network_start),
+   int(network_end),
+   int(prefix_length).
+
+SetIsisGeneratedRoutePolicy(node, network, map) ->
+   Node(node),
+   Network(network),
+   PolicyMap(map).
+
+SetIsisGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length, map) ->
+   Node(node),
+   int(network_start),
+   int(network_end),
+   int(prefix_length),
+   PolicyMap(map).
 
 SetIsisInterfaceCost[node, interface] = cost ->
    Node(node),

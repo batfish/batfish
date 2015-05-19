@@ -81,6 +81,12 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
    public static final String VENDOR_NAME = "cisco";
 
+   private static final String ISIS_LEAK_L1_ROUTES_POLICY_NAME = "~ISIS_LEAK_L1_ROUTES_POLICY~";
+
+   private static final String ISIS_SUPPRESS_SUMMARIZED_ROUTE_FILTER_NAME = "~ISIS_SUPPRESS_SUMMARIZED_FILTER~";
+
+   private static final String ISIS_ALLOW_SUMMARY_ROUTE_FILTER_NAME = "~ISIS_ALLOW_SUMMARY_FILTER~";
+
    private static PolicyMap makeRouteExportPolicy(Configuration c, String name,
          String prefixListName, Prefix prefix, SubRange prefixRange,
          LineAction prefixAction, Integer metric, RoutingProtocol protocol,
@@ -211,6 +217,80 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
       newProcess.setNetAddress(proc.getNetAddress());
       newProcess.setLevel(proc.getLevel());
+
+      if (proc.getLevel() == IsisLevel.LEVEL_1_2) {
+         PolicyMap leakL1Policy = new PolicyMap(ISIS_LEAK_L1_ROUTES_POLICY_NAME);
+         c.getPolicyMaps().put(ISIS_LEAK_L1_ROUTES_POLICY_NAME, leakL1Policy);
+         if (proc.getSummaryAddresses().size() > 0) {
+            // add clause suppressing l1 summarized routes, and also add
+            // aggregates for summarized addresses
+            PolicyMapClause suppressClause = new PolicyMapClause();
+            PolicyMapClause allowSummaryClause = new PolicyMapClause();
+            leakL1Policy.getClauses().add(suppressClause);
+            leakL1Policy.getClauses().add(allowSummaryClause);
+            suppressClause.setAction(PolicyMapAction.DENY);
+            allowSummaryClause.setAction(PolicyMapAction.PERMIT);
+            RouteFilterList summarizedFilter = new RouteFilterList(
+                  ISIS_SUPPRESS_SUMMARIZED_ROUTE_FILTER_NAME);
+            RouteFilterList summaryFilter = new RouteFilterList(
+                  ISIS_ALLOW_SUMMARY_ROUTE_FILTER_NAME);
+            PolicyMapMatchRouteFilterListLine matchSummarized = new PolicyMapMatchRouteFilterListLine(
+                  Collections.singleton(summarizedFilter));
+            PolicyMapMatchRouteFilterListLine matchSummary = new PolicyMapMatchRouteFilterListLine(
+                  Collections.singleton(summaryFilter));
+            suppressClause.getMatchLines().add(matchSummarized);
+            suppressClause.getMatchLines().add(
+                  new PolicyMapMatchProtocolLine(RoutingProtocol.ISIS_L1));
+            allowSummaryClause.getMatchLines().add(matchSummary);
+            allowSummaryClause.getMatchLines().add(
+                  new PolicyMapMatchProtocolLine(RoutingProtocol.AGGREGATE));
+            allowSummaryClause
+                  .getSetLines()
+                  .add(new PolicyMapSetMetricLine(
+                        org.batfish.representation.IsisProcess.DEFAULT_ISIS_INTERFACE_COST));
+            for (Prefix summaryAddress : proc.getSummaryAddresses()) {
+               int length = summaryAddress.getPrefixLength();
+               int rejectLowerBound = length + 1;
+               if (rejectLowerBound > 32) {
+                  throw new VendorConversionException(
+                        "Invalid summary prefix: " + summaryAddress.toString());
+               }
+               SubRange summarizedRange = new SubRange(rejectLowerBound, 32);
+               RouteFilterLine summarized = new RouteFilterLine(
+                     LineAction.ACCEPT, summaryAddress, summarizedRange);
+               RouteFilterLine summary = new RouteFilterLine(LineAction.ACCEPT,
+                     summaryAddress, new SubRange(length, length));
+               summarizedFilter.addLine(summarized);
+               summaryFilter.addLine(summary);
+
+               String filterName = "~ISIS_MATCH_SUMMARIZED_OF:"
+                     + summaryAddress.toString() + "~";
+               String generationPolicyName = "~ISIS_AGGREGATE_ROUTE_GEN:"
+                     + summaryAddress.toString() + "~";
+               PolicyMap generationPolicy = makeRouteExportPolicy(c,
+                     generationPolicyName, filterName, summaryAddress,
+                     summarizedRange, LineAction.ACCEPT, null, null,
+                     PolicyMapAction.PERMIT);
+               Set<PolicyMap> generationPolicies = new HashSet<PolicyMap>();
+               generationPolicies.add(generationPolicy);
+               GeneratedRoute gr = new GeneratedRoute(summaryAddress,
+                     MAX_ADMINISTRATIVE_COST, generationPolicies);
+               gr.setDiscard(true);
+               newProcess.getGeneratedRoutes().add(gr);
+            }
+         }
+         // add clause allowing remaining l1 routes
+         PolicyMapClause leakL1Clause = new PolicyMapClause();
+         leakL1Clause.setAction(PolicyMapAction.PERMIT);
+         leakL1Clause.getMatchLines().add(
+               new PolicyMapMatchProtocolLine(RoutingProtocol.ISIS_L1));
+         leakL1Policy.getClauses().add(leakL1Clause);
+         newProcess.getOutboundPolicyMaps().add(leakL1Policy);
+         newProcess.getPolicyExportLevels()
+               .put(leakL1Policy, IsisLevel.LEVEL_2);
+
+         // generate routes, policies for summary addresses
+      }
 
       // policy map for redistributing connected routes
       // TODO: honor subnets option

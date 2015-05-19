@@ -80,6 +80,8 @@ public class ConfigurationFactExtractor {
          return "igp";
       case ISIS:
          return "isis";
+      case ISIS_L1:
+         return "isisL1";
       case LOCAL:
          return "local";
       case MSDP:
@@ -402,6 +404,7 @@ public class ConfigurationFactExtractor {
       writeAsPaths();
       writeIsis();
       writeIsisOutboundPolicyMaps();
+      writeIsisGeneratedRoutes();
    }
 
    private void writeGeneratedRoutes() {
@@ -702,6 +705,33 @@ public class ConfigurationFactExtractor {
             for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
                String gpName = hostname + ":" + generationPolicy.getMapName();
                wSetOspfGeneratedRoutePolicy_flat.append(hostname + "|"
+                     + network_start + "|" + network_end + "|" + prefix_length
+                     + "|" + gpName + "\n");
+            }
+         }
+      }
+   }
+
+   private void writeIsisGeneratedRoutes() {
+      StringBuilder wSetIsisGeneratedRoute_flat = _factBins
+            .get("SetIsisGeneratedRoute_flat");
+      StringBuilder wSetIsisGeneratedRoutePolicy_flat = _factBins
+            .get("SetIsisGeneratedRoutePolicy_flat");
+      StringBuilder wSetNetwork = _factBins.get("SetNetwork");
+      String hostname = _configuration.getHostname();
+      IsisProcess proc = _configuration.getIsisProcess();
+      if (proc != null) {
+         for (GeneratedRoute gr : proc.getGeneratedRoutes()) {
+            long network_start = gr.getPrefix().getAddress().asLong();
+            int prefix_length = gr.getPrefix().getPrefixLength();
+            long network_end = gr.getPrefix().getEndAddress().asLong();
+            wSetIsisGeneratedRoute_flat.append(hostname + "|" + network_start
+                  + "|" + network_end + "|" + prefix_length + "\n");
+            wSetNetwork.append(network_start + "|" + network_start + "|"
+                  + network_end + "|" + prefix_length + "\n");
+            for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
+               String gpName = hostname + ":" + generationPolicy.getMapName();
+               wSetIsisGeneratedRoutePolicy_flat.append(hostname + "|"
                      + network_start + "|" + network_end + "|" + prefix_length
                      + "|" + gpName + "\n");
             }

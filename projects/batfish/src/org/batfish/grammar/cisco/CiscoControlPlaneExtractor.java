@@ -677,6 +677,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private Ipv6BgpPeerGroup _currentIpv6PeerGroup;
 
+   private IsisProcess _currentIsisProcess;
+
    private NamedBgpPeerGroup _currentNamedPeerGroup;
 
    private OspfProcess _currentOspfProcess;
@@ -1026,9 +1028,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterRouter_isis_stanza(Router_isis_stanzaContext ctx) {
-      IsisProcess proc = new IsisProcess();
-      _configuration.setIsisProcess(proc);
-      proc.setLevel(IsisLevel.LEVEL_1_2);
+      _currentIsisProcess = new IsisProcess();
+      _currentIsisProcess.setLevel(IsisLevel.LEVEL_1_2);
+      _configuration.setIsisProcess(_currentIsisProcess);
    }
 
    @Override
@@ -1041,7 +1043,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          _configuration.setOspfProcess(_currentOspfProcess);
       }
-
    }
 
    @Override
@@ -2237,6 +2238,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitRouter_isis_stanza(Router_isis_stanzaContext ctx) {
+      _currentIsisProcess = null;
+   }
+
+   @Override
    public void exitRouter_ospf_stanza(Router_ospf_stanzaContext ctx) {
       _currentOspfProcess.computeNetworks(_configuration.getInterfaces()
             .values());
@@ -2395,6 +2401,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       StandardAccessListLine line = new StandardAccessListLine(action, srcIp,
             srcWildcard);
       _currentStandardAcl.addLine(line);
+   }
+
+   @Override
+   public void exitSummary_address_is_stanza(
+         Summary_address_is_stanzaContext ctx) {
+      Ip ip = toIp(ctx.ip);
+      Ip mask = toIp(ctx.mask);
+      Prefix prefix = new Prefix(ip, mask);
+      _currentIsisProcess.getSummaryAddresses().add(prefix);
    }
 
    @Override

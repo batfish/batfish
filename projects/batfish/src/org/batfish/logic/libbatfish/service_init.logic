@@ -869,6 +869,26 @@ block(`service_init) {
             }
       }.
 
+      file_binding_by_name["SetIsisGeneratedRoute_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetIsisGeneratedRoute_flat",
+         predicate_binding_by_name["libbatfish:Isis:SetIsisGeneratedRoute_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH"
+            }
+      }.
+
+      file_binding_by_name["SetIsisGeneratedRoutePolicy_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetIsisGeneratedRoutePolicy_flat",
+         predicate_binding_by_name["libbatfish:Isis:SetIsisGeneratedRoutePolicy_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP"
+            }
+      }.
+
       file_binding_by_name["SetIsisInterfaceCost"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
@@ -876,16 +896,6 @@ block(`service_init) {
          predicate_binding_by_name["libbatfish:Isis:SetIsisInterfaceCost"] =
             predicate_binding(_) {
                predicate_binding_columns[] = "NODE,INTERFACE,COST"
-            }
-      }.
-
-      file_binding_by_name["SetIsisOutboundPolicyMap"] = fb,
-      file_binding(fb) {
-         file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "SetIsisOutboundPolicyMap",
-         predicate_binding_by_name["libbatfish:Isis:SetIsisOutboundPolicyMap"] =
-            predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,POLICY"
             }
       }.
 
@@ -906,6 +916,16 @@ block(`service_init) {
          predicate_binding_by_name["libbatfish:Isis:SetIsisL2Node"] =
             predicate_binding(_) {
                predicate_binding_columns[] = "NODE"
+            }
+      }.
+
+      file_binding_by_name["SetIsisOutboundPolicyMap"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetIsisOutboundPolicyMap",
+         predicate_binding_by_name["libbatfish:Isis:SetIsisOutboundPolicyMap"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,POLICY"
             }
       }.
 
