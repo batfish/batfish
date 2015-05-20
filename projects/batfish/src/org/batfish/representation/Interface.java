@@ -13,20 +13,35 @@ public class Interface extends NamedStructure {
    private static final long serialVersionUID = 1L;
 
    private int _accessVlan;
+
    private boolean _active;
+
    private ArrayList<SubRange> _allowedVlans;
+
    private Double _bandwidth;
+
    private String _description;
+
    private IpAccessList _incomingFilter;
+
    private Integer _isisCost;
+
    private IsisInterfaceMode _isisInterfaceMode;
+
    private int _nativeVlan;
+
    private Integer _ospfArea;
+
    private Integer _ospfCost;
+
    private int _ospfDeadInterval;
+
    private int _ospfHelloMultiplier;
+
    private IpAccessList _outgoingFilter;
+
    private Prefix _prefix;
+
    private PolicyMap _routingPolicy;
 
    private Set<Prefix> _secondaryPrefixes;
