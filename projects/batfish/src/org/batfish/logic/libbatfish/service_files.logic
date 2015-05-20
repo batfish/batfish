@@ -428,6 +428,13 @@ block(`service_files) {
          column_formats[] = "string,integer,string"
       }.
 
+      file_definition_by_name["SetPolicyMapClauseSetProtocol"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,PROTOCOL",
+         column_formats[] = "string,integer,string"
+      }.
+
       file_definition_by_name["SetPolicyMapIsisExternalRouteType"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
@@ -653,6 +660,13 @@ block(`service_files) {
       file_definition(fd) {
          file_delimiter[] = "|",
          column_headers[] = "NODE,POLICY",
+         column_formats[] = "string,string"
+      }.
+
+      file_definition_by_name["SetIsisPassiveInterface"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE",
          column_formats[] = "string,string"
       }.
 

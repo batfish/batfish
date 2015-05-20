@@ -106,6 +106,10 @@ SetIsisOutboundPolicyMap(node, map) ->
    Node(node),
    PolicyMap(map).
 
+SetIsisPassiveInterface(node, interface) ->
+   Node(node),
+   Interface(interface).
+
 SetIsisSystemId(node, systemId) ->
    Node(node),
    int(systemId).

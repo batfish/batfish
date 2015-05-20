@@ -116,5 +116,18 @@ router_isis_stanza
 
 summary_address_is_stanza
 :
-   SUMMARY_ADDRESS ip = IP_ADDRESS mask = IP_ADDRESS NEWLINE
+   SUMMARY_ADDRESS ip = IP_ADDRESS mask = IP_ADDRESS
+   (
+      LEVEL_1
+      | LEVEL_1_2
+      | LEVEL_2
+      |
+      (
+         METRIC metric = DEC
+      )
+      |
+      (
+         TAG tag = DEC
+      )
+   )* NEWLINE
 ;

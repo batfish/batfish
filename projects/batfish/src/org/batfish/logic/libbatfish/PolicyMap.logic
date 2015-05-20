@@ -182,6 +182,11 @@ SetPolicyMapClauseSetOriginType(map, clause, originType) ->
    int(clause),
    OriginType(originType).
 
+SetPolicyMapClauseSetProtocol(map, clause, protocol) ->
+   PolicyMap(map),
+   int(clause),
+   RoutingProtocol(protocol).
+
 SetPolicyMapIsisExternalRouteType(map, protocol) ->
    PolicyMap(map),
    RoutingProtocol(protocol).

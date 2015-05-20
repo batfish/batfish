@@ -1879,6 +1879,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitPassive_interface_is_stanza(
+         Passive_interface_is_stanzaContext ctx) {
+      String ifaceName = ctx.name.getText();
+      _configuration.getInterfaces().get(ifaceName)
+            .setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
+   }
+
+   @Override
    public void exitPassive_interface_ro_stanza(
          Passive_interface_ro_stanzaContext ctx) {
       boolean passive = ctx.NO() == null;
@@ -2018,7 +2026,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          r.setLevel(IsisLevel.LEVEL_2);
       }
       else if (ctx.LEVEL_1_2() != null) {
-         r.setLevel(IsisLevel.LEVEL_2);
+         r.setLevel(IsisLevel.LEVEL_1_2);
       }
       else {
          r.setLevel(IsisRedistributionPolicy.DEFAULT_LEVEL);
@@ -2132,7 +2140,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          r.setLevel(IsisLevel.LEVEL_2);
       }
       else if (ctx.LEVEL_1_2() != null) {
-         r.setLevel(IsisLevel.LEVEL_2);
+         r.setLevel(IsisLevel.LEVEL_1_2);
       }
       else {
          r.setLevel(IsisRedistributionPolicy.DEFAULT_LEVEL);
@@ -2409,7 +2417,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip ip = toIp(ctx.ip);
       Ip mask = toIp(ctx.mask);
       Prefix prefix = new Prefix(ip, mask);
-      _currentIsisProcess.getSummaryAddresses().add(prefix);
+      RoutingProtocol sourceProtocol = RoutingProtocol.ISIS_L1;
+      IsisRedistributionPolicy r = new IsisRedistributionPolicy(sourceProtocol);
+      r.setSummaryPrefix(prefix);
+      _currentIsisProcess.getRedistributionPolicies().put(sourceProtocol, r);
+      if (ctx.metric != null) {
+         int metric = toInteger(ctx.metric);
+         r.setMetric(metric);
+      }
+      if (!ctx.LEVEL_1().isEmpty()) {
+         r.setLevel(IsisLevel.LEVEL_1);
+      }
+      else if (!ctx.LEVEL_2().isEmpty()) {
+         r.setLevel(IsisLevel.LEVEL_2);
+      }
+      else if (!ctx.LEVEL_1_2().isEmpty()) {
+         r.setLevel(IsisLevel.LEVEL_1_2);
+      }
+      else {
+         r.setLevel(IsisRedistributionPolicy.DEFAULT_LEVEL);
+      }
    }
 
    @Override

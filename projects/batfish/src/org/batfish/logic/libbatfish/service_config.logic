@@ -314,6 +314,11 @@ block(`service_config) {
          delim_file_binding[] = "SetPolicyMapClauseSetOriginType"
       }.
 
+      service_by_prefix["/batfish/SetPolicyMapClauseSetProtocol"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseSetProtocol"
+      }.
+
       service_by_prefix["/batfish/SetPolicyMapIsisExternalRouteType"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetPolicyMapIsisExternalRouteType"
@@ -476,6 +481,11 @@ block(`service_config) {
       service_by_prefix["/batfish/SetIsisOutboundPolicyMap"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetIsisOutboundPolicyMap"
+      }.
+
+      service_by_prefix["/batfish/SetIsisPassiveInterface"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIsisPassiveInterface"
       }.
 
    })

@@ -605,6 +605,16 @@ block(`service_init) {
             }
       }.
 
+      file_binding_by_name["SetPolicyMapClauseSetProtocol"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseSetProtocol",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseSetProtocol"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,PROTOCOL"
+            }
+      }.
+
       file_binding_by_name["SetPolicyMapIsisExternalRouteType"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
@@ -926,6 +936,16 @@ block(`service_init) {
          predicate_binding_by_name["libbatfish:Isis:SetIsisOutboundPolicyMap"] =
             predicate_binding(_) {
                predicate_binding_columns[] = "NODE,POLICY"
+            }
+      }.
+
+      file_binding_by_name["SetIsisPassiveInterface"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetIsisPassiveInterface",
+         predicate_binding_by_name["libbatfish:Isis:SetIsisPassiveInterface"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,INTERFACE"
             }
       }.
 

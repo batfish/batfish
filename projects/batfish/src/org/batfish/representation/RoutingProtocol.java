@@ -9,6 +9,7 @@ public enum RoutingProtocol {
    IGP,
    ISIS,
    ISIS_L1,
+   ISIS_L2,
    LOCAL,
    MSDP,
    OSPF,

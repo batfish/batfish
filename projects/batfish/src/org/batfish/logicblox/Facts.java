@@ -80,6 +80,7 @@ public class Facts {
       map.put("SetPolicyMapClauseSetMetric", "MAP|CLAUSE|METRIC");
       map.put("SetPolicyMapClauseSetNextHopIp", "MAP|CLAUSE|NEXTHOPIP");
       map.put("SetPolicyMapClauseSetOriginType", "MAP|CLAUSE|ORIGINTYPE");
+      map.put("SetPolicyMapClauseSetProtocol", "MAP|CLAUSE|PROTOCOL");
       map.put("SetPolicyMapIsisExternalRouteType", "MAP|PROTOCOL");
       map.put("SetPolicyMapOspfExternalRouteType", "MAP|PROTOCOL");
       map.put(
@@ -137,6 +138,7 @@ public class Facts {
       map.put("SetIsisL1Node", "NODE");
       map.put("SetIsisL2Node", "NODE");
       map.put("SetIsisOutboundPolicyMap", "NODE|POLICY");
+      map.put("SetIsisPassiveInterface", "NODE|INTERFACE");
       return Collections.unmodifiableMap(map);
    }
 

@@ -48,6 +48,7 @@ import org.batfish.representation.PolicyMapSetLocalPreferenceLine;
 import org.batfish.representation.PolicyMapSetMetricLine;
 import org.batfish.representation.PolicyMapSetNextHopLine;
 import org.batfish.representation.PolicyMapSetOriginTypeLine;
+import org.batfish.representation.PolicyMapSetLevelLine;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
@@ -82,6 +83,8 @@ public class ConfigurationFactExtractor {
          return "isis";
       case ISIS_L1:
          return "isisL1";
+      case ISIS_L2:
+         return "isisL2";
       case LOCAL:
          return "local";
       case MSDP:
@@ -590,20 +593,30 @@ public class ConfigurationFactExtractor {
       StringBuilder wSetIsisArea = _factBins.get("SetIsisArea");
       StringBuilder wSetIsisInterfaceCost = _factBins
             .get("SetIsisInterfaceCost");
+      StringBuilder wSetIsisPassiveInterface = _factBins
+            .get("SetIsisPassiveInterface");
       String hostname = _configuration.getHostname();
       IsisProcess proc = _configuration.getIsisProcess();
       if (proc != null) {
          for (Interface iface : _configuration.getInterfaces().values()) {
             IsisInterfaceMode mode = iface.getIsisInterfaceMode();
-            if (mode == IsisInterfaceMode.ACTIVE) {
+            String ifaceName = iface.getName();
+            switch (mode) {
+            case PASSIVE:
+               wSetIsisPassiveInterface.append(hostname + "|" + ifaceName
+                     + "\n");
+            case ACTIVE:
                Integer isisCost = iface.getIsisCost();
                if (isisCost == null) {
                   isisCost = IsisProcess.DEFAULT_ISIS_INTERFACE_COST;
                }
-               String ifaceName = iface.getName();
                wSetIsisInterfaceCost.append(hostname + "|" + ifaceName + "|"
                      + isisCost + "\n");
-
+               break;
+            case UNSET:
+               break;
+            default:
+               throw new BatfishException("Bad IS-IS mode");
             }
          }
          boolean level1 = false;
@@ -633,6 +646,33 @@ public class ConfigurationFactExtractor {
       }
    }
 
+   private void writeIsisGeneratedRoutes() {
+      StringBuilder wSetIsisGeneratedRoute_flat = _factBins
+            .get("SetIsisGeneratedRoute_flat");
+      StringBuilder wSetIsisGeneratedRoutePolicy_flat = _factBins
+            .get("SetIsisGeneratedRoutePolicy_flat");
+      StringBuilder wSetNetwork = _factBins.get("SetNetwork");
+      String hostname = _configuration.getHostname();
+      IsisProcess proc = _configuration.getIsisProcess();
+      if (proc != null) {
+         for (GeneratedRoute gr : proc.getGeneratedRoutes()) {
+            long network_start = gr.getPrefix().getAddress().asLong();
+            int prefix_length = gr.getPrefix().getPrefixLength();
+            long network_end = gr.getPrefix().getEndAddress().asLong();
+            wSetIsisGeneratedRoute_flat.append(hostname + "|" + network_start
+                  + "|" + network_end + "|" + prefix_length + "\n");
+            wSetNetwork.append(network_start + "|" + network_start + "|"
+                  + network_end + "|" + prefix_length + "\n");
+            for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
+               String gpName = hostname + ":" + generationPolicy.getMapName();
+               wSetIsisGeneratedRoutePolicy_flat.append(hostname + "|"
+                     + network_start + "|" + network_end + "|" + prefix_length
+                     + "|" + gpName + "\n");
+            }
+         }
+      }
+   }
+
    private void writeIsisOutboundPolicyMaps() {
       StringBuilder wSetIsisOutboundPolicyMap = _factBins
             .get("SetIsisOutboundPolicyMap");
@@ -643,18 +683,22 @@ public class ConfigurationFactExtractor {
       if (proc != null) {
          for (PolicyMap map : proc.getOutboundPolicyMaps()) {
             String mapName = hostname + ":" + map.getMapName();
+            wSetIsisOutboundPolicyMap.append(hostname + "|" + mapName + "\n");
             IsisLevel exportLevel = proc.getPolicyExportLevels().get(map);
+            if (exportLevel == null) {
+               continue;
+            }
             Set<String> levels = new HashSet<String>();
             switch (exportLevel) {
             case LEVEL_1:
-               levels.add("isisL1");
+               levels.add(getLBRoutingProtocol(RoutingProtocol.ISIS_L1));
                break;
             case LEVEL_2:
-               levels.add("isisL2");
+               levels.add(getLBRoutingProtocol(RoutingProtocol.ISIS_L2));
                break;
             case LEVEL_1_2:
-               levels.add("isisL1");
-               levels.add("isisL2");
+               levels.add(getLBRoutingProtocol(RoutingProtocol.ISIS_L1));
+               levels.add(getLBRoutingProtocol(RoutingProtocol.ISIS_L2));
                break;
             default:
                throw new BatfishException("invalid IS-IS level");
@@ -663,7 +707,6 @@ public class ConfigurationFactExtractor {
                wSetPolicyMapIsisExternalRouteType.append(mapName + "|" + level
                      + "\n");
             }
-            wSetIsisOutboundPolicyMap.append(hostname + "|" + mapName + "\n");
          }
       }
    }
@@ -705,33 +748,6 @@ public class ConfigurationFactExtractor {
             for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
                String gpName = hostname + ":" + generationPolicy.getMapName();
                wSetOspfGeneratedRoutePolicy_flat.append(hostname + "|"
-                     + network_start + "|" + network_end + "|" + prefix_length
-                     + "|" + gpName + "\n");
-            }
-         }
-      }
-   }
-
-   private void writeIsisGeneratedRoutes() {
-      StringBuilder wSetIsisGeneratedRoute_flat = _factBins
-            .get("SetIsisGeneratedRoute_flat");
-      StringBuilder wSetIsisGeneratedRoutePolicy_flat = _factBins
-            .get("SetIsisGeneratedRoutePolicy_flat");
-      StringBuilder wSetNetwork = _factBins.get("SetNetwork");
-      String hostname = _configuration.getHostname();
-      IsisProcess proc = _configuration.getIsisProcess();
-      if (proc != null) {
-         for (GeneratedRoute gr : proc.getGeneratedRoutes()) {
-            long network_start = gr.getPrefix().getAddress().asLong();
-            int prefix_length = gr.getPrefix().getPrefixLength();
-            long network_end = gr.getPrefix().getEndAddress().asLong();
-            wSetIsisGeneratedRoute_flat.append(hostname + "|" + network_start
-                  + "|" + network_end + "|" + prefix_length + "\n");
-            wSetNetwork.append(network_start + "|" + network_start + "|"
-                  + network_end + "|" + prefix_length + "\n");
-            for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
-               String gpName = hostname + ":" + generationPolicy.getMapName();
-               wSetIsisGeneratedRoutePolicy_flat.append(hostname + "|"
                      + network_start + "|" + network_end + "|" + prefix_length
                      + "|" + gpName + "\n");
             }
@@ -830,6 +846,8 @@ public class ConfigurationFactExtractor {
             .get("SetPolicyMapClauseSetNextHopIp");
       StringBuilder wSetPolicyMapClauseSetOriginType = _factBins
             .get("SetPolicyMapClauseSetOriginType");
+      StringBuilder wSetPolicyMapClauseSetProtocol = _factBins
+            .get("SetPolicyMapClauseSetProtocol");
       String hostname = _configuration.getHostname();
       for (PolicyMap map : _configuration.getPolicyMaps().values()) {
          String mapName = hostname + ":" + map.getMapName();
@@ -987,6 +1005,39 @@ public class ConfigurationFactExtractor {
                   OriginType originType = pmsotl.getOriginType();
                   wSetPolicyMapClauseSetOriginType.append(mapName + "|" + i
                         + "|" + originType.toString() + "\n");
+                  break;
+
+               case LEVEL:
+                  PolicyMapSetLevelLine pmspl = (PolicyMapSetLevelLine) setLine;
+                  IsisLevel level = pmspl.getLevel();
+                  boolean level1 = false;
+                  boolean level2 = false;
+                  switch (level) {
+                  case LEVEL_1:
+                     level1 = true;
+                     break;
+                  case LEVEL_1_2:
+                     level1 = true;
+                     level2 = true;
+                     break;
+                  case LEVEL_2:
+                     level2 = true;
+                     break;
+                  default:
+                     throw new BatfishException("Invalid level");
+                  }
+                  if (level1) {
+                     wSetPolicyMapClauseSetProtocol.append(mapName + "|" + i
+                           + "|"
+                           + getLBRoutingProtocol(RoutingProtocol.ISIS_L1)
+                           + "\n");
+                  }
+                  if (level2) {
+                     wSetPolicyMapClauseSetProtocol.append(mapName + "|" + i
+                           + "|"
+                           + getLBRoutingProtocol(RoutingProtocol.ISIS_L2)
+                           + "\n");
+                  }
                   break;
 
                default:
