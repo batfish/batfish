@@ -1,6 +1,5 @@
 package org.batfish.logicblox;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +8,7 @@ import java.util.Set;
 
 import org.batfish.collections.RoleSet;
 import org.batfish.main.BatfishException;
+import org.batfish.main.Warnings;
 import org.batfish.representation.AsPathAccessList;
 import org.batfish.representation.AsPathAccessListLine;
 import org.batfish.representation.BgpNeighbor;
@@ -30,8 +30,11 @@ import org.batfish.representation.OspfArea;
 import org.batfish.representation.OspfMetricType;
 import org.batfish.representation.OspfProcess;
 import org.batfish.representation.PolicyMap;
+import org.batfish.representation.PolicyMapAction;
 import org.batfish.representation.PolicyMapClause;
+import org.batfish.representation.PolicyMapClauseMatchInterfaceLine;
 import org.batfish.representation.PolicyMapMatchAsPathAccessListLine;
+import org.batfish.representation.PolicyMapMatchColorLine;
 import org.batfish.representation.PolicyMapMatchCommunityListLine;
 import org.batfish.representation.PolicyMapMatchIpAccessListLine;
 import org.batfish.representation.PolicyMapMatchLine;
@@ -104,20 +107,19 @@ public class ConfigurationFactExtractor {
    }
 
    private Set<Long> _allCommunities;
+
    private Configuration _configuration;
+
    private Map<String, StringBuilder> _factBins;
-   private List<String> _warnings;
+
+   private Warnings _w;
 
    public ConfigurationFactExtractor(Configuration c, Set<Long> allCommunities,
-         Map<String, StringBuilder> factBins) {
+         Map<String, StringBuilder> factBins, Warnings warnings) {
       _configuration = c;
       _allCommunities = allCommunities;
       _factBins = factBins;
-      _warnings = new ArrayList<String>();
-   }
-
-   public List<String> getWarnings() {
-      return _warnings;
+      _w = warnings;
    }
 
    private void writeAsPaths() {
@@ -539,7 +541,7 @@ public class ConfigurationFactExtractor {
             IpAccessListLine line = lines.get(i);
             String invalidMessage = line.getInvalidMessage();
             if (invalidMessage != null) {
-               _warnings.add("WARNING: IpAccessList " + name + " line " + i
+               _w.redFlag("IpAccessList " + name + " line " + i
                      + ": disabled: " + invalidMessage + "\n");
                continue;
             }
@@ -836,6 +838,8 @@ public class ConfigurationFactExtractor {
             .get("SetPolicyMapClausePermit");
       StringBuilder wSetPolicyMapClauseSetCommunity = _factBins
             .get("SetPolicyMapClauseSetCommunity");
+      StringBuilder wSetPolicyMapClauseSetCommunityNone = _factBins
+            .get("SetPolicyMapClauseSetCommunityNone");
       StringBuilder wSetPolicyMapClauseSetLocalPreference = _factBins
             .get("SetPolicyMapClauseSetLocalPreference");
       StringBuilder wSetPolicyMapClauseSetMetric = _factBins
@@ -848,23 +852,34 @@ public class ConfigurationFactExtractor {
             .get("SetPolicyMapClauseSetOriginType");
       StringBuilder wSetPolicyMapClauseSetProtocol = _factBins
             .get("SetPolicyMapClauseSetProtocol");
+      StringBuilder wSetPolicyMapClauseMatchColor = _factBins
+            .get("SetPolicyMapClauseMatchColor");
+      StringBuilder wSetPolicyMapClauseMatchInterface = _factBins
+            .get("SetPolicyMapClauseMatchInterface");
       String hostname = _configuration.getHostname();
       for (PolicyMap map : _configuration.getPolicyMaps().values()) {
          String mapName = hostname + ":" + map.getMapName();
          List<PolicyMapClause> clauses = map.getClauses();
          for (int i = 0; i < clauses.size(); i++) {
             PolicyMapClause clause = clauses.get(i);
-            // match lines
-            // TODO: complete
-            switch (clause.getAction()) {
-            case DENY:
-               wSetPolicyMapClauseDeny.append(mapName + "|" + i + "\n");
-               break;
-            case PERMIT:
-               wSetPolicyMapClausePermit.append(mapName + "|" + i + "\n");
-               break;
-            default:
-               throw new BatfishException("invalid action");
+            PolicyMapAction action = clause.getAction();
+            if (action == null) {
+               _w.redFlag("missing action for policy map: \"" + mapName
+                     + "\", clause: " + i);
+            }
+            else {
+               // match lines
+               // TODO: complete
+               switch (action) {
+               case DENY:
+                  wSetPolicyMapClauseDeny.append(mapName + "|" + i + "\n");
+                  break;
+               case PERMIT:
+                  wSetPolicyMapClausePermit.append(mapName + "|" + i + "\n");
+                  break;
+               default:
+                  throw new BatfishException("invalid action");
+               }
             }
             for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
                switch (matchLine.getType()) {
@@ -935,6 +950,20 @@ public class ConfigurationFactExtractor {
                   }
                   break;
 
+               case COLOR:
+                  PolicyMapMatchColorLine pmmcl = (PolicyMapMatchColorLine) matchLine;
+                  int color = pmmcl.getColor();
+                  wSetPolicyMapClauseMatchColor.append(mapName + "|" + i + "|"
+                        + color + "\n");
+                  break;
+
+               case INTERFACE:
+                  PolicyMapClauseMatchInterfaceLine pmmil = (PolicyMapClauseMatchInterfaceLine) matchLine;
+                  String ifaceName = pmmil.getName();
+                  wSetPolicyMapClauseMatchInterface.append(mapName + "|" + i
+                        + "|" + ifaceName + "\n");
+                  break;
+
                default:
                   throw new BatfishException("invalid match type");
                }
@@ -954,8 +983,8 @@ public class ConfigurationFactExtractor {
                case AS_PATH_PREPEND:
                   // TODO: implement
                   // throw new BatfishException("not implemented");
-                  _warnings.add("WARNING: " + mapName + ":" + i
-                        + ": AS_PATH_PREPEND not implemented\n");
+                  _w.unimplemented(mapName + ":" + i
+                        + ": AS_PATH_PREPEND not implemented");
                   break;
 
                case COMMUNITY:
@@ -967,8 +996,9 @@ public class ConfigurationFactExtractor {
                   break;
 
                case COMMUNITY_NONE:
-                  // TODO: implement
-                  throw new BatfishException("not implemented");
+                  wSetPolicyMapClauseSetCommunityNone.append(mapName + "|" + i
+                        + "\n");
+                  break;
 
                case DELETE_COMMUNITY:
                   PolicyMapSetDeleteCommunityLine sdcLine = (PolicyMapSetDeleteCommunityLine) setLine;

@@ -9,6 +9,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.main.BatfishException;
+import org.batfish.main.PartialGroupMatchBatfishException;
 import org.batfish.main.Warnings;
 
 public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
@@ -68,6 +69,17 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
                groupName, _currentPath, _configurationContext);
          int insertionIndex = _newConfigurationLines.indexOf(_currentSetLine);
          _newConfigurationLines.addAll(insertionIndex, applyGroupsLines);
+      }
+      catch (PartialGroupMatchBatfishException e) {
+         String message = "Exception processing apply-groups statement at path: \""
+               + _currentPath.pathString()
+               + "\" with group \""
+               + groupName
+               + "\": "
+               + e.getMessage()
+               + ": caused by: "
+               + ExceptionUtils.getFullStackTrace(e);
+         _w.pedantic(message);
       }
       catch (BatfishException e) {
          String message = "Exception processing apply-groups statement at path: \""

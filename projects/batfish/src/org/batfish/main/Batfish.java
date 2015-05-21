@@ -2118,6 +2118,7 @@ public class Batfish implements AutoCloseable {
                   }
                   else {
                      processingError = true;
+                     _logger.error(ExceptionUtils.getStackTrace(failureCause));
                   }
                }
                else {
@@ -2167,13 +2168,51 @@ public class Batfish implements AutoCloseable {
       for (Configuration c : configurations) {
          communities.addAll(c.getCommunities());
       }
+      boolean pedanticAsError = _settings.getPedanticAsError();
+      boolean pedanticRecord = _settings.getPedanticRecord();
+      boolean redFlagAsError = _settings.getRedFlagAsError();
+      boolean redFlagRecord = _settings.getRedFlagRecord();
+      boolean unimplementedAsError = _settings.getUnimplementedAsError();
+      boolean unimplementedRecord = _settings.getUnimplementedRecord();
+      boolean processingError = false;
       for (Configuration c : configurations) {
-         ConfigurationFactExtractor cfe = new ConfigurationFactExtractor(c,
-               communities, factBins);
-         cfe.writeFacts();
-         for (String warning : cfe.getWarnings()) {
-            _logger.warn(warning);
+         String hostname = c.getHostname();
+         _logger.debug("Extracting facts from: \"" + hostname + "\"");
+         Warnings warnings = new Warnings(pedanticAsError, pedanticRecord,
+               redFlagAsError, redFlagRecord, unimplementedAsError,
+               unimplementedRecord, false);
+         try {
+            ConfigurationFactExtractor cfe = new ConfigurationFactExtractor(c,
+                  communities, factBins, warnings);
+            cfe.writeFacts();
+            _logger.debug("...OK\n");
          }
+         catch (BatfishException e) {
+            _logger.fatal("...EXTRACTION ERROR\n");
+            _logger.fatal(ExceptionUtils.getStackTrace(e));
+            processingError = true;
+            if (_settings.exitOnParseError()) {
+               break;
+            }
+            else {
+               continue;
+            }
+         }
+         finally {
+            for (String warning : warnings.getRedFlagWarnings()) {
+               _logger.redflag(warning);
+            }
+            for (String warning : warnings.getUnimplementedWarnings()) {
+               _logger.unimplemented(warning);
+            }
+            for (String warning : warnings.getPedanticWarnings()) {
+               _logger.pedantic(warning);
+            }
+         }
+      }
+      if (processingError) {
+         throw new BatfishException(
+               "Failed to extract facts from vendor-indpendent configuration structures");
       }
       printElapsedTime();
    }

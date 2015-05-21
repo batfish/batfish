@@ -254,9 +254,19 @@ block(`service_config) {
          delim_file_binding[] = "SetPolicyMapClauseMatchAsPath"
       }.
 
+      service_by_prefix["/batfish/SetPolicyMapClauseMatchColor"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseMatchColor"
+      }.
+
       service_by_prefix["/batfish/SetPolicyMapClauseMatchCommunityList"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetPolicyMapClauseMatchCommunityList"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseMatchInterface"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseMatchInterface"
       }.
 
       service_by_prefix["/batfish/SetPolicyMapClauseMatchNeighbor"] = x,
@@ -292,6 +302,11 @@ block(`service_config) {
       service_by_prefix["/batfish/SetPolicyMapClauseSetCommunity"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetPolicyMapClauseSetCommunity"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseSetCommunityNone"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseSetCommunityNone"
       }.
 
       service_by_prefix["/batfish/SetPolicyMapClauseSetLocalPreference"] = x,

@@ -65,7 +65,14 @@ famt_inet6
 
 famt_iso
 :
-   ISO s_null_filler
+   ISO famt_iso_tail
+;
+
+famt_iso_tail
+:
+// intentional blank
+
+   | isofamt_address
 ;
 
 famt_mpls
@@ -195,6 +202,11 @@ intt_null
    (
       TRACEOPTIONS
    ) s_null_filler
+;
+
+isofamt_address
+:
+   ADDRESS ISO_ADDRESS
 ;
 
 it_apply_groups

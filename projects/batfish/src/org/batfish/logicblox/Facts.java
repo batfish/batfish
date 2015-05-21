@@ -68,7 +68,9 @@ public class Facts {
       map.put("SetPolicyMapClauseDeny", "MAP|CLAUSE");
       map.put("SetPolicyMapClauseMatchAcl", "MAP|CLAUSE|ACL");
       map.put("SetPolicyMapClauseMatchAsPath", "MAP|CLAUSE|ASPATH");
+      map.put("SetPolicyMapClauseMatchColor", "MAP|CLAUSE|COLOR");
       map.put("SetPolicyMapClauseMatchCommunityList", "MAP|CLAUSE|LIST");
+      map.put("SetPolicyMapClauseMatchInterface", "MAP|CLAUSE|INTERFACE");
       map.put("SetPolicyMapClauseMatchNeighbor", "MAP|CLAUSE|NEIGHBORIP");
       map.put("SetPolicyMapClauseMatchPolicy", "MAP|CLAUSE|POLICY");
       map.put("SetPolicyMapClauseMatchProtocol", "MAP|CLAUSE|PROTOCOL");
@@ -76,6 +78,7 @@ public class Facts {
       map.put("SetPolicyMapClauseMatchTag", "MAP|CLAUSE|TAG");
       map.put("SetPolicyMapClausePermit", "MAP|CLAUSE");
       map.put("SetPolicyMapClauseSetCommunity", "MAP|CLAUSE|COMMUNITY");
+      map.put("SetPolicyMapClauseSetCommunityNone", "MAP|CLAUSE");
       map.put("SetPolicyMapClauseSetLocalPreference", "MAP|CLAUSE|LOCALPREF");
       map.put("SetPolicyMapClauseSetMetric", "MAP|CLAUSE|METRIC");
       map.put("SetPolicyMapClauseSetNextHopIp", "MAP|CLAUSE|NEXTHOPIP");

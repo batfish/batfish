@@ -485,6 +485,16 @@ block(`service_init) {
             }
       }.
 
+      file_binding_by_name["SetPolicyMapClauseMatchColor"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseMatchColor",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseMatchColor"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,COLOR"
+            }
+      }.
+
       file_binding_by_name["SetPolicyMapClauseMatchCommunityList"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",
@@ -492,6 +502,16 @@ block(`service_init) {
          predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseMatchCommunityList"] =
             predicate_binding(_) {
                predicate_binding_columns[] = "MAP,CLAUSE,LIST"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapClauseMatchInterface"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseMatchInterface",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseMatchInterface"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE,INTERFACE"
             }
       }.
 
@@ -562,6 +582,16 @@ block(`service_init) {
          predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseSetCommunity"] =
             predicate_binding(_) {
                predicate_binding_columns[] = "MAP,CLAUSE,COMMUNITY"
+            }
+      }.
+
+      file_binding_by_name["SetPolicyMapClauseSetCommunityNone"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPolicyMapClauseSetCommunityNone",
+         predicate_binding_by_name["libbatfish:PolicyMap:SetPolicyMapClauseSetCommunityNone"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "MAP,CLAUSE"
             }
       }.
 

@@ -20,7 +20,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.StatementContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.main.BatfishException;
-import org.batfish.main.RedFlagBatfishException;
+import org.batfish.main.PartialGroupMatchBatfishException;
+import org.batfish.main.UndefinedGroupBatfishException;
 
 public class Hierarchy {
 
@@ -483,7 +484,7 @@ public class Hierarchy {
                      message += ": Partial path match within applied group: \""
                            + partialMatch.pathString() + "\"";
                   }
-                  throw new RedFlagBatfishException(message);
+                  throw new PartialGroupMatchBatfishException(message);
                }
                partialMatch._nodes.add(matchNode);
                currentGroupNode = matchNode;
@@ -595,8 +596,8 @@ public class Hierarchy {
          Flat_juniper_configurationContext configurationContext) {
       HierarchyTree tree = _trees.get(groupName);
       if (tree == null) {
-         throw new RedFlagBatfishException("No such group: \"" + groupName
-               + "\"");
+         throw new UndefinedGroupBatfishException("No such group: \""
+               + groupName + "\"");
       }
       return tree.getApplyGroupsLines(path, configurationContext, _masterTree);
    }

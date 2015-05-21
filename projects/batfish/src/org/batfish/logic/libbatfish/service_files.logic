@@ -344,10 +344,24 @@ block(`service_files) {
          column_formats[] = "string,integer,string"
       }.
 
+      file_definition_by_name["SetPolicyMapClauseMatchColor"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,COLOR",
+         column_formats[] = "string,integer,integer"
+      }.
+
       file_definition_by_name["SetPolicyMapClauseMatchCommunityList"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
          column_headers[] = "MAP,CLAUSE,LIST",
+         column_formats[] = "string,integer,string"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseMatchInterface"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,INTERFACE",
          column_formats[] = "string,integer,string"
       }.
 
@@ -398,6 +412,13 @@ block(`service_files) {
          file_delimiter[] = "|",
          column_headers[] = "MAP,CLAUSE,COMMUNITY",
          column_formats[] = "string,integer,integer"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseSetCommunityNone"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE",
+         column_formats[] = "string,integer"
       }.
 
       file_definition_by_name["SetPolicyMapClauseSetLocalPreference"] = fd,

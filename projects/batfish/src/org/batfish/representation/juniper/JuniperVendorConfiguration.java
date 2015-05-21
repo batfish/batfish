@@ -41,6 +41,13 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
    private static final long serialVersionUID = 1L;
 
+   private static String communityRegexToJavaRegex(String regex) {
+      String out = regex;
+      out = out.replace(":*", ":.*");
+      out = out.replaceFirst("^\\*", ".*");
+      return out;
+   }
+
    private Configuration _c;
 
    private final RoleSet _roles;
@@ -221,8 +228,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       String name = cl.getName();
       List<org.batfish.representation.CommunityListLine> newLines = new ArrayList<org.batfish.representation.CommunityListLine>();
       for (CommunityListLine line : cl.getLines()) {
+         String regex = line.getRegex();
+         String javaRegex = communityRegexToJavaRegex(regex);
          org.batfish.representation.CommunityListLine newLine = new org.batfish.representation.CommunityListLine(
-               LineAction.ACCEPT, line.getRegex());
+               LineAction.ACCEPT, javaRegex);
          newLines.add(newLine);
       }
       org.batfish.representation.CommunityList newCl = new org.batfish.representation.CommunityList(
@@ -305,9 +314,14 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             // TODO: throw error if any transformation is being done
             continue;
          }
+         else if (term.getThens().contains(FwThenNop.INSTANCE)) {
+            // we assume for now that any 'nop' operations imply acceptance
+            action = LineAction.ACCEPT;
+         }
          else {
-            throw new VendorConversionException(
-                  "not sure what to do without corresponding access list action from firewall filter term");
+            _w.redFlag("missing action in firewall filter: \"" + name
+                  + "\", term: \"" + term.getName() + "\"");
+            action = LineAction.REJECT;
          }
          IpAccessListLine line = new IpAccessListLine();
          line.setAction(action);
@@ -377,7 +391,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       String nextHopInterface = route.getDrop() ? Util.NULL_INTERFACE_NAME
             : route.getNextHopInterface();
       int administrativeCost = route.getMetric();
-      Integer tag = route.getTag();
+      Integer oldTag = route.getTag();
+      int tag;
+      tag = oldTag != null ? oldTag : -1;
       org.batfish.representation.StaticRoute newStaticRoute = new org.batfish.representation.StaticRoute(
             prefix, nextHopIp, nextHopInterface, administrativeCost, tag);
       return newStaticRoute;

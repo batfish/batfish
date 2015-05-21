@@ -15,6 +15,7 @@ import org.batfish.representation.AsPath;
 import org.batfish.representation.AsSet;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.IsoAddress;
 import org.batfish.representation.NamedPort;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RoutingProtocol;
@@ -34,6 +35,7 @@ import org.batfish.representation.juniper.FwTerm;
 import org.batfish.representation.juniper.FwThenAccept;
 import org.batfish.representation.juniper.FwThenDiscard;
 import org.batfish.representation.juniper.FwThenNextTerm;
+import org.batfish.representation.juniper.FwThenNop;
 import org.batfish.representation.juniper.GeneratedRoute;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.IpBgpGroup;
@@ -94,6 +96,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private static final String F_COMPLEX_POLICY = "boolean combination of policy-statements";
 
    private static final String F_EXTENDED_COMMUNITY = "extended communities";
+
+   private static final String F_FIREWALL_TERM_THEN_ROUTING_INSTANCE = "firewall - filter - term - then - routing-instance";
 
    private static final String F_IPV6 = "ipv6 - other";
 
@@ -1227,7 +1231,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitFwthent_nop(Fwthent_nopContext ctx) {
+      _currentFwTerm.getThens().add(FwThenNop.INSTANCE);
+   }
+
+   @Override
    public void exitFwthent_reject(Fwthent_rejectContext ctx) {
+      _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
+   }
+
+   @Override
+   public void exitFwthent_routing_instance(Fwthent_routing_instanceContext ctx) {
+      // TODO: implement
+      _w.unimplemented(ConfigurationBuilder.F_FIREWALL_TERM_THEN_ROUTING_INSTANCE);
       _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
    }
 
@@ -1363,6 +1379,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentRoutingInstance.getIsisSettings()
                .setTrafficEngineeringShortcuts(true);
       }
+   }
+
+   @Override
+   public void exitIsofamt_address(Isofamt_addressContext ctx) {
+      IsoAddress address = new IsoAddress(ctx.ISO_ADDRESS().getText());
+      _currentInterface.setIsoAddress(address);
    }
 
    @Override
@@ -1505,7 +1527,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitTht_community_add(Tht_community_addContext ctx) {
       String name = ctx.name.getText();
-      PsThenCommunityAdd then = new PsThenCommunityAdd(name);
+      PsThenCommunityAdd then = new PsThenCommunityAdd(name, _configuration);
       _currentPsThens.add(then);
    }
 

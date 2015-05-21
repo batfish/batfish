@@ -38,11 +38,6 @@ public class CommunityListLine implements Serializable {
       return matchingCommunitites;
    }
 
-   public String getIFString(int indentLevel) {
-      return Util.getIndentString(indentLevel) + "CommulityListLine " + _regex
-            + " " + _action;
-   }
-
    public Set<Long> getMatchingCommunities(Set<Long> allCommunities) {
       Pattern p = Pattern.compile(_regex);
       Set<Long> matchingCommunitites = new LinkedHashSet<Long>();
@@ -59,10 +54,6 @@ public class CommunityListLine implements Serializable {
 
    public String getRegex() {
       return _regex;
-   }
-
-   public boolean sameParseTree(CommunityListLine line) {
-      return ((_regex.equals(line._regex)) && (_action == line._action));
    }
 
 }
