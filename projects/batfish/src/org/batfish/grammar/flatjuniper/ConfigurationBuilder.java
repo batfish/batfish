@@ -1,6 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -1344,8 +1345,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitIsist_export(Isist_exportContext ctx) {
-      String policy = ctx.name.getText();
-      _currentRoutingInstance.getIsisSettings().setExportPolicy(policy);
+      Set<String> policies = new LinkedHashSet<String>();
+      for (VariableContext policy : ctx.policies) {
+         policies.add(policy.getText());
+      }
+      _currentRoutingInstance.getIsisSettings().getExportPolicies()
+            .addAll(policies);
    }
 
    @Override

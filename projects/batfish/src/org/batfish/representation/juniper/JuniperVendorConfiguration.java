@@ -18,6 +18,10 @@ import org.batfish.representation.Configuration;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
+import org.batfish.representation.IsisInterfaceMode;
+import org.batfish.representation.IsisLevel;
+import org.batfish.representation.IsisProcess;
+import org.batfish.representation.IsoAddress;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.OspfMetricType;
 import org.batfish.representation.OspfProcess;
@@ -38,6 +42,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       implements VendorConfiguration {
 
    private static final int DEFAULT_AGGREGATE_ROUTE_PREFERENCE = 130;
+
+   private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
 
    private static final long serialVersionUID = 1L;
 
@@ -114,6 +120,37 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
       }
       return proc;
+   }
+
+   private IsisProcess createIsisProcess(IsoAddress netAddress) {
+      IsisProcess newProc = new IsisProcess();
+      newProc.setNetAddress(netAddress);
+      IsisSettings settings = _defaultRoutingInstance.getIsisSettings();
+      for (String policyName : settings.getExportPolicies()) {
+         PolicyMap policy = _c.getPolicyMaps().get(policyName);
+         if (policy == null) {
+            _w.redFlag("undefined reference to is-is export policy: \""
+                  + policyName + "\"");
+         }
+         else {
+            newProc.getOutboundPolicyMaps().add(policy);
+         }
+      }
+      boolean l1 = settings.getLevel1Settings().getEnabled();
+      boolean l2 = settings.getLevel2Settings().getEnabled();
+      if (l1 && l2) {
+         newProc.setLevel(IsisLevel.LEVEL_1_2);
+      }
+      else if (l1) {
+         newProc.setLevel(IsisLevel.LEVEL_1);
+      }
+      else if (l2) {
+         newProc.setLevel(IsisLevel.LEVEL_2);
+      }
+      else {
+         return null;
+      }
+      return newProc;
    }
 
    private OspfProcess createOspfProcess() {
@@ -294,6 +331,29 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       newIface.setSwitchportTrunkEncapsulation(iface
             .getSwitchportTrunkEncapsulation());
       newIface.setBandwidth(iface.getBandwidth());
+      // isis settings
+      IsisInterfaceSettings isisSettings = iface.getIsisSettings();
+      if (isisSettings.getPassive()) {
+         newIface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
+      }
+      else if (isisSettings.getEnabled()) {
+         newIface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
+      }
+      else {
+         newIface.setIsisInterfaceMode(IsisInterfaceMode.UNSET);
+      }
+      Integer l1Metric = isisSettings.getLevel1Settings().getMetric();
+      Integer l2Metric = isisSettings.getLevel2Settings().getMetric();
+      if (l1Metric != l2Metric && l1Metric != null && l2Metric != null) {
+         _w.unimplemented("distinct metrics for is-is level1 and level2 on an interface");
+      }
+      else if (l1Metric != null) {
+         newIface.setIsisCost(l1Metric);
+      }
+      else if (l2Metric != null) {
+         newIface.setIsisCost(l2Metric);
+      }
+      // TODO: enable/disable individual levels
       return newIface;
    }
 
@@ -507,6 +567,23 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       if (_defaultRoutingInstance.getOspfAreas().size() > 0) {
          OspfProcess oproc = createOspfProcess();
          _c.setOspfProcess(oproc);
+      }
+
+      // create is-is process
+      // is-is runs only if iso address is configured on lo0 unit 0
+      Interface loopback0 = _defaultRoutingInstance.getInterfaces().get(
+            FIRST_LOOPBACK_INTERFACE_NAME);
+      if (loopback0 != null) {
+         Interface loopback0unit0 = loopback0.getUnits().get(
+               FIRST_LOOPBACK_INTERFACE_NAME + ".0");
+         if (loopback0unit0 != null) {
+            IsoAddress isisNet = loopback0unit0.getIsoAddress();
+            if (isisNet != null) {
+               // now we should create is-is process
+               IsisProcess proc = createIsisProcess(isisNet);
+               _c.setIsisProcess(proc);
+            }
+         }
       }
 
       // create bgp process

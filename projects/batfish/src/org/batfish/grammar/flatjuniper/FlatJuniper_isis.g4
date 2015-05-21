@@ -85,7 +85,10 @@ isist_apply_groups
 
 isist_export
 :
-   EXPORT name = variable
+   EXPORT
+   (
+      policies += variable
+   )+
 ;
 
 isist_interface

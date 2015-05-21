@@ -1,6 +1,8 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class IsisSettings implements Serializable {
 
@@ -9,7 +11,7 @@ public class IsisSettings implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   private String _exportPolicy;
+   private Set<String> _exportPolicies;
 
    private final IsisLevelSettings _level1Settings;
 
@@ -22,12 +24,13 @@ public class IsisSettings implements Serializable {
    private boolean _trafficEngineeringShortcuts;
 
    public IsisSettings() {
+      _exportPolicies = new LinkedHashSet<String>();
       _level1Settings = new IsisLevelSettings();
       _level2Settings = new IsisLevelSettings();
    }
 
-   public String getExportPolicy() {
-      return _exportPolicy;
+   public Set<String> getExportPolicies() {
+      return _exportPolicies;
    }
 
    public IsisLevelSettings getLevel1Settings() {
@@ -48,10 +51,6 @@ public class IsisSettings implements Serializable {
 
    public boolean getTrafficEngineeringShortcuts() {
       return _trafficEngineeringShortcuts;
-   }
-
-   public void setExportPolicy(String policy) {
-      _exportPolicy = policy;
    }
 
    public void setNoIpv4Routing(boolean noIpv4Routing) {
