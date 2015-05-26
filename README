@@ -27,13 +27,13 @@ standard autotools install (extract, configure, make, make install)
 git clone https://git01.codeplex.com/z3 # IF YOU HAVE PROBLEMS WITH THIS STEP, JUST PULL LATEST SNAPSHOT OF 'opt' BRANCH
 cd z3
 git checkout opt # skip if you just downloaded a snapshot
-python scripts/mk_make.py
+python scripts/mk_make.py --java
 cd build
 make -j<number-of-jobs>
 make install # as administrator (sudo or whatever)
 
 3. (SERVER) Install LogicBlox >= 4.1.9 and fix lb-web-server timeout
-- edit <logicblox-root>/lb-web/config/lb-web-server.conf
+- edit <logicblox-root>/config/lb-web-server.conf
 - change all tcp_server_max_idle_time lines to read:
 tcp_server_max_idle_time = 0
 
@@ -44,9 +44,9 @@ git clone https://github.com/arifogel/batfish.git
 #(SERVER)
    export LB_HOME=<logicblox-root>
     . <logicblox-root>/etc/profile.d/logicblox.sh
-    alias rlb="killall -9 lb-server; killall -9 lb-pager; lb services stop && rm -rf ~/lb_deployment/* /run/shm/LB_${USER} && LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start"
+    alias rlb="killall -9 lb-server; killall -9 lb-pager; lb services stop && rm -rf ~/lb_deployment/* /run/shm/LB_${USER} /tmp/LB_${USER}_* && LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start"
     alias slb="LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start"
-    alias klb="killall -9 lb-server; killall -9 lb-pager; lb services stop; rm -rf ~/lb_deployment/* /run/shm/LB_${USER}"
+    alias klb="killall -9 lb-server; killall -9 lb-pager; lb services stop; rm -rf ~/lb_deployment/* /run/shm/LB_${USER} /tmp/LB_${USER}_*"
 
 #(SERVER AND CLIENT)
     . <batfish-root>/tools/batfish_functions.sh
@@ -82,13 +82,13 @@ NOTE the default values for the following arguments:
 NOTE that the built logic will reside on the SERVER at <batfish-repo-root>/projects/batfish/bin/org/batfish/logic
 .bashrc:
    export BATFISH_REMOTE_LOGIC_DIR=<MANDATORY_absolute_path_to_built_logic_on_SERVER_filesystem>'
-   export BATFISH_COMMON_ARGS='-lbhost <OPTIONAL_hostname_of_SERVER> -lbport <OPTIONAL_ConnectBlox_port_on_SERVER> -lbwebport <OPTIONAL_lb_web_port_on_SERVER> -lbwebadminport <OPTIONAL_lb_web_admin_port_on_SERVER>
+   export BATFISH_COMMON_ARGS="-lbhost <OPTIONAL_hostname_of_SERVER> -lbport <OPTIONAL_ConnectBlox_port_on_SERVER> -lbwebport <OPTIONAL_lb_web_port_on_SERVER> -lbwebadminport <OPTIONAL_lb_web_admin_port_on_SERVER> -logicdir $BATFISH_REMOTE_LOGIC_DIR"
 10. run batfish
 The output of this step will be placed in the current folder.
 If you want to confirm running of each subtask, run:
-    batfish_confirm_analyze /path/to/test/rig <generated-output-prefix>
+    batfish_confirm_analyze_multipath /path/to/test/rig <generated-output-prefix>
 OR to run everything:
-    batfish_analyze /path/to/test/rig <generated-output-prefix>
+    batfish_analyze_multipath /path/to/test/rig <generated-output-prefix>
 
 **************************************************
 Notes on running
@@ -98,10 +98,15 @@ After running step 9 above on the example test rig, as:
    batfish_analyze_multipath <batfish-root>/test_rigs/example example
 you should see the following output in the current folder:
 
+example-bgp
 example-dp (directory)
 example-dump (directory)
 example-flows
 example-indep (directory)
+example-node-set
+example-node-set.txt
+example-ospf
+example-policy
 example-query (directory)
 example-reach.smt2
 example-routes
@@ -114,14 +119,23 @@ To see help for ALL predicates, including IDB (derived) predicates, use the '-pr
 Individual predicates for a processed test rig can be dumped to stdout by running:
    batfish_query_predicate <generated-output-prefix> <predicate>
 
-ex-vendor:
+example-vendor:
 This folder contains parsed versions of the vendor configuration files, serialized into an XML-like format.
 
-ex-indep:
+example-indep:
 This folder contains vendor-independent representations of the configurations, created by processing the vendor configuration structures. The former are also serialized into an XML-like format.
 
 example-dump:
 This folder contains files named for LogicBlox EDB (input) predicates. Note that the files in the 'example-dump' folder are in raw CSV format (with '|' as a delimiter), and may not be very legible, even with the schema.
+
+example-bgp:
+This file contains dumps of selected BGP-related predicates for a processed testrig
+
+example-ospf
+This file contains dumps of selected OSPF-related predicates for a processed testrig
+
+example-policy
+This file contains dumps of selected policy-related predicates for a processed testrig
 
 example-routes:
 This file contains dumps of the routing tables for a processed testrig, retrieved using:
@@ -130,22 +144,25 @@ This file contains dumps of the routing tables for a processed testrig, retrieve
 example-dp:
 This folder contains information needed to represent the data plane. Specifically, it contains the FIBs (Forwarding Information Bases) and topology edges. This information is enough to represent the data plane when used in conjunction with the static information contained in the vendor-independent configuration structures.
 
+example-node-set:
+example-node-set.txt:
+These files are an intermediate byproduct, and should be considered opaque and ignored
+
 example-reach.smt2:
 This file contains the data plane (reachability relations) of a processed test-rig in the z3 smt-solver's 'smt2' format.
 
 example-query:
 This folder contains 4 types of files:
-   1. incons-query-<node>.smt2:
+   1. multipath-inconsistency-query-<node>.smt2:
       A z3 query for the z3 fixed-point datalog engine that, when appended to the example-reach.smt2 file, yields the constraints for multipath-inconsistent packets originating at <node>
-   2. incons-query-<node>.smt2.out:
+   2. multipath-inconsistency-query--<node>.smt2.out:
       The output of step 1
-   3. incons-constraints-<node>.smt2:
+   3. multipath-inconsistency-query-<node>-concrete-<number>.smt2:
       These files are z3 queries for the standard smt engine incorporating the constraints found in step 2. These queries should yield 0 or 1 CONCRETE packets per node that exhibit multipath inconsistency when injected at that node.
-   4. incons-constraints-<node>.smt2.out:
+   4. multipath-inconsistency-query-<node>-concrete-<number>.smt2.out:
       The output of step 3.
 
 example-flows:
 This file contains dumps of relevant flow predicates, retrieved using:
    batfish -testrig </path/to/testrig> -query -predicates <flow_predicates..>
 These predicates were populated AFTER injecting the concrete packets found in example-query step 4 above into the LogicBlox network model.
-

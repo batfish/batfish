@@ -12,6 +12,7 @@ public abstract class BooleanExpr extends Expr {
       return this;
    }
 
-   public abstract BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception;
+   public abstract BoolExpr toBoolExpr(NodProgram nodProgram)
+         throws Z3Exception;
 
 }

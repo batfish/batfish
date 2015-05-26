@@ -192,7 +192,7 @@ fwthent_next_term
    NEXT TERM
 ;
 
-fwthent_null
+fwthent_nop
 :
    (
       COUNT
@@ -200,7 +200,6 @@ fwthent_null
       | FORWARDING_CLASS
       | LOG
       | POLICER
-      | ROUTING_INSTANCE
       | SAMPLE
       | SYSLOG
    ) s_null_filler
@@ -209,6 +208,11 @@ fwthent_null
 fwthent_reject
 :
    REJECT
+;
+
+fwthent_routing_instance
+:
+   ROUTING_INSTANCE s_null_filler
 ;
 
 fwtt_from
@@ -249,7 +253,8 @@ fwtt_then_tail
    | fwthent_discard
    | fwthent_reject
    | fwthent_next_term
-   | fwthent_null
+   | fwthent_nop
+   | fwthent_routing_instance
 ;
 
 s_firewall

@@ -100,6 +100,22 @@ block(`BaseFacts) {
    distance = 0.
 +AdministrativeDistance[vendor, protocol] = distance <-
    +Vendor_name(vendor:"cisco"),
+   +RoutingProtocol_name(protocol:"isisL1"),
+   distance = 115.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"cisco"),
+   +RoutingProtocol_name(protocol:"isisL2"),
+   distance = 115.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"cisco"),
+   +RoutingProtocol_name(protocol:"isisEL1"),
+   distance = 115.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"cisco"),
+   +RoutingProtocol_name(protocol:"isisEL2"),
+   distance = 115.
++AdministrativeDistance[vendor, protocol] = distance <-
+   +Vendor_name(vendor:"cisco"),
    +RoutingProtocol_name(protocol:"ospf"),
    distance = 110.
 +AdministrativeDistance[vendor, protocol] = distance <-
@@ -164,6 +180,7 @@ block(`BaseFacts) {
 +GeneratedRouteType(type), +GeneratedRouteType_name(type:"bgp").
 +GeneratedRouteType(type), +GeneratedRouteType_name(type:"bgp_neighbor").
 +GeneratedRouteType(type), +GeneratedRouteType_name(type:"global").
++GeneratedRouteType(type), +GeneratedRouteType_name(type:"isis").
 +GeneratedRouteType(type), +GeneratedRouteType_name(type:"ospf").
 
 // END CODE

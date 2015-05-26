@@ -85,11 +85,6 @@ OspfExport(node, network, cost, protocol) ->
 OspfGeneratedRoute(route) ->
    Route(route).
 
-OspfGeneratedRoutePolicy(node, network, map) ->
-   Node(node),
-   Network(network),
-   PolicyMap(map).
-
 OspfIANetwork(node, network) ->
    Node(node),
    Network(network).

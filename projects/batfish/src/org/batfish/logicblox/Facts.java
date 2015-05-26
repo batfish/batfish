@@ -68,7 +68,9 @@ public class Facts {
       map.put("SetPolicyMapClauseDeny", "MAP|CLAUSE");
       map.put("SetPolicyMapClauseMatchAcl", "MAP|CLAUSE|ACL");
       map.put("SetPolicyMapClauseMatchAsPath", "MAP|CLAUSE|ASPATH");
+      map.put("SetPolicyMapClauseMatchColor", "MAP|CLAUSE|COLOR");
       map.put("SetPolicyMapClauseMatchCommunityList", "MAP|CLAUSE|LIST");
+      map.put("SetPolicyMapClauseMatchInterface", "MAP|CLAUSE|INTERFACE");
       map.put("SetPolicyMapClauseMatchNeighbor", "MAP|CLAUSE|NEIGHBORIP");
       map.put("SetPolicyMapClauseMatchPolicy", "MAP|CLAUSE|POLICY");
       map.put("SetPolicyMapClauseMatchProtocol", "MAP|CLAUSE|PROTOCOL");
@@ -76,10 +78,13 @@ public class Facts {
       map.put("SetPolicyMapClauseMatchTag", "MAP|CLAUSE|TAG");
       map.put("SetPolicyMapClausePermit", "MAP|CLAUSE");
       map.put("SetPolicyMapClauseSetCommunity", "MAP|CLAUSE|COMMUNITY");
+      map.put("SetPolicyMapClauseSetCommunityNone", "MAP|CLAUSE");
       map.put("SetPolicyMapClauseSetLocalPreference", "MAP|CLAUSE|LOCALPREF");
       map.put("SetPolicyMapClauseSetMetric", "MAP|CLAUSE|METRIC");
       map.put("SetPolicyMapClauseSetNextHopIp", "MAP|CLAUSE|NEXTHOPIP");
       map.put("SetPolicyMapClauseSetOriginType", "MAP|CLAUSE|ORIGINTYPE");
+      map.put("SetPolicyMapClauseSetProtocol", "MAP|CLAUSE|PROTOCOL");
+      map.put("SetPolicyMapIsisExternalRouteType", "MAP|PROTOCOL");
       map.put("SetPolicyMapOspfExternalRouteType", "MAP|PROTOCOL");
       map.put(
             "SetBgpDefaultLocalPref_flat",
@@ -127,6 +132,16 @@ public class Facts {
             "ASPATH|LINE|AS1LOW|AS1HIGH|AS2LOW|AS2HIGH");
       map.put("SetAsPathLineMatchEmpty", "ASPATH|LINE");
       map.put("SetAsPathLinePermit", "ASPATH|LINE");
+      map.put("SetIsisArea", "NODE|AREA");
+      map.put("SetIsisGeneratedRoute_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
+      map.put("SetIsisGeneratedRoutePolicy_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
+      map.put("SetIsisInterfaceCost", "NODE|INTERFACE|COST");
+      map.put("SetIsisL1Node", "NODE");
+      map.put("SetIsisL2Node", "NODE");
+      map.put("SetIsisOutboundPolicyMap", "NODE|POLICY");
+      map.put("SetIsisPassiveInterface", "NODE|INTERFACE");
       return Collections.unmodifiableMap(map);
    }
 

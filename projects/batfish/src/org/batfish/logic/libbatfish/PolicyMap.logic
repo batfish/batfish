@@ -3,6 +3,7 @@ block(`PolicyMap) {
    alias_all(`libbatfish:BgpAdvertisement),
    alias_all(`libbatfish:CommunityList),
    alias_all(`libbatfish:Flow),
+   alias_all(`libbatfish:Interface),
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:IpAccessList),
    alias_all(`libbatfish:Node),
@@ -123,10 +124,20 @@ SetPolicyMapClauseMatchAsPath(map, clause, asPath) ->
    int(clause),
    AsPath(asPath).
 
+SetPolicyMapClauseMatchColor(map, clause, color) ->
+   PolicyMap(map),
+   int(clause),
+   int(color).
+
 SetPolicyMapClauseMatchCommunityList(map, clause, list) ->
    PolicyMap(map),
    int(clause),
    CommunityList(list).
+
+SetPolicyMapClauseMatchInterface(map, clause, interface) ->
+   PolicyMap(map),
+   int(clause),
+   Interface(interface).
 
 SetPolicyMapClauseMatchNeighbor(map, clause, neighborIp) ->
    PolicyMap(map),
@@ -162,6 +173,10 @@ SetPolicyMapClauseSetCommunity(map, clause, community) ->
    int(clause),
    int(community).
 
+SetPolicyMapClauseSetCommunityNone(map, clause) ->
+   PolicyMap(map),
+   int(clause).
+
 SetPolicyMapClauseSetLocalPreference(map, clause, localPref) ->
    PolicyMap(map),
    int(clause),
@@ -181,6 +196,15 @@ SetPolicyMapClauseSetOriginType(map, clause, originType) ->
    PolicyMap(map),
    int(clause),
    OriginType(originType).
+
+SetPolicyMapClauseSetProtocol(map, clause, protocol) ->
+   PolicyMap(map),
+   int(clause),
+   RoutingProtocol(protocol).
+
+SetPolicyMapIsisExternalRouteType(map, protocol) ->
+   PolicyMap(map),
+   RoutingProtocol(protocol).
 
 SetPolicyMapOspfExternalRouteType(map, protocol) ->
    PolicyMap(map),

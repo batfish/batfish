@@ -42,6 +42,7 @@ if_stanza
    | ip_ospf_dead_interval_minimal_if_stanza
    | ip_ospf_passive_interface_if_stanza
    | ip_policy_if_stanza
+   | ip_router_isis_if_stanza
    | isis_circuit_type_if_stanza
    | isis_metric_if_stanza
    | isis_network_if_stanza
@@ -139,6 +140,11 @@ ip_ospf_passive_interface_if_stanza
 ip_policy_if_stanza
 :
    IP POLICY ROUTE_MAP name = ~NEWLINE NEWLINE
+;
+
+ip_router_isis_if_stanza
+:
+   IP ROUTER ISIS NEWLINE
 ;
 
 isis_circuit_type_if_stanza

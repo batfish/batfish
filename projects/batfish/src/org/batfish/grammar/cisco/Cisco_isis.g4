@@ -20,11 +20,16 @@ is_stanza
    | null_is_stanza
    | redistribute_static_is_stanza
    | passive_interface_is_stanza
+   | summary_address_is_stanza
 ;
 
 is_type_is_stanza
 :
-   IS_TYPE LEVEL_2_ONLY NEWLINE
+   IS_TYPE
+   (
+      LEVEL_1
+      | LEVEL_2_ONLY
+   ) NEWLINE
 ;
 
 metric_style_is_stanza
@@ -63,10 +68,38 @@ passive_interface_is_stanza
    PASSIVE_INTERFACE name = variable NEWLINE
 ;
 
+redistribute_connected_is_stanza
+:
+   REDISTRIBUTE CONNECTED
+   (
+      IP
+      | LEVEL_1
+      | LEVEL_1_2
+      | LEVEL_2
+      |
+      (
+         METRIC metric = DEC
+      )
+      |
+      (
+         ROUTE_MAP map = VARIABLE
+      )
+   )* NEWLINE
+;
+
 redistribute_static_is_stanza
 :
-   REDISTRIBUTE STATIC IP
+   REDISTRIBUTE STATIC
    (
+      IP
+      | LEVEL_1
+      | LEVEL_1_2
+      | LEVEL_2
+      |
+      (
+         METRIC metric = DEC
+      )
+      |
       (
          ROUTE_MAP map = VARIABLE
       )
@@ -75,5 +108,26 @@ redistribute_static_is_stanza
 
 router_isis_stanza
 :
-   ROUTER ISIS name = variable NEWLINE is_stanza+
+   ROUTER ISIS
+   (
+      name = variable
+   )? NEWLINE is_stanza+
+;
+
+summary_address_is_stanza
+:
+   SUMMARY_ADDRESS ip = IP_ADDRESS mask = IP_ADDRESS
+   (
+      LEVEL_1
+      | LEVEL_1_2
+      | LEVEL_2
+      |
+      (
+         METRIC metric = DEC
+      )
+      |
+      (
+         TAG tag = DEC
+      )
+   )* NEWLINE
 ;

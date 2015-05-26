@@ -6,6 +6,7 @@ public enum PolicyMapSetType {
    COMMUNITY,
    COMMUNITY_NONE,
    DELETE_COMMUNITY,
+   LEVEL,
    LOCAL_PREFERENCE,
    METRIC,
    NEXT_HOP,

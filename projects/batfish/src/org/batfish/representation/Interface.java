@@ -13,20 +13,39 @@ public class Interface extends NamedStructure {
    private static final long serialVersionUID = 1L;
 
    private int _accessVlan;
+
    private boolean _active;
+
    private ArrayList<SubRange> _allowedVlans;
+
    private Double _bandwidth;
+
    private String _description;
+
    private IpAccessList _incomingFilter;
+
+   private Integer _isisCost;
+
+   private IsisInterfaceMode _isisInterfaceMode;
+
    private int _nativeVlan;
+
    private Integer _ospfArea;
+
    private Integer _ospfCost;
+
    private int _ospfDeadInterval;
+
    private int _ospfHelloMultiplier;
+
    private IpAccessList _outgoingFilter;
+
    private Prefix _prefix;
+
    private PolicyMap _routingPolicy;
+
    private Set<Prefix> _secondaryPrefixes;
+
    private SwitchportMode _switchportMode;
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
@@ -74,6 +93,14 @@ public class Interface extends NamedStructure {
 
    public IpAccessList getIncomingFilter() {
       return _incomingFilter;
+   }
+
+   public Integer getIsisCost() {
+      return _isisCost;
+   }
+
+   public IsisInterfaceMode getIsisInterfaceMode() {
+      return _isisInterfaceMode;
    }
 
    public int getNativeVlan() {
@@ -140,6 +167,14 @@ public class Interface extends NamedStructure {
       _incomingFilter = filter;
    }
 
+   public void setIsisCost(Integer isisCost) {
+      _isisCost = isisCost;
+   }
+
+   public void setIsisInterfaceMode(IsisInterfaceMode mode) {
+      _isisInterfaceMode = mode;
+   }
+
    public void setNativeVlan(int vlan) {
       _nativeVlan = vlan;
    }
@@ -176,5 +211,4 @@ public class Interface extends NamedStructure {
          SwitchportEncapsulationType encapsulation) {
       _switchportTrunkEncapsulation = encapsulation;
    }
-
 }

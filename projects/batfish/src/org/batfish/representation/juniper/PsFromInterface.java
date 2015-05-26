@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapClause;
+import org.batfish.representation.PolicyMapClauseMatchInterfaceLine;
 
 public final class PsFromInterface extends PsFrom {
 
@@ -18,9 +19,9 @@ public final class PsFromInterface extends PsFrom {
 
    @Override
    public void applyTo(PolicyMapClause clause, Configuration c) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      PolicyMapClauseMatchInterfaceLine line = new PolicyMapClauseMatchInterfaceLine(
+            _name);
+      clause.getMatchLines().add(line);
    }
 
    public String getName() {

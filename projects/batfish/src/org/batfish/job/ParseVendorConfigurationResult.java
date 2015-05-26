@@ -15,12 +15,14 @@ public class ParseVendorConfigurationResult {
       _history = history;
    }
 
-   public ParseVendorConfigurationResult(BatfishLoggerHistory history, Throwable failureCause) {
+   public ParseVendorConfigurationResult(BatfishLoggerHistory history,
+         Throwable failureCause) {
       _history = history;
       _failureCause = failureCause;
    }
 
-   public ParseVendorConfigurationResult(BatfishLoggerHistory history, VendorConfiguration vc) {
+   public ParseVendorConfigurationResult(BatfishLoggerHistory history,
+         VendorConfiguration vc) {
       _history = history;
       _vc = vc;
    }

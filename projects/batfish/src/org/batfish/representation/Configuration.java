@@ -29,6 +29,8 @@ public class Configuration extends NamedStructure {
 
    private Map<String, IpAccessList> _ipAccessLists;
 
+   private IsisProcess _isisProcess;
+
    private OspfProcess _ospfProcess;
 
    private Map<String, PolicyMap> _policyMaps;
@@ -94,6 +96,10 @@ public class Configuration extends NamedStructure {
       return _ipAccessLists;
    }
 
+   public IsisProcess getIsisProcess() {
+      return _isisProcess;
+   }
+
    public OspfProcess getOspfProcess() {
       return _ospfProcess;
    }
@@ -120,6 +126,10 @@ public class Configuration extends NamedStructure {
 
    public void setBgpProcess(BgpProcess process) {
       _bgpProcess = process;
+   }
+
+   public void setIsisProcess(IsisProcess process) {
+      _isisProcess = process;
    }
 
    public void setOspfProcess(OspfProcess process) {

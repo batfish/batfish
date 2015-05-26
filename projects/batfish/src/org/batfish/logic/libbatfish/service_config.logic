@@ -254,9 +254,19 @@ block(`service_config) {
          delim_file_binding[] = "SetPolicyMapClauseMatchAsPath"
       }.
 
+      service_by_prefix["/batfish/SetPolicyMapClauseMatchColor"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseMatchColor"
+      }.
+
       service_by_prefix["/batfish/SetPolicyMapClauseMatchCommunityList"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetPolicyMapClauseMatchCommunityList"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseMatchInterface"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseMatchInterface"
       }.
 
       service_by_prefix["/batfish/SetPolicyMapClauseMatchNeighbor"] = x,
@@ -294,6 +304,11 @@ block(`service_config) {
          delim_file_binding[] = "SetPolicyMapClauseSetCommunity"
       }.
 
+      service_by_prefix["/batfish/SetPolicyMapClauseSetCommunityNone"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseSetCommunityNone"
+      }.
+
       service_by_prefix["/batfish/SetPolicyMapClauseSetLocalPreference"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetPolicyMapClauseSetLocalPreference"
@@ -312,6 +327,16 @@ block(`service_config) {
       service_by_prefix["/batfish/SetPolicyMapClauseSetOriginType"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetPolicyMapClauseSetOriginType"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapClauseSetProtocol"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapClauseSetProtocol"
+      }.
+
+      service_by_prefix["/batfish/SetPolicyMapIsisExternalRouteType"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetPolicyMapIsisExternalRouteType"
       }.
 
       service_by_prefix["/batfish/SetPolicyMapOspfExternalRouteType"] = x,
@@ -435,6 +460,47 @@ block(`service_config) {
       service_by_prefix["/batfish/SetAsPathLinePermit"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetAsPathLinePermit"
+      }.
+
+      // Isis
+      service_by_prefix["/batfish/SetIsisArea"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIsisArea"
+      }.
+
+      service_by_prefix["/batfish/SetIsisGeneratedRoute_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIsisGeneratedRoute_flat"
+      }.
+
+      service_by_prefix["/batfish/SetIsisGeneratedRoutePolicy_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIsisGeneratedRoutePolicy_flat"
+      }.
+
+      service_by_prefix["/batfish/SetIsisInterfaceCost"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIsisInterfaceCost"
+      }.
+
+      service_by_prefix["/batfish/SetIsisL1Node"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIsisL1Node"
+      }.
+
+      service_by_prefix["/batfish/SetIsisL2Node"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIsisL2Node"
+      }.
+
+      service_by_prefix["/batfish/SetIsisOutboundPolicyMap"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIsisOutboundPolicyMap"
+      }.
+
+      service_by_prefix["/batfish/SetIsisPassiveInterface"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIsisPassiveInterface"
       }.
 
    })

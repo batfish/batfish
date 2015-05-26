@@ -9,20 +9,35 @@ import java.util.Set;
 public class CiscoConfiguration implements Serializable {
 
    public static final String MANAGEMENT_VRF_NAME = "management";
+
    public static final String MASTER_VRF_NAME = "__MASTER_VRF__";
+
    private static final long serialVersionUID = 1L;
 
    protected final Map<String, IpAsPathAccessList> _asPathAccessLists;
+
    protected final Map<String, BgpProcess> _bgpProcesses;
+
    protected final Map<String, ExpandedCommunityList> _expandedCommunityLists;
+
    protected final Map<String, ExtendedAccessList> _extendedAccessLists;
+
    protected String _hostname;
+
    protected final Map<String, Interface> _interfaces;
+
+   protected IsisProcess _isisProcess;
+
    protected OspfProcess _ospfProcess;
+
    protected final Map<String, PrefixList> _prefixLists;
+
    protected final Map<String, RouteMap> _routeMaps;
+
    protected final Map<String, StandardAccessList> _standardAccessLists;
+
    protected final Map<String, StandardCommunityList> _standardCommunityLists;
+
    protected final HashSet<StaticRoute> _staticRoutes;
 
    public CiscoConfiguration() {
@@ -62,6 +77,10 @@ public class CiscoConfiguration implements Serializable {
       return _interfaces;
    }
 
+   public IsisProcess getIsisProcess() {
+      return _isisProcess;
+   }
+
    public final OspfProcess getOspfProcess() {
       return _ospfProcess;
    }
@@ -88,6 +107,10 @@ public class CiscoConfiguration implements Serializable {
 
    public final void setHostname(String hostname) {
       _hostname = hostname;
+   }
+
+   public void setIsisProcess(IsisProcess isisProcess) {
+      _isisProcess = isisProcess;
    }
 
    public final void setOspfProcess(OspfProcess proc) {

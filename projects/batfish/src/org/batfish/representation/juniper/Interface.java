@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.batfish.representation.Ip;
+import org.batfish.representation.IsoAddress;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.SwitchportMode;
@@ -49,6 +50,8 @@ public class Interface implements Serializable {
    private String _incomingFilter;
 
    private final IsisInterfaceSettings _isisSettings;
+
+   private IsoAddress _isoAddress;
 
    private String _name;
 
@@ -127,6 +130,10 @@ public class Interface implements Serializable {
       return _isisSettings;
    }
 
+   public IsoAddress getIsoAddress() {
+      return _isoAddress;
+   }
+
    public String getName() {
       return _name;
    }
@@ -193,6 +200,10 @@ public class Interface implements Serializable {
 
    public void setIncomingFilter(String accessListName) {
       _incomingFilter = accessListName;
+   }
+
+   public void setIsoAddress(IsoAddress address) {
+      _isoAddress = address;
    }
 
    public void setNativeVlan(int vlan) {

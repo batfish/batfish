@@ -22,9 +22,9 @@ public class NodProgram {
 
    private final Map<String, BitVecExpr> _variables;
 
-   private final Map<String, Integer> _variableSizes;
-
    private final Map<String, BitVecExpr> _variablesAsConsts;
+
+   private final Map<String, Integer> _variableSizes;
 
    public NodProgram(Context context) {
       _context = context;
@@ -73,12 +73,12 @@ public class NodProgram {
       return _variables;
    }
 
-   public Map<String, Integer> getVariableSizes() {
-      return _variableSizes;
-   }
-
    public Map<String, BitVecExpr> getVariablesAsConsts() {
       return _variablesAsConsts;
+   }
+
+   public Map<String, Integer> getVariableSizes() {
+      return _variableSizes;
    }
 
 }

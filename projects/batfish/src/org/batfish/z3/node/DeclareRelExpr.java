@@ -10,9 +10,9 @@ import com.microsoft.z3.Z3Exception;
 
 public class DeclareRelExpr extends Statement implements ComplexExpr {
 
-   private List<Expr> _subExpressions;
-   private List<Integer> _sizes;
    private String _name;
+   private List<Integer> _sizes;
+   private List<Expr> _subExpressions;
 
    public DeclareRelExpr(String name, List<Integer> sizes) {
       _name = name;
@@ -38,7 +38,7 @@ public class DeclareRelExpr extends Statement implements ComplexExpr {
       for (int size : _sizes) {
          argTypes.add(ctx.mkBitVecSort(size));
       }
-      BitVecSort[] argTypesArray = argTypes.toArray(new BitVecSort[]{});
+      BitVecSort[] argTypesArray = argTypes.toArray(new BitVecSort[] {});
       FuncDecl output = ctx.mkFuncDecl(_name, argTypesArray, ctx.mkBoolSort());
       return output;
    }

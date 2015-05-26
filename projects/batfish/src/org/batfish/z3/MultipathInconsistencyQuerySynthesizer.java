@@ -35,7 +35,8 @@ public class MultipathInconsistencyQuerySynthesizer implements QuerySynthesizer 
       RuleExpr queryRule = new RuleExpr(queryConditions,
             QueryRelationExpr.INSTANCE);
       List<BoolExpr> rules = program.getRules();
-      BoolExpr injectSymbolicPacketsBoolExpr = injectSymbolicPackets.toBoolExpr(baseProgram);
+      BoolExpr injectSymbolicPacketsBoolExpr = injectSymbolicPackets
+            .toBoolExpr(baseProgram);
       rules.add(injectSymbolicPacketsBoolExpr);
       rules.add(queryRule.toBoolExpr(baseProgram));
       QueryExpr query = new QueryExpr(QueryRelationExpr.INSTANCE);

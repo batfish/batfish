@@ -161,7 +161,8 @@ public class LogicBloxFrontend {
          return b.build();
       }
       catch (ConnectBloxSession.Exception e) {
-         String msg = "Failed to create regular session with host=\"" + _lbHost + "\" and port=\"" + _lbPort + "\"";
+         String msg = "Failed to create regular session with host=\"" + _lbHost
+               + "\" and port=\"" + _lbPort + "\"";
          throw new LBInitializationException(msg, e);
       }
    }

@@ -15,9 +15,9 @@ import com.microsoft.z3.Z3Exception;
 
 public class RelExpr extends BooleanExpr implements ComplexExpr {
 
+   private List<IntExpr> _args;
    private String _name;
    private List<Expr> _subExpressions;
-   private List<IntExpr> _args;
 
    public RelExpr(String name) {
       _name = name;
@@ -59,8 +59,9 @@ public class RelExpr extends BooleanExpr implements ComplexExpr {
       for (IntExpr arg : _args) {
          args.add(arg.toBitVecExpr(nodProgram));
       }
-      com.microsoft.z3.Expr result = ctx.mkApp(funcDecl, args.toArray(new com.microsoft.z3.Expr[]{}));
-      return (BoolExpr)result;
+      com.microsoft.z3.Expr result = ctx.mkApp(funcDecl,
+            args.toArray(new com.microsoft.z3.Expr[] {}));
+      return (BoolExpr) result;
    }
 
 }

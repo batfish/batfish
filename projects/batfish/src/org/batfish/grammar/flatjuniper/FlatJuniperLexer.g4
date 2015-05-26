@@ -25,6 +25,7 @@ public String printStateVariables() {
 }
 
 tokens {
+   ISO_ADDRESS,
    PIPE
 }
 
@@ -931,7 +932,7 @@ ISIS
 
 ISO
 :
-   'iso'
+   'iso' -> pushMode(M_ISO)
 ;
 
 KERBEROS_SEC
@@ -2463,13 +2464,6 @@ IPV6_PREFIX
    )? '/' F_DecByte
 ;
 
-ISO_ADDRESS
-:
-   F_Digit F_Digit '.' F_Digit F_Digit F_Digit F_Digit '.' F_Digit F_Digit
-   F_Digit F_Digit '.' F_Digit F_Digit F_Digit F_Digit '.' F_Digit F_Digit
-   F_Digit F_Digit '.' F_Digit F_Digit
-;
-
 LINE_COMMENT
 :
    '#' F_NonNewlineChar* F_NewlineChar+ -> channel(HIDDEN)
@@ -2791,6 +2785,35 @@ M_InterfaceQuote_VARIABLE
 M_InterfaceQuote_WILDCARD
 :
    '<' ~'>'* '>' -> type(WILDCARD)
+;
+
+mode M_ISO;
+
+M_ISO_ADDRESS
+:
+   'address' -> type(ADDRESS), mode(M_ISO_Address)
+;
+
+M_ISO_Newline
+:
+   F_NewlineChar+ -> type(NEWLINE), popMode
+;
+
+M_ISO_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_ISO_Address;
+
+M_ISO_Address_ISO_ADDRESS
+:
+   F_HexDigit+ ('.' F_HexDigit+)+ -> type(ISO_ADDRESS), popMode
+;
+
+M_ISO_Address_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
 ;
 
 mode M_MacAddress;

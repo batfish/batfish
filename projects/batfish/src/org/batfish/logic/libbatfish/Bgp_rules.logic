@@ -70,6 +70,7 @@ AdvertisementCommunity(advert, community) <-
       (
          BgpImportPolicy(dstNode, srcIp, map),
          PolicyMapPermitAdvert(map, clause, prevAdvert),
+         !SetPolicyMapClauseSetCommunityNone(map, clause),
          (
             SetPolicyMapClauseAddCommunity(map, clause, community) ;
             SetPolicyMapClauseSetCommunity(map, clause, community) ;
@@ -106,6 +107,7 @@ AdvertisementCommunity(advert, community) <-
       (
          BgpExportPolicy(srcNode, dstIp, map),
          PolicyMapPermitAdvert(map, clause, prevAdvert),
+         !SetPolicyMapClauseSetCommunityNone(map, clause),
          (
             (
                !SetPolicyMapClauseMatchPolicy(map, clause, _),

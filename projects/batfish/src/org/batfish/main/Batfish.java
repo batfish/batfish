@@ -193,6 +193,8 @@ public class Batfish implements AutoCloseable {
    private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = { (byte) 0xac,
          (byte) 0xed, (byte) 0x00, (byte) 0x05 };
 
+   private static final long JOB_POLLING_PERIOD_MS = 1000l;
+
    /**
     * The name of the LogiQL library for org.batfish
     */
@@ -224,8 +226,6 @@ public class Batfish implements AutoCloseable {
     * same LAN segment
     */
    private static final String TOPOLOGY_PREDICATE_NAME = "LanAdjacent";
-
-   private static final long JOB_POLLING_PERIOD_MS = 1000l;
 
    public static String flatten(String input, BatfishLogger logger,
          Settings settings) {
@@ -2090,12 +2090,12 @@ public class Batfish implements AutoCloseable {
          Future<ParseVendorConfigurationResult> future = pool.submit(job);
          futures.add(future);
       }
-//      try {
-//         futures = pool.invokeAll(jobs);
-//      }
-//      catch (InterruptedException e) {
-//         throw new BatfishException("Error invoking parse jobs", e);
-//      }
+      // try {
+      // futures = pool.invokeAll(jobs);
+      // }
+      // catch (InterruptedException e) {
+      // throw new BatfishException("Error invoking parse jobs", e);
+      // }
       while (!futures.isEmpty()) {
          List<Future<ParseVendorConfigurationResult>> currentFutures = new ArrayList<Future<ParseVendorConfigurationResult>>();
          currentFutures.addAll(futures);
@@ -2118,6 +2118,7 @@ public class Batfish implements AutoCloseable {
                   }
                   else {
                      processingError = true;
+                     _logger.error(ExceptionUtils.getStackTrace(failureCause));
                   }
                }
                else {
@@ -2167,13 +2168,51 @@ public class Batfish implements AutoCloseable {
       for (Configuration c : configurations) {
          communities.addAll(c.getCommunities());
       }
+      boolean pedanticAsError = _settings.getPedanticAsError();
+      boolean pedanticRecord = _settings.getPedanticRecord();
+      boolean redFlagAsError = _settings.getRedFlagAsError();
+      boolean redFlagRecord = _settings.getRedFlagRecord();
+      boolean unimplementedAsError = _settings.getUnimplementedAsError();
+      boolean unimplementedRecord = _settings.getUnimplementedRecord();
+      boolean processingError = false;
       for (Configuration c : configurations) {
-         ConfigurationFactExtractor cfe = new ConfigurationFactExtractor(c,
-               communities, factBins);
-         cfe.writeFacts();
-         for (String warning : cfe.getWarnings()) {
-            _logger.warn(warning);
+         String hostname = c.getHostname();
+         _logger.debug("Extracting facts from: \"" + hostname + "\"");
+         Warnings warnings = new Warnings(pedanticAsError, pedanticRecord,
+               redFlagAsError, redFlagRecord, unimplementedAsError,
+               unimplementedRecord, false);
+         try {
+            ConfigurationFactExtractor cfe = new ConfigurationFactExtractor(c,
+                  communities, factBins, warnings);
+            cfe.writeFacts();
+            _logger.debug("...OK\n");
          }
+         catch (BatfishException e) {
+            _logger.fatal("...EXTRACTION ERROR\n");
+            _logger.fatal(ExceptionUtils.getStackTrace(e));
+            processingError = true;
+            if (_settings.exitOnParseError()) {
+               break;
+            }
+            else {
+               continue;
+            }
+         }
+         finally {
+            for (String warning : warnings.getRedFlagWarnings()) {
+               _logger.redflag(warning);
+            }
+            for (String warning : warnings.getUnimplementedWarnings()) {
+               _logger.unimplemented(warning);
+            }
+            for (String warning : warnings.getPedanticWarnings()) {
+               _logger.pedantic(warning);
+            }
+         }
+      }
+      if (processingError) {
+         throw new BatfishException(
+               "Failed to extract facts from vendor-indpendent configuration structures");
       }
       printElapsedTime();
    }

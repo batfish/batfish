@@ -12,10 +12,10 @@ import com.microsoft.z3.Z3Exception;
 
 public class ExtractExpr extends IntExpr implements ComplexExpr {
 
+   private int _high;
+   private int _low;
    private List<Expr> _subExpressions;
    private VarIntExpr _var;
-   private int _low;
-   private int _high;
 
    public ExtractExpr(String var, int low, int high) {
       _low = low;
@@ -45,7 +45,7 @@ public class ExtractExpr extends IntExpr implements ComplexExpr {
    @Override
    public BitVecExpr toBitVecExpr(NodProgram nodProgram) throws Z3Exception {
       Context ctx = nodProgram.getContext();
-      BitVecExpr bvArg = (BitVecExpr)_var.toBitVecExpr(nodProgram);
+      BitVecExpr bvArg = _var.toBitVecExpr(nodProgram);
       BitVecExpr result = ctx.mkExtract(_high, _low, bvArg);
       return result;
    }

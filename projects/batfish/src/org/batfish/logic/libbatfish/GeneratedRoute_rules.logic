@@ -99,6 +99,9 @@ GeneratedRouteType_BGP_NEIGHBOR[] = type <-
 GeneratedRouteType_GLOBAL[] = type <-
    GeneratedRouteType_name(type:"global").
 
+GeneratedRouteType_ISIS[] = type <-
+   GeneratedRouteType_name(type:"isis").
+
 GeneratedRouteType_OSPF[] = type <-
    GeneratedRouteType_name(type:"ospf").
 

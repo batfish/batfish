@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.SwitchportMode;
@@ -18,10 +19,12 @@ public class Interface implements Serializable {
    private static final double FAST_ETHERNET_BANDWIDTH = 100E6;
 
    private static final double GIGABIT_ETHERNET_BANDWIDTH = 1E9;
+
    /**
     * dirty hack: just chose a very large number
     */
    private static final double LOOPBACK_BANDWIDTH = 1E12;
+
    private static final long serialVersionUID = 1L;
 
    private static final double TEN_GIGABIT_ETHERNET_BANDWIDTH = 10E9;
@@ -63,6 +66,10 @@ public class Interface implements Serializable {
 
    private String _incomingFilter;
 
+   private Integer _isisCost;
+
+   private IsisInterfaceMode _isisInterfaceMode;
+
    private String _name;
 
    private int _nativeVlan;
@@ -96,6 +103,7 @@ public class Interface implements Serializable {
       _allowedVlans = new ArrayList<SubRange>();
       _ospfCost = null;
       _secondaryPrefixes = new LinkedHashSet<Prefix>();
+      _isisInterfaceMode = IsisInterfaceMode.UNSET;
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
@@ -128,6 +136,14 @@ public class Interface implements Serializable {
 
    public String getIncomingFilter() {
       return _incomingFilter;
+   }
+
+   public Integer getIsisCost() {
+      return _isisCost;
+   }
+
+   public IsisInterfaceMode getIsisInterfaceMode() {
+      return _isisInterfaceMode;
    }
 
    public String getName() {
@@ -198,6 +214,14 @@ public class Interface implements Serializable {
       _incomingFilter = accessListName;
    }
 
+   public void setIsisCost(Integer isisCost) {
+      _isisCost = isisCost;
+   }
+
+   public void setIsisInterfaceMode(IsisInterfaceMode mode) {
+      _isisInterfaceMode = mode;
+   }
+
    public void setNativeVlan(int vlan) {
       _nativeVlan = vlan;
    }
@@ -206,11 +230,11 @@ public class Interface implements Serializable {
       _ospfCost = ospfCost;
    }
 
-   public void setOSPFDeadInterval(int seconds) {
+   public void setOspfDeadInterval(int seconds) {
       _ospfDeadInterval = seconds;
    }
 
-   public void setOSPFHelloMultiplier(int multiplier) {
+   public void setOspfHelloMultiplier(int multiplier) {
       _ospfHelloMultiplier = multiplier;
    }
 

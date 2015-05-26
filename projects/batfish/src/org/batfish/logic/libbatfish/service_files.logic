@@ -344,10 +344,24 @@ block(`service_files) {
          column_formats[] = "string,integer,string"
       }.
 
+      file_definition_by_name["SetPolicyMapClauseMatchColor"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,COLOR",
+         column_formats[] = "string,integer,integer"
+      }.
+
       file_definition_by_name["SetPolicyMapClauseMatchCommunityList"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
          column_headers[] = "MAP,CLAUSE,LIST",
+         column_formats[] = "string,integer,string"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseMatchInterface"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,INTERFACE",
          column_formats[] = "string,integer,string"
       }.
 
@@ -400,6 +414,13 @@ block(`service_files) {
          column_formats[] = "string,integer,integer"
       }.
 
+      file_definition_by_name["SetPolicyMapClauseSetCommunityNone"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE",
+         column_formats[] = "string,integer"
+      }.
+
       file_definition_by_name["SetPolicyMapClauseSetLocalPreference"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
@@ -426,6 +447,20 @@ block(`service_files) {
          file_delimiter[] = "|",
          column_headers[] = "MAP,CLAUSE,ORIGINTYPE",
          column_formats[] = "string,integer,string"
+      }.
+
+      file_definition_by_name["SetPolicyMapClauseSetProtocol"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,CLAUSE,PROTOCOL",
+         column_formats[] = "string,integer,string"
+      }.
+
+      file_definition_by_name["SetPolicyMapIsisExternalRouteType"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "MAP,PROTOCOL",
+         column_formats[] = "string,string"
       }.
 
       file_definition_by_name["SetPolicyMapOspfExternalRouteType"] = fd,
@@ -597,6 +632,63 @@ block(`service_files) {
          file_delimiter[] = "|",
          column_headers[] = "ASPATH,LINE",
          column_formats[] = "string,integer"
+      }.
+
+      // Isis
+      file_definition_by_name["SetIsisArea"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,AREA",
+         column_formats[] = "string,integer"
+      }.
+
+      file_definition_by_name["SetIsisGeneratedRoute_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH",
+         column_formats[] = "string,integer,integer,integer"
+      }.
+
+      file_definition_by_name["SetIsisGeneratedRoutePolicy_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,MAP",
+         column_formats[] = "string,integer,integer,integer,string"
+      }.
+
+      file_definition_by_name["SetIsisInterfaceCost"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE,COST",
+         column_formats[] = "string,string,integer"
+      }.
+
+      file_definition_by_name["SetIsisL1Node"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE",
+         column_formats[] = "string"
+      }.
+
+      file_definition_by_name["SetIsisL2Node"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE",
+         column_formats[] = "string"
+      }.
+
+      file_definition_by_name["SetIsisOutboundPolicyMap"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,POLICY",
+         column_formats[] = "string,string"
+      }.
+
+      file_definition_by_name["SetIsisPassiveInterface"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE,INTERFACE",
+         column_formats[] = "string,string"
       }.
 
    })

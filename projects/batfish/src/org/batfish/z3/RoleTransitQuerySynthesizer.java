@@ -40,13 +40,15 @@ public class RoleTransitQuerySynthesizer implements QuerySynthesizer {
    }
 
    @Override
-   public String getQueryText() {
-      return _queryText;
+   public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 
    @Override
-   public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+   public String getQueryText() {
+      return _queryText;
    }
 
 }
