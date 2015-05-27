@@ -2219,6 +2219,9 @@ public class Batfish implements AutoCloseable {
 
    private void postFacts(LogicBloxFrontend lbFrontend,
          Map<String, StringBuilder> factBins) {
+      Map<String, StringBuilder> enabledFacts = new HashMap<String, StringBuilder>();
+      enabledFacts.putAll(factBins);
+      enabledFacts.keySet().removeAll(_settings.getDisabledFacts());
       _logger.info("\n*** POSTING FACTS TO BLOXWEB SERVICES ***\n");
       resetTimer();
       _logger.info("Starting bloxweb services...");
@@ -2226,7 +2229,7 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
       _logger.info("Posting facts...");
       try {
-         lbFrontend.postFacts(factBins);
+         lbFrontend.postFacts(enabledFacts);
       }
       catch (ServiceClientException e) {
          throw new BatfishException("Failed to post facts to bloxweb services",

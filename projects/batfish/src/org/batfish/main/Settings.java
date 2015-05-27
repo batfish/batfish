@@ -2,7 +2,9 @@ package org.batfish.main;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -32,6 +34,7 @@ public class Settings {
    private static final String ARG_DATA_PLANE = "dp";
    private static final String ARG_DATA_PLANE_DIR = "dpdir";
    private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
+   private static final String ARG_DISABLED_FACTS = "disablefacts";
    private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
    private static final String ARG_DUMP_FACTS_DIR = "dumpdir";
    private static final String ARG_DUMP_IF = "dumpif";
@@ -203,6 +206,7 @@ public class Settings {
    private boolean _counts;
    private boolean _dataPlane;
    private String _dataPlaneDir;
+   private Set<String> _disabledFacts;
    private boolean _dumpControlPlaneFacts;
    private String _dumpFactsDir;
    private boolean _dumpIF;
@@ -408,6 +412,10 @@ public class Settings {
 
    public String getDataPlaneDir() {
       return _dataPlaneDir;
+   }
+
+   public Set<String> getDisabledFacts() {
+      return _disabledFacts;
    }
 
    public boolean getDumpControlPlaneFacts() {
@@ -751,6 +759,9 @@ public class Settings {
             .desc("list of LogicBlox predicates to query (defaults to '"
                   + DEFAULT_PREDICATES.get(0) + "')").longOpt(ARG_PREDICATES)
             .build());
+      _options.addOption(Option.builder().argName("predicates").hasArgs()
+            .desc("list of LogicBlox fact predicates to suppress")
+            .longOpt(ARG_DISABLED_FACTS).build());
       _options.addOption(Option
             .builder()
             .argName("path")
@@ -1176,6 +1187,11 @@ public class Settings {
             DEFAULT_TEST_RIG_PATH);
 
       _workspaceName = line.getOptionValue(ARG_WORKSPACE, null);
+      _disabledFacts = new HashSet<String>();
+      if (line.hasOption(ARG_DISABLED_FACTS)) {
+         _disabledFacts.addAll(Arrays.asList(line
+               .getOptionValues(ARG_DISABLED_FACTS)));
+      }
       if (line.hasOption(ARG_PREDICATES)) {
          _predicates = Arrays.asList(line.getOptionValues(ARG_PREDICATES));
       }
