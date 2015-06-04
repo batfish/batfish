@@ -13,7 +13,7 @@ It is suggested that the following lines be added to ~/.gitconfig to avoid other
 
 3.
 The Z3 java dlls required for certain tasks will not be properly installed by following the instructions for building z3 in the main README.
-******IN ADDITION******  you must do the following from the windows command prompt, using a FRESH copy of the z3 opt branch:
+******IN ADDITION******  you must do the following from the windows command prompt, using a FRESH working copy of the z3 unstable branch:
 1.
 cd <z3-source-root>
 
