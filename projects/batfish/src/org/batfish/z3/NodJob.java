@@ -52,7 +52,7 @@ public class NodJob implements Callable<NodJobResult> {
          Params p = ctx.mkParams();
          p.add("fixedpoint.engine", "datalog");
          p.add("fixedpoint.datalog.default_relation", "doc");
-         p.add("fixedpoint.print.answer", true);
+         p.add("fixedpoint.print_answer", true);
          Fixedpoint fix = ctx.mkFixedpoint();
          fix.setParameters(p);
          for (FuncDecl relationDeclaration : program.getRelationDeclarations()
