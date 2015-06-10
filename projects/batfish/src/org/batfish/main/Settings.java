@@ -14,6 +14,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.batfish.common.BfConsts;
+import org.batfish.common.CoordConsts;
 
 public class Settings {
 
@@ -30,6 +31,9 @@ public class Settings {
    private static final String ARG_CB_PORT = "lbport";
    private static final String ARG_COMPILE = "compile";
    private static final String ARG_CONC_UNIQUE = "concunique";
+   private static final String ARG_COORDINATOR_HOST = "coordinatorhost";
+   private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
+   private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
    private static final String ARG_COUNT = "count";
    private static final String ARG_DATA_PLANE = "dp";
    private static final String ARG_DATA_PLANE_DIR = "dpdir";
@@ -100,6 +104,7 @@ public class Settings {
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
    private static final String ARG_SERIALIZE_VENDOR = "sv";
    private static final String ARG_SERIALIZE_VENDOR_PATH = "svpath";
+   private static final String ARG_SERVICE_HOST = "servicehost";
    private static final String ARG_SERVICE_LOGICBLOX_HOSTNAME = "servicelbhostname";
    private static final String ARG_SERVICE_MODE = "servicemode";
    private static final String ARG_SERVICE_PORT = "serviceport";
@@ -127,6 +132,7 @@ public class Settings {
    private static final String ARGNAME_BLACKLIST_INTERFACE = "node,interface";
    private static final String ARGNAME_BLACKLIST_NODE = "node";
    private static final String ARGNAME_BUILD_PREDICATE_INFO = "path";
+   private static final String ARGNAME_COORDINATOR_HOST = "hostname";
    private static final String ARGNAME_DATA_PLANE_DIR = "path";
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
    private static final String ARGNAME_DUMP_IF_DIR = "path";
@@ -158,6 +164,7 @@ public class Settings {
    private static final String ARGNAME_ROLE_TRANSIT_QUERY_PATH = "path";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
+   private static final String ARGNAME_SERVICE_HOST = "hostname";
    private static final String ARGNAME_SERVICE_LOGICBLOX_HOSTNAME = "hostname";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILES = "paths";
@@ -203,6 +210,9 @@ public class Settings {
    private String[] _concretizerInputFilePaths;
    private String _concretizerOutputFilePath;
    private boolean _concUnique;
+   private String _coordinatorHost;
+   private int _coordinatorPoolPort;
+   private int _coordinatorWorkPort;
    private boolean _counts;
    private boolean _dataPlane;
    private String _dataPlaneDir;
@@ -284,6 +294,7 @@ public class Settings {
    private boolean _serializeToText;
    private boolean _serializeVendor;
    private String _serializeVendorPath;
+   private String _serviceHost;
    private String _serviceLogicBloxHostname;
    private int _servicePort;
    private String _serviceUrl;
@@ -400,6 +411,18 @@ public class Settings {
 
    public int getConnectBloxPort() {
       return _cbPort;
+   }
+
+   public String getCoordinatorHost() {
+      return _coordinatorHost;
+   }
+
+   public int getCoordinatorPoolPort() {
+      return _coordinatorPoolPort;
+   }
+
+   public int getCoordinatorWorkPort() {
+      return _coordinatorWorkPort;
    }
 
    public boolean getCountsOnly() {
@@ -680,6 +703,10 @@ public class Settings {
 
    public String getSerializeVendorPath() {
       return _serializeVendorPath;
+   }
+
+   public String getServiceHost() {
+      return _serviceHost;
    }
 
    public String getServiceLogicBloxHostname() {
@@ -1143,6 +1170,20 @@ public class Settings {
             .longOpt(BfConsts.COMMAND_POST_FLOWS).build());
       _options.addOption(Option.builder().desc("parse configs in parallel")
             .longOpt(ARG_PARSE_PARALLEL).build());
+      _options.addOption(Option.builder().argName("port_number").hasArg()
+            .desc("coordinator work manager listening port")
+            .longOpt(ARG_COORDINATOR_WORK_PORT).build());
+      _options.addOption(Option.builder().argName("port_number").hasArg()
+            .desc("coordinator pool manager listening port")
+            .longOpt(ARG_COORDINATOR_POOL_PORT).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_SERVICE_HOST)
+            .desc("local hostname to report to coordinator")
+            .longOpt(ARG_SERVICE_HOST).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_COORDINATOR_HOST)
+            .desc("local hostname to report to coordinator")
+            .longOpt(ARG_COORDINATOR_HOST).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1321,6 +1362,12 @@ public class Settings {
       _answer = line.hasOption(BfConsts.COMMAND_ANSWER);
       _postFlows = line.hasOption(BfConsts.COMMAND_POST_FLOWS);
       _parseParallel = line.hasOption(ARG_PARSE_PARALLEL);
+      _coordinatorHost = line.getOptionValue(ARG_COORDINATOR_HOST);
+      _coordinatorPoolPort = Integer.parseInt(line.getOptionValue(
+            ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_POOL_PORT.toString()));
+      _coordinatorWorkPort = Integer.parseInt(line.getOptionValue(
+            ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_WORK_PORT.toString()));
+      _serviceHost = line.getOptionValue(ARG_SERVICE_HOST);
    }
 
    public boolean printParseTree() {
