@@ -1180,10 +1180,12 @@ public class Settings {
             .argName(ARGNAME_SERVICE_HOST)
             .desc("local hostname to report to coordinator")
             .longOpt(ARG_SERVICE_HOST).build());
-      _options.addOption(Option.builder().hasArg()
+      _options.addOption(Option
+            .builder()
+            .hasArg()
             .argName(ARGNAME_COORDINATOR_HOST)
-            .desc("local hostname to report to coordinator")
-            .longOpt(ARG_COORDINATOR_HOST).build());
+            .desc("hostname of coordinator for registration with -"
+                  + ARG_SERVICE_MODE).longOpt(ARG_COORDINATOR_HOST).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
