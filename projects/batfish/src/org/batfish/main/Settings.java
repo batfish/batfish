@@ -186,7 +186,7 @@ public class Settings {
    private static final String DEFAULT_SERIALIZE_VENDOR_PATH = "serialized-vendor-configs";
    private static final String DEFAULT_SERVICE_PORT = BfConsts.SVC_PORT
          .toString();
-   private static final String DEFAULT_SERVICE_URL = "http://localhost";
+   private static final String DEFAULT_SERVICE_URL = "http://0.0.0.0";
    private static final String DEFAULT_TEST_RIG_PATH = "default_test_rig";
    private static final boolean DEFAULT_Z3_SIMPLIFY = true;
    private static final String EXECUTABLE_NAME = "batfish";
