@@ -148,6 +148,10 @@ public class BatfishLogger {
       write(LEVEL_ERROR, msg);
    }
 
+   public void errorf(String format, Object... args) {
+      error(String.format(format, args));
+   }
+
    public void fatal(String msg) {
       write(LEVEL_FATAL, msg);
    }
@@ -175,6 +179,10 @@ public class BatfishLogger {
 
    public void output(String msg) {
       write(LEVEL_OUTPUT, msg);
+   }
+
+   public void outputf(String format, Object... args) {
+      output(String.format(format, args));
    }
 
    public void pedantic(String msg) {
