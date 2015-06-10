@@ -1131,7 +1131,7 @@ public class Settings {
                   .builder()
                   .hasArg()
                   .argName(ARGNAME_SERVICE_LOGICBLOX_HOSTNAME)
-                  .desc("hostname of of LogicBlox server to be used by batfish service when creating workspaces")
+                  .desc("hostname of LogicBlox server to be used by batfish service when creating workspaces")
                   .longOpt(ARG_SERVICE_LOGICBLOX_HOSTNAME).build());
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_QUESTION_NAME).desc("name of question")
