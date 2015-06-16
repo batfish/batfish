@@ -1358,8 +1358,6 @@ public class Settings {
       _ignoreUnsupported = line.hasOption(ARG_IGNORE_UNSUPPORTED);
       _autoBaseDir = line.getOptionValue(ARG_AUTO_BASE_DIR);
       _environmentName = line.getOptionValue(ARG_ENVIRONMENT_NAME);
-      _serviceLogicBloxHostname = line
-            .getOptionValue(ARG_SERVICE_LOGICBLOX_HOSTNAME);
       _questionName = line.getOptionValue(BfConsts.ARG_QUESTION_NAME);
       _answer = line.hasOption(BfConsts.COMMAND_ANSWER);
       _postFlows = line.hasOption(BfConsts.COMMAND_POST_FLOWS);
@@ -1370,6 +1368,10 @@ public class Settings {
       _coordinatorWorkPort = Integer.parseInt(line.getOptionValue(
             ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_WORK_PORT.toString()));
       _serviceHost = line.getOptionValue(ARG_SERVICE_HOST);
+      // set service logicblox hostname to service hostname unless set
+      // explicitly
+      _serviceLogicBloxHostname = line.getOptionValue(
+            ARG_SERVICE_LOGICBLOX_HOSTNAME, _serviceHost);
    }
 
    public boolean printParseTree() {
