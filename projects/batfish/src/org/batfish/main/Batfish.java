@@ -81,6 +81,8 @@ import org.batfish.grammar.z3.ConcretizerQueryResultCombinedParser;
 import org.batfish.grammar.z3.ConcretizerQueryResultExtractor;
 import org.batfish.grammar.z3.DatalogQueryResultCombinedParser;
 import org.batfish.grammar.z3.DatalogQueryResultExtractor;
+import org.batfish.job.FlattenVendorConfigurationJob;
+import org.batfish.job.FlattenVendorConfigurationResult;
 import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.logic.LogicResourceLocator;
@@ -215,6 +217,8 @@ public class Batfish implements AutoCloseable {
     * Role name for generated stubs
     */
    private static final String STUB_ROLE = "generated_stubs";
+
+   private static final String TESTRIG_CONFIGURATION_DIRECTORY = "configs";
 
    /**
     * The name of the [optional] topology file within a test-rig
@@ -948,11 +952,9 @@ public class Batfish implements AutoCloseable {
       writeFile(outputPath, output);
    }
 
-   private String flatten(String input) {
-      return flatten(input, _logger, _settings);
-   }
-
    private void flatten(String inputPath, String outputPath) {
+      Map<File, String> configurationData = readConfigurationFiles(inputPath);
+      Map<File, String> outputConfigurationData = new TreeMap<File, String>();
       File inputFolder = new File(inputPath);
       File[] configs = inputFolder.listFiles();
       if (configs == null) {
@@ -965,26 +967,109 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException(
                "Could not create output testrig directory", e);
       }
-      for (File config : configs) {
-         String name = config.getName();
-         _logger.debug("Reading config: \"" + config + "\"");
-         String configText = readFile(config);
-         _logger.debug("..OK\n");
-         File outputFile = Paths.get(outputPath, name).toFile();
+
+      _logger.info("\n*** FLATTENING TEST RIG ***\n");
+      resetTimer();
+
+      ExecutorService pool;
+      if (_settings.getParseParallel()) {
+         int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
+         pool = Executors.newFixedThreadPool(numConcurrentThreads);
+      }
+      else {
+         pool = Executors.newSingleThreadExecutor();
+      }
+
+      List<FlattenVendorConfigurationJob> jobs = new ArrayList<FlattenVendorConfigurationJob>();
+
+      boolean processingError = false;
+      for (File currentFile : configurationData.keySet()) {
+         Warnings warnings = new Warnings(_settings.getPedanticAsError(),
+               _settings.getPedanticRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
+               _settings.getRedFlagAsError(), _settings.getRedFlagRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
+               _settings.getUnimplementedAsError(),
+               _settings.getUnimplementedRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
+               _settings.printParseTree());
+         String fileText = configurationData.get(currentFile);
+         String name = currentFile.getName();
+         File outputFile = Paths.get(outputPath,
+               TESTRIG_CONFIGURATION_DIRECTORY, name).toFile();
+         FlattenVendorConfigurationJob job = new FlattenVendorConfigurationJob(
+               _settings, fileText, currentFile, outputFile, warnings);
+         jobs.add(job);
+      }
+      List<Future<FlattenVendorConfigurationResult>> futures = new ArrayList<Future<FlattenVendorConfigurationResult>>();
+      for (FlattenVendorConfigurationJob job : jobs) {
+         Future<FlattenVendorConfigurationResult> future = pool.submit(job);
+         futures.add(future);
+      }
+      while (!futures.isEmpty()) {
+         List<Future<FlattenVendorConfigurationResult>> currentFutures = new ArrayList<Future<FlattenVendorConfigurationResult>>();
+         currentFutures.addAll(futures);
+         for (Future<FlattenVendorConfigurationResult> future : currentFutures) {
+            if (future.isDone()) {
+               futures.remove(future);
+               FlattenVendorConfigurationResult result = null;
+               try {
+                  result = future.get();
+               }
+               catch (InterruptedException | ExecutionException e) {
+                  throw new BatfishException("Error executing parse job", e);
+               }
+               _logger.append(result.getHistory());
+               Throwable failureCause = result.getFailureCause();
+               if (failureCause != null) {
+                  if (_settings.exitOnParseError()) {
+                     throw new BatfishException("Failed parse job",
+                           failureCause);
+                  }
+                  else {
+                     processingError = true;
+                     _logger.error(ExceptionUtils.getStackTrace(failureCause));
+                  }
+               }
+               else {
+                  File outputFile = result.getOutputFile();
+                  String flattenedText = result.getFlattenedText();
+                  outputConfigurationData.put(outputFile, flattenedText);
+               }
+            }
+            else {
+               continue;
+            }
+         }
+         if (!futures.isEmpty()) {
+            try {
+               Thread.sleep(JOB_POLLING_PERIOD_MS);
+            }
+            catch (InterruptedException e) {
+               throw new BatfishException("interrupted while sleeping", e);
+            }
+         }
+      }
+      pool.shutdown();
+      if (processingError) {
+         throw new BatfishException("Error flattening vendor configurations");
+      }
+      else {
+         printElapsedTime();
+      }
+      for (Entry<File, String> e : outputConfigurationData.entrySet()) {
+         File outputFile = e.getKey();
+         String flatConfigText = e.getValue();
          String outputFileAsString = outputFile.toString();
-         if (configText.charAt(0) == '#'
-               && !configText.matches("(?m)set version.*")) {
-            _logger.debug("Flattening config to \"" + outputFileAsString
-                  + "\"...");
-            String flatConfigText = flatten(configText);
-            writeFile(outputFileAsString, flatConfigText);
-         }
-         else {
-            _logger.debug("Copying unmodified config to \""
-                  + outputFileAsString + "\"...");
-            writeFile(outputFileAsString, configText);
-            _logger.debug("OK\n");
-         }
+         _logger.debug("Writing config to \"" + outputFileAsString + "\"...");
+         writeFile(outputFileAsString, flatConfigText);
+         _logger.debug("OK\n");
+      }
+      Path inputTopologyPath = Paths.get(inputPath, TOPOLOGY_FILENAME);
+      Path outputTopologyPath = Paths.get(outputPath, TOPOLOGY_FILENAME);
+      if (Files.isRegularFile(inputTopologyPath)) {
+         String topologyFileText = readFile(inputTopologyPath.toFile());
+         writeFile(outputTopologyPath.toString(), topologyFileText);
       }
    }
 
@@ -2374,7 +2459,8 @@ public class Batfish implements AutoCloseable {
       _logger.info("\n*** READING CONFIGURATION FILES ***\n");
       resetTimer();
       Map<File, String> configurationData = new TreeMap<File, String>();
-      File configsPath = Paths.get(testRigPath, "configs").toFile();
+      File configsPath = Paths
+            .get(testRigPath, TESTRIG_CONFIGURATION_DIRECTORY).toFile();
       File[] configFilePaths = configsPath.listFiles(new FilenameFilter() {
          @Override
          public boolean accept(File dir, String name) {
@@ -2512,10 +2598,8 @@ public class Batfish implements AutoCloseable {
       }
 
       if (_settings.getFlatten()) {
-         String flattenSource = Paths.get(_settings.getFlattenSource(),
-               "configs").toString();
-         String flattenDestination = Paths.get(
-               _settings.getFlattenDestination(), "configs").toString();
+         String flattenSource = _settings.getTestRigPath();
+         String flattenDestination = _settings.getFlattenDestination();
          flatten(flattenSource, flattenDestination);
          return;
       }

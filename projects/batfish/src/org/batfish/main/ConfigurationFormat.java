@@ -3,6 +3,7 @@ package org.batfish.main;
 public enum ConfigurationFormat {
    ARISTA("arista"),
    CISCO("cisco"),
+   CISCO_IOS_XR("cisco"),
    FLAT_JUNIPER("juniper"),
    JUNIPER("juniper"),
    JUNIPER_SWITCH("juniper"),

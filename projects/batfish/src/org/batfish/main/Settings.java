@@ -53,7 +53,6 @@ public class Settings {
    private static final String ARG_FLATTEN = "flatten";
    private static final String ARG_FLATTEN_DESTINATION = "flattendst";
    private static final String ARG_FLATTEN_ON_THE_FLY = "flattenonthefly";
-   private static final String ARG_FLATTEN_SOURCE = "flattensrc";
    private static final String ARG_FLOW_PATH = "flowpath";
    private static final String ARG_FLOW_SINK_PATH = "flowsink";
    private static final String ARG_FLOWS = "flow";
@@ -139,7 +138,6 @@ public class Settings {
    private static final String ARGNAME_DUMP_INTERFACE_DESCRIPTIONS_PATH = "path";
    private static final String ARGNAME_ENVIRONMENT_NAME = "name";
    private static final String ARGNAME_FLATTEN_DESTINATION = "path";
-   private static final String ARGNAME_FLATTEN_SOURCE = "path";
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
    private static final String ARGNAME_GEN_OSPF = "path";
@@ -1068,13 +1066,6 @@ public class Settings {
             .addOption(Option
                   .builder()
                   .hasArg()
-                  .argName(ARGNAME_FLATTEN_SOURCE)
-                  .desc("path to test rig containing hierarchical juniper configurations to be flattened")
-                  .longOpt(ARG_FLATTEN_SOURCE).build());
-      _options
-            .addOption(Option
-                  .builder()
-                  .hasArg()
                   .argName(ARGNAME_FLATTEN_DESTINATION)
                   .desc("output path to test rig in which flat juniper (and all other) configurations will be placed")
                   .longOpt(ARG_FLATTEN_DESTINATION).build());
@@ -1334,7 +1325,6 @@ public class Settings {
       _throwOnParserError = line.hasOption(ARG_THROW_ON_PARSER_ERROR);
       _throwOnLexerError = line.hasOption(ARG_THROW_ON_LEXER_ERROR);
       _flatten = line.hasOption(ARG_FLATTEN);
-      _flattenSource = line.getOptionValue(ARG_FLATTEN_SOURCE);
       _flattenDestination = line.getOptionValue(ARG_FLATTEN_DESTINATION);
       _flattenOnTheFly = line.hasOption(ARG_FLATTEN_ON_THE_FLY);
       _pedanticAsError = line.hasOption(ARG_PEDANTIC_AS_ERROR);

@@ -22,46 +22,6 @@ import org.batfish.representation.VendorConfiguration;
 public class ParseVendorConfigurationJob implements
       Callable<ParseVendorConfigurationResult> {
 
-   private static ConfigurationFormat identifyConfigurationFormat(
-         String fileText) {
-      char firstChar = fileText.trim().charAt(0);
-      if (firstChar == '!') {
-         if (fileText.contains("set prompt")) {
-            return ConfigurationFormat.VXWORKS;
-         }
-         else if (fileText.contains("boot system flash")) {
-            return ConfigurationFormat.ARISTA;
-         }
-         else {
-            String[] lines = fileText.split("\\n");
-            for (String line : lines) {
-               String trimmedLine = line.trim();
-               if (trimmedLine.length() == 0 || trimmedLine.startsWith("!")) {
-                  continue;
-               }
-               if (line.startsWith("version")) {
-                  return ConfigurationFormat.CISCO;
-               }
-               else {
-                  break;
-               }
-            }
-         }
-      }
-      else if (fileText.contains("set hostname")) {
-         return ConfigurationFormat.JUNIPER_SWITCH;
-      }
-      else if (firstChar == '#') {
-         if (fileText.contains("set version")) {
-            return ConfigurationFormat.FLAT_JUNIPER;
-         }
-         else {
-            return ConfigurationFormat.JUNIPER;
-         }
-      }
-      return ConfigurationFormat.UNKNOWN;
-   }
-
    private File _file;
 
    private String _fileText;
@@ -92,7 +52,8 @@ public class ParseVendorConfigurationJob implements
       BatfishCombinedParser<?, ?> combinedParser = null;
       ParserRuleContext tree = null;
       ControlPlaneExtractor extractor = null;
-      ConfigurationFormat format = identifyConfigurationFormat(_fileText);
+      ConfigurationFormat format = Format
+            .identifyConfigurationFormat(_fileText);
 
       switch (format) {
 
@@ -130,6 +91,7 @@ public class ParseVendorConfigurationJob implements
                flatJuniperParser, _warnings);
          break;
 
+      case CISCO_IOS_XR:
       case JUNIPER_SWITCH:
       case VXWORKS:
          String unsupportedError = "Unsupported configuration format: \""
