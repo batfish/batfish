@@ -291,6 +291,11 @@ COLOR
    'color'
 ;
 
+COMMIT
+:
+   'commit'
+;
+
 COMMUNITY
 :
    'community'

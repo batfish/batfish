@@ -113,6 +113,7 @@ st_null
       ACCOUNTING
       | AUTHENTICATION_ORDER
       | BACKUP_ROUTER
+      | COMMIT
       | DDOS_PROTECTION
       | DOMAIN_NAME
       | DOMAIN_SEARCH
