@@ -1330,6 +1330,11 @@ NO_ACTIVE_BACKBONE
    'no-active-backbone'
 ;
 
+NO_CLIENT_REFLECT
+:
+   'no-client-reflect'
+;
+
 NO_EXPORT
 :
    'no-export'

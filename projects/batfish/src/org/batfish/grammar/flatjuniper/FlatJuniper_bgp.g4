@@ -143,6 +143,7 @@ bt_common
    | bt_local_as
    | bt_multihop
    | bt_multipath
+   | bt_no_client_reflect
    | bt_null
    | bt_path_selection
    | bt_peer_as
@@ -263,6 +264,11 @@ bt_neighbor_tail
 // intentional blank
 
    | bt_common
+;
+
+bt_no_client_reflect
+:
+   NO_CLIENT_REFLECT
 ;
 
 bt_null
