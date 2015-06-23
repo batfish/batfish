@@ -133,6 +133,7 @@ st_null
 :
    (
       ACCOUNTING
+      | ARP
       | AUTHENTICATION_ORDER
       | BACKUP_ROUTER
       | COMMIT
