@@ -27,10 +27,10 @@ public class FlattenVendorConfigurationJob implements
    private Warnings _warnings;
 
    public FlattenVendorConfigurationJob(Settings settings, String fileText,
-         File file, File outputFile, Warnings warnings) {
+         File inputFile, File outputFile, Warnings warnings) {
       _settings = settings;
       _fileText = fileText;
-      _inputFile = file;
+      _inputFile = inputFile;
       _outputFile = outputFile;
       _warnings = warnings;
       _logger = new BatfishLogger(_settings.getLogLevel(),

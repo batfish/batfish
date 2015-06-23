@@ -983,7 +983,7 @@ public class Batfish implements AutoCloseable {
       List<FlattenVendorConfigurationJob> jobs = new ArrayList<FlattenVendorConfigurationJob>();
 
       boolean processingError = false;
-      for (File currentFile : configurationData.keySet()) {
+      for (File inputFile : configurationData.keySet()) {
          Warnings warnings = new Warnings(_settings.getPedanticAsError(),
                _settings.getPedanticRecord()
                      && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
@@ -993,12 +993,12 @@ public class Batfish implements AutoCloseable {
                _settings.getUnimplementedRecord()
                      && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
                _settings.printParseTree());
-         String fileText = configurationData.get(currentFile);
-         String name = currentFile.getName();
+         String fileText = configurationData.get(inputFile);
+         String name = inputFile.getName();
          File outputFile = Paths.get(outputPath,
                TESTRIG_CONFIGURATION_DIRECTORY, name).toFile();
          FlattenVendorConfigurationJob job = new FlattenVendorConfigurationJob(
-               _settings, fileText, currentFile, outputFile, warnings);
+               _settings, fileText, inputFile, outputFile, warnings);
          jobs.add(job);
       }
       List<Future<FlattenVendorConfigurationResult>> futures = new ArrayList<Future<FlattenVendorConfigurationResult>>();
