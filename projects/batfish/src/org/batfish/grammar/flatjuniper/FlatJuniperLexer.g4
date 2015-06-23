@@ -1715,6 +1715,11 @@ REMOVED
    'Removed'
 ;
 
+RESOLUTION
+:
+   'resolution'
+;
+
 RESOLVE
 :
    'resolve'

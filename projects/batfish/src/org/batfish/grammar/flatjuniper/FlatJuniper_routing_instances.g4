@@ -294,6 +294,7 @@ rot_null
       | MULTIPATH
       | OPTIONS
       | PPM
+      | RESOLUTION
    ) s_null_filler
 ;
 
