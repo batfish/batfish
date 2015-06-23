@@ -144,6 +144,11 @@ bt_advertise_inactive
    ADVERTISE_INACTIVE
 ;
 
+bt_advertise_peer_as
+:
+   ADVERTISE_PEER_AS
+;
+
 bt_apply_groups
 :
    s_apply_groups
@@ -162,6 +167,7 @@ bt_cluster
 bt_common
 :
    bt_advertise_inactive
+   | bt_advertise_peer_as
    | bt_apply_groups
    | bt_as_override
    | bt_cluster

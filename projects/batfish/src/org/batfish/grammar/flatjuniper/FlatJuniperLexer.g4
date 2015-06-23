@@ -81,6 +81,11 @@ ADVERTISE_INACTIVE
    'advertise-inactive'
 ;
 
+ADVERTISE_PEER_AS
+:
+   'advertise-peer-as'
+;
+
 AFS
 :
    'afs'
