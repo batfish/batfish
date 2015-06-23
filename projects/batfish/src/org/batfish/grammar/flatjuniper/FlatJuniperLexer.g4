@@ -1640,6 +1640,11 @@ PPTP
    'pptp'
 ;
 
+PRECEDENCE
+:
+   'precedence'
+;
+
 PREEMPT
 :
    'preempt'

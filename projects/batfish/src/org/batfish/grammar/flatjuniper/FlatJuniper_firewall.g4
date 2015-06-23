@@ -82,6 +82,11 @@ fwfromt_port
    )
 ;
 
+fwfromt_precedence
+:
+   PRECEDENCE precedence = DEC
+;
+
 fwfromt_prefix_list
 :
    PREFIX_LIST variable
@@ -248,6 +253,7 @@ fwtt_from_tail
    | fwfromt_next_header
    | fwfromt_null
    | fwfromt_port
+   | fwfromt_precedence
    | fwfromt_prefix_list
    | fwfromt_protocol
    | fwfromt_source_address
