@@ -366,6 +366,7 @@ rst_route
 rst_route_tail
 :
    srt_active
+   | srt_as_path
    | srt_community
    | srt_discard
    | srt_install
@@ -438,6 +439,14 @@ srlgt_named_tail
 srt_active
 :
    ACTIVE
+;
+
+srt_as_path
+:
+   AS_PATH PATH
+   (
+      path += DEC
+   )+
 ;
 
 srt_community
