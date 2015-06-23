@@ -925,6 +925,11 @@ INTERNAL
    'internal'
 ;
 
+INTERNET_OPTIONS
+:
+   'internet-options'
+;
+
 IP
 :
    'ip'

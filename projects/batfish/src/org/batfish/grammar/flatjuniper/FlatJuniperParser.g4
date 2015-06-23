@@ -140,6 +140,7 @@ st_null
       | DDOS_PROTECTION
       | DOMAIN_NAME
       | DOMAIN_SEARCH
+      | INTERNET_OPTIONS
       | LICENSE
       | LOGIN
       | NAME_SERVER
