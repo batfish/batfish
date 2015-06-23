@@ -52,6 +52,7 @@ famt_inet_tail
 // intentional blank
 
    | ifamt_address
+   | ifamt_apply_groups_except
    | ifamt_filter
    | ifamt_mtu
    | ifamt_no_redirects
@@ -147,6 +148,11 @@ ifamt_address_tail
    | ifamat_preferred
    | ifamat_primary
    | ifamat_vrrp_group
+;
+
+ifamt_apply_groups_except
+:
+   s_apply_groups_except
 ;
 
 ifamt_filter
