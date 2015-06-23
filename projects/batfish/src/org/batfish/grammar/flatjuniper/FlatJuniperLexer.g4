@@ -1105,6 +1105,11 @@ LSP
    'lsp'
 ;
 
+LSP_EQUAL_COST
+:
+   'lsp-equal-cost'
+;
+
 LSP_INTERVAL
 :
    'lsp-interval'

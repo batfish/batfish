@@ -151,6 +151,7 @@ isist_traffic_engineering_tail
 :
    isistet_credibility_protocol_preference
    | isistet_family_shortcuts
+   | isistet_multipath
 ;
 
 isistet_credibility_protocol_preference
@@ -165,6 +166,11 @@ isistet_family_shortcuts
       INET
       | INET6
    ) SHORTCUTS
+;
+
+isistet_multipath
+:
+   MULTIPATH LSP_EQUAL_COST
 ;
 
 s_protocols_isis
