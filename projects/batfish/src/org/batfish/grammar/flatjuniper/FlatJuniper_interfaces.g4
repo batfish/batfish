@@ -194,6 +194,7 @@ intt_named_tail
 :
    it_common
    | it_flexible_vlan_tagging
+   | it_link_mode
    | it_native_vlan_id
    | it_unit
 ;
@@ -273,6 +274,11 @@ it_family_tail
 it_flexible_vlan_tagging
 :
    FLEXIBLE_VLAN_TAGGING
+;
+
+it_link_mode
+:
+   LINK_MODE FULL_DUPLEX
 ;
 
 it_mtu

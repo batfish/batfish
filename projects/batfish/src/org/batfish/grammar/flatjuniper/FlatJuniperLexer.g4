@@ -660,6 +660,11 @@ FTP_DATA
    'ftp-data'
 ;
 
+FULL_DUPLEX
+:
+   'full-duplex'
+;
+
 G
 :
    'g'
