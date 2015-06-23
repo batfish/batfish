@@ -180,6 +180,7 @@ bt_common
    | bt_path_selection
    | bt_peer_as
    | bt_remove_private
+   | bt_tcp_mss
    | bt_type
 ;
 
@@ -340,6 +341,11 @@ bt_peer_as_tail
 bt_remove_private
 :
    'remove-private'
+;
+
+bt_tcp_mss
+:
+   TCP_MSS DEC
 ;
 
 bt_type
