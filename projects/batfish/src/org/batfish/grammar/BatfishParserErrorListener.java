@@ -61,6 +61,8 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
       sb.append("Offending Token: " + offendingTokenText + "\n");
       sb.append("Error parsing top (leftmost) parser rule in stack: '"
             + ruleStack + "'.\n");
+      String ctxParseTree = ParseTreePrettyPrinter.print(ctx, _combinedParser);
+      sb.append("Parse tree of current rule:\n" + ctxParseTree + "\n");
       sb.append("Unconsumed tokens:\n");
       for (int i = startTokenIndex; i < endTokenIndex; i++) {
          Token token = tokens.get(i);
