@@ -231,6 +231,11 @@ BIFF
    'biff'
 ;
 
+BMP
+:
+   'bmp'
+;
+
 BOOTPC
 :
    'bootpc'
@@ -1983,6 +1988,16 @@ STANZA_REMOVED
 STATIC
 :
    'static'
+;
+
+STATION_ADDRESS
+:
+   'station-address'
+;
+
+STATION_PORT
+:
+   'station-port'
 ;
 
 SUBTRACT

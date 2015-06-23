@@ -16,6 +16,16 @@ agt_preference
    PREFERENCE preference = DEC
 ;
 
+bmpt_station_address
+:
+   STATION_ADDRESS IP_ADDRESS
+;
+
+bmpt_station_port
+:
+   STATION_PORT DEC
+;
+
 gt_discard
 :
    DISCARD
@@ -259,6 +269,17 @@ rot_martians
    MARTIANS s_null_filler
 ;
 
+rot_bmp
+:
+   BMP rot_bmp_tail
+;
+
+rot_bmp_tail
+:
+   bmpt_station_address
+   | bmpt_station_port
+;
+
 rot_generate
 :
    GENERATE ROUTE
@@ -404,6 +425,7 @@ s_routing_options_tail
    rot_aggregate
    | rot_auto_export
    | rot_autonomous_system
+   | rot_bmp
    | rot_generate
    | rot_interface_routes
    | rot_martians
