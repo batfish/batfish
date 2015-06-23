@@ -201,7 +201,11 @@ rit_protocols
 
 rit_route_distinguisher
 :
-   ROUTE_DISTINGUISHER IP_ADDRESS COLON DEC
+   ROUTE_DISTINGUISHER
+   (
+      DEC
+      | IP_ADDRESS
+   ) COLON DEC
 ;
 
 rit_routing_options

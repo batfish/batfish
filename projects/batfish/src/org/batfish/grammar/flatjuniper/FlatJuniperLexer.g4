@@ -1847,7 +1847,7 @@ ROUTE
 
 ROUTE_DISTINGUISHER
 :
-   'route-distinguisher'
+   'route-distinguisher' -> pushMode(M_RouteDistinguisher)
 ;
 
 ROUTE_FILTER
@@ -3097,6 +3097,33 @@ METRIC_TYPE_2
 ;
 
 M_MetricType_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_RouteDistinguisher;
+
+M_RouteDistinguisher_COLON
+:
+   ':' -> type(COLON)
+;
+
+M_RouteDistinguisher_IP_ADDRESS
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type(IP_ADDRESS)
+;
+
+M_RouteDistinguisher_DEC
+:
+   F_Digit+ -> type(DEC)
+;
+
+M_RouteDistinguisher_NEWLINE
+:
+   F_NewlineChar+ -> type(NEWLINE), popMode
+;
+
+M_RouteDistinguisher_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;
