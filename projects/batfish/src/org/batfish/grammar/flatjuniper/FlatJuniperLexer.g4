@@ -715,6 +715,11 @@ HELLO_INTERVAL
    'hello-interval'
 ;
 
+HIGH
+:
+   'high'
+;
+
 HOLD_TIME
 :
    'hold-time'
@@ -1133,6 +1138,16 @@ LONGER
 LOOPS
 :
    'loops'
+;
+
+LOSS_PRIORITY
+:
+   'loss-priority'
+;
+
+LOW
+:
+   'low'
 ;
 
 LSP

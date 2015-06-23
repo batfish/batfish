@@ -192,6 +192,15 @@ fwthent_discard
    DISCARD
 ;
 
+fwthent_loss_priority
+:
+   LOSS_PRIORITY
+   (
+      HIGH
+      | LOW
+   )
+;
+
 fwthent_next_term
 :
    NEXT TERM
@@ -258,6 +267,7 @@ fwtt_then_tail
    fwthent_accept
    | fwthent_discard
    | fwthent_reject
+   | fwthent_loss_priority
    | fwthent_next_term
    | fwthent_nop
    | fwthent_routing_instance
