@@ -46,6 +46,7 @@ ait_null
    (
       AUTHENTICATION
       | BFD_LIVENESS_DETECTION
+      | NO_NEIGHBOR_DOWN_NOTIFICATION
    ) s_null_filler
 ;
 

@@ -1350,6 +1350,11 @@ NO_IPV4_ROUTING
    'no-ipv4-routing'
 ;
 
+NO_NEIGHBOR_DOWN_NOTIFICATION
+:
+   'no-neighbor-down-notification'
+;
+
 NO_NEXTHOP_CHANGE
 :
    'no-nexthop-change'
