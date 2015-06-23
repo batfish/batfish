@@ -73,6 +73,7 @@ famt_iso_tail
 // intentional blank
 
    | isofamt_address
+   | isofamt_mtu
 ;
 
 famt_mpls
@@ -207,6 +208,11 @@ intt_null
 isofamt_address
 :
    ADDRESS ISO_ADDRESS
+;
+
+isofamt_mtu
+:
+   MTU DEC
 ;
 
 it_apply_groups

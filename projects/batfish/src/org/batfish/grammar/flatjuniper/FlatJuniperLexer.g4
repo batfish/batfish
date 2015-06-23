@@ -2859,6 +2859,11 @@ M_ISO_ADDRESS
    'address' -> type(ADDRESS), mode(M_ISO_Address)
 ;
 
+M_ISO_MTU
+:
+   'mtu' -> type(MTU), popMode
+;
+
 M_ISO_Newline
 :
    F_NewlineChar+ -> type(NEWLINE), popMode
