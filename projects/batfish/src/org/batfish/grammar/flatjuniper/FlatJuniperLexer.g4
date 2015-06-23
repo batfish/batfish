@@ -1105,6 +1105,11 @@ LOG_UPDOWN
    'log-updown'
 ;
 
+LOGICAL_SYSTEMS
+:
+   'logical-systems'
+;
+
 LOGIN
 :
    'login'

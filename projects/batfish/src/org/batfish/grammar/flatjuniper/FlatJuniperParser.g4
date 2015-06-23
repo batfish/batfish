@@ -36,6 +36,12 @@ flat_juniper_configuration
 
 statement
 :
+   s_common
+   | s_logical_systems
+;
+
+s_common
+:
    s_apply_groups
    | s_firewall
    | s_interfaces
@@ -58,6 +64,22 @@ s_groups_named
 ;
 
 s_groups_tail
+:
+// intentional blank
+
+   | statement
+;
+
+s_logical_systems
+:
+   LOGICAL_SYSTEMS
+   (
+      name = variable
+      | WILDCARD
+   ) s_logical_systems_tail
+;
+
+s_logical_systems_tail
 :
 // intentional blank
 
