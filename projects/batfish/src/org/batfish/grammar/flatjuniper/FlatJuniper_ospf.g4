@@ -257,11 +257,17 @@ ot_traffic_engineering_tail
 // intentional blank
 
    | otet_credibility_protocol_preference
+   | otet_shortcuts
 ;
 
 otet_credibility_protocol_preference
 :
    CREDIBILITY_PROTOCOL_PREFERENCE
+;
+
+otet_shortcuts
+:
+   SHORTCUTS
 ;
 
 s_protocols_ospf
