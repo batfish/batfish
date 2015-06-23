@@ -1055,6 +1055,11 @@ LDP
    'ldp'
 ;
 
+LEARN_VLAN_1P_PRIORITY
+:
+   'learn-vlan-1p-priority'
+;
+
 LEVEL
 :
    'level'
