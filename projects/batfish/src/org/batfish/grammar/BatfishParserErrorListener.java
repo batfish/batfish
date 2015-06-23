@@ -13,6 +13,8 @@ import org.batfish.util.Util;
 
 public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
 
+   private static final int MAX_LOOKBACK = 10;
+
    public BatfishParserErrorListener(String grammarName,
          BatfishCombinedParser<?, ?> parser) {
       super(grammarName, parser);
@@ -49,6 +51,7 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
       String ruleStack = ctx.toString(ruleNames);
       List<Token> tokens = _combinedParser.getTokens().getTokens();
       int startTokenIndex = parser.getInputStream().index();
+      int lookbackIndex = Math.max(0, startTokenIndex - MAX_LOOKBACK);
       int endTokenIndex = tokens.size();
       StringBuilder sb = new StringBuilder();
       sb.append("parser: " + _grammarName + ": line " + line + ":"
@@ -63,6 +66,15 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
          Token token = tokens.get(i);
          String tokenText = printToken(token);
          sb.append(tokenText + "\n");
+      }
+      if (lookbackIndex < startTokenIndex) {
+         int numLookbackTokens = startTokenIndex - lookbackIndex;
+         sb.append("Previous " + numLookbackTokens + " tokens:\n");
+         for (int i = lookbackIndex; i < startTokenIndex; i++) {
+            Token lookbackToken = tokens.get(i);
+            String tokenText = printToken(lookbackToken);
+            sb.append(tokenText + "\n");
+         }
       }
       if (offendingToken.getType() == Token.EOF) {
          sb.append("Lexer mode at EOF: " + _combinedParser.getLexer().getMode()
