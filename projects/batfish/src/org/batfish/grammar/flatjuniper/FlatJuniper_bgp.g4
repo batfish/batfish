@@ -333,9 +333,9 @@ bt_peer_as
 
 bt_peer_as_tail
 :
-   // intentional blank
-   |
-   bpast_as
+// intentional blank
+
+   | bpast_as
 ;
 
 bt_remove_private
