@@ -241,6 +241,11 @@ ot_null
    ) s_null_filler
 ;
 
+ot_rib_group
+:
+   RIB_GROUP name = variable
+;
+
 ot_traffic_engineering
 :
    TRAFFIC_ENGINEERING ot_traffic_engineering_tail
@@ -272,6 +277,7 @@ s_protocols_ospf_tail
    | ot_import
    | ot_no_active_backbone
    | ot_null
+   | ot_rib_group
    | ot_traffic_engineering
 ;
 

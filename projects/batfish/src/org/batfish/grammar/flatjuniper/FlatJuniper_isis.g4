@@ -142,6 +142,11 @@ isist_no_ipv4_routing
    NO_IPV4_ROUTING
 ;
 
+isist_rib_group
+:
+   RIB_GROUP INET name = variable
+;
+
 isist_traffic_engineering
 :
    TRAFFIC_ENGINEERING isist_traffic_engineering_tail
@@ -186,5 +191,6 @@ s_protocols_isis_tail
    | isist_level
    | isist_null
    | isist_no_ipv4_routing
+   | isist_rib_group
    | isist_traffic_engineering
 ;
