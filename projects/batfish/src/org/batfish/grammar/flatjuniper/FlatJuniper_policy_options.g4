@@ -93,7 +93,7 @@ fromt_null
 
 fromt_policy
 :
-   POLICY name = variable
+   POLICY expr = policy_expression
 ;
 
 fromt_prefix_list

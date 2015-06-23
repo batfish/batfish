@@ -377,35 +377,6 @@ last_private
    PRIVATE
 ;
 
-pe_conjunction
-:
-   OPEN_PAREN policy_expression
-   (
-      DOUBLE_AMPERSAND policy_expression
-   )+ CLOSE_PAREN
-;
-
-pe_disjunction
-:
-   OPEN_PAREN policy_expression
-   (
-      DOUBLE_PIPE policy_expression
-   )+ CLOSE_PAREN
-;
-
-pe_nested
-:
-   OPEN_PAREN policy_expression CLOSE_PAREN
-;
-
-policy_expression
-:
-   pe_conjunction
-   | pe_disjunction
-   | pe_nested
-   | variable
-;
-
 pst_always_compare_med
 :
    ALWAYS_COMPARE_MED
