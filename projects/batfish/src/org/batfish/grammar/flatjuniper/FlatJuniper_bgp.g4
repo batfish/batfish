@@ -43,6 +43,11 @@ bfit_flow
    FLOW s_null_filler
 ;
 
+bfit_multicast
+:
+   MULTICAST s_null_filler
+;
+
 bfit_unicast
 :
    UNICAST bfit_unicast_tail
@@ -102,6 +107,7 @@ bft_inet
 bft_inet_tail
 :
    bfit_flow
+   | bfit_multicast
    | bfit_unicast
 ;
 
