@@ -259,10 +259,7 @@ bt_local_as
 
 bt_local_as_tail
 :
-   last_alias
-   | last_loops
-   | last_number
-   | last_private
+   last_number? last_common*
 ;
 
 bt_multihop
@@ -360,6 +357,13 @@ bt_type
 last_alias
 :
    ALIAS
+;
+
+last_common
+:
+   last_alias
+   | last_loops
+   | last_private
 ;
 
 last_loops
