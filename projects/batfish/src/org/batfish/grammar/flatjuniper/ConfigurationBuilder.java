@@ -309,6 +309,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (ctx.NO_ADVERTISE() != null) {
          return 0xFFFFFF02l;
       }
+      if (ctx.NO_EXPORT() != null) {
+         return 0xFFFFFF01l;
+      }
       else {
          throw new BatfishException(
                "missing named-community-to-long mapping for: \""

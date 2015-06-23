@@ -164,6 +164,7 @@ metric_expression
 named_community
 :
    NO_ADVERTISE
+   | NO_EXPORT
 ;
 
 plt_apply_path

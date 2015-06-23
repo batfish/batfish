@@ -2897,6 +2897,11 @@ NO_ADVERTISE
    'no-advertise'
 ;
 
+M_Members_NO_EXPORT
+:
+   'no-export' -> type(NO_EXPORT)
+;
+
 M_Members_OPEN_BRACE
 :
    '{' -> type(OPEN_BRACE)
