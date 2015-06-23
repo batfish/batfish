@@ -1855,6 +1855,21 @@ SHORTCUTS
    'shortcuts'
 ;
 
+SRLG
+:
+   'srlg'
+;
+
+SRLG_COST
+:
+   'srlg-cost'
+;
+
+SRLG_VALUE
+:
+   'srlg-value'
+;
+
 SMTP
 :
    'smtp'

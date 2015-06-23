@@ -338,6 +338,16 @@ rot_static_tail
    | rst_route
 ;
 
+rot_srlg
+:
+   SRLG rot_srlg_tail
+;
+
+rot_srlg_tail
+:
+   srlgt_named
+;
+
 rst_rib_group
 :
    RIB_GROUP name = variable
@@ -399,7 +409,29 @@ s_routing_options_tail
    | rot_rib
    | rot_rib_groups
    | rot_router_id
+   | rot_srlg
    | rot_static
+;
+
+srlgnt_srlg_cost
+:
+   SRLG_COST cost = DEC
+;
+
+srlgnt_srlg_value
+:
+   SRLG_VALUE value = DEC
+;
+
+srlgt_named
+:
+   name = variable srlgt_named_tail
+;
+
+srlgt_named_tail
+:
+   srlgnt_srlg_cost
+   | srlgnt_srlg_value
 ;
 
 srt_active
