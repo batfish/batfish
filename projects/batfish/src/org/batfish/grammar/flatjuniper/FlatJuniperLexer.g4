@@ -1290,6 +1290,11 @@ NEIGHBOR_ADVERTISEMENT
    'neighbor-advertisement'
 ;
 
+NEIGHBOR_DISCOVERY
+:
+   'neighbor-discovery'
+;
+
 NEIGHBOR_SOLICIT
 :
    'neighbor-solicit'
