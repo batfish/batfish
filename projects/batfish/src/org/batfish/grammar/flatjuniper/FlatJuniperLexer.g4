@@ -1480,6 +1480,11 @@ PATH
    'path'
 ;
 
+PATH_COUNT
+:
+   'path-count'
+;
+
 PATH_SELECTION
 :
    'path-selection'
@@ -1608,6 +1613,11 @@ PREFIX_LIST
 PREFIX_LIST_FILTER
 :
    'prefix-list-filter'
+;
+
+PREFIX_POLICY
+:
+   'prefix-policy'
 ;
 
 PRIMARY
@@ -1853,6 +1863,11 @@ SERVICES
 SELF
 :
    'self'
+;
+
+SEND
+:
+   'send'
 ;
 
 SET

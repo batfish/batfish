@@ -6,6 +6,16 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+apsendt_path_count
+:
+   PATH_COUNT count = DEC
+;
+
+apsendt_prefix_policy
+:
+   PREFIX_POLICY policy = variable
+;
+
 bfi6t_null
 :
    LABELED_UNICAST s_null_filler
@@ -47,9 +57,31 @@ bfit_unicast_tail
    | bfiut_rib_group
 ;
 
+bfiuapt_receive
+:
+   RECEIVE
+;
+
+bfiuapt_send
+:
+   SEND bfiuapt_send_tail
+;
+
+bfiuapt_send_tail
+:
+   apsendt_path_count
+   | apsendt_prefix_policy
+;
+
 bfiut_add_path
 :
-   ADD_PATH RECEIVE
+   ADD_PATH bfiut_add_path_tail
+;
+
+bfiut_add_path_tail
+:
+   bfiuapt_receive
+   | bfiuapt_send
 ;
 
 bfiut_prefix_limit
