@@ -132,7 +132,11 @@ fromt_route_filter_then
 
 fromt_route_type
 :
-   ROUTE_TYPE EXTERNAL
+   ROUTE_TYPE
+   (
+      EXTERNAL
+      | INTERNAL
+   )
 ;
 
 fromt_source_address_filter
