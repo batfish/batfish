@@ -386,22 +386,8 @@ rst_route
 
 rst_route_tail
 :
-   srt_active
-   | srt_as_path
-   | srt_community
-   | srt_discard
-   | srt_install
-   | srt_next_hop
-   | srt_next_table
-   | srt_no_readvertise
-   | srt_no_retain
-   | srt_passive
-   | srt_preference
-   | srt_readvertise
-   | srt_reject
-   | srt_resolve
-   | srt_retain
-   | srt_tag
+   srt_common
+   | srt_qualified_next_hop
 ;
 
 s_routing_instances
@@ -471,6 +457,26 @@ srt_as_path
    )+
 ;
 
+srt_common
+:
+   srt_active
+   | srt_as_path
+   | srt_community
+   | srt_discard
+   | srt_install
+   | srt_next_hop
+   | srt_next_table
+   | srt_no_readvertise
+   | srt_no_retain
+   | srt_passive
+   | srt_preference
+   | srt_readvertise
+   | srt_reject
+   | srt_resolve
+   | srt_retain
+   | srt_tag
+;
+
 srt_community
 :
    COMMUNITY COMMUNITY_LITERAL
@@ -518,6 +524,11 @@ srt_passive
 srt_preference
 :
    PREFERENCE pref = DEC
+;
+
+srt_qualified_next_hop
+:
+   QUALIFIED_NEXT_HOP nexthop = IP_ADDRESS srt_common?
 ;
 
 srt_readvertise

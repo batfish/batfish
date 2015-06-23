@@ -1675,6 +1675,11 @@ PROTOCOLS
    'protocols'
 ;
 
+QUALIFIED_NEXT_HOP
+:
+   'qualified-next-hop'
+;
+
 RADACCT
 :
    'radacct'
