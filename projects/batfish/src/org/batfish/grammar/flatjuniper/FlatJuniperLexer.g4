@@ -1535,6 +1535,11 @@ PEER_AS
    'peer-as'
 ;
 
+PEER_UNIT
+:
+   'peer-unit'
+;
+
 PER_PACKET
 :
    'per-packet'

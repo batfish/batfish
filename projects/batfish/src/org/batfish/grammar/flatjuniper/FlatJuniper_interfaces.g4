@@ -317,6 +317,11 @@ it_null
    ) s_null_filler
 ;
 
+it_peer_unit
+:
+   PEER_UNIT unit = DEC
+;
+
 it_speed
 :
    SPEED DEC speed_abbreviation
@@ -336,6 +341,7 @@ it_unit_tail
 // intentional blank
 
    | it_common
+   | it_peer_unit
 ;
 
 it_vlan_id
