@@ -972,12 +972,15 @@ public class Batfish implements AutoCloseable {
       resetTimer();
 
       ExecutorService pool;
+      boolean shuffle;
       if (_settings.getParseParallel()) {
          int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
          pool = Executors.newFixedThreadPool(numConcurrentThreads);
+         shuffle = true;
       }
       else {
          pool = Executors.newSingleThreadExecutor();
+         shuffle = false;
       }
 
       List<FlattenVendorConfigurationJob> jobs = new ArrayList<FlattenVendorConfigurationJob>();
@@ -1000,6 +1003,9 @@ public class Batfish implements AutoCloseable {
          FlattenVendorConfigurationJob job = new FlattenVendorConfigurationJob(
                _settings, fileText, inputFile, outputFile, warnings);
          jobs.add(job);
+      }
+      if (shuffle) {
+         Collections.shuffle(jobs);
       }
       List<Future<FlattenVendorConfigurationResult>> futures = new ArrayList<Future<FlattenVendorConfigurationResult>>();
       for (FlattenVendorConfigurationJob job : jobs) {
@@ -2143,12 +2149,15 @@ public class Batfish implements AutoCloseable {
       resetTimer();
 
       ExecutorService pool;
+      boolean shuffle;
       if (_settings.getParseParallel()) {
          int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
          pool = Executors.newFixedThreadPool(numConcurrentThreads);
+         shuffle = true;
       }
       else {
          pool = Executors.newSingleThreadExecutor();
+         shuffle = false;
       }
 
       Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<String, VendorConfiguration>();
@@ -2169,6 +2178,9 @@ public class Batfish implements AutoCloseable {
          ParseVendorConfigurationJob job = new ParseVendorConfigurationJob(
                _settings, fileText, currentFile, warnings);
          jobs.add(job);
+      }
+      if (shuffle) {
+         Collections.shuffle(jobs);
       }
       List<Future<ParseVendorConfigurationResult>> futures = new ArrayList<Future<ParseVendorConfigurationResult>>();
       for (ParseVendorConfigurationJob job : jobs) {
