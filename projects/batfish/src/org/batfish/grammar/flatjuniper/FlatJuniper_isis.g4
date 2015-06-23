@@ -45,7 +45,8 @@ isisit_level_tail
 isisit_null
 :
    (
-      LSP_INTERVAL
+      BFD_LIVENESS_DETECTION
+      | LSP_INTERVAL
    ) s_null_filler
 ;
 
