@@ -46,6 +46,7 @@ isisit_null
 :
    (
       BFD_LIVENESS_DETECTION
+      | HELLO_PADDING
       | LSP_INTERVAL
    ) s_null_filler
 ;

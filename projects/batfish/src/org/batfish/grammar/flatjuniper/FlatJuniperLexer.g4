@@ -715,6 +715,11 @@ HELLO_INTERVAL
    'hello-interval'
 ;
 
+HELLO_PADDING
+:
+   'hello-padding'
+;
+
 HIGH
 :
    'high'
