@@ -477,6 +477,11 @@ tot_level
    LEVEL DEC
 ;
 
+tot_rib
+:
+   RIB variable
+;
+
 tt_apply_groups
 :
    s_apply_groups
@@ -551,4 +556,5 @@ tt_to
 tt_to_tail
 :
    tot_level
+   | tot_rib
 ;
