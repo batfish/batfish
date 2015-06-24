@@ -43,6 +43,12 @@ public final class Format {
             return ConfigurationFormat.JUNIPER;
          }
       }
+      else if (fileText.contains("version") && fileText.contains("system")
+            && fileText.contains("{") && fileText.contains("}")
+            && fileText.contains("host-name")
+            && fileText.contains("interfaces")) {
+         return ConfigurationFormat.JUNIPER;
+      }
       return ConfigurationFormat.UNKNOWN;
    }
 
