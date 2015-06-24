@@ -408,7 +408,7 @@ tht_metric_expression
 
 tht_metric_igp
 :
-   METRIC IGP
+   METRIC IGP offset = DEC?
 ;
 
 tht_metric2_expression
