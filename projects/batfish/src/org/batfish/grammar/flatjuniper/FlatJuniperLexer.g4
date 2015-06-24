@@ -2421,14 +2421,14 @@ VARIABLE
       |
       (
          (
-            F_Variable_VarChar
+            F_Variable_LeadingVarChar
             {!enableIPV6_ADDRESS}?
 
             F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
          )
          |
          (
-            F_Variable_VarChar_Ipv6
+            F_Variable_LeadingVarChar_Ipv6
             {enableIPV6_ADDRESS}?
 
             F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar_Ipv6
@@ -2753,15 +2753,27 @@ F_Variable_InterfaceVarChar
 ;
 
 fragment
+F_Variable_LeadingVarChar
+:
+   ~[ \t\n\r:;{}<>[\]&|()"']
+;
+
+fragment
+F_Variable_LeadingVarChar_Ipv6
+:
+   ~[ \t\n\r:;{}<>[\]&|()"']
+;
+
+fragment
 F_Variable_VarChar
 :
-   ~[ \t\n\r;{}<>[\]&|()"']
+   ~[ \t\n\r;{}[\]&|()"']
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~[ \t\n\r:;{}<>[\]&|()"']
+   ~[ \t\n\r:;{}[\]&|()"']
 ;
 
 fragment
