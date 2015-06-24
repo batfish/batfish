@@ -77,6 +77,11 @@ fromt_interface
    INTERFACE id = interface_id
 ;
 
+fromt_level
+:
+   LEVEL DEC
+;
+
 fromt_neighbor
 :
    NEIGHBOR
@@ -484,6 +489,7 @@ tt_from_tail
    | fromt_community
    | fromt_family
    | fromt_interface
+   | fromt_level
    | fromt_neighbor
    | fromt_null
    | fromt_policy
