@@ -136,7 +136,9 @@ at_label_switched_path
 
 at_label_switched_path_tail
 :
-   alt_metric
+// intentional blank
+
+   | alt_metric
 ;
 
 at_nssa
