@@ -228,6 +228,8 @@ fwthent_loss_priority
    LOSS_PRIORITY
    (
       HIGH
+      | MEDIUM_HIGH
+      | MEDIUM_LOW
       | LOW
    )
 ;

@@ -1230,6 +1230,16 @@ MAXIMUM_LABELS
    'maximum-labels'
 ;
 
+MEDIUM_HIGH
+:
+   'medium-high'
+;
+
+MEDIUM_LOW
+:
+   'medium-low'
+;
+
 METRIC
 :
    'metric'
