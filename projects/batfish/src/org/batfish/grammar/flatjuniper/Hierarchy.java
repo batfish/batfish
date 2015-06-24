@@ -22,6 +22,10 @@ import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.main.BatfishException;
 import org.batfish.main.PartialGroupMatchBatfishException;
 import org.batfish.main.UndefinedGroupBatfishException;
+import org.batfish.representation.Ip;
+import org.batfish.representation.Ip6;
+import org.batfish.representation.Prefix;
+import org.batfish.representation.Prefix6;
 
 public class Hierarchy {
 
@@ -504,17 +508,39 @@ public class Hierarchy {
             HierarchyPath applyPathPath,
             Flat_juniper_configurationContext configurationContext) {
          List<ParseTree> lines = new ArrayList<ParseTree>();
-         List<String> prefixes = getApplyPathPrefixes(applyPathPath);
-         for (String prefix : prefixes) {
-            String prefixWithMask;
-            if (prefix.contains("/")) {
-               prefixWithMask = prefix;
+         List<String> candidatePrefixes = getApplyPathPrefixes(applyPathPath);
+         for (String candidatePrefix : candidatePrefixes) {
+            String finalPrefixStr;
+            boolean ipv6 = candidatePrefix.contains(":");
+            boolean isPrefix = candidatePrefix.contains("/");
+            try {
+               if (isPrefix) {
+                  if (ipv6) {
+                     Prefix6 prefix6 = new Prefix6(candidatePrefix);
+                     finalPrefixStr = prefix6.toString();
+                  }
+                  else {
+                     Prefix prefix = new Prefix(candidatePrefix);
+                     finalPrefixStr = prefix.toString();
+                  }
+               }
+               else {
+                  String candidateAddress;
+                  if (ipv6) {
+                     candidateAddress = new Ip6(candidatePrefix).toString();
+                  }
+                  else {
+                     candidateAddress = new Ip(candidatePrefix).toString();
+                  }
+                  finalPrefixStr = candidateAddress + (ipv6 ? "/64" : "/32");
+               }
             }
-            else {
-               boolean ipv6 = prefix.contains(":");
-               prefixWithMask = prefix + (ipv6 ? "/64" : "/32");
+            catch (BatfishException e) {
+               throw new BatfishException(
+                     "Invalid ip(v6) address or prefix: \"" + candidatePrefix
+                           + "\"", e);
             }
-            basePath.addNode(prefixWithMask);
+            basePath.addNode(finalPrefixStr);
             Set_lineContext setLine = generateSetLine(basePath,
                   configurationContext);
             lines.add(setLine);
