@@ -21,6 +21,11 @@ ait_dead_interval
    DEAD_INTERVAL DEC
 ;
 
+ait_disable
+:
+   DISABLE
+;
+
 ait_hello_interval
 :
    HELLO_INTERVAL DEC
@@ -109,6 +114,7 @@ at_interface_tail
    | ait_apply_groups
    | ait_apply_groups_except
    | ait_dead_interval
+   | ait_disable
    | ait_hello_interval
    | ait_interface_type
    | ait_ldp_synchronization
