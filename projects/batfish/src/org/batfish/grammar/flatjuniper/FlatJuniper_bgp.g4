@@ -304,6 +304,7 @@ bt_neighbor
    (
       IP_ADDRESS
       | IPV6_ADDRESS
+      | WILDCARD
    ) bt_neighbor_tail
 ;
 
