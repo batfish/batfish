@@ -91,6 +91,7 @@ s_null
    (
       (
          SECURITY
+         | SWITCH_OPTIONS
       ) s_null_filler
    )
    | rit_null

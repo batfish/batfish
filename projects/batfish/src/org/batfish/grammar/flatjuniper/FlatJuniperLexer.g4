@@ -2120,6 +2120,11 @@ SUNRPC
    'sunrpc'
 ;
 
+SWITCH_OPTIONS
+:
+   'switch-options'
+;
+
 SYSLOG
 :
    'syslog'
