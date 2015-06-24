@@ -10,10 +10,12 @@ public enum RoutingProtocol {
    ISIS,
    ISIS_L1,
    ISIS_L2,
+   LDP,
    LOCAL,
    MSDP,
    OSPF,
    OSPF_E1,
    OSPF_E2,
+   RSVP,
    STATIC
 }
