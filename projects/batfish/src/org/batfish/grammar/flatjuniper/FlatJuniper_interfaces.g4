@@ -312,6 +312,7 @@ it_null
       | NO_TRAPS
       | REDUNDANT_ETHER_OPTIONS
       | SONET_OPTIONS
+      | TRACEOPTIONS
       | TRAPS
       | TUNNEL
    ) s_null_filler
