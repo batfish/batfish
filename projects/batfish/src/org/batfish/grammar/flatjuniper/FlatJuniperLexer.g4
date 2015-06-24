@@ -462,7 +462,7 @@ DOMAIN_SEARCH
 
 DSCP
 :
-   'dscp'
+   'dscp' -> pushMode(M_DSCP)
 ;
 
 DSTOPTS
@@ -2896,6 +2896,23 @@ M_Description_NEWLINE
 ;
 
 M_Description_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_DSCP;
+
+M_DSCP_VARIABLE
+:
+   F_NonWhitespaceChar+ -> type(VARIABLE)
+;
+
+M_DSCP_NEWLINE
+:
+   F_NewlineChar+ -> type(NEWLINE), popMode
+;
+
+M_DSCP_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;
