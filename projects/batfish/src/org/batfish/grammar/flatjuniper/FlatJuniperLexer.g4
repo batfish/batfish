@@ -2777,6 +2777,11 @@ M_AsPath_PATH
    'path' -> type(PATH), mode(M_AsPathPath)
 ;
 
+M_AsPath_TERM
+:
+   'term' -> type(TERM), popMode
+;
+
 M_AsPath_VARIABLE
 :
    (
