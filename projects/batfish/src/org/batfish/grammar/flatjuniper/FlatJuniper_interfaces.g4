@@ -108,6 +108,11 @@ ft_direction
    direction name = variable
 ;
 
+ifamat_arp
+:
+   ARP IP_ADDRESS MAC MAC_ADDRESS
+;
+
 ifamat_master_only
 :
    MASTER_ONLY
@@ -144,7 +149,8 @@ ifamt_address
 
 ifamt_address_tail
 :
-   ifamat_master_only
+   ifamat_arp
+   | ifamat_master_only
    | ifamat_preferred
    | ifamat_primary
    | ifamat_vrrp_group
