@@ -27,6 +27,7 @@ isisilt_null
       HELLO_AUTHENTICATION_KEY
       | HELLO_AUTHENTICATION_TYPE
       | HELLO_INTERVAL
+      | HOLD_TIME
    ) s_null_filler
 ;
 
