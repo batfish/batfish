@@ -33,6 +33,15 @@ fwfromt_destination_port
    )
 ;
 
+fwfromt_destination_port_except
+:
+   DESTINATION_PORT_EXCEPT
+   (
+      port
+      | range
+   )
+;
+
 fwfromt_destination_prefix_list
 :
    DESTINATION_PREFIX_LIST variable EXCEPT?
@@ -261,6 +270,7 @@ fwtt_from_tail
    fwfromt_address
    | fwfromt_destination_address
    | fwfromt_destination_port
+   | fwfromt_destination_port_except
    | fwfromt_destination_prefix_list
    | fwfromt_dscp
    | fwfromt_exp

@@ -415,6 +415,11 @@ DESTINATION_PORT
    'destination-port'
 ;
 
+DESTINATION_PORT_EXCEPT
+:
+   'destination-port-except'
+;
+
 DESTINATION_PREFIX_LIST
 :
    'destination-prefix-list'
