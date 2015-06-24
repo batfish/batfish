@@ -447,6 +447,15 @@ tht_origin
    ORIGIN IGP
 ;
 
+tht_priority
+:
+   PRIORITY
+   (
+      HIGH
+      | LOW
+   )
+;
+
 tht_reject
 :
    REJECT
@@ -517,6 +526,7 @@ tt_then_tail
    | tht_next_term
    | tht_null
    | tht_origin
+   | tht_priority
    | tht_reject
    | tht_tag
 ;
