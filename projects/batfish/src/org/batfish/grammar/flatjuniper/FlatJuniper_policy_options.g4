@@ -72,6 +72,11 @@ fromt_family
    )
 ;
 
+fromt_instance
+:
+   INSTANCE name = variable
+;
+
 fromt_interface
 :
    INTERFACE id = interface_id
@@ -499,6 +504,7 @@ tt_from_tail
    | fromt_color
    | fromt_community
    | fromt_family
+   | fromt_instance
    | fromt_interface
    | fromt_level
    | fromt_neighbor
