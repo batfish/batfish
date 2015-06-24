@@ -266,6 +266,7 @@ pst_term_tail
    | tt_apply_groups
    | tt_from
    | tt_then
+   | tt_to
 ;
 
 rft_exact
@@ -471,6 +472,11 @@ tht_tag
    TAG DEC
 ;
 
+tot_level
+:
+   LEVEL DEC
+;
+
 tt_apply_groups
 :
    s_apply_groups
@@ -535,4 +541,14 @@ tt_then_tail
    | tht_priority
    | tht_reject
    | tht_tag
+;
+
+tt_to
+:
+   TO tt_to_tail
+;
+
+tt_to_tail
+:
+   tot_level
 ;
