@@ -1660,6 +1660,11 @@ PRECEDENCE
    'precedence'
 ;
 
+PRECISION_TIMERS
+:
+   'precision-timers'
+;
+
 PREEMPT
 :
    'preempt'

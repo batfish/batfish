@@ -328,6 +328,7 @@ bt_null
       | HOLD_TIME
       | LOG_UPDOWN
       | OUT_DELAY
+      | PRECISION_TIMERS
       | TRACEOPTIONS
    ) s_null_filler
 ;
