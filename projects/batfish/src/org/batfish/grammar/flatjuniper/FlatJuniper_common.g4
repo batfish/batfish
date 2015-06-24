@@ -102,6 +102,11 @@ interface_id
    )?
 ;
 
+ip_option
+:
+   SECURITY
+;
+
 ip_protocol
 :
    AH

@@ -950,6 +950,11 @@ IP
    'ip'
 ;
 
+IP_OPTIONS
+:
+   'ip-options'
+;
+
 IPIP
 :
    'ipip'

@@ -58,6 +58,11 @@ fwfromt_icmp_type
    ICMP_TYPE icmp_type
 ;
 
+fwfromt_ip_options
+:
+   IP_OPTIONS ip_option
+;
+
 fwfromt_learn_vlan_1p_priority
 :
    LEARN_VLAN_1P_PRIORITY DEC
@@ -256,6 +261,7 @@ fwtt_from_tail
    | fwfromt_exp
    | fwfromt_icmp_code
    | fwfromt_icmp_type
+   | fwfromt_ip_options
    | fwfromt_learn_vlan_1p_priority
    | fwfromt_next_header
    | fwfromt_null
