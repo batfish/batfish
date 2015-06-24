@@ -256,8 +256,10 @@ routing_protocol
    | BGP
    | DIRECT
    | ISIS
+   | LDP
    | LOCAL
    | OSPF
+   | RSVP
    | STATIC
 ;
 
