@@ -76,6 +76,12 @@ public class FlattenVendorConfigurationJob implements
          return new FlattenVendorConfigurationResult(_logger.getHistory(),
                _outputFile, flatConfigText);
       }
+      else if (!_settings.ignoreUnsupported()
+            && format == ConfigurationFormat.UNKNOWN) {
+         return new FlattenVendorConfigurationResult(_logger.getHistory(),
+               new BatfishException("Unknown configuration format for: \""
+                     + _inputFile.toString() + "\""));
+      }
       else {
          _logger.debug("Skipping: \"" + _inputFile.toString() + "\"\n");
          String flatConfigText = _fileText;
