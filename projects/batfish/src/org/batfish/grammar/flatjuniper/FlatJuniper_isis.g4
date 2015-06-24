@@ -31,6 +31,16 @@ isisilt_null
    ) s_null_filler
 ;
 
+isisit_apply_groups
+:
+   s_apply_groups
+;
+
+isisit_apply_groups_except
+:
+   s_apply_groups_except
+;
+
 isisit_level
 :
    LEVEL DEC isisit_level_tail
@@ -113,6 +123,8 @@ isist_interface_tail
 :
 // intentional blank
 
+   | isisit_apply_groups
+   | isisit_apply_groups_except
    | isisit_level
    | isisit_null
    | isisit_passive
