@@ -76,10 +76,10 @@ public class ParseVendorConfigurationJob implements
             _fileText = Batfish.flatten(_fileText, _logger, _settings);
          }
          else {
-            return new ParseVendorConfigurationResult(
-                  _logger.getHistory(),
+            return new ParseVendorConfigurationResult(_logger.getHistory(),
                   new BatfishException(
-                        "Juniper configurations must be flattened prior to this stage"));
+                        "Juniper configurations must be flattened prior to this stage: \""
+                              + _file.toString() + "\""));
          }
          // MISSING BREAK IS INTENTIONAL
       case FLAT_JUNIPER:
