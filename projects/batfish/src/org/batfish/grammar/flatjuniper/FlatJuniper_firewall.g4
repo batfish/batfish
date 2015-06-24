@@ -130,6 +130,11 @@ fwfromt_tcp_flags
    TCP_FLAGS DOUBLE_QUOTED_STRING
 ;
 
+fwft_apply_groups
+:
+   s_apply_groups
+;
+
 fwft_interface_specific
 :
    INTERFACE_SPECIFIC
@@ -176,7 +181,8 @@ fwt_filter
 
 fwt_filter_tail
 :
-   fwft_interface_specific
+   fwft_apply_groups
+   | fwft_interface_specific
    | fwft_term
 ;
 
