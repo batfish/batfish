@@ -387,6 +387,11 @@ tht_external
    EXTERNAL TYPE DEC
 ;
 
+tht_forwarding_class
+:
+   FORWARDING_CLASS variable
+;
+
 tht_install_nexthop
 :
    INSTALL_NEXTHOP s_null_filler
@@ -536,6 +541,7 @@ tt_then_tail
    | tht_default_action_accept
    | tht_default_action_reject
    | tht_external
+   | tht_forwarding_class
    | tht_install_nexthop
    | tht_local_preference
    | tht_metric
