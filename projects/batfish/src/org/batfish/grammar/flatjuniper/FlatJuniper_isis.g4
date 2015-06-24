@@ -66,6 +66,11 @@ isislt_disable
    DISABLE
 ;
 
+isislt_enable
+:
+   ENABLE
+;
+
 isislt_null
 :
    (
@@ -124,6 +129,7 @@ isist_level
 isist_level_tail
 :
    isislt_disable
+   | isislt_enable
    | isislt_null
    | isislt_wide_metrics_only
 ;
