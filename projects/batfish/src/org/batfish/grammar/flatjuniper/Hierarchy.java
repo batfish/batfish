@@ -383,17 +383,20 @@ public class Hierarchy {
          }
          else {
             appliedWildcards.add(currentPathNode._text);
-            for (HierarchyChildNode destinationTreeNode : destinationTreeRoot._children
-                  .values()) {
-               // if there are no matching children, then we recurse no further
-               if (!destinationTreeNode.isWildcard()
-                     && currentPathNode.matches(destinationTreeNode)) {
-                  newPath._nodes.add(destinationTreeNode);
-                  applyWildcardPath(path, configurationContext, sourceGroup,
-                        destinationTreeNode, startingIndex + 1,
-                        remainingWildcards - 1, appliedWildcards, newPath,
-                        lines);
-                  newPath._nodes.remove(newPath._nodes.size() - 1);
+            if (startingIndex < path._nodes.size() - 1) {
+               for (HierarchyChildNode destinationTreeNode : destinationTreeRoot._children
+                     .values()) {
+                  // if there are no matching children, then we recurse no
+                  // further
+                  if (!destinationTreeNode.isWildcard()
+                        && currentPathNode.matches(destinationTreeNode)) {
+                     newPath._nodes.add(destinationTreeNode);
+                     applyWildcardPath(path, configurationContext, sourceGroup,
+                           destinationTreeNode, startingIndex + 1,
+                           remainingWildcards - 1, appliedWildcards, newPath,
+                           lines);
+                     newPath._nodes.remove(newPath._nodes.size() - 1);
+                  }
                }
             }
             appliedWildcards.remove(appliedWildcards.size() - 1);
