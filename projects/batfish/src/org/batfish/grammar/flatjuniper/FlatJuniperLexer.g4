@@ -840,6 +840,11 @@ INCLUDE_MP_NEXT_HOP
    'include-mp-next-hop'
 ;
 
+INCOMPLETE
+:
+   'incomplete'
+;
+
 INET
 :
    'inet'

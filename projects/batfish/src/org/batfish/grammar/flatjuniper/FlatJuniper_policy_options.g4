@@ -101,6 +101,11 @@ fromt_null
    PREFIX_LIST_FILTER s_null_filler
 ;
 
+fromt_origin
+:
+   ORIGIN origin_type
+;
+
 fromt_policy
 :
    POLICY expr = policy_expression
@@ -514,6 +519,7 @@ tt_from_tail
    | fromt_level
    | fromt_neighbor
    | fromt_null
+   | fromt_origin
    | fromt_policy
    | fromt_prefix_list
    | fromt_protocol

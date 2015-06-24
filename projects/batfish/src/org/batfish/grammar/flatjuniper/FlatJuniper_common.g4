@@ -132,6 +132,13 @@ ip_protocol
    | VRRP
 ;
 
+origin_type
+:
+   EGP
+   | IGP
+   | INCOMPLETE
+;
+
 s_apply_groups
 :
    APPLY_GROUPS name = variable
