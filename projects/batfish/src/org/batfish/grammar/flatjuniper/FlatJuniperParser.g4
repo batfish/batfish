@@ -142,6 +142,7 @@ st_null
       | DOMAIN_SEARCH
       | INTERNET_OPTIONS
       | LICENSE
+      | LOCATION
       | LOGIN
       | NAME_SERVER
       | NTP
