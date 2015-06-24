@@ -48,6 +48,11 @@ fwfromt_exp
    EXP DEC
 ;
 
+fwfromt_forwarding_class
+:
+   FORWARDING_CLASS variable
+;
+
 fwfromt_icmp_code
 :
    ICMP_CODE icmp_code
@@ -259,6 +264,7 @@ fwtt_from_tail
    | fwfromt_destination_prefix_list
    | fwfromt_dscp
    | fwfromt_exp
+   | fwfromt_forwarding_class
    | fwfromt_icmp_code
    | fwfromt_icmp_type
    | fwfromt_ip_options
