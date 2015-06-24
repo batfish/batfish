@@ -4,22 +4,22 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
-af_as
+administrator_as
 :
    DEC L
 ;
 
-af_dec
+administrator_dec
 :
    DEC
 ;
 
-af_dotted_as
+administrator_dotted_as
 :
    DEC PERIOD DEC
 ;
 
-af_ip
+administrator_ip
 :
    DEC PERIOD DEC PERIOD DEC PERIOD DEC
 ;
@@ -45,28 +45,34 @@ as_unit
    | DEC
 ;
 
+ec_administrator
+:
+   administrator_as
+   | administrator_dec
+   | administrator_dotted_as
+   | administrator_ip
+;
+
 ec_literal
 :
    DEC COLON DEC COLON DEC
 ;
 
-ec_target
+ec_named
 :
-   TARGET COLON ecaf_target COLON assigned_number = DEC
+   ec_type COLON ec_administrator COLON assigned_number = DEC
 ;
 
-ecaf_target
+ec_type
 :
-   af_as
-   | af_dec
-   | af_dotted_as
-   | af_ip
+   ORIGIN
+   | TARGET
 ;
 
 extended_community
 :
    ec_literal
-   | ec_target
+   | ec_named
 ;
 
 icmp_code

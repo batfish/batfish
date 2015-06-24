@@ -3111,6 +3111,11 @@ M_Members_OPEN_PAREN
    '(' -> type(OPEN_PAREN)
 ;
 
+M_Members_ORIGIN
+:
+   'origin' -> type(ORIGIN)
+;
+
 M_Members_PERIOD
 :
    '.' -> type(PERIOD)
