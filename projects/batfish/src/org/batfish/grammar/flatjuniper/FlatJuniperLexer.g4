@@ -121,6 +121,11 @@ ALWAYS_COMPARE_MED
    'always-compare-med'
 ;
 
+ANY
+:
+   'any'
+;
+
 APPLY_GROUPS
 :
    'apply-groups'

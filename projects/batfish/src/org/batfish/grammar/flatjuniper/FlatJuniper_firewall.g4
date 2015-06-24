@@ -156,7 +156,8 @@ fwt_family
 :
    FAMILY
    (
-      CCC
+      ANY
+      | CCC
       | INET
       | INET6
       | MPLS
