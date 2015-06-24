@@ -315,6 +315,11 @@ COMMUNITY
 
 ;
 
+CONDITION
+:
+   'condition'
+;
+
 CONNECTIONS
 :
    'connections'

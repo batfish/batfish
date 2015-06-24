@@ -231,6 +231,11 @@ pot_community_tail
    ct_members
 ;
 
+pot_condition
+:
+   CONDITION s_null_filler
+;
+
 pot_policy_statement
 :
    POLICY_STATEMENT
@@ -323,6 +328,7 @@ s_policy_options_tail
    pot_apply_groups
    | pot_as_path
    | pot_community
+   | pot_condition
    | pot_policy_statement
    | pot_prefix_list
 ;
