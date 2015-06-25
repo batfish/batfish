@@ -59,6 +59,7 @@ public class ParseVendorConfigurationJob implements
 
       case ARISTA:
       case CISCO:
+      case CISCO_IOS_XR:
          CiscoCombinedParser ciscoParser = new CiscoCombinedParser(_fileText,
                _settings.getThrowOnParserError(),
                _settings.getThrowOnLexerError());
@@ -91,7 +92,6 @@ public class ParseVendorConfigurationJob implements
                flatJuniperParser, _warnings);
          break;
 
-      case CISCO_IOS_XR:
       case JUNIPER_SWITCH:
       case VXWORKS:
          String unsupportedError = "Unsupported configuration format: \""
