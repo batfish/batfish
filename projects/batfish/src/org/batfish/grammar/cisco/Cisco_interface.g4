@@ -193,6 +193,8 @@ null_standalone_if_stanza
       | AUTOSTATE
       | BANDWIDTH
       | BEACON
+      | BFD
+      | BUNDLE
       | CABLELENGTH
       | CDP
       | CHANNEL

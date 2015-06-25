@@ -546,6 +546,11 @@ BROADCAST_ADDRESS
    'broadcast-address'
 ;
 
+BUNDLE
+:
+   'bundle'
+;
+
 CA
 :
    'ca'
