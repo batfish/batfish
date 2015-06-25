@@ -449,6 +449,32 @@ null_as_path_regex
    ~NEWLINE*
 ;
 
+prefix_set_stanza
+:
+   PREFIX_SET name = variable NEWLINE prefix_set_tail* END_SET NEWLINE
+;
+
+prefix_set_tail
+:
+   (
+      prefix = IP_PREFIX
+      | ipv6_prefix = IPV6_PREFIX
+   )
+   (
+      (
+         GE minpl = DEC
+      )
+      |
+      (
+         LE maxpl = DEC
+      )
+      |
+      (
+         EQ eqpl = DEC
+      )
+   )* NEWLINE
+;
+
 protocol_type_code_access_list_numbered_stanza
 locals [boolean again]
 :

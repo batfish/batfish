@@ -226,8 +226,10 @@ stanza
    | nexus_access_list_stanza
    | nexus_prefix_list_stanza
    | null_stanza
+   | prefix_set_stanza
    | protocol_type_code_access_list_stanza
    | route_map_stanza
+   | route_policy_stanza
    | router_bgp_stanza
    | router_isis_stanza
    | router_ospf_stanza

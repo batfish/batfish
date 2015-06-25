@@ -1306,9 +1306,19 @@ END_CLASS_MAP
    'end-class-map'
 ;
 
+END_POLICY
+:
+   'end-policy'
+;
+
 END_POLICY_MAP
 :
    'end-policy-map'
+;
+
+END_SET
+:
+   'end-set'
 ;
 
 ENFORCE_FIRST_AS
@@ -2402,6 +2412,11 @@ LSP_INTERVAL
    'lsp-interval'
 ;
 
+LSP_PASSWORD
+:
+   'lsp-password'
+;
+
 LSP_REFRESH_INTERVAL
 :
    'lsp-refresh-interval'
@@ -3332,6 +3347,11 @@ PREFIX_LIST
    'prefix-list'
 ;
 
+PREFIX_SET
+:
+   'prefix-set'
+;
+
 PREPEND
 :
    'prepend'
@@ -3685,6 +3705,11 @@ ROUTE_CACHE
 ROUTE_MAP
 :
    'route-map'
+;
+
+ROUTE_POLICY
+:
+   'route-policy'
 ;
 
 ROUTE_REFLECTOR_CLIENT

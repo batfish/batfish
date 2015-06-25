@@ -6,21 +6,41 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+address_family_is_stanza
+:
+   ADDRESS_FAMILY
+   (
+      IPV4
+      | IPV6
+   )
+   (
+      UNICAST
+      | MULTICAST
+   ) NEWLINE isaf_stanza*
+;
+
 advertise_is_stanza
 :
    ADVERTISE PASSIVE_ONLY NEWLINE
 ;
 
-is_stanza
+common_is_stanza
 :
    advertise_is_stanza
    | is_type_is_stanza
+   | metric_is_stanza
    | metric_style_is_stanza
    | net_is_stanza
    | null_is_stanza
    | redistribute_static_is_stanza
    | passive_interface_is_stanza
    | summary_address_is_stanza
+;
+
+is_stanza
+:
+   address_family_is_stanza
+   | common_is_stanza
 ;
 
 is_type_is_stanza
@@ -32,9 +52,23 @@ is_type_is_stanza
    ) NEWLINE
 ;
 
+isaf_stanza
+:
+   common_is_stanza
+;
+
+metric_is_stanza
+:
+   METRIC DEC NEWLINE
+;
+
 metric_style_is_stanza
 :
-   METRIC_STYLE WIDE LEVEL_2 NEWLINE
+   METRIC_STYLE
+   (
+      WIDE
+      | LEVEL_2
+   )* NEWLINE
 ;
 
 net_is_stanza
@@ -49,10 +83,14 @@ null_is_stanza
       AUTHENTICATION
       | FAST_FLOOD
       | HELLO
+      | LOG
       | LOG_ADJACENCY_CHANGES
       | LSP_GEN_INTERVAL
+      | LSP_PASSWORD
       | LSP_REFRESH_INTERVAL
       | MAX_LSP_LIFETIME
+      | NSF
+      | NSR
       | SPF_INTERVAL
       | PRC_INTERVAL
       |
