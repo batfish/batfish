@@ -67,6 +67,11 @@ ACCEPT_DIALIN
    'accept-dialin'
 ;
 
+ACCEPT_LIFETIME
+:
+   'accept-lifetime'
+;
+
 ACCESS
 :
    'access'
@@ -219,6 +224,11 @@ ALIAS
    'alias'
 ;
 
+ALLOW
+:
+   'allow'
+;
+
 ALLOWED
 :
    'allowed'
@@ -274,6 +284,16 @@ ARCHIVE
    'archive'
 ;
 
+ARCHIVE_LENGTH
+:
+   'archive-length'
+;
+
+ARCHIVE_SIZE
+:
+   'archive-size'
+;
+
 AREA
 :
    'area'
@@ -309,6 +329,11 @@ ASA
 ASDM
 :
    'asdm'
+;
+
+ASSEMBLER
+:
+   'assembler'
 ;
 
 ASSOCIATE
@@ -766,6 +791,11 @@ CONFIGURATION
    'configuration'
 ;
 
+CONFLICT_POLICY
+:
+   'conflict-policy'
+;
+
 CONFORM_ACTION
 :
    'conform-action'
@@ -839,6 +869,11 @@ CREDENTIALS
 CRYPTO
 :
    'crypto'
+;
+
+CRYPTOGRAPHIC_ALGORITHM
+:
+   'cryptographic-algorithm'
 ;
 
 CRL
@@ -1473,6 +1508,11 @@ FILE_ENTRY
    'file-entry'
 ;
 
+FILE_SIZE
+:
+   'file-size'
+;
+
 FILTER_LIST
 :
    'filter-list'
@@ -1863,6 +1903,11 @@ IN
 INACTIVITY_TIMER
 :
    'inactivity-timer'
+;
+
+INBAND
+:
+   'inband'
 ;
 
 INBOUND
@@ -2302,6 +2347,11 @@ LPD
    'lpd'
 ;
 
+LPTS
+:
+   'lpts'
+;
+
 LRE
 :
    'lre'
@@ -2370,6 +2420,11 @@ MANAGEMENT
 MANAGEMENT_ONLY
 :
    'management-only'
+;
+
+MANAGEMENT_PLANE
+:
+   'management-plane'
 ;
 
 MAP
@@ -2865,6 +2920,11 @@ NOTIFY
 NSF
 :
    'nsf'
+;
+
+NSR
+:
+   'nsr'
 ;
 
 NSSA
@@ -3697,6 +3757,11 @@ SECONDARY
    'secondary'
 ;
 
+SECRET
+:
+   'secret'
+;
+
 SECUREID_UDP
 :
    'secureid-udp'
@@ -3720,6 +3785,11 @@ SEND_COMMUNITY
 SEND_LABEL
 :
    'send-label'
+;
+
+SEND_LIFETIME
+:
+   'send-lifetime'
 ;
 
 SENDER
@@ -3817,6 +3887,11 @@ SETUP
    'setup'
 ;
 
+SEVERITY
+:
+   'severity'
+;
+
 SFLOW
 :
    'sflow'
@@ -3845,6 +3920,11 @@ SHUT
 SHUTDOWN
 :
    'shutdown'
+;
+
+SINGLE_CONNECTION
+:
+   'single-connection'
 ;
 
 SINGLE_ROUTER_MODE
@@ -3960,6 +4040,11 @@ SPLIT_TUNNEL_POLICY
 SQLNET
 :
    'sqlnet'
+;
+
+SRLG
+:
+   'srlg'
 ;
 
 SRR_QUEUE
@@ -4179,6 +4264,11 @@ TALK
    'talk'
 ;
 
+TASKGROUP
+:
+   'taskgroup'
+;
+
 TB_VLAN1
 :
    'tb-vlan1'
@@ -4282,6 +4372,11 @@ TIMER
 TIMERS
 :
    'timers'
+;
+
+TIMESTAMP
+:
+   'timestamp'
 ;
 
 TIMING
@@ -4444,6 +4539,11 @@ UNICAST
    'unicast'
 ;
 
+UPDATE_CALENDAR
+:
+   'update-calendar'
+;
+
 UPDATE_SOURCE
 :
    'update-source' -> pushMode(M_Interface)
@@ -4462,6 +4562,11 @@ USE_VRF
 USER_IDENTITY
 :
    'user-identity'
+;
+
+USERGROUP
+:
+   'usergroup'
 ;
 
 USERNAME
@@ -4609,6 +4714,11 @@ VSERVER
 VTP
 :
    'vtp'
+;
+
+VTY_POOL
+:
+   'vty-pool'
 ;
 
 WEBVPN

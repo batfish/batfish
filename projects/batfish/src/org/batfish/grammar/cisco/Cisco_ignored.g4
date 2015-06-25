@@ -11,12 +11,15 @@ null_block_stanza
    NO?
    (
       AAA
+      | ACCESS_GROUP
       | ARCHIVE
       | ATM
       | BASH
+      | BFD
       | CHAT_SCRIPT
       | CLASS_MAP
       | CLI
+      | CONFIGURATION
       | CONTROL_PLANE
       | CONTROLLER
       | COPY
@@ -46,19 +49,13 @@ null_block_stanza
       //      )
 
       | DIAL_PEER
+      | DOMAIN
       | EVENT_HANDLER
       | FEX
-      |
-      (
-         FLOW
-         (
-            EXPORTER
-            | MONITOR
-            | RECORD
-         )
-      )
+      | FLOW
       | GATEKEEPER
       | GATEWAY
+      | GROUP
       | GROUP_POLICY
       |
       (
@@ -86,9 +83,20 @@ null_block_stanza
       | IPC
       |
       (
+         IPV4
+         (
+            ASSEMBLER
+            | CONFLICT_POLICY
+            | HARDWARE
+            | UNNUMBERED
+         )
+      )
+      |
+      (
          IPV6
          (
             ACCESS_LIST
+            | CONFLICT_POLICY
             | HARDWARE
          )
       )
@@ -96,6 +104,7 @@ null_block_stanza
       | KRON
       | L2TP_CLASS
       | LINE
+      | LOGGING
       | MAC
       | MAC_LEARN
       | MANAGEMENT
@@ -105,6 +114,7 @@ null_block_stanza
       | MODULE
       | MONITOR
       | NO_BANNER
+      | NSR
       | ONE
       | OPENFLOW
       | PLAT
@@ -123,11 +133,13 @@ null_block_stanza
       | SVCLC
       | TACACS
       | TACACS_SERVER
+      | TCP
       | TEMPLATE
       | TERMINAL
       | TRACE
       | TRACK
       | TRANSCEIVER
+      | USERGROUP
       | VDC
       |
       (
@@ -152,7 +164,9 @@ null_block_substanza
       (
          ABSOLUTE_TIMEOUT
          | ACCEPT_DIALIN
+         | ACCEPT_LIFETIME
          | ACCESS_CLASS
+         | ACCOUNTING
          | ACCOUNTING_SERVER_GROUP
          | ACTION
          | ACTIVATION_CHARACTER
@@ -161,6 +175,8 @@ null_block_substanza
          | ADMINISTRATIVE_WEIGHT
          | AESA
          | ANYCONNECT
+         | ARCHIVE_LENGTH
+         | ARCHIVE_SIZE
          | ASSOCIATE
          | ASSOCIATION
          | AUTHENTICATION
@@ -194,6 +210,7 @@ null_block_substanza
          | CPTONE
          | CREDENTIALS
          | CRL
+         | CRYPTOGRAPHIC_ALGORITHM
          | DATABITS
          | DBL
          | DEFAULT_ACTION
@@ -204,12 +221,14 @@ null_block_substanza
          | DENY
          | DESCRIPTION
          | DESTINATION
+         | DEVICE
          | DIAGNOSTIC
          | DNS_SERVER
          | DOMAIN_ID
          | DROP
          | DS0_GROUP
          | DOMAIN_NAME
+         | ECHO
          | ENCAPSULATION
          | ENCRYPTION
          | ENROLLMENT
@@ -230,6 +249,7 @@ null_block_substanza
          | FALLBACK_DN
          | FILE_BROWSING
          | FILE_ENTRY
+         | FILE_SIZE
          | FLUSH_AT_ACTIVATION
          | FQDN
          | FRAMING
@@ -293,6 +313,7 @@ null_block_substanza
          | LOG
          | LOGGING
          | LOGIN
+         | LPTS
          | MAIN_CPU
          | MATCH
          | MAXIMUM
@@ -370,6 +391,8 @@ null_block_substanza
          | ROUTE_TARGET
          | RULE
          | SCHEME
+         | SECRET
+         | SEND_LIFETIME
          | SEQUENCE
          | SERVER
          | SERVERFARM
@@ -381,9 +404,11 @@ null_block_substanza
          | SESSION_LIMIT
          | SESSION_TIMEOUT
          | SET
+         | SEVERITY
          | SHAPE
          | SHUT
          | SHUTDOWN
+         | SINGLE_CONNECTION
          | SINGLE_ROUTER_MODE
          | SORT_BY
          | SOURCE
@@ -400,6 +425,7 @@ null_block_substanza
          | SYNC
          | SYSTEM_PRIORITY
          | TAG
+         | TASKGROUP
          | TB_VLAN1
          | TB_VLAN2
          | TCP_CONNECT
@@ -408,6 +434,7 @@ null_block_substanza
          | TIMEOUT
          | TIMEOUTS
          | TIMER
+         | TIMESTAMP
          | TIMING
          | TOP
          | TOS
@@ -418,6 +445,7 @@ null_block_substanza
          | TUNNEL
          | TUNNEL_GROUP
          | UDP_JITTER
+         | UPDATE_CALENDAR
          | USE_VRF
          | VIOLATE_ACTION
          | VIRTUAL
@@ -426,6 +454,7 @@ null_block_substanza
          | VPN_IDLE_TIMEOUT
          | VPN_TUNNEL_PROTOCOL
          | VSERVER
+         | VTY_POOL
          | WEBVPN
          | WINS_SERVER
          | WITHOUT_CSD
@@ -463,7 +492,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       AAA
       | AAA_SERVER
       | ABSOLUTE_TIMEOUT
-      | ACCESS_GROUP
       |
       (
          ACCESS_LIST
@@ -550,7 +578,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | FQDN
       | FTP
       | FTP_SERVER
-      | GROUP
       | GROUP_OBJECT
       | HARDWARE
       | HASH
@@ -663,7 +690,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | LIFETIME
       | LLDP
       | LOCATION
-      | LOGGING
       | MAC_ADDRESS_TABLE
       | MAIL_SERVER
       | MAXIMUM

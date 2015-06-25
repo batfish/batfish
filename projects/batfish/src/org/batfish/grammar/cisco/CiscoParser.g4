@@ -12,6 +12,11 @@ options {
 package org.batfish.grammar.cisco;
 }
 
+address_aiimgp_stanza
+:
+   ADDRESS ~NEWLINE* NEWLINE
+;
+
 address_family_vrfd_stanza
 :
    ADDRESS_FAMILY
@@ -24,6 +29,16 @@ address_family_vrfd_stanza
 afvrfd_stanza
 :
    null_afvrfd_stanza
+;
+
+aiimgp_stanza
+:
+   address_aiimgp_stanza
+;
+
+allow_iimgp_stanza
+:
+   ALLOW ~NEWLINE* NEWLINE aiimgp_stanza*
 ;
 
 banner_stanza
@@ -65,6 +80,26 @@ hostname_stanza
       HOSTNAME
       | SWITCHNAME
    ) name = ~NEWLINE* NEWLINE
+;
+
+iimgp_stanza
+:
+   allow_iimgp_stanza
+;
+
+imgp_stanza
+:
+   interface_imgp_stanza
+;
+
+inband_mgp_stanza
+:
+   INBAND NEWLINE imgp_stanza*
+;
+
+interface_imgp_stanza
+:
+   INTERFACE ~NEWLINE* NEWLINE iimgp_stanza*
 ;
 
 ip_default_gateway_stanza
@@ -119,6 +154,16 @@ macro_stanza
    MACRO ~NEWLINE* NEWLINE
 ;
 
+management_plane_stanza
+:
+   MANAGEMENT_PLANE NEWLINE mgp_stanza*
+;
+
+mgp_stanza
+:
+   inband_mgp_stanza
+;
+
 no_ip_access_list_stanza
 :
    NO IP ACCESS_LIST ~NEWLINE* NEWLINE
@@ -129,9 +174,11 @@ null_stanza
    banner_stanza
    | certificate_stanza
    | macro_stanza
+   | management_plane_stanza
    | no_ip_access_list_stanza
    | null_block_stanza
    | null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
+   | srlg_stanza
 ;
 
 null_afvrfd_stanza
@@ -145,6 +192,21 @@ null_vrfd_stanza
       RD
       | ROUTE_TARGET
    ) ~NEWLINE* NEWLINE
+;
+
+srlg_interface_numeric_stanza
+:
+   DEC ~NEWLINE* NEWLINE
+;
+
+srlg_interface_stanza
+:
+   INTERFACE ~NEWLINE* NEWLINE srlg_interface_numeric_stanza*
+;
+
+srlg_stanza
+:
+   SRLG NEWLINE srlg_interface_stanza*
 ;
 
 stanza
