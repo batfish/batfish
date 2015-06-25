@@ -1790,6 +1790,16 @@ HELLO_MULTIPLIER
    'hello-multiplier'
 ;
 
+HELLO_PADDING
+:
+   'hello-padding'
+;
+
+HELLO_PASSWORD
+:
+   'hello-password'
+;
+
 HELPER_ADDRESS
 :
    'helper-address'
@@ -2100,6 +2110,11 @@ ISIS
 ISL
 :
    'isl'
+;
+
+ISPF
+:
+   'ispf'
 ;
 
 KEEPALIVE
@@ -3087,6 +3102,11 @@ PARTICIPATE
    'participate'
 ;
 
+PASSIVE
+:
+   'passive'
+;
+
 PASSIVE_INTERFACE
 :
    'passive-interface'
@@ -4005,6 +4025,11 @@ SINGLE_CONNECTION
 SINGLE_ROUTER_MODE
 :
    'single-router-mode'
+;
+
+SINGLE_TOPOLOGY
+:
+   'single-topology'
 ;
 
 SLA

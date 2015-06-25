@@ -6,6 +6,19 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+address_family_iis_stanza
+:
+   ADDRESS_FAMILY
+   (
+      IPV4
+      | IPV6
+   )
+   (
+      UNICAST
+      | MULTICAST
+   ) NEWLINE common_iis_stanza*
+;
+
 address_family_is_stanza
 :
    ADDRESS_FAMILY
@@ -24,6 +37,19 @@ advertise_is_stanza
    ADVERTISE PASSIVE_ONLY NEWLINE
 ;
 
+circuit_type_iis_stanza
+:
+   CIRCUIT_TYPE LEVEL_2_ONLY NEWLINE
+;
+
+common_iis_stanza
+:
+   circuit_type_iis_stanza
+   | metric_iis_stanza
+   | null_iis_stanza
+   | passive_iis_stanza
+;
+
 common_is_stanza
 :
    advertise_is_stanza
@@ -37,10 +63,22 @@ common_is_stanza
    | summary_address_is_stanza
 ;
 
+iis_stanza
+:
+   address_family_iis_stanza
+   | common_iis_stanza
+;
+
+interface_is_stanza
+:
+   INTERFACE iname = interface_name NEWLINE iis_stanza*
+;
+
 is_stanza
 :
    address_family_is_stanza
    | common_is_stanza
+   | interface_is_stanza
 ;
 
 is_type_is_stanza
@@ -55,6 +93,11 @@ is_type_is_stanza
 isaf_stanza
 :
    common_is_stanza
+;
+
+metric_iis_stanza
+:
+   METRIC DEC NEWLINE
 ;
 
 metric_is_stanza
@@ -76,6 +119,16 @@ net_is_stanza
    NET ISO_ADDRESS NEWLINE
 ;
 
+null_iis_stanza
+:
+   NO?
+   (
+      HELLO_PADDING
+      | HELLO_PASSWORD
+      | POINT_TO_POINT
+   ) ~NEWLINE* NEWLINE
+;
+
 null_is_stanza
 :
    NO?
@@ -83,22 +136,31 @@ null_is_stanza
       AUTHENTICATION
       | FAST_FLOOD
       | HELLO
+      | ISPF
       | LOG
       | LOG_ADJACENCY_CHANGES
       | LSP_GEN_INTERVAL
       | LSP_PASSWORD
       | LSP_REFRESH_INTERVAL
       | MAX_LSP_LIFETIME
+      | MAXIMUM_PATHS
+      | MPLS
       | NSF
       | NSR
-      | SPF_INTERVAL
       | PRC_INTERVAL
       |
       (
          REDISTRIBUTE MAXIMUM_PREFIX
       )
       | SET_OVERLOAD_BIT
+      | SINGLE_TOPOLOGY
+      | SPF_INTERVAL
    ) ~NEWLINE* NEWLINE
+;
+
+passive_iis_stanza
+:
+   PASSIVE NEWLINE
 ;
 
 passive_interface_is_stanza
