@@ -160,6 +160,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Map<String, String> prefixes = new LinkedHashMap<String, String>();
       prefixes.put("Async", "Async");
       prefixes.put("ATM", "ATM");
+      prefixes.put("Bundle-Ether", "Bundle-Ether");
       prefixes.put("cmp-mgmt", "cmp-mgmt");
       prefixes.put("Embedded-Service-Engine", "Embedded-Service-Engine");
       prefixes.put("Ethernet", "Ethernet");
@@ -168,17 +169,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("GigabitEthernet", "GigabitEthernet");
       prefixes.put("ge", "GigabitEthernet");
       prefixes.put("GMPLS", "GMPLS");
+      prefixes.put("HundredGigE", "HundredGigE");
       prefixes.put("Group-Async", "Group-Async");
       prefixes.put("Loopback", "Loopback");
       prefixes.put("Management", "Management");
       prefixes.put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX);
+      prefixes.put("MgmtEth", "MgmtEth");
       prefixes.put("Null", "Null");
       prefixes.put("Port-channel", "Port-channel");
       prefixes.put("POS", "POS");
       prefixes.put("Serial", "Serial");
       prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
+      prefixes.put("TenGigE", "TenGigE");
       prefixes.put("te", "TenGigabitEthernet");
       prefixes.put("Tunnel", "Tunnel");
+      prefixes.put("tunnel-te", "tunnel-te");
       prefixes.put("Vlan", "Vlan");
       return prefixes;
    }
