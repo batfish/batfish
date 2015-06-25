@@ -16,43 +16,23 @@ null_block_stanza
       | ATM
       | BASH
       | BFD
+      | CEF
       | CHAT_SCRIPT
       | CLASS_MAP
       | CLI
+      | CONFDCONFIG
       | CONFIGURATION
       | CONTROL_PLANE
       | CONTROLLER
       | COPY
       | CRYPTO
-      //      (
-      //         CRYPTO
-      //         (
-      //            CA
-      //            | IPSEC
-      //            |
-      //            (
-      //               ISAKMP
-      //               (
-      //                  ENABLE
-      //                  | INVALID_SPI_RECOVERY
-      //                  | KEY
-      //                  | PEER
-      //                  | POLICY
-      //                  | PROFILE
-      //               )
-      //            )
-      //            | KEY
-      //            | KEYRING
-      //            | MAP
-      //            | PKI
-      //         )
-      //      )
-
       | DIAL_PEER
       | DOMAIN
+      | END
       | EVENT_HANDLER
       | FEX
       | FLOW
+      | FPD
       | GATEKEEPER
       | GATEWAY
       | GROUP
@@ -113,6 +93,13 @@ null_block_stanza
       | MLAG
       | MODULE
       | MONITOR
+      |
+      (
+         MPLS
+         (
+            OAM
+         )
+      )
       | NO_BANNER
       | NSR
       | ONE
@@ -127,6 +114,7 @@ null_block_stanza
       | ROLE
       | SAMPLER
       | SCCP
+      | SDR
       | SFLOW
       | SPANNING_TREE
       | STCAPP
@@ -205,8 +193,10 @@ null_block_substanza
          | CLIENT_GROUP
          | CLOCK
          | COLLECT
+         | COMMAND
          | CONFORM_ACTION
          | CONGESTION_CONTROL
+         | CONTEXT
          | CPTONE
          | CREDENTIALS
          | CRL
@@ -258,6 +248,8 @@ null_block_substanza
          | FREQUENCY
          | FT
          | GATEWAY
+         | GID
+         | GROUP
          | GROUP_ALIAS
          | GROUP_POLICY
          | GROUP_URL
@@ -267,6 +259,7 @@ null_block_substanza
          | HIDEKEYS
          | HIGH_AVAILABILITY
          | HISTORY
+         | HOMEDIR
          | ICMP_ECHO
          | IDLE
          | IDLE_TIMEOUT
@@ -300,6 +293,7 @@ null_block_substanza
          | KEEPALIVE_ENABLE
          | KEY_STRING
          | KEYPAIR
+         | KEYPATH
          | KEYRING
          | L2TP
          | LEASE
@@ -324,6 +318,7 @@ null_block_substanza
          | MODEM
          | MTU
          | NAME
+         | NAMESPACE
          | NAT
          | NATPOOL
          | NEGOTIATE
@@ -332,6 +327,7 @@ null_block_substanza
          | NOTIFY
          | OBJECT
          | OPEN
+         | OPS
          | PARAMETERS
          | PARENT
          | PARITY
@@ -382,6 +378,7 @@ null_block_substanza
          | REMOVED
          | REQUEST
          | REQUEST_DATA_SIZE
+         | RESOURCES
          | RETRANSMIT
          | RETRIES
          | REVERSE_ROUTE
@@ -418,6 +415,7 @@ null_block_substanza
          | SPEED
          | SPLIT_TUNNEL_NETWORK_LIST
          | SPLIT_TUNNEL_POLICY
+         | SSH_KEYDIR
          | STICKY
          | STOPBITS
          | STP
@@ -447,11 +445,15 @@ null_block_substanza
          | TUNNEL
          | TUNNEL_GROUP
          | UDP_JITTER
+         | UID
          | UPDATE_CALENDAR
          | USE_VRF
+         | USERS
          | VIOLATE_ACTION
          | VIRTUAL
          | VIRTUAL_TEMPLATE
+         | VM_CPU
+         | VM_MEMORY
          | VPN_FILTER
          | VPN_IDLE_TIMEOUT
          | VPN_TUNNEL_PROTOCOL
@@ -491,8 +493,7 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       NO
    )?
    (
-      AAA
-      | AAA_SERVER
+      AAA_SERVER
       | ABSOLUTE_TIMEOUT
       |
       (
@@ -702,7 +703,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | MLS
       | MODE
       | MODEM
-      | MPLS
       | MTA
       | MTU
       | MULTILINK

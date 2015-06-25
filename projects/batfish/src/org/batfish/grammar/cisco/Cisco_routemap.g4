@@ -166,7 +166,7 @@ route_map_tail_tail
 
 route_policy_stanza
 :
-   ROUTE_POLICY ~END_POLICY* END_POLICY NEWLINE
+   ROUTE_POLICY name = variable NEWLINE ~END_POLICY* END_POLICY NEWLINE
 ;
 
 set_as_path_prepend_rm_stanza

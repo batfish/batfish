@@ -169,6 +169,11 @@ ADDRESS_POOL
    'address-pool'
 ;
 
+ADJACENCY
+:
+   'adjacency'
+;
+
 ADMINISTRATIVE_WEIGHT
 :
    'administrative-weight'
@@ -204,6 +209,11 @@ AFFINITY
    'affinity'
 ;
 
+AFFINITY_MAP
+:
+   'affinity-map'
+;
+
 AGGREGATE
 :
    'aggregate'
@@ -227,6 +237,11 @@ ALERT_GROUP
 ALIAS
 :
    'alias'
+;
+
+ALLOCATE
+:
+   'allocate'
 ;
 
 ALLOW
@@ -366,6 +381,16 @@ ATM
    'atm'
 ;
 
+ATTRIBUTE_NAMES
+:
+   'attribute-names'
+;
+
+ATTRIBUTE_SET
+:
+   'attribute-set'
+;
+
 AUDIT
 :
    'audit'
@@ -424,6 +449,11 @@ AUTO_SUMMARY
 AUTO_SYNC
 :
    'auto-sync'
+;
+
+AUTO_TUNNEL
+:
+   'auto-tunnel'
 ;
 
 AUTOROUTE
@@ -776,6 +806,11 @@ COMM_LIST
    'comm-list'
 ;
 
+COMMAND
+:
+   'command'
+;
+
 COMMANDER_ADDRESS
 :
    'commander-address'
@@ -799,6 +834,11 @@ COMMUNITY_LIST
       enableDEC = false;
    }
 
+;
+
+CONFDCONFIG
+:
+   'confdConfig'
 ;
 
 CONFIG_REGISTER
@@ -1116,6 +1156,11 @@ DISCARD
    'discard'
 ;
 
+DISCOVERY
+:
+   'discovery'
+;
+
 DISTANCE
 :
    'distance'
@@ -1406,6 +1451,11 @@ EXCEPTION
    'exception'
 ;
 
+EXCLUDE
+:
+   'exclude'
+;
+
 EXEC
 :
    'exec'
@@ -1630,6 +1680,11 @@ FORWARDING
    'forwarding'
 ;
 
+FPD
+:
+   'fpd'
+;
+
 FQDN
 :
    'fqdn'
@@ -1693,6 +1748,11 @@ GATEWAY
 GE
 :
    'ge'
+;
+
+GID
+:
+   'gid'
 ;
 
 GLBP
@@ -1833,6 +1893,11 @@ HISTORY
 HOLD_QUEUE
 :
    'hold-queue'
+;
+
+HOMEDIR
+:
+   'homedir'
 ;
 
 HOST
@@ -2142,6 +2207,11 @@ KEY
    'key' -> pushMode(M_Key)
 ;
 
+KEY_SOURCE
+:
+   'key-source'
+;
+
 KEY_STRING
 :
    'key-string'
@@ -2150,6 +2220,11 @@ KEY_STRING
 KEYPAIR
 :
    'keypair'
+;
+
+KEYPATH
+:
+   'keypath'
 ;
 
 KEYRING
@@ -2180,6 +2255,11 @@ L2TP
 L2TP_CLASS
 :
    'l2tp-class'
+;
+
+LABEL
+:
+   'label'
 ;
 
 LACP
@@ -2215,6 +2295,11 @@ LDAP
 LDAPS
 :
    'ldaps'
+;
+
+LDP
+:
+   'ldp'
 ;
 
 LE
@@ -2772,6 +2857,11 @@ NAMEIF
    'nameif'
 ;
 
+NAMESPACE
+:
+   'namespace'
+;
+
 NAME
 :
    'name' -> pushMode(M_NAME)
@@ -2917,6 +3007,11 @@ NEXTHOP
    'nexthop'
 ;
 
+NHOP_ONLY
+:
+   'nhop-only'
+;
+
 NNTP
 :
    'nntp'
@@ -3002,6 +3097,11 @@ NTP
    'ntp'
 ;
 
+OAM
+:
+   'oam'
+;
+
 OBJECT
 :
    'object'
@@ -3025,6 +3125,11 @@ OPEN
 OPENFLOW
 :
    'openflow'
+;
+
+OPS
+:
+   'ops'
 ;
 
 ORIGIN
@@ -3642,6 +3747,11 @@ REPLACE_AS
    'replace-as'
 ;
 
+REOPTIMIZE
+:
+   'reoptimize'
+;
+
 REQUEST
 :
    'request'
@@ -3660,6 +3770,11 @@ RESOURCE
 RESOURCE_POOL
 :
    'resource-pool'
+;
+
+RESOURCES
+:
+   'resources'
 ;
 
 RETRANSMIT
@@ -3772,6 +3887,11 @@ RST
    'rst'
 ;
 
+RSVP
+:
+   'rsvp'
+;
+
 RT
 :
    'rt'
@@ -3835,6 +3955,11 @@ SCTP
 SDM
 :
    'sdm'
+;
+
+SDR
+:
+   'sdr'
 ;
 
 SECONDARY
@@ -3950,6 +4075,11 @@ SESSION_DISCONNECT_WARNING
 SESSION_LIMIT
 :
    'session-limit'
+;
+
+SESSION_PROTECTION
+:
+   'session-protection'
 ;
 
 SESSION_TIMEOUT
@@ -4155,6 +4285,11 @@ SRR_QUEUE
 SSH
 :
    'ssh'
+;
+
+SSH_KEYDIR
+:
+   'ssh_keydir'
 ;
 
 SSL
@@ -4514,6 +4649,11 @@ TRACKED
    'tracked'
 ;
 
+TRAFFIC_ENG
+:
+   'traffic-eng'
+;
+
 TRANSCEIVER
 :
    'transceiver'
@@ -4579,6 +4719,11 @@ TUNNEL_GROUP_LIST
    'tunnel-group-list'
 ;
 
+TUNNEL_ID
+:
+   'tunnel-id'
+;
+
 TX_QUEUE
 :
    'tx-queue'
@@ -4607,6 +4752,11 @@ UDP
 UDP_JITTER
 :
    'udp-jitter'
+;
+
+UID
+:
+   'uid'
 ;
 
 UNABLE
@@ -4674,6 +4824,11 @@ USERNAME
    'username'
 ;
 
+USERS
+:
+   'users'
+;
+
 UUCP
 :
    'uucp'
@@ -4727,6 +4882,16 @@ VIRTUAL_TEMPLATE
 VLAN
 :
    'vlan'
+;
+
+VM_CPU
+:
+   'vm-cpu'
+;
+
+VM_MEMORY
+:
+   'vm-memory'
 ;
 
 VMPS
