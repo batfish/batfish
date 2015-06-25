@@ -189,16 +189,19 @@ null_standalone_if_stanza
 :
    NO?
    (
-      ARP
+      AFFINITY
+      | ARP
       | ASYNC
       | ATM
       | AUTO
+      | AUTOROUTE
       | AUTOSTATE
       | BANDWIDTH
       | BEACON
       | BFD
       | BUNDLE
       | CABLELENGTH
+      | CARRIER_DELAY
       | CDP
       | CHANNEL
       | CHANNEL_GROUP
@@ -209,7 +212,9 @@ null_standalone_if_stanza
       | COUNTER
       | CRC
       | CRYPTO
+      | DAMPENING
       | DCBX
+      | DESTINATION
       |
       (
          DSU BANDWIDTH
@@ -217,6 +222,7 @@ null_standalone_if_stanza
       | DUPLEX
       | ENCAPSULATION
       | FAIR_QUEUE
+      | FAST_REROUTE
       | FLOWCONTROL
       | FORWARDER
       | FRAME_RELAY
@@ -282,6 +288,13 @@ null_standalone_if_stanza
             | VRF
          )
       )
+      |
+      (
+         IPV4
+         (
+            UNNUMBERED
+         )
+      )
       | IPV6
       | ISDN
       |
@@ -322,6 +335,7 @@ null_standalone_if_stanza
       (
          NTP BROADCAST
       )
+      | PATH_OPTION
       | PEER
       | PHYSICAL_LAYER
       | PORT_CHANNEL
@@ -343,6 +357,8 @@ null_standalone_if_stanza
       | SERIAL
       | SERVICE_MODULE
       | SERVICE_POLICY
+      | SIGNALLED_BANDWIDTH
+      | SIGNALLED_NAME
       | SONET
       | SPANNING_TREE
       | SPEED

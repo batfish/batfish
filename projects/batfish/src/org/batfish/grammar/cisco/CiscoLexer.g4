@@ -199,6 +199,11 @@ AESA
    'aesa'
 ;
 
+AFFINITY
+:
+   'affinity'
+;
+
 AGGREGATE
 :
    'aggregate'
@@ -421,6 +426,11 @@ AUTO_SYNC
    'auto-sync'
 ;
 
+AUTOROUTE
+:
+   'autoroute'
+;
+
 AUTOSELECT
 :
    'autoselect'
@@ -594,6 +604,11 @@ CALLER_ID
 CARD
 :
    'card'
+;
+
+CARRIER_DELAY
+:
+   'carrier-delay'
 ;
 
 CAS_CUSTOM
@@ -1496,6 +1511,11 @@ FALLBACK_DN
 FAST_FLOOD
 :
    'fast-flood'
+;
+
+FAST_REROUTE
+:
+   'fast-reroute'
 ;
 
 FEATURE
@@ -3077,6 +3097,11 @@ PATH_JITTER
    'path-jitter'
 ;
 
+PATH_OPTION
+:
+   'path-option'
+;
+
 PAUSE
 :
    'pause'
@@ -3935,6 +3960,16 @@ SHUT
 SHUTDOWN
 :
    'shutdown'
+;
+
+SIGNALLED_BANDWIDTH
+:
+   'signalled-bandwidth'
+;
+
+SIGNALLED_NAME
+:
+   'signalled-name'
 ;
 
 SINGLE_CONNECTION
