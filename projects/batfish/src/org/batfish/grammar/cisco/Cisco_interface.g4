@@ -94,7 +94,10 @@ ip_address_hsrpc_stanza
 
 ip_address_if_stanza
 :
-   IP ADDRESS
+   (
+      IP
+      | IPV4
+   ) ADDRESS
    (
       (
          ip = IP_ADDRESS subnet = IP_ADDRESS
