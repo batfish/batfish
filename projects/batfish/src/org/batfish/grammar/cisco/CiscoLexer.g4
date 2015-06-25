@@ -5460,6 +5460,7 @@ M_BANNER_ESCAPE_C
 :
    (
       '^C'
+      | ('^' F_Newline+)
       | '\u0003'
    ) -> type(ESCAPE_C), mode(M_MOTD_C)
 ;
