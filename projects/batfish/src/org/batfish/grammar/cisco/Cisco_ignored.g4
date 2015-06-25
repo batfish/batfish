@@ -231,6 +231,8 @@ null_block_substanza
          | ECHO
          | ENCAPSULATION
          | ENCRYPTION
+         | END_CLASS_MAP
+         | END_POLICY_MAP
          | ENROLLMENT
          | ERSPAN_ID
          | ESCAPE_CHARACTER

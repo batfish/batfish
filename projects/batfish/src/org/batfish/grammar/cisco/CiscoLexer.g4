@@ -1281,6 +1281,16 @@ END
    'end'
 ;
 
+END_CLASS_MAP
+:
+   'end-class-map'
+;
+
+END_POLICY_MAP
+:
+   'end-policy-map'
+;
+
 ENFORCE_FIRST_AS
 :
    'enforce-first-as'
