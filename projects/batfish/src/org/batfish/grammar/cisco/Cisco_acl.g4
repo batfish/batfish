@@ -420,6 +420,7 @@ nexus_access_list_stanza
 :
    (
       IP
+      | IPV4
       | IPV6
    ) ACCESS_LIST name = ~NEWLINE NEWLINE
    (
