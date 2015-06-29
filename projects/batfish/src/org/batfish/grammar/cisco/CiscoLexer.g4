@@ -1016,6 +1016,11 @@ DEFAULT_GROUP_POLICY
    'default-group-policy'
 ;
 
+DEFAULT_GW
+:
+   'default-gw'
+;
+
 DEFAULT_INFORMATION
 :
    'default-information'

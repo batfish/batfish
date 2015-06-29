@@ -6,6 +6,11 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+default_gw_if_stanza
+:
+   DEFAULT_GW IP_ADDRESS NEWLINE
+;
+
 description_if_stanza
 :
    description_line
@@ -33,7 +38,8 @@ hsrpc_stanza
 
 if_stanza
 :
-   description_if_stanza
+   default_gw_if_stanza
+   | description_if_stanza
    | ip_access_group_if_stanza
    | ip_address_if_stanza
    | ip_address_secondary_if_stanza
