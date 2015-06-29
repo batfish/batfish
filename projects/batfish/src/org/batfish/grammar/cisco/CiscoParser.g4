@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Cisco_acl, Cisco_bgp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_mpls, Cisco_ospf, Cisco_rip, Cisco_routemap;
+Cisco_common, Cisco_acl, Cisco_bgp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_mpls, Cisco_ospf, Cisco_rip, Cisco_routemap, Cisco_static;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -236,6 +236,7 @@ stanza
    | router_isis_stanza
    | router_ospf_stanza
    | router_rip_stanza
+   | router_static_stanza
    | rsvp_stanza
    | standard_access_list_stanza
    | switching_mode_stanza

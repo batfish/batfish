@@ -294,6 +294,7 @@
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_ospf.g4"/>
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_rip.g4"/>
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_routemap.g4"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_static.g4"/>
             </dependencies>
          </antlr4parser>
          <antlr4parser grammar.name="ConcretizerQueryResultParser" grammar.packagedir="org/batfish/grammar/z3">
