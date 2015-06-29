@@ -73,6 +73,7 @@ public class Settings {
    private static final String ARG_LOGICDIR = "logicdir";
    private static final String ARG_MPI = "mpi";
    private static final String ARG_MPI_PATH = "mpipath";
+   private static final String ARG_NO_OUTPUT = "nooutput";
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_NODE_ROLES_PATH = "nrpath";
    private static final String ARG_NODE_SET_PATH = "nodes";
@@ -257,6 +258,7 @@ public class Settings {
    private String[] _negatedConcretizerInputFilePaths;
    private String _nodeRolesPath;
    private String _nodeSetPath;
+   private boolean _noOutput;
    private boolean _noTraffic;
    private Options _options;
    private boolean _parseParallel;
@@ -589,6 +591,10 @@ public class Settings {
 
    public String getNodeSetPath() {
       return _nodeSetPath;
+   }
+
+   public boolean getNoOutput() {
+      return _noOutput;
    }
 
    public boolean getNoTraffic() {
@@ -1177,6 +1183,8 @@ public class Settings {
             .argName(ARGNAME_COORDINATOR_HOST)
             .desc("hostname of coordinator for registration with -"
                   + ARG_SERVICE_MODE).longOpt(ARG_COORDINATOR_HOST).build());
+      _options.addOption(Option.builder().desc("do not produce output files")
+            .longOpt(ARG_NO_OUTPUT).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1362,6 +1370,7 @@ public class Settings {
       // explicitly
       _serviceLogicBloxHostname = line.getOptionValue(
             ARG_SERVICE_LOGICBLOX_HOSTNAME, _serviceHost);
+      _noOutput = line.hasOption(ARG_NO_OUTPUT);
    }
 
    public boolean printParseTree() {

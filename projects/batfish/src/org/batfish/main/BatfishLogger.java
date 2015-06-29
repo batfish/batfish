@@ -127,9 +127,13 @@ public class BatfishLogger {
    }
 
    public void append(BatfishLoggerHistory history) {
+      append(history, "");
+   }
+
+   public void append(BatfishLoggerHistory history, String prefix) {
       for (HistoryItem item : history) {
          int level = item.getLevel();
-         String msg = item.getMessage();
+         String msg = prefix + item.getMessage();
          write(level, msg);
       }
    }

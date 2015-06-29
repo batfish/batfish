@@ -47,7 +47,7 @@ public class ParseVendorConfigurationJob implements
       String currentPath = _file.getAbsolutePath();
       VendorConfiguration vc = null;
       if (_fileText.length() == 0) {
-         return new ParseVendorConfigurationResult(_logger.getHistory());
+         return new ParseVendorConfigurationResult(_logger.getHistory(), _file);
       }
       BatfishCombinedParser<?, ?> combinedParser = null;
       ParserRuleContext tree = null;
@@ -78,7 +78,7 @@ public class ParseVendorConfigurationJob implements
          }
          else {
             return new ParseVendorConfigurationResult(_logger.getHistory(),
-                  new BatfishException(
+                  _file, new BatfishException(
                         "Juniper configurations must be flattened prior to this stage: \""
                               + _file.toString() + "\""));
          }
@@ -98,18 +98,18 @@ public class ParseVendorConfigurationJob implements
                + format.toString() + "\" for file: \"" + currentPath + "\"\n";
          if (!_settings.ignoreUnsupported()) {
             return new ParseVendorConfigurationResult(_logger.getHistory(),
-                  new BatfishException(unsupportedError));
+                  _file, new BatfishException(unsupportedError));
          }
          else {
             _logger.warn(unsupportedError);
          }
-         return new ParseVendorConfigurationResult(_logger.getHistory());
+         return new ParseVendorConfigurationResult(_logger.getHistory(), _file);
 
       case UNKNOWN:
       default:
          String unknownError = "Unknown configuration format for file: \""
                + currentPath + "\"\n";
-         return new ParseVendorConfigurationResult(_logger.getHistory(),
+         return new ParseVendorConfigurationResult(_logger.getHistory(), _file,
                new BatfishException(unknownError));
       }
 
@@ -122,13 +122,13 @@ public class ParseVendorConfigurationJob implements
       catch (ParserBatfishException e) {
          String error = "Error parsing configuration file: \"" + currentPath
                + "\"";
-         return new ParseVendorConfigurationResult(_logger.getHistory(),
+         return new ParseVendorConfigurationResult(_logger.getHistory(), _file,
                new BatfishException(error, e));
       }
       catch (Exception e) {
          String error = "Error post-processing parse tree of configuration file: \""
                + currentPath + "\"";
-         return new ParseVendorConfigurationResult(_logger.getHistory(),
+         return new ParseVendorConfigurationResult(_logger.getHistory(), _file,
                new BatfishException(error, e));
       }
       finally {
@@ -148,10 +148,10 @@ public class ParseVendorConfigurationJob implements
       String hostname = vc.getHostname();
       if (hostname == null) {
          String error = "No hostname set in file: \"" + _file + "\"\n";
-         return new ParseVendorConfigurationResult(_logger.getHistory(),
+         return new ParseVendorConfigurationResult(_logger.getHistory(), _file,
                new BatfishException(error));
       }
-      return new ParseVendorConfigurationResult(_logger.getHistory(), vc);
+      return new ParseVendorConfigurationResult(_logger.getHistory(), _file, vc);
    }
 
 }

@@ -2206,7 +2206,14 @@ public class Batfish implements AutoCloseable {
                catch (InterruptedException | ExecutionException e) {
                   throw new BatfishException("Error executing parse job", e);
                }
-               _logger.append(result.getHistory());
+               String terseLogLevelPrefix;
+               if (_logger.isActive(BatfishLogger.LEVEL_INFO)) {
+                  terseLogLevelPrefix = "";
+               }
+               else {
+                  terseLogLevelPrefix = result.getFile().toString() + ": ";
+               }
+               _logger.append(result.getHistory(), terseLogLevelPrefix);
                Throwable failureCause = result.getFailureCause();
                if (failureCause != null) {
                   if (_settings.exitOnParseError()) {
@@ -2879,24 +2886,28 @@ public class Batfish implements AutoCloseable {
             RoleSet roles = nodeRolesEntry.getValue();
             config.setRoles(roles);
          }
-         _logger.info("Serializing node-roles mappings: \"" + nodeRolesPath
-               + "\"...");
-         serializeObject(nodeRoles, new File(nodeRolesPath));
-         _logger.info("OK\n");
+         if (!_settings.getNoOutput()) {
+            _logger.info("Serializing node-roles mappings: \"" + nodeRolesPath
+                  + "\"...");
+            serializeObject(nodeRoles, new File(nodeRolesPath));
+            _logger.info("OK\n");
+         }
       }
-
-      _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
-      resetTimer();
-      new File(outputPath).mkdirs();
-      for (String name : vendorConfigurations.keySet()) {
-         VendorConfiguration vc = vendorConfigurations.get(name);
-         Path currentOutputPath = Paths.get(outputPath, name);
-         _logger.debug("Serializing: \"" + name + "\" ==> \""
-               + currentOutputPath.toString() + "\"...");
-         serializeObject(vc, currentOutputPath.toFile());
-         _logger.debug("OK\n");
+      if (!_settings.getNoOutput()) {
+         _logger
+               .info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+         resetTimer();
+         new File(outputPath).mkdirs();
+         for (String name : vendorConfigurations.keySet()) {
+            VendorConfiguration vc = vendorConfigurations.get(name);
+            Path currentOutputPath = Paths.get(outputPath, name);
+            _logger.debug("Serializing: \"" + name + "\" ==> \""
+                  + currentOutputPath.toString() + "\"...");
+            serializeObject(vc, currentOutputPath.toFile());
+            _logger.debug("OK\n");
+         }
+         printElapsedTime();
       }
-      printElapsedTime();
    }
 
    private Synthesizer synthesizeDataPlane(
