@@ -59,6 +59,7 @@ if_stanza
    | switchport_mode_dynamic_desirable_stanza
    | switchport_mode_trunk_stanza
    | vrf_forwarding_if_stanza
+   | vrf_if_stanza
    | vrf_member_if_stanza
 ;
 
@@ -465,10 +466,15 @@ track_hsrpc_stanza
 
 vrf_forwarding_if_stanza
 :
-   VRF FORWARDING name = ~NEWLINE NEWLINE
+   VRF FORWARDING name = variable NEWLINE
+;
+
+vrf_if_stanza
+:
+   VRF name = variable NEWLINE
 ;
 
 vrf_member_if_stanza
 :
-   VRF MEMBER name = ~NEWLINE NEWLINE
+   VRF MEMBER name = variable NEWLINE
 ;

@@ -23,7 +23,14 @@ address_family_vrfd_stanza
    (
       IPV4
       | IPV6
-   ) NEWLINE afvrfd_stanza* EXIT_ADDRESS_FAMILY NEWLINE
+   )
+   (
+      MULTICAST
+      | UNICAST
+   )? NEWLINE afvrfd_stanza*
+   (
+      EXIT_ADDRESS_FAMILY NEWLINE
+   )?
 ;
 
 afvrfd_stanza
@@ -90,11 +97,15 @@ iimgp_stanza
 imgp_stanza
 :
    interface_imgp_stanza
+   | null_imgp_stanza
 ;
 
 inband_mgp_stanza
 :
-   INBAND NEWLINE imgp_stanza*
+   (
+      INBAND
+      | OUT_OF_BAND
+   ) NEWLINE imgp_stanza*
 ;
 
 interface_imgp_stanza
@@ -186,6 +197,14 @@ null_afvrfd_stanza
    MAXIMUM ~NEWLINE* NEWLINE
 ;
 
+null_imgp_stanza
+:
+   NO?
+   (
+      VRF
+   ) ~NEWLINE* NEWLINE
+;
+
 null_vrfd_stanza
 :
    (
@@ -256,7 +275,7 @@ vrf_context_stanza
 
 vrf_definition_stanza
 :
-   VRF DEFINITION name = variable NEWLINE vrfd_stanza*
+   VRF DEFINITION? name = variable NEWLINE vrfd_stanza*
 ;
 
 vrfc_stanza

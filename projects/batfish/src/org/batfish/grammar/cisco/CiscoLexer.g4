@@ -3162,6 +3162,11 @@ OUT
    'out'
 ;
 
+OUT_OF_BAND
+:
+   'out-of-band'
+;
+
 OWNER
 :
    'owner'
@@ -5936,6 +5941,7 @@ M_MOTD_C_ESCAPE_C
 :
    (
       '^C'
+      | 'cC'
       | '\u0003'
    ) -> type(ESCAPE_C), mode(DEFAULT_MODE)
 ;
@@ -5946,7 +5952,11 @@ M_MOTD_C_MOTD
       (
          '^' ~[^C\u0003]
       )
-      | ~[^\u0003]
+      |
+      (
+         'c' ~[^C\u0003]
+      )
+      | ~[c^\u0003]
    )+
 ;
 

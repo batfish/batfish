@@ -69,6 +69,7 @@ null_block_stanza
             | CONFLICT_POLICY
             | HARDWARE
             | UNNUMBERED
+            | VIRTUAL
          )
       )
       |
