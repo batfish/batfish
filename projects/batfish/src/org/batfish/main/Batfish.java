@@ -973,7 +973,7 @@ public class Batfish implements AutoCloseable {
 
       ExecutorService pool;
       boolean shuffle;
-      if (_settings.getParseParallel()) {
+      if (!_settings.getSequential()) {
          int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
          pool = Executors.newFixedThreadPool(numConcurrentThreads);
          shuffle = true;
@@ -2150,7 +2150,7 @@ public class Batfish implements AutoCloseable {
 
       ExecutorService pool;
       boolean shuffle;
-      if (_settings.getParseParallel()) {
+      if (!_settings.getSequential()) {
          int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
          pool = Executors.newFixedThreadPool(numConcurrentThreads);
          shuffle = true;

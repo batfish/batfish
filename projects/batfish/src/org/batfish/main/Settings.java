@@ -78,7 +78,6 @@ public class Settings {
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_NODE_ROLES_PATH = "nrpath";
    private static final String ARG_NODE_SET_PATH = "nodes";
-   private static final String ARG_PARSE_PARALLEL = "parseparallel";
    private static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
    private static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
    private static final String ARG_PREDHELP = "predhelp";
@@ -99,6 +98,7 @@ public class Settings {
    private static final String ARG_ROLE_SET_PATH = "rspath";
    private static final String ARG_ROLE_TRANSIT_QUERY = "rt";
    private static final String ARG_ROLE_TRANSIT_QUERY_PATH = "rtpath";
+   private static final String ARG_SEQUENTIAL = "sequential";
    private static final String ARG_SERIALIZE_INDEPENDENT = "si";
    private static final String ARG_SERIALIZE_INDEPENDENT_PATH = "sipath";
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
@@ -262,7 +262,6 @@ public class Settings {
    private boolean _noOutput;
    private boolean _noTraffic;
    private Options _options;
-   private boolean _parseParallel;
    private boolean _pedanticAsError;
    private boolean _pedanticRecord;
    private boolean _postFlows;
@@ -289,6 +288,7 @@ public class Settings {
    private boolean _roleTransitQuery;
    private String _roleTransitQueryPath;
    private boolean _runInServiceMode;
+   private boolean _sequential;
    private boolean _serializeIndependent;
    private String _serializeIndependentPath;
    private boolean _serializeToText;
@@ -605,10 +605,6 @@ public class Settings {
       return _noTraffic;
    }
 
-   public boolean getParseParallel() {
-      return _parseParallel;
-   }
-
    public boolean getPedanticAsError() {
       return _pedanticAsError;
    }
@@ -691,6 +687,10 @@ public class Settings {
 
    public String getRoleTransitQueryPath() {
       return _roleTransitQueryPath;
+   }
+
+   public boolean getSequential() {
+      return _sequential;
    }
 
    public boolean getSerializeIndependent() {
@@ -1167,8 +1167,8 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("post dumped flows to logicblox")
             .longOpt(BfConsts.COMMAND_POST_FLOWS).build());
-      _options.addOption(Option.builder().desc("parse configs in parallel")
-            .longOpt(ARG_PARSE_PARALLEL).build());
+      _options.addOption(Option.builder().desc("force sequential operation")
+            .longOpt(ARG_SEQUENTIAL).build());
       _options.addOption(Option.builder().argName("port_number").hasArg()
             .desc("coordinator work manager listening port")
             .longOpt(ARG_COORDINATOR_WORK_PORT).build());
@@ -1363,7 +1363,7 @@ public class Settings {
       _questionName = line.getOptionValue(BfConsts.ARG_QUESTION_NAME);
       _answer = line.hasOption(BfConsts.COMMAND_ANSWER);
       _postFlows = line.hasOption(BfConsts.COMMAND_POST_FLOWS);
-      _parseParallel = line.hasOption(ARG_PARSE_PARALLEL);
+      _sequential = line.hasOption(ARG_SEQUENTIAL);
       _coordinatorHost = line.getOptionValue(ARG_COORDINATOR_HOST);
       _coordinatorPoolPort = Integer.parseInt(line.getOptionValue(
             ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_POOL_PORT.toString()));
