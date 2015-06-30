@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.batfish.collections.Pair;
+import org.batfish.util.CompositePrintStream;
 
 public class BatfishLogger {
 
@@ -108,12 +109,20 @@ public class BatfishLogger {
       initializeLogLevel(levelStr);
       _logFile = settings.getLogFile();
       if (_logFile != null) {
+         PrintStream filePrintStream = null;
          try {
-            _ps = new PrintStream(_logFile);
+            filePrintStream = new PrintStream(_logFile);
          }
          catch (FileNotFoundException e) {
             throw new BatfishException("Could not create logfile", e);
          }
+         if (settings.getLogTee()) {
+            _ps = new CompositePrintStream(System.out, filePrintStream);
+         }
+         else {
+            _ps = filePrintStream;
+         }
+
       }
       else {
          _ps = System.out;

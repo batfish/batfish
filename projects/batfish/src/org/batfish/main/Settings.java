@@ -70,6 +70,7 @@ public class Settings {
    private static final String ARG_LB_WEB_PORT = "lbwebport";
    private static final String ARG_LOG_FILE = "logfile";
    private static final String ARG_LOG_LEVEL = "loglevel";
+   private static final String ARG_LOG_TEE = "logtee";
    private static final String ARG_LOGICDIR = "logicdir";
    private static final String ARG_MPI = "mpi";
    private static final String ARG_MPI_PATH = "mpipath";
@@ -89,7 +90,6 @@ public class Settings {
    private static final String ARG_REACH_PATH = "reachpath";
    private static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
    private static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
-   private static final String ARG_REDIRECT_STDERR = "redirect";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
    private static final String ARG_ROLE_HEADERS = "rh";
@@ -254,6 +254,7 @@ public class Settings {
    private String _logicDir;
    private String _logicSrcDir;
    private String _logLevel;
+   private boolean _logTee;
    private String _mpiPath;
    private String[] _negatedConcretizerInputFilePaths;
    private String _nodeRolesPath;
@@ -277,7 +278,6 @@ public class Settings {
    private String _reachPath;
    private boolean _redFlagAsError;
    private boolean _redFlagRecord;
-   private boolean _redirectStdErr;
    private boolean _removeFacts;
    private boolean _revert;
    private String _revertBranchName;
@@ -575,6 +575,10 @@ public class Settings {
 
    public String getLogLevel() {
       return _logLevel;
+   }
+
+   public boolean getLogTee() {
+      return _logTee;
    }
 
    public String getMultipathInconsistencyQueryPath() {
@@ -898,8 +902,6 @@ public class Settings {
       _options.addOption(Option.builder().hasArg().argName(ARGNAME_REVERT)
             .desc("revert test rig workspace to specified branch")
             .longOpt(ARG_REVERT).build());
-      _options.addOption(Option.builder().desc("redirect stderr to stdout")
-            .longOpt(ARG_REDIRECT_STDERR).build());
       _options.addOption(Option.builder().hasArg().argName(ARGNAME_ANONYMIZE)
             .desc("created anonymized versions of configs in test rig")
             .longOpt(ARG_ANONYMIZE).build());
@@ -1185,6 +1187,9 @@ public class Settings {
                   + ARG_SERVICE_MODE).longOpt(ARG_COORDINATOR_HOST).build());
       _options.addOption(Option.builder().desc("do not produce output files")
             .longOpt(ARG_NO_OUTPUT).build());
+      _options.addOption(Option.builder()
+            .desc("print output to both logfile and standard out")
+            .longOpt(ARG_LOG_TEE).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1273,7 +1278,6 @@ public class Settings {
       _dumpFactsDir = line.getOptionValue(ARG_DUMP_FACTS_DIR);
       _revertBranchName = line.getOptionValue(ARG_REVERT);
       _revert = (_revertBranchName != null);
-      _redirectStdErr = line.hasOption(ARG_REDIRECT_STDERR);
       _anonymize = line.hasOption(ARG_ANONYMIZE);
       if (_anonymize) {
          _anonymizeDir = line.getOptionValue(ARG_ANONYMIZE);
@@ -1371,14 +1375,11 @@ public class Settings {
       _serviceLogicBloxHostname = line.getOptionValue(
             ARG_SERVICE_LOGICBLOX_HOSTNAME, _serviceHost);
       _noOutput = line.hasOption(ARG_NO_OUTPUT);
+      _logTee = line.hasOption(ARG_LOG_TEE);
    }
 
    public boolean printParseTree() {
       return _printParseTree;
-   }
-
-   public boolean redirectStdErr() {
-      return _redirectStdErr;
    }
 
    public boolean revert() {
