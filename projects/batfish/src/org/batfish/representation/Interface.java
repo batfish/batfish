@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.batfish.main.ConfigurationFormat;
 import org.batfish.util.NamedStructure;
 import org.batfish.util.SubRange;
 
@@ -143,6 +144,16 @@ public class Interface extends NamedStructure {
       return _switchportTrunkEncapsulation;
    }
 
+   public boolean isLoopback(ConfigurationFormat vendor) {
+      if (vendor == ConfigurationFormat.JUNIPER
+            || vendor == ConfigurationFormat.FLAT_JUNIPER) {
+         if (!_name.contains(".")) {
+            return false;
+         }
+      }
+      return _name.toLowerCase().startsWith("lo");
+   }
+
    public void setAccessVlan(int vlan) {
       _accessVlan = vlan;
    }
@@ -211,4 +222,5 @@ public class Interface extends NamedStructure {
          SwitchportEncapsulationType encapsulation) {
       _switchportTrunkEncapsulation = encapsulation;
    }
+
 }
