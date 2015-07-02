@@ -48,7 +48,7 @@ public class Settings {
    private static final String ARG_DUMP_TRAFFIC_FACTS = "dumptraffic";
    private static final String ARG_DUPLICATE_ROLE_FLOWS = "drf";
    private static final String ARG_ENVIRONMENT_NAME = "env";
-   private static final String ARG_EXIT_ON_PARSE_ERROR = "ee";
+   private static final String ARG_EXIT_ON_FIRST_ERROR = "ee";
    private static final String ARG_FACTS = "facts";
    private static final String ARG_FLATTEN = "flatten";
    private static final String ARG_FLATTEN_DESTINATION = "flattendst";
@@ -225,7 +225,7 @@ public class Settings {
    private boolean _dumpTrafficFacts;
    private boolean _duplicateRoleFlows;
    private String _environmentName;
-   private boolean _exitOnParseError;
+   private boolean _exitOnFirstError;
    private boolean _facts;
    private boolean _flatten;
    private String _flattenDestination;
@@ -339,10 +339,6 @@ public class Settings {
 
    public boolean duplicateRoleFlows() {
       return _duplicateRoleFlows;
-   }
-
-   public boolean exitOnParseError() {
-      return _exitOnParseError;
    }
 
    public boolean flattenOnTheFly() {
@@ -463,6 +459,10 @@ public class Settings {
 
    public String getEnvironmentName() {
       return _environmentName;
+   }
+
+   public boolean getExitOnFirstError() {
+      return _exitOnFirstError;
    }
 
    public boolean getFacts() {
@@ -856,7 +856,7 @@ public class Settings {
             .addOption(Option
                   .builder()
                   .desc("exit on first parse error (otherwise will exit on last parse error)")
-                  .longOpt(ARG_EXIT_ON_PARSE_ERROR).build());
+                  .longOpt(ARG_EXIT_ON_FIRST_ERROR).build());
       _options.addOption(Option.builder().desc("generate z3 data plane logic")
             .longOpt(ARG_Z3).build());
       _options.addOption(Option.builder().argName(ARGNAME_Z3_OUTPUT).hasArg()
@@ -1250,7 +1250,7 @@ public class Settings {
       _facts = line.hasOption(ARG_FACTS);
       _update = line.hasOption(ARG_UPDATE);
       _noTraffic = line.hasOption(ARG_NO_TRAFFIC);
-      _exitOnParseError = line.hasOption(ARG_EXIT_ON_PARSE_ERROR);
+      _exitOnFirstError = line.hasOption(ARG_EXIT_ON_FIRST_ERROR);
       _z3 = line.hasOption(ARG_Z3);
       if (_z3) {
          _z3File = line.getOptionValue(ARG_Z3_OUTPUT);

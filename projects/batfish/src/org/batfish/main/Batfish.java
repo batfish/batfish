@@ -773,7 +773,7 @@ public class Batfish implements AutoCloseable {
             _logger.fatal("...CONVERSION ERROR\n");
             _logger.fatal(ExceptionUtils.getStackTrace(e));
             processingError = true;
-            if (_settings.exitOnParseError()) {
+            if (_settings.getExitOnFirstError()) {
                break;
             }
             else {
@@ -1028,7 +1028,7 @@ public class Batfish implements AutoCloseable {
                _logger.append(result.getHistory());
                Throwable failureCause = result.getFailureCause();
                if (failureCause != null) {
-                  if (_settings.exitOnParseError()) {
+                  if (_settings.getExitOnFirstError()) {
                      throw new BatfishException("Failed parse job",
                            failureCause);
                   }
@@ -2216,7 +2216,7 @@ public class Batfish implements AutoCloseable {
                _logger.append(result.getHistory(), terseLogLevelPrefix);
                Throwable failureCause = result.getFailureCause();
                if (failureCause != null) {
-                  if (_settings.exitOnParseError()) {
+                  if (_settings.getExitOnFirstError()) {
                      throw new BatfishException("Failed parse job",
                            failureCause);
                   }
@@ -2295,7 +2295,7 @@ public class Batfish implements AutoCloseable {
             _logger.fatal("...EXTRACTION ERROR\n");
             _logger.fatal(ExceptionUtils.getStackTrace(e));
             processingError = true;
-            if (_settings.exitOnParseError()) {
+            if (_settings.getExitOnFirstError()) {
                break;
             }
             else {
