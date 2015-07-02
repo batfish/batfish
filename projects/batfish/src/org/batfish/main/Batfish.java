@@ -851,7 +851,8 @@ public class Batfish implements AutoCloseable {
       File[] serializedConfigs = dir.listFiles();
       if (serializedConfigs == null) {
          throw new BatfishException(
-               "Error reading vendor-independent configs directory");
+               "Error reading vendor-independent configs directory: \""
+                     + dir.toString() + "\"");
       }
       for (File serializedConfig : serializedConfigs) {
          String name = serializedConfig.getName();
