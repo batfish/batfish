@@ -19,6 +19,11 @@ ACTIVE
    'active'
 ;
 
+ADD_IP
+:
+   'add_ip'
+;
+
 AND
 :
    'and'
@@ -27,6 +32,21 @@ AND
 ASSERT
 :
    'assert'
+;
+
+BGP_NEIGHBOR
+:
+   'bgp_neighbor'
+;
+
+CONTAINS_IP
+:
+   'contains_ip'
+;
+
+ELSE
+:
+   'else'
 ;
 
 FALSE
@@ -54,14 +74,24 @@ INTERFACE
    'interface'
 ;
 
+IP
+:
+   'ip'
+;
+
 ISIS
 :
    'isis'
 ;
 
-ISLOOPBACK
+IS_LOOPBACK
 :
-   'isLoopback'
+   'is_loopback'
+;
+
+GLOBAL
+:
+   'global'
 ;
 
 MULTIPATH
@@ -87,6 +117,11 @@ OR
 PASSIVE
 :
    'passive'
+;
+
+REMOTE_IP
+:
+   'remote_ip'
 ;
 
 TESTRIG
@@ -156,6 +191,21 @@ PERIOD
    '.'
 ;
 
+PREFIX_SET
+:
+   'prefix-set'
+;
+
+SEMICOLON
+:
+   ';'
+;
+
+VARIABLE
+:
+   '$' F_VarChar+
+;
+
 WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
@@ -176,7 +226,10 @@ F_NonNewlineChar
 fragment
 F_VarChar
 :
-   ~[\n\r:, \t\u000C]
+   'A' .. 'Z'
+   | 'a' .. 'z'
+   | '0' .. '9'
+   | '_'
 ;
 
 fragment

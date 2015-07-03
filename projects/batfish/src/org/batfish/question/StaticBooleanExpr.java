@@ -7,7 +7,7 @@ public enum StaticBooleanExpr implements BooleanExpr {
    TRUE;
 
    @Override
-   public boolean evaluate(AssertionCtx context) {
+   public boolean evaluate(Environment environment) {
       switch (this) {
       case FALSE:
          return false;

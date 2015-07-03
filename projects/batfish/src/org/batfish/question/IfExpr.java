@@ -12,8 +12,9 @@ public class IfExpr implements BooleanExpr {
    }
 
    @Override
-   public boolean evaluate(AssertionCtx context) {
-      return !_antecedent.evaluate(context) || _consequent.evaluate(context);
+   public boolean evaluate(Environment environment) {
+      return !_antecedent.evaluate(environment)
+            || _consequent.evaluate(environment);
    }
 
 }

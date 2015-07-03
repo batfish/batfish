@@ -9,8 +9,8 @@ public class NotExpr implements BooleanExpr {
    }
 
    @Override
-   public boolean evaluate(AssertionCtx context) {
-      return !_argument.evaluate(context);
+   public boolean evaluate(Environment environment) {
+      return !_argument.evaluate(environment);
    }
 
 }

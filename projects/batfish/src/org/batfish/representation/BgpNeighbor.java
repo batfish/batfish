@@ -304,4 +304,9 @@ public class BgpNeighbor implements Serializable {
       _updateSource = updateSource;
    }
 
+   @Override
+   public String toString() {
+      return "BgpNeighbor<Ip:" + _address + ", AS:" + _remoteAs + ">";
+   }
+
 }

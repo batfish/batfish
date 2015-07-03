@@ -95,11 +95,7 @@ import org.batfish.logicblox.PredicateInfo;
 import org.batfish.logicblox.ProjectFile;
 import org.batfish.logicblox.QueryException;
 import org.batfish.logicblox.TopologyFactExtractor;
-import org.batfish.question.Assertion;
-import org.batfish.question.AssertionCtx;
-import org.batfish.question.InterfaceSelector;
 import org.batfish.question.MultipathQuestion;
-import org.batfish.question.NodeSelector;
 import org.batfish.question.Question;
 import org.batfish.question.VerifyQuestion;
 import org.batfish.representation.BgpNeighbor;
@@ -424,34 +420,9 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answerVerify(VerifyQuestion question) {
-      Map<String, Configuration> configuration = deserializeConfigurations(_settings
+      Map<String, Configuration> configurations = deserializeConfigurations(_settings
             .getSerializeIndependentPath());
-      Collection<Configuration> nodes = configuration.values();
-      AssertionCtx masterContext = new AssertionCtx();
-      NodeSelector nodeSelector = question.getNodeSelector();
-      if (nodeSelector != null) {
-         for (Configuration node : nodes) {
-            boolean nodeSelected = nodeSelector.select(node);
-            if (nodeSelected) {
-               AssertionCtx nodeContext = masterContext.copy();
-               nodeContext.setNode(node);
-               InterfaceSelector interfaceSelector = question
-                     .getInterfaceSelector();
-               if (interfaceSelector != null) {
-                  for (Interface iface : node.getInterfaces().values()) {
-                     boolean interfaceSelected = interfaceSelector.select(node,
-                           iface);
-                     if (interfaceSelected) {
-                        AssertionCtx interfaceContext = nodeContext.copy();
-                        interfaceContext.setInterface(iface);
-                        Assertion assertion = question.getAssertion();
-                        assertion.check(interfaceContext, _logger, _settings);
-                     }
-                  }
-               }
-            }
-         }
-      }
+      question.getProgram().execute(configurations, _logger, _settings);
    }
 
    /**

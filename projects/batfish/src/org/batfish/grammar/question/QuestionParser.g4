@@ -9,6 +9,11 @@ options {
 package org.batfish.grammar.question;
 }
 
+add_ip_statement
+:
+   target = VARIABLE PERIOD ADD_IP OPEN_PAREN ip_expr CLOSE_PAREN SEMICOLON
+;
+
 and_expr
 :
    AND OPEN_BRACE conjuncts += boolean_expr
@@ -22,9 +27,25 @@ assertion
    ASSERT OPEN_BRACE boolean_expr CLOSE_BRACE
 ;
 
+bgp_neighbor_statement
+:
+   statement
+;
+
+bgp_neighbor_ip_expr
+:
+   BGP_NEIGHBOR PERIOD bgp_neighbor_remote_ip_ip_expr
+;
+
+bgp_neighbor_remote_ip_ip_expr
+:
+   REMOTE_IP
+;
+
 boolean_expr
 :
    and_expr
+   | contains_ip_expr
    | if_expr
    | false_expr
    | not_expr
@@ -33,19 +54,29 @@ boolean_expr
    | true_expr
 ;
 
+contains_ip_expr
+:
+   caller = VARIABLE PERIOD CONTAINS_IP OPEN_PAREN ip_expr CLOSE_PAREN
+;
+
 false_expr
 :
    FALSE
 ;
 
-foreach_interface
+foreach_bgp_neighbor_statement
 :
-   FOREACH INTERFACE
+   FOREACH BGP_NEIGHBOR OPEN_BRACE bgp_neighbor_statement+ CLOSE_BRACE
 ;
 
-foreach_node
+foreach_interface_statement
 :
-   FOREACH NODE
+   FOREACH INTERFACE OPEN_BRACE interface_statement+ CLOSE_BRACE
+;
+
+foreach_node_statement
+:
+   FOREACH NODE OPEN_BRACE node_statement+ CLOSE_BRACE
 ;
 
 if_expr
@@ -54,9 +85,28 @@ if_expr
    consequent = boolean_expr CLOSE_BRACE
 ;
 
-interface_context
+if_statement
 :
-   foreach_interface OPEN_BRACE assertion CLOSE_BRACE
+   IF OPEN_PAREN guard = boolean_expr CLOSE_PAREN THEN OPEN_BRACE
+   (
+      true_statements += statement
+   )* CLOSE_BRACE
+   (
+      ELSE OPEN_BRACE
+      (
+         false_statements += statement
+      )* CLOSE_BRACE
+   )?
+;
+
+interface_ip_expr
+:
+   INTERFACE PERIOD interface_ip_ip_expr
+;
+
+interface_ip_ip_expr
+:
+   IP
 ;
 
 interface_isis_active_expr
@@ -80,7 +130,7 @@ interface_isis_property_expr
 
 interface_isloopback_expr
 :
-   ISLOOPBACK
+   IS_LOOPBACK
 ;
 
 interface_property_expr
@@ -92,18 +142,27 @@ interface_property_expr
    )
 ;
 
+interface_statement
+:
+   statement
+;
+
+ip_expr
+:
+   bgp_neighbor_ip_expr
+   | interface_ip_expr
+;
+
 multipath_question
 :
    MULTIPATH environment = string
 ;
 
-node_context
+node_statement
 :
-   foreach_node OPEN_BRACE
-   (
-      assertion
-      | interface_context
-   ) CLOSE_BRACE
+   foreach_bgp_neighbor_statement
+   | foreach_interface_statement
+   | statement
 ;
 
 not_expr
@@ -130,6 +189,13 @@ question
    | verify_question
 ;
 
+statement
+:
+   add_ip_statement
+   | assertion
+   | if_statement
+;
+
 string
 :
    STRING_LITERAL
@@ -142,9 +208,12 @@ true_expr
 
 verify_question
 :
-   VERIFY OPEN_BRACE
-   (
-      assertion
-      | node_context
-   ) CLOSE_BRACE
+   VERIFY OPEN_BRACE verify_statement+ CLOSE_BRACE
 ;
+
+verify_statement
+:
+   foreach_node_statement
+   | statement
+;
+

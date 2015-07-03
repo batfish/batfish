@@ -13,9 +13,9 @@ public class OrExpr implements BooleanExpr {
    }
 
    @Override
-   public boolean evaluate(AssertionCtx context) {
+   public boolean evaluate(Environment environment) {
       for (BooleanExpr disjunct : _disjuncts) {
-         if (disjunct.evaluate(context)) {
+         if (disjunct.evaluate(environment)) {
             return true;
          }
       }

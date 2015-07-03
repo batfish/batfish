@@ -13,9 +13,9 @@ public class AndExpr implements BooleanExpr {
    }
 
    @Override
-   public boolean evaluate(AssertionCtx context) {
+   public boolean evaluate(Environment env) {
       for (BooleanExpr conjunct : _conjuncts) {
-         if (!conjunct.evaluate(context)) {
+         if (!conjunct.evaluate(env)) {
             return false;
          }
       }
