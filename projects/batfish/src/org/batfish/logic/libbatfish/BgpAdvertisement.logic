@@ -39,9 +39,9 @@ BgpAdvertisement_constructor[type, dstIpBlock, nextHopIp, srcNode, srcIp, dstNod
    Ip(srcIp),
    Node(dstNode),
    Ip(dstIp),
-   BgpAdvertisement(advert),
    RoutingProtocol(srcProtocol),
-   OriginType(originType).
+   OriginType(originType),
+   BgpAdvertisement(advert).
 
 BgpAdvertisement_details(type, dstIpBlock, nextHopIp, srcIp, dstIp, srcProtocol, srcNode, dstNode, localPref, med, originatorIp, originType)
 ->
