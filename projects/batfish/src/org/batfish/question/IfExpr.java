@@ -1,6 +1,6 @@
 package org.batfish.question;
 
-public class IfExpr implements BooleanExpr {
+public class IfExpr extends BaseBooleanExpr {
 
    private BooleanExpr _antecedent;
 

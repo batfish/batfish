@@ -1,8 +1,10 @@
 package org.batfish.grammar.question;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -15,30 +17,46 @@ import org.batfish.question.AndExpr;
 import org.batfish.question.Assertion;
 import org.batfish.question.BgpNeighborIpExpr;
 import org.batfish.question.BooleanExpr;
+import org.batfish.question.ClearIpsStatement;
 import org.batfish.question.ContainsIpExpr;
+import org.batfish.question.DifferenceIntExpr;
 import org.batfish.question.ForEachBgpNeighborStatement;
 import org.batfish.question.ForEachInterfaceStatement;
 import org.batfish.question.ForEachNodeStatement;
+import org.batfish.question.GtExpr;
 import org.batfish.question.IfExpr;
 import org.batfish.question.IfStatement;
+import org.batfish.question.IntExpr;
+import org.batfish.question.IntegerAssignment;
 import org.batfish.question.InterfaceBooleanExpr;
 import org.batfish.question.InterfaceIpExpr;
 import org.batfish.question.IpExpr;
+import org.batfish.question.LiteralIntExpr;
 import org.batfish.question.MultipathQuestion;
 import org.batfish.question.NotExpr;
+import org.batfish.question.NumIpsIntExpr;
 import org.batfish.question.OrExpr;
+import org.batfish.question.PrintableExpr;
+import org.batfish.question.ProductIntExpr;
 import org.batfish.question.Question;
+import org.batfish.question.QuotientIntExpr;
 import org.batfish.question.Statement;
 import org.batfish.question.StaticBooleanExpr;
+import org.batfish.question.SumIntExpr;
+import org.batfish.question.VarIntExpr;
 import org.batfish.question.VerifyProgram;
 import org.batfish.question.VerifyQuestion;
 
 public class QuestionExtractor extends QuestionParserBaseListener implements
       BatfishExtractor {
 
-   private static final String ERR_CONVERT_BOOLEAN = "Cannot convert parse tree node to boolean";
+   private static final String ERR_CONVERT_BOOLEAN = "Cannot convert parse tree node to boolean expression";
 
-   private static final String ERR_CONVERT_IP = "Cannot convert parse tree node to IP";
+   private static final String ERR_CONVERT_INT = "Cannot convert parse tree node to integer expression";
+
+   private static final String ERR_CONVERT_IP = "Cannot convert parse tree node to IP expression";
+
+   private static final String ERR_CONVERT_PRINTABLE = "Cannot convert parse tree node to printable expression";
 
    private static final String ERR_CONVERT_STATEMENT = "Cannot convert parse tree node to statement";;
 
@@ -96,6 +114,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (expr.false_expr() != null) {
          return StaticBooleanExpr.FALSE;
       }
+      else if (expr.gt_expr() != null) {
+         return toBooleanExpr(expr.gt_expr());
+      }
       else if (expr.if_expr() != null) {
          return toBooleanExpr(expr.if_expr());
       }
@@ -122,6 +143,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return new ContainsIpExpr(caller, ipExpr);
    }
 
+   private BooleanExpr toBooleanExpr(Gt_exprContext expr) {
+      IntExpr lhs = toIntExpr(expr.lhs);
+      IntExpr rhs = toIntExpr(expr.rhs);
+      return new GtExpr(lhs, rhs);
+   }
+
    private BooleanExpr toBooleanExpr(If_exprContext expr) {
       BooleanExpr antecedent = toBooleanExpr(expr.antecedent);
       BooleanExpr consequent = toBooleanExpr(expr.consequent);
@@ -142,7 +169,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private BooleanExpr toBooleanExpr(Interface_property_exprContext expr) {
-      if (expr.interface_isis_property_expr() != null) {
+      if (expr.interface_has_ip_boolean_expr() != null) {
+         return InterfaceBooleanExpr.INTERFACE_HAS_IP;
+      }
+      else if (expr.interface_isis_property_expr() != null) {
          return toBooleanExpr(expr.interface_isis_property_expr());
       }
       else if (expr.interface_isloopback_expr() != null) {
@@ -176,6 +206,68 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else {
          throw new BatfishException("Missing conversion for expression");
       }
+   }
+
+   private IntExpr toIntExpr(Int_exprContext expr) {
+      if (expr.ASTERISK() != null) {
+         IntExpr multiplicand1 = toIntExpr(expr.multiplicand1);
+         IntExpr multiplicand2 = toIntExpr(expr.multiplicand2);
+         return new ProductIntExpr(multiplicand1, multiplicand2);
+      }
+      else if (expr.FORWARD_SLASH() != null) {
+         IntExpr dividend = toIntExpr(expr.dividend);
+         IntExpr divisor = toIntExpr(expr.divisor);
+         return new QuotientIntExpr(dividend, divisor);
+      }
+      else if (expr.MINUS() != null) {
+         IntExpr subtrahend = toIntExpr(expr.subtrahend);
+         IntExpr minuend = toIntExpr(expr.minuend);
+         return new DifferenceIntExpr(subtrahend, minuend);
+      }
+      else if (expr.OPEN_PAREN() != null) {
+         return toIntExpr(expr.parenthesized);
+      }
+      else if (expr.PLUS() != null) {
+         IntExpr addend1 = toIntExpr(expr.addend1);
+         IntExpr addend2 = toIntExpr(expr.addend2);
+         return new SumIntExpr(addend1, addend2);
+      }
+      else if (expr.val_int_expr() != null) {
+         return toIntExpr(expr.val_int_expr());
+      }
+      else {
+         throw new BatfishException(ERR_CONVERT_INT);
+      }
+   }
+
+   private IntExpr toIntExpr(Literal_int_exprContext expr) {
+      int i = Integer.parseInt(expr.DEC().toString());
+      return new LiteralIntExpr(i);
+   }
+
+   private IntExpr toIntExpr(Num_ips_int_exprContext expr) {
+      String caller = expr.caller.getText();
+      return new NumIpsIntExpr(caller);
+   }
+
+   private IntExpr toIntExpr(Val_int_exprContext expr) {
+      if (expr.literal_int_expr() != null) {
+         return toIntExpr(expr.literal_int_expr());
+      }
+      else if (expr.num_ips_int_expr() != null) {
+         return toIntExpr(expr.num_ips_int_expr());
+      }
+      else if (expr.var_int_expr() != null) {
+         return toIntExpr(expr.var_int_expr());
+      }
+      else {
+         throw new BatfishException(ERR_CONVERT_INT);
+      }
+   }
+
+   private IntExpr toIntExpr(Var_int_exprContext expr) {
+      String variable = expr.VARIABLE().getText();
+      return new VarIntExpr(variable);
    }
 
    private IpExpr toIpExpr(Bgp_neighbor_ip_exprContext expr) {
@@ -216,12 +308,45 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private Statement toStatement(AssertionContext ctx) {
       BooleanExpr expr = toBooleanExpr(ctx.boolean_expr());
-      Assertion assertion = new Assertion(expr, ctx.getText());
+      Map<String, PrintableExpr> onErrorPrintables = new HashMap<String, PrintableExpr>();
+      for (Assertion_failure_env_entryContext entry : ctx.env_entries) {
+         String name = entry.VARIABLE().getText();
+         PrintableExpr pexpr;
+         if (entry.boolean_expr() != null) {
+            pexpr = toBooleanExpr(entry.boolean_expr());
+         }
+         else if (entry.int_expr() != null) {
+            pexpr = toIntExpr(entry.int_expr());
+         }
+         else if (entry.ip_expr() != null) {
+            pexpr = toIpExpr(entry.ip_expr());
+         }
+         else {
+            throw new BatfishException(ERR_CONVERT_PRINTABLE);
+         }
+         onErrorPrintables.put(name, pexpr);
+      }
+      Assertion assertion = new Assertion(expr, ctx.getText(),
+            onErrorPrintables);
       return assertion;
+   }
+
+   private Statement toStatement(AssignmentContext assignment) {
+      if (assignment.int_assignment() != null) {
+         return toStatement(assignment.int_assignment());
+      }
+      else {
+         throw new BatfishException(ERR_CONVERT_STATEMENT);
+      }
    }
 
    private Statement toStatement(Bgp_neighbor_statementContext ctx) {
       return toStatement(ctx.statement());
+   }
+
+   private Statement toStatement(Clear_ips_statementContext statement) {
+      String caller = statement.caller.getText();
+      return new ClearIpsStatement(caller);
    }
 
    private Statement toStatement(Foreach_bgp_neighbor_statementContext statement) {
@@ -267,6 +392,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return new IfStatement(guard, trueStatements, falseStatements);
    }
 
+   private Statement toStatement(Int_assignmentContext int_assignment) {
+      String variable = int_assignment.VARIABLE().getText();
+      IntExpr intExpr = toIntExpr(int_assignment.int_expr());
+      return new IntegerAssignment(variable, intExpr);
+   }
+
    private Statement toStatement(Interface_statementContext ctx) {
       return toStatement(ctx.statement());
    }
@@ -293,8 +424,14 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (statement.assertion() != null) {
          return toStatement(statement.assertion());
       }
+      else if (statement.assignment() != null) {
+         return toStatement(statement.assignment());
+      }
       else if (statement.if_statement() != null) {
          return toStatement(statement.if_statement());
+      }
+      else if (statement.clear_ips_statement() != null) {
+         return toStatement(statement.clear_ips_statement());
       }
       else {
          throw new BatfishException(ERR_CONVERT_STATEMENT);
