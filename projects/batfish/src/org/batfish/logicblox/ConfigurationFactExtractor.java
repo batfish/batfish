@@ -88,6 +88,8 @@ public class ConfigurationFactExtractor {
          return "isisL1";
       case ISIS_L2:
          return "isisL2";
+      case LDP:
+         return "ldp";
       case LOCAL:
          return "local";
       case MSDP:
@@ -98,6 +100,8 @@ public class ConfigurationFactExtractor {
          return "ospfE1";
       case OSPF_E2:
          return "ospfE2";
+      case RSVP:
+         return "rsvp";
       case STATIC:
          return "static";
       default:

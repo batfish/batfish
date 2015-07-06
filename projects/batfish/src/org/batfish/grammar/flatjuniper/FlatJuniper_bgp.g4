@@ -6,6 +6,16 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+apsendt_path_count
+:
+   PATH_COUNT count = DEC
+;
+
+apsendt_prefix_policy
+:
+   PREFIX_POLICY policy = variable
+;
+
 bfi6t_null
 :
    LABELED_UNICAST s_null_filler
@@ -33,6 +43,16 @@ bfit_flow
    FLOW s_null_filler
 ;
 
+bfit_labeled_unicast
+:
+   LABELED_UNICAST s_null_filler
+;
+
+bfit_multicast
+:
+   MULTICAST s_null_filler
+;
+
 bfit_unicast
 :
    UNICAST bfit_unicast_tail
@@ -47,9 +67,31 @@ bfit_unicast_tail
    | bfiut_rib_group
 ;
 
+bfiuapt_receive
+:
+   RECEIVE
+;
+
+bfiuapt_send
+:
+   SEND bfiuapt_send_tail
+;
+
+bfiuapt_send_tail
+:
+   apsendt_path_count
+   | apsendt_prefix_policy
+;
+
 bfiut_add_path
 :
-   ADD_PATH RECEIVE
+   ADD_PATH bfiut_add_path_tail
+;
+
+bfiut_add_path_tail
+:
+   bfiuapt_receive
+   | bfiuapt_send
 ;
 
 bfiut_prefix_limit
@@ -70,6 +112,8 @@ bft_inet
 bft_inet_tail
 :
    bfit_flow
+   | bfit_labeled_unicast
+   | bfit_multicast
    | bfit_unicast
 ;
 
@@ -112,6 +156,11 @@ bt_advertise_inactive
    ADVERTISE_INACTIVE
 ;
 
+bt_advertise_peer_as
+:
+   ADVERTISE_PEER_AS
+;
+
 bt_apply_groups
 :
    s_apply_groups
@@ -130,6 +179,7 @@ bt_cluster
 bt_common
 :
    bt_advertise_inactive
+   | bt_advertise_peer_as
    | bt_apply_groups
    | bt_as_override
    | bt_cluster
@@ -143,10 +193,12 @@ bt_common
    | bt_local_as
    | bt_multihop
    | bt_multipath
+   | bt_no_client_reflect
    | bt_null
    | bt_path_selection
    | bt_peer_as
    | bt_remove_private
+   | bt_tcp_mss
    | bt_type
 ;
 
@@ -225,10 +277,7 @@ bt_local_as
 
 bt_local_as_tail
 :
-   last_alias
-   | last_loops
-   | last_number
-   | last_private
+   last_number? last_common*
 ;
 
 bt_multihop
@@ -255,6 +304,7 @@ bt_neighbor
    (
       IP_ADDRESS
       | IPV6_ADDRESS
+      | WILDCARD
    ) bt_neighbor_tail
 ;
 
@@ -265,6 +315,11 @@ bt_neighbor_tail
    | bt_common
 ;
 
+bt_no_client_reflect
+:
+   NO_CLIENT_REFLECT
+;
+
 bt_null
 :
    (
@@ -273,6 +328,7 @@ bt_null
       | HOLD_TIME
       | LOG_UPDOWN
       | OUT_DELAY
+      | PRECISION_TIMERS
       | TRACEOPTIONS
    ) s_null_filler
 ;
@@ -294,14 +350,19 @@ bt_peer_as
 
 bt_peer_as_tail
 :
-   // intentional blank
-   |
-   bpast_as
+// intentional blank
+
+   | bpast_as
 ;
 
 bt_remove_private
 :
    'remove-private'
+;
+
+bt_tcp_mss
+:
+   TCP_MSS DEC
 ;
 
 bt_type
@@ -318,6 +379,13 @@ last_alias
    ALIAS
 ;
 
+last_common
+:
+   last_alias
+   | last_loops
+   | last_private
+;
+
 last_loops
 :
    LOOPS DEC
@@ -331,35 +399,6 @@ last_number
 last_private
 :
    PRIVATE
-;
-
-pe_conjunction
-:
-   OPEN_PAREN policy_expression
-   (
-      DOUBLE_AMPERSAND policy_expression
-   )+ CLOSE_PAREN
-;
-
-pe_disjunction
-:
-   OPEN_PAREN policy_expression
-   (
-      DOUBLE_PIPE policy_expression
-   )+ CLOSE_PAREN
-;
-
-pe_nested
-:
-   OPEN_PAREN policy_expression CLOSE_PAREN
-;
-
-policy_expression
-:
-   pe_conjunction
-   | pe_disjunction
-   | pe_nested
-   | variable
 ;
 
 pst_always_compare_med

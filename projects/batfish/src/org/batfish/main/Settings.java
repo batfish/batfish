@@ -2,7 +2,9 @@ package org.batfish.main;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -12,6 +14,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.batfish.common.BfConsts;
+import org.batfish.common.CoordConsts;
 
 public class Settings {
 
@@ -28,10 +31,14 @@ public class Settings {
    private static final String ARG_CB_PORT = "lbport";
    private static final String ARG_COMPILE = "compile";
    private static final String ARG_CONC_UNIQUE = "concunique";
+   private static final String ARG_COORDINATOR_HOST = "coordinatorhost";
+   private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
+   private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
    private static final String ARG_COUNT = "count";
    private static final String ARG_DATA_PLANE = "dp";
    private static final String ARG_DATA_PLANE_DIR = "dpdir";
    private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
+   private static final String ARG_DISABLED_FACTS = "disablefacts";
    private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
    private static final String ARG_DUMP_FACTS_DIR = "dumpdir";
    private static final String ARG_DUMP_IF = "dumpif";
@@ -41,12 +48,11 @@ public class Settings {
    private static final String ARG_DUMP_TRAFFIC_FACTS = "dumptraffic";
    private static final String ARG_DUPLICATE_ROLE_FLOWS = "drf";
    private static final String ARG_ENVIRONMENT_NAME = "env";
-   private static final String ARG_EXIT_ON_PARSE_ERROR = "ee";
+   private static final String ARG_EXIT_ON_FIRST_ERROR = "ee";
    private static final String ARG_FACTS = "facts";
    private static final String ARG_FLATTEN = "flatten";
    private static final String ARG_FLATTEN_DESTINATION = "flattendst";
    private static final String ARG_FLATTEN_ON_THE_FLY = "flattenonthefly";
-   private static final String ARG_FLATTEN_SOURCE = "flattensrc";
    private static final String ARG_FLOW_PATH = "flowpath";
    private static final String ARG_FLOW_SINK_PATH = "flowsink";
    private static final String ARG_FLOWS = "flow";
@@ -64,13 +70,14 @@ public class Settings {
    private static final String ARG_LB_WEB_PORT = "lbwebport";
    private static final String ARG_LOG_FILE = "logfile";
    private static final String ARG_LOG_LEVEL = "loglevel";
+   private static final String ARG_LOG_TEE = "logtee";
    private static final String ARG_LOGICDIR = "logicdir";
    private static final String ARG_MPI = "mpi";
    private static final String ARG_MPI_PATH = "mpipath";
+   private static final String ARG_NO_OUTPUT = "nooutput";
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_NODE_ROLES_PATH = "nrpath";
    private static final String ARG_NODE_SET_PATH = "nodes";
-   private static final String ARG_PARSE_PARALLEL = "parseparallel";
    private static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
    private static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
    private static final String ARG_PREDHELP = "predhelp";
@@ -82,7 +89,6 @@ public class Settings {
    private static final String ARG_REACH_PATH = "reachpath";
    private static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
    private static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
-   private static final String ARG_REDIRECT_STDERR = "redirect";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
    private static final String ARG_ROLE_HEADERS = "rh";
@@ -92,11 +98,13 @@ public class Settings {
    private static final String ARG_ROLE_SET_PATH = "rspath";
    private static final String ARG_ROLE_TRANSIT_QUERY = "rt";
    private static final String ARG_ROLE_TRANSIT_QUERY_PATH = "rtpath";
+   private static final String ARG_SEQUENTIAL = "sequential";
    private static final String ARG_SERIALIZE_INDEPENDENT = "si";
    private static final String ARG_SERIALIZE_INDEPENDENT_PATH = "sipath";
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
    private static final String ARG_SERIALIZE_VENDOR = "sv";
    private static final String ARG_SERIALIZE_VENDOR_PATH = "svpath";
+   private static final String ARG_SERVICE_HOST = "servicehost";
    private static final String ARG_SERVICE_LOGICBLOX_HOSTNAME = "servicelbhostname";
    private static final String ARG_SERVICE_MODE = "servicemode";
    private static final String ARG_SERVICE_PORT = "serviceport";
@@ -124,13 +132,13 @@ public class Settings {
    private static final String ARGNAME_BLACKLIST_INTERFACE = "node,interface";
    private static final String ARGNAME_BLACKLIST_NODE = "node";
    private static final String ARGNAME_BUILD_PREDICATE_INFO = "path";
+   private static final String ARGNAME_COORDINATOR_HOST = "hostname";
    private static final String ARGNAME_DATA_PLANE_DIR = "path";
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
    private static final String ARGNAME_DUMP_IF_DIR = "path";
    private static final String ARGNAME_DUMP_INTERFACE_DESCRIPTIONS_PATH = "path";
    private static final String ARGNAME_ENVIRONMENT_NAME = "name";
    private static final String ARGNAME_FLATTEN_DESTINATION = "path";
-   private static final String ARGNAME_FLATTEN_SOURCE = "path";
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
    private static final String ARGNAME_GEN_OSPF = "path";
@@ -155,6 +163,7 @@ public class Settings {
    private static final String ARGNAME_ROLE_TRANSIT_QUERY_PATH = "path";
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
+   private static final String ARGNAME_SERVICE_HOST = "hostname";
    private static final String ARGNAME_SERVICE_LOGICBLOX_HOSTNAME = "hostname";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILES = "paths";
@@ -176,7 +185,7 @@ public class Settings {
    private static final String DEFAULT_SERIALIZE_VENDOR_PATH = "serialized-vendor-configs";
    private static final String DEFAULT_SERVICE_PORT = BfConsts.SVC_PORT
          .toString();
-   private static final String DEFAULT_SERVICE_URL = "http://localhost";
+   private static final String DEFAULT_SERVICE_URL = "http://0.0.0.0";
    private static final String DEFAULT_TEST_RIG_PATH = "default_test_rig";
    private static final boolean DEFAULT_Z3_SIMPLIFY = true;
    private static final String EXECUTABLE_NAME = "batfish";
@@ -200,9 +209,13 @@ public class Settings {
    private String[] _concretizerInputFilePaths;
    private String _concretizerOutputFilePath;
    private boolean _concUnique;
+   private String _coordinatorHost;
+   private int _coordinatorPoolPort;
+   private int _coordinatorWorkPort;
    private boolean _counts;
    private boolean _dataPlane;
    private String _dataPlaneDir;
+   private Set<String> _disabledFacts;
    private boolean _dumpControlPlaneFacts;
    private String _dumpFactsDir;
    private boolean _dumpIF;
@@ -212,7 +225,7 @@ public class Settings {
    private boolean _dumpTrafficFacts;
    private boolean _duplicateRoleFlows;
    private String _environmentName;
-   private boolean _exitOnParseError;
+   private boolean _exitOnFirstError;
    private boolean _facts;
    private boolean _flatten;
    private String _flattenDestination;
@@ -241,13 +254,14 @@ public class Settings {
    private String _logicDir;
    private String _logicSrcDir;
    private String _logLevel;
+   private boolean _logTee;
    private String _mpiPath;
    private String[] _negatedConcretizerInputFilePaths;
    private String _nodeRolesPath;
    private String _nodeSetPath;
+   private boolean _noOutput;
    private boolean _noTraffic;
    private Options _options;
-   private boolean _parseParallel;
    private boolean _pedanticAsError;
    private boolean _pedanticRecord;
    private boolean _postFlows;
@@ -263,7 +277,6 @@ public class Settings {
    private String _reachPath;
    private boolean _redFlagAsError;
    private boolean _redFlagRecord;
-   private boolean _redirectStdErr;
    private boolean _removeFacts;
    private boolean _revert;
    private String _revertBranchName;
@@ -275,11 +288,13 @@ public class Settings {
    private boolean _roleTransitQuery;
    private String _roleTransitQueryPath;
    private boolean _runInServiceMode;
+   private boolean _sequential;
    private boolean _serializeIndependent;
    private String _serializeIndependentPath;
    private boolean _serializeToText;
    private boolean _serializeVendor;
    private String _serializeVendorPath;
+   private String _serviceHost;
    private String _serviceLogicBloxHostname;
    private int _servicePort;
    private String _serviceUrl;
@@ -324,10 +339,6 @@ public class Settings {
 
    public boolean duplicateRoleFlows() {
       return _duplicateRoleFlows;
-   }
-
-   public boolean exitOnParseError() {
-      return _exitOnParseError;
    }
 
    public boolean flattenOnTheFly() {
@@ -398,6 +409,18 @@ public class Settings {
       return _cbPort;
    }
 
+   public String getCoordinatorHost() {
+      return _coordinatorHost;
+   }
+
+   public int getCoordinatorPoolPort() {
+      return _coordinatorPoolPort;
+   }
+
+   public int getCoordinatorWorkPort() {
+      return _coordinatorWorkPort;
+   }
+
    public boolean getCountsOnly() {
       return _counts;
    }
@@ -408,6 +431,10 @@ public class Settings {
 
    public String getDataPlaneDir() {
       return _dataPlaneDir;
+   }
+
+   public Set<String> getDisabledFacts() {
+      return _disabledFacts;
    }
 
    public boolean getDumpControlPlaneFacts() {
@@ -432,6 +459,10 @@ public class Settings {
 
    public String getEnvironmentName() {
       return _environmentName;
+   }
+
+   public boolean getExitOnFirstError() {
+      return _exitOnFirstError;
    }
 
    public boolean getFacts() {
@@ -546,6 +577,10 @@ public class Settings {
       return _logLevel;
    }
 
+   public boolean getLogTee() {
+      return _logTee;
+   }
+
    public String getMultipathInconsistencyQueryPath() {
       return _mpiPath;
    }
@@ -562,12 +597,12 @@ public class Settings {
       return _nodeSetPath;
    }
 
-   public boolean getNoTraffic() {
-      return _noTraffic;
+   public boolean getNoOutput() {
+      return _noOutput;
    }
 
-   public boolean getParseParallel() {
-      return _parseParallel;
+   public boolean getNoTraffic() {
+      return _noTraffic;
    }
 
    public boolean getPedanticAsError() {
@@ -654,6 +689,10 @@ public class Settings {
       return _roleTransitQueryPath;
    }
 
+   public boolean getSequential() {
+      return _sequential;
+   }
+
    public boolean getSerializeIndependent() {
       return _serializeIndependent;
    }
@@ -672,6 +711,10 @@ public class Settings {
 
    public String getSerializeVendorPath() {
       return _serializeVendorPath;
+   }
+
+   public String getServiceHost() {
+      return _serviceHost;
    }
 
    public String getServiceLogicBloxHostname() {
@@ -751,6 +794,9 @@ public class Settings {
             .desc("list of LogicBlox predicates to query (defaults to '"
                   + DEFAULT_PREDICATES.get(0) + "')").longOpt(ARG_PREDICATES)
             .build());
+      _options.addOption(Option.builder().argName("predicates").hasArgs()
+            .desc("list of LogicBlox fact predicates to suppress")
+            .longOpt(ARG_DISABLED_FACTS).build());
       _options.addOption(Option
             .builder()
             .argName("path")
@@ -810,7 +856,7 @@ public class Settings {
             .addOption(Option
                   .builder()
                   .desc("exit on first parse error (otherwise will exit on last parse error)")
-                  .longOpt(ARG_EXIT_ON_PARSE_ERROR).build());
+                  .longOpt(ARG_EXIT_ON_FIRST_ERROR).build());
       _options.addOption(Option.builder().desc("generate z3 data plane logic")
             .longOpt(ARG_Z3).build());
       _options.addOption(Option.builder().argName(ARGNAME_Z3_OUTPUT).hasArg()
@@ -856,8 +902,6 @@ public class Settings {
       _options.addOption(Option.builder().hasArg().argName(ARGNAME_REVERT)
             .desc("revert test rig workspace to specified branch")
             .longOpt(ARG_REVERT).build());
-      _options.addOption(Option.builder().desc("redirect stderr to stdout")
-            .longOpt(ARG_REDIRECT_STDERR).build());
       _options.addOption(Option.builder().hasArg().argName(ARGNAME_ANONYMIZE)
             .desc("created anonymized versions of configs in test rig")
             .longOpt(ARG_ANONYMIZE).build());
@@ -1030,13 +1074,6 @@ public class Settings {
             .addOption(Option
                   .builder()
                   .hasArg()
-                  .argName(ARGNAME_FLATTEN_SOURCE)
-                  .desc("path to test rig containing hierarchical juniper configurations to be flattened")
-                  .longOpt(ARG_FLATTEN_SOURCE).build());
-      _options
-            .addOption(Option
-                  .builder()
-                  .hasArg()
                   .argName(ARGNAME_FLATTEN_DESTINATION)
                   .desc("output path to test rig in which flat juniper (and all other) configurations will be placed")
                   .longOpt(ARG_FLATTEN_DESTINATION).build());
@@ -1120,7 +1157,7 @@ public class Settings {
                   .builder()
                   .hasArg()
                   .argName(ARGNAME_SERVICE_LOGICBLOX_HOSTNAME)
-                  .desc("hostname of of LogicBlox server to be used by batfish service when creating workspaces")
+                  .desc("hostname of LogicBlox server to be used by batfish service when creating workspaces")
                   .longOpt(ARG_SERVICE_LOGICBLOX_HOSTNAME).build());
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_QUESTION_NAME).desc("name of question")
@@ -1130,8 +1167,29 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("post dumped flows to logicblox")
             .longOpt(BfConsts.COMMAND_POST_FLOWS).build());
-      _options.addOption(Option.builder().desc("parse configs in parallel")
-            .longOpt(ARG_PARSE_PARALLEL).build());
+      _options.addOption(Option.builder().desc("force sequential operation")
+            .longOpt(ARG_SEQUENTIAL).build());
+      _options.addOption(Option.builder().argName("port_number").hasArg()
+            .desc("coordinator work manager listening port")
+            .longOpt(ARG_COORDINATOR_WORK_PORT).build());
+      _options.addOption(Option.builder().argName("port_number").hasArg()
+            .desc("coordinator pool manager listening port")
+            .longOpt(ARG_COORDINATOR_POOL_PORT).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_SERVICE_HOST)
+            .desc("local hostname to report to coordinator")
+            .longOpt(ARG_SERVICE_HOST).build());
+      _options.addOption(Option
+            .builder()
+            .hasArg()
+            .argName(ARGNAME_COORDINATOR_HOST)
+            .desc("hostname of coordinator for registration with -"
+                  + ARG_SERVICE_MODE).longOpt(ARG_COORDINATOR_HOST).build());
+      _options.addOption(Option.builder().desc("do not produce output files")
+            .longOpt(ARG_NO_OUTPUT).build());
+      _options.addOption(Option.builder()
+            .desc("print output to both logfile and standard out")
+            .longOpt(ARG_LOG_TEE).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1176,6 +1234,11 @@ public class Settings {
             DEFAULT_TEST_RIG_PATH);
 
       _workspaceName = line.getOptionValue(ARG_WORKSPACE, null);
+      _disabledFacts = new HashSet<String>();
+      if (line.hasOption(ARG_DISABLED_FACTS)) {
+         _disabledFacts.addAll(Arrays.asList(line
+               .getOptionValues(ARG_DISABLED_FACTS)));
+      }
       if (line.hasOption(ARG_PREDICATES)) {
          _predicates = Arrays.asList(line.getOptionValues(ARG_PREDICATES));
       }
@@ -1187,7 +1250,7 @@ public class Settings {
       _facts = line.hasOption(ARG_FACTS);
       _update = line.hasOption(ARG_UPDATE);
       _noTraffic = line.hasOption(ARG_NO_TRAFFIC);
-      _exitOnParseError = line.hasOption(ARG_EXIT_ON_PARSE_ERROR);
+      _exitOnFirstError = line.hasOption(ARG_EXIT_ON_FIRST_ERROR);
       _z3 = line.hasOption(ARG_Z3);
       if (_z3) {
          _z3File = line.getOptionValue(ARG_Z3_OUTPUT);
@@ -1215,7 +1278,6 @@ public class Settings {
       _dumpFactsDir = line.getOptionValue(ARG_DUMP_FACTS_DIR);
       _revertBranchName = line.getOptionValue(ARG_REVERT);
       _revert = (_revertBranchName != null);
-      _redirectStdErr = line.hasOption(ARG_REDIRECT_STDERR);
       _anonymize = line.hasOption(ARG_ANONYMIZE);
       if (_anonymize) {
          _anonymizeDir = line.getOptionValue(ARG_ANONYMIZE);
@@ -1275,7 +1337,6 @@ public class Settings {
       _throwOnParserError = line.hasOption(ARG_THROW_ON_PARSER_ERROR);
       _throwOnLexerError = line.hasOption(ARG_THROW_ON_LEXER_ERROR);
       _flatten = line.hasOption(ARG_FLATTEN);
-      _flattenSource = line.getOptionValue(ARG_FLATTEN_SOURCE);
       _flattenDestination = line.getOptionValue(ARG_FLATTEN_DESTINATION);
       _flattenOnTheFly = line.hasOption(ARG_FLATTEN_ON_THE_FLY);
       _pedanticAsError = line.hasOption(ARG_PEDANTIC_AS_ERROR);
@@ -1299,20 +1360,26 @@ public class Settings {
       _ignoreUnsupported = line.hasOption(ARG_IGNORE_UNSUPPORTED);
       _autoBaseDir = line.getOptionValue(ARG_AUTO_BASE_DIR);
       _environmentName = line.getOptionValue(ARG_ENVIRONMENT_NAME);
-      _serviceLogicBloxHostname = line
-            .getOptionValue(ARG_SERVICE_LOGICBLOX_HOSTNAME);
       _questionName = line.getOptionValue(BfConsts.ARG_QUESTION_NAME);
       _answer = line.hasOption(BfConsts.COMMAND_ANSWER);
       _postFlows = line.hasOption(BfConsts.COMMAND_POST_FLOWS);
-      _parseParallel = line.hasOption(ARG_PARSE_PARALLEL);
+      _sequential = line.hasOption(ARG_SEQUENTIAL);
+      _coordinatorHost = line.getOptionValue(ARG_COORDINATOR_HOST);
+      _coordinatorPoolPort = Integer.parseInt(line.getOptionValue(
+            ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_POOL_PORT.toString()));
+      _coordinatorWorkPort = Integer.parseInt(line.getOptionValue(
+            ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_WORK_PORT.toString()));
+      _serviceHost = line.getOptionValue(ARG_SERVICE_HOST);
+      // set service logicblox hostname to service hostname unless set
+      // explicitly
+      _serviceLogicBloxHostname = line.getOptionValue(
+            ARG_SERVICE_LOGICBLOX_HOSTNAME, _serviceHost);
+      _noOutput = line.hasOption(ARG_NO_OUTPUT);
+      _logTee = line.hasOption(ARG_LOG_TEE);
    }
 
    public boolean printParseTree() {
       return _printParseTree;
-   }
-
-   public boolean redirectStdErr() {
-      return _redirectStdErr;
    }
 
    public boolean revert() {

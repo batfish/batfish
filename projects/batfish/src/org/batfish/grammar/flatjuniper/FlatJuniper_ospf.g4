@@ -21,6 +21,11 @@ ait_dead_interval
    DEAD_INTERVAL DEC
 ;
 
+ait_disable
+:
+   DISABLE
+;
+
 ait_hello_interval
 :
    HELLO_INTERVAL DEC
@@ -46,6 +51,7 @@ ait_null
    (
       AUTHENTICATION
       | BFD_LIVENESS_DETECTION
+      | NO_NEIGHBOR_DOWN_NOTIFICATION
    ) s_null_filler
 ;
 
@@ -108,6 +114,7 @@ at_interface_tail
    | ait_apply_groups
    | ait_apply_groups_except
    | ait_dead_interval
+   | ait_disable
    | ait_hello_interval
    | ait_interface_type
    | ait_ldp_synchronization
@@ -129,7 +136,9 @@ at_label_switched_path
 
 at_label_switched_path_tail
 :
-   alt_metric
+// intentional blank
+
+   | alt_metric
 ;
 
 at_nssa
@@ -241,6 +250,11 @@ ot_null
    ) s_null_filler
 ;
 
+ot_rib_group
+:
+   RIB_GROUP name = variable
+;
+
 ot_traffic_engineering
 :
    TRAFFIC_ENGINEERING ot_traffic_engineering_tail
@@ -251,11 +265,17 @@ ot_traffic_engineering_tail
 // intentional blank
 
    | otet_credibility_protocol_preference
+   | otet_shortcuts
 ;
 
 otet_credibility_protocol_preference
 :
    CREDIBILITY_PROTOCOL_PREFERENCE
+;
+
+otet_shortcuts
+:
+   SHORTCUTS
 ;
 
 s_protocols_ospf
@@ -272,6 +292,7 @@ s_protocols_ospf_tail
    | ot_import
    | ot_no_active_backbone
    | ot_null
+   | ot_rib_group
    | ot_traffic_engineering
 ;
 

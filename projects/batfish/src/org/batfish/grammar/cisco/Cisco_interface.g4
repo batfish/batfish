@@ -6,6 +6,11 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+default_gw_if_stanza
+:
+   DEFAULT_GW IP_ADDRESS NEWLINE
+;
+
 description_if_stanza
 :
    description_line
@@ -33,7 +38,8 @@ hsrpc_stanza
 
 if_stanza
 :
-   description_if_stanza
+   default_gw_if_stanza
+   | description_if_stanza
    | ip_access_group_if_stanza
    | ip_address_if_stanza
    | ip_address_secondary_if_stanza
@@ -59,6 +65,7 @@ if_stanza
    | switchport_mode_dynamic_desirable_stanza
    | switchport_mode_trunk_stanza
    | vrf_forwarding_if_stanza
+   | vrf_if_stanza
    | vrf_member_if_stanza
 ;
 
@@ -94,7 +101,10 @@ ip_address_hsrpc_stanza
 
 ip_address_if_stanza
 :
-   IP ADDRESS
+   (
+      IP
+      | IPV4
+   ) ADDRESS
    (
       (
          ip = IP_ADDRESS subnet = IP_ADDRESS
@@ -186,14 +196,19 @@ null_standalone_if_stanza
 :
    NO?
    (
-      ARP
+      AFFINITY
+      | ARP
       | ASYNC
       | ATM
       | AUTO
+      | AUTOROUTE
       | AUTOSTATE
       | BANDWIDTH
       | BEACON
+      | BFD
+      | BUNDLE
       | CABLELENGTH
+      | CARRIER_DELAY
       | CDP
       | CHANNEL
       | CHANNEL_GROUP
@@ -204,7 +219,9 @@ null_standalone_if_stanza
       | COUNTER
       | CRC
       | CRYPTO
+      | DAMPENING
       | DCBX
+      | DESTINATION
       |
       (
          DSU BANDWIDTH
@@ -212,6 +229,7 @@ null_standalone_if_stanza
       | DUPLEX
       | ENCAPSULATION
       | FAIR_QUEUE
+      | FAST_REROUTE
       | FLOWCONTROL
       | FORWARDER
       | FRAME_RELAY
@@ -277,6 +295,13 @@ null_standalone_if_stanza
             | VRF
          )
       )
+      |
+      (
+         IPV4
+         (
+            UNNUMBERED
+         )
+      )
       | IPV6
       | ISDN
       |
@@ -317,6 +342,7 @@ null_standalone_if_stanza
       (
          NTP BROADCAST
       )
+      | PATH_OPTION
       | PEER
       | PHYSICAL_LAYER
       | PORT_CHANNEL
@@ -338,6 +364,8 @@ null_standalone_if_stanza
       | SERIAL
       | SERVICE_MODULE
       | SERVICE_POLICY
+      | SIGNALLED_BANDWIDTH
+      | SIGNALLED_NAME
       | SONET
       | SPANNING_TREE
       | SPEED
@@ -444,10 +472,15 @@ track_hsrpc_stanza
 
 vrf_forwarding_if_stanza
 :
-   VRF FORWARDING name = ~NEWLINE NEWLINE
+   VRF FORWARDING name = variable NEWLINE
+;
+
+vrf_if_stanza
+:
+   VRF name = variable NEWLINE
 ;
 
 vrf_member_if_stanza
 :
-   VRF MEMBER name = ~NEWLINE NEWLINE
+   VRF MEMBER name = variable NEWLINE
 ;

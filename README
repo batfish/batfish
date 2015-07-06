@@ -24,15 +24,15 @@ NOTE: After any step involving modifications to .bashrc or equivalent, make sure
 standard autotools install (extract, configure, make, make install)
 
 2. (CLIENT) Install z3
-git clone https://git01.codeplex.com/z3 # IF YOU HAVE PROBLEMS WITH THIS STEP, JUST PULL LATEST SNAPSHOT OF 'opt' BRANCH
+git clone https://github.com/Z3Prover/z3
 cd z3
-git checkout opt # skip if you just downloaded a snapshot
+git checkout unstable
 python scripts/mk_make.py --java
 cd build
 make -j<number-of-jobs>
 make install # as administrator (sudo or whatever)
 
-3. (SERVER) Install LogicBlox >= 4.1.9 and fix lb-web-server timeout
+3. (SERVER) Install LogicBlox >= 4.2.1 and fix lb-web-server timeout
 - edit <logicblox-root>/config/lb-web-server.conf
 - change all tcp_server_max_idle_time lines to read:
 tcp_server_max_idle_time = 0
@@ -67,7 +67,7 @@ type:
     batfish_build lbcompile
 
 8. (CLIENT) compile batfish
-    batfish_build
+    batfish_build # implies lbcompile which only does work if LogicBlox is installed
 Note that 'batfish_build' runs 'ant' in the batfish project directory with corresponding args.
 You can clean all generated output with:
    batfish_build distclean

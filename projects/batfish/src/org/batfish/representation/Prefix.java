@@ -2,6 +2,7 @@ package org.batfish.representation;
 
 import java.io.Serializable;
 
+import org.batfish.main.BatfishException;
 import org.batfish.util.Util;
 
 public class Prefix implements Comparable<Prefix>, Serializable {
@@ -38,8 +39,17 @@ public class Prefix implements Comparable<Prefix>, Serializable {
 
    public Prefix(String text) {
       String[] parts = text.split("/");
+      if (parts.length != 2) {
+         throw new BatfishException("Invalid prefix string: \"" + text + "\"");
+      }
       _address = new Ip(parts[0]);
-      _prefixLength = Integer.parseInt(parts[1]);
+      try {
+         _prefixLength = Integer.parseInt(parts[1]);
+      }
+      catch (NumberFormatException e) {
+         throw new BatfishException("Invalid prefix length: \"" + parts[1]
+               + "\"", e);
+      }
    }
 
    @Override

@@ -162,6 +162,9 @@ RoutingProtocol_ISIS_L1[] = x <-
 RoutingProtocol_ISIS_L2[] = x <-
    RoutingProtocol_name(x:"isisL2").
 
+RoutingProtocol_LDP[] = x <-
+   RoutingProtocol_name(x:"ldp").
+
 RoutingProtocol_OSPF[] = x <-
    RoutingProtocol_name(x:"ospf").
 
@@ -173,6 +176,9 @@ RoutingProtocol_OSPF_E1[] = x <-
 
 RoutingProtocol_OSPF_E2[] = x <-
    RoutingProtocol_name(x:"ospfE2").
+
+RoutingProtocol_RSVP[] = x <-
+   RoutingProtocol_name(x:"rsvp").
 
 RoutingProtocol_STATIC[] = x <-
    RoutingProtocol_name(x:"static").

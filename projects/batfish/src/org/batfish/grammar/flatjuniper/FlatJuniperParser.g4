@@ -36,6 +36,12 @@ flat_juniper_configuration
 
 statement
 :
+   s_common
+   | s_logical_systems
+;
+
+s_common
+:
    s_apply_groups
    | s_firewall
    | s_interfaces
@@ -64,11 +70,28 @@ s_groups_tail
    | statement
 ;
 
+s_logical_systems
+:
+   LOGICAL_SYSTEMS
+   (
+      name = variable
+      | WILDCARD
+   ) s_logical_systems_tail
+;
+
+s_logical_systems_tail
+:
+// intentional blank
+
+   | statement
+;
+
 s_null
 :
    (
       (
          SECURITY
+         | SWITCH_OPTIONS
       ) s_null_filler
    )
    | rit_null
@@ -111,12 +134,16 @@ st_null
 :
    (
       ACCOUNTING
+      | ARP
       | AUTHENTICATION_ORDER
       | BACKUP_ROUTER
+      | COMMIT
       | DDOS_PROTECTION
       | DOMAIN_NAME
       | DOMAIN_SEARCH
+      | INTERNET_OPTIONS
       | LICENSE
+      | LOCATION
       | LOGIN
       | NAME_SERVER
       | NTP

@@ -52,6 +52,7 @@ famt_inet_tail
 // intentional blank
 
    | ifamt_address
+   | ifamt_apply_groups_except
    | ifamt_filter
    | ifamt_mtu
    | ifamt_no_redirects
@@ -73,6 +74,7 @@ famt_iso_tail
 // intentional blank
 
    | isofamt_address
+   | isofamt_mtu
 ;
 
 famt_mpls
@@ -104,6 +106,11 @@ filter_tail
 ft_direction
 :
    direction name = variable
+;
+
+ifamat_arp
+:
+   ARP IP_ADDRESS MAC MAC_ADDRESS
 ;
 
 ifamat_master_only
@@ -142,10 +149,16 @@ ifamt_address
 
 ifamt_address_tail
 :
-   ifamat_master_only
+   ifamat_arp
+   | ifamat_master_only
    | ifamat_preferred
    | ifamat_primary
    | ifamat_vrrp_group
+;
+
+ifamt_apply_groups_except
+:
+   s_apply_groups_except
 ;
 
 ifamt_filter
@@ -193,6 +206,7 @@ intt_named_tail
 :
    it_common
    | it_flexible_vlan_tagging
+   | it_link_mode
    | it_native_vlan_id
    | it_unit
 ;
@@ -207,6 +221,11 @@ intt_null
 isofamt_address
 :
    ADDRESS ISO_ADDRESS
+;
+
+isofamt_mtu
+:
+   MTU DEC
 ;
 
 it_apply_groups
@@ -269,6 +288,11 @@ it_flexible_vlan_tagging
    FLEXIBLE_VLAN_TAGGING
 ;
 
+it_link_mode
+:
+   LINK_MODE FULL_DUPLEX
+;
+
 it_mtu
 :
    MTU size = DEC
@@ -294,9 +318,15 @@ it_null
       | NO_TRAPS
       | REDUNDANT_ETHER_OPTIONS
       | SONET_OPTIONS
+      | TRACEOPTIONS
       | TRAPS
       | TUNNEL
    ) s_null_filler
+;
+
+it_peer_unit
+:
+   PEER_UNIT unit = DEC
 ;
 
 it_speed
@@ -318,6 +348,7 @@ it_unit_tail
 // intentional blank
 
    | it_common
+   | it_peer_unit
 ;
 
 it_vlan_id

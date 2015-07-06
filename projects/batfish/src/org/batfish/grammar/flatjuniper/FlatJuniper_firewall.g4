@@ -33,6 +33,15 @@ fwfromt_destination_port
    )
 ;
 
+fwfromt_destination_port_except
+:
+   DESTINATION_PORT_EXCEPT
+   (
+      port
+      | range
+   )
+;
+
 fwfromt_destination_prefix_list
 :
    DESTINATION_PREFIX_LIST variable EXCEPT?
@@ -48,6 +57,11 @@ fwfromt_exp
    EXP DEC
 ;
 
+fwfromt_forwarding_class
+:
+   FORWARDING_CLASS variable
+;
+
 fwfromt_icmp_code
 :
    ICMP_CODE icmp_code
@@ -56,6 +70,16 @@ fwfromt_icmp_code
 fwfromt_icmp_type
 :
    ICMP_TYPE icmp_type
+;
+
+fwfromt_ip_options
+:
+   IP_OPTIONS ip_option
+;
+
+fwfromt_learn_vlan_1p_priority
+:
+   LEARN_VLAN_1P_PRIORITY DEC
 ;
 
 fwfromt_next_header
@@ -75,6 +99,11 @@ fwfromt_port
       port
       | range
    )
+;
+
+fwfromt_precedence
+:
+   PRECEDENCE precedence = DEC
 ;
 
 fwfromt_prefix_list
@@ -120,6 +149,11 @@ fwfromt_tcp_flags
    TCP_FLAGS DOUBLE_QUOTED_STRING
 ;
 
+fwft_apply_groups
+:
+   s_apply_groups
+;
+
 fwft_interface_specific
 :
    INTERFACE_SPECIFIC
@@ -146,7 +180,8 @@ fwt_family
 :
    FAMILY
    (
-      CCC
+      ANY
+      | CCC
       | INET
       | INET6
       | MPLS
@@ -165,7 +200,8 @@ fwt_filter
 
 fwt_filter_tail
 :
-   fwft_interface_specific
+   fwft_apply_groups
+   | fwft_interface_specific
    | fwft_term
 ;
 
@@ -185,6 +221,17 @@ fwthent_accept
 fwthent_discard
 :
    DISCARD
+;
+
+fwthent_loss_priority
+:
+   LOSS_PRIORITY
+   (
+      HIGH
+      | MEDIUM_HIGH
+      | MEDIUM_LOW
+      | LOW
+   )
 ;
 
 fwthent_next_term
@@ -225,14 +272,19 @@ fwtt_from_tail
    fwfromt_address
    | fwfromt_destination_address
    | fwfromt_destination_port
+   | fwfromt_destination_port_except
    | fwfromt_destination_prefix_list
    | fwfromt_dscp
    | fwfromt_exp
+   | fwfromt_forwarding_class
    | fwfromt_icmp_code
    | fwfromt_icmp_type
+   | fwfromt_ip_options
+   | fwfromt_learn_vlan_1p_priority
    | fwfromt_next_header
    | fwfromt_null
    | fwfromt_port
+   | fwfromt_precedence
    | fwfromt_prefix_list
    | fwfromt_protocol
    | fwfromt_source_address
@@ -251,9 +303,10 @@ fwtt_then_tail
 :
    fwthent_accept
    | fwthent_discard
-   | fwthent_reject
+   | fwthent_loss_priority
    | fwthent_next_term
    | fwthent_nop
+   | fwthent_reject
    | fwthent_routing_instance
 ;
 

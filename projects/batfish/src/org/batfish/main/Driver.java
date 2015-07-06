@@ -7,12 +7,20 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BfConsts;
+import org.batfish.common.CoordConsts;
 import org.batfish.common.BfConsts.TaskStatus;
+import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -134,8 +142,21 @@ public class Driver {
 
          GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
 
-         // sleep indefinitely, in 10 minute chunks
          try {
+            if (_mainSettings.getCoordinatorHost() != null) {
+               boolean registrationSuccess;
+               do {
+                  registrationSuccess = registerWithCoordinator();
+                  if (!registrationSuccess) {
+                     ;
+                     _mainLogger
+                           .error("Unable to register  with coordinator\n");
+                     Thread.sleep(1000); // 1 second
+                  }
+               } while (!registrationSuccess);
+            }
+
+            // sleep indefinitely, in 10 minute chunks
             while (true) {
                Thread.sleep(10 * 60 * 1000); // 10 minutes
             }
@@ -156,6 +177,56 @@ public class Driver {
 
    private static void makeIdle() {
       _idle = true;
+   }
+
+   private static boolean registerWithCoordinator() {
+      String coordinatorHost = _mainSettings.getCoordinatorHost();
+      String workMgr = coordinatorHost + ":"
+            + _mainSettings.getCoordinatorWorkPort();
+      String poolMgr = coordinatorHost + ":"
+            + _mainSettings.getCoordinatorPoolPort();
+      try {
+         Client client = ClientBuilder.newClient();
+         WebTarget webTarget = client.target(
+               String.format("http://%s%s/%s", poolMgr,
+                     CoordConsts.SVC_BASE_POOL_MGR,
+                     CoordConsts.SVC_POOL_UPDATE_RSC)).queryParam(
+               "add",
+               _mainSettings.getServiceHost() + ":"
+                     + _mainSettings.getServicePort());
+         Response response = webTarget.request(MediaType.APPLICATION_JSON)
+               .get();
+
+         _mainLogger.output(response.getStatus() + " "
+               + response.getStatusInfo() + " " + response + "\n");
+
+         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            _mainLogger.error("Did not get an OK response\n");
+            return false;
+         }
+
+         String sobj = response.readEntity(String.class);
+         JSONArray array = new JSONArray(sobj);
+         _mainLogger.outputf("response: %s [%s] [%s]\n", array.toString(),
+               array.get(0), array.get(1));
+
+         if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
+            _mainLogger.errorf("got error while checking work status: %s %s\n",
+                  array.get(0), array.get(1));
+            return false;
+         }
+
+         return true;
+      }
+      catch (ProcessingException e) {
+         _mainLogger.errorf("unable to connect to %s: %s\n", workMgr,
+               ExceptionUtils.getStackTrace(e));
+         return false;
+      }
+      catch (Exception e) {
+         _mainLogger.errorf("exception: " + ExceptionUtils.getStackTrace(e));
+         return false;
+      }
    }
 
    private static boolean RunBatfish(Settings settings) {
@@ -238,4 +309,5 @@ public class Driver {
                "Non-executable command");
       }
    }
+
 }

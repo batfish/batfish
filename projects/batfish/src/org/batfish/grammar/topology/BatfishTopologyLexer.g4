@@ -10,7 +10,7 @@ package org.batfish.grammar.topology;
 
 HEADER
 :
-   'CONFIGPARSER_TOPOLOGY'
+   'BATFISH_TOPOLOGY'
 ;
 
 COLON

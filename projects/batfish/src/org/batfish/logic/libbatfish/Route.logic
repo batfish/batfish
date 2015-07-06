@@ -181,6 +181,9 @@ RoutingProtocol_ISIS_L1[] = x ->
 RoutingProtocol_ISIS_L2[] = x ->
    RoutingProtocol(x).
 
+RoutingProtocol_LDP[] = x ->
+   RoutingProtocol(x).
+
 RoutingProtocol_OSPF[] = x ->
    RoutingProtocol(x).
 
@@ -191,6 +194,9 @@ RoutingProtocol_OSPF_E2[] = x ->
    RoutingProtocol(x).
 
 RoutingProtocol_OSPF_IA[] = x ->
+   RoutingProtocol(x).
+
+RoutingProtocol_RSVP[] = x ->
    RoutingProtocol(x).
 
 RoutingProtocol_STATIC[] = x ->

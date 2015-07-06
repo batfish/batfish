@@ -26,7 +26,19 @@ isisilt_null
    (
       HELLO_AUTHENTICATION_KEY
       | HELLO_AUTHENTICATION_TYPE
+      | HELLO_INTERVAL
+      | HOLD_TIME
    ) s_null_filler
+;
+
+isisit_apply_groups
+:
+   s_apply_groups
+;
+
+isisit_apply_groups_except
+:
+   s_apply_groups_except
 ;
 
 isisit_level
@@ -45,7 +57,9 @@ isisit_level_tail
 isisit_null
 :
    (
-      LSP_INTERVAL
+      BFD_LIVENESS_DETECTION
+      | HELLO_PADDING
+      | LSP_INTERVAL
    ) s_null_filler
 ;
 
@@ -62,6 +76,11 @@ isisit_point_to_point
 isislt_disable
 :
    DISABLE
+;
+
+isislt_enable
+:
+   ENABLE
 ;
 
 isislt_null
@@ -104,6 +123,8 @@ isist_interface_tail
 :
 // intentional blank
 
+   | isisit_apply_groups
+   | isisit_apply_groups_except
    | isisit_level
    | isisit_null
    | isisit_passive
@@ -122,6 +143,7 @@ isist_level
 isist_level_tail
 :
    isislt_disable
+   | isislt_enable
    | isislt_null
    | isislt_wide_metrics_only
 ;
@@ -141,6 +163,11 @@ isist_no_ipv4_routing
    NO_IPV4_ROUTING
 ;
 
+isist_rib_group
+:
+   RIB_GROUP INET name = variable
+;
+
 isist_traffic_engineering
 :
    TRAFFIC_ENGINEERING isist_traffic_engineering_tail
@@ -150,6 +177,7 @@ isist_traffic_engineering_tail
 :
    isistet_credibility_protocol_preference
    | isistet_family_shortcuts
+   | isistet_multipath
 ;
 
 isistet_credibility_protocol_preference
@@ -166,6 +194,11 @@ isistet_family_shortcuts
    ) SHORTCUTS
 ;
 
+isistet_multipath
+:
+   MULTIPATH LSP_EQUAL_COST
+;
+
 s_protocols_isis
 :
    ISIS s_protocols_isis_tail
@@ -179,5 +212,6 @@ s_protocols_isis_tail
    | isist_level
    | isist_null
    | isist_no_ipv4_routing
+   | isist_rib_group
    | isist_traffic_engineering
 ;

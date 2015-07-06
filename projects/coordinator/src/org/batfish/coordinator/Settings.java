@@ -33,7 +33,7 @@ public class Settings {
    private static final String DEFAULT_QUEUE_TYPE = "memory";
    private static final String DEFAULT_SERVICE_POOL_PORT = CoordConsts.SVC_POOL_PORT.toString();
    private static final String DEFAULT_SERVICE_WORK_PORT = CoordConsts.SVC_WORK_PORT.toString();
-   private static final String DEFAULT_SERVICE_HOST = "localhost";
+   private static final String DEFAULT_SERVICE_HOST = "0.0.0.0";
    private static final String DEFAULT_STORAGE_ACCOUNT_KEY = "zRTT++dVryOWXJyAM7NM0TuQcu0Y23BgCQfkt7xh2f/Mm+r6c8/XtPTY0xxaF6tPSACJiuACsjotDeNIVyXM8Q==";
    private static final String DEFAULT_STORAGE_ACCOUNT_NAME = "testdrive";
    private static final String DEFAULT_STORAGE_PROTOCOL = "http";

@@ -2,6 +2,8 @@ package org.batfish.representation;
 
 import java.io.Serializable;
 
+import org.batfish.main.BatfishException;
+
 public class Ip implements Comparable<Ip>, Serializable {
 
    public static final Ip MAX = new Ip(0xFFFFFFFFl);
@@ -12,10 +14,21 @@ public class Ip implements Comparable<Ip>, Serializable {
 
    private static long ipStrToLong(String addr) {
       String[] addrArray = addr.split("\\.");
+      if (addrArray.length != 4) {
+         throw new BatfishException("Invalid ip string: \"" + addr + "\"");
+      }
       long num = 0;
       for (int i = 0; i < addrArray.length; i++) {
          int power = 3 - i;
-         num += ((Integer.parseInt(addrArray[i]) % 256 * Math.pow(256, power)));
+         String segmentStr = addrArray[i];
+         try {
+            int segment = Integer.parseInt(segmentStr);
+            num += ((segment % 256 * Math.pow(256, power)));
+         }
+         catch (NumberFormatException e) {
+            throw new BatfishException("Invalid ip segment: \"" + segmentStr
+                  + "\" in ip string: \"" + addr + "\"", e);
+         }
       }
       return num;
    }

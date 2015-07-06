@@ -125,6 +125,7 @@ bgp_tail
    | redistribute_static_bgp_tail
    | remove_private_as_bgp_tail
    | route_map_bgp_tail
+   | route_policy_bgp_tail
    | route_reflector_client_bgp_tail
    | router_id_bgp_tail
    | send_community_bgp_tail
@@ -412,6 +413,7 @@ null_bgp_tail
             (
                LISTEN LIMIT
             )
+            | LOG
             | LOG_NEIGHBOR_CHANGES
             | NEXTHOP
          )
@@ -489,6 +491,15 @@ remove_private_as_bgp_tail
 route_map_bgp_tail
 :
    ROUTE_MAP name = VARIABLE
+   (
+      IN
+      | OUT
+   ) NEWLINE
+;
+
+route_policy_bgp_tail
+:
+   ROUTE_POLICY name = variable
    (
       IN
       | OUT

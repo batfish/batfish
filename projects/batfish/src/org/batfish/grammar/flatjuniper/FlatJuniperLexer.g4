@@ -81,6 +81,11 @@ ADVERTISE_INACTIVE
    'advertise-inactive'
 ;
 
+ADVERTISE_PEER_AS
+:
+   'advertise-peer-as'
+;
+
 AFS
 :
    'afs'
@@ -114,6 +119,11 @@ ALLOW
 ALWAYS_COMPARE_MED
 :
    'always-compare-med'
+;
+
+ANY
+:
+   'any'
 ;
 
 APPLY_GROUPS
@@ -231,6 +241,11 @@ BIFF
    'biff'
 ;
 
+BMP
+:
+   'bmp'
+;
+
 BOOTPC
 :
    'bootpc'
@@ -286,6 +301,11 @@ COLOR
    'color'
 ;
 
+COMMIT
+:
+   'commit'
+;
+
 COMMUNITY
 :
    'community'
@@ -293,6 +313,11 @@ COMMUNITY
       enableIPV6_ADDRESS = false;
    }
 
+;
+
+CONDITION
+:
+   'condition'
 ;
 
 CONNECTIONS
@@ -390,6 +415,11 @@ DESTINATION_PORT
    'destination-port'
 ;
 
+DESTINATION_PORT_EXCEPT
+:
+   'destination-port-except'
+;
+
 DESTINATION_PREFIX_LIST
 :
    'destination-prefix-list'
@@ -442,7 +472,7 @@ DOMAIN_SEARCH
 
 DSCP
 :
-   'dscp'
+   'dscp' -> pushMode(M_DSCP)
 ;
 
 DSTOPTS
@@ -645,6 +675,11 @@ FTP_DATA
    'ftp-data'
 ;
 
+FULL_DUPLEX
+:
+   'full-duplex'
+;
+
 G
 :
    'g'
@@ -693,6 +728,16 @@ HELLO_AUTHENTICATION_TYPE
 HELLO_INTERVAL
 :
    'hello-interval'
+;
+
+HELLO_PADDING
+:
+   'hello-padding'
+;
+
+HIGH
+:
+   'high'
 ;
 
 HOLD_TIME
@@ -805,6 +850,11 @@ INCLUDE_MP_NEXT_HOP
    'include-mp-next-hop'
 ;
 
+INCOMPLETE
+:
+   'incomplete'
+;
+
 INET
 :
    'inet'
@@ -905,9 +955,19 @@ INTERNAL
    'internal'
 ;
 
+INTERNET_OPTIONS
+:
+   'internet-options'
+;
+
 IP
 :
    'ip'
+;
+
+IP_OPTIONS
+:
+   'ip-options'
 ;
 
 IPIP
@@ -1030,6 +1090,11 @@ LDP
    'ldp'
 ;
 
+LEARN_VLAN_1P_PRIORITY
+:
+   'learn-vlan-1p-priority'
+;
+
 LEVEL
 :
    'level'
@@ -1085,6 +1150,11 @@ LOG_UPDOWN
    'log-updown'
 ;
 
+LOGICAL_SYSTEMS
+:
+   'logical-systems'
+;
+
 LOGIN
 :
    'login'
@@ -1100,9 +1170,24 @@ LOOPS
    'loops'
 ;
 
+LOSS_PRIORITY
+:
+   'loss-priority'
+;
+
+LOW
+:
+   'low'
+;
+
 LSP
 :
    'lsp'
+;
+
+LSP_EQUAL_COST
+:
+   'lsp-equal-cost'
 ;
 
 LSP_INTERVAL
@@ -1143,6 +1228,16 @@ MAX_CONFIGURATION_ROLLBACKS
 MAXIMUM_LABELS
 :
    'maximum-labels'
+;
+
+MEDIUM_HIGH
+:
+   'medium-high'
+;
+
+MEDIUM_LOW
+:
+   'medium-low'
 ;
 
 METRIC
@@ -1255,6 +1350,11 @@ NEIGHBOR_ADVERTISEMENT
    'neighbor-advertisement'
 ;
 
+NEIGHBOR_DISCOVERY
+:
+   'neighbor-discovery'
+;
+
 NEIGHBOR_SOLICIT
 :
    'neighbor-solicit'
@@ -1325,6 +1425,11 @@ NO_ACTIVE_BACKBONE
    'no-active-backbone'
 ;
 
+NO_CLIENT_REFLECT
+:
+   'no-client-reflect'
+;
+
 NO_EXPORT
 :
    'no-export'
@@ -1338,6 +1443,11 @@ NO_INSTALL
 NO_IPV4_ROUTING
 :
    'no-ipv4-routing'
+;
+
+NO_NEIGHBOR_DOWN_NOTIFICATION
+:
+   'no-neighbor-down-notification'
 ;
 
 NO_NEXTHOP_CHANGE
@@ -1470,6 +1580,11 @@ PATH
    'path'
 ;
 
+PATH_COUNT
+:
+   'path-count'
+;
+
 PATH_SELECTION
 :
    'path-selection'
@@ -1483,6 +1598,11 @@ PEER_ADDRESS
 PEER_AS
 :
    'peer-as'
+;
+
+PEER_UNIT
+:
+   'peer-unit'
 ;
 
 PER_PACKET
@@ -1560,6 +1680,16 @@ PPTP
    'pptp'
 ;
 
+PRECEDENCE
+:
+   'precedence'
+;
+
+PRECISION_TIMERS
+:
+   'precision-timers'
+;
+
 PREEMPT
 :
    'preempt'
@@ -1600,6 +1730,11 @@ PREFIX_LIST_FILTER
    'prefix-list-filter'
 ;
 
+PREFIX_POLICY
+:
+   'prefix-policy'
+;
+
 PRIMARY
 :
    'primary'
@@ -1638,6 +1773,11 @@ PROTOCOL
 PROTOCOLS
 :
    'protocols'
+;
+
+QUALIFIED_NEXT_HOP
+:
+   'qualified-next-hop'
 ;
 
 RADACCT
@@ -1695,6 +1835,11 @@ REMOVED
    'Removed'
 ;
 
+RESOLUTION
+:
+   'resolution'
+;
+
 RESOLVE
 :
    'resolve'
@@ -1747,7 +1892,7 @@ ROUTE
 
 ROUTE_DISTINGUISHER
 :
-   'route-distinguisher'
+   'route-distinguisher' -> pushMode(M_RouteDistinguisher)
 ;
 
 ROUTE_FILTER
@@ -1845,6 +1990,11 @@ SELF
    'self'
 ;
 
+SEND
+:
+   'send'
+;
+
 SET
 :
    'set'
@@ -1853,6 +2003,21 @@ SET
 SHORTCUTS
 :
    'shortcuts'
+;
+
+SRLG
+:
+   'srlg'
+;
+
+SRLG_COST
+:
+   'srlg-cost'
+;
+
+SRLG_VALUE
+:
+   'srlg-value'
 ;
 
 SMTP
@@ -1935,6 +2100,16 @@ STATIC
    'static'
 ;
 
+STATION_ADDRESS
+:
+   'station-address'
+;
+
+STATION_PORT
+:
+   'station-port'
+;
+
 SUBTRACT
 :
    'subtract'
@@ -1943,6 +2118,11 @@ SUBTRACT
 SUNRPC
 :
    'sunrpc'
+;
+
+SWITCH_OPTIONS
+:
+   'switch-options'
 ;
 
 SYSLOG
@@ -2276,14 +2456,14 @@ VARIABLE
       |
       (
          (
-            F_Variable_VarChar
+            F_Variable_LeadingVarChar
             {!enableIPV6_ADDRESS}?
 
             F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
          )
          |
          (
-            F_Variable_VarChar_Ipv6
+            F_Variable_LeadingVarChar_Ipv6
             {enableIPV6_ADDRESS}?
 
             F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar_Ipv6
@@ -2608,15 +2788,27 @@ F_Variable_InterfaceVarChar
 ;
 
 fragment
+F_Variable_LeadingVarChar
+:
+   ~[ \t\n\r:;{}<>[\]&|()"']
+;
+
+fragment
+F_Variable_LeadingVarChar_Ipv6
+:
+   ~[ \t\n\r:;{}<>[\]&|()"']
+;
+
+fragment
 F_Variable_VarChar
 :
-   ~[ \t\n\r;{}<>[\]&|()"']
+   ~[ \t\n\r;{}[\]&|()"']
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~[ \t\n\r:;{}<>[\]&|()"']
+   ~[ \t\n\r:;{}[\]&|()"']
 ;
 
 fragment
@@ -2640,6 +2832,11 @@ M_AsPath_ORIGIN
 M_AsPath_PATH
 :
    'path' -> type(PATH), mode(M_AsPathPath)
+;
+
+M_AsPath_TERM
+:
+   'term' -> type(TERM), popMode
 ;
 
 M_AsPath_VARIABLE
@@ -2703,7 +2900,7 @@ mode M_AsPathRegex;
 
 AS_PATH_REGEX
 :
-   [0-9,^$[\]\-*.{}+|()] [0-9,^$[\]\-*.{}+|() _]*
+   [0-9,^$[\]\-*.{}+|()] [0-9,^$[\]\-*.{}+|() _?]*
 ;
 
 M_AsPathRegex_DOUBLE_QUOTE
@@ -2734,6 +2931,23 @@ M_Description_NEWLINE
 ;
 
 M_Description_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_DSCP;
+
+M_DSCP_VARIABLE
+:
+   F_NonWhitespaceChar+ -> type(VARIABLE)
+;
+
+M_DSCP_NEWLINE
+:
+   F_NewlineChar+ -> type(NEWLINE), popMode
+;
+
+M_DSCP_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;
@@ -2792,6 +3006,11 @@ mode M_ISO;
 M_ISO_ADDRESS
 :
    'address' -> type(ADDRESS), mode(M_ISO_Address)
+;
+
+M_ISO_MTU
+:
+   'mtu' -> type(MTU), popMode
 ;
 
 M_ISO_Newline
@@ -2897,6 +3116,11 @@ NO_ADVERTISE
    'no-advertise'
 ;
 
+M_Members_NO_EXPORT
+:
+   'no-export' -> type(NO_EXPORT)
+;
+
 M_Members_OPEN_BRACE
 :
    '{' -> type(OPEN_BRACE)
@@ -2910,6 +3134,11 @@ M_Members_OPEN_BRACKET
 M_Members_OPEN_PAREN
 :
    '(' -> type(OPEN_PAREN)
+;
+
+M_Members_ORIGIN
+:
+   'origin' -> type(ORIGIN)
 ;
 
 M_Members_PERIOD
@@ -2957,6 +3186,33 @@ METRIC_TYPE_2
 ;
 
 M_MetricType_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_RouteDistinguisher;
+
+M_RouteDistinguisher_COLON
+:
+   ':' -> type(COLON)
+;
+
+M_RouteDistinguisher_IP_ADDRESS
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type(IP_ADDRESS)
+;
+
+M_RouteDistinguisher_DEC
+:
+   F_Digit+ -> type(DEC)
+;
+
+M_RouteDistinguisher_NEWLINE
+:
+   F_NewlineChar+ -> type(NEWLINE), popMode
+;
+
+M_RouteDistinguisher_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;

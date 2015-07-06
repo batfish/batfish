@@ -4,22 +4,22 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
-af_as
+administrator_as
 :
    DEC L
 ;
 
-af_dec
+administrator_dec
 :
    DEC
 ;
 
-af_dotted_as
+administrator_dotted_as
 :
    DEC PERIOD DEC
 ;
 
-af_ip
+administrator_ip
 :
    DEC PERIOD DEC PERIOD DEC PERIOD DEC
 ;
@@ -45,28 +45,34 @@ as_unit
    | DEC
 ;
 
+ec_administrator
+:
+   administrator_as
+   | administrator_dec
+   | administrator_dotted_as
+   | administrator_ip
+;
+
 ec_literal
 :
    DEC COLON DEC COLON DEC
 ;
 
-ec_target
+ec_named
 :
-   TARGET COLON ecaf_target COLON assigned_number = DEC
+   ec_type COLON ec_administrator COLON assigned_number = DEC
 ;
 
-ecaf_target
+ec_type
 :
-   af_as
-   | af_dec
-   | af_dotted_as
-   | af_ip
+   ORIGIN
+   | TARGET
 ;
 
 extended_community
 :
    ec_literal
-   | ec_target
+   | ec_named
 ;
 
 icmp_code
@@ -102,6 +108,11 @@ interface_id
    )?
 ;
 
+ip_option
+:
+   SECURITY
+;
+
 ip_protocol
 :
    AH
@@ -127,6 +138,13 @@ ip_protocol
    | VRRP
 ;
 
+origin_type
+:
+   EGP
+   | IGP
+   | INCOMPLETE
+;
+
 s_apply_groups
 :
    APPLY_GROUPS name = variable
@@ -140,6 +158,35 @@ s_apply_groups_except
 s_description
 :
    DESCRIPTION description = M_Description_DESCRIPTION?
+;
+
+pe_conjunction
+:
+   OPEN_PAREN policy_expression
+   (
+      DOUBLE_AMPERSAND policy_expression
+   )+ CLOSE_PAREN
+;
+
+pe_disjunction
+:
+   OPEN_PAREN policy_expression
+   (
+      DOUBLE_PIPE policy_expression
+   )+ CLOSE_PAREN
+;
+
+pe_nested
+:
+   OPEN_PAREN policy_expression CLOSE_PAREN
+;
+
+policy_expression
+:
+   pe_conjunction
+   | pe_disjunction
+   | pe_nested
+   | variable
 ;
 
 port
@@ -222,8 +269,10 @@ routing_protocol
    | BGP
    | DIRECT
    | ISIS
+   | LDP
    | LOCAL
    | OSPF
+   | RSVP
    | STATIC
 ;
 

@@ -538,29 +538,56 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
          Set<PolicyMap> originationPolicies = new LinkedHashSet<PolicyMap>();
          // create origination prefilter from listed advertised networks
-         RouteFilterList filter = new RouteFilterList("~BGP_PRE_FILTER:"
+         RouteFilterList localFilter = new RouteFilterList("~BGP_PRE_FILTER:"
                + lpg.getName() + "~");
          for (Prefix prefix : proc.getNetworks()) {
             int prefixLen = prefix.getPrefixLength();
             RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT,
                   prefix, new SubRange(prefixLen, prefixLen));
-            filter.addLine(line);
+            localFilter.addLine(line);
          }
-         c.getRouteFilterLists().put(filter.getName(), filter);
+         c.getRouteFilterLists().put(localFilter.getName(), localFilter);
 
          // add prefilter policy for explicitly advertised networks
-         Set<RouteFilterList> rfLines = new LinkedHashSet<RouteFilterList>();
-         rfLines.add(filter);
-         PolicyMapMatchRouteFilterListLine rfLine = new PolicyMapMatchRouteFilterListLine(
-               rfLines);
-         PolicyMapClause clause = new PolicyMapClause();
-         clause.setName("");
-         clause.setAction(PolicyMapAction.PERMIT);
-         Set<PolicyMapMatchLine> matchLines = clause.getMatchLines();
-         matchLines.add(rfLine);
+         Set<RouteFilterList> localRfLists = new LinkedHashSet<RouteFilterList>();
+         localRfLists.add(localFilter);
+         PolicyMapMatchRouteFilterListLine localRfLine = new PolicyMapMatchRouteFilterListLine(
+               localRfLists);
+         PolicyMapClause localAdvertisedNetworksClause = new PolicyMapClause();
+         localAdvertisedNetworksClause.setName("");
+         localAdvertisedNetworksClause.setAction(PolicyMapAction.PERMIT);
+         localAdvertisedNetworksClause.getMatchLines().add(localRfLine);
+
+         // create origination prefilter from listed aggregate advertiseed
+         // networks
+         RouteFilterList aggregateFilter = new RouteFilterList(
+               "~BGP_AGGREGATE_PRE_FILTER:" + lpg.getName() + "~");
+         for (Prefix prefix : proc.getAggregateNetworks().keySet()) {
+            int prefixLen = prefix.getPrefixLength();
+            RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT,
+                  prefix, new SubRange(prefixLen, prefixLen));
+            aggregateFilter.addLine(line);
+         }
+         c.getRouteFilterLists()
+               .put(aggregateFilter.getName(), aggregateFilter);
+
+         Set<RouteFilterList> aggregateRfLists = new LinkedHashSet<RouteFilterList>();
+         aggregateRfLists.add(aggregateFilter);
+         PolicyMapMatchRouteFilterListLine aggregateRfLine = new PolicyMapMatchRouteFilterListLine(
+               aggregateRfLists);
+         PolicyMapClause aggregatedAdvertisedNetworksClause = new PolicyMapClause();
+         aggregatedAdvertisedNetworksClause.setName("");
+         aggregatedAdvertisedNetworksClause.setAction(PolicyMapAction.PERMIT);
+         aggregatedAdvertisedNetworksClause.getMatchLines()
+               .add(aggregateRfLine);
+         aggregatedAdvertisedNetworksClause.getMatchLines().add(
+               new PolicyMapMatchProtocolLine(RoutingProtocol.AGGREGATE));
          PolicyMap explicitOriginationPolicyMap = new PolicyMap(
                "~BGP_ADVERTISED_NETWORKS_POLICY:" + lpg.getName() + "~");
-         explicitOriginationPolicyMap.getClauses().add(clause);
+         explicitOriginationPolicyMap.getClauses().add(
+               localAdvertisedNetworksClause);
+         explicitOriginationPolicyMap.getClauses().add(
+               aggregatedAdvertisedNetworksClause);
          c.getPolicyMaps().put(explicitOriginationPolicyMap.getMapName(),
                explicitOriginationPolicyMap);
          originationPolicies.add(explicitOriginationPolicyMap);

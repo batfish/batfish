@@ -16,6 +16,16 @@ agt_preference
    PREFERENCE preference = DEC
 ;
 
+bmpt_station_address
+:
+   STATION_ADDRESS IP_ADDRESS
+;
+
+bmpt_station_port
+:
+   STATION_PORT DEC
+;
+
 gt_discard
 :
    DISCARD
@@ -191,7 +201,11 @@ rit_protocols
 
 rit_route_distinguisher
 :
-   ROUTE_DISTINGUISHER IP_ADDRESS COLON DEC
+   ROUTE_DISTINGUISHER
+   (
+      DEC
+      | IP_ADDRESS
+   ) COLON DEC
 ;
 
 rit_routing_options
@@ -259,6 +273,17 @@ rot_martians
    MARTIANS s_null_filler
 ;
 
+rot_bmp
+:
+   BMP rot_bmp_tail
+;
+
+rot_bmp_tail
+:
+   bmpt_station_address
+   | bmpt_station_port
+;
+
 rot_generate
 :
    GENERATE ROUTE
@@ -294,6 +319,7 @@ rot_null
       | MULTIPATH
       | OPTIONS
       | PPM
+      | RESOLUTION
    ) s_null_filler
 ;
 
@@ -338,6 +364,16 @@ rot_static_tail
    | rst_route
 ;
 
+rot_srlg
+:
+   SRLG rot_srlg_tail
+;
+
+rot_srlg_tail
+:
+   srlgt_named
+;
+
 rst_rib_group
 :
    RIB_GROUP name = variable
@@ -354,21 +390,8 @@ rst_route
 
 rst_route_tail
 :
-   srt_active
-   | srt_community
-   | srt_discard
-   | srt_install
-   | srt_next_hop
-   | srt_next_table
-   | srt_no_readvertise
-   | srt_no_retain
-   | srt_passive
-   | srt_preference
-   | srt_readvertise
-   | srt_reject
-   | srt_resolve
-   | srt_retain
-   | srt_tag
+   srt_common
+   | srt_qualified_next_hop
 ;
 
 s_routing_instances
@@ -392,6 +415,7 @@ s_routing_options_tail
    rot_aggregate
    | rot_auto_export
    | rot_autonomous_system
+   | rot_bmp
    | rot_generate
    | rot_interface_routes
    | rot_martians
@@ -399,12 +423,62 @@ s_routing_options_tail
    | rot_rib
    | rot_rib_groups
    | rot_router_id
+   | rot_srlg
    | rot_static
+;
+
+srlgnt_srlg_cost
+:
+   SRLG_COST cost = DEC
+;
+
+srlgnt_srlg_value
+:
+   SRLG_VALUE value = DEC
+;
+
+srlgt_named
+:
+   name = variable srlgt_named_tail
+;
+
+srlgt_named_tail
+:
+   srlgnt_srlg_cost
+   | srlgnt_srlg_value
 ;
 
 srt_active
 :
    ACTIVE
+;
+
+srt_as_path
+:
+   AS_PATH PATH
+   (
+      path += DEC
+   )+
+;
+
+srt_common
+:
+   srt_active
+   | srt_as_path
+   | srt_community
+   | srt_discard
+   | srt_install
+   | srt_next_hop
+   | srt_next_table
+   | srt_no_readvertise
+   | srt_no_retain
+   | srt_passive
+   | srt_preference
+   | srt_readvertise
+   | srt_reject
+   | srt_resolve
+   | srt_retain
+   | srt_tag
 ;
 
 srt_community
@@ -454,6 +528,11 @@ srt_passive
 srt_preference
 :
    PREFERENCE pref = DEC
+;
+
+srt_qualified_next_hop
+:
+   QUALIFIED_NEXT_HOP nexthop = IP_ADDRESS srt_common?
 ;
 
 srt_readvertise

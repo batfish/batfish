@@ -67,6 +67,11 @@ as_path_regex_range
    | PERIOD
 ;
 
+bandwidth_irs_stanza
+:
+   BANDWIDTH ~NEWLINE* NEWLINE
+;
+
 extended_access_list_additional_feature
 :
    (
@@ -160,6 +165,11 @@ extended_access_list_tail
    (
       alps_dst = port_specifier
    )? feature = extended_access_list_additional_feature? NEWLINE
+;
+
+interface_rs_stanza
+:
+   INTERFACE name = interface_name NEWLINE irs_stanza*
 ;
 
 ip_as_path_access_list_stanza
@@ -405,6 +415,11 @@ ipx_sap_access_list_stanza
    numbered = ipx_sap_access_list_numbered_stanza
 ;
 
+irs_stanza
+:
+   bandwidth_irs_stanza
+;
+
 nexus_access_list_null_tail
 :
    (
@@ -420,6 +435,7 @@ nexus_access_list_stanza
 :
    (
       IP
+      | IPV4
       | IPV6
    ) ACCESS_LIST name = ~NEWLINE NEWLINE
    (
@@ -446,6 +462,42 @@ nexus_prefix_list_stanza
 null_as_path_regex
 :
    ~NEWLINE*
+;
+
+null_rs_stanza
+:
+   NO?
+   (
+      AUTHENTICATION
+      | KEY_SOURCE
+      | LOGGING
+   ) ~NEWLINE* NEWLINE
+;
+
+prefix_set_stanza
+:
+   PREFIX_SET name = variable NEWLINE prefix_set_tail* END_SET NEWLINE
+;
+
+prefix_set_tail
+:
+   (
+      prefix = IP_PREFIX
+      | ipv6_prefix = IPV6_PREFIX
+   )
+   (
+      (
+         GE minpl = DEC
+      )
+      |
+      (
+         LE maxpl = DEC
+      )
+      |
+      (
+         EQ eqpl = DEC
+      )
+   )* NEWLINE
 ;
 
 protocol_type_code_access_list_numbered_stanza
@@ -477,6 +529,17 @@ protocol_type_code_access_list_null_tail
 protocol_type_code_access_list_stanza
 :
    numbered = protocol_type_code_access_list_numbered_stanza
+;
+
+rs_stanza
+:
+   interface_rs_stanza
+   | null_rs_stanza
+;
+
+rsvp_stanza
+:
+   RSVP NEWLINE rs_stanza*
 ;
 
 standard_access_list_null_tail

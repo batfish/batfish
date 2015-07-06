@@ -38,10 +38,12 @@ block(`BaseFacts) {
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"isisL2").
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"isisEL1").
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"isisEL2").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ldp").
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ospf").
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ospfIA").
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ospfE1").
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"ospfE2").
++RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"rsvp").
 +RoutingProtocol(protocol), +RoutingProtocol_name(protocol:"static").
 
 +Ip(ip), +Ip_address(ip:0).

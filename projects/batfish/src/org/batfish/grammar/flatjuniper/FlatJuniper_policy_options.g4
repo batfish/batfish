@@ -72,9 +72,19 @@ fromt_family
    )
 ;
 
+fromt_instance
+:
+   INSTANCE name = variable
+;
+
 fromt_interface
 :
    INTERFACE id = interface_id
+;
+
+fromt_level
+:
+   LEVEL DEC
 ;
 
 fromt_neighbor
@@ -91,9 +101,14 @@ fromt_null
    PREFIX_LIST_FILTER s_null_filler
 ;
 
+fromt_origin
+:
+   ORIGIN origin_type
+;
+
 fromt_policy
 :
-   POLICY name = variable
+   POLICY expr = policy_expression
 ;
 
 fromt_prefix_list
@@ -132,7 +147,11 @@ fromt_route_filter_then
 
 fromt_route_type
 :
-   ROUTE_TYPE EXTERNAL
+   ROUTE_TYPE
+   (
+      EXTERNAL
+      | INTERNAL
+   )
 ;
 
 fromt_source_address_filter
@@ -164,6 +183,7 @@ metric_expression
 named_community
 :
    NO_ADVERTISE
+   | NO_EXPORT
 ;
 
 plt_apply_path
@@ -211,6 +231,11 @@ pot_community_tail
    ct_members
 ;
 
+pot_condition
+:
+   CONDITION s_null_filler
+;
+
 pot_policy_statement
 :
    POLICY_STATEMENT
@@ -256,6 +281,7 @@ pst_term_tail
    | tt_apply_groups
    | tt_from
    | tt_then
+   | tt_to
 ;
 
 rft_exact
@@ -302,6 +328,7 @@ s_policy_options_tail
    pot_apply_groups
    | pot_as_path
    | pot_community
+   | pot_condition
    | pot_policy_statement
    | pot_prefix_list
 ;
@@ -371,6 +398,11 @@ tht_external
    EXTERNAL TYPE DEC
 ;
 
+tht_forwarding_class
+:
+   FORWARDING_CLASS variable
+;
+
 tht_install_nexthop
 :
    INSTALL_NEXTHOP s_null_filler
@@ -403,7 +435,7 @@ tht_metric_expression
 
 tht_metric_igp
 :
-   METRIC IGP
+   METRIC IGP offset = DEC?
 ;
 
 tht_metric2_expression
@@ -442,6 +474,15 @@ tht_origin
    ORIGIN IGP
 ;
 
+tht_priority
+:
+   PRIORITY
+   (
+      HIGH
+      | LOW
+   )
+;
+
 tht_reject
 :
    REJECT
@@ -450,6 +491,16 @@ tht_reject
 tht_tag
 :
    TAG DEC
+;
+
+tot_level
+:
+   LEVEL DEC
+;
+
+tot_rib
+:
+   RIB variable
 ;
 
 tt_apply_groups
@@ -469,9 +520,12 @@ tt_from_tail
    | fromt_color
    | fromt_community
    | fromt_family
+   | fromt_instance
    | fromt_interface
+   | fromt_level
    | fromt_neighbor
    | fromt_null
+   | fromt_origin
    | fromt_policy
    | fromt_prefix_list
    | fromt_protocol
@@ -499,6 +553,7 @@ tt_then_tail
    | tht_default_action_accept
    | tht_default_action_reject
    | tht_external
+   | tht_forwarding_class
    | tht_install_nexthop
    | tht_local_preference
    | tht_metric
@@ -512,6 +567,18 @@ tt_then_tail
    | tht_next_term
    | tht_null
    | tht_origin
+   | tht_priority
    | tht_reject
    | tht_tag
+;
+
+tt_to
+:
+   TO tt_to_tail
+;
+
+tt_to_tail
+:
+   tot_level
+   | tot_rib
 ;

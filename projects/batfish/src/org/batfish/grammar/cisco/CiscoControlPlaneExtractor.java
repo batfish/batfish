@@ -88,6 +88,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
+   private static final Interface DUMMY_INTERFACE = new Interface("dummy");
+
    private static final String F_ALLOWAS_IN_NUMBER = "bgp -  allowas-in with number - ignored and effectively infinite for now";
 
    private static final String F_BGP_AUTO_SUMMARY = "bgp - auto-summary";
@@ -160,6 +162,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Map<String, String> prefixes = new LinkedHashMap<String, String>();
       prefixes.put("Async", "Async");
       prefixes.put("ATM", "ATM");
+      prefixes.put("Bundle-Ether", "Bundle-Ether");
       prefixes.put("cmp-mgmt", "cmp-mgmt");
       prefixes.put("Embedded-Service-Engine", "Embedded-Service-Engine");
       prefixes.put("Ethernet", "Ethernet");
@@ -168,17 +171,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("GigabitEthernet", "GigabitEthernet");
       prefixes.put("ge", "GigabitEthernet");
       prefixes.put("GMPLS", "GMPLS");
+      prefixes.put("HundredGigE", "HundredGigE");
       prefixes.put("Group-Async", "Group-Async");
       prefixes.put("Loopback", "Loopback");
       prefixes.put("Management", "Management");
       prefixes.put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX);
+      prefixes.put("MgmtEth", "MgmtEth");
       prefixes.put("Null", "Null");
       prefixes.put("Port-channel", "Port-channel");
       prefixes.put("POS", "POS");
       prefixes.put("Serial", "Serial");
       prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
+      prefixes.put("TenGigE", "TenGigE");
       prefixes.put("te", "TenGigabitEthernet");
       prefixes.put("Tunnel", "Tunnel");
+      prefixes.put("tunnel-te", "tunnel-te");
       prefixes.put("Vlan", "Vlan");
       return prefixes;
    }
@@ -677,6 +684,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private Ipv6BgpPeerGroup _currentIpv6PeerGroup;
 
+   private Interface _currentIsisInterface;
+
    private IsisProcess _currentIsisProcess;
 
    private NamedBgpPeerGroup _currentNamedPeerGroup;
@@ -760,6 +769,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       _currentExtendedAcl = new ExtendedAccessList(name);
       _configuration.getExtendedAcls().put(name, _currentExtendedAcl);
+   }
+
+   @Override
+   public void enterInterface_is_stanza(Interface_is_stanzaContext ctx) {
+      String ifaceName = ctx.iname.getText();
+      _currentIsisInterface = _configuration.getInterfaces().get(ifaceName);
+      if (_currentIsisInterface == null) {
+         _w.redFlag("IS-IS process references nonexistent interface: \""
+               + ifaceName + "\"");
+         _currentIsisInterface = DUMMY_INTERFACE;
+      }
+      _currentIsisInterface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
    }
 
    @Override
@@ -1347,6 +1368,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitInterface_is_stanza(Interface_is_stanzaContext ctx) {
+      _currentIsisInterface = null;
+   }
+
+   @Override
    public void exitInterface_stanza(Interface_stanzaContext ctx) {
       _currentInterfaces = null;
    }
@@ -1879,6 +1905,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitNull_as_path_regex(Null_as_path_regexContext ctx) {
       _w.redFlag("as-path regexes this complicated are not supported yet");
+   }
+
+   @Override
+   public void exitPassive_iis_stanza(Passive_iis_stanzaContext ctx) {
+      _currentIsisInterface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
    }
 
    @Override

@@ -81,6 +81,8 @@ import org.batfish.grammar.z3.ConcretizerQueryResultCombinedParser;
 import org.batfish.grammar.z3.ConcretizerQueryResultExtractor;
 import org.batfish.grammar.z3.DatalogQueryResultCombinedParser;
 import org.batfish.grammar.z3.DatalogQueryResultExtractor;
+import org.batfish.job.FlattenVendorConfigurationJob;
+import org.batfish.job.FlattenVendorConfigurationResult;
 import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.logic.LogicResourceLocator;
@@ -93,7 +95,9 @@ import org.batfish.logicblox.PredicateInfo;
 import org.batfish.logicblox.ProjectFile;
 import org.batfish.logicblox.QueryException;
 import org.batfish.logicblox.TopologyFactExtractor;
+import org.batfish.question.MultipathQuestion;
 import org.batfish.question.Question;
+import org.batfish.question.VerifyQuestion;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
@@ -215,6 +219,8 @@ public class Batfish implements AutoCloseable {
     * Role name for generated stubs
     */
    private static final String STUB_ROLE = "generated_stubs";
+
+   private static final String TESTRIG_CONFIGURATION_DIRECTORY = "configs";
 
    /**
     * The name of the [optional] topology file within a test-rig
@@ -358,14 +364,17 @@ public class Batfish implements AutoCloseable {
       Question question = parseQuestion(questionPath);
       switch (question.getType()) {
       case MULTIPATH:
-         answerMultipath(question);
+         answerMultipath((MultipathQuestion) question);
+         break;
+      case VERIFY:
+         answerVerify((VerifyQuestion) question);
          break;
       default:
          throw new BatfishException("Unknown question type");
       }
    }
 
-   private void answerMultipath(Question question) {
+   private void answerMultipath(MultipathQuestion question) {
       String environmentName = question.getMasterEnvironment();
       Path envPath = Paths.get(_settings.getAutoBaseDir(),
             BfConsts.RELPATH_ENVIRONMENTS_DIR, environmentName);
@@ -408,6 +417,12 @@ public class Batfish implements AutoCloseable {
          wSetFlowOriginate.append(flowLine);
       }
       dumpFacts(trafficFactBins);
+   }
+
+   private void answerVerify(VerifyQuestion question) {
+      Map<String, Configuration> configurations = deserializeConfigurations(_settings
+            .getSerializeIndependentPath());
+      question.getProgram().execute(configurations, _logger, _settings);
    }
 
    /**
@@ -769,7 +784,7 @@ public class Batfish implements AutoCloseable {
             _logger.fatal("...CONVERSION ERROR\n");
             _logger.fatal(ExceptionUtils.getStackTrace(e));
             processingError = true;
-            if (_settings.exitOnParseError()) {
+            if (_settings.getExitOnFirstError()) {
                break;
             }
             else {
@@ -807,7 +822,8 @@ public class Batfish implements AutoCloseable {
       File[] serializedConfigs = dir.listFiles();
       if (serializedConfigs == null) {
          throw new BatfishException(
-               "Error reading vendor-independent configs directory");
+               "Error reading vendor-independent configs directory: \""
+                     + dir.toString() + "\"");
       }
       for (File serializedConfig : serializedConfigs) {
          String name = serializedConfig.getName();
@@ -948,11 +964,9 @@ public class Batfish implements AutoCloseable {
       writeFile(outputPath, output);
    }
 
-   private String flatten(String input) {
-      return flatten(input, _logger, _settings);
-   }
-
    private void flatten(String inputPath, String outputPath) {
+      Map<File, String> configurationData = readConfigurationFiles(inputPath);
+      Map<File, String> outputConfigurationData = new TreeMap<File, String>();
       File inputFolder = new File(inputPath);
       File[] configs = inputFolder.listFiles();
       if (configs == null) {
@@ -965,26 +979,115 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException(
                "Could not create output testrig directory", e);
       }
-      for (File config : configs) {
-         String name = config.getName();
-         _logger.debug("Reading config: \"" + config + "\"");
-         String configText = readFile(config);
-         _logger.debug("..OK\n");
-         File outputFile = Paths.get(outputPath, name).toFile();
+
+      _logger.info("\n*** FLATTENING TEST RIG ***\n");
+      resetTimer();
+
+      ExecutorService pool;
+      boolean shuffle;
+      if (!_settings.getSequential()) {
+         int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
+         pool = Executors.newFixedThreadPool(numConcurrentThreads);
+         shuffle = true;
+      }
+      else {
+         pool = Executors.newSingleThreadExecutor();
+         shuffle = false;
+      }
+
+      List<FlattenVendorConfigurationJob> jobs = new ArrayList<FlattenVendorConfigurationJob>();
+
+      boolean processingError = false;
+      for (File inputFile : configurationData.keySet()) {
+         Warnings warnings = new Warnings(_settings.getPedanticAsError(),
+               _settings.getPedanticRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
+               _settings.getRedFlagAsError(), _settings.getRedFlagRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
+               _settings.getUnimplementedAsError(),
+               _settings.getUnimplementedRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
+               _settings.printParseTree());
+         String fileText = configurationData.get(inputFile);
+         String name = inputFile.getName();
+         File outputFile = Paths.get(outputPath,
+               TESTRIG_CONFIGURATION_DIRECTORY, name).toFile();
+         FlattenVendorConfigurationJob job = new FlattenVendorConfigurationJob(
+               _settings, fileText, inputFile, outputFile, warnings);
+         jobs.add(job);
+      }
+      if (shuffle) {
+         Collections.shuffle(jobs);
+      }
+      List<Future<FlattenVendorConfigurationResult>> futures = new ArrayList<Future<FlattenVendorConfigurationResult>>();
+      for (FlattenVendorConfigurationJob job : jobs) {
+         Future<FlattenVendorConfigurationResult> future = pool.submit(job);
+         futures.add(future);
+      }
+      while (!futures.isEmpty()) {
+         List<Future<FlattenVendorConfigurationResult>> currentFutures = new ArrayList<Future<FlattenVendorConfigurationResult>>();
+         currentFutures.addAll(futures);
+         for (Future<FlattenVendorConfigurationResult> future : currentFutures) {
+            if (future.isDone()) {
+               futures.remove(future);
+               FlattenVendorConfigurationResult result = null;
+               try {
+                  result = future.get();
+               }
+               catch (InterruptedException | ExecutionException e) {
+                  throw new BatfishException("Error executing parse job", e);
+               }
+               _logger.append(result.getHistory());
+               Throwable failureCause = result.getFailureCause();
+               if (failureCause != null) {
+                  if (_settings.getExitOnFirstError()) {
+                     throw new BatfishException("Failed parse job",
+                           failureCause);
+                  }
+                  else {
+                     processingError = true;
+                     _logger.error(ExceptionUtils.getStackTrace(failureCause));
+                  }
+               }
+               else {
+                  File outputFile = result.getOutputFile();
+                  String flattenedText = result.getFlattenedText();
+                  outputConfigurationData.put(outputFile, flattenedText);
+               }
+            }
+            else {
+               continue;
+            }
+         }
+         if (!futures.isEmpty()) {
+            try {
+               Thread.sleep(JOB_POLLING_PERIOD_MS);
+            }
+            catch (InterruptedException e) {
+               throw new BatfishException("interrupted while sleeping", e);
+            }
+         }
+      }
+      pool.shutdown();
+      if (processingError) {
+         throw new BatfishException("Error flattening vendor configurations");
+      }
+      else {
+         printElapsedTime();
+      }
+      for (Entry<File, String> e : outputConfigurationData.entrySet()) {
+         File outputFile = e.getKey();
+         String flatConfigText = e.getValue();
          String outputFileAsString = outputFile.toString();
-         if (configText.charAt(0) == '#'
-               && !configText.matches("(?m)set version.*")) {
-            _logger.debug("Flattening config to \"" + outputFileAsString
-                  + "\"...");
-            String flatConfigText = flatten(configText);
-            writeFile(outputFileAsString, flatConfigText);
-         }
-         else {
-            _logger.debug("Copying unmodified config to \""
-                  + outputFileAsString + "\"...");
-            writeFile(outputFileAsString, configText);
-            _logger.debug("OK\n");
-         }
+         _logger.debug("Writing config to \"" + outputFileAsString + "\"...");
+         writeFile(outputFileAsString, flatConfigText);
+         _logger.debug("OK\n");
+      }
+      Path inputTopologyPath = Paths.get(inputPath, TOPOLOGY_FILENAME);
+      Path outputTopologyPath = Paths.get(outputPath, TOPOLOGY_FILENAME);
+      if (Files.isRegularFile(inputTopologyPath)) {
+         String topologyFileText = readFile(inputTopologyPath.toFile());
+         writeFile(outputTopologyPath.toString(), topologyFileText);
       }
    }
 
@@ -2058,12 +2161,15 @@ public class Batfish implements AutoCloseable {
       resetTimer();
 
       ExecutorService pool;
-      if (_settings.getParseParallel()) {
+      boolean shuffle;
+      if (!_settings.getSequential()) {
          int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
          pool = Executors.newFixedThreadPool(numConcurrentThreads);
+         shuffle = true;
       }
       else {
          pool = Executors.newSingleThreadExecutor();
+         shuffle = false;
       }
 
       Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<String, VendorConfiguration>();
@@ -2084,6 +2190,9 @@ public class Batfish implements AutoCloseable {
          ParseVendorConfigurationJob job = new ParseVendorConfigurationJob(
                _settings, fileText, currentFile, warnings);
          jobs.add(job);
+      }
+      if (shuffle) {
+         Collections.shuffle(jobs);
       }
       List<Future<ParseVendorConfigurationResult>> futures = new ArrayList<Future<ParseVendorConfigurationResult>>();
       for (ParseVendorConfigurationJob job : jobs) {
@@ -2109,10 +2218,17 @@ public class Batfish implements AutoCloseable {
                catch (InterruptedException | ExecutionException e) {
                   throw new BatfishException("Error executing parse job", e);
                }
-               _logger.append(result.getHistory());
+               String terseLogLevelPrefix;
+               if (_logger.isActive(BatfishLogger.LEVEL_INFO)) {
+                  terseLogLevelPrefix = "";
+               }
+               else {
+                  terseLogLevelPrefix = result.getFile().toString() + ": ";
+               }
+               _logger.append(result.getHistory(), terseLogLevelPrefix);
                Throwable failureCause = result.getFailureCause();
                if (failureCause != null) {
-                  if (_settings.exitOnParseError()) {
+                  if (_settings.getExitOnFirstError()) {
                      throw new BatfishException("Failed parse job",
                            failureCause);
                   }
@@ -2191,7 +2307,7 @@ public class Batfish implements AutoCloseable {
             _logger.fatal("...EXTRACTION ERROR\n");
             _logger.fatal(ExceptionUtils.getStackTrace(e));
             processingError = true;
-            if (_settings.exitOnParseError()) {
+            if (_settings.getExitOnFirstError()) {
                break;
             }
             else {
@@ -2219,6 +2335,9 @@ public class Batfish implements AutoCloseable {
 
    private void postFacts(LogicBloxFrontend lbFrontend,
          Map<String, StringBuilder> factBins) {
+      Map<String, StringBuilder> enabledFacts = new HashMap<String, StringBuilder>();
+      enabledFacts.putAll(factBins);
+      enabledFacts.keySet().removeAll(_settings.getDisabledFacts());
       _logger.info("\n*** POSTING FACTS TO BLOXWEB SERVICES ***\n");
       resetTimer();
       _logger.info("Starting bloxweb services...");
@@ -2226,7 +2345,7 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
       _logger.info("Posting facts...");
       try {
-         lbFrontend.postFacts(factBins);
+         lbFrontend.postFacts(enabledFacts);
       }
       catch (ServiceClientException e) {
          throw new BatfishException("Failed to post facts to bloxweb services",
@@ -2371,7 +2490,8 @@ public class Batfish implements AutoCloseable {
       _logger.info("\n*** READING CONFIGURATION FILES ***\n");
       resetTimer();
       Map<File, String> configurationData = new TreeMap<File, String>();
-      File configsPath = Paths.get(testRigPath, "configs").toFile();
+      File configsPath = Paths
+            .get(testRigPath, TESTRIG_CONFIGURATION_DIRECTORY).toFile();
       File[] configFilePaths = configsPath.listFiles(new FilenameFilter() {
          @Override
          public boolean accept(File dir, String name) {
@@ -2509,10 +2629,8 @@ public class Batfish implements AutoCloseable {
       }
 
       if (_settings.getFlatten()) {
-         String flattenSource = Paths.get(_settings.getFlattenSource(),
-               "configs").toString();
-         String flattenDestination = Paths.get(
-               _settings.getFlattenDestination(), "configs").toString();
+         String flattenSource = _settings.getTestRigPath();
+         String flattenDestination = _settings.getFlattenDestination();
          flatten(flattenSource, flattenDestination);
          return;
       }
@@ -2780,24 +2898,28 @@ public class Batfish implements AutoCloseable {
             RoleSet roles = nodeRolesEntry.getValue();
             config.setRoles(roles);
          }
-         _logger.info("Serializing node-roles mappings: \"" + nodeRolesPath
-               + "\"...");
-         serializeObject(nodeRoles, new File(nodeRolesPath));
-         _logger.info("OK\n");
+         if (!_settings.getNoOutput()) {
+            _logger.info("Serializing node-roles mappings: \"" + nodeRolesPath
+                  + "\"...");
+            serializeObject(nodeRoles, new File(nodeRolesPath));
+            _logger.info("OK\n");
+         }
       }
-
-      _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
-      resetTimer();
-      new File(outputPath).mkdirs();
-      for (String name : vendorConfigurations.keySet()) {
-         VendorConfiguration vc = vendorConfigurations.get(name);
-         Path currentOutputPath = Paths.get(outputPath, name);
-         _logger.debug("Serializing: \"" + name + "\" ==> \""
-               + currentOutputPath.toString() + "\"...");
-         serializeObject(vc, currentOutputPath.toFile());
-         _logger.debug("OK\n");
+      if (!_settings.getNoOutput()) {
+         _logger
+               .info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+         resetTimer();
+         new File(outputPath).mkdirs();
+         for (String name : vendorConfigurations.keySet()) {
+            VendorConfiguration vc = vendorConfigurations.get(name);
+            Path currentOutputPath = Paths.get(outputPath, name);
+            _logger.debug("Serializing: \"" + name + "\" ==> \""
+                  + currentOutputPath.toString() + "\"...");
+            serializeObject(vc, currentOutputPath.toFile());
+            _logger.debug("OK\n");
+         }
+         printElapsedTime();
       }
-      printElapsedTime();
    }
 
    private Synthesizer synthesizeDataPlane(
