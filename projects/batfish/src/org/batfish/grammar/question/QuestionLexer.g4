@@ -104,6 +104,11 @@ HAS_IP
    'has_ip'
 ;
 
+LOCAL_AS
+:
+   'local_as'
+;
+
 MULTIPATH
 :
    'multipath'
@@ -137,6 +142,11 @@ OR
 PASSIVE
 :
    'passive'
+;
+
+REMOTE_AS
+:
+   'remote_as'
 ;
 
 REMOTE_IP
@@ -238,6 +248,11 @@ MINUS
 NEWLINE
 :
    F_NewlineChar+ -> channel ( HIDDEN )
+;
+
+NOT_EQUALS
+:
+   '!='
 ;
 
 OPEN_BRACE

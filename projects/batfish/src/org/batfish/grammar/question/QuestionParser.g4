@@ -53,9 +53,28 @@ bgp_neighbor_statement
    statement
 ;
 
+bgp_neighbor_int_expr
+:
+   BGP_NEIGHBOR PERIOD
+   (
+      bgp_neighbor_local_as_int_expr
+      | bgp_neighbor_remote_as_int_expr
+   )
+;
+
 bgp_neighbor_ip_expr
 :
    BGP_NEIGHBOR PERIOD bgp_neighbor_remote_ip_ip_expr
+;
+
+bgp_neighbor_local_as_int_expr
+:
+   LOCAL_AS
+;
+
+bgp_neighbor_remote_as_int_expr
+:
+   REMOTE_AS
 ;
 
 bgp_neighbor_remote_ip_ip_expr
@@ -67,9 +86,11 @@ boolean_expr
 :
    and_expr
    | contains_ip_expr
+   | eq_expr
    | gt_expr
    | if_expr
    | false_expr
+   | neq_expr
    | not_expr
    | or_expr
    | property_expr
@@ -104,6 +125,11 @@ foreach_interface_statement
 foreach_node_statement
 :
    FOREACH NODE OPEN_BRACE node_statement+ CLOSE_BRACE
+;
+
+eq_expr
+:
+   lhs = int_expr DOUBLE_EQUALS rhs = int_expr
 ;
 
 gt_expr
@@ -223,6 +249,11 @@ node_statement
    | statement
 ;
 
+neq_expr
+:
+   lhs = int_expr NOT_EQUALS rhs = int_expr
+;
+
 not_expr
 :
    NOT OPEN_BRACE boolean_expr CLOSE_BRACE
@@ -273,7 +304,8 @@ true_expr
 
 val_int_expr
 :
-   literal_int_expr
+   bgp_neighbor_int_expr
+   | literal_int_expr
    | num_ips_int_expr
    | var_int_expr
 ;
