@@ -49,6 +49,7 @@ var SVC_WORKSPACE_NAME_KEY = "workspace";
 
 var ARG_QUESTION_NAME = "questionname";
 var ARG_PREDICATES = "predicates";
+var ARG_LOGLEVEL = "loglevel";
 
 var COMMAND_ANSWER = "answer";
 var COMMAND_COMPILE = "compile";

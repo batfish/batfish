@@ -121,6 +121,7 @@ function fnDoWork(worktype) {
         case "answerquestion":
             reqParams[COMMAND_ANSWER] = "";
             reqParams[ARG_QUESTION_NAME] = questionName;
+            reqParams[ARG_LOGLEVEL] = "output";
             break;
         case "postflows":
             reqParams[COMMAND_POST_FLOWS] = "";
