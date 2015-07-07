@@ -62,7 +62,7 @@ function fnUploadTestrig() {
     data.append(SVC_TESTRIG_NAME_KEY, testrigName);
     data.append(SVC_ZIPFILE_KEY, testrigFile);
 
-    bfUploadData("UploadTestrig " + testrigName, SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_TESTRIG_RSC, data);
+    bfUploadData("UploadTestrig " + testrigName, SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_TESTRIG_RSC, data, cbUploadData, "testrig");
 }
 
 // -----------------------------------doWork-----------------------
@@ -176,18 +176,13 @@ function doFollowOnWork(worktype) {
             //no follow on work to be done here
             break;
         case "answerquestion":
-            reqParams[COMMAND_ANSWER] = "";
-            reqParams[ARG_QUESTION_NAME] = questionName;
+            fnDoWork("postflows");
             break;
         case "postflows":
-            reqParams[COMMAND_POST_FLOWS] = "";
-            reqParams[ARG_QUESTION_NAME] = questionName;
-            reqParams[COMMAND_ENV] = envName;
+            fnDoWork("getflowtraces");
             break;
         case "getflowtraces":
-            reqParams[COMMAND_QUERY] = "";
-            reqParams[ARG_PREDICATES] = PREDICATE_FLOW_PATH_HISTORY;
-            reqParams[COMMAND_ENV] = envName;
+            //no follow on work to be done here
             break;
         default:
             alert("Unsupported work command", worktype);
@@ -347,28 +342,7 @@ function fnUploadEnvironment() {
     data.append(SVC_ENV_NAME_KEY, envName);
     data.append(SVC_ZIPFILE_KEY, envFile);
 
-    bfUploadData("UploadEnvironment-" + envName, SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_ENV_RSC, data);
-
-    //jQuery.ajax({
-    //    url: SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_ENV_RSC,
-    //    type: "POST",
-    //    contentType: false,
-    //    processData: false,
-    //    data: data,
-
-    //    error: function (_, textStatus, errorThrown) {
-    //        bfUpdateDebugInfo("Environment upload failed:", textStatus, errorThrown);
-    //        console.log(textStatus, errorThrown);
-    //    },
-    //    success: function (response, textStatus) {
-    //        if (response[0] === SVC_SUCCESS_KEY) {
-    //            bfUpdateDebugInfo("Environment uploaded");
-    //        }
-    //        else {
-    //            bfUpdateDebugInfo("Environment upload failed: " + response[1]);
-    //        }
-    //    }
-    //});
+    bfUploadData("UploadEnvironment-" + envName, SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_ENV_RSC, data, cbUploadData, "environment");
 }
 
 // ------------------------------
@@ -381,43 +355,44 @@ function fnUploadQuestion() {
         return;
     }
 
-    var qName = jQuery("#txtQuestionName").val();
-    if (qName == "") {
-        alert("Specify a question name");
-        return;
-    }
-
     var qFile = jQuery("#fileUploadQuestion").get(0).files[0];
     if (typeof qFile === 'undefined') {
         alert("Select a question file");
         return;
     }
 
+    var qName = jQuery("#txtQuestionName").val();
+
+    if (qName == "") {
+        if (DEMO_MODE == 0) {
+            alert("Specify a question name");
+            return;
+        }
+        else {
+            jQuery("#txtQuestionName").val(qFile.name);
+            qName = jQuery("#txtQuestionName").val();
+        }
+    }
+
+
     var data = new FormData();
     data.append(SVC_TESTRIG_NAME_KEY, testrigName);
     data.append(SVC_QUESTION_NAME_KEY, qName);
     data.append(SVC_FILE_KEY, qFile);
 
-    bfUploadData("UploadQuestion-" + qName, SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_QUESTION_RSC, data);
+    bfUploadData("UploadQuestion-" + qName, SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_QUESTION_RSC, data, cbUploadData, "question");
+}
 
-    //jQuery.ajax({
-    //    url: SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_QUESTION_RSC,
-    //    type: "POST",
-    //    contentType: false,
-    //    processData: false,
-    //    data: data,
+function cbUploadData(uploadtype) {
 
-    //    error: function (_, textStatus, errorThrown) {
-    //        bfUpdateDebugInfo("Question upload failed:", textStatus, errorThrown);
-    //        console.log(textStatus, errorThrown);
-    //    },
-    //    success: function (response, textStatus) {
-    //        if (response[0] === SVC_SUCCESS_KEY) {
-    //            bfUpdateDebugInfo("Question uploaded");
-    //        }
-    //        else {
-    //            bfUpdateDebugInfo("Question upload failed: " + response[1]);
-    //        }
-    //    }
-    //});
+    switch (uploadtype) {
+        case "question":
+            fnDoWork("answerquestion");
+            break;
+        case "testrig":
+        case "environment":
+            break;
+        default:
+            alert("Unknown upload type " + uploadtype);
+    }
 }

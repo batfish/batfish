@@ -12,17 +12,15 @@
     </h1>
 
         <form>
-        <b> [Specify hostname where the coordinator is running]</b>
         <br />
         <input type="text" id="txtCoordinatorHost" value="localhost" />
-        <input type="button" id="btnCoordinatorHost" value="Update" onclick="bfUpdateCoordinatorLocation()" />
+        <input type="button" id="btnCoordinatorHost" value="Update coordinator location" onclick="bfUpdateCoordinatorLocation()" />
 
         <br /><br />
-        <b> [Add a worker to the coordinator's pool]</b>
-        <br />
-            <input type="text" id="txtAddWorker" value="localhost:9999" />
-            <input type="button" id="btnAddWorker" value="Add worker" onclick="fnAddWorker()" />
+        <input type="text" id="txtAddWorker" value="localhost:9999" />
+        <input type="button" id="btnAddWorker" value="Add worker" onclick="fnAddWorker()" />
 
+            <div style="display: none">
         <br /><br />
         <b> [Refresh to learn the latest on the status of coordinator's work queues]</b>
         <br />
@@ -31,13 +29,12 @@
             <input type="text" disabled id="txtCompletedWorks" size="3"/>
             Incomplete works
             <input type="text" disabled id="txtIncompleteWorks" size="3"/>
-
+                </div>
         </form>
 
     <hr />
 
     <form>
-        <b> [Upload a testrig]</b>
         <br />
         Name 
         <input type="text" id="txtTestrigName" value="example" />
@@ -45,75 +42,30 @@
         <input type="button" id="btnUploadTestrig" value="Upload testrig" onclick="fnUploadTestrig()" />
 
         <br /><br />
-        <b> [Upload an environment]</b>
-        <br />
         Name
         <input type="text" id="txtEnvironmentName" value="default"/>
         <input type="file" id="fileUploadEnvironment" />
         <input type="button" id="btnUploadEnvironment" value="Upload environment" onclick="fnUploadEnvironment()" />
 
         <br /><br />
-<!--        <b> [Generate control plane. Testrig with the name above should already have been uploaded]</b>-->
         <br />
         <input type="button" id="btnWorkVendorSpecific" value="Generate control plane" style="width:200px" onclick="fnDoWork('vendorspecific')" />
-        <input type="button" id="btnGetObjectVendorSpecific" value="Get result" onclick="fnGetObject('vendorspecific')" />
-
-<!--        <br /><br />
-        <b> [Parse configs into vendor independent format. Vendor specific parsing should already have been done.]</b>
-        <br />
-        <input type="button" id="btnWorkVendorIndependent" value="Parse vendor independent" style="width:200px" onclick="fnDoWork('vendorindependent')" />
-        <input type="button" id="btnGetObjectVendorIndependent" value="Get result" onclick="fnGetObject('vendorindependent')" />-->
-
-<!--        <br /><br />
-        <b> [Generate facts for the testrig and environment specified above.]</b>
-        <br />
-        <input type="button" id="btnWorkGenerateFacts" value="Generate facts" style="width:200px" onclick="fnDoWork('generatefacts')" />
-        <input type="button" id="btnGetObjectGenerateFacts" value="Get result" onclick="fnGetObject('generatefacts')" />-->
+        <input type="button" id="btnGetObjectVendorSpecific" value="See errors" onclick="fnGetObject('vendorspecific')" />
 
         <br /><br />
-<!--        <b> [Generate data plane for the testrig and environment specified above. Facts should already have been generated.]</b>-->
-        <br />
         <input type="button" id="btnWorkGenerateDataPlane" value="Generate data plane" style="width:200px" onclick="fnDoWork('generatedataplane')" />
 
-<!--        <br /><br />
-        <b> [Get from LB the generated data plane for the testrig and environment specified above. Data plane should already have been generated.]</b>
-        <br />
-        <input type="button" id="btnWorkGetDataPlane" value="Get data plane" style="width:200px" onclick="fnDoWork('getdataplane')" />
-        <input type="button" id="btnGetObjectGetDataPlane" value="Get result" onclick="fnGetObject('getdataplane')" />
-
         <br /><br />
-        <b> [Get the Z3 encoding of the data plane. Data plane should have already been gotten from LB.]</b>
-        <br />
-        <input type="button" id="btnWorkGetZ3Encoding" value="Get z3 encoding" style="width:200px" onclick="fnDoWork('getz3encoding')" />
-        <input type="button" id="btnGetObjectGetZ3Encoding" value="Get result" onclick="fnGetObject('getz3encoding')" />-->
-
-        <br /><br />
-        <b> [Upload a question for the testrig specified above. Testrig with the name above should exist and another question with the specified name should not.]</b>
         <br />
         Name
         <input type="text" id="txtQuestionName" />
         <input type="file" id="fileUploadQuestion" />
-        <input type="button" id="btnUploadQuestion" value="Upload question" onclick="fnUploadQuestion()" />
-
-        <br /><br />
-        <b> [Answer the question specified above.]</b>
-        <br />
-        <input type="button" id="btnWorkAnswerQuestion" value="Answer question" style="width:200px" onclick="fnDoWork('answerquestion')" />
-
-        <br /><br />
-        <b> [Post flows to LB.]</b>
-        <br />
-        <input type="button" id="btnPostFlows" value="Post flows to LB" style="width:200px" onclick="fnDoWork('postflows')" />
-
-        <br /><br />
-        <b> [Get the flow traces]</b>
-        <br />
-        <input type="button" id="btnGetFlowTraces" value="Get flow traces" style="width:200px" onclick="fnDoWork('getflowtraces')" />
-        <input type="button" id="btnGetObjectGetFlowTraces" value="Get result" onclick="fnGetObject('getflowtraces')" />
-
+        <input type="button" id="btnUploadQuestion" value="Answer query" onclick="fnUploadQuestion()" />
+        <input type="button" id="btnGetObjectGetFlowTraces" value="See result" onclick="fnGetObject('getflowtraces')" />
+        
         <hr />
 
-        
+        <div class="divClassSection" id="workguid" style="display: none">
         <b> [Work GUID. Auto-populated to the last work issued, but you can specify your own too.]</b>
         <br />
         <input type="text" id="txtWorkGuid" size ="75"/>
@@ -124,16 +76,15 @@
         <input type="text" disabled id="txtCheckWorkStatus" size="25"/>
         <input type="button" id="btnCheckWorkStatus" value="Get status" onclick="fnCheckWork()" />
                 
-        <br /><br />
-        <b> [Get the log for the work GUID specified above.]</b>
+        </div>
+
+       <b>Debug information: </b>
         <br />
         <input type="button" value="Get log" style="width:200px" onclick="fnGetLog()" />
     </form>
 
     <hr />
 
-    <!-- Change display style to 'normal' to show debug information and 'none' to turn it off  -->    
-    <b>Debug information: </b>
     <div class="divClassSection" id="divDebugInfo" style="display: normal">
     </div>
 </body>

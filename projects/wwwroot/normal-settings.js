@@ -1,2 +1,2 @@
 ﻿
-var BUNDLE_WORK = 0;
+var DEMO_MODE = 0;

@@ -96,7 +96,7 @@ function bfUpdateCoordinatorLocation() {
     bfUpdateDebugInfo("Coordinator host is updated to " + coordinatorHost);
 }
 
-function bfUploadData(taskname, url_parm, data) {
+function bfUploadData(taskname, url_parm, data, callback, worktype) {
     console.log("bfUploadData: ", taskname, url_parm);
     jQuery.ajax({
         url: url_parm,
@@ -111,6 +111,8 @@ function bfUploadData(taskname, url_parm, data) {
         success: function (response, textStatus) {
             if (response[0] === SVC_SUCCESS_KEY) {
                 bfUpdateDebugInfo(taskname + " succeeded");
+                if (callback != undefined)
+                    callback(worktype);
             }
             else {
                 alert(taskname + " failed: " + response[1]);
