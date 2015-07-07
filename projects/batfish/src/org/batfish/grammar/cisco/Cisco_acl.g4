@@ -204,7 +204,7 @@ ip_as_path_access_list_tail
    (
       as_path_regex
       | null_as_path_regex
-   ) NEWLINE
+   ) ANY? NEWLINE
 ;
 
 ip_community_list_expanded_stanza
