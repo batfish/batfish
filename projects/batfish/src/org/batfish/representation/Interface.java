@@ -31,13 +31,17 @@ public class Interface extends NamedStructure {
 
    private int _nativeVlan;
 
-   private Integer _ospfArea;
+   private OspfArea _ospfArea;
 
    private Integer _ospfCost;
 
    private int _ospfDeadInterval;
 
+   private boolean _ospfEnabled;
+
    private int _ospfHelloMultiplier;
+
+   private boolean _ospfPassive;
 
    private IpAccessList _outgoingFilter;
 
@@ -57,10 +61,6 @@ public class Interface extends NamedStructure {
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
       _allowedVlans = new ArrayList<SubRange>();
-      _ospfCost = null;
-      _ospfArea = null;
-      _incomingFilter = null;
-      _outgoingFilter = null;
       _secondaryPrefixes = new HashSet<Prefix>();
    }
 
@@ -78,10 +78,6 @@ public class Interface extends NamedStructure {
 
    public List<SubRange> getAllowedVlans() {
       return _allowedVlans;
-   }
-
-   public Integer getArea() {
-      return _ospfArea;
    }
 
    public double getBandwidth() {
@@ -108,6 +104,10 @@ public class Interface extends NamedStructure {
       return _nativeVlan;
    }
 
+   public OspfArea getOspfArea() {
+      return _ospfArea;
+   }
+
    public Integer getOspfCost() {
       return _ospfCost;
    }
@@ -116,8 +116,16 @@ public class Interface extends NamedStructure {
       return _ospfDeadInterval;
    }
 
+   public boolean getOspfEnabled() {
+      return _ospfEnabled;
+   }
+
    public int getOspfHelloMultiplier() {
       return _ospfHelloMultiplier;
+   }
+
+   public boolean getOspfPassive() {
+      return _ospfPassive;
    }
 
    public IpAccessList getOutgoingFilter() {
@@ -162,10 +170,6 @@ public class Interface extends NamedStructure {
       _active = active;
    }
 
-   public void setArea(Integer area) {
-      _ospfArea = area;
-   }
-
    public void setBandwidth(Double bandwidth) {
       _bandwidth = bandwidth;
    }
@@ -190,6 +194,10 @@ public class Interface extends NamedStructure {
       _nativeVlan = vlan;
    }
 
+   public void setOspfArea(OspfArea ospfArea) {
+      _ospfArea = ospfArea;
+   }
+
    public void setOspfCost(Integer ospfCost) {
       _ospfCost = ospfCost;
    }
@@ -198,8 +206,16 @@ public class Interface extends NamedStructure {
       _ospfDeadInterval = seconds;
    }
 
+   public void setOspfEnabled(boolean b) {
+      _ospfEnabled = b;
+   }
+
    public void setOspfHelloMultiplier(int multiplier) {
       _ospfHelloMultiplier = multiplier;
+   }
+
+   public void setOspfPassive(boolean passive) {
+      _ospfPassive = passive;
    }
 
    public void setOutgoingFilter(IpAccessList filter) {

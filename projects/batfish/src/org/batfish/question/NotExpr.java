@@ -1,8 +1,8 @@
 package org.batfish.question;
 
-public class NotExpr implements BooleanExpr {
+public class NotExpr extends BaseBooleanExpr {
 
-   private BooleanExpr _argument;
+   private final BooleanExpr _argument;
 
    public NotExpr(BooleanExpr argument) {
       _argument = argument;

@@ -39,6 +39,11 @@ BGP_NEIGHBOR
    'bgp_neighbor'
 ;
 
+CLEAR_IPS
+:
+   'clear_ips'
+;
+
 CONTAINS_IP
 :
    'contains_ip'
@@ -94,6 +99,16 @@ GLOBAL
    'global'
 ;
 
+HAS_IP
+:
+   'has_ip'
+;
+
+LOCAL_AS
+:
+   'local_as'
+;
+
 MULTIPATH
 :
    'multipath'
@@ -109,14 +124,34 @@ NOT
    'not'
 ;
 
+NUM_IPS
+:
+   'num_ips'
+;
+
+ONFAILURE
+:
+   'onfailure'
+;
+
 OR
 :
    'or'
 ;
 
+OSPF
+:
+   'ospf'
+;
+
 PASSIVE
 :
    'passive'
+;
+
+REMOTE_AS
+:
+   'remote_as'
 ;
 
 REMOTE_IP
@@ -146,6 +181,11 @@ VERIFY
 
 // Complex tokens
 
+ASTERISK
+:
+   '*'
+;
+
 CLOSE_BRACE
 :
    '}'
@@ -161,9 +201,33 @@ COLON
    ':'
 ;
 
+COLON_EQUALS
+:
+   ':='
+;
+
 COMMA
 :
    ','
+;
+
+DEC
+:
+   '0'
+   |
+   (
+      '-'? F_PositiveDecimalDigit F_DecimalDigit*
+   )
+;
+
+DOUBLE_EQUALS
+:
+   '=='
+;
+
+DOUBLE_PLUS
+:
+   '++'
 ;
 
 DOUBLE_QUOTE
@@ -171,9 +235,29 @@ DOUBLE_QUOTE
    '"' -> channel ( HIDDEN ) , pushMode ( M_QuotedString )
 ;
 
+FORWARD_SLASH
+:
+   '/'
+;
+
+GT
+:
+   '>'
+;
+
+MINUS
+:
+   '-'
+;
+
 NEWLINE
 :
    F_NewlineChar+ -> channel ( HIDDEN )
+;
+
+NOT_EQUALS
+:
+   '!='
 ;
 
 OPEN_BRACE
@@ -189,6 +273,11 @@ OPEN_PAREN
 PERIOD
 :
    '.'
+;
+
+PLUS
+:
+   '+'
 ;
 
 PREFIX_SET
@@ -212,6 +301,12 @@ WS
 ;
 
 fragment
+F_DecimalDigit
+:
+   '0' .. '9'
+;
+
+fragment
 F_NewlineChar
 :
    [\n\r]
@@ -221,6 +316,12 @@ fragment
 F_NonNewlineChar
 :
    ~[\n\r]
+;
+
+fragment
+F_PositiveDecimalDigit
+:
+   '1' .. '9'
 ;
 
 fragment

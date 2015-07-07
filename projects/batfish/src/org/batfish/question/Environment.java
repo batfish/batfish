@@ -16,6 +16,8 @@ public class Environment {
 
    private Map<String, Configuration> _configurations;
 
+   private Map<String, Integer> _integers;
+
    private Interface _interface;
 
    private Map<String, Set<Ip>> _ipSets;
@@ -23,6 +25,7 @@ public class Environment {
    private Configuration _node;
 
    public Environment() {
+      _integers = new HashMap<String, Integer>();
       _ipSets = new HashMap<String, Set<Ip>>();
    }
 
@@ -30,6 +33,7 @@ public class Environment {
       Environment copy = new Environment();
       copy._configurations = _configurations;
       copy._node = _node;
+      copy._integers = _integers;
       copy._interface = _interface;
       copy._ipSets = _ipSets;
       return copy;
@@ -37,6 +41,10 @@ public class Environment {
 
    public BgpNeighbor getBgpNeighbor() {
       return _bgpNeighbor;
+   }
+
+   public Map<String, Integer> getIntegers() {
+      return _integers;
    }
 
    public Interface getInterface() {

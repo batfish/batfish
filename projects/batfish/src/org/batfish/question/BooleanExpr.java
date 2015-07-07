@@ -1,6 +1,6 @@
 package org.batfish.question;
 
-public interface BooleanExpr {
+public interface BooleanExpr extends PrintableExpr {
 
    public boolean evaluate(Environment env);
 

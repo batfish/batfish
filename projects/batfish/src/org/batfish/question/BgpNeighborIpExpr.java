@@ -22,4 +22,9 @@ public enum BgpNeighborIpExpr implements IpExpr {
       }
    }
 
+   @Override
+   public String print(Environment environment) {
+      return evaluate(environment).toString();
+   }
+
 }

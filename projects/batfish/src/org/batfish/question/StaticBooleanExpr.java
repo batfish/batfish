@@ -18,4 +18,9 @@ public enum StaticBooleanExpr implements BooleanExpr {
       }
    }
 
+   @Override
+   public String print(Environment environment) {
+      return Boolean.toString(evaluate(environment));
+   }
+
 }

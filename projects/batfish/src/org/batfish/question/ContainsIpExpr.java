@@ -4,7 +4,7 @@ import java.util.Set;
 
 import org.batfish.representation.Ip;
 
-public class ContainsIpExpr implements BooleanExpr {
+public class ContainsIpExpr extends BaseBooleanExpr {
 
    private String _caller;
 

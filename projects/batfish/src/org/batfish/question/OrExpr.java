@@ -3,7 +3,7 @@ package org.batfish.question;
 import java.util.HashSet;
 import java.util.Set;
 
-public class OrExpr implements BooleanExpr {
+public class OrExpr extends BaseBooleanExpr {
 
    private final Set<BooleanExpr> _disjuncts;
 
