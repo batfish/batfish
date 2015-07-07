@@ -165,6 +165,7 @@ function doFollowOnWork(worktype) {
             break;
         case "generatefacts":
             //no follow on work to be done here
+            bfUpdateDebugInfo("Done generating control plane");
             break;
         case "generatedataplane":
             fnDoWork("getdataplane");
@@ -174,15 +175,23 @@ function doFollowOnWork(worktype) {
             break;
         case "getz3encoding":
             //no follow on work to be done here
+            bfUpdateDebugInfo("Done generating data plane");
             break;
         case "answerquestion":
-            fnDoWork("postflows");
+            var qName = jQuery("#txtQuestionName").val();
+            if (qName.toLowerCase().indexOf("multi") >= 0) {
+                fnDoWork("postflows");
+            }
+            else {
+                bfUpdateDebugInfo("Done answering query");
+            }
             break;
         case "postflows":
             fnDoWork("getflowtraces");
             break;
         case "getflowtraces":
             //no follow on work to be done here
+            bfUpdateDebugInfo("Done answering query");
             break;
         default:
             alert("Unsupported work command", worktype);
