@@ -170,6 +170,5 @@ function bfUpdateDebugInfo(string) {
 
 function bfGetTimestamp() {
     var now = new Date();
-    var time = [now.getHours(), now.getMinutes(), now.getSeconds()];
-    return time.join(":");
+    return now.toLocaleTimeString();  
 }
