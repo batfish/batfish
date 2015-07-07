@@ -1,5 +1,6 @@
 verify {
    $assignedips.clear_ips;
+   $dualassignedips.clear_ips;
    foreach node {
       foreach interface {
          if (interface.has_ip) then {
