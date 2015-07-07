@@ -188,7 +188,7 @@ set_comm_list_delete_rm_stanza
 
 set_community_additive_rm_stanza
 :
-   SET COMMUNITY
+   SET COMMUNITY COMMUNITY_LIST?
    (
       comm_list += community
    )+ ADDITIVE NEWLINE
@@ -201,7 +201,7 @@ set_community_none_rm_stanza
 
 set_community_rm_stanza
 :
-   SET COMMUNITY
+   SET COMMUNITY COMMUNITY_LIST?
    (
       comm_list += community
    )+ NEWLINE
