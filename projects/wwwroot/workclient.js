@@ -153,7 +153,7 @@ function cbDoWork(taskname, result, worktype) {
 
 function doFollowOnWork(worktype) {
 
-    if (BUNDLE_WORK == 0)
+    if (DEMO_MODE == 0)
         return;
 
     switch (worktype) {
@@ -238,7 +238,7 @@ function cbCheckWork(taskname, result, worktype) {
             case "ASSIGNED":
             case "CHECKINGSTATUS":
                 //fire again
-                currWorkChecker = window.setTimeout(fnCheckWork(worktype), 10 * 1000);
+                currWorkChecker = window.setTimeout(function () { fnCheckWork(worktype) }, 10 * 1000);
                 break;
             default:
                 bfUpdateDebugInfo("Got unknown work status: ", status);
