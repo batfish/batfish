@@ -50,7 +50,9 @@
         <br /><br />
         <br />
         <input type="button" id="btnWorkVendorSpecific" value="Generate control plane" style="width:200px" onclick="fnDoWork('vendorspecific')" />
-        <input type="button" id="btnGetObjectVendorSpecific" value="See errors" onclick="fnGetObject('vendorspecific')" />
+        <input type="button" id="btnLogVendorSpecific" value="See parse errors" onclick="fnGetLog('vendorspecific')"/>
+        <input type="button" id="btnLogVendorIndependent" value="See unresolved refereces" onclick="fnGetLog('vendorindependent')"/>
+        <input type="button" id="btnLogGenerateFacts" value="See other errors" onclick="fnGetLog('generatefacts')"/>
 
         <br /><br />
         <input type="button" id="btnWorkGenerateDataPlane" value="Generate data plane" style="width:200px" onclick="fnDoWork('generatedataplane')" />
