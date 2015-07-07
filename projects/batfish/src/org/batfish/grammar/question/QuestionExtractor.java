@@ -10,6 +10,7 @@ import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.BatfishExtractor;
+import org.batfish.grammar.question.QuestionParser.Interface_ospf_property_exprContext;
 import org.batfish.grammar.question.QuestionParser.*;
 import org.batfish.main.BatfishException;
 import org.batfish.question.AddIpStatement;
@@ -183,6 +184,18 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
+   private BooleanExpr toBooleanExpr(Interface_ospf_property_exprContext expr) {
+      if (expr.interface_ospf_active_expr() != null) {
+         return InterfaceBooleanExpr.INTERFACE_OSPF_ACTIVE;
+      }
+      else if (expr.interface_ospf_passive_expr() != null) {
+         return InterfaceBooleanExpr.INTERFACE_OSPF_PASSIVE;
+      }
+      else {
+         throw new BatfishException(ERR_CONVERT_BOOLEAN);
+      }
+   }
+
    private BooleanExpr toBooleanExpr(Interface_property_exprContext expr) {
       if (expr.interface_has_ip_boolean_expr() != null) {
          return InterfaceBooleanExpr.INTERFACE_HAS_IP;
@@ -192,6 +205,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else if (expr.interface_isloopback_expr() != null) {
          return InterfaceBooleanExpr.INTERFACE_IS_LOOPBACK;
+      }
+      else if (expr.interface_ospf_property_expr() != null) {
+         return toBooleanExpr(expr.interface_ospf_property_expr());
       }
       else {
          throw new BatfishException("Missing conversion for expression");

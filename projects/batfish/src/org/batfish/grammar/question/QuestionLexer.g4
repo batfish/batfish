@@ -139,6 +139,11 @@ OR
    'or'
 ;
 
+OSPF
+:
+   'ospf'
+;
+
 PASSIVE
 :
    'passive'

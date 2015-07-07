@@ -708,7 +708,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             iface.getName());
       newIface.setDescription(iface.getDescription());
       newIface.setActive(iface.getActive());
-      newIface.setArea(iface.getArea());
       newIface.setBandwidth(iface.getBandwidth());
       if (iface.getPrefix() != null) {
          newIface.setPrefix(iface.getPrefix());
@@ -1143,6 +1142,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   areas.put(areaNum, newArea);
                }
                newArea.getInterfaces().add(i);
+               i.setOspfArea(newArea);
+               i.setOspfEnabled(true);
+               boolean passive = proc.getInterfaceBlacklist().contains(
+                     i.getName())
+                     || (proc.getPassiveInterfaceDefault() && !proc
+                           .getInterfaceWhitelist().contains(i.getName()));
+               i.setOspfPassive(passive);
                break;
             }
          }

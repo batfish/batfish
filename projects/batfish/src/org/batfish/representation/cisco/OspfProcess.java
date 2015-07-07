@@ -41,17 +41,15 @@ public class OspfProcess implements Serializable {
    private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
    private double _referenceBandwidth;
    private Ip _routerId;
+
    private Set<OspfWildcardNetwork> _wildcardNetworks;
 
    public OspfProcess(int procnum) {
       _pid = procnum;
       _referenceBandwidth = DEFAULT_REFERENCE_BANDWIDTH;
       _networks = new TreeSet<OspfNetwork>();
-      _defaultInformationOriginate = false;
-      _defaultInformationOriginateAlways = false;
       _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
       _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
-      _passiveInterfaceDefault = false;
       _nssas = new HashMap<Integer, Boolean>();
       _interfaceBlacklist = new HashSet<String>();
       _interfaceWhitelist = new HashSet<String>();
@@ -62,12 +60,6 @@ public class OspfProcess implements Serializable {
 
    public void computeNetworks(Collection<Interface> interfaces) {
       for (Interface i : interfaces) {
-         String iname = i.getName();
-         if (_interfaceBlacklist.contains(iname)
-               || (_passiveInterfaceDefault && !_interfaceWhitelist
-                     .contains(iname))) {
-            continue;
-         }
          Prefix intPrefix = i.getPrefix();
          if (intPrefix == null) {
             continue;
@@ -126,6 +118,10 @@ public class OspfProcess implements Serializable {
 
    public Map<Integer, Boolean> getNssas() {
       return _nssas;
+   }
+
+   public boolean getPassiveInterfaceDefault() {
+      return _passiveInterfaceDefault;
    }
 
    public int getPid() {

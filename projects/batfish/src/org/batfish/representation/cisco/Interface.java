@@ -58,8 +58,6 @@ public class Interface implements Serializable {
 
    private ArrayList<SubRange> _allowedVlans;
 
-   private Integer _area;
-
    private Double _bandwidth;
 
    private String _description;
@@ -96,12 +94,10 @@ public class Interface implements Serializable {
 
    public Interface(String name) {
       _name = name;
-      _area = null;
       _active = true;
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
       _allowedVlans = new ArrayList<SubRange>();
-      _ospfCost = null;
       _secondaryPrefixes = new LinkedHashSet<Prefix>();
       _isisInterfaceMode = IsisInterfaceMode.UNSET;
    }
@@ -120,10 +116,6 @@ public class Interface implements Serializable {
 
    public List<SubRange> getAllowedVlans() {
       return _allowedVlans;
-   }
-
-   public Integer getArea() {
-      return _area;
    }
 
    public Double getBandwidth() {

@@ -211,6 +211,25 @@ interface_isloopback_expr
    IS_LOOPBACK
 ;
 
+interface_ospf_active_expr
+:
+   ACTIVE
+;
+
+interface_ospf_passive_expr
+:
+   PASSIVE
+;
+
+interface_ospf_property_expr
+:
+   OSPF PERIOD
+   (
+      interface_ospf_active_expr
+      | interface_ospf_passive_expr
+   )
+;
+
 interface_property_expr
 :
    INTERFACE PERIOD
@@ -218,6 +237,7 @@ interface_property_expr
       interface_has_ip_boolean_expr
       | interface_isis_property_expr
       | interface_isloopback_expr
+      | interface_ospf_property_expr
    )
 ;
 
