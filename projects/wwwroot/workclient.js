@@ -5,6 +5,10 @@ $(document).ready(
     }
 );
 
+// ------------------------------------------------
+
+var WorkGuids = {};
+
 // -------------------------------------------------
 
 function fnGetCoordinatorWorkQueueStatus() {
@@ -70,6 +74,8 @@ function fnUploadTestrig() {
 function fnDoWork(worktype) {
 
     var uuidCurrWork = guid();
+
+    WorkGuids[worktype] = uuidCurrWork;
 
     //set the guid of the text field
     jQuery("#txtWorkGuid").val(uuidCurrWork);
@@ -261,14 +267,22 @@ function cbCheckWork(taskname, result, worktype) {
 
 // ----------------------------------------------------------------
 
-function fnGetLog() {
+function fnGetLog(worktype) {
     var testrigName = jQuery("#txtTestrigName").val();
     if (testrigName == "") {
         alert("Testrig name is empty.");
         return;
     }
 
-    var uuidWork = jQuery("#txtWorkGuid").val();
+    var uuidWork = "";
+
+    if (worktype == "") {
+        uuidWork = jQuery("#txtWorkGuid").val();
+    }
+    else {
+        uuidWork = WorkGuids[worktype];
+    }
+
     if (uuidWork == "") {
         alert("Work GUID is empty");
         return;
