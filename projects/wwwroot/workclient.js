@@ -8,7 +8,7 @@ $(document).ready(
 // -------------------------------------------------
 
 function fnGetCoordinatorWorkQueueStatus() {
-    bfGetJson("GetCoordinatorWorkQueueStatus", SVC_WORK_MGR_ROOT + SVC_WORK_GETSTATUS_RSC, cbGetCoordinatorWorkQueueStatus);
+    bfGetJson("GetCoordinatorWorkQueueStatus", SVC_WORK_MGR_ROOT + SVC_WORK_GETSTATUS_RSC, cbGetCoordinatorWorkQueueStatus, "");
 }
 
 function cbGetCoordinatorWorkQueueStatus(taskname, result) {
@@ -37,7 +37,7 @@ function fnAddWorker() {
         return;
     }
 
-    bfGetJson("AddWorker-" + worker, SVC_POOL_MGR_ROOT + SVC_POOL_UPDATE_RSC + "?add=" + worker, bfGenericCallback);
+    bfGetJson("AddWorker-" + worker, SVC_POOL_MGR_ROOT + SVC_POOL_UPDATE_RSC + "?add=" + worker, bfGenericCallback, "");
 }
 
 // -----------------------------------------------
@@ -138,16 +138,59 @@ function fnDoWork(worktype) {
 
     var workItem = JSON.stringify([uuidCurrWork, testrigName, reqParams, {}]);
 
-    bfGetJson("DoWork" + worktype, SVC_WORK_MGR_ROOT + SVC_WORK_QUEUE_WORK_RSC + "?" + SVC_WORKITEM_KEY + "=" + workItem, cbDoWork);
+    bfGetJson("DoWork:" + worktype, SVC_WORK_MGR_ROOT + SVC_WORK_QUEUE_WORK_RSC + "?" + SVC_WORKITEM_KEY + "=" + workItem, cbDoWork, worktype);
 }
 
-function cbDoWork(taskname, result) {
+function cbDoWork(taskname, result, worktype) {
     if (result[0] === SVC_SUCCESS_KEY) {
         bfUpdateDebugInfo(taskname + " succeeded. Will start polling for status");
-        fnCheckWork();
+        fnCheckWork(worktype);
     }
     else {
         alert("Work queuing failed: " + result[1]);
+    }
+}
+
+function doFollowOnWork(worktype) {
+
+    if (BUNDLE_WORK == 0)
+        return;
+
+    switch (worktype) {
+        case "vendorspecific":
+            fnDoWork("vendorindependent");
+            break;
+        case "vendorindependent":
+            fnDoWork("generatefacts");
+            break;
+        case "generatefacts":
+            //no follow on work to be done here
+            break;
+        case "generatedataplane":
+            fnDoWork("getdataplane");
+            break;
+        case "getdataplane":
+            fnDoWork("getz3encoding");
+            break;
+        case "getz3encoding":
+            //no follow on work to be done here
+            break;
+        case "answerquestion":
+            reqParams[COMMAND_ANSWER] = "";
+            reqParams[ARG_QUESTION_NAME] = questionName;
+            break;
+        case "postflows":
+            reqParams[COMMAND_POST_FLOWS] = "";
+            reqParams[ARG_QUESTION_NAME] = questionName;
+            reqParams[COMMAND_ENV] = envName;
+            break;
+        case "getflowtraces":
+            reqParams[COMMAND_QUERY] = "";
+            reqParams[ARG_PREDICATES] = PREDICATE_FLOW_PATH_HISTORY;
+            reqParams[COMMAND_ENV] = envName;
+            break;
+        default:
+            alert("Unsupported work command", worktype);
     }
 }
 
@@ -165,7 +208,7 @@ function guid() {
 
 var currWorkChecker;
 
-function fnCheckWork() {
+function fnCheckWork(worktype) {
 
     //delete any old work checker
     window.clearTimeout(currWorkChecker);
@@ -176,10 +219,10 @@ function fnCheckWork() {
         return;
     }
 
-    bfGetJson("Checkwork-" + uuid, SVC_WORK_MGR_ROOT + SVC_WORK_GET_WORKSTATUS_RSC + "?" + SVC_WORKID_KEY + "=" + uuid, cbCheckWork);
+    bfGetJson("Checkwork-" + uuid, SVC_WORK_MGR_ROOT + SVC_WORK_GET_WORKSTATUS_RSC + "?" + SVC_WORKID_KEY + "=" + uuid, cbCheckWork, worktype);
 }
 
-function cbCheckWork(taskname, result) {
+function cbCheckWork(taskname, result, worktype) {
     if (result[0] === SVC_SUCCESS_KEY) {
 
         var status = result[1][SVC_WORKSTATUS_KEY];
@@ -190,6 +233,8 @@ function cbCheckWork(taskname, result) {
 
         switch (status) {
             case "TERMINATEDNORMALLY":
+                doFollowOnWork(worktype);
+                break;
             case "TERMINATEDABNORMALLY":
             case "ASSIGNMENTERROR":
                 break;
@@ -198,7 +243,7 @@ function cbCheckWork(taskname, result) {
             case "ASSIGNED":
             case "CHECKINGSTATUS":
                 //fire again
-                currWorkChecker = window.setTimeout(fnCheckWork, 10 * 1000);
+                currWorkChecker = window.setTimeout(fnCheckWork(worktype), 10 * 1000);
                 break;
             default:
                 bfUpdateDebugInfo("Got unknown work status: ", status);

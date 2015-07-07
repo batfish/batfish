@@ -119,7 +119,7 @@ function bfUploadData(taskname, url_parm, data) {
     });
 }
 
-function bfGetJson(taskname, url_parm, callback) {
+function bfGetJson(taskname, url_parm, callback, worktype) {
     console.log("bfGetJsonRequest: ", taskname, url_parm);
     $.ajax({
         type: "GET", //GET or POST or PUT or DELETE verb
@@ -131,7 +131,7 @@ function bfGetJson(taskname, url_parm, callback) {
         },
         success: function (response, textStatus) {
             console.log("bfGetJsonResponse: ", taskname, JSON.stringify(response));
-            callback(taskname, response);
+            callback(taskname, response, worktype);
         }
     });
 }

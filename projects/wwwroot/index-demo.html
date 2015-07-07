@@ -4,6 +4,7 @@
     <title>Batfish batfish batfish</title>
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.11.2.min.js"></script>
     <script src="batfish-common.js"></script>
+    <script src ="demo-settings.js"></script>
     <script src="workclient.js"></script>
 </head>
 <body>
@@ -36,30 +37,15 @@
     <hr />
 
     <form>
-        <b> [Specify testrig name]</b>
+        <b> [Upload a testrig]</b>
         <br />
+        Name 
         <input type="text" id="txtTestrigName" value="example" />
-
-        <br /><br />
-        <b> [Upload a testrig. Testrig with the name above should not exist]</b>
-        <br />
         <input type="file" id="fileUploadTestrig" />
         <input type="button" id="btnUploadTestrig" value="Upload testrig" onclick="fnUploadTestrig()" />
 
         <br /><br />
-        <b> [Parse configs into vendor specific format. Testrig with the name above should already have been uploaded]</b>
-        <br />
-        <input type="button" id="btnWorkVendorSpecific" value="Parse vendor specific" style="width:200px" onclick="fnDoWork('vendorspecific')" />
-        <input type="button" id="btnGetObjectVendorSpecific" value="Get result" onclick="fnGetObject('vendorspecific')" />
-
-        <br /><br />
-        <b> [Parse configs into vendor independent format. Vendor specific parsing should already have been done.]</b>
-        <br />
-        <input type="button" id="btnWorkVendorIndependent" value="Parse vendor independent" style="width:200px" onclick="fnDoWork('vendorindependent')" />
-        <input type="button" id="btnGetObjectVendorIndependent" value="Get result" onclick="fnGetObject('vendorindependent')" />
-
-        <br /><br />
-        <b> [Upload an environment. Testrig with the name above should exist and another environment with the specified name should not.]</b>
+        <b> [Upload an environment]</b>
         <br />
         Name
         <input type="text" id="txtEnvironmentName" value="default"/>
@@ -67,17 +53,29 @@
         <input type="button" id="btnUploadEnvironment" value="Upload environment" onclick="fnUploadEnvironment()" />
 
         <br /><br />
+<!--        <b> [Generate control plane. Testrig with the name above should already have been uploaded]</b>-->
+        <br />
+        <input type="button" id="btnWorkVendorSpecific" value="Generate control plane" style="width:200px" onclick="fnDoWork('vendorspecific')" />
+        <input type="button" id="btnGetObjectVendorSpecific" value="Get result" onclick="fnGetObject('vendorspecific')" />
+
+<!--        <br /><br />
+        <b> [Parse configs into vendor independent format. Vendor specific parsing should already have been done.]</b>
+        <br />
+        <input type="button" id="btnWorkVendorIndependent" value="Parse vendor independent" style="width:200px" onclick="fnDoWork('vendorindependent')" />
+        <input type="button" id="btnGetObjectVendorIndependent" value="Get result" onclick="fnGetObject('vendorindependent')" />-->
+
+<!--        <br /><br />
         <b> [Generate facts for the testrig and environment specified above.]</b>
         <br />
         <input type="button" id="btnWorkGenerateFacts" value="Generate facts" style="width:200px" onclick="fnDoWork('generatefacts')" />
-        <input type="button" id="btnGetObjectGenerateFacts" value="Get result" onclick="fnGetObject('generatefacts')" />
+        <input type="button" id="btnGetObjectGenerateFacts" value="Get result" onclick="fnGetObject('generatefacts')" />-->
 
         <br /><br />
-        <b> [Generate data plane for the testrig and environment specified above. Facts should already have been generated.]</b>
+<!--        <b> [Generate data plane for the testrig and environment specified above. Facts should already have been generated.]</b>-->
         <br />
         <input type="button" id="btnWorkGenerateDataPlane" value="Generate data plane" style="width:200px" onclick="fnDoWork('generatedataplane')" />
 
-        <br /><br />
+<!--        <br /><br />
         <b> [Get from LB the generated data plane for the testrig and environment specified above. Data plane should already have been generated.]</b>
         <br />
         <input type="button" id="btnWorkGetDataPlane" value="Get data plane" style="width:200px" onclick="fnDoWork('getdataplane')" />
@@ -87,7 +85,7 @@
         <b> [Get the Z3 encoding of the data plane. Data plane should have already been gotten from LB.]</b>
         <br />
         <input type="button" id="btnWorkGetZ3Encoding" value="Get z3 encoding" style="width:200px" onclick="fnDoWork('getz3encoding')" />
-        <input type="button" id="btnGetObjectGetZ3Encoding" value="Get result" onclick="fnGetObject('getz3encoding')" />
+        <input type="button" id="btnGetObjectGetZ3Encoding" value="Get result" onclick="fnGetObject('getz3encoding')" />-->
 
         <br /><br />
         <b> [Upload a question for the testrig specified above. Testrig with the name above should exist and another question with the specified name should not.]</b>
