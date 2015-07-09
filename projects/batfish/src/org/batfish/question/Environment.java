@@ -24,11 +24,12 @@ public class Environment {
 
    private Configuration _node;
 
-   private boolean _unsafe;
+   private boolean[] _unsafe;
 
    public Environment() {
       _integers = new HashMap<String, Integer>();
       _ipSets = new HashMap<String, Set<Ip>>();
+      _unsafe = new boolean[1];
    }
 
    public Environment copy() {
@@ -38,6 +39,7 @@ public class Environment {
       copy._integers = _integers;
       copy._interface = _interface;
       copy._ipSets = _ipSets;
+      copy._unsafe = _unsafe;
       return copy;
    }
 
@@ -68,7 +70,7 @@ public class Environment {
    }
 
    public boolean getUnsafe() {
-      return _unsafe;
+      return _unsafe[0];
    }
 
    public void setBgpNeighbor(BgpNeighbor bgpNeighbor) {
@@ -88,7 +90,7 @@ public class Environment {
    }
 
    public void setUnsafe(boolean b) {
-      _unsafe = b;
+      _unsafe[0] = b;
    }
 
    @Override
