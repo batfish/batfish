@@ -311,21 +311,27 @@ function fnGetObject(worktype) {
     switch (worktype) {
         case "vendorspecific":
             objectName = RELPATH_VENDOR_SPECIFIC_CONFIG_DIR;
+            bfGetObject(testrigName, objectName);
             break;
         case "vendorindependent":
             objectName = RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR;
+            bfGetObject(testrigName, objectName);
             break;
         case "generatefacts":
             objectName = [RELPATH_ENVIRONMENTS_DIR, envName, RELPATH_FACT_DUMP_DIR].join("/");
+            bfGetObject(testrigName, objectName);
             break;
         case "getdataplane":
             objectName = [RELPATH_ENVIRONMENTS_DIR, envName, RELPATH_DATA_PLANE_DIR].join("/");
+            bfGetObject(testrigName, objectName);
             break;
         case "getz3encoding":
             objectName = [RELPATH_ENVIRONMENTS_DIR, envName, RELPATH_Z3_DATA_PLANE_FILE].join("/");
+            bfGetObject(testrigName, objectName);
             break;
         case "getflowtraces":
             objectName = [RELPATH_ENVIRONMENTS_DIR, envName, RELPATH_QUERY_DUMP_DIR].join("/");
+            bfDownloadObject(testrigName, objectName);
             break;
         default:
             alert("Unsupported worktype for get result", worktype);
@@ -336,7 +342,6 @@ function fnGetObject(worktype) {
         return;
     }
 
-    bfGetObject(testrigName, objectName);
 }
 
 // ------------------------------------

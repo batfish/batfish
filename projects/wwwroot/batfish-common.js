@@ -158,6 +158,14 @@ function bfGetObject(testrigName, objectName) {
     //window.location.assign(uri);
 }
 
+function bfDownloadObject(testrigName, objectName) {
+    var uri = encodeURI(SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?" + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY + "=" + objectName);
+
+    bfUpdateDebugInfo("Fetching " + uri);
+
+    window.location.assign(uri);
+}
+
 function bfGenericCallback(taskname, result) {
     if (result[0] === SVC_SUCCESS_KEY) {
         bfUpdateDebugInfo(taskname + " succeeded");
