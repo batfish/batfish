@@ -150,7 +150,7 @@ function bfGetObject(testrigName, objectName) {
 
     $.get(uri, function (data) {
         var op = document.getElementById("divOutputInfo");
-        op.innerText = data;
+        op.textContent = data;
     }).fail(function () {
         bfUpdateDebugInfo("Failed to fetch " + uri);
     });
