@@ -48,9 +48,8 @@
        
                         Query: &nbsp 
                         <input type="text" id="txtQuestionName" /> &nbsp
-                        <input type="file" id="fileUploadQuestion" /> &nbsp
+                        <input type="file" id="fileUploadQuestion" /> &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
                         <input type="button" id="btnUploadQuestion" value="Process query" onclick="fnUploadQuestion()" /> &nbsp
-                        <input type="button" id="btnGetObjectGetFlowTraces" value="View result" onclick="fnGetObject('getflowtraces')" />
 
                         <br />
                         <br />
@@ -70,7 +69,8 @@
                         </div>
 
                         <br />
-                        <input type="button" value="Get log" style="width:200px" onclick="fnGetLog()" />
+                        <input type="button" value="View control plane query result" onclick="fnGetLog()" /> &nbsp &nbsp 
+                        <input type="button" id="btnGetObjectGetFlowTraces" value="Download data plane query result" onclick="fnGetObject('getflowtraces')" />
                         <br />
                 </form>
                        
