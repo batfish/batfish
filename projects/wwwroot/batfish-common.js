@@ -82,6 +82,10 @@ var RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
 var RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 var RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
+$(document).ajaxError(function (event, request, settings, thrownError) {
+    bfUpdateDebugInfo(settings.url + " " + thrownErroor + " " + request);
+});
+
 function bfUpdateCoordinatorLocation() {
 
     var coordinatorHost = jQuery("#txtCoordinatorHost").val();
@@ -141,7 +145,17 @@ function bfGetJson(taskname, url_parm, callback, worktype) {
 
 function bfGetObject(testrigName, objectName) {
     var uri = encodeURI(SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?" + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY + "=" + objectName);
-    window.location.assign(uri);
+
+    bfUpdateDebugInfo("Fetching " + uri);
+
+    $.get(uri, function (data) {
+        var op = document.getElementById("divOutputInfo");
+        op.innerText = data;
+    }).fail(function () {
+        bfUpdateDebugInfo("Failed to fetch " + uri);
+    });
+
+    //window.location.assign(uri);
 }
 
 function bfGenericCallback(taskname, result) {
@@ -165,7 +179,7 @@ function bfUpdateDebugInfo(string) {
         debugLog.shift();
     }
 
-    $("#divDebugInfo").html(debugLog.join("<br/>"));
+    $("#divDebugInfo").html(debugLog.join("\n"));
 }
 
 function bfGetTimestamp() {

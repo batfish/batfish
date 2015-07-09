@@ -6,86 +6,109 @@
     <script src="batfish-common.js"></script>
     <script src ="demo-settings.js"></script>
     <script src="workclient.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
-    <h1>Welcome to batfish service
-    </h1>
+    <h1>Batfish  Demo</h1>
 
-        <form>
-        <br />
-        <input type="text" id="txtCoordinatorHost" value="localhost" />
-        <input type="button" id="btnCoordinatorHost" value="Update coordinator location" onclick="bfUpdateCoordinatorLocation()" />
+        <table>
+            <tr>
+                <td>
+                    <form class="myform">
 
-        <br /><br />
-        <input type="text" id="txtAddWorker" value="localhost:9999" />
-        <input type="button" id="btnAddWorker" value="Add worker" onclick="fnAddWorker()" />
+                        Configuration: &nbsp
+                        <input type="text" id="txtTestrigName" value="example" />  &nbsp 
+                        <input type="file" id="fileUploadTestrig" />  &nbsp
+                        <input type="button" id="btnUploadTestrig" value="Upload Configuration" onclick="fnUploadTestrig()" />
+                        <br />
+                        <br />
 
-            <div style="display: none">
-        <br /><br />
-        <b> [Refresh to learn the latest on the status of coordinator's work queues]</b>
-        <br />
-            <input type="button" id="btnGetWorkStatus" value="Referesh work queue status" onclick="fnGetCoordinatorWorkQueueStatus()" />
-            Completed works
-            <input type="text" disabled id="txtCompletedWorks" size="3"/>
-            Incomplete works
-            <input type="text" disabled id="txtIncompleteWorks" size="3"/>
-                </div>
-        </form>
+                        Environment: &nbsp &nbsp
+                        <input type="text" id="txtEnvironmentName" value="default"/> &nbsp
+                        <input type="file" id="fileUploadEnvironment" /> &nbsp
+                        <input type="button" id="btnUploadEnvironment" value="Upload environment" onclick="fnUploadEnvironment()" />
 
-    <hr />
+                        <br />
+                        <br />
+                        <hr />
+                        <br />
 
-    <form>
-        <br />
-        Name 
-        <input type="text" id="txtTestrigName" value="example" />
-        <input type="file" id="fileUploadTestrig" />
-        <input type="button" id="btnUploadTestrig" value="Upload testrig" onclick="fnUploadTestrig()" />
+                        <input type="button" id="btnWorkVendorSpecific" value="Generate control plane" style="width:200px" onclick="fnDoWork('vendorspecific')" /> &nbsp &nbsp
+                        <input type="button" id="btnWorkGenerateDataPlane" value="Generate data plane" style="width:200px" onclick="fnDoWork('generatedataplane')" />
+                        
+                        <br /> <br />
+                        <input type="button" id="btnLogVendorSpecific" value="View parse errors" onclick="fnGetLog('vendorspecific')"/> &nbsp
+                        <input type="button" id="btnLogVendorIndependent" value="View unresolved refereces" onclick="fnGetLog('vendorindependent')"/> &nbsp
+                        <input type="button" id="btnLogGenerateFacts" value="View other errors" onclick="fnGetLog('generatefacts')"/>
 
-        <br /><br />
-        Name
-        <input type="text" id="txtEnvironmentName" value="default"/>
-        <input type="file" id="fileUploadEnvironment" />
-        <input type="button" id="btnUploadEnvironment" value="Upload environment" onclick="fnUploadEnvironment()" />
+                        <br />
+                        <br />
+                        <hr />
+                        <br />
+       
+                        Query: &nbsp 
+                        <input type="text" id="txtQuestionName" /> &nbsp
+                        <input type="file" id="fileUploadQuestion" /> &nbsp
+                        <input type="button" id="btnUploadQuestion" value="Process query" onclick="fnUploadQuestion()" /> &nbsp
+                        <input type="button" id="btnGetObjectGetFlowTraces" value="View result" onclick="fnGetObject('getflowtraces')" />
 
-        <br /><br />
-        <br />
-        <input type="button" id="btnWorkVendorSpecific" value="Generate control plane" style="width:200px" onclick="fnDoWork('vendorspecific')" />
-        <input type="button" id="btnLogVendorSpecific" value="See parse errors" onclick="fnGetLog('vendorspecific')"/>
-        <input type="button" id="btnLogVendorIndependent" value="See unresolved refereces" onclick="fnGetLog('vendorindependent')"/>
-        <input type="button" id="btnLogGenerateFacts" value="See other errors" onclick="fnGetLog('generatefacts')"/>
+                        <br />
+                        <br />
+                        <hr />
 
-        <br /><br />
-        <input type="button" id="btnWorkGenerateDataPlane" value="Generate data plane" style="width:200px" onclick="fnDoWork('generatedataplane')" />
+                        <div class="divClassSection" id="workguid" style="display: none">
+                        <b> [Work GUID. Auto-populated to the last work issued, but you can specify your own too.]</b>
+                        <br />
+                        <input type="text" id="txtWorkGuid" size ="75"/>
 
-        <br /><br />
-        <br />
-        Name
-        <input type="text" id="txtQuestionName" />
-        <input type="file" id="fileUploadQuestion" />
-        <input type="button" id="btnUploadQuestion" value="Answer query" onclick="fnUploadQuestion()" />
-        <input type="button" id="btnGetObjectGetFlowTraces" value="See result" onclick="fnGetObject('getflowtraces')" />
-        
-        <hr />
-
-        <div class="divClassSection" id="workguid" style="display: none">
-        <b> [Work GUID. Auto-populated to the last work issued, but you can specify your own too.]</b>
-        <br />
-        <input type="text" id="txtWorkGuid" size ="75"/>
-
-        <br /><br />
-        <b> [Status is automatically polled and populated when work is issued. But you trigger status check manually as well for the GUID above.]</b>
-        <br />
-        <input type="text" disabled id="txtCheckWorkStatus" size="25"/>
-        <input type="button" id="btnCheckWorkStatus" value="Get status" onclick="fnCheckWork()" />
+                        <br /><br />
+                        <b> [Status is automatically polled and populated when work is issued. But you trigger status check manually as well for the GUID above.]</b>
+                        <br />
+                        <input type="text" disabled id="txtCheckWorkStatus" size="25"/>
+                        <input type="button" id="btnCheckWorkStatus" value="Get status" onclick="fnCheckWork()" />
                 
-        </div>
+                        </div>
 
-        <br />
-        <input type="button" value="Get log" style="width:200px" onclick="fnGetLog()" />
-    </form>
+                        <br />
+                        <input type="button" value="Get log" style="width:200px" onclick="fnGetLog()" />
+                        <br />
+                </form>
+                       
+                <br />
+                Debug information: <br />
+                <textarea id="divDebugInfo" style="display: normal; border-radius: 5pt"cols="100" rows="10"></textarea>
+            </td>
+            <td>
+                <form class="myform">
+                
+                Coordinator: &nbsp &nbsp
+                <input type="text" id="txtCoordinatorHost" value="localhost" /> &nbsp &nbsp
+                <input type="button" id="btnCoordinatorHost" value="Update" onclick="bfUpdateCoordinatorLocation()" />
+                <br /> <br />
 
-       <b>Debug information: </b>
-    <div class="divClassSection" id="divDebugInfo" style="display: normal">
-    </div>
+                Worker: &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
+                <input type="text" id="txtAddWorker" value="localhost:9999" /> &nbsp &nbsp
+                <input type="button" id="btnAddWorker" value="Add worker" onclick="fnAddWorker()" />
+                <br />
+
+                <div style="display: none">
+                    <br /><br />
+                    <b> [Refresh to learn the latest on the status of coordinator's work queues]</b>
+                    <br />
+                        <input type="button" id="btnGetWorkStatus" value="Referesh work queue status" onclick="fnGetCoordinatorWorkQueueStatus()" />
+                        Completed works
+                        <input type="text" disabled id="txtCompletedWorks" size="3"/>
+                        Incomplete works
+                        <input type="text" disabled id="txtIncompleteWorks" size="3"/>
+                </div>
+                </form>
+                <br />
+                Output: <br />
+                <textarea id="divOutputInfo" style="display: normal; border-radius:5px" cols="100" rows="30"></textarea>
+                <br />
+            </td>
+        </tr>
+           
+    </table>
 </body>
 </html>
