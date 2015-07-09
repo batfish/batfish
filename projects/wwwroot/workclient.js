@@ -276,7 +276,7 @@ function fnGetLog(worktype) {
 
     var uuidWork = "";
 
-    if (worktype == "") {
+    if (typeof worktype === 'undefined') {
         uuidWork = jQuery("#txtWorkGuid").val();
     }
     else {
