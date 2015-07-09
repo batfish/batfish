@@ -32,6 +32,7 @@ public class Assertion implements Statement {
          logger.info(successMessage);
       }
       else {
+         environment.setUnsafe(true);
          String optionalMessage = "";
          if (_onErrorPrintables.size() > 0) {
             StringBuilder sb = new StringBuilder();

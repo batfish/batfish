@@ -423,6 +423,9 @@ public class Batfish implements AutoCloseable {
       Map<String, Configuration> configurations = deserializeConfigurations(_settings
             .getSerializeIndependentPath());
       question.getProgram().execute(configurations, _logger, _settings);
+      if (!question.getProgram().getUnsafe()) {
+         _logger.output("No violations detected\n");
+      }
    }
 
    /**

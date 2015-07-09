@@ -37,4 +37,8 @@ public class VerifyProgram {
       return _statements;
    }
 
+   public boolean getUnsafe() {
+      return _environment.getUnsafe();
+   }
+
 }
