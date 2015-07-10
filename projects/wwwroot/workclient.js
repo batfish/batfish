@@ -254,7 +254,7 @@ function cbCheckWork(taskname, result, worktype) {
             case "ASSIGNED":
             case "CHECKINGSTATUS":
                 //fire again
-                currWorkChecker = window.setTimeout(function () { fnCheckWork(worktype) }, 5 * 1000);
+                currWorkChecker = window.setTimeout(function () { fnCheckWork(worktype) }, 2 * 1000);
                 break;
             default:
                 bfUpdateDebugInfo("Got unknown work status: ", status);

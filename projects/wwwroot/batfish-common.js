@@ -177,11 +177,12 @@ function bfGenericCallback(taskname, result) {
 
 
 var debugLog = [];
-var maxLogEntries = 10;
+var maxLogEntries = 10000;
 
 function bfUpdateDebugInfo(string) {
 
-    debugLog.push(bfGetTimestamp() + " " + string);
+    //debugLog.push(bfGetTimestamp() + " " + string);
+    debugLog.splice(0, 0, bfGetTimestamp() + " " + string);
 
     while (debugLog.length > maxLogEntries) {
         debugLog.shift();
