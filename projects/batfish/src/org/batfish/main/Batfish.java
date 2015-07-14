@@ -97,6 +97,7 @@ import org.batfish.logicblox.QueryException;
 import org.batfish.logicblox.TopologyFactExtractor;
 import org.batfish.question.MultipathQuestion;
 import org.batfish.question.Question;
+import org.batfish.question.VerifyProgram;
 import org.batfish.question.VerifyQuestion;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.BgpProcess;
@@ -422,8 +423,9 @@ public class Batfish implements AutoCloseable {
    private void answerVerify(VerifyQuestion question) {
       Map<String, Configuration> configurations = deserializeConfigurations(_settings
             .getSerializeIndependentPath());
-      question.getProgram().execute(configurations, _logger, _settings);
-      if (!question.getProgram().getUnsafe()) {
+      VerifyProgram program = question.getProgram();
+      program.execute(configurations, _logger, _settings);
+      if (program.getAssertions() && !program.getUnsafe()) {
          _logger.output("No violations detected\n");
       }
    }

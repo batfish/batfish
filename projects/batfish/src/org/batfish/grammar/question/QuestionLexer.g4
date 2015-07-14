@@ -24,6 +24,11 @@ ADD_IP
    'add_ip'
 ;
 
+ADMINISTRATIVE_COST
+:
+   'administrative_cost'
+;
+
 AND
 :
    'and'
@@ -34,6 +39,11 @@ ASSERT
    'assert'
 ;
 
+BGP
+:
+   'bgp'
+;
+
 BGP_NEIGHBOR
 :
    'bgp_neighbor'
@@ -42,6 +52,11 @@ BGP_NEIGHBOR
 CLEAR_IPS
 :
    'clear_ips'
+;
+
+CONFIGURED
+:
+   'configured'
 ;
 
 CONTAINS_IP
@@ -62,6 +77,16 @@ FALSE
 FOREACH
 :
    'foreach'
+;
+
+GENERATED_ROUTE
+:
+   'generated_route'
+;
+
+HAS_GENERATED_ROUTE
+:
+   'has_generated_route'
 ;
 
 IF
@@ -104,14 +129,44 @@ HAS_IP
    'has_ip'
 ;
 
+HAS_NEXT_HOP_INTERFACE
+:
+   'has_next_hop_interface'
+;
+
+HAS_NEXT_HOP_IP
+:
+   'has_next_hop_ip'
+;
+
 LOCAL_AS
 :
    'local_as'
 ;
 
+LOCAL_IP
+:
+   'local_ip'
+;
+
 MULTIPATH
 :
    'multipath'
+;
+
+NAME
+:
+   'name'
+;
+
+NEXT_HOP_INTERFACE
+:
+   'next_hop_interface'
+;
+
+NEXT_HOP_IP
+:
+   'next_hop_ip'
 ;
 
 NODE
@@ -149,6 +204,21 @@ PASSIVE
    'passive'
 ;
 
+PREFIX
+:
+   'prefix'
+;
+
+PREFIX_SET
+:
+   'prefix-set'
+;
+
+PRINTF
+:
+   'printf'
+;
+
 REMOTE_AS
 :
    'remote_as'
@@ -157,6 +227,16 @@ REMOTE_AS
 REMOTE_IP
 :
    'remote_ip'
+;
+
+STATIC
+:
+   'static'
+;
+
+STATIC_ROUTE
+:
+   'static_route'
 ;
 
 TESTRIG
@@ -280,9 +360,9 @@ PLUS
    '+'
 ;
 
-PREFIX_SET
+PRINTF_STRING
 :
-   'prefix-set'
+   '%s'
 ;
 
 SEMICOLON

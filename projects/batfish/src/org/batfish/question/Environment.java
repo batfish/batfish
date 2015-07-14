@@ -7,14 +7,20 @@ import java.util.TreeSet;
 
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
+import org.batfish.representation.GeneratedRoute;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
+import org.batfish.representation.StaticRoute;
 
 public class Environment {
+
+   private boolean[] _assertions;
 
    private BgpNeighbor _bgpNeighbor;
 
    private Map<String, Configuration> _configurations;
+
+   private GeneratedRoute _generatedRoute;
 
    private Map<String, Integer> _integers;
 
@@ -24,9 +30,12 @@ public class Environment {
 
    private Configuration _node;
 
+   private StaticRoute _staticRoute;
+
    private boolean[] _unsafe;
 
    public Environment() {
+      _assertions = new boolean[1];
       _integers = new HashMap<String, Integer>();
       _ipSets = new HashMap<String, Set<Ip>>();
       _unsafe = new boolean[1];
@@ -34,17 +43,28 @@ public class Environment {
 
    public Environment copy() {
       Environment copy = new Environment();
+      copy._assertions = _assertions;
       copy._configurations = _configurations;
+      copy._generatedRoute = _generatedRoute;
       copy._node = _node;
       copy._integers = _integers;
       copy._interface = _interface;
       copy._ipSets = _ipSets;
+      copy._staticRoute = _staticRoute;
       copy._unsafe = _unsafe;
       return copy;
    }
 
+   public boolean getAssertions() {
+      return _assertions[0];
+   }
+
    public BgpNeighbor getBgpNeighbor() {
       return _bgpNeighbor;
+   }
+
+   public GeneratedRoute getGeneratedRoute() {
+      return _generatedRoute;
    }
 
    public Map<String, Integer> getIntegers() {
@@ -69,8 +89,16 @@ public class Environment {
       return nodes;
    }
 
+   public StaticRoute getStaticRoute() {
+      return _staticRoute;
+   }
+
    public boolean getUnsafe() {
       return _unsafe[0];
+   }
+
+   public void setAssertions(boolean b) {
+      _assertions[0] = b;
    }
 
    public void setBgpNeighbor(BgpNeighbor bgpNeighbor) {
@@ -81,12 +109,20 @@ public class Environment {
       _configurations = configurations;
    }
 
+   public void setGeneratedRoute(GeneratedRoute generatedRoute) {
+      _generatedRoute = generatedRoute;
+   }
+
    public void setInterface(Interface iface) {
       _interface = iface;
    }
 
    public void setNode(Configuration node) {
       _node = node;
+   }
+
+   public void setStaticRoute(StaticRoute staticRoute) {
+      _staticRoute = staticRoute;
    }
 
    public void setUnsafe(boolean b) {

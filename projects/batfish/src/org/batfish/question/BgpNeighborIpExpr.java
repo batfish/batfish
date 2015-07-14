@@ -6,6 +6,7 @@ import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Ip;
 
 public enum BgpNeighborIpExpr implements IpExpr {
+   LOCAL_IP,
    REMOTE_IP;
 
    @Override
@@ -13,6 +14,9 @@ public enum BgpNeighborIpExpr implements IpExpr {
       // Configuration node = context.getNode();
       BgpNeighbor neighbor = environment.getBgpNeighbor();
       switch (this) {
+
+      case LOCAL_IP:
+         return new Ip(neighbor.getUpdateSource());
 
       case REMOTE_IP:
          return neighbor.getAddress();
