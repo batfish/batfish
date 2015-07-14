@@ -85,6 +85,7 @@ public class Settings {
    private static final String ARG_PRINT_PARSE_TREES = "ppt";
    private static final String ARG_QUERY = "query";
    private static final String ARG_QUERY_ALL = "all";
+   private static final String ARG_QUESTION_PATH = "questionpath";
    private static final String ARG_REACH = "reach";
    private static final String ARG_REACH_PATH = "reachpath";
    private static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
@@ -155,6 +156,7 @@ public class Settings {
    private static final String ARGNAME_NODE_ROLES_PATH = "path";
    private static final String ARGNAME_NODE_SET_PATH = "path";
    private static final String ARGNAME_QUESTION_NAME = "name";
+   private static final String ARGNAME_QUESTION_PATH = "path";
    private static final String ARGNAME_REACH_PATH = "path";
    private static final String ARGNAME_REVERT = "branch-name";
    private static final String ARGNAME_ROLE_NODES_PATH = "path";
@@ -170,6 +172,7 @@ public class Settings {
    private static final String ARGNAME_Z3_CONCRETIZER_NEGATED_INPUT_FILES = "paths";
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
    private static final String ARGNAME_Z3_OUTPUT = "path";
+
    public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "55181";
    public static final String DEFAULT_CONNECTBLOX_HOST = "localhost";
    public static final String DEFAULT_CONNECTBLOX_REGULAR_PORT = "55179";
@@ -1190,6 +1193,9 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("print output to both logfile and standard out")
             .longOpt(ARG_LOG_TEE).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_QUESTION_PATH).desc("path to question file")
+            .longOpt(ARG_QUESTION_PATH).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1376,6 +1382,7 @@ public class Settings {
             ARG_SERVICE_LOGICBLOX_HOSTNAME, _serviceHost);
       _noOutput = line.hasOption(ARG_NO_OUTPUT);
       _logTee = line.hasOption(ARG_LOG_TEE);
+      _questionPath = line.getOptionValue(ARG_QUESTION_PATH);
    }
 
    public boolean printParseTree() {
