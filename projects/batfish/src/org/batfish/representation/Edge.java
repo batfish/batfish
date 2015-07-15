@@ -18,6 +18,13 @@ public class Edge implements Serializable {
       _int2 = int2;
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      Edge edge = (Edge) obj;
+      return _int1.equals(edge._int1) && _int2.equals(edge._int2)
+            && _node1.equals(edge._node1) && _node2.equals(edge._node2);
+   }
+
    public String getInt1() {
       return _int1;
    }

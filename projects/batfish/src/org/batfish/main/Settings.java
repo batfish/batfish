@@ -110,6 +110,7 @@ public class Settings {
    private static final String ARG_SERVICE_MODE = "servicemode";
    private static final String ARG_SERVICE_PORT = "serviceport";
    private static final String ARG_SERVICE_URL = "serviceurl";
+   private static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
    private static final String ARG_TEST_RIG_PATH = "testrig";
    private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
    private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
@@ -302,6 +303,7 @@ public class Settings {
    private int _servicePort;
    private String _serviceUrl;
    private boolean _simplify;
+   private boolean _synthesizeTopology;
    private String _testRigPath;
    private boolean _throwOnLexerError;
    private boolean _throwOnParserError;
@@ -734,6 +736,10 @@ public class Settings {
 
    public boolean getSimplify() {
       return _simplify;
+   }
+
+   public boolean getSynthesizeTopology() {
+      return _synthesizeTopology;
    }
 
    public String getTestRigPath() {
@@ -1196,6 +1202,9 @@ public class Settings {
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_QUESTION_PATH).desc("path to question file")
             .longOpt(ARG_QUESTION_PATH).build());
+      _options.addOption(Option.builder()
+            .desc("synthesize topology from interface ip subnet information")
+            .longOpt(ARG_SYNTHESIZE_TOPOLOGY).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1383,6 +1392,7 @@ public class Settings {
       _noOutput = line.hasOption(ARG_NO_OUTPUT);
       _logTee = line.hasOption(ARG_LOG_TEE);
       _questionPath = line.getOptionValue(ARG_QUESTION_PATH);
+      _synthesizeTopology = line.hasOption(ARG_SYNTHESIZE_TOPOLOGY);
    }
 
    public boolean printParseTree() {

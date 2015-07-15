@@ -72,6 +72,7 @@ import org.batfish.grammar.question.QuestionCombinedParser;
 import org.batfish.grammar.question.QuestionExtractor;
 import org.batfish.grammar.topology.BatfishTopologyCombinedParser;
 import org.batfish.grammar.topology.BatfishTopologyExtractor;
+import org.batfish.grammar.topology.BatfishTopologyLexer;
 import org.batfish.grammar.topology.GNS3TopologyCombinedParser;
 import org.batfish.grammar.topology.GNS3TopologyExtractor;
 import org.batfish.grammar.topology.RoleCombinedParser;
@@ -2611,6 +2612,11 @@ public class Batfish implements AutoCloseable {
 
    public void run() {
 
+      if (_settings.getSynthesizeTopology()) {
+         synthesizeTopology(_settings.getSerializeIndependentPath());
+         return;
+      }
+
       if (_settings.getAnswer()) {
          String questionPath = _settings.getQuestionPath();
          answer(questionPath);
@@ -2981,6 +2987,60 @@ public class Batfish implements AutoCloseable {
       }
       printElapsedTime();
       return s;
+   }
+
+   private void synthesizeTopology(String serializedConfigPath) {
+      Map<String, Configuration> configs = deserializeConfigurations(serializedConfigPath);
+      _logger
+            .info("\n*** SYNTHESIZING TOPOLOGY FROM INTERFACE SUBNET INFORMATION ***\n");
+      resetTimer();
+      EdgeSet edges = new EdgeSet();
+      Map<NodeInterfacePair, Prefix> interfacePrefixes = new HashMap<NodeInterfacePair, Prefix>();
+      for (Entry<String, Configuration> e1 : configs.entrySet()) {
+         String nodeName = e1.getKey();
+         Configuration node = e1.getValue();
+         for (Entry<String, Interface> e2 : node.getInterfaces().entrySet()) {
+            Interface iface = e2.getValue();
+            String ifaceName = e2.getKey();
+            Prefix prefix = e2.getValue().getPrefix();
+            if (!iface.isLoopback(node.getVendor()) && iface.getActive()
+                  && prefix != null && prefix.getPrefixLength() < 32) {
+               NodeInterfacePair pair = new NodeInterfacePair(nodeName,
+                     ifaceName);
+               interfacePrefixes.put(pair, prefix);
+            }
+         }
+      }
+      for (Entry<NodeInterfacePair, Prefix> e1 : interfacePrefixes.entrySet()) {
+         for (Entry<NodeInterfacePair, Prefix> e2 : interfacePrefixes
+               .entrySet()) {
+            NodeInterfacePair pair1 = e1.getKey();
+            NodeInterfacePair pair2 = e2.getKey();
+            String h1 = pair1.getHostname();
+            String h2 = pair2.getHostname();
+            if (!h1.equals(h2) && !pair1.equals(pair2)) {
+               Prefix p1 = e1.getValue();
+               Prefix p2 = e2.getValue();
+               if (p1.getNetworkAddress().equals(p2.getNetworkAddress())
+                     && p1.getPrefixLength() == p2.getPrefixLength()) {
+                  String i1 = pair1.getInterface();
+                  String i2 = pair2.getInterface();
+                  Edge edge = new Edge(h1, i1, h2, i2);
+                  edges.add(edge);
+               }
+            }
+         }
+      }
+      String headerTextWithQuotes = BatfishTopologyLexer.VOCABULARY
+            .getLiteralName(BatfishTopologyLexer.HEADER);
+      String headerText = headerTextWithQuotes.substring(1,
+            headerTextWithQuotes.length() - 1);
+      _logger.output(headerText + "\n");
+      for (Edge edge : edges) {
+         _logger.output(edge.getNode1() + ":" + edge.getInt1() + ","
+               + edge.getNode2() + ":" + edge.getInt2() + "\n");
+      }
+      printElapsedTime();
    }
 
    public void writeConfigurationFacts(
