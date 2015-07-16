@@ -174,9 +174,9 @@ public class Settings {
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
    private static final String ARGNAME_Z3_OUTPUT = "path";
 
-   public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "55181";
+   public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "5519";
    public static final String DEFAULT_CONNECTBLOX_HOST = "localhost";
-   public static final String DEFAULT_CONNECTBLOX_REGULAR_PORT = "55179";
+   public static final String DEFAULT_CONNECTBLOX_REGULAR_PORT = "5518";
    private static final String DEFAULT_DUMP_IF_DIR = "if";
    private static final String DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH = "interface_descriptions";
    private static final String DEFAULT_FLOW_PATH = "flows";
