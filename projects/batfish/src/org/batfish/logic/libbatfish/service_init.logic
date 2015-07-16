@@ -4,16 +4,6 @@ block(`service_init) {
    clauses(`{
 
 // Layer2
-      file_binding_by_name["GuessTopology"] = fb,
-      file_binding(fb) {
-         file_binding_entity_creation[] = "accumulate",
-         file_binding_definition_name[] = "GuessTopology",
-         predicate_binding_by_name["libbatfish:Layer2:GuessTopology"] =
-            predicate_binding(_) {
-               predicate_binding_columns[] = "DUMMY"
-            }
-      }.
-
       file_binding_by_name["SamePhysicalSegment"] = fb,
       file_binding(fb) {
          file_binding_entity_creation[] = "accumulate",

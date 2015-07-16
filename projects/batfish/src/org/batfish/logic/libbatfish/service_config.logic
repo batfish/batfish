@@ -8,11 +8,6 @@ block(`service_config) {
       delim_txn_service(x).
 
 // Layer2
-      service_by_prefix["/batfish/GuessTopology"] = x,
-      delim_service(x) {
-         delim_file_binding[] = "GuessTopology"
-      }.
-
       service_by_prefix["/batfish/SamePhysicalSegment"] = x,
       delim_service(x) {
          delim_file_binding[] = "SamePhysicalSegment"

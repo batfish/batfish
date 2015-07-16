@@ -11,9 +11,6 @@ Encapsulation(x),
    ->
    string(s).
 
-GuessTopology(dummy) ->
-   int(dummy).
-
 /// [LanAdjacent(node1, int1, node2, int2)] =
 ///   Interface [int1] on node [node1] and interface [int2] on node [node2] are
 ///   in the same broadcast domain.

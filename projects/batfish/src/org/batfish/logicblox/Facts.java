@@ -13,7 +13,6 @@ public class Facts {
       Map<String, String> map = new TreeMap<String, String>();
       map.put("SetFakeInterface", "NODE|INTERFACE");
       map.put("SetFlowSinkInterface", "NODE|INTERFACE");
-      map.put("GuessTopology", "DUMMY");
       map.put("SamePhysicalSegment", "NODE1|INTERFACE1|NODE2|INTERFACE2");
       map.put("SetSwitchportAccess", "SWITCH|INTERFACE|VLAN");
       map.put("SetSwitchportTrunkAllows", "SWITCH|INTERFACE|VLANSTART|VLANEND");

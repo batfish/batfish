@@ -72,7 +72,6 @@ import org.batfish.grammar.question.QuestionCombinedParser;
 import org.batfish.grammar.question.QuestionExtractor;
 import org.batfish.grammar.topology.BatfishTopologyCombinedParser;
 import org.batfish.grammar.topology.BatfishTopologyExtractor;
-import org.batfish.grammar.topology.BatfishTopologyLexer;
 import org.batfish.grammar.topology.GNS3TopologyCombinedParser;
 import org.batfish.grammar.topology.GNS3TopologyExtractor;
 import org.batfish.grammar.topology.RoleCombinedParser;
@@ -2140,7 +2139,8 @@ public class Batfish implements AutoCloseable {
                _settings.getThrowOnLexerError());
          extractor = new GNS3TopologyExtractor();
       }
-      else if (topologyFileText.startsWith("CONFIGPARSER_TOPOLOGY")) {
+      else if (topologyFileText
+            .startsWith(BatfishTopologyCombinedParser.HEADER)) {
          parser = new BatfishTopologyCombinedParser(topologyFileText,
                _settings.getThrowOnParserError(),
                _settings.getThrowOnLexerError());
@@ -2613,7 +2613,7 @@ public class Batfish implements AutoCloseable {
    public void run() {
 
       if (_settings.getSynthesizeTopology()) {
-         synthesizeTopology(_settings.getSerializeIndependentPath());
+         writeSynthesizedTopology(_settings.getSerializeIndependentPath());
          return;
       }
 
@@ -2989,14 +2989,13 @@ public class Batfish implements AutoCloseable {
       return s;
    }
 
-   private void synthesizeTopology(String serializedConfigPath) {
-      Map<String, Configuration> configs = deserializeConfigurations(serializedConfigPath);
+   private EdgeSet synthesizeTopology(Map<String, Configuration> configurations) {
       _logger
             .info("\n*** SYNTHESIZING TOPOLOGY FROM INTERFACE SUBNET INFORMATION ***\n");
       resetTimer();
       EdgeSet edges = new EdgeSet();
       Map<NodeInterfacePair, Prefix> interfacePrefixes = new HashMap<NodeInterfacePair, Prefix>();
-      for (Entry<String, Configuration> e1 : configs.entrySet()) {
+      for (Entry<String, Configuration> e1 : configurations.entrySet()) {
          String nodeName = e1.getKey();
          Configuration node = e1.getValue();
          for (Entry<String, Interface> e2 : node.getInterfaces().entrySet()) {
@@ -3031,16 +3030,7 @@ public class Batfish implements AutoCloseable {
             }
          }
       }
-      String headerTextWithQuotes = BatfishTopologyLexer.VOCABULARY
-            .getLiteralName(BatfishTopologyLexer.HEADER);
-      String headerText = headerTextWithQuotes.substring(1,
-            headerTextWithQuotes.length() - 1);
-      _logger.output(headerText + "\n");
-      for (Edge edge : edges) {
-         _logger.output(edge.getNode1() + ":" + edge.getInt1() + ","
-               + edge.getNode2() + ":" + edge.getInt2() + "\n");
-      }
-      printElapsedTime();
+      return edges;
    }
 
    public void writeConfigurationFacts(
@@ -3069,6 +3059,17 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   private void writeSynthesizedTopology(String serializedConfigPath) {
+      Map<String, Configuration> configs = deserializeConfigurations(serializedConfigPath);
+      EdgeSet edges = synthesizeTopology(configs);
+      _logger.output(BatfishTopologyCombinedParser.HEADER + "\n");
+      for (Edge edge : edges) {
+         _logger.output(edge.getNode1() + ":" + edge.getInt1() + ","
+               + edge.getNode2() + ":" + edge.getInt2() + "\n");
+      }
+      printElapsedTime();
+   }
+
    public void writeTopologyFacts(String testRigPath,
          Map<String, Configuration> configurations,
          Map<String, StringBuilder> factBins) {
@@ -3082,8 +3083,10 @@ public class Batfish implements AutoCloseable {
          // subnetworks
          _logger
                .info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
-         StringBuilder wGuessTopology = factBins.get("GuessTopology");
-         wGuessTopology.append("1\n");
+         EdgeSet edges = synthesizeTopology(configurations);
+         Topology topology = new Topology(edges);
+         TopologyFactExtractor tfe = new TopologyFactExtractor(topology);
+         tfe.writeFacts(factBins);
       }
    }
 

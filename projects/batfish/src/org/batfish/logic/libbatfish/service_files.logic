@@ -4,13 +4,6 @@ block(`service_files) {
    clauses(`{
 
 // Layer2
-      file_definition_by_name["GuessTopology"] = fd,
-      file_definition(fd) {
-         file_delimiter[] = "|",
-         column_headers[] = "DUMMY",
-         column_formats[] = "integer"
-      }.
-
       file_definition_by_name["SamePhysicalSegment"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",

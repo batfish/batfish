@@ -1,8 +1,6 @@
 package org.batfish.grammar.topology;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.batfish.collections.EdgeSet;
 import org.batfish.grammar.topology.BatfishTopologyParser.*;
 import org.batfish.representation.Edge;
 import org.batfish.representation.Topology;
@@ -10,11 +8,12 @@ import org.batfish.representation.Topology;
 public class BatfishTopologyExtractor extends BatfishTopologyParserBaseListener
       implements TopologyExtractor {
 
-   private List<Edge> _edges;
+   private EdgeSet _edges;
+
    private Topology _topology;
 
    public BatfishTopologyExtractor() {
-      _edges = new ArrayList<Edge>();
+      _edges = new EdgeSet();
    }
 
    @Override
