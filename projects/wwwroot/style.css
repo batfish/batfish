@@ -11,10 +11,12 @@ table {
     width:auto;
     vertical-align: top;
     border-spacing: 10px 10px;
+    table-layout: fixed;
 }
 
 td {
     vertical-align: top;
+    align-content: center;
 }
 
 .myform {

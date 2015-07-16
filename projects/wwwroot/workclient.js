@@ -144,8 +144,10 @@ function fnDoWork(worktype) {
     }
 
     var workItem = JSON.stringify([uuidCurrWork, testrigName, reqParams, {}]);
+    var rawURL = SVC_WORK_MGR_ROOT + SVC_WORK_QUEUE_WORK_RSC + "?" + SVC_WORKITEM_KEY + "=" + workItem;
+    var encodedURL = encodeURI(rawURL);
 
-    bfGetJson("DoWork:" + worktype, SVC_WORK_MGR_ROOT + SVC_WORK_QUEUE_WORK_RSC + "?" + SVC_WORKITEM_KEY + "=" + workItem, cbDoWork, worktype);
+    bfGetJson("DoWork:" + worktype, encodedURL, cbDoWork, worktype);
 }
 
 function cbDoWork(taskname, result, worktype) {
@@ -409,7 +411,33 @@ function fnUploadQuestion() {
     data.append(SVC_QUESTION_NAME_KEY, qName);
     data.append(SVC_FILE_KEY, qFile);
 
-    bfUploadData("UploadQuestion-" + qName, SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_QUESTION_RSC, data, cbUploadData, "question");
+    bfUploadData("UploadQuestion-" + qName, SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_QUESTION_RSC, data, undefined, undefined);
+}
+
+function fnAnswerQuestion() {
+
+    var testrigName = jQuery("#txtTestrigName").val();
+    if (testrigName == "") {
+        alert("Specify a testrig name");
+        return;
+    }
+
+    var qFile = jQuery("#fileUploadQuestion").get(0).files[0];
+    var fileSpecified = (typeof qFile === 'undefined');
+    var qName = jQuery("#txtQuestionName").val();
+    var nameSpecified = (qName != "");
+    if (!nameSpecified) {
+        if (fileSpecified) {
+            jQuery("#txtQuestionName").val(qFile.name);
+            qName = jQuery("#txtQuestionName").val();
+        }
+        else {
+            alert("Specify a question name");
+            return;
+        }
+    }
+
+    fnDoWork("answerquestion");
 }
 
 function cbUploadData(uploadtype) {

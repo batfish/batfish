@@ -83,7 +83,7 @@ var RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 var RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
 $(document).ajaxError(function (event, request, settings, thrownError) {
-    bfUpdateDebugInfo(settings.url + " " + thrownErroor + " " + request);
+    bfUpdateDebugInfo(settings.url + " " + thrownError + " " + request);
 });
 
 function bfUpdateCoordinatorLocation() {
