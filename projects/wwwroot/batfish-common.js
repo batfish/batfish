@@ -47,9 +47,15 @@ var SVC_WORKSPACE_NAME_KEY = "workspace";
 //make sure they are in sync with what is there
 //
 
-var ARG_QUESTION_NAME = "questionname";
+var ARG_LOG_LEVEL = "loglevel";
+var ARG_PEDANTIC_AS_ERROR = "pedanticerror";
+var ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
 var ARG_PREDICATES = "predicates";
-var ARG_LOGLEVEL = "loglevel";
+var ARG_QUESTION_NAME = "questionname";
+var ARG_RED_FLAG_AS_ERROR = "redflagerror";
+var ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
+var ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
+var ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
 
 var COMMAND_ANSWER = "answer";
 var COMMAND_COMPILE = "compile";
@@ -62,6 +68,9 @@ var COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
 var COMMAND_POST_FLOWS = "postflows";
 var COMMAND_QUERY = "query";
 var COMMAND_SYNTHESIZE_Z3_DATA_PLANE = "z3";
+
+var LOG_LEVEL_OUTPUT = "output";
+var LOG_LEVEL_WARN = "warn";
 
 var PREDICATE_FLOW_PATH_HISTORY = "FlowPathHistory";
 

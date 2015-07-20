@@ -12,12 +12,19 @@ public class BfConsts {
    }
 
    //
-   //IMPORTANT
-   // if you change the value of these constants, 
+   // IMPORTANT
+   // if you change the value of these constants,
    // ensure that the clients (including the javascript client) are up to date
    //
-   public static final String ARG_QUESTION_NAME = "questionname";
+   public static final String ARG_LOG_LEVEL = "loglevel";
+   public static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
+   public static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
    public static final String ARG_PREDICATES = "predicates";
+   public static final String ARG_QUESTION_NAME = "questionname";
+   public static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
+   public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
+   public static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
+   public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
 
    public static final String COMMAND_ANSWER = "answer";
    public static final String COMMAND_COMPILE = "compile";
@@ -50,7 +57,6 @@ public class BfConsts {
    public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
    public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
-
    public static final String SVC_BASE_RSC = "/batfishservice";
    public static final String SVC_FAILURE_KEY = "failure";
    public static final String SVC_GET_STATUS_RSC = "getstatus";
@@ -61,4 +67,4 @@ public class BfConsts {
    public static final String SVC_TASK_KEY = "task";
    public static final String SVC_TASKID_KEY = "taskid";
 
-   }
+}

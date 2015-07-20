@@ -103,13 +103,15 @@ function fnDoWork(worktype) {
     switch (worktype) {
         case "vendorspecific":
             reqParams[COMMAND_PARSE_VENDOR_SPECIFIC] = "";
+            reqParams[ARG_UNIMPLEMENTED_SUPPRESS] = "";
+            reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_WARN;
             break;
         case "vendorindependent":
             reqParams[COMMAND_PARSE_VENDOR_INDEPENDENT] = "";
             break;
         case "generatefacts":
             reqParams[COMMAND_GENERATE_FACT] = "";
-            reqParams[COMMAND_ENV] = envName
+            reqParams[COMMAND_ENV] = envName;
             break;
         case "generatedataplane":
             reqParams[COMMAND_COMPILE] = "";
@@ -127,7 +129,7 @@ function fnDoWork(worktype) {
         case "answerquestion":
             reqParams[COMMAND_ANSWER] = "";
             reqParams[ARG_QUESTION_NAME] = questionName;
-            reqParams[ARG_LOGLEVEL] = "output";
+            reqParams[ARG_LOGLEVEL] = LOG_LEVEL_OUTPUT;
             break;
         case "postflows":
             reqParams[COMMAND_POST_FLOWS] = "";

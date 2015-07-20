@@ -69,7 +69,6 @@ public class Settings {
    private static final String ARG_LB_WEB_ADMIN_PORT = "lbwebadminport";
    private static final String ARG_LB_WEB_PORT = "lbwebport";
    private static final String ARG_LOG_FILE = "logfile";
-   private static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_LOG_TEE = "logtee";
    private static final String ARG_LOGICDIR = "logicdir";
    private static final String ARG_MPI = "mpi";
@@ -78,8 +77,6 @@ public class Settings {
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_NODE_ROLES_PATH = "nrpath";
    private static final String ARG_NODE_SET_PATH = "nodes";
-   private static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
-   private static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
    private static final String ARG_PRINT_PARSE_TREES = "ppt";
@@ -88,8 +85,6 @@ public class Settings {
    private static final String ARG_QUESTION_PATH = "questionpath";
    private static final String ARG_REACH = "reach";
    private static final String ARG_REACH_PATH = "reachpath";
-   private static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
-   private static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
    private static final String ARG_ROLE_HEADERS = "rh";
@@ -115,8 +110,6 @@ public class Settings {
    private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
    private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
    private static final String ARG_TIMESTAMP = "timestamp";
-   private static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
-   private static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
    private static final String ARG_UPDATE = "update";
    private static final String ARG_VAR_SIZE_MAP_PATH = "vsmpath";
    private static final String ARG_WORKSPACE = "workspace";
@@ -1066,7 +1059,7 @@ public class Settings {
             .desc("duplicate flows across all nodes in same role")
             .longOpt(ARG_DUPLICATE_ROLE_FLOWS).build());
       _options.addOption(Option.builder().hasArg().argName(ARGNAME_LOG_LEVEL)
-            .desc("log level").longOpt(ARG_LOG_LEVEL).build());
+            .desc("log level").longOpt(BfConsts.ARG_LOG_LEVEL).build());
       _options.addOption(Option.builder()
             .desc("header of concretized z3 output refers to role, not node")
             .longOpt(ARG_ROLE_HEADERS).build());
@@ -1097,28 +1090,28 @@ public class Settings {
                   .desc("throws "
                         + PedanticBatfishException.class.getSimpleName()
                         + " for likely harmless warnings (e.g. deviation from good configuration style), instead of emitting warning and continuing")
-                  .longOpt(ARG_PEDANTIC_AS_ERROR).build());
+                  .longOpt(BfConsts.ARG_PEDANTIC_AS_ERROR).build());
       _options.addOption(Option.builder().desc("suppresses pedantic warnings")
-            .longOpt(ARG_PEDANTIC_SUPPRESS).build());
+            .longOpt(BfConsts.ARG_PEDANTIC_SUPPRESS).build());
       _options
             .addOption(Option
                   .builder()
                   .desc("throws "
                         + RedFlagBatfishException.class.getSimpleName()
                         + " on some recoverable errors (e.g. bad config lines), instead of emitting warning and attempting to recover")
-                  .longOpt(ARG_RED_FLAG_AS_ERROR).build());
+                  .longOpt(BfConsts.ARG_RED_FLAG_AS_ERROR).build());
       _options.addOption(Option.builder().desc("suppresses red-flag warnings")
-            .longOpt(ARG_RED_FLAG_SUPPRESS).build());
+            .longOpt(BfConsts.ARG_RED_FLAG_SUPPRESS).build());
       _options
             .addOption(Option
                   .builder()
                   .desc("throws "
                         + UnimplementedBatfishException.class.getSimpleName()
                         + " when encountering unimplemented configuration directives, instead of emitting warning and ignoring")
-                  .longOpt(ARG_UNIMPLEMENTED_AS_ERROR).build());
+                  .longOpt(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR).build());
       _options.addOption(Option.builder()
             .desc("suppresses unimplemented-configuration-directive warnings")
-            .longOpt(ARG_UNIMPLEMENTED_SUPPRESS).build());
+            .longOpt(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS).build());
       _options.addOption(Option.builder()
             .desc("build histogram of unimplemented features")
             .longOpt(ARG_HISTOGRAM).build());
@@ -1217,7 +1210,8 @@ public class Settings {
       // parse the command line arguments
       line = parser.parse(_options, args);
 
-      _logLevel = line.getOptionValue(ARG_LOG_LEVEL, DEFAULT_LOG_LEVEL);
+      _logLevel = line
+            .getOptionValue(BfConsts.ARG_LOG_LEVEL, DEFAULT_LOG_LEVEL);
       _logFile = line.getOptionValue(ARG_LOG_FILE);
       if (line.hasOption(ARG_HELP)) {
          _canExecute = false;
@@ -1354,12 +1348,14 @@ public class Settings {
       _flatten = line.hasOption(ARG_FLATTEN);
       _flattenDestination = line.getOptionValue(ARG_FLATTEN_DESTINATION);
       _flattenOnTheFly = line.hasOption(ARG_FLATTEN_ON_THE_FLY);
-      _pedanticAsError = line.hasOption(ARG_PEDANTIC_AS_ERROR);
-      _pedanticRecord = !line.hasOption(ARG_PEDANTIC_SUPPRESS);
-      _redFlagAsError = line.hasOption(ARG_RED_FLAG_AS_ERROR);
-      _redFlagRecord = !line.hasOption(ARG_RED_FLAG_SUPPRESS);
-      _unimplementedAsError = line.hasOption(ARG_UNIMPLEMENTED_AS_ERROR);
-      _unimplementedRecord = !line.hasOption(ARG_UNIMPLEMENTED_SUPPRESS);
+      _pedanticAsError = line.hasOption(BfConsts.ARG_PEDANTIC_AS_ERROR);
+      _pedanticRecord = !line.hasOption(BfConsts.ARG_PEDANTIC_SUPPRESS);
+      _redFlagAsError = line.hasOption(BfConsts.ARG_RED_FLAG_AS_ERROR);
+      _redFlagRecord = !line.hasOption(BfConsts.ARG_RED_FLAG_SUPPRESS);
+      _unimplementedAsError = line
+            .hasOption(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
+      _unimplementedRecord = !line
+            .hasOption(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
       _histogram = line.hasOption(ARG_HISTOGRAM);
       _generateStubs = line.hasOption(ARG_GENERATE_STUBS);
       _generateStubsInputRole = line
