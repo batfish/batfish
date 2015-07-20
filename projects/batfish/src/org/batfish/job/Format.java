@@ -27,7 +27,7 @@ public final class Format {
                   return ConfigurationFormat.CISCO;
                }
                else {
-                  break;
+                  return ConfigurationFormat.CISCO; // may change in future
                }
             }
          }

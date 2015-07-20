@@ -98,7 +98,10 @@ null_block_stanza
       (
          MPLS
          (
-            OAM
+            (
+               LDP ~NEWLINE
+            )
+            | OAM
          )
       )
       | NO_BANNER
