@@ -31,7 +31,7 @@ batfish() {
          else
             local NEW_ARG="$(cygpath -w -- $CURRENT_ARG)"
          fi
-         if [ "$CURRENT_ARG" = "-logicdir" ]; then
+         if [ "$CURRENT_ARG" = "-logicdir" -o "$CURRENT_ARG" = "-workspace" ]; then
             local IGNORE_CURRENT_ARG=yes
          fi
          set -- "$@" "$NEW_ARG"
