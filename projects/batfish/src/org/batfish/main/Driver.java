@@ -68,6 +68,13 @@ public class Driver {
             settings.setQueryDumpDir(envPath.resolve(
                   BfConsts.RELPATH_QUERY_DUMP_DIR).toString());
          }
+         String outputEnvName = settings.getOutputEnvironmentName();
+         if (outputEnvName != null) {
+            Path outputEnvPath = Paths.get(baseDir,
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR, outputEnvName);
+            settings.setWriteRoutesPath(outputEnvPath.resolve(
+                  BfConsts.RELPATH_WRITE_ROUTES).toString());
+         }
          String questionName = settings.getQuestionName();
          if (questionName != null) {
             Path questionPath = Paths.get(baseDir,

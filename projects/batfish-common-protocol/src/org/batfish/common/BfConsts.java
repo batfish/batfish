@@ -17,6 +17,7 @@ public class BfConsts {
    // ensure that the clients (including the javascript client) are up to date
    //
    public static final String ARG_LOG_LEVEL = "loglevel";
+   public static final String ARG_OUTPUT_ENV = "outputenv";
    public static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
    public static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
    public static final String ARG_PREDICATES = "predicates";
@@ -37,6 +38,7 @@ public class BfConsts {
    public static final String COMMAND_POST_FLOWS = "postflows";
    public static final String COMMAND_QUERY = "query";
    public static final String COMMAND_SYNTHESIZE_Z3_DATA_PLANE = "z3";
+   public static final String COMMAND_WRITE_ROUTES = "writeroutes";
 
    public static final String PREDICATE_FLOW_PATH_HISTORY = "FlowPathHistory";
 
@@ -55,6 +57,7 @@ public class BfConsts {
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
    public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
    public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
+   public static final String RELPATH_WRITE_ROUTES = null;
    public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
    public static final String SVC_BASE_RSC = "/batfishservice";
@@ -66,5 +69,5 @@ public class BfConsts {
    public static final String SVC_SUCCESS_KEY = "success";
    public static final String SVC_TASK_KEY = "task";
    public static final String SVC_TASKID_KEY = "taskid";
-
+   
 }

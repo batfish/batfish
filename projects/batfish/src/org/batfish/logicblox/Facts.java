@@ -141,6 +141,8 @@ public class Facts {
       map.put("SetIsisL2Node", "NODE");
       map.put("SetIsisOutboundPolicyMap", "NODE|POLICY");
       map.put("SetIsisPassiveInterface", "NODE|INTERFACE");
+      map.put("SetPrecomputedRoute",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|NEXTHOPIP|ADMIN|COST|PROTOCOL|TAG");
       return Collections.unmodifiableMap(map);
    }
 

@@ -59,6 +59,7 @@ import org.batfish.collections.PredicateValueTypeMap;
 import org.batfish.collections.QualifiedNameMap;
 import org.batfish.collections.RoleNodeMap;
 import org.batfish.collections.RoleSet;
+import org.batfish.collections.RouteSet;
 import org.batfish.collections.TreeMultiSet;
 import org.batfish.common.BfConsts;
 import org.batfish.grammar.BatfishCombinedParser;
@@ -190,6 +191,8 @@ public class Batfish implements AutoCloseable {
    private static final String FLOW_SINKS_FILENAME = "flow-sinks";
 
    private static final String GEN_OSPF_STARTING_IP = "10.0.0.0";
+
+   private static final Object INSTALLED_ROUTE_PREDICATE_NAME = "InstalledRoute";
 
    /**
     * A byte-array containing the first 4 bytes comprising the header for a file
@@ -1890,6 +1893,17 @@ public class Batfish implements AutoCloseable {
       return fibs;
    }
 
+   private RouteSet getRoutes(LogicBloxFrontend lbFrontend) {
+      RouteSet routes = new RouteSet();
+      String qualifiedName = _predicateInfo.getPredicateNames().get(
+            INSTALLED_ROUTE_PREDICATE_NAME);
+      Relation installedRoutesRelation = lbFrontend
+            .queryPredicate(qualifiedName);
+      lbFrontend.fillRouteColumn(routes, installedRoutesRelation.getColumns()
+            .get(0));
+      return routes;
+   }
+
    private Map<String, String> getSemanticsFiles() {
       final Map<String, String> semanticsFiles = new HashMap<String, String>();
       File logicDirFile = retrieveLogicDir();
@@ -2720,7 +2734,7 @@ public class Batfish implements AutoCloseable {
       }
 
       if (_settings.getQuery() || _settings.getPrintSemantics()
-            || _settings.getDataPlane()) {
+            || _settings.getDataPlane() || _settings.getWriteRoutes()) {
          Map<String, String> logicFiles = getSemanticsFiles();
          _predicateInfo = getPredicateInfo(logicFiles);
          // Print predicate semantics and quit if requested
@@ -2757,8 +2771,13 @@ public class Batfish implements AutoCloseable {
       LogicBloxFrontend lbFrontend = null;
       if (_settings.createWorkspace() || _settings.getFacts()
             || _settings.getQuery() || _settings.getDataPlane()
-            || _settings.revert()) {
+            || _settings.revert() || _settings.getWriteRoutes()) {
          lbFrontend = connect();
+      }
+
+      if (_settings.getWriteRoutes()) {
+         writeRoutes(_settings.getWriteRoutesPath(), lbFrontend);
+         return;
       }
 
       if (_settings.revert()) {
@@ -3057,6 +3076,16 @@ public class Batfish implements AutoCloseable {
          String iface = f.getInterface();
          sb.append(node + "|" + iface + "\n");
       }
+   }
+
+   private void writeRoutes(String writeRoutesPath, LogicBloxFrontend lbFrontend) {
+      lbFrontend.initEntityTable();
+      File routesFile = new File(writeRoutesPath);
+      routesFile.getParentFile().mkdirs();
+      RouteSet routes = getRoutes(lbFrontend);
+      _logger.info("Serializing: routes => \"" + writeRoutesPath + "\"...");
+      serializeObject(routes, routesFile);
+      _logger.info("OK\n");
    }
 
    private void writeSynthesizedTopology(String serializedConfigPath) {

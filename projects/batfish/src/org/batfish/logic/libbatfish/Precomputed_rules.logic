@@ -2,6 +2,7 @@ block(`Precomputed_rules) {
    alias_all(`libbatfish:Interface),
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:Precomputed),
    alias_all(`libbatfish:Route),
    clauses(`{
 // BEGIN CODE

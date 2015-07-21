@@ -6,6 +6,8 @@ import java.util.Arrays;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 import org.batfish.representation.NamedPort;
+import org.batfish.representation.Prefix;
+import org.batfish.representation.RoutingProtocol;
 
 import com.logicblox.connect.Workspace.Relation;
 import com.logicblox.connect.Workspace.Relation.EntityColumn;
@@ -20,6 +22,48 @@ public class EntityTable {
    private static final long IP_NONE_L = -1l;
 
    private static final long NO_TAG = -1l;
+
+   private static RoutingProtocol getRoutingProtocol(String lbProt) {
+      switch (lbProt) {
+      case "aggregate":
+         return RoutingProtocol.AGGREGATE;
+      case "bgp":
+         return RoutingProtocol.BGP;
+      case "connected":
+         return RoutingProtocol.CONNECTED;
+      case "egp":
+         return RoutingProtocol.EGP;
+      case "ibgp":
+         return RoutingProtocol.IBGP;
+      case "igp":
+         return RoutingProtocol.IGP;
+      case "isis":
+         return RoutingProtocol.ISIS;
+      case "isisL1":
+         return RoutingProtocol.ISIS_L1;
+      case "isisL2":
+         return RoutingProtocol.ISIS_L2;
+      case "ldp":
+         return RoutingProtocol.LDP;
+      case "local":
+         return RoutingProtocol.LOCAL;
+      case "msdp":
+         return RoutingProtocol.MSDP;
+      case "ospf":
+         return RoutingProtocol.OSPF;
+      case "ospfE1":
+         return RoutingProtocol.OSPF_E1;
+      case "ospfE2":
+         return RoutingProtocol.OSPF_E2;
+      case "rsvp":
+         return RoutingProtocol.RSVP;
+      case "static":
+         return RoutingProtocol.STATIC;
+      default:
+         break;
+      }
+      return null;
+   }
 
    private long[] _advertDstIps;
 
@@ -284,7 +328,32 @@ public class EntityTable {
       return new Ip(network).toString() + "/" + subnetBits;
    }
 
-   public String getRoute(BigInteger index) {
+   public PrecomputedRoute getPrecomputedRoute(BigInteger index) {
+      int listIndex = Arrays.binarySearch(_routeIndices, index);
+      String node = _routeNodes[listIndex];
+      Prefix network = new Prefix(getNetwork(_routeNetworks[listIndex]));
+      String nextHopInt = _routeNextHopInts[listIndex];
+      long nextHopIpAsLong = _routeNextHopIps[listIndex];
+      Ip nextHopIpAsIp;
+      if (nextHopIpAsLong != IP_NONE_L) {
+         nextHopIpAsIp = new Ip(nextHopIpAsLong);
+      }
+      else {
+         return null;
+      }
+      int admin = (int) _routeAdmins[listIndex];
+      int cost = (int) _routeCosts[listIndex];
+      int tag = (int) _routeTags[listIndex];
+      String lbProtocol = _routeProtocols[listIndex];
+      RoutingProtocol protocol = getRoutingProtocol(lbProtocol);
+      if (!nextHopInt.equals(DYNAMIC_NEXT_HOP_INTERFACE_NAME)) {
+         return null;
+      }
+      return new PrecomputedRoute(node, network, nextHopIpAsIp, admin, cost,
+            protocol, tag);
+   }
+
+   public String getRouteAsString(BigInteger index) {
       int listIndex = Arrays.binarySearch(_routeIndices, index);
       String node = _routeNodes[listIndex];
       String network = getNetwork(_routeNetworks[listIndex]);
@@ -318,5 +387,4 @@ public class EntityTable {
             + nextHop + ", " + nextHopInt + ", " + admin + ", " + cost + ", "
             + tag + ", " + protocol + ">";
    }
-
 }

@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -298,7 +299,7 @@ public class LogicBloxFrontend {
             BigInteger[] routeIndices = ((UInt64Column) ec.getIndexColumn()
                   .unwrap()).getRows();
             for (BigInteger index : routeIndices) {
-               textColumn.add(_entityTable.getRoute(index));
+               textColumn.add(_entityTable.getRouteAsString(index));
             }
             break;
 
@@ -597,6 +598,26 @@ public class LogicBloxFrontend {
       String startJsonMessage = "{\"stop\": {\"workspace\":[\""
             + _workspaceName + "\"] } }";
       sendLbWebAdminMessage(startJsonMessage);
+   }
+
+   public void fillRouteColumn(Collection<PrecomputedRoute> routes,
+         Column column) {
+      try {
+         EntityColumn ec = (EntityColumn) column;
+         BigInteger[] routeIndices = ((UInt64Column) ec.getIndexColumn()
+               .unwrap()).getRows();
+         for (BigInteger index : routeIndices) {
+            PrecomputedRoute route = _entityTable.getPrecomputedRoute(index);
+            if (route != null) {
+               routes.add(route);
+            }
+         }
+
+      }
+      catch (Option.Exception e) {
+         throw new BatfishException(
+               "Error getting typed ogicblox query result", e);
+      }
    }
 
 }

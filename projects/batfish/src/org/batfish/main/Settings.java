@@ -113,6 +113,7 @@ public class Settings {
    private static final String ARG_UPDATE = "update";
    private static final String ARG_VAR_SIZE_MAP_PATH = "vsmpath";
    private static final String ARG_WORKSPACE = "workspace";
+   private static final String ARG_WRITE_ROUTES_PATH = "writeroutespath";
    private static final String ARG_Z3 = "z3";
    private static final String ARG_Z3_CONCRETIZE = "conc";
    private static final String ARG_Z3_CONCRETIZER_INPUT_FILES = "concin";
@@ -162,11 +163,12 @@ public class Settings {
    private static final String ARGNAME_SERVICE_HOST = "hostname";
    private static final String ARGNAME_SERVICE_LOGICBLOX_HOSTNAME = "hostname";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
+   private static final String ARGNAME_WRITE_ROUTES_PATH = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILES = "paths";
    private static final String ARGNAME_Z3_CONCRETIZER_NEGATED_INPUT_FILES = "paths";
+
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
    private static final String ARGNAME_Z3_OUTPUT = "path";
-
    public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "5519";
    public static final String DEFAULT_CONNECTBLOX_HOST = "localhost";
    public static final String DEFAULT_CONNECTBLOX_REGULAR_PORT = "5518";
@@ -259,6 +261,7 @@ public class Settings {
    private boolean _noOutput;
    private boolean _noTraffic;
    private Options _options;
+   private String _outputEnvironmentName;
    private boolean _pedanticAsError;
    private boolean _pedanticRecord;
    private boolean _postFlows;
@@ -307,6 +310,8 @@ public class Settings {
    private boolean _update;
    private String _varSizeMapPath;
    private String _workspaceName;
+   private boolean _writeRoutes;
+   private String _writeRoutesPath;
    private boolean _z3;
    private String _z3File;
 
@@ -603,6 +608,10 @@ public class Settings {
       return _noTraffic;
    }
 
+   public String getOutputEnvironmentName() {
+      return _outputEnvironmentName;
+   }
+
    public boolean getPedanticAsError() {
       return _pedanticAsError;
    }
@@ -773,6 +782,14 @@ public class Settings {
 
    public String getWorkspaceName() {
       return _workspaceName;
+   }
+
+   public boolean getWriteRoutes() {
+      return _writeRoutes;
+   }
+
+   public String getWriteRoutesPath() {
+      return _writeRoutesPath;
    }
 
    public boolean getZ3() {
@@ -1198,6 +1215,15 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("synthesize topology from interface ip subnet information")
             .longOpt(ARG_SYNTHESIZE_TOPOLOGY).build());
+      _options.addOption(Option.builder()
+            .desc("write routes from LogicBlox to disk")
+            .longOpt(BfConsts.COMMAND_WRITE_ROUTES).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_WRITE_ROUTES_PATH).desc("path to write routes")
+            .longOpt(ARG_WRITE_ROUTES_PATH).build());
+      _options.addOption(Option.builder().hasArg().argName("name")
+            .desc("name of output environment")
+            .longOpt(BfConsts.ARG_OUTPUT_ENV).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1389,6 +1415,9 @@ public class Settings {
       _logTee = line.hasOption(ARG_LOG_TEE);
       _questionPath = line.getOptionValue(ARG_QUESTION_PATH);
       _synthesizeTopology = line.hasOption(ARG_SYNTHESIZE_TOPOLOGY);
+      _writeRoutes = line.hasOption(BfConsts.COMMAND_WRITE_ROUTES);
+      _writeRoutesPath = line.getOptionValue(ARG_WRITE_ROUTES_PATH);
+      _outputEnvironmentName = line.getOptionValue(BfConsts.ARG_OUTPUT_ENV);
    }
 
    public boolean printParseTree() {
@@ -1465,6 +1494,10 @@ public class Settings {
 
    public void setWorkspaceName(String name) {
       _workspaceName = name;
+   }
+
+   public void setWriteRoutesPath(String writeRoutesPath) {
+      _writeRoutesPath = writeRoutesPath;
    }
 
    public void setZ3DataPlaneFile(String path) {

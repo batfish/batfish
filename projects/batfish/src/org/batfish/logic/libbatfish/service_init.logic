@@ -969,5 +969,16 @@ block(`service_init) {
             }
       }.
 
+      // Precomputed
+      file_binding_by_name["SetPrecomputedRoute_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetPrecomputedRoute_flat",
+         predicate_binding_by_name["libbatfish:Precomputed:SetPrecomputedRoute_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,ADMIN,COST,PROTOCOL,TAG"
+            }
+      }.
+
    })
 } <-- .
