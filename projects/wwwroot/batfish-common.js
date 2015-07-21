@@ -48,6 +48,7 @@ var SVC_WORKSPACE_NAME_KEY = "workspace";
 //
 
 var ARG_LOG_LEVEL = "loglevel";
+var ARG_OUTPUT_ENV = "outputenv";
 var ARG_PEDANTIC_AS_ERROR = "pedanticerror";
 var ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
 var ARG_PREDICATES = "predicates";
@@ -68,6 +69,7 @@ var COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
 var COMMAND_POST_FLOWS = "postflows";
 var COMMAND_QUERY = "query";
 var COMMAND_SYNTHESIZE_Z3_DATA_PLANE = "z3";
+var COMMAND_WRITE_ROUTES = "writeroutes";
 
 var LOG_LEVEL_OUTPUT = "output";
 var LOG_LEVEL_WARN = "warn";

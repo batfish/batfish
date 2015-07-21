@@ -92,6 +92,12 @@ function fnDoWork(worktype) {
         return;
     }
 
+    var outputEnvName = jQuery("#txtOutputEnvironmentName").val();
+    if (outputEnvName == "" && worktype == "writeroutes") {
+        alert("Output environment name is empty");
+        return;
+    }
+
     var questionName = jQuery("#txtQuestionName").val();
     if (questionName == "" && (worktype == "answerquestion" || worktype == "postflows")) { 
         alert("Question name is empty");
@@ -139,6 +145,11 @@ function fnDoWork(worktype) {
         case "getflowtraces":
             reqParams[COMMAND_QUERY] = "";
             reqParams[ARG_PREDICATES] = PREDICATE_FLOW_PATH_HISTORY;
+            reqParams[COMMAND_ENV] = envName;
+            break;
+        case "writeroutes":
+            reqParams[COMMAND_WRITE_ROUTES] = "";
+            reqParams[ARG_OUTPUT_ENV] = outputEnvName;
             reqParams[COMMAND_ENV] = envName;
             break;
         default:
@@ -203,6 +214,10 @@ function doFollowOnWork(worktype) {
         case "getflowtraces":
             //no follow on work to be done here
             bfUpdateDebugInfo("Done answering query");
+            break;
+        case "writeroutes":
+            //no follow on work to be done here
+            bfUpdateDebugInfo("Done generating precomputed routes");
             break;
         default:
             alert("Unsupported work command", worktype);
@@ -440,6 +455,30 @@ function fnAnswerQuestion() {
     }
 
     fnDoWork("answerquestion");
+}
+
+function fnWriteRoutes() {
+    var testrigName = jQuery("#txtTestrigName").val();
+    if (testrigName == "") {
+        alert("Specify a testrig name");
+        return;
+    }
+
+    var iName = jQuery("#txtEnvironmentName").val();
+    var iNameSpecified = (iName != "");
+    if (!iNameSpecified) {
+        alert("Specify an input environment name");
+        return;
+    }
+
+    var oName = jQuery("#txtOutputEnvironmentName").val();
+    var oNameSpecified = (oName != "");
+    if (!oNameSpecified) {
+        alert("Specify an output environment name");
+        return;
+    }
+
+    fnDoWork("writeroutes");
 }
 
 function cbUploadData(uploadtype) {
