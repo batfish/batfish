@@ -477,9 +477,9 @@ public class LogicBloxFrontend {
             _cbSession.close();
          }
          catch (Exception e1) {
-            throw new Error(ExceptionUtils.getStackTrace(e1));
+            throw new BatfishException(ExceptionUtils.getStackTrace(e1));
          }
-         throw new Error(failure.getMessage());
+         throw new BatfishException(failure.getMessage());
       }
    }
 
