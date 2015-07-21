@@ -1,0 +1,34 @@
+block(`Precomputed) {
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:Route),
+   export(`{
+// BEGIN CODE
+
+PrecomputedRoute(route) ->
+   Route(route).
+   
+SetPrecomputedRoute(node, network, nextHopIp, admin, cost, protocol, tag) ->
+   Node(node),
+   Network(network),
+   Ip(nextHopIp),
+   int(admin),
+   int(cost),
+   RoutingProtocol(protocol),
+   int(tag).
+
+SetPrecomputedRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, admin, cost, protocol, tag) ->
+   Node(node),
+   int(network_start),
+   int(network_end),
+   int(prefix_length),
+   Ip(nextHopIp),
+   int(admin),
+   int(cost),
+   RoutingProtocol(protocol),
+   int(tag).
+
+// END CODE
+   })
+} <-- .
