@@ -6,6 +6,7 @@ import org.batfish.representation.Interface;
 import org.batfish.representation.IsisInterfaceMode;
 
 public enum InterfaceBooleanExpr implements BooleanExpr {
+   INTERFACE_ENABLED,
    INTERFACE_HAS_IP,
    INTERFACE_IS_LOOPBACK,
    INTERFACE_ISIS_ACTIVE,
@@ -18,6 +19,9 @@ public enum InterfaceBooleanExpr implements BooleanExpr {
       Configuration node = environment.getNode();
       Interface iface = environment.getInterface();
       switch (this) {
+
+      case INTERFACE_ENABLED:
+         return iface.getActive();
 
       case INTERFACE_HAS_IP:
          return iface.getPrefix() != null;

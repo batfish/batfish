@@ -202,7 +202,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private BooleanExpr toBooleanExpr(Interface_boolean_exprContext expr) {
-      if (expr.interface_has_ip_boolean_expr() != null) {
+      if (expr.interface_enabled_boolean_expr() != null) {
+         return InterfaceBooleanExpr.INTERFACE_ENABLED;
+      }
+      else if (expr.interface_has_ip_boolean_expr() != null) {
          return InterfaceBooleanExpr.INTERFACE_HAS_IP;
       }
       else if (expr.interface_isis_boolean_expr() != null) {

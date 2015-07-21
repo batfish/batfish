@@ -69,6 +69,11 @@ ELSE
    'else'
 ;
 
+ENABLED
+:
+   'enabled'
+;
+
 FALSE
 :
    'false'

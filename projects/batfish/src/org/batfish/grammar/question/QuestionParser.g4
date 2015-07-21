@@ -222,11 +222,17 @@ interface_boolean_expr
 :
    INTERFACE PERIOD
    (
-      interface_has_ip_boolean_expr
+      interface_enabled_boolean_expr
+      | interface_has_ip_boolean_expr
       | interface_isis_boolean_expr
       | interface_isloopback_boolean_expr
       | interface_ospf_boolean_expr
    )
+;
+
+interface_enabled_boolean_expr
+:
+   ENABLED
 ;
 
 interface_has_ip_boolean_expr

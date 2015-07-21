@@ -21,7 +21,8 @@ verify {
                }
             }
             onfailure {
-               $offendingIp:interface.ip
+               $offendingIp:interface.ip,
+               $enabled:interface.enabled
             }
          }
       }
