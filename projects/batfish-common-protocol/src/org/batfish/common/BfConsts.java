@@ -16,6 +16,7 @@ public class BfConsts {
    // if you change the value of these constants,
    // ensure that the clients (including the javascript client) are up to date
    //
+   public static final String ARG_BLOCK_NAMES = "blocknames";
    public static final String ARG_LOG_LEVEL = "loglevel";
    public static final String ARG_OUTPUT_ENV = "outputenv";
    public static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
@@ -26,9 +27,10 @@ public class BfConsts {
    public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
    public static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
    public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
+   public static final String ARG_USE_PRECOMPUTED_ROUTES = "useprecomputedroutes";
 
    public static final String COMMAND_ANSWER = "answer";
-   public static final String COMMAND_COMPILE = "compile";
+   public static final String COMMAND_CREATE_WORKSPACE = "createworkspace";
    public static final String COMMAND_DUMP_DP = "dp";
    public static final String COMMAND_ENV = "env";
    public static final String COMMAND_FACTS = "facts";
@@ -37,6 +39,7 @@ public class BfConsts {
    public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
    public static final String COMMAND_POST_FLOWS = "postflows";
    public static final String COMMAND_QUERY = "query";
+   public static final String COMMAND_REMOVE_BLOCKS = "removeblocks";
    public static final String COMMAND_SYNTHESIZE_Z3_DATA_PLANE = "z3";
    public static final String COMMAND_WRITE_ROUTES = "writeroutes";
 
@@ -50,6 +53,7 @@ public class BfConsts {
    public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
    public static final String RELPATH_LB_HOSTNAME_PATH = "lb";
    public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";
+   public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
    public static final String RELPATH_QUERIES_DIR = "queries";
    public static final String RELPATH_QUERY_DUMP_DIR = "querydump";
    public static final String RELPATH_QUESTION_FILE = "question";
@@ -57,7 +61,6 @@ public class BfConsts {
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
    public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
    public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
-   public static final String RELPATH_WRITE_ROUTES = "precomputedroutes";
    public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
    public static final String SVC_BASE_RSC = "/batfishservice";

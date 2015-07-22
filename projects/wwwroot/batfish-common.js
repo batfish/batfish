@@ -59,7 +59,7 @@ var ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
 var ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
 
 var COMMAND_ANSWER = "answer";
-var COMMAND_COMPILE = "compile";
+var COMMAND_CREATE_WORKSPACE = "createworkspace";
 var COMMAND_DUMP_DP = "dp";
 var COMMAND_ENV = "env";
 var COMMAND_FACTS = "facts";

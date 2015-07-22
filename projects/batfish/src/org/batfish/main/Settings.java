@@ -29,7 +29,6 @@ public class Settings {
    private static final String ARG_BUILD_PREDICATE_INFO = "bpi";
    private static final String ARG_CB_HOST = "lbhost";
    private static final String ARG_CB_PORT = "lbport";
-   private static final String ARG_COMPILE = "compile";
    private static final String ARG_CONC_UNIQUE = "concunique";
    private static final String ARG_COORDINATOR_HOST = "coordinatorhost";
    private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
@@ -77,6 +76,7 @@ public class Settings {
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_NODE_ROLES_PATH = "nrpath";
    private static final String ARG_NODE_SET_PATH = "nodes";
+   private static final String ARG_PRECOMPUTED_ROUTES_PATH = "precomputedroutespath";
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
    private static final String ARG_PRINT_PARSE_TREES = "ppt";
@@ -113,7 +113,6 @@ public class Settings {
    private static final String ARG_UPDATE = "update";
    private static final String ARG_VAR_SIZE_MAP_PATH = "vsmpath";
    private static final String ARG_WORKSPACE = "workspace";
-   private static final String ARG_WRITE_ROUTES_PATH = "writeroutespath";
    private static final String ARG_Z3 = "z3";
    private static final String ARG_Z3_CONCRETIZE = "conc";
    private static final String ARG_Z3_CONCRETIZER_INPUT_FILES = "concin";
@@ -150,6 +149,7 @@ public class Settings {
    private static final String ARGNAME_MPI_PATH = "path";
    private static final String ARGNAME_NODE_ROLES_PATH = "path";
    private static final String ARGNAME_NODE_SET_PATH = "path";
+   private static final String ARGNAME_PRECOMPUTED_ROUTES_PATH = "path";
    private static final String ARGNAME_QUESTION_NAME = "name";
    private static final String ARGNAME_QUESTION_PATH = "path";
    private static final String ARGNAME_REACH_PATH = "path";
@@ -163,7 +163,6 @@ public class Settings {
    private static final String ARGNAME_SERVICE_HOST = "hostname";
    private static final String ARGNAME_SERVICE_LOGICBLOX_HOSTNAME = "hostname";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
-   private static final String ARGNAME_WRITE_ROUTES_PATH = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILES = "paths";
    private static final String ARGNAME_Z3_CONCRETIZER_NEGATED_INPUT_FILES = "paths";
 
@@ -199,11 +198,11 @@ public class Settings {
    private String _blacklistDstIpPath;
    private String _blacklistInterface;
    private String _blacklistNode;
+   private List<String> _blockNames;
    private boolean _buildPredicateInfo;
    private boolean _canExecute;
    private String _cbHost;
    private int _cbPort;
-   private boolean _compile;
    private boolean _concretize;
    private String[] _concretizerInputFilePaths;
    private String _concretizerOutputFilePath;
@@ -212,6 +211,7 @@ public class Settings {
    private int _coordinatorPoolPort;
    private int _coordinatorWorkPort;
    private boolean _counts;
+   private boolean _createWorkspace;
    private boolean _dataPlane;
    private String _dataPlaneDir;
    private Set<String> _disabledFacts;
@@ -265,6 +265,7 @@ public class Settings {
    private boolean _pedanticAsError;
    private boolean _pedanticRecord;
    private boolean _postFlows;
+   private String _precomputedRoutesPath;
    private List<String> _predicates;
    private boolean _printParseTree;
    private boolean _printSemantics;
@@ -277,6 +278,7 @@ public class Settings {
    private String _reachPath;
    private boolean _redFlagAsError;
    private boolean _redFlagRecord;
+   private boolean _removeBlocks;
    private boolean _removeFacts;
    private boolean _revert;
    private String _revertBranchName;
@@ -308,10 +310,10 @@ public class Settings {
    private boolean _unimplementedAsError;
    private boolean _unimplementedRecord;
    private boolean _update;
+   private boolean _usePrecomputedRoutes;
    private String _varSizeMapPath;
    private String _workspaceName;
    private boolean _writeRoutes;
-   private String _writeRoutesPath;
    private boolean _z3;
    private String _z3File;
 
@@ -333,7 +335,7 @@ public class Settings {
    }
 
    public boolean createWorkspace() {
-      return _compile;
+      return _createWorkspace;
    }
 
    public boolean dumpInterfaceDescriptions() {
@@ -382,6 +384,10 @@ public class Settings {
 
    public String getBlacklistNode() {
       return _blacklistNode;
+   }
+
+   public List<String> getBlockNames() {
+      return _blockNames;
    }
 
    public String getBranchName() {
@@ -624,6 +630,10 @@ public class Settings {
       return _postFlows;
    }
 
+   public String getPrecomputedRoutesPath() {
+      return _precomputedRoutesPath;
+   }
+
    public List<String> getPredicates() {
       return _predicates;
    }
@@ -662,6 +672,10 @@ public class Settings {
 
    public boolean getRedFlagRecord() {
       return _redFlagRecord;
+   }
+
+   public boolean getRemoveBlocks() {
+      return _removeBlocks;
    }
 
    public boolean getRemoveFacts() {
@@ -776,6 +790,10 @@ public class Settings {
       return _update;
    }
 
+   public boolean getUsePrecomputedRoutes() {
+      return _usePrecomputedRoutes;
+   }
+
    public String getVarSizeMapPath() {
       return _varSizeMapPath;
    }
@@ -786,10 +804,6 @@ public class Settings {
 
    public boolean getWriteRoutes() {
       return _writeRoutes;
-   }
-
-   public String getWriteRoutesPath() {
-      return _writeRoutesPath;
    }
 
    public boolean getZ3() {
@@ -857,7 +871,7 @@ public class Settings {
             .longOpt(ARG_QUERY_ALL).build());
       _options.addOption(Option.builder()
             .desc("create workspace and add project logic")
-            .longOpt(ARG_COMPILE).build());
+            .longOpt(BfConsts.COMMAND_CREATE_WORKSPACE).build());
       _options.addOption(Option.builder().desc("add facts to workspace")
             .longOpt(ARG_FACTS).build());
       _options.addOption(Option.builder()
@@ -1219,11 +1233,21 @@ public class Settings {
             .desc("write routes from LogicBlox to disk")
             .longOpt(BfConsts.COMMAND_WRITE_ROUTES).build());
       _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_WRITE_ROUTES_PATH).desc("path to write routes")
-            .longOpt(ARG_WRITE_ROUTES_PATH).build());
+            .argName(ARGNAME_PRECOMPUTED_ROUTES_PATH)
+            .desc("path to precomputed routes")
+            .longOpt(ARG_PRECOMPUTED_ROUTES_PATH).build());
       _options.addOption(Option.builder().hasArg().argName("name")
             .desc("name of output environment")
             .longOpt(BfConsts.ARG_OUTPUT_ENV).build());
+      _options.addOption(Option.builder()
+            .desc("remove blocks from LogicBlox workspace")
+            .longOpt(BfConsts.COMMAND_REMOVE_BLOCKS).build());
+      _options.addOption(Option.builder().argName("blocknames").hasArgs()
+            .desc("list of LogicBlox blocks to add or remove")
+            .longOpt(BfConsts.ARG_BLOCK_NAMES).build());
+      _options.addOption(Option.builder()
+            .desc("add precomputed routes to workspace")
+            .longOpt(BfConsts.ARG_USE_PRECOMPUTED_ROUTES).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1280,8 +1304,15 @@ public class Settings {
       else {
          _predicates = DEFAULT_PREDICATES;
       }
+      if (line.hasOption(BfConsts.ARG_BLOCK_NAMES)) {
+         _blockNames = Arrays.asList(line
+               .getOptionValues(BfConsts.ARG_BLOCK_NAMES));
+      }
+      else {
+         _blockNames = Collections.<String> emptyList();
+      }
       _removeFacts = line.hasOption(ARG_REMOVE_FACTS);
-      _compile = line.hasOption(ARG_COMPILE);
+      _createWorkspace = line.hasOption(BfConsts.COMMAND_CREATE_WORKSPACE);
       _facts = line.hasOption(ARG_FACTS);
       _update = line.hasOption(ARG_UPDATE);
       _noTraffic = line.hasOption(ARG_NO_TRAFFIC);
@@ -1416,8 +1447,11 @@ public class Settings {
       _questionPath = line.getOptionValue(ARG_QUESTION_PATH);
       _synthesizeTopology = line.hasOption(ARG_SYNTHESIZE_TOPOLOGY);
       _writeRoutes = line.hasOption(BfConsts.COMMAND_WRITE_ROUTES);
-      _writeRoutesPath = line.getOptionValue(ARG_WRITE_ROUTES_PATH);
+      _precomputedRoutesPath = line.getOptionValue(ARG_PRECOMPUTED_ROUTES_PATH);
       _outputEnvironmentName = line.getOptionValue(BfConsts.ARG_OUTPUT_ENV);
+      _removeBlocks = line.hasOption(BfConsts.COMMAND_REMOVE_BLOCKS);
+      _usePrecomputedRoutes = line
+            .hasOption(BfConsts.ARG_USE_PRECOMPUTED_ROUTES);
    }
 
    public boolean printParseTree() {
@@ -1464,6 +1498,10 @@ public class Settings {
       _nodeSetPath = nodeSetPath;
    }
 
+   public void setPrecomputedRoutesPath(String writeRoutesPath) {
+      _precomputedRoutesPath = writeRoutesPath;
+   }
+
    public void setQueryDumpDir(String path) {
       _queryDumpDir = path;
    }
@@ -1494,10 +1532,6 @@ public class Settings {
 
    public void setWorkspaceName(String name) {
       _workspaceName = name;
-   }
-
-   public void setWriteRoutesPath(String writeRoutesPath) {
-      _writeRoutesPath = writeRoutesPath;
    }
 
    public void setZ3DataPlaneFile(String path) {

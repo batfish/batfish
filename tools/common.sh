@@ -68,7 +68,7 @@ batfish_compile() {
    if [ -n "${BATFISH_REMOTE_LOGIC_DIR}" ]; then
       local LOGIC_DIR_ARG="-logicdir ${BATFISH_REMOTE_LOGIC_DIR}"
    fi
-   batfish $LOGIC_DIR_ARG -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR || return 1
+   batfish $LOGIC_DIR_ARG -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -createworkspace -facts -dumpcp -dumpdir $DUMP_DIR || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane"
 }

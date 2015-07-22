@@ -72,8 +72,8 @@ public class Driver {
          if (outputEnvName != null) {
             Path outputEnvPath = Paths.get(baseDir,
                   BfConsts.RELPATH_ENVIRONMENTS_DIR, outputEnvName);
-            settings.setWriteRoutesPath(outputEnvPath.resolve(
-                  BfConsts.RELPATH_WRITE_ROUTES).toString());
+            settings.setPrecomputedRoutesPath(outputEnvPath.resolve(
+                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
          }
          String questionName = settings.getQuestionName();
          if (questionName != null) {

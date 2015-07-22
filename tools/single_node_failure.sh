@@ -161,7 +161,7 @@ batfish_compile_blacklist_node() {
    local ORIG_FLOW_SINKS=$6
    echo ": START: Compute the fixed point of the control plane with blacklisted node: \"${BLACKLISTED_NODE}\""
    batfish_expect_args 6 $# || return 1
-   batfish -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR -blnode $BLACKLISTED_NODE -flowsink $ORIG_FLOW_SINKS || return 1
+   batfish -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -createworkspace -facts -dumpcp -dumpdir $DUMP_DIR -blnode $BLACKLISTED_NODE -flowsink $ORIG_FLOW_SINKS || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane with blacklisted node: \"${BLACKLISTED_NODE}\""
 }

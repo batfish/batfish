@@ -313,6 +313,26 @@ public class LogicBloxFrontend {
       }
    }
 
+   public void fillRouteColumn(Collection<PrecomputedRoute> routes,
+         Column column) {
+      try {
+         EntityColumn ec = (EntityColumn) column;
+         BigInteger[] routeIndices = ((UInt64Column) ec.getIndexColumn()
+               .unwrap()).getRows();
+         for (BigInteger index : routeIndices) {
+            PrecomputedRoute route = _entityTable.getPrecomputedRoute(index);
+            if (route != null) {
+               routes.add(route);
+            }
+         }
+
+      }
+      catch (Option.Exception e) {
+         throw new BatfishException(
+               "Error getting typed ogicblox query result", e);
+      }
+   }
+
    public List<String> getPredicate(PredicateInfo predicateInfo,
          Relation relation, String relationName) throws QueryException {
       List<LBValueType> valueTypes = predicateInfo
@@ -484,45 +504,53 @@ public class LogicBloxFrontend {
       }
    }
 
-   public void removeBlock(String blockName) {
+   public void removeBlocks(List<String> blockNames) {
       try {
          Workspace.Command.RemoveBlock rem = Workspace.Command
-               .removeBlock(Collections.singletonList(blockName));
-
+               .removeBlock(blockNames);
          // Execute the command as part of a self-contained transaction
          List<Workspace.Result> results = _workspace.transaction(Collections
                .singletonList(rem));
          // Now to check that our command succeeded
          if (results.size() == 1) {
             Workspace.Result result = results.get(0);
-            if (result instanceof Workspace.Result.Failure) {
-               Workspace.Result.Failure failResult = (Workspace.Result.Failure) result;
-               _logger.error("RemoveBlock failed: " + failResult.getMessage()
-                     + "\n");
-            }
-            else if (result instanceof Workspace.Result.AddBlock) {
-               Workspace.Result.AddBlock addResult = (Workspace.Result.AddBlock) result;
-               Option<CommonProto.CompilationProblems> optProblems = addResult
+            if (result instanceof Workspace.Result.RemoveBlock) {
+               Workspace.Result.RemoveBlock removeResult = (Workspace.Result.RemoveBlock) result;
+               Option<CommonProto.CompilationProblems> optProblems = removeResult
                      .getProblems();
                if (optProblems.isSome()) {
-                  _logger.error("There were problems removing the block: "
-                        + optProblems.unwrap() + "\n");
+                  throw new BatfishException(
+                        "There were problems removing the block: "
+                              + optProblems.unwrap());
                }
                else {
-                  _logger.info("Block successfully removed from workspace!\n");
+                  _logger.info("Blocks: " + blockNames.toString()
+                        + " successfully removed from workspace!\n");
                }
             }
             else {
-               _logger.info("Unexpected result " + result.getClass().getName()
-                     + "!\n");
+               throw new BatfishException("Unexpected result "
+                     + result.getClass().getName() + "!");
+            }
+         }
+         else if (results.size() == 2) {
+            Workspace.Result result = results.get(0);
+            if (result instanceof Workspace.Result.Failure) {
+               Workspace.Result.Failure failResult = (Workspace.Result.Failure) result;
+               throw new BatfishException("RemoveBlock failed: "
+                     + failResult.getMessage());
+            }
+            else {
+               throw new BatfishException("Unexpected result "
+                     + result.getClass().getName() + "!");
             }
          }
          else {
-            _logger.error("Incorrect number of results!\n");
+            throw new BatfishException("Incorrect number of results!");
          }
       }
       catch (Workspace.Exception e) {
-         _logger.error("Encountered error " + e.errorSort() + "\n");
+         throw new BatfishException("Encountered error " + e.errorSort(), e);
       }
    }
 
@@ -598,26 +626,6 @@ public class LogicBloxFrontend {
       String startJsonMessage = "{\"stop\": {\"workspace\":[\""
             + _workspaceName + "\"] } }";
       sendLbWebAdminMessage(startJsonMessage);
-   }
-
-   public void fillRouteColumn(Collection<PrecomputedRoute> routes,
-         Column column) {
-      try {
-         EntityColumn ec = (EntityColumn) column;
-         BigInteger[] routeIndices = ((UInt64Column) ec.getIndexColumn()
-               .unwrap()).getRows();
-         for (BigInteger index : routeIndices) {
-            PrecomputedRoute route = _entityTable.getPrecomputedRoute(index);
-            if (route != null) {
-               routes.add(route);
-            }
-         }
-
-      }
-      catch (Option.Exception e) {
-         throw new BatfishException(
-               "Error getting typed ogicblox query result", e);
-      }
    }
 
 }

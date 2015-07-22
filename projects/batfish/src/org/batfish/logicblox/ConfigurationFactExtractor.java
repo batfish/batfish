@@ -68,48 +68,6 @@ public class ConfigurationFactExtractor {
 
    private static final String FLOW_SINK_INTERFACE_PREFIX = "TenGigabitEthernet100/";
 
-   private static String getLBRoutingProtocol(RoutingProtocol prot) {
-      switch (prot) {
-      case AGGREGATE:
-         return "aggregate";
-      case BGP:
-         return "bgp";
-      case CONNECTED:
-         return "connected";
-      case EGP:
-         return "egp";
-      case IBGP:
-         return "ibgp";
-      case IGP:
-         return "igp";
-      case ISIS:
-         return "isis";
-      case ISIS_L1:
-         return "isisL1";
-      case ISIS_L2:
-         return "isisL2";
-      case LDP:
-         return "ldp";
-      case LOCAL:
-         return "local";
-      case MSDP:
-         return "msdp";
-      case OSPF:
-         return "ospf";
-      case OSPF_E1:
-         return "ospfE1";
-      case OSPF_E2:
-         return "ospfE2";
-      case RSVP:
-         return "rsvp";
-      case STATIC:
-         return "static";
-      default:
-         break;
-      }
-      return null;
-   }
-
    private Set<Long> _allCommunities;
 
    private Configuration _configuration;
@@ -697,14 +655,14 @@ public class ConfigurationFactExtractor {
             Set<String> levels = new HashSet<String>();
             switch (exportLevel) {
             case LEVEL_1:
-               levels.add(getLBRoutingProtocol(RoutingProtocol.ISIS_L1));
+               levels.add(Facts.getLBRoutingProtocol(RoutingProtocol.ISIS_L1));
                break;
             case LEVEL_2:
-               levels.add(getLBRoutingProtocol(RoutingProtocol.ISIS_L2));
+               levels.add(Facts.getLBRoutingProtocol(RoutingProtocol.ISIS_L2));
                break;
             case LEVEL_1_2:
-               levels.add(getLBRoutingProtocol(RoutingProtocol.ISIS_L1));
-               levels.add(getLBRoutingProtocol(RoutingProtocol.ISIS_L2));
+               levels.add(Facts.getLBRoutingProtocol(RoutingProtocol.ISIS_L1));
+               levels.add(Facts.getLBRoutingProtocol(RoutingProtocol.ISIS_L2));
                break;
             default:
                throw new BatfishException("invalid IS-IS level");
@@ -934,7 +892,7 @@ public class ConfigurationFactExtractor {
                   PolicyMapMatchProtocolLine pmmpl = (PolicyMapMatchProtocolLine) matchLine;
                   RoutingProtocol prot = pmmpl.getProtocol();
                   wSetPolicyMapClauseMatchProtocol.append(mapName + "|" + i
-                        + "|" + getLBRoutingProtocol(prot) + "\n");
+                        + "|" + Facts.getLBRoutingProtocol(prot) + "\n");
                   break;
 
                case ROUTE_FILTER_LIST:
@@ -1061,15 +1019,21 @@ public class ConfigurationFactExtractor {
                      throw new BatfishException("Invalid level");
                   }
                   if (level1) {
-                     wSetPolicyMapClauseSetProtocol.append(mapName + "|" + i
+                     wSetPolicyMapClauseSetProtocol.append(mapName
                            + "|"
-                           + getLBRoutingProtocol(RoutingProtocol.ISIS_L1)
+                           + i
+                           + "|"
+                           + Facts
+                                 .getLBRoutingProtocol(RoutingProtocol.ISIS_L1)
                            + "\n");
                   }
                   if (level2) {
-                     wSetPolicyMapClauseSetProtocol.append(mapName + "|" + i
+                     wSetPolicyMapClauseSetProtocol.append(mapName
                            + "|"
-                           + getLBRoutingProtocol(RoutingProtocol.ISIS_L2)
+                           + i
+                           + "|"
+                           + Facts
+                                 .getLBRoutingProtocol(RoutingProtocol.ISIS_L2)
                            + "\n");
                   }
                   break;

@@ -92,6 +92,7 @@ import org.batfish.logicblox.Facts;
 import org.batfish.logicblox.LBInitializationException;
 import org.batfish.logicblox.LBValueType;
 import org.batfish.logicblox.LogicBloxFrontend;
+import org.batfish.logicblox.PrecomputedRoute;
 import org.batfish.logicblox.PredicateInfo;
 import org.batfish.logicblox.ProjectFile;
 import org.batfish.logicblox.QueryException;
@@ -207,6 +208,8 @@ public class Batfish implements AutoCloseable {
     * The name of the LogiQL library for org.batfish
     */
    private static final String LB_BATFISH_LIBRARY_NAME = "libbatfish";
+
+   private static final String PRECOMPUTED_ROUTES_PREDICATE_NAME = "SetPrecomputedRoute_flat";
 
    /**
     * The name of the file in which LogiQL predicate type-information and
@@ -2353,6 +2356,28 @@ public class Batfish implements AutoCloseable {
       printElapsedTime();
    }
 
+   private void populatePrecomputedRoutes(String precomputedRoutesPath,
+         Map<String, StringBuilder> cpFactBins) {
+      File inputFile = new File(precomputedRoutesPath);
+      StringBuilder sb = cpFactBins.get(PRECOMPUTED_ROUTES_PREDICATE_NAME);
+      RouteSet routes = (RouteSet) deserializeObject(inputFile);
+      for (PrecomputedRoute route : routes) {
+         String node = route.getNode();
+         Prefix prefix = route.getPrefix();
+         long networkStart = prefix.getNetworkAddress().asLong();
+         long networkEnd = prefix.getEndAddress().asLong();
+         int prefixLength = prefix.getPrefixLength();
+         long nextHopIp = route.getNextHopIp().asLong();
+         int admin = route.getAdministrativeCost();
+         int cost = route.getCost();
+         String protocol = Facts.getLBRoutingProtocol(route.getProtocol());
+         int tag = route.getTag();
+         sb.append(node + "|" + networkStart + "|" + networkEnd + "|"
+               + prefixLength + "|" + nextHopIp + "|" + admin + "|" + cost
+               + "|" + protocol + "|" + tag + "\n");
+      }
+   }
+
    private void postFacts(LogicBloxFrontend lbFrontend,
          Map<String, StringBuilder> factBins) {
       Map<String, StringBuilder> enabledFacts = new HashMap<String, StringBuilder>();
@@ -2540,6 +2565,16 @@ public class Batfish implements AutoCloseable {
                e);
       }
       return text;
+   }
+
+   private void removeBlocks(List<String> blockNames,
+         LogicBloxFrontend lbFrontend) {
+      List<String> qualifiedBlockNames = new ArrayList<String>();
+      for (String blockName : blockNames) {
+         String qualifiedBlockName = LB_BATFISH_LIBRARY_NAME + ":" + blockName;
+         qualifiedBlockNames.add(qualifiedBlockName);
+      }
+      lbFrontend.removeBlocks(qualifiedBlockNames);
    }
 
    private void resetTimer() {
@@ -2748,6 +2783,10 @@ public class Batfish implements AutoCloseable {
       if (_settings.getFacts() || _settings.getDumpControlPlaneFacts()) {
          cpFactBins = new LinkedHashMap<String, StringBuilder>();
          initControlPlaneFactBins(cpFactBins);
+         if (_settings.getUsePrecomputedRoutes()) {
+            String precomputedRotuesPath = _settings.getPrecomputedRoutesPath();
+            populatePrecomputedRoutes(precomputedRotuesPath, cpFactBins);
+         }
          Map<String, Configuration> configurations = deserializeConfigurations(_settings
                .getSerializeIndependentPath());
          writeTopologyFacts(_settings.getTestRigPath(), configurations,
@@ -2771,12 +2810,13 @@ public class Batfish implements AutoCloseable {
       LogicBloxFrontend lbFrontend = null;
       if (_settings.createWorkspace() || _settings.getFacts()
             || _settings.getQuery() || _settings.getDataPlane()
-            || _settings.revert() || _settings.getWriteRoutes()) {
+            || _settings.revert() || _settings.getWriteRoutes()
+            || _settings.getRemoveBlocks()) {
          lbFrontend = connect();
       }
 
       if (_settings.getWriteRoutes()) {
-         writeRoutes(_settings.getWriteRoutesPath(), lbFrontend);
+         writeRoutes(_settings.getPrecomputedRoutesPath(), lbFrontend);
          return;
       }
 
@@ -2793,6 +2833,15 @@ public class Batfish implements AutoCloseable {
          if (lbHostnamePath != null && lbHostname != null) {
             writeFile(lbHostnamePath, lbHostname);
          }
+         if (!_settings.getFacts() && !_settings.getRemoveBlocks()) {
+            return;
+         }
+      }
+
+      // Remove blocks if requested
+      if (_settings.getRemoveBlocks()) {
+         List<String> blockNames = _settings.getBlockNames();
+         removeBlocks(blockNames, lbFrontend);
          if (!_settings.getFacts()) {
             return;
          }
@@ -3081,7 +3130,10 @@ public class Batfish implements AutoCloseable {
    private void writeRoutes(String writeRoutesPath, LogicBloxFrontend lbFrontend) {
       lbFrontend.initEntityTable();
       File routesFile = new File(writeRoutesPath);
-      routesFile.getParentFile().mkdirs();
+      File parentDir = routesFile.getParentFile();
+      if (parentDir != null) {
+         parentDir.mkdirs();
+      }
       RouteSet routes = getRoutes(lbFrontend);
       _logger.info("Serializing: routes => \"" + writeRoutesPath + "\"...");
       serializeObject(routes, routesFile);

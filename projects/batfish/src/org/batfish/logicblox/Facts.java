@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.batfish.representation.RoutingProtocol;
+
 public class Facts {
 
    public static final Map<String, String> CONTROL_PLANE_FACT_COLUMN_HEADERS = getControlPlaneFactColumnHeaders();
@@ -141,9 +143,51 @@ public class Facts {
       map.put("SetIsisL2Node", "NODE");
       map.put("SetIsisOutboundPolicyMap", "NODE|POLICY");
       map.put("SetIsisPassiveInterface", "NODE|INTERFACE");
-      map.put("SetPrecomputedRoute",
+      map.put("SetPrecomputedRoute_flat",
             "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|NEXTHOPIP|ADMIN|COST|PROTOCOL|TAG");
       return Collections.unmodifiableMap(map);
+   }
+
+   public static String getLBRoutingProtocol(RoutingProtocol prot) {
+      switch (prot) {
+      case AGGREGATE:
+         return "aggregate";
+      case BGP:
+         return "bgp";
+      case CONNECTED:
+         return "connected";
+      case EGP:
+         return "egp";
+      case IBGP:
+         return "ibgp";
+      case IGP:
+         return "igp";
+      case ISIS:
+         return "isis";
+      case ISIS_L1:
+         return "isisL1";
+      case ISIS_L2:
+         return "isisL2";
+      case LDP:
+         return "ldp";
+      case LOCAL:
+         return "local";
+      case MSDP:
+         return "msdp";
+      case OSPF:
+         return "ospf";
+      case OSPF_E1:
+         return "ospfE1";
+      case OSPF_E2:
+         return "ospfE2";
+      case RSVP:
+         return "rsvp";
+      case STATIC:
+         return "static";
+      default:
+         break;
+      }
+      return null;
    }
 
    private static Map<String, String> getTrafficFactColumnHeaders() {

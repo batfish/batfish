@@ -120,7 +120,7 @@ function fnDoWork(worktype) {
             reqParams[COMMAND_ENV] = envName;
             break;
         case "generatedataplane":
-            reqParams[COMMAND_COMPILE] = "";
+            reqParams[COMMAND_CREATE_WORKSPACE] = "";
             reqParams[COMMAND_FACTS] = "";
             reqParams[COMMAND_ENV] = envName;
             break;

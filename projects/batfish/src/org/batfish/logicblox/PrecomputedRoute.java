@@ -10,7 +10,7 @@ public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
       Serializable {
 
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
 
