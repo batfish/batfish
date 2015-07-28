@@ -12,3 +12,4 @@ export BATFISH_TOOLS_PATH="$(readlink -f $(dirname $BATFISH_SOURCED_SCRIPT))"
 . "$BATFISH_TOOLS_PATH/role_transit.sh"
 
 . "$BATFISH_TOOLS_PATH/nsdi_demo.sh"
+. "$BATFISH_TOOLS_PATH/completion.sh"
