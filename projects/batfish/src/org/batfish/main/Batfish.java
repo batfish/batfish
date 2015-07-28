@@ -304,7 +304,7 @@ public class Batfish implements AutoCloseable {
 
    public static ParserRuleContext parse(BatfishCombinedParser<?, ?> parser,
          String filename, BatfishLogger logger, Settings settings) {
-      logger.info("Parsing: \"" + filename + "\"...");
+      logger.info("Parsing: \"" + filename + "\" ...");
       return parse(parser, logger, settings);
    }
 
@@ -668,7 +668,7 @@ public class Batfish implements AutoCloseable {
       }
       for (String concInPath : concInPaths) {
          _logger.info("Reading z3 datalog query output file: \"" + concInPath
-               + "\"...");
+               + "\" ...");
          File queryOutputFile = new File(concInPath);
          String queryOutputStr = readFile(queryOutputFile);
          _logger.info("OK\n");
@@ -699,7 +699,7 @@ public class Batfish implements AutoCloseable {
          for (String negConcInPath : negConcInPaths) {
             _logger
                   .info("Reading z3 datalog query output file (to be negated): \""
-                        + negConcInPath + "\"...");
+                        + negConcInPath + "\" ...");
             File queryOutputFile = new File(negConcInPath);
             String queryOutputStr = readFile(queryOutputFile);
             _logger.info("OK\n");
@@ -732,7 +732,7 @@ public class Batfish implements AutoCloseable {
          String concQueryPath = _settings.getConcretizerOutputFilePath() + "-"
                + i + ".smt2";
          _logger.info("Writing concretizer query file: \"" + concQueryPath
-               + "\"...");
+               + "\" ...");
          writeFile(concQueryPath, cq.getText());
          _logger.info("OK\n");
       }
@@ -2174,7 +2174,7 @@ public class Batfish implements AutoCloseable {
       BatfishCombinedParser<?, ?> parser = null;
       TopologyExtractor extractor = null;
       _logger.info("Parsing: \""
-            + topologyFilePath.getAbsolutePath().toString() + "\"");
+            + topologyFilePath.getAbsolutePath().toString() + "\" ...");
       if (topologyFileText.startsWith("autostart")) {
          parser = new GNS3TopologyCombinedParser(topologyFileText,
                _settings.getThrowOnParserError(),
@@ -2189,7 +2189,7 @@ public class Batfish implements AutoCloseable {
          extractor = new BatfishTopologyExtractor();
       }
       else if (topologyFileText.equals("")) {
-         throw new BatfishException("...ERROR: empty topology\n");
+         throw new BatfishException("ERROR: empty topology\n");
       }
       else {
          _logger.fatal("...ERROR\n");
