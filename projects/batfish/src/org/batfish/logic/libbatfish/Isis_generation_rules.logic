@@ -1,0 +1,55 @@
+block(`Isis_generation_rules) {
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Isis),
+   alias_all(`libbatfish:Layer2),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+GeneratedRoutePolicy(route, policy) <-
+   IsisGeneratedRoute(route),
+   Route_network[route] = network,
+   Route_node[route] = node,
+   SetIsisGeneratedRoutePolicy(node, network, policy).
+
+IsisGeneratedRoute(route),
+   Route(route),
+   GeneratedRoute_constructor[node, network, type] = route,
+   GeneratedRoute(route),
+   GeneratedRoute_type[route] = type,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   SetIsisGeneratedRoute(node, network),
+   type = GeneratedRouteType_ISIS[],
+   protocol = RoutingProtocol_AGGREGATE[].
+
+need_PolicyMapMatchRoute(map, route) <-
+   SetIsisGeneratedRoutePolicy(node, _, map),
+   InstalledRoute(route),
+   Route_node[route] = node.
+
+SetIsisGeneratedRoute(node, network) <-
+   SetIsisGeneratedRoute_flat(node, network_start, network_end, prefix_length),
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+SetIsisGeneratedRoutePolicy(node, network, map) <-
+   SetIsisGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length, map),
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+lang:compiler:disableError:NEGATION_RECURSION[] = true.
+lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
+lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
+lang:compiler:error:ENTITY_CREATION_RECURSION[]=false.
+lang:compiler:warning:ENTITY_CREATION_RECURSION[]=false.
+
+// END CODE
+   })
+} <-- .

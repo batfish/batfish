@@ -1,0 +1,102 @@
+block(`Ospf_e2_rules) {
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Layer2),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:Ospf),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+BestOspfE2Route(route) <-
+   OspfE2Route(route),
+   OspfRoute_costToAdvertiser[route] = costToAdvertiser,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   MinOspfE2RouteCostToAdvertiser[node, network] = costToAdvertiser,
+   !OspfE1Network(node, network),
+   !OspfNetwork(node, network),
+   !OspfIANetwork(node, network).
+
+MinOspfE2RouteCostToAdvertiser[node, network] = minCostToAdvertiser <-
+   agg<<minCostToAdvertiser = min(costToAdvertiser)>>
+      OspfE2Route(route),
+      OspfRoute_costToAdvertiser[route] = costToAdvertiser,
+      Route_network[route] = network,
+      Route_node[route] = node.   
+
+// (base case) import ospfE2 routes exported by ospf neighbors
+OspfE2Route(route),
+   Route(route),
+   NonOspfExportableRoute(route),
+   OspfE2Route_constructor[advertiser, costToAdvertiser, node, network, nextHopIp] = route,
+   OspfRoute_advertiser[route] = advertiser,
+   OspfRoute_advertiserIp[route] = advertiserIp,
+   OspfRoute_costToAdvertiser[route] = costToAdvertiser,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   !ConnectedRoute(node, network, _),
+   OspfNeighbors(node, _, costToAdvertiser, nextHop, nextHopInt, _, _, _),
+   IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
+   node != advertiser,
+   node != nextHop,
+   advertiser = nextHop,
+   SetOspfRouterId(advertiser, advertiserIp),
+   OspfExport(advertiser, network, cost, protocol),
+   protocol = RoutingProtocol_OSPF_E2[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
+// (recursive case) propagate ospfE2 over ospf
+OspfE2Route(route),
+   Route(route),
+   NonOspfExportableRoute(route),
+   OspfE2Route_constructor[advertiser, costToAdvertiser, node, network, nextHopIp] = route,
+   OspfRoute_advertiser[route] = advertiser,
+   OspfRoute_advertiserIp[route] = advertiserIp,
+   OspfRoute_costToAdvertiser[route] = costToAdvertiser,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   !ConnectedRoute(node, network, _), // is this necessary?
+   OspfNeighbors(node, _, nodeIntCost, nextHop, nextHopInt, _, _, area),
+   IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
+   OspfNeighbors(nextHop, _, _, secondHop, _, _, _, area),
+   BestOspfE2Route(subRoute),
+   Route_cost[subRoute] = cost,
+   Route_network[subRoute] = network,
+   Route_nextHopIp[subRoute] = secondHopIp,
+   Route_node[subRoute] = nextHop,
+   OspfRoute_advertiser[subRoute] = advertiser,
+   OspfRoute_advertiserIp[subRoute] = advertiserIp,
+   OspfRoute_costToAdvertiser[subRoute] = subCost,
+   HasIp(secondHop, secondHopIp),
+   node != secondHop,
+   node != advertiser,
+   costToAdvertiser = subCost + nodeIntCost,
+   protocol = RoutingProtocol_OSPF_E2[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
+
+lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
+lang:compiler:error:ENTITY_CREATION_RECURSION[]=false.
+lang:compiler:warning:ENTITY_CREATION_RECURSION[]=false.
+lang:compiler:disableError:NEGATION_RECURSION[] = true.
+lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
+lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
+
+// END CODE
+   })
+} <-- .
+

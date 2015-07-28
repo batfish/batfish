@@ -65,6 +65,10 @@ BgpNeighborGeneratedRoute_constructor[node, network, neighborIp] = route ->
    Ip(neighborIp),
    Route(route).
 
+BgpNeighborGeneratedRoute_neighborIp[route] = neighborIp ->
+   Route(route),
+   Ip(neighborIp).
+
 BgpNeighborGeneratedRoutePolicy(node, neighborIp, network, map) ->
    Node(node),
    Ip(neighborIp),

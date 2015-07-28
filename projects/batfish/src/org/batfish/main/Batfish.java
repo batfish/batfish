@@ -87,6 +87,7 @@ import org.batfish.job.FlattenVendorConfigurationResult;
 import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.logic.LogicResourceLocator;
+import org.batfish.logicblox.Block;
 import org.batfish.logicblox.ConfigurationFactExtractor;
 import org.batfish.logicblox.Facts;
 import org.batfish.logicblox.LBInitializationException;
@@ -2014,6 +2015,30 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   private void keepBlocks(List<String> blockNames, LogicBloxFrontend lbFrontend) {
+      Set<String> allBlockNames = new LinkedHashSet<String>();
+      allBlockNames.addAll(Block.BLOCKS.keySet());
+      for (String blockName : blockNames) {
+         Block block = Block.BLOCKS.get(blockName);
+         if (block == null) {
+            throw new BatfishException("Invalid block name: \"" + blockName
+                  + "\"");
+         }
+         Set<Block> dependencies = block.getDependencies();
+         for (Block dependency : dependencies) {
+            allBlockNames.remove(dependency.getName());
+         }
+         allBlockNames.remove(blockName);
+      }
+      List<String> qualifiedBlockNames = new ArrayList<String>();
+      for (String blockName : allBlockNames) {
+         String qualifiedBlockName = LB_BATFISH_LIBRARY_NAME + ":" + blockName
+               + "_rules";
+         qualifiedBlockNames.add(qualifiedBlockName);
+      }
+      lbFrontend.removeBlocks(qualifiedBlockNames);
+   }
+
    private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
       return parse(parser, _logger, _settings);
    }
@@ -2569,9 +2594,23 @@ public class Batfish implements AutoCloseable {
 
    private void removeBlocks(List<String> blockNames,
          LogicBloxFrontend lbFrontend) {
-      List<String> qualifiedBlockNames = new ArrayList<String>();
+      Set<String> allBlockNames = new LinkedHashSet<String>();
       for (String blockName : blockNames) {
-         String qualifiedBlockName = LB_BATFISH_LIBRARY_NAME + ":" + blockName;
+         Block block = Block.BLOCKS.get(blockName);
+         if (block == null) {
+            throw new BatfishException("Invalid block name: \"" + blockName
+                  + "\"");
+         }
+         Set<Block> dependents = block.getDependents();
+         for (Block dependent : dependents) {
+            allBlockNames.add(dependent.getName());
+         }
+         allBlockNames.add(blockName);
+      }
+      List<String> qualifiedBlockNames = new ArrayList<String>();
+      for (String blockName : allBlockNames) {
+         String qualifiedBlockName = LB_BATFISH_LIBRARY_NAME + ":" + blockName
+               + "_rules";
          qualifiedBlockNames.add(qualifiedBlockName);
       }
       lbFrontend.removeBlocks(qualifiedBlockNames);
@@ -2811,7 +2850,7 @@ public class Batfish implements AutoCloseable {
       if (_settings.createWorkspace() || _settings.getFacts()
             || _settings.getQuery() || _settings.getDataPlane()
             || _settings.revert() || _settings.getWriteRoutes()
-            || _settings.getRemoveBlocks()) {
+            || _settings.getRemoveBlocks() || _settings.getKeepBlocks()) {
          lbFrontend = connect();
       }
 
@@ -2833,15 +2872,21 @@ public class Batfish implements AutoCloseable {
          if (lbHostnamePath != null && lbHostname != null) {
             writeFile(lbHostnamePath, lbHostname);
          }
-         if (!_settings.getFacts() && !_settings.getRemoveBlocks()) {
+         if (!_settings.getFacts() && !_settings.getRemoveBlocks()
+               && !_settings.getKeepBlocks()) {
             return;
          }
       }
 
       // Remove blocks if requested
-      if (_settings.getRemoveBlocks()) {
+      if (_settings.getRemoveBlocks() || _settings.getKeepBlocks()) {
          List<String> blockNames = _settings.getBlockNames();
-         removeBlocks(blockNames, lbFrontend);
+         if (_settings.getRemoveBlocks()) {
+            removeBlocks(blockNames, lbFrontend);
+         }
+         if (_settings.getKeepBlocks()) {
+            keepBlocks(blockNames, lbFrontend);
+         }
          if (!_settings.getFacts()) {
             return;
          }

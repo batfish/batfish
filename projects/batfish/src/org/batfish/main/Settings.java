@@ -246,6 +246,7 @@ public class Settings {
    private boolean _ignoreUnsupported;
    private String _interfaceMapPath;
    private String _jobLogicBloxHostnamePath;
+   private boolean _keepBlocks;
    private int _lbWebAdminPort;
    private int _lbWebPort;
    private String _logFile;
@@ -556,6 +557,10 @@ public class Settings {
 
    public String getJobLogicBloxHostnamePath() {
       return _jobLogicBloxHostnamePath;
+   }
+
+   public boolean getKeepBlocks() {
+      return _keepBlocks;
    }
 
    public int getLbWebAdminPort() {
@@ -1240,8 +1245,11 @@ public class Settings {
             .desc("name of output environment")
             .longOpt(BfConsts.ARG_OUTPUT_ENV).build());
       _options.addOption(Option.builder()
-            .desc("remove blocks from LogicBlox workspace")
+            .desc("remove selected blocks from LogicBlox workspace")
             .longOpt(BfConsts.COMMAND_REMOVE_BLOCKS).build());
+      _options.addOption(Option.builder()
+            .desc("keep only selected blocks in LogicBlox workspace")
+            .longOpt(BfConsts.COMMAND_KEEP_BLOCKS).build());
       _options.addOption(Option.builder().argName("blocknames").hasArgs()
             .desc("list of LogicBlox blocks to add or remove")
             .longOpt(BfConsts.ARG_BLOCK_NAMES).build());
@@ -1450,6 +1458,7 @@ public class Settings {
       _precomputedRoutesPath = line.getOptionValue(ARG_PRECOMPUTED_ROUTES_PATH);
       _outputEnvironmentName = line.getOptionValue(BfConsts.ARG_OUTPUT_ENV);
       _removeBlocks = line.hasOption(BfConsts.COMMAND_REMOVE_BLOCKS);
+      _keepBlocks = line.hasOption(BfConsts.COMMAND_KEEP_BLOCKS);
       _usePrecomputedRoutes = line
             .hasOption(BfConsts.ARG_USE_PRECOMPUTED_ROUTES);
    }

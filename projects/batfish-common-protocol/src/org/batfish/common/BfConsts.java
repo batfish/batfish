@@ -35,6 +35,7 @@ public class BfConsts {
    public static final String COMMAND_ENV = "env";
    public static final String COMMAND_FACTS = "facts";
    public static final String COMMAND_GENERATE_FACT = "dumpcp";
+   public static final String COMMAND_KEEP_BLOCKS = "keepblocks";
    public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
    public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
    public static final String COMMAND_POST_FLOWS = "postflows";

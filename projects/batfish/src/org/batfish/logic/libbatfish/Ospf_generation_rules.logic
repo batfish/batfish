@@ -1,0 +1,44 @@
+block(`Ospf_generation_rules) {
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Ospf),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+GeneratedRoutePolicy(route, policy) <-
+   OspfGeneratedRoute(route),
+   Route_network[route] = network,
+   Route_node[route] = node,
+   SetOspfGeneratedRoutePolicy(node, network, policy).
+
+need_PolicyMapMatchRoute(map, route) <-
+   SetOspfGeneratedRoutePolicy(node, _, map),
+   InstalledRoute(route),
+   Route_node[route] = node.
+
+OspfGeneratedRoute(route),
+   Route(route),
+   GeneratedRoute_constructor[node, network, type] = route,
+   GeneratedRoute(route),
+   GeneratedRoute_type[route] = type,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   SetOspfGeneratedRoute(node, network),
+   type = GeneratedRouteType_OSPF[],
+   protocol = RoutingProtocol_AGGREGATE[].
+
+SetOspfGeneratedRoute(node, network) <-
+   SetOspfGeneratedRoute_flat(node, network_start, network_end, prefix_length),
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+SetOspfGeneratedRoutePolicy(node, network, map) <-
+   SetOspfGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length, map),
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+// END CODE
+   })
+} <-- .

@@ -16,6 +16,7 @@ public enum RoutingProtocol {
    OSPF,
    OSPF_E1,
    OSPF_E2,
+   OSPF_IA,
    RSVP,
    STATIC
 }

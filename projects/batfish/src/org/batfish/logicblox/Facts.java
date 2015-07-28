@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.batfish.main.BatfishException;
 import org.batfish.representation.RoutingProtocol;
 
 public class Facts {
@@ -142,7 +143,10 @@ public class Facts {
       map.put("SetIsisL1Node", "NODE");
       map.put("SetIsisL2Node", "NODE");
       map.put("SetIsisOutboundPolicyMap", "NODE|POLICY");
-      map.put("SetIsisPassiveInterface", "NODE|INTERFACE");
+      map.put("SetIsisL1ActiveInterface", "NODE|INTERFACE");
+      map.put("SetIsisL1PassiveInterface", "NODE|INTERFACE");
+      map.put("SetIsisL2ActiveInterface", "NODE|INTERFACE");
+      map.put("SetIsisL2PassiveInterface", "NODE|INTERFACE");
       map.put("SetPrecomputedRoute_flat",
             "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|NEXTHOPIP|ADMIN|COST|PROTOCOL|TAG");
       return Collections.unmodifiableMap(map);
@@ -180,14 +184,15 @@ public class Facts {
          return "ospfE1";
       case OSPF_E2:
          return "ospfE2";
+      case OSPF_IA:
+         return "ospfIA";
       case RSVP:
          return "rsvp";
       case STATIC:
          return "static";
       default:
-         break;
+         throw new BatfishException("invalid routing protocol");
       }
-      return null;
    }
 
    private static Map<String, String> getTrafficFactColumnHeaders() {

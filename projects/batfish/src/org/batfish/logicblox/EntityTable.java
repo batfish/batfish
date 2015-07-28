@@ -3,6 +3,7 @@ package org.batfish.logicblox;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import org.batfish.main.BatfishException;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 import org.batfish.representation.NamedPort;
@@ -55,14 +56,16 @@ public class EntityTable {
          return RoutingProtocol.OSPF_E1;
       case "ospfE2":
          return RoutingProtocol.OSPF_E2;
+      case "ospfIA":
+         return RoutingProtocol.OSPF_IA;
       case "rsvp":
          return RoutingProtocol.RSVP;
       case "static":
          return RoutingProtocol.STATIC;
       default:
-         break;
+         throw new BatfishException(
+               "Missing conversion for lb routing protocol: \"" + lbProt + "\"");
       }
-      return null;
    }
 
    private long[] _advertDstIps;
