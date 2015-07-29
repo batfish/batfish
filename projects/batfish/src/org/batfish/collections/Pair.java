@@ -2,7 +2,7 @@ package org.batfish.collections;
 
 import java.io.Serializable;
 
-public abstract class Pair<T1 extends Comparable<T1>, T2 extends Comparable<T2>>
+public abstract class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? super T2>>
       implements Serializable, Comparable<Pair<T1, T2>> {
 
    private static final long serialVersionUID = 1L;

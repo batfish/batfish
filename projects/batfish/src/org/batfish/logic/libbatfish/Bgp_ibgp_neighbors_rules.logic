@@ -1,0 +1,40 @@
+block(`Bgp_ibgp_neighbors_rules) {
+   alias_all(`libbatfish:AsPath),
+   alias_all(`libbatfish:Bgp),
+   alias_all(`libbatfish:BgpAdvertisement),
+   alias_all(`libbatfish:CommunityList),
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Layer2),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+IbgpNeighborTo(node, neighbor, neighborIp) <-
+   NetworkOf[neighborIp, prefix_length] = neighborNetwork,
+   InstalledRoute(route),
+   Route_network[route] = neighborNetwork,
+   Route_node[route] = node,
+   IpReadyInt(neighbor, _, neighborIp, prefix_length),
+   RemoteAs(node, neighborIp, as),
+   LocalAs(node, neighborIp, as).
+
+IbgpNeighbors(node1, ip1, node2, ip2) <-
+   IbgpNeighborTo(node1, node2, ip2),
+   IbgpNeighborTo(node2, node1, ip1).
+
+lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
+
+lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
+
+lang:compiler:disableError:NEGATION_RECURSION[] = true.
+lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
+
+// END CODE
+   })
+
+} <-- .

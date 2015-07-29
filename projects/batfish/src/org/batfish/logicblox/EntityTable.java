@@ -3,10 +3,14 @@ package org.batfish.logicblox;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import org.batfish.collections.CommunitySet;
 import org.batfish.main.BatfishException;
+import org.batfish.representation.AsPath;
+import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 import org.batfish.representation.NamedPort;
+import org.batfish.representation.OriginType;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RoutingProtocol;
 
@@ -67,6 +71,10 @@ public class EntityTable {
                "Missing conversion for lb routing protocol: \"" + lbProt + "\"");
       }
    }
+
+   private AsPath[] _advertAsPaths;
+
+   private CommunitySet[] _advertCommunitySets;
 
    private long[] _advertDstIps;
 
@@ -275,6 +283,62 @@ public class EntityTable {
       // get indices
       ec = (EntityColumn) currentAdvertProperty.getColumns().get(0);
       _advertIndices = ((UInt64Column) ec.getIndexColumn().unwrap()).getRows();
+
+      // AsPath
+      _advertAsPaths = new AsPath[_advertIndices.length];
+      Relation advertisementPathSizeRelation = lbf
+            .queryPredicate("libbatfish:AsPath:AdvertisementPathSize");
+      ec = (EntityColumn) advertisementPathSizeRelation.getColumns().get(0);
+      BigInteger[] asPathSizeAdvertIndices = ((UInt64Column) ec
+            .getIndexColumn().unwrap()).getRows();
+      long[] asPathSizes = ((Int64Column) advertisementPathSizeRelation
+            .getColumns().get(1)).getRows();
+      for (int i = 0; i < asPathSizeAdvertIndices.length; i++) {
+         BigInteger key = asPathSizeAdvertIndices[i];
+         int advertIndex = Arrays.binarySearch(_advertIndices, key);
+         int currentPathSize = (int) asPathSizes[i];
+         AsPath asPath = new AsPath(currentPathSize);
+         _advertAsPaths[advertIndex] = asPath;
+      }
+
+      Relation advertisementPathRelation = lbf
+            .queryPredicate("libbatfish:AsPath:AdvertisementPath");
+      ec = (EntityColumn) advertisementPathRelation.getColumns().get(0);
+      BigInteger[] asPathAdvertIndices = ((UInt64Column) ec.getIndexColumn()
+            .unwrap()).getRows();
+      long[] asPathPathIndices = ((Int64Column) advertisementPathRelation
+            .getColumns().get(1)).getRows();
+      long[] asPathAses = ((Int64Column) ((EntityColumn) advertisementPathRelation
+            .getColumns().get(2)).getRefModeColumn().unwrap()).getRows();
+      for (int i = 0; i < asPathAdvertIndices.length; i++) {
+         BigInteger key = asPathAdvertIndices[i];
+         int advertIndex = Arrays.binarySearch(_advertIndices, key);
+         AsPath asPath = _advertAsPaths[advertIndex];
+         int currentPathIndex = (int) asPathPathIndices[i];
+         int currentAs = (int) asPathAses[i];
+         asPath.get(currentPathIndex).add(currentAs);
+      }
+
+      // Commmunities
+      _advertCommunitySets = new CommunitySet[_advertIndices.length];
+      Relation advertisementCommunityRelation = lbf
+            .queryPredicate("libbatfish:CommunityList:AdvertisementCommunity");
+      ec = (EntityColumn) advertisementCommunityRelation.getColumns().get(0);
+      BigInteger[] communityAdvertIndices = ((UInt64Column) ec.getIndexColumn()
+            .unwrap()).getRows();
+      long[] advertCommunities = ((Int64Column) advertisementCommunityRelation
+            .getColumns().get(1)).getRows();
+      for (int i = 0; i < communityAdvertIndices.length; i++) {
+         BigInteger key = communityAdvertIndices[i];
+         int advertIndex = Arrays.binarySearch(_advertIndices, key);
+         CommunitySet communitySet = _advertCommunitySets[advertIndex];
+         if (communitySet == null) {
+            communitySet = new CommunitySet();
+            _advertCommunitySets[advertIndex] = communitySet;
+         }
+         long community = advertCommunities[i];
+         communitySet.add(community);
+      }
    }
 
    public String getBgpAdvertisement(BigInteger index) {
@@ -329,6 +393,26 @@ public class EntityTable {
       long network = _networkAddresses[listIndex];
       long subnetBits = _networkPrefixLengths[listIndex];
       return new Ip(network).toString() + "/" + subnetBits;
+   }
+
+   public BgpAdvertisement getPrecomputedBgpAdvertisement(BigInteger index) {
+      int listIndex = Arrays.binarySearch(_advertIndices, index);
+      Prefix network = new Prefix(getNetwork(_advertNetworks[listIndex]));
+      Ip nextHopIp = new Ip(_advertNextHopIps[listIndex]);
+      String srcNode = _advertSrcNodes[listIndex];
+      Ip srcIp = new Ip(_advertSrcIps[listIndex]);
+      String dstNode = _advertDstNodes[listIndex];
+      Ip dstIp = new Ip(_advertDstIps[listIndex]);
+      int med = (int) _advertMeds[listIndex];
+      int localPreference = (int) _advertLocalPrefs[listIndex];
+      OriginType originType = OriginType
+            .fromString(_advertOriginTypes[listIndex]);
+      Ip originatorIp = new Ip(_advertOriginatorIps[listIndex]);
+      AsPath asPath = _advertAsPaths[listIndex];
+      CommunitySet communities = _advertCommunitySets[listIndex];
+      return new BgpAdvertisement(network, nextHopIp, srcNode, srcIp, dstNode,
+            dstIp, med, localPreference, originType, originatorIp, asPath,
+            communities);
    }
 
    public PrecomputedRoute getPrecomputedRoute(BigInteger index) {
@@ -390,4 +474,5 @@ public class EntityTable {
             + nextHop + ", " + nextHopInt + ", " + admin + ", " + cost + ", "
             + tag + ", " + protocol + ">";
    }
+
 }

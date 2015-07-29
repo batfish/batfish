@@ -27,8 +27,10 @@ public class BfConsts {
    public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
    public static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
    public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
+   public static final String ARG_USE_PRECOMPUTED_ADVERTISEMENTS = "useprecomputedadvertisements";
+   public static final String ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS = "userprecomputedibgpneighbors";
    public static final String ARG_USE_PRECOMPUTED_ROUTES = "useprecomputedroutes";
-
+   
    public static final String COMMAND_ANSWER = "answer";
    public static final String COMMAND_CREATE_WORKSPACE = "createworkspace";
    public static final String COMMAND_DUMP_DP = "dp";
@@ -42,10 +44,12 @@ public class BfConsts {
    public static final String COMMAND_QUERY = "query";
    public static final String COMMAND_REMOVE_BLOCKS = "removeblocks";
    public static final String COMMAND_SYNTHESIZE_Z3_DATA_PLANE = "z3";
+   public static final String COMMAND_WRITE_ADVERTISEMENTS = "writeadvertisements";
+   public static final String COMMAND_WRITE_IBGP_NEIGHBORS = "writeibgpneighbors";
+
    public static final String COMMAND_WRITE_ROUTES = "writeroutes";
 
    public static final String PREDICATE_FLOW_PATH_HISTORY = "FlowPathHistory";
-
    public static final String RELPATH_DATA_PLANE_DIR = "dp";
    public static final String RELPATH_ENV_DIR = "env";
    public static final String RELPATH_ENV_NODE_SET = "env-node-set";
@@ -62,8 +66,8 @@ public class BfConsts {
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
    public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
    public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
-   public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
+   public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
    public static final String SVC_BASE_RSC = "/batfishservice";
    public static final String SVC_FAILURE_KEY = "failure";
    public static final String SVC_GET_STATUS_RSC = "getstatus";

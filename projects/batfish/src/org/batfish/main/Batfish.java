@@ -41,6 +41,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.collections.AdvertisementSet;
 import org.batfish.collections.EdgeSet;
 import org.batfish.collections.FibMap;
 import org.batfish.collections.FibRow;
@@ -48,6 +49,7 @@ import org.batfish.collections.FibSet;
 import org.batfish.collections.FlowSinkInterface;
 import org.batfish.collections.FlowSinkSet;
 import org.batfish.collections.FunctionSet;
+import org.batfish.collections.IbgpTopology;
 import org.batfish.collections.MultiSet;
 import org.batfish.collections.NodeInterfacePair;
 import org.batfish.collections.NodeRoleMap;
@@ -155,6 +157,8 @@ public class Batfish implements AutoCloseable {
     */
    private static final String BASIC_FACTS_BLOCKNAME = "BaseFacts";
 
+   private static final String BGP_ADVERTISEMENT_ROUTE_PREDICATE_NAME = "BgpAdvertisementRoute";
+
    /**
     * Name of the file in which the topology of a network is serialized
     */
@@ -193,6 +197,8 @@ public class Batfish implements AutoCloseable {
    private static final String FLOW_SINKS_FILENAME = "flow-sinks";
 
    private static final String GEN_OSPF_STARTING_IP = "10.0.0.0";
+
+   private static final String IBGP_NEIGHBORS_PREDICATE_NAME = "IbgpNeighbors";
 
    private static final Object INSTALLED_ROUTE_PREDICATE_NAME = "InstalledRoute";
 
@@ -1719,17 +1725,22 @@ public class Batfish implements AutoCloseable {
       printElapsedTime();
    }
 
+   private AdvertisementSet getAdvertisements(LogicBloxFrontend lbFrontend) {
+      AdvertisementSet adverts = new AdvertisementSet();
+      String qualifiedName = _predicateInfo.getPredicateNames().get(
+            BGP_ADVERTISEMENT_ROUTE_PREDICATE_NAME);
+      Relation bgpAdvertisementRouteRelation = lbFrontend
+            .queryPredicate(qualifiedName);
+      lbFrontend.fillBgpAdvertisementColumn(adverts,
+            bgpAdvertisementRouteRelation.getColumns().get(0));
+      return adverts;
+   }
+
    public Map<String, Configuration> getConfigurations(
          String serializedVendorConfigPath) {
       Map<String, VendorConfiguration> vendorConfigurations = deserializeVendorConfigurations(serializedVendorConfigPath);
       Map<String, Configuration> configurations = convertConfigurations(vendorConfigurations);
       return configurations;
-   }
-
-   private double getElapsedTime(long beforeTime) {
-      long difference = System.currentTimeMillis() - beforeTime;
-      double seconds = difference / 1000d;
-      return seconds;
    }
 
    // private Set<Path> getMultipathQueryPaths(Path directory) {
@@ -1754,6 +1765,12 @@ public class Batfish implements AutoCloseable {
    // }
    // return queryPaths;
    // }
+
+   private double getElapsedTime(long beforeTime) {
+      long difference = System.currentTimeMillis() - beforeTime;
+      double seconds = difference / 1000d;
+      return seconds;
+   }
 
    private FlowSinkSet getFlowSinkSet(LogicBloxFrontend lbFrontend) {
       FlowSinkSet flowSinks = new FlowSinkSet();
@@ -2381,6 +2398,22 @@ public class Batfish implements AutoCloseable {
       printElapsedTime();
    }
 
+   private void populatePrecomputedBgpAdvertisements(
+         String precomputedBgpAdvertisementsPath,
+         Map<String, StringBuilder> cpFactBins) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   private void populatePrecomputedIbgpNeighbors(
+         String precomputedIbgpNeighborsPath,
+         Map<String, StringBuilder> cpFactBins) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
    private void populatePrecomputedRoutes(String precomputedRoutesPath,
          Map<String, StringBuilder> cpFactBins) {
       File inputFile = new File(precomputedRoutesPath);
@@ -2808,7 +2841,9 @@ public class Batfish implements AutoCloseable {
       }
 
       if (_settings.getQuery() || _settings.getPrintSemantics()
-            || _settings.getDataPlane() || _settings.getWriteRoutes()) {
+            || _settings.getDataPlane() || _settings.getWriteRoutes()
+            || _settings.getWriteBgpAdvertisements()
+            || _settings.getWriteIbgpNeighbors()) {
          Map<String, String> logicFiles = getSemanticsFiles();
          _predicateInfo = getPredicateInfo(logicFiles);
          // Print predicate semantics and quit if requested
@@ -2825,6 +2860,14 @@ public class Batfish implements AutoCloseable {
          if (_settings.getUsePrecomputedRoutes()) {
             String precomputedRotuesPath = _settings.getPrecomputedRoutesPath();
             populatePrecomputedRoutes(precomputedRotuesPath, cpFactBins);
+         }
+         if (_settings.getUsePrecomputedIbgpNeighbors()) {
+            populatePrecomputedIbgpNeighbors(
+                  _settings.getPrecomputedIbgpNeighborsPath(), cpFactBins);
+         }
+         if (_settings.getUsePrecomputedBgpAdvertisements()) {
+            populatePrecomputedBgpAdvertisements(
+                  _settings.getPrecomputedBgpAdvertisementsPath(), cpFactBins);
          }
          Map<String, Configuration> configurations = deserializeConfigurations(_settings
                .getSerializeIndependentPath());
@@ -2850,12 +2893,26 @@ public class Batfish implements AutoCloseable {
       if (_settings.createWorkspace() || _settings.getFacts()
             || _settings.getQuery() || _settings.getDataPlane()
             || _settings.revert() || _settings.getWriteRoutes()
-            || _settings.getRemoveBlocks() || _settings.getKeepBlocks()) {
+            || _settings.getWriteBgpAdvertisements()
+            || _settings.getWriteIbgpNeighbors() || _settings.getRemoveBlocks()
+            || _settings.getKeepBlocks()) {
          lbFrontend = connect();
       }
 
-      if (_settings.getWriteRoutes()) {
-         writeRoutes(_settings.getPrecomputedRoutesPath(), lbFrontend);
+      if (_settings.getWriteRoutes() || _settings.getWriteBgpAdvertisements()
+            || _settings.getWriteIbgpNeighbors()) {
+         lbFrontend.initEntityTable();
+         if (_settings.getWriteRoutes()) {
+            writeRoutes(_settings.getPrecomputedRoutesPath(), lbFrontend);
+         }
+         if (_settings.getWriteBgpAdvertisements()) {
+            writeBgpAdvertisements(
+                  _settings.getPrecomputedBgpAdvertisementsPath(), lbFrontend);
+         }
+         if (_settings.getWriteIbgpNeighbors()) {
+            writeIbgpNeighbors(_settings.getPrecomputedIbgpNeighborsPath(),
+                  lbFrontend);
+         }
          return;
       }
 
@@ -3107,7 +3164,7 @@ public class Batfish implements AutoCloseable {
             .info("\n*** SYNTHESIZING TOPOLOGY FROM INTERFACE SUBNET INFORMATION ***\n");
       resetTimer();
       EdgeSet edges = new EdgeSet();
-      Map<NodeInterfacePair, Prefix> interfacePrefixes = new HashMap<NodeInterfacePair, Prefix>();
+      Map<Prefix, Set<NodeInterfacePair>> prefixInterfaces = new HashMap<Prefix, Set<NodeInterfacePair>>();
       for (Entry<String, Configuration> e1 : configurations.entrySet()) {
          String nodeName = e1.getKey();
          Configuration node = e1.getValue();
@@ -3117,33 +3174,46 @@ public class Batfish implements AutoCloseable {
             Prefix prefix = e2.getValue().getPrefix();
             if (!iface.isLoopback(node.getVendor()) && iface.getActive()
                   && prefix != null && prefix.getPrefixLength() < 32) {
+               Prefix network = new Prefix(prefix.getNetworkAddress(),
+                     prefix.getPrefixLength());
                NodeInterfacePair pair = new NodeInterfacePair(nodeName,
                      ifaceName);
-               interfacePrefixes.put(pair, prefix);
+               Set<NodeInterfacePair> interfaceBucket = prefixInterfaces
+                     .get(network);
+               if (interfaceBucket == null) {
+                  interfaceBucket = new HashSet<NodeInterfacePair>();
+                  prefixInterfaces.put(network, interfaceBucket);
+               }
+               interfaceBucket.add(pair);
             }
          }
       }
-      for (Entry<NodeInterfacePair, Prefix> e1 : interfacePrefixes.entrySet()) {
-         for (Entry<NodeInterfacePair, Prefix> e2 : interfacePrefixes
-               .entrySet()) {
-            NodeInterfacePair pair1 = e1.getKey();
-            NodeInterfacePair pair2 = e2.getKey();
-            String h1 = pair1.getHostname();
-            String h2 = pair2.getHostname();
-            if (!h1.equals(h2) && !pair1.equals(pair2)) {
-               Prefix p1 = e1.getValue();
-               Prefix p2 = e2.getValue();
-               if (p1.getNetworkAddress().equals(p2.getNetworkAddress())
-                     && p1.getPrefixLength() == p2.getPrefixLength()) {
-                  String i1 = pair1.getInterface();
-                  String i2 = pair2.getInterface();
-                  Edge edge = new Edge(h1, i1, h2, i2);
+      for (Set<NodeInterfacePair> bucket : prefixInterfaces.values()) {
+         for (NodeInterfacePair p1 : bucket) {
+            for (NodeInterfacePair p2 : bucket) {
+               if (!p1.equals(p2)) {
+                  Edge edge = new Edge(p1, p2);
                   edges.add(edge);
                }
             }
          }
       }
       return edges;
+   }
+
+   private void writeBgpAdvertisements(String writeAdvertsPath,
+         LogicBloxFrontend lbFrontend) {
+      lbFrontend.initEntityTable();
+      File advertsFile = new File(writeAdvertsPath);
+      File parentDir = advertsFile.getParentFile();
+      if (parentDir != null) {
+         parentDir.mkdirs();
+      }
+      AdvertisementSet adverts = getAdvertisements(lbFrontend);
+      _logger.info("Serializing: BGP advertisements => \"" + writeAdvertsPath
+            + "\"...");
+      serializeObject(adverts, advertsFile);
+      _logger.info("OK\n");
    }
 
    public void writeConfigurationFacts(
@@ -3172,8 +3242,23 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   private void writeIbgpNeighbors(String ibgpTopologyPath,
+         LogicBloxFrontend lbFrontend) {
+      File ibgpTopologyFile = new File(ibgpTopologyPath);
+      File parentDir = ibgpTopologyFile.getParentFile();
+      if (parentDir != null) {
+         parentDir.mkdirs();
+      }
+      String qualifiedName = _predicateInfo.getPredicateNames().get(
+            IBGP_NEIGHBORS_PREDICATE_NAME);
+      IbgpTopology topology = lbFrontend.getIbgpNeighbors(qualifiedName);
+      _logger.info("Serializing: IBGP neighbors => \"" + ibgpTopologyPath
+            + "\"...");
+      serializeObject(topology, ibgpTopologyFile);
+      _logger.info("OK\n");
+   }
+
    private void writeRoutes(String writeRoutesPath, LogicBloxFrontend lbFrontend) {
-      lbFrontend.initEntityTable();
       File routesFile = new File(writeRoutesPath);
       File parentDir = routesFile.getParentFile();
       if (parentDir != null) {

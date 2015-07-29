@@ -76,6 +76,8 @@ public class Settings {
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_NODE_ROLES_PATH = "nrpath";
    private static final String ARG_NODE_SET_PATH = "nodes";
+   private static final String ARG_PRECOMPUTED_ADVERTISEMENTS_PATH = "precomputedadvertisementspath";
+   private static final String ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH = "precomputedibgpneighborspath";
    private static final String ARG_PRECOMPUTED_ROUTES_PATH = "precomputedroutespath";
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
@@ -163,9 +165,9 @@ public class Settings {
    private static final String ARGNAME_SERVICE_HOST = "hostname";
    private static final String ARGNAME_SERVICE_LOGICBLOX_HOSTNAME = "hostname";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
+
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILES = "paths";
    private static final String ARGNAME_Z3_CONCRETIZER_NEGATED_INPUT_FILES = "paths";
-
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
    private static final String ARGNAME_Z3_OUTPUT = "path";
    public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "5519";
@@ -266,6 +268,8 @@ public class Settings {
    private boolean _pedanticAsError;
    private boolean _pedanticRecord;
    private boolean _postFlows;
+   private String _precomputedBgpAdvertisementsPath;
+   private String _precomputedIbgpNeighborsPath;
    private String _precomputedRoutesPath;
    private List<String> _predicates;
    private boolean _printParseTree;
@@ -311,9 +315,13 @@ public class Settings {
    private boolean _unimplementedAsError;
    private boolean _unimplementedRecord;
    private boolean _update;
+   private boolean _usePrecomputedAdvertisements;
+   private boolean _usePrecomputedIbgpNeighbors;
    private boolean _usePrecomputedRoutes;
    private String _varSizeMapPath;
    private String _workspaceName;
+   private boolean _writeBgpAdvertisements;
+   private boolean _writeIbgpNeighbors;
    private boolean _writeRoutes;
    private boolean _z3;
    private String _z3File;
@@ -635,6 +643,14 @@ public class Settings {
       return _postFlows;
    }
 
+   public String getPrecomputedBgpAdvertisementsPath() {
+      return _precomputedBgpAdvertisementsPath;
+   }
+
+   public String getPrecomputedIbgpNeighborsPath() {
+      return _precomputedIbgpNeighborsPath;
+   }
+
    public String getPrecomputedRoutesPath() {
       return _precomputedRoutesPath;
    }
@@ -795,6 +811,14 @@ public class Settings {
       return _update;
    }
 
+   public boolean getUsePrecomputedBgpAdvertisements() {
+      return _usePrecomputedAdvertisements;
+   }
+
+   public boolean getUsePrecomputedIbgpNeighbors() {
+      return _usePrecomputedIbgpNeighbors;
+   }
+
    public boolean getUsePrecomputedRoutes() {
       return _usePrecomputedRoutes;
    }
@@ -805,6 +829,14 @@ public class Settings {
 
    public String getWorkspaceName() {
       return _workspaceName;
+   }
+
+   public boolean getWriteBgpAdvertisements() {
+      return _writeBgpAdvertisements;
+   }
+
+   public boolean getWriteIbgpNeighbors() {
+      return _writeIbgpNeighbors;
    }
 
    public boolean getWriteRoutes() {
@@ -1256,6 +1288,24 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("add precomputed routes to workspace")
             .longOpt(BfConsts.ARG_USE_PRECOMPUTED_ROUTES).build());
+      _options.addOption(Option.builder()
+            .desc("add precomputed ibgp neighborsto workspace")
+            .longOpt(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS).build());
+      _options.addOption(Option.builder()
+            .desc("add precomputed bgp advertisements to workspace")
+            .longOpt(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS).build());
+      _options.addOption(Option.builder().hasArg().argName("path")
+            .desc("path to precomputed bgp advertisements")
+            .longOpt(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH).build());
+      _options.addOption(Option.builder().hasArg().argName("path")
+            .desc("path to precomputed ibgp neighbors")
+            .longOpt(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH).build());
+      _options.addOption(Option.builder()
+            .desc("write ibgp neighbors from LogicBlox to disk")
+            .longOpt(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS).build());
+      _options.addOption(Option.builder()
+            .desc("write bgp advertisements from LogicBlox to disk")
+            .longOpt(BfConsts.COMMAND_WRITE_ADVERTISEMENTS).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1456,11 +1506,25 @@ public class Settings {
       _synthesizeTopology = line.hasOption(ARG_SYNTHESIZE_TOPOLOGY);
       _writeRoutes = line.hasOption(BfConsts.COMMAND_WRITE_ROUTES);
       _precomputedRoutesPath = line.getOptionValue(ARG_PRECOMPUTED_ROUTES_PATH);
+      _precomputedBgpAdvertisementsPath = line
+            .getOptionValue(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH);
+      _precomputedIbgpNeighborsPath = line
+            .getOptionValue(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH);
       _outputEnvironmentName = line.getOptionValue(BfConsts.ARG_OUTPUT_ENV);
       _removeBlocks = line.hasOption(BfConsts.COMMAND_REMOVE_BLOCKS);
       _keepBlocks = line.hasOption(BfConsts.COMMAND_KEEP_BLOCKS);
       _usePrecomputedRoutes = line
             .hasOption(BfConsts.ARG_USE_PRECOMPUTED_ROUTES);
+      _usePrecomputedAdvertisements = line
+            .hasOption(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS);
+      _writeBgpAdvertisements = line
+            .hasOption(BfConsts.COMMAND_WRITE_ADVERTISEMENTS);
+      _writeIbgpNeighbors = line
+            .hasOption(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS);
+      _usePrecomputedIbgpNeighbors = line
+            .hasOption(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS);
+      _usePrecomputedAdvertisements = line
+            .hasOption(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS);
    }
 
    public boolean printParseTree() {

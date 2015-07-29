@@ -1,6 +1,8 @@
 package org.batfish.representation;
 
-import java.util.List;
+import java.io.Serializable;
+
+import org.batfish.collections.CommunitySet;
 
 /**
  * Instances of this class represent hypothetical BGP advertisements used for
@@ -10,52 +12,101 @@ import java.util.List;
  *
  */
 
-public class BgpAdvertisement {
-   // / [BGPAdvertisement(destIpBlock, nextHopIp, asPath, localPref, srcIp,
-   // dstIp)] =
-   // / An advertisement of routes to ip block [destIpBlock] with next hop of ip
-   // / [nextHopIp] through path [asPath] with metric [metric] should be sent by
-   // / host [srcHost] at ip [srcIp] to host [dstHost] at [dstIp].
+public class BgpAdvertisement implements Serializable {
 
-   private List<Integer> _asPath;
-   private String _destIpBlock;
-   private String _dstIp;
-   private int _metric;
-   private String _nextHopIp;
-   private String _srcIp;
+   /**
+    *
+    */
+   private static final long serialVersionUID = 1L;
 
-   public BgpAdvertisement(String destIpBlock, String nextHopIp,
-         List<Integer> asPath, int metric, String srcIp, String dstIp) {
-      _destIpBlock = destIpBlock;
+   private final AsPath _asPath;
+
+   private final CommunitySet _communities;
+
+   private final Ip _dstIp;
+
+   private final String _dstNode;
+
+   private final int _localPreference;
+
+   private final int _med;
+
+   private final Prefix _network;
+
+   private final Ip _nextHopIp;
+
+   private final Ip _originatorIp;
+
+   private final OriginType _originType;
+
+   private final Ip _srcIp;
+
+   private final String _srcNode;
+
+   public BgpAdvertisement(Prefix network, Ip nextHopIp, String srcNode,
+         Ip srcIp, String dstNode, Ip dstIp, int med, int localPreference,
+         OriginType originType, Ip originatorIp, AsPath asPath,
+         CommunitySet communities) {
+      _network = network;
       _nextHopIp = nextHopIp;
-      _asPath = asPath;
-      _metric = metric;
+      _srcNode = srcNode;
       _srcIp = srcIp;
+      _dstNode = dstNode;
       _dstIp = dstIp;
+      _med = med;
+      _localPreference = localPreference;
+      _originType = originType;
+      _originatorIp = originatorIp;
+      _asPath = asPath;
+      _communities = communities;
    }
 
-   public List<Integer> getAsPath() {
+   public AsPath getAsPath() {
       return _asPath;
    }
 
-   public String getDestIpBlock() {
-      return _destIpBlock;
+   public CommunitySet getCommunities() {
+      return _communities;
    }
 
-   public String getDstIp() {
+   public Ip getDstIp() {
       return _dstIp;
    }
 
-   public int getMetric() {
-      return _metric;
+   public String getDstNode() {
+      return _dstNode;
    }
 
-   public String getNextHopIp() {
+   public int getLocalPreference() {
+      return _localPreference;
+   }
+
+   public int getMed() {
+      return _med;
+   }
+
+   public Prefix getNetwork() {
+      return _network;
+   }
+
+   public Ip getNextHopIp() {
       return _nextHopIp;
    }
 
-   public String getSrcIp() {
+   public Ip getOriginatorIp() {
+      return _originatorIp;
+   }
+
+   public OriginType getOriginType() {
+      return _originType;
+   }
+
+   public Ip getSrcIp() {
       return _srcIp;
+   }
+
+   public String getSrcNode() {
+      return _srcNode;
    }
 
 }

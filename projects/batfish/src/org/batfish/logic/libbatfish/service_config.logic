@@ -1989,6 +1989,86 @@ block(`service_config) {
       }.
 
       // Precomputed
+      service_by_prefix["/batfish/SetBgpAdvertisement_flat"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpAdvertisement_flat"
+      }.
+      file_definition_by_name["SetBgpAdvertisement_flat"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "PCINDEX,TYPE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,SRCNODE,SRCIP,DSTNODE,DSTIP,SRCPROTOCOL,ORIGINTYPE,LOCALPREF,MED,ORIGINATORIP",
+         column_formats[] = "integer,string,integer,integer,integer,integer,string,integer,string,integer,string,string,integer,integer,integer"
+      }.
+      file_binding_by_name["SetBgpAdvertisement_flat"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpAdvertisement_flat",
+         predicate_binding_by_name["libbatfish:Precomputed:SetBgpAdvertisement_flat"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "PCINDEX,TYPE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,SRCNODE,SRCIP,DSTNODE,DSTIP,SRCPROTOCOL,ORIGINTYPE,LOCALPREF,MED,ORIGINATORIP"
+            }
+      }.
+
+      service_by_prefix["/batfish/SetBgpAdvertisementCommunity"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpAdvertisementCommunity"
+      }.
+      file_definition_by_name["SetBgpAdvertisementCommunity"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "PCINDEX,COMMUNITY",
+         column_formats[] = "integer,integer"
+      }.
+      file_binding_by_name["SetBgpAdvertisementCommunity"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpAdvertisementCommunity",
+         predicate_binding_by_name["libbatfish:Precomputed:SetBgpAdvertisementCommunity"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "PCINDEX,COMMUNITY"
+            }
+      }.
+
+      service_by_prefix["/batfish/SetBgpAdvertisementPath"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpAdvertisementPath"
+      }.
+      file_definition_by_name["SetBgpAdvertisementPath"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "PCINDEX,INDEX,AS",
+         column_formats[] = "integer,integer,integer"
+      }.
+      file_binding_by_name["SetBgpAdvertisementPath"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpAdvertisementPath",
+         predicate_binding_by_name["libbatfish:Precomputed:SetBgpAdvertisementPath"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "PCINDEX,INDEX,AS"
+            }
+      }.
+
+      service_by_prefix["/batfish/SetBgpAdvertisementPathSize"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetBgpAdvertisementPathSize"
+      }.
+      file_definition_by_name["SetBgpAdvertisementPathSize"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "PCINDEX,SIZE",
+         column_formats[] = "integer,integer"
+      }.
+      file_binding_by_name["SetBgpAdvertisementPathSize"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetBgpAdvertisementPathSize",
+         predicate_binding_by_name["libbatfish:Precomputed:SetBgpAdvertisementPathSize"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "PCINDEX,SIZE"
+            }
+      }.
+
       service_by_prefix["/batfish/SetPrecomputedRoute_flat"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetPrecomputedRoute_flat"

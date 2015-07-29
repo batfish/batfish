@@ -1,4 +1,6 @@
 block(`Precomputed_rules) {
+   alias_all(`libbatfish:AsPath),
+   alias_all(`libbatfish:BgpAdvertisement),
    alias_all(`libbatfish:Interface),
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:Node),
@@ -7,8 +9,42 @@ block(`Precomputed_rules) {
    clauses(`{
 // BEGIN CODE
 
+BgpAdvertisement(advert),
+BgpAdvertisement_constructor[type, network, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType] = advert,
+BgpAdvertisement_dstIp[advert] = dstIp,
+BgpAdvertisement_dstNode[advert] = dstNode,
+BgpAdvertisement_localPref[advert] = localPref,
+BgpAdvertisement_med[advert] = med,
+BgpAdvertisement_network[advert] = network,
+BgpAdvertisement_nextHopIp[advert] = nextHopIp,
+BgpAdvertisement_originatorIp[advert] = originatorIp,
+BgpAdvertisement_originType[advert] = originType,
+BgpAdvertisement_srcIp[advert] = srcIp,
+BgpAdvertisement_srcNode[advert] = srcNode,
+BgpAdvertisement_srcProtocol[advert] = srcProtocol,
+BgpAdvertisement_type[advert] = type,
+PrecomputedAdvertisement_index(advert, pcIndex)
+<-
+   SetBgpAdvertisement_flat(pcIndex, type, network_start, network_end, prefix_length, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType, localPref, med, originatorIp),
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+BgpAdvertismentCommunity(advert, community) <-
+   SetBgpAdvertisementCommunity(pcIndex, community),
+   PrecomputedAdvertisement_index(advert, pcIndex).
+
+BgpAdvertismentPath(advert, index, as) <-
+   SetBgpAdvertisementPath(pcIndex, index, as),
+   PrecomputedAdvertisement_index(advert, pcIndex).
+
+AdvertisementPathSize[advert] = size <-
+   SetBgpAdvertisementPathSize(pcIndex, size),
+   PrecomputedAdvertisement_index(advert, pcIndex).
+
 BestPerProtocolRoute(route) <-
    PrecomputedRoute(route).
+
+IbgpNeighbors(node1, ip1, node2, ip2) <-
+   SetIbgpNeighbors(node1, ip1, node2, ip2).
 
 SetPrecomputedRoute(node, network, nextHopIp, admin, cost, protocol, tag) <-
    SetPrecomputedRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, admin, cost, protocol, tag),

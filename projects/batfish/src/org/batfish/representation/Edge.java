@@ -2,6 +2,8 @@ package org.batfish.representation;
 
 import java.io.Serializable;
 
+import org.batfish.collections.NodeInterfacePair;
+
 public class Edge implements Serializable {
 
    private static final long serialVersionUID = 1L;
@@ -10,6 +12,13 @@ public class Edge implements Serializable {
    private String _int2;
    private String _node1;
    private String _node2;
+
+   public Edge(NodeInterfacePair p1, NodeInterfacePair p2) {
+      _node1 = p1.getHostname();
+      _node2 = p2.getHostname();
+      _int1 = p1.getInterface();
+      _int2 = p2.getInterface();
+   }
 
    public Edge(String node1, String int1, String node2, String int2) {
       _node1 = node1;

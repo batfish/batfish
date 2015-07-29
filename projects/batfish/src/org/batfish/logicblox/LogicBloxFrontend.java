@@ -14,8 +14,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.collections.AdvertisementSet;
+import org.batfish.collections.IbgpTopology;
+import org.batfish.collections.IpEdge;
+import org.batfish.collections.NodeIpPair;
 import org.batfish.main.BatfishException;
 import org.batfish.main.BatfishLogger;
+import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.Ip;
 import org.eclipse.jetty.client.ContentExchange;
 import org.eclipse.jetty.client.HttpClient;
@@ -102,6 +107,8 @@ public class LogicBloxFrontend {
                + _workspaceName + "\"");
       }
       _lbWebTransport = Transports.tcp(false);
+      _lbWebTransport.getHttpClient().setMaxConnectionsPerAddress(
+            Facts.CONTROL_PLANE_FACT_COLUMN_HEADERS.size() + 10);
       _lbWebClient = initLbWebClient();
    }
 
@@ -197,6 +204,27 @@ public class LogicBloxFrontend {
       }
       else {
          return results.toString();
+      }
+   }
+
+   public void fillBgpAdvertisementColumn(AdvertisementSet adverts,
+         Column column) {
+      try {
+         EntityColumn ec = (EntityColumn) column;
+         BigInteger[] advertIndices = ((UInt64Column) ec.getIndexColumn()
+               .unwrap()).getRows();
+         for (BigInteger index : advertIndices) {
+            BgpAdvertisement advert = _entityTable
+                  .getPrecomputedBgpAdvertisement(index);
+            if (advert != null) {
+               adverts.add(advert);
+            }
+         }
+
+      }
+      catch (Option.Exception e) {
+         throw new BatfishException(
+               "Error getting typed logicblox query result", e);
       }
    }
 
@@ -329,8 +357,37 @@ public class LogicBloxFrontend {
       }
       catch (Option.Exception e) {
          throw new BatfishException(
-               "Error getting typed ogicblox query result", e);
+               "Error getting typed logicblox query result", e);
       }
+   }
+
+   public IbgpTopology getIbgpNeighbors(String qualifiedPredicateName) {
+      IbgpTopology topology = new IbgpTopology();
+      Relation ibgpNeighborsRelation = queryPredicate(qualifiedPredicateName);
+      List<String> node1List = new ArrayList<String>();
+      List<String> node2List = new ArrayList<String>();
+      List<String> ip1List = new ArrayList<String>();
+      List<String> ip2List = new ArrayList<String>();
+      fillColumn(LBValueType.ENTITY_REF_STRING, node1List,
+            ibgpNeighborsRelation.getColumns().get(0));
+      fillColumn(LBValueType.ENTITY_REF_IP, ip1List, ibgpNeighborsRelation
+            .getColumns().get(1));
+      fillColumn(LBValueType.ENTITY_REF_STRING, node2List,
+            ibgpNeighborsRelation.getColumns().get(2));
+      fillColumn(LBValueType.ENTITY_REF_IP, ip2List, ibgpNeighborsRelation
+            .getColumns().get(3));
+      int numEntries = node1List.size();
+      for (int i = 0; i < numEntries; i++) {
+         String node1 = node1List.get(i);
+         String node2 = node2List.get(i);
+         Ip ip1 = new Ip(ip1List.get(i));
+         Ip ip2 = new Ip(ip2List.get(i));
+         NodeIpPair p1 = new NodeIpPair(node1, ip1);
+         NodeIpPair p2 = new NodeIpPair(node2, ip2);
+         IpEdge edge = new IpEdge(p1, p2);
+         topology.add(edge);
+      }
+      return topology;
    }
 
    public List<String> getPredicate(PredicateInfo predicateInfo,

@@ -22,8 +22,8 @@ public class Block implements Comparable<Block> {
       blocks.put("Bgp_ebgp_igp_origination", Bgp_ebgp_igp_origination);
       Block Bgp_generation = new Block("Bgp_generation");
       blocks.put("Bgp_generation", Bgp_generation);
-      Block Bgp_ibgp_forwarding = new Block("Bgp_ibgp_forwarding");
-      blocks.put("Bgp_ibgp_forwarding", Bgp_ibgp_forwarding);
+      Block Bgp_ibgp_neighbors = new Block("Bgp_ibgp_neighbors");
+      blocks.put("Bgp_ibgp_neighbors", Bgp_ibgp_neighbors);
       Block Bgp_ibgp_origination = new Block("Bgp_ibgp_origination");
       blocks.put("Bgp_ibgp_origination", Bgp_ibgp_origination);
       Block Bgp_incoming_transformation = new Block(
@@ -90,7 +90,6 @@ public class Block implements Comparable<Block> {
       blocks.put("Traffic", Traffic);
 
       AsPath.addDependent(Bgp_ebgp_bgp_origination);
-      AsPath.addDependent(Bgp_ibgp_forwarding);
       AsPath.addDependent(Bgp_ibgp_origination);
       AsPath.addDependent(Bgp_incoming_transformation);
       AsPath.addDependent(Bgp_outgoing_transformation);
@@ -99,7 +98,7 @@ public class Block implements Comparable<Block> {
       Bgp.addDependent(Bgp_ebgp_bgp_origination);
       Bgp.addDependent(Bgp_ebgp_igp_origination);
       Bgp.addDependent(Bgp_generation);
-      Bgp.addDependent(Bgp_ibgp_forwarding);
+      Bgp.addDependent(Bgp_ibgp_neighbors);
       Bgp.addDependent(Bgp_ibgp_origination);
       Bgp.addDependent(Bgp_incoming_transformation);
       Bgp.addDependent(Bgp_outgoing_transformation);
