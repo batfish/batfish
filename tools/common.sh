@@ -47,6 +47,9 @@ export -f batfish
 
 batfish_build() {
    bash -c '_batfish_build "$@"' _batfish_build "$@" || return 1
+   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" ]; then
+      batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+   fi
 }
 export -f batfish_build
 
