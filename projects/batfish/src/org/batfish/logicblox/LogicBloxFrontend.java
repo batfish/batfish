@@ -581,8 +581,14 @@ public class LogicBloxFrontend {
                               + optProblems.unwrap());
                }
                else {
-                  _logger.info("Blocks: " + blockNames.toString()
-                        + " successfully removed from workspace!\n");
+                  Collections.sort(blockNames);
+                  _logger.info("Rule blocks: \n");
+                  for (String blockName : blockNames) {
+                     String shortName = blockName.replaceFirst("libbatfish:",
+                           "").replaceAll("_rules", "");
+                     _logger.info("\t" + shortName + "\n");
+                  }
+                  _logger.info("..successfully removed from workspace!\n");
                }
             }
             else {

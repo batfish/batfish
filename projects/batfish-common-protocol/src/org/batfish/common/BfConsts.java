@@ -28,7 +28,7 @@ public class BfConsts {
    public static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
    public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
    public static final String ARG_USE_PRECOMPUTED_ADVERTISEMENTS = "useprecomputedadvertisements";
-   public static final String ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS = "userprecomputedibgpneighbors";
+   public static final String ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS = "useprecomputedibgpneighbors";
    public static final String ARG_USE_PRECOMPUTED_ROUTES = "useprecomputedroutes";
    
    public static final String COMMAND_ANSWER = "answer";

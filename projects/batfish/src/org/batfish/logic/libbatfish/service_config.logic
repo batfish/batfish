@@ -2069,6 +2069,26 @@ block(`service_config) {
             }
       }.
 
+      service_by_prefix["/batfish/SetIbgpNeighbors"] = x,
+      delim_service(x) {
+         delim_file_binding[] = "SetIbgpNeighbors"
+      }.
+      file_definition_by_name["SetIbgpNeighbors"] = fd,
+      file_definition(fd) {
+         file_delimiter[] = "|",
+         column_headers[] = "NODE1,IP1,NODE2,IP2",
+         column_formats[] = "string,integer,string,integer"
+      }.
+      file_binding_by_name["SetIbgpNeighbors"] = fb,
+      file_binding(fb) {
+         file_binding_entity_creation[] = "accumulate",
+         file_binding_definition_name[] = "SetIbgpNeighbors",
+         predicate_binding_by_name["libbatfish:Precomputed:SetIbgpNeighbors"] =
+            predicate_binding(_) {
+               predicate_binding_columns[] = "NODE1,IP1,NODE2,IP2"
+            }
+      }.
+
       service_by_prefix["/batfish/SetPrecomputedRoute_flat"] = x,
       delim_service(x) {
          delim_file_binding[] = "SetPrecomputedRoute_flat"

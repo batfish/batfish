@@ -43,19 +43,26 @@ public class BgpAdvertisement implements Serializable {
 
    private final String _srcNode;
 
-   public BgpAdvertisement(Prefix network, Ip nextHopIp, String srcNode,
-         Ip srcIp, String dstNode, Ip dstIp, int med, int localPreference,
-         OriginType originType, Ip originatorIp, AsPath asPath,
+   private final RoutingProtocol _srcProtocol;
+
+   private final String _type;
+
+   public BgpAdvertisement(String type, Prefix network, Ip nextHopIp,
+         String srcNode, Ip srcIp, String dstNode, Ip dstIp,
+         RoutingProtocol srcProtocol, OriginType originType,
+         int localPreference, int med, Ip originatorIp, AsPath asPath,
          CommunitySet communities) {
+      _type = type;
       _network = network;
       _nextHopIp = nextHopIp;
       _srcNode = srcNode;
       _srcIp = srcIp;
       _dstNode = dstNode;
       _dstIp = dstIp;
-      _med = med;
-      _localPreference = localPreference;
+      _srcProtocol = srcProtocol;
       _originType = originType;
+      _localPreference = localPreference;
+      _med = med;
       _originatorIp = originatorIp;
       _asPath = asPath;
       _communities = communities;
@@ -107,6 +114,14 @@ public class BgpAdvertisement implements Serializable {
 
    public String getSrcNode() {
       return _srcNode;
+   }
+
+   public RoutingProtocol getSrcProtocol() {
+      return _srcProtocol;
+   }
+
+   public String getType() {
+      return _type;
    }
 
 }

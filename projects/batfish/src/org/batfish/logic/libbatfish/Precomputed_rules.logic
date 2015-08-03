@@ -1,5 +1,6 @@
 block(`Precomputed_rules) {
    alias_all(`libbatfish:AsPath),
+   alias_all(`libbatfish:Bgp),
    alias_all(`libbatfish:BgpAdvertisement),
    alias_all(`libbatfish:Interface),
    alias_all(`libbatfish:Ip),
@@ -8,6 +9,10 @@ block(`Precomputed_rules) {
    alias_all(`libbatfish:Route),
    clauses(`{
 // BEGIN CODE
+
+AdvertisementClusterId(advert, clusterId) <-
+   SetBgpAdvertisementClusterId(pcIndex, clusterId),
+   PrecomputedAdvertisement_index(advert, pcIndex).
 
 BgpAdvertisement(advert),
 BgpAdvertisement_constructor[type, network, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType] = advert,

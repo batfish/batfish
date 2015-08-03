@@ -153,6 +153,7 @@ public class Facts {
       map.put("SetBgpAdvertisementCommunity", "PCINDEX|COMMUNITY");
       map.put("SetBgpAdvertisementPath", "PCINDEX|INDEX|AS");
       map.put("SetBgpAdvertisementPathSize", "PCINDEX|SIZE");
+      map.put("SetIbgpNeighbors", "NODE1|IP1|NODE2|IP2");
       map.put("SetPrecomputedRoute_flat",
             "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|NEXTHOPIP|ADMIN|COST|PROTOCOL|TAG");
       return Collections.unmodifiableMap(map);

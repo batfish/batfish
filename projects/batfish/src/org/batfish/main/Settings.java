@@ -77,6 +77,7 @@ public class Settings {
    private static final String ARG_NODE_ROLES_PATH = "nrpath";
    private static final String ARG_NODE_SET_PATH = "nodes";
    private static final String ARG_PRECOMPUTED_ADVERTISEMENTS_PATH = "precomputedadvertisementspath";
+   private static final String ARG_PRECOMPUTED_FACTS_PATH = "precomputedfactspath";
    private static final String ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH = "precomputedibgpneighborspath";
    private static final String ARG_PRECOMPUTED_ROUTES_PATH = "precomputedroutespath";
    private static final String ARG_PREDHELP = "predhelp";
@@ -113,6 +114,7 @@ public class Settings {
    private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
    private static final String ARG_TIMESTAMP = "timestamp";
    private static final String ARG_UPDATE = "update";
+   private static final String ARG_USE_PRECOMPUTED_FACTS = "useprecomputedfacts";
    private static final String ARG_VAR_SIZE_MAP_PATH = "vsmpath";
    private static final String ARG_WORKSPACE = "workspace";
    private static final String ARG_Z3 = "z3";
@@ -163,9 +165,9 @@ public class Settings {
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
    private static final String ARGNAME_SERVICE_HOST = "hostname";
+
    private static final String ARGNAME_SERVICE_LOGICBLOX_HOSTNAME = "hostname";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
-
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILES = "paths";
    private static final String ARGNAME_Z3_CONCRETIZER_NEGATED_INPUT_FILES = "paths";
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
@@ -269,6 +271,7 @@ public class Settings {
    private boolean _pedanticRecord;
    private boolean _postFlows;
    private String _precomputedBgpAdvertisementsPath;
+   private String _precomputedFactsPath;
    private String _precomputedIbgpNeighborsPath;
    private String _precomputedRoutesPath;
    private List<String> _predicates;
@@ -316,6 +319,7 @@ public class Settings {
    private boolean _unimplementedRecord;
    private boolean _update;
    private boolean _usePrecomputedAdvertisements;
+   private boolean _usePrecomputedFacts;
    private boolean _usePrecomputedIbgpNeighbors;
    private boolean _usePrecomputedRoutes;
    private String _varSizeMapPath;
@@ -647,6 +651,10 @@ public class Settings {
       return _precomputedBgpAdvertisementsPath;
    }
 
+   public String getPrecomputedFactsPath() {
+      return _precomputedFactsPath;
+   }
+
    public String getPrecomputedIbgpNeighborsPath() {
       return _precomputedIbgpNeighborsPath;
    }
@@ -813,6 +821,10 @@ public class Settings {
 
    public boolean getUsePrecomputedBgpAdvertisements() {
       return _usePrecomputedAdvertisements;
+   }
+
+   public boolean getUsePrecomputedFacts() {
+      return _usePrecomputedFacts;
    }
 
    public boolean getUsePrecomputedIbgpNeighbors() {
@@ -1306,6 +1318,12 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("write bgp advertisements from LogicBlox to disk")
             .longOpt(BfConsts.COMMAND_WRITE_ADVERTISEMENTS).build());
+      _options.addOption(Option.builder().hasArg().argName("path")
+            .desc("path to precomputed facts")
+            .longOpt(ARG_PRECOMPUTED_FACTS_PATH).build());
+      _options.addOption(Option.builder()
+            .desc("add precomputed facts to workspace")
+            .longOpt(ARG_USE_PRECOMPUTED_FACTS).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1525,6 +1543,8 @@ public class Settings {
             .hasOption(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS);
       _usePrecomputedAdvertisements = line
             .hasOption(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS);
+      _usePrecomputedFacts = line.hasOption(ARG_USE_PRECOMPUTED_FACTS);
+      _precomputedFactsPath = line.getOptionValue(ARG_PRECOMPUTED_FACTS_PATH);
    }
 
    public boolean printParseTree() {

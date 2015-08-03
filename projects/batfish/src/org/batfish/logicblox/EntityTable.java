@@ -397,22 +397,27 @@ public class EntityTable {
 
    public BgpAdvertisement getPrecomputedBgpAdvertisement(BigInteger index) {
       int listIndex = Arrays.binarySearch(_advertIndices, index);
+      String type = _advertTypes[listIndex];
       Prefix network = new Prefix(getNetwork(_advertNetworks[listIndex]));
       Ip nextHopIp = new Ip(_advertNextHopIps[listIndex]);
       String srcNode = _advertSrcNodes[listIndex];
       Ip srcIp = new Ip(_advertSrcIps[listIndex]);
       String dstNode = _advertDstNodes[listIndex];
       Ip dstIp = new Ip(_advertDstIps[listIndex]);
-      int med = (int) _advertMeds[listIndex];
-      int localPreference = (int) _advertLocalPrefs[listIndex];
+      RoutingProtocol srcProtocol = getRoutingProtocol(_advertSrcProtocols[listIndex]);
       OriginType originType = OriginType
             .fromString(_advertOriginTypes[listIndex]);
+      int localPreference = (int) _advertLocalPrefs[listIndex];
+      int med = (int) _advertMeds[listIndex];
       Ip originatorIp = new Ip(_advertOriginatorIps[listIndex]);
       AsPath asPath = _advertAsPaths[listIndex];
       CommunitySet communities = _advertCommunitySets[listIndex];
-      return new BgpAdvertisement(network, nextHopIp, srcNode, srcIp, dstNode,
-            dstIp, med, localPreference, originType, originatorIp, asPath,
-            communities);
+      if (communities == null) {
+         communities = new CommunitySet();
+      }
+      return new BgpAdvertisement(type, network, nextHopIp, srcNode, srcIp,
+            dstNode, dstIp, srcProtocol, originType, localPreference, med,
+            originatorIp, asPath, communities);
    }
 
    public PrecomputedRoute getPrecomputedRoute(BigInteger index) {

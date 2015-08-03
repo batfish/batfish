@@ -33,6 +33,10 @@ SetBgpAdvertisement_flat(pcIndex, type, network_start, network_end, prefix_lengt
    int(med),
    Ip(originatorIp).
 
+SetBgpAdvertisementClusterId(pcIndex, id) ->
+   int(pcIndex),
+   int(id).
+
 SetBgpAdvertisementCommunity(pcIndex, community) ->
    int(pcIndex),
    int(community).

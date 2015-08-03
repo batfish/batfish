@@ -32,6 +32,22 @@ public class Block implements Comparable<Block> {
       Block Bgp_outgoing_transformation = new Block(
             "Bgp_outgoing_transformation");
       blocks.put("Bgp_outgoing_transformation", Bgp_outgoing_transformation);
+      Block Bgp_ebgp_incoming_transformation = new Block(
+            "Bgp_ebgp_incoming_transformation");
+      blocks.put("Bgp_ebgp_incoming_transformation",
+            Bgp_ebgp_incoming_transformation);
+      Block Bgp_ebgp_outgoing_transformation = new Block(
+            "Bgp_ebgp_outgoing_transformation");
+      blocks.put("Bgp_ebgp_outgoing_transformation",
+            Bgp_ebgp_outgoing_transformation);
+      Block Bgp_ibgp_incoming_transformation = new Block(
+            "Bgp_ibgp_incoming_transformation");
+      blocks.put("Bgp_ibgp_incoming_transformation",
+            Bgp_ibgp_incoming_transformation);
+      Block Bgp_ibgp_outgoing_transformation = new Block(
+            "Bgp_ibgp_outgoing_transformation");
+      blocks.put("Bgp_ibgp_outgoing_transformation",
+            Bgp_ibgp_outgoing_transformation);
       Block Bgp_route_reflection = new Block("Bgp_route_reflection");
       blocks.put("Bgp_route_reflection", Bgp_route_reflection);
       Block Bgp = new Block("Bgp");
@@ -104,6 +120,16 @@ public class Block implements Comparable<Block> {
       Bgp.addDependent(Bgp_outgoing_transformation);
       Bgp.addDependent(Bgp_route_reflection);
 
+      Bgp_incoming_transformation
+            .addDependent(Bgp_ebgp_incoming_transformation);
+      Bgp_incoming_transformation
+            .addDependent(Bgp_ibgp_incoming_transformation);
+
+      Bgp_outgoing_transformation
+            .addDependent(Bgp_ebgp_outgoing_transformation);
+      Bgp_outgoing_transformation
+            .addDependent(Bgp_ibgp_outgoing_transformation);
+
       DataPlane.addDependent(Traffic);
 
       GeneratedRoute.addDependent(Bgp_generation);
@@ -131,6 +157,7 @@ public class Block implements Comparable<Block> {
 
       PolicyMap.addDependent(Bgp);
       PolicyMap.addDependent(Isis_generation);
+      PolicyMap.addDependent(Ospf_external);
       PolicyMap.addDependent(Ospf_generation);
 
       Route.addDependent(DataPlane);

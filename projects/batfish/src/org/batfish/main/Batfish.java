@@ -50,6 +50,7 @@ import org.batfish.collections.FlowSinkInterface;
 import org.batfish.collections.FlowSinkSet;
 import org.batfish.collections.FunctionSet;
 import org.batfish.collections.IbgpTopology;
+import org.batfish.collections.IpEdge;
 import org.batfish.collections.MultiSet;
 import org.batfish.collections.NodeInterfacePair;
 import org.batfish.collections.NodeRoleMap;
@@ -104,6 +105,9 @@ import org.batfish.question.MultipathQuestion;
 import org.batfish.question.Question;
 import org.batfish.question.VerifyProgram;
 import org.batfish.question.VerifyQuestion;
+import org.batfish.representation.AsPath;
+import org.batfish.representation.AsSet;
+import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
@@ -216,6 +220,18 @@ public class Batfish implements AutoCloseable {
     */
    private static final String LB_BATFISH_LIBRARY_NAME = "libbatfish";
 
+   private static final String NETWORKS_PREDICATE_NAME = "SetNetwork";
+
+   private static final String PRECOMPUTED_BGP_ADVERTISEMENT_AS_PATH_LENGTH_PREDICATE_NAME = "SetBgpAdvertisementPathSize";
+
+   private static final String PRECOMPUTED_BGP_ADVERTISEMENT_AS_PATH_PREDICATE_NAME = "SetBgpAdvertisementPath";
+
+   private static final String PRECOMPUTED_BGP_ADVERTISEMENT_COMMUNITY_PREDICATE_NAME = "SetBgpAdvertisementCommunity";
+
+   private static final String PRECOMPUTED_BGP_ADVERTISEMENTS_PREDICATE_NAME = "SetBgpAdvertisement_flat";
+
+   private static final String PRECOMPUTED_IBGP_NEIGHBORS_PREDICATE_NAME = "SetIbgpNeighbors";
+
    private static final String PRECOMPUTED_ROUTES_PREDICATE_NAME = "SetPrecomputedRoute_flat";
 
    /**
@@ -259,22 +275,27 @@ public class Batfish implements AutoCloseable {
    }
 
    private static void initControlPlaneFactBins(
-         Map<String, StringBuilder> factBins) {
-      initFactBins(Facts.CONTROL_PLANE_FACT_COLUMN_HEADERS, factBins);
+         Map<String, StringBuilder> factBins, boolean addHeaders) {
+      initFactBins(Facts.CONTROL_PLANE_FACT_COLUMN_HEADERS, factBins,
+            addHeaders);
    }
 
    private static void initFactBins(Map<String, String> columnHeaderMap,
-         Map<String, StringBuilder> factBins) {
+         Map<String, StringBuilder> factBins, boolean addHeaders) {
       for (String factPredicate : columnHeaderMap.keySet()) {
-         String columnHeaders = columnHeaderMap.get(factPredicate);
-         String initialText = columnHeaders + "\n";
-         factBins.put(factPredicate, new StringBuilder(initialText));
+         if (addHeaders) {
+            String columnHeaders = columnHeaderMap.get(factPredicate);
+            String initialText = columnHeaders + "\n";
+            factBins.put(factPredicate, new StringBuilder(initialText));
+         }
+         else {
+            factBins.put(factPredicate, new StringBuilder());
+         }
       }
-
    }
 
    private static void initTrafficFactBins(Map<String, StringBuilder> factBins) {
-      initFactBins(Facts.TRAFFIC_FACT_COLUMN_HEADERS, factBins);
+      initFactBins(Facts.TRAFFIC_FACT_COLUMN_HEADERS, factBins, true);
    }
 
    public static ParserRuleContext parse(BatfishCombinedParser<?, ?> parser,
@@ -2401,27 +2422,104 @@ public class Batfish implements AutoCloseable {
    private void populatePrecomputedBgpAdvertisements(
          String precomputedBgpAdvertisementsPath,
          Map<String, StringBuilder> cpFactBins) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      File inputFile = new File(precomputedBgpAdvertisementsPath);
+      StringBuilder adverts = cpFactBins
+            .get(PRECOMPUTED_BGP_ADVERTISEMENTS_PREDICATE_NAME);
+      StringBuilder advertCommunities = cpFactBins
+            .get(PRECOMPUTED_BGP_ADVERTISEMENT_COMMUNITY_PREDICATE_NAME);
+      StringBuilder advertPaths = cpFactBins
+            .get(PRECOMPUTED_BGP_ADVERTISEMENT_AS_PATH_PREDICATE_NAME);
+      StringBuilder advertPathLengths = cpFactBins
+            .get(PRECOMPUTED_BGP_ADVERTISEMENT_AS_PATH_LENGTH_PREDICATE_NAME);
+      AdvertisementSet advertSet = (AdvertisementSet) deserializeObject(inputFile);
+      StringBuilder wNetworks = cpFactBins.get(NETWORKS_PREDICATE_NAME);
+      Set<Prefix> networks = new HashSet<Prefix>();
+      int pcIndex = 0;
+      for (BgpAdvertisement advert : advertSet) {
+         String type = advert.getType();
+         Prefix network = advert.getNetwork();
+         networks.add(network);
+         long networkStart = network.getAddress().asLong();
+         long networkEnd = network.getEndAddress().asLong();
+         int prefixLength = network.getPrefixLength();
+         long nextHopIp = advert.getNextHopIp().asLong();
+         String srcNode = advert.getSrcNode();
+         long srcIp = advert.getSrcIp().asLong();
+         String dstNode = advert.getDstNode();
+         long dstIp = advert.getDstIp().asLong();
+         String srcProtocol = Facts.getLBRoutingProtocol(advert
+               .getSrcProtocol());
+         String originType = advert.getOriginType().toString();
+         int localPref = advert.getLocalPreference();
+         int med = advert.getMed();
+         long originatorIp = advert.getOriginatorIp().asLong();
+         adverts.append(pcIndex + "|" + type + "|" + networkStart + "|"
+               + networkEnd + "|" + prefixLength + "|" + nextHopIp + "|"
+               + srcNode + "|" + srcIp + "|" + dstNode + "|" + dstIp + "|"
+               + srcProtocol + "|" + originType + "|" + localPref + "|" + med
+               + "|" + originatorIp + "\n");
+         for (Long community : advert.getCommunities()) {
+            advertCommunities.append(pcIndex + "|" + community + "\n");
+         }
+         AsPath asPath = advert.getAsPath();
+         int asPathLength = asPath.size();
+         for (int i = 0; i < asPathLength; i++) {
+            AsSet asSet = asPath.get(i);
+            for (Integer as : asSet) {
+               advertPaths.append(pcIndex + "|" + i + "|" + as + "\n");
+            }
+         }
+         advertPathLengths.append(pcIndex + "|" + asPathLength + "\n");
+         pcIndex++;
+      }
+      for (Prefix network : networks) {
+         long networkStart = network.getNetworkAddress().asLong();
+         long networkEnd = network.getEndAddress().asLong();
+         int prefixLength = network.getPrefixLength();
+         wNetworks.append(networkStart + "|" + networkStart + "|" + networkEnd
+               + "|" + prefixLength + "\n");
+      }
+   }
+
+   private void populatePrecomputedFacts(String precomputedFactsPath,
+         Map<String, StringBuilder> cpFactBins) {
+      File precomputedFactsDir = new File(precomputedFactsPath);
+      String[] filenames = precomputedFactsDir.list();
+      for (String filename : filenames) {
+         File file = Paths.get(precomputedFactsPath, filename).toFile();
+         StringBuilder sb = cpFactBins.get(filename);
+         String contents = readFile(file);
+         sb.append(contents);
+      }
    }
 
    private void populatePrecomputedIbgpNeighbors(
          String precomputedIbgpNeighborsPath,
          Map<String, StringBuilder> cpFactBins) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      File inputFile = new File(precomputedIbgpNeighborsPath);
+      StringBuilder sb = cpFactBins
+            .get(PRECOMPUTED_IBGP_NEIGHBORS_PREDICATE_NAME);
+      IbgpTopology topology = (IbgpTopology) deserializeObject(inputFile);
+      for (IpEdge edge : topology) {
+         String node1 = edge.getNode1();
+         long ip1 = edge.getIp1().asLong();
+         String node2 = edge.getNode2();
+         long ip2 = edge.getIp2().asLong();
+         sb.append(node1 + "|" + ip1 + "|" + node2 + "|" + ip2 + "\n");
+      }
    }
 
    private void populatePrecomputedRoutes(String precomputedRoutesPath,
          Map<String, StringBuilder> cpFactBins) {
       File inputFile = new File(precomputedRoutesPath);
       StringBuilder sb = cpFactBins.get(PRECOMPUTED_ROUTES_PREDICATE_NAME);
+      StringBuilder wNetworks = cpFactBins.get(NETWORKS_PREDICATE_NAME);
+      Set<Prefix> networks = new HashSet<Prefix>();
       RouteSet routes = (RouteSet) deserializeObject(inputFile);
       for (PrecomputedRoute route : routes) {
          String node = route.getNode();
          Prefix prefix = route.getPrefix();
+         networks.add(prefix);
          long networkStart = prefix.getNetworkAddress().asLong();
          long networkEnd = prefix.getEndAddress().asLong();
          int prefixLength = prefix.getPrefixLength();
@@ -2433,6 +2531,13 @@ public class Batfish implements AutoCloseable {
          sb.append(node + "|" + networkStart + "|" + networkEnd + "|"
                + prefixLength + "|" + nextHopIp + "|" + admin + "|" + cost
                + "|" + protocol + "|" + tag + "\n");
+      }
+      for (Prefix network : networks) {
+         long networkStart = network.getNetworkAddress().asLong();
+         long networkEnd = network.getEndAddress().asLong();
+         int prefixLength = network.getPrefixLength();
+         wNetworks.append(networkStart + "|" + networkStart + "|" + networkEnd
+               + "|" + prefixLength + "\n");
       }
    }
 
@@ -2855,37 +2960,47 @@ public class Batfish implements AutoCloseable {
 
       Map<String, StringBuilder> cpFactBins = null;
       if (_settings.getFacts() || _settings.getDumpControlPlaneFacts()) {
+         boolean usePrecomputedFacts = _settings.getUsePrecomputedFacts();
          cpFactBins = new LinkedHashMap<String, StringBuilder>();
-         initControlPlaneFactBins(cpFactBins);
-         if (_settings.getUsePrecomputedRoutes()) {
-            String precomputedRotuesPath = _settings.getPrecomputedRoutesPath();
-            populatePrecomputedRoutes(precomputedRotuesPath, cpFactBins);
-         }
-         if (_settings.getUsePrecomputedIbgpNeighbors()) {
-            populatePrecomputedIbgpNeighbors(
-                  _settings.getPrecomputedIbgpNeighborsPath(), cpFactBins);
-         }
-         if (_settings.getUsePrecomputedBgpAdvertisements()) {
-            populatePrecomputedBgpAdvertisements(
-                  _settings.getPrecomputedBgpAdvertisementsPath(), cpFactBins);
-         }
-         Map<String, Configuration> configurations = deserializeConfigurations(_settings
-               .getSerializeIndependentPath());
-         writeTopologyFacts(_settings.getTestRigPath(), configurations,
-               cpFactBins);
-         writeConfigurationFacts(configurations, cpFactBins);
-         String flowSinkPath = _settings.getFlowSinkPath();
-         if (flowSinkPath != null) {
-            FlowSinkSet flowSinks = (FlowSinkSet) deserializeObject(new File(
-                  flowSinkPath));
-            writeFlowSinkFacts(flowSinks, cpFactBins);
-         }
-         if (_settings.getDumpControlPlaneFacts()) {
-            dumpFacts(cpFactBins);
+         initControlPlaneFactBins(cpFactBins, !usePrecomputedFacts);
+         if (!usePrecomputedFacts) {
+            if (_settings.getUsePrecomputedRoutes()) {
+               String precomputedRotuesPath = _settings
+                     .getPrecomputedRoutesPath();
+               populatePrecomputedRoutes(precomputedRotuesPath, cpFactBins);
+            }
+            if (_settings.getUsePrecomputedIbgpNeighbors()) {
+               populatePrecomputedIbgpNeighbors(
+                     _settings.getPrecomputedIbgpNeighborsPath(), cpFactBins);
+            }
+            if (_settings.getUsePrecomputedBgpAdvertisements()) {
+               populatePrecomputedBgpAdvertisements(
+                     _settings.getPrecomputedBgpAdvertisementsPath(),
+                     cpFactBins);
+            }
+            Map<String, Configuration> configurations = deserializeConfigurations(_settings
+                  .getSerializeIndependentPath());
+            writeTopologyFacts(_settings.getTestRigPath(), configurations,
+                  cpFactBins);
+            writeConfigurationFacts(configurations, cpFactBins);
+            String flowSinkPath = _settings.getFlowSinkPath();
+            if (flowSinkPath != null) {
+               FlowSinkSet flowSinks = (FlowSinkSet) deserializeObject(new File(
+                     flowSinkPath));
+               writeFlowSinkFacts(flowSinks, cpFactBins);
+            }
+            if (_settings.getDumpControlPlaneFacts()) {
+               dumpFacts(cpFactBins);
+            }
          }
          if (!(_settings.getFacts() || _settings.createWorkspace())) {
             return;
          }
+      }
+
+      if (_settings.getUsePrecomputedFacts()) {
+         populatePrecomputedFacts(_settings.getPrecomputedFactsPath(),
+               cpFactBins);
       }
 
       // Start frontend
