@@ -1,5 +1,8 @@
 package org.batfish.job;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.batfish.main.ConfigurationFormat;
 
 public final class Format {
@@ -10,10 +13,12 @@ public final class Format {
       }
       char firstChar = fileText.trim().charAt(0);
       if (firstChar == '!') {
+         Matcher aristaMatcher = Pattern.compile("boot system flash.*\\.swi")
+               .matcher(fileText);
          if (fileText.contains("set prompt")) {
             return ConfigurationFormat.VXWORKS;
          }
-         else if (fileText.contains("boot system flash")) {
+         else if (aristaMatcher.find()) {
             return ConfigurationFormat.ARISTA;
          }
          else {
