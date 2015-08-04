@@ -147,7 +147,7 @@
          <outofdate property="lbbFiles.outOfDate">
             <deletetargets/>
             <sourcefiles>
-               <fileset dir="src" includes="**/*.logic"/>
+               <fileset dir="src" includes="org/batfish/logic/libbatfish/*.logic"/>
             </sourcefiles>
             <mapper type="regexp" from="src/(.*).logic" to="bin/\1.lbb"/>
          </outofdate>

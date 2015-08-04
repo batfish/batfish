@@ -1,4 +1,5 @@
 batfish, projectname
 lb_web,library
+pedantic.logic, severities
 libbatfish, module
 

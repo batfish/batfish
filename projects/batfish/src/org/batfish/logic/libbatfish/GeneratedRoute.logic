@@ -9,7 +9,7 @@ block(`GeneratedRoute) {
 ActiveGeneratedRoute(route) ->
    Route(route).
 
-ActiveGeneratedContributor(route, contributingRoute) ->
+ActiveGeneratedRouteContributor(route, contributingRoute) ->
    Route(route),
    Route(contributingRoute).
 
@@ -67,7 +67,7 @@ MinAdminContributingRoute(route, contributingRoute) ->
    Route(route),
    Route(contributingRoute).
 
-MinBestGlobalGeneratedRoute_nextHopIp[route] = minNextHopIpInt ->
+MinBestGlobalGeneratedRoute_nextHopIpInt[route] = minNextHopIpInt ->
    Route(route),
    int(minNextHopIpInt).
 

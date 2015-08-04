@@ -498,6 +498,7 @@ public class Batfish implements AutoCloseable {
                         BasicFileAttributes attrs) throws IOException {
                      String name = file.getFileName().toString();
                      if (!name.equals("BaseFacts.logic")
+                           && !name.equals("pedantic.logic")
                            && !name.endsWith("_rules.logic")
                            && !name.startsWith("service_")
                            && name.endsWith(".logic")) {

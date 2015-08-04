@@ -2,6 +2,7 @@ block(`Precomputed_rules) {
    alias_all(`libbatfish:AsPath),
    alias_all(`libbatfish:Bgp),
    alias_all(`libbatfish:BgpAdvertisement),
+   alias_all(`libbatfish:CommunityList),
    alias_all(`libbatfish:Interface),
    alias_all(`libbatfish:Ip),
    alias_all(`libbatfish:Node),
@@ -33,11 +34,11 @@ PrecomputedAdvertisement_index(advert, pcIndex)
    SetBgpAdvertisement_flat(pcIndex, type, network_start, network_end, prefix_length, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType, localPref, med, originatorIp),
    Network_constructor[network_start, network_end, prefix_length] = network.
 
-BgpAdvertismentCommunity(advert, community) <-
+AdvertisementCommunity(advert, community) <-
    SetBgpAdvertisementCommunity(pcIndex, community),
    PrecomputedAdvertisement_index(advert, pcIndex).
 
-BgpAdvertismentPath(advert, index, as) <-
+AdvertisementPath(advert, index, as) <-
    SetBgpAdvertisementPath(pcIndex, index, as),
    PrecomputedAdvertisement_index(advert, pcIndex).
 
