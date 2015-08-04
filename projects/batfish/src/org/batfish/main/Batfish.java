@@ -2492,6 +2492,17 @@ public class Batfish implements AutoCloseable {
          String contents = readFile(file);
          sb.append(contents);
       }
+      Set<Map.Entry<String, StringBuilder>> cpEntries = cpFactBins.entrySet();
+      Set<Map.Entry<String, StringBuilder>> cpEntriesToRemove = new HashSet<Map.Entry<String, StringBuilder>>();
+      for (Entry<String, StringBuilder> e : cpEntries) {
+         StringBuilder sb = e.getValue();
+         if (sb.toString().length() == 0) {
+            cpEntriesToRemove.add(e);
+         }
+      }
+      for (Entry<String, StringBuilder> e : cpEntriesToRemove) {
+         cpEntries.remove(e);
+      }
    }
 
    private void populatePrecomputedIbgpNeighbors(
