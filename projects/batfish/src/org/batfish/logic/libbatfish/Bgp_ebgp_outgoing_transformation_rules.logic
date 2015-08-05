@@ -70,7 +70,7 @@ AdvertisementCommunity(advert, community) <-
       )
    ).
 
-// (i)bgp transformed outgoing
+// ebgp transformed outgoing
 BgpAdvertisement(advert),
 BgpAdvertisement_constructor[type, dstIpBlock, tNextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, tOriginType] = advert,
 BgpAdvertisement_dstIp[advert] = dstIp,

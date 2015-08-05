@@ -1,4 +1,4 @@
-block(`Bgp_ibgp_origination_rules) {
+block(`Bgp_ibgp_ebgp_origination_rules) {
    alias_all(`libbatfish:AsPath),
    alias_all(`libbatfish:Bgp),
    alias_all(`libbatfish:BgpAdvertisement),

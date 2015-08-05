@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -80,6 +81,7 @@ public class Settings {
    private static final String ARG_PRECOMPUTED_FACTS_PATH = "precomputedfactspath";
    private static final String ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH = "precomputedibgpneighborspath";
    private static final String ARG_PRECOMPUTED_ROUTES_PATH = "precomputedroutespath";
+   private static final String ARG_PRECOMPUTED_ROUTES_PATHS = "precomputedroutespaths";
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
    private static final String ARG_PRINT_PARSE_TREES = "ppt";
@@ -274,6 +276,7 @@ public class Settings {
    private String _precomputedFactsPath;
    private String _precomputedIbgpNeighborsPath;
    private String _precomputedRoutesPath;
+   private Set<String> _precomputedRoutesPaths;
    private List<String> _predicates;
    private boolean _printParseTree;
    private boolean _printSemantics;
@@ -661,6 +664,10 @@ public class Settings {
 
    public String getPrecomputedRoutesPath() {
       return _precomputedRoutesPath;
+   }
+
+   public Set<String> getPrecomputedRoutesPaths() {
+      return _precomputedRoutesPaths;
    }
 
    public List<String> getPredicates() {
@@ -1285,6 +1292,9 @@ public class Settings {
             .argName(ARGNAME_PRECOMPUTED_ROUTES_PATH)
             .desc("path to precomputed routes")
             .longOpt(ARG_PRECOMPUTED_ROUTES_PATH).build());
+      _options.addOption(Option.builder().hasArg().argName("paths")
+            .desc("paths to precomputed routes")
+            .longOpt(ARG_PRECOMPUTED_ROUTES_PATHS).build());
       _options.addOption(Option.builder().hasArg().argName("name")
             .desc("name of output environment")
             .longOpt(BfConsts.ARG_OUTPUT_ENV).build());
@@ -1523,6 +1533,13 @@ public class Settings {
       _questionPath = line.getOptionValue(ARG_QUESTION_PATH);
       _synthesizeTopology = line.hasOption(ARG_SYNTHESIZE_TOPOLOGY);
       _writeRoutes = line.hasOption(BfConsts.COMMAND_WRITE_ROUTES);
+      String[] precomputedRoutesPathsAsArray = line
+            .getOptionValues(ARG_PRECOMPUTED_ROUTES_PATHS);
+      if (precomputedRoutesPathsAsArray != null) {
+         _precomputedRoutesPaths = new TreeSet<String>();
+         _precomputedRoutesPaths.addAll(Arrays
+               .asList(precomputedRoutesPathsAsArray));
+      }
       _precomputedRoutesPath = line.getOptionValue(ARG_PRECOMPUTED_ROUTES_PATH);
       _precomputedBgpAdvertisementsPath = line
             .getOptionValue(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH);

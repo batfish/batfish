@@ -29,7 +29,10 @@ AdvertisementPathSize[advert] = pathSize
 <-
    type = AdvertisementType_BGP[],
    originatorIp = Ip_NONE[],
-   BgpAdvertisement_type[prevAdvert] = AdvertisementType_BGP_TI[],
+   (
+      BgpAdvertisement_type[prevAdvert] = AdvertisementType_BGP_TI[] ;
+      BgpAdvertisement_type[prevAdvert] = AdvertisementType_IBGP_TI[]
+   ),
    BgpAdvertisement_network[prevAdvert] = dstIpBlock,
    BgpAdvertisement_nextHopIp[prevAdvert] = origNextHopIp,
    BgpAdvertisement_srcProtocol[prevAdvert] = srcProtocol,

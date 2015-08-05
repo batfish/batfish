@@ -2489,6 +2489,10 @@ public class Batfish implements AutoCloseable {
       for (String filename : filenames) {
          File file = Paths.get(precomputedFactsPath, filename).toFile();
          StringBuilder sb = cpFactBins.get(filename);
+         if (sb == null) {
+            throw new BatfishException("File: \"" + filename
+                  + "\" does not correspond to a fact");
+         }
          String contents = readFile(file);
          sb.append(contents);
       }
@@ -2521,35 +2525,37 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void populatePrecomputedRoutes(String precomputedRoutesPath,
+   private void populatePrecomputedRoutes(Set<String> precomputedRoutesPaths,
          Map<String, StringBuilder> cpFactBins) {
-      File inputFile = new File(precomputedRoutesPath);
       StringBuilder sb = cpFactBins.get(PRECOMPUTED_ROUTES_PREDICATE_NAME);
       StringBuilder wNetworks = cpFactBins.get(NETWORKS_PREDICATE_NAME);
       Set<Prefix> networks = new HashSet<Prefix>();
-      RouteSet routes = (RouteSet) deserializeObject(inputFile);
-      for (PrecomputedRoute route : routes) {
-         String node = route.getNode();
-         Prefix prefix = route.getPrefix();
-         networks.add(prefix);
-         long networkStart = prefix.getNetworkAddress().asLong();
-         long networkEnd = prefix.getEndAddress().asLong();
-         int prefixLength = prefix.getPrefixLength();
-         long nextHopIp = route.getNextHopIp().asLong();
-         int admin = route.getAdministrativeCost();
-         int cost = route.getCost();
-         String protocol = Facts.getLBRoutingProtocol(route.getProtocol());
-         int tag = route.getTag();
-         sb.append(node + "|" + networkStart + "|" + networkEnd + "|"
-               + prefixLength + "|" + nextHopIp + "|" + admin + "|" + cost
-               + "|" + protocol + "|" + tag + "\n");
-      }
-      for (Prefix network : networks) {
-         long networkStart = network.getNetworkAddress().asLong();
-         long networkEnd = network.getEndAddress().asLong();
-         int prefixLength = network.getPrefixLength();
-         wNetworks.append(networkStart + "|" + networkStart + "|" + networkEnd
-               + "|" + prefixLength + "\n");
+      for (String precomputedRoutesPath : precomputedRoutesPaths) {
+         File inputFile = new File(precomputedRoutesPath);
+         RouteSet routes = (RouteSet) deserializeObject(inputFile);
+         for (PrecomputedRoute route : routes) {
+            String node = route.getNode();
+            Prefix prefix = route.getPrefix();
+            networks.add(prefix);
+            long networkStart = prefix.getNetworkAddress().asLong();
+            long networkEnd = prefix.getEndAddress().asLong();
+            int prefixLength = prefix.getPrefixLength();
+            long nextHopIp = route.getNextHopIp().asLong();
+            int admin = route.getAdministrativeCost();
+            int cost = route.getCost();
+            String protocol = Facts.getLBRoutingProtocol(route.getProtocol());
+            int tag = route.getTag();
+            sb.append(node + "|" + networkStart + "|" + networkEnd + "|"
+                  + prefixLength + "|" + nextHopIp + "|" + admin + "|" + cost
+                  + "|" + protocol + "|" + tag + "\n");
+         }
+         for (Prefix network : networks) {
+            long networkStart = network.getNetworkAddress().asLong();
+            long networkEnd = network.getEndAddress().asLong();
+            int prefixLength = network.getPrefixLength();
+            wNetworks.append(networkStart + "|" + networkStart + "|"
+                  + networkEnd + "|" + prefixLength + "\n");
+         }
       }
    }
 
@@ -2977,9 +2983,21 @@ public class Batfish implements AutoCloseable {
          initControlPlaneFactBins(cpFactBins, !usePrecomputedFacts);
          if (!usePrecomputedFacts) {
             if (_settings.getUsePrecomputedRoutes()) {
-               String precomputedRotuesPath = _settings
+               Set<String> precomputedRoutesPaths = _settings
+                     .getPrecomputedRoutesPaths();
+               String precomputedRoutesPath = _settings
                      .getPrecomputedRoutesPath();
-               populatePrecomputedRoutes(precomputedRotuesPath, cpFactBins);
+               if (precomputedRoutesPaths == null) {
+                  if (precomputedRoutesPath == null) {
+                     throw new BatfishException(
+                           "Must specify path(s) to precomputed routes");
+                  }
+                  else {
+                     precomputedRoutesPaths = Collections
+                           .singleton(precomputedRoutesPath);
+                  }
+               }
+               populatePrecomputedRoutes(precomputedRoutesPaths, cpFactBins);
             }
             if (_settings.getUsePrecomputedIbgpNeighbors()) {
                populatePrecomputedIbgpNeighbors(
