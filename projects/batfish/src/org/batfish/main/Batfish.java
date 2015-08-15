@@ -906,6 +906,9 @@ public class Batfish implements AutoCloseable {
          return null;
       }
       else {
+         if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
+            _logger.output("All configurations converted successfully\n");
+         }
          printElapsedTime();
          return configurations;
       }
@@ -2416,6 +2419,9 @@ public class Batfish implements AutoCloseable {
       }
       else {
          printElapsedTime();
+         if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
+            _logger.output("All vendor configurations parsed successfully\n");
+         }
          return vendorConfigurations;
       }
    }
