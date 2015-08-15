@@ -85,6 +85,8 @@ import org.batfish.grammar.z3.ConcretizerQueryResultCombinedParser;
 import org.batfish.grammar.z3.ConcretizerQueryResultExtractor;
 import org.batfish.grammar.z3.DatalogQueryResultCombinedParser;
 import org.batfish.grammar.z3.DatalogQueryResultExtractor;
+import org.batfish.job.ConvertConfigurationJob;
+import org.batfish.job.ConvertConfigurationResult;
 import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.FlattenVendorConfigurationResult;
 import org.batfish.job.ParseVendorConfigurationJob;
@@ -797,54 +799,111 @@ public class Batfish implements AutoCloseable {
 
    private Map<String, Configuration> convertConfigurations(
          Map<String, VendorConfiguration> vendorConfigurations) {
-      boolean processingError = false;
-      Map<String, Configuration> configurations = new TreeMap<String, Configuration>();
       _logger
             .info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
       resetTimer();
-      boolean pedanticAsError = _settings.getPedanticAsError();
-      boolean pedanticRecord = _settings.getPedanticRecord();
-      boolean redFlagAsError = _settings.getRedFlagAsError();
-      boolean redFlagRecord = _settings.getRedFlagRecord();
-      boolean unimplementedAsError = _settings.getUnimplementedAsError();
-      boolean unimplementedRecord = _settings.getUnimplementedRecord();
-      for (String name : vendorConfigurations.keySet()) {
-         _logger.debug("Processing: \"" + name + "\"");
-         VendorConfiguration vc = vendorConfigurations.get(name);
-         Warnings warnings = new Warnings(pedanticAsError, pedanticRecord,
-               redFlagAsError, redFlagRecord, unimplementedAsError,
-               unimplementedRecord, false);
-         try {
-            Configuration config = vc
-                  .toVendorIndependentConfiguration(warnings);
-            configurations.put(name, config);
-            _logger.debug(" ...OK\n");
-         }
-         catch (BatfishException e) {
-            _logger.fatal("...CONVERSION ERROR\n");
-            _logger.fatal(ExceptionUtils.getStackTrace(e));
-            processingError = true;
-            if (_settings.getExitOnFirstError()) {
-               break;
+
+      ExecutorService pool;
+      boolean shuffle;
+      if (!_settings.getSequential()) {
+         int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
+         pool = Executors.newFixedThreadPool(numConcurrentThreads);
+         shuffle = true;
+      }
+      else {
+         pool = Executors.newSingleThreadExecutor();
+         shuffle = false;
+      }
+
+      Map<String, Configuration> configurations = new TreeMap<String, Configuration>();
+      List<ConvertConfigurationJob> jobs = new ArrayList<ConvertConfigurationJob>();
+
+      boolean processingError = false;
+      for (String hostname : vendorConfigurations.keySet()) {
+         Warnings warnings = new Warnings(_settings.getPedanticAsError(),
+               _settings.getPedanticRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
+               _settings.getRedFlagAsError(), _settings.getRedFlagRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
+               _settings.getUnimplementedAsError(),
+               _settings.getUnimplementedRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
+               _settings.printParseTree());
+         VendorConfiguration vc = vendorConfigurations.get(hostname);
+         ConvertConfigurationJob job = new ConvertConfigurationJob(_settings,
+               vc, hostname, warnings);
+         jobs.add(job);
+      }
+      if (shuffle) {
+         Collections.shuffle(jobs);
+      }
+      List<Future<ConvertConfigurationResult>> futures = new ArrayList<Future<ConvertConfigurationResult>>();
+      for (ConvertConfigurationJob job : jobs) {
+         Future<ConvertConfigurationResult> future = pool.submit(job);
+         futures.add(future);
+      }
+      while (!futures.isEmpty()) {
+         List<Future<ConvertConfigurationResult>> currentFutures = new ArrayList<Future<ConvertConfigurationResult>>();
+         currentFutures.addAll(futures);
+         for (Future<ConvertConfigurationResult> future : currentFutures) {
+            if (future.isDone()) {
+               futures.remove(future);
+               ConvertConfigurationResult result = null;
+               try {
+                  result = future.get();
+               }
+               catch (InterruptedException | ExecutionException e) {
+                  throw new BatfishException("Error executing convert job", e);
+               }
+               String terseLogLevelPrefix;
+               if (_logger.isActive(BatfishLogger.LEVEL_INFO)) {
+                  terseLogLevelPrefix = "";
+               }
+               else {
+                  terseLogLevelPrefix = result.getNodeName().toString() + ": ";
+               }
+               _logger.append(result.getHistory(), terseLogLevelPrefix);
+               Throwable failureCause = result.getFailureCause();
+               if (failureCause != null) {
+                  if (_settings.getExitOnFirstError()) {
+                     throw new BatfishException("Failed convert job",
+                           failureCause);
+                  }
+                  else {
+                     processingError = true;
+                     _logger.error(ExceptionUtils.getStackTrace(failureCause));
+                  }
+               }
+               else {
+                  Configuration c = result.getConfiguration();
+                  if (c != null) {
+                     String hostname = c.getHostname();
+                     if (configurations.containsKey(hostname)) {
+                        throw new BatfishException("Duplicate hostname: "
+                              + hostname);
+                     }
+                     else {
+                        configurations.put(hostname, c);
+                     }
+                  }
+               }
             }
             else {
                continue;
             }
          }
-         finally {
-            for (String warning : warnings.getRedFlagWarnings()) {
-               _logger.redflag(warning);
+         if (!futures.isEmpty()) {
+            try {
+               Thread.sleep(JOB_POLLING_PERIOD_MS);
             }
-            for (String warning : warnings.getUnimplementedWarnings()) {
-               _logger.unimplemented(warning);
-            }
-            for (String warning : warnings.getPedanticWarnings()) {
-               _logger.pedantic(warning);
+            catch (InterruptedException e) {
+               throw new BatfishException("interrupted while sleeping", e);
             }
          }
       }
+      pool.shutdown();
       if (processingError) {
-         throw new BatfishException("Vendor conversion error(s)");
+         return null;
       }
       else {
          printElapsedTime();
@@ -914,11 +973,11 @@ public class Batfish implements AutoCloseable {
       }
       for (File serializedConfig : serializedConfigs) {
          String name = serializedConfig.getName();
-         _logger.debug("Reading vendor config: \"" + serializedConfig + "\"");
+         _logger.info("Reading vendor config: \"" + serializedConfig + "\"");
          Object object = deserializeObject(serializedConfig);
          VendorConfiguration vc = (VendorConfiguration) object;
          vendorConfigurations.put(name, vc);
-         _logger.debug("...OK\n");
+         _logger.info("...OK\n");
       }
       printElapsedTime();
       return vendorConfigurations;
@@ -3161,19 +3220,24 @@ public class Batfish implements AutoCloseable {
 
    private void serializeIndependentConfigs(
          Map<String, Configuration> configurations, String outputPath) {
-      _logger
-            .info("\n*** SERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
-      resetTimer();
-      new File(outputPath).mkdirs();
-      for (String name : configurations.keySet()) {
-         Configuration c = configurations.get(name);
-         Path currentOutputPath = Paths.get(outputPath, name);
-         _logger.info("Serializing: \"" + name + "\" ==> \""
-               + currentOutputPath.toString() + "\"");
-         serializeObject(c, currentOutputPath.toFile());
-         _logger.debug(" ...OK\n");
+      if (configurations == null) {
+         throw new BatfishException("Exiting due to conversion error(s)");
       }
-      printElapsedTime();
+      if (!_settings.getNoOutput()) {
+         _logger
+               .info("\n*** SERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
+         resetTimer();
+         new File(outputPath).mkdirs();
+         for (String name : configurations.keySet()) {
+            Configuration c = configurations.get(name);
+            Path currentOutputPath = Paths.get(outputPath, name);
+            _logger.info("Serializing: \"" + name + "\" ==> \""
+                  + currentOutputPath.toString() + "\"");
+            serializeObject(c, currentOutputPath.toFile());
+            _logger.info(" ...OK\n");
+         }
+         printElapsedTime();
+      }
    }
 
    private void serializeIndependentConfigs(String vendorConfigPath,
@@ -3208,7 +3272,7 @@ public class Batfish implements AutoCloseable {
       Map<File, String> configurationData = readConfigurationFiles(testRigPath);
       Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(configurationData);
       if (vendorConfigurations == null) {
-         throw new BatfishException("Exiting due to parser errors\n");
+         throw new BatfishException("Exiting due to parser errors");
       }
       String nodeRolesPath = _settings.getNodeRolesPath();
       if (nodeRolesPath != null) {
