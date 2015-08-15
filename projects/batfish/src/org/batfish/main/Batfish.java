@@ -2346,12 +2346,6 @@ public class Batfish implements AutoCloseable {
          Future<ParseVendorConfigurationResult> future = pool.submit(job);
          futures.add(future);
       }
-      // try {
-      // futures = pool.invokeAll(jobs);
-      // }
-      // catch (InterruptedException e) {
-      // throw new BatfishException("Error invoking parse jobs", e);
-      // }
       while (!futures.isEmpty()) {
          List<Future<ParseVendorConfigurationResult>> currentFutures = new ArrayList<Future<ParseVendorConfigurationResult>>();
          currentFutures.addAll(futures);
