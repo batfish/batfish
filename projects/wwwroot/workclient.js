@@ -110,10 +110,11 @@ function fnDoWork(worktype) {
         case "vendorspecific":
             reqParams[COMMAND_PARSE_VENDOR_SPECIFIC] = "";
             reqParams[ARG_UNIMPLEMENTED_SUPPRESS] = "";
-            reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_WARN;
+            reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
             break;
         case "vendorindependent":
             reqParams[COMMAND_PARSE_VENDOR_INDEPENDENT] = "";
+            reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
             break;
         case "generatefacts":
             reqParams[COMMAND_GENERATE_FACT] = "";
