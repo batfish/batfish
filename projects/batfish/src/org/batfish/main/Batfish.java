@@ -802,7 +802,6 @@ public class Batfish implements AutoCloseable {
       _logger
             .info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
       resetTimer();
-
       ExecutorService pool;
       boolean shuffle;
       if (!_settings.getSequential()) {
@@ -2308,7 +2307,6 @@ public class Batfish implements AutoCloseable {
          Map<File, String> configurationData) {
       _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
       resetTimer();
-
       ExecutorService pool;
       boolean shuffle;
       if (!_settings.getSequential()) {
