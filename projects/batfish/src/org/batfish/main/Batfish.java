@@ -3076,6 +3076,9 @@ public class Batfish implements AutoCloseable {
                      flowSinkPath));
                writeFlowSinkFacts(flowSinks, cpFactBins);
             }
+            if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
+               _logger.output("LogicBlox facts generated successfully.\n");
+            }
             if (_settings.getDumpControlPlaneFacts()) {
                dumpFacts(cpFactBins);
             }
