@@ -110,15 +110,16 @@ function fnDoWork(worktype) {
         case "vendorspecific":
             reqParams[COMMAND_PARSE_VENDOR_SPECIFIC] = "";
             reqParams[ARG_UNIMPLEMENTED_SUPPRESS] = "";
-            reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
+            reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_WARN;
             break;
         case "vendorindependent":
             reqParams[COMMAND_PARSE_VENDOR_INDEPENDENT] = "";
-            reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
+            reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_WARN;
             break;
         case "generatefacts":
             reqParams[COMMAND_GENERATE_FACT] = "";
             reqParams[COMMAND_ENV] = envName;
+            reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_WARN;
             break;
         case "generatedataplane":
             reqParams[COMMAND_CREATE_WORKSPACE] = "";
