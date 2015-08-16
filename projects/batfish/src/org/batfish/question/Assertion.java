@@ -25,6 +25,7 @@ public class Assertion implements Statement {
    @Override
    public void execute(Environment environment, BatfishLogger logger,
          Settings settings) {
+      environment.setAssertions(true);
       boolean pass = _expr.evaluate(environment);
       if (pass) {
          String successMessage = "Assertion: " + _assertionText
