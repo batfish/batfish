@@ -74,6 +74,11 @@ ENABLED
    'enabled'
 ;
 
+FAILURE
+:
+   'failure'
+;
+
 FALSE
 :
    'false'

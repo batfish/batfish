@@ -47,6 +47,8 @@ var SVC_WORKSPACE_NAME_KEY = "workspace";
 //make sure they are in sync with what is there
 //
 
+var ARG_DIFF_ENVIRONMENT_NAME = "diffenv";
+var ARG_ENVIRONMENT_NAME = "env";
 var ARG_LOG_LEVEL = "loglevel";
 var ARG_OUTPUT_ENV = "outputenv";
 var ARG_PEDANTIC_AS_ERROR = "pedanticerror";
@@ -61,7 +63,6 @@ var ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
 var COMMAND_ANSWER = "answer";
 var COMMAND_CREATE_WORKSPACE = "createworkspace";
 var COMMAND_DUMP_DP = "dp";
-var COMMAND_ENV = "env";
 var COMMAND_FACTS = "facts";
 var COMMAND_GENERATE_FACT = "dumpcp";
 var COMMAND_PARSE_VENDOR_INDEPENDENT = "si";

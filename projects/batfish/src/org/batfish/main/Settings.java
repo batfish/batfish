@@ -47,7 +47,6 @@ public class Settings {
    private static final String ARG_DUMP_INTERFACE_DESCRIPTIONS_PATH = "idpath";
    private static final String ARG_DUMP_TRAFFIC_FACTS = "dumptraffic";
    private static final String ARG_DUPLICATE_ROLE_FLOWS = "drf";
-   private static final String ARG_ENVIRONMENT_NAME = "env";
    private static final String ARG_EXIT_ON_FIRST_ERROR = "ee";
    private static final String ARG_FACTS = "facts";
    private static final String ARG_FLATTEN = "flatten";
@@ -138,7 +137,6 @@ public class Settings {
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
    private static final String ARGNAME_DUMP_IF_DIR = "path";
    private static final String ARGNAME_DUMP_INTERFACE_DESCRIPTIONS_PATH = "path";
-   private static final String ARGNAME_ENVIRONMENT_NAME = "name";
    private static final String ARGNAME_FLATTEN_DESTINATION = "path";
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
@@ -220,6 +218,14 @@ public class Settings {
    private boolean _createWorkspace;
    private boolean _dataPlane;
    private String _dataPlaneDir;
+   private String _diffDataPlaneDir;
+   private String _diffEnvironmentName;
+   private String _diffFailureInconsistencyQueryPath;
+   private String _diffJobLogicBloxHostnamePath;
+   private String _diffNodeSetPath;
+   private String _diffQueryDumpDir;
+   private String _diffWorkspaceName;
+   private String _diffZ3DataPlaneFile;
    private Set<String> _disabledFacts;
    private boolean _dumpControlPlaneFacts;
    private String _dumpFactsDir;
@@ -232,6 +238,7 @@ public class Settings {
    private String _environmentName;
    private boolean _exitOnFirstError;
    private boolean _facts;
+   private String _failureInconsistencyQueryPath;
    private boolean _flatten;
    private String _flattenDestination;
    private boolean _flattenOnTheFly;
@@ -458,6 +465,38 @@ public class Settings {
       return _dataPlaneDir;
    }
 
+   public String getDiffDataPlaneDir() {
+      return _diffDataPlaneDir;
+   }
+
+   public String getDiffEnvironmentName() {
+      return _diffEnvironmentName;
+   }
+
+   public String getDiffFailureInconsistencyQueryPath() {
+      return _diffFailureInconsistencyQueryPath;
+   }
+
+   public String getDiffJobLogicBloxHostnamePath() {
+      return _diffJobLogicBloxHostnamePath;
+   }
+
+   public String getDiffNodeSetPath() {
+      return _diffNodeSetPath;
+   }
+
+   public String getDiffQueryDumpDir() {
+      return _diffQueryDumpDir;
+   }
+
+   public String getDiffWorkspaceName() {
+      return _diffWorkspaceName;
+   }
+
+   public String getDiffZ3DataPlaneFile() {
+      return _diffZ3DataPlaneFile;
+   }
+
    public Set<String> getDisabledFacts() {
       return _disabledFacts;
    }
@@ -492,6 +531,10 @@ public class Settings {
 
    public boolean getFacts() {
       return _facts;
+   }
+
+   public String getFailureInconsistencyQueryPath() {
+      return _failureInconsistencyQueryPath;
    }
 
    public boolean getFlatten() {
@@ -1237,10 +1280,9 @@ public class Settings {
             .argName(ARGNAME_AUTO_BASE_DIR)
             .desc("path to base dir for automatic i/o path selection")
             .longOpt(ARG_AUTO_BASE_DIR).build());
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_ENVIRONMENT_NAME)
-            .desc("name of environment to use").longOpt(ARG_ENVIRONMENT_NAME)
-            .build());
+      _options.addOption(Option.builder().hasArg().argName("name")
+            .desc("name of environment to use")
+            .longOpt(BfConsts.ARG_ENVIRONMENT_NAME).build());
       _options
             .addOption(Option
                   .builder()
@@ -1334,6 +1376,9 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("add precomputed facts to workspace")
             .longOpt(ARG_USE_PRECOMPUTED_FACTS).build());
+      _options.addOption(Option.builder().hasArg().argName("name")
+            .desc("name of delta environment to use")
+            .longOpt(BfConsts.ARG_DIFF_ENVIRONMENT_NAME).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1513,7 +1558,7 @@ public class Settings {
       _timestamp = line.hasOption(ARG_TIMESTAMP);
       _ignoreUnsupported = line.hasOption(ARG_IGNORE_UNSUPPORTED);
       _autoBaseDir = line.getOptionValue(ARG_AUTO_BASE_DIR);
-      _environmentName = line.getOptionValue(ARG_ENVIRONMENT_NAME);
+      _environmentName = line.getOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
       _questionName = line.getOptionValue(BfConsts.ARG_QUESTION_NAME);
       _answer = line.hasOption(BfConsts.COMMAND_ANSWER);
       _postFlows = line.hasOption(BfConsts.COMMAND_POST_FLOWS);
@@ -1562,6 +1607,8 @@ public class Settings {
             .hasOption(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS);
       _usePrecomputedFacts = line.hasOption(ARG_USE_PRECOMPUTED_FACTS);
       _precomputedFactsPath = line.getOptionValue(ARG_PRECOMPUTED_FACTS_PATH);
+      _diffEnvironmentName = line
+            .getOptionValue(BfConsts.ARG_DIFF_ENVIRONMENT_NAME);
    }
 
    public boolean printParseTree() {
@@ -1584,8 +1631,43 @@ public class Settings {
       _dataPlaneDir = path;
    }
 
+   public void setDiffDataPlaneDir(String diffDataPlaneDir) {
+      _diffDataPlaneDir = diffDataPlaneDir;
+   }
+
+   public void setDiffFailureInconsistencyQueryPath(
+         String diffFailureInconsistencyQueryPath) {
+      _diffFailureInconsistencyQueryPath = diffFailureInconsistencyQueryPath;
+   }
+
+   public void setDiffJobLogicBloxHostnamePath(
+         String diffJobLogicBloxHostnamePath) {
+      _diffJobLogicBloxHostnamePath = diffJobLogicBloxHostnamePath;
+   }
+
+   public void setDiffNodeSetPath(String diffNodeSetPath) {
+      _diffNodeSetPath = diffNodeSetPath;
+   }
+
+   public void setDiffQueryDumpDir(String diffQueryDumpDir) {
+      _diffQueryDumpDir = diffQueryDumpDir;
+   }
+
+   public void setDiffWorkspaceName(String diffWorkspaceName) {
+      _diffWorkspaceName = diffWorkspaceName;
+   }
+
+   public void setDiffZ3DataPlaneFile(String diffZ3DataPlaneFile) {
+      _diffZ3DataPlaneFile = diffZ3DataPlaneFile;
+   }
+
    public void setDumpFactsDir(String path) {
       _dumpFactsDir = path;
+   }
+
+   public void setFailureInconsistencyQueryPath(
+         String failureInconsistencyQueryPath) {
+      _failureInconsistencyQueryPath = failureInconsistencyQueryPath;
    }
 
    public void setJobLogicBloxHostnamePath(String path) {

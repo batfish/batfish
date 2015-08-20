@@ -1,1 +1,1 @@
-multipath "default"
+multipath

@@ -92,6 +92,11 @@ function fnDoWork(worktype) {
         return;
     }
 
+    var diffEnvName = jQuery("#txtDiffEnvironmentName").val();
+    if (diffEnvName == "" && worktype == "answerquestion") {
+        diffEnvName = "UNSET_DIFF_ENV";
+    }
+
     var outputEnvName = jQuery("#txtOutputEnvironmentName").val();
     if (outputEnvName == "" && worktype == "writeroutes") {
         alert("Output environment name is empty");
@@ -118,41 +123,43 @@ function fnDoWork(worktype) {
             break;
         case "generatefacts":
             reqParams[COMMAND_GENERATE_FACT] = "";
-            reqParams[COMMAND_ENV] = envName;
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
             reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_WARN;
             break;
         case "generatedataplane":
             reqParams[COMMAND_CREATE_WORKSPACE] = "";
             reqParams[COMMAND_FACTS] = "";
-            reqParams[COMMAND_ENV] = envName;
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
             break;
         case "getdataplane":
             reqParams[COMMAND_DUMP_DP] = "";
-            reqParams[COMMAND_ENV] = envName;
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
             break;
         case "getz3encoding":
             reqParams[COMMAND_SYNTHESIZE_Z3_DATA_PLANE] = "";
-            reqParams[COMMAND_ENV] = envName;
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
             break;
         case "answerquestion":
             reqParams[COMMAND_ANSWER] = "";
             reqParams[ARG_QUESTION_NAME] = questionName;
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
+            reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
             reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
             break;
         case "postflows":
             reqParams[COMMAND_POST_FLOWS] = "";
             reqParams[ARG_QUESTION_NAME] = questionName;
-            reqParams[COMMAND_ENV] = envName;
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
             break;
         case "getflowtraces":
             reqParams[COMMAND_QUERY] = "";
             reqParams[ARG_PREDICATES] = PREDICATE_FLOW_PATH_HISTORY;
-            reqParams[COMMAND_ENV] = envName;
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
             break;
         case "writeroutes":
             reqParams[COMMAND_WRITE_ROUTES] = "";
             reqParams[ARG_OUTPUT_ENV] = outputEnvName;
-            reqParams[COMMAND_ENV] = envName;
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
             break;
         default:
             alert("Unsupported work command", worktype);

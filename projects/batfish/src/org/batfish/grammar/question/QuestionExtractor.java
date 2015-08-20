@@ -92,7 +92,6 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void enterMultipath_question(Multipath_questionContext ctx) {
       MultipathQuestion multipathQuestion = new MultipathQuestion();
       _question = multipathQuestion;
-      multipathQuestion.setMasterEnvironment(ctx.environment.getText());
    }
 
    @Override

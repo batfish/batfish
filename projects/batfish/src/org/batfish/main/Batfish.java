@@ -64,7 +64,6 @@ import org.batfish.collections.RoleNodeMap;
 import org.batfish.collections.RoleSet;
 import org.batfish.collections.RouteSet;
 import org.batfish.collections.TreeMultiSet;
-import org.batfish.common.BfConsts;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
@@ -412,18 +411,6 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answerMultipath(MultipathQuestion question) {
-      String environmentName = question.getMasterEnvironment();
-      Path envPath = Paths.get(_settings.getAutoBaseDir(),
-            BfConsts.RELPATH_ENVIRONMENTS_DIR, environmentName);
-      Path queryDir = Paths.get(_settings.getAutoBaseDir(),
-            BfConsts.RELPATH_QUESTIONS_DIR, _settings.getQuestionName(),
-            BfConsts.RELPATH_QUERIES_DIR);
-      _settings.setMultipathInconsistencyQueryPath(queryDir.resolve(
-            BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX).toString());
-      _settings.setNodeSetPath(envPath.resolve(BfConsts.RELPATH_ENV_NODE_SET)
-            .toString());
-      _settings.setDataPlaneDir(envPath
-            .resolve(BfConsts.RELPATH_DATA_PLANE_DIR).toString());
       _settings.setDumpFactsDir(_settings.getTrafficFactDumpDir());
       genMultipathQueries();
       List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();

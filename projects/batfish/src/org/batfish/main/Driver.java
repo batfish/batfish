@@ -67,6 +67,26 @@ public class Driver {
                   BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString());
             settings.setQueryDumpDir(envPath.resolve(
                   BfConsts.RELPATH_QUERY_DUMP_DIR).toString());
+
+         }
+         String diffEnvName = settings.getDiffEnvironmentName();
+         if (diffEnvName != null) {
+            Path diffEnvPath = Paths.get(baseDir,
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
+            settings.setDiffDataPlaneDir(diffEnvPath.resolve(
+                  BfConsts.RELPATH_DATA_PLANE_DIR).toString());
+            settings.setDiffJobLogicBloxHostnamePath(diffEnvPath.resolve(
+                  BfConsts.RELPATH_LB_HOSTNAME_PATH).toString());
+            String workspaceBasename = Paths.get(baseDir).getFileName()
+                  .toString();
+            String workspaceName = workspaceBasename + ":" + envName;
+            settings.setDiffWorkspaceName(workspaceName);
+            settings.setDiffNodeSetPath(diffEnvPath.resolve(
+                  BfConsts.RELPATH_ENV_NODE_SET).toString());
+            settings.setDiffZ3DataPlaneFile(diffEnvPath.resolve(
+                  BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString());
+            settings.setDiffQueryDumpDir(diffEnvPath.resolve(
+                  BfConsts.RELPATH_QUERY_DUMP_DIR).toString());
          }
          String outputEnvName = settings.getOutputEnvironmentName();
          if (outputEnvName != null) {
@@ -83,6 +103,18 @@ public class Driver {
                   BfConsts.RELPATH_QUESTION_FILE).toString());
             settings.setTrafficFactDumpDir(questionPath.resolve(
                   BfConsts.RELPATH_FLOWS_DUMP_DIR).toString());
+            Path queryDir = questionPath.resolve(BfConsts.RELPATH_QUERIES_DIR);
+            settings.setMultipathInconsistencyQueryPath(queryDir.resolve(
+                  Paths.get(envName, BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX))
+                  .toString());
+            settings.setFailureInconsistencyQueryPath(queryDir.resolve(
+                  Paths.get(envName, BfConsts.RELPATH_FAILURE_QUERY_PREFIX))
+                  .toString());
+            settings.setDiffFailureInconsistencyQueryPath(queryDir
+                  .resolve(
+                        Paths.get(diffEnvName,
+                              BfConsts.RELPATH_FAILURE_QUERY_PREFIX))
+                  .toString());
          }
       }
    }

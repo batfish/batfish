@@ -17,6 +17,8 @@ public class BfConsts {
    // ensure that the clients (including the javascript client) are up to date
    //
    public static final String ARG_BLOCK_NAMES = "blocknames";
+   public static final String ARG_DIFF_ENVIRONMENT_NAME = "diffenv";
+   public static final String ARG_ENVIRONMENT_NAME = "env";
    public static final String ARG_LOG_LEVEL = "loglevel";
    public static final String ARG_OUTPUT_ENV = "outputenv";
    public static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
@@ -34,7 +36,6 @@ public class BfConsts {
    public static final String COMMAND_ANSWER = "answer";
    public static final String COMMAND_CREATE_WORKSPACE = "createworkspace";
    public static final String COMMAND_DUMP_DP = "dp";
-   public static final String COMMAND_ENV = "env";
    public static final String COMMAND_FACTS = "facts";
    public static final String COMMAND_GENERATE_FACT = "dumpcp";
    public static final String COMMAND_KEEP_BLOCKS = "keepblocks";
@@ -55,6 +56,7 @@ public class BfConsts {
    public static final String RELPATH_ENV_NODE_SET = "env-node-set";
    public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
    public static final String RELPATH_FACT_DUMP_DIR = "dump";
+   public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
    public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
    public static final String RELPATH_LB_HOSTNAME_PATH = "lb";
    public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";

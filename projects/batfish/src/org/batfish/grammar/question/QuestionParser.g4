@@ -127,6 +127,11 @@ eq_expr
    lhs = int_expr DOUBLE_EQUALS rhs = int_expr
 ;
 
+failure_question
+:
+   FAILURE
+;
+
 false_expr
 :
    FALSE
@@ -332,7 +337,7 @@ literal_int_expr
 
 multipath_question
 :
-   MULTIPATH environment = string_literal_string_expr
+   MULTIPATH
 ;
 
 neq_expr
