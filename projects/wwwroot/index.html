@@ -29,14 +29,25 @@
                                 <td> <input type="file" id="fileUploadEnvironment" /> </td>
                                 <td> <input type="button" id="btnUploadEnvironment" value="Upload environment" onclick="fnUploadEnvironment()" /> </td>
                             </tr>
+                            <tr>
+                                <td> Differential Environment: </td>
+                                <td> <input type="text" id="txtDiffEnvironmentName" value="default" /> </td>
+                            </tr>
                         </table>
 
                         <hr />
 
                         <table>
                             <tr>
-                                <td> <input type="button" id="btnWorkVendorSpecific" value="Generate control plane" style="width:200px" onclick="fnDoWork('vendorspecific')" /> </td>
-                                <td> <input type="button" id="btnWorkGenerateDataPlane" value="Generate data plane" style="width:200px" onclick="fnDoWork('generatedataplane')" /> </td>
+                                <td> <input type="button" id="btnWorkVendorSpecific" value="Generate common control plane" style="width:300px" onclick="fnDoWork('vendorspecific')" /> </td>
+                            </tr>
+                            <tr>
+                                <td> <input type="button" id="btnDumpControlPlane" value="Dump base control plane" style="width:300px" onclick="fnDoWork('generatefacts')" /> </td>
+                                <td> <input type="button" id="btnWorkGenerateDataPlane" value="Generate base data plane" style="width:300px" onclick="fnDoWork('generatedataplane')" /> </td>
+                            </tr>
+                            <tr>
+                                <td> <input type="button" id="btnDumpDiffControlPlane" value="Dump differential control plane" style="width:300px" onclick="fnDoWork('generatedifffacts')" /> </td>
+                                <td> <input type="button" id="btnWorkGenerateDiffDataPlane" value="Generate differential data plane" style="width:300px" onclick="fnDoWork('generatediffdataplane')" /> </td>
                             </tr>
                         </table>
                         <table>
@@ -60,10 +71,6 @@
                         <hr />
 
                         <table>
-                            <tr>
-                                <td> Differential Environment: </td>
-                                <td> <input type="text" id="txtDiffEnvironmentName" value="default" /> </td>
-                            </tr>
                             <tr>
                                 <td> Query: </td>
                                 <td> <input type="text" id="txtQuestionName" /> </td>

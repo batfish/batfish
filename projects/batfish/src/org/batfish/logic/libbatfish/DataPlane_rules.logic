@@ -33,13 +33,13 @@ Fib(node, ip, prefix_length, interface, nextHop, nextHopInt, nextHopIp) <-
    nextHop = Node_NONE[],
    (
       (
-         !FlowSinkInterface(node, routeInterface),
+         !SetFlowSinkInterface(node, routeInterface),
          interface = Interface_NULL[],
          nextHopInt = Interface_NULL[],
          nextHopIp = ip
       ) ;
       (
-         FlowSinkInterface(node, routeInterface),
+         SetFlowSinkInterface(node, routeInterface),
          interface = routeInterface,
          nextHopInt = Interface_FLOW_SINK_TERMINATION[],
          nextHopIp = Ip_NONE[]

@@ -4,12 +4,6 @@ block(`Interface) {
    export(`{
 // BEGIN CODE
 
-GuessFlowSinkInterface() -> .
-
-FlowSinkInterface(node, interface) ->
-   Node(node),
-   Interface(interface).
-
 /// [HasIp(node, ip)] =
 ///   Some interface on node [node] is configured with ip [ip].
 HasIp(node, ip) ->

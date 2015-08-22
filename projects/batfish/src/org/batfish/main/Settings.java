@@ -17,7 +17,91 @@ import org.apache.commons.cli.ParseException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 
-public class Settings {
+public final class Settings {
+
+   public final class EnvironmentSettings {
+
+      private String _dataPlanePath;
+
+      private String _dumpFactsDir;
+
+      private String _edgeBlacklistPath;
+
+      private String _interfaceBlacklistPath;
+
+      private String _jobLogicBloxHostnamePath;
+
+      private String _nodeBlacklistPath;
+
+      private String _serializedTopologyPath;
+
+      private String _workspaceName;
+
+      public String getDataPlanePath() {
+         return _dataPlanePath;
+      }
+
+      public String getDumpFactsDir() {
+         return _dumpFactsDir;
+      }
+
+      public String getEdgeBlacklistPath() {
+         return _edgeBlacklistPath;
+      }
+
+      public String getInterfaceBlacklistPath() {
+         return _interfaceBlacklistPath;
+      }
+
+      public String getJobLogicBloxHostnamePath() {
+         return _jobLogicBloxHostnamePath;
+      }
+
+      public String getNodeBlacklistPath() {
+         return _nodeBlacklistPath;
+      }
+
+      public String getSerializedTopologyPath() {
+         return _serializedTopologyPath;
+      }
+
+      public String getWorkspaceName() {
+         return _workspaceName;
+      }
+
+      public void setDataPlanePath(String path) {
+         _dataPlanePath = path;
+      }
+
+      public void setDumpFactsDir(String path) {
+         _dumpFactsDir = path;
+      }
+
+      public void setEdgeBlacklistPath(String edgeBlacklistPath) {
+         _edgeBlacklistPath = edgeBlacklistPath;
+      }
+
+      public void setInterfaceBlacklistPath(String interfaceBlacklistPath) {
+         _interfaceBlacklistPath = interfaceBlacklistPath;
+      }
+
+      public void setJobLogicBloxHostnamePath(String path) {
+         _jobLogicBloxHostnamePath = path;
+      }
+
+      public void setNodeBlacklistPath(String nodeBlacklistPath) {
+         _nodeBlacklistPath = nodeBlacklistPath;
+      }
+
+      public void setSerializedTopologyPath(String serializedTopologyPath) {
+         _serializedTopologyPath = serializedTopologyPath;
+      }
+
+      public void setWorkspaceName(String name) {
+         _workspaceName = name;
+      }
+
+   }
 
    private static final String ARG_ACCEPT_NODE = "acceptnode";
    private static final String ARG_ANONYMIZE = "anonymize";
@@ -36,7 +120,7 @@ public class Settings {
    private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
    private static final String ARG_COUNT = "count";
    private static final String ARG_DATA_PLANE = "dp";
-   private static final String ARG_DATA_PLANE_DIR = "dpdir";
+   private static final String ARG_DATA_PLANE_PATH = "dppath";
    private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
    private static final String ARG_DISABLED_FACTS = "disablefacts";
    private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
@@ -165,7 +249,6 @@ public class Settings {
    private static final String ARGNAME_SERIALIZE_INDEPENDENT_PATH = "path";
    private static final String ARGNAME_SERIALIZE_VENDOR_PATH = "path";
    private static final String ARGNAME_SERVICE_HOST = "hostname";
-
    private static final String ARGNAME_SERVICE_LOGICBLOX_HOSTNAME = "hostname";
    private static final String ARGNAME_VAR_SIZE_MAP_PATH = "path";
    private static final String ARGNAME_Z3_CONCRETIZER_INPUT_FILES = "paths";
@@ -193,10 +276,12 @@ public class Settings {
    private static final String EXECUTABLE_NAME = "batfish";
 
    private String _acceptNode;
+   private EnvironmentSettings _activeEnvironmentSettings;
    private boolean _anonymize;
    private String _anonymizeDir;
    private boolean _answer;
    private String _autoBaseDir;
+   private EnvironmentSettings _baseEnvironmentSettings;
    private boolean _blackHole;
    private String _blackHolePath;
    private String _blacklistDstIpPath;
@@ -217,18 +302,10 @@ public class Settings {
    private boolean _counts;
    private boolean _createWorkspace;
    private boolean _dataPlane;
-   private String _dataPlaneDir;
-   private String _diffDataPlaneDir;
    private String _diffEnvironmentName;
-   private String _diffFailureInconsistencyQueryPath;
-   private String _diffJobLogicBloxHostnamePath;
-   private String _diffNodeSetPath;
-   private String _diffQueryDumpDir;
-   private String _diffWorkspaceName;
-   private String _diffZ3DataPlaneFile;
+   private EnvironmentSettings _diffEnvironmentSettings;
    private Set<String> _disabledFacts;
    private boolean _dumpControlPlaneFacts;
-   private String _dumpFactsDir;
    private boolean _dumpIF;
    private String _dumpIFDir;
    private boolean _dumpInterfaceDescriptions;
@@ -258,7 +335,6 @@ public class Settings {
    private String _hsaOutputDir;
    private boolean _ignoreUnsupported;
    private String _interfaceMapPath;
-   private String _jobLogicBloxHostnamePath;
    private boolean _keepBlocks;
    private int _lbWebAdminPort;
    private int _lbWebPort;
@@ -333,7 +409,6 @@ public class Settings {
    private boolean _usePrecomputedIbgpNeighbors;
    private boolean _usePrecomputedRoutes;
    private String _varSizeMapPath;
-   private String _workspaceName;
    private boolean _writeBgpAdvertisements;
    private boolean _writeIbgpNeighbors;
    private boolean _writeRoutes;
@@ -345,6 +420,9 @@ public class Settings {
    }
 
    public Settings(String[] args) throws ParseException {
+      _diffEnvironmentSettings = new EnvironmentSettings();
+      _baseEnvironmentSettings = new EnvironmentSettings();
+      _activeEnvironmentSettings = _baseEnvironmentSettings;
       initOptions();
       parseCommandLine(args);
    }
@@ -377,6 +455,10 @@ public class Settings {
       return _acceptNode;
    }
 
+   public EnvironmentSettings getActiveEnvironmentSettings() {
+      return _activeEnvironmentSettings;
+   }
+
    public boolean getAnonymize() {
       return _anonymize;
    }
@@ -391,6 +473,10 @@ public class Settings {
 
    public String getAutoBaseDir() {
       return _autoBaseDir;
+   }
+
+   public EnvironmentSettings getBaseEnvironmentSettings() {
+      return _baseEnvironmentSettings;
    }
 
    public String getBlackHoleQueryPath() {
@@ -461,40 +547,12 @@ public class Settings {
       return _dataPlane;
    }
 
-   public String getDataPlaneDir() {
-      return _dataPlaneDir;
-   }
-
-   public String getDiffDataPlaneDir() {
-      return _diffDataPlaneDir;
-   }
-
    public String getDiffEnvironmentName() {
       return _diffEnvironmentName;
    }
 
-   public String getDiffFailureInconsistencyQueryPath() {
-      return _diffFailureInconsistencyQueryPath;
-   }
-
-   public String getDiffJobLogicBloxHostnamePath() {
-      return _diffJobLogicBloxHostnamePath;
-   }
-
-   public String getDiffNodeSetPath() {
-      return _diffNodeSetPath;
-   }
-
-   public String getDiffQueryDumpDir() {
-      return _diffQueryDumpDir;
-   }
-
-   public String getDiffWorkspaceName() {
-      return _diffWorkspaceName;
-   }
-
-   public String getDiffZ3DataPlaneFile() {
-      return _diffZ3DataPlaneFile;
+   public EnvironmentSettings getDiffEnvironmentSettings() {
+      return _diffEnvironmentSettings;
    }
 
    public Set<String> getDisabledFacts() {
@@ -503,10 +561,6 @@ public class Settings {
 
    public boolean getDumpControlPlaneFacts() {
       return _dumpControlPlaneFacts;
-   }
-
-   public String getDumpFactsDir() {
-      return _dumpFactsDir;
    }
 
    public String getDumpIFDir() {
@@ -611,10 +665,6 @@ public class Settings {
 
    public String getInterfaceMapPath() {
       return _interfaceMapPath;
-   }
-
-   public String getJobLogicBloxHostnamePath() {
-      return _jobLogicBloxHostnamePath;
    }
 
    public boolean getKeepBlocks() {
@@ -889,10 +939,6 @@ public class Settings {
       return _varSizeMapPath;
    }
 
-   public String getWorkspaceName() {
-      return _workspaceName;
-   }
-
    public boolean getWriteBgpAdvertisements() {
       return _writeBgpAdvertisements;
    }
@@ -1068,7 +1114,7 @@ public class Settings {
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_DATA_PLANE_DIR)
             .desc("path to read or write serialized data plane")
-            .longOpt(ARG_DATA_PLANE_DIR).build());
+            .longOpt(ARG_DATA_PLANE_PATH).build());
       _options.addOption(Option.builder().desc("print parse trees")
             .longOpt(ARG_PRINT_PARSE_TREES).build());
       _options.addOption(Option.builder().desc("dump interface descriptions")
@@ -1423,7 +1469,8 @@ public class Settings {
       _testRigPath = line.getOptionValue(ARG_TEST_RIG_PATH,
             DEFAULT_TEST_RIG_PATH);
 
-      _workspaceName = line.getOptionValue(ARG_WORKSPACE, null);
+      _baseEnvironmentSettings.setWorkspaceName(line.getOptionValue(
+            ARG_WORKSPACE, null));
       _disabledFacts = new HashSet<String>();
       if (line.hasOption(ARG_DISABLED_FACTS)) {
          _disabledFacts.addAll(Arrays.asList(line
@@ -1472,7 +1519,8 @@ public class Settings {
       }
       _dumpControlPlaneFacts = line.hasOption(ARG_DUMP_CONTROL_PLANE_FACTS);
       _dumpTrafficFacts = line.hasOption(ARG_DUMP_TRAFFIC_FACTS);
-      _dumpFactsDir = line.getOptionValue(ARG_DUMP_FACTS_DIR);
+      _baseEnvironmentSettings.setDumpFactsDir(line
+            .getOptionValue(ARG_DUMP_FACTS_DIR));
       _revertBranchName = line.getOptionValue(ARG_REVERT);
       _revert = (_revertBranchName != null);
       _anonymize = line.hasOption(ARG_ANONYMIZE);
@@ -1491,7 +1539,8 @@ public class Settings {
       _serializeIndependentPath = line.getOptionValue(
             ARG_SERIALIZE_INDEPENDENT_PATH, DEFAULT_SERIALIZE_INDEPENDENT_PATH);
       _dataPlane = line.hasOption(ARG_DATA_PLANE);
-      _dataPlaneDir = line.getOptionValue(ARG_DATA_PLANE_DIR);
+      _baseEnvironmentSettings.setDataPlanePath(line
+            .getOptionValue(ARG_DATA_PLANE_PATH));
       _printParseTree = line.hasOption(ARG_PRINT_PARSE_TREES);
       _dumpInterfaceDescriptions = line
             .hasOption(ARG_DUMP_INTERFACE_DESCRIPTIONS);
@@ -1623,55 +1672,21 @@ public class Settings {
       return _runInServiceMode;
    }
 
+   public void setActiveEnvironmentSettings(EnvironmentSettings envSettings) {
+      _activeEnvironmentSettings = envSettings;
+   }
+
    public void setConnectBloxHost(String hostname) {
       _cbHost = hostname;
    }
 
-   public void setDataPlaneDir(String path) {
-      _dataPlaneDir = path;
-   }
-
-   public void setDiffDataPlaneDir(String diffDataPlaneDir) {
-      _diffDataPlaneDir = diffDataPlaneDir;
-   }
-
-   public void setDiffFailureInconsistencyQueryPath(
-         String diffFailureInconsistencyQueryPath) {
-      _diffFailureInconsistencyQueryPath = diffFailureInconsistencyQueryPath;
-   }
-
-   public void setDiffJobLogicBloxHostnamePath(
-         String diffJobLogicBloxHostnamePath) {
-      _diffJobLogicBloxHostnamePath = diffJobLogicBloxHostnamePath;
-   }
-
-   public void setDiffNodeSetPath(String diffNodeSetPath) {
-      _diffNodeSetPath = diffNodeSetPath;
-   }
-
-   public void setDiffQueryDumpDir(String diffQueryDumpDir) {
-      _diffQueryDumpDir = diffQueryDumpDir;
-   }
-
-   public void setDiffWorkspaceName(String diffWorkspaceName) {
-      _diffWorkspaceName = diffWorkspaceName;
-   }
-
-   public void setDiffZ3DataPlaneFile(String diffZ3DataPlaneFile) {
-      _diffZ3DataPlaneFile = diffZ3DataPlaneFile;
-   }
-
-   public void setDumpFactsDir(String path) {
-      _dumpFactsDir = path;
+   public void setDiffEnvironmentName(String diffEnvironmentName) {
+      _diffEnvironmentName = diffEnvironmentName;
    }
 
    public void setFailureInconsistencyQueryPath(
          String failureInconsistencyQueryPath) {
       _failureInconsistencyQueryPath = failureInconsistencyQueryPath;
-   }
-
-   public void setJobLogicBloxHostnamePath(String path) {
-      _jobLogicBloxHostnamePath = path;
    }
 
    public void setLogger(BatfishLogger logger) {
@@ -1720,10 +1735,6 @@ public class Settings {
 
    public void setTrafficFactDumpDir(String path) {
       _trafficFactDumpDir = path;
-   }
-
-   public void setWorkspaceName(String name) {
-      _workspaceName = name;
    }
 
    public void setZ3DataPlaneFile(String path) {

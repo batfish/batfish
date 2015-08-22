@@ -11,6 +11,8 @@ import java.util.concurrent.Callable;
 
 import org.batfish.collections.NodeSet;
 import org.batfish.main.BatfishException;
+import org.batfish.representation.Flow;
+import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 
 import com.microsoft.z3.BitVecExpr;
@@ -29,7 +31,9 @@ import com.microsoft.z3.Z3Exception;
 public class NodJob implements Callable<NodJobResult> {
 
    private Synthesizer _dataPlaneSynthesizer;
+
    private final NodeSet _nodeSet;
+
    private QuerySynthesizer _querySynthesizer;
 
    public NodJob(Synthesizer dataPlaneSynthesizer,
@@ -44,11 +48,10 @@ public class NodJob implements Callable<NodJobResult> {
    public NodJobResult call() throws Exception {
       try {
          Context ctx = new Context();
-         NodProgram _baseProgram = _dataPlaneSynthesizer
+         NodProgram baseProgram = _dataPlaneSynthesizer
                .synthesizeNodProgram(ctx);
-         NodProgram queryProgram = _querySynthesizer
-               .getNodProgram(_baseProgram);
-         NodProgram program = _baseProgram.append(queryProgram);
+         NodProgram queryProgram = _querySynthesizer.getNodProgram(baseProgram);
+         NodProgram program = baseProgram.append(queryProgram);
          Params p = ctx.mkParams();
          p.add("fixedpoint.engine", "datalog");
          p.add("fixedpoint.datalog.default_relation", "doc");
@@ -100,12 +103,12 @@ public class NodJob implements Callable<NodJobResult> {
                      .getLong();
                constraints.put(name, val);
             }
-            Set<String> flowLines = new HashSet<String>();
+            Set<Flow> flows = new HashSet<Flow>();
             for (String node : _nodeSet) {
-               String flowLine = createFlowLine(node, constraints);
-               flowLines.add(flowLine);
+               Flow flow = createFlow(node, constraints);
+               flows.add(flow);
             }
-            return new NodJobResult(flowLines);
+            return new NodJobResult(flows);
          }
          else {
             return new NodJobResult();
@@ -117,7 +120,7 @@ public class NodJob implements Callable<NodJobResult> {
       }
    }
 
-   private String createFlowLine(String node, Map<String, Long> constraints) {
+   private Flow createFlow(String node, Map<String, Long> constraints) {
       long src_ip = 0;
       long dst_ip = 0;
       long src_port = 0;
@@ -150,9 +153,8 @@ public class NodJob implements Callable<NodJobResult> {
             throw new Error("invalid variable name");
          }
       }
-      String line = node + "|" + src_ip + "|" + dst_ip + "|" + src_port + "|"
-            + dst_port + "|" + protocol + "\n";
-      return line;
+      return new Flow(node, new Ip(src_ip), new Ip(dst_ip), (int) src_port,
+            (int) dst_port, IpProtocol.fromNumber((int) protocol));
    }
 
 }

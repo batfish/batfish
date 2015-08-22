@@ -32,7 +32,7 @@ public class BfConsts {
    public static final String ARG_USE_PRECOMPUTED_ADVERTISEMENTS = "useprecomputedadvertisements";
    public static final String ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS = "useprecomputedibgpneighbors";
    public static final String ARG_USE_PRECOMPUTED_ROUTES = "useprecomputedroutes";
-   
+
    public static final String COMMAND_ANSWER = "answer";
    public static final String COMMAND_CREATE_WORKSPACE = "createworkspace";
    public static final String COMMAND_DUMP_DP = "dp";
@@ -52,20 +52,24 @@ public class BfConsts {
 
    public static final String PREDICATE_FLOW_PATH_HISTORY = "FlowPathHistory";
    public static final String RELPATH_DATA_PLANE_DIR = "dp";
+   public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
    public static final String RELPATH_ENV_DIR = "env";
    public static final String RELPATH_ENV_NODE_SET = "env-node-set";
    public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
    public static final String RELPATH_FACT_DUMP_DIR = "dump";
    public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
    public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
+   public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
    public static final String RELPATH_LB_HOSTNAME_PATH = "lb";
    public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";
+   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
    public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
    public static final String RELPATH_QUERIES_DIR = "queries";
    public static final String RELPATH_QUERY_DUMP_DIR = "querydump";
    public static final String RELPATH_QUESTION_FILE = "question";
    public static final String RELPATH_QUESTIONS_DIR = "questions";
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
+   public static final String RELPATH_TOPOLOGY_FILE = "topology";
    public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
    public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 

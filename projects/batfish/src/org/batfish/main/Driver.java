@@ -20,6 +20,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.BfConsts.TaskStatus;
+import org.batfish.main.Settings.EnvironmentSettings;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -38,6 +39,10 @@ public class Driver {
    private static void applyAutoBaseDir(final Settings settings) {
       String baseDir = settings.getAutoBaseDir();
       if (baseDir != null) {
+         EnvironmentSettings envSettings = settings
+               .getBaseEnvironmentSettings();
+         EnvironmentSettings diffEnvSettings = settings
+               .getDiffEnvironmentSettings();
          settings.setSerializeIndependentPath(Paths.get(baseDir,
                BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR).toString());
          settings.setSerializeVendorPath(Paths.get(baseDir,
@@ -51,42 +56,57 @@ public class Driver {
          if (envName != null) {
             Path envPath = Paths.get(baseDir,
                   BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
-            settings.setDumpFactsDir(envPath.resolve(
+            envSettings.setDumpFactsDir(envPath.resolve(
                   BfConsts.RELPATH_FACT_DUMP_DIR).toString());
-            settings.setDataPlaneDir(envPath.resolve(
+            envSettings.setDataPlanePath(envPath.resolve(
                   BfConsts.RELPATH_DATA_PLANE_DIR).toString());
-            settings.setJobLogicBloxHostnamePath(envPath.resolve(
+            envSettings.setJobLogicBloxHostnamePath(envPath.resolve(
                   BfConsts.RELPATH_LB_HOSTNAME_PATH).toString());
             String workspaceBasename = Paths.get(baseDir).getFileName()
                   .toString();
             String workspaceName = workspaceBasename + ":" + envName;
-            settings.setWorkspaceName(workspaceName);
+            envSettings.setWorkspaceName(workspaceName);
             settings.setNodeSetPath(envPath.resolve(
                   BfConsts.RELPATH_ENV_NODE_SET).toString());
             settings.setZ3DataPlaneFile(envPath.resolve(
                   BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString());
             settings.setQueryDumpDir(envPath.resolve(
                   BfConsts.RELPATH_QUERY_DUMP_DIR).toString());
-
+            Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
+            envSettings.setNodeBlacklistPath(envDirPath.resolve(
+                  BfConsts.RELPATH_NODE_BLACKLIST_FILE).toString());
+            envSettings.setInterfaceBlacklistPath(envDirPath.resolve(
+                  BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE).toString());
+            envSettings.setEdgeBlacklistPath(envDirPath.resolve(
+                  BfConsts.RELPATH_EDGE_BLACKLIST_FILE).toString());
+            envSettings.setSerializedTopologyPath(envDirPath.resolve(
+                  BfConsts.RELPATH_TOPOLOGY_FILE).toString());
          }
          String diffEnvName = settings.getDiffEnvironmentName();
          if (diffEnvName != null) {
+            settings.setDiffEnvironmentName(diffEnvName);
             Path diffEnvPath = Paths.get(baseDir,
-                  BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
-            settings.setDiffDataPlaneDir(diffEnvPath.resolve(
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR, diffEnvName);
+            diffEnvSettings.setDumpFactsDir(diffEnvPath.resolve(
+                  BfConsts.RELPATH_FACT_DUMP_DIR).toString());
+            diffEnvSettings.setDataPlanePath(diffEnvPath.resolve(
                   BfConsts.RELPATH_DATA_PLANE_DIR).toString());
-            settings.setDiffJobLogicBloxHostnamePath(diffEnvPath.resolve(
+            diffEnvSettings.setJobLogicBloxHostnamePath(diffEnvPath.resolve(
                   BfConsts.RELPATH_LB_HOSTNAME_PATH).toString());
             String workspaceBasename = Paths.get(baseDir).getFileName()
                   .toString();
-            String workspaceName = workspaceBasename + ":" + envName;
-            settings.setDiffWorkspaceName(workspaceName);
-            settings.setDiffNodeSetPath(diffEnvPath.resolve(
-                  BfConsts.RELPATH_ENV_NODE_SET).toString());
-            settings.setDiffZ3DataPlaneFile(diffEnvPath.resolve(
-                  BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString());
-            settings.setDiffQueryDumpDir(diffEnvPath.resolve(
-                  BfConsts.RELPATH_QUERY_DUMP_DIR).toString());
+            String workspaceName = workspaceBasename + ":" + diffEnvName;
+            diffEnvSettings.setWorkspaceName(workspaceName);
+            Path diffEnvDirPath = diffEnvPath.resolve(BfConsts.RELPATH_ENV_DIR);
+            diffEnvSettings.setNodeBlacklistPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_NODE_BLACKLIST_FILE).toString());
+            diffEnvSettings.setInterfaceBlacklistPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE).toString());
+            diffEnvSettings.setEdgeBlacklistPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_EDGE_BLACKLIST_FILE).toString());
+            diffEnvSettings.setSerializedTopologyPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_TOPOLOGY_FILE).toString());
+            settings.setActiveEnvironmentSettings(diffEnvSettings);
          }
          String outputEnvName = settings.getOutputEnvironmentName();
          if (outputEnvName != null) {
@@ -110,11 +130,11 @@ public class Driver {
             settings.setFailureInconsistencyQueryPath(queryDir.resolve(
                   Paths.get(envName, BfConsts.RELPATH_FAILURE_QUERY_PREFIX))
                   .toString());
-            settings.setDiffFailureInconsistencyQueryPath(queryDir
-                  .resolve(
-                        Paths.get(diffEnvName,
-                              BfConsts.RELPATH_FAILURE_QUERY_PREFIX))
-                  .toString());
+            // settings.setDiffFailureInconsistencyQueryPath(queryDir
+            // .resolve(
+            // Paths.get(diffEnvName,
+            // BfConsts.RELPATH_FAILURE_QUERY_PREFIX))
+            // .toString());
          }
       }
    }

@@ -13,14 +13,15 @@ import java.util.TreeSet;
 import org.batfish.collections.EdgeSet;
 import org.batfish.collections.FibMap;
 import org.batfish.collections.FibRow;
-import org.batfish.collections.FlowSinkInterface;
-import org.batfish.collections.FlowSinkSet;
+import org.batfish.collections.InterfaceSet;
+import org.batfish.collections.NodeInterfacePair;
 import org.batfish.collections.NodeSet;
 import org.batfish.collections.PolicyRouteFibIpMap;
 import org.batfish.collections.PolicyRouteFibNodeMap;
 import org.batfish.collections.RoleSet;
 import org.batfish.main.BatfishException;
 import org.batfish.representation.Configuration;
+import org.batfish.representation.DataPlane;
 import org.batfish.representation.Edge;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
@@ -305,7 +306,7 @@ public class Synthesizer {
 
    private final Map<String, Configuration> _configurations;
    private final FibMap _fibs;
-   private FlowSinkSet _flowSinks;
+   private InterfaceSet _flowSinks;
    private final PolicyRouteFibNodeMap _prFibs;
    private final boolean _simplify;
    private final EdgeSet _topologyEdges;
@@ -314,18 +315,17 @@ public class Synthesizer {
 
    private List<String> _warnings;
 
-   public Synthesizer(Map<String, Configuration> configurations, FibMap fibs,
-         PolicyRouteFibNodeMap prFibs, EdgeSet topologyEdges, boolean simplify,
-         FlowSinkSet flowSinks) {
+   public Synthesizer(Map<String, Configuration> configurations,
+         DataPlane dataPlane, boolean simplify) {
       _configurations = configurations;
       pruneInterfaces();
-      _fibs = fibs;
-      _topologyEdges = topologyEdges;
-      _prFibs = prFibs;
+      _fibs = dataPlane.getFibs();
+      _prFibs = dataPlane.getPolicyRouteFibNodeMap();
+      _topologyEdges = dataPlane.getTopologyEdges();
+      _flowSinks = dataPlane.getFlowSinks();
       _simplify = simplify;
       _topologyInterfaces = new TreeMap<String, Set<Interface>>();
       _warnings = new ArrayList<String>();
-      _flowSinks = flowSinks;
       computeTopologyInterfaces();
    }
 
@@ -566,8 +566,8 @@ public class Synthesizer {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment(
             "Post out flow sink interface leads to node accept"));
-      for (FlowSinkInterface f : _flowSinks) {
-         String hostname = f.getNode();
+      for (NodeInterfacePair f : _flowSinks) {
+         String hostname = f.getHostname();
          String ifaceName = f.getInterface();
          if (isFlowSink(hostname, ifaceName)) {
             PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(
@@ -1151,8 +1151,8 @@ public class Synthesizer {
    private List<Statement> getPreOutEdgeToPreOutInterfaceRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment("PreOutEdge => PreOutInterface"));
-      for (FlowSinkInterface f : _flowSinks) {
-         String hostnameOut = f.getNode();
+      for (NodeInterfacePair f : _flowSinks) {
+         String hostnameOut = f.getHostname();
          String hostnameIn = NODE_NONE_NAME;
          String intOut = f.getInterface();
          String intIn = FLOW_SINK_TERMINATION_NAME;
@@ -1372,7 +1372,7 @@ public class Synthesizer {
    }
 
    private boolean isFlowSink(String hostname, String ifaceName) {
-      FlowSinkInterface f = new FlowSinkInterface(hostname, ifaceName);
+      NodeInterfacePair f = new NodeInterfacePair(hostname, ifaceName);
       return _flowSinks.contains(f);
    }
 

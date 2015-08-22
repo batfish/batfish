@@ -5,12 +5,6 @@ block(`Interface_rules) {
    clauses(`{
 // BEGIN CODE
 
-GuessFlowSinkInterface() <-
-   !SetFlowSinkInterface(_, _).
-
-FlowSinkInterface(node, interface) <-
-   SetFlowSinkInterface(node, interface).
-
 HasIp(node, ip) <-
    IpReadyInt(node, _, ip, _).
 

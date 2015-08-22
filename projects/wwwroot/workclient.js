@@ -93,9 +93,6 @@ function fnDoWork(worktype) {
     }
 
     var diffEnvName = jQuery("#txtDiffEnvironmentName").val();
-    if (diffEnvName == "" && worktype == "answerquestion") {
-        diffEnvName = "UNSET_DIFF_ENV";
-    }
 
     var outputEnvName = jQuery("#txtOutputEnvironmentName").val();
     if (outputEnvName == "" && worktype == "writeroutes") {
@@ -126,13 +123,30 @@ function fnDoWork(worktype) {
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
             reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_WARN;
             break;
+        case "generatedifffacts":
+            reqParams[COMMAND_GENERATE_FACT] = "";
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
+            reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
+            reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_WARN;
+            break;
         case "generatedataplane":
             reqParams[COMMAND_CREATE_WORKSPACE] = "";
             reqParams[COMMAND_FACTS] = "";
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
             break;
+        case "generatediffdataplane":
+            reqParams[COMMAND_CREATE_WORKSPACE] = "";
+            reqParams[COMMAND_FACTS] = "";
+            reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
+            break;
         case "getdataplane":
             reqParams[COMMAND_DUMP_DP] = "";
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
+            break;
+        case "getdiffdataplane":
+            reqParams[COMMAND_DUMP_DP] = "";
+            reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
             break;
         case "getz3encoding":
@@ -143,8 +157,10 @@ function fnDoWork(worktype) {
             reqParams[COMMAND_ANSWER] = "";
             reqParams[ARG_QUESTION_NAME] = questionName;
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
-            reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
             reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
+            if (diffEnvName != "") {
+               reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
+            }
             break;
         case "postflows":
             reqParams[COMMAND_POST_FLOWS] = "";
@@ -192,21 +208,34 @@ function doFollowOnWork(worktype) {
             fnDoWork("vendorindependent");
             break;
         case "vendorindependent":
-            fnDoWork("generatefacts");
+            //no follow on work to be done here
+            bfUpdateDebugInfo("Done generating common control plane");
             break;
         case "generatefacts":
             //no follow on work to be done here
-            bfUpdateDebugInfo("Done generating control plane");
+            bfUpdateDebugInfo("Done dumping control plane for base environment");
+            break;
+        case "generatedifffacts":
+            //no follow on work to be done here
+            bfUpdateDebugInfo("Done dumping control plane for differential environment");
             break;
         case "generatedataplane":
             fnDoWork("getdataplane");
             break;
+        case "generatediffdataplane":
+            fnDoWork("getdiffdataplane");
+            break;
         case "getdataplane":
-            fnDoWork("getz3encoding");
+            //no follow on work to be done here
+            bfUpdateDebugInfo("Done generating base data plane");
+            break;
+        case "getdiffdataplane":
+            //no follow on work to be done here
+            bfUpdateDebugInfo("Done generating differential data plane");
             break;
         case "getz3encoding":
             //no follow on work to be done here
-            bfUpdateDebugInfo("Done generating data plane");
+            bfUpdateDebugInfo("Done dumping z3 encoding");
             break;
         case "answerquestion":
             var qName = jQuery("#txtQuestionName").val();
