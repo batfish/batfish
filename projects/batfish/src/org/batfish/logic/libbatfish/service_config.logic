@@ -504,8 +504,8 @@ block(`service_config) {
       file_definition_by_name["SetFlowOriginate"] = fd,
       file_definition(fd) {
          file_delimiter[] = "|",
-         column_headers[] = "NODE,SRCIP,DSTIP,SRCPORT,DSTPORT,IPPROTOCOL",
-         column_formats[] = "string,integer,integer,integer,integer,integer"
+         column_headers[] = "NODE,SRCIP,DSTIP,SRCPORT,DSTPORT,IPPROTOCOL,TAG",
+         column_formats[] = "string,integer,integer,integer,integer,integer,string"
       }.
       file_binding_by_name["SetFlowOriginate"] = fb,
       file_binding(fb) {
@@ -513,7 +513,7 @@ block(`service_config) {
          file_binding_definition_name[] = "SetFlowOriginate",
          predicate_binding_by_name["libbatfish:Traffic:SetFlowOriginate"] =
             predicate_binding(_) {
-               predicate_binding_columns[] = "NODE,SRCIP,DSTIP,SRCPORT,DSTPORT,IPPROTOCOL"
+               predicate_binding_columns[] = "NODE,SRCIP,DSTIP,SRCPORT,DSTPORT,IPPROTOCOL,TAG"
             }
       }.
 

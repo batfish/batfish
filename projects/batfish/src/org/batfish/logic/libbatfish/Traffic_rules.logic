@@ -97,9 +97,10 @@ Flow_dstPort[flow] = dstPort,
 Flow_ipProtocol[flow] = protocol,
 Flow_node[flow] = node,
 Flow_srcIp[flow] = srcIp,
-Flow_srcPort[flow] = srcPort
+Flow_srcPort[flow] = srcPort,
+FlowTag(flow, tag)
 <-
-   SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol).
+   SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol, tag).
 FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow,
 Flow(flow),
 Flow_dstIp[flow] = dstIp,
@@ -107,10 +108,11 @@ Flow_dstPort[flow] = dstPort,
 Flow_ipProtocol[flow] = protocol,
 Flow_node[flow] = node,
 Flow_srcIp[flow] = srcIp,
-Flow_srcPort[flow] = srcPort
+Flow_srcPort[flow] = srcPort,
+FlowTag(flow, tag)
 <-
    DuplicateRoleFlows(_),
-   SetFlowOriginate(acceptNode, srcIp, dstIp, srcPort, dstPort, protocol),
+   SetFlowOriginate(acceptNode, srcIp, dstIp, srcPort, dstPort, protocol, tag),
    SetNodeRole(acceptNode, role),
    SetNodeRole(node, role).
 

@@ -328,13 +328,14 @@ FlowSameHeader(flow1, flow2) ->
    Flow(flow1),
    Flow(flow2).
 
-SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol) ->
+SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol, tag) ->
    Node(node),
    Ip(srcIp),
    Ip(dstIp),
    int(srcPort),
    int(dstPort),
-   IpProtocol(protocol).
+   IpProtocol(protocol),
+   string(tag).
 
 // END CODE
    }),
