@@ -40,6 +40,16 @@ public class Util {
       return s;
    }
 
+   public static String getIndentedString(String str, int indentLevel) {
+      String indent = getIndentString(indentLevel);
+      StringBuilder sb = new StringBuilder();
+      String[] lines = str.split("\n");
+      for (String line : lines) {
+         sb.append(indent + line + "\n");
+      }
+      return sb.toString();
+   }
+
    public static String getIndentString(int indentLevel) {
 
       String retString = "";

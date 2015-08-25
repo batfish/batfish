@@ -7,6 +7,7 @@ import org.batfish.collections.CommunitySet;
 import org.batfish.main.BatfishException;
 import org.batfish.representation.AsPath;
 import org.batfish.representation.BgpAdvertisement;
+import org.batfish.representation.Flow;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 import org.batfish.representation.NamedPort;
@@ -361,7 +362,20 @@ public class EntityTable {
             + ", " + originType + ">";
    }
 
-   public String getFlow(BigInteger index) {
+   public Flow getFlow(BigInteger index) {
+      int listIndex = Arrays.binarySearch(_flowIndices, index);
+      String node = _flowNodes[listIndex];
+      Ip srcIp = new Ip(_flowSrcIps[listIndex]);
+      Ip dstIp = new Ip(_flowDstIps[listIndex]);
+      IpProtocol protocol = IpProtocol
+            .fromNumber((int) (_flowProtocols[listIndex]));
+      int srcPort = (int) _flowSrcPorts[listIndex];
+      int dstPort = (int) _flowDstPorts[listIndex];
+      Flow flow = new Flow(node, srcIp, dstIp, srcPort, dstPort, protocol);
+      return flow;
+   }
+
+   public String getFlowText(BigInteger index) {
       int listIndex = Arrays.binarySearch(_flowIndices, index);
       String node = _flowNodes[listIndex];
       String srcIp = new Ip(_flowSrcIps[listIndex]).toString();

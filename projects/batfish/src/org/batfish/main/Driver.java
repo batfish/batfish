@@ -54,6 +54,7 @@ public class Driver {
          settings.setLogicDir(_mainSettings.getLogicDir());
          String envName = settings.getEnvironmentName();
          if (envName != null) {
+            settings.setEnvironmentName(envName);
             Path envPath = Paths.get(baseDir,
                   BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
             envSettings.setDumpFactsDir(envPath.resolve(
@@ -121,8 +122,15 @@ public class Driver {
                   BfConsts.RELPATH_QUESTIONS_DIR, questionName);
             settings.setQuestionPath(questionPath.resolve(
                   BfConsts.RELPATH_QUESTION_FILE).toString());
-            settings.setTrafficFactDumpDir(questionPath.resolve(
-                  BfConsts.RELPATH_FLOWS_DUMP_DIR).toString());
+            envSettings.setTrafficFactDumpDir(questionPath.resolve(
+                  Paths.get(BfConsts.RELPATH_BASE, envName,
+                        BfConsts.RELPATH_FACT_DUMP_DIR).toString()).toString());
+            if (diffEnvName != null) {
+               diffEnvSettings.setTrafficFactDumpDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,
+                           BfConsts.RELPATH_FACT_DUMP_DIR).toString())
+                     .toString());
+            }
             Path queryDir = questionPath.resolve(BfConsts.RELPATH_QUERIES_DIR);
             settings.setMultipathInconsistencyQueryPath(queryDir.resolve(
                   Paths.get(envName, BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX))

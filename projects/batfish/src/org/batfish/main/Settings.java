@@ -35,6 +35,8 @@ public final class Settings {
 
       private String _serializedTopologyPath;
 
+      private String _trafficFactDumpDir;
+
       private String _workspaceName;
 
       public String getDataPlanePath() {
@@ -63,6 +65,10 @@ public final class Settings {
 
       public String getSerializedTopologyPath() {
          return _serializedTopologyPath;
+      }
+
+      public String getTrafficFactDumpDir() {
+         return _trafficFactDumpDir;
       }
 
       public String getWorkspaceName() {
@@ -95,6 +101,10 @@ public final class Settings {
 
       public void setSerializedTopologyPath(String serializedTopologyPath) {
          _serializedTopologyPath = serializedTopologyPath;
+      }
+
+      public void setTrafficFactDumpDir(String trafficFactDumpDir) {
+         _trafficFactDumpDir = trafficFactDumpDir;
       }
 
       public void setWorkspaceName(String name) {
@@ -304,6 +314,7 @@ public final class Settings {
    private boolean _dataPlane;
    private String _diffEnvironmentName;
    private EnvironmentSettings _diffEnvironmentSettings;
+   private boolean _differentialHistory;
    private Set<String> _disabledFacts;
    private boolean _dumpControlPlaneFacts;
    private boolean _dumpIF;
@@ -331,6 +342,7 @@ public final class Settings {
    private String _genOspfTopology;
    private List<String> _helpPredicates;
    private boolean _histogram;
+   private boolean _history;
    private String _hsaInputDir;
    private String _hsaOutputDir;
    private boolean _ignoreUnsupported;
@@ -354,6 +366,7 @@ public final class Settings {
    private String _outputEnvironmentName;
    private boolean _pedanticAsError;
    private boolean _pedanticRecord;
+   private boolean _postDifferentialFlows;
    private boolean _postFlows;
    private String _precomputedBgpAdvertisementsPath;
    private String _precomputedFactsPath;
@@ -400,7 +413,6 @@ public final class Settings {
    private boolean _throwOnLexerError;
    private boolean _throwOnParserError;
    private boolean _timestamp;
-   private String _trafficFactDumpDir;
    private boolean _unimplementedAsError;
    private boolean _unimplementedRecord;
    private boolean _update;
@@ -555,6 +567,10 @@ public final class Settings {
       return _diffEnvironmentSettings;
    }
 
+   public boolean getDifferentialHistory() {
+      return _differentialHistory;
+   }
+
    public Set<String> getDisabledFacts() {
       return _disabledFacts;
    }
@@ -647,6 +663,10 @@ public final class Settings {
       return _histogram;
    }
 
+   public boolean getHistory() {
+      return _history;
+   }
+
    public String getHSAInputPath() {
       return _hsaInputDir;
    }
@@ -737,6 +757,10 @@ public final class Settings {
 
    public boolean getPedanticRecord() {
       return _pedanticRecord;
+   }
+
+   public boolean getPostDifferentialFlows() {
+      return _postDifferentialFlows;
    }
 
    public boolean getPostFlows() {
@@ -901,10 +925,6 @@ public final class Settings {
 
    public boolean getTimestamp() {
       return _timestamp;
-   }
-
-   public String getTrafficFactDumpDir() {
-      return _trafficFactDumpDir;
    }
 
    public boolean getUnimplementedAsError() {
@@ -1425,6 +1445,16 @@ public final class Settings {
       _options.addOption(Option.builder().hasArg().argName("name")
             .desc("name of delta environment to use")
             .longOpt(BfConsts.ARG_DIFF_ENVIRONMENT_NAME).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("post dumped differential flows to base and differential logicblox workspaces")
+                  .longOpt(BfConsts.COMMAND_POST_DIFFERENTIAL_FLOWS).build());
+      _options.addOption(Option.builder()
+            .desc("retrieve differential flow history")
+            .longOpt(BfConsts.COMMAND_GET_DIFFERENTIAL_HISTORY).build());
+      _options.addOption(Option.builder().desc("retrieve flow history")
+            .longOpt(BfConsts.COMMAND_GET_HISTORY).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1658,6 +1688,11 @@ public final class Settings {
       _precomputedFactsPath = line.getOptionValue(ARG_PRECOMPUTED_FACTS_PATH);
       _diffEnvironmentName = line
             .getOptionValue(BfConsts.ARG_DIFF_ENVIRONMENT_NAME);
+      _postDifferentialFlows = line
+            .hasOption(BfConsts.COMMAND_POST_DIFFERENTIAL_FLOWS);
+      _differentialHistory = line
+            .hasOption(BfConsts.COMMAND_GET_DIFFERENTIAL_HISTORY);
+      _history = line.hasOption(BfConsts.COMMAND_GET_HISTORY);
    }
 
    public boolean printParseTree() {
@@ -1682,6 +1717,10 @@ public final class Settings {
 
    public void setDiffEnvironmentName(String diffEnvironmentName) {
       _diffEnvironmentName = diffEnvironmentName;
+   }
+
+   public void setEnvironmentName(String envName) {
+      _environmentName = envName;
    }
 
    public void setFailureInconsistencyQueryPath(
@@ -1731,10 +1770,6 @@ public final class Settings {
 
    public void setTestRigPath(String path) {
       _testRigPath = path;
-   }
-
-   public void setTrafficFactDumpDir(String path) {
-      _trafficFactDumpDir = path;
    }
 
    public void setZ3DataPlaneFile(String path) {

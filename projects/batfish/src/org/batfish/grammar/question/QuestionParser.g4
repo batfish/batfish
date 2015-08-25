@@ -483,7 +483,8 @@ property_boolean_expr
 
 question
 :
-   multipath_question
+   failure_question
+   | multipath_question
    | verify_question
 ;
 

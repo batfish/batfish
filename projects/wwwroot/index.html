@@ -32,6 +32,8 @@
                             <tr>
                                 <td> Differential Environment: </td>
                                 <td> <input type="text" id="txtDiffEnvironmentName" value="default" /> </td>
+                                <td> <input type="file" id="fileUploadDiffEnvironment" /> </td>
+                                <td> <input type="button" id="btnUploadDiffEnvironment" value="Upload environment" onclick="fnUploadDiffEnvironment()" /> </td>
                             </tr>
                         </table>
 
@@ -84,6 +86,15 @@
 
                         <hr />
 
+                        <table>
+                           <tr>
+                              <td> <input type="button" value="View control plane query result" onclick="fnGetLog()" /> </td>
+                           </tr>
+                           <tr>
+                              <td> <input type="button" id="btnGetHistory" value="Get flow history" onclick="fnGetLog('gethistory')" /> </td>
+                              <td> <input type="button" id="btnGetDifferentialHistory" value="Get differential flow history" onclick="fnGetLog('getdiffhistory')" /> </td>
+                           </tr>
+                        </table>
                         <div class="divClassSection" id="workguid" style="display: none">
                         <b> [Work GUID. Auto-populated to the last work issued, but you can specify your own too.]</b>
                         <br />
@@ -97,10 +108,6 @@
 
                         </div>
 
-                        <br />
-                        <input type="button" value="View control plane query result" onclick="fnGetLog()" /> &nbsp &nbsp 
-                        <input type="button" id="btnGetObjectGetFlowTraces" value="Download data plane query result" onclick="fnGetObject('getflowtraces')" />
-                        <br />
                 </form>
 
                 <br />

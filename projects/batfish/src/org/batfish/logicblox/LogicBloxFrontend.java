@@ -21,6 +21,7 @@ import org.batfish.collections.NodeIpPair;
 import org.batfish.main.BatfishException;
 import org.batfish.main.BatfishLogger;
 import org.batfish.representation.BgpAdvertisement;
+import org.batfish.representation.Flow;
 import org.batfish.representation.Ip;
 import org.eclipse.jetty.client.ContentExchange;
 import org.eclipse.jetty.client.HttpClient;
@@ -249,7 +250,7 @@ public class LogicBloxFrontend {
             BigInteger[] flowIndices = ((UInt64Column) ec.getIndexColumn()
                   .unwrap()).getRows();
             for (BigInteger index : flowIndices) {
-               textColumn.add(_entityTable.getFlow(index));
+               textColumn.add(_entityTable.getFlowText(index));
             }
             break;
 
@@ -338,6 +339,23 @@ public class LogicBloxFrontend {
       catch (Option.Exception e) {
          throw new BatfishException(
                "Error pretty-printing logicblox query result", e);
+      }
+   }
+
+   public void fillFlowColumn(List<Flow> flows, Column column) {
+      try {
+         EntityColumn ec = (EntityColumn) column;
+         BigInteger[] flowIndices = ((UInt64Column) ec.getIndexColumn()
+               .unwrap()).getRows();
+         for (BigInteger index : flowIndices) {
+            Flow flow = _entityTable.getFlow(index);
+            flows.add(flow);
+         }
+
+      }
+      catch (Option.Exception e) {
+         throw new BatfishException(
+               "Error getting typed logicblox query result", e);
       }
    }
 

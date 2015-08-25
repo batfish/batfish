@@ -23,6 +23,7 @@ import org.batfish.question.ClearIpsStatement;
 import org.batfish.question.ContainsIpExpr;
 import org.batfish.question.DifferenceIntExpr;
 import org.batfish.question.EqExpr;
+import org.batfish.question.FailureQuestion;
 import org.batfish.question.ForEachBgpNeighborStatement;
 import org.batfish.question.ForEachGeneratedRouteStatement;
 import org.batfish.question.ForEachInterfaceStatement;
@@ -87,6 +88,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private Question _question;
 
    private VerifyProgram _verifyProgram;
+
+   @Override
+   public void enterFailure_question(Failure_questionContext ctx) {
+      FailureQuestion failureQuestion = new FailureQuestion();
+      _question = failureQuestion;
+   }
 
    @Override
    public void enterMultipath_question(Multipath_questionContext ctx) {

@@ -109,6 +109,19 @@ function fnDoWork(worktype) {
     var reqParams = {};
 
     switch (worktype) {
+        case "gethistory":
+            reqParams[COMMAND_GET_HISTORY] = "";
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
+            reqParams[ARG_QUESTION_NAME] = questionName;
+            reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
+            break;
+        case "getdiffhistory":
+            reqParams[COMMAND_GET_DIFFERENTIAL_HISTORY] = "";
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
+            reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
+            reqParams[ARG_QUESTION_NAME] = questionName;
+            reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
+            break;
         case "vendorspecific":
             reqParams[COMMAND_PARSE_VENDOR_SPECIFIC] = "";
             reqParams[ARG_UNIMPLEMENTED_SUPPRESS] = "";
@@ -158,7 +171,7 @@ function fnDoWork(worktype) {
             reqParams[ARG_QUESTION_NAME] = questionName;
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
             reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
-            if (diffEnvName != "") {
+            if (diffEnvName != "" && questionName.toLowerCase().indexOf("fail") >= 0) {
                reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
             }
             break;
@@ -166,6 +179,12 @@ function fnDoWork(worktype) {
             reqParams[COMMAND_POST_FLOWS] = "";
             reqParams[ARG_QUESTION_NAME] = questionName;
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
+            break;
+        case "postdiffflows":
+            reqParams[COMMAND_POST_DIFFERENTIAL_FLOWS] = "";
+            reqParams[ARG_QUESTION_NAME] = questionName;
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
+            reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
             break;
         case "getflowtraces":
             reqParams[COMMAND_QUERY] = "";
@@ -203,6 +222,7 @@ function doFollowOnWork(worktype) {
     if (DEMO_MODE == 0)
         return;
 
+    var qName = jQuery("#txtQuestionName").val();
     switch (worktype) {
         case "vendorspecific":
             fnDoWork("vendorindependent");
@@ -233,21 +253,42 @@ function doFollowOnWork(worktype) {
             //no follow on work to be done here
             bfUpdateDebugInfo("Done generating differential data plane");
             break;
+        case "gethistory":
+            //no follow on work to be done here
+            bfUpdateDebugInfo("Done answering query");
+            break;
+        case "getdiffhistory":
+            //no follow on work to be done here
+            bfUpdateDebugInfo("Done answering differential query");
+            break;
         case "getz3encoding":
             //no follow on work to be done here
             bfUpdateDebugInfo("Done dumping z3 encoding");
             break;
         case "answerquestion":
-            var qName = jQuery("#txtQuestionName").val();
             if (qName.toLowerCase().indexOf("multi") >= 0) {
                 fnDoWork("postflows");
+            }
+            else if (qName.toLowerCase().indexOf("failure") >= 0) {
+                fnDoWork("postdiffflows");
             }
             else {
                 bfUpdateDebugInfo("Done answering query");
             }
             break;
         case "postflows":
-            fnDoWork("getflowtraces");
+            if (qName.toLowerCase().indexOf("failure") >= 0) {
+               fnDoWork("postdiffflows");
+            }
+            else if (qName.toLowerCase().indexOf("multi") >= 0) {
+                fnDoWork("gethistory");
+            }
+            else {
+               fnDoWork("getflowtraces");
+            }
+            break;
+        case "postdiffflows":
+            fnDoWork("getdiffhistory");
             break;
         case "getflowtraces":
             //no follow on work to be done here
@@ -420,6 +461,36 @@ function fnUploadEnvironment() {
     var envFile = jQuery("#fileUploadEnvironment").get(0).files[0];
     if (typeof envFile === 'undefined') {
         alert("Select an environment file");
+        return;
+    }
+
+    var data = new FormData();
+    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
+    data.append(SVC_ENV_NAME_KEY, envName);
+    data.append(SVC_ZIPFILE_KEY, envFile);
+
+    bfUploadData("UploadEnvironment-" + envName, SVC_WORK_MGR_ROOT + SVC_WORK_UPLOAD_ENV_RSC, data, cbUploadData, "environment");
+}
+
+// ------------------------------------
+
+function fnUploadDiffEnvironment() {
+
+    var testrigName = jQuery("#txtTestrigName").val();
+    if (testrigName == "") {
+        alert("Specify a testrig name");
+        return;
+    }
+
+    var envName = jQuery("#txtDiffEnvironmentName").val();
+    if (envName == "") {
+        alert("Specify a differential environment name");
+        return;
+    }
+
+    var envFile = jQuery("#fileUploadDiffEnvironment").get(0).files[0];
+    if (typeof envFile === 'undefined') {
+        alert("Select a differential environment file");
         return;
     }
 

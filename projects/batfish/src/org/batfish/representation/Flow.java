@@ -142,4 +142,11 @@ public class Flow implements Comparable<Flow> {
       return line;
    }
 
+   @Override
+   public String toString() {
+      return "Flow<ingressNode:" + _ingressNode + ", srcIp:" + _srcIp
+            + ", dstIp:" + _dstIp + ", IpProtocol:" + _ipProtocol
+            + ", srcPort:" + _srcPort + ", dstPort:" + _dstPort + ">";
+   }
+
 }
