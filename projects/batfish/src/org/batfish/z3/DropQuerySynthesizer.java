@@ -13,14 +13,14 @@ import org.batfish.z3.node.SaneExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Z3Exception;
 
-public class FailureInconsistencyBlackHoleQuerySynthesizer implements
-      QuerySynthesizer {
+public class DropQuerySynthesizer extends
+      BaseQuerySynthesizer {
 
    private String _hostname;
 
    private String _queryText;
 
-   public FailureInconsistencyBlackHoleQuerySynthesizer(String hostname) {
+   public DropQuerySynthesizer(String hostname) {
       _hostname = hostname;
       OriginateExpr originate = new OriginateExpr(hostname);
       RuleExpr injectSymbolicPackets = new RuleExpr(originate);

@@ -36,12 +36,15 @@ public class NodJob implements Callable<NodJobResult> {
 
    private QuerySynthesizer _querySynthesizer;
 
+   private String _tag;
+
    public NodJob(Synthesizer dataPlaneSynthesizer,
-         QuerySynthesizer querySynthesizer, NodeSet nodeSet) {
+         QuerySynthesizer querySynthesizer, NodeSet nodeSet, String tag) {
       _dataPlaneSynthesizer = dataPlaneSynthesizer;
       _querySynthesizer = querySynthesizer;
       _nodeSet = new NodeSet();
       _nodeSet.addAll(nodeSet);
+      _tag = tag;
    }
 
    @Override
@@ -154,7 +157,7 @@ public class NodJob implements Callable<NodJobResult> {
          }
       }
       return new Flow(node, new Ip(src_ip), new Ip(dst_ip), (int) src_port,
-            (int) dst_port, IpProtocol.fromNumber((int) protocol));
+            (int) dst_port, IpProtocol.fromNumber((int) protocol), _tag);
    }
 
 }

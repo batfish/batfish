@@ -12,7 +12,7 @@ import org.batfish.z3.node.SaneExpr;
 
 import com.microsoft.z3.Z3Exception;
 
-public class RoleTransitQuerySynthesizer implements QuerySynthesizer {
+public class RoleTransitQuerySynthesizer extends BaseQuerySynthesizer {
 
    private String _queryText;
 

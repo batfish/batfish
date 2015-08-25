@@ -38,8 +38,10 @@ public class CompositeNodJob implements Callable<NodJobResult> {
 
    private List<QuerySynthesizer> _querySynthesizers;
 
+   private String _tag;
+
    public CompositeNodJob(List<Synthesizer> dataPlaneSynthesizer,
-         List<QuerySynthesizer> querySynthesizer, NodeSet nodeSet) {
+         List<QuerySynthesizer> querySynthesizer, NodeSet nodeSet, String tag) {
       _numPrograms = dataPlaneSynthesizer.size();
       if (_numPrograms != querySynthesizer.size()) {
          throw new BatfishException(
@@ -49,6 +51,7 @@ public class CompositeNodJob implements Callable<NodJobResult> {
       _querySynthesizers = querySynthesizer;
       _nodeSet = new NodeSet();
       _nodeSet.addAll(nodeSet);
+      _tag = tag;
    }
 
    @Override
@@ -104,7 +107,12 @@ public class CompositeNodJob implements Callable<NodJobResult> {
                Expr[] reversedVars = reversedVarList.toArray(new Expr[] {});
                Expr substitutedAnswer = answer.substituteVars(reversedVars);
                BoolExpr solverInput = (BoolExpr) substitutedAnswer;
-               answers[i] = solverInput;
+               if (_querySynthesizers.get(i).getNegate()) {
+                  answers[i] = ctx.mkNot(solverInput);
+               }
+               else {
+                  answers[i] = solverInput;
+               }
             }
             else {
                return new NodJobResult();
@@ -185,7 +193,7 @@ public class CompositeNodJob implements Callable<NodJobResult> {
          }
       }
       return new Flow(node, new Ip(src_ip), new Ip(dst_ip), (int) src_port,
-            (int) dst_port, IpProtocol.fromNumber((int) protocol));
+            (int) dst_port, IpProtocol.fromNumber((int) protocol), _tag);
    }
 
 }

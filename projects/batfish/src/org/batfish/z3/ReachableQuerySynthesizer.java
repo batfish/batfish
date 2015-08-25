@@ -14,7 +14,7 @@ import org.batfish.z3.node.SaneExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Z3Exception;
 
-public class ReachableQuerySynthesizer implements QuerySynthesizer {
+public class ReachableQuerySynthesizer extends BaseQuerySynthesizer {
 
    private String _acceptNode;
    private String _originationNode;

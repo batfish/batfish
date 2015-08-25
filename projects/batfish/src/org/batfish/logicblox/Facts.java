@@ -205,7 +205,7 @@ public class Facts {
    private static Map<String, String> getTrafficFactColumnHeaders() {
       Map<String, String> map = new TreeMap<String, String>();
       map.put("DuplicateRoleFlows", "DUMMY");
-      map.put("SetFlowOriginate", "NODE|SRCIP|DSTIP|SRCPORT|DSTPORT|IPPROTOCOL");
+      map.put("SetFlowOriginate", "NODE|SRCIP|DSTIP|SRCPORT|DSTPORT|IPPROTOCOL|TAG");
       return Collections.unmodifiableMap(map);
    }
 

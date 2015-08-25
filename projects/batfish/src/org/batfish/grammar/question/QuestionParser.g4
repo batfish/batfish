@@ -494,6 +494,8 @@ property_boolean_expr
 question
 :
    failure_question
+   | ingress_path_question
+   | local_path_question
    | multipath_question
    | verify_question
 ;

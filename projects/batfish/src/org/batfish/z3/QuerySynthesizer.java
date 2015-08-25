@@ -8,4 +8,6 @@ public interface QuerySynthesizer {
 
    String getQueryText();
 
+   boolean getNegate();
+
 }

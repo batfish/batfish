@@ -16,14 +16,17 @@ public class Flow implements Comparable<Flow> {
 
    private final Integer _srcPort;
 
+   private final String _tag;
+
    public Flow(String ingressNode, Ip srcIp, Ip dstIp, Integer srcPort,
-         Integer dstPort, IpProtocol ipProtocol) {
+         Integer dstPort, IpProtocol ipProtocol, String tag) {
       _ingressNode = ingressNode;
       _srcIp = srcIp;
       _dstIp = dstIp;
       _srcPort = srcPort;
       _dstPort = dstPort;
       _ipProtocol = ipProtocol;
+      _tag = tag;
       if ((srcPort == null || dstPort == null)
             && (srcPort != null || dstPort != null)) {
          throw new BatfishException(
@@ -91,7 +94,7 @@ public class Flow implements Comparable<Flow> {
       else if (!_srcPort.equals(other._srcPort)) {
          return false;
       }
-      return true;
+      return _tag.equals(other._tag);
    }
 
    public Ip getDstIp() {
@@ -118,6 +121,10 @@ public class Flow implements Comparable<Flow> {
       return _srcPort;
    }
 
+   public String getTag() {
+      return _tag;
+   }
+
    @Override
    public int hashCode() {
       final int prime = 31;
@@ -128,6 +135,7 @@ public class Flow implements Comparable<Flow> {
       result = prime * result + _ipProtocol.hashCode();
       result = prime * result + _srcIp.hashCode();
       result = prime * result + ((_srcPort == null) ? 0 : _srcPort.hashCode());
+      result = prime * result + _tag.hashCode();
       return result;
    }
 
@@ -138,15 +146,28 @@ public class Flow implements Comparable<Flow> {
       long dst_port = _dstPort == null ? 0 : _dstPort;
       long protocol = _ipProtocol.number();
       String line = _ingressNode + "|" + src_ip + "|" + dst_ip + "|" + src_port
-            + "|" + dst_port + "|" + protocol + "\n";
+            + "|" + dst_port + "|" + protocol + "|" + _tag + "\n";
       return line;
    }
 
    @Override
    public String toString() {
+      boolean tcp = _ipProtocol == IpProtocol.TCP;
+      boolean udp = _ipProtocol == IpProtocol.UDP;
+      String srcPort;
+      String dstPort;
+      if (tcp || udp) {
+         srcPort = NamedPort.nameFromNumber(_srcPort);
+         dstPort = NamedPort.nameFromNumber(_dstPort);
+      }
+      else {
+         srcPort = "N/A";
+         dstPort = "N/A";
+      }
       return "Flow<ingressNode:" + _ingressNode + ", srcIp:" + _srcIp
             + ", dstIp:" + _dstIp + ", IpProtocol:" + _ipProtocol
-            + ", srcPort:" + _srcPort + ", dstPort:" + _dstPort + ">";
+            + ", srcPort:" + srcPort + ", dstPort:" + dstPort + ", tag:" + _tag
+            + ">";
    }
 
 }

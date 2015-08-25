@@ -10,7 +10,6 @@ import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.Flow;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
-import org.batfish.representation.NamedPort;
 import org.batfish.representation.OriginType;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RoutingProtocol;
@@ -117,6 +116,8 @@ public class EntityTable {
 
    private long[] _flowSrcPorts;
 
+   private String[] _flowTags;
+
    private long[] _networkAddresses;
 
    private BigInteger[] _networkIndices;
@@ -182,6 +183,10 @@ public class EntityTable {
       currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_srcPort");
       _flowSrcPorts = ((Int64Column) currentFlowProperty.getColumns().get(1))
             .getRows();
+
+      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_tag");
+      _flowTags = ((StringColumn) ((EntityColumn) currentFlowProperty
+            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
 
       // get indices
       ec = (EntityColumn) currentFlowProperty.getColumns().get(0);
@@ -371,35 +376,14 @@ public class EntityTable {
             .fromNumber((int) (_flowProtocols[listIndex]));
       int srcPort = (int) _flowSrcPorts[listIndex];
       int dstPort = (int) _flowDstPorts[listIndex];
-      Flow flow = new Flow(node, srcIp, dstIp, srcPort, dstPort, protocol);
+      String tag = _flowTags[listIndex];
+      Flow flow = new Flow(node, srcIp, dstIp, srcPort, dstPort, protocol, tag);
       return flow;
    }
 
    public String getFlowText(BigInteger index) {
-      int listIndex = Arrays.binarySearch(_flowIndices, index);
-      String node = _flowNodes[listIndex];
-      String srcIp = new Ip(_flowSrcIps[listIndex]).toString();
-      String dstIp = new Ip(_flowDstIps[listIndex]).toString();
-      IpProtocol protocol = IpProtocol
-            .fromNumber((int) (_flowProtocols[listIndex]));
-      boolean tcp = protocol == IpProtocol.TCP;
-      boolean udp = protocol == IpProtocol.UDP;
-      StringBuilder sb = new StringBuilder();
-      sb.append("Flow<" + node + ", " + protocol + ", " + srcIp + ", " + dstIp
-            + ", ");
-      if (tcp || udp) {
-         String srcPort = NamedPort
-               .nameFromNumber((int) _flowSrcPorts[listIndex]);
-         String dstPort = NamedPort
-               .nameFromNumber((int) _flowDstPorts[listIndex]);
-         sb.append(srcPort + ", " + dstPort);
-      }
-      else {
-         sb.append("N/A, N/A");
-      }
-      sb.append(">");
-      String output = sb.toString();
-      return output;
+      Flow flow = getFlow(index);
+      return flow.toString();
    }
 
    public String getNetwork(BigInteger index) {

@@ -9,11 +9,8 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.UUID;
 
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -38,7 +35,7 @@ public class WorkMgrService {
 //      _logger.info("WMS:getInfo\n");
 //      JSONArray id = new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, Main.getWorkMgr()
 //            .getStatusJson()));
-//      
+//
 //      return Response.ok()
 //            .entity(id)
 ////            .header("Access-Control-Allow-Origin","*")
@@ -63,7 +60,7 @@ public class WorkMgrService {
             .getStatusJson()));
 
       return id.toString();
-      
+
 //      return Response.ok()
 //            .entity(id)
 ////            .header("Access-Control-Allow-Origin","*")
@@ -104,7 +101,7 @@ public class WorkMgrService {
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
    }
-   
+
    @GET
    @Path(CoordConsts.SVC_WORK_QUEUE_WORK_RSC)
    @Produces(MediaType.APPLICATION_JSON)
@@ -142,7 +139,7 @@ public class WorkMgrService {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "workid not supplied"));
          }
-         
+
          QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
 
          if (work == null) {
@@ -175,7 +172,7 @@ public class WorkMgrService {
          if (name == null || name.equals("")) {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, "Testrig name not supplied"));
          }
-         
+
          Main.getWorkMgr().uploadTestrig(name, fileStream);
 
          return new JSONArray(

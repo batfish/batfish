@@ -62,6 +62,9 @@ public class FlowTrace implements Comparable<FlowTrace> {
          else if (hop.contains("noRoute")) {
             _disposition = FlowDisposition.NO_ROUTE;
          }
+         else if (hop.contains("neighborUnreachable")) {
+            _disposition = FlowDisposition.NEIGHBOR_UNREACHABLE;
+         }
       }
       if (_disposition == null) {
          throw new BatfishException(

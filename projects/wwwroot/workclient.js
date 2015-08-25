@@ -106,6 +106,9 @@ function fnDoWork(worktype) {
         return;
     }
 
+    var dataPlaneQuery = document.getElementById("chkDataPlaneQuery").checked;
+    var differentialQuery = document.getElementById("chkDifferentialQuery").checked;
+
     var reqParams = {};
 
     switch (worktype) {
@@ -171,7 +174,7 @@ function fnDoWork(worktype) {
             reqParams[ARG_QUESTION_NAME] = questionName;
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
             reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
-            if (diffEnvName != "" && questionName.toLowerCase().indexOf("fail") >= 0) {
+            if (differentialQuery) {
                reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
             }
             break;
@@ -222,6 +225,8 @@ function doFollowOnWork(worktype) {
     if (DEMO_MODE == 0)
         return;
 
+    var dataPlaneQuery = document.getElementById("chkDataPlaneQuery").checked;
+    var differentialQuery = document.getElementById("chkDifferentialQuery").checked;
     var qName = jQuery("#txtQuestionName").val();
     switch (worktype) {
         case "vendorspecific":
@@ -266,26 +271,20 @@ function doFollowOnWork(worktype) {
             bfUpdateDebugInfo("Done dumping z3 encoding");
             break;
         case "answerquestion":
-            if (qName.toLowerCase().indexOf("multi") >= 0) {
-                fnDoWork("postflows");
-            }
-            else if (qName.toLowerCase().indexOf("failure") >= 0) {
-                fnDoWork("postdiffflows");
+            if (dataPlaneQuery) {
+                if (differentialQuery) {
+                    fnDoWork("postdiffflows");
+                }
+                else {
+                    fnDoWork("postflows");
+                }
             }
             else {
                 bfUpdateDebugInfo("Done answering query");
             }
             break;
         case "postflows":
-            if (qName.toLowerCase().indexOf("failure") >= 0) {
-               fnDoWork("postdiffflows");
-            }
-            else if (qName.toLowerCase().indexOf("multi") >= 0) {
-                fnDoWork("gethistory");
-            }
-            else {
-               fnDoWork("getflowtraces");
-            }
+            fnDoWork("gethistory");
             break;
         case "postdiffflows":
             fnDoWork("getdiffhistory");
