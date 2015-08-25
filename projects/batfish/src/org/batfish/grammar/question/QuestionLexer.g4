@@ -335,6 +335,16 @@ GT
    '>'
 ;
 
+INGRESS_PATH
+:
+   'ingress-path'
+;
+
+LOCAL_PATH
+:
+   'local-path'
+;
+
 MINUS
 :
    '-'

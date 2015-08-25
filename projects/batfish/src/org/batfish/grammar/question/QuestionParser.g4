@@ -208,6 +208,11 @@ if_statement
    )?
 ;
 
+ingress_path_question
+:
+  INGRESS_PATH
+;
+
 int_assignment
 :
    VARIABLE COLON_EQUALS int_expr SEMICOLON
@@ -333,6 +338,11 @@ ip_expr
 literal_int_expr
 :
    DEC
+;
+
+local_path_question
+:
+   LOCAL_PATH
 ;
 
 multipath_question

@@ -104,6 +104,8 @@ import org.batfish.logicblox.TopologyFactExtractor;
 import org.batfish.main.Settings.EnvironmentSettings;
 import org.batfish.question.DestinationQuestion;
 import org.batfish.question.FailureQuestion;
+import org.batfish.question.IngressPathQuestion;
+import org.batfish.question.LocalPathQuestion;
 import org.batfish.question.MultipathQuestion;
 import org.batfish.question.Question;
 import org.batfish.question.VerifyProgram;
@@ -398,6 +400,14 @@ public class Batfish implements AutoCloseable {
          answerFailure((FailureQuestion) question);
          break;
 
+      case INGRESS_PATH:
+         answerIngressPath((IngressPathQuestion) question);
+         break;
+
+      case LOCAL_PATH:
+         answerLocalPath((LocalPathQuestion) question);
+         break;
+
       case MULTIPATH:
          answerMultipath((MultipathQuestion) question);
          break;
@@ -478,6 +488,14 @@ public class Batfish implements AutoCloseable {
       }
       dumpFacts(trafficFactBins, _baseEnvSettings);
       dumpFacts(trafficFactBins, _diffEnvSettings);
+   }
+
+   private void answerIngressPath(IngressPathQuestion question) {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+   }
+
+   private void answerLocalPath(LocalPathQuestion question) {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
    private void answerMultipath(MultipathQuestion question) {

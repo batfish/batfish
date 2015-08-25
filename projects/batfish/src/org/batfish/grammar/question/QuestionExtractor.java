@@ -34,6 +34,7 @@ import org.batfish.question.GeneratedRoutePrefixExpr;
 import org.batfish.question.GtExpr;
 import org.batfish.question.IfExpr;
 import org.batfish.question.IfStatement;
+import org.batfish.question.IngressPathQuestion;
 import org.batfish.question.IntExpr;
 import org.batfish.question.IntegerAssignment;
 import org.batfish.question.InterfaceBooleanExpr;
@@ -42,6 +43,7 @@ import org.batfish.question.InterfacePrefixExpr;
 import org.batfish.question.InterfaceStringExpr;
 import org.batfish.question.IpExpr;
 import org.batfish.question.LiteralIntExpr;
+import org.batfish.question.LocalPathQuestion;
 import org.batfish.question.MultipathQuestion;
 import org.batfish.question.NeqExpr;
 import org.batfish.question.NodeBooleanExpr;
@@ -93,6 +95,18 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void enterFailure_question(Failure_questionContext ctx) {
       FailureQuestion failureQuestion = new FailureQuestion();
       _question = failureQuestion;
+   }
+
+   @Override
+   public void enterIngress_path_question(Ingress_path_questionContext ctx) {
+      IngressPathQuestion question = new IngressPathQuestion();
+      _question = question;
+   }
+
+   @Override
+   public void enterLocal_path_question(Local_path_questionContext ctx) {
+      LocalPathQuestion question = new LocalPathQuestion();
+      _question = question;
    }
 
    @Override
