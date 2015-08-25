@@ -131,8 +131,11 @@ bft_inet6_tail
 bft_null
 :
    (
-      INET_VPN
+      INET_MDT
+      | INET_MVPN
+      | INET_VPN
       | INET6_VPN
+      | L2VPN
    ) s_null_filler
 ;
 
@@ -326,6 +329,7 @@ bt_null
       AUTHENTICATION_KEY
       | BFD_LIVENESS_DETECTION
       | HOLD_TIME
+      | KEEP
       | LOG_UPDOWN
       | OUT_DELAY
       | PRECISION_TIMERS

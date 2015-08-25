@@ -52,11 +52,13 @@ famt_inet_tail
 // intentional blank
 
    | ifamt_address
+   | ifamt_apply_groups
    | ifamt_apply_groups_except
    | ifamt_filter
    | ifamt_mtu
    | ifamt_no_redirects
    | ifamt_null
+   | ifamt_rpf_check
 ;
 
 famt_inet6
@@ -130,12 +132,18 @@ ifamat_primary
 
 ifamat_vrrp_group
 :
-   VRRP_GROUP name = variable ifamat_vrrp_group_tail
+   VRRP_GROUP
+   (
+      name = variable
+      | WILDCARD
+   ) ifamat_vrrp_group_tail
 ;
 
 ifamat_vrrp_group_tail
 :
    ivrrpt_accept_data
+   | ivrrpt_advertise_interval
+   | ivrrpt_authentication_type
    | ivrrpt_preempt
    | ivrrpt_priority
    | ivrrpt_track
@@ -144,7 +152,11 @@ ifamat_vrrp_group_tail
 
 ifamt_address
 :
-   ADDRESS IP_PREFIX ifamt_address_tail?
+   ADDRESS
+   (
+      IP_PREFIX
+      | WILDCARD
+   ) ifamt_address_tail?
 ;
 
 ifamt_address_tail
@@ -154,6 +166,11 @@ ifamt_address_tail
    | ifamat_preferred
    | ifamat_primary
    | ifamat_vrrp_group
+;
+
+ifamt_apply_groups
+:
+   s_apply_groups
 ;
 
 ifamt_apply_groups_except
@@ -179,9 +196,15 @@ ifamt_no_redirects
 ifamt_null
 :
    (
-      SAMPLING
+      POLICER
+      | SAMPLING
       | SERVICE
    ) s_null_filler
+;
+
+ifamt_rpf_check
+:
+   RPF_CHECK FAIL_FILTER name = variable
 ;
 
 interface_mode
@@ -366,6 +389,16 @@ ivrrpt_accept_data
    ACCEPT_DATA
 ;
 
+ivrrpt_advertise_interval
+:
+   ADVERTISE_INTERVAL DEC
+;
+
+ivrrpt_authentication_type
+:
+   AUTHENTICATION_TYPE SIMPLE
+;
+
 ivrrpt_preempt
 :
    PREEMPT
@@ -384,6 +417,7 @@ ivrrpt_track
 ivrrpt_track_tail
 :
    ivrrptt_interface
+   | ivrrptt_route
 ;
 
 ivrrpt_virtual_address
@@ -399,6 +433,11 @@ ivrrptt_interface
 ivrrptt_interface_tail
 :
    ivrrptti_priority_cost
+;
+
+ivrrptt_route
+:
+   ROUTE IP_PREFIX ROUTING_INSTANCE variable PRIORITY_COST DEC
 ;
 
 ivrrptti_priority_cost

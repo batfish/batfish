@@ -81,6 +81,11 @@ ADVERTISE_INACTIVE
    'advertise-inactive'
 ;
 
+ADVERTISE_INTERVAL
+:
+   'advertise-interval'
+;
+
 ADVERTISE_PEER_AS
 :
    'advertise-peer-as'
@@ -370,6 +375,11 @@ DEFAULT_ACTION
    'default-action'
 ;
 
+DEFAULT_ADDRESS_SELECTION
+:
+   'default-address-selection'
+;
+
 DEFAULT_LSA
 :
    'default-lsa'
@@ -620,6 +630,11 @@ FIREWALL
    'firewall'
 ;
 
+FIRST_FRAGMENT
+:
+   'first-fragment'
+;
+
 FLEXIBLE_VLAN_TAGGING
 :
    'flexible-vlan-tagging'
@@ -865,6 +880,16 @@ INET6
    'inet6'
 ;
 
+INET_MDT
+:
+   'inet-mdt'
+;
+
+INET_MVPN
+:
+   'inet-mvpn'
+;
+
 INET_VPN
 :
    'inet-vpn'
@@ -995,6 +1020,11 @@ ISO
    'iso' -> pushMode(M_ISO)
 ;
 
+KEEP
+:
+   'keep'
+;
+
 KERBEROS_SEC
 :
    'kerberos-sec'
@@ -1098,6 +1128,11 @@ LEARN_VLAN_1P_PRIORITY
 LEVEL
 :
    'level'
+;
+
+LINK_PROTECTION
+:
+   'link-protection'
 ;
 
 LLDP
@@ -1328,6 +1363,11 @@ MULTIPLIER
 MULTISERVICE_OPTIONS
 :
    'multiservice-options'
+;
+
+MVPN
+:
+   'mvpn'
 ;
 
 NAME_SERVER
@@ -1660,6 +1700,11 @@ PORTS
    'ports'
 ;
 
+PORT_MIRROR
+:
+   'port-mirror'
+;
+
 PORT_MODE
 :
    'port-mode'
@@ -1773,6 +1818,11 @@ PROTOCOL
 PROTOCOLS
 :
    'protocols'
+;
+
+PROVIDER_TUNNEL
+:
+   'provider-tunnel'
 ;
 
 QUALIFIED_NEXT_HOP
@@ -2003,6 +2053,11 @@ SET
 SHORTCUTS
 :
    'shortcuts'
+;
+
+SIMPLE
+:
+   'simple'
 ;
 
 SRLG
@@ -2953,6 +3008,11 @@ M_DSCP_WS
 ;
 
 mode M_Interface;
+
+M_Interface_NEWLINE
+:
+   F_NewlineChar+ -> type(NEWLINE), popMode
+;
 
 M_Interface_INTERFACE
 :

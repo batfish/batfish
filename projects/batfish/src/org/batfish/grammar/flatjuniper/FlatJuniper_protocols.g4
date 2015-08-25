@@ -34,6 +34,7 @@ s_protocols_null
       | MLD
       | MSDP
       | MSTP
+      | MVPN
       | NEIGHBOR_DISCOVERY
       | PIM
       | ROUTER_ADVERTISEMENT

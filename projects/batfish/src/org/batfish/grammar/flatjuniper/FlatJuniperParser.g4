@@ -139,6 +139,7 @@ st_null
       | BACKUP_ROUTER
       | COMMIT
       | DDOS_PROTECTION
+      | DEFAULT_ADDRESS_SELECTION
       | DOMAIN_NAME
       | DOMAIN_SEARCH
       | INTERNET_OPTIONS
@@ -149,6 +150,7 @@ st_null
       | NTP
       | PORTS
       | PROCESSES
+      | RADIUS_SERVER
       | ROOT_AUTHENTICATION
       | SCRIPTS
       | SERVICES

@@ -121,6 +121,11 @@ fromt_protocol
    PROTOCOL protocol = routing_protocol
 ;
 
+fromt_rib
+:
+   RIB name = variable
+;
+
 fromt_route_filter
 :
    ROUTE_FILTER
@@ -529,6 +534,7 @@ tt_from_tail
    | fromt_policy
    | fromt_prefix_list
    | fromt_protocol
+   | fromt_rib
    | fromt_route_filter
    | fromt_route_type
    | fromt_source_address_filter

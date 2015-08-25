@@ -97,6 +97,11 @@ irt_rib_group_tail
    | irrgt_null
 ;
 
+rgt_export_rib
+:
+   EXPORT_RIB rib = variable
+;
+
 rgt_import_policy
 :
    IMPORT_POLICY name = variable
@@ -189,6 +194,7 @@ rit_null
       | CLASS_OF_SERVICE
       | EVENT_OPTIONS
       | FORWARDING_OPTIONS
+      | PROVIDER_TUNNEL
       | SERVICES
       | SNMP
    ) s_null_filler
@@ -330,7 +336,8 @@ rot_rib_groups
 
 rot_rib_groups_tail
 :
-   rgt_import_policy
+   rgt_export_rib
+   | rgt_import_policy
    | rgt_import_rib
 ;
 
