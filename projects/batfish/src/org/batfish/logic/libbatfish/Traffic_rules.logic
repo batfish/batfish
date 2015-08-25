@@ -90,7 +90,7 @@ FlowNullRouted(flow, node) <-
    FibDrop(node, dstIp),
    !FibNeighborUnreachable(node, dstIp, _).
 
-FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow,
+FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol, tag] = flow,
 Flow(flow),
 Flow_dstIp[flow] = dstIp,
 Flow_dstPort[flow] = dstPort,
@@ -98,10 +98,10 @@ Flow_ipProtocol[flow] = protocol,
 Flow_node[flow] = node,
 Flow_srcIp[flow] = srcIp,
 Flow_srcPort[flow] = srcPort,
-FlowTag(flow, tag)
+Flow_tag[flow] = tag
 <-
    SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol, tag).
-FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow,
+FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol, tag] = flow,
 Flow(flow),
 Flow_dstIp[flow] = dstIp,
 Flow_dstPort[flow] = dstPort,
@@ -109,7 +109,7 @@ Flow_ipProtocol[flow] = protocol,
 Flow_node[flow] = node,
 Flow_srcIp[flow] = srcIp,
 Flow_srcPort[flow] = srcPort,
-FlowTag(flow, tag)
+Flow_tag[flow] = tag
 <-
    DuplicateRoleFlows(_),
    SetFlowOriginate(acceptNode, srcIp, dstIp, srcPort, dstPort, protocol, tag),
@@ -411,8 +411,8 @@ FlowSameHeaderRoleTransitNode(flow, similarFlow, transitNode) <-
    FlowSameHeader(flow, similarFlow).
 
 FlowSameHeader(flow1, flow2) <-
-   FlowOriginate[node1, srcIp, dstIp, srcPort, dstPort, protocol] = flow1,
-   FlowOriginate[node2, srcIp, dstIp, srcPort, dstPort, protocol] = flow2,
+   FlowOriginate[node1, srcIp, dstIp, srcPort, dstPort, protocol, tag] = flow1,
+   FlowOriginate[node2, srcIp, dstIp, srcPort, dstPort, protocol, tag] = flow2,
    node1 != node2.
 
 lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.

@@ -33,9 +33,14 @@ Flow_srcPort[flow] = srcPort ->
    Flow(flow),
    int(srcPort).
 
-FlowTag(flow, tag) ->
+Flow_tag[flow] = tag ->
    Flow(flow),
-   string(tag).
+   FlowTag(tag).
+
+FlowTag(x),
+   FlowTag_tag(x:n)
+->
+   string(n).
 
 /// [IpProtocol(x)] =
 ///   [x] is an ip protocol.
