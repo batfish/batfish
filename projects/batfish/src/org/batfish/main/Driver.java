@@ -122,12 +122,19 @@ public class Driver {
                   BfConsts.RELPATH_QUESTIONS_DIR, questionName);
             settings.setQuestionPath(questionPath.resolve(
                   BfConsts.RELPATH_QUESTION_FILE).toString());
-            envSettings.setTrafficFactDumpDir(questionPath.resolve(
-                  Paths.get(BfConsts.RELPATH_BASE, envName,
-                        BfConsts.RELPATH_FACT_DUMP_DIR).toString()).toString());
             if (diffEnvName != null) {
                diffEnvSettings.setTrafficFactDumpDir(questionPath.resolve(
                      Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,
+                           BfConsts.RELPATH_FACT_DUMP_DIR).toString())
+                     .toString());
+               envSettings.setTrafficFactDumpDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName, diffEnvName,
+                           BfConsts.RELPATH_FACT_DUMP_DIR).toString())
+                     .toString());
+            }
+            else {
+               envSettings.setTrafficFactDumpDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName,
                            BfConsts.RELPATH_FACT_DUMP_DIR).toString())
                      .toString());
             }
@@ -138,11 +145,6 @@ public class Driver {
             settings.setFailureInconsistencyQueryPath(queryDir.resolve(
                   Paths.get(envName, BfConsts.RELPATH_FAILURE_QUERY_PREFIX))
                   .toString());
-            // settings.setDiffFailureInconsistencyQueryPath(queryDir
-            // .resolve(
-            // Paths.get(diffEnvName,
-            // BfConsts.RELPATH_FAILURE_QUERY_PREFIX))
-            // .toString());
          }
       }
    }

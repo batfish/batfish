@@ -3,8 +3,10 @@ package org.batfish.z3;
 import java.util.List;
 
 import org.batfish.representation.Edge;
+import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.OriginateExpr;
+import org.batfish.z3.node.PreInInterfaceExpr;
 import org.batfish.z3.node.PreOutEdgeExpr;
 import org.batfish.z3.node.QueryExpr;
 import org.batfish.z3.node.QueryRelationExpr;
@@ -32,6 +34,9 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
       RuleExpr injectSymbolicPackets = new RuleExpr(originate);
       AndExpr queryConditions = new AndExpr();
       queryConditions.addConjunct(new PreOutEdgeExpr(_edge));
+      queryConditions.addConjunct(new PreInInterfaceExpr(_edge.getNode2(),
+            _edge.getInt2()));
+      queryConditions.addConjunct(AcceptExpr.INSTANCE);
       queryConditions.addConjunct(SaneExpr.INSTANCE);
       RuleExpr queryRule = new RuleExpr(queryConditions,
             QueryRelationExpr.INSTANCE);
@@ -48,8 +53,9 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
 
    @Override
    public String getQueryText() {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
-
 
 }

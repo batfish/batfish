@@ -429,7 +429,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answerFailure(FailureQuestion question) {
-      String tag = _settings.getQuestionName();
+      String tag = getDifferentialFlowTag();
       _baseEnvSettings
             .setDumpFactsDir(_baseEnvSettings.getTrafficFactDumpDir());
       _diffEnvSettings
@@ -498,7 +498,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answerLocalPath(LocalPathQuestion question) {
-      String tag = _settings.getQuestionName();
+      String tag = getDifferentialFlowTag();
       _baseEnvSettings
             .setDumpFactsDir(_baseEnvSettings.getTrafficFactDumpDir());
       _diffEnvSettings
@@ -564,7 +564,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answerMultipath(MultipathQuestion question) {
-      String tag = _settings.getQuestionName();
+      String tag = getFlowTag();
       _envSettings.setDumpFactsDir(_envSettings.getTrafficFactDumpDir());
       Map<String, Configuration> configurations = loadConfigurations();
       File dataPlanePath = new File(_envSettings.getDataPlanePath());
@@ -2138,8 +2138,13 @@ public class Batfish implements AutoCloseable {
       return configurations;
    }
 
+   private String getDifferentialFlowTag() {
+      return _settings.getQuestionName() + ":" + _settings.getEnvironmentName()
+            + ":" + _settings.getDiffEnvironmentName();
+   }
+
    private void getDifferentialHistory() {
-      String tag = _settings.getQuestionName();
+      String tag = getDifferentialFlowTag();
       LogicBloxFrontend baseLbFrontend = connect(_baseEnvSettings);
       LogicBloxFrontend diffLbFrontend = connect(_diffEnvSettings);
       baseLbFrontend.initEntityTable();
@@ -2186,6 +2191,10 @@ public class Batfish implements AutoCloseable {
       return dataPlane.getFlowSinks();
    }
 
+   private String getFlowTag() {
+      return _settings.getQuestionName() + ":" + _settings.getEnvironmentName();
+   }
+
    private List<String> getHelpPredicates(Map<String, String> predicateSemantics) {
       Set<String> helpPredicateSet = new LinkedHashSet<String>();
       _settings.getHelpPredicates();
@@ -2225,7 +2234,7 @@ public class Batfish implements AutoCloseable {
    // }
 
    private void getHistory() {
-      String tag = _settings.getQuestionName();
+      String tag = getFlowTag();
       LogicBloxFrontend baseLbFrontend = connect(_baseEnvSettings);
       baseLbFrontend.initEntityTable();
       FlowHistory flowHistory = new FlowHistory();
