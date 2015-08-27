@@ -1,52 +1,7 @@
 "use strict";
-var SVC_WORK_MGR_ROOT = "http://localhost:9997/batfishworkmgr/";
-var SVC_POOL_MGR_ROOT = "http://localhost:9998/batfishpoolmgr/";
 
-//
-// these constants come from CoordConsts.java
-// make sure they are in sync with what is there
-//
-var SVC_SUCCESS_KEY = "success";
-var SVC_FAILURE_KEY = "failure";
-
-var SVC_POOL_GETSTATUS_RSC = "getstatus";
-var SVC_POOL_UPDATE_RSC = "updatepool";
-
-var SVC_WORK_GETSTATUS_RSC = "getstatus";
-var SVC_WORK_UPLOAD_ENV_RSC = "uploadenvironment";
-var SVC_WORK_UPLOAD_QUESTION_RSC = "uploadquestion";
-var SVC_WORK_UPLOAD_TESTRIG_RSC = "uploadtestrig";
-var SVC_WORK_QUEUE_WORK_RSC = "queuework";
-var SVC_WORK_GET_WORKSTATUS_RSC = "getworkstatus";
-var SVC_WORK_GET_OBJECT_RSC = "getobject";
-
-var SVC_WORK_OBJECT_KEY = "object";
-var SVC_WORKID_KEY = "workid";
-var SVC_WORKSTATUS_KEY = "workstatus";
-var SVC_WORKITEM_KEY = "workitem";
-var SVC_ENV_NAME_KEY = "envname";
-var SVC_QUESTION_NAME_KEY = "questionname";
-var SVC_TESTRIG_NAME_KEY = "testrigname";
-var SVC_FILE_KEY = "file";
-var SVC_ZIPFILE_KEY = "zipfile";
-var SVC_WORKSPACE_NAME_KEY = "workspace";
-
-var SVC_WORK_OBJECT_KEY = "object";
-var SVC_WORKID_KEY = "workid";
-var SVC_WORKSTATUS_KEY = "workstatus";
-var SVC_WORKITEM_KEY = "workitem";
-var SVC_ENV_NAME_KEY = "envname";
-var SVC_QUESTION_NAME_KEY = "questionname";
-var SVC_TESTRIG_NAME_KEY = "testrigname";
-var SVC_FILE_KEY = "file";
-var SVC_ZIPFILE_KEY = "zipfile";
-var SVC_WORKSPACE_NAME_KEY = "workspace";
-
-//
-// these constants come from BfConsts.java
-// make sure they are in sync with what is there
-//
-
+// These constants come from 'BfConsts.java'.
+// Make sure they are in sync with what is there.
 var ARG_DIFF_ENVIRONMENT_NAME = "diffenv";
 var ARG_ENVIRONMENT_NAME = "env";
 var ARG_LOG_LEVEL = "loglevel";
@@ -97,48 +52,57 @@ var RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
 var RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 var RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
+// These constants come from 'CoordConsts.java'.
+// Make sure they are in sync with what is there.
+var SVC_ENV_NAME_KEY = "envname";
+var SVC_FAILURE_KEY = "failure";
+var SVC_FILE_KEY = "file";
+var SVC_POOL_GETSTATUS_RSC = "getstatus";
+var SVC_POOL_MGR_ROOT = "http://localhost:9998/batfishpoolmgr/";
+var SVC_POOL_UPDATE_RSC = "updatepool";
+var SVC_QUESTION_NAME_KEY = "questionname";
+var SVC_SUCCESS_KEY = "success";
+var SVC_TESTRIG_NAME_KEY = "testrigname";
+var SVC_WORK_GET_OBJECT_RSC = "getobject";
+var SVC_WORK_GET_WORKSTATUS_RSC = "getworkstatus";
+var SVC_WORK_GETSTATUS_RSC = "getstatus";
+var SVC_WORK_MGR_ROOT = "http://localhost:9997/batfishworkmgr/";
+var SVC_WORK_OBJECT_KEY = "object";
+var SVC_WORK_QUEUE_WORK_RSC = "queuework";
+var SVC_WORK_UPLOAD_ENV_RSC = "uploadenvironment";
+var SVC_WORK_UPLOAD_QUESTION_RSC = "uploadquestion";
+var SVC_WORK_UPLOAD_TESTRIG_RSC = "uploadtestrig";
+var SVC_WORKID_KEY = "workid";
+var SVC_WORKITEM_KEY = "workitem";
+var SVC_WORKSPACE_NAME_KEY = "workspace";
+var SVC_WORKSTATUS_KEY = "workstatus";
+var SVC_ZIPFILE_KEY = "zipfile";
+
 $(document).ajaxError(function(event, request, settings, thrownError) {
    bfUpdateDebugInfo(settings.url + " " + thrownError + " " + request);
 });
 
-function bfUpdateCoordinatorLocation() {
+var debugLog = [];
 
-   var coordinatorHost = jQuery("#txtCoordinatorHost").val();
+var maxLogEntries = 10000;
 
-   if (coordinatorHost == "") {
-      alert("Specify a coordinator host");
-      return;
-   }
+function bfDownloadObject(testrigName, objectName) {
+   var uri = encodeURI(SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?"
+         + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY
+         + "=" + objectName);
 
-   SVC_WORK_MGR_ROOT = "http://" + coordinatorHost + ":9997/batfishworkmgr/";
-   SVC_POOL_MGR_ROOT = "http://" + coordinatorHost + ":9998/batfishpoolmgr/";
+   bfUpdateDebugInfo("Fetching " + uri);
 
-   bfUpdateDebugInfo("Coordinator host is updated to " + coordinatorHost);
+   window.location.assign(uri);
 }
 
-function bfUploadData(taskname, url_parm, data, callback, worktype) {
-   console.log("bfUploadData: ", taskname, url_parm);
-   jQuery.ajax({
-      url : url_parm,
-      type : "POST",
-      contentType : false,
-      processData : false,
-      data : data,
-
-      error : function(_, textStatus, errorThrown) {
-         alert(taskname + " failed: ", textStatus, errorThrown);
-      },
-      success : function(response, textStatus) {
-         if (response[0] === SVC_SUCCESS_KEY) {
-            bfUpdateDebugInfo(taskname + " succeeded");
-            if (callback != undefined)
-               callback(worktype);
-         }
-         else {
-            alert(taskname + " failed: " + response[1]);
-         }
-      }
-   });
+function bfGenericCallback(taskname, result) {
+   if (result[0] === SVC_SUCCESS_KEY) {
+      bfUpdateDebugInfo(taskname + " succeeded");
+   }
+   else {
+      alert(taskname + "failed: " + result[1]);
+   }
 }
 
 function bfGetJson(taskname, url_parm, callback, worktype) {
@@ -177,41 +141,55 @@ function bfGetObject(testrigName, objectName) {
    // window.location.assign(uri);
 }
 
-function bfDownloadObject(testrigName, objectName) {
-   var uri = encodeURI(SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?"
-         + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY
-         + "=" + objectName);
-
-   bfUpdateDebugInfo("Fetching " + uri);
-
-   window.location.assign(uri);
-}
-
-function bfGenericCallback(taskname, result) {
-   if (result[0] === SVC_SUCCESS_KEY) {
-      bfUpdateDebugInfo(taskname + " succeeded");
-   }
-   else {
-      alert(taskname + "failed: " + result[1]);
-   }
-}
-
-var debugLog = [];
-var maxLogEntries = 10000;
-
-function bfUpdateDebugInfo(string) {
-
-   // debugLog.push(bfGetTimestamp() + " " + string);
-   debugLog.splice(0, 0, bfGetTimestamp() + " " + string);
-
-   while (debugLog.length > maxLogEntries) {
-      debugLog.shift();
-   }
-
-   $("#divDebugInfo").html(debugLog.join("\n"));
-}
-
 function bfGetTimestamp() {
    var now = new Date();
    return now.toLocaleTimeString();
+}
+
+function bfUpdateCoordinatorLocation() {
+
+   var coordinatorHost = jQuery("#txtCoordinatorHost").val();
+
+   if (coordinatorHost == "") {
+      alert("Specify a coordinator host");
+      return;
+   }
+
+   SVC_WORK_MGR_ROOT = "http://" + coordinatorHost + ":9997/batfishworkmgr/";
+   SVC_POOL_MGR_ROOT = "http://" + coordinatorHost + ":9998/batfishpoolmgr/";
+
+   bfUpdateDebugInfo("Coordinator host is updated to " + coordinatorHost);
+}
+
+function bfUpdateDebugInfo(string) {
+   debugLog.splice(0, 0, bfGetTimestamp() + " " + string);
+   while (debugLog.length > maxLogEntries) {
+      debugLog.shift();
+   }
+   $("#divDebugInfo").html(debugLog.join("\n"));
+}
+
+function bfUploadData(taskname, url_parm, data, callback, worktype) {
+   console.log("bfUploadData: ", taskname, url_parm);
+   jQuery.ajax({
+      url : url_parm,
+      type : "POST",
+      contentType : false,
+      processData : false,
+      data : data,
+
+      error : function(_, textStatus, errorThrown) {
+         alert(taskname + " failed: ", textStatus, errorThrown);
+      },
+      success : function(response, textStatus) {
+         if (response[0] === SVC_SUCCESS_KEY) {
+            bfUpdateDebugInfo(taskname + " succeeded");
+            if (callback != undefined)
+               callback(worktype);
+         }
+         else {
+            alert(taskname + " failed: " + response[1]);
+         }
+      }
+   });
 }
