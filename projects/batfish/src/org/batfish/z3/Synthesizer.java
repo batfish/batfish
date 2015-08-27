@@ -305,10 +305,15 @@ public class Synthesizer {
    }
 
    private final Map<String, Configuration> _configurations;
+
    private final FibMap _fibs;
+
    private InterfaceSet _flowSinks;
+
    private final PolicyRouteFibNodeMap _prFibs;
+
    private final boolean _simplify;
+
    private final EdgeSet _topologyEdges;
 
    private final Map<String, Set<Interface>> _topologyInterfaces;
@@ -318,7 +323,6 @@ public class Synthesizer {
    public Synthesizer(Map<String, Configuration> configurations,
          DataPlane dataPlane, boolean simplify) {
       _configurations = configurations;
-      pruneInterfaces();
       _fibs = dataPlane.getFibs();
       _prFibs = dataPlane.getPolicyRouteFibNodeMap();
       _topologyEdges = dataPlane.getTopologyEdges();
@@ -327,6 +331,7 @@ public class Synthesizer {
       _topologyInterfaces = new TreeMap<String, Set<Interface>>();
       _warnings = new ArrayList<String>();
       computeTopologyInterfaces();
+      pruneInterfaces();
    }
 
    private void computeTopologyInterfaces() {
@@ -350,11 +355,14 @@ public class Synthesizer {
          for (String ifaceName : nodeInterfaces.keySet()) {
             if (isFlowSink(hostname, ifaceName)) {
                Interface iface = nodeInterfaces.get(ifaceName);
-               if (!_topologyInterfaces.containsKey(hostname)) {
-                  _topologyInterfaces.put(hostname, new TreeSet<Interface>());
+               if (iface.getActive()) {
+                  if (!_topologyInterfaces.containsKey(hostname)) {
+                     _topologyInterfaces
+                           .put(hostname, new TreeSet<Interface>());
+                  }
+                  Set<Interface> interfaces = _topologyInterfaces.get(hostname);
+                  interfaces.add(iface);
                }
-               Set<Interface> interfaces = _topologyInterfaces.get(hostname);
-               interfaces.add(iface);
             }
          }
       }
@@ -1378,12 +1386,20 @@ public class Synthesizer {
 
    private void pruneInterfaces() {
       for (Configuration c : _configurations.values()) {
+         String hostname = c.getHostname();
          Set<String> prunedInterfaces = new HashSet<String>();
          Map<String, Interface> interfaces = c.getInterfaces();
+         Set<Interface> topologyInterfaces = _topologyInterfaces.get(hostname);
          for (Interface i : interfaces.values()) {
             String ifaceName = i.getName();
-            if (!i.getActive() || ifaceName.startsWith(FAKE_INTERFACE_PREFIX)) {
+            if ((!i.getActive() && !topologyInterfaces.contains(i))
+                  || ifaceName.startsWith(FAKE_INTERFACE_PREFIX)) {
                prunedInterfaces.add(ifaceName);
+            }
+            if (!i.getActive() && topologyInterfaces.contains(i)) {
+               Interface blankInterface = new Interface(ifaceName);
+               blankInterface.setActive(false);
+               interfaces.put(ifaceName, blankInterface);
             }
          }
          for (String i : prunedInterfaces) {

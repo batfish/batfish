@@ -82,40 +82,52 @@ public class NodJob implements Callable<NodJobResult> {
             }
          }
          Expr answer = fix.getAnswer();
+         BoolExpr solverInput;
          if (answer.getArgs().length > 0) {
             List<Expr> reversedVarList = new ArrayList<Expr>();
             reversedVarList.addAll(program.getVariablesAsConsts().values());
             Collections.reverse(reversedVarList);
             Expr[] reversedVars = reversedVarList.toArray(new Expr[] {});
             Expr substitutedAnswer = answer.substituteVars(reversedVars);
-            BoolExpr solverInput = (BoolExpr) substitutedAnswer;
-            Solver solver = ctx.mkSolver();
-            solver.add(solverInput);
-            Status solverStatus = solver.check();
-            if (solverStatus != Status.SATISFIABLE) {
-               throw new BatfishException(
-                     "Sanity check failed: satisfiable expression no longer satisfiable in second stage");
-            }
-            Model model = solver.getModel();
-            Map<String, Long> constraints = new LinkedHashMap<String, Long>();
-            for (FuncDecl constDecl : model.getConstDecls()) {
-               String name = constDecl.getName().toString();
-               BitVecExpr varConstExpr = program.getVariablesAsConsts().get(
-                     name);
-               long val = ((BitVecNum) model.getConstInterp(varConstExpr))
-                     .getLong();
-               constraints.put(name, val);
-            }
-            Set<Flow> flows = new HashSet<Flow>();
-            for (String node : _nodeSet) {
-               Flow flow = createFlow(node, constraints);
-               flows.add(flow);
-            }
-            return new NodJobResult(flows);
+            solverInput = (BoolExpr) substitutedAnswer;
          }
          else {
-            return new NodJobResult();
+            solverInput = (BoolExpr) answer;
          }
+         if (_querySynthesizer.getNegate()) {
+            solverInput = ctx.mkNot(solverInput);
+         }
+         Solver solver = ctx.mkSolver();
+         solver.add(solverInput);
+         Status solverStatus = solver.check();
+         switch (solverStatus) {
+         case SATISFIABLE:
+            break;
+
+         case UNKNOWN:
+            throw new BatfishException("Stage 2 query satisfiability unknown");
+
+         case UNSATISFIABLE:
+            return new NodJobResult();
+
+         default:
+            throw new BatfishException("invalid status");
+         }
+         Model model = solver.getModel();
+         Map<String, Long> constraints = new LinkedHashMap<String, Long>();
+         for (FuncDecl constDecl : model.getConstDecls()) {
+            String name = constDecl.getName().toString();
+            BitVecExpr varConstExpr = program.getVariablesAsConsts().get(name);
+            long val = ((BitVecNum) model.getConstInterp(varConstExpr))
+                  .getLong();
+            constraints.put(name, val);
+         }
+         Set<Flow> flows = new HashSet<Flow>();
+         for (String node : _nodeSet) {
+            Flow flow = createFlow(node, constraints);
+            flows.add(flow);
+         }
+         return new NodJobResult(flows);
       }
       catch (Z3Exception e) {
          return new NodJobResult(new BatfishException(

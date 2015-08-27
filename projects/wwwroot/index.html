@@ -31,7 +31,7 @@
                             </tr>
                             <tr>
                                 <td> Differential Environment: </td>
-                                <td> <input type="text" id="txtDiffEnvironmentName" value="default" /> </td>
+                                <td> <input type="text" id="txtDiffEnvironmentName" value="delta" /> </td>
                                 <td> <input type="file" id="fileUploadDiffEnvironment" /> </td>
                                 <td> <input type="button" id="btnUploadDiffEnvironment" value="Upload environment" onclick="fnUploadDiffEnvironment()" /> </td>
                             </tr>
@@ -59,7 +59,7 @@
                                 <td> <input type="button" id="btnLogGenerateFacts" value="View other errors" onclick="fnGetLog('generatefacts')" /> </td>
                             </tr>
                         </table>
-
+<!--
                         <hr />
 
                         <table>
@@ -69,7 +69,7 @@
                                 <td> <input type="button" id="btnWriteRoutes" value="Write computed routes to output environment" onclick="fnWriteRoutes()" /> </td>
                             </tr>
                         </table>
-
+-->
                         <hr />
 
                         <table>
@@ -91,8 +91,6 @@
                         <table>
                            <tr>
                               <td> <input type="button" value="View control plane query result" onclick="fnGetLog()" /> </td>
-                           </tr>
-                           <tr>
                               <td> <input type="button" id="btnGetHistory" value="Get flow history" onclick="fnGetLog('gethistory')" /> </td>
                               <td> <input type="button" id="btnGetDifferentialHistory" value="Get differential flow history" onclick="fnGetLog('getdiffhistory')" /> </td>
                            </tr>

@@ -22,9 +22,13 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
 
    private String _originationNode;
 
-   public ReachEdgeQuerySynthesizer(String originationNode, Edge edge) {
+   private boolean _requireAcceptance;
+
+   public ReachEdgeQuerySynthesizer(String originationNode, Edge edge,
+         boolean requireAcceptance) {
       _originationNode = originationNode;
       _edge = edge;
+      _requireAcceptance = requireAcceptance;
    }
 
    @Override
@@ -36,7 +40,9 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
       queryConditions.addConjunct(new PreOutEdgeExpr(_edge));
       queryConditions.addConjunct(new PreInInterfaceExpr(_edge.getNode2(),
             _edge.getInt2()));
-      queryConditions.addConjunct(AcceptExpr.INSTANCE);
+      if (_requireAcceptance) {
+         queryConditions.addConjunct(AcceptExpr.INSTANCE);
+      }
       queryConditions.addConjunct(SaneExpr.INSTANCE);
       RuleExpr queryRule = new RuleExpr(queryConditions,
             QueryRelationExpr.INSTANCE);

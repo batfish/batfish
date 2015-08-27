@@ -13,8 +13,7 @@ import org.batfish.z3.node.SaneExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Z3Exception;
 
-public class DropQuerySynthesizer extends
-      BaseQuerySynthesizer {
+public class DropQuerySynthesizer extends BaseQuerySynthesizer {
 
    private String _hostname;
 

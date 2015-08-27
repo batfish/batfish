@@ -82,6 +82,8 @@ public class Driver {
                   BfConsts.RELPATH_EDGE_BLACKLIST_FILE).toString());
             envSettings.setSerializedTopologyPath(envDirPath.resolve(
                   BfConsts.RELPATH_TOPOLOGY_FILE).toString());
+            envSettings.setDeltaConfigurationsDir(envDirPath.resolve(
+                  BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
          }
          String diffEnvName = settings.getDiffEnvironmentName();
          if (diffEnvName != null) {
@@ -107,6 +109,8 @@ public class Driver {
                   BfConsts.RELPATH_EDGE_BLACKLIST_FILE).toString());
             diffEnvSettings.setSerializedTopologyPath(diffEnvDirPath.resolve(
                   BfConsts.RELPATH_TOPOLOGY_FILE).toString());
+            diffEnvSettings.setDeltaConfigurationsDir(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
             settings.setActiveEnvironmentSettings(diffEnvSettings);
          }
          String outputEnvName = settings.getOutputEnvironmentName();

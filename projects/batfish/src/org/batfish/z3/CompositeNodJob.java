@@ -100,22 +100,23 @@ public class CompositeNodJob implements Callable<NodJobResult> {
                }
             }
             Expr answer = fix.getAnswer();
+            BoolExpr solverInput;
             if (answer.getArgs().length > 0) {
                List<Expr> reversedVarList = new ArrayList<Expr>();
                reversedVarList.addAll(program.getVariablesAsConsts().values());
                Collections.reverse(reversedVarList);
                Expr[] reversedVars = reversedVarList.toArray(new Expr[] {});
                Expr substitutedAnswer = answer.substituteVars(reversedVars);
-               BoolExpr solverInput = (BoolExpr) substitutedAnswer;
-               if (_querySynthesizers.get(i).getNegate()) {
-                  answers[i] = ctx.mkNot(solverInput);
-               }
-               else {
-                  answers[i] = solverInput;
-               }
+               solverInput = (BoolExpr) substitutedAnswer;
             }
             else {
-               return new NodJobResult();
+               solverInput = (BoolExpr) answer;
+            }
+            if (_querySynthesizers.get(i).getNegate()) {
+               answers[i] = ctx.mkNot(solverInput);
+            }
+            else {
+               answers[i] = solverInput;
             }
          }
          BoolExpr compositeQuery = ctx.mkAnd(answers);
@@ -134,7 +135,6 @@ public class CompositeNodJob implements Callable<NodJobResult> {
 
          default:
             throw new BatfishException("invalid status");
-
          }
          Model model = solver.getModel();
          Map<String, Long> constraints = new LinkedHashMap<String, Long>();

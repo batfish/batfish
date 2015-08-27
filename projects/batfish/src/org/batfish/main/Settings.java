@@ -23,6 +23,8 @@ public final class Settings {
 
       private String _dataPlanePath;
 
+      private String _deltaConfigurationsDir;
+
       private String _dumpFactsDir;
 
       private String _edgeBlacklistPath;
@@ -41,6 +43,10 @@ public final class Settings {
 
       public String getDataPlanePath() {
          return _dataPlanePath;
+      }
+
+      public String getDeltaConfigurationsDir() {
+         return _deltaConfigurationsDir;
       }
 
       public String getDumpFactsDir() {
@@ -77,6 +83,10 @@ public final class Settings {
 
       public void setDataPlanePath(String path) {
          _dataPlanePath = path;
+      }
+
+      public void setDeltaConfigurationsDir(String deltaConfigurationsDir) {
+         _deltaConfigurationsDir = deltaConfigurationsDir;
       }
 
       public void setDumpFactsDir(String path) {

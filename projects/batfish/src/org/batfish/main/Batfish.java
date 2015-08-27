@@ -63,6 +63,7 @@ import org.batfish.collections.RoleNodeMap;
 import org.batfish.collections.RoleSet;
 import org.batfish.collections.RouteSet;
 import org.batfish.collections.TreeMultiSet;
+import org.batfish.common.BfConsts;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
@@ -241,8 +242,6 @@ public class Batfish implements AutoCloseable {
     * Role name for generated stubs
     */
    private static final String STUB_ROLE = "generated_stubs";
-
-   private static final String TESTRIG_CONFIGURATION_DIRECTORY = "configs";
 
    /**
     * The name of the [optional] topology file within a test-rig
@@ -457,28 +456,33 @@ public class Batfish implements AutoCloseable {
       BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
             null, blacklistNodes, blacklistInterfaces, baseConfigurations);
 
-      // generate base reachability and diff blackhole and blacklist queries
+      // compute composite program and flows
+      List<Synthesizer> synthesizers = new ArrayList<Synthesizer>();
+      synthesizers.add(baseDataPlaneSynthesizer);
+      synthesizers.add(diffDataPlaneSynthesizer);
+      synthesizers.add(baseDataPlaneSynthesizer);
 
-      Map<List<QuerySynthesizer>, NodeSet> queryNodes = new HashMap<List<QuerySynthesizer>, NodeSet>();
+      List<CompositeNodJob> jobs = new ArrayList<CompositeNodJob>();
+
+      // generate base reachability and diff blackhole and blacklist queries
       for (String node : commonNodes) {
          ReachableQuerySynthesizer reachableQuery = new ReachableQuerySynthesizer(
                node, null);
-         DropQuerySynthesizer blackHoleQuery = new DropQuerySynthesizer(node);
+         ReachableQuerySynthesizer blackHoleQuery = new ReachableQuerySynthesizer(
+               node, null);
+         blackHoleQuery.setNegate(true);
          NodeSet nodes = new NodeSet();
          nodes.add(node);
          List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
          queries.add(reachableQuery);
          queries.add(blackHoleQuery);
          queries.add(blacklistQuery);
-         queryNodes.put(queries, nodes);
+         CompositeNodJob job = new CompositeNodJob(synthesizers, queries,
+               nodes, tag);
+         jobs.add(job);
       }
 
-      // compute composite program and flows
-      List<Synthesizer> synthesizers = new ArrayList<Synthesizer>();
-      synthesizers.add(baseDataPlaneSynthesizer);
-      synthesizers.add(diffDataPlaneSynthesizer);
-      synthesizers.add(baseDataPlaneSynthesizer);
-      Set<Flow> flows = computeCompositeNodOutput(synthesizers, queryNodes, tag);
+      Set<Flow> flows = computeCompositeNodOutput(jobs);
 
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
       initTrafficFactBins(trafficFactBins);
@@ -526,15 +530,23 @@ public class Batfish implements AutoCloseable {
       BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
             null, blacklistNodes, blacklistInterfaces, baseConfigurations);
 
+      // compute composite program and flows
+      List<Synthesizer> commonEdgeSynthesizers = new ArrayList<Synthesizer>();
+      commonEdgeSynthesizers.add(baseDataPlaneSynthesizer);
+      commonEdgeSynthesizers.add(diffDataPlaneSynthesizer);
+      commonEdgeSynthesizers.add(baseDataPlaneSynthesizer);
+
+      List<CompositeNodJob> jobs = new ArrayList<CompositeNodJob>();
+
       // generate local edge reachability and black hole queries
-      Map<List<QuerySynthesizer>, NodeSet> queryNodes = new HashMap<List<QuerySynthesizer>, NodeSet>();
       Topology diffTopology = loadTopology(_diffEnvSettings);
-      for (Edge edge : diffTopology.getEdges()) {
+      EdgeSet diffEdges = diffTopology.getEdges();
+      for (Edge edge : diffEdges) {
          String ingressNode = edge.getNode1();
          ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
-               ingressNode, edge);
+               ingressNode, edge, true);
          ReachEdgeQuerySynthesizer noReachQuery = new ReachEdgeQuerySynthesizer(
-               ingressNode, edge);
+               ingressNode, edge, false);
          noReachQuery.setNegate(true);
          List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
          queries.add(reachQuery);
@@ -542,15 +554,39 @@ public class Batfish implements AutoCloseable {
          queries.add(blacklistQuery);
          NodeSet nodes = new NodeSet();
          nodes.add(ingressNode);
-         queryNodes.put(queries, nodes);
+         CompositeNodJob job = new CompositeNodJob(commonEdgeSynthesizers,
+               queries, nodes, tag);
+         jobs.add(job);
       }
 
-      // compute composite program and flows
-      List<Synthesizer> synthesizers = new ArrayList<Synthesizer>();
-      synthesizers.add(baseDataPlaneSynthesizer);
-      synthesizers.add(diffDataPlaneSynthesizer);
-      synthesizers.add(baseDataPlaneSynthesizer);
-      Set<Flow> flows = computeCompositeNodOutput(synthesizers, queryNodes, tag);
+      // we also need queries for nodes next to edges that are now missing, in
+      // the case that those nodes still exist
+      List<Synthesizer> missingEdgeSynthesizers = new ArrayList<Synthesizer>();
+      missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
+      missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
+      Topology baseTopology = loadTopology(_baseEnvSettings);
+      EdgeSet baseEdges = baseTopology.getEdges();
+      EdgeSet missingEdges = new EdgeSet();
+      missingEdges.addAll(baseEdges);
+      missingEdges.removeAll(diffEdges);
+      for (Edge missingEdge : missingEdges) {
+         String ingressNode = missingEdge.getNode1();
+         if (diffConfigurations.containsKey(ingressNode)) {
+            ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
+                  ingressNode, missingEdge, true);
+            List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
+            queries.add(reachQuery);
+            queries.add(blacklistQuery);
+            NodeSet nodes = new NodeSet();
+            nodes.add(ingressNode);
+            CompositeNodJob job = new CompositeNodJob(missingEdgeSynthesizers,
+                  queries, nodes, tag);
+            jobs.add(job);
+         }
+
+      }
+
+      Set<Flow> flows = computeCompositeNodOutput(jobs);
 
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
       initTrafficFactBins(trafficFactBins);
@@ -700,9 +736,7 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private Set<Flow> computeCompositeNodOutput(
-         List<Synthesizer> dataPlaneSynthesizers,
-         Map<List<QuerySynthesizer>, NodeSet> queryNodes, String tag) {
+   private Set<Flow> computeCompositeNodOutput(List<CompositeNodJob> jobs) {
       Set<Flow> flows = new TreeSet<Flow>();
       ExecutorService pool;
       boolean shuffle;
@@ -714,13 +748,6 @@ public class Batfish implements AutoCloseable {
       else {
          pool = Executors.newSingleThreadExecutor();
          shuffle = false;
-      }
-      List<CompositeNodJob> jobs = new ArrayList<CompositeNodJob>();
-      for (final List<QuerySynthesizer> queryList : queryNodes.keySet()) {
-         NodeSet nodes = queryNodes.get(queryList);
-         CompositeNodJob job = new CompositeNodJob(dataPlaneSynthesizers,
-               queryList, nodes, tag);
-         jobs.add(job);
       }
       if (shuffle) {
          Collections.shuffle(jobs);
@@ -1447,7 +1474,7 @@ public class Batfish implements AutoCloseable {
          String fileText = configurationData.get(inputFile);
          String name = inputFile.getName();
          File outputFile = Paths.get(outputPath,
-               TESTRIG_CONFIGURATION_DIRECTORY, name).toFile();
+               BfConsts.RELPATH_CONFIGURATIONS_DIR, name).toFile();
          FlattenVendorConfigurationJob job = new FlattenVendorConfigurationJob(
                _settings, fileText, inputFile, outputFile, warnings);
          jobs.add(job);
@@ -2138,6 +2165,23 @@ public class Batfish implements AutoCloseable {
       return configurations;
    }
 
+   private Map<String, Configuration> getDeltaConfigurations(
+         EnvironmentSettings envSettings) {
+      String deltaConfigurationsDir = envSettings.getDeltaConfigurationsDir();
+      if (deltaConfigurationsDir != null) {
+         File deltaConfigurationsDirAsFile = new File(deltaConfigurationsDir);
+         if (deltaConfigurationsDirAsFile.exists()) {
+            File configParentDir = deltaConfigurationsDirAsFile.getParentFile();
+            Map<File, String> deltaConfigsText = readConfigurationFiles(configParentDir
+                  .toString());
+            Map<String, VendorConfiguration> vendorDeltaConfigs = parseVendorConfigurations(deltaConfigsText);
+            Map<String, Configuration> deltaConfigs = convertConfigurations(vendorDeltaConfigs);
+            return deltaConfigs;
+         }
+      }
+      return Collections.<String, Configuration> emptyMap();
+   }
+
    private String getDifferentialFlowTag() {
       return _settings.getQuestionName() + ":" + _settings.getEnvironmentName()
             + ":" + _settings.getDiffEnvironmentName();
@@ -2195,21 +2239,6 @@ public class Batfish implements AutoCloseable {
       return _settings.getQuestionName() + ":" + _settings.getEnvironmentName();
    }
 
-   private List<String> getHelpPredicates(Map<String, String> predicateSemantics) {
-      Set<String> helpPredicateSet = new LinkedHashSet<String>();
-      _settings.getHelpPredicates();
-      if (_settings.getHelpPredicates() == null) {
-         helpPredicateSet.addAll(predicateSemantics.keySet());
-      }
-      else {
-         helpPredicateSet.addAll(_settings.getHelpPredicates());
-      }
-      List<String> helpPredicates = new ArrayList<String>();
-      helpPredicates.addAll(helpPredicateSet);
-      Collections.sort(helpPredicates);
-      return helpPredicates;
-   }
-
    // private Set<Path> getMultipathQueryPaths(Path directory) {
    // Set<Path> queryPaths = new TreeSet<Path>();
    // try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
@@ -2232,6 +2261,21 @@ public class Batfish implements AutoCloseable {
    // }
    // return queryPaths;
    // }
+
+   private List<String> getHelpPredicates(Map<String, String> predicateSemantics) {
+      Set<String> helpPredicateSet = new LinkedHashSet<String>();
+      _settings.getHelpPredicates();
+      if (_settings.getHelpPredicates() == null) {
+         helpPredicateSet.addAll(predicateSemantics.keySet());
+      }
+      else {
+         helpPredicateSet.addAll(_settings.getHelpPredicates());
+      }
+      List<String> helpPredicates = new ArrayList<String>();
+      helpPredicates.addAll(helpPredicateSet);
+      Collections.sort(helpPredicates);
+      return helpPredicates;
+   }
 
    private void getHistory() {
       String tag = getFlowTag();
@@ -2498,6 +2542,7 @@ public class Batfish implements AutoCloseable {
             .getSerializeIndependentPath());
       processNodeBlacklist(configurations, envSettings);
       processInterfaceBlacklist(configurations, envSettings);
+      processDeltaConfigurations(configurations, envSettings);
       return configurations;
    }
 
@@ -3217,6 +3262,14 @@ public class Batfish implements AutoCloseable {
       writeFile(outputPath, outputString);
    }
 
+   private void processDeltaConfigurations(
+         Map<String, Configuration> configurations,
+         EnvironmentSettings envSettings) {
+      Map<String, Configuration> deltaConfigurations = getDeltaConfigurations(envSettings);
+      configurations.putAll(deltaConfigurations);
+      // TODO: deal with topological changes
+   }
+
    private void processInterfaceBlacklist(
          Map<String, Configuration> configurations,
          EnvironmentSettings envSettings) {
@@ -3251,8 +3304,8 @@ public class Batfish implements AutoCloseable {
       _logger.info("\n*** READING CONFIGURATION FILES ***\n");
       resetTimer();
       Map<File, String> configurationData = new TreeMap<File, String>();
-      File configsPath = Paths
-            .get(testRigPath, TESTRIG_CONFIGURATION_DIRECTORY).toFile();
+      File configsPath = Paths.get(testRigPath,
+            BfConsts.RELPATH_CONFIGURATIONS_DIR).toFile();
       File[] configFilePaths = configsPath.listFiles(new FilenameFilter() {
          @Override
          public boolean accept(File dir, String name) {

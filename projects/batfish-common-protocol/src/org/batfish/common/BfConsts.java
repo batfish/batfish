@@ -56,6 +56,7 @@ public class BfConsts {
    public static final String PREDICATE_FLOW_PATH_HISTORY = "FlowPathHistory";
    public static final String RELPATH_BASE = "base";
    public static final String RELPATH_DATA_PLANE_DIR = "dp";
+   public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
    public static final String RELPATH_DIFF = "diff";
    public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
    public static final String RELPATH_ENV_DIR = "env";
