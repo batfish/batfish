@@ -655,14 +655,14 @@ public class ConfigurationFactExtractor {
             Set<String> levels = new HashSet<String>();
             switch (exportLevel) {
             case LEVEL_1:
-               levels.add(Facts.getLBRoutingProtocol(RoutingProtocol.ISIS_L1));
+               levels.add(RoutingProtocol.ISIS_L1.protocolName());
                break;
             case LEVEL_2:
-               levels.add(Facts.getLBRoutingProtocol(RoutingProtocol.ISIS_L2));
+               levels.add(RoutingProtocol.ISIS_L2.protocolName());
                break;
             case LEVEL_1_2:
-               levels.add(Facts.getLBRoutingProtocol(RoutingProtocol.ISIS_L1));
-               levels.add(Facts.getLBRoutingProtocol(RoutingProtocol.ISIS_L2));
+               levels.add(RoutingProtocol.ISIS_L1.protocolName());
+               levels.add(RoutingProtocol.ISIS_L2.protocolName());
                break;
             default:
                throw new BatfishException("invalid IS-IS level");
@@ -892,7 +892,7 @@ public class ConfigurationFactExtractor {
                   PolicyMapMatchProtocolLine pmmpl = (PolicyMapMatchProtocolLine) matchLine;
                   RoutingProtocol prot = pmmpl.getProtocol();
                   wSetPolicyMapClauseMatchProtocol.append(mapName + "|" + i
-                        + "|" + Facts.getLBRoutingProtocol(prot) + "\n");
+                        + "|" + prot.protocolName() + "\n");
                   break;
 
                case ROUTE_FILTER_LIST:
@@ -1019,21 +1019,13 @@ public class ConfigurationFactExtractor {
                      throw new BatfishException("Invalid level");
                   }
                   if (level1) {
-                     wSetPolicyMapClauseSetProtocol.append(mapName
-                           + "|"
-                           + i
-                           + "|"
-                           + Facts
-                                 .getLBRoutingProtocol(RoutingProtocol.ISIS_L1)
+                     wSetPolicyMapClauseSetProtocol.append(mapName + "|" + i
+                           + "|" + RoutingProtocol.ISIS_L1.protocolName()
                            + "\n");
                   }
                   if (level2) {
-                     wSetPolicyMapClauseSetProtocol.append(mapName
-                           + "|"
-                           + i
-                           + "|"
-                           + Facts
-                                 .getLBRoutingProtocol(RoutingProtocol.ISIS_L2)
+                     wSetPolicyMapClauseSetProtocol.append(mapName + "|" + i
+                           + "|" + RoutingProtocol.ISIS_L2.protocolName()
                            + "\n");
                   }
                   break;

@@ -1,5 +1,7 @@
 package org.batfish.representation;
 
+import org.batfish.main.BatfishException;
+
 public enum OriginType {
    EGP("egp"),
    IGP("igp"),
@@ -11,7 +13,7 @@ public enum OriginType {
             return ot;
          }
       }
-      throw new Error("bad origin type string");
+      throw new BatfishException("bad origin type string");
    }
 
    private String _originType;

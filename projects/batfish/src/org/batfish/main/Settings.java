@@ -218,6 +218,7 @@ public final class Settings {
    private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
    private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
    private static final String ARG_TIMESTAMP = "timestamp";
+   private static final String ARG_TRACE_QUERY = "tracequery";
    private static final String ARG_UPDATE = "update";
    private static final String ARG_USE_PRECOMPUTED_FACTS = "useprecomputedfacts";
    private static final String ARG_VAR_SIZE_MAP_PATH = "vsmpath";
@@ -423,6 +424,7 @@ public final class Settings {
    private boolean _throwOnLexerError;
    private boolean _throwOnParserError;
    private boolean _timestamp;
+   private boolean _traceQuery;
    private boolean _unimplementedAsError;
    private boolean _unimplementedRecord;
    private boolean _update;
@@ -935,6 +937,10 @@ public final class Settings {
 
    public boolean getTimestamp() {
       return _timestamp;
+   }
+
+   public boolean getTraceQuery() {
+      return _traceQuery;
    }
 
    public boolean getUnimplementedAsError() {
@@ -1465,6 +1471,9 @@ public final class Settings {
             .longOpt(BfConsts.COMMAND_GET_DIFFERENTIAL_HISTORY).build());
       _options.addOption(Option.builder().desc("retrieve flow history")
             .longOpt(BfConsts.COMMAND_GET_HISTORY).build());
+      _options.addOption(Option.builder()
+            .desc("get per-trace versions of relations during query")
+            .longOpt(ARG_TRACE_QUERY).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1703,6 +1712,7 @@ public final class Settings {
       _differentialHistory = line
             .hasOption(BfConsts.COMMAND_GET_DIFFERENTIAL_HISTORY);
       _history = line.hasOption(BfConsts.COMMAND_GET_HISTORY);
+      _traceQuery = line.hasOption(ARG_TRACE_QUERY);
    }
 
    public boolean printParseTree() {

@@ -97,7 +97,6 @@ import org.batfish.logicblox.Facts;
 import org.batfish.logicblox.LBInitializationException;
 import org.batfish.logicblox.LBValueType;
 import org.batfish.logicblox.LogicBloxFrontend;
-import org.batfish.logicblox.PrecomputedRoute;
 import org.batfish.logicblox.PredicateInfo;
 import org.batfish.logicblox.ProjectFile;
 import org.batfish.logicblox.QueryException;
@@ -132,6 +131,7 @@ import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapAction;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
+import org.batfish.representation.PrecomputedRoute;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
@@ -247,6 +247,8 @@ public class Batfish implements AutoCloseable {
     * The name of the [optional] topology file within a test-rig
     */
    private static final String TOPOLOGY_FILENAME = "topology.net";
+
+   private static final String TRACE_PREFIX = "trace:";
 
    public static String flatten(String input, BatfishLogger logger,
          Settings settings) {
@@ -2981,8 +2983,7 @@ public class Batfish implements AutoCloseable {
          long srcIp = advert.getSrcIp().asLong();
          String dstNode = advert.getDstNode();
          long dstIp = advert.getDstIp().asLong();
-         String srcProtocol = Facts.getLBRoutingProtocol(advert
-               .getSrcProtocol());
+         String srcProtocol = advert.getSrcProtocol().protocolName();
          String originType = advert.getOriginType().toString();
          int localPref = advert.getLocalPreference();
          int med = advert.getMed();
@@ -3076,7 +3077,7 @@ public class Batfish implements AutoCloseable {
             long nextHopIp = route.getNextHopIp().asLong();
             int admin = route.getAdministrativeCost();
             int cost = route.getCost();
-            String protocol = Facts.getLBRoutingProtocol(route.getProtocol());
+            String protocol = route.getProtocol().protocolName();
             int tag = route.getTag();
             sb.append(node + "|" + networkStart + "|" + networkEnd + "|"
                   + prefixLength + "|" + nextHopIp + "|" + admin + "|" + cost
@@ -3260,6 +3261,42 @@ public class Batfish implements AutoCloseable {
       }
       String outputString = sb.toString();
       writeFile(outputPath, outputString);
+   }
+
+   private void printTracePredicate(LogicBloxFrontend lbFrontend,
+         String predicateName) {
+      List<String> output;
+      printPredicateSemantics(predicateName);
+      String qualifiedName = _predicateInfo.getPredicateNames().get(
+            predicateName);
+      if (qualifiedName == null) { // predicate not found
+         _logger.error("ERROR: No information for predicate: " + predicateName
+               + "\n");
+         return;
+      }
+      Relation relation = lbFrontend.queryPredicate(TRACE_PREFIX
+            + qualifiedName);
+      try {
+         output = lbFrontend.getTracePredicate(_predicateInfo, relation,
+               predicateName);
+         for (String match : output) {
+            _logger.output(match + "\n");
+         }
+      }
+      catch (QueryException q) {
+         _logger.fatal(q.getMessage() + "\n");
+      }
+   }
+
+   public void printTracePredicates(LogicBloxFrontend lbFrontend,
+         Set<String> predicateNames) {
+      // Print predicate(s) here
+      _logger.info("\n*** SUBMITTING QUERY(IES) ***\n");
+      resetTimer();
+      for (String predicateName : predicateNames) {
+         printTracePredicate(lbFrontend, predicateName);
+      }
+      printElapsedTime();
    }
 
    private void processDeltaConfigurations(
@@ -3563,7 +3600,8 @@ public class Batfish implements AutoCloseable {
             || _settings.getDataPlane() || _settings.getWriteRoutes()
             || _settings.getWriteBgpAdvertisements()
             || _settings.getWriteIbgpNeighbors()
-            || _settings.getDifferentialHistory() || _settings.getHistory()) {
+            || _settings.getDifferentialHistory() || _settings.getHistory()
+            || _settings.getTraceQuery()) {
          Map<String, String> logicFiles = getSemanticsFiles();
          _predicateInfo = getPredicateInfo(logicFiles);
          // Print predicate semantics and quit if requested
@@ -3608,7 +3646,7 @@ public class Batfish implements AutoCloseable {
             || _settings.revert() || _settings.getWriteRoutes()
             || _settings.getWriteBgpAdvertisements()
             || _settings.getWriteIbgpNeighbors() || _settings.getRemoveBlocks()
-            || _settings.getKeepBlocks()) {
+            || _settings.getKeepBlocks() || _settings.getTraceQuery()) {
          lbFrontend = connect();
       }
 
@@ -3686,6 +3724,43 @@ public class Batfish implements AutoCloseable {
          else {
             printPredicates(lbFrontend, predicateNames);
          }
+         return;
+      }
+
+      if (_settings.getTraceQuery()) {
+         lbFrontend.initTraceEntityTable();
+         Map<String, String> allPredicateNames = _predicateInfo
+               .getPredicateNames();
+         Set<String> predicateNames = new TreeSet<String>();
+         if (_settings.getQueryAll()) {
+            predicateNames.addAll(allPredicateNames.keySet());
+         }
+         else {
+            predicateNames.addAll(_settings.getPredicates());
+         }
+         printTracePredicates(lbFrontend, predicateNames);
+         // Map<Integer, Map<Long, PrecomputedRoute>> routes = lbFrontend
+         // .getTraceRoutes();
+         // Map<Integer, Map<Long, BgpAdvertisement>> adverts = lbFrontend
+         // .getTraceAdvertisements();
+         // for (int traceNumber : routes.keySet()) {
+         // Map<Long, PrecomputedRoute> currentRoutes = routes
+         // .get(traceNumber);
+         // for (long index : currentRoutes.keySet()) {
+         // PrecomputedRoute route = currentRoutes.get(index);
+         // _logger.output("Trace: " + traceNumber + ", " + route.toString()
+         // + "\n");
+         // }
+         // }
+         // for (int traceNumber : adverts.keySet()) {
+         // Map<Long, BgpAdvertisement> currentAdverts = adverts
+         // .get(traceNumber);
+         // for (long index : currentAdverts.keySet()) {
+         // BgpAdvertisement advert = currentAdverts.get(index);
+         // _logger.output("Trace: " + traceNumber + ", "
+         // + advert.toString() + "\n");
+         // }
+         // }
          return;
       }
 

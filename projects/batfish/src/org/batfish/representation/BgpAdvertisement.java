@@ -124,4 +124,12 @@ public class BgpAdvertisement implements Serializable {
       return _type;
    }
 
+   @Override
+   public String toString() {
+      return "BgpAdvert<" + _type + ", " + _network + ", " + _nextHopIp + ", "
+            + _srcIp + ", " + _dstIp + ", " + _srcProtocol + ", " + _srcNode
+            + ", " + _dstNode + ", " + _localPreference + ", " + _med + ", "
+            + _originatorIp + ", " + _originType + ">";
+   }
+
 }

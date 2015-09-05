@@ -1,10 +1,6 @@
-package org.batfish.logicblox;
+package org.batfish.representation;
 
 import java.io.Serializable;
-
-import org.batfish.representation.Ip;
-import org.batfish.representation.Prefix;
-import org.batfish.representation.RoutingProtocol;
 
 public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
       Serializable {
@@ -14,25 +10,44 @@ public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
     */
    private static final long serialVersionUID = 1L;
 
+   public static final String UNSET_NEXT_HOP = "(unknown)";
+
+   public static final String UNSET_NEXT_HOP_INTERFACE = "dynamic";
+
+   public static final int UNSET_ROUTE_ADMIN = -1;
+
+   public static final int UNSET_ROUTE_COST = -1;
+
+   public static final Ip UNSET_ROUTE_NEXT_HOP_IP = new Ip(-1l);
+
+   public static final int UNSET_ROUTE_TAG = -1;
+
    private final int _administrativeCost;
 
    private final int _cost;
+
+   private final Prefix _network;
+
+   private final transient String _nextHop;
+
+   private final String _nextHopInterface;
 
    private final Ip _nextHopIp;
 
    private final String _node;
 
-   private final Prefix _prefix;
-
    private final RoutingProtocol _protocol;
 
    private final int _tag;
 
-   public PrecomputedRoute(String node, Prefix prefix, Ip nextHopIp,
-         int administrativeCost, int cost, RoutingProtocol protocol, int tag) {
+   public PrecomputedRoute(String node, Prefix network, Ip nextHopIp,
+         String nextHop, String nextHopInterface, int administrativeCost,
+         int cost, RoutingProtocol protocol, int tag) {
       _node = node;
-      _prefix = prefix;
+      _network = network;
       _nextHopIp = nextHopIp;
+      _nextHop = nextHop;
+      _nextHopInterface = nextHopInterface;
       _administrativeCost = administrativeCost;
       _cost = cost;
       _protocol = protocol;
@@ -45,7 +60,7 @@ public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
       if (result != 0) {
          return result;
       }
-      result = _prefix.compareTo(rhs._prefix);
+      result = _network.compareTo(rhs._network);
       if (result != 0) {
          return result;
       }
@@ -87,7 +102,7 @@ public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
       if (!_node.equals(other._node)) {
          return false;
       }
-      if (!_prefix.equals(other._prefix)) {
+      if (!_network.equals(other._network)) {
          return false;
       }
       if (_protocol != other._protocol) {
@@ -107,6 +122,14 @@ public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
       return _cost;
    }
 
+   public String getNextHop() {
+      return _nextHop;
+   }
+
+   public String getNextHopInterface() {
+      return _nextHopInterface;
+   }
+
    public Ip getNextHopIp() {
       return _nextHopIp;
    }
@@ -116,7 +139,7 @@ public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
    }
 
    public Prefix getPrefix() {
-      return _prefix;
+      return _network;
    }
 
    public RoutingProtocol getProtocol() {
@@ -135,10 +158,32 @@ public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
       result = prime * result + _cost;
       result = prime * result + _nextHopIp.hashCode();
       result = prime * result + _node.hashCode();
-      result = prime * result + _prefix.hashCode();
+      result = prime * result + _network.hashCode();
       result = prime * result + _protocol.hashCode();
       result = prime * result + _tag;
       return result;
+   }
+
+   @Override
+   public String toString() {
+      String nextHop = _nextHop;
+      String nextHopIp = _nextHopIp.toString();
+      String tag = Integer.toString(_tag);
+      // extra formatting
+      if (!_nextHopInterface.equals(UNSET_NEXT_HOP_INTERFACE)) {
+         // static interface
+         if (_nextHopIp.equals(UNSET_ROUTE_NEXT_HOP_IP)) {
+            nextHop = "N/A";
+            nextHopIp = "N/A";
+         }
+      }
+      if (_tag == UNSET_ROUTE_TAG) {
+         tag = "none";
+      }
+      return "Route<" + _node.toString() + ", " + _network.toString() + ", "
+            + nextHopIp.toString() + ", " + nextHop.toString() + ", "
+            + _nextHopInterface.toString() + ", " + _administrativeCost + ", "
+            + _cost + ", " + tag + ", " + _protocol.toString() + ">";
    }
 
 }

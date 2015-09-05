@@ -40,12 +40,48 @@ public class LogQLPredicateInfoExtractor extends LogiQLParserBaseListener {
    public void enterRefmode_decl(Refmode_declContext ctx) {
       String predicateName = ctx.refmode_predicate.getText();
       LBValueType refType;
-      if (predicateName.equals("Ip")) {
+      switch (predicateName) {
+
+      case "AdvertisementType":
+         refType = LBValueType.ENTITY_REF_ADVERTISEMENT_TYPE;
+         break;
+
+      case "AutonomousSystem":
+         refType = LBValueType.ENTITY_REF_AUTONOMOUS_SYSTEM;
+         break;
+
+      case "FlowTag":
+         refType = LBValueType.ENTITY_REF_FLOW_TAG;
+         break;
+
+      case "Interface":
+         refType = LBValueType.ENTITY_REF_INTERFACE;
+         break;
+
+      case "Ip":
          refType = LBValueType.ENTITY_REF_IP;
-      }
-      else {
+         break;
+
+      case "Node":
+         refType = LBValueType.ENTITY_REF_NODE;
+         break;
+
+      case "OriginType":
+         refType = LBValueType.ENTITY_REF_ORIGIN_TYPE;
+         break;
+
+      case "PolicyMap":
+         refType = LBValueType.ENTITY_REF_POLICY_MAP;
+         break;
+
+      case "RoutingProtocol":
+         refType = LBValueType.ENTITY_REF_ROUTING_PROTOCOL;
+         break;
+
+      default:
          LBValueType valueType = getTypeDeclValueType(ctx.type_decl());
          refType = getRefType(valueType);
+         break;
       }
       addPredicate(predicateName);
       addPredicateValueType(predicateName, refType);
@@ -87,16 +123,7 @@ public class LogQLPredicateInfoExtractor extends LogiQLParserBaseListener {
       case STRING:
          return LBValueType.ENTITY_REF_STRING;
 
-      case ENTITY_INDEX_BGP_ADVERTISEMENT:
-      case ENTITY_INDEX_FLOW:
-      case ENTITY_INDEX_INT:
-      case ENTITY_REF_IP:
-      case ENTITY_INDEX_NETWORK:
-      case ENTITY_INDEX_ROUTE:
-      case ENTITY_REF_INT:
-      case ENTITY_REF_STRING:
-      case FLOAT:
-      case IP:
+         // $CASES-OMITTED$
       default:
          throw new BatfishException("no refmode type for given value type: "
                + valueType.toString());

@@ -23,6 +23,10 @@ import org.batfish.main.BatfishLogger;
 import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.Flow;
 import org.batfish.representation.Ip;
+import org.batfish.representation.OriginType;
+import org.batfish.representation.PrecomputedRoute;
+import org.batfish.representation.Prefix;
+import org.batfish.representation.RoutingProtocol;
 import org.eclipse.jetty.client.ContentExchange;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpExchange;
@@ -90,6 +94,7 @@ public class LogicBloxFrontend {
    private int _lbWebPort;
    private final TCPTransport _lbWebTransport;
    private BatfishLogger _logger;
+   private TraceEntityTable _traceEntityTable;
    private ConnectBloxWorkspace _workspace;
    private final String _workspaceName;
 
@@ -215,8 +220,7 @@ public class LogicBloxFrontend {
          BigInteger[] advertIndices = ((UInt64Column) ec.getIndexColumn()
                .unwrap()).getRows();
          for (BigInteger index : advertIndices) {
-            BgpAdvertisement advert = _entityTable
-                  .getPrecomputedBgpAdvertisement(index);
+            BgpAdvertisement advert = _entityTable.getBgpAdvertisement(index);
             if (advert != null) {
                adverts.add(advert);
             }
@@ -250,7 +254,7 @@ public class LogicBloxFrontend {
             BigInteger[] flowIndices = ((UInt64Column) ec.getIndexColumn()
                   .unwrap()).getRows();
             for (BigInteger index : flowIndices) {
-               textColumn.add(_entityTable.getFlowText(index));
+               textColumn.add(_entityTable.getFlow(index).toString());
             }
             break;
 
@@ -259,7 +263,7 @@ public class LogicBloxFrontend {
             BigInteger[] networkIndices = ((UInt64Column) ec.getIndexColumn()
                   .unwrap()).getRows();
             for (BigInteger index : networkIndices) {
-               textColumn.add(_entityTable.getNetwork(index));
+               textColumn.add(_entityTable.getNetwork(index).toString());
             }
             break;
 
@@ -271,6 +275,7 @@ public class LogicBloxFrontend {
             }
             break;
 
+         case ENTITY_REF_AUTONOMOUS_SYSTEM:
          case ENTITY_REF_INT:
             ec = (EntityColumn) column;
             long[] refIntLongs = ((Int64Column) ec.getRefModeColumn().unwrap())
@@ -280,6 +285,13 @@ public class LogicBloxFrontend {
             }
             break;
 
+         case ENTITY_REF_ADVERTISEMENT_TYPE:
+         case ENTITY_REF_FLOW_TAG:
+         case ENTITY_REF_INTERFACE:
+         case ENTITY_REF_NODE:
+         case ENTITY_REF_ORIGIN_TYPE:
+         case ENTITY_REF_POLICY_MAP:
+         case ENTITY_REF_ROUTING_PROTOCOL:
          case ENTITY_REF_STRING:
             ec = (EntityColumn) column;
             String[] strings = ((StringColumn) ec.getRefModeColumn().unwrap())
@@ -292,13 +304,6 @@ public class LogicBloxFrontend {
          case STRING:
             StringColumn sColumn = (StringColumn) column;
             textColumn.addAll(Arrays.asList(sColumn.getRows()));
-            break;
-
-         case IP:
-            long[] ipsAsLongs = ((Int64Column) column).getRows();
-            for (Long ipAsLong : ipsAsLongs) {
-               textColumn.add(new Ip(ipAsLong).toString());
-            }
             break;
 
          case FLOAT:
@@ -319,7 +324,8 @@ public class LogicBloxFrontend {
             BigInteger[] advertIndices = ((UInt64Column) ec.getIndexColumn()
                   .unwrap()).getRows();
             for (BigInteger index : advertIndices) {
-               textColumn.add(_entityTable.getBgpAdvertisement(index));
+               textColumn.add(_entityTable.getBgpAdvertisement(index)
+                     .toString());
             }
             break;
 
@@ -328,7 +334,7 @@ public class LogicBloxFrontend {
             BigInteger[] routeIndices = ((UInt64Column) ec.getIndexColumn()
                   .unwrap()).getRows();
             for (BigInteger index : routeIndices) {
-               textColumn.add(_entityTable.getRouteAsString(index));
+               textColumn.add(_entityTable.getRoute(index).toString());
             }
             break;
 
@@ -376,6 +382,129 @@ public class LogicBloxFrontend {
       catch (Option.Exception e) {
          throw new BatfishException(
                "Error getting typed logicblox query result", e);
+      }
+   }
+
+   public void fillTraceColumn(LBValueType valueType, List<String> textColumn,
+         Column column, long[] traceNumbers) {
+      long[] rawValues = ((Int64Column) column).getRows();
+      switch (valueType) {
+      case ENTITY_INDEX_BGP_ADVERTISEMENT:
+         for (int i = 0; i < rawValues.length; i++) {
+            int traceNumber = (int) traceNumbers[i];
+            long index = rawValues[i];
+            BgpAdvertisement structuredValue = _traceEntityTable
+                  .getBgpAdvertisement(traceNumber, index);
+            textColumn.add(structuredValue.toString());
+         }
+         break;
+
+      case ENTITY_INDEX_FLOW:
+         for (int i = 0; i < rawValues.length; i++) {
+            int traceNumber = (int) traceNumbers[i];
+            long index = rawValues[i];
+            Flow structuredValue = _traceEntityTable
+                  .getFlow(traceNumber, index);
+            textColumn.add(structuredValue.toString());
+         }
+         break;
+
+      case ENTITY_INDEX_NETWORK:
+         for (int i = 0; i < rawValues.length; i++) {
+            long index = rawValues[i];
+            Prefix structuredValue = _traceEntityTable.getNetwork(index);
+            textColumn.add(structuredValue.toString());
+         }
+         break;
+
+      case ENTITY_INDEX_ROUTE:
+         for (int i = 0; i < rawValues.length; i++) {
+            int traceNumber = (int) traceNumbers[i];
+            long index = rawValues[i];
+            PrecomputedRoute structuredValue = _traceEntityTable.getRoute(
+                  traceNumber, index);
+            textColumn.add(structuredValue.toString());
+         }
+         break;
+
+      case ENTITY_REF_ADVERTISEMENT_TYPE:
+         for (int i = 0; i < rawValues.length; i++) {
+            long index = rawValues[i];
+            String structuredValue = _traceEntityTable
+                  .getAdvertisementType(index);
+            textColumn.add(structuredValue);
+         }
+         break;
+
+      case ENTITY_REF_AUTONOMOUS_SYSTEM:
+         for (int i = 0; i < rawValues.length; i++) {
+            long index = rawValues[i];
+            int structuredValue = _traceEntityTable.getAutonomousSystem(index);
+            textColumn.add(Integer.toString(structuredValue));
+         }
+         break;
+
+      case ENTITY_REF_INTERFACE:
+         for (int i = 0; i < rawValues.length; i++) {
+            long index = rawValues[i];
+            String structuredValue = _traceEntityTable.getInterface(index);
+            textColumn.add(structuredValue);
+         }
+         break;
+
+      case ENTITY_REF_IP:
+         for (int i = 0; i < rawValues.length; i++) {
+            long index = rawValues[i];
+            Ip structuredValue = _traceEntityTable.getIp(index);
+            textColumn.add(structuredValue.toString());
+         }
+         break;
+
+      case ENTITY_REF_NODE:
+         for (int i = 0; i < rawValues.length; i++) {
+            long index = rawValues[i];
+            String structuredValue = _traceEntityTable.getNode(index);
+            textColumn.add(structuredValue);
+         }
+         break;
+
+      case ENTITY_REF_ORIGIN_TYPE:
+         for (int i = 0; i < rawValues.length; i++) {
+            long index = rawValues[i];
+            OriginType structuredValue = _traceEntityTable.getOriginType(index);
+            textColumn.add(structuredValue.toString());
+         }
+         break;
+
+      case ENTITY_REF_ROUTING_PROTOCOL:
+         for (int i = 0; i < rawValues.length; i++) {
+            long index = rawValues[i];
+            RoutingProtocol structuredValue = _traceEntityTable
+                  .getRoutingProtocol(index);
+            textColumn.add(structuredValue.toString());
+         }
+         break;
+
+      case INT:
+         for (int i = 0; i < rawValues.length; i++) {
+            long value = rawValues[i];
+            textColumn.add(Long.toString(value));
+         }
+         break;
+
+      case ENTITY_REF_FLOW_TAG:
+         // todo
+      case ENTITY_REF_INT:
+      case ENTITY_REF_POLICY_MAP:
+      case ENTITY_REF_STRING:
+      case FLOAT:
+      case STRING:
+      case ENTITY_INDEX_INT:
+         throw new BatfishException(
+               "Unsupported value type for trace predicate printing");
+      default:
+         throw new BatfishException("Invalid value type");
+
       }
    }
 
@@ -489,6 +618,80 @@ public class LogicBloxFrontend {
       return tableByRows;
    }
 
+   public Map<Integer, Map<Long, BgpAdvertisement>> getTraceAdvertisements() {
+      return _traceEntityTable.getBgpAdvertisements();
+   }
+
+   public List<String> getTracePredicate(PredicateInfo predicateInfo,
+         Relation relation, String relationName) throws QueryException {
+      List<LBValueType> valueTypes = predicateInfo
+            .getPredicateValueTypes(relationName);
+      if (valueTypes == null) {
+         throw new QueryException("Missing type information for relation: "
+               + relationName);
+      }
+      boolean isFunction = predicateInfo.isFunction(relationName);
+      String outputLine;
+      List<String> output = new ArrayList<String>();
+
+      List<Column> columns = relation.getColumns();
+      Column traceNumberColumn = columns.get(0);
+      long[] traceNumbers = ((Int64Column) (traceNumberColumn)).getRows();
+      ArrayList<ArrayList<String>> tableByColumns = new ArrayList<ArrayList<String>>();
+
+      // special case
+      ArrayList<String> traceNumberTextColumn = new ArrayList<String>();
+      tableByColumns.add(traceNumberTextColumn);
+      fillColumn(LBValueType.INT, traceNumberTextColumn, traceNumberColumn);
+
+      for (int i = 1; i < columns.size(); i++) {
+         Column column = columns.get(i);
+         ArrayList<String> textColumn = new ArrayList<String>();
+         tableByColumns.add(textColumn);
+         fillTraceColumn(valueTypes.get(i - 1), textColumn, column,
+               traceNumbers);
+      }
+      ArrayList<ArrayList<String>> tableByRows = new ArrayList<ArrayList<String>>();
+      int numRows = tableByColumns.get(0).size();
+      for (int i = 0; i < numRows; i++) {
+         ArrayList<String> textRow = new ArrayList<String>();
+         tableByRows.add(textRow);
+         for (ArrayList<String> textColumn : tableByColumns) {
+            textRow.add(textColumn.get(i));
+         }
+      }
+      if (isFunction) {
+         for (ArrayList<String> textRow : tableByRows) {
+            String value;
+            outputLine = relationName + "[";
+            for (int i = 0; i < textRow.size() - 1; i++) {
+               value = textRow.get(i);
+               outputLine += value + ", ";
+            }
+            outputLine = outputLine.substring(0, outputLine.length() - 2);
+            value = textRow.get(textRow.size() - 1);
+            outputLine += "] = " + value;
+            output.add(outputLine);
+         }
+      }
+      else {
+         for (ArrayList<String> textRow : tableByRows) {
+            outputLine = relationName + "(";
+            for (String value : textRow) {
+               outputLine += value + ", ";
+            }
+            outputLine = outputLine.substring(0, outputLine.length() - 2);
+            outputLine += ")";
+            output.add(outputLine);
+         }
+      }
+      return output;
+   }
+
+   public Map<Integer, Map<Long, PrecomputedRoute>> getTraceRoutes() {
+      return _traceEntityTable.getRoutes();
+   }
+
    public void initEntityTable() {
       _entityTable = new EntityTable(this);
    }
@@ -508,6 +711,10 @@ public class LogicBloxFrontend {
       client.setTimeout(LB_WEB_TIMEOUT_MS);
       client.setIdleTimeout(LB_WEB_TIMEOUT_MS);
       return client;
+   }
+
+   public void initTraceEntityTable() {
+      _traceEntityTable = new TraceEntityTable(this, _entityTable);
    }
 
    private ContentExchange newLbWebAdminExchange(String msg) {
@@ -708,5 +915,4 @@ public class LogicBloxFrontend {
             + _workspaceName + "\"] } }";
       sendLbWebAdminMessage(startJsonMessage);
    }
-
 }
