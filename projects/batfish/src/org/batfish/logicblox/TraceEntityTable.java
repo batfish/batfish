@@ -45,6 +45,8 @@ public class TraceEntityTable {
 
    private final Map<Long, String> _nodes;
 
+   private final Map<Long, String> _policyMaps;
+
    private final Map<Long, OriginType> _originTypes;
 
    private final Map<Integer, Map<Long, PrecomputedRoute>> _routes;
@@ -63,21 +65,25 @@ public class TraceEntityTable {
       _networks = new HashMap<Long, Prefix>();
       _nodes = new HashMap<Long, String>();
       _originTypes = new HashMap<Long, OriginType>();
+      _policyMaps = new HashMap<Long, String>();
       _routes = new HashMap<Integer, Map<Long, PrecomputedRoute>>();
       _routingProtocols = new HashMap<Long, RoutingProtocol>();
-      populateNodes(lbf);
+      populateAdvertTypes(lbf);
+      populateAses(lbf);
       populateInterfaces(lbf);
       populateIps(lbf);
-      populateRoutingProtocols(lbf);
-      populateAdvertTypes(lbf);
+      populateNodes(lbf);
       populateOriginTypes(lbf);
-      populateNetworks(lbf);
-      populateRoutes(lbf);
-      populateAses(lbf);
+      populatePolicyMaps(lbf);
+      populateRoutingProtocols(lbf);
+
       populateAsPaths(lbf);
       populateCommunities(lbf);
-      populateBgpAdvertisements(lbf);
       populateFlows(lbf);
+      populateNetworks(lbf);
+
+      populateBgpAdvertisements(lbf);
+      populateRoutes(lbf);
    }
 
    public String getAdvertisementType(long index) {
@@ -456,6 +462,18 @@ public class TraceEntityTable {
       }
    }
 
+   private void populatePolicyMaps(LogicBloxFrontend lbf) {
+      Relation relation = lbf
+            .queryPredicate("libbatfish:PolicyMap:PolicyMap_name");
+      long[] indices = getRefColumn(relation, 0);
+      String[] names = getStringColumn(relation, 1);
+      for (int i = 0; i < indices.length; i++) {
+         long index = indices[i];
+         String name = names[i];
+         _policyMaps.put(index, name);
+      }
+   }
+
    private void populateOriginTypes(LogicBloxFrontend lbf) {
       Relation relation = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:OriginType_name");
@@ -607,6 +625,10 @@ public class TraceEntityTable {
          RoutingProtocol protocol = RoutingProtocol.fromProtocolName(names[i]);
          _routingProtocols.put(index, protocol);
       }
+   }
+
+   public String getPolicyMap(long index) {
+      return _policyMaps.get(index);
    }
 
 }

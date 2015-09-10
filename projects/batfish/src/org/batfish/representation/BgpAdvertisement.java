@@ -14,6 +14,8 @@ import org.batfish.collections.CommunitySet;
 
 public class BgpAdvertisement implements Serializable {
 
+   private static final Ip UNSET_ORIGINATOR_IP = new Ip(-1l);
+
    /**
     *
     */
@@ -126,10 +128,12 @@ public class BgpAdvertisement implements Serializable {
 
    @Override
    public String toString() {
+      String originatorIp = _originatorIp.equals(UNSET_ORIGINATOR_IP) ? "N/A"
+            : _originatorIp.toString();
       return "BgpAdvert<" + _type + ", " + _network + ", " + _nextHopIp + ", "
             + _srcIp + ", " + _dstIp + ", " + _srcProtocol + ", " + _srcNode
             + ", " + _dstNode + ", " + _localPreference + ", " + _med + ", "
-            + _originatorIp + ", " + _originType + ">";
+            + originatorIp + ", " + _originType + ">";
    }
 
 }

@@ -492,16 +492,24 @@ public class LogicBloxFrontend {
          }
          break;
 
+      case ENTITY_REF_POLICY_MAP:
+         for (int i = 0; i < rawValues.length; i++) {
+            long index = rawValues[i];
+            String structuredValue = _traceEntityTable.getPolicyMap(index);
+            textColumn.add(structuredValue);
+         }
+         break;
+
       case ENTITY_REF_FLOW_TAG:
          // todo
       case ENTITY_REF_INT:
-      case ENTITY_REF_POLICY_MAP:
       case ENTITY_REF_STRING:
       case FLOAT:
       case STRING:
       case ENTITY_INDEX_INT:
          throw new BatfishException(
-               "Unsupported value type for trace predicate printing");
+               "Unsupported value type for trace predicate printing: "
+                     + valueType.toString());
       default:
          throw new BatfishException("Invalid value type");
 
