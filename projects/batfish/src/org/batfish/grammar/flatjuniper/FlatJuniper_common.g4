@@ -289,6 +289,23 @@ s_null_filler
    ~( APPLY_GROUPS | NEWLINE )* s_apply_groups?
 ;
 
+sc_literal
+:
+   COMMUNITY_LITERAL
+;
+
+sc_named
+:
+   NO_ADVERTISE
+   | NO_EXPORT
+;
+
+standard_community
+:
+   sc_literal
+   | sc_named
+;
+
 variable
 :
    text = ~( NEWLINE | OPEN_PAREN | OPEN_BRACKET | OPEN_BRACE | WILDCARD )

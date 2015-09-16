@@ -46,6 +46,7 @@ if_stanza
    | ip_ospf_cost_if_stanza
    | ip_ospf_dead_interval_if_stanza
    | ip_ospf_dead_interval_minimal_if_stanza
+   | ip_ospf_hello_interval_if_stanza
    | ip_ospf_passive_interface_if_stanza
    | ip_policy_if_stanza
    | ip_router_isis_if_stanza
@@ -140,6 +141,11 @@ ip_ospf_dead_interval_if_stanza
 ip_ospf_dead_interval_minimal_if_stanza
 :
    IP OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = DEC NEWLINE
+;
+
+ip_ospf_hello_interval_if_stanza
+:
+   IP OSPF HELLO_INTERVAL seconds = DEC NEWLINE
 ;
 
 ip_ospf_passive_interface_if_stanza
@@ -272,6 +278,7 @@ null_standalone_if_stanza
                OSPF
                (
                   AUTHENTICATION
+                  | AUTHENTICATION_KEY
                   | MESSAGE_DIGEST_KEY
                   | MTU_IGNORE
                   | NETWORK

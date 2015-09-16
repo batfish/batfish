@@ -33,7 +33,7 @@ ct_members
    MEMBERS
    (
       extended_community
-      | named_community
+      | standard_community
       // community_regex intentionally on bottom
 
       | community_regex
@@ -183,12 +183,6 @@ metric_expression
    (
       OFFSET offset = DEC
    )?
-;
-
-named_community
-:
-   NO_ADVERTISE
-   | NO_EXPORT
 ;
 
 plt_apply_path
@@ -415,12 +409,20 @@ tht_install_nexthop
 
 tht_local_preference
 :
-   LOCAL_PREFERENCE localpref = DEC
+   LOCAL_PREFERENCE
+   (
+      localpref = DEC
+      | s_apply_groups
+   )
 ;
 
 tht_metric
 :
-   METRIC metric = DEC
+   METRIC
+   (
+      metric = DEC
+      | s_apply_groups
+   )
 ;
 
 tht_metric_add

@@ -45,9 +45,9 @@ public class TraceEntityTable {
 
    private final Map<Long, String> _nodes;
 
-   private final Map<Long, String> _policyMaps;
-
    private final Map<Long, OriginType> _originTypes;
+
+   private final Map<Long, String> _policyMaps;
 
    private final Map<Integer, Map<Long, PrecomputedRoute>> _routes;
 
@@ -141,6 +141,10 @@ public class TraceEntityTable {
 
    public OriginType getOriginType(long index) {
       return _originTypes.get(index);
+   }
+
+   public String getPolicyMap(long index) {
+      return _policyMaps.get(index);
    }
 
    private long[] getRefColumn(Relation relation, int column) {
@@ -462,18 +466,6 @@ public class TraceEntityTable {
       }
    }
 
-   private void populatePolicyMaps(LogicBloxFrontend lbf) {
-      Relation relation = lbf
-            .queryPredicate("libbatfish:PolicyMap:PolicyMap_name");
-      long[] indices = getRefColumn(relation, 0);
-      String[] names = getStringColumn(relation, 1);
-      for (int i = 0; i < indices.length; i++) {
-         long index = indices[i];
-         String name = names[i];
-         _policyMaps.put(index, name);
-      }
-   }
-
    private void populateOriginTypes(LogicBloxFrontend lbf) {
       Relation relation = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:OriginType_name");
@@ -483,6 +475,18 @@ public class TraceEntityTable {
          long index = indices[i];
          OriginType originType = OriginType.fromString(names[i]);
          _originTypes.put(index, originType);
+      }
+   }
+
+   private void populatePolicyMaps(LogicBloxFrontend lbf) {
+      Relation relation = lbf
+            .queryPredicate("libbatfish:PolicyMap:PolicyMap_name");
+      long[] indices = getRefColumn(relation, 0);
+      String[] names = getStringColumn(relation, 1);
+      for (int i = 0; i < indices.length; i++) {
+         long index = indices[i];
+         String name = names[i];
+         _policyMaps.put(index, name);
       }
    }
 
@@ -625,10 +629,6 @@ public class TraceEntityTable {
          RoutingProtocol protocol = RoutingProtocol.fromProtocolName(names[i]);
          _routingProtocols.put(index, protocol);
       }
-   }
-
-   public String getPolicyMap(long index) {
-      return _policyMaps.get(index);
    }
 
 }

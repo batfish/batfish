@@ -955,6 +955,11 @@ INTERFACE_SPECIFIC
    'interface-specific'
 ;
 
+INTERFACE_SWITCH
+:
+   'interface-switch'
+;
+
 INTERFACE_TRANSMIT_STATISTICS
 :
    'interface-transmit-statistics'
@@ -1235,6 +1240,11 @@ LSP_LIFETIME
    'lsp-lifetime'
 ;
 
+M
+:
+   'm'
+;
+
 MAC
 :
    'mac' -> pushMode(M_MacAddress)
@@ -1338,6 +1348,11 @@ MTU
 MULTICAST
 :
    'multicast'
+;
+
+MULTICAST_MAC
+:
+   'multicast-mac' -> pushMode(M_MacAddress)
 ;
 
 MULTIHOP
@@ -2240,6 +2255,11 @@ TCP_FLAGS
    'tcp-flags'
 ;
 
+TCP_INITIAL
+:
+   'tcp-initial'
+;
+
 TCP_MSS
 :
    'tcp-mss'
@@ -2388,6 +2408,11 @@ VIRTUAL_ADDRESS
 VIRTUAL_CHASSIS
 :
    'virtual-chassis'
+;
+
+VIRTUAL_SWITCH
+:
+   'virtual-switch'
 ;
 
 VLAN
@@ -2701,7 +2726,7 @@ IPV6_PREFIX
 
 LINE_COMMENT
 :
-   '#' F_NonNewlineChar* F_NewlineChar+ -> channel(HIDDEN)
+   '#' F_NonNewlineChar* F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> channel(HIDDEN)
 ;
 
 MULTILINE_COMMENT
@@ -2876,7 +2901,7 @@ mode M_AsPath;
 
 M_AsPath_NEWLINE
 :
-   F_NewlineChar+ -> type(NEWLINE), popMode
+   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
 ;
 
 M_AsPath_ORIGIN
@@ -2965,7 +2990,7 @@ M_AsPathRegex_DOUBLE_QUOTE
 
 M_AsPathRegex_NEWLINE
 :
-   F_NewlineChar+ -> type(NEWLINE), popMode
+   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
 ;
 
 M_AsPathRegex_WS
@@ -2982,7 +3007,7 @@ M_Description_DESCRIPTION
 
 M_Description_NEWLINE
 :
-   F_NewlineChar+ -> type(NEWLINE), popMode
+   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
 ;
 
 M_Description_WS
@@ -2999,7 +3024,7 @@ M_DSCP_VARIABLE
 
 M_DSCP_NEWLINE
 :
-   F_NewlineChar+ -> type(NEWLINE), popMode
+   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
 ;
 
 M_DSCP_WS
@@ -3011,7 +3036,7 @@ mode M_Interface;
 
 M_Interface_NEWLINE
 :
-   F_NewlineChar+ -> type(NEWLINE), popMode
+   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
 ;
 
 M_Interface_INTERFACE
@@ -3075,7 +3100,7 @@ M_ISO_MTU
 
 M_ISO_Newline
 :
-   F_NewlineChar+ -> type(NEWLINE), popMode
+   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
 ;
 
 M_ISO_WS
@@ -3168,7 +3193,7 @@ M_Members_L
 
 M_Members_NEWLINE
 :
-   F_NewlineChar+ -> type(NEWLINE), popMode
+   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
 ;
 
 NO_ADVERTISE
@@ -3269,7 +3294,7 @@ M_RouteDistinguisher_DEC
 
 M_RouteDistinguisher_NEWLINE
 :
-   F_NewlineChar+ -> type(NEWLINE), popMode
+   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
 ;
 
 M_RouteDistinguisher_WS
@@ -3287,6 +3312,11 @@ M_Speed_DEC
 M_Speed_G
 :
    'g' -> type(G), popMode
+;
+
+M_Speed_M
+:
+   'm' -> type(M), popMode
 ;
 
 M_Speed_WS
@@ -3352,7 +3382,7 @@ M_VrfTarget_L
 
 M_VrfTarget_NEWLINE
 :
-   F_NewlineChar+ -> type(NEWLINE), popMode
+   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
 ;
 
 M_VrfTarget_PERIOD

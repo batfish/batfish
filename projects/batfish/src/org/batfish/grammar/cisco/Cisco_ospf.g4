@@ -24,6 +24,11 @@ area_nssa_ro_stanza
    )* NEWLINE
 ;
 
+auto_cost_ipv6_ro_stanza
+:
+   AUTO_COST REFERENCE_BANDWIDTH DEC NEWLINE
+;
+
 default_information_ipv6_ro_stanza
 :
    DEFAULT_INFORMATION ~NEWLINE* NEWLINE
@@ -48,11 +53,27 @@ default_information_ro_stanza
    )* NEWLINE
 ;
 
+distance_ipv6_ro_stanza
+:
+   DISTANCE value = DEC NEWLINE
+;
+
+distance_ro_stanza
+:
+   DISTANCE value = DEC NEWLINE
+;
+
 ipv6_ro_stanza
 :
-   null_ipv6_ro_stanza
+   area_ipv6_ro_stanza
+   | auto_cost_ipv6_ro_stanza
+   | default_information_ipv6_ro_stanza
+   | distance_ipv6_ro_stanza
+   | log_adjacency_changes_ipv6_ro_stanza
+   | maximum_paths_ipv6_ro_stanza
    | passive_interface_ipv6_ro_stanza
    | redistribute_ipv6_ro_stanza
+   | router_id_ipv6_ro_stanza
 ;
 
 ipv6_router_ospf_stanza
@@ -68,9 +89,14 @@ log_adjacency_changes_ipv6_ro_stanza
    LOG_ADJACENCY_CHANGES NEWLINE
 ;
 
+maximum_paths_ipv6_ro_stanza
+:
+   MAXIMUM_PATHS DEC NEWLINE
+;
+
 maximum_paths_ro_stanza
 :
-   MAXIMUM_PATHS ~NEWLINE* NEWLINE
+   MAXIMUM_PATHS DEC NEWLINE
 ;
 
 network_ro_stanza
@@ -80,14 +106,6 @@ network_ro_stanza
       area_int = DEC
       | area_ip = IP_ADDRESS
    ) NEWLINE
-;
-
-null_ipv6_ro_stanza
-:
-   area_ipv6_ro_stanza
-   | default_information_ipv6_ro_stanza
-   | log_adjacency_changes_ipv6_ro_stanza
-   | router_id_ipv6_ro_stanza
 ;
 
 null_ro_stanza
@@ -213,6 +231,7 @@ ro_stanza
 :
    area_nssa_ro_stanza
    | default_information_ro_stanza
+   | distance_ro_stanza
    | maximum_paths_ro_stanza
    | network_ro_stanza
    | null_ro_stanza

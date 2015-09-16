@@ -6,6 +6,11 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+brt_filter
+:
+   filter
+;
+
 brt_interface_mode
 :
    INTERFACE_MODE interface_mode
@@ -33,6 +38,7 @@ famt_bridge_tail
 :
 // intentional blank
 
+   | brt_filter
    | brt_interface_mode
    | brt_vlan_id_list
 ;
@@ -112,7 +118,11 @@ ft_direction
 
 ifamat_arp
 :
-   ARP IP_ADDRESS MAC MAC_ADDRESS
+   ARP IP_ADDRESS
+   (
+      MAC
+      | MULTICAST_MAC
+   ) MAC_ADDRESS
 ;
 
 ifamat_master_only
@@ -199,6 +209,7 @@ ifamt_null
       POLICER
       | SAMPLING
       | SERVICE
+      | TARGETED_BROADCAST
    ) s_null_filler
 ;
 
@@ -273,6 +284,7 @@ it_common
    | it_null
    | it_speed
    | it_vlan_id
+   | it_vlan_id_list
    | it_vlan_tagging
 ;
 
@@ -379,6 +391,11 @@ it_vlan_id
    VLAN_ID id = DEC
 ;
 
+it_vlan_id_list
+:
+   VLAN_ID_LIST subrange
+;
+
 it_vlan_tagging
 :
    VLAN_TAGGING
@@ -475,4 +492,5 @@ s_interfaces_tail
 speed_abbreviation
 :
    G
+   | M
 ;

@@ -406,6 +406,11 @@ AUTHENTICATION
    'authentication'
 ;
 
+AUTHENTICATION_KEY
+:
+   'authentication-key'
+;
+
 AUTHENTICATION_PORT
 :
    'authentication-port'
@@ -1850,6 +1855,11 @@ HELLO
    'hello'
 ;
 
+HELLO_INTERVAL
+:
+   'hello-interval'
+;
+
 HELLO_MULTIPLIER
 :
    'hello-multiplier'
@@ -2770,6 +2780,11 @@ MODULE
 MONITOR
 :
    'monitor'
+;
+
+MONITORING
+:
+   'monitoring'
 ;
 
 MOP
@@ -3700,6 +3715,11 @@ REDISTRIBUTE
 REDUNDANCY
 :
    'redundancy'
+;
+
+REFERENCE_BANDWIDTH
+:
+   'reference-bandwidth'
 ;
 
 REFLECT

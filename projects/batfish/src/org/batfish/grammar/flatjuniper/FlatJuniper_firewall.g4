@@ -154,6 +154,11 @@ fwfromt_tcp_flags
    TCP_FLAGS DOUBLE_QUOTED_STRING
 ;
 
+fwfromt_tcp_initial
+:
+   TCP_INITIAL
+;
+
 fwft_apply_groups
 :
    s_apply_groups
@@ -304,6 +309,7 @@ fwtt_from_tail
    | fwfromt_source_prefix_list
    | fwfromt_tcp_established
    | fwfromt_tcp_flags
+   | fwfromt_tcp_initial
 ;
 
 fwtt_then

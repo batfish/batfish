@@ -14,12 +14,12 @@ import org.batfish.collections.CommunitySet;
 
 public class BgpAdvertisement implements Serializable {
 
-   private static final Ip UNSET_ORIGINATOR_IP = new Ip(-1l);
-
    /**
     *
     */
    private static final long serialVersionUID = 1L;
+
+   private static final Ip UNSET_ORIGINATOR_IP = new Ip(-1l);
 
    private final AsPath _asPath;
 

@@ -9,11 +9,14 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_namedContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Extended_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.main.BatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.AsPath;
 import org.batfish.representation.AsSet;
+import org.batfish.representation.ExtendedCommunity;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 import org.batfish.representation.IsoAddress;
@@ -79,6 +82,7 @@ import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.util.SubRange;
+import org.batfish.util.Util;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
@@ -95,8 +99,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private static final String F_BGP_LOCAL_AS_PRIVATE = "protocols - bgp - group? - local-as - private";
 
    private static final String F_COMPLEX_POLICY = "boolean combination of policy-statements";
-
-   private static final String F_EXTENDED_COMMUNITY = "extended communities";
 
    private static final String F_FIREWALL_TERM_THEN_ROUTING_INSTANCE = "firewall - filter - term - then - routing-instance";
 
@@ -305,7 +307,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
    }
 
-   private static long toCommunityLong(Named_communityContext ctx) {
+   private static long toCommunityLong(Sc_literalContext sc_literal) {
+      String text = sc_literal.COMMUNITY_LITERAL().getText();
+      return Util.communityStringToLong(text);
+   }
+
+   private static long toCommunityLong(Sc_namedContext ctx) {
       if (ctx.NO_ADVERTISE() != null) {
          return 0xFFFFFF02l;
       }
@@ -316,6 +323,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          throw new BatfishException(
                "missing named-community-to-long mapping for: \""
                      + ctx.getText() + "\"");
+      }
+   }
+
+   private static long toCommunityLong(Standard_communityContext ctx) {
+      if (ctx.sc_literal() != null) {
+         return toCommunityLong(ctx.sc_literal());
+      }
+      else if (ctx.sc_named() != null) {
+         return toCommunityLong(ctx.sc_named());
+      }
+      else {
+         throw new BatfishException("Cannot convert to community long");
       }
    }
 
@@ -1061,15 +1080,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentCommunityList.getLines().add(
                new CommunityListLine(ctx.community_regex().getText()));
       }
-      else if (ctx.named_community() != null) {
-         long communityVal = toCommunityLong(ctx.named_community());
+      else if (ctx.standard_community() != null) {
+         long communityVal = toCommunityLong(ctx.standard_community());
          String communityStr = org.batfish.util.Util
                .longToCommunity(communityVal);
          _currentCommunityList.getLines().add(
                new CommunityListLine(communityStr));
       }
       else if (ctx.extended_community() != null) {
-         todo(ctx, F_EXTENDED_COMMUNITY);
+         long communityVal = toCommunityLong(ctx.extended_community());
+         String communityStr = org.batfish.util.Util
+               .longToCommunity(communityVal);
+         _currentCommunityList.getLines().add(
+               new CommunityListLine(communityStr));
       }
    }
 
@@ -1611,6 +1634,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          asPath.add(asSet);
       }
       return asPath;
+   }
+
+   private long toCommunityLong(Ec_namedContext ctx) {
+      ExtendedCommunity ec = new ExtendedCommunity(ctx.getText());
+      return ec.asLong();
+   }
+
+   private long toCommunityLong(Extended_communityContext ctx) {
+      if (ctx.ec_literal() != null) {
+         throw new BatfishException(
+               "literal extended communities not supported");
+      }
+      else if (ctx.ec_named() != null) {
+         return toCommunityLong(ctx.ec_named());
+      }
+      else {
+         throw new BatfishException("invalid extended community");
+      }
    }
 
    private void todo(ParserRuleContext ctx, String feature) {

@@ -150,6 +150,7 @@ st_null
       | NTP
       | PORTS
       | PROCESSES
+      | RADIUS_OPTIONS
       | RADIUS_SERVER
       | ROOT_AUTHENTICATION
       | SCRIPTS
