@@ -689,7 +689,7 @@ block(`service_files) {
       file_definition(fd) {
          file_delimiter[] = "|",
          column_headers[] = "NODE,NETWORKSTART,NETWORKEND,PREFIXLENGTH,NEXTHOPIP,ADMIN,COST,PROTOCOL,TAG",
-         column_formats[] = "string,int,int,int,int,int,intk,string,int"
+         column_formats[] = "string,int,int,int,int,int,int,string,int"
       }.
       
    })
