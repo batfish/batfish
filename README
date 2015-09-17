@@ -32,7 +32,7 @@ cd build
 make -j<number-of-jobs>
 make install # as administrator (sudo or whatever)
 
-3. (SERVER) Install LogicBlox >= 4.2.1 and fix lb-web-server timeout
+3. (SERVER) Install LogicBlox >= 4.3.0 and fix lb-web-server timeout
 - edit <logicblox-root>/config/lb-web-server.conf
 - change all tcp_server_max_idle_time lines to read:
 tcp_server_max_idle_time = 0
