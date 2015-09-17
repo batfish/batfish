@@ -117,6 +117,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          // send-community
          neighbor.setSendCommunity(true);
 
+         // inherit update-source
+         neighbor.setUpdateSource(ig.getLocalAddress().toString());
+
          proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
       }
       return proc;
