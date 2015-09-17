@@ -191,6 +191,9 @@ public class EntityTable {
          BigInteger advertIndex = advertIndices[i];
          AsPath asPath = _asPaths.get(advertIndex);
          CommunitySet communities = _communities.get(advertIndex);
+         if (communities == null) {
+            communities = new CommunitySet();
+         }
          BgpAdvertisement advert = new BgpAdvertisement(type, network,
                nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol,
                originType, localPref, med, originatorIp, asPath, communities);

@@ -2973,6 +2973,15 @@ public class Batfish implements AutoCloseable {
       int pcIndex = 0;
       for (BgpAdvertisement advert : advertSet) {
          String type = advert.getType();
+         switch (type) {
+         case "ibgp_ti":
+         case "bgp_ti":
+            break;
+
+         default:
+            continue;
+         }
+
          Prefix network = advert.getNetwork();
          networks.add(network);
          long networkStart = network.getAddress().asLong();
