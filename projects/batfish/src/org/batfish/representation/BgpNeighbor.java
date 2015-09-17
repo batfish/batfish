@@ -93,14 +93,10 @@ public class BgpNeighbor implements Serializable {
    private String _updateSource;
 
    private BgpNeighbor() {
-      _clusterId = null;
       _outboundPolicyMaps = new LinkedHashSet<PolicyMap>();
       _inboundPolicyMaps = new LinkedHashSet<PolicyMap>();
-      _groupName = null;
       _originationPolicies = new LinkedHashSet<PolicyMap>();
       _generatedRoutes = new LinkedHashSet<GeneratedRoute>();
-      _remoteAs = null;
-      _localAs = null;
    }
 
    /**

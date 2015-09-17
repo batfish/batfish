@@ -425,7 +425,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       for (LeafBgpPeerGroup lpg : leafGroups) {
          // update source
          String updateSourceInterface = lpg.getUpdateSource();
-         String updateSource = null;
+         String updateSource;
          if (updateSourceInterface == null) {
             Ip processRouterId = proc.getRouterId();
             if (processRouterId == null) {
@@ -479,7 +479,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                            + updateSourceInterface + "\"");
             }
          }
-
          PolicyMap newInboundPolicyMap = null;
          String inboundRouteMapName = lpg.getInboundRouteMap();
          if (inboundRouteMapName != null) {

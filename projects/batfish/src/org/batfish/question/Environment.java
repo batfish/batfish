@@ -32,12 +32,15 @@ public class Environment {
 
    private StaticRoute _staticRoute;
 
+   private Map<String, Set<String>> _stringSets;
+
    private boolean[] _unsafe;
 
    public Environment() {
       _assertions = new boolean[1];
       _integers = new HashMap<String, Integer>();
       _ipSets = new HashMap<String, Set<Ip>>();
+      _stringSets = new HashMap<String, Set<String>>();
       _unsafe = new boolean[1];
    }
 
@@ -51,6 +54,7 @@ public class Environment {
       copy._interface = _interface;
       copy._ipSets = _ipSets;
       copy._staticRoute = _staticRoute;
+      copy._stringSets = _stringSets;
       copy._unsafe = _unsafe;
       return copy;
    }
@@ -91,6 +95,10 @@ public class Environment {
 
    public StaticRoute getStaticRoute() {
       return _staticRoute;
+   }
+
+   public Map<String, Set<String>> getStringSets() {
+      return _stringSets;
    }
 
    public boolean getUnsafe() {

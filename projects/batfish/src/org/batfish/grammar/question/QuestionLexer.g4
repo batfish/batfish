@@ -24,6 +24,11 @@ ADD_IP
    'add_ip'
 ;
 
+ADD_STRING
+:
+   'add_string'
+;
+
 ADMINISTRATIVE_COST
 :
    'administrative_cost'
@@ -52,6 +57,11 @@ BGP_NEIGHBOR
 CLEAR_IPS
 :
    'clear_ips'
+;
+
+CLEAR_STRINGS
+:
+   'clear_strings'
 ;
 
 CONFIGURED
@@ -194,6 +204,11 @@ NUM_IPS
    'num_ips'
 ;
 
+NUM_STRINGS
+:
+   'num_strings'
+;
+
 ONFAILURE
 :
    'onfailure'
@@ -313,6 +328,11 @@ DEC
 DOUBLE_EQUALS
 :
    '=='
+;
+
+DOUBLE_FORWARD_SLASH
+:
+   '//' -> channel ( HIDDEN ) , pushMode ( M_Comment )
 ;
 
 DOUBLE_PLUS
@@ -437,6 +457,18 @@ fragment
 F_WhitespaceChar
 :
    [ \t\u000C]
+;
+
+mode M_Comment;
+
+M_Comment_COMMENT
+:
+   F_NonNewlineChar+ -> channel ( HIDDEN )
+;
+
+M_Comment_NEWLINE
+:
+   F_NewlineChar+ -> channel ( HIDDEN ) , popMode
 ;
 
 mode M_QuotedString;

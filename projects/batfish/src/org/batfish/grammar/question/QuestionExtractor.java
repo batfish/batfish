@@ -13,6 +13,7 @@ import org.batfish.grammar.BatfishExtractor;
 import org.batfish.grammar.question.QuestionParser.*;
 import org.batfish.main.BatfishException;
 import org.batfish.question.AddIpStatement;
+import org.batfish.question.AddStringStatement;
 import org.batfish.question.AndExpr;
 import org.batfish.question.Assertion;
 import org.batfish.question.BgpNeighborBooleanExpr;
@@ -20,6 +21,7 @@ import org.batfish.question.BgpNeighborIntExpr;
 import org.batfish.question.BgpNeighborIpExpr;
 import org.batfish.question.BooleanExpr;
 import org.batfish.question.ClearIpsStatement;
+import org.batfish.question.ClearStringsStatement;
 import org.batfish.question.ContainsIpExpr;
 import org.batfish.question.DifferenceIntExpr;
 import org.batfish.question.EqExpr;
@@ -50,6 +52,7 @@ import org.batfish.question.NodeBooleanExpr;
 import org.batfish.question.NodeStringExpr;
 import org.batfish.question.NotExpr;
 import org.batfish.question.NumIpsIntExpr;
+import org.batfish.question.NumStringsIntExpr;
 import org.batfish.question.OrExpr;
 import org.batfish.question.PrintableExpr;
 import org.batfish.question.PrintfStatement;
@@ -432,6 +435,11 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return new NumIpsIntExpr(caller);
    }
 
+   private IntExpr toIntExpr(Num_strings_int_exprContext expr) {
+      String caller = expr.caller.getText();
+      return new NumStringsIntExpr(caller);
+   }
+
    private IntExpr toIntExpr(Static_route_int_exprContext expr) {
       if (expr.static_route_administrative_cost_int_expr() != null) {
          return StaticRouteIntExpr.STATICROUTE_ADMINISTRATIVE_COST;
@@ -450,6 +458,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else if (expr.num_ips_int_expr() != null) {
          return toIntExpr(expr.num_ips_int_expr());
+      }
+      else if (expr.num_strings_int_expr() != null) {
+         return toIntExpr(expr.num_strings_int_expr());
       }
       else if (expr.static_route_int_expr() != null) {
          return toIntExpr(expr.static_route_int_expr());
@@ -581,6 +592,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return new AddIpStatement(target, ipExpr);
    }
 
+   private Statement toStatement(Add_string_statementContext statement) {
+      String target = statement.target.getText();
+      PrintableExpr pExpr = toPrintableExpr(statement.printable_expr());
+      return new AddStringStatement(target, pExpr);
+   }
+
    private Statement toStatement(AssertionContext ctx) {
       BooleanExpr expr = toBooleanExpr(ctx.boolean_expr());
       Map<String, PrintableExpr> onErrorPrintables = new HashMap<String, PrintableExpr>();
@@ -618,6 +635,11 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private Statement toStatement(Clear_ips_statementContext statement) {
       String caller = statement.caller.getText();
       return new ClearIpsStatement(caller);
+   }
+
+   private Statement toStatement(Clear_strings_statementContext statement) {
+      String caller = statement.caller.getText();
+      return new ClearStringsStatement(caller);
    }
 
    private Statement toStatement(Foreach_bgp_neighbor_statementContext statement) {
@@ -754,6 +776,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       if (statement.add_ip_statement() != null) {
          return toStatement(statement.add_ip_statement());
       }
+      if (statement.add_string_statement() != null) {
+         return toStatement(statement.add_string_statement());
+      }
       else if (statement.assertion() != null) {
          return toStatement(statement.assertion());
       }
@@ -765,6 +790,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else if (statement.clear_ips_statement() != null) {
          return toStatement(statement.clear_ips_statement());
+      }
+      else if (statement.clear_strings_statement() != null) {
+         return toStatement(statement.clear_strings_statement());
       }
       else if (statement.printf_statement() != null) {
          return toStatement(statement.printf_statement());

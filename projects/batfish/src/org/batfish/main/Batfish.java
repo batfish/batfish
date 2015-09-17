@@ -3359,7 +3359,9 @@ public class Batfish implements AutoCloseable {
          }
       });
       if (configFilePaths == null) {
-         throw new BatfishException("Error reading test rig configs directory");
+         throw new BatfishException(
+               "Error reading test rig configs directory: \""
+                     + configsPath.toString() + "\"");
       }
       for (File file : configFilePaths) {
          _logger.debug("Reading: \"" + file.toString() + "\"\n");

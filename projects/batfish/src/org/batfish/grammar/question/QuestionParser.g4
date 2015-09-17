@@ -14,6 +14,11 @@ add_ip_statement
    target = VARIABLE PERIOD ADD_IP OPEN_PAREN ip_expr CLOSE_PAREN SEMICOLON
 ;
 
+add_string_statement
+:
+   target = VARIABLE PERIOD ADD_STRING OPEN_PAREN printable_expr CLOSE_PAREN SEMICOLON
+;
+
 and_expr
 :
    AND OPEN_BRACE conjuncts += boolean_expr
@@ -115,6 +120,11 @@ boolean_expr
 clear_ips_statement
 :
    caller = VARIABLE PERIOD CLEAR_IPS SEMICOLON
+;
+
+clear_strings_statement
+:
+   caller = VARIABLE PERIOD CLEAR_STRINGS SEMICOLON
 ;
 
 contains_ip_expr
@@ -451,6 +461,11 @@ num_ips_int_expr
    caller = VARIABLE PERIOD NUM_IPS
 ;
 
+num_strings_int_expr
+:
+   caller = VARIABLE PERIOD NUM_STRINGS
+;
+
 or_expr
 :
    OR OPEN_BRACE disjuncts += boolean_expr
@@ -503,7 +518,9 @@ question
 statement
 :
    add_ip_statement
+   | add_string_statement
    | clear_ips_statement
+   | clear_strings_statement
    | assertion
    | assignment
    | if_statement
@@ -597,6 +614,7 @@ val_int_expr
    bgp_neighbor_int_expr
    | literal_int_expr
    | num_ips_int_expr
+   | num_strings_int_expr
    | static_route_int_expr
    | var_int_expr
 ;
