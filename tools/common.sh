@@ -60,6 +60,19 @@ _batfish_build() {
 }
 export -f _batfish_build
 
+batfish_clone_environment() {
+   batfish_date
+   echo ": START: Clone environment"
+   batfish_expect_args 3 $# || return 1
+   local BASE=$1
+   local ENV_SRC=$2
+   local ENV_DST=$3
+   cp -a $BASE/environments/$ENV_SRC $BASE/environments/$ENV_DST
+   batfish_date
+   echo ": END: Clone environment"
+}
+export -f batfish_clone_environment
+
 batfish_compile() {
    batfish_date
    echo ": START: Compute the fixed point of the control plane"
