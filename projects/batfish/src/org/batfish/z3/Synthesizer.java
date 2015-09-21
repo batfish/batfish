@@ -335,6 +335,9 @@ public class Synthesizer {
    }
 
    private void computeTopologyInterfaces() {
+      for (String hostname : _configurations.keySet()) {
+         _topologyInterfaces.put(hostname, new TreeSet<Interface>());
+      }
       for (Edge edge : _topologyEdges) {
          String hostname = edge.getNode1();
          if (!_topologyInterfaces.containsKey(hostname)) {
@@ -356,10 +359,6 @@ public class Synthesizer {
             if (isFlowSink(hostname, ifaceName)) {
                Interface iface = nodeInterfaces.get(ifaceName);
                if (iface.getActive()) {
-                  if (!_topologyInterfaces.containsKey(hostname)) {
-                     _topologyInterfaces
-                           .put(hostname, new TreeSet<Interface>());
-                  }
                   Set<Interface> interfaces = _topologyInterfaces.get(hostname);
                   interfaces.add(iface);
                }

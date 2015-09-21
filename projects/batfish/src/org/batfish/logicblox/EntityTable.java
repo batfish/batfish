@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.batfish.collections.CommunitySet;
-import org.batfish.main.BatfishException;
 import org.batfish.representation.AsPath;
 import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.Flow;

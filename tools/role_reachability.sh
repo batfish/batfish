@@ -127,7 +127,7 @@ batfish_find_role_reachability_packet_constraints() {
    batfish_date
    echo ": END: Find role-reachability packet constraints"
 }
-export -f batfish_find_multipath_inconsistent_packet_constraints
+export -f batfish_find_role_reachability_packet_constraints
 
 batfish_find_role_reachability_packet_constraints_helper() {
    batfish_expect_args 3 $# || return 1

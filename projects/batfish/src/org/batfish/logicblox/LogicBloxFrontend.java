@@ -43,6 +43,7 @@ import com.logicblox.bloxweb.client.Transports;
 import com.logicblox.common.Option;
 import com.logicblox.common.ProtoBufSession.Exception;
 import com.logicblox.common.protocol.CommonProto;
+import com.logicblox.connect.ConnectBlox.DeleteWorkSpace;
 import com.logicblox.connect.ConnectBlox.RevertDatabase;
 import com.logicblox.connect.ConnectBloxSession;
 import com.logicblox.connect.ConnectBloxWorkspace;
@@ -193,6 +194,30 @@ public class LogicBloxFrontend {
       catch (com.logicblox.connect.WorkspaceReader.Exception e) {
          throw new LBInitializationException(e);
       }
+   }
+
+   public String deleteWorkspace() {
+      DeleteWorkSpace.Builder db = DeleteWorkSpace.newBuilder();
+      db.setName(_workspaceName);
+      DeleteWorkSpace d = db.build();
+      Request.Builder reqBuild = Request.newBuilder();
+      reqBuild.setDelete(d);
+      Request deleteRequest = reqBuild.build();
+      try {
+         Future<Response> futureResponse = _cbSession.call(deleteRequest);
+         Response response = futureResponse.get();
+         if (response.hasException()) {
+            ExceptionContainer exception = response.getException();
+            if (exception.hasMessage()) {
+               String message = exception.getMessage();
+               return message;
+            }
+         }
+      }
+      catch (Exception | InterruptedException | ExecutionException e) {
+         return ExceptionUtils.getStackTrace(e);
+      }
+      return null;
    }
 
    public String execNamedBlock(String blockName) {

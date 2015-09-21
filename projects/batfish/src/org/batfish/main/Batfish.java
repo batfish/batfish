@@ -454,9 +454,11 @@ public class Batfish implements AutoCloseable {
 
       NodeSet blacklistNodes = getNodeBlacklist(_diffEnvSettings);
       Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(_diffEnvSettings);
+      EdgeSet blacklistEdges = getEdgeBlacklist(_diffEnvSettings);
 
       BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
-            null, blacklistNodes, blacklistInterfaces, baseConfigurations);
+            null, blacklistNodes, blacklistInterfaces, blacklistEdges,
+            baseConfigurations);
 
       // compute composite program and flows
       List<Synthesizer> synthesizers = new ArrayList<Synthesizer>();
@@ -528,9 +530,11 @@ public class Batfish implements AutoCloseable {
 
       NodeSet blacklistNodes = getNodeBlacklist(_diffEnvSettings);
       Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(_diffEnvSettings);
+      EdgeSet blacklistEdges = getEdgeBlacklist(_diffEnvSettings);
 
       BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
-            null, blacklistNodes, blacklistInterfaces, baseConfigurations);
+            null, blacklistNodes, blacklistInterfaces, blacklistEdges,
+            baseConfigurations);
 
       // compute composite program and flows
       List<Synthesizer> commonEdgeSynthesizers = new ArrayList<Synthesizer>();
@@ -818,43 +822,35 @@ public class Batfish implements AutoCloseable {
       Topology topology = computeTopology(_settings.getTestRigPath(),
             configurations, cpFactBins);
       String edgeBlacklistPath = _envSettings.getEdgeBlacklistPath();
-      String nodeBlacklistPath = _envSettings.getNodeBlacklistPath();
-      String interfaceBlacklistPath = _envSettings.getInterfaceBlacklistPath();
       String serializedTopologyPath = _envSettings.getSerializedTopologyPath();
       InterfaceSet flowSinks = null;
       boolean differentialContext = _settings.getDiffEnvironmentName() != null;
       if (differentialContext) {
          flowSinks = getFlowSinkSet(_baseEnvSettings.getDataPlanePath());
       }
+      EdgeSet blacklistEdges = getEdgeBlacklist(_envSettings);
       if (edgeBlacklistPath != null) {
          File edgeBlacklistPathAsFile = new File(edgeBlacklistPath);
          if (edgeBlacklistPathAsFile.exists()) {
-            Topology blacklistTopology = parseTopology(edgeBlacklistPathAsFile);
             EdgeSet edges = topology.getEdges();
-            edges.removeAll(blacklistTopology.getEdges());
+            edges.removeAll(blacklistEdges);
          }
       }
-      if (nodeBlacklistPath != null) {
-         File nodeBlacklistPathAsFile = new File(nodeBlacklistPath);
-         if (nodeBlacklistPathAsFile.exists()) {
-            NodeSet blacklistNodes = parseNodeBlacklist(nodeBlacklistPathAsFile);
+      NodeSet blacklistNodes = getNodeBlacklist(_envSettings);
+      if (blacklistNodes != null) {
+         if (differentialContext) {
+            flowSinks.removeNodes(blacklistNodes);
+         }
+         for (String blacklistNode : blacklistNodes) {
+            topology.removeNode(blacklistNode);
+         }
+      }
+      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(_envSettings);
+      if (blacklistInterfaces != null) {
+         for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
+            topology.removeInterface(blacklistInterface);
             if (differentialContext) {
-               flowSinks.removeNodes(blacklistNodes);
-            }
-            for (String blacklistNode : blacklistNodes) {
-               topology.removeNode(blacklistNode);
-            }
-         }
-      }
-      if (interfaceBlacklistPath != null) {
-         File interfaceBlacklistPathAsFile = new File(interfaceBlacklistPath);
-         if (interfaceBlacklistPathAsFile.exists()) {
-            Set<NodeInterfacePair> blacklistInterfaces = parseInterfaceBlacklist(interfaceBlacklistPathAsFile);
-            for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
-               topology.removeInterface(blacklistInterface);
-               if (differentialContext) {
-                  flowSinks.remove(blacklistInterface);
-               }
+               flowSinks.remove(blacklistInterface);
             }
          }
       }
@@ -2203,6 +2199,19 @@ public class Batfish implements AutoCloseable {
       _logger.output(flowHistory.toString());
    }
 
+   private EdgeSet getEdgeBlacklist(EnvironmentSettings envSettings) {
+      EdgeSet blacklistEdges = null;
+      String edgeBlacklistPath = envSettings.getEdgeBlacklistPath();
+      if (edgeBlacklistPath != null) {
+         File edgeBlacklistPathAsFile = new File(edgeBlacklistPath);
+         if (edgeBlacklistPathAsFile.exists()) {
+            Topology blacklistTopology = parseTopology(edgeBlacklistPathAsFile);
+            blacklistEdges = blacklistTopology.getEdges();
+         }
+      }
+      return blacklistEdges;
+   }
+
    private double getElapsedTime(long beforeTime) {
       long difference = System.currentTimeMillis() - beforeTime;
       double seconds = difference / 1000d;
@@ -2237,10 +2246,6 @@ public class Batfish implements AutoCloseable {
       return dataPlane.getFlowSinks();
    }
 
-   private String getFlowTag() {
-      return _settings.getQuestionName() + ":" + _settings.getEnvironmentName();
-   }
-
    // private Set<Path> getMultipathQueryPaths(Path directory) {
    // Set<Path> queryPaths = new TreeSet<Path>();
    // try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
@@ -2263,6 +2268,10 @@ public class Batfish implements AutoCloseable {
    // }
    // return queryPaths;
    // }
+
+   private String getFlowTag() {
+      return _settings.getQuestionName() + ":" + _settings.getEnvironmentName();
+   }
 
    private List<String> getHelpPredicates(Map<String, String> predicateSemantics) {
       Set<String> helpPredicateSet = new LinkedHashSet<String>();
@@ -2456,6 +2465,19 @@ public class Batfish implements AutoCloseable {
       }
       cleanupLogicDir();
       return semanticsFiles;
+   }
+
+   private Set<Edge> getSymmetricEdgePairs(EdgeSet edges) {
+      LinkedHashSet<Edge> consumedEdges = new LinkedHashSet<Edge>();
+      for (Edge edge : edges) {
+         if (consumedEdges.contains(edge)) {
+            continue;
+         }
+         Edge reverseEdge = new Edge(edge.getInterface2(), edge.getInterface1());
+         consumedEdges.add(edge);
+         consumedEdges.add(reverseEdge);
+      }
+      return consumedEdges;
    }
 
    private void histogram(String testRigPath) {
@@ -3272,6 +3294,23 @@ public class Batfish implements AutoCloseable {
       writeFile(outputPath, outputString);
    }
 
+   private void printSymmetricEdgePairs() {
+      Map<String, Configuration> configs = loadConfigurations();
+      EdgeSet edges = synthesizeTopology(configs);
+      Set<Edge> symmetricEdgePairs = getSymmetricEdgePairs(edges);
+      List<Edge> edgeList = new ArrayList<Edge>();
+      edgeList.addAll(symmetricEdgePairs);
+      for (int i = 0; i < edgeList.size() / 2; i++) {
+         Edge edge1 = edgeList.get(2 * i);
+         Edge edge2 = edgeList.get(2 * i + 1);
+         _logger.output(edge1.getNode1() + ":" + edge1.getInt1() + ","
+               + edge1.getNode2() + ":" + edge1.getInt2() + " "
+               + edge2.getNode1() + ":" + edge2.getInt1() + ","
+               + edge2.getNode2() + ":" + edge2.getInt2() + "\n");
+      }
+      printElapsedTime();
+   }
+
    private void printTracePredicate(LogicBloxFrontend lbFrontend,
          String predicateName) {
       List<String> output;
@@ -3492,6 +3531,11 @@ public class Batfish implements AutoCloseable {
 
    public void run() {
 
+      if (_settings.getPrintSymmetricEdgePairs()) {
+         printSymmetricEdgePairs();
+         return;
+      }
+
       if (_settings.getPostDifferentialFlows()) {
          postDifferentialFlows();
          return;
@@ -3657,7 +3701,8 @@ public class Batfish implements AutoCloseable {
             || _settings.revert() || _settings.getWriteRoutes()
             || _settings.getWriteBgpAdvertisements()
             || _settings.getWriteIbgpNeighbors() || _settings.getRemoveBlocks()
-            || _settings.getKeepBlocks() || _settings.getTraceQuery()) {
+            || _settings.getKeepBlocks() || _settings.getTraceQuery()
+            || _settings.getDeleteWorkspace()) {
          lbFrontend = connect();
       }
 
@@ -3680,6 +3725,11 @@ public class Batfish implements AutoCloseable {
 
       if (_settings.revert()) {
          revert(lbFrontend);
+         return;
+      }
+
+      if (_settings.getDeleteWorkspace()) {
+         lbFrontend.deleteWorkspace();
          return;
       }
 

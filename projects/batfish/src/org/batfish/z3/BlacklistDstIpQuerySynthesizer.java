@@ -5,8 +5,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.batfish.collections.EdgeSet;
 import org.batfish.collections.NodeInterfacePair;
 import org.batfish.representation.Configuration;
+import org.batfish.representation.Edge;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.Prefix;
@@ -30,7 +32,7 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
 
    public BlacklistDstIpQuerySynthesizer(Set<Ip> explicitBlacklistIps,
          Set<String> blacklistNodes,
-         Set<NodeInterfacePair> blacklistInterfaces,
+         Set<NodeInterfacePair> blacklistInterfaces, EdgeSet blacklistEdges,
          Map<String, Configuration> configurations) {
       _blacklistIps = new TreeSet<Ip>();
       if (explicitBlacklistIps != null) {
@@ -61,6 +63,16 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
                   _blacklistIps.add(prefix.getAddress());
                }
             }
+         }
+      }
+      if (blacklistEdges != null) {
+         for (Edge edge : blacklistEdges) {
+            Ip ip1 = configurations.get(edge.getNode1()).getInterfaces()
+                  .get(edge.getInt1()).getPrefix().getAddress();
+            Ip ip2 = configurations.get(edge.getNode2()).getInterfaces()
+                  .get(edge.getInt2()).getPrefix().getAddress();
+            _blacklistIps.add(ip1);
+            _blacklistIps.add(ip2);
          }
       }
    }

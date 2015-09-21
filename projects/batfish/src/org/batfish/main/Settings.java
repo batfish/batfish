@@ -141,6 +141,7 @@ public final class Settings {
    private static final String ARG_COUNT = "count";
    private static final String ARG_DATA_PLANE = "dp";
    private static final String ARG_DATA_PLANE_PATH = "dppath";
+   private static final String ARG_DELETE_WORKSPACE = "deleteworkspace";
    private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
    private static final String ARG_DISABLED_FACTS = "disablefacts";
    private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
@@ -188,6 +189,7 @@ public final class Settings {
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
    private static final String ARG_PRINT_PARSE_TREES = "ppt";
+   private static final String ARG_PRINT_SYMMETRIC_EDGES = "printsymmetricedges";
    private static final String ARG_QUERY = "query";
    private static final String ARG_QUERY_ALL = "all";
    private static final String ARG_QUESTION_PATH = "questionpath";
@@ -323,6 +325,7 @@ public final class Settings {
    private boolean _counts;
    private boolean _createWorkspace;
    private boolean _dataPlane;
+   private boolean _deleteWorkspace;
    private String _diffEnvironmentName;
    private EnvironmentSettings _diffEnvironmentSettings;
    private boolean _differentialHistory;
@@ -387,6 +390,7 @@ public final class Settings {
    private List<String> _predicates;
    private boolean _printParseTree;
    private boolean _printSemantics;
+   private boolean _printSymmetricEdges;
    private boolean _query;
    private boolean _queryAll;
    private String _queryDumpDir;
@@ -569,6 +573,10 @@ public final class Settings {
 
    public boolean getDataPlane() {
       return _dataPlane;
+   }
+
+   public boolean getDeleteWorkspace() {
+      return _deleteWorkspace;
    }
 
    public String getDiffEnvironmentName() {
@@ -805,6 +813,10 @@ public final class Settings {
 
    public boolean getPrintSemantics() {
       return _printSemantics;
+   }
+
+   public boolean getPrintSymmetricEdgePairs() {
+      return _printSymmetricEdges;
    }
 
    public boolean getQuery() {
@@ -1474,6 +1486,11 @@ public final class Settings {
       _options.addOption(Option.builder()
             .desc("get per-trace versions of relations during query")
             .longOpt(ARG_TRACE_QUERY).build());
+      _options.addOption(Option.builder().desc("delete LogicBlox workspace")
+            .longOpt(ARG_DELETE_WORKSPACE).build());
+      _options.addOption(Option.builder()
+            .desc("print topology with symmetric edges adjacent in listing")
+            .longOpt(ARG_PRINT_SYMMETRIC_EDGES).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1713,6 +1730,8 @@ public final class Settings {
             .hasOption(BfConsts.COMMAND_GET_DIFFERENTIAL_HISTORY);
       _history = line.hasOption(BfConsts.COMMAND_GET_HISTORY);
       _traceQuery = line.hasOption(ARG_TRACE_QUERY);
+      _deleteWorkspace = line.hasOption(ARG_DELETE_WORKSPACE);
+      _printSymmetricEdges = line.hasOption(ARG_PRINT_SYMMETRIC_EDGES);
    }
 
    public boolean printParseTree() {
