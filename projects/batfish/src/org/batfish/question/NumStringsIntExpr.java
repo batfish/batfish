@@ -17,7 +17,8 @@ public class NumStringsIntExpr extends BaseIntExpr {
       Set<String> stringSet = environment.getStringSets().get(_caller);
       if (stringSet == null) {
          throw new BatfishException(
-               "Attempt to get size of undefined string set: \"" + _caller + "\"");
+               "Attempt to get size of undefined string set: \"" + _caller
+                     + "\"");
       }
       else {
          return stringSet.size();

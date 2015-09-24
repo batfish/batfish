@@ -311,6 +311,7 @@ public class LogicBloxFrontend {
             break;
 
          case ENTITY_REF_ADVERTISEMENT_TYPE:
+         case ENTITY_REF_AS_PATH:
          case ENTITY_REF_FLOW_TAG:
          case ENTITY_REF_INTERFACE:
          case ENTITY_REF_NODE:
@@ -457,6 +458,14 @@ public class LogicBloxFrontend {
             long index = rawValues[i];
             String structuredValue = _traceEntityTable
                   .getAdvertisementType(index);
+            textColumn.add(structuredValue);
+         }
+         break;
+
+      case ENTITY_REF_AS_PATH:
+         for (int i = 0; i < rawValues.length; i++) {
+            long index = rawValues[i];
+            String structuredValue = _traceEntityTable.getNamedAsPath(index);
             textColumn.add(structuredValue);
          }
          break;
@@ -809,13 +818,12 @@ public class LogicBloxFrontend {
       }
       catch (ClassCastException e) {
          Failure failure = (Failure) results.get(0);
-         try {
-            _cbSession.close();
+         String msg = failure.getMessage();
+         if (msg.contains("Could not find predicate")) {
+            throw new PredicateNotFoundBatfishException(msg,
+                  qualifiedPredicateName);
          }
-         catch (Exception e1) {
-            throw new BatfishException(ExceptionUtils.getStackTrace(e1));
-         }
-         throw new BatfishException(failure.getMessage());
+         throw new BatfishException(msg);
       }
    }
 

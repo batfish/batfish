@@ -3789,6 +3789,7 @@ public class Batfish implements AutoCloseable {
       }
 
       if (_settings.getTraceQuery()) {
+         lbFrontend.initEntityTable();
          lbFrontend.initTraceEntityTable();
          Map<String, String> allPredicateNames = _predicateInfo
                .getPredicateNames();

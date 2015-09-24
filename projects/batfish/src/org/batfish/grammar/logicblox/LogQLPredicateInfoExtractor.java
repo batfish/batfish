@@ -46,6 +46,10 @@ public class LogQLPredicateInfoExtractor extends LogiQLParserBaseListener {
          refType = LBValueType.ENTITY_REF_ADVERTISEMENT_TYPE;
          break;
 
+      case "AsPath":
+         refType = LBValueType.ENTITY_REF_AS_PATH;
+         break;
+
       case "AutonomousSystem":
          refType = LBValueType.ENTITY_REF_AUTONOMOUS_SYSTEM;
          break;

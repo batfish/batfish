@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+batfish_confirm_analyze_modular() {
+   BATFISH_CONFIRM=batfish_confirm batfish_analyze_modular $@
+}
+export -f batfish_confirm_analyze_modular
+
 batfish_analyze_modular() {
    local TEST_RIG_RELATIVE=$1
    if [ -z "$BATFISH_CONFIRM" ]; then
@@ -79,9 +84,11 @@ batfish_compile_modular_stage1() {
    batfish_expect_args 4 $# || return 1
    local BASE=$1
    local ENV=$2
+   local WORKSPACE="$(basename ${BASE}):${ENV}"
    local OUT_ROUTES=$3
    local OUT_IBGP_NEIGHBORS=$4
    batfish -autobasedir $BASE -env $ENV -createworkspace -facts -keepblocks -dumpcp -blocknames Route Ospf_inter_area Ospf_intra_area Static_recursive Static_interface Bgp_ibgp_neighbors || return 1
+   batfish_trace_import_transaction $WORKSPACE || return 1
    batfish -autobasedir $BASE -env $ENV -writeibgpneighbors -writeroutes -precomputedibgpneighborspath $OUT_IBGP_NEIGHBORS -precomputedroutespath $OUT_ROUTES || return 1
    batfish_date
    echo ": END: Run stage 1"
@@ -94,10 +101,12 @@ batfish_compile_modular_stage2() {
    batfish_expect_args 5 $# || return 1
    local BASE=$1
    local ENV=$2
+   local WORKSPACE="$(basename ${BASE}):${ENV}"
    local IN_ROUTES=$3
    local OUT_ROUTES=$4
    local OUT_ADVERTISEMENTS=$5
    batfish -autobasedir $BASE -env $ENV -createworkspace -facts -keepblocks -dumpcp -useprecomputedroutes -precomputedroutespath $IN_ROUTES -blocknames Route Precomputed Ospf_e1 Ospf_e2 Ospf_generation Static_recursive Static_interface Bgp_ebgp_igp_origination Bgp_ebgp_incoming_transformation Bgp_ebgp_outgoing_transformation || return 1
+   batfish_trace_import_transaction $WORKSPACE || return 1
    batfish -autobasedir $BASE -env $ENV -writeroutes -precomputedroutespath $OUT_ROUTES -writeadvertisements -precomputedadvertisementspath $OUT_ADVERTISEMENTS || return 1
    batfish_date
    echo ": END: Run stage 2"
@@ -110,11 +119,13 @@ batfish_compile_modular_stage3() {
    batfish_expect_args 6 $# || return 1
    local BASE=$1
    local ENV=$2
+   local WORKSPACE="$(basename ${BASE}):${ENV}"
    local IN_IBGP_NEIGHBORS=$3
    local IN_ROUTES=$4
    local IN_ADVERTISEMENTS=$5
    local OUT_ADVERTISEMENTS=$6
    batfish -autobasedir $BASE -env $ENV -createworkspace -facts -keepblocks -dumpcp -useprecomputedadvertisements -useprecomputedroutes -useprecomputedibgpneighbors -precomputedroutespath $IN_ROUTES -precomputedibgpneighborspath $IN_IBGP_NEIGHBORS -precomputedadvertisementspath $IN_ADVERTISEMENTS -blocknames Route Precomputed Static_recursive Static_interface Bgp_ebgp_incoming_transformation Bgp_ibgp_igp_origination Bgp_ibgp_ebgp_origination Bgp_ibgp_incoming_transformation Bgp_ibgp_outgoing_transformation || return 1
+   batfish_trace_import_transaction $WORKSPACE || return 1
    batfish -autobasedir $BASE -env $ENV -writeadvertisements -precomputedadvertisementspath $OUT_ADVERTISEMENTS || return 1
    batfish_date
    echo ": END: Run stage 3"
@@ -127,9 +138,11 @@ batfish_compile_modular_stage4() {
    batfish_expect_args 4 $# || return 1
    local BASE=$1
    local ENV=$2
+   local WORKSPACE="$(basename ${BASE}):${ENV}"
    local IN_ROUTES=$3
    local IN_ADVERTISEMENTS=$4
    batfish -autobasedir $BASE -env $ENV -createworkspace -facts -keepblocks -dumpcp -useprecomputedroutes -precomputedroutespath $IN_ROUTES -useprecomputedadvertisements -precomputedadvertisementspath $IN_ADVERTISEMENTS -blocknames Route Precomputed Static_recursive Static_interface Bgp_ebgp_incoming_transformation Bgp_ibgp_incoming_transformation Bgp_ebgp_outgoing_transformation Bgp_ebgp_bgp_origination Bgp_generation Bgp_ebgp_igp_origination || return 1
+   batfish_trace_import_transaction $WORKSPACE || return 1
    batfish_date
    echo ": END: Run stage 4"
 }
@@ -172,3 +185,26 @@ batfish_prepare_ibgp_environment() {
    echo ": END: Prepare ibgp environment"
 }
 export -f batfish_prepare_ibgp_environment
+
+batfish_trace_import_transaction() {
+   batfish_expect_args 1 $# || return 1
+   local WORKSPACE=$1
+   local LATEST_TXN=$(find -mindepth 1 -maxdepth 1 -name 'txndata*' -printf '%T@ %p\n' | sort -nr | cut -d' ' -f2- | head -n1)
+   if [ -n "$LATEST_TXN" ]; then
+      bash -c "_batfish_trace_import_transaction $WORKSPACE $LATEST_TXN" || return 1
+      rm -rf txndata*
+   fi
+}
+export -f batfish_trace_import_transaction
+
+_batfish_trace_import_transaction() {
+   batfish_expect_args 2 $# || return 1
+   set -x
+   local WORKSPACE=$1
+   local TXN=$2
+   cd $TXN
+   sed -i -e "s/create --overwrite abc/open $WORKSPACE/g" import.lb || return 1
+   lb import.lb || return 1
+   set +x
+}
+export -f _batfish_trace_import_transaction

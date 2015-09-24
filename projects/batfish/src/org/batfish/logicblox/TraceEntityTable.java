@@ -35,15 +35,21 @@ public class TraceEntityTable {
 
    private final Map<Integer, Map<Long, CommunitySet>> _communities;
 
+   private final EntityTable _entityTable;
+
    private final Map<Integer, Map<Long, Flow>> _flows;
 
    private final Map<Long, String> _interfaces;
 
    private final Map<Long, Ip> _ips;
 
+   private final Map<Long, String> _namedAsPaths;
+
    private final Map<Long, Prefix> _networks;
 
    private final Map<Long, String> _nodes;
+
+   private BigInteger _offset;
 
    private final Map<Long, OriginType> _originTypes;
 
@@ -54,6 +60,7 @@ public class TraceEntityTable {
    private final Map<Long, RoutingProtocol> _routingProtocols;
 
    public TraceEntityTable(LogicBloxFrontend lbf, EntityTable entityTable) {
+      _entityTable = entityTable;
       _asPaths = new HashMap<Integer, Map<Long, AsPath>>();
       _ases = new HashMap<Long, Integer>();
       _bgpAdvertisements = new HashMap<Integer, Map<Long, BgpAdvertisement>>();
@@ -62,6 +69,7 @@ public class TraceEntityTable {
       _flows = new HashMap<Integer, Map<Long, Flow>>();
       _interfaces = new HashMap<Long, String>();
       _ips = new HashMap<Long, Ip>();
+      _namedAsPaths = new HashMap<Long, String>();
       _networks = new HashMap<Long, Prefix>();
       _nodes = new HashMap<Long, String>();
       _originTypes = new HashMap<Long, OriginType>();
@@ -72,6 +80,7 @@ public class TraceEntityTable {
       populateAses(lbf);
       populateInterfaces(lbf);
       populateIps(lbf);
+      populateNamedAsPaths(lbf);
       populateNodes(lbf);
       populateOriginTypes(lbf);
       populatePolicyMaps(lbf);
@@ -111,6 +120,7 @@ public class TraceEntityTable {
       BigInteger[] indexArray = ((UInt64Column) ec.getIndexColumn().unwrap())
             .getRows();
       long[] modifiedArray = new long[indexArray.length];
+      initOffset(indexArray);
       for (int i = 0; i < indexArray.length; i++) {
          modifiedArray[i] = indexArray[i].longValue() + 1;
       }
@@ -129,6 +139,10 @@ public class TraceEntityTable {
 
    public Ip getIp(long index) {
       return _ips.get(index);
+   }
+
+   public String getNamedAsPath(long index) {
+      return _namedAsPaths.get(index);
    }
 
    public Prefix getNetwork(long index) {
@@ -151,6 +165,7 @@ public class TraceEntityTable {
       EntityColumn ec = (EntityColumn) relation.getColumns().get(column);
       BigInteger[] indexArray = ((UInt64Column) ec.getIndexColumn().unwrap())
             .getRows();
+      initOffset(indexArray);
       long[] modifiedArray = new long[indexArray.length];
       for (int i = 0; i < indexArray.length; i++) {
          modifiedArray[i] = indexArray[i].longValue() + 1;
@@ -159,7 +174,11 @@ public class TraceEntityTable {
    }
 
    public PrecomputedRoute getRoute(int traceNumber, long index) {
-      return _routes.get(traceNumber).get(index);
+      PrecomputedRoute val = _routes.get(traceNumber).get(index);
+      if (val == null) {
+         assert Boolean.TRUE;
+      }
+      return val;
    }
 
    public Map<Integer, Map<Long, PrecomputedRoute>> getRoutes() {
@@ -174,6 +193,17 @@ public class TraceEntityTable {
       String[] stringArray = ((StringColumn) relation.getColumns().get(column))
             .getRows();
       return stringArray;
+   }
+
+   private void initOffset(BigInteger[] indexArray) {
+      if (_offset == null) {
+         if (indexArray.length != 0) {
+            BigInteger largeValue = indexArray[0];
+            long l = largeValue.longValue() + 1;
+            BigInteger smallValue = BigInteger.valueOf(l);
+            _offset = largeValue.subtract(smallValue);
+         }
+      }
    }
 
    private void populateAdvertTypes(LogicBloxFrontend lbf) {
@@ -201,153 +231,172 @@ public class TraceEntityTable {
    }
 
    private void populateAsPaths(LogicBloxFrontend lbf) {
-      String tracePrefix = "trace:";
-      Relation advertisementPathSizeRelation = lbf.queryPredicate(tracePrefix
-            + "libbatfish:AsPath:AdvertisementPathSize");
-      long[] sizeTraceNumbers = getIntColumn(advertisementPathSizeRelation, 0);
-      long[] sizeAdvertIndices = getIntColumn(advertisementPathSizeRelation, 1);
-      long[] sizes = getIntColumn(advertisementPathSizeRelation, 2);
-      int numAsPaths = sizeAdvertIndices.length;
-      int traceNumber = -1;
-      Map<Long, AsPath> currentTraceAsPaths = null;
-      for (int i = 0; i < numAsPaths; i++) {
-         int newTraceNumber = (int) sizeTraceNumbers[i];
-         if (traceNumber != newTraceNumber) {
-            traceNumber = newTraceNumber;
-            currentTraceAsPaths = new HashMap<Long, AsPath>();
-            _asPaths.put(traceNumber, currentTraceAsPaths);
+      try {
+         String tracePrefix = "trace:";
+         Relation advertisementPathSizeRelation = lbf
+               .queryPredicate(tracePrefix
+                     + "libbatfish:AsPath:AdvertisementPathSize");
+         long[] sizeTraceNumbers = getIntColumn(advertisementPathSizeRelation,
+               0);
+         long[] sizeAdvertIndices = getIntColumn(advertisementPathSizeRelation,
+               1);
+         long[] sizes = getIntColumn(advertisementPathSizeRelation, 2);
+         int numAsPaths = sizeAdvertIndices.length;
+         int traceNumber = -1;
+         Map<Long, AsPath> currentTraceAsPaths = null;
+         for (int i = 0; i < numAsPaths; i++) {
+            int newTraceNumber = (int) sizeTraceNumbers[i];
+            if (traceNumber != newTraceNumber) {
+               traceNumber = newTraceNumber;
+               currentTraceAsPaths = new HashMap<Long, AsPath>();
+               _asPaths.put(traceNumber, currentTraceAsPaths);
+            }
+            long advertIndex = sizeAdvertIndices[i];
+            int size = (int) sizes[i];
+            AsPath asPath = new AsPath(size);
+            currentTraceAsPaths.put(advertIndex, asPath);
          }
-         long advertIndex = sizeAdvertIndices[i];
-         int size = (int) sizes[i];
-         AsPath asPath = new AsPath(size);
-         currentTraceAsPaths.put(advertIndex, asPath);
+         Relation advertisementPathRelation = lbf.queryPredicate(tracePrefix
+               + "libbatfish:AsPath:AdvertisementPath");
+         long[] pathTraceNumbers = getIntColumn(advertisementPathRelation, 0);
+         long[] pathAdvertIndices = getIntColumn(advertisementPathRelation, 1);
+         long[] pathListIndices = getIntColumn(advertisementPathRelation, 2);
+         long[] asPathAsIndices = getIntColumn(advertisementPathRelation, 3);
+         int numPathListEntries = asPathAsIndices.length;
+         for (int i = 0; i < numPathListEntries; i++) {
+            long advertIndex = pathAdvertIndices[i];
+            int pathTraceNumber = (int) pathTraceNumbers[i];
+            AsPath asPath = _asPaths.get(pathTraceNumber).get(advertIndex);
+            int as = _ases.get(asPathAsIndices[i]);
+            int pathListIndex = (int) pathListIndices[i];
+            asPath.get(pathListIndex).add(as);
+         }
       }
-      Relation advertisementPathRelation = lbf.queryPredicate(tracePrefix
-            + "libbatfish:AsPath:AdvertisementPath");
-      long[] pathTraceNumbers = getIntColumn(advertisementPathRelation, 0);
-      long[] pathAdvertIndices = getIntColumn(advertisementPathRelation, 1);
-      long[] pathListIndices = getIntColumn(advertisementPathRelation, 2);
-      long[] asPathAsIndices = getIntColumn(advertisementPathRelation, 3);
-      int numPathListEntries = asPathAsIndices.length;
-      for (int i = 0; i < numPathListEntries; i++) {
-         long advertIndex = pathAdvertIndices[i];
-         int pathTraceNumber = (int) pathTraceNumbers[i];
-         AsPath asPath = _asPaths.get(pathTraceNumber).get(advertIndex);
-         int as = _ases.get(asPathAsIndices[i]);
-         int pathListIndex = (int) pathListIndices[i];
-         asPath.get(pathListIndex).add(as);
+      catch (PredicateNotFoundBatfishException e) {
+         return;
       }
    }
 
    private void populateBgpAdvertisements(LogicBloxFrontend lbf) {
-      String tracePrefix = "trace:";
-      Relation currentAdvertProperty;
-      currentAdvertProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:BgpAdvertisement:BgpAdvertisement_type");
-      long[] advertTypes = getIntColumn(currentAdvertProperty, 2);
-      currentAdvertProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:BgpAdvertisement:BgpAdvertisement_network");
-      long[] advertNetworks = getIntColumn(currentAdvertProperty, 2);
-      currentAdvertProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:BgpAdvertisement:BgpAdvertisement_nextHopIp");
-      long[] advertNextHopIps = getIntColumn(currentAdvertProperty, 2);
-      currentAdvertProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:BgpAdvertisement:BgpAdvertisement_srcIp");
-      long[] advertSrcIps = getIntColumn(currentAdvertProperty, 2);
-      currentAdvertProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:BgpAdvertisement:BgpAdvertisement_dstIp");
-      long[] advertDstIps = getIntColumn(currentAdvertProperty, 2);
-      currentAdvertProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:BgpAdvertisement:BgpAdvertisement_srcProtocol");
-      long[] advertSrcProtocols = getIntColumn(currentAdvertProperty, 2);
-      currentAdvertProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:BgpAdvertisement:BgpAdvertisement_srcNode");
-      long[] advertSrcNodes = getIntColumn(currentAdvertProperty, 2);
-      currentAdvertProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:BgpAdvertisement:BgpAdvertisement_dstNode");
-      long[] advertDstNodes = getIntColumn(currentAdvertProperty, 2);
-      currentAdvertProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:BgpAdvertisement:BgpAdvertisement_localPref");
-      long[] advertLocalPrefs = getIntColumn(currentAdvertProperty, 2);
-      currentAdvertProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:BgpAdvertisement:BgpAdvertisement_med");
-      long[] advertMeds = getIntColumn(currentAdvertProperty, 2);
-      currentAdvertProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:BgpAdvertisement:BgpAdvertisement_originatorIp");
-      long[] advertOriginatorIps = getIntColumn(currentAdvertProperty, 2);
-      currentAdvertProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:BgpAdvertisement:BgpAdvertisement_originType");
-      long[] advertOriginTypes = getIntColumn(currentAdvertProperty, 2);
-      long[] advertIndices = getIntColumn(currentAdvertProperty, 1);
-      long[] traceNumbers = getIntColumn(currentAdvertProperty, 0);
-      int numAdverts = traceNumbers.length;
-      int traceNumber = -1;
-      Map<Long, BgpAdvertisement> currentTraceAdverts = null;
-      for (int i = 0; i < numAdverts; i++) {
-         int newTraceNumber = (int) traceNumbers[i];
-         if (traceNumber != newTraceNumber) {
-            traceNumber = newTraceNumber;
-            currentTraceAdverts = new LinkedHashMap<Long, BgpAdvertisement>();
-            _bgpAdvertisements.put(traceNumber, currentTraceAdverts);
+      try {
+         String tracePrefix = "trace:";
+         Relation currentAdvertProperty;
+         currentAdvertProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:BgpAdvertisement:BgpAdvertisement_type");
+         long[] advertTypes = getIntColumn(currentAdvertProperty, 2);
+         currentAdvertProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:BgpAdvertisement:BgpAdvertisement_network");
+         long[] advertNetworks = getIntColumn(currentAdvertProperty, 2);
+         currentAdvertProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:BgpAdvertisement:BgpAdvertisement_nextHopIp");
+         long[] advertNextHopIps = getIntColumn(currentAdvertProperty, 2);
+         currentAdvertProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:BgpAdvertisement:BgpAdvertisement_srcIp");
+         long[] advertSrcIps = getIntColumn(currentAdvertProperty, 2);
+         currentAdvertProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:BgpAdvertisement:BgpAdvertisement_dstIp");
+         long[] advertDstIps = getIntColumn(currentAdvertProperty, 2);
+         currentAdvertProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:BgpAdvertisement:BgpAdvertisement_srcProtocol");
+         long[] advertSrcProtocols = getIntColumn(currentAdvertProperty, 2);
+         currentAdvertProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:BgpAdvertisement:BgpAdvertisement_srcNode");
+         long[] advertSrcNodes = getIntColumn(currentAdvertProperty, 2);
+         currentAdvertProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:BgpAdvertisement:BgpAdvertisement_dstNode");
+         long[] advertDstNodes = getIntColumn(currentAdvertProperty, 2);
+         currentAdvertProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:BgpAdvertisement:BgpAdvertisement_localPref");
+         long[] advertLocalPrefs = getIntColumn(currentAdvertProperty, 2);
+         currentAdvertProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:BgpAdvertisement:BgpAdvertisement_med");
+         long[] advertMeds = getIntColumn(currentAdvertProperty, 2);
+         currentAdvertProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:BgpAdvertisement:BgpAdvertisement_originatorIp");
+         long[] advertOriginatorIps = getIntColumn(currentAdvertProperty, 2);
+         currentAdvertProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:BgpAdvertisement:BgpAdvertisement_originType");
+         long[] advertOriginTypes = getIntColumn(currentAdvertProperty, 2);
+         long[] advertIndices = getIntColumn(currentAdvertProperty, 1);
+         long[] traceNumbers = getIntColumn(currentAdvertProperty, 0);
+         int numAdverts = traceNumbers.length;
+         int traceNumber = -1;
+         Map<Long, BgpAdvertisement> currentTraceAdverts = null;
+         for (int i = 0; i < numAdverts; i++) {
+            int newTraceNumber = (int) traceNumbers[i];
+            if (traceNumber != newTraceNumber) {
+               traceNumber = newTraceNumber;
+               currentTraceAdverts = new LinkedHashMap<Long, BgpAdvertisement>();
+               _bgpAdvertisements.put(traceNumber, currentTraceAdverts);
+            }
+            String type = getAdvertisementType(advertTypes[i]);
+            Prefix network = getNetwork(advertNetworks[i]);
+            Ip nextHopIp = getIp(advertNextHopIps[i]);
+            Ip srcIp = getIp(advertSrcIps[i]);
+            Ip dstIp = getIp(advertDstIps[i]);
+            RoutingProtocol srcProtocol = getRoutingProtocol(advertSrcProtocols[i]);
+            String srcNode = getNode(advertSrcNodes[i]);
+            String dstNode = getNode(advertDstNodes[i]);
+            int localPref = (int) advertLocalPrefs[i];
+            int med = (int) advertMeds[i];
+            Ip originatorIp = getIp(advertOriginatorIps[i]);
+            OriginType originType = getOriginType(advertOriginTypes[i]);
+            long advertIndex = advertIndices[i];
+            // add asPath if present
+            AsPath asPath = null;
+            Map<Long, AsPath> currentTraceAsPaths = _asPaths.get(traceNumber);
+            if (currentTraceAsPaths != null) {
+               asPath = currentTraceAsPaths.get(advertIndex);
+            }
+            // add communities if present
+            CommunitySet communities = null;
+            Map<Long, CommunitySet> currentTraceCommunities = _communities
+                  .get(traceNumber);
+            if (currentTraceCommunities != null) {
+               communities = currentTraceCommunities.get(advertIndex);
+            }
+            BgpAdvertisement advert = new BgpAdvertisement(type, network,
+                  nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol,
+                  originType, localPref, med, originatorIp, asPath, communities);
+            currentTraceAdverts.put(advertIndex, advert);
          }
-         String type = getAdvertisementType(advertTypes[i]);
-         Prefix network = getNetwork(advertNetworks[i]);
-         Ip nextHopIp = getIp(advertNextHopIps[i]);
-         Ip srcIp = getIp(advertSrcIps[i]);
-         Ip dstIp = getIp(advertDstIps[i]);
-         RoutingProtocol srcProtocol = getRoutingProtocol(advertSrcProtocols[i]);
-         String srcNode = getNode(advertSrcNodes[i]);
-         String dstNode = getNode(advertDstNodes[i]);
-         int localPref = (int) advertLocalPrefs[i];
-         int med = (int) advertMeds[i];
-         Ip originatorIp = getIp(advertOriginatorIps[i]);
-         OriginType originType = getOriginType(advertOriginTypes[i]);
-         long advertIndex = advertIndices[i];
-         // add asPath if present
-         AsPath asPath = null;
-         Map<Long, AsPath> currentTraceAsPaths = _asPaths.get(traceNumber);
-         if (currentTraceAsPaths != null) {
-            asPath = currentTraceAsPaths.get(advertIndex);
-         }
-         // add communities if present
-         CommunitySet communities = null;
-         Map<Long, CommunitySet> currentTraceCommunities = _communities
-               .get(traceNumber);
-         if (currentTraceCommunities != null) {
-            communities = currentTraceCommunities.get(advertIndex);
-         }
-         BgpAdvertisement advert = new BgpAdvertisement(type, network,
-               nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol,
-               originType, localPref, med, originatorIp, asPath, communities);
-         currentTraceAdverts.put(advertIndex, advert);
+      }
+      catch (PredicateNotFoundBatfishException e) {
+
       }
    }
 
    private void populateCommunities(LogicBloxFrontend lbf) {
-      String tracePrefix = "trace:";
-      Relation advertisementCommunityRelation = lbf.queryPredicate(tracePrefix
-            + "libbatfish:CommunityList:AdvertisementCommunity");
-      long[] traceNumbers = getIntColumn(advertisementCommunityRelation, 0);
-      long[] advertIndices = getIntColumn(advertisementCommunityRelation, 1);
-      long[] communities = getIntColumn(advertisementCommunityRelation, 2);
-      int numEntries = traceNumbers.length;
-      int traceNumber = -1;
-      Map<Long, CommunitySet> currentTraceCommunities = null;
-      for (int i = 0; i < numEntries; i++) {
-         int newTraceNumber = (int) traceNumbers[i];
-         if (traceNumber != newTraceNumber) {
-            traceNumber = newTraceNumber;
-            currentTraceCommunities = new LinkedHashMap<Long, CommunitySet>();
-            _communities.put(traceNumber, currentTraceCommunities);
+      try {
+         String tracePrefix = "trace:";
+         Relation advertisementCommunityRelation = lbf
+               .queryPredicate(tracePrefix
+                     + "libbatfish:CommunityList:AdvertisementCommunity");
+         long[] traceNumbers = getIntColumn(advertisementCommunityRelation, 0);
+         long[] advertIndices = getIntColumn(advertisementCommunityRelation, 1);
+         long[] communities = getIntColumn(advertisementCommunityRelation, 2);
+         int numEntries = traceNumbers.length;
+         int traceNumber = -1;
+         Map<Long, CommunitySet> currentTraceCommunities = null;
+         for (int i = 0; i < numEntries; i++) {
+            int newTraceNumber = (int) traceNumbers[i];
+            if (traceNumber != newTraceNumber) {
+               traceNumber = newTraceNumber;
+               currentTraceCommunities = new LinkedHashMap<Long, CommunitySet>();
+               _communities.put(traceNumber, currentTraceCommunities);
+            }
+            long advertIndex = advertIndices[i];
+            CommunitySet communitySet = currentTraceCommunities
+                  .get(advertIndex);
+            if (communitySet == null) {
+               communitySet = new CommunitySet();
+               currentTraceCommunities.put(advertIndex, communitySet);
+            }
+            long community = communities[i];
+            communitySet.add(community);
          }
-         long advertIndex = advertIndices[i];
-         CommunitySet communitySet = currentTraceCommunities.get(advertIndex);
-         if (communitySet == null) {
-            communitySet = new CommunitySet();
-            currentTraceCommunities.put(advertIndex, communitySet);
-         }
-         long community = communities[i];
-         communitySet.add(community);
+      }
+      catch (PredicateNotFoundBatfishException e) {
       }
    }
 
@@ -440,6 +489,17 @@ public class TraceEntityTable {
       }
    }
 
+   private void populateNamedAsPaths(LogicBloxFrontend lbf) {
+      Relation relation = lbf.queryPredicate("libbatfish:AsPath:AsPath_name");
+      long[] indices = getRefColumn(relation, 0);
+      String[] names = getStringColumn(relation, 1);
+      for (int i = 0; i < indices.length; i++) {
+         long index = indices[i];
+         String name = names[i];
+         _namedAsPaths.put(index, name);
+      }
+   }
+
    private void populateNetworks(LogicBloxFrontend lbf) {
       Relation relation = lbf.queryPredicate("libbatfish:Ip:Network_index");
       long[] networkIndices = getIndexColumn(relation, 0);
@@ -496,9 +556,14 @@ public class TraceEntityTable {
       currentRouteProperty = lbf.queryPredicate(tracePrefix
             + "libbatfish:Route:Route_node");
       long[] routeNodes = getIntColumn(currentRouteProperty, 2);
-      currentRouteProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:Route:Route_protocol");
-      long[] routeProtocols = getIntColumn(currentRouteProperty, 2);
+      long[] routeProtocols = null;
+      try {
+         currentRouteProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:Route:Route_protocol");
+         routeProtocols = getIntColumn(currentRouteProperty, 2);
+      }
+      catch (PredicateNotFoundBatfishException e) {
+      }
 
       // get networks and indices
       currentRouteProperty = lbf.queryPredicate(tracePrefix
@@ -520,9 +585,13 @@ public class TraceEntityTable {
             routeBuilders.put(traceNumber, currentTraceRoutes);
          }
          long routeIndex = routeIndices[i];
+         BigInteger entityTableRouteIndex = BigInteger.valueOf(routeIndex);
+         PrecomputedRoute entityTableRoute = _entityTable
+               .getRoute(entityTableRouteIndex.add(_offset));
          Prefix network = getNetwork(routeNetworks[i]);
          String node = getNode(routeNodes[i]);
-         RoutingProtocol routingProtocol = getRoutingProtocol(routeProtocols[i]);
+         RoutingProtocol routingProtocol = routeProtocols != null ? getRoutingProtocol(routeProtocols[i])
+               : entityTableRoute.getProtocol();
          PrecomputedRouteBuilder routeBuilder = new PrecomputedRouteBuilder();
          routeBuilder.setNode(node);
          routeBuilder.setNetwork(network);
@@ -557,16 +626,36 @@ public class TraceEntityTable {
       }
 
       // set tags where they exist
-      currentRouteProperty = lbf.queryPredicate(tracePrefix
-            + "libbatfish:Route:Route_tag");
-      long[] routeTagTraceNumbers = getIntColumn(currentRouteProperty, 0);
-      long[] routeTagIndices = getIntColumn(currentRouteProperty, 1);
-      long[] routeTags = getIntColumn(currentRouteProperty, 2);
-      for (int i = 0; i < routeTagTraceNumbers.length; i++) {
-         int currentTraceNumber = (int) routeTagTraceNumbers[i];
-         long currentIndex = routeTagIndices[i];
-         int tag = (int) routeTags[i];
-         routeBuilders.get(currentTraceNumber).get(currentIndex).setTag(tag);
+      try {
+         currentRouteProperty = lbf.queryPredicate(tracePrefix
+               + "libbatfish:Route:Route_tag");
+         long[] routeTagTraceNumbers = getIntColumn(currentRouteProperty, 0);
+         long[] routeTagIndices = getIntColumn(currentRouteProperty, 1);
+         long[] routeTags = getIntColumn(currentRouteProperty, 2);
+         if (routeTagTraceNumbers != null) {
+            for (int i = 0; i < routeTagTraceNumbers.length; i++) {
+               int currentTraceNumber = (int) routeTagTraceNumbers[i];
+               long currentIndex = routeTagIndices[i];
+               int tag = (int) routeTags[i];
+               routeBuilders.get(currentTraceNumber).get(currentIndex)
+                     .setTag(tag);
+            }
+         }
+      }
+      catch (PredicateNotFoundBatfishException e) {
+         for (Map<Long, PrecomputedRouteBuilder> builders : routeBuilders
+               .values()) {
+            for (Entry<Long, PrecomputedRouteBuilder> entry : builders
+                  .entrySet()) {
+               BigInteger key = BigInteger.valueOf(entry.getKey());
+               PrecomputedRouteBuilder builder = entry.getValue();
+               BigInteger entityTableKey = key.add(_offset);
+               PrecomputedRoute entityTableRoute = _entityTable
+                     .getRoute(entityTableKey);
+               int tag = entityTableRoute.getTag();
+               builder.setTag(tag);
+            }
+         }
       }
 
       // set next hop ips where they exist
