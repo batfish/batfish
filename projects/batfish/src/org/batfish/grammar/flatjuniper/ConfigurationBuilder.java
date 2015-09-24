@@ -9,8 +9,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_namedContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Extended_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.main.BatfishException;
 import org.batfish.main.Warnings;
