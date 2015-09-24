@@ -16,7 +16,7 @@ batfish_analyze_link_failures() {
    local TOPOLOGY_HEADER=BATFISH_TOPOLOGY
 
    echo "Prepare test-rig"
-   $BATFISH_CONFIRM && { batfish_prepare_test_rig $TEST_RIG $NAME $BASE || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_prepare_test_rig $TEST_RIG $BASE || return 1 ; }
 
    echo "Prepare default environment"
    $BATFISH_CONFIRM && { batfish_prepare_default_environment $BASE $ENV || return 1 ; }
@@ -78,7 +78,7 @@ batfish_analyze_node_failures() {
    local QUESTIONNAME=failure
 
    echo "Prepare test-rig"
-   $BATFISH_CONFIRM && { batfish_prepare_test_rig $TEST_RIG $NAME $BASE || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_prepare_test_rig $TEST_RIG $BASE || return 1 ; }
 
    echo "Prepare default environment"
    $BATFISH_CONFIRM && { batfish_prepare_default_environment $BASE $ENV || return 1 ; }

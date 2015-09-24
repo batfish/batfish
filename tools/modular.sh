@@ -34,7 +34,7 @@ batfish_analyze_modular() {
    local RESULT=$PWD/$NAME-$ENV-$QUESTIONNAME-result
 
    echo "Prepare test-rig"
-   $BATFISH_CONFIRM && { batfish_prepare_test_rig $TEST_RIG $NAME $BASE || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_prepare_test_rig $TEST_RIG $BASE || return 1 ; }
 
    echo "Parse vendor configuration files and serialize vendor structures"
    $BATFISH_CONFIRM && { batfish_serialize_vendor $BASE || return 1 ; }

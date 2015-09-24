@@ -23,7 +23,7 @@ batfish_analyze_multipath() {
    local RESULT=$PWD/$NAME-$ENV-$QUESTIONNAME-result
 
    echo "Prepare test-rig"
-   $BATFISH_CONFIRM && { batfish_prepare_test_rig $TEST_RIG $NAME $BASE || return 1 ; }
+   $BATFISH_CONFIRM && { batfish_prepare_test_rig $TEST_RIG $BASE || return 1 ; }
 
    echo "Prepare default environment"
    $BATFISH_CONFIRM && { batfish_prepare_default_environment $BASE $ENV || return 1 ; }
