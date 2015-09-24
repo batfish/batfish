@@ -104,7 +104,8 @@ s_system
 
 s_system_tail
 :
-   st_host_name
+   st_default_address_selection
+   | st_host_name
    | st_null
 ;
 
@@ -125,6 +126,11 @@ set_line_tail
    | s_version
 ;
 
+st_default_address_selection
+:
+   DEFAULT_ADDRESS_SELECTION
+;
+
 st_host_name
 :
    HOST_NAME variable
@@ -139,7 +145,6 @@ st_null
       | BACKUP_ROUTER
       | COMMIT
       | DDOS_PROTECTION
-      | DEFAULT_ADDRESS_SELECTION
       | DOMAIN_NAME
       | DOMAIN_SEARCH
       | INTERNET_OPTIONS

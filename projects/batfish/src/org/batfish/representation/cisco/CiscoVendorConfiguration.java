@@ -425,7 +425,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       for (LeafBgpPeerGroup lpg : leafGroups) {
          // update source
          String updateSourceInterface = lpg.getUpdateSource();
-         String updateSource;
+         Ip updateSource;
          if (updateSourceInterface == null) {
             Ip processRouterId = proc.getRouterId();
             if (processRouterId == null) {
@@ -454,7 +454,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   }
                }
             }
-            updateSource = processRouterId.toString();
+            updateSource = processRouterId;
          }
          else {
             org.batfish.representation.Interface sourceInterface = c
@@ -464,7 +464,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                      .getPrefix();
                if (prefix != null) {
                   Ip sourceIp = prefix.getAddress();
-                  updateSource = sourceIp.toString();
+                  updateSource = sourceIp;
                }
                else {
                   throw new VendorConversionException(
@@ -630,7 +630,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          boolean routeReflectorClient = lpg.getRouteReflectorClient();
          if (routeReflectorClient) {
             if (clusterId == null) {
-               clusterId = new Ip(updateSource);
+               clusterId = updateSource;
             }
          }
          boolean sendCommunity = lpg.getSendCommunity();
@@ -675,7 +675,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
             newNeighbor.setRemoteAs(lpg.getRemoteAS());
             newNeighbor.setLocalAs(proc.getPid());
-            newNeighbor.setUpdateSource(updateSource);
+            newNeighbor.setLocalIp(updateSource);
             newNeighbor.getOriginationPolicies().addAll(originationPolicies);
             newNeighbor.setSendCommunity(sendCommunity);
             newNeighbor.setDefaultMetric(defaultMetric);

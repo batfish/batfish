@@ -16,7 +16,7 @@ public enum BgpNeighborIpExpr implements IpExpr {
       switch (this) {
 
       case LOCAL_IP:
-         return new Ip(neighbor.getUpdateSource());
+         return neighbor.getLocalIp();
 
       case REMOTE_IP:
          return neighbor.getAddress();

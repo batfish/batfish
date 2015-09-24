@@ -57,6 +57,11 @@ public class BgpNeighbor implements Serializable {
    private Integer _localAs;
 
    /**
+    * The ip address of the containing router as reported to this peer
+    */
+   private Ip _localIp;
+
+   /**
     * The set of policies governing routes that may be originated (i.e. routes
     * not received through BGP) from the containing BGP process. Each policy in
     * this set is applied independently of the others. These policies are
@@ -86,11 +91,6 @@ public class BgpNeighbor implements Serializable {
     * advertisements to this peer
     */
    private Boolean _sendCommunity;
-
-   /**
-    * TODO: figure out semantics of this field
-    */
-   private String _updateSource;
 
    private BgpNeighbor() {
       _outboundPolicyMaps = new LinkedHashSet<PolicyMap>();
@@ -191,6 +191,13 @@ public class BgpNeighbor implements Serializable {
    }
 
    /**
+    * @return {@link #_localIp}
+    */
+   public Ip getLocalIp() {
+      return _localIp;
+   }
+
+   /**
     * @return {@link #_originationPolicies}
     */
    public Set<PolicyMap> getOriginationPolicies() {
@@ -231,13 +238,6 @@ public class BgpNeighbor implements Serializable {
    }
 
    /**
-    * @return {@link #_updateSource}
-    */
-   public String getUpdateSource() {
-      return _updateSource;
-   }
-
-   /**
     * Sets {@link #_clusterId}
     *
     * @param clusterId
@@ -274,6 +274,15 @@ public class BgpNeighbor implements Serializable {
    }
 
    /**
+    * Sets {@link #_localIp}
+    *
+    * @param updateSource
+    */
+   public void setLocalIp(Ip updateSource) {
+      _localIp = updateSource;
+   }
+
+   /**
     * Sets {@link #_remoteAs}
     *
     * @param remoteAs
@@ -289,15 +298,6 @@ public class BgpNeighbor implements Serializable {
     */
    public void setSendCommunity(Boolean sendCommunity) {
       _sendCommunity = sendCommunity;
-   }
-
-   /**
-    * Sets {@link #_updateSource}
-    *
-    * @param updateSource
-    */
-   public void setUpdateSource(String updateSource) {
-      _updateSource = updateSource;
    }
 
    @Override

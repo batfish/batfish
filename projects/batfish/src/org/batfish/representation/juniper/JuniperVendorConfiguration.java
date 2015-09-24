@@ -56,6 +56,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
    private Configuration _c;
 
+   private boolean _defaultAddressSelection;
+
    private final RoleSet _roles;
 
    private transient Set<String> _unimplementedFeatures;
@@ -118,8 +120,42 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          neighbor.setSendCommunity(true);
 
          // inherit update-source
-         neighbor.setUpdateSource(ig.getLocalAddress().toString());
-
+         Ip localAddress = ig.getLocalAddress();
+         if (localAddress == null && _defaultAddressSelection) {
+            Interface lo0 = _defaultRoutingInstance.getInterfaces().get(
+                  FIRST_LOOPBACK_INTERFACE_NAME);
+            if (lo0 != null) {
+               Interface lo0_0 = lo0.getUnits().get(
+                     FIRST_LOOPBACK_INTERFACE_NAME + ".0");
+               if (lo0_0 != null) {
+                  Prefix lo0_0Prefix = lo0_0.getPrimaryPrefix();
+                  if (lo0_0Prefix != null) {
+                     localAddress = lo0_0Prefix.getAddress();
+                  }
+               }
+            }
+         }
+         if (localAddress == null) {
+            // assign the ip of the interface that is likely connected to this
+            // peer
+            for (Interface iface : _defaultRoutingInstance.getInterfaces()
+                  .values()) {
+               for (Interface unit : iface.getUnits().values()) {
+                  Prefix unitPrefix = unit.getPrimaryPrefix();
+                  if (unitPrefix != null && unitPrefix.contains(ip)) {
+                     localAddress = unitPrefix.getAddress();
+                     break;
+                  }
+               }
+            }
+         }
+         if (localAddress == null) {
+            _w.redFlag("Could not determine local ip for bgp peering with neighbor ip: "
+                  + ip);
+         }
+         else {
+            neighbor.setLocalIp(localAddress);
+         }
          proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
       }
       return proc;
@@ -223,6 +259,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                .get(ospfAreaLong);
          newArea.getInterfaces().add(newIface);
       }
+   }
+
+   public void setDefaultAddressSelection(boolean defaultAddressSelection) {
+      _defaultAddressSelection = defaultAddressSelection;
    }
 
    @Override
