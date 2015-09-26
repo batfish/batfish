@@ -45,6 +45,24 @@ batfish() {
 }
 export -f batfish
 
+batfish_answer_example_cp() {
+   batfish_date
+   echo ": START: Answer provided example question"
+   batfish_expect_args 3 $# || return 1
+   local BASE=$1
+   local ENVIRONMENT=$2
+   local QUESTIONNAME=$3
+   local QUESTION_SRC=$BATFISH_ROOT/example_questions/${QUESTIONNAME}.q
+   local QUESTION_DST_DIR=$BASE/questions/$QUESTIONNAME
+   local QUESTION_DST=$QUESTION_DST_DIR/question
+   mkdir -p $QUESTION_DST_DIR
+   cp $QUESTION_SRC $QUESTION_DST
+   batfish -autobasedir $BASE -env $ENVIRONMENT -answer -questionname $QUESTIONNAME -loglevel output
+   batfish_date
+   echo ": END: Answer provided example question"
+}
+export -f batfish_answer_example_cp
+
 batfish_build() {
    bash -c '_batfish_build "$@"' _batfish_build "$@" || return 1
    if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" ]; then

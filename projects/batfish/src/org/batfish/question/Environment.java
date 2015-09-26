@@ -141,9 +141,15 @@ public class Environment {
    public String toString() {
       StringBuilder sb = new StringBuilder();
       sb.append("{ ");
-      sb.append("node:" + _node + " ");
-      sb.append("interface:" + _interface + " ");
-      sb.append("bgp_neighbor:" + _bgpNeighbor + " ");
+      if (_node != null) {
+         sb.append("node:" + _node + " ");
+      }
+      if (_interface != null) {
+         sb.append("interface:" + _interface + " ");
+      }
+      if (_bgpNeighbor != null) {
+         sb.append("bgp_neighbor:" + _bgpNeighbor + " ");
+      }
       sb.append("}");
       return sb.toString();
    }
