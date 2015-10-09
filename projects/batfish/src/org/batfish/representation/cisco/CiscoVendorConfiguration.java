@@ -24,6 +24,7 @@ import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.IsisLevel;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.OspfArea;
@@ -712,8 +713,37 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          newIface.setPrefix(iface.getPrefix());
       }
       newIface.getSecondaryPrefixes().addAll(iface.getSecondaryPrefixes());
+      boolean level1 = false;
+      boolean level2 = false;
+      if (_isisProcess != null) {
+         switch (_isisProcess.getLevel()) {
+         case LEVEL_1:
+            level1 = true;
+            break;
+         case LEVEL_1_2:
+            level1 = true;
+            level2 = true;
+            break;
+         case LEVEL_2:
+            level2 = true;
+            break;
+         default:
+            throw new VendorConversionException("Invalid IS-IS level");
+         }
+      }
+      if (level1) {
+         newIface.setIsisL1InterfaceMode(iface.getIsisInterfaceMode());
+      }
+      else {
+         newIface.setIsisL1InterfaceMode(IsisInterfaceMode.UNSET);
+      }
+      if (level2) {
+         newIface.setIsisL2InterfaceMode(iface.getIsisInterfaceMode());
+      }
+      else {
+         newIface.setIsisL2InterfaceMode(IsisInterfaceMode.UNSET);
+      }
       newIface.setIsisCost(iface.getIsisCost());
-      newIface.setIsisInterfaceMode(iface.getIsisInterfaceMode());
       newIface.setOspfCost(iface.getOspfCost());
       newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
       newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());

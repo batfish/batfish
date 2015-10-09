@@ -376,14 +376,31 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       newIface.setBandwidth(iface.getBandwidth());
       // isis settings
       IsisInterfaceSettings isisSettings = iface.getIsisSettings();
-      if (isisSettings.getPassive()) {
-         newIface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
+      IsisInterfaceLevelSettings isisL1Settings = isisSettings
+            .getLevel1Settings();
+      if (isisL1Settings.getEnabled()) {
+         if (isisSettings.getPassive()) {
+            newIface.setIsisL1InterfaceMode(IsisInterfaceMode.PASSIVE);
+         }
+         else if (isisSettings.getEnabled()) {
+            newIface.setIsisL1InterfaceMode(IsisInterfaceMode.ACTIVE);
+         }
+         else {
+            newIface.setIsisL1InterfaceMode(IsisInterfaceMode.UNSET);
+         }
       }
-      else if (isisSettings.getEnabled()) {
-         newIface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
-      }
-      else {
-         newIface.setIsisInterfaceMode(IsisInterfaceMode.UNSET);
+      IsisInterfaceLevelSettings isisL2Settings = isisSettings
+            .getLevel2Settings();
+      if (isisL2Settings.getEnabled()) {
+         if (isisSettings.getPassive()) {
+            newIface.setIsisL2InterfaceMode(IsisInterfaceMode.PASSIVE);
+         }
+         else if (isisSettings.getEnabled()) {
+            newIface.setIsisL2InterfaceMode(IsisInterfaceMode.ACTIVE);
+         }
+         else {
+            newIface.setIsisL2InterfaceMode(IsisInterfaceMode.UNSET);
+         }
       }
       Integer l1Metric = isisSettings.getLevel1Settings().getMetric();
       Integer l2Metric = isisSettings.getLevel2Settings().getMetric();

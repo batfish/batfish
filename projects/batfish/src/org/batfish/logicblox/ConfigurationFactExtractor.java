@@ -557,19 +557,47 @@ public class ConfigurationFactExtractor {
       StringBuilder wSetIsisArea = _factBins.get("SetIsisArea");
       StringBuilder wSetIsisInterfaceCost = _factBins
             .get("SetIsisInterfaceCost");
-      StringBuilder wSetIsisPassiveInterface = _factBins
-            .get("SetIsisPassiveInterface");
+      StringBuilder wSetIsisL1PassiveInterface = _factBins
+            .get("SetIsisL1PassiveInterface");
+      StringBuilder wSetIsisL2PassiveInterface = _factBins
+            .get("SetIsisL2PassiveInterface");
+      StringBuilder wSetIsisL1ActiveInterface = _factBins
+            .get("SetIsisL1ActiveInterface");
+      StringBuilder wSetIsisL2ActiveInterface = _factBins
+            .get("SetIsisL2ActiveInterface");
       String hostname = _configuration.getHostname();
       IsisProcess proc = _configuration.getIsisProcess();
       if (proc != null) {
          for (Interface iface : _configuration.getInterfaces().values()) {
-            IsisInterfaceMode mode = iface.getIsisInterfaceMode();
+            IsisInterfaceMode l1Mode = iface.getIsisL1InterfaceMode();
+            IsisInterfaceMode l2Mode = iface.getIsisL2InterfaceMode();
             String ifaceName = iface.getName();
-            switch (mode) {
+            switch (l1Mode) {
             case PASSIVE:
-               wSetIsisPassiveInterface.append(hostname + "|" + ifaceName
+               wSetIsisL1PassiveInterface.append(hostname + "|" + ifaceName
                      + "\n");
             case ACTIVE:
+               wSetIsisL1ActiveInterface.append(hostname + "|" + ifaceName
+                     + "\n");
+               Integer isisCost = iface.getIsisCost();
+               if (isisCost == null) {
+                  isisCost = IsisProcess.DEFAULT_ISIS_INTERFACE_COST;
+               }
+               wSetIsisInterfaceCost.append(hostname + "|" + ifaceName + "|"
+                     + isisCost + "\n");
+               break;
+            case UNSET:
+               break;
+            default:
+               throw new BatfishException("Bad IS-IS mode");
+            }
+            switch (l2Mode) {
+            case PASSIVE:
+               wSetIsisL2PassiveInterface.append(hostname + "|" + ifaceName
+                     + "\n");
+            case ACTIVE:
+               wSetIsisL2ActiveInterface.append(hostname + "|" + ifaceName
+                     + "\n");
                Integer isisCost = iface.getIsisCost();
                if (isisCost == null) {
                   isisCost = IsisProcess.DEFAULT_ISIS_INTERFACE_COST;

@@ -246,11 +246,17 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private BooleanExpr toBooleanExpr(Interface_isis_boolean_exprContext expr) {
-      if (expr.interface_isis_active_boolean_expr() != null) {
-         return InterfaceBooleanExpr.INTERFACE_ISIS_ACTIVE;
+      if (expr.interface_isis_l1_active_boolean_expr() != null) {
+         return InterfaceBooleanExpr.INTERFACE_ISIS_L1_ACTIVE;
       }
-      else if (expr.interface_isis_passive_boolean_expr() != null) {
-         return InterfaceBooleanExpr.INTERFACE_ISIS_PASSIVE;
+      else if (expr.interface_isis_l1_passive_boolean_expr() != null) {
+         return InterfaceBooleanExpr.INTERFACE_ISIS_L1_PASSIVE;
+      }
+      else if (expr.interface_isis_l2_active_boolean_expr() != null) {
+         return InterfaceBooleanExpr.INTERFACE_ISIS_L2_ACTIVE;
+      }
+      else if (expr.interface_isis_l2_passive_boolean_expr() != null) {
+         return InterfaceBooleanExpr.INTERFACE_ISIS_L2_PASSIVE;
       }
       else {
          throw new BatfishException(ERR_CONVERT_BOOLEAN);

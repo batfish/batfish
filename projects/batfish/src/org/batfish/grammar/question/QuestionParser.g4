@@ -270,22 +270,34 @@ interface_ip_ip_expr
    IP
 ;
 
-interface_isis_active_boolean_expr
+interface_isis_l1_active_boolean_expr
 :
-   ACTIVE
+   L1_ACTIVE
 ;
 
-interface_isis_passive_boolean_expr
+interface_isis_l1_passive_boolean_expr
 :
-   PASSIVE
+   L1_PASSIVE
+;
+
+interface_isis_l2_active_boolean_expr
+:
+   L2_ACTIVE
+;
+
+interface_isis_l2_passive_boolean_expr
+:
+   L2_PASSIVE
 ;
 
 interface_isis_boolean_expr
 :
    ISIS PERIOD
    (
-      interface_isis_active_boolean_expr
-      | interface_isis_passive_boolean_expr
+      interface_isis_l1_active_boolean_expr
+      | interface_isis_l1_passive_boolean_expr
+      | interface_isis_l2_active_boolean_expr
+      | interface_isis_l2_passive_boolean_expr
    )
 ;
 

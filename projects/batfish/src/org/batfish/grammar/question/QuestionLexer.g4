@@ -159,6 +159,26 @@ HAS_NEXT_HOP_IP
    'has_next_hop_ip'
 ;
 
+L1_ACTIVE
+:
+   'l1_active'
+;
+
+L1_PASSIVE
+:
+   'l1_passive'
+;
+
+L2_ACTIVE
+:
+   'l2_active'
+;
+
+L2_PASSIVE
+:
+   'l2_passive'
+;
+
 LOCAL_AS
 :
    'local_as'
