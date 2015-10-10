@@ -20,7 +20,7 @@ export COMMON_JAR="$COMMON_PATH/out/batfish-common-protocol.jar"
 
 batfish() {
    # if cygwin, shift and replace each parameter
-   if [ "Cygwin" = "$(uname -o)" ]; then
+   if [[ $(uname) == *"Cygwin"* ]]; then
       local NUMARGS=$#
       local IGNORE_CURRENT_ARG=no;
       for i in $(seq 1 $NUMARGS); do
@@ -378,7 +378,7 @@ batfish_reload() {
 export -f batfish_reload
 
 batfish_replace_symlinks() {
-   if [ "Cygwin" = "$(uname -o)" ]; then
+   if [[ $(uname) == *"Cygwin"* ]]; then
       bash -c _batfish_replace_symlinks || return 1
    fi
 }
@@ -401,9 +401,9 @@ export -f _batfish_replace_symlinks
 _batfish_replace_symlink() {
    SYMLINK=$1
    echo "SYMLINK=$SYMLINK"
-   TARGET="$(readlink $SYMLINK)"
+   TARGET="$($GNU_READLINK $SYMLINK)"
    echo "TARGET=$TARGET"
-   ABSOLUTE_TARGET="$(readlink -f $SYMLINK)"
+   ABSOLUTE_TARGET="$($GNU_READLINK -f $SYMLINK)"
    echo "ABSOLUTE_TARGET=$ABSOLUTE_TARGET"
    rm "$SYMLINK" || return 1
    cp -a "$ABSOLUTE_TARGET" "$SYMLINK" || return 1
@@ -499,7 +499,7 @@ export -f batfish_time
 
 coordinator() {
    # if cygwin, shift and replace each parameter
-   if [ "Cygwin" = "$(uname -o)" ]; then
+   if [[ $(uname) == *"Cygwin"* ]]; then
       local NUMARGS=$#
       for i in $(seq 1 $NUMARGS); do
          local CURRENT_ARG=$1
@@ -515,9 +515,9 @@ coordinator() {
 }
 export -f coordinator
 
-batfish-client() {
+batfish_client() {
    # if cygwin, shift and replace each parameter
-   if [ "Cygwin" = "$(uname -o)" ]; then
+   if [[ $(uname) == *"Cygwin"* ]]; then
       local NUMARGS=$#
       for i in $(seq 1 $NUMARGS); do
          local CURRENT_ARG=$1
@@ -531,7 +531,7 @@ batfish-client() {
    fi
    $BATFISH_CLIENT $BATFISH_CLIENT_COMMON_ARGS $@
 }
-export -f batfish-client
+export -f batfish_client
 
 client_build() {
    bash -c '_client_build "$@"' _client_build "$@" || return 1

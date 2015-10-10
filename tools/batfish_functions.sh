@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
+if [[ $(uname) == *"Darwin"* ]]; then
+   export GNU_READLINK=greadlink
+else
+   export GNU_READLINK=readlink
+fi
+
 export BATFISH_SOURCED_SCRIPT=$BASH_SOURCE
-export BATFISH_TOOLS_PATH="$(readlink -f $(dirname $BATFISH_SOURCED_SCRIPT))"
+export BATFISH_TOOLS_PATH="$($GNU_READLINK -f $(dirname $BATFISH_SOURCED_SCRIPT))"
 
 . "$BATFISH_TOOLS_PATH/common.sh" || return 1
 . "$BATFISH_TOOLS_PATH/destination.sh"
