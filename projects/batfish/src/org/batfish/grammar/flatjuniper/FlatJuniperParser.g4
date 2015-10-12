@@ -104,7 +104,8 @@ s_system
 
 s_system_tail
 :
-   st_host_name
+   st_default_address_selection
+   | st_host_name
    | st_null
 ;
 
@@ -123,6 +124,11 @@ set_line_tail
    s_groups
    | statement
    | s_version
+;
+
+st_default_address_selection
+:
+   DEFAULT_ADDRESS_SELECTION
 ;
 
 st_host_name
@@ -149,6 +155,8 @@ st_null
       | NTP
       | PORTS
       | PROCESSES
+      | RADIUS_OPTIONS
+      | RADIUS_SERVER
       | ROOT_AUTHENTICATION
       | SCRIPTS
       | SERVICES

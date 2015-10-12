@@ -1,0 +1,26 @@
+block(`Bgp_igp_origination_rules) {
+   alias_all(`libbatfish:AsPath),
+   alias_all(`libbatfish:Bgp),
+   alias_all(`libbatfish:BgpAdvertisement),
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+BgpOriginationPolicy(node, neighborIp, map) <-
+   SetBgpOriginationPolicy(node, neighborNetwork, map),
+   NetworkOf[neighborIp, _] = neighborNetwork.
+
+SetBgpOriginationPolicy(node, neighborNetwork, map) <-
+   SetBgpOriginationPolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, map),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
+
+lang:compiler:error:ENTITY_CREATION_RECURSION[]=false.
+lang:compiler:warning:ENTITY_CREATION_RECURSION[]=false.
+
+// END CODE
+   })
+
+} <-- .

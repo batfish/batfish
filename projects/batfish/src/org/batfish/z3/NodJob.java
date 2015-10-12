@@ -11,6 +11,8 @@ import java.util.concurrent.Callable;
 
 import org.batfish.collections.NodeSet;
 import org.batfish.main.BatfishException;
+import org.batfish.representation.Flow;
+import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 
 import com.microsoft.z3.BitVecExpr;
@@ -29,26 +31,30 @@ import com.microsoft.z3.Z3Exception;
 public class NodJob implements Callable<NodJobResult> {
 
    private Synthesizer _dataPlaneSynthesizer;
+
    private final NodeSet _nodeSet;
+
    private QuerySynthesizer _querySynthesizer;
 
+   private String _tag;
+
    public NodJob(Synthesizer dataPlaneSynthesizer,
-         QuerySynthesizer querySynthesizer, NodeSet nodeSet) {
+         QuerySynthesizer querySynthesizer, NodeSet nodeSet, String tag) {
       _dataPlaneSynthesizer = dataPlaneSynthesizer;
       _querySynthesizer = querySynthesizer;
       _nodeSet = new NodeSet();
       _nodeSet.addAll(nodeSet);
+      _tag = tag;
    }
 
    @Override
    public NodJobResult call() throws Exception {
       try {
          Context ctx = new Context();
-         NodProgram _baseProgram = _dataPlaneSynthesizer
+         NodProgram baseProgram = _dataPlaneSynthesizer
                .synthesizeNodProgram(ctx);
-         NodProgram queryProgram = _querySynthesizer
-               .getNodProgram(_baseProgram);
-         NodProgram program = _baseProgram.append(queryProgram);
+         NodProgram queryProgram = _querySynthesizer.getNodProgram(baseProgram);
+         NodProgram program = baseProgram.append(queryProgram);
          Params p = ctx.mkParams();
          p.add("fixedpoint.engine", "datalog");
          p.add("fixedpoint.datalog.default_relation", "doc");
@@ -76,40 +82,52 @@ public class NodJob implements Callable<NodJobResult> {
             }
          }
          Expr answer = fix.getAnswer();
+         BoolExpr solverInput;
          if (answer.getArgs().length > 0) {
             List<Expr> reversedVarList = new ArrayList<Expr>();
             reversedVarList.addAll(program.getVariablesAsConsts().values());
             Collections.reverse(reversedVarList);
             Expr[] reversedVars = reversedVarList.toArray(new Expr[] {});
             Expr substitutedAnswer = answer.substituteVars(reversedVars);
-            BoolExpr solverInput = (BoolExpr) substitutedAnswer;
-            Solver solver = ctx.mkSolver();
-            solver.add(solverInput);
-            Status solverStatus = solver.check();
-            if (solverStatus != Status.SATISFIABLE) {
-               throw new BatfishException(
-                     "Sanity check failed: satisfiable expression no longer satisfiable in second stage");
-            }
-            Model model = solver.getModel();
-            Map<String, Long> constraints = new LinkedHashMap<String, Long>();
-            for (FuncDecl constDecl : model.getConstDecls()) {
-               String name = constDecl.getName().toString();
-               BitVecExpr varConstExpr = program.getVariablesAsConsts().get(
-                     name);
-               long val = ((BitVecNum) model.getConstInterp(varConstExpr))
-                     .getLong();
-               constraints.put(name, val);
-            }
-            Set<String> flowLines = new HashSet<String>();
-            for (String node : _nodeSet) {
-               String flowLine = createFlowLine(node, constraints);
-               flowLines.add(flowLine);
-            }
-            return new NodJobResult(flowLines);
+            solverInput = (BoolExpr) substitutedAnswer;
          }
          else {
-            return new NodJobResult();
+            solverInput = (BoolExpr) answer;
          }
+         if (_querySynthesizer.getNegate()) {
+            solverInput = ctx.mkNot(solverInput);
+         }
+         Solver solver = ctx.mkSolver();
+         solver.add(solverInput);
+         Status solverStatus = solver.check();
+         switch (solverStatus) {
+         case SATISFIABLE:
+            break;
+
+         case UNKNOWN:
+            throw new BatfishException("Stage 2 query satisfiability unknown");
+
+         case UNSATISFIABLE:
+            return new NodJobResult();
+
+         default:
+            throw new BatfishException("invalid status");
+         }
+         Model model = solver.getModel();
+         Map<String, Long> constraints = new LinkedHashMap<String, Long>();
+         for (FuncDecl constDecl : model.getConstDecls()) {
+            String name = constDecl.getName().toString();
+            BitVecExpr varConstExpr = program.getVariablesAsConsts().get(name);
+            long val = ((BitVecNum) model.getConstInterp(varConstExpr))
+                  .getLong();
+            constraints.put(name, val);
+         }
+         Set<Flow> flows = new HashSet<Flow>();
+         for (String node : _nodeSet) {
+            Flow flow = createFlow(node, constraints);
+            flows.add(flow);
+         }
+         return new NodJobResult(flows);
       }
       catch (Z3Exception e) {
          return new NodJobResult(new BatfishException(
@@ -117,7 +135,7 @@ public class NodJob implements Callable<NodJobResult> {
       }
    }
 
-   private String createFlowLine(String node, Map<String, Long> constraints) {
+   private Flow createFlow(String node, Map<String, Long> constraints) {
       long src_ip = 0;
       long dst_ip = 0;
       long src_port = 0;
@@ -150,9 +168,8 @@ public class NodJob implements Callable<NodJobResult> {
             throw new Error("invalid variable name");
          }
       }
-      String line = node + "|" + src_ip + "|" + dst_ip + "|" + src_port + "|"
-            + dst_port + "|" + protocol + "\n";
-      return line;
+      return new Flow(node, new Ip(src_ip), new Ip(dst_ip), (int) src_port,
+            (int) dst_port, IpProtocol.fromNumber((int) protocol), _tag);
    }
 
 }

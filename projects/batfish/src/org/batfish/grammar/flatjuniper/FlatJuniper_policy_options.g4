@@ -33,7 +33,7 @@ ct_members
    MEMBERS
    (
       extended_community
-      | named_community
+      | standard_community
       // community_regex intentionally on bottom
 
       | community_regex
@@ -121,6 +121,11 @@ fromt_protocol
    PROTOCOL protocol = routing_protocol
 ;
 
+fromt_rib
+:
+   RIB name = variable
+;
+
 fromt_route_filter
 :
    ROUTE_FILTER
@@ -178,12 +183,6 @@ metric_expression
    (
       OFFSET offset = DEC
    )?
-;
-
-named_community
-:
-   NO_ADVERTISE
-   | NO_EXPORT
 ;
 
 plt_apply_path
@@ -410,12 +409,20 @@ tht_install_nexthop
 
 tht_local_preference
 :
-   LOCAL_PREFERENCE localpref = DEC
+   LOCAL_PREFERENCE
+   (
+      localpref = DEC
+      | s_apply_groups
+   )
 ;
 
 tht_metric
 :
-   METRIC metric = DEC
+   METRIC
+   (
+      metric = DEC
+      | s_apply_groups
+   )
 ;
 
 tht_metric_add
@@ -529,6 +536,7 @@ tt_from_tail
    | fromt_policy
    | fromt_prefix_list
    | fromt_protocol
+   | fromt_rib
    | fromt_route_filter
    | fromt_route_type
    | fromt_source_address_filter

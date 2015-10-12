@@ -20,6 +20,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.BfConsts.TaskStatus;
+import org.batfish.main.Settings.EnvironmentSettings;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -38,6 +39,10 @@ public class Driver {
    private static void applyAutoBaseDir(final Settings settings) {
       String baseDir = settings.getAutoBaseDir();
       if (baseDir != null) {
+         EnvironmentSettings envSettings = settings
+               .getBaseEnvironmentSettings();
+         EnvironmentSettings diffEnvSettings = settings
+               .getDiffEnvironmentSettings();
          settings.setSerializeIndependentPath(Paths.get(baseDir,
                BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR).toString());
          settings.setSerializeVendorPath(Paths.get(baseDir,
@@ -49,24 +54,71 @@ public class Driver {
          settings.setLogicDir(_mainSettings.getLogicDir());
          String envName = settings.getEnvironmentName();
          if (envName != null) {
+            settings.setEnvironmentName(envName);
             Path envPath = Paths.get(baseDir,
                   BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
-            settings.setDumpFactsDir(envPath.resolve(
+            envSettings.setDumpFactsDir(envPath.resolve(
                   BfConsts.RELPATH_FACT_DUMP_DIR).toString());
-            settings.setDataPlaneDir(envPath.resolve(
+            envSettings.setDataPlanePath(envPath.resolve(
                   BfConsts.RELPATH_DATA_PLANE_DIR).toString());
-            settings.setJobLogicBloxHostnamePath(envPath.resolve(
+            envSettings.setJobLogicBloxHostnamePath(envPath.resolve(
                   BfConsts.RELPATH_LB_HOSTNAME_PATH).toString());
             String workspaceBasename = Paths.get(baseDir).getFileName()
                   .toString();
             String workspaceName = workspaceBasename + ":" + envName;
-            settings.setWorkspaceName(workspaceName);
+            envSettings.setWorkspaceName(workspaceName);
             settings.setNodeSetPath(envPath.resolve(
                   BfConsts.RELPATH_ENV_NODE_SET).toString());
             settings.setZ3DataPlaneFile(envPath.resolve(
                   BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString());
             settings.setQueryDumpDir(envPath.resolve(
                   BfConsts.RELPATH_QUERY_DUMP_DIR).toString());
+            Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
+            envSettings.setNodeBlacklistPath(envDirPath.resolve(
+                  BfConsts.RELPATH_NODE_BLACKLIST_FILE).toString());
+            envSettings.setInterfaceBlacklistPath(envDirPath.resolve(
+                  BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE).toString());
+            envSettings.setEdgeBlacklistPath(envDirPath.resolve(
+                  BfConsts.RELPATH_EDGE_BLACKLIST_FILE).toString());
+            envSettings.setSerializedTopologyPath(envDirPath.resolve(
+                  BfConsts.RELPATH_TOPOLOGY_FILE).toString());
+            envSettings.setDeltaConfigurationsDir(envDirPath.resolve(
+                  BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
+         }
+         String diffEnvName = settings.getDiffEnvironmentName();
+         if (diffEnvName != null) {
+            settings.setDiffEnvironmentName(diffEnvName);
+            Path diffEnvPath = Paths.get(baseDir,
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR, diffEnvName);
+            diffEnvSettings.setDumpFactsDir(diffEnvPath.resolve(
+                  BfConsts.RELPATH_FACT_DUMP_DIR).toString());
+            diffEnvSettings.setDataPlanePath(diffEnvPath.resolve(
+                  BfConsts.RELPATH_DATA_PLANE_DIR).toString());
+            diffEnvSettings.setJobLogicBloxHostnamePath(diffEnvPath.resolve(
+                  BfConsts.RELPATH_LB_HOSTNAME_PATH).toString());
+            String workspaceBasename = Paths.get(baseDir).getFileName()
+                  .toString();
+            String workspaceName = workspaceBasename + ":" + diffEnvName;
+            diffEnvSettings.setWorkspaceName(workspaceName);
+            Path diffEnvDirPath = diffEnvPath.resolve(BfConsts.RELPATH_ENV_DIR);
+            diffEnvSettings.setNodeBlacklistPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_NODE_BLACKLIST_FILE).toString());
+            diffEnvSettings.setInterfaceBlacklistPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE).toString());
+            diffEnvSettings.setEdgeBlacklistPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_EDGE_BLACKLIST_FILE).toString());
+            diffEnvSettings.setSerializedTopologyPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_TOPOLOGY_FILE).toString());
+            diffEnvSettings.setDeltaConfigurationsDir(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
+            settings.setActiveEnvironmentSettings(diffEnvSettings);
+         }
+         String outputEnvName = settings.getOutputEnvironmentName();
+         if (outputEnvName != null) {
+            Path outputEnvPath = Paths.get(baseDir,
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR, outputEnvName);
+            settings.setPrecomputedRoutesPath(outputEnvPath.resolve(
+                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
          }
          String questionName = settings.getQuestionName();
          if (questionName != null) {
@@ -74,8 +126,29 @@ public class Driver {
                   BfConsts.RELPATH_QUESTIONS_DIR, questionName);
             settings.setQuestionPath(questionPath.resolve(
                   BfConsts.RELPATH_QUESTION_FILE).toString());
-            settings.setTrafficFactDumpDir(questionPath.resolve(
-                  BfConsts.RELPATH_FLOWS_DUMP_DIR).toString());
+            if (diffEnvName != null) {
+               diffEnvSettings.setTrafficFactDumpDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,
+                           BfConsts.RELPATH_FACT_DUMP_DIR).toString())
+                     .toString());
+               envSettings.setTrafficFactDumpDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName, diffEnvName,
+                           BfConsts.RELPATH_FACT_DUMP_DIR).toString())
+                     .toString());
+            }
+            else {
+               envSettings.setTrafficFactDumpDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName,
+                           BfConsts.RELPATH_FACT_DUMP_DIR).toString())
+                     .toString());
+            }
+            Path queryDir = questionPath.resolve(BfConsts.RELPATH_QUERIES_DIR);
+            settings.setMultipathInconsistencyQueryPath(queryDir.resolve(
+                  Paths.get(envName, BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX))
+                  .toString());
+            settings.setFailureInconsistencyQueryPath(queryDir.resolve(
+                  Paths.get(envName, BfConsts.RELPATH_FAILURE_QUERY_PREFIX))
+                  .toString());
          }
       }
    }

@@ -1,0 +1,33 @@
+block(`Bgp_outgoing_transformation_rules) {
+   alias_all(`libbatfish:AsPath),
+   alias_all(`libbatfish:Bgp),
+   alias_all(`libbatfish:BgpAdvertisement),
+   alias_all(`libbatfish:CommunityList),
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Layer2),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+BgpExportPolicy(node, neighborIp, map) <-
+   SetBgpExportPolicy(node, neighborNetwork, map),
+   NetworkOf[neighborIp, _] = neighborNetwork.
+
+SetBgpExportPolicy(node, neighborNetwork, map) <-
+   SetBgpExportPolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, map),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
+
+lang:compiler:error:ENTITY_CREATION_RECURSION[]=false.
+lang:compiler:warning:ENTITY_CREATION_RECURSION[]=false.
+
+lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
+
+
+// END CODE
+   })
+
+} <-- .

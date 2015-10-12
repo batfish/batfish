@@ -1,0 +1,105 @@
+block(`Isis_L1_rules) {
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Isis),
+   alias_all(`libbatfish:Layer2),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+BestIsisL1Route(route),
+   IsisL1Network(node, network)
+<-
+   IsisL1Route(route),
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   MinIsisL1RouteCost[node, network] = cost.
+
+IsisL1EnabledInterface(node, interface) <-
+   SetIsisL1ActiveInterface(node, interface) ;
+   SetIsisL1PassiveInterface(node, interface).
+   
+IsisL1Neighbors(node1, int1, cost1, node2, int2, cost2) <-
+   SetIsisL1Node(node1),
+   SetIsisL1Node(node2),
+   SetIsisArea(node1, area),
+   SetIsisArea(node2, area),
+   LanAdjacent(node1, int1, node2, int2),
+   SetIsisInterfaceCost(node1, int1, cost1),
+   SetIsisInterfaceCost(node2, int2, cost2),
+   SetIsisL1ActiveInterface(node1, int1),
+   SetIsisL1ActiveInterface(node2, int2).
+
+// (base case)
+IsisL1Route(route),
+   Route(route),
+   NonIsisExportableRoute(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   !ConnectedRoute(node, network, _), // is this necessary?
+   IsisL1Neighbors(node, _, nodeIntCost, nextHop, nextHopInt, _),
+   IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
+   ConnectedRoute(nextHop, network, nextHopConnectedInt),
+   IsisL1EnabledInterface(nextHop, nextHopConnectedInt),
+   SetIsisInterfaceCost[nextHop, nextHopConnectedInt] = nextHopIntCost,
+   cost = nodeIntCost + nextHopIntCost,
+   protocol = RoutingProtocol_ISIS_L1[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
+// (recursive case)
+IsisL1Route(route),
+   Route(route),
+   NonIsisExportableRoute(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   !ConnectedRoute(node, network, _),
+   IsisL1Neighbors(node, _, nodeIntCost, nextHop, nextHopInt, _),
+   IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
+   IsisL1Neighbors(nextHop, _, _, secondHop, _, _),
+   BestIsisL1Route(subRoute),
+   Route_cost[subRoute] = subCost,
+   Route_network[subRoute] = network,
+   Route_nextHopIp[subRoute] = secondHopIp,
+   Route_node[subRoute] = nextHop,
+   HasIp(secondHop, secondHopIp),
+   node != secondHop,
+   cost = subCost + nodeIntCost,
+   protocol = RoutingProtocol_ISIS_L1[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
+
+MinIsisL1RouteCost[node, network] = minCost <-
+   agg<<minCost = min(cost)>>
+      IsisL1Route(route),
+      Route_cost[route] = cost,
+      Route_network[route] = network,
+      Route_node[route] = node.
+
+lang:compiler:disableError:NEGATION_RECURSION[] = true.
+lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
+lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
+lang:compiler:error:ENTITY_CREATION_RECURSION[]=false.
+lang:compiler:warning:ENTITY_CREATION_RECURSION[]=false.
+
+// END CODE
+   })
+} <-- .
+

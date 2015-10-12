@@ -57,6 +57,11 @@ fwfromt_exp
    EXP DEC
 ;
 
+fwfromt_first_fragment
+:
+   FIRST_FRAGMENT
+;
+
 fwfromt_forwarding_class
 :
    FORWARDING_CLASS variable
@@ -149,6 +154,11 @@ fwfromt_tcp_flags
    TCP_FLAGS DOUBLE_QUOTED_STRING
 ;
 
+fwfromt_tcp_initial
+:
+   TCP_INITIAL
+;
+
 fwft_apply_groups
 :
    s_apply_groups
@@ -181,6 +191,7 @@ fwt_family
    FAMILY
    (
       ANY
+      | BRIDGE
       | CCC
       | INET
       | INET6
@@ -252,6 +263,11 @@ fwthent_nop
    ) s_null_filler
 ;
 
+fwthent_port_mirror
+:
+   PORT_MIRROR
+;
+
 fwthent_reject
 :
    REJECT
@@ -276,6 +292,7 @@ fwtt_from_tail
    | fwfromt_destination_prefix_list
    | fwfromt_dscp
    | fwfromt_exp
+   | fwfromt_first_fragment
    | fwfromt_forwarding_class
    | fwfromt_icmp_code
    | fwfromt_icmp_type
@@ -292,6 +309,7 @@ fwtt_from_tail
    | fwfromt_source_prefix_list
    | fwfromt_tcp_established
    | fwfromt_tcp_flags
+   | fwfromt_tcp_initial
 ;
 
 fwtt_then
@@ -306,6 +324,7 @@ fwtt_then_tail
    | fwthent_loss_priority
    | fwthent_next_term
    | fwthent_nop
+   | fwthent_port_mirror
    | fwthent_reject
    | fwthent_routing_instance
 ;

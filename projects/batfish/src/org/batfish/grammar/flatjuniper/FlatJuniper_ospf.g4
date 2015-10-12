@@ -41,6 +41,11 @@ ait_ldp_synchronization
    LDP_SYNCHRONIZATION
 ;
 
+ait_link_protection
+:
+   LINK_PROTECTION
+;
+
 ait_metric
 :
    METRIC DEC
@@ -118,6 +123,7 @@ at_interface_tail
    | ait_hello_interval
    | ait_interface_type
    | ait_ldp_synchronization
+   | ait_link_protection
    | ait_metric
    | ait_null
    | ait_passive

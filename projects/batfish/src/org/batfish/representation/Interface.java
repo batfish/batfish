@@ -27,7 +27,9 @@ public class Interface extends NamedStructure {
 
    private Integer _isisCost;
 
-   private IsisInterfaceMode _isisInterfaceMode;
+   private IsisInterfaceMode _isisL1InterfaceMode;
+
+   private IsisInterfaceMode _isisL2InterfaceMode;
 
    private int _nativeVlan;
 
@@ -96,8 +98,12 @@ public class Interface extends NamedStructure {
       return _isisCost;
    }
 
-   public IsisInterfaceMode getIsisInterfaceMode() {
-      return _isisInterfaceMode;
+   public IsisInterfaceMode getIsisL1InterfaceMode() {
+      return _isisL1InterfaceMode;
+   }
+
+   public IsisInterfaceMode getIsisL2InterfaceMode() {
+      return _isisL2InterfaceMode;
    }
 
    public int getNativeVlan() {
@@ -186,8 +192,12 @@ public class Interface extends NamedStructure {
       _isisCost = isisCost;
    }
 
-   public void setIsisInterfaceMode(IsisInterfaceMode mode) {
-      _isisInterfaceMode = mode;
+   public void setIsisL1InterfaceMode(IsisInterfaceMode mode) {
+      _isisL1InterfaceMode = mode;
+   }
+
+   public void setIsisL2InterfaceMode(IsisInterfaceMode mode) {
+      _isisL2InterfaceMode = mode;
    }
 
    public void setNativeVlan(int vlan) {

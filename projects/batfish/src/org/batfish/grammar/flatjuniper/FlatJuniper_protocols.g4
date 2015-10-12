@@ -15,6 +15,7 @@ s_protocols
 s_protocols_tail
 :
    s_protocols_bgp
+   | s_protocols_connections
    | s_protocols_isis
    | s_protocols_mpls
    | s_protocols_null
@@ -34,10 +35,12 @@ s_protocols_null
       | MLD
       | MSDP
       | MSTP
+      | MVPN
       | NEIGHBOR_DISCOVERY
       | PIM
       | ROUTER_ADVERTISEMENT
       | RSVP
+      | VRRP
       | VSTP
    ) s_null_filler
 ;

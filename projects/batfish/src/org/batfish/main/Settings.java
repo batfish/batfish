@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -16,7 +17,111 @@ import org.apache.commons.cli.ParseException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 
-public class Settings {
+public final class Settings {
+
+   public final class EnvironmentSettings {
+
+      private String _dataPlanePath;
+
+      private String _deltaConfigurationsDir;
+
+      private String _dumpFactsDir;
+
+      private String _edgeBlacklistPath;
+
+      private String _interfaceBlacklistPath;
+
+      private String _jobLogicBloxHostnamePath;
+
+      private String _nodeBlacklistPath;
+
+      private String _serializedTopologyPath;
+
+      private String _trafficFactDumpDir;
+
+      private String _workspaceName;
+
+      public String getDataPlanePath() {
+         return _dataPlanePath;
+      }
+
+      public String getDeltaConfigurationsDir() {
+         return _deltaConfigurationsDir;
+      }
+
+      public String getDumpFactsDir() {
+         return _dumpFactsDir;
+      }
+
+      public String getEdgeBlacklistPath() {
+         return _edgeBlacklistPath;
+      }
+
+      public String getInterfaceBlacklistPath() {
+         return _interfaceBlacklistPath;
+      }
+
+      public String getJobLogicBloxHostnamePath() {
+         return _jobLogicBloxHostnamePath;
+      }
+
+      public String getNodeBlacklistPath() {
+         return _nodeBlacklistPath;
+      }
+
+      public String getSerializedTopologyPath() {
+         return _serializedTopologyPath;
+      }
+
+      public String getTrafficFactDumpDir() {
+         return _trafficFactDumpDir;
+      }
+
+      public String getWorkspaceName() {
+         return _workspaceName;
+      }
+
+      public void setDataPlanePath(String path) {
+         _dataPlanePath = path;
+      }
+
+      public void setDeltaConfigurationsDir(String deltaConfigurationsDir) {
+         _deltaConfigurationsDir = deltaConfigurationsDir;
+      }
+
+      public void setDumpFactsDir(String path) {
+         _dumpFactsDir = path;
+      }
+
+      public void setEdgeBlacklistPath(String edgeBlacklistPath) {
+         _edgeBlacklistPath = edgeBlacklistPath;
+      }
+
+      public void setInterfaceBlacklistPath(String interfaceBlacklistPath) {
+         _interfaceBlacklistPath = interfaceBlacklistPath;
+      }
+
+      public void setJobLogicBloxHostnamePath(String path) {
+         _jobLogicBloxHostnamePath = path;
+      }
+
+      public void setNodeBlacklistPath(String nodeBlacklistPath) {
+         _nodeBlacklistPath = nodeBlacklistPath;
+      }
+
+      public void setSerializedTopologyPath(String serializedTopologyPath) {
+         _serializedTopologyPath = serializedTopologyPath;
+      }
+
+      public void setTrafficFactDumpDir(String trafficFactDumpDir) {
+         _trafficFactDumpDir = trafficFactDumpDir;
+      }
+
+      public void setWorkspaceName(String name) {
+         _workspaceName = name;
+      }
+
+   }
 
    private static final String ARG_ACCEPT_NODE = "acceptnode";
    private static final String ARG_ANONYMIZE = "anonymize";
@@ -29,14 +134,14 @@ public class Settings {
    private static final String ARG_BUILD_PREDICATE_INFO = "bpi";
    private static final String ARG_CB_HOST = "lbhost";
    private static final String ARG_CB_PORT = "lbport";
-   private static final String ARG_COMPILE = "compile";
    private static final String ARG_CONC_UNIQUE = "concunique";
    private static final String ARG_COORDINATOR_HOST = "coordinatorhost";
    private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
    private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
    private static final String ARG_COUNT = "count";
    private static final String ARG_DATA_PLANE = "dp";
-   private static final String ARG_DATA_PLANE_DIR = "dpdir";
+   private static final String ARG_DATA_PLANE_PATH = "dppath";
+   private static final String ARG_DELETE_WORKSPACE = "deleteworkspace";
    private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
    private static final String ARG_DISABLED_FACTS = "disablefacts";
    private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
@@ -47,7 +152,6 @@ public class Settings {
    private static final String ARG_DUMP_INTERFACE_DESCRIPTIONS_PATH = "idpath";
    private static final String ARG_DUMP_TRAFFIC_FACTS = "dumptraffic";
    private static final String ARG_DUPLICATE_ROLE_FLOWS = "drf";
-   private static final String ARG_ENVIRONMENT_NAME = "env";
    private static final String ARG_EXIT_ON_FIRST_ERROR = "ee";
    private static final String ARG_FACTS = "facts";
    private static final String ARG_FLATTEN = "flatten";
@@ -69,7 +173,6 @@ public class Settings {
    private static final String ARG_LB_WEB_ADMIN_PORT = "lbwebadminport";
    private static final String ARG_LB_WEB_PORT = "lbwebport";
    private static final String ARG_LOG_FILE = "logfile";
-   private static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_LOG_TEE = "logtee";
    private static final String ARG_LOGICDIR = "logicdir";
    private static final String ARG_MPI = "mpi";
@@ -78,17 +181,20 @@ public class Settings {
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_NODE_ROLES_PATH = "nrpath";
    private static final String ARG_NODE_SET_PATH = "nodes";
-   private static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
-   private static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
+   private static final String ARG_PRECOMPUTED_ADVERTISEMENTS_PATH = "precomputedadvertisementspath";
+   private static final String ARG_PRECOMPUTED_FACTS_PATH = "precomputedfactspath";
+   private static final String ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH = "precomputedibgpneighborspath";
+   private static final String ARG_PRECOMPUTED_ROUTES_PATH = "precomputedroutespath";
+   private static final String ARG_PRECOMPUTED_ROUTES_PATHS = "precomputedroutespaths";
    private static final String ARG_PREDHELP = "predhelp";
    private static final String ARG_PREDICATES = "predicates";
    private static final String ARG_PRINT_PARSE_TREES = "ppt";
+   private static final String ARG_PRINT_SYMMETRIC_EDGES = "printsymmetricedges";
    private static final String ARG_QUERY = "query";
    private static final String ARG_QUERY_ALL = "all";
+   private static final String ARG_QUESTION_PATH = "questionpath";
    private static final String ARG_REACH = "reach";
    private static final String ARG_REACH_PATH = "reachpath";
-   private static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
-   private static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
    private static final String ARG_REMOVE_FACTS = "remove";
    private static final String ARG_REVERT = "revert";
    private static final String ARG_ROLE_HEADERS = "rh";
@@ -109,13 +215,14 @@ public class Settings {
    private static final String ARG_SERVICE_MODE = "servicemode";
    private static final String ARG_SERVICE_PORT = "serviceport";
    private static final String ARG_SERVICE_URL = "serviceurl";
+   private static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
    private static final String ARG_TEST_RIG_PATH = "testrig";
    private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
    private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
    private static final String ARG_TIMESTAMP = "timestamp";
-   private static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
-   private static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
+   private static final String ARG_TRACE_QUERY = "tracequery";
    private static final String ARG_UPDATE = "update";
+   private static final String ARG_USE_PRECOMPUTED_FACTS = "useprecomputedfacts";
    private static final String ARG_VAR_SIZE_MAP_PATH = "vsmpath";
    private static final String ARG_WORKSPACE = "workspace";
    private static final String ARG_Z3 = "z3";
@@ -137,7 +244,6 @@ public class Settings {
    private static final String ARGNAME_DUMP_FACTS_DIR = "path";
    private static final String ARGNAME_DUMP_IF_DIR = "path";
    private static final String ARGNAME_DUMP_INTERFACE_DESCRIPTIONS_PATH = "path";
-   private static final String ARGNAME_ENVIRONMENT_NAME = "name";
    private static final String ARGNAME_FLATTEN_DESTINATION = "path";
    private static final String ARGNAME_FLOW_PATH = "path";
    private static final String ARGNAME_FLOW_SINK_PATH = "path";
@@ -154,7 +260,9 @@ public class Settings {
    private static final String ARGNAME_MPI_PATH = "path";
    private static final String ARGNAME_NODE_ROLES_PATH = "path";
    private static final String ARGNAME_NODE_SET_PATH = "path";
+   private static final String ARGNAME_PRECOMPUTED_ROUTES_PATH = "path";
    private static final String ARGNAME_QUESTION_NAME = "name";
+   private static final String ARGNAME_QUESTION_PATH = "path";
    private static final String ARGNAME_REACH_PATH = "path";
    private static final String ARGNAME_REVERT = "branch-name";
    private static final String ARGNAME_ROLE_NODES_PATH = "path";
@@ -170,9 +278,9 @@ public class Settings {
    private static final String ARGNAME_Z3_CONCRETIZER_NEGATED_INPUT_FILES = "paths";
    private static final String ARGNAME_Z3_CONCRETIZER_OUTPUT_FILE = "path";
    private static final String ARGNAME_Z3_OUTPUT = "path";
-   public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "55181";
+   public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "5519";
    public static final String DEFAULT_CONNECTBLOX_HOST = "localhost";
-   public static final String DEFAULT_CONNECTBLOX_REGULAR_PORT = "55179";
+   public static final String DEFAULT_CONNECTBLOX_REGULAR_PORT = "5518";
    private static final String DEFAULT_DUMP_IF_DIR = "if";
    private static final String DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH = "interface_descriptions";
    private static final String DEFAULT_FLOW_PATH = "flows";
@@ -191,20 +299,22 @@ public class Settings {
    private static final String EXECUTABLE_NAME = "batfish";
 
    private String _acceptNode;
+   private EnvironmentSettings _activeEnvironmentSettings;
    private boolean _anonymize;
    private String _anonymizeDir;
    private boolean _answer;
    private String _autoBaseDir;
+   private EnvironmentSettings _baseEnvironmentSettings;
    private boolean _blackHole;
    private String _blackHolePath;
    private String _blacklistDstIpPath;
    private String _blacklistInterface;
    private String _blacklistNode;
+   private List<String> _blockNames;
    private boolean _buildPredicateInfo;
    private boolean _canExecute;
    private String _cbHost;
    private int _cbPort;
-   private boolean _compile;
    private boolean _concretize;
    private String[] _concretizerInputFilePaths;
    private String _concretizerOutputFilePath;
@@ -213,11 +323,14 @@ public class Settings {
    private int _coordinatorPoolPort;
    private int _coordinatorWorkPort;
    private boolean _counts;
+   private boolean _createWorkspace;
    private boolean _dataPlane;
-   private String _dataPlaneDir;
+   private boolean _deleteWorkspace;
+   private String _diffEnvironmentName;
+   private EnvironmentSettings _diffEnvironmentSettings;
+   private boolean _differentialHistory;
    private Set<String> _disabledFacts;
    private boolean _dumpControlPlaneFacts;
-   private String _dumpFactsDir;
    private boolean _dumpIF;
    private String _dumpIFDir;
    private boolean _dumpInterfaceDescriptions;
@@ -227,6 +340,7 @@ public class Settings {
    private String _environmentName;
    private boolean _exitOnFirstError;
    private boolean _facts;
+   private String _failureInconsistencyQueryPath;
    private boolean _flatten;
    private String _flattenDestination;
    private boolean _flattenOnTheFly;
@@ -242,11 +356,12 @@ public class Settings {
    private String _genOspfTopology;
    private List<String> _helpPredicates;
    private boolean _histogram;
+   private boolean _history;
    private String _hsaInputDir;
    private String _hsaOutputDir;
    private boolean _ignoreUnsupported;
    private String _interfaceMapPath;
-   private String _jobLogicBloxHostnamePath;
+   private boolean _keepBlocks;
    private int _lbWebAdminPort;
    private int _lbWebPort;
    private String _logFile;
@@ -262,12 +377,20 @@ public class Settings {
    private boolean _noOutput;
    private boolean _noTraffic;
    private Options _options;
+   private String _outputEnvironmentName;
    private boolean _pedanticAsError;
    private boolean _pedanticRecord;
+   private boolean _postDifferentialFlows;
    private boolean _postFlows;
+   private String _precomputedBgpAdvertisementsPath;
+   private String _precomputedFactsPath;
+   private String _precomputedIbgpNeighborsPath;
+   private String _precomputedRoutesPath;
+   private Set<String> _precomputedRoutesPaths;
    private List<String> _predicates;
    private boolean _printParseTree;
    private boolean _printSemantics;
+   private boolean _printSymmetricEdges;
    private boolean _query;
    private boolean _queryAll;
    private String _queryDumpDir;
@@ -277,6 +400,7 @@ public class Settings {
    private String _reachPath;
    private boolean _redFlagAsError;
    private boolean _redFlagRecord;
+   private boolean _removeBlocks;
    private boolean _removeFacts;
    private boolean _revert;
    private String _revertBranchName;
@@ -299,16 +423,23 @@ public class Settings {
    private int _servicePort;
    private String _serviceUrl;
    private boolean _simplify;
+   private boolean _synthesizeTopology;
    private String _testRigPath;
    private boolean _throwOnLexerError;
    private boolean _throwOnParserError;
    private boolean _timestamp;
-   private String _trafficFactDumpDir;
+   private boolean _traceQuery;
    private boolean _unimplementedAsError;
    private boolean _unimplementedRecord;
    private boolean _update;
+   private boolean _usePrecomputedAdvertisements;
+   private boolean _usePrecomputedFacts;
+   private boolean _usePrecomputedIbgpNeighbors;
+   private boolean _usePrecomputedRoutes;
    private String _varSizeMapPath;
-   private String _workspaceName;
+   private boolean _writeBgpAdvertisements;
+   private boolean _writeIbgpNeighbors;
+   private boolean _writeRoutes;
    private boolean _z3;
    private String _z3File;
 
@@ -317,6 +448,9 @@ public class Settings {
    }
 
    public Settings(String[] args) throws ParseException {
+      _diffEnvironmentSettings = new EnvironmentSettings();
+      _baseEnvironmentSettings = new EnvironmentSettings();
+      _activeEnvironmentSettings = _baseEnvironmentSettings;
       initOptions();
       parseCommandLine(args);
    }
@@ -330,7 +464,7 @@ public class Settings {
    }
 
    public boolean createWorkspace() {
-      return _compile;
+      return _createWorkspace;
    }
 
    public boolean dumpInterfaceDescriptions() {
@@ -349,6 +483,10 @@ public class Settings {
       return _acceptNode;
    }
 
+   public EnvironmentSettings getActiveEnvironmentSettings() {
+      return _activeEnvironmentSettings;
+   }
+
    public boolean getAnonymize() {
       return _anonymize;
    }
@@ -365,6 +503,10 @@ public class Settings {
       return _autoBaseDir;
    }
 
+   public EnvironmentSettings getBaseEnvironmentSettings() {
+      return _baseEnvironmentSettings;
+   }
+
    public String getBlackHoleQueryPath() {
       return _blackHolePath;
    }
@@ -379,6 +521,10 @@ public class Settings {
 
    public String getBlacklistNode() {
       return _blacklistNode;
+   }
+
+   public List<String> getBlockNames() {
+      return _blockNames;
    }
 
    public String getBranchName() {
@@ -429,8 +575,20 @@ public class Settings {
       return _dataPlane;
    }
 
-   public String getDataPlaneDir() {
-      return _dataPlaneDir;
+   public boolean getDeleteWorkspace() {
+      return _deleteWorkspace;
+   }
+
+   public String getDiffEnvironmentName() {
+      return _diffEnvironmentName;
+   }
+
+   public EnvironmentSettings getDiffEnvironmentSettings() {
+      return _diffEnvironmentSettings;
+   }
+
+   public boolean getDifferentialHistory() {
+      return _differentialHistory;
    }
 
    public Set<String> getDisabledFacts() {
@@ -439,10 +597,6 @@ public class Settings {
 
    public boolean getDumpControlPlaneFacts() {
       return _dumpControlPlaneFacts;
-   }
-
-   public String getDumpFactsDir() {
-      return _dumpFactsDir;
    }
 
    public String getDumpIFDir() {
@@ -467,6 +621,10 @@ public class Settings {
 
    public boolean getFacts() {
       return _facts;
+   }
+
+   public String getFailureInconsistencyQueryPath() {
+      return _failureInconsistencyQueryPath;
    }
 
    public boolean getFlatten() {
@@ -525,6 +683,10 @@ public class Settings {
       return _histogram;
    }
 
+   public boolean getHistory() {
+      return _history;
+   }
+
    public String getHSAInputPath() {
       return _hsaInputDir;
    }
@@ -545,8 +707,8 @@ public class Settings {
       return _interfaceMapPath;
    }
 
-   public String getJobLogicBloxHostnamePath() {
-      return _jobLogicBloxHostnamePath;
+   public boolean getKeepBlocks() {
+      return _keepBlocks;
    }
 
    public int getLbWebAdminPort() {
@@ -605,6 +767,10 @@ public class Settings {
       return _noTraffic;
    }
 
+   public String getOutputEnvironmentName() {
+      return _outputEnvironmentName;
+   }
+
    public boolean getPedanticAsError() {
       return _pedanticAsError;
    }
@@ -613,8 +779,32 @@ public class Settings {
       return _pedanticRecord;
    }
 
+   public boolean getPostDifferentialFlows() {
+      return _postDifferentialFlows;
+   }
+
    public boolean getPostFlows() {
       return _postFlows;
+   }
+
+   public String getPrecomputedBgpAdvertisementsPath() {
+      return _precomputedBgpAdvertisementsPath;
+   }
+
+   public String getPrecomputedFactsPath() {
+      return _precomputedFactsPath;
+   }
+
+   public String getPrecomputedIbgpNeighborsPath() {
+      return _precomputedIbgpNeighborsPath;
+   }
+
+   public String getPrecomputedRoutesPath() {
+      return _precomputedRoutesPath;
+   }
+
+   public Set<String> getPrecomputedRoutesPaths() {
+      return _precomputedRoutesPaths;
    }
 
    public List<String> getPredicates() {
@@ -623,6 +813,10 @@ public class Settings {
 
    public boolean getPrintSemantics() {
       return _printSemantics;
+   }
+
+   public boolean getPrintSymmetricEdgePairs() {
+      return _printSymmetricEdges;
    }
 
    public boolean getQuery() {
@@ -655,6 +849,10 @@ public class Settings {
 
    public boolean getRedFlagRecord() {
       return _redFlagRecord;
+   }
+
+   public boolean getRemoveBlocks() {
+      return _removeBlocks;
    }
 
    public boolean getRemoveFacts() {
@@ -733,6 +931,10 @@ public class Settings {
       return _simplify;
    }
 
+   public boolean getSynthesizeTopology() {
+      return _synthesizeTopology;
+   }
+
    public String getTestRigPath() {
       return _testRigPath;
    }
@@ -749,8 +951,8 @@ public class Settings {
       return _timestamp;
    }
 
-   public String getTrafficFactDumpDir() {
-      return _trafficFactDumpDir;
+   public boolean getTraceQuery() {
+      return _traceQuery;
    }
 
    public boolean getUnimplementedAsError() {
@@ -765,12 +967,36 @@ public class Settings {
       return _update;
    }
 
+   public boolean getUsePrecomputedBgpAdvertisements() {
+      return _usePrecomputedAdvertisements;
+   }
+
+   public boolean getUsePrecomputedFacts() {
+      return _usePrecomputedFacts;
+   }
+
+   public boolean getUsePrecomputedIbgpNeighbors() {
+      return _usePrecomputedIbgpNeighbors;
+   }
+
+   public boolean getUsePrecomputedRoutes() {
+      return _usePrecomputedRoutes;
+   }
+
    public String getVarSizeMapPath() {
       return _varSizeMapPath;
    }
 
-   public String getWorkspaceName() {
-      return _workspaceName;
+   public boolean getWriteBgpAdvertisements() {
+      return _writeBgpAdvertisements;
+   }
+
+   public boolean getWriteIbgpNeighbors() {
+      return _writeIbgpNeighbors;
+   }
+
+   public boolean getWriteRoutes() {
+      return _writeRoutes;
    }
 
    public boolean getZ3() {
@@ -838,7 +1064,7 @@ public class Settings {
             .longOpt(ARG_QUERY_ALL).build());
       _options.addOption(Option.builder()
             .desc("create workspace and add project logic")
-            .longOpt(ARG_COMPILE).build());
+            .longOpt(BfConsts.COMMAND_CREATE_WORKSPACE).build());
       _options.addOption(Option.builder().desc("add facts to workspace")
             .longOpt(ARG_FACTS).build());
       _options.addOption(Option.builder()
@@ -936,7 +1162,7 @@ public class Settings {
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_DATA_PLANE_DIR)
             .desc("path to read or write serialized data plane")
-            .longOpt(ARG_DATA_PLANE_DIR).build());
+            .longOpt(ARG_DATA_PLANE_PATH).build());
       _options.addOption(Option.builder().desc("print parse trees")
             .longOpt(ARG_PRINT_PARSE_TREES).build());
       _options.addOption(Option.builder().desc("dump interface descriptions")
@@ -1057,7 +1283,7 @@ public class Settings {
             .desc("duplicate flows across all nodes in same role")
             .longOpt(ARG_DUPLICATE_ROLE_FLOWS).build());
       _options.addOption(Option.builder().hasArg().argName(ARGNAME_LOG_LEVEL)
-            .desc("log level").longOpt(ARG_LOG_LEVEL).build());
+            .desc("log level").longOpt(BfConsts.ARG_LOG_LEVEL).build());
       _options.addOption(Option.builder()
             .desc("header of concretized z3 output refers to role, not node")
             .longOpt(ARG_ROLE_HEADERS).build());
@@ -1088,28 +1314,28 @@ public class Settings {
                   .desc("throws "
                         + PedanticBatfishException.class.getSimpleName()
                         + " for likely harmless warnings (e.g. deviation from good configuration style), instead of emitting warning and continuing")
-                  .longOpt(ARG_PEDANTIC_AS_ERROR).build());
+                  .longOpt(BfConsts.ARG_PEDANTIC_AS_ERROR).build());
       _options.addOption(Option.builder().desc("suppresses pedantic warnings")
-            .longOpt(ARG_PEDANTIC_SUPPRESS).build());
+            .longOpt(BfConsts.ARG_PEDANTIC_SUPPRESS).build());
       _options
             .addOption(Option
                   .builder()
                   .desc("throws "
                         + RedFlagBatfishException.class.getSimpleName()
                         + " on some recoverable errors (e.g. bad config lines), instead of emitting warning and attempting to recover")
-                  .longOpt(ARG_RED_FLAG_AS_ERROR).build());
+                  .longOpt(BfConsts.ARG_RED_FLAG_AS_ERROR).build());
       _options.addOption(Option.builder().desc("suppresses red-flag warnings")
-            .longOpt(ARG_RED_FLAG_SUPPRESS).build());
+            .longOpt(BfConsts.ARG_RED_FLAG_SUPPRESS).build());
       _options
             .addOption(Option
                   .builder()
                   .desc("throws "
                         + UnimplementedBatfishException.class.getSimpleName()
                         + " when encountering unimplemented configuration directives, instead of emitting warning and ignoring")
-                  .longOpt(ARG_UNIMPLEMENTED_AS_ERROR).build());
+                  .longOpt(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR).build());
       _options.addOption(Option.builder()
             .desc("suppresses unimplemented-configuration-directive warnings")
-            .longOpt(ARG_UNIMPLEMENTED_SUPPRESS).build());
+            .longOpt(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS).build());
       _options.addOption(Option.builder()
             .desc("build histogram of unimplemented features")
             .longOpt(ARG_HISTOGRAM).build());
@@ -1148,10 +1374,9 @@ public class Settings {
             .argName(ARGNAME_AUTO_BASE_DIR)
             .desc("path to base dir for automatic i/o path selection")
             .longOpt(ARG_AUTO_BASE_DIR).build());
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_ENVIRONMENT_NAME)
-            .desc("name of environment to use").longOpt(ARG_ENVIRONMENT_NAME)
-            .build());
+      _options.addOption(Option.builder().hasArg().argName("name")
+            .desc("name of environment to use")
+            .longOpt(BfConsts.ARG_ENVIRONMENT_NAME).build());
       _options
             .addOption(Option
                   .builder()
@@ -1190,6 +1415,82 @@ public class Settings {
       _options.addOption(Option.builder()
             .desc("print output to both logfile and standard out")
             .longOpt(ARG_LOG_TEE).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_QUESTION_PATH).desc("path to question file")
+            .longOpt(ARG_QUESTION_PATH).build());
+      _options.addOption(Option.builder()
+            .desc("synthesize topology from interface ip subnet information")
+            .longOpt(ARG_SYNTHESIZE_TOPOLOGY).build());
+      _options.addOption(Option.builder()
+            .desc("write routes from LogicBlox to disk")
+            .longOpt(BfConsts.COMMAND_WRITE_ROUTES).build());
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_PRECOMPUTED_ROUTES_PATH)
+            .desc("path to precomputed routes")
+            .longOpt(ARG_PRECOMPUTED_ROUTES_PATH).build());
+      _options.addOption(Option.builder().hasArg().argName("paths")
+            .desc("paths to precomputed routes")
+            .longOpt(ARG_PRECOMPUTED_ROUTES_PATHS).build());
+      _options.addOption(Option.builder().hasArg().argName("name")
+            .desc("name of output environment")
+            .longOpt(BfConsts.ARG_OUTPUT_ENV).build());
+      _options.addOption(Option.builder()
+            .desc("remove selected blocks from LogicBlox workspace")
+            .longOpt(BfConsts.COMMAND_REMOVE_BLOCKS).build());
+      _options.addOption(Option.builder()
+            .desc("keep only selected blocks in LogicBlox workspace")
+            .longOpt(BfConsts.COMMAND_KEEP_BLOCKS).build());
+      _options.addOption(Option.builder().argName("blocknames").hasArgs()
+            .desc("list of LogicBlox blocks to add or remove")
+            .longOpt(BfConsts.ARG_BLOCK_NAMES).build());
+      _options.addOption(Option.builder()
+            .desc("add precomputed routes to workspace")
+            .longOpt(BfConsts.ARG_USE_PRECOMPUTED_ROUTES).build());
+      _options.addOption(Option.builder()
+            .desc("add precomputed ibgp neighborsto workspace")
+            .longOpt(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS).build());
+      _options.addOption(Option.builder()
+            .desc("add precomputed bgp advertisements to workspace")
+            .longOpt(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS).build());
+      _options.addOption(Option.builder().hasArg().argName("path")
+            .desc("path to precomputed bgp advertisements")
+            .longOpt(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH).build());
+      _options.addOption(Option.builder().hasArg().argName("path")
+            .desc("path to precomputed ibgp neighbors")
+            .longOpt(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH).build());
+      _options.addOption(Option.builder()
+            .desc("write ibgp neighbors from LogicBlox to disk")
+            .longOpt(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS).build());
+      _options.addOption(Option.builder()
+            .desc("write bgp advertisements from LogicBlox to disk")
+            .longOpt(BfConsts.COMMAND_WRITE_ADVERTISEMENTS).build());
+      _options.addOption(Option.builder().hasArg().argName("path")
+            .desc("path to precomputed facts")
+            .longOpt(ARG_PRECOMPUTED_FACTS_PATH).build());
+      _options.addOption(Option.builder()
+            .desc("add precomputed facts to workspace")
+            .longOpt(ARG_USE_PRECOMPUTED_FACTS).build());
+      _options.addOption(Option.builder().hasArg().argName("name")
+            .desc("name of delta environment to use")
+            .longOpt(BfConsts.ARG_DIFF_ENVIRONMENT_NAME).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("post dumped differential flows to base and differential logicblox workspaces")
+                  .longOpt(BfConsts.COMMAND_POST_DIFFERENTIAL_FLOWS).build());
+      _options.addOption(Option.builder()
+            .desc("retrieve differential flow history")
+            .longOpt(BfConsts.COMMAND_GET_DIFFERENTIAL_HISTORY).build());
+      _options.addOption(Option.builder().desc("retrieve flow history")
+            .longOpt(BfConsts.COMMAND_GET_HISTORY).build());
+      _options.addOption(Option.builder()
+            .desc("get per-trace versions of relations during query")
+            .longOpt(ARG_TRACE_QUERY).build());
+      _options.addOption(Option.builder().desc("delete LogicBlox workspace")
+            .longOpt(ARG_DELETE_WORKSPACE).build());
+      _options.addOption(Option.builder()
+            .desc("print topology with symmetric edges adjacent in listing")
+            .longOpt(ARG_PRINT_SYMMETRIC_EDGES).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1202,7 +1503,8 @@ public class Settings {
       // parse the command line arguments
       line = parser.parse(_options, args);
 
-      _logLevel = line.getOptionValue(ARG_LOG_LEVEL, DEFAULT_LOG_LEVEL);
+      _logLevel = line
+            .getOptionValue(BfConsts.ARG_LOG_LEVEL, DEFAULT_LOG_LEVEL);
       _logFile = line.getOptionValue(ARG_LOG_FILE);
       if (line.hasOption(ARG_HELP)) {
          _canExecute = false;
@@ -1233,7 +1535,8 @@ public class Settings {
       _testRigPath = line.getOptionValue(ARG_TEST_RIG_PATH,
             DEFAULT_TEST_RIG_PATH);
 
-      _workspaceName = line.getOptionValue(ARG_WORKSPACE, null);
+      _baseEnvironmentSettings.setWorkspaceName(line.getOptionValue(
+            ARG_WORKSPACE, null));
       _disabledFacts = new HashSet<String>();
       if (line.hasOption(ARG_DISABLED_FACTS)) {
          _disabledFacts.addAll(Arrays.asList(line
@@ -1245,8 +1548,15 @@ public class Settings {
       else {
          _predicates = DEFAULT_PREDICATES;
       }
+      if (line.hasOption(BfConsts.ARG_BLOCK_NAMES)) {
+         _blockNames = Arrays.asList(line
+               .getOptionValues(BfConsts.ARG_BLOCK_NAMES));
+      }
+      else {
+         _blockNames = Collections.<String> emptyList();
+      }
       _removeFacts = line.hasOption(ARG_REMOVE_FACTS);
-      _compile = line.hasOption(ARG_COMPILE);
+      _createWorkspace = line.hasOption(BfConsts.COMMAND_CREATE_WORKSPACE);
       _facts = line.hasOption(ARG_FACTS);
       _update = line.hasOption(ARG_UPDATE);
       _noTraffic = line.hasOption(ARG_NO_TRAFFIC);
@@ -1275,7 +1585,8 @@ public class Settings {
       }
       _dumpControlPlaneFacts = line.hasOption(ARG_DUMP_CONTROL_PLANE_FACTS);
       _dumpTrafficFacts = line.hasOption(ARG_DUMP_TRAFFIC_FACTS);
-      _dumpFactsDir = line.getOptionValue(ARG_DUMP_FACTS_DIR);
+      _baseEnvironmentSettings.setDumpFactsDir(line
+            .getOptionValue(ARG_DUMP_FACTS_DIR));
       _revertBranchName = line.getOptionValue(ARG_REVERT);
       _revert = (_revertBranchName != null);
       _anonymize = line.hasOption(ARG_ANONYMIZE);
@@ -1294,7 +1605,8 @@ public class Settings {
       _serializeIndependentPath = line.getOptionValue(
             ARG_SERIALIZE_INDEPENDENT_PATH, DEFAULT_SERIALIZE_INDEPENDENT_PATH);
       _dataPlane = line.hasOption(ARG_DATA_PLANE);
-      _dataPlaneDir = line.getOptionValue(ARG_DATA_PLANE_DIR);
+      _baseEnvironmentSettings.setDataPlanePath(line
+            .getOptionValue(ARG_DATA_PLANE_PATH));
       _printParseTree = line.hasOption(ARG_PRINT_PARSE_TREES);
       _dumpInterfaceDescriptions = line
             .hasOption(ARG_DUMP_INTERFACE_DESCRIPTIONS);
@@ -1339,12 +1651,14 @@ public class Settings {
       _flatten = line.hasOption(ARG_FLATTEN);
       _flattenDestination = line.getOptionValue(ARG_FLATTEN_DESTINATION);
       _flattenOnTheFly = line.hasOption(ARG_FLATTEN_ON_THE_FLY);
-      _pedanticAsError = line.hasOption(ARG_PEDANTIC_AS_ERROR);
-      _pedanticRecord = !line.hasOption(ARG_PEDANTIC_SUPPRESS);
-      _redFlagAsError = line.hasOption(ARG_RED_FLAG_AS_ERROR);
-      _redFlagRecord = !line.hasOption(ARG_RED_FLAG_SUPPRESS);
-      _unimplementedAsError = line.hasOption(ARG_UNIMPLEMENTED_AS_ERROR);
-      _unimplementedRecord = !line.hasOption(ARG_UNIMPLEMENTED_SUPPRESS);
+      _pedanticAsError = line.hasOption(BfConsts.ARG_PEDANTIC_AS_ERROR);
+      _pedanticRecord = !line.hasOption(BfConsts.ARG_PEDANTIC_SUPPRESS);
+      _redFlagAsError = line.hasOption(BfConsts.ARG_RED_FLAG_AS_ERROR);
+      _redFlagRecord = !line.hasOption(BfConsts.ARG_RED_FLAG_SUPPRESS);
+      _unimplementedAsError = line
+            .hasOption(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
+      _unimplementedRecord = !line
+            .hasOption(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
       _histogram = line.hasOption(ARG_HISTOGRAM);
       _generateStubs = line.hasOption(ARG_GENERATE_STUBS);
       _generateStubsInputRole = line
@@ -1359,7 +1673,7 @@ public class Settings {
       _timestamp = line.hasOption(ARG_TIMESTAMP);
       _ignoreUnsupported = line.hasOption(ARG_IGNORE_UNSUPPORTED);
       _autoBaseDir = line.getOptionValue(ARG_AUTO_BASE_DIR);
-      _environmentName = line.getOptionValue(ARG_ENVIRONMENT_NAME);
+      _environmentName = line.getOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
       _questionName = line.getOptionValue(BfConsts.ARG_QUESTION_NAME);
       _answer = line.hasOption(BfConsts.COMMAND_ANSWER);
       _postFlows = line.hasOption(BfConsts.COMMAND_POST_FLOWS);
@@ -1376,6 +1690,48 @@ public class Settings {
             ARG_SERVICE_LOGICBLOX_HOSTNAME, _serviceHost);
       _noOutput = line.hasOption(ARG_NO_OUTPUT);
       _logTee = line.hasOption(ARG_LOG_TEE);
+      _questionPath = line.getOptionValue(ARG_QUESTION_PATH);
+      _synthesizeTopology = line.hasOption(ARG_SYNTHESIZE_TOPOLOGY);
+      _writeRoutes = line.hasOption(BfConsts.COMMAND_WRITE_ROUTES);
+      String[] precomputedRoutesPathsAsArray = line
+            .getOptionValues(ARG_PRECOMPUTED_ROUTES_PATHS);
+      if (precomputedRoutesPathsAsArray != null) {
+         _precomputedRoutesPaths = new TreeSet<String>();
+         _precomputedRoutesPaths.addAll(Arrays
+               .asList(precomputedRoutesPathsAsArray));
+      }
+      _precomputedRoutesPath = line.getOptionValue(ARG_PRECOMPUTED_ROUTES_PATH);
+      _precomputedBgpAdvertisementsPath = line
+            .getOptionValue(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH);
+      _precomputedIbgpNeighborsPath = line
+            .getOptionValue(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH);
+      _outputEnvironmentName = line.getOptionValue(BfConsts.ARG_OUTPUT_ENV);
+      _removeBlocks = line.hasOption(BfConsts.COMMAND_REMOVE_BLOCKS);
+      _keepBlocks = line.hasOption(BfConsts.COMMAND_KEEP_BLOCKS);
+      _usePrecomputedRoutes = line
+            .hasOption(BfConsts.ARG_USE_PRECOMPUTED_ROUTES);
+      _usePrecomputedAdvertisements = line
+            .hasOption(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS);
+      _writeBgpAdvertisements = line
+            .hasOption(BfConsts.COMMAND_WRITE_ADVERTISEMENTS);
+      _writeIbgpNeighbors = line
+            .hasOption(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS);
+      _usePrecomputedIbgpNeighbors = line
+            .hasOption(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS);
+      _usePrecomputedAdvertisements = line
+            .hasOption(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS);
+      _usePrecomputedFacts = line.hasOption(ARG_USE_PRECOMPUTED_FACTS);
+      _precomputedFactsPath = line.getOptionValue(ARG_PRECOMPUTED_FACTS_PATH);
+      _diffEnvironmentName = line
+            .getOptionValue(BfConsts.ARG_DIFF_ENVIRONMENT_NAME);
+      _postDifferentialFlows = line
+            .hasOption(BfConsts.COMMAND_POST_DIFFERENTIAL_FLOWS);
+      _differentialHistory = line
+            .hasOption(BfConsts.COMMAND_GET_DIFFERENTIAL_HISTORY);
+      _history = line.hasOption(BfConsts.COMMAND_GET_HISTORY);
+      _traceQuery = line.hasOption(ARG_TRACE_QUERY);
+      _deleteWorkspace = line.hasOption(ARG_DELETE_WORKSPACE);
+      _printSymmetricEdges = line.hasOption(ARG_PRINT_SYMMETRIC_EDGES);
    }
 
    public boolean printParseTree() {
@@ -1390,20 +1746,25 @@ public class Settings {
       return _runInServiceMode;
    }
 
+   public void setActiveEnvironmentSettings(EnvironmentSettings envSettings) {
+      _activeEnvironmentSettings = envSettings;
+   }
+
    public void setConnectBloxHost(String hostname) {
       _cbHost = hostname;
    }
 
-   public void setDataPlaneDir(String path) {
-      _dataPlaneDir = path;
+   public void setDiffEnvironmentName(String diffEnvironmentName) {
+      _diffEnvironmentName = diffEnvironmentName;
    }
 
-   public void setDumpFactsDir(String path) {
-      _dumpFactsDir = path;
+   public void setEnvironmentName(String envName) {
+      _environmentName = envName;
    }
 
-   public void setJobLogicBloxHostnamePath(String path) {
-      _jobLogicBloxHostnamePath = path;
+   public void setFailureInconsistencyQueryPath(
+         String failureInconsistencyQueryPath) {
+      _failureInconsistencyQueryPath = failureInconsistencyQueryPath;
    }
 
    public void setLogger(BatfishLogger logger) {
@@ -1420,6 +1781,10 @@ public class Settings {
 
    public void setNodeSetPath(String nodeSetPath) {
       _nodeSetPath = nodeSetPath;
+   }
+
+   public void setPrecomputedRoutesPath(String writeRoutesPath) {
+      _precomputedRoutesPath = writeRoutesPath;
    }
 
    public void setQueryDumpDir(String path) {
@@ -1444,14 +1809,6 @@ public class Settings {
 
    public void setTestRigPath(String path) {
       _testRigPath = path;
-   }
-
-   public void setTrafficFactDumpDir(String path) {
-      _trafficFactDumpDir = path;
-   }
-
-   public void setWorkspaceName(String name) {
-      _workspaceName = name;
    }
 
    public void setZ3DataPlaneFile(String path) {

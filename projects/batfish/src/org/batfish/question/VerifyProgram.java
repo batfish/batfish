@@ -33,6 +33,10 @@ public class VerifyProgram {
       }
    }
 
+   public boolean getAssertions() {
+      return _environment.getAssertions();
+   }
+
    public List<Statement> getStatements() {
       return _statements;
    }

@@ -24,6 +24,7 @@ import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.IsisLevel;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.OspfArea;
@@ -425,7 +426,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       for (LeafBgpPeerGroup lpg : leafGroups) {
          // update source
          String updateSourceInterface = lpg.getUpdateSource();
-         String updateSource = null;
+         Ip updateSource;
          if (updateSourceInterface == null) {
             Ip processRouterId = proc.getRouterId();
             if (processRouterId == null) {
@@ -454,7 +455,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   }
                }
             }
-            updateSource = processRouterId.toString();
+            updateSource = processRouterId;
          }
          else {
             org.batfish.representation.Interface sourceInterface = c
@@ -464,7 +465,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                      .getPrefix();
                if (prefix != null) {
                   Ip sourceIp = prefix.getAddress();
-                  updateSource = sourceIp.toString();
+                  updateSource = sourceIp;
                }
                else {
                   throw new VendorConversionException(
@@ -479,7 +480,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                            + updateSourceInterface + "\"");
             }
          }
-
          PolicyMap newInboundPolicyMap = null;
          String inboundRouteMapName = lpg.getInboundRouteMap();
          if (inboundRouteMapName != null) {
@@ -631,7 +631,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          boolean routeReflectorClient = lpg.getRouteReflectorClient();
          if (routeReflectorClient) {
             if (clusterId == null) {
-               clusterId = new Ip(updateSource);
+               clusterId = updateSource;
             }
          }
          boolean sendCommunity = lpg.getSendCommunity();
@@ -676,7 +676,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
             newNeighbor.setRemoteAs(lpg.getRemoteAS());
             newNeighbor.setLocalAs(proc.getPid());
-            newNeighbor.setUpdateSource(updateSource);
+            newNeighbor.setLocalIp(updateSource);
             newNeighbor.getOriginationPolicies().addAll(originationPolicies);
             newNeighbor.setSendCommunity(sendCommunity);
             newNeighbor.setDefaultMetric(defaultMetric);
@@ -713,8 +713,37 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          newIface.setPrefix(iface.getPrefix());
       }
       newIface.getSecondaryPrefixes().addAll(iface.getSecondaryPrefixes());
+      boolean level1 = false;
+      boolean level2 = false;
+      if (_isisProcess != null) {
+         switch (_isisProcess.getLevel()) {
+         case LEVEL_1:
+            level1 = true;
+            break;
+         case LEVEL_1_2:
+            level1 = true;
+            level2 = true;
+            break;
+         case LEVEL_2:
+            level2 = true;
+            break;
+         default:
+            throw new VendorConversionException("Invalid IS-IS level");
+         }
+      }
+      if (level1) {
+         newIface.setIsisL1InterfaceMode(iface.getIsisInterfaceMode());
+      }
+      else {
+         newIface.setIsisL1InterfaceMode(IsisInterfaceMode.UNSET);
+      }
+      if (level2) {
+         newIface.setIsisL2InterfaceMode(iface.getIsisInterfaceMode());
+      }
+      else {
+         newIface.setIsisL2InterfaceMode(IsisInterfaceMode.UNSET);
+      }
       newIface.setIsisCost(iface.getIsisCost());
-      newIface.setIsisInterfaceMode(iface.getIsisInterfaceMode());
       newIface.setOspfCost(iface.getOspfCost());
       newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
       newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());

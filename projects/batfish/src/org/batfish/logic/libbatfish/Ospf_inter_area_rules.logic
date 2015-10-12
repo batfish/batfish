@@ -1,0 +1,95 @@
+block(`Ospf_inter_area_rules) {
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Layer2),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:Ospf),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+BestOspfIARoute(route),
+   OspfIANetwork(node, network)
+<-
+   OspfIARoute(route),
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   MinOspfIARouteCost[node, network] = cost,
+   !OspfNetwork(node, network).
+
+MinOspfIARouteCost[node, network] = minCost <-
+   agg<<minCost = min(cost)>>
+      OspfIARoute(route),
+      Route_cost[route] = cost,
+      Route_network[route] = network,
+      Route_node[route] = node.
+
+// distribute connected routes from another area into backbone area
+OspfIARoute(route),
+   Route(route),
+   NonOspfExportableRoute(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   !ConnectedRoute(node, network, _), // is this necessary?
+   OspfNeighbors(node, _, nodeIntCost, nextHop, nextHopInt, _, _, 0),
+   IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
+   ConnectedRoute(nextHop, network, nextHopConnectedInt),
+   SetOspfInterface(nextHop, nextHopConnectedInt, area),
+   area != 0,
+   SetOspfInterfaceCost[nextHop, nextHopConnectedInt] = nextHopIntCost,
+   cost = nodeIntCost + nextHopIntCost,
+   protocol = RoutingProtocol_OSPF_IA[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
+// propagate ospf ia routes through backbone area
+OspfIARoute(route),
+   Route(route),
+   NonOspfExportableRoute(route),
+   Route_constructor[node, network, nextHopIp, protocol] = route,
+   Route_admin[route] = admin,
+   Route_cost[route] = cost,
+   Route_network[route] = network,
+   Route_nextHopIp[route] = nextHopIp,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   !ConnectedRoute(node, network, _), // is this necessary?
+   OspfNeighbors(node, _, nodeIntCost, nextHop, nextHopInt, _, _, area),
+   IpReadyInt(nextHop, nextHopInt, nextHopIp, _),
+   OspfNeighbors(nextHop, _, _, secondHop, _, _, _, area),
+   BestOspfIARoute(subRoute),
+   Route_cost[subRoute] = subCost,
+   Route_network[subRoute] = network,
+   Route_nextHopIp[subRoute] = secondHopIp,
+   Route_node[subRoute] = nextHop,
+   HasIp(secondHop, secondHopIp),
+   area = 0,
+   node != secondHop,
+   cost = subCost + nodeIntCost,
+   protocol = RoutingProtocol_OSPF_IA[],
+   SetNodeVendor(node, vendor),
+   AdministrativeDistance[vendor, protocol] = admin.
+
+//TODO: OSPF IA Routes propagated from OSPF routes (not just connected routes) in another area
+
+lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
+lang:compiler:error:ENTITY_CREATION_RECURSION[]=false.
+lang:compiler:warning:ENTITY_CREATION_RECURSION[]=false.
+lang:compiler:disableError:NEGATION_RECURSION[] = true.
+lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
+lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
+
+// END CODE
+   })
+} <-- .
+

@@ -68,48 +68,6 @@ public class ConfigurationFactExtractor {
 
    private static final String FLOW_SINK_INTERFACE_PREFIX = "TenGigabitEthernet100/";
 
-   private static String getLBRoutingProtocol(RoutingProtocol prot) {
-      switch (prot) {
-      case AGGREGATE:
-         return "aggregate";
-      case BGP:
-         return "bgp";
-      case CONNECTED:
-         return "connected";
-      case EGP:
-         return "egp";
-      case IBGP:
-         return "ibgp";
-      case IGP:
-         return "igp";
-      case ISIS:
-         return "isis";
-      case ISIS_L1:
-         return "isisL1";
-      case ISIS_L2:
-         return "isisL2";
-      case LDP:
-         return "ldp";
-      case LOCAL:
-         return "local";
-      case MSDP:
-         return "msdp";
-      case OSPF:
-         return "ospf";
-      case OSPF_E1:
-         return "ospfE1";
-      case OSPF_E2:
-         return "ospfE2";
-      case RSVP:
-         return "rsvp";
-      case STATIC:
-         return "static";
-      default:
-         break;
-      }
-      return null;
-   }
-
    private Set<Long> _allCommunities;
 
    private Configuration _configuration;
@@ -599,19 +557,47 @@ public class ConfigurationFactExtractor {
       StringBuilder wSetIsisArea = _factBins.get("SetIsisArea");
       StringBuilder wSetIsisInterfaceCost = _factBins
             .get("SetIsisInterfaceCost");
-      StringBuilder wSetIsisPassiveInterface = _factBins
-            .get("SetIsisPassiveInterface");
+      StringBuilder wSetIsisL1PassiveInterface = _factBins
+            .get("SetIsisL1PassiveInterface");
+      StringBuilder wSetIsisL2PassiveInterface = _factBins
+            .get("SetIsisL2PassiveInterface");
+      StringBuilder wSetIsisL1ActiveInterface = _factBins
+            .get("SetIsisL1ActiveInterface");
+      StringBuilder wSetIsisL2ActiveInterface = _factBins
+            .get("SetIsisL2ActiveInterface");
       String hostname = _configuration.getHostname();
       IsisProcess proc = _configuration.getIsisProcess();
       if (proc != null) {
          for (Interface iface : _configuration.getInterfaces().values()) {
-            IsisInterfaceMode mode = iface.getIsisInterfaceMode();
+            IsisInterfaceMode l1Mode = iface.getIsisL1InterfaceMode();
+            IsisInterfaceMode l2Mode = iface.getIsisL2InterfaceMode();
             String ifaceName = iface.getName();
-            switch (mode) {
+            switch (l1Mode) {
             case PASSIVE:
-               wSetIsisPassiveInterface.append(hostname + "|" + ifaceName
+               wSetIsisL1PassiveInterface.append(hostname + "|" + ifaceName
                      + "\n");
             case ACTIVE:
+               wSetIsisL1ActiveInterface.append(hostname + "|" + ifaceName
+                     + "\n");
+               Integer isisCost = iface.getIsisCost();
+               if (isisCost == null) {
+                  isisCost = IsisProcess.DEFAULT_ISIS_INTERFACE_COST;
+               }
+               wSetIsisInterfaceCost.append(hostname + "|" + ifaceName + "|"
+                     + isisCost + "\n");
+               break;
+            case UNSET:
+               break;
+            default:
+               throw new BatfishException("Bad IS-IS mode");
+            }
+            switch (l2Mode) {
+            case PASSIVE:
+               wSetIsisL2PassiveInterface.append(hostname + "|" + ifaceName
+                     + "\n");
+            case ACTIVE:
+               wSetIsisL2ActiveInterface.append(hostname + "|" + ifaceName
+                     + "\n");
                Integer isisCost = iface.getIsisCost();
                if (isisCost == null) {
                   isisCost = IsisProcess.DEFAULT_ISIS_INTERFACE_COST;
@@ -697,14 +683,14 @@ public class ConfigurationFactExtractor {
             Set<String> levels = new HashSet<String>();
             switch (exportLevel) {
             case LEVEL_1:
-               levels.add(getLBRoutingProtocol(RoutingProtocol.ISIS_L1));
+               levels.add(RoutingProtocol.ISIS_L1.protocolName());
                break;
             case LEVEL_2:
-               levels.add(getLBRoutingProtocol(RoutingProtocol.ISIS_L2));
+               levels.add(RoutingProtocol.ISIS_L2.protocolName());
                break;
             case LEVEL_1_2:
-               levels.add(getLBRoutingProtocol(RoutingProtocol.ISIS_L1));
-               levels.add(getLBRoutingProtocol(RoutingProtocol.ISIS_L2));
+               levels.add(RoutingProtocol.ISIS_L1.protocolName());
+               levels.add(RoutingProtocol.ISIS_L2.protocolName());
                break;
             default:
                throw new BatfishException("invalid IS-IS level");
@@ -934,7 +920,7 @@ public class ConfigurationFactExtractor {
                   PolicyMapMatchProtocolLine pmmpl = (PolicyMapMatchProtocolLine) matchLine;
                   RoutingProtocol prot = pmmpl.getProtocol();
                   wSetPolicyMapClauseMatchProtocol.append(mapName + "|" + i
-                        + "|" + getLBRoutingProtocol(prot) + "\n");
+                        + "|" + prot.protocolName() + "\n");
                   break;
 
                case ROUTE_FILTER_LIST:
@@ -1062,14 +1048,12 @@ public class ConfigurationFactExtractor {
                   }
                   if (level1) {
                      wSetPolicyMapClauseSetProtocol.append(mapName + "|" + i
-                           + "|"
-                           + getLBRoutingProtocol(RoutingProtocol.ISIS_L1)
+                           + "|" + RoutingProtocol.ISIS_L1.protocolName()
                            + "\n");
                   }
                   if (level2) {
                      wSetPolicyMapClauseSetProtocol.append(mapName + "|" + i
-                           + "|"
-                           + getLBRoutingProtocol(RoutingProtocol.ISIS_L2)
+                           + "|" + RoutingProtocol.ISIS_L2.protocolName()
                            + "\n");
                   }
                   break;

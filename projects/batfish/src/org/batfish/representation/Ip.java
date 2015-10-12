@@ -146,9 +146,17 @@ public class Ip implements Comparable<Ip>, Serializable {
 
    @Override
    public String toString() {
-      return ((_ip >> 24) & 0xFF) + "." + ((_ip >> 16) & 0xFF) + "."
-            + ((_ip >> 8) & 0xFF) + "." + (_ip & 0xFF);
+      if (!valid()) {
+         return "INVALID_IP(" + _ip + "l)";
+      }
+      else {
+         return ((_ip >> 24) & 0xFF) + "." + ((_ip >> 16) & 0xFF) + "."
+               + ((_ip >> 8) & 0xFF) + "." + (_ip & 0xFF);
+      }
+   }
 
+   public boolean valid() {
+      return _ip >= 0 && _ip <= 0xFFFFFFFFl;
    }
 
 }

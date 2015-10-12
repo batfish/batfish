@@ -6,8 +6,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.ProcessingException;
@@ -21,7 +19,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BfConsts;
-import org.batfish.common.CoordConsts;
 import org.batfish.common.UnzipUtility;
 import org.batfish.common.WorkItem;
 import org.batfish.common.AppZip;
@@ -37,13 +34,13 @@ public class WorkMgr {
 
 //   private Runnable _checkWorkTask;
 //   private Runnable _assignWorkTask;
-//   
+//
 //   private ScheduledExecutorService _checkService;
 //   private ScheduledExecutorService _assignService;
-//   
+//
 //   private ScheduledFuture<?> _checkFuture;
 //   private ScheduledFuture<?> _assignFuture;
-   
+
    public WorkMgr() {
       _logger = Main.initializeLogger();
       _workQueueMgr = new WorkQueueMgr();
@@ -56,7 +53,7 @@ public class WorkMgr {
 //      _checkFuture = _checkService.scheduleAtFixedRate(_checkWorkTask, 0,
 //                  Main.getSettings().getPeriodCheckWorkMs(),
 //                  TimeUnit.MILLISECONDS);
-      
+
       Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
             new AssignWorkTask(), 0,
             Main.getSettings().getPeriodAssignWorkMs(), TimeUnit.MILLISECONDS);
@@ -126,22 +123,21 @@ public class WorkMgr {
 
       boolean assignmentError = false;
       boolean assigned = false;
-      
+
       try {
-         
+
          //get the task and add other standard stuff
          JSONObject task = work.getWorkItem().toTask();
          File autobasedir = new File(Main.getSettings().getTestrigStorageLocation() + "/" + work.getWorkItem().getTestrigName());
          task.put("autobasedir", autobasedir.getAbsolutePath());
          task.put("logfile", autobasedir.getAbsolutePath() + "/" + work.getId().toString() + ".log");
-         task.put("timestamp", "");
-         
+
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client.target(String.format("http://%s%s/%s", worker,
                      BfConsts.SVC_BASE_RSC, BfConsts.SVC_RUN_TASK_RSC))
               .queryParam(BfConsts.SVC_TASKID_KEY,
                    UriComponent.encode(work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED))
-              .queryParam(BfConsts.SVC_TASK_KEY, 
+              .queryParam(BfConsts.SVC_TASK_KEY,
                     UriComponent.encode(task.toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
 
          Response response = webTarget
@@ -162,7 +158,7 @@ public class WorkMgr {
             if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
                _logger.error(String.format("ERROR in assigning task: %s %s\n",
                      array.get(0), array.get(1)));
-               
+
                assignmentError = true;
             }
             else {
@@ -178,7 +174,7 @@ public class WorkMgr {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error(String.format("exception: %s\n", stackTrace));
       }
-      
+
       // mark the assignment results for both work and worker
       if (assignmentError) {
          _workQueueMgr.markAssignmentError(work);
@@ -189,7 +185,7 @@ public class WorkMgr {
       else {
          _workQueueMgr.markAssignmentFailure(work);
       }
-      
+
       Main.getPoolMgr().markAssignmentResult(worker, assigned);
    }
 
@@ -228,7 +224,7 @@ public class WorkMgr {
          WebTarget webTarget = client.target(String.format("http://%s%s/%s",
                worker, BfConsts.SVC_BASE_RSC,
                BfConsts.SVC_GET_TASKSTATUS_RSC))
-               .queryParam(BfConsts.SVC_TASKID_KEY, 
+               .queryParam(BfConsts.SVC_TASKID_KEY,
                      UriComponent.encode(work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
          Response response = webTarget
                .request(MediaType.APPLICATION_JSON)
@@ -272,7 +268,7 @@ public class WorkMgr {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error(String.format("exception: %s\n", stackTrace));
       }
-      
+
       _workQueueMgr.processStatusCheckResult(work, status);
    }
 
@@ -292,7 +288,7 @@ public class WorkMgr {
       }
 
       String zipFile = testrigDir.getAbsolutePath() + "/" + BfConsts.RELPATH_TEST_RIG_DIR + ".zip";
-      
+
       try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
          int read = 0;
          final byte[] bytes = new byte[1024];
@@ -300,24 +296,24 @@ public class WorkMgr {
             fileOutputStream.write(bytes, 0, read);
          }
       }
-      
+
       //now unzip
       File unzipDir = new File(testrigDir.getAbsolutePath() + "/" + BfConsts.RELPATH_TEST_RIG_DIR);
       UnzipUtility unzipper = new UnzipUtility();
       unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
-      
+
       //sanity check what we got
       // 1. there should be just one top-level folder
       // 2. there should be a directory called configs in that folder
       File[] fileList = unzipDir.listFiles();
-      
+
       if (fileList.length != 1 || !fileList[0].isDirectory()) {
          FileUtils.deleteDirectory(testrigDir);
          throw new Exception("Unexpected packaging of test rig. There should be just one top-level folder");
       }
-      
+
       File[] subFileList = fileList[0].listFiles();
-      
+
       boolean foundConfigs = false;
       for (File file : subFileList) {
          if (file.isDirectory() && file.getName().equals("configs")) {
@@ -325,21 +321,21 @@ public class WorkMgr {
             break;
          }
       }
-      
+
       if (!foundConfigs) {
         FileUtils.deleteDirectory(testrigDir);
-        throw new Exception("Unexpected packaging of test rig. Did not find configs folder inside the top-level folder");         
+        throw new Exception("Unexpected packaging of test rig. Did not find configs folder inside the top-level folder");
       }
-       
+
       //things look ok, now make the move
       for (File file : subFileList) {
          String target = unzipDir + "/" + file.getName();
          file.renameTo(new File(target));
       }
-      
+
       //delete the empty directory and the zip file
       fileList[0].delete();
-      new File(zipFile).delete();      
+      new File(zipFile).delete();
    }
 
    public void uploadEnvironment(String testrigName, String envName, InputStream fileStream)
@@ -347,7 +343,7 @@ public class WorkMgr {
 
       File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
             + "/" + testrigName);
-      
+
       if (!testrigDir.exists()) {
          throw new Exception("testrig " + testrigName + "does not exist");
       }
@@ -364,7 +360,7 @@ public class WorkMgr {
       }
 
       String zipFile = envDir.getAbsolutePath() + "/tmp" + ".zip";
-      
+
       try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
          int read = 0;
          final byte[] bytes = new byte[1024];
@@ -372,32 +368,32 @@ public class WorkMgr {
             fileOutputStream.write(bytes, 0, read);
          }
       }
-      
+
       //now unzip
       File unzipDir = new File(envDir.getAbsolutePath() + "/" + BfConsts.RELPATH_ENV_DIR);
       UnzipUtility unzipper = new UnzipUtility();
       unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
-      
+
       //sanity check what we got
       // 1. there should be just one top-level folder
       File[] fileList = unzipDir.listFiles();
-      
+
       if (fileList.length != 1 || !fileList[0].isDirectory()) {
          FileUtils.deleteDirectory(envDir);
          throw new Exception("Unexpected packaging of environment. There should be just one top-level folder");
       }
-      
+
       File[] subFileList = fileList[0].listFiles();
-      
+
       //things look ok, now make the move
       for (File file : subFileList) {
          String target = unzipDir + "/" + file.getName();
          file.renameTo(new File(target));
       }
-      
+
     //delete the empty directory and the zip file
       fileList[0].delete();
-      new File(zipFile).delete();      
+      new File(zipFile).delete();
    }
 
    public void uploadQuestion(String testrigName, String qName, InputStream fileStream)
@@ -405,7 +401,7 @@ public class WorkMgr {
 
       File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
             + "/" + testrigName);
-      
+
       if (!testrigDir.exists()) {
          throw new Exception("testrig " + testrigName + "does not exist");
       }
@@ -422,14 +418,14 @@ public class WorkMgr {
       }
 
       String file = qDir.getAbsolutePath() + "/" + BfConsts.RELPATH_QUESTION_FILE;
-      
+
       try (OutputStream fileOutputStream = new FileOutputStream(file)) {
          int read = 0;
          final byte[] bytes = new byte[1024];
          while ((read = fileStream.read(bytes)) != -1) {
             fileOutputStream.write(bytes, 0, read);
          }
-      }     
+      }
    }
 
    public QueuedWork getWork(UUID workItemId) {
@@ -445,17 +441,17 @@ public class WorkMgr {
       }
       else if (file.isDirectory()) {
          File zipfile = new File(file.getAbsolutePath() + ".zip");
-         
+
          if (zipfile.exists()) {
             zipfile.delete();
          }
-         
+
          AppZip appZip = new AppZip();
          appZip.zip(file.getAbsolutePath(), zipfile.getAbsolutePath());
-         
-         return zipfile;         
+
+         return zipfile;
       }
-      
+
       return null;
    }
 

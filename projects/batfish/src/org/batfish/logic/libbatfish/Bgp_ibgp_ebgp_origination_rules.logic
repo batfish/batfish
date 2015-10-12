@@ -1,0 +1,52 @@
+block(`Bgp_ibgp_ebgp_origination_rules) {
+   alias_all(`libbatfish:AsPath),
+   alias_all(`libbatfish:Bgp),
+   alias_all(`libbatfish:BgpAdvertisement),
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+// ibgp advertisement from bgp
+BgpAdvertisement(advert),
+BgpAdvertisement_constructor[type, dstIpBlock, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType] = advert,
+BgpAdvertisement_dstIp[advert] = dstIp,
+BgpAdvertisement_dstNode[advert] = dstNode,
+BgpAdvertisement_localPref[advert] = localPref,
+BgpAdvertisement_med[advert] = med,
+BgpAdvertisement_network[advert] = dstIpBlock,
+BgpAdvertisement_nextHopIp[advert] = nextHopIp,
+BgpAdvertisement_originatorIp[advert] = originatorIp,
+BgpAdvertisement_originType[advert] = originType,
+BgpAdvertisement_srcIp[advert] = srcIp,
+BgpAdvertisement_srcNode[advert] = srcNode,
+BgpAdvertisement_srcProtocol[advert] = srcProtocol,
+BgpAdvertisement_type[advert] = type,
+ParentAdvertisement(prevAdvert, advert),
+AdvertisementPathSize[advert] = pathSize
+<-
+   type = AdvertisementType_IBGP[],
+   priorType = AdvertisementType_BGP_TI[],
+   originatorIp = Ip_NONE[],
+   BgpAdvertisement_dstNode[prevAdvert] = srcNode,
+   BgpAdvertisement_localPref[prevAdvert] = localPref,
+   BgpAdvertisement_med[prevAdvert] = med,
+   BgpAdvertisement_network[prevAdvert] = dstIpBlock,
+   BgpAdvertisement_nextHopIp[prevAdvert] = nextHopIp,
+   BgpAdvertisement_originType[prevAdvert] = originType,
+   BgpAdvertisement_srcProtocol[prevAdvert] = srcProtocol,
+   BgpAdvertisement_type[prevAdvert] = priorType,
+   AdvertisementPathSize[prevAdvert] = pathSize,
+   BestBgpAdvertisement(prevAdvert),
+   InstalledBgpAdvertisement(prevAdvert),
+   IbgpNeighbors(srcNode, srcIp, dstNode, dstIp).
+
+lang:compiler:error:ENTITY_CREATION_RECURSION[]=false.
+lang:compiler:warning:ENTITY_CREATION_RECURSION[]=false.
+
+// END CODE
+   })
+
+} <-- .

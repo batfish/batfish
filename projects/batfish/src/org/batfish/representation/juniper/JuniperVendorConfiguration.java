@@ -56,6 +56,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
    private Configuration _c;
 
+   private boolean _defaultAddressSelection;
+
    private final RoleSet _roles;
 
    private transient Set<String> _unimplementedFeatures;
@@ -117,6 +119,43 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          // send-community
          neighbor.setSendCommunity(true);
 
+         // inherit update-source
+         Ip localAddress = ig.getLocalAddress();
+         if (localAddress == null && _defaultAddressSelection) {
+            Interface lo0 = _defaultRoutingInstance.getInterfaces().get(
+                  FIRST_LOOPBACK_INTERFACE_NAME);
+            if (lo0 != null) {
+               Interface lo0_0 = lo0.getUnits().get(
+                     FIRST_LOOPBACK_INTERFACE_NAME + ".0");
+               if (lo0_0 != null) {
+                  Prefix lo0_0Prefix = lo0_0.getPrimaryPrefix();
+                  if (lo0_0Prefix != null) {
+                     localAddress = lo0_0Prefix.getAddress();
+                  }
+               }
+            }
+         }
+         if (localAddress == null) {
+            // assign the ip of the interface that is likely connected to this
+            // peer
+            for (Interface iface : _defaultRoutingInstance.getInterfaces()
+                  .values()) {
+               for (Interface unit : iface.getUnits().values()) {
+                  Prefix unitPrefix = unit.getPrimaryPrefix();
+                  if (unitPrefix != null && unitPrefix.contains(ip)) {
+                     localAddress = unitPrefix.getAddress();
+                     break;
+                  }
+               }
+            }
+         }
+         if (localAddress == null) {
+            _w.redFlag("Could not determine local ip for bgp peering with neighbor ip: "
+                  + ip);
+         }
+         else {
+            neighbor.setLocalIp(localAddress);
+         }
          proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
       }
       return proc;
@@ -220,6 +259,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                .get(ospfAreaLong);
          newArea.getInterfaces().add(newIface);
       }
+   }
+
+   public void setDefaultAddressSelection(boolean defaultAddressSelection) {
+      _defaultAddressSelection = defaultAddressSelection;
    }
 
    @Override
@@ -333,14 +376,31 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       newIface.setBandwidth(iface.getBandwidth());
       // isis settings
       IsisInterfaceSettings isisSettings = iface.getIsisSettings();
-      if (isisSettings.getPassive()) {
-         newIface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
+      IsisInterfaceLevelSettings isisL1Settings = isisSettings
+            .getLevel1Settings();
+      if (isisL1Settings.getEnabled()) {
+         if (isisSettings.getPassive()) {
+            newIface.setIsisL1InterfaceMode(IsisInterfaceMode.PASSIVE);
+         }
+         else if (isisSettings.getEnabled()) {
+            newIface.setIsisL1InterfaceMode(IsisInterfaceMode.ACTIVE);
+         }
+         else {
+            newIface.setIsisL1InterfaceMode(IsisInterfaceMode.UNSET);
+         }
       }
-      else if (isisSettings.getEnabled()) {
-         newIface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
-      }
-      else {
-         newIface.setIsisInterfaceMode(IsisInterfaceMode.UNSET);
+      IsisInterfaceLevelSettings isisL2Settings = isisSettings
+            .getLevel2Settings();
+      if (isisL2Settings.getEnabled()) {
+         if (isisSettings.getPassive()) {
+            newIface.setIsisL2InterfaceMode(IsisInterfaceMode.PASSIVE);
+         }
+         else if (isisSettings.getEnabled()) {
+            newIface.setIsisL2InterfaceMode(IsisInterfaceMode.ACTIVE);
+         }
+         else {
+            newIface.setIsisL2InterfaceMode(IsisInterfaceMode.UNSET);
+         }
       }
       Integer l1Metric = isisSettings.getLevel1Settings().getMetric();
       Integer l2Metric = isisSettings.getLevel2Settings().getMetric();

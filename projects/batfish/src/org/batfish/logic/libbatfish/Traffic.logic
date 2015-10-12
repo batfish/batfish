@@ -113,13 +113,14 @@ FlowNullRouted(flow, node) ->
    Flow(flow),
    Node(node).
 
-FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow ->
+FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol, tag] = flow ->
    Node(node),
    Ip(srcIp),
    Ip(dstIp),
    int(srcPort),
    int(dstPort),
    IpProtocol(protocol),
+   FlowTag(tag),
    Flow(flow).
 
 FlowPathAcceptedEdge(flow, i, node1, int1, node2, int2, history) ->
@@ -328,13 +329,14 @@ FlowSameHeader(flow1, flow2) ->
    Flow(flow1),
    Flow(flow2).
 
-SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol) ->
+SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol, tag) ->
    Node(node),
    Ip(srcIp),
    Ip(dstIp),
    int(srcPort),
    int(dstPort),
-   IpProtocol(protocol).
+   IpProtocol(protocol),
+   FlowTag(tag).
 
 // END CODE
    }),

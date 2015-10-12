@@ -1,0 +1,100 @@
+block(`Bgp_generation_rules) {
+   alias_all(`libbatfish:AsPath),
+   alias_all(`libbatfish:Bgp),
+   alias_all(`libbatfish:BgpAdvertisement),
+   alias_all(`libbatfish:CommunityList),
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Layer2),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+BgpGeneratedRoute(route),
+   Route(route),
+   GeneratedRoute_constructor[node, network, type] = route,
+   GeneratedRoute(route),
+   GeneratedRoute_type[route] = type,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   SetBgpGeneratedRoute(node, network),
+   type = GeneratedRouteType_BGP[],
+   protocol = RoutingProtocol_AGGREGATE[].
+
+BgpNeighborGeneratedRoute(route),
+   Route(route),
+   BgpNeighborGeneratedRoute_constructor[node, network, neighborIp] = route,
+   BgpNeighborGeneratedRoute_neighborIp[route] = neighborIp,
+   GeneratedRoute(route),
+   GeneratedRoute_type[route] = type,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   Route_protocol[route] = protocol
+<-
+   BgpNeighborIpGeneratedRoute(node, neighborIp, network),
+   type = GeneratedRouteType_BGP_NEIGHBOR[],
+   protocol = RoutingProtocol_AGGREGATE[].
+
+BgpNeighborIpGeneratedRoute(node, neighborIp, network) <-
+   SetBgpNeighborGeneratedRoute(node, neighborNetwork, network),
+   NetworkOf[neighborIp, _] = neighborNetwork.
+
+BgpNeighborGeneratedRoutePolicy(node, neighborIp, network, map) <-
+   SetBgpNeighborGeneratedRoutePolicy(node, neighborNetwork, network, map),
+   NetworkOf[neighborIp, _] = neighborNetwork.
+
+GeneratedRoutePolicy(route, policy) <-
+   BgpGeneratedRoute(route),
+   Route_network[route] = network,
+   Route_node[route] = node,
+   SetBgpGeneratedRoutePolicy(node, network, policy).
+GeneratedRoutePolicy(route, policy) <-
+   BgpNeighborGeneratedRoute(route),
+   BgpNeighborGeneratedRoute_neighborIp[route] = neighborIp,
+   Route_network[route] = network,
+   Route_node[route] = node,
+   BgpNeighborGeneratedRoutePolicy(node, neighborIp, network, policy).
+
+need_PolicyMapMatchRoute(map, route) <-
+   InstalledRoute(route),
+   Route_node[route] = node,
+   (
+      SetBgpGeneratedRoutePolicy(node, _, map) ;
+      BgpNeighborGeneratedRoutePolicy(node, _, _, map)
+   ).
+
+SetBgpGeneratedRoute(node, network) <-
+   SetBgpGeneratedRoute_flat(node, network_start, network_end, prefix_length),
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+SetBgpGeneratedRoutePolicy(node, network, map) <-
+   SetBgpGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length, map),
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+SetBgpNeighborGeneratedRoute(node, neighborNetwork, network) <-
+   SetBgpNeighborGeneratedRoute_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, network_start, network_end, prefix_length),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork,
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+SetBgpNeighborGeneratedRoutePolicy(node, neighborNetwork, network, map) <-
+   SetBgpNeighborGeneratedRoutePolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, network_start, network_end, prefix_length, map),
+   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork,
+   Network_constructor[network_start, network_end, prefix_length] = network.
+
+lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
+
+lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
+lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
+
+lang:compiler:disableError:NEGATION_RECURSION[] = true.
+lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
+
+// END CODE
+   })
+
+} <-- .

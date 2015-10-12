@@ -18,7 +18,7 @@ FlowAccepted(flow, node) <-
    HasIp(node, dstIp).
 FlowAccepted(flow, node) <-
    FlowReachPostOutInterface(flow, node, interface),
-   FlowSinkInterface(node, interface).
+   SetFlowSinkInterface(node, interface).
 
 FlowAllowedIn(flow, node, interface, filter) <-
    FlowReachPostInInterface(flow, node, interface),
@@ -90,27 +90,29 @@ FlowNullRouted(flow, node) <-
    FibDrop(node, dstIp),
    !FibNeighborUnreachable(node, dstIp, _).
 
-FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow,
+FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol, tag] = flow,
 Flow(flow),
 Flow_dstIp[flow] = dstIp,
 Flow_dstPort[flow] = dstPort,
 Flow_ipProtocol[flow] = protocol,
 Flow_node[flow] = node,
 Flow_srcIp[flow] = srcIp,
-Flow_srcPort[flow] = srcPort
+Flow_srcPort[flow] = srcPort,
+Flow_tag[flow] = tag
 <-
-   SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol).
-FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol] = flow,
+   SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol, tag).
+FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol, tag] = flow,
 Flow(flow),
 Flow_dstIp[flow] = dstIp,
 Flow_dstPort[flow] = dstPort,
 Flow_ipProtocol[flow] = protocol,
 Flow_node[flow] = node,
 Flow_srcIp[flow] = srcIp,
-Flow_srcPort[flow] = srcPort
+Flow_srcPort[flow] = srcPort,
+Flow_tag[flow] = tag
 <-
    DuplicateRoleFlows(_),
-   SetFlowOriginate(acceptNode, srcIp, dstIp, srcPort, dstPort, protocol),
+   SetFlowOriginate(acceptNode, srcIp, dstIp, srcPort, dstPort, protocol, tag),
    SetNodeRole(acceptNode, role),
    SetNodeRole(node, role).
 
@@ -409,8 +411,8 @@ FlowSameHeaderRoleTransitNode(flow, similarFlow, transitNode) <-
    FlowSameHeader(flow, similarFlow).
 
 FlowSameHeader(flow1, flow2) <-
-   FlowOriginate[node1, srcIp, dstIp, srcPort, dstPort, protocol] = flow1,
-   FlowOriginate[node2, srcIp, dstIp, srcPort, dstPort, protocol] = flow2,
+   FlowOriginate[node1, srcIp, dstIp, srcPort, dstPort, protocol, tag] = flow1,
+   FlowOriginate[node2, srcIp, dstIp, srcPort, dstPort, protocol, tag] = flow2,
    node1 != node2.
 
 lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.

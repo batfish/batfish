@@ -31,7 +31,7 @@ batfish() {
          else
             local NEW_ARG="$(cygpath -w -- $CURRENT_ARG)"
          fi
-         if [ "$CURRENT_ARG" = "-logicdir" ]; then
+         if [ "$CURRENT_ARG" = "-logicdir" -o "$CURRENT_ARG" = "-workspace" ]; then
             local IGNORE_CURRENT_ARG=yes
          fi
          set -- "$@" "$NEW_ARG"
@@ -39,14 +39,35 @@ batfish() {
       done
    fi
    if [ "$BATFISH_PRINT_CMDLINE" = "yes" ]; then
-      echo "$BATFISH $BATFISH_COMMON_ARGS $@"
+      echo "$BATFISH $BATFISH_COMMON_ARGS $@" >&2
    fi
    $BATFISH $BATFISH_COMMON_ARGS $@
 }
 export -f batfish
 
+batfish_answer_example_cp() {
+   batfish_date
+   echo ": START: Answer provided example question"
+   batfish_expect_args 3 $# || return 1
+   local BASE=$1
+   local ENVIRONMENT=$2
+   local QUESTIONNAME=$3
+   local QUESTION_SRC=$BATFISH_ROOT/example_questions/${QUESTIONNAME}.q
+   local QUESTION_DST_DIR=$BASE/questions/$QUESTIONNAME
+   local QUESTION_DST=$QUESTION_DST_DIR/question
+   mkdir -p $QUESTION_DST_DIR
+   cp $QUESTION_SRC $QUESTION_DST
+   batfish -autobasedir $BASE -env $ENVIRONMENT -answer -questionname $QUESTIONNAME -loglevel output
+   batfish_date
+   echo ": END: Answer provided example question"
+}
+export -f batfish_answer_example_cp
+
 batfish_build() {
    bash -c '_batfish_build "$@"' _batfish_build "$@" || return 1
+   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" ]; then
+      batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+   fi
 }
 export -f batfish_build
 
@@ -57,22 +78,49 @@ _batfish_build() {
 }
 export -f _batfish_build
 
+batfish_clone_environment() {
+   batfish_date
+   echo ": START: Clone environment"
+   batfish_expect_args 3 $# || return 1
+   local BASE=$1
+   local ENV_SRC=$2
+   local ENV_DST=$3
+   cp -a $BASE/environments/$ENV_SRC $BASE/environments/$ENV_DST
+   batfish_date
+   echo ": END: Clone environment"
+}
+export -f batfish_clone_environment
+
 batfish_compile() {
    batfish_date
    echo ": START: Compute the fixed point of the control plane"
-   batfish_expect_args 4 $# || return 1
-   local WORKSPACE=$1
-   local TEST_RIG=$2
-   local DUMP_DIR=$3
-   local INDEP_SERIAL_DIR=$4
+   batfish_expect_args 2 $# || return 1
+   local BASE=$1
+   local ENV=$2
    if [ -n "${BATFISH_REMOTE_LOGIC_DIR}" ]; then
       local LOGIC_DIR_ARG="-logicdir ${BATFISH_REMOTE_LOGIC_DIR}"
    fi
-   batfish $LOGIC_DIR_ARG -workspace $WORKSPACE -testrig $TEST_RIG -sipath $INDEP_SERIAL_DIR -compile -facts -dumpcp -dumpdir $DUMP_DIR || return 1
+   batfish $LOGIC_DIR_ARG -autobasedir $BASE -env $ENV -createworkspace -facts -dumpcp || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane"
 }
 export -f batfish_compile
+
+batfish_compile_diff() {
+   batfish_date
+   echo ": START: Compute the fixed point of the control plane (differential)"
+   batfish_expect_args 3 $# || return 1
+   local BASE=$1
+   local ENV=$2
+   local DIFF_ENV=$3
+   if [ -n "${BATFISH_REMOTE_LOGIC_DIR}" ]; then
+      local LOGIC_DIR_ARG="-logicdir ${BATFISH_REMOTE_LOGIC_DIR}"
+   fi
+   batfish $LOGIC_DIR_ARG -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -createworkspace -facts -dumpcp || return 1
+   batfish_date
+   echo ": END: Compute the fixed point of the control plane (differential)"
+}
+export -f batfish_compile_diff
 
 batfish_confirm() {
    # call with a prompt string or use a default
@@ -92,6 +140,18 @@ batfish_date() {
    { hostname; echo -n ': '; date ; } | tr -d '\n'
 }
 export -f batfish_date
+
+batfish_delete_workspace() {
+   batfish_date
+   echo ": START: Delete LogicBlox workspace"
+   batfish_expect_args 2 $# || return 1
+   local BASE=$1
+   local ENV=$2
+   batfish -autobasedir $BASE -env $ENV -deleteworkspace || return 1
+   batfish_date
+   echo ": END: Delete LogicBlox workspace"
+}
+export -f batfish_delete_workspace
 
 batfish_expect_args() {
    local EXPECTED_NUMARGS=$1
@@ -119,6 +179,50 @@ batfish_format_flows() {
 }
 export -f batfish_format_flows
 
+batfish_get_history() {
+   batfish_date
+   echo ": START: Get flow histories from LogicBlox"
+   batfish_expect_args 4 $# || return 1
+   local BASE=$1
+   local ENV=$2
+   local QUESTIONNAME=$3
+   local RESULT=$4
+   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -gethistory -logtee -loglevel output -logfile $RESULT
+   batfish_date
+   echo ": END: Get flow histories from LogicBlox"
+}
+export -f batfish_get_history
+
+batfish_get_history_diff() {
+   batfish_date
+   echo ": START: Get flow histories from LogicBlox"
+   batfish_expect_args 5 $# || return 1
+   local BASE=$1
+   local ENV=$2
+   local DIFF_ENV=$3
+   local QUESTIONNAME=$4
+   local RESULT=$5
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -questionname $QUESTIONNAME -getdiffhistory -logtee -loglevel output -logfile $RESULT
+   batfish_date
+   echo ": END: Get flow histories from LogicBlox"
+}
+export -f batfish_get_history_diff
+
+batfish_get_topology_interfaces() {
+   batfish_date
+   echo ": START: Get topology interfaces"
+   batfish_expect_args 5 $# || return 1
+   local BASE=$1
+   local ENV=$2
+   local DIFF_ENV=$3
+   local QUESTIONNAME=$4
+   local RESULT=$5
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -questionname $QUESTIONNAME -getdiffhistory -logtee -loglevel output -logfile $RESULT
+   batfish_date
+   echo ": END: Get topology interfaces"
+}
+export -f batfish_get_topology_interfaces
+
 batfish_inject_packets() {
    batfish_date
    echo ": START: Inject concrete packets into network model"
@@ -135,33 +239,6 @@ batfish_inject_packets() {
    echo ": END: Inject concrete packets into network model"
 }
 export -f batfish_inject_packets
-
-batfish_generate_concretizer_query_output() {
-   batfish_expect_args 2 $# || return 1
-   local INPUT_FILE=$1
-   local NODE=$2
-   local OUTPUT_FILE=${INPUT_FILE}.out
-   batfish_date
-   echo ": START: Generate concretizer output for $NODE (\"$OUTPUT_FILE\")"
-   local FIRST_LINE="$(head -n1 $INPUT_FILE | tr -d '\n')"
-   if [ "$FIRST_LINE" = "unsat" ]; then
-      echo unsat > $OUTPUT_FILE || return 1
-   else
-      { echo ";$NODE" ; $BATFISH_Z3 $INPUT_FILE ; } >& $OUTPUT_FILE
-      local SECOND_OUTPUT_LINE="$(sed -n -e '2p' $OUTPUT_FILE | tr -d '\n')"
-      if [ "$SECOND_OUTPUT_LINE" = "unsat" ]; then
-         echo "unsat" > $OUTPUT_FILE
-         else if [ ! "$SECOND_OUTPUT_LINE" = "sat" ]; then
-            echo FAILED: z3 output follows
-            tail -n+2 $OUTPUT_FILE
-            return 1
-         fi
-      fi
-   fi
-   batfish_date
-   echo ": END: Generate concretizer output for $NODE (\"$OUTPUT_FILE\")"
-}
-export -f batfish_generate_concretizer_query_output
 
 batfish_generate_z3_reachability() {
    batfish_date
@@ -218,40 +295,96 @@ batfish_nuke_reset_logicblox() {
 }
 export -f batfish_nuke_reset_logicblox
 
-batfish_query_bgp() {
-   batfish_date
-   echo ": START: Query bgp (informational only)"
-   batfish_expect_args 2 $# || return 1
-   local BGP=$1
-   local WORKSPACE=$2
-   batfish -loglevel output -workspace $WORKSPACE -query -predicates \
-      AdvertisementPath \
-      AdvertisementPathSize \
-      BgpAdvertisement \
-      BgpGeneratedRoute \
-      BgpNeighborGeneratedRoute \
-      BgpNeighbors \
-      IbgpNeighbors \
-      InstalledBgpAdvertisementRoute \
-      OriginalBgpAdvertisementRoute \
-      &> $BGP
-   batfish_date
-   echo ": END: Query bgp (informational only)"
+batfish_output_topology() {
+   batfish_expect_args 1 $# || return 1
+   local BASE=$1
+   batfish -autobasedir $BASE -synthesizetopology -loglevel output
 }
-export -f batfish_query_bgp
+export -f batfish_output_topology
+
+batfish_post_flows() {
+   batfish_date
+   echo ": START: Inject discovered packets into network model"
+   batfish_expect_args 3 $# || return 1
+   local BASE=$1
+   local ENV=$2
+   local QUESTIONNAME=$3
+   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -postflows
+   batfish_date
+   echo ": END: Inject discovered packets into network model"
+}
+export -f batfish_post_flows
+
+batfish_post_flows_diff() {
+   batfish_date
+   echo ": START: Inject discovered packets into network model (differential)"
+   batfish_expect_args 4 $# || return 1
+   local BASE=$1
+   local ENV=$2
+   local DIFF_ENV=$3
+   local QUESTIONNAME=$4
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -questionname $QUESTIONNAME -postflows
+   batfish_date
+   echo ": END: Inject discovered packets into network model (differential)"
+}
+export -f batfish_post_flows_diff
+
+batfish_prepare_default_environment() {
+   batfish_date
+   echo ": START: Prepare default environment"
+   batfish_expect_args 2 $# || return 1
+   local BASE=$1
+   local ENV=$2
+   mkdir -p $BASE/environments/$ENV/env || return 1
+   batfish_date
+   echo ": END: Prepare default environment"
+}
+export -f batfish_prepare_default_environment
+
+batfish_prepare_test_rig() {
+   batfish_date
+   echo ": START: Prepare test-rig"
+   batfish_expect_args 2 $# || return 1
+   local TEST_RIG=$1
+   local BASE=$2
+   mkdir -p $BASE/testrig || return 1
+   cp -r $TEST_RIG/. $BASE/testrig/.
+   batfish_date
+   echo ": END: Prepare test-rig"
+}
+export -f batfish_prepare_test_rig
+
+batfish_print_symmetric_edges() {
+   batfish_expect_args 1 $# || return 1
+   local BASE=$1
+   batfish -autobasedir $BASE -printsymmetricedges -loglevel output
+}
+export -f batfish_print_symmetric_edges
 
 batfish_query_data_plane() {
    batfish_date
    echo ": START: Query data plane predicates"
    batfish_expect_args 2 $# || return 1
-   local WORKSPACE=$1
-   local DP_DIR=$2
-   mkdir -p $DP_DIR
-   batfish -workspace $WORKSPACE -dp -dpdir $DP_DIR || return 1
+   local BASE=$1
+   local ENV=$2
+   batfish -autobasedir $BASE -env $ENV -dp || return 1
    batfish_date
    echo ": END: Query data plane predicates"
 }
 export -f batfish_query_data_plane
+
+batfish_query_data_plane_diff() {
+   batfish_date
+   echo ": START: Query data plane predicates (differential)"
+   batfish_expect_args 3 $# || return 1
+   local BASE=$1
+   local ENV=$2
+   local DIFF_ENV=$3
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -dp || return 1
+   batfish_date
+   echo ": END: Query data plane predicates (differential)"
+}
+export -f batfish_query_data_plane_diff
 
 batfish_query_flows() {
    batfish_date
@@ -357,6 +490,19 @@ batfish_query_policy() {
 }
 export -f batfish_query_policy
 
+batfish_query_predicate() {
+   batfish_date
+   echo ": START: Query predicate"
+   [ "$#" -gt 1 ] || return 1
+   local WORKSPACE=$1
+   shift
+   local PREDICATES="$@"
+   batfish -loglevel output -workspace $WORKSPACE -query -predicates $PREDICATES
+   batfish_date
+   echo ": END: Query predicate"
+}
+export -f batfish_query_predicate
+
 batfish_query_routes() {
    batfish_date
    echo ": START: Query routes (informational only)"
@@ -413,11 +559,9 @@ export -f _batfish_replace_symlink
 batfish_serialize_independent() {
    batfish_date
    echo ": START: Parse vendor structures and serialize vendor-independent structures"
-   batfish_expect_args 2 $# || return 1
-   local VENDOR_SERIAL_DIR=$1
-   local INDEP_SERIAL_DIR=$2
-   mkdir -p $INDEP_SERIAL_DIR
-   batfish -svpath $VENDOR_SERIAL_DIR -si -sipath $INDEP_SERIAL_DIR || return 1
+   batfish_expect_args 1 $# || return 1
+   local BASE=$1
+   batfish -autobasedir $BASE -si || return 1
    batfish_date
    echo ": END: Parse vendor structures and serialize vendor-independent structures"
 }
@@ -426,11 +570,9 @@ export -f batfish_serialize_independent
 batfish_serialize_vendor() {
    batfish_date
    echo ": START: Parse vendor configuration files and serialize vendor structures"
-   batfish_expect_args 2 $# || return 1
-   local TEST_RIG=$1
-   local VENDOR_SERIAL_DIR=$2
-   mkdir -p $VENDOR_SERIAL_DIR
-   batfish -testrig $TEST_RIG -sv -svpath $VENDOR_SERIAL_DIR -ee -throwparser -throwlexer -unimplementedsuppress -parseparallel || return 1
+   batfish_expect_args 1 $# || return 1
+   local BASE=$1
+   batfish -autobasedir $BASE -sv -ee -throwparser -throwlexer -unimplementedsuppress || return 1
    batfish_date
    echo ": END: Parse vendor configuration files and serialize vendor structures"
 }

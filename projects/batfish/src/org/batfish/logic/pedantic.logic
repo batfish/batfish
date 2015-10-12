@@ -1,0 +1,5 @@
+lang:compiler:error:INCR_DELTA[] = true.
+lang:compiler:error:NO_DECLARATION[] = true.
+lang:compiler:error:DELTA_UNGUARDED[] = true.
+lang:compiler:error:VARIABLE_SOLITARY[] = true.
+

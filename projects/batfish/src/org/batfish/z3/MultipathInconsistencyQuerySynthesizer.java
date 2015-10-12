@@ -14,7 +14,8 @@ import org.batfish.z3.node.SaneExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Z3Exception;
 
-public class MultipathInconsistencyQuerySynthesizer implements QuerySynthesizer {
+public class MultipathInconsistencyQuerySynthesizer extends
+      BaseQuerySynthesizer {
 
    private String _hostname;
    private String _queryText;

@@ -1,0 +1,53 @@
+block(`Ospf_external_rules) {
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Ospf),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+need_PolicyMapMatchRoute(map, route) <-
+   SetOspfOutboundPolicyMap(node, map),
+   Route_node[route] = node,
+   (
+      InstalledRoute(route) ;
+      (
+         OspfGeneratedRoute(route),
+         ActiveGeneratedRoute(route)
+      )
+   ).
+
+OspfExport(node, network, newCost, protocol) <-
+   (
+      InstalledRoute(route) ;
+      (
+         OspfGeneratedRoute(route),
+         ActiveGeneratedRoute(route)
+      )
+   ),
+   !NonOspfExportableRoute(route),
+   Route_network[route] = network,
+   Route_node[route] = node,
+   SetOspfOutboundPolicyMap(node, map),
+   SetPolicyMapOspfExternalRouteType(map, protocol),
+   PolicyMapPermitRoute(map, clause, route),
+   SetPolicyMapClauseSetMetric(map, clause, newCost),
+   (
+      !ConnectedRoute(node, network, _) ;
+      (
+         ConnectedRoute(node, network, interface),
+         !SetOspfInterface(node, interface, _)
+      )
+   ).
+
+OspfOutboundPolicyClauseSetMetric(map, clause, metric) <-
+   SetOspfOutboundPolicyMap(_, map),
+   SetPolicyMapClauseSetMetric(map, clause, metric).
+
+lang:compiler:disableError:NEGATION_RECURSION[] = true.
+lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
+
+// END CODE
+   })
+} <-- .

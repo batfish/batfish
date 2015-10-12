@@ -1,8 +1,6 @@
 package org.batfish.grammar.topology;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.batfish.collections.EdgeSet;
 import org.batfish.grammar.topology.GNS3TopologyParser.*;
 import org.batfish.representation.Edge;
 import org.batfish.representation.Topology;
@@ -11,11 +9,11 @@ public class GNS3TopologyExtractor extends GNS3TopologyParserBaseListener
       implements TopologyExtractor {
 
    private String _currentRouter;
-   private List<Edge> _edges;
+   private EdgeSet _edges;
    private Topology _topology;
 
    public GNS3TopologyExtractor() {
-      _edges = new ArrayList<Edge>();
+      _edges = new EdgeSet();
    }
 
    private String convertInterfaceName(String shortName) {

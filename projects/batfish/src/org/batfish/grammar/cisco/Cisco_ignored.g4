@@ -50,6 +50,10 @@ null_block_stanza
             | DHCP
             | FLOW_TOP_TALKERS
             | INSPECT
+            |
+            (
+               OSPF NAME_LOOKUP
+            )
             | POLICY_LIST
             | SLA
             | SOURCE
@@ -98,7 +102,10 @@ null_block_stanza
       (
          MPLS
          (
-            OAM
+            (
+               LDP ~NEWLINE
+            )
+            | OAM
          )
       )
       | NO_BANNER
@@ -317,6 +324,7 @@ null_block_substanza
          | MESSAGE_LENGTH
          | MODE
          | MODEM
+         | MONITORING
          | MTU
          | NAME
          | NAMESPACE
@@ -635,10 +643,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
             | MULTICAST_ROUTING
             | NAME_SERVER
             | NAT
-            |
-            (
-               OSPF NAME_LOOKUP
-            )
             | PIM
             | RADIUS
             | RCMD

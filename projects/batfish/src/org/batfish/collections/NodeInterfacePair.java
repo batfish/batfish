@@ -7,8 +7,8 @@ public class NodeInterfacePair extends Pair<String, String> {
     */
    private static final long serialVersionUID = 1L;
 
-   public NodeInterfacePair(String t1, String t2) {
-      super(t1, t2);
+   public NodeInterfacePair(String node, String iface) {
+      super(node, iface);
    }
 
    public String getHostname() {

@@ -13,40 +13,12 @@ block(`Bgp_rules) {
    clauses(`{
 // BEGIN CODE
 
-AdvertisementClusterId(advert, clusterId) <-
-   (
-      priorType = AdvertisementType_IBGP[] ;
-      priorType = AdvertisementType_IBGP_TI[] ;
-      priorType = AdvertisementType_IBGP_TO[]
-   ),
-   BgpAdvertisement_type[prevAdvert] = priorType,
-   ParentAdvertisement(prevAdvert, advert),
-   AdvertisementClusterId(prevAdvert, clusterId).
-AdvertisementClusterId(advert, clusterId) <-
-   type = AdvertisementType_IBGP[],
-   BgpAdvertisement_type[advert] = type,
-   BgpAdvertisement_originatorIp[advert] = originatorIp,
-   BgpAdvertisement_srcNode[advert] = srcNode,
-   BgpAdvertisement_dstIp[advert] = dstIp,
-   originatorIp != Ip_NONE[],
-   RouteReflectorClient(srcNode, dstIp, clusterId).
-
-// append as to path for bgp route advertisement
-AdvertisementPath(advert, index, as) <-
-   BgpAdvertisement_type[advert] = type,
-   BgpAdvertisement_dstNode[advert] = dstNode,
-   BgpAdvertisement_srcIp[advert] = srcIp,
-   type = AdvertisementType_BGP_TO[],
-   ParentAdvertisement(prevAdvert, advert),
-   AdvertisementPathSize[prevAdvert] = prevPathSize,
-   index = prevPathSize,
-   RemoteAs(dstNode, srcIp, as).
 // copy old path elements
 AdvertisementPath(advert, index, as) <-
    ParentAdvertisement(prevAdvert, advert),
    AdvertisementPath(prevAdvert, index, as).
 
-// ibgp base advertisement inherits community from bgp and ibgp
+// i/ebgp base advertisement inherits community from bgp and ibgp
 AdvertisementCommunity(advert, community) <-
    (
       priorType = AdvertisementType_BGP_TI[] ;
@@ -55,522 +27,20 @@ AdvertisementCommunity(advert, community) <-
    AdvertisementCommunity(prevAdvert, community),
    BgpAdvertisement_type[prevAdvert] = priorType,
    ParentAdvertisement(prevAdvert, advert).
-// incoming transformation
-AdvertisementCommunity(advert, community) <-
-   (
-      priorType = AdvertisementType_BGP_TO[] ;
-      priorType = AdvertisementType_IBGP_TO[]
-   ),
-   BgpNeighborSendCommunity(dstNode, srcIp),
-   BgpAdvertisement_type[prevAdvert] = priorType,
-   BgpAdvertisement_dstNode[prevAdvert] = dstNode,
-   BgpAdvertisement_srcIp[prevAdvert] = srcIp,
-   ParentAdvertisement(prevAdvert, advert),
-   (
-      (
-         BgpImportPolicy(dstNode, srcIp, map),
-         PolicyMapPermitAdvert(map, clause, prevAdvert),
-         !SetPolicyMapClauseSetCommunityNone(map, clause),
-         (
-            SetPolicyMapClauseAddCommunity(map, clause, community) ;
-            SetPolicyMapClauseSetCommunity(map, clause, community) ;
-            (
-               AdvertisementCommunity(prevAdvert, community),
-               !SetPolicyMapClauseSetCommunity(map, clause, _),
-               (
-                  !SetPolicyMapClauseDeleteCommunity(map, clause, _) ;
-                  (
-                     SetPolicyMapClauseDeleteCommunity(map, clause, deleteList),
-                     !CommunityListPermit(deleteList, _, community)
-                  )
-               )
-            )
-         )
-      ) ;
-      (
-         !BgpImportPolicy(dstNode, srcIp, _),
-         AdvertisementCommunity(prevAdvert, community)
-      )
-   ).
-// outgoing transformation
-AdvertisementCommunity(advert, community) <-
-   (
-      priorType = AdvertisementType_BGP[] ;
-      priorType = AdvertisementType_IBGP[]
-   ),
-   BgpNeighborSendCommunity(srcNode, dstIp),
-   BgpAdvertisement_type[prevAdvert] = priorType,
-   BgpAdvertisement_srcNode[prevAdvert] = srcNode,
-   BgpAdvertisement_dstIp[prevAdvert] = dstIp,
-   ParentAdvertisement(prevAdvert, advert),
-   (
-      (
-         BgpExportPolicy(srcNode, dstIp, map),
-         PolicyMapPermitAdvert(map, clause, prevAdvert),
-         !SetPolicyMapClauseSetCommunityNone(map, clause),
-         (
-            (
-               !SetPolicyMapClauseMatchPolicy(map, clause, _),
-               clause = transformingClause,
-               map = transformingMap
-            ) ;
-            (
-               SetPolicyMapClauseMatchPolicy(map, clause, transformingMap),
-               PolicyMapPermitAdvert(transformingMap, transformingClause, prevAdvert)
-            )
-         ),
-         (
-            SetPolicyMapClauseAddCommunity(transformingMap, transformingClause, community) ;
-            SetPolicyMapClauseSetCommunity(transformingMap, transformingClause, community) ;
-            (
-               AdvertisementCommunity(prevAdvert, community),
-               !SetPolicyMapClauseSetCommunity(transformingMap, transformingClause, _),
-               (
-                  !SetPolicyMapClauseDeleteCommunity(transformingMap, transformingClause, _) ;
-                  (
-                     SetPolicyMapClauseDeleteCommunity(transformingMap, transformingClause, deleteList),
-                     !CommunityListPermit(deleteList, _, community)
-                  )
-               )
-            )
-         )
-      ) ;
-      (
-         !BgpExportPolicy(srcNode, dstIp, _),
-         AdvertisementCommunity(prevAdvert, community)
-      )
-   ).
 
 BestBgpAdvertisement(advert) <-
    MinAsPathLengthBgpAdvertisement(advert).
-
-BestBgpRoute(route),
-   Route(route),
-   Route_constructor[node, network, nextHopIp, protocol] = route,
-   BestBgpRouteNetwork(node, network),
-   Route_admin[route] = admin,
-   Route_cost[route] = cost,
-   Route_network[route] = network,
-   Route_nextHopIp[route] = nextHopIp,
-   Route_node[route] = node,
-   Route_protocol[route] = protocol,
-   BgpAdvertisementRoute[advert] = route
-<-
-   type = AdvertisementType_BGP_TI[],
-   protocol = RoutingProtocol_BGP[],
-   BgpAdvertisement_type[advert] = type,
-   BgpAdvertisement_network[advert] = network,
-   BgpAdvertisement_nextHopIp[advert] = nextHopIp,
-   BgpAdvertisement_dstNode[advert] = node,
-   BgpAdvertisement_med[advert] = cost,
-   BestBgpAdvertisement(advert),
-   SetNodeVendor(node, vendor),
-   AdministrativeDistance[vendor, protocol] = admin.
-
-BestIbgpRoute(route),
-   Route(route),
-   Route_constructor[node, network, nextHopIp, protocol] = route,
-   Route_admin[route] = admin,
-   Route_cost[route] = cost,
-   Route_network[route] = network,
-   Route_nextHopIp[route] = nextHopIp,
-   Route_node[route] = node,
-   Route_protocol[route] = protocol,
-   BgpAdvertisementRoute[advert] = route
-<-
-   type = AdvertisementType_IBGP_TI[],
-   protocol = RoutingProtocol_IBGP[],
-   BgpAdvertisement_type[advert] = type,
-   BgpAdvertisement_network[advert] = network,
-   BgpAdvertisement_nextHopIp[advert] = nextHopIp,
-   BgpAdvertisement_dstNode[advert] = node,
-   BgpAdvertisement_med[advert] = cost,
-   BestBgpAdvertisement(advert),
-   SetNodeVendor(node, vendor),
-   AdministrativeDistance[vendor, protocol] = admin,
-   !BestBgpRouteNetwork(node, network).
 
 BestPerProtocolRoute(route) <-
    BestBgpRoute(route) ;
    BestIbgpRoute(route).
 
-// advertise an internally received route
-BgpAdvertisement(advert),
-BgpAdvertisement_constructor[type, network, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType] = advert,
-AdvertisementPathSize[advert] = pathSize,
-BgpAdvertisement_dstIp[advert] = dstIp,
-BgpAdvertisement_dstNode[advert] = dstNode,
-BgpAdvertisement_localPref[advert] = localPref,
-BgpAdvertisement_med[advert] = med,
-BgpAdvertisement_network[advert] = network,
-BgpAdvertisement_nextHopIp[advert] = nextHopIp,
-BgpAdvertisement_originatorIp[advert] = originatorIp,
-BgpAdvertisement_originType[advert] = originType,
-BgpAdvertisement_srcIp[advert] = srcIp,
-BgpAdvertisement_srcNode[advert] = srcNode,
-BgpAdvertisement_srcProtocol[advert] = srcProtocol,
-BgpAdvertisement_type[advert] = type,
-OriginalBgpAdvertisementRoute(advert, route),
-OriginatedBgpNetwork(srcNode, network)
-<-
-   type = AdvertisementType_BGP[],
-   pathSize = 0,
-   nextHopIp = srcIp,
-   originatorIp = Ip_NONE[],
-   BgpNeighbors(srcNode, srcIp, dstNode, dstIp),
-   BgpNeighborIp(srcNode, dstIp),
-   originType = OriginType_IGP[],
-   BgpNeighborDefaultMetric(srcNode, dstIp, med),
-   (
-      BgpDefaultLocalPref(srcNode, dstIp, localPref) ;
-      (
-         !BgpDefaultLocalPref(srcNode, dstIp, _),
-         localPref = 100
-      )
-   ),
-   Route_network[route] = network,
-   Route_protocol[route] = srcProtocol,
-   Route_node[route] = srcNode,
-   (
-      (
-         ActiveGeneratedRoute(route),
-         BgpGeneratedRoute(route)
-      ) ;
-      (
-         ActiveGeneratedRoute(route),
-         BgpNeighborGeneratedRoute(route),
-         BgpNeighborGeneratedRoute_neighborIp[route] = dstIp
-      ) ;
-      (
-         InstalledRoute(route),
-         srcProtocol != RoutingProtocol_BGP[],
-         srcProtocol != RoutingProtocol_IBGP[],
-         (
-            !BgpOriginationPolicy(srcNode, dstIp, _);
-            (
-               BgpOriginationPolicy(srcNode, dstIp, map),
-               PolicyMapPermitRoute(map, _, route)
-            )
-         )
-      )
-   ).
-// advertise a transit route received through ibgp or ebgp
-BgpAdvertisement(advert),
-BgpAdvertisement_constructor[type, dstIpBlock, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType] = advert,
-BgpAdvertisement_dstIp[advert] = dstIp,
-BgpAdvertisement_dstNode[advert] = dstNode,
-BgpAdvertisement_localPref[advert] = localPref,
-BgpAdvertisement_med[advert] = med,
-BgpAdvertisement_network[advert] = dstIpBlock,
-BgpAdvertisement_nextHopIp[advert] = nextHopIp,
-BgpAdvertisement_originatorIp[advert] = originatorIp,
-BgpAdvertisement_originType[advert] = originType,
-BgpAdvertisement_srcIp[advert] = srcIp,
-BgpAdvertisement_srcNode[advert] = srcNode,
-BgpAdvertisement_srcProtocol[advert] = srcProtocol,
-BgpAdvertisement_type[advert] = type,
-ParentAdvertisement(prevAdvert, advert),
-AdvertisementPathSize[advert] = pathSize
-<-
-   type = AdvertisementType_BGP[],
-   originatorIp = Ip_NONE[],
-   (
-      BgpAdvertisement_type[prevAdvert] = AdvertisementType_IBGP_TI[] ;
-      BgpAdvertisement_type[prevAdvert] = AdvertisementType_BGP_TI[]
-   ),
-   BgpAdvertisement_network[prevAdvert] = dstIpBlock,
-   BgpAdvertisement_nextHopIp[prevAdvert] = origNextHopIp,
-   BgpAdvertisement_srcProtocol[prevAdvert] = srcProtocol,
-   BgpAdvertisement_dstNode[prevAdvert] = srcNode,
-   AdvertisementPathSize[prevAdvert] = prevPathSize,
-   InstalledBgpAdvertisement(prevAdvert),
-   pathSize = prevPathSize,
-   BestBgpAdvertisement(prevAdvert),
-   (
-      BgpDefaultLocalPref(srcNode, dstIp, localPref);
-      (
-         !BgpDefaultLocalPref(srcNode, dstIp, _),
-         localPref = 100
-      )
-   ),
-   originType = OriginType_EGP[],
-   BgpNeighborDefaultMetric(srcNode, dstIp, med),
-   nextHopIp = srcIp,
-   origNextHopIp != dstIp,
-   BgpNeighbors(srcNode, srcIp, dstNode, dstIp).
-// (i)bgp transformed incoming
-BgpAdvertisement(advert),
-BgpAdvertisement_constructor[type, dstIpBlock, tNextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, tOriginType] = advert,
-BgpAdvertisement_dstIp[advert] = dstIp,
-BgpAdvertisement_dstNode[advert] = dstNode,
-BgpAdvertisement_localPref[advert] = tLocalPref,
-BgpAdvertisement_med[advert] = tMed,
-BgpAdvertisement_network[advert] = dstIpBlock,
-BgpAdvertisement_nextHopIp[advert] = tNextHopIp,
-BgpAdvertisement_originatorIp[advert] = originatorIp,
-BgpAdvertisement_originType[advert] = tOriginType,
-BgpAdvertisement_srcIp[advert] = srcIp,
-BgpAdvertisement_srcNode[advert] = srcNode,
-BgpAdvertisement_srcProtocol[advert] = tSrcProtocol,
-BgpAdvertisement_type[advert] = type,
-ParentAdvertisement(prevAdvert, advert),
-AdvertisementPathSize[advert] = pathSize
-<-
-   (
-      (
-         type = AdvertisementType_BGP_TI[],
-         priorType = AdvertisementType_BGP_TO[]
-      ) ;
-      (
-         type = AdvertisementType_IBGP_TI[],
-         priorType = AdvertisementType_IBGP_TO[]
-      )
-   ),
-   (
-      !RouteReflectorClient(dstNode, srcIp, _) ;
-      (
-         RouteReflectorClient(dstNode, _, clusterId),
-         !AdvertisementClusterId(prevAdvert, clusterId)
-      )
-   ),
-   !HasIp(dstNode, originatorIp),
-   LocalAs(dstNode, srcIp, receiverAs),
-   !AdvertisementPath(prevAdvert, _, receiverAs),
-   BgpAdvertisement_dstIp[prevAdvert] = dstIp,
-   BgpAdvertisement_dstNode[prevAdvert] = dstNode,
-   BgpAdvertisement_localPref[prevAdvert] = localPref,
-   BgpAdvertisement_med[prevAdvert] = med,
-   BgpAdvertisement_network[prevAdvert] = dstIpBlock,
-   BgpAdvertisement_nextHopIp[prevAdvert] = nextHopIp,
-   BgpAdvertisement_originatorIp[prevAdvert] = originatorIp,
-   BgpAdvertisement_originType[prevAdvert] = originType,
-   BgpAdvertisement_srcIp[prevAdvert] = srcIp,
-   BgpAdvertisement_srcNode[prevAdvert] = srcNode,
-   BgpAdvertisement_srcProtocol[prevAdvert] = srcProtocol,
-   BgpAdvertisement_type[prevAdvert] = priorType,
-   AdvertisementPathSize[prevAdvert] = pathSize,
-   BgpNeighborIp(dstNode, srcIp),
-   (
-      (
-         BgpImportPolicy(dstNode, srcIp, map),
-         PolicyMapPermitAdvert(map, clause, prevAdvert),
-         PolicyMapClauseTransformAdvert(map, clause, prevAdvert, tNextHopIp,
-            tLocalPref, tOriginType, tMed, tSrcProtocol)
-      );
-      (
-         !BgpImportPolicy(dstNode, srcIp, _),
-         tNextHopIp = nextHopIp,
-         tLocalPref = localPref,
-         tOriginType = originType,
-         tMed = med,
-         tSrcProtocol = srcProtocol
-      )
-   ).
-// (i)bgp transformed outgoing
-BgpAdvertisement(advert),
-BgpAdvertisement_constructor[type, dstIpBlock, tNextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, tOriginType] = advert,
-BgpAdvertisement_dstIp[advert] = dstIp,
-BgpAdvertisement_dstNode[advert] = dstNode,
-BgpAdvertisement_localPref[advert] = tLocalPref,
-BgpAdvertisement_med[advert] = tMed,
-BgpAdvertisement_network[advert] = dstIpBlock,
-BgpAdvertisement_nextHopIp[advert] = tNextHopIp,
-BgpAdvertisement_originatorIp[advert] = originatorIp,
-BgpAdvertisement_originType[advert] = tOriginType,
-BgpAdvertisement_srcIp[advert] = srcIp,
-BgpAdvertisement_srcNode[advert] = srcNode,
-BgpAdvertisement_srcProtocol[advert] = tSrcProtocol,
-BgpAdvertisement_type[advert] = type,
-ParentAdvertisement(prevAdvert, advert),
-AdvertisementPathSize[advert] = pathSize
-<-
-   (
-      (
-         type = AdvertisementType_BGP_TO[],
-         priorType = AdvertisementType_BGP[],
-         pathSize = prevPathSize + 1
-      ) ;
-      (
-         type = AdvertisementType_IBGP_TO[],
-         priorType = AdvertisementType_IBGP[],
-         pathSize = prevPathSize
-      )
-   ),
-   BgpAdvertisement_dstIp[prevAdvert] = dstIp,
-   BgpAdvertisement_dstNode[prevAdvert] = dstNode,
-   BgpAdvertisement_localPref[prevAdvert] = localPref,
-   BgpAdvertisement_med[prevAdvert] = med,
-   BgpAdvertisement_network[prevAdvert] = dstIpBlock,
-   BgpAdvertisement_nextHopIp[prevAdvert] = nextHopIp,
-   BgpAdvertisement_originatorIp[prevAdvert] = originatorIp,
-   BgpAdvertisement_originType[prevAdvert] = originType,
-   BgpAdvertisement_srcIp[prevAdvert] = srcIp,
-   BgpAdvertisement_srcNode[prevAdvert] = srcNode,
-   BgpAdvertisement_srcProtocol[prevAdvert] = srcProtocol,
-   BgpAdvertisement_type[prevAdvert] = priorType,
-   AdvertisementPathSize[prevAdvert] = prevPathSize,
-   BgpNeighborIp(srcNode, dstIp),
-   (
-      (
-         BgpExportPolicy(srcNode, dstIp, map),
-         PolicyMapPermitAdvert(map, clause, prevAdvert),
-         (
-            (
-               !SetPolicyMapClauseMatchPolicy(map, clause, _),
-               transformingClause = clause,
-               transformingMap = map
-            ) ;
-            (
-               SetPolicyMapClauseMatchPolicy(map, clause, transformingMap),
-               PolicyMapPermitAdvert(transformingMap, transformingClause, prevAdvert)
-            )
-         ),
-         PolicyMapClauseTransformAdvert(transformingMap, transformingClause, prevAdvert, tNextHopIp,
-            tLocalPref, tOriginType, tMed, tSrcProtocol)
-      );
-      (
-         !BgpExportPolicy(srcNode, dstIp, _),
-         tNextHopIp = nextHopIp,
-         tLocalPref = localPref,
-         tOriginType = originType,
-         tMed = med,
-         tSrcProtocol = srcProtocol
-      )
-   ).
-// ibgp advertisement from bgp
-BgpAdvertisement(advert),
-BgpAdvertisement_constructor[type, dstIpBlock, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType] = advert,
-BgpAdvertisement_dstIp[advert] = dstIp,
-BgpAdvertisement_dstNode[advert] = dstNode,
-BgpAdvertisement_localPref[advert] = localPref,
-BgpAdvertisement_med[advert] = med,
-BgpAdvertisement_network[advert] = dstIpBlock,
-BgpAdvertisement_nextHopIp[advert] = nextHopIp,
-BgpAdvertisement_originatorIp[advert] = originatorIp,
-BgpAdvertisement_originType[advert] = originType,
-BgpAdvertisement_srcIp[advert] = srcIp,
-BgpAdvertisement_srcNode[advert] = srcNode,
-BgpAdvertisement_srcProtocol[advert] = srcProtocol,
-BgpAdvertisement_type[advert] = type,
-ParentAdvertisement(prevAdvert, advert),
-AdvertisementPathSize[advert] = pathSize
-<-
-   type = AdvertisementType_IBGP[],
-   priorType = AdvertisementType_BGP_TI[],
-   originatorIp = Ip_NONE[],
-   BgpAdvertisement_dstNode[prevAdvert] = srcNode,
-   BgpAdvertisement_localPref[prevAdvert] = localPref,
-   BgpAdvertisement_med[prevAdvert] = med,
-   BgpAdvertisement_network[prevAdvert] = dstIpBlock,
-   BgpAdvertisement_nextHopIp[prevAdvert] = nextHopIp,
-   BgpAdvertisement_originType[prevAdvert] = originType,
-   BgpAdvertisement_srcProtocol[prevAdvert] = srcProtocol,
-   BgpAdvertisement_type[prevAdvert] = priorType,
-   AdvertisementPathSize[prevAdvert] = pathSize,
-   BestBgpAdvertisement(prevAdvert),
-   InstalledBgpAdvertisement(prevAdvert),
-   IbgpNeighbors(srcNode, srcIp, dstNode, dstIp).
-// ibgp route reflection
-BgpAdvertisement(advert),
-BgpAdvertisement_constructor[type, dstIpBlock, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType] = advert,
-BgpAdvertisement_dstIp[advert] = dstIp,
-BgpAdvertisement_dstNode[advert] = dstNode,
-BgpAdvertisement_localPref[advert] = localPref,
-BgpAdvertisement_med[advert] = med,
-BgpAdvertisement_network[advert] = dstIpBlock,
-BgpAdvertisement_nextHopIp[advert] = nextHopIp,
-BgpAdvertisement_originatorIp[advert] = originatorIp,
-BgpAdvertisement_originType[advert] = originType,
-BgpAdvertisement_srcIp[advert] = srcIp,
-BgpAdvertisement_srcNode[advert] = srcNode,
-BgpAdvertisement_srcProtocol[advert] = srcProtocol,
-BgpAdvertisement_type[advert] = type,
-ParentAdvertisement(prevAdvert, advert),
-AdvertisementPathSize[advert] = pathSize
-<-
-   type = AdvertisementType_IBGP[],
-   priorType = AdvertisementType_IBGP_TI[],
-   BgpAdvertisement_dstNode[prevAdvert] = srcNode,
-   BgpAdvertisement_localPref[prevAdvert] = localPref,
-   BgpAdvertisement_med[prevAdvert] = med,
-   BgpAdvertisement_network[prevAdvert] = dstIpBlock,
-   BgpAdvertisement_nextHopIp[prevAdvert] = nextHopIp,
-   BgpAdvertisement_originatorIp[prevAdvert] = prevOriginatorIp,
-   BgpAdvertisement_originType[prevAdvert] = originType,
-   BgpAdvertisement_srcIp[prevAdvert] = senderIp,
-   BgpAdvertisement_srcProtocol[prevAdvert] = srcProtocol,
-   BgpAdvertisement_type[prevAdvert] = priorType,
-   AdvertisementPathSize[prevAdvert] = pathSize,
-   InstalledBgpAdvertisement(prevAdvert),
-   BestBgpAdvertisement(prevAdvert),
-   (
-      (
-         Ip_NONE[] != prevOriginatorIp,
-         originatorIp = prevOriginatorIp
-      ) ;
-      (
-         Ip_NONE[] = prevOriginatorIp,
-         originatorIp = senderIp
-      )
-   ),
-   (
-      RouteReflectorClient(srcNode, senderIp, _) ;
-      (
-         !RouteReflectorClient(srcNode, senderIp, _),
-         RouteReflectorClient(srcNode, dstIp, _)
-      )
-   ),
-   IbgpNeighbors(srcNode, srcIp, dstNode, dstIp).
-
 BgpDefaultLocalPref(node, neighborIp, localPref) <-
    SetBgpDefaultLocalPref(node, neighborNetwork, localPref),
    NetworkOf[neighborIp, _] = neighborNetwork.
 
-BgpExportPolicy(node, neighborIp, map) <-
-   SetBgpExportPolicy(node, neighborNetwork, map),
-   NetworkOf[neighborIp, _] = neighborNetwork.
-
-BgpGeneratedRoute(route),
-   Route(route),
-   GeneratedRoute_constructor[node, network, type] = route,
-   GeneratedRoute(route),
-   GeneratedRoute_type[route] = type,
-   Route_network[route] = network,
-   Route_node[route] = node,
-   Route_protocol[route] = protocol
-<-
-   SetBgpGeneratedRoute(node, network),
-   type = GeneratedRouteType_BGP[],
-   protocol = RoutingProtocol_AGGREGATE[].
-
-BgpImportPolicy(node, neighborIp, map) <-
-   SetBgpImportPolicy(node, neighborNetwork, map),
-   NetworkOf[neighborIp, _] = neighborNetwork.
-
 BgpNeighborDefaultMetric(node, neighborIp, metric) <-
    SetBgpNeighborDefaultMetric(node, neighborNetwork, metric),
-   NetworkOf[neighborIp, _] = neighborNetwork.
-
-BgpNeighborGeneratedRoute(route),
-   Route(route),
-   BgpNeighborGeneratedRoute_constructor[node, network, neighborIp] = route,
-   BgpNeighborGeneratedRoute_neighborIp[route] = neighborIp,
-   GeneratedRoute(route),
-   GeneratedRoute_type[route] = type,
-   Route_network[route] = network,
-   Route_node[route] = node,
-   Route_protocol[route] = protocol
-<-
-   BgpNeighborGeneratedRouteIp(node, neighborIp, network),
-   type = GeneratedRouteType_BGP_NEIGHBOR[],
-   protocol = RoutingProtocol_AGGREGATE[].
-
-BgpNeighborGeneratedRouteIp(node, neighborIp, network) <-
-   SetBgpNeighborGeneratedRoute(node, neighborNetwork, network),
-   NetworkOf[neighborIp, _] = neighborNetwork.
-
-BgpNeighborGeneratedRoutePolicy(node, neighborIp, network, map) <-
-   SetBgpNeighborGeneratedRoutePolicy(node, neighborNetwork, network, map),
    NetworkOf[neighborIp, _] = neighborNetwork.
 
 BgpNeighborIp(node, neighborIp) <-
@@ -587,35 +57,6 @@ BgpNeighbors(node1, ip1, node2, ip2) <-
 BgpNeighborSendCommunity(node, neighborIp) <-
    SetBgpNeighborSendCommunity(node, neighborNetwork),
    NetworkOf[neighborIp, _] = neighborNetwork.
-
-BgpOriginationPolicy(node, neighborIp, map) <-
-   SetBgpOriginationPolicy(node, neighborNetwork, map),
-   NetworkOf[neighborIp, _] = neighborNetwork.
-
-GeneratedRoutePolicy(route, policy) <-
-   BgpGeneratedRoute(route),
-   Route_network[route] = network,
-   Route_node[route] = node,
-   SetBgpGeneratedRoutePolicy(node, network, policy).
-GeneratedRoutePolicy(route, policy) <-
-   BgpNeighborGeneratedRoute(route),
-   BgpNeighborGeneratedRoute_neighborIp[route] = neighborIp,
-   Route_network[route] = network,
-   Route_node[route] = node,
-   BgpNeighborGeneratedRoutePolicy(node, neighborIp, network, policy).
-
-IbgpNeighborTo(node, neighbor, neighborIp) <-
-   NetworkOf[neighborIp, prefix_length] = neighborNetwork,
-   InstalledRoute(route),
-   Route_network[route] = neighborNetwork,
-   Route_node[route] = node,
-   IpReadyInt(neighbor, _, neighborIp, prefix_length),
-   RemoteAs(node, neighborIp, as),
-   LocalAs(node, neighborIp, as).
-
-IbgpNeighbors(node1, ip1, node2, ip2) <-
-   IbgpNeighborTo(node1, node2, ip2),
-   IbgpNeighborTo(node2, node1, ip1).
 
 InstalledBgpAdvertisement(advert) <-
    InstalledBgpAdvertisementRoute[advert] = _.
@@ -667,36 +108,6 @@ need_PolicyMapMatchAdvert(map, advert)
    BgpAdvertisement_dstIp[advert] = dstIp,
    BgpAdvertisement_type[advert] = type,
    BgpExportPolicy(srcNode, dstIp, map).
-need_PolicyMapMatchAdvert(map, advert)
-<-
-   (
-      type = AdvertisementType_BGP_TO[] ;
-      type = AdvertisementType_IBGP_TO[]
-   ),
-   BgpAdvertisement_dstNode[advert] = dstNode,
-   BgpAdvertisement_srcIp[advert] = srcIp,
-   BgpAdvertisement_type[advert] = type,
-   BgpImportPolicy(dstNode, srcIp, map).
-
-need_PolicyMapMatchRoute(map, route) <-
-   (
-      InstalledRoute(route) ;
-      BgpGeneratedRoute(route) ;
-      (
-         BgpNeighborGeneratedRoute(route),
-         BgpNeighborGeneratedRoute_neighborIp[route] = neighborIp
-      )
-   ),
-   Route_node[route] = node,
-   BgpOriginationPolicy(node, neighborIp, map),
-   BgpNeighbors(node, _, _, neighborIp).
-need_PolicyMapMatchRoute(map, route) <-
-   InstalledRoute(route),
-   Route_node[route] = node,
-   (
-      SetBgpGeneratedRoutePolicy(node, _, map) ;
-      BgpNeighborGeneratedRoutePolicy(node, _, _, map)
-   ).
 
 OriginalBgpAdvertisement(advert) <-
    OriginalBgpAdvertisementRoute(advert, _).
@@ -712,43 +123,13 @@ RemoteAs(node, neighborIp, remoteAs) <-
    SetRemoteAs(node, neighborNetwork, remoteAs),
    NetworkOf[neighborIp, _] = neighborNetwork.
 
-RouteReflectorClient(node, neighborIp, clusterId) <-
-   SetRouteReflectorClient(node, neighborNetwork, clusterId),
-   NetworkOf[neighborIp, _] = neighborNetwork.
-
 SetBgpDefaultLocalPref(node, neighborNetwork, localPref) <-
    SetBgpDefaultLocalPref_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, localPref),
-   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
-
-SetBgpExportPolicy(node, neighborNetwork, map) <-
-   SetBgpExportPolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, map),
-   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
-
-SetBgpGeneratedRoute(node, network) <-
-   SetBgpGeneratedRoute_flat(node, network_start, network_end, prefix_length),
-   Network_constructor[network_start, network_end, prefix_length] = network.
-
-SetBgpGeneratedRoutePolicy(node, network, map) <-
-   SetBgpGeneratedRoutePolicy_flat(node, network_start, network_end, prefix_length, map),
-   Network_constructor[network_start, network_end, prefix_length] = network.
-
-SetBgpImportPolicy(node, neighborNetwork, map) <-
-   SetBgpImportPolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, map),
    Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
 
 SetBgpNeighborDefaultMetric(node, neighborNetwork, metric) <-
    SetBgpNeighborDefaultMetric_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, metric),
    Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
-
-SetBgpNeighborGeneratedRoute(node, neighborNetwork, network) <-
-   SetBgpNeighborGeneratedRoute_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, network_start, network_end, prefix_length),
-   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork,
-   Network_constructor[network_start, network_end, prefix_length] = network.
-
-SetBgpNeighborGeneratedRoutePolicy(node, neighborNetwork, network, map) <-
-   SetBgpNeighborGeneratedRoutePolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, network_start, network_end, prefix_length, map),
-   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork,
-   Network_constructor[network_start, network_end, prefix_length] = network.
 
 SetBgpNeighborNetwork(node, neighborNetwork) <-
    SetBgpNeighborNetwork_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length),
@@ -756,10 +137,6 @@ SetBgpNeighborNetwork(node, neighborNetwork) <-
 
 SetBgpNeighborSendCommunity(node, neighborNetwork) <-
    SetBgpNeighborSendCommunity_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length),
-   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
-
-SetBgpOriginationPolicy(node, neighborNetwork, map) <-
-   SetBgpOriginationPolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, map),
    Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
 
 SetLocalAs(node, neighborNetwork, localAs) <-
@@ -770,10 +147,6 @@ SetRemoteAs(node, neighborNetwork, remoteAs) <-
    SetRemoteAs_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, remoteAs),
    Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
 
-SetRouteReflectorClient(node, neighborNetwork, clusterId) <-
-   SetRouteReflectorClient_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, clusterId),
-   Network_constructor[neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length] = neighborNetwork.
-
 lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
 
 lang:compiler:disableError:AGGREGATE_RECURSION[] = true.
@@ -782,11 +155,7 @@ lang:compiler:disableWarning:AGGREGATE_RECURSION[] = true.
 lang:compiler:disableError:NEGATION_RECURSION[] = true.
 lang:compiler:disableWarning:NEGATION_RECURSION[] = true.
 
-lang:compiler:error:ENTITY_CREATION_RECURSION[]=false.
-lang:compiler:warning:ENTITY_CREATION_RECURSION[]=false.
-
 // END CODE
    })
 
 } <-- .
-

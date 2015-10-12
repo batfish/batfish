@@ -1,11 +1,19 @@
 package org.batfish.logicblox;
 
 import java.math.BigInteger;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.batfish.collections.CommunitySet;
+import org.batfish.representation.AsPath;
+import org.batfish.representation.BgpAdvertisement;
+import org.batfish.representation.Flow;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
-import org.batfish.representation.NamedPort;
+import org.batfish.representation.OriginType;
+import org.batfish.representation.PrecomputedRoute;
+import org.batfish.representation.Prefix;
+import org.batfish.representation.RoutingProtocol;
 
 import com.logicblox.connect.Workspace.Relation;
 import com.logicblox.connect.Workspace.Relation.EntityColumn;
@@ -15,308 +23,317 @@ import com.logicblox.connect.Workspace.Relation.UInt64Column;
 
 public class EntityTable {
 
-   private static final String DYNAMIC_NEXT_HOP_INTERFACE_NAME = "dynamic";
+   private final Map<BigInteger, AsPath> _asPaths;
 
-   private static final long IP_NONE_L = -1l;
+   private final Map<BigInteger, BgpAdvertisement> _bgpAdvertisements;
 
-   private static final long NO_TAG = -1l;
+   private final Map<BigInteger, CommunitySet> _communities;
 
-   private long[] _advertDstIps;
+   private final Map<BigInteger, Flow> _flows;
 
-   private String[] _advertDstNodes;
+   private final Map<BigInteger, Prefix> _networks;
 
-   private BigInteger[] _advertIndices;
-
-   private long[] _advertLocalPrefs;
-
-   private long[] _advertMeds;
-
-   private BigInteger[] _advertNetworks;
-
-   private long[] _advertNextHopIps;
-
-   private long[] _advertOriginatorIps;
-
-   private String[] _advertOriginTypes;
-
-   private long[] _advertSrcIps;
-
-   private String[] _advertSrcNodes;
-
-   private String[] _advertSrcProtocols;
-
-   private String[] _advertTypes;
-
-   private long[] _flowDstIps;
-
-   private long[] _flowDstPorts;
-
-   private BigInteger[] _flowIndices;
-
-   private String[] _flowNodes;
-
-   private long[] _flowProtocols;
-
-   private long[] _flowSrcIps;
-
-   private long[] _flowSrcPorts;
-
-   private long[] _networkAddresses;
-
-   private BigInteger[] _networkIndices;
-
-   private long[] _networkPrefixLengths;
-
-   private long[] _routeAdmins;
-
-   private long[] _routeCosts;
-
-   private BigInteger[] _routeIndices;
-
-   private BigInteger[] _routeNetworks;
-
-   private String[] _routeNextHopInts;
-
-   private long[] _routeNextHopIps;
-
-   private String[] _routeNextHops;
-
-   private String[] _routeNodes;
-
-   private String[] _routeProtocols;
-
-   private long[] _routeTags;
+   private final Map<BigInteger, PrecomputedRoute> _routes;
 
    public EntityTable(LogicBloxFrontend lbf) {
+      _asPaths = new HashMap<BigInteger, AsPath>();
+      _bgpAdvertisements = new HashMap<BigInteger, BgpAdvertisement>();
+      _communities = new HashMap<BigInteger, CommunitySet>();
+      _flows = new HashMap<BigInteger, Flow>();
+      _networks = new HashMap<BigInteger, Prefix>();
+      _routes = new HashMap<BigInteger, PrecomputedRoute>();
+      populateNetworks(lbf);
+      populateFlows(lbf);
+      populateRoutes(lbf);
+      populateAsPaths(lbf);
+      populateCommunities(lbf);
+      populateBgpAdvertisements(lbf);
+   }
 
-      EntityColumn ec;
+   public BgpAdvertisement getBgpAdvertisement(BigInteger index) {
+      return _bgpAdvertisements.get(index);
+   }
 
-      // Network
-      Relation networkIndex = lbf.queryPredicate("libbatfish:Ip:Network_index");
-      ec = (EntityColumn) networkIndex.getColumns().get(0);
-      _networkIndices = ((UInt64Column) ec.getIndexColumn().unwrap()).getRows();
-      _networkAddresses = ((Int64Column) networkIndex.getColumns().get(1))
+   public Flow getFlow(BigInteger index) {
+      return _flows.get(index);
+   }
+
+   private BigInteger[] getIndexColumn(Relation relation, int column) {
+      EntityColumn ec = (EntityColumn) relation.getColumns().get(column);
+      BigInteger[] indexArray = ((UInt64Column) ec.getIndexColumn().unwrap())
             .getRows();
-      _networkPrefixLengths = ((Int64Column) networkIndex.getColumns().get(3))
+      return indexArray;
+   }
+
+   private long[] getIntColumn(Relation relation, int column) {
+      long[] longArray = ((Int64Column) relation.getColumns().get(column))
             .getRows();
+      return longArray;
+   }
 
-      // Flow
-      Relation currentFlowProperty;
-      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_dstIp");
-      _flowDstIps = ((Int64Column) ((EntityColumn) currentFlowProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+   public Prefix getNetwork(BigInteger index) {
+      return _networks.get(index);
+   }
 
-      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_dstPort");
-      _flowDstPorts = ((Int64Column) currentFlowProperty.getColumns().get(1))
+   public PrecomputedRoute getPrecomputedRoute(BigInteger index) {
+      PrecomputedRoute route = _routes.get(index);
+      if (route.getNextHopIp().equals(PrecomputedRoute.UNSET_ROUTE_NEXT_HOP_IP)) {
+         return null;
+      }
+      if (!route.getNextHopInterface().equals(
+            PrecomputedRoute.UNSET_NEXT_HOP_INTERFACE)) {
+         return null;
+      }
+      return route;
+   }
+
+   private long[] getRefIntColumn(Relation relation, int column) {
+      EntityColumn ec = (EntityColumn) relation.getColumns().get(column);
+      long[] longArray = ((Int64Column) ec.getRefModeColumn().unwrap())
             .getRows();
+      return longArray;
+   }
 
-      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_node");
-      _flowNodes = ((StringColumn) ((EntityColumn) currentFlowProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
-
-      currentFlowProperty = lbf
-            .queryPredicate("libbatfish:Flow:Flow_ipProtocol");
-      _flowProtocols = ((Int64Column) ((EntityColumn) currentFlowProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
-
-      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_srcIp");
-      _flowSrcIps = ((Int64Column) ((EntityColumn) currentFlowProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
-
-      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_srcPort");
-      _flowSrcPorts = ((Int64Column) currentFlowProperty.getColumns().get(1))
+   private String[] getRefStringColumn(Relation relation, int column) {
+      EntityColumn ec = (EntityColumn) relation.getColumns().get(column);
+      String[] stringArray = ((StringColumn) ec.getRefModeColumn().unwrap())
             .getRows();
+      return stringArray;
+   }
 
-      // get indices
-      ec = (EntityColumn) currentFlowProperty.getColumns().get(0);
-      _flowIndices = ((UInt64Column) ec.getIndexColumn().unwrap()).getRows();
+   public PrecomputedRoute getRoute(BigInteger index) {
+      return _routes.get(index);
+   }
 
-      // Route
-      Relation currentRouteProperty;
-      currentRouteProperty = lbf
-            .queryPredicate("libbatfish:Route:RouteDetails_admin");
-      _routeAdmins = ((Int64Column) currentRouteProperty.getColumns().get(1))
-            .getRows();
-      currentRouteProperty = lbf
-            .queryPredicate("libbatfish:Route:RouteDetails_cost");
-      _routeCosts = ((Int64Column) currentRouteProperty.getColumns().get(1))
-            .getRows();
-      currentRouteProperty = lbf
-            .queryPredicate("libbatfish:Route:Route_network");
-      _routeNetworks = ((UInt64Column) ((EntityColumn) currentRouteProperty
-            .getColumns().get(1)).getIndexColumn().unwrap()).getRows();
-      currentRouteProperty = lbf
-            .queryPredicate("libbatfish:Route:RouteDetails_nextHop");
-      _routeNextHops = ((StringColumn) ((EntityColumn) currentRouteProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
-      currentRouteProperty = lbf
-            .queryPredicate("libbatfish:Route:RouteDetails_nextHopInt");
-      _routeNextHopInts = ((StringColumn) ((EntityColumn) currentRouteProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
-      currentRouteProperty = lbf
-            .queryPredicate("libbatfish:Route:RouteDetails_nextHopIp");
-      _routeNextHopIps = ((Int64Column) ((EntityColumn) currentRouteProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
-      currentRouteProperty = lbf.queryPredicate("libbatfish:Route:Route_node");
-      _routeNodes = ((StringColumn) ((EntityColumn) currentRouteProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
-      currentRouteProperty = lbf
-            .queryPredicate("libbatfish:Route:Route_protocol");
-      _routeProtocols = ((StringColumn) ((EntityColumn) currentRouteProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
-      currentRouteProperty = lbf
-            .queryPredicate("libbatfish:Route:RouteDetails_tag");
-      _routeTags = ((Int64Column) currentRouteProperty.getColumns().get(1))
-            .getRows();
+   private void populateAsPaths(LogicBloxFrontend lbf) {
+      Relation advertisementPathSizeRelation = lbf
+            .queryPredicate("libbatfish:AsPath:AdvertisementPathSize");
+      BigInteger[] sizeAdvertIndices = getIndexColumn(
+            advertisementPathSizeRelation, 0);
+      long[] sizes = getIntColumn(advertisementPathSizeRelation, 1);
+      int numAsPaths = sizeAdvertIndices.length;
+      for (int i = 0; i < numAsPaths; i++) {
+         BigInteger advertIndex = sizeAdvertIndices[i];
+         int size = (int) sizes[i];
+         AsPath asPath = new AsPath(size);
+         _asPaths.put(advertIndex, asPath);
+      }
+      Relation advertisementPathRelation = lbf
+            .queryPredicate("libbatfish:AsPath:AdvertisementPath");
+      BigInteger[] pathAdvertIndices = getIndexColumn(
+            advertisementPathRelation, 0);
+      long[] pathListIndices = getIntColumn(advertisementPathRelation, 1);
+      long[] asPathAses = getRefIntColumn(advertisementPathRelation, 2);
+      int numPathListEntries = asPathAses.length;
+      for (int i = 0; i < numPathListEntries; i++) {
+         BigInteger advertIndex = pathAdvertIndices[i];
+         AsPath asPath = _asPaths.get(advertIndex);
+         int as = (int) asPathAses[i];
+         int pathListIndex = (int) pathListIndices[i];
+         asPath.get(pathListIndex).add(as);
+      }
+   }
 
-      // get indices
-      currentRouteProperty = lbf.queryPredicate("libbatfish:Route:Route");
-      ec = (EntityColumn) currentRouteProperty.getColumns().get(0);
-      _routeIndices = ((UInt64Column) ec.getIndexColumn().unwrap()).getRows();
-
-      // BgpAdvertisement
+   private void populateBgpAdvertisements(LogicBloxFrontend lbf) {
       Relation currentAdvertProperty;
       currentAdvertProperty = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_type");
-      _advertTypes = ((StringColumn) ((EntityColumn) currentAdvertProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      String[] advertTypes = getRefStringColumn(currentAdvertProperty, 1);
       currentAdvertProperty = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_network");
-      _advertNetworks = ((UInt64Column) ((EntityColumn) currentAdvertProperty
-            .getColumns().get(1)).getIndexColumn().unwrap()).getRows();
+      BigInteger[] advertNetworks = getIndexColumn(currentAdvertProperty, 1);
       currentAdvertProperty = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_nextHopIp");
-      _advertNextHopIps = ((Int64Column) ((EntityColumn) currentAdvertProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      long[] advertNextHopIps = getRefIntColumn(currentAdvertProperty, 1);
       currentAdvertProperty = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_srcIp");
-      _advertSrcIps = ((Int64Column) ((EntityColumn) currentAdvertProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      long[] advertSrcIps = getRefIntColumn(currentAdvertProperty, 1);
       currentAdvertProperty = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_dstIp");
-      _advertDstIps = ((Int64Column) ((EntityColumn) currentAdvertProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      long[] advertDstIps = getRefIntColumn(currentAdvertProperty, 1);
       currentAdvertProperty = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_srcProtocol");
-      _advertSrcProtocols = ((StringColumn) ((EntityColumn) currentAdvertProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      String[] advertSrcProtocols = getRefStringColumn(currentAdvertProperty, 1);
       currentAdvertProperty = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_srcNode");
-      _advertSrcNodes = ((StringColumn) ((EntityColumn) currentAdvertProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      String[] advertSrcNodes = getRefStringColumn(currentAdvertProperty, 1);
       currentAdvertProperty = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_dstNode");
-      _advertDstNodes = ((StringColumn) ((EntityColumn) currentAdvertProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      String[] advertDstNodes = getRefStringColumn(currentAdvertProperty, 1);
       currentAdvertProperty = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_localPref");
-      _advertLocalPrefs = ((Int64Column) currentAdvertProperty.getColumns()
-            .get(1)).getRows();
+      long[] advertLocalPrefs = getIntColumn(currentAdvertProperty, 1);
       currentAdvertProperty = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_med");
-      _advertMeds = ((Int64Column) currentAdvertProperty.getColumns().get(1))
-            .getRows();
+      long[] advertMeds = getIntColumn(currentAdvertProperty, 1);
       currentAdvertProperty = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_originatorIp");
-      _advertOriginatorIps = ((Int64Column) ((EntityColumn) currentAdvertProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      long[] advertOriginatorIps = getRefIntColumn(currentAdvertProperty, 1);
       currentAdvertProperty = lbf
             .queryPredicate("libbatfish:BgpAdvertisement:BgpAdvertisement_originType");
-      _advertOriginTypes = ((StringColumn) ((EntityColumn) currentAdvertProperty
-            .getColumns().get(1)).getRefModeColumn().unwrap()).getRows();
+      String[] advertOriginTypes = getRefStringColumn(currentAdvertProperty, 1);
+      BigInteger[] advertIndices = getIndexColumn(currentAdvertProperty, 0);
+      int numAdverts = advertIndices.length;
+      for (int i = 0; i < numAdverts; i++) {
+         String type = advertTypes[i];
+         Prefix network = _networks.get(advertNetworks[i]);
+         Ip nextHopIp = new Ip(advertNextHopIps[i]);
+         Ip srcIp = new Ip(advertSrcIps[i]);
+         Ip dstIp = new Ip(advertDstIps[i]);
+         RoutingProtocol srcProtocol = RoutingProtocol
+               .fromProtocolName(advertSrcProtocols[i]);
+         String srcNode = advertSrcNodes[i];
+         String dstNode = advertDstNodes[i];
+         int localPref = (int) advertLocalPrefs[i];
+         int med = (int) advertMeds[i];
+         Ip originatorIp = new Ip(advertOriginatorIps[i]);
+         OriginType originType = OriginType.fromString(advertOriginTypes[i]);
+         BigInteger advertIndex = advertIndices[i];
+         AsPath asPath = _asPaths.get(advertIndex);
+         CommunitySet communities = _communities.get(advertIndex);
+         if (communities == null) {
+            communities = new CommunitySet();
+         }
+         BgpAdvertisement advert = new BgpAdvertisement(type, network,
+               nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol,
+               originType, localPref, med, originatorIp, asPath, communities);
+         _bgpAdvertisements.put(advertIndex, advert);
+      }
+   }
+
+   private void populateCommunities(LogicBloxFrontend lbf) {
+      Relation advertisementCommunityRelation = lbf
+            .queryPredicate("libbatfish:CommunityList:AdvertisementCommunity");
+      BigInteger[] advertIndices = getIndexColumn(
+            advertisementCommunityRelation, 0);
+      long[] communities = getIntColumn(advertisementCommunityRelation, 1);
+      int numEntries = advertIndices.length;
+      for (int i = 0; i < numEntries; i++) {
+         BigInteger advertIndex = advertIndices[i];
+         CommunitySet communitySet = _communities.get(advertIndex);
+         if (communitySet == null) {
+            communitySet = new CommunitySet();
+            _communities.put(advertIndex, communitySet);
+         }
+         long community = communities[i];
+         communitySet.add(community);
+      }
+   }
+
+   private void populateFlows(LogicBloxFrontend lbf) {
+      Relation currentFlowProperty;
+      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_dstIp");
+      long[] flowDstIps = getRefIntColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_dstPort");
+      long[] flowDstPorts = getIntColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_node");
+      String[] flowNodes = getRefStringColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = lbf
+            .queryPredicate("libbatfish:Flow:Flow_ipProtocol");
+      long[] flowProtocols = getRefIntColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_srcIp");
+      long[] flowSrcIps = getRefIntColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_srcPort");
+      long[] flowSrcPorts = getIntColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = lbf.queryPredicate("libbatfish:Flow:Flow_tag");
+      String[] flowTags = getRefStringColumn(currentFlowProperty, 1);
 
       // get indices
-      ec = (EntityColumn) currentAdvertProperty.getColumns().get(0);
-      _advertIndices = ((UInt64Column) ec.getIndexColumn().unwrap()).getRows();
+      BigInteger[] flowIndices = getIndexColumn(currentFlowProperty, 0);
+
+      int numFlows = flowIndices.length;
+      for (int i = 0; i < numFlows; i++) {
+         BigInteger flowIndex = flowIndices[i];
+         Ip dstIp = new Ip(flowDstIps[i]);
+         int dstPort = (int) flowDstPorts[i];
+         String node = flowNodes[i];
+         IpProtocol protocol = IpProtocol.fromNumber((int) flowProtocols[i]);
+         Ip srcIp = new Ip(flowSrcIps[i]);
+         int srcPort = (int) flowSrcPorts[i];
+         String tag = flowTags[i];
+         Flow flow = new Flow(node, srcIp, dstIp, srcPort, dstPort, protocol,
+               tag);
+         _flows.put(flowIndex, flow);
+      }
    }
 
-   public String getBgpAdvertisement(BigInteger index) {
-      int listIndex = Arrays.binarySearch(_advertIndices, index);
-      String type = _advertTypes[listIndex];
-      String network = getNetwork(_advertNetworks[listIndex]);
-      String nextHopIp = new Ip(_advertNextHopIps[listIndex]).toString();
-      String srcIp = new Ip(_advertSrcIps[listIndex]).toString();
-      String dstIp = new Ip(_advertDstIps[listIndex]).toString();
-      String srcProtocol = _advertSrcProtocols[listIndex];
-      String srcNode = _advertSrcNodes[listIndex];
-      String dstNode = _advertDstNodes[listIndex];
-      String localPref = Long.toString(_advertLocalPrefs[listIndex]);
-      String med = Long.toString(_advertMeds[listIndex]);
-      String originatorIp = new Ip(_advertOriginatorIps[listIndex]).toString();
-      String originType = _advertOriginTypes[listIndex];
-      return "BgpAdvert<" + type + ", " + network + ", " + nextHopIp + ", "
-            + srcIp + ", " + dstIp + ", " + srcProtocol + ", " + srcNode + ", "
-            + dstNode + ", " + localPref + ", " + med + ", " + originatorIp
-            + ", " + originType + ">";
+   private void populateNetworks(LogicBloxFrontend lbf) {
+      Relation relation = lbf.queryPredicate("libbatfish:Ip:Network_index");
+      BigInteger[] networkIndices = getIndexColumn(relation, 0);
+      long[] networkAddresses = getIntColumn(relation, 1);
+      long[] networkPrefixLengths = getIntColumn(relation, 3);
+      int numNetworks = networkIndices.length;
+      for (int i = 0; i < numNetworks; i++) {
+         BigInteger networkIndex = networkIndices[i];
+         Ip networkAddress = new Ip(networkAddresses[i]);
+         int prefixLength = (int) networkPrefixLengths[i];
+         Prefix prefix = new Prefix(networkAddress, prefixLength);
+         _networks.put(networkIndex, prefix);
+      }
    }
 
-   public String getFlow(BigInteger index) {
-      int listIndex = Arrays.binarySearch(_flowIndices, index);
-      String node = _flowNodes[listIndex];
-      String srcIp = new Ip(_flowSrcIps[listIndex]).toString();
-      String dstIp = new Ip(_flowDstIps[listIndex]).toString();
-      IpProtocol protocol = IpProtocol
-            .fromNumber((int) (_flowProtocols[listIndex]));
-      boolean tcp = protocol == IpProtocol.TCP;
-      boolean udp = protocol == IpProtocol.UDP;
-      StringBuilder sb = new StringBuilder();
-      sb.append("Flow<" + node + ", " + protocol + ", " + srcIp + ", " + dstIp
-            + ", ");
-      if (tcp || udp) {
-         String srcPort = NamedPort
-               .nameFromNumber((int) _flowSrcPorts[listIndex]);
-         String dstPort = NamedPort
-               .nameFromNumber((int) _flowDstPorts[listIndex]);
-         sb.append(srcPort + ", " + dstPort);
-      }
-      else {
-         sb.append("N/A, N/A");
-      }
-      sb.append(">");
-      String output = sb.toString();
-      return output;
-   }
+   private void populateRoutes(LogicBloxFrontend lbf) {
+      Relation currentRouteProperty;
+      long[] routeAdmins;
+      long[] routeCosts;
+      String[] routeNextHops = null;
+      String[] routeNextHopInts = null;
+      long[] routeNextHopIps;
+      long[] routeTags;
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:RouteDetails_admin");
+      routeAdmins = getIntColumn(currentRouteProperty, 1);
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:RouteDetails_cost");
+      routeCosts = getIntColumn(currentRouteProperty, 1);
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:RouteDetails_nextHop");
+      routeNextHops = getRefStringColumn(currentRouteProperty, 1);
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:RouteDetails_nextHopInt");
+      routeNextHopInts = getRefStringColumn(currentRouteProperty, 1);
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:RouteDetails_nextHopIp");
+      routeNextHopIps = getRefIntColumn(currentRouteProperty, 1);
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:RouteDetails_tag");
+      routeTags = getIntColumn(currentRouteProperty, 1);
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:Route_network");
+      BigInteger[] routeNetworks = getIndexColumn(currentRouteProperty, 1);
+      currentRouteProperty = lbf.queryPredicate("libbatfish:Route:Route_node");
+      String[] routeNodes = getRefStringColumn(currentRouteProperty, 1);
+      currentRouteProperty = lbf
+            .queryPredicate("libbatfish:Route:Route_protocol");
+      String[] routeProtocols = getRefStringColumn(currentRouteProperty, 1);
 
-   public String getNetwork(BigInteger index) {
-      int listIndex = Arrays.binarySearch(_networkIndices, index);
-      long network = _networkAddresses[listIndex];
-      long subnetBits = _networkPrefixLengths[listIndex];
-      return new Ip(network).toString() + "/" + subnetBits;
-   }
-
-   public String getRoute(BigInteger index) {
-      int listIndex = Arrays.binarySearch(_routeIndices, index);
-      String node = _routeNodes[listIndex];
-      String network = getNetwork(_routeNetworks[listIndex]);
-      String nextHopInt = _routeNextHopInts[listIndex];
-      long nextHopIpAsLong = _routeNextHopIps[listIndex];
-      String nextHopIp = null;
-      if (nextHopIpAsLong != IP_NONE_L) {
-         Ip nextHopIpAsIp = new Ip(nextHopIpAsLong);
-         nextHopIp = nextHopIpAsIp.toString();
+      // get indices
+      currentRouteProperty = lbf.queryPredicate("libbatfish:Route:Route");
+      BigInteger[] routeIndices = getIndexColumn(currentRouteProperty, 0);
+      int numRoutes = routeIndices.length;
+      for (int i = 0; i < numRoutes; i++) {
+         BigInteger routeIndex = routeIndices[i];
+         int admin = (int) routeAdmins[i];
+         int cost = (int) routeCosts[i];
+         Prefix network = _networks.get(routeNetworks[i]);
+         String nextHopInterface = routeNextHopInts[i];
+         Ip nextHopIp = new Ip(routeNextHopIps[i]);
+         String node = routeNodes[i];
+         RoutingProtocol routingProtocol = RoutingProtocol
+               .fromProtocolName(routeProtocols[i]);
+         int tag = (int) routeTags[i];
+         String nextHop = routeNextHops[i];
+         PrecomputedRoute route = new PrecomputedRoute(node, network,
+               nextHopIp, nextHop, nextHopInterface, admin, cost,
+               routingProtocol, tag);
+         _routes.put(routeIndex, route);
       }
-      String nextHop = _routeNextHops[listIndex];
-      String admin = Long.toString(_routeAdmins[listIndex]);
-      String cost = Long.toString(_routeCosts[listIndex]);
-      long tagAsLong = _routeTags[listIndex];
-      String tag = Long.toString(tagAsLong);
-      String protocol = _routeProtocols[listIndex];
-
-      // extra formatting
-      if (!nextHopInt.equals(DYNAMIC_NEXT_HOP_INTERFACE_NAME)) {
-         // static interface
-         if (nextHopIpAsLong == IP_NONE_L) {
-            nextHop = "N/A";
-            nextHopIp = "N/A";
-         }
-      }
-      if (tagAsLong == NO_TAG) {
-         tag = "none";
-      }
-
-      return "Route<" + node + ", " + network + ", " + nextHopIp + ", "
-            + nextHop + ", " + nextHopInt + ", " + admin + ", " + cost + ", "
-            + tag + ", " + protocol + ">";
    }
 
 }

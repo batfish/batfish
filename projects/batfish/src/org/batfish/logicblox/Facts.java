@@ -13,7 +13,6 @@ public class Facts {
       Map<String, String> map = new TreeMap<String, String>();
       map.put("SetFakeInterface", "NODE|INTERFACE");
       map.put("SetFlowSinkInterface", "NODE|INTERFACE");
-      map.put("GuessTopology", "DUMMY");
       map.put("SamePhysicalSegment", "NODE1|INTERFACE1|NODE2|INTERFACE2");
       map.put("SetSwitchportAccess", "SWITCH|INTERFACE|VLAN");
       map.put("SetSwitchportTrunkAllows", "SWITCH|INTERFACE|VLANSTART|VLANEND");
@@ -141,14 +140,27 @@ public class Facts {
       map.put("SetIsisL1Node", "NODE");
       map.put("SetIsisL2Node", "NODE");
       map.put("SetIsisOutboundPolicyMap", "NODE|POLICY");
-      map.put("SetIsisPassiveInterface", "NODE|INTERFACE");
+      map.put("SetIsisL1ActiveInterface", "NODE|INTERFACE");
+      map.put("SetIsisL1PassiveInterface", "NODE|INTERFACE");
+      map.put("SetIsisL2ActiveInterface", "NODE|INTERFACE");
+      map.put("SetIsisL2PassiveInterface", "NODE|INTERFACE");
+      map.put(
+            "SetBgpAdvertisement_flat",
+            "PCINDEX|TYPE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|NEXTHOPIP|SRCNODE|SRCIP|DSTNODE|DSTIP|SRCPROTOCOL|ORIGINTYPE|LOCALPREF|MED|ORIGINATORIP");
+      map.put("SetBgpAdvertisementCommunity", "PCINDEX|COMMUNITY");
+      map.put("SetBgpAdvertisementPath", "PCINDEX|INDEX|AS");
+      map.put("SetBgpAdvertisementPathSize", "PCINDEX|SIZE");
+      map.put("SetIbgpNeighbors", "NODE1|IP1|NODE2|IP2");
+      map.put("SetPrecomputedRoute_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|NEXTHOPIP|ADMIN|COST|PROTOCOL|TAG");
       return Collections.unmodifiableMap(map);
    }
 
    private static Map<String, String> getTrafficFactColumnHeaders() {
       Map<String, String> map = new TreeMap<String, String>();
       map.put("DuplicateRoleFlows", "DUMMY");
-      map.put("SetFlowOriginate", "NODE|SRCIP|DSTIP|SRCPORT|DSTPORT|IPPROTOCOL");
+      map.put("SetFlowOriginate",
+            "NODE|SRCIP|DSTIP|SRCPORT|DSTPORT|IPPROTOCOL|TAG");
       return Collections.unmodifiableMap(map);
    }
 

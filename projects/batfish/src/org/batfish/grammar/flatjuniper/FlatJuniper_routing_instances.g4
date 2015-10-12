@@ -97,6 +97,11 @@ irt_rib_group_tail
    | irrgt_null
 ;
 
+rgt_export_rib
+:
+   EXPORT_RIB rib = variable
+;
+
 rgt_import_policy
 :
    IMPORT_POLICY name = variable
@@ -114,6 +119,11 @@ ribt_aggregate
       IP_PREFIX
       | IPV6_PREFIX
    ) ribt_aggregate_tail
+;
+
+ribt_apply_groups
+:
+   s_apply_groups
 ;
 
 ribt_aggregate_tail
@@ -137,9 +147,15 @@ rit_apply_groups
    s_apply_groups
 ;
 
+rit_apply_groups_except
+:
+   s_apply_groups_except
+;
+
 rit_common
 :
    rit_apply_groups
+   | rit_apply_groups_except
    | rit_description
    | rit_routing_options
 ;
@@ -151,7 +167,11 @@ rit_description
 
 rit_instance_type
 :
-   INSTANCE_TYPE VRF
+   INSTANCE_TYPE
+   (
+      VIRTUAL_SWITCH
+      | VRF
+   )
 ;
 
 rit_interface
@@ -189,6 +209,7 @@ rit_null
       | CLASS_OF_SERVICE
       | EVENT_OPTIONS
       | FORWARDING_OPTIONS
+      | PROVIDER_TUNNEL
       | SERVICES
       | SNMP
    ) s_null_filler
@@ -330,13 +351,18 @@ rot_rib_groups
 
 rot_rib_groups_tail
 :
-   rgt_import_policy
+   rgt_export_rib
+   | rgt_import_policy
    | rgt_import_rib
 ;
 
 rot_rib
 :
-   RIB name = VARIABLE rot_rib_tail
+   RIB
+   (
+      name = VARIABLE
+      | WILDCARD
+   ) rot_rib_tail
 ;
 
 rot_rib_tail
@@ -344,6 +370,7 @@ rot_rib_tail
 // intentional blank
 
    | ribt_aggregate
+   | ribt_apply_groups
    | ribt_generate
    | ribt_static
 ;
@@ -483,7 +510,7 @@ srt_common
 
 srt_community
 :
-   COMMUNITY COMMUNITY_LITERAL
+   COMMUNITY standard_community
 ;
 
 srt_discard

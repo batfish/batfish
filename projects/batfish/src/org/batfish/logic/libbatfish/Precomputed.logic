@@ -1,0 +1,81 @@
+block(`Precomputed) {
+   alias_all(`libbatfish:AsPath),
+   alias_all(`libbatfish:BgpAdvertisement),
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:Route),
+   export(`{
+// BEGIN CODE
+
+PrecomputedAdvertisement_index(advert, index) ->
+   BgpAdvertisement(advert),
+   int(index).
+
+PrecomputedRoute(route) ->
+   Route(route).
+
+SetBgpAdvertisement_flat(pcIndex, type, network_start, network_end, prefix_length, nextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, originType, localPref, med, originatorIp)
+->
+   int(pcIndex),
+   AdvertisementType(type),
+   int(network_start),
+   int(network_end),
+   int(prefix_length),
+   Ip(nextHopIp),
+   Node(srcNode),
+   Ip(srcIp),
+   Node(dstNode),
+   Ip(dstIp),
+   RoutingProtocol(srcProtocol),
+   OriginType(originType),
+   int(localPref),
+   int(med),
+   Ip(originatorIp).
+
+SetBgpAdvertisementClusterId(pcIndex, id) ->
+   int(pcIndex),
+   int(id).
+
+SetBgpAdvertisementCommunity(pcIndex, community) ->
+   int(pcIndex),
+   int(community).
+
+SetBgpAdvertisementPath(pcIndex, index, as) ->
+   int(pcIndex),
+   int(index),
+   AutonomousSystem(as).
+
+SetBgpAdvertisementPathSize(pcIndex, size) ->
+   int(pcIndex),
+   int(size).
+
+SetIbgpNeighbors(node1, ip1, node2, ip2) ->  
+   Node(node1),
+   Ip(ip1),
+   Node(node2),
+   Ip(ip2).
+
+SetPrecomputedRoute(node, network, nextHopIp, admin, cost, protocol, tag) ->
+   Node(node),
+   Network(network),
+   Ip(nextHopIp),
+   int(admin),
+   int(cost),
+   RoutingProtocol(protocol),
+   int(tag).
+
+SetPrecomputedRoute_flat(node, network_start, network_end, prefix_length, nextHopIp, admin, cost, protocol, tag) ->
+   Node(node),
+   int(network_start),
+   int(network_end),
+   int(prefix_length),
+   Ip(nextHopIp),
+   int(admin),
+   int(cost),
+   RoutingProtocol(protocol),
+   int(tag).
+
+// END CODE
+   })
+} <-- .

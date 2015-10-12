@@ -24,6 +24,16 @@ ADD_IP
    'add_ip'
 ;
 
+ADD_STRING
+:
+   'add_string'
+;
+
+ADMINISTRATIVE_COST
+:
+   'administrative_cost'
+;
+
 AND
 :
    'and'
@@ -32,6 +42,11 @@ AND
 ASSERT
 :
    'assert'
+;
+
+BGP
+:
+   'bgp'
 ;
 
 BGP_NEIGHBOR
@@ -44,6 +59,16 @@ CLEAR_IPS
    'clear_ips'
 ;
 
+CLEAR_STRINGS
+:
+   'clear_strings'
+;
+
+CONFIGURED
+:
+   'configured'
+;
+
 CONTAINS_IP
 :
    'contains_ip'
@@ -54,6 +79,16 @@ ELSE
    'else'
 ;
 
+ENABLED
+:
+   'enabled'
+;
+
+FAILURE
+:
+   'failure'
+;
+
 FALSE
 :
    'false'
@@ -62,6 +97,16 @@ FALSE
 FOREACH
 :
    'foreach'
+;
+
+GENERATED_ROUTE
+:
+   'generated_route'
+;
+
+HAS_GENERATED_ROUTE
+:
+   'has_generated_route'
 ;
 
 IF
@@ -104,14 +149,64 @@ HAS_IP
    'has_ip'
 ;
 
+HAS_NEXT_HOP_INTERFACE
+:
+   'has_next_hop_interface'
+;
+
+HAS_NEXT_HOP_IP
+:
+   'has_next_hop_ip'
+;
+
+L1_ACTIVE
+:
+   'l1_active'
+;
+
+L1_PASSIVE
+:
+   'l1_passive'
+;
+
+L2_ACTIVE
+:
+   'l2_active'
+;
+
+L2_PASSIVE
+:
+   'l2_passive'
+;
+
 LOCAL_AS
 :
    'local_as'
 ;
 
+LOCAL_IP
+:
+   'local_ip'
+;
+
 MULTIPATH
 :
    'multipath'
+;
+
+NAME
+:
+   'name'
+;
+
+NEXT_HOP_INTERFACE
+:
+   'next_hop_interface'
+;
+
+NEXT_HOP_IP
+:
+   'next_hop_ip'
 ;
 
 NODE
@@ -127,6 +222,11 @@ NOT
 NUM_IPS
 :
    'num_ips'
+;
+
+NUM_STRINGS
+:
+   'num_strings'
 ;
 
 ONFAILURE
@@ -149,6 +249,21 @@ PASSIVE
    'passive'
 ;
 
+PREFIX
+:
+   'prefix'
+;
+
+PREFIX_SET
+:
+   'prefix-set'
+;
+
+PRINTF
+:
+   'printf'
+;
+
 REMOTE_AS
 :
    'remote_as'
@@ -157,6 +272,16 @@ REMOTE_AS
 REMOTE_IP
 :
    'remote_ip'
+;
+
+STATIC
+:
+   'static'
+;
+
+STATIC_ROUTE
+:
+   'static_route'
 ;
 
 TESTRIG
@@ -225,6 +350,11 @@ DOUBLE_EQUALS
    '=='
 ;
 
+DOUBLE_FORWARD_SLASH
+:
+   '//' -> channel ( HIDDEN ) , pushMode ( M_Comment )
+;
+
 DOUBLE_PLUS
 :
    '++'
@@ -243,6 +373,16 @@ FORWARD_SLASH
 GT
 :
    '>'
+;
+
+INGRESS_PATH
+:
+   'ingress-path'
+;
+
+LOCAL_PATH
+:
+   'local-path'
 ;
 
 MINUS
@@ -280,9 +420,9 @@ PLUS
    '+'
 ;
 
-PREFIX_SET
+PRINTF_STRING
 :
-   'prefix-set'
+   '%s'
 ;
 
 SEMICOLON
@@ -337,6 +477,18 @@ fragment
 F_WhitespaceChar
 :
    [ \t\u000C]
+;
+
+mode M_Comment;
+
+M_Comment_COMMENT
+:
+   F_NonNewlineChar+ -> channel ( HIDDEN )
+;
+
+M_Comment_NEWLINE
+:
+   F_NewlineChar+ -> channel ( HIDDEN ) , popMode
 ;
 
 mode M_QuotedString;

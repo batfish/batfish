@@ -16,6 +16,11 @@ apsendt_prefix_policy
    PREFIX_POLICY policy = variable
 ;
 
+bfi6t_any
+:
+   ANY s_null_filler
+;
+
 bfi6t_null
 :
    LABELED_UNICAST s_null_filler
@@ -46,6 +51,11 @@ bfit_flow
 bfit_labeled_unicast
 :
    LABELED_UNICAST s_null_filler
+;
+
+bfit_any
+:
+   ANY s_null_filler
 ;
 
 bfit_multicast
@@ -111,7 +121,8 @@ bft_inet
 
 bft_inet_tail
 :
-   bfit_flow
+   bfit_any
+   | bfit_flow
    | bfit_labeled_unicast
    | bfit_multicast
    | bfit_unicast
@@ -124,15 +135,19 @@ bft_inet6
 
 bft_inet6_tail
 :
-   bfi6t_null
+   bfi6t_any
+   | bfi6t_null
    | bfi6t_unicast
 ;
 
 bft_null
 :
    (
-      INET_VPN
+      INET_MDT
+      | INET_MVPN
+      | INET_VPN
       | INET6_VPN
+      | L2VPN
    ) s_null_filler
 ;
 
@@ -326,6 +341,7 @@ bt_null
       AUTHENTICATION_KEY
       | BFD_LIVENESS_DETECTION
       | HOLD_TIME
+      | KEEP
       | LOG_UPDOWN
       | OUT_DELAY
       | PRECISION_TIMERS

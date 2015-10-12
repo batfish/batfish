@@ -1,47 +1,49 @@
 package org.batfish.representation;
 
-import java.io.Serializable;
+import org.batfish.collections.NodeInterfacePair;
+import org.batfish.collections.Pair;
 
-public class Edge implements Serializable {
+public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
 
    private static final long serialVersionUID = 1L;
 
-   private String _int1;
-   private String _int2;
-   private String _node1;
-   private String _node2;
+   public Edge(NodeInterfacePair p1, NodeInterfacePair p2) {
+      super(p1, p2);
+   }
 
    public Edge(String node1, String int1, String node2, String int2) {
-      _node1 = node1;
-      _node2 = node2;
-      _int1 = int1;
-      _int2 = int2;
+      super(new NodeInterfacePair(node1, int1), new NodeInterfacePair(node2,
+            int2));
    }
 
    public String getInt1() {
-      return _int1;
+      return _t1.getInterface();
    }
 
    public String getInt2() {
-      return _int2;
+      return _t2.getInterface();
+   }
+
+   public NodeInterfacePair getInterface1() {
+      return _t1;
+   }
+
+   public NodeInterfacePair getInterface2() {
+      return _t2;
    }
 
    public String getNode1() {
-      return _node1;
+      return _t1.getHostname();
    }
 
    public String getNode2() {
-      return _node2;
-   }
-
-   @Override
-   public int hashCode() {
-      return toString().hashCode();
+      return _t2.getHostname();
    }
 
    @Override
    public String toString() {
-      return _node1 + ", " + _int1 + ", " + _node2 + ", " + _int2;
+      return getNode1() + ", " + getInt1() + ", " + getNode2() + ", "
+            + getInt2();
    }
 
 }

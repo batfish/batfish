@@ -29,12 +29,20 @@ NonIsisExportableRoute(route) ->
 IsisGeneratedRoute(route) ->
    Route(route).
 
+IsisL1EnabledInterface(node, interface) ->
+   Node(node),
+   Interface(interface).
+
 IsisL1Network(node, network) ->
    Node(node),
    Network(network).
 
 IsisL1Route(route) ->
    Route(route).
+
+IsisL2EnabledInterface(node, interface) ->
+   Node(node),
+   Interface(interface).
 
 IsisL2Route(route) ->
    Route(route).
@@ -96,19 +104,31 @@ SetIsisInterfaceCost[node, interface] = cost ->
    Interface(interface),
    int(cost).
 
+SetIsisL1ActiveInterface(node, interface) ->
+   Node(node),
+   Interface(interface).
+
 SetIsisL1Node(node) ->
    Node(node).
+
+SetIsisL1PassiveInterface(node, interface) ->
+   Node(node),
+   Interface(interface).
+
+SetIsisL2ActiveInterface(node, interface) ->
+   Node(node),
+   Interface(interface).
 
 SetIsisL2Node(node) ->
    Node(node).
 
+SetIsisL2PassiveInterface(node, interface) ->
+   Node(node),
+   Interface(interface).
+
 SetIsisOutboundPolicyMap(node, map) ->
    Node(node),
    PolicyMap(map).
-
-SetIsisPassiveInterface(node, interface) ->
-   Node(node),
-   Interface(interface).
 
 SetIsisSystemId(node, systemId) ->
    Node(node),

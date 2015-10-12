@@ -12,7 +12,7 @@ Prerequisites:
    ant
    GNU parallel
    java 7 jdk
-   logicblox 4.1.X+ (not required for all tasks)
+   logicblox 4.3.X+ (not required for all tasks)
    python
    z3
 
@@ -32,7 +32,7 @@ cd build
 make -j<number-of-jobs>
 make install # as administrator (sudo or whatever)
 
-3. (SERVER) Install LogicBlox >= 4.2.1 and fix lb-web-server timeout
+3. (SERVER) Install LogicBlox >= 4.3.1 and fix lb-web-server timeout
 - edit <logicblox-root>/config/lb-web-server.conf
 - change all tcp_server_max_idle_time lines to read:
 tcp_server_max_idle_time = 0
@@ -76,93 +76,60 @@ You can clean all generated output with:
 Set up your .bashrc or equivalent on your CLIENT with batfish common arguments needed to access SERVER
 NOTE the default values for the following arguments:
 -lbhost -> localhost
--lbport -> 55179
+-lbport -> 5518
 -lbwebport -> 8080
--lbwebadminport -> 55183
+-lbwebadminport -> 5519
 NOTE that the built logic will reside on the SERVER at <batfish-repo-root>/projects/batfish/bin/org/batfish/logic
 .bashrc:
    export BATFISH_REMOTE_LOGIC_DIR=<MANDATORY_absolute_path_to_built_logic_on_SERVER_filesystem>'
    export BATFISH_COMMON_ARGS="-lbhost <OPTIONAL_hostname_of_SERVER> -lbport <OPTIONAL_ConnectBlox_port_on_SERVER> -lbwebport <OPTIONAL_lb_web_port_on_SERVER> -lbwebadminport <OPTIONAL_lb_web_admin_port_on_SERVER> -logicdir $BATFISH_REMOTE_LOGIC_DIR"
+
 10. run batfish
 The output of this step will be placed in the current folder.
 If you want to confirm running of each subtask, run:
-    batfish_confirm_analyze_multipath /path/to/test/rig <generated-output-prefix>
+    batfish_confirm_analyze_multipath /path/to/test/rig
 OR to run everything:
-    batfish_analyze_multipath /path/to/test/rig <generated-output-prefix>
+    batfish_analyze_multipath /path/to/test/rig
 
 **************************************************
 Notes on running
 **************************************************
 This repository should contain an example test rig at <batfish-root>/test_rigs/example
-After running step 9 above on the example test rig, as:
-   batfish_analyze_multipath <batfish-root>/test_rigs/example example
+After running step 10 above on the example test rig, as:
+   batfish_analyze_multipath <batfish-root>/test_rigs/example
 you should see the following output in the current folder:
 
-example-bgp
-example-dp (directory)
-example-dump (directory)
-example-flows
-example-indep (directory)
-example-node-set
-example-node-set.txt
-example-ospf
-example-policy
-example-query (directory)
-example-reach.smt2
-example-routes
-example-vendor (directory)
+example (directory) - base directory of intermediate output
+example-multipath-default-multipath-result - result of multipath consistency check. If multipath consistency is satisfied, this file will be empty. Otherwise, it will contain counterexample pairs of ingress node and packet that violate multipath consistency. Traceroutes for such packets are included.
 
-Much of the output is in the form of elements of LogicBlox predicates. To see the schema and comments for the LogicBlox predicates, run:
+Results of intermediate computations during data plane generation are stored in predicates in a LogicBlox database.  To see the schema and comments for the LogicBlox predicates, run:
    batfish -predhelp <predicate-name..>
 To see help for ALL predicates, including IDB (derived) predicates, use the '-predhelp' flag without arguments:
    batfish -predhelp
-Individual predicates for a processed test rig can be dumped to stdout by running:
-   batfish_query_predicate <generated-output-prefix> <predicate>
+Individual predicates for a processed test rig can be dumped to stdout by finding the LogicBlox workspace name and running:
+   batfish_query_predicate <workspacename> <predicate>
+The <workspacename> is constructed as "<testrig-directory-name>:<environment-name>.
+The <environment-name> for this example -s 'multipath-default', which follows 'example-' (where 'example' is the <testrig-directory-name>)in the name of the result file.
+**
+So for example, one could query the routing tables by running:
+   batfish_query 'example:multipath-default' 'InstalledRoute'
 
-example-vendor:
-This folder contains parsed versions of the vendor configuration files, serialized into an XML-like format.
+Other intermediate output is stored in the 'example' base directory mentioned above.
+Within this base directory one finds:
+   vendor (directory): This folder contains parsed versions of the vendor configuration files, serialized into an XML-like format.
 
-example-indep:
-This folder contains vendor-independent representations of the configurations, created by processing the vendor configuration structures. The former are also serialized into an XML-like format.
+   indep (directory): This folder contains vendor-independent representations of the configurations, created by processing the vendor configuration structures. The former are also serialized into an XML-like format.
 
-example-dump:
-This folder contains files named for LogicBlox EDB (input) predicates. Note that the files in the 'example-dump' folder are in raw CSV format (with '|' as a delimiter), and may not be very legible, even with the schema.
+   environments (directory): holds the environments used in intermediate computation. In the example this contains a single environment called 'multipath-default'. Within this directory we see:
+      dp : a serialized representation of the data plane induced by the environment
 
-example-bgp:
-This file contains dumps of selected BGP-related predicates for a processed testrig
+      dump (directory): This folder contains files named for LogicBlox EDB (input) predicates. Note that these files are in raw CSV format (with '|' as a delimiter), and may not be very legible, even with the schema.
 
-example-ospf
-This file contains dumps of selected OSPF-related predicates for a processed testrig
+      env (directory): a directory in which modifications to a default environment are specified. Modifications could include failed nodes, failed interfaces, failed links, or updated configuration files.
 
-example-policy
-This file contains dumps of selected policy-related predicates for a processed testrig
-
-example-routes:
-This file contains dumps of the routing tables for a processed testrig, retrieved using:
-   batfish -testrig </path/to/testrig> -query -predicates InstalledRoute
-
-example-dp:
-This folder contains information needed to represent the data plane. Specifically, it contains the FIBs (Forwarding Information Bases) and topology edges. This information is enough to represent the data plane when used in conjunction with the static information contained in the vendor-independent configuration structures.
-
-example-node-set:
-example-node-set.txt:
-These files are an intermediate byproduct, and should be considered opaque and ignored
-
-example-reach.smt2:
-This file contains the data plane (reachability relations) of a processed test-rig in the z3 smt-solver's 'smt2' format.
-
-example-query:
-This folder contains 4 types of files:
-   1. multipath-inconsistency-query-<node>.smt2:
-      A z3 query for the z3 fixed-point datalog engine that, when appended to the example-reach.smt2 file, yields the constraints for multipath-inconsistent packets originating at <node>
-   2. multipath-inconsistency-query--<node>.smt2.out:
-      The output of step 1
-   3. multipath-inconsistency-query-<node>-concrete-<number>.smt2:
-      These files are z3 queries for the standard smt engine incorporating the constraints found in step 2. These queries should yield 0 or 1 CONCRETE packets per node that exhibit multipath inconsistency when injected at that node.
-   4. multipath-inconsistency-query-<node>-concrete-<number>.smt2.out:
-      The output of step 3.
-
-example-flows:
-This file contains dumps of relevant flow predicates, retrieved using:
-   batfish -testrig </path/to/testrig> -query -predicates <flow_predicates..>
-These predicates were populated AFTER injecting the concrete packets found in example-query step 4 above into the LogicBlox network model.
+***
+One can also run a single-node-failure or single-link-failure consistency check with:
+   batfish_analyze_node_failures <batfish-root>/test_rigs/example
+OR
+   batfish_analyze_link_failures <batfish-root>/test_rigs/example
+Since these checks produce multiple environments, it may be instructive to example the output for those environments after running each command.

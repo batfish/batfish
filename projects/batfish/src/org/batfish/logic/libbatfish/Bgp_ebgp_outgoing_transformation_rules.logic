@@ -1,0 +1,145 @@
+block(`Bgp_ebgp_outgoing_transformation_rules) {
+   alias_all(`libbatfish:AsPath),
+   alias_all(`libbatfish:Bgp),
+   alias_all(`libbatfish:BgpAdvertisement),
+   alias_all(`libbatfish:CommunityList),
+   alias_all(`libbatfish:GeneratedRoute),
+   alias_all(`libbatfish:Interface),
+   alias_all(`libbatfish:Ip),
+   alias_all(`libbatfish:Layer2),
+   alias_all(`libbatfish:Node),
+   alias_all(`libbatfish:PolicyMap),
+   alias_all(`libbatfish:Route),
+   clauses(`{
+// BEGIN CODE
+
+// append as to path for bgp route advertisement
+AdvertisementPath(advert, index, as) <-
+   BgpAdvertisement_type[advert] = type,
+   BgpAdvertisement_dstNode[advert] = dstNode,
+   BgpAdvertisement_srcIp[advert] = srcIp,
+   type = AdvertisementType_BGP_TO[],
+   ParentAdvertisement(prevAdvert, advert),
+   AdvertisementPathSize[prevAdvert] = prevPathSize,
+   index = prevPathSize,
+   RemoteAs(dstNode, srcIp, as).
+
+// outgoing transformation
+AdvertisementCommunity(advert, community) <-
+   priorType = AdvertisementType_BGP[],
+   BgpNeighborSendCommunity(srcNode, dstIp),
+   BgpAdvertisement_type[prevAdvert] = priorType,
+   BgpAdvertisement_srcNode[prevAdvert] = srcNode,
+   BgpAdvertisement_dstIp[prevAdvert] = dstIp,
+   ParentAdvertisement(prevAdvert, advert),
+   (
+      (
+         BgpExportPolicy(srcNode, dstIp, map),
+         PolicyMapPermitAdvert(map, clause, prevAdvert),
+         !SetPolicyMapClauseSetCommunityNone(map, clause),
+         (
+            (
+               !SetPolicyMapClauseMatchPolicy(map, clause, _),
+               clause = transformingClause,
+               map = transformingMap
+            ) ;
+            (
+               SetPolicyMapClauseMatchPolicy(map, clause, transformingMap),
+               PolicyMapPermitAdvert(transformingMap, transformingClause, prevAdvert)
+            )
+         ),
+         (
+            SetPolicyMapClauseAddCommunity(transformingMap, transformingClause, community) ;
+            SetPolicyMapClauseSetCommunity(transformingMap, transformingClause, community) ;
+            (
+               AdvertisementCommunity(prevAdvert, community),
+               !SetPolicyMapClauseSetCommunity(transformingMap, transformingClause, _),
+               (
+                  !SetPolicyMapClauseDeleteCommunity(transformingMap, transformingClause, _) ;
+                  (
+                     SetPolicyMapClauseDeleteCommunity(transformingMap, transformingClause, deleteList),
+                     !CommunityListPermit(deleteList, _, community)
+                  )
+               )
+            )
+         )
+      ) ;
+      (
+         !BgpExportPolicy(srcNode, dstIp, _),
+         AdvertisementCommunity(prevAdvert, community)
+      )
+   ).
+
+// ebgp transformed outgoing
+BgpAdvertisement(advert),
+BgpAdvertisement_constructor[type, dstIpBlock, tNextHopIp, srcNode, srcIp, dstNode, dstIp, srcProtocol, tOriginType] = advert,
+BgpAdvertisement_dstIp[advert] = dstIp,
+BgpAdvertisement_dstNode[advert] = dstNode,
+BgpAdvertisement_localPref[advert] = tLocalPref,
+BgpAdvertisement_med[advert] = tMed,
+BgpAdvertisement_network[advert] = dstIpBlock,
+BgpAdvertisement_nextHopIp[advert] = tNextHopIp,
+BgpAdvertisement_originatorIp[advert] = originatorIp,
+BgpAdvertisement_originType[advert] = tOriginType,
+BgpAdvertisement_srcIp[advert] = srcIp,
+BgpAdvertisement_srcNode[advert] = srcNode,
+BgpAdvertisement_srcProtocol[advert] = tSrcProtocol,
+BgpAdvertisement_type[advert] = type,
+ParentAdvertisement(prevAdvert, advert),
+AdvertisementPathSize[advert] = pathSize
+<-
+   type = AdvertisementType_BGP_TO[],
+   priorType = AdvertisementType_BGP[],
+   pathSize = prevPathSize + 1,
+   BgpAdvertisement_dstIp[prevAdvert] = dstIp,
+   BgpAdvertisement_dstNode[prevAdvert] = dstNode,
+   BgpAdvertisement_localPref[prevAdvert] = localPref,
+   BgpAdvertisement_med[prevAdvert] = med,
+   BgpAdvertisement_network[prevAdvert] = dstIpBlock,
+   BgpAdvertisement_nextHopIp[prevAdvert] = nextHopIp,
+   BgpAdvertisement_originatorIp[prevAdvert] = originatorIp,
+   BgpAdvertisement_originType[prevAdvert] = originType,
+   BgpAdvertisement_srcIp[prevAdvert] = srcIp,
+   BgpAdvertisement_srcNode[prevAdvert] = srcNode,
+   BgpAdvertisement_srcProtocol[prevAdvert] = srcProtocol,
+   BgpAdvertisement_type[prevAdvert] = priorType,
+   AdvertisementPathSize[prevAdvert] = prevPathSize,
+   BgpNeighborIp(srcNode, dstIp),
+   (
+      (
+         BgpExportPolicy(srcNode, dstIp, map),
+         PolicyMapPermitAdvert(map, clause, prevAdvert),
+         (
+            (
+               !SetPolicyMapClauseMatchPolicy(map, clause, _),
+               transformingClause = clause,
+               transformingMap = map
+            ) ;
+            (
+               SetPolicyMapClauseMatchPolicy(map, clause, transformingMap),
+               PolicyMapPermitAdvert(transformingMap, transformingClause, prevAdvert)
+            )
+         ),
+         PolicyMapClauseTransformAdvert(transformingMap, transformingClause, prevAdvert, tNextHopIp,
+            tLocalPref, tOriginType, tMed, tSrcProtocol)
+      );
+      (
+         !BgpExportPolicy(srcNode, dstIp, _),
+         tNextHopIp = nextHopIp,
+         tLocalPref = localPref,
+         tOriginType = originType,
+         tMed = med,
+         tSrcProtocol = srcProtocol
+      )
+   ).
+
+lang:compiler:error:ENTITY_CREATION_RECURSION[]=false.
+lang:compiler:warning:ENTITY_CREATION_RECURSION[]=false.
+
+lang:compiler:disableWarning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = true.
+
+
+// END CODE
+   })
+
+} <-- .

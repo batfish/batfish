@@ -6,6 +6,11 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+brt_filter
+:
+   filter
+;
+
 brt_interface_mode
 :
    INTERFACE_MODE interface_mode
@@ -33,6 +38,7 @@ famt_bridge_tail
 :
 // intentional blank
 
+   | brt_filter
    | brt_interface_mode
    | brt_vlan_id_list
 ;
@@ -52,11 +58,13 @@ famt_inet_tail
 // intentional blank
 
    | ifamt_address
+   | ifamt_apply_groups
    | ifamt_apply_groups_except
    | ifamt_filter
    | ifamt_mtu
    | ifamt_no_redirects
    | ifamt_null
+   | ifamt_rpf_check
 ;
 
 famt_inet6
@@ -110,7 +118,11 @@ ft_direction
 
 ifamat_arp
 :
-   ARP IP_ADDRESS MAC MAC_ADDRESS
+   ARP IP_ADDRESS
+   (
+      MAC
+      | MULTICAST_MAC
+   ) MAC_ADDRESS
 ;
 
 ifamat_master_only
@@ -130,12 +142,18 @@ ifamat_primary
 
 ifamat_vrrp_group
 :
-   VRRP_GROUP name = variable ifamat_vrrp_group_tail
+   VRRP_GROUP
+   (
+      name = variable
+      | WILDCARD
+   ) ifamat_vrrp_group_tail
 ;
 
 ifamat_vrrp_group_tail
 :
    ivrrpt_accept_data
+   | ivrrpt_advertise_interval
+   | ivrrpt_authentication_type
    | ivrrpt_preempt
    | ivrrpt_priority
    | ivrrpt_track
@@ -144,7 +162,11 @@ ifamat_vrrp_group_tail
 
 ifamt_address
 :
-   ADDRESS IP_PREFIX ifamt_address_tail?
+   ADDRESS
+   (
+      IP_PREFIX
+      | WILDCARD
+   ) ifamt_address_tail?
 ;
 
 ifamt_address_tail
@@ -154,6 +176,11 @@ ifamt_address_tail
    | ifamat_preferred
    | ifamat_primary
    | ifamat_vrrp_group
+;
+
+ifamt_apply_groups
+:
+   s_apply_groups
 ;
 
 ifamt_apply_groups_except
@@ -179,9 +206,16 @@ ifamt_no_redirects
 ifamt_null
 :
    (
-      SAMPLING
+      POLICER
+      | SAMPLING
       | SERVICE
+      | TARGETED_BROADCAST
    ) s_null_filler
+;
+
+ifamt_rpf_check
+:
+   RPF_CHECK FAIL_FILTER name = variable
 ;
 
 interface_mode
@@ -250,6 +284,7 @@ it_common
    | it_null
    | it_speed
    | it_vlan_id
+   | it_vlan_id_list
    | it_vlan_tagging
 ;
 
@@ -356,6 +391,11 @@ it_vlan_id
    VLAN_ID id = DEC
 ;
 
+it_vlan_id_list
+:
+   VLAN_ID_LIST subrange
+;
+
 it_vlan_tagging
 :
    VLAN_TAGGING
@@ -364,6 +404,16 @@ it_vlan_tagging
 ivrrpt_accept_data
 :
    ACCEPT_DATA
+;
+
+ivrrpt_advertise_interval
+:
+   ADVERTISE_INTERVAL DEC
+;
+
+ivrrpt_authentication_type
+:
+   AUTHENTICATION_TYPE SIMPLE
 ;
 
 ivrrpt_preempt
@@ -384,6 +434,7 @@ ivrrpt_track
 ivrrpt_track_tail
 :
    ivrrptt_interface
+   | ivrrptt_route
 ;
 
 ivrrpt_virtual_address
@@ -399,6 +450,11 @@ ivrrptt_interface
 ivrrptt_interface_tail
 :
    ivrrptti_priority_cost
+;
+
+ivrrptt_route
+:
+   ROUTE IP_PREFIX ROUTING_INSTANCE variable PRIORITY_COST DEC
 ;
 
 ivrrptti_priority_cost
@@ -436,4 +492,5 @@ s_interfaces_tail
 speed_abbreviation
 :
    G
+   | M
 ;
