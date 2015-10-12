@@ -613,15 +613,17 @@ public class Batfish implements AutoCloseable {
       Set<Flow> flows = null;
       Synthesizer dataPlaneSynthesizer = synthesizeDataPlane(configurations,
             dataPlanePath);
-      Map<QuerySynthesizer, NodeSet> queryNodes = new HashMap<QuerySynthesizer, NodeSet>();
+      List<NodJob> jobs = new ArrayList<NodJob>();
       for (String node : configurations.keySet()) {
          MultipathInconsistencyQuerySynthesizer query = new MultipathInconsistencyQuerySynthesizer(
                node);
          NodeSet nodes = new NodeSet();
          nodes.add(node);
-         queryNodes.put(query, nodes);
+         NodJob job = new NodJob(dataPlaneSynthesizer, query, nodes, tag);
+         jobs.add(job);
       }
-      flows = computeNodOutput(dataPlaneSynthesizer, queryNodes, tag);
+
+      flows = computeNodOutput(jobs);
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
       initTrafficFactBins(trafficFactBins);
       StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
@@ -952,8 +954,9 @@ public class Batfish implements AutoCloseable {
       return flowSinks;
    }
 
-   private Set<Flow> computeNodOutput(Synthesizer dataPlaneSynthesizer,
-         Map<QuerySynthesizer, NodeSet> queryNodes, String tag) {
+   private Set<Flow> computeNodOutput(List<NodJob> jobs) {
+      _logger.info("\n*** EXECUTING NOD JOBS ***\n");
+      resetTimer();
       Set<Flow> flows = new TreeSet<Flow>();
       ExecutorService pool;
       boolean shuffle;
@@ -966,48 +969,87 @@ public class Batfish implements AutoCloseable {
          pool = Executors.newSingleThreadExecutor();
          shuffle = false;
       }
-      List<NodJob> jobs = new ArrayList<NodJob>();
-      for (final QuerySynthesizer query : queryNodes.keySet()) {
-         NodeSet nodes = queryNodes.get(query);
-         NodJob job = new NodJob(dataPlaneSynthesizer, query, nodes, tag);
-         jobs.add(job);
-      }
       if (shuffle) {
          Collections.shuffle(jobs);
       }
-      List<Future<NodJobResult>> results;
-      try {
-         results = pool.invokeAll(jobs);
+      List<Future<NodJobResult>> futures = new ArrayList<Future<NodJobResult>>();
+      for (NodJob job : jobs) {
+         Future<NodJobResult> future = pool.submit(job);
+         futures.add(future);
       }
-      catch (InterruptedException e) {
-         throw new BatfishException("Nod executor service interrupted", e);
-      }
-      for (Future<NodJobResult> future : results) {
-         try {
-            NodJobResult result = future.get();
-            if (result.terminatedSuccessfully()) {
-               flows.addAll(result.getFlows());
-            }
-            else {
-               Throwable failureCause = result.getFailureCause();
-               if (failureCause != null) {
-                  throw new BatfishException("Failure running nod job",
-                        failureCause);
+      boolean processingError = false;
+      int finishedJobs = 0;
+      int totalJobs = jobs.size();
+      double finishedPercent;
+      while (!futures.isEmpty()) {
+         List<Future<NodJobResult>> currentFutures = new ArrayList<Future<NodJobResult>>();
+         currentFutures.addAll(futures);
+         for (Future<NodJobResult> future : currentFutures) {
+            if (future.isDone()) {
+               futures.remove(future);
+               finishedJobs++;
+               finishedPercent = 100 * ((double) finishedJobs) / totalJobs;
+               NodJobResult result = null;
+               try {
+                  result = future.get();
+               }
+               catch (InterruptedException | ExecutionException e) {
+                  throw new BatfishException("Error executing nod job", e);
+               }
+               String time = Util.getTime(result.getElapsedTime());
+               if (result.terminatedSuccessfully()) {
+                  flows.addAll(result.getFlows());
+                  _logger
+                        .infof(
+                              "Nod job terminated successfully with result: %s after elapsed time: %s - %d/%d (%.1f%%) complete\n",
+                              result.toString(), time, finishedJobs, totalJobs,
+                              finishedPercent);
                }
                else {
-                  throw new BatfishException("Unknown failure running nod job");
+                  Throwable failureCause = result.getFailureCause();
+                  if (failureCause != null) {
+                     String failureMessage = "Failure running nod job after elapsed time: "
+                           + time;
+                     if (_settings.getExitOnFirstError()) {
+                        throw new BatfishException(failureMessage, failureCause);
+                     }
+                     else {
+                        processingError = true;
+                        _logger.error(failureMessage + ":"
+                              + ExceptionUtils.getStackTrace(failureCause));
+                     }
+                  }
+                  else {
+                     throw new BatfishException(
+                           "Unknown failure running nod job");
+                  }
                }
             }
+            else {
+               continue;
+            }
          }
-         catch (InterruptedException e) {
-            throw new BatfishException("Nod job interrupted", e);
-         }
-         catch (ExecutionException e) {
-            throw new BatfishException("Could not execute nod job", e);
+         if (!futures.isEmpty()) {
+            try {
+               Thread.sleep(JOB_POLLING_PERIOD_MS);
+            }
+            catch (InterruptedException e) {
+               throw new BatfishException("interrupted while sleeping", e);
+            }
          }
       }
       pool.shutdown();
-      return flows;
+      if (processingError) {
+         throw new BatfishException(
+               "Fatal exception due to failure of at least one nod job");
+      }
+      else {
+         printElapsedTime();
+         if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
+            _logger.output("All nod jobs executed successfully\n");
+         }
+         return flows;
+      }
    }
 
    public Topology computeTopology(String testRigPath,

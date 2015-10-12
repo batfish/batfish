@@ -56,6 +56,8 @@ public class CompositeNodJob implements Callable<NodJobResult> {
 
    @Override
    public NodJobResult call() throws Exception {
+      long startTime = System.currentTimeMillis();
+      long elapsedTime;
       NodProgram latestProgram = null;
       try {
          BoolExpr[] answers = new BoolExpr[_numPrograms];
@@ -131,7 +133,8 @@ public class CompositeNodJob implements Callable<NodJobResult> {
             throw new BatfishException("Stage 2 query satisfiability unknown");
 
          case UNSATISFIABLE:
-            return new NodJobResult();
+            elapsedTime = System.currentTimeMillis() - startTime;
+            return new NodJobResult(elapsedTime);
 
          default:
             throw new BatfishException("invalid status");
@@ -151,10 +154,12 @@ public class CompositeNodJob implements Callable<NodJobResult> {
             Flow flow = createFlow(node, constraints);
             flows.add(flow);
          }
-         return new NodJobResult(flows);
+         elapsedTime = System.currentTimeMillis() - startTime;
+         return new NodJobResult(elapsedTime, flows);
       }
       catch (Z3Exception e) {
-         return new NodJobResult(new BatfishException(
+         elapsedTime = System.currentTimeMillis() - startTime;
+         return new NodJobResult(elapsedTime, new BatfishException(
                "Error running NoD on concatenated data plane", e));
       }
    }

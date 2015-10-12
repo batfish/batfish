@@ -181,6 +181,10 @@ public class BatfishLogger {
       write(LEVEL_INFO, msg);
    }
 
+   public void infof(String format, Object... args) {
+      info(String.format(format, args));
+   }
+
    private void initializeLogLevel(String levelStr) {
       String canonicalLevelStr = levelStr.toLowerCase();
       _level = LOG_LEVELS.get(canonicalLevelStr);
