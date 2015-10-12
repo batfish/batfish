@@ -2,7 +2,7 @@
 COORDINATOR=${BASH_SOURCE[0]}
 COORDINATOR_PATH=$(dirname $COORDINATOR)
 COORDINATOR_JAR=$COORDINATOR_PATH/out/coordinator.jar
-if [[ $(uname) == *"Cygwin"* ]]; then
+if batfish_cygwin; then
    COORDINATOR_JAR="$(cygpath -w $COORDINATOR_JAR)"
 fi
 java -jar "$COORDINATOR_JAR" $@
