@@ -161,7 +161,12 @@ batfish_prepare_ebgp_environment() {
    mkdir -p $ENV_DIR || return 1
    mkdir -p $(dirname $EBGP_QUESTION_DST) || return 1
    cp $EBGP_QUESTION_SRC $EBGP_QUESTION_DST || return 1
-   comm -23 <($GNU_FIND $BASE/indep -type f -printf '%f\n' | sort) <(batfish -autobasedir $BASE -env $ENV -loglevel output -answer -questionname $QUESTION_NAME | sort) > $ENV_DIR/node_blacklist || return 1
+   local RESULT=$(comm -23 <($GNU_FIND $BASE/indep -type f -printf '%f\n' | sort) <(batfish -autobasedir $BASE -env $ENV -loglevel output -answer -questionname $QUESTION_NAME | sort) || echo error) 
+   if [[ $RESULT == "error" ]]; then 
+      return 1 
+   else
+      echo $RESULT > $ENV_DIR/node_blacklist
+   fi
    batfish_date
    echo ": END: Prepare ebgp environment"
 }
@@ -180,7 +185,12 @@ batfish_prepare_ibgp_environment() {
    mkdir -p $ENV_DIR || return 1
    mkdir -p $(dirname $IBGP_QUESTION_DST) || return 1
    cp $IBGP_QUESTION_SRC $IBGP_QUESTION_DST || return 1
-   comm -23 <($GNU_FIND $BASE/indep -type f -printf '%f\n' | sort) <(batfish -autobasedir $BASE -env $ENV -loglevel output -answer -questionname $QUESTION_NAME | sort) > $ENV_DIR/node_blacklist || return 1
+   local RESULT=$(comm -23 <($GNU_FIND $BASE/indep -type f -printf '%f\n' | sort) <(batfish -autobasedir $BASE -env $ENV -loglevel output -answer -questionname $QUESTION_NAME | sort) || echo error)
+   if [[ $RESULT == "error" ]]; then 
+      return 1 
+   else
+      echo $RESULT > $ENV_DIR/node_blacklist
+   fi
    batfish_date
    echo ": END: Prepare ibgp environment"
 }
