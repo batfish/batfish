@@ -42,7 +42,12 @@ public class Assertion implements Statement {
             throw new BatfishException(debugErrorMessage);
          }
          else {
-            logger.debug(debugErrorMessage);
+            if (_onErrorStatements.size() == 0) {
+               logger.output(debugErrorMessage);
+            }
+            else {
+               logger.debug(debugErrorMessage);
+            }
             executeOnErrorStatements(environment, logger, settings);
          }
       }
