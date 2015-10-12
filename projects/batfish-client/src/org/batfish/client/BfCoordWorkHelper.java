@@ -34,7 +34,7 @@ public class BfCoordWorkHelper {
 
          _coordWorkMgr = workMgr;
    }
-   
+
    public WorkStatusCode getWorkStatus(UUID parseWorkUUID) {
       try {
          Client client = ClientBuilder.newClient();
@@ -374,35 +374,35 @@ public class BfCoordWorkHelper {
    public WorkItem getWorkItemParseVendorIndependent(String testrigName) {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
-      return wItem;     
+      return wItem;
    }
 
    public WorkItem getWorkItemParseVendorSpecific(String testrigName) {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
-      return wItem;     
+      return wItem;
    }
 
    public WorkItem getWorkItemGenerateFacts(String testrigName, String envName) {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_GENERATE_FACT, "");
-      wItem.addRequestParam(BfConsts.COMMAND_ENV, envName);
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
-   
+
    public WorkItem getWorkItemGenerateDataPlane(String testrigName,
          String envName) {
       WorkItem wItem = new WorkItem(testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_COMPILE, "");
+      wItem.addRequestParam(BfConsts.COMMAND_CREATE_WORKSPACE, "");
       wItem.addRequestParam(BfConsts.COMMAND_FACTS, "");
-      wItem.addRequestParam(BfConsts.COMMAND_ENV, envName);
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
-   }   
+   }
 
    public String getResultsObjectNameParseVendorIndependent() {
       return BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR;
    }
-   
+
    public String getResultsObjectNameParseVendorSpecific() {
       return BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR;
    }
@@ -419,10 +419,10 @@ public class BfCoordWorkHelper {
    public WorkItem getWorkItemGetDataPlane(String testrigName, String envName) {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
-      wItem.addRequestParam(BfConsts.COMMAND_ENV, envName);
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
-   
+
    public String getResultsObjectNameGetDataPlane(String envName) {
       return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
                   BfConsts.RELPATH_DATA_PLANE_DIR).toString();
@@ -432,10 +432,10 @@ public class BfCoordWorkHelper {
          String envName) {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_SYNTHESIZE_Z3_DATA_PLANE, "");
-      wItem.addRequestParam(BfConsts.COMMAND_ENV, envName);
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
-   
+
    public String getResultsObjectNameCreateZ3Encoding(String envName) {
       return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
                   BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString();
@@ -448,7 +448,7 @@ public class BfCoordWorkHelper {
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
       return wItem;
    }
-   
+
    public String getResultsObjectNameAnswerQuestion(String envName, String questionName) {
       return null;
    }
@@ -458,10 +458,10 @@ public class BfCoordWorkHelper {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_POST_FLOWS, "");
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
-      wItem.addRequestParam(BfConsts.COMMAND_ENV, envName);
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
-   
+
    public String getResultsObjectNamePostFlows(String envName, String questionName) {
       return null;
    }
@@ -472,14 +472,13 @@ public class BfCoordWorkHelper {
       wItem.addRequestParam(BfConsts.COMMAND_QUERY, "");
       wItem.addRequestParam(BfConsts.ARG_PREDICATES,
             BfConsts.PREDICATE_FLOW_PATH_HISTORY);
-      wItem.addRequestParam(BfConsts.COMMAND_ENV, envName);
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
-   
+
    public String getResultsObjectNameGetFlowTraces(String envName, String questionName) {
       return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
                   BfConsts.RELPATH_QUERY_DUMP_DIR).toString();
    }
-   
+
 }
-   

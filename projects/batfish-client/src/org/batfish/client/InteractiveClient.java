@@ -1,6 +1,5 @@
 package org.batfish.client;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,12 +10,11 @@ import org.batfish.common.CoordConsts.WorkStatusCode;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
-import jline.console.completer.FileNameCompleter;
 import jline.console.completer.StringsCompleter;
 
 
 public class InteractiveClient {
-   
+
 //   public static void usage() {
 //      System.out.println("Usage: java " + InteractiveClient.class.getName()
 //          + " [none/simple/files/dictionary [trigger mask]]");
@@ -110,7 +108,7 @@ public class InteractiveClient {
 //              }
 //
 //              String[] words = line.split("\\s+");
-//              
+//
 //              if (words.length > 0)
 //                 processCommand(line, out);
 //          }
@@ -122,10 +120,10 @@ public class InteractiveClient {
 
    private BfCoordWorkHelper _workHelper;
    private BfCoordPoolHelper _poolHelper;
-   
+
   public InteractiveClient(String workMgr, String poolMgr)  {
       try {
-         
+
          _workHelper = new BfCoordWorkHelper(workMgr);
          _poolHelper = new BfCoordPoolHelper(poolMgr);
 
@@ -154,7 +152,7 @@ public class InteractiveClient {
               }
 
               String[] words = line.split("\\s+");
-              
+
               if (words.length > 0) {
                  if (validCommandUsage(words, out))
                     processCommand(words, out);
@@ -165,7 +163,7 @@ public class InteractiveClient {
           t.printStackTrace();
       }
   }
-  
+
    private void processCommand(String[] words, PrintWriter out) {
 
       try {
@@ -205,7 +203,7 @@ public class InteractiveClient {
          e.printStackTrace();
       }
    }
-  
+
   private boolean validCommandUsage(String[] words, PrintWriter out) {
      return true;
   }
