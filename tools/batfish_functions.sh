@@ -2,8 +2,10 @@
 
 if [[ $(uname) == *"Darwin"* ]]; then
    export GNU_READLINK=greadlink
+   export GNU_FIND=gfind
 else
    export GNU_READLINK=readlink
+   export GNU_FIND=find
 fi
 
 export BATFISH_SOURCED_SCRIPT=$BASH_SOURCE

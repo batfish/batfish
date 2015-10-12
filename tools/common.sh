@@ -534,10 +534,10 @@ _batfish_replace_symlinks() {
    cd $BATFISH_ROOT
    if [ -d ".git" ]; then
       echo "(Cygwin workaround) Updating git index to ignore changes to symlinks"
-      git update-index --assume-unchanged $(find . -type l) || return 1
+      git update-index --assume-unchanged $($GNU_FIND . -type l) || return 1
    fi
    echo "(Cygwin workaround) Replacing symlinks"
-   find . -type l | parallel _batfish_replace_symlink "{}" \;
+   $GNU_FIND . -type l | parallel _batfish_replace_symlink "{}" \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi

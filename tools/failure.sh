@@ -95,7 +95,7 @@ batfish_analyze_node_failures() {
    echo "Query data plane predicates"
    $BATFISH_CONFIRM && { batfish_query_data_plane $BASE $ENV || return 1 ; }
 
-   find $BASE/indep -type f -printf '%f\n' | sort | while read NODE_RAW; do
+   $GNU_FIND $BASE/indep -type f -printf '%f\n' | sort | while read NODE_RAW; do
       local NODE=$(echo $NODE_RAW | tr '/' '_')
       local ENV_CURRENT=failure-$NODE
       local RESULT_CURRENT=$PWD/$NAME-$ENV_CURRENT-$QUESTIONNAME-result

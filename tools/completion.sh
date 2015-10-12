@@ -9,7 +9,7 @@ _batfish()
       fi
    done
    if [ "$lastopt" = "-blocknames" ]; then
-      COMPREPLY=( $(compgen -W "$(find ${BATFISH_PATH}/src/org/batfish/logic/libbatfish -name '*_rules.logic' | sed -e 's/\/[^\n]*\///g' -e 's/_rules.logic//g' | tr '\n' ' ')" -- $cur) )
+      COMPREPLY=( $(compgen -W "$($GNU_FIND ${BATFISH_PATH}/src/org/batfish/logic/libbatfish -name '*_rules.logic' | sed -e 's/\/[^\n]*\///g' -e 's/_rules.logic//g' | tr '\n' ' ')" -- $cur) )
    else
       COMPREPLY=( $(compgen -fW "$(cat $BATFISH_COMPLETION_FILE)" -- $cur) )
    fi

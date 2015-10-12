@@ -161,7 +161,7 @@ batfish_prepare_ebgp_environment() {
    mkdir -p $ENV_DIR || return 1
    mkdir -p $(dirname $EBGP_QUESTION_DST) || return 1
    cp $EBGP_QUESTION_SRC $EBGP_QUESTION_DST || return 1
-   comm -23 <(find $BASE/indep -type f -printf '%f\n' | sort) <(batfish -autobasedir $BASE -env $ENV -loglevel output -answer -questionname $QUESTION_NAME | sort) > $ENV_DIR/node_blacklist || return 1
+   comm -23 <($GNU_FIND $BASE/indep -type f -printf '%f\n' | sort) <(batfish -autobasedir $BASE -env $ENV -loglevel output -answer -questionname $QUESTION_NAME | sort) > $ENV_DIR/node_blacklist || return 1
    batfish_date
    echo ": END: Prepare ebgp environment"
 }
@@ -180,7 +180,7 @@ batfish_prepare_ibgp_environment() {
    mkdir -p $ENV_DIR || return 1
    mkdir -p $(dirname $IBGP_QUESTION_DST) || return 1
    cp $IBGP_QUESTION_SRC $IBGP_QUESTION_DST || return 1
-   comm -23 <(find $BASE/indep -type f -printf '%f\n' | sort) <(batfish -autobasedir $BASE -env $ENV -loglevel output -answer -questionname $QUESTION_NAME | sort) > $ENV_DIR/node_blacklist || return 1
+   comm -23 <($GNU_FIND $BASE/indep -type f -printf '%f\n' | sort) <(batfish -autobasedir $BASE -env $ENV -loglevel output -answer -questionname $QUESTION_NAME | sort) > $ENV_DIR/node_blacklist || return 1
    batfish_date
    echo ": END: Prepare ibgp environment"
 }
@@ -189,7 +189,7 @@ export -f batfish_prepare_ibgp_environment
 batfish_trace_import_transaction() {
    batfish_expect_args 1 $# || return 1
    local WORKSPACE=$1
-   local LATEST_TXN=$(find -mindepth 1 -maxdepth 1 -name 'txndata*' -printf '%T@ %p\n' | sort -nr | cut -d' ' -f2- | head -n1)
+   local LATEST_TXN=$($GNU_FIND -mindepth 1 -maxdepth 1 -name 'txndata*' -printf '%T@ %p\n' | sort -nr | cut -d' ' -f2- | head -n1)
    if [ -n "$LATEST_TXN" ]; then
       bash -c "_batfish_trace_import_transaction $WORKSPACE $LATEST_TXN" || return 1
       rm -rf txndata*

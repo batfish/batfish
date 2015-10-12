@@ -150,7 +150,7 @@ _batfish_nsdi_demo_results() {
    echo "Stage 3 View Results"
    $BATFISH_CONFIRM && \
    {
-      #less $(find $QUERY_PATH -type f -not -name '*concrete*' -and -name '*.smt2' | head -n1)
+      #less $($GNU_FIND $QUERY_PATH -type f -not -name '*concrete*' -and -name '*.smt2' | head -n1)
       less $DUMP_DIR/SetFlowOriginate.formatted
    }
 
