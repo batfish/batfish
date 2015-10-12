@@ -8,6 +8,9 @@ verify {
                   interface.ospf.passive
                }
             }
+            onfailure {
+               printf("Loopback interface %s:%s is neither active nor passive wrt OSPF, so its network %s will not appear in OSPF RIB.\n", node.name, interface.name, interface.prefix);
+            }
          }
       }
    }

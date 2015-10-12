@@ -14,11 +14,15 @@ import org.batfish.representation.StaticRoute;
 
 public class Environment {
 
+   private int[] _assertionCount;
+
    private boolean[] _assertions;
 
    private BgpNeighbor _bgpNeighbor;
 
    private Map<String, Configuration> _configurations;
+
+   private int[] _failedAssertionCount;
 
    private GeneratedRoute _generatedRoute;
 
@@ -37,7 +41,9 @@ public class Environment {
    private boolean[] _unsafe;
 
    public Environment() {
+      _assertionCount = new int[1];
       _assertions = new boolean[1];
+      _failedAssertionCount = new int[1];
       _integers = new HashMap<String, Integer>();
       _ipSets = new HashMap<String, Set<Ip>>();
       _stringSets = new HashMap<String, Set<String>>();
@@ -46,8 +52,10 @@ public class Environment {
 
    public Environment copy() {
       Environment copy = new Environment();
+      copy._assertionCount = _assertionCount;
       copy._assertions = _assertions;
       copy._configurations = _configurations;
+      copy._failedAssertionCount = _failedAssertionCount;
       copy._generatedRoute = _generatedRoute;
       copy._node = _node;
       copy._integers = _integers;
@@ -65,6 +73,10 @@ public class Environment {
 
    public BgpNeighbor getBgpNeighbor() {
       return _bgpNeighbor;
+   }
+
+   public int getFailedAssertions() {
+      return _failedAssertionCount[0];
    }
 
    public GeneratedRoute getGeneratedRoute() {
@@ -101,8 +113,20 @@ public class Environment {
       return _stringSets;
    }
 
+   public int getTotalAssertions() {
+      return _assertionCount[0];
+   }
+
    public boolean getUnsafe() {
       return _unsafe[0];
+   }
+
+   public void incrementAssertionCount() {
+      _assertionCount[0]++;
+   }
+
+   public void incrementFailedAssertionCount() {
+      _failedAssertionCount[0]++;
    }
 
    public void setAssertions(boolean b) {

@@ -1,10 +1,8 @@
 package org.batfish.grammar.question;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -606,14 +604,13 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private Statement toStatement(AssertionContext ctx) {
       BooleanExpr expr = toBooleanExpr(ctx.boolean_expr());
-      Map<String, PrintableExpr> onErrorPrintables = new HashMap<String, PrintableExpr>();
-      for (Assertion_failure_env_entryContext entry : ctx.env_entries) {
-         String name = entry.VARIABLE().getText();
-         PrintableExpr pexpr = toPrintableExpr(entry.printable_expr());
-         onErrorPrintables.put(name, pexpr);
+      List<Statement> onErrorStatements = new ArrayList<Statement>();
+      for (StatementContext s : ctx.statements) {
+         Statement statement = toStatement(s);
+         onErrorStatements.add(statement);
       }
       Assertion assertion = new Assertion(expr, ctx.getText(),
-            onErrorPrintables);
+            onErrorStatements);
       return assertion;
    }
 

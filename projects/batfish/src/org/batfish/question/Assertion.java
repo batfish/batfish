@@ -1,7 +1,6 @@
 package org.batfish.question;
 
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
 
 import org.batfish.main.BatfishException;
 import org.batfish.main.BatfishLogger;
@@ -13,13 +12,13 @@ public class Assertion implements Statement {
 
    private final BooleanExpr _expr;
 
-   private final Map<String, PrintableExpr> _onErrorPrintables;
+   private List<Statement> _onErrorStatements;
 
    public Assertion(BooleanExpr expr, String assertionText,
-         Map<String, PrintableExpr> onErrorPrintables) {
+         List<Statement> onErrorStatements) {
       _expr = expr;
       _assertionText = assertionText;
-      _onErrorPrintables = onErrorPrintables;
+      _onErrorStatements = onErrorStatements;
    }
 
    @Override
@@ -27,6 +26,7 @@ public class Assertion implements Statement {
          Settings settings) {
       environment.setAssertions(true);
       boolean pass = _expr.evaluate(environment);
+      environment.incrementAssertionCount();
       if (pass) {
          String successMessage = "Assertion: " + _assertionText
                + " succeeded with context: " + environment.toString() + "\n";
@@ -34,25 +34,24 @@ public class Assertion implements Statement {
       }
       else {
          environment.setUnsafe(true);
-         String optionalMessage = "";
-         if (_onErrorPrintables.size() > 0) {
-            StringBuilder sb = new StringBuilder();
-            for (Entry<String, PrintableExpr> e : _onErrorPrintables.entrySet()) {
-               String name = e.getKey();
-               String value = e.getValue().print(environment);
-               sb.append(name + ":" + value + " ");
-            }
-            optionalMessage = ", special values: { " + sb.toString() + "}";
-         }
-         String errorMessage = "Assertion: " + _assertionText
-               + " failed with context: " + environment.toString()
-               + optionalMessage + "\n";
+         environment.incrementFailedAssertionCount();
+         String debugErrorMessage = "Assertion: " + _assertionText
+               + " failed with context: " + environment.toString() + "\n";
          if (settings.getExitOnFirstError()) {
-            throw new BatfishException(errorMessage);
+            executeOnErrorStatements(environment, logger, settings);
+            throw new BatfishException(debugErrorMessage);
          }
          else {
-            logger.error(errorMessage);
+            logger.debug(debugErrorMessage);
+            executeOnErrorStatements(environment, logger, settings);
          }
+      }
+   }
+
+   private void executeOnErrorStatements(Environment environment,
+         BatfishLogger logger, Settings settings) {
+      for (Statement statement : _onErrorStatements) {
+         statement.execute(environment, logger, settings);
       }
    }
 

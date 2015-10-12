@@ -635,8 +635,17 @@ public class Batfish implements AutoCloseable {
       Map<String, Configuration> configurations = loadConfigurations();
       VerifyProgram program = question.getProgram();
       program.execute(configurations, _logger, _settings);
-      if (program.getAssertions() && !program.getUnsafe()) {
-         _logger.output("No violations detected\n");
+      if (program.getAssertions()) {
+         int totalAssertions = program.getTotalAssertions();
+         int failedAssertions = program.getFailedAssertions();
+         int passedAssertions = totalAssertions - failedAssertions;
+         double percentPassed = 100 * ((double) passedAssertions)
+               / totalAssertions;
+         _logger.outputf("%d/%d (%.1f%%) assertions passed.\n",
+               passedAssertions, totalAssertions, percentPassed);
+         if (!program.getUnsafe()) {
+            _logger.output("No violations detected\n");
+         }
       }
    }
 

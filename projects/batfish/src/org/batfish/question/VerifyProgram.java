@@ -37,8 +37,16 @@ public class VerifyProgram {
       return _environment.getAssertions();
    }
 
+   public int getFailedAssertions() {
+      return _environment.getFailedAssertions();
+   }
+
    public List<Statement> getStatements() {
       return _statements;
+   }
+
+   public int getTotalAssertions() {
+      return _environment.getTotalAssertions();
    }
 
    public boolean getUnsafe() {

@@ -16,7 +16,8 @@ add_ip_statement
 
 add_string_statement
 :
-   target = VARIABLE PERIOD ADD_STRING OPEN_PAREN printable_expr CLOSE_PAREN SEMICOLON
+   target = VARIABLE PERIOD ADD_STRING OPEN_PAREN printable_expr CLOSE_PAREN
+   SEMICOLON
 ;
 
 and_expr
@@ -31,16 +32,11 @@ assertion
 :
    ASSERT OPEN_BRACE boolean_expr CLOSE_BRACE
    (
-      ONFAILURE OPEN_BRACE env_entries += assertion_failure_env_entry
+      ONFAILURE OPEN_BRACE
       (
-         COMMA env_entries += assertion_failure_env_entry
+         statements += statement
       )* CLOSE_BRACE
    )?
-;
-
-assertion_failure_env_entry
-:
-   VARIABLE COLON printable_expr
 ;
 
 assignment
@@ -220,7 +216,7 @@ if_statement
 
 ingress_path_question
 :
-  INGRESS_PATH
+   INGRESS_PATH
 ;
 
 int_assignment

@@ -21,8 +21,11 @@ verify {
                }
             }
             onfailure {
-               $offendingIp:interface.ip,
-               $enabled:interface.enabled
+               printf("%s:%s is assigned multiply-assigned ip address: %s", node.name, interface.name, interface.ip);
+               if (not {interface.enabled}) then {
+                  printf(" (interface is disabled)");
+               }
+               printf("\n");
             }
          }
       }
