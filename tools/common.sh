@@ -78,6 +78,25 @@ _batfish_build() {
 }
 export -f _batfish_build
 
+batfish_build_all() {
+   bash -c '_batfish_build_all "$@"' _batfish_build_all "$@" || return 1
+   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" -a -e "$BATFISH_PATH/out/batfish.jar" ]; then
+      batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+   fi
+}
+export -f batfish_build_all
+
+_batfish_build_all() {
+   common_build "$@" || return 1
+   cd $BATFISH_PATH
+   ant "$@" || return 1
+   cd $COORDINATOR_PATH
+   ant "$@" || return 1
+   cd $BATFISH_CLIENT_PATH
+   ant "$@" || return 1
+}
+export -f _batfish_build_all
+
 batfish_clone_environment() {
    batfish_date
    echo ": START: Clone environment"
