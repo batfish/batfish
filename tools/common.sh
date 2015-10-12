@@ -20,7 +20,7 @@ export COMMON_JAR="$COMMON_PATH/out/batfish-common-protocol.jar"
 
 batfish() {
    # if cygwin, shift and replace each parameter
-   if [[ $(uname) == *"Cygwin"* ]]; then
+   if batfish_cygwin; then
       local NUMARGS=$#
       local IGNORE_CURRENT_ARG=no;
       for i in $(seq 1 $NUMARGS); do
@@ -135,6 +135,11 @@ batfish_confirm() {
    esac
 }
 export -f batfish_confirm
+
+batfish_cygwin() {
+   [[ $(uname) == *"CYGWIN"* ]]
+}
+export -f batfish_cygwin
 
 batfish_date() {
    { hostname; echo -n ': '; date ; } | tr -d '\n'
@@ -524,7 +529,7 @@ batfish_reload() {
 export -f batfish_reload
 
 batfish_replace_symlinks() {
-   if [[ $(uname) == *"Cygwin"* ]]; then
+   if batfish_cygwin; then
       bash -c _batfish_replace_symlinks || return 1
    fi
 }
@@ -641,7 +646,7 @@ export -f batfish_time
 
 coordinator() {
    # if cygwin, shift and replace each parameter
-   if [[ $(uname) == *"Cygwin"* ]]; then
+   if batfish_cygwin; then
       local NUMARGS=$#
       for i in $(seq 1 $NUMARGS); do
          local CURRENT_ARG=$1
@@ -659,7 +664,7 @@ export -f coordinator
 
 batfish_client() {
    # if cygwin, shift and replace each parameter
-   if [[ $(uname) == *"Cygwin"* ]]; then
+   if batfish_cygwin; then
       local NUMARGS=$#
       for i in $(seq 1 $NUMARGS); do
          local CURRENT_ARG=$1
