@@ -311,7 +311,7 @@ public class BfCoordWorkHelper {
       }
    }
 
-   public boolean getObject(String testrigName, String objectName) {
+   public String getObject(String testrigName, String objectName) {
       try {
 
          Client client = ClientBuilder.newBuilder()
@@ -332,7 +332,7 @@ public class BfCoordWorkHelper {
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             System.err.printf("GetObject: Did not get an OK response\n");
-            return false;
+            return null;
          }
 
          // see if we have a filename header
@@ -359,14 +359,14 @@ public class BfCoordWorkHelper {
          fr.flush();
          fr.close();
 
-         return true;
+         return outFile.getAbsolutePath();
       }
       catch (Exception e) {
          System.err.printf(
-               "Exception when uploading test rig to %s using (%s, %s)\n",
+               "Exception in getObject from %s using (%s, %s)\n",
                _coordWorkMgr, testrigName, objectName);
          e.printStackTrace();
-         return false;
+         return null;
       }
    }
 

@@ -1,5 +1,8 @@
 package org.batfish.client;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
@@ -198,14 +201,31 @@ public class InteractiveClient {
             out.println("Queuing result: " + result);
             break;
          }
+         case "init-testrig": {
+        	 String testrigName = words[1];
+        	 String testrigFile = words[2];
+
+        	 //upload the testrig
+             boolean result = _workHelper.uploadTestrig(testrigName, testrigFile);
+             out.println("Result of uploading testrig: " + result);
+
+             if (!result) 
+            	 break;
+
+             //queue vendor specific parsing
+             WorkItem wItem = _workHelper.getWorkItemParseVendorSpecific(testrigName);
+             wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _logLevel);
+             execute(wItem, out);
+             break;
+          }
          case "get-work-status": {
             WorkStatusCode status = _workHelper.getWorkStatus(UUID.fromString(words[1]));
             out.println("Result: " + status);
             break;
          }
          case "get-object": {
-            boolean result = _workHelper.getObject(words[1], words[2]);
-            out.println("Result: " + result);
+            String file = _workHelper.getObject(words[1], words[2]);
+            out.println("Result: " + file);
             break;
          }
          case "set-loglevel": {
@@ -226,4 +246,44 @@ public class InteractiveClient {
   private boolean validCommandUsage(String[] words, PrintWriter out) {
      return true;
   }
+  
+  private void execute(WorkItem wItem, PrintWriter out) throws Exception {
+
+	  boolean queueWorkResult = _workHelper.queueWork(wItem);
+  
+	  out.println("work-id is " + wItem.getId());
+      out.println("Queuing result: " + queueWorkResult);
+        
+	  WorkStatusCode status = _workHelper.getWorkStatus(wItem.getId());
+
+	  while (status != WorkStatusCode.TERMINATEDABNORMALLY
+			  && status != WorkStatusCode.TERMINATEDNORMALLY
+			  && status != WorkStatusCode.ASSIGNMENTERROR) {
+
+		  out.printf("status: %s\n", status);
+
+		  Thread.sleep(10 * 1000);
+
+		  status = _workHelper.getWorkStatus(wItem.getId());
+	  }
+
+	  out.printf("final status: %s\n", status);
+
+	  // get the results
+	  String logFileName = wItem.getId() + ".log";
+	  String downloadedFile = _workHelper.getObject(wItem.getTestrigName(), logFileName);
+	  
+	  if (downloadedFile == null) {
+		  out.printf("Failed to get output file %s\n", logFileName);
+	  }
+	  else {
+		  try (BufferedReader br = new BufferedReader(new FileReader(downloadedFile))) {
+			  String line = null;
+			  while ((line = br.readLine()) != null) {
+				  out.println(line);
+			  }
+		  }	  
+	  }  
+  }
+
 }
