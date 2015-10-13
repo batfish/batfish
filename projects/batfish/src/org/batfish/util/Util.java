@@ -77,6 +77,14 @@ public class Util {
       return srcText.substring(start, stop);
    }
 
+   public static String getTime(long millis) {
+      double second = (millis / 1000) % 60 + (millis % 1000) / 1000d;
+      long minute = (millis / (1000 * 60)) % 60;
+      long hour = (millis / (1000 * 60 * 60)) % 24;
+      String time = String.format("%02d:%02d:%02.2f", hour, minute, second);
+      return time;
+   }
+
    public static int intWidth(int n) {
       if (n == 0) {
          return 1;
