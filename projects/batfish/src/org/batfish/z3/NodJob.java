@@ -7,9 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import org.batfish.collections.NodeSet;
+import org.batfish.job.BatfishJob;
 import org.batfish.main.BatfishException;
 import org.batfish.representation.Flow;
 import org.batfish.representation.Ip;
@@ -28,7 +28,7 @@ import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
 
-public class NodJob implements Callable<NodJobResult> {
+public class NodJob extends BatfishJob<NodJobResult> {
 
    private Synthesizer _dataPlaneSynthesizer;
 
@@ -51,8 +51,9 @@ public class NodJob implements Callable<NodJobResult> {
    public NodJobResult call() throws Exception {
       long startTime = System.currentTimeMillis();
       long elapsedTime;
+      Context ctx = null;
       try {
-         Context ctx = new Context();
+         ctx = new Context();
          NodProgram baseProgram = _dataPlaneSynthesizer
                .synthesizeNodProgram(ctx);
          NodProgram queryProgram = _querySynthesizer.getNodProgram(baseProgram);
@@ -137,6 +138,11 @@ public class NodJob implements Callable<NodJobResult> {
          elapsedTime = System.currentTimeMillis() - startTime;
          return new NodJobResult(elapsedTime, new BatfishException(
                "Error running NoD on concatenated data plane", e));
+      }
+      finally {
+         if (ctx != null) {
+            ctx.dispose();
+         }
       }
    }
 

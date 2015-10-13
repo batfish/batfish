@@ -1,7 +1,6 @@
 package org.batfish.job;
 
 import java.io.File;
-import java.util.concurrent.Callable;
 
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishException;
@@ -11,8 +10,8 @@ import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Settings;
 import org.batfish.main.Warnings;
 
-public class FlattenVendorConfigurationJob implements
-      Callable<FlattenVendorConfigurationResult> {
+public class FlattenVendorConfigurationJob extends
+      BatfishJob<FlattenVendorConfigurationResult> {
 
    private String _fileText;
 
@@ -39,6 +38,8 @@ public class FlattenVendorConfigurationJob implements
 
    @Override
    public FlattenVendorConfigurationResult call() throws Exception {
+      long startTime = System.currentTimeMillis();
+      long elapsedTime;
       String inputFileAsString = _inputFile.getAbsolutePath();
       ConfigurationFormat format = Format
             .identifyConfigurationFormat(_fileText);
@@ -53,14 +54,16 @@ public class FlattenVendorConfigurationJob implements
          catch (ParserBatfishException e) {
             String error = "Error parsing configuration file: \""
                   + inputFileAsString + "\"";
-            return new FlattenVendorConfigurationResult(_logger.getHistory(),
-                  new BatfishException(error, e));
+            elapsedTime = System.currentTimeMillis() - startTime;
+            return new FlattenVendorConfigurationResult(elapsedTime,
+                  _logger.getHistory(), new BatfishException(error, e));
          }
          catch (Exception e) {
             String error = "Error post-processing parse tree of configuration file: \""
                   + inputFileAsString + "\"";
-            return new FlattenVendorConfigurationResult(_logger.getHistory(),
-                  new BatfishException(error, e));
+            elapsedTime = System.currentTimeMillis() - startTime;
+            return new FlattenVendorConfigurationResult(elapsedTime,
+                  _logger.getHistory(), new BatfishException(error, e));
          }
          finally {
             for (String warning : _warnings.getRedFlagWarnings()) {
@@ -73,20 +76,24 @@ public class FlattenVendorConfigurationJob implements
                _logger.pedantic(warning);
             }
          }
-         return new FlattenVendorConfigurationResult(_logger.getHistory(),
-               _outputFile, flatConfigText);
+         elapsedTime = System.currentTimeMillis() - startTime;
+         return new FlattenVendorConfigurationResult(elapsedTime,
+               _logger.getHistory(), _outputFile, flatConfigText);
       }
       else if (!_settings.ignoreUnsupported()
             && format == ConfigurationFormat.UNKNOWN) {
-         return new FlattenVendorConfigurationResult(_logger.getHistory(),
-               new BatfishException("Unknown configuration format for: \""
-                     + _inputFile.toString() + "\""));
+         elapsedTime = System.currentTimeMillis() - startTime;
+         return new FlattenVendorConfigurationResult(elapsedTime,
+               _logger.getHistory(), new BatfishException(
+                     "Unknown configuration format for: \""
+                           + _inputFile.toString() + "\""));
       }
       else {
          _logger.debug("Skipping: \"" + _inputFile.toString() + "\"\n");
          String flatConfigText = _fileText;
-         return new FlattenVendorConfigurationResult(_logger.getHistory(),
-               _outputFile, flatConfigText);
+         elapsedTime = System.currentTimeMillis() - startTime;
+         return new FlattenVendorConfigurationResult(elapsedTime,
+               _logger.getHistory(), _outputFile, flatConfigText);
       }
    }
 

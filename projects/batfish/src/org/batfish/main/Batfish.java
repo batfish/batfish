@@ -27,10 +27,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Set;
@@ -84,6 +80,7 @@ import org.batfish.grammar.z3.ConcretizerQueryResultCombinedParser;
 import org.batfish.grammar.z3.ConcretizerQueryResultExtractor;
 import org.batfish.grammar.z3.DatalogQueryResultCombinedParser;
 import org.batfish.grammar.z3.DatalogQueryResultExtractor;
+import org.batfish.job.BatfishJobExecutor;
 import org.batfish.job.ConvertConfigurationJob;
 import org.batfish.job.ConvertConfigurationResult;
 import org.batfish.job.FlattenVendorConfigurationJob;
@@ -205,8 +202,6 @@ public class Batfish implements AutoCloseable {
     */
    private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = { (byte) 0xac,
          (byte) 0xed, (byte) 0x00, (byte) 0x05 };
-
-   private static final long JOB_POLLING_PERIOD_MS = 1000l;
 
    /**
     * The name of the LogiQL library for org.batfish
@@ -754,53 +749,13 @@ public class Batfish implements AutoCloseable {
    }
 
    private Set<Flow> computeCompositeNodOutput(List<CompositeNodJob> jobs) {
+      _logger.info("\n*** EXECUTING COMPOSITE NOD JOBS ***\n");
+      resetTimer();
       Set<Flow> flows = new TreeSet<Flow>();
-      ExecutorService pool;
-      boolean shuffle;
-      if (!_settings.getSequential()) {
-         int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
-         pool = Executors.newFixedThreadPool(numConcurrentThreads);
-         shuffle = true;
-      }
-      else {
-         pool = Executors.newSingleThreadExecutor();
-         shuffle = false;
-      }
-      if (shuffle) {
-         Collections.shuffle(jobs);
-      }
-      List<Future<NodJobResult>> results;
-      try {
-         results = pool.invokeAll(jobs);
-      }
-      catch (InterruptedException e) {
-         throw new BatfishException("Nod executor service interrupted", e);
-      }
-      for (Future<NodJobResult> future : results) {
-         try {
-            NodJobResult result = future.get();
-            if (result.terminatedSuccessfully()) {
-               flows.addAll(result.getFlows());
-            }
-            else {
-               Throwable failureCause = result.getFailureCause();
-               if (failureCause != null) {
-                  throw new BatfishException("Failure running nod job",
-                        failureCause);
-               }
-               else {
-                  throw new BatfishException("Unknown failure running nod job");
-               }
-            }
-         }
-         catch (InterruptedException e) {
-            throw new BatfishException("Nod job interrupted", e);
-         }
-         catch (ExecutionException e) {
-            throw new BatfishException("Could not execute nod job", e);
-         }
-      }
-      pool.shutdown();
+      BatfishJobExecutor<CompositeNodJob, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<CompositeNodJob, NodJobResult, Set<Flow>>(
+            _settings, _logger);
+      executor.executeJobs(jobs, flows);
+      printElapsedTime();
       return flows;
    }
 
@@ -958,98 +913,11 @@ public class Batfish implements AutoCloseable {
       _logger.info("\n*** EXECUTING NOD JOBS ***\n");
       resetTimer();
       Set<Flow> flows = new TreeSet<Flow>();
-      ExecutorService pool;
-      boolean shuffle;
-      if (!_settings.getSequential()) {
-         int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
-         pool = Executors.newFixedThreadPool(numConcurrentThreads);
-         shuffle = true;
-      }
-      else {
-         pool = Executors.newSingleThreadExecutor();
-         shuffle = false;
-      }
-      if (shuffle) {
-         Collections.shuffle(jobs);
-      }
-      List<Future<NodJobResult>> futures = new ArrayList<Future<NodJobResult>>();
-      for (NodJob job : jobs) {
-         Future<NodJobResult> future = pool.submit(job);
-         futures.add(future);
-      }
-      boolean processingError = false;
-      int finishedJobs = 0;
-      int totalJobs = jobs.size();
-      double finishedPercent;
-      while (!futures.isEmpty()) {
-         List<Future<NodJobResult>> currentFutures = new ArrayList<Future<NodJobResult>>();
-         currentFutures.addAll(futures);
-         for (Future<NodJobResult> future : currentFutures) {
-            if (future.isDone()) {
-               futures.remove(future);
-               finishedJobs++;
-               finishedPercent = 100 * ((double) finishedJobs) / totalJobs;
-               NodJobResult result = null;
-               try {
-                  result = future.get();
-               }
-               catch (InterruptedException | ExecutionException e) {
-                  throw new BatfishException("Error executing nod job", e);
-               }
-               String time = Util.getTime(result.getElapsedTime());
-               if (result.terminatedSuccessfully()) {
-                  flows.addAll(result.getFlows());
-                  _logger
-                        .infof(
-                              "Nod job terminated successfully with result: %s after elapsed time: %s - %d/%d (%.1f%%) complete\n",
-                              result.toString(), time, finishedJobs, totalJobs,
-                              finishedPercent);
-               }
-               else {
-                  Throwable failureCause = result.getFailureCause();
-                  if (failureCause != null) {
-                     String failureMessage = "Failure running nod job after elapsed time: "
-                           + time;
-                     if (_settings.getExitOnFirstError()) {
-                        throw new BatfishException(failureMessage, failureCause);
-                     }
-                     else {
-                        processingError = true;
-                        _logger.error(failureMessage + ":"
-                              + ExceptionUtils.getStackTrace(failureCause));
-                     }
-                  }
-                  else {
-                     throw new BatfishException(
-                           "Unknown failure running nod job");
-                  }
-               }
-            }
-            else {
-               continue;
-            }
-         }
-         if (!futures.isEmpty()) {
-            try {
-               Thread.sleep(JOB_POLLING_PERIOD_MS);
-            }
-            catch (InterruptedException e) {
-               throw new BatfishException("interrupted while sleeping", e);
-            }
-         }
-      }
-      pool.shutdown();
-      if (processingError) {
-         throw new BatfishException(
-               "Fatal exception due to failure of at least one nod job");
-      }
-      else {
-         printElapsedTime();
-         if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
-            _logger.output("All nod jobs executed successfully\n");
-         }
-         return flows;
-      }
+      BatfishJobExecutor<NodJob, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<NodJob, NodJobResult, Set<Flow>>(
+            _settings, _logger);
+      executor.executeJobs(jobs, flows);
+      printElapsedTime();
+      return flows;
    }
 
    public Topology computeTopology(String testRigPath,
@@ -1208,22 +1076,8 @@ public class Batfish implements AutoCloseable {
       _logger
             .info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
       resetTimer();
-      ExecutorService pool;
-      boolean shuffle;
-      if (!_settings.getSequential()) {
-         int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
-         pool = Executors.newFixedThreadPool(numConcurrentThreads);
-         shuffle = true;
-      }
-      else {
-         pool = Executors.newSingleThreadExecutor();
-         shuffle = false;
-      }
-
       Map<String, Configuration> configurations = new TreeMap<String, Configuration>();
       List<ConvertConfigurationJob> jobs = new ArrayList<ConvertConfigurationJob>();
-
-      boolean processingError = false;
       for (String hostname : vendorConfigurations.keySet()) {
          Warnings warnings = new Warnings(_settings.getPedanticAsError(),
                _settings.getPedanticRecord()
@@ -1239,84 +1093,11 @@ public class Batfish implements AutoCloseable {
                vc, hostname, warnings);
          jobs.add(job);
       }
-      if (shuffle) {
-         Collections.shuffle(jobs);
-      }
-      List<Future<ConvertConfigurationResult>> futures = new ArrayList<Future<ConvertConfigurationResult>>();
-      for (ConvertConfigurationJob job : jobs) {
-         Future<ConvertConfigurationResult> future = pool.submit(job);
-         futures.add(future);
-      }
-      while (!futures.isEmpty()) {
-         List<Future<ConvertConfigurationResult>> currentFutures = new ArrayList<Future<ConvertConfigurationResult>>();
-         currentFutures.addAll(futures);
-         for (Future<ConvertConfigurationResult> future : currentFutures) {
-            if (future.isDone()) {
-               futures.remove(future);
-               ConvertConfigurationResult result = null;
-               try {
-                  result = future.get();
-               }
-               catch (InterruptedException | ExecutionException e) {
-                  throw new BatfishException("Error executing convert job", e);
-               }
-               String terseLogLevelPrefix;
-               if (_logger.isActive(BatfishLogger.LEVEL_INFO)) {
-                  terseLogLevelPrefix = "";
-               }
-               else {
-                  terseLogLevelPrefix = result.getNodeName().toString() + ": ";
-               }
-               _logger.append(result.getHistory(), terseLogLevelPrefix);
-               Throwable failureCause = result.getFailureCause();
-               if (failureCause != null) {
-                  if (_settings.getExitOnFirstError()) {
-                     throw new BatfishException("Failed convert job",
-                           failureCause);
-                  }
-                  else {
-                     processingError = true;
-                     _logger.error(ExceptionUtils.getStackTrace(failureCause));
-                  }
-               }
-               else {
-                  Configuration c = result.getConfiguration();
-                  if (c != null) {
-                     String hostname = c.getHostname();
-                     if (configurations.containsKey(hostname)) {
-                        throw new BatfishException("Duplicate hostname: "
-                              + hostname);
-                     }
-                     else {
-                        configurations.put(hostname, c);
-                     }
-                  }
-               }
-            }
-            else {
-               continue;
-            }
-         }
-         if (!futures.isEmpty()) {
-            try {
-               Thread.sleep(JOB_POLLING_PERIOD_MS);
-            }
-            catch (InterruptedException e) {
-               throw new BatfishException("interrupted while sleeping", e);
-            }
-         }
-      }
-      pool.shutdown();
-      if (processingError) {
-         return null;
-      }
-      else {
-         if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
-            _logger.output("All configurations converted successfully\n");
-         }
-         printElapsedTime();
-         return configurations;
-      }
+      BatfishJobExecutor<ConvertConfigurationJob, ConvertConfigurationResult, Map<String, Configuration>> executor = new BatfishJobExecutor<ConvertConfigurationJob, ConvertConfigurationResult, Map<String, Configuration>>(
+            _settings, _logger);
+      executor.executeJobs(jobs, configurations);
+      printElapsedTime();
+      return configurations;
    }
 
    public Map<String, Configuration> deserializeConfigurations(
@@ -1491,25 +1272,9 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException(
                "Could not create output testrig directory", e);
       }
-
       _logger.info("\n*** FLATTENING TEST RIG ***\n");
       resetTimer();
-
-      ExecutorService pool;
-      boolean shuffle;
-      if (!_settings.getSequential()) {
-         int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
-         pool = Executors.newFixedThreadPool(numConcurrentThreads);
-         shuffle = true;
-      }
-      else {
-         pool = Executors.newSingleThreadExecutor();
-         shuffle = false;
-      }
-
       List<FlattenVendorConfigurationJob> jobs = new ArrayList<FlattenVendorConfigurationJob>();
-
-      boolean processingError = false;
       for (File inputFile : configurationData.keySet()) {
          Warnings warnings = new Warnings(_settings.getPedanticAsError(),
                _settings.getPedanticRecord()
@@ -1528,65 +1293,10 @@ public class Batfish implements AutoCloseable {
                _settings, fileText, inputFile, outputFile, warnings);
          jobs.add(job);
       }
-      if (shuffle) {
-         Collections.shuffle(jobs);
-      }
-      List<Future<FlattenVendorConfigurationResult>> futures = new ArrayList<Future<FlattenVendorConfigurationResult>>();
-      for (FlattenVendorConfigurationJob job : jobs) {
-         Future<FlattenVendorConfigurationResult> future = pool.submit(job);
-         futures.add(future);
-      }
-      while (!futures.isEmpty()) {
-         List<Future<FlattenVendorConfigurationResult>> currentFutures = new ArrayList<Future<FlattenVendorConfigurationResult>>();
-         currentFutures.addAll(futures);
-         for (Future<FlattenVendorConfigurationResult> future : currentFutures) {
-            if (future.isDone()) {
-               futures.remove(future);
-               FlattenVendorConfigurationResult result = null;
-               try {
-                  result = future.get();
-               }
-               catch (InterruptedException | ExecutionException e) {
-                  throw new BatfishException("Error executing parse job", e);
-               }
-               _logger.append(result.getHistory());
-               Throwable failureCause = result.getFailureCause();
-               if (failureCause != null) {
-                  if (_settings.getExitOnFirstError()) {
-                     throw new BatfishException("Failed parse job",
-                           failureCause);
-                  }
-                  else {
-                     processingError = true;
-                     _logger.error(ExceptionUtils.getStackTrace(failureCause));
-                  }
-               }
-               else {
-                  File outputFile = result.getOutputFile();
-                  String flattenedText = result.getFlattenedText();
-                  outputConfigurationData.put(outputFile, flattenedText);
-               }
-            }
-            else {
-               continue;
-            }
-         }
-         if (!futures.isEmpty()) {
-            try {
-               Thread.sleep(JOB_POLLING_PERIOD_MS);
-            }
-            catch (InterruptedException e) {
-               throw new BatfishException("interrupted while sleeping", e);
-            }
-         }
-      }
-      pool.shutdown();
-      if (processingError) {
-         throw new BatfishException("Error flattening vendor configurations");
-      }
-      else {
-         printElapsedTime();
-      }
+      BatfishJobExecutor<FlattenVendorConfigurationJob, FlattenVendorConfigurationResult, Map<File, String>> executor = new BatfishJobExecutor<FlattenVendorConfigurationJob, FlattenVendorConfigurationResult, Map<File, String>>(
+            _settings, _logger);
+      executor.executeJobs(jobs, outputConfigurationData);
+      printElapsedTime();
       for (Entry<File, String> e : outputConfigurationData.entrySet()) {
          File outputFile = e.getKey();
          String flatConfigText = e.getValue();
@@ -2837,22 +2547,8 @@ public class Batfish implements AutoCloseable {
          Map<File, String> configurationData) {
       _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
       resetTimer();
-      ExecutorService pool;
-      boolean shuffle;
-      if (!_settings.getSequential()) {
-         int numConcurrentThreads = Runtime.getRuntime().availableProcessors();
-         pool = Executors.newFixedThreadPool(numConcurrentThreads);
-         shuffle = true;
-      }
-      else {
-         pool = Executors.newSingleThreadExecutor();
-         shuffle = false;
-      }
-
       Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<String, VendorConfiguration>();
       List<ParseVendorConfigurationJob> jobs = new ArrayList<ParseVendorConfigurationJob>();
-
-      boolean processingError = false;
       for (File currentFile : configurationData.keySet()) {
          Warnings warnings = new Warnings(_settings.getPedanticAsError(),
                _settings.getPedanticRecord()
@@ -2868,84 +2564,12 @@ public class Batfish implements AutoCloseable {
                _settings, fileText, currentFile, warnings);
          jobs.add(job);
       }
-      if (shuffle) {
-         Collections.shuffle(jobs);
-      }
-      List<Future<ParseVendorConfigurationResult>> futures = new ArrayList<Future<ParseVendorConfigurationResult>>();
-      for (ParseVendorConfigurationJob job : jobs) {
-         Future<ParseVendorConfigurationResult> future = pool.submit(job);
-         futures.add(future);
-      }
-      while (!futures.isEmpty()) {
-         List<Future<ParseVendorConfigurationResult>> currentFutures = new ArrayList<Future<ParseVendorConfigurationResult>>();
-         currentFutures.addAll(futures);
-         for (Future<ParseVendorConfigurationResult> future : currentFutures) {
-            if (future.isDone()) {
-               futures.remove(future);
-               ParseVendorConfigurationResult result = null;
-               try {
-                  result = future.get();
-               }
-               catch (InterruptedException | ExecutionException e) {
-                  throw new BatfishException("Error executing parse job", e);
-               }
-               String terseLogLevelPrefix;
-               if (_logger.isActive(BatfishLogger.LEVEL_INFO)) {
-                  terseLogLevelPrefix = "";
-               }
-               else {
-                  terseLogLevelPrefix = result.getFile().toString() + ": ";
-               }
-               _logger.append(result.getHistory(), terseLogLevelPrefix);
-               Throwable failureCause = result.getFailureCause();
-               if (failureCause != null) {
-                  if (_settings.getExitOnFirstError()) {
-                     throw new BatfishException("Failed parse job",
-                           failureCause);
-                  }
-                  else {
-                     processingError = true;
-                     _logger.error(ExceptionUtils.getStackTrace(failureCause));
-                  }
-               }
-               else {
-                  VendorConfiguration vc = result.getVendorConfiguration();
-                  if (vc != null) {
-                     String hostname = vc.getHostname();
-                     if (vendorConfigurations.containsKey(hostname)) {
-                        throw new BatfishException("Duplicate hostname: "
-                              + hostname);
-                     }
-                     else {
-                        vendorConfigurations.put(hostname, vc);
-                     }
-                  }
-               }
-            }
-            else {
-               continue;
-            }
-         }
-         if (!futures.isEmpty()) {
-            try {
-               Thread.sleep(JOB_POLLING_PERIOD_MS);
-            }
-            catch (InterruptedException e) {
-               throw new BatfishException("interrupted while sleeping", e);
-            }
-         }
-      }
-      pool.shutdown();
-      if (processingError) {
-         return null;
-      }
-      else {
-         printElapsedTime();
-         if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
-            _logger.output("All vendor configurations parsed successfully\n");
-         }
-         return vendorConfigurations;
-      }
+      BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationResult, Map<String, VendorConfiguration>> executor = new BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationResult, Map<String, VendorConfiguration>>(
+            _settings, _logger);
+      executor.executeJobs(jobs, vendorConfigurations);
+
+      printElapsedTime();
+      return vendorConfigurations;
    }
 
    private void populateConfigurationFactBins(
