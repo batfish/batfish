@@ -51,8 +51,9 @@ public class NodJob extends BatfishJob<NodJobResult> {
    public NodJobResult call() throws Exception {
       long startTime = System.currentTimeMillis();
       long elapsedTime;
+      Context ctx = null;
       try {
-         Context ctx = new Context();
+         ctx = new Context();
          NodProgram baseProgram = _dataPlaneSynthesizer
                .synthesizeNodProgram(ctx);
          NodProgram queryProgram = _querySynthesizer.getNodProgram(baseProgram);
@@ -137,6 +138,11 @@ public class NodJob extends BatfishJob<NodJobResult> {
          elapsedTime = System.currentTimeMillis() - startTime;
          return new NodJobResult(elapsedTime, new BatfishException(
                "Error running NoD on concatenated data plane", e));
+      }
+      finally {
+         if (ctx != null) {
+            ctx.dispose();
+         }
       }
    }
 
