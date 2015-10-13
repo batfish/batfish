@@ -7,9 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import org.batfish.collections.NodeSet;
+import org.batfish.job.BatfishJob;
 import org.batfish.main.BatfishException;
 import org.batfish.representation.Flow;
 import org.batfish.representation.Ip;
@@ -28,7 +28,7 @@ import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
 
-public class NodJob implements Callable<NodJobResult> {
+public class NodJob extends BatfishJob<NodJobResult> {
 
    private Synthesizer _dataPlaneSynthesizer;
 

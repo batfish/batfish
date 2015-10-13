@@ -1,12 +1,13 @@
 package org.batfish.job;
 
 import java.io.File;
+import java.util.Map;
 
+import org.batfish.main.BatfishLogger;
 import org.batfish.main.BatfishLogger.BatfishLoggerHistory;
 
-public class FlattenVendorConfigurationResult {
-
-   private Throwable _failureCause;
+public class FlattenVendorConfigurationResult extends
+      BatfishJobResult<Map<File, String>> {
 
    private String _flattenedText;
 
@@ -14,25 +15,34 @@ public class FlattenVendorConfigurationResult {
 
    private File _outputFile;
 
-   public FlattenVendorConfigurationResult(BatfishLoggerHistory history) {
+   public FlattenVendorConfigurationResult(long elapsedTime,
+         BatfishLoggerHistory history) {
+      super(elapsedTime);
       _history = history;
    }
 
-   public FlattenVendorConfigurationResult(BatfishLoggerHistory history,
-         File outputFile, String flattenedText) {
+   public FlattenVendorConfigurationResult(long elapsedTime,
+         BatfishLoggerHistory history, File outputFile, String flattenedText) {
+      super(elapsedTime);
       _history = history;
       _outputFile = outputFile;
       _flattenedText = flattenedText;
    }
 
-   public FlattenVendorConfigurationResult(BatfishLoggerHistory history,
-         Throwable failureCause) {
+   public FlattenVendorConfigurationResult(long elapsedTime,
+         BatfishLoggerHistory history, Throwable failureCause) {
+      super(elapsedTime, failureCause);
       _history = history;
-      _failureCause = failureCause;
    }
 
-   public Throwable getFailureCause() {
-      return _failureCause;
+   @Override
+   public void applyTo(Map<File, String> outputConfigurationData,
+         BatfishLogger logger) {
+      outputConfigurationData.put(_outputFile, _flattenedText);
+   }
+
+   @Override
+   public void explainFailure(BatfishLogger logger) {
    }
 
    public String getFlattenedText() {

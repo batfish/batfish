@@ -170,6 +170,7 @@ public final class Settings {
    private static final String ARG_HISTOGRAM = "histogram";
    private static final String ARG_IGNORE_UNSUPPORTED = "ignoreunsupported";
    private static final String ARG_INTERFACE_MAP_PATH = "impath";
+   private static final String ARG_JOBS = "jobs";
    private static final String ARG_LB_WEB_ADMIN_PORT = "lbwebadminport";
    private static final String ARG_LB_WEB_PORT = "lbwebport";
    private static final String ARG_LOG_FILE = "logfile";
@@ -284,6 +285,8 @@ public final class Settings {
    private static final String DEFAULT_DUMP_IF_DIR = "if";
    private static final String DEFAULT_DUMP_INTERFACE_DESCRIPTIONS_PATH = "interface_descriptions";
    private static final String DEFAULT_FLOW_PATH = "flows";
+   private static final String DEFAULT_JOBS = Integer
+         .toString(Integer.MAX_VALUE);
    private static final String DEFAULT_LB_WEB_ADMIN_PORT = "55183";
    private static final String DEFAULT_LB_WEB_PORT = "8080";
    private static final String DEFAULT_LOG_LEVEL = "debug";
@@ -361,6 +364,7 @@ public final class Settings {
    private String _hsaOutputDir;
    private boolean _ignoreUnsupported;
    private String _interfaceMapPath;
+   private int _jobs;
    private boolean _keepBlocks;
    private int _lbWebAdminPort;
    private int _lbWebPort;
@@ -705,6 +709,10 @@ public final class Settings {
 
    public String getInterfaceMapPath() {
       return _interfaceMapPath;
+   }
+
+   public int getJobs() {
+      return _jobs;
    }
 
    public boolean getKeepBlocks() {
@@ -1491,6 +1499,9 @@ public final class Settings {
       _options.addOption(Option.builder()
             .desc("print topology with symmetric edges adjacent in listing")
             .longOpt(ARG_PRINT_SYMMETRIC_EDGES).build());
+      _options.addOption(Option.builder().hasArg().argName("number")
+            .desc("number of threads used by parallel jobs executor")
+            .longOpt(ARG_JOBS).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1732,6 +1743,8 @@ public final class Settings {
       _traceQuery = line.hasOption(ARG_TRACE_QUERY);
       _deleteWorkspace = line.hasOption(ARG_DELETE_WORKSPACE);
       _printSymmetricEdges = line.hasOption(ARG_PRINT_SYMMETRIC_EDGES);
+      String jobsStr = line.getOptionValue(ARG_JOBS, DEFAULT_JOBS);
+      _jobs = Integer.parseInt(jobsStr);
    }
 
    public boolean printParseTree() {

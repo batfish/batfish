@@ -1,13 +1,15 @@
 package org.batfish.job;
 
 import java.io.File;
+import java.util.Map;
 
+import org.batfish.main.BatfishException;
+import org.batfish.main.BatfishLogger;
 import org.batfish.main.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.representation.VendorConfiguration;
 
-public class ParseVendorConfigurationResult {
-
-   private Throwable _failureCause;
+public class ParseVendorConfigurationResult extends
+      BatfishJobResult<Map<String, VendorConfiguration>> {
 
    private final File _file;
 
@@ -15,27 +17,57 @@ public class ParseVendorConfigurationResult {
 
    private VendorConfiguration _vc;
 
-   public ParseVendorConfigurationResult(BatfishLoggerHistory history, File file) {
+   public ParseVendorConfigurationResult(long elapsedTime,
+         BatfishLoggerHistory history, File file) {
+      super(elapsedTime);
       _history = history;
       _file = file;
    }
 
-   public ParseVendorConfigurationResult(BatfishLoggerHistory history,
-         File file, Throwable failureCause) {
+   public ParseVendorConfigurationResult(long elapsedTime,
+         BatfishLoggerHistory history, File file, Throwable failureCause) {
+      super(elapsedTime, failureCause);
       _history = history;
       _file = file;
-      _failureCause = failureCause;
    }
 
-   public ParseVendorConfigurationResult(BatfishLoggerHistory history,
-         File file, VendorConfiguration vc) {
+   public ParseVendorConfigurationResult(long elapsedTime,
+         BatfishLoggerHistory history, File file, VendorConfiguration vc) {
+      super(elapsedTime);
       _history = history;
       _file = file;
       _vc = vc;
    }
 
-   public Throwable getFailureCause() {
-      return _failureCause;
+   private void appendHistory(BatfishLogger logger) {
+      String terseLogLevelPrefix;
+      if (logger.isActive(BatfishLogger.LEVEL_INFO)) {
+         terseLogLevelPrefix = "";
+      }
+      else {
+         terseLogLevelPrefix = _vc.getHostname().toString() + ": ";
+      }
+      logger.append(_history, terseLogLevelPrefix);
+   }
+
+   @Override
+   public void applyTo(Map<String, VendorConfiguration> vendorConfigurations,
+         BatfishLogger logger) {
+      appendHistory(logger);
+      if (_vc != null) {
+         String hostname = _vc.getHostname();
+         if (vendorConfigurations.containsKey(hostname)) {
+            throw new BatfishException("Duplicate hostname: " + hostname);
+         }
+         else {
+            vendorConfigurations.put(hostname, _vc);
+         }
+      }
+   }
+
+   @Override
+   public void explainFailure(BatfishLogger logger) {
+      appendHistory(logger);
    }
 
    public File getFile() {

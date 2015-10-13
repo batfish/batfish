@@ -1,7 +1,5 @@
 package org.batfish.job;
 
-import java.util.concurrent.Callable;
-
 import org.batfish.main.BatfishException;
 import org.batfish.main.BatfishLogger;
 import org.batfish.main.Settings;
@@ -9,8 +7,8 @@ import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.VendorConfiguration;
 
-public class ConvertConfigurationJob implements
-      Callable<ConvertConfigurationResult> {
+public class ConvertConfigurationJob extends
+      BatfishJob<ConvertConfigurationResult> {
 
    private String _hostname;
 
@@ -34,6 +32,8 @@ public class ConvertConfigurationJob implements
 
    @Override
    public ConvertConfigurationResult call() throws Exception {
+      long startTime = System.currentTimeMillis();
+      long elapsedTime;
       _logger.info("Processing: \"" + _hostname + "\"");
       Configuration configuration = null;
       try {
@@ -42,8 +42,9 @@ public class ConvertConfigurationJob implements
       }
       catch (BatfishException e) {
          String error = "Conversion error";
-         return new ConvertConfigurationResult(_logger.getHistory(), _hostname,
-               new BatfishException(error, e));
+         elapsedTime = System.currentTimeMillis() - startTime;
+         return new ConvertConfigurationResult(elapsedTime,
+               _logger.getHistory(), _hostname, new BatfishException(error, e));
       }
       finally {
          for (String warning : _warnings.getRedFlagWarnings()) {
@@ -56,8 +57,9 @@ public class ConvertConfigurationJob implements
             _logger.pedantic(warning);
          }
       }
-      return new ConvertConfigurationResult(_logger.getHistory(), _hostname,
-            configuration);
+      elapsedTime = System.currentTimeMillis() - startTime;
+      return new ConvertConfigurationResult(elapsedTime, _logger.getHistory(),
+            _hostname, configuration);
    }
 
 }
