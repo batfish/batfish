@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import org.batfish.common.BfConsts;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 
@@ -120,6 +121,8 @@ public class InteractiveClient {
 
    private BfCoordWorkHelper _workHelper;
    private BfCoordPoolHelper _poolHelper;
+   
+   private String _logLevel;
 
   public InteractiveClient(String workMgr, String poolMgr)  {
       try {
@@ -127,6 +130,8 @@ public class InteractiveClient {
          _workHelper = new BfCoordWorkHelper(workMgr);
          _poolHelper = new BfCoordPoolHelper(poolMgr);
 
+         _logLevel = "output";
+         
           ConsoleReader reader = new ConsoleReader();
           reader.setPrompt("batfish> ");
 
@@ -141,14 +146,21 @@ public class InteractiveClient {
           PrintWriter out = new PrintWriter(reader.getOutput());
 
           while ((line = reader.readLine()) != null) {
+             
+             //skip over empty lines
+             if (line.trim().length() == 0)
+                continue;
+
+             if (line.equalsIgnoreCase("quit") || line.equalsIgnoreCase("exit")) {
+                break;
+            }
+             
               out.println("======>\"" + line + "\"");
               out.flush();
 
-              if (line.equalsIgnoreCase("quit") || line.equalsIgnoreCase("exit")) {
-                  break;
-              }
               if (line.equalsIgnoreCase("cls")) {
                   reader.clearScreen();
+                  continue;
               }
 
               String[] words = line.split("\\s+");
@@ -180,6 +192,7 @@ public class InteractiveClient {
          }
          case "parse-vendor-specific": {
             WorkItem wItem = _workHelper.getWorkItemParseVendorSpecific(words[1]);
+            wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _logLevel);
             out.println("work-id is " + wItem.getId());
             boolean result = _workHelper.queueWork(wItem);
             out.println("Queuing result: " + result);
@@ -193,6 +206,12 @@ public class InteractiveClient {
          case "get-object": {
             boolean result = _workHelper.getObject(words[1], words[2]);
             out.println("Result: " + result);
+            break;
+         }
+         case "set-loglevel": {
+            //TODO: sanity test loglevel specification
+            _logLevel = words[1];
+            out.println("Changed loglevel to " + _logLevel);
             break;
          }
          default:

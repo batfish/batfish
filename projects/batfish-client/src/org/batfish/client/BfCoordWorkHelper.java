@@ -31,7 +31,6 @@ public class BfCoordWorkHelper {
    private String _coordWorkMgr;
 
    public BfCoordWorkHelper(String workMgr) {
-
          _coordWorkMgr = workMgr;
    }
 
@@ -480,5 +479,4 @@ public class BfCoordWorkHelper {
       return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
                   BfConsts.RELPATH_QUERY_DUMP_DIR).toString();
    }
-
-}
+ }
