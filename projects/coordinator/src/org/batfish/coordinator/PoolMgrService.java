@@ -42,22 +42,24 @@ public class PoolMgrService {
          _logger.info("PMS:getStatus\n");
          HashMap<String, String> poolStatus = Main.getPoolMgr().getPoolStatus();
          JSONObject obj = new JSONObject(poolStatus);
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, obj.toString()));
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               obj.toString()));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("PMS:getStatus exception: " + stackTrace);
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
       }
    }
 
-   //functions for pool management
+   // functions for pool management
    @GET
    @Path(CoordConsts.SVC_POOL_UPDATE_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray updatePool(@Context UriInfo ui) {
       try {
-         _logger.info("PMS:updatePool " + ui.toString() +"\n");
+         _logger.info("PMS:updatePool " + ui.toString() + "\n");
          MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
 
          for (MultivaluedMap.Entry<String, List<String>> entry : queryParams
@@ -67,7 +69,8 @@ public class PoolMgrService {
 
             if (entry.getKey().equals("add")) {
                for (String worker : entry.getValue()) {
-                  // don't add empty values; occurs for options that have no value
+                  // don't add empty values; occurs for options that have no
+                  // value
                   if (!worker.equals("")) {
                      Main.getPoolMgr().addToPool(worker);
                   }
@@ -75,7 +78,8 @@ public class PoolMgrService {
             }
             else if (entry.getKey().equals("del")) {
                for (String worker : entry.getValue()) {
-                  // don't add empty values; occurs for options that have no value
+                  // don't add empty values; occurs for options that have no
+                  // value
                   if (!worker.equals("")) {
                      Main.getPoolMgr().deleteFromPool(worker);
                   }
@@ -91,7 +95,8 @@ public class PoolMgrService {
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("PMS:updatePool exception: " + stackTrace);
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
       }
 
       return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, "done"));

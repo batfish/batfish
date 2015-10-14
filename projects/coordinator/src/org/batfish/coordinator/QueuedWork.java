@@ -9,18 +9,18 @@ import org.batfish.common.WorkItem;
 
 public class QueuedWork {
 
-   WorkItem _workItem;
+   String _assignedWorker;
 
-   WorkStatusCode _status;
+   Date _dateAssigned;
 
    Date _dateCreated;
-   Date _dateAssigned;
+   Date _dateLastTaskCheckedStatus;
    Date _dateTerminated;
 
-   Date _dateLastTaskCheckedStatus;
    TaskStatus _lastTaskCheckedStatus;
+   WorkStatusCode _status;
 
-   String _assignedWorker;
+   WorkItem _workItem;
 
    public QueuedWork(WorkItem workItem) {
       _workItem = workItem;
@@ -28,10 +28,12 @@ public class QueuedWork {
       _dateCreated = new Date();
    }
 
-   public void setAssignment(String assignedWorker) {
-      _status = WorkStatusCode.ASSIGNED;
-      _assignedWorker = assignedWorker;
-      _dateAssigned = new Date();
+   public void clearAssignment() {
+      _dateAssigned = null;
+      _assignedWorker = null;
+
+      _lastTaskCheckedStatus = null;
+      _dateLastTaskCheckedStatus = null;
    }
 
    public String getAssignedWorker() {
@@ -45,7 +47,7 @@ public class QueuedWork {
    public TaskStatus getLastTaskCheckedStatus() {
       return _lastTaskCheckedStatus;
    }
-   
+
    public WorkStatusCode getStatus() {
       return _status;
    }
@@ -54,29 +56,26 @@ public class QueuedWork {
       return _workItem;
    }
 
+   public void recordTaskStatusCheckResult(TaskStatus status) {
+      _lastTaskCheckedStatus = status;
+      _dateLastTaskCheckedStatus = new Date();
+   }
+
+   public void setAssignment(String assignedWorker) {
+      _status = WorkStatusCode.ASSIGNED;
+      _assignedWorker = assignedWorker;
+      _dateAssigned = new Date();
+   }
+
    public void setStatus(WorkStatusCode status) {
       _status = status;
    }
 
+   @Override
    public String toString() {
-      return String.format("%s [%s] [%s %s %s] [%s] [%s, %s]", 
-            _workItem.toJsonString(), _status, 
-            _dateCreated, _dateAssigned, _dateTerminated, 
-            _assignedWorker, 
-            _lastTaskCheckedStatus, _dateLastTaskCheckedStatus
-            );
-   }
-
-   public void recordTaskStatusCheckResult(TaskStatus status) {
-       _lastTaskCheckedStatus=status;
-       _dateLastTaskCheckedStatus = new Date();    
-   }
-
-   public void clearAssignment() {
-      _dateAssigned = null;
-      _assignedWorker = null;
-      
-      _lastTaskCheckedStatus = null;
-      _dateLastTaskCheckedStatus = null;
+      return String.format("%s [%s] [%s %s %s] [%s] [%s, %s]",
+            _workItem.toJsonString(), _status, _dateCreated, _dateAssigned,
+            _dateTerminated, _assignedWorker, _lastTaskCheckedStatus,
+            _dateLastTaskCheckedStatus);
    }
 }

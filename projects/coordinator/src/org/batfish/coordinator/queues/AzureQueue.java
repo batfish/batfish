@@ -11,13 +11,14 @@ import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueClient;
 
 public class AzureQueue implements WorkQueue {
-   
+
    private CloudQueue _queue;
 
    public AzureQueue(String queueName, String storageConnectionString) {
       try {
          // Retrieve storage account from connection-string.
-         CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);
+         CloudStorageAccount storageAccount = CloudStorageAccount
+               .parse(storageConnectionString);
 
          // Create the queue client.
          CloudQueueClient queueClient = storageAccount.createCloudQueueClient();
@@ -33,7 +34,29 @@ public class AzureQueue implements WorkQueue {
          e.printStackTrace();
       }
    }
-   
+
+   @Override
+   public boolean delete(QueuedWork qWork) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   @Override
+   public QueuedWork deque() {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   @Override
+   public boolean enque(QueuedWork work) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   @Override
    public long getLength() {
       try {
          // Download the approximate message count from the server.
@@ -49,27 +72,16 @@ public class AzureQueue implements WorkQueue {
    }
 
    @Override
-   public boolean enque(QueuedWork work) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
-   }
-
-   @Override
    public QueuedWork getWork(UUID workItemId) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 
    @Override
    public Iterator<QueuedWork> iterator() {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
-   }
-
-   @Override
-   public QueuedWork deque() {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
-   }
-
-   @Override
-   public boolean delete(QueuedWork qWork) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 }

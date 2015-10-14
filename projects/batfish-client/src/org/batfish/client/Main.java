@@ -46,12 +46,12 @@ public class Main {
       else {
          String workMgr = "localhost:" + CoordConsts.SVC_WORK_PORT;
          String poolMgr = "localhost:" + CoordConsts.SVC_POOL_PORT;
-         
+
          if (args.length == 3) {
             workMgr = args[1];
             poolMgr = args[2];
          }
-         
+
          new InteractiveClient(workMgr, poolMgr);
       }
    }

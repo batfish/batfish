@@ -23,9 +23,16 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class PoolMgr {
 
+   final class WorkerStatusRefreshTask implements Runnable {
+      @Override
+      public void run() {
+         Main.getPoolMgr().refreshWorkerStatus();
+      }
+   }
+   private Logger _logger;
+
    // the key should be of the form <ip or hostname>:<port>
    private HashMap<String, WorkerStatus> workerPool;
-   private Logger _logger;
 
    public PoolMgr() {
       _logger = Main.initializeLogger();
@@ -44,6 +51,7 @@ public class PoolMgr {
       workerPool.put(worker, new WorkerStatus(WorkerStatus.StatusCode.UNKNOWN));
 
       Thread thread = new Thread() {
+         @Override
          public void run() {
             refreshWorkerStatus(worker);
          }
@@ -58,11 +66,12 @@ public class PoolMgr {
       }
    }
 
-   private synchronized void updateWorkerStatus(String worker,
-         WorkerStatus.StatusCode statusCode) {
-      if (workerPool.containsKey(worker)) {
-         workerPool.get(worker).UpdateStatus(statusCode);
+   private synchronized List<String> getAllWorkers() {
+      List<String> workers = new LinkedList<String>();
+      for (String worker : workerPool.keySet()) {
+         workers.add(worker);
       }
+      return workers;
    }
 
    public synchronized HashMap<String, String> getPoolStatus() {
@@ -75,37 +84,50 @@ public class PoolMgr {
       return copy;
    }
 
-   private synchronized List<String> getAllWorkers() {
-      List<String> workers = new LinkedList<String>();
-      for (String worker : workerPool.keySet()) {
-         workers.add(worker);
+   public synchronized String getWorkerForAssignment() {
+
+      for (Entry<String, WorkerStatus> workerEntry : workerPool.entrySet()) {
+         if (workerEntry.getValue().getStatus() == WorkerStatus.StatusCode.IDLE) {
+            updateWorkerStatus(workerEntry.getKey(),
+                  WorkerStatus.StatusCode.TRYINGTOASSIGN);
+            return workerEntry.getKey();
+         }
       }
-      return workers;
+
+      return null;
+   }
+
+   public WorkerStatus getWorkerStatus(String worker) {
+      if (workerPool.containsKey(worker)) {
+         return workerPool.get(worker);
+      }
+      else {
+         return null;
+      }
+   }
+
+   public void markAssignmentResult(String worker, boolean assignmentSuccessful) {
+      updateWorkerStatus(worker,
+            assignmentSuccessful ? WorkerStatus.StatusCode.BUSY
+                  : WorkerStatus.StatusCode.IDLE);
    }
 
    public void refreshWorkerStatus() {
-      //_logger.info("PM:RefreshWorkerStatus: entered\n");
+      // _logger.info("PM:RefreshWorkerStatus: entered\n");
       List<String> workers = getAllWorkers();
       for (String worker : workers) {
          refreshWorkerStatus(worker);
       }
    }
 
-   public WorkerStatus getWorkerStatus(String worker) {
-      if (workerPool.containsKey(worker))
-         return workerPool.get(worker);
-      else
-         return null;
-   }
-
    private void refreshWorkerStatus(String worker) {
-      //_logger.info("PM:RefreshWorkerStatus: refreshing status of " + worker +"\n");
+      // _logger.info("PM:RefreshWorkerStatus: refreshing status of " + worker
+      // +"\n");
 
       try {
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               worker, BfConsts.SVC_BASE_RSC,
-               BfConsts.SVC_GET_STATUS_RSC));
+               worker, BfConsts.SVC_BASE_RSC, BfConsts.SVC_GET_STATUS_RSC));
          Invocation.Builder invocationBuilder = webTarget
                .request(MediaType.APPLICATION_JSON);
          Response response = invocationBuilder.get();
@@ -118,8 +140,8 @@ public class PoolMgr {
             String sobj = response.readEntity(String.class);
             JSONArray array = new JSONArray(sobj);
 
-            //_logger.info(String.format("response: %s [%s] [%s]\n",
-            //      array.toString(), array.get(0), array.get(1)));
+            // _logger.info(String.format("response: %s [%s] [%s]\n",
+            // array.toString(), array.get(0), array.get(1)));
 
             if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
                _logger.error(String.format(
@@ -149,7 +171,8 @@ public class PoolMgr {
          }
       }
       catch (ProcessingException e) {
-         _logger.error(String.format("unable to connect to %s: %s\n", worker, e.getMessage()));
+         _logger.error(String.format("unable to connect to %s: %s\n", worker,
+               e.getMessage()));
          updateWorkerStatus(worker, WorkerStatus.StatusCode.UNREACHABLE);
       }
       catch (Exception e) {
@@ -159,29 +182,10 @@ public class PoolMgr {
       }
    }
 
-   public synchronized String getWorkerForAssignment() {
-
-      for (Entry<String, WorkerStatus> workerEntry : workerPool.entrySet()) {
-         if (workerEntry.getValue().getStatus() == WorkerStatus.StatusCode.IDLE) {
-            updateWorkerStatus(workerEntry.getKey(),
-                  WorkerStatus.StatusCode.TRYINGTOASSIGN);
-            return workerEntry.getKey();
-         }
-      }
-
-      return null;
-   }
-
-   public void markAssignmentResult(String worker, boolean assignmentSuccessful) {
-      updateWorkerStatus(worker,
-            assignmentSuccessful ? WorkerStatus.StatusCode.BUSY
-                  : WorkerStatus.StatusCode.IDLE);
-   }
-
-   final class WorkerStatusRefreshTask implements Runnable {
-      @Override
-      public void run() {
-         Main.getPoolMgr().refreshWorkerStatus();
+   private synchronized void updateWorkerStatus(String worker,
+         WorkerStatus.StatusCode statusCode) {
+      if (workerPool.containsKey(worker)) {
+         workerPool.get(worker).UpdateStatus(statusCode);
       }
    }
 }

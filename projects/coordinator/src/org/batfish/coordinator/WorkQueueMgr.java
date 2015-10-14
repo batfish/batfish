@@ -16,13 +16,16 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class WorkQueueMgr {
 
-   public enum QueueType {INCOMPLETE, COMPLETED}
-
-   private WorkQueue _queueIncompleteWork;
-   private WorkQueue _queueCompletedWork;
+   public enum QueueType {
+      COMPLETED,
+      INCOMPLETE
+   }
 
    Logger _logger = Main.initializeLogger();
-   
+   private WorkQueue _queueCompletedWork;
+
+   private WorkQueue _queueIncompleteWork;
+
    public WorkQueueMgr() {
       if (Main.getSettings().getQueueType() == WorkQueue.Type.azure) {
          String storageConnectionString = String.format(
@@ -41,55 +44,10 @@ public class WorkQueueMgr {
          _queueIncompleteWork = new MemoryQueue();
       }
       else {
-         _logger.fatal("unsupported queue type: " + Main.getSettings().getQueueType());
+         _logger.fatal("unsupported queue type: "
+               + Main.getSettings().getQueueType());
          System.exit(1);
       }
-   }
-   
-   public synchronized JSONObject getStatusJson() throws JSONException {
-      
-      JSONObject jObject = new JSONObject();      
-
-      jObject.put("incomplete-works", _queueIncompleteWork.getLength());       
-      for (QueuedWork work : _queueIncompleteWork) {
-         jObject.put(work.getId().toString(), work.toString());         
-      }
-
-      jObject.put("completed-works", _queueCompletedWork.getLength()); 
-      for (QueuedWork work : _queueCompletedWork) {
-         jObject.put(work.getId().toString(), work.toString());         
-      }
-
-      return jObject;
-   }
-
-   public synchronized boolean queueUnassignedWork(QueuedWork work) throws Exception {
-      
-      QueuedWork previouslyQueuedWork = getWork(work.getId());
-      
-      if (previouslyQueuedWork != null) {
-         throw new Exception("Duplicate id for work");
-      }
-      
-      return _queueIncompleteWork.enque(work);
-   }
-   
-   public synchronized QueuedWork getWork(UUID workId) {
-      QueuedWork work = getWork(workId, QueueType.INCOMPLETE);
-      if (work == null) {
-         work = getWork(workId, QueueType.COMPLETED);
-      }      
-      return work;
-   }
-   
-   private synchronized QueuedWork getWork(UUID workId, QueueType qType) {
-      switch (qType) {
-         case COMPLETED:
-            return _queueCompletedWork.getWork(workId);
-         case INCOMPLETE:
-            return _queueIncompleteWork.getWork(workId);     
-      }            
-      return null;
    }
 
    public synchronized long getLength(QueueType qType) {
@@ -102,31 +60,70 @@ public class WorkQueueMgr {
       return -1;
    }
 
+   public synchronized JSONObject getStatusJson() throws JSONException {
+
+      JSONObject jObject = new JSONObject();
+
+      jObject.put("incomplete-works", _queueIncompleteWork.getLength());
+      for (QueuedWork work : _queueIncompleteWork) {
+         jObject.put(work.getId().toString(), work.toString());
+      }
+
+      jObject.put("completed-works", _queueCompletedWork.getLength());
+      for (QueuedWork work : _queueCompletedWork) {
+         jObject.put(work.getId().toString(), work.toString());
+      }
+
+      return jObject;
+   }
+
+   public synchronized QueuedWork getWork(UUID workId) {
+      QueuedWork work = getWork(workId, QueueType.INCOMPLETE);
+      if (work == null) {
+         work = getWork(workId, QueueType.COMPLETED);
+      }
+      return work;
+   }
+
+   private synchronized QueuedWork getWork(UUID workId, QueueType qType) {
+      switch (qType) {
+      case COMPLETED:
+         return _queueCompletedWork.getWork(workId);
+      case INCOMPLETE:
+         return _queueIncompleteWork.getWork(workId);
+      }
+      return null;
+   }
+
    public synchronized QueuedWork getWorkForAssignment() {
-      
+
       for (QueuedWork work : _queueIncompleteWork) {
          if (work.getStatus() == WorkStatusCode.UNASSIGNED) {
             work.setStatus(WorkStatusCode.TRYINGTOASSIGN);
             return work;
-         }         
+         }
       }
-      
+
       return null;
    }
- 
+
    public QueuedWork getWorkForChecking() {
-      
+
       for (QueuedWork work : _queueIncompleteWork) {
          if (work.getStatus() == WorkStatusCode.ASSIGNED) {
             work.setStatus(WorkStatusCode.CHECKINGSTATUS);
             return work;
-         }         
+         }
       }
-      
+
       return null;
    }
 
-   //when assignment attempt ends in error, we do not try to reassign
+   public synchronized void makeWorkUnassigned(QueuedWork work) {
+      work.setStatus(WorkStatusCode.UNASSIGNED);
+   }
+
+   // when assignment attempt ends in error, we do not try to reassign
    public synchronized void markAssignmentError(QueuedWork work) {
       // move the work to completed queue
       _queueIncompleteWork.delete(work);
@@ -135,25 +132,23 @@ public class WorkQueueMgr {
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
-         _logger.error("Could not put work on completed queue. Work = "
-               + work + "\nException = " + stackTrace);
+         _logger.error("Could not put work on completed queue. Work = " + work
+               + "\nException = " + stackTrace);
       }
       work.setStatus(WorkStatusCode.ASSIGNMENTERROR);
    }
 
    public synchronized void markAssignmentFailure(QueuedWork work) {
-         work.setStatus(WorkStatusCode.UNASSIGNED);
-   }
-
-   public synchronized void markAssignmentSuccess(QueuedWork work, String assignedWorker) {
-      work.setAssignment(assignedWorker);
-   }
-
-   public synchronized void makeWorkUnassigned(QueuedWork work) {
       work.setStatus(WorkStatusCode.UNASSIGNED);
    }
 
-   public synchronized void processStatusCheckResult(QueuedWork work, TaskStatus status) {
+   public synchronized void markAssignmentSuccess(QueuedWork work,
+         String assignedWorker) {
+      work.setAssignment(assignedWorker);
+   }
+
+   public synchronized void processStatusCheckResult(QueuedWork work,
+         TaskStatus status) {
 
       // {Unscheduled, InProgress, TerminatedNormally, TerminatedAbnormally,
       // Unknown, UnreachableOrBadResponse}
@@ -161,7 +156,7 @@ public class WorkQueueMgr {
       switch (status) {
       case Unscheduled:
       case InProgress:
-        work.setStatus(WorkStatusCode.ASSIGNED);
+         work.setStatus(WorkStatusCode.ASSIGNED);
          work.recordTaskStatusCheckResult(status);
          break;
       case TerminatedNormally:
@@ -199,5 +194,16 @@ public class WorkQueueMgr {
          break;
       }
    }
+
+   public synchronized boolean queueUnassignedWork(QueuedWork work)
+         throws Exception {
+
+      QueuedWork previouslyQueuedWork = getWork(work.getId());
+
+      if (previouslyQueuedWork != null) {
+         throw new Exception("Duplicate id for work");
+      }
+
+      return _queueIncompleteWork.enque(work);
+   }
 }
- 

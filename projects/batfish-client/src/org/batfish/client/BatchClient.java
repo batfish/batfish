@@ -9,18 +9,19 @@ import org.batfish.common.WorkItem;
 
 public class BatchClient {
 
-   private BfCoordWorkHelper _workHelper;
-   private BfCoordPoolHelper _poolHelper;
    private BatfishLogger _logger;
-   
+   private BfCoordPoolHelper _poolHelper;
+   private BfCoordWorkHelper _workHelper;
+
    public BatchClient(String workMgr, String poolMgr, String testrigName,
          String testrigZipfileName, String envName, String envZipfileName,
          String questionName, String questionFileName, String workerToAdd) {
 
       try {
-    	  
-    	  _logger = new BatfishLogger(BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_DEBUG), 
-    			  						false, System.out);
+
+         _logger = new BatfishLogger(
+               BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_DEBUG), false,
+               System.out);
          _workHelper = new BfCoordWorkHelper(workMgr, _logger);
          _poolHelper = new BfCoordPoolHelper(poolMgr);
 
@@ -98,23 +99,6 @@ public class BatchClient {
       }
    }
 
-   private boolean proceed(String string) {
-      System.out.print("\n" + string + " (y/N): ");
-      try {
-         BufferedReader bufferRead = new BufferedReader(new InputStreamReader(
-               System.in));
-         String s = bufferRead.readLine();
-
-         if (s.startsWith("y") || s.startsWith("Y")) {
-            return true;
-         }
-      }
-      catch (Exception e) {
-         e.printStackTrace();
-      }
-      return false;
-   }
-
    private void execute(WorkItem wItem, String resultsObjName) throws Exception {
 
       _workHelper.queueWork(wItem);
@@ -142,7 +126,25 @@ public class BatchClient {
       // String logFile = "5ea3d4d3-682c-4c8b-8418-08f36fa3e638.log";
       _workHelper.getObject(wItem.getTestrigName(), logFile);
 
-      if (resultsObjName != null)
+      if (resultsObjName != null) {
          _workHelper.getObject(wItem.getTestrigName(), resultsObjName);
+      }
+   }
+
+   private boolean proceed(String string) {
+      System.out.print("\n" + string + " (y/N): ");
+      try {
+         BufferedReader bufferRead = new BufferedReader(new InputStreamReader(
+               System.in));
+         String s = bufferRead.readLine();
+
+         if (s.startsWith("y") || s.startsWith("Y")) {
+            return true;
+         }
+      }
+      catch (Exception e) {
+         e.printStackTrace();
+      }
+      return false;
    }
 }
