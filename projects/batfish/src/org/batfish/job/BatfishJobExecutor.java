@@ -35,7 +35,7 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, JobResult ext
          int numConcurrentThreads = Math.min(maxConcurrentThreads,
                _settings.getJobs());
          pool = Executors.newFixedThreadPool(numConcurrentThreads);
-         shuffle = true;
+         shuffle = _settings.getShuffleJobs();
       }
       else {
          pool = Executors.newSingleThreadExecutor();
