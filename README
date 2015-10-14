@@ -23,10 +23,9 @@ NOTE: After any step involving modifications to .bashrc or equivalent, make sure
 1. (CLIENT) Install gnu parallel 20150109 or later (20150109 available at <http://alpha.gnu.org/gnu/parallel/paralell-20150109.tar.bz2>)
 standard autotools install (extract, configure, make, make install)
 
-2. (CLIENT) Install z3
+2. (CLIENT) Install z3 - use master branch
 git clone https://github.com/Z3Prover/z3
 cd z3
-git checkout unstable
 python scripts/mk_make.py --java
 cd build
 make -j<number-of-jobs>
