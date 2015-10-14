@@ -1,5 +1,6 @@
 package org.batfish.collections;
 
+import org.batfish.common.Pair;
 import org.batfish.representation.Ip;
 
 public class NodeIpPair extends Pair<String, Ip> {

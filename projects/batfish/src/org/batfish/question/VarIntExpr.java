@@ -1,6 +1,6 @@
 package org.batfish.question;
 
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 
 public class VarIntExpr extends BaseIntExpr {
 

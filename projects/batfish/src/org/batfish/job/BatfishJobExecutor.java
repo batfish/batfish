@@ -9,8 +9,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.batfish.main.BatfishException;
-import org.batfish.main.BatfishLogger;
+import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
 import org.batfish.main.Settings;
 import org.batfish.util.Util;
 

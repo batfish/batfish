@@ -1,6 +1,6 @@
 package org.batfish.logicblox;
 
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 
 public class PredicateNotFoundBatfishException extends BatfishException {
 

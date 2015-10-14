@@ -16,7 +16,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.cisco.CiscoParser.*;
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.main.RedFlagBatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Ip;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.batfish.collections.NodeInterfacePair;
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 
 public class FlowTrace implements Comparable<FlowTrace> {
 

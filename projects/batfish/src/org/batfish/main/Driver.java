@@ -17,6 +17,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.BfConsts.TaskStatus;
@@ -200,7 +201,10 @@ public class Driver {
                + e.getMessage());
          System.exit(1);
       }
-      _mainLogger = new BatfishLogger(_mainSettings);
+      _mainLogger = new BatfishLogger(_mainSettings.getLogLevel(), 
+                                      _mainSettings.getTimestamp(), 
+                                      _mainSettings.getLogFile(),
+                                      _mainSettings.getLogTee());
       System.setErr(_mainLogger.getPrintStream());
       System.setOut(_mainLogger.getPrintStream());
       _mainSettings.setLogger(_mainLogger);
@@ -344,7 +348,10 @@ public class Driver {
 
             try {
 
-               final BatfishLogger jobLogger = new BatfishLogger(settings);
+               final BatfishLogger jobLogger = new BatfishLogger(settings.getLogLevel(), 
+                     settings.getTimestamp(), 
+                     settings.getLogFile(), 
+                     settings.getLogTee());
                settings.setLogger(jobLogger);
 
                final Task task = new Task(args);

@@ -1,5 +1,7 @@
 package org.batfish.collections;
 
+import org.batfish.common.Pair;
+
 public class NodeInterfacePair extends Pair<String, String> {
 
    /**

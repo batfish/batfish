@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.representation.Ip;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RoutingProtocol;

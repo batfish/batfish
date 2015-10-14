@@ -2,8 +2,8 @@ package org.batfish.question;
 
 import java.util.List;
 
-import org.batfish.main.BatfishException;
-import org.batfish.main.BatfishLogger;
+import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
 import org.batfish.main.Settings;
 
 public class Assertion implements Statement {

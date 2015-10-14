@@ -2,7 +2,7 @@ package org.batfish.representation;
 
 import java.io.Serializable;
 
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.util.Util;
 
 public class Prefix implements Comparable<Prefix>, Serializable {

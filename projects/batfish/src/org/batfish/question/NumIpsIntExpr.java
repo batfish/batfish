@@ -2,7 +2,7 @@ package org.batfish.question;
 
 import java.util.Set;
 
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.representation.Ip;
 
 public class NumIpsIntExpr extends BaseIntExpr {

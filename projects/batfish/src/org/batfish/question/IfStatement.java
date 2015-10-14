@@ -2,7 +2,7 @@ package org.batfish.question;
 
 import java.util.List;
 
-import org.batfish.main.BatfishLogger;
+import org.batfish.common.BatfishLogger;
 import org.batfish.main.Settings;
 
 public class IfStatement implements Statement {

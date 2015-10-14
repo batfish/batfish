@@ -2,9 +2,9 @@ package org.batfish.job;
 
 import java.util.Map;
 
-import org.batfish.main.BatfishException;
-import org.batfish.main.BatfishLogger;
-import org.batfish.main.BatfishLogger.BatfishLoggerHistory;
+import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.representation.Configuration;
 
 public class ConvertConfigurationResult extends

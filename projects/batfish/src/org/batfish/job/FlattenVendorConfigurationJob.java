@@ -3,8 +3,8 @@ package org.batfish.job;
 import java.io.File;
 
 import org.batfish.main.Batfish;
-import org.batfish.main.BatfishException;
-import org.batfish.main.BatfishLogger;
+import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Settings;

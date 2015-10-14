@@ -8,7 +8,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.util.Util;
 
 public class BatfishParserErrorListener extends BatfishGrammarErrorListener {

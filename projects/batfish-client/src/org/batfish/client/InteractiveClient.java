@@ -48,7 +48,7 @@ public class InteractiveClient {
           
           PrintWriter pWriter = new PrintWriter(reader.getOutput(), true);
           OutputStream os = new WriterOutputStream(pWriter);
-          PrintStream ps = new PrintStream(os);
+          PrintStream ps = new PrintStream(os, true);
           _logger = new BatfishLogger(BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT), 
         		  					false, ps);
 

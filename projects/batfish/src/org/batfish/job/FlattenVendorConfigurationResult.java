@@ -3,8 +3,8 @@ package org.batfish.job;
 import java.io.File;
 import java.util.Map;
 
-import org.batfish.main.BatfishLogger;
-import org.batfish.main.BatfishLogger.BatfishLoggerHistory;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 
 public class FlattenVendorConfigurationResult extends
       BatfishJobResult<Map<File, String>> {

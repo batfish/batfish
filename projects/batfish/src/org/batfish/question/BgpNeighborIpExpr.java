@@ -1,7 +1,7 @@
 package org.batfish.question;
 
 //import org.batfish.representation.Configuration;
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Ip;
 

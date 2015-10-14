@@ -8,7 +8,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.main.PartialGroupMatchBatfishException;
 import org.batfish.main.Warnings;
 

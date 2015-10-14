@@ -3,7 +3,7 @@ package org.batfish.representation;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 
 public enum NamedPort {
    AFS(1483),

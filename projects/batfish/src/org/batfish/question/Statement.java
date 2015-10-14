@@ -1,6 +1,6 @@
 package org.batfish.question;
 
-import org.batfish.main.BatfishLogger;
+import org.batfish.common.BatfishLogger;
 import org.batfish.main.Settings;
 
 public interface Statement {

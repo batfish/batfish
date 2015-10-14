@@ -3,7 +3,7 @@ package org.batfish.representation;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 
 import com.google.common.net.InetAddresses;
 

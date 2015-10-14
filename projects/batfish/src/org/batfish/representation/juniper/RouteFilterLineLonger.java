@@ -1,6 +1,6 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterList;

@@ -1,6 +1,6 @@
 package org.batfish.representation;
 
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 
 public enum OriginType {
    EGP("egp"),

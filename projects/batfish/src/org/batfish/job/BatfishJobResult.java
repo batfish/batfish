@@ -1,6 +1,6 @@
 package org.batfish.job;
 
-import org.batfish.main.BatfishLogger;
+import org.batfish.common.BatfishLogger;
 
 public abstract class BatfishJobResult<Output> {
 

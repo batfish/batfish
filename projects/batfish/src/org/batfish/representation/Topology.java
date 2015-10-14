@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.batfish.collections.EdgeSet;
 import org.batfish.collections.NodeInterfacePair;
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 
 public class Topology implements Serializable {
 

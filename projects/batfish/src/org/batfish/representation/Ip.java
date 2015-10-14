@@ -2,7 +2,7 @@ package org.batfish.representation;
 
 import java.io.Serializable;
 
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 
 public class Ip implements Comparable<Ip>, Serializable {
 
