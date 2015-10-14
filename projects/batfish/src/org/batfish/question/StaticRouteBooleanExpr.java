@@ -1,6 +1,6 @@
 package org.batfish.question;
 
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.representation.StaticRoute;
 
 public enum StaticRouteBooleanExpr implements BooleanExpr {

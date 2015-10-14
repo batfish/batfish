@@ -1,5 +1,7 @@
 package org.batfish.main;
 
+import org.batfish.common.BatfishException;
+
 public class ParserBatfishException extends BatfishException {
 
    /**

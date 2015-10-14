@@ -1,4 +1,4 @@
-package org.batfish.util;
+package org.batfish.common;
 
 import java.io.IOException;
 import java.io.PrintStream;

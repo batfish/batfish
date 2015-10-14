@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.batfish.job.BatfishJobResult;
-import org.batfish.main.BatfishLogger;
+import org.batfish.common.BatfishLogger;
 import org.batfish.representation.Flow;
 
 public class NodJobResult extends BatfishJobResult<Set<Flow>> {

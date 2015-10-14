@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.batfish.main.BatfishException;
-import org.batfish.main.BatfishLogger;
+import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
 import org.batfish.main.Settings;
 import org.batfish.representation.Configuration;
 

@@ -19,7 +19,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.StatementContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.main.PartialGroupMatchBatfishException;
 import org.batfish.main.UndefinedGroupBatfishException;
 import org.batfish.representation.Ip;

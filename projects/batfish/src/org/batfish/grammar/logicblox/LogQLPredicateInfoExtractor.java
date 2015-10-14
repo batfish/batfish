@@ -4,7 +4,7 @@ import org.batfish.collections.LBValueTypeList;
 import org.batfish.collections.PredicateValueTypeMap;
 import org.batfish.grammar.logicblox.LogiQLParser.*;
 import org.batfish.logicblox.LBValueType;
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 
 public class LogQLPredicateInfoExtractor extends LogiQLParserBaseListener {
 

@@ -99,7 +99,7 @@ public class PoolMgr {
    }
 
    private void refreshWorkerStatus(String worker) {
-      _logger.info("PM:RefreshWorkerStatus: refreshing status of " + worker +"\n");
+      //_logger.info("PM:RefreshWorkerStatus: refreshing status of " + worker +"\n");
 
       try {
          Client client = ClientBuilder.newClient();
@@ -117,8 +117,9 @@ public class PoolMgr {
          else {
             String sobj = response.readEntity(String.class);
             JSONArray array = new JSONArray(sobj);
-            _logger.info(String.format("response: %s [%s] [%s]\n",
-                  array.toString(), array.get(0), array.get(1)));
+
+            //_logger.info(String.format("response: %s [%s] [%s]\n",
+            //      array.toString(), array.get(0), array.get(1)));
 
             if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
                _logger.error(String.format(
@@ -148,8 +149,7 @@ public class PoolMgr {
          }
       }
       catch (ProcessingException e) {
-         String stackTrace = ExceptionUtils.getFullStackTrace(e);
-         _logger.error(String.format("unable to connect to %s: %s\n", worker, stackTrace));
+         _logger.error(String.format("unable to connect to %s: %s\n", worker, e.getMessage()));
          updateWorkerStatus(worker, WorkerStatus.StatusCode.UNREACHABLE);
       }
       catch (Exception e) {

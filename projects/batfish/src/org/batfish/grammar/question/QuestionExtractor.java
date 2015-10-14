@@ -9,7 +9,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.BatfishExtractor;
 import org.batfish.grammar.question.QuestionParser.*;
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.question.AddIpStatement;
 import org.batfish.question.AddStringStatement;
 import org.batfish.question.AndExpr;

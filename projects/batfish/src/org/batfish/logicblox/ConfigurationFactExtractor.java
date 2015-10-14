@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.batfish.collections.RoleSet;
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.AsPathAccessList;
 import org.batfish.representation.AsPathAccessListLine;

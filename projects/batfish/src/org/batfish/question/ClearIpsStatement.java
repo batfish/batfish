@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.batfish.main.BatfishLogger;
+import org.batfish.common.BatfishLogger;
 import org.batfish.main.Settings;
 import org.batfish.representation.Ip;
 

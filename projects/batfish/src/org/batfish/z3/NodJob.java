@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.batfish.collections.NodeSet;
 import org.batfish.job.BatfishJob;
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.representation.Flow;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;

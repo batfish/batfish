@@ -3,7 +3,7 @@ package org.batfish.question;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.batfish.main.BatfishLogger;
+import org.batfish.common.BatfishLogger;
 import org.batfish.main.Settings;
 
 public class PrintfStatement implements Statement {

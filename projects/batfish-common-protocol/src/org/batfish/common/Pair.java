@@ -1,4 +1,4 @@
-package org.batfish.collections;
+package org.batfish.common;
 
 import java.io.Serializable;
 

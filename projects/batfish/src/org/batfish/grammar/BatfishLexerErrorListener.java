@@ -6,7 +6,7 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 
 public class BatfishLexerErrorListener extends BatfishGrammarErrorListener {
 

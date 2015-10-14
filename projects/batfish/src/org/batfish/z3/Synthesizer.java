@@ -19,7 +19,7 @@ import org.batfish.collections.NodeSet;
 import org.batfish.collections.PolicyRouteFibIpMap;
 import org.batfish.collections.PolicyRouteFibNodeMap;
 import org.batfish.collections.RoleSet;
-import org.batfish.main.BatfishException;
+import org.batfish.common.BatfishException;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.DataPlane;
 import org.batfish.representation.Edge;

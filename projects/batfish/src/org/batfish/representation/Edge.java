@@ -1,7 +1,7 @@
 package org.batfish.representation;
 
 import org.batfish.collections.NodeInterfacePair;
-import org.batfish.collections.Pair;
+import org.batfish.common.Pair;
 
 public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
 
