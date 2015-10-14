@@ -78,10 +78,11 @@ public class Util {
    }
 
    public static String getTime(long millis) {
-      double second = (millis / 1000) % 60 + (millis % 1000) / 1000d;
-      long minute = (millis / (1000 * 60)) % 60;
-      long hour = (millis / (1000 * 60 * 60)) % 24;
-      String time = String.format("%02d:%02d:%02.2f", hour, minute, second);
+      long cs = (millis / 10) % 100;
+      long s = (millis / 1000) % 60;
+      long m = (millis / (1000 * 60)) % 60;
+      long h = (millis / (1000 * 60 * 60)) % 24;
+      String time = String.format("%02d:%02d:%02d.%02d", h, m, s, cs);
       return time;
    }
 
