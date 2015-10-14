@@ -3,6 +3,7 @@ package org.batfish.client;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.WorkItem;
 
@@ -10,13 +11,17 @@ public class BatchClient {
 
    private BfCoordWorkHelper _workHelper;
    private BfCoordPoolHelper _poolHelper;
-
+   private BatfishLogger _logger;
+   
    public BatchClient(String workMgr, String poolMgr, String testrigName,
          String testrigZipfileName, String envName, String envZipfileName,
          String questionName, String questionFileName, String workerToAdd) {
 
       try {
-         _workHelper = new BfCoordWorkHelper(workMgr);
+    	  
+    	  _logger = new BatfishLogger(BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_DEBUG), 
+    			  						false, System.out);
+         _workHelper = new BfCoordWorkHelper(workMgr, _logger);
          _poolHelper = new BfCoordPoolHelper(poolMgr);
 
          if (proceed("add local batfish worker")) {

@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.WorkItem;
@@ -29,9 +30,11 @@ import org.glassfish.jersey.uri.UriComponent;
 public class BfCoordWorkHelper {
 
    private String _coordWorkMgr;
+   private BatfishLogger _logger;
 
-   public BfCoordWorkHelper(String workMgr) {
+   public BfCoordWorkHelper(String workMgr, BatfishLogger logger) {
          _coordWorkMgr = workMgr;
+         _logger = logger;
    }
 
    public WorkStatusCode getWorkStatus(UUID parseWorkUUID) {
@@ -47,21 +50,21 @@ public class BfCoordWorkHelper {
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
 
-         System.out.println(response.getStatus() + " "
-               + response.getStatusInfo() + " " + response);
+         _logger.info(response.getStatus() + " "
+               + response.getStatusInfo() + " " + response + "\n");
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-            System.err.printf("Did not get an OK response\n");
+            _logger.errorf("Did not get an OK response from: %s\n", webTarget);
             return null;
          }
 
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
-         System.out.printf("response: %s [%s] [%s]\n", array.toString(),
+         _logger.infof("response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-            System.err.printf("got error while checking work status: %s %s\n",
+            _logger.errorf("got error while checking work status: %s %s\n",
                   array.get(0), array.get(1));
             return null;
          }
@@ -69,7 +72,7 @@ public class BfCoordWorkHelper {
          JSONObject jObj = new JSONObject(array.get(1).toString());
 
          if (!jObj.has(CoordConsts.SVC_WORKSTATUS_KEY)) {
-            System.err.printf("workstatus key not found in: %s\n",
+            _logger.errorf("workstatus key not found in: %s\n",
                   jObj.toString());
             return null;
          }
@@ -78,12 +81,12 @@ public class BfCoordWorkHelper {
                .getString(CoordConsts.SVC_WORKSTATUS_KEY));
       }
       catch (ProcessingException e) {
-         System.err.printf("unable to connect to %s: %s\n", _coordWorkMgr, e
+         _logger.errorf("unable to connect to %s: %s\n", _coordWorkMgr, e
                .getStackTrace().toString());
          return null;
       }
       catch (Exception e) {
-         System.err.printf("exception: ");
+         _logger.errorf("exception: ");
          e.printStackTrace();
          return null;
       }
@@ -114,21 +117,21 @@ public class BfCoordWorkHelper {
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
-         System.out.println(response.getStatus() + " "
-               + response.getStatusInfo() + " " + response);
+         _logger.info(response.getStatus() + " "
+               + response.getStatusInfo() + " " + response + "\n");
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-            System.err.printf("UploadTestrig: Did not get an OK response\n");
+            _logger.errorf("UploadTestrig: Did not get an OK response\n");
             return false;
          }
 
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
-         System.out.printf("response: %s [%s] [%s]\n", array.toString(),
+         _logger.infof("response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-            System.err.printf("got error while uploading test rig: %s %s\n",
+            _logger.errorf("got error while uploading test rig: %s %s\n",
                   array.get(0), array.get(1));
             return false;
          }
@@ -137,10 +140,10 @@ public class BfCoordWorkHelper {
       }
       catch (Exception e) {
          if (e.getMessage().contains("FileNotFoundException")) {
-            System.err.printf("File not found: %s", zipfileName);
+            _logger.errorf("File not found: %s", zipfileName);
          }
          else {
-            System.err.printf(
+            _logger.errorf(
                   "Exception when uploading test rig to %s using (%s, %s)\n",
                   _coordWorkMgr, testrigName, zipfileName);
             e.printStackTrace();
@@ -179,8 +182,8 @@ public class BfCoordWorkHelper {
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
-         System.out.println(response.getStatus() + " "
-               + response.getStatusInfo() + " " + response);
+         _logger.infof(response.getStatus() + " "
+               + response.getStatusInfo() + " " + response + "\n");
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             System.err
@@ -190,11 +193,11 @@ public class BfCoordWorkHelper {
 
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
-         System.out.printf("response: %s [%s] [%s]\n", array.toString(),
+         _logger.infof("response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-            System.err.printf("got error while uploading environment: %s %s\n",
+            _logger.errorf("got error while uploading environment: %s %s\n",
                   array.get(0), array.get(1));
             return false;
          }
@@ -242,21 +245,21 @@ public class BfCoordWorkHelper {
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
-         System.out.println(response.getStatus() + " "
-               + response.getStatusInfo() + " " + response);
+         _logger.infof(response.getStatus() + " "
+               + response.getStatusInfo() + " " + response + "\n");
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-            System.err.printf("UploadQuestion: Did not get an OK response\n");
+            _logger.errorf("UploadQuestion: Did not get an OK response\n");
             return false;
          }
 
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
-         System.out.printf("response: %s [%s] [%s]\n", array.toString(),
+         _logger.infof("response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-            System.err.printf("got error while uploading environment: %s %s\n",
+            _logger.errorf("got error while uploading environment: %s %s\n",
                   array.get(0), array.get(1));
             return false;
          }
@@ -264,7 +267,7 @@ public class BfCoordWorkHelper {
          return true;
       }
       catch (Exception e) {
-         System.err.printf(
+         _logger.errorf(
                "Exception when uploading question to %s using (%s, %s, %s)\n",
                _coordWorkMgr, testrigName, qName, fileName);
          e.printStackTrace();
@@ -287,17 +290,17 @@ public class BfCoordWorkHelper {
                .get();
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-            System.err.printf("QueueWork: Did not get an OK response\n");
+            _logger.errorf("QueueWork: Did not get an OK response\n");
             return false;
          }
 
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
-         System.out.printf("response: %s [%s] [%s]\n", array.toString(),
+         _logger.infof("response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-            System.err.printf("got error while queuing work: %s %s\n",
+            _logger.errorf("got error while queuing work: %s %s\n",
                   array.get(0), array.get(1));
             return false;
          }
@@ -305,12 +308,12 @@ public class BfCoordWorkHelper {
          return true;
       }
       catch (ProcessingException e) {
-         System.err.printf("unable to connect to %s: %s\n", _coordWorkMgr, e
+         _logger.errorf("unable to connect to %s: %s\n", _coordWorkMgr, e
                .getStackTrace().toString());
          return false;
       }
       catch (Exception e) {
-         System.err.printf("exception: ");
+         _logger.errorf("exception: ");
          e.printStackTrace();
          return false;
       }
@@ -332,11 +335,11 @@ public class BfCoordWorkHelper {
          Response response = webTarget.request(
                MediaType.APPLICATION_OCTET_STREAM).get();
 
-         System.out.println(response.getStatus() + " "
-               + response.getStatusInfo() + " " + response);
+         _logger.info(response.getStatus() + " "
+               + response.getStatusInfo() + " " + response + "\n");
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-            System.err.printf("GetObject: Did not get an OK response\n");
+            _logger.errorf("GetObject: Did not get an OK response\n");
             return null;
          }
 
@@ -367,7 +370,7 @@ public class BfCoordWorkHelper {
          return outFile.getAbsolutePath();
       }
       catch (Exception e) {
-         System.err.printf(
+         _logger.errorf(
                "Exception in getObject from %s using (%s, %s)\n",
                _coordWorkMgr, testrigName, objectName);
          e.printStackTrace();

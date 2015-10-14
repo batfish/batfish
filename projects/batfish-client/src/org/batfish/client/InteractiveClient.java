@@ -3,13 +3,16 @@ package org.batfish.client;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.common.BfConsts;
-import org.batfish.common.LogHelper;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 
@@ -20,126 +23,17 @@ import jline.console.completer.StringsCompleter;
 
 public class InteractiveClient {
 
-//   public static void usage() {
-//      System.out.println("Usage: java " + InteractiveClient.class.getName()
-//          + " [none/simple/files/dictionary [trigger mask]]");
-//      System.out.println("  none - no completors");
-//      System.out.println("  simple - a simple completor that comples "
-//          + "\"foo\", \"bar\", and \"baz\"");
-//      System.out
-//          .println("  files - a completor that comples " + "file names");
-//      System.out.println("  classes - a completor that comples "
-//          + "java class names");
-//      System.out
-//          .println("  trigger - a special word which causes it to assume "
-//              + "the next line is a password");
-//      System.out.println("  mask - is the character to print in place of "
-//          + "the actual password character");
-//      System.out.println("  color - colored prompt and feedback");
-//      System.out.println("\n  E.g - java Example simple su '*'\n"
-//          + "will use the simple compleator with 'su' triggering\n"
-//          + "the use of '*' as a password mask.");
-//  }
-//
-//   public InteractiveClient(String[] args)  {
-//      try {
-//          Character mask = null;
-//          String trigger = null;
-//          boolean color = false;
-//
-//          ConsoleReader reader = new ConsoleReader();
-//
-//          reader.setPrompt("prompt> ");
-//
-//          if ((args == null) || (args.length == 0)) {
-//              usage();
-//
-//              return;
-//          }
-//
-//          List<Completer> completors = new LinkedList<Completer>();
-//
-//          if (args.length > 0) {
-//              if (args[0].equals("none")) {
-//              }
-//              else if (args[0].equals("files")) {
-//                  completors.add(new FileNameCompleter());
-//              }
-//              else if (args[0].equals("simple")) {
-//                  completors.add(new StringsCompleter("foo", "bar", "baz"));
-//              }
-//              else if (args[0].equals("color")) {
-//                  color = true;
-//                  reader.setPrompt("\u001B[1mfoo\u001B[0m@bar\u001B[32m@baz\u001B[0m> ");
-//              }
-//              else {
-//                  usage();
-//
-//                  return;
-//              }
-//          }
-//
-//          if (args.length == 3) {
-//              mask = args[2].charAt(0);
-//              trigger = args[1];
-//          }
-//
-//          for (Completer c : completors) {
-//              reader.addCompleter(c);
-//          }
-//
-//          String line;
-//          PrintWriter out = new PrintWriter(reader.getOutput());
-//
-//          while ((line = reader.readLine()) != null) {
-//              if (color){
-//                  out.println("\u001B[33m======>\u001B[0m\"" + line + "\"");
-//
-//              } else {
-//                  out.println("======>\"" + line + "\"");
-//              }
-//              out.flush();
-//
-//              // If we input the special word then we will mask
-//              // the next line.
-//              if ((trigger != null) && (line.compareTo(trigger) == 0)) {
-//                  line = reader.readLine("password> ", mask);
-//              }
-//              if (line.equalsIgnoreCase("quit") || line.equalsIgnoreCase("exit")) {
-//                  break;
-//              }
-//              if (line.equalsIgnoreCase("cls")) {
-//                  reader.clearScreen();
-//              }
-//
-//              String[] words = line.split("\\s+");
-//
-//              if (words.length > 0)
-//                 processCommand(line, out);
-//          }
-//      }
-//      catch (Throwable t) {
-//          t.printStackTrace();
-//      }
-//  }
-
    private BfCoordWorkHelper _workHelper;
    private BfCoordPoolHelper _poolHelper;
    
-   private int _logLevel;
    private String _currentTestrigName = null;
    private String _currentEnvironment = null;
 
-   private PrintWriter _consoleWriter = null;
+   private BatfishLogger _logger;
 
    public InteractiveClient(String workMgr, String poolMgr)  {
       try {
 
-         _workHelper = new BfCoordWorkHelper(workMgr);
-         _poolHelper = new BfCoordPoolHelper(poolMgr);
-
-         _logLevel = LogHelper.LEVEL_OUTPUT;
-         
           ConsoleReader reader = new ConsoleReader();
           reader.setPrompt("batfish> ");
 
@@ -151,8 +45,15 @@ public class InteractiveClient {
           }
 
           String line;
+          
+          PrintWriter pWriter = new PrintWriter(reader.getOutput(), true);
+          OutputStream os = new WriterOutputStream(pWriter);
+          PrintStream ps = new PrintStream(os);
+          _logger = new BatfishLogger(BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT), 
+        		  					false, ps);
 
-          _consoleWriter = new PrintWriter(reader.getOutput(), true);
+          _workHelper = new BfCoordWorkHelper(workMgr, _logger);
+          _poolHelper = new BfCoordPoolHelper(poolMgr);
 
           while ((line = reader.readLine()) != null) {
 
@@ -188,20 +89,20 @@ public class InteractiveClient {
          switch (words[0]) {
          case "add-worker": {
             boolean result = _poolHelper.addBatfishWorker(words[1]);
-            writeln("Result: " + result);
+            _logger.output("Result: " + result + "\n");
             break;
          }
          case "upload-testrig": {
             boolean result = _workHelper.uploadTestrig(words[1], words[2]);
-            writeln("Result: " + result);
+            _logger.output("Result: " + result + "\n");
             break;
          }
          case "parse-vendor-specific": {
             WorkItem wItem = _workHelper.getWorkItemParseVendorSpecific(words[1]);
-            wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, LogHelper.toString(_logLevel));
-            writeln("work-id is " + wItem.getId());
+            wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _logger.getLogLevelStr());
+            _logger.info("work-id is " + wItem.getId() + "\n");
             boolean result = _workHelper.queueWork(wItem);
-            writeln("Queuing result: " + result);
+            _logger.info("Queuing result: " + result + "\n");
             break;
          }
          case "init-testrig": {
@@ -210,7 +111,7 @@ public class InteractiveClient {
 
         	    //upload the testrig
              boolean resultUpload = _workHelper.uploadTestrig(testrigName, testrigFile);
-             writeln("Result of uploading testrig: " + resultUpload);
+             _logger.output("Result of uploading testrig: " + resultUpload + "\n");
 
              if (!resultUpload) 
             	 break;
@@ -231,12 +132,12 @@ public class InteractiveClient {
 
              //upload a default environment
              boolean resultUploadEnv = _workHelper.uploadEnvironment(testrigName, "default", testrigFile);
-             writeln(LogHelper.LEVEL_INFO, "Result of uploading default environment: " + resultUploadEnv);
+             _logger.info("Result of uploading default environment: " + resultUploadEnv);
              
              //set the name of the current testrig
              _currentTestrigName = testrigName;
              _currentEnvironment = "default";
-             write("Set active testrig to %s and environment to %s\n", _currentTestrigName, _currentEnvironment);
+             _logger.outputf("Set active testrig to %s and environment to %s\n", _currentTestrigName, _currentEnvironment);
              
              break;
           }
@@ -247,14 +148,14 @@ public class InteractiveClient {
             _currentTestrigName = testrigName;
             _currentEnvironment = environmentName;
             
-            write("Set active testrig to %s and environment to %s\n", _currentTestrigName, _currentEnvironment);
+            _logger.outputf("Set active testrig to %s and environment to %s\n", _currentTestrigName, _currentEnvironment);
             
             break;
          }
          case "generate-dataplane": {
 
             if (_currentTestrigName == null || _currentEnvironment == null) {
-               write("Active testrig name or environment is not set (%s, %s)\n", _currentTestrigName, _currentEnvironment);
+               _logger.errorf("Active testrig name or environment is not set (%s, %s)\n", _currentTestrigName, _currentEnvironment);
                break;
             }
             
@@ -291,13 +192,13 @@ public class InteractiveClient {
             String questionFile = words[2];
             
             if (_currentTestrigName == null || _currentEnvironment == null) {
-               write("Active testrig name or environment is not set (%s, %s)\n", _currentTestrigName, _currentEnvironment);
+               _logger.errorf("Active testrig name or environment is not set (%s, %s)\n", _currentTestrigName, _currentEnvironment);
                break;
             }
             
             //upload the question
             boolean resultUpload = _workHelper.uploadQuestion(_currentTestrigName, questionName, questionFile);            
-            writeln("Result of uploading question: " + resultUpload);
+            _logger.output("Result of uploading question: " + resultUpload + "\n");
 
             if (!resultUpload) 
                break;
@@ -310,27 +211,27 @@ public class InteractiveClient {
          }
          case "get-work-status": {
             WorkStatusCode status = _workHelper.getWorkStatus(UUID.fromString(words[1]));
-            writeln("Result: " + status);
+            _logger.output("Result: " + status + "\n");
             break;
          }
          case "get-object": {
             String file = _workHelper.getObject(words[1], words[2]);
-            writeln("Result: " + file);
+            _logger.output("Result: " + file + "\n");
             break;
          }
          case "set-loglevel": {
             String logLevelStr = words[1];
-            if (LogHelper.LOG_LEVELS.containsKey(logLevelStr)) {
-               _logLevel = LogHelper.LOG_LEVELS.get(logLevelStr);
-               writeln("Changed loglevel to " + logLevelStr);
+            try {
+            	_logger.setLogLevel(logLevelStr);
+                _logger.output("Changed loglevel to " + logLevelStr + "\n");
             }
-            else {
-               write("Undefined loglevel value: %s\n", logLevelStr);
+            catch (Exception e) {
+               _logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
             }
             break;
          }
          default:
-            writeln("Unsupported command " + words[0]);
+            _logger.error("Unsupported command " + words[0] + "\n");
          }
       }
       catch (Exception e) {
@@ -344,11 +245,11 @@ public class InteractiveClient {
   
   private boolean execute(WorkItem wItem) throws Exception {
 
-     wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, LogHelper.toString(_logLevel));
-     writeln(LogHelper.LEVEL_INFO, "work-id is " + wItem.getId());
+     wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _logger.getLogLevelStr());
+     _logger.info("work-id is " + wItem.getId() + "\n");
 
      boolean queueWorkResult = _workHelper.queueWork(wItem);  
-     writeln(LogHelper.LEVEL_INFO, "Queuing result: " + queueWorkResult);
+     _logger.info("Queuing result: " + queueWorkResult + "\n");
 
      if (!queueWorkResult)
         return queueWorkResult;
@@ -359,28 +260,28 @@ public class InteractiveClient {
 			  && status != WorkStatusCode.TERMINATEDNORMALLY
 			  && status != WorkStatusCode.ASSIGNMENTERROR) {
 
-		  write(LogHelper.LEVEL_INFO, "status: %s\n", status);
+		  _logger.infof("status: %s\n", status);
 
 		  Thread.sleep(10 * 1000);
 
 		  status = _workHelper.getWorkStatus(wItem.getId());
 	  }
 
-	  write(LogHelper.LEVEL_INFO, "final status: %s\n", status);
+	  _logger.infof("final status: %s\n", status);
 
 	  // get the results
 	  String logFileName = wItem.getId() + ".log";
 	  String downloadedFile = _workHelper.getObject(wItem.getTestrigName(), logFileName);
 	  
 	  if (downloadedFile == null) {
-		  write("Failed to get output file %s\n", logFileName);
+		  _logger.errorf("Failed to get output file %s\n", logFileName);
 		  return false;
 	  }
 	  else {
 		  try (BufferedReader br = new BufferedReader(new FileReader(downloadedFile))) {
 			  String line = null;
 			  while ((line = br.readLine()) != null) {
-				  writeln(line);
+				  _logger.output(line);
 			  }
 		  }	  
 	  }  
@@ -391,38 +292,8 @@ public class InteractiveClient {
 	     return true;
 	  }
 	  else {
-	     write("WorkItem failed: %s", wItem);
+	     _logger.errorf("WorkItem failed: %s", wItem);
 	     return false;
 	  }
-  }
-  
-  private void writeFinally(String message) {
-     _consoleWriter.print(message);
-  }
-  
-  private void write(int msgLogLevel, String message) {
-     if (msgLogLevel > _logLevel) {
-        writeFinally(message);
-     }
-  }
-
-  private void writeln(int msgLogLevel, String message) {
-     write(msgLogLevel, message + "\n");
-  }
-
-  private void writeln(String message) {
-     writeFinally(message + "\n");
-  }
-  
-  private void write(int msgLogLevel, String format, Object... args) {
-     write(msgLogLevel, String.format(format, args));
-  }
-
-  private void write(String message) {
-     writeFinally(message);
-  }
-
-  private void write(String format, Object... args) {
-     write(String.format(format, args));
   }
 }
