@@ -328,7 +328,13 @@ public class Driver {
                "Parsing command-line failed: " + e.getMessage());
       }
 
-      applyAutoBaseDir(settings);
+      try {
+         applyAutoBaseDir(settings);
+      }
+      catch (Exception e) {
+         return Arrays.asList("failure",
+               "Failed while applying auto basedir. (All arguments are supplied?): " + e.getMessage());
+      }
 
       if (settings.canExecute()) {
          if (claimIdle()) {

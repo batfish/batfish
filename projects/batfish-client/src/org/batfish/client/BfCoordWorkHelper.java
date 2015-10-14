@@ -136,10 +136,15 @@ public class BfCoordWorkHelper {
          return true;
       }
       catch (Exception e) {
-         System.err.printf(
-               "Exception when uploading test rig to %s using (%s, %s)\n",
-               _coordWorkMgr, testrigName, zipfileName);
-         e.printStackTrace();
+         if (e.getMessage().contains("FileNotFoundException")) {
+            System.err.printf("File not found: %s", zipfileName);
+         }
+         else {
+            System.err.printf(
+                  "Exception when uploading test rig to %s using (%s, %s)\n",
+                  _coordWorkMgr, testrigName, zipfileName);
+            e.printStackTrace();
+         }
          return false;
       }
    }
@@ -444,6 +449,7 @@ public class BfCoordWorkHelper {
          String envName, String questionName) {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
       return wItem;
    }

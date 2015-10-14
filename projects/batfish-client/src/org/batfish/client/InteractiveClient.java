@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.batfish.common.BfConsts;
+import org.batfish.common.LogHelper;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 
@@ -125,15 +126,19 @@ public class InteractiveClient {
    private BfCoordWorkHelper _workHelper;
    private BfCoordPoolHelper _poolHelper;
    
-   private String _logLevel;
+   private int _logLevel;
+   private String _currentTestrigName = null;
+   private String _currentEnvironment = null;
 
-  public InteractiveClient(String workMgr, String poolMgr)  {
+   private PrintWriter _consoleWriter = null;
+
+   public InteractiveClient(String workMgr, String poolMgr)  {
       try {
 
          _workHelper = new BfCoordWorkHelper(workMgr);
          _poolHelper = new BfCoordPoolHelper(poolMgr);
 
-         _logLevel = "output";
+         _logLevel = LogHelper.LEVEL_OUTPUT;
          
           ConsoleReader reader = new ConsoleReader();
           reader.setPrompt("batfish> ");
@@ -146,32 +151,30 @@ public class InteractiveClient {
           }
 
           String line;
-          PrintWriter out = new PrintWriter(reader.getOutput());
+
+          _consoleWriter = new PrintWriter(reader.getOutput(), true);
 
           while ((line = reader.readLine()) != null) {
-             
+
              //skip over empty lines
              if (line.trim().length() == 0)
                 continue;
 
              if (line.equalsIgnoreCase("quit") || line.equalsIgnoreCase("exit")) {
                 break;
-            }
-             
-              out.println("======>\"" + line + "\"");
-              out.flush();
+             }
 
-              if (line.equalsIgnoreCase("cls")) {
-                  reader.clearScreen();
-                  continue;
-              }
+             if (line.equalsIgnoreCase("cls")) {
+                reader.clearScreen();
+                continue;
+             }
 
-              String[] words = line.split("\\s+");
+             String[] words = line.split("\\s+");
 
-              if (words.length > 0) {
-                 if (validCommandUsage(words, out))
-                    processCommand(words, out);
-              }
+             if (words.length > 0) {
+                if (validCommandUsage(words, _consoleWriter))
+                   processCommand(words, _consoleWriter);
+             }
           }
       }
       catch (Throwable t) {
@@ -195,7 +198,7 @@ public class InteractiveClient {
          }
          case "parse-vendor-specific": {
             WorkItem wItem = _workHelper.getWorkItemParseVendorSpecific(words[1]);
-            wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _logLevel);
+            wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, LogHelper.toString(_logLevel));
             out.println("work-id is " + wItem.getId());
             boolean result = _workHelper.queueWork(wItem);
             out.println("Queuing result: " + result);
@@ -205,19 +208,106 @@ public class InteractiveClient {
         	 String testrigName = words[1];
         	 String testrigFile = words[2];
 
-        	 //upload the testrig
-             boolean result = _workHelper.uploadTestrig(testrigName, testrigFile);
-             out.println("Result of uploading testrig: " + result);
+        	    //upload the testrig
+             boolean resultUpload = _workHelper.uploadTestrig(testrigName, testrigFile);
+             out.println("Result of uploading testrig: " + resultUpload);
 
-             if (!result) 
+             if (!resultUpload) 
             	 break;
 
-             //queue vendor specific parsing
-             WorkItem wItem = _workHelper.getWorkItemParseVendorSpecific(testrigName);
-             wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _logLevel);
-             execute(wItem, out);
+             //vendor specific parsing
+             WorkItem wItemPvs = _workHelper.getWorkItemParseVendorSpecific(testrigName);
+             boolean resultPvs = execute(wItemPvs, out);
+             
+             if (!resultPvs)
+                break;
+
+             //vendor independent parsing
+             WorkItem wItemPvi = _workHelper.getWorkItemParseVendorIndependent(testrigName);
+             boolean resultPvi = execute(wItemPvi, out);
+             
+             if (!resultPvi)
+                break;
+
+             //upload a default environment
+             boolean resultUploadEnv = _workHelper.uploadEnvironment(testrigName, "default", testrigFile);
+             out.println("Result of uploading default environment: " + resultUploadEnv);
+             
+             //set the name of the current testrig
+             _currentTestrigName = testrigName;
+             _currentEnvironment = "default";
+             out.printf("Set active testrig to %s and environment to %s\n", _currentTestrigName, _currentEnvironment);
+             
              break;
           }
+         case "set-testrig": {
+            String testrigName = words[1];
+            String environmentName = words[2];
+            
+            _currentTestrigName = testrigName;
+            _currentEnvironment = environmentName;
+            
+            out.printf("Set active testrig to %s and environment to %s\n", _currentTestrigName, _currentEnvironment);
+            
+            break;
+         }
+         case "generate-dataplane": {
+
+            if (_currentTestrigName == null || _currentEnvironment == null) {
+               out.printf("Active testrig name or environment is not set (%s, %s)\n", _currentTestrigName, _currentEnvironment);
+               break;
+            }
+            
+            //generate facts
+            WorkItem wItemGf = _workHelper.getWorkItemGenerateFacts(_currentTestrigName, _currentEnvironment);
+            boolean resultGf = execute(wItemGf, out);
+
+            if (!resultGf) 
+               break;
+
+            //generate the data plane
+            WorkItem wItemGenDp = _workHelper.getWorkItemGenerateDataPlane(_currentTestrigName, _currentEnvironment);
+            boolean resultGenDp = execute(wItemGenDp, out);
+
+            if (!resultGenDp) 
+               break;
+
+            //get the data plane
+            WorkItem wItemGetDp = _workHelper.getWorkItemGetDataPlane(_currentTestrigName, _currentEnvironment);
+            boolean resultGetDp = execute(wItemGetDp, out);
+
+            if (!resultGetDp) 
+               break;
+                        
+            //create z3 encoding
+            WorkItem wItemCz3e = _workHelper.getWorkItemCreateZ3Encoding(_currentTestrigName, _currentEnvironment);
+            boolean resultCz3e = execute(wItemCz3e, out);
+
+            if (!resultCz3e) 
+               break;               
+         }
+         case "answer": {
+            String questionName = words[1];
+            String questionFile = words[2];
+            
+            if (_currentTestrigName == null || _currentEnvironment == null) {
+               out.printf("Active testrig name or environment is not set (%s, %s)\n", _currentTestrigName, _currentEnvironment);
+               break;
+            }
+            
+            //upload the question
+            boolean resultUpload = _workHelper.uploadQuestion(_currentTestrigName, questionName, questionFile);            
+            out.println("Result of uploading question: " + resultUpload);
+
+            if (!resultUpload) 
+               break;
+
+            //answer the question
+            WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(_currentTestrigName, _currentEnvironment, questionName);
+            execute(wItemAs, out);
+            
+            break;                        
+         }
          case "get-work-status": {
             WorkStatusCode status = _workHelper.getWorkStatus(UUID.fromString(words[1]));
             out.println("Result: " + status);
@@ -229,9 +319,14 @@ public class InteractiveClient {
             break;
          }
          case "set-loglevel": {
-            //TODO: sanity test loglevel specification
-            _logLevel = words[1];
-            out.println("Changed loglevel to " + _logLevel);
+            String logLevelStr = words[1];
+            if (LogHelper.LOG_LEVELS.containsKey(logLevelStr)) {
+               _logLevel = LogHelper.LOG_LEVELS.get(logLevelStr);
+               writeln("Changed loglevel to " + logLevelStr);
+            }
+            else {
+               write(LogHelper.LEVEL_ERROR, "Undefined loglevel value: %s\n", logLevelStr);
+            }
             break;
          }
          default:
@@ -247,13 +342,17 @@ public class InteractiveClient {
      return true;
   }
   
-  private void execute(WorkItem wItem, PrintWriter out) throws Exception {
+  private boolean execute(WorkItem wItem, PrintWriter out) throws Exception {
 
-	  boolean queueWorkResult = _workHelper.queueWork(wItem);
-  
-	  out.println("work-id is " + wItem.getId());
-      out.println("Queuing result: " + queueWorkResult);
-        
+     wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, LogHelper.toString(_logLevel));
+     out.println("work-id is " + wItem.getId());
+
+     boolean queueWorkResult = _workHelper.queueWork(wItem);  
+     out.println("Queuing result: " + queueWorkResult);
+
+     if (!queueWorkResult)
+        return queueWorkResult;
+     
 	  WorkStatusCode status = _workHelper.getWorkStatus(wItem.getId());
 
 	  while (status != WorkStatusCode.TERMINATEDABNORMALLY
@@ -275,6 +374,7 @@ public class InteractiveClient {
 	  
 	  if (downloadedFile == null) {
 		  out.printf("Failed to get output file %s\n", logFileName);
+		  return false;
 	  }
 	  else {
 		  try (BufferedReader br = new BufferedReader(new FileReader(downloadedFile))) {
@@ -284,6 +384,32 @@ public class InteractiveClient {
 			  }
 		  }	  
 	  }  
+	  
+	  //TODO: remove the log file?
+	  
+	  return (status == WorkStatusCode.TERMINATEDNORMALLY);
+  }
+  
+  private void writeFinally(String message) {
+     _consoleWriter.print(message);
+  }
+  
+  private void write(int msgLogLevel, String message) {
+     if (msgLogLevel > _logLevel) {
+        writeFinally(message);
+     }
+  }
+
+  private void writeln(int msgLogLevel, String message) {
+     write(msgLogLevel, message + "\n");
+  }
+
+  private void writeln(String message) {
+     writeFinally(message);
+  }
+  
+  private void write(int msgLogLevel, String format, Object... args) {
+     write(msgLogLevel, String.format(format, args));
   }
 
 }
