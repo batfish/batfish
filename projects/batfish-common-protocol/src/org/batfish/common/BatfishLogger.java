@@ -1,5 +1,6 @@
 package org.batfish.common;
 
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -114,33 +115,33 @@ public class BatfishLogger {
 
    private boolean _timestamp;
 
-//   public BatfishLogger(String logLevel, boolean timestamp, String logFile, boolean logTee) 
-//		   throws FileNotFoundException{
-//      _history = null;
-//      _timestamp = timestamp;
-//      String levelStr = logLevel;
-//      initializeLogLevel(levelStr);
-//      _logFile = logFile;
-//      if (_logFile != null) {
-//         PrintStream filePrintStream = null;
-////         try {
-//            filePrintStream = new PrintStream(_logFile);
-////         }
-////         catch (FileNotFoundException e) {
-////            throw new Exception("Could not create logfile", e);
-////         }
-//         if (logTee) {
-//            _ps = new CompositePrintStream(System.out, filePrintStream);
+   public BatfishLogger(String logLevel, boolean timestamp, String logFile, boolean logTee) 
+		   throws FileNotFoundException{
+      _history = null;
+      _timestamp = timestamp;
+      String levelStr = logLevel;
+      setLogLevel(levelStr);
+      _logFile = logFile;
+      if (_logFile != null) {
+         PrintStream filePrintStream = null;
+//         try {
+            filePrintStream = new PrintStream(_logFile);
 //         }
-//         else {
-//            _ps = filePrintStream;
+//         catch (FileNotFoundException e) {
+//            throw new Exception("Could not create logfile", e);
 //         }
-//
-//      }
-//      else {
-//         _ps = System.out;
-//      }
-//   }
+         if (logTee) {
+            _ps = new CompositePrintStream(System.out, filePrintStream);
+         }
+         else {
+            _ps = filePrintStream;
+         }
+
+      }
+      else {
+         _ps = System.out;
+      }
+   }
 
    public BatfishLogger(String logLevel, boolean timestamp, PrintStream stream) {
       _history = null;
