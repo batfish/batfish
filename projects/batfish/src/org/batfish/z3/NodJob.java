@@ -139,11 +139,6 @@ public class NodJob extends BatfishJob<NodJobResult> {
          return new NodJobResult(elapsedTime, new BatfishException(
                "Error running NoD on concatenated data plane", e));
       }
-      finally {
-         if (ctx != null) {
-            ctx.dispose();
-         }
-      }
    }
 
    private Flow createFlow(String node, Map<String, Long> constraints) {
