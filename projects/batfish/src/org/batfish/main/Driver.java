@@ -201,10 +201,9 @@ public class Driver {
                + e.getMessage());
          System.exit(1);
       }
-      _mainLogger = new BatfishLogger(_mainSettings.getLogLevel(), 
-                                      _mainSettings.getTimestamp(), 
-                                      _mainSettings.getLogFile(),
-                                      _mainSettings.getLogTee());
+      _mainLogger = new BatfishLogger(_mainSettings.getLogLevel(),
+            _mainSettings.getTimestamp(), _mainSettings.getLogFile(),
+            _mainSettings.getLogTee());
       System.setErr(_mainLogger.getPrintStream());
       System.setOut(_mainLogger.getPrintStream());
       _mainSettings.setLogger(_mainLogger);
@@ -337,7 +336,8 @@ public class Driver {
       }
       catch (Exception e) {
          return Arrays.asList("failure",
-               "Failed while applying auto basedir. (All arguments are supplied?): " + e.getMessage());
+               "Failed while applying auto basedir. (All arguments are supplied?): "
+                     + e.getMessage());
       }
 
       if (settings.canExecute()) {
@@ -348,10 +348,9 @@ public class Driver {
 
             try {
 
-               final BatfishLogger jobLogger = new BatfishLogger(settings.getLogLevel(), 
-                     settings.getTimestamp(), 
-                     settings.getLogFile(), 
-                     settings.getLogTee());
+               final BatfishLogger jobLogger = new BatfishLogger(
+                     settings.getLogLevel(), settings.getTimestamp(),
+                     settings.getLogFile(), settings.getLogTee());
                settings.setLogger(jobLogger);
 
                final Task task = new Task(args);
