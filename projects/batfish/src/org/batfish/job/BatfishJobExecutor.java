@@ -113,7 +113,7 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, JobResult ext
       }
       else {
          if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
-            _logger.output("All jobs executed successfully\n");
+            _logger.info("All jobs executed successfully\n");
          }
          return output;
       }
