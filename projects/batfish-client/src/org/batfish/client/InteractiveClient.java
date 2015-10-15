@@ -20,68 +20,127 @@ import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 import jline.console.completer.StringsCompleter;
 
-
 public class InteractiveClient {
 
-   private BfCoordWorkHelper _workHelper;
-   private BfCoordPoolHelper _poolHelper;
-   
-   private String _currentTestrigName = null;
    private String _currentEnvironment = null;
+   private String _currentTestrigName = null;
 
    private BatfishLogger _logger;
+   private BfCoordPoolHelper _poolHelper;
 
-   public InteractiveClient(String workMgr, String poolMgr)  {
+   private BfCoordWorkHelper _workHelper;
+
+   public InteractiveClient(String workMgr, String poolMgr) {
       try {
 
-          ConsoleReader reader = new ConsoleReader();
-          reader.setPrompt("batfish> ");
+         ConsoleReader reader = new ConsoleReader();
+         reader.setPrompt("batfish> ");
 
-          List<Completer> completors = new LinkedList<Completer>();
-          completors.add(new StringsCompleter("foo", "bar", "baz"));
+         List<Completer> completors = new LinkedList<Completer>();
+         completors.add(new StringsCompleter("foo", "bar", "baz"));
 
-          for (Completer c : completors) {
-              reader.addCompleter(c);
-          }
+         for (Completer c : completors) {
+            reader.addCompleter(c);
+         }
 
-          String line;
-          
-          PrintWriter pWriter = new PrintWriter(reader.getOutput(), true);
-          OutputStream os = new WriterOutputStream(pWriter);
-          PrintStream ps = new PrintStream(os, true);
-          _logger = new BatfishLogger(BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT), 
-        		  					false, ps);
+         String line;
 
-          _workHelper = new BfCoordWorkHelper(workMgr, _logger);
-          _poolHelper = new BfCoordPoolHelper(poolMgr);
+         PrintWriter pWriter = new PrintWriter(reader.getOutput(), true);
+         OutputStream os = new WriterOutputStream(pWriter);
+         PrintStream ps = new PrintStream(os, true);
+         _logger = new BatfishLogger(
+               BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT), false,
+               ps);
 
-          while ((line = reader.readLine()) != null) {
+         _workHelper = new BfCoordWorkHelper(workMgr, _logger);
+         _poolHelper = new BfCoordPoolHelper(poolMgr);
 
-             //skip over empty lines
-             if (line.trim().length() == 0)
-                continue;
+         while ((line = reader.readLine()) != null) {
 
-             if (line.equalsIgnoreCase("quit") || line.equalsIgnoreCase("exit")) {
-                break;
-             }
+            // skip over empty lines
+            if (line.trim().length() == 0) {
+               continue;
+            }
 
-             if (line.equalsIgnoreCase("cls")) {
-                reader.clearScreen();
-                continue;
-             }
+            if (line.equalsIgnoreCase("quit") || line.equalsIgnoreCase("exit")) {
+               break;
+            }
 
-             String[] words = line.split("\\s+");
+            if (line.equalsIgnoreCase("cls")) {
+               reader.clearScreen();
+               continue;
+            }
 
-             if (words.length > 0) {
-                if (validCommandUsage(words))
-                   processCommand(words);
-             }
-          }
+            String[] words = line.split("\\s+");
+
+            if (words.length > 0) {
+               if (validCommandUsage(words)) {
+                  processCommand(words);
+               }
+            }
+         }
       }
       catch (Throwable t) {
-          t.printStackTrace();
+         t.printStackTrace();
       }
-  }
+   }
+
+   private boolean execute(WorkItem wItem) throws Exception {
+
+      wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _logger.getLogLevelStr());
+      _logger.info("work-id is " + wItem.getId() + "\n");
+
+      boolean queueWorkResult = _workHelper.queueWork(wItem);
+      _logger.info("Queuing result: " + queueWorkResult + "\n");
+
+      if (!queueWorkResult) {
+         return queueWorkResult;
+      }
+
+      WorkStatusCode status = _workHelper.getWorkStatus(wItem.getId());
+
+      while (status != WorkStatusCode.TERMINATEDABNORMALLY
+            && status != WorkStatusCode.TERMINATEDNORMALLY
+            && status != WorkStatusCode.ASSIGNMENTERROR) {
+
+         _logger.infof("status: %s\n", status);
+
+         Thread.sleep(10 * 1000);
+
+         status = _workHelper.getWorkStatus(wItem.getId());
+      }
+
+      _logger.infof("final status: %s\n", status);
+
+      // get the results
+      String logFileName = wItem.getId() + ".log";
+      String downloadedFile = _workHelper.getObject(wItem.getTestrigName(),
+            logFileName);
+
+      if (downloadedFile == null) {
+         _logger.errorf("Failed to get output file %s\n", logFileName);
+         return false;
+      }
+      else {
+         try (BufferedReader br = new BufferedReader(new FileReader(
+               downloadedFile))) {
+            String line = null;
+            while ((line = br.readLine()) != null) {
+               _logger.output(line + "\n");
+            }
+         }
+      }
+
+      // TODO: remove the log file?
+
+      if (status == WorkStatusCode.TERMINATEDNORMALLY) {
+         return true;
+      }
+      else {
+         _logger.errorf("WorkItem failed: %s", wItem);
+         return false;
+      }
+   }
 
    private void processCommand(String[] words) {
 
@@ -98,127 +157,159 @@ public class InteractiveClient {
             break;
          }
          case "parse-vendor-specific": {
-            WorkItem wItem = _workHelper.getWorkItemParseVendorSpecific(words[1]);
-            wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _logger.getLogLevelStr());
+            WorkItem wItem = _workHelper
+                  .getWorkItemParseVendorSpecific(words[1]);
+            wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL,
+                  _logger.getLogLevelStr());
             _logger.info("work-id is " + wItem.getId() + "\n");
             boolean result = _workHelper.queueWork(wItem);
             _logger.info("Queuing result: " + result + "\n");
             break;
          }
          case "init-testrig": {
-        	 String testrigName = words[1];
-        	 String testrigFile = words[2];
-
-        	    //upload the testrig
-             boolean resultUpload = _workHelper.uploadTestrig(testrigName, testrigFile);
-             
-             if (resultUpload) {
-                 _logger.output("Successfully uploaded testrig. Starting parsing\n");
-             }
-             else {
-                break;
-             }
-
-             //vendor specific parsing
-             WorkItem wItemPvs = _workHelper.getWorkItemParseVendorSpecific(testrigName);
-             boolean resultPvs = execute(wItemPvs);
-             
-             if (!resultPvs)
-                break;
-
-             //vendor independent parsing
-             WorkItem wItemPvi = _workHelper.getWorkItemParseVendorIndependent(testrigName);
-             boolean resultPvi = execute(wItemPvi);
-             
-             if (!resultPvi)
-                break;
-
-             //upload a default environment
-             boolean resultUploadEnv = _workHelper.uploadEnvironment(testrigName, "default", testrigFile);
-             _logger.info("Result of uploading default environment: " + resultUploadEnv);
-             
-             //set the name of the current testrig
-             _currentTestrigName = testrigName;
-             _currentEnvironment = "default";
-             _logger.outputf("Active (testrig, environment) is now set to (%s, %s)\n", _currentTestrigName, _currentEnvironment);
-             
-             break;
-          }
-         case "set-testrig": {
             String testrigName = words[1];
-            String environmentName = words[2];
-            
-            _currentTestrigName = testrigName;
-            _currentEnvironment = environmentName;
-            
-            _logger.outputf("Active (testrig, environment) is now set to (%s, %s)\n", _currentTestrigName, _currentEnvironment);
-            
-            break;
-         }
-         case "generate-dataplane": {
+            String testrigFile = words[2];
 
-            if (_currentTestrigName == null || _currentEnvironment == null) {
-               _logger.errorf("Active testrig name or environment is not set (%s, %s)\n", _currentTestrigName, _currentEnvironment);
-               break;
-            }
-            
-            //generate facts
-            WorkItem wItemGf = _workHelper.getWorkItemGenerateFacts(_currentTestrigName, _currentEnvironment);
-            boolean resultGf = execute(wItemGf);
-
-            if (!resultGf) 
-               break;
-
-            //generate the data plane
-            WorkItem wItemGenDp = _workHelper.getWorkItemGenerateDataPlane(_currentTestrigName, _currentEnvironment);
-            boolean resultGenDp = execute(wItemGenDp);
-
-            if (!resultGenDp) 
-               break;
-
-            //get the data plane
-            WorkItem wItemGetDp = _workHelper.getWorkItemGetDataPlane(_currentTestrigName, _currentEnvironment);
-            boolean resultGetDp = execute(wItemGetDp);
-
-            if (!resultGetDp) 
-               break;
-                        
-            //create z3 encoding
-            WorkItem wItemCz3e = _workHelper.getWorkItemCreateZ3Encoding(_currentTestrigName, _currentEnvironment);
-            boolean resultCz3e = execute(wItemCz3e);
-
-            if (!resultCz3e) 
-               break;               
-            
-            break;
-         }
-         case "answer": {
-            String questionName = words[1];
-            String questionFile = words[2];
-            
-            if (_currentTestrigName == null || _currentEnvironment == null) {
-               _logger.errorf("Active testrig name or environment is not set: (%s, %s)\n", _currentTestrigName, _currentEnvironment);
-               break;
-            }
-            
-            //upload the question
-            boolean resultUpload = _workHelper.uploadQuestion(_currentTestrigName, questionName, questionFile);            
+            // upload the testrig
+            boolean resultUpload = _workHelper.uploadTestrig(testrigName,
+                  testrigFile);
 
             if (resultUpload) {
-               _logger.output("Successfully uploaded question. Starting to answer\n");  
+               _logger
+                     .output("Successfully uploaded testrig. Starting parsing\n");
             }
             else {
                break;
             }
 
-            //answer the question
-            WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(_currentTestrigName, _currentEnvironment, questionName);
+            // vendor specific parsing
+            WorkItem wItemPvs = _workHelper
+                  .getWorkItemParseVendorSpecific(testrigName);
+            boolean resultPvs = execute(wItemPvs);
+
+            if (!resultPvs) {
+               break;
+            }
+
+            // vendor independent parsing
+            WorkItem wItemPvi = _workHelper
+                  .getWorkItemParseVendorIndependent(testrigName);
+            boolean resultPvi = execute(wItemPvi);
+
+            if (!resultPvi) {
+               break;
+            }
+
+            // upload a default environment
+            boolean resultUploadEnv = _workHelper.uploadEnvironment(
+                  testrigName, "default", testrigFile);
+            _logger.info("Result of uploading default environment: "
+                  + resultUploadEnv);
+
+            // set the name of the current testrig
+            _currentTestrigName = testrigName;
+            _currentEnvironment = "default";
+            _logger.outputf(
+                  "Active (testrig, environment) is now set to (%s, %s)\n",
+                  _currentTestrigName, _currentEnvironment);
+
+            break;
+         }
+         case "set-testrig": {
+            String testrigName = words[1];
+            String environmentName = words[2];
+
+            _currentTestrigName = testrigName;
+            _currentEnvironment = environmentName;
+
+            _logger.outputf(
+                  "Active (testrig, environment) is now set to (%s, %s)\n",
+                  _currentTestrigName, _currentEnvironment);
+
+            break;
+         }
+         case "generate-dataplane": {
+
+            if (_currentTestrigName == null || _currentEnvironment == null) {
+               _logger
+                     .errorf(
+                           "Active testrig name or environment is not set (%s, %s)\n",
+                           _currentTestrigName, _currentEnvironment);
+               break;
+            }
+
+            // generate facts
+            WorkItem wItemGf = _workHelper.getWorkItemGenerateFacts(
+                  _currentTestrigName, _currentEnvironment);
+            boolean resultGf = execute(wItemGf);
+
+            if (!resultGf) {
+               break;
+            }
+
+            // generate the data plane
+            WorkItem wItemGenDp = _workHelper.getWorkItemGenerateDataPlane(
+                  _currentTestrigName, _currentEnvironment);
+            boolean resultGenDp = execute(wItemGenDp);
+
+            if (!resultGenDp) {
+               break;
+            }
+
+            // get the data plane
+            WorkItem wItemGetDp = _workHelper.getWorkItemGetDataPlane(
+                  _currentTestrigName, _currentEnvironment);
+            boolean resultGetDp = execute(wItemGetDp);
+
+            if (!resultGetDp) {
+               break;
+            }
+
+            // create z3 encoding
+            WorkItem wItemCz3e = _workHelper.getWorkItemCreateZ3Encoding(
+                  _currentTestrigName, _currentEnvironment);
+            boolean resultCz3e = execute(wItemCz3e);
+
+            if (!resultCz3e) {
+               break;
+            }
+
+            break;
+         }
+         case "answer": {
+            String questionName = words[1];
+            String questionFile = words[2];
+
+            if (_currentTestrigName == null || _currentEnvironment == null) {
+               _logger
+                     .errorf(
+                           "Active testrig name or environment is not set: (%s, %s)\n",
+                           _currentTestrigName, _currentEnvironment);
+               break;
+            }
+
+            // upload the question
+            boolean resultUpload = _workHelper.uploadQuestion(
+                  _currentTestrigName, questionName, questionFile);
+
+            if (resultUpload) {
+               _logger
+                     .output("Successfully uploaded question. Starting to answer\n");
+            }
+            else {
+               break;
+            }
+
+            // answer the question
+            WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(
+                  _currentTestrigName, _currentEnvironment, questionName);
             execute(wItemAs);
-            
-            break;                        
+
+            break;
          }
          case "get-work-status": {
-            WorkStatusCode status = _workHelper.getWorkStatus(UUID.fromString(words[1]));
+            WorkStatusCode status = _workHelper.getWorkStatus(UUID
+                  .fromString(words[1]));
             _logger.output("Result: " + status + "\n");
             break;
          }
@@ -230,8 +321,8 @@ public class InteractiveClient {
          case "set-loglevel": {
             String logLevelStr = words[1];
             try {
-            	_logger.setLogLevel(logLevelStr);
-                _logger.output("Changed loglevel to " + logLevelStr + "\n");
+               _logger.setLogLevel(logLevelStr);
+               _logger.output("Changed loglevel to " + logLevelStr + "\n");
             }
             catch (Exception e) {
                _logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
@@ -247,61 +338,7 @@ public class InteractiveClient {
       }
    }
 
-  private boolean validCommandUsage(String[] words) {
-     return true;
-  }
-  
-  private boolean execute(WorkItem wItem) throws Exception {
-
-     wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _logger.getLogLevelStr());
-     _logger.info("work-id is " + wItem.getId() + "\n");
-
-     boolean queueWorkResult = _workHelper.queueWork(wItem);  
-     _logger.info("Queuing result: " + queueWorkResult + "\n");
-
-     if (!queueWorkResult)
-        return queueWorkResult;
-     
-	  WorkStatusCode status = _workHelper.getWorkStatus(wItem.getId());
-
-	  while (status != WorkStatusCode.TERMINATEDABNORMALLY
-			  && status != WorkStatusCode.TERMINATEDNORMALLY
-			  && status != WorkStatusCode.ASSIGNMENTERROR) {
-
-		  _logger.infof("status: %s\n", status);
-
-		  Thread.sleep(10 * 1000);
-
-		  status = _workHelper.getWorkStatus(wItem.getId());
-	  }
-
-	  _logger.infof("final status: %s\n", status);
-
-	  // get the results
-	  String logFileName = wItem.getId() + ".log";
-	  String downloadedFile = _workHelper.getObject(wItem.getTestrigName(), logFileName);
-	  
-	  if (downloadedFile == null) {
-		  _logger.errorf("Failed to get output file %s\n", logFileName);
-		  return false;
-	  }
-	  else {
-		  try (BufferedReader br = new BufferedReader(new FileReader(downloadedFile))) {
-			  String line = null;
-			  while ((line = br.readLine()) != null) {
-				  _logger.output(line + "\n");
-			  }
-		  }	  
-	  }  
-	  
-	  //TODO: remove the log file?
-	  
-	  if (status == WorkStatusCode.TERMINATEDNORMALLY) {
-	     return true;
-	  }
-	  else {
-	     _logger.errorf("WorkItem failed: %s", wItem);
-	     return false;
-	  }
-  }
+   private boolean validCommandUsage(String[] words) {
+      return true;
+   }
 }

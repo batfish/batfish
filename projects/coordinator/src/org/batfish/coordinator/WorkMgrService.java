@@ -178,7 +178,8 @@ public class WorkMgrService {
       }
       catch (FileExistsException e) {
          _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));         
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
@@ -233,7 +234,8 @@ public class WorkMgrService {
       }
       catch (FileNotFoundException | FileExistsException e) {
          _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));         
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
@@ -262,7 +264,8 @@ public class WorkMgrService {
       }
       catch (FileNotFoundException | FileExistsException e) {
          _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));         
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);

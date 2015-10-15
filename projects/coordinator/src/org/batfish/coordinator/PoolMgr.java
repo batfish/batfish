@@ -29,6 +29,7 @@ public class PoolMgr {
          Main.getPoolMgr().refreshWorkerStatus();
       }
    }
+
    private Logger _logger;
 
    // the key should be of the form <ip or hostname>:<port>

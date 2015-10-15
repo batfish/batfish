@@ -31,64 +31,51 @@ import org.glassfish.jersey.uri.UriComponent;
 
 public class WorkMgr {
 
-   private WorkQueueMgr _workQueueMgr;
+   final class AssignWorkTask implements Runnable {
+      @Override
+      public void run() {
+         Main.getWorkMgr().checkTask();
+         Main.getWorkMgr().assignWork();
+      }
+   }
+   final class CheckTaskTask implements Runnable {
+      @Override
+      public void run() {
+         Main.getWorkMgr().checkTask();
+      }
+   }
+
+   // private Runnable _checkWorkTask;
+   // private Runnable _assignWorkTask;
+   //
+   // private ScheduledExecutorService _checkService;
+   // private ScheduledExecutorService _assignService;
+   //
+   // private ScheduledFuture<?> _checkFuture;
+   // private ScheduledFuture<?> _assignFuture;
+
    private Logger _logger;
 
-//   private Runnable _checkWorkTask;
-//   private Runnable _assignWorkTask;
-//
-//   private ScheduledExecutorService _checkService;
-//   private ScheduledExecutorService _assignService;
-//
-//   private ScheduledFuture<?> _checkFuture;
-//   private ScheduledFuture<?> _assignFuture;
+   private WorkQueueMgr _workQueueMgr;
 
    public WorkMgr() {
       _logger = Main.initializeLogger();
       _workQueueMgr = new WorkQueueMgr();
 
-      //for some bizarre reason, this ordering of scheduling checktask before assignwork, is important
-      //in the other order, assignwork never fires
-      //TODO: track this down
-//      _checkWorkTask = new CheckTaskTask();
-//      _checkService = Executors.newScheduledThreadPool(1);
-//      _checkFuture = _checkService.scheduleAtFixedRate(_checkWorkTask, 0,
-//                  Main.getSettings().getPeriodCheckWorkMs(),
-//                  TimeUnit.MILLISECONDS);
+      // for some bizarre reason, this ordering of scheduling checktask before
+      // assignwork, is important
+      // in the other order, assignwork never fires
+      // TODO: track this down
+      // _checkWorkTask = new CheckTaskTask();
+      // _checkService = Executors.newScheduledThreadPool(1);
+      // _checkFuture = _checkService.scheduleAtFixedRate(_checkWorkTask, 0,
+      // Main.getSettings().getPeriodCheckWorkMs(),
+      // TimeUnit.MILLISECONDS);
 
       Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
             new AssignWorkTask(), 0,
             Main.getSettings().getPeriodAssignWorkMs(), TimeUnit.MILLISECONDS);
 
-   }
-
-   public JSONObject getStatusJson() throws JSONException {
-      return _workQueueMgr.getStatusJson();
-   }
-
-   public boolean queueWork(WorkItem workItem) throws Exception {
-
-      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
-            + "/" + workItem.getTestrigName());
-
-      if (workItem.getTestrigName().isEmpty() || !testrigDir.exists()) {
-         throw new Exception("Non-existent testrig");
-      }
-
-      boolean success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem));
-
-      // as an optimization trigger AssignWork to see if we can schedule this
-      // (or another) work
-      if (success) {
-         Thread thread = new Thread() {
-            public void run() {
-               assignWork();
-            }
-         };
-         thread.start();
-      }
-
-      return success;
    }
 
    private void assignWork() {
@@ -98,7 +85,7 @@ public class WorkMgr {
 
          // get out if no work was found
          if (work == null) {
-//            _logger.info("WM:AssignWork: No unassigned work\n");
+            // _logger.info("WM:AssignWork: No unassigned work\n");
             return;
          }
 
@@ -121,29 +108,39 @@ public class WorkMgr {
 
    private void assignWork(QueuedWork work, String worker) {
 
-      _logger.info("WM:AssignWork: Trying to assign " + work + " to " + worker + " \n");
+      _logger.info("WM:AssignWork: Trying to assign " + work + " to " + worker
+            + " \n");
 
       boolean assignmentError = false;
       boolean assigned = false;
 
       try {
 
-         //get the task and add other standard stuff
+         // get the task and add other standard stuff
          JSONObject task = work.getWorkItem().toTask();
-         File autobasedir = new File(Main.getSettings().getTestrigStorageLocation() + "/" + work.getWorkItem().getTestrigName());
+         File autobasedir = new File(Main.getSettings()
+               .getTestrigStorageLocation()
+               + "/"
+               + work.getWorkItem().getTestrigName());
          task.put("autobasedir", autobasedir.getAbsolutePath());
-         task.put("logfile", autobasedir.getAbsolutePath() + "/" + work.getId().toString() + ".log");
+         task.put("logfile", autobasedir.getAbsolutePath() + "/"
+               + work.getId().toString() + ".log");
 
          Client client = ClientBuilder.newClient();
-         WebTarget webTarget = client.target(String.format("http://%s%s/%s", worker,
-                     BfConsts.SVC_BASE_RSC, BfConsts.SVC_RUN_TASK_RSC))
-              .queryParam(BfConsts.SVC_TASKID_KEY,
-                   UriComponent.encode(work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED))
-              .queryParam(BfConsts.SVC_TASK_KEY,
-                    UriComponent.encode(task.toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
+         WebTarget webTarget = client
+               .target(
+                     String.format("http://%s%s/%s", worker,
+                           BfConsts.SVC_BASE_RSC, BfConsts.SVC_RUN_TASK_RSC))
+               .queryParam(
+                     BfConsts.SVC_TASKID_KEY,
+                     UriComponent.encode(work.getId().toString(),
+                           UriComponent.Type.QUERY_PARAM_SPACE_ENCODED))
+               .queryParam(
+                     BfConsts.SVC_TASK_KEY,
+                     UriComponent.encode(task.toString(),
+                           UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
 
-         Response response = webTarget
-               .request(MediaType.APPLICATION_JSON)
+         Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
@@ -170,7 +167,8 @@ public class WorkMgr {
       }
       catch (ProcessingException e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
-         _logger.error(String.format("unable to connect to %s: %s\n", worker, stackTrace));
+         _logger.error(String.format("unable to connect to %s: %s\n", worker,
+               stackTrace));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
@@ -197,7 +195,7 @@ public class WorkMgr {
          QueuedWork work = _workQueueMgr.getWorkForChecking();
 
          if (work == null) {
-//            _logger.info("WM:checkTask: No assigned work\n");
+            // _logger.info("WM:checkTask: No assigned work\n");
             return;
          }
 
@@ -217,19 +215,20 @@ public class WorkMgr {
    }
 
    private void checkTask(QueuedWork work, String worker) {
-      _logger.info("WM:CheckWork: Trying to check " + work + " on " + worker + " \n");
+      _logger.info("WM:CheckWork: Trying to check " + work + " on " + worker
+            + " \n");
 
       BfConsts.TaskStatus status = BfConsts.TaskStatus.UnreachableOrBadResponse;
 
       try {
          Client client = ClientBuilder.newClient();
-         WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               worker, BfConsts.SVC_BASE_RSC,
-               BfConsts.SVC_GET_TASKSTATUS_RSC))
-               .queryParam(BfConsts.SVC_TASKID_KEY,
-                     UriComponent.encode(work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
-         Response response = webTarget
-               .request(MediaType.APPLICATION_JSON)
+         WebTarget webTarget = client.target(
+               String.format("http://%s%s/%s", worker, BfConsts.SVC_BASE_RSC,
+                     BfConsts.SVC_GET_TASKSTATUS_RSC)).queryParam(
+               BfConsts.SVC_TASKID_KEY,
+               UriComponent.encode(work.getId().toString(),
+                     UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
+         Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
@@ -256,15 +255,16 @@ public class WorkMgr {
                         .format("did not see status key in json response\n"));
                }
                else {
-                  status = BfConsts.TaskStatus.valueOf(jObj
-                        .getString("status"));
+                  status = BfConsts.TaskStatus
+                        .valueOf(jObj.getString("status"));
                }
             }
          }
       }
       catch (ProcessingException e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
-         _logger.error(String.format("unable to connect to %s: %s\n", worker, stackTrace));
+         _logger.error(String.format("unable to connect to %s: %s\n", worker,
+               stackTrace));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
@@ -272,166 +272,6 @@ public class WorkMgr {
       }
 
       _workQueueMgr.processStatusCheckResult(work, status);
-   }
-
-   public void uploadTestrig(String name, InputStream fileStream)
-         throws Exception {
-
-      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
-            + "/" + name);
-
-      if (testrigDir.exists()) {
-         throw new FileExistsException("Testrig with name " + name + " already exists");
-      }
-
-      if (!testrigDir.mkdirs()) {
-         throw new Exception("failed to create directory "
-               + testrigDir.getAbsolutePath());
-      }
-
-      String zipFile = testrigDir.getAbsolutePath() + "/" + BfConsts.RELPATH_TEST_RIG_DIR + ".zip";
-
-      try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
-         int read = 0;
-         final byte[] bytes = new byte[1024];
-         while ((read = fileStream.read(bytes)) != -1) {
-            fileOutputStream.write(bytes, 0, read);
-         }
-      }
-
-      //now unzip
-      File unzipDir = new File(testrigDir.getAbsolutePath() + "/" + BfConsts.RELPATH_TEST_RIG_DIR);
-      UnzipUtility unzipper = new UnzipUtility();
-      unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
-
-      //sanity check what we got
-      // 1. there should be just one top-level folder
-      // 2. there should be a directory called configs in that folder
-      File[] fileList = unzipDir.listFiles();
-
-      if (fileList.length != 1 || !fileList[0].isDirectory()) {
-         FileUtils.deleteDirectory(testrigDir);
-         throw new Exception("Unexpected packaging of test rig. There should be just one top-level folder");
-      }
-
-      File[] subFileList = fileList[0].listFiles();
-
-      boolean foundConfigs = false;
-      for (File file : subFileList) {
-         if (file.isDirectory() && file.getName().equals("configs")) {
-            foundConfigs = true;
-            break;
-         }
-      }
-
-      if (!foundConfigs) {
-        FileUtils.deleteDirectory(testrigDir);
-        throw new Exception("Unexpected packaging of test rig. Did not find configs folder inside the top-level folder");
-      }
-
-      //things look ok, now make the move
-      for (File file : subFileList) {
-         String target = unzipDir + "/" + file.getName();
-         file.renameTo(new File(target));
-      }
-
-      //delete the empty directory and the zip file
-      fileList[0].delete();
-      new File(zipFile).delete();
-   }
-
-   public void uploadEnvironment(String testrigName, String envName, InputStream fileStream)
-         throws Exception {
-
-      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
-            + "/" + testrigName);
-
-      if (!testrigDir.exists()) {
-         throw new FileNotFoundException("testrig " + testrigName + " does not exist");
-      }
-
-      File envDir = new File(testrigDir.getAbsolutePath()+ "/" + BfConsts.RELPATH_ENVIRONMENTS_DIR + "/" + envName);
-
-      if (envDir.exists()) {
-         throw new FileExistsException("environment " + envName + " exists for testrig " + testrigName);
-      }
-
-      if (!envDir.mkdirs()) {
-         throw new Exception("failed to create directory "
-               + envDir.getAbsolutePath());
-      }
-
-      String zipFile = envDir.getAbsolutePath() + "/tmp" + ".zip";
-
-      try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
-         int read = 0;
-         final byte[] bytes = new byte[1024];
-         while ((read = fileStream.read(bytes)) != -1) {
-            fileOutputStream.write(bytes, 0, read);
-         }
-      }
-
-      //now unzip
-      File unzipDir = new File(envDir.getAbsolutePath() + "/" + BfConsts.RELPATH_ENV_DIR);
-      UnzipUtility unzipper = new UnzipUtility();
-      unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
-
-      //sanity check what we got
-      // 1. there should be just one top-level folder
-      File[] fileList = unzipDir.listFiles();
-
-      if (fileList.length != 1 || !fileList[0].isDirectory()) {
-         FileUtils.deleteDirectory(envDir);
-         throw new Exception("Unexpected packaging of environment. There should be just one top-level folder");
-      }
-
-      File[] subFileList = fileList[0].listFiles();
-
-      //things look ok, now make the move
-      for (File file : subFileList) {
-         String target = unzipDir + "/" + file.getName();
-         file.renameTo(new File(target));
-      }
-
-    //delete the empty directory and the zip file
-      fileList[0].delete();
-      new File(zipFile).delete();
-   }
-
-   public void uploadQuestion(String testrigName, String qName, InputStream fileStream)
-         throws Exception {
-
-      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
-            + "/" + testrigName);
-
-      if (!testrigDir.exists()) {
-         throw new FileNotFoundException("testrig " + testrigName + " does not exist");
-      }
-
-      File qDir = new File(testrigDir.getAbsolutePath()+ "/" + BfConsts.RELPATH_QUESTIONS_DIR + "/" + qName);
-
-      if (qDir.exists()) {
-         throw new FileExistsException("question " + qName + " exists for testrig " + testrigName);
-      }
-
-      if (!qDir.mkdirs()) {
-         throw new Exception("failed to create directory "
-               + qDir.getAbsolutePath());
-      }
-
-      String file = qDir.getAbsolutePath() + "/" + BfConsts.RELPATH_QUESTION_FILE;
-
-      try (OutputStream fileOutputStream = new FileOutputStream(file)) {
-         int read = 0;
-         final byte[] bytes = new byte[1024];
-         while ((read = fileStream.read(bytes)) != -1) {
-            fileOutputStream.write(bytes, 0, read);
-         }
-      }
-   }
-
-   public QueuedWork getWork(UUID workItemId) {
-      return _workQueueMgr.getWork(workItemId);
    }
 
    public File getObject(String testrigName, String objectName) {
@@ -457,18 +297,208 @@ public class WorkMgr {
       return null;
    }
 
-   final class AssignWorkTask implements Runnable {
-      @Override
-      public void run() {
-         Main.getWorkMgr().checkTask();
-         Main.getWorkMgr().assignWork();
+   public JSONObject getStatusJson() throws JSONException {
+      return _workQueueMgr.getStatusJson();
+   }
+
+   public QueuedWork getWork(UUID workItemId) {
+      return _workQueueMgr.getWork(workItemId);
+   }
+
+   public boolean queueWork(WorkItem workItem) throws Exception {
+
+      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
+            + "/" + workItem.getTestrigName());
+
+      if (workItem.getTestrigName().isEmpty() || !testrigDir.exists()) {
+         throw new Exception("Non-existent testrig");
+      }
+
+      boolean success = _workQueueMgr.queueUnassignedWork(new QueuedWork(
+            workItem));
+
+      // as an optimization trigger AssignWork to see if we can schedule this
+      // (or another) work
+      if (success) {
+         Thread thread = new Thread() {
+            @Override
+            public void run() {
+               assignWork();
+            }
+         };
+         thread.start();
+      }
+
+      return success;
+   }
+
+   public void uploadEnvironment(String testrigName, String envName,
+         InputStream fileStream) throws Exception {
+
+      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
+            + "/" + testrigName);
+
+      if (!testrigDir.exists()) {
+         throw new FileNotFoundException("testrig " + testrigName
+               + " does not exist");
+      }
+
+      File envDir = new File(testrigDir.getAbsolutePath() + "/"
+            + BfConsts.RELPATH_ENVIRONMENTS_DIR + "/" + envName);
+
+      if (envDir.exists()) {
+         throw new FileExistsException("environment " + envName
+               + " exists for testrig " + testrigName);
+      }
+
+      if (!envDir.mkdirs()) {
+         throw new Exception("failed to create directory "
+               + envDir.getAbsolutePath());
+      }
+
+      String zipFile = envDir.getAbsolutePath() + "/tmp" + ".zip";
+
+      try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
+         int read = 0;
+         final byte[] bytes = new byte[1024];
+         while ((read = fileStream.read(bytes)) != -1) {
+            fileOutputStream.write(bytes, 0, read);
+         }
+      }
+
+      // now unzip
+      File unzipDir = new File(envDir.getAbsolutePath() + "/"
+            + BfConsts.RELPATH_ENV_DIR);
+      UnzipUtility unzipper = new UnzipUtility();
+      unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
+
+      // sanity check what we got
+      // 1. there should be just one top-level folder
+      File[] fileList = unzipDir.listFiles();
+
+      if (fileList.length != 1 || !fileList[0].isDirectory()) {
+         FileUtils.deleteDirectory(envDir);
+         throw new Exception(
+               "Unexpected packaging of environment. There should be just one top-level folder");
+      }
+
+      File[] subFileList = fileList[0].listFiles();
+
+      // things look ok, now make the move
+      for (File file : subFileList) {
+         String target = unzipDir + "/" + file.getName();
+         file.renameTo(new File(target));
+      }
+
+      // delete the empty directory and the zip file
+      fileList[0].delete();
+      new File(zipFile).delete();
+   }
+
+   public void uploadQuestion(String testrigName, String qName,
+         InputStream fileStream) throws Exception {
+
+      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
+            + "/" + testrigName);
+
+      if (!testrigDir.exists()) {
+         throw new FileNotFoundException("testrig " + testrigName
+               + " does not exist");
+      }
+
+      File qDir = new File(testrigDir.getAbsolutePath() + "/"
+            + BfConsts.RELPATH_QUESTIONS_DIR + "/" + qName);
+
+      if (qDir.exists()) {
+         throw new FileExistsException("question " + qName
+               + " exists for testrig " + testrigName);
+      }
+
+      if (!qDir.mkdirs()) {
+         throw new Exception("failed to create directory "
+               + qDir.getAbsolutePath());
+      }
+
+      String file = qDir.getAbsolutePath() + "/"
+            + BfConsts.RELPATH_QUESTION_FILE;
+
+      try (OutputStream fileOutputStream = new FileOutputStream(file)) {
+         int read = 0;
+         final byte[] bytes = new byte[1024];
+         while ((read = fileStream.read(bytes)) != -1) {
+            fileOutputStream.write(bytes, 0, read);
+         }
       }
    }
 
-   final class CheckTaskTask implements Runnable {
-      @Override
-      public void run() {
-         Main.getWorkMgr().checkTask();
+   public void uploadTestrig(String name, InputStream fileStream)
+         throws Exception {
+
+      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
+            + "/" + name);
+
+      if (testrigDir.exists()) {
+         throw new FileExistsException("Testrig with name " + name
+               + " already exists");
       }
+
+      if (!testrigDir.mkdirs()) {
+         throw new Exception("failed to create directory "
+               + testrigDir.getAbsolutePath());
+      }
+
+      String zipFile = testrigDir.getAbsolutePath() + "/"
+            + BfConsts.RELPATH_TEST_RIG_DIR + ".zip";
+
+      try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
+         int read = 0;
+         final byte[] bytes = new byte[1024];
+         while ((read = fileStream.read(bytes)) != -1) {
+            fileOutputStream.write(bytes, 0, read);
+         }
+      }
+
+      // now unzip
+      File unzipDir = new File(testrigDir.getAbsolutePath() + "/"
+            + BfConsts.RELPATH_TEST_RIG_DIR);
+      UnzipUtility unzipper = new UnzipUtility();
+      unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
+
+      // sanity check what we got
+      // 1. there should be just one top-level folder
+      // 2. there should be a directory called configs in that folder
+      File[] fileList = unzipDir.listFiles();
+
+      if (fileList.length != 1 || !fileList[0].isDirectory()) {
+         FileUtils.deleteDirectory(testrigDir);
+         throw new Exception(
+               "Unexpected packaging of test rig. There should be just one top-level folder");
+      }
+
+      File[] subFileList = fileList[0].listFiles();
+
+      boolean foundConfigs = false;
+      for (File file : subFileList) {
+         if (file.isDirectory() && file.getName().equals("configs")) {
+            foundConfigs = true;
+            break;
+         }
+      }
+
+      if (!foundConfigs) {
+         FileUtils.deleteDirectory(testrigDir);
+         throw new Exception(
+               "Unexpected packaging of test rig. Did not find configs folder inside the top-level folder");
+      }
+
+      // things look ok, now make the move
+      for (File file : subFileList) {
+         String target = unzipDir + "/" + file.getName();
+         file.renameTo(new File(target));
+      }
+
+      // delete the empty directory and the zip file
+      fileList[0].delete();
+      new File(zipFile).delete();
    }
 }

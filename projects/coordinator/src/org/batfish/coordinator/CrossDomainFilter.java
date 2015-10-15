@@ -12,7 +12,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 public class CrossDomainFilter implements ContainerResponseFilter {
    /**
     * Add the cross domain data to the output if needed
-    * 
+    *
     * @param creq
     *           The container request (input)
     * @param cres

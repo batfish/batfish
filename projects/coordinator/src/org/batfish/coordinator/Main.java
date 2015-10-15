@@ -112,7 +112,7 @@ public class Main {
       // sleep indefinitely, in 10 minute chunks
       try {
          while (true) {
-            Thread.sleep(10 * 60 * 1000);  //10 minutes
+            Thread.sleep(10 * 60 * 1000); // 10 minutes
             _logger.info("Still alive .... waiting for work to show up\n");
          }
       }
