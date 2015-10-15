@@ -139,12 +139,20 @@ public class BfCoordWorkHelper {
       return null;
    }
 
-   public WorkItem getWorkItemAnswerQuestion(String testrigName,
-         String envName, String questionName) {
+   public WorkItem getWorkItemAnswerQuestion(String questionName, 
+         String testrigName, String envName, String diffEnvName) {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
-      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+      wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
+
+      wItem.addRequestParam(BfConsts.COMMAND_POST_FLOWS, "");
+      wItem.addRequestParam(BfConsts.COMMAND_POST_DIFFERENTIAL_FLOWS, "");      
+      
+      wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
+      wItem.addRequestParam(BfConsts.COMMAND_GET_DIFFERENTIAL_HISTORY, "");
+      
       return wItem;
    }
 
@@ -165,6 +173,16 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
+   public WorkItem getWorkItemGenerateDiffDataPlane(String testrigName,
+         String envName, String diffEnvName) {
+      WorkItem wItem = new WorkItem(testrigName);
+      wItem.addRequestParam(BfConsts.COMMAND_CREATE_WORKSPACE, "");
+      wItem.addRequestParam(BfConsts.COMMAND_FACTS, "");
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+      wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
+      return wItem;
+   }
+
    public WorkItem getWorkItemGenerateFacts(String testrigName, String envName) {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_GENERATE_FACT, "");
@@ -176,6 +194,14 @@ public class BfCoordWorkHelper {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+      return wItem;
+   }
+
+   public WorkItem getWorkItemGetDiffDataPlane(String testrigName, String envName, String diffEnvName) {
+      WorkItem wItem = new WorkItem(testrigName);
+      wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+      wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
       return wItem;
    }
 

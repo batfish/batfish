@@ -22,8 +22,9 @@ import jline.console.completer.StringsCompleter;
 
 public class InteractiveClient {
 
-   private String _currentEnvironment = null;
-   private String _currentTestrigName = null;
+   private String _currEnv = null;
+   private String _currDiffEnv = null;
+   private String _currTestrigName = null;
 
    private BatfishLogger _logger;
    private BfCoordPoolHelper _poolHelper;
@@ -152,11 +153,13 @@ public class InteractiveClient {
             break;
          }
          case "upload-testrig": {
+            //OLD command
             boolean result = _workHelper.uploadTestrig(words[1], words[2]);
             _logger.output("Result: " + result + "\n");
             break;
          }
          case "parse-vendor-specific": {
+            //OLD command
             WorkItem wItem = _workHelper
                   .getWorkItemParseVendorSpecific(words[1]);
             wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL,
@@ -164,6 +167,33 @@ public class InteractiveClient {
             _logger.info("work-id is " + wItem.getId() + "\n");
             boolean result = _workHelper.queueWork(wItem);
             _logger.info("Queuing result: " + result + "\n");
+            break;
+         }
+         case "init-diff-environment": {
+            String diffEnvName = words[1];
+            String diffEnvFile = words[2];
+
+            if (_currTestrigName == null) {
+               _logger.errorf("Active testrig is not set\n");
+               break;
+            }
+
+            // upload the environment
+            boolean resultUpload = _workHelper.uploadEnvironment(_currTestrigName, diffEnvName, diffEnvFile);
+
+            if (resultUpload) {
+               _logger
+                     .output("Successfully uploaded environment.\n");
+            }
+            else {
+               break;
+            }
+
+            _currDiffEnv = diffEnvName;
+            
+            _logger.outputf(
+                  "Active differential environment is now set to %s\n", _currDiffEnv);
+
             break;
          }
          case "init-testrig": {
@@ -207,11 +237,11 @@ public class InteractiveClient {
                   + resultUploadEnv);
 
             // set the name of the current testrig
-            _currentTestrigName = testrigName;
-            _currentEnvironment = "default";
+            _currTestrigName = testrigName;
+            _currEnv = "default";
             _logger.outputf(
                   "Active (testrig, environment) is now set to (%s, %s)\n",
-                  _currentTestrigName, _currentEnvironment);
+                  _currTestrigName, _currEnv);
 
             break;
          }
@@ -219,37 +249,38 @@ public class InteractiveClient {
             String testrigName = words[1];
             String environmentName = words[2];
 
-            _currentTestrigName = testrigName;
-            _currentEnvironment = environmentName;
+            _currTestrigName = testrigName;
+            _currEnv = environmentName;
 
             _logger.outputf(
                   "Active (testrig, environment) is now set to (%s, %s)\n",
-                  _currentTestrigName, _currentEnvironment);
+                  _currTestrigName, _currEnv);
+
+            break;
+         }
+         case "set-diff-environment": {
+            String diffEnvName = words[1];
+
+            _currDiffEnv = diffEnvName;
+
+            _logger.outputf(
+                  "Active differential environment is now set to %s\n", _currDiffEnv);
 
             break;
          }
          case "generate-dataplane": {
 
-            if (_currentTestrigName == null || _currentEnvironment == null) {
+            if (_currTestrigName == null || _currEnv == null) {
                _logger
                      .errorf(
                            "Active testrig name or environment is not set (%s, %s)\n",
-                           _currentTestrigName, _currentEnvironment);
-               break;
-            }
-
-            // generate facts
-            WorkItem wItemGf = _workHelper.getWorkItemGenerateFacts(
-                  _currentTestrigName, _currentEnvironment);
-            boolean resultGf = execute(wItemGf);
-
-            if (!resultGf) {
+                           _currTestrigName, _currEnv);
                break;
             }
 
             // generate the data plane
             WorkItem wItemGenDp = _workHelper.getWorkItemGenerateDataPlane(
-                  _currentTestrigName, _currentEnvironment);
+                  _currTestrigName, _currEnv);
             boolean resultGenDp = execute(wItemGenDp);
 
             if (!resultGenDp) {
@@ -258,19 +289,40 @@ public class InteractiveClient {
 
             // get the data plane
             WorkItem wItemGetDp = _workHelper.getWorkItemGetDataPlane(
-                  _currentTestrigName, _currentEnvironment);
+                  _currTestrigName, _currEnv);
             boolean resultGetDp = execute(wItemGetDp);
 
             if (!resultGetDp) {
                break;
             }
 
-            // create z3 encoding
-            WorkItem wItemCz3e = _workHelper.getWorkItemCreateZ3Encoding(
-                  _currentTestrigName, _currentEnvironment);
-            boolean resultCz3e = execute(wItemCz3e);
+            break;
+         }
+         case "generate-diff-dataplane": {
 
-            if (!resultCz3e) {
+            if (_currTestrigName == null || _currEnv == null || _currDiffEnv == null) {
+               _logger
+                     .errorf(
+                           "Active testrig, environment, or differential environment is not set (%s, %s, %s)\n",
+                           _currTestrigName, _currEnv, _currDiffEnv);
+               break;
+            }
+
+            // generate the data plane
+            WorkItem wItemGenDdp = _workHelper.getWorkItemGenerateDiffDataPlane(
+                  _currTestrigName, _currEnv, _currDiffEnv);
+            boolean resultGenDdp = execute(wItemGenDdp);
+
+            if (!resultGenDdp) {
+               break;
+            }
+
+            // get the data plane
+            WorkItem wItemGetDdp = _workHelper.getWorkItemGetDiffDataPlane(
+                  _currTestrigName, _currEnv, _currDiffEnv);
+            boolean resultGetDdp = execute(wItemGetDdp);
+
+            if (!resultGetDdp) {
                break;
             }
 
@@ -280,17 +332,17 @@ public class InteractiveClient {
             String questionName = words[1];
             String questionFile = words[2];
 
-            if (_currentTestrigName == null || _currentEnvironment == null) {
+            if (_currTestrigName == null || _currEnv == null) {
                _logger
                      .errorf(
                            "Active testrig name or environment is not set: (%s, %s)\n",
-                           _currentTestrigName, _currentEnvironment);
+                           _currTestrigName, _currEnv);
                break;
             }
 
             // upload the question
             boolean resultUpload = _workHelper.uploadQuestion(
-                  _currentTestrigName, questionName, questionFile);
+                  _currTestrigName, questionName, questionFile);
 
             if (resultUpload) {
                _logger
@@ -302,7 +354,7 @@ public class InteractiveClient {
 
             // answer the question
             WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(
-                  _currentTestrigName, _currentEnvironment, questionName);
+                  questionName, _currTestrigName, _currEnv, _currDiffEnv);
             execute(wItemAs);
 
             break;
