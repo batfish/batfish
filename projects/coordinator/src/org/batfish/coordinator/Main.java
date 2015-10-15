@@ -109,6 +109,11 @@ public class Main {
       _poolManager = new PoolMgr();
       _workManager = new WorkMgr();
 
+      String initialWorker = _settings.getInitialWorker();
+      if (initialWorker != null && !initialWorker.isEmpty())
+    	  _poolManager.addToPool(initialWorker);
+    	  
+    	  
       // sleep indefinitely, in 10 minute chunks
       try {
          while (true) {
