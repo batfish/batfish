@@ -15,16 +15,17 @@ public class BfCoordPoolHelper {
    private String _coordPoolMgr;
 
    public BfCoordPoolHelper(String poolMgr) {
-         _coordPoolMgr = poolMgr;
+      _coordPoolMgr = poolMgr;
    }
-   
+
    public boolean addBatfishWorker(String worker) {
       try {
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client.target(
                String.format("http://%s%s/%s", _coordPoolMgr,
                      CoordConsts.SVC_BASE_POOL_MGR,
-                     CoordConsts.SVC_POOL_UPDATE_RSC)).queryParam("add", worker);
+                     CoordConsts.SVC_POOL_UPDATE_RSC))
+               .queryParam("add", worker);
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
 
@@ -62,4 +63,3 @@ public class BfCoordPoolHelper {
    }
 
 }
-   

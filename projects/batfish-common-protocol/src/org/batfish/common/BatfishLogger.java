@@ -75,6 +75,12 @@ public class BatfishLogger {
 
    private static final Map<String, Integer> LOG_LEVELS = initializeLogLevels();
 
+   private static final Map<Integer, String> LOG_LEVELSTRS = initializeLogLevelStrs();
+
+   public static String getLogLevelStr(int level) {
+      return LOG_LEVELSTRS.get(level);
+   }
+
    private static Map<String, Integer> initializeLogLevels() {
       Map<String, Integer> levels = new HashMap<String, Integer>();
       levels.put(LEVELSTR_DEBUG, LEVEL_DEBUG);
@@ -88,8 +94,6 @@ public class BatfishLogger {
       levels.put(LEVELSTR_WARN, LEVEL_WARN);
       return levels;
    }
-
-   private static final Map<Integer, String> LOG_LEVELSTRS = initializeLogLevelStrs();
 
    private static Map<Integer, String> initializeLogLevelStrs() {
       Map<Integer, String> levels = new HashMap<Integer, String>();
@@ -115,7 +119,22 @@ public class BatfishLogger {
 
    private boolean _timestamp;
 
-   public BatfishLogger(String logLevel, boolean timestamp, String logFile, boolean logTee) {
+   public BatfishLogger(String logLevel, boolean timestamp) {
+      _timestamp = timestamp;
+      setLogLevel(logLevel);
+      _history = new BatfishLoggerHistory();
+   }
+
+   public BatfishLogger(String logLevel, boolean timestamp, PrintStream stream) {
+      _history = null;
+      _timestamp = timestamp;
+      String levelStr = logLevel;
+      setLogLevel(levelStr);
+      _ps = stream;
+   }
+
+   public BatfishLogger(String logLevel, boolean timestamp, String logFile,
+         boolean logTee) {
       _history = null;
       _timestamp = timestamp;
       String levelStr = logLevel;
@@ -140,20 +159,6 @@ public class BatfishLogger {
       else {
          _ps = System.out;
       }
-   }
-
-   public BatfishLogger(String logLevel, boolean timestamp, PrintStream stream) {
-      _history = null;
-      _timestamp = timestamp;
-      String levelStr = logLevel;
-      setLogLevel(levelStr);
-      _ps = stream;
-   }
-   
-   public BatfishLogger(String logLevel, boolean timestamp) {
-      _timestamp = timestamp;
-      setLogLevel(logLevel);
-      _history = new BatfishLoggerHistory();
    }
 
    public void append(BatfishLoggerHistory history) {
@@ -195,11 +200,7 @@ public class BatfishLogger {
    }
 
    public String getLogLevelStr() {
-	   return LOG_LEVELSTRS.get(_level);
-   }
-
-   public static String getLogLevelStr(int level) {
-	   return LOG_LEVELSTRS.get(level);
+      return LOG_LEVELSTRS.get(_level);
    }
 
    public PrintStream getPrintStream() {
@@ -212,11 +213,6 @@ public class BatfishLogger {
 
    public void infof(String format, Object... args) {
       info(String.format(format, args));
-   }
-
-   public void setLogLevel(String levelStr) {
-      String canonicalLevelStr = levelStr.toLowerCase();
-      _level = LOG_LEVELS.get(canonicalLevelStr);
    }
 
    public boolean isActive(int level) {
@@ -237,6 +233,11 @@ public class BatfishLogger {
 
    public void redflag(String msg) {
       write(LEVEL_REDFLAG, msg);
+   }
+
+   public void setLogLevel(String levelStr) {
+      String canonicalLevelStr = levelStr.toLowerCase();
+      _level = LOG_LEVELS.get(canonicalLevelStr);
    }
 
    public void unimplemented(String msg) {

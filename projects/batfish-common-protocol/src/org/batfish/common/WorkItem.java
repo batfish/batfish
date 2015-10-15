@@ -10,34 +10,15 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 public class WorkItem {
-   private UUID _id;
-   private String _testrigName;
-   private HashMap<String, String> _requestParams;
-   private HashMap<String, String> _responseParams;
-
-   public WorkItem(String testrigName) {
-      _id = UUID.randomUUID();
-      _testrigName = testrigName;
-      _requestParams = new HashMap<String, String>();
-      _responseParams = new HashMap<String, String>();
-   }
-
-   public WorkItem(UUID id, String testrigName, 
-         HashMap<String, String> reqParams, HashMap<String, String> resParams) {
-      _id = id;
-      _testrigName = testrigName;
-      _requestParams = reqParams;
-      _responseParams = resParams;
-   }
-
-   public static WorkItem FromJsonString(String jsonString) throws JSONException {
+   public static WorkItem FromJsonString(String jsonString)
+         throws JSONException {
 
       JSONArray array = new JSONArray(jsonString);
 
       UUID id = UUID.fromString(array.get(0).toString());
 
       String testrigName = array.get(1).toString();
-      
+
       HashMap<String, String> requestParams = new HashMap<String, String>();
       HashMap<String, String> responseParams = new HashMap<String, String>();
 
@@ -46,7 +27,7 @@ public class WorkItem {
 
       PopulateHashMap(requestParams, requestObject);
       PopulateHashMap(responseParams, responseObject);
-      
+
       return new WorkItem(id, testrigName, requestParams, responseParams);
    }
 
@@ -61,16 +42,34 @@ public class WorkItem {
       }
    }
 
-   public UUID getId() {
-      return _id;
+   private UUID _id;
+   private HashMap<String, String> _requestParams;
+
+   private HashMap<String, String> _responseParams;
+
+   private String _testrigName;
+
+   public WorkItem(String testrigName) {
+      _id = UUID.randomUUID();
+      _testrigName = testrigName;
+      _requestParams = new HashMap<String, String>();
+      _responseParams = new HashMap<String, String>();
    }
 
-   public void setId(String idString) {
-      _id = UUID.fromString(idString);
+   public WorkItem(UUID id, String testrigName,
+         HashMap<String, String> reqParams, HashMap<String, String> resParams) {
+      _id = id;
+      _testrigName = testrigName;
+      _requestParams = reqParams;
+      _responseParams = resParams;
    }
 
    public void addRequestParam(String key, String value) {
       _requestParams.put(key, value);
+   }
+
+   public UUID getId() {
+      return _id;
    }
 
    public HashMap<String, String> getRequestParams() {
@@ -79,6 +78,10 @@ public class WorkItem {
 
    public String getTestrigName() {
       return _testrigName;
+   }
+
+   public void setId(String idString) {
+      _id = UUID.fromString(idString);
    }
 
    public String toJsonString() {

@@ -180,6 +180,7 @@ public final class Settings {
    private static final String ARG_MPI = "mpi";
    private static final String ARG_MPI_PATH = "mpipath";
    private static final String ARG_NO_OUTPUT = "nooutput";
+   private static final String ARG_NO_SHUFFLE = "noshuffle";
    private static final String ARG_NO_TRAFFIC = "notraffic";
    private static final String ARG_NODE_ROLES_PATH = "nrpath";
    private static final String ARG_NODE_SET_PATH = "nodes";
@@ -427,6 +428,7 @@ public final class Settings {
    private String _serviceLogicBloxHostname;
    private int _servicePort;
    private String _serviceUrl;
+   private boolean _shuffleJobs;
    private boolean _simplify;
    private boolean _synthesizeTopology;
    private String _testRigPath;
@@ -934,6 +936,10 @@ public final class Settings {
 
    public String getServiceUrl() {
       return _serviceUrl;
+   }
+
+   public boolean getShuffleJobs() {
+      return _shuffleJobs;
    }
 
    public boolean getSimplify() {
@@ -1503,6 +1509,8 @@ public final class Settings {
       _options.addOption(Option.builder().hasArg().argName("number")
             .desc("number of threads used by parallel jobs executor")
             .longOpt(ARG_JOBS).build());
+      _options.addOption(Option.builder().desc("do not shuffle parallel jobs")
+            .longOpt(ARG_NO_SHUFFLE).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1746,6 +1754,7 @@ public final class Settings {
       _printSymmetricEdges = line.hasOption(ARG_PRINT_SYMMETRIC_EDGES);
       String jobsStr = line.getOptionValue(ARG_JOBS, DEFAULT_JOBS);
       _jobs = Integer.parseInt(jobsStr);
+      _shuffleJobs = !line.hasOption(ARG_NO_SHUFFLE);
    }
 
    public boolean printParseTree() {
