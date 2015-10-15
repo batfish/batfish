@@ -104,7 +104,7 @@ public class Main {
       try {
          while (true) {
             Thread.sleep(10 * 60 * 1000);  //10 minutes
-            _logger.info("Still alive ....\n");
+            _logger.info("Still alive .... waiting for work to show up\n");
          }
       }
       catch (Exception ex) {

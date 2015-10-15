@@ -111,10 +111,13 @@ public class InteractiveClient {
 
         	    //upload the testrig
              boolean resultUpload = _workHelper.uploadTestrig(testrigName, testrigFile);
-             _logger.output("Result of uploading testrig: " + resultUpload + "\n");
-
-             if (!resultUpload) 
-            	 break;
+             
+             if (resultUpload) {
+                 _logger.output("Successfully uploaded testrig. Starting parsing\n");
+             }
+             else {
+                break;
+             }
 
              //vendor specific parsing
              WorkItem wItemPvs = _workHelper.getWorkItemParseVendorSpecific(testrigName);
@@ -137,7 +140,7 @@ public class InteractiveClient {
              //set the name of the current testrig
              _currentTestrigName = testrigName;
              _currentEnvironment = "default";
-             _logger.outputf("Set active testrig to %s and environment to %s\n", _currentTestrigName, _currentEnvironment);
+             _logger.outputf("Active (testrig, environment) is now set to (%s, %s)\n", _currentTestrigName, _currentEnvironment);
              
              break;
           }
@@ -148,7 +151,7 @@ public class InteractiveClient {
             _currentTestrigName = testrigName;
             _currentEnvironment = environmentName;
             
-            _logger.outputf("Set active testrig to %s and environment to %s\n", _currentTestrigName, _currentEnvironment);
+            _logger.outputf("Active (testrig, environment) is now set to (%s, %s)\n", _currentTestrigName, _currentEnvironment);
             
             break;
          }
@@ -186,22 +189,27 @@ public class InteractiveClient {
 
             if (!resultCz3e) 
                break;               
+            
+            break;
          }
          case "answer": {
             String questionName = words[1];
             String questionFile = words[2];
             
             if (_currentTestrigName == null || _currentEnvironment == null) {
-               _logger.errorf("Active testrig name or environment is not set (%s, %s)\n", _currentTestrigName, _currentEnvironment);
+               _logger.errorf("Active testrig name or environment is not set: (%s, %s)\n", _currentTestrigName, _currentEnvironment);
                break;
             }
             
             //upload the question
             boolean resultUpload = _workHelper.uploadQuestion(_currentTestrigName, questionName, questionFile);            
-            _logger.output("Result of uploading question: " + resultUpload + "\n");
 
-            if (!resultUpload) 
+            if (resultUpload) {
+               _logger.output("Successfully uploaded question. Starting to answer\n");  
+            }
+            else {
                break;
+            }
 
             //answer the question
             WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(_currentTestrigName, _currentEnvironment, questionName);
@@ -281,7 +289,7 @@ public class InteractiveClient {
 		  try (BufferedReader br = new BufferedReader(new FileReader(downloadedFile))) {
 			  String line = null;
 			  while ((line = br.readLine()) != null) {
-				  _logger.output(line);
+				  _logger.output(line + "\n");
 			  }
 		  }	  
 	  }  

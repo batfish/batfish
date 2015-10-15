@@ -1,10 +1,12 @@
 package org.batfish.coordinator;
 
+import org.apache.commons.io.FileExistsException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.UUID;
@@ -178,6 +180,10 @@ public class WorkMgrService {
          return new JSONArray(
                Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, "successfully uploaded testrig"));
       }
+      catch (FileExistsException e) {
+         _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));         
+      }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("WMS:uploadTestrig exception: " + stackTrace);
@@ -201,6 +207,10 @@ public class WorkMgrService {
          return new JSONArray(
                Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, "successfully uploaded environment"));
       }
+      catch (FileNotFoundException | FileExistsException e) {
+         _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));         
+      }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("WMS:uploadEnvironment exception: " + stackTrace);
@@ -223,6 +233,10 @@ public class WorkMgrService {
 
          return new JSONArray(
                Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, "successfully uploaded question"));
+      }
+      catch (FileNotFoundException | FileExistsException e) {
+         _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));         
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);

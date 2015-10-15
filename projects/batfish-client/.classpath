@@ -32,5 +32,6 @@
 	<classpathentry kind="lib" path="lib/jaxrs-ri/mimepull-1.9.5.jar"/>
 	<classpathentry kind="lib" path="lib/jline2/jline-2.13-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-io-2.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-lang-2.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
