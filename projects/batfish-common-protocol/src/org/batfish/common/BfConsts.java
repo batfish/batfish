@@ -17,6 +17,7 @@ public class BfConsts {
    // ensure that the clients (including the javascript client) are up to date
    //
    public static final String ARG_BLOCK_NAMES = "blocknames";
+   public static final String ARG_DIFF_ACTIVE = "diffactive";
    public static final String ARG_DIFF_ENVIRONMENT_NAME = "diffenv";
    public static final String ARG_ENVIRONMENT_NAME = "env";
    public static final String ARG_LOG_LEVEL = "loglevel";

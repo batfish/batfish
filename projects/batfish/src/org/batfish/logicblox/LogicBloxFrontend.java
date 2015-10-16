@@ -735,7 +735,9 @@ public class LogicBloxFrontend {
    }
 
    public void initEntityTable() {
-      _entityTable = new EntityTable(this);
+      if (_entityTable == null) {
+         _entityTable = new EntityTable(this);
+      }
    }
 
    public void initialize() throws LBInitializationException {

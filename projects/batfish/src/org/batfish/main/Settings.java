@@ -34,6 +34,8 @@ public final class Settings {
 
       private String _jobLogicBloxHostnamePath;
 
+      private String _name;
+
       private String _nodeBlacklistPath;
 
       private String _serializedTopologyPath;
@@ -64,6 +66,10 @@ public final class Settings {
 
       public String getJobLogicBloxHostnamePath() {
          return _jobLogicBloxHostnamePath;
+      }
+
+      public String getName() {
+         return _name;
       }
 
       public String getNodeBlacklistPath() {
@@ -104,6 +110,10 @@ public final class Settings {
 
       public void setJobLogicBloxHostnamePath(String path) {
          _jobLogicBloxHostnamePath = path;
+      }
+
+      public void setName(String name) {
+         _name = name;
       }
 
       public void setNodeBlacklistPath(String nodeBlacklistPath) {
@@ -331,6 +341,7 @@ public final class Settings {
    private boolean _createWorkspace;
    private boolean _dataPlane;
    private boolean _deleteWorkspace;
+   private boolean _diffActive;
    private String _diffEnvironmentName;
    private EnvironmentSettings _diffEnvironmentSettings;
    private boolean _differentialHistory;
@@ -586,6 +597,10 @@ public final class Settings {
       return _deleteWorkspace;
    }
 
+   public boolean getDiffActive() {
+      return _diffActive;
+   }
+
    public String getDiffEnvironmentName() {
       return _diffEnvironmentName;
    }
@@ -648,10 +663,6 @@ public final class Settings {
 
    public String getFlowPath() {
       return _flowPath;
-   }
-
-   public boolean getFlows() {
-      return _flows;
    }
 
    public String getFlowSinkPath() {
@@ -1511,6 +1522,11 @@ public final class Settings {
             .longOpt(ARG_JOBS).build());
       _options.addOption(Option.builder().desc("do not shuffle parallel jobs")
             .longOpt(ARG_NO_SHUFFLE).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("make differential environment the active one for questions about a single environment")
+                  .longOpt(BfConsts.ARG_DIFF_ACTIVE).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1755,6 +1771,7 @@ public final class Settings {
       String jobsStr = line.getOptionValue(ARG_JOBS, DEFAULT_JOBS);
       _jobs = Integer.parseInt(jobsStr);
       _shuffleJobs = !line.hasOption(ARG_NO_SHUFFLE);
+      _diffActive = line.hasOption(BfConsts.ARG_DIFF_ACTIVE);
    }
 
    public boolean printParseTree() {
@@ -1781,6 +1798,10 @@ public final class Settings {
       _diffEnvironmentName = diffEnvironmentName;
    }
 
+   public void setDifferentialHistory(boolean differentialHistory) {
+      _differentialHistory = differentialHistory;
+   }
+
    public void setEnvironmentName(String envName) {
       _environmentName = envName;
    }
@@ -1788,6 +1809,10 @@ public final class Settings {
    public void setFailureInconsistencyQueryPath(
          String failureInconsistencyQueryPath) {
       _failureInconsistencyQueryPath = failureInconsistencyQueryPath;
+   }
+
+   public void setHistory(boolean history) {
+      _history = history;
    }
 
    public void setLogger(BatfishLogger logger) {
@@ -1804,6 +1829,14 @@ public final class Settings {
 
    public void setNodeSetPath(String nodeSetPath) {
       _nodeSetPath = nodeSetPath;
+   }
+
+   public void setPostDifferentialFlows(boolean postDifferentialFlows) {
+      _postDifferentialFlows = postDifferentialFlows;
+   }
+
+   public void setPostFlows(boolean postFlows) {
+      _postFlows = postFlows;
    }
 
    public void setPrecomputedRoutesPath(String writeRoutesPath) {

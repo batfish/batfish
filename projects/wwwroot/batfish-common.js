@@ -2,6 +2,7 @@
 
 // These constants come from 'BfConsts.java'.
 // Make sure they are in sync with what is there.
+var ARG_DIFF_ACTIVE = "diffactive";
 var ARG_DIFF_ENVIRONMENT_NAME = "diffenv";
 var ARG_ENVIRONMENT_NAME = "env";
 var ARG_LOG_LEVEL = "loglevel";
