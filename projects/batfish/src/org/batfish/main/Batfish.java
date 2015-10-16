@@ -62,6 +62,7 @@ import org.batfish.collections.TreeMultiSet;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishException;
+import org.batfish.common.CleanBatfishException;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
@@ -389,26 +390,37 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answer(String questionPath) {
+      boolean dp = false;
+      boolean diff = false;
       Question question = parseQuestion(questionPath);
       switch (question.getType()) {
       case DESTINATION:
          answerDestination((DestinationQuestion) question);
+         dp = true;
+         diff = true;
          break;
 
       case FAILURE:
          answerFailure((FailureQuestion) question);
+         dp = true;
+         diff = true;
          break;
 
       case INGRESS_PATH:
          answerIngressPath((IngressPathQuestion) question);
+         dp = true;
+         diff = true;
          break;
 
       case LOCAL_PATH:
          answerLocalPath((LocalPathQuestion) question);
+         dp = true;
+         diff = true;
          break;
 
       case MULTIPATH:
          answerMultipath((MultipathQuestion) question);
+         dp = true;
          break;
 
       case VERIFY:
@@ -417,6 +429,20 @@ public class Batfish implements AutoCloseable {
 
       default:
          throw new BatfishException("Unknown question type");
+      }
+      if (diff) {
+         _settings.setPostFlows(false);
+         _settings.setHistory(false);
+      }
+      else {
+         _settings.setPostDifferentialFlows(false);
+         _settings.setDifferentialHistory(false);
+      }
+      if (!dp) {
+         _settings.setPostDifferentialFlows(false);
+         _settings.setDifferentialHistory(false);
+         _settings.setPostFlows(false);
+         _settings.setHistory(false);
       }
    }
 
@@ -603,6 +629,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answerMultipath(MultipathQuestion question) {
+      checkDataPlaneQuestionDependencies();
       String tag = getFlowTag();
       _envSettings.setDumpFactsDir(_envSettings.getTrafficFactDumpDir());
       Map<String, Configuration> configurations = loadConfigurations();
@@ -727,6 +754,34 @@ public class Batfish implements AutoCloseable {
       serializeObject(predicateInfo, predicateInfoFile);
    }
 
+   private void checkConfigurations() {
+      String serializedConfigPath = _settings.getSerializeIndependentPath();
+      File dir = new File(serializedConfigPath);
+      File[] serializedConfigs = dir.listFiles();
+      if (serializedConfigs == null) {
+         throw new CleanBatfishException(
+               "Missing compiled vendor-independent configurations for this test-rig\n");
+      }
+      else if (serializedConfigs.length == 0) {
+         throw new CleanBatfishException(
+               "Nothing to do: Set of vendor-independent configurations for this test-rig is empty\n");
+      }
+   }
+
+   private void checkDataPlane() {
+      String dpPath = _envSettings.getDataPlanePath();
+      File dp = new File(dpPath);
+      if (!dp.exists()) {
+         throw new CleanBatfishException(
+               "Missing data plane for this test-rig\n");
+      }
+   }
+
+   private void checkDataPlaneQuestionDependencies() {
+      checkConfigurations();
+      checkDataPlane();
+   }
+
    private void cleanupLogicDir() {
       if (_tmpLogicDir != null) {
          try {
@@ -792,7 +847,7 @@ public class Batfish implements AutoCloseable {
       String edgeBlacklistPath = _envSettings.getEdgeBlacklistPath();
       String serializedTopologyPath = _envSettings.getSerializedTopologyPath();
       InterfaceSet flowSinks = null;
-      boolean differentialContext = _settings.getDiffEnvironmentName() != null;
+      boolean differentialContext = _diffEnvSettings.getName() != null;
       if (differentialContext) {
          flowSinks = getFlowSinkSet(_baseEnvSettings.getDataPlanePath());
       }
@@ -850,9 +905,6 @@ public class Batfish implements AutoCloseable {
 
       lbFrontend.initEntityTable();
 
-      if (_settings.getDiffEnvironmentName() != null) {
-
-      }
       _logger.info("Retrieving flow sink information from LogicBlox...");
       InterfaceSet flowSinks = getFlowSinkSet(lbFrontend);
       _logger.info("OK\n");
@@ -1944,21 +1996,20 @@ public class Batfish implements AutoCloseable {
    }
 
    private String getDifferentialFlowTag() {
-      return _settings.getQuestionName() + ":" + _settings.getEnvironmentName()
-            + ":" + _settings.getDiffEnvironmentName();
+      return _settings.getQuestionName() + ":" + _baseEnvSettings.getName()
+            + ":" + _diffEnvSettings.getName();
    }
 
-   private void getDifferentialHistory() {
+   private void getDifferentialHistory(LogicBloxFrontend baseLbFrontend,
+         LogicBloxFrontend diffLbFrontend) {
       String tag = getDifferentialFlowTag();
-      LogicBloxFrontend baseLbFrontend = connect(_baseEnvSettings);
-      LogicBloxFrontend diffLbFrontend = connect(_diffEnvSettings);
       baseLbFrontend.initEntityTable();
       diffLbFrontend.initEntityTable();
       FlowHistory flowHistory = new FlowHistory();
       populateFlowHistory(flowHistory, baseLbFrontend,
-            _settings.getEnvironmentName(), tag);
+            _baseEnvSettings.getName(), tag);
       populateFlowHistory(flowHistory, diffLbFrontend,
-            _settings.getDiffEnvironmentName(), tag);
+            _diffEnvSettings.getName(), tag);
       _logger.output(flowHistory.toString());
    }
 
@@ -2033,7 +2084,7 @@ public class Batfish implements AutoCloseable {
    // }
 
    private String getFlowTag() {
-      return _settings.getQuestionName() + ":" + _settings.getEnvironmentName();
+      return _settings.getQuestionName() + ":" + _envSettings.getName();
    }
 
    private List<String> getHelpPredicates(Map<String, String> predicateSemantics) {
@@ -2051,13 +2102,11 @@ public class Batfish implements AutoCloseable {
       return helpPredicates;
    }
 
-   private void getHistory() {
+   private void getHistory(LogicBloxFrontend lbFrontend) {
       String tag = getFlowTag();
-      LogicBloxFrontend baseLbFrontend = connect(_baseEnvSettings);
-      baseLbFrontend.initEntityTable();
+      lbFrontend.initEntityTable();
       FlowHistory flowHistory = new FlowHistory();
-      populateFlowHistory(flowHistory, baseLbFrontend,
-            _settings.getEnvironmentName(), tag);
+      populateFlowHistory(flowHistory, lbFrontend, _envSettings.getName(), tag);
       _logger.output(flowHistory.toString());
    }
 
@@ -2801,9 +2850,8 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void postDifferentialFlows() {
-      LogicBloxFrontend baseLbFrontend = connect(_baseEnvSettings);
-      LogicBloxFrontend diffLbFrontend = connect(_diffEnvSettings);
+   private void postDifferentialFlows(LogicBloxFrontend baseLbFrontend,
+         LogicBloxFrontend diffLbFrontend) {
       Map<String, StringBuilder> baseTrafficFactBins = new LinkedHashMap<String, StringBuilder>();
       Map<String, StringBuilder> diffTrafficFactBins = new LinkedHashMap<String, StringBuilder>();
       Path baseDumpDir = Paths.get(_baseEnvSettings.getTrafficFactDumpDir());
@@ -2850,6 +2898,19 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
       _logger.info("SUCCESS\n");
       printElapsedTime();
+   }
+
+   private void postFlows(LogicBloxFrontend lbFrontend) {
+      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
+      Path dumpDir = Paths.get(_envSettings.getTrafficFactDumpDir());
+      for (String predicate : Facts.TRAFFIC_FACT_COLUMN_HEADERS.keySet()) {
+         File factFile = dumpDir.resolve(predicate).toFile();
+         String contents = readFile(factFile);
+         StringBuilder sb = new StringBuilder();
+         trafficFactBins.put(predicate, sb);
+         sb.append(contents);
+      }
+      postFacts(lbFrontend, trafficFactBins);
    }
 
    private void printAllPredicateSemantics(
@@ -3207,14 +3268,47 @@ public class Batfish implements AutoCloseable {
    }
 
    public void run() {
+      boolean action = false;
+
+      if (_settings.getQuery() || _settings.getPrintSemantics()
+            || _settings.getDataPlane() || _settings.getWriteRoutes()
+            || _settings.getWriteBgpAdvertisements()
+            || _settings.getWriteIbgpNeighbors()
+            || _settings.getDifferentialHistory() || _settings.getHistory()
+            || _settings.getTraceQuery()) {
+         Map<String, String> logicFiles = getSemanticsFiles();
+         _predicateInfo = getPredicateInfo(logicFiles);
+         // Print predicate semantics and quit if requested
+         if (_settings.getPrintSemantics()) {
+            printAllPredicateSemantics(_predicateInfo.getPredicateSemantics());
+            return;
+         }
+      }
+
+      // Start frontend
+      LogicBloxFrontend lbFrontend = null;
+      LogicBloxFrontend baseLbFrontend = null;
+      LogicBloxFrontend diffLbFrontend = null;
+      if (_settings.createWorkspace() || _settings.getFacts()
+            || _settings.getQuery() || _settings.getDataPlane()
+            || _settings.revert() || _settings.getWriteRoutes()
+            || _settings.getWriteBgpAdvertisements()
+            || _settings.getWriteIbgpNeighbors() || _settings.getRemoveBlocks()
+            || _settings.getKeepBlocks() || _settings.getTraceQuery()
+            || _settings.getDeleteWorkspace() || _settings.getPostFlows()
+            || _settings.getPostDifferentialFlows() || _settings.getHistory()
+            || _settings.getDifferentialHistory()) {
+         lbFrontend = connect();
+         if (_settings.getDiffActive()) {
+            diffLbFrontend = lbFrontend;
+         }
+         else {
+            baseLbFrontend = lbFrontend;
+         }
+      }
 
       if (_settings.getPrintSymmetricEdgePairs()) {
          printSymmetricEdgePairs();
-         return;
-      }
-
-      if (_settings.getPostDifferentialFlows()) {
-         postDifferentialFlows();
          return;
       }
 
@@ -3226,7 +3320,7 @@ public class Batfish implements AutoCloseable {
       if (_settings.getAnswer()) {
          String questionPath = _settings.getQuestionPath();
          answer(questionPath);
-         return;
+         action = true;
       }
 
       if (_settings.getBuildPredicateInfo()) {
@@ -3328,31 +3422,6 @@ public class Batfish implements AutoCloseable {
          return;
       }
 
-      if (_settings.getQuery() || _settings.getPrintSemantics()
-            || _settings.getDataPlane() || _settings.getWriteRoutes()
-            || _settings.getWriteBgpAdvertisements()
-            || _settings.getWriteIbgpNeighbors()
-            || _settings.getDifferentialHistory() || _settings.getHistory()
-            || _settings.getTraceQuery()) {
-         Map<String, String> logicFiles = getSemanticsFiles();
-         _predicateInfo = getPredicateInfo(logicFiles);
-         // Print predicate semantics and quit if requested
-         if (_settings.getPrintSemantics()) {
-            printAllPredicateSemantics(_predicateInfo.getPredicateSemantics());
-            return;
-         }
-      }
-
-      if (_settings.getHistory()) {
-         getHistory();
-         return;
-      }
-
-      if (_settings.getDifferentialHistory()) {
-         getDifferentialHistory();
-         return;
-      }
-
       Map<String, StringBuilder> cpFactBins = null;
       if (_settings.getFacts() || _settings.getDumpControlPlaneFacts()) {
          boolean usePrecomputedFacts = _settings.getUsePrecomputedFacts();
@@ -3369,18 +3438,6 @@ public class Batfish implements AutoCloseable {
       if (_settings.getUsePrecomputedFacts()) {
          populatePrecomputedFacts(_settings.getPrecomputedFactsPath(),
                cpFactBins);
-      }
-
-      // Start frontend
-      LogicBloxFrontend lbFrontend = null;
-      if (_settings.createWorkspace() || _settings.getFacts()
-            || _settings.getQuery() || _settings.getDataPlane()
-            || _settings.revert() || _settings.getWriteRoutes()
-            || _settings.getWriteBgpAdvertisements()
-            || _settings.getWriteIbgpNeighbors() || _settings.getRemoveBlocks()
-            || _settings.getKeepBlocks() || _settings.getTraceQuery()
-            || _settings.getDeleteWorkspace()) {
-         lbFrontend = connect();
       }
 
       if (_settings.getWriteRoutes() || _settings.getWriteBgpAdvertisements()
@@ -3418,10 +3475,7 @@ public class Batfish implements AutoCloseable {
          if (lbHostnamePath != null && lbHostname != null) {
             writeFile(lbHostnamePath, lbHostname);
          }
-         if (!_settings.getFacts() && !_settings.getRemoveBlocks()
-               && !_settings.getKeepBlocks()) {
-            return;
-         }
+         action = true;
       }
 
       // Remove blocks if requested
@@ -3433,9 +3487,7 @@ public class Batfish implements AutoCloseable {
          if (_settings.getKeepBlocks()) {
             keepBlocks(blockNames, lbFrontend);
          }
-         if (!_settings.getFacts()) {
-            return;
-         }
+         action = true;
       }
 
       // Post facts if requested
@@ -3513,37 +3565,42 @@ public class Batfish implements AutoCloseable {
          return;
       }
 
-      Map<String, StringBuilder> trafficFactBins = null;
       if (_settings.getPostFlows()) {
-         trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-         Path dumpDir = Paths.get(_envSettings.getTrafficFactDumpDir());
-         for (String predicate : Facts.TRAFFIC_FACT_COLUMN_HEADERS.keySet()) {
-            File factFile = dumpDir.resolve(predicate).toFile();
-            String contents = readFile(factFile);
-            StringBuilder sb = new StringBuilder();
-            trafficFactBins.put(predicate, sb);
-            sb.append(contents);
+         postFlows(lbFrontend);
+         action = true;
+      }
+
+      if (_settings.getPostDifferentialFlows()) {
+         diffLbFrontend = connect(_diffEnvSettings);
+         postDifferentialFlows(baseLbFrontend, diffLbFrontend);
+         action = true;
+      }
+
+      if (_settings.getHistory()) {
+         getHistory(lbFrontend);
+         action = true;
+      }
+
+      if (_settings.getDifferentialHistory()) {
+         if (diffLbFrontend == null) {
+            diffLbFrontend = connect(_diffEnvSettings);
          }
-         lbFrontend = connect();
-         postFacts(lbFrontend, trafficFactBins);
+         getDifferentialHistory(baseLbFrontend, diffLbFrontend);
+         action = true;
+      }
+
+      if (_settings.getDumpTrafficFacts()) {
+         Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
+         initTrafficFactBins(trafficFactBins);
+         writeTrafficFacts(trafficFactBins);
+         dumpFacts(trafficFactBins);
          return;
       }
 
-      if (_settings.getFlows() || _settings.getDumpTrafficFacts()) {
-         trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-         initTrafficFactBins(trafficFactBins);
-         writeTrafficFacts(trafficFactBins);
-         if (_settings.getDumpTrafficFacts()) {
-            dumpFacts(trafficFactBins);
-         }
-         if (_settings.getFlows()) {
-            lbFrontend = connect();
-            postFacts(lbFrontend, trafficFactBins);
-            return;
-         }
+      if (!action) {
+         throw new BatfishException(
+               "No task performed! Run with -help flag to see usage");
       }
-      throw new BatfishException(
-            "No task performed! Run with -help flag to see usage");
    }
 
    private void serializeIndependentConfigs(

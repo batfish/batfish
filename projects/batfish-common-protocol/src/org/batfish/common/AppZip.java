@@ -28,7 +28,7 @@ public class AppZip {
 
    /**
     * Traverse a directory and get all files, and add the file into fileList
-    * 
+    *
     * @param node
     *           file or directory
     */
@@ -50,7 +50,7 @@ public class AppZip {
 
    /**
     * Format the file path for zip
-    * 
+    *
     * @param file
     *           file path
     * @return Formatted file path
@@ -68,7 +68,7 @@ public class AppZip {
 
    /**
     * Zip it
-    * 
+    *
     * @param zipFile
     *           output ZIP file location
     */

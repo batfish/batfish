@@ -19,6 +19,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.main.Settings.EnvironmentSettings;
@@ -55,7 +56,7 @@ public class Driver {
          settings.setLogicDir(_mainSettings.getLogicDir());
          String envName = settings.getEnvironmentName();
          if (envName != null) {
-            settings.setEnvironmentName(envName);
+            envSettings.setName(envName);
             Path envPath = Paths.get(baseDir,
                   BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
             envSettings.setDumpFactsDir(envPath.resolve(
@@ -88,7 +89,7 @@ public class Driver {
          }
          String diffEnvName = settings.getDiffEnvironmentName();
          if (diffEnvName != null) {
-            settings.setDiffEnvironmentName(diffEnvName);
+            diffEnvSettings.setName(diffEnvName);
             Path diffEnvPath = Paths.get(baseDir,
                   BfConsts.RELPATH_ENVIRONMENTS_DIR, diffEnvName);
             diffEnvSettings.setDumpFactsDir(diffEnvPath.resolve(
@@ -112,7 +113,9 @@ public class Driver {
                   BfConsts.RELPATH_TOPOLOGY_FILE).toString());
             diffEnvSettings.setDeltaConfigurationsDir(diffEnvDirPath.resolve(
                   BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
-            settings.setActiveEnvironmentSettings(diffEnvSettings);
+            if (settings.getDiffActive()) {
+               settings.setActiveEnvironmentSettings(diffEnvSettings);
+            }
          }
          String outputEnvName = settings.getOutputEnvironmentName();
          if (outputEnvName != null) {
@@ -310,6 +313,10 @@ public class Driver {
       boolean noError = true;
       try (Batfish batfish = new Batfish(settings)) {
          batfish.run();
+      }
+      catch (CleanBatfishException e) {
+         noError = false;
+         logger.error("FATAL ERROR: " + e.getMessage());
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
