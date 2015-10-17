@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
@@ -138,12 +139,22 @@ public class BfCoordWorkHelper {
       return null;
    }
 
-   public WorkItem getWorkItemAnswerQuestion(String testrigName,
-         String envName, String questionName) {
+   public WorkItem getWorkItemAnswerQuestion(String questionName, 
+         String testrigName, String envName, String diffEnvName) {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
-      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+      
+      if (diffEnvName != null)
+         wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
+
+      wItem.addRequestParam(BfConsts.COMMAND_POST_FLOWS, "");
+      wItem.addRequestParam(BfConsts.COMMAND_POST_DIFFERENTIAL_FLOWS, "");      
+      
+      wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
+      wItem.addRequestParam(BfConsts.COMMAND_GET_DIFFERENTIAL_HISTORY, "");
+      
       return wItem;
    }
 
@@ -164,6 +175,16 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
+   public WorkItem getWorkItemGenerateDiffDataPlane(String testrigName,
+         String envName, String diffEnvName) {
+      WorkItem wItem = new WorkItem(testrigName);
+      wItem.addRequestParam(BfConsts.COMMAND_CREATE_WORKSPACE, "");
+      wItem.addRequestParam(BfConsts.COMMAND_FACTS, "");
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+      wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
+      return wItem;
+   }
+
    public WorkItem getWorkItemGenerateFacts(String testrigName, String envName) {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_GENERATE_FACT, "");
@@ -175,6 +196,14 @@ public class BfCoordWorkHelper {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+      return wItem;
+   }
+
+   public WorkItem getWorkItemGetDiffDataPlane(String testrigName, String envName, String diffEnvName) {
+      WorkItem wItem = new WorkItem(testrigName);
+      wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+      wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
       return wItem;
    }
 
@@ -361,11 +390,16 @@ public class BfCoordWorkHelper {
          return true;
       }
       catch (Exception e) {
-         System.err
-               .printf(
-                     "Exception when uploading environment to %s using (%s, %s, %s)\n",
-                     _coordWorkMgr, testrigName, envName, zipfileName);
-         e.printStackTrace();
+         if (e.getMessage().contains("FileNotFoundException")) {
+            _logger.errorf("File not found: %s\n", zipfileName);
+         }
+         else {
+            _logger
+                  .errorf(
+                        "Exception when uploading environment to %s using (%s, %s, %s): %s\n",
+                        _coordWorkMgr, testrigName, envName, zipfileName,
+                        ExceptionUtils.getStackTrace(e));
+         }
          return false;
       }
    }
@@ -415,7 +449,7 @@ public class BfCoordWorkHelper {
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-            _logger.errorf("got error while uploading environment: %s %s\n",
+            _logger.errorf("Error while uploading question [%s]: %s\n",
                   array.get(0), array.get(1));
             return false;
          }
@@ -423,10 +457,16 @@ public class BfCoordWorkHelper {
          return true;
       }
       catch (Exception e) {
-         _logger.errorf(
-               "Exception when uploading question to %s using (%s, %s, %s)\n",
-               _coordWorkMgr, testrigName, qName, fileName);
-         e.printStackTrace();
+         if (e.getMessage().contains("FileNotFoundException")) {
+            _logger.errorf("File not found: %s\n", fileName);
+         }
+         else {
+            _logger
+                  .errorf(
+                        "Exception when uploading question to %s using (%s, %s, %s): %s\n",
+                        _coordWorkMgr, testrigName, qName, fileName,
+                        ExceptionUtils.getStackTrace(e));
+         }
          return false;
       }
    }
@@ -470,7 +510,7 @@ public class BfCoordWorkHelper {
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-            _logger.errorf("got error while uploading test rig: %s %s\n",
+            _logger.errorf("Error while uploading test rig [%s]: %s\n",
                   array.get(0), array.get(1));
             return false;
          }
@@ -479,13 +519,14 @@ public class BfCoordWorkHelper {
       }
       catch (Exception e) {
          if (e.getMessage().contains("FileNotFoundException")) {
-            _logger.errorf("File not found: %s", zipfileName);
+            _logger.errorf("File not found: %s\n", zipfileName);
          }
          else {
-            _logger.errorf(
-                  "Exception when uploading test rig to %s using (%s, %s)\n",
-                  _coordWorkMgr, testrigName, zipfileName);
-            e.printStackTrace();
+            _logger
+                  .errorf(
+                        "Exception when uploading test rig to %s using (%s, %s): %s\n",
+                        _coordWorkMgr, testrigName, zipfileName,
+                        ExceptionUtils.getStackTrace(e));
          }
          return false;
       }

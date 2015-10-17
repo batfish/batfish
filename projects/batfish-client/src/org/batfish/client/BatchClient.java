@@ -76,8 +76,8 @@ public class BatchClient {
          }
 
          if (proceed("answer the question")) {
-            execute(_workHelper.getWorkItemAnswerQuestion(testrigName, envName,
-                  questionName),
+            execute(_workHelper.getWorkItemAnswerQuestion(questionName, testrigName, 
+                  envName, null),
                   _workHelper.getResultsObjectNameAnswerQuestion(envName,
                         questionName));
          }

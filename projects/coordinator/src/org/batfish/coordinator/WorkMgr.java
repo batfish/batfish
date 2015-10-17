@@ -1,6 +1,7 @@
 package org.batfish.coordinator;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,6 +16,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.FileExistsException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
@@ -337,15 +339,16 @@ public class WorkMgr {
             + "/" + testrigName);
 
       if (!testrigDir.exists()) {
-         throw new Exception("testrig " + testrigName + "does not exist");
+         throw new FileNotFoundException("testrig " + testrigName
+               + " does not exist");
       }
 
       File envDir = new File(testrigDir.getAbsolutePath() + "/"
             + BfConsts.RELPATH_ENVIRONMENTS_DIR + "/" + envName);
 
       if (envDir.exists()) {
-         throw new Exception("environment " + envName + "exists for testrig "
-               + testrigName);
+         throw new FileExistsException("environment " + envName
+               + " exists for testrig " + testrigName);
       }
 
       if (!envDir.mkdirs()) {
@@ -399,15 +402,16 @@ public class WorkMgr {
             + "/" + testrigName);
 
       if (!testrigDir.exists()) {
-         throw new Exception("testrig " + testrigName + "does not exist");
+         throw new FileNotFoundException("testrig " + testrigName
+               + " does not exist");
       }
 
       File qDir = new File(testrigDir.getAbsolutePath() + "/"
             + BfConsts.RELPATH_QUESTIONS_DIR + "/" + qName);
 
       if (qDir.exists()) {
-         throw new Exception("question " + qName + "exists for testrig "
-               + testrigName);
+         throw new FileExistsException("question " + qName
+               + " exists for testrig " + testrigName);
       }
 
       if (!qDir.mkdirs()) {
@@ -434,7 +438,8 @@ public class WorkMgr {
             + "/" + name);
 
       if (testrigDir.exists()) {
-         throw new Exception("test rig with the same name exists");
+         throw new FileExistsException("Testrig with name " + name
+               + " already exists");
       }
 
       if (!testrigDir.mkdirs()) {

@@ -7,9 +7,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.*;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -51,7 +49,7 @@ public class Main {
    }
 
    public static void main(String[] args) {
-      _logger = LogManager.getLogger(MAIN_LOGGER);
+      _logger = LogManager.getLogger (MAIN_LOGGER);
       _settings = null;
       try {
          _settings = new Settings(args);
@@ -109,11 +107,21 @@ public class Main {
       _poolManager = new PoolMgr();
       _workManager = new WorkMgr();
 
+      String initialWorker = _settings.getInitialWorker();
+      if (initialWorker != null && !initialWorker.isEmpty()) {
+         
+         //workaround for cygwin replacing ':' with '?'
+         initialWorker = initialWorker.replace('?', ':');
+         
+         _logger.info("Adding initial worker " + initialWorker + "\n");
+    	  _poolManager.addToPool(initialWorker);
+      }
+    	  
       // sleep indefinitely, in 10 minute chunks
       try {
          while (true) {
             Thread.sleep(10 * 60 * 1000); // 10 minutes
-            _logger.info("Still alive ....\n");
+            _logger.info("Still alive .... waiting for work to show up\n");
          }
       }
       catch (Exception ex) {
