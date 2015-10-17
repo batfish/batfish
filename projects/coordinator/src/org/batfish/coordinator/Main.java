@@ -49,7 +49,7 @@ public class Main {
    }
 
    public static void main(String[] args) {
-      _logger = LogManager.getLogger (MAIN_LOGGER);
+      _logger = LogManager.getLogger(MAIN_LOGGER);
       _settings = null;
       try {
          _settings = new Settings(args);
@@ -109,14 +109,14 @@ public class Main {
 
       String initialWorker = _settings.getInitialWorker();
       if (initialWorker != null && !initialWorker.isEmpty()) {
-         
-         //workaround for cygwin replacing ':' with '?'
+
+         // workaround for cygwin replacing ':' with '?'
          initialWorker = initialWorker.replace('?', ':');
-         
+
          _logger.info("Adding initial worker " + initialWorker + "\n");
-    	  _poolManager.addToPool(initialWorker);
+         _poolManager.addToPool(initialWorker);
       }
-    	  
+
       // sleep indefinitely, in 10 minute chunks
       try {
          while (true) {

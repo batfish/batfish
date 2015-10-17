@@ -122,7 +122,7 @@ public class PoolMgr {
    }
 
    private void refreshWorkerStatus(String worker) {
-      //_logger.debug("PM:RefreshWorkerStatus: refreshing status of " + worker
+      // _logger.debug("PM:RefreshWorkerStatus: refreshing status of " + worker
       // +"\n");
 
       try {
@@ -133,8 +133,8 @@ public class PoolMgr {
                .request(MediaType.APPLICATION_JSON);
          Response response = invocationBuilder.get();
 
-         //_logger.debug(webTarget.getUri());
-         
+         // _logger.debug(webTarget.getUri());
+
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             _logger.error("PM:RefreshWorkerStatus: Got non-OK response "
                   + response.getStatus() + "\n");

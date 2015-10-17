@@ -10,9 +10,9 @@ import org.batfish.common.CoordConsts;
 
 public class Settings {
 
-   private static final String ARG_LOG_FILE = "logfile";
-
    private static final String ARG_INITIAL_WORKER = "initialworker";
+
+   private static final String ARG_LOG_FILE = "logfile";
    private static final String ARG_PERIOD_ASSIGN_WORK = "periodassignwork";
    private static final String ARG_PERIOD_CHECK_WORK = "periodcheckwork";
    private static final String ARG_PERIOD_WORKER_STATUS_REFRESH = "periodworkerrefresh";
@@ -28,7 +28,7 @@ public class Settings {
    private static final String ARG_STORAGE_PROTOCOL = "storageprotocol";
    private static final String ARG_TESTRIG_STORAGE_LOCATION = "testrigstorage";
 
-   private static final String DEFAULT_INITIAL_WORKER = ""; 
+   private static final String DEFAULT_INITIAL_WORKER = "";
    private static final String DEFAULT_PERIOD_ASSIGN_WORK = "1000"; // 1 seconds
    private static final String DEFAULT_PERIOD_CHECK_WORK = "5000"; // 5 seconds
    private static final String DEFAULT_PERIOD_WORKER_STATUS_REFRESH = "10000"; // 10
@@ -75,7 +75,7 @@ public class Settings {
    }
 
    public String getInitialWorker() {
-	      return _initialWorker;
+      return _initialWorker;
    }
 
    public String getLogFile() {
@@ -164,10 +164,9 @@ public class Settings {
       _options.addOption(Option.builder().argName("path").hasArg()
             .desc("send output to specified log file").longOpt(ARG_LOG_FILE)
             .build());
-      _options.addOption(Option.builder()
-              .argName("location_initial_worker").hasArg()
-              .desc("location of initial worker (host:port)")
-              .longOpt(ARG_INITIAL_WORKER).build());
+      _options.addOption(Option.builder().argName("location_initial_worker")
+            .hasArg().desc("location of initial worker (host:port)")
+            .longOpt(ARG_INITIAL_WORKER).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -210,7 +209,8 @@ public class Settings {
       _periodCheckWorkMs = Long.parseLong(line.getOptionValue(
             ARG_PERIOD_CHECK_WORK, DEFAULT_PERIOD_CHECK_WORK));
 
-      _initialWorker = line.getOptionValue(ARG_INITIAL_WORKER, DEFAULT_INITIAL_WORKER);
+      _initialWorker = line.getOptionValue(ARG_INITIAL_WORKER,
+            DEFAULT_INITIAL_WORKER);
 
       _logFile = line.getOptionValue(ARG_LOG_FILE);
    }

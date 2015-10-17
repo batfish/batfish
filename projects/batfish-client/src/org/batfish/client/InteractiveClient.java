@@ -22,8 +22,8 @@ import jline.console.completer.StringsCompleter;
 
 public class InteractiveClient {
 
-   private String _currEnv = null;
    private String _currDiffEnv = null;
+   private String _currEnv = null;
    private String _currTestrigName = null;
 
    private BatfishLogger _logger;
@@ -153,13 +153,13 @@ public class InteractiveClient {
             break;
          }
          case "upload-testrig": {
-            //OLD command
+            // OLD command
             boolean result = _workHelper.uploadTestrig(words[1], words[2]);
             _logger.output("Result: " + result + "\n");
             break;
          }
          case "parse-vendor-specific": {
-            //OLD command
+            // OLD command
             WorkItem wItem = _workHelper
                   .getWorkItemParseVendorSpecific(words[1]);
             wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL,
@@ -179,20 +179,21 @@ public class InteractiveClient {
             }
 
             // upload the environment
-            boolean resultUpload = _workHelper.uploadEnvironment(_currTestrigName, diffEnvName, diffEnvFile);
+            boolean resultUpload = _workHelper.uploadEnvironment(
+                  _currTestrigName, diffEnvName, diffEnvFile);
 
             if (resultUpload) {
-               _logger
-                     .output("Successfully uploaded environment.\n");
+               _logger.output("Successfully uploaded environment.\n");
             }
             else {
                break;
             }
 
             _currDiffEnv = diffEnvName;
-            
+
             _logger.outputf(
-                  "Active differential environment is now set to %s\n", _currDiffEnv);
+                  "Active differential environment is now set to %s\n",
+                  _currDiffEnv);
 
             break;
          }
@@ -264,7 +265,8 @@ public class InteractiveClient {
             _currDiffEnv = diffEnvName;
 
             _logger.outputf(
-                  "Active differential environment is now set to %s\n", _currDiffEnv);
+                  "Active differential environment is now set to %s\n",
+                  _currDiffEnv);
 
             break;
          }
@@ -300,7 +302,8 @@ public class InteractiveClient {
          }
          case "generate-diff-dataplane": {
 
-            if (_currTestrigName == null || _currEnv == null || _currDiffEnv == null) {
+            if (_currTestrigName == null || _currEnv == null
+                  || _currDiffEnv == null) {
                _logger
                      .errorf(
                            "Active testrig, environment, or differential environment is not set (%s, %s, %s)\n",
@@ -309,8 +312,9 @@ public class InteractiveClient {
             }
 
             // generate the data plane
-            WorkItem wItemGenDdp = _workHelper.getWorkItemGenerateDiffDataPlane(
-                  _currTestrigName, _currEnv, _currDiffEnv);
+            WorkItem wItemGenDdp = _workHelper
+                  .getWorkItemGenerateDiffDataPlane(_currTestrigName, _currEnv,
+                        _currDiffEnv);
             boolean resultGenDdp = execute(wItemGenDdp);
 
             if (!resultGenDdp) {
@@ -341,8 +345,8 @@ public class InteractiveClient {
             }
 
             // upload the question
-            boolean resultUpload = _workHelper.uploadQuestion(
-                  _currTestrigName, questionName, questionFile);
+            boolean resultUpload = _workHelper.uploadQuestion(_currTestrigName,
+                  questionName, questionFile);
 
             if (resultUpload) {
                _logger

@@ -38,6 +38,7 @@ public class WorkMgr {
          Main.getWorkMgr().assignWork();
       }
    }
+
    final class CheckTaskTask implements Runnable {
       @Override
       public void run() {

@@ -1,6 +1,11 @@
 package org.batfish.util;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.commons.io.FileUtils;
+import org.batfish.common.BatfishException;
 import org.batfish.representation.Ip;
 
 public class Util {
@@ -125,6 +130,18 @@ public class Util {
          wildcard |= (1 << i);
       }
       return wildcard;
+   }
+
+   public static String readFile(File file) {
+      String text = null;
+      try {
+         text = FileUtils.readFileToString(file);
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to read file: " + file.toString(),
+               e);
+      }
+      return text;
    }
 
    /**
