@@ -1,0 +1,8 @@
+* text eol=lf
+*.jar binary
+*.class binary
+*.zip binary
+*.lbb binary
+*.lbp binary
+*.object binary
+*.sln binary
