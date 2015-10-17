@@ -5,4 +5,4 @@
 *.lbb binary
 *.lbp binary
 *.object binary
-*.sln binary
+*.sln -text
