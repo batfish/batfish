@@ -517,11 +517,13 @@ export -f batfish_query_policy
 batfish_query_predicate() {
    batfish_date
    echo ": START: Query predicate"
-   [ "$#" -gt 1 ] || return 1
-   local WORKSPACE=$1
+   [ "$#" -gt 2 ] || return 1
+   local BASE=$1
+   shift
+   local ENV=$1
    shift
    local PREDICATES="$@"
-   batfish -loglevel output -workspace $WORKSPACE -query -predicates $PREDICATES
+   batfish -loglevel output -autobasedir $BASE -env $ENV -query -predicates $PREDICATES
    batfish_date
    echo ": END: Query predicate"
 }
