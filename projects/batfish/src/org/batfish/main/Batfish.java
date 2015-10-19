@@ -1130,7 +1130,10 @@ public class Batfish implements AutoCloseable {
       addProject();
       String lbHostnamePath = _envSettings.getJobLogicBloxHostnamePath();
       String lbHostname = _settings.getServiceLogicBloxHostname();
-      if (lbHostnamePath != null && lbHostname != null) {
+      if (lbHostname == null) {
+         lbHostname = "localhost";
+      }
+      if (lbHostnamePath != null) {
          writeFile(lbHostnamePath, lbHostname);
       }
    }
