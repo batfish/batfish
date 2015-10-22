@@ -182,6 +182,7 @@ public class BfCoordWorkHelper {
       wItem.addRequestParam(BfConsts.COMMAND_FACTS, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
+      wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
       return wItem;
    }
 
@@ -205,6 +206,7 @@ public class BfCoordWorkHelper {
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
+      wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
       return wItem;
    }
 

@@ -137,7 +137,7 @@ public class InteractiveClient {
          return true;
       }
       else {
-         _logger.errorf("WorkItem failed: %s", wItem);
+         _logger.errorf("WorkItem failed: %s\n", wItem);
          return false;
       }
    }

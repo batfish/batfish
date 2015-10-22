@@ -780,6 +780,15 @@ public class Batfish implements AutoCloseable {
       serializeObject(predicateInfo, predicateInfoFile);
    }
 
+   private void checkComputeControlPlaneFacts() {
+      checkConfigurations();
+      checkEnvironmentExists(_baseEnvSettings);
+      if (_settings.getDiffActive()) {
+         checkDataPlane(_baseEnvSettings);
+         checkDiffEnvironmentExists();
+      }
+   }
+
    private void checkConfigurations() {
       String serializedConfigPath = _settings.getSerializeIndependentPath();
       File dir = new File(serializedConfigPath);
@@ -795,11 +804,11 @@ public class Batfish implements AutoCloseable {
    }
 
    private void checkDataPlane(EnvironmentSettings envSettings) {
-      String dpPath = _envSettings.getDataPlanePath();
+      String dpPath = envSettings.getDataPlanePath();
       File dp = new File(dpPath);
       if (!dp.exists()) {
-         throw new CleanBatfishException(
-               "Missing data plane for this test-rig\n");
+         throw new CleanBatfishException("Missing data plane for environment: "
+               + envSettings.getName() + "\n");
       }
    }
 
@@ -813,10 +822,30 @@ public class Batfish implements AutoCloseable {
       checkDataPlane(envSettings);
    }
 
+   private void checkDiffEnvironmentExists() {
+      checkDiffEnvironmentSpecified();
+      checkEnvironmentExists(_diffEnvSettings);
+   }
+
+   private void checkDiffEnvironmentSpecified() {
+      if (_settings.getDiffEnvironmentName() == null) {
+         throw new CleanBatfishException(
+               "No differential environment specified for differential question");
+      }
+   }
+
    private void checkDifferentialDataPlaneQuestionDependencies() {
+      checkDiffEnvironmentSpecified();
       checkConfigurations();
       checkDataPlane(_baseEnvSettings);
       checkDataPlane(_diffEnvSettings);
+   }
+
+   private void checkEnvironmentExists(EnvironmentSettings envSettings) {
+      if (!new File(envSettings.getDataPlanePath()).getParentFile().exists()) {
+         throw new CleanBatfishException("Environment not initialized: \""
+               + envSettings.getName() + "\"");
+      }
    }
 
    private void cleanupLogicDir() {
@@ -851,6 +880,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void computeControlPlaneFacts(Map<String, StringBuilder> cpFactBins) {
+      checkComputeControlPlaneFacts();
       if (_settings.getUsePrecomputedRoutes()) {
          Set<String> precomputedRoutesPaths = _settings
                .getPrecomputedRoutesPaths();
@@ -875,13 +905,13 @@ public class Batfish implements AutoCloseable {
          populatePrecomputedBgpAdvertisements(
                _settings.getPrecomputedBgpAdvertisementsPath(), cpFactBins);
       }
+      boolean differentialContext = _settings.getDiffActive();
       Map<String, Configuration> configurations = loadConfigurations();
       Topology topology = computeTopology(_settings.getTestRigPath(),
             configurations, cpFactBins);
       String edgeBlacklistPath = _envSettings.getEdgeBlacklistPath();
       String serializedTopologyPath = _envSettings.getSerializedTopologyPath();
       InterfaceSet flowSinks = null;
-      boolean differentialContext = _diffEnvSettings.getName() != null;
       if (differentialContext) {
          flowSinks = getFlowSinkSet(_baseEnvSettings.getDataPlanePath());
       }
