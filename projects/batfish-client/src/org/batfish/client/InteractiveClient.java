@@ -104,13 +104,15 @@ public class InteractiveClient {
             && status != WorkStatusCode.TERMINATEDNORMALLY
             && status != WorkStatusCode.ASSIGNMENTERROR) {
 
+         _logger.output(". ");
          _logger.infof("status: %s\n", status);
 
-         Thread.sleep(10 * 1000);
+         Thread.sleep(1 * 1000);
 
          status = _workHelper.getWorkStatus(wItem.getId());
       }
 
+      _logger.output("\n");
       _logger.infof("final status: %s\n", status);
 
       // get the results
@@ -138,7 +140,7 @@ public class InteractiveClient {
          return true;
       }
       else {
-         _logger.errorf("WorkItem failed: %s", wItem);
+         //_logger.errorf("WorkItem failed: %s", wItem);
          return false;
       }
    }
