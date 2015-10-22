@@ -1,7 +1,6 @@
 package org.batfish.client;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.nio.file.Paths;
 import java.util.UUID;
 
@@ -14,7 +13,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
@@ -76,16 +77,14 @@ public class BfCoordWorkHelper {
 
          File outdir = new File("client");
          outdir.mkdirs();
-
          File inFile = response.readEntity(File.class);
-         File outFile = new File(outdir.getAbsolutePath() + "/" + outFileStr);
-
-         inFile.renameTo(outFile);
-
-         FileWriter fr = new FileWriter(inFile);
-         fr.flush();
-         fr.close();
-
+         File outFile = Paths.get(outdir.getAbsolutePath().toString(),
+               outFileStr).toFile();
+         FileUtils.copyFile(inFile, outFile);
+         if (!inFile.delete()) {
+            throw new BatfishException("Failed to delete temporary file: "
+                  + inFile.getAbsolutePath());
+         }
          return outFile.getAbsolutePath();
       }
       catch (Exception e) {
