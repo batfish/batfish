@@ -455,12 +455,14 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answerDestination(DestinationQuestion question) {
+      checkDifferentialDataPlaneQuestionDependencies();
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
                                                        // method stub
    }
 
    private void answerFailure(FailureQuestion question) {
+      checkDifferentialDataPlaneQuestionDependencies();
       String tag = getDifferentialFlowTag();
       _baseEnvSettings
             .setDumpFactsDir(_baseEnvSettings.getTrafficFactDumpDir());
@@ -531,12 +533,14 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answerIngressPath(IngressPathQuestion question) {
+      checkDifferentialDataPlaneQuestionDependencies();
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
                                                        // method stub
    }
 
    private void answerLocalPath(LocalPathQuestion question) {
+      checkDifferentialDataPlaneQuestionDependencies();
       String tag = getDifferentialFlowTag();
       _baseEnvSettings
             .setDumpFactsDir(_baseEnvSettings.getTrafficFactDumpDir());
@@ -666,6 +670,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answerTraceroute(TracerouteQuestion question) {
+      checkDataPlaneQuestionDependencies();
       _envSettings.setDumpFactsDir(_envSettings.getTrafficFactDumpDir());
       Set<Flow> flows = question.getFlows();
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
@@ -678,6 +683,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answerVerify(VerifyQuestion question) {
+      checkConfigurations();
       Map<String, Configuration> configurations = loadConfigurations();
       VerifyProgram program = question.getProgram();
       program.execute(configurations, _logger, _settings);
@@ -788,7 +794,7 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void checkDataPlane() {
+   private void checkDataPlane(EnvironmentSettings envSettings) {
       String dpPath = _envSettings.getDataPlanePath();
       File dp = new File(dpPath);
       if (!dp.exists()) {
@@ -798,8 +804,19 @@ public class Batfish implements AutoCloseable {
    }
 
    private void checkDataPlaneQuestionDependencies() {
+      checkDataPlaneQuestionDependencies(_envSettings);
+   }
+
+   private void checkDataPlaneQuestionDependencies(
+         EnvironmentSettings envSettings) {
       checkConfigurations();
-      checkDataPlane();
+      checkDataPlane(envSettings);
+   }
+
+   private void checkDifferentialDataPlaneQuestionDependencies() {
+      checkConfigurations();
+      checkDataPlane(_baseEnvSettings);
+      checkDataPlane(_diffEnvSettings);
    }
 
    private void cleanupLogicDir() {
