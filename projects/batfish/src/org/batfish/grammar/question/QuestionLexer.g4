@@ -74,6 +74,16 @@ CONTAINS_IP
    'contains_ip'
 ;
 
+DST_IP
+:
+   'dst_ip'
+;
+
+DST_PORT
+:
+   'dst_port'
+;
+
 ELSE
 :
    'else'
@@ -92,6 +102,11 @@ FAILURE
 FALSE
 :
    'false'
+;
+
+FLOW
+:
+   'flow'
 ;
 
 FOREACH
@@ -114,6 +129,11 @@ IF
    'if'
 ;
 
+INGRESS_NODE
+:
+   'ingress_node'
+;
+
 INPUT
 :
    'input'
@@ -127,6 +147,11 @@ INTERFACE
 IP
 :
    'ip'
+;
+
+IP_PROTOCOL
+:
+   'ip_protocol'
 ;
 
 ISIS
@@ -274,6 +299,16 @@ REMOTE_IP
    'remote_ip'
 ;
 
+SRC_IP
+:
+   'src_ip'
+;
+
+SRC_PORT
+:
+   'src_port'
+;
+
 STATIC
 :
    'static'
@@ -365,6 +400,11 @@ DOUBLE_QUOTE
    '"' -> channel ( HIDDEN ) , pushMode ( M_QuotedString )
 ;
 
+EQUALS
+:
+   '='
+;
+
 FORWARD_SLASH
 :
    '/'
@@ -378,6 +418,11 @@ GT
 INGRESS_PATH
 :
    'ingress-path'
+;
+
+IP_ADDRESS
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
 ;
 
 LOCAL_PATH
@@ -430,6 +475,11 @@ SEMICOLON
    ';'
 ;
 
+TRACEROUTE
+:
+   'traceroute'
+;
+
 VARIABLE
 :
    '$' F_VarChar+
@@ -438,6 +488,19 @@ VARIABLE
 WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+fragment
+F_DecByte
+:
+   (
+      F_PositiveDecimalDigit F_DecimalDigit F_DecimalDigit
+   )
+   |
+   (
+      F_PositiveDecimalDigit F_DecimalDigit
+   )
+   | F_DecimalDigit
 ;
 
 fragment

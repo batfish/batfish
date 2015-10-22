@@ -108,6 +108,7 @@ import org.batfish.question.IngressPathQuestion;
 import org.batfish.question.LocalPathQuestion;
 import org.batfish.question.MultipathQuestion;
 import org.batfish.question.Question;
+import org.batfish.question.TracerouteQuestion;
 import org.batfish.question.VerifyProgram;
 import org.batfish.question.VerifyQuestion;
 import org.batfish.representation.AsPath;
@@ -425,6 +426,11 @@ public class Batfish implements AutoCloseable {
          dp = true;
          break;
 
+      case TRACEROUTE:
+         answerTraceroute((TracerouteQuestion) question);
+         dp = true;
+         break;
+
       case VERIFY:
          answerVerify((VerifyQuestion) question);
          break;
@@ -650,6 +656,18 @@ public class Batfish implements AutoCloseable {
       }
 
       flows = computeNodOutput(jobs);
+      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
+      initTrafficFactBins(trafficFactBins);
+      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
+      for (Flow flow : flows) {
+         wSetFlowOriginate.append(flow.toLBLine());
+      }
+      dumpFacts(trafficFactBins);
+   }
+
+   private void answerTraceroute(TracerouteQuestion question) {
+      _envSettings.setDumpFactsDir(_envSettings.getTrafficFactDumpDir());
+      Set<Flow> flows = question.getFlows();
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
       initTrafficFactBins(trafficFactBins);
       StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
@@ -2511,7 +2529,7 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
       QuestionCombinedParser parser = new QuestionCombinedParser(questionText,
             _settings.getThrowOnParserError(), _settings.getThrowOnLexerError());
-      QuestionExtractor extractor = new QuestionExtractor();
+      QuestionExtractor extractor = new QuestionExtractor(getFlowTag());
       try {
          ParserRuleContext tree = parse(parser, questionPath);
          _logger.info("\tPost-processing...");

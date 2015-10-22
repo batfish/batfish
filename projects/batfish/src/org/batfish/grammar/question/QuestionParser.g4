@@ -133,6 +133,17 @@ eq_expr
    lhs = int_expr DOUBLE_EQUALS rhs = int_expr
 ;
 
+explicit_flow
+:
+   FLOW OPEN_PAREN
+   (
+      flow_constraint
+      (
+         COMMA flow_constraint
+      )*
+   )? CLOSE_PAREN
+;
+
 failure_question
 :
    FAILURE
@@ -141,6 +152,46 @@ failure_question
 false_expr
 :
    FALSE
+;
+
+flow_constraint
+:
+   flow_constraint_ingress_node
+   | flow_constraint_ip_protocol
+   | flow_constraint_dst_ip
+   | flow_constraint_dst_port
+   | flow_constraint_src_ip
+   | flow_constraint_src_port
+;
+
+flow_constraint_ingress_node
+:
+   INGRESS_NODE EQUALS ingress_node = STRING_LITERAL
+;
+
+flow_constraint_ip_protocol
+:
+   IP_PROTOCOL EQUALS ip_protocol = DEC
+;
+
+flow_constraint_dst_ip
+:
+   DST_IP EQUALS dst_ip = IP_ADDRESS
+;
+
+flow_constraint_dst_port
+:
+   DST_PORT EQUALS dst_port = DEC
+;
+
+flow_constraint_src_ip
+:
+   SRC_IP EQUALS src_ip = IP_ADDRESS
+;
+
+flow_constraint_src_port
+:
+   SRC_PORT EQUALS src_port = DEC
 ;
 
 foreach_bgp_neighbor_statement
@@ -520,6 +571,7 @@ question
    | ingress_path_question
    | local_path_question
    | multipath_question
+   | traceroute_question
    | verify_question
 ;
 
@@ -610,6 +662,14 @@ string_expr
 string_literal_string_expr
 :
    STRING_LITERAL
+;
+
+traceroute_question
+:
+   TRACEROUTE OPEN_BRACE
+   (
+      explicit_flow SEMICOLON
+   )+ CLOSE_BRACE
 ;
 
 true_expr

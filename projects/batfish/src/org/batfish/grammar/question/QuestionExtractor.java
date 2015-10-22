@@ -66,9 +66,14 @@ import org.batfish.question.StaticRoutePrefixExpr;
 import org.batfish.question.StaticRouteStringExpr;
 import org.batfish.question.StringLiteralStringExpr;
 import org.batfish.question.SumIntExpr;
+import org.batfish.question.TracerouteQuestion;
 import org.batfish.question.VarIntExpr;
 import org.batfish.question.VerifyProgram;
 import org.batfish.question.VerifyQuestion;
+import org.batfish.representation.Flow;
+import org.batfish.representation.FlowBuilder;
+import org.batfish.representation.Ip;
+import org.batfish.representation.IpProtocol;
 import org.batfish.util.Util;
 
 public class QuestionExtractor extends QuestionParserBaseListener implements
@@ -88,14 +93,69 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private static final String ERR_CONVERT_STRING = "Cannot convert parse tree node to string expression";
 
+   private FlowBuilder _currentFlowBuilder;
+
+   private String _flowTag;
+
    private Question _question;
 
+   private Set<Flow> _tracerouteFlows;
+
    private VerifyProgram _verifyProgram;
+
+   public QuestionExtractor(String flowTag) {
+      _flowTag = flowTag;
+   }
+
+   @Override
+   public void enterExplicit_flow(Explicit_flowContext ctx) {
+      _currentFlowBuilder = new FlowBuilder();
+      _currentFlowBuilder.setTag(_flowTag);
+   }
 
    @Override
    public void enterFailure_question(Failure_questionContext ctx) {
       FailureQuestion failureQuestion = new FailureQuestion();
       _question = failureQuestion;
+   }
+
+   @Override
+   public void enterFlow_constraint_dst_ip(Flow_constraint_dst_ipContext ctx) {
+      Ip dstIp = new Ip(ctx.dst_ip.getText());
+      _currentFlowBuilder.setDstIp(dstIp);
+   }
+
+   @Override
+   public void enterFlow_constraint_dst_port(Flow_constraint_dst_portContext ctx) {
+      int dstPort = Integer.parseInt(ctx.dst_port.getText());
+      _currentFlowBuilder.setDstPort(dstPort);
+   }
+
+   @Override
+   public void enterFlow_constraint_ingress_node(
+         Flow_constraint_ingress_nodeContext ctx) {
+      String ingressNode = ctx.ingress_node.getText();
+      _currentFlowBuilder.setIngressNode(ingressNode);
+   }
+
+   @Override
+   public void enterFlow_constraint_ip_protocol(
+         Flow_constraint_ip_protocolContext ctx) {
+      int ipProtocolInt = Integer.parseInt(ctx.ip_protocol.getText());
+      IpProtocol ipProtocol = IpProtocol.fromNumber(ipProtocolInt);
+      _currentFlowBuilder.setIpProtocol(ipProtocol);
+   }
+
+   @Override
+   public void enterFlow_constraint_src_ip(Flow_constraint_src_ipContext ctx) {
+      Ip srcIp = new Ip(ctx.src_ip.getText());
+      _currentFlowBuilder.setSrcIp(srcIp);
+   }
+
+   @Override
+   public void enterFlow_constraint_src_port(Flow_constraint_src_portContext ctx) {
+      int srcPort = Integer.parseInt(ctx.src_port.getText());
+      _currentFlowBuilder.setSrcPort(srcPort);
    }
 
    @Override
@@ -117,6 +177,13 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    @Override
+   public void enterTraceroute_question(Traceroute_questionContext ctx) {
+      TracerouteQuestion question = new TracerouteQuestion();
+      _question = question;
+      _tracerouteFlows = question.getFlows();
+   }
+
+   @Override
    public void enterVerify_question(Verify_questionContext ctx) {
       VerifyQuestion verifyQuestion = new VerifyQuestion();
       _question = verifyQuestion;
@@ -127,6 +194,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void enterVerify_statement(Verify_statementContext ctx) {
       Statement statement = toStatement(ctx);
       _verifyProgram.getStatements().add(statement);
+   }
+
+   @Override
+   public void exitExplicit_flow(Explicit_flowContext ctx) {
+      Flow flow = _currentFlowBuilder.build();
+      _tracerouteFlows.add(flow);
    }
 
    public Question getQuestion() {
