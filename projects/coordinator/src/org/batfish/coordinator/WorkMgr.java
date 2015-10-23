@@ -3,8 +3,11 @@ package org.batfish.coordinator;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -119,13 +122,14 @@ public class WorkMgr {
 
          // get the task and add other standard stuff
          JSONObject task = work.getWorkItem().toTask();
-         File autobasedir = new File(Main.getSettings()
-               .getTestrigStorageLocation()
-               + "/"
-               + work.getWorkItem().getTestrigName());
+         File autobasedir = Paths.get(
+               Main.getSettings().getTestrigStorageLocation(),
+               work.getWorkItem().getTestrigName()).toFile();
          task.put("autobasedir", autobasedir.getAbsolutePath());
-         task.put("logfile", autobasedir.getAbsolutePath() + "/"
-               + work.getId().toString() + ".log");
+         task.put(
+               "logfile",
+               Paths.get(autobasedir.getAbsolutePath(),
+                     work.getId().toString() + ".log").toString());
 
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client
@@ -276,8 +280,8 @@ public class WorkMgr {
    }
 
    public File getObject(String testrigName, String objectName) {
-      File file = new File(Main.getSettings().getTestrigStorageLocation() + "/"
-            + testrigName + "/" + objectName);
+      File file = Paths.get(Main.getSettings().getTestrigStorageLocation(),
+            testrigName, objectName).toFile();
 
       if (file.isFile()) {
          return file;
@@ -306,10 +310,25 @@ public class WorkMgr {
       return _workQueueMgr.getWork(workItemId);
    }
 
+   private void moveByCopy(File srcFile, File destFile) throws IOException {
+      if (srcFile.isDirectory()) {
+         FileUtils.copyDirectory(srcFile, destFile);
+         FileUtils.deleteDirectory(srcFile);
+      }
+      else {
+         FileUtils.copyFile(srcFile, destFile);
+         if (!srcFile.delete()) {
+            throw new IOException("Failed to delete srcFile: "
+                  + srcFile.toString());
+         }
+      }
+   }
+
    public boolean queueWork(WorkItem workItem) throws Exception {
 
-      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
-            + "/" + workItem.getTestrigName());
+      File testrigDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(),
+            workItem.getTestrigName()).toFile();
 
       if (workItem.getTestrigName().isEmpty() || !testrigDir.exists()) {
          throw new Exception("Non-existent testrig");
@@ -336,16 +355,17 @@ public class WorkMgr {
    public void uploadEnvironment(String testrigName, String envName,
          InputStream fileStream) throws Exception {
 
-      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
-            + "/" + testrigName);
+      File testrigDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), testrigName)
+            .toFile();
 
       if (!testrigDir.exists()) {
          throw new FileNotFoundException("testrig " + testrigName
                + " does not exist");
       }
 
-      File envDir = new File(testrigDir.getAbsolutePath() + "/"
-            + BfConsts.RELPATH_ENVIRONMENTS_DIR + "/" + envName);
+      File envDir = Paths.get(testrigDir.getAbsolutePath(),
+            BfConsts.RELPATH_ENVIRONMENTS_DIR, envName).toFile();
 
       if (envDir.exists()) {
          throw new FileExistsException("environment " + envName
@@ -357,7 +377,8 @@ public class WorkMgr {
                + envDir.getAbsolutePath());
       }
 
-      String zipFile = envDir.getAbsolutePath() + "/tmp" + ".zip";
+      File zipFile = Files.createTempFile("coordinatortmpuploadenvironment",
+            ".zip").toFile();
 
       try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
          int read = 0;
@@ -368,8 +389,8 @@ public class WorkMgr {
       }
 
       // now unzip
-      File unzipDir = new File(envDir.getAbsolutePath() + "/"
-            + BfConsts.RELPATH_ENV_DIR);
+      File unzipDir = Paths.get(envDir.getAbsolutePath(),
+            BfConsts.RELPATH_ENV_DIR).toFile();
       UnzipUtility unzipper = new UnzipUtility();
       unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
 
@@ -387,28 +408,29 @@ public class WorkMgr {
 
       // things look ok, now make the move
       for (File file : subFileList) {
-         String target = unzipDir + "/" + file.getName();
-         file.renameTo(new File(target));
+         File target = Paths.get(unzipDir.toString(), file.getName()).toFile();
+         moveByCopy(file, target);
       }
 
       // delete the empty directory and the zip file
       fileList[0].delete();
-      new File(zipFile).delete();
+      zipFile.delete();
    }
 
    public void uploadQuestion(String testrigName, String qName,
          InputStream fileStream) throws Exception {
 
-      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
-            + "/" + testrigName);
+      File testrigDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), testrigName)
+            .toFile();
 
       if (!testrigDir.exists()) {
          throw new FileNotFoundException("testrig " + testrigName
                + " does not exist");
       }
 
-      File qDir = new File(testrigDir.getAbsolutePath() + "/"
-            + BfConsts.RELPATH_QUESTIONS_DIR + "/" + qName);
+      File qDir = Paths.get(testrigDir.getAbsolutePath(),
+            BfConsts.RELPATH_QUESTIONS_DIR, qName).toFile();
 
       if (qDir.exists()) {
          throw new FileExistsException("question " + qName
@@ -420,8 +442,8 @@ public class WorkMgr {
                + qDir.getAbsolutePath());
       }
 
-      String file = qDir.getAbsolutePath() + "/"
-            + BfConsts.RELPATH_QUESTION_FILE;
+      File file = Paths.get(qDir.getAbsolutePath(),
+            BfConsts.RELPATH_QUESTION_FILE).toFile();
 
       try (OutputStream fileOutputStream = new FileOutputStream(file)) {
          int read = 0;
@@ -435,8 +457,8 @@ public class WorkMgr {
    public void uploadTestrig(String name, InputStream fileStream)
          throws Exception {
 
-      File testrigDir = new File(Main.getSettings().getTestrigStorageLocation()
-            + "/" + name);
+      File testrigDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), name).toFile();
 
       if (testrigDir.exists()) {
          throw new FileExistsException("Testrig with name " + name
@@ -448,9 +470,7 @@ public class WorkMgr {
                + testrigDir.getAbsolutePath());
       }
 
-      String zipFile = testrigDir.getAbsolutePath() + "/"
-            + BfConsts.RELPATH_TEST_RIG_DIR + ".zip";
-
+      File zipFile = Files.createTempFile("testrig", ".zip").toFile();
       try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
          int read = 0;
          final byte[] bytes = new byte[1024];
@@ -460,8 +480,8 @@ public class WorkMgr {
       }
 
       // now unzip
-      File unzipDir = new File(testrigDir.getAbsolutePath() + "/"
-            + BfConsts.RELPATH_TEST_RIG_DIR);
+      File unzipDir = Paths.get(testrigDir.getAbsolutePath(),
+            BfConsts.RELPATH_TEST_RIG_DIR).toFile();
       UnzipUtility unzipper = new UnzipUtility();
       unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
 
@@ -494,12 +514,12 @@ public class WorkMgr {
 
       // things look ok, now make the move
       for (File file : subFileList) {
-         String target = unzipDir + "/" + file.getName();
-         file.renameTo(new File(target));
+         File target = Paths.get(unzipDir.toString(), file.getName()).toFile();
+         moveByCopy(file, target);
       }
 
       // delete the empty directory and the zip file
       fileList[0].delete();
-      new File(zipFile).delete();
+      zipFile.delete();
    }
 }
