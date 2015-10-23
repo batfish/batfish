@@ -44,19 +44,17 @@ public class UnzipUtility {
     * Extracts a zip file specified by the zipFilePath to a directory specified
     * by destDirectory (will be created if does not exists)
     *
-    * @param zipFilePath
+    * @param zipFile
     * @param destDirectory
     * @throws IOException
     */
-   public void unzip(String zipFilePath, String destDirectory)
-         throws IOException {
+   public void unzip(File zipFile, String destDirectory) throws IOException {
       File destDir = new File(destDirectory);
       if (!destDir.exists()) {
          destDir.mkdir();
       }
 
-      ZipInputStream zipIn = new ZipInputStream(
-            new FileInputStream(zipFilePath));
+      ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFile));
 
       ZipEntry entry = zipIn.getNextEntry();
 
