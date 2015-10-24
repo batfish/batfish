@@ -3,6 +3,7 @@ package org.batfish.client;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -12,6 +13,7 @@ import org.batfish.common.CoordConsts;
 public class Settings {
 
    private static final String ARG_COMMAND_FILE = "cmdfile";
+   private static final String ARG_HELP = "help";
    private static final String ARG_LOG_FILE = "logfile";
    private static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_PERIOD_CHECK_WORK = "periodcheckwork";
@@ -26,6 +28,8 @@ public class Settings {
          .toString();
    private static final String DEFAULT_SERVICE_WORK_PORT = CoordConsts.SVC_WORK_PORT
          .toString();
+
+   private static final String EXECUTABLE_NAME = "batfish_client";
 
    private String _commandFile;
    private String _logFile;
@@ -96,6 +100,8 @@ public class Settings {
       _options.addOption(Option.builder().argName("cmdfile").hasArg()
             .desc("read commands from the specified command file").longOpt(ARG_COMMAND_FILE)
             .build());
+      _options.addOption(Option.builder().desc("print this message")
+            .longOpt(ARG_HELP).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -104,6 +110,15 @@ public class Settings {
 
       // parse the command line arguments
       line = parser.parse(_options, args);
+      
+      if (line.hasOption(ARG_HELP)) {
+         // automatically generate the help statement
+         HelpFormatter formatter = new HelpFormatter();
+         formatter.setLongOptPrefix("-");
+         formatter.printHelp(EXECUTABLE_NAME, _options);
+         System.exit(0);
+      }
+
       _servicePoolPort = Integer.parseInt(line.getOptionValue(
             ARG_SERVICE_POOL_PORT, DEFAULT_SERVICE_POOL_PORT));
       _serviceWorkPort = Integer.parseInt(line.getOptionValue(
