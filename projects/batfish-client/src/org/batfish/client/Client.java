@@ -1,6 +1,7 @@
 package org.batfish.client;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -21,7 +22,7 @@ import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 import jline.console.completer.StringsCompleter;
 
-public class InteractiveClient {
+public class Client {
 
    private static final String COMMAND_ANSWER = "answer";
    private static final String COMMAND_ANSWER_DIFF = "answer-diff";
@@ -72,11 +73,54 @@ public class InteractiveClient {
    private String _currTestrigName = null;
 
    private BatfishLogger _logger;
-   private BfCoordPoolHelper _poolHelper;
 
+   private BfCoordPoolHelper _poolHelper;
    private BfCoordWorkHelper _workHelper;
 
-   public InteractiveClient(String workMgr, String poolMgr) {
+   public Client(Settings settings) {
+      if (settings.getCommandFile() != null) {
+         RunBatchMode(settings);         
+      }
+      else {
+         RunInteractiveMode(settings);
+      }
+      
+   }
+
+   private void RunBatchMode(Settings settings) {
+      
+      _logger = new BatfishLogger(settings.getLogLevel(), false, settings.getLogFile(), false);
+
+      String workMgr = settings.getServiceHost() + ":" + settings.getServiceWorkPort();
+      String poolMgr = settings.getServiceHost() + ":" + settings.getServicePoolPort();
+      
+      _workHelper = new BfCoordWorkHelper(workMgr, _logger);
+      _poolHelper = new BfCoordPoolHelper(poolMgr);
+           
+      try (BufferedReader br = new BufferedReader(new FileReader(
+            settings.getCommandFile()))) {
+         String line = null;
+         while ((line = br.readLine()) != null) {
+            _logger.output("Doing command: " + line + "\n");
+            
+            String[] words = line.split("\\s+");
+
+            if (words.length > 0) {
+               if (validCommandUsage(words)) {
+                  processCommand(words);
+               }
+            }
+         }      
+      }
+      catch (FileNotFoundException e) {
+         _logger.errorf("Command file not found: %s\n", settings.getCommandFile());
+      }
+      catch (Exception e) {
+         _logger.errorf("Exception while reading command file: %s\n", e);
+      }
+   }
+   
+   private void RunInteractiveMode(Settings settings) {
       try {
 
          ConsoleReader reader = new ConsoleReader();
@@ -94,10 +138,11 @@ public class InteractiveClient {
          PrintWriter pWriter = new PrintWriter(reader.getOutput(), true);
          OutputStream os = new WriterOutputStream(pWriter);
          PrintStream ps = new PrintStream(os, true);
-         _logger = new BatfishLogger(
-               BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT), false,
-               ps);
+         _logger = new BatfishLogger(settings.getLogLevel(), false, ps);
 
+         String workMgr = settings.getServiceHost() + ":" + settings.getServiceWorkPort();
+         String poolMgr = settings.getServiceHost() + ":" + settings.getServicePoolPort();
+         
          _workHelper = new BfCoordWorkHelper(workMgr, _logger);
          _poolHelper = new BfCoordPoolHelper(poolMgr);
 
