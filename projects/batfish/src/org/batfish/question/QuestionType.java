@@ -6,6 +6,7 @@ public enum QuestionType {
    INGRESS_PATH,
    LOCAL_PATH,
    MULTIPATH,
+   REACHABILITY,
    TRACEROUTE,
    VERIFY
 }

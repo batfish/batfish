@@ -397,6 +397,26 @@ interface_string_expr
    INTERFACE PERIOD interface_name_string_expr
 ;
 
+ip_constraint
+:
+   ip_constraint_complex
+   | ip_constraint_simple
+;
+
+ip_constraint_complex
+:
+   OPEN_BRACE ip_constraint_simple
+   (
+      COMMA ip_constraint_simple
+   )* CLOSE_BRACE
+;
+
+ip_constraint_simple
+:
+   IP_ADDRESS
+   | IP_PREFIX
+;
+
 ip_expr
 :
    bgp_neighbor_ip_expr
@@ -453,6 +473,12 @@ node_boolean_expr
       | node_ospf_boolean_expr
       | node_static_boolean_expr
    )
+;
+
+node_constraint
+:
+   REGEX
+   | STRING_LITERAL
 ;
 
 node_has_generated_route_boolean_expr
@@ -571,8 +597,89 @@ question
    | ingress_path_question
    | local_path_question
    | multipath_question
+   | reachability_question
    | traceroute_question
    | verify_question
+;
+
+range
+:
+   range_list += subrange
+   (
+      COMMA range_list += subrange
+   )*
+;
+
+range_constraint
+:
+   (
+      OPEN_BRACE range CLOSE_BRACE
+   )
+   | subrange
+;
+
+reachability_constraint
+:
+   reachability_constraint_action
+   | reachability_constraint_dst_ip
+   | reachability_constraint_dst_port
+   | reachability_constraint_final_node
+   | reachability_constraint_ingress_node
+   | reachability_constraint_ip_protocol
+   | reachability_constraint_src_ip
+   | reachability_constraint_src_port
+;
+
+reachability_constraint_action
+:
+   ACTION EQUALS
+   (
+      ACCEPT
+      | DROP
+   )
+;
+
+reachability_constraint_dst_ip
+:
+   DST_IP EQUALS ip_constraint
+;
+
+reachability_constraint_dst_port
+:
+   DST_PORT EQUALS range_constraint
+;
+
+reachability_constraint_final_node
+:
+   FINAL_NODE EQUALS node_constraint
+;
+
+reachability_constraint_ingress_node
+:
+   INGRESS_NODE EQUALS node_constraint
+;
+
+reachability_constraint_ip_protocol
+:
+   IP_PROTOCOL EQUALS range_constraint
+;
+
+reachability_constraint_src_ip
+:
+   SRC_IP EQUALS ip_constraint
+;
+
+reachability_constraint_src_port
+:
+   SRC_PORT EQUALS range_constraint
+;
+
+reachability_question
+:
+   REACHABILITY OPEN_BRACE reachability_constraint
+   (
+      COMMA reachability_constraint
+   )* CLOSE_BRACE
 ;
 
 statement
@@ -662,6 +769,14 @@ string_expr
 string_literal_string_expr
 :
    STRING_LITERAL
+;
+
+subrange
+:
+   low = DEC
+   (
+      MINUS high = DEC
+   )?
 ;
 
 traceroute_question

@@ -1,13 +1,17 @@
 package org.batfish.grammar.question;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.BatfishExtractor;
+import org.batfish.grammar.question.QuestionParser.RangeContext;
+import org.batfish.grammar.question.QuestionParser.SubrangeContext;
 import org.batfish.grammar.question.QuestionParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.question.AddIpStatement;
@@ -30,6 +34,7 @@ import org.batfish.question.ForEachInterfaceStatement;
 import org.batfish.question.ForEachNodeBgpGeneratedRouteStatement;
 import org.batfish.question.ForEachNodeStatement;
 import org.batfish.question.ForEachStaticRouteStatement;
+import org.batfish.question.ForwardingAction;
 import org.batfish.question.GeneratedRoutePrefixExpr;
 import org.batfish.question.GtExpr;
 import org.batfish.question.IfExpr;
@@ -57,6 +62,7 @@ import org.batfish.question.PrintfStatement;
 import org.batfish.question.ProductIntExpr;
 import org.batfish.question.Question;
 import org.batfish.question.QuotientIntExpr;
+import org.batfish.question.ReachabilityQuestion;
 import org.batfish.question.Statement;
 import org.batfish.question.StaticBooleanExpr;
 import org.batfish.question.StaticRouteBooleanExpr;
@@ -74,6 +80,8 @@ import org.batfish.representation.Flow;
 import org.batfish.representation.FlowBuilder;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.Prefix;
+import org.batfish.util.SubRange;
 import org.batfish.util.Util;
 
 public class QuestionExtractor extends QuestionParserBaseListener implements
@@ -98,6 +106,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private String _flowTag;
 
    private Question _question;
+
+   private ReachabilityQuestion _reachabilityQuestion;
 
    private Set<Flow> _tracerouteFlows;
 
@@ -174,6 +184,73 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void enterMultipath_question(Multipath_questionContext ctx) {
       MultipathQuestion multipathQuestion = new MultipathQuestion();
       _question = multipathQuestion;
+   }
+
+   @Override
+   public void enterReachability_constraint_action(
+         Reachability_constraint_actionContext ctx) {
+      _reachabilityQuestion.getActions().clear();
+      if (ctx.ACCEPT() != null) {
+         _reachabilityQuestion.getActions().add(ForwardingAction.ACCEPT);
+      }
+      if (ctx.DROP() != null) {
+         _reachabilityQuestion.getActions().add(ForwardingAction.DROP);
+      }
+   }
+
+   @Override
+   public void enterReachability_constraint_dst_ip(
+         Reachability_constraint_dst_ipContext ctx) {
+      Set<Prefix> prefixes = toPrefixSet(ctx.ip_constraint());
+      _reachabilityQuestion.getDstPrefixes().addAll(prefixes);
+   }
+
+   @Override
+   public void enterReachability_constraint_dst_port(
+         Reachability_constraint_dst_portContext ctx) {
+      Set<SubRange> range = toRange(ctx.range_constraint());
+      _reachabilityQuestion.getDstPortRange().addAll(range);
+   }
+
+   @Override
+   public void enterReachability_constraint_final_node(
+         Reachability_constraint_final_nodeContext ctx) {
+      String regex = toRegex(ctx.node_constraint());
+      _reachabilityQuestion.setFinalNodeRegex(regex);
+   }
+
+   @Override
+   public void enterReachability_constraint_ingress_node(
+         Reachability_constraint_ingress_nodeContext ctx) {
+      String regex = toRegex(ctx.node_constraint());
+      _reachabilityQuestion.setIngressNodeRegex(regex);
+   }
+
+   @Override
+   public void enterReachability_constraint_ip_protocol(
+         Reachability_constraint_ip_protocolContext ctx) {
+      Set<SubRange> range = toRange(ctx.range_constraint());
+      _reachabilityQuestion.getIpProtocolRange().addAll(range);
+   }
+
+   @Override
+   public void enterReachability_constraint_src_ip(
+         Reachability_constraint_src_ipContext ctx) {
+      Set<Prefix> prefixes = toPrefixSet(ctx.ip_constraint());
+      _reachabilityQuestion.getSrcPrefixes().addAll(prefixes);
+   }
+
+   @Override
+   public void enterReachability_constraint_src_port(
+         Reachability_constraint_src_portContext ctx) {
+      Set<SubRange> range = toRange(ctx.range_constraint());
+      _reachabilityQuestion.getSrcPortRange().addAll(range);
+   }
+
+   @Override
+   public void enterReachability_question(Reachability_questionContext ctx) {
+      _reachabilityQuestion = new ReachabilityQuestion();
+      _question = _reachabilityQuestion;
    }
 
    @Override
@@ -600,6 +677,20 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
+   private Prefix toPrefix(Ip_constraint_simpleContext ctx) {
+      if (ctx.IP_ADDRESS() != null) {
+         Ip ip = new Ip(ctx.IP_ADDRESS().getText());
+         return new Prefix(ip, 32);
+      }
+      else if (ctx.IP_PREFIX() != null) {
+         return new Prefix(ctx.IP_PREFIX().getText());
+      }
+      else {
+         throw new BatfishException("invalid simple ip constraint: "
+               + ctx.getText());
+      }
+   }
+
    private PrintableExpr toPrefixExpr(Generated_route_prefix_exprContext expr) {
       if (expr.generated_route_prefix_prefix_expr() != null) {
          return GeneratedRoutePrefixExpr.GENERATED_ROUTE_PREFIX;
@@ -642,6 +733,27 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
+   private Set<Prefix> toPrefixSet(Ip_constraint_complexContext ctx) {
+      Set<Prefix> prefixes = new LinkedHashSet<Prefix>();
+      for (Ip_constraint_simpleContext sctx : ctx.ip_constraint_simple()) {
+         Prefix prefix = toPrefix(sctx);
+         prefixes.add(prefix);
+      }
+      return prefixes;
+   }
+
+   private Set<Prefix> toPrefixSet(Ip_constraintContext ctx) {
+      if (ctx.ip_constraint_complex() != null) {
+         return toPrefixSet(ctx.ip_constraint_complex());
+      }
+      else if (ctx.ip_constraint_simple() != null) {
+         return Collections.singleton(toPrefix(ctx.ip_constraint_simple()));
+      }
+      else {
+         throw new BatfishException("invalid ip constraint: " + ctx.getText());
+      }
+   }
+
    private PrintableExpr toPrintableExpr(Printable_exprContext expr) {
       if (expr.boolean_expr() != null) {
          return toBooleanExpr(expr.boolean_expr());
@@ -661,6 +773,49 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else {
          throw new BatfishException(ERR_CONVERT_PRINTABLE);
       }
+   }
+
+   private Set<SubRange> toRange(Range_constraintContext ctx) {
+      if (ctx.range() != null) {
+         return toRange(ctx.range());
+      }
+      else if (ctx.subrange() != null) {
+         return Collections.singleton(toSubRange(ctx.subrange()));
+      }
+      else {
+         throw new BatfishException("invalid range constraint: "
+               + ctx.getText());
+      }
+   }
+
+   private Set<SubRange> toRange(RangeContext ctx) {
+      Set<SubRange> range = new LinkedHashSet<SubRange>();
+      for (SubrangeContext sctx : ctx.range_list) {
+         SubRange subRange = toSubRange(sctx);
+         range.add(subRange);
+      }
+      return range;
+   }
+
+   private String toRegex(Node_constraintContext ctx) {
+      if (ctx.REGEX() != null) {
+         String regex = toRegex(ctx.REGEX().getText());
+         return regex;
+      }
+      else if (ctx.STRING_LITERAL() != null) {
+         return ctx.STRING_LITERAL().getText();
+      }
+      else {
+         throw new BatfishException("invalid node constraint: " + ctx.getText());
+      }
+   }
+
+   private String toRegex(String text) {
+      String prefix = "regex<";
+      if (!text.startsWith(prefix) || !text.endsWith(">")) {
+         throw new BatfishException("unexpected regex token text: " + text);
+      }
+      return text.substring(prefix.length(), text.length() - 1);
    }
 
    private Statement toStatement(Add_ip_statementContext statement) {
@@ -943,6 +1098,17 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       String withEscapes = expr.getText();
       String processed = Util.unescapeJavaString(withEscapes);
       return new StringLiteralStringExpr(processed);
+   }
+
+   private SubRange toSubRange(SubrangeContext ctx) {
+      int low = Integer.parseInt(ctx.low.getText());
+      if (ctx.high != null) {
+         int high = Integer.parseInt(ctx.high.getText());
+         return new SubRange(low, high);
+      }
+      else {
+         return new SubRange(low, low);
+      }
    }
 
 }

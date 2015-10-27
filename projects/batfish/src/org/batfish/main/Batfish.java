@@ -108,6 +108,7 @@ import org.batfish.question.IngressPathQuestion;
 import org.batfish.question.LocalPathQuestion;
 import org.batfish.question.MultipathQuestion;
 import org.batfish.question.Question;
+import org.batfish.question.ReachabilityQuestion;
 import org.batfish.question.TracerouteQuestion;
 import org.batfish.question.VerifyProgram;
 import org.batfish.question.VerifyQuestion;
@@ -152,6 +153,7 @@ import org.batfish.z3.NodJob;
 import org.batfish.z3.NodJobResult;
 import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
+import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.ReachableQuerySynthesizer;
 import org.batfish.z3.RoleReachabilityQuerySynthesizer;
 import org.batfish.z3.RoleTransitQuerySynthesizer;
@@ -426,6 +428,11 @@ public class Batfish implements AutoCloseable {
          dp = true;
          break;
 
+      case REACHABILITY:
+         answerReachability((ReachabilityQuestion) question);
+         dp = true;
+         break;
+
       case TRACEROUTE:
          answerTraceroute((TracerouteQuestion) question);
          dp = true;
@@ -660,6 +667,74 @@ public class Batfish implements AutoCloseable {
       }
 
       flows = computeNodOutput(jobs);
+      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
+      initTrafficFactBins(trafficFactBins);
+      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
+      for (Flow flow : flows) {
+         wSetFlowOriginate.append(flow.toLBLine());
+      }
+      dumpFacts(trafficFactBins);
+   }
+
+   private void answerReachability(ReachabilityQuestion question) {
+      checkDataPlaneQuestionDependencies();
+      String tag = getFlowTag();
+      _envSettings.setDumpFactsDir(_envSettings.getTrafficFactDumpDir());
+      Map<String, Configuration> configurations = loadConfigurations();
+      File dataPlanePath = new File(_envSettings.getDataPlanePath());
+      Set<Flow> flows = null;
+      Synthesizer dataPlaneSynthesizer = synthesizeDataPlane(configurations,
+            dataPlanePath);
+
+      // collect ingress nodes
+      Pattern ingressNodeRegex = question.getIngressNodeRegex();
+      Set<String> activeIngressNodes = new TreeSet<String>();
+      if (ingressNodeRegex != null) {
+         for (String node : configurations.keySet()) {
+            Matcher ingressNodeMatcher = ingressNodeRegex.matcher(node);
+            if (ingressNodeMatcher.matches()) {
+               activeIngressNodes.add(node);
+            }
+         }
+      }
+      else {
+         activeIngressNodes.addAll(configurations.keySet());
+      }
+
+      // collect final nodes
+      Pattern finalNodeRegex = question.getFinalNodeRegex();
+      Set<String> activeFinalNodes = new TreeSet<String>();
+      if (finalNodeRegex != null) {
+         for (String node : configurations.keySet()) {
+            Matcher finalNodeMatcher = finalNodeRegex.matcher(node);
+            if (finalNodeMatcher.matches()) {
+               activeFinalNodes.add(node);
+            }
+         }
+      }
+      else {
+         activeFinalNodes.addAll(configurations.keySet());
+      }
+
+      // build query jobs
+      List<NodJob> jobs = new ArrayList<NodJob>();
+      for (String ingressNode : activeIngressNodes) {
+         ReachabilityQuerySynthesizer query = new ReachabilityQuerySynthesizer(
+               question.getActions(), question.getDstPrefixes(),
+               question.getDstPortRange(), activeFinalNodes,
+               Collections.singleton(ingressNode),
+               question.getIpProtocolRange(), question.getSrcPrefixes(),
+               question.getSrcPortRange());
+         NodeSet nodes = new NodeSet();
+         nodes.add(ingressNode);
+         NodJob job = new NodJob(dataPlaneSynthesizer, query, nodes, tag);
+         jobs.add(job);
+      }
+
+      // run jobs and get resulting flows
+      flows = computeNodOutput(jobs);
+
+      // dump flows to disk
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
       initTrafficFactBins(trafficFactBins);
       StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");

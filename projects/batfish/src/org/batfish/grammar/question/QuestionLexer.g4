@@ -14,6 +14,16 @@ tokens {
 
 // Simple tokens
 
+ACCEPT
+:
+   'accept'
+;
+
+ACTION
+:
+   'action'
+;
+
 ACTIVE
 :
    'active'
@@ -72,6 +82,11 @@ CONFIGURED
 CONTAINS_IP
 :
    'contains_ip'
+;
+
+DROP
+:
+   'drop'
 ;
 
 DST_IP
@@ -289,6 +304,11 @@ PRINTF
    'printf'
 ;
 
+REACHABILITY
+:
+   'reachability'
+;
+
 REMOTE_AS
 :
    'remote_as'
@@ -376,7 +396,7 @@ DEC
    '0'
    |
    (
-      '-'? F_PositiveDecimalDigit F_DecimalDigit*
+      F_PositiveDecimalDigit F_DecimalDigit*
    )
 ;
 
@@ -405,6 +425,11 @@ EQUALS
    '='
 ;
 
+FINAL_NODE
+:
+   'final_node'
+;
+
 FORWARD_SLASH
 :
    '/'
@@ -423,6 +448,11 @@ INGRESS_PATH
 IP_ADDRESS
 :
    F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+;
+
+IP_PREFIX
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte '/' F_DecimalDigit+
 ;
 
 LOCAL_PATH
@@ -468,6 +498,11 @@ PLUS
 PRINTF_STRING
 :
    '%s'
+;
+
+REGEX
+:
+   'regex<' ~'>'* '>'
 ;
 
 SEMICOLON
