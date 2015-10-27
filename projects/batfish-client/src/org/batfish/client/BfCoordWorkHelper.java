@@ -138,6 +138,23 @@ public class BfCoordWorkHelper {
       return null;
    }
 
+   public WorkItem getWorkItemAnswerDiffQuestion(String questionName,
+         String testrigName, String envName, String diffEnvName) {
+      WorkItem wItem = new WorkItem(testrigName);
+      wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
+      wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+      wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
+      wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
+      wItem.addRequestParam(BfConsts.COMMAND_POST_FLOWS, "");
+      wItem.addRequestParam(BfConsts.COMMAND_POST_DIFFERENTIAL_FLOWS, "");
+
+      wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
+      wItem.addRequestParam(BfConsts.COMMAND_GET_DIFFERENTIAL_HISTORY, "");
+
+      return wItem;
+   }
+
    public WorkItem getWorkItemAnswerQuestion(String questionName,
          String testrigName, String envName, String diffEnvName) {
       WorkItem wItem = new WorkItem(testrigName);
@@ -149,23 +166,6 @@ public class BfCoordWorkHelper {
          wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
       }
 
-      wItem.addRequestParam(BfConsts.COMMAND_POST_FLOWS, "");
-      wItem.addRequestParam(BfConsts.COMMAND_POST_DIFFERENTIAL_FLOWS, "");
-
-      wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
-      wItem.addRequestParam(BfConsts.COMMAND_GET_DIFFERENTIAL_HISTORY, "");
-
-      return wItem;
-   }
-
-   public WorkItem getWorkItemAnswerDiffQuestion(String questionName,
-         String testrigName, String envName, String diffEnvName) {
-      WorkItem wItem = new WorkItem(testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
-      wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
-      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
-      wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
-      wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
       wItem.addRequestParam(BfConsts.COMMAND_POST_FLOWS, "");
       wItem.addRequestParam(BfConsts.COMMAND_POST_DIFFERENTIAL_FLOWS, "");
 

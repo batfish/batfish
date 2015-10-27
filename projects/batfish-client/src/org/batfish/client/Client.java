@@ -27,8 +27,8 @@ public class Client {
    private static final String COMMAND_ANSWER = "answer";
    private static final String COMMAND_ANSWER_DIFF = "answer-diff";
    private static final String COMMAND_CLEAR_SCREEN = "cls";
-   private static final String COMMAND_GEN_DP = "generate-dataplane";
    private static final String COMMAND_GEN_DIFF_DP = "generate-diff-dataplane";
+   private static final String COMMAND_GEN_DP = "generate-dataplane";
    private static final String COMMAND_HELP = "help";
    private static final String COMMAND_INIT_DIFF_ENV = "init-diff-environment";
    private static final String COMMAND_INIT_TESTRIG = "init-testrig";
@@ -37,13 +37,15 @@ public class Client {
    private static final String COMMAND_SET_LOGLEVEL = "set-loglevel";
    private static final String COMMAND_SET_TESTRIG = "set-testrig";
 
-   private static final Map<String,String> MAP_COMMANDS = initCommands();
-   
+   private static final Map<String, String> MAP_COMMANDS = initCommands();
+
    private static Map<String, String> initCommands() {
-      Map<String,String> descs = new HashMap<String,String>();
-      descs.put(COMMAND_ANSWER, COMMAND_ANSWER + " <question-name> <question-file>\n"
+      Map<String, String> descs = new HashMap<String, String>();
+      descs.put(COMMAND_ANSWER, COMMAND_ANSWER
+            + " <question-name> <question-file>\n"
             + "\t Answer the question for the default environment");
-      descs.put(COMMAND_ANSWER_DIFF, COMMAND_ANSWER_DIFF + " <question-name> <question-file>\n"
+      descs.put(COMMAND_ANSWER_DIFF, COMMAND_ANSWER_DIFF
+            + " <question-name> <question-file>\n"
             + "\t Answer the question for the differential environment");
       descs.put(COMMAND_CLEAR_SCREEN, COMMAND_CLEAR_SCREEN + "\n"
             + "\t Clear screen");
@@ -53,21 +55,24 @@ public class Client {
             + "\t Generate dataplane for the default environment");
       descs.put(COMMAND_HELP, "help\n"
             + "\t Print the list of supported commands");
-      descs.put(COMMAND_INIT_DIFF_ENV, COMMAND_INIT_DIFF_ENV + " <environment-name> <environment-file>\n"
+      descs.put(COMMAND_INIT_DIFF_ENV, COMMAND_INIT_DIFF_ENV
+            + " <environment-name> <environment-file>\n"
             + "\t Initialize the differential environment");
-      descs.put(COMMAND_INIT_TESTRIG, COMMAND_INIT_TESTRIG + " <environment-name> <environment-file>\n"
+      descs.put(COMMAND_INIT_TESTRIG, COMMAND_INIT_TESTRIG
+            + " <environment-name> <environment-file>\n"
             + "\t Initialize the testrig with default environment");
-      descs.put(COMMAND_QUIT, COMMAND_QUIT + "\n"
-            + "\t Clear screen");
-      descs.put(COMMAND_SET_DIFF_ENV, COMMAND_SET_DIFF_ENV + " <environment-name>\n"
+      descs.put(COMMAND_QUIT, COMMAND_QUIT + "\n" + "\t Clear screen");
+      descs.put(COMMAND_SET_DIFF_ENV, COMMAND_SET_DIFF_ENV
+            + " <environment-name>\n"
             + "\t Set the current differential environment");
-      descs.put(COMMAND_SET_LOGLEVEL, COMMAND_SET_LOGLEVEL + " <debug|info|output|warn|error>\n"
+      descs.put(COMMAND_SET_LOGLEVEL, COMMAND_SET_LOGLEVEL
+            + " <debug|info|output|warn|error>\n"
             + "\t Set the loglevel. Default is output");
       descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG + " <testrig-name>\n"
-            + "\t Set the current testrig");      
+            + "\t Set the current testrig");
       return descs;
    }
-   
+
    private String _currDiffEnv = null;
    private String _currEnv = null;
    private String _currTestrigName = null;
@@ -79,101 +84,12 @@ public class Client {
 
    public Client(Settings settings) {
       if (settings.getCommandFile() != null) {
-         RunBatchMode(settings);         
+         RunBatchMode(settings);
       }
       else {
          RunInteractiveMode(settings);
       }
-      
-   }
 
-   private void RunBatchMode(Settings settings) {
-      
-      _logger = new BatfishLogger(settings.getLogLevel(), false, settings.getLogFile(), false);
-
-      String workMgr = settings.getServiceHost() + ":" + settings.getServiceWorkPort();
-      String poolMgr = settings.getServiceHost() + ":" + settings.getServicePoolPort();
-      
-      _workHelper = new BfCoordWorkHelper(workMgr, _logger);
-      _poolHelper = new BfCoordPoolHelper(poolMgr);
-           
-      try (BufferedReader br = new BufferedReader(new FileReader(
-            settings.getCommandFile()))) {
-         String line = null;
-         while ((line = br.readLine()) != null) {
-            _logger.output("Doing command: " + line + "\n");
-            
-            String[] words = line.split("\\s+");
-
-            if (words.length > 0) {
-               if (validCommandUsage(words)) {
-                  processCommand(words);
-               }
-            }
-         }      
-      }
-      catch (FileNotFoundException e) {
-         _logger.errorf("Command file not found: %s\n", settings.getCommandFile());
-      }
-      catch (Exception e) {
-         _logger.errorf("Exception while reading command file: %s\n", e);
-      }
-   }
-   
-   private void RunInteractiveMode(Settings settings) {
-      try {
-
-         ConsoleReader reader = new ConsoleReader();
-         reader.setPrompt("batfish> ");
-
-         List<Completer> completors = new LinkedList<Completer>();
-         completors.add(new StringsCompleter("foo", "bar", "baz"));
-
-         for (Completer c : completors) {
-            reader.addCompleter(c);
-         }
-
-         String line;
-
-         PrintWriter pWriter = new PrintWriter(reader.getOutput(), true);
-         OutputStream os = new WriterOutputStream(pWriter);
-         PrintStream ps = new PrintStream(os, true);
-         _logger = new BatfishLogger(settings.getLogLevel(), false, ps);
-
-         String workMgr = settings.getServiceHost() + ":" + settings.getServiceWorkPort();
-         String poolMgr = settings.getServiceHost() + ":" + settings.getServicePoolPort();
-         
-         _workHelper = new BfCoordWorkHelper(workMgr, _logger);
-         _poolHelper = new BfCoordPoolHelper(poolMgr);
-
-         while ((line = reader.readLine()) != null) {
-
-            // skip over empty lines
-            if (line.trim().length() == 0) {
-               continue;
-            }
-
-            if (line.equals(COMMAND_QUIT)) {
-               break;
-            }
-
-            if (line.equals(COMMAND_CLEAR_SCREEN)) {
-               reader.clearScreen();
-               continue;
-            }
-
-            String[] words = line.split("\\s+");
-
-            if (words.length > 0) {
-               if (validCommandUsage(words)) {
-                  processCommand(words);
-               }
-            }
-         }
-      }
-      catch (Throwable t) {
-         t.printStackTrace();
-      }
    }
 
    private boolean execute(WorkItem wItem) throws Exception {
@@ -230,8 +146,14 @@ public class Client {
          return true;
       }
       else {
-         //_logger.errorf("WorkItem failed: %s", wItem);
+         // _logger.errorf("WorkItem failed: %s", wItem);
          return false;
+      }
+   }
+
+   private void printUsage() {
+      for (Map.Entry<String, String> entry : MAP_COMMANDS.entrySet()) {
+         _logger.output(entry.getValue() + "\n\n");
       }
    }
 
@@ -239,7 +161,8 @@ public class Client {
 
       try {
          switch (words[0]) {
-         //this is almost a hidden command; it should not be invoked through here
+         // this is almost a hidden command; it should not be invoked through
+         // here
          case "add-worker": {
             boolean result = _poolHelper.addBatfishWorker(words[1]);
             _logger.output("Result: " + result + "\n");
@@ -277,7 +200,7 @@ public class Client {
             break;
          }
          case COMMAND_ANSWER_DIFF: {
-            
+
             if (_currTestrigName == null || _currEnv == null
                   || _currDiffEnv == null) {
                _logger
@@ -503,9 +426,98 @@ public class Client {
       }
    }
 
-   private void printUsage() {
-      for (Map.Entry<String, String> entry : MAP_COMMANDS.entrySet()) {
-         _logger.output(entry.getValue() + "\n\n");
+   private void RunBatchMode(Settings settings) {
+
+      _logger = new BatfishLogger(settings.getLogLevel(), false,
+            settings.getLogFile(), false);
+
+      String workMgr = settings.getServiceHost() + ":"
+            + settings.getServiceWorkPort();
+      String poolMgr = settings.getServiceHost() + ":"
+            + settings.getServicePoolPort();
+
+      _workHelper = new BfCoordWorkHelper(workMgr, _logger);
+      _poolHelper = new BfCoordPoolHelper(poolMgr);
+
+      try (BufferedReader br = new BufferedReader(new FileReader(
+            settings.getCommandFile()))) {
+         String line = null;
+         while ((line = br.readLine()) != null) {
+            _logger.output("Doing command: " + line + "\n");
+
+            String[] words = line.split("\\s+");
+
+            if (words.length > 0) {
+               if (validCommandUsage(words)) {
+                  processCommand(words);
+               }
+            }
+         }
+      }
+      catch (FileNotFoundException e) {
+         _logger.errorf("Command file not found: %s\n",
+               settings.getCommandFile());
+      }
+      catch (Exception e) {
+         _logger.errorf("Exception while reading command file: %s\n", e);
+      }
+   }
+
+   private void RunInteractiveMode(Settings settings) {
+      try {
+
+         ConsoleReader reader = new ConsoleReader();
+         reader.setPrompt("batfish> ");
+
+         List<Completer> completors = new LinkedList<Completer>();
+         completors.add(new StringsCompleter("foo", "bar", "baz"));
+
+         for (Completer c : completors) {
+            reader.addCompleter(c);
+         }
+
+         String line;
+
+         PrintWriter pWriter = new PrintWriter(reader.getOutput(), true);
+         OutputStream os = new WriterOutputStream(pWriter);
+         PrintStream ps = new PrintStream(os, true);
+         _logger = new BatfishLogger(settings.getLogLevel(), false, ps);
+
+         String workMgr = settings.getServiceHost() + ":"
+               + settings.getServiceWorkPort();
+         String poolMgr = settings.getServiceHost() + ":"
+               + settings.getServicePoolPort();
+
+         _workHelper = new BfCoordWorkHelper(workMgr, _logger);
+         _poolHelper = new BfCoordPoolHelper(poolMgr);
+
+         while ((line = reader.readLine()) != null) {
+
+            // skip over empty lines
+            if (line.trim().length() == 0) {
+               continue;
+            }
+
+            if (line.equals(COMMAND_QUIT)) {
+               break;
+            }
+
+            if (line.equals(COMMAND_CLEAR_SCREEN)) {
+               reader.clearScreen();
+               continue;
+            }
+
+            String[] words = line.split("\\s+");
+
+            if (words.length > 0) {
+               if (validCommandUsage(words)) {
+                  processCommand(words);
+               }
+            }
+         }
+      }
+      catch (Throwable t) {
+         t.printStackTrace();
       }
    }
 

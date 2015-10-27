@@ -21,7 +21,8 @@ public class Settings {
    private static final String ARG_SERVICE_POOL_PORT = "poolmgrport";
    private static final String ARG_SERVICE_WORK_PORT = "workmgrport";
 
-   private static final String DEFAULT_LOG_LEVEL = BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT);
+   private static final String DEFAULT_LOG_LEVEL = BatfishLogger
+         .getLogLevelStr(BatfishLogger.LEVEL_OUTPUT);
    private static final String DEFAULT_PERIOD_CHECK_WORK = "5000"; // 5 seconds
    private static final String DEFAULT_SERVICE_HOST = "localhost";
    private static final String DEFAULT_SERVICE_POOL_PORT = CoordConsts.SVC_POOL_PORT
@@ -60,7 +61,7 @@ public class Settings {
    public String getLogLevel() {
       return _logLevel;
    }
-   
+
    public long getPeriodCheckWorkMs() {
       return _periodCheckWorkMs;
    }
@@ -95,11 +96,10 @@ public class Settings {
             .desc("send output to specified log file").longOpt(ARG_LOG_FILE)
             .build());
       _options.addOption(Option.builder().argName("loglevel").hasArg()
-            .desc("log level").longOpt(ARG_LOG_LEVEL)
-            .build());
+            .desc("log level").longOpt(ARG_LOG_LEVEL).build());
       _options.addOption(Option.builder().argName("cmdfile").hasArg()
-            .desc("read commands from the specified command file").longOpt(ARG_COMMAND_FILE)
-            .build());
+            .desc("read commands from the specified command file")
+            .longOpt(ARG_COMMAND_FILE).build());
       _options.addOption(Option.builder().desc("print this message")
             .longOpt(ARG_HELP).build());
    }
@@ -110,7 +110,7 @@ public class Settings {
 
       // parse the command line arguments
       line = parser.parse(_options, args);
-      
+
       if (line.hasOption(ARG_HELP)) {
          // automatically generate the help statement
          HelpFormatter formatter = new HelpFormatter();
@@ -130,7 +130,7 @@ public class Settings {
             ARG_PERIOD_CHECK_WORK, DEFAULT_PERIOD_CHECK_WORK));
 
       _logFile = line.getOptionValue(ARG_LOG_FILE);
-      
+
       _logLevel = line.getOptionValue(ARG_LOG_LEVEL, DEFAULT_LOG_LEVEL);
 
       _commandFile = line.getOptionValue(ARG_COMMAND_FILE);

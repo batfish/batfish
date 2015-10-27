@@ -17,5 +17,5 @@ public class Main {
       }
 
       new Client(_settings);
-  }
+   }
 }
