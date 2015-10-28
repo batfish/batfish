@@ -9,6 +9,7 @@ package org.batfish.grammar.question;
 }
 
 tokens {
+   STRING,
    STRING_LITERAL
 }
 
@@ -29,14 +30,9 @@ ACTIVE
    'active'
 ;
 
-ADD_IP
+ADD
 :
-   'add_ip'
-;
-
-ADD_STRING
-:
-   'add_string'
+   'add'
 ;
 
 ADMINISTRATIVE_COST
@@ -64,14 +60,14 @@ BGP_NEIGHBOR
    'bgp_neighbor'
 ;
 
-CLEAR_IPS
+CLAUSE
 :
-   'clear_ips'
+   'clause'
 ;
 
-CLEAR_STRINGS
+CLEAR
 :
-   'clear_strings'
+   'clear'
 ;
 
 CONFIGURED
@@ -219,6 +215,11 @@ L2_PASSIVE
    'l2_passive'
 ;
 
+LINE
+:
+   'line'
+;
+
 LOCAL_AS
 :
    'local_as'
@@ -227,6 +228,16 @@ LOCAL_AS
 LOCAL_IP
 :
    'local_ip'
+;
+
+MATCH_PROTOCOL
+:
+   'match_protocol'
+;
+
+MATCH_ROUTE_FILTER
+:
+   'match_route_filter'
 ;
 
 MULTIPATH
@@ -259,16 +270,6 @@ NOT
    'not'
 ;
 
-NUM_IPS
-:
-   'num_ips'
-;
-
-NUM_STRINGS
-:
-   'num_strings'
-;
-
 ONFAILURE
 :
    'onfailure'
@@ -282,6 +283,11 @@ OR
 OSPF
 :
    'ospf'
+;
+
+OSPF_OUTBOUND_POLICY
+:
+   'ospf_outbound_policy'
 ;
 
 PASSIVE
@@ -304,6 +310,11 @@ PRINTF
    'printf'
 ;
 
+PROTOCOL
+:
+   'protocol'
+;
+
 REACHABILITY
 :
    'reachability'
@@ -317,6 +328,16 @@ REMOTE_AS
 REMOTE_IP
 :
    'remote_ip'
+;
+
+ROUTE_FILTER
+:
+   'route_filter'
+;
+
+SIZE
+:
+   'size'
 ;
 
 SRC_IP
@@ -510,6 +531,11 @@ SEMICOLON
    ';'
 ;
 
+SET
+:
+   'set' -> pushMode(M_Set)
+;
+
 TRACEROUTE
 :
    'traceroute'
@@ -599,4 +625,26 @@ M_QuotedString_TEXT
 M_QuotedString_DOUBLE_QUOTE
 :
    '"' -> channel ( HIDDEN ) , popMode
+;
+
+mode M_Set;
+
+M_Set_OPEN_ANGLE_BRACKET
+:
+   '<' -> channel(HIDDEN)
+;
+
+M_Set_ROUTE_FILTER
+:
+   'route_filter' -> type(ROUTE_FILTER)
+;
+
+M_Set_STRING
+:
+   'string' -> type(STRING)
+;
+
+M_Set_CLOSE_ANGLE_BRACKET
+:
+   '>' -> channel(HIDDEN), popMode
 ;

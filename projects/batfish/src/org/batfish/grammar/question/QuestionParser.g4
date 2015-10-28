@@ -9,16 +9,10 @@ options {
 package org.batfish.grammar.question;
 }
 
-add_ip_statement
-:
-   target = VARIABLE PERIOD ADD_IP OPEN_PAREN ip_expr CLOSE_PAREN SEMICOLON
-;
-
-add_string_statement
-:
-   target = VARIABLE PERIOD ADD_STRING OPEN_PAREN printable_expr CLOSE_PAREN
-   SEMICOLON
-;
+@members {
+   private java.util.Map<String, VariableType> _typeBindings = new java.util.HashMap<String, VariableType>(); 
+   
+}
 
 and_expr
 :
@@ -28,13 +22,13 @@ and_expr
    )* CLOSE_BRACE
 ;
 
-assertion
+assertion [String scope]
 :
    ASSERT OPEN_BRACE boolean_expr CLOSE_BRACE
    (
       ONFAILURE OPEN_BRACE
       (
-         statements += statement
+         statements += statement [scope]
       )* CLOSE_BRACE
    )?
 ;
@@ -92,12 +86,6 @@ bgp_neighbor_remote_ip_ip_expr
    REMOTE_IP
 ;
 
-bgp_neighbor_statement
-:
-   foreach_generated_route_statement
-   | statement
-;
-
 boolean_expr
 :
    and_expr
@@ -111,16 +99,6 @@ boolean_expr
    | or_expr
    | property_boolean_expr
    | true_expr
-;
-
-clear_ips_statement
-:
-   caller = VARIABLE PERIOD CLEAR_IPS SEMICOLON
-;
-
-clear_strings_statement
-:
-   caller = VARIABLE PERIOD CLEAR_STRINGS SEMICOLON
 ;
 
 contains_ip_expr
@@ -196,33 +174,78 @@ flow_constraint_src_port
 
 foreach_bgp_neighbor_statement
 :
-   FOREACH BGP_NEIGHBOR OPEN_BRACE bgp_neighbor_statement+ CLOSE_BRACE
+   FOREACH BGP_NEIGHBOR OPEN_BRACE statement ["bgp_neighbor"]+ CLOSE_BRACE
+;
+
+foreach_clause_statement
+:
+   FOREACH CLAUSE OPEN_BRACE statement ["clause"]+ CLOSE_BRACE
 ;
 
 foreach_generated_route_statement
 :
-   FOREACH GENERATED_ROUTE OPEN_BRACE generated_route_statement+ CLOSE_BRACE
+   FOREACH GENERATED_ROUTE OPEN_BRACE statement ["generated_route"]+
+   CLOSE_BRACE
 ;
 
 foreach_interface_statement
 :
-   FOREACH INTERFACE OPEN_BRACE interface_statement+ CLOSE_BRACE
+   FOREACH INTERFACE OPEN_BRACE statement ["interface"]+ CLOSE_BRACE
+;
+
+foreach_line_statement
+:
+   FOREACH LINE OPEN_BRACE statement ["route_filter_line"]+ CLOSE_BRACE
+;
+
+foreach_match_protocol_statement
+:
+   FOREACH MATCH_PROTOCOL OPEN_BRACE statement ["match_protocol"]+ CLOSE_BRACE
+;
+
+foreach_match_route_filter_statement
+:
+   FOREACH MATCH_ROUTE_FILTER OPEN_BRACE statement ["match_route_filter"]+
+   CLOSE_BRACE
 ;
 
 foreach_node_bgp_generated_route_statement
 :
-   FOREACH NODE PERIOD BGP PERIOD GENERATED_ROUTE OPEN_BRACE
-   generated_route_statement+ CLOSE_BRACE
+   FOREACH NODE PERIOD BGP PERIOD GENERATED_ROUTE OPEN_BRACE statement
+   ["generated_route"]+ CLOSE_BRACE
 ;
 
 foreach_node_statement
 :
-   FOREACH NODE OPEN_BRACE node_statement+ CLOSE_BRACE
+   FOREACH NODE OPEN_BRACE statement ["node"]+ CLOSE_BRACE
+;
+
+foreach_ospf_outbound_policy_statement
+:
+   FOREACH OSPF_OUTBOUND_POLICY OPEN_BRACE statement ["policy"]+ CLOSE_BRACE
+;
+
+foreach_protocol_statement
+:
+   FOREACH PROTOCOL OPEN_BRACE statement ["protocol"]+ CLOSE_BRACE
+;
+
+foreach_route_filter_statement
+:
+   FOREACH ROUTE_FILTER OPEN_BRACE statement ["route_filter"]+ CLOSE_BRACE
+;
+
+foreach_route_filter_in_set_statement
+:
+   FOREACH ROUTE_FILTER COLON var = VARIABLE
+   {_typeBindings.get($var.getText()) == VariableType.SET_ROUTE_FILTER}?
+
+   OPEN_BRACE statement ["route_filter"]+ CLOSE_BRACE
 ;
 
 foreach_static_route_statement
 :
-   FOREACH STATIC_ROUTE OPEN_BRACE static_route_statement+ CLOSE_BRACE
+   FOREACH STATIC_ROUTE OPEN_BRACE statement ["static_route"]+ CLOSE_BRACE
 ;
 
 generated_route_prefix_expr
@@ -233,11 +256,6 @@ generated_route_prefix_expr
 generated_route_prefix_prefix_expr
 :
    PREFIX
-;
-
-generated_route_statement
-:
-   statement
 ;
 
 gt_expr
@@ -251,16 +269,16 @@ if_expr
    consequent = boolean_expr CLOSE_BRACE
 ;
 
-if_statement
+if_statement [String scope]
 :
    IF OPEN_PAREN guard = boolean_expr CLOSE_PAREN THEN OPEN_BRACE
    (
-      true_statements += statement
+      true_statements += statement [scope]
    )* CLOSE_BRACE
    (
       ELSE OPEN_BRACE
       (
-         false_statements += statement
+         false_statements += statement [scope]
       )* CLOSE_BRACE
    )?
 ;
@@ -387,11 +405,6 @@ interface_prefix_prefix_expr
    PREFIX
 ;
 
-interface_statement
-:
-   statement
-;
-
 interface_string_expr
 :
    INTERFACE PERIOD interface_name_string_expr
@@ -432,6 +445,12 @@ literal_int_expr
 local_path_question
 :
    LOCAL_PATH
+;
+
+method [String scope]
+:
+   var = VARIABLE PERIOD typed_method [scope, _typeBindings.get($var.getText())]
+   SEMICOLON
 ;
 
 multipath_question
@@ -511,16 +530,6 @@ node_ospf_configured_boolean_expr
    CONFIGURED
 ;
 
-node_statement
-:
-   foreach_bgp_neighbor_statement
-   | foreach_generated_route_statement
-   | foreach_interface_statement
-   | foreach_node_bgp_generated_route_statement
-   | foreach_static_route_statement
-   | statement
-;
-
 node_static_boolean_expr
 :
    STATIC PERIOD node_static_configured_boolean_expr
@@ -539,16 +548,6 @@ node_string_expr
 not_expr
 :
    NOT OPEN_BRACE boolean_expr CLOSE_BRACE
-;
-
-num_ips_int_expr
-:
-   caller = VARIABLE PERIOD NUM_IPS
-;
-
-num_strings_int_expr
-:
-   caller = VARIABLE PERIOD NUM_STRINGS
 ;
 
 or_expr
@@ -572,6 +571,7 @@ printable_expr
    | int_expr
    | ip_expr
    | prefix_expr
+   | route_filter_line_expr
    | string_expr
 ;
 
@@ -589,6 +589,16 @@ property_boolean_expr
    | interface_boolean_expr
    | node_boolean_expr
    | static_route_boolean_expr
+;
+
+protocol_name_string_expr
+:
+   NAME
+;
+
+protocol_string_expr
+:
+   PROTOCOL PERIOD protocol_name_string_expr
 ;
 
 question
@@ -682,16 +692,115 @@ reachability_question
    )* CLOSE_BRACE
 ;
 
-statement
+route_filter_expr
 :
-   add_ip_statement
-   | add_string_statement
-   | clear_ips_statement
-   | clear_strings_statement
-   | assertion
+   ROUTE_FILTER
+;
+
+route_filter_line_expr
+:
+   LINE
+;
+
+route_filter_name_string_expr
+:
+   NAME
+;
+
+route_filter_string_expr
+:
+   ROUTE_FILTER PERIOD route_filter_name_string_expr
+;
+
+set_add_method [VariableType type]
+:
+   ADD OPEN_PAREN
+   (
+      {$type == VariableType.SET_IP}?
+
+      ip_expr
+      |
+      {$type == VariableType.SET_STRING}?
+
+      printable_expr
+      |
+      {$type == VariableType.SET_ROUTE_FILTER}?
+
+      route_filter_expr
+   ) CLOSE_PAREN
+;
+
+set_clear_method
+:
+   CLEAR
+;
+
+set_size_int_expr
+:
+   VARIABLE PERIOD SIZE
+;
+
+statement [String scope]
+:
+   assertion [scope]
    | assignment
-   | if_statement
+   |
+   {$scope.equals("node")}?
+
+   foreach_bgp_neighbor_statement
+   |
+   {$scope.equals("policy")}?
+
+   foreach_clause_statement
+   |
+   {$scope.equals("bgp_neighbor") || $scope.equals("node")}?
+
+   foreach_generated_route_statement
+   |
+   {$scope.equals("node")}?
+
+   foreach_interface_statement
+   |
+   {$scope.equals("route_filter")}?
+
+   foreach_line_statement
+   |
+   {$scope.equals("clause")}?
+
+   foreach_match_protocol_statement
+   |
+   {$scope.equals("clause")}?
+
+   foreach_match_route_filter_statement
+   |
+   {$scope.equals("node")}?
+
+   foreach_node_bgp_generated_route_statement
+   |
+   {$scope.equals("verify")}?
+
+   foreach_node_statement
+   |
+   {$scope.equals("node")}?
+
+   foreach_ospf_outbound_policy_statement
+   |
+   {$scope.equals("match_protocol")}?
+
+   foreach_protocol_statement
+   | foreach_route_filter_in_set_statement
+   |
+   {$scope.equals("match_route_filter")}?
+
+   foreach_route_filter_statement
+   |
+   {$scope.equals("node")}?
+
+   foreach_static_route_statement
+   | if_statement [scope]
+   | method [scope]
    | printf_statement
+   | variable_declaration_statement
 ;
 
 static_route_administrative_cost_int_expr
@@ -748,11 +857,6 @@ static_route_prefix_prefix_expr
    PREFIX
 ;
 
-static_route_statement
-:
-   statement
-;
-
 static_route_string_expr
 :
    STATIC_ROUTE PERIOD static_route_next_hop_interface_string_expr
@@ -762,6 +866,8 @@ string_expr
 :
    interface_string_expr
    | node_string_expr
+   | protocol_string_expr
+   | route_filter_string_expr
    | static_route_string_expr
    | string_literal_string_expr
 ;
@@ -792,12 +898,17 @@ true_expr
    TRUE
 ;
 
+typed_method [String scope, VariableType type]
+:
+   set_add_method [type]
+   | set_clear_method
+;
+
 val_int_expr
 :
    bgp_neighbor_int_expr
    | literal_int_expr
-   | num_ips_int_expr
-   | num_strings_int_expr
+   | set_size_int_expr
    | static_route_int_expr
    | var_int_expr
 ;
@@ -807,14 +918,29 @@ var_int_expr
    VARIABLE
 ;
 
+variable_declaration_statement
+locals [String typeStr, VariableType type]
+:
+   var = VARIABLE COLON
+   (
+      { _typeBindings.get($var.getText()) == null}?
+
+      SET
+      {$typeStr = "set<";}
+
+      (
+         settype = IP
+         | settype = ROUTE_FILTER
+         | settype = STRING
+      )
+      {$typeStr += $settype.getText() + ">"; $type = VariableType.fromString($typeStr);}
+
+      {_typeBindings.put($var.getText(), $type);}
+
+   ) SEMICOLON
+;
+
 verify_question
 :
-   VERIFY OPEN_BRACE verify_statement+ CLOSE_BRACE
+   VERIFY OPEN_BRACE statement ["verify"]+ CLOSE_BRACE
 ;
-
-verify_statement
-:
-   foreach_node_statement
-   | statement
-;
-

@@ -10,20 +10,15 @@ import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.BatfishExtractor;
-import org.batfish.grammar.question.QuestionParser.RangeContext;
-import org.batfish.grammar.question.QuestionParser.SubrangeContext;
+import org.batfish.grammar.question.QuestionParser.StatementContext;
 import org.batfish.grammar.question.QuestionParser.*;
 import org.batfish.common.BatfishException;
-import org.batfish.question.AddIpStatement;
-import org.batfish.question.AddStringStatement;
 import org.batfish.question.AndExpr;
 import org.batfish.question.Assertion;
 import org.batfish.question.BgpNeighborBooleanExpr;
 import org.batfish.question.BgpNeighborIntExpr;
 import org.batfish.question.BgpNeighborIpExpr;
 import org.batfish.question.BooleanExpr;
-import org.batfish.question.ClearIpsStatement;
-import org.batfish.question.ClearStringsStatement;
 import org.batfish.question.ContainsIpExpr;
 import org.batfish.question.DifferenceIntExpr;
 import org.batfish.question.EqExpr;
@@ -33,6 +28,7 @@ import org.batfish.question.ForEachGeneratedRouteStatement;
 import org.batfish.question.ForEachInterfaceStatement;
 import org.batfish.question.ForEachNodeBgpGeneratedRouteStatement;
 import org.batfish.question.ForEachNodeStatement;
+import org.batfish.question.ForEachOspfOutboundPolicyStatement;
 import org.batfish.question.ForEachStaticRouteStatement;
 import org.batfish.question.ForwardingAction;
 import org.batfish.question.GeneratedRoutePrefixExpr;
@@ -54,8 +50,6 @@ import org.batfish.question.NeqExpr;
 import org.batfish.question.NodeBooleanExpr;
 import org.batfish.question.NodeStringExpr;
 import org.batfish.question.NotExpr;
-import org.batfish.question.NumIpsIntExpr;
-import org.batfish.question.NumStringsIntExpr;
 import org.batfish.question.OrExpr;
 import org.batfish.question.PrintableExpr;
 import org.batfish.question.PrintfStatement;
@@ -74,6 +68,7 @@ import org.batfish.question.StringLiteralStringExpr;
 import org.batfish.question.SumIntExpr;
 import org.batfish.question.TracerouteQuestion;
 import org.batfish.question.VarIntExpr;
+import org.batfish.question.VariableDeclarationStatement;
 import org.batfish.question.VerifyProgram;
 import org.batfish.question.VerifyQuestion;
 import org.batfish.representation.Flow;
@@ -265,12 +260,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       VerifyQuestion verifyQuestion = new VerifyQuestion();
       _question = verifyQuestion;
       _verifyProgram = verifyQuestion.getProgram();
-   }
-
-   @Override
-   public void enterVerify_statement(Verify_statementContext ctx) {
-      Statement statement = toStatement(ctx);
-      _verifyProgram.getStatements().add(statement);
+      for (StatementContext sctx : ctx.statement()) {
+         Statement statement = toStatement(sctx);
+         _verifyProgram.getStatements().add(statement);
+      }
    }
 
    @Override
@@ -584,14 +577,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return new LiteralIntExpr(i);
    }
 
-   private IntExpr toIntExpr(Num_ips_int_exprContext expr) {
-      String caller = expr.caller.getText();
-      return new NumIpsIntExpr(caller);
-   }
-
-   private IntExpr toIntExpr(Num_strings_int_exprContext expr) {
-      String caller = expr.caller.getText();
-      return new NumStringsIntExpr(caller);
+   private IntExpr toIntExpr(Set_size_int_exprContext ctx) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 
    private IntExpr toIntExpr(Static_route_int_exprContext expr) {
@@ -610,11 +599,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (expr.literal_int_expr() != null) {
          return toIntExpr(expr.literal_int_expr());
       }
-      else if (expr.num_ips_int_expr() != null) {
-         return toIntExpr(expr.num_ips_int_expr());
-      }
-      else if (expr.num_strings_int_expr() != null) {
-         return toIntExpr(expr.num_strings_int_expr());
+      else if (expr.set_size_int_expr() != null) {
+         return toIntExpr(expr.set_size_int_expr());
       }
       else if (expr.static_route_int_expr() != null) {
          return toIntExpr(expr.static_route_int_expr());
@@ -818,25 +804,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return text.substring(prefix.length(), text.length() - 1);
    }
 
-   private Statement toStatement(Add_ip_statementContext statement) {
-      String target = statement.target.getText();
-      IpExpr ipExpr = toIpExpr(statement.ip_expr());
-      return new AddIpStatement(target, ipExpr);
-   }
-
-   private Statement toStatement(Add_string_statementContext statement) {
-      String target = statement.target.getText();
-      PrintableExpr pExpr = toPrintableExpr(statement.printable_expr());
-      return new AddStringStatement(target, pExpr);
-   }
-
    private Statement toStatement(AssertionContext ctx) {
       BooleanExpr expr = toBooleanExpr(ctx.boolean_expr());
-      List<Statement> onErrorStatements = new ArrayList<Statement>();
-      for (StatementContext s : ctx.statements) {
-         Statement statement = toStatement(s);
-         onErrorStatements.add(statement);
-      }
+      List<Statement> onErrorStatements = toStatements(ctx.statements);
       Assertion assertion = new Assertion(expr, ctx.getText(),
             onErrorStatements);
       return assertion;
@@ -851,110 +821,50 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
-   private Statement toStatement(Bgp_neighbor_statementContext ctx) {
-      if (ctx.foreach_generated_route_statement() != null) {
-         return toStatement(ctx.foreach_generated_route_statement());
-      }
-      else if (ctx.statement() != null) {
-         return toStatement(ctx.statement());
-      }
-      else {
-         throw new BatfishException(ERR_CONVERT_STATEMENT);
-      }
+   private Statement toStatement(Foreach_bgp_neighbor_statementContext ctx) {
+      return new ForEachBgpNeighborStatement(toStatements(ctx.statement()));
    }
 
-   private Statement toStatement(Clear_ips_statementContext statement) {
-      String caller = statement.caller.getText();
-      return new ClearIpsStatement(caller);
+   private Statement toStatement(Foreach_generated_route_statementContext ctx) {
+      return new ForEachGeneratedRouteStatement(toStatements(ctx.statement()));
    }
 
-   private Statement toStatement(Clear_strings_statementContext statement) {
-      String caller = statement.caller.getText();
-      return new ClearStringsStatement(caller);
-   }
-
-   private Statement toStatement(Foreach_bgp_neighbor_statementContext statement) {
-      List<Statement> bgpNeighborStatements = new ArrayList<Statement>();
-      for (Bgp_neighbor_statementContext ctx : statement
-            .bgp_neighbor_statement()) {
-         Statement bgpNeighborStatement = toStatement(ctx);
-         bgpNeighborStatements.add(bgpNeighborStatement);
-      }
-      return new ForEachBgpNeighborStatement(bgpNeighborStatements);
+   private Statement toStatement(Foreach_interface_statementContext ctx) {
+      return new ForEachInterfaceStatement(toStatements(ctx.statement()));
    }
 
    private Statement toStatement(
-         Foreach_generated_route_statementContext statement) {
-      List<Statement> generatedRouteStatements = new ArrayList<Statement>();
-      for (Generated_route_statementContext ctx : statement
-            .generated_route_statement()) {
-         Statement generatedRouteStatement = toStatement(ctx);
-         generatedRouteStatements.add(generatedRouteStatement);
-      }
-      return new ForEachGeneratedRouteStatement(generatedRouteStatements);
+         Foreach_node_bgp_generated_route_statementContext ctx) {
+      return new ForEachNodeBgpGeneratedRouteStatement(toStatements(ctx.statement()));
    }
 
-   private Statement toStatement(Foreach_interface_statementContext statement) {
-      List<Statement> interfaceStatements = new ArrayList<Statement>();
-      for (Interface_statementContext ctx : statement.interface_statement()) {
-         Statement interfaceStatement = toStatement(ctx);
-         interfaceStatements.add(interfaceStatement);
-      }
-      return new ForEachInterfaceStatement(interfaceStatements);
+   private Statement toStatement(Foreach_node_statementContext ctx) {
+      return new ForEachNodeStatement(toStatements(ctx.statement()));
    }
 
    private Statement toStatement(
-         Foreach_node_bgp_generated_route_statementContext statement) {
-      List<Statement> generatedRouteStatements = new ArrayList<Statement>();
-      for (Generated_route_statementContext ctx : statement
-            .generated_route_statement()) {
-         Statement generatedRouteStatement = toStatement(ctx);
-         generatedRouteStatements.add(generatedRouteStatement);
-      }
-      return new ForEachNodeBgpGeneratedRouteStatement(generatedRouteStatements);
+         Foreach_ospf_outbound_policy_statementContext ctx) {
+      return new ForEachOspfOutboundPolicyStatement(toStatements(ctx.statement()));
    }
 
-   private Statement toStatement(Foreach_node_statementContext statement) {
-      List<Statement> nodeStatements = new ArrayList<Statement>();
-      for (Node_statementContext ctx : statement.node_statement()) {
-         Statement nodeStatement = toStatement(ctx);
-         nodeStatements.add(nodeStatement);
+   private List<Statement> toStatements(List<StatementContext> sctxList) {
+      List<Statement> statements = new ArrayList<Statement>();
+      for (StatementContext sctx : sctxList) {
+         Statement statement = toStatement(sctx);
+         statements.add(statement);
       }
-      return new ForEachNodeStatement(nodeStatements);
+      return statements;
    }
 
-   private Statement toStatement(Foreach_static_route_statementContext statement) {
-      List<Statement> static_routeStatements = new ArrayList<Statement>();
-      for (Static_route_statementContext ctx : statement
-            .static_route_statement()) {
-         Statement static_routeStatement = toStatement(ctx);
-         static_routeStatements.add(static_routeStatement);
-      }
-      return new ForEachStaticRouteStatement(static_routeStatements);
+   private Statement toStatement(Foreach_static_route_statementContext ctx) {
+      return new ForEachStaticRouteStatement(toStatements(ctx.statement()));
 
-   }
-
-   private Statement toStatement(Generated_route_statementContext ctx) {
-      if (ctx.statement() != null) {
-         return toStatement(ctx.statement());
-      }
-      else {
-         throw new BatfishException(ERR_CONVERT_STATEMENT);
-      }
    }
 
    private Statement toStatement(If_statementContext statement) {
       BooleanExpr guard = toBooleanExpr(statement.guard);
-      List<Statement> trueStatements = new ArrayList<Statement>();
-      for (StatementContext ctx : statement.true_statements) {
-         Statement trueStatement = toStatement(ctx);
-         trueStatements.add(trueStatement);
-      }
-      List<Statement> falseStatements = new ArrayList<Statement>();
-      for (StatementContext ctx : statement.false_statements) {
-         Statement falseStatement = toStatement(ctx);
-         falseStatements.add(falseStatement);
-      }
+      List<Statement> trueStatements = toStatements(statement.true_statements);
+      List<Statement> falseStatements = toStatements(statement.false_statements);
       return new IfStatement(guard, trueStatements, falseStatements);
    }
 
@@ -962,35 +872,6 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       String variable = int_assignment.VARIABLE().getText();
       IntExpr intExpr = toIntExpr(int_assignment.int_expr());
       return new IntegerAssignment(variable, intExpr);
-   }
-
-   private Statement toStatement(Interface_statementContext ctx) {
-      return toStatement(ctx.statement());
-   }
-
-   private Statement toStatement(Node_statementContext statement) {
-      if (statement.foreach_bgp_neighbor_statement() != null) {
-         return toStatement(statement.foreach_bgp_neighbor_statement());
-      }
-      else if (statement.foreach_generated_route_statement() != null) {
-         return toStatement(statement.foreach_generated_route_statement());
-      }
-      else if (statement.foreach_interface_statement() != null) {
-         return toStatement(statement.foreach_interface_statement());
-      }
-      else if (statement.foreach_node_bgp_generated_route_statement() != null) {
-         return toStatement(statement
-               .foreach_node_bgp_generated_route_statement());
-      }
-      else if (statement.foreach_static_route_statement() != null) {
-         return toStatement(statement.foreach_static_route_statement());
-      }
-      else if (statement.statement() != null) {
-         return toStatement(statement.statement());
-      }
-      else {
-         throw new BatfishException(ERR_CONVERT_STATEMENT);
-      }
    }
 
    private Statement toStatement(Printf_statementContext statement) {
@@ -1003,50 +884,53 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return new PrintfStatement(formatString, replacements);
    }
 
-   private Statement toStatement(StatementContext statement) {
-      if (statement.add_ip_statement() != null) {
-         return toStatement(statement.add_ip_statement());
+   private Statement toStatement(StatementContext ctx) {
+      if (ctx.assertion() != null) {
+         return toStatement(ctx.assertion());
       }
-      if (statement.add_string_statement() != null) {
-         return toStatement(statement.add_string_statement());
+      else if (ctx.assignment() != null) {
+         return toStatement(ctx.assignment());
       }
-      else if (statement.assertion() != null) {
-         return toStatement(statement.assertion());
+      else if (ctx.foreach_bgp_neighbor_statement() != null) {
+         return toStatement(ctx.foreach_bgp_neighbor_statement());
       }
-      else if (statement.assignment() != null) {
-         return toStatement(statement.assignment());
+      else if (ctx.foreach_generated_route_statement() != null) {
+         return toStatement(ctx.foreach_generated_route_statement());
       }
-      else if (statement.if_statement() != null) {
-         return toStatement(statement.if_statement());
+      else if (ctx.foreach_interface_statement() != null) {
+         return toStatement(ctx.foreach_interface_statement());
       }
-      else if (statement.clear_ips_statement() != null) {
-         return toStatement(statement.clear_ips_statement());
+      else if (ctx.foreach_node_bgp_generated_route_statement() != null) {
+         return toStatement(ctx.foreach_node_bgp_generated_route_statement());
       }
-      else if (statement.clear_strings_statement() != null) {
-         return toStatement(statement.clear_strings_statement());
+      else if (ctx.foreach_node_statement() != null) {
+         return toStatement(ctx.foreach_node_statement());
       }
-      else if (statement.printf_statement() != null) {
-         return toStatement(statement.printf_statement());
+      else if (ctx.foreach_ospf_outbound_policy_statement() != null) {
+         return toStatement(ctx.foreach_ospf_outbound_policy_statement());
+      }
+      else if (ctx.foreach_static_route_statement() != null) {
+         return toStatement(ctx.foreach_static_route_statement());
+      }
+      else if (ctx.if_statement() != null) {
+         return toStatement(ctx.if_statement());
+      }
+      else if (ctx.printf_statement() != null) {
+         return toStatement(ctx.printf_statement());
+      }
+      else if (ctx.variable_declaration_statement() != null) {
+         return toStatement(ctx.variable_declaration_statement());
       }
       else {
-         throw new BatfishException(ERR_CONVERT_STATEMENT);
+         throw new BatfishException(ERR_CONVERT_STATEMENT + ":" + ctx.getText());
       }
    }
 
-   private Statement toStatement(Static_route_statementContext ctx) {
-      return toStatement(ctx.statement());
-   }
-
-   private Statement toStatement(Verify_statementContext statement) {
-      if (statement.foreach_node_statement() != null) {
-         return toStatement(statement.foreach_node_statement());
-      }
-      else if (statement.statement() != null) {
-         return toStatement(statement.statement());
-      }
-      else {
-         throw new BatfishException(ERR_CONVERT_STATEMENT);
-      }
+   private Statement toStatement(
+         Variable_declaration_statementContext ctx) {
+      String var = ctx.var.getText();
+      VariableType type = VariableType.fromString(ctx.typeStr);
+      return new VariableDeclarationStatement(var, type);
    }
 
    private PrintableExpr toStringExpr(Interface_string_exprContext expr) {

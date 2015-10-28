@@ -57,7 +57,11 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
          _sb.append("  ");
       }
       _indent++;
-      _sb.append("(" + _ruleNames.get(ctx.getRuleIndex()));
+      String ruleName = _ruleNames.get(ctx.getRuleIndex());
+      _sb.append("(" + ruleName);
+      if (ruleName.equals("set_add_method")) {
+         assert Boolean.TRUE;
+      }
    }
 
    @Override
