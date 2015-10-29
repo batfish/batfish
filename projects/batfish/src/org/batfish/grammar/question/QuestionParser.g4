@@ -122,6 +122,16 @@ explicit_flow
    )? CLOSE_PAREN
 ;
 
+expr
+:
+   boolean_expr
+   | int_expr
+   | ip_expr
+   | prefix_expr
+   | route_filter_line_expr
+   | string_expr
+;
+
 failure_question
 :
    FAILURE
@@ -237,8 +247,8 @@ foreach_route_filter_statement
 
 foreach_route_filter_in_set_statement
 :
-   FOREACH ROUTE_FILTER COLON var = VARIABLE
-   {_typeBindings.get($var.getText()) == VariableType.SET_ROUTE_FILTER}?
+   FOREACH ROUTE_FILTER COLON set = VARIABLE
+   {_typeBindings.get($set.getText()) == VariableType.SET_ROUTE_FILTER}?
 
    OPEN_BRACE statement ["route_filter"]+ CLOSE_BRACE
 ;
@@ -449,8 +459,7 @@ local_path_question
 
 method [String scope]
 :
-   var = VARIABLE PERIOD typed_method [scope, _typeBindings.get($var.getText())]
-   SEMICOLON
+   caller = VARIABLE PERIOD typed_method [scope, $caller.getText()] SEMICOLON
 ;
 
 multipath_question
@@ -565,21 +574,11 @@ prefix_expr
    | static_route_prefix_expr
 ;
 
-printable_expr
-:
-   boolean_expr
-   | int_expr
-   | ip_expr
-   | prefix_expr
-   | route_filter_line_expr
-   | string_expr
-;
-
 printf_statement
 :
-   PRINTF OPEN_PAREN format_string = printable_expr
+   PRINTF OPEN_PAREN format_string = string_expr
    (
-      COMMA replacements += printable_expr
+      COMMA replacements += expr
    )* CLOSE_PAREN SEMICOLON
 ;
 
@@ -694,10 +693,15 @@ reachability_question
 
 route_filter_expr
 :
-   ROUTE_FILTER
+   route_filter_route_filter_expr
 ;
 
 route_filter_line_expr
+:
+   route_filter_line_line_expr
+;
+
+route_filter_line_line_expr
 :
    LINE
 ;
@@ -707,12 +711,17 @@ route_filter_name_string_expr
    NAME
 ;
 
+route_filter_route_filter_expr
+:
+   ROUTE_FILTER
+;
+
 route_filter_string_expr
 :
    ROUTE_FILTER PERIOD route_filter_name_string_expr
 ;
 
-set_add_method [VariableType type]
+set_add_method [VariableType type, String caller]
 :
    ADD OPEN_PAREN
    (
@@ -722,7 +731,7 @@ set_add_method [VariableType type]
       |
       {$type == VariableType.SET_STRING}?
 
-      printable_expr
+      expr
       |
       {$type == VariableType.SET_ROUTE_FILTER}?
 
@@ -730,14 +739,48 @@ set_add_method [VariableType type]
    ) CLOSE_PAREN
 ;
 
-set_clear_method
+set_clear_method [VariableType type, String caller]
 :
    CLEAR
 ;
 
-set_size_int_expr
+set_declaration_statement
+locals [String typeStr, VariableType type, VariableType oldType]
 :
-   VARIABLE PERIOD SIZE
+   var = VARIABLE COLON
+   (
+      {$oldType = _typeBindings.get($var.getText());}
+
+      SET
+      {$typeStr = "set<";}
+
+      (
+         settype = IP
+         | settype = ROUTE_FILTER
+         | settype = STRING
+      )
+      {
+         $typeStr += $settype.getText() + ">";
+         $type = VariableType.fromString($typeStr);
+         _typeBindings.put($var.getText(), $type);
+      }
+
+   )
+   {
+      $oldType == null || $type == $oldType 
+      /* Same variable declared with two different types*/
+   }?
+
+   SEMICOLON
+;
+
+set_size_int_expr
+locals [VariableType type]
+:
+   caller = VARIABLE
+   {$type = _typeBindings.get($caller.getText());}
+
+   PERIOD SIZE
 ;
 
 statement [String scope]
@@ -800,7 +843,7 @@ statement [String scope]
    | if_statement [scope]
    | method [scope]
    | printf_statement
-   | variable_declaration_statement
+   | set_declaration_statement
 ;
 
 static_route_administrative_cost_int_expr
@@ -898,10 +941,13 @@ true_expr
    TRUE
 ;
 
-typed_method [String scope, VariableType type]
+typed_method [String scope, String caller]
+locals [VariableType type]
 :
-   set_add_method [type]
-   | set_clear_method
+   {$type = _typeBindings.get($caller);}
+
+   set_add_method [$type, caller]
+   | set_clear_method [$type, caller]
 ;
 
 val_int_expr
@@ -916,28 +962,6 @@ val_int_expr
 var_int_expr
 :
    VARIABLE
-;
-
-variable_declaration_statement
-locals [String typeStr, VariableType type]
-:
-   var = VARIABLE COLON
-   (
-      { _typeBindings.get($var.getText()) == null}?
-
-      SET
-      {$typeStr = "set<";}
-
-      (
-         settype = IP
-         | settype = ROUTE_FILTER
-         | settype = STRING
-      )
-      {$typeStr += $settype.getText() + ">"; $type = VariableType.fromString($typeStr);}
-
-      {_typeBindings.put($var.getText(), $type);}
-
-   ) SEMICOLON
 ;
 
 verify_question

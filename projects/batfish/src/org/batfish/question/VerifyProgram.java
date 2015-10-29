@@ -7,6 +7,7 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.main.Settings;
+import org.batfish.question.statement.Statement;
 import org.batfish.representation.Configuration;
 
 public class VerifyProgram {

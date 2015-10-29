@@ -2651,7 +2651,7 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
       QuestionCombinedParser parser = new QuestionCombinedParser(questionText,
             _settings.getThrowOnParserError(), _settings.getThrowOnLexerError());
-      QuestionExtractor extractor = new QuestionExtractor(getFlowTag());
+      QuestionExtractor extractor = new QuestionExtractor(parser, getFlowTag());
       try {
          ParserRuleContext tree = parse(parser, questionPath);
          _logger.info("\tPost-processing...");

@@ -19,11 +19,11 @@ verify {
          }
       }
       if ($ospf_route_filters.size > 0) then {
-         printf("OSPF route-filters on %s:\n");
+         printf("\nOSPF route-filters on %s:\n", node.name);
          foreach route_filter:$ospf_route_filters {
-            printf(" %s:\n", route_filter.name);
+            printf("\n  %s:\n", route_filter.name);
             foreach line {
-               printf("  %s\n", line);   
+               printf("    %s\n", line);   
             }
          }
       }

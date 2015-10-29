@@ -9,6 +9,7 @@ package org.batfish.grammar.question;
 }
 
 tokens {
+   INT,
    STRING,
    STRING_LITERAL
 }
@@ -628,6 +629,16 @@ M_QuotedString_DOUBLE_QUOTE
 ;
 
 mode M_Set;
+
+M_Set_INT
+:
+   'int' -> type(INT)
+;
+
+M_Set_IP
+:
+   'ip' -> type(IP)
+;
 
 M_Set_OPEN_ANGLE_BRACKET
 :

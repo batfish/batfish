@@ -1,6 +1,7 @@
 package org.batfish.question;
 
 import org.batfish.common.BatfishException;
+import org.batfish.question.prefix_expr.PrefixExpr;
 import org.batfish.representation.GeneratedRoute;
 import org.batfish.representation.Prefix;
 

@@ -32,4 +32,15 @@ public class RouteFilterLine implements Serializable {
       return _prefix;
    }
 
+   @Override
+   public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("{ ");
+      sb.append("Action=" + _action + " ");
+      sb.append("Prefix=" + _prefix + " ");
+      sb.append("LengthRange=" + _lengthRange + " ");
+      sb.append("}");
+      return sb.toString();
+   }
+
 }
