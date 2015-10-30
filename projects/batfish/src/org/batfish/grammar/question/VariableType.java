@@ -5,6 +5,8 @@ import org.batfish.common.BatfishException;
 public enum VariableType {
    INT,
    IP,
+   PREFIX,
+   REGEX,
    ROUTE_FILTER,
    SET_INT,
    SET_IP,
@@ -30,6 +32,12 @@ public enum VariableType {
 
       case "ip":
          return IP;
+
+      case "prefix":
+         return PREFIX;
+
+      case "regex":
+         return REGEX;
 
       case "route_filter":
          return ROUTE_FILTER;

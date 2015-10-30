@@ -57,6 +57,8 @@ public class SetAddStatement implements Statement {
 
       case INT:
       case IP:
+      case PREFIX:
+      case REGEX:
       case ROUTE_FILTER:
       case STRING:
       default:

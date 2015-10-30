@@ -32,7 +32,9 @@ public class SetSizeIntExpr extends BaseIntExpr {
 
       case INT:
       case IP:
+      case PREFIX:
       case ROUTE_FILTER:
+      case REGEX:
       case STRING:
       default:
          throw new BatfishException("invalid set type");

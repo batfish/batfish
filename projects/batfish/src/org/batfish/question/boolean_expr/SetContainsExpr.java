@@ -51,6 +51,8 @@ public class SetContainsExpr extends BaseBooleanExpr {
 
       case INT:
       case IP:
+      case PREFIX:
+      case REGEX:
       case ROUTE_FILTER:
       case STRING:
       default:

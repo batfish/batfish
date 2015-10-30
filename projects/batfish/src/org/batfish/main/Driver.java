@@ -130,6 +130,8 @@ public class Driver {
                   BfConsts.RELPATH_QUESTIONS_DIR, questionName);
             settings.setQuestionPath(questionPath.resolve(
                   BfConsts.RELPATH_QUESTION_FILE).toString());
+            settings.setQuestionParametersPath(questionPath.resolve(
+                  BfConsts.RELPATH_QUESTION_PARAM_FILE).toString());
             if (diffEnvName != null) {
                diffEnvSettings.setTrafficFactDumpDir(questionPath.resolve(
                      Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,

@@ -21,6 +21,7 @@ import org.batfish.question.IngressPathQuestion;
 import org.batfish.question.LocalPathQuestion;
 import org.batfish.question.MultipathQuestion;
 import org.batfish.question.Question;
+import org.batfish.question.QuestionParameters;
 import org.batfish.question.ReachabilityQuestion;
 import org.batfish.question.TracerouteQuestion;
 import org.batfish.question.VerifyProgram;
@@ -122,6 +123,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private String _flowTag;
 
+   private QuestionParameters _parameters;
+
    private QuestionCombinedParser _parser;
 
    private Question _question;
@@ -132,14 +135,51 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private VerifyProgram _verifyProgram;
 
-   public QuestionExtractor(QuestionCombinedParser parser, String flowTag) {
+   public QuestionExtractor(QuestionCombinedParser parser, String flowTag,
+         QuestionParameters parameters) {
       _parser = parser;
       _flowTag = flowTag;
+      _parameters = parameters;
    }
 
    private BatfishException conversionError(String error, ParserRuleContext ctx) {
       String parseTree = ParseTreePrettyPrinter.print(ctx, _parser);
       return new BatfishException(error + ": \n" + parseTree);
+   }
+
+   @Override
+   public void enterDefault_binding(Default_bindingContext ctx) {
+      String var = ctx.VARIABLE().getText().substring(1);
+      VariableType type;
+      Object value;
+      if (ctx.integer_literal() != null) {
+         type = VariableType.INT;
+         value = Long.parseLong(ctx.integer_literal().getText());
+      }
+      else if (ctx.IP_ADDRESS() != null) {
+         type = VariableType.IP;
+         value = new Ip(ctx.IP_ADDRESS().getText());
+      }
+      else if (ctx.IP_PREFIX() != null) {
+         type = VariableType.PREFIX;
+         value = new Prefix(ctx.IP_PREFIX().getText());
+      }
+      else if (ctx.REGEX() != null) {
+         type = VariableType.REGEX;
+         value = ctx.REGEX().getText();
+      }
+      else if (ctx.STRING_LITERAL() != null) {
+         type = VariableType.STRING;
+         value = ctx.STRING_LITERAL().getText();
+      }
+      else {
+         throw new BatfishException("Invalid binding for variable: \"" + var
+               + "\"");
+      }
+      if (_parameters.getTypeBindings().get(var) == null) {
+         _parameters.getTypeBindings().put(var, type);
+         _parameters.getStore().put(var, value);
+      }
    }
 
    @Override
@@ -156,40 +196,88 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    @Override
    public void enterFlow_constraint_dst_ip(Flow_constraint_dst_ipContext ctx) {
-      Ip dstIp = new Ip(ctx.dst_ip.getText());
+      String valueText = ctx.dst_ip.getText();
+      Ip dstIp;
+      if (ctx.VARIABLE() != null) {
+         String var = valueText.substring(1);
+         dstIp = _parameters.getIp(var);
+      }
+      else {
+         dstIp = new Ip(valueText);
+      }
       _currentFlowBuilder.setDstIp(dstIp);
    }
 
    @Override
    public void enterFlow_constraint_dst_port(Flow_constraint_dst_portContext ctx) {
-      int dstPort = Integer.parseInt(ctx.dst_port.getText());
+      String valueText = ctx.dst_port.getText();
+      int dstPort;
+      if (ctx.VARIABLE() != null) {
+         String var = valueText.substring(1);
+         dstPort = (int) _parameters.getInt(var);
+      }
+      else {
+         dstPort = Integer.parseInt(valueText);
+      }
       _currentFlowBuilder.setDstPort(dstPort);
    }
 
    @Override
    public void enterFlow_constraint_ingress_node(
          Flow_constraint_ingress_nodeContext ctx) {
-      String ingressNode = ctx.ingress_node.getText();
+      String valueText = ctx.ingress_node.getText();
+      String ingressNode;
+      if (ctx.VARIABLE() != null) {
+         String var = valueText.substring(1);
+         ingressNode = _parameters.getString(var);
+      }
+      else {
+         ingressNode = valueText;
+      }
       _currentFlowBuilder.setIngressNode(ingressNode);
    }
 
    @Override
    public void enterFlow_constraint_ip_protocol(
          Flow_constraint_ip_protocolContext ctx) {
-      int ipProtocolInt = Integer.parseInt(ctx.ip_protocol.getText());
+      String valueText = ctx.ip_protocol.getText();
+      int ipProtocolInt;
+      if (ctx.VARIABLE() != null) {
+         String var = valueText.substring(1);
+         ipProtocolInt = (int) _parameters.getInt(var);
+      }
+      else {
+         ipProtocolInt = Integer.parseInt(valueText);
+      }
       IpProtocol ipProtocol = IpProtocol.fromNumber(ipProtocolInt);
       _currentFlowBuilder.setIpProtocol(ipProtocol);
    }
 
    @Override
    public void enterFlow_constraint_src_ip(Flow_constraint_src_ipContext ctx) {
-      Ip srcIp = new Ip(ctx.src_ip.getText());
+      String valueText = ctx.src_ip.getText();
+      Ip srcIp;
+      if (ctx.VARIABLE() != null) {
+         String var = valueText.substring(1);
+         srcIp = _parameters.getIp(var);
+      }
+      else {
+         srcIp = new Ip(valueText);
+      }
       _currentFlowBuilder.setSrcIp(srcIp);
    }
 
    @Override
    public void enterFlow_constraint_src_port(Flow_constraint_src_portContext ctx) {
-      int srcPort = Integer.parseInt(ctx.src_port.getText());
+      String valueText = ctx.src_port.getText();
+      int srcPort;
+      if (ctx.VARIABLE() != null) {
+         String var = valueText.substring(1);
+         srcPort = (int) _parameters.getInt(var);
+      }
+      else {
+         srcPort = Integer.parseInt(valueText);
+      }
       _currentFlowBuilder.setSrcPort(srcPort);
    }
 

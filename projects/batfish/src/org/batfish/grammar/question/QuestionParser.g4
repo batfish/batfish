@@ -101,6 +101,23 @@ boolean_expr
    | true_expr
 ;
 
+default_binding
+:
+   VARIABLE EQUALS
+   (
+      integer_literal
+      | REGEX
+      | IP_ADDRESS
+      | IP_PREFIX
+      | STRING_LITERAL
+   ) SEMICOLON
+;
+
+defaults
+:
+   DEFAULTS OPEN_BRACE default_binding+ CLOSE_BRACE
+;
+
 eq_expr
 :
    lhs = int_expr DOUBLE_EQUALS rhs = int_expr
@@ -149,32 +166,56 @@ flow_constraint
 
 flow_constraint_ingress_node
 :
-   INGRESS_NODE EQUALS ingress_node = STRING_LITERAL
+   INGRESS_NODE EQUALS
+   (
+      ingress_node = STRING_LITERAL
+      | ingress_node = VARIABLE
+   )
 ;
 
 flow_constraint_ip_protocol
 :
-   IP_PROTOCOL EQUALS ip_protocol = DEC
+   IP_PROTOCOL EQUALS
+   (
+      ip_protocol = DEC
+      | ip_protocol = VARIABLE
+   )
 ;
 
 flow_constraint_dst_ip
 :
-   DST_IP EQUALS dst_ip = IP_ADDRESS
+   DST_IP EQUALS
+   (
+      dst_ip = IP_ADDRESS
+      | dst_ip = VARIABLE
+   )
 ;
 
 flow_constraint_dst_port
 :
-   DST_PORT EQUALS dst_port = DEC
+   DST_PORT EQUALS
+   (
+      dst_port = DEC
+      | dst_port = VARIABLE
+   )
 ;
 
 flow_constraint_src_ip
 :
-   SRC_IP EQUALS src_ip = IP_ADDRESS
+   SRC_IP EQUALS
+   (
+      src_ip = IP_ADDRESS
+      | src_ip = VARIABLE
+   )
 ;
 
 flow_constraint_src_port
 :
-   SRC_PORT EQUALS src_port = DEC
+   SRC_PORT EQUALS
+   (
+      src_port = DEC
+      | src_port = VARIABLE
+   )
 ;
 
 foreach_bgp_neighbor_statement
@@ -306,6 +347,11 @@ int_expr
    | subtrahend = int_expr MINUS minuend = int_expr
    | OPEN_PAREN parenthesized = int_expr CLOSE_PAREN
    | val_int_expr
+;
+
+integer_literal
+:
+   MINUS? DEC
 ;
 
 interface_boolean_expr
@@ -597,13 +643,16 @@ protocol_string_expr
 
 question
 :
-   failure_question
-   | ingress_path_question
-   | local_path_question
-   | multipath_question
-   | reachability_question
-   | traceroute_question
-   | verify_question
+   defaults?
+   (
+      failure_question
+      | ingress_path_question
+      | local_path_question
+      | multipath_question
+      | reachability_question
+      | traceroute_question
+      | verify_question
+   )
 ;
 
 range

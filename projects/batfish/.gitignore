@@ -23,5 +23,7 @@ LogiQLLexer*.java
 LogiQLParser*.java
 QuestionLexer*.java
 QuestionParser*.java
+QuestionParametersLexer*.java
+QuestionParametersParser*.java
 RoleLexer*.java
 RoleParser*.java

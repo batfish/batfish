@@ -43,7 +43,9 @@ public class SetDeclarationStatement implements Statement {
 
       case INT:
       case IP:
+      case PREFIX:
       case ROUTE_FILTER:
+      case REGEX:
       case STRING:
          throw new BatfishException("not a set type: " + _type.toString());
 

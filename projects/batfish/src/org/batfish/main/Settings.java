@@ -412,6 +412,7 @@ public final class Settings {
    private boolean _queryAll;
    private String _queryDumpDir;
    private String _questionName;
+   private String _questionParametersPath;
    private String _questionPath;
    private boolean _reach;
    private String _reachPath;
@@ -855,6 +856,10 @@ public final class Settings {
 
    public String getQuestionName() {
       return _questionName;
+   }
+
+   public String getQuestionParametersPath() {
+      return _questionParametersPath;
    }
 
    public String getQuestionPath() {
@@ -1845,6 +1850,10 @@ public final class Settings {
 
    public void setQueryDumpDir(String path) {
       _queryDumpDir = path;
+   }
+
+   public void setQuestionParametersPath(String questionParametersPath) {
+      _questionParametersPath = questionParametersPath;
    }
 
    public void setQuestionPath(String questionPath) {

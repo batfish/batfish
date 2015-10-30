@@ -81,6 +81,11 @@ CONTAINS
    'contains'
 ;
 
+DEFAULTS
+:
+   'defaults'
+;
+
 DROP
 :
    'drop'
@@ -114,6 +119,11 @@ FAILURE
 FALSE
 :
    'false'
+;
+
+FINAL_NODE
+:
+   'final_node'
 ;
 
 FLOW
@@ -196,6 +206,11 @@ HAS_NEXT_HOP_IP
    'has_next_hop_ip'
 ;
 
+INGRESS_PATH
+:
+   'ingress-path'
+;
+
 L1_ACTIVE
 :
    'l1_active'
@@ -229,6 +244,11 @@ LOCAL_AS
 LOCAL_IP
 :
    'local_ip'
+;
+
+LOCAL_PATH
+:
+   'local-path'
 ;
 
 MATCH_PROTOCOL
@@ -336,6 +356,11 @@ ROUTE_FILTER
    'route_filter'
 ;
 
+SET
+:
+   'set' -> pushMode(M_Set)
+;
+
 SIZE
 :
    'size'
@@ -369,6 +394,11 @@ TESTRIG
 THEN
 :
    'then'
+;
+
+TRACEROUTE
+:
+   'traceroute'
 ;
 
 TRUE
@@ -447,11 +477,6 @@ EQUALS
    '='
 ;
 
-FINAL_NODE
-:
-   'final_node'
-;
-
 FORWARD_SLASH
 :
    '/'
@@ -462,11 +487,6 @@ GT
    '>'
 ;
 
-INGRESS_PATH
-:
-   'ingress-path'
-;
-
 IP_ADDRESS
 :
    F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
@@ -475,11 +495,6 @@ IP_ADDRESS
 IP_PREFIX
 :
    F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte '/' F_DecimalDigit+
-;
-
-LOCAL_PATH
-:
-   'local-path'
 ;
 
 MINUS
@@ -530,16 +545,6 @@ REGEX
 SEMICOLON
 :
    ';'
-;
-
-SET
-:
-   'set' -> pushMode(M_Set)
-;
-
-TRACEROUTE
-:
-   'traceroute'
 ;
 
 VARIABLE

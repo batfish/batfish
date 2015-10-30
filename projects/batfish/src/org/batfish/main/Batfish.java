@@ -72,6 +72,8 @@ import org.batfish.grammar.logicblox.LogiQLCombinedParser;
 import org.batfish.grammar.logicblox.LogiQLPredicateInfoResolver;
 import org.batfish.grammar.question.QuestionCombinedParser;
 import org.batfish.grammar.question.QuestionExtractor;
+import org.batfish.grammar.question.QuestionParametersCombinedParser;
+import org.batfish.grammar.question.QuestionParametersExtractor;
 import org.batfish.grammar.topology.BatfishTopologyCombinedParser;
 import org.batfish.grammar.topology.BatfishTopologyExtractor;
 import org.batfish.grammar.topology.GNS3TopologyCombinedParser;
@@ -108,6 +110,7 @@ import org.batfish.question.IngressPathQuestion;
 import org.batfish.question.LocalPathQuestion;
 import org.batfish.question.MultipathQuestion;
 import org.batfish.question.Question;
+import org.batfish.question.QuestionParameters;
 import org.batfish.question.ReachabilityQuestion;
 import org.batfish.question.TracerouteQuestion;
 import org.batfish.question.VerifyProgram;
@@ -394,10 +397,10 @@ public class Batfish implements AutoCloseable {
 
    }
 
-   private void answer(String questionPath) {
+   private void answer() {
       boolean dp = false;
       boolean diff = false;
-      Question question = parseQuestion(questionPath);
+      Question question = parseQuestion();
       switch (question.getType()) {
       case DESTINATION:
          answerDestination((DestinationQuestion) question);
@@ -2644,19 +2647,25 @@ public class Batfish implements AutoCloseable {
       return nodeRoles;
    }
 
-   private Question parseQuestion(String questionPath) {
+   private Question parseQuestion() {
+      String questionPath = _settings.getQuestionPath();
       File questionFile = new File(questionPath);
       _logger.info("Reading question file: \"" + questionPath + "\"...");
       String questionText = Util.readFile(questionFile);
       _logger.info("OK\n");
+      QuestionParameters parameters = parseQuestionParameters();
       QuestionCombinedParser parser = new QuestionCombinedParser(questionText,
             _settings.getThrowOnParserError(), _settings.getThrowOnLexerError());
-      QuestionExtractor extractor = new QuestionExtractor(parser, getFlowTag());
+      QuestionExtractor extractor = new QuestionExtractor(parser, getFlowTag(),
+            parameters);
       try {
          ParserRuleContext tree = parse(parser, questionPath);
          _logger.info("\tPost-processing...");
          extractor.processParseTree(tree);
          _logger.info("OK\n");
+      }
+      catch (CleanBatfishException e) {
+         throw e;
       }
       catch (ParserBatfishException e) {
          String error = "Error parsing question: \"" + questionPath + "\"";
@@ -2668,6 +2677,39 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException(error, e);
       }
       return extractor.getQuestion();
+   }
+
+   private QuestionParameters parseQuestionParameters() {
+      String questionParametersPath = _settings.getQuestionParametersPath();
+      File questionParametersFile = new File(questionParametersPath);
+      if (!questionParametersFile.exists()) {
+         return null;
+      }
+      _logger.info("Reading question parametersfile: \""
+            + questionParametersPath + "\"...");
+      String questionText = Util.readFile(questionParametersFile);
+      _logger.info("OK\n");
+      QuestionParametersCombinedParser parser = new QuestionParametersCombinedParser(
+            questionText, _settings.getThrowOnParserError(),
+            _settings.getThrowOnLexerError());
+      QuestionParametersExtractor extractor = new QuestionParametersExtractor();
+      try {
+         ParserRuleContext tree = parse(parser, questionParametersPath);
+         _logger.info("\tPost-processing...");
+         extractor.processParseTree(tree);
+         _logger.info("OK\n");
+      }
+      catch (ParserBatfishException e) {
+         String error = "Error parsing question parameters: \""
+               + questionParametersPath + "\"";
+         throw new BatfishException(error, e);
+      }
+      catch (Exception e) {
+         String error = "Error post-processing parse tree of question parameters file: \""
+               + questionParametersPath + "\"";
+         throw new BatfishException(error, e);
+      }
+      return extractor.getParameters();
    }
 
    private Topology parseTopology(File topologyFilePath) {
@@ -3423,8 +3465,7 @@ public class Batfish implements AutoCloseable {
       }
 
       if (_settings.getAnswer()) {
-         String questionPath = _settings.getQuestionPath();
-         answer(questionPath);
+         answer();
          action = true;
       }
 
