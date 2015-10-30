@@ -74,7 +74,7 @@ public class BfConsts {
    public static final String RELPATH_QUERIES_DIR = "queries";
    public static final String RELPATH_QUERY_DUMP_DIR = "querydump";
    public static final String RELPATH_QUESTION_FILE = "question";
-   public static final String RELPATH_QUESTION_PARAM_FILE = "params";
+   public static final String RELPATH_QUESTION_PARAM_FILE = "parameters";
    public static final String RELPATH_QUESTIONS_DIR = "questions";
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
    public static final String RELPATH_TOPOLOGY_FILE = "topology";
