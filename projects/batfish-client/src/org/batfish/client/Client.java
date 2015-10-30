@@ -1,11 +1,17 @@
 package org.batfish.client;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -180,9 +186,19 @@ public class Client {
                break;
             }
 
+            File paramsFile = null;
+            
+            try {
+              paramsFile = createParamsFile(words, 3, words.length - 1);              
+            } 
+            catch (Exception e) {
+               _logger.error("Could not create params file\n");
+               break;
+            }
+            
             // upload the question
             boolean resultUpload = _workHelper.uploadQuestion(_currTestrigName,
-                  questionName, questionFile);
+                  questionName, questionFile, paramsFile);
 
             if (resultUpload) {
                _logger
@@ -192,6 +208,11 @@ public class Client {
                break;
             }
 
+            //delete the temporary params file
+            if (paramsFile != null) {
+               paramsFile.delete();
+            }
+            
             // answer the question
             WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(
                   questionName, _currTestrigName, _currEnv, _currDiffEnv);
@@ -221,9 +242,19 @@ public class Client {
                break;
             }
 
+            File paramsFile = null;
+            
+            try {
+            paramsFile = createParamsFile(words, 3, words.length - 1);
+         } 
+         catch (Exception e) {
+            _logger.error("Could not create params file\n");
+            break;
+         }
+           
             // upload the question
             boolean resultUpload = _workHelper.uploadQuestion(_currTestrigName,
-                  questionName, questionFile);
+                  questionName, questionFile, paramsFile);
 
             if (resultUpload) {
                _logger
@@ -232,6 +263,11 @@ public class Client {
             else {
                break;
             }
+
+          //delete the temporary params file
+          if (paramsFile != null) {
+             paramsFile.delete();
+          }
 
             // answer the question
             WorkItem wItemAs = _workHelper.getWorkItemAnswerDiffQuestion(
@@ -424,6 +460,25 @@ public class Client {
       catch (Exception e) {
          e.printStackTrace();
       }
+   }
+
+   private File createParamsFile(String[] words, int startIndex, int endIndex) throws IOException {
+      
+      //String paramsLine = String.join(" ", Arrays.copyOfRange(words, startIndex,  endIndex));
+      
+      File paramFile = Files.createTempFile("params", null).toFile();      
+      _logger.debugf("Creating temporary params file: %s\n", paramFile.getAbsolutePath());
+      
+      BufferedWriter writer = new BufferedWriter(new FileWriter(paramFile));
+      writer.write("#parameters for the question\n");
+      
+      for (int index = startIndex; index <= endIndex; index++) {
+         writer.write(words[index] + "\n");         
+      }
+
+      writer.close();
+      
+      return paramFile;
    }
 
    private void RunBatchMode(Settings settings) {

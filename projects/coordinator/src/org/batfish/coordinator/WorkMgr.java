@@ -418,7 +418,7 @@ public class WorkMgr {
    }
 
    public void uploadQuestion(String testrigName, String qName,
-         InputStream fileStream) throws Exception {
+         InputStream fileStream, InputStream paramFileStream) throws Exception {
 
       File testrigDir = Paths.get(
             Main.getSettings().getTestrigStorageLocation(), testrigName)
@@ -450,6 +450,17 @@ public class WorkMgr {
          final byte[] bytes = new byte[1024];
          while ((read = fileStream.read(bytes)) != -1) {
             fileOutputStream.write(bytes, 0, read);
+         }
+      }
+      
+      File paramFile = Paths.get(qDir.getAbsolutePath(),
+            BfConsts.RELPATH_QUESTION_PARAM_FILE).toFile();
+
+      try (OutputStream paramFileOutputStream = new FileOutputStream(paramFile)) {
+         int read = 0;
+         final byte[] bytes = new byte[1024];
+         while ((read = paramFileStream.read(bytes)) != -1) {
+            paramFileOutputStream.write(bytes, 0, read);
          }
       }
    }

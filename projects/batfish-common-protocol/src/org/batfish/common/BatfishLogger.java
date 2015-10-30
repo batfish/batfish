@@ -183,6 +183,10 @@ public class BatfishLogger {
       write(LEVEL_DEBUG, msg);
    }
 
+   public void debugf(String format, Object... args) {
+      debug(String.format(format, args));
+   }
+
    public void error(String msg) {
       write(LEVEL_ERROR, msg);
    }

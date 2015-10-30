@@ -253,12 +253,13 @@ public class WorkMgrService {
    public JSONArray uploadQuestion(
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
          @FormDataParam(CoordConsts.SVC_QUESTION_NAME_KEY) String qName,
-         @FormDataParam(CoordConsts.SVC_FILE_KEY) InputStream fileStream) {
+         @FormDataParam(CoordConsts.SVC_FILE_KEY) InputStream fileStream,
+         @FormDataParam(CoordConsts.SVC_FILE2_KEY) InputStream paramFileStream) {
       try {
          _logger.info("WMS:uploadQuestion " + testrigName + " / " + qName
                + "\n");
 
-         Main.getWorkMgr().uploadQuestion(testrigName, qName, fileStream);
+         Main.getWorkMgr().uploadQuestion(testrigName, qName, fileStream, paramFileStream);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
                "successfully uploaded question"));

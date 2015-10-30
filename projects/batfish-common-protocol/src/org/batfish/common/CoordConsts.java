@@ -23,6 +23,7 @@ public class CoordConsts {
 
    public static final String SVC_FAILURE_KEY = "failure";
    public static final String SVC_FILE_KEY = "file";
+   public static final String SVC_FILE2_KEY = "file2";
 
    public static final String SVC_POOL_GETSTATUS_RSC = "getstatus";
    public static final Integer SVC_POOL_PORT = 9998;
