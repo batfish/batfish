@@ -89,7 +89,7 @@ bgp_neighbor_remote_ip_ip_expr
 boolean_expr
 :
    and_expr
-   | contains_ip_expr
+   | set_contains_expr
    | eq_expr
    | gt_expr
    | if_expr
@@ -99,11 +99,6 @@ boolean_expr
    | or_expr
    | property_boolean_expr
    | true_expr
-;
-
-contains_ip_expr
-:
-   caller = VARIABLE PERIOD CONTAINS_IP OPEN_PAREN ip_expr CLOSE_PAREN
 ;
 
 eq_expr
@@ -724,6 +719,28 @@ route_filter_string_expr
 set_add_method [VariableType type, String caller]
 :
    ADD OPEN_PAREN
+   (
+      {$type == VariableType.SET_IP}?
+
+      ip_expr
+      |
+      {$type == VariableType.SET_STRING}?
+
+      expr
+      |
+      {$type == VariableType.SET_ROUTE_FILTER}?
+
+      route_filter_expr
+   ) CLOSE_PAREN
+;
+
+set_contains_expr
+locals [VariableType type]
+:
+   caller = VARIABLE
+   { $type = _typeBindings.get($caller.getText()); }
+
+   PERIOD CONTAINS OPEN_PAREN
    (
       {$type == VariableType.SET_IP}?
 

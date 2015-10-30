@@ -1,11 +1,13 @@
 verify {
+   $loopbackips:set<ip>;
+   $allinterfaceips:set<ip>;
    foreach node {
       foreach interface {
          if (interface.has_ip) then {
             if (interface.is_loopback) then {
-               $loopbackips.add_ip(interface.ip);
+               $loopbackips.add(interface.ip);
             }
-            $allinterfaceips.add_ip(interface.ip);
+            $allinterfaceips.add(interface.ip);
          }
       }
    }

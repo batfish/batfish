@@ -29,7 +29,7 @@ import org.batfish.question.boolean_expr.AndExpr;
 import org.batfish.question.boolean_expr.BaseCaseBooleanExpr;
 import org.batfish.question.boolean_expr.BgpNeighborBooleanExpr;
 import org.batfish.question.boolean_expr.BooleanExpr;
-import org.batfish.question.boolean_expr.ContainsIpExpr;
+import org.batfish.question.boolean_expr.SetContainsExpr;
 import org.batfish.question.boolean_expr.EqExpr;
 import org.batfish.question.boolean_expr.GtExpr;
 import org.batfish.question.boolean_expr.IfExpr;
@@ -335,9 +335,6 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       if (ctx.and_expr() != null) {
          return toBooleanExpr(ctx.and_expr());
       }
-      else if (ctx.contains_ip_expr() != null) {
-         return toBooleanExpr(ctx.contains_ip_expr());
-      }
       else if (ctx.false_expr() != null) {
          return BaseCaseBooleanExpr.FALSE;
       }
@@ -362,18 +359,15 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.property_boolean_expr() != null) {
          return toBooleanExpr(ctx.property_boolean_expr());
       }
+      else if (ctx.set_contains_expr() != null) {
+         return toBooleanExpr(ctx.set_contains_expr());
+      }
       else if (ctx.true_expr() != null) {
          return BaseCaseBooleanExpr.TRUE;
       }
       else {
          throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
       }
-   }
-
-   private BooleanExpr toBooleanExpr(Contains_ip_exprContext expr) {
-      String caller = expr.caller.getText();
-      IpExpr ipExpr = toIpExpr(expr.ip_expr());
-      return new ContainsIpExpr(caller, ipExpr);
    }
 
    private BooleanExpr toBooleanExpr(Eq_exprContext expr) {
@@ -544,6 +538,23 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else {
          throw conversionError("Missing conversion for expression", ctx);
       }
+   }
+
+   private BooleanExpr toBooleanExpr(Set_contains_exprContext ctx) {
+      Expr expr;
+      if (ctx.ip_expr() != null) {
+         expr = toIpExpr(ctx.ip_expr());
+      }
+      else if (ctx.expr() != null) {
+         expr = toExpr(ctx.expr());
+      }
+      else if (ctx.route_filter_expr() != null) {
+         expr = toRouteFilterExpr(ctx.route_filter_expr());
+      }
+      else {
+         throw conversionError(ERR_CONVERT_STATEMENT, ctx);
+      }
+      return new SetContainsExpr(expr, ctx.caller.getText(), ctx.type);
    }
 
    private BooleanExpr toBooleanExpr(Static_route_boolean_exprContext ctx) {

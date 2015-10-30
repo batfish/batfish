@@ -76,9 +76,9 @@ CONFIGURED
    'configured'
 ;
 
-CONTAINS_IP
+CONTAINS
 :
-   'contains_ip'
+   'contains'
 ;
 
 DROP
