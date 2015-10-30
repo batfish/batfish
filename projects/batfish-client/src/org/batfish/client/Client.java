@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.common.BfConsts;
