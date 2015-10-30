@@ -464,7 +464,7 @@ public class Client {
 
    private File createParamsFile(String[] words, int startIndex, int endIndex) throws IOException {
       
-      //String paramsLine = String.join(" ", Arrays.copyOfRange(words, startIndex,  endIndex));
+      String paramsLine = String.join(" ", Arrays.copyOfRange(words, startIndex,  endIndex + 1));
       
       File paramFile = Files.createTempFile("params", null).toFile();      
       _logger.debugf("Creating temporary params file: %s\n", paramFile.getAbsolutePath());
@@ -472,9 +472,11 @@ public class Client {
       BufferedWriter writer = new BufferedWriter(new FileWriter(paramFile));
       writer.write("#parameters for the question\n");
       
-      for (int index = startIndex; index <= endIndex; index++) {
-         writer.write(words[index] + "\n");         
-      }
+      writer.write(paramsLine + "\n");
+      
+//      for (int index = startIndex; index <= endIndex; index++) {
+//         writer.write(words[index] + "\n");         
+//      }
 
       writer.close();
       
@@ -498,6 +500,10 @@ public class Client {
             settings.getCommandFile()))) {
          String line = null;
          while ((line = br.readLine()) != null) {
+            
+            if (line.startsWith("#"))
+               continue;
+            
             _logger.output("Doing command: " + line + "\n");
 
             String[] words = line.split("\\s+");

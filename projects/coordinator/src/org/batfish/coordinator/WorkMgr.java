@@ -456,6 +456,8 @@ public class WorkMgr {
       File paramFile = Paths.get(qDir.getAbsolutePath(),
             BfConsts.RELPATH_QUESTION_PARAM_FILE).toFile();
 
+      System.out.println("parameters file = " + BfConsts.RELPATH_QUESTION_PARAM_FILE + "\n");
+      
       try (OutputStream paramFileOutputStream = new FileOutputStream(paramFile)) {
          int read = 0;
          final byte[] bytes = new byte[1024];
