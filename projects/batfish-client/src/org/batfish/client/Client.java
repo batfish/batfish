@@ -78,13 +78,30 @@ public class Client {
       return descs;
    }
 
+   private static String joinStrings(String delimiter, String[] parts) {
+      StringBuilder sb = new StringBuilder();
+      for (String part : parts) {
+         sb.append(part + delimiter);
+      }
+      String joined = sb.toString();
+      int joinedLength = joined.length();
+      String result;
+      if (joinedLength > 0) {
+         result = joined.substring(0, joinedLength - delimiter.length());
+      }
+      else {
+         result = joined;
+      }
+      return result;
+   }
    private String _currDiffEnv = null;
    private String _currEnv = null;
+
    private String _currTestrigName = null;
 
    private BatfishLogger _logger;
-
    private BfCoordPoolHelper _poolHelper;
+
    private BfCoordWorkHelper _workHelper;
 
    public Client(Settings settings) {
@@ -100,7 +117,7 @@ public class Client {
    private File createParamsFile(String[] words, int startIndex, int endIndex)
          throws IOException {
 
-      String paramsLine = String.join(" ",
+      String paramsLine = joinStrings(" ",
             Arrays.copyOfRange(words, startIndex, endIndex + 1));
 
       File paramFile = Files.createTempFile("params", null).toFile();
