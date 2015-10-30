@@ -98,6 +98,30 @@ public class Client {
 
    }
 
+   private File createParamsFile(String[] words, int startIndex, int endIndex)
+         throws IOException {
+
+      String paramsLine = String.join(" ",
+            Arrays.copyOfRange(words, startIndex, endIndex + 1));
+
+      File paramFile = Files.createTempFile("params", null).toFile();
+      _logger.debugf("Creating temporary params file: %s\n",
+            paramFile.getAbsolutePath());
+
+      BufferedWriter writer = new BufferedWriter(new FileWriter(paramFile));
+      writer.write("#parameters for the question\n");
+
+      writer.write(paramsLine + "\n");
+
+      // for (int index = startIndex; index <= endIndex; index++) {
+      // writer.write(words[index] + "\n");
+      // }
+
+      writer.close();
+
+      return paramFile;
+   }
+
    private boolean execute(WorkItem wItem) throws Exception {
 
       wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _logger.getLogLevelStr());
@@ -187,15 +211,15 @@ public class Client {
             }
 
             File paramsFile = null;
-            
+
             try {
-              paramsFile = createParamsFile(words, 3, words.length - 1);              
-            } 
+               paramsFile = createParamsFile(words, 3, words.length - 1);
+            }
             catch (Exception e) {
                _logger.error("Could not create params file\n");
                break;
             }
-            
+
             // upload the question
             boolean resultUpload = _workHelper.uploadQuestion(_currTestrigName,
                   questionName, questionFile, paramsFile);
@@ -208,11 +232,11 @@ public class Client {
                break;
             }
 
-            //delete the temporary params file
+            // delete the temporary params file
             if (paramsFile != null) {
                paramsFile.delete();
             }
-            
+
             // answer the question
             WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(
                   questionName, _currTestrigName, _currEnv, _currDiffEnv);
@@ -243,15 +267,15 @@ public class Client {
             }
 
             File paramsFile = null;
-            
+
             try {
-            paramsFile = createParamsFile(words, 3, words.length - 1);
-         } 
-         catch (Exception e) {
-            _logger.error("Could not create params file\n");
-            break;
-         }
-           
+               paramsFile = createParamsFile(words, 3, words.length - 1);
+            }
+            catch (Exception e) {
+               _logger.error("Could not create params file\n");
+               break;
+            }
+
             // upload the question
             boolean resultUpload = _workHelper.uploadQuestion(_currTestrigName,
                   questionName, questionFile, paramsFile);
@@ -264,10 +288,10 @@ public class Client {
                break;
             }
 
-          //delete the temporary params file
-          if (paramsFile != null) {
-             paramsFile.delete();
-          }
+            // delete the temporary params file
+            if (paramsFile != null) {
+               paramsFile.delete();
+            }
 
             // answer the question
             WorkItem wItemAs = _workHelper.getWorkItemAnswerDiffQuestion(
@@ -462,27 +486,6 @@ public class Client {
       }
    }
 
-   private File createParamsFile(String[] words, int startIndex, int endIndex) throws IOException {
-      
-      String paramsLine = String.join(" ", Arrays.copyOfRange(words, startIndex,  endIndex + 1));
-      
-      File paramFile = Files.createTempFile("params", null).toFile();      
-      _logger.debugf("Creating temporary params file: %s\n", paramFile.getAbsolutePath());
-      
-      BufferedWriter writer = new BufferedWriter(new FileWriter(paramFile));
-      writer.write("#parameters for the question\n");
-      
-      writer.write(paramsLine + "\n");
-      
-//      for (int index = startIndex; index <= endIndex; index++) {
-//         writer.write(words[index] + "\n");         
-//      }
-
-      writer.close();
-      
-      return paramFile;
-   }
-
    private void RunBatchMode(Settings settings) {
 
       _logger = new BatfishLogger(settings.getLogLevel(), false,
@@ -500,10 +503,11 @@ public class Client {
             settings.getCommandFile()))) {
          String line = null;
          while ((line = br.readLine()) != null) {
-            
-            if (line.startsWith("#"))
+
+            if (line.startsWith("#")) {
                continue;
-            
+            }
+
             _logger.output("Doing command: " + line + "\n");
 
             String[] words = line.split("\\s+");

@@ -458,7 +458,7 @@ public class BfCoordWorkHelper {
          FileDataBodyPart paramFileDataBodyPart = new FileDataBodyPart(
                CoordConsts.SVC_FILE2_KEY, paramsFile,
                MediaType.APPLICATION_OCTET_STREAM_TYPE);
-         multiPart.bodyPart(paramFileDataBodyPart);            
+         multiPart.bodyPart(paramFileDataBodyPart);
 
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .post(Entity.entity(multiPart, multiPart.getMediaType()));
@@ -486,7 +486,8 @@ public class BfCoordWorkHelper {
       }
       catch (Exception e) {
          if (e.getMessage().contains("FileNotFoundException")) {
-            _logger.errorf("File not found: %s or %s\n", qFileName, paramsFile.getAbsolutePath());
+            _logger.errorf("File not found: %s or %s\n", qFileName,
+                  paramsFile.getAbsolutePath());
          }
          else if (e.getMessage().contains("ConnectException")) {
             _logger.error("ERROR: Could not talk to coordinator\n");

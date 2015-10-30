@@ -259,7 +259,8 @@ public class WorkMgrService {
          _logger.info("WMS:uploadQuestion " + testrigName + " / " + qName
                + "\n");
 
-         Main.getWorkMgr().uploadQuestion(testrigName, qName, fileStream, paramFileStream);
+         Main.getWorkMgr().uploadQuestion(testrigName, qName, fileStream,
+               paramFileStream);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
                "successfully uploaded question"));
