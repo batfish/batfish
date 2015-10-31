@@ -192,3 +192,12 @@ M_Value_STRING_LITERAL
 :
    F_LeadingVarChar F_VarChar* -> type ( STRING_LITERAL ) , popMode
 ;
+
+M_Value_WS
+:
+   (
+      F_WhitespaceChar
+      | F_NewlineChar
+   )+ -> channel ( HIDDEN )
+;
+
