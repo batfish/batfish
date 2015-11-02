@@ -24,16 +24,21 @@ public class SetSizeIntExpr extends BaseIntExpr {
       case SET_IP:
          return environment.getIpSets().get(_caller).size();
 
+      case SET_PREFIX:
+         return environment.getPrefixSets().get(_caller).size();
+
       case SET_ROUTE_FILTER:
          return environment.getRouteFilterSets().get(_caller).size();
 
       case SET_STRING:
          return environment.getStringSets().get(_caller).size();
 
+      case ACTION:
       case INT:
       case IP:
       case PREFIX:
       case ROUTE_FILTER:
+      case RANGE:
       case REGEX:
       case STRING:
       default:

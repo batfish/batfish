@@ -3,13 +3,16 @@ package org.batfish.grammar.question;
 import org.batfish.common.BatfishException;
 
 public enum VariableType {
+   ACTION,
    INT,
    IP,
    PREFIX,
+   RANGE,
    REGEX,
    ROUTE_FILTER,
    SET_INT,
    SET_IP,
+   SET_PREFIX,
    SET_ROUTE_FILTER,
    SET_STRING,
    STRING;
@@ -21,11 +24,17 @@ public enum VariableType {
       case "set<ip>":
          return SET_IP;
 
+      case "set<prefix>":
+         return SET_PREFIX;
+
       case "set<string>":
          return SET_STRING;
 
       case "set<int>":
          return SET_INT;
+
+      case "action":
+         return ACTION;
 
       case "int":
          return INT;
@@ -35,6 +44,9 @@ public enum VariableType {
 
       case "prefix":
          return PREFIX;
+
+      case "range":
+         return RANGE;
 
       case "regex":
          return REGEX;

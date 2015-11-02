@@ -8,6 +8,7 @@ import org.batfish.grammar.question.VariableType;
 import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.representation.Ip;
+import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterList;
 
 public class SetDeclarationStatement implements Statement {
@@ -33,6 +34,9 @@ public class SetDeclarationStatement implements Statement {
          initIntSet(environment, logger, settings);
          break;
 
+      case SET_PREFIX:
+         initPrefixSet(environment, logger, settings);
+
       case SET_ROUTE_FILTER:
          initRouteFilterSet(environment, logger, settings);
          break;
@@ -41,9 +45,11 @@ public class SetDeclarationStatement implements Statement {
          initStringSet(environment, logger, settings);
          break;
 
+      case ACTION:
       case INT:
       case IP:
       case PREFIX:
+      case RANGE:
       case ROUTE_FILTER:
       case REGEX:
       case STRING:
@@ -67,6 +73,13 @@ public class SetDeclarationStatement implements Statement {
          Settings settings) {
       if (environment.getIpSets().get(_var) == null) {
          environment.getIpSets().put(_var, new HashSet<Ip>());
+      }
+   }
+
+   private void initPrefixSet(Environment environment, BatfishLogger logger,
+         Settings settings) {
+      if (environment.getPrefixSets().get(_var) == null) {
+         environment.getPrefixSets().put(_var, new HashSet<Prefix>());
       }
    }
 

@@ -8,9 +8,11 @@ import org.batfish.question.Environment;
 import org.batfish.question.Expr;
 import org.batfish.question.int_expr.IntExpr;
 import org.batfish.question.ip_expr.IpExpr;
+import org.batfish.question.prefix_expr.PrefixExpr;
 import org.batfish.question.route_filter_expr.RouteFilterExpr;
 import org.batfish.question.string_expr.StringExpr;
 import org.batfish.representation.Ip;
+import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterList;
 
 public class SetAddStatement implements Statement {
@@ -43,6 +45,12 @@ public class SetAddStatement implements Statement {
          environment.getIpSets().get(_caller).add(ipVal);
          break;
 
+      case SET_PREFIX:
+         PrefixExpr prefixExpr = (PrefixExpr) _expr;
+         Prefix prefixVal = prefixExpr.evaluate(environment);
+         environment.getPrefixSets().get(_caller).add(prefixVal);
+         break;
+
       case SET_ROUTE_FILTER:
          RouteFilterExpr routeFilterExpr = (RouteFilterExpr) _expr;
          RouteFilterList routeFilterVal = routeFilterExpr.evaluate(environment);
@@ -55,9 +63,11 @@ public class SetAddStatement implements Statement {
          environment.getStringSets().get(_caller).add(stringVal);
          break;
 
+      case ACTION:
       case INT:
       case IP:
       case PREFIX:
+      case RANGE:
       case REGEX:
       case ROUTE_FILTER:
       case STRING:

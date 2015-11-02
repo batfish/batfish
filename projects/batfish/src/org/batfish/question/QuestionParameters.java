@@ -2,10 +2,13 @@ package org.batfish.question;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.batfish.common.CleanBatfishException;
 import org.batfish.grammar.question.VariableType;
 import org.batfish.representation.Ip;
+import org.batfish.representation.Prefix;
+import org.batfish.util.SubRange;
 
 public class QuestionParameters {
 
@@ -33,6 +36,11 @@ public class QuestionParameters {
       }
    }
 
+   public ForwardingAction getAction(String var) {
+      confirmTypeBinding(var, VariableType.ACTION);
+      return (ForwardingAction) _store.get(var);
+   }
+
    public long getInt(String var) {
       confirmTypeBinding(var, VariableType.INT);
       return (long) _store.get(var);
@@ -41,6 +49,28 @@ public class QuestionParameters {
    public Ip getIp(String var) {
       confirmTypeBinding(var, VariableType.IP);
       return (Ip) _store.get(var);
+   }
+
+   public Prefix getPrefix(String var) {
+      confirmTypeBinding(var, VariableType.PREFIX);
+      return (Prefix) _store.get(var);
+   }
+
+   @SuppressWarnings("unchecked")
+   public Set<Prefix> getPrefixSet(String var) {
+      confirmTypeBinding(var, VariableType.SET_PREFIX);
+      return (Set<Prefix>) _store.get(var);
+   }
+
+   @SuppressWarnings("unchecked")
+   public Set<SubRange> getRange(String var) {
+      confirmTypeBinding(var, VariableType.RANGE);
+      return (Set<SubRange>) _store.get(var);
+   }
+
+   public String getRegex(String var) {
+      confirmTypeBinding(var, VariableType.REGEX);
+      return (String) _store.get(var);
    }
 
    public Map<String, Object> getStore() {

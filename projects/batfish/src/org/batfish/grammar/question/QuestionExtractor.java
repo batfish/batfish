@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -101,6 +102,8 @@ import org.batfish.util.Util;
 public class QuestionExtractor extends QuestionParserBaseListener implements
       BatfishExtractor {
 
+   private static final String ERR_CONVERT_ACTION = "Cannot convert parse tree node to action";
+
    private static final String ERR_CONVERT_BOOLEAN = "Cannot convert parse tree node to boolean expression";
 
    private static final String ERR_CONVERT_INT = "Cannot convert parse tree node to integer expression";
@@ -117,7 +120,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private static final String ERR_CONVERT_STATEMENT = "Cannot convert parse tree node to statement";
 
-   private static final String ERR_CONVERT_STRING = "Cannot convert parse tree node to string expression";;
+   private static final String ERR_CONVERT_STRING = "Cannot convert parse tree node to string expression";
 
    private FlowBuilder _currentFlowBuilder;
 
@@ -152,7 +155,11 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       String var = ctx.VARIABLE().getText().substring(1);
       VariableType type;
       Object value;
-      if (ctx.integer_literal() != null) {
+      if (ctx.action() != null) {
+         type = VariableType.ACTION;
+         value = ForwardingAction.fromString(ctx.action().getText());
+      }
+      else if (ctx.integer_literal() != null) {
          type = VariableType.INT;
          value = Long.parseLong(ctx.integer_literal().getText());
       }
@@ -160,9 +167,17 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          type = VariableType.IP;
          value = new Ip(ctx.IP_ADDRESS().getText());
       }
+      else if (ctx.ip_constraint_complex() != null) {
+         type = VariableType.SET_PREFIX;
+         value = toPrefixSet(ctx.ip_constraint_complex());
+      }
       else if (ctx.IP_PREFIX() != null) {
          type = VariableType.PREFIX;
          value = new Prefix(ctx.IP_PREFIX().getText());
+      }
+      else if (ctx.range() != null) {
+         type = VariableType.RANGE;
+         value = toRange(ctx.range());
       }
       else if (ctx.REGEX() != null) {
          type = VariableType.REGEX;
@@ -303,12 +318,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void enterReachability_constraint_action(
          Reachability_constraint_actionContext ctx) {
       _reachabilityQuestion.getActions().clear();
-      if (ctx.ACCEPT() != null) {
-         _reachabilityQuestion.getActions().add(ForwardingAction.ACCEPT);
-      }
-      if (ctx.DROP() != null) {
-         _reachabilityQuestion.getActions().add(ForwardingAction.DROP);
-      }
+      ForwardingAction action = toAction(ctx.action_constraint());
+      _reachabilityQuestion.getActions().add(action);
    }
 
    @Override
@@ -398,6 +409,28 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void processParseTree(ParserRuleContext tree) {
       ParseTreeWalker walker = new ParseTreeWalker();
       walker.walk(this, tree);
+   }
+
+   private ForwardingAction toAction(Action_constraintContext ctx) {
+      ForwardingAction action;
+      if (ctx.action() != null) {
+         if (ctx.action().ACCEPT() != null) {
+            action = ForwardingAction.ACCEPT;
+         }
+         else if (ctx.action().DROP() != null) {
+            action = ForwardingAction.DROP;
+         }
+         else {
+            throw new BatfishException(ERR_CONVERT_ACTION);
+         }
+      }
+      else if (ctx.VARIABLE() != null) {
+         action = _parameters.getAction(ctx.VARIABLE().getText().substring(1));
+      }
+      else {
+         throw new BatfishException(ERR_CONVERT_ACTION);
+      }
+      return action;
    }
 
    private BooleanExpr toBooleanExpr(And_exprContext expr) {
@@ -888,6 +921,30 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.ip_constraint_simple() != null) {
          return Collections.singleton(toPrefix(ctx.ip_constraint_simple()));
       }
+      else if (ctx.VARIABLE() != null) {
+         Set<Prefix> prefixes;
+         String var = ctx.VARIABLE().getText().substring(1);
+         VariableType type = _parameters.getTypeBindings().get(var);
+         switch (type) {
+         case SET_PREFIX:
+            prefixes = _parameters.getPrefixSet(var);
+            break;
+
+         case PREFIX:
+            Prefix prefix = _parameters.getPrefix(var);
+            prefixes = Collections.singleton(prefix);
+            break;
+
+         case IP:
+            Ip ip = _parameters.getIp(var);
+            prefixes = Collections.singleton(new Prefix(ip, 32));
+            break;
+         // $CASES-OMITTED$
+         default:
+            throw new BatfishException("invalid constraint");
+         }
+         return prefixes;
+      }
       else {
          throw new BatfishException("invalid ip constraint: " + ctx.getText());
       }
@@ -899,6 +956,22 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else if (ctx.subrange() != null) {
          return Collections.singleton(toSubRange(ctx.subrange()));
+      }
+      else if (ctx.VARIABLE() != null) {
+         String var = ctx.VARIABLE().getText().substring(1);
+         VariableType type = _parameters.getTypeBindings().get(var);
+         switch (type) {
+         case INT:
+            int value = (int) _parameters.getInt(var);
+            return Collections.singleton(new SubRange(value, value));
+
+         case RANGE:
+            return _parameters.getRange(var);
+
+            // $CASES-OMITTED$
+         default:
+            throw new BatfishException("invalid constraint");
+         }
       }
       else {
          throw new BatfishException("invalid range constraint: "
@@ -921,7 +994,23 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          return regex;
       }
       else if (ctx.STRING_LITERAL() != null) {
-         return ctx.STRING_LITERAL().getText();
+         return Matcher.quoteReplacement(ctx.STRING_LITERAL().getText());
+      }
+      else if (ctx.VARIABLE() != null) {
+         String var = ctx.VARIABLE().getText().substring(1);
+         VariableType type = _parameters.getTypeBindings().get(var);
+         switch (type) {
+         case REGEX:
+            return toRegex(_parameters.getRegex(var));
+
+         case STRING:
+            String str = _parameters.getString(var);
+            return Matcher.quoteReplacement(str);
+
+            // $CASES-OMITTED$
+         default:
+            throw new BatfishException("invalid constraint");
+         }
       }
       else {
          throw new BatfishException("invalid node constraint: " + ctx.getText());

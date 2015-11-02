@@ -14,6 +14,18 @@ package org.batfish.grammar.question;
    
 }
 
+action
+:
+   ACCEPT
+   | DROP
+;
+
+action_constraint
+:
+   action
+   | VARIABLE
+;
+
 and_expr
 :
    AND OPEN_BRACE conjuncts += boolean_expr
@@ -105,10 +117,13 @@ default_binding
 :
    VARIABLE EQUALS
    (
-      integer_literal
-      | REGEX
+      action
+      | integer_literal
       | IP_ADDRESS
       | IP_PREFIX
+      | ip_constraint_complex
+      | range
+      | REGEX
       | STRING_LITERAL
    ) SEMICOLON
 ;
@@ -465,6 +480,7 @@ ip_constraint
 :
    ip_constraint_complex
    | ip_constraint_simple
+   | VARIABLE
 ;
 
 ip_constraint_complex
@@ -548,6 +564,7 @@ node_constraint
 :
    REGEX
    | STRING_LITERAL
+   | VARIABLE
 ;
 
 node_has_generated_route_boolean_expr
@@ -669,6 +686,7 @@ range_constraint
       OPEN_BRACE range CLOSE_BRACE
    )
    | subrange
+   | VARIABLE
 ;
 
 reachability_constraint
@@ -685,11 +703,7 @@ reachability_constraint
 
 reachability_constraint_action
 :
-   ACTION EQUALS
-   (
-      ACCEPT
-      | DROP
-   )
+   ACTION EQUALS action_constraint
 ;
 
 reachability_constraint_dst_ip

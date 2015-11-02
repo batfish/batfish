@@ -14,6 +14,7 @@ import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchProtocolLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
+import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
@@ -51,6 +52,8 @@ public class Environment {
 
    private PolicyMap _policyMap;
 
+   private Map<String, Set<Prefix>> _prefixSets;
+
    private RoutingProtocol _protocol;
 
    private Set<RoutingProtocol> _protocols;
@@ -76,6 +79,7 @@ public class Environment {
       _integers = new HashMap<String, Integer>();
       _integerSets = new HashMap<String, Set<Integer>>();
       _ipSets = new HashMap<String, Set<Ip>>();
+      _prefixSets = new HashMap<String, Set<Prefix>>();
       _routeFilterSets = new HashMap<String, Set<RouteFilterList>>();
       _stringSets = new HashMap<String, Set<String>>();
       _unsafe = new boolean[1];
@@ -97,6 +101,7 @@ public class Environment {
       copy._interface = _interface;
       copy._ipSets = _ipSets;
       copy._policyMap = _policyMap;
+      copy._prefixSets = _prefixSets;
       copy._protocol = _protocol;
       copy._protocols = _protocols;
       copy._routeFilter = _routeFilter;
@@ -161,6 +166,10 @@ public class Environment {
 
    public PolicyMap getPolicyMap() {
       return _policyMap;
+   }
+
+   public Map<String, Set<Prefix>> getPrefixSets() {
+      return _prefixSets;
    }
 
    public RoutingProtocol getProtocol() {
