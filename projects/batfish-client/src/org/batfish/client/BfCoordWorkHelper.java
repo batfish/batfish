@@ -240,12 +240,14 @@ public class BfCoordWorkHelper {
    public WorkItem getWorkItemParseVendorIndependent(String testrigName) {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
+      wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
       return wItem;
    }
 
    public WorkItem getWorkItemParseVendorSpecific(String testrigName) {
       WorkItem wItem = new WorkItem(testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
+      wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
       return wItem;
    }
 

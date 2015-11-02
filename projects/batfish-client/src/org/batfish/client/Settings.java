@@ -22,7 +22,7 @@ public class Settings {
    private static final String ARG_SERVICE_WORK_PORT = "workmgrport";
 
    private static final String DEFAULT_LOG_LEVEL = BatfishLogger
-         .getLogLevelStr(BatfishLogger.LEVEL_OUTPUT);
+         .getLogLevelStr(BatfishLogger.LEVEL_WARN);
    private static final String DEFAULT_PERIOD_CHECK_WORK = "5000"; // 5 seconds
    private static final String DEFAULT_SERVICE_HOST = "localhost";
    private static final String DEFAULT_SERVICE_POOL_PORT = CoordConsts.SVC_POOL_PORT
