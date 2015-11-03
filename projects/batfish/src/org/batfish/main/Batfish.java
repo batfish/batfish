@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Set;
@@ -36,6 +37,7 @@ import java.util.TreeSet;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.collections.AdvertisementSet;
 import org.batfish.collections.EdgeSet;
@@ -164,6 +166,7 @@ import org.batfish.z3.Synthesizer;
 
 import com.logicblox.bloxweb.client.ServiceClientException;
 import com.logicblox.connect.Workspace.Relation;
+import com.sun.xml.internal.ws.util.StreamUtils;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
@@ -253,6 +256,8 @@ public class Batfish implements AutoCloseable {
    private static final String TOPOLOGY_FILENAME = "topology.net";
 
    private static final String TRACE_PREFIX = "trace:";
+
+   private static final String NXTNET_PATH_ENVIRONMENT_VARIABLE = "BATFISH_NXTNET_PATH";
 
    public static String flatten(String input, BatfishLogger logger,
          Settings settings) {
@@ -3579,6 +3584,10 @@ public class Batfish implements AutoCloseable {
          action = true;
       }
 
+      if (_settings.getNxtnet()) {
+         nxtnet();
+      }
+
       if (_settings.getUsePrecomputedFacts()) {
          populatePrecomputedFacts(_settings.getPrecomputedFactsPath(),
                cpFactBins);
@@ -3679,6 +3688,73 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException(
                "No task performed! Run with -help flag to see usage");
       }
+   }
+
+   private void nxtnet() {
+      nxtnet(_envSettings);
+
+   }
+
+   private void nxtnet(EnvironmentSettings envSettings) {
+      writeNxtnetInput(envSettings);
+      runNxtnet(envSettings);
+   }
+
+   private void runNxtnet(EnvironmentSettings envSettings) {
+      String nxtnetInputFile = envSettings.getNxtnetInputFile();
+      String nxtnetOutputDir = envSettings.getNxtnetOutputDir();
+      String nxtnetPath = System.getenv(NXTNET_PATH_ENVIRONMENT_VARIABLE);
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      try {
+         ProcessBuilder builder = new ProcessBuilder(nxtnetPath, "-dir", nxtnetOutputDir, nxtnetInputFile);
+         builder.redirectErrorStream(true);
+         Process proc = builder.start();
+         proc.get
+         int ret = proc.waitFor();
+         if (ret != 0) {
+            new ByteArrayOutputStream
+         }
+      }
+      catch (IOException | InterruptedException e) {
+         throw new BatfishException("Failed to run nxtnet", e);
+      }
+   }
+
+   private void writeNxtnetInput(EnvironmentSettings envSettings) {
+      StringBuilder sb = new StringBuilder();
+      File factsDir = Paths.get(envSettings.getDumpFactsDir()).toFile();
+      File[] files = factsDir.listFiles();
+      String lineDelimiter = Matcher.quoteReplacement("|");
+      for (File file : files) {
+         String contents = Util.readFile(file);
+         String predicateName = file.getName();
+         String[] lines = contents.split("\n");
+         for (int i = 1; i < lines.length; i++) {
+            sb.append("'" + predicateName + "'(");
+            String line = lines[i];
+            String[] parts = line.split(lineDelimiter);
+            for (int j = 0; j < parts.length; j++) {
+               String part = parts[j];
+               char firstChar = part.charAt(0);
+               boolean isNum = '0' <= firstChar || firstChar <= '9' || firstChar == '-';
+               if (!isNum) {
+                  sb.append("'" + part + "'");
+               }
+               else {
+                  sb.append(part);
+               }
+               if (j < parts.length - 1) {
+                  sb.append(",");
+               }
+               else {
+                  sb.append(").\n");
+               }
+            }
+         }
+      }
+      String output = sb.toString();
+      String nxtnetInputFile = envSettings.getNxtnetInputFile();
+      writeFile(nxtnetInputFile, output);
    }
 
    private void serializeIndependentConfigs(

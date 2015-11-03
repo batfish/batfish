@@ -61,6 +61,10 @@ public class Driver {
                   BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
             envSettings.setDumpFactsDir(envPath.resolve(
                   BfConsts.RELPATH_FACT_DUMP_DIR).toString());
+            envSettings.setNxtnetInputFile(envPath.resolve(
+                  BfConsts.RELPATH_NXTNET_INPUT_FILE).toString());
+            envSettings.setNxtnetOutputDir(envPath.resolve(
+                  BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
             envSettings.setDataPlanePath(envPath.resolve(
                   BfConsts.RELPATH_DATA_PLANE_DIR).toString());
             envSettings.setJobLogicBloxHostnamePath(envPath.resolve(
@@ -94,6 +98,10 @@ public class Driver {
                   BfConsts.RELPATH_ENVIRONMENTS_DIR, diffEnvName);
             diffEnvSettings.setDumpFactsDir(diffEnvPath.resolve(
                   BfConsts.RELPATH_FACT_DUMP_DIR).toString());
+            diffEnvSettings.setNxtnetInputFile(diffEnvPath.resolve(
+                  BfConsts.RELPATH_NXTNET_INPUT_FILE).toString());
+            diffEnvSettings.setNxtnetOutputDir(diffEnvPath.resolve(
+                  BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
             diffEnvSettings.setDataPlanePath(diffEnvPath.resolve(
                   BfConsts.RELPATH_DATA_PLANE_DIR).toString());
             diffEnvSettings.setJobLogicBloxHostnamePath(diffEnvPath.resolve(

@@ -38,6 +38,10 @@ public final class Settings {
 
       private String _nodeBlacklistPath;
 
+      private String _nxtnetInputFile;
+
+      private String _nxtnetOutputDir;
+
       private String _serializedTopologyPath;
 
       private String _trafficFactDumpDir;
@@ -74,6 +78,14 @@ public final class Settings {
 
       public String getNodeBlacklistPath() {
          return _nodeBlacklistPath;
+      }
+
+      public String getNxtnetInputFile() {
+         return _nxtnetInputFile;
+      }
+
+      public String getNxtnetOutputDir() {
+         return _nxtnetOutputDir;
       }
 
       public String getSerializedTopologyPath() {
@@ -118,6 +130,14 @@ public final class Settings {
 
       public void setNodeBlacklistPath(String nodeBlacklistPath) {
          _nodeBlacklistPath = nodeBlacklistPath;
+      }
+
+      public void setNxtnetInputFile(String nxtnetInputFile) {
+         _nxtnetInputFile = nxtnetInputFile;
+      }
+
+      public void setNxtnetOutputDir(String nxtnetOutputDir) {
+         _nxtnetOutputDir = nxtnetOutputDir;
       }
 
       public void setSerializedTopologyPath(String serializedTopologyPath) {
@@ -393,6 +413,7 @@ public final class Settings {
    private String _nodeSetPath;
    private boolean _noOutput;
    private boolean _noTraffic;
+   private boolean _nxtnet;
    private Options _options;
    private String _outputEnvironmentName;
    private boolean _pedanticAsError;
@@ -788,6 +809,10 @@ public final class Settings {
 
    public boolean getNoTraffic() {
       return _noTraffic;
+   }
+
+   public boolean getNxtnet() {
+      return _nxtnet;
    }
 
    public String getOutputEnvironmentName() {
@@ -1532,6 +1557,11 @@ public final class Settings {
                   .builder()
                   .desc("make differential environment the active one for questions about a single environment")
                   .longOpt(BfConsts.ARG_DIFF_ACTIVE).build());
+      _options
+      .addOption(Option
+            .builder()
+            .desc("run nxtnet")
+            .longOpt(BfConsts.COMMAND_NXTNET).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1777,6 +1807,7 @@ public final class Settings {
       _jobs = Integer.parseInt(jobsStr);
       _shuffleJobs = !line.hasOption(ARG_NO_SHUFFLE);
       _diffActive = line.hasOption(BfConsts.ARG_DIFF_ACTIVE);
+      _nxtnet = line.hasOption(BfConsts.COMMAND_NXTNET);
    }
 
    public boolean printParseTree() {
