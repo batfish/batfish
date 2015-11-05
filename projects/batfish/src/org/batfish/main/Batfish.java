@@ -865,6 +865,10 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   private void checkComputeNxtnetRelations() {
+      checkControlPlaneFacts();
+   }
+
    private void checkConfigurations() {
       String serializedConfigPath = _settings.getSerializeIndependentPath();
       File dir = new File(serializedConfigPath);
@@ -876,6 +880,19 @@ public class Batfish implements AutoCloseable {
       else if (serializedConfigs.length == 0) {
          throw new CleanBatfishException(
                "Nothing to do: Set of vendor-independent configurations for this test-rig is empty\n");
+      }
+   }
+
+   private void checkControlPlaneFacts() {
+      checkControlPlaneFacts(_envSettings);
+   }
+
+   private void checkControlPlaneFacts(EnvironmentSettings envSettings) {
+      File cpFactsDir = new File(envSettings.getDumpFactsDir());
+      if (!cpFactsDir.exists()) {
+         throw new CleanBatfishException(
+               "Missing control plane facts for environment: \""
+                     + envSettings.getName() + "\"\n");
       }
    }
 
@@ -3262,8 +3279,7 @@ public class Batfish implements AutoCloseable {
       StringFilter lbFilter = new StringFilter() {
          @Override
          public boolean accept(String filename) {
-            return filename.endsWith(".lbb") || filename.endsWith(".lbp")
-                  || filename.endsWith(".semantics")
+            return filename.endsWith(".semantics") || filename.endsWith(".pl")
                   || filename.endsWith(locatorFilename)
                   || filename.endsWith(PREDICATE_INFO_FILENAME);
          }
@@ -3272,7 +3288,8 @@ public class Batfish implements AutoCloseable {
          FileVisitor<Path> visitor = null;
          try {
             zip = new UrlZipExplorer(logicSourceURL);
-            Path destinationDir = Files.createTempDirectory("lbtmpproject");
+            Path destinationDir = Files
+                  .createTempDirectory("batfish_tmp_logic");
             File destinationDirAsFile = destinationDir.toFile();
             zip.extractFiles(lbFilter, destinationDirAsFile);
             visitor = new SimpleFileVisitor<Path>() {
@@ -3575,6 +3592,7 @@ public class Batfish implements AutoCloseable {
          StringBuilder sb = new StringBuilder();
          if (failure) {
             sb.append("nxtnet terminated abnormally:\n");
+            sb.append("nxtnet command line: " + cmdLine.toString() + "\n");
             sb.append(err);
             throw new BatfishException(sb.toString());
          }
@@ -3805,6 +3823,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void writeNxtnetInput(EnvironmentSettings envSettings) {
+      checkComputeNxtnetRelations();
       StringBuilder sb = new StringBuilder();
       File factsDir = Paths.get(envSettings.getDumpFactsDir()).toFile();
       sb.append("output_symbols([");
