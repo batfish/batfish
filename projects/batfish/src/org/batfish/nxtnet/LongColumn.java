@@ -1,12 +1,68 @@
 package org.batfish.nxtnet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.batfish.common.BatfishException;
+import org.batfish.representation.BgpAdvertisement;
+import org.batfish.representation.Flow;
 import org.batfish.representation.Ip;
+import org.batfish.representation.PrecomputedRoute;
+import org.batfish.representation.Prefix;
 
 public final class LongColumn extends BaseColumn<Long> {
 
    public LongColumn(Long[] items) {
       super(items, ColumnType.LONG);
+   }
+
+   @Override
+   public List<BgpAdvertisement> asBgpAdvertisementList(EntityTable entityTable) {
+      List<BgpAdvertisement> advertisementList = new ArrayList<BgpAdvertisement>();
+      for (Long index : _items) {
+         BgpAdvertisement advert = entityTable.getBgpAdvertisement(index);
+         advertisementList.add(advert);
+      }
+      return advertisementList;
+   }
+
+   @Override
+   public List<Flow> asFlowList(EntityTable entityTable) {
+      List<Flow> flowList = new ArrayList<Flow>();
+      for (Long index : _items) {
+         Flow advert = entityTable.getFlow(index);
+         flowList.add(advert);
+      }
+      return flowList;
+   }
+
+   @Override
+   public List<Ip> asIpList() {
+      List<Ip> ips = new ArrayList<Ip>();
+      for (Long l : _items) {
+         ips.add(new Ip(l));
+      }
+      return ips;
+   }
+
+   @Override
+   public List<Prefix> asPrefixList(EntityTable entityTable) {
+      List<Prefix> prefixList = new ArrayList<Prefix>();
+      for (Long index : _items) {
+         Prefix advert = entityTable.getNetwork(index);
+         prefixList.add(advert);
+      }
+      return prefixList;
+   }
+
+   @Override
+   public List<PrecomputedRoute> asRouteList(EntityTable entityTable) {
+      List<PrecomputedRoute> routeList = new ArrayList<PrecomputedRoute>();
+      for (Long index : _items) {
+         PrecomputedRoute advert = entityTable.getRoute(index);
+         routeList.add(advert);
+      }
+      return routeList;
    }
 
    @Override

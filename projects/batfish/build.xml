@@ -123,10 +123,6 @@
          <fileset dir="src" includes="org/batfish/grammar/topology/BatfishTopologyParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/topology/GNS3TopologyLexer*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/topology/GNS3TopologyParser*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/z3/DatalogQueryResultLexer*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/z3/DatalogQueryResultParser*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/z3/ConcretizerQueryResultLexer*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/z3/ConcretizerQueryResultParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/logicblox/LogiQLLexer*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/logicblox/LogiQLParser*.java"/>
       </delete>
@@ -261,8 +257,6 @@
       <parallel>
          <antlr4lexer grammar.name="BatfishTopologyLexer" grammar.packagedir="org/batfish/grammar/topology"/>
          <antlr4lexer grammar.name="CiscoLexer" grammar.packagedir="org/batfish/grammar/cisco"/>
-         <antlr4lexer grammar.name="ConcretizerQueryResultLexer" grammar.packagedir="org/batfish/grammar/z3"/>
-         <antlr4lexer grammar.name="DatalogQueryResultLexer" grammar.packagedir="org/batfish/grammar/z3"/>
          <antlr4lexer grammar.name="FlatJuniperLexer" grammar.packagedir="org/batfish/grammar/flatjuniper"/>
          <antlr4lexer grammar.name="GNS3TopologyLexer" grammar.packagedir="org/batfish/grammar/topology"/>
          <antlr4lexer grammar.name="JuniperLexer" grammar.packagedir="org/batfish/grammar/juniper"/>
@@ -299,20 +293,6 @@
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_rip.g4"/>
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_routemap.g4"/>
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_static.g4"/>
-            </dependencies>
-         </antlr4parser>
-         <antlr4parser grammar.name="ConcretizerQueryResultParser" grammar.packagedir="org/batfish/grammar/z3">
-            <dependencies>
-               <fileset dir="src/org/batfish/grammar/z3" includes="ConcretizerQueryResultParser.g4"/>
-               <fileset dir="src/org/batfish/grammar/z3" includes="ConcretizerQueryResultLexer.g4"/>
-               <fileset dir="src/org/batfish/grammar/z3" includes="ConcretizerQueryResultLexer.tokens"/>
-            </dependencies>
-         </antlr4parser>
-         <antlr4parser grammar.name="DatalogQueryResultParser" grammar.packagedir="org/batfish/grammar/z3">
-            <dependencies>
-               <fileset dir="src/org/batfish/grammar/z3" includes="DatalogQueryResultParser.g4"/>
-               <fileset dir="src/org/batfish/grammar/z3" includes="DatalogQueryResultLexer.g4"/>
-               <fileset dir="src/org/batfish/grammar/z3" includes="DatalogQueryResultLexer.tokens"/>
             </dependencies>
          </antlr4parser>
          <antlr4parser grammar.name="FlatJuniperParser" grammar.packagedir="org/batfish/grammar/flatjuniper">

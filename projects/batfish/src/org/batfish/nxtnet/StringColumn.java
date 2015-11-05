@@ -1,5 +1,7 @@
 package org.batfish.nxtnet;
 
+import java.util.List;
+
 import org.batfish.common.BatfishException;
 import org.batfish.representation.OriginType;
 import org.batfish.representation.RoutingProtocol;
@@ -8,6 +10,11 @@ public final class StringColumn extends BaseColumn<String> {
 
    public StringColumn(String[] items) {
       super(items, ColumnType.STRING);
+   }
+
+   @Override
+   public List<String> asStringList() {
+      return _items;
    }
 
    @Override

@@ -248,7 +248,6 @@ public class EntityTable {
    }
 
    private void populateNetworks() {
-      // "libbatfish:Ip:Network_index"
       Relation relation = _relations.get("Network_index");
       List<Long> networkIndices = getLongColumn(relation, 0);
       List<Long> networkAddresses = getLongColumn(relation, 1);
@@ -304,9 +303,6 @@ public class EntityTable {
          String node = routeNodes.get(i);
          RoutingProtocol routingProtocol = RoutingProtocol
                .fromProtocolName(routeProtocols.get(i));
-         if (routingProtocol == RoutingProtocol.CONNECTED) {
-            assert Boolean.TRUE;
-         }
          int tag = routeTags.get(i).intValue();
          String nextHop = routeNextHops.get(i);
          PrecomputedRoute route = new PrecomputedRoute(node, network,

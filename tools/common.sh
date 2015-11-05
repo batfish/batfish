@@ -117,10 +117,7 @@ batfish_compile() {
    batfish_expect_args 2 $# || return 1
    local BASE=$1
    local ENV=$2
-   if [ -n "${BATFISH_REMOTE_LOGIC_DIR}" ]; then
-      local LOGIC_DIR_ARG="-logicdir ${BATFISH_REMOTE_LOGIC_DIR}"
-   fi
-   batfish $LOGIC_DIR_ARG -autobasedir $BASE -env $ENV -createworkspace -facts -dumpcp || return 1
+   batfish -autobasedir $BASE -env $ENV -cpfacts  -nxtnetdp || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane"
 }
@@ -133,10 +130,7 @@ batfish_compile_diff() {
    local BASE=$1
    local ENV=$2
    local DIFF_ENV=$3
-   if [ -n "${BATFISH_REMOTE_LOGIC_DIR}" ]; then
-      local LOGIC_DIR_ARG="-logicdir ${BATFISH_REMOTE_LOGIC_DIR}"
-   fi
-   batfish $LOGIC_DIR_ARG -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -createworkspace -facts -dumpcp || return 1
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -cpfacts -nxtnetdp -diffactive || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane (differential)"
 }

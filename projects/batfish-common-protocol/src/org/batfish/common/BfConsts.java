@@ -35,24 +35,18 @@ public class BfConsts {
    public static final String ARG_USE_PRECOMPUTED_ROUTES = "useprecomputedroutes";
 
    public static final String COMMAND_ANSWER = "answer";
-   public static final String COMMAND_CREATE_WORKSPACE = "createworkspace";
    public static final String COMMAND_DUMP_DP = "dp";
-   public static final String COMMAND_FACTS = "facts";
-   public static final String COMMAND_GENERATE_FACT = "dumpcp";
-   public static final String COMMAND_GET_DIFFERENTIAL_HISTORY = "getdiffhistory";
-   public static final String COMMAND_GET_HISTORY = "gethistory";
+   public static final String COMMAND_GET_HISTORY = "history";
    public static final String COMMAND_KEEP_BLOCKS = "keepblocks";
-   public static final String COMMAND_NXTNET = "nxtnet";
+   public static final String COMMAND_NXTNET_DATA_PLANE = "nxtnetdp";
+   public static final String COMMAND_NXTNET_TRAFFIC = "nxtnettraffic";
    public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
    public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
-   public static final String COMMAND_POST_DIFFERENTIAL_FLOWS = "postdiffflows";
-   public static final String COMMAND_POST_FLOWS = "postflows";
    public static final String COMMAND_QUERY = "query";
    public static final String COMMAND_REMOVE_BLOCKS = "removeblocks";
-   public static final String COMMAND_SYNTHESIZE_Z3_DATA_PLANE = "z3";
    public static final String COMMAND_WRITE_ADVERTISEMENTS = "writeadvertisements";
+   public static final String COMMAND_WRITE_CP_FACTS = "cpfacts";
    public static final String COMMAND_WRITE_IBGP_NEIGHBORS = "writeibgpneighbors";
-
    public static final String COMMAND_WRITE_ROUTES = "writeroutes";
 
    public static final String PREDICATE_FLOW_PATH_HISTORY = "FlowPathHistory";
@@ -64,7 +58,7 @@ public class BfConsts {
    public static final String RELPATH_ENV_DIR = "env";
    public static final String RELPATH_ENV_NODE_SET = "env-node-set";
    public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
-   public static final String RELPATH_FACT_DUMP_DIR = "dump";
+   public static final String RELPATH_CONTROL_PLANE_FACTS_DIR = "cp_facts";
    public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
    public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
    public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
@@ -75,7 +69,6 @@ public class BfConsts {
    public static final String RELPATH_NXTNET_OUTPUT_DIR = "nxtnet_output";
    public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
    public static final String RELPATH_QUERIES_DIR = "queries";
-   public static final String RELPATH_QUERY_DUMP_DIR = "querydump";
    public static final String RELPATH_QUESTION_FILE = "question";
    public static final String RELPATH_QUESTION_PARAM_FILE = "parameters";
    public static final String RELPATH_QUESTIONS_DIR = "questions";

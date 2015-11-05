@@ -111,18 +111,12 @@ public class BfCoordWorkHelper {
 
    public String getResultsObjectNameGenerateFacts(String envName) {
       return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
-            BfConsts.RELPATH_FACT_DUMP_DIR).toString();
+            BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString();
    }
 
    public String getResultsObjectNameGetDataPlane(String envName) {
       return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
             BfConsts.RELPATH_DATA_PLANE_DIR).toString();
-   }
-
-   public String getResultsObjectNameGetFlowTraces(String envName,
-         String questionName) {
-      return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
-            BfConsts.RELPATH_QUERY_DUMP_DIR).toString();
    }
 
    public String getResultsObjectNameParseVendorIndependent() {
@@ -146,12 +140,8 @@ public class BfCoordWorkHelper {
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
-      wItem.addRequestParam(BfConsts.COMMAND_POST_FLOWS, "");
-      wItem.addRequestParam(BfConsts.COMMAND_POST_DIFFERENTIAL_FLOWS, "");
-
+      wItem.addRequestParam(BfConsts.COMMAND_NXTNET_TRAFFIC, "");
       wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
-      wItem.addRequestParam(BfConsts.COMMAND_GET_DIFFERENTIAL_HISTORY, "");
-
       return wItem;
    }
 
@@ -161,33 +151,19 @@ public class BfCoordWorkHelper {
       wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
-
       if (diffEnvName != null) {
          wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
       }
-
-      wItem.addRequestParam(BfConsts.COMMAND_POST_FLOWS, "");
-      wItem.addRequestParam(BfConsts.COMMAND_POST_DIFFERENTIAL_FLOWS, "");
-
+      wItem.addRequestParam(BfConsts.COMMAND_NXTNET_TRAFFIC, "");
       wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
-      wItem.addRequestParam(BfConsts.COMMAND_GET_DIFFERENTIAL_HISTORY, "");
-
-      return wItem;
-   }
-
-   public WorkItem getWorkItemCreateZ3Encoding(String testrigName,
-         String envName) {
-      WorkItem wItem = new WorkItem(testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_SYNTHESIZE_Z3_DATA_PLANE, "");
-      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
 
    public WorkItem getWorkItemGenerateDataPlane(String testrigName,
          String envName) {
       WorkItem wItem = new WorkItem(testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_CREATE_WORKSPACE, "");
-      wItem.addRequestParam(BfConsts.COMMAND_FACTS, "");
+      wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
+      wItem.addRequestParam(BfConsts.COMMAND_NXTNET_DATA_PLANE, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
@@ -195,8 +171,8 @@ public class BfCoordWorkHelper {
    public WorkItem getWorkItemGenerateDiffDataPlane(String testrigName,
          String envName, String diffEnvName) {
       WorkItem wItem = new WorkItem(testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_CREATE_WORKSPACE, "");
-      wItem.addRequestParam(BfConsts.COMMAND_FACTS, "");
+      wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
+      wItem.addRequestParam(BfConsts.COMMAND_NXTNET_DATA_PLANE, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
@@ -205,7 +181,7 @@ public class BfCoordWorkHelper {
 
    public WorkItem getWorkItemGenerateFacts(String testrigName, String envName) {
       WorkItem wItem = new WorkItem(testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_GENERATE_FACT, "");
+      wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
@@ -254,7 +230,7 @@ public class BfCoordWorkHelper {
    public WorkItem getWorkItemPostFlows(String testrigName, String envName,
          String questionName) {
       WorkItem wItem = new WorkItem(testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_POST_FLOWS, "");
+      wItem.addRequestParam(BfConsts.COMMAND_NXTNET_TRAFFIC, "");
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
