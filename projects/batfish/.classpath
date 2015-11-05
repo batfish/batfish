@@ -2,10 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/logicblox/lb-common-protocol.jar"/>
-	<classpathentry kind="lib" path="lib/logicblox/lb-common.jar"/>
-	<classpathentry kind="lib" path="lib/logicblox/lb-connectblox.jar"/>
-	<classpathentry kind="lib" path="lib/logicblox/lb-web-client.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-codec-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-configuration-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-io-2.4.jar"/>
@@ -53,5 +49,6 @@
 	<classpathentry kind="lib" path="lib/jaxrs-ri/osgi-resource-locator-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/persistence-api-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/validation-api-1.1.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-exec-1.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

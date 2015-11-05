@@ -71,7 +71,7 @@ public class BfConsts {
    public static final String RELPATH_LB_HOSTNAME_PATH = "lb";
    public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";
    public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
-   public static final String RELPATH_NXTNET_INPUT_FILE = "nxtnet_input";
+   public static final String RELPATH_NXTNET_INPUT_FILE = "nxtnet_input.pl";
    public static final String RELPATH_NXTNET_OUTPUT_DIR = "nxtnet_output";
    public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
    public static final String RELPATH_QUERIES_DIR = "queries";

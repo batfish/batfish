@@ -2,7 +2,7 @@ package org.batfish.collections;
 
 import java.util.ArrayList;
 
-import org.batfish.logicblox.LBValueType;
+import org.batfish.nxtnet.LBValueType;
 
 public class LBValueTypeList extends ArrayList<LBValueType> {
 

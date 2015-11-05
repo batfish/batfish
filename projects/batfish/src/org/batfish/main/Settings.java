@@ -169,7 +169,6 @@ public final class Settings {
    private static final String ARG_COORDINATOR_HOST = "coordinatorhost";
    private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
    private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
-   private static final String ARG_COUNT = "count";
    private static final String ARG_DATA_PLANE = "dp";
    private static final String ARG_DATA_PLANE_PATH = "dppath";
    private static final String ARG_DELETE_WORKSPACE = "deleteworkspace";
@@ -184,7 +183,6 @@ public final class Settings {
    private static final String ARG_DUMP_TRAFFIC_FACTS = "dumptraffic";
    private static final String ARG_DUPLICATE_ROLE_FLOWS = "drf";
    private static final String ARG_EXIT_ON_FIRST_ERROR = "ee";
-   private static final String ARG_FACTS = "facts";
    private static final String ARG_FLATTEN = "flatten";
    private static final String ARG_FLATTEN_DESTINATION = "flattendst";
    private static final String ARG_FLATTEN_ON_THE_FLY = "flattenonthefly";
@@ -357,7 +355,6 @@ public final class Settings {
    private String _coordinatorHost;
    private int _coordinatorPoolPort;
    private int _coordinatorWorkPort;
-   private boolean _counts;
    private boolean _createWorkspace;
    private boolean _dataPlane;
    private boolean _deleteWorkspace;
@@ -375,7 +372,6 @@ public final class Settings {
    private boolean _duplicateRoleFlows;
    private String _environmentName;
    private boolean _exitOnFirstError;
-   private boolean _facts;
    private String _failureInconsistencyQueryPath;
    private boolean _flatten;
    private String _flattenDestination;
@@ -607,10 +603,6 @@ public final class Settings {
       return _coordinatorWorkPort;
    }
 
-   public boolean getCountsOnly() {
-      return _counts;
-   }
-
    public boolean getDataPlane() {
       return _dataPlane;
    }
@@ -661,10 +653,6 @@ public final class Settings {
 
    public boolean getExitOnFirstError() {
       return _exitOnFirstError;
-   }
-
-   public boolean getFacts() {
-      return _facts;
    }
 
    public String getFailureInconsistencyQueryPath() {
@@ -1113,16 +1101,11 @@ public final class Settings {
             .longOpt(ARG_HELP).build());
       _options.addOption(Option.builder().desc("query workspace")
             .longOpt(ARG_QUERY).build());
-      _options.addOption(Option.builder()
-            .desc("return predicate cardinalities instead of contents")
-            .longOpt(ARG_COUNT).build());
       _options.addOption(Option.builder().desc("query ALL predicates")
             .longOpt(ARG_QUERY_ALL).build());
       _options.addOption(Option.builder()
             .desc("create workspace and add project logic")
             .longOpt(BfConsts.COMMAND_CREATE_WORKSPACE).build());
-      _options.addOption(Option.builder().desc("add facts to workspace")
-            .longOpt(ARG_FACTS).build());
       _options.addOption(Option.builder()
             .desc("remove facts instead of adding them")
             .longOpt(ARG_REMOVE_FACTS).build());
@@ -1557,10 +1540,7 @@ public final class Settings {
                   .builder()
                   .desc("make differential environment the active one for questions about a single environment")
                   .longOpt(BfConsts.ARG_DIFF_ACTIVE).build());
-      _options
-      .addOption(Option
-            .builder()
-            .desc("run nxtnet")
+      _options.addOption(Option.builder().desc("run nxtnet")
             .longOpt(BfConsts.COMMAND_NXTNET).build());
    }
 
@@ -1589,7 +1569,6 @@ public final class Settings {
       _servicePort = Integer.parseInt(line.getOptionValue(ARG_SERVICE_PORT,
             DEFAULT_SERVICE_PORT));
       _serviceUrl = line.getOptionValue(ARG_SERVICE_URL, DEFAULT_SERVICE_URL);
-      _counts = line.hasOption(ARG_COUNT);
       _queryAll = line.hasOption(ARG_QUERY_ALL);
       _query = line.hasOption(ARG_QUERY);
       if (line.hasOption(ARG_PREDHELP)) {
@@ -1628,7 +1607,6 @@ public final class Settings {
       }
       _removeFacts = line.hasOption(ARG_REMOVE_FACTS);
       _createWorkspace = line.hasOption(BfConsts.COMMAND_CREATE_WORKSPACE);
-      _facts = line.hasOption(ARG_FACTS);
       _update = line.hasOption(ARG_UPDATE);
       _noTraffic = line.hasOption(ARG_NO_TRAFFIC);
       _exitOnFirstError = line.hasOption(ARG_EXIT_ON_FIRST_ERROR);

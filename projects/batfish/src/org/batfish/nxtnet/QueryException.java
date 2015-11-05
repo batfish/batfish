@@ -1,4 +1,4 @@
-package org.batfish.logicblox;
+package org.batfish.nxtnet;
 
 public class QueryException extends Exception {
    private static final long serialVersionUID = 1L;

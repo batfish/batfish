@@ -3,7 +3,7 @@ package org.batfish.grammar.logicblox;
 import org.batfish.collections.LBValueTypeList;
 import org.batfish.collections.PredicateValueTypeMap;
 import org.batfish.grammar.logicblox.LogiQLParser.*;
-import org.batfish.logicblox.LBValueType;
+import org.batfish.nxtnet.LBValueType;
 import org.batfish.common.BatfishException;
 
 public class LogQLPredicateInfoExtractor extends LogiQLParserBaseListener {

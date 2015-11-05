@@ -6,6 +6,7 @@ export BATFISH_TEST_RIG_PATH="$BATFISH_ROOT/test_rigs"
 export BATFISH="$BATFISH_PATH/batfish"
 export BATFISH_Z3=z3
 export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.datalog.default_relation=doc fixedpoint.print_answer=true"
+export BATFISH_NXTNET=nxtnet
 export BATFISH_PARALLEL='parallel --tag -v --eta --halt 2'
 export BATFISH_NESTED_PARALLEL='parallel --tag -v --halt 2 -j1'
 

@@ -10,7 +10,7 @@ import org.batfish.collections.PredicateSemantics;
 import org.batfish.collections.PredicateValueTypeMap;
 import org.batfish.collections.QualifiedNameMap;
 import org.batfish.grammar.logicblox.LogiQLParser.*;
-import org.batfish.logicblox.LBValueType;
+import org.batfish.nxtnet.LBValueType;
 import org.batfish.common.BatfishException;
 
 public class LogiQLPredicateInfoResolver extends LogiQLParserBaseListener {

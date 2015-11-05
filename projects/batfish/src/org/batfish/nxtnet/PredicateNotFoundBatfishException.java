@@ -1,4 +1,4 @@
-package org.batfish.logicblox;
+package org.batfish.nxtnet;
 
 import org.batfish.common.BatfishException;
 
