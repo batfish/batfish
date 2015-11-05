@@ -2130,29 +2130,6 @@ public class Batfish implements AutoCloseable {
       return seconds;
    }
 
-   // private Set<Path> getMultipathQueryPaths(Path directory) {
-   // Set<Path> queryPaths = new TreeSet<Path>();
-   // try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
-   // directory, new DirectoryStream.Filter<Path>() {
-   // @Override
-   // public boolean accept(Path path) throws IOException {
-   // String filename = path.getFileName().toString();
-   // return filename
-   // .startsWith(BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX)
-   // && filename.endsWith(".smt2");
-   // }
-   // })) {
-   // for (Path path : directoryStream) {
-   // queryPaths.add(path);
-   // }
-   // }
-   // catch (IOException ex) {
-   // throw new BatfishException(
-   // "Could not list files in queries directory", ex);
-   // }
-   // return queryPaths;
-   // }
-
    private InterfaceSet getFlowSinkSet() {
       return getFlowSinkSet(_envSettings);
    }
