@@ -25,7 +25,7 @@
    </path>
    <property name="outputJar" value="out/batfish-client.jar"/>
 
-   <target name="all" depends="jar" description="Build everything"/>
+   <target name="all" depends="jar,copyconfig" description="Build everything"/>
 
    <!-- Check to see if anything that would be packaged for distribution has changed -->
    <target name="checkJarBuild" depends="compile">
@@ -53,6 +53,12 @@
 	<target name="compileclean" description="Delete all compiled Java classes and copied logic">
 		<delete dir="bin" />
 	</target>
+
+   <target name="copyconfig" description="Copy configuration file to output directory">
+      <copy todir="out">
+         <fileset dir="src" includes="**/config.Properties"/>
+      </copy>
+   </target>
 
    <target name="distclean" depends="clean"
     description=
