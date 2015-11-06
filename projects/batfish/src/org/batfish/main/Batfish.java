@@ -3095,7 +3095,14 @@ public class Batfish implements AutoCloseable {
       cmdLine.addArgument(nxtnetOutputDir);
       cmdLine.addArgument(nxtnetInputFile);
       cmdLine.addArguments(logicFilenames);
+      StringBuilder cmdLineSb = new StringBuilder();
+      cmdLineSb.append(NXTNET_COMMAND + " ");
+      cmdLineSb.append(org.batfish.common.Util.joinStrings(" ",
+            cmdLine.getArguments()));
+      String cmdLineString = cmdLineSb.toString();
       boolean failure = false;
+      _logger.info("\n*** RUNNING NXTNET ***\n");
+      _logger.info("Command line: " + cmdLineString + " \n");
       try {
          executor.execute(cmdLine);
       }
@@ -3129,6 +3136,7 @@ public class Batfish implements AutoCloseable {
             sb.append("nxtnet output:\n");
             sb.append(out);
             _logger.debug(sb.toString());
+            _logger.info("nxtnet completed successfully\n");
          }
       }
    }

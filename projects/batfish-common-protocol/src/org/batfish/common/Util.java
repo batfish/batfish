@@ -7,6 +7,23 @@ import java.nio.file.Paths;
 
 public final class Util {
 
+   public static String joinStrings(String delimiter, String[] parts) {
+      StringBuilder sb = new StringBuilder();
+      for (String part : parts) {
+         sb.append(part + delimiter);
+      }
+      String joined = sb.toString();
+      int joinedLength = joined.length();
+      String result;
+      if (joinedLength > 0) {
+         result = joined.substring(0, joinedLength - delimiter.length());
+      }
+      else {
+         result = joined;
+      }
+      return result;
+   }
+
    public static File getConfigProperties(Class<?> locatorClass) {
       File configDir = getJarOrClassDir(locatorClass);
       return Paths.get(configDir.toString(),

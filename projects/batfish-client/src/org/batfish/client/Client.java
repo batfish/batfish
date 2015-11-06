@@ -20,6 +20,7 @@ import java.util.Map;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Util;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 
@@ -78,23 +79,6 @@ public class Client {
       return descs;
    }
 
-   private static String joinStrings(String delimiter, String[] parts) {
-      StringBuilder sb = new StringBuilder();
-      for (String part : parts) {
-         sb.append(part + delimiter);
-      }
-      String joined = sb.toString();
-      int joinedLength = joined.length();
-      String result;
-      if (joinedLength > 0) {
-         result = joined.substring(0, joinedLength - delimiter.length());
-      }
-      else {
-         result = joined;
-      }
-      return result;
-   }
-
    private String _currDiffEnv = null;
    private String _currEnv = null;
 
@@ -118,7 +102,7 @@ public class Client {
    private File createParamsFile(String[] words, int startIndex, int endIndex)
          throws IOException {
 
-      String paramsLine = joinStrings(" ",
+      String paramsLine = Util.joinStrings(" ",
             Arrays.copyOfRange(words, startIndex, endIndex + 1));
 
       File paramFile = Files.createTempFile("params", null).toFile();

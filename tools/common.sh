@@ -67,7 +67,9 @@ export -f batfish_answer_example_cp
 batfish_build() {
    bash -c '_batfish_build "$@"' _batfish_build "$@" || return 1
    if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" ]; then
-      batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+      echo -n "Generating bash completion file.."
+      BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+      echo "OK"
    fi
 }
 export -f batfish_build
