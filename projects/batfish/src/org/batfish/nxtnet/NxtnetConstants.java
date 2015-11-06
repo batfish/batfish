@@ -106,6 +106,34 @@ public class NxtnetConstants {
          "SetSwitchportTrunkNative",
          "SetVlanInterface" };
 
+   public static final String[] NXTNET_DATA_PLANE_ENTITY_SYMBOLS = {
+         "AdvertisementCommunity",
+         "AdvertisementPath",
+         "AdvertisementPathSize",
+         "BgpAdvertisement_dstIp",
+         "BgpAdvertisement_dstNode",
+         "BgpAdvertisement_localPref",
+         "BgpAdvertisement_med",
+         "BgpAdvertisement_network",
+         "BgpAdvertisement_nextHopIp",
+         "BgpAdvertisement_originatorIp",
+         "BgpAdvertisement_originType",
+         "BgpAdvertisement_srcIp",
+         "BgpAdvertisement_srcNode",
+         "BgpAdvertisement_srcProtocol",
+         "BgpAdvertisement_type",
+         "Network_index",
+         "Route",
+         "RouteDetails_admin",
+         "RouteDetails_cost",
+         "RouteDetails_nextHop",
+         "RouteDetails_nextHopInt",
+         "RouteDetails_nextHopIp",
+         "RouteDetails_tag",
+         "Route_network",
+         "Route_node",
+         "Route_protocol" };
+
    public static final String[] NXTNET_DATA_PLANE_OUTPUT_SYMBOLS = {
          "AdvertisementCommunity",
          "AdvertisementPath",
@@ -124,14 +152,10 @@ public class NxtnetConstants {
          "BgpAdvertisement_type",
          "FibForwardPolicyRouteNextHopIp",
          "FibNetwork",
-         "Flow_dstIp",
-         "Flow_dstPort",
-         "Flow_ipProtocol",
-         "Flow_node",
-         "Flow_srcIp",
-         "Flow_srcPort",
-         "Flow_tag",
+         "InstalledRoute",
+         "InterfaceRoute_nextHopInt",
          "Network_index",
+         "ReceivedBgpAdvertisement",
          "Route",
          "RouteDetails_admin",
          "RouteDetails_cost",
@@ -142,46 +166,7 @@ public class NxtnetConstants {
          "Route_network",
          "Route_node",
          "Route_protocol",
-         "InterfaceRoute_nextHopInt",
-         "SetFlowSinkInterface",
-         "FlowPathHistory",
-         "InstalledRoute",
-         "ReceivedBgpAdvertisement" };
-
-   public static final String[] NXTNET_ENTITY_SYMBOLS = {
-         "AdvertisementCommunity",
-         "AdvertisementPath",
-         "AdvertisementPathSize",
-         "BgpAdvertisement_dstIp",
-         "BgpAdvertisement_dstNode",
-         "BgpAdvertisement_localPref",
-         "BgpAdvertisement_med",
-         "BgpAdvertisement_network",
-         "BgpAdvertisement_nextHopIp",
-         "BgpAdvertisement_originatorIp",
-         "BgpAdvertisement_originType",
-         "BgpAdvertisement_srcIp",
-         "BgpAdvertisement_srcNode",
-         "BgpAdvertisement_srcProtocol",
-         "BgpAdvertisement_type",
-         "Flow_dstIp",
-         "Flow_dstPort",
-         "Flow_ipProtocol",
-         "Flow_node",
-         "Flow_srcIp",
-         "Flow_srcPort",
-         "Flow_tag",
-         "Network_index",
-         "Route",
-         "RouteDetails_admin",
-         "RouteDetails_cost",
-         "RouteDetails_nextHop",
-         "RouteDetails_nextHopInt",
-         "RouteDetails_nextHopIp",
-         "RouteDetails_tag",
-         "Route_network",
-         "Route_node",
-         "Route_protocol" };
+         "SetFlowSinkInterface", };
 
    public static final String[] NXTNET_TRAFFIC_COMPUTATION_CONTROL_PLANE_FACTS = new String[] {
          "SamePhysicalSegment",
@@ -252,6 +237,30 @@ public class NxtnetConstants {
          "SetFlowOriginate",
          "SetPrecomputedRoute_flat" };
 
-   public static final String[] NXTNET_TRAFFIC_OUTPUT_SYMBOLS = { "FlowPathHistory" };
+   public static final String[] NXTNET_TRAFFIC_ENTITY_SYMBOLS = new String[] {
+         "Flow_dstIp",
+         "Flow_dstPort",
+         "Flow_ipProtocol",
+         "Flow_node",
+         "Flow_srcIp",
+         "Flow_srcPort",
+         "Flow_tag" };
+
+   public static final String[] NXTNET_TRAFFIC_OUTPUT_SYMBOLS = {
+         "Flow_dstIp",
+         "Flow_dstPort",
+         "Flow_ipProtocol",
+         "Flow_node",
+         "Flow_srcIp",
+         "Flow_srcPort",
+         "Flow_tag",
+         "FlowPathAcceptedEdge",
+         "FlowPathDeniedInEdge",
+         "FlowPathDeniedOutEdge",
+         "FlowPathHistory",
+         "FlowPathIntermediateEdge",
+         "FlowPathNeighborUnreachableEdge",
+         "FlowPathNoRouteEdge",
+         "FlowPathNullRoutedEdge" };
 
 }

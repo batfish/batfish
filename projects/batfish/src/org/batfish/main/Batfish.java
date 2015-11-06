@@ -1882,19 +1882,25 @@ public class Batfish implements AutoCloseable {
       return filenames.toArray(new String[] {});
    }
 
-   private Map<String, String> getNxtnetPredicateContents(
-         EnvironmentSettings envSettings) {
-      Map<String, String> nxtnetPredicateContents = new HashMap<String, String>();
-      for (String relationName : NxtnetConstants.NXTNET_ENTITY_SYMBOLS) {
-         String content = getNxtnetText(envSettings, relationName);
-         nxtnetPredicateContents.put(relationName, content);
-      }
-      return nxtnetPredicateContents;
-   }
-
    private String getNxtnetText(EnvironmentSettings envSettings,
          String relationName) {
-      String nxtnetOutputDir = envSettings.getNxtnetDataPlaneOutputDir();
+      String nxtnetOutputDir;
+      if (Arrays.asList(NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS)
+            .contains(relationName)) {
+         nxtnetOutputDir = envSettings.getNxtnetDataPlaneOutputDir();
+      }
+      else if (Arrays.asList(NxtnetConstants.NXTNET_TRAFFIC_OUTPUT_SYMBOLS)
+            .contains(relationName)) {
+         nxtnetOutputDir = envSettings.getNxtnetTrafficOutputDir();
+      }
+      else {
+         throw new BatfishException("Predicate: \"" + relationName
+               + "\" not an output symbol");
+      }
+      return getNxtnetText(nxtnetOutputDir, relationName);
+   }
+
+   private String getNxtnetText(String nxtnetOutputDir, String relationName) {
       File relationFile = Paths.get(nxtnetOutputDir, relationName).toFile();
       String content = Util.readFile(relationFile);
       return content;
@@ -2096,7 +2102,21 @@ public class Batfish implements AutoCloseable {
    private EntityTable initEntityTable(EnvironmentSettings envSettings) {
       EntityTable entityTable = _entityTables.get(envSettings);
       if (entityTable == null) {
-         Map<String, String> nxtnetPredicateContents = getNxtnetPredicateContents(envSettings);
+         Map<String, String> nxtnetPredicateContents = new HashMap<String, String>();
+         String nxtnetDataPlaneOutputDir = envSettings
+               .getNxtnetDataPlaneOutputDir();
+         String nxtnetTrafficOutputDir = envSettings
+               .getNxtnetTrafficOutputDir();
+         if (nxtnetDataPlaneOutputDir != null
+               && new File(nxtnetDataPlaneOutputDir).exists()) {
+            nxtnetPredicateContents.putAll(readFacts(nxtnetDataPlaneOutputDir,
+                  NxtnetConstants.NXTNET_DATA_PLANE_ENTITY_SYMBOLS));
+         }
+         if (nxtnetTrafficOutputDir != null
+               && new File(nxtnetTrafficOutputDir).exists()) {
+            nxtnetPredicateContents.putAll(readFacts(nxtnetTrafficOutputDir,
+                  NxtnetConstants.NXTNET_TRAFFIC_ENTITY_SYMBOLS));
+         }
          entityTable = new EntityTable(nxtnetPredicateContents, _predicateInfo);
          _entityTables.put(envSettings, entityTable);
       }
@@ -2176,7 +2196,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void nxtnetDataPlane(EnvironmentSettings envSettings) {
-      Map<String, String> inputFacts = readInputFacts(
+      Map<String, String> inputFacts = readFacts(
             envSettings.getControlPlaneFactsDir(),
             NxtnetConstants.NXTNET_DATA_PLANE_COMPUTATION_FACTS);
       writeNxtnetInput(NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS,
@@ -2197,10 +2217,10 @@ public class Batfish implements AutoCloseable {
 
    private void nxtnetTraffic(EnvironmentSettings envSettings) {
       writeNxtnetPrecomputedRoutes(envSettings);
-      Map<String, String> inputControlPlaneFacts = readInputFacts(
+      Map<String, String> inputControlPlaneFacts = readFacts(
             envSettings.getControlPlaneFactsDir(),
             NxtnetConstants.NXTNET_TRAFFIC_COMPUTATION_CONTROL_PLANE_FACTS);
-      Map<String, String> inputFlowFacts = readInputFacts(
+      Map<String, String> inputFlowFacts = readFacts(
             envSettings.getTrafficFactsDir(),
             NxtnetConstants.NXTNET_TRAFFIC_COMPUTATION_FLOW_FACTS);
       Map<String, String> inputFacts = new TreeMap<String, String>();
@@ -2805,8 +2825,7 @@ public class Batfish implements AutoCloseable {
       return configurationData;
    }
 
-   private Map<String, String> readInputFacts(String factsDir,
-         String[] factNames) {
+   private Map<String, String> readFacts(String factsDir, String[] factNames) {
       Map<String, String> inputFacts = new TreeMap<String, String>();
       for (String factName : factNames) {
          File factFile = Paths.get(factsDir, factName).toFile();
@@ -3083,6 +3102,8 @@ public class Batfish implements AutoCloseable {
    }
 
    private void runNxtnet(String nxtnetInputFile, String nxtnetOutputDir) {
+      _logger.info("\n*** RUNNING NXTNET ***\n");
+      resetTimer();
       File logicDir = retrieveLogicDir();
       String[] logicFilenames = getNxtnetLogicFilenames(logicDir);
       DefaultExecutor executor = new DefaultExecutor();
@@ -3101,7 +3122,6 @@ public class Batfish implements AutoCloseable {
             cmdLine.getArguments()));
       String cmdLineString = cmdLineSb.toString();
       boolean failure = false;
-      _logger.info("\n*** RUNNING NXTNET ***\n");
       _logger.info("Command line: " + cmdLineString + " \n");
       try {
          executor.execute(cmdLine);
@@ -3139,6 +3159,7 @@ public class Batfish implements AutoCloseable {
             _logger.info("nxtnet completed successfully\n");
          }
       }
+      printElapsedTime();
    }
 
    private void serializeIndependentConfigs(

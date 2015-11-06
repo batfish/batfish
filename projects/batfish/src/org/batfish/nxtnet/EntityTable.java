@@ -207,6 +207,9 @@ public class EntityTable {
    private void populateFlows() {
       Relation currentFlowProperty;
       currentFlowProperty = _relations.get("Flow_dstIp");
+      if (currentFlowProperty == null) {
+         return;
+      }
       List<Long> flowDstIps = getLongColumn(currentFlowProperty, 1);
 
       currentFlowProperty = _relations.get("Flow_dstPort");

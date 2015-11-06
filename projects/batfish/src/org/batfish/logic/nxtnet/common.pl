@@ -3052,8 +3052,7 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    Int1 = 'null_interface',
    Int2 = 'null_interface',
    'FlowAccepted'(Flow, Node1),
-   'Node_name'(Node1:Node1str),
-   History = ['[\'', Node1str, '\':accepted]'].
+   History = ['[\'', Node1, '\':accepted]'].
 
 'FlowPathDeniedInEdge'(Flow, I, ReceivedInt, Node1, Int1, Node2, Int2, History, Filter, Line) :-
    (
@@ -3081,12 +3080,8 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    ),
    'FlowReachPreOutEdge'(Flow, Node1, ReceivedInt, Int1, Node2, Int2),
    'FlowDeniedIn'(Flow, Node2, Int2, Filter, Line),
-   'Node_name'(Node1:Node1str),
-   'Node_name'(Node2:Node2str),
-   'Interface_name'(Int1:Int1str),
-   'Interface_name'(Int2:Int2str),
-   CurrentHistory = ['[\'', Node1str, '\':\'', Int1str, '\'', AllowedOutStr,
-		     '-> \'', Node2str, '\':\'', Int2str, '\':deniedIn:\'',
+   CurrentHistory = ['[\'', Node1, '\':\'', Int1, '\'', AllowedOutStr,
+		     '-> \'', Node2, '\':\'', Int2, '\':deniedIn:\'',
 		     Filter, '\':', Line, ']'].
 
 'FlowPathDeniedOutEdge'(Flow, I, ReceivedInt, Node1, Int1, Node2, Int2, History, Filter, Line) :-
@@ -3105,13 +3100,9 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    ),
    'FlowReachPreOutEdge'(Flow, Node1, ReceivedInt, Int1, Node2, Int2),
    'FlowDeniedOut'(Flow, Node1, Int1, Filter, Line),
-   'Node_name'(Node1:Node1str),
-   'Node_name'(Node2:Node2str),
-   'Interface_name'(Int1:Int1str),
-   'Interface_name'(Int2:Int2str),
-   CurrentHistory = ['[\'', Node1str, '\':\'', Int1str, '\':deniedOut:\'',
-		     Filter, '\':', Line, '-> \'', Node2str, '\':\'',
-		     Int2str, '\']'].
+   CurrentHistory = ['[\'', Node1, '\':\'', Int1, '\':deniedOut:\'',
+		     Filter, '\':', Line, '-> \'', Node2, '\':\'',
+		     Int2, '\']'].
 
 'FlowPathHistory'(Flow, History) :-
    'FlowPathAcceptedEdge'(Flow, _, _, _, _, _, History) ;
@@ -3158,12 +3149,8 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    ),
    'FlowReachPostOutInterface'(Flow, Node1, Int1),
    'FlowReachPostInInterface'(Flow, Node2, Int2),
-   'Node_name'(Node1:Node1str),
-   'Node_name'(Node2:Node2str),
-   'Interface_name'(Int1:Int1str),
-   'Interface_name'(Int2:Int2str),
-   CurrentHistory =['[\'', Node1str, '\':\'', Int1str, '\'', AllowedOutStr,
-		    '-> \'', Node2str, '\':\'', Int2str, '\'', AllowedInStr,
+   CurrentHistory =['[\'', Node1, '\':\'', Int1, '\'', AllowedOutStr,
+	    '-> \'', Node2, '\':\'', Int2, '\'', AllowedInStr,
 		    ']'].
 
 'FlowPathNeighborUnreachableEdge'(Flow, I, Node1, Int1, Node2, Int2, History) :-
@@ -3177,8 +3164,7 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    Int1 = 'null_interface',
    Int2 = 'null_interface',
    'FlowNeighborUnreachable'(Flow, Node1, _),
-   'Node_name'(Node1:Node1str),
-   History = ['[\'', Node1str, '\':neighborUnreachable]'].
+   History = ['[\'', Node1, '\':neighborUnreachable]'].
 
 'FlowPathNoRouteEdge'(Flow, I, Node1, Int1, Node2, Int2, History) :-
    'FlowPathIntermediateEdge'(Flow, I, _, Node1, Int1, Node2, Int2, OldHistory),
@@ -3191,8 +3177,7 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    Int1 = 'null_interface',
    Int2 = 'null_interface',
    'FlowNoRoute'(Flow, Node1),
-   'Node_name'(Node1:Node1str),
-   History = ['[\'', Node1str, '\':noRoute]'].
+   History = ['[\'', Node1, '\':noRoute]'].
 
 'FlowPathNullRoutedEdge'(Flow, I, Node1, Int1, Node2, Int2, History) :-
    'FlowPathIntermediateEdge'(Flow, I, _, Node1, Int1, Node2, Int2, OldHistory),
@@ -3205,8 +3190,7 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    Int1 = 'null_interface',
    Int2 = 'null_interface',
    'FlowNullRouted'(Flow, Node1),
-   'Node_name'(Node1:Node1str),
-   History = ['[\'', Node1str, '\':nullRouted]'].
+   History = ['[\'', Node1, '\':nullRouted]'].
 
 'FlowRoleAccepted'(Flow, Role) :-
    'FlowAccepted'(Flow, Node),
