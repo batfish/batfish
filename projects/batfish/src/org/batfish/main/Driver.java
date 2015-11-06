@@ -30,8 +30,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 public class Driver {
 
-   private static final String SERVICE_URL = "http://0.0.0.0";
-
    private static boolean _idle = true;
 
    private static BatfishLogger _mainLogger = null;
@@ -39,6 +37,8 @@ public class Driver {
    private static Settings _mainSettings = null;
 
    private static HashMap<String, Task> _taskLog;
+
+   private static final String SERVICE_URL = "http://0.0.0.0";
 
    private static void applyAutoBaseDir(final Settings settings) {
       String baseDir = settings.getAutoBaseDir();
@@ -61,9 +61,9 @@ public class Driver {
                   BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
             envSettings.setControlPlaneFactsDir(envPath.resolve(
                   BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString());
-            envSettings.setNxtnetInputFile(envPath.resolve(
+            envSettings.setNxtnetDataPlaneInputFile(envPath.resolve(
                   BfConsts.RELPATH_NXTNET_INPUT_FILE).toString());
-            envSettings.setNxtnetOutputDir(envPath.resolve(
+            envSettings.setNxtnetDataPlaneOutputDir(envPath.resolve(
                   BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
             envSettings.setDataPlanePath(envPath.resolve(
                   BfConsts.RELPATH_DATA_PLANE_DIR).toString());
@@ -96,9 +96,9 @@ public class Driver {
                   BfConsts.RELPATH_ENVIRONMENTS_DIR, diffEnvName);
             diffEnvSettings.setControlPlaneFactsDir(diffEnvPath.resolve(
                   BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString());
-            diffEnvSettings.setNxtnetInputFile(diffEnvPath.resolve(
+            diffEnvSettings.setNxtnetDataPlaneInputFile(diffEnvPath.resolve(
                   BfConsts.RELPATH_NXTNET_INPUT_FILE).toString());
-            diffEnvSettings.setNxtnetOutputDir(diffEnvPath.resolve(
+            diffEnvSettings.setNxtnetDataPlaneOutputDir(diffEnvPath.resolve(
                   BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
             diffEnvSettings.setDataPlanePath(diffEnvPath.resolve(
                   BfConsts.RELPATH_DATA_PLANE_DIR).toString());
@@ -139,19 +139,48 @@ public class Driver {
             settings.setQuestionParametersPath(questionPath.resolve(
                   BfConsts.RELPATH_QUESTION_PARAM_FILE).toString());
             if (diffEnvName != null) {
-               diffEnvSettings.setTrafficFactDumpDir(questionPath.resolve(
+               diffEnvSettings.setTrafficFactDumpDir(questionPath
+                     .resolve(
+                           Paths.get(BfConsts.RELPATH_DIFF, envName,
+                                 diffEnvName,
+                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
+                                 .toString()).toString());
+               diffEnvSettings.setNxtnetTrafficInputFile(questionPath.resolve(
                      Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,
-                           BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString())
+                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
                      .toString());
-               envSettings.setTrafficFactDumpDir(questionPath.resolve(
+               diffEnvSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,
+                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
+                     .toString());
+               envSettings.setTrafficFactDumpDir(questionPath
+                     .resolve(
+                           Paths.get(BfConsts.RELPATH_BASE, envName,
+                                 diffEnvName,
+                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
+                                 .toString()).toString());
+               envSettings.setNxtnetTrafficInputFile(questionPath.resolve(
                      Paths.get(BfConsts.RELPATH_BASE, envName, diffEnvName,
-                           BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString())
+                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
+                     .toString());
+               envSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName, diffEnvName,
+                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
                      .toString());
             }
             else {
-               envSettings.setTrafficFactDumpDir(questionPath.resolve(
+               envSettings.setTrafficFactDumpDir(questionPath
+                     .resolve(
+                           Paths.get(BfConsts.RELPATH_BASE, envName,
+                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
+                                 .toString()).toString());
+               envSettings.setNxtnetTrafficInputFile(questionPath.resolve(
                      Paths.get(BfConsts.RELPATH_BASE, envName,
-                           BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString())
+                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
+                     .toString());
+               envSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName,
+                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
                      .toString());
             }
          }

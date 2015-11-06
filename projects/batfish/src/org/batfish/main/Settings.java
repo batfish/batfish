@@ -37,9 +37,13 @@ public final class Settings {
 
       private String _nodeBlacklistPath;
 
-      private String _nxtnetInputFile;
+      private String _nxtnetDataPlaneInputFile;
 
-      private String _nxtnetOutputDir;
+      private String _nxtnetDataPlaneOutputDir;
+
+      private String _nxtnetTrafficInputFile;
+
+      private String _nxtnetTrafficOutputDir;
 
       private String _serializedTopologyPath;
 
@@ -79,12 +83,20 @@ public final class Settings {
          return _nodeBlacklistPath;
       }
 
-      public String getNxtnetInputFile() {
-         return _nxtnetInputFile;
+      public String getNxtnetDataPlaneInputFile() {
+         return _nxtnetDataPlaneInputFile;
       }
 
-      public String getNxtnetOutputDir() {
-         return _nxtnetOutputDir;
+      public String getNxtnetDataPlaneOutputDir() {
+         return _nxtnetDataPlaneOutputDir;
+      }
+
+      public String getNxtnetTrafficInputFile() {
+         return _nxtnetTrafficInputFile;
+      }
+
+      public String getNxtnetTrafficOutputDir() {
+         return _nxtnetTrafficOutputDir;
       }
 
       public String getSerializedTopologyPath() {
@@ -131,12 +143,20 @@ public final class Settings {
          _nodeBlacklistPath = nodeBlacklistPath;
       }
 
-      public void setNxtnetInputFile(String nxtnetInputFile) {
-         _nxtnetInputFile = nxtnetInputFile;
+      public void setNxtnetDataPlaneInputFile(String nxtnetDataPlaneInputFile) {
+         _nxtnetDataPlaneInputFile = nxtnetDataPlaneInputFile;
       }
 
-      public void setNxtnetOutputDir(String nxtnetOutputDir) {
-         _nxtnetOutputDir = nxtnetOutputDir;
+      public void setNxtnetDataPlaneOutputDir(String nxtnetDataPlaneOutputDir) {
+         _nxtnetDataPlaneOutputDir = nxtnetDataPlaneOutputDir;
+      }
+
+      public void setNxtnetTrafficInputFile(String nxtnetTrafficInputFile) {
+         _nxtnetTrafficInputFile = nxtnetTrafficInputFile;
+      }
+
+      public void setNxtnetTrafficOutputDir(String nxtnetTrafficOutputDir) {
+         _nxtnetTrafficOutputDir = nxtnetTrafficOutputDir;
       }
 
       public void setSerializedTopologyPath(String serializedTopologyPath) {
@@ -160,9 +180,8 @@ public final class Settings {
    private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
    private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
    private static final String ARG_DATA_PLANE = "dp";
+   private static final String ARG_DIFF_QUESTION = "diffquestion";
    private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
-   private static final String ARG_DUMP_CONTROL_PLANE_FACTS = "dumpcp";
-   private static final String ARG_DUMP_TRAFFIC_FACTS = "dumptraffic";
    private static final String ARG_DUPLICATE_ROLE_FLOWS = "drf";
    private static final String ARG_EXIT_ON_FIRST_ERROR = "ee";
    private static final String ARG_FLATTEN = "flatten";
@@ -231,9 +250,6 @@ public final class Settings {
    private static final String ARGNAME_ROLE_SET_PATH = "path";
    private static final String ARGNAME_ROLE_TRANSIT_QUERY_PATH = "path";
    private static final String ARGNAME_SERVICE_HOST = "hostname";
-   public static final String DEFAULT_CONNECTBLOX_ADMIN_PORT = "5519";
-   public static final String DEFAULT_CONNECTBLOX_HOST = "localhost";
-   public static final String DEFAULT_CONNECTBLOX_REGULAR_PORT = "5518";
    private static final String DEFAULT_JOBS = Integer
          .toString(Integer.MAX_VALUE);
    private static final String DEFAULT_LOG_LEVEL = "debug";
@@ -262,7 +278,6 @@ public final class Settings {
    private EnvironmentSettings _diffEnvironmentSettings;
    private boolean _diffQuestion;
    private boolean _dumpControlPlaneFacts;
-   private boolean _dumpTrafficFacts;
    private boolean _duplicateRoleFlows;
    private String _environmentName;
    private boolean _exitOnFirstError;
@@ -435,10 +450,6 @@ public final class Settings {
 
    public boolean getDumpControlPlaneFacts() {
       return _dumpControlPlaneFacts;
-   }
-
-   public boolean getDumpTrafficFacts() {
-      return _dumpTrafficFacts;
    }
 
    public String getEnvironmentName() {
@@ -773,10 +784,8 @@ public final class Settings {
                   .builder()
                   .desc("exit on first parse error (otherwise will exit on last parse error)")
                   .longOpt(ARG_EXIT_ON_FIRST_ERROR).build());
-      _options.addOption(Option.builder().desc("dump control plane facts")
-            .longOpt(ARG_DUMP_CONTROL_PLANE_FACTS).build());
-      _options.addOption(Option.builder().desc("dump traffic facts")
-            .longOpt(ARG_DUMP_TRAFFIC_FACTS).build());
+      _options.addOption(Option.builder().desc("write control plane facts")
+            .longOpt(BfConsts.COMMAND_WRITE_CP_FACTS).build());
       _options.addOption(Option.builder().hasArg().argName(ARGNAME_ANONYMIZE)
             .desc("created anonymized versions of configs in test rig")
             .longOpt(ARG_ANONYMIZE).build());
@@ -1033,6 +1042,11 @@ public final class Settings {
                   .builder()
                   .desc("compute traffic information from provided flows with nxtnet")
                   .longOpt(BfConsts.COMMAND_NXTNET_TRAFFIC).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("force treatment of question as differential (to be used when not answering question)")
+                  .longOpt(ARG_DIFF_QUESTION).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1084,8 +1098,7 @@ public final class Settings {
          _blockNames = Collections.<String> emptyList();
       }
       _exitOnFirstError = line.hasOption(ARG_EXIT_ON_FIRST_ERROR);
-      _dumpControlPlaneFacts = line.hasOption(ARG_DUMP_CONTROL_PLANE_FACTS);
-      _dumpTrafficFacts = line.hasOption(ARG_DUMP_TRAFFIC_FACTS);
+      _dumpControlPlaneFacts = line.hasOption(BfConsts.COMMAND_WRITE_CP_FACTS);
       _anonymize = line.hasOption(ARG_ANONYMIZE);
       if (_anonymize) {
          _anonymizeDir = line.getOptionValue(ARG_ANONYMIZE);
@@ -1191,6 +1204,7 @@ public final class Settings {
       _shuffleJobs = !line.hasOption(ARG_NO_SHUFFLE);
       _diffActive = line.hasOption(BfConsts.ARG_DIFF_ACTIVE);
       _nxtnetDataPlane = line.hasOption(BfConsts.COMMAND_NXTNET_DATA_PLANE);
+      _diffQuestion = line.hasOption(ARG_DIFF_QUESTION);
    }
 
    public boolean printParseTree() {

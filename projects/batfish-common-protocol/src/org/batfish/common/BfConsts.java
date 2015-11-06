@@ -52,13 +52,13 @@ public class BfConsts {
    public static final String PREDICATE_FLOW_PATH_HISTORY = "FlowPathHistory";
    public static final String RELPATH_BASE = "base";
    public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
+   public static final String RELPATH_CONTROL_PLANE_FACTS_DIR = "cp_facts";
    public static final String RELPATH_DATA_PLANE_DIR = "dp";
    public static final String RELPATH_DIFF = "diff";
    public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
    public static final String RELPATH_ENV_DIR = "env";
    public static final String RELPATH_ENV_NODE_SET = "env-node-set";
    public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
-   public static final String RELPATH_CONTROL_PLANE_FACTS_DIR = "cp_facts";
    public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
    public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
    public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";

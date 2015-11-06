@@ -206,7 +206,7 @@ batfish_get_history() {
    local ENV=$2
    local QUESTIONNAME=$3
    local RESULT=$4
-   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -gethistory -logtee -loglevel output -logfile $RESULT
+   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -history -logtee -loglevel output -logfile $RESULT
    batfish_date
    echo ": END: Get flow histories from LogicBlox"
 }
@@ -221,7 +221,7 @@ batfish_get_history_diff() {
    local DIFF_ENV=$3
    local QUESTIONNAME=$4
    local RESULT=$5
-   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -questionname $QUESTIONNAME -getdiffhistory -logtee -loglevel output -logfile $RESULT
+   batfish -autobasedir $BASE -env $ENV -diffquestion -diffenv $DIFF_ENV -questionname $QUESTIONNAME -history -logtee -loglevel output -logfile $RESULT
    batfish_date
    echo ": END: Get flow histories from LogicBlox"
 }
@@ -328,7 +328,7 @@ batfish_post_flows() {
    local BASE=$1
    local ENV=$2
    local QUESTIONNAME=$3
-   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -postflows
+   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -nxtnettraffic
    batfish_date
    echo ": END: Inject discovered packets into network model"
 }
@@ -342,7 +342,7 @@ batfish_post_flows_diff() {
    local ENV=$2
    local DIFF_ENV=$3
    local QUESTIONNAME=$4
-   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -questionname $QUESTIONNAME -postflows
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -questionname $QUESTIONNAME -nxtnettraffic
    batfish_date
    echo ": END: Inject discovered packets into network model (differential)"
 }

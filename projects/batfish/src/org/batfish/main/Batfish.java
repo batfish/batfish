@@ -1906,7 +1906,7 @@ public class Batfish implements AutoCloseable {
 
    private String getNxtnetText(EnvironmentSettings envSettings,
          String relationName) {
-      String nxtnetOutputDir = envSettings.getNxtnetOutputDir();
+      String nxtnetOutputDir = envSettings.getNxtnetDataPlaneOutputDir();
       File relationFile = Paths.get(nxtnetOutputDir, relationName).toFile();
       String content = Util.readFile(relationFile);
       return content;
@@ -2170,8 +2170,13 @@ public class Batfish implements AutoCloseable {
    }
 
    private void nxtnetDataPlane(EnvironmentSettings envSettings) {
-      writeNxtnetInput(envSettings);
-      runNxtnet(envSettings);
+      Map<String, String> inputFacts = readInputFacts(
+            envSettings.getControlPlaneFactsDir(),
+            NxtnetConstants.NXTNET_DATA_PLANE_COMPUTATION_FACTS);
+      writeNxtnetInput(NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS,
+            inputFacts, envSettings.getNxtnetDataPlaneInputFile());
+      runNxtnet(envSettings.getNxtnetDataPlaneInputFile(),
+            envSettings.getNxtnetDataPlaneOutputDir());
    }
 
    private void nxtnetTraffic() {
@@ -2185,7 +2190,19 @@ public class Batfish implements AutoCloseable {
    }
 
    private void nxtnetTraffic(EnvironmentSettings envSettings) {
-
+      Map<String, String> inputControlPlaneFacts = readInputFacts(
+            envSettings.getControlPlaneFactsDir(),
+            NxtnetConstants.NXTNET_TRAFFIC_COMPUTATION_CONTROL_PLANE_FACTS);
+      Map<String, String> inputFlowFacts = readInputFacts(
+            envSettings.getTrafficFactsDir(),
+            NxtnetConstants.NXTNET_TRAFFIC_COMPUTATION_FLOW_FACTS);
+      Map<String, String> inputFacts = new TreeMap<String, String>();
+      inputFacts.putAll(inputControlPlaneFacts);
+      inputFacts.putAll(inputFlowFacts);
+      writeNxtnetInput(NxtnetConstants.NXTNET_TRAFFIC_OUTPUT_SYMBOLS,
+            inputFacts, envSettings.getNxtnetTrafficInputFile());
+      runNxtnet(envSettings.getNxtnetTrafficInputFile(),
+            envSettings.getNxtnetTrafficOutputDir());
    }
 
    private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
@@ -2781,6 +2798,17 @@ public class Batfish implements AutoCloseable {
       return configurationData;
    }
 
+   private Map<String, String> readInputFacts(String factsDir,
+         String[] factNames) {
+      Map<String, String> inputFacts = new TreeMap<String, String>();
+      for (String factName : factNames) {
+         File factFile = Paths.get(factsDir, factName).toFile();
+         String contents = Util.readFile(factFile);
+         inputFacts.put(factName, contents);
+      }
+      return inputFacts;
+   }
+
    private void removeBlocks(List<String> blockNames) {
       Set<String> allBlockNames = new LinkedHashSet<String>();
       for (String blockName : blockNames) {
@@ -3045,9 +3073,7 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void runNxtnet(EnvironmentSettings envSettings) {
-      String nxtnetInputFile = envSettings.getNxtnetInputFile();
-      String nxtnetOutputDir = envSettings.getNxtnetOutputDir();
+   private void runNxtnet(String nxtnetInputFile, String nxtnetOutputDir) {
       File logicDir = retrieveLogicDir();
       String[] logicFilenames = getNxtnetLogicFilenames(logicDir);
       DefaultExecutor executor = new DefaultExecutor();
@@ -3314,26 +3340,25 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
    }
 
-   private void writeNxtnetInput(EnvironmentSettings envSettings) {
+   private void writeNxtnetInput(String[] outputSymbols,
+         Map<String, String> inputFacts, String nxtnetInputFile) {
       checkComputeNxtnetRelations();
       StringBuilder sb = new StringBuilder();
-      File factsDir = Paths.get(envSettings.getControlPlaneFactsDir()).toFile();
       sb.append("output_symbols([");
-      for (int i = 0; i < NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS.length; i++) {
-         String symbol = NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS[i];
+      for (int i = 0; i < outputSymbols.length; i++) {
+         String symbol = outputSymbols[i];
          sb.append("'" + symbol + "'");
-         if (i < NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS.length - 1) {
+         if (i < outputSymbols.length - 1) {
             sb.append(",");
          }
          else {
             sb.append("]).\n");
          }
       }
-      File[] files = factsDir.listFiles();
       String lineDelimiter = Pattern.quote("|");
-      for (File file : files) {
-         String contents = Util.readFile(file);
-         String predicateName = file.getName();
+      for (Entry<String, String> e : inputFacts.entrySet()) {
+         String predicateName = e.getKey();
+         String contents = e.getValue();
          String[] lines = contents.split("\n");
          for (int i = 1; i < lines.length; i++) {
             sb.append("'" + predicateName + "'(");
@@ -3360,7 +3385,6 @@ public class Batfish implements AutoCloseable {
          }
       }
       String output = sb.toString();
-      String nxtnetInputFile = envSettings.getNxtnetInputFile();
       writeFile(nxtnetInputFile, output);
    }
 
