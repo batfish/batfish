@@ -102,7 +102,7 @@
       </sequential>
    </macrodef> 
 
-   <target name="all" depends="jar" description="Build everything"/>
+   <target name="all" depends="jar,copyconfig" description="Build everything"/>
 
 	<target name="grammarclean" description="Delete generated antlr files">
       <delete>
@@ -189,6 +189,12 @@
 	<target name="compileclean" description="Delete all compiled Java classes and copied logic">
 		<delete dir="bin" />
 	</target>
+
+   <target name="copyconfig" description="Copy configuration file to output directory">
+      <copy todir="out">
+         <fileset dir="src" includes="**/config.Properties"/>
+      </copy>
+   </target>
 
    <target name="copylog4j" description="Copy log4j configuration from src to bin for staging">
       <copy todir="bin">
