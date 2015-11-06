@@ -510,8 +510,6 @@ batfish_query_policy() {
 export -f batfish_query_policy
 
 batfish_query_predicate() {
-   batfish_date
-   echo ": START: Query predicate"
    [ "$#" -gt 2 ] || return 1
    local BASE=$1
    shift
@@ -519,8 +517,6 @@ batfish_query_predicate() {
    shift
    local PREDICATES="$@"
    batfish -loglevel output -autobasedir $BASE -env $ENV -query -predicates $PREDICATES
-   batfish_date
-   echo ": END: Query predicate"
 }
 export -f batfish_query_predicate
 
