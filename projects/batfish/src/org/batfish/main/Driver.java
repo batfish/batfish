@@ -88,6 +88,8 @@ public class Driver {
                   BfConsts.RELPATH_TOPOLOGY_FILE).toString());
             envSettings.setDeltaConfigurationsDir(envDirPath.resolve(
                   BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
+            settings.setPrecomputedRoutesPath(envPath.resolve(
+                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
          }
          String diffEnvName = settings.getDiffEnvironmentName();
          if (diffEnvName != null) {
@@ -121,6 +123,8 @@ public class Driver {
                   BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
             if (settings.getDiffActive()) {
                settings.setActiveEnvironmentSettings(diffEnvSettings);
+               settings.setPrecomputedRoutesPath(diffEnvPath.resolve(
+                     BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
             }
          }
          String outputEnvName = settings.getOutputEnvironmentName();

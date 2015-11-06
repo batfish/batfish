@@ -248,8 +248,9 @@ public class NxtnetConstants {
          "SetVlanInterface" };
 
    public static final String[] NXTNET_TRAFFIC_COMPUTATION_FLOW_FACTS = new String[] {
+         "DuplicateRoleFlows",
          "SetFlowOriginate",
-         "DuplicateRoleFlows" };
+         "SetPrecomputedRoute_flat" };
 
    public static final String[] NXTNET_TRAFFIC_OUTPUT_SYMBOLS = { "FlowPathHistory" };
 

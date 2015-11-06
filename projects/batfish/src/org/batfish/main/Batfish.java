@@ -912,19 +912,7 @@ public class Batfish implements AutoCloseable {
    private void computeControlPlaneFacts(Map<String, StringBuilder> cpFactBins) {
       checkComputeControlPlaneFacts();
       if (_settings.getUsePrecomputedRoutes()) {
-         Set<String> precomputedRoutesPaths = _settings
-               .getPrecomputedRoutesPaths();
-         String precomputedRoutesPath = _settings.getPrecomputedRoutesPath();
-         if (precomputedRoutesPaths == null) {
-            if (precomputedRoutesPath == null) {
-               throw new BatfishException(
-                     "Must specify path(s) to precomputed routes");
-            }
-            else {
-               precomputedRoutesPaths = Collections
-                     .singleton(precomputedRoutesPath);
-            }
-         }
+         Set<String> precomputedRoutesPaths = getPrecomputedRoutesPaths();
          populatePrecomputedRoutes(precomputedRoutesPaths, cpFactBins);
       }
       if (_settings.getUsePrecomputedIbgpNeighbors()) {
@@ -1949,6 +1937,23 @@ public class Batfish implements AutoCloseable {
       return nodeMap;
    }
 
+   private Set<String> getPrecomputedRoutesPaths() {
+      Set<String> precomputedRoutesPaths = _settings
+            .getPrecomputedRoutesPaths();
+      String precomputedRoutesPath = _settings.getPrecomputedRoutesPath();
+      if (precomputedRoutesPaths == null) {
+         if (precomputedRoutesPath == null) {
+            throw new BatfishException(
+                  "Must specify path(s) to precomputed routes");
+         }
+         else {
+            precomputedRoutesPaths = Collections
+                  .singleton(precomputedRoutesPath);
+         }
+      }
+      return precomputedRoutesPaths;
+   }
+
    public PredicateInfo getPredicateInfo(Map<String, String> logicFiles) {
       // Get predicate semantics from rules file
       _logger.info("\n*** PARSING PREDICATE INFO ***\n");
@@ -2167,6 +2172,7 @@ public class Batfish implements AutoCloseable {
 
    private void nxtnetDataPlane() {
       nxtnetDataPlane(_envSettings);
+      writeRoutes(_settings.getPrecomputedRoutesPath());
    }
 
    private void nxtnetDataPlane(EnvironmentSettings envSettings) {
@@ -2190,6 +2196,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void nxtnetTraffic(EnvironmentSettings envSettings) {
+      writeNxtnetPrecomputedRoutes(envSettings);
       Map<String, String> inputControlPlaneFacts = readInputFacts(
             envSettings.getControlPlaneFactsDir(),
             NxtnetConstants.NXTNET_TRAFFIC_COMPUTATION_CONTROL_PLANE_FACTS);
@@ -2909,7 +2916,7 @@ public class Batfish implements AutoCloseable {
             || _settings.getDataPlane() || _settings.getWriteRoutes()
             || _settings.getWriteBgpAdvertisements()
             || _settings.getWriteIbgpNeighbors() || _settings.getHistory()
-            || _settings.getTraceQuery()) {
+            || _settings.getTraceQuery() || _settings.getNxtnetDataPlane()) {
          Map<String, String> logicFiles = getSemanticsFiles();
          _predicateInfo = getPredicateInfo(logicFiles);
          // Print predicate semantics and quit if requested
@@ -3022,19 +3029,6 @@ public class Batfish implements AutoCloseable {
                cpFactBins);
       }
 
-      if (_settings.getWriteRoutes()) {
-         writeRoutes(_settings.getPrecomputedRoutesPath());
-         action = true;
-      }
-      if (_settings.getWriteBgpAdvertisements()) {
-         writeBgpAdvertisements(_settings.getPrecomputedBgpAdvertisementsPath());
-         action = true;
-      }
-      if (_settings.getWriteIbgpNeighbors()) {
-         writeIbgpNeighbors(_settings.getPrecomputedIbgpNeighborsPath());
-         action = true;
-      }
-
       // Remove blocks if requested
       if (_settings.getRemoveBlocks() || _settings.getKeepBlocks()) {
          List<String> blockNames = _settings.getBlockNames();
@@ -3064,6 +3058,21 @@ public class Batfish implements AutoCloseable {
 
       if (_settings.getHistory()) {
          getHistory();
+         action = true;
+      }
+
+      if (_settings.getWriteRoutes()) {
+         writeRoutes(_settings.getPrecomputedRoutesPath());
+         action = true;
+      }
+
+      if (_settings.getWriteBgpAdvertisements()) {
+         writeBgpAdvertisements(_settings.getPrecomputedBgpAdvertisementsPath());
+         action = true;
+      }
+
+      if (_settings.getWriteIbgpNeighbors()) {
+         writeIbgpNeighbors(_settings.getPrecomputedIbgpNeighborsPath());
          action = true;
       }
 
@@ -3386,6 +3395,18 @@ public class Batfish implements AutoCloseable {
       }
       String output = sb.toString();
       writeFile(nxtnetInputFile, output);
+   }
+
+   private void writeNxtnetPrecomputedRoutes(EnvironmentSettings envSettings) {
+      Set<String> precomputedRoutesPaths = getPrecomputedRoutesPaths();
+      Map<String, StringBuilder> prFactBins = new HashMap<String, StringBuilder>();
+      initControlPlaneFactBins(prFactBins, true);
+      Set<String> prPredicates = new HashSet<String>();
+      prPredicates.add(PRECOMPUTED_ROUTES_PREDICATE_NAME);
+      prPredicates.add(NETWORKS_PREDICATE_NAME);
+      prFactBins.keySet().retainAll(prPredicates);
+      populatePrecomputedRoutes(precomputedRoutesPaths, prFactBins);
+      dumpFacts(prFactBins, envSettings.getTrafficFactsDir());
    }
 
    private void writeRoutes(String writeRoutesPath) {
