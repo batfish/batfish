@@ -49,16 +49,19 @@ public class Settings {
    }
 
    public Settings(String[] args) throws ParseException {
-      File configProperties = org.batfish.common.Util.getConfigProperties(org.batfish.client.config.ConfigurationLocator.class);
+      File configProperties = org.batfish.common.Util
+            .getConfigProperties(org.batfish.client.config.ConfigurationLocator.class);
 
       try {
-         //Configuration config = new PropertiesConfiguration("config.properties");
-         //FileConfiguration config = new PropertiesConfiguration("config.Properties");
-         
+         // Configuration config = new
+         // PropertiesConfiguration("config.properties");
+         // FileConfiguration config = new
+         // PropertiesConfiguration("config.properties");
+
          FileConfiguration config = new PropertiesConfiguration();
          config.setFile(configProperties);
          config.load();
-         
+
          System.out.println("config val = " + config.getString("apiKey"));
       }
       catch (ConfigurationException e) {

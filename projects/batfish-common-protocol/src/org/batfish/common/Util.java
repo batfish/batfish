@@ -7,23 +7,6 @@ import java.nio.file.Paths;
 
 public final class Util {
 
-   public static String joinStrings(String delimiter, String[] parts) {
-      StringBuilder sb = new StringBuilder();
-      for (String part : parts) {
-         sb.append(part + delimiter);
-      }
-      String joined = sb.toString();
-      int joinedLength = joined.length();
-      String result;
-      if (joinedLength > 0) {
-         result = joined.substring(0, joinedLength - delimiter.length());
-      }
-      else {
-         result = joined;
-      }
-      return result;
-   }
-
    public static File getConfigProperties(Class<?> locatorClass) {
       File configDir = getJarOrClassDir(locatorClass);
       return Paths.get(configDir.toString(),
@@ -44,7 +27,8 @@ public final class Util {
          catch (ClassNotFoundException e) {
             throw new BatfishException("could not find onejar class");
          }
-         File jarDir = new File(onejarSourceURL.toString().substring("file:/".length())).getParentFile();
+         File jarDir = new File(onejarSourceURL.toString().replaceAll(
+               "^file:\\\\*", "")).getParentFile();
          return jarDir;
       }
       else {
@@ -61,6 +45,23 @@ public final class Util {
          assert Boolean.TRUE;
          return locatorDirFile;
       }
+   }
+
+   public static String joinStrings(String delimiter, String[] parts) {
+      StringBuilder sb = new StringBuilder();
+      for (String part : parts) {
+         sb.append(part + delimiter);
+      }
+      String joined = sb.toString();
+      int joinedLength = joined.length();
+      String result;
+      if (joinedLength > 0) {
+         result = joined.substring(0, joinedLength - delimiter.length());
+      }
+      else {
+         result = joined;
+      }
+      return result;
    }
 
    private Util() {
