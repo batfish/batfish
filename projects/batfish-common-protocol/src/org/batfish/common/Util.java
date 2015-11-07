@@ -27,7 +27,7 @@ public final class Util {
          catch (ClassNotFoundException e) {
             throw new BatfishException("could not find onejar class");
          }
-         File jarDir = new File(onejarSourceURL.toString()).getParentFile();
+         File jarDir = new File(onejarSourceURL.toString().substring("file:/".length())).getParentFile();
          return jarDir;
       }
       else {

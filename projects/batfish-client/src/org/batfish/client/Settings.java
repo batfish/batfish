@@ -1,5 +1,7 @@
 package org.batfish.client;
 
+import java.io.File;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -9,6 +11,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.CoordConsts;
+import org.apache.commons.configuration.*;
 
 public class Settings {
 
@@ -46,6 +49,22 @@ public class Settings {
    }
 
    public Settings(String[] args) throws ParseException {
+      File configProperties = org.batfish.common.Util.getConfigProperties(org.batfish.client.config.ConfigurationLocator.class);
+
+      try {
+         //Configuration config = new PropertiesConfiguration("config.properties");
+         //FileConfiguration config = new PropertiesConfiguration("config.Properties");
+         
+         FileConfiguration config = new PropertiesConfiguration();
+         config.setFile(configProperties);
+         config.load();
+         
+         System.out.println("config val = " + config.getString("apiKey"));
+      }
+      catch (ConfigurationException e) {
+         e.printStackTrace();
+      }
+
       initOptions();
       parseCommandLine(args);
    }
