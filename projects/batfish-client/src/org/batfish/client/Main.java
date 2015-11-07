@@ -1,17 +1,16 @@
 package org.batfish.client;
 
-import org.apache.commons.cli.ParseException;
-
 public class Main {
 
    public static void main(String[] args) {
       Settings _settings = null;
       try {
          _settings = new Settings(args);
+         System.err.println("apikey " + _settings.getApiKey());
       }
-      catch (ParseException e) {
+      catch (Exception e) {
          System.err
-               .println("org.batfish.client: Parsing command-line failed. Reason: "
+               .println("org.batfish.client: Initialization failed: "
                      + e.getMessage());
          System.exit(1);
       }
