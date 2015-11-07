@@ -16,6 +16,8 @@ public class CoordConsts {
       UNASSIGNED
    }
 
+   public static final String SVC_API_KEY = "apikey";
+
    public static final String SVC_BASE_POOL_MGR = "/batfishpoolmgr";
 
    public static final String SVC_BASE_WORK_MGR = "/batfishworkmgr";

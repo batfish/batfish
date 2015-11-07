@@ -20,6 +20,7 @@ import java.util.Map;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.CoordConsts;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 
@@ -102,15 +103,18 @@ public class Client {
 
    private BatfishLogger _logger;
    private BfCoordPoolHelper _poolHelper;
-
+   
+   private Settings _settings;
+   
    private BfCoordWorkHelper _workHelper;
 
    public Client(Settings settings) {
+      _settings = settings;
       if (settings.getCommandFile() != null) {
-         RunBatchMode(settings);
+         RunBatchMode();
       }
       else {
-         RunInteractiveMode(settings);
+         RunInteractiveMode();
       }
 
    }
@@ -141,6 +145,7 @@ public class Client {
 
    private boolean execute(WorkItem wItem) throws Exception {
 
+      wItem.addRequestParam(CoordConsts.SVC_API_KEY, _settings.getApiKey());
       wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _logger.getLogLevelStr());
       _logger.info("work-id is " + wItem.getId() + "\n");
 
@@ -503,21 +508,21 @@ public class Client {
       }
    }
 
-   private void RunBatchMode(Settings settings) {
+   private void RunBatchMode() {
 
-      _logger = new BatfishLogger(settings.getLogLevel(), false,
-            settings.getLogFile(), false);
+      _logger = new BatfishLogger(_settings.getLogLevel(), false,
+            _settings.getLogFile(), false);
 
-      String workMgr = settings.getServiceHost() + ":"
-            + settings.getServiceWorkPort();
-      String poolMgr = settings.getServiceHost() + ":"
-            + settings.getServicePoolPort();
+      String workMgr = _settings.getServiceHost() + ":"
+            + _settings.getServiceWorkPort();
+      String poolMgr = _settings.getServiceHost() + ":"
+            + _settings.getServicePoolPort();
 
       _workHelper = new BfCoordWorkHelper(workMgr, _logger);
       _poolHelper = new BfCoordPoolHelper(poolMgr);
 
       try (BufferedReader br = new BufferedReader(new FileReader(
-            settings.getCommandFile()))) {
+            _settings.getCommandFile()))) {
          String line = null;
          while ((line = br.readLine()) != null) {
 
@@ -538,14 +543,14 @@ public class Client {
       }
       catch (FileNotFoundException e) {
          _logger.errorf("Command file not found: %s\n",
-               settings.getCommandFile());
+               _settings.getCommandFile());
       }
       catch (Exception e) {
          _logger.errorf("Exception while reading command file: %s\n", e);
       }
    }
 
-   private void RunInteractiveMode(Settings settings) {
+   private void RunInteractiveMode() {
       try {
 
          ConsoleReader reader = new ConsoleReader();
@@ -563,12 +568,12 @@ public class Client {
          PrintWriter pWriter = new PrintWriter(reader.getOutput(), true);
          OutputStream os = new WriterOutputStream(pWriter);
          PrintStream ps = new PrintStream(os, true);
-         _logger = new BatfishLogger(settings.getLogLevel(), false, ps);
+         _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
 
-         String workMgr = settings.getServiceHost() + ":"
-               + settings.getServiceWorkPort();
-         String poolMgr = settings.getServiceHost() + ":"
-               + settings.getServicePoolPort();
+         String workMgr = _settings.getServiceHost() + ":"
+               + _settings.getServiceWorkPort();
+         String poolMgr = _settings.getServiceHost() + ":"
+               + _settings.getServicePoolPort();
 
          _workHelper = new BfCoordWorkHelper(workMgr, _logger);
          _poolHelper = new BfCoordPoolHelper(poolMgr);
