@@ -23,7 +23,7 @@ public class Relation {
          LBValueTypeList columnValueTypes = predicateInfo
                .getPredicateValueTypes(_name);
          int numColumns = columnValueTypes.size();
-         String[] lines = nxtnetText.split("\n");
+         String[] lines = nxtnetText.split("\n|\r\n");
          int numLines;
          if (nxtnetText.length() == 0) {
             numLines = 0;
