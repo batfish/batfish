@@ -162,6 +162,7 @@ public class BfCoordWorkHelper {
    public WorkItem getWorkItemGenerateDataPlane(String testrigName,
          String envName) {
       WorkItem wItem = new WorkItem(testrigName);
+      wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
       wItem.addRequestParam(BfConsts.COMMAND_NXTNET_DATA_PLANE, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
