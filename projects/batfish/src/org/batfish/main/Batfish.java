@@ -477,7 +477,7 @@ public class Batfish implements AutoCloseable {
       StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
       for (Flow flow : flows) {
          wSetFlowOriginate.append(flow.toLBLine());
-         _logger.output(flow.toString() + "\n");
+         _logger.debug("Found: " + flow.toString() + "\n");
       }
       dumpTrafficFacts(trafficFactBins, _baseEnvSettings);
       dumpTrafficFacts(trafficFactBins, _diffEnvSettings);
