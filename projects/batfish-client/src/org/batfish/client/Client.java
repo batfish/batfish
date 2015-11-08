@@ -428,12 +428,6 @@ public class Client {
                break;
             }
 
-            // upload a default environment
-            boolean resultUploadEnv = _workHelper.uploadEnvironment(
-                  testrigName, "default", testrigFile);
-            _logger.info("Result of uploading default environment: "
-                  + resultUploadEnv);
-
             // set the name of the current testrig
             _currTestrigName = testrigName;
             _currEnv = "default";

@@ -535,5 +535,14 @@ public class WorkMgr {
       // delete the empty directory and the zip file
       fileList[0].delete();
       zipFile.delete();
+
+      // create empty default environment
+      File defaultEnvironmentLeafDir = Paths
+            .get(testrigDir.getAbsolutePath(),
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                  BfConsts.RELPATH_ENV_DIR).toFile();
+      defaultEnvironmentLeafDir.mkdirs();
+
    }
 }

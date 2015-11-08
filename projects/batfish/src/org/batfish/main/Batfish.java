@@ -419,10 +419,10 @@ public class Batfish implements AutoCloseable {
    private void answerFailure(FailureQuestion question) {
       checkDifferentialDataPlaneQuestionDependencies();
       String tag = getDifferentialFlowTag();
-      _baseEnvSettings.setControlPlaneFactsDir(_baseEnvSettings
-            .getTrafficFactsDir());
-      _diffEnvSettings.setControlPlaneFactsDir(_diffEnvSettings
-            .getTrafficFactsDir());
+      // _baseEnvSettings.setControlPlaneFactsDir(_baseEnvSettings
+      // .getTrafficFactsDir());
+      // _diffEnvSettings.setControlPlaneFactsDir(_diffEnvSettings
+      // .getTrafficFactsDir());
 
       // load base configurations and generate base data plane
       Map<String, Configuration> baseConfigurations = loadConfigurations(_baseEnvSettings);
@@ -1793,15 +1793,16 @@ public class Batfish implements AutoCloseable {
    }
 
    private void getHistory() {
-      String tag = getFlowTag();
       FlowHistory flowHistory = new FlowHistory();
       if (_settings.getDiffQuestion()) {
+         String tag = getDifferentialFlowTag();
          populateFlowHistory(flowHistory, _baseEnvSettings,
                _baseEnvSettings.getName(), tag);
          populateFlowHistory(flowHistory, _diffEnvSettings,
                _diffEnvSettings.getName(), tag);
       }
       else {
+         String tag = getFlowTag();
          populateFlowHistory(flowHistory, _envSettings, _envSettings.getName(),
                tag);
       }
@@ -2206,7 +2207,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void nxtnetTraffic() {
-      if (_settings.getDiffActive()) {
+      if (_settings.getDiffQuestion()) {
          nxtnetTraffic(_baseEnvSettings);
          nxtnetTraffic(_diffEnvSettings);
       }
