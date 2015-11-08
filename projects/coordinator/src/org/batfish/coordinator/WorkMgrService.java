@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
@@ -176,6 +177,66 @@ public class WorkMgrService {
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("WMS:initContainer exception: " + stackTrace);
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+   }
+
+   @GET
+   @Path(CoordConsts.SVC_LIST_CONTAINERS_RSC)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray listContainers(
+         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey) {
+      try {
+         _logger.info("WMS:listContainers " + apiKey + "\n");
+
+         if (apiKey == null || apiKey.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "API key not supplied"));
+         }
+
+         String[] containerList = Main.getWorkMgr().listContainers(apiKey);
+
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               (new JSONObject().put(CoordConsts.SVC_CONTAINER_LIST_KEY, 
+                     new JSONArray(Arrays.asList(containerList))))));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:listContainer exception: " + stackTrace);
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+   }
+
+   @GET
+   @Path(CoordConsts.SVC_LIST_TESTRIGS_RSC)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray listTestrigs(
+         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName) {
+      try {
+         _logger.info("WMS:listTestrigs " + apiKey + " " + containerName + "\n");
+
+         if (apiKey == null || apiKey.equals("") || containerName == null || containerName.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "API key or container name not supplied"));
+         }
+
+         String[] testrigList = Main.getWorkMgr().listTestrigs(apiKey, containerName);
+
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               (new JSONObject().put(CoordConsts.SVC_TESTRIG_LIST_KEY, 
+                     new JSONArray(Arrays.asList(testrigList))))));
+      }
+      catch (FileExistsException e) {
+         _logger.error("WMS:listTestrig exception: " + e.getMessage() + "\n");
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:listTestrig exception: " + stackTrace);
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
       }

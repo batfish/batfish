@@ -67,12 +67,19 @@ public class Client {
             + "\t Generate dataplane for the default environment");
       descs.put(COMMAND_HELP, "help\n"
             + "\t Print the list of supported commands");
+      descs.put(COMMAND_INIT_CONTAINER, COMMAND_INIT_CONTAINER
+            + " <container-name-prefix>\n"
+            + "\t Initialize a new container");
       descs.put(COMMAND_INIT_DIFF_ENV, COMMAND_INIT_DIFF_ENV
             + " <environment-name> <environment-file>\n"
             + "\t Initialize the differential environment");
       descs.put(COMMAND_INIT_TESTRIG, COMMAND_INIT_TESTRIG
             + " <environment-name> <environment-file>\n"
             + "\t Initialize the testrig with default environment");
+      descs.put(COMMAND_LIST_CONTAINERS, COMMAND_LIST_CONTAINERS
+            + "\t List the containers to which you have access");
+      descs.put(COMMAND_LIST_TESTRIGS, COMMAND_LIST_TESTRIGS
+            + "\t List the testrigs within the current container");
       descs.put(COMMAND_QUIT, COMMAND_QUIT + "\n" + "\t Clear screen");
       descs.put(COMMAND_SET_DIFF_ENV, COMMAND_SET_DIFF_ENV
             + " <environment-name>\n"
@@ -396,11 +403,9 @@ public class Client {
          case COMMAND_INIT_CONTAINER: {
             String containerPrefix = words[1];
 
-            String containerName = _workHelper.initContainer(containerPrefix);
+            _currContainerName = _workHelper.initContainer(containerPrefix);
 
-            _currContainerName = containerName;
-            
-            _logger.outputf("Init'ed and set active container to %s\n", containerName);
+            _logger.outputf("Init'ed and set active container to %s\n", _currContainerName);
                   
             break;
          }
@@ -475,10 +480,35 @@ public class Client {
 
             break;
          }
-         case COMMAND_SET_TESTRIG: {
-            String testrigName = words[1];
+         case COMMAND_LIST_CONTAINERS: {            
+            String[] containerList = _workHelper.listContainers();
+            _logger.outputf("Containers: %s\n", Arrays.toString(containerList));                  
+            break;            
+         }
+         case COMMAND_LIST_TESTRIGS: {
 
-            _currTestrigName = testrigName;
+            if (_currContainerName == null) {
+               _logger.errorf("Active container is not set\n");
+               break;
+            }
+
+            String[] testrigList = _workHelper.listTestrigs(_currContainerName);
+            _logger.outputf("Testrigs: %s\n", Arrays.toString(testrigList));
+                  
+            break;
+            
+         }
+         case COMMAND_SET_CONTAINER: {
+            _currContainerName = words[1];
+
+            _logger.outputf(
+                  "Active container is now set to %s\n",
+                  _currContainerName);
+
+            break;
+         }
+         case COMMAND_SET_TESTRIG: {
+            _currTestrigName = words[1];
             _currEnv = "default";
 
             _logger.outputf(
@@ -488,9 +518,7 @@ public class Client {
             break;
          }
          case COMMAND_SET_DIFF_ENV: {
-            String diffEnvName = words[1];
-
-            _currDiffEnv = diffEnvName;
+            _currDiffEnv = words[1];
 
             _logger.outputf(
                   "Active differential environment is now set to %s\n",
@@ -529,7 +557,7 @@ public class Client {
       String poolMgr = _settings.getServiceHost() + ":"
             + _settings.getServicePoolPort();
 
-      _workHelper = new BfCoordWorkHelper(workMgr, _logger);
+      _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings.getApiKey());
       _poolHelper = new BfCoordPoolHelper(poolMgr);
 
       try (BufferedReader br = new BufferedReader(new FileReader(
@@ -586,7 +614,7 @@ public class Client {
          String poolMgr = _settings.getServiceHost() + ":"
                + _settings.getServicePoolPort();
 
-         _workHelper = new BfCoordWorkHelper(workMgr, _logger);
+         _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings.getApiKey());
          _poolHelper = new BfCoordPoolHelper(poolMgr);
 
          while ((line = reader.readLine()) != null) {

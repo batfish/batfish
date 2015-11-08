@@ -33,22 +33,16 @@ public class BfCoordWorkHelper {
 
    private String _coordWorkMgr;
    private BatfishLogger _logger;
+   private String _apiKey;
 
-   public BfCoordWorkHelper(String workMgr, BatfishLogger logger) {
+   public BfCoordWorkHelper(String workMgr, BatfishLogger logger, String apiKey) {
       _coordWorkMgr = workMgr;
       _logger = logger;
+      _apiKey = apiKey;
    }
 
-   public String initContainer(String containerPrefix) {
+   private JSONObject getJsonResponse(WebTarget webTarget) {      
       try {
-         Client client = ClientBuilder.newClient();
-         WebTarget webTarget = client.target(
-               String.format("http://%s%s/%s", _coordWorkMgr,
-                     CoordConsts.SVC_BASE_WORK_MGR,
-                     CoordConsts.SVC_INIT_CONTAINER_RSC)).queryParam(
-               CoordConsts.SVC_CONTAINER_PREFIX_KEY,
-               UriComponent.encode(containerPrefix.toString(),
-                     UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
 
@@ -62,24 +56,19 @@ public class BfCoordWorkHelper {
 
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
+
          _logger.infof("response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-            _logger.errorf("got error in init container: %s %s\n",
+            _logger.errorf("did not get success: %s %s\n",
                   array.get(0), array.get(1));
             return null;
          }
 
          JSONObject jObj = new JSONObject(array.get(1).toString());
 
-         if (!jObj.has(CoordConsts.SVC_CONTAINER_NAME_KEY)) {
-            _logger
-                  .errorf("container name key not found in: %s\n", jObj.toString());
-            return null;
-         }
-
-         return jObj.getString(CoordConsts.SVC_CONTAINER_NAME_KEY);
+         return jObj;
       }
       catch (ProcessingException e) {
          _logger.errorf("unable to connect to %s: %s\n", _coordWorkMgr, e
@@ -92,7 +81,7 @@ public class BfCoordWorkHelper {
          return null;
       }
    }
-
+   
    public String getObject(String testrigName, String objectName) {
       try {
 
@@ -149,42 +138,42 @@ public class BfCoordWorkHelper {
       }
    }
 
-   public String getResultsObjectNameAnswerQuestion(String envName,
-         String questionName) {
-      return null;
-   }
-
-   public String getResultsObjectNameCreateZ3Encoding(String envName) {
-      return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
-            BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString();
-   }
-
-   public String getResultsObjectNameGenerateDataPlane(String envName) {
-      return null;
-   }
-
-   public String getResultsObjectNameGenerateFacts(String envName) {
-      return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
-            BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString();
-   }
-
-   public String getResultsObjectNameGetDataPlane(String envName) {
-      return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
-            BfConsts.RELPATH_DATA_PLANE_DIR).toString();
-   }
-
-   public String getResultsObjectNameParseVendorIndependent() {
-      return BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR;
-   }
-
-   public String getResultsObjectNameParseVendorSpecific() {
-      return BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR;
-   }
-
-   public String getResultsObjectNamePostFlows(String envName,
-         String questionName) {
-      return null;
-   }
+//   public String getResultsObjectNameAnswerQuestion(String envName,
+//         String questionName) {
+//      return null;
+//   }
+//
+//   public String getResultsObjectNameCreateZ3Encoding(String envName) {
+//      return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
+//            BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString();
+//   }
+//
+//   public String getResultsObjectNameGenerateDataPlane(String envName) {
+//      return null;
+//   }
+//
+//   public String getResultsObjectNameGenerateFacts(String envName) {
+//      return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
+//            BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString();
+//   }
+//
+//   public String getResultsObjectNameGetDataPlane(String envName) {
+//      return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
+//            BfConsts.RELPATH_DATA_PLANE_DIR).toString();
+//   }
+//
+//   public String getResultsObjectNameParseVendorIndependent() {
+//      return BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR;
+//   }
+//
+//   public String getResultsObjectNameParseVendorSpecific() {
+//      return BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR;
+//   }
+//
+//   public String getResultsObjectNamePostFlows(String envName,
+//         String questionName) {
+//      return null;
+//   }
 
    public WorkItem getWorkItemAnswerDiffQuestion(String questionName,
          String testrigName, String envName, String diffEnvName) {
@@ -334,6 +323,120 @@ public class BfCoordWorkHelper {
 
          return WorkStatusCode.valueOf(jObj
                .getString(CoordConsts.SVC_WORKSTATUS_KEY));
+      }
+      catch (ProcessingException e) {
+         _logger.errorf("unable to connect to %s: %s\n", _coordWorkMgr, e
+               .getStackTrace().toString());
+         return null;
+      }
+      catch (Exception e) {
+         _logger.errorf("exception: ");
+         e.printStackTrace();
+         return null;
+      }
+   }
+
+   public String initContainer(String containerPrefix) {
+      try {
+         Client client = ClientBuilder.newClient();
+         WebTarget webTarget = client.target(
+               String.format("http://%s%s/%s", _coordWorkMgr,
+                     CoordConsts.SVC_BASE_WORK_MGR,
+                     CoordConsts.SVC_INIT_CONTAINER_RSC)).queryParam(
+               CoordConsts.SVC_CONTAINER_PREFIX_KEY,
+               UriComponent.encode(containerPrefix.toString(),
+                     UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
+         
+         JSONObject jObj = getJsonResponse(webTarget);
+         if (jObj == null) 
+            return null;
+         
+         if (!jObj.has(CoordConsts.SVC_CONTAINER_NAME_KEY)) {
+            _logger
+                  .errorf("container name key not found in: %s\n", jObj.toString());
+            return null;
+         }
+
+         return jObj.getString(CoordConsts.SVC_CONTAINER_NAME_KEY);
+      }
+      catch (Exception e) {
+         _logger.errorf("exception: ");
+         e.printStackTrace();
+         return null;
+      }
+   }
+
+   public String[] listContainers() {
+      try {
+         Client client = ClientBuilder.newClient();
+         WebTarget webTarget = client.target(
+               String.format("http://%s%s/%s", _coordWorkMgr,
+                     CoordConsts.SVC_BASE_WORK_MGR,
+                     CoordConsts.SVC_LIST_CONTAINERS_RSC)).queryParam(
+               CoordConsts.SVC_API_KEY,
+               UriComponent.encode(_apiKey,
+                     UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
+
+         JSONObject jObj = getJsonResponse(webTarget);
+         if (jObj == null) 
+            return null;
+         
+         if (!jObj.has(CoordConsts.SVC_CONTAINER_LIST_KEY)) {
+            _logger
+                  .errorf("container name key not found in: %s\n", jObj.toString());
+            return null;
+         }
+
+         JSONArray containerArray = jObj.getJSONArray(CoordConsts.SVC_CONTAINER_LIST_KEY);
+         
+         String[] containerList = new String[containerArray.length()];
+         
+         for (int index=0; index < containerArray.length(); index++) {
+            containerList[index] = containerArray.getString(index);
+         }
+         
+         return containerList;
+      }
+      catch (Exception e) {
+         _logger.errorf("exception: ");
+         e.printStackTrace();
+         return null;
+      }
+   }
+
+   public String[] listTestrigs(String containerName) {
+      try {
+         Client client = ClientBuilder.newClient();
+         WebTarget webTarget = client.target(
+               String.format("http://%s%s/%s", _coordWorkMgr,
+                     CoordConsts.SVC_BASE_WORK_MGR,
+                     CoordConsts.SVC_LIST_TESTRIGS_RSC)).queryParam(
+               CoordConsts.SVC_API_KEY,
+               UriComponent.encode(_apiKey,
+                     UriComponent.Type.QUERY_PARAM_SPACE_ENCODED)).queryParam(
+               CoordConsts.SVC_CONTAINER_NAME_KEY,
+               UriComponent.encode(containerName,
+                                 UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
+
+         JSONObject jObj = getJsonResponse(webTarget);
+         if (jObj == null) 
+            return null;
+         
+         if (!jObj.has(CoordConsts.SVC_TESTRIG_LIST_KEY)) {
+            _logger
+                  .errorf("container name key not found in: %s\n", jObj.toString());
+            return null;
+         }
+
+         JSONArray testrigArray = jObj.getJSONArray(CoordConsts.SVC_TESTRIG_LIST_KEY);
+         
+         String[] containerList = new String[testrigArray.length()];
+         
+         for (int index=0; index < testrigArray.length(); index++) {
+            containerList[index] = testrigArray.getString(index);
+         }
+         
+         return containerList;
       }
       catch (ProcessingException e) {
          _logger.errorf("unable to connect to %s: %s\n", _coordWorkMgr, e
@@ -600,4 +703,5 @@ public class BfCoordWorkHelper {
          return false;
       }
    }
+
 }

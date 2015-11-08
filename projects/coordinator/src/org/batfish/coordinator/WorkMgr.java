@@ -3,11 +3,14 @@ package org.batfish.coordinator;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -330,6 +333,43 @@ public class WorkMgr {
       return containerName;
    }
 
+   //TODO: check for api key access rights
+   public String[] listContainers(String apiKey) {
+
+      File containersDir = new File(Main.getSettings().getTestrigStorageLocation());      
+      
+      String[] directories = containersDir.list(new FilenameFilter() {
+         @Override
+         public boolean accept(File current, String name) {
+           return new File(current, name).isDirectory();
+         }
+       });
+       
+      return directories;
+   }
+
+   //TODO: check for api key access rights
+   public String[] listTestrigs(String apiKey, String containerName) throws Exception {
+
+      File containerDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName).toFile();
+
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException("Container " + containerName
+               + " does not exist");
+      }
+
+      String[] directories = containerDir.list(new FilenameFilter() {
+         @Override
+         public boolean accept(File current, String name) {
+           return new File(current, name).isDirectory();
+         }
+       });
+       
+      return directories;
+     
+   }
+
    private void moveByCopy(File srcFile, File destFile) throws IOException {
       if (srcFile.isDirectory()) {
          FileUtils.copyDirectory(srcFile, destFile);
@@ -565,4 +605,5 @@ public class WorkMgr {
       defaultEnvironmentLeafDir.mkdirs();
 
    }
+
 }
