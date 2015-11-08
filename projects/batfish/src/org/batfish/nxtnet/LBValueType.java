@@ -1,4 +1,4 @@
-package org.batfish.logicblox;
+package org.batfish.nxtnet;
 
 public enum LBValueType {
    ENTITY_INDEX_BGP_ADVERTISEMENT,

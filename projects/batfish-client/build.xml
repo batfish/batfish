@@ -56,7 +56,7 @@
 
    <target name="copyconfig" description="Copy configuration file to output directory">
       <copy todir="out">
-         <fileset dir="src/org/batfish/client/config" includes="config.Properties"/>
+         <fileset dir="src/org/batfish/client/config" includes="config.properties"/>
       </copy>
    </target>
 

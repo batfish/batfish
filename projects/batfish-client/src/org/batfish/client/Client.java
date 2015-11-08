@@ -21,6 +21,8 @@ import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.Util;
+
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 
@@ -126,7 +128,7 @@ public class Client {
    private File createParamsFile(String[] words, int startIndex, int endIndex)
          throws IOException {
 
-      String paramsLine = joinStrings(" ",
+      String paramsLine = Util.joinStrings(" ",
             Arrays.copyOfRange(words, startIndex, endIndex + 1));
 
       File paramFile = Files.createTempFile("params", null).toFile();
@@ -463,12 +465,6 @@ public class Client {
             if (!resultPvi) {
                break;
             }
-
-            // upload a default environment
-            boolean resultUploadEnv = _workHelper.uploadEnvironment(
-                  testrigName, "default", testrigFile);
-            _logger.info("Result of uploading default environment: "
-                  + resultUploadEnv);
 
             // set the name of the current testrig
             _currTestrigName = testrigName;

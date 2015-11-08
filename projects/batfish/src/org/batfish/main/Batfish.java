@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,6 +36,10 @@ import java.util.TreeSet;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.collections.AdvertisementSet;
@@ -48,6 +53,7 @@ import org.batfish.collections.IbgpTopology;
 import org.batfish.collections.IpEdge;
 import org.batfish.collections.MultiSet;
 import org.batfish.collections.NodeInterfacePair;
+import org.batfish.collections.NodeIpPair;
 import org.batfish.collections.NodeRoleMap;
 import org.batfish.collections.NodeSet;
 import org.batfish.collections.PolicyRouteFibIpMap;
@@ -81,10 +87,6 @@ import org.batfish.grammar.topology.GNS3TopologyExtractor;
 import org.batfish.grammar.topology.RoleCombinedParser;
 import org.batfish.grammar.topology.RoleExtractor;
 import org.batfish.grammar.topology.TopologyExtractor;
-import org.batfish.grammar.z3.ConcretizerQueryResultCombinedParser;
-import org.batfish.grammar.z3.ConcretizerQueryResultExtractor;
-import org.batfish.grammar.z3.DatalogQueryResultCombinedParser;
-import org.batfish.grammar.z3.DatalogQueryResultExtractor;
 import org.batfish.job.BatfishJobExecutor;
 import org.batfish.job.ConvertConfigurationJob;
 import org.batfish.job.ConvertConfigurationResult;
@@ -93,17 +95,17 @@ import org.batfish.job.FlattenVendorConfigurationResult;
 import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.logic.LogicResourceLocator;
-import org.batfish.logicblox.Block;
-import org.batfish.logicblox.ConfigurationFactExtractor;
-import org.batfish.logicblox.Facts;
-import org.batfish.logicblox.LBValueType;
-import org.batfish.logicblox.LogicBloxFrontend;
-import org.batfish.logicblox.LogicBloxFrontendManager;
-import org.batfish.logicblox.PredicateInfo;
-import org.batfish.logicblox.ProjectFile;
-import org.batfish.logicblox.QueryException;
-import org.batfish.logicblox.TopologyFactExtractor;
 import org.batfish.main.Settings.EnvironmentSettings;
+import org.batfish.nxtnet.Block;
+import org.batfish.nxtnet.Column;
+import org.batfish.nxtnet.ConfigurationFactExtractor;
+import org.batfish.nxtnet.EntityTable;
+import org.batfish.nxtnet.Facts;
+import org.batfish.nxtnet.LBValueType;
+import org.batfish.nxtnet.NxtnetConstants;
+import org.batfish.nxtnet.PredicateInfo;
+import org.batfish.nxtnet.Relation;
+import org.batfish.nxtnet.TopologyFactExtractor;
 import org.batfish.question.DestinationQuestion;
 import org.batfish.question.FailureQuestion;
 import org.batfish.question.IngressPathQuestion;
@@ -128,7 +130,6 @@ import org.batfish.representation.FlowHistory;
 import org.batfish.representation.FlowTrace;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
-import org.batfish.representation.IpProtocol;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.OspfArea;
 import org.batfish.representation.OspfProcess;
@@ -142,15 +143,12 @@ import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.Topology;
 import org.batfish.representation.VendorConfiguration;
-import org.batfish.representation.cisco.CiscoVendorConfiguration;
 import org.batfish.util.StringFilter;
 import org.batfish.util.SubRange;
 import org.batfish.util.UrlZipExplorer;
 import org.batfish.util.Util;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
-import org.batfish.z3.ConcretizerQuery;
-import org.batfish.z3.DropQuerySynthesizer;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodJob;
 import org.batfish.z3.NodJobResult;
@@ -158,12 +156,9 @@ import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.ReachableQuerySynthesizer;
-import org.batfish.z3.RoleReachabilityQuerySynthesizer;
 import org.batfish.z3.RoleTransitQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
 
-import com.logicblox.bloxweb.client.ServiceClientException;
-import com.logicblox.connect.Workspace.Relation;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
@@ -171,12 +166,6 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
  * This class encapsulates the main control logic for Batfish.
  */
 public class Batfish implements AutoCloseable {
-
-   /**
-    * Name of the LogiQL executable block containing basic facts that are true
-    * for any network
-    */
-   private static final String BASIC_FACTS_BLOCKNAME = "BaseFacts";
 
    private static final String BGP_ADVERTISEMENT_ROUTE_PREDICATE_NAME = "BgpAdvertisementRoute";
 
@@ -209,8 +198,11 @@ public class Batfish implements AutoCloseable {
     * A byte-array containing the first 4 bytes comprising the header for a file
     * that is the output of java serialization
     */
-   private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = { (byte) 0xac,
-         (byte) 0xed, (byte) 0x00, (byte) 0x05 };
+   private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = {
+         (byte) 0xac,
+         (byte) 0xed,
+         (byte) 0x00,
+         (byte) 0x05 };
 
    /**
     * The name of the LogiQL library for org.batfish
@@ -218,6 +210,8 @@ public class Batfish implements AutoCloseable {
    private static final String LB_BATFISH_LIBRARY_NAME = "libbatfish";
 
    private static final String NETWORKS_PREDICATE_NAME = "SetNetwork";
+
+   private static final String NXTNET_COMMAND = "nxtnet";
 
    private static final String PRECOMPUTED_BGP_ADVERTISEMENT_AS_PATH_LENGTH_PREDICATE_NAME = "SetBgpAdvertisementPathSize";
 
@@ -251,8 +245,6 @@ public class Batfish implements AutoCloseable {
     * The name of the [optional] topology file within a test-rig
     */
    private static final String TOPOLOGY_FILENAME = "topology.net";
-
-   private static final String TRACE_PREFIX = "trace:";
 
    public static String flatten(String input, BatfishLogger logger,
          Settings settings) {
@@ -330,11 +322,11 @@ public class Batfish implements AutoCloseable {
 
    private EnvironmentSettings _diffEnvSettings;
 
+   private final Map<EnvironmentSettings, EntityTable> _entityTables;
+
    private EnvironmentSettings _envSettings;
 
    private BatfishLogger _logger;
-
-   private LogicBloxFrontendManager _manager;
 
    private PredicateInfo _predicateInfo;
 
@@ -350,46 +342,8 @@ public class Batfish implements AutoCloseable {
       _baseEnvSettings = settings.getBaseEnvironmentSettings();
       _diffEnvSettings = settings.getDiffEnvironmentSettings();
       _logger = _settings.getLogger();
-      _manager = new LogicBloxFrontendManager(settings, _logger, _envSettings);
       _tmpLogicDir = null;
-   }
-
-   private void addProject() {
-      LogicBloxFrontend lbFrontend = _manager.connect();
-      _logger.info("\n*** ADDING PROJECT ***\n");
-      resetTimer();
-      String settingsLogicDir = _settings.getLogicDir();
-      File logicDir;
-      if (settingsLogicDir != null) {
-         logicDir = new ProjectFile(settingsLogicDir);
-      }
-      else {
-         logicDir = retrieveLogicDir().getAbsoluteFile();
-      }
-      String result = lbFrontend.addProject(logicDir, "");
-      cleanupLogicDir();
-      if (result != null) {
-         throw new BatfishException(result + "\n");
-      }
-      _logger.info("SUCCESS\n");
-      printElapsedTime();
-   }
-
-   private void addStaticFacts(String blockName) {
-      LogicBloxFrontend lbFrontend = _manager.connect();
-      _logger.info("\n*** ADDING STATIC FACTS ***\n");
-      resetTimer();
-      _logger.info("Adding " + blockName + "....");
-      String output = lbFrontend.execNamedBlock(LB_BATFISH_LIBRARY_NAME + ":"
-            + blockName);
-      if (output == null) {
-         _logger.info("OK\n");
-      }
-      else {
-         throw new BatfishException(output + "\n");
-      }
-      _logger.info("SUCCESS\n");
-      printElapsedTime();
+      _entityTables = new HashMap<EnvironmentSettings, EntityTable>();
    }
 
    private void anonymizeConfigurations() {
@@ -448,18 +402,9 @@ public class Batfish implements AutoCloseable {
       default:
          throw new BatfishException("Unknown question type");
       }
-      if (diff) {
-         _settings.setPostFlows(false);
-         _settings.setHistory(false);
-      }
-      else {
-         _settings.setPostDifferentialFlows(false);
-         _settings.setDifferentialHistory(false);
-      }
+      _settings.setDiffQuestion(diff);
       if (!dp) {
-         _settings.setPostDifferentialFlows(false);
-         _settings.setDifferentialHistory(false);
-         _settings.setPostFlows(false);
+         _settings.setNxtnetTraffic(false);
          _settings.setHistory(false);
       }
    }
@@ -474,10 +419,6 @@ public class Batfish implements AutoCloseable {
    private void answerFailure(FailureQuestion question) {
       checkDifferentialDataPlaneQuestionDependencies();
       String tag = getDifferentialFlowTag();
-      _baseEnvSettings
-            .setDumpFactsDir(_baseEnvSettings.getTrafficFactDumpDir());
-      _diffEnvSettings
-            .setDumpFactsDir(_diffEnvSettings.getTrafficFactDumpDir());
 
       // load base configurations and generate base data plane
       Map<String, Configuration> baseConfigurations = loadConfigurations(_baseEnvSettings);
@@ -536,10 +477,10 @@ public class Batfish implements AutoCloseable {
       StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
       for (Flow flow : flows) {
          wSetFlowOriginate.append(flow.toLBLine());
-         _logger.output(flow.toString() + "\n");
+         _logger.debug("Found: " + flow.toString() + "\n");
       }
-      dumpFacts(trafficFactBins, _baseEnvSettings);
-      dumpFacts(trafficFactBins, _diffEnvSettings);
+      dumpTrafficFacts(trafficFactBins, _baseEnvSettings);
+      dumpTrafficFacts(trafficFactBins, _diffEnvSettings);
    }
 
    private void answerIngressPath(IngressPathQuestion question) {
@@ -552,10 +493,6 @@ public class Batfish implements AutoCloseable {
    private void answerLocalPath(LocalPathQuestion question) {
       checkDifferentialDataPlaneQuestionDependencies();
       String tag = getDifferentialFlowTag();
-      _baseEnvSettings
-            .setDumpFactsDir(_baseEnvSettings.getTrafficFactDumpDir());
-      _diffEnvSettings
-            .setDumpFactsDir(_diffEnvSettings.getTrafficFactDumpDir());
 
       // load base configurations and generate base data plane
       Map<String, Configuration> baseConfigurations = loadConfigurations(_baseEnvSettings);
@@ -646,14 +583,13 @@ public class Batfish implements AutoCloseable {
          wSetFlowOriginate.append(flow.toLBLine());
          _logger.output(flow.toString() + "\n");
       }
-      dumpFacts(trafficFactBins, _baseEnvSettings);
-      dumpFacts(trafficFactBins, _diffEnvSettings);
+      dumpTrafficFacts(trafficFactBins, _baseEnvSettings);
+      dumpTrafficFacts(trafficFactBins, _diffEnvSettings);
    }
 
    private void answerMultipath(MultipathQuestion question) {
       checkDataPlaneQuestionDependencies();
       String tag = getFlowTag();
-      _envSettings.setDumpFactsDir(_envSettings.getTrafficFactDumpDir());
       Map<String, Configuration> configurations = loadConfigurations();
       File dataPlanePath = new File(_envSettings.getDataPlanePath());
       Set<Flow> flows = null;
@@ -676,13 +612,12 @@ public class Batfish implements AutoCloseable {
       for (Flow flow : flows) {
          wSetFlowOriginate.append(flow.toLBLine());
       }
-      dumpFacts(trafficFactBins);
+      dumpTrafficFacts(trafficFactBins);
    }
 
    private void answerReachability(ReachabilityQuestion question) {
       checkDataPlaneQuestionDependencies();
       String tag = getFlowTag();
-      _envSettings.setDumpFactsDir(_envSettings.getTrafficFactDumpDir());
       Map<String, Configuration> configurations = loadConfigurations();
       File dataPlanePath = new File(_envSettings.getDataPlanePath());
       Set<Flow> flows = null;
@@ -744,12 +679,11 @@ public class Batfish implements AutoCloseable {
       for (Flow flow : flows) {
          wSetFlowOriginate.append(flow.toLBLine());
       }
-      dumpFacts(trafficFactBins);
+      dumpTrafficFacts(trafficFactBins);
    }
 
    private void answerTraceroute(TracerouteQuestion question) {
       checkDataPlaneQuestionDependencies();
-      _envSettings.setDumpFactsDir(_envSettings.getTrafficFactDumpDir());
       Set<Flow> flows = question.getFlows();
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
       initTrafficFactBins(trafficFactBins);
@@ -757,7 +691,7 @@ public class Batfish implements AutoCloseable {
       for (Flow flow : flows) {
          wSetFlowOriginate.append(flow.toLBLine());
       }
-      dumpFacts(trafficFactBins);
+      dumpTrafficFacts(trafficFactBins);
    }
 
    private void answerVerify(VerifyQuestion question) {
@@ -867,6 +801,10 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   private void checkComputeNxtnetRelations() {
+      checkControlPlaneFacts();
+   }
+
    private void checkConfigurations() {
       String serializedConfigPath = _settings.getSerializeIndependentPath();
       File dir = new File(serializedConfigPath);
@@ -878,6 +816,19 @@ public class Batfish implements AutoCloseable {
       else if (serializedConfigs.length == 0) {
          throw new CleanBatfishException(
                "Nothing to do: Set of vendor-independent configurations for this test-rig is empty\n");
+      }
+   }
+
+   private void checkControlPlaneFacts() {
+      checkControlPlaneFacts(_envSettings);
+   }
+
+   private void checkControlPlaneFacts(EnvironmentSettings envSettings) {
+      File cpFactsDir = new File(envSettings.getControlPlaneFactsDir());
+      if (!cpFactsDir.exists()) {
+         throw new CleanBatfishException(
+               "Missing control plane facts for environment: \""
+                     + envSettings.getName() + "\"\n");
       }
    }
 
@@ -941,9 +892,6 @@ public class Batfish implements AutoCloseable {
 
    @Override
    public void close() throws Exception {
-      if (_manager != null) {
-         _manager.close();
-      }
    }
 
    private Set<Flow> computeCompositeNodOutput(List<CompositeNodJob> jobs) {
@@ -960,19 +908,7 @@ public class Batfish implements AutoCloseable {
    private void computeControlPlaneFacts(Map<String, StringBuilder> cpFactBins) {
       checkComputeControlPlaneFacts();
       if (_settings.getUsePrecomputedRoutes()) {
-         Set<String> precomputedRoutesPaths = _settings
-               .getPrecomputedRoutesPaths();
-         String precomputedRoutesPath = _settings.getPrecomputedRoutesPath();
-         if (precomputedRoutesPaths == null) {
-            if (precomputedRoutesPath == null) {
-               throw new BatfishException(
-                     "Must specify path(s) to precomputed routes");
-            }
-            else {
-               precomputedRoutesPaths = Collections
-                     .singleton(precomputedRoutesPath);
-            }
-         }
+         Set<String> precomputedRoutesPaths = getPrecomputedRoutesPaths();
          populatePrecomputedRoutes(precomputedRoutesPaths, cpFactBins);
       }
       if (_settings.getUsePrecomputedIbgpNeighbors()) {
@@ -1029,15 +965,13 @@ public class Batfish implements AutoCloseable {
          _logger.output("LogicBlox facts generated successfully.\n");
       }
       if (_settings.getDumpControlPlaneFacts()) {
-         dumpFacts(cpFactBins);
+         dumpControlPlaneFacts(cpFactBins);
       }
-      if (_settings.getFacts()) {
-         // serialize topology
-         File topologyPath = new File(serializedTopologyPath);
-         _logger.info("Serializing topology...");
-         serializeObject(topology, topologyPath);
-         _logger.info("OK\n");
-      }
+      // serialize topology
+      File topologyPath = new File(serializedTopologyPath);
+      _logger.info("Serializing topology...");
+      serializeObject(topology, topologyPath);
+      _logger.info("OK\n");
    }
 
    private void computeDataPlane() {
@@ -1050,38 +984,19 @@ public class Batfish implements AutoCloseable {
    }
 
    private void computeDataPlane(File dataPlanePath) {
-      LogicBloxFrontend lbFrontend = _manager.connect();
       _logger.info("\n*** COMPUTING DATA PLANE STRUCTURES ***\n");
       resetTimer();
 
-      lbFrontend.initEntityTable();
-
-      _logger.info("Retrieving flow sink information from LogicBlox...");
-      InterfaceSet flowSinks = getFlowSinkSet(lbFrontend);
+      _logger.info("Retrieving flow sink information...");
+      InterfaceSet flowSinks = getFlowSinkSet();
       _logger.info("OK\n");
 
       Topology topology = loadTopology();
       EdgeSet topologyEdges = topology.getEdges();
 
-      String fibQualifiedName = _predicateInfo.getPredicateNames().get(
-            FIB_PREDICATE_NAME);
-      _logger
-            .info("Retrieving destination-routing FIB information from LogicBlox...");
-      Relation fibNetwork = lbFrontend.queryPredicate(fibQualifiedName);
-      _logger.info("OK\n");
-
-      String fibPolicyRouteNextHopQualifiedName = _predicateInfo
-            .getPredicateNames().get(FIB_POLICY_ROUTE_NEXT_HOP_PREDICATE_NAME);
-      _logger
-            .info("Retrieving policy-routing  FIB information from LogicBlox...");
-      Relation fibPolicyRouteNextHops = lbFrontend
-            .queryPredicate(fibPolicyRouteNextHopQualifiedName);
-      _logger.info("OK\n");
-
       _logger.info("Caclulating forwarding rules...");
-      FibMap fibs = getRouteForwardingRules(fibNetwork, lbFrontend);
-      PolicyRouteFibNodeMap policyRouteFibNodeMap = getPolicyRouteFibNodeMap(
-            fibPolicyRouteNextHops, lbFrontend);
+      FibMap fibs = getRouteForwardingRules();
+      PolicyRouteFibNodeMap policyRouteFibNodeMap = getPolicyRouteFibNodeMap();
       _logger.info("OK\n");
       DataPlane dataPlane = new DataPlane(flowSinks, topologyEdges, fibs,
             policyRouteFibNodeMap);
@@ -1144,102 +1059,6 @@ public class Batfish implements AutoCloseable {
       return topology;
    }
 
-   private void concretize() {
-      _logger.info("\n*** GENERATING Z3 CONCRETIZER QUERIES ***\n");
-      resetTimer();
-      String[] concInPaths = _settings.getConcretizerInputFilePaths();
-      String[] negConcInPaths = _settings.getNegatedConcretizerInputFilePaths();
-      List<ConcretizerQuery> concretizerQueries = new ArrayList<ConcretizerQuery>();
-      String blacklistDstIpPath = _settings.getBlacklistDstIpPath();
-      if (blacklistDstIpPath != null) {
-         String blacklistDstIpFileText = Util.readFile(new File(
-               blacklistDstIpPath));
-         String[] blacklistDstpIpStrs = blacklistDstIpFileText.split("\n");
-         Set<Ip> blacklistDstIps = new TreeSet<Ip>();
-         for (String blacklistDstIpStr : blacklistDstpIpStrs) {
-            Ip blacklistDstIp = new Ip(blacklistDstIpStr);
-            blacklistDstIps.add(blacklistDstIp);
-         }
-         if (blacklistDstIps.size() == 0) {
-            _logger.warn("Warning: empty set of blacklisted destination ips\n");
-         }
-         ConcretizerQuery blacklistIpQuery = ConcretizerQuery
-               .blacklistDstIpQuery(blacklistDstIps);
-         concretizerQueries.add(blacklistIpQuery);
-      }
-      for (String concInPath : concInPaths) {
-         _logger.info("Reading z3 datalog query output file: \"" + concInPath
-               + "\" ...");
-         File queryOutputFile = new File(concInPath);
-         String queryOutputStr = Util.readFile(queryOutputFile);
-         _logger.info("OK\n");
-
-         DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
-               queryOutputStr, _settings.getThrowOnParserError(),
-               _settings.getThrowOnLexerError());
-         ParserRuleContext tree = parse(parser, concInPath);
-
-         _logger.info("Computing concretizer queries...");
-         ParseTreeWalker walker = new ParseTreeWalker();
-         DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(
-               _settings.concretizeUnique(), false);
-         walker.walk(extractor, tree);
-         _logger.info("OK\n");
-
-         List<ConcretizerQuery> currentQueries = extractor
-               .getConcretizerQueries();
-         if (concretizerQueries.size() == 0) {
-            concretizerQueries.addAll(currentQueries);
-         }
-         else {
-            concretizerQueries = ConcretizerQuery.crossProduct(
-                  concretizerQueries, currentQueries);
-         }
-      }
-      if (negConcInPaths != null) {
-         for (String negConcInPath : negConcInPaths) {
-            _logger
-                  .info("Reading z3 datalog query output file (to be negated): \""
-                        + negConcInPath + "\" ...");
-            File queryOutputFile = new File(negConcInPath);
-            String queryOutputStr = Util.readFile(queryOutputFile);
-            _logger.info("OK\n");
-
-            DatalogQueryResultCombinedParser parser = new DatalogQueryResultCombinedParser(
-                  queryOutputStr, _settings.getThrowOnParserError(),
-                  _settings.getThrowOnLexerError());
-            ParserRuleContext tree = parse(parser, negConcInPath);
-
-            _logger.info("Computing concretizer queries...");
-            ParseTreeWalker walker = new ParseTreeWalker();
-            DatalogQueryResultExtractor extractor = new DatalogQueryResultExtractor(
-                  _settings.concretizeUnique(), true);
-            walker.walk(extractor, tree);
-            _logger.info("OK\n");
-
-            List<ConcretizerQuery> currentQueries = extractor
-                  .getConcretizerQueries();
-            if (concretizerQueries.size() == 0) {
-               concretizerQueries.addAll(currentQueries);
-            }
-            else {
-               concretizerQueries = ConcretizerQuery.crossProduct(
-                     concretizerQueries, currentQueries);
-            }
-         }
-      }
-      for (int i = 0; i < concretizerQueries.size(); i++) {
-         ConcretizerQuery cq = concretizerQueries.get(i);
-         String concQueryPath = _settings.getConcretizerOutputFilePath() + "-"
-               + i + ".smt2";
-         _logger.info("Writing concretizer query file: \"" + concQueryPath
-               + "\" ...");
-         writeFile(concQueryPath, cq.getText());
-         _logger.info("OK\n");
-      }
-      printElapsedTime();
-   }
-
    private Map<String, Configuration> convertConfigurations(
          Map<String, VendorConfiguration> vendorConfigurations) {
       _logger
@@ -1269,23 +1088,6 @@ public class Batfish implements AutoCloseable {
       return configurations;
    }
 
-   private void createWorkspace() {
-      addProject();
-      String lbHostnamePath = _envSettings.getJobLogicBloxHostnamePath();
-      String lbHostname = _settings.getServiceLogicBloxHostname();
-      if (lbHostname == null) {
-         lbHostname = "localhost";
-      }
-      if (lbHostnamePath != null) {
-         writeFile(lbHostnamePath, lbHostname);
-      }
-   }
-
-   private void deleteWorkspace() {
-      LogicBloxFrontend lbFrontend = _manager.connect();
-      lbFrontend.deleteWorkspace();
-   }
-
    public Map<String, Configuration> deserializeConfigurations(
          String serializedConfigPath) {
       _logger
@@ -1307,8 +1109,6 @@ public class Batfish implements AutoCloseable {
          configurations.put(name, c);
          _logger.debug(" ...OK\n");
       }
-      disableBlacklistedInterface(configurations);
-      disableBlacklistedNode(configurations);
       printElapsedTime();
       return configurations;
    }
@@ -1358,89 +1158,43 @@ public class Batfish implements AutoCloseable {
       return vendorConfigurations;
    }
 
-   private void disableBlacklistedInterface(
-         Map<String, Configuration> configurations) {
-      String blacklistInterfaceString = _settings.getBlacklistInterfaceString();
-      if (blacklistInterfaceString != null) {
-         String[] blacklistInterfaceStringParts = blacklistInterfaceString
-               .split(",");
-         String blacklistInterfaceNode = blacklistInterfaceStringParts[0];
-         String blacklistInterfaceName = blacklistInterfaceStringParts[1];
-         Configuration c = configurations.get(blacklistInterfaceNode);
-         Interface i = c.getInterfaces().get(blacklistInterfaceName);
-         i.setActive(false);
-      }
+   private void dumpControlPlaneFacts(EnvironmentSettings envSettings,
+         Map<String, StringBuilder> factBins) {
+      _logger.info("\n*** DUMPING CONTROL PLANE FACTS ***\n");
+      dumpFacts(factBins, envSettings.getControlPlaneFactsDir());
    }
 
-   private void disableBlacklistedNode(Map<String, Configuration> configurations) {
-      String blacklistNode = _settings.getBlacklistNode();
-      if (blacklistNode != null) {
-         if (!configurations.containsKey(blacklistNode)) {
-            throw new BatfishException("Cannot blacklist non-existent node: "
-                  + blacklistNode);
-         }
-         Configuration configuration = configurations.get(blacklistNode);
-         for (Interface iface : configuration.getInterfaces().values()) {
-            iface.setActive(false);
-         }
-      }
+   private void dumpControlPlaneFacts(Map<String, StringBuilder> factBins) {
+      dumpControlPlaneFacts(_envSettings, factBins);
    }
 
-   private void dumpFacts(Map<String, StringBuilder> factBins) {
-      dumpFacts(factBins, _envSettings);
-   }
-
-   private void dumpFacts(Map<String, StringBuilder> factBins,
-         EnvironmentSettings envSettings) {
-      _logger.info("\n*** DUMPING FACTS ***\n");
+   private void dumpFacts(Map<String, StringBuilder> factBins, String factsDir) {
       resetTimer();
-      Path factsDir = Paths.get(envSettings.getDumpFactsDir());
+      Path factsDirPath = Paths.get(factsDir);
       try {
-         Files.createDirectories(factsDir);
+         Files.createDirectories(factsDirPath);
          for (String factsFilename : factBins.keySet()) {
             String facts = factBins.get(factsFilename).toString();
-            Path factsFilePath = factsDir.resolve(factsFilename);
+            Path factsFilePath = factsDirPath.resolve(factsFilename);
             _logger.info("Writing: \""
                   + factsFilePath.toAbsolutePath().toString() + "\"\n");
             FileUtils.write(factsFilePath.toFile(), facts);
          }
       }
       catch (IOException e) {
-         throw new BatfishException("Failed to write fact dump file", e);
+         throw new BatfishException("Failed to write fact dump file(s)", e);
       }
       printElapsedTime();
    }
 
-   private void dumpInterfaceDescriptions(String testRigPath, String outputPath) {
-      Map<File, String> configurationData = readConfigurationFiles(testRigPath);
-      Map<String, VendorConfiguration> configs = parseVendorConfigurations(configurationData);
-      Map<String, VendorConfiguration> sortedConfigs = new TreeMap<String, VendorConfiguration>();
-      sortedConfigs.putAll(configs);
-      StringBuilder sb = new StringBuilder();
-      for (VendorConfiguration vconfig : sortedConfigs.values()) {
-         String node = vconfig.getHostname();
-         CiscoVendorConfiguration config = null;
-         try {
-            config = (CiscoVendorConfiguration) vconfig;
-         }
-         catch (ClassCastException e) {
-            continue;
-         }
-         Map<String, org.batfish.representation.cisco.Interface> sortedInterfaces = new TreeMap<String, org.batfish.representation.cisco.Interface>();
-         sortedInterfaces.putAll(config.getInterfaces());
-         for (org.batfish.representation.cisco.Interface iface : sortedInterfaces
-               .values()) {
-            String iname = iface.getName();
-            String description = iface.getDescription();
-            sb.append(node + " " + iname);
-            if (description != null) {
-               sb.append(" \"" + description + "\"");
-            }
-            sb.append("\n");
-         }
-      }
-      String output = sb.toString();
-      writeFile(outputPath, output);
+   private void dumpTrafficFacts(Map<String, StringBuilder> factBins) {
+      dumpTrafficFacts(factBins, _envSettings);
+   }
+
+   private void dumpTrafficFacts(Map<String, StringBuilder> factBins,
+         EnvironmentSettings envSettings) {
+      _logger.info("\n*** DUMPING TRAFFIC FACTS ***\n");
+      dumpFacts(factBins, envSettings.getTrafficFactsDir());
    }
 
    private void flatten(String inputPath, String outputPath) {
@@ -1497,31 +1251,6 @@ public class Batfish implements AutoCloseable {
          String topologyFileText = Util.readFile(inputTopologyPath.toFile());
          writeFile(outputTopologyPath.toString(), topologyFileText);
       }
-   }
-
-   private void genBlackHoleQueries() {
-      _logger.info("\n*** GENERATING BLACK-HOLE QUERIES ***\n");
-      resetTimer();
-
-      String fiQueryBasePath = _settings.getBlackHoleQueryPath();
-      String nodeSetPath = _settings.getNodeSetPath();
-
-      _logger.info("Reading node set from: \"" + nodeSetPath + "\"...");
-      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
-      _logger.info("OK\n");
-
-      for (String hostname : nodes) {
-         QuerySynthesizer synth = new DropQuerySynthesizer(hostname);
-         String queryText = synth.getQueryText();
-         String fiQueryPath;
-         fiQueryPath = fiQueryBasePath + "-" + hostname + ".smt2";
-
-         _logger.info("Writing query to: \"" + fiQueryPath + "\"...");
-         writeFile(fiQueryPath, queryText);
-         _logger.info("OK\n");
-      }
-
-      printElapsedTime();
    }
 
    private void generateOspfConfigs(String topologyPath, String outputPath) {
@@ -1772,147 +1501,6 @@ public class Batfish implements AutoCloseable {
 
    }
 
-   private void genMultipathQueries() {
-      _logger.info("\n*** GENERATING MULTIPATH-INCONSISTENCY QUERIES ***\n");
-      resetTimer();
-
-      String mpiQueryBasePath = _settings.getMultipathInconsistencyQueryPath();
-      String nodeSetPath = _settings.getNodeSetPath();
-      String nodeSetTextPath = nodeSetPath + ".txt";
-
-      _logger.info("Reading node set from: \"" + nodeSetPath + "\"...");
-      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
-      _logger.info("OK\n");
-
-      for (String hostname : nodes) {
-         QuerySynthesizer synth = new MultipathInconsistencyQuerySynthesizer(
-               hostname);
-         String queryText = synth.getQueryText();
-         String mpiQueryPath = mpiQueryBasePath + "-" + hostname + ".smt2";
-         _logger.info("Writing query to: \"" + mpiQueryPath + "\"...");
-         writeFile(mpiQueryPath, queryText);
-         _logger.info("OK\n");
-      }
-
-      _logger.info("Writing node lines for next stage...");
-      StringBuilder sb = new StringBuilder();
-      for (String node : nodes) {
-         sb.append(node + "\n");
-      }
-      writeFile(nodeSetTextPath, sb.toString());
-      _logger.info("OK\n");
-
-      printElapsedTime();
-   }
-
-   private void genReachableQueries() {
-      _logger.info("\n*** GENERATING REACHABLE QUERIES ***\n");
-      resetTimer();
-
-      String queryBasePath = _settings.getReachableQueryPath();
-      String nodeSetPath = _settings.getNodeSetPath();
-      String acceptNode = _settings.getAcceptNode();
-      String blacklistedNode = _settings.getBlacklistNode();
-      _logger.info("Reading node set from: \"" + nodeSetPath + "\"...");
-      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
-      _logger.info("OK\n");
-
-      for (String hostname : nodes) {
-         if (hostname.equals(acceptNode) || hostname.equals(blacklistedNode)) {
-            continue;
-         }
-         QuerySynthesizer synth = new ReachableQuerySynthesizer(hostname,
-               acceptNode);
-         String queryText = synth.getQueryText();
-         String queryPath;
-         queryPath = queryBasePath + "-" + hostname + ".smt2";
-
-         _logger.info("Writing query to: \"" + queryPath + "\"...");
-         writeFile(queryPath, queryText);
-         _logger.info("OK\n");
-      }
-
-      printElapsedTime();
-   }
-
-   private void genRoleReachabilityQueries() {
-      _logger.info("\n*** GENERATING NODE-TO-ROLE QUERIES ***\n");
-      resetTimer();
-
-      String queryBasePath = _settings.getRoleReachabilityQueryPath();
-      String nodeSetPath = _settings.getNodeSetPath();
-      String nodeSetTextPath = nodeSetPath + ".txt";
-      String roleSetTextPath = _settings.getRoleSetPath();
-      String nodeRolesPath = _settings.getNodeRolesPath();
-      String iterationsPath = nodeRolesPath + ".iterations";
-
-      _logger.info("Reading node set from: \"" + nodeSetPath + "\"...");
-      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
-      _logger.info("OK\n");
-
-      _logger.info("Reading node roles from: \"" + nodeRolesPath + "\"...");
-      NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(new File(
-            nodeRolesPath));
-      _logger.info("OK\n");
-
-      RoleNodeMap roleNodes = nodeRoles.toRoleNodeMap();
-
-      for (String hostname : nodes) {
-         for (String role : roleNodes.keySet()) {
-            QuerySynthesizer synth = new RoleReachabilityQuerySynthesizer(
-                  hostname, role);
-            String queryText = synth.getQueryText();
-            String queryPath = queryBasePath + "-" + hostname + "-" + role
-                  + ".smt2";
-            _logger.info("Writing query to: \"" + queryPath + "\"...");
-            writeFile(queryPath, queryText);
-            _logger.info("OK\n");
-         }
-      }
-
-      _logger.info("Writing node lines for next stage...");
-      StringBuilder sbNodes = new StringBuilder();
-      for (String node : nodes) {
-         sbNodes.append(node + "\n");
-      }
-      writeFile(nodeSetTextPath, sbNodes.toString());
-      _logger.info("OK\n");
-
-      StringBuilder sbRoles = new StringBuilder();
-      _logger.info("Writing role lines for next stage...");
-      sbRoles = new StringBuilder();
-      for (String role : roleNodes.keySet()) {
-         sbRoles.append(role + "\n");
-      }
-      writeFile(roleSetTextPath, sbRoles.toString());
-      _logger.info("OK\n");
-
-      _logger
-            .info("Writing role-node-role iteration ordering lines for concretizer stage...");
-      StringBuilder sbIterations = new StringBuilder();
-      for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
-         String transmittingRole = roleNodeEntry.getKey();
-         NodeSet transmittingNodes = roleNodeEntry.getValue();
-         if (transmittingNodes.size() < 2) {
-            continue;
-         }
-         String[] tNodeArray = transmittingNodes.toArray(new String[] {});
-         String masterNode = tNodeArray[0];
-         for (int i = 1; i < tNodeArray.length; i++) {
-            String slaveNode = tNodeArray[i];
-            for (String receivingRole : roleNodes.keySet()) {
-               String iterationLine = transmittingRole + ":" + masterNode + ":"
-                     + slaveNode + ":" + receivingRole + "\n";
-               sbIterations.append(iterationLine);
-            }
-         }
-      }
-      writeFile(iterationsPath, sbIterations.toString());
-      _logger.info("OK\n");
-
-      printElapsedTime();
-   }
-
    private void genRoleTransitQueries() {
       _logger.info("\n*** GENERATING ROLE-TO-NODE QUERIES ***\n");
       resetTimer();
@@ -2092,14 +1680,18 @@ public class Batfish implements AutoCloseable {
       printElapsedTime();
    }
 
-   private AdvertisementSet getAdvertisements(LogicBloxFrontend lbFrontend) {
+   private AdvertisementSet getAdvertisements() {
+      return getAdvertisements(_envSettings);
+   }
+
+   private AdvertisementSet getAdvertisements(EnvironmentSettings envSettings) {
       AdvertisementSet adverts = new AdvertisementSet();
-      String qualifiedName = _predicateInfo.getPredicateNames().get(
+      EntityTable entityTable = initEntityTable(envSettings);
+      Relation relation = getRelation(envSettings,
             BGP_ADVERTISEMENT_ROUTE_PREDICATE_NAME);
-      Relation bgpAdvertisementRouteRelation = lbFrontend
-            .queryPredicate(qualifiedName);
-      lbFrontend.fillBgpAdvertisementColumn(adverts,
-            bgpAdvertisementRouteRelation.getColumns().get(0));
+      List<BgpAdvertisement> advertList = relation.getColumns().get(0)
+            .asBgpAdvertisementList(entityTable);
+      adverts.addAll(advertList);
       return adverts;
    }
 
@@ -2132,20 +1724,6 @@ public class Batfish implements AutoCloseable {
             + ":" + _diffEnvSettings.getName();
    }
 
-   private void getDifferentialHistory() {
-      LogicBloxFrontend baseLbFrontend = _manager.connect(_baseEnvSettings);
-      LogicBloxFrontend diffLbFrontend = _manager.connect(_diffEnvSettings);
-      baseLbFrontend.initEntityTable();
-      diffLbFrontend.initEntityTable();
-      String tag = getDifferentialFlowTag();
-      FlowHistory flowHistory = new FlowHistory();
-      populateFlowHistory(flowHistory, baseLbFrontend,
-            _baseEnvSettings.getName(), tag);
-      populateFlowHistory(flowHistory, diffLbFrontend,
-            _diffEnvSettings.getName(), tag);
-      _logger.output(flowHistory.toString());
-   }
-
    private EdgeSet getEdgeBlacklist(EnvironmentSettings envSettings) {
       EdgeSet blacklistEdges = null;
       String edgeBlacklistPath = envSettings.getEdgeBlacklistPath();
@@ -2159,46 +1737,21 @@ public class Batfish implements AutoCloseable {
       return blacklistEdges;
    }
 
-   // private Set<Path> getMultipathQueryPaths(Path directory) {
-   // Set<Path> queryPaths = new TreeSet<Path>();
-   // try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
-   // directory, new DirectoryStream.Filter<Path>() {
-   // @Override
-   // public boolean accept(Path path) throws IOException {
-   // String filename = path.getFileName().toString();
-   // return filename
-   // .startsWith(BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX)
-   // && filename.endsWith(".smt2");
-   // }
-   // })) {
-   // for (Path path : directoryStream) {
-   // queryPaths.add(path);
-   // }
-   // }
-   // catch (IOException ex) {
-   // throw new BatfishException(
-   // "Could not list files in queries directory", ex);
-   // }
-   // return queryPaths;
-   // }
-
    private double getElapsedTime(long beforeTime) {
       long difference = System.currentTimeMillis() - beforeTime;
       double seconds = difference / 1000d;
       return seconds;
    }
 
-   private InterfaceSet getFlowSinkSet(LogicBloxFrontend lbFrontend) {
+   private InterfaceSet getFlowSinkSet() {
+      return getFlowSinkSet(_envSettings);
+   }
+
+   private InterfaceSet getFlowSinkSet(EnvironmentSettings envSettings) {
       InterfaceSet flowSinks = new InterfaceSet();
-      String qualifiedName = _predicateInfo.getPredicateNames().get(
-            FLOW_SINK_PREDICATE_NAME);
-      Relation flowSinkRelation = lbFrontend.queryPredicate(qualifiedName);
-      List<String> nodes = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nodes,
-            flowSinkRelation.getColumns().get(0));
-      List<String> interfaces = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, interfaces,
-            flowSinkRelation.getColumns().get(1));
+      Relation relation = getRelation(envSettings, FLOW_SINK_PREDICATE_NAME);
+      List<String> nodes = relation.getColumns().get(0).asStringList();
+      List<String> interfaces = relation.getColumns().get(1).asStringList();
       for (int i = 0; i < nodes.size(); i++) {
          String node = nodes.get(i);
          String iface = interfaces.get(i);
@@ -2236,12 +1789,46 @@ public class Batfish implements AutoCloseable {
    }
 
    private void getHistory() {
-      LogicBloxFrontend lbFrontend = _manager.connect();
-      lbFrontend.initEntityTable();
-      String tag = getFlowTag();
       FlowHistory flowHistory = new FlowHistory();
-      populateFlowHistory(flowHistory, lbFrontend, _envSettings.getName(), tag);
+      if (_settings.getDiffQuestion()) {
+         String tag = getDifferentialFlowTag();
+         populateFlowHistory(flowHistory, _baseEnvSettings,
+               _baseEnvSettings.getName(), tag);
+         populateFlowHistory(flowHistory, _diffEnvSettings,
+               _diffEnvSettings.getName(), tag);
+      }
+      else {
+         String tag = getFlowTag();
+         populateFlowHistory(flowHistory, _envSettings, _envSettings.getName(),
+               tag);
+      }
       _logger.output(flowHistory.toString());
+   }
+
+   private IbgpTopology getIbgpNeighbors() {
+      return getIbgpNeighbors(_envSettings);
+   }
+
+   private IbgpTopology getIbgpNeighbors(EnvironmentSettings envSettings) {
+      IbgpTopology topology = new IbgpTopology();
+      Relation relation = getRelation(envSettings,
+            IBGP_NEIGHBORS_PREDICATE_NAME);
+      List<String> node1List = relation.getColumns().get(0).asStringList();
+      List<Ip> ip1List = relation.getColumns().get(1).asIpList();
+      List<String> node2List = relation.getColumns().get(2).asStringList();
+      List<Ip> ip2List = relation.getColumns().get(3).asIpList();
+      int numEntries = node1List.size();
+      for (int i = 0; i < numEntries; i++) {
+         String node1 = node1List.get(i);
+         String node2 = node2List.get(i);
+         Ip ip1 = ip1List.get(i);
+         Ip ip2 = ip2List.get(i);
+         NodeIpPair p1 = new NodeIpPair(node1, ip1);
+         NodeIpPair p2 = new NodeIpPair(node2, ip2);
+         IpEdge edge = new IpEdge(p1, p2);
+         topology.add(edge);
+      }
+      return topology;
    }
 
    private Set<NodeInterfacePair> getInterfaceBlacklist(
@@ -2269,29 +1856,72 @@ public class Batfish implements AutoCloseable {
       return blacklistNodes;
    }
 
+   private String[] getNxtnetLogicFilenames(File logicDir) {
+      final Set<String> filenames = new TreeSet<String>();
+      Path logicDirPath = Paths.get(logicDir.toString());
+      FileVisitor<Path> nxtnetLogicFileCollector = new SimpleFileVisitor<Path>() {
+         @Override
+         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+               throws IOException {
+            String fileStr = file.toString();
+            if (fileStr.endsWith(".pl")) {
+               filenames.add(fileStr);
+            }
+            return FileVisitResult.CONTINUE;
+         }
+      };
+      try {
+         Files.walkFileTree(logicDirPath, nxtnetLogicFileCollector);
+      }
+      catch (IOException e) {
+         throw new BatfishException("failed to retreive nxtnet logic files", e);
+      }
+      return filenames.toArray(new String[] {});
+   }
+
+   private String getNxtnetText(EnvironmentSettings envSettings,
+         String relationName) {
+      String nxtnetOutputDir;
+      if (Arrays.asList(NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS)
+            .contains(relationName)) {
+         nxtnetOutputDir = envSettings.getNxtnetDataPlaneOutputDir();
+      }
+      else if (Arrays.asList(NxtnetConstants.NXTNET_TRAFFIC_OUTPUT_SYMBOLS)
+            .contains(relationName)) {
+         nxtnetOutputDir = envSettings.getNxtnetTrafficOutputDir();
+      }
+      else {
+         throw new BatfishException("Predicate: \"" + relationName
+               + "\" not an output symbol");
+      }
+      return getNxtnetText(nxtnetOutputDir, relationName);
+   }
+
+   private String getNxtnetText(String nxtnetOutputDir, String relationName) {
+      File relationFile = Paths.get(nxtnetOutputDir, relationName).toFile();
+      String content = Util.readFile(relationFile);
+      return content;
+   }
+
+   private PolicyRouteFibNodeMap getPolicyRouteFibNodeMap() {
+      return getPolicyRouteFibNodeMap(_envSettings);
+   }
+
    private PolicyRouteFibNodeMap getPolicyRouteFibNodeMap(
-         Relation fibPolicyRouteNextHops, LogicBloxFrontend lbFrontend) {
+         EnvironmentSettings envSettings) {
       PolicyRouteFibNodeMap nodeMap = new PolicyRouteFibNodeMap();
-      List<String> nodeList = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nodeList,
-            fibPolicyRouteNextHops.getColumns().get(0));
-      List<String> ipList = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_IP, ipList,
-            fibPolicyRouteNextHops.getColumns().get(1));
-      List<String> outInterfaces = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, outInterfaces,
-            fibPolicyRouteNextHops.getColumns().get(2));
-      List<String> inNodes = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, inNodes,
-            fibPolicyRouteNextHops.getColumns().get(3));
-      List<String> inInterfaces = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, inInterfaces,
-            fibPolicyRouteNextHops.getColumns().get(4));
+      Relation relation = getRelation(envSettings,
+            FIB_POLICY_ROUTE_NEXT_HOP_PREDICATE_NAME);
+      List<String> nodeList = relation.getColumns().get(0).asStringList();
+      List<Ip> ipList = relation.getColumns().get(1).asIpList();
+      List<String> outInterfaces = relation.getColumns().get(2).asStringList();
+      List<String> inNodes = relation.getColumns().get(3).asStringList();
+      List<String> inInterfaces = relation.getColumns().get(4).asStringList();
       int size = nodeList.size();
       for (int i = 0; i < size; i++) {
          String nodeOut = nodeList.get(i);
          String nodeIn = inNodes.get(i);
-         Ip ip = new Ip(ipList.get(i));
+         Ip ip = ipList.get(i);
          String ifaceOut = outInterfaces.get(i);
          String ifaceIn = inInterfaces.get(i);
          PolicyRouteFibIpMap ipMap = nodeMap.get(nodeOut);
@@ -2310,6 +1940,23 @@ public class Batfish implements AutoCloseable {
       return nodeMap;
    }
 
+   private Set<String> getPrecomputedRoutesPaths() {
+      Set<String> precomputedRoutesPaths = _settings
+            .getPrecomputedRoutesPaths();
+      String precomputedRoutesPath = _settings.getPrecomputedRoutesPath();
+      if (precomputedRoutesPaths == null) {
+         if (precomputedRoutesPath == null) {
+            throw new BatfishException(
+                  "Must specify path(s) to precomputed routes");
+         }
+         else {
+            precomputedRoutesPaths = Collections
+                  .singleton(precomputedRoutesPath);
+         }
+      }
+      return precomputedRoutesPaths;
+   }
+
    public PredicateInfo getPredicateInfo(Map<String, String> logicFiles) {
       // Get predicate semantics from rules file
       _logger.info("\n*** PARSING PREDICATE INFO ***\n");
@@ -2326,24 +1973,28 @@ public class Batfish implements AutoCloseable {
       return Paths.get(logicDir.toString(), PREDICATE_INFO_FILENAME).toString();
    }
 
-   private FibMap getRouteForwardingRules(Relation fibNetworkForward,
-         LogicBloxFrontend lbFrontend) {
+   private Relation getRelation(EnvironmentSettings envSettings,
+         String predicateName) {
+      String nxtnetText = getNxtnetText(envSettings, predicateName);
+      Relation relation = new Relation.Builder(predicateName).build(
+            _predicateInfo, nxtnetText);
+      return relation;
+   }
+
+   private FibMap getRouteForwardingRules() {
+      return getRouteForwardingRules(_envSettings);
+   }
+
+   private FibMap getRouteForwardingRules(EnvironmentSettings envSettings) {
       FibMap fibs = new FibMap();
-      List<String> nameList = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nameList,
-            fibNetworkForward.getColumns().get(0));
-      List<String> networkList = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_INDEX_NETWORK, networkList,
-            fibNetworkForward.getColumns().get(1));
-      List<String> interfaceList = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, interfaceList,
-            fibNetworkForward.getColumns().get(2));
-      List<String> nextHopList = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nextHopList,
-            fibNetworkForward.getColumns().get(3));
-      List<String> nextHopIntList = new ArrayList<String>();
-      lbFrontend.fillColumn(LBValueType.ENTITY_REF_STRING, nextHopIntList,
-            fibNetworkForward.getColumns().get(4));
+      Relation relation = getRelation(envSettings, FIB_PREDICATE_NAME);
+      EntityTable entityTable = initEntityTable(envSettings);
+      List<String> nameList = relation.getColumns().get(0).asStringList();
+      List<Prefix> networkList = relation.getColumns().get(1)
+            .asPrefixList(entityTable);
+      List<String> interfaceList = relation.getColumns().get(2).asStringList();
+      List<String> nextHopList = relation.getColumns().get(3).asStringList();
+      List<String> nextHopIntList = relation.getColumns().get(4).asStringList();
 
       String currentHostname = "";
       Map<String, Integer> startIndices = new HashMap<String, Integer>();
@@ -2365,8 +2016,7 @@ public class Batfish implements AutoCloseable {
          int startIndex = startIndices.get(hostname);
          int endIndex = endIndices.get(hostname);
          for (int i = startIndex; i <= endIndex; i++) {
-            String networkStr = networkList.get(i);
-            Prefix prefix = new Prefix(networkStr);
+            Prefix prefix = networkList.get(i);
             String iface = interfaceList.get(i);
             String nextHop = nextHopList.get(i);
             String nextHopInt = nextHopIntList.get(i);
@@ -2376,14 +2026,18 @@ public class Batfish implements AutoCloseable {
       return fibs;
    }
 
-   private RouteSet getRoutes(LogicBloxFrontend lbFrontend) {
+   private RouteSet getRoutes() {
+      return getRoutes(_envSettings);
+   }
+
+   private RouteSet getRoutes(EnvironmentSettings envSettings) {
       RouteSet routes = new RouteSet();
-      String qualifiedName = _predicateInfo.getPredicateNames().get(
+      EntityTable entityTable = initEntityTable(envSettings);
+      Relation relation = getRelation(envSettings,
             INSTALLED_ROUTE_PREDICATE_NAME);
-      Relation installedRoutesRelation = lbFrontend
-            .queryPredicate(qualifiedName);
-      lbFrontend.fillRouteColumn(routes, installedRoutesRelation.getColumns()
-            .get(0));
+      List<PrecomputedRoute> routeList = relation.getColumns().get(0)
+            .asRouteList(entityTable);
+      routes.addAll(routeList);
       return routes;
    }
 
@@ -2442,6 +2096,30 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   private EntityTable initEntityTable(EnvironmentSettings envSettings) {
+      EntityTable entityTable = _entityTables.get(envSettings);
+      if (entityTable == null) {
+         Map<String, String> nxtnetPredicateContents = new HashMap<String, String>();
+         String nxtnetDataPlaneOutputDir = envSettings
+               .getNxtnetDataPlaneOutputDir();
+         String nxtnetTrafficOutputDir = envSettings
+               .getNxtnetTrafficOutputDir();
+         if (nxtnetDataPlaneOutputDir != null
+               && new File(nxtnetDataPlaneOutputDir).exists()) {
+            nxtnetPredicateContents.putAll(readFacts(nxtnetDataPlaneOutputDir,
+                  NxtnetConstants.NXTNET_DATA_PLANE_ENTITY_SYMBOLS));
+         }
+         if (nxtnetTrafficOutputDir != null
+               && new File(nxtnetTrafficOutputDir).exists()) {
+            nxtnetPredicateContents.putAll(readFacts(nxtnetTrafficOutputDir,
+                  NxtnetConstants.NXTNET_TRAFFIC_ENTITY_SYMBOLS));
+         }
+         entityTable = new EntityTable(nxtnetPredicateContents, _predicateInfo);
+         _entityTables.put(envSettings, entityTable);
+      }
+      return entityTable;
+   }
+
    private boolean isJavaSerializationData(File inputFile) {
       try (FileInputStream i = new FileInputStream(inputFile)) {
          int headerLength = JAVA_SERIALIZED_OBJECT_HEADER.length;
@@ -2459,7 +2137,6 @@ public class Batfish implements AutoCloseable {
    }
 
    private void keepBlocks(List<String> blockNames) {
-      LogicBloxFrontend lbFrontend = _manager.connect();
       Set<String> allBlockNames = new LinkedHashSet<String>();
       allBlockNames.addAll(Block.BLOCKS.keySet());
       for (String blockName : blockNames) {
@@ -2480,7 +2157,7 @@ public class Batfish implements AutoCloseable {
                + "_rules";
          qualifiedBlockNames.add(qualifiedBlockName);
       }
-      lbFrontend.removeBlocks(qualifiedBlockNames);
+      // lbFrontend.removeBlocks(qualifiedBlockNames);
    }
 
    public Map<String, Configuration> loadConfigurations() {
@@ -2510,6 +2187,48 @@ public class Batfish implements AutoCloseable {
       return topology;
    }
 
+   private void nxtnetDataPlane() {
+      nxtnetDataPlane(_envSettings);
+      writeRoutes(_settings.getPrecomputedRoutesPath());
+   }
+
+   private void nxtnetDataPlane(EnvironmentSettings envSettings) {
+      Map<String, String> inputFacts = readFacts(
+            envSettings.getControlPlaneFactsDir(),
+            NxtnetConstants.NXTNET_DATA_PLANE_COMPUTATION_FACTS);
+      writeNxtnetInput(NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS,
+            inputFacts, envSettings.getNxtnetDataPlaneInputFile());
+      runNxtnet(envSettings.getNxtnetDataPlaneInputFile(),
+            envSettings.getNxtnetDataPlaneOutputDir());
+   }
+
+   private void nxtnetTraffic() {
+      if (_settings.getDiffQuestion()) {
+         nxtnetTraffic(_baseEnvSettings);
+         nxtnetTraffic(_diffEnvSettings);
+      }
+      else {
+         nxtnetTraffic(_envSettings);
+      }
+   }
+
+   private void nxtnetTraffic(EnvironmentSettings envSettings) {
+      writeNxtnetPrecomputedRoutes(envSettings);
+      Map<String, String> inputControlPlaneFacts = readFacts(
+            envSettings.getControlPlaneFactsDir(),
+            NxtnetConstants.NXTNET_TRAFFIC_COMPUTATION_CONTROL_PLANE_FACTS);
+      Map<String, String> inputFlowFacts = readFacts(
+            envSettings.getTrafficFactsDir(),
+            NxtnetConstants.NXTNET_TRAFFIC_COMPUTATION_FLOW_FACTS);
+      Map<String, String> inputFacts = new TreeMap<String, String>();
+      inputFacts.putAll(inputControlPlaneFacts);
+      inputFacts.putAll(inputFlowFacts);
+      writeNxtnetInput(NxtnetConstants.NXTNET_TRAFFIC_OUTPUT_SYMBOLS,
+            inputFacts, envSettings.getNxtnetTrafficInputFile());
+      runNxtnet(envSettings.getNxtnetTrafficInputFile(),
+            envSettings.getNxtnetTrafficOutputDir());
+   }
+
    private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
       return parse(parser, _logger, _settings);
    }
@@ -2518,84 +2237,6 @@ public class Batfish implements AutoCloseable {
          String filename) {
       _logger.info("Parsing: \"" + filename + "\"...");
       return parse(parser);
-   }
-
-   private void parseFlowsFromConstraints(StringBuilder sb,
-         RoleNodeMap roleNodes) {
-      Path flowConstraintsDir = Paths.get(_settings.getFlowPath());
-      File[] constraintsFiles = flowConstraintsDir.toFile().listFiles(
-            new FilenameFilter() {
-               @Override
-               public boolean accept(File dir, String filename) {
-                  return filename.matches(".*-concrete-.*.smt2.out");
-               }
-            });
-      if (constraintsFiles == null) {
-         throw new BatfishException("Error reading flow constraints directory");
-      }
-      for (File constraintsFile : constraintsFiles) {
-         String flowConstraintsText = Util.readFile(constraintsFile);
-         ConcretizerQueryResultCombinedParser parser = new ConcretizerQueryResultCombinedParser(
-               flowConstraintsText, _settings.getThrowOnParserError(),
-               _settings.getThrowOnLexerError());
-         ParserRuleContext tree = parse(parser, constraintsFile.toString());
-         ParseTreeWalker walker = new ParseTreeWalker();
-         ConcretizerQueryResultExtractor extractor = new ConcretizerQueryResultExtractor();
-         walker.walk(extractor, tree);
-         String id = extractor.getId();
-         if (id == null) {
-            continue;
-         }
-         Map<String, Long> constraints = extractor.getConstraints();
-         long src_ip = 0;
-         long dst_ip = 0;
-         long src_port = 0;
-         long dst_port = 0;
-         long protocol = IpProtocol.IP.number();
-         for (String varName : constraints.keySet()) {
-            Long value = constraints.get(varName);
-            switch (varName) {
-            case Synthesizer.SRC_IP_VAR:
-               src_ip = value;
-               break;
-
-            case Synthesizer.DST_IP_VAR:
-               dst_ip = value;
-               break;
-
-            case Synthesizer.SRC_PORT_VAR:
-               src_port = value;
-               break;
-
-            case Synthesizer.DST_PORT_VAR:
-               dst_port = value;
-               break;
-
-            case Synthesizer.IP_PROTOCOL_VAR:
-               protocol = value;
-               break;
-
-            default:
-               throw new Error("invalid variable name");
-            }
-         }
-         // TODO: cleanup dirty hack
-         if (roleNodes != null) {
-            // id is role
-            NodeSet nodes = roleNodes.get(id);
-            for (String node : nodes) {
-               String line = node + "|" + src_ip + "|" + dst_ip + "|"
-                     + src_port + "|" + dst_port + "|" + protocol + "\n";
-               sb.append(line);
-            }
-         }
-         else {
-            String node = id;
-            String line = node + "|" + src_ip + "|" + dst_ip + "|" + src_port
-                  + "|" + dst_port + "|" + protocol + "\n";
-            sb.append(line);
-         }
-      }
    }
 
    private Set<NodeInterfacePair> parseInterfaceBlacklist(
@@ -2837,15 +2478,11 @@ public class Batfish implements AutoCloseable {
    }
 
    private void populateFlowHistory(FlowHistory flowHistory,
-         LogicBloxFrontend lbFrontend, String environmentName, String tag) {
-      String qualifiedName = _predicateInfo.getPredicateNames().get(
-            FLOW_HISTORY_PREDICATE_NAME);
-      Relation relation = lbFrontend.queryPredicate(qualifiedName);
-      List<Flow> flows = new ArrayList<Flow>();
-      List<String> historyLines = new ArrayList<String>();
-      lbFrontend.fillFlowColumn(flows, relation.getColumns().get(0));
-      lbFrontend.fillColumn(LBValueType.STRING, historyLines, relation
-            .getColumns().get(1));
+         EnvironmentSettings envSettings, String environmentName, String tag) {
+      EntityTable entityTable = initEntityTable(envSettings);
+      Relation relation = getRelation(envSettings, FLOW_HISTORY_PREDICATE_NAME);
+      List<Flow> flows = relation.getColumns().get(0).asFlowList(entityTable);
+      List<String> historyLines = relation.getColumns().get(1).asStringList();
       int numEntries = flows.size();
       for (int i = 0; i < numEntries; i++) {
          Flow flow = flows.get(i);
@@ -3004,75 +2641,6 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void postDifferentialFlows() {
-      LogicBloxFrontend baseLbFrontend = _manager.connect(_baseEnvSettings);
-      LogicBloxFrontend diffLbFrontend = _manager.connect(_diffEnvSettings);
-      Map<String, StringBuilder> baseTrafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      Map<String, StringBuilder> diffTrafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      Path baseDumpDir = Paths.get(_baseEnvSettings.getTrafficFactDumpDir());
-      Path diffDumpDir = Paths.get(_diffEnvSettings.getTrafficFactDumpDir());
-      for (String predicate : Facts.TRAFFIC_FACT_COLUMN_HEADERS.keySet()) {
-         File factFile = baseDumpDir.resolve(predicate).toFile();
-         String contents = Util.readFile(factFile);
-         StringBuilder sb = new StringBuilder();
-         baseTrafficFactBins.put(predicate, sb);
-         sb.append(contents);
-      }
-      for (String predicate : Facts.TRAFFIC_FACT_COLUMN_HEADERS.keySet()) {
-         File factFile = diffDumpDir.resolve(predicate).toFile();
-         String contents = Util.readFile(factFile);
-         StringBuilder sb = new StringBuilder();
-         diffTrafficFactBins.put(predicate, sb);
-         sb.append(contents);
-      }
-      postFacts(baseLbFrontend, baseTrafficFactBins);
-      postFacts(diffLbFrontend, baseTrafficFactBins);
-   }
-
-   private void postFacts(LogicBloxFrontend lbFrontend,
-         Map<String, StringBuilder> factBins) {
-      Map<String, StringBuilder> enabledFacts = new HashMap<String, StringBuilder>();
-      enabledFacts.putAll(factBins);
-      enabledFacts.keySet().removeAll(_settings.getDisabledFacts());
-      _logger.info("\n*** POSTING FACTS TO BLOXWEB SERVICES ***\n");
-      resetTimer();
-      _logger.info("Starting bloxweb services...");
-      lbFrontend.startLbWebServices();
-      _logger.info("OK\n");
-      _logger.info("Posting facts...");
-      try {
-         lbFrontend.postFacts(enabledFacts);
-      }
-      catch (ServiceClientException e) {
-         throw new BatfishException("Failed to post facts to bloxweb services",
-               e);
-      }
-      _logger.info("OK\n");
-      _logger.info("Stopping bloxweb services...");
-      lbFrontend.stopLbWebServices();
-      _logger.info("OK\n");
-      _logger.info("SUCCESS\n");
-      printElapsedTime();
-   }
-
-   private void postFacts(Map<String, StringBuilder> factBins) {
-      LogicBloxFrontend lbFrontend = _manager.connect();
-      postFacts(lbFrontend, factBins);
-   }
-
-   private void postFlows() {
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      Path dumpDir = Paths.get(_envSettings.getTrafficFactDumpDir());
-      for (String predicate : Facts.TRAFFIC_FACT_COLUMN_HEADERS.keySet()) {
-         File factFile = dumpDir.resolve(predicate).toFile();
-         String contents = Util.readFile(factFile);
-         StringBuilder sb = new StringBuilder();
-         trafficFactBins.put(predicate, sb);
-         sb.append(contents);
-      }
-      postFacts(trafficFactBins);
-   }
-
    private void printAllPredicateSemantics(
          Map<String, String> predicateSemantics) {
       // Get predicate semantics from rules file
@@ -3089,70 +2657,65 @@ public class Batfish implements AutoCloseable {
       _logger.info("Time taken for this task: " + seconds + " seconds\n");
    }
 
-   private void printPredicate(LogicBloxFrontend lbFrontend,
+   private void printPredicate(EnvironmentSettings envSettings,
          String predicateName) {
-      List<String> output;
-      printPredicateSemantics(predicateName);
-      String qualifiedName = _predicateInfo.getPredicateNames().get(
-            predicateName);
-      if (qualifiedName == null) { // predicate not found
-         _logger.error("ERROR: No information for predicate: " + predicateName
-               + "\n");
-         return;
-      }
-      Relation relation = lbFrontend.queryPredicate(qualifiedName);
-      try {
-         output = lbFrontend.getPredicate(_predicateInfo, relation,
-               predicateName);
-         for (String match : output) {
-            _logger.output(match + "\n");
+      boolean function = _predicateInfo.isFunction(predicateName);
+      StringBuilder sb = new StringBuilder();
+      EntityTable entityTable = initEntityTable(envSettings);
+      Relation relation = getRelation(envSettings, predicateName);
+      List<Column> columns = relation.getColumns();
+      List<LBValueType> valueTypes = _predicateInfo
+            .getPredicateValueTypes(predicateName);
+      int numColumns = columns.size();
+      int numRows = relation.getNumRows();
+      for (int i = 0; i < numRows; i++) {
+         sb.append(predicateName);
+         if (function) {
+            sb.append("[");
+         }
+         else {
+            sb.append("(");
+         }
+         for (int j = 0; j < numColumns; j++) {
+            boolean last = (j == numColumns - 1);
+            boolean penultimate = (j == numColumns - 2);
+            String part = columns.get(j)
+                  .getItem(i, entityTable, valueTypes.get(j)).toString();
+            sb.append(part);
+            if ((function && !last && !penultimate) || (!function && !last)) {
+               sb.append(", ");
+            }
+            else if (function && penultimate) {
+               sb.append("] = ");
+            }
+            else if (last) {
+               if (!function) {
+                  sb.append(")");
+               }
+               sb.append(".\n");
+            }
          }
       }
-      catch (QueryException q) {
-         _logger.fatal(q.getMessage() + "\n");
-      }
+      _logger.output(sb.toString());
    }
 
-   private void printPredicateCount(LogicBloxFrontend lbFrontend,
-         String predicateName) {
-      int numRows = lbFrontend.queryPredicate(predicateName).getColumns()
-            .get(0).size();
-      String output = "|" + predicateName + "| = " + numRows + "\n";
-      _logger.info(output);
+   private void printPredicate(String predicateName) {
+      printPredicate(_envSettings, predicateName);
    }
 
-   public void printPredicateCounts(LogicBloxFrontend lbFrontend,
+   public void printPredicates(EnvironmentSettings envSettings,
          Set<String> predicateNames) {
       // Print predicate(s) here
       _logger.info("\n*** SUBMITTING QUERY(IES) ***\n");
       resetTimer();
       for (String predicateName : predicateNames) {
-         printPredicateCount(lbFrontend, predicateName);
-         // _logger.info("\n");
+         printPredicate(predicateName);
       }
       printElapsedTime();
    }
 
-   public void printPredicates(LogicBloxFrontend lbFrontend,
-         Set<String> predicateNames) {
-      // Print predicate(s) here
-      _logger.info("\n*** SUBMITTING QUERY(IES) ***\n");
-      resetTimer();
-      String queryDumpDirStr = _settings.getQueryDumpDir();
-      if (queryDumpDirStr == null) {
-         for (String predicateName : predicateNames) {
-            printPredicate(lbFrontend, predicateName);
-         }
-      }
-      else {
-         Path queryDumpDir = Paths.get(queryDumpDirStr);
-         queryDumpDir.toFile().mkdirs();
-         for (String predicateName : predicateNames) {
-            String outputPath = queryDumpDir.resolve(predicateName).toString();
-            printPredicateToFile(lbFrontend, predicateName, outputPath);
-         }
-      }
-      printElapsedTime();
+   public void printPredicates(Set<String> predicateNames) {
+      printPredicates(_envSettings, predicateNames);
    }
 
    private void printPredicateSemantics(String predicateName) {
@@ -3163,33 +2726,6 @@ public class Batfish implements AutoCloseable {
       _logger.info("\n");
       _logger.info("Predicate: " + predicateName + "\n");
       _logger.info("Semantics: " + semantics + "\n");
-   }
-
-   private void printPredicateToFile(LogicBloxFrontend lbFrontend,
-         String predicateName, String outputPath) {
-      List<String> output;
-      printPredicateSemantics(predicateName);
-      StringBuilder sb = new StringBuilder();
-      String qualifiedName = _predicateInfo.getPredicateNames().get(
-            predicateName);
-      if (qualifiedName == null) { // predicate not found
-         _logger.error("ERROR: No information for predicate: " + predicateName
-               + "\n");
-         return;
-      }
-      Relation relation = lbFrontend.queryPredicate(qualifiedName);
-      try {
-         output = lbFrontend.getPredicate(_predicateInfo, relation,
-               predicateName);
-         for (String match : output) {
-            sb.append(match + "\n");
-         }
-      }
-      catch (QueryException q) {
-         _logger.fatal(q.getMessage() + "\n");
-      }
-      String outputString = sb.toString();
-      writeFile(outputPath, outputString);
    }
 
    private void printSymmetricEdgePairs() {
@@ -3205,42 +2741,6 @@ public class Batfish implements AutoCloseable {
                + edge1.getNode2() + ":" + edge1.getInt2() + " "
                + edge2.getNode1() + ":" + edge2.getInt1() + ","
                + edge2.getNode2() + ":" + edge2.getInt2() + "\n");
-      }
-      printElapsedTime();
-   }
-
-   private void printTracePredicate(LogicBloxFrontend lbFrontend,
-         String predicateName) {
-      List<String> output;
-      printPredicateSemantics(predicateName);
-      String qualifiedName = _predicateInfo.getPredicateNames().get(
-            predicateName);
-      if (qualifiedName == null) { // predicate not found
-         _logger.error("ERROR: No information for predicate: " + predicateName
-               + "\n");
-         return;
-      }
-      Relation relation = lbFrontend.queryPredicate(TRACE_PREFIX
-            + qualifiedName);
-      try {
-         output = lbFrontend.getTracePredicate(_predicateInfo, relation,
-               predicateName);
-         for (String match : output) {
-            _logger.output(match + "\n");
-         }
-      }
-      catch (QueryException q) {
-         _logger.fatal(q.getMessage() + "\n");
-      }
-   }
-
-   public void printTracePredicates(LogicBloxFrontend lbFrontend,
-         Set<String> predicateNames) {
-      // Print predicate(s) here
-      _logger.info("\n*** SUBMITTING QUERY(IES) ***\n");
-      resetTimer();
-      for (String predicateName : predicateNames) {
-         printTracePredicate(lbFrontend, predicateName);
       }
       printElapsedTime();
    }
@@ -3284,8 +2784,6 @@ public class Batfish implements AutoCloseable {
    }
 
    private void query() {
-      LogicBloxFrontend lbFrontend = _manager.connect();
-      lbFrontend.initEntityTable();
       Map<String, String> allPredicateNames = _predicateInfo
             .getPredicateNames();
       Set<String> predicateNames = new TreeSet<String>();
@@ -3295,12 +2793,7 @@ public class Batfish implements AutoCloseable {
       else {
          predicateNames.addAll(_settings.getPredicates());
       }
-      if (_settings.getCountsOnly()) {
-         printPredicateCounts(lbFrontend, predicateNames);
-      }
-      else {
-         printPredicates(lbFrontend, predicateNames);
-      }
+      printPredicates(predicateNames);
    }
 
    private Map<File, String> readConfigurationFiles(String testRigPath) {
@@ -3329,8 +2822,17 @@ public class Batfish implements AutoCloseable {
       return configurationData;
    }
 
+   private Map<String, String> readFacts(String factsDir, String[] factNames) {
+      Map<String, String> inputFacts = new TreeMap<String, String>();
+      for (String factName : factNames) {
+         File factFile = Paths.get(factsDir, factName).toFile();
+         String contents = Util.readFile(factFile);
+         inputFacts.put(factName, contents);
+      }
+      return inputFacts;
+   }
+
    private void removeBlocks(List<String> blockNames) {
-      LogicBloxFrontend lbFrontend = _manager.connect();
       Set<String> allBlockNames = new LinkedHashSet<String>();
       for (String blockName : blockNames) {
          Block block = Block.BLOCKS.get(blockName);
@@ -3350,7 +2852,7 @@ public class Batfish implements AutoCloseable {
                + "_rules";
          qualifiedBlockNames.add(qualifiedBlockName);
       }
-      lbFrontend.removeBlocks(qualifiedBlockNames);
+      // lbFrontend.removeBlocks(qualifiedBlockNames);
    }
 
    private void resetTimer() {
@@ -3368,8 +2870,7 @@ public class Batfish implements AutoCloseable {
       StringFilter lbFilter = new StringFilter() {
          @Override
          public boolean accept(String filename) {
-            return filename.endsWith(".lbb") || filename.endsWith(".lbp")
-                  || filename.endsWith(".semantics")
+            return filename.endsWith(".semantics") || filename.endsWith(".pl")
                   || filename.endsWith(locatorFilename)
                   || filename.endsWith(PREDICATE_INFO_FILENAME);
          }
@@ -3378,7 +2879,8 @@ public class Batfish implements AutoCloseable {
          FileVisitor<Path> visitor = null;
          try {
             zip = new UrlZipExplorer(logicSourceURL);
-            Path destinationDir = Files.createTempDirectory("lbtmpproject");
+            Path destinationDir = Files
+                  .createTempDirectory("batfish_tmp_logic");
             File destinationDirAsFile = destinationDir.toFile();
             zip.extractFiles(lbFilter, destinationDirAsFile);
             visitor = new SimpleFileVisitor<Path>() {
@@ -3423,28 +2925,14 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void revert() {
-      _logger.info("\n*** REVERTING WORKSPACE ***\n");
-      LogicBloxFrontend lbFrontend = _manager.connect();
-      String workspaceName = new File(_settings.getTestRigPath()).getName();
-      String branchName = _settings.getBranchName();
-      _logger.debug("Reverting workspace: \"" + workspaceName
-            + "\" to branch: \"" + branchName + "\n");
-      String errorResult = lbFrontend.revertDatabase(branchName);
-      if (errorResult != null) {
-         throw new BatfishException("Failed to revert database: " + errorResult);
-      }
-   }
-
    public void run() {
       boolean action = false;
 
       if (_settings.getQuery() || _settings.getPrintSemantics()
             || _settings.getDataPlane() || _settings.getWriteRoutes()
             || _settings.getWriteBgpAdvertisements()
-            || _settings.getWriteIbgpNeighbors()
-            || _settings.getDifferentialHistory() || _settings.getHistory()
-            || _settings.getTraceQuery()) {
+            || _settings.getWriteIbgpNeighbors() || _settings.getHistory()
+            || _settings.getTraceQuery() || _settings.getNxtnetDataPlane()) {
          Map<String, String> logicFiles = getSemanticsFiles();
          _predicateInfo = getPredicateInfo(logicFiles);
          // Print predicate semantics and quit if requested
@@ -3517,28 +3005,8 @@ public class Batfish implements AutoCloseable {
          return;
       }
 
-      if (_settings.getInterfaceFailureInconsistencyReachableQuery()) {
-         genReachableQueries();
-         return;
-      }
-
-      if (_settings.getRoleReachabilityQuery()) {
-         genRoleReachabilityQueries();
-         return;
-      }
-
       if (_settings.getRoleTransitQuery()) {
          genRoleTransitQueries();
-         return;
-      }
-
-      if (_settings.getInterfaceFailureInconsistencyBlackHoleQuery()) {
-         genBlackHoleQueries();
-         return;
-      }
-
-      if (_settings.getGenerateMultipathInconsistencyQuery()) {
-         genMultipathQueries();
          return;
       }
 
@@ -3549,13 +3017,6 @@ public class Batfish implements AutoCloseable {
          return;
       }
 
-      if (_settings.dumpInterfaceDescriptions()) {
-         String testRigPath = _settings.getTestRigPath();
-         String outputPath = _settings.getDumpInterfaceDescriptionsPath();
-         dumpInterfaceDescriptions(testRigPath, outputPath);
-         return;
-      }
-
       if (_settings.getSerializeIndependent()) {
          String inputPath = _settings.getSerializeVendorPath();
          String outputPath = _settings.getSerializeIndependentPath();
@@ -3563,13 +3024,8 @@ public class Batfish implements AutoCloseable {
          return;
       }
 
-      if (_settings.getConcretize()) {
-         concretize();
-         return;
-      }
-
       Map<String, StringBuilder> cpFactBins = null;
-      if (_settings.getFacts() || _settings.getDumpControlPlaneFacts()) {
+      if (_settings.getDumpControlPlaneFacts()) {
          boolean usePrecomputedFacts = _settings.getUsePrecomputedFacts();
          cpFactBins = new LinkedHashMap<String, StringBuilder>();
          initControlPlaneFactBins(cpFactBins, !usePrecomputedFacts);
@@ -3579,38 +3035,14 @@ public class Batfish implements AutoCloseable {
          action = true;
       }
 
+      if (_settings.getNxtnetDataPlane()) {
+         nxtnetDataPlane();
+         action = true;
+      }
+
       if (_settings.getUsePrecomputedFacts()) {
          populatePrecomputedFacts(_settings.getPrecomputedFactsPath(),
                cpFactBins);
-      }
-
-      if (_settings.getWriteRoutes()) {
-         writeRoutes(_settings.getPrecomputedRoutesPath());
-         action = true;
-      }
-      if (_settings.getWriteBgpAdvertisements()) {
-         writeBgpAdvertisements(_settings.getPrecomputedBgpAdvertisementsPath());
-         action = true;
-      }
-      if (_settings.getWriteIbgpNeighbors()) {
-         writeIbgpNeighbors(_settings.getPrecomputedIbgpNeighborsPath());
-         action = true;
-      }
-
-      if (_settings.revert()) {
-         revert();
-         return;
-      }
-
-      if (_settings.getDeleteWorkspace()) {
-         deleteWorkspace();
-         return;
-      }
-
-      // Create new workspace (will overwrite existing) if requested
-      if (_settings.createWorkspace()) {
-         createWorkspace();
-         action = true;
       }
 
       // Remove blocks if requested
@@ -3625,20 +3057,8 @@ public class Batfish implements AutoCloseable {
          action = true;
       }
 
-      // Post facts if requested
-      if (_settings.getFacts()) {
-         addStaticFacts(BASIC_FACTS_BLOCKNAME);
-         postFacts(cpFactBins);
-         return;
-      }
-
       if (_settings.getQuery()) {
          query();
-         return;
-      }
-
-      if (_settings.getTraceQuery()) {
-         traceQuery();
          return;
       }
 
@@ -3647,13 +3067,8 @@ public class Batfish implements AutoCloseable {
          return;
       }
 
-      if (_settings.getPostFlows()) {
-         postFlows();
-         action = true;
-      }
-
-      if (_settings.getPostDifferentialFlows()) {
-         postDifferentialFlows();
+      if (_settings.getNxtnetTraffic()) {
+         nxtnetTraffic();
          action = true;
       }
 
@@ -3662,23 +3077,86 @@ public class Batfish implements AutoCloseable {
          action = true;
       }
 
-      if (_settings.getDifferentialHistory()) {
-         getDifferentialHistory();
+      if (_settings.getWriteRoutes()) {
+         writeRoutes(_settings.getPrecomputedRoutesPath());
          action = true;
       }
 
-      if (_settings.getDumpTrafficFacts()) {
-         Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-         initTrafficFactBins(trafficFactBins);
-         writeTrafficFacts(trafficFactBins);
-         dumpFacts(trafficFactBins);
-         return;
+      if (_settings.getWriteBgpAdvertisements()) {
+         writeBgpAdvertisements(_settings.getPrecomputedBgpAdvertisementsPath());
+         action = true;
+      }
+
+      if (_settings.getWriteIbgpNeighbors()) {
+         writeIbgpNeighbors(_settings.getPrecomputedIbgpNeighborsPath());
+         action = true;
       }
 
       if (!action) {
-         throw new BatfishException(
-               "No task performed! Run with -help flag to see usage");
+         throw new CleanBatfishException(
+               "No task performed! Run with -help flag to see usage\n");
       }
+   }
+
+   private void runNxtnet(String nxtnetInputFile, String nxtnetOutputDir) {
+      _logger.info("\n*** RUNNING NXTNET ***\n");
+      resetTimer();
+      File logicDir = retrieveLogicDir();
+      String[] logicFilenames = getNxtnetLogicFilenames(logicDir);
+      DefaultExecutor executor = new DefaultExecutor();
+      ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+      ByteArrayOutputStream errStream = new ByteArrayOutputStream();
+      executor.setStreamHandler(new PumpStreamHandler(outStream, errStream));
+      executor.setExitValue(0);
+      CommandLine cmdLine = new CommandLine(NXTNET_COMMAND);
+      cmdLine.addArgument("-dir");
+      cmdLine.addArgument(nxtnetOutputDir);
+      cmdLine.addArgument(nxtnetInputFile);
+      cmdLine.addArguments(logicFilenames);
+      StringBuilder cmdLineSb = new StringBuilder();
+      cmdLineSb.append(NXTNET_COMMAND + " ");
+      cmdLineSb.append(org.batfish.common.Util.joinStrings(" ",
+            cmdLine.getArguments()));
+      String cmdLineString = cmdLineSb.toString();
+      boolean failure = false;
+      _logger.info("Command line: " + cmdLineString + " \n");
+      try {
+         executor.execute(cmdLine);
+      }
+      catch (ExecuteException e) {
+         failure = true;
+      }
+      catch (IOException e) {
+         throw new BatfishException("Unknown error running nxtnet", e);
+      }
+      finally {
+         cleanupLogicDir();
+         byte[] outRaw = outStream.toByteArray();
+         byte[] errRaw = errStream.toByteArray();
+         String out = null;
+         String err = null;
+         try {
+            out = new String(outRaw, "UTF-8");
+            err = new String(errRaw, "UTF-8");
+         }
+         catch (IOException e) {
+            throw new BatfishException("Error reading nxnet output", e);
+         }
+         StringBuilder sb = new StringBuilder();
+         if (failure) {
+            sb.append("nxtnet terminated abnormally:\n");
+            sb.append("nxtnet command line: " + cmdLine.toString() + "\n");
+            sb.append(err);
+            throw new BatfishException(sb.toString());
+         }
+         else {
+            sb.append("nxtnet output:\n");
+            sb.append(out);
+            _logger.debug(sb.toString());
+            _logger.info("nxtnet completed successfully\n");
+         }
+      }
+      printElapsedTime();
    }
 
    private void serializeIndependentConfigs(
@@ -3845,53 +3323,13 @@ public class Batfish implements AutoCloseable {
       return edges;
    }
 
-   private void traceQuery() {
-      LogicBloxFrontend lbFrontend = _manager.connect();
-      lbFrontend.initEntityTable();
-      lbFrontend.initTraceEntityTable();
-      Map<String, String> allPredicateNames = _predicateInfo
-            .getPredicateNames();
-      Set<String> predicateNames = new TreeSet<String>();
-      if (_settings.getQueryAll()) {
-         predicateNames.addAll(allPredicateNames.keySet());
-      }
-      else {
-         predicateNames.addAll(_settings.getPredicates());
-      }
-      printTracePredicates(lbFrontend, predicateNames);
-      // Map<Integer, Map<Long, PrecomputedRoute>> routes = lbFrontend
-      // .getTraceRoutes();
-      // Map<Integer, Map<Long, BgpAdvertisement>> adverts = lbFrontend
-      // .getTraceAdvertisements();
-      // for (int traceNumber : routes.keySet()) {
-      // Map<Long, PrecomputedRoute> currentRoutes = routes
-      // .get(traceNumber);
-      // for (long index : currentRoutes.keySet()) {
-      // PrecomputedRoute route = currentRoutes.get(index);
-      // _logger.output("Trace: " + traceNumber + ", " + route.toString()
-      // + "\n");
-      // }
-      // }
-      // for (int traceNumber : adverts.keySet()) {
-      // Map<Long, BgpAdvertisement> currentAdverts = adverts
-      // .get(traceNumber);
-      // for (long index : currentAdverts.keySet()) {
-      // BgpAdvertisement advert = currentAdverts.get(index);
-      // _logger.output("Trace: " + traceNumber + ", "
-      // + advert.toString() + "\n");
-      // }
-      // }
-   }
-
    private void writeBgpAdvertisements(String writeAdvertsPath) {
-      LogicBloxFrontend lbFrontend = _manager.connect();
-      lbFrontend.initEntityTable();
       File advertsFile = new File(writeAdvertsPath);
       File parentDir = advertsFile.getParentFile();
       if (parentDir != null) {
          parentDir.mkdirs();
       }
-      AdvertisementSet adverts = getAdvertisements(lbFrontend);
+      AdvertisementSet adverts = getAdvertisements();
       _logger.info("Serializing: BGP advertisements => \"" + writeAdvertsPath
             + "\"...");
       serializeObject(adverts, advertsFile);
@@ -3925,31 +3363,85 @@ public class Batfish implements AutoCloseable {
    }
 
    private void writeIbgpNeighbors(String ibgpTopologyPath) {
-      LogicBloxFrontend lbFrontend = _manager.connect();
-      lbFrontend.initEntityTable();
       File ibgpTopologyFile = new File(ibgpTopologyPath);
       File parentDir = ibgpTopologyFile.getParentFile();
       if (parentDir != null) {
          parentDir.mkdirs();
       }
-      String qualifiedName = _predicateInfo.getPredicateNames().get(
-            IBGP_NEIGHBORS_PREDICATE_NAME);
-      IbgpTopology topology = lbFrontend.getIbgpNeighbors(qualifiedName);
+      IbgpTopology topology = getIbgpNeighbors();
       _logger.info("Serializing: IBGP neighbors => \"" + ibgpTopologyPath
             + "\"...");
       serializeObject(topology, ibgpTopologyFile);
       _logger.info("OK\n");
    }
 
+   private void writeNxtnetInput(String[] outputSymbols,
+         Map<String, String> inputFacts, String nxtnetInputFile) {
+      checkComputeNxtnetRelations();
+      StringBuilder sb = new StringBuilder();
+      sb.append("output_symbols([");
+      for (int i = 0; i < outputSymbols.length; i++) {
+         String symbol = outputSymbols[i];
+         sb.append("'" + symbol + "'");
+         if (i < outputSymbols.length - 1) {
+            sb.append(",");
+         }
+         else {
+            sb.append("]).\n");
+         }
+      }
+      String lineDelimiter = Pattern.quote("|");
+      for (Entry<String, String> e : inputFacts.entrySet()) {
+         String predicateName = e.getKey();
+         String contents = e.getValue();
+         String[] lines = contents.split("\n");
+         for (int i = 1; i < lines.length; i++) {
+            sb.append("'" + predicateName + "'(");
+            String line = lines[i];
+            String[] parts = line.split(lineDelimiter);
+            for (int j = 0; j < parts.length; j++) {
+               String part = parts[j];
+               char firstChar = part.charAt(0);
+               boolean isNum = ('0' <= firstChar && firstChar <= '9')
+                     || firstChar == '-';
+               if (!isNum) {
+                  sb.append("'" + part + "'");
+               }
+               else {
+                  sb.append(part);
+               }
+               if (j < parts.length - 1) {
+                  sb.append(",");
+               }
+               else {
+                  sb.append(").\n");
+               }
+            }
+         }
+      }
+      String output = sb.toString();
+      writeFile(nxtnetInputFile, output);
+   }
+
+   private void writeNxtnetPrecomputedRoutes(EnvironmentSettings envSettings) {
+      Set<String> precomputedRoutesPaths = getPrecomputedRoutesPaths();
+      Map<String, StringBuilder> prFactBins = new HashMap<String, StringBuilder>();
+      initControlPlaneFactBins(prFactBins, true);
+      Set<String> prPredicates = new HashSet<String>();
+      prPredicates.add(PRECOMPUTED_ROUTES_PREDICATE_NAME);
+      prPredicates.add(NETWORKS_PREDICATE_NAME);
+      prFactBins.keySet().retainAll(prPredicates);
+      populatePrecomputedRoutes(precomputedRoutesPaths, prFactBins);
+      dumpFacts(prFactBins, envSettings.getTrafficFactsDir());
+   }
+
    private void writeRoutes(String writeRoutesPath) {
-      LogicBloxFrontend lbFrontend = _manager.connect();
-      lbFrontend.initEntityTable();
       File routesFile = new File(writeRoutesPath);
       File parentDir = routesFile.getParentFile();
       if (parentDir != null) {
          parentDir.mkdirs();
       }
-      RouteSet routes = getRoutes(lbFrontend);
+      RouteSet routes = getRoutes();
       _logger.info("Serializing: routes => \"" + writeRoutesPath + "\"...");
       serializeObject(routes, routesFile);
       _logger.info("OK\n");
@@ -3970,22 +3462,6 @@ public class Batfish implements AutoCloseable {
          Map<String, StringBuilder> factBins) {
       TopologyFactExtractor tfe = new TopologyFactExtractor(topology);
       tfe.writeFacts(factBins);
-   }
-
-   private void writeTrafficFacts(Map<String, StringBuilder> factBins) {
-      StringBuilder wSetFlowOriginate = factBins.get("SetFlowOriginate");
-      RoleNodeMap roleNodes = null;
-      if (_settings.getRoleHeaders()) {
-         String nodeRolesPath = _settings.getNodeRolesPath();
-         NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(new File(
-               nodeRolesPath));
-         roleNodes = nodeRoles.toRoleNodeMap();
-      }
-      parseFlowsFromConstraints(wSetFlowOriginate, roleNodes);
-      if (_settings.duplicateRoleFlows()) {
-         StringBuilder wDuplicateRoleFlows = factBins.get("DuplicateRoleFlows");
-         wDuplicateRoleFlows.append("1\n");
-      }
    }
 
 }

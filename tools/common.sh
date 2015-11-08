@@ -6,6 +6,7 @@ export BATFISH_TEST_RIG_PATH="$BATFISH_ROOT/test_rigs"
 export BATFISH="$BATFISH_PATH/batfish"
 export BATFISH_Z3=z3
 export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.datalog.default_relation=doc fixedpoint.print_answer=true"
+export BATFISH_NXTNET=nxtnet
 export BATFISH_PARALLEL='parallel --tag -v --eta --halt 2'
 export BATFISH_NESTED_PARALLEL='parallel --tag -v --halt 2 -j1'
 
@@ -65,8 +66,10 @@ export -f batfish_answer_example_cp
 
 batfish_build() {
    bash -c '_batfish_build "$@"' _batfish_build "$@" || return 1
-   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" ]; then
-      batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" -a -e "$BATFISH_PATH/out/batfish.jar" ]; then
+      echo -n "Generating bash completion file.."
+      BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+      echo "OK"
    fi
 }
 export -f batfish_build
@@ -81,7 +84,9 @@ export -f _batfish_build
 batfish_build_all() {
    bash -c '_batfish_build_all "$@"' _batfish_build_all "$@" || return 1
    if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" -a -e "$BATFISH_PATH/out/batfish.jar" ]; then
-      batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+      echo -n "Generating bash completion file.."
+      BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+      echo "OK"
    fi
 }
 export -f batfish_build_all
@@ -116,10 +121,7 @@ batfish_compile() {
    batfish_expect_args 2 $# || return 1
    local BASE=$1
    local ENV=$2
-   if [ -n "${BATFISH_REMOTE_LOGIC_DIR}" ]; then
-      local LOGIC_DIR_ARG="-logicdir ${BATFISH_REMOTE_LOGIC_DIR}"
-   fi
-   batfish $LOGIC_DIR_ARG -autobasedir $BASE -env $ENV -createworkspace -facts -dumpcp || return 1
+   batfish -autobasedir $BASE -env $ENV -cpfacts  -nxtnetdp || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane"
 }
@@ -132,10 +134,7 @@ batfish_compile_diff() {
    local BASE=$1
    local ENV=$2
    local DIFF_ENV=$3
-   if [ -n "${BATFISH_REMOTE_LOGIC_DIR}" ]; then
-      local LOGIC_DIR_ARG="-logicdir ${BATFISH_REMOTE_LOGIC_DIR}"
-   fi
-   batfish $LOGIC_DIR_ARG -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -createworkspace -facts -dumpcp || return 1
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -cpfacts -nxtnetdp -diffactive || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane (differential)"
 }
@@ -211,7 +210,7 @@ batfish_get_history() {
    local ENV=$2
    local QUESTIONNAME=$3
    local RESULT=$4
-   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -gethistory -logtee -loglevel output -logfile $RESULT
+   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -history -logtee -loglevel output -logfile $RESULT
    batfish_date
    echo ": END: Get flow histories from LogicBlox"
 }
@@ -226,7 +225,7 @@ batfish_get_history_diff() {
    local DIFF_ENV=$3
    local QUESTIONNAME=$4
    local RESULT=$5
-   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -questionname $QUESTIONNAME -getdiffhistory -logtee -loglevel output -logfile $RESULT
+   batfish -autobasedir $BASE -env $ENV -diffquestion -diffenv $DIFF_ENV -questionname $QUESTIONNAME -history -logtee -loglevel output -logfile $RESULT
    batfish_date
    echo ": END: Get flow histories from LogicBlox"
 }
@@ -333,7 +332,7 @@ batfish_post_flows() {
    local BASE=$1
    local ENV=$2
    local QUESTIONNAME=$3
-   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -postflows
+   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -nxtnettraffic
    batfish_date
    echo ": END: Inject discovered packets into network model"
 }
@@ -347,7 +346,7 @@ batfish_post_flows_diff() {
    local ENV=$2
    local DIFF_ENV=$3
    local QUESTIONNAME=$4
-   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -questionname $QUESTIONNAME -postflows
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -questionname $QUESTIONNAME -nxtnettraffic
    batfish_date
    echo ": END: Inject discovered packets into network model (differential)"
 }
@@ -515,8 +514,6 @@ batfish_query_policy() {
 export -f batfish_query_policy
 
 batfish_query_predicate() {
-   batfish_date
-   echo ": START: Query predicate"
    [ "$#" -gt 2 ] || return 1
    local BASE=$1
    shift
@@ -524,8 +521,6 @@ batfish_query_predicate() {
    shift
    local PREDICATES="$@"
    batfish -loglevel output -autobasedir $BASE -env $ENV -query -predicates $PREDICATES
-   batfish_date
-   echo ": END: Query predicate"
 }
 export -f batfish_query_predicate
 

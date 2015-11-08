@@ -170,6 +170,9 @@ public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
       String nextHopIp = _nextHopIp.toString();
       String tag = Integer.toString(_tag);
       // extra formatting
+      if (_protocol == RoutingProtocol.CONNECTED) {
+         assert Boolean.TRUE;
+      }
       if (!_nextHopInterface.equals(UNSET_NEXT_HOP_INTERFACE)) {
          // static interface
          if (_nextHopIp.equals(UNSET_ROUTE_NEXT_HOP_IP)) {

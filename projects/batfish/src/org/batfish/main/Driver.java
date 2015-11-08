@@ -38,6 +38,8 @@ public class Driver {
 
    private static HashMap<String, Task> _taskLog;
 
+   private static final String SERVICE_URL = "http://0.0.0.0";
+
    private static void applyAutoBaseDir(final Settings settings) {
       String baseDir = settings.getAutoBaseDir();
       if (baseDir != null) {
@@ -51,16 +53,18 @@ public class Driver {
                BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR).toString());
          settings.setTestRigPath(Paths.get(baseDir,
                BfConsts.RELPATH_TEST_RIG_DIR).toString());
-         settings.setServiceLogicBloxHostname(_mainSettings
-               .getServiceLogicBloxHostname());
          settings.setLogicDir(_mainSettings.getLogicDir());
          String envName = settings.getEnvironmentName();
          if (envName != null) {
             envSettings.setName(envName);
             Path envPath = Paths.get(baseDir,
                   BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
-            envSettings.setDumpFactsDir(envPath.resolve(
-                  BfConsts.RELPATH_FACT_DUMP_DIR).toString());
+            envSettings.setControlPlaneFactsDir(envPath.resolve(
+                  BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString());
+            envSettings.setNxtnetDataPlaneInputFile(envPath.resolve(
+                  BfConsts.RELPATH_NXTNET_INPUT_FILE).toString());
+            envSettings.setNxtnetDataPlaneOutputDir(envPath.resolve(
+                  BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
             envSettings.setDataPlanePath(envPath.resolve(
                   BfConsts.RELPATH_DATA_PLANE_DIR).toString());
             envSettings.setJobLogicBloxHostnamePath(envPath.resolve(
@@ -73,8 +77,6 @@ public class Driver {
                   BfConsts.RELPATH_ENV_NODE_SET).toString());
             settings.setZ3DataPlaneFile(envPath.resolve(
                   BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString());
-            settings.setQueryDumpDir(envPath.resolve(
-                  BfConsts.RELPATH_QUERY_DUMP_DIR).toString());
             Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
             envSettings.setNodeBlacklistPath(envDirPath.resolve(
                   BfConsts.RELPATH_NODE_BLACKLIST_FILE).toString());
@@ -86,14 +88,20 @@ public class Driver {
                   BfConsts.RELPATH_TOPOLOGY_FILE).toString());
             envSettings.setDeltaConfigurationsDir(envDirPath.resolve(
                   BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
+            settings.setPrecomputedRoutesPath(envPath.resolve(
+                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
          }
          String diffEnvName = settings.getDiffEnvironmentName();
          if (diffEnvName != null) {
             diffEnvSettings.setName(diffEnvName);
             Path diffEnvPath = Paths.get(baseDir,
                   BfConsts.RELPATH_ENVIRONMENTS_DIR, diffEnvName);
-            diffEnvSettings.setDumpFactsDir(diffEnvPath.resolve(
-                  BfConsts.RELPATH_FACT_DUMP_DIR).toString());
+            diffEnvSettings.setControlPlaneFactsDir(diffEnvPath.resolve(
+                  BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString());
+            diffEnvSettings.setNxtnetDataPlaneInputFile(diffEnvPath.resolve(
+                  BfConsts.RELPATH_NXTNET_INPUT_FILE).toString());
+            diffEnvSettings.setNxtnetDataPlaneOutputDir(diffEnvPath.resolve(
+                  BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
             diffEnvSettings.setDataPlanePath(diffEnvPath.resolve(
                   BfConsts.RELPATH_DATA_PLANE_DIR).toString());
             diffEnvSettings.setJobLogicBloxHostnamePath(diffEnvPath.resolve(
@@ -115,6 +123,8 @@ public class Driver {
                   BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
             if (settings.getDiffActive()) {
                settings.setActiveEnvironmentSettings(diffEnvSettings);
+               settings.setPrecomputedRoutesPath(diffEnvPath.resolve(
+                     BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
             }
          }
          String outputEnvName = settings.getOutputEnvironmentName();
@@ -133,28 +143,50 @@ public class Driver {
             settings.setQuestionParametersPath(questionPath.resolve(
                   BfConsts.RELPATH_QUESTION_PARAM_FILE).toString());
             if (diffEnvName != null) {
-               diffEnvSettings.setTrafficFactDumpDir(questionPath.resolve(
+               diffEnvSettings.setTrafficFactDumpDir(questionPath
+                     .resolve(
+                           Paths.get(BfConsts.RELPATH_DIFF, envName,
+                                 diffEnvName,
+                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
+                                 .toString()).toString());
+               diffEnvSettings.setNxtnetTrafficInputFile(questionPath.resolve(
                      Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,
-                           BfConsts.RELPATH_FACT_DUMP_DIR).toString())
+                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
                      .toString());
-               envSettings.setTrafficFactDumpDir(questionPath.resolve(
+               diffEnvSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,
+                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
+                     .toString());
+               envSettings.setTrafficFactDumpDir(questionPath
+                     .resolve(
+                           Paths.get(BfConsts.RELPATH_BASE, envName,
+                                 diffEnvName,
+                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
+                                 .toString()).toString());
+               envSettings.setNxtnetTrafficInputFile(questionPath.resolve(
                      Paths.get(BfConsts.RELPATH_BASE, envName, diffEnvName,
-                           BfConsts.RELPATH_FACT_DUMP_DIR).toString())
+                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
+                     .toString());
+               envSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName, diffEnvName,
+                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
                      .toString());
             }
             else {
-               envSettings.setTrafficFactDumpDir(questionPath.resolve(
+               envSettings.setTrafficFactDumpDir(questionPath
+                     .resolve(
+                           Paths.get(BfConsts.RELPATH_BASE, envName,
+                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
+                                 .toString()).toString());
+               envSettings.setNxtnetTrafficInputFile(questionPath.resolve(
                      Paths.get(BfConsts.RELPATH_BASE, envName,
-                           BfConsts.RELPATH_FACT_DUMP_DIR).toString())
+                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
+                     .toString());
+               envSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName,
+                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
                      .toString());
             }
-            Path queryDir = questionPath.resolve(BfConsts.RELPATH_QUERIES_DIR);
-            settings.setMultipathInconsistencyQueryPath(queryDir.resolve(
-                  Paths.get(envName, BfConsts.RELPATH_MULTIPATH_QUERY_PREFIX))
-                  .toString());
-            settings.setFailureInconsistencyQueryPath(queryDir.resolve(
-                  Paths.get(envName, BfConsts.RELPATH_FAILURE_QUERY_PREFIX))
-                  .toString());
          }
       }
    }
@@ -213,7 +245,7 @@ public class Driver {
       System.setOut(_mainLogger.getPrintStream());
       _mainSettings.setLogger(_mainLogger);
       if (_mainSettings.runInServiceMode()) {
-         URI baseUri = UriBuilder.fromUri(_mainSettings.getServiceUrl())
+         URI baseUri = UriBuilder.fromUri(SERVICE_URL)
                .port(_mainSettings.getServicePort()).build();
 
          _mainLogger.output(String.format("Starting server at %s\n", baseUri));

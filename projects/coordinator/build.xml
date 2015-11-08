@@ -40,7 +40,7 @@
 
    <target name="copyconfig" description="Copy configuration file to output directory">
       <copy todir="out">
-         <fileset dir="src" includes="**/config.Properties"/>
+         <fileset dir="src/org/batfish/coordinator/config" includes="config.properties"/>
       </copy>
    </target>
 
