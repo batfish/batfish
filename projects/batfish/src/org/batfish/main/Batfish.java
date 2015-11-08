@@ -419,10 +419,6 @@ public class Batfish implements AutoCloseable {
    private void answerFailure(FailureQuestion question) {
       checkDifferentialDataPlaneQuestionDependencies();
       String tag = getDifferentialFlowTag();
-      // _baseEnvSettings.setControlPlaneFactsDir(_baseEnvSettings
-      // .getTrafficFactsDir());
-      // _diffEnvSettings.setControlPlaneFactsDir(_diffEnvSettings
-      // .getTrafficFactsDir());
 
       // load base configurations and generate base data plane
       Map<String, Configuration> baseConfigurations = loadConfigurations(_baseEnvSettings);
