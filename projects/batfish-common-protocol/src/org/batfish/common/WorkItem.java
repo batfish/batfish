@@ -17,18 +17,19 @@ public class WorkItem {
 
       UUID id = UUID.fromString(array.get(0).toString());
 
-      String testrigName = array.get(1).toString();
+      String containerName = array.get(1).toString();
+      String testrigName = array.get(2).toString();
 
       HashMap<String, String> requestParams = new HashMap<String, String>();
       HashMap<String, String> responseParams = new HashMap<String, String>();
 
-      JSONObject requestObject = new JSONObject(array.get(2).toString());
-      JSONObject responseObject = new JSONObject(array.get(3).toString());
+      JSONObject requestObject = new JSONObject(array.get(3).toString());
+      JSONObject responseObject = new JSONObject(array.get(4).toString());
 
       PopulateHashMap(requestParams, requestObject);
       PopulateHashMap(responseParams, responseObject);
 
-      return new WorkItem(id, testrigName, requestParams, responseParams);
+      return new WorkItem(id, containerName, testrigName, requestParams, responseParams);
    }
 
    private static void PopulateHashMap(HashMap<String, String> map,
@@ -43,22 +44,23 @@ public class WorkItem {
    }
 
    private UUID _id;
+   private String _containerName;
    private HashMap<String, String> _requestParams;
-
    private HashMap<String, String> _responseParams;
-
    private String _testrigName;
 
-   public WorkItem(String testrigName) {
+   public WorkItem(String containerName, String testrigName) {
       _id = UUID.randomUUID();
+      _containerName = containerName;
       _testrigName = testrigName;
       _requestParams = new HashMap<String, String>();
       _responseParams = new HashMap<String, String>();
    }
 
-   public WorkItem(UUID id, String testrigName,
+   public WorkItem(UUID id, String containerName, String testrigName,
          HashMap<String, String> reqParams, HashMap<String, String> resParams) {
       _id = id;
+      _containerName = containerName;
       _testrigName = testrigName;
       _requestParams = reqParams;
       _responseParams = resParams;
@@ -70,6 +72,10 @@ public class WorkItem {
 
    public UUID getId() {
       return _id;
+   }
+
+   public String getContainerName() {
+      return _containerName;
    }
 
    public HashMap<String, String> getRequestParams() {
@@ -87,7 +93,7 @@ public class WorkItem {
    public String toJsonString() {
       JSONObject requestObject = new JSONObject(_requestParams);
       JSONObject responseObject = new JSONObject(_responseParams);
-      JSONArray array = new JSONArray(Arrays.asList(_id, _testrigName,
+      JSONArray array = new JSONArray(Arrays.asList(_id, _containerName, _testrigName,
             requestObject.toString(), responseObject.toString()));
       return array.toString();
    }

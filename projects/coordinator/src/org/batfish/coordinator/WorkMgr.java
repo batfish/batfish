@@ -127,6 +127,7 @@ public class WorkMgr {
          JSONObject task = work.getWorkItem().toTask();
          File autobasedir = Paths.get(
                Main.getSettings().getTestrigStorageLocation(),
+               work.getWorkItem().getContainerName(),
                work.getWorkItem().getTestrigName()).toFile();
          task.put("autobasedir", autobasedir.getAbsolutePath());
          task.put(
@@ -282,9 +283,11 @@ public class WorkMgr {
       _workQueueMgr.processStatusCheckResult(work, status);
    }
 
-   public File getObject(String testrigName, String objectName) {
+   //TODO: check for api key 
+   public File getObject(String apiKey, String containerName, String testrigName, String objectName) {
+
       File file = Paths.get(Main.getSettings().getTestrigStorageLocation(),
-            testrigName, objectName).toFile();
+            containerName, testrigName, objectName).toFile();
 
       if (file.isFile()) {
          return file;
@@ -309,11 +312,13 @@ public class WorkMgr {
       return _workQueueMgr.getStatusJson();
    }
 
-   public QueuedWork getWork(UUID workItemId) {
+   //TODO: check api key
+   public QueuedWork getWork(String apiKey, UUID workItemId) {
       return _workQueueMgr.getWork(workItemId);
    }
 
-   public String initContainer(String containerPrefix) throws Exception {
+   //TODO: check api key
+   public String initContainer(String apiKey, String containerPrefix) throws Exception {
       
       String containerName =  containerPrefix + "_" + UUID.randomUUID();
       
@@ -384,10 +389,12 @@ public class WorkMgr {
       }
    }
 
-   public boolean queueWork(WorkItem workItem) throws Exception {
+   //TODO: test for api key
+   public boolean queueWork(String apiKey, WorkItem workItem) throws Exception {
 
       File testrigDir = Paths.get(
-            Main.getSettings().getTestrigStorageLocation(),
+            Main.getSettings().getTestrigStorageLocation(), 
+            workItem.getContainerName(),
             workItem.getTestrigName()).toFile();
 
       if (workItem.getTestrigName().isEmpty() || !testrigDir.exists()) {
@@ -412,11 +419,21 @@ public class WorkMgr {
       return success;
    }
 
-   public void uploadEnvironment(String testrigName, String envName,
+   //TODO: check api key
+   public void uploadEnvironment(String apiKey, String containerName, String testrigName, String envName,
          InputStream fileStream) throws Exception {
 
+      File containerDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName)
+            .toFile();
+
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException("Container " + containerName
+               + " does not exist");
+      }
+
       File testrigDir = Paths.get(
-            Main.getSettings().getTestrigStorageLocation(), testrigName)
+            Main.getSettings().getTestrigStorageLocation(), containerName, testrigName)
             .toFile();
 
       if (!testrigDir.exists()) {
@@ -477,11 +494,21 @@ public class WorkMgr {
       zipFile.delete();
    }
 
-   public void uploadQuestion(String testrigName, String qName,
+   //TODO: check api key
+   public void uploadQuestion(String apiKey, String containerName, String testrigName, String qName,
          InputStream fileStream, InputStream paramFileStream) throws Exception {
 
+      File containerDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName)
+            .toFile();
+
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException("Container " + containerName
+               + " does not exist");
+      }
+
       File testrigDir = Paths.get(
-            Main.getSettings().getTestrigStorageLocation(), testrigName)
+            Main.getSettings().getTestrigStorageLocation(), containerName, testrigName)
             .toFile();
 
       if (!testrigDir.exists()) {
@@ -528,14 +555,24 @@ public class WorkMgr {
       }
    }
 
-   public void uploadTestrig(String name, InputStream fileStream)
+   //TODO: test api key
+   public void uploadTestrig(String apiKey, String containerName, String testrigName, InputStream fileStream)
          throws Exception {
 
+      File containerDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName)
+            .toFile();
+      
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException("Container " + containerName
+               + " does not exist");
+      }
+
       File testrigDir = Paths.get(
-            Main.getSettings().getTestrigStorageLocation(), name).toFile();
+            Main.getSettings().getTestrigStorageLocation(), containerName, testrigName).toFile();
 
       if (testrigDir.exists()) {
-         throw new FileExistsException("Testrig with name " + name
+         throw new FileExistsException("Testrig with name " + testrigName
                + " already exists");
       }
 
