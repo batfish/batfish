@@ -36,9 +36,13 @@ public class Client {
    private static final String COMMAND_GEN_DIFF_DP = "generate-diff-dataplane";
    private static final String COMMAND_GEN_DP = "generate-dataplane";
    private static final String COMMAND_HELP = "help";
+   private static final String COMMAND_INIT_CONTAINER = "init-container";
    private static final String COMMAND_INIT_DIFF_ENV = "init-diff-environment";
    private static final String COMMAND_INIT_TESTRIG = "init-testrig";
+   private static final String COMMAND_LIST_CONTAINERS = "list-containers";
+   private static final String COMMAND_LIST_TESTRIGS = "list-testrigs";
    private static final String COMMAND_QUIT = "quit";
+   private static final String COMMAND_SET_CONTAINER = "set-container";
    private static final String COMMAND_SET_DIFF_ENV = "set-diff-environment";
    private static final String COMMAND_SET_LOGLEVEL = "set-loglevel";
    private static final String COMMAND_SET_TESTRIG = "set-testrig";
@@ -96,9 +100,9 @@ public class Client {
       return result;
    }
 
+   private String _currContainerName = null;
    private String _currDiffEnv = null;
    private String _currEnv = null;
-
    private String _currTestrigName = null;
 
    private BatfishLogger _logger;
@@ -385,6 +389,17 @@ public class Client {
          }
          case COMMAND_HELP: {
             printUsage();
+            break;
+         }
+         case COMMAND_INIT_CONTAINER: {
+            String containerPrefix = words[1];
+
+            String containerName = _workHelper.initContainer(containerPrefix);
+
+            _currContainerName = containerName;
+            
+            _logger.outputf("Init'ed and set active container to %s\n", containerName);
+                  
             break;
          }
          case COMMAND_INIT_DIFF_ENV: {

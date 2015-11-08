@@ -39,6 +39,60 @@ public class BfCoordWorkHelper {
       _logger = logger;
    }
 
+   public String initContainer(String containerPrefix) {
+      try {
+         Client client = ClientBuilder.newClient();
+         WebTarget webTarget = client.target(
+               String.format("http://%s%s/%s", _coordWorkMgr,
+                     CoordConsts.SVC_BASE_WORK_MGR,
+                     CoordConsts.SVC_INIT_CONTAINER_RSC)).queryParam(
+               CoordConsts.SVC_CONTAINER_PREFIX_KEY,
+               UriComponent.encode(containerPrefix.toString(),
+                     UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
+         Response response = webTarget.request(MediaType.APPLICATION_JSON)
+               .get();
+
+         _logger.info(response.getStatus() + " " + response.getStatusInfo()
+               + " " + response + "\n");
+
+         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            _logger.errorf("Did not get an OK response from: %s\n", webTarget);
+            return null;
+         }
+
+         String sobj = response.readEntity(String.class);
+         JSONArray array = new JSONArray(sobj);
+         _logger.infof("response: %s [%s] [%s]\n", array.toString(),
+               array.get(0), array.get(1));
+
+         if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
+            _logger.errorf("got error in init container: %s %s\n",
+                  array.get(0), array.get(1));
+            return null;
+         }
+
+         JSONObject jObj = new JSONObject(array.get(1).toString());
+
+         if (!jObj.has(CoordConsts.SVC_CONTAINER_NAME_KEY)) {
+            _logger
+                  .errorf("container name key not found in: %s\n", jObj.toString());
+            return null;
+         }
+
+         return jObj.getString(CoordConsts.SVC_CONTAINER_NAME_KEY);
+      }
+      catch (ProcessingException e) {
+         _logger.errorf("unable to connect to %s: %s\n", _coordWorkMgr, e
+               .getStackTrace().toString());
+         return null;
+      }
+      catch (Exception e) {
+         _logger.errorf("exception: ");
+         e.printStackTrace();
+         return null;
+      }
+   }
+
    public String getObject(String testrigName, String objectName) {
       try {
 

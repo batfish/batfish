@@ -2,7 +2,6 @@ package org.batfish.coordinator;
 
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.logging.log4j.Logger;
 import org.batfish.common.*;
 
 import java.io.File;
@@ -27,7 +26,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 @Path(CoordConsts.SVC_BASE_WORK_MGR)
 public class WorkMgrService {
 
-   Logger _logger = Main.initializeLogger();
+   BatfishLogger _logger = Main.getLogger();
 
    // @GET
    // @Path("test")
@@ -151,6 +150,32 @@ public class WorkMgrService {
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("WMS:getWorkStatus exception: " + stackTrace);
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+   }
+
+   @GET
+   @Path(CoordConsts.SVC_INIT_CONTAINER_RSC)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray initContainer(
+         @QueryParam(CoordConsts.SVC_CONTAINER_PREFIX_KEY) String containerPrefix) {
+      try {
+         _logger.info("WMS:initContainer " + containerPrefix + "\n");
+
+         if (containerPrefix == null || containerPrefix.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "container prefix not supplied"));
+         }
+
+         String containerName = Main.getWorkMgr().initContainer(containerPrefix);
+
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               (new JSONObject().put(CoordConsts.SVC_CONTAINER_NAME_KEY, containerName))));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:initContainer exception: " + stackTrace);
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
       }

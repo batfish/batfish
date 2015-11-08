@@ -16,7 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.logging.log4j.Logger;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -30,13 +30,13 @@ public class PoolMgr {
       }
    }
 
-   private Logger _logger;
+   private BatfishLogger _logger;
 
    // the key should be of the form <ip or hostname>:<port>
    private HashMap<String, WorkerStatus> workerPool;
 
-   public PoolMgr() {
-      _logger = Main.initializeLogger();
+   public PoolMgr(BatfishLogger logger) {
+      _logger = logger;
       workerPool = new HashMap<String, WorkerStatus>();
 
       Runnable workerStatusRefreshTask = new WorkerStatusRefreshTask();

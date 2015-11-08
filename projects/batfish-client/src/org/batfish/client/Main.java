@@ -6,7 +6,6 @@ public class Main {
       Settings _settings = null;
       try {
          _settings = new Settings(args);
-         System.err.println("apikey " + _settings.getApiKey());
       }
       catch (Exception e) {
          System.err

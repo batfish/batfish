@@ -52,4 +52,8 @@ public class CoordConsts {
    public static final String SVC_WORKSTATUS_KEY = "workstatus";
 
    public static final String SVC_ZIPFILE_KEY = "zipfile";
+
+   public static final String SVC_INIT_CONTAINER_RSC = "initcontainer";
+   public static final String SVC_CONTAINER_PREFIX_KEY = "containerprefix";
+   public static final String SVC_CONTAINER_NAME_KEY = "container";
 }

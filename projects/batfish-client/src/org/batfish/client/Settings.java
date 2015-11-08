@@ -1,7 +1,5 @@
 package org.batfish.client;
 
-import java.io.File;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -10,8 +8,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.batfish.client.config.ConfigurationLocator;
-import org.batfish.common.BatfishLogger;
-import org.batfish.common.CoordConsts;
 import org.apache.commons.configuration.*;
 
 public class Settings {
@@ -22,7 +18,7 @@ public class Settings {
    private static final String ARG_LOG_FILE = "client.LogFile";
    private static final String ARG_LOG_LEVEL = "client.LogLevel";
    private static final String ARG_PERIOD_CHECK_WORK = "client.PeriodCheckWorkMs";
-   private static final String ARG_SERVICE_HOST = "coordinator.Host";
+   private static final String ARG_SERVICE_HOST = "coordinator.ServiceHost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinator.PoolPort";
    private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";
 

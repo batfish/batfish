@@ -22,7 +22,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.logging.log4j.Logger;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.UnzipUtility;
 import org.batfish.common.WorkItem;
@@ -58,12 +58,12 @@ public class WorkMgr {
    // private ScheduledFuture<?> _checkFuture;
    // private ScheduledFuture<?> _assignFuture;
 
-   private Logger _logger;
+   private BatfishLogger _logger;
 
    private WorkQueueMgr _workQueueMgr;
 
-   public WorkMgr() {
-      _logger = Main.initializeLogger();
+   public WorkMgr(BatfishLogger logger) {
+      _logger = logger;
       _workQueueMgr = new WorkQueueMgr();
 
       // for some bizarre reason, this ordering of scheduling checktask before
@@ -308,6 +308,26 @@ public class WorkMgr {
 
    public QueuedWork getWork(UUID workItemId) {
       return _workQueueMgr.getWork(workItemId);
+   }
+
+   public String initContainer(String containerPrefix) throws Exception {
+      
+      String containerName =  containerPrefix + "_" + UUID.randomUUID();
+      
+      File containerDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName).toFile();
+
+      if (containerDir.exists()) {
+         throw new FileExistsException("Container " + containerName
+               + " already exists!");
+      }
+
+      if (!containerDir.mkdirs()) {
+         throw new Exception("failed to create directory "
+               + containerDir.getAbsolutePath());
+      }
+      
+      return containerName;
    }
 
    private void moveByCopy(File srcFile, File destFile) throws IOException {

@@ -3,7 +3,7 @@ package org.batfish.coordinator;
 import java.util.UUID;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.logging.log4j.Logger;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.coordinator.queues.AzureQueue;
@@ -21,7 +21,7 @@ public class WorkQueueMgr {
       INCOMPLETE
    }
 
-   Logger _logger = Main.initializeLogger();
+   BatfishLogger _logger = Main.getLogger();
    private WorkQueue _queueCompletedWork;
 
    private WorkQueue _queueIncompleteWork;
