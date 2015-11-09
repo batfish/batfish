@@ -187,6 +187,9 @@
 	</target>
 
    <target name="copyconfig" description="Copy configuration file to output directory">
+      <copy todir="bin">
+         <fileset dir="src" includes="**/config.properties"/>
+      </copy>
       <copy todir="out">
          <fileset dir="src/org/batfish/config" includes="config.properties"/>
       </copy>
@@ -386,7 +389,7 @@
 
    <target name="predicateinfo" depends="compile,predicateinfolite" description="Extract predicate information from logic files"/>
 
-   <target name="predicateinfolite" depends="copylogic" description="Extract predicate information from logic files asssuming external compiler">
+   <target name="predicateinfolite" depends="copylogic,copyconfig" description="Extract predicate information from logic files asssuming external compiler">
       <mkdir dir="bin"/>
       <outofdate>
          <deletetargets/>

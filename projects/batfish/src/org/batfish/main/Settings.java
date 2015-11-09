@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -380,9 +381,9 @@ public final class Settings {
       _activeEnvironmentSettings = _baseEnvironmentSettings;
 
       _config = new PropertiesConfiguration();
-      _config
-            .setFile(org.batfish.common.Util
-                  .getConfigProperties(org.batfish.config.ConfigurationLocator.class));
+      File configFile = org.batfish.common.Util
+            .getConfigProperties(org.batfish.config.ConfigurationLocator.class);
+      _config.setFile(configFile);
       _config.load();
 
       initOptions();

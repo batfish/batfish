@@ -39,6 +39,10 @@
    <target name="clean" depends="compileclean" description="Delete all intermediate files"/>
 
    <target name="copyconfig" description="Copy configuration file to output directory">
+      <copy todir="bin">
+         <fileset dir="src" includes="**/config.properties"/>
+         <fileset dir="src" includes="**/selfsigned.jks"/>
+      </copy>
       <copy todir="out">
          <fileset dir="src/org/batfish/coordinator/config" includes="config.properties"/>
          <fileset dir="src/org/batfish/coordinator/config" includes="selfsigned.jks"/>
