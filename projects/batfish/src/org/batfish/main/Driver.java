@@ -9,13 +9,11 @@ import java.util.List;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
