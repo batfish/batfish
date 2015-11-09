@@ -8,11 +8,13 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
+import org.batfish.coordinator.queues.WorkQueue;
 
 public class Settings {
 
-   private static final String ARG_CHECK_API_KEY = "coordinator.CheckApiKey";
+   private static final String ARG_AUTHORIZER_TYPE = "coordinator.AuthorizerType";
    private static final String ARG_LOG_FILE = "coordinator.LogFile";
    private static final String ARG_LOG_LEVEL = "coordinator.LogLevel";
    private static final String ARG_PERIOD_ASSIGN_WORK = "coordinator.PeriodAssignWorkMs";
@@ -31,7 +33,7 @@ public class Settings {
    private static final String ARG_TESTRIG_STORAGE_LOCATION = "coordinator.TestrigStorageLocation";
 
    private FileConfiguration _config;
-   private boolean _checkApiKey;
+   private Authorizer.Type _authorizerType;
    private String _logFile;
    private String _logLevel;
    private Options _options;
@@ -64,8 +66,8 @@ public class Settings {
       parseCommandLine(args);
    }
 
-   public boolean getCheckApiKey() {
-      return _checkApiKey;
+   public Authorizer.Type getAuthorizationType() {
+      return _authorizerType;
    }
 
    public String getLogFile() {
@@ -161,8 +163,8 @@ public class Settings {
       _options.addOption(Option.builder().argName("log_level").hasArg()
             .desc("log level").longOpt(ARG_LOG_LEVEL)
             .build());
-      _options.addOption(Option.builder().argName("check_api_key").hasArg()
-            .desc("check api key?").longOpt(ARG_CHECK_API_KEY)
+      _options.addOption(Option.builder().argName("authorizer type").hasArg()
+            .desc("type of authorizer to use").longOpt(ARG_AUTHORIZER_TYPE)
             .build());
    }
 
@@ -209,7 +211,7 @@ public class Settings {
       _logFile = line.getOptionValue(ARG_LOG_FILE, _config.getString(ARG_LOG_FILE));
       _logLevel = line.getOptionValue(ARG_LOG_LEVEL, _config.getString(ARG_LOG_LEVEL));
       
-      _checkApiKey = Boolean.parseBoolean(line.getOptionValue(
-            ARG_CHECK_API_KEY, _config.getString(ARG_CHECK_API_KEY)));
+      _authorizerType = Authorizer.Type.valueOf(line.getOptionValue(
+            ARG_AUTHORIZER_TYPE, _config.getString(ARG_AUTHORIZER_TYPE)));
    }
 }

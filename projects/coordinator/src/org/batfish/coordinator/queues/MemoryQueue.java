@@ -4,7 +4,6 @@ import java.util.LinkedList;
 import java.util.UUID;
 
 import org.batfish.coordinator.QueuedWork;
-import org.batfish.coordinator.WorkQueue;
 
 // we don't synchronize on this queue
 // all synchronization is in inside WorkQueueMgr

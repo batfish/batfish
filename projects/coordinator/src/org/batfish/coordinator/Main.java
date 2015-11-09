@@ -7,9 +7,14 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.coordinator.authorizer.*;
+import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.ssl.SSLContextConfigurator;
+import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 public class Main {
@@ -18,6 +23,11 @@ public class Main {
    private static PoolMgr _poolManager;
    private static Settings _settings;
    private static WorkMgr _workManager;
+   private static Authorizer _authorizer;
+
+   public static Authorizer getAuthorizer() {
+      return _authorizer;
+   }
 
    public static BatfishLogger getLogger() {
       return _logger;
@@ -35,6 +45,18 @@ public class Main {
       return _workManager;
    }
 
+   private static void initAuthorizer() {
+      switch (_settings.getAuthorizationType()) {
+         case none:
+            _authorizer = new NoneAuthorizer();
+            break;
+         default:
+            System.err.print("org.batfish.coordinator: Initialization failed. Unsupported authorizer type "
+                  + _settings.getAuthorizationType());
+            System.exit(1);            
+      }
+   }
+      
    public static void main(String[] args) {
       _settings = null;
       try {
@@ -47,7 +69,8 @@ public class Main {
                      + e.getMessage());
          System.exit(1);
       }
-
+      
+      initAuthorizer();
 
       // start the pool manager service
       URI poolMgrUri = UriBuilder
@@ -62,6 +85,27 @@ public class Main {
 
       GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool);
 
+//      URI poolMgrUri = UriBuilder
+//            .fromUri("https://" + _settings.getServiceHost())
+//            .port(_settings.getServicePoolPort()).build();
+//
+//      _logger.info("Starting pool manager at " + poolMgrUri + "\n");
+//
+//      ResourceConfig rcPool = new ResourceConfig(PoolMgrService.class)
+//            .register(new JettisonFeature()).register(MultiPartFeature.class)
+//            .register(org.batfish.coordinator.CrossDomainFilter.class);
+//
+//      SSLContextConfigurator sslCon = new SSLContextConfigurator();
+//
+//      sslCon.setKeyStoreFile(ConfigLoader.getKeystoreLocation()); // contains server keypair
+//      sslCon.setKeyStorePass(ConfigLoader.getKeystorePassword());
+//
+//      //HttpHandler hand = ContainerFactory.createContainer(HttpHandler.class, rc);
+//
+//      GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool, true,
+//              new SSLEngineConfigurator(sslCon, false, false, false));
+//
+      
       // start the work manager service
       URI workMgrUri = UriBuilder
             .fromUri("http://" + _settings.getServiceHost())
@@ -72,19 +116,6 @@ public class Main {
       ResourceConfig rcWork = new ResourceConfig(WorkMgrService.class)
             .register(new JettisonFeature()).register(MultiPartFeature.class)
             .register(org.batfish.coordinator.CrossDomainFilter.class);
-
-      // rcPool.getProperties().put(
-      // "com.sun.jersey.spi.container.ContainerResponseFilters",
-      // "org.batfish.coordinator.CrossDomainFilter"
-      // );
-
-      // ResourceConfig rcWork = new ResourceConfig(WorkMgrService.class);
-      // rcWork.getProperties().put(
-      // "com.sun.jersey.spi.container.ContainerResponseFilters",
-      // "org.batfish.coordinator.CrossDomainFilter");
-      //
-      // rcWork.register(new JettisonFeature())
-      // .register(MultiPartFeature.class);
 
       GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork);
 
