@@ -14,13 +14,17 @@ public class Settings {
 
    private static final String ARG_COMMAND_FILE = "cmdfile";
    private static final String ARG_HELP = "help";
-   private static final String ARG_API_KEY = "client.ApiKey";
    private static final String ARG_LOG_FILE = "client.LogFile";
    private static final String ARG_LOG_LEVEL = "client.LogLevel";
    private static final String ARG_PERIOD_CHECK_WORK = "client.PeriodCheckWorkMs";
    private static final String ARG_SERVICE_HOST = "coordinator.ServiceHost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinator.PoolPort";
    private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";
+
+   //these settings are not wired up to command line options
+   private static final String ARG_API_KEY = "client.ApiKey";
+   private static final String ARG_USE_SSL = "coordinator.UseSsl";
+   private static final String ARG_TRUST_ALL_SSL_CERTS = "client.TrustAllSslCerts";
 
    private static final String EXECUTABLE_NAME = "batfish_client";
 
@@ -78,6 +82,14 @@ public class Settings {
 
    public int getServiceWorkPort() {
       return _serviceWorkPort;
+   }
+
+   public boolean getTrustAllSslCerts() {
+      return _config.getBoolean(ARG_TRUST_ALL_SSL_CERTS);
+   }
+
+   public boolean getUseSsl() {
+      return _config.getBoolean(ARG_USE_SSL);
    }
 
    private void initOptions() {

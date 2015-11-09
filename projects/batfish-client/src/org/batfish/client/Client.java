@@ -11,19 +11,19 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javafx.collections.transformation.SortedList;
+import javax.net.ssl.*;
+import javax.security.cert.*;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.CoordConsts;
 import org.batfish.common.Util;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
@@ -135,6 +135,7 @@ public class Client {
 
    public Client(Settings settings) {
       _settings = settings;
+      
       if (settings.getCommandFile() != null) {
          RunBatchMode();
       }
@@ -566,7 +567,7 @@ public class Client {
       String poolMgr = _settings.getServiceHost() + ":"
             + _settings.getServicePoolPort();
 
-      _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings.getApiKey());
+      _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings);
       _poolHelper = new BfCoordPoolHelper(poolMgr);
 
       try (BufferedReader br = new BufferedReader(new FileReader(
@@ -623,7 +624,7 @@ public class Client {
          String poolMgr = _settings.getServiceHost() + ":"
                + _settings.getServicePoolPort();
 
-         _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings.getApiKey());
+         _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings);
          _poolHelper = new BfCoordPoolHelper(poolMgr);
 
          while ((line = reader.readLine()) != null) {

@@ -1,13 +1,16 @@
 package org.batfish.coordinator;
 
 // Include the following imports to use queue APIs.
+import java.io.File;
 import java.net.URI;
+import java.nio.file.Paths;
 
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.coordinator.authorizer.*;
+import org.batfish.coordinator.config.ConfigurationLocator;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
@@ -56,7 +59,91 @@ public class Main {
             System.exit(1);            
       }
    }
+   
+   private static void initPoolManager() {
+
+      ResourceConfig rcPool = new ResourceConfig(PoolMgrService.class)
+      .register(new JettisonFeature()).register(MultiPartFeature.class)
+      .register(org.batfish.coordinator.CrossDomainFilter.class);
+
+      if (!_settings.getUseSsl()) {
+         URI poolMgrUri = UriBuilder
+               .fromUri("http://" + _settings.getServiceHost())
+               .port(_settings.getServicePoolPort()).build();
+
+         _logger.info("Starting pool manager at " + poolMgrUri + "\n");
+
+         GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool);
+      }
+      else {
+         URI poolMgrUri = UriBuilder
+               .fromUri("https://" + _settings.getServiceHost())
+               .port(_settings.getServicePoolPort()).build();
+
+         _logger.info("Starting pool manager at " + poolMgrUri + "\n");
+
+         File keystoreFile = Paths.get(org.batfish.common.Util.getJarOrClassDir(ConfigurationLocator.class).getAbsolutePath(), 
+               _settings.getSslKeystoreFilename()).toFile();
+         
+         if (!keystoreFile.exists()) {
+            System.err.print("org.batfish.coordinator: keystore file not found: "
+                  + keystoreFile.getAbsolutePath());
+            System.exit(1);
+         }
+            
+         SSLContextConfigurator sslCon = new SSLContextConfigurator();
+         sslCon.setKeyStoreFile(keystoreFile.getAbsolutePath()); 
+         sslCon.setKeyStorePass(_settings.getSslKeystorePassword());
+         
+         GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool, true,
+               new SSLEngineConfigurator(sslCon, false, false, false));
+      }
+
+      _poolManager = new PoolMgr(_logger);
+
+   }
       
+   private static void initWorkManager() {
+      ResourceConfig rcWork = new ResourceConfig(WorkMgrService.class)
+      .register(new JettisonFeature()).register(MultiPartFeature.class)
+      .register(org.batfish.coordinator.CrossDomainFilter.class);
+
+      if (!_settings.getUseSsl()) {
+      URI workMgrUri = UriBuilder
+            .fromUri("http://" + _settings.getServiceHost())
+            .port(_settings.getServiceWorkPort()).build();
+
+      _logger.info("Starting work manager at " + workMgrUri + "\n");
+
+      GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork);
+      } 
+      else {
+         URI workMgrUri = UriBuilder
+               .fromUri("https://" + _settings.getServiceHost())
+               .port(_settings.getServiceWorkPort()).build();
+
+         _logger.info("Starting work manager at " + workMgrUri + "\n");
+
+         File keystoreFile = Paths.get(org.batfish.common.Util.getJarOrClassDir(ConfigurationLocator.class).getAbsolutePath(), 
+               _settings.getSslKeystoreFilename()).toFile();
+         
+         if (!keystoreFile.exists()) {
+            System.err.print("org.batfish.coordinator: keystore file not found: "
+                  + keystoreFile.getAbsolutePath());
+            System.exit(1);
+         }
+            
+         SSLContextConfigurator sslCon = new SSLContextConfigurator();
+         sslCon.setKeyStoreFile(keystoreFile.getAbsolutePath()); 
+         sslCon.setKeyStorePass(_settings.getSslKeystorePassword());
+         
+         GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork, true,
+               new SSLEngineConfigurator(sslCon, false, false, false));         
+      }
+
+      _workManager = new WorkMgr(_logger);
+   }
+   
    public static void main(String[] args) {
       _settings = null;
       try {
@@ -71,57 +158,8 @@ public class Main {
       }
       
       initAuthorizer();
-
-      // start the pool manager service
-      URI poolMgrUri = UriBuilder
-            .fromUri("http://" + _settings.getServiceHost())
-            .port(_settings.getServicePoolPort()).build();
-
-      _logger.info("Starting pool manager at " + poolMgrUri + "\n");
-
-      ResourceConfig rcPool = new ResourceConfig(PoolMgrService.class)
-            .register(new JettisonFeature()).register(MultiPartFeature.class)
-            .register(org.batfish.coordinator.CrossDomainFilter.class);
-
-      GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool);
-
-//      URI poolMgrUri = UriBuilder
-//            .fromUri("https://" + _settings.getServiceHost())
-//            .port(_settings.getServicePoolPort()).build();
-//
-//      _logger.info("Starting pool manager at " + poolMgrUri + "\n");
-//
-//      ResourceConfig rcPool = new ResourceConfig(PoolMgrService.class)
-//            .register(new JettisonFeature()).register(MultiPartFeature.class)
-//            .register(org.batfish.coordinator.CrossDomainFilter.class);
-//
-//      SSLContextConfigurator sslCon = new SSLContextConfigurator();
-//
-//      sslCon.setKeyStoreFile(ConfigLoader.getKeystoreLocation()); // contains server keypair
-//      sslCon.setKeyStorePass(ConfigLoader.getKeystorePassword());
-//
-//      //HttpHandler hand = ContainerFactory.createContainer(HttpHandler.class, rc);
-//
-//      GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool, true,
-//              new SSLEngineConfigurator(sslCon, false, false, false));
-//
-      
-      // start the work manager service
-      URI workMgrUri = UriBuilder
-            .fromUri("http://" + _settings.getServiceHost())
-            .port(_settings.getServiceWorkPort()).build();
-
-      _logger.info("Starting work manager at " + workMgrUri + "\n");
-
-      ResourceConfig rcWork = new ResourceConfig(WorkMgrService.class)
-            .register(new JettisonFeature()).register(MultiPartFeature.class)
-            .register(org.batfish.coordinator.CrossDomainFilter.class);
-
-      GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork);
-
-      // start the two managers
-      _poolManager = new PoolMgr(_logger);
-      _workManager = new WorkMgr(_logger);
+      initPoolManager();
+      initWorkManager();
 
       // sleep indefinitely, in 10 minute chunks
       try {

@@ -3,7 +3,14 @@ package org.batfish.client;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.UUID;
+import java.security.cert.X509Certificate;
+import java.security.cert.CertificateException;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -33,12 +40,34 @@ public class BfCoordWorkHelper {
 
    private String _coordWorkMgr;
    private BatfishLogger _logger;
-   private String _apiKey;
-
-   public BfCoordWorkHelper(String workMgr, BatfishLogger logger, String apiKey) {
+   private Settings _settings;
+   public BfCoordWorkHelper(String workMgr, BatfishLogger logger, Settings settings) {
       _coordWorkMgr = workMgr;
       _logger = logger;
-      _apiKey = apiKey;
+      _settings = settings;
+   }
+
+   private static class TrustAllHostNameVerifier implements HostnameVerifier {
+      public boolean verify(String hostname, SSLSession session) {
+         return true;
+      }
+   }   
+
+   public ClientBuilder getClientBuilder() throws Exception {
+      if (_settings.getUseSsl() && _settings.getTrustAllSslCerts()) {
+         SSLContext sslcontext = SSLContext.getInstance("TLS");
+         sslcontext.init(null, new TrustManager[]{new X509TrustManager() {
+            public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
+            public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
+            public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+
+         }}, new java.security.SecureRandom());
+
+         return ClientBuilder.newBuilder().sslContext(sslcontext).hostnameVerifier(new TrustAllHostNameVerifier());
+      }
+      else {
+         return ClientBuilder.newBuilder();
+      }
    }
 
    private JSONObject getJsonResponse(WebTarget webTarget) throws Exception {      
@@ -69,26 +98,27 @@ public class BfCoordWorkHelper {
          return new JSONObject(array.get(1).toString());
       }
       catch (ProcessingException e) {
-         _logger.errorf("unable to connect to %s: %s\n", _coordWorkMgr, e
-               .getStackTrace().toString());
-         return null;
+         if (e.getMessage().contains("ConnectException")) {
+            _logger.errorf("unable to connect to coordinator at %s\n", _coordWorkMgr);
+            return null;
+         }
+         if (e.getMessage().contains("SSLHandshakeException")) {
+            _logger.errorf("SSL handshake exception while connecting to coordinator\n");
+            return null;
+         }
+         throw e;
       }
    }
 
    public String getObject(String containerName, String testrigName, String objectName) {
       try {
 
-         Client client = ClientBuilder.newBuilder()
-               .register(MultiPartFeature.class).build();
-         WebTarget webTarget = client
-               .target(
-                     String.format("http://%s%s/%s", _coordWorkMgr,
-                           CoordConsts.SVC_BASE_WORK_MGR,
-                           CoordConsts.SVC_WORK_GET_OBJECT_RSC))
-                           .queryParam(CoordConsts.SVC_API_KEY, _apiKey)
-                           .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY, uriEncode(containerName))
-                           .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY, testrigName)
-                           .queryParam(CoordConsts.SVC_WORK_OBJECT_KEY, objectName);
+         Client client = getClientBuilder().register(MultiPartFeature.class).build();
+         WebTarget webTarget = getTarget(client, CoordConsts.SVC_WORK_GET_OBJECT_RSC)
+               .queryParam(CoordConsts.SVC_API_KEY, _settings.getApiKey())
+               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY, uriEncode(containerName))
+               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY, testrigName)
+               .queryParam(CoordConsts.SVC_WORK_OBJECT_KEY, objectName);
                
          Response response = webTarget.request(
                MediaType.APPLICATION_OCTET_STREAM).get();
@@ -169,6 +199,16 @@ public class BfCoordWorkHelper {
    //         String questionName) {
    //      return null;
    //   }
+   
+   private WebTarget getTarget(Client client, String resource) {
+
+      String protocol = (_settings.getUseSsl())? "https" : "http";
+
+      String urlString = String.format("%s://%s%s/%s", protocol, _coordWorkMgr, 
+            CoordConsts.SVC_BASE_WORK_MGR, resource);
+
+      return client.target(urlString);
+   }
 
    public WorkItem getWorkItemAnswerDiffQuestion(String questionName, String containerName,
          String testrigName, String envName, String diffEnvName) {
@@ -278,13 +318,13 @@ public class BfCoordWorkHelper {
 
    public WorkStatusCode getWorkStatus(UUID parseWorkUUID) {
       try {
-         Client client = ClientBuilder.newClient();
+         Client client = getClientBuilder().build();
          WebTarget webTarget = client.target(
                String.format("http://%s%s/%s", _coordWorkMgr,
                      CoordConsts.SVC_BASE_WORK_MGR,
                      CoordConsts.SVC_WORK_GET_WORKSTATUS_RSC))
                      .queryParam(CoordConsts.SVC_API_KEY, 
-                           uriEncode(_apiKey))
+                           uriEncode(_settings.getApiKey()))
                            .queryParam(CoordConsts.SVC_WORKID_KEY,
                                  uriEncode(parseWorkUUID.toString()));
 
@@ -310,15 +350,10 @@ public class BfCoordWorkHelper {
 
    public String initContainer(String containerPrefix) {
       try {
-         Client client = ClientBuilder.newClient();
-         WebTarget webTarget = client
-               .target(String.format("http://%s%s/%s", _coordWorkMgr,
-                     CoordConsts.SVC_BASE_WORK_MGR,
-                     CoordConsts.SVC_INIT_CONTAINER_RSC))
-                     .queryParam(CoordConsts.SVC_API_KEY,
-                           uriEncode(_apiKey))
-                                 .queryParam(CoordConsts.SVC_CONTAINER_PREFIX_KEY,
-                                       uriEncode(containerPrefix));
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client, CoordConsts.SVC_INIT_CONTAINER_RSC)
+               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_CONTAINER_PREFIX_KEY, uriEncode(containerPrefix));
 
          JSONObject jObj = getJsonResponse(webTarget);
          if (jObj == null) 
@@ -341,12 +376,9 @@ public class BfCoordWorkHelper {
 
    public String[] listContainers() {
       try {
-         Client client = ClientBuilder.newClient();
-         WebTarget webTarget = client.target(
-               String.format("http://%s%s/%s", _coordWorkMgr,
-                     CoordConsts.SVC_BASE_WORK_MGR,
-                     CoordConsts.SVC_LIST_CONTAINERS_RSC)).queryParam(
-                           CoordConsts.SVC_API_KEY, uriEncode(_apiKey));
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client, CoordConsts.SVC_LIST_CONTAINERS_RSC)
+               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()));
 
          JSONObject jObj = getJsonResponse(webTarget);
          if (jObj == null) 
@@ -377,14 +409,10 @@ public class BfCoordWorkHelper {
 
    public String[] listTestrigs(String containerName) {
       try {
-         Client client = ClientBuilder.newClient();
-         WebTarget webTarget = client.target(
-               String.format("http://%s%s/%s", _coordWorkMgr,
-                     CoordConsts.SVC_BASE_WORK_MGR,
-                     CoordConsts.SVC_LIST_TESTRIGS_RSC))
-                     .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_apiKey))
-                     .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY,
-                           uriEncode(containerName));
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client, CoordConsts.SVC_LIST_TESTRIGS_RSC)
+               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY, uriEncode(containerName));
 
          JSONObject jObj = getJsonResponse(webTarget);
          if (jObj == null) 
@@ -406,11 +434,6 @@ public class BfCoordWorkHelper {
 
          return containerList;
       }
-      catch (ProcessingException e) {
-         _logger.errorf("unable to connect to %s: %s\n", _coordWorkMgr, e
-               .getStackTrace().toString());
-         return null;
-      }
       catch (Exception e) {
          _logger.errorf("exception: ");
          e.printStackTrace();
@@ -421,15 +444,10 @@ public class BfCoordWorkHelper {
    public boolean queueWork(WorkItem wItem) {
 
       try {
-         Client client = ClientBuilder.newClient();
-         WebTarget webTarget = client.target(
-               String.format("http://%s%s/%s", _coordWorkMgr,
-                     CoordConsts.SVC_BASE_WORK_MGR,
-                     CoordConsts.SVC_WORK_QUEUE_WORK_RSC))
-                     .queryParam(CoordConsts.SVC_WORKITEM_KEY,
-                           uriEncode(wItem.toJsonString()))
-                           .queryParam(CoordConsts.SVC_API_KEY,
-                                 uriEncode(_apiKey));
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client, CoordConsts.SVC_WORK_QUEUE_WORK_RSC)
+               .queryParam(CoordConsts.SVC_WORKITEM_KEY, uriEncode(wItem.toJsonString()))
+               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()));
 
          JSONObject jObj = getJsonResponse(webTarget);
          return (jObj != null);
@@ -472,6 +490,10 @@ public class BfCoordWorkHelper {
             _logger.errorf("unable to connect to coordinator at %s\n", _coordWorkMgr);
             return false;
          }
+         if (e.getMessage().contains("SSLHandshakeException")) {
+            _logger.errorf("SSL handshake exception while connecting to coordinator\n");
+            return false;
+         }
          throw e;
       }
    }
@@ -480,17 +502,14 @@ public class BfCoordWorkHelper {
          String zipfileName) {
       try {
 
-         Client client = ClientBuilder.newBuilder()
-               .register(MultiPartFeature.class).build();
-         WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               _coordWorkMgr, CoordConsts.SVC_BASE_WORK_MGR,
-               CoordConsts.SVC_WORK_UPLOAD_ENV_RSC));
+         Client client = getClientBuilder().register(MultiPartFeature.class).build();
+         WebTarget webTarget = getTarget(client, CoordConsts.SVC_WORK_UPLOAD_ENV_RSC);
 
          MultiPart multiPart = new MultiPart();
          multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
          FormDataBodyPart apiKeyBodyPart = new FormDataBodyPart(
-               CoordConsts.SVC_API_KEY, _apiKey,
+               CoordConsts.SVC_API_KEY, _settings.getApiKey(),
                MediaType.TEXT_PLAIN_TYPE);
          multiPart.bodyPart(apiKeyBodyPart);
 
@@ -534,17 +553,14 @@ public class BfCoordWorkHelper {
          String qFileName, File paramsFile) {
       try {
 
-         Client client = ClientBuilder.newBuilder()
-               .register(MultiPartFeature.class).build();
-         WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               _coordWorkMgr, CoordConsts.SVC_BASE_WORK_MGR,
-               CoordConsts.SVC_WORK_UPLOAD_QUESTION_RSC));
+         Client client = getClientBuilder().register(MultiPartFeature.class).build();
+         WebTarget webTarget = getTarget(client, CoordConsts.SVC_WORK_UPLOAD_QUESTION_RSC);
 
          MultiPart multiPart = new MultiPart();
          multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
          FormDataBodyPart apiKeyBodyPart = new FormDataBodyPart(
-               CoordConsts.SVC_API_KEY, _apiKey,
+               CoordConsts.SVC_API_KEY, _settings.getApiKey(),
                MediaType.TEXT_PLAIN_TYPE);
          multiPart.bodyPart(apiKeyBodyPart);
 
@@ -593,17 +609,14 @@ public class BfCoordWorkHelper {
 
    public boolean uploadTestrig(String containerName, String testrigName, String zipfileName) {
       try{
-         Client client = ClientBuilder.newBuilder()
-               .register(MultiPartFeature.class).build();
-         WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               _coordWorkMgr, CoordConsts.SVC_BASE_WORK_MGR,
-               CoordConsts.SVC_WORK_UPLOAD_TESTRIG_RSC));
+         Client client = getClientBuilder().register(MultiPartFeature.class).build();
+         WebTarget webTarget = getTarget(client, CoordConsts.SVC_WORK_UPLOAD_TESTRIG_RSC);
 
          MultiPart multiPart = new MultiPart();
          multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
          FormDataBodyPart apiKeyBodyPart = new FormDataBodyPart(
-               CoordConsts.SVC_API_KEY, _apiKey,
+               CoordConsts.SVC_API_KEY, _settings.getApiKey(),
                MediaType.TEXT_PLAIN_TYPE);
          multiPart.bodyPart(apiKeyBodyPart);
 

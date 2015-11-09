@@ -25,12 +25,16 @@ public class Settings {
    private static final String ARG_QUEUE_TYPE = "coordinator.Q_Type";
    private static final String ARG_SERVICE_HOST = "coordinator.ServiceHost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinator.PoolPort";
-   private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";
-   
+   private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";   
    private static final String ARG_STORAGE_ACCOUNT_KEY = "coordinator.StorageAccountKey";
    private static final String ARG_STORAGE_ACCOUNT_NAME = "coordinator.StorageAccountName";
    private static final String ARG_STORAGE_PROTOCOL = "coordinator.StorageProtocol";
    private static final String ARG_TESTRIG_STORAGE_LOCATION = "coordinator.TestrigStorageLocation";
+
+   //these arguments are not wired for options
+   private static final String ARG_USE_SSL = "coordinator.UseSsl";
+   private static final String ARG_SSL_KEYSTORE_FILE = "coordinator.SslKeyStoreFile";
+   private static final String ARG_SSL_KEYSTORE_PASSWORD = "coordinator.SslKeyStorePassword";
 
    private FileConfiguration _config;
    private Authorizer.Type _authorizerType;
@@ -114,6 +118,14 @@ public class Settings {
       return _serviceWorkPort;
    }
 
+   public String getSslKeystoreFilename() {
+      return _config.getString(ARG_SSL_KEYSTORE_FILE);
+   }
+
+   public String getSslKeystorePassword() {
+      return _config.getString(ARG_SSL_KEYSTORE_PASSWORD);
+   }
+
    public String getStorageAccountKey() {
       return _storageAccountKey;
    }
@@ -128,6 +140,10 @@ public class Settings {
 
    public String getTestrigStorageLocation() {
       return _testrigStorageLocation;
+   }
+
+   public boolean getUseSsl() {
+      return _config.getBoolean(ARG_USE_SSL);
    }
 
    private void initOptions() {
