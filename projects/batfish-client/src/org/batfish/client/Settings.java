@@ -20,10 +20,10 @@ public class Settings {
    private static final String ARG_SERVICE_HOST = "coordinator.ServiceHost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinator.PoolPort";
    private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";
+   private static final String ARG_USE_SSL = "coordinator.UseSsl";
 
    //these settings are not wired up to command line options
    private static final String ARG_API_KEY = "client.ApiKey";
-   private static final String ARG_USE_SSL = "coordinator.UseSsl";
    private static final String ARG_TRUST_ALL_SSL_CERTS = "client.TrustAllSslCerts";
 
    private static final String EXECUTABLE_NAME = "batfish_client";
@@ -37,6 +37,7 @@ public class Settings {
    private String _serviceHost;
    private int _servicePoolPort;
    private int _serviceWorkPort;
+   private boolean _useSsl;
 
    public Settings() throws Exception {
       this(new String[] {});
@@ -89,7 +90,7 @@ public class Settings {
    }
 
    public boolean getUseSsl() {
-      return _config.getBoolean(ARG_USE_SSL);
+      return _useSsl;
    }
 
    private void initOptions() {
@@ -116,6 +117,9 @@ public class Settings {
             .longOpt(ARG_COMMAND_FILE).build());
       _options.addOption(Option.builder().desc("print this message")
             .longOpt(ARG_HELP).build());
+      _options.addOption(Option.builder().argName("use_ssl").hasArg()
+            .desc("whether to use ssl with coordinator")
+            .longOpt(ARG_USE_SSL).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -133,19 +137,18 @@ public class Settings {
          System.exit(0);
       }
 
+      _commandFile = line.getOptionValue(ARG_COMMAND_FILE);
+      _logFile = line.getOptionValue(ARG_LOG_FILE, _config.getString(ARG_LOG_FILE));
+      _logLevel = line.getOptionValue(ARG_LOG_LEVEL, _config.getString(ARG_LOG_LEVEL));
+
+      _periodCheckWorkMs = Long.parseLong(line.getOptionValue(
+            ARG_PERIOD_CHECK_WORK, _config.getString(ARG_PERIOD_CHECK_WORK)));
+      _serviceHost = line
+            .getOptionValue(ARG_SERVICE_HOST, _config.getString(ARG_SERVICE_HOST));
       _servicePoolPort = Integer.parseInt(line.getOptionValue(
             ARG_SERVICE_POOL_PORT, _config.getString(ARG_SERVICE_POOL_PORT)));
       _serviceWorkPort = Integer.parseInt(line.getOptionValue(
             ARG_SERVICE_WORK_PORT, _config.getString(ARG_SERVICE_WORK_PORT)));
-      _serviceHost = line
-            .getOptionValue(ARG_SERVICE_HOST, _config.getString(ARG_SERVICE_HOST));
-      _periodCheckWorkMs = Long.parseLong(line.getOptionValue(
-            ARG_PERIOD_CHECK_WORK, _config.getString(ARG_PERIOD_CHECK_WORK)));
-
-      _logFile = line.getOptionValue(ARG_LOG_FILE, _config.getString(ARG_LOG_FILE));
-
-      _logLevel = line.getOptionValue(ARG_LOG_LEVEL, _config.getString(ARG_LOG_LEVEL));
-
-      _commandFile = line.getOptionValue(ARG_COMMAND_FILE);
+      _useSsl = Boolean.parseBoolean(line.getOptionValue(ARG_USE_SSL, _config.getString(ARG_USE_SSL)));
    }
 }

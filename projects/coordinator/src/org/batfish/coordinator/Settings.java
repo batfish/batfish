@@ -30,9 +30,9 @@ public class Settings {
    private static final String ARG_STORAGE_ACCOUNT_NAME = "coordinator.StorageAccountName";
    private static final String ARG_STORAGE_PROTOCOL = "coordinator.StorageProtocol";
    private static final String ARG_TESTRIG_STORAGE_LOCATION = "coordinator.TestrigStorageLocation";
+   private static final String ARG_USE_SSL = "coordinator.UseSsl";
 
    //these arguments are not wired for options
-   private static final String ARG_USE_SSL = "coordinator.UseSsl";
    private static final String ARG_SSL_KEYSTORE_FILE = "coordinator.SslKeyStoreFile";
    private static final String ARG_SSL_KEYSTORE_PASSWORD = "coordinator.SslKeyStorePassword";
 
@@ -50,11 +50,11 @@ public class Settings {
    private String _serviceHost;
    private int _servicePoolPort;
    private int _serviceWorkPort;
-
    private String _storageAccountKey;
    private String _storageAccountName;
    private String _storageProtocol;
    private String _testrigStorageLocation;
+   private boolean _useSsl;
 
    public Settings() throws Exception {
       this(new String[] {});
@@ -143,7 +143,7 @@ public class Settings {
    }
 
    public boolean getUseSsl() {
-      return _config.getBoolean(ARG_USE_SSL);
+      return _useSsl;
    }
 
    private void initOptions() {
@@ -181,6 +181,9 @@ public class Settings {
             .build());
       _options.addOption(Option.builder().argName("authorizer type").hasArg()
             .desc("type of authorizer to use").longOpt(ARG_AUTHORIZER_TYPE)
+            .build());
+      _options.addOption(Option.builder().argName("use_ssl").hasArg()
+            .desc("whether to use SSL").longOpt(ARG_USE_SSL)
             .build());
    }
 
@@ -229,5 +232,8 @@ public class Settings {
       
       _authorizerType = Authorizer.Type.valueOf(line.getOptionValue(
             ARG_AUTHORIZER_TYPE, _config.getString(ARG_AUTHORIZER_TYPE)));
+      
+      _useSsl = Boolean.parseBoolean(line.getOptionValue(
+            ARG_USE_SSL, _config.getString(ARG_USE_SSL)));
    }
 }

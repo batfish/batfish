@@ -47,29 +47,10 @@ public class BfCoordWorkHelper {
       _settings = settings;
    }
 
-   private static class TrustAllHostNameVerifier implements HostnameVerifier {
-      public boolean verify(String hostname, SSLSession session) {
-         return true;
-      }
-   }   
-
-   public ClientBuilder getClientBuilder() throws Exception {
-      if (_settings.getUseSsl() && _settings.getTrustAllSslCerts()) {
-         SSLContext sslcontext = SSLContext.getInstance("TLS");
-         sslcontext.init(null, new TrustManager[]{new X509TrustManager() {
-            public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
-            public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
-            public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-
-         }}, new java.security.SecureRandom());
-
-         return ClientBuilder.newBuilder().sslContext(sslcontext).hostnameVerifier(new TrustAllHostNameVerifier());
-      }
-      else {
-         return ClientBuilder.newBuilder();
-      }
+   private ClientBuilder getClientBuilder() throws Exception {
+      return org.batfish.common.Util.getClientBuilder(_settings.getUseSsl(), _settings.getTrustAllSslCerts());
    }
-
+   
    private JSONObject getJsonResponse(WebTarget webTarget) throws Exception {      
       try {
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
@@ -162,43 +143,6 @@ public class BfCoordWorkHelper {
          return null;
       }
    }
-
-   //   public String getResultsObjectNameAnswerQuestion(String envName,
-   //         String questionName) {
-   //      return null;
-   //   }
-   //
-   //   public String getResultsObjectNameCreateZ3Encoding(String envName) {
-   //      return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
-   //            BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString();
-   //   }
-   //
-   //   public String getResultsObjectNameGenerateDataPlane(String envName) {
-   //      return null;
-   //   }
-   //
-   //   public String getResultsObjectNameGenerateFacts(String envName) {
-   //      return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
-   //            BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString();
-   //   }
-   //
-   //   public String getResultsObjectNameGetDataPlane(String envName) {
-   //      return Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName,
-   //            BfConsts.RELPATH_DATA_PLANE_DIR).toString();
-   //   }
-   //
-   //   public String getResultsObjectNameParseVendorIndependent() {
-   //      return BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR;
-   //   }
-   //
-   //   public String getResultsObjectNameParseVendorSpecific() {
-   //      return BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR;
-   //   }
-   //
-   //   public String getResultsObjectNamePostFlows(String envName,
-   //         String questionName) {
-   //      return null;
-   //   }
    
    private WebTarget getTarget(Client client, String resource) {
 
@@ -319,14 +263,9 @@ public class BfCoordWorkHelper {
    public WorkStatusCode getWorkStatus(UUID parseWorkUUID) {
       try {
          Client client = getClientBuilder().build();
-         WebTarget webTarget = client.target(
-               String.format("http://%s%s/%s", _coordWorkMgr,
-                     CoordConsts.SVC_BASE_WORK_MGR,
-                     CoordConsts.SVC_WORK_GET_WORKSTATUS_RSC))
-                     .queryParam(CoordConsts.SVC_API_KEY, 
-                           uriEncode(_settings.getApiKey()))
-                           .queryParam(CoordConsts.SVC_WORKID_KEY,
-                                 uriEncode(parseWorkUUID.toString()));
+         WebTarget webTarget = getTarget(client, CoordConsts.SVC_WORK_GET_WORKSTATUS_RSC)
+               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_WORKID_KEY, uriEncode(parseWorkUUID.toString()));
 
          JSONObject jObj = getJsonResponse(webTarget);
          if (jObj == null) 

@@ -13,6 +13,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
@@ -229,7 +231,9 @@ public final class Settings {
    private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
    private static final String ARG_TIMESTAMP = "timestamp";
    private static final String ARG_TRACE_QUERY = "tracequery";
+   private static final String ARG_TRUST_ALL_SSL_CERTS = "batfish.TrustAllSslCerts"; //not wired to command line
    private static final String ARG_USE_PRECOMPUTED_FACTS = "useprecomputedfacts";
+   private static final String ARG_COORDINATOR_USE_SSL = "coordinator.UseSsl"; 
    private static final String ARG_WORKSPACE = "workspace";
    private static final String ARGNAME_ANONYMIZE = "path";
    private static final String ARGNAME_AUTO_BASE_DIR = "path";
@@ -269,8 +273,10 @@ public final class Settings {
    private List<String> _blockNames;
    private boolean _buildPredicateInfo;
    private boolean _canExecute;
+   private FileConfiguration _config;
    private String _coordinatorHost;
    private int _coordinatorPoolPort;
+   private boolean _coordinatorUseSsl;
    private int _coordinatorWorkPort;
    private boolean _dataPlane;
    private boolean _diffActive;
@@ -360,14 +366,19 @@ public final class Settings {
    private boolean _z3;
    private String _z3File;
 
-   public Settings() throws ParseException {
+   public Settings() throws Exception {
       this(new String[] {});
    }
 
-   public Settings(String[] args) throws ParseException {
+   public Settings(String[] args) throws Exception {
       _diffEnvironmentSettings = new EnvironmentSettings();
       _baseEnvironmentSettings = new EnvironmentSettings();
       _activeEnvironmentSettings = _baseEnvironmentSettings;
+
+      _config = new PropertiesConfiguration();
+      _config.setFile(org.batfish.common.Util.getConfigProperties(org.batfish.config.ConfigurationLocator.class));
+      _config.load();
+
       initOptions();
       parseCommandLine(args);
    }
@@ -422,6 +433,10 @@ public final class Settings {
 
    public int getCoordinatorPoolPort() {
       return _coordinatorPoolPort;
+   }
+
+   public boolean getCoordinatorUseSsl() {
+      return _coordinatorUseSsl;
    }
 
    public int getCoordinatorWorkPort() {
@@ -708,6 +723,10 @@ public final class Settings {
       return _traceQuery;
    }
 
+   public boolean getTrustAllSslCerts() {
+      return _config.getBoolean(ARG_TRUST_ALL_SSL_CERTS);
+   }
+
    public boolean getUnimplementedAsError() {
       return _unimplementedAsError;
    }
@@ -946,6 +965,9 @@ public final class Settings {
       _options.addOption(Option.builder().argName("port_number").hasArg()
             .desc("coordinator pool manager listening port")
             .longOpt(ARG_COORDINATOR_POOL_PORT).build());
+      _options.addOption(Option.builder().argName("coordinator_use_ssl").hasArg()
+            .desc("whether coordinator uses ssl")
+            .longOpt(ARG_COORDINATOR_USE_SSL).build());
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_SERVICE_HOST)
             .desc("local hostname to report to coordinator")
@@ -1160,6 +1182,8 @@ public final class Settings {
             ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_POOL_PORT.toString()));
       _coordinatorWorkPort = Integer.parseInt(line.getOptionValue(
             ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_WORK_PORT.toString()));
+      _coordinatorUseSsl = Boolean.parseBoolean(line.getOptionValue(
+            ARG_COORDINATOR_USE_SSL, _config.getString(ARG_COORDINATOR_USE_SSL)));
       _serviceHost = line.getOptionValue(ARG_SERVICE_HOST);
       _noOutput = line.hasOption(ARG_NO_OUTPUT);
       _logTee = line.hasOption(ARG_LOG_TEE);
