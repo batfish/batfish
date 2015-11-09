@@ -22,6 +22,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.BfConsts.TaskStatus;
+import org.batfish.common.Util;
 import org.batfish.main.Settings.EnvironmentSettings;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -233,8 +234,8 @@ public class Driver {
       try {
          _mainSettings = new Settings(args);
       }
-      catch (ParseException e) {
-         System.err.println("batfish: Parsing command-line failed. Reason: "
+      catch (Exception e) {
+         System.err.println("batfish: Initialization failed. Reason: "
                + e.getMessage());
          System.exit(1);
       }
@@ -292,6 +293,7 @@ public class Driver {
       _idle = true;
    }
 
+   
    private static boolean registerWithCoordinator() {
       String coordinatorHost = _mainSettings.getCoordinatorHost();
       String workMgr = coordinatorHost + ":"
@@ -299,9 +301,10 @@ public class Driver {
       String poolMgr = coordinatorHost + ":"
             + _mainSettings.getCoordinatorPoolPort();
       try {
-         Client client = ClientBuilder.newClient();
+         Client client = Util.getClientBuilder(_mainSettings.getCoordinatorUseSsl(), _mainSettings.getTrustAllSslCerts()).build();
+         String protocol = (_mainSettings.getCoordinatorUseSsl())? "https" : "http";
          WebTarget webTarget = client.target(
-               String.format("http://%s%s/%s", poolMgr,
+               String.format("%s://%s%s/%s", protocol, poolMgr,
                      CoordConsts.SVC_BASE_POOL_MGR,
                      CoordConsts.SVC_POOL_UPDATE_RSC)).queryParam(
                "add",
@@ -367,9 +370,9 @@ public class Driver {
       try {
          settings = new Settings(args);
       }
-      catch (ParseException e) {
+      catch (Exception e) {
          return Arrays.asList("failure",
-               "Parsing command-line failed: " + e.getMessage());
+               "Initialization failed: " + e.getMessage());
       }
 
       try {
