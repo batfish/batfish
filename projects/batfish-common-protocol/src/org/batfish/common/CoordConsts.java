@@ -16,6 +16,8 @@ public class CoordConsts {
       UNASSIGNED
    }
 
+   public static final String SVC_API_KEY = "apikey";
+
    public static final String SVC_BASE_POOL_MGR = "/batfishpoolmgr";
 
    public static final String SVC_BASE_WORK_MGR = "/batfishworkmgr";
@@ -50,4 +52,14 @@ public class CoordConsts {
    public static final String SVC_WORKSTATUS_KEY = "workstatus";
 
    public static final String SVC_ZIPFILE_KEY = "zipfile";
+
+   public static final String SVC_INIT_CONTAINER_RSC = "initcontainer";
+   public static final String SVC_CONTAINER_PREFIX_KEY = "containerprefix";
+   public static final String SVC_CONTAINER_NAME_KEY = "container";
+
+   public static final String SVC_LIST_CONTAINERS_RSC = "listcontainers";
+   public static final String SVC_CONTAINER_LIST_KEY = "containerlist";
+
+   public static final String SVC_LIST_TESTRIGS_RSC = "listtestrigs";
+   public static final String SVC_TESTRIG_LIST_KEY = "testriglist"; 
 }

@@ -1,6 +1,8 @@
-package org.batfish.coordinator;
+package org.batfish.coordinator.queues;
 
 import java.util.UUID;
+
+import org.batfish.coordinator.QueuedWork;
 
 public interface WorkQueue extends Iterable<QueuedWork> {
 

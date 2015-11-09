@@ -6,49 +6,40 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.batfish.common.CoordConsts;
+import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.batfish.coordinator.authorizer.Authorizer;
+import org.batfish.coordinator.config.ConfigurationLocator;
+import org.batfish.coordinator.queues.WorkQueue;
 
 public class Settings {
 
-   private static final String ARG_INITIAL_WORKER = "initialworker";
+   private static final String ARG_AUTHORIZER_TYPE = "coordinator.AuthorizerType";
+   private static final String ARG_LOG_FILE = "coordinator.LogFile";
+   private static final String ARG_LOG_LEVEL = "coordinator.LogLevel";
+   private static final String ARG_PERIOD_ASSIGN_WORK = "coordinator.PeriodAssignWorkMs";
+   private static final String ARG_PERIOD_CHECK_WORK = "coordinator.PeriodCheckWorkMs";
+   private static final String ARG_PERIOD_WORKER_STATUS_REFRESH = "coordinator.PeriodWorkerRefresh";
+   private static final String ARG_QUEUE_COMPLETED_WORK = "coordinator.Q_CompletedWork";
+   private static final String ARG_QUEUE_INCOMPLETE_WORK = "coordinator.Q_IncompleteWork";
+   private static final String ARG_QUEUE_TYPE = "coordinator.Q_Type";
+   private static final String ARG_SERVICE_HOST = "coordinator.ServiceHost";
+   private static final String ARG_SERVICE_POOL_PORT = "coordinator.PoolPort";
+   private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";   
+   private static final String ARG_STORAGE_ACCOUNT_KEY = "coordinator.StorageAccountKey";
+   private static final String ARG_STORAGE_ACCOUNT_NAME = "coordinator.StorageAccountName";
+   private static final String ARG_STORAGE_PROTOCOL = "coordinator.StorageProtocol";
+   private static final String ARG_TESTRIG_STORAGE_LOCATION = "coordinator.TestrigStorageLocation";
 
-   private static final String ARG_LOG_FILE = "logfile";
-   private static final String ARG_PERIOD_ASSIGN_WORK = "periodassignwork";
-   private static final String ARG_PERIOD_CHECK_WORK = "periodcheckwork";
-   private static final String ARG_PERIOD_WORKER_STATUS_REFRESH = "periodworkerrefresh";
-   private static final String ARG_QUEUE_COMPLETED_WORK = "q_completedwork";
-   private static final String ARG_QUEUE_INCOMPLETE_WORK = "q_incompletework";
-   private static final String ARG_QUEUE_TYPE = "qtype";
-   private static final String ARG_SERVICE_HOST = "servicehost";
-   private static final String ARG_SERVICE_POOL_PORT = "servicepoolport";
-   private static final String ARG_SERVICE_WORK_PORT = "serviceworkport";
-   private static final String ARG_STORAGE_ACCOUNT_KEY = "storageaccountkey";
+   //these arguments are not wired for options
+   private static final String ARG_USE_SSL = "coordinator.UseSsl";
+   private static final String ARG_SSL_KEYSTORE_FILE = "coordinator.SslKeyStoreFile";
+   private static final String ARG_SSL_KEYSTORE_PASSWORD = "coordinator.SslKeyStorePassword";
 
-   private static final String ARG_STORAGE_ACCOUNT_NAME = "storageaccountname";
-   private static final String ARG_STORAGE_PROTOCOL = "storageprotocol";
-   private static final String ARG_TESTRIG_STORAGE_LOCATION = "testrigstorage";
-
-   private static final String DEFAULT_INITIAL_WORKER = "";
-   private static final String DEFAULT_PERIOD_ASSIGN_WORK = "1000"; // 1 seconds
-   private static final String DEFAULT_PERIOD_CHECK_WORK = "5000"; // 5 seconds
-   private static final String DEFAULT_PERIOD_WORKER_STATUS_REFRESH = "10000"; // 10
-                                                                               // seconds
-   private static final String DEFAULT_QUEUE_COMPLETED_WORK = "batfishcompletedwork";
-   private static final String DEFAULT_QUEUE_INCOMPLETE_WORK = "batfishincompletework";
-   private static final String DEFAULT_QUEUE_TYPE = "memory";
-   private static final String DEFAULT_SERVICE_HOST = "0.0.0.0";
-   private static final String DEFAULT_SERVICE_POOL_PORT = CoordConsts.SVC_POOL_PORT
-         .toString();
-   private static final String DEFAULT_SERVICE_WORK_PORT = CoordConsts.SVC_WORK_PORT
-         .toString();
-   private static final String DEFAULT_STORAGE_ACCOUNT_KEY = "zRTT++dVryOWXJyAM7NM0TuQcu0Y23BgCQfkt7xh2f/Mm+r6c8/XtPTY0xxaF6tPSACJiuACsjotDeNIVyXM8Q==";
-
-   private static final String DEFAULT_STORAGE_ACCOUNT_NAME = "testdrive";
-   private static final String DEFAULT_STORAGE_PROTOCOL = "http";
-   private static final String DEFAULT_TESTRIG_STORAGE_LOCATION = ".";
-
-   private String _initialWorker;
+   private FileConfiguration _config;
+   private Authorizer.Type _authorizerType;
    private String _logFile;
+   private String _logLevel;
    private Options _options;
    private long _periodAssignWorkMs;
    private long _periodCheckWorkMs;
@@ -65,21 +56,30 @@ public class Settings {
    private String _storageProtocol;
    private String _testrigStorageLocation;
 
-   public Settings() throws ParseException {
+   public Settings() throws Exception {
       this(new String[] {});
    }
 
-   public Settings(String[] args) throws ParseException {
+   public Settings(String[] args) throws Exception {
+      
+      _config = new PropertiesConfiguration();
+      _config.setFile(org.batfish.common.Util.getConfigProperties(ConfigurationLocator.class));
+      _config.load();
+
       initOptions();
       parseCommandLine(args);
    }
 
-   public String getInitialWorker() {
-      return _initialWorker;
+   public Authorizer.Type getAuthorizationType() {
+      return _authorizerType;
    }
 
    public String getLogFile() {
       return _logFile;
+   }
+
+   public String getLogLevel() {
+      return _logLevel;
    }
 
    public long getPeriodAssignWorkMs() {
@@ -118,6 +118,14 @@ public class Settings {
       return _serviceWorkPort;
    }
 
+   public String getSslKeystoreFilename() {
+      return _config.getString(ARG_SSL_KEYSTORE_FILE);
+   }
+
+   public String getSslKeystorePassword() {
+      return _config.getString(ARG_SSL_KEYSTORE_PASSWORD);
+   }
+
    public String getStorageAccountKey() {
       return _storageAccountKey;
    }
@@ -132,6 +140,10 @@ public class Settings {
 
    public String getTestrigStorageLocation() {
       return _testrigStorageLocation;
+   }
+
+   public boolean getUseSsl() {
+      return _config.getBoolean(ARG_USE_SSL);
    }
 
    private void initOptions() {
@@ -161,12 +173,15 @@ public class Settings {
       _options.addOption(Option.builder().argName("period_check_work_ms")
             .hasArg().desc("period with which to check work (ms)")
             .longOpt(ARG_PERIOD_CHECK_WORK).build());
-      _options.addOption(Option.builder().argName("path").hasArg()
+      _options.addOption(Option.builder().argName("log_file_path").hasArg()
             .desc("send output to specified log file").longOpt(ARG_LOG_FILE)
             .build());
-      _options.addOption(Option.builder().argName("location_initial_worker")
-            .hasArg().desc("location of initial worker (host:port)")
-            .longOpt(ARG_INITIAL_WORKER).build());
+      _options.addOption(Option.builder().argName("log_level").hasArg()
+            .desc("log level").longOpt(ARG_LOG_LEVEL)
+            .build());
+      _options.addOption(Option.builder().argName("authorizer type").hasArg()
+            .desc("type of authorizer to use").longOpt(ARG_AUTHORIZER_TYPE)
+            .build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -177,41 +192,42 @@ public class Settings {
       line = parser.parse(_options, args);
 
       _queuIncompleteWork = line.getOptionValue(ARG_QUEUE_INCOMPLETE_WORK,
-            DEFAULT_QUEUE_INCOMPLETE_WORK);
+            _config.getString(ARG_QUEUE_INCOMPLETE_WORK));
       _queueCompletedWork = line.getOptionValue(ARG_QUEUE_COMPLETED_WORK,
-            DEFAULT_QUEUE_COMPLETED_WORK);
+            _config.getString(ARG_QUEUE_COMPLETED_WORK));
 
       _queueType = WorkQueue.Type.valueOf(line.getOptionValue(ARG_QUEUE_TYPE,
-            DEFAULT_QUEUE_TYPE));
+            _config.getString(ARG_QUEUE_TYPE)));
 
       _servicePoolPort = Integer.parseInt(line.getOptionValue(
-            ARG_SERVICE_POOL_PORT, DEFAULT_SERVICE_POOL_PORT));
+            ARG_SERVICE_POOL_PORT, _config.getString(ARG_SERVICE_POOL_PORT)));
       _serviceWorkPort = Integer.parseInt(line.getOptionValue(
-            ARG_SERVICE_WORK_PORT, DEFAULT_SERVICE_WORK_PORT));
+            ARG_SERVICE_WORK_PORT, _config.getString(ARG_SERVICE_WORK_PORT)));
       _serviceHost = line
-            .getOptionValue(ARG_SERVICE_HOST, DEFAULT_SERVICE_HOST);
+            .getOptionValue(ARG_SERVICE_HOST, _config.getString(ARG_SERVICE_HOST));
 
       _storageAccountKey = line.getOptionValue(ARG_STORAGE_ACCOUNT_KEY,
-            DEFAULT_STORAGE_ACCOUNT_KEY);
+            _config.getString(ARG_STORAGE_ACCOUNT_KEY));
       _storageAccountName = line.getOptionValue(ARG_STORAGE_ACCOUNT_NAME,
-            DEFAULT_STORAGE_ACCOUNT_NAME);
+            _config.getString(ARG_STORAGE_ACCOUNT_NAME));
       _storageProtocol = line.getOptionValue(ARG_STORAGE_PROTOCOL,
-            DEFAULT_STORAGE_PROTOCOL);
+            _config.getString(ARG_STORAGE_PROTOCOL));
 
       _testrigStorageLocation = line.getOptionValue(
-            ARG_TESTRIG_STORAGE_LOCATION, DEFAULT_TESTRIG_STORAGE_LOCATION);
+            ARG_TESTRIG_STORAGE_LOCATION, _config.getString(ARG_TESTRIG_STORAGE_LOCATION));
 
       _periodWorkerStatusRefreshMs = Long.parseLong(line.getOptionValue(
             ARG_PERIOD_WORKER_STATUS_REFRESH,
-            DEFAULT_PERIOD_WORKER_STATUS_REFRESH));
+            _config.getString(ARG_PERIOD_WORKER_STATUS_REFRESH)));
       _periodAssignWorkMs = Long.parseLong(line.getOptionValue(
-            ARG_PERIOD_ASSIGN_WORK, DEFAULT_PERIOD_ASSIGN_WORK));
+            ARG_PERIOD_ASSIGN_WORK, _config.getString(ARG_PERIOD_ASSIGN_WORK)));
       _periodCheckWorkMs = Long.parseLong(line.getOptionValue(
-            ARG_PERIOD_CHECK_WORK, DEFAULT_PERIOD_CHECK_WORK));
+            ARG_PERIOD_CHECK_WORK, _config.getString(ARG_PERIOD_CHECK_WORK)));
 
-      _initialWorker = line.getOptionValue(ARG_INITIAL_WORKER,
-            DEFAULT_INITIAL_WORKER);
-
-      _logFile = line.getOptionValue(ARG_LOG_FILE);
+      _logFile = line.getOptionValue(ARG_LOG_FILE, _config.getString(ARG_LOG_FILE));
+      _logLevel = line.getOptionValue(ARG_LOG_LEVEL, _config.getString(ARG_LOG_LEVEL));
+      
+      _authorizerType = Authorizer.Type.valueOf(line.getOptionValue(
+            ARG_AUTHORIZER_TYPE, _config.getString(ARG_AUTHORIZER_TYPE)));
    }
 }

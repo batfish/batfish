@@ -1,32 +1,40 @@
 package org.batfish.coordinator;
 
 // Include the following imports to use queue APIs.
+import java.io.File;
 import java.net.URI;
+import java.nio.file.Paths;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.logging.log4j.*;
+import org.batfish.common.BatfishLogger;
+import org.batfish.coordinator.authorizer.*;
+import org.batfish.coordinator.config.ConfigurationLocator;
+import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.ssl.SSLContextConfigurator;
+import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 public class Main {
 
-   private static Logger _logger;
+   private static BatfishLogger _logger;
    private static PoolMgr _poolManager;
    private static Settings _settings;
    private static WorkMgr _workManager;
+   private static Authorizer _authorizer;
 
-   private static String LOG_FILE = null;
+   public static Authorizer getAuthorizer() {
+      return _authorizer;
+   }
 
-   private static final String LOG_FILE_KEY = "LOG_FILE";
-   public static final String MAIN_LOGGER = "MainLogger";
-   private static final String ROUTING_KEY_NAME = "ROUTINGKEY";
-
-   private static final String SLAVE_ROUTING_KEY_VALUE = "slave";
+   public static BatfishLogger getLogger() {
+      return _logger;
+   }
 
    public static PoolMgr getPoolMgr() {
       return _poolManager;
@@ -40,82 +48,118 @@ public class Main {
       return _workManager;
    }
 
-   public static Logger initializeLogger() {
-      if (LOG_FILE != null) {
-         ThreadContext.put(ROUTING_KEY_NAME, SLAVE_ROUTING_KEY_VALUE);
-         ThreadContext.put(LOG_FILE_KEY, LOG_FILE);
+   private static void initAuthorizer() {
+      switch (_settings.getAuthorizationType()) {
+         case none:
+            _authorizer = new NoneAuthorizer();
+            break;
+         default:
+            System.err.print("org.batfish.coordinator: Initialization failed. Unsupported authorizer type "
+                  + _settings.getAuthorizationType());
+            System.exit(1);            
       }
-      return LogManager.getLogger(MAIN_LOGGER);
    }
-
-   public static void main(String[] args) {
-      _logger = LogManager.getLogger(MAIN_LOGGER);
-      _settings = null;
-      try {
-         _settings = new Settings(args);
-      }
-      catch (ParseException e) {
-         _logger
-               .fatal("org.batfish.coordinator: Parsing command-line failed. Reason: "
-                     + e.getMessage());
-         System.exit(1);
-      }
-
-      LOG_FILE = _settings.getLogFile();
-      initializeLogger();
-
-      // start the pool manager service
-      URI poolMgrUri = UriBuilder
-            .fromUri("http://" + _settings.getServiceHost())
-            .port(_settings.getServicePoolPort()).build();
-
-      _logger.info("Starting pool manager at " + poolMgrUri + "\n");
+   
+   private static void initPoolManager() {
 
       ResourceConfig rcPool = new ResourceConfig(PoolMgrService.class)
-            .register(new JettisonFeature()).register(MultiPartFeature.class)
-            .register(org.batfish.coordinator.CrossDomainFilter.class);
+      .register(new JettisonFeature()).register(MultiPartFeature.class)
+      .register(org.batfish.coordinator.CrossDomainFilter.class);
 
-      GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool);
+      if (!_settings.getUseSsl()) {
+         URI poolMgrUri = UriBuilder
+               .fromUri("http://" + _settings.getServiceHost())
+               .port(_settings.getServicePoolPort()).build();
 
-      // start the work manager service
+         _logger.info("Starting pool manager at " + poolMgrUri + "\n");
+
+         GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool);
+      }
+      else {
+         URI poolMgrUri = UriBuilder
+               .fromUri("https://" + _settings.getServiceHost())
+               .port(_settings.getServicePoolPort()).build();
+
+         _logger.info("Starting pool manager at " + poolMgrUri + "\n");
+
+         File keystoreFile = Paths.get(org.batfish.common.Util.getJarOrClassDir(ConfigurationLocator.class).getAbsolutePath(), 
+               _settings.getSslKeystoreFilename()).toFile();
+         
+         if (!keystoreFile.exists()) {
+            System.err.print("org.batfish.coordinator: keystore file not found: "
+                  + keystoreFile.getAbsolutePath());
+            System.exit(1);
+         }
+            
+         SSLContextConfigurator sslCon = new SSLContextConfigurator();
+         sslCon.setKeyStoreFile(keystoreFile.getAbsolutePath()); 
+         sslCon.setKeyStorePass(_settings.getSslKeystorePassword());
+         
+         GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool, true,
+               new SSLEngineConfigurator(sslCon, false, false, false));
+      }
+
+      _poolManager = new PoolMgr(_logger);
+
+   }
+      
+   private static void initWorkManager() {
+      ResourceConfig rcWork = new ResourceConfig(WorkMgrService.class)
+      .register(new JettisonFeature()).register(MultiPartFeature.class)
+      .register(org.batfish.coordinator.CrossDomainFilter.class);
+
+      if (!_settings.getUseSsl()) {
       URI workMgrUri = UriBuilder
             .fromUri("http://" + _settings.getServiceHost())
             .port(_settings.getServiceWorkPort()).build();
 
       _logger.info("Starting work manager at " + workMgrUri + "\n");
 
-      ResourceConfig rcWork = new ResourceConfig(WorkMgrService.class)
-            .register(new JettisonFeature()).register(MultiPartFeature.class)
-            .register(org.batfish.coordinator.CrossDomainFilter.class);
-
-      // rcPool.getProperties().put(
-      // "com.sun.jersey.spi.container.ContainerResponseFilters",
-      // "org.batfish.coordinator.CrossDomainFilter"
-      // );
-
-      // ResourceConfig rcWork = new ResourceConfig(WorkMgrService.class);
-      // rcWork.getProperties().put(
-      // "com.sun.jersey.spi.container.ContainerResponseFilters",
-      // "org.batfish.coordinator.CrossDomainFilter");
-      //
-      // rcWork.register(new JettisonFeature())
-      // .register(MultiPartFeature.class);
-
       GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork);
+      } 
+      else {
+         URI workMgrUri = UriBuilder
+               .fromUri("https://" + _settings.getServiceHost())
+               .port(_settings.getServiceWorkPort()).build();
 
-      // start the two managers
-      _poolManager = new PoolMgr();
-      _workManager = new WorkMgr();
+         _logger.info("Starting work manager at " + workMgrUri + "\n");
 
-      String initialWorker = _settings.getInitialWorker();
-      if (initialWorker != null && !initialWorker.isEmpty()) {
-
-         // workaround for cygwin replacing ':' with '?'
-         initialWorker = initialWorker.replace('?', ':');
-
-         _logger.info("Adding initial worker " + initialWorker + "\n");
-         _poolManager.addToPool(initialWorker);
+         File keystoreFile = Paths.get(org.batfish.common.Util.getJarOrClassDir(ConfigurationLocator.class).getAbsolutePath(), 
+               _settings.getSslKeystoreFilename()).toFile();
+         
+         if (!keystoreFile.exists()) {
+            System.err.print("org.batfish.coordinator: keystore file not found: "
+                  + keystoreFile.getAbsolutePath());
+            System.exit(1);
+         }
+            
+         SSLContextConfigurator sslCon = new SSLContextConfigurator();
+         sslCon.setKeyStoreFile(keystoreFile.getAbsolutePath()); 
+         sslCon.setKeyStorePass(_settings.getSslKeystorePassword());
+         
+         GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork, true,
+               new SSLEngineConfigurator(sslCon, false, false, false));         
       }
+
+      _workManager = new WorkMgr(_logger);
+   }
+   
+   public static void main(String[] args) {
+      _settings = null;
+      try {
+         _settings = new Settings(args);
+         _logger = new BatfishLogger(_settings.getLogLevel(), false,
+               _settings.getLogFile(), false);
+      }
+      catch (Exception e) {
+         System.err.print("org.batfish.coordinator: Initialization failed: "
+                     + e.getMessage());
+         System.exit(1);
+      }
+      
+      initAuthorizer();
+      initPoolManager();
+      initWorkManager();
 
       // sleep indefinitely, in 10 minute chunks
       try {

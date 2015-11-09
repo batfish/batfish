@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.UUID;
 
 import org.batfish.coordinator.QueuedWork;
-import org.batfish.coordinator.WorkQueue;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.queue.CloudQueue;

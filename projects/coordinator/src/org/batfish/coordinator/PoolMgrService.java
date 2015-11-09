@@ -1,7 +1,6 @@
 package org.batfish.coordinator;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.logging.log4j.Logger;
 import org.batfish.common.*;
 
 import java.util.Arrays;
@@ -22,7 +21,7 @@ import org.codehaus.jettison.json.JSONObject;
 @Path(CoordConsts.SVC_BASE_POOL_MGR)
 public class PoolMgrService {
 
-   Logger _logger = Main.initializeLogger();
+   BatfishLogger _logger = Main.getLogger();
 
    @GET
    @Produces(MediaType.APPLICATION_JSON)
