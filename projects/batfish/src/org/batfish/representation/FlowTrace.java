@@ -14,14 +14,9 @@ public class FlowTrace implements Comparable<FlowTrace> {
 
    private String _notes;
 
-   public FlowTrace(String historyLineNxtnetRaw) {
+   public FlowTrace(String historyLine) {
       _notes = "";
       _hops = new ArrayList<Edge>();
-
-      // TODO: REMOVE WORKAROUND FOR NXTNET STRING CONCATENATION BUG
-      String historyLine = historyLineNxtnetRaw.replaceAll(",", "")
-            .replaceAll("\\[\\[*", "[").replaceAll("\\]\\]*", "]");
-
       String[] hops = historyLine.split("(\\];\\[)|(\\])|(\\[)");
       for (String hop : hops) {
          if (hop.length() == 0) {
