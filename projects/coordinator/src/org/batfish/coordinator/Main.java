@@ -22,11 +22,11 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 public class Main {
 
+   private static Authorizer _authorizer;
    private static BatfishLogger _logger;
    private static PoolMgr _poolManager;
    private static Settings _settings;
    private static WorkMgr _workManager;
-   private static Authorizer _authorizer;
 
    public static Authorizer getAuthorizer() {
       return _authorizer;
@@ -50,21 +50,24 @@ public class Main {
 
    private static void initAuthorizer() {
       switch (_settings.getAuthorizationType()) {
-         case none:
-            _authorizer = new NoneAuthorizer();
-            break;
-         default:
-            System.err.print("org.batfish.coordinator: Initialization failed. Unsupported authorizer type "
-                  + _settings.getAuthorizationType());
-            System.exit(1);            
+      case none:
+         _authorizer = new NoneAuthorizer();
+         break;
+      case database:
+      case file:
+      default:
+         System.err
+               .print("org.batfish.coordinator: Initialization failed. Unsupported authorizer type "
+                     + _settings.getAuthorizationType());
+         System.exit(1);
       }
    }
-   
+
    private static void initPoolManager() {
 
       ResourceConfig rcPool = new ResourceConfig(PoolMgrService.class)
-      .register(new JettisonFeature()).register(MultiPartFeature.class)
-      .register(org.batfish.coordinator.CrossDomainFilter.class);
+            .register(new JettisonFeature()).register(MultiPartFeature.class)
+            .register(org.batfish.coordinator.CrossDomainFilter.class);
 
       if (!_settings.getUseSsl()) {
          URI poolMgrUri = UriBuilder
@@ -82,19 +85,22 @@ public class Main {
 
          _logger.info("Starting pool manager at " + poolMgrUri + "\n");
 
-         File keystoreFile = Paths.get(org.batfish.common.Util.getJarOrClassDir(ConfigurationLocator.class).getAbsolutePath(), 
+         File keystoreFile = Paths.get(
+               org.batfish.common.Util.getJarOrClassDir(
+                     ConfigurationLocator.class).getAbsolutePath(),
                _settings.getSslKeystoreFilename()).toFile();
-         
+
          if (!keystoreFile.exists()) {
-            System.err.print("org.batfish.coordinator: keystore file not found: "
-                  + keystoreFile.getAbsolutePath());
+            System.err
+                  .print("org.batfish.coordinator: keystore file not found: "
+                        + keystoreFile.getAbsolutePath());
             System.exit(1);
          }
-            
+
          SSLContextConfigurator sslCon = new SSLContextConfigurator();
-         sslCon.setKeyStoreFile(keystoreFile.getAbsolutePath()); 
+         sslCon.setKeyStoreFile(keystoreFile.getAbsolutePath());
          sslCon.setKeyStorePass(_settings.getSslKeystorePassword());
-         
+
          GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool, true,
                new SSLEngineConfigurator(sslCon, false, false, false));
       }
@@ -102,21 +108,21 @@ public class Main {
       _poolManager = new PoolMgr(_logger);
 
    }
-      
+
    private static void initWorkManager() {
       ResourceConfig rcWork = new ResourceConfig(WorkMgrService.class)
-      .register(new JettisonFeature()).register(MultiPartFeature.class)
-      .register(org.batfish.coordinator.CrossDomainFilter.class);
+            .register(new JettisonFeature()).register(MultiPartFeature.class)
+            .register(org.batfish.coordinator.CrossDomainFilter.class);
 
       if (!_settings.getUseSsl()) {
-      URI workMgrUri = UriBuilder
-            .fromUri("http://" + _settings.getServiceHost())
-            .port(_settings.getServiceWorkPort()).build();
+         URI workMgrUri = UriBuilder
+               .fromUri("http://" + _settings.getServiceHost())
+               .port(_settings.getServiceWorkPort()).build();
 
-      _logger.info("Starting work manager at " + workMgrUri + "\n");
+         _logger.info("Starting work manager at " + workMgrUri + "\n");
 
-      GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork);
-      } 
+         GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork);
+      }
       else {
          URI workMgrUri = UriBuilder
                .fromUri("https://" + _settings.getServiceHost())
@@ -124,26 +130,29 @@ public class Main {
 
          _logger.info("Starting work manager at " + workMgrUri + "\n");
 
-         File keystoreFile = Paths.get(org.batfish.common.Util.getJarOrClassDir(ConfigurationLocator.class).getAbsolutePath(), 
+         File keystoreFile = Paths.get(
+               org.batfish.common.Util.getJarOrClassDir(
+                     ConfigurationLocator.class).getAbsolutePath(),
                _settings.getSslKeystoreFilename()).toFile();
-         
+
          if (!keystoreFile.exists()) {
-            System.err.print("org.batfish.coordinator: keystore file not found: "
-                  + keystoreFile.getAbsolutePath());
+            System.err
+                  .print("org.batfish.coordinator: keystore file not found: "
+                        + keystoreFile.getAbsolutePath());
             System.exit(1);
          }
-            
+
          SSLContextConfigurator sslCon = new SSLContextConfigurator();
-         sslCon.setKeyStoreFile(keystoreFile.getAbsolutePath()); 
+         sslCon.setKeyStoreFile(keystoreFile.getAbsolutePath());
          sslCon.setKeyStorePass(_settings.getSslKeystorePassword());
-         
+
          GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork, true,
-               new SSLEngineConfigurator(sslCon, false, false, false));         
+               new SSLEngineConfigurator(sslCon, false, false, false));
       }
 
       _workManager = new WorkMgr(_logger);
    }
-   
+
    public static void main(String[] args) {
       _settings = null;
       try {
@@ -153,10 +162,10 @@ public class Main {
       }
       catch (Exception e) {
          System.err.print("org.batfish.coordinator: Initialization failed: "
-                     + e.getMessage());
+               + e.getMessage());
          System.exit(1);
       }
-      
+
       initAuthorizer();
       initPoolManager();
       initWorkManager();

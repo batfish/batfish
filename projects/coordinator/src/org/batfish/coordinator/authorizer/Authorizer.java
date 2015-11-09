@@ -3,12 +3,14 @@ package org.batfish.coordinator.authorizer;
 public interface Authorizer {
 
    public enum Type {
-      none,
+      database,
       file,
-      database
+      none
    }
-   
-   boolean isAccessibleContainer(String apiKey, String containerName);
-   boolean isValidWorkApiKey(String apiKey);
+
    void authorizeContainer(String apiKey, String containerName);
+
+   boolean isAccessibleContainer(String apiKey, String containerName);
+
+   boolean isValidWorkApiKey(String apiKey);
 }

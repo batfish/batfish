@@ -5,6 +5,11 @@ package org.batfish.coordinator.authorizer;
 public class NoneAuthorizer implements Authorizer {
 
    @Override
+   public void authorizeContainer(String apiKey, String containerName) {
+      return;
+   }
+
+   @Override
    public boolean isAccessibleContainer(String apiKey, String containerName) {
       return true;
    }
@@ -12,10 +17,5 @@ public class NoneAuthorizer implements Authorizer {
    @Override
    public boolean isValidWorkApiKey(String apiKey) {
       return true;
-   }
-
-   @Override
-   public void authorizeContainer(String apiKey, String containerName) {
-      return;
    }
 }

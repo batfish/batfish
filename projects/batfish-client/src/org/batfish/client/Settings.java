@@ -12,6 +12,8 @@ import org.apache.commons.configuration.*;
 
 public class Settings {
 
+   // these settings are not wired up to command line options
+   private static final String ARG_API_KEY = "client.ApiKey";
    private static final String ARG_COMMAND_FILE = "cmdfile";
    private static final String ARG_HELP = "help";
    private static final String ARG_LOG_FILE = "client.LogFile";
@@ -20,11 +22,9 @@ public class Settings {
    private static final String ARG_SERVICE_HOST = "coordinator.ServiceHost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinator.PoolPort";
    private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";
-   private static final String ARG_USE_SSL = "coordinator.UseSsl";
 
-   //these settings are not wired up to command line options
-   private static final String ARG_API_KEY = "client.ApiKey";
    private static final String ARG_TRUST_ALL_SSL_CERTS = "client.TrustAllSslCerts";
+   private static final String ARG_USE_SSL = "coordinator.UseSsl";
 
    private static final String EXECUTABLE_NAME = "batfish_client";
 
@@ -44,19 +44,20 @@ public class Settings {
    }
 
    public Settings(String[] args) throws Exception {
-      
-         _config = new PropertiesConfiguration();
-         _config.setFile(org.batfish.common.Util.getConfigProperties(ConfigurationLocator.class));
-         _config.load();
 
-         initOptions();
-         parseCommandLine(args);
+      _config = new PropertiesConfiguration();
+      _config.setFile(org.batfish.common.Util
+            .getConfigProperties(ConfigurationLocator.class));
+      _config.load();
+
+      initOptions();
+      parseCommandLine(args);
    }
 
    public String getApiKey() {
       return _config.getString(ARG_API_KEY);
    }
-   
+
    public String getCommandFile() {
       return _commandFile;
    }
@@ -118,8 +119,8 @@ public class Settings {
       _options.addOption(Option.builder().desc("print this message")
             .longOpt(ARG_HELP).build());
       _options.addOption(Option.builder().argName("use_ssl").hasArg()
-            .desc("whether to use ssl with coordinator")
-            .longOpt(ARG_USE_SSL).build());
+            .desc("whether to use ssl with coordinator").longOpt(ARG_USE_SSL)
+            .build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -138,17 +139,20 @@ public class Settings {
       }
 
       _commandFile = line.getOptionValue(ARG_COMMAND_FILE);
-      _logFile = line.getOptionValue(ARG_LOG_FILE, _config.getString(ARG_LOG_FILE));
-      _logLevel = line.getOptionValue(ARG_LOG_LEVEL, _config.getString(ARG_LOG_LEVEL));
+      _logFile = line.getOptionValue(ARG_LOG_FILE,
+            _config.getString(ARG_LOG_FILE));
+      _logLevel = line.getOptionValue(ARG_LOG_LEVEL,
+            _config.getString(ARG_LOG_LEVEL));
 
       _periodCheckWorkMs = Long.parseLong(line.getOptionValue(
             ARG_PERIOD_CHECK_WORK, _config.getString(ARG_PERIOD_CHECK_WORK)));
-      _serviceHost = line
-            .getOptionValue(ARG_SERVICE_HOST, _config.getString(ARG_SERVICE_HOST));
+      _serviceHost = line.getOptionValue(ARG_SERVICE_HOST,
+            _config.getString(ARG_SERVICE_HOST));
       _servicePoolPort = Integer.parseInt(line.getOptionValue(
             ARG_SERVICE_POOL_PORT, _config.getString(ARG_SERVICE_POOL_PORT)));
       _serviceWorkPort = Integer.parseInt(line.getOptionValue(
             ARG_SERVICE_WORK_PORT, _config.getString(ARG_SERVICE_WORK_PORT)));
-      _useSsl = Boolean.parseBoolean(line.getOptionValue(ARG_USE_SSL, _config.getString(ARG_USE_SSL)));
+      _useSsl = Boolean.parseBoolean(line.getOptionValue(ARG_USE_SSL,
+            _config.getString(ARG_USE_SSL)));
    }
 }

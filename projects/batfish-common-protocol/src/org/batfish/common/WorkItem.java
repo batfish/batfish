@@ -29,7 +29,8 @@ public class WorkItem {
       PopulateHashMap(requestParams, requestObject);
       PopulateHashMap(responseParams, responseObject);
 
-      return new WorkItem(id, containerName, testrigName, requestParams, responseParams);
+      return new WorkItem(id, containerName, testrigName, requestParams,
+            responseParams);
    }
 
    private static void PopulateHashMap(HashMap<String, String> map,
@@ -43,8 +44,8 @@ public class WorkItem {
       }
    }
 
-   private UUID _id;
    private String _containerName;
+   private UUID _id;
    private HashMap<String, String> _requestParams;
    private HashMap<String, String> _responseParams;
    private String _testrigName;
@@ -70,12 +71,12 @@ public class WorkItem {
       _requestParams.put(key, value);
    }
 
-   public UUID getId() {
-      return _id;
-   }
-
    public String getContainerName() {
       return _containerName;
+   }
+
+   public UUID getId() {
+      return _id;
    }
 
    public HashMap<String, String> getRequestParams() {
@@ -93,8 +94,8 @@ public class WorkItem {
    public String toJsonString() {
       JSONObject requestObject = new JSONObject(_requestParams);
       JSONObject responseObject = new JSONObject(_responseParams);
-      JSONArray array = new JSONArray(Arrays.asList(_id, _containerName, _testrigName,
-            requestObject.toString(), responseObject.toString()));
+      JSONArray array = new JSONArray(Arrays.asList(_id, _containerName,
+            _testrigName, requestObject.toString(), responseObject.toString()));
       return array.toString();
    }
 

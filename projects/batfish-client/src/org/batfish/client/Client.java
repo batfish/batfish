@@ -61,45 +61,36 @@ public class Client {
       descs.put(COMMAND_ANSWER_DIFF, COMMAND_ANSWER_DIFF
             + " <question-name> <question-file>\n"
             + "\t Answer the question for the differential environment");
-      descs.put(COMMAND_CLEAR_SCREEN, COMMAND_CLEAR_SCREEN + 
-            "\n"
+      descs.put(COMMAND_CLEAR_SCREEN, COMMAND_CLEAR_SCREEN + "\n"
             + "\t Clear screen");
-      descs.put(COMMAND_GEN_DIFF_DP, COMMAND_GEN_DIFF_DP 
-            + "\n"
+      descs.put(COMMAND_GEN_DIFF_DP, COMMAND_GEN_DIFF_DP + "\n"
             + "\t Generate dataplane for the differential environment");
-      descs.put(COMMAND_GEN_DP, COMMAND_GEN_DP 
-            + "\n"
+      descs.put(COMMAND_GEN_DP, COMMAND_GEN_DP + "\n"
             + "\t Generate dataplane for the default environment");
-      descs.put(COMMAND_HELP, COMMAND_HELP
-            + "\n"
+      descs.put(COMMAND_HELP, COMMAND_HELP + "\n"
             + "\t Print the list of supported commands");
       descs.put(COMMAND_INIT_CONTAINER, COMMAND_INIT_CONTAINER
-            + " <container-name-prefix>\n"
-            + "\t Initialize a new container");
+            + " <container-name-prefix>\n" + "\t Initialize a new container");
       descs.put(COMMAND_INIT_DIFF_ENV, COMMAND_INIT_DIFF_ENV
             + " <environment-name> <environment-file>\n"
             + "\t Initialize the differential environment");
       descs.put(COMMAND_INIT_TESTRIG, COMMAND_INIT_TESTRIG
             + " <environment-name> <environment-file>\n"
             + "\t Initialize the testrig with default environment");
-      descs.put(COMMAND_LIST_CONTAINERS, COMMAND_LIST_CONTAINERS
-            + "\n"
+      descs.put(COMMAND_LIST_CONTAINERS, COMMAND_LIST_CONTAINERS + "\n"
             + "\t List the containers to which you have access");
-      descs.put(COMMAND_LIST_TESTRIGS, COMMAND_LIST_TESTRIGS
-            + "\n"
+      descs.put(COMMAND_LIST_TESTRIGS, COMMAND_LIST_TESTRIGS + "\n"
             + "\t List the testrigs within the current container");
       descs.put(COMMAND_QUIT, COMMAND_QUIT + "\n" + "\t Clear screen");
-      descs.put(COMMAND_SET_CONTAINER, COMMAND_SET_CONTAINER 
-            + " <container-name>\n"
-            + "\t Set the current container");
+      descs.put(COMMAND_SET_CONTAINER, COMMAND_SET_CONTAINER
+            + " <container-name>\n" + "\t Set the current container");
       descs.put(COMMAND_SET_DIFF_ENV, COMMAND_SET_DIFF_ENV
             + " <environment-name>\n"
             + "\t Set the current differential environment");
       descs.put(COMMAND_SET_LOGLEVEL, COMMAND_SET_LOGLEVEL
             + " <debug|info|output|warn|error>\n"
             + "\t Set the loglevel. Default is output");
-      descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG 
-            + " <testrig-name>\n"
+      descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG + " <testrig-name>\n"
             + "\t Set the current testrig");
       return descs;
    }
@@ -128,14 +119,14 @@ public class Client {
 
    private BatfishLogger _logger;
    private BfCoordPoolHelper _poolHelper;
-   
+
    private Settings _settings;
-   
+
    private BfCoordWorkHelper _workHelper;
 
    public Client(Settings settings) {
       _settings = settings;
-      
+
       if (settings.getCommandFile() != null) {
          RunBatchMode();
       }
@@ -200,8 +191,8 @@ public class Client {
 
       // get the results
       String logFileName = wItem.getId() + ".log";
-      String downloadedFile = _workHelper.getObject(wItem.getContainerName(), wItem.getTestrigName(),
-            logFileName);
+      String downloadedFile = _workHelper.getObject(wItem.getContainerName(),
+            wItem.getTestrigName(), logFileName);
 
       if (downloadedFile == null) {
          _logger.errorf("Failed to get output file %s\n", logFileName);
@@ -249,7 +240,8 @@ public class Client {
             String questionName = words[1];
             String questionFile = words[2];
 
-            if (_currContainerName == null || _currTestrigName == null || _currEnv == null) {
+            if (_currContainerName == null || _currTestrigName == null
+                  || _currEnv == null) {
                _logger
                      .errorf(
                            "Active container, testrig, or environment is not set: (%s, %s, %s)\n",
@@ -268,8 +260,9 @@ public class Client {
             }
 
             // upload the question
-            boolean resultUpload = _workHelper.uploadQuestion(_currContainerName, _currTestrigName,
-                  questionName, questionFile, paramsFile);
+            boolean resultUpload = _workHelper.uploadQuestion(
+                  _currContainerName, _currTestrigName, questionName,
+                  questionFile, paramsFile);
 
             if (resultUpload) {
                _logger
@@ -286,19 +279,21 @@ public class Client {
 
             // answer the question
             WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(
-                  questionName, _currContainerName, _currTestrigName, _currEnv, _currDiffEnv);
+                  questionName, _currContainerName, _currTestrigName, _currEnv,
+                  _currDiffEnv);
             execute(wItemAs);
 
             break;
          }
          case COMMAND_ANSWER_DIFF: {
 
-            if (_currContainerName == null || _currTestrigName == null || _currEnv == null
-                  || _currDiffEnv == null) {
+            if (_currContainerName == null || _currTestrigName == null
+                  || _currEnv == null || _currDiffEnv == null) {
                _logger
                      .errorf(
                            "Active container, testrig, environment, or differential environment is not set (%s, %s, %s)\n",
-                           _currContainerName, _currTestrigName, _currEnv, _currDiffEnv);
+                           _currContainerName, _currTestrigName, _currEnv,
+                           _currDiffEnv);
                break;
             }
 
@@ -316,8 +311,9 @@ public class Client {
             }
 
             // upload the question
-            boolean resultUpload = _workHelper.uploadQuestion(_currContainerName, _currTestrigName,
-                  questionName, questionFile, paramsFile);
+            boolean resultUpload = _workHelper.uploadQuestion(
+                  _currContainerName, _currTestrigName, questionName,
+                  questionFile, paramsFile);
 
             if (resultUpload) {
                _logger
@@ -334,7 +330,8 @@ public class Client {
 
             // answer the question
             WorkItem wItemAs = _workHelper.getWorkItemAnswerDiffQuestion(
-                  questionName, _currContainerName, _currTestrigName, _currEnv, _currDiffEnv);
+                  questionName, _currContainerName, _currTestrigName, _currEnv,
+                  _currDiffEnv);
             execute(wItemAs);
 
             break;
@@ -350,8 +347,8 @@ public class Client {
             }
 
             // generate the data plane
-            WorkItem wItemGenDp = _workHelper.getWorkItemGenerateDataPlane(_currContainerName,
-                  _currTestrigName, _currEnv);
+            WorkItem wItemGenDp = _workHelper.getWorkItemGenerateDataPlane(
+                  _currContainerName, _currTestrigName, _currEnv);
             boolean resultGenDp = execute(wItemGenDp);
 
             if (!resultGenDp) {
@@ -359,8 +356,8 @@ public class Client {
             }
 
             // get the data plane
-            WorkItem wItemGetDp = _workHelper.getWorkItemGetDataPlane(_currContainerName,
-                  _currTestrigName, _currEnv);
+            WorkItem wItemGetDp = _workHelper.getWorkItemGetDataPlane(
+                  _currContainerName, _currTestrigName, _currEnv);
             boolean resultGetDp = execute(wItemGetDp);
 
             if (!resultGetDp) {
@@ -381,8 +378,8 @@ public class Client {
 
             // generate the data plane
             WorkItem wItemGenDdp = _workHelper
-                  .getWorkItemGenerateDiffDataPlane(_currContainerName, _currTestrigName, _currEnv,
-                        _currDiffEnv);
+                  .getWorkItemGenerateDiffDataPlane(_currContainerName,
+                        _currTestrigName, _currEnv, _currDiffEnv);
             boolean resultGenDdp = execute(wItemGenDdp);
 
             if (!resultGenDdp) {
@@ -390,8 +387,8 @@ public class Client {
             }
 
             // get the data plane
-            WorkItem wItemGetDdp = _workHelper.getWorkItemGetDiffDataPlane(_currContainerName,
-                  _currTestrigName, _currEnv, _currDiffEnv);
+            WorkItem wItemGetDdp = _workHelper.getWorkItemGetDiffDataPlane(
+                  _currContainerName, _currTestrigName, _currEnv, _currDiffEnv);
             boolean resultGetDdp = execute(wItemGetDdp);
 
             if (!resultGetDdp) {
@@ -409,13 +406,15 @@ public class Client {
 
             _currContainerName = _workHelper.initContainer(containerPrefix);
 
-            _logger.outputf("Init'ed and set active container to %s\n", _currContainerName);
-                  
+            _logger.outputf("Init'ed and set active container to %s\n",
+                  _currContainerName);
+
             break;
          }
          case COMMAND_INIT_DIFF_ENV: {
             if (_currContainerName == null || _currTestrigName == null) {
-               _logger.errorf("Active container or testrig is not set: (%s, %s)\n", 
+               _logger.errorf(
+                     "Active container or testrig is not set: (%s, %s)\n",
                      _currContainerName, _currTestrigName);
                break;
             }
@@ -424,8 +423,9 @@ public class Client {
             String diffEnvFile = words[2];
 
             // upload the environment
-            boolean resultUpload = _workHelper.uploadEnvironment(_currContainerName,
-                  _currTestrigName, diffEnvName, diffEnvFile);
+            boolean resultUpload = _workHelper.uploadEnvironment(
+                  _currContainerName, _currTestrigName, diffEnvName,
+                  diffEnvFile);
 
             if (resultUpload) {
                _logger.output("Successfully uploaded environment.\n");
@@ -452,8 +452,8 @@ public class Client {
             String testrigFile = words[2];
 
             // upload the testrig
-            boolean resultUpload = _workHelper.uploadTestrig(_currContainerName, testrigName,
-                  testrigFile);
+            boolean resultUpload = _workHelper.uploadTestrig(
+                  _currContainerName, testrigName, testrigFile);
 
             if (resultUpload) {
                _logger
@@ -464,8 +464,8 @@ public class Client {
             }
 
             // vendor specific parsing
-            WorkItem wItemPvs = _workHelper
-                  .getWorkItemParseVendorSpecific(_currContainerName, testrigName);
+            WorkItem wItemPvs = _workHelper.getWorkItemParseVendorSpecific(
+                  _currContainerName, testrigName);
             boolean resultPvs = execute(wItemPvs);
 
             if (!resultPvs) {
@@ -473,8 +473,8 @@ public class Client {
             }
 
             // vendor independent parsing
-            WorkItem wItemPvi = _workHelper
-                  .getWorkItemParseVendorIndependent(_currContainerName, testrigName);
+            WorkItem wItemPvi = _workHelper.getWorkItemParseVendorIndependent(
+                  _currContainerName, testrigName);
             boolean resultPvi = execute(wItemPvi);
 
             if (!resultPvi) {
@@ -490,10 +490,10 @@ public class Client {
 
             break;
          }
-         case COMMAND_LIST_CONTAINERS: {            
+         case COMMAND_LIST_CONTAINERS: {
             String[] containerList = _workHelper.listContainers();
-            _logger.outputf("Containers: %s\n", Arrays.toString(containerList));                  
-            break;            
+            _logger.outputf("Containers: %s\n", Arrays.toString(containerList));
+            break;
          }
          case COMMAND_LIST_TESTRIGS: {
 
@@ -504,15 +504,14 @@ public class Client {
 
             String[] testrigList = _workHelper.listTestrigs(_currContainerName);
             _logger.outputf("Testrigs: %s\n", Arrays.toString(testrigList));
-                  
+
             break;
-            
+
          }
          case COMMAND_SET_CONTAINER: {
             _currContainerName = words[1];
 
-            _logger.outputf(
-                  "Active container is now set to %s\n",
+            _logger.outputf("Active container is now set to %s\n",
                   _currContainerName);
 
             break;
@@ -572,10 +571,10 @@ public class Client {
 
       try (BufferedReader br = new BufferedReader(new FileReader(
             _settings.getCommandFile()))) {
-         String line = null;
-         while ((line = br.readLine()) != null) {
-
-            if (line.startsWith("#")) {
+         String rawLine = null;
+         while ((rawLine = br.readLine()) != null) {
+            String line = rawLine.trim();
+            if (line.length() == 0 || line.startsWith("#")) {
                continue;
             }
 
@@ -612,8 +611,6 @@ public class Client {
             reader.addCompleter(c);
          }
 
-         String line;
-
          PrintWriter pWriter = new PrintWriter(reader.getOutput(), true);
          OutputStream os = new WriterOutputStream(pWriter);
          PrintStream ps = new PrintStream(os, true);
@@ -627,10 +624,11 @@ public class Client {
          _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings);
          _poolHelper = new BfCoordPoolHelper(poolMgr);
 
-         while ((line = reader.readLine()) != null) {
-
+         String rawLine;
+         while ((rawLine = reader.readLine()) != null) {
+            String line = rawLine.trim();
             // skip over empty lines
-            if (line.trim().length() == 0) {
+            if (line.length() == 0) {
                continue;
             }
 

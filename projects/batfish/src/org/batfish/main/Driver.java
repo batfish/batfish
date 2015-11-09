@@ -293,7 +293,6 @@ public class Driver {
       _idle = true;
    }
 
-   
    private static boolean registerWithCoordinator() {
       String coordinatorHost = _mainSettings.getCoordinatorHost();
       String workMgr = coordinatorHost + ":"
@@ -301,8 +300,11 @@ public class Driver {
       String poolMgr = coordinatorHost + ":"
             + _mainSettings.getCoordinatorPoolPort();
       try {
-         Client client = Util.getClientBuilder(_mainSettings.getCoordinatorUseSsl(), _mainSettings.getTrustAllSslCerts()).build();
-         String protocol = (_mainSettings.getCoordinatorUseSsl())? "https" : "http";
+         Client client = Util.getClientBuilder(
+               _mainSettings.getCoordinatorUseSsl(),
+               _mainSettings.getTrustAllSslCerts()).build();
+         String protocol = (_mainSettings.getCoordinatorUseSsl()) ? "https"
+               : "http";
          WebTarget webTarget = client.target(
                String.format("%s://%s%s/%s", protocol, poolMgr,
                      CoordConsts.SVC_BASE_POOL_MGR,

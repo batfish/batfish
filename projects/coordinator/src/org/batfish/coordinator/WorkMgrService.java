@@ -74,11 +74,11 @@ public class WorkMgrService {
          _logger.info("WMS:getObject " + testrigName + " --> " + objectName
                + "\n");
 
-         //error checking
+         // error checking
          if (apiKey == null || apiKey.equals("")) {
             return Response.status(Response.Status.BAD_REQUEST)
-                  .entity("api key not supplied")
-                  .type(MediaType.TEXT_PLAIN).build();
+                  .entity("api key not supplied").type(MediaType.TEXT_PLAIN)
+                  .build();
          }
          if (containerName == null || containerName.equals("")) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -95,14 +95,16 @@ public class WorkMgrService {
                   .entity("objectname not supplied").type(MediaType.TEXT_PLAIN)
                   .build();
          }
-         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey) ||
-             !Main.getAuthorizer().isAccessibleContainer(apiKey, containerName)) {
+         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)
+               || !Main.getAuthorizer().isAccessibleContainer(apiKey,
+                     containerName)) {
             return Response.status(Response.Status.FORBIDDEN)
-                  .entity("invalid api key or inaccessible container name").type(MediaType.TEXT_PLAIN)
-                  .build();
+                  .entity("invalid api key or inaccessible container name")
+                  .type(MediaType.TEXT_PLAIN).build();
          }
-               
-         File file = Main.getWorkMgr().getObject(containerName, testrigName, objectName);
+
+         File file = Main.getWorkMgr().getObject(containerName, testrigName,
+               objectName);
 
          if (file == null) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -113,8 +115,8 @@ public class WorkMgrService {
                .ok(file, MediaType.APPLICATION_OCTET_STREAM)
                .header("Content-Disposition",
                      "attachment; filename=\"" + file.getName() + "\"")
-                     .header(CoordConsts.SVC_WORK_FILENAME_HDR, file.getName())
-                     .build();
+               .header(CoordConsts.SVC_WORK_FILENAME_HDR, file.getName())
+               .build();
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
@@ -150,7 +152,7 @@ public class WorkMgrService {
       try {
          _logger.info("WMS:getWorkStatus " + workId + "\n");
 
-         //error checking
+         // error checking
          if (apiKey == null || apiKey.equals("")) {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "api key not supplied"));
@@ -166,10 +168,12 @@ public class WorkMgrService {
 
          QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
 
-         if (work == null ||
-             !Main.getAuthorizer().isAccessibleContainer(apiKey, work.getWorkItem().getContainerName())) {
-            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
-                  "work with the specified id does not exist or is not inaccessible"));
+         if (work == null
+               || !Main.getAuthorizer().isAccessibleContainer(apiKey,
+                     work.getWorkItem().getContainerName())) {
+            return new JSONArray(
+                  Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                        "work with the specified id does not exist or is not inaccessible"));
          }
          else {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
@@ -207,12 +211,14 @@ public class WorkMgrService {
                   "invalid api key"));
          }
 
-         String containerName = Main.getWorkMgr().initContainer(containerPrefix);
+         String containerName = Main.getWorkMgr()
+               .initContainer(containerPrefix);
 
          Main.getAuthorizer().authorizeContainer(apiKey, containerName);
-         
+
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               (new JSONObject().put(CoordConsts.SVC_CONTAINER_NAME_KEY, containerName))));
+               (new JSONObject().put(CoordConsts.SVC_CONTAINER_NAME_KEY,
+                     containerName))));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
@@ -242,7 +248,7 @@ public class WorkMgrService {
          String[] containerList = Main.getWorkMgr().listContainers(apiKey);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               (new JSONObject().put(CoordConsts.SVC_CONTAINER_LIST_KEY, 
+               (new JSONObject().put(CoordConsts.SVC_CONTAINER_LIST_KEY,
                      new JSONArray(Arrays.asList(containerList))))));
       }
       catch (Exception e) {
@@ -260,9 +266,10 @@ public class WorkMgrService {
          @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
          @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName) {
       try {
-         _logger.info("WMS:listTestrigs " + apiKey + " " + containerName + "\n");
+         _logger
+               .info("WMS:listTestrigs " + apiKey + " " + containerName + "\n");
 
-         //error checking
+         // error checking
          if (apiKey == null || apiKey.equals("")) {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "API key not supplied"));
@@ -271,8 +278,9 @@ public class WorkMgrService {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "Container name not supplied"));
          }
-         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey) ||
-               !Main.getAuthorizer().isAccessibleContainer(apiKey, containerName)) {
+         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)
+               || !Main.getAuthorizer().isAccessibleContainer(apiKey,
+                     containerName)) {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "invalid api key or inaccessible container name"));
          }
@@ -280,7 +288,7 @@ public class WorkMgrService {
          String[] testrigList = Main.getWorkMgr().listTestrigs(containerName);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               (new JSONObject().put(CoordConsts.SVC_TESTRIG_LIST_KEY, 
+               (new JSONObject().put(CoordConsts.SVC_TESTRIG_LIST_KEY,
                      new JSONArray(Arrays.asList(testrigList))))));
       }
       catch (FileExistsException e) {
@@ -305,7 +313,7 @@ public class WorkMgrService {
       try {
          _logger.info("WMS:queueWork " + apiKey + " " + workItemStr + "\n");
 
-         //error checking
+         // error checking
          if (apiKey == null || apiKey.equals("")) {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "API key not supplied"));
@@ -317,17 +325,17 @@ public class WorkMgrService {
 
          WorkItem workItem = WorkItem.FromJsonString(workItemStr);
 
-         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey) ||
-               !Main.getAuthorizer().isAccessibleContainer(apiKey, workItem.getContainerName())) {
+         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)
+               || !Main.getAuthorizer().isAccessibleContainer(apiKey,
+                     workItem.getContainerName())) {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "invalid api key or inaccessible container name"));
          }
 
          boolean result = Main.getWorkMgr().queueWork(workItem);
 
-         return new JSONArray(
-               Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, 
-                     (new JSONObject().put("result", result))));
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               (new JSONObject().put("result", result))));
       }
       catch (FileExistsException e) {
          _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");
@@ -379,10 +387,10 @@ public class WorkMgrService {
          @FormDataParam(CoordConsts.SVC_ENV_NAME_KEY) String envName,
          @FormDataParam(CoordConsts.SVC_ZIPFILE_KEY) InputStream fileStream) {
       try {
-         _logger.info("WMS:uploadEnvironment " + apiKey + " " + containerName + " " + testrigName + " / " + envName
-               + "\n");
+         _logger.info("WMS:uploadEnvironment " + apiKey + " " + containerName
+               + " " + testrigName + " / " + envName + "\n");
 
-         //error checking
+         // error checking
          if (apiKey == null || apiKey.equals("")) {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "API key not supplied"));
@@ -399,13 +407,15 @@ public class WorkMgrService {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "Environment name not supplied"));
          }
-         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey) ||
-               !Main.getAuthorizer().isAccessibleContainer(apiKey, containerName)) {
+         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)
+               || !Main.getAuthorizer().isAccessibleContainer(apiKey,
+                     containerName)) {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "invalid api key or inaccessible container name"));
          }
 
-         Main.getWorkMgr().uploadEnvironment(containerName, testrigName, envName, fileStream);
+         Main.getWorkMgr().uploadEnvironment(containerName, testrigName,
+               envName, fileStream);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
                "successfully uploaded environment"));
@@ -436,10 +446,10 @@ public class WorkMgrService {
          @FormDataParam(CoordConsts.SVC_FILE_KEY) InputStream fileStream,
          @FormDataParam(CoordConsts.SVC_FILE2_KEY) InputStream paramFileStream) {
       try {
-         _logger.info("WMS:uploadQuestion " + apiKey + " " + containerName + " " + testrigName + " / " + qName
-               + "\n");
+         _logger.info("WMS:uploadQuestion " + apiKey + " " + containerName
+               + " " + testrigName + " / " + qName + "\n");
 
-         //error checking
+         // error checking
          if (apiKey == null || apiKey.equals("")) {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "API key not supplied"));
@@ -456,21 +466,22 @@ public class WorkMgrService {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "Question name not supplied"));
          }
-         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey) ||
-               !Main.getAuthorizer().isAccessibleContainer(apiKey, containerName)) {
+         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)
+               || !Main.getAuthorizer().isAccessibleContainer(apiKey,
+                     containerName)) {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "invalid api key or inaccessible container name"));
          }
 
-         Main.getWorkMgr().uploadQuestion(containerName, testrigName, qName, fileStream,
-               paramFileStream);
+         Main.getWorkMgr().uploadQuestion(containerName, testrigName, qName,
+               fileStream, paramFileStream);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
                "successfully uploaded question"));
       }
       catch (FileNotFoundException | FileExistsException e) {
          _logger
-         .error("WMS:uploadQuestion exception: " + e.getMessage() + "\n");
+               .error("WMS:uploadQuestion exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
       }
@@ -492,9 +503,10 @@ public class WorkMgrService {
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
          @FormDataParam(CoordConsts.SVC_ZIPFILE_KEY) InputStream fileStream) {
       try {
-         _logger.info("WMS:uploadTestrig " + apiKey + " " + containerName + " " + testrigName + "\n");
+         _logger.info("WMS:uploadTestrig " + apiKey + " " + containerName + " "
+               + testrigName + "\n");
 
-         //error checking
+         // error checking
          if (apiKey == null || apiKey.equals("")) {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "API key not supplied"));
@@ -507,13 +519,15 @@ public class WorkMgrService {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "Testrig name not supplied"));
          }
-         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey) ||
-               !Main.getAuthorizer().isAccessibleContainer(apiKey, containerName)) {
+         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)
+               || !Main.getAuthorizer().isAccessibleContainer(apiKey,
+                     containerName)) {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                   "invalid api key or inaccessible container name"));
          }
 
-         Main.getWorkMgr().uploadTestrig(containerName, testrigName, fileStream);
+         Main.getWorkMgr()
+               .uploadTestrig(containerName, testrigName, fileStream);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
                "successfully uploaded testrig"));

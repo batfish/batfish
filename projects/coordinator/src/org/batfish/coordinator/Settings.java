@@ -25,19 +25,19 @@ public class Settings {
    private static final String ARG_QUEUE_TYPE = "coordinator.Q_Type";
    private static final String ARG_SERVICE_HOST = "coordinator.ServiceHost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinator.PoolPort";
-   private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";   
+   private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";
+   // these arguments are not wired for options
+   private static final String ARG_SSL_KEYSTORE_FILE = "coordinator.SslKeyStoreFile";
+   private static final String ARG_SSL_KEYSTORE_PASSWORD = "coordinator.SslKeyStorePassword";
    private static final String ARG_STORAGE_ACCOUNT_KEY = "coordinator.StorageAccountKey";
    private static final String ARG_STORAGE_ACCOUNT_NAME = "coordinator.StorageAccountName";
    private static final String ARG_STORAGE_PROTOCOL = "coordinator.StorageProtocol";
+
    private static final String ARG_TESTRIG_STORAGE_LOCATION = "coordinator.TestrigStorageLocation";
    private static final String ARG_USE_SSL = "coordinator.UseSsl";
 
-   //these arguments are not wired for options
-   private static final String ARG_SSL_KEYSTORE_FILE = "coordinator.SslKeyStoreFile";
-   private static final String ARG_SSL_KEYSTORE_PASSWORD = "coordinator.SslKeyStorePassword";
-
-   private FileConfiguration _config;
    private Authorizer.Type _authorizerType;
+   private FileConfiguration _config;
    private String _logFile;
    private String _logLevel;
    private Options _options;
@@ -61,9 +61,10 @@ public class Settings {
    }
 
    public Settings(String[] args) throws Exception {
-      
+
       _config = new PropertiesConfiguration();
-      _config.setFile(org.batfish.common.Util.getConfigProperties(ConfigurationLocator.class));
+      _config.setFile(org.batfish.common.Util
+            .getConfigProperties(ConfigurationLocator.class));
       _config.load();
 
       initOptions();
@@ -177,14 +178,12 @@ public class Settings {
             .desc("send output to specified log file").longOpt(ARG_LOG_FILE)
             .build());
       _options.addOption(Option.builder().argName("log_level").hasArg()
-            .desc("log level").longOpt(ARG_LOG_LEVEL)
-            .build());
+            .desc("log level").longOpt(ARG_LOG_LEVEL).build());
       _options.addOption(Option.builder().argName("authorizer type").hasArg()
             .desc("type of authorizer to use").longOpt(ARG_AUTHORIZER_TYPE)
             .build());
       _options.addOption(Option.builder().argName("use_ssl").hasArg()
-            .desc("whether to use SSL").longOpt(ARG_USE_SSL)
-            .build());
+            .desc("whether to use SSL").longOpt(ARG_USE_SSL).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -206,8 +205,8 @@ public class Settings {
             ARG_SERVICE_POOL_PORT, _config.getString(ARG_SERVICE_POOL_PORT)));
       _serviceWorkPort = Integer.parseInt(line.getOptionValue(
             ARG_SERVICE_WORK_PORT, _config.getString(ARG_SERVICE_WORK_PORT)));
-      _serviceHost = line
-            .getOptionValue(ARG_SERVICE_HOST, _config.getString(ARG_SERVICE_HOST));
+      _serviceHost = line.getOptionValue(ARG_SERVICE_HOST,
+            _config.getString(ARG_SERVICE_HOST));
 
       _storageAccountKey = line.getOptionValue(ARG_STORAGE_ACCOUNT_KEY,
             _config.getString(ARG_STORAGE_ACCOUNT_KEY));
@@ -217,7 +216,8 @@ public class Settings {
             _config.getString(ARG_STORAGE_PROTOCOL));
 
       _testrigStorageLocation = line.getOptionValue(
-            ARG_TESTRIG_STORAGE_LOCATION, _config.getString(ARG_TESTRIG_STORAGE_LOCATION));
+            ARG_TESTRIG_STORAGE_LOCATION,
+            _config.getString(ARG_TESTRIG_STORAGE_LOCATION));
 
       _periodWorkerStatusRefreshMs = Long.parseLong(line.getOptionValue(
             ARG_PERIOD_WORKER_STATUS_REFRESH,
@@ -227,13 +227,15 @@ public class Settings {
       _periodCheckWorkMs = Long.parseLong(line.getOptionValue(
             ARG_PERIOD_CHECK_WORK, _config.getString(ARG_PERIOD_CHECK_WORK)));
 
-      _logFile = line.getOptionValue(ARG_LOG_FILE, _config.getString(ARG_LOG_FILE));
-      _logLevel = line.getOptionValue(ARG_LOG_LEVEL, _config.getString(ARG_LOG_LEVEL));
-      
+      _logFile = line.getOptionValue(ARG_LOG_FILE,
+            _config.getString(ARG_LOG_FILE));
+      _logLevel = line.getOptionValue(ARG_LOG_LEVEL,
+            _config.getString(ARG_LOG_LEVEL));
+
       _authorizerType = Authorizer.Type.valueOf(line.getOptionValue(
             ARG_AUTHORIZER_TYPE, _config.getString(ARG_AUTHORIZER_TYPE)));
-      
-      _useSsl = Boolean.parseBoolean(line.getOptionValue(
-            ARG_USE_SSL, _config.getString(ARG_USE_SSL)));
+
+      _useSsl = Boolean.parseBoolean(line.getOptionValue(ARG_USE_SSL,
+            _config.getString(ARG_USE_SSL)));
    }
 }

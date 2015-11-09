@@ -16,6 +16,43 @@ import javax.ws.rs.client.ClientBuilder;
 
 public final class Util {
 
+   private static class TrustAllHostNameVerifier implements HostnameVerifier {
+      @Override
+      public boolean verify(String hostname, SSLSession session) {
+         return true;
+      }
+   }
+
+   public static ClientBuilder getClientBuilder(boolean secure, boolean trustAll)
+         throws Exception {
+      if (secure && trustAll) {
+         SSLContext sslcontext = SSLContext.getInstance("TLS");
+         sslcontext.init(null, new TrustManager[] { new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] arg0, String arg1)
+                  throws CertificateException {
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] arg0, String arg1)
+                  throws CertificateException {
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+               return new X509Certificate[0];
+            }
+
+         } }, new java.security.SecureRandom());
+
+         return ClientBuilder.newBuilder().sslContext(sslcontext)
+               .hostnameVerifier(new TrustAllHostNameVerifier());
+      }
+      else {
+         return ClientBuilder.newBuilder();
+      }
+   }
+
    public static File getConfigProperties(Class<?> locatorClass) {
       File configDir = getJarOrClassDir(locatorClass);
       return Paths.get(configDir.toString(),
@@ -71,29 +108,6 @@ public final class Util {
          result = joined;
       }
       return result;
-   }
-
-   private static class TrustAllHostNameVerifier implements HostnameVerifier {
-      public boolean verify(String hostname, SSLSession session) {
-         return true;
-      }
-   }   
-
-   public static ClientBuilder getClientBuilder(boolean secure, boolean trustAll) throws Exception {
-      if (secure && trustAll) {
-         SSLContext sslcontext = SSLContext.getInstance("TLS");
-         sslcontext.init(null, new TrustManager[]{new X509TrustManager() {
-            public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
-            public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
-            public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-
-         }}, new java.security.SecureRandom());
-
-         return ClientBuilder.newBuilder().sslContext(sslcontext).hostnameVerifier(new TrustAllHostNameVerifier());
-      }
-      else {
-         return ClientBuilder.newBuilder();
-      }
    }
 
    private Util() {

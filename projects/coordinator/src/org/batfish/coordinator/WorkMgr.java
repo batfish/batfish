@@ -338,7 +338,7 @@ public class WorkMgr {
    public String[] listContainers(String apiKey) {
 
       final String apiKeyCopy = apiKey;
-      
+
       File containersDir = new File(Main.getSettings()
             .getTestrigStorageLocation());
 
@@ -346,7 +346,8 @@ public class WorkMgr {
          @Override
          public boolean accept(File current, String name) {
             return new File(current, name).isDirectory()
-                  && Main.getAuthorizer().isAccessibleContainer(apiKeyCopy, name);
+                  && Main.getAuthorizer().isAccessibleContainer(apiKeyCopy,
+                        name);
          }
       });
 

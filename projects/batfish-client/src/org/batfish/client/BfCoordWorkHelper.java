@@ -41,17 +41,20 @@ public class BfCoordWorkHelper {
    private String _coordWorkMgr;
    private BatfishLogger _logger;
    private Settings _settings;
-   public BfCoordWorkHelper(String workMgr, BatfishLogger logger, Settings settings) {
+
+   public BfCoordWorkHelper(String workMgr, BatfishLogger logger,
+         Settings settings) {
       _coordWorkMgr = workMgr;
       _logger = logger;
       _settings = settings;
    }
 
    private ClientBuilder getClientBuilder() throws Exception {
-      return org.batfish.common.Util.getClientBuilder(_settings.getUseSsl(), _settings.getTrustAllSslCerts());
+      return org.batfish.common.Util.getClientBuilder(_settings.getUseSsl(),
+            _settings.getTrustAllSslCerts());
    }
-   
-   private JSONObject getJsonResponse(WebTarget webTarget) throws Exception {      
+
+   private JSONObject getJsonResponse(WebTarget webTarget) throws Exception {
       try {
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
@@ -71,8 +74,8 @@ public class BfCoordWorkHelper {
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-            _logger.errorf("did not get success: %s %s\n",
-                  array.get(0), array.get(1));
+            _logger.errorf("did not get success: %s %s\n", array.get(0),
+                  array.get(1));
             return null;
          }
 
@@ -80,27 +83,33 @@ public class BfCoordWorkHelper {
       }
       catch (ProcessingException e) {
          if (e.getMessage().contains("ConnectException")) {
-            _logger.errorf("unable to connect to coordinator at %s\n", _coordWorkMgr);
+            _logger.errorf("unable to connect to coordinator at %s\n",
+                  _coordWorkMgr);
             return null;
          }
          if (e.getMessage().contains("SSLHandshakeException")) {
-            _logger.errorf("SSL handshake exception while connecting to coordinator\n");
+            _logger
+                  .errorf("SSL handshake exception while connecting to coordinator\n");
             return null;
          }
          throw e;
       }
    }
 
-   public String getObject(String containerName, String testrigName, String objectName) {
+   public String getObject(String containerName, String testrigName,
+         String objectName) {
       try {
 
-         Client client = getClientBuilder().register(MultiPartFeature.class).build();
-         WebTarget webTarget = getTarget(client, CoordConsts.SVC_WORK_GET_OBJECT_RSC)
+         Client client = getClientBuilder().register(MultiPartFeature.class)
+               .build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_WORK_GET_OBJECT_RSC)
                .queryParam(CoordConsts.SVC_API_KEY, _settings.getApiKey())
-               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY, uriEncode(containerName))
+               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY,
+                     uriEncode(containerName))
                .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY, testrigName)
                .queryParam(CoordConsts.SVC_WORK_OBJECT_KEY, objectName);
-               
+
          Response response = webTarget.request(
                MediaType.APPLICATION_OCTET_STREAM).get();
 
@@ -143,19 +152,20 @@ public class BfCoordWorkHelper {
          return null;
       }
    }
-   
+
    private WebTarget getTarget(Client client, String resource) {
 
-      String protocol = (_settings.getUseSsl())? "https" : "http";
+      String protocol = (_settings.getUseSsl()) ? "https" : "http";
 
-      String urlString = String.format("%s://%s%s/%s", protocol, _coordWorkMgr, 
+      String urlString = String.format("%s://%s%s/%s", protocol, _coordWorkMgr,
             CoordConsts.SVC_BASE_WORK_MGR, resource);
 
       return client.target(urlString);
    }
 
-   public WorkItem getWorkItemAnswerDiffQuestion(String questionName, String containerName,
-         String testrigName, String envName, String diffEnvName) {
+   public WorkItem getWorkItemAnswerDiffQuestion(String questionName,
+         String containerName, String testrigName, String envName,
+         String diffEnvName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
@@ -167,8 +177,9 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
-   public WorkItem getWorkItemAnswerQuestion(String questionName, String containerName,
-         String testrigName, String envName, String diffEnvName) {
+   public WorkItem getWorkItemAnswerQuestion(String questionName,
+         String containerName, String testrigName, String envName,
+         String diffEnvName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
@@ -181,8 +192,8 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
-   public WorkItem getWorkItemGenerateDataPlane(String containerName, String testrigName,
-         String envName) {
+   public WorkItem getWorkItemGenerateDataPlane(String containerName,
+         String testrigName, String envName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
@@ -191,8 +202,8 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
-   public WorkItem getWorkItemGenerateDiffDataPlane(String containerName, String testrigName,
-         String envName, String diffEnvName) {
+   public WorkItem getWorkItemGenerateDiffDataPlane(String containerName,
+         String testrigName, String envName, String diffEnvName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
@@ -203,22 +214,24 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
-   public WorkItem getWorkItemGenerateFacts(String containerName, String testrigName, String envName) {
+   public WorkItem getWorkItemGenerateFacts(String containerName,
+         String testrigName, String envName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
 
-   public WorkItem getWorkItemGetDataPlane(String containerName, String testrigName, String envName) {
+   public WorkItem getWorkItemGetDataPlane(String containerName,
+         String testrigName, String envName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
 
-   public WorkItem getWorkItemGetDiffDataPlane(String containerName, String testrigName,
-         String envName, String diffEnvName) {
+   public WorkItem getWorkItemGetDiffDataPlane(String containerName,
+         String testrigName, String envName, String diffEnvName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
@@ -227,8 +240,8 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
-   public WorkItem getWorkItemGetFlowTraces(String containerName, String testrigName, String envName,
-         String questionName) {
+   public WorkItem getWorkItemGetFlowTraces(String containerName,
+         String testrigName, String envName, String questionName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_QUERY, "");
       wItem.addRequestParam(BfConsts.ARG_PREDICATES,
@@ -237,22 +250,24 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
-   public WorkItem getWorkItemParseVendorIndependent(String containerName, String testrigName) {
+   public WorkItem getWorkItemParseVendorIndependent(String containerName,
+         String testrigName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
       wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
       return wItem;
    }
 
-   public WorkItem getWorkItemParseVendorSpecific(String containerName, String testrigName) {
+   public WorkItem getWorkItemParseVendorSpecific(String containerName,
+         String testrigName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
       wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
       return wItem;
    }
 
-   public WorkItem getWorkItemPostFlows(String containerName, String testrigName, String envName,
-         String questionName) {
+   public WorkItem getWorkItemPostFlows(String containerName,
+         String testrigName, String envName, String questionName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_NXTNET_TRAFFIC, "");
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
@@ -263,17 +278,20 @@ public class BfCoordWorkHelper {
    public WorkStatusCode getWorkStatus(UUID parseWorkUUID) {
       try {
          Client client = getClientBuilder().build();
-         WebTarget webTarget = getTarget(client, CoordConsts.SVC_WORK_GET_WORKSTATUS_RSC)
-               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
-               .queryParam(CoordConsts.SVC_WORKID_KEY, uriEncode(parseWorkUUID.toString()));
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_WORK_GET_WORKSTATUS_RSC).queryParam(
+               CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_WORKID_KEY,
+                     uriEncode(parseWorkUUID.toString()));
 
          JSONObject jObj = getJsonResponse(webTarget);
-         if (jObj == null) 
+         if (jObj == null) {
             return null;
+         }
 
          if (!jObj.has(CoordConsts.SVC_WORKSTATUS_KEY)) {
             _logger
-            .errorf("workstatus key not found in: %s\n", jObj.toString());
+                  .errorf("workstatus key not found in: %s\n", jObj.toString());
             return null;
          }
 
@@ -290,17 +308,20 @@ public class BfCoordWorkHelper {
    public String initContainer(String containerPrefix) {
       try {
          Client client = getClientBuilder().build();
-         WebTarget webTarget = getTarget(client, CoordConsts.SVC_INIT_CONTAINER_RSC)
-               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
-               .queryParam(CoordConsts.SVC_CONTAINER_PREFIX_KEY, uriEncode(containerPrefix));
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_INIT_CONTAINER_RSC).queryParam(
+               CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_CONTAINER_PREFIX_KEY,
+                     uriEncode(containerPrefix));
 
          JSONObject jObj = getJsonResponse(webTarget);
-         if (jObj == null) 
+         if (jObj == null) {
             return null;
+         }
 
          if (!jObj.has(CoordConsts.SVC_CONTAINER_NAME_KEY)) {
-            _logger
-            .errorf("container name key not found in: %s\n", jObj.toString());
+            _logger.errorf("container name key not found in: %s\n",
+                  jObj.toString());
             return null;
          }
 
@@ -316,24 +337,27 @@ public class BfCoordWorkHelper {
    public String[] listContainers() {
       try {
          Client client = getClientBuilder().build();
-         WebTarget webTarget = getTarget(client, CoordConsts.SVC_LIST_CONTAINERS_RSC)
-               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()));
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_LIST_CONTAINERS_RSC).queryParam(
+               CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()));
 
          JSONObject jObj = getJsonResponse(webTarget);
-         if (jObj == null) 
-            return null;
-
-         if (!jObj.has(CoordConsts.SVC_CONTAINER_LIST_KEY)) {
-            _logger
-            .errorf("container name key not found in: %s\n", jObj.toString());
+         if (jObj == null) {
             return null;
          }
 
-         JSONArray containerArray = jObj.getJSONArray(CoordConsts.SVC_CONTAINER_LIST_KEY);
+         if (!jObj.has(CoordConsts.SVC_CONTAINER_LIST_KEY)) {
+            _logger.errorf("container name key not found in: %s\n",
+                  jObj.toString());
+            return null;
+         }
+
+         JSONArray containerArray = jObj
+               .getJSONArray(CoordConsts.SVC_CONTAINER_LIST_KEY);
 
          String[] containerList = new String[containerArray.length()];
 
-         for (int index=0; index < containerArray.length(); index++) {
+         for (int index = 0; index < containerArray.length(); index++) {
             containerList[index] = containerArray.getString(index);
          }
 
@@ -349,25 +373,29 @@ public class BfCoordWorkHelper {
    public String[] listTestrigs(String containerName) {
       try {
          Client client = getClientBuilder().build();
-         WebTarget webTarget = getTarget(client, CoordConsts.SVC_LIST_TESTRIGS_RSC)
-               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
-               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY, uriEncode(containerName));
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_LIST_TESTRIGS_RSC).queryParam(
+               CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY,
+                     uriEncode(containerName));
 
          JSONObject jObj = getJsonResponse(webTarget);
-         if (jObj == null) 
-            return null;
-
-         if (!jObj.has(CoordConsts.SVC_TESTRIG_LIST_KEY)) {
-            _logger
-            .errorf("container name key not found in: %s\n", jObj.toString());
+         if (jObj == null) {
             return null;
          }
 
-         JSONArray testrigArray = jObj.getJSONArray(CoordConsts.SVC_TESTRIG_LIST_KEY);
+         if (!jObj.has(CoordConsts.SVC_TESTRIG_LIST_KEY)) {
+            _logger.errorf("container name key not found in: %s\n",
+                  jObj.toString());
+            return null;
+         }
+
+         JSONArray testrigArray = jObj
+               .getJSONArray(CoordConsts.SVC_TESTRIG_LIST_KEY);
 
          String[] containerList = new String[testrigArray.length()];
 
-         for (int index=0; index < testrigArray.length(); index++) {
+         for (int index = 0; index < testrigArray.length(); index++) {
             containerList[index] = testrigArray.getString(index);
          }
 
@@ -380,13 +408,56 @@ public class BfCoordWorkHelper {
       }
    }
 
+   public boolean postData(WebTarget webTarget, MultiPart multiPart)
+         throws Exception {
+      try {
+         Response response = webTarget.request(MediaType.APPLICATION_JSON)
+               .post(Entity.entity(multiPart, multiPart.getMediaType()));
+
+         _logger.infof(response.getStatus() + " " + response.getStatusInfo()
+               + " " + response + "\n");
+
+         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            System.err.printf("PostData: Did not get an OK response\n");
+            return false;
+         }
+
+         String sobj = response.readEntity(String.class);
+         JSONArray array = new JSONArray(sobj);
+         _logger.infof("response: %s [%s] [%s]\n", array.toString(),
+               array.get(0), array.get(1));
+
+         if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
+            _logger.errorf("Error in PostData: %s %s\n", array.get(0),
+                  array.get(1));
+            return false;
+         }
+         return true;
+      }
+      catch (ProcessingException e) {
+         if (e.getMessage().contains("ConnectException")) {
+            _logger.errorf("unable to connect to coordinator at %s\n",
+                  _coordWorkMgr);
+            return false;
+         }
+         if (e.getMessage().contains("SSLHandshakeException")) {
+            _logger
+                  .errorf("SSL handshake exception while connecting to coordinator\n");
+            return false;
+         }
+         throw e;
+      }
+   }
+
    public boolean queueWork(WorkItem wItem) {
 
       try {
          Client client = getClientBuilder().build();
-         WebTarget webTarget = getTarget(client, CoordConsts.SVC_WORK_QUEUE_WORK_RSC)
-               .queryParam(CoordConsts.SVC_WORKITEM_KEY, uriEncode(wItem.toJsonString()))
-               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()));
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_WORK_QUEUE_WORK_RSC).queryParam(
+               CoordConsts.SVC_WORKITEM_KEY, uriEncode(wItem.toJsonString()))
+               .queryParam(CoordConsts.SVC_API_KEY,
+                     uriEncode(_settings.getApiKey()));
 
          JSONObject jObj = getJsonResponse(webTarget);
          return (jObj != null);
@@ -398,51 +469,14 @@ public class BfCoordWorkHelper {
       }
    }
 
-   public boolean postData(WebTarget webTarget, MultiPart multiPart) throws Exception {
-      try {
-         Response response = webTarget.request(MediaType.APPLICATION_JSON)
-               .post(Entity.entity(multiPart, multiPart.getMediaType()));
-
-         _logger.infof(response.getStatus() + " " + response.getStatusInfo()
-               + " " + response + "\n");
-
-         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-            System.err
-            .printf("PostData: Did not get an OK response\n");
-            return false;
-         }
-
-         String sobj = response.readEntity(String.class);
-         JSONArray array = new JSONArray(sobj);
-         _logger.infof("response: %s [%s] [%s]\n", array.toString(),
-               array.get(0), array.get(1));
-
-         if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-            _logger.errorf("Error in PostData: %s %s\n",
-                  array.get(0), array.get(1));
-            return false;
-         }      
-         return true;
-      }
-      catch (ProcessingException e) {
-         if (e.getMessage().contains("ConnectException")) {
-            _logger.errorf("unable to connect to coordinator at %s\n", _coordWorkMgr);
-            return false;
-         }
-         if (e.getMessage().contains("SSLHandshakeException")) {
-            _logger.errorf("SSL handshake exception while connecting to coordinator\n");
-            return false;
-         }
-         throw e;
-      }
-   }
-
-   public boolean uploadEnvironment(String containerName, String testrigName, String envName,
-         String zipfileName) {
+   public boolean uploadEnvironment(String containerName, String testrigName,
+         String envName, String zipfileName) {
       try {
 
-         Client client = getClientBuilder().register(MultiPartFeature.class).build();
-         WebTarget webTarget = getTarget(client, CoordConsts.SVC_WORK_UPLOAD_ENV_RSC);
+         Client client = getClientBuilder().register(MultiPartFeature.class)
+               .build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_WORK_UPLOAD_ENV_RSC);
 
          MultiPart multiPart = new MultiPart();
          multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -479,21 +513,23 @@ public class BfCoordWorkHelper {
          }
          else {
             _logger
-            .errorf(
-                  "Exception when uploading environment to %s using (%s, %s, %s): %s\n",
-                  _coordWorkMgr, testrigName, envName, zipfileName,
-                  ExceptionUtils.getStackTrace(e));
+                  .errorf(
+                        "Exception when uploading environment to %s using (%s, %s, %s): %s\n",
+                        _coordWorkMgr, testrigName, envName, zipfileName,
+                        ExceptionUtils.getStackTrace(e));
          }
          return false;
       }
    }
 
-   public boolean uploadQuestion(String containerName, String testrigName, String qName,
-         String qFileName, File paramsFile) {
+   public boolean uploadQuestion(String containerName, String testrigName,
+         String qName, String qFileName, File paramsFile) {
       try {
 
-         Client client = getClientBuilder().register(MultiPartFeature.class).build();
-         WebTarget webTarget = getTarget(client, CoordConsts.SVC_WORK_UPLOAD_QUESTION_RSC);
+         Client client = getClientBuilder().register(MultiPartFeature.class)
+               .build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_WORK_UPLOAD_QUESTION_RSC);
 
          MultiPart multiPart = new MultiPart();
          multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -537,19 +573,22 @@ public class BfCoordWorkHelper {
          }
          else {
             _logger
-            .errorf(
-                  "Exception when uploading question to %s using (%s, %s, %s): %s\n",
-                  _coordWorkMgr, testrigName, qName, qFileName,
-                  ExceptionUtils.getStackTrace(e));
+                  .errorf(
+                        "Exception when uploading question to %s using (%s, %s, %s): %s\n",
+                        _coordWorkMgr, testrigName, qName, qFileName,
+                        ExceptionUtils.getStackTrace(e));
          }
          return false;
       }
    }
 
-   public boolean uploadTestrig(String containerName, String testrigName, String zipfileName) {
-      try{
-         Client client = getClientBuilder().register(MultiPartFeature.class).build();
-         WebTarget webTarget = getTarget(client, CoordConsts.SVC_WORK_UPLOAD_TESTRIG_RSC);
+   public boolean uploadTestrig(String containerName, String testrigName,
+         String zipfileName) {
+      try {
+         Client client = getClientBuilder().register(MultiPartFeature.class)
+               .build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_WORK_UPLOAD_TESTRIG_RSC);
 
          MultiPart multiPart = new MultiPart();
          multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -582,16 +621,17 @@ public class BfCoordWorkHelper {
          }
          else {
             _logger
-            .errorf(
-                  "Exception when uploading test rig to %s using (%s, %s): %s\n",
-                  _coordWorkMgr, testrigName, zipfileName,
-                  ExceptionUtils.getStackTrace(e));
+                  .errorf(
+                        "Exception when uploading test rig to %s using (%s, %s): %s\n",
+                        _coordWorkMgr, testrigName, zipfileName,
+                        ExceptionUtils.getStackTrace(e));
          }
          return false;
       }
    }
-   
+
    private String uriEncode(String input) {
-      return UriComponent.encode(input, UriComponent.Type.QUERY_PARAM_SPACE_ENCODED);
+      return UriComponent.encode(input,
+            UriComponent.Type.QUERY_PARAM_SPACE_ENCODED);
    }
 }

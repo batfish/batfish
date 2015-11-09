@@ -180,6 +180,7 @@ public final class Settings {
    private static final String ARG_BUILD_PREDICATE_INFO = "bpi";
    private static final String ARG_COORDINATOR_HOST = "coordinatorhost";
    private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
+   private static final String ARG_COORDINATOR_USE_SSL = "coordinator.UseSsl";
    private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
    private static final String ARG_DATA_PLANE = "dp";
    private static final String ARG_DIFF_QUESTION = "diffquestion";
@@ -231,9 +232,12 @@ public final class Settings {
    private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
    private static final String ARG_TIMESTAMP = "timestamp";
    private static final String ARG_TRACE_QUERY = "tracequery";
-   private static final String ARG_TRUST_ALL_SSL_CERTS = "batfish.TrustAllSslCerts"; //not wired to command line
+   private static final String ARG_TRUST_ALL_SSL_CERTS = "batfish.TrustAllSslCerts"; // not
+                                                                                     // wired
+                                                                                     // to
+                                                                                     // command
+                                                                                     // line
    private static final String ARG_USE_PRECOMPUTED_FACTS = "useprecomputedfacts";
-   private static final String ARG_COORDINATOR_USE_SSL = "coordinator.UseSsl"; 
    private static final String ARG_WORKSPACE = "workspace";
    private static final String ARGNAME_ANONYMIZE = "path";
    private static final String ARGNAME_AUTO_BASE_DIR = "path";
@@ -376,7 +380,9 @@ public final class Settings {
       _activeEnvironmentSettings = _baseEnvironmentSettings;
 
       _config = new PropertiesConfiguration();
-      _config.setFile(org.batfish.common.Util.getConfigProperties(org.batfish.config.ConfigurationLocator.class));
+      _config
+            .setFile(org.batfish.common.Util
+                  .getConfigProperties(org.batfish.config.ConfigurationLocator.class));
       _config.load();
 
       initOptions();
@@ -965,8 +971,8 @@ public final class Settings {
       _options.addOption(Option.builder().argName("port_number").hasArg()
             .desc("coordinator pool manager listening port")
             .longOpt(ARG_COORDINATOR_POOL_PORT).build());
-      _options.addOption(Option.builder().argName("coordinator_use_ssl").hasArg()
-            .desc("whether coordinator uses ssl")
+      _options.addOption(Option.builder().argName("coordinator_use_ssl")
+            .hasArg().desc("whether coordinator uses ssl")
             .longOpt(ARG_COORDINATOR_USE_SSL).build());
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_SERVICE_HOST)
@@ -1182,8 +1188,9 @@ public final class Settings {
             ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_POOL_PORT.toString()));
       _coordinatorWorkPort = Integer.parseInt(line.getOptionValue(
             ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_WORK_PORT.toString()));
-      _coordinatorUseSsl = Boolean.parseBoolean(line.getOptionValue(
-            ARG_COORDINATOR_USE_SSL, _config.getString(ARG_COORDINATOR_USE_SSL)));
+      _coordinatorUseSsl = Boolean
+            .parseBoolean(line.getOptionValue(ARG_COORDINATOR_USE_SSL,
+                  _config.getString(ARG_COORDINATOR_USE_SSL)));
       _serviceHost = line.getOptionValue(ARG_SERVICE_HOST);
       _noOutput = line.hasOption(ARG_NO_OUTPUT);
       _logTee = line.hasOption(ARG_LOG_TEE);
