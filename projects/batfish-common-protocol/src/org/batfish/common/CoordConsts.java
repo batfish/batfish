@@ -25,6 +25,10 @@ public class CoordConsts {
 
    public static final String SVC_CONTAINER_NAME_KEY = "container";
    public static final String SVC_CONTAINER_PREFIX_KEY = "containerprefix";
+   public static final String SVC_DEL_CONTAINER_RSC = "delcontainer";
+   public static final String SVC_DEL_ENVIRONMENT_RSC = "delenvironment";
+   public static final String SVC_DEL_QUESTION_RSC = "delquestion";
+   public static final String SVC_DEL_TESTRIG_RSC = "deltestrig";
    public static final String SVC_ENV_NAME_KEY = "envname";
 
    public static final String SVC_FAILURE_KEY = "failure";
@@ -66,5 +70,6 @@ public class CoordConsts {
 
    public static final String SVC_WORKSTATUS_KEY = "workstatus";
    public static final String SVC_ZIPFILE_KEY = "zipfile";
+
 
 }

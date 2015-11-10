@@ -237,6 +237,30 @@ public class Client {
       }
    }
 
+   private boolean isSetContainer() {
+      if (_currContainerName == null) {
+         _logger.errorf("Active container is not set\n");
+         return false;
+      }
+      return true;
+   }
+
+   private boolean isSetDiffEnvironment() {
+      if (_currDiffEnv == null) {
+         _logger.errorf("Active diff environment is not set\n");
+         return false;
+      }
+      return true;
+   }
+
+   private boolean isSetTestrig() {
+      if (_currTestrigName == null) {
+         _logger.errorf("Active testrig is not set\n");
+         return false;
+      }
+      return true;
+   }
+
    private void printUsage() {
       for (Map.Entry<String, String> entry : MAP_COMMANDS.entrySet()) {
          _logger.output(entry.getValue() + "\n\n");
@@ -255,17 +279,11 @@ public class Client {
             break;
          }
          case COMMAND_ANSWER: {
+            if (!isSetContainer() || !isSetTestrig())
+               break;
+
             String questionName = words[1];
             String questionFile = words[2];
-
-            if (_currContainerName == null || _currTestrigName == null
-                  || _currEnv == null) {
-               _logger
-                     .errorf(
-                           "Active container, testrig, or environment is not set: (%s, %s, %s)\n",
-                           _currContainerName, _currTestrigName, _currEnv);
-               break;
-            }
 
             File paramsFile = null;
 
@@ -304,17 +322,9 @@ public class Client {
             break;
          }
          case COMMAND_ANSWER_DIFF: {
-
-            if (_currContainerName == null || _currTestrigName == null
-                  || _currEnv == null || _currDiffEnv == null) {
-               _logger
-                     .errorf(
-                           "Active container, testrig, environment, or differential environment is not set (%s, %s, %s)\n",
-                           _currContainerName, _currTestrigName, _currEnv,
-                           _currDiffEnv);
+            if (!isSetContainer() || !isSetTestrig() || !isSetDiffEnvironment())
                break;
-            }
-
+            
             String questionName = words[1];
             String questionFile = words[2];
 
@@ -354,15 +364,42 @@ public class Client {
 
             break;
          }
-         case COMMAND_GEN_DP: {
-
-            if (_currTestrigName == null || _currEnv == null) {
-               _logger
-                     .errorf(
-                           "Active testrig name or environment is not set (%s, %s)\n",
-                           _currTestrigName, _currEnv);
+         case COMMAND_DEL_CONTAINER: {
+            String containerName = words[1];
+            boolean result = _workHelper.delContainer(containerName);
+            _logger.outputf("Result of deleting container: %s\n", result);
+            break;
+         }
+         case COMMAND_DEL_ENVIRONMENT: {
+            if (!isSetContainer() || !isSetTestrig()) 
                break;
-            }
+            
+            String envName = words[1];
+            boolean result = _workHelper.delEnvironment(_currContainerName, _currTestrigName, envName);
+            _logger.outputf("Result of deleting environment: %s\n", result);
+            break;
+         }
+         case COMMAND_DEL_QUESTION: {
+            if (!isSetContainer() || !isSetTestrig()) 
+               break;
+            
+            String qName = words[1];
+            boolean result = _workHelper.delQuestion(_currContainerName, _currTestrigName, qName);
+            _logger.outputf("Result of deleting question: %s\n", result);
+            break;
+         }
+         case COMMAND_DEL_TESTRIG: {
+            if (!isSetContainer()) 
+               break;
+            
+            String testrigName = words[1];
+            boolean result = _workHelper.delTestrig(_currContainerName, testrigName);
+            _logger.outputf("Result of deleting testrig: %s\n", result);
+            break;
+         }
+         case COMMAND_GEN_DP: {
+            if (!isSetContainer() || !isSetTestrig()) 
+               break;
 
             // generate the data plane
             WorkItem wItemGenDp = _workHelper.getWorkItemGenerateDataPlane(
@@ -385,14 +422,8 @@ public class Client {
             break;
          }
          case COMMAND_GEN_DIFF_DP: {
-            if (_currTestrigName == null || _currEnv == null
-                  || _currDiffEnv == null) {
-               _logger
-                     .errorf(
-                           "Active testrig, environment, or differential environment is not set (%s, %s, %s)\n",
-                           _currTestrigName, _currEnv, _currDiffEnv);
+            if (!isSetContainer() || !isSetTestrig() || !isSetDiffEnvironment())
                break;
-            }
 
             // generate the data plane
             WorkItem wItemGenDdp = _workHelper
@@ -421,21 +452,14 @@ public class Client {
          }
          case COMMAND_INIT_CONTAINER: {
             String containerPrefix = words[1];
-
             _currContainerName = _workHelper.initContainer(containerPrefix);
-
             _logger.outputf("Init'ed and set active container to %s\n",
                   _currContainerName);
-
             break;
          }
          case COMMAND_INIT_DIFF_ENV: {
-            if (_currContainerName == null || _currTestrigName == null) {
-               _logger.errorf(
-                     "Active container or testrig is not set: (%s, %s)\n",
-                     _currContainerName, _currTestrigName);
+            if (!isSetContainer() || !isSetTestrig())
                break;
-            }
 
             String diffEnvName = words[1];
             String diffEnvFile = words[2];
@@ -461,10 +485,8 @@ public class Client {
             break;
          }
          case COMMAND_INIT_TESTRIG: {
-            if (_currContainerName == null) {
-               _logger.errorf("Active container is not set\n");
+            if (!isSetContainer())
                break;
-            }
 
             String testrigName = words[1];
             String testrigFile = words[2];
@@ -514,12 +536,8 @@ public class Client {
             break;
          }
          case COMMAND_LIST_ENVIRONMENTS: {
-
-            if (_currContainerName == null || _currTestrigName == null ) {
-               _logger.errorf("Active container or testrig is not set: (%s, %s)\n", 
-                     _currContainerName, _currTestrigName);
+            if (!isSetContainer() || !isSetTestrig())
                break;
-            }
 
             String[] environmentList = _workHelper.listEnvironments(_currContainerName, _currTestrigName);
             _logger.outputf("Environments: %s\n", Arrays.toString(environmentList));
@@ -528,57 +546,38 @@ public class Client {
 
          }
          case COMMAND_LIST_QUESTIONS: {
-
-            if (_currContainerName == null || _currTestrigName == null ) {
-               _logger.errorf("Active container or testrig is not set: (%s, %s)\n", 
-                     _currContainerName, _currTestrigName);
+            if (!isSetContainer() || !isSetTestrig())
                break;
-            }
-
             String[] questionList = _workHelper.listQuestions(_currContainerName, _currTestrigName);
             _logger.outputf("Questions: %s\n", Arrays.toString(questionList));
-
             break;
-
          }
          case COMMAND_LIST_TESTRIGS: {
-
-            if (_currContainerName == null) {
-               _logger.errorf("Active container is not set\n");
+            if (!isSetContainer())
                break;
-            }
-
             String[] testrigList = _workHelper.listTestrigs(_currContainerName);
             _logger.outputf("Testrigs: %s\n", Arrays.toString(testrigList));
-
             break;
-
          }
          case COMMAND_SET_CONTAINER: {
             _currContainerName = words[1];
-
             _logger.outputf("Active container is now set to %s\n",
                   _currContainerName);
-
             break;
          }
          case COMMAND_SET_TESTRIG: {
             _currTestrigName = words[1];
             _currEnv = "default";
-
             _logger.outputf(
                   "Active (testrig, environment) is now set to (%s, %s)\n",
                   _currTestrigName, _currEnv);
-
             break;
          }
          case COMMAND_SET_DIFF_ENV: {
             _currDiffEnv = words[1];
-
             _logger.outputf(
                   "Active differential environment is now set to %s\n",
                   _currDiffEnv);
-
             break;
          }
          case COMMAND_SET_LOGLEVEL: {

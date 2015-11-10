@@ -53,6 +53,195 @@ public class WorkMgrService {
    // }
 
    @GET
+   @Path(CoordConsts.SVC_DEL_CONTAINER_RSC)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray delContainer(
+         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName) {
+      try {
+         _logger.info("WMS:delContainer " + containerName + "\n");
+
+         if (apiKey == null || apiKey.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "api key not supplied"));
+         }
+         if (containerName == null || containerName.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "container name not supplied"));
+         }
+         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey) || 
+               !Main.getAuthorizer().isAccessibleContainer(apiKey,
+                     containerName)) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "invalid api key or inaccessible container name"));
+         }
+
+         Main.getWorkMgr().delContainer(containerName);
+
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               (new JSONObject().put("result", "true"))));
+
+      }
+      catch (FileExistsException | FileNotFoundException e) {
+         _logger.error("WMS:delContainer exception: " + e.getMessage() + "\n");
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:delContainer exception: " + stackTrace);
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+   }
+
+   @GET
+   @Path(CoordConsts.SVC_DEL_ENVIRONMENT_RSC)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray delEnvironment(
+         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @QueryParam(CoordConsts.SVC_ENV_NAME_KEY) String envName,
+         @QueryParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
+      try {
+         _logger.info("WMS:delEnvironment " + containerName + "\n");
+
+         if (apiKey == null || apiKey.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "api key not supplied"));
+         }
+         if (containerName == null || containerName.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "container name not supplied"));
+         }
+         if (testrigName == null || testrigName.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "testrig name not supplied"));
+         }
+         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey) || 
+               !Main.getAuthorizer().isAccessibleContainer(apiKey,
+                     containerName)) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "invalid api key or inaccessible container name"));
+         }
+
+         Main.getWorkMgr().delEnvironment(containerName, testrigName, envName);
+
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               (new JSONObject().put("result", "true"))));
+
+      }
+      catch (FileExistsException | FileNotFoundException e) {
+         _logger.error("WMS:delEnvironment exception: " + e.getMessage() + "\n");
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:delEnvironment exception: " + stackTrace);
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+   }
+
+   @GET
+   @Path(CoordConsts.SVC_DEL_QUESTION_RSC)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray delQuestion(
+         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @QueryParam(CoordConsts.SVC_QUESTION_NAME_KEY) String questionName,
+         @QueryParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
+      try {
+         _logger.info("WMS:delQuestion " + containerName + "\n");
+
+         if (apiKey == null || apiKey.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "api key not supplied"));
+         }
+         if (containerName == null || containerName.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "container name not supplied"));
+         }
+         if (testrigName == null || testrigName.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "testrig name not supplied"));
+         }
+         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey) || 
+               !Main.getAuthorizer().isAccessibleContainer(apiKey,
+                     containerName)) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "invalid api key or inaccessible container name"));
+         }
+
+         Main.getWorkMgr().delQuestion(containerName, testrigName, questionName);
+
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               (new JSONObject().put("result", "true"))));
+
+      }
+      catch (FileExistsException | FileNotFoundException e) {
+         _logger.error("WMS:delQuestion exception: " + e.getMessage() + "\n");
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:delQuestion exception: " + stackTrace);
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+   }
+
+   @GET
+   @Path(CoordConsts.SVC_DEL_TESTRIG_RSC)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray delTestrig(
+         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @QueryParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
+      try {
+         _logger.info("WMS:delTestrig " + containerName + "\n");
+
+         if (apiKey == null || apiKey.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "api key not supplied"));
+         }
+         if (containerName == null || containerName.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "container name not supplied"));
+         }
+         if (testrigName == null || testrigName.equals("")) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "testrig name not supplied"));
+         }
+         if (!Main.getAuthorizer().isValidWorkApiKey(apiKey) || 
+               !Main.getAuthorizer().isAccessibleContainer(apiKey,
+                     containerName)) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                  "invalid api key or inaccessible container name"));
+         }
+
+         Main.getWorkMgr().delTestrig(containerName, testrigName);
+
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               (new JSONObject().put("result", "true"))));
+
+      }
+      catch (FileExistsException | FileNotFoundException e) {
+         _logger.error("WMS:delTestrig exception: " + e.getMessage() + "\n");
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:delTestrig exception: " + stackTrace);
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+   }
+
+   @GET
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getInfo() {
       _logger.info("WMS:getInfo\n");
