@@ -899,7 +899,7 @@ public final class Settings {
       setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
       setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_POOL_PORT);
-      setDefaultProperty(ARG_COORDINATOR_USE_SSL, false);
+      setDefaultProperty(ARG_COORDINATOR_USE_SSL, CoordConsts.SVC_USE_SSL);
       setDefaultProperty(ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_WORK_PORT);
       setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
       setDefaultProperty(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, null);

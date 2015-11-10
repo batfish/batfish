@@ -8,6 +8,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.CoordConsts;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.queues.WorkQueue;
@@ -17,22 +19,24 @@ public class Settings {
    private static final String ARG_AUTHORIZER_TYPE = "coordinator.AuthorizerType";
    private static final String ARG_LOG_FILE = "coordinator.LogFile";
    private static final String ARG_LOG_LEVEL = "coordinator.LogLevel";
-   private static final String ARG_PERIOD_ASSIGN_WORK = "coordinator.PeriodAssignWorkMs";
-   private static final String ARG_PERIOD_CHECK_WORK = "coordinator.PeriodCheckWorkMs";
-   private static final String ARG_PERIOD_WORKER_STATUS_REFRESH = "coordinator.PeriodWorkerRefresh";
+   private static final String ARG_PERIOD_ASSIGN_WORK_MS = "coordinator.PeriodAssignWorkMs";
+   private static final String ARG_PERIOD_CHECK_WORK_MS = "coordinator.PeriodCheckWorkMs";
+   private static final String ARG_PERIOD_WORKER_STATUS_REFRESH_MS = "coordinator.PeriodWorkerRefreshMs";
    private static final String ARG_QUEUE_COMPLETED_WORK = "coordinator.Q_CompletedWork";
    private static final String ARG_QUEUE_INCOMPLETE_WORK = "coordinator.Q_IncompleteWork";
    private static final String ARG_QUEUE_TYPE = "coordinator.Q_Type";
    private static final String ARG_SERVICE_HOST = "coordinator.ServiceHost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinator.PoolPort";
    private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";
-   // these arguments are not wired for options
+      
+   /**
+    * (not wired to command line)
+    */
    private static final String ARG_SSL_KEYSTORE_FILE = "coordinator.SslKeyStoreFile";
    private static final String ARG_SSL_KEYSTORE_PASSWORD = "coordinator.SslKeyStorePassword";
    private static final String ARG_STORAGE_ACCOUNT_KEY = "coordinator.StorageAccountKey";
    private static final String ARG_STORAGE_ACCOUNT_NAME = "coordinator.StorageAccountName";
    private static final String ARG_STORAGE_PROTOCOL = "coordinator.StorageProtocol";
-
    private static final String ARG_TESTRIG_STORAGE_LOCATION = "coordinator.TestrigStorageLocation";
    private static final String ARG_USE_SSL = "coordinator.UseSsl";
 
@@ -66,6 +70,7 @@ public class Settings {
       _config.setFile(org.batfish.common.Util
             .getConfigProperties(ConfigurationLocator.class));
       _config.load();
+      initConfigDefaults();
 
       initOptions();
       parseCommandLine(args);
@@ -147,6 +152,28 @@ public class Settings {
       return _useSsl;
    }
 
+   private void initConfigDefaults() {
+      setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none);      
+      setDefaultProperty(ARG_LOG_FILE, null);
+      setDefaultProperty(ARG_LOG_LEVEL, BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
+      setDefaultProperty(ARG_PERIOD_ASSIGN_WORK_MS, 1000);
+      setDefaultProperty(ARG_PERIOD_CHECK_WORK_MS, 5000);
+      setDefaultProperty(ARG_PERIOD_WORKER_STATUS_REFRESH_MS, 10000);
+      setDefaultProperty(ARG_QUEUE_COMPLETED_WORK, "batfishcompletedwork");
+      setDefaultProperty(ARG_QUEUE_INCOMPLETE_WORK, "batfishincompletework");
+      setDefaultProperty(ARG_QUEUE_TYPE, WorkQueue.Type.memory.toString());
+      setDefaultProperty(ARG_SERVICE_HOST, "localhost");
+      setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
+      setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_WORK_PORT);
+      setDefaultProperty(ARG_SSL_KEYSTORE_FILE, "selfsigned.jks");
+      setDefaultProperty(ARG_SSL_KEYSTORE_PASSWORD, "batfish");
+      setDefaultProperty(ARG_STORAGE_ACCOUNT_KEY, "zRTT++dVryOWXJyAM7NM0TuQcu0Y23BgCQfkt7xh2f/Mm+r6c8/XtPTY0xxaF6tPSACJiuACsjotDeNIVyXM8Q==");
+      setDefaultProperty(ARG_STORAGE_ACCOUNT_NAME, "testdrive");
+      setDefaultProperty(ARG_STORAGE_PROTOCOL, "http");
+      setDefaultProperty(ARG_TESTRIG_STORAGE_LOCATION, "containers");
+      setDefaultProperty(ARG_USE_SSL, CoordConsts.SVC_USE_SSL);
+   }
+
    private void initOptions() {
       _options = new Options();
       _options.addOption(Option.builder().argName("port_number_pool_service")
@@ -167,13 +194,13 @@ public class Settings {
       _options.addOption(Option.builder()
             .argName("period_worker_status_refresh_ms").hasArg()
             .desc("period with which to check worker status (ms)")
-            .longOpt(ARG_PERIOD_WORKER_STATUS_REFRESH).build());
+            .longOpt(ARG_PERIOD_WORKER_STATUS_REFRESH_MS).build());
       _options.addOption(Option.builder().argName("period_assign_work_ms")
             .hasArg().desc("period with which to assign work (ms)")
-            .longOpt(ARG_PERIOD_ASSIGN_WORK).build());
+            .longOpt(ARG_PERIOD_ASSIGN_WORK_MS).build());
       _options.addOption(Option.builder().argName("period_check_work_ms")
             .hasArg().desc("period with which to check work (ms)")
-            .longOpt(ARG_PERIOD_CHECK_WORK).build());
+            .longOpt(ARG_PERIOD_CHECK_WORK_MS).build());
       _options.addOption(Option.builder().argName("log_file_path").hasArg()
             .desc("send output to specified log file").longOpt(ARG_LOG_FILE)
             .build());
@@ -220,12 +247,12 @@ public class Settings {
             _config.getString(ARG_TESTRIG_STORAGE_LOCATION));
 
       _periodWorkerStatusRefreshMs = Long.parseLong(line.getOptionValue(
-            ARG_PERIOD_WORKER_STATUS_REFRESH,
-            _config.getString(ARG_PERIOD_WORKER_STATUS_REFRESH)));
+            ARG_PERIOD_WORKER_STATUS_REFRESH_MS,
+            _config.getString(ARG_PERIOD_WORKER_STATUS_REFRESH_MS)));
       _periodAssignWorkMs = Long.parseLong(line.getOptionValue(
-            ARG_PERIOD_ASSIGN_WORK, _config.getString(ARG_PERIOD_ASSIGN_WORK)));
+            ARG_PERIOD_ASSIGN_WORK_MS, _config.getString(ARG_PERIOD_ASSIGN_WORK_MS)));
       _periodCheckWorkMs = Long.parseLong(line.getOptionValue(
-            ARG_PERIOD_CHECK_WORK, _config.getString(ARG_PERIOD_CHECK_WORK)));
+            ARG_PERIOD_CHECK_WORK_MS, _config.getString(ARG_PERIOD_CHECK_WORK_MS)));
 
       _logFile = line.getOptionValue(ARG_LOG_FILE,
             _config.getString(ARG_LOG_FILE));
@@ -237,5 +264,11 @@ public class Settings {
 
       _useSsl = Boolean.parseBoolean(line.getOptionValue(ARG_USE_SSL,
             _config.getString(ARG_USE_SSL)));
+   }
+   
+   private void setDefaultProperty(String key, Object value) {
+      if (_config.getProperty(key) == null) {
+         _config.setProperty(key, value);
+      }
    }
 }

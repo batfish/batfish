@@ -8,14 +8,12 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.batfish.client.config.ConfigurationLocator;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.CoordConsts;
 import org.apache.commons.configuration.*;
 
 public class Settings {
 
-   // these settings are not wired up to command line options
-   private static final String ARG_API_KEY = "client.ApiKey";
-   private static final String ARG_COMMAND_FILE = "cmdfile";
-   private static final String ARG_HELP = "help";
    private static final String ARG_LOG_FILE = "client.LogFile";
    private static final String ARG_LOG_LEVEL = "client.LogLevel";
    private static final String ARG_PERIOD_CHECK_WORK = "client.PeriodCheckWorkMs";
@@ -25,6 +23,13 @@ public class Settings {
 
    private static final String ARG_TRUST_ALL_SSL_CERTS = "client.TrustAllSslCerts";
    private static final String ARG_USE_SSL = "coordinator.UseSsl";
+
+   /*
+    *  not wired to command line
+    */   
+   private static final String ARG_API_KEY = "client.ApiKey";
+   private static final String ARG_COMMAND_FILE = "cmdfile";
+   private static final String ARG_HELP = "help";
 
    private static final String EXECUTABLE_NAME = "batfish_client";
 
@@ -49,7 +54,8 @@ public class Settings {
       _config.setFile(org.batfish.common.Util
             .getConfigProperties(ConfigurationLocator.class));
       _config.load();
-
+      initConfigDefaults();
+      
       initOptions();
       parseCommandLine(args);
    }
@@ -92,6 +98,17 @@ public class Settings {
 
    public boolean getUseSsl() {
       return _useSsl;
+   }
+   
+   private void initConfigDefaults() {
+      setDefaultProperty(ARG_LOG_FILE, null);
+      setDefaultProperty(ARG_LOG_LEVEL, BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
+      setDefaultProperty(ARG_PERIOD_CHECK_WORK, 1000);
+      setDefaultProperty(ARG_SERVICE_HOST, "localhost");
+      setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
+      setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_WORK_PORT);
+      setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, false);
+      setDefaultProperty(ARG_USE_SSL, CoordConsts.SVC_USE_SSL);
    }
 
    private void initOptions() {
@@ -154,5 +171,11 @@ public class Settings {
             ARG_SERVICE_WORK_PORT, _config.getString(ARG_SERVICE_WORK_PORT)));
       _useSsl = Boolean.parseBoolean(line.getOptionValue(ARG_USE_SSL,
             _config.getString(ARG_USE_SSL)));
+   }
+   
+   private void setDefaultProperty(String key, Object value) {
+      if (_config.getProperty(key) == null) {
+         _config.setProperty(key, value);
+      }
    }
 }
