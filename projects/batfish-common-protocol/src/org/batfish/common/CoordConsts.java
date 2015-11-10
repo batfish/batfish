@@ -33,6 +33,8 @@ public class CoordConsts {
    public static final String SVC_FILE2_KEY = "file2";
    public static final String SVC_INIT_CONTAINER_RSC = "initcontainer";
    public static final String SVC_LIST_CONTAINERS_RSC = "listcontainers";
+   public static final String SVC_LIST_ENVIRONMENTS_RSC = "listenvironments";
+   public static final String SVC_LIST_QUESTIONS_RSC = "listquestions";
    public static final String SVC_LIST_TESTRIGS_RSC = "listtestrigs";
    public static final String SVC_POOL_GETSTATUS_RSC = "getstatus";
    public static final Integer SVC_POOL_PORT = 9998;
@@ -40,6 +42,8 @@ public class CoordConsts {
 
    public static final String SVC_QUESTION_NAME_KEY = "questionname";
    public static final String SVC_SUCCESS_KEY = "success";
+   public static final String SVC_ENVIRONMENT_LIST_KEY = "environmentlist";
+   public static final String SVC_QUESTION_LIST_KEY = "questionlist";
    public static final String SVC_TESTRIG_LIST_KEY = "testriglist";
    public static final String SVC_TESTRIG_NAME_KEY = "testrigname";
    public static final String SVC_WORK_FILENAME_HDR = "FileName";
@@ -62,4 +66,5 @@ public class CoordConsts {
 
    public static final String SVC_WORKSTATUS_KEY = "workstatus";
    public static final String SVC_ZIPFILE_KEY = "zipfile";
+
 }

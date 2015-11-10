@@ -3,14 +3,7 @@ package org.batfish.client;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.UUID;
-import java.security.cert.X509Certificate;
-import java.security.cert.CertificateException;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -148,7 +141,7 @@ public class BfCoordWorkHelper {
       catch (Exception e) {
          _logger.errorf("Exception in getObject from %s using (%s, %s)\n",
                _coordWorkMgr, testrigName, objectName);
-         e.printStackTrace();
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
          return null;
       }
    }
@@ -300,7 +293,7 @@ public class BfCoordWorkHelper {
       }
       catch (Exception e) {
          _logger.errorf("exception: ");
-         e.printStackTrace();
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
          return null;
       }
    }
@@ -329,7 +322,7 @@ public class BfCoordWorkHelper {
       }
       catch (Exception e) {
          _logger.errorf("exception: ");
-         e.printStackTrace();
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
          return null;
       }
    }
@@ -347,7 +340,7 @@ public class BfCoordWorkHelper {
          }
 
          if (!jObj.has(CoordConsts.SVC_CONTAINER_LIST_KEY)) {
-            _logger.errorf("container name key not found in: %s\n",
+            _logger.errorf("container list key not found in: %s\n",
                   jObj.toString());
             return null;
          }
@@ -365,7 +358,83 @@ public class BfCoordWorkHelper {
       }
       catch (Exception e) {
          _logger.errorf("exception: ");
-         e.printStackTrace();
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+         return null;
+      }
+   }
+
+   public String[] listEnvironments(String containerName, String testrigName) {
+      try {
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_LIST_ENVIRONMENTS_RSC).queryParam(
+               CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY, uriEncode(containerName))
+               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY, uriEncode(testrigName));
+
+         JSONObject jObj = getJsonResponse(webTarget);
+         if (jObj == null) {
+            return null;
+         }
+
+         if (!jObj.has(CoordConsts.SVC_ENVIRONMENT_LIST_KEY)) {
+            _logger.errorf("environment list key not found in: %s\n",
+                  jObj.toString());
+            return null;
+         }
+
+         JSONArray environmentArray = jObj
+               .getJSONArray(CoordConsts.SVC_ENVIRONMENT_LIST_KEY);
+
+         String[] environmentList = new String[environmentArray.length()];
+
+         for (int index = 0; index < environmentArray.length(); index++) {
+            environmentList[index] = environmentArray.getString(index);
+         }
+
+         return environmentList;
+      }
+      catch (Exception e) {
+         _logger.errorf("exception: ");
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+         return null;
+      }
+   }
+
+   public String[] listQuestions(String containerName, String testrigName) {
+      try {
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_LIST_QUESTIONS_RSC).queryParam(
+               CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY, uriEncode(containerName))
+               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY, uriEncode(testrigName));
+
+         JSONObject jObj = getJsonResponse(webTarget);
+         if (jObj == null) {
+            return null;
+         }
+
+         if (!jObj.has(CoordConsts.SVC_QUESTION_LIST_KEY)) {
+            _logger.errorf("question list key not found in: %s\n",
+                  jObj.toString());
+            return null;
+         }
+
+         JSONArray questionArray = jObj
+               .getJSONArray(CoordConsts.SVC_QUESTION_LIST_KEY);
+
+         String[] questionList = new String[questionArray.length()];
+
+         for (int index = 0; index < questionArray.length(); index++) {
+            questionList[index] = questionArray.getString(index);
+         }
+
+         return questionList;
+      }
+      catch (Exception e) {
+         _logger.errorf("exception: ");
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
          return null;
       }
    }
@@ -385,7 +454,7 @@ public class BfCoordWorkHelper {
          }
 
          if (!jObj.has(CoordConsts.SVC_TESTRIG_LIST_KEY)) {
-            _logger.errorf("container name key not found in: %s\n",
+            _logger.errorf("testrig key not found in: %s\n",
                   jObj.toString());
             return null;
          }
@@ -393,17 +462,17 @@ public class BfCoordWorkHelper {
          JSONArray testrigArray = jObj
                .getJSONArray(CoordConsts.SVC_TESTRIG_LIST_KEY);
 
-         String[] containerList = new String[testrigArray.length()];
+         String[] testrigList = new String[testrigArray.length()];
 
          for (int index = 0; index < testrigArray.length(); index++) {
-            containerList[index] = testrigArray.getString(index);
+            testrigList[index] = testrigArray.getString(index);
          }
 
-         return containerList;
+         return testrigList;
       }
       catch (Exception e) {
          _logger.errorf("exception: ");
-         e.printStackTrace();
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
          return null;
       }
    }
@@ -464,7 +533,7 @@ public class BfCoordWorkHelper {
       }
       catch (Exception e) {
          _logger.errorf("exception: ");
-         e.printStackTrace();
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
          return false;
       }
    }

@@ -354,6 +354,80 @@ public class WorkMgr {
       return directories;
    }
 
+   public String[] listEnvironments(String containerName, String testrigName) throws Exception {
+
+      File containerDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName)
+            .toFile();
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException("Container " + containerName
+               + " does not exist");
+      }
+
+      File testrigDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName, testrigName)
+            .toFile();
+
+      if (!testrigDir.exists()) {
+         throw new FileNotFoundException("Testrig " + testrigName
+               + " does not exist");
+      }
+
+      File environmentsDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName, testrigName, 
+            BfConsts.RELPATH_ENVIRONMENTS_DIR).toFile();
+
+      if (!environmentsDir.exists()) {
+         return new String[0];
+      }
+
+      String[] directories = environmentsDir.list(new FilenameFilter() {
+         @Override
+         public boolean accept(File current, String name) {
+            return new File(current, name).isDirectory();
+         }
+      });
+
+      return directories;
+   }
+
+   public String[] listQuestions(String containerName, String testrigName) throws Exception {
+
+      File containerDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName)
+            .toFile();
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException("Container " + containerName
+               + " does not exist");
+      }
+
+      File testrigDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName, testrigName)
+            .toFile();
+
+      if (!testrigDir.exists()) {
+         throw new FileNotFoundException("Testrig " + testrigName
+               + " does not exist");
+      }
+
+      File questionsDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName, testrigName, 
+            BfConsts.RELPATH_QUESTIONS_DIR).toFile();
+
+      if (!questionsDir.exists()) {
+         return new String[0];
+      }
+
+      String[] directories = questionsDir.list(new FilenameFilter() {
+         @Override
+         public boolean accept(File current, String name) {
+            return new File(current, name).isDirectory();
+         }
+      });
+
+      return directories;
+   }
+
    public String[] listTestrigs(String containerName) throws Exception {
 
       File containerDir = Paths.get(

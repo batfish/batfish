@@ -11,15 +11,11 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
-import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import javax.net.ssl.*;
-import javax.security.cert.*;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.common.BfConsts;
@@ -37,6 +33,10 @@ public class Client {
    private static final String COMMAND_ANSWER = "answer";
    private static final String COMMAND_ANSWER_DIFF = "answer-diff";
    private static final String COMMAND_CLEAR_SCREEN = "cls";
+   private static final String COMMAND_DEL_CONTAINER = "del-container";
+   private static final String COMMAND_DEL_ENVIRONMENT = "del-environment";
+   private static final String COMMAND_DEL_QUESTION = "del-question";
+   private static final String COMMAND_DEL_TESTRIG = "del-testrig";
    private static final String COMMAND_GEN_DIFF_DP = "generate-diff-dataplane";
    private static final String COMMAND_GEN_DP = "generate-dataplane";
    private static final String COMMAND_HELP = "help";
@@ -44,6 +44,8 @@ public class Client {
    private static final String COMMAND_INIT_DIFF_ENV = "init-diff-environment";
    private static final String COMMAND_INIT_TESTRIG = "init-testrig";
    private static final String COMMAND_LIST_CONTAINERS = "list-containers";
+   private static final String COMMAND_LIST_ENVIRONMENTS = "list-environments";
+   private static final String COMMAND_LIST_QUESTIONS = "list-questions";
    private static final String COMMAND_LIST_TESTRIGS = "list-testrigs";
    private static final String COMMAND_QUIT = "quit";
    private static final String COMMAND_SET_CONTAINER = "set-container";
@@ -63,6 +65,18 @@ public class Client {
             + "\t Answer the question for the differential environment");
       descs.put(COMMAND_CLEAR_SCREEN, COMMAND_CLEAR_SCREEN + "\n"
             + "\t Clear screen");
+      descs.put(COMMAND_DEL_CONTAINER, COMMAND_DEL_CONTAINER 
+            + "<container-name>"
+            + "\t Delete the specified container");
+      descs.put(COMMAND_DEL_ENVIRONMENT, COMMAND_DEL_ENVIRONMENT 
+            + "<environment-name>"
+            + "\t Delete the specified environment");
+      descs.put(COMMAND_DEL_QUESTION, COMMAND_DEL_QUESTION 
+            + "<question-name>"
+            + "\t Delete the specified question");
+      descs.put(COMMAND_DEL_TESTRIG, COMMAND_DEL_TESTRIG 
+            + "<testrig-name>"
+            + "\t Delete the specified testrig");
       descs.put(COMMAND_GEN_DIFF_DP, COMMAND_GEN_DIFF_DP + "\n"
             + "\t Generate dataplane for the differential environment");
       descs.put(COMMAND_GEN_DP, COMMAND_GEN_DP + "\n"
@@ -79,6 +93,10 @@ public class Client {
             + "\t Initialize the testrig with default environment");
       descs.put(COMMAND_LIST_CONTAINERS, COMMAND_LIST_CONTAINERS + "\n"
             + "\t List the containers to which you have access");
+      descs.put(COMMAND_LIST_ENVIRONMENTS, COMMAND_LIST_ENVIRONMENTS + "\n"
+            + "\t List the environments under current container and testrig");
+      descs.put(COMMAND_LIST_QUESTIONS, COMMAND_LIST_QUESTIONS + "\n"
+            + "\t List the questions under current container and testrig");
       descs.put(COMMAND_LIST_TESTRIGS, COMMAND_LIST_TESTRIGS + "\n"
             + "\t List the testrigs within the current container");
       descs.put(COMMAND_QUIT, COMMAND_QUIT + "\n" + "\t Clear screen");
@@ -95,22 +113,22 @@ public class Client {
       return descs;
    }
 
-   private static String joinStrings(String delimiter, String[] parts) {
-      StringBuilder sb = new StringBuilder();
-      for (String part : parts) {
-         sb.append(part + delimiter);
-      }
-      String joined = sb.toString();
-      int joinedLength = joined.length();
-      String result;
-      if (joinedLength > 0) {
-         result = joined.substring(0, joinedLength - delimiter.length());
-      }
-      else {
-         result = joined;
-      }
-      return result;
-   }
+//   private static String joinStrings(String delimiter, String[] parts) {
+//      StringBuilder sb = new StringBuilder();
+//      for (String part : parts) {
+//         sb.append(part + delimiter);
+//      }
+//      String joined = sb.toString();
+//      int joinedLength = joined.length();
+//      String result;
+//      if (joinedLength > 0) {
+//         result = joined.substring(0, joinedLength - delimiter.length());
+//      }
+//      else {
+//         result = joined;
+//      }
+//      return result;
+//   }
 
    private String _currContainerName = null;
    private String _currDiffEnv = null;
@@ -494,6 +512,34 @@ public class Client {
             String[] containerList = _workHelper.listContainers();
             _logger.outputf("Containers: %s\n", Arrays.toString(containerList));
             break;
+         }
+         case COMMAND_LIST_ENVIRONMENTS: {
+
+            if (_currContainerName == null || _currTestrigName == null ) {
+               _logger.errorf("Active container or testrig is not set: (%s, %s)\n", 
+                     _currContainerName, _currTestrigName);
+               break;
+            }
+
+            String[] environmentList = _workHelper.listEnvironments(_currContainerName, _currTestrigName);
+            _logger.outputf("Environments: %s\n", Arrays.toString(environmentList));
+
+            break;
+
+         }
+         case COMMAND_LIST_QUESTIONS: {
+
+            if (_currContainerName == null || _currTestrigName == null ) {
+               _logger.errorf("Active container or testrig is not set: (%s, %s)\n", 
+                     _currContainerName, _currTestrigName);
+               break;
+            }
+
+            String[] questionList = _workHelper.listQuestions(_currContainerName, _currTestrigName);
+            _logger.outputf("Questions: %s\n", Arrays.toString(questionList));
+
+            break;
+
          }
          case COMMAND_LIST_TESTRIGS: {
 
