@@ -255,35 +255,27 @@ public final class Settings {
 
    private static final String ARG_USE_PRECOMPUTED_FACTS = "useprecomputedfacts";
 
-   private static final String ARGNAME_ANONYMIZE = "path";
+   private static final String ARGNAME_AS = "as";
 
-   private static final String ARGNAME_AUTO_BASE_DIR = "path";
+   private static final String ARGNAME_HOSTNAME = "hostname";
 
-   private static final String ARGNAME_BUILD_PREDICATE_INFO = "path";
+   private static final String ARGNAME_JAVA_REGEX = "java-regex";
 
-   private static final String ARGNAME_COORDINATOR_HOST = "hostname";
+   private static final String ARGNAME_LOG_LEVEL = "level-name";
 
-   private static final String ARGNAME_FLATTEN_DESTINATION = "path";
+   private static final String ARGNAME_NAME = "name";
 
-   private static final String ARGNAME_GEN_OSPF = "path";
+   private static final String ARGNAME_PATH = "path";
 
-   private static final String ARGNAME_GENERATE_STUBS_INPUT_ROLE = "role";
+   private static final String ARGNAME_PATHS = "path..";
 
-   private static final String ARGNAME_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX = "java-regex";
+   private static final String ARGNAME_PORT = "port";
 
-   private static final String ARGNAME_GENERATE_STUBS_REMOTE_AS = "as";
-
-   private static final String ARGNAME_LOG_FILE = "path";
-
-   private static final String ARGNAME_LOG_LEVEL = "level";
-
-   private static final String ARGNAME_PRECOMPUTED_ROUTES_PATH = "path";
-
-   private static final String ARGNAME_QUESTION_NAME = "name";
-
-   private static final String ARGNAME_SERVICE_HOST = "hostname";
+   private static final String ARGNAME_ROLE = "role";
 
    private static final String EXECUTABLE_NAME = "batfish";
+
+   private static final int HELP_WIDTH = 80;
 
    private EnvironmentSettings _activeEnvironmentSettings;
 
@@ -981,35 +973,34 @@ public final class Settings {
    private void initOptions() {
       _options = new Options();
 
-      _options.addOption(Option.builder().hasArg().argName(ARGNAME_ANONYMIZE)
+      _options.addOption(Option.builder()
             .desc("created anonymized versions of configs in test rig")
             .longOpt(ARG_ANONYMIZE).build());
 
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_AUTO_BASE_DIR)
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_PATH)
             .desc("path to base dir for automatic i/o path selection")
             .longOpt(ARG_AUTO_BASE_DIR).build());
 
       _options.addOption(Option.builder().argName("blocknames").hasArgs()
-            .desc("list of LogicBlox blocks to add or remove")
+            .desc("list of blocks of logic rules to add or remove")
             .longOpt(BfConsts.ARG_BLOCK_NAMES).build());
 
       _options
             .addOption(Option
                   .builder()
                   .hasArg()
-                  .argName(ARGNAME_BUILD_PREDICATE_INFO)
+                  .argName(ARGNAME_PATH)
                   .desc("build predicate info (should only be called by ant build script) with provided input logic dir")
                   .longOpt(ARG_BUILD_PREDICATE_INFO).build());
 
       _options.addOption(Option
             .builder()
             .hasArg()
-            .argName(ARGNAME_COORDINATOR_HOST)
+            .argName(ARGNAME_HOSTNAME)
             .desc("hostname of coordinator for registration with -"
                   + ARG_SERVICE_MODE).longOpt(ARG_COORDINATOR_HOST).build());
 
-      _options.addOption(Option.builder().argName("port_number").hasArg()
+      _options.addOption(Option.builder().argName(ARGNAME_PORT).hasArg()
             .desc("coordinator pool manager listening port")
             .longOpt(ARG_COORDINATOR_POOL_PORT).build());
 
@@ -1061,7 +1052,7 @@ public final class Settings {
             .addOption(Option
                   .builder()
                   .hasArg()
-                  .argName(ARGNAME_FLATTEN_DESTINATION)
+                  .argName(ARGNAME_PATH)
                   .desc("output path to test rig in which flat juniper (and all other) configurations will be placed")
                   .longOpt(ARG_FLATTEN_DESTINATION).build());
 
@@ -1071,15 +1062,14 @@ public final class Settings {
                   .desc("flatten hierarchical juniper configuration files on-the-fly (line number references will be spurious)")
                   .longOpt(ARG_FLATTEN_ON_THE_FLY).build());
 
-      _options.addOption(Option.builder().hasArg().argName(ARGNAME_GEN_OSPF)
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_PATH)
             .desc("generate ospf configs from specified topology")
             .longOpt(ARG_GEN_OSPF_TOPLOGY_PATH).build());
 
       _options.addOption(Option.builder().desc("generate stubs")
             .longOpt(ARG_GENERATE_STUBS).build());
 
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_GENERATE_STUBS_INPUT_ROLE)
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_ROLE)
             .desc("input role for which to generate stubs")
             .longOpt(ARG_GENERATE_STUBS_INPUT_ROLE).build());
 
@@ -1087,13 +1077,12 @@ public final class Settings {
             .addOption(Option
                   .builder()
                   .hasArg()
-                  .argName(ARGNAME_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX)
+                  .argName(ARGNAME_JAVA_REGEX)
                   .desc("java regex to extract hostname of generated stub from description of adjacent interface")
                   .longOpt(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX)
                   .build());
 
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_GENERATE_STUBS_REMOTE_AS)
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_AS)
             .desc("autonomous system number of stubs to be generated")
             .longOpt(ARG_GENERATE_STUBS_REMOTE_AS).build());
 
@@ -1117,7 +1106,7 @@ public final class Settings {
             .desc("build histogram of unimplemented features")
             .longOpt(ARG_HISTOGRAM).build());
 
-      _options.addOption(Option.builder().hasArg().argName(ARGNAME_LOG_FILE)
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_PATH)
             .desc("path to main log file").longOpt(ARG_LOG_FILE).build());
 
       _options.addOption(Option.builder()
@@ -1157,12 +1146,11 @@ public final class Settings {
             .desc("path to precomputed ibgp neighbors")
             .longOpt(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH).build());
 
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_PRECOMPUTED_ROUTES_PATH)
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_PATH)
             .desc("output path to precomputed routes")
             .longOpt(ARG_PRECOMPUTED_ROUTES_PATH).build());
 
-      _options.addOption(Option.builder().hasArg().argName("paths")
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_PATHS)
             .desc("input paths to precomputed routes")
             .longOpt(ARG_PRECOMPUTED_ROUTES_PATHS).build());
 
@@ -1186,15 +1174,16 @@ public final class Settings {
             .desc("print topology with symmetric edges adjacent in listing")
             .longOpt(ARG_PRINT_SYMMETRIC_EDGES).build());
 
-      _options.addOption(Option.builder().desc("query workspace")
-            .longOpt(ARG_QUERY).build());
+      _options.addOption(Option.builder()
+            .desc("query one or more nxtnet relations").longOpt(ARG_QUERY)
+            .build());
 
       _options.addOption(Option.builder().desc("query ALL predicates")
             .longOpt(ARG_QUERY_ALL).build());
 
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_QUESTION_NAME).desc("name of question")
-            .longOpt(BfConsts.ARG_QUESTION_NAME).build());
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_NAME)
+            .desc("name of question").longOpt(BfConsts.ARG_QUESTION_NAME)
+            .build());
 
       _options
             .addOption(Option
@@ -1213,8 +1202,7 @@ public final class Settings {
       _options.addOption(Option.builder().desc("serialize to text")
             .longOpt(ARG_SERIALIZE_TO_TEXT).build());
 
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_SERVICE_HOST)
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_HOSTNAME)
             .desc("local hostname to report to coordinator")
             .longOpt(ARG_SERVICE_HOST).build());
 
@@ -1250,24 +1238,26 @@ public final class Settings {
                         + " when encountering unimplemented configuration directives, instead of emitting warning and ignoring")
                   .longOpt(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR).build());
 
-      _options.addOption(Option.builder()
-            .desc("suppresses unimplemented-configuration-directive warnings")
-            .longOpt(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("suppresses warnings about unimplemented configuration directives")
+                  .longOpt(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS).build());
 
       _options.addOption(Option.builder()
-            .desc("add precomputed bgp advertisements to workspace")
+            .desc("add precomputed bgp advertisements to data plane model")
             .longOpt(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS).build());
 
       _options.addOption(Option.builder()
-            .desc("add precomputed facts to workspace")
+            .desc("add precomputed facts to data plane model")
             .longOpt(ARG_USE_PRECOMPUTED_FACTS).build());
 
       _options.addOption(Option.builder()
-            .desc("add precomputed ibgp neighborsto workspace")
+            .desc("add precomputed ibgp neighbors to data plane model")
             .longOpt(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS).build());
 
       _options.addOption(Option.builder()
-            .desc("add precomputed routes to workspace")
+            .desc("add precomputed routes to data plane model")
             .longOpt(BfConsts.ARG_USE_PRECOMPUTED_ROUTES).build());
 
       _options.addOption(Option.builder().desc("answer provided question")
@@ -1281,7 +1271,7 @@ public final class Settings {
             .longOpt(BfConsts.COMMAND_GET_HISTORY).build());
 
       _options.addOption(Option.builder()
-            .desc("keep only selected blocks in LogicBlox workspace")
+            .desc("activate only selected blocks of logic rules")
             .longOpt(BfConsts.COMMAND_KEEP_BLOCKS).build());
 
       _options.addOption(Option.builder()
@@ -1302,22 +1292,24 @@ public final class Settings {
             .longOpt(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC).build());
 
       _options.addOption(Option.builder()
-            .desc("remove selected blocks from LogicBlox workspace")
+            .desc("remove selected blocks of logic rules")
             .longOpt(BfConsts.COMMAND_REMOVE_BLOCKS).build());
 
-      _options.addOption(Option.builder()
-            .desc("write bgp advertisements from LogicBlox to disk")
-            .longOpt(BfConsts.COMMAND_WRITE_ADVERTISEMENTS).build());
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("write bgp advertisements from nxtnet data plane model to disk")
+                  .longOpt(BfConsts.COMMAND_WRITE_ADVERTISEMENTS).build());
 
       _options.addOption(Option.builder().desc("write control plane facts")
             .longOpt(BfConsts.COMMAND_WRITE_CP_FACTS).build());
 
       _options.addOption(Option.builder()
-            .desc("write ibgp neighbors from LogicBlox to disk")
+            .desc("write ibgp neighbors from nxtnet data plane model to disk")
             .longOpt(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS).build());
 
       _options.addOption(Option.builder()
-            .desc("write routes from LogicBlox to disk")
+            .desc("write routes from nxtnet data plane model to disk")
             .longOpt(BfConsts.COMMAND_WRITE_ROUTES).build());
 
    }
@@ -1339,6 +1331,7 @@ public final class Settings {
          // automatically generate the help statement
          HelpFormatter formatter = new HelpFormatter();
          formatter.setLongOptPrefix("-");
+         formatter.setWidth(HELP_WIDTH);
          formatter.printHelp(EXECUTABLE_NAME, _options);
          return;
       }
