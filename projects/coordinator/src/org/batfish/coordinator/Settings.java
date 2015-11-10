@@ -44,6 +44,7 @@ public class Settings {
    private FileConfiguration _config;
    private String _logFile;
    private String _logLevel;
+   private CommandLine _line;
    private Options _options;
    private long _periodAssignWorkMs;
    private long _periodCheckWorkMs;
@@ -80,12 +81,40 @@ public class Settings {
       return _authorizerType;
    }
 
+   private boolean getBooleanOptionValue(String key) {
+      boolean value = _line.hasOption(key);
+      if (!value) {
+         value = _config.getBoolean(key);
+      }
+      return value;
+   }
+
+   private Integer getIntegerOptionValue(String key) {
+      String valueStr = _line.getOptionValue(key);
+      if (valueStr == null) {
+         return _config.getInteger(key, null);
+      }
+      else {
+         return Integer.parseInt(valueStr);
+      }
+   }
+
    public String getLogFile() {
       return _logFile;
    }
 
    public String getLogLevel() {
       return _logLevel;
+   }
+   
+   private Long getLongOptionValue(String key) {
+      String valueStr = _line.getOptionValue(key);
+      if (valueStr == null) {
+         return _config.getLong(key, null);
+      }
+      else {
+         return Long.parseLong(valueStr);
+      }
    }
 
    public long getPeriodAssignWorkMs() {
@@ -144,6 +173,11 @@ public class Settings {
       return _storageProtocol;
    }
 
+   private String getStringOptionValue(String key) {
+      String value = _line.getOptionValue(key, _config.getString(key));
+      return value;
+   }
+
    public String getTestrigStorageLocation() {
       return _testrigStorageLocation;
    }
@@ -153,7 +187,7 @@ public class Settings {
    }
 
    private void initConfigDefaults() {
-      setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none);      
+      setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none.toString());      
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_LEVEL, BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
       setDefaultProperty(ARG_PERIOD_ASSIGN_WORK_MS, 1000);
@@ -214,56 +248,28 @@ public class Settings {
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
-      CommandLine line = null;
       CommandLineParser parser = new DefaultParser();
 
       // parse the command line arguments
-      line = parser.parse(_options, args);
+      _line = parser.parse(_options, args);
 
-      _queuIncompleteWork = line.getOptionValue(ARG_QUEUE_INCOMPLETE_WORK,
-            _config.getString(ARG_QUEUE_INCOMPLETE_WORK));
-      _queueCompletedWork = line.getOptionValue(ARG_QUEUE_COMPLETED_WORK,
-            _config.getString(ARG_QUEUE_COMPLETED_WORK));
-
-      _queueType = WorkQueue.Type.valueOf(line.getOptionValue(ARG_QUEUE_TYPE,
-            _config.getString(ARG_QUEUE_TYPE)));
-
-      _servicePoolPort = Integer.parseInt(line.getOptionValue(
-            ARG_SERVICE_POOL_PORT, _config.getString(ARG_SERVICE_POOL_PORT)));
-      _serviceWorkPort = Integer.parseInt(line.getOptionValue(
-            ARG_SERVICE_WORK_PORT, _config.getString(ARG_SERVICE_WORK_PORT)));
-      _serviceHost = line.getOptionValue(ARG_SERVICE_HOST,
-            _config.getString(ARG_SERVICE_HOST));
-
-      _storageAccountKey = line.getOptionValue(ARG_STORAGE_ACCOUNT_KEY,
-            _config.getString(ARG_STORAGE_ACCOUNT_KEY));
-      _storageAccountName = line.getOptionValue(ARG_STORAGE_ACCOUNT_NAME,
-            _config.getString(ARG_STORAGE_ACCOUNT_NAME));
-      _storageProtocol = line.getOptionValue(ARG_STORAGE_PROTOCOL,
-            _config.getString(ARG_STORAGE_PROTOCOL));
-
-      _testrigStorageLocation = line.getOptionValue(
-            ARG_TESTRIG_STORAGE_LOCATION,
-            _config.getString(ARG_TESTRIG_STORAGE_LOCATION));
-
-      _periodWorkerStatusRefreshMs = Long.parseLong(line.getOptionValue(
-            ARG_PERIOD_WORKER_STATUS_REFRESH_MS,
-            _config.getString(ARG_PERIOD_WORKER_STATUS_REFRESH_MS)));
-      _periodAssignWorkMs = Long.parseLong(line.getOptionValue(
-            ARG_PERIOD_ASSIGN_WORK_MS, _config.getString(ARG_PERIOD_ASSIGN_WORK_MS)));
-      _periodCheckWorkMs = Long.parseLong(line.getOptionValue(
-            ARG_PERIOD_CHECK_WORK_MS, _config.getString(ARG_PERIOD_CHECK_WORK_MS)));
-
-      _logFile = line.getOptionValue(ARG_LOG_FILE,
-            _config.getString(ARG_LOG_FILE));
-      _logLevel = line.getOptionValue(ARG_LOG_LEVEL,
-            _config.getString(ARG_LOG_LEVEL));
-
-      _authorizerType = Authorizer.Type.valueOf(line.getOptionValue(
-            ARG_AUTHORIZER_TYPE, _config.getString(ARG_AUTHORIZER_TYPE)));
-
-      _useSsl = Boolean.parseBoolean(line.getOptionValue(ARG_USE_SSL,
-            _config.getString(ARG_USE_SSL)));
+      _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);
+      _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);
+      _queueType = WorkQueue.Type.valueOf(getStringOptionValue(ARG_QUEUE_TYPE));
+      _servicePoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
+      _serviceWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
+      _serviceHost = getStringOptionValue(ARG_SERVICE_HOST);
+      _storageAccountKey = getStringOptionValue(ARG_STORAGE_ACCOUNT_KEY);
+      _storageAccountName = getStringOptionValue(ARG_STORAGE_ACCOUNT_NAME);
+      _storageProtocol = getStringOptionValue(ARG_STORAGE_PROTOCOL);
+      _testrigStorageLocation = getStringOptionValue(ARG_TESTRIG_STORAGE_LOCATION);
+      _periodWorkerStatusRefreshMs = getLongOptionValue(ARG_PERIOD_WORKER_STATUS_REFRESH_MS);
+      _periodAssignWorkMs = getLongOptionValue(ARG_PERIOD_ASSIGN_WORK_MS);
+      _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK_MS);
+      _logFile = getStringOptionValue(ARG_LOG_FILE);
+      _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
+      _authorizerType = Authorizer.Type.valueOf(getStringOptionValue(ARG_AUTHORIZER_TYPE));
+      _useSsl = getBooleanOptionValue(ARG_USE_SSL);
    }
    
    private void setDefaultProperty(String key, Object value) {

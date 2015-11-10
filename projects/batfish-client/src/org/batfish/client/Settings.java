@@ -35,6 +35,7 @@ public class Settings {
 
    private String _commandFile;
    private FileConfiguration _config;
+   private CommandLine _line;
    private String _logFile;
    private String _logLevel;
    private Options _options;
@@ -64,8 +65,26 @@ public class Settings {
       return _config.getString(ARG_API_KEY);
    }
 
+   private boolean getBooleanOptionValue(String key) {
+      boolean value = _line.hasOption(key);
+      if (!value) {
+         value = _config.getBoolean(key);
+      }
+      return value;
+   }
+
    public String getCommandFile() {
       return _commandFile;
+   }
+
+   private Integer getIntegerOptionValue(String key) {
+      String valueStr = _line.getOptionValue(key);
+      if (valueStr == null) {
+         return _config.getInteger(key, null);
+      }
+      else {
+         return Integer.parseInt(valueStr);
+      }
    }
 
    public String getLogFile() {
@@ -74,6 +93,16 @@ public class Settings {
 
    public String getLogLevel() {
       return _logLevel;
+   }
+
+   private Long getLongOptionValue(String key) {
+      String valueStr = _line.getOptionValue(key);
+      if (valueStr == null) {
+         return _config.getLong(key, null);
+      }
+      else {
+         return Long.parseLong(valueStr);
+      }
    }
 
    public long getPeriodCheckWorkMs() {
@@ -90,6 +119,11 @@ public class Settings {
 
    public int getServiceWorkPort() {
       return _serviceWorkPort;
+   }
+
+   private String getStringOptionValue(String key) {
+      String value = _line.getOptionValue(key, _config.getString(key));
+      return value;
    }
 
    public boolean getTrustAllSslCerts() {
@@ -141,13 +175,12 @@ public class Settings {
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
-      CommandLine line = null;
       CommandLineParser parser = new DefaultParser();
 
       // parse the command line arguments
-      line = parser.parse(_options, args);
+      _line = parser.parse(_options, args);
 
-      if (line.hasOption(ARG_HELP)) {
+      if (_line.hasOption(ARG_HELP)) {
          // automatically generate the help statement
          HelpFormatter formatter = new HelpFormatter();
          formatter.setLongOptPrefix("-");
@@ -155,22 +188,14 @@ public class Settings {
          System.exit(0);
       }
 
-      _commandFile = line.getOptionValue(ARG_COMMAND_FILE);
-      _logFile = line.getOptionValue(ARG_LOG_FILE,
-            _config.getString(ARG_LOG_FILE));
-      _logLevel = line.getOptionValue(ARG_LOG_LEVEL,
-            _config.getString(ARG_LOG_LEVEL));
-
-      _periodCheckWorkMs = Long.parseLong(line.getOptionValue(
-            ARG_PERIOD_CHECK_WORK, _config.getString(ARG_PERIOD_CHECK_WORK)));
-      _serviceHost = line.getOptionValue(ARG_SERVICE_HOST,
-            _config.getString(ARG_SERVICE_HOST));
-      _servicePoolPort = Integer.parseInt(line.getOptionValue(
-            ARG_SERVICE_POOL_PORT, _config.getString(ARG_SERVICE_POOL_PORT)));
-      _serviceWorkPort = Integer.parseInt(line.getOptionValue(
-            ARG_SERVICE_WORK_PORT, _config.getString(ARG_SERVICE_WORK_PORT)));
-      _useSsl = Boolean.parseBoolean(line.getOptionValue(ARG_USE_SSL,
-            _config.getString(ARG_USE_SSL)));
+      _commandFile = getStringOptionValue(ARG_COMMAND_FILE);
+      _logFile = getStringOptionValue(ARG_LOG_FILE);
+      _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
+      _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK);
+      _serviceHost = getStringOptionValue(ARG_SERVICE_HOST);
+      _servicePoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
+      _serviceWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
+      _useSsl = getBooleanOptionValue(ARG_USE_SSL);
    }
    
    private void setDefaultProperty(String key, Object value) {
