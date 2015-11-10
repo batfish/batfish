@@ -66,14 +66,6 @@ public class Driver {
                   BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
             envSettings.setDataPlanePath(envPath.resolve(
                   BfConsts.RELPATH_DATA_PLANE_DIR).toString());
-            envSettings.setJobLogicBloxHostnamePath(envPath.resolve(
-                  BfConsts.RELPATH_LB_HOSTNAME_PATH).toString());
-            String workspaceBasename = Paths.get(baseDir).getFileName()
-                  .toString();
-            String workspaceName = workspaceBasename + ":" + envName;
-            envSettings.setWorkspaceName(workspaceName);
-            settings.setNodeSetPath(envPath.resolve(
-                  BfConsts.RELPATH_ENV_NODE_SET).toString());
             settings.setZ3DataPlaneFile(envPath.resolve(
                   BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString());
             Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
@@ -103,12 +95,6 @@ public class Driver {
                   BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
             diffEnvSettings.setDataPlanePath(diffEnvPath.resolve(
                   BfConsts.RELPATH_DATA_PLANE_DIR).toString());
-            diffEnvSettings.setJobLogicBloxHostnamePath(diffEnvPath.resolve(
-                  BfConsts.RELPATH_LB_HOSTNAME_PATH).toString());
-            String workspaceBasename = Paths.get(baseDir).getFileName()
-                  .toString();
-            String workspaceName = workspaceBasename + ":" + diffEnvName;
-            diffEnvSettings.setWorkspaceName(workspaceName);
             Path diffEnvDirPath = diffEnvPath.resolve(BfConsts.RELPATH_ENV_DIR);
             diffEnvSettings.setNodeBlacklistPath(diffEnvDirPath.resolve(
                   BfConsts.RELPATH_NODE_BLACKLIST_FILE).toString());
@@ -255,7 +241,7 @@ public class Driver {
          GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
 
          try {
-            if (_mainSettings.getCoordinatorHost() != null) {
+            if (_mainSettings.getCoordinatorRegister()) {
                boolean registrationSuccess;
                do {
                   registrationSuccess = registerWithCoordinator();

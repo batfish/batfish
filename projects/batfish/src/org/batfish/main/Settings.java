@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -34,8 +32,6 @@ public final class Settings {
 
       private String _interfaceBlacklistPath;
 
-      private String _jobLogicBloxHostnamePath;
-
       private String _name;
 
       private String _nodeBlacklistPath;
@@ -51,8 +47,6 @@ public final class Settings {
       private String _serializedTopologyPath;
 
       private String _trafficFactsDir;
-
-      private String _workspaceName;
 
       public String getControlPlaneFactsDir() {
          return _controlPlaneFactsDir;
@@ -72,10 +66,6 @@ public final class Settings {
 
       public String getInterfaceBlacklistPath() {
          return _interfaceBlacklistPath;
-      }
-
-      public String getJobLogicBloxHostnamePath() {
-         return _jobLogicBloxHostnamePath;
       }
 
       public String getName() {
@@ -110,10 +100,6 @@ public final class Settings {
          return _trafficFactsDir;
       }
 
-      public String getWorkspaceName() {
-         return _workspaceName;
-      }
-
       public void setControlPlaneFactsDir(String path) {
          _controlPlaneFactsDir = path;
       }
@@ -132,10 +118,6 @@ public final class Settings {
 
       public void setInterfaceBlacklistPath(String interfaceBlacklistPath) {
          _interfaceBlacklistPath = interfaceBlacklistPath;
-      }
-
-      public void setJobLogicBloxHostnamePath(String path) {
-         _jobLogicBloxHostnamePath = path;
       }
 
       public void setName(String name) {
@@ -170,10 +152,6 @@ public final class Settings {
          _trafficFactsDir = trafficFactDumpDir;
       }
 
-      public void setWorkspaceName(String name) {
-         _workspaceName = name;
-      }
-
    }
 
    private static final String ARG_ANONYMIZE = "anonymize";
@@ -186,17 +164,15 @@ public final class Settings {
 
    private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
 
+   private static final String ARG_COORDINATOR_REGISTER = "register";
+
    private static final String ARG_COORDINATOR_USE_SSL = "coordinator.UseSsl";
 
    private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
 
-   private static final String ARG_DATA_PLANE = "dp";
-
    private static final String ARG_DIFF_QUESTION = "diffquestion";
 
    private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
-
-   private static final String ARG_DUPLICATE_ROLE_FLOWS = "drf";
 
    private static final String ARG_EXIT_ON_FIRST_ERROR = "ee";
 
@@ -206,7 +182,7 @@ public final class Settings {
 
    private static final String ARG_FLATTEN_ON_THE_FLY = "flattenonthefly";
 
-   private static final String ARG_GEN_OSPF = "genospf";
+   private static final String ARG_GEN_OSPF_TOPLOGY_PATH = "genospf";
 
    private static final String ARG_GENERATE_STUBS = "gs";
 
@@ -232,10 +208,6 @@ public final class Settings {
 
    private static final String ARG_NO_SHUFFLE = "noshuffle";
 
-   private static final String ARG_NODE_ROLES_PATH = "nrpath";
-
-   private static final String ARG_NODE_SET_PATH = "nodes";
-
    private static final String ARG_PRECOMPUTED_ADVERTISEMENTS_PATH = "precomputedadvertisementspath";
 
    private static final String ARG_PRECOMPUTED_FACTS_PATH = "precomputedfactspath";
@@ -258,21 +230,9 @@ public final class Settings {
 
    private static final String ARG_QUERY_ALL = "all";
 
-   private static final String ARG_ROLE_NODES_PATH = "rnpath";
-
-   private static final String ARG_ROLE_SET_PATH = "rspath";
-
-   private static final String ARG_ROLE_TRANSIT_QUERY = "rt";
-
-   private static final String ARG_ROLE_TRANSIT_QUERY_PATH = "rtpath";
-
    private static final String ARG_SEQUENTIAL = "sequential";
 
-   private static final String ARG_SERIALIZE_INDEPENDENT = "si";
-
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
-
-   private static final String ARG_SERIALIZE_VENDOR = "sv";
 
    private static final String ARG_SERVICE_HOST = "servicehost";
 
@@ -288,16 +248,12 @@ public final class Settings {
 
    private static final String ARG_TIMESTAMP = "timestamp";
 
-   private static final String ARG_TRACE_QUERY = "tracequery";
-
    /**
     * (not wired to command line)
     */
    private static final String ARG_TRUST_ALL_SSL_CERTS = "batfish.TrustAllSslCerts";
 
    private static final String ARG_USE_PRECOMPUTED_FACTS = "useprecomputedfacts";
-
-   private static final String ARG_WORKSPACE = "workspace";
 
    private static final String ARGNAME_ANONYMIZE = "path";
 
@@ -321,42 +277,17 @@ public final class Settings {
 
    private static final String ARGNAME_LOG_LEVEL = "level";
 
-   private static final String ARGNAME_NODE_ROLES_PATH = "path";
-
-   private static final String ARGNAME_NODE_SET_PATH = "path";
-
    private static final String ARGNAME_PRECOMPUTED_ROUTES_PATH = "path";
 
    private static final String ARGNAME_QUESTION_NAME = "name";
 
-   private static final String ARGNAME_ROLE_NODES_PATH = "path";
-
-   private static final String ARGNAME_ROLE_SET_PATH = "path";
-
-   private static final String ARGNAME_ROLE_TRANSIT_QUERY_PATH = "path";
-
    private static final String ARGNAME_SERVICE_HOST = "hostname";
-
-   private static final String DEFAULT_JOBS = Integer
-         .toString(Integer.MAX_VALUE);
-
-   private static final String DEFAULT_LOG_LEVEL = "debug";
-
-   private static final List<String> DEFAULT_PREDICATES = Collections
-         .singletonList("InstalledRoute");
-
-   private static final String DEFAULT_SERVICE_PORT = BfConsts.SVC_PORT
-         .toString();
-
-   private static final boolean DEFAULT_Z3_SIMPLIFY = true;
 
    private static final String EXECUTABLE_NAME = "batfish";
 
    private EnvironmentSettings _activeEnvironmentSettings;
 
    private boolean _anonymize;
-
-   private String _anonymizeDir;
 
    private boolean _answer;
 
@@ -376,6 +307,8 @@ public final class Settings {
 
    private int _coordinatorPoolPort;
 
+   private boolean _coordinatorRegister;
+
    private boolean _coordinatorUseSsl;
 
    private int _coordinatorWorkPort;
@@ -389,10 +322,6 @@ public final class Settings {
    private EnvironmentSettings _diffEnvironmentSettings;
 
    private boolean _diffQuestion;
-
-   private boolean _dumpControlPlaneFacts;
-
-   private boolean _duplicateRoleFlows;
 
    private String _environmentName;
 
@@ -412,7 +341,7 @@ public final class Settings {
 
    private Integer _generateStubsRemoteAs;
 
-   private String _genOspfTopology;
+   private String _genOspfTopologyPath;
 
    private List<String> _helpPredicates;
 
@@ -442,8 +371,6 @@ public final class Settings {
 
    private String _nodeRolesPath;
 
-   private String _nodeSetPath;
-
    private boolean _noOutput;
 
    private boolean _nxtnetDataPlane;
@@ -466,7 +393,7 @@ public final class Settings {
 
    private String _precomputedRoutesPath;
 
-   private Set<String> _precomputedRoutesPaths;
+   private List<String> _precomputedRoutesPaths;
 
    private List<String> _predicates;
 
@@ -491,14 +418,6 @@ public final class Settings {
    private boolean _redFlagRecord;
 
    private boolean _removeBlocks;
-
-   private String _roleNodesPath;
-
-   private String _roleSetPath;
-
-   private boolean _roleTransitQuery;
-
-   private String _roleTransitQueryPath;
 
    private boolean _runInServiceMode;
 
@@ -532,8 +451,6 @@ public final class Settings {
 
    private boolean _timestamp;
 
-   private boolean _traceQuery;
-
    private boolean _unimplementedAsError;
 
    private boolean _unimplementedRecord;
@@ -548,11 +465,11 @@ public final class Settings {
 
    private boolean _writeBgpAdvertisements;
 
+   private boolean _writeControlPlaneFacts;
+
    private boolean _writeIbgpNeighbors;
 
    private boolean _writeRoutes;
-
-   private boolean _z3;
 
    private String _z3File;
 
@@ -570,6 +487,7 @@ public final class Settings {
             .getConfigProperties(org.batfish.config.ConfigurationLocator.class);
       _config.setFile(configFile);
       _config.load();
+      initConfigDefaults();
 
       initOptions();
       parseCommandLine(args);
@@ -577,10 +495,6 @@ public final class Settings {
 
    public boolean canExecute() {
       return _canExecute;
-   }
-
-   public boolean duplicateRoleFlows() {
-      return _duplicateRoleFlows;
    }
 
    public boolean flattenOnTheFly() {
@@ -593,10 +507,6 @@ public final class Settings {
 
    public boolean getAnonymize() {
       return _anonymize;
-   }
-
-   public String getAnonymizeDir() {
-      return _anonymizeDir;
    }
 
    public boolean getAnswer() {
@@ -615,6 +525,14 @@ public final class Settings {
       return _blockNames;
    }
 
+   private boolean getBooleanOptionValue(String key) {
+      boolean value = _line.hasOption(key);
+      if (!value) {
+         value = _config.getBoolean(key);
+      }
+      return value;
+   }
+
    public boolean getBuildPredicateInfo() {
       return _buildPredicateInfo;
    }
@@ -625,6 +543,10 @@ public final class Settings {
 
    public int getCoordinatorPoolPort() {
       return _coordinatorPoolPort;
+   }
+
+   public boolean getCoordinatorRegister() {
+      return _coordinatorRegister;
    }
 
    public boolean getCoordinatorUseSsl() {
@@ -656,7 +578,7 @@ public final class Settings {
    }
 
    public boolean getDumpControlPlaneFacts() {
-      return _dumpControlPlaneFacts;
+      return _writeControlPlaneFacts;
    }
 
    public String getEnvironmentName() {
@@ -676,7 +598,7 @@ public final class Settings {
    }
 
    public String getGenerateOspfTopologyPath() {
-      return _genOspfTopology;
+      return _genOspfTopologyPath;
    }
 
    public boolean getGenerateStubs() {
@@ -705,6 +627,26 @@ public final class Settings {
 
    public boolean getHistory() {
       return _history;
+   }
+
+   private Integer getIntegerOptionValue(String key) {
+      String valueStr = _line.getOptionValue(key);
+      if (valueStr == null) {
+         return _config.getInteger(key, null);
+      }
+      else {
+         return Integer.parseInt(valueStr);
+      }
+   }
+
+   private int getIntOptionValue(String key) {
+      String valueStr = _line.getOptionValue(key);
+      if (valueStr == null) {
+         return _config.getInt(key);
+      }
+      else {
+         return Integer.parseInt(valueStr);
+      }
    }
 
    public int getJobs() {
@@ -741,10 +683,6 @@ public final class Settings {
 
    public String getNodeRolesPath() {
       return _nodeRolesPath;
-   }
-
-   public String getNodeSetPath() {
-      return _nodeSetPath;
    }
 
    public boolean getNoOutput() {
@@ -787,7 +725,7 @@ public final class Settings {
       return _precomputedRoutesPath;
    }
 
-   public Set<String> getPrecomputedRoutesPaths() {
+   public List<String> getPrecomputedRoutesPaths() {
       return _precomputedRoutesPaths;
    }
 
@@ -835,22 +773,6 @@ public final class Settings {
       return _removeBlocks;
    }
 
-   public String getRoleNodesPath() {
-      return _roleNodesPath;
-   }
-
-   public String getRoleSetPath() {
-      return _roleSetPath;
-   }
-
-   public boolean getRoleTransitQuery() {
-      return _roleTransitQuery;
-   }
-
-   public String getRoleTransitQueryPath() {
-      return _roleTransitQueryPath;
-   }
-
    public boolean getSequential() {
       return _sequential;
    }
@@ -891,6 +813,21 @@ public final class Settings {
       return _simplify;
    }
 
+   private List<String> getStringListOptionValue(String key) {
+      if (_line.hasOption(ARG_PREDICATES)) {
+         String[] optionValues = _line.getOptionValues(ARG_PREDICATES);
+         if (optionValues == null) {
+            return Collections.<String> emptyList();
+         }
+         else {
+            return Arrays.asList(optionValues);
+         }
+      }
+      else {
+         return Arrays.asList(_config.getStringArray(key));
+      }
+   }
+
    private String getStringOptionValue(String key) {
       String value = _line.getOptionValue(key, _config.getString(key));
       return value;
@@ -914,10 +851,6 @@ public final class Settings {
 
    public boolean getTimestamp() {
       return _timestamp;
-   }
-
-   public boolean getTraceQuery() {
-      return _traceQuery;
    }
 
    public boolean getTrustAllSslCerts() {
@@ -960,10 +893,6 @@ public final class Settings {
       return _writeRoutes;
    }
 
-   public boolean getZ3() {
-      return _z3;
-   }
-
    public String getZ3File() {
       return _z3File;
    }
@@ -972,63 +901,99 @@ public final class Settings {
       return _ignoreUnsupported;
    }
 
+   private void initConfigDefaults() {
+      setDefaultProperty(ARG_ANONYMIZE, false);
+      setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[] {});
+      setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
+      setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
+      setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_POOL_PORT);
+      setDefaultProperty(ARG_COORDINATOR_USE_SSL, false);
+      setDefaultProperty(ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_WORK_PORT);
+      setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
+      setDefaultProperty(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, null);
+      setDefaultProperty(ARG_DIFF_QUESTION, false);
+      setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
+      setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, null);
+      setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
+      setDefaultProperty(ARG_FLATTEN, false);
+      setDefaultProperty(ARG_FLATTEN_DESTINATION, null);
+      setDefaultProperty(ARG_FLATTEN_ON_THE_FLY, false);
+      setDefaultProperty(ARG_GEN_OSPF_TOPLOGY_PATH, null);
+      setDefaultProperty(ARG_GENERATE_STUBS, false);
+      setDefaultProperty(ARG_GENERATE_STUBS_INPUT_ROLE, null);
+      setDefaultProperty(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX, null);
+      setDefaultProperty(ARG_GENERATE_STUBS_REMOTE_AS, null);
+      setDefaultProperty(ARG_HISTOGRAM, false);
+      setDefaultProperty(ARG_IGNORE_UNSUPPORTED, false);
+      setDefaultProperty(ARG_JOBS, Integer.MAX_VALUE);
+      setDefaultProperty(ARG_LOG_FILE, null);
+      setDefaultProperty(ARG_LOG_TEE, false);
+      setDefaultProperty(BfConsts.ARG_LOG_LEVEL, "debug");
+      setDefaultProperty(ARG_NO_OUTPUT, false);
+      setDefaultProperty(ARG_NO_SHUFFLE, false);
+      setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
+      setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
+      setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
+      setDefaultProperty(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH, null);
+      setDefaultProperty(ARG_PRECOMPUTED_FACTS_PATH, null);
+      setDefaultProperty(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH, null);
+      setDefaultProperty(ARG_PRECOMPUTED_ROUTES_PATH, null);
+      setDefaultProperty(ARG_PRECOMPUTED_ROUTES_PATHS, new String[] {});
+      setDefaultProperty(ARG_PREDHELP, new String[] {});
+      setDefaultProperty(ARG_PREDICATES, new String[] {});
+      setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
+      setDefaultProperty(ARG_PRINT_SYMMETRIC_EDGES, false);
+      setDefaultProperty(ARG_QUERY, false);
+      setDefaultProperty(ARG_QUERY_ALL, false);
+      setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
+      setDefaultProperty(BfConsts.ARG_RED_FLAG_AS_ERROR, false);
+      setDefaultProperty(BfConsts.ARG_RED_FLAG_SUPPRESS, false);
+      setDefaultProperty(ARG_SEQUENTIAL, false);
+      setDefaultProperty(ARG_SERIALIZE_TO_TEXT, false);
+      setDefaultProperty(ARG_SERVICE_HOST, "localhost");
+      setDefaultProperty(ARG_SERVICE_MODE, false);
+      setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
+      setDefaultProperty(ARG_SYNTHESIZE_TOPOLOGY, false);
+      setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, false);
+      setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, false);
+      setDefaultProperty(ARG_TIMESTAMP, false);
+      setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS, false);
+      setDefaultProperty(ARG_USE_PRECOMPUTED_FACTS, false);
+      setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS, false);
+      setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ROUTES, false);
+      setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
+      setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
+      setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
+      setDefaultProperty(BfConsts.COMMAND_DUMP_DP, false);
+      setDefaultProperty(BfConsts.COMMAND_GET_HISTORY, false);
+      setDefaultProperty(BfConsts.COMMAND_KEEP_BLOCKS, false);
+      setDefaultProperty(BfConsts.COMMAND_NXTNET_DATA_PLANE, false);
+      setDefaultProperty(BfConsts.COMMAND_NXTNET_TRAFFIC, false);
+      setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
+      setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
+      setDefaultProperty(BfConsts.COMMAND_REMOVE_BLOCKS, false);
+      setDefaultProperty(BfConsts.COMMAND_WRITE_CP_FACTS, false);
+      setDefaultProperty(BfConsts.COMMAND_WRITE_ADVERTISEMENTS, false);
+      setDefaultProperty(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS, false);
+      setDefaultProperty(BfConsts.COMMAND_WRITE_ROUTES, false);
+   }
+
    private void initOptions() {
       _options = new Options();
-      _options.addOption(Option
-            .builder()
-            .argName("predicates")
-            .hasArgs()
-            .desc("list of LogicBlox predicates to query (defaults to '"
-                  + DEFAULT_PREDICATES.get(0) + "')").longOpt(ARG_PREDICATES)
-            .build());
-      _options
-            .addOption(Option
-                  .builder()
-                  .argName("predicates")
-                  .optionalArg(true)
-                  .hasArgs()
-                  .desc("print semantics for all predicates, or for predicates supplied as optional arguments")
-                  .longOpt(ARG_PREDHELP).build());
-      _options.addOption(Option.builder().desc("print this message")
-            .longOpt(ARG_HELP).build());
-      _options.addOption(Option.builder().desc("query workspace")
-            .longOpt(ARG_QUERY).build());
-      _options.addOption(Option.builder().desc("query ALL predicates")
-            .longOpt(ARG_QUERY_ALL).build());
-      _options
-            .addOption(Option
-                  .builder()
-                  .desc("exit on first parse error (otherwise will exit on last parse error)")
-                  .longOpt(ARG_EXIT_ON_FIRST_ERROR).build());
-      _options.addOption(Option.builder().desc("write control plane facts")
-            .longOpt(BfConsts.COMMAND_WRITE_CP_FACTS).build());
+
       _options.addOption(Option.builder().hasArg().argName(ARGNAME_ANONYMIZE)
             .desc("created anonymized versions of configs in test rig")
             .longOpt(ARG_ANONYMIZE).build());
-      _options.addOption(Option.builder().desc("disable z3 simplification")
-            .longOpt(ARG_DISABLE_Z3_SIMPLIFICATION).build());
-      _options.addOption(Option.builder().desc("serialize vendor configs")
-            .longOpt(ARG_SERIALIZE_VENDOR).build());
-      _options.addOption(Option.builder()
-            .desc("serialize vendor-independent configs")
-            .longOpt(ARG_SERIALIZE_INDEPENDENT).build());
-      _options.addOption(Option.builder()
-            .desc("compute and serialize data plane").longOpt(ARG_DATA_PLANE)
-            .build());
-      _options.addOption(Option.builder().desc("print parse trees")
-            .longOpt(ARG_PRINT_PARSE_TREES).build());
+
       _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_NODE_SET_PATH)
-            .desc("path to read or write node set").longOpt(ARG_NODE_SET_PATH)
-            .build());
-      _options.addOption(Option.builder().desc("serialize to text")
-            .longOpt(ARG_SERIALIZE_TO_TEXT).build());
-      _options.addOption(Option.builder().desc("run in service mode")
-            .longOpt(ARG_SERVICE_MODE).build());
-      _options
-            .addOption(Option.builder().argName("port_number").hasArg()
-                  .desc("port for batfish service").longOpt(ARG_SERVICE_PORT)
-                  .build());
+            .argName(ARGNAME_AUTO_BASE_DIR)
+            .desc("path to base dir for automatic i/o path selection")
+            .longOpt(ARG_AUTO_BASE_DIR).build());
+
+      _options.addOption(Option.builder().argName("blocknames").hasArgs()
+            .desc("list of LogicBlox blocks to add or remove")
+            .longOpt(BfConsts.ARG_BLOCK_NAMES).build());
+
       _options
             .addOption(Option
                   .builder()
@@ -1036,38 +1001,62 @@ public final class Settings {
                   .argName(ARGNAME_BUILD_PREDICATE_INFO)
                   .desc("build predicate info (should only be called by ant build script) with provided input logic dir")
                   .longOpt(ARG_BUILD_PREDICATE_INFO).build());
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_NODE_ROLES_PATH)
-            .desc("path to read or write node-role mappings")
-            .longOpt(ARG_NODE_ROLES_PATH).build());
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_ROLE_NODES_PATH)
-            .desc("path to read or write role-node mappings")
-            .longOpt(ARG_ROLE_NODES_PATH).build());
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_ROLE_TRANSIT_QUERY_PATH)
-            .desc("path to read or write role-transit queries")
-            .longOpt(ARG_ROLE_TRANSIT_QUERY_PATH).build());
-      _options.addOption(Option.builder().desc("generate role-transit queries")
-            .longOpt(ARG_ROLE_TRANSIT_QUERY).build());
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_ROLE_SET_PATH)
-            .desc("path to read or write role set").longOpt(ARG_ROLE_SET_PATH)
-            .build());
+
+      _options.addOption(Option
+            .builder()
+            .hasArg()
+            .argName(ARGNAME_COORDINATOR_HOST)
+            .desc("hostname of coordinator for registration with -"
+                  + ARG_SERVICE_MODE).longOpt(ARG_COORDINATOR_HOST).build());
+
+      _options.addOption(Option.builder().argName("port_number").hasArg()
+            .desc("coordinator pool manager listening port")
+            .longOpt(ARG_COORDINATOR_POOL_PORT).build());
+
       _options.addOption(Option.builder()
-            .desc("duplicate flows across all nodes in same role")
-            .longOpt(ARG_DUPLICATE_ROLE_FLOWS).build());
-      _options.addOption(Option.builder().hasArg().argName(ARGNAME_LOG_LEVEL)
-            .desc("log level").longOpt(BfConsts.ARG_LOG_LEVEL).build());
-      _options.addOption(Option.builder()
-            .desc("throw exception immediately on parser error")
-            .longOpt(ARG_THROW_ON_PARSER_ERROR).build());
-      _options.addOption(Option.builder()
-            .desc("throw exception immediately on lexer error")
-            .longOpt(ARG_THROW_ON_LEXER_ERROR).build());
+            .desc("register service with coordinator on startup")
+            .longOpt(ARG_COORDINATOR_REGISTER).build());
+
+      _options.addOption(Option.builder().desc("whether coordinator uses ssl")
+            .longOpt(ARG_COORDINATOR_USE_SSL).build());
+
+      _options.addOption(Option.builder().argName("port_number").hasArg()
+            .desc("coordinator work manager listening port")
+            .longOpt(ARG_COORDINATOR_WORK_PORT).build());
+
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("make differential environment the active one for questions about a single environment")
+                  .longOpt(BfConsts.ARG_DIFF_ACTIVE).build());
+
+      _options.addOption(Option.builder().hasArg().argName("name")
+            .desc("name of delta environment to use")
+            .longOpt(BfConsts.ARG_DIFF_ENVIRONMENT_NAME).build());
+
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("force treatment of question as differential (to be used when not answering question)")
+                  .longOpt(ARG_DIFF_QUESTION).build());
+
+      _options.addOption(Option.builder().desc("disable z3 simplification")
+            .longOpt(ARG_DISABLE_Z3_SIMPLIFICATION).build());
+
+      _options.addOption(Option.builder().hasArg().argName("name")
+            .desc("name of environment to use")
+            .longOpt(BfConsts.ARG_ENVIRONMENT_NAME).build());
+
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("exit on first parse error (otherwise will exit on last parse error)")
+                  .longOpt(ARG_EXIT_ON_FIRST_ERROR).build());
+
       _options.addOption(Option.builder()
             .desc("flatten hierarchical juniper configuration files")
             .longOpt(ARG_FLATTEN).build());
+
       _options
             .addOption(Option
                   .builder()
@@ -1075,48 +1064,25 @@ public final class Settings {
                   .argName(ARGNAME_FLATTEN_DESTINATION)
                   .desc("output path to test rig in which flat juniper (and all other) configurations will be placed")
                   .longOpt(ARG_FLATTEN_DESTINATION).build());
+
       _options
             .addOption(Option
                   .builder()
                   .desc("flatten hierarchical juniper configuration files on-the-fly (line number references will be spurious)")
                   .longOpt(ARG_FLATTEN_ON_THE_FLY).build());
-      _options
-            .addOption(Option
-                  .builder()
-                  .desc("throws "
-                        + PedanticBatfishException.class.getSimpleName()
-                        + " for likely harmless warnings (e.g. deviation from good configuration style), instead of emitting warning and continuing")
-                  .longOpt(BfConsts.ARG_PEDANTIC_AS_ERROR).build());
-      _options.addOption(Option.builder().desc("suppresses pedantic warnings")
-            .longOpt(BfConsts.ARG_PEDANTIC_SUPPRESS).build());
-      _options
-            .addOption(Option
-                  .builder()
-                  .desc("throws "
-                        + RedFlagBatfishException.class.getSimpleName()
-                        + " on some recoverable errors (e.g. bad config lines), instead of emitting warning and attempting to recover")
-                  .longOpt(BfConsts.ARG_RED_FLAG_AS_ERROR).build());
-      _options.addOption(Option.builder().desc("suppresses red-flag warnings")
-            .longOpt(BfConsts.ARG_RED_FLAG_SUPPRESS).build());
-      _options
-            .addOption(Option
-                  .builder()
-                  .desc("throws "
-                        + UnimplementedBatfishException.class.getSimpleName()
-                        + " when encountering unimplemented configuration directives, instead of emitting warning and ignoring")
-                  .longOpt(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR).build());
-      _options.addOption(Option.builder()
-            .desc("suppresses unimplemented-configuration-directive warnings")
-            .longOpt(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS).build());
-      _options.addOption(Option.builder()
-            .desc("build histogram of unimplemented features")
-            .longOpt(ARG_HISTOGRAM).build());
+
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_GEN_OSPF)
+            .desc("generate ospf configs from specified topology")
+            .longOpt(ARG_GEN_OSPF_TOPLOGY_PATH).build());
+
       _options.addOption(Option.builder().desc("generate stubs")
             .longOpt(ARG_GENERATE_STUBS).build());
+
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_GENERATE_STUBS_INPUT_ROLE)
             .desc("input role for which to generate stubs")
             .longOpt(ARG_GENERATE_STUBS_INPUT_ROLE).build());
+
       _options
             .addOption(Option
                   .builder()
@@ -1125,147 +1091,235 @@ public final class Settings {
                   .desc("java regex to extract hostname of generated stub from description of adjacent interface")
                   .longOpt(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX)
                   .build());
+
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_GENERATE_STUBS_REMOTE_AS)
             .desc("autonomous system number of stubs to be generated")
             .longOpt(ARG_GENERATE_STUBS_REMOTE_AS).build());
-      _options.addOption(Option.builder().hasArg().argName(ARGNAME_LOG_FILE)
-            .desc("path to main log file").longOpt(ARG_LOG_FILE).build());
-      _options.addOption(Option.builder().hasArg().argName(ARGNAME_GEN_OSPF)
-            .desc("generate ospf configs from specified topology")
-            .longOpt(ARG_GEN_OSPF).build());
-      _options.addOption(Option.builder()
-            .desc("print timestamps in log messages").longOpt(ARG_TIMESTAMP)
-            .build());
+
+      _options.addOption(Option.builder().desc("print this message")
+            .longOpt(ARG_HELP).build());
+
       _options
             .addOption(Option
                   .builder()
                   .desc("ignore configuration files with unsupported format instead of crashing")
                   .longOpt(ARG_IGNORE_UNSUPPORTED).build());
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_AUTO_BASE_DIR)
-            .desc("path to base dir for automatic i/o path selection")
-            .longOpt(ARG_AUTO_BASE_DIR).build());
+
+      _options.addOption(Option.builder().hasArg().argName("number")
+            .desc("number of threads used by parallel jobs executor")
+            .longOpt(ARG_JOBS).build());
+
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_LOG_LEVEL)
+            .desc("log level").longOpt(BfConsts.ARG_LOG_LEVEL).build());
+
+      _options.addOption(Option.builder()
+            .desc("build histogram of unimplemented features")
+            .longOpt(ARG_HISTOGRAM).build());
+
+      _options.addOption(Option.builder().hasArg().argName(ARGNAME_LOG_FILE)
+            .desc("path to main log file").longOpt(ARG_LOG_FILE).build());
+
+      _options.addOption(Option.builder()
+            .desc("print output to both logfile and standard out")
+            .longOpt(ARG_LOG_TEE).build());
+
+      _options.addOption(Option.builder().desc("do not produce output files")
+            .longOpt(ARG_NO_OUTPUT).build());
+
+      _options.addOption(Option.builder().desc("do not shuffle parallel jobs")
+            .longOpt(ARG_NO_SHUFFLE).build());
+
       _options.addOption(Option.builder().hasArg().argName("name")
-            .desc("name of environment to use")
-            .longOpt(BfConsts.ARG_ENVIRONMENT_NAME).build());
+            .desc("name of output environment")
+            .longOpt(BfConsts.ARG_OUTPUT_ENV).build());
+
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("throws "
+                        + PedanticBatfishException.class.getSimpleName()
+                        + " for likely harmless warnings (e.g. deviation from good configuration style), instead of emitting warning and continuing")
+                  .longOpt(BfConsts.ARG_PEDANTIC_AS_ERROR).build());
+
+      _options.addOption(Option.builder().desc("suppresses pedantic warnings")
+            .longOpt(BfConsts.ARG_PEDANTIC_SUPPRESS).build());
+
+      _options.addOption(Option.builder().hasArg().argName("path")
+            .desc("path to precomputed bgp advertisements")
+            .longOpt(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH).build());
+
+      _options.addOption(Option.builder().hasArg().argName("path")
+            .desc("path to precomputed facts")
+            .longOpt(ARG_PRECOMPUTED_FACTS_PATH).build());
+
+      _options.addOption(Option.builder().hasArg().argName("path")
+            .desc("path to precomputed ibgp neighbors")
+            .longOpt(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH).build());
+
+      _options.addOption(Option.builder().hasArg()
+            .argName(ARGNAME_PRECOMPUTED_ROUTES_PATH)
+            .desc("output path to precomputed routes")
+            .longOpt(ARG_PRECOMPUTED_ROUTES_PATH).build());
+
+      _options.addOption(Option.builder().hasArg().argName("paths")
+            .desc("input paths to precomputed routes")
+            .longOpt(ARG_PRECOMPUTED_ROUTES_PATHS).build());
+
+      _options
+            .addOption(Option
+                  .builder()
+                  .argName("predicates")
+                  .optionalArg(true)
+                  .hasArgs()
+                  .desc("print semantics for all predicates, or for predicates supplied as optional arguments")
+                  .longOpt(ARG_PREDHELP).build());
+
+      _options.addOption(Option.builder().argName("predicates").hasArgs()
+            .desc("list of predicates to query").longOpt(ARG_PREDICATES)
+            .build());
+
+      _options.addOption(Option.builder().desc("print parse trees")
+            .longOpt(ARG_PRINT_PARSE_TREES).build());
+
+      _options.addOption(Option.builder()
+            .desc("print topology with symmetric edges adjacent in listing")
+            .longOpt(ARG_PRINT_SYMMETRIC_EDGES).build());
+
+      _options.addOption(Option.builder().desc("query workspace")
+            .longOpt(ARG_QUERY).build());
+
+      _options.addOption(Option.builder().desc("query ALL predicates")
+            .longOpt(ARG_QUERY_ALL).build());
+
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_QUESTION_NAME).desc("name of question")
             .longOpt(BfConsts.ARG_QUESTION_NAME).build());
-      _options.addOption(Option.builder().desc("answer provided question")
-            .longOpt(BfConsts.COMMAND_ANSWER).build());
+
+      _options
+            .addOption(Option
+                  .builder()
+                  .desc("throws "
+                        + RedFlagBatfishException.class.getSimpleName()
+                        + " on some recoverable errors (e.g. bad config lines), instead of emitting warning and attempting to recover")
+                  .longOpt(BfConsts.ARG_RED_FLAG_AS_ERROR).build());
+
+      _options.addOption(Option.builder().desc("suppresses red-flag warnings")
+            .longOpt(BfConsts.ARG_RED_FLAG_SUPPRESS).build());
+
       _options.addOption(Option.builder().desc("force sequential operation")
             .longOpt(ARG_SEQUENTIAL).build());
-      _options.addOption(Option.builder().argName("port_number").hasArg()
-            .desc("coordinator work manager listening port")
-            .longOpt(ARG_COORDINATOR_WORK_PORT).build());
-      _options.addOption(Option.builder().argName("port_number").hasArg()
-            .desc("coordinator pool manager listening port")
-            .longOpt(ARG_COORDINATOR_POOL_PORT).build());
-      _options.addOption(Option.builder().argName("coordinator_use_ssl")
-            .hasArg().desc("whether coordinator uses ssl")
-            .longOpt(ARG_COORDINATOR_USE_SSL).build());
+
+      _options.addOption(Option.builder().desc("serialize to text")
+            .longOpt(ARG_SERIALIZE_TO_TEXT).build());
+
       _options.addOption(Option.builder().hasArg()
             .argName(ARGNAME_SERVICE_HOST)
             .desc("local hostname to report to coordinator")
             .longOpt(ARG_SERVICE_HOST).build());
-      _options.addOption(Option
-            .builder()
-            .hasArg()
-            .argName(ARGNAME_COORDINATOR_HOST)
-            .desc("hostname of coordinator for registration with -"
-                  + ARG_SERVICE_MODE).longOpt(ARG_COORDINATOR_HOST).build());
-      _options.addOption(Option.builder().desc("do not produce output files")
-            .longOpt(ARG_NO_OUTPUT).build());
-      _options.addOption(Option.builder()
-            .desc("print output to both logfile and standard out")
-            .longOpt(ARG_LOG_TEE).build());
+
+      _options.addOption(Option.builder().desc("run in service mode")
+            .longOpt(ARG_SERVICE_MODE).build());
+
+      _options
+            .addOption(Option.builder().argName("port_number").hasArg()
+                  .desc("port for batfish service").longOpt(ARG_SERVICE_PORT)
+                  .build());
+
       _options.addOption(Option.builder()
             .desc("synthesize topology from interface ip subnet information")
             .longOpt(ARG_SYNTHESIZE_TOPOLOGY).build());
+
       _options.addOption(Option.builder()
-            .desc("write routes from LogicBlox to disk")
-            .longOpt(BfConsts.COMMAND_WRITE_ROUTES).build());
-      _options.addOption(Option.builder().hasArg()
-            .argName(ARGNAME_PRECOMPUTED_ROUTES_PATH)
-            .desc("path to precomputed routes")
-            .longOpt(ARG_PRECOMPUTED_ROUTES_PATH).build());
-      _options.addOption(Option.builder().hasArg().argName("paths")
-            .desc("paths to precomputed routes")
-            .longOpt(ARG_PRECOMPUTED_ROUTES_PATHS).build());
-      _options.addOption(Option.builder().hasArg().argName("name")
-            .desc("name of output environment")
-            .longOpt(BfConsts.ARG_OUTPUT_ENV).build());
+            .desc("throw exception immediately on lexer error")
+            .longOpt(ARG_THROW_ON_LEXER_ERROR).build());
+
       _options.addOption(Option.builder()
-            .desc("remove selected blocks from LogicBlox workspace")
-            .longOpt(BfConsts.COMMAND_REMOVE_BLOCKS).build());
+            .desc("throw exception immediately on parser error")
+            .longOpt(ARG_THROW_ON_PARSER_ERROR).build());
+
       _options.addOption(Option.builder()
-            .desc("keep only selected blocks in LogicBlox workspace")
-            .longOpt(BfConsts.COMMAND_KEEP_BLOCKS).build());
-      _options.addOption(Option.builder().argName("blocknames").hasArgs()
-            .desc("list of LogicBlox blocks to add or remove")
-            .longOpt(BfConsts.ARG_BLOCK_NAMES).build());
-      _options.addOption(Option.builder()
-            .desc("add precomputed routes to workspace")
-            .longOpt(BfConsts.ARG_USE_PRECOMPUTED_ROUTES).build());
-      _options.addOption(Option.builder()
-            .desc("add precomputed ibgp neighborsto workspace")
-            .longOpt(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS).build());
-      _options.addOption(Option.builder()
-            .desc("add precomputed bgp advertisements to workspace")
-            .longOpt(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS).build());
-      _options.addOption(Option.builder().hasArg().argName("path")
-            .desc("path to precomputed bgp advertisements")
-            .longOpt(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH).build());
-      _options.addOption(Option.builder().hasArg().argName("path")
-            .desc("path to precomputed ibgp neighbors")
-            .longOpt(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH).build());
-      _options.addOption(Option.builder()
-            .desc("write ibgp neighbors from LogicBlox to disk")
-            .longOpt(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS).build());
-      _options.addOption(Option.builder()
-            .desc("write bgp advertisements from LogicBlox to disk")
-            .longOpt(BfConsts.COMMAND_WRITE_ADVERTISEMENTS).build());
-      _options.addOption(Option.builder().hasArg().argName("path")
-            .desc("path to precomputed facts")
-            .longOpt(ARG_PRECOMPUTED_FACTS_PATH).build());
-      _options.addOption(Option.builder()
-            .desc("add precomputed facts to workspace")
-            .longOpt(ARG_USE_PRECOMPUTED_FACTS).build());
-      _options.addOption(Option.builder().hasArg().argName("name")
-            .desc("name of delta environment to use")
-            .longOpt(BfConsts.ARG_DIFF_ENVIRONMENT_NAME).build());
-      _options.addOption(Option.builder().desc("retrieve flow history")
-            .longOpt(BfConsts.COMMAND_GET_HISTORY).build());
-      _options.addOption(Option.builder()
-            .desc("get per-trace versions of relations during query")
-            .longOpt(ARG_TRACE_QUERY).build());
-      _options.addOption(Option.builder()
-            .desc("print topology with symmetric edges adjacent in listing")
-            .longOpt(ARG_PRINT_SYMMETRIC_EDGES).build());
-      _options.addOption(Option.builder().hasArg().argName("number")
-            .desc("number of threads used by parallel jobs executor")
-            .longOpt(ARG_JOBS).build());
-      _options.addOption(Option.builder().desc("do not shuffle parallel jobs")
-            .longOpt(ARG_NO_SHUFFLE).build());
+            .desc("print timestamps in log messages").longOpt(ARG_TIMESTAMP)
+            .build());
+
       _options
             .addOption(Option
                   .builder()
-                  .desc("make differential environment the active one for questions about a single environment")
-                  .longOpt(BfConsts.ARG_DIFF_ACTIVE).build());
+                  .desc("throws "
+                        + UnimplementedBatfishException.class.getSimpleName()
+                        + " when encountering unimplemented configuration directives, instead of emitting warning and ignoring")
+                  .longOpt(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR).build());
+
+      _options.addOption(Option.builder()
+            .desc("suppresses unimplemented-configuration-directive warnings")
+            .longOpt(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS).build());
+
+      _options.addOption(Option.builder()
+            .desc("add precomputed bgp advertisements to workspace")
+            .longOpt(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS).build());
+
+      _options.addOption(Option.builder()
+            .desc("add precomputed facts to workspace")
+            .longOpt(ARG_USE_PRECOMPUTED_FACTS).build());
+
+      _options.addOption(Option.builder()
+            .desc("add precomputed ibgp neighborsto workspace")
+            .longOpt(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS).build());
+
+      _options.addOption(Option.builder()
+            .desc("add precomputed routes to workspace")
+            .longOpt(BfConsts.ARG_USE_PRECOMPUTED_ROUTES).build());
+
+      _options.addOption(Option.builder().desc("answer provided question")
+            .longOpt(BfConsts.COMMAND_ANSWER).build());
+
+      _options.addOption(Option.builder()
+            .desc("compute and serialize data plane")
+            .longOpt(BfConsts.COMMAND_DUMP_DP).build());
+
+      _options.addOption(Option.builder().desc("retrieve flow history")
+            .longOpt(BfConsts.COMMAND_GET_HISTORY).build());
+
+      _options.addOption(Option.builder()
+            .desc("keep only selected blocks in LogicBlox workspace")
+            .longOpt(BfConsts.COMMAND_KEEP_BLOCKS).build());
+
       _options.addOption(Option.builder()
             .desc("compute data plane with nxtnet")
             .longOpt(BfConsts.COMMAND_NXTNET_DATA_PLANE).build());
+
       _options
             .addOption(Option
                   .builder()
                   .desc("compute traffic information from provided flows with nxtnet")
                   .longOpt(BfConsts.COMMAND_NXTNET_TRAFFIC).build());
-      _options
-            .addOption(Option
-                  .builder()
-                  .desc("force treatment of question as differential (to be used when not answering question)")
-                  .longOpt(ARG_DIFF_QUESTION).build());
+
+      _options.addOption(Option.builder()
+            .desc("serialize vendor-independent configs")
+            .longOpt(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT).build());
+
+      _options.addOption(Option.builder().desc("serialize vendor configs")
+            .longOpt(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC).build());
+
+      _options.addOption(Option.builder()
+            .desc("remove selected blocks from LogicBlox workspace")
+            .longOpt(BfConsts.COMMAND_REMOVE_BLOCKS).build());
+
+      _options.addOption(Option.builder()
+            .desc("write bgp advertisements from LogicBlox to disk")
+            .longOpt(BfConsts.COMMAND_WRITE_ADVERTISEMENTS).build());
+
+      _options.addOption(Option.builder().desc("write control plane facts")
+            .longOpt(BfConsts.COMMAND_WRITE_CP_FACTS).build());
+
+      _options.addOption(Option.builder()
+            .desc("write ibgp neighbors from LogicBlox to disk")
+            .longOpt(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS).build());
+
+      _options.addOption(Option.builder()
+            .desc("write routes from LogicBlox to disk")
+            .longOpt(BfConsts.COMMAND_WRITE_ROUTES).build());
+
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -1277,9 +1331,9 @@ public final class Settings {
       // parse the command line arguments
       _line = parser.parse(_options, args);
 
-      _logLevel = _line.getOptionValue(BfConsts.ARG_LOG_LEVEL,
-            DEFAULT_LOG_LEVEL);
-      _logFile = _line.getOptionValue(ARG_LOG_FILE);
+      // SPECIAL OPTIONS
+      _logFile = getStringOptionValue(ARG_LOG_FILE);
+      _logLevel = getStringOptionValue(BfConsts.ARG_LOG_LEVEL);
       if (_line.hasOption(ARG_HELP)) {
          _canExecute = false;
          // automatically generate the help statement
@@ -1288,145 +1342,87 @@ public final class Settings {
          formatter.printHelp(EXECUTABLE_NAME, _options);
          return;
       }
-      _runInServiceMode = _line.hasOption(ARG_SERVICE_MODE);
-      _servicePort = Integer.parseInt(_line.getOptionValue(ARG_SERVICE_PORT,
-            DEFAULT_SERVICE_PORT));
-      _queryAll = _line.hasOption(ARG_QUERY_ALL);
-      _query = _line.hasOption(ARG_QUERY);
-      if (_line.hasOption(ARG_PREDHELP)) {
-         _printSemantics = true;
-         String[] optionValues = _line.getOptionValues(ARG_PREDHELP);
-         if (optionValues != null) {
-            _helpPredicates = Arrays.asList(optionValues);
-         }
-      }
-      _baseEnvironmentSettings.setWorkspaceName(_line.getOptionValue(
-            ARG_WORKSPACE, null));
-      if (_line.hasOption(ARG_PREDICATES)) {
-         _predicates = Arrays.asList(_line.getOptionValues(ARG_PREDICATES));
-      }
-      else {
-         _predicates = DEFAULT_PREDICATES;
-      }
-      if (_line.hasOption(BfConsts.ARG_BLOCK_NAMES)) {
-         _blockNames = Arrays.asList(_line
-               .getOptionValues(BfConsts.ARG_BLOCK_NAMES));
-      }
-      else {
-         _blockNames = Collections.<String> emptyList();
-      }
-      _exitOnFirstError = _line.hasOption(ARG_EXIT_ON_FIRST_ERROR);
-      _dumpControlPlaneFacts = _line.hasOption(BfConsts.COMMAND_WRITE_CP_FACTS);
-      _anonymize = _line.hasOption(ARG_ANONYMIZE);
-      if (_anonymize) {
-         _anonymizeDir = _line.getOptionValue(ARG_ANONYMIZE);
-      }
-      _simplify = DEFAULT_Z3_SIMPLIFY;
-      if (_line.hasOption(ARG_DISABLE_Z3_SIMPLIFICATION)) {
-         _simplify = false;
-      }
-      _serializeVendor = _line.hasOption(ARG_SERIALIZE_VENDOR);
-      _serializeIndependent = _line.hasOption(ARG_SERIALIZE_INDEPENDENT);
-      _dataPlane = _line.hasOption(ARG_DATA_PLANE);
-      _printParseTree = _line.hasOption(ARG_PRINT_PARSE_TREES);
-      _nodeSetPath = _line.getOptionValue(ARG_NODE_SET_PATH);
-      _serializeToText = _line.hasOption(ARG_SERIALIZE_TO_TEXT);
       _buildPredicateInfo = _line.hasOption(ARG_BUILD_PREDICATE_INFO);
       if (_buildPredicateInfo) {
          _logicSrcDir = _line.getOptionValue(ARG_BUILD_PREDICATE_INFO);
+         return;
       }
-      _nodeRolesPath = _line.getOptionValue(ARG_NODE_ROLES_PATH);
-      _roleNodesPath = _line.getOptionValue(ARG_ROLE_NODES_PATH);
-      _roleTransitQueryPath = _line.getOptionValue(ARG_ROLE_TRANSIT_QUERY_PATH);
-      _roleTransitQuery = _line.hasOption(ARG_ROLE_TRANSIT_QUERY);
-      _roleSetPath = _line.getOptionValue(ARG_ROLE_SET_PATH);
-      _duplicateRoleFlows = _line.hasOption(ARG_DUPLICATE_ROLE_FLOWS);
-      _throwOnParserError = _line.hasOption(ARG_THROW_ON_PARSER_ERROR);
-      _throwOnLexerError = _line.hasOption(ARG_THROW_ON_LEXER_ERROR);
-      _flatten = _line.hasOption(ARG_FLATTEN);
-      _flattenDestination = _line.getOptionValue(ARG_FLATTEN_DESTINATION);
-      _flattenOnTheFly = _line.hasOption(ARG_FLATTEN_ON_THE_FLY);
-      _pedanticAsError = _line.hasOption(BfConsts.ARG_PEDANTIC_AS_ERROR);
-      _pedanticRecord = !_line.hasOption(BfConsts.ARG_PEDANTIC_SUPPRESS);
-      _redFlagAsError = _line.hasOption(BfConsts.ARG_RED_FLAG_AS_ERROR);
-      _redFlagRecord = !_line.hasOption(BfConsts.ARG_RED_FLAG_SUPPRESS);
-      _unimplementedAsError = _line
-            .hasOption(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
-      _unimplementedRecord = !_line
-            .hasOption(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
-      _histogram = _line.hasOption(ARG_HISTOGRAM);
-      _generateStubs = _line.hasOption(ARG_GENERATE_STUBS);
-      _generateStubsInputRole = _line
-            .getOptionValue(ARG_GENERATE_STUBS_INPUT_ROLE);
-      _generateStubsInterfaceDescriptionRegex = _line
-            .getOptionValue(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
-      if (_line.hasOption(ARG_GENERATE_STUBS_REMOTE_AS)) {
-         _generateStubsRemoteAs = Integer.parseInt(_line
-               .getOptionValue(ARG_GENERATE_STUBS_REMOTE_AS));
-      }
-      _genOspfTopology = _line.getOptionValue(ARG_GEN_OSPF);
-      _timestamp = _line.hasOption(ARG_TIMESTAMP);
-      _ignoreUnsupported = _line.hasOption(ARG_IGNORE_UNSUPPORTED);
-      _autoBaseDir = _line.getOptionValue(ARG_AUTO_BASE_DIR);
-      _environmentName = _line.getOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
-      _questionName = _line.getOptionValue(BfConsts.ARG_QUESTION_NAME);
-      _answer = _line.hasOption(BfConsts.COMMAND_ANSWER);
-      _nxtnetTraffic = _line.hasOption(BfConsts.COMMAND_NXTNET_TRAFFIC);
-      _sequential = _line.hasOption(ARG_SEQUENTIAL);
+      _printSemantics = _line.hasOption(ARG_PREDHELP);
+
+      // REGULAR OPTIONS
+      _anonymize = getBooleanOptionValue(ARG_ANONYMIZE);
+      _answer = getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
+      _autoBaseDir = getStringOptionValue(ARG_AUTO_BASE_DIR);
+      _blockNames = getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);
       _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
-      _coordinatorPoolPort = Integer.parseInt(_line.getOptionValue(
-            ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_POOL_PORT.toString()));
-      _coordinatorWorkPort = Integer.parseInt(_line.getOptionValue(
-            ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_WORK_PORT.toString()));
-      _coordinatorUseSsl = Boolean
-            .parseBoolean(_line.getOptionValue(ARG_COORDINATOR_USE_SSL,
-                  _config.getString(ARG_COORDINATOR_USE_SSL)));
+      _coordinatorPoolPort = getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
+      _coordinatorRegister = getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
+      _coordinatorUseSsl = getBooleanOptionValue(ARG_COORDINATOR_USE_SSL);
+      _coordinatorWorkPort = getIntOptionValue(ARG_COORDINATOR_WORK_PORT);
+      _dataPlane = getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
+      _diffActive = getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
+      _diffEnvironmentName = getStringOptionValue(BfConsts.ARG_DIFF_ENVIRONMENT_NAME);
+      _diffQuestion = getBooleanOptionValue(ARG_DIFF_QUESTION);
+      _environmentName = getStringOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
+      _exitOnFirstError = getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
+      _flatten = getBooleanOptionValue(ARG_FLATTEN);
+      _flattenDestination = getStringOptionValue(ARG_FLATTEN_DESTINATION);
+      _flattenOnTheFly = getBooleanOptionValue(ARG_FLATTEN_ON_THE_FLY);
+      _generateStubs = getBooleanOptionValue(ARG_GENERATE_STUBS);
+      _generateStubsInputRole = getStringOptionValue(ARG_GENERATE_STUBS_INPUT_ROLE);
+      _generateStubsInterfaceDescriptionRegex = getStringOptionValue(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
+      _generateStubsRemoteAs = getIntegerOptionValue(ARG_GENERATE_STUBS_REMOTE_AS);
+      _genOspfTopologyPath = getStringOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
+      _helpPredicates = getStringListOptionValue(ARG_PREDHELP);
+      _histogram = getBooleanOptionValue(ARG_HISTOGRAM);
+      _history = getBooleanOptionValue(BfConsts.COMMAND_GET_HISTORY);
+      _ignoreUnsupported = getBooleanOptionValue(ARG_IGNORE_UNSUPPORTED);
+      _jobs = getIntOptionValue(ARG_JOBS);
+      _keepBlocks = getBooleanOptionValue(BfConsts.COMMAND_KEEP_BLOCKS);
+      _logTee = getBooleanOptionValue(ARG_LOG_TEE);
+      _noOutput = getBooleanOptionValue(ARG_NO_OUTPUT);
+      _nxtnetDataPlane = getBooleanOptionValue(BfConsts.COMMAND_NXTNET_DATA_PLANE);
+      _nxtnetTraffic = getBooleanOptionValue(BfConsts.COMMAND_NXTNET_TRAFFIC);
+      _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
+      _pedanticAsError = getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
+      _pedanticRecord = !getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
+      _precomputedBgpAdvertisementsPath = getStringOptionValue(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH);
+      _precomputedFactsPath = getStringOptionValue(ARG_PRECOMPUTED_FACTS_PATH);
+      _precomputedIbgpNeighborsPath = getStringOptionValue(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH);
+      _precomputedRoutesPath = getStringOptionValue(ARG_PRECOMPUTED_ROUTES_PATH);
+      _precomputedRoutesPaths = getStringListOptionValue(ARG_PRECOMPUTED_ROUTES_PATHS);
+      _predicates = getStringListOptionValue(ARG_PREDICATES);
+      _printParseTree = getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
+      _printSymmetricEdges = getBooleanOptionValue(ARG_PRINT_SYMMETRIC_EDGES);
+      _query = getBooleanOptionValue(ARG_QUERY);
+      _queryAll = getBooleanOptionValue(ARG_QUERY_ALL);
+      _questionName = getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
+      _redFlagAsError = getBooleanOptionValue(BfConsts.ARG_RED_FLAG_AS_ERROR);
+      _redFlagRecord = !getBooleanOptionValue(BfConsts.ARG_RED_FLAG_SUPPRESS);
+      _removeBlocks = getBooleanOptionValue(BfConsts.COMMAND_REMOVE_BLOCKS);
+      _runInServiceMode = getBooleanOptionValue(ARG_SERVICE_MODE);
+      _sequential = getBooleanOptionValue(ARG_SEQUENTIAL);
+      _serializeIndependent = getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT);
+      _serializeToText = getBooleanOptionValue(ARG_SERIALIZE_TO_TEXT);
+      _serializeVendor = getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC);
       _serviceHost = getStringOptionValue(ARG_SERVICE_HOST);
-      _noOutput = _line.hasOption(ARG_NO_OUTPUT);
-      _logTee = _line.hasOption(ARG_LOG_TEE);
-      _synthesizeTopology = _line.hasOption(ARG_SYNTHESIZE_TOPOLOGY);
-      _writeRoutes = _line.hasOption(BfConsts.COMMAND_WRITE_ROUTES);
-      String[] precomputedRoutesPathsAsArray = _line
-            .getOptionValues(ARG_PRECOMPUTED_ROUTES_PATHS);
-      if (precomputedRoutesPathsAsArray != null) {
-         _precomputedRoutesPaths = new TreeSet<String>();
-         _precomputedRoutesPaths.addAll(Arrays
-               .asList(precomputedRoutesPathsAsArray));
-      }
-      _precomputedRoutesPath = _line
-            .getOptionValue(ARG_PRECOMPUTED_ROUTES_PATH);
-      _precomputedBgpAdvertisementsPath = _line
-            .getOptionValue(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH);
-      _precomputedIbgpNeighborsPath = _line
-            .getOptionValue(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH);
-      _outputEnvironmentName = _line.getOptionValue(BfConsts.ARG_OUTPUT_ENV);
-      _removeBlocks = _line.hasOption(BfConsts.COMMAND_REMOVE_BLOCKS);
-      _keepBlocks = _line.hasOption(BfConsts.COMMAND_KEEP_BLOCKS);
-      _usePrecomputedRoutes = _line
-            .hasOption(BfConsts.ARG_USE_PRECOMPUTED_ROUTES);
-      _usePrecomputedAdvertisements = _line
-            .hasOption(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS);
-      _writeBgpAdvertisements = _line
-            .hasOption(BfConsts.COMMAND_WRITE_ADVERTISEMENTS);
-      _writeIbgpNeighbors = _line
-            .hasOption(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS);
-      _usePrecomputedIbgpNeighbors = _line
-            .hasOption(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS);
-      _usePrecomputedAdvertisements = _line
-            .hasOption(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS);
-      _usePrecomputedFacts = _line.hasOption(ARG_USE_PRECOMPUTED_FACTS);
-      _precomputedFactsPath = _line.getOptionValue(ARG_PRECOMPUTED_FACTS_PATH);
-      _diffEnvironmentName = _line
-            .getOptionValue(BfConsts.ARG_DIFF_ENVIRONMENT_NAME);
-      _history = _line.hasOption(BfConsts.COMMAND_GET_HISTORY);
-      _traceQuery = _line.hasOption(ARG_TRACE_QUERY);
-      _printSymmetricEdges = _line.hasOption(ARG_PRINT_SYMMETRIC_EDGES);
-      String jobsStr = _line.getOptionValue(ARG_JOBS, DEFAULT_JOBS);
-      _jobs = Integer.parseInt(jobsStr);
-      _shuffleJobs = !_line.hasOption(ARG_NO_SHUFFLE);
-      _diffActive = _line.hasOption(BfConsts.ARG_DIFF_ACTIVE);
-      _nxtnetDataPlane = _line.hasOption(BfConsts.COMMAND_NXTNET_DATA_PLANE);
-      _diffQuestion = _line.hasOption(ARG_DIFF_QUESTION);
+      _servicePort = getIntOptionValue(ARG_SERVICE_PORT);
+      _shuffleJobs = !getBooleanOptionValue(ARG_NO_SHUFFLE);
+      _simplify = !getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
+      _synthesizeTopology = getBooleanOptionValue(ARG_SYNTHESIZE_TOPOLOGY);
+      _throwOnLexerError = getBooleanOptionValue(ARG_THROW_ON_LEXER_ERROR);
+      _throwOnParserError = getBooleanOptionValue(ARG_THROW_ON_PARSER_ERROR);
+      _timestamp = getBooleanOptionValue(ARG_TIMESTAMP);
+      _unimplementedAsError = getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
+      _unimplementedRecord = !getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
+      _usePrecomputedAdvertisements = getBooleanOptionValue(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS);
+      _usePrecomputedFacts = getBooleanOptionValue(ARG_USE_PRECOMPUTED_FACTS);
+      _usePrecomputedIbgpNeighbors = getBooleanOptionValue(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS);
+      _usePrecomputedRoutes = getBooleanOptionValue(BfConsts.ARG_USE_PRECOMPUTED_ROUTES);
+      _writeBgpAdvertisements = getBooleanOptionValue(BfConsts.COMMAND_WRITE_ADVERTISEMENTS);
+      _writeControlPlaneFacts = getBooleanOptionValue(BfConsts.COMMAND_WRITE_CP_FACTS);
+      _writeIbgpNeighbors = getBooleanOptionValue(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS);
+      _writeRoutes = getBooleanOptionValue(BfConsts.COMMAND_WRITE_ROUTES);
    }
 
    public boolean printParseTree() {
@@ -1439,6 +1435,12 @@ public final class Settings {
 
    public void setActiveEnvironmentSettings(EnvironmentSettings envSettings) {
       _activeEnvironmentSettings = envSettings;
+   }
+
+   private void setDefaultProperty(String key, Object value) {
+      if (_config.getProperty(key) == null) {
+         _config.setProperty(key, value);
+      }
    }
 
    public void setDiffEnvironmentName(String diffEnvironmentName) {
@@ -1465,8 +1467,8 @@ public final class Settings {
       _logicDir = logicDir;
    }
 
-   public void setNodeSetPath(String nodeSetPath) {
-      _nodeSetPath = nodeSetPath;
+   public void setNodeRolesPath(String nodeRolesPath) {
+      _nodeRolesPath = nodeRolesPath;
    }
 
    public void setNxtnetTraffic(boolean postFlows) {

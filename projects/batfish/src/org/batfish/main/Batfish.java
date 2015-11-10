@@ -61,7 +61,6 @@ import org.batfish.collections.PolicyRouteFibNodeMap;
 import org.batfish.collections.PredicateSemantics;
 import org.batfish.collections.PredicateValueTypeMap;
 import org.batfish.collections.QualifiedNameMap;
-import org.batfish.collections.RoleNodeMap;
 import org.batfish.collections.RoleSet;
 import org.batfish.collections.RouteSet;
 import org.batfish.collections.TreeMultiSet;
@@ -156,7 +155,6 @@ import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.ReachableQuerySynthesizer;
-import org.batfish.z3.RoleTransitQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
 
 import com.thoughtworks.xstream.XStream;
@@ -908,7 +906,8 @@ public class Batfish implements AutoCloseable {
    private void computeControlPlaneFacts(Map<String, StringBuilder> cpFactBins) {
       checkComputeControlPlaneFacts();
       if (_settings.getUsePrecomputedRoutes()) {
-         Set<String> precomputedRoutesPaths = getPrecomputedRoutesPaths();
+         List<String> precomputedRoutesPaths = _settings
+               .getPrecomputedRoutesPaths();
          populatePrecomputedRoutes(precomputedRoutesPaths, cpFactBins);
       }
       if (_settings.getUsePrecomputedIbgpNeighbors()) {
@@ -1501,184 +1500,184 @@ public class Batfish implements AutoCloseable {
 
    }
 
-   private void genRoleTransitQueries() {
-      _logger.info("\n*** GENERATING ROLE-TO-NODE QUERIES ***\n");
-      resetTimer();
+   // private void genRoleTransitQueries() {
+   // _logger.info("\n*** GENERATING ROLE-TO-NODE QUERIES ***\n");
+   // resetTimer();
+   //
+   // String queryBasePath = _settings.getRoleTransitQueryPath();
+   // String nodeSetPath = _settings.getNodeSetPath();
+   // String nodeSetTextPath = nodeSetPath + ".txt";
+   // String roleSetTextPath = _settings.getRoleSetPath();
+   // String nodeRolesPath = _settings.getNodeRolesPath();
+   // String roleNodesPath = _settings.getRoleNodesPath();
+   // String iterationsPath = nodeRolesPath + ".rtiterations";
+   // String constraintsIterationsPath = nodeRolesPath
+   // + ".rtconstraintsiterations";
+   //
+   // _logger.info("Reading node set from: \"" + nodeSetPath + "\"...");
+   // NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
+   // _logger.info("OK\n");
+   //
+   // _logger.info("Reading node roles from: \"" + nodeRolesPath + "\"...");
+   // NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(new File(
+   // nodeRolesPath));
+   // _logger.info("OK\n");
+   //
+   // RoleNodeMap roleNodes = nodeRoles.toRoleNodeMap();
+   //
+   // for (Entry<String, NodeSet> sourceEntry : roleNodes.entrySet()) {
+   // String sourceRole = sourceEntry.getKey();
+   // for (Entry<String, NodeSet> transitEntry : roleNodes.entrySet()) {
+   // String transitRole = transitEntry.getKey();
+   // if (transitRole.equals(sourceRole)) {
+   // continue;
+   // }
+   // NodeSet transitNodes = transitEntry.getValue();
+   // for (String transitNode : transitNodes) {
+   // QuerySynthesizer synth = new RoleTransitQuerySynthesizer(
+   // sourceRole, transitNode);
+   // String queryText = synth.getQueryText();
+   // String queryPath = queryBasePath + "-" + transitNode + "-"
+   // + sourceRole + ".smt2";
+   // _logger.info("Writing query to: \"" + queryPath + "\"...");
+   // writeFile(queryPath, queryText);
+   // _logger.info("OK\n");
+   // }
+   // }
+   // }
+   //
+   // _logger.info("Writing node lines for next stage...");
+   // StringBuilder sbNodes = new StringBuilder();
+   // for (String node : nodes) {
+   // sbNodes.append(node + "\n");
+   // }
+   // writeFile(nodeSetTextPath, sbNodes.toString());
+   // _logger.info("OK\n");
+   //
+   // StringBuilder sbRoles = new StringBuilder();
+   // _logger.info("Writing role lines for next stage...");
+   // sbRoles = new StringBuilder();
+   // for (String role : roleNodes.keySet()) {
+   // sbRoles.append(role + "\n");
+   // }
+   // writeFile(roleSetTextPath, sbRoles.toString());
+   // _logger.info("OK\n");
+   //
+   // // not actually sure if this is necessary
+   // StringBuilder sbRoleNodes = new StringBuilder();
+   // _logger.info("Writing role-node mappings for concretizer stage...");
+   // sbRoleNodes = new StringBuilder();
+   // for (Entry<String, NodeSet> e : roleNodes.entrySet()) {
+   // String role = e.getKey();
+   // NodeSet currentNodes = e.getValue();
+   // sbRoleNodes.append(role + ":");
+   // for (String node : currentNodes) {
+   // sbRoleNodes.append(node + ",");
+   // }
+   // sbRoleNodes.append(role + "\n");
+   // }
+   // writeFile(roleNodesPath, sbRoleNodes.toString());
+   //
+   // _logger
+   // .info("Writing transitrole-transitnode-sourcerole iteration ordering lines for constraints stage...");
+   // StringBuilder sbConstraintsIterations = new StringBuilder();
+   // for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
+   // String transitRole = roleNodeEntry.getKey();
+   // NodeSet transitNodes = roleNodeEntry.getValue();
+   // if (transitNodes.size() < 2) {
+   // continue;
+   // }
+   // for (String sourceRole : roleNodes.keySet()) {
+   // if (sourceRole.equals(transitRole)) {
+   // continue;
+   // }
+   // for (String transitNode : transitNodes) {
+   // String iterationLine = transitRole + ":" + transitNode + ":"
+   // + sourceRole + "\n";
+   // sbConstraintsIterations.append(iterationLine);
+   // }
+   // }
+   // }
+   // writeFile(constraintsIterationsPath, sbConstraintsIterations.toString());
+   // _logger.info("OK\n");
+   //
+   // _logger
+   // .info("Writing transitrole-master-slave-sourcerole iteration ordering lines for concretizer stage...");
+   // StringBuilder sbIterations = new StringBuilder();
+   // for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
+   // String transitRole = roleNodeEntry.getKey();
+   // NodeSet transitNodes = roleNodeEntry.getValue();
+   // if (transitNodes.size() < 2) {
+   // continue;
+   // }
+   // String[] tNodeArray = transitNodes.toArray(new String[] {});
+   // String masterNode = tNodeArray[0];
+   // for (int i = 1; i < tNodeArray.length; i++) {
+   // String slaveNode = tNodeArray[i];
+   // for (String sourceRole : roleNodes.keySet()) {
+   // if (sourceRole.equals(transitRole)) {
+   // continue;
+   // }
+   // String iterationLine = transitRole + ":" + masterNode + ":"
+   // + slaveNode + ":" + sourceRole + "\n";
+   // sbIterations.append(iterationLine);
+   // }
+   // }
+   // }
+   // writeFile(iterationsPath, sbIterations.toString());
+   // _logger.info("OK\n");
+   //
+   // printElapsedTime();
+   // }
 
-      String queryBasePath = _settings.getRoleTransitQueryPath();
-      String nodeSetPath = _settings.getNodeSetPath();
-      String nodeSetTextPath = nodeSetPath + ".txt";
-      String roleSetTextPath = _settings.getRoleSetPath();
-      String nodeRolesPath = _settings.getNodeRolesPath();
-      String roleNodesPath = _settings.getRoleNodesPath();
-      String iterationsPath = nodeRolesPath + ".rtiterations";
-      String constraintsIterationsPath = nodeRolesPath
-            + ".rtconstraintsiterations";
-
-      _logger.info("Reading node set from: \"" + nodeSetPath + "\"...");
-      NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
-      _logger.info("OK\n");
-
-      _logger.info("Reading node roles from: \"" + nodeRolesPath + "\"...");
-      NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(new File(
-            nodeRolesPath));
-      _logger.info("OK\n");
-
-      RoleNodeMap roleNodes = nodeRoles.toRoleNodeMap();
-
-      for (Entry<String, NodeSet> sourceEntry : roleNodes.entrySet()) {
-         String sourceRole = sourceEntry.getKey();
-         for (Entry<String, NodeSet> transitEntry : roleNodes.entrySet()) {
-            String transitRole = transitEntry.getKey();
-            if (transitRole.equals(sourceRole)) {
-               continue;
-            }
-            NodeSet transitNodes = transitEntry.getValue();
-            for (String transitNode : transitNodes) {
-               QuerySynthesizer synth = new RoleTransitQuerySynthesizer(
-                     sourceRole, transitNode);
-               String queryText = synth.getQueryText();
-               String queryPath = queryBasePath + "-" + transitNode + "-"
-                     + sourceRole + ".smt2";
-               _logger.info("Writing query to: \"" + queryPath + "\"...");
-               writeFile(queryPath, queryText);
-               _logger.info("OK\n");
-            }
-         }
-      }
-
-      _logger.info("Writing node lines for next stage...");
-      StringBuilder sbNodes = new StringBuilder();
-      for (String node : nodes) {
-         sbNodes.append(node + "\n");
-      }
-      writeFile(nodeSetTextPath, sbNodes.toString());
-      _logger.info("OK\n");
-
-      StringBuilder sbRoles = new StringBuilder();
-      _logger.info("Writing role lines for next stage...");
-      sbRoles = new StringBuilder();
-      for (String role : roleNodes.keySet()) {
-         sbRoles.append(role + "\n");
-      }
-      writeFile(roleSetTextPath, sbRoles.toString());
-      _logger.info("OK\n");
-
-      // not actually sure if this is necessary
-      StringBuilder sbRoleNodes = new StringBuilder();
-      _logger.info("Writing role-node mappings for concretizer stage...");
-      sbRoleNodes = new StringBuilder();
-      for (Entry<String, NodeSet> e : roleNodes.entrySet()) {
-         String role = e.getKey();
-         NodeSet currentNodes = e.getValue();
-         sbRoleNodes.append(role + ":");
-         for (String node : currentNodes) {
-            sbRoleNodes.append(node + ",");
-         }
-         sbRoleNodes.append(role + "\n");
-      }
-      writeFile(roleNodesPath, sbRoleNodes.toString());
-
-      _logger
-            .info("Writing transitrole-transitnode-sourcerole iteration ordering lines for constraints stage...");
-      StringBuilder sbConstraintsIterations = new StringBuilder();
-      for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
-         String transitRole = roleNodeEntry.getKey();
-         NodeSet transitNodes = roleNodeEntry.getValue();
-         if (transitNodes.size() < 2) {
-            continue;
-         }
-         for (String sourceRole : roleNodes.keySet()) {
-            if (sourceRole.equals(transitRole)) {
-               continue;
-            }
-            for (String transitNode : transitNodes) {
-               String iterationLine = transitRole + ":" + transitNode + ":"
-                     + sourceRole + "\n";
-               sbConstraintsIterations.append(iterationLine);
-            }
-         }
-      }
-      writeFile(constraintsIterationsPath, sbConstraintsIterations.toString());
-      _logger.info("OK\n");
-
-      _logger
-            .info("Writing transitrole-master-slave-sourcerole iteration ordering lines for concretizer stage...");
-      StringBuilder sbIterations = new StringBuilder();
-      for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
-         String transitRole = roleNodeEntry.getKey();
-         NodeSet transitNodes = roleNodeEntry.getValue();
-         if (transitNodes.size() < 2) {
-            continue;
-         }
-         String[] tNodeArray = transitNodes.toArray(new String[] {});
-         String masterNode = tNodeArray[0];
-         for (int i = 1; i < tNodeArray.length; i++) {
-            String slaveNode = tNodeArray[i];
-            for (String sourceRole : roleNodes.keySet()) {
-               if (sourceRole.equals(transitRole)) {
-                  continue;
-               }
-               String iterationLine = transitRole + ":" + masterNode + ":"
-                     + slaveNode + ":" + sourceRole + "\n";
-               sbIterations.append(iterationLine);
-            }
-         }
-      }
-      writeFile(iterationsPath, sbIterations.toString());
-      _logger.info("OK\n");
-
-      printElapsedTime();
-   }
-
-   private void genZ3(Map<String, Configuration> configurations,
-         File dataPlanePath) {
-      _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
-      resetTimer();
-
-      String outputPath = _settings.getZ3File();
-      if (outputPath == null) {
-         throw new BatfishException("Need to specify output path for z3 logic");
-      }
-      String nodeSetPath = _settings.getNodeSetPath();
-      if (nodeSetPath == null) {
-         throw new BatfishException(
-               "Need to specify output path for serialized set of nodes in environment");
-      }
-
-      _logger.info("Deserializing data plane: \"" + dataPlanePath.toString()
-            + "\"...");
-      DataPlane dataPlane = (DataPlane) deserializeObject(dataPlanePath);
-      _logger.info("OK\n");
-
-      _logger.info("Synthesizing Z3 logic...");
-      Synthesizer s = new Synthesizer(configurations, dataPlane,
-            _settings.getSimplify());
-      String result = s.synthesize();
-      List<String> warnings = s.getWarnings();
-      int numWarnings = warnings.size();
-      if (numWarnings == 0) {
-         _logger.info("OK\n");
-      }
-      else {
-         for (String warning : warnings) {
-            _logger.warn(warning);
-         }
-      }
-
-      _logger.info("Writing Z3 logic: \"" + outputPath + "\"...");
-      File z3Out = new File(outputPath);
-      z3Out.delete();
-      writeFile(outputPath, result);
-      _logger.info("OK\n");
-
-      _logger.info("Serializing node set: \"" + nodeSetPath + "\"...");
-      NodeSet nodeSet = s.getNodeSet();
-      serializeObject(nodeSet, new File(nodeSetPath));
-      _logger.info("OK\n");
-
-      printElapsedTime();
-   }
+   // private void genZ3(Map<String, Configuration> configurations,
+   // File dataPlanePath) {
+   // _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
+   // resetTimer();
+   //
+   // String outputPath = _settings.getZ3File();
+   // if (outputPath == null) {
+   // throw new BatfishException("Need to specify output path for z3 logic");
+   // }
+   // String nodeSetPath = _settings.getNodeSetPath();
+   // if (nodeSetPath == null) {
+   // throw new BatfishException(
+   // "Need to specify output path for serialized set of nodes in environment");
+   // }
+   //
+   // _logger.info("Deserializing data plane: \"" + dataPlanePath.toString()
+   // + "\"...");
+   // DataPlane dataPlane = (DataPlane) deserializeObject(dataPlanePath);
+   // _logger.info("OK\n");
+   //
+   // _logger.info("Synthesizing Z3 logic...");
+   // Synthesizer s = new Synthesizer(configurations, dataPlane,
+   // _settings.getSimplify());
+   // String result = s.synthesize();
+   // List<String> warnings = s.getWarnings();
+   // int numWarnings = warnings.size();
+   // if (numWarnings == 0) {
+   // _logger.info("OK\n");
+   // }
+   // else {
+   // for (String warning : warnings) {
+   // _logger.warn(warning);
+   // }
+   // }
+   //
+   // _logger.info("Writing Z3 logic: \"" + outputPath + "\"...");
+   // File z3Out = new File(outputPath);
+   // z3Out.delete();
+   // writeFile(outputPath, result);
+   // _logger.info("OK\n");
+   //
+   // _logger.info("Serializing node set: \"" + nodeSetPath + "\"...");
+   // NodeSet nodeSet = s.getNodeSet();
+   // serializeObject(nodeSet, new File(nodeSetPath));
+   // _logger.info("OK\n");
+   //
+   // printElapsedTime();
+   // }
 
    private AdvertisementSet getAdvertisements() {
       return getAdvertisements(_envSettings);
@@ -1938,23 +1937,6 @@ public class Batfish implements AutoCloseable {
          edges.add(newEdge);
       }
       return nodeMap;
-   }
-
-   private Set<String> getPrecomputedRoutesPaths() {
-      Set<String> precomputedRoutesPaths = _settings
-            .getPrecomputedRoutesPaths();
-      String precomputedRoutesPath = _settings.getPrecomputedRoutesPath();
-      if (precomputedRoutesPaths == null) {
-         if (precomputedRoutesPath == null) {
-            throw new BatfishException(
-                  "Must specify path(s) to precomputed routes");
-         }
-         else {
-            precomputedRoutesPaths = Collections
-                  .singleton(precomputedRoutesPath);
-         }
-      }
-      return precomputedRoutesPaths;
    }
 
    public PredicateInfo getPredicateInfo(Map<String, String> logicFiles) {
@@ -2607,7 +2589,7 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void populatePrecomputedRoutes(Set<String> precomputedRoutesPaths,
+   private void populatePrecomputedRoutes(List<String> precomputedRoutesPaths,
          Map<String, StringBuilder> cpFactBins) {
       StringBuilder sb = cpFactBins.get(PRECOMPUTED_ROUTES_PREDICATE_NAME);
       StringBuilder wNetworks = cpFactBins.get(NETWORKS_PREDICATE_NAME);
@@ -2932,7 +2914,7 @@ public class Batfish implements AutoCloseable {
             || _settings.getDataPlane() || _settings.getWriteRoutes()
             || _settings.getWriteBgpAdvertisements()
             || _settings.getWriteIbgpNeighbors() || _settings.getHistory()
-            || _settings.getTraceQuery() || _settings.getNxtnetDataPlane()) {
+            || _settings.getNxtnetDataPlane()) {
          Map<String, String> logicFiles = getSemanticsFiles();
          _predicateInfo = getPredicateInfo(logicFiles);
          // Print predicate semantics and quit if requested
@@ -2989,26 +2971,26 @@ public class Batfish implements AutoCloseable {
          return;
       }
 
-      if (_settings.getZ3()) {
-         Map<String, Configuration> configurations = loadConfigurations();
-         String dataPlanePath = _envSettings.getDataPlanePath();
-         if (dataPlanePath == null) {
-            throw new BatfishException("Missing path to data plane");
-         }
-         File dataPlanePathAsFile = new File(dataPlanePath);
-         genZ3(configurations, dataPlanePathAsFile);
-         return;
-      }
-
+      // if (_settings.getZ3()) {
+      // Map<String, Configuration> configurations = loadConfigurations();
+      // String dataPlanePath = _envSettings.getDataPlanePath();
+      // if (dataPlanePath == null) {
+      // throw new BatfishException("Missing path to data plane");
+      // }
+      // File dataPlanePathAsFile = new File(dataPlanePath);
+      // genZ3(configurations, dataPlanePathAsFile);
+      // return;
+      // }
+      //
       if (_settings.getAnonymize()) {
          anonymizeConfigurations();
          return;
       }
 
-      if (_settings.getRoleTransitQuery()) {
-         genRoleTransitQueries();
-         return;
-      }
+      // if (_settings.getRoleTransitQuery()) {
+      // genRoleTransitQueries();
+      // return;
+      // }
 
       if (_settings.getSerializeVendor()) {
          String testRigPath = _settings.getTestRigPath();
@@ -3424,14 +3406,15 @@ public class Batfish implements AutoCloseable {
    }
 
    private void writeNxtnetPrecomputedRoutes(EnvironmentSettings envSettings) {
-      Set<String> precomputedRoutesPaths = getPrecomputedRoutesPaths();
+      String precomputedRoutesPath = _settings.getPrecomputedRoutesPath();
       Map<String, StringBuilder> prFactBins = new HashMap<String, StringBuilder>();
       initControlPlaneFactBins(prFactBins, true);
       Set<String> prPredicates = new HashSet<String>();
       prPredicates.add(PRECOMPUTED_ROUTES_PREDICATE_NAME);
       prPredicates.add(NETWORKS_PREDICATE_NAME);
       prFactBins.keySet().retainAll(prPredicates);
-      populatePrecomputedRoutes(precomputedRoutesPaths, prFactBins);
+      populatePrecomputedRoutes(
+            Collections.singletonList(precomputedRoutesPath), prFactBins);
       dumpFacts(prFactBins, envSettings.getTrafficFactsDir());
    }
 
