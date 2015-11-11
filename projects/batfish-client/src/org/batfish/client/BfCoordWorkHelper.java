@@ -159,7 +159,12 @@ public class BfCoordWorkHelper {
          }
          if (e.getMessage().contains("SSLHandshakeException")) {
             _logger
-                  .errorf("SSL handshake exception while connecting to coordinator\n");
+                  .errorf("SSL handshake exception while connecting to coordinator (Is the coordinator using SSL and using keys that you trust?)\n");
+            return null;
+         }
+         if (e.getMessage().contains("SocketException: Unexpected end of file")) {
+            _logger
+                  .errorf("SocketException while connecting to coordinator. (Are you using SSL?)\n");
             return null;
          }
          throw e;

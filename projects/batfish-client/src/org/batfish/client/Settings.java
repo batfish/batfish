@@ -22,7 +22,7 @@ public class Settings {
    private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";
 
    private static final String ARG_TRUST_ALL_SSL_CERTS = "client.TrustAllSslCerts";
-   private static final String ARG_USE_SSL = "coordinator.UseSsl";
+   private static final String ARG_DISABLE_SSL = "coordinator.DisableSsl";
 
    /*
     *  not wired to command line
@@ -142,7 +142,7 @@ public class Settings {
       setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
       setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_WORK_PORT);
       setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, false);
-      setDefaultProperty(ARG_USE_SSL, CoordConsts.SVC_USE_SSL);
+      setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
    }
 
    private void initOptions() {
@@ -169,9 +169,8 @@ public class Settings {
             .longOpt(ARG_COMMAND_FILE).build());
       _options.addOption(Option.builder().desc("print this message")
             .longOpt(ARG_HELP).build());
-      _options.addOption(Option.builder().argName("use_ssl").hasArg()
-            .desc("whether to use ssl with coordinator").longOpt(ARG_USE_SSL)
-            .build());
+      _options.addOption(Option.builder().desc("disable coordinator ssl")
+            .longOpt(ARG_DISABLE_SSL).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -195,7 +194,7 @@ public class Settings {
       _serviceHost = getStringOptionValue(ARG_SERVICE_HOST);
       _servicePoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
       _serviceWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
-      _useSsl = getBooleanOptionValue(ARG_USE_SSL);
+      _useSsl = !getBooleanOptionValue(ARG_DISABLE_SSL);
    }
    
    private void setDefaultProperty(String key, Object value) {

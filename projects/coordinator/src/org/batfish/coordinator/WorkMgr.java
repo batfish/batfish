@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -432,23 +434,25 @@ public class WorkMgr {
       return containerName;
    }
 
-   public String[] listContainers(String apiKey) {
-
-      final String apiKeyCopy = apiKey;
+   public String[] listContainers(String apiKey) throws Exception {
 
       File containersDir = new File(Main.getSettings()
             .getTestrigStorageLocation());
 
-      String[] directories = containersDir.list(new FilenameFilter() {
-         @Override
-         public boolean accept(File current, String name) {
-            return new File(current, name).isDirectory()
-                  && Main.getAuthorizer().isAccessibleContainer(apiKeyCopy,
-                        name);
-         }
-      });
+      if (!containersDir.exists()) {
+         containersDir.mkdirs(); 
+      }
 
-      return directories;
+      List<String> containers = new ArrayList<String>();
+      
+      for (File file : containersDir.listFiles()) {
+         if (file.isDirectory()
+             && Main.getAuthorizer().isAccessibleContainer(apiKey, 
+                   file.getName()))
+            containers.add(file.getName());
+      }
+
+      return containers.toArray(new String[containers.size()]);
    }
 
    public String[] listEnvironments(String containerName, String testrigName)

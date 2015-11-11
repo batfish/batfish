@@ -166,7 +166,7 @@ public final class Settings {
 
    private static final String ARG_COORDINATOR_REGISTER = "register";
 
-   private static final String ARG_COORDINATOR_USE_SSL = "coordinator.UseSsl";
+   private static final String ARG_COORDINATOR_NO_SSL = "coordinator.NoSsl";
 
    private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
 
@@ -899,7 +899,7 @@ public final class Settings {
       setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
       setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_POOL_PORT);
-      setDefaultProperty(ARG_COORDINATOR_USE_SSL, CoordConsts.SVC_USE_SSL);
+      setDefaultProperty(ARG_COORDINATOR_NO_SSL, CoordConsts.SVC_DISABLE_SSL);
       setDefaultProperty(ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_WORK_PORT);
       setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
       setDefaultProperty(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, null);
@@ -1009,7 +1009,7 @@ public final class Settings {
             .longOpt(ARG_COORDINATOR_REGISTER).build());
 
       _options.addOption(Option.builder().desc("whether coordinator uses ssl")
-            .longOpt(ARG_COORDINATOR_USE_SSL).build());
+            .longOpt(ARG_COORDINATOR_NO_SSL).build());
 
       _options.addOption(Option.builder().argName("port_number").hasArg()
             .desc("coordinator work manager listening port")
@@ -1350,7 +1350,7 @@ public final class Settings {
       _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
       _coordinatorPoolPort = getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
       _coordinatorRegister = getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
-      _coordinatorUseSsl = getBooleanOptionValue(ARG_COORDINATOR_USE_SSL);
+      _coordinatorUseSsl = !getBooleanOptionValue(ARG_COORDINATOR_NO_SSL);
       _coordinatorWorkPort = getIntOptionValue(ARG_COORDINATOR_WORK_PORT);
       _dataPlane = getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
       _diffActive = getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);

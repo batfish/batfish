@@ -8,9 +8,9 @@ public interface Authorizer {
       none
    }
 
-   void authorizeContainer(String apiKey, String containerName);
+   void authorizeContainer(String apiKey, String containerName) throws Exception;
 
-   boolean isAccessibleContainer(String apiKey, String containerName);
+   boolean isAccessibleContainer(String apiKey, String containerName) throws Exception;
 
-   boolean isValidWorkApiKey(String apiKey);
+   boolean isValidWorkApiKey(String apiKey) throws Exception;
 }

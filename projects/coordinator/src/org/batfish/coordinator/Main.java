@@ -46,7 +46,7 @@ public class Main {
       return _workManager;
    }
 
-   private static void initAuthorizer() {
+   private static void initAuthorizer() throws Exception {
       switch (_settings.getAuthorizationType()) {
       case none:
          _authorizer = new NoneAuthorizer();
@@ -159,6 +159,9 @@ public class Main {
          _settings = new Settings(args);
          _logger = new BatfishLogger(_settings.getLogLevel(), false,
                _settings.getLogFile(), false);
+         initAuthorizer();
+         initPoolManager();
+         initWorkManager();
       }
       catch (Exception e) {
          System.err.print("org.batfish.coordinator: Initialization failed: "
@@ -166,9 +169,6 @@ public class Main {
          System.exit(1);
       }
 
-      initAuthorizer();
-      initPoolManager();
-      initWorkManager();
 
       // sleep indefinitely, in 10 minute chunks
       try {

@@ -32,7 +32,7 @@ public class Settings {
    private static final String ARG_STORAGE_ACCOUNT_NAME = "coordinator.StorageAccountName";
    private static final String ARG_STORAGE_PROTOCOL = "coordinator.StorageProtocol";
    private static final String ARG_TESTRIG_STORAGE_LOCATION = "coordinator.TestrigStorageLocation";
-   private static final String ARG_USE_SSL = "coordinator.UseSsl";
+   private static final String ARG_DISABLE_SSL = "coordinator.DisableSsl";
       
    /**
     * (not wired to command line)
@@ -223,7 +223,7 @@ public class Settings {
       setDefaultProperty(ARG_STORAGE_ACCOUNT_NAME, "testdrive");
       setDefaultProperty(ARG_STORAGE_PROTOCOL, "http");
       setDefaultProperty(ARG_TESTRIG_STORAGE_LOCATION, "containers");
-      setDefaultProperty(ARG_USE_SSL, CoordConsts.SVC_USE_SSL);
+      setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
    }
 
    private void initOptions() {
@@ -261,8 +261,8 @@ public class Settings {
       _options.addOption(Option.builder().argName("authorizer type").hasArg()
             .desc("type of authorizer to use").longOpt(ARG_AUTHORIZER_TYPE)
             .build());
-      _options.addOption(Option.builder().argName("use_ssl").hasArg()
-            .desc("whether to use SSL").longOpt(ARG_USE_SSL).build());
+      _options.addOption(Option.builder().desc("disable coordinator ssl")
+            .longOpt(ARG_DISABLE_SSL).build());
    }
 
    private void parseCommandLine(String[] args) throws ParseException {
@@ -287,7 +287,7 @@ public class Settings {
       _logFile = getStringOptionValue(ARG_LOG_FILE);
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
       _authorizerType = Authorizer.Type.valueOf(getStringOptionValue(ARG_AUTHORIZER_TYPE));
-      _useSsl = getBooleanOptionValue(ARG_USE_SSL);
+      _useSsl = !getBooleanOptionValue(ARG_DISABLE_SSL);
    }
    
    private void setDefaultProperty(String key, Object value) {

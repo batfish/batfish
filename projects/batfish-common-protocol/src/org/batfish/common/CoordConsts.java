@@ -29,6 +29,7 @@ public class CoordConsts {
    public static final String SVC_DEL_ENVIRONMENT_RSC = "delenvironment";
    public static final String SVC_DEL_QUESTION_RSC = "delquestion";
    public static final String SVC_DEL_TESTRIG_RSC = "deltestrig";
+   public static final boolean SVC_DISABLE_SSL = false;
    public static final String SVC_ENV_NAME_KEY = "envname";
 
    public static final String SVC_FAILURE_KEY = "failure";
@@ -50,7 +51,6 @@ public class CoordConsts {
    public static final String SVC_QUESTION_LIST_KEY = "questionlist";
    public static final String SVC_TESTRIG_LIST_KEY = "testriglist";
    public static final String SVC_TESTRIG_NAME_KEY = "testrigname";
-   public static final boolean SVC_USE_SSL = true;
    public static final String SVC_WORK_FILENAME_HDR = "FileName";
    public static final String SVC_WORK_GET_OBJECT_RSC = "getobject";
    public static final String SVC_WORK_GET_WORKSTATUS_RSC = "getworkstatus";
