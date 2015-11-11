@@ -440,16 +440,17 @@ public class WorkMgr {
             .getTestrigStorageLocation());
 
       if (!containersDir.exists()) {
-         containersDir.mkdirs(); 
+         containersDir.mkdirs();
       }
 
       List<String> containers = new ArrayList<String>();
-      
+
       for (File file : containersDir.listFiles()) {
          if (file.isDirectory()
-             && Main.getAuthorizer().isAccessibleContainer(apiKey, 
-                   file.getName()))
+               && Main.getAuthorizer().isAccessibleContainer(apiKey,
+                     file.getName())) {
             containers.add(file.getName());
+         }
       }
 
       return containers.toArray(new String[containers.size()]);

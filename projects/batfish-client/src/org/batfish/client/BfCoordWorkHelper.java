@@ -46,9 +46,10 @@ public class BfCoordWorkHelper {
       try {
          Client client = getClientBuilder().build();
          WebTarget webTarget = getTarget(client,
-               CoordConsts.SVC_DEL_CONTAINER_RSC)
-               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
-               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY, uriEncode(containerName));
+               CoordConsts.SVC_DEL_CONTAINER_RSC).queryParam(
+               CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY,
+                     uriEncode(containerName));
 
          JSONObject jObj = getJsonResponse(webTarget);
          return (jObj != null);
@@ -60,14 +61,18 @@ public class BfCoordWorkHelper {
       }
    }
 
-   public boolean delEnvironment(String containerName, String testrigName, String envName) {
+   public boolean delEnvironment(String containerName, String testrigName,
+         String envName) {
       try {
          Client client = getClientBuilder().build();
          WebTarget webTarget = getTarget(client,
                CoordConsts.SVC_DEL_ENVIRONMENT_RSC)
-               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
-               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY, uriEncode(containerName))
-               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY, uriEncode(testrigName))
+               .queryParam(CoordConsts.SVC_API_KEY,
+                     uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY,
+                     uriEncode(containerName))
+               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY,
+                     uriEncode(testrigName))
                .queryParam(CoordConsts.SVC_ENV_NAME_KEY, uriEncode(envName));
 
          JSONObject jObj = getJsonResponse(webTarget);
@@ -79,16 +84,21 @@ public class BfCoordWorkHelper {
          return false;
       }
    }
-   
-   public boolean delQuestion(String containerName, String testrigName, String questionName) {
+
+   public boolean delQuestion(String containerName, String testrigName,
+         String questionName) {
       try {
          Client client = getClientBuilder().build();
          WebTarget webTarget = getTarget(client,
                CoordConsts.SVC_DEL_QUESTION_RSC)
-               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
-               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY, uriEncode(containerName))
-               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY, uriEncode(testrigName))
-               .queryParam(CoordConsts.SVC_QUESTION_NAME_KEY, uriEncode(questionName));
+               .queryParam(CoordConsts.SVC_API_KEY,
+                     uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY,
+                     uriEncode(containerName))
+               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY,
+                     uriEncode(testrigName))
+               .queryParam(CoordConsts.SVC_QUESTION_NAME_KEY,
+                     uriEncode(questionName));
 
          JSONObject jObj = getJsonResponse(webTarget);
          return (jObj != null);
@@ -105,9 +115,12 @@ public class BfCoordWorkHelper {
          Client client = getClientBuilder().build();
          WebTarget webTarget = getTarget(client,
                CoordConsts.SVC_DEL_TESTRIG_RSC)
-               .queryParam(CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
-               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY, uriEncode(containerName))
-               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY, uriEncode(testrigName));
+               .queryParam(CoordConsts.SVC_API_KEY,
+                     uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY,
+                     uriEncode(containerName))
+               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY,
+                     uriEncode(testrigName));
 
          JSONObject jObj = getJsonResponse(webTarget);
          return (jObj != null);
@@ -118,7 +131,7 @@ public class BfCoordWorkHelper {
          return false;
       }
    }
-   
+
    private ClientBuilder getClientBuilder() throws Exception {
       return org.batfish.common.Util.getClientBuilder(_settings.getUseSsl(),
             _settings.getTrustAllSslCerts());
@@ -449,10 +462,13 @@ public class BfCoordWorkHelper {
       try {
          Client client = getClientBuilder().build();
          WebTarget webTarget = getTarget(client,
-               CoordConsts.SVC_LIST_ENVIRONMENTS_RSC).queryParam(
-               CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
-               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY, uriEncode(containerName))
-               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY, uriEncode(testrigName));
+               CoordConsts.SVC_LIST_ENVIRONMENTS_RSC)
+               .queryParam(CoordConsts.SVC_API_KEY,
+                     uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY,
+                     uriEncode(containerName))
+               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY,
+                     uriEncode(testrigName));
 
          JSONObject jObj = getJsonResponse(webTarget);
          if (jObj == null) {
@@ -487,10 +503,13 @@ public class BfCoordWorkHelper {
       try {
          Client client = getClientBuilder().build();
          WebTarget webTarget = getTarget(client,
-               CoordConsts.SVC_LIST_QUESTIONS_RSC).queryParam(
-               CoordConsts.SVC_API_KEY, uriEncode(_settings.getApiKey()))
-               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY, uriEncode(containerName))
-               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY, uriEncode(testrigName));
+               CoordConsts.SVC_LIST_QUESTIONS_RSC)
+               .queryParam(CoordConsts.SVC_API_KEY,
+                     uriEncode(_settings.getApiKey()))
+               .queryParam(CoordConsts.SVC_CONTAINER_NAME_KEY,
+                     uriEncode(containerName))
+               .queryParam(CoordConsts.SVC_TESTRIG_NAME_KEY,
+                     uriEncode(testrigName));
 
          JSONObject jObj = getJsonResponse(webTarget);
          if (jObj == null) {
@@ -536,8 +555,7 @@ public class BfCoordWorkHelper {
          }
 
          if (!jObj.has(CoordConsts.SVC_TESTRIG_LIST_KEY)) {
-            _logger.errorf("testrig key not found in: %s\n",
-                  jObj.toString());
+            _logger.errorf("testrig key not found in: %s\n", jObj.toString());
             return null;
          }
 

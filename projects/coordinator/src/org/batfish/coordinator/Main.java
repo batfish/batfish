@@ -169,7 +169,6 @@ public class Main {
          System.exit(1);
       }
 
-
       // sleep indefinitely, in 10 minute chunks
       try {
          while (true) {

@@ -65,17 +65,13 @@ public class Client {
             + "\t Answer the question for the differential environment");
       descs.put(COMMAND_CLEAR_SCREEN, COMMAND_CLEAR_SCREEN + "\n"
             + "\t Clear screen");
-      descs.put(COMMAND_DEL_CONTAINER, COMMAND_DEL_CONTAINER 
-            + "<container-name>"
-            + "\t Delete the specified container");
-      descs.put(COMMAND_DEL_ENVIRONMENT, COMMAND_DEL_ENVIRONMENT 
-            + "<environment-name>"
-            + "\t Delete the specified environment");
-      descs.put(COMMAND_DEL_QUESTION, COMMAND_DEL_QUESTION 
-            + "<question-name>"
+      descs.put(COMMAND_DEL_CONTAINER, COMMAND_DEL_CONTAINER
+            + "<container-name>" + "\t Delete the specified container");
+      descs.put(COMMAND_DEL_ENVIRONMENT, COMMAND_DEL_ENVIRONMENT
+            + "<environment-name>" + "\t Delete the specified environment");
+      descs.put(COMMAND_DEL_QUESTION, COMMAND_DEL_QUESTION + "<question-name>"
             + "\t Delete the specified question");
-      descs.put(COMMAND_DEL_TESTRIG, COMMAND_DEL_TESTRIG 
-            + "<testrig-name>"
+      descs.put(COMMAND_DEL_TESTRIG, COMMAND_DEL_TESTRIG + "<testrig-name>"
             + "\t Delete the specified testrig");
       descs.put(COMMAND_GEN_DIFF_DP, COMMAND_GEN_DIFF_DP + "\n"
             + "\t Generate dataplane for the differential environment");
@@ -113,22 +109,22 @@ public class Client {
       return descs;
    }
 
-//   private static String joinStrings(String delimiter, String[] parts) {
-//      StringBuilder sb = new StringBuilder();
-//      for (String part : parts) {
-//         sb.append(part + delimiter);
-//      }
-//      String joined = sb.toString();
-//      int joinedLength = joined.length();
-//      String result;
-//      if (joinedLength > 0) {
-//         result = joined.substring(0, joinedLength - delimiter.length());
-//      }
-//      else {
-//         result = joined;
-//      }
-//      return result;
-//   }
+   // private static String joinStrings(String delimiter, String[] parts) {
+   // StringBuilder sb = new StringBuilder();
+   // for (String part : parts) {
+   // sb.append(part + delimiter);
+   // }
+   // String joined = sb.toString();
+   // int joinedLength = joined.length();
+   // String result;
+   // if (joinedLength > 0) {
+   // result = joined.substring(0, joinedLength - delimiter.length());
+   // }
+   // else {
+   // result = joined;
+   // }
+   // return result;
+   // }
 
    private String _currContainerName = null;
    private String _currDiffEnv = null;
@@ -279,8 +275,9 @@ public class Client {
             break;
          }
          case COMMAND_ANSWER: {
-            if (!isSetContainer() || !isSetTestrig())
+            if (!isSetContainer() || !isSetTestrig()) {
                break;
+            }
 
             String questionName = words[1];
             String questionFile = words[2];
@@ -322,9 +319,10 @@ public class Client {
             break;
          }
          case COMMAND_ANSWER_DIFF: {
-            if (!isSetContainer() || !isSetTestrig() || !isSetDiffEnvironment())
+            if (!isSetContainer() || !isSetTestrig() || !isSetDiffEnvironment()) {
                break;
-            
+            }
+
             String questionName = words[1];
             String questionFile = words[2];
 
@@ -371,35 +369,42 @@ public class Client {
             break;
          }
          case COMMAND_DEL_ENVIRONMENT: {
-            if (!isSetContainer() || !isSetTestrig()) 
+            if (!isSetContainer() || !isSetTestrig()) {
                break;
-            
+            }
+
             String envName = words[1];
-            boolean result = _workHelper.delEnvironment(_currContainerName, _currTestrigName, envName);
+            boolean result = _workHelper.delEnvironment(_currContainerName,
+                  _currTestrigName, envName);
             _logger.outputf("Result of deleting environment: %s\n", result);
             break;
          }
          case COMMAND_DEL_QUESTION: {
-            if (!isSetContainer() || !isSetTestrig()) 
+            if (!isSetContainer() || !isSetTestrig()) {
                break;
-            
+            }
+
             String qName = words[1];
-            boolean result = _workHelper.delQuestion(_currContainerName, _currTestrigName, qName);
+            boolean result = _workHelper.delQuestion(_currContainerName,
+                  _currTestrigName, qName);
             _logger.outputf("Result of deleting question: %s\n", result);
             break;
          }
          case COMMAND_DEL_TESTRIG: {
-            if (!isSetContainer()) 
+            if (!isSetContainer()) {
                break;
-            
+            }
+
             String testrigName = words[1];
-            boolean result = _workHelper.delTestrig(_currContainerName, testrigName);
+            boolean result = _workHelper.delTestrig(_currContainerName,
+                  testrigName);
             _logger.outputf("Result of deleting testrig: %s\n", result);
             break;
          }
          case COMMAND_GEN_DP: {
-            if (!isSetContainer() || !isSetTestrig()) 
+            if (!isSetContainer() || !isSetTestrig()) {
                break;
+            }
 
             // generate the data plane
             WorkItem wItemGenDp = _workHelper.getWorkItemGenerateDataPlane(
@@ -422,8 +427,9 @@ public class Client {
             break;
          }
          case COMMAND_GEN_DIFF_DP: {
-            if (!isSetContainer() || !isSetTestrig() || !isSetDiffEnvironment())
+            if (!isSetContainer() || !isSetTestrig() || !isSetDiffEnvironment()) {
                break;
+            }
 
             // generate the data plane
             WorkItem wItemGenDdp = _workHelper
@@ -458,8 +464,9 @@ public class Client {
             break;
          }
          case COMMAND_INIT_DIFF_ENV: {
-            if (!isSetContainer() || !isSetTestrig())
+            if (!isSetContainer() || !isSetTestrig()) {
                break;
+            }
 
             String diffEnvName = words[1];
             String diffEnvFile = words[2];
@@ -485,8 +492,9 @@ public class Client {
             break;
          }
          case COMMAND_INIT_TESTRIG: {
-            if (!isSetContainer())
+            if (!isSetContainer()) {
                break;
+            }
 
             String testrigName = words[1];
             String testrigFile = words[2];
@@ -536,25 +544,31 @@ public class Client {
             break;
          }
          case COMMAND_LIST_ENVIRONMENTS: {
-            if (!isSetContainer() || !isSetTestrig())
+            if (!isSetContainer() || !isSetTestrig()) {
                break;
+            }
 
-            String[] environmentList = _workHelper.listEnvironments(_currContainerName, _currTestrigName);
-            _logger.outputf("Environments: %s\n", Arrays.toString(environmentList));
+            String[] environmentList = _workHelper.listEnvironments(
+                  _currContainerName, _currTestrigName);
+            _logger.outputf("Environments: %s\n",
+                  Arrays.toString(environmentList));
 
             break;
 
          }
          case COMMAND_LIST_QUESTIONS: {
-            if (!isSetContainer() || !isSetTestrig())
+            if (!isSetContainer() || !isSetTestrig()) {
                break;
-            String[] questionList = _workHelper.listQuestions(_currContainerName, _currTestrigName);
+            }
+            String[] questionList = _workHelper.listQuestions(
+                  _currContainerName, _currTestrigName);
             _logger.outputf("Questions: %s\n", Arrays.toString(questionList));
             break;
          }
          case COMMAND_LIST_TESTRIGS: {
-            if (!isSetContainer())
+            if (!isSetContainer()) {
                break;
+            }
             String[] testrigList = _workHelper.listTestrigs(_currContainerName);
             _logger.outputf("Testrigs: %s\n", Arrays.toString(testrigList));
             break;
