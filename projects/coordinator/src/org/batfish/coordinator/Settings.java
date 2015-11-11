@@ -28,17 +28,20 @@ public class Settings {
    private static final String ARG_SERVICE_HOST = "coordinator.ServiceHost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinator.PoolPort";
    private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";
-      
-   /**
-    * (not wired to command line)
-    */
-   private static final String ARG_SSL_KEYSTORE_FILE = "coordinator.SslKeyStoreFile";
-   private static final String ARG_SSL_KEYSTORE_PASSWORD = "coordinator.SslKeyStorePassword";
    private static final String ARG_STORAGE_ACCOUNT_KEY = "coordinator.StorageAccountKey";
    private static final String ARG_STORAGE_ACCOUNT_NAME = "coordinator.StorageAccountName";
    private static final String ARG_STORAGE_PROTOCOL = "coordinator.StorageProtocol";
    private static final String ARG_TESTRIG_STORAGE_LOCATION = "coordinator.TestrigStorageLocation";
    private static final String ARG_USE_SSL = "coordinator.UseSsl";
+      
+   /**
+    * (not wired to command line)
+    */
+   private static final String ARG_FILE_AUTHORIZER_PERMS_FILE = "coordinator.FileAuthPermsFile";
+   private static final String ARG_FILE_AUTHORIZER_ROOT_DIR = "coordinator.FileAuthRootDir";
+   private static final String ARG_FILE_AUTHORIZER_USERS_FILE = "coordinator.FileAuthUsersFile";
+   private static final String ARG_SSL_KEYSTORE_FILE = "coordinator.SslKeyStoreFile";
+   private static final String ARG_SSL_KEYSTORE_PASSWORD = "coordinator.SslKeyStorePassword";
 
    private Authorizer.Type _authorizerType;
    private FileConfiguration _config;
@@ -99,6 +102,18 @@ public class Settings {
       }
    }
 
+   public String getFileAuthorizerPermsFile() {
+      return _config.getString(ARG_FILE_AUTHORIZER_PERMS_FILE);
+   }
+   
+   public String getFileAuthorizerRootDir() {
+      return _config.getString(ARG_FILE_AUTHORIZER_ROOT_DIR);
+   }
+   
+   public String getFileAuthorizerUsersFile() {
+      return _config.getString(ARG_FILE_AUTHORIZER_USERS_FILE);
+   }
+   
    public String getLogFile() {
       return _logFile;
    }
@@ -188,6 +203,9 @@ public class Settings {
 
    private void initConfigDefaults() {
       setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none.toString());      
+      setDefaultProperty(ARG_FILE_AUTHORIZER_PERMS_FILE, "perms.json");
+      setDefaultProperty(ARG_FILE_AUTHORIZER_ROOT_DIR, "fileauthorizer");
+      setDefaultProperty(ARG_FILE_AUTHORIZER_USERS_FILE, "users.json");      
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_LEVEL, BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
       setDefaultProperty(ARG_PERIOD_ASSIGN_WORK_MS, 1000);

@@ -51,8 +51,10 @@ public class Main {
       case none:
          _authorizer = new NoneAuthorizer();
          break;
-      case database:
       case file:
+         _authorizer = new FileAuthorizer();
+         break;
+      case database:
       default:
          System.err
                .print("org.batfish.coordinator: Initialization failed. Unsupported authorizer type "
