@@ -28,36 +28,12 @@ public class WorkMgrService {
 
    BatfishLogger _logger = Main.getLogger();
 
-   // @GET
-   // @Path("test")
-   // @Produces(MediaType.APPLICATION_JSON)
-   // public Response test() {
-   // try {
-   // _logger.info("WMS:getInfo\n");
-   // JSONArray id = new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-   // Main.getWorkMgr()
-   // .getStatusJson()));
-   //
-   // return Response.ok()
-   // .entity(id)
-   // // .header("Access-Control-Allow-Origin","*")
-   // .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
-   // .allow("OPTIONS")
-   // .build();
-   // }
-   // catch (Exception e) {
-   // String stackTrace = ExceptionUtils.getFullStackTrace(e);
-   // _logger.error("WMS:getWorkQueueStatus exception: " + stackTrace);
-   // return Response.serverError().build();
-   // }
-   // }
-
-   @GET
+   @POST
    @Path(CoordConsts.SVC_DEL_CONTAINER_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray delContainer(
-         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
-         @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName) {
       try {
          _logger.info("WMS:delContainer " + containerName + "\n");
 
@@ -95,14 +71,14 @@ public class WorkMgrService {
       }
    }
 
-   @GET
+   @POST
    @Path(CoordConsts.SVC_DEL_ENVIRONMENT_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray delEnvironment(
-         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
-         @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
-         @QueryParam(CoordConsts.SVC_ENV_NAME_KEY) String envName,
-         @QueryParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_ENV_NAME_KEY) String envName,
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
       try {
          _logger.info("WMS:delEnvironment " + containerName + "\n");
 
@@ -145,14 +121,14 @@ public class WorkMgrService {
       }
    }
 
-   @GET
+   @POST
    @Path(CoordConsts.SVC_DEL_QUESTION_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray delQuestion(
-         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
-         @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
-         @QueryParam(CoordConsts.SVC_QUESTION_NAME_KEY) String questionName,
-         @QueryParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_QUESTION_NAME_KEY) String questionName,
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
       try {
          _logger.info("WMS:delQuestion " + containerName + "\n");
 
@@ -195,13 +171,13 @@ public class WorkMgrService {
       }
    }
 
-   @GET
+   @POST
    @Path(CoordConsts.SVC_DEL_TESTRIG_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray delTestrig(
-         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
-         @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
-         @QueryParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
       try {
          _logger.info("WMS:delTestrig " + containerName + "\n");
 
@@ -253,14 +229,14 @@ public class WorkMgrService {
                   "Batfish coordinator: enter ../application.wadl (relative to your URL) to see supported methods"));
    }
 
-   @GET
+   @POST
    @Path(CoordConsts.SVC_WORK_GET_OBJECT_RSC)
    @Produces(MediaType.APPLICATION_OCTET_STREAM)
    public Response getObject(
-         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
-         @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
-         @QueryParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
-         @QueryParam(CoordConsts.SVC_WORK_OBJECT_KEY) String objectName) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
+         @FormDataParam(CoordConsts.SVC_WORK_OBJECT_KEY) String objectName) {
       try {
          _logger.info("WMS:getObject " + testrigName + " --> " + objectName
                + "\n");
@@ -334,12 +310,12 @@ public class WorkMgrService {
       }
    }
 
-   @GET
+   @POST
    @Path(CoordConsts.SVC_WORK_GET_WORKSTATUS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getWorkStatus(
-         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
-         @QueryParam(CoordConsts.SVC_WORKID_KEY) String workId) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_WORKID_KEY) String workId) {
       try {
          _logger.info("WMS:getWorkStatus " + workId + "\n");
 
@@ -380,12 +356,12 @@ public class WorkMgrService {
       }
    }
 
-   @GET
+   @POST
    @Path(CoordConsts.SVC_INIT_CONTAINER_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray initContainer(
-         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
-         @QueryParam(CoordConsts.SVC_CONTAINER_PREFIX_KEY) String containerPrefix) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_PREFIX_KEY) String containerPrefix) {
       try {
          _logger.info("WMS:initContainer " + containerPrefix + "\n");
 
@@ -419,11 +395,11 @@ public class WorkMgrService {
       }
    }
 
-   @GET
+   @POST
    @Path(CoordConsts.SVC_LIST_CONTAINERS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray listContainers(
-         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey) {
       try {
          _logger.info("WMS:listContainers " + apiKey + "\n");
 
@@ -450,13 +426,13 @@ public class WorkMgrService {
       }
    }
 
-   @GET
+   @POST
    @Path(CoordConsts.SVC_LIST_ENVIRONMENTS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray listEnvironments(
-         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
-         @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
-         @QueryParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
       try {
          _logger.info("WMS:listEnvironments " + apiKey + " " + containerName
                + "\n");
@@ -502,13 +478,13 @@ public class WorkMgrService {
       }
    }
 
-   @GET
+   @POST
    @Path(CoordConsts.SVC_LIST_QUESTIONS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray listQuestions(
-         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
-         @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
-         @QueryParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
       try {
          _logger.info("WMS:listQuestions " + apiKey + " " + containerName
                + "\n");
@@ -553,12 +529,12 @@ public class WorkMgrService {
       }
    }
 
-   @GET
+   @POST
    @Path(CoordConsts.SVC_LIST_TESTRIGS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray listTestrigs(
-         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
-         @QueryParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName) {
       try {
          _logger
                .info("WMS:listTestrigs " + apiKey + " " + containerName + "\n");
@@ -598,12 +574,12 @@ public class WorkMgrService {
       }
    }
 
-   @GET
+   @POST
    @Path(CoordConsts.SVC_WORK_QUEUE_WORK_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray queueWork(
-         @QueryParam(CoordConsts.SVC_API_KEY) String apiKey,
-         @QueryParam(CoordConsts.SVC_WORKITEM_KEY) String workItemStr) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_WORKITEM_KEY) String workItemStr) {
       try {
          _logger.info("WMS:queueWork " + apiKey + " " + workItemStr + "\n");
 
@@ -712,7 +688,8 @@ public class WorkMgrService {
                envName, fileStream);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               "successfully uploaded environment"));
+               (new JSONObject().put("result", "successfully uploaded environment"))));
+
       }
       catch (FileNotFoundException | FileExistsException e) {
          _logger.error("WMS:uploadEnvironment exception: " + e.getMessage()
@@ -771,7 +748,8 @@ public class WorkMgrService {
                fileStream, paramFileStream);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               "successfully uploaded question"));
+               (new JSONObject().put("result", "successfully uploaded question"))));
+
       }
       catch (FileNotFoundException | FileExistsException e) {
          _logger
@@ -824,7 +802,7 @@ public class WorkMgrService {
                .uploadTestrig(containerName, testrigName, fileStream);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               "successfully uploaded testrig"));
+               (new JSONObject().put("result", "successfully uploaded testrig"))));
       }
       catch (FileNotFoundException | FileExistsException e) {
          _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");

@@ -295,7 +295,7 @@ public class Client {
             // upload the question
             boolean resultUpload = _workHelper.uploadQuestion(
                   _currContainerName, _currTestrigName, questionName,
-                  questionFile, paramsFile);
+                  questionFile, paramsFile.getAbsolutePath());
 
             if (resultUpload) {
                _logger
@@ -339,7 +339,7 @@ public class Client {
             // upload the question
             boolean resultUpload = _workHelper.uploadQuestion(
                   _currContainerName, _currTestrigName, questionName,
-                  questionFile, paramsFile);
+                  questionFile, paramsFile.getAbsolutePath());
 
             if (resultUpload) {
                _logger
