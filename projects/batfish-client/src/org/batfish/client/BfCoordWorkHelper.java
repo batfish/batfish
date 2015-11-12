@@ -222,9 +222,9 @@ public class BfCoordWorkHelper {
          addTextMultiPart(multiPart, CoordConsts.SVC_TESTRIG_NAME_KEY, testrigName);
          addTextMultiPart(multiPart, CoordConsts.SVC_WORK_OBJECT_KEY, objectName);
 
-         Response response = webTarget.request(
-               MediaType.APPLICATION_OCTET_STREAM).get();
-
+         Response response = webTarget.request(MediaType.APPLICATION_OCTET_STREAM)
+               .post(Entity.entity(multiPart, multiPart.getMediaType()));
+         
          _logger.info(response.getStatus() + " " + response.getStatusInfo()
                + " " + response + "\n");
 
