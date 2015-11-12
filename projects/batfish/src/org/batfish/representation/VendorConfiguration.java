@@ -17,6 +17,8 @@ public interface VendorConfiguration extends Serializable {
 
    Warnings getWarnings();
 
+   void setHostname(String hostname);
+
    void setRoles(RoleSet roles);
 
    void setVendor(ConfigurationFormat format);

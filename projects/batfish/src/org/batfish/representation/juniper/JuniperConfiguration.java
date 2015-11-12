@@ -49,7 +49,7 @@ public class JuniperConfiguration implements Serializable {
       return _filters;
    }
 
-   public String getHostname() {
+   public final String getHostname() {
       return _defaultRoutingInstance.getHostname();
    }
 
@@ -67,6 +67,10 @@ public class JuniperConfiguration implements Serializable {
 
    public final Map<String, RoutingInstance> getRoutingInstances() {
       return _routingInstances;
+   }
+
+   public final void setHostname(String hostname) {
+      _defaultRoutingInstance.setHostname(hostname);
    }
 
 }

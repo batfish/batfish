@@ -51,6 +51,7 @@ s_common
    | s_routing_instances
    | s_routing_options
    | s_system
+   | s_vlans
 ;
 
 s_groups
@@ -90,8 +91,13 @@ s_null
 :
    (
       (
-         SECURITY
+         ACCESS
+         | APPLICATIONS
+         | ETHERNET_SWITCHING_OPTIONS
+         | POE
+         | SECURITY
          | SWITCH_OPTIONS
+         | VIRTUAL_CHASSIS
       ) s_null_filler
    )
    | rit_null
@@ -112,6 +118,28 @@ s_system_tail
 s_version
 :
    VERSION M_Version_VERSION_STRING
+;
+
+s_vlans
+:
+// intentional blank
+
+   | VLANS s_vlans_named
+;
+
+s_vlans_named
+:
+   name = variable s_vlans_tail
+;
+
+s_vlans_tail
+:
+//    intentional blank
+
+   | vlt_description
+   | vlt_filter
+   | vlt_l3_interface
+   | vlt_vlan_id
 ;
 
 set_line
@@ -151,7 +179,11 @@ st_null
       | LICENSE
       | LOCATION
       | LOGIN
+      | MAX_CONFIGURATIONS_ON_FLASH
+      | MAX_CONFIGURATION_ROLLBACKS
+      | NAME_RESOLUTION
       | NAME_SERVER
+      | NO_REDIRECTS
       | NTP
       | PORTS
       | PROCESSES
@@ -164,4 +196,28 @@ st_null
       | TACPLUS_SERVER
       | TIME_ZONE
    ) s_null_filler
+;
+
+vlt_description
+:
+   DESCRIPTION M_Description_DESCRIPTION
+;
+
+vlt_filter
+:
+   FILTER
+   (
+      INPUT
+      | OUTPUT
+   ) name = variable
+;
+
+vlt_l3_interface
+:
+   L3_INTERFACE interface_id
+;
+
+vlt_vlan_id
+:
+   VLAN_ID name = variable
 ;

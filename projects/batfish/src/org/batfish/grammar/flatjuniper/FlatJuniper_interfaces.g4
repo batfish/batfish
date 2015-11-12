@@ -29,6 +29,73 @@ direction
    | OUTPUT_LIST
 ;
 
+efamt_filter
+:
+   FILTER direction name = variable
+;
+
+efamt_native_vlan_id
+:
+   NATIVE_VLAN_ID name = variable
+;
+
+efamt_port_mode
+:
+   PORT_MODE
+   (
+      ACCESS
+      | TRUNK
+   )
+;
+
+efamt_vlan
+:
+   VLAN MEMBERS name = variable
+;
+
+eot_802_3ad
+:
+   EIGHT02_3AD name = variable
+;
+
+eot_auto_negotiation
+:
+   AUTO_NEGOTIATION
+;
+
+eot_no_auto_negotiation
+:
+   NO_AUTO_NEGOTIATION
+;
+
+eot_speed
+:
+   SPEED DEC speed_abbreviation
+;
+
+eot_null
+:
+   (
+      AUTO_NEGOTIATION
+      | NO_AUTO_NEGOTIATION
+      | NO_FLOW_CONTROL
+      | LINK_MODE
+   ) s_null_filler
+;
+
+eot_redundant_parent
+:
+   REDUNDANT_PARENT name = variable
+;
+
+ether_options_tail
+:
+   eot_802_3ad
+   | eot_null
+   | eot_redundant_parent
+   | eot_speed
+;
+
 famt_bridge
 :
    BRIDGE famt_bridge_tail
@@ -46,6 +113,21 @@ famt_bridge_tail
 famt_ccc
 :
    CCC s_null_filler
+;
+
+famt_ethernet_switching
+:
+   ETHERNET_SWITCHING famt_ethernet_switching_tail
+;
+
+famt_ethernet_switching_tail
+:
+// intentional blank
+
+   | efamt_filter
+   | efamt_native_vlan_id
+   | efamt_port_mode
+   | efamt_vlan
 ;
 
 famt_inet
@@ -206,7 +288,8 @@ ifamt_no_redirects
 ifamt_null
 :
    (
-      POLICER
+      DHCP
+      | POLICER
       | SAMPLING
       | SERVICE
       | TARGETED_BROADCAST
@@ -232,7 +315,7 @@ intt_named
 :
    (
       WILDCARD
-      | name = VARIABLE
+      | name = variable
    ) intt_named_tail
 ;
 
@@ -242,6 +325,7 @@ intt_named_tail
    | it_flexible_vlan_tagging
    | it_link_mode
    | it_native_vlan_id
+   | it_per_unit_scheduler
    | it_unit
 ;
 
@@ -279,9 +363,13 @@ it_common
    | it_description
    | it_disable
    | it_enable
+   | it_ether_options
+   | it_fastether_options
+   | it_gigether_options
    | it_family
    | it_mtu
    | it_null
+   | it_redundant_ether_options
    | it_speed
    | it_vlan_id
    | it_vlan_id_list
@@ -303,6 +391,36 @@ it_enable
    ENABLE
 ;
 
+it_ether_options
+:
+   ETHER_OPTIONS it_ether_options_tail
+;
+
+it_ether_options_tail
+:
+   ether_options_tail
+;
+
+it_fastether_options
+:
+   FASTETHER_OPTIONS it_fastether_options_tail
+;
+
+it_fastether_options_tail
+:
+   ether_options_tail
+;
+
+it_gigether_options
+:
+   GIGETHER_OPTIONS it_gigether_options_tail
+;
+
+it_gigether_options_tail
+:
+   ether_options_tail
+;
+
 it_family
 :
    FAMILY it_family_tail
@@ -312,6 +430,7 @@ it_family_tail
 :
    famt_bridge
    | famt_ccc
+   | famt_ethernet_switching
    | famt_inet
    | famt_inet6
    | famt_iso
@@ -346,7 +465,6 @@ it_null
       | ENCAPSULATION
       | FABRIC_OPTIONS
       | FRAMING
-      | GIGETHER_OPTIONS
       | HOLD_TIME
       | INTERFACE_TRANSMIT_STATISTICS
       | MULTISERVICE_OPTIONS
@@ -362,6 +480,16 @@ it_null
 it_peer_unit
 :
    PEER_UNIT unit = DEC
+;
+
+it_per_unit_scheduler
+:
+   PER__UNIT_SCHEDULER
+;
+
+it_redundant_ether_options
+:
+   REDUNDANCY_GROUP name = variable
 ;
 
 it_speed

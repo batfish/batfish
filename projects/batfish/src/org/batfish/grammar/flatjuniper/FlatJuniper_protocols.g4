@@ -28,10 +28,12 @@ s_protocols_null
    (
       BFD
       | IGMP
+      | IGMP_SNOOPING
       | L2CIRCUIT
       | LACP
       | LDP
       | LLDP
+      | LLDP_MED
       | MLD
       | MSDP
       | MSTP
@@ -39,7 +41,10 @@ s_protocols_null
       | NEIGHBOR_DISCOVERY
       | PIM
       | ROUTER_ADVERTISEMENT
+      | RSTP
       | RSVP
+      | SFLOW
+      | STP
       | VRRP
       | VSTP
    ) s_null_filler
