@@ -1,0 +1,6 @@
+#
+set version aaa
+set system host-name juniper_extended_community
+#
+set policy-options community COMM_ALL members "target:123456L:.*$"
+#
