@@ -343,6 +343,7 @@ bt_null
       | HOLD_TIME
       | KEEP
       | LOG_UPDOWN
+      | MTU_DISCOVERY
       | OUT_DELAY
       | PRECISION_TIMERS
       | TRACEOPTIONS

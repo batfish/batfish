@@ -9,10 +9,6 @@ BatfishTopologyLexer*.java
 BatfishTopologyParser*.java
 CiscoLexer*.java
 CiscoParser*.java
-ConcretizerQueryResultLexer*.java
-ConcretizerQueryResultParser*.java
-DatalogQueryResultLexer*.java
-DatalogQueryResultParser*.java
 FlatJuniperLexer*.java
 FlatJuniperParser*.java
 GNS3TopologyLexer*.java

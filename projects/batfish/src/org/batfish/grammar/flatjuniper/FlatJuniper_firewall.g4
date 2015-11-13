@@ -159,6 +159,11 @@ fwfromt_tcp_initial
    TCP_INITIAL
 ;
 
+fwfromt_vlan
+:
+   VLAN name = variable
+;
+
 fwft_apply_groups
 :
    s_apply_groups
@@ -193,6 +198,7 @@ fwt_family
       ANY
       | BRIDGE
       | CCC
+      | ETHERNET_SWITCHING
       | INET
       | INET6
       | MPLS
@@ -310,6 +316,7 @@ fwtt_from_tail
    | fwfromt_tcp_established
    | fwfromt_tcp_flags
    | fwfromt_tcp_initial
+   | fwfromt_vlan
 ;
 
 fwtt_then

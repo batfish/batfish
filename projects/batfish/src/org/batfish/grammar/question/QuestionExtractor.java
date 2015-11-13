@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -994,7 +994,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          return regex;
       }
       else if (ctx.STRING_LITERAL() != null) {
-         return Matcher.quoteReplacement(ctx.STRING_LITERAL().getText());
+         return Pattern.quote(ctx.STRING_LITERAL().getText());
       }
       else if (ctx.VARIABLE() != null) {
          String var = ctx.VARIABLE().getText().substring(1);
@@ -1005,7 +1005,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
          case STRING:
             String str = _parameters.getString(var);
-            return Matcher.quoteReplacement(str);
+            return Pattern.quote(str);
 
             // $CASES-OMITTED$
          default:

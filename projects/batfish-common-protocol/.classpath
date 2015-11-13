@@ -2,7 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/jettison/jettison-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/guava/guava-15.0.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/jettison-1.3.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/javax.ws.rs-api-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-cli-1.3-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-configuration-1.8.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-lang-2.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

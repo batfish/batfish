@@ -169,7 +169,8 @@ rit_instance_type
 :
    INSTANCE_TYPE
    (
-      VIRTUAL_SWITCH
+      FORWARDING
+      | VIRTUAL_SWITCH
       | VRF
    )
 ;
@@ -338,6 +339,7 @@ rot_null
       FORWARDING_TABLE
       | MULTICAST
       | MULTIPATH
+      | NONSTOP_ROUTING
       | OPTIONS
       | PPM
       | RESOLUTION
@@ -529,6 +531,7 @@ srt_next_hop
    (
       IP_ADDRESS
       | IPV6_ADDRESS
+      | interface_id
    )
 ;
 

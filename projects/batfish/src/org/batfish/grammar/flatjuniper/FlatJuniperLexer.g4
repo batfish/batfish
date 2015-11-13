@@ -131,6 +131,16 @@ ANY
    'any'
 ;
 
+APPLICATION
+:
+   'application'
+;
+
+APPLICATIONS
+:
+   'applications'
+;
+
 APPLY_GROUPS
 :
    'apply-groups'
@@ -214,6 +224,11 @@ AUTHENTICATION_TYPE
 AUTO_EXPORT
 :
    'auto-export'
+;
+
+AUTO_NEGOTIATION
+:
+   'auto-negotiation'
 ;
 
 BACKUP_ROUTER
@@ -510,6 +525,11 @@ EGP
    'egp'
 ;
 
+EIGHT02_3AD
+:
+   '802.3ad'
+;
+
 EKLOGIN
 :
    'eklogin'
@@ -533,6 +553,11 @@ ENCAPSULATION
 ESP
 :
    'esp'
+;
+
+ETHER_OPTIONS
+:
+   'ether-options'
 ;
 
 ETHERNET_SWITCHING
@@ -610,6 +635,11 @@ FAMILY
    'family'
 ;
 
+FASTETHER_OPTIONS
+:
+   'fastether-options'
+;
+
 FILE
 :
    'file'
@@ -643,6 +673,11 @@ FLEXIBLE_VLAN_TAGGING
 FLOW
 :
    'flow'
+;
+
+FORWARDING
+:
+   'forwarding'
 ;
 
 FORWARDING_CLASS
@@ -1075,6 +1110,11 @@ L2VPN
    'l2vpn'
 ;
 
+L3_INTERFACE
+:
+   'l3-interface'
+;
+
 LABEL_SWITCHED_PATH
 :
    'label-switched-path'
@@ -1345,6 +1385,11 @@ MTU
    'mtu'
 ;
 
+MTU_DISCOVERY
+:
+   'mtu-discovery'
+;
+
 MULTICAST
 :
    'multicast'
@@ -1383,6 +1428,11 @@ MULTISERVICE_OPTIONS
 MVPN
 :
    'mvpn'
+;
+
+NAME_RESOLUTION
+:
+   'name-resolution'
 ;
 
 NAME_SERVER
@@ -1480,6 +1530,11 @@ NO_ACTIVE_BACKBONE
    'no-active-backbone'
 ;
 
+NO_AUTO_NEGOTIATION
+:
+   'no-auto-negotiation'
+;
+
 NO_CLIENT_REFLECT
 :
    'no-client-reflect'
@@ -1488,6 +1543,11 @@ NO_CLIENT_REFLECT
 NO_EXPORT
 :
    'no-export'
+;
+
+NO_FLOW_CONTROL
+:
+   'no-flow-control'
 ;
 
 NO_INSTALL
@@ -1538,6 +1598,11 @@ NO_NEIGHBOR_LEARN
 NO_TRAPS
 :
    'no-traps'
+;
+
+NONSTOP_ROUTING
+:
+   'nonstop-routing'
 ;
 
 NSSA
@@ -1663,6 +1728,11 @@ PEER_UNIT
 PER_PACKET
 :
    'per-packet'
+;
+
+PER__UNIT_SCHEDULER
+:
+   'per-unit-scheduler'
 ;
 
 PIM
@@ -1875,9 +1945,19 @@ RECEIVE
    'receive'
 ;
 
+REDUNDANCY_GROUP
+:
+   'redundancy-group'
+;
+
 REDUNDANT_ETHER_OPTIONS
 :
    'redundant-ether-options'
+;
+
+REDUNDANT_PARENT
+:
+   'redundant-parent'
 ;
 
 REFERENCE_BANDWIDTH
@@ -2065,6 +2145,11 @@ SET
    'set'
 ;
 
+SFLOW
+:
+   'sflow'
+;
+
 SHORTCUTS
 :
    'shortcuts'
@@ -2178,6 +2263,11 @@ STATION_ADDRESS
 STATION_PORT
 :
    'station-port'
+;
+
+STP
+:
+   'stp'
 ;
 
 SUBTRACT
@@ -2417,7 +2507,7 @@ VIRTUAL_SWITCH
 
 VLAN
 :
-   'vlan'
+   'vlan' -> pushMode(M_Vlan)
 ;
 
 VLANS
@@ -3349,6 +3439,28 @@ M_Version_VERSION_STRING
 ;
 
 M_Version_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+mode M_Vlan;
+
+M_Vlan_MEMBERS
+:
+   'members' -> type(MEMBERS), popMode
+;
+
+M_Vlan_UNIT
+:
+   'unit' -> type(UNIT), popMode
+;
+
+M_Vlan_VARIABLE
+:
+   ~[ \t\n\r&|()"]+ -> type(VARIABLE), popMode
+;
+
+M_Vlan_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;

@@ -159,9 +159,20 @@ public class ParseVendorConfigurationJob extends
       String hostname = vc.getHostname();
       if (hostname == null) {
          String error = "No hostname set in file: \"" + _file + "\"\n";
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new ParseVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _file, new BatfishException(error));
+         try {
+            _warnings.redFlag(error);
+         }
+         catch (BatfishException e) {
+            elapsedTime = System.currentTimeMillis() - startTime;
+            return new ParseVendorConfigurationResult(elapsedTime,
+                  _logger.getHistory(), _file, e);
+         }
+         String filename = _file.getName();
+         String guessedHostname = filename.replaceAll("\\.(cfg|conf)$", "");
+         _logger
+               .redflag("\tNo hostname set! Guessing hostname from filename: \""
+                     + filename + "\" ==> \"" + guessedHostname + "\"\n");
+         vc.setHostname(guessedHostname);
       }
       elapsedTime = System.currentTimeMillis() - startTime;
       return new ParseVendorConfigurationResult(elapsedTime,

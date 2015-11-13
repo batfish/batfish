@@ -65,8 +65,10 @@ export -f batfish_answer_example_cp
 
 batfish_build() {
    bash -c '_batfish_build "$@"' _batfish_build "$@" || return 1
-   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" ]; then
-      batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" -a -e "$BATFISH_PATH/out/batfish.jar" ]; then
+      echo -n "Generating bash completion file.."
+      BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+      echo "OK"
    fi
 }
 export -f batfish_build
@@ -81,7 +83,9 @@ export -f _batfish_build
 batfish_build_all() {
    bash -c '_batfish_build_all "$@"' _batfish_build_all "$@" || return 1
    if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" -a -e "$BATFISH_PATH/out/batfish.jar" ]; then
-      batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+      echo -n "Generating bash completion file.."
+      BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+      echo "OK"
    fi
 }
 export -f batfish_build_all
@@ -186,6 +190,16 @@ batfish_expect_args() {
    fi   
 }
 export -f batfish_expect_args
+
+batfish_expect_min_args() {
+   local EXPECTED_NUMARGS=$1
+   local ACTUAL_NUMARGS=$2
+   if [ "$EXPECTED_NUMARGS" -gt "$ACTUAL_NUMARGS" ]; then
+      echo "${FUNCNAME[1]}: Expected at least $EXPECTED_NUMARGS arguments, but got $ACTUAL_NUMARGS" >&2
+      return 1
+   fi
+}
+export -f batfish_expect_min_args
 
 batfish_format_flows() {
    batfish_expect_args 1 $# || return 1
@@ -515,8 +529,6 @@ batfish_query_policy() {
 export -f batfish_query_policy
 
 batfish_query_predicate() {
-   batfish_date
-   echo ": START: Query predicate"
    [ "$#" -gt 2 ] || return 1
    local BASE=$1
    shift
@@ -524,8 +536,6 @@ batfish_query_predicate() {
    shift
    local PREDICATES="$@"
    batfish -loglevel output -autobasedir $BASE -env $ENV -query -predicates $PREDICATES
-   batfish_date
-   echo ": END: Query predicate"
 }
 export -f batfish_query_predicate
 
@@ -619,13 +629,14 @@ batfish_serialize_vendor_with_roles() {
 export -f batfish_serialize_vendor_with_roles
 
 batfish_unit_tests_parser() {
-   batfish_expect_args 1 $# || return 1
+   batfish_expect_min_args 1 $# || return 1
    local OUTPUT_DIR=$1
+   shift
    local UNIT_TEST_DIR=$BATFISH_TEST_RIG_PATH/unit-tests
    batfish_date
    echo ": START UNIT TEST: Vendor configuration parser"
-   mkdir -p $OUTPUT_DIR
-   batfish -testrig $UNIT_TEST_DIR -sv -svpath $OUTPUT_DIR -ppt
+   batfish_prepare_test_rig $UNIT_TEST_DIR $OUTPUT_DIR
+   batfish -autobasedir $OUTPUT_DIR -sv "$@"
    batfish_date
    echo ": END UNIT TEST: Vendor configuration parser"
 }

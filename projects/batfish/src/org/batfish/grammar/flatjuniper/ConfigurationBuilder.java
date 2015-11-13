@@ -1078,6 +1078,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentCommunityList.getLines().add(
                new CommunityListLine(ctx.community_regex().getText()));
       }
+      else if (ctx.extended_community_regex() != null) {
+         _currentCommunityList.getLines().add(
+               new CommunityListLine(ctx.extended_community_regex().getText()));
+      }
       else if (ctx.standard_community() != null) {
          long communityVal = toCommunityLong(ctx.standard_community());
          String communityStr = org.batfish.util.Util
