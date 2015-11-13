@@ -13,6 +13,10 @@ public class ExtendedCommunity implements Serializable {
 
    private long _value;
 
+   public ExtendedCommunity(int part1, long part2, int part3) {
+      _value = (part1) | (part2 << 16) | (((long) part3) << 48);
+   }
+
    public ExtendedCommunity(long communityLong) {
       _value = communityLong;
    }
