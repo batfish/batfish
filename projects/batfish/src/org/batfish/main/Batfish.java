@@ -2969,6 +2969,7 @@ public class Batfish implements AutoCloseable {
       CommandLine cmdLine = new CommandLine(NXTNET_COMMAND);
       cmdLine.addArgument("-dir");
       cmdLine.addArgument(nxtnetOutputDir);
+      cmdLine.addArgument("-rev-lookup");
       cmdLine.addArgument(nxtnetInputFile);
       cmdLine.addArguments(logicFilenames);
       StringBuilder cmdLineSb = new StringBuilder();
