@@ -186,6 +186,16 @@ batfish_expect_args() {
 }
 export -f batfish_expect_args
 
+batfish_expect_min_args() {
+   local EXPECTED_NUMARGS=$1
+   local ACTUAL_NUMARGS=$2
+   if [ "$EXPECTED_NUMARGS" -gt "$ACTUAL_NUMARGS" ]; then
+      echo "${FUNCNAME[1]}: Expected at least $EXPECTED_NUMARGS arguments, but got $ACTUAL_NUMARGS" >&2
+      return 1
+   fi
+}
+export -f batfish_expect_min_args
+
 batfish_format_flows() {
    batfish_expect_args 1 $# || return 1
    local DUMP_DIR=$1
@@ -614,13 +624,14 @@ batfish_serialize_vendor_with_roles() {
 export -f batfish_serialize_vendor_with_roles
 
 batfish_unit_tests_parser() {
-   batfish_expect_args 1 $# || return 1
+   batfish_expect_min_args 1 $# || return 1
    local OUTPUT_DIR=$1
+   shift
    local UNIT_TEST_DIR=$BATFISH_TEST_RIG_PATH/unit-tests
    batfish_date
    echo ": START UNIT TEST: Vendor configuration parser"
-   mkdir -p $OUTPUT_DIR
-   batfish -testrig $UNIT_TEST_DIR -sv -svpath $OUTPUT_DIR -ppt
+   batfish_prepare_test_rig $UNIT_TEST_DIR $OUTPUT_DIR
+   batfish -autobasedir $OUTPUT_DIR -sv "$@"
    batfish_date
    echo ": END UNIT TEST: Vendor configuration parser"
 }

@@ -77,6 +77,7 @@ eot_null
 :
    (
       AUTO_NEGOTIATION
+      | IGNORE_L3_INCOMPLETES
       | NO_AUTO_NEGOTIATION
       | NO_FLOW_CONTROL
       | LINK_MODE

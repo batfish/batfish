@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.main.Warnings;
@@ -1078,6 +1079,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentCommunityList.getLines().add(
                new CommunityListLine(ctx.community_regex().getText()));
       }
+      else if (ctx.extended_community_regex() != null) {
+         _currentCommunityList.getLines().add(
+               new CommunityListLine(ctx.extended_community_regex().getText()));
+      }
       else if (ctx.standard_community() != null) {
          long communityVal = toCommunityLong(ctx.standard_community());
          String communityStr = org.batfish.util.Util
@@ -1640,6 +1645,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return asPath;
    }
 
+   private long toCommunityLong(Ec_literalContext ctx) {
+      String[] parts = ctx.getText().split(":");
+      int part1 = Integer.parseInt(parts[0]);
+      long part2 = Long.parseLong(parts[1]);
+      int part3 = Integer.parseInt(parts[2]);
+      ExtendedCommunity c = new ExtendedCommunity(part1, part2, part3);
+      return c.asLong();
+   }
+
    private long toCommunityLong(Ec_namedContext ctx) {
       ExtendedCommunity ec = new ExtendedCommunity(ctx.getText());
       return ec.asLong();
@@ -1647,8 +1661,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private long toCommunityLong(Extended_communityContext ctx) {
       if (ctx.ec_literal() != null) {
-         throw new BatfishException(
-               "literal extended communities not supported");
+         return toCommunityLong(ctx.ec_literal());
       }
       else if (ctx.ec_named() != null) {
          return toCommunityLong(ctx.ec_named());

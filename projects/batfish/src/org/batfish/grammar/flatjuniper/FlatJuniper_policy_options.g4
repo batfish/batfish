@@ -11,6 +11,12 @@ base_community_regex
    ~( COLON | NEWLINE )+ COLON ~( COLON | NEWLINE )+
 ;
 
+base_extended_community_regex
+:
+   ~( COLON | NEWLINE )+ COLON ~( COLON | NEWLINE )+ COLON ~( COLON | NEWLINE
+   )+
+;
+
 colort_apply_groups
 :
    s_apply_groups
@@ -37,7 +43,15 @@ ct_members
       // community_regex intentionally on bottom
 
       | community_regex
+      | extended_community_regex
    )
+;
+
+extended_community_regex
+:
+   (
+      base_extended_community_regex PIPE
+   )* base_extended_community_regex
 ;
 
 fromt_area

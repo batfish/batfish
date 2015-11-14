@@ -41,7 +41,10 @@ public final class Format {
          return ConfigurationFormat.JUNIPER_SWITCH;
       }
       else if (firstChar == '#') {
-         if (fileText.contains("set version")) {
+         Matcher setMatcher = Pattern.compile("^set ").matcher(fileText);
+         if (fileText.contains("set version")
+               || fileText.contains("set host-name")
+               || (fileText.contains("apply-groups") && setMatcher.find())) {
             return ConfigurationFormat.FLAT_JUNIPER;
          }
          else {

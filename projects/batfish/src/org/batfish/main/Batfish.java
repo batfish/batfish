@@ -51,6 +51,7 @@ import org.batfish.collections.InterfaceSet;
 import org.batfish.collections.FunctionSet;
 import org.batfish.collections.IbgpTopology;
 import org.batfish.collections.IpEdge;
+import org.batfish.collections.LBValueTypeList;
 import org.batfish.collections.MultiSet;
 import org.batfish.collections.NodeInterfacePair;
 import org.batfish.collections.NodeIpPair;
@@ -790,6 +791,14 @@ public class Batfish implements AutoCloseable {
       serializeObject(predicateInfo, predicateInfoFile);
    }
 
+   private void checkBaseDirExists() {
+      File baseDir = new File(_settings.getAutoBaseDir());
+      if (!baseDir.exists()) {
+         throw new CleanBatfishException("Test rig does not exist: \""
+               + baseDir.getName() + "\"");
+      }
+   }
+
    private void checkComputeControlPlaneFacts() {
       checkConfigurations();
       checkEnvironmentExists(_baseEnvSettings);
@@ -839,6 +848,17 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   private void checkDataPlaneFacts(EnvironmentSettings envSettings) {
+      checkEnvironmentExists(envSettings);
+      File dataPlaneFactDir = new File(
+            envSettings.getNxtnetDataPlaneOutputDir());
+      if (!dataPlaneFactDir.exists()) {
+         throw new CleanBatfishException(
+               "Missing computed data plane facts for environment: "
+                     + envSettings.getName() + "\n");
+      }
+   }
+
    private void checkDataPlaneQuestionDependencies() {
       checkDataPlaneQuestionDependencies(_envSettings);
    }
@@ -869,9 +889,36 @@ public class Batfish implements AutoCloseable {
    }
 
    private void checkEnvironmentExists(EnvironmentSettings envSettings) {
+      checkBaseDirExists();
       if (!new File(envSettings.getDataPlanePath()).getParentFile().exists()) {
          throw new CleanBatfishException("Environment not initialized: \""
                + envSettings.getName() + "\"");
+      }
+   }
+
+   private void checkQuery(EnvironmentSettings envSettings,
+         Set<String> predicateNames) {
+      Set<String> dpIntersect = new HashSet<String>();
+      dpIntersect.addAll(predicateNames);
+      dpIntersect.retainAll(NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS);
+      if (dpIntersect.size() > 0) {
+         checkDataPlaneFacts(envSettings);
+      }
+      Set<String> trafficIntersect = new HashSet<String>();
+      trafficIntersect.addAll(predicateNames);
+      trafficIntersect.retainAll(NxtnetConstants.NXTNET_TRAFFIC_OUTPUT_SYMBOLS);
+      if (trafficIntersect.size() > 0) {
+         checkTrafficFacts(envSettings);
+      }
+   }
+
+   private void checkTrafficFacts(EnvironmentSettings envSettings) {
+      checkEnvironmentExists(envSettings);
+      File trafficFactDir = new File(envSettings.getNxtnetTrafficOutputDir());
+      if (!trafficFactDir.exists()) {
+         throw new CleanBatfishException(
+               "Missing computed traffic facts for environment: "
+                     + envSettings.getName() + "\n");
       }
    }
 
@@ -974,6 +1021,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void computeDataPlane() {
+      checkDataPlaneFacts(_envSettings);
       String dataPlanePath = _envSettings.getDataPlanePath();
       if (dataPlanePath == null) {
          throw new BatfishException("Missing path to data plane");
@@ -1500,190 +1548,12 @@ public class Batfish implements AutoCloseable {
 
    }
 
-   // private void genRoleTransitQueries() {
-   // _logger.info("\n*** GENERATING ROLE-TO-NODE QUERIES ***\n");
-   // resetTimer();
-   //
-   // String queryBasePath = _settings.getRoleTransitQueryPath();
-   // String nodeSetPath = _settings.getNodeSetPath();
-   // String nodeSetTextPath = nodeSetPath + ".txt";
-   // String roleSetTextPath = _settings.getRoleSetPath();
-   // String nodeRolesPath = _settings.getNodeRolesPath();
-   // String roleNodesPath = _settings.getRoleNodesPath();
-   // String iterationsPath = nodeRolesPath + ".rtiterations";
-   // String constraintsIterationsPath = nodeRolesPath
-   // + ".rtconstraintsiterations";
-   //
-   // _logger.info("Reading node set from: \"" + nodeSetPath + "\"...");
-   // NodeSet nodes = (NodeSet) deserializeObject(new File(nodeSetPath));
-   // _logger.info("OK\n");
-   //
-   // _logger.info("Reading node roles from: \"" + nodeRolesPath + "\"...");
-   // NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(new File(
-   // nodeRolesPath));
-   // _logger.info("OK\n");
-   //
-   // RoleNodeMap roleNodes = nodeRoles.toRoleNodeMap();
-   //
-   // for (Entry<String, NodeSet> sourceEntry : roleNodes.entrySet()) {
-   // String sourceRole = sourceEntry.getKey();
-   // for (Entry<String, NodeSet> transitEntry : roleNodes.entrySet()) {
-   // String transitRole = transitEntry.getKey();
-   // if (transitRole.equals(sourceRole)) {
-   // continue;
-   // }
-   // NodeSet transitNodes = transitEntry.getValue();
-   // for (String transitNode : transitNodes) {
-   // QuerySynthesizer synth = new RoleTransitQuerySynthesizer(
-   // sourceRole, transitNode);
-   // String queryText = synth.getQueryText();
-   // String queryPath = queryBasePath + "-" + transitNode + "-"
-   // + sourceRole + ".smt2";
-   // _logger.info("Writing query to: \"" + queryPath + "\"...");
-   // writeFile(queryPath, queryText);
-   // _logger.info("OK\n");
-   // }
-   // }
-   // }
-   //
-   // _logger.info("Writing node lines for next stage...");
-   // StringBuilder sbNodes = new StringBuilder();
-   // for (String node : nodes) {
-   // sbNodes.append(node + "\n");
-   // }
-   // writeFile(nodeSetTextPath, sbNodes.toString());
-   // _logger.info("OK\n");
-   //
-   // StringBuilder sbRoles = new StringBuilder();
-   // _logger.info("Writing role lines for next stage...");
-   // sbRoles = new StringBuilder();
-   // for (String role : roleNodes.keySet()) {
-   // sbRoles.append(role + "\n");
-   // }
-   // writeFile(roleSetTextPath, sbRoles.toString());
-   // _logger.info("OK\n");
-   //
-   // // not actually sure if this is necessary
-   // StringBuilder sbRoleNodes = new StringBuilder();
-   // _logger.info("Writing role-node mappings for concretizer stage...");
-   // sbRoleNodes = new StringBuilder();
-   // for (Entry<String, NodeSet> e : roleNodes.entrySet()) {
-   // String role = e.getKey();
-   // NodeSet currentNodes = e.getValue();
-   // sbRoleNodes.append(role + ":");
-   // for (String node : currentNodes) {
-   // sbRoleNodes.append(node + ",");
-   // }
-   // sbRoleNodes.append(role + "\n");
-   // }
-   // writeFile(roleNodesPath, sbRoleNodes.toString());
-   //
-   // _logger
-   // .info("Writing transitrole-transitnode-sourcerole iteration ordering lines for constraints stage...");
-   // StringBuilder sbConstraintsIterations = new StringBuilder();
-   // for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
-   // String transitRole = roleNodeEntry.getKey();
-   // NodeSet transitNodes = roleNodeEntry.getValue();
-   // if (transitNodes.size() < 2) {
-   // continue;
-   // }
-   // for (String sourceRole : roleNodes.keySet()) {
-   // if (sourceRole.equals(transitRole)) {
-   // continue;
-   // }
-   // for (String transitNode : transitNodes) {
-   // String iterationLine = transitRole + ":" + transitNode + ":"
-   // + sourceRole + "\n";
-   // sbConstraintsIterations.append(iterationLine);
-   // }
-   // }
-   // }
-   // writeFile(constraintsIterationsPath, sbConstraintsIterations.toString());
-   // _logger.info("OK\n");
-   //
-   // _logger
-   // .info("Writing transitrole-master-slave-sourcerole iteration ordering lines for concretizer stage...");
-   // StringBuilder sbIterations = new StringBuilder();
-   // for (Entry<String, NodeSet> roleNodeEntry : roleNodes.entrySet()) {
-   // String transitRole = roleNodeEntry.getKey();
-   // NodeSet transitNodes = roleNodeEntry.getValue();
-   // if (transitNodes.size() < 2) {
-   // continue;
-   // }
-   // String[] tNodeArray = transitNodes.toArray(new String[] {});
-   // String masterNode = tNodeArray[0];
-   // for (int i = 1; i < tNodeArray.length; i++) {
-   // String slaveNode = tNodeArray[i];
-   // for (String sourceRole : roleNodes.keySet()) {
-   // if (sourceRole.equals(transitRole)) {
-   // continue;
-   // }
-   // String iterationLine = transitRole + ":" + masterNode + ":"
-   // + slaveNode + ":" + sourceRole + "\n";
-   // sbIterations.append(iterationLine);
-   // }
-   // }
-   // }
-   // writeFile(iterationsPath, sbIterations.toString());
-   // _logger.info("OK\n");
-   //
-   // printElapsedTime();
-   // }
-
-   // private void genZ3(Map<String, Configuration> configurations,
-   // File dataPlanePath) {
-   // _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
-   // resetTimer();
-   //
-   // String outputPath = _settings.getZ3File();
-   // if (outputPath == null) {
-   // throw new BatfishException("Need to specify output path for z3 logic");
-   // }
-   // String nodeSetPath = _settings.getNodeSetPath();
-   // if (nodeSetPath == null) {
-   // throw new BatfishException(
-   // "Need to specify output path for serialized set of nodes in environment");
-   // }
-   //
-   // _logger.info("Deserializing data plane: \"" + dataPlanePath.toString()
-   // + "\"...");
-   // DataPlane dataPlane = (DataPlane) deserializeObject(dataPlanePath);
-   // _logger.info("OK\n");
-   //
-   // _logger.info("Synthesizing Z3 logic...");
-   // Synthesizer s = new Synthesizer(configurations, dataPlane,
-   // _settings.getSimplify());
-   // String result = s.synthesize();
-   // List<String> warnings = s.getWarnings();
-   // int numWarnings = warnings.size();
-   // if (numWarnings == 0) {
-   // _logger.info("OK\n");
-   // }
-   // else {
-   // for (String warning : warnings) {
-   // _logger.warn(warning);
-   // }
-   // }
-   //
-   // _logger.info("Writing Z3 logic: \"" + outputPath + "\"...");
-   // File z3Out = new File(outputPath);
-   // z3Out.delete();
-   // writeFile(outputPath, result);
-   // _logger.info("OK\n");
-   //
-   // _logger.info("Serializing node set: \"" + nodeSetPath + "\"...");
-   // NodeSet nodeSet = s.getNodeSet();
-   // serializeObject(nodeSet, new File(nodeSetPath));
-   // _logger.info("OK\n");
-   //
-   // printElapsedTime();
-   // }
-
    private AdvertisementSet getAdvertisements() {
       return getAdvertisements(_envSettings);
    }
 
    private AdvertisementSet getAdvertisements(EnvironmentSettings envSettings) {
+      checkDataPlaneFacts(_envSettings);
       AdvertisementSet adverts = new AdvertisementSet();
       EntityTable entityTable = initEntityTable(envSettings);
       Relation relation = getRelation(envSettings,
@@ -1790,6 +1660,8 @@ public class Batfish implements AutoCloseable {
    private void getHistory() {
       FlowHistory flowHistory = new FlowHistory();
       if (_settings.getDiffQuestion()) {
+         checkTrafficFacts(_baseEnvSettings);
+         checkTrafficFacts(_diffEnvSettings);
          String tag = getDifferentialFlowTag();
          populateFlowHistory(flowHistory, _baseEnvSettings,
                _baseEnvSettings.getName(), tag);
@@ -1797,6 +1669,7 @@ public class Batfish implements AutoCloseable {
                _diffEnvSettings.getName(), tag);
       }
       else {
+         checkTrafficFacts(_envSettings);
          String tag = getFlowTag();
          populateFlowHistory(flowHistory, _envSettings, _envSettings.getName(),
                tag);
@@ -1809,6 +1682,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private IbgpTopology getIbgpNeighbors(EnvironmentSettings envSettings) {
+      checkDataPlaneFacts(_envSettings);
       IbgpTopology topology = new IbgpTopology();
       Relation relation = getRelation(envSettings,
             IBGP_NEIGHBORS_PREDICATE_NAME);
@@ -1881,11 +1755,11 @@ public class Batfish implements AutoCloseable {
    private String getNxtnetText(EnvironmentSettings envSettings,
          String relationName) {
       String nxtnetOutputDir;
-      if (Arrays.asList(NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS)
+      if (NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS
             .contains(relationName)) {
          nxtnetOutputDir = envSettings.getNxtnetDataPlaneOutputDir();
       }
-      else if (Arrays.asList(NxtnetConstants.NXTNET_TRAFFIC_OUTPUT_SYMBOLS)
+      else if (NxtnetConstants.NXTNET_TRAFFIC_OUTPUT_SYMBOLS
             .contains(relationName)) {
          nxtnetOutputDir = envSettings.getNxtnetTrafficOutputDir();
       }
@@ -2013,6 +1887,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private RouteSet getRoutes(EnvironmentSettings envSettings) {
+      checkDataPlaneFacts(_envSettings);
       RouteSet routes = new RouteSet();
       EntityTable entityTable = initEntityTable(envSettings);
       Relation relation = getRelation(envSettings,
@@ -2775,6 +2650,7 @@ public class Batfish implements AutoCloseable {
       else {
          predicateNames.addAll(_settings.getPredicates());
       }
+      checkQuery(_envSettings, predicateNames);
       printPredicates(predicateNames);
    }
 
@@ -2804,7 +2680,7 @@ public class Batfish implements AutoCloseable {
       return configurationData;
    }
 
-   private Map<String, String> readFacts(String factsDir, String[] factNames) {
+   private Map<String, String> readFacts(String factsDir, Set<String> factNames) {
       Map<String, String> inputFacts = new TreeMap<String, String>();
       for (String factName : factNames) {
          File factFile = Paths.get(factsDir, factName).toFile();
@@ -2914,7 +2790,7 @@ public class Batfish implements AutoCloseable {
             || _settings.getDataPlane() || _settings.getWriteRoutes()
             || _settings.getWriteBgpAdvertisements()
             || _settings.getWriteIbgpNeighbors() || _settings.getHistory()
-            || _settings.getNxtnetDataPlane()) {
+            || _settings.getNxtnetDataPlane() || _settings.getNxtnetTraffic()) {
          Map<String, String> logicFiles = getSemanticsFiles();
          _predicateInfo = getPredicateInfo(logicFiles);
          // Print predicate semantics and quit if requested
@@ -3093,6 +2969,7 @@ public class Batfish implements AutoCloseable {
       CommandLine cmdLine = new CommandLine(NXTNET_COMMAND);
       cmdLine.addArgument("-dir");
       cmdLine.addArgument(nxtnetOutputDir);
+      cmdLine.addArgument("-rev-lookup");
       cmdLine.addArgument(nxtnetInputFile);
       cmdLine.addArguments(logicFilenames);
       StringBuilder cmdLineSb = new StringBuilder();
@@ -3306,12 +3183,12 @@ public class Batfish implements AutoCloseable {
    }
 
    private void writeBgpAdvertisements(String writeAdvertsPath) {
+      AdvertisementSet adverts = getAdvertisements();
       File advertsFile = new File(writeAdvertsPath);
       File parentDir = advertsFile.getParentFile();
       if (parentDir != null) {
          parentDir.mkdirs();
       }
-      AdvertisementSet adverts = getAdvertisements();
       _logger.info("Serializing: BGP advertisements => \"" + writeAdvertsPath
             + "\"...");
       serializeObject(adverts, advertsFile);
@@ -3345,27 +3222,30 @@ public class Batfish implements AutoCloseable {
    }
 
    private void writeIbgpNeighbors(String ibgpTopologyPath) {
+      IbgpTopology topology = getIbgpNeighbors();
       File ibgpTopologyFile = new File(ibgpTopologyPath);
       File parentDir = ibgpTopologyFile.getParentFile();
       if (parentDir != null) {
          parentDir.mkdirs();
       }
-      IbgpTopology topology = getIbgpNeighbors();
       _logger.info("Serializing: IBGP neighbors => \"" + ibgpTopologyPath
             + "\"...");
       serializeObject(topology, ibgpTopologyFile);
       _logger.info("OK\n");
    }
 
-   private void writeNxtnetInput(String[] outputSymbols,
+   private void writeNxtnetInput(Set<String> outputSymbols,
          Map<String, String> inputFacts, String nxtnetInputFile) {
       checkComputeNxtnetRelations();
       StringBuilder sb = new StringBuilder();
       sb.append("output_symbols([");
-      for (int i = 0; i < outputSymbols.length; i++) {
-         String symbol = outputSymbols[i];
+      List<String> outputSymbolsList = new ArrayList<String>();
+      outputSymbolsList.addAll(outputSymbols);
+      int numOutputSymbols = outputSymbols.size();
+      for (int i = 0; i < numOutputSymbols; i++) {
+         String symbol = outputSymbolsList.get(i);
          sb.append("'" + symbol + "'");
-         if (i < outputSymbols.length - 1) {
+         if (i < numOutputSymbols - 1) {
             sb.append(",");
          }
          else {
@@ -3376,6 +3256,8 @@ public class Batfish implements AutoCloseable {
       for (Entry<String, String> e : inputFacts.entrySet()) {
          String predicateName = e.getKey();
          String contents = e.getValue();
+         LBValueTypeList valueTypes = _predicateInfo
+               .getPredicateValueTypes(predicateName);
          String[] lines = contents.split("\n");
          for (int i = 1; i < lines.length; i++) {
             sb.append("'" + predicateName + "'(");
@@ -3383,9 +3265,38 @@ public class Batfish implements AutoCloseable {
             String[] parts = line.split(lineDelimiter);
             for (int j = 0; j < parts.length; j++) {
                String part = parts[j];
-               char firstChar = part.charAt(0);
-               boolean isNum = ('0' <= firstChar && firstChar <= '9')
-                     || firstChar == '-';
+               boolean isNum;
+               LBValueType currentValueType = valueTypes.get(j);
+               switch (currentValueType) {
+               case ENTITY_INDEX_BGP_ADVERTISEMENT:
+               case ENTITY_INDEX_FLOW:
+               case ENTITY_INDEX_INT:
+               case ENTITY_INDEX_NETWORK:
+               case ENTITY_INDEX_ROUTE:
+               case ENTITY_REF_AUTONOMOUS_SYSTEM:
+               case ENTITY_REF_INT:
+               case ENTITY_REF_IP:
+               case FLOAT:
+               case INT:
+                  isNum = true;
+                  break;
+
+               case ENTITY_REF_ADVERTISEMENT_TYPE:
+               case ENTITY_REF_AS_PATH:
+               case ENTITY_REF_FLOW_TAG:
+               case ENTITY_REF_INTERFACE:
+               case ENTITY_REF_NODE:
+               case ENTITY_REF_ORIGIN_TYPE:
+               case ENTITY_REF_POLICY_MAP:
+               case ENTITY_REF_ROUTING_PROTOCOL:
+               case ENTITY_REF_STRING:
+               case STRING:
+                  isNum = false;
+                  break;
+
+               default:
+                  throw new BatfishException("invalid value type");
+               }
                if (!isNum) {
                   sb.append("'" + part + "'");
                }
@@ -3419,12 +3330,12 @@ public class Batfish implements AutoCloseable {
    }
 
    private void writeRoutes(String writeRoutesPath) {
+      RouteSet routes = getRoutes();
       File routesFile = new File(writeRoutesPath);
       File parentDir = routesFile.getParentFile();
       if (parentDir != null) {
          parentDir.mkdirs();
       }
-      RouteSet routes = getRoutes();
       _logger.info("Serializing: routes => \"" + writeRoutesPath + "\"...");
       serializeObject(routes, routesFile);
       _logger.info("OK\n");
