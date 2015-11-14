@@ -282,7 +282,7 @@ bt_local_address
    (
       IP_ADDRESS
       | IPV6_ADDRESS
-   )
+   )?
 ;
 
 bt_local_as
