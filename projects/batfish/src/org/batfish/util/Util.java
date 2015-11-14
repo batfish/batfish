@@ -69,9 +69,12 @@ public class Util {
    public static Integer getInterfaceVlanNumber(String ifaceName) {
       String prefix = "vlan";
       String ifaceNameLower = ifaceName.toLowerCase();
-      if (ifaceNameLower.startsWith(prefix)) {
-         String vlanStr = ifaceNameLower.substring(prefix.length());
-         return Integer.parseInt(vlanStr);
+      String withoutDot = ifaceNameLower.replaceAll("\\.", "");
+      if (withoutDot.startsWith(prefix)) {
+         String vlanStr = withoutDot.substring(prefix.length());
+         if (vlanStr.length() > 0) {
+            return Integer.parseInt(vlanStr);
+         }
       }
       return null;
    }
