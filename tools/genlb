@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+_genlbpackage() {
+   local COMMAND=$0
+   if [ "$#" -ne  1 ]; then
+      echo "Usage: $0 <test-rig dir>"
+      return 1
+   fi
+   
+   local -a OUTPUT_PREDICATES=(
+      AsPathFirstMatchAdvert
+      InstalledRoute
+      PolicyMapFirstMatchRoute
+      PolicyMapFirstMatchAdvert
+      ReceivedBgpAdvertisement
+      RouteFilterFirstMatch
+   )
+  
+   
+   local TEST_RIG_RELATIVE=$1
+   if [ -z "$BATFISH_CONFIRM" ]; then
+      local BATFISH_CONFIRM=true
+   fi
+   local OLD_PWD=$PWD
+   if [ "$(echo $TEST_RIG_RELATIVE | head -c1)" = "/" ]; then
+      local TEST_RIG=$TEST_RIG_RELATIVE
+   else
+      local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
+   fi
+   local NAME=$(basename $TEST_RIG)
+   local BASE=$PWD/$NAME
+   local INPUT_FACTS_DIR=${NAME}.input_facts
+   local OUTPUT_PREDICATES_DIR=${NAME}.output_predicates
+   local PACKAGE_BASENAME=${BASE}.output
+   local ENV=multipath-default
+   local QUESTIONNAME=multipath
+
+   echo "Prepare test-rig"
+   $BATFISH_CONFIRM && { batfish_prepare_test_rig $TEST_RIG $BASE || return 1 ; }
+
+   echo "Prepare default environment"
+   $BATFISH_CONFIRM && { batfish_prepare_default_environment $BASE $ENV || return 1 ; }
+
+   echo "Parse vendor configuration files and serialize vendor structures"
+   $BATFISH_CONFIRM && { batfish_serialize_vendor $BASE || return 1 ; }
+
+   echo "Parse vendor structures and serialize vendor-independent structures"
+   $BATFISH_CONFIRM && { batfish_serialize_independent $BASE || return 1 ; }
+
+   echo "Compute the fixed point of the control plane"
+   $BATFISH_CONFIRM && { batfish_compile $BASE $ENV || return 1 ; }
+
+   echo "Query data plane predicates (Text)"
+   $BATFISH_CONFIRM && { batfish_query_predicate $BASE $ENV ${OUTPUT_PREDICATES[@]} || return 1 ; }
+   
+   echo "Package output"
+    $BATFISH_CONFIRM && {
+       mkdir -p $INPUT_FACTS_DIR || return 1 ;
+       mkdir -p $OUTPUT_PREDICATES_DIR || return 1 ;
+       cp $BASE/environments/$ENV/dump/* $INPUT_FACTS_DIR/ || return 1 ;
+       cp $BASE/environments/$ENV/querydump/* $OUTPUT_PREDICATES_DIR/ || return 1 ;
+       tar -czf $PACKAGE_BASENAME.tar.gz $OUTPUT_PREDICATES_DIR $INPUT_FACTS_DIR || return 1 ;
+    }
+
+}
+export -f _genlbpackage
+
+bash -c '_genlbpackage "$@"' $0 "$@"
