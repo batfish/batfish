@@ -865,6 +865,11 @@ IGMP_SNOOPING
    'igmp-snooping'
 ;
 
+IGNORE_L3_INCOMPLETES
+:
+   'ignore-l3-incompletes'
+;
+
 IGP
 :
    'igp'
