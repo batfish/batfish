@@ -11,10 +11,12 @@ import org.batfish.coordinator.queues.WorkQueue;
 public class Settings extends BaseSettings {
 
    private static final String ARG_AUTHORIZER_TYPE = "coordinator.AuthorizerType";
+   private static final String ARG_DB_AUTHORIZER_CONN_STRING = "dbconnection";
    private static final String ARG_DISABLE_SSL = "coordinator.DisableSsl";
    /**
     * (not wired to command line)
     */
+   private static final String ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS = "dbcacheexpiry";
    private static final String ARG_FILE_AUTHORIZER_PERMS_FILE = "coordinator.FileAuthPermsFile";
    private static final String ARG_FILE_AUTHORIZER_ROOT_DIR = "coordinator.FileAuthRootDir";
    private static final String ARG_FILE_AUTHORIZER_USERS_FILE = "coordinator.FileAuthUsersFile";
@@ -39,6 +41,7 @@ public class Settings extends BaseSettings {
    private static final String EXECUTABLE_NAME = "coordinator";
 
    private Authorizer.Type _authorizerType;
+   private String _dbAuthorizerConnString;
    private String _logFile;
    private String _logLevel;
    private long _periodAssignWorkMs;
@@ -67,6 +70,14 @@ public class Settings extends BaseSettings {
 
    public Authorizer.Type getAuthorizationType() {
       return _authorizerType;
+   }
+
+   public long getDbAuthorizerCacheExpiryMs() {
+      return _config.getLong(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS);
+   }
+
+   public String getDbAuthorizerConnString() {
+      return _dbAuthorizerConnString;
    }
 
    public String getFileAuthorizerPermsFile() {
@@ -155,6 +166,7 @@ public class Settings extends BaseSettings {
 
    private void initConfigDefaults() {
       setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none.toString());
+      //no default for ARG_DB_AUTHORIZER_CONN_STRING
       setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
       setDefaultProperty(ARG_FILE_AUTHORIZER_PERMS_FILE, "perms.json");
       setDefaultProperty(ARG_FILE_AUTHORIZER_ROOT_DIR, "fileauthorizer");
@@ -185,6 +197,9 @@ public class Settings extends BaseSettings {
    private void initOptions() {
       addOption(ARG_AUTHORIZER_TYPE, "type of authorizer to use",
             "authorizer type");
+
+      addOption(ARG_DB_AUTHORIZER_CONN_STRING, "connection string for authorizer db",
+            "connection string");
 
       addBooleanOption(ARG_DISABLE_SSL, "disable coordinator ssl");
 
@@ -230,6 +245,7 @@ public class Settings extends BaseSettings {
 
       _authorizerType = Authorizer.Type
             .valueOf(getStringOptionValue(ARG_AUTHORIZER_TYPE));
+      _dbAuthorizerConnString = getStringOptionValue(ARG_DB_AUTHORIZER_CONN_STRING);
       _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);
       _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);
       _queueType = WorkQueue.Type.valueOf(getStringOptionValue(ARG_QUEUE_TYPE));
@@ -247,5 +263,4 @@ public class Settings extends BaseSettings {
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
       _useSsl = !getBooleanOptionValue(ARG_DISABLE_SSL);
    }
-
 }
