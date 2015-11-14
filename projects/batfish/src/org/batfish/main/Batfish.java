@@ -51,6 +51,7 @@ import org.batfish.collections.InterfaceSet;
 import org.batfish.collections.FunctionSet;
 import org.batfish.collections.IbgpTopology;
 import org.batfish.collections.IpEdge;
+import org.batfish.collections.LBValueTypeList;
 import org.batfish.collections.MultiSet;
 import org.batfish.collections.NodeInterfacePair;
 import org.batfish.collections.NodeIpPair;
@@ -3376,6 +3377,8 @@ public class Batfish implements AutoCloseable {
       for (Entry<String, String> e : inputFacts.entrySet()) {
          String predicateName = e.getKey();
          String contents = e.getValue();
+         LBValueTypeList valueTypes = _predicateInfo
+               .getPredicateValueTypes(predicateName);
          String[] lines = contents.split("\n");
          for (int i = 1; i < lines.length; i++) {
             sb.append("'" + predicateName + "'(");
@@ -3383,9 +3386,38 @@ public class Batfish implements AutoCloseable {
             String[] parts = line.split(lineDelimiter);
             for (int j = 0; j < parts.length; j++) {
                String part = parts[j];
-               char firstChar = part.charAt(0);
-               boolean isNum = ('0' <= firstChar && firstChar <= '9')
-                     || firstChar == '-';
+               boolean isNum;
+               LBValueType currentValueType = valueTypes.get(j);
+               switch (currentValueType) {
+               case ENTITY_INDEX_BGP_ADVERTISEMENT:
+               case ENTITY_INDEX_FLOW:
+               case ENTITY_INDEX_INT:
+               case ENTITY_INDEX_NETWORK:
+               case ENTITY_INDEX_ROUTE:
+               case ENTITY_REF_AUTONOMOUS_SYSTEM:
+               case ENTITY_REF_INT:
+               case ENTITY_REF_IP:
+               case FLOAT:
+               case INT:
+                  isNum = true;
+                  break;
+
+               case ENTITY_REF_ADVERTISEMENT_TYPE:
+               case ENTITY_REF_AS_PATH:
+               case ENTITY_REF_FLOW_TAG:
+               case ENTITY_REF_INTERFACE:
+               case ENTITY_REF_NODE:
+               case ENTITY_REF_ORIGIN_TYPE:
+               case ENTITY_REF_POLICY_MAP:
+               case ENTITY_REF_ROUTING_PROTOCOL:
+               case ENTITY_REF_STRING:
+               case STRING:
+                  isNum = false;
+                  break;
+
+               default:
+                  throw new BatfishException("invalid value type");
+               }
                if (!isNum) {
                   sb.append("'" + part + "'");
                }
