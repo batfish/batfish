@@ -10,6 +10,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.common.BatfishException;
 import org.batfish.main.PartialGroupMatchBatfishException;
+import org.batfish.main.UndefinedGroupBatfishException;
 import org.batfish.main.Warnings;
 
 public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
@@ -80,6 +81,12 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
                + ": caused by: "
                + ExceptionUtils.getFullStackTrace(e);
          _w.pedantic(message);
+      }
+      catch (UndefinedGroupBatfishException e) {
+         String message = "apply-groups statement at path: \""
+               + _currentPath.pathString()
+               + "\" refers to non-existent group \"" + groupName + "\n";
+         _w.redFlag(message);
       }
       catch (BatfishException e) {
          String message = "Exception processing apply-groups statement at path: \""
