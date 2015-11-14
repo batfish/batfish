@@ -1776,7 +1776,7 @@ block(`service_config) {
       file_definition(fd) {
          file_delimiter[] = "|",
          column_headers[] = "NODE,AREA",
-         column_formats[] = "string,integer"
+         column_formats[] = "string,string"
       }.
       file_binding_by_name["SetIsisArea"] = fb,
       file_binding(fb) {

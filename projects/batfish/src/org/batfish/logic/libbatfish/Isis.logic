@@ -26,6 +26,11 @@ MinIsisL2RouteCost[node, network] = minCost ->
 NonIsisExportableRoute(route) ->
    Route(route).
 
+IsisArea(area),
+   IsisArea_name(area:name)
+->
+   string(name).
+
 IsisGeneratedRoute(route) ->
    Route(route).
 
@@ -75,7 +80,7 @@ IsisL2Network(node, network) ->
 
 SetIsisArea(node, area) ->
    Node(node),
-   int(area).
+   IsisArea(area).
 
 SetIsisGeneratedRoute(node, network) ->
    Node(node),
