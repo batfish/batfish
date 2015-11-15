@@ -2,10 +2,10 @@
 
 create database batfish_test;
 
-create table ApiKeys 
+create table batfish_test.ApiKeys 
  (ApiKey varchar(255) not null primary key);
  
- create table Permissions
+ create table batfish_test.Permissions
  (ApiKey varchar(255) not null,
   ContainerName varchar(255) not null,
   primary key (ApiKey, ContainerName));
@@ -22,4 +22,4 @@ GRANT SELECT, INSERT ON batfish_test.* TO 'batfish'@'localhost';
 
 #this is the test apikey that we use
 
-insert into ApiKeys values ('0000000');
+insert into batfish_test.ApiKeys values ('0000000');
