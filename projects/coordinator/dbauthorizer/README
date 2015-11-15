@@ -1,5 +1,4 @@
 #for testing, create a database called batfish_test and the tables as specified below
-# also create a user batfish with password batfish that has select and insert privileges for batfish_Test
 
 create database batfish_test;
 
@@ -11,6 +10,16 @@ create table ApiKeys
   ContainerName varchar(255) not null,
   primary key (ApiKey, ContainerName));
 
-insert into ApiKeys values ('0000000');
-select * from ApiKeys;
 
+
+# also create a user batfish with password batfish that has select and insert privileges for batfish_Test
+
+create user 'batfish'@'localhost' identified by 'batfish';
+
+GRANT SELECT, INSERT ON batfish_test.* TO 'batfish'@'localhost';
+
+
+
+#this is the test apikey that we use
+
+insert into ApiKeys values ('0000000');
