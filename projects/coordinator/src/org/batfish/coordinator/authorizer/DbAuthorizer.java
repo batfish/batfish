@@ -49,11 +49,14 @@ public class DbAuthorizer implements Authorizer {
             return;
          }
          catch (SQLException e) {
-            _logger.errorf("SQLException while opening Db connection: %s", e.getMessage());
+            if (e.getMessage().contains("Access denied for user") || 
+                  e.getMessage().contains("No suitable driver found") ||
+                  triesLeft == 0) 
+               throw e;
+            
+            _logger.errorf("SQLException while opening Db connection: %s\n", e.getMessage());
             _logger.errorf("Tries left = %d\n", triesLeft);
             
-            if (triesLeft == 0) 
-               throw e;
          }
       }
    }

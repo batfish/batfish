@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>lib/mysql</name>
+			<type>2</type>
+			<locationURI>PROJECT_LOC/lib/mysql</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

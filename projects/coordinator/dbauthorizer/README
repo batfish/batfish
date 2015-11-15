@@ -1,0 +1,16 @@
+#for testing, create a database called batfish_test and the tables as specified below
+# also create a user batfish with password batfish that has select and insert privileges for batfish_Test
+
+create database batfish_test;
+
+create table ApiKeys 
+ (ApiKey varchar(255) not null primary key);
+ 
+ create table Permissions
+ (ApiKey varchar(255) not null,
+  ContainerName varchar(255) not null,
+  primary key (ApiKey, ContainerName));
+
+insert into ApiKeys values ('0000000');
+select * from ApiKeys;
+
