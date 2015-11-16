@@ -675,6 +675,11 @@ FLOW
    'flow'
 ;
 
+FLOW_CONTROL
+:
+   'flow-control'
+;
+
 FORWARDING
 :
    'forwarding'
