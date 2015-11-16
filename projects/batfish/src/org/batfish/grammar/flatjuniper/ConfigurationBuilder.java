@@ -677,7 +677,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterIfamt_address(Ifamt_addressContext ctx) {
       Set<Prefix> allPrefixes = _currentInterface.getAllPrefixes();
-      Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
+      Prefix prefix;
+      if (ctx.IP_PREFIX() != null) {
+         prefix = new Prefix(ctx.IP_PREFIX().getText());
+      }
+      else if (ctx.IP_ADDRESS() != null) {
+         Ip ip = new Ip(ctx.IP_ADDRESS().getText());
+         prefix = new Prefix(ip, 32);
+      }
+      else {
+         throw new BatfishException("Invalid or missing address");
+      }
       _currentInterfacePrefix = prefix;
       if (_currentInterface.getPrimaryPrefix() == null) {
          _currentInterface.setPrimaryPrefix(prefix);
