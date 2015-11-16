@@ -484,16 +484,16 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                            Collections.singleton(lineSpecificList));
                      lineSpecificClause.getMatchLines().add(matchRflLine);
                      for (PsThen then : line.getThens()) {
-                        then.applyTo(lineSpecificClause, _c);
+                        then.applyTo(lineSpecificClause, _c, null);
                      }
                      map.getClauses().add(lineSpecificClause);
                   }
                }
             }
-            from.applyTo(clause, _c);
+            from.applyTo(clause, _c, _w);
          }
          for (PsThen then : term.getThens()) {
-            then.applyTo(clause, _c);
+            then.applyTo(clause, _c, _w);
          }
          map.getClauses().add(clause);
       }
