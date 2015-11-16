@@ -12,7 +12,7 @@ public final class Format {
          return ConfigurationFormat.CISCO_IOS_XR;
       }
       char firstChar = fileText.trim().charAt(0);
-      Matcher setMatcher = Pattern.compile("^set ").matcher(fileText);
+      Matcher setMatcher = Pattern.compile("\nset ").matcher(fileText);
       if (firstChar == '!') {
          Matcher aristaMatcher = Pattern.compile("boot system flash.*\\.swi")
                .matcher(fileText);
