@@ -48,13 +48,7 @@ public class ExtendedCommunity implements Serializable {
       }
       String[] gaParts = globalAdministrator.split("\\.");
       laLong = Long.parseLong(localAdministrator);
-      if (!globalAdministrator.endsWith("l")) {
-         // type 0x00, 1-byte subtype, 2-byte number ga, 4-byte number la
-         gaLong = Long.parseLong(globalAdministrator);
-         typeByte = 0x00;
-         gaBytes = 2;
-      }
-      else if (gaParts.length == 4) {
+      if (gaParts.length == 4) {
          // type 0x01, 1-byte subtype, 4-byte ip address, 2-byte number la
          typeByte = 0x01;
          gaLong = new Ip(globalAdministrator).asLong();
@@ -68,10 +62,18 @@ public class ExtendedCommunity implements Serializable {
          gaLong = low + (high << 16);
          gaBytes = 4;
       }
+      else if (!globalAdministrator.endsWith("l")) {
+         // type 0x00, 1-byte subtype, 2-byte number ga, 4-byte number la
+         gaLong = Long.parseLong(globalAdministrator);
+         typeByte = 0x00;
+         gaBytes = 2;
+      }
       else {
          // type 0x02, 1-byte subtype, 4-byte number ga, 2-byte number la
          typeByte = 0x02;
-         gaLong = Long.parseLong(globalAdministrator);
+         String globalAdministratorDigits = globalAdministrator.substring(0,
+               globalAdministrator.length() - 1);
+         gaLong = Long.parseLong(globalAdministratorDigits);
          gaBytes = 4;
       }
       int subTypeOffset = 8;
