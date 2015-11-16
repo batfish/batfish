@@ -29,9 +29,11 @@ public final class PsFromPrefixList extends PsFrom {
          warnings.redFlag("Reference to undefined route filter list: \""
                + _name + "\"");
       }
-      PolicyMapMatchRouteFilterListLine line = new PolicyMapMatchRouteFilterListLine(
-            Collections.singleton(list));
-      clause.getMatchLines().add(line);
+      else {
+         PolicyMapMatchRouteFilterListLine line = new PolicyMapMatchRouteFilterListLine(
+               Collections.singleton(list));
+         clause.getMatchLines().add(line);
+      }
    }
 
    public String getName() {
