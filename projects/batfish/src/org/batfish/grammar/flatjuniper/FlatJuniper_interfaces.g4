@@ -247,7 +247,8 @@ ifamt_address
 :
    ADDRESS
    (
-      IP_PREFIX
+      IP_ADDRESS
+      | IP_PREFIX
       | WILDCARD
    ) ifamt_address_tail?
 ;
