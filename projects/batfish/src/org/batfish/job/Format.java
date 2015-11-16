@@ -7,12 +7,16 @@ import org.batfish.main.ConfigurationFormat;
 
 public final class Format {
 
+   public static final String BATFISH_FLATTENED_JUNIPER_HEADER = "####BATFISH FLATTENED JUNIPER CONFIG####\n";
+
    public static ConfigurationFormat identifyConfigurationFormat(String fileText) {
       if (fileText.contains("IOS XR")) {
          return ConfigurationFormat.CISCO_IOS_XR;
       }
       char firstChar = fileText.trim().charAt(0);
       Matcher setMatcher = Pattern.compile("\nset ").matcher(fileText);
+      Matcher flattenedMatcher = Pattern.compile(
+            Pattern.quote(BATFISH_FLATTENED_JUNIPER_HEADER)).matcher(fileText);
       if (firstChar == '!') {
          Matcher aristaMatcher = Pattern.compile("boot system flash.*\\.swi")
                .matcher(fileText);
@@ -41,8 +45,9 @@ public final class Format {
       else if (fileText.contains("set hostname")) {
          return ConfigurationFormat.JUNIPER_SWITCH;
       }
-      else if (fileText.contains("set system host-name")
-            || (fileText.contains("apply-groups") && setMatcher.find())) {
+      else if (flattenedMatcher.find(0)
+            || fileText.contains("set system host-name")
+            || (fileText.contains("apply-groups") && setMatcher.find(0))) {
          return ConfigurationFormat.FLAT_JUNIPER;
       }
       else if (firstChar == '#'

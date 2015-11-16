@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.batfish.grammar.juniper.JuniperParser.*;
+import org.batfish.job.Format;
 
 public class JuniperFlattener extends JuniperParserBaseListener {
 
@@ -51,7 +52,7 @@ public class JuniperFlattener extends JuniperParserBaseListener {
    @Override
    public void exitJuniper_configuration(Juniper_configurationContext ctx) {
       StringBuilder sb = new StringBuilder();
-      sb.append("#\n");
+      sb.append(Format.BATFISH_FLATTENED_JUNIPER_HEADER);
       for (String setStatement : _setStatements) {
          sb.append(setStatement + "\n");
       }
