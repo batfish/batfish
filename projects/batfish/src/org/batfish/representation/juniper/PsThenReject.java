@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapAction;
 import org.batfish.representation.PolicyMapClause;
@@ -17,7 +18,7 @@ public final class PsThenReject extends PsThen {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c) {
+   public void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings) {
       clause.setAction(PolicyMapAction.DENY);
    }
 

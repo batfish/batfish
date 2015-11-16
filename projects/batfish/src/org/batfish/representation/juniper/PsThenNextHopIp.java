@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import java.util.Collections;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.Ip;
 import org.batfish.representation.PolicyMapClause;
@@ -21,7 +22,7 @@ public final class PsThenNextHopIp extends PsThen {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c) {
+   public void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings) {
       PolicyMapSetNextHopLine line = new PolicyMapSetNextHopLine(
             Collections.singletonList(_nextHopIp));
       clause.getSetLines().add(line);

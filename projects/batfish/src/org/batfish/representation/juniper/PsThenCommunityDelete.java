@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.CommunityList;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapClause;
@@ -20,7 +21,7 @@ public final class PsThenCommunityDelete extends PsThen {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c) {
+   public void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings) {
       CommunityList list = c.getCommunityLists().get(_name);
       if (list == null) {
          throw new VendorConversionException("missing community list: \""

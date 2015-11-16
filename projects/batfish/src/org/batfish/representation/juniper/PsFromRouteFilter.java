@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import java.util.Collections;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
@@ -22,7 +23,7 @@ public final class PsFromRouteFilter extends PsFrom {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c) {
+   public void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings) {
       RouteFilterList rfl = c.getRouteFilterLists().get(_routeFilterName);
       if (rfl == null) {
          throw new VendorConversionException("missing route filter list: \""

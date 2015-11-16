@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapClause;
 
@@ -17,7 +18,7 @@ public class PsFromAsPath extends PsFrom {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c) {
+   public void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings) {
       // throw new
       // UnsupportedOperationException("no implementation for generated method");
       // TODO Auto-generated method stub
