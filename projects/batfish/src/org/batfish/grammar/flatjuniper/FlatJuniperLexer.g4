@@ -106,9 +106,34 @@ AGGREGATED_ETHER_OPTIONS
    'aggregated-ether-options'
 ;
 
+AGGRESSIVE
+:
+   'aggressive'
+;
+
+AES_128_CBC
+:
+   'aes-128-cbc'
+;
+
+AES_192_CBC
+:
+   'aes-192-cbc'
+;
+
+AES_256_CBC
+:
+   'aes-256-cbc'
+;
+
 AH
 :
    'ah'
+;
+
+ALG
+:
+   'alg'
 ;
 
 ALIAS
@@ -196,14 +221,29 @@ AS_PATH_PREPEND
    'as-path-prepend'
 ;
 
+ASCII_TEXT
+:
+   'ascii-text'
+;
+
 AUTHENTICATION
 :
    'authentication'
 ;
 
+AUTHENTICATION_ALGORITHM
+:
+   'authentication-algorithm'
+;
+
 AUTHENTICATION_KEY
 :
    'authentication-key'
+;
+
+AUTHENTICATION_METHOD
+:
+   'authentication-method'
 ;
 
 AUTHENTICATION_ORDER
@@ -241,6 +281,11 @@ BANDWIDTH
    'bandwidth'
 ;
 
+BASIC
+:
+   'basic'
+;
+
 BFD
 :
    'bfd'
@@ -259,6 +304,11 @@ BGP
 BIFF
 :
    'biff'
+;
+
+BIND_INTERFACE
+:
+   'bind-interface'
 ;
 
 BMP
@@ -286,9 +336,19 @@ BRIDGE_DOMAINS
    'bridge-domains'
 ;
 
+BUNDLE
+:
+   'bundle'
+;
+
 CCC
 :
    'ccc'
+;
+
+CERTIFICATES
+:
+   'certificates'
 ;
 
 CHASSIS
@@ -304,6 +364,11 @@ CLASS
 CLASS_OF_SERVICE
 :
    'class-of-service'
+;
+
+CLEAR
+:
+   'clear'
 ;
 
 CLUSTER
@@ -333,6 +398,11 @@ COMMUNITY
       enableIPV6_ADDRESS = false;
    }
 
+;
+
+COMPATIBLE
+:
+   'compatible'
 ;
 
 CONDITION
@@ -385,6 +455,11 @@ DEAD_INTERVAL
    'dead-interval'
 ;
 
+DEAD_PEER_DETECTION
+:
+   'dead-peer-detection'
+;
+
 DEFAULT_ACTION
 :
    'default-action'
@@ -415,6 +490,11 @@ DELETE
    'delete'
 ;
 
+DES_CBC
+:
+   'des-cbc'
+;
+
 DESCRIPTION
 :
    'description' -> pushMode(M_Description)
@@ -428,6 +508,11 @@ DESTINATION_ADDRESS
 DESTINATION_HOST_UNKNOWN
 :
    'destination-host-unknown'
+;
+
+DESTINATION_IP
+:
+   'destination-ip'
 ;
 
 DESTINATION_NETWORK_UNKNOWN
@@ -453,6 +538,16 @@ DESTINATION_PREFIX_LIST
 DESTINATION_UNREACHABLE
 :
    'destination-unreachable'
+;
+
+DF_BIT
+:
+   'df-bit'
+;
+
+DH_GROUP
+:
+   'dh-group'
 ;
 
 DHCP
@@ -493,6 +588,11 @@ DOMAIN_NAME
 DOMAIN_SEARCH
 :
    'domain-search'
+;
+
+DSA_SIGNATURES
+:
+   'dsa-signatures'
 ;
 
 DSCP
@@ -550,9 +650,19 @@ ENCAPSULATION
    'encapsulation'
 ;
 
+ENCRYPTION_ALGORITHM
+:
+   'encryption-algorithm'
+;
+
 ESP
 :
    'esp'
+;
+
+ESTABLISH_TUNNELS
+:
+   'establish-tunnels'
 ;
 
 ETHER_OPTIONS
@@ -613,6 +723,11 @@ EXPRESSION
 EXTERNAL
 :
    'external'
+;
+
+EXTERNAL_INTERFACE
+:
+   'external-interface'
 ;
 
 EXTERNAL_PREFERENCE
@@ -735,6 +850,11 @@ G
    'g'
 ;
 
+GATEWAY
+:
+   'gateway'
+;
+
 GENERATE
 :
    'generate'
@@ -758,6 +878,26 @@ GRE
 GROUP
 :
    'group' -> pushMode(M_VarOrWildcard)
+;
+
+GROUP1
+:
+   'group1'
+;
+
+GROUP14
+:
+   'group14'
+;
+
+GROUP2
+:
+   'group2'
+;
+
+GROUP5
+:
+   'group5'
 ;
 
 GROUPS
@@ -788,6 +928,16 @@ HELLO_PADDING
 HIGH
 :
    'high'
+;
+
+HMAC_MD5_96
+:
+   'hmac-md5-96'
+;
+
+HMAC_SHA1_96
+:
+   'hmac-sha1-96'
 ;
 
 HOLD_TIME
@@ -875,9 +1025,24 @@ IGP
    'igp'
 ;
 
+IKE
+:
+   'ike'
+;
+
+IKE_POLICY
+:
+   'ike-policy'
+;
+
 IMAP
 :
    'imap'
+;
+
+IMMEDIATELY
+:
+   'immediately'
 ;
 
 IMPORT
@@ -1045,6 +1210,16 @@ IPIP
    'ipip'
 ;
 
+IPSEC
+:
+   'ipsec'
+;
+
+IPSEC_POLICY
+:
+   'ipsec-policy'
+;
+
 IPV6
 :
    'ipv6'
@@ -1073,6 +1248,11 @@ KEEP
 KERBEROS_SEC
 :
    'kerberos-sec'
+;
+
+KEYS
+:
+   'keys'
 ;
 
 KLOGIN
@@ -1178,6 +1358,11 @@ LEARN_VLAN_1P_PRIORITY
 LEVEL
 :
    'level'
+;
+
+LIFETIME_SECONDS
+:
+   'lifetime-seconds'
 ;
 
 LINK_PROTECTION
@@ -1295,6 +1480,11 @@ MAC
    'mac' -> pushMode(M_MacAddress)
 ;
 
+MAIN
+:
+   'main'
+;
+
 MARTIANS
 :
    'martians'
@@ -1318,6 +1508,11 @@ MAX_CONFIGURATION_ROLLBACKS
 MAXIMUM_LABELS
 :
    'maximum-labels'
+;
+
+MD5
+:
+   'md5'
 ;
 
 MEDIUM_HIGH
@@ -1368,6 +1563,11 @@ MOBILEIP_AGENT
 MOBILIP_MN
 :
    'mobilip-mn'
+;
+
+MODE
+:
+   'mode'
 ;
 
 MPLS
@@ -1740,6 +1940,11 @@ PER__UNIT_SCHEDULER
    'per-unit-scheduler'
 ;
 
+PERFECT_FORWARD_SECRECY
+:
+   'perfect-forward-secrecy'
+;
+
 PIM
 :
    'pim'
@@ -1813,6 +2018,16 @@ PPM
 PPTP
 :
    'pptp'
+;
+
+PRE_SHARED_KEY
+:
+   'pre-shared-key'
+;
+
+PRE_SHARED_KEYS
+:
+   'pre-shared-keys'
 ;
 
 PRECEDENCE
@@ -1898,6 +2113,21 @@ PRIVATE
 PROCESSES
 :
    'processes'
+;
+
+PROPOSAL
+:
+   'proposal'
+;
+
+PROPOSAL_SET
+:
+   'proposal-set'
+;
+
+PROPOSALS
+:
+   'proposals'
 ;
 
 PROTOCOL
@@ -2085,6 +2315,11 @@ RPF_CHECK
    'rpf-check'
 ;
 
+RSA_SIGNATURES
+:
+   'rsa-signatures'
+;
+
 RSTP
 :
    'rstp'
@@ -2103,6 +2338,11 @@ SAMPLE
 SAMPLING
 :
    'sampling'
+;
+
+SCREEN
+:
+   'screen'
 ;
 
 SCRIPTS
@@ -2153,6 +2393,16 @@ SET
 SFLOW
 :
    'sflow'
+;
+
+SHA_256
+:
+   'sha-256'
+;
+
+SHA1
+:
+   'sha1'
 ;
 
 SHORTCUTS
@@ -2220,6 +2470,11 @@ SOURCE_ADDRESS_FILTER
    'source-address-filter'
 ;
 
+SOURCE_INTERFACE
+:
+   'source-interface'
+;
+
 SOURCE_PORT
 :
    'source-port'
@@ -2250,9 +2505,9 @@ SSH
    'ssh'
 ;
 
-STANZA_REMOVED
+STANDARD
 :
-   'Stanza Removed'
+   'standard'
 ;
 
 STATIC
@@ -2385,6 +2640,11 @@ THEN
    'then'
 ;
 
+THREEDES_CBC
+:
+   '3des-cbc'
+;
+
 THROUGH
 :
    'through'
@@ -2490,6 +2750,11 @@ USER
    'user'
 ;
 
+V1_ONLY
+:
+   'v1-only'
+;
+
 VERSION
 :
    'version' -> pushMode(M_Version)
@@ -2545,6 +2810,16 @@ VPLS
    'vpls'
 ;
 
+VPN
+:
+   'vpn'
+;
+
+VPN_MONITOR
+:
+   'vpn-monitor'
+;
+
 VRF
 :
    'vrf'
@@ -2598,6 +2873,11 @@ WIDE_METRICS_ONLY
 XDMCP
 :
    'xdmcp'
+;
+
+ZONES
+:
+   'zones'
 ;
 
 // End of Juniper keywords
@@ -3437,6 +3717,11 @@ M_VarOrWildcard_WS
 ;
 
 mode M_Version;
+
+M_Version_V1_ONLY
+:
+   'v1-only' -> type(V1_ONLY), popMode
+;
 
 M_Version_VERSION_STRING
 :
