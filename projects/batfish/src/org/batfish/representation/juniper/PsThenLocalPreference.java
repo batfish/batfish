@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapSetLocalPreferenceLine;
@@ -18,7 +19,7 @@ public final class PsThenLocalPreference extends PsThen {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c) {
+   public void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings) {
       PolicyMapSetLocalPreferenceLine line = new PolicyMapSetLocalPreferenceLine(
             _localPreference);
       clause.getSetLines().add(line);

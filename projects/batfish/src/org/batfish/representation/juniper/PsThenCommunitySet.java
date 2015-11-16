@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import java.util.Collections;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapSetCommunityLine;
@@ -21,7 +22,7 @@ public final class PsThenCommunitySet extends PsThen {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c) {
+   public void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings) {
       org.batfish.representation.CommunityList list = c.getCommunityLists()
             .get(_name);
       String regex = list.getLines().get(0).getRegex();

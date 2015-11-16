@@ -12,6 +12,7 @@ public final class Format {
          return ConfigurationFormat.CISCO_IOS_XR;
       }
       char firstChar = fileText.trim().charAt(0);
+      Matcher setMatcher = Pattern.compile("^set ").matcher(fileText);
       if (firstChar == '!') {
          Matcher aristaMatcher = Pattern.compile("boot system flash.*\\.swi")
                .matcher(fileText);
@@ -40,21 +41,15 @@ public final class Format {
       else if (fileText.contains("set hostname")) {
          return ConfigurationFormat.JUNIPER_SWITCH;
       }
-      else if (firstChar == '#') {
-         Matcher setMatcher = Pattern.compile("^set ").matcher(fileText);
-         if (fileText.contains("set version")
-               || fileText.contains("set host-name")
-               || (fileText.contains("apply-groups") && setMatcher.find())) {
-            return ConfigurationFormat.FLAT_JUNIPER;
-         }
-         else {
-            return ConfigurationFormat.JUNIPER;
-         }
+      else if (fileText.contains("set system host-name")
+            || (fileText.contains("apply-groups") && setMatcher.find())) {
+         return ConfigurationFormat.FLAT_JUNIPER;
       }
-      else if (fileText.contains("version") && fileText.contains("system")
-            && fileText.contains("{") && fileText.contains("}")
-            && fileText.contains("host-name")
-            && fileText.contains("interfaces")) {
+      else if (firstChar == '#'
+            || (fileText.contains("version") && fileText.contains("system")
+                  && fileText.contains("{") && fileText.contains("}")
+                  && fileText.contains("host-name") && fileText
+                     .contains("interfaces"))) {
          return ConfigurationFormat.JUNIPER;
       }
       return ConfigurationFormat.UNKNOWN;
