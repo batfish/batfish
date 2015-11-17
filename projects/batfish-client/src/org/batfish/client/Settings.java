@@ -90,7 +90,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_LEVEL,
-            BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
+            BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
       setDefaultProperty(ARG_PERIOD_CHECK_WORK, 1000);
       setDefaultProperty(ARG_SERVICE_HOST, "localhost");
       setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
