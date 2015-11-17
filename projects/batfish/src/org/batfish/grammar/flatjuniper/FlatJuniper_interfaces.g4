@@ -77,6 +77,7 @@ eot_null
 :
    (
       AUTO_NEGOTIATION
+      | FLOW_CONTROL
       | IGNORE_L3_INCOMPLETES
       | NO_AUTO_NEGOTIATION
       | NO_FLOW_CONTROL
@@ -247,7 +248,8 @@ ifamt_address
 :
    ADDRESS
    (
-      IP_PREFIX
+      IP_ADDRESS
+      | IP_PREFIX
       | WILDCARD
    ) ifamt_address_tail?
 ;
