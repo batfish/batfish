@@ -17,9 +17,19 @@ base_extended_community_regex
    )+
 ;
 
-colort_apply_groups
+color2t_add_color
 :
-   s_apply_groups
+   ADD color2 = DEC
+;
+
+color2t_color
+:
+   color2 = DEC
+;
+
+colort_add_color
+:
+   ADD color = DEC
 ;
 
 colort_color
@@ -372,8 +382,21 @@ tht_color
 
 tht_color_tail
 :
-   colort_apply_groups
+   apply
+   | colort_add_color
    | colort_color
+;
+
+tht_color2
+:
+   COLOR2 tht_color2_tail
+;
+
+tht_color2_tail
+:
+   apply
+   | color2t_add_color
+   | color2t_color
 ;
 
 tht_community_add
@@ -568,6 +591,7 @@ tt_then_tail
    | tht_as_path_expand
    | tht_as_path_prepend
    | tht_color
+   | tht_color2
    | tht_community_add
    | tht_community_delete
    | tht_community_set

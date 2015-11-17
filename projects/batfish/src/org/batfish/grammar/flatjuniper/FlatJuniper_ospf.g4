@@ -57,6 +57,7 @@ ait_null
       AUTHENTICATION
       | BFD_LIVENESS_DETECTION
       | NO_NEIGHBOR_DOWN_NOTIFICATION
+      | POLL_INTERVAL
    ) s_null_filler
 ;
 
@@ -88,6 +89,11 @@ art_restrict
 at_apply_groups
 :
    s_apply_groups
+;
+
+at_apply_groups_except
+:
+   s_apply_groups_except
 ;
 
 at_area_range
@@ -220,6 +226,7 @@ ot_area
 ot_area_tail
 :
    at_apply_groups
+   | at_apply_groups_except
    | at_area_range
    | at_interface
    | at_label_switched_path

@@ -2715,9 +2715,12 @@ public class Batfish implements AutoCloseable {
                "Error reading test rig configs directory: \""
                      + configsPath.toString() + "\"");
       }
+      Arrays.sort(configFilePaths);
       for (File file : configFilePaths) {
          _logger.debug("Reading: \"" + file.toString() + "\"\n");
-         String fileText = Util.readFile(file.getAbsoluteFile()) + "\n";
+         String fileTextRaw = Util.readFile(file.getAbsoluteFile());
+         String fileText = fileTextRaw
+               + ((fileTextRaw.length() != 0) ? "\n" : "");
          configurationData.put(file, fileText);
       }
       printElapsedTime();
