@@ -35,7 +35,7 @@ ikegt_address
 
 ikegt_dead_peer_detection
 :
-   DEAD_PEER_DETECTION
+   DEAD_PEER_DETECTION ALWAYS_SEND?
 ;
 
 ikegt_external_interface
@@ -51,6 +51,11 @@ ikegt_ike_policy
 ikegt_local_address
 :
    LOCAL_ADDRESS IP_ADDRESS
+;
+
+ikegt_no_nat_traversal
+:
+   NO_NAT_TRAVERSAL
 ;
 
 ikegt_version
@@ -76,6 +81,11 @@ ikeprt_authentication_method
       | PRE_SHARED_KEYS
       | RSA_SIGNATURES
    )
+;
+
+ikeprt_description
+:
+   DESCRIPTION s_null_filler
 ;
 
 ikeprt_dh_group
@@ -134,6 +144,7 @@ iket_gateway_tail
    | ikegt_external_interface
    | ikegt_ike_policy
    | ikegt_local_address
+   | ikegt_no_nat_traversal
    | ikegt_version
 ;
 
@@ -169,6 +180,7 @@ iket_proposal_tail
 :
    ikeprt_authentication_algorithm
    | ikeprt_authentication_method
+   | ikeprt_description
    | ikeprt_dh_group
    | ikeprt_encryption_algorithm
    | ikeprt_lifetime_seconds
@@ -282,6 +294,15 @@ ipsecvit_ipsec_policy
    IPSEC_POLICY name = variable
 ;
 
+ipsecvit_proxy_identity
+:
+   PROXY_IDENTITY
+   (
+      LOCAL
+      | REMOTE
+   ) IP_PREFIX
+;
+
 ipsecvmt_destination_ip
 :
    DESTINATION_IP IP_ADDRESS
@@ -316,6 +337,7 @@ ipsecvt_ike_tail
 :
    ipsecvit_gateway
    | ipsecvit_ipsec_policy
+   | ipsecvit_proxy_identity
 ;
 
 ipsecvt_vpn_monitor
@@ -331,9 +353,139 @@ ipsecvt_vpn_monitor_tail
    | ipsecvmt_source_interface
 ;
 
+nat_rule_set
+:
+   RULE_SET nat_rule_set_named
+;
+
+nat_rule_set_named
+:
+   name = variable nat_rule_set_tail
+;
+
+nat_rule_set_tail
+:
+   natrst_from
+   | natrst_rule
+   | natrst_to
+;
+
+natrsrmt_destination_address
+:
+   DESTINATION_ADDRESS IP_PREFIX
+;
+
+natrsrmt_source_address
+:
+   SOURCE_ADDRESS IP_PREFIX
+;
+
+natrsrt_match
+:
+   MATCH natrsrt_match_tail
+;
+
+natrsrt_match_tail
+:
+   natrsrmt_destination_address
+   | natrsrmt_source_address
+;
+
+natrsrt_then
+:
+   THEN natrsrt_then_tail
+;
+
+natrsrt_then_tail
+:
+   natrsrtt_source_nat
+   | natrsrtt_static_nat
+;
+
+natrsrtt_source_nat
+:
+   SOURCE_NAT INTERFACE
+;
+
+natrsrtt_static_nat
+:
+   STATIC_NAT PREFIX IP_PREFIX
+;
+
+natrst_from
+:
+   FROM natrst_from_tail
+;
+
+natrst_from_tail
+:
+   natrsfromt_zone
+;
+
+natrst_rule
+:
+   RULE natrst_rule_named
+;
+
+natrst_rule_named
+:
+   name = variable natrst_rule_tail
+;
+
+natrst_rule_tail
+:
+   natrsrt_match
+   | natrsrt_then
+;
+
+natrst_to
+:
+   TO natrst_from_tail
+;
+
+natrst_to_tail
+:
+   natrstot_zone
+;
+
+natrsfromt_zone
+:
+   ZONE name = variable
+;
+
+natrstot_zone
+:
+   ZONE name = variable
+;
+
+natsot_rule_set
+:
+   nat_rule_set
+;
+
+natstt_rule_set
+:
+   nat_rule_set
+;
+
 natt_source
 :
-   SOURCE 'aaaaaaaaaaaaa'
+   SOURCE natt_source_tail
+;
+
+natt_source_tail
+:
+   natsot_rule_set
+;
+
+natt_static
+:
+   STATIC natt_static_tail
+;
+
+natt_static_tail
+:
+   natstt_rule_set
 ;
 
 proposal_set_type
@@ -400,6 +552,7 @@ sect_nat
 sect_nat_tail
 :
    natt_source
+   | natt_static
 ;
 
 sect_null

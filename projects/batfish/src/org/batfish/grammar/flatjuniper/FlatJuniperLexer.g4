@@ -151,6 +151,11 @@ ALWAYS_COMPARE_MED
    'always-compare-med'
 ;
 
+ALWAYS_SEND
+:
+   'always-send'
+;
+
 ANY
 :
    'any'
@@ -1495,6 +1500,11 @@ MASTER_ONLY
    'master-only'
 ;
 
+MATCH
+:
+   'match'
+;
+
 MAX_CONFIGURATIONS_ON_FLASH
 :
    'max-configurations-on-flash'
@@ -1645,6 +1655,11 @@ NAME_SERVER
    'name-server'
 ;
 
+NAT
+:
+   'nat'
+;
+
 NATIVE_VLAN_ID
 :
    'native-vlan-id'
@@ -1763,6 +1778,11 @@ NO_INSTALL
 NO_IPV4_ROUTING
 :
    'no-ipv4-routing'
+;
+
+NO_NAT_TRAVERSAL
+:
+   'no-nat-traversal'
 ;
 
 NO_NEIGHBOR_DOWN_NOTIFICATION
@@ -2055,6 +2075,11 @@ PREFERRED
    'preferred'
 ;
 
+PREFIX
+:
+   'prefix'
+;
+
 PREFIX_EXPORT_LIMIT
 :
    'prefix-export-limit'
@@ -2145,6 +2170,11 @@ PROVIDER_TUNNEL
    'provider-tunnel'
 ;
 
+PROXY_IDENTITY
+:
+   'proxy-identity'
+;
+
 QUALIFIED_NEXT_HOP
 :
    'qualified-next-hop'
@@ -2203,6 +2233,11 @@ REFERENCE_BANDWIDTH
 REJECT
 :
    'reject'
+;
+
+REMOTE
+:
+   'remote'
 ;
 
 REMOVE_PRIVATE
@@ -2328,6 +2363,16 @@ RSTP
 RSVP
 :
    'rsvp'
+;
+
+RULE
+:
+   'rule'
+;
+
+RULE_SET
+:
+   'rule-set'
 ;
 
 SAMPLE
@@ -2460,6 +2505,11 @@ SONET_OPTIONS
    'sonet-options'
 ;
 
+SOURCE
+:
+   'source'
+;
+
 SOURCE_ADDRESS
 :
    'source-address'
@@ -2473,6 +2523,11 @@ SOURCE_ADDRESS_FILTER
 SOURCE_INTERFACE
 :
    'source-interface'
+;
+
+SOURCE_NAT
+:
+   'source-nat'
 ;
 
 SOURCE_PORT
@@ -2513,6 +2568,11 @@ STANDARD
 STATIC
 :
    'static'
+;
+
+STATIC_NAT
+:
+   'static-nat'
 ;
 
 STATION_ADDRESS
@@ -2873,6 +2933,11 @@ WIDE_METRICS_ONLY
 XDMCP
 :
    'xdmcp'
+;
+
+ZONE
+:
+   'zone'
 ;
 
 ZONES
