@@ -391,6 +391,11 @@ COLOR
    'color'
 ;
 
+COLOR2
+:
+   'color2'
+;
+
 COMMIT
 :
    'commit'
@@ -793,6 +798,11 @@ FLEXIBLE_VLAN_TAGGING
 FLOW
 :
    'flow'
+;
+
+FLOW_CONTROL
+:
+   'flow-control'
 ;
 
 FORWARDING
@@ -1998,6 +2008,11 @@ POLICY_OPTIONS
 POLICY_STATEMENT
 :
    'policy-statement'
+;
+
+POLL_INTERVAL
+:
+   'poll-interval'
 ;
 
 POP3

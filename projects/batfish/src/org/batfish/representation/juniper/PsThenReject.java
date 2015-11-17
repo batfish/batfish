@@ -18,7 +18,8 @@ public final class PsThenReject extends PsThen {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings) {
+   public void applyTo(PolicyMapClause clause, Configuration c,
+         Warnings warnings) {
       clause.setAction(PolicyMapAction.DENY);
    }
 

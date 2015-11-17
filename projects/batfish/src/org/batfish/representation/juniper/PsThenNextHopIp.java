@@ -22,7 +22,8 @@ public final class PsThenNextHopIp extends PsThen {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings) {
+   public void applyTo(PolicyMapClause clause, Configuration c,
+         Warnings warnings) {
       PolicyMapSetNextHopLine line = new PolicyMapSetNextHopLine(
             Collections.singletonList(_nextHopIp));
       clause.getSetLines().add(line);
