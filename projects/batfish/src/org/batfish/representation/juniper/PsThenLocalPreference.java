@@ -19,7 +19,8 @@ public final class PsThenLocalPreference extends PsThen {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings) {
+   public void applyTo(PolicyMapClause clause, Configuration c,
+         Warnings warnings) {
       PolicyMapSetLocalPreferenceLine line = new PolicyMapSetLocalPreferenceLine(
             _localPreference);
       clause.getSetLines().add(line);

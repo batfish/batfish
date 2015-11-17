@@ -22,7 +22,8 @@ public final class PsFromCommunity extends PsFrom {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings) {
+   public void applyTo(PolicyMapClause clause, Configuration c,
+         Warnings warnings) {
       org.batfish.representation.CommunityList list = c.getCommunityLists()
             .get(_name);
       if (list == null) {

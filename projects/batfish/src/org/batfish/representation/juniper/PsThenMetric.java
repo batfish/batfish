@@ -19,7 +19,8 @@ public final class PsThenMetric extends PsThen {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings) {
+   public void applyTo(PolicyMapClause clause, Configuration c,
+         Warnings warnings) {
       clause.getSetLines().add(new PolicyMapSetMetricLine(_metric));
    }
 

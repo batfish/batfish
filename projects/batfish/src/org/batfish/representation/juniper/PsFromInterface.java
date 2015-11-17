@@ -19,7 +19,8 @@ public final class PsFromInterface extends PsFrom {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings) {
+   public void applyTo(PolicyMapClause clause, Configuration c,
+         Warnings warnings) {
       PolicyMapClauseMatchInterfaceLine line = new PolicyMapClauseMatchInterfaceLine(
             _name);
       clause.getMatchLines().add(line);

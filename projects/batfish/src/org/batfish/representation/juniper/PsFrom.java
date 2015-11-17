@@ -13,6 +13,7 @@ public abstract class PsFrom implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   public abstract void applyTo(PolicyMapClause clause, Configuration c, Warnings warnings);
+   public abstract void applyTo(PolicyMapClause clause, Configuration c,
+         Warnings warnings);
 
 }
