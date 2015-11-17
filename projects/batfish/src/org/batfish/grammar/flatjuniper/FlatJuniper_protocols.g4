@@ -30,6 +30,7 @@ s_protocols_null
       | IGMP
       | IGMP_SNOOPING
       | L2CIRCUIT
+      | L2VPN
       | LACP
       | LDP
       | LLDP

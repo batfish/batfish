@@ -210,6 +210,7 @@ bt_common
    | bt_multipath
    | bt_no_client_reflect
    | bt_null
+   | bt_passive
    | bt_path_selection
    | bt_peer_as
    | bt_remove_private
@@ -348,6 +349,11 @@ bt_null
       | PRECISION_TIMERS
       | TRACEOPTIONS
    ) s_null_filler
+;
+
+bt_passive
+:
+   PASSIVE
 ;
 
 bt_path_selection

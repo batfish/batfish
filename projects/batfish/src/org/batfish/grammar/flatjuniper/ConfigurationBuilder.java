@@ -9,7 +9,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.main.Warnings;
@@ -1511,6 +1510,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitRit_named_routing_instance(
+         Rit_named_routing_instanceContext ctx) {
+      _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
+   }
+
+   @Override
    public void exitRot_autonomous_system(Rot_autonomous_systemContext ctx) {
       int as = toInt(ctx.as);
       _currentRoutingInstance.setAs(as);
@@ -1590,14 +1595,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitTht_community_delete(Tht_community_deleteContext ctx) {
       String name = ctx.name.getText();
-      PsThenCommunityDelete then = new PsThenCommunityDelete(name);
+      PsThenCommunityDelete then = new PsThenCommunityDelete(name,
+            _configuration);
       _currentPsThens.add(then);
    }
 
    @Override
    public void exitTht_community_set(Tht_community_setContext ctx) {
       String name = ctx.name.getText();
-      PsThenCommunitySet then = new PsThenCommunitySet(name);
+      PsThenCommunitySet then = new PsThenCommunitySet(name, _configuration);
       _currentPsThens.add(then);
    }
 

@@ -24,6 +24,12 @@ administrator_ip
    DEC PERIOD DEC PERIOD DEC PERIOD DEC
 ;
 
+apply
+:
+   s_apply_groups
+   | s_apply_groups_except
+;
+
 as_path_expr
 :
    (

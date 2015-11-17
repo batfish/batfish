@@ -170,6 +170,7 @@ rit_instance_type
    INSTANCE_TYPE
    (
       FORWARDING
+      | L2VPN
       | VIRTUAL_SWITCH
       | VRF
    )
@@ -343,6 +344,7 @@ rot_null
       | OPTIONS
       | PPM
       | RESOLUTION
+      | TRACEOPTIONS
    ) s_null_filler
 ;
 

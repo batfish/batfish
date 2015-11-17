@@ -30,8 +30,8 @@ public final class PsThenCommunityAdd extends PsThen {
          Warnings warnings) {
       CommunityList namedList = _configuration.getCommunityLists().get(_name);
       if (namedList == null) {
-         warnings.redFlag("Reference to undefined community: \"" + _name
-               + "\"");
+         warnings
+               .redFlag("Reference to undefined community: \"" + _name + "\"");
       }
       else {
          for (CommunityListLine clLine : namedList.getLines()) {
