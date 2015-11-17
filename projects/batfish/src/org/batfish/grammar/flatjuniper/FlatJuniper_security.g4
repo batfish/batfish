@@ -6,6 +6,25 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+abt_address
+:
+   ADDRESS name = variable abt_address_tail
+;
+
+abt_address_tail
+:
+   apply
+   | IP_PREFIX
+;
+
+address_specifier
+:
+   ANY
+   | ANY_IPV4
+   | ANY_IPV6
+   | name = variable
+;
+
 certt_local
 :
    LOCAL name = variable cert = DOUBLE_QUOTED_STRING
@@ -26,6 +45,66 @@ encryption_algorithm
    | AES_192_CBC
    | AES_256_CBC
    | DES_CBC
+;
+
+hibt_protocols
+:
+   PROTOCOLS
+   (
+      ALL
+      | BFD
+      | BGP
+      | DVMRP
+      | IGMP
+      | LDP
+      | MSDP
+      | NHRP
+      | OSPF
+      | OSPF3
+      | PGM
+      | PIM
+      | RIP
+      | RIPNG
+      | ROUTER_DISCOVERY
+      | RSVP
+      | SAP
+      | VRRP
+   )
+;
+
+hibt_system_services
+:
+   SYSTEM_SERVICES
+   (
+      ALL
+      | ANY_SERVICE
+      | DNS
+      | FINGER
+      | FTP
+      | HTTP
+      | HTTPS
+      | IDENT_RESET
+      | IKE
+      | LSPING
+      | NETCONF
+      | NTP
+      | PING
+      | R2CP
+      | REVERSE_SSH
+      | REVERSE_TELNET
+      | RLOGIN
+      | RPM
+      | RSH
+      | SIP
+      | SNMP
+      | SNMP_TRAP
+      | SSH
+      | TELNET
+      | TFTP
+      | TRACEROUTE
+      | XNM_CLEAR_TEXT
+      | XNM_SSL
+   )
 ;
 
 ikegt_address
@@ -294,6 +373,13 @@ ipsecvit_ipsec_policy
    IPSEC_POLICY name = variable
 ;
 
+ipsecvit_null
+:
+   (
+      NO_ANTI_REPLAY
+   ) s_null_filler
+;
+
 ipsecvit_proxy_identity
 :
    PROXY_IDENTITY
@@ -337,6 +423,7 @@ ipsecvt_ike_tail
 :
    ipsecvit_gateway
    | ipsecvit_ipsec_policy
+   | ipsecvit_null
    | ipsecvit_proxy_identity
 ;
 
@@ -468,6 +555,17 @@ natstt_rule_set
    nat_rule_set
 ;
 
+natt_proxy_arp
+:
+   PROXY_ARP natt_proxy_arp_tail
+;
+
+natt_proxy_arp_tail
+:
+   apply
+   | pat_interface
+;
+
 natt_source
 :
    SOURCE natt_source_tail
@@ -486,6 +584,26 @@ natt_static
 natt_static_tail
 :
    natstt_rule_set
+;
+
+pait_address
+:
+   ADDRESS
+   (
+      IP_ADDRESS
+      | IP_PREFIX
+   )
+;
+
+pat_interface
+:
+   INTERFACE interface_id pat_interface_tail
+;
+
+pat_interface_tail
+:
+   apply
+   | pait_address
 ;
 
 proposal_set_type
@@ -507,6 +625,7 @@ s_security_tail
    | sect_ipsec
    | sect_nat
    | sect_null
+   | sect_policies
    | sect_zones
 ;
 
@@ -551,7 +670,8 @@ sect_nat
 
 sect_nat_tail
 :
-   natt_source
+   natt_proxy_arp
+   | natt_source
    | natt_static
 ;
 
@@ -565,7 +685,186 @@ sect_null
    ) s_null_filler
 ;
 
+sect_policies
+:
+   POLICIES sect_policies_tail
+;
+
+sect_policies_tail
+:
+   spt_default_policy
+   | spt_from_zone
+;
+
 sect_zones
 :
-   ZONES
+   ZONES sect_zones_tail
+;
+
+sect_zones_tail
+:
+   apply
+   | szt_security_zone
+;
+
+sp_match
+:
+   MATCH sp_match_tail
+;
+
+sp_match_tail
+:
+   spmt_application
+   | spmt_destination_address
+   | spmt_source_address
+   | spmt_source_identity
+;
+
+sp_then
+:
+   THEN sp_then_tail
+;
+
+sp_then_tail
+:
+   sptt_deny
+   | sptt_permit
+;
+
+spmt_application
+:
+   APPLICATION
+   (
+      ANY
+      | name = variable
+   )
+;
+
+spmt_destination_address
+:
+   DESTINATION_ADDRESS address_specifier
+;
+
+spmt_source_address
+:
+   SOURCE_ADDRESS address_specifier
+;
+
+spmt_source_identity
+:
+   SOURCE_IDENTITY
+   (
+      ANY
+      | name = variable
+   )
+;
+
+spt_default_policy
+:
+   DEFAULT_POLICY spt_default_policy_tail
+;
+
+spt_default_policy_tail
+:
+   apply
+   | DENY_ALL
+   | PERMIT_ALL
+;
+
+spt_from_zone
+:
+   FROM_ZONE from = zone TO_ZONE to = zone spt_from_zone_tail
+;
+
+spt_from_zone_tail
+:
+   apply
+   | spt_policy
+;
+
+spt_policy
+:
+   POLICY name = variable spt_policy_tail
+;
+
+spt_policy_tail
+:
+   apply
+   | sp_match
+   | sp_then
+;
+
+sptt_deny
+:
+   DENY
+;
+
+sptt_permit
+:
+   PERMIT
+;
+
+szszt_address_book
+:
+   ADDRESS_BOOK szszt_address_book_tail
+;
+
+szszt_address_book_tail
+:
+   apply
+   | abt_address
+;
+
+szszt_host_inbound_traffic
+:
+   HOST_INBOUND_TRAFFIC szszt_host_inbound_traffic_tail
+;
+
+szszt_host_inbound_traffic_tail
+:
+   apply
+   | hibt_protocols
+   | hibt_system_services
+;
+
+szszt_interfaces
+:
+   INTERFACES interface_id szszt_interfaces_tail
+;
+
+szszt_interfaces_tail
+:
+   apply
+   | szszt_host_inbound_traffic
+;
+
+szszt_screen
+:
+   SCREEN
+   (
+      UNTRUST_SCREEN
+      | name = variable
+   )
+;
+
+szt_security_zone
+:
+   SECURITY_ZONE zone szt_security_zone_tail
+;
+
+szt_security_zone_tail
+:
+   apply
+   | szszt_address_book
+   | szszt_host_inbound_traffic
+   | szszt_interfaces
+   | szszt_screen
+;
+
+zone
+:
+   JUNOS_HOST
+   | TRUST
+   | UNTRUST
+   | name = variable
 ;

@@ -26,7 +26,9 @@ administrator_ip
 
 apply
 :
-   s_apply_groups
+// intentional blank
+
+   | s_apply_groups
    | s_apply_groups_except
 ;
 

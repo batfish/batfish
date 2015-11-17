@@ -71,6 +71,11 @@ ADDRESS
    'address'
 ;
 
+ADDRESS_BOOK
+:
+   'address-book'
+;
+
 ADDRESS_MASK
 :
    'address-mask'
@@ -141,6 +146,11 @@ ALIAS
    'alias'
 ;
 
+ALL
+:
+   'all'
+;
+
 ALLOW
 :
    'allow'
@@ -159,6 +169,21 @@ ALWAYS_SEND
 ANY
 :
    'any'
+;
+
+ANY_IPV4
+:
+   'any-ipv4'
+;
+
+ANY_IPV6
+:
+   'any-ipv6'
+;
+
+ANY_SERVICE
+:
+   'any-service'
 ;
 
 APPLICATION
@@ -490,6 +515,11 @@ DEFAULT_METRIC
    'default-metric'
 ;
 
+DEFAULT_POLICY
+:
+   'default-policy'
+;
+
 DEFAULTS
 :
    'defaults'
@@ -498,6 +528,16 @@ DEFAULTS
 DELETE
 :
    'delete'
+;
+
+DENY
+:
+   'deny'
+;
+
+DENY_ALL
+:
+   'deny-all'
 ;
 
 DES_CBC
@@ -585,6 +625,11 @@ DISCARD
    'discard'
 ;
 
+DNS
+:
+   'dns'
+;
+
 DOMAIN
 :
    'domain'
@@ -618,6 +663,11 @@ DSTOPTS
 DUMPONPANIC
 :
    'dump-on-panic'
+;
+
+DVMRP
+:
+   'dvmrp'
 ;
 
 ECHO_REPLY
@@ -845,6 +895,11 @@ FROM
    'from'
 ;
 
+FROM_ZONE
+:
+   'from-zone'
+;
+
 FTP
 :
    'ftp'
@@ -970,6 +1025,11 @@ HOST
    'host'
 ;
 
+HOST_INBOUND_TRAFFIC
+:
+   'host-inbound-traffic'
+;
+
 HOST_NAME
 :
    'host-name'
@@ -1018,6 +1078,11 @@ ICMPV6
 IDENT
 :
    'ident'
+;
+
+IDENT_RESET
+:
+   'ident-reset'
 ;
 
 IGMP
@@ -1255,6 +1320,11 @@ ISO
    'iso' -> pushMode(M_ISO)
 ;
 
+JUNOS_HOST
+:
+   'junos-host'
+;
+
 KEEP
 :
    'keep'
@@ -1485,6 +1555,11 @@ LSP_LIFETIME
    'lsp-lifetime'
 ;
 
+LSPING
+:
+   'lsping'
+;
+
 M
 :
    'm'
@@ -1710,6 +1785,11 @@ NETBIOS_SSN
    'netbios-ssn'
 ;
 
+NETCONF
+:
+   'netconf'
+;
+
 NETWORK_SUMMARY_EXPORT
 :
    'network-summary-export'
@@ -1745,6 +1825,11 @@ NFSD
    'nfsd'
 ;
 
+NHRP
+:
+   'nhrp'
+;
+
 NNTP
 :
    'nntp'
@@ -1758,6 +1843,11 @@ NTALK
 NO_ACTIVE_BACKBONE
 :
    'no-active-backbone'
+;
+
+NO_ANTI_REPLAY
+:
+   'no-anti-replay'
 ;
 
 NO_AUTO_NEGOTIATION
@@ -1975,9 +2065,29 @@ PERFECT_FORWARD_SECRECY
    'perfect-forward-secrecy'
 ;
 
+PERMIT
+:
+   'permit'
+;
+
+PERMIT_ALL
+:
+   'permit-all'
+;
+
+PGM
+:
+   'pgm'
+;
+
 PIM
 :
    'pim'
+;
+
+PING
+:
+   'ping'
 ;
 
 POE
@@ -1993,6 +2103,11 @@ POINT_TO_POINT
 POLICER
 :
    'policer'
+;
+
+POLICIES
+:
+   'policies'
 ;
 
 POLICY
@@ -2185,6 +2300,11 @@ PROVIDER_TUNNEL
    'provider-tunnel'
 ;
 
+PROXY_ARP
+:
+   'proxy-arp'
+;
+
 PROXY_IDENTITY
 :
    'proxy-identity'
@@ -2193,6 +2313,11 @@ PROXY_IDENTITY
 QUALIFIED_NEXT_HOP
 :
    'qualified-next-hop'
+;
+
+R2CP
+:
+   'r2cp'
 ;
 
 RADACCT
@@ -2285,6 +2410,16 @@ RETAIN
    'retain'
 ;
 
+REVERSE_SSH
+:
+   'reverse-ssh'
+;
+
+REVERSE_TELNET
+:
+   'reverse-telnet'
+;
+
 RIB
 :
    'rib'
@@ -2305,9 +2440,19 @@ RIP
    'rip'
 ;
 
+RIPNG
+:
+   'ripng'
+;
+
 RKINIT
 :
    'rkinit'
+;
+
+RLOGIN
+:
+   'rlogin'
 ;
 
 ROOT_AUTHENTICATION
@@ -2340,6 +2485,11 @@ ROUTER_ADVERTISEMENT
    'router-advertisement'
 ;
 
+ROUTER_DISCOVERY
+:
+   'router-discovery'
+;
+
 ROUTER_ID
 :
    'router-id'
@@ -2365,9 +2515,19 @@ RPF_CHECK
    'rpf-check'
 ;
 
+RPM
+:
+   'rpm'
+;
+
 RSA_SIGNATURES
 :
    'rsa-signatures'
+;
+
+RSH
+:
+   'rsh'
 ;
 
 RSTP
@@ -2400,6 +2560,11 @@ SAMPLING
    'sampling'
 ;
 
+SAP
+:
+   'sap'
+;
+
 SCREEN
 :
    'screen'
@@ -2418,6 +2583,11 @@ SCTP
 SECURITY
 :
    'security'
+;
+
+SECURITY_ZONE
+:
+   'security-zone'
 ;
 
 SERVICE
@@ -2475,6 +2645,11 @@ SIMPLE
    'simple'
 ;
 
+SIP
+:
+   'sip'
+;
+
 SRLG
 :
    'srlg'
@@ -2498,6 +2673,11 @@ SMTP
 SNMP
 :
    'snmp'
+;
+
+SNMP_TRAP
+:
+   'snmp-trap'
 ;
 
 SNMPTRAP
@@ -2533,6 +2713,11 @@ SOURCE_ADDRESS
 SOURCE_ADDRESS_FILTER
 :
    'source-address-filter'
+;
+
+SOURCE_IDENTITY
+:
+   'source-identity'
 ;
 
 SOURCE_INTERFACE
@@ -2628,6 +2813,11 @@ SYSLOG
 SYSTEM
 :
    'system'
+;
+
+SYSTEM_SERVICES
+:
+   'system-services'
 ;
 
 TACACS
@@ -2745,9 +2935,19 @@ TO
    'to'
 ;
 
+TO_ZONE
+:
+   'to-zone'
+;
+
 TRACEOPTIONS
 :
    'traceoptions'
+;
+
+TRACEROUTE
+:
+   'traceroute'
 ;
 
 TRACK
@@ -2768,6 +2968,11 @@ TRAPS
 TRUNK
 :
    'trunk'
+;
+
+TRUST
+:
+   'trust'
 ;
 
 TTL
@@ -2808,6 +3013,16 @@ UNIT
 UNREACHABLE
 :
    'unreachable'
+;
+
+UNTRUST
+:
+   'untrust'
+;
+
+UNTRUST_SCREEN
+:
+   'untrust-screen'
 ;
 
 UPTO
@@ -2948,6 +3163,16 @@ WIDE_METRICS_ONLY
 XDMCP
 :
    'xdmcp'
+;
+
+XNM_CLEAR_TEXT
+:
+   'xnm-clear-text'
+;
+
+XNM_SSL
+:
+   'xnm-ssl'
 ;
 
 ZONE
