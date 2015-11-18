@@ -664,7 +664,7 @@ public class Client {
          reader.setPrompt("batfish> ");
 
          List<Completer> completors = new LinkedList<Completer>();
-         completors.add(new StringsCompleter("foo", "bar", "baz"));
+         completors.add(new StringsCompleter(MAP_COMMANDS.keySet()));
 
          for (Completer c : completors) {
             reader.addCompleter(c);
