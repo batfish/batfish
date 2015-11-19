@@ -6,6 +6,16 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+abast_address
+:
+   ADDRESS name = variable
+;
+
+abast_address_set
+:
+   ADDRESS_SET name = variable
+;
+
 abt_address
 :
    ADDRESS name = variable abt_address_tail
@@ -15,6 +25,18 @@ abt_address_tail
 :
    apply
    | IP_PREFIX
+;
+
+abt_address_set
+:
+   ADDRESS_SET name = variable abt_address_set_tail
+;
+
+abt_address_set_tail
+:
+   apply
+   | abast_address
+   | abast_address_set
 ;
 
 address_specifier
@@ -45,6 +67,25 @@ encryption_algorithm
    | AES_192_CBC
    | AES_256_CBC
    | DES_CBC
+;
+
+gdt_connections_limit
+:
+   CONNECTIONS_LIMIT limit = DEC
+;
+
+gdt_hostname
+:
+   HOSTNAME name = variable
+;
+
+gdt_ike_user_type
+:
+   IKE_USER_TYPE
+   (
+      GROUP_IKE_ID
+      | SHARED_IKE_ID
+   )
 ;
 
 hibt_protocols
@@ -117,6 +158,19 @@ ikegt_dead_peer_detection
    DEAD_PEER_DETECTION ALWAYS_SEND?
 ;
 
+ikegt_dynamic
+:
+   DYNAMIC ikegt_dynamic_tail
+;
+
+ikegt_dynamic_tail
+:
+   apply
+   | gdt_connections_limit
+   | gdt_hostname
+   | gdt_ike_user_type
+;
+
 ikegt_external_interface
 :
    EXTERNAL_INTERFACE interface_id
@@ -132,6 +186,16 @@ ikegt_local_address
    LOCAL_ADDRESS IP_ADDRESS
 ;
 
+ikegt_local_identity
+:
+   LOCAL_IDENTITY ikegt_local_identity_tail
+;
+
+ikegt_local_identity_tail
+:
+   lit_inet
+;
+
 ikegt_no_nat_traversal
 :
    NO_NAT_TRAVERSAL
@@ -140,6 +204,11 @@ ikegt_no_nat_traversal
 ikegt_version
 :
    VERSION V1_ONLY
+;
+
+ikegt_xauth
+:
+   XAUTH ACCESS_PROFILE name = variable
 ;
 
 ikeprt_authentication_algorithm
@@ -182,6 +251,11 @@ ikeprt_lifetime_seconds
    LIFETIME_SECONDS seconds = DEC
 ;
 
+ikept_description
+:
+   DESCRIPTION s_null_filler
+;
+
 ikept_mode
 :
    MODE
@@ -220,11 +294,14 @@ iket_gateway_tail
 :
    ikegt_address
    | ikegt_dead_peer_detection
+   | ikegt_dynamic
    | ikegt_external_interface
    | ikegt_ike_policy
    | ikegt_local_address
+   | ikegt_local_identity
    | ikegt_no_nat_traversal
    | ikegt_version
+   | ikegt_xauth
 ;
 
 iket_policy
@@ -239,7 +316,8 @@ iket_policy_named
 
 iket_policy_tail
 :
-   ikept_mode
+   ikept_description
+   | ikept_mode
    | ikept_pre_shared_key
    | ikept_proposal_set
    | ikept_proposals
@@ -274,9 +352,19 @@ ipsecprt_authentication_algorithm
    )
 ;
 
+ipsecprt_description
+:
+   DESCRIPTION s_null_filler
+;
+
 ipsecprt_encryption_algorithm
 :
    ENCRYPTION_ALGORITHM encryption_algorithm
+;
+
+ipsecprt_lifetime_kilobytes
+:
+   LIFETIME_KILOBYTES kilobytes = DEC
 ;
 
 ipsecprt_lifetime_seconds
@@ -338,8 +426,11 @@ ipsect_proposal_named
 
 ipsect_proposal_tail
 :
-   ipsecprt_authentication_algorithm
+   apply
+   | ipsecprt_authentication_algorithm
+   | ipsecprt_description
    | ipsecprt_encryption_algorithm
+   | ipsecprt_lifetime_kilobytes
    | ipsecprt_lifetime_seconds
    | ipsecprt_protocol
 ;
@@ -382,11 +473,14 @@ ipsecvit_null
 
 ipsecvit_proxy_identity
 :
-   PROXY_IDENTITY
-   (
-      LOCAL
-      | REMOTE
-   ) IP_PREFIX
+   PROXY_IDENTITY ipsecvit_proxy_identity_tail
+;
+
+ipsecvit_proxy_identity_tail
+:
+   pit_local
+   | pit_remote
+   | pit_service
 ;
 
 ipsecvmt_destination_ip
@@ -440,6 +534,11 @@ ipsecvt_vpn_monitor_tail
    | ipsecvmt_source_interface
 ;
 
+lit_inet
+:
+   INET name = variable
+;
+
 nat_rule_set
 :
    RULE_SET nat_rule_set_named
@@ -457,14 +556,32 @@ nat_rule_set_tail
    | natrst_to
 ;
 
+natrsfromt_zone
+:
+   ZONE name = variable
+;
+
 natrsrmt_destination_address
 :
    DESTINATION_ADDRESS IP_PREFIX
 ;
 
+natrsrmt_destination_port
+:
+   DESTINATION_PORT from = DEC
+   (
+      TO to = DEC
+   )?
+;
+
 natrsrmt_source_address
 :
    SOURCE_ADDRESS IP_PREFIX
+;
+
+natrsrt_description
+:
+   DESCRIPTION s_null_filler
 ;
 
 natrsrt_match
@@ -475,6 +592,7 @@ natrsrt_match
 natrsrt_match_tail
 :
    natrsrmt_destination_address
+   | natrsrmt_destination_port
    | natrsrmt_source_address
 ;
 
@@ -491,12 +609,23 @@ natrsrt_then_tail
 
 natrsrtt_source_nat
 :
-   SOURCE_NAT INTERFACE
+   SOURCE_NAT natrsrtt_source_nat_tail
+;
+
+natrsrtt_source_nat_tail
+:
+   tsnt_interface
+   | tsnt_pool
 ;
 
 natrsrtt_static_nat
 :
-   STATIC_NAT PREFIX IP_PREFIX
+   STATIC_NAT natrsrtt_static_nat_tail
+;
+
+natrsrtt_static_nat_tail
+:
+   stnt_prefix
 ;
 
 natrst_from
@@ -521,7 +650,8 @@ natrst_rule_named
 
 natrst_rule_tail
 :
-   natrsrt_match
+   natrsrt_description
+   | natrsrt_match
    | natrsrt_then
 ;
 
@@ -535,14 +665,46 @@ natrst_to_tail
    natrstot_zone
 ;
 
-natrsfromt_zone
+natrstot_zone
 :
    ZONE name = variable
 ;
 
-natrstot_zone
+natsoit_port_overloading
 :
-   ZONE name = variable
+   PORT_OVERLOADING OFF
+;
+
+natsoit_port_overloading_factor
+:
+   PORT_OVERLOADING_FACTOR factor = DEC
+;
+
+natsot_interface
+:
+   INTERFACE natsot_interface_tail
+;
+
+natsot_interface_tail
+:
+   natsoit_port_overloading
+   | natsoit_port_overloading_factor
+;
+
+natsot_pool
+:
+   POOL name = variable natsot_pool_tail
+;
+
+natsot_pool_tail
+:
+   poolt_address
+   | poolt_description
+;
+
+natsot_port_randomization
+:
+   PORT_RANDOMIZATION DISABLE
 ;
 
 natsot_rule_set
@@ -573,7 +735,10 @@ natt_source
 
 natt_source_tail
 :
-   natsot_rule_set
+   natsot_interface
+   | natsot_pool
+   | natsot_port_randomization
+   | natsot_rule_set
 ;
 
 natt_static
@@ -590,9 +755,16 @@ pait_address
 :
    ADDRESS
    (
-      IP_ADDRESS
-      | IP_PREFIX
+      from = IP_ADDRESS
+      | from = IP_PREFIX
    )
+   (
+      TO
+      (
+         to = IP_ADDRESS
+         | to = IP_PREFIX
+      )
+   )?
 ;
 
 pat_interface
@@ -606,11 +778,68 @@ pat_interface_tail
    | pait_address
 ;
 
+pit_local
+:
+   LOCAL IP_PREFIX
+;
+
+pit_remote
+:
+   REMOTE IP_PREFIX
+;
+
+pit_service
+:
+   SERVICE
+   (
+      ANY
+      | name = variable
+   )
+;
+
+pnt_inactivity_timeout
+:
+   INACTIVITY_TIMEOUT seconds = DEC
+;
+
+pnt_max_session_number
+:
+   MAX_SESSION_NUMBER max = DEC
+;
+
+pnt_permit
+:
+   PERMIT
+   (
+      ANY_REMOTE_HOST
+      | TARGET_HOST
+      | TARGET_HOST_PORT
+   )
+;
+
+poolt_address
+:
+   ADDRESS IP_PREFIX
+   (
+      TO IP_PREFIX
+   )?
+;
+
+poolt_description
+:
+   DESCRIPTION s_null_filler
+;
+
 proposal_set_type
 :
    BASIC
    | COMPATIBLE
    | STANDARD
+;
+
+ptt_ipsec_vpn
+:
+   IPSEC_VPN name = variable
 ;
 
 s_security
@@ -679,6 +908,7 @@ sect_null
 :
    (
       ALG
+      | APPLICATION_TRACKING
       | FLOW
       | LOG
       | SCREEN
@@ -705,6 +935,11 @@ sect_zones_tail
 :
    apply
    | szt_security_zone
+;
+
+sp_description
+:
+   DESCRIPTION s_null_filler
 ;
 
 sp_match
@@ -790,8 +1025,20 @@ spt_policy
 spt_policy_tail
 :
    apply
+   | sp_description
    | sp_match
    | sp_then
+;
+
+sptpt_tunnel
+:
+   TUNNEL sptpt_tunnel_tail
+;
+
+sptpt_tunnel_tail
+:
+   apply
+   | ptt_ipsec_vpn
 ;
 
 sptt_deny
@@ -801,7 +1048,37 @@ sptt_deny
 
 sptt_permit
 :
-   PERMIT
+   PERMIT sptt_permit_tail
+;
+
+sptt_permit_tail
+:
+   apply
+   | sptpt_tunnel
+;
+
+stnpt_mapped_port
+:
+   MAPPED_PORT low = DEC
+   (
+      TO high = DEC
+   )?
+;
+
+stnpt_prefix
+:
+   IP_PREFIX
+;
+
+stnt_prefix
+:
+   PREFIX stnt_prefix_tail
+;
+
+stnt_prefix_tail
+:
+   stnpt_mapped_port
+   | stnpt_prefix
 ;
 
 szszt_address_book
@@ -813,6 +1090,12 @@ szszt_address_book_tail
 :
    apply
    | abt_address
+   | abt_address_set
+;
+
+szszt_application_tracking
+:
+   APPLICATION_TRACKING
 ;
 
 szszt_host_inbound_traffic
@@ -847,6 +1130,11 @@ szszt_screen
    )
 ;
 
+szszt_tcp_rst
+:
+   TCP_RST
+;
+
 szt_security_zone
 :
    SECURITY_ZONE zone szt_security_zone_tail
@@ -856,9 +1144,51 @@ szt_security_zone_tail
 :
    apply
    | szszt_address_book
+   | szszt_application_tracking
    | szszt_host_inbound_traffic
    | szszt_interfaces
    | szszt_screen
+   | szszt_tcp_rst
+;
+
+tsnpt_common
+:
+   apply
+   | tsnpt_persistent_nat
+;
+
+tsnpt_named
+:
+   name = variable tsnpt_common
+;
+
+tsnpt_persistent_nat
+:
+   PERSISTENT_NAT tsnpt_persistent_nat_tail
+;
+
+tsnpt_persistent_nat_tail
+:
+   apply
+   | pnt_inactivity_timeout
+   | pnt_max_session_number
+   | pnt_permit
+;
+
+tsnt_interface
+:
+   INTERFACE
+;
+
+tsnt_pool
+:
+   POOL tsnt_pool_tail
+;
+
+tsnt_pool_tail
+:
+   tsnpt_common
+   | tsnpt_named
 ;
 
 zone

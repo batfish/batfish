@@ -46,6 +46,11 @@ ACCESS
    'access'
 ;
 
+ACCESS_PROFILE
+:
+   'access-profile'
+;
+
 ACCOUNTING
 :
    'accounting'
@@ -79,6 +84,11 @@ ADDRESS_BOOK
 ADDRESS_MASK
 :
    'address-mask'
+;
+
+ADDRESS_SET
+:
+   'address-set'
 ;
 
 ADVERTISE_INACTIVE
@@ -181,6 +191,11 @@ ANY_IPV6
    'any-ipv6'
 ;
 
+ANY_REMOTE_HOST
+:
+   'any-remote-host'
+;
+
 ANY_SERVICE
 :
    'any-service'
@@ -189,6 +204,11 @@ ANY_SERVICE
 APPLICATION
 :
    'application'
+;
+
+APPLICATION_TRACKING
+:
+   'application-tracking'
 ;
 
 APPLICATIONS
@@ -450,6 +470,11 @@ CONNECTIONS
    'connections'
 ;
 
+CONNECTIONS_LIMIT
+:
+   'connections-limit'
+;
+
 COS_NEXT_HOP_MAP
 :
    'cos-next-hop-map'
@@ -668,6 +693,11 @@ DUMPONPANIC
 DVMRP
 :
    'dvmrp'
+;
+
+DYNAMIC
+:
+   'dynamic'
 ;
 
 ECHO_REPLY
@@ -950,6 +980,11 @@ GROUP
    'group' -> pushMode(M_VarOrWildcard)
 ;
 
+GROUP_IKE_ID
+:
+   'group-ike-id'
+;
+
 GROUP1
 :
    'group1'
@@ -1040,6 +1075,11 @@ HOST_UNREACHABLE
    'host-unreachable'
 ;
 
+HOSTNAME
+:
+   'hostname'
+;
+
 HTTP
 :
    'http'
@@ -1115,6 +1155,11 @@ IKE_POLICY
    'ike-policy'
 ;
 
+IKE_USER_TYPE
+:
+   'ike-user-type'
+;
+
 IMAP
 :
    'imap'
@@ -1143,6 +1188,11 @@ IMPORT_RIB
 INACTIVE
 :
    'inactive'
+;
+
+INACTIVITY_TIMEOUT
+:
+   'inactivity-timeout'
 ;
 
 INCLUDE_MP_NEXT_HOP
@@ -1300,6 +1350,11 @@ IPSEC_POLICY
    'ipsec-policy'
 ;
 
+IPSEC_VPN
+:
+   'ipsec-vpn'
+;
+
 IPV6
 :
    'ipv6'
@@ -1445,6 +1500,11 @@ LEVEL
    'level'
 ;
 
+LIFETIME_KILOBYTES
+:
+   'lifetime-kilobytes'
+;
+
 LIFETIME_SECONDS
 :
    'lifetime-seconds'
@@ -1485,6 +1545,10 @@ LOCAL_AS
    'local-as'
 ;
 
+LOCAL_IDENTITY
+:
+   'local-identity'
+;
 LOCAL_PREFERENCE
 :
    'local-preference'
@@ -1575,6 +1639,11 @@ MAIN
    'main'
 ;
 
+MAPPED_PORT
+:
+   'mapped-port'
+;
+
 MARTIANS
 :
    'martians'
@@ -1598,6 +1667,11 @@ MAX_CONFIGURATIONS_ON_FLASH
 MAX_CONFIGURATION_ROLLBACKS
 :
    'max-configuration-rollbacks'
+;
+
+MAX_SESSION_NUMBER
+:
+   'max-session-number'
 ;
 
 MAXIMUM_LABELS
@@ -1940,6 +2014,11 @@ NTP
    'ntp'
 ;
 
+OFF
+:
+   'off'
+;
+
 OFFSET
 :
    'offset'
@@ -2075,6 +2154,11 @@ PERMIT_ALL
    'permit-all'
 ;
 
+PERSISTENT_NAT
+:
+   'persistent-nat'
+;
+
 PGM
 :
    'pgm'
@@ -2130,6 +2214,11 @@ POLL_INTERVAL
    'poll-interval'
 ;
 
+POOL
+:
+   'pool'
+;
+
 POP3
 :
    'pop3'
@@ -2153,6 +2242,21 @@ PORT_MIRROR
 PORT_MODE
 :
    'port-mode'
+;
+
+PORT_OVERLOADING
+:
+   'port-overloading'
+;
+
+PORT_OVERLOADING_FACTOR
+:
+   'port-overloading-factor'
+;
+
+PORT_RANDOMIZATION
+:
+   'port-randomization'
 ;
 
 PORT_UNREACHABLE
@@ -2635,6 +2739,11 @@ SHA1
    'sha1'
 ;
 
+SHARED_IKE_ID
+:
+   'shared-ike-id'
+;
+
 SHORTCUTS
 :
    'shortcuts'
@@ -2850,6 +2959,16 @@ TARGET
    'target'
 ;
 
+TARGET_HOST
+:
+   'target-host'
+;
+
+TARGET_HOST_PORT
+:
+   'target-host-port'
+;
+
 TARGETED_BROADCAST
 :
    'targeted-broadcast'
@@ -2878,6 +2997,11 @@ TCP_INITIAL
 TCP_MSS
 :
    'tcp-mss'
+;
+
+TCP_RST
+:
+   'tcp-rst'
 ;
 
 TE_METRIC
@@ -3158,6 +3282,11 @@ WHO
 WIDE_METRICS_ONLY
 :
    'wide-metrics-only'
+;
+
+XAUTH
+:
+   'xauth'
 ;
 
 XDMCP
@@ -3722,6 +3851,16 @@ M_Interface_NEWLINE
 M_Interface_INTERFACE
 :
    'interface' -> type(INTERFACE)
+;
+
+M_Interface_PORT_OVERLOADING
+:
+   'port-overloading' -> type(PORT_OVERLOADING), popMode
+;
+
+M_Interface_PORT_OVERLOADING_FACTOR
+:
+   'port-overloading-factor' -> type(PORT_OVERLOADING_FACTOR), popMode
 ;
 
 M_Interface_QUOTE
