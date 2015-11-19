@@ -1,6 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -14,9 +15,15 @@ import org.batfish.common.BatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.AsPath;
 import org.batfish.representation.AsSet;
+import org.batfish.representation.DiffieHellmanGroup;
+import org.batfish.representation.EncryptionAlgorithm;
 import org.batfish.representation.ExtendedCommunity;
+import org.batfish.representation.IkeAuthenticationAlgorithm;
+import org.batfish.representation.IkeAuthenticationMethod;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.IpsecAuthenticationAlgorithm;
+import org.batfish.representation.IpsecProtocol;
 import org.batfish.representation.IsoAddress;
 import org.batfish.representation.NamedPort;
 import org.batfish.representation.Prefix;
@@ -39,8 +46,14 @@ import org.batfish.representation.juniper.FwThenDiscard;
 import org.batfish.representation.juniper.FwThenNextTerm;
 import org.batfish.representation.juniper.FwThenNop;
 import org.batfish.representation.juniper.GeneratedRoute;
+import org.batfish.representation.juniper.IkeGateway;
+import org.batfish.representation.juniper.IkePolicy;
+import org.batfish.representation.IkeProposal;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.IpBgpGroup;
+import org.batfish.representation.juniper.IpsecPolicy;
+import org.batfish.representation.IpsecProposal;
+import org.batfish.representation.juniper.IpsecVpn;
 import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
 import org.batfish.representation.juniper.IsisLevelSettings;
 import org.batfish.representation.juniper.IsisSettings;
@@ -336,6 +349,66 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
    }
 
+   private static EncryptionAlgorithm toEncryptionAlgorithm(
+         Encryption_algorithmContext ctx) {
+      if (ctx.THREEDES_CBC() != null) {
+         return EncryptionAlgorithm.THREEDES_CBC;
+      }
+      else if (ctx.AES_128_CBC() != null) {
+         return EncryptionAlgorithm.AES_128_CBC;
+      }
+      else if (ctx.AES_192_CBC() != null) {
+         return EncryptionAlgorithm.AES_192_CBC;
+      }
+      else if (ctx.AES_256_CBC() != null) {
+         return EncryptionAlgorithm.AES_256_CBC;
+      }
+      else if (ctx.DES_CBC() != null) {
+         return EncryptionAlgorithm.DES_CBC;
+      }
+      else {
+         throw new BatfishException("Invalid encryption algorithm: "
+               + ctx.getText());
+      }
+   }
+
+   private static IkeAuthenticationAlgorithm toIkeAuthenticationAlgorithm(
+         Ike_authentication_algorithmContext ctx) {
+      if (ctx.MD5() != null) {
+         return IkeAuthenticationAlgorithm.MD5;
+      }
+      else if (ctx.SHA1() != null) {
+         return IkeAuthenticationAlgorithm.SHA1;
+      }
+      else if (ctx.SHA_256() != null) {
+         return IkeAuthenticationAlgorithm.SHA_256;
+      }
+      else if (ctx.SHA_384() != null) {
+         return IkeAuthenticationAlgorithm.SHA_384;
+      }
+      else {
+         throw new BatfishException("invalid ike authentication algorithm: "
+               + ctx.getText());
+      }
+   }
+
+   private static IkeAuthenticationMethod toIkeAuthenticationMethod(
+         Ike_authentication_methodContext ctx) {
+      if (ctx.DSA_SIGNATURES() != null) {
+         return IkeAuthenticationMethod.DSA_SIGNATURES;
+      }
+      else if (ctx.PRE_SHARED_KEYS() != null) {
+         return IkeAuthenticationMethod.PRE_SHARED_KEYS;
+      }
+      else if (ctx.RSA_SIGNATURES() != null) {
+         return IkeAuthenticationMethod.RSA_SIGNATURES;
+      }
+      else {
+         throw new BatfishException("Invalid ike authentication method: "
+               + ctx.getText());
+      }
+   }
+
    private static Integer toInt(TerminalNode node) {
       return toInt(node.getSymbol());
    }
@@ -416,6 +489,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
    }
 
+   private static IpsecAuthenticationAlgorithm toIpsecAuthenticationAlgorithm(
+         Ipsec_authentication_algorithmContext ctx) {
+      if (ctx.HMAC_MD5_96() != null) {
+         return IpsecAuthenticationAlgorithm.HMAC_MD5_96;
+      }
+      else if (ctx.HMAC_SHA1_96() != null) {
+         return IpsecAuthenticationAlgorithm.HMAC_SHA1_96;
+      }
+      else {
+         throw new BatfishException("invalid ipsec authentication algorithm: "
+               + ctx.getText());
+      }
+   }
+
+   private static IpsecProtocol toIpsecProtocol(Ipsec_protocolContext ctx) {
+      if (ctx.AH() != null) {
+         return IpsecProtocol.AH;
+      }
+      else if (ctx.ESP() != null) {
+         return IpsecProtocol.ESP;
+      }
+      else {
+         throw new BatfishException("invalid ipsec protocol: " + ctx.getText());
+      }
+   }
+
    private static RoutingProtocol toRoutingProtocol(Routing_protocolContext ctx) {
       if (ctx.AGGREGATE() != null) {
          return RoutingProtocol.AGGREGATE;
@@ -449,6 +548,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
    }
 
+   private static String unquote(String text) {
+      if (text.length() == 0) {
+         return text;
+      }
+      if (text.charAt(0) != '"') {
+         return text;
+      }
+      else if (text.charAt(text.length() - 1) != '"') {
+         throw new BatfishException("Improperly-quoted string");
+      }
+      else {
+         return text.substring(1, text.length() - 1);
+      }
+   }
+
    private JuniperVendorConfiguration _configuration;
 
    private AggregateRoute _currentAggregateRoute;
@@ -467,9 +581,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private GeneratedRoute _currentGeneratedRoute;
 
+   private IkeGateway _currentIkeGateway;
+
+   private IkePolicy _currentIkePolicy;
+
+   private IkeProposal _currentIkeProposal;
+
    private Interface _currentInterface;
 
    private Prefix _currentInterfacePrefix;
+
+   private IpsecPolicy _currentIpsecPolicy;
+
+   private IpsecProposal _currentIpsecProposal;
+
+   private IpsecVpn _currentIpsecVpn;
 
    private Interface _currentIsisInterface;
 
@@ -543,25 +669,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          }
       }
       else {
-         String name = ctx.id.name.getText();
-         String unit = null;
-         if (ctx.id.unit != null) {
-            unit = ctx.id.unit.getText();
-         }
-         unitFullName = name + "." + unit;
-         _currentOspfInterface = interfaces.get(name);
-         if (_currentOspfInterface == null) {
-            _currentOspfInterface = new Interface(name);
-            interfaces.put(name, _currentOspfInterface);
-         }
-         if (unit != null) {
-            Map<String, Interface> units = _currentOspfInterface.getUnits();
-            _currentOspfInterface = units.get(unitFullName);
-            if (_currentOspfInterface == null) {
-               _currentOspfInterface = new Interface(unitFullName);
-               units.put(unitFullName, _currentOspfInterface);
-            }
-         }
+         _currentOspfInterface = initInterface(ctx.id);
+         unitFullName = _currentOspfInterface.getName();
       }
       Ip currentArea = _currentArea.getAreaIp();
       if (ctx.at_interface_tail() != null
@@ -700,6 +809,36 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterIket_gateway(Iket_gatewayContext ctx) {
+      String name = ctx.name.getText();
+      _currentIkeGateway = _configuration.getIkeGateways().get(name);
+      if (_currentIkeGateway == null) {
+         _currentIkeGateway = new IkeGateway(name);
+         _configuration.getIkeGateways().put(name, _currentIkeGateway);
+      }
+   }
+
+   @Override
+   public void enterIket_policy(Iket_policyContext ctx) {
+      String name = ctx.name.getText();
+      _currentIkePolicy = _configuration.getIkePolicies().get(name);
+      if (_currentIkePolicy == null) {
+         _currentIkePolicy = new IkePolicy(name);
+         _configuration.getIkePolicies().put(name, _currentIkePolicy);
+      }
+   }
+
+   @Override
+   public void enterIket_proposal(Iket_proposalContext ctx) {
+      String name = ctx.name.getText();
+      _currentIkeProposal = _configuration.getIkeProposals().get(name);
+      if (_currentIkeProposal == null) {
+         _currentIkeProposal = new IkeProposal(name);
+         _configuration.getIkeProposals().put(name, _currentIkeProposal);
+      }
+   }
+
+   @Override
    public void enterIntt_named(Intt_namedContext ctx) {
       if (ctx.name == null) {
          _currentInterface = _currentRoutingInstance.getGlobalMasterInterface();
@@ -715,6 +854,36 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          }
       }
       _currentMasterInterface = _currentInterface;
+   }
+
+   @Override
+   public void enterIpsect_policy(Ipsect_policyContext ctx) {
+      String name = ctx.name.getText();
+      _currentIpsecPolicy = _configuration.getIpsecPolicies().get(name);
+      if (_currentIpsecPolicy == null) {
+         _currentIpsecPolicy = new IpsecPolicy(name);
+         _configuration.getIpsecPolicies().put(name, _currentIpsecPolicy);
+      }
+   }
+
+   @Override
+   public void enterIpsect_proposal(Ipsect_proposalContext ctx) {
+      String name = ctx.name.getText();
+      _currentIpsecProposal = _configuration.getIpsecProposals().get(name);
+      if (_currentIpsecProposal == null) {
+         _currentIpsecProposal = new IpsecProposal(name);
+         _configuration.getIpsecProposals().put(name, _currentIpsecProposal);
+      }
+   }
+
+   @Override
+   public void enterIpsect_vpn(Ipsect_vpnContext ctx) {
+      String name = ctx.name.getText();
+      _currentIpsecVpn = _configuration.getIpsecVpns().get(name);
+      if (_currentIpsecVpn == null) {
+         _currentIpsecVpn = new IpsecVpn(name);
+         _configuration.getIpsecVpns().put(name, _currentIpsecVpn);
+      }
    }
 
    @Override
@@ -1340,9 +1509,184 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitIkegt_address(Ikegt_addressContext ctx) {
+      Ip ip = new Ip(ctx.IP_ADDRESS().getText());
+      _currentIkeGateway.setAddress(ip);
+   }
+
+   @Override
+   public void exitIkegt_external_interface(Ikegt_external_interfaceContext ctx) {
+      Interface iface = initInterface(ctx.interface_id());
+      _currentIkeGateway.setExternalInterface(iface);
+   }
+
+   @Override
+   public void exitIkegt_ike_policy(Ikegt_ike_policyContext ctx) {
+      String name = ctx.name.getText();
+      _currentIkeGateway.setIkePolicy(name);
+   }
+
+   @Override
+   public void exitIkeprt_authentication_algorithm(
+         Ikeprt_authentication_algorithmContext ctx) {
+      IkeAuthenticationAlgorithm alg = toIkeAuthenticationAlgorithm(ctx
+            .ike_authentication_algorithm());
+      _currentIkeProposal.setAuthenticationAlgorithm(alg);
+   }
+
+   @Override
+   public void exitIkeprt_authentication_method(
+         Ikeprt_authentication_methodContext ctx) {
+      IkeAuthenticationMethod authenticationMethod = toIkeAuthenticationMethod(ctx
+            .ike_authentication_method());
+      _currentIkeProposal.setAuthenticationMethod(authenticationMethod);
+   }
+
+   @Override
+   public void exitIkeprt_dh_group(Ikeprt_dh_groupContext ctx) {
+      DiffieHellmanGroup group = toDhGroup(ctx.dh_group());
+      _currentIkeProposal.setDiffieHellmanGroup(group);
+   }
+
+   @Override
+   public void exitIkeprt_encryption_algorithm(
+         Ikeprt_encryption_algorithmContext ctx) {
+      EncryptionAlgorithm alg = toEncryptionAlgorithm(ctx
+            .encryption_algorithm());
+      _currentIkeProposal.setEncryptionAlgorithm(alg);
+   }
+
+   @Override
+   public void exitIkeprt_lifetime_seconds(Ikeprt_lifetime_secondsContext ctx) {
+      int lifetimeSeconds = toInt(ctx.seconds);
+      _currentIkeProposal.setLifetimeSeconds(lifetimeSeconds);
+   }
+
+   @Override
+   public void exitIkept_pre_shared_key(Ikept_pre_shared_keyContext ctx) {
+      String key = unquote(ctx.key.getText());
+      _currentIkePolicy.setPreSharedKey(key);
+   }
+
+   @Override
+   public void exitIkept_proposal_set(Ikept_proposal_setContext ctx) {
+      Set<String> proposalsInSet = initIkeProposalSet(ctx.proposal_set_type());
+      _currentIkePolicy.getProposals().addAll(proposalsInSet);
+   }
+
+   @Override
+   public void exitIkept_proposals(Ikept_proposalsContext ctx) {
+      String proposal = ctx.name.getText();
+      _currentIkePolicy.getProposals().add(proposal);
+   }
+
+   @Override
+   public void exitIket_gateway(Iket_gatewayContext ctx) {
+      _currentIkeGateway = null;
+   }
+
+   @Override
+   public void exitIket_policy(Iket_policyContext ctx) {
+      _currentIkePolicy = null;
+   }
+
+   @Override
+   public void exitIket_proposal(Iket_proposalContext ctx) {
+      _currentIkeProposal = null;
+   }
+
+   @Override
    public void exitIntt_named(Intt_namedContext ctx) {
       _currentInterface = null;
       _currentMasterInterface = null;
+   }
+
+   @Override
+   public void exitIpsecprt_authentication_algorithm(
+         Ipsecprt_authentication_algorithmContext ctx) {
+      IpsecAuthenticationAlgorithm alg = toIpsecAuthenticationAlgorithm(ctx
+            .ipsec_authentication_algorithm());
+      _currentIpsecProposal.setAuthenticationAlgorithm(alg);
+   }
+
+   @Override
+   public void exitIpsecprt_encryption_algorithm(
+         Ipsecprt_encryption_algorithmContext ctx) {
+      EncryptionAlgorithm alg = toEncryptionAlgorithm(ctx
+            .encryption_algorithm());
+      _currentIpsecProposal.setEncryptionAlgorithm(alg);
+   }
+
+   @Override
+   public void exitIpsecprt_lifetime_kilobytes(
+         Ipsecprt_lifetime_kilobytesContext ctx) {
+      int lifetimeKilobytes = toInt(ctx.kilobytes);
+      _currentIpsecProposal.setLifetimeKilobytes(lifetimeKilobytes);
+   }
+
+   @Override
+   public void exitIpsecprt_lifetime_seconds(
+         Ipsecprt_lifetime_secondsContext ctx) {
+      int lifetimeSeconds = toInt(ctx.seconds);
+      _currentIpsecProposal.setLifetimeSeconds(lifetimeSeconds);
+   }
+
+   @Override
+   public void exitIpsecprt_protocol(Ipsecprt_protocolContext ctx) {
+      IpsecProtocol protocol = toIpsecProtocol(ctx.ipsec_protocol());
+      _currentIpsecProposal.setProtocol(protocol);
+   }
+
+   @Override
+   public void exitIpsecpt_perfect_forward_secrecy(
+         Ipsecpt_perfect_forward_secrecyContext ctx) {
+      DiffieHellmanGroup dhGroup = toDhGroup(ctx.dh_group());
+      _currentIpsecPolicy.setPfsKeyGroup(dhGroup);
+   }
+
+   @Override
+   public void exitIpsecpt_proposal_set(Ipsecpt_proposal_setContext ctx) {
+      Set<String> proposalsInSet = initIpsecProposalSet(ctx.proposal_set_type());
+      _currentIpsecPolicy.getProposals().addAll(proposalsInSet);
+   }
+
+   @Override
+   public void exitIpsecpt_proposals(Ipsecpt_proposalsContext ctx) {
+      String name = ctx.name.getText();
+      _currentIpsecPolicy.getProposals().add(name);
+   }
+
+   @Override
+   public void exitIpsect_policy(Ipsect_policyContext ctx) {
+      _currentIpsecPolicy = null;
+   }
+
+   @Override
+   public void exitIpsect_proposal(Ipsect_proposalContext ctx) {
+      _currentIpsecProposal = null;
+   }
+
+   @Override
+   public void exitIpsect_vpn(Ipsect_vpnContext ctx) {
+      _currentIpsecVpn = null;
+   }
+
+   @Override
+   public void exitIpsecvit_gateway(Ipsecvit_gatewayContext ctx) {
+      String name = ctx.name.getText();
+      _currentIpsecVpn.setGateway(name);
+   }
+
+   @Override
+   public void exitIpsecvit_ipsec_policy(Ipsecvit_ipsec_policyContext ctx) {
+      String name = ctx.name.getText();
+      _currentIpsecVpn.setIpsecPolicy(name);
+   }
+
+   @Override
+   public void exitIpsecvt_bind_interface(Ipsecvt_bind_interfaceContext ctx) {
+      Interface iface = initInterface(ctx.interface_id());
+      _currentIpsecVpn.setBindInterface(iface);
    }
 
    @Override
@@ -1644,6 +1988,80 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return _configuration;
    }
 
+   private String initIkeProposal(IkeProposal proposal) {
+      String name = proposal.getName();
+      _configuration.getIkeProposals().put(name, proposal);
+      return name;
+   }
+
+   private Set<String> initIkeProposalSet(Proposal_set_typeContext ctx) {
+      Set<String> proposals = new HashSet<String>();
+      if (ctx.BASIC() != null) {
+         proposals.add(initIkeProposal(IkeProposal.PSK_DES_DH1_SHA1));
+         proposals.add(initIkeProposal(IkeProposal.PSK_DES_DH1_MD5));
+      }
+      else if (ctx.COMPATIBLE() != null) {
+         proposals.add(initIkeProposal(IkeProposal.PSK_3DES_DH2_MD5));
+         proposals.add(initIkeProposal(IkeProposal.PSK_DES_DH2_SHA1));
+         proposals.add(initIkeProposal(IkeProposal.PSK_DES_DH2_MD5));
+      }
+      else if (ctx.STANDARD() != null) {
+         proposals.add(initIkeProposal(IkeProposal.PSK_3DES_DH2_SHA1));
+         proposals.add(initIkeProposal(IkeProposal.PSK_AES128_DH2_SHA1));
+      }
+      return proposals;
+   }
+
+   private Interface initInterface(Interface_idContext id) {
+      Map<String, Interface> interfaces = _currentRoutingInstance
+            .getInterfaces();
+      String name = id.name.getText();
+      String unit = null;
+      if (id.unit != null) {
+         unit = id.unit.getText();
+      }
+      String unitFullName = name + "." + unit;
+      Interface iface = interfaces.get(name);
+      if (iface == null) {
+         iface = new Interface(name);
+         interfaces.put(name, iface);
+      }
+      if (unit != null) {
+         Map<String, Interface> units = iface.getUnits();
+         iface = units.get(unitFullName);
+         if (iface == null) {
+            iface = new Interface(unitFullName);
+            units.put(unitFullName, iface);
+         }
+      }
+      return iface;
+   }
+
+   private String initIpsecProposal(IpsecProposal proposal) {
+      String name = proposal.getName();
+      _configuration.getIpsecProposals().put(name, proposal);
+      return name;
+   }
+
+   private Set<String> initIpsecProposalSet(Proposal_set_typeContext ctx) {
+      Set<String> proposals = new HashSet<String>();
+      if (ctx.BASIC() != null) {
+         proposals.add(initIpsecProposal(IpsecProposal.NOPFS_ESP_DES_SHA));
+         proposals.add(initIpsecProposal(IpsecProposal.NOPFS_ESP_DES_MD5));
+      }
+      else if (ctx.COMPATIBLE() != null) {
+         proposals.add(initIpsecProposal(IpsecProposal.NOPFS_ESP_3DES_SHA));
+         proposals.add(initIpsecProposal(IpsecProposal.NOPFS_ESP_3DES_MD5));
+         proposals.add(initIpsecProposal(IpsecProposal.NOPFS_ESP_DES_SHA));
+         proposals.add(initIpsecProposal(IpsecProposal.NOPFS_ESP_DES_MD5));
+      }
+      else if (ctx.STANDARD() != null) {
+         proposals.add(initIpsecProposal(IpsecProposal.G2_ESP_3DES_SHA));
+         proposals.add(initIpsecProposal(IpsecProposal.G2_ESP_AES128_SHA));
+      }
+      return proposals;
+   }
+
    private AsPath toAsPath(As_path_exprContext path) {
       AsPath asPath = new AsPath();
       for (As_unitContext ctx : path.items) {
@@ -1684,6 +2102,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       else {
          throw new BatfishException("invalid extended community");
+      }
+   }
+
+   private DiffieHellmanGroup toDhGroup(Dh_groupContext ctx) {
+      if (ctx.GROUP1() != null) {
+         return DiffieHellmanGroup.GROUP1;
+      }
+      else if (ctx.GROUP14() != null) {
+         return DiffieHellmanGroup.GROUP14;
+      }
+      else if (ctx.GROUP2() != null) {
+         return DiffieHellmanGroup.GROUP2;
+      }
+      else if (ctx.GROUP5() != null) {
+         return DiffieHellmanGroup.GROUP5;
+      }
+      else {
+         throw new BatfishException("invalid dh-group");
       }
    }
 

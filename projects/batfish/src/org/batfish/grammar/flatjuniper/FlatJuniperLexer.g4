@@ -386,11 +386,6 @@ BRIDGE_DOMAINS
    'bridge-domains'
 ;
 
-BUNDLE
-:
-   'bundle'
-;
-
 CCC
 :
    'ccc'
@@ -2732,6 +2727,11 @@ SFLOW
 SHA_256
 :
    'sha-256'
+;
+
+SHA_384
+:
+   'sha-384'
 ;
 
 SHA1

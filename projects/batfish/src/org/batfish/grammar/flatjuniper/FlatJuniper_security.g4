@@ -148,6 +148,21 @@ hibt_system_services
    )
 ;
 
+ike_authentication_algorithm
+:
+   MD5
+   | SHA_256
+   | SHA_384
+   | SHA1
+;
+
+ike_authentication_method
+:
+   DSA_SIGNATURES
+   | PRE_SHARED_KEYS
+   | RSA_SIGNATURES
+;
+
 ikegt_address
 :
    ADDRESS IP_ADDRESS
@@ -213,22 +228,12 @@ ikegt_xauth
 
 ikeprt_authentication_algorithm
 :
-   AUTHENTICATION_ALGORITHM
-   (
-      MD5
-      | SHA_256
-      | SHA1
-   )
+   AUTHENTICATION_ALGORITHM ike_authentication_algorithm
 ;
 
 ikeprt_authentication_method
 :
-   AUTHENTICATION_METHOD
-   (
-      DSA_SIGNATURES
-      | PRE_SHARED_KEYS
-      | RSA_SIGNATURES
-   )
+   AUTHENTICATION_METHOD ike_authentication_method
 ;
 
 ikeprt_description
@@ -282,12 +287,7 @@ ikept_proposals
 
 iket_gateway
 :
-   GATEWAY iket_gateway_named
-;
-
-iket_gateway_named
-:
-   name = variable iket_gateway_tail
+   GATEWAY name = variable iket_gateway_tail
 ;
 
 iket_gateway_tail
@@ -306,12 +306,7 @@ iket_gateway_tail
 
 iket_policy
 :
-   POLICY iket_policy_named
-;
-
-iket_policy_named
-:
-   name = variable iket_policy_tail
+   POLICY name = variable iket_policy_tail
 ;
 
 iket_policy_tail
@@ -325,12 +320,7 @@ iket_policy_tail
 
 iket_proposal
 :
-   PROPOSAL iket_proposal_named
-;
-
-iket_proposal_named
-:
-   name = variable iket_proposal_tail
+   PROPOSAL name = variable iket_proposal_tail
 ;
 
 iket_proposal_tail
@@ -343,13 +333,21 @@ iket_proposal_tail
    | ikeprt_lifetime_seconds
 ;
 
+ipsec_authentication_algorithm
+:
+   HMAC_MD5_96
+   | HMAC_SHA1_96
+;
+
+ipsec_protocol
+:
+   AH
+   | ESP
+;
+
 ipsecprt_authentication_algorithm
 :
-   AUTHENTICATION_ALGORITHM
-   (
-      HMAC_MD5_96
-      | HMAC_SHA1_96
-   )
+   AUTHENTICATION_ALGORITHM ipsec_authentication_algorithm
 ;
 
 ipsecprt_description
@@ -374,12 +372,7 @@ ipsecprt_lifetime_seconds
 
 ipsecprt_protocol
 :
-   PROTOCOL
-   (
-      AH
-      | BUNDLE
-      | ESP
-   )
+   PROTOCOL ipsec_protocol
 ;
 
 ipsecpt_perfect_forward_secrecy
@@ -399,12 +392,7 @@ ipsecpt_proposals
 
 ipsect_policy
 :
-   POLICY ipsect_policy_named
-;
-
-ipsect_policy_named
-:
-   name = variable ipsect_policy_tail
+   POLICY name = variable ipsect_policy_tail
 ;
 
 ipsect_policy_tail
@@ -416,12 +404,7 @@ ipsect_policy_tail
 
 ipsect_proposal
 :
-   PROPOSAL ipsect_proposal_named
-;
-
-ipsect_proposal_named
-:
-   name = variable ipsect_proposal_tail
+   PROPOSAL name = variable ipsect_proposal_tail
 ;
 
 ipsect_proposal_tail
@@ -437,12 +420,7 @@ ipsect_proposal_tail
 
 ipsect_vpn
 :
-   VPN ipsect_vpn_named
-;
-
-ipsect_vpn_named
-:
-   name = variable ipsect_vpn_tail
+   VPN name = variable ipsect_vpn_tail
 ;
 
 ipsect_vpn_tail

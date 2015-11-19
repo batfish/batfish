@@ -15,9 +15,11 @@ import org.batfish.main.Warnings;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
+import org.batfish.representation.IkeProposal;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
+import org.batfish.representation.IpsecProposal;
 import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.IsisLevel;
 import org.batfish.representation.IsisProcess;
@@ -342,6 +344,74 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return newRoute;
    }
 
+   private org.batfish.representation.IkeGateway toIkeGateway(
+         IkeGateway oldIkeGateway) {
+      String name = oldIkeGateway.getName();
+      org.batfish.representation.IkeGateway newIkeGateway = new org.batfish.representation.IkeGateway(
+            name);
+
+      // address
+      newIkeGateway.setAddress(oldIkeGateway.getAddress());
+
+      // external interface
+      Interface oldExternalInterface = oldIkeGateway.getExternalInterface();
+      if (oldExternalInterface != null) {
+         String externalInterfaceName = oldExternalInterface.getName();
+         org.batfish.representation.Interface newExternalInterface = _c
+               .getInterfaces().get(externalInterfaceName);
+         if (newExternalInterface == null) {
+            _w.redFlag("Reference to undefined interface: \""
+                  + externalInterfaceName + "\" in ike gateway: \"" + name
+                  + "\"");
+         }
+         else {
+            newIkeGateway.setExternalInterface(newExternalInterface);
+         }
+      }
+      else {
+         _w.redFlag("No external interface set for ike gateway: \"" + name
+               + "\"");
+      }
+
+      // ike policy
+      String ikePolicyName = oldIkeGateway.getIkePolicy();
+      org.batfish.representation.IkePolicy newIkePolicy = _c.getIkePolicies()
+            .get(ikePolicyName);
+      if (newIkePolicy == null) {
+         _w.redFlag("Reference to undefined ike policy: \"" + ikePolicyName
+               + "\" in ike gateway: \"" + name + "\"");
+      }
+      else {
+         newIkeGateway.setIkePolicy(newIkePolicy);
+      }
+
+      return newIkeGateway;
+   }
+
+   private org.batfish.representation.IkePolicy toIkePolicy(
+         IkePolicy oldIkePolicy) {
+      String name = oldIkePolicy.getName();
+      org.batfish.representation.IkePolicy newIkePolicy = new org.batfish.representation.IkePolicy(
+            name);
+
+      // pre-shared-key
+      newIkePolicy.setPreSharedKey(oldIkePolicy.getPreSharedKey());
+
+      // ike proposals
+      for (String ikeProposalName : oldIkePolicy.getProposals()) {
+         IkeProposal ikeProposal = _c.getIkeProposals().get(ikeProposalName);
+         if (ikeProposal == null) {
+            _w.redFlag("Reference to undefined ike proposal: \""
+                  + ikeProposalName + "\" in ike policy: \"" + name + "\"");
+         }
+         else {
+            newIkePolicy.getProposals().put(ikeProposalName, ikeProposal);
+         }
+      }
+
+      return newIkePolicy;
+   }
+
    private org.batfish.representation.Interface toInterface(Interface iface) {
       String name = iface.getName();
       org.batfish.representation.Interface newIface = new org.batfish.representation.Interface(
@@ -448,6 +518,81 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       }
       IpAccessList list = new IpAccessList(name, lines);
       return list;
+   }
+
+   private org.batfish.representation.IpsecPolicy toIpsecPolicy(
+         IpsecPolicy oldIpsecPolicy) {
+      String name = oldIpsecPolicy.getName();
+      org.batfish.representation.IpsecPolicy newIpsecPolicy = new org.batfish.representation.IpsecPolicy(
+            name);
+
+      // ipsec proposals
+      for (String ipsecProposalName : oldIpsecPolicy.getProposals()) {
+         IpsecProposal ipsecProposal = _c.getIpsecProposals().get(
+               ipsecProposalName);
+         if (ipsecProposal == null) {
+            _w.redFlag("Reference to undefined ipsec proposal: \""
+                  + ipsecProposalName + "\" in ipsec policy: \"" + name + "\"");
+         }
+         else {
+            newIpsecPolicy.getProposals().put(ipsecProposalName, ipsecProposal);
+         }
+      }
+
+      // perfect-forward-secrecy diffie-hellman key group
+      newIpsecPolicy.setPfsKeyGroup(oldIpsecPolicy.getPfsKeyGroup());
+
+      return newIpsecPolicy;
+   }
+
+   private org.batfish.representation.IpsecVpn toIpsecVpn(IpsecVpn oldIpsecVpn) {
+      String name = oldIpsecVpn.getName();
+      org.batfish.representation.IpsecVpn newIpsecVpn = new org.batfish.representation.IpsecVpn(
+            name);
+
+      // bind interface
+      Interface oldBindInterface = oldIpsecVpn.getBindInterface();
+      if (oldBindInterface != null) {
+         String bindInterfaceName = oldBindInterface.getName();
+         org.batfish.representation.Interface newBindInterface = _c
+               .getInterfaces().get(bindInterfaceName);
+         if (newBindInterface == null) {
+            _w.redFlag("Reference to undefined interface: \""
+                  + bindInterfaceName + "\" in ipsec vpn: \"" + name + "\"");
+         }
+         else {
+            newIpsecVpn.setBindInterface(newBindInterface);
+         }
+      }
+      else {
+         _w.redFlag("No bind interface set for ipsec vpn: \"" + name + "\"");
+      }
+
+      // ike gateway
+      String ikeGatewayName = oldIpsecVpn.getGateway();
+      org.batfish.representation.IkeGateway ikeGateway = _c.getIkeGateways()
+            .get(ikeGatewayName);
+      if (ikeGateway == null) {
+         _w.redFlag("Reference to undefined ike gateway: \"" + ikeGatewayName
+               + "\" in ipsec vpn: \"" + name + "\"");
+      }
+      else {
+         newIpsecVpn.setGateway(ikeGateway);
+      }
+
+      // ipsec policy
+      String ipsecPolicyName = oldIpsecVpn.getIpsecPolicy();
+      org.batfish.representation.IpsecPolicy ipsecPolicy = _c
+            .getIpsecPolicies().get(ipsecPolicyName);
+      if (ipsecPolicy == null) {
+         _w.redFlag("Reference to undefined ipsec policy: \"" + ipsecPolicyName
+               + "\" in ipsec vpn: \"" + name + "\"");
+      }
+      else {
+         newIpsecVpn.setIpsecPolicy(ipsecPolicy);
+      }
+
+      return newIpsecVpn;
    }
 
    private PolicyMap toPolicyMap(PolicyStatement ps) {
@@ -593,6 +738,44 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             org.batfish.representation.Interface newUnitIface = toInterface(unitIface);
             _c.getInterfaces().put(unitName, newUnitIface);
          }
+      }
+
+      // copy ike proposals
+      _c.getIkeProposals().putAll(_ikeProposals);
+
+      // convert ike policies
+      for (Entry<String, IkePolicy> e : _ikePolicies.entrySet()) {
+         String name = e.getKey();
+         IkePolicy oldIkePolicy = e.getValue();
+         org.batfish.representation.IkePolicy newPolicy = toIkePolicy(oldIkePolicy);
+         _c.getIkePolicies().put(name, newPolicy);
+      }
+
+      // convert ike gateways
+      for (Entry<String, IkeGateway> e : _ikeGateways.entrySet()) {
+         String name = e.getKey();
+         IkeGateway oldIkeGateway = e.getValue();
+         org.batfish.representation.IkeGateway newIkeGateway = toIkeGateway(oldIkeGateway);
+         _c.getIkeGateways().put(name, newIkeGateway);
+      }
+
+      // copy ipsec proposals
+      _c.getIpsecProposals().putAll(_ipsecProposals);
+
+      // convert ipsec policies
+      for (Entry<String, IpsecPolicy> e : _ipsecPolicies.entrySet()) {
+         String name = e.getKey();
+         IpsecPolicy oldIpsecPolicy = e.getValue();
+         org.batfish.representation.IpsecPolicy newPolicy = toIpsecPolicy(oldIpsecPolicy);
+         _c.getIpsecPolicies().put(name, newPolicy);
+      }
+
+      // convert ipsec vpns
+      for (Entry<String, IpsecVpn> e : _ipsecVpns.entrySet()) {
+         String name = e.getKey();
+         IpsecVpn oldIpsecVpn = e.getValue();
+         org.batfish.representation.IpsecVpn newIpsecVpn = toIpsecVpn(oldIpsecVpn);
+         _c.getIpsecVpns().put(name, newIpsecVpn);
       }
 
       // static routes
