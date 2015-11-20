@@ -2,6 +2,7 @@ package org.batfish.question;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -10,6 +11,7 @@ import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
+import org.batfish.representation.IpsecVpn;
 import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchProtocolLine;
@@ -42,6 +44,8 @@ public class Environment {
 
    private Interface _interface;
 
+   private IpsecVpn _ipsecVpn;
+
    private Map<String, Set<Ip>> _ipSets;
 
    private PolicyMapMatchProtocolLine _matchProtocolLine;
@@ -57,6 +61,8 @@ public class Environment {
    private RoutingProtocol _protocol;
 
    private Set<RoutingProtocol> _protocols;
+
+   private boolean[] _remoteIpsecVpnsInitialized;
 
    private RouteFilterList _routeFilter;
 
@@ -80,6 +86,7 @@ public class Environment {
       _integerSets = new HashMap<String, Set<Integer>>();
       _ipSets = new HashMap<String, Set<Ip>>();
       _prefixSets = new HashMap<String, Set<Prefix>>();
+      _remoteIpsecVpnsInitialized = new boolean[1];
       _routeFilterSets = new HashMap<String, Set<RouteFilterList>>();
       _stringSets = new HashMap<String, Set<String>>();
       _unsafe = new boolean[1];
@@ -104,6 +111,7 @@ public class Environment {
       copy._prefixSets = _prefixSets;
       copy._protocol = _protocol;
       copy._protocols = _protocols;
+      copy._remoteIpsecVpnsInitialized = _remoteIpsecVpnsInitialized;
       copy._routeFilter = _routeFilter;
       copy._routeFilterLine = _routeFilterLine;
       copy._routeFilterSet = _routeFilterSet;
@@ -144,6 +152,10 @@ public class Environment {
 
    public Interface getInterface() {
       return _interface;
+   }
+
+   public IpsecVpn getIpsecVpn() {
+      return _ipsecVpn;
    }
 
    public Map<String, Set<Ip>> getIpSets() {
@@ -220,6 +232,33 @@ public class Environment {
       _failedAssertionCount[0]++;
    }
 
+   public void initRemoteIpsecVpns() {
+      if (_remoteIpsecVpnsInitialized[0]) {
+         return;
+      }
+      Map<IpsecVpn, Ip> remoteAddresses = new HashMap<IpsecVpn, Ip>();
+      Map<Ip, IpsecVpn> externalAddresses = new HashMap<Ip, IpsecVpn>();
+      for (Configuration c : _configurations.values()) {
+         for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
+            Ip remoteAddress = ipsecVpn.getGateway().getAddress();
+            remoteAddresses.put(ipsecVpn, remoteAddress);
+            Prefix externalPrefix = ipsecVpn.getGateway()
+                  .getExternalInterface().getPrefix();
+            if (externalPrefix != null) {
+               Ip externalAddress = externalPrefix.getAddress();
+               externalAddresses.put(externalAddress, ipsecVpn);
+            }
+         }
+      }
+      for (Entry<IpsecVpn, Ip> e : remoteAddresses.entrySet()) {
+         IpsecVpn ipsecVpn = e.getKey();
+         Ip remoteAddress = e.getValue();
+         IpsecVpn remoteIpsecVpn = externalAddresses.get(remoteAddress);
+         ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpn);
+      }
+      _remoteIpsecVpnsInitialized[0] = true;
+   }
+
    public void setAssertions(boolean b) {
       _assertions[0] = b;
    }
@@ -242,6 +281,10 @@ public class Environment {
 
    public void setInterface(Interface iface) {
       _interface = iface;
+   }
+
+   public void setIpsecVpn(IpsecVpn ipsecVpn) {
+      _ipsecVpn = ipsecVpn;
    }
 
    public void setMatchProtocolLine(PolicyMapMatchProtocolLine matchProtocolLine) {

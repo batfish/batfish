@@ -548,7 +548,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    private org.batfish.representation.IpsecVpn toIpsecVpn(IpsecVpn oldIpsecVpn) {
       String name = oldIpsecVpn.getName();
       org.batfish.representation.IpsecVpn newIpsecVpn = new org.batfish.representation.IpsecVpn(
-            name);
+            name, _c);
 
       // bind interface
       Interface oldBindInterface = oldIpsecVpn.getBindInterface();

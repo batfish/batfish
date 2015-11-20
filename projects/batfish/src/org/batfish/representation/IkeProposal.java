@@ -104,6 +104,13 @@ public final class IkeProposal extends NamedStructure {
       super(name);
    }
 
+   public boolean compatibleWith(IkeProposal rhs) {
+      return _authenticationAlgorithm == rhs._authenticationAlgorithm
+            && _authenticationMethod == rhs._authenticationMethod
+            && _diffieHellmanGroup == rhs._diffieHellmanGroup
+            && _encryptionAlgorithm == rhs._encryptionAlgorithm;
+   }
+
    public IkeAuthenticationAlgorithm getAuthenticationAlgorithm() {
       return _authenticationAlgorithm;
    }

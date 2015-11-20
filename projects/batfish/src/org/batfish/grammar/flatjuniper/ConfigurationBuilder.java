@@ -1516,7 +1516,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitIkegt_external_interface(Ikegt_external_interfaceContext ctx) {
-      Interface iface = initInterface(ctx.interface_id());
+      Interface_idContext interfaceId = ctx.interface_id();
+      Interface iface = initInterface(interfaceId);
       _currentIkeGateway.setExternalInterface(iface);
    }
 

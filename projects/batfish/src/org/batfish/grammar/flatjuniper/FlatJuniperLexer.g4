@@ -358,7 +358,7 @@ BIFF
 
 BIND_INTERFACE
 :
-   'bind-interface'
+   'bind-interface' -> pushMode(M_Interface)
 ;
 
 BMP
@@ -812,7 +812,7 @@ EXTERNAL
 
 EXTERNAL_INTERFACE
 :
-   'external-interface'
+   'external-interface' -> pushMode(M_Interface)
 ;
 
 EXTERNAL_PREFERENCE

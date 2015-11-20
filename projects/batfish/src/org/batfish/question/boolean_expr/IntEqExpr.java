@@ -3,13 +3,13 @@ package org.batfish.question.boolean_expr;
 import org.batfish.question.Environment;
 import org.batfish.question.int_expr.IntExpr;
 
-public class EqExpr extends BaseBooleanExpr {
+public class IntEqExpr extends BaseBooleanExpr {
 
    private final IntExpr _lhs;
 
    private final IntExpr _rhs;
 
-   public EqExpr(IntExpr lhs, IntExpr rhs) {
+   public IntEqExpr(IntExpr lhs, IntExpr rhs) {
       _lhs = lhs;
       _rhs = rhs;
    }

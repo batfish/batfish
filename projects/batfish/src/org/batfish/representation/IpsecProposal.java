@@ -86,6 +86,11 @@ public class IpsecProposal extends NamedStructure {
       super(name);
    }
 
+   public boolean compatibleWith(IpsecProposal rhs) {
+      return (_authenticationAlgorithm == rhs._authenticationAlgorithm
+            && _encryptionAlgorithm == rhs._encryptionAlgorithm && _protocol == rhs._protocol);
+   }
+
    public IpsecAuthenticationAlgorithm getAuthenticationAlgorithm() {
       return _authenticationAlgorithm;
    }

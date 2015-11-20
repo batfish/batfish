@@ -135,7 +135,13 @@ defaults
 
 eq_expr
 :
-   lhs = int_expr DOUBLE_EQUALS rhs = int_expr
+   (
+      lhs_int = int_expr DOUBLE_EQUALS rhs_int = int_expr
+   )
+   |
+   (
+      lhs_string = string_expr DOUBLE_EQUALS rhs_string = string_expr
+   )
 ;
 
 explicit_flow
@@ -154,6 +160,7 @@ expr
    boolean_expr
    | int_expr
    | ip_expr
+   | ipsec_vpn_expr
    | prefix_expr
    | route_filter_line_expr
    | string_expr
@@ -252,6 +259,11 @@ foreach_generated_route_statement
 foreach_interface_statement
 :
    FOREACH INTERFACE OPEN_BRACE statement ["interface"]+ CLOSE_BRACE
+;
+
+foreach_ipsec_vpn_statement
+:
+   FOREACH IPSEC_VPN OPEN_BRACE statement ["ipsec_vpn"]+ CLOSE_BRACE
 ;
 
 foreach_line_statement
@@ -504,6 +516,93 @@ ip_expr
    | static_route_ip_expr
 ;
 
+ipsec_vpn_boolean_expr
+:
+   ipsec_vpn_expr PERIOD
+   (
+      ipsec_vpn_compatible_ike_proposals_boolean_expr
+      | ipsec_vpn_compatible_ipsec_proposals_boolean_expr
+      | ipsec_vpn_has_remote_ipsec_vpn_boolean_expr
+   )
+;
+
+ipsec_vpn_compatible_ike_proposals_boolean_expr
+:
+   COMPATIBLE_IKE_PROPOSALS
+;
+
+ipsec_vpn_compatible_ipsec_proposals_boolean_expr
+:
+   COMPATIBLE_IPSEC_PROPOSALS
+;
+
+ipsec_vpn_expr
+:
+   IPSEC_VPN
+   | ipsec_vpn_ipsec_vpn_expr
+;
+
+ipsec_vpn_has_remote_ipsec_vpn_boolean_expr
+:
+   HAS_REMOTE_IPSEC_VPN
+;
+
+ipsec_vpn_ike_gateway_name_string_expr
+:
+   IKE_GATEWAY_NAME
+;
+
+ipsec_vpn_ike_policy_name_string_expr
+:
+   IKE_POLICY_NAME
+;
+
+ipsec_vpn_ipsec_policy_name_string_expr
+:
+   IPSEC_POLICY_NAME
+;
+
+ipsec_vpn_ipsec_vpn_expr
+:
+   IPSEC_VPN PERIOD
+   (
+      ipsec_vpn_remote_ipsec_vpn_ipsec_vpn_expr
+   )
+;
+
+ipsec_vpn_name_string_expr
+:
+   NAME
+;
+
+ipsec_vpn_owner_name_string_expr
+:
+   OWNER_NAME
+;
+
+ipsec_vpn_pre_shared_key_string_expr
+:
+   PRE_SHARED_KEY
+;
+
+ipsec_vpn_remote_ipsec_vpn_ipsec_vpn_expr
+:
+   REMOTE_IPSEC_VPN
+;
+
+ipsec_vpn_string_expr
+:
+   ipsec_vpn_expr PERIOD
+   (
+      ipsec_vpn_ike_gateway_name_string_expr
+      | ipsec_vpn_ike_policy_name_string_expr
+      | ipsec_vpn_ipsec_policy_name_string_expr
+      | ipsec_vpn_name_string_expr
+      | ipsec_vpn_owner_name_string_expr
+      | ipsec_vpn_pre_shared_key_string_expr
+   )
+;
+
 literal_int_expr
 :
    DEC
@@ -644,6 +743,7 @@ property_boolean_expr
 :
    bgp_neighbor_boolean_expr
    | interface_boolean_expr
+   | ipsec_vpn_boolean_expr
    | node_boolean_expr
    | static_route_boolean_expr
 ;
@@ -884,6 +984,10 @@ statement [String scope]
 
    foreach_interface_statement
    |
+   {$scope.equals("node")}?
+
+   foreach_ipsec_vpn_statement
+   |
    {$scope.equals("route_filter")}?
 
    foreach_line_statement
@@ -988,6 +1092,7 @@ static_route_string_expr
 string_expr
 :
    interface_string_expr
+   | ipsec_vpn_string_expr
    | node_string_expr
    | protocol_string_expr
    | route_filter_string_expr
