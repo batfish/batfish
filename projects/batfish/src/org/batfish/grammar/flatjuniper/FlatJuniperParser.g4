@@ -1,7 +1,7 @@
 parser grammar FlatJuniperParser;
 
 import
-FlatJuniper_common, FlatJuniper_firewall, FlatJuniper_interfaces, FlatJuniper_policy_options, FlatJuniper_protocols, FlatJuniper_routing_instances;
+FlatJuniper_common, FlatJuniper_firewall, FlatJuniper_interfaces, FlatJuniper_policy_options, FlatJuniper_protocols, FlatJuniper_routing_instances, FlatJuniper_security;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -50,6 +50,7 @@ s_common
    | s_protocols
    | s_routing_instances
    | s_routing_options
+   | s_security
    | s_system
    | s_vlans
 ;
@@ -95,7 +96,6 @@ s_null
          | APPLICATIONS
          | ETHERNET_SWITCHING_OPTIONS
          | POE
-         | SECURITY
          | SWITCH_OPTIONS
          | VIRTUAL_CHASSIS
       ) s_null_filler

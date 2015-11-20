@@ -21,7 +21,8 @@
 	<property name="temp.dir" value="temp" />	
    <path id="libraries">
       <fileset dir="lib" includes="**/*.jar"/>
-      <fileset dir="../batfish-common-protocol/out" includes="batfish-common-protocol.jar"/>
+      <fileset dir="../batfish-common-protocol/lib" includes="**/*.jar"/>
+      <pathelement location="../batfish-common-protocol/bin"/>
    </path>
    <property name="outputJar" value="out/coordinator.jar"/>
 

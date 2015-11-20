@@ -31,8 +31,11 @@ import org.batfish.question.boolean_expr.AndExpr;
 import org.batfish.question.boolean_expr.BaseCaseBooleanExpr;
 import org.batfish.question.boolean_expr.BgpNeighborBooleanExpr;
 import org.batfish.question.boolean_expr.BooleanExpr;
+import org.batfish.question.boolean_expr.CompatibleIkeProposalsIpsecVpnBooleanExpr;
+import org.batfish.question.boolean_expr.CompatibleIpsecProposalsIpsecVpnBooleanExpr;
+import org.batfish.question.boolean_expr.HasRemoteIpsecVpnIpsecVpnBooleanExpr;
 import org.batfish.question.boolean_expr.SetContainsExpr;
-import org.batfish.question.boolean_expr.EqExpr;
+import org.batfish.question.boolean_expr.IntEqExpr;
 import org.batfish.question.boolean_expr.GtExpr;
 import org.batfish.question.boolean_expr.IfExpr;
 import org.batfish.question.boolean_expr.InterfaceBooleanExpr;
@@ -41,6 +44,7 @@ import org.batfish.question.boolean_expr.NodeBooleanExpr;
 import org.batfish.question.boolean_expr.NotExpr;
 import org.batfish.question.boolean_expr.OrExpr;
 import org.batfish.question.boolean_expr.StaticRouteBooleanExpr;
+import org.batfish.question.boolean_expr.StringEqExpr;
 import org.batfish.question.int_expr.BgpNeighborIntExpr;
 import org.batfish.question.int_expr.DifferenceIntExpr;
 import org.batfish.question.int_expr.IntExpr;
@@ -55,6 +59,8 @@ import org.batfish.question.ip_expr.BgpNeighborIpExpr;
 import org.batfish.question.ip_expr.InterfaceIpExpr;
 import org.batfish.question.ip_expr.IpExpr;
 import org.batfish.question.ip_expr.StaticRouteIpExpr;
+import org.batfish.question.ipsec_vpn_expr.BaseCaseIpsecVpnExpr;
+import org.batfish.question.ipsec_vpn_expr.IpsecVpnExpr;
 import org.batfish.question.prefix_expr.InterfacePrefixExpr;
 import org.batfish.question.prefix_expr.PrefixExpr;
 import org.batfish.question.prefix_expr.StaticRoutePrefixExpr;
@@ -67,6 +73,7 @@ import org.batfish.question.statement.ForEachBgpNeighborStatement;
 import org.batfish.question.statement.ForEachClauseStatement;
 import org.batfish.question.statement.ForEachGeneratedRouteStatement;
 import org.batfish.question.statement.ForEachInterfaceStatement;
+import org.batfish.question.statement.ForEachIpsecVpnStatement;
 import org.batfish.question.statement.ForEachLineStatement;
 import org.batfish.question.statement.ForEachMatchProtocolStatement;
 import org.batfish.question.statement.ForEachMatchRouteFilterStatement;
@@ -84,8 +91,14 @@ import org.batfish.question.statement.SetAddStatement;
 import org.batfish.question.statement.SetClearStatement;
 import org.batfish.question.statement.Statement;
 import org.batfish.question.statement.SetDeclarationStatement;
+import org.batfish.question.string_expr.IkeGatewayNameIpsecVpnStringExpr;
+import org.batfish.question.string_expr.IkePolicyNameIpsecVpnStringExpr;
 import org.batfish.question.string_expr.InterfaceStringExpr;
+import org.batfish.question.string_expr.IpsecPolicyNameIpsecVpnStringExpr;
+import org.batfish.question.string_expr.NameIpsecVpnStringExpr;
 import org.batfish.question.string_expr.NodeStringExpr;
+import org.batfish.question.string_expr.OwnerNameIpsecVpnStringExpr;
+import org.batfish.question.string_expr.PreSharedKeyIpsecVpnStringExpr;
 import org.batfish.question.string_expr.ProtocolStringExpr;
 import org.batfish.question.string_expr.RouteFilterStringExpr;
 import org.batfish.question.string_expr.StaticRouteStringExpr;
@@ -492,9 +505,19 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private BooleanExpr toBooleanExpr(Eq_exprContext expr) {
-      IntExpr lhs = toIntExpr(expr.lhs);
-      IntExpr rhs = toIntExpr(expr.rhs);
-      return new EqExpr(lhs, rhs);
+      if (expr.lhs_int != null) {
+         IntExpr lhs = toIntExpr(expr.lhs_int);
+         IntExpr rhs = toIntExpr(expr.rhs_int);
+         return new IntEqExpr(lhs, rhs);
+      }
+      else if (expr.lhs_string != null) {
+         StringExpr lhs = toStringExpr(expr.lhs_string);
+         StringExpr rhs = toStringExpr(expr.rhs_string);
+         return new StringEqExpr(lhs, rhs);
+      }
+      else {
+         throw new BatfishException("invalid eq_expr");
+      }
    }
 
    private BooleanExpr toBooleanExpr(Gt_exprContext expr) {
@@ -558,6 +581,22 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else {
          throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
+      }
+   }
+
+   private BooleanExpr toBooleanExpr(Ipsec_vpn_boolean_exprContext expr) {
+      IpsecVpnExpr caller = toIpsecVpnExpr(expr.ipsec_vpn_expr());
+      if (expr.ipsec_vpn_compatible_ike_proposals_boolean_expr() != null) {
+         return new CompatibleIkeProposalsIpsecVpnBooleanExpr(caller);
+      }
+      else if (expr.ipsec_vpn_compatible_ipsec_proposals_boolean_expr() != null) {
+         return new CompatibleIpsecProposalsIpsecVpnBooleanExpr(caller);
+      }
+      else if (expr.ipsec_vpn_has_remote_ipsec_vpn_boolean_expr() != null) {
+         return new HasRemoteIpsecVpnIpsecVpnBooleanExpr(caller);
+      }
+      else {
+         throw new BatfishException("Missing conversion for expression");
       }
    }
 
@@ -649,6 +688,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else if (ctx.interface_boolean_expr() != null) {
          return toBooleanExpr(ctx.interface_boolean_expr());
+      }
+      else if (ctx.ipsec_vpn_boolean_expr() != null) {
+         return toBooleanExpr(ctx.ipsec_vpn_boolean_expr());
       }
       else if (ctx.node_boolean_expr() != null) {
          return toBooleanExpr(ctx.node_boolean_expr());
@@ -846,6 +888,27 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else {
          throw conversionError(ERR_CONVERT_IP, ctx);
+      }
+   }
+
+   private IpsecVpnExpr toIpsecVpnExpr(Ipsec_vpn_exprContext expr) {
+      if (expr.IPSEC_VPN() != null) {
+         return BaseCaseIpsecVpnExpr.IPSEC_VPN;
+      }
+      else if (expr.ipsec_vpn_ipsec_vpn_expr() != null) {
+         return toIpsecVpnExpr(expr.ipsec_vpn_ipsec_vpn_expr());
+      }
+      else {
+         throw new BatfishException("Missing conversion for expression");
+      }
+   }
+
+   private IpsecVpnExpr toIpsecVpnExpr(Ipsec_vpn_ipsec_vpn_exprContext expr) {
+      if (expr.ipsec_vpn_remote_ipsec_vpn_ipsec_vpn_expr() != null) {
+         return BaseCaseIpsecVpnExpr.REMOTE_IPSEC_VPN;
+      }
+      else {
+         throw new BatfishException("Missing conversion for expression");
       }
    }
 
@@ -1077,6 +1140,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return new ForEachInterfaceStatement(toStatements(ctx.statement()));
    }
 
+   private Statement toStatement(Foreach_ipsec_vpn_statementContext ctx) {
+      return new ForEachIpsecVpnStatement(toStatements(ctx.statement()));
+   }
+
    private Statement toStatement(Foreach_line_statementContext ctx) {
       return new ForEachLineStatement(toStatements(ctx.statement()));
    }
@@ -1203,6 +1270,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.foreach_interface_statement() != null) {
          return toStatement(ctx.foreach_interface_statement());
       }
+      else if (ctx.foreach_ipsec_vpn_statement() != null) {
+         return toStatement(ctx.foreach_ipsec_vpn_statement());
+      }
       else if (ctx.foreach_line_statement() != null) {
          return toStatement(ctx.foreach_line_statement());
       }
@@ -1280,6 +1350,31 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
+   private StringExpr toStringExpr(Ipsec_vpn_string_exprContext ctx) {
+      IpsecVpnExpr caller = toIpsecVpnExpr(ctx.ipsec_vpn_expr());
+      if (ctx.ipsec_vpn_ike_gateway_name_string_expr() != null) {
+         return new IkeGatewayNameIpsecVpnStringExpr(caller);
+      }
+      else if (ctx.ipsec_vpn_ike_policy_name_string_expr() != null) {
+         return new IkePolicyNameIpsecVpnStringExpr(caller);
+      }
+      else if (ctx.ipsec_vpn_ipsec_policy_name_string_expr() != null) {
+         return new IpsecPolicyNameIpsecVpnStringExpr(caller);
+      }
+      else if (ctx.ipsec_vpn_name_string_expr() != null) {
+         return new NameIpsecVpnStringExpr(caller);
+      }
+      else if (ctx.ipsec_vpn_owner_name_string_expr() != null) {
+         return new OwnerNameIpsecVpnStringExpr(caller);
+      }
+      else if (ctx.ipsec_vpn_pre_shared_key_string_expr() != null) {
+         return new PreSharedKeyIpsecVpnStringExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_STRING, ctx);
+      }
+   }
+
    private StringExpr toStringExpr(Node_string_exprContext ctx) {
       if (ctx.node_name_string_expr() != null) {
          return NodeStringExpr.NODE_NAME;
@@ -1319,6 +1414,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private StringExpr toStringExpr(String_exprContext ctx) {
       if (ctx.interface_string_expr() != null) {
          return toStringExpr(ctx.interface_string_expr());
+      }
+      else if (ctx.ipsec_vpn_string_expr() != null) {
+         return toStringExpr(ctx.ipsec_vpn_string_expr());
       }
       else if (ctx.node_string_expr() != null) {
          return toStringExpr(ctx.node_string_expr());
