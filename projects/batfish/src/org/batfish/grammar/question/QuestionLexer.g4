@@ -71,6 +71,16 @@ CLEAR
    'clear'
 ;
 
+COMPATIBLE_IKE_PROPOSALS
+:
+   'compatible_ike_proposals'
+;
+
+COMPATIBLE_IPSEC_PROPOSALS
+:
+   'compatible_ipsec_proposals'
+;
+
 CONFIGURED
 :
    'configured'
@@ -151,6 +161,16 @@ IF
    'if'
 ;
 
+IKE_GATEWAY_NAME
+:
+   'ike_gateway_name'
+;
+
+IKE_POLICY_NAME
+:
+   'ike_policy_name'
+;
+
 INGRESS_NODE
 :
    'ingress_node'
@@ -174,6 +194,16 @@ IP
 IP_PROTOCOL
 :
    'ip_protocol'
+;
+
+IPSEC_POLICY_NAME
+:
+   'ipsec_policy_name'
+;
+
+IPSEC_VPN
+:
+   'ipsec_vpn'
 ;
 
 ISIS
@@ -204,6 +234,11 @@ HAS_NEXT_HOP_INTERFACE
 HAS_NEXT_HOP_IP
 :
    'has_next_hop_ip'
+;
+
+HAS_REMOTE_IPSEC_VPN
+:
+   'has_remote_ipsec_vpn'
 ;
 
 INGRESS_PATH
@@ -311,9 +346,19 @@ OSPF_OUTBOUND_POLICY
    'ospf_outbound_policy'
 ;
 
+OWNER_NAME
+:
+   'owner_name'
+;
+
 PASSIVE
 :
    'passive'
+;
+
+PRE_SHARED_KEY
+:
+   'pre_shared_key'
 ;
 
 PREFIX
@@ -349,6 +394,11 @@ REMOTE_AS
 REMOTE_IP
 :
    'remote_ip'
+;
+
+REMOTE_IPSEC_VPN
+:
+   'remote_ipsec_vpn'
 ;
 
 ROUTE_FILTER

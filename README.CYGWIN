@@ -41,4 +41,4 @@ cd \windows\syswow64
 copy libz3.dll z3dll
 copy libz3java.dll z3java.dll
 
-If you compile on a machine different from the one you run it in, make sure that the right version of c++ redistributable is present on the running machine.
+If you compile on a machine different from the one you run it in, make sure that the right version of c++ redistributable is present on the running machine. download and install these redistributable packages from the web.

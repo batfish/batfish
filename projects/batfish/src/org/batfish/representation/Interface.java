@@ -1,9 +1,9 @@
 package org.batfish.representation;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.util.NamedStructure;
@@ -18,6 +18,8 @@ public class Interface extends NamedStructure {
    private boolean _active;
 
    private ArrayList<SubRange> _allowedVlans;
+
+   private final Set<Prefix> _allPrefixes;
 
    private Double _bandwidth;
 
@@ -51,7 +53,7 @@ public class Interface extends NamedStructure {
 
    private PolicyMap _routingPolicy;
 
-   private Set<Prefix> _secondaryPrefixes;
+   private final Set<Prefix> _secondaryPrefixes;
 
    private SwitchportMode _switchportMode;
 
@@ -60,10 +62,11 @@ public class Interface extends NamedStructure {
    public Interface(String name) {
       super(name);
       _active = true;
+      _allPrefixes = new TreeSet<Prefix>();
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
       _allowedVlans = new ArrayList<SubRange>();
-      _secondaryPrefixes = new HashSet<Prefix>();
+      _secondaryPrefixes = new TreeSet<Prefix>();
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
@@ -80,6 +83,10 @@ public class Interface extends NamedStructure {
 
    public List<SubRange> getAllowedVlans() {
       return _allowedVlans;
+   }
+
+   public Set<Prefix> getAllPrefixes() {
+      return _allPrefixes;
    }
 
    public double getBandwidth() {

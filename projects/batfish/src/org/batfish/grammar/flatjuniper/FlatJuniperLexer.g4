@@ -46,6 +46,11 @@ ACCESS
    'access'
 ;
 
+ACCESS_PROFILE
+:
+   'access-profile'
+;
+
 ACCOUNTING
 :
    'accounting'
@@ -71,9 +76,19 @@ ADDRESS
    'address'
 ;
 
+ADDRESS_BOOK
+:
+   'address-book'
+;
+
 ADDRESS_MASK
 :
    'address-mask'
+;
+
+ADDRESS_SET
+:
+   'address-set'
 ;
 
 ADVERTISE_INACTIVE
@@ -106,14 +121,44 @@ AGGREGATED_ETHER_OPTIONS
    'aggregated-ether-options'
 ;
 
+AGGRESSIVE
+:
+   'aggressive'
+;
+
+AES_128_CBC
+:
+   'aes-128-cbc'
+;
+
+AES_192_CBC
+:
+   'aes-192-cbc'
+;
+
+AES_256_CBC
+:
+   'aes-256-cbc'
+;
+
 AH
 :
    'ah'
 ;
 
+ALG
+:
+   'alg'
+;
+
 ALIAS
 :
    'alias'
+;
+
+ALL
+:
+   'all'
 ;
 
 ALLOW
@@ -126,14 +171,44 @@ ALWAYS_COMPARE_MED
    'always-compare-med'
 ;
 
+ALWAYS_SEND
+:
+   'always-send'
+;
+
 ANY
 :
    'any'
 ;
 
+ANY_IPV4
+:
+   'any-ipv4'
+;
+
+ANY_IPV6
+:
+   'any-ipv6'
+;
+
+ANY_REMOTE_HOST
+:
+   'any-remote-host'
+;
+
+ANY_SERVICE
+:
+   'any-service'
+;
+
 APPLICATION
 :
    'application'
+;
+
+APPLICATION_TRACKING
+:
+   'application-tracking'
 ;
 
 APPLICATIONS
@@ -196,14 +271,29 @@ AS_PATH_PREPEND
    'as-path-prepend'
 ;
 
+ASCII_TEXT
+:
+   'ascii-text'
+;
+
 AUTHENTICATION
 :
    'authentication'
 ;
 
+AUTHENTICATION_ALGORITHM
+:
+   'authentication-algorithm'
+;
+
 AUTHENTICATION_KEY
 :
    'authentication-key'
+;
+
+AUTHENTICATION_METHOD
+:
+   'authentication-method'
 ;
 
 AUTHENTICATION_ORDER
@@ -241,6 +331,11 @@ BANDWIDTH
    'bandwidth'
 ;
 
+BASIC
+:
+   'basic'
+;
+
 BFD
 :
    'bfd'
@@ -259,6 +354,11 @@ BGP
 BIFF
 :
    'biff'
+;
+
+BIND_INTERFACE
+:
+   'bind-interface' -> pushMode(M_Interface)
 ;
 
 BMP
@@ -291,6 +391,11 @@ CCC
    'ccc'
 ;
 
+CERTIFICATES
+:
+   'certificates'
+;
+
 CHASSIS
 :
    'chassis'
@@ -304,6 +409,11 @@ CLASS
 CLASS_OF_SERVICE
 :
    'class-of-service'
+;
+
+CLEAR
+:
+   'clear'
 ;
 
 CLUSTER
@@ -340,6 +450,11 @@ COMMUNITY
 
 ;
 
+COMPATIBLE
+:
+   'compatible'
+;
+
 CONDITION
 :
    'condition'
@@ -348,6 +463,11 @@ CONDITION
 CONNECTIONS
 :
    'connections'
+;
+
+CONNECTIONS_LIMIT
+:
+   'connections-limit'
 ;
 
 COS_NEXT_HOP_MAP
@@ -390,6 +510,11 @@ DEAD_INTERVAL
    'dead-interval'
 ;
 
+DEAD_PEER_DETECTION
+:
+   'dead-peer-detection'
+;
+
 DEFAULT_ACTION
 :
    'default-action'
@@ -410,6 +535,11 @@ DEFAULT_METRIC
    'default-metric'
 ;
 
+DEFAULT_POLICY
+:
+   'default-policy'
+;
+
 DEFAULTS
 :
    'defaults'
@@ -418,6 +548,21 @@ DEFAULTS
 DELETE
 :
    'delete'
+;
+
+DENY
+:
+   'deny'
+;
+
+DENY_ALL
+:
+   'deny-all'
+;
+
+DES_CBC
+:
+   'des-cbc'
 ;
 
 DESCRIPTION
@@ -433,6 +578,11 @@ DESTINATION_ADDRESS
 DESTINATION_HOST_UNKNOWN
 :
    'destination-host-unknown'
+;
+
+DESTINATION_IP
+:
+   'destination-ip'
 ;
 
 DESTINATION_NETWORK_UNKNOWN
@@ -460,6 +610,16 @@ DESTINATION_UNREACHABLE
    'destination-unreachable'
 ;
 
+DF_BIT
+:
+   'df-bit'
+;
+
+DH_GROUP
+:
+   'dh-group'
+;
+
 DHCP
 :
    'dhcp'
@@ -485,6 +645,11 @@ DISCARD
    'discard'
 ;
 
+DNS
+:
+   'dns'
+;
+
 DOMAIN
 :
    'domain'
@@ -500,6 +665,11 @@ DOMAIN_SEARCH
    'domain-search'
 ;
 
+DSA_SIGNATURES
+:
+   'dsa-signatures'
+;
+
 DSCP
 :
    'dscp' -> pushMode(M_DSCP)
@@ -513,6 +683,16 @@ DSTOPTS
 DUMPONPANIC
 :
    'dump-on-panic'
+;
+
+DVMRP
+:
+   'dvmrp'
+;
+
+DYNAMIC
+:
+   'dynamic'
 ;
 
 ECHO_REPLY
@@ -555,9 +735,19 @@ ENCAPSULATION
    'encapsulation'
 ;
 
+ENCRYPTION_ALGORITHM
+:
+   'encryption-algorithm'
+;
+
 ESP
 :
    'esp'
+;
+
+ESTABLISH_TUNNELS
+:
+   'establish-tunnels'
 ;
 
 ETHER_OPTIONS
@@ -618,6 +808,11 @@ EXPRESSION
 EXTERNAL
 :
    'external'
+;
+
+EXTERNAL_INTERFACE
+:
+   'external-interface' -> pushMode(M_Interface)
 ;
 
 EXTERNAL_PREFERENCE
@@ -725,6 +920,11 @@ FROM
    'from'
 ;
 
+FROM_ZONE
+:
+   'from-zone'
+;
+
 FTP
 :
    'ftp'
@@ -743,6 +943,11 @@ FULL_DUPLEX
 G
 :
    'g'
+;
+
+GATEWAY
+:
+   'gateway'
 ;
 
 GENERATE
@@ -768,6 +973,31 @@ GRE
 GROUP
 :
    'group' -> pushMode(M_VarOrWildcard)
+;
+
+GROUP_IKE_ID
+:
+   'group-ike-id'
+;
+
+GROUP1
+:
+   'group1'
+;
+
+GROUP14
+:
+   'group14'
+;
+
+GROUP2
+:
+   'group2'
+;
+
+GROUP5
+:
+   'group5'
 ;
 
 GROUPS
@@ -800,6 +1030,16 @@ HIGH
    'high'
 ;
 
+HMAC_MD5_96
+:
+   'hmac-md5-96'
+;
+
+HMAC_SHA1_96
+:
+   'hmac-sha1-96'
+;
+
 HOLD_TIME
 :
    'hold-time'
@@ -815,6 +1055,11 @@ HOST
    'host'
 ;
 
+HOST_INBOUND_TRAFFIC
+:
+   'host-inbound-traffic'
+;
+
 HOST_NAME
 :
    'host-name'
@@ -823,6 +1068,11 @@ HOST_NAME
 HOST_UNREACHABLE
 :
    'host-unreachable'
+;
+
+HOSTNAME
+:
+   'hostname'
 ;
 
 HTTP
@@ -865,6 +1115,11 @@ IDENT
    'ident'
 ;
 
+IDENT_RESET
+:
+   'ident-reset'
+;
+
 IGMP
 :
    'igmp'
@@ -885,9 +1140,29 @@ IGP
    'igp'
 ;
 
+IKE
+:
+   'ike'
+;
+
+IKE_POLICY
+:
+   'ike-policy'
+;
+
+IKE_USER_TYPE
+:
+   'ike-user-type'
+;
+
 IMAP
 :
    'imap'
+;
+
+IMMEDIATELY
+:
+   'immediately'
 ;
 
 IMPORT
@@ -908,6 +1183,11 @@ IMPORT_RIB
 INACTIVE
 :
    'inactive'
+;
+
+INACTIVITY_TIMEOUT
+:
+   'inactivity-timeout'
 ;
 
 INCLUDE_MP_NEXT_HOP
@@ -1055,6 +1335,21 @@ IPIP
    'ipip'
 ;
 
+IPSEC
+:
+   'ipsec'
+;
+
+IPSEC_POLICY
+:
+   'ipsec-policy'
+;
+
+IPSEC_VPN
+:
+   'ipsec-vpn'
+;
+
 IPV6
 :
    'ipv6'
@@ -1075,6 +1370,11 @@ ISO
    'iso' -> pushMode(M_ISO)
 ;
 
+JUNOS_HOST
+:
+   'junos-host'
+;
+
 KEEP
 :
    'keep'
@@ -1083,6 +1383,11 @@ KEEP
 KERBEROS_SEC
 :
    'kerberos-sec'
+;
+
+KEYS
+:
+   'keys'
 ;
 
 KLOGIN
@@ -1190,6 +1495,16 @@ LEVEL
    'level'
 ;
 
+LIFETIME_KILOBYTES
+:
+   'lifetime-kilobytes'
+;
+
+LIFETIME_SECONDS
+:
+   'lifetime-seconds'
+;
+
 LINK_PROTECTION
 :
    'link-protection'
@@ -1225,6 +1540,10 @@ LOCAL_AS
    'local-as'
 ;
 
+LOCAL_IDENTITY
+:
+   'local-identity'
+;
 LOCAL_PREFERENCE
 :
    'local-preference'
@@ -1295,6 +1614,11 @@ LSP_LIFETIME
    'lsp-lifetime'
 ;
 
+LSPING
+:
+   'lsping'
+;
+
 M
 :
    'm'
@@ -1303,6 +1627,16 @@ M
 MAC
 :
    'mac' -> pushMode(M_MacAddress)
+;
+
+MAIN
+:
+   'main'
+;
+
+MAPPED_PORT
+:
+   'mapped-port'
 ;
 
 MARTIANS
@@ -1315,6 +1649,11 @@ MASTER_ONLY
    'master-only'
 ;
 
+MATCH
+:
+   'match'
+;
+
 MAX_CONFIGURATIONS_ON_FLASH
 :
    'max-configurations-on-flash'
@@ -1325,9 +1664,19 @@ MAX_CONFIGURATION_ROLLBACKS
    'max-configuration-rollbacks'
 ;
 
+MAX_SESSION_NUMBER
+:
+   'max-session-number'
+;
+
 MAXIMUM_LABELS
 :
    'maximum-labels'
+;
+
+MD5
+:
+   'md5'
 ;
 
 MEDIUM_HIGH
@@ -1378,6 +1727,11 @@ MOBILEIP_AGENT
 MOBILIP_MN
 :
    'mobilip-mn'
+;
+
+MODE
+:
+   'mode'
 ;
 
 MPLS
@@ -1455,6 +1809,11 @@ NAME_SERVER
    'name-server'
 ;
 
+NAT
+:
+   'nat'
+;
+
 NATIVE_VLAN_ID
 :
    'native-vlan-id'
@@ -1495,6 +1854,11 @@ NETBIOS_SSN
    'netbios-ssn'
 ;
 
+NETCONF
+:
+   'netconf'
+;
+
 NETWORK_SUMMARY_EXPORT
 :
    'network-summary-export'
@@ -1530,6 +1894,11 @@ NFSD
    'nfsd'
 ;
 
+NHRP
+:
+   'nhrp'
+;
+
 NNTP
 :
    'nntp'
@@ -1543,6 +1912,11 @@ NTALK
 NO_ACTIVE_BACKBONE
 :
    'no-active-backbone'
+;
+
+NO_ANTI_REPLAY
+:
+   'no-anti-replay'
 ;
 
 NO_AUTO_NEGOTIATION
@@ -1573,6 +1947,11 @@ NO_INSTALL
 NO_IPV4_ROUTING
 :
    'no-ipv4-routing'
+;
+
+NO_NAT_TRAVERSAL
+:
+   'no-nat-traversal'
 ;
 
 NO_NEIGHBOR_DOWN_NOTIFICATION
@@ -1628,6 +2007,11 @@ NSSA
 NTP
 :
    'ntp'
+;
+
+OFF
+:
+   'off'
 ;
 
 OFFSET
@@ -1750,9 +2134,39 @@ PER__UNIT_SCHEDULER
    'per-unit-scheduler'
 ;
 
+PERFECT_FORWARD_SECRECY
+:
+   'perfect-forward-secrecy'
+;
+
+PERMIT
+:
+   'permit'
+;
+
+PERMIT_ALL
+:
+   'permit-all'
+;
+
+PERSISTENT_NAT
+:
+   'persistent-nat'
+;
+
+PGM
+:
+   'pgm'
+;
+
 PIM
 :
    'pim'
+;
+
+PING
+:
+   'ping'
 ;
 
 POE
@@ -1768,6 +2182,11 @@ POINT_TO_POINT
 POLICER
 :
    'policer'
+;
+
+POLICIES
+:
+   'policies'
 ;
 
 POLICY
@@ -1788,6 +2207,11 @@ POLICY_STATEMENT
 POLL_INTERVAL
 :
    'poll-interval'
+;
+
+POOL
+:
+   'pool'
 ;
 
 POP3
@@ -1815,6 +2239,21 @@ PORT_MODE
    'port-mode'
 ;
 
+PORT_OVERLOADING
+:
+   'port-overloading'
+;
+
+PORT_OVERLOADING_FACTOR
+:
+   'port-overloading-factor'
+;
+
+PORT_RANDOMIZATION
+:
+   'port-randomization'
+;
+
 PORT_UNREACHABLE
 :
    'port-unreachable'
@@ -1828,6 +2267,16 @@ PPM
 PPTP
 :
    'pptp'
+;
+
+PRE_SHARED_KEY
+:
+   'pre-shared-key'
+;
+
+PRE_SHARED_KEYS
+:
+   'pre-shared-keys'
 ;
 
 PRECEDENCE
@@ -1853,6 +2302,11 @@ PREFERENCE
 PREFERRED
 :
    'preferred'
+;
+
+PREFIX
+:
+   'prefix'
 ;
 
 PREFIX_EXPORT_LIMIT
@@ -1915,6 +2369,21 @@ PROCESSES
    'processes'
 ;
 
+PROPOSAL
+:
+   'proposal'
+;
+
+PROPOSAL_SET
+:
+   'proposal-set'
+;
+
+PROPOSALS
+:
+   'proposals'
+;
+
 PROTOCOL
 :
    'protocol'
@@ -1930,9 +2399,24 @@ PROVIDER_TUNNEL
    'provider-tunnel'
 ;
 
+PROXY_ARP
+:
+   'proxy-arp'
+;
+
+PROXY_IDENTITY
+:
+   'proxy-identity'
+;
+
 QUALIFIED_NEXT_HOP
 :
    'qualified-next-hop'
+;
+
+R2CP
+:
+   'r2cp'
 ;
 
 RADACCT
@@ -1990,6 +2474,11 @@ REJECT
    'reject'
 ;
 
+REMOTE
+:
+   'remote'
+;
+
 REMOVE_PRIVATE
 :
    'remove-private'
@@ -2020,6 +2509,16 @@ RETAIN
    'retain'
 ;
 
+REVERSE_SSH
+:
+   'reverse-ssh'
+;
+
+REVERSE_TELNET
+:
+   'reverse-telnet'
+;
+
 RIB
 :
    'rib'
@@ -2040,9 +2539,19 @@ RIP
    'rip'
 ;
 
+RIPNG
+:
+   'ripng'
+;
+
 RKINIT
 :
    'rkinit'
+;
+
+RLOGIN
+:
+   'rlogin'
 ;
 
 ROOT_AUTHENTICATION
@@ -2075,6 +2584,11 @@ ROUTER_ADVERTISEMENT
    'router-advertisement'
 ;
 
+ROUTER_DISCOVERY
+:
+   'router-discovery'
+;
+
 ROUTER_ID
 :
    'router-id'
@@ -2100,6 +2614,21 @@ RPF_CHECK
    'rpf-check'
 ;
 
+RPM
+:
+   'rpm'
+;
+
+RSA_SIGNATURES
+:
+   'rsa-signatures'
+;
+
+RSH
+:
+   'rsh'
+;
+
 RSTP
 :
    'rstp'
@@ -2110,6 +2639,16 @@ RSVP
    'rsvp'
 ;
 
+RULE
+:
+   'rule'
+;
+
+RULE_SET
+:
+   'rule-set'
+;
+
 SAMPLE
 :
    'sample'
@@ -2118,6 +2657,16 @@ SAMPLE
 SAMPLING
 :
    'sampling'
+;
+
+SAP
+:
+   'sap'
+;
+
+SCREEN
+:
+   'screen'
 ;
 
 SCRIPTS
@@ -2133,6 +2682,11 @@ SCTP
 SECURITY
 :
    'security'
+;
+
+SECURITY_ZONE
+:
+   'security-zone'
 ;
 
 SERVICE
@@ -2170,6 +2724,26 @@ SFLOW
    'sflow'
 ;
 
+SHA_256
+:
+   'sha-256'
+;
+
+SHA_384
+:
+   'sha-384'
+;
+
+SHA1
+:
+   'sha1'
+;
+
+SHARED_IKE_ID
+:
+   'shared-ike-id'
+;
+
 SHORTCUTS
 :
    'shortcuts'
@@ -2178,6 +2752,11 @@ SHORTCUTS
 SIMPLE
 :
    'simple'
+;
+
+SIP
+:
+   'sip'
 ;
 
 SRLG
@@ -2205,6 +2784,11 @@ SNMP
    'snmp'
 ;
 
+SNMP_TRAP
+:
+   'snmp-trap'
+;
+
 SNMPTRAP
 :
    'snmptrap'
@@ -2225,6 +2809,11 @@ SONET_OPTIONS
    'sonet-options'
 ;
 
+SOURCE
+:
+   'source'
+;
+
 SOURCE_ADDRESS
 :
    'source-address'
@@ -2233,6 +2822,21 @@ SOURCE_ADDRESS
 SOURCE_ADDRESS_FILTER
 :
    'source-address-filter'
+;
+
+SOURCE_IDENTITY
+:
+   'source-identity'
+;
+
+SOURCE_INTERFACE
+:
+   'source-interface'
+;
+
+SOURCE_NAT
+:
+   'source-nat'
 ;
 
 SOURCE_PORT
@@ -2265,14 +2869,19 @@ SSH
    'ssh'
 ;
 
-STANZA_REMOVED
+STANDARD
 :
-   'Stanza Removed'
+   'standard'
 ;
 
 STATIC
 :
    'static'
+;
+
+STATIC_NAT
+:
+   'static-nat'
 ;
 
 STATION_ADDRESS
@@ -2315,6 +2924,11 @@ SYSTEM
    'system'
 ;
 
+SYSTEM_SERVICES
+:
+   'system-services'
+;
+
 TACACS
 :
    'tacacs'
@@ -2343,6 +2957,16 @@ TALK
 TARGET
 :
    'target'
+;
+
+TARGET_HOST
+:
+   'target-host'
+;
+
+TARGET_HOST_PORT
+:
+   'target-host-port'
 ;
 
 TARGETED_BROADCAST
@@ -2375,6 +2999,11 @@ TCP_MSS
    'tcp-mss'
 ;
 
+TCP_RST
+:
+   'tcp-rst'
+;
+
 TE_METRIC
 :
    'te-metric'
@@ -2398,6 +3027,11 @@ TFTP
 THEN
 :
    'then'
+;
+
+THREEDES_CBC
+:
+   '3des-cbc'
 ;
 
 THROUGH
@@ -2425,9 +3059,19 @@ TO
    'to'
 ;
 
+TO_ZONE
+:
+   'to-zone'
+;
+
 TRACEOPTIONS
 :
    'traceoptions'
+;
+
+TRACEROUTE
+:
+   'traceroute'
 ;
 
 TRACK
@@ -2448,6 +3092,11 @@ TRAPS
 TRUNK
 :
    'trunk'
+;
+
+TRUST
+:
+   'trust'
 ;
 
 TTL
@@ -2490,6 +3139,16 @@ UNREACHABLE
    'unreachable'
 ;
 
+UNTRUST
+:
+   'untrust'
+;
+
+UNTRUST_SCREEN
+:
+   'untrust-screen'
+;
+
 UPTO
 :
    'upto'
@@ -2503,6 +3162,11 @@ URPF_LOGGING
 USER
 :
    'user'
+;
+
+V1_ONLY
+:
+   'v1-only'
 ;
 
 VERSION
@@ -2560,6 +3224,16 @@ VPLS
    'vpls'
 ;
 
+VPN
+:
+   'vpn'
+;
+
+VPN_MONITOR
+:
+   'vpn-monitor'
+;
+
 VRF
 :
    'vrf'
@@ -2610,9 +3284,34 @@ WIDE_METRICS_ONLY
    'wide-metrics-only'
 ;
 
+XAUTH
+:
+   'xauth'
+;
+
 XDMCP
 :
    'xdmcp'
+;
+
+XNM_CLEAR_TEXT
+:
+   'xnm-clear-text'
+;
+
+XNM_SSL
+:
+   'xnm-ssl'
+;
+
+ZONE
+:
+   'zone'
+;
+
+ZONES
+:
+   'zones'
 ;
 
 // End of Juniper keywords
@@ -3154,6 +3853,16 @@ M_Interface_INTERFACE
    'interface' -> type(INTERFACE)
 ;
 
+M_Interface_PORT_OVERLOADING
+:
+   'port-overloading' -> type(PORT_OVERLOADING), popMode
+;
+
+M_Interface_PORT_OVERLOADING_FACTOR
+:
+   'port-overloading-factor' -> type(PORT_OVERLOADING_FACTOR), popMode
+;
+
 M_Interface_QUOTE
 :
    '"' -> channel(HIDDEN), mode(M_InterfaceQuote)
@@ -3452,6 +4161,11 @@ M_VarOrWildcard_WS
 ;
 
 mode M_Version;
+
+M_Version_V1_ONLY
+:
+   'v1-only' -> type(V1_ONLY), popMode
+;
 
 M_Version_VERSION_STRING
 :
