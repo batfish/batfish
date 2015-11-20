@@ -105,30 +105,6 @@
 
    <target name="all" depends="jar,copyconfig" description="Build everything"/>
 
-	<target name="grammarclean" description="Delete generated antlr files">
-      <delete>
-         <fileset dir="src" includes="**/*.tokens"/>
-         <fileset dir="src" includes="org/batfish/grammar/cisco/CiscoLexer*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/cisco/CiscoParser*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/flatjuniper/FlatJuniperLexer*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/flatjuniper/FlatJuniperParser*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/juniper/JuniperLexer*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/juniper/JuniperParser*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/question/QuestionLexer*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/question/QuestionParser*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/question/QuestionParametersLexer*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/question/QuestionParametersParser*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/topology/RoleLexer*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/topology/RoleParser*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/topology/BatfishTopologyLexer*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/topology/BatfishTopologyParser*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/topology/GNS3TopologyLexer*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/topology/GNS3TopologyParser*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/logicblox/LogiQLLexer*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/logicblox/LogiQLParser*.java"/>
-      </delete>
-	</target>
-
    <!-- Check to see if anything that would be packaged for distribution has changed -->
    <target name="checkJarBuild" depends="lbcompile,compile,predicateinfo">
       <uptodate property="jarBuild.notRequired" targetfile="${outputJar}">
@@ -253,6 +229,30 @@
 
    <target name="eclipse_post_compile" depends="lbcompile,predicateinfolite"
       description="Last stage of eclipse compilation" />
+
+   <target name="grammarclean" description="Delete generated antlr files">
+      <delete>
+         <fileset dir="src" includes="**/*.tokens"/>
+         <fileset dir="src" includes="org/batfish/grammar/cisco/CiscoLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/cisco/CiscoParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/flatjuniper/FlatJuniperLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/flatjuniper/FlatJuniperParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/juniper/JuniperLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/juniper/JuniperParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/question/QuestionLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/question/QuestionParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/question/QuestionParametersLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/question/QuestionParametersParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/topology/RoleLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/topology/RoleParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/topology/BatfishTopologyLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/topology/BatfishTopologyParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/topology/GNS3TopologyLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/topology/GNS3TopologyParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/logicblox/LogiQLLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/logicblox/LogiQLParser*.java"/>
+      </delete>
+   </target>
 
    <target name="jar" depends="checkJarBuild" unless="jarBuild.notRequired"
      description="Produce distribution all-in-one jar">
