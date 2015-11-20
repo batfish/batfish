@@ -242,13 +242,20 @@ public class Environment {
          for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
             Ip remoteAddress = ipsecVpn.getGateway().getAddress();
             remoteAddresses.put(ipsecVpn, remoteAddress);
-            Prefix externalPrefix = ipsecVpn.getGateway()
-                  .getExternalInterface().getPrefix();
-            if (externalPrefix != null) {
+            Set<Prefix> externalPrefixes =  ipsecVpn.getGateway()
+                  .getExternalInterface().getAllPrefixes();
+            for (Prefix externalPrefix : externalPrefixes) {
                Ip externalAddress = externalPrefix.getAddress();
                externalAddresses.put(externalAddress, ipsecVpn);
             }
          }
+//            Prefix externalPrefix = ipsecVpn.getGateway()
+//                  .getExternalInterface().getPrefix();
+//            if (externalPrefix != null) {
+//               Ip externalAddress = externalPrefix.getAddress();
+//               externalAddresses.put(externalAddress, ipsecVpn);
+//            }
+
       }
       for (Entry<IpsecVpn, Ip> e : remoteAddresses.entrySet()) {
          IpsecVpn ipsecVpn = e.getKey();

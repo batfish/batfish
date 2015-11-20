@@ -437,6 +437,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       if (iface.getPrimaryPrefix() != null) {
          newIface.setPrefix(iface.getPrimaryPrefix());
       }
+      newIface.getAllPrefixes().addAll(iface.getAllPrefixes());
       newIface.setActive(iface.getActive());
       newIface.setAccessVlan(iface.getAccessVlan());
       newIface.setNativeVlan(iface.getNativeVlan());
