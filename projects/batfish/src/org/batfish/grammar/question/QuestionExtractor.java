@@ -21,6 +21,7 @@ import org.batfish.question.GeneratedRoutePrefixExpr;
 import org.batfish.question.IngressPathQuestion;
 import org.batfish.question.LocalPathQuestion;
 import org.batfish.question.MultipathQuestion;
+import org.batfish.question.ProtocolDependenciesQuestion;
 import org.batfish.question.Question;
 import org.batfish.question.QuestionParameters;
 import org.batfish.question.ReachabilityQuestion;
@@ -331,6 +332,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void enterMultipath_question(Multipath_questionContext ctx) {
       MultipathQuestion multipathQuestion = new MultipathQuestion();
       _question = multipathQuestion;
+   }
+
+   @Override
+   public void enterProtocol_dependencies_question(
+         Protocol_dependencies_questionContext ctx) {
+      _question = new ProtocolDependenciesQuestion();
    }
 
    @Override

@@ -386,6 +386,11 @@ PROTOCOL
    'protocol'
 ;
 
+PROTOCOL_DEPENDENCIES
+:
+   'protocol-dependencies'
+;
+
 REACHABILITY
 :
    'reachability'
@@ -413,7 +418,7 @@ ROUTE_FILTER
 
 SET
 :
-   'set' -> pushMode(M_Set)
+   'set' -> pushMode ( M_Set )
 ;
 
 SIZE
@@ -535,6 +540,11 @@ EQUALS
 FORWARD_SLASH
 :
    '/'
+;
+
+FORWARD_SLASH_STAR
+:
+   '/*' -> channel ( HIDDEN ) , pushMode ( M_MultilineComment )
 ;
 
 GT
@@ -676,6 +686,26 @@ M_Comment_NEWLINE
    F_NewlineChar+ -> channel ( HIDDEN ) , popMode
 ;
 
+mode M_MultilineComment;
+
+M_MultilineComment_COMMENT
+:
+   (
+      (
+         ~'*'+
+      )
+      |
+      (
+         '*'+ ~[*/]
+      )
+   ) -> channel(HIDDEN)
+;
+
+M_MultilineComment_TERMINATOR
+:
+   '*/' -> channel(HIDDEN), popMode
+;
+
 mode M_QuotedString;
 
 M_QuotedString_TEXT
@@ -692,30 +722,30 @@ mode M_Set;
 
 M_Set_INT
 :
-   'int' -> type(INT)
+   'int' -> type ( INT )
 ;
 
 M_Set_IP
 :
-   'ip' -> type(IP)
+   'ip' -> type ( IP )
 ;
 
 M_Set_OPEN_ANGLE_BRACKET
 :
-   '<' -> channel(HIDDEN)
+   '<' -> channel ( HIDDEN )
 ;
 
 M_Set_ROUTE_FILTER
 :
-   'route_filter' -> type(ROUTE_FILTER)
+   'route_filter' -> type ( ROUTE_FILTER )
 ;
 
 M_Set_STRING
 :
-   'string' -> type(STRING)
+   'string' -> type ( STRING )
 ;
 
 M_Set_CLOSE_ANGLE_BRACKET
 :
-   '>' -> channel(HIDDEN), popMode
+   '>' -> channel ( HIDDEN ) , popMode
 ;

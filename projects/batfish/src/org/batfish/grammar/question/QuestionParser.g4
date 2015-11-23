@@ -781,6 +781,11 @@ property_boolean_expr
    | static_route_boolean_expr
 ;
 
+protocol_dependencies_question
+:
+   PROTOCOL_DEPENDENCIES
+;
+
 protocol_name_string_expr
 :
    NAME
@@ -799,6 +804,7 @@ question
       | ingress_path_question
       | local_path_question
       | multipath_question
+      | protocol_dependencies_question
       | reachability_question
       | traceroute_question
       | verify_question

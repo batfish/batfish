@@ -1,4 +1,4 @@
-verify {
+/*verify {
    foreach  node {
       $ospf_route_filters:set<route_filter>;
       if (node.ospf.configured) then {
@@ -32,4 +32,6 @@ verify {
          }
       }
    }
-}
+}*/
+protocol-dependencies
+

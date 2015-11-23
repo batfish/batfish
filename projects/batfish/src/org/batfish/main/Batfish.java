@@ -106,11 +106,13 @@ import org.batfish.nxtnet.NxtnetConstants;
 import org.batfish.nxtnet.PredicateInfo;
 import org.batfish.nxtnet.Relation;
 import org.batfish.nxtnet.TopologyFactExtractor;
+import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
 import org.batfish.question.DestinationQuestion;
 import org.batfish.question.FailureQuestion;
 import org.batfish.question.IngressPathQuestion;
 import org.batfish.question.LocalPathQuestion;
 import org.batfish.question.MultipathQuestion;
+import org.batfish.question.ProtocolDependenciesQuestion;
 import org.batfish.question.Question;
 import org.batfish.question.QuestionParameters;
 import org.batfish.question.ReachabilityQuestion;
@@ -384,6 +386,10 @@ public class Batfish implements AutoCloseable {
          dp = true;
          break;
 
+      case PROTOCOL_DEPENDENCIES:
+         answerProtocolDependencies((ProtocolDependenciesQuestion) question);
+         break;
+
       case REACHABILITY:
          answerReachability((ReachabilityQuestion) question);
          dp = true;
@@ -612,6 +618,12 @@ public class Batfish implements AutoCloseable {
          wSetFlowOriginate.append(flow.toLBLine());
       }
       dumpTrafficFacts(trafficFactBins);
+   }
+
+   private void answerProtocolDependencies(ProtocolDependenciesQuestion question) {
+      checkConfigurations();
+      Map<String, Configuration> configurations = loadConfigurations();
+      new ProtocolDependencyAnalysis(configurations, _settings, _logger).run();
    }
 
    private void answerReachability(ReachabilityQuestion question) {
