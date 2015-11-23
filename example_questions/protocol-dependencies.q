@@ -4,15 +4,17 @@ verify {
       if (node.ospf.configured) then {
          foreach ospf_outbound_policy {
             foreach clause {
-               foreach match_protocol {
-                  foreach protocol {
-                     printf("External OSPF on %s depends on protocol: %s\n", node.name, protocol.name);
+               if (clause.permit) then {
+                  foreach match_protocol {
+                     foreach protocol {
+                        printf("External OSPF on %s depends on protocol: %s\n", node.name, protocol.name);
+                     }
                   }
-               }
-               foreach match_route_filter {
-                  foreach route_filter {
-                     $ospf_route_filters.add(route_filter);
-                     printf("External OSPF on %s depends on routefilter %s\n", node.name, route_filter.name);
+                  foreach match_route_filter {
+                     foreach route_filter {
+                        $ospf_route_filters.add(route_filter);
+                        printf("External OSPF on %s depends on routefilter %s\n", node.name, route_filter.name);
+                     }
                   }
                }
             }
@@ -23,7 +25,9 @@ verify {
          foreach route_filter:$ospf_route_filters {
             printf("\n  %s:\n", route_filter.name);
             foreach line {
-               printf("    %s\n", line);   
+               if (line.permit) then {
+                  printf("    %s\n", line);
+               }
             }
          }
       }

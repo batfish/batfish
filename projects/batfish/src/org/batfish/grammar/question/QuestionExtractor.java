@@ -34,6 +34,8 @@ import org.batfish.question.boolean_expr.BooleanExpr;
 import org.batfish.question.boolean_expr.CompatibleIkeProposalsIpsecVpnBooleanExpr;
 import org.batfish.question.boolean_expr.CompatibleIpsecProposalsIpsecVpnBooleanExpr;
 import org.batfish.question.boolean_expr.HasRemoteIpsecVpnIpsecVpnBooleanExpr;
+import org.batfish.question.boolean_expr.PermitClauseBooleanExpr;
+import org.batfish.question.boolean_expr.PermitLineBooleanExpr;
 import org.batfish.question.boolean_expr.SetContainsExpr;
 import org.batfish.question.boolean_expr.IntEqExpr;
 import org.batfish.question.boolean_expr.GtExpr;
@@ -61,6 +63,8 @@ import org.batfish.question.ip_expr.IpExpr;
 import org.batfish.question.ip_expr.StaticRouteIpExpr;
 import org.batfish.question.ipsec_vpn_expr.BaseCaseIpsecVpnExpr;
 import org.batfish.question.ipsec_vpn_expr.IpsecVpnExpr;
+import org.batfish.question.policy_map_clause_expr.BaseCasePolicyMapClauseExpr;
+import org.batfish.question.policy_map_clause_expr.PolicyMapClauseExpr;
 import org.batfish.question.prefix_expr.InterfacePrefixExpr;
 import org.batfish.question.prefix_expr.PrefixExpr;
 import org.batfish.question.prefix_expr.StaticRoutePrefixExpr;
@@ -123,6 +127,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private static final String ERR_CONVERT_IP = "Cannot convert parse tree node to IP expression";
 
+   private static final String ERR_CONVERT_POLICY_MAP_CLAUSE = "Cannot convert parse tree node to policy map clause expression";
+
    private static final String ERR_CONVERT_PREFIX = "Cannot convert parse tree node to prefix expression";
 
    private static final String ERR_CONVERT_PRINTABLE = "Cannot convert parse tree node to printable expression";
@@ -133,7 +139,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private static final String ERR_CONVERT_STATEMENT = "Cannot convert parse tree node to statement";
 
-   private static final String ERR_CONVERT_STRING = "Cannot convert parse tree node to string expression";
+   private static final String ERR_CONVERT_STRING = "Cannot convert parse tree node to string expression";;
 
    private FlowBuilder _currentFlowBuilder;
 
@@ -504,6 +510,16 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
+   private BooleanExpr toBooleanExpr(Clause_boolean_exprContext ctx) {
+      PolicyMapClauseExpr caller = toPolicyMapClauseExpr(ctx.caller);
+      if (ctx.clause_permit_boolean_expr() != null) {
+         return new PermitClauseBooleanExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
+      }
+   }
+
    private BooleanExpr toBooleanExpr(Eq_exprContext expr) {
       if (expr.lhs_int != null) {
          IntExpr lhs = toIntExpr(expr.lhs_int);
@@ -600,6 +616,16 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
+   private BooleanExpr toBooleanExpr(Line_boolean_exprContext ctx) {
+      RouteFilterLineExpr caller = toRouteFilterLineExpr(ctx.caller);
+      if (ctx.line_permit_boolean_expr() != null) {
+         return new PermitLineBooleanExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
+      }
+   }
+
    private BooleanExpr toBooleanExpr(Neq_exprContext expr) {
       IntExpr lhs = toIntExpr(expr.lhs);
       IntExpr rhs = toIntExpr(expr.rhs);
@@ -686,11 +712,17 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       if (ctx.bgp_neighbor_boolean_expr() != null) {
          return toBooleanExpr(ctx.bgp_neighbor_boolean_expr());
       }
+      else if (ctx.clause_boolean_expr() != null) {
+         return toBooleanExpr(ctx.clause_boolean_expr());
+      }
       else if (ctx.interface_boolean_expr() != null) {
          return toBooleanExpr(ctx.interface_boolean_expr());
       }
       else if (ctx.ipsec_vpn_boolean_expr() != null) {
          return toBooleanExpr(ctx.ipsec_vpn_boolean_expr());
+      }
+      else if (ctx.line_boolean_expr() != null) {
+         return toBooleanExpr(ctx.line_boolean_expr());
       }
       else if (ctx.node_boolean_expr() != null) {
          return toBooleanExpr(ctx.node_boolean_expr());
@@ -909,6 +941,15 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else {
          throw new BatfishException("Missing conversion for expression");
+      }
+   }
+
+   private PolicyMapClauseExpr toPolicyMapClauseExpr(Clause_exprContext ctx) {
+      if (ctx.CLAUSE() != null) {
+         return BaseCasePolicyMapClauseExpr.CLAUSE;
+      }
+      else {
+         throw conversionError(ERR_CONVERT_POLICY_MAP_CLAUSE, ctx);
       }
    }
 

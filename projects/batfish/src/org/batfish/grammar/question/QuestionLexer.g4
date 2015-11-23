@@ -356,6 +356,11 @@ PASSIVE
    'passive'
 ;
 
+PERMIT
+:
+   'permit'
+;
+
 PRE_SHARED_KEY
 :
    'pre_shared_key'

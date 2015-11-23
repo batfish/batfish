@@ -113,6 +113,24 @@ boolean_expr
    | true_expr
 ;
 
+clause_boolean_expr
+:
+   caller = clause_expr PERIOD
+   (
+      clause_permit_boolean_expr
+   )
+;
+
+clause_expr
+:
+   CLAUSE
+;
+
+clause_permit_boolean_expr
+:
+   PERMIT
+;
+
 default_binding
 :
    VARIABLE EQUALS
@@ -603,6 +621,19 @@ ipsec_vpn_string_expr
    )
 ;
 
+line_boolean_expr
+:
+   caller = route_filter_line_expr PERIOD
+   (
+      line_permit_boolean_expr
+   )
+;
+
+line_permit_boolean_expr
+:
+   PERMIT
+;
+
 literal_int_expr
 :
    DEC
@@ -742,8 +773,10 @@ printf_statement
 property_boolean_expr
 :
    bgp_neighbor_boolean_expr
+   | clause_boolean_expr
    | interface_boolean_expr
    | ipsec_vpn_boolean_expr
+   | line_boolean_expr
    | node_boolean_expr
    | static_route_boolean_expr
 ;
