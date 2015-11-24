@@ -8,6 +8,7 @@ import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.representation.Configuration;
+import org.batfish.representation.Ip;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RoutingProtocol;
 
@@ -52,6 +53,8 @@ public class DependencyDatabase {
 
    private final Map<RoutingProtocol, Set<PotentialImport>> _potentialImportsByProtocol;
 
+   private final Map<String, RoutingTable> _routingTables;
+
    public DependencyDatabase(Map<String, Configuration> configurations) {
       _dependentRoutesByNode = new TreeMap<String, Set<DependentRoute>>();
       _dependentRoutesByNodePrefixProtocol = new TreeMap<NodePrefixProtocol, Set<DependentRoute>>();
@@ -59,9 +62,11 @@ public class DependencyDatabase {
       _dependentRoutesByProtocol = new TreeMap<RoutingProtocol, Set<DependentRoute>>();
       _potentialExportsByProtocol = new TreeMap<RoutingProtocol, Set<PotentialExport>>();
       _potentialImportsByProtocol = new TreeMap<RoutingProtocol, Set<PotentialImport>>();
+      _routingTables = new TreeMap<String, RoutingTable>();
       for (Configuration c : configurations.values()) {
          String name = c.getHostname();
          _dependentRoutesByNode.put(name, new TreeSet<DependentRoute>());
+         _routingTables.put(name, new RoutingTable());
       }
       for (RoutingProtocol protocol : RoutingProtocol.values()) {
          _dependentRoutesByProtocol
@@ -78,6 +83,7 @@ public class DependencyDatabase {
       addDependentRouteByPrefix(dependentRoute);
       addDependentRouteByProtocol(dependentRoute);
       addDependentRouteByNodePrefixProtocol(dependentRoute);
+      addDependentRouteToRoutingTableByNode(dependentRoute);
    }
 
    private void addDependentRouteByNode(DependentRoute dependentRoute) {
@@ -113,20 +119,33 @@ public class DependencyDatabase {
             dependentRoute);
    }
 
+   private void addDependentRouteToRoutingTableByNode(
+         DependentRoute dependentRoute) {
+      String node = dependentRoute.getNode();
+      _routingTables.get(node).addDependentRoute(dependentRoute);
+   }
+
    public void addPotentialExport(PotentialExport potentialExport) {
       getPotentialExports(potentialExport.getProtocol()).add(potentialExport);
    }
 
    public void addPotentialImport(PotentialImport potentialImport) {
-      _potentialImportsByProtocol.get(potentialImport.getProtocol()).add(potentialImport);
+      _potentialImportsByProtocol.get(potentialImport.getProtocol()).add(
+            potentialImport);
    }
 
    public void clearPotentialExports() {
-      _potentialExportsByProtocol.clear();
+      for (Set<PotentialExport> potentialExports : _potentialExportsByProtocol
+            .values()) {
+         potentialExports.clear();
+      }
    }
 
    public void clearPotentialImports() {
-      _potentialImportsByProtocol.clear();
+      for (Set<PotentialImport> potentialImports : _potentialImportsByProtocol
+            .values()) {
+         potentialImports.clear();
+      }
    }
 
    public DependentRoute getConnectedRoute(String node, Prefix prefix) {
@@ -151,13 +170,19 @@ public class DependencyDatabase {
             node, prefix, protocol));
    }
 
+   public Set<DependentRoute> getLongestPrefixMatch(String node, Ip address) {
+      return _routingTables.get(node).longestPrefixMatch(address);
+   }
+
    public Set<PotentialExport> getPotentialExports(RoutingProtocol protocol) {
       return _potentialExportsByProtocol.get(protocol);
    }
 
-   public Set<PotentialExport> getPotentialExports(String node, RoutingProtocol protocol) {
+   public Set<PotentialExport> getPotentialExports(String node,
+         RoutingProtocol protocol) {
       Set<PotentialExport> potentialExports = new TreeSet<PotentialExport>();
-      Set<PotentialExport> potentialExportsByProtocol = _potentialExportsByProtocol.get(protocol);
+      Set<PotentialExport> potentialExportsByProtocol = _potentialExportsByProtocol
+            .get(protocol);
       for (PotentialExport potentialExport : potentialExportsByProtocol) {
          if (potentialExport.getNode().equals(node)) {
             potentialExports.add(potentialExport);
