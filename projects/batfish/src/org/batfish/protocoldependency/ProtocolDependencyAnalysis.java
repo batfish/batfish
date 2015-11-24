@@ -1,13 +1,18 @@
 package org.batfish.protocoldependency;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.batfish.common.BatfishLogger;
 import org.batfish.main.Settings;
+import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
+import org.batfish.representation.Interface;
 import org.batfish.representation.LineAction;
+import org.batfish.representation.OspfArea;
 import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapAction;
 import org.batfish.representation.PolicyMapClause;
@@ -19,13 +24,14 @@ import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
+import org.batfish.representation.StaticRoute;
 import org.batfish.util.SubRange;
 
 public class ProtocolDependencyAnalysis {
 
    private Map<String, Configuration> _configurations;
 
-   private final DependencyMap _dependencyMap;
+   private final DependencyDatabase _dependencyDatabase;
 
    @SuppressWarnings("unused")
    private BatfishLogger _logger;
@@ -38,64 +44,96 @@ public class ProtocolDependencyAnalysis {
       _configurations = configurations;
       _settings = settings;
       _logger = logger;
-      _dependencyMap = new DependencyMap(_configurations);
+      _dependencyDatabase = new DependencyDatabase(_configurations);
    }
 
-   private void initOspfE2Dependencies() {
+   private void initConnectedRoutes() {
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         String node = e.getKey();
+         Configuration c = e.getValue();
+         for (Interface iface : c.getInterfaces().values()) {
+            Prefix prefix = iface.getPrefix();
+            if (prefix != null) {
+               RoutingProtocol protocol = RoutingProtocol.CONNECTED;
+               DependentRoute dependentRoute = new DependentRoute(node, prefix,
+                     protocol);
+               _dependencyDatabase.addDependentRoute(dependentRoute);
+            }
+         }
+      }
+   }
+
+   private void initPotentialEbgpOriginationExports() {
       for (Configuration c : _configurations.values()) {
-         DependentNode dependentNode = _dependencyMap.getDependentNodes().get(
-               c.getHostname());
-         DependentProtocol ospf = new DependentProtocol(RoutingProtocol.OSPF_E2);
-         dependentNode.getProtocols().put(RoutingProtocol.OSPF_E2, ospf);
-         Set<Dependent> dependents = ospf.getDependents();
-         if (c.getOspfProcess() != null) {
-            for (PolicyMap outboundPolicy : c.getOspfProcess()
-                  .getOutboundPolicyMaps()) {
-               for (PolicyMapClause clause : outboundPolicy.getClauses()) {
-                  if (clause.getAction() == PolicyMapAction.PERMIT) {
-                     Set<RoutingProtocol> protocols = new HashSet<RoutingProtocol>();
-                     boolean foundMatchProtocol = false;
-                     boolean foundMatchRouteFilter = false;
-                     for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
-                        if (matchLine.getType() == PolicyMapMatchType.PROTOCOL) {
-                           foundMatchProtocol = true;
-                           PolicyMapMatchProtocolLine matchProtocolLine = (PolicyMapMatchProtocolLine) matchLine;
-                           protocols.add(matchProtocolLine.getProtocol());
+         String node = c.getHostname();
+         if (c.getBgpProcess() != null) {
+            for (BgpNeighbor neighbor : c.getBgpProcess().getNeighbors()
+                  .values()) {
+               boolean ebgp = !neighbor.getLocalAs().equals(neighbor.getRemoteAs());
+               if (!ebgp) {
+                  continue;
+               }
+               Set<PolicyMap> originationPolicies = neighbor
+                     .getOriginationPolicies();
+               for (PolicyMap origination : originationPolicies) {
+                  for (PolicyMapClause clause : origination.getClauses()) {
+                     if (clause.getAction() == PolicyMapAction.PERMIT) {
+                        Set<RoutingProtocol> protocols = new HashSet<RoutingProtocol>();
+                        Set<PrefixRange> prefixRanges = new HashSet<PrefixRange>();
+                        boolean foundMatchProtocol = false;
+                        boolean foundMatchRouteFilter = false;
+                        for (PolicyMapMatchLine matchLine : clause
+                              .getMatchLines()) {
+                           if (matchLine.getType() == PolicyMapMatchType.PROTOCOL) {
+                              foundMatchProtocol = true;
+                              PolicyMapMatchProtocolLine matchProtocolLine = (PolicyMapMatchProtocolLine) matchLine;
+                              protocols.add(matchProtocolLine.getProtocol());
+                           }
                         }
-                        if (matchLine.getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
-                           foundMatchRouteFilter = true;
-                           PolicyMapMatchRouteFilterListLine matchRouteFilterLine = (PolicyMapMatchRouteFilterListLine) matchLine;
-                           for (RouteFilterList list : matchRouteFilterLine
-                                 .getLists()) {
-                              for (RouteFilterLine line : list.getLines()) {
-                                 Prefix prefix = line.getPrefix();
-                                 SubRange lengthRange = line.getLengthRange();
-                                 if (line.getAction() == LineAction.ACCEPT) {
-                                    for (RoutingProtocol protocol : protocols) {
-                                       dependents.add(new Dependent(protocol,
-                                             prefix, lengthRange));
-                                    }
-                                    if (!foundMatchProtocol) {
-                                       RoutingProtocol protocol = null;
-                                       dependents.add(new Dependent(protocol,
-                                             prefix, lengthRange));
+                        if (!foundMatchProtocol) {
+                           protocols.addAll(Arrays.asList(RoutingProtocol
+                                 .values()));
+                           protocols.remove(RoutingProtocol.BGP);
+                           protocols.remove(RoutingProtocol.IBGP);
+                        }
+                        for (PolicyMapMatchLine matchLine : clause
+                              .getMatchLines()) {
+                           if (matchLine.getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
+                              foundMatchRouteFilter = true;
+                              PolicyMapMatchRouteFilterListLine matchRouteFilterLine = (PolicyMapMatchRouteFilterListLine) matchLine;
+                              for (RouteFilterList list : matchRouteFilterLine
+                                    .getLists()) {
+                                 for (RouteFilterLine line : list.getLines()) {
+                                    Prefix prefix = line.getPrefix();
+                                    SubRange lengthRange = line
+                                          .getLengthRange();
+                                    if (line.getAction() == LineAction.ACCEPT) {
+                                       prefixRanges.add(new PrefixRange(prefix,
+                                             lengthRange));
                                     }
                                  }
                               }
                            }
                         }
-                     }
-                     if (!foundMatchRouteFilter) {
-                        Prefix prefix = Prefix.ZERO;
-                        SubRange lengthRange = new SubRange(0, 32);
-                        for (RoutingProtocol protocol : protocols) {
-                           dependents.add(new Dependent(protocol, prefix,
-                                 lengthRange));
+                        if (!foundMatchRouteFilter) {
+                           prefixRanges.add(new PrefixRange(Prefix.ZERO,
+                                 new SubRange(0, 32)));
                         }
-                        if (!foundMatchProtocol) {
-                           RoutingProtocol protocol = null;
-                           dependents.add(new Dependent(protocol, prefix,
-                                 lengthRange));
+                        Set<DependentRoute> dependentRoutes = _dependencyDatabase
+                              .getDependentRoutes(node);
+                        for (DependentRoute dependentRoute : dependentRoutes) {
+                           Prefix prefix = dependentRoute.getPrefix();
+                           if (protocols.contains(dependentRoute.getProtocol())) {
+                              for (PrefixRange prefixRange : prefixRanges) {
+                                 if (prefixRange.includesPrefix(prefix)) {
+                                    PotentialExport potentialExport = new EbgpPotentialExport(
+                                          node, prefix, dependentRoute);
+                                    _dependencyDatabase
+                                          .addPotentialExport(potentialExport);
+                                    break;
+                                 }
+                              }
+                           }
                         }
                      }
                   }
@@ -105,8 +143,393 @@ public class ProtocolDependencyAnalysis {
       }
    }
 
+   private void initPotentialEbgpImports() {
+      RoutingProtocol protocol = RoutingProtocol.BGP;
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         String node = e.getKey();
+         Configuration c = e.getValue();
+         if (c.getBgpProcess() != null) {
+            boolean ebgp = false;
+            for (BgpNeighbor neighbor : c.getBgpProcess().getNeighbors()
+                  .values()) {
+               if (!neighbor.getLocalAs().equals(neighbor.getRemoteAs())) {
+                  ebgp = true;
+                  break;
+               }
+            }
+            if (!ebgp) {
+               continue;
+            }
+            for (PotentialExport potentialExport : _dependencyDatabase
+                  .getPotentialExports(protocol)) {
+               if (!node.equals(potentialExport.getNode())) {
+                  Prefix prefix = potentialExport.getPrefix();
+                  PotentialImport potentialImport = new PotentialImport(node,
+                        prefix, protocol, potentialExport);
+                  _dependencyDatabase.addPotentialImport(potentialImport);
+               }
+            }
+         }
+      }
+   }
+
+   private void initPotentialIbgpOriginationExports() {
+      for (Configuration c : _configurations.values()) {
+         String node = c.getHostname();
+         if (c.getBgpProcess() != null) {
+            for (BgpNeighbor neighbor : c.getBgpProcess().getNeighbors()
+                  .values()) {
+               boolean ibgp = neighbor.getLocalAs().equals(neighbor.getRemoteAs());
+               if (!ibgp) {
+                  continue;
+               }
+               Set<PolicyMap> originationPolicies = neighbor
+                     .getOriginationPolicies();
+               for (PolicyMap origination : originationPolicies) {
+                  for (PolicyMapClause clause : origination.getClauses()) {
+                     if (clause.getAction() == PolicyMapAction.PERMIT) {
+                        Set<RoutingProtocol> protocols = new HashSet<RoutingProtocol>();
+                        Set<PrefixRange> prefixRanges = new HashSet<PrefixRange>();
+                        boolean foundMatchProtocol = false;
+                        boolean foundMatchRouteFilter = false;
+                        for (PolicyMapMatchLine matchLine : clause
+                              .getMatchLines()) {
+                           if (matchLine.getType() == PolicyMapMatchType.PROTOCOL) {
+                              foundMatchProtocol = true;
+                              PolicyMapMatchProtocolLine matchProtocolLine = (PolicyMapMatchProtocolLine) matchLine;
+                              protocols.add(matchProtocolLine.getProtocol());
+                           }
+                        }
+                        if (!foundMatchProtocol) {
+                           protocols.addAll(Arrays.asList(RoutingProtocol
+                                 .values()));
+                           protocols.remove(RoutingProtocol.BGP);
+                           protocols.remove(RoutingProtocol.IBGP);
+                        }
+                        for (PolicyMapMatchLine matchLine : clause
+                              .getMatchLines()) {
+                           if (matchLine.getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
+                              foundMatchRouteFilter = true;
+                              PolicyMapMatchRouteFilterListLine matchRouteFilterLine = (PolicyMapMatchRouteFilterListLine) matchLine;
+                              for (RouteFilterList list : matchRouteFilterLine
+                                    .getLists()) {
+                                 for (RouteFilterLine line : list.getLines()) {
+                                    Prefix prefix = line.getPrefix();
+                                    SubRange lengthRange = line
+                                          .getLengthRange();
+                                    if (line.getAction() == LineAction.ACCEPT) {
+                                       prefixRanges.add(new PrefixRange(prefix,
+                                             lengthRange));
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                        if (!foundMatchRouteFilter) {
+                           prefixRanges.add(new PrefixRange(Prefix.ZERO,
+                                 new SubRange(0, 32)));
+                        }
+                        Set<DependentRoute> dependentRoutes = _dependencyDatabase
+                              .getDependentRoutes(node);
+                        for (DependentRoute dependentRoute : dependentRoutes) {
+                           Prefix prefix = dependentRoute.getPrefix();
+                           if (protocols.contains(dependentRoute.getProtocol())) {
+                              for (PrefixRange prefixRange : prefixRanges) {
+                                 if (prefixRange.includesPrefix(prefix)) {
+                                    PotentialExport potentialExport = new IbgpPotentialExport(
+                                          node, prefix, dependentRoute);
+                                    _dependencyDatabase
+                                          .addPotentialExport(potentialExport);
+                                    break;
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   private void initPotentialIbgpImports() {
+      RoutingProtocol protocol = RoutingProtocol.IBGP;
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         String node = e.getKey();
+         Configuration c = e.getValue();
+         if (c.getBgpProcess() != null) {
+            boolean ibgp = false;
+            for (BgpNeighbor neighbor : c.getBgpProcess().getNeighbors()
+                  .values()) {
+               if (neighbor.getLocalAs().equals(neighbor.getRemoteAs())) {
+                  ibgp = true;
+                  break;
+               }
+            }
+            if (!ibgp) {
+               continue;
+            }
+            for (PotentialExport potentialExport : _dependencyDatabase
+                  .getPotentialExports(protocol)) {
+               if (!node.equals(potentialExport.getNode())) {
+                  Prefix prefix = potentialExport.getPrefix();
+                  PotentialImport potentialImport = new PotentialImport(node,
+                        prefix, protocol, potentialExport);
+                  _dependencyDatabase.addPotentialImport(potentialImport);
+               }
+            }
+         }
+      }
+   }
+
+   private void initPotentialIgpExports() {
+      initPotentialOspfInternalExports();
+   }
+
+   private void initPotentialIgpImports() {
+      initPotentialOspfInternalImports();
+   }
+
+   private void initPotentialOspfExternalExports() {
+      for (Configuration c : _configurations.values()) {
+         String node = c.getHostname();
+         if (c.getOspfProcess() != null) {
+            for (PolicyMap outboundPolicy : c.getOspfProcess()
+                  .getOutboundPolicyMaps()) {
+               for (PolicyMapClause clause : outboundPolicy.getClauses()) {
+                  if (clause.getAction() == PolicyMapAction.PERMIT) {
+                     Set<RoutingProtocol> protocols = new HashSet<RoutingProtocol>();
+                     Set<PrefixRange> prefixRanges = new HashSet<PrefixRange>();
+                     boolean foundMatchProtocol = false;
+                     boolean foundMatchRouteFilter = false;
+                     for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
+                        if (matchLine.getType() == PolicyMapMatchType.PROTOCOL) {
+                           foundMatchProtocol = true;
+                           PolicyMapMatchProtocolLine matchProtocolLine = (PolicyMapMatchProtocolLine) matchLine;
+                           protocols.add(matchProtocolLine.getProtocol());
+                        }
+                     }
+                     if (!foundMatchProtocol) {
+                        protocols
+                              .addAll(Arrays.asList(RoutingProtocol.values()));
+                        protocols.remove(RoutingProtocol.OSPF);
+                        protocols.remove(RoutingProtocol.OSPF_E1);
+                        protocols.remove(RoutingProtocol.OSPF_E2);
+                        protocols.remove(RoutingProtocol.OSPF_IA);
+                     }
+                     for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
+                        if (matchLine.getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
+                           foundMatchRouteFilter = true;
+                           PolicyMapMatchRouteFilterListLine matchRouteFilterLine = (PolicyMapMatchRouteFilterListLine) matchLine;
+                           for (RouteFilterList list : matchRouteFilterLine
+                                 .getLists()) {
+                              for (RouteFilterLine line : list.getLines()) {
+                                 Prefix prefix = line.getPrefix();
+                                 SubRange lengthRange = line.getLengthRange();
+                                 if (line.getAction() == LineAction.ACCEPT) {
+                                    prefixRanges.add(new PrefixRange(prefix,
+                                          lengthRange));
+                                 }
+                              }
+                           }
+                        }
+                     }
+                     if (!foundMatchRouteFilter) {
+                        prefixRanges.add(new PrefixRange(Prefix.ZERO,
+                              new SubRange(0, 32)));
+                     }
+                     Set<DependentRoute> dependentRoutes = _dependencyDatabase
+                           .getDependentRoutes(node);
+                     for (DependentRoute dependentRoute : dependentRoutes) {
+                        Prefix prefix = dependentRoute.getPrefix();
+                        if (protocols.contains(dependentRoute.getProtocol())) {
+                           for (PrefixRange prefixRange : prefixRanges) {
+                              if (prefixRange.includesPrefix(prefix)) {
+                                 OspfE2PotentialExport potentialExport = new OspfE2PotentialExport(
+                                       node, prefix, dependentRoute);
+                                 _dependencyDatabase
+                                       .addPotentialExport(potentialExport);
+                                 break;
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   private void initPotentialOspfExternalImports() {
+      RoutingProtocol protocol = RoutingProtocol.OSPF_E2;
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         String node = e.getKey();
+         Configuration c = e.getValue();
+         if (c.getOspfProcess() != null) {
+            for (PotentialExport potentialExport : _dependencyDatabase
+                  .getPotentialExports(protocol)) {
+               if (!node.equals(potentialExport.getNode())) {
+                  Prefix prefix = potentialExport.getPrefix();
+                  PotentialImport potentialImport = new PotentialImport(node,
+                        prefix, protocol, potentialExport);
+                  _dependencyDatabase.addPotentialImport(potentialImport);
+               }
+            }
+         }
+      }
+   }
+
+   private void initPotentialOspfInterAreaExports() {
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         String node = e.getKey();
+         Configuration c = e.getValue();
+         if (c.getOspfProcess() != null) {
+            if (c.getOspfProcess().getAreas().size() > 1) {
+               Set<Long> areas = c.getOspfProcess().getAreas().keySet();
+               for (OspfArea area : c.getOspfProcess().getAreas().values()) {
+                  for (Interface iface : area.getInterfaces()) {
+                     Prefix prefix = iface.getPrefix();
+                     DependentRoute dependentRoute = _dependencyDatabase
+                           .getConnectedRoute(node, prefix);
+                     PotentialExport potentialExport = new OspfInterAreaPotentialExport(
+                           node, prefix, dependentRoute, areas);
+                     _dependencyDatabase.addPotentialExport(potentialExport);
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   private void initPotentialOspfInterAreaImports() {
+      RoutingProtocol protocol = RoutingProtocol.OSPF_IA;
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         String node = e.getKey();
+         Configuration c = e.getValue();
+         if (c.getOspfProcess() != null) {
+            Set<Long> areas = c.getOspfProcess().getAreas().keySet();
+            for (PotentialExport potentialExport : _dependencyDatabase
+                  .getPotentialExports(protocol)) {
+               OspfInterAreaPotentialExport ospfInterAreaPotentialExport = (OspfInterAreaPotentialExport) potentialExport;
+               Set<Long> commonAreas = new HashSet<Long>();
+               commonAreas
+                     .addAll(ospfInterAreaPotentialExport.getAreaNumbers());
+               commonAreas.retainAll(areas);
+               if (!node.equals(potentialExport.getNode())
+                     && !commonAreas.isEmpty()) {
+                  Prefix prefix = potentialExport.getPrefix();
+                  PotentialImport potentialImport = new PotentialImport(node,
+                        prefix, protocol, potentialExport);
+                  _dependencyDatabase.addPotentialImport(potentialImport);
+               }
+            }
+         }
+      }
+   }
+
+   private void initPotentialOspfInternalExports() {
+      initPotentialOspfIntraAreaExports();
+      initPotentialOspfInterAreaExports();
+   }
+
+   private void initPotentialOspfInternalImports() {
+      initPotentialOspfIntraAreaImports();
+      initPotentialOspfInterAreaImports();
+   }
+
+   private void initPotentialOspfIntraAreaExports() {
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         String node = e.getKey();
+         Configuration c = e.getValue();
+         if (c.getOspfProcess() != null) {
+            for (Entry<Long, OspfArea> e2 : c.getOspfProcess().getAreas()
+                  .entrySet()) {
+               long areaNum = e2.getKey();
+               OspfArea area = e2.getValue();
+               for (Interface iface : area.getInterfaces()) {
+                  Prefix prefix = iface.getPrefix();
+                  DependentRoute dependentRoute = _dependencyDatabase
+                        .getConnectedRoute(node, prefix);
+                  PotentialExport potentialExport = new OspfIntraAreaPotentialExport(
+                        node, prefix, dependentRoute, areaNum);
+                  _dependencyDatabase.addPotentialExport(potentialExport);
+               }
+            }
+         }
+      }
+   }
+
+   private void initPotentialOspfIntraAreaImports() {
+      RoutingProtocol protocol = RoutingProtocol.OSPF;
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         String node = e.getKey();
+         Configuration c = e.getValue();
+         if (c.getOspfProcess() != null) {
+            Set<Long> areas = c.getOspfProcess().getAreas().keySet();
+            for (PotentialExport potentialExport : _dependencyDatabase
+                  .getPotentialExports(protocol)) {
+               OspfIntraAreaPotentialExport ospfIntraAreaPotentialExport = (OspfIntraAreaPotentialExport) potentialExport;
+               if (!node.equals(potentialExport.getNode())
+                     && areas.contains(ospfIntraAreaPotentialExport
+                           .getAreaNum())) {
+                  Prefix prefix = potentialExport.getPrefix();
+                  PotentialImport potentialImport = new PotentialImport(node,
+                        prefix, protocol, potentialExport);
+                  _dependencyDatabase.addPotentialImport(potentialImport);
+               }
+            }
+         }
+      }
+   }
+
+   private void initStaticInterfaceRoutes() {
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         String node = e.getKey();
+         Configuration c = e.getValue();
+         for (StaticRoute staticRoute : c.getStaticRoutes()) {
+            if (staticRoute.getNextHopInterface() != null) {
+               Prefix prefix = staticRoute.getPrefix();
+               RoutingProtocol protocol = RoutingProtocol.STATIC;
+               DependentRoute dependentRoute = new DependentRoute(node, prefix,
+                     protocol);
+               _dependencyDatabase.addDependentRoute(dependentRoute);
+            }
+         }
+      }
+   }
+
+   private void cleanDatabase() {
+      _dependencyDatabase.clearPotentialExports();
+      _dependencyDatabase.clearPotentialImports();
+   }
+
    public void run() {
-      initOspfE2Dependencies();
+      // One and done
+      initConnectedRoutes();
+      initStaticInterfaceRoutes();
+      initPotentialIgpExports();
+      initPotentialIgpImports();
+      initIgpRoutes();
+      cleanDatabase();
+
+      // First iteration
+      initStaticNextHopRoutes();
+      initPotentialOspfExternalExports();
+      initPotentialOspfExternalImports();
+      initPotentialEbgpOriginationExports();
+      initPotentialEbgpImports();
+
+      initOspfRoutes()
+      initStaticRoutes();
+
+      initPotentialIbgpOriginationExports();
+      initPotentialIbgpImports();
+
+      // second iteration
+      // resolveImports();
+      assert Boolean.TRUE;
    }
 
 }
