@@ -6,7 +6,7 @@ import org.batfish.representation.RoutingProtocol;
 public class IbgpPotentialExport extends PotentialExport {
 
    public IbgpPotentialExport(String node, Prefix prefix,
-          DependentRoute dependency) {
+         DependentRoute dependency) {
       super(node, prefix, RoutingProtocol.BGP, dependency);
    }
 

@@ -15,6 +15,14 @@ public class PrefixRange extends Pair<Prefix, SubRange> {
       super(prefix, lengthRange);
    }
 
+   public SubRange getLengthRange() {
+      return _t2;
+   }
+
+   public Prefix getPrefix() {
+      return _t1;
+   }
+
    public boolean includesPrefix(Prefix argPrefix) {
       Prefix prefix = getPrefix();
       SubRange lengthRange = getLengthRange();
@@ -31,14 +39,6 @@ public class PrefixRange extends Pair<Prefix, SubRange> {
       long argMaskedPrefixAsLong = argPrefix.getAddress()
             .getNetworkAddress(prefixLength).asLong();
       return maskedPrefixAsLong == argMaskedPrefixAsLong;
-   }
-
-   public SubRange getLengthRange() {
-      return _t2;
-   }
-
-   public Prefix getPrefix() {
-      return _t1;
    }
 
 }

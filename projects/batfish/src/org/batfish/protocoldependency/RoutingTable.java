@@ -31,7 +31,7 @@ public class RoutingTable {
       }
 
    }
-   
+
    private static class ByteTrieNode {
 
       private final Set<DependentRoute> _dependentRoutes;
@@ -109,14 +109,15 @@ public class RoutingTable {
    private static final int NUM_BITS = 32;
 
    private static BitSet getAddressBits(Ip address) {
-      int addressAsInt = (int)(address.asLong());
+      int addressAsInt = (int) (address.asLong());
       ByteBuffer b = ByteBuffer.allocate(4);
-      
-      b.order(ByteOrder.LITTLE_ENDIAN); // optional, the initial order of a byte buffer is always BIG_ENDIAN.
+
+      b.order(ByteOrder.LITTLE_ENDIAN); // optional, the initial order of a byte
+                                        // buffer is always BIG_ENDIAN.
       b.putInt(addressAsInt);
       BitSet bitsWithHighestMostSignificant = BitSet.valueOf(b.array());
       BitSet bits = new BitSet(NUM_BITS);
-      for (int i = NUM_BITS - 1, j = 0; i >= 0; i--,j++) {
+      for (int i = NUM_BITS - 1, j = 0; i >= 0; i--, j++) {
          bits.set(j, bitsWithHighestMostSignificant.get(i));
       }
       return bits;

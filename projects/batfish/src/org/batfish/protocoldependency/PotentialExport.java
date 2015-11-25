@@ -3,8 +3,7 @@ package org.batfish.protocoldependency;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RoutingProtocol;
 
-public abstract class PotentialExport
-      implements Comparable<PotentialExport> {
+public abstract class PotentialExport implements Comparable<PotentialExport> {
 
    private final DependentRoute _dependency;
 
@@ -14,8 +13,8 @@ public abstract class PotentialExport
 
    protected final RoutingProtocol _protocol;
 
-   public PotentialExport(String node, Prefix prefix,
-         RoutingProtocol protocol, DependentRoute dependency) {
+   public PotentialExport(String node, Prefix prefix, RoutingProtocol protocol,
+         DependentRoute dependency) {
       _node = node;
       _prefix = prefix;
       _protocol = protocol;
