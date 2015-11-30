@@ -1,6 +1,7 @@
 package org.batfish.protocoldependency;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.batfish.representation.Prefix;
@@ -39,6 +40,16 @@ public class DependentRoute implements Comparable<DependentRoute> {
       return _dependencies;
    }
 
+   public Set<DependentRoute> getDependentClosure() {
+      Set<DependentRoute> closure = new LinkedHashSet<DependentRoute>();
+      for (DependentRoute dependency : _dependencies) {
+         Set<DependentRoute> reflexiveClosure = dependency
+               .getReflexiveClosure();
+         closure.addAll(reflexiveClosure);
+      }
+      return closure;
+   }
+
    public String getNode() {
       return _node;
    }
@@ -49,6 +60,33 @@ public class DependentRoute implements Comparable<DependentRoute> {
 
    public RoutingProtocol getProtocol() {
       return _protocol;
+   }
+
+   public Set<ProtocolDependency> getProtocolDependencies() {
+      Set<ProtocolDependency> protocolDependencies = new LinkedHashSet<ProtocolDependency>();
+      for (DependentRoute dependency : _dependencies) {
+         Set<ProtocolDependency> recursiveDependencies = dependency
+               .getProtocolDependencies();
+         for (ProtocolDependency recursiveDependency : recursiveDependencies) {
+            RoutingProtocol protocol = recursiveDependency.getProtocol();
+            int indirectionLevel = recursiveDependency.getIndirectionLevel() + 1;
+            protocolDependencies.add(new ProtocolDependency(protocol,
+                  indirectionLevel));
+         }
+      }
+      protocolDependencies.add(new ProtocolDependency(_protocol, 0));
+      return protocolDependencies;
+   }
+
+   private Set<DependentRoute> getReflexiveClosure() {
+      Set<DependentRoute> closure = new LinkedHashSet<DependentRoute>();
+      for (DependentRoute dependency : _dependencies) {
+         Set<DependentRoute> reflexiveClosure = dependency
+               .getReflexiveClosure();
+         closure.addAll(reflexiveClosure);
+      }
+      closure.add(this);
+      return closure;
    }
 
    @Override

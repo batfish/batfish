@@ -1,6 +1,8 @@
 package org.batfish.protocoldependency;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -28,6 +30,19 @@ public class DependencyDatabase {
 
    }
 
+   private class NodeProtocol extends Pair<String, RoutingProtocol> {
+
+      /**
+       *
+       */
+      private static final long serialVersionUID = 1L;
+
+      public NodeProtocol(String t1, RoutingProtocol t2) {
+         super(t1, t2);
+      }
+
+   }
+
    private class PrefixProtocol extends Pair<Prefix, RoutingProtocol> {
 
       /**
@@ -41,9 +56,13 @@ public class DependencyDatabase {
 
    }
 
+   private final Set<DependentRoute> _dependentRoutes;
+
    private final Map<String, Set<DependentRoute>> _dependentRoutesByNode;
 
    private final Map<NodePrefixProtocol, Set<DependentRoute>> _dependentRoutesByNodePrefixProtocol;
+
+   private final Map<NodeProtocol, Set<DependentRoute>> _dependentRoutesByNodeProtocol;
 
    private final Map<Prefix, Set<DependentRoute>> _dependentRoutesByPrefix;
 
@@ -53,20 +72,33 @@ public class DependencyDatabase {
 
    private final Map<RoutingProtocol, Set<PotentialImport>> _potentialImportsByProtocol;
 
+   private final Map<RoutingProtocol, Set<ProtocolDependency>> _protocolDependencies;
+
+   private final Map<RoutingProtocol, Map<RoutingProtocol, Set<Integer>>> _protocolDependencyMap;
+
    private final Map<String, RoutingTable> _routingTables;
 
    public DependencyDatabase(Map<String, Configuration> configurations) {
+      _dependentRoutes = new TreeSet<DependentRoute>();
       _dependentRoutesByNode = new TreeMap<String, Set<DependentRoute>>();
       _dependentRoutesByNodePrefixProtocol = new TreeMap<NodePrefixProtocol, Set<DependentRoute>>();
+      _dependentRoutesByNodeProtocol = new TreeMap<NodeProtocol, Set<DependentRoute>>();
       _dependentRoutesByPrefix = new TreeMap<Prefix, Set<DependentRoute>>();
       _dependentRoutesByProtocol = new TreeMap<RoutingProtocol, Set<DependentRoute>>();
       _potentialExportsByProtocol = new TreeMap<RoutingProtocol, Set<PotentialExport>>();
       _potentialImportsByProtocol = new TreeMap<RoutingProtocol, Set<PotentialImport>>();
+      _protocolDependencies = new TreeMap<RoutingProtocol, Set<ProtocolDependency>>();
+      _protocolDependencyMap = new TreeMap<RoutingProtocol, Map<RoutingProtocol, Set<Integer>>>();
       _routingTables = new TreeMap<String, RoutingTable>();
       for (Configuration c : configurations.values()) {
-         String name = c.getHostname();
-         _dependentRoutesByNode.put(name, new TreeSet<DependentRoute>());
-         _routingTables.put(name, new RoutingTable());
+         String node = c.getHostname();
+         _dependentRoutesByNode.put(node, new TreeSet<DependentRoute>());
+         _routingTables.put(node, new RoutingTable());
+         for (RoutingProtocol protocol : RoutingProtocol.values()) {
+            NodeProtocol np = new NodeProtocol(node, protocol);
+            _dependentRoutesByNodeProtocol.put(np,
+                  new TreeSet<DependentRoute>());
+         }
       }
       for (RoutingProtocol protocol : RoutingProtocol.values()) {
          _dependentRoutesByProtocol
@@ -79,10 +111,12 @@ public class DependencyDatabase {
    }
 
    public void addDependentRoute(DependentRoute dependentRoute) {
+      _dependentRoutes.add(dependentRoute);
       addDependentRouteByNode(dependentRoute);
+      addDependentRouteByNodePrefixProtocol(dependentRoute);
+      addDependentRouteByNodeProtocol(dependentRoute);
       addDependentRouteByPrefix(dependentRoute);
       addDependentRouteByProtocol(dependentRoute);
-      addDependentRouteByNodePrefixProtocol(dependentRoute);
       addDependentRouteToRoutingTableByNode(dependentRoute);
    }
 
@@ -101,6 +135,12 @@ public class DependencyDatabase {
          _dependentRoutesByNodePrefixProtocol.put(npr, dependentRoutes);
       }
       dependentRoutes.add(dependentRoute);
+   }
+
+   private void addDependentRouteByNodeProtocol(DependentRoute dependentRoute) {
+      NodeProtocol np = new NodeProtocol(dependentRoute.getNode(),
+            dependentRoute.getProtocol());
+      _dependentRoutesByNodeProtocol.get(np).add(dependentRoute);
    }
 
    private void addDependentRouteByPrefix(DependentRoute dependentRoute) {
@@ -134,6 +174,49 @@ public class DependencyDatabase {
             potentialImport);
    }
 
+   public void calculateDependencies() {
+      _protocolDependencies.clear();
+      for (Entry<RoutingProtocol, Set<DependentRoute>> e : _dependentRoutesByProtocol
+            .entrySet()) {
+         RoutingProtocol protocol = e.getKey();
+         Set<DependentRoute> routes = e.getValue();
+         if (!routes.isEmpty()) {
+            Set<ProtocolDependency> protocolDependencies = new TreeSet<ProtocolDependency>();
+            _protocolDependencies.put(protocol, protocolDependencies);
+            for (DependentRoute route : routes) {
+               Set<ProtocolDependency> routeProtocolDependencies = route
+                     .getProtocolDependencies();
+               protocolDependencies.addAll(routeProtocolDependencies);
+            }
+            Set<ProtocolDependency> trivialDependencies = new LinkedHashSet<ProtocolDependency>();
+            for (ProtocolDependency protocolDependency : protocolDependencies) {
+               if (protocolDependency.getIndirectionLevel().equals(0)) {
+                  trivialDependencies.add(protocolDependency);
+               }
+            }
+            protocolDependencies.removeAll(trivialDependencies);
+         }
+      }
+      for (Entry<RoutingProtocol, Set<ProtocolDependency>> e : _protocolDependencies
+            .entrySet()) {
+         RoutingProtocol dependentProtocol = e.getKey();
+         Set<ProtocolDependency> dependencies = e.getValue();
+         Map<RoutingProtocol, Set<Integer>> compactDependencies = new TreeMap<RoutingProtocol, Set<Integer>>();
+         _protocolDependencyMap.put(dependentProtocol, compactDependencies);
+         for (ProtocolDependency dependency : dependencies) {
+            RoutingProtocol dependencyProtocol = dependency.getProtocol();
+            Set<Integer> indirectionLevels = compactDependencies
+                  .get(dependencyProtocol);
+            if (indirectionLevels == null) {
+               indirectionLevels = new TreeSet<Integer>();
+               compactDependencies.put(dependencyProtocol, indirectionLevels);
+            }
+            int indirectionLevel = dependency.getIndirectionLevel();
+            indirectionLevels.add(indirectionLevel);
+         }
+      }
+   }
+
    public void clearPotentialExports() {
       for (Set<PotentialExport> potentialExports : _potentialExportsByProtocol
             .values()) {
@@ -146,6 +229,10 @@ public class DependencyDatabase {
             .values()) {
          potentialImports.clear();
       }
+   }
+
+   public Map<RoutingProtocol, Map<RoutingProtocol, Set<Integer>>> getCompactProtocolDependencies() {
+      return _protocolDependencyMap;
    }
 
    public DependentRoute getConnectedRoute(String node, Prefix prefix) {
@@ -168,6 +255,12 @@ public class DependencyDatabase {
          RoutingProtocol protocol) {
       return _dependentRoutesByNodePrefixProtocol.get(new NodePrefixProtocol(
             node, prefix, protocol));
+   }
+
+   public Set<DependentRoute> getDependentRoutes(String node,
+         RoutingProtocol protocol) {
+      return _dependentRoutesByNodeProtocol
+            .get(new NodeProtocol(node, protocol));
    }
 
    public Set<DependentRoute> getLongestPrefixMatch(String node, Ip address) {
@@ -206,6 +299,20 @@ public class DependencyDatabase {
          }
       }
       return potentialImports;
+   }
+
+   public Map<RoutingProtocol, Set<ProtocolDependency>> getProtocolDependencies() {
+      return _protocolDependencies;
+   }
+
+   public void removeCycles() {
+      for (DependentRoute dependentRoute : _dependentRoutes) {
+         Set<DependentRoute> dependentClosure = dependentRoute
+               .getDependentClosure();
+         if (dependentClosure.contains(dependentRoute)) {
+            assert Boolean.TRUE;
+         }
+      }
    }
 
 }

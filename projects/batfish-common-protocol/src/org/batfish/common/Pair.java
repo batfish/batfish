@@ -64,4 +64,9 @@ public abstract class Pair<T1 extends Comparable<? super T1>, T2 extends Compara
       return result;
    }
 
+   @Override
+   public String toString() {
+      return "<" + _t1.toString() + ":" + _t2.toString() + ">";
+   }
+
 }

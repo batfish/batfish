@@ -7,7 +7,7 @@ public class IbgpPotentialExport extends PotentialExport {
 
    public IbgpPotentialExport(String node, Prefix prefix,
          DependentRoute dependency) {
-      super(node, prefix, RoutingProtocol.BGP, dependency);
+      super(node, prefix, RoutingProtocol.IBGP, dependency);
    }
 
 }
