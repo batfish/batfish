@@ -40,7 +40,7 @@ public final class JuniperUtils {
 
    private final List<List<Integer>> _codeMatrix;
 
-   private Pattern _validationRegex;
+   private final Pattern _validationRegex;
 
    private JuniperUtils() {
       _codeMatrix = initCodeMatrix();
