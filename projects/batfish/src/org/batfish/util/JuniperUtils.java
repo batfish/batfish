@@ -10,9 +10,12 @@ import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
 
 /**
- * This class is derived code based on the perl module Crypt-Juniper
+ * This class is a derivative work based on the perl module Crypt-Juniper
  * <http://search.cpan.org/~kbrint/Crypt-Juniper/lib/Crypt/Juniper.pm> by Kevin
  * Brintnall
+ *
+ * Permission to release this derived code under the Apache 2.0 License was
+ * granted by Kevin Brintall on 2015/12/04
  */
 public final class JuniperUtils {
 
