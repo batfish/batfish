@@ -12,7 +12,7 @@ public final class IkePolicy extends NamedStructure {
     */
    private static final long serialVersionUID = 1L;
 
-   private String _preSharedKey;
+   private String _preSharedKeyHash;
 
    private final Set<String> _proposals;
 
@@ -21,16 +21,16 @@ public final class IkePolicy extends NamedStructure {
       _proposals = new TreeSet<String>();
    }
 
-   public String getPreSharedKey() {
-      return _preSharedKey;
+   public String getPreSharedKeyHash() {
+      return _preSharedKeyHash;
    }
 
    public Set<String> getProposals() {
       return _proposals;
    }
 
-   public void setPreSharedKey(String key) {
-      _preSharedKey = key;
+   public void setPreSharedKeyHash(String preSharedKeyHash) {
+      _preSharedKeyHash = preSharedKeyHash;
    }
 
 }

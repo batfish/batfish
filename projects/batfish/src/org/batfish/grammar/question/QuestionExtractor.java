@@ -103,7 +103,7 @@ import org.batfish.question.string_expr.IpsecPolicyNameIpsecVpnStringExpr;
 import org.batfish.question.string_expr.NameIpsecVpnStringExpr;
 import org.batfish.question.string_expr.NodeStringExpr;
 import org.batfish.question.string_expr.OwnerNameIpsecVpnStringExpr;
-import org.batfish.question.string_expr.PreSharedKeyIpsecVpnStringExpr;
+import org.batfish.question.string_expr.PreSharedKeyHashIpsecVpnStringExpr;
 import org.batfish.question.string_expr.ProtocolStringExpr;
 import org.batfish.question.string_expr.RouteFilterStringExpr;
 import org.batfish.question.string_expr.StaticRouteStringExpr;
@@ -1415,8 +1415,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.ipsec_vpn_owner_name_string_expr() != null) {
          return new OwnerNameIpsecVpnStringExpr(caller);
       }
-      else if (ctx.ipsec_vpn_pre_shared_key_string_expr() != null) {
-         return new PreSharedKeyIpsecVpnStringExpr(caller);
+      else if (ctx.ipsec_vpn_pre_shared_key_hash_string_expr() != null) {
+         return new PreSharedKeyHashIpsecVpnStringExpr(caller);
       }
       else {
          throw conversionError(ERR_CONVERT_STRING, ctx);

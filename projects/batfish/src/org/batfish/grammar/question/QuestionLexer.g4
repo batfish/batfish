@@ -361,9 +361,9 @@ PERMIT
    'permit'
 ;
 
-PRE_SHARED_KEY
+PRE_SHARED_KEY_HASH
 :
-   'pre_shared_key'
+   'pre_shared_key_hash'
 ;
 
 PREFIX

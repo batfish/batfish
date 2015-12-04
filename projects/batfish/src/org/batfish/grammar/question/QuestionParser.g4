@@ -598,9 +598,9 @@ ipsec_vpn_owner_name_string_expr
    OWNER_NAME
 ;
 
-ipsec_vpn_pre_shared_key_string_expr
+ipsec_vpn_pre_shared_key_hash_string_expr
 :
-   PRE_SHARED_KEY
+   PRE_SHARED_KEY_HASH
 ;
 
 ipsec_vpn_remote_ipsec_vpn_ipsec_vpn_expr
@@ -617,7 +617,7 @@ ipsec_vpn_string_expr
       | ipsec_vpn_ipsec_policy_name_string_expr
       | ipsec_vpn_name_string_expr
       | ipsec_vpn_owner_name_string_expr
-      | ipsec_vpn_pre_shared_key_string_expr
+      | ipsec_vpn_pre_shared_key_hash_string_expr
    )
 ;
 

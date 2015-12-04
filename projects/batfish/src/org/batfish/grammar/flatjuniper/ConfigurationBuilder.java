@@ -92,6 +92,7 @@ import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
+import org.batfish.util.JuniperUtils;
 import org.batfish.util.SubRange;
 import org.batfish.util.Util;
 
@@ -1566,7 +1567,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitIkept_pre_shared_key(Ikept_pre_shared_keyContext ctx) {
       String key = unquote(ctx.key.getText());
-      _currentIkePolicy.setPreSharedKey(key);
+      String decodedKeyHash = JuniperUtils
+            .decryptAndHashJuniper9CipherText(key);
+      _currentIkePolicy.setPreSharedKeyHash(decodedKeyHash);
    }
 
    @Override

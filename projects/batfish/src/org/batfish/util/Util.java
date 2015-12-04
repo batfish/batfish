@@ -2,6 +2,9 @@ package org.batfish.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.io.FileUtils;
@@ -125,6 +128,35 @@ public class Util {
       Long upper = l >> 16;
       Long lower = l & 0xFFFF;
       return upper.toString() + ":" + lower;
+   }
+
+   public static String md5Digest(String saltedSecret) {
+      MessageDigest digest = null;
+      try {
+         digest = MessageDigest.getInstance("MD5");
+      }
+      catch (NoSuchAlgorithmException e) {
+         throw new BatfishException("Could not initialize md5 hasher", e);
+      }
+      byte[] plainTextBytes = null;
+      try {
+         plainTextBytes = saltedSecret.getBytes("UTF-8");
+      }
+      catch (UnsupportedEncodingException e) {
+         throw new BatfishException("Could not convert salted secret to bytes",
+               e);
+      }
+      byte[] digestBytes = digest.digest(plainTextBytes);
+      StringBuffer sb = new StringBuffer();
+      for (int i = 0; i < digestBytes.length; i++) {
+         int digestByteAsInt = 0xff & digestBytes[i];
+         if (digestByteAsInt < 0x10) {
+            sb.append('0');
+         }
+         sb.append(Integer.toHexString(digestByteAsInt));
+      }
+      String md5 = sb.toString();
+      return md5;
    }
 
    public static long numWildcardBitsToWildcardLong(int numBits) {

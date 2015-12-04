@@ -46,7 +46,7 @@ verify {
                   ipsec_vpn.remote_ipsec_vpn.owner_name);
             }
             assert {
-               ipsec_vpn.pre_shared_key == ipsec_vpn.remote_ipsec_vpn.pre_shared_key
+               ipsec_vpn.pre_shared_key_hash == ipsec_vpn.remote_ipsec_vpn.pre_shared_key_hash
             }
             onfailure {
                $num_pre_shared_key_mismatches := $num_pre_shared_key_mismatches + 1;

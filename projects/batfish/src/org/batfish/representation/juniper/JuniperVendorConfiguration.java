@@ -395,7 +395,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             name);
 
       // pre-shared-key
-      newIkePolicy.setPreSharedKey(oldIkePolicy.getPreSharedKey());
+      newIkePolicy.setPreSharedKeyHash(oldIkePolicy.getPreSharedKeyHash());
 
       // ike proposals
       for (String ikeProposalName : oldIkePolicy.getProposals()) {

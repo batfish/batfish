@@ -4,16 +4,16 @@ import org.batfish.question.Environment;
 import org.batfish.question.ipsec_vpn_expr.IpsecVpnExpr;
 import org.batfish.representation.IpsecVpn;
 
-public class PreSharedKeyIpsecVpnStringExpr extends IpsecVpnStringExpr {
+public class PreSharedKeyHashIpsecVpnStringExpr extends IpsecVpnStringExpr {
 
-   public PreSharedKeyIpsecVpnStringExpr(IpsecVpnExpr caller) {
+   public PreSharedKeyHashIpsecVpnStringExpr(IpsecVpnExpr caller) {
       super(caller);
    }
 
    @Override
    public String evaluate(Environment environment) {
       IpsecVpn caller = _caller.evaluate(environment);
-      return caller.getGateway().getIkePolicy().getPreSharedKey();
+      return caller.getGateway().getIkePolicy().getPreSharedKeyHash();
    }
 
 }
