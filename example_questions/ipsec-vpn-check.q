@@ -59,10 +59,10 @@ verify {
          }
       }
       $num_missing_endpoints := $num_ipsec_vpns - $num_matched_ipsec_vpns;
-      printf("****Summary****\n");
-      printf("MISSING_ENDPOINT: %s/%s\n", $num_missing_endpoints, $num_ipsec_vpns);
-      printf("INCOMPATIBLE_IPSEC_PROPOSALS: %s/%s\n", $num_incompatible_ipsec_proposals, $num_matched_ipsec_vpns);
-      printf("INCOMPATIBLE_IKE_PROPOSALS: %s/%s\n", $num_incompatible_ike_proposals, $num_matched_ipsec_vpns);
-      printf("PRE_SHARED_KEY_MISMATCH: %s/%s\n", $num_pre_shared_key_mismatches, $num_matched_ipsec_vpns);
    }
+   printf("****Summary****\n");
+   printf("MISSING_ENDPOINT: %s/%s\n", $num_missing_endpoints, $num_ipsec_vpns);
+   printf("INCOMPATIBLE_IPSEC_PROPOSALS: %s/%s\n", $num_incompatible_ipsec_proposals, $num_matched_ipsec_vpns);
+   printf("INCOMPATIBLE_IKE_PROPOSALS: %s/%s\n", $num_incompatible_ike_proposals, $num_matched_ipsec_vpns);
+   printf("PRE_SHARED_KEY_MISMATCH: %s/%s\n", $num_pre_shared_key_mismatches, $num_matched_ipsec_vpns);
 }
