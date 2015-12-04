@@ -15,7 +15,7 @@ import org.batfish.common.BatfishException;
  * Brintnall
  *
  * Permission to release this derived code under the Apache 2.0 License was
- * granted by Kevin Brintall on 2015/12/04
+ * granted by Kevin Brintnall on 2015/12/04
  */
 public final class JuniperUtils {
 
