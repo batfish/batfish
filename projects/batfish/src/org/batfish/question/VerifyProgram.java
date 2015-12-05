@@ -16,8 +16,9 @@ public class VerifyProgram {
 
    private List<Statement> _statements;
 
-   public VerifyProgram() {
+   public VerifyProgram(QuestionParameters parameters) {
       _environment = new Environment();
+      _environment.applyParameters(parameters);
       _statements = new ArrayList<Statement>();
    }
 

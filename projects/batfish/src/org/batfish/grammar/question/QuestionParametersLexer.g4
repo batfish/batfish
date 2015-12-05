@@ -10,11 +10,13 @@ package org.batfish.grammar.question;
 
 tokens {
    DEC,
+   FALSE,
    IP_ADDRESS,
    IP_PREFIX,
    MINUS,
    REGEX,
-   STRING_LITERAL
+   STRING_LITERAL,
+   TRUE
 }
 
 // Simple tokens
@@ -161,6 +163,11 @@ M_Value_DOUBLE_QUOTE
    '"' -> channel ( HIDDEN ) , pushMode ( M_QuotedString )
 ;
 
+M_Value_FALSE
+:
+   'false' -> type ( FALSE ) , popMode
+;
+
 M_Value_HASH
 :
    '#' -> channel ( HIDDEN ) , pushMode ( M_Comment )
@@ -186,6 +193,11 @@ M_Value_MINUS
 M_Value_REGEX
 :
    'regex<' ~'>'* '>' -> type ( REGEX ) , popMode
+;
+
+M_Value_TRUE
+:
+   'true' -> type ( TRUE ) , popMode
 ;
 
 M_Value_STRING_LITERAL

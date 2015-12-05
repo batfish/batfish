@@ -20,7 +20,11 @@ public class QuestionParametersExtractor extends
       String var = ctx.VARIABLE().getText();
       VariableType type;
       Object value;
-      if (ctx.integer() != null) {
+      if (ctx.bool() != null) {
+         type = VariableType.BOOLEAN;
+         value = Boolean.parseBoolean(ctx.bool().getText());
+      }
+      else if (ctx.integer() != null) {
          type = VariableType.INT;
          value = Long.parseLong(ctx.integer().getText());
       }

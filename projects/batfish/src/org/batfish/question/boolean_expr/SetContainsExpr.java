@@ -57,6 +57,7 @@ public class SetContainsExpr extends BaseBooleanExpr {
          return environment.getStringSets().get(_caller).contains(stringVal);
 
       case ACTION:
+      case BOOLEAN:
       case INT:
       case IP:
       case PREFIX:

@@ -4,9 +4,9 @@ public class VerifyQuestion extends Question {
 
    private VerifyProgram _program;
 
-   public VerifyQuestion() {
+   public VerifyQuestion(QuestionParameters parameters) {
       super(QuestionType.VERIFY);
-      _program = new VerifyProgram();
+      _program = new VerifyProgram(parameters);
    }
 
    public VerifyProgram getProgram() {

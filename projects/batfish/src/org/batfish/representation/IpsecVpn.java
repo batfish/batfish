@@ -1,8 +1,11 @@
 package org.batfish.representation;
 
-import org.batfish.util.NamedStructure;
+import java.util.Set;
+import java.util.TreeSet;
 
-public final class IpsecVpn extends NamedStructure {
+import org.batfish.common.Pair;
+
+public final class IpsecVpn extends Pair<Configuration, String> {
 
    /**
     *
@@ -11,7 +14,7 @@ public final class IpsecVpn extends NamedStructure {
 
    private Interface _bindInterface;
 
-   private Configuration _configuration;
+   private transient Set<IpsecVpn> _candidateRemoteIpsecVpns;
 
    private IkeGateway _gateway;
 
@@ -20,8 +23,7 @@ public final class IpsecVpn extends NamedStructure {
    private transient IpsecVpn _remoteIpsecVpn;
 
    public IpsecVpn(String name, Configuration configuration) {
-      super(name);
-      _configuration = configuration;
+      super(configuration, name);
    }
 
    public Boolean compatibleIkeProposals(IpsecVpn remoteIpsecVpn) {
@@ -56,8 +58,12 @@ public final class IpsecVpn extends NamedStructure {
       return _bindInterface;
    }
 
+   public Set<IpsecVpn> getCandidateRemoteIpsecVpns() {
+      return _candidateRemoteIpsecVpns;
+   }
+
    public Configuration getConfiguration() {
-      return _configuration;
+      return _t1;
    }
 
    public IkeGateway getGateway() {
@@ -68,8 +74,16 @@ public final class IpsecVpn extends NamedStructure {
       return _ipsecPolicy;
    }
 
+   public String getName() {
+      return _t2;
+   }
+
    public IpsecVpn getRemoteIpsecVpn() {
       return _remoteIpsecVpn;
+   }
+
+   public void initCandidateRemoteVpns() {
+      _candidateRemoteIpsecVpns = new TreeSet<IpsecVpn>();
    }
 
    public void setBindInterface(Interface iface) {

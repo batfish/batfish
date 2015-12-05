@@ -18,12 +18,19 @@ binding
 :
    VARIABLE EQUALS
    (
-      integer
+      bool
+      | integer
       | REGEX
       | IP_ADDRESS
       | IP_PREFIX
       | STRING_LITERAL
    )
+;
+
+bool
+:
+   FALSE
+   | TRUE
 ;
 
 integer

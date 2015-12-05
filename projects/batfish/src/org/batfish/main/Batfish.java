@@ -2195,7 +2195,7 @@ public class Batfish implements AutoCloseable {
       if (!questionParametersFile.exists()) {
          return null;
       }
-      _logger.info("Reading question parametersfile: \""
+      _logger.info("Reading question parameters file: \""
             + questionParametersPath + "\"...");
       String questionText = Util.readFile(questionParametersFile);
       _logger.info("OK\n");

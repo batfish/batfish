@@ -64,6 +64,7 @@ public class SetAddStatement implements Statement {
          break;
 
       case ACTION:
+      case BOOLEAN:
       case INT:
       case IP:
       case PREFIX:

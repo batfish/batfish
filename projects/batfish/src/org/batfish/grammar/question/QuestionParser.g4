@@ -47,7 +47,8 @@ assertion [String scope]
 
 assignment
 :
-   int_assignment
+   boolean_assignment
+   | int_assignment
 ;
 
 bgp_neighbor_boolean_expr
@@ -98,6 +99,13 @@ bgp_neighbor_remote_ip_ip_expr
    REMOTE_IP
 ;
 
+boolean_assignment
+:
+   var = VARIABLE COLON_EQUALS boolean_expr SEMICOLON
+   {_typeBindings.put($var.getText(), VariableType.BOOLEAN);}
+
+;
+
 boolean_expr
 :
    and_expr
@@ -111,6 +119,13 @@ boolean_expr
    | or_expr
    | property_boolean_expr
    | true_expr
+   | var_boolean_expr
+;
+
+boolean_literal
+:
+   TRUE
+   | FALSE
 ;
 
 clause_boolean_expr
@@ -133,10 +148,15 @@ clause_permit_boolean_expr
 
 default_binding
 :
-   VARIABLE EQUALS
+   var = VARIABLE EQUALS
    (
       action
+      | boolean_literal
+      {_typeBindings.put($var.getText(), VariableType.BOOLEAN);}
+
       | integer_literal
+      {_typeBindings.put($var.getText(), VariableType.INT);}
+
       | IP_ADDRESS
       | IP_PREFIX
       | ip_constraint_complex
@@ -174,9 +194,16 @@ explicit_flow
 ;
 
 expr
+locals [boolean isVar, String var]
+@init {$isVar = _input.LT(1).getType() == VARIABLE && _input.LT(2).getType() != PERIOD; if ($isVar) {$var = _input.LT(1).getText();}}
 :
+   {!$isVar || _typeBindings.get($var) == VariableType.BOOLEAN}?
+
    boolean_expr
-   | int_expr
+   |
+   {!$isVar || _typeBindings.get($var) == VariableType.INT}?
+
+   int_expr
    | ip_expr
    | ipsec_vpn_expr
    | prefix_expr
@@ -321,6 +348,12 @@ foreach_protocol_statement
    FOREACH PROTOCOL OPEN_BRACE statement ["protocol"]+ CLOSE_BRACE
 ;
 
+foreach_remote_ipsec_vpn_statement
+:
+   FOREACH REMOTE_IPSEC_VPN OPEN_BRACE statement ["remote_ipsec_vpn"]+
+   CLOSE_BRACE
+;
+
 foreach_route_filter_statement
 :
    FOREACH ROUTE_FILTER OPEN_BRACE statement ["route_filter"]+ CLOSE_BRACE
@@ -362,7 +395,7 @@ if_expr
 
 if_statement [String scope]
 :
-   IF OPEN_PAREN guard = boolean_expr CLOSE_PAREN THEN OPEN_BRACE
+   IF OPEN_PAREN guard = boolean_expr CLOSE_PAREN THEN? OPEN_BRACE
    (
       true_statements += statement [scope]
    )* CLOSE_BRACE
@@ -381,7 +414,9 @@ ingress_path_question
 
 int_assignment
 :
-   VARIABLE COLON_EQUALS int_expr SEMICOLON
+   var = VARIABLE COLON_EQUALS int_expr SEMICOLON
+   {_typeBindings.put($var.getText(), VariableType.INT);}
+
 ;
 
 int_expr
@@ -541,6 +576,7 @@ ipsec_vpn_boolean_expr
       ipsec_vpn_compatible_ike_proposals_boolean_expr
       | ipsec_vpn_compatible_ipsec_proposals_boolean_expr
       | ipsec_vpn_has_remote_ipsec_vpn_boolean_expr
+      | ipsec_vpn_has_single_remote_ipsec_vpn_boolean_expr
    )
 ;
 
@@ -557,12 +593,18 @@ ipsec_vpn_compatible_ipsec_proposals_boolean_expr
 ipsec_vpn_expr
 :
    IPSEC_VPN
-   | ipsec_vpn_ipsec_vpn_expr
+   | REMOTE_IPSEC_VPN
+   | ipsec_vpn_expr PERIOD ipsec_vpn_ipsec_vpn_expr
 ;
 
 ipsec_vpn_has_remote_ipsec_vpn_boolean_expr
 :
    HAS_REMOTE_IPSEC_VPN
+;
+
+ipsec_vpn_has_single_remote_ipsec_vpn_boolean_expr
+:
+   HAS_SINGLE_REMOTE_IPSEC_VPN
 ;
 
 ipsec_vpn_ike_gateway_name_string_expr
@@ -582,7 +624,6 @@ ipsec_vpn_ipsec_policy_name_string_expr
 
 ipsec_vpn_ipsec_vpn_expr
 :
-   IPSEC_VPN PERIOD
    (
       ipsec_vpn_remote_ipsec_vpn_ipsec_vpn_expr
    )
@@ -1054,6 +1095,10 @@ statement [String scope]
    {$scope.equals("match_protocol")}?
 
    foreach_protocol_statement
+   |
+   {$scope.equals("ipsec_vpn")}?
+
+   foreach_remote_ipsec_vpn_statement
    | foreach_route_filter_in_set_statement
    |
    {$scope.equals("match_route_filter")}?
@@ -1067,6 +1112,7 @@ statement [String scope]
    | method [scope]
    | printf_statement
    | set_declaration_statement
+   | unless_statement [scope]
 ;
 
 static_route_administrative_cost_int_expr
@@ -1174,6 +1220,14 @@ locals [VariableType type]
    | set_clear_method [$type, caller]
 ;
 
+unless_statement [String scope]
+:
+   UNLESS OPEN_PAREN guard = boolean_expr CLOSE_PAREN OPEN_BRACE
+   (
+      statements += statement [scope]
+   )* CLOSE_BRACE
+;
+
 val_int_expr
 :
    bgp_neighbor_int_expr
@@ -1181,6 +1235,11 @@ val_int_expr
    | set_size_int_expr
    | static_route_int_expr
    | var_int_expr
+;
+
+var_boolean_expr
+:
+   var = VARIABLE
 ;
 
 var_int_expr

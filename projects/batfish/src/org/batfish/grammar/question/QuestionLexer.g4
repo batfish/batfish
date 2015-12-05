@@ -151,9 +151,39 @@ GENERATED_ROUTE
    'generated_route'
 ;
 
+GLOBAL
+:
+   'global'
+;
+
 HAS_GENERATED_ROUTE
 :
    'has_generated_route'
+;
+
+HAS_IP
+:
+   'has_ip'
+;
+
+HAS_NEXT_HOP_INTERFACE
+:
+   'has_next_hop_interface'
+;
+
+HAS_NEXT_HOP_IP
+:
+   'has_next_hop_ip'
+;
+
+HAS_REMOTE_IPSEC_VPN
+:
+   'has_remote_ipsec_vpn'
+;
+
+HAS_SINGLE_REMOTE_IPSEC_VPN
+:
+   'has_single_remote_ipsec_vpn'
 ;
 
 IF
@@ -174,6 +204,11 @@ IKE_POLICY_NAME
 INGRESS_NODE
 :
    'ingress_node'
+;
+
+INGRESS_PATH
+:
+   'ingress-path'
 ;
 
 INPUT
@@ -214,36 +249,6 @@ ISIS
 IS_LOOPBACK
 :
    'is_loopback'
-;
-
-GLOBAL
-:
-   'global'
-;
-
-HAS_IP
-:
-   'has_ip'
-;
-
-HAS_NEXT_HOP_INTERFACE
-:
-   'has_next_hop_interface'
-;
-
-HAS_NEXT_HOP_IP
-:
-   'has_next_hop_ip'
-;
-
-HAS_REMOTE_IPSEC_VPN
-:
-   'has_remote_ipsec_vpn'
-;
-
-INGRESS_PATH
-:
-   'ingress-path'
 ;
 
 L1_ACTIVE
@@ -464,6 +469,11 @@ TRACEROUTE
 TRUE
 :
    'true'
+;
+
+UNLESS
+:
+   'unless'
 ;
 
 VERIFY
@@ -698,12 +708,12 @@ M_MultilineComment_COMMENT
       (
          '*'+ ~[*/]
       )
-   ) -> channel(HIDDEN)
+   ) -> channel ( HIDDEN )
 ;
 
 M_MultilineComment_TERMINATOR
 :
-   '*/' -> channel(HIDDEN), popMode
+   '*/' -> channel ( HIDDEN ) , popMode
 ;
 
 mode M_QuotedString;

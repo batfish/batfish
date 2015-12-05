@@ -41,6 +41,11 @@ public class QuestionParameters {
       return (ForwardingAction) _store.get(var);
    }
 
+   public boolean getBoolean(String var) {
+      confirmTypeBinding(var, VariableType.BOOLEAN);
+      return (boolean) _store.get(var);
+   }
+
    public long getInt(String var) {
       confirmTypeBinding(var, VariableType.INT);
       return (long) _store.get(var);

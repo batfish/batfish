@@ -1,11 +1,14 @@
 package org.batfish.question;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.batfish.common.BatfishException;
+import org.batfish.grammar.question.VariableType;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
@@ -29,6 +32,8 @@ public class Environment {
    private boolean[] _assertions;
 
    private BgpNeighbor _bgpNeighbor;
+
+   private Map<String, Boolean> _booleans;
 
    private PolicyMapClause _clause;
 
@@ -62,6 +67,8 @@ public class Environment {
 
    private Set<RoutingProtocol> _protocols;
 
+   private IpsecVpn _remoteIpsecVpn;
+
    private boolean[] _remoteIpsecVpnsInitialized;
 
    private RouteFilterList _routeFilter;
@@ -81,6 +88,7 @@ public class Environment {
    public Environment() {
       _assertionCount = new int[1];
       _assertions = new boolean[1];
+      _booleans = new HashMap<String, Boolean>();
       _failedAssertionCount = new int[1];
       _integers = new HashMap<String, Integer>();
       _integerSets = new HashMap<String, Set<Integer>>();
@@ -92,10 +100,46 @@ public class Environment {
       _unsafe = new boolean[1];
    }
 
+   public void applyParameters(QuestionParameters parameters) {
+      for (Entry<String, Object> e : parameters.getStore().entrySet()) {
+         String key = e.getKey();
+         String var = "$" + key;
+         Object value = e.getValue();
+         VariableType type = parameters.getTypeBindings().get(key);
+         switch (type) {
+         case BOOLEAN:
+            _booleans.put(var, (Boolean) value);
+            break;
+
+         case INT:
+            _integers.put(var, (Integer) value);
+            break;
+
+         case ACTION:
+         case IP:
+         case PREFIX:
+         case RANGE:
+         case REGEX:
+         case ROUTE_FILTER:
+         case SET_INT:
+         case SET_IP:
+         case SET_PREFIX:
+         case SET_ROUTE_FILTER:
+         case SET_STRING:
+         case STRING:
+         default:
+            throw new BatfishException("Unsupported variable type: "
+                  + type.toString());
+
+         }
+      }
+   }
+
    public Environment copy() {
       Environment copy = new Environment();
       copy._assertionCount = _assertionCount;
       copy._assertions = _assertions;
+      copy._booleans = _booleans;
       copy._clause = _clause;
       copy._configurations = _configurations;
       copy._failedAssertionCount = _failedAssertionCount;
@@ -111,6 +155,7 @@ public class Environment {
       copy._prefixSets = _prefixSets;
       copy._protocol = _protocol;
       copy._protocols = _protocols;
+      copy._remoteIpsecVpn = _remoteIpsecVpn;
       copy._remoteIpsecVpnsInitialized = _remoteIpsecVpnsInitialized;
       copy._routeFilter = _routeFilter;
       copy._routeFilterLine = _routeFilterLine;
@@ -128,6 +173,10 @@ public class Environment {
 
    public BgpNeighbor getBgpNeighbor() {
       return _bgpNeighbor;
+   }
+
+   public Map<String, Boolean> getBooleans() {
+      return _booleans;
    }
 
    public PolicyMapClause getClause() {
@@ -192,6 +241,10 @@ public class Environment {
       return _protocols;
    }
 
+   public IpsecVpn getRemoteIpsecVpn() {
+      return _remoteIpsecVpn;
+   }
+
    public RouteFilterList getRouteFilter() {
       return _routeFilter;
    }
@@ -237,7 +290,7 @@ public class Environment {
          return;
       }
       Map<IpsecVpn, Ip> remoteAddresses = new HashMap<IpsecVpn, Ip>();
-      Map<Ip, IpsecVpn> externalAddresses = new HashMap<Ip, IpsecVpn>();
+      Map<Ip, Set<IpsecVpn>> externalAddresses = new HashMap<Ip, Set<IpsecVpn>>();
       for (Configuration c : _configurations.values()) {
          for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
             Ip remoteAddress = ipsecVpn.getGateway().getAddress();
@@ -246,22 +299,36 @@ public class Environment {
                   .getExternalInterface().getAllPrefixes();
             for (Prefix externalPrefix : externalPrefixes) {
                Ip externalAddress = externalPrefix.getAddress();
-               externalAddresses.put(externalAddress, ipsecVpn);
+               Set<IpsecVpn> vpnsUsingExternalAddress = externalAddresses
+                     .get(externalAddress);
+               if (vpnsUsingExternalAddress == null) {
+                  vpnsUsingExternalAddress = new HashSet<IpsecVpn>();
+                  externalAddresses.put(externalAddress,
+                        vpnsUsingExternalAddress);
+               }
+               vpnsUsingExternalAddress.add(ipsecVpn);
             }
          }
-         // Prefix externalPrefix = ipsecVpn.getGateway()
-         // .getExternalInterface().getPrefix();
-         // if (externalPrefix != null) {
-         // Ip externalAddress = externalPrefix.getAddress();
-         // externalAddresses.put(externalAddress, ipsecVpn);
-         // }
-
       }
       for (Entry<IpsecVpn, Ip> e : remoteAddresses.entrySet()) {
          IpsecVpn ipsecVpn = e.getKey();
          Ip remoteAddress = e.getValue();
-         IpsecVpn remoteIpsecVpn = externalAddresses.get(remoteAddress);
-         ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpn);
+         ipsecVpn.initCandidateRemoteVpns();
+         Set<IpsecVpn> remoteIpsecVpnCandidates = externalAddresses
+               .get(remoteAddress);
+         if (remoteIpsecVpnCandidates != null) {
+            for (IpsecVpn remoteIpsecVpnCandidate : remoteIpsecVpnCandidates) {
+               Ip reciprocalRemoteAddress = remoteAddresses
+                     .get(remoteIpsecVpnCandidate);
+               Set<IpsecVpn> reciprocalVpns = externalAddresses
+                     .get(reciprocalRemoteAddress);
+               if (reciprocalVpns != null && reciprocalVpns.contains(ipsecVpn)) {
+                  ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
+                  ipsecVpn.getCandidateRemoteIpsecVpns().add(
+                        remoteIpsecVpnCandidate);
+               }
+            }
+         }
       }
       _remoteIpsecVpnsInitialized[0] = true;
    }
@@ -313,6 +380,10 @@ public class Environment {
 
    public void setProtocolSet(Set<RoutingProtocol> protocols) {
       _protocols = protocols;
+   }
+
+   public void setRemoteIpsecVpn(IpsecVpn remoteIpsecVpn) {
+      _remoteIpsecVpn = remoteIpsecVpn;
    }
 
    public void setRouteFilter(RouteFilterList routeFilter) {

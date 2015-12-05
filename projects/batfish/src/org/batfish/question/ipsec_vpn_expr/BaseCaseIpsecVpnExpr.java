@@ -11,13 +11,13 @@ public enum BaseCaseIpsecVpnExpr implements IpsecVpnExpr {
    @Override
    public IpsecVpn evaluate(Environment environment) {
       IpsecVpn ipsecVpn = environment.getIpsecVpn();
+      IpsecVpn remoteIpsecVpn = environment.getRemoteIpsecVpn();
       switch (this) {
       case IPSEC_VPN:
          return ipsecVpn;
 
       case REMOTE_IPSEC_VPN:
-         environment.initRemoteIpsecVpns();
-         return ipsecVpn.getRemoteIpsecVpn();
+         return remoteIpsecVpn;
 
       default:
          throw new BatfishException("invalid BaseCaseIpsecVpnExpr");

@@ -4,6 +4,7 @@ import org.batfish.common.BatfishException;
 
 public enum VariableType {
    ACTION,
+   BOOLEAN,
    INT,
    IP,
    PREFIX,
@@ -35,6 +36,9 @@ public enum VariableType {
 
       case "action":
          return ACTION;
+
+      case "boolean":
+         return BOOLEAN;
 
       case "int":
          return INT;

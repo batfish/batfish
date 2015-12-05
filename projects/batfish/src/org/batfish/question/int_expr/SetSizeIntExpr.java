@@ -34,6 +34,7 @@ public class SetSizeIntExpr extends BaseIntExpr {
          return environment.getStringSets().get(_caller).size();
 
       case ACTION:
+      case BOOLEAN:
       case INT:
       case IP:
       case PREFIX:
