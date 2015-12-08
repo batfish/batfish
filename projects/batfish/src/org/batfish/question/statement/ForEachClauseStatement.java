@@ -1,32 +1,35 @@
 package org.batfish.question.statement;
 
+import java.util.Collection;
 import java.util.List;
 
-import org.batfish.common.BatfishLogger;
-import org.batfish.main.Settings;
 import org.batfish.question.Environment;
-import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapClause;
 
-public class ForEachClauseStatement implements Statement {
+public class ForEachClauseStatement extends ForEachStatement<PolicyMapClause> {
 
-   List<Statement> _statements;
-
-   public ForEachClauseStatement(List<Statement> statements) {
-      _statements = statements;
+   public ForEachClauseStatement(List<Statement> statements, String var) {
+      super(statements, var);
    }
 
    @Override
-   public void execute(Environment environment, BatfishLogger logger,
-         Settings settings) {
-      PolicyMap policyMap = environment.getPolicyMap();
-      for (PolicyMapClause clause : policyMap.getClauses()) {
-         Environment statementEnv = environment.copy();
-         statementEnv.setClause(clause);
-         for (Statement statement : _statements) {
-            statement.execute(statementEnv, logger, settings);
-         }
-      }
+   protected Collection<PolicyMapClause> getCollection(Environment environment) {
+      return environment.getPolicyMap().getClauses();
+   }
+
+   @Override
+   protected PolicyMapClause getOldVarVal(Environment environment) {
+      return environment.getPolicyMapClauses().get(_var);
+   }
+
+   @Override
+   protected void writeVal(Environment environment, PolicyMapClause t) {
+      environment.setClause(t);
+   }
+
+   @Override
+   protected void writeVarVal(Environment environment, PolicyMapClause t) {
+      environment.getPolicyMapClauses().put(_var, t);
    }
 
 }

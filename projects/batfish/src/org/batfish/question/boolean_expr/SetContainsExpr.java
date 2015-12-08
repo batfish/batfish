@@ -13,7 +13,7 @@ import org.batfish.representation.Ip;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterList;
 
-public class SetContainsExpr extends BaseBooleanExpr {
+public final class SetContainsExpr extends BaseBooleanExpr {
 
    private final String _caller;
 
@@ -56,15 +56,7 @@ public class SetContainsExpr extends BaseBooleanExpr {
          String stringVal = stringExpr.evaluate(environment);
          return environment.getStringSets().get(_caller).contains(stringVal);
 
-      case ACTION:
-      case BOOLEAN:
-      case INT:
-      case IP:
-      case PREFIX:
-      case RANGE:
-      case REGEX:
-      case ROUTE_FILTER:
-      case STRING:
+         // $CASES-OMITTED$
       default:
          throw new BatfishException("invalid set type");
       }

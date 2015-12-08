@@ -61,6 +61,11 @@ BGP_NEIGHBOR
    'bgp_neighbor'
 ;
 
+BGP_ORIGINATION_SPACE_EXPLICIT
+:
+   'bgp_origination_space_explicit'
+;
+
 CLAUSE
 :
    'clause'
@@ -351,6 +356,11 @@ OSPF_OUTBOUND_POLICY
    'ospf_outbound_policy'
 ;
 
+OVERLAPS
+:
+   'overlaps'
+;
+
 OWNER_NAME
 :
    'owner_name'
@@ -557,6 +567,11 @@ FORWARD_SLASH_STAR
    '/*' -> channel ( HIDDEN ) , pushMode ( M_MultilineComment )
 ;
 
+GE
+:
+   '>='
+;
+
 GT
 :
    '>'
@@ -570,6 +585,16 @@ IP_ADDRESS
 IP_PREFIX
 :
    F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte '/' F_DecimalDigit+
+;
+
+LE
+:
+   '<='
+;
+
+LT
+:
+   '<'
 ;
 
 MINUS

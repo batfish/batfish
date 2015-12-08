@@ -33,15 +33,7 @@ public class SetSizeIntExpr extends BaseIntExpr {
       case SET_STRING:
          return environment.getStringSets().get(_caller).size();
 
-      case ACTION:
-      case BOOLEAN:
-      case INT:
-      case IP:
-      case PREFIX:
-      case ROUTE_FILTER:
-      case RANGE:
-      case REGEX:
-      case STRING:
+         // $CASES-OMITTED$
       default:
          throw new BatfishException("invalid set type");
       }

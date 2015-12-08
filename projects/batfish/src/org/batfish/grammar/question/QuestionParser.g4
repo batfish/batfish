@@ -53,7 +53,14 @@ assignment
 
 bgp_neighbor_boolean_expr
 :
-   BGP_NEIGHBOR PERIOD bgp_neighbor_has_generated_route_boolean_expr
+   caller = bgp_neighbor_expr PERIOD
+   bgp_neighbor_has_generated_route_boolean_expr
+;
+
+bgp_neighbor_expr
+:
+   BGP_NEIGHBOR
+   | var_bgp_neighbor_expr
 ;
 
 bgp_neighbor_has_generated_route_boolean_expr
@@ -63,7 +70,7 @@ bgp_neighbor_has_generated_route_boolean_expr
 
 bgp_neighbor_int_expr
 :
-   BGP_NEIGHBOR PERIOD
+   caller = bgp_neighbor_expr PERIOD
    (
       bgp_neighbor_local_as_int_expr
       | bgp_neighbor_remote_as_int_expr
@@ -72,7 +79,7 @@ bgp_neighbor_int_expr
 
 bgp_neighbor_ip_expr
 :
-   BGP_NEIGHBOR PERIOD
+   caller = bgp_neighbor_expr PERIOD
    (
       bgp_neighbor_local_ip_ip_expr
       | bgp_neighbor_remote_ip_ip_expr
@@ -111,9 +118,12 @@ boolean_expr
    and_expr
    | set_contains_expr
    | eq_expr
+   | ge_expr
    | gt_expr
    | if_expr
    | false_expr
+   | le_expr
+   | lt_expr
    | neq_expr
    | not_expr
    | or_expr
@@ -197,6 +207,10 @@ expr
 locals [boolean isVar, String var]
 @init {$isVar = _input.LT(1).getType() == VARIABLE && _input.LT(2).getType() != PERIOD; if ($isVar) {$var = _input.LT(1).getText();}}
 :
+   {!$isVar || _typeBindings.get($var) == VariableType.BGP_NEIGHBOR}?
+
+   bgp_neighbor_expr
+   |
    {!$isVar || _typeBindings.get($var) == VariableType.BOOLEAN}?
 
    boolean_expr
@@ -204,11 +218,42 @@ locals [boolean isVar, String var]
    {!$isVar || _typeBindings.get($var) == VariableType.INT}?
 
    int_expr
-   | ip_expr
-   | ipsec_vpn_expr
-   | prefix_expr
-   | route_filter_line_expr
-   | string_expr
+   |
+   {!$isVar || _typeBindings.get($var) == VariableType.INTERFACE}?
+
+   interface_expr
+   |
+   {!$isVar || _typeBindings.get($var) == VariableType.IP}?
+
+   ip_expr
+   |
+   {!$isVar || _typeBindings.get($var) == VariableType.IPSEC_VPN}?
+
+   ipsec_vpn_expr
+   |
+   {!$isVar || _typeBindings.get($var) == VariableType.NODE}?
+
+   node_expr
+   |
+   {!$isVar || _typeBindings.get($var) == VariableType.PREFIX}?
+
+   prefix_expr
+   |
+   {!$isVar || _typeBindings.get($var) == VariableType.PREFIX_SPACE}?
+
+   prefix_space_expr
+   |
+   {!$isVar || _typeBindings.get($var) == VariableType.ROUTE_FILTER_LINE}?
+
+   route_filter_line_expr
+   |
+   {!$isVar || _typeBindings.get($var) == VariableType.STATIC_ROUTE}?
+
+   static_route_expr
+   |
+   {!$isVar || _typeBindings.get($var) == VariableType.STRING}?
+
+   string_expr
 ;
 
 failure_question
@@ -333,9 +378,19 @@ foreach_node_bgp_generated_route_statement
    ["generated_route"]+ CLOSE_BRACE
 ;
 
-foreach_node_statement
+foreach_node_statement [String scope]
 :
-   FOREACH NODE OPEN_BRACE statement ["node"]+ CLOSE_BRACE
+   FOREACH NODE
+   (
+      var = VARIABLE
+      {_typeBindings.put($var.getText(), VariableType.NODE);}
+
+      OPEN_BRACE statement [scope]+ CLOSE_BRACE
+   )
+   |
+   (
+      OPEN_BRACE statement ["node"]+ CLOSE_BRACE
+   )
 ;
 
 foreach_ospf_outbound_policy_statement
@@ -372,6 +427,17 @@ foreach_static_route_statement
    FOREACH STATIC_ROUTE OPEN_BRACE statement ["static_route"]+ CLOSE_BRACE
 ;
 
+ge_expr
+:
+   (
+      lhs_int = int_expr GE rhs_int = int_expr
+   )
+   |
+   (
+      lhs_string = string_expr GE rhs_string = string_expr
+   )
+;
+
 generated_route_prefix_expr
 :
    GENERATED_ROUTE PERIOD generated_route_prefix_prefix_expr
@@ -384,7 +450,13 @@ generated_route_prefix_prefix_expr
 
 gt_expr
 :
-   lhs = int_expr GT rhs = int_expr
+   (
+      lhs_int = int_expr GT rhs_int = int_expr
+   )
+   |
+   (
+      lhs_string = string_expr GT rhs_string = string_expr
+   )
 ;
 
 if_expr
@@ -436,7 +508,7 @@ integer_literal
 
 interface_boolean_expr
 :
-   INTERFACE PERIOD
+   caller = interface_expr PERIOD
    (
       interface_enabled_boolean_expr
       | interface_has_ip_boolean_expr
@@ -451,6 +523,12 @@ interface_enabled_boolean_expr
    ENABLED
 ;
 
+interface_expr
+:
+   INTERFACE
+   | var_interface_expr
+;
+
 interface_has_ip_boolean_expr
 :
    HAS_IP
@@ -458,7 +536,7 @@ interface_has_ip_boolean_expr
 
 interface_ip_expr
 :
-   INTERFACE PERIOD interface_ip_ip_expr
+   caller = interface_expr PERIOD interface_ip_ip_expr
 ;
 
 interface_ip_ip_expr
@@ -528,7 +606,7 @@ interface_ospf_boolean_expr
 
 interface_prefix_expr
 :
-   INTERFACE PERIOD interface_prefix_prefix_expr
+   caller = interface_expr PERIOD interface_prefix_prefix_expr
 ;
 
 interface_prefix_prefix_expr
@@ -662,6 +740,17 @@ ipsec_vpn_string_expr
    )
 ;
 
+le_expr
+:
+   (
+      lhs_int = int_expr LE rhs_int = int_expr
+   )
+   |
+   (
+      lhs_string = string_expr LE rhs_string = string_expr
+   )
+;
+
 line_boolean_expr
 :
    caller = route_filter_line_expr PERIOD
@@ -683,6 +772,17 @@ literal_int_expr
 local_path_question
 :
    LOCAL_PATH
+;
+
+lt_expr
+:
+   (
+      lhs_int = int_expr LT rhs_int = int_expr
+   )
+   |
+   (
+      lhs_string = string_expr LT rhs_string = string_expr
+   )
 ;
 
 method [String scope]
@@ -719,9 +819,14 @@ node_bgp_has_generated_route_boolean_expr
    HAS_GENERATED_ROUTE
 ;
 
+node_bgp_origination_space_explicit_prefix_space_expr
+:
+   BGP_ORIGINATION_SPACE_EXPLICIT
+;
+
 node_boolean_expr
 :
-   NODE PERIOD
+   node_expr PERIOD
    (
       node_bgp_boolean_expr
       | node_has_generated_route_boolean_expr
@@ -736,6 +841,12 @@ node_constraint
    REGEX
    | STRING_LITERAL
    | VARIABLE
+;
+
+node_expr
+:
+   NODE
+   | var_node_expr
 ;
 
 node_has_generated_route_boolean_expr
@@ -768,6 +879,14 @@ node_ospf_configured_boolean_expr
    CONFIGURED
 ;
 
+node_prefix_space_expr
+:
+   caller = node_expr PERIOD
+   (
+      node_bgp_origination_space_explicit_prefix_space_expr
+   )
+;
+
 node_static_boolean_expr
 :
    STATIC PERIOD node_static_configured_boolean_expr
@@ -780,7 +899,7 @@ node_static_configured_boolean_expr
 
 node_string_expr
 :
-   NODE PERIOD node_name_string_expr
+   node_expr PERIOD node_name_string_expr
 ;
 
 not_expr
@@ -803,6 +922,24 @@ prefix_expr
    | static_route_prefix_expr
 ;
 
+prefix_space_boolean_expr
+:
+   caller = prefix_space_expr PERIOD
+   (
+      prefix_space_overlaps_boolean_expr
+   )
+;
+
+prefix_space_expr
+:
+   node_prefix_space_expr
+;
+
+prefix_space_overlaps_boolean_expr
+:
+   OVERLAPS OPEN_PAREN arg = prefix_space_expr CLOSE_PAREN
+;
+
 printf_statement
 :
    PRINTF OPEN_PAREN format_string = string_expr
@@ -819,6 +956,7 @@ property_boolean_expr
    | ipsec_vpn_boolean_expr
    | line_boolean_expr
    | node_boolean_expr
+   | prefix_space_boolean_expr
    | static_route_boolean_expr
 ;
 
@@ -1086,7 +1224,7 @@ statement [String scope]
    |
    {$scope.equals("verify")}?
 
-   foreach_node_statement
+   foreach_node_statement [scope]
    |
    {$scope.equals("node")}?
 
@@ -1122,11 +1260,17 @@ static_route_administrative_cost_int_expr
 
 static_route_boolean_expr
 :
-   STATIC_ROUTE PERIOD
+   caller = static_route_expr PERIOD
    (
       static_route_has_next_hop_interface_boolean_expr
       | static_route_has_next_hop_ip_boolean_expr
    )
+;
+
+static_route_expr
+:
+   STATIC_ROUTE
+   | var_static_route_expr
 ;
 
 static_route_has_next_hop_interface_boolean_expr
@@ -1141,12 +1285,12 @@ static_route_has_next_hop_ip_boolean_expr
 
 static_route_int_expr
 :
-   STATIC_ROUTE PERIOD static_route_administrative_cost_int_expr
+   caller = static_route_expr PERIOD static_route_administrative_cost_int_expr
 ;
 
 static_route_ip_expr
 :
-   STATIC_ROUTE PERIOD static_route_next_hop_ip_ip_expr
+   caller = static_route_expr PERIOD static_route_next_hop_ip_ip_expr
 ;
 
 static_route_next_hop_interface_string_expr
@@ -1161,7 +1305,7 @@ static_route_next_hop_ip_ip_expr
 
 static_route_prefix_expr
 :
-   STATIC_ROUTE PERIOD static_route_prefix_prefix_expr
+   caller = static_route_expr PERIOD static_route_prefix_prefix_expr
 ;
 
 static_route_prefix_prefix_expr
@@ -1237,12 +1381,32 @@ val_int_expr
    | var_int_expr
 ;
 
+var_bgp_neighbor_expr
+:
+   var = VARIABLE
+;
+
 var_boolean_expr
 :
    var = VARIABLE
 ;
 
 var_int_expr
+:
+   VARIABLE
+;
+
+var_interface_expr
+:
+   VARIABLE
+;
+
+var_node_expr
+:
+   VARIABLE
+;
+
+var_static_route_expr
 :
    VARIABLE
 ;

@@ -29,6 +29,8 @@ public class BgpProcess implements Serializable {
     */
    private Set<GeneratedRoute> _generatedRoutes;
 
+   private transient PrefixSpace _originationSpace;
+
    /**
     * Constructs a BgpProcess
     */
@@ -49,6 +51,14 @@ public class BgpProcess implements Serializable {
     */
    public Map<Prefix, BgpNeighbor> getNeighbors() {
       return _bgpNeighbors;
+   }
+
+   public PrefixSpace getOriginationSpace() {
+      return _originationSpace;
+   }
+
+   public void setOriginationSpace(PrefixSpace originationSpace) {
+      _originationSpace = originationSpace;
    }
 
 }

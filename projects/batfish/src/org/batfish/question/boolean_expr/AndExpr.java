@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.batfish.question.Environment;
 
-public class AndExpr extends BaseBooleanExpr {
+public final class AndExpr extends BaseBooleanExpr {
 
    private final Set<BooleanExpr> _conjuncts;
 

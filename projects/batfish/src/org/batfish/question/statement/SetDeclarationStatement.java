@@ -45,21 +45,9 @@ public class SetDeclarationStatement implements Statement {
          initStringSet(environment, logger, settings);
          break;
 
-      case ACTION:
-      case BOOLEAN:
-      case INT:
-      case IP:
-      case PREFIX:
-      case RANGE:
-      case ROUTE_FILTER:
-      case REGEX:
-      case STRING:
-         throw new BatfishException("not a set type: " + _type.toString());
-
+      // $CASES-OMITTED$
       default:
-         throw new BatfishException(
-               "initialization for this type not yet implemented: "
-                     + _type.toString());
+         throw new BatfishException("invalid set type: " + _type.toString());
       }
    }
 

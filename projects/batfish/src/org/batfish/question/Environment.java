@@ -20,6 +20,7 @@ import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchProtocolLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
 import org.batfish.representation.Prefix;
+import org.batfish.representation.PrefixSpace;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
@@ -32,6 +33,10 @@ public class Environment {
    private boolean[] _assertions;
 
    private BgpNeighbor _bgpNeighbor;
+
+   private Map<String, BgpNeighbor> _bgpNeighbors;
+
+   private boolean[] _bgpOriginationSpaceInitialized;
 
    private Map<String, Boolean> _booleans;
 
@@ -49,7 +54,13 @@ public class Environment {
 
    private Interface _interface;
 
+   private Map<String, Interface> _interfaces;
+
+   private Map<String, Ip> _ips;
+
    private IpsecVpn _ipsecVpn;
+
+   private Map<String, IpsecVpn> _ipsecVpns;
 
    private Map<String, Set<Ip>> _ipSets;
 
@@ -59,9 +70,19 @@ public class Environment {
 
    private Configuration _node;
 
+   private Map<String, Configuration> _nodes;
+
    private PolicyMap _policyMap;
 
+   private Map<String, PolicyMapClause> _policyMapClauses;
+
+   private Map<String, PolicyMap> _policyMaps;
+
+   private Map<String, Prefix> _prefixes;
+
    private Map<String, Set<Prefix>> _prefixSets;
+
+   private Map<String, PrefixSpace> _prefixSpaces;
 
    private RoutingProtocol _protocol;
 
@@ -75,11 +96,17 @@ public class Environment {
 
    private RouteFilterLine _routeFilterLine;
 
+   private Map<String, RouteFilterLine> _routeFilterLines;
+
+   private Map<String, RouteFilterList> _routeFilters;
+
    private Set<RouteFilterList> _routeFilterSet;
 
    private Map<String, Set<RouteFilterList>> _routeFilterSets;
 
    private StaticRoute _staticRoute;
+
+   private Map<String, StaticRoute> _staticRoutes;
 
    private Map<String, Set<String>> _stringSets;
 
@@ -88,14 +115,27 @@ public class Environment {
    public Environment() {
       _assertionCount = new int[1];
       _assertions = new boolean[1];
+      _bgpNeighbors = new HashMap<String, BgpNeighbor>();
+      _bgpOriginationSpaceInitialized = new boolean[1];
       _booleans = new HashMap<String, Boolean>();
       _failedAssertionCount = new int[1];
       _integers = new HashMap<String, Integer>();
       _integerSets = new HashMap<String, Set<Integer>>();
+      _interfaces = new HashMap<String, Interface>();
+      _ips = new HashMap<String, Ip>();
+      _ipsecVpns = new HashMap<String, IpsecVpn>();
       _ipSets = new HashMap<String, Set<Ip>>();
+      _nodes = new HashMap<String, Configuration>();
+      _policyMaps = new HashMap<String, PolicyMap>();
+      _policyMapClauses = new HashMap<String, PolicyMapClause>();
+      _prefixes = new HashMap<String, Prefix>();
       _prefixSets = new HashMap<String, Set<Prefix>>();
+      _prefixSpaces = new HashMap<String, PrefixSpace>();
       _remoteIpsecVpnsInitialized = new boolean[1];
+      _routeFilters = new HashMap<String, RouteFilterList>();
+      _routeFilterLines = new HashMap<String, RouteFilterLine>();
       _routeFilterSets = new HashMap<String, Set<RouteFilterList>>();
+      _staticRoutes = new HashMap<String, StaticRoute>();
       _stringSets = new HashMap<String, Set<String>>();
       _unsafe = new boolean[1];
    }
@@ -116,16 +156,25 @@ public class Environment {
             break;
 
          case ACTION:
+         case BGP_NEIGHBOR:
+         case INTERFACE:
          case IP:
+         case IPSEC_VPN:
+         case NODE:
+         case POLICY_MAP:
+         case POLICY_MAP_CLAUSE:
          case PREFIX:
+         case PREFIX_SPACE:
          case RANGE:
          case REGEX:
          case ROUTE_FILTER:
+         case ROUTE_FILTER_LINE:
          case SET_INT:
          case SET_IP:
          case SET_PREFIX:
          case SET_ROUTE_FILTER:
          case SET_STRING:
+         case STATIC_ROUTE:
          case STRING:
          default:
             throw new BatfishException("Unsupported variable type: "
@@ -139,6 +188,8 @@ public class Environment {
       Environment copy = new Environment();
       copy._assertionCount = _assertionCount;
       copy._assertions = _assertions;
+      copy._bgpNeighbors = _bgpNeighbors;
+      copy._bgpOriginationSpaceInitialized = _bgpOriginationSpaceInitialized;
       copy._booleans = _booleans;
       copy._clause = _clause;
       copy._configurations = _configurations;
@@ -147,24 +198,42 @@ public class Environment {
       copy._matchProtocolLine = _matchProtocolLine;
       copy._matchRouteFilterLine = _matchRouteFilterLine;
       copy._node = _node;
+      copy._nodes = _nodes;
       copy._integers = _integers;
       copy._integerSets = _integerSets;
       copy._interface = _interface;
+      copy._interfaces = _interfaces;
+      copy._ips = _ips;
+      copy._ipsecVpn = _ipsecVpn;
+      copy._ipsecVpns = _ipsecVpns;
       copy._ipSets = _ipSets;
       copy._policyMap = _policyMap;
+      copy._policyMaps = _policyMaps;
+      copy._policyMapClauses = _policyMapClauses;
+      copy._prefixes = _prefixes;
       copy._prefixSets = _prefixSets;
+      copy._prefixSpaces = _prefixSpaces;
       copy._protocol = _protocol;
       copy._protocols = _protocols;
       copy._remoteIpsecVpn = _remoteIpsecVpn;
       copy._remoteIpsecVpnsInitialized = _remoteIpsecVpnsInitialized;
       copy._routeFilter = _routeFilter;
+      copy._routeFilters = _routeFilters;
       copy._routeFilterLine = _routeFilterLine;
+      copy._routeFilterLines = _routeFilterLines;
       copy._routeFilterSet = _routeFilterSet;
       copy._routeFilterSets = _routeFilterSets;
       copy._staticRoute = _staticRoute;
+      copy._staticRoutes = _staticRoutes;
       copy._stringSets = _stringSets;
       copy._unsafe = _unsafe;
       return copy;
+   }
+
+   public Set<Configuration> getAllNodes() {
+      Set<Configuration> nodes = new TreeSet<Configuration>();
+      nodes.addAll(_configurations.values());
+      return nodes;
    }
 
    public boolean getAssertions() {
@@ -173,6 +242,10 @@ public class Environment {
 
    public BgpNeighbor getBgpNeighbor() {
       return _bgpNeighbor;
+   }
+
+   public Map<String, BgpNeighbor> getBgpNeighbors() {
+      return _bgpNeighbors;
    }
 
    public Map<String, Boolean> getBooleans() {
@@ -203,8 +276,20 @@ public class Environment {
       return _interface;
    }
 
+   public Map<String, Interface> getInterfaces() {
+      return _interfaces;
+   }
+
+   public Map<String, Ip> getIps() {
+      return _ips;
+   }
+
    public IpsecVpn getIpsecVpn() {
       return _ipsecVpn;
+   }
+
+   public Map<String, IpsecVpn> getIpsecVpns() {
+      return _ipsecVpns;
    }
 
    public Map<String, Set<Ip>> getIpSets() {
@@ -219,18 +304,32 @@ public class Environment {
       return _node;
    }
 
-   public Set<Configuration> getNodes() {
-      Set<Configuration> nodes = new TreeSet<Configuration>();
-      nodes.addAll(_configurations.values());
-      return nodes;
+   public Map<String, Configuration> getNodes() {
+      return _nodes;
    }
 
    public PolicyMap getPolicyMap() {
       return _policyMap;
    }
 
+   public Map<String, PolicyMapClause> getPolicyMapClauses() {
+      return _policyMapClauses;
+   }
+
+   public Map<String, PolicyMap> getPolicyMaps() {
+      return _policyMaps;
+   }
+
+   public Map<String, Prefix> getPrefixes() {
+      return _prefixes;
+   }
+
    public Map<String, Set<Prefix>> getPrefixSets() {
       return _prefixSets;
+   }
+
+   public Map<String, PrefixSpace> getPrefixSpaces() {
+      return _prefixSpaces;
    }
 
    public RoutingProtocol getProtocol() {
@@ -253,6 +352,14 @@ public class Environment {
       return _routeFilterLine;
    }
 
+   public Map<String, RouteFilterLine> getRouteFilterLines() {
+      return _routeFilterLines;
+   }
+
+   public Map<String, RouteFilterList> getRouteFilters() {
+      return _routeFilters;
+   }
+
    public Set<RouteFilterList> getRouteFilterSet() {
       return _routeFilterSet;
    }
@@ -263,6 +370,10 @@ public class Environment {
 
    public StaticRoute getStaticRoute() {
       return _staticRoute;
+   }
+
+   public Map<String, StaticRoute> getStaticRoutes() {
+      return _staticRoutes;
    }
 
    public Map<String, Set<String>> getStringSets() {
@@ -283,6 +394,13 @@ public class Environment {
 
    public void incrementFailedAssertionCount() {
       _failedAssertionCount[0]++;
+   }
+
+   public void initBgpOriginationSpaceExplicit() {
+      if (_bgpOriginationSpaceInitialized[0]) {
+         return;
+      }
+      _bgpOriginationSpaceInitialized[0] = true;
    }
 
    public void initRemoteIpsecVpns() {

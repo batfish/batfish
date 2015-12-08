@@ -14,7 +14,8 @@ public enum BaseCasePolicyMapClauseExpr implements PolicyMapClauseExpr {
          return environment.getClause();
 
       default:
-         throw new BatfishException("invalid BaseCaseRouteFilterExpr");
+         throw new BatfishException("Invalid "
+               + this.getClass().getSimpleName());
 
       }
    }
