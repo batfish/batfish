@@ -49,6 +49,7 @@ assignment
 :
    boolean_assignment
    | int_assignment
+   | prefix_space_assignment
 ;
 
 bgp_neighbor_boolean_expr
@@ -922,6 +923,13 @@ prefix_expr
    | static_route_prefix_expr
 ;
 
+prefix_space_assignment
+:
+   var = VARIABLE COLON_EQUALS prefix_space_expr SEMICOLON
+   {_typeBindings.put($var.getText(), VariableType.PREFIX_SPACE);}
+
+;
+
 prefix_space_boolean_expr
 :
    caller = prefix_space_expr PERIOD
@@ -933,11 +941,24 @@ prefix_space_boolean_expr
 prefix_space_expr
 :
    node_prefix_space_expr
+   | caller = prefix_space_expr PERIOD prefix_space_prefix_space_expr
+;
+
+prefix_space_intersection_prefix_space_expr
+:
+   INTERSECTION OPEN_PAREN arg = prefix_space_expr CLOSE_PAREN
 ;
 
 prefix_space_overlaps_boolean_expr
 :
    OVERLAPS OPEN_PAREN arg = prefix_space_expr CLOSE_PAREN
+;
+
+prefix_space_prefix_space_expr
+:
+   (
+      prefix_space_intersection_prefix_space_expr
+   )
 ;
 
 printf_statement

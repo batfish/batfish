@@ -623,7 +623,7 @@ public class Batfish implements AutoCloseable {
    private void answerProtocolDependencies(ProtocolDependenciesQuestion question) {
       checkConfigurations();
       Map<String, Configuration> configurations = loadConfigurations();
-      new ProtocolDependencyAnalysis(configurations, _settings, _logger).run();
+      new ProtocolDependencyAnalysis(configurations).printDependencies(_logger);
    }
 
    private void answerReachability(ReachabilityQuestion question) {

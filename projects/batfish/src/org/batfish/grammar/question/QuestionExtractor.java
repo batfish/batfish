@@ -105,8 +105,8 @@ import org.batfish.question.policy_map_clause_expr.PolicyMapClauseExpr;
 import org.batfish.question.prefix_expr.PrefixExpr;
 import org.batfish.question.prefix_expr.iface.PrefixInterfacePrefixExpr;
 import org.batfish.question.prefix_expr.static_route.PrefixStaticRoutePrefixExpr;
-import org.batfish.question.prefix_space_expr.BgpOriginationSpaceExplicitExpr;
 import org.batfish.question.prefix_space_expr.PrefixSpaceExpr;
+import org.batfish.question.prefix_space_expr.node.BgpOriginationSpaceExplicitNodePrefixSpaceExpr;
 import org.batfish.question.route_filter_expr.BaseCaseRouteFilterExpr;
 import org.batfish.question.route_filter_expr.RouteFilterExpr;
 import org.batfish.question.route_filter_line_expr.BaseCaseRouterFilterLineExpr;
@@ -1278,7 +1278,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private PrefixSpaceExpr toPrefixSpaceExpr(Node_prefix_space_exprContext ctx) {
       NodeExpr caller = toNodeExpr(ctx.caller);
       if (ctx.node_bgp_origination_space_explicit_prefix_space_expr() != null) {
-         return new BgpOriginationSpaceExplicitExpr(caller);
+         return new BgpOriginationSpaceExplicitNodePrefixSpaceExpr(caller);
       }
       else {
          throw conversionError(ERR_CONVERT_PREFIX_SPACE, ctx);

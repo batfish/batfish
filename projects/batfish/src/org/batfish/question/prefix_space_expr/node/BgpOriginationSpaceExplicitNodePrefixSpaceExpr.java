@@ -1,16 +1,14 @@
-package org.batfish.question.prefix_space_expr;
+package org.batfish.question.prefix_space_expr.node;
 
 import org.batfish.question.Environment;
 import org.batfish.question.node_expr.NodeExpr;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PrefixSpace;
 
-public class BgpOriginationSpaceExplicitExpr extends BasePrefixSpaceExpr {
+public class BgpOriginationSpaceExplicitNodePrefixSpaceExpr extends NodePrefixSpaceExpr {
 
-   private NodeExpr _caller;
-
-   public BgpOriginationSpaceExplicitExpr(NodeExpr caller) {
-      _caller = caller;
+   public BgpOriginationSpaceExplicitNodePrefixSpaceExpr(NodeExpr caller) {
+      super(caller);
    }
 
    @Override

@@ -95,4 +95,13 @@ public class DependentRoute implements Comparable<DependentRoute> {
             + _prefix.toString() + ", " + _protocol.toString() + ">";
    }
 
+   public boolean dependsOn(RoutingProtocol protocol) {
+      for (DependentRoute dependentRoute : _dependencies) {
+         if (dependentRoute.dependsOn(protocol)) {
+            return true;
+         }
+      }
+      return _protocol == protocol;
+   }
+
 }

@@ -226,6 +226,11 @@ INTERFACE
    'interface'
 ;
 
+INTERSECTION
+:
+   'intersection'
+;
+
 IP
 :
    'ip'

@@ -2,7 +2,11 @@ package org.batfish.representation;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.batfish.util.SubRange;
 
 public class PolicyMap implements Serializable {
 
@@ -24,6 +28,8 @@ public class PolicyMap implements Serializable {
     * The configuration-local name identifying this policy.
     */
    private String _mapName;
+
+   private transient PrefixSpace _prefixSpace;
 
    /**
     * Constructs a PolicyMap with the given name for {@link #_mapName} and list
@@ -48,6 +54,47 @@ public class PolicyMap implements Serializable {
     */
    public String getMapName() {
       return _mapName;
+   }
+
+   public PrefixSpace getPrefixSpace() {
+      initPrefixSpace();
+      return _prefixSpace;
+   }
+
+   private void initPrefixSpace() {
+      if (_prefixSpace == null) {
+         _prefixSpace = new PrefixSpace();
+         Set<PrefixRange> prefixRanges = new HashSet<PrefixRange>();
+         for (PolicyMapClause clause : _clauses) {
+            if (clause.getAction() == PolicyMapAction.PERMIT) {
+               boolean foundMatchRouteFilter = false;
+               for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
+                  if (matchLine.getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
+                     foundMatchRouteFilter = true;
+                     PolicyMapMatchRouteFilterListLine matchRouteFilterLine = (PolicyMapMatchRouteFilterListLine) matchLine;
+                     for (RouteFilterList list : matchRouteFilterLine
+                           .getLists()) {
+                        for (RouteFilterLine line : list.getLines()) {
+                           Prefix prefix = line.getPrefix();
+                           SubRange lengthRange = line.getLengthRange();
+                           if (line.getAction() == LineAction.ACCEPT) {
+                              prefixRanges.add(new PrefixRange(prefix,
+                                    lengthRange));
+                           }
+                        }
+                     }
+                  }
+               }
+               if (!foundMatchRouteFilter) {
+                  prefixRanges.add(new PrefixRange(Prefix.ZERO, new SubRange(0,
+                        32)));
+               }
+            }
+         }
+         for (PrefixRange prefixRange : prefixRanges) {
+            _prefixSpace.addPrefixRange(prefixRange);
+         }
+      }
    }
 
 }

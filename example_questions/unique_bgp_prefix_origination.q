@@ -15,6 +15,8 @@ verify {
                printf("BGP explicit origination space on node '%s' overlaps with that of node '%s'\n",
                   $i.name,
                   $j.name);
+               $intersection := $i.bgp_origination_space_explicit.intersection($j.bgp_origination_space_explicit);
+               printf("\tIntersection: '%s'\n", $intersection);
             }
          }
       }

@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.main.Settings;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
@@ -26,6 +26,7 @@ import org.batfish.representation.PolicyMapMatchProtocolLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
 import org.batfish.representation.PolicyMapMatchType;
 import org.batfish.representation.Prefix;
+import org.batfish.representation.PrefixRange;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
@@ -41,17 +42,10 @@ public final class ProtocolDependencyAnalysis {
 
    private final DependencyDatabase _dependencyDatabase;
 
-   private final BatfishLogger _logger;
-
-   @SuppressWarnings("unused")
-   private final Settings _settings;
-
-   public ProtocolDependencyAnalysis(Map<String, Configuration> configurations,
-         Settings settings, BatfishLogger logger) {
+   public ProtocolDependencyAnalysis(Map<String, Configuration> configurations) {
       _configurations = configurations;
-      _settings = settings;
-      _logger = logger;
       _dependencyDatabase = new DependencyDatabase(_configurations);
+      initialize();
    }
 
    private void cleanDatabase() {
@@ -64,43 +58,12 @@ public final class ProtocolDependencyAnalysis {
       Set<DependentRoute> contributingRoutes = new LinkedHashSet<DependentRoute>();
       for (PolicyMapClause clause : policy.getClauses()) {
          if (clause.getAction() == PolicyMapAction.PERMIT) {
-            Set<RoutingProtocol> protocols = new HashSet<RoutingProtocol>();
-            Set<PrefixRange> prefixRanges = new HashSet<PrefixRange>();
-            boolean foundMatchProtocol = false;
-            boolean foundMatchRouteFilter = false;
-            for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
-               if (matchLine.getType() == PolicyMapMatchType.PROTOCOL) {
-                  foundMatchProtocol = true;
-                  PolicyMapMatchProtocolLine matchProtocolLine = (PolicyMapMatchProtocolLine) matchLine;
-                  protocols.add(matchProtocolLine.getProtocol());
-               }
-            }
-            if (!foundMatchProtocol) {
-               protocols.addAll(Arrays.asList(RoutingProtocol.values()));
-            }
-            if (permittedProtocols != null) {
-               protocols.retainAll(permittedProtocols);
-            }
-            for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
-               if (matchLine.getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
-                  foundMatchRouteFilter = true;
-                  PolicyMapMatchRouteFilterListLine matchRouteFilterLine = (PolicyMapMatchRouteFilterListLine) matchLine;
-                  for (RouteFilterList list : matchRouteFilterLine.getLists()) {
-                     for (RouteFilterLine line : list.getLines()) {
-                        Prefix prefix = line.getPrefix();
-                        SubRange lengthRange = line.getLengthRange();
-                        if (line.getAction() == LineAction.ACCEPT) {
-                           prefixRanges
-                                 .add(new PrefixRange(prefix, lengthRange));
-                        }
-                     }
-                  }
-               }
-            }
-            if (!foundMatchRouteFilter) {
-               prefixRanges.add(new PrefixRange(Prefix.ZERO,
-                     new SubRange(0, 32)));
-            }
+
+            Set<RoutingProtocol> protocols = getClausePermittedProtocols(
+                  permittedProtocols, clause);
+
+            Set<PrefixRange> prefixRanges = getClausePrefixRanges(clause);
+
             Set<DependentRoute> dependentRoutes = _dependencyDatabase
                   .getDependentRoutes(node);
             for (DependentRoute dependentRoute : dependentRoutes) {
@@ -117,6 +80,50 @@ public final class ProtocolDependencyAnalysis {
          }
       }
       return contributingRoutes;
+   }
+
+   private Set<RoutingProtocol> getClausePermittedProtocols(
+         Set<RoutingProtocol> permittedProtocols, PolicyMapClause clause) {
+      Set<RoutingProtocol> protocols = new HashSet<RoutingProtocol>();
+      boolean foundMatchProtocol = false;
+      for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
+         if (matchLine.getType() == PolicyMapMatchType.PROTOCOL) {
+            foundMatchProtocol = true;
+            PolicyMapMatchProtocolLine matchProtocolLine = (PolicyMapMatchProtocolLine) matchLine;
+            protocols.add(matchProtocolLine.getProtocol());
+         }
+      }
+      if (!foundMatchProtocol) {
+         protocols.addAll(Arrays.asList(RoutingProtocol.values()));
+      }
+      if (permittedProtocols != null) {
+         protocols.retainAll(permittedProtocols);
+      }
+      return protocols;
+   }
+
+   private Set<PrefixRange> getClausePrefixRanges(PolicyMapClause clause) {
+      Set<PrefixRange> prefixRanges = new HashSet<PrefixRange>();
+      boolean foundMatchRouteFilter = false;
+      for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
+         if (matchLine.getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
+            foundMatchRouteFilter = true;
+            PolicyMapMatchRouteFilterListLine matchRouteFilterLine = (PolicyMapMatchRouteFilterListLine) matchLine;
+            for (RouteFilterList list : matchRouteFilterLine.getLists()) {
+               for (RouteFilterLine line : list.getLines()) {
+                  Prefix prefix = line.getPrefix();
+                  SubRange lengthRange = line.getLengthRange();
+                  if (line.getAction() == LineAction.ACCEPT) {
+                     prefixRanges.add(new PrefixRange(prefix, lengthRange));
+                  }
+               }
+            }
+         }
+      }
+      if (!foundMatchRouteFilter) {
+         prefixRanges.add(new PrefixRange(Prefix.ZERO, new SubRange(0, 32)));
+      }
+      return prefixRanges;
    }
 
    private void initBgpRoutes() {
@@ -249,6 +256,7 @@ public final class ProtocolDependencyAnalysis {
    }
 
    private void initPotentialEbgpOriginationExports() {
+      RoutingProtocol exportProtocol = RoutingProtocol.BGP;
       Set<RoutingProtocol> permittedProtocols = new HashSet<RoutingProtocol>();
       permittedProtocols.addAll(Arrays.asList(RoutingProtocol.values()));
       permittedProtocols.remove(RoutingProtocol.BGP);
@@ -265,22 +273,76 @@ public final class ProtocolDependencyAnalysis {
                }
                Set<PolicyMap> originationPolicies = neighbor
                      .getOriginationPolicies();
-               for (PolicyMap originationPolicy : originationPolicies) {
-                  Set<DependentRoute> dependentRoutes = getPermittedRoutes(
-                        node, originationPolicy, permittedProtocols);
-                  for (DependentRoute dependentRoute : dependentRoutes) {
-                     Prefix prefix = dependentRoute.getPrefix();
-                     PotentialExport potentialExport = new EbgpPotentialExport(
-                           node, prefix, dependentRoute);
-                     _dependencyDatabase.addPotentialExport(potentialExport);
+               Set<PolicyMap> exportPolicies = neighbor.getOutboundPolicyMaps();
+               if (!originationPolicies.isEmpty() && exportPolicies.isEmpty()) {
+                  Set<PotentialExport> originationExports = getPermittedExports(
+                        exportProtocol, permittedProtocols, node,
+                        originationPolicies);
+                  for (PotentialExport originationExport : originationExports) {
+                     _dependencyDatabase.addPotentialExport(originationExport);
                   }
+               }
+               else if (originationPolicies.isEmpty() && !exportPolicies.isEmpty()) {
+                  Set<PotentialExport> exportExports = getPermittedExports(
+                        exportProtocol, permittedProtocols, node,
+                        exportPolicies);
+                  for (PotentialExport exportExport : exportExports) {
+                     _dependencyDatabase.addPotentialExport(exportExport);
+                  }
+               }
+               else if (!originationPolicies.isEmpty() && !exportPolicies.isEmpty()) {
+                  Set<PotentialExport> originationExports = getPermittedExports(
+                        exportProtocol, permittedProtocols, node,
+                        originationPolicies);
+                  for (PolicyMap exportPolicy : exportPolicies) {
+                     for (PolicyMapClause clause : exportPolicy.getClauses()) {
+                        Set<RoutingProtocol> clauseProtocols = getClausePermittedProtocols(
+                              permittedProtocols, clause);
+                        Set<PrefixRange> clausePrefixRanges = getClausePrefixRanges(clause);
+                        for (PotentialExport originationExport : originationExports) {
+                           Prefix prefix = originationExport.getPrefix();
+                           RoutingProtocol sourceProtocol = originationExport
+                                 .getProtocol();
+                           if (clauseProtocols.contains(sourceProtocol)) {
+                              for (PrefixRange prefixRange : clausePrefixRanges) {
+                                 if (prefixRange.includesPrefix(prefix)) {
+                                    _dependencyDatabase
+                                          .addPotentialExport(originationExport);
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+               else {
+                  throw new BatfishException("todo");
                }
             }
          }
       }
    }
 
+   private Set<PotentialExport> getPermittedExports(
+         RoutingProtocol exportProtocol,
+         Set<RoutingProtocol> permittedProtocols, String node,
+         Set<PolicyMap> policies) {
+      Set<PotentialExport> originationExports = new HashSet<PotentialExport>();
+      for (PolicyMap originationPolicy : policies) {
+         Set<DependentRoute> dependentRoutes = getPermittedRoutes(
+               node, originationPolicy, permittedProtocols);
+         for (DependentRoute dependentRoute : dependentRoutes) {
+            Prefix prefix = dependentRoute.getPrefix();
+            PotentialExport potentialExport = new PotentialExport(
+                  node, prefix, exportProtocol, dependentRoute);
+            originationExports.add(potentialExport);
+         }
+      }
+      return originationExports;
+   }
+
    private void initPotentialEbgpRecursiveExports() {
+      RoutingProtocol exportProtocol = RoutingProtocol.BGP;
       Set<RoutingProtocol> permittedProtocols = new HashSet<RoutingProtocol>();
       permittedProtocols.add(RoutingProtocol.BGP);
       permittedProtocols.add(RoutingProtocol.IBGP);
@@ -309,8 +371,8 @@ public final class ProtocolDependencyAnalysis {
                }
                for (DependentRoute dependentRoute : dependentRoutes) {
                   Prefix prefix = dependentRoute.getPrefix();
-                  PotentialExport potentialExport = new EbgpPotentialExport(
-                        node, prefix, dependentRoute);
+                  PotentialExport potentialExport = new PotentialExport(
+                        node, prefix, exportProtocol, dependentRoute);
                   _dependencyDatabase.addPotentialExport(potentialExport);
                }
             }
@@ -349,6 +411,7 @@ public final class ProtocolDependencyAnalysis {
    }
 
    private void initPotentialIbgpOriginationExports() {
+      RoutingProtocol exportProtocol = RoutingProtocol.IBGP;
       Set<RoutingProtocol> permittedProtocols = new HashSet<RoutingProtocol>();
       permittedProtocols.addAll(Arrays.asList(RoutingProtocol.values()));
       permittedProtocols.remove(RoutingProtocol.BGP);
@@ -365,15 +428,50 @@ public final class ProtocolDependencyAnalysis {
                }
                Set<PolicyMap> originationPolicies = neighbor
                      .getOriginationPolicies();
-               for (PolicyMap originationPolicy : originationPolicies) {
-                  Set<DependentRoute> dependentRoutes = getPermittedRoutes(
-                        node, originationPolicy, permittedProtocols);
-                  for (DependentRoute dependentRoute : dependentRoutes) {
-                     Prefix prefix = dependentRoute.getPrefix();
-                     PotentialExport potentialExport = new IbgpPotentialExport(
-                           node, prefix, dependentRoute);
-                     _dependencyDatabase.addPotentialExport(potentialExport);
+               Set<PolicyMap> exportPolicies = neighbor.getOutboundPolicyMaps();
+               if (!originationPolicies.isEmpty() && exportPolicies.isEmpty()) {
+                  Set<PotentialExport> originationExports = getPermittedExports(
+                        exportProtocol, permittedProtocols, node,
+                        originationPolicies);
+                  for (PotentialExport originationExport : originationExports) {
+                     _dependencyDatabase.addPotentialExport(originationExport);
                   }
+               }
+               else if (originationPolicies.isEmpty() && !exportPolicies.isEmpty()) {
+                  Set<PotentialExport> exportExports = getPermittedExports(
+                        exportProtocol, permittedProtocols, node,
+                        exportPolicies);
+                  for (PotentialExport exportExport : exportExports) {
+                     _dependencyDatabase.addPotentialExport(exportExport);
+                  }
+               }
+               else if (!originationPolicies.isEmpty() && !exportPolicies.isEmpty()) {
+                  Set<PotentialExport> originationExports = getPermittedExports(
+                        exportProtocol, permittedProtocols, node,
+                        originationPolicies);
+                  for (PolicyMap exportPolicy : exportPolicies) {
+                     for (PolicyMapClause clause : exportPolicy.getClauses()) {
+                        Set<RoutingProtocol> clauseProtocols = getClausePermittedProtocols(
+                              permittedProtocols, clause);
+                        Set<PrefixRange> clausePrefixRanges = getClausePrefixRanges(clause);
+                        for (PotentialExport originationExport : originationExports) {
+                           Prefix prefix = originationExport.getPrefix();
+                           RoutingProtocol sourceProtocol = originationExport
+                                 .getProtocol();
+                           if (clauseProtocols.contains(sourceProtocol)) {
+                              for (PrefixRange prefixRange : clausePrefixRanges) {
+                                 if (prefixRange.includesPrefix(prefix)) {
+                                    _dependencyDatabase
+                                          .addPotentialExport(originationExport);
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+               else {
+                  throw new BatfishException("todo");
                }
             }
          }
@@ -381,6 +479,7 @@ public final class ProtocolDependencyAnalysis {
    }
 
    private void initPotentialIbgpRecursiveExports() {
+      RoutingProtocol exportProtocol = RoutingProtocol.IBGP;
       Set<RoutingProtocol> permittedProtocols = new HashSet<RoutingProtocol>();
       permittedProtocols.add(RoutingProtocol.BGP);
       permittedProtocols.add(RoutingProtocol.IBGP);
@@ -410,8 +509,8 @@ public final class ProtocolDependencyAnalysis {
                }
                for (DependentRoute dependentRoute : dependentRoutes) {
                   Prefix prefix = dependentRoute.getPrefix();
-                  PotentialExport potentialExport = new IbgpPotentialExport(
-                        node, prefix, dependentRoute);
+                  PotentialExport potentialExport = new PotentialExport(
+                        node, prefix, exportProtocol, dependentRoute);
                   _dependencyDatabase.addPotentialExport(potentialExport);
                }
             }
@@ -611,7 +710,7 @@ public final class ProtocolDependencyAnalysis {
       }
    }
 
-   private void printDependencies() {
+   public void printDependencies(BatfishLogger logger) {
       StringBuilder sb = new StringBuilder();
       Map<RoutingProtocol, Map<RoutingProtocol, Set<Integer>>> protocolDependencies = _dependencyDatabase
             .getCompactProtocolDependencies();
@@ -634,14 +733,14 @@ public final class ProtocolDependencyAnalysis {
          }
          sb.append("}\n");
       }
-      _logger.output(sb.toString());
+      logger.output(sb.toString());
    }
 
    private void removeCycles() {
       _dependencyDatabase.removeCycles();
    }
 
-   public void run() {
+   public void initialize() {
       // One and done
       initConnectedRoutes();
       initStaticInterfaceRoutes();
@@ -680,14 +779,17 @@ public final class ProtocolDependencyAnalysis {
       initPotentialIbgpImports();
       initBgpRoutes();
 
-      cleanDatabase();
+      // cleanDatabase();
 
       initFixedPointRoutes();
 
       removeCycles();
 
       _dependencyDatabase.calculateDependencies();
-      printDependencies();
+   }
+
+   public DependencyDatabase getDependencyDatabase() {
+      return _dependencyDatabase;
    }
 
 }

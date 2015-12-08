@@ -9,7 +9,12 @@ import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.grammar.question.VariableType;
+import org.batfish.protocoldependency.DependencyDatabase;
+import org.batfish.protocoldependency.DependentRoute;
+import org.batfish.protocoldependency.PotentialExport;
+import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
 import org.batfish.representation.BgpNeighbor;
+import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
 import org.batfish.representation.Interface;
@@ -112,6 +117,8 @@ public class Environment {
 
    private boolean[] _unsafe;
 
+   private ProtocolDependencyAnalysis[] _protocolDependencyAnalysis;
+
    public Environment() {
       _assertionCount = new int[1];
       _assertions = new boolean[1];
@@ -131,6 +138,7 @@ public class Environment {
       _prefixes = new HashMap<String, Prefix>();
       _prefixSets = new HashMap<String, Set<Prefix>>();
       _prefixSpaces = new HashMap<String, PrefixSpace>();
+      _protocolDependencyAnalysis = new ProtocolDependencyAnalysis[1];
       _remoteIpsecVpnsInitialized = new boolean[1];
       _routeFilters = new HashMap<String, RouteFilterList>();
       _routeFilterLines = new HashMap<String, RouteFilterLine>();
@@ -214,6 +222,7 @@ public class Environment {
       copy._prefixSets = _prefixSets;
       copy._prefixSpaces = _prefixSpaces;
       copy._protocol = _protocol;
+      copy._protocolDependencyAnalysis = _protocolDependencyAnalysis;
       copy._protocols = _protocols;
       copy._remoteIpsecVpn = _remoteIpsecVpn;
       copy._remoteIpsecVpnsInitialized = _remoteIpsecVpnsInitialized;
@@ -400,7 +409,84 @@ public class Environment {
       if (_bgpOriginationSpaceInitialized[0]) {
          return;
       }
+      initProtocolDependencyAnalysis();
+      DependencyDatabase database = _protocolDependencyAnalysis[0]
+            .getDependencyDatabase();
+
+      for (Entry<String, Configuration> e : _configurations.entrySet()) {
+         PrefixSpace ebgpExportSpace = new PrefixSpace();
+         String name = e.getKey();
+         Configuration node = e.getValue();
+         BgpProcess proc = node.getBgpProcess();
+         if (proc != null) {
+            Set<PotentialExport> bgpExports = database.getPotentialExports(
+                  name, RoutingProtocol.BGP);
+            for (PotentialExport export : bgpExports) {
+               DependentRoute exportSourceRoute = export.getDependency();
+               if (!exportSourceRoute.dependsOn(RoutingProtocol.BGP)
+                     && !exportSourceRoute.dependsOn(RoutingProtocol.IBGP)) {
+                  Prefix prefix = export.getPrefix();
+                  ebgpExportSpace.addPrefix(prefix);
+               }
+            }
+            proc.setOriginationSpace(ebgpExportSpace);
+         }
+      }
+
+      // for (Configuration node : _configurations.values()) {
+      // BgpProcess proc = node.getBgpProcess();
+      // PrefixSpace ebgpExportSpace = new PrefixSpace();
+      // if (proc != null) {
+      // for (BgpNeighbor neighbor : proc.getNeighbors().values()) {
+      // if (!neighbor.getRemoteAs().equals(neighbor.getLocalAs())) {
+      // Set<PolicyMap> originationPolicies = neighbor.getOriginationPolicies();
+      // Set<PolicyMap> exportPolicies = neighbor.getOutboundPolicyMaps();
+      // PrefixSpace originationSpace = new PrefixSpace();
+      // PrefixSpace exportSpace = new PrefixSpace();
+      // for (PolicyMap originationPolicy : neighbor
+      // .getOriginationPolicies()) {
+      // PrefixSpace currentOriginationSpace = originationPolicy
+      // .getPrefixSpace();
+      // originationSpace.addSpace(currentOriginationSpace);
+      // }
+      // for (PolicyMap exportPolicy : neighbor
+      // .getOutboundPolicyMaps()) {
+      // PrefixSpace currentExportSpace = exportPolicy
+      // .getPrefixSpace();
+      // exportSpace.addSpace(currentExportSpace);
+      // }
+      // if (originationPolicies.isEmpty() && exportPolicies.isEmpty()) {
+      // PrefixRange fullRange = new PrefixRange(Prefix.ZERO, new SubRange(0,
+      // 32));
+      // ebgpExportSpace.addPrefixRange(fullRange);
+      // break;
+      // }
+      // else if (originationPolicies.isEmpty() && !exportPolicies.isEmpty()) {
+      // ebgpExportSpace.addSpace(exportSpace);
+      // }
+      // else if (!originationPolicies.isEmpty() && exportPolicies.isEmpty()) {
+      // ebgpExportSpace.addSpace(originationSpace);
+      // }
+      // else {
+      // PrefixSpace intersectSpace =
+      // originationSpace.intersection(exportSpace);
+      // ebgpExportSpace.addSpace(intersectSpace);
+      // }
+      // }
+      // }
+      // proc.setOriginationSpace(ebgpExportSpace);
+      // }
+      // }
+
       _bgpOriginationSpaceInitialized[0] = true;
+   }
+
+   private void initProtocolDependencyAnalysis() {
+      if (_protocolDependencyAnalysis[0] != null) {
+         return;
+      }
+      _protocolDependencyAnalysis[0] = new ProtocolDependencyAnalysis(
+            _configurations);
    }
 
    public void initRemoteIpsecVpns() {

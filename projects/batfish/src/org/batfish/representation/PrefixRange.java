@@ -1,7 +1,6 @@
-package org.batfish.protocoldependency;
+package org.batfish.representation;
 
 import org.batfish.common.Pair;
-import org.batfish.representation.Prefix;
 import org.batfish.util.SubRange;
 
 public class PrefixRange extends Pair<Prefix, SubRange> {
@@ -39,6 +38,21 @@ public class PrefixRange extends Pair<Prefix, SubRange> {
       long argMaskedPrefixAsLong = argPrefix.getAddress()
             .getNetworkAddress(prefixLength).asLong();
       return maskedPrefixAsLong == argMaskedPrefixAsLong;
+   }
+
+   public boolean includesPrefixRange(PrefixRange argPrefixRange) {
+      Prefix prefix = getPrefix();
+      SubRange lengthRange = getLengthRange();
+      int prefixLength = prefix.getPrefixLength();
+      long maskedPrefixAsLong = prefix.getAddress()
+            .getNetworkAddress(prefixLength).asLong();
+      Prefix argPrefix = argPrefixRange.getPrefix();
+      SubRange argLengthRange = argPrefixRange.getLengthRange();
+      long argMaskedPrefixAsLong = argPrefix.getAddress()
+            .getNetworkAddress(prefixLength).asLong();
+      return maskedPrefixAsLong == argMaskedPrefixAsLong
+            && lengthRange.getStart() <= argLengthRange.getStart()
+            && lengthRange.getEnd() >= argLengthRange.getEnd();
    }
 
 }
