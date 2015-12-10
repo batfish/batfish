@@ -2,11 +2,11 @@ package org.batfish.question.boolean_expr;
 
 import org.batfish.question.Environment;
 
-public class IfExpr extends BaseBooleanExpr {
+public final class IfExpr extends BaseBooleanExpr {
 
-   private BooleanExpr _antecedent;
+   private final BooleanExpr _antecedent;
 
-   private BooleanExpr _consequent;
+   private final BooleanExpr _consequent;
 
    public IfExpr(BooleanExpr antecedent, BooleanExpr consequent) {
       _antecedent = antecedent;

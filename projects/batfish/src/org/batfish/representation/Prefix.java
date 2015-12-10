@@ -5,7 +5,7 @@ import java.io.Serializable;
 import org.batfish.common.BatfishException;
 import org.batfish.util.Util;
 
-public class Prefix implements Comparable<Prefix>, Serializable {
+public final class Prefix implements Comparable<Prefix>, Serializable {
 
    /**
     *
@@ -90,6 +90,10 @@ public class Prefix implements Comparable<Prefix>, Serializable {
       return _address.getNetworkAddress(_prefixLength);
    }
 
+   public Prefix getNetworkPrefix() {
+      return new Prefix(getNetworkAddress(), _prefixLength);
+   }
+
    public int getPrefixLength() {
       return _prefixLength;
    }
@@ -117,4 +121,5 @@ public class Prefix implements Comparable<Prefix>, Serializable {
    public String toString() {
       return _address.toString() + "/" + _prefixLength;
    }
+
 }

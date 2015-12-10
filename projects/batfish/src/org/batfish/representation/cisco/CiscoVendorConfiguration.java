@@ -703,9 +703,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
    private org.batfish.representation.Interface toInterface(Interface iface,
          Map<String, IpAccessList> ipAccessLists,
-         Map<String, PolicyMap> policyMaps) {
+         Map<String, PolicyMap> policyMaps, Configuration c) {
       org.batfish.representation.Interface newIface = new org.batfish.representation.Interface(
-            iface.getName());
+            iface.getName(), c);
       newIface.setDescription(iface.getDescription());
       newIface.setActive(iface.getActive());
       newIface.setBandwidth(iface.getBandwidth());
@@ -1703,7 +1703,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             continue;
          }
          org.batfish.representation.Interface newInterface = toInterface(iface,
-               c.getIpAccessLists(), c.getPolicyMaps());
+               c.getIpAccessLists(), c.getPolicyMaps(), c);
          c.getInterfaces().put(newInterface.getName(), newInterface);
       }
 

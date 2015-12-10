@@ -10,12 +10,17 @@ public enum BaseCaseBooleanExpr implements BooleanExpr {
    @Override
    public Boolean evaluate(Environment environment) {
       switch (this) {
+
       case FALSE:
          return false;
+
       case TRUE:
          return true;
+
       default:
-         throw new BatfishException("Invalid StaticBooleanExpr");
+         throw new BatfishException("Invalid "
+               + this.getClass().getSimpleName());
+
       }
    }
 

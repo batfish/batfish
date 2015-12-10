@@ -3,7 +3,7 @@ package org.batfish.question.boolean_expr;
 import org.batfish.common.BatfishException;
 import org.batfish.question.Environment;
 
-public class VarBooleanExpr extends BaseBooleanExpr {
+public final class VarBooleanExpr extends BaseBooleanExpr {
 
    private final String _variable;
 

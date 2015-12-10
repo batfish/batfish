@@ -49,6 +49,8 @@ public class Interface extends NamedStructure {
 
    private IpAccessList _outgoingFilter;
 
+   private Configuration _owner;
+
    private Prefix _prefix;
 
    private PolicyMap _routingPolicy;
@@ -59,11 +61,12 @@ public class Interface extends NamedStructure {
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
 
-   public Interface(String name) {
+   public Interface(String name, Configuration owner) {
       super(name);
       _active = true;
       _allPrefixes = new TreeSet<Prefix>();
       _nativeVlan = 1;
+      _owner = owner;
       _switchportMode = SwitchportMode.NONE;
       _allowedVlans = new ArrayList<SubRange>();
       _secondaryPrefixes = new TreeSet<Prefix>();
@@ -143,6 +146,10 @@ public class Interface extends NamedStructure {
 
    public IpAccessList getOutgoingFilter() {
       return _outgoingFilter;
+   }
+
+   public Configuration getOwner() {
+      return _owner;
    }
 
    public Prefix getPrefix() {

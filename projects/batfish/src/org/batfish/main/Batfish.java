@@ -623,7 +623,7 @@ public class Batfish implements AutoCloseable {
    private void answerProtocolDependencies(ProtocolDependenciesQuestion question) {
       checkConfigurations();
       Map<String, Configuration> configurations = loadConfigurations();
-      new ProtocolDependencyAnalysis(configurations, _settings, _logger).run();
+      new ProtocolDependencyAnalysis(configurations).printDependencies(_logger);
    }
 
    private void answerReachability(ReachabilityQuestion question) {
@@ -1362,7 +1362,8 @@ public class Batfish implements AutoCloseable {
             Ip ip = new Ip(currentStartingIpAsLong + offset);
             Prefix prefix = new Prefix(ip, subnetBits);
             String ifaceName = currentPair.getInterface();
-            Interface iface = new Interface(ifaceName);
+            Interface iface = new Interface(ifaceName, configs.get(currentPair
+                  .getHostname()));
             iface.setPrefix(prefix);
 
             // dirty hack for setting bandwidth for now
@@ -1429,13 +1430,6 @@ public class Batfish implements AutoCloseable {
       clause.getMatchLines().add(matchLine);
       clause.setAction(PolicyMapAction.PERMIT);
 
-      // create flow sink interface common to all stubs
-      String flowSinkName = "TenGibabitEthernet100/100";
-      Interface flowSink = new Interface(flowSinkName);
-      flowSink.setPrefix(Prefix.ZERO);
-      flowSink.setActive(true);
-      flowSink.setBandwidth(10E9d);
-
       Set<String> skipWarningNodes = new HashSet<String>();
 
       for (Configuration config : configs.values()) {
@@ -1497,6 +1491,13 @@ public class Batfish implements AutoCloseable {
                   if (stub == null) {
                      stub = new Configuration(hostname);
                      stubConfigurations.put(hostname, stub);
+                     // create flow sink interface for stub with common deatils
+                     String flowSinkName = "TenGibabitEthernet100/100";
+                     Interface flowSink = new Interface(flowSinkName, stub);
+                     flowSink.setPrefix(Prefix.ZERO);
+                     flowSink.setActive(true);
+                     flowSink.setBandwidth(10E9d);
+
                      stub.getInterfaces().put(flowSinkName, flowSink);
                      stub.setBgpProcess(new BgpProcess());
                      stub.getPolicyMaps().put(stubOriginationPolicyName,
@@ -1512,7 +1513,8 @@ public class Batfish implements AutoCloseable {
                   Map<String, Interface> stubInterfaces = stub.getInterfaces();
                   String stubInterfaceName = "TenGigabitEthernet0/"
                         + (stubInterfaces.size() - 1);
-                  Interface stubInterface = new Interface(stubInterfaceName);
+                  Interface stubInterface = new Interface(stubInterfaceName,
+                        stub);
                   stubInterfaces.put(stubInterfaceName, stubInterface);
                   stubInterface.setPrefix(new Prefix(neighborAddress, prefix
                         .getPrefixLength()));

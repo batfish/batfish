@@ -63,15 +63,7 @@ public class SetAddStatement implements Statement {
          environment.getStringSets().get(_caller).add(stringVal);
          break;
 
-      case ACTION:
-      case BOOLEAN:
-      case INT:
-      case IP:
-      case PREFIX:
-      case RANGE:
-      case REGEX:
-      case ROUTE_FILTER:
-      case STRING:
+      // $CASES-OMITTED$
       default:
          throw new BatfishException("invalid set type");
       }

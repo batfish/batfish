@@ -1,30 +1,35 @@
 package org.batfish.question.statement;
 
+import java.util.Collection;
 import java.util.List;
 
-import org.batfish.common.BatfishLogger;
-import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.representation.Configuration;
 
-public class ForEachNodeStatement implements Statement {
+public class ForEachNodeStatement extends ForEachStatement<Configuration> {
 
-   List<Statement> _statements;
-
-   public ForEachNodeStatement(List<Statement> statements) {
-      _statements = statements;
+   public ForEachNodeStatement(List<Statement> statements, String var) {
+      super(statements, var);
    }
 
    @Override
-   public void execute(Environment environment, BatfishLogger logger,
-         Settings settings) {
-      for (Configuration node : environment.getNodes()) {
-         Environment statementEnv = environment.copy();
-         statementEnv.setNode(node);
-         for (Statement statement : _statements) {
-            statement.execute(statementEnv, logger, settings);
-         }
-      }
+   protected Collection<Configuration> getCollection(Environment environment) {
+      return environment.getAllNodes();
+   }
+
+   @Override
+   protected Configuration getOldVarVal(Environment environment) {
+      return environment.getNodes().get(_var);
+   }
+
+   @Override
+   protected void writeVal(Environment environment, Configuration t) {
+      environment.setNode(t);
+   }
+
+   @Override
+   protected void writeVarVal(Environment environment, Configuration t) {
+      environment.getNodes().put(_var, t);
    }
 
 }

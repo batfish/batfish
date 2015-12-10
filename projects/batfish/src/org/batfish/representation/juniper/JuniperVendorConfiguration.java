@@ -415,7 +415,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    private org.batfish.representation.Interface toInterface(Interface iface) {
       String name = iface.getName();
       org.batfish.representation.Interface newIface = new org.batfish.representation.Interface(
-            name);
+            name, _c);
       String inAclName = iface.getIncomingFilter();
       if (inAclName != null) {
          IpAccessList inAcl = _c.getIpAccessLists().get(inAclName);

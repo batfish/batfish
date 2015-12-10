@@ -1260,7 +1260,7 @@ public class Synthesizer {
                prunedInterfaces.add(ifaceName);
             }
             if (!i.getActive() && topologyInterfaces.contains(i)) {
-               Interface blankInterface = new Interface(ifaceName);
+               Interface blankInterface = new Interface(ifaceName, c);
                blankInterface.setActive(false);
                interfaces.put(ifaceName, blankInterface);
             }
