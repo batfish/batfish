@@ -8,8 +8,9 @@ public class IntersectionPrefixSpacePrefixSpaceExpr extends
       PrefixSpacePrefixSpaceExpr {
 
    private final PrefixSpaceExpr _arg;
-   
-   public IntersectionPrefixSpacePrefixSpaceExpr(PrefixSpaceExpr caller, PrefixSpaceExpr arg) {
+
+   public IntersectionPrefixSpacePrefixSpaceExpr(PrefixSpaceExpr caller,
+         PrefixSpaceExpr arg) {
       super(caller);
       _arg = arg;
    }

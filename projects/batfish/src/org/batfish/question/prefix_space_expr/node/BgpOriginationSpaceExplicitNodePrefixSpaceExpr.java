@@ -5,7 +5,8 @@ import org.batfish.question.node_expr.NodeExpr;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PrefixSpace;
 
-public class BgpOriginationSpaceExplicitNodePrefixSpaceExpr extends NodePrefixSpaceExpr {
+public class BgpOriginationSpaceExplicitNodePrefixSpaceExpr extends
+      NodePrefixSpaceExpr {
 
    public BgpOriginationSpaceExplicitNodePrefixSpaceExpr(NodeExpr caller) {
       super(caller);

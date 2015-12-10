@@ -1904,7 +1904,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitSrt_discard(Srt_discardContext ctx) {
       _currentStaticRoute.setDrop(true);
    }
-   
+
    @Override
    public void exitSrt_next_hop(Srt_next_hopContext ctx) {
       if (ctx.IP_ADDRESS() != null) {

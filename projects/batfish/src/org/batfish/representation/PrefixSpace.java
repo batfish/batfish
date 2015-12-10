@@ -6,8 +6,6 @@ import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.batfish.util.SubRange;
-
 public class PrefixSpace {
 
    private static class BitTrie {
@@ -36,10 +34,6 @@ public class PrefixSpace {
             addPrefixRange(prefixRange);
          }
       }
-
-      // public Set<DependentRoute> getPrefix(Ip address, BitSet addressBits) {
-      // return _root.getLongestPrefixMatch(address, addressBits, 0);
-      // }
 
       public boolean containsPrefixRange(PrefixRange prefixRange) {
          Prefix prefix = prefixRange.getPrefix();
@@ -173,9 +167,7 @@ public class PrefixSpace {
    private static BitSet getAddressBits(Ip address) {
       int addressAsInt = (int) (address.asLong());
       ByteBuffer b = ByteBuffer.allocate(4);
-
-      b.order(ByteOrder.LITTLE_ENDIAN); // optional, the initial order of a byte
-                                        // buffer is always BIG_ENDIAN.
+      b.order(ByteOrder.LITTLE_ENDIAN);
       b.putInt(addressAsInt);
       BitSet bitsWithHighestMostSignificant = BitSet.valueOf(b.array());
       BitSet bits = new BitSet(NUM_BITS);
@@ -191,6 +183,10 @@ public class PrefixSpace {
       _trie = new BitTrie();
    }
 
+   public void addPrefix(Prefix prefix) {
+      addPrefixRange(PrefixRange.fromPrefix(prefix));
+   }
+
    public void addPrefixRange(PrefixRange prefixRange) {
       _trie.addPrefixRange(prefixRange);
    }
@@ -198,6 +194,10 @@ public class PrefixSpace {
    public void addSpace(PrefixSpace prefixSpace) {
       _trie.addTrieNodeSpace(prefixSpace._trie._root);
 
+   }
+
+   public boolean containsPrefix(Prefix prefix) {
+      return containsPrefixRange(PrefixRange.fromPrefix(prefix));
    }
 
    public boolean containsPrefixRange(PrefixRange prefixRange) {
@@ -228,10 +228,9 @@ public class PrefixSpace {
       return !intersection.isEmpty();
    }
 
-   public void addPrefix(Prefix prefix) {
-      int prefixLength = prefix.getPrefixLength();
-      PrefixRange prefixRange = new PrefixRange(prefix, new SubRange(prefixLength, prefixLength));
-      addPrefixRange(prefixRange);
+   @Override
+   public String toString() {
+      return getPrefixRanges().toString();
    }
 
 }

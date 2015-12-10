@@ -102,11 +102,16 @@ import org.batfish.question.node_expr.NodeExpr;
 import org.batfish.question.node_expr.VarNodeExpr;
 import org.batfish.question.policy_map_clause_expr.BaseCasePolicyMapClauseExpr;
 import org.batfish.question.policy_map_clause_expr.PolicyMapClauseExpr;
+import org.batfish.question.policy_map_clause_expr.VarPolicyMapClauseExpr;
+import org.batfish.question.policy_map_expr.PolicyMapExpr;
+import org.batfish.question.policy_map_expr.VarPolicyMapExpr;
 import org.batfish.question.prefix_expr.PrefixExpr;
 import org.batfish.question.prefix_expr.iface.PrefixInterfacePrefixExpr;
 import org.batfish.question.prefix_expr.static_route.PrefixStaticRoutePrefixExpr;
 import org.batfish.question.prefix_space_expr.PrefixSpaceExpr;
+import org.batfish.question.prefix_space_expr.VarPrefixSpaceExpr;
 import org.batfish.question.prefix_space_expr.node.BgpOriginationSpaceExplicitNodePrefixSpaceExpr;
+import org.batfish.question.prefix_space_expr.prefix_space.IntersectionPrefixSpacePrefixSpaceExpr;
 import org.batfish.question.route_filter_expr.BaseCaseRouteFilterExpr;
 import org.batfish.question.route_filter_expr.RouteFilterExpr;
 import org.batfish.question.route_filter_line_expr.BaseCaseRouterFilterLineExpr;
@@ -129,7 +134,7 @@ import org.batfish.question.statement.ForEachRouteFilterInSetStatement;
 import org.batfish.question.statement.ForEachRouteFilterStatement;
 import org.batfish.question.statement.ForEachStaticRouteStatement;
 import org.batfish.question.statement.IfStatement;
-import org.batfish.question.statement.IntegerAssignment;
+import org.batfish.question.statement.Assignment;
 import org.batfish.question.statement.PrintfStatement;
 import org.batfish.question.statement.SetAddStatement;
 import org.batfish.question.statement.SetClearStatement;
@@ -174,6 +179,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private static final String ERR_CONVERT_INTERFACE = "Cannot convert parse tree node to interface expression";
 
    private static final String ERR_CONVERT_IP = "Cannot convert parse tree node to IP expression";
+
+   private static final String ERR_CONVERT_POLICY_MAP = "Cannot convert parse tree node to policy map expression";
 
    private static final String ERR_CONVERT_POLICY_MAP_CLAUSE = "Cannot convert parse tree node to policy map clause expression";
 
@@ -598,16 +605,6 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
-   private BooleanExpr toBooleanExpr(Clause_boolean_exprContext ctx) {
-      PolicyMapClauseExpr caller = toPolicyMapClauseExpr(ctx.caller);
-      if (ctx.clause_permit_boolean_expr() != null) {
-         return new PermitPolicyMapClauseBooleanExpr(caller);
-      }
-      else {
-         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
-      }
-   }
-
    private BooleanExpr toBooleanExpr(Eq_exprContext expr) {
       if (expr.lhs_int != null) {
          IntExpr lhs = toIntExpr(expr.lhs_int);
@@ -865,6 +862,16 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return orExpr;
    }
 
+   private BooleanExpr toBooleanExpr(Policy_map_clause_boolean_exprContext ctx) {
+      PolicyMapClauseExpr caller = toPolicyMapClauseExpr(ctx.caller);
+      if (ctx.policy_map_clause_permit_boolean_expr() != null) {
+         return new PermitPolicyMapClauseBooleanExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
+      }
+   }
+
    private BooleanExpr toBooleanExpr(Prefix_space_boolean_exprContext ctx) {
       PrefixSpaceExpr caller = toPrefixSpaceExpr(ctx.caller);
       if (ctx.prefix_space_overlaps_boolean_expr() != null) {
@@ -885,9 +892,6 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       if (ctx.bgp_neighbor_boolean_expr() != null) {
          return toBooleanExpr(ctx.bgp_neighbor_boolean_expr());
       }
-      else if (ctx.clause_boolean_expr() != null) {
-         return toBooleanExpr(ctx.clause_boolean_expr());
-      }
       else if (ctx.interface_boolean_expr() != null) {
          return toBooleanExpr(ctx.interface_boolean_expr());
       }
@@ -899,6 +903,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else if (ctx.node_boolean_expr() != null) {
          return toBooleanExpr(ctx.node_boolean_expr());
+      }
+      else if (ctx.policy_map_clause_boolean_expr() != null) {
+         return toBooleanExpr(ctx.policy_map_clause_boolean_expr());
       }
       else if (ctx.prefix_space_boolean_expr() != null) {
          return toBooleanExpr(ctx.prefix_space_boolean_expr());
@@ -947,20 +954,47 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private Expr toExpr(ExprContext ctx) {
-      if (ctx.boolean_expr() != null) {
+      if (ctx.bgp_neighbor_expr() != null) {
+         return toBgpNeighborExpr(ctx.bgp_neighbor_expr());
+      }
+      else if (ctx.boolean_expr() != null) {
          return toBooleanExpr(ctx.boolean_expr());
       }
       else if (ctx.int_expr() != null) {
          return toIntExpr(ctx.int_expr());
       }
+      else if (ctx.interface_expr() != null) {
+         return toInterfaceExpr(ctx.interface_expr());
+      }
       else if (ctx.ip_expr() != null) {
          return toIpExpr(ctx.ip_expr());
+      }
+      else if (ctx.ipsec_vpn_expr() != null) {
+         return toIpsecVpnExpr(ctx.ipsec_vpn_expr());
+      }
+      else if (ctx.node_expr() != null) {
+         return toNodeExpr(ctx.node_expr());
+      }
+      else if (ctx.policy_map_expr() != null) {
+         return toPolicyMapExpr(ctx.policy_map_expr());
+      }
+      else if (ctx.policy_map_clause_expr() != null) {
+         return toPolicyMapClauseExpr(ctx.policy_map_clause_expr());
       }
       else if (ctx.prefix_expr() != null) {
          return toPrefixExpr(ctx.prefix_expr());
       }
+      else if (ctx.prefix_space_expr() != null) {
+         return toPrefixSpaceExpr(ctx.prefix_space_expr());
+      }
+      else if (ctx.route_filter_expr() != null) {
+         return toRouteFilterExpr(ctx.route_filter_expr());
+      }
       else if (ctx.route_filter_line_expr() != null) {
          return toRouteFilterLineExpr(ctx.route_filter_line_expr());
+      }
+      else if (ctx.static_route_expr() != null) {
+         return toStaticRouteExpr(ctx.static_route_expr());
       }
       else if (ctx.string_expr() != null) {
          return toStringExpr(ctx.string_expr());
@@ -1163,12 +1197,27 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    }
 
-   private PolicyMapClauseExpr toPolicyMapClauseExpr(Clause_exprContext ctx) {
+   private PolicyMapClauseExpr toPolicyMapClauseExpr(
+         Policy_map_clause_exprContext ctx) {
       if (ctx.CLAUSE() != null) {
          return BaseCasePolicyMapClauseExpr.CLAUSE;
       }
+      else if (ctx.var_policy_map_clause_expr() != null) {
+         return new VarPolicyMapClauseExpr(ctx.var_policy_map_clause_expr()
+               .VARIABLE().getText());
+      }
       else {
          throw conversionError(ERR_CONVERT_POLICY_MAP_CLAUSE, ctx);
+      }
+   }
+
+   private PolicyMapExpr toPolicyMapExpr(Policy_map_exprContext ctx) {
+      if (ctx.var_policy_map_expr() != null) {
+         return new VarPolicyMapExpr(ctx.var_policy_map_expr().VARIABLE()
+               .getText());
+      }
+      else {
+         throw conversionError(ERR_CONVERT_POLICY_MAP, ctx);
       }
    }
 
@@ -1289,6 +1338,26 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       if (ctx.node_prefix_space_expr() != null) {
          return toPrefixSpaceExpr(ctx.node_prefix_space_expr());
       }
+      else if (ctx.prefix_space_prefix_space_expr() != null) {
+         PrefixSpaceExpr caller = toPrefixSpaceExpr(ctx.prefix_space_expr());
+         return toPrefixSpaceExpr(caller, ctx.prefix_space_prefix_space_expr());
+      }
+      else if (ctx.var_prefix_space_expr() != null) {
+         return new VarPrefixSpaceExpr(ctx.var_prefix_space_expr().VARIABLE()
+               .getText());
+      }
+      else {
+         throw conversionError(ERR_CONVERT_PREFIX_SPACE, ctx);
+      }
+   }
+
+   private PrefixSpaceExpr toPrefixSpaceExpr(PrefixSpaceExpr caller,
+         Prefix_space_prefix_space_exprContext ctx) {
+      if (ctx.prefix_space_intersection_prefix_space_expr() != null) {
+         PrefixSpaceExpr arg = toPrefixSpaceExpr(ctx
+               .prefix_space_intersection_prefix_space_expr().arg);
+         return new IntersectionPrefixSpacePrefixSpaceExpr(caller, arg);
+      }
       else {
          throw conversionError(ERR_CONVERT_PREFIX_SPACE, ctx);
       }
@@ -1397,8 +1466,68 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private Statement toStatement(AssignmentContext ctx) {
-      if (ctx.int_assignment() != null) {
-         return toStatement(ctx.int_assignment());
+      String variable = ctx.VARIABLE().getText();
+      if (ctx.bgp_neighbor_expr() != null) {
+         BgpNeighborExpr expr = toBgpNeighborExpr(ctx.bgp_neighbor_expr());
+         return new Assignment(variable, expr, VariableType.BGP_NEIGHBOR);
+      }
+      else if (ctx.boolean_expr() != null) {
+         BooleanExpr expr = toBooleanExpr(ctx.boolean_expr());
+         return new Assignment(variable, expr, VariableType.BOOLEAN);
+      }
+      else if (ctx.int_expr() != null) {
+         IntExpr expr = toIntExpr(ctx.int_expr());
+         return new Assignment(variable, expr, VariableType.INT);
+      }
+      else if (ctx.interface_expr() != null) {
+         InterfaceExpr expr = toInterfaceExpr(ctx.interface_expr());
+         return new Assignment(variable, expr, VariableType.INTERFACE);
+      }
+      else if (ctx.ip_expr() != null) {
+         IpExpr expr = toIpExpr(ctx.ip_expr());
+         return new Assignment(variable, expr, VariableType.IP);
+      }
+      else if (ctx.ipsec_vpn_expr() != null) {
+         IpsecVpnExpr expr = toIpsecVpnExpr(ctx.ipsec_vpn_expr());
+         return new Assignment(variable, expr, VariableType.IPSEC_VPN);
+      }
+      else if (ctx.node_expr() != null) {
+         NodeExpr expr = toNodeExpr(ctx.node_expr());
+         return new Assignment(variable, expr, VariableType.NODE);
+      }
+      else if (ctx.policy_map_expr() != null) {
+         PolicyMapExpr expr = toPolicyMapExpr(ctx.policy_map_expr());
+         return new Assignment(variable, expr, VariableType.POLICY_MAP);
+      }
+      else if (ctx.policy_map_clause_expr() != null) {
+         PolicyMapClauseExpr expr = toPolicyMapClauseExpr(ctx
+               .policy_map_clause_expr());
+         return new Assignment(variable, expr, VariableType.POLICY_MAP_CLAUSE);
+      }
+      else if (ctx.prefix_expr() != null) {
+         PrefixExpr expr = toPrefixExpr(ctx.prefix_expr());
+         return new Assignment(variable, expr, VariableType.PREFIX);
+      }
+      else if (ctx.prefix_space_expr() != null) {
+         PrefixSpaceExpr expr = toPrefixSpaceExpr(ctx.prefix_space_expr());
+         return new Assignment(variable, expr, VariableType.PREFIX_SPACE);
+      }
+      else if (ctx.route_filter_expr() != null) {
+         RouteFilterExpr expr = toRouteFilterExpr(ctx.route_filter_expr());
+         return new Assignment(variable, expr, VariableType.ROUTE_FILTER);
+      }
+      else if (ctx.route_filter_line_expr() != null) {
+         RouteFilterLineExpr expr = toRouteFilterLineExpr(ctx
+               .route_filter_line_expr());
+         return new Assignment(variable, expr, VariableType.ROUTE_FILTER_LINE);
+      }
+      else if (ctx.static_route_expr() != null) {
+         StaticRouteExpr expr = toStaticRouteExpr(ctx.static_route_expr());
+         return new Assignment(variable, expr, VariableType.STATIC_ROUTE);
+      }
+      else if (ctx.string_expr() != null) {
+         StringExpr expr = toStringExpr(ctx.string_expr());
+         return new Assignment(variable, expr, VariableType.STRING);
       }
       else {
          throw conversionError(ERR_CONVERT_STATEMENT, ctx);
@@ -1487,12 +1616,6 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       List<Statement> trueStatements = toStatements(ctx.true_statements);
       List<Statement> falseStatements = toStatements(ctx.false_statements);
       return new IfStatement(guard, trueStatements, falseStatements);
-   }
-
-   private Statement toStatement(Int_assignmentContext ctx) {
-      String variable = ctx.VARIABLE().getText();
-      IntExpr intExpr = toIntExpr(ctx.int_expr());
-      return new IntegerAssignment(variable, intExpr);
    }
 
    private Statement toStatement(MethodContext ctx) {

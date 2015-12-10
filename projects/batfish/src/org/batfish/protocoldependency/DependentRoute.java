@@ -36,6 +36,15 @@ public class DependentRoute implements Comparable<DependentRoute> {
       return ret;
    }
 
+   public boolean dependsOn(RoutingProtocol protocol) {
+      for (DependentRoute dependentRoute : _dependencies) {
+         if (dependentRoute.dependsOn(protocol)) {
+            return true;
+         }
+      }
+      return _protocol == protocol;
+   }
+
    public Set<DependentRoute> getDependencies() {
       return _dependencies;
    }
@@ -93,15 +102,6 @@ public class DependentRoute implements Comparable<DependentRoute> {
    public String toString() {
       return DependentRoute.class.getSimpleName() + "<" + _node + ", "
             + _prefix.toString() + ", " + _protocol.toString() + ">";
-   }
-
-   public boolean dependsOn(RoutingProtocol protocol) {
-      for (DependentRoute dependentRoute : _dependencies) {
-         if (dependentRoute.dependsOn(protocol)) {
-            return true;
-         }
-      }
-      return _protocol == protocol;
    }
 
 }

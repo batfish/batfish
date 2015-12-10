@@ -47,9 +47,54 @@ assertion [String scope]
 
 assignment
 :
-   boolean_assignment
-   | int_assignment
-   | prefix_space_assignment
+   var = VARIABLE COLON_EQUALS
+   (
+      bgp_neighbor_expr
+      {_typeBindings.put($var.getText(), VariableType.BGP_NEIGHBOR);}
+
+      | boolean_expr
+      {_typeBindings.put($var.getText(), VariableType.BOOLEAN);}
+
+      | int_expr
+      {_typeBindings.put($var.getText(), VariableType.INT);}
+
+      | interface_expr
+      {_typeBindings.put($var.getText(), VariableType.INTERFACE);}
+
+      | ip_expr
+      {_typeBindings.put($var.getText(), VariableType.IP);}
+
+      | ipsec_vpn_expr
+      {_typeBindings.put($var.getText(), VariableType.IPSEC_VPN);}
+
+      | node_expr
+      {_typeBindings.put($var.getText(), VariableType.NODE);}
+
+      | policy_map_expr
+      {_typeBindings.put($var.getText(), VariableType.POLICY_MAP);}
+
+      | policy_map_clause_expr
+      {_typeBindings.put($var.getText(), VariableType.POLICY_MAP_CLAUSE);}
+
+      | prefix_expr
+      {_typeBindings.put($var.getText(), VariableType.PREFIX);}
+
+      | prefix_space_expr
+      {_typeBindings.put($var.getText(), VariableType.PREFIX_SPACE);}
+
+      | route_filter_expr
+      {_typeBindings.put($var.getText(), VariableType.ROUTE_FILTER);}
+
+      | route_filter_line_expr
+      {_typeBindings.put($var.getText(), VariableType.ROUTE_FILTER_LINE);}
+
+      | static_route_expr
+      {_typeBindings.put($var.getText(), VariableType.STATIC_ROUTE);}
+
+      | string_expr
+      {_typeBindings.put($var.getText(), VariableType.STRING);}
+
+   ) SEMICOLON
 ;
 
 bgp_neighbor_boolean_expr
@@ -107,13 +152,6 @@ bgp_neighbor_remote_ip_ip_expr
    REMOTE_IP
 ;
 
-boolean_assignment
-:
-   var = VARIABLE COLON_EQUALS boolean_expr SEMICOLON
-   {_typeBindings.put($var.getText(), VariableType.BOOLEAN);}
-
-;
-
 boolean_expr
 :
    and_expr
@@ -137,24 +175,6 @@ boolean_literal
 :
    TRUE
    | FALSE
-;
-
-clause_boolean_expr
-:
-   caller = clause_expr PERIOD
-   (
-      clause_permit_boolean_expr
-   )
-;
-
-clause_expr
-:
-   CLAUSE
-;
-
-clause_permit_boolean_expr
-:
-   PERMIT
 ;
 
 default_binding
@@ -236,6 +256,14 @@ locals [boolean isVar, String var]
 
    node_expr
    |
+   {!$isVar || _typeBindings.get($var) == VariableType.POLICY_MAP}?
+
+   policy_map_expr
+   |
+   {!$isVar || _typeBindings.get($var) == VariableType.POLICY_MAP_CLAUSE}?
+
+   policy_map_clause_expr
+   |
    {!$isVar || _typeBindings.get($var) == VariableType.PREFIX}?
 
    prefix_expr
@@ -243,6 +271,10 @@ locals [boolean isVar, String var]
    {!$isVar || _typeBindings.get($var) == VariableType.PREFIX_SPACE}?
 
    prefix_space_expr
+   |
+   {!$isVar || _typeBindings.get($var) == VariableType.ROUTE_FILTER}?
+
+   route_filter_expr
    |
    {!$isVar || _typeBindings.get($var) == VariableType.ROUTE_FILTER_LINE}?
 
@@ -483,13 +515,6 @@ if_statement [String scope]
 ingress_path_question
 :
    INGRESS_PATH
-;
-
-int_assignment
-:
-   var = VARIABLE COLON_EQUALS int_expr SEMICOLON
-   {_typeBindings.put($var.getText(), VariableType.INT);}
-
 ;
 
 int_expr
@@ -916,18 +941,35 @@ or_expr
    )* CLOSE_BRACE
 ;
 
+policy_map_clause_boolean_expr
+:
+   caller = policy_map_clause_expr PERIOD
+   (
+      policy_map_clause_permit_boolean_expr
+   )
+;
+
+policy_map_clause_expr
+:
+   CLAUSE
+   | var_policy_map_clause_expr
+;
+
+policy_map_clause_permit_boolean_expr
+:
+   PERMIT
+;
+
+policy_map_expr
+:
+   var_policy_map_expr
+;
+
 prefix_expr
 :
    generated_route_prefix_expr
    | interface_prefix_expr
    | static_route_prefix_expr
-;
-
-prefix_space_assignment
-:
-   var = VARIABLE COLON_EQUALS prefix_space_expr SEMICOLON
-   {_typeBindings.put($var.getText(), VariableType.PREFIX_SPACE);}
-
 ;
 
 prefix_space_boolean_expr
@@ -942,6 +984,7 @@ prefix_space_expr
 :
    node_prefix_space_expr
    | caller = prefix_space_expr PERIOD prefix_space_prefix_space_expr
+   | var_prefix_space_expr
 ;
 
 prefix_space_intersection_prefix_space_expr
@@ -972,11 +1015,11 @@ printf_statement
 property_boolean_expr
 :
    bgp_neighbor_boolean_expr
-   | clause_boolean_expr
    | interface_boolean_expr
    | ipsec_vpn_boolean_expr
    | line_boolean_expr
    | node_boolean_expr
+   | policy_map_clause_boolean_expr
    | prefix_space_boolean_expr
    | static_route_boolean_expr
 ;
@@ -1091,11 +1134,13 @@ reachability_question
 route_filter_expr
 :
    route_filter_route_filter_expr
+   | var_route_filter_expr
 ;
 
 route_filter_line_expr
 :
    route_filter_line_line_expr
+   | var_route_filter_line_expr
 ;
 
 route_filter_line_line_expr
@@ -1423,6 +1468,31 @@ var_interface_expr
 ;
 
 var_node_expr
+:
+   VARIABLE
+;
+
+var_policy_map_clause_expr
+:
+   VARIABLE
+;
+
+var_policy_map_expr
+:
+   VARIABLE
+;
+
+var_prefix_space_expr
+:
+   VARIABLE
+;
+
+var_route_filter_expr
+:
+   VARIABLE
+;
+
+var_route_filter_line_expr
 :
    VARIABLE
 ;

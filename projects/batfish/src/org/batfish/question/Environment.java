@@ -91,6 +91,8 @@ public class Environment {
 
    private RoutingProtocol _protocol;
 
+   private ProtocolDependencyAnalysis[] _protocolDependencyAnalysis;
+
    private Set<RoutingProtocol> _protocols;
 
    private IpsecVpn _remoteIpsecVpn;
@@ -116,8 +118,6 @@ public class Environment {
    private Map<String, Set<String>> _stringSets;
 
    private boolean[] _unsafe;
-
-   private ProtocolDependencyAnalysis[] _protocolDependencyAnalysis;
 
    public Environment() {
       _assertionCount = new int[1];

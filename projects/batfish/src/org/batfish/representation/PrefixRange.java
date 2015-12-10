@@ -10,6 +10,11 @@ public class PrefixRange extends Pair<Prefix, SubRange> {
     */
    private static final long serialVersionUID = 1L;
 
+   public static PrefixRange fromPrefix(Prefix prefix) {
+      int prefixLength = prefix.getPrefixLength();
+      return new PrefixRange(prefix, new SubRange(prefixLength, prefixLength));
+   }
+
    public PrefixRange(Prefix prefix, SubRange lengthRange) {
       super(prefix, lengthRange);
    }
