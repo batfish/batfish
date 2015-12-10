@@ -169,7 +169,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_QUEUE_COMPLETED_WORK, "batfishcompletedwork");
       setDefaultProperty(ARG_QUEUE_INCOMPLETE_WORK, "batfishincompletework");
       setDefaultProperty(ARG_QUEUE_TYPE, WorkQueue.Type.memory.toString());
-      setDefaultProperty(ARG_SERVICE_HOST, "localhost");
+      setDefaultProperty(ARG_SERVICE_HOST, "0.0.0.0");
       setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
       setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_WORK_PORT);
       setDefaultProperty(ARG_SSL_KEYSTORE_FILE, "selfsigned.jks");
