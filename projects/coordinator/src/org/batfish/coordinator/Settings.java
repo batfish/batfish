@@ -10,17 +10,19 @@ import org.batfish.coordinator.queues.WorkQueue;
 
 public class Settings extends BaseSettings {
 
-   private static final String ARG_AUTHORIZER_TYPE = "coordinator.AuthorizerType";
-   private static final String ARG_DISABLE_SSL = "coordinator.DisableSsl";
+   private static final String ARG_AUTHORIZER_TYPE = "authorizertype";
+   private static final String ARG_DB_AUTHORIZER_CONN_STRING = "dbconnection";
+   private static final String ARG_DISABLE_SSL = "disablessl";
    /**
     * (not wired to command line)
     */
+   private static final String ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS = "dbcacheexpiry";
    private static final String ARG_FILE_AUTHORIZER_PERMS_FILE = "coordinator.FileAuthPermsFile";
    private static final String ARG_FILE_AUTHORIZER_ROOT_DIR = "coordinator.FileAuthRootDir";
    private static final String ARG_FILE_AUTHORIZER_USERS_FILE = "coordinator.FileAuthUsersFile";
    private static final String ARG_HELP = "help";
-   private static final String ARG_LOG_FILE = "coordinator.LogFile";
-   private static final String ARG_LOG_LEVEL = "coordinator.LogLevel";
+   private static final String ARG_LOG_FILE = "logfile";
+   private static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_PERIOD_ASSIGN_WORK_MS = "coordinator.PeriodAssignWorkMs";
    private static final String ARG_PERIOD_CHECK_WORK_MS = "coordinator.PeriodCheckWorkMs";
    private static final String ARG_PERIOD_WORKER_STATUS_REFRESH_MS = "coordinator.PeriodWorkerRefreshMs";
@@ -39,6 +41,8 @@ public class Settings extends BaseSettings {
    private static final String EXECUTABLE_NAME = "coordinator";
 
    private Authorizer.Type _authorizerType;
+   private String _dbAuthorizerConnString;
+   private long _dbCacheExpiryMs;
    private String _logFile;
    private String _logLevel;
    private long _periodAssignWorkMs;
@@ -67,6 +71,14 @@ public class Settings extends BaseSettings {
 
    public Authorizer.Type getAuthorizationType() {
       return _authorizerType;
+   }
+
+   public long getDbAuthorizerCacheExpiryMs() {
+      return _dbCacheExpiryMs;
+   }
+
+   public String getDbAuthorizerConnString() {
+      return _dbAuthorizerConnString;
    }
 
    public String getFileAuthorizerPermsFile() {
@@ -155,6 +167,8 @@ public class Settings extends BaseSettings {
 
    private void initConfigDefaults() {
       setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none.toString());
+      setDefaultProperty(ARG_DB_AUTHORIZER_CONN_STRING, "jdbc:mysql://localhost/batfish_test?user=batfish&password=batfish");
+      setDefaultProperty(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, 60 * 1000);
       setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
       setDefaultProperty(ARG_FILE_AUTHORIZER_PERMS_FILE, "perms.json");
       setDefaultProperty(ARG_FILE_AUTHORIZER_ROOT_DIR, "fileauthorizer");
@@ -185,6 +199,12 @@ public class Settings extends BaseSettings {
    private void initOptions() {
       addOption(ARG_AUTHORIZER_TYPE, "type of authorizer to use",
             "authorizer type");
+
+      addOption(ARG_DB_AUTHORIZER_CONN_STRING, "connection string for authorizer db",
+            "connection string");
+
+      addOption(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, "when to expire information from authorizer database",
+            "expiration time (ms)");
 
       addBooleanOption(ARG_DISABLE_SSL, "disable coordinator ssl");
 
@@ -230,6 +250,8 @@ public class Settings extends BaseSettings {
 
       _authorizerType = Authorizer.Type
             .valueOf(getStringOptionValue(ARG_AUTHORIZER_TYPE));
+      _dbAuthorizerConnString = getStringOptionValue(ARG_DB_AUTHORIZER_CONN_STRING);
+      _dbCacheExpiryMs = getLongOptionValue(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS);
       _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);
       _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);
       _queueType = WorkQueue.Type.valueOf(getStringOptionValue(ARG_QUEUE_TYPE));
@@ -247,5 +269,4 @@ public class Settings extends BaseSettings {
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
       _useSsl = !getBooleanOptionValue(ARG_DISABLE_SSL);
    }
-
 }

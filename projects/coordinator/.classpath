@@ -42,5 +42,6 @@
 	<classpathentry kind="lib" path="lib/commons/commons-io-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-configuration-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/mysql/mysql-connector-java-5.1.37.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
