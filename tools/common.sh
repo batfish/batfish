@@ -273,6 +273,11 @@ batfish_inject_packets() {
 }
 export -f batfish_inject_packets
 
+batfish_gendoc() {
+   echo "Generating documentation under batfish_doc"
+   javadoc -d batfish_doc -sourcepath "$COMMON_PATH/src;$BATFISH_PATH/src;$COORDINATOR_PATH/src;$BATFISH_CLIENT_PATH/src" -subpackages org.batfish
+}
+
 batfish_generate_z3_reachability() {
    batfish_date
    echo ": START: Extract z3 reachability relations"

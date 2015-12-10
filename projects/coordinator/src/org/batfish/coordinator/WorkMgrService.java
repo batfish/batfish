@@ -23,6 +23,12 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+/**
+ * 
+ */
+/**
+ * 
+ */
 @Path(CoordConsts.SVC_BASE_WORK_MGR)
 public class WorkMgrService {
 
@@ -44,6 +50,13 @@ public class WorkMgrService {
          throw new AccessControlException("container is not accessible by the api key");
    }
 
+   /**
+    * Deletes the specified container 
+    * 
+    * @param apiKey
+    * @param containerName
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_DEL_CONTAINER_RSC)
    @Produces(MediaType.APPLICATION_JSON)
@@ -77,6 +90,15 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Deletes the specified environment under the specified container and testrig
+    * 
+    * @param apiKey
+    * @param containerName
+    * @param envName
+    * @param testrigName
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_DEL_ENVIRONMENT_RSC)
    @Produces(MediaType.APPLICATION_JSON)
@@ -115,6 +137,15 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Deletes the specified question under the specified container, testrig
+    * 
+    * @param apiKey
+    * @param containerName
+    * @param questionName
+    * @param testrigName
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_DEL_QUESTION_RSC)
    @Produces(MediaType.APPLICATION_JSON)
@@ -153,6 +184,14 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Deletes the specified testrig under the specified container
+    * 
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_DEL_TESTRIG_RSC)
    @Produces(MediaType.APPLICATION_JSON)
@@ -198,6 +237,15 @@ public class WorkMgrService {
                   "Batfish coordinator: enter ../application.wadl (relative to your URL) to see supported methods"));
    }
 
+   /**
+    * Fetches the specified object from the specified container, testrig 
+    * 
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @param objectName
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_WORK_GET_OBJECT_RSC)
    @Produces(MediaType.APPLICATION_OCTET_STREAM)
@@ -261,6 +309,13 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Obtains the counts of completed and incomplete work iterms
+    * 
+    * @param apiKey
+    * @param workId
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_WORK_GET_WORKSTATUS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
@@ -301,6 +356,13 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Initializes a new container
+    * 
+    * @param apiKey
+    * @param containerPrefix
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_INIT_CONTAINER_RSC)
    @Produces(MediaType.APPLICATION_JSON)
@@ -336,6 +398,12 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * List the containers that the specified API key can access
+    * 
+    * @param apiKey
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_LIST_CONTAINERS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
@@ -366,6 +434,14 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Lists the environments under the specified container, testrig
+    * 
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_LIST_ENVIRONMENTS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
@@ -404,6 +480,14 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Lists the questions under the specified container, testrig
+    * 
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_LIST_QUESTIONS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
@@ -441,6 +525,13 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Lists the testrigs under the specified container
+    * 
+    * @param apiKey
+    * @param containerName
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_LIST_TESTRIGS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
@@ -475,6 +566,13 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Queues new work 
+    * 
+    * @param apiKey
+    * @param workItemStr
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_WORK_QUEUE_WORK_RSC)
    @Produces(MediaType.APPLICATION_JSON)
@@ -536,6 +634,16 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Uploads a new environment under the container, testrig
+    * 
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @param envName
+    * @param fileStream
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_WORK_UPLOAD_ENV_RSC)
    @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -578,6 +686,19 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Uploads a new questions under container, testrig. 
+    * Expects a file containing the question and a file 
+    * containing the parameters.
+    * 
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @param qName
+    * @param fileStream
+    * @param paramFileStream
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_WORK_UPLOAD_QUESTION_RSC)
    @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -621,6 +742,15 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Uploads a new testrig under the specified container
+    * 
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @param fileStream
+    * @return
+    */
    @POST
    @Path(CoordConsts.SVC_WORK_UPLOAD_TESTRIG_RSC)
    @Consumes(MediaType.MULTIPART_FORM_DATA)
