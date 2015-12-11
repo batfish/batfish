@@ -8,9 +8,11 @@ import org.batfish.question.Environment;
 import org.batfish.question.Expr;
 import org.batfish.question.int_expr.IntExpr;
 import org.batfish.question.ip_expr.IpExpr;
+import org.batfish.question.node_expr.NodeExpr;
 import org.batfish.question.prefix_expr.PrefixExpr;
 import org.batfish.question.route_filter_expr.RouteFilterExpr;
 import org.batfish.question.string_expr.StringExpr;
+import org.batfish.representation.Configuration;
 import org.batfish.representation.Ip;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterList;
@@ -43,6 +45,12 @@ public class SetAddStatement implements Statement {
          IpExpr ipExpr = (IpExpr) _expr;
          Ip ipVal = ipExpr.evaluate(environment);
          environment.getIpSets().get(_caller).add(ipVal);
+         break;
+
+      case SET_NODE:
+         NodeExpr nodeExpr = (NodeExpr) _expr;
+         Configuration nodeVal = nodeExpr.evaluate(environment);
+         environment.getNodeSets().get(_caller).add(nodeVal);
          break;
 
       case SET_PREFIX:

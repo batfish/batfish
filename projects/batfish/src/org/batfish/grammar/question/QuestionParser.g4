@@ -11,7 +11,13 @@ package org.batfish.grammar.question;
 
 @members {
    private java.util.Map<String, VariableType> _typeBindings = new java.util.HashMap<String, VariableType>(); 
-   
+   private VariableType retrieveTypeBinding(String var) {
+      VariableType ret = _typeBindings.get(var);
+      if (ret == null) {
+         throw new org.batfish.common.BatfishException("Missing type for variable: " + var);
+      }
+      return ret;
+   }
 }
 
 action
@@ -415,14 +421,16 @@ foreach_node_statement [String scope]
 :
    FOREACH NODE
    (
-      var = VARIABLE
-      {_typeBindings.put($var.getText(), VariableType.NODE);}
+      (
+         var = VARIABLE
+         {_typeBindings.put($var.getText(), VariableType.NODE);}
 
-      OPEN_BRACE statement [scope]+ CLOSE_BRACE
-   )
-   |
-   (
-      OPEN_BRACE statement ["node"]+ CLOSE_BRACE
+         OPEN_BRACE statement [scope]+ CLOSE_BRACE
+      )
+      |
+      (
+         OPEN_BRACE statement ["node"]+ CLOSE_BRACE
+      )
    )
 ;
 
@@ -458,6 +466,15 @@ foreach_route_filter_in_set_statement
 foreach_static_route_statement
 :
    FOREACH STATIC_ROUTE OPEN_BRACE statement ["static_route"]+ CLOSE_BRACE
+;
+
+foreach_in_set_statement [String scope]
+locals [VariableType setVarType]
+:
+   FOREACH v = VARIABLE COLON set_var = VARIABLE
+   {$setVarType = _typeBindings.get($set_var.getText()); _typeBindings.put($v.getText(), $setVarType.elementType());}
+
+   OPEN_BRACE statement [scope]+ CLOSE_BRACE
 ;
 
 ge_expr
@@ -738,9 +755,17 @@ ipsec_vpn_name_string_expr
    NAME
 ;
 
-ipsec_vpn_owner_name_string_expr
+ipsec_vpn_node_expr
 :
-   OWNER_NAME
+   caller = ipsec_vpn_expr PERIOD
+   (
+      ipsec_vpn_owner_node_expr
+   )
+;
+
+ipsec_vpn_owner_node_expr
+:
+   OWNER
 ;
 
 ipsec_vpn_pre_shared_key_hash_string_expr
@@ -761,7 +786,6 @@ ipsec_vpn_string_expr
       | ipsec_vpn_ike_policy_name_string_expr
       | ipsec_vpn_ipsec_policy_name_string_expr
       | ipsec_vpn_name_string_expr
-      | ipsec_vpn_owner_name_string_expr
       | ipsec_vpn_pre_shared_key_hash_string_expr
    )
 ;
@@ -823,7 +847,13 @@ multipath_question
 
 neq_expr
 :
-   lhs = int_expr NOT_EQUALS rhs = int_expr
+   (
+      lhs_int = int_expr NOT_EQUALS rhs_int = int_expr
+   )
+   |
+   (
+      lhs_string = string_expr NOT_EQUALS rhs_string = string_expr
+   )
 ;
 
 node_bgp_boolean_expr
@@ -872,6 +902,7 @@ node_constraint
 node_expr
 :
    NODE
+   | ipsec_vpn_node_expr
    | var_node_expr
 ;
 
@@ -1167,17 +1198,58 @@ set_add_method [VariableType type, String caller]
 :
    ADD OPEN_PAREN
    (
+      {$type == VariableType.SET_BGP_NEIGHBOR}?
+
+      bgp_neighbor_expr
+      |
+      {$type == VariableType.SET_INTERFACE}?
+
+      interface_expr
+      |
       {$type == VariableType.SET_IP}?
 
       ip_expr
       |
-      {$type == VariableType.SET_STRING}?
+      {$type == VariableType.SET_IPSEC_VPN}?
 
-      expr
+      ipsec_vpn_expr
+      |
+      {$type == VariableType.SET_NODE}?
+
+      node_expr
+      |
+      {$type == VariableType.SET_POLICY_MAP}?
+
+      policy_map_expr
+      |
+      {$type == VariableType.SET_POLICY_MAP_CLAUSE}?
+
+      policy_map_clause_expr
+      |
+      {$type == VariableType.SET_PREFIX}?
+
+      prefix_expr
+      |
+      {$type == VariableType.SET_PREFIX_SPACE}?
+
+      prefix_space_expr
+      |
+      {$type == VariableType.SET_ROUTE_FILTER_LINE}?
+
+      route_filter_expr
       |
       {$type == VariableType.SET_ROUTE_FILTER}?
 
-      route_filter_expr
+      route_filter_line_expr
+      |
+      {$type == VariableType.SET_STATIC_ROUTE}?
+
+      static_route_expr
+      |
+      {$type == VariableType.SET_STRING}?
+
+      expr // at end on purpose
+
    ) CLOSE_PAREN
 ;
 
@@ -1189,17 +1261,58 @@ locals [VariableType type]
 
    PERIOD CONTAINS OPEN_PAREN
    (
+      {$type == VariableType.SET_BGP_NEIGHBOR}?
+
+      bgp_neighbor_expr
+      |
+      {$type == VariableType.SET_INTERFACE}?
+
+      interface_expr
+      |
       {$type == VariableType.SET_IP}?
 
       ip_expr
       |
-      {$type == VariableType.SET_STRING}?
+      {$type == VariableType.SET_IPSEC_VPN}?
 
-      expr
+      ipsec_vpn_expr
+      |
+      {$type == VariableType.SET_NODE}?
+
+      node_expr
+      |
+      {$type == VariableType.SET_POLICY_MAP}?
+
+      policy_map_expr
+      |
+      {$type == VariableType.SET_POLICY_MAP_CLAUSE}?
+
+      policy_map_clause_expr
+      |
+      {$type == VariableType.SET_PREFIX}?
+
+      prefix_expr
+      |
+      {$type == VariableType.SET_PREFIX_SPACE}?
+
+      prefix_space_expr
+      |
+      {$type == VariableType.SET_ROUTE_FILTER_LINE}?
+
+      route_filter_expr
       |
       {$type == VariableType.SET_ROUTE_FILTER}?
 
-      route_filter_expr
+      route_filter_line_expr
+      |
+      {$type == VariableType.SET_STATIC_ROUTE}?
+
+      static_route_expr
+      |
+      {$type == VariableType.SET_STRING}?
+
+      expr // at end on purpose
+
    ) CLOSE_PAREN
 ;
 
@@ -1219,8 +1332,18 @@ locals [String typeStr, VariableType type, VariableType oldType]
       {$typeStr = "set<";}
 
       (
-         settype = IP
+         settype = BGP_NEIGHBOR
+         | settype = INTERFACE
+         | settype = IP
+         | settype = IPSEC_VPN
+         | settype = NODE
+         | settype = POLICY_MAP
+         | settype = POLICY_MAP_CLAUSE
+         | settype = PREFIX
+         | settype = PREFIX_SPACE
          | settype = ROUTE_FILTER
+         | settype = ROUTE_FILTER_LINE
+         | settype = STATIC_ROUTE
          | settype = STRING
       )
       {
@@ -1312,6 +1435,7 @@ statement [String scope]
    {$scope.equals("node")}?
 
    foreach_static_route_statement
+   | foreach_in_set_statement [scope]
    | if_statement [scope]
    | method [scope]
    | printf_statement
@@ -1424,10 +1548,12 @@ true_expr
 typed_method [String scope, String caller]
 locals [VariableType type]
 :
-   {$type = _typeBindings.get($caller);}
+   {$type = retrieveTypeBinding($caller);}
 
-   set_add_method [$type, caller]
-   | set_clear_method [$type, caller]
+   (
+      set_add_method [$type, caller]
+      | set_clear_method [$type, caller]
+   )
 ;
 
 unless_statement [String scope]
@@ -1457,6 +1583,13 @@ var_boolean_expr
    var = VARIABLE
 ;
 
+var_expr returns [VariableType varType]
+:
+   v = VARIABLE
+   {$varType = _typeBindings.get($v.getText());}
+
+;
+
 var_int_expr
 :
    VARIABLE
@@ -1482,6 +1615,11 @@ var_policy_map_expr
    VARIABLE
 ;
 
+var_prefix_expr
+:
+   VARIABLE
+;
+
 var_prefix_space_expr
 :
    VARIABLE
@@ -1498,6 +1636,11 @@ var_route_filter_line_expr
 ;
 
 var_static_route_expr
+:
+   VARIABLE
+;
+
+var_string_expr
 :
    VARIABLE
 ;

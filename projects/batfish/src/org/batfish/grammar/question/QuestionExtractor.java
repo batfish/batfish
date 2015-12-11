@@ -36,7 +36,6 @@ import org.batfish.question.boolean_expr.BaseCaseBooleanExpr;
 import org.batfish.question.boolean_expr.BooleanExpr;
 import org.batfish.question.boolean_expr.SetContainsExpr;
 import org.batfish.question.boolean_expr.IfExpr;
-import org.batfish.question.boolean_expr.NeqExpr;
 import org.batfish.question.boolean_expr.NotExpr;
 import org.batfish.question.boolean_expr.OrExpr;
 import org.batfish.question.boolean_expr.VarBooleanExpr;
@@ -55,6 +54,7 @@ import org.batfish.question.boolean_expr.integer.IntGeExpr;
 import org.batfish.question.boolean_expr.integer.IntGtExpr;
 import org.batfish.question.boolean_expr.integer.IntLeExpr;
 import org.batfish.question.boolean_expr.integer.IntLtExpr;
+import org.batfish.question.boolean_expr.integer.IntNeqExpr;
 import org.batfish.question.boolean_expr.ipsec_vpn.CompatibleIkeProposalsIpsecVpnBooleanExpr;
 import org.batfish.question.boolean_expr.ipsec_vpn.CompatibleIpsecProposalsIpsecVpnBooleanExpr;
 import org.batfish.question.boolean_expr.ipsec_vpn.HasRemoteIpsecVpnIpsecVpnBooleanExpr;
@@ -75,6 +75,7 @@ import org.batfish.question.boolean_expr.string.StringGeExpr;
 import org.batfish.question.boolean_expr.string.StringGtExpr;
 import org.batfish.question.boolean_expr.string.StringLeExpr;
 import org.batfish.question.boolean_expr.string.StringLtExpr;
+import org.batfish.question.boolean_expr.string.StringNeqExpr;
 import org.batfish.question.int_expr.DifferenceIntExpr;
 import org.batfish.question.int_expr.IntExpr;
 import org.batfish.question.int_expr.LiteralIntExpr;
@@ -100,6 +101,7 @@ import org.batfish.question.ipsec_vpn_expr.ipsec_vpn.RemoteIpsecVpnIpsecVpnExpr;
 import org.batfish.question.node_expr.BaseCaseNodeExpr;
 import org.batfish.question.node_expr.NodeExpr;
 import org.batfish.question.node_expr.VarNodeExpr;
+import org.batfish.question.node_expr.ipsec_vpn.OwnerIpsecVpnNodeExpr;
 import org.batfish.question.policy_map_clause_expr.BaseCasePolicyMapClauseExpr;
 import org.batfish.question.policy_map_clause_expr.PolicyMapClauseExpr;
 import org.batfish.question.policy_map_clause_expr.VarPolicyMapClauseExpr;
@@ -151,7 +153,6 @@ import org.batfish.question.string_expr.ipsec_vpn.IkeGatewayNameIpsecVpnStringEx
 import org.batfish.question.string_expr.ipsec_vpn.IkePolicyNameIpsecVpnStringExpr;
 import org.batfish.question.string_expr.ipsec_vpn.IpsecPolicyNameIpsecVpnStringExpr;
 import org.batfish.question.string_expr.ipsec_vpn.NameIpsecVpnStringExpr;
-import org.batfish.question.string_expr.ipsec_vpn.OwnerNameIpsecVpnStringExpr;
 import org.batfish.question.string_expr.ipsec_vpn.PreSharedKeyHashIpsecVpnStringExpr;
 import org.batfish.question.string_expr.node.NameNodeStringExpr;
 import org.batfish.question.string_expr.protocol.ProtocolStringExpr;
@@ -179,6 +180,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private static final String ERR_CONVERT_INTERFACE = "Cannot convert parse tree node to interface expression";
 
    private static final String ERR_CONVERT_IP = "Cannot convert parse tree node to IP expression";
+
+   private static final String ERR_CONVERT_IPSEC_VPN = "Cannot convert parse tree node to ipsec_vpn expression";
+
+   private static final String ERR_CONVERT_NODE = "Cannot convert parse tree node to node expression";
 
    private static final String ERR_CONVERT_POLICY_MAP = "Cannot convert parse tree node to policy map expression";
 
@@ -509,14 +514,14 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
             action = ForwardingAction.DROP;
          }
          else {
-            throw new BatfishException(ERR_CONVERT_ACTION);
+            throw conversionError(ERR_CONVERT_ACTION, ctx);
          }
       }
       else if (ctx.VARIABLE() != null) {
          action = _parameters.getAction(ctx.VARIABLE().getText().substring(1));
       }
       else {
-         throw new BatfishException(ERR_CONVERT_ACTION);
+         throw conversionError(ERR_CONVERT_ACTION, ctx);
       }
       return action;
    }
@@ -530,7 +535,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
                ctx.var_bgp_neighbor_expr().var.getText());
       }
       else {
-         throw new BatfishException(ERR_CONVERT_BGP_NEIGHBOR);
+         throw conversionError(ERR_CONVERT_BGP_NEIGHBOR, ctx);
       }
    }
 
@@ -605,80 +610,80 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
-   private BooleanExpr toBooleanExpr(Eq_exprContext expr) {
-      if (expr.lhs_int != null) {
-         IntExpr lhs = toIntExpr(expr.lhs_int);
-         IntExpr rhs = toIntExpr(expr.rhs_int);
+   private BooleanExpr toBooleanExpr(Eq_exprContext ctx) {
+      if (ctx.lhs_int != null) {
+         IntExpr lhs = toIntExpr(ctx.lhs_int);
+         IntExpr rhs = toIntExpr(ctx.rhs_int);
          return new IntEqExpr(lhs, rhs);
       }
-      else if (expr.lhs_string != null) {
-         StringExpr lhs = toStringExpr(expr.lhs_string);
-         StringExpr rhs = toStringExpr(expr.rhs_string);
+      else if (ctx.lhs_string != null) {
+         StringExpr lhs = toStringExpr(ctx.lhs_string);
+         StringExpr rhs = toStringExpr(ctx.rhs_string);
          return new StringEqExpr(lhs, rhs);
       }
       else {
-         throw new BatfishException("invalid eq_expr");
+         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
       }
    }
 
-   private BooleanExpr toBooleanExpr(Ge_exprContext expr) {
-      if (expr.lhs_int != null) {
-         IntExpr lhs = toIntExpr(expr.lhs_int);
-         IntExpr rhs = toIntExpr(expr.rhs_int);
+   private BooleanExpr toBooleanExpr(Ge_exprContext ctx) {
+      if (ctx.lhs_int != null) {
+         IntExpr lhs = toIntExpr(ctx.lhs_int);
+         IntExpr rhs = toIntExpr(ctx.rhs_int);
          return new IntGeExpr(lhs, rhs);
       }
-      else if (expr.lhs_string != null) {
-         StringExpr lhs = toStringExpr(expr.lhs_string);
-         StringExpr rhs = toStringExpr(expr.rhs_string);
+      else if (ctx.lhs_string != null) {
+         StringExpr lhs = toStringExpr(ctx.lhs_string);
+         StringExpr rhs = toStringExpr(ctx.rhs_string);
          return new StringGeExpr(lhs, rhs);
       }
       else {
-         throw new BatfishException("invalid ge_expr");
+         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
       }
    }
 
-   private BooleanExpr toBooleanExpr(Gt_exprContext expr) {
-      if (expr.lhs_int != null) {
-         IntExpr lhs = toIntExpr(expr.lhs_int);
-         IntExpr rhs = toIntExpr(expr.rhs_int);
+   private BooleanExpr toBooleanExpr(Gt_exprContext ctx) {
+      if (ctx.lhs_int != null) {
+         IntExpr lhs = toIntExpr(ctx.lhs_int);
+         IntExpr rhs = toIntExpr(ctx.rhs_int);
          return new IntGtExpr(lhs, rhs);
       }
-      else if (expr.lhs_string != null) {
-         StringExpr lhs = toStringExpr(expr.lhs_string);
-         StringExpr rhs = toStringExpr(expr.rhs_string);
+      else if (ctx.lhs_string != null) {
+         StringExpr lhs = toStringExpr(ctx.lhs_string);
+         StringExpr rhs = toStringExpr(ctx.rhs_string);
          return new StringGtExpr(lhs, rhs);
       }
       else {
-         throw new BatfishException("invalid gt_expr");
+         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
       }
    }
 
-   private BooleanExpr toBooleanExpr(If_exprContext expr) {
-      BooleanExpr antecedent = toBooleanExpr(expr.antecedent);
-      BooleanExpr consequent = toBooleanExpr(expr.consequent);
+   private BooleanExpr toBooleanExpr(If_exprContext ctx) {
+      BooleanExpr antecedent = toBooleanExpr(ctx.antecedent);
+      BooleanExpr consequent = toBooleanExpr(ctx.consequent);
       IfExpr ifExpr = new IfExpr(antecedent, consequent);
       return ifExpr;
    }
 
-   private BooleanExpr toBooleanExpr(Interface_boolean_exprContext expr) {
-      InterfaceExpr caller = toInterfaceExpr(expr.caller);
-      if (expr.interface_enabled_boolean_expr() != null) {
+   private BooleanExpr toBooleanExpr(Interface_boolean_exprContext ctx) {
+      InterfaceExpr caller = toInterfaceExpr(ctx.caller);
+      if (ctx.interface_enabled_boolean_expr() != null) {
          return new EnabledInterfaceBooleanExpr(caller);
       }
-      else if (expr.interface_has_ip_boolean_expr() != null) {
+      else if (ctx.interface_has_ip_boolean_expr() != null) {
          return new HasIpInterfaceBooleanExpr(caller);
       }
-      else if (expr.interface_isis_boolean_expr() != null) {
-         return toBooleanExpr(caller, expr.interface_isis_boolean_expr());
+      else if (ctx.interface_isis_boolean_expr() != null) {
+         return toBooleanExpr(caller, ctx.interface_isis_boolean_expr());
       }
-      else if (expr.interface_isloopback_boolean_expr() != null) {
+      else if (ctx.interface_isloopback_boolean_expr() != null) {
          return new IsLoopbackInterfaceBooleanExpr(caller);
       }
-      else if (expr.interface_ospf_boolean_expr() != null) {
-         return toBooleanExpr(caller, expr.interface_ospf_boolean_expr());
+      else if (ctx.interface_ospf_boolean_expr() != null) {
+         return toBooleanExpr(caller, ctx.interface_ospf_boolean_expr());
       }
       else {
-         throw new BatfishException(ERR_CONVERT_BOOLEAN);
+         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
       }
    }
 
@@ -714,38 +719,38 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
-   private BooleanExpr toBooleanExpr(Ipsec_vpn_boolean_exprContext expr) {
-      IpsecVpnExpr caller = toIpsecVpnExpr(expr.ipsec_vpn_expr());
-      if (expr.ipsec_vpn_compatible_ike_proposals_boolean_expr() != null) {
+   private BooleanExpr toBooleanExpr(Ipsec_vpn_boolean_exprContext ctx) {
+      IpsecVpnExpr caller = toIpsecVpnExpr(ctx.ipsec_vpn_expr());
+      if (ctx.ipsec_vpn_compatible_ike_proposals_boolean_expr() != null) {
          return new CompatibleIkeProposalsIpsecVpnBooleanExpr(caller);
       }
-      else if (expr.ipsec_vpn_compatible_ipsec_proposals_boolean_expr() != null) {
+      else if (ctx.ipsec_vpn_compatible_ipsec_proposals_boolean_expr() != null) {
          return new CompatibleIpsecProposalsIpsecVpnBooleanExpr(caller);
       }
-      else if (expr.ipsec_vpn_has_remote_ipsec_vpn_boolean_expr() != null) {
+      else if (ctx.ipsec_vpn_has_remote_ipsec_vpn_boolean_expr() != null) {
          return new HasRemoteIpsecVpnIpsecVpnBooleanExpr(caller);
       }
-      else if (expr.ipsec_vpn_has_single_remote_ipsec_vpn_boolean_expr() != null) {
+      else if (ctx.ipsec_vpn_has_single_remote_ipsec_vpn_boolean_expr() != null) {
          return new HasSingleRemoteIpsecVpnIpsecVpnBooleanExpr(caller);
       }
       else {
-         throw new BatfishException("Missing conversion for expression");
+         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
       }
    }
 
-   private BooleanExpr toBooleanExpr(Le_exprContext expr) {
-      if (expr.lhs_int != null) {
-         IntExpr lhs = toIntExpr(expr.lhs_int);
-         IntExpr rhs = toIntExpr(expr.rhs_int);
+   private BooleanExpr toBooleanExpr(Le_exprContext ctx) {
+      if (ctx.lhs_int != null) {
+         IntExpr lhs = toIntExpr(ctx.lhs_int);
+         IntExpr rhs = toIntExpr(ctx.rhs_int);
          return new IntLeExpr(lhs, rhs);
       }
-      else if (expr.lhs_string != null) {
-         StringExpr lhs = toStringExpr(expr.lhs_string);
-         StringExpr rhs = toStringExpr(expr.rhs_string);
+      else if (ctx.lhs_string != null) {
+         StringExpr lhs = toStringExpr(ctx.lhs_string);
+         StringExpr rhs = toStringExpr(ctx.rhs_string);
          return new StringLeExpr(lhs, rhs);
       }
       else {
-         throw new BatfishException("invalid le_expr");
+         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
       }
    }
 
@@ -759,26 +764,36 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
-   private BooleanExpr toBooleanExpr(Lt_exprContext expr) {
-      if (expr.lhs_int != null) {
-         IntExpr lhs = toIntExpr(expr.lhs_int);
-         IntExpr rhs = toIntExpr(expr.rhs_int);
+   private BooleanExpr toBooleanExpr(Lt_exprContext ctx) {
+      if (ctx.lhs_int != null) {
+         IntExpr lhs = toIntExpr(ctx.lhs_int);
+         IntExpr rhs = toIntExpr(ctx.rhs_int);
          return new IntLtExpr(lhs, rhs);
       }
-      else if (expr.lhs_string != null) {
-         StringExpr lhs = toStringExpr(expr.lhs_string);
-         StringExpr rhs = toStringExpr(expr.rhs_string);
+      else if (ctx.lhs_string != null) {
+         StringExpr lhs = toStringExpr(ctx.lhs_string);
+         StringExpr rhs = toStringExpr(ctx.rhs_string);
          return new StringLtExpr(lhs, rhs);
       }
       else {
-         throw new BatfishException("invalid lt_expr");
+         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
       }
    }
 
-   private BooleanExpr toBooleanExpr(Neq_exprContext expr) {
-      IntExpr lhs = toIntExpr(expr.lhs);
-      IntExpr rhs = toIntExpr(expr.rhs);
-      return new NeqExpr(lhs, rhs);
+   private BooleanExpr toBooleanExpr(Neq_exprContext ctx) {
+      if (ctx.lhs_int != null) {
+         IntExpr lhs = toIntExpr(ctx.lhs_int);
+         IntExpr rhs = toIntExpr(ctx.rhs_int);
+         return new IntNeqExpr(lhs, rhs);
+      }
+      else if (ctx.lhs_string != null) {
+         StringExpr lhs = toStringExpr(ctx.lhs_string);
+         StringExpr rhs = toStringExpr(ctx.rhs_string);
+         return new StringNeqExpr(lhs, rhs);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
+      }
    }
 
    private BooleanExpr toBooleanExpr(Node_boolean_exprContext ctx) {
@@ -920,17 +935,47 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private BooleanExpr toBooleanExpr(Set_contains_exprContext ctx) {
       Expr expr;
-      if (ctx.ip_expr() != null) {
+      if (ctx.bgp_neighbor_expr() != null) {
+         expr = toBgpNeighborExpr(ctx.bgp_neighbor_expr());
+      }
+      else if (ctx.interface_expr() != null) {
+         expr = toInterfaceExpr(ctx.interface_expr());
+      }
+      else if (ctx.ip_expr() != null) {
          expr = toIpExpr(ctx.ip_expr());
       }
-      else if (ctx.expr() != null) {
-         expr = toExpr(ctx.expr());
+      else if (ctx.ipsec_vpn_expr() != null) {
+         expr = toIpsecVpnExpr(ctx.ipsec_vpn_expr());
+      }
+      else if (ctx.node_expr() != null) {
+         expr = toNodeExpr(ctx.node_expr());
+      }
+      else if (ctx.prefix_expr() != null) {
+         expr = toPrefixExpr(ctx.prefix_expr());
+      }
+      else if (ctx.prefix_space_expr() != null) {
+         expr = toPrefixSpaceExpr(ctx.prefix_space_expr());
+      }
+      else if (ctx.policy_map_expr() != null) {
+         expr = toPolicyMapExpr(ctx.policy_map_expr());
+      }
+      else if (ctx.policy_map_clause_expr() != null) {
+         expr = toPolicyMapClauseExpr(ctx.policy_map_clause_expr());
       }
       else if (ctx.route_filter_expr() != null) {
          expr = toRouteFilterExpr(ctx.route_filter_expr());
       }
+      else if (ctx.route_filter_line_expr() != null) {
+         expr = toRouteFilterLineExpr(ctx.route_filter_line_expr());
+      }
+      else if (ctx.static_route_expr() != null) {
+         expr = toStaticRouteExpr(ctx.static_route_expr());
+      }
+      else if (ctx.expr() != null) {
+         expr = toExpr(ctx.expr());
+      }
       else {
-         throw conversionError(ERR_CONVERT_STATEMENT, ctx);
+         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
       }
       return new SetContainsExpr(expr, ctx.caller.getText(), ctx.type);
    }
@@ -1013,7 +1058,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
                .getText());
       }
       else {
-         throw new BatfishException(ERR_CONVERT_INTERFACE);
+         throw conversionError(ERR_CONVERT_INTERFACE, ctx);
       }
    }
 
@@ -1157,30 +1202,40 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
-   private IpsecVpnExpr toIpsecVpnExpr(Ipsec_vpn_exprContext expr) {
-      if (expr.IPSEC_VPN() != null) {
+   private IpsecVpnExpr toIpsecVpnExpr(Ipsec_vpn_exprContext ctx) {
+      if (ctx.IPSEC_VPN() != null) {
          return BaseCaseIpsecVpnExpr.IPSEC_VPN;
       }
-      else if (expr.REMOTE_IPSEC_VPN() != null) {
+      else if (ctx.REMOTE_IPSEC_VPN() != null) {
          return BaseCaseIpsecVpnExpr.REMOTE_IPSEC_VPN;
       }
-      else if (expr.ipsec_vpn_expr() != null) {
-         return toIpsecVpnExpr(expr.ipsec_vpn_expr(),
-               expr.ipsec_vpn_ipsec_vpn_expr());
+      else if (ctx.ipsec_vpn_expr() != null) {
+         return toIpsecVpnExpr(ctx.ipsec_vpn_expr(),
+               ctx.ipsec_vpn_ipsec_vpn_expr());
       }
       else {
-         throw new BatfishException("Missing conversion for expression");
+         throw conversionError(ERR_CONVERT_IPSEC_VPN, ctx);
       }
    }
 
    private IpsecVpnExpr toIpsecVpnExpr(Ipsec_vpn_exprContext callerCtx,
-         Ipsec_vpn_ipsec_vpn_exprContext expr) {
+         Ipsec_vpn_ipsec_vpn_exprContext ctx) {
       IpsecVpnExpr caller = toIpsecVpnExpr(callerCtx);
-      if (expr.ipsec_vpn_remote_ipsec_vpn_ipsec_vpn_expr() != null) {
+      if (ctx.ipsec_vpn_remote_ipsec_vpn_ipsec_vpn_expr() != null) {
          return new RemoteIpsecVpnIpsecVpnExpr(caller);
       }
       else {
-         throw new BatfishException("Missing conversion for expression");
+         throw conversionError(ERR_CONVERT_IPSEC_VPN, ctx);
+      }
+   }
+
+   private NodeExpr toNodeExpr(Ipsec_vpn_node_exprContext ctx) {
+      IpsecVpnExpr caller = toIpsecVpnExpr(ctx.caller);
+      if (ctx.ipsec_vpn_owner_node_expr() != null) {
+         return new OwnerIpsecVpnNodeExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_NODE, ctx);
       }
    }
 
@@ -1188,11 +1243,14 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       if (ctx.NODE() != null) {
          return BaseCaseNodeExpr.NODE;
       }
+      else if (ctx.ipsec_vpn_node_expr() != null) {
+         return toNodeExpr(ctx.ipsec_vpn_node_expr());
+      }
       else if (ctx.var_node_expr() != null) {
          return new VarNodeExpr(ctx.var_node_expr().VARIABLE().getText());
       }
       else {
-         throw new BatfishException("Missing conversion for expression");
+         throw conversionError(ERR_CONVERT_NODE, ctx);
       }
 
    }
@@ -1547,6 +1605,53 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return new ForEachGeneratedRouteStatement(toStatements(ctx.statement()));
    }
 
+   private Statement toStatement(Foreach_in_set_statementContext ctx) {
+      String var = ctx.v.getText();
+      String setVar = ctx.set_var.getText();
+      VariableType elementType = ctx.setVarType.elementType();
+      List<Statement> statements = toStatements(ctx.statement());
+      switch (elementType) {
+
+      case NODE:
+         return new ForEachNodeStatement(statements, var, setVar);
+
+      case ACTION:
+      case BGP_NEIGHBOR:
+      case BOOLEAN:
+      case INT:
+      case INTERFACE:
+      case IP:
+      case IPSEC_VPN:
+      case POLICY_MAP:
+      case POLICY_MAP_CLAUSE:
+      case PREFIX:
+      case PREFIX_SPACE:
+      case RANGE:
+      case REGEX:
+      case ROUTE_FILTER:
+      case ROUTE_FILTER_LINE:
+      case SET_BGP_NEIGHBOR:
+      case SET_INT:
+      case SET_INTERFACE:
+      case SET_IP:
+      case SET_IPSEC_VPN:
+      case SET_NODE:
+      case SET_POLICY_MAP:
+      case SET_POLICY_MAP_CLAUSE:
+      case SET_PREFIX:
+      case SET_PREFIX_SPACE:
+      case SET_ROUTE_FILTER:
+      case SET_ROUTE_FILTER_LINE:
+      case SET_STATIC_ROUTE:
+      case SET_STRING:
+      case STATIC_ROUTE:
+      case STRING:
+      default:
+         throw new BatfishException("element type not implemented: "
+               + elementType);
+      }
+   }
+
    private Statement toStatement(Foreach_interface_statementContext ctx) {
       return new ForEachInterfaceStatement(toStatements(ctx.statement()));
    }
@@ -1639,14 +1744,44 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private Statement toStatement(Set_add_methodContext ctx) {
       Expr expr;
-      if (ctx.ip_expr() != null) {
+      if (ctx.bgp_neighbor_expr() != null) {
+         expr = toBgpNeighborExpr(ctx.bgp_neighbor_expr());
+      }
+      else if (ctx.interface_expr() != null) {
+         expr = toInterfaceExpr(ctx.interface_expr());
+      }
+      else if (ctx.ip_expr() != null) {
          expr = toIpExpr(ctx.ip_expr());
       }
-      else if (ctx.expr() != null) {
-         expr = toExpr(ctx.expr());
+      else if (ctx.ipsec_vpn_expr() != null) {
+         expr = toIpsecVpnExpr(ctx.ipsec_vpn_expr());
+      }
+      else if (ctx.node_expr() != null) {
+         expr = toNodeExpr(ctx.node_expr());
+      }
+      else if (ctx.prefix_expr() != null) {
+         expr = toPrefixExpr(ctx.prefix_expr());
+      }
+      else if (ctx.prefix_space_expr() != null) {
+         expr = toPrefixSpaceExpr(ctx.prefix_space_expr());
+      }
+      else if (ctx.policy_map_expr() != null) {
+         expr = toPolicyMapExpr(ctx.policy_map_expr());
+      }
+      else if (ctx.policy_map_clause_expr() != null) {
+         expr = toPolicyMapClauseExpr(ctx.policy_map_clause_expr());
       }
       else if (ctx.route_filter_expr() != null) {
          expr = toRouteFilterExpr(ctx.route_filter_expr());
+      }
+      else if (ctx.route_filter_line_expr() != null) {
+         expr = toRouteFilterLineExpr(ctx.route_filter_line_expr());
+      }
+      else if (ctx.static_route_expr() != null) {
+         expr = toStaticRouteExpr(ctx.static_route_expr());
+      }
+      else if (ctx.expr() != null) {
+         expr = toExpr(ctx.expr());
       }
       else {
          throw conversionError(ERR_CONVERT_STATEMENT, ctx);
@@ -1719,6 +1854,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.foreach_static_route_statement() != null) {
          return toStatement(ctx.foreach_static_route_statement());
       }
+      else if (ctx.foreach_in_set_statement() != null) {
+         return toStatement(ctx.foreach_in_set_statement());
+      }
       else if (ctx.if_statement() != null) {
          return toStatement(ctx.if_statement());
       }
@@ -1775,7 +1913,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
                .getText());
       }
       else {
-         throw new BatfishException(ERR_CONVERT_STATIC_ROUTE);
+         throw conversionError(ERR_CONVERT_STATIC_ROUTE, ctx);
       }
    }
 
@@ -1801,9 +1939,6 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else if (ctx.ipsec_vpn_name_string_expr() != null) {
          return new NameIpsecVpnStringExpr(caller);
-      }
-      else if (ctx.ipsec_vpn_owner_name_string_expr() != null) {
-         return new OwnerNameIpsecVpnStringExpr(caller);
       }
       else if (ctx.ipsec_vpn_pre_shared_key_hash_string_expr() != null) {
          return new PreSharedKeyHashIpsecVpnStringExpr(caller);

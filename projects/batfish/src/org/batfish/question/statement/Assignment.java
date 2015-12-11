@@ -103,10 +103,19 @@ public class Assignment implements Statement {
       case ACTION:
       case RANGE:
       case REGEX:
+      case SET_BGP_NEIGHBOR:
       case SET_INT:
+      case SET_INTERFACE:
       case SET_IP:
+      case SET_IPSEC_VPN:
+      case SET_NODE:
+      case SET_POLICY_MAP:
+      case SET_POLICY_MAP_CLAUSE:
       case SET_PREFIX:
+      case SET_PREFIX_SPACE:
       case SET_ROUTE_FILTER:
+      case SET_ROUTE_FILTER_LINE:
+      case SET_STATIC_ROUTE:
       case SET_STRING:
       default:
          throw new BatfishException("Unsupported variable type: " + _type);

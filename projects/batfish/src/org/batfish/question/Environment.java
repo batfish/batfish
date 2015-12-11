@@ -41,6 +41,8 @@ public class Environment {
 
    private Map<String, BgpNeighbor> _bgpNeighbors;
 
+   private Map<String, Set<BgpNeighbor>> _bgpNeighborSets;
+
    private boolean[] _bgpOriginationSpaceInitialized;
 
    private Map<String, Boolean> _booleans;
@@ -61,11 +63,15 @@ public class Environment {
 
    private Map<String, Interface> _interfaces;
 
+   private Map<String, Set<Interface>> _interfaceSets;
+
    private Map<String, Ip> _ips;
 
    private IpsecVpn _ipsecVpn;
 
    private Map<String, IpsecVpn> _ipsecVpns;
+
+   private Map<String, Set<IpsecVpn>> _ipsecVpnSets;
 
    private Map<String, Set<Ip>> _ipSets;
 
@@ -77,17 +83,25 @@ public class Environment {
 
    private Map<String, Configuration> _nodes;
 
+   private Map<String, Set<Configuration>> _nodeSets;
+
    private PolicyMap _policyMap;
 
    private Map<String, PolicyMapClause> _policyMapClauses;
 
+   private Map<String, Set<PolicyMapClause>> _policyMapClauseSets;
+
    private Map<String, PolicyMap> _policyMaps;
+
+   private Map<String, Set<PolicyMap>> _policyMapSets;
 
    private Map<String, Prefix> _prefixes;
 
    private Map<String, Set<Prefix>> _prefixSets;
 
    private Map<String, PrefixSpace> _prefixSpaces;
+
+   private Map<String, Set<PrefixSpace>> _prefixSpaceSets;
 
    private RoutingProtocol _protocol;
 
@@ -105,6 +119,8 @@ public class Environment {
 
    private Map<String, RouteFilterLine> _routeFilterLines;
 
+   private Map<String, Set<RouteFilterLine>> _routeFilterLineSets;
+
    private Map<String, RouteFilterList> _routeFilters;
 
    private Set<RouteFilterList> _routeFilterSet;
@@ -115,6 +131,8 @@ public class Environment {
 
    private Map<String, StaticRoute> _staticRoutes;
 
+   private Map<String, Set<StaticRoute>> _staticRouteSets;
+
    private Map<String, Set<String>> _stringSets;
 
    private boolean[] _unsafe;
@@ -123,27 +141,36 @@ public class Environment {
       _assertionCount = new int[1];
       _assertions = new boolean[1];
       _bgpNeighbors = new HashMap<String, BgpNeighbor>();
+      _bgpNeighborSets = new HashMap<String, Set<BgpNeighbor>>();
       _bgpOriginationSpaceInitialized = new boolean[1];
       _booleans = new HashMap<String, Boolean>();
       _failedAssertionCount = new int[1];
       _integers = new HashMap<String, Integer>();
       _integerSets = new HashMap<String, Set<Integer>>();
       _interfaces = new HashMap<String, Interface>();
+      _interfaceSets = new HashMap<String, Set<Interface>>();
       _ips = new HashMap<String, Ip>();
       _ipsecVpns = new HashMap<String, IpsecVpn>();
       _ipSets = new HashMap<String, Set<Ip>>();
+      _ipsecVpnSets = new HashMap<String, Set<IpsecVpn>>();
       _nodes = new HashMap<String, Configuration>();
+      _nodeSets = new HashMap<String, Set<Configuration>>();
       _policyMaps = new HashMap<String, PolicyMap>();
       _policyMapClauses = new HashMap<String, PolicyMapClause>();
+      _policyMapSets = new HashMap<String, Set<PolicyMap>>();
+      _policyMapClauseSets = new HashMap<String, Set<PolicyMapClause>>();
       _prefixes = new HashMap<String, Prefix>();
       _prefixSets = new HashMap<String, Set<Prefix>>();
       _prefixSpaces = new HashMap<String, PrefixSpace>();
+      _prefixSpaceSets = new HashMap<String, Set<PrefixSpace>>();
       _protocolDependencyAnalysis = new ProtocolDependencyAnalysis[1];
       _remoteIpsecVpnsInitialized = new boolean[1];
       _routeFilters = new HashMap<String, RouteFilterList>();
       _routeFilterLines = new HashMap<String, RouteFilterLine>();
       _routeFilterSets = new HashMap<String, Set<RouteFilterList>>();
+      _routeFilterLineSets = new HashMap<String, Set<RouteFilterLine>>();
       _staticRoutes = new HashMap<String, StaticRoute>();
+      _staticRouteSets = new HashMap<String, Set<StaticRoute>>();
       _stringSets = new HashMap<String, Set<String>>();
       _unsafe = new boolean[1];
    }
@@ -177,10 +204,19 @@ public class Environment {
          case REGEX:
          case ROUTE_FILTER:
          case ROUTE_FILTER_LINE:
+         case SET_BGP_NEIGHBOR:
          case SET_INT:
+         case SET_INTERFACE:
          case SET_IP:
+         case SET_IPSEC_VPN:
+         case SET_NODE:
+         case SET_POLICY_MAP:
+         case SET_POLICY_MAP_CLAUSE:
          case SET_PREFIX:
+         case SET_PREFIX_SPACE:
          case SET_ROUTE_FILTER:
+         case SET_ROUTE_FILTER_LINE:
+         case SET_STATIC_ROUTE:
          case SET_STRING:
          case STATIC_ROUTE:
          case STRING:
@@ -197,30 +233,37 @@ public class Environment {
       copy._assertionCount = _assertionCount;
       copy._assertions = _assertions;
       copy._bgpNeighbors = _bgpNeighbors;
+      copy._bgpNeighborSets = _bgpNeighborSets;
       copy._bgpOriginationSpaceInitialized = _bgpOriginationSpaceInitialized;
       copy._booleans = _booleans;
       copy._clause = _clause;
       copy._configurations = _configurations;
       copy._failedAssertionCount = _failedAssertionCount;
       copy._generatedRoute = _generatedRoute;
-      copy._matchProtocolLine = _matchProtocolLine;
-      copy._matchRouteFilterLine = _matchRouteFilterLine;
-      copy._node = _node;
-      copy._nodes = _nodes;
       copy._integers = _integers;
       copy._integerSets = _integerSets;
       copy._interface = _interface;
       copy._interfaces = _interfaces;
+      copy._interfaceSets = _interfaceSets;
       copy._ips = _ips;
+      copy._ipSets = _ipSets;
       copy._ipsecVpn = _ipsecVpn;
       copy._ipsecVpns = _ipsecVpns;
-      copy._ipSets = _ipSets;
+      copy._ipsecVpnSets = _ipsecVpnSets;
+      copy._matchProtocolLine = _matchProtocolLine;
+      copy._matchRouteFilterLine = _matchRouteFilterLine;
+      copy._node = _node;
+      copy._nodes = _nodes;
+      copy._nodeSets = _nodeSets;
       copy._policyMap = _policyMap;
       copy._policyMaps = _policyMaps;
+      copy._policyMapSets = _policyMapSets;
       copy._policyMapClauses = _policyMapClauses;
+      copy._policyMapClauseSets = _policyMapClauseSets;
       copy._prefixes = _prefixes;
       copy._prefixSets = _prefixSets;
       copy._prefixSpaces = _prefixSpaces;
+      copy._prefixSpaceSets = _prefixSpaceSets;
       copy._protocol = _protocol;
       copy._protocolDependencyAnalysis = _protocolDependencyAnalysis;
       copy._protocols = _protocols;
@@ -228,12 +271,14 @@ public class Environment {
       copy._remoteIpsecVpnsInitialized = _remoteIpsecVpnsInitialized;
       copy._routeFilter = _routeFilter;
       copy._routeFilters = _routeFilters;
-      copy._routeFilterLine = _routeFilterLine;
-      copy._routeFilterLines = _routeFilterLines;
       copy._routeFilterSet = _routeFilterSet;
       copy._routeFilterSets = _routeFilterSets;
+      copy._routeFilterLine = _routeFilterLine;
+      copy._routeFilterLines = _routeFilterLines;
+      copy._routeFilterLineSets = _routeFilterLineSets;
       copy._staticRoute = _staticRoute;
       copy._staticRoutes = _staticRoutes;
+      copy._staticRouteSets = _staticRouteSets;
       copy._stringSets = _stringSets;
       copy._unsafe = _unsafe;
       return copy;
@@ -255,6 +300,10 @@ public class Environment {
 
    public Map<String, BgpNeighbor> getBgpNeighbors() {
       return _bgpNeighbors;
+   }
+
+   public Map<String, Set<BgpNeighbor>> getBgpNeighborSets() {
+      return _bgpNeighborSets;
    }
 
    public Map<String, Boolean> getBooleans() {
@@ -289,6 +338,10 @@ public class Environment {
       return _interfaces;
    }
 
+   public Map<String, Set<Interface>> getInterfaceSets() {
+      return _interfaceSets;
+   }
+
    public Map<String, Ip> getIps() {
       return _ips;
    }
@@ -299,6 +352,10 @@ public class Environment {
 
    public Map<String, IpsecVpn> getIpsecVpns() {
       return _ipsecVpns;
+   }
+
+   public Map<String, Set<IpsecVpn>> getIpsecVpnSets() {
+      return _ipsecVpnSets;
    }
 
    public Map<String, Set<Ip>> getIpSets() {
@@ -317,6 +374,10 @@ public class Environment {
       return _nodes;
    }
 
+   public Map<String, Set<Configuration>> getNodeSets() {
+      return _nodeSets;
+   }
+
    public PolicyMap getPolicyMap() {
       return _policyMap;
    }
@@ -325,8 +386,16 @@ public class Environment {
       return _policyMapClauses;
    }
 
+   public Map<String, Set<PolicyMapClause>> getPolicyMapClauseSets() {
+      return _policyMapClauseSets;
+   }
+
    public Map<String, PolicyMap> getPolicyMaps() {
       return _policyMaps;
+   }
+
+   public Map<String, Set<PolicyMap>> getPolicyMapSets() {
+      return _policyMapSets;
    }
 
    public Map<String, Prefix> getPrefixes() {
@@ -339,6 +408,10 @@ public class Environment {
 
    public Map<String, PrefixSpace> getPrefixSpaces() {
       return _prefixSpaces;
+   }
+
+   public Map<String, Set<PrefixSpace>> getPrefixSpaceSets() {
+      return _prefixSpaceSets;
    }
 
    public RoutingProtocol getProtocol() {
@@ -365,6 +438,10 @@ public class Environment {
       return _routeFilterLines;
    }
 
+   public Map<String, Set<RouteFilterLine>> getRouteFilterLineSets() {
+      return _routeFilterLineSets;
+   }
+
    public Map<String, RouteFilterList> getRouteFilters() {
       return _routeFilters;
    }
@@ -383,6 +460,10 @@ public class Environment {
 
    public Map<String, StaticRoute> getStaticRoutes() {
       return _staticRoutes;
+   }
+
+   public Map<String, Set<StaticRoute>> getStaticRouteSets() {
+      return _staticRouteSets;
    }
 
    public Map<String, Set<String>> getStringSets() {

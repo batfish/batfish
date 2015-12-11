@@ -12,9 +12,19 @@ public class ForEachNodeStatement extends ForEachStatement<Configuration> {
       super(statements, var);
    }
 
+   public ForEachNodeStatement(List<Statement> statements, String var,
+         String setVar) {
+      super(statements, var, setVar);
+   }
+
    @Override
    protected Collection<Configuration> getCollection(Environment environment) {
-      return environment.getAllNodes();
+      if (_setVar == null) {
+         return environment.getAllNodes();
+      }
+      else {
+         return environment.getNodeSets().get(_setVar);
+      }
    }
 
    @Override

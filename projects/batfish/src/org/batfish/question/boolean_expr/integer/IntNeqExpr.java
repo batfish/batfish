@@ -1,15 +1,16 @@
-package org.batfish.question.boolean_expr;
+package org.batfish.question.boolean_expr.integer;
 
 import org.batfish.question.Environment;
+import org.batfish.question.boolean_expr.BaseBooleanExpr;
 import org.batfish.question.int_expr.IntExpr;
 
-public class NeqExpr extends BaseBooleanExpr {
+public class IntNeqExpr extends BaseBooleanExpr {
 
    private final IntExpr _lhs;
 
    private final IntExpr _rhs;
 
-   public NeqExpr(IntExpr lhs, IntExpr rhs) {
+   public IntNeqExpr(IntExpr lhs, IntExpr rhs) {
       _lhs = lhs;
       _rhs = rhs;
    }

@@ -9,6 +9,8 @@ import org.batfish.question.Environment;
 
 public abstract class ForEachStatement<T> implements Statement {
 
+   protected final String _setVar;
+
    private final List<Statement> _statements;
 
    protected final String _var;
@@ -16,6 +18,13 @@ public abstract class ForEachStatement<T> implements Statement {
    public ForEachStatement(List<Statement> statements, String var) {
       _statements = statements;
       _var = var;
+      _setVar = null;
+   }
+
+   public ForEachStatement(List<Statement> statements, String var, String setVar) {
+      _statements = statements;
+      _var = var;
+      _setVar = setVar;
    }
 
    @Override
