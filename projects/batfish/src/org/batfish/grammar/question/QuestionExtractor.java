@@ -12,6 +12,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.BatfishExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
+import org.batfish.grammar.question.QuestionParser.Foreach_scoped_statementContext;
 import org.batfish.grammar.question.QuestionParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.question.Expr;
@@ -122,7 +123,9 @@ import org.batfish.question.statement.Assertion;
 import org.batfish.question.statement.ForEachBgpNeighborStatement;
 import org.batfish.question.statement.ForEachClauseStatement;
 import org.batfish.question.statement.ForEachGeneratedRouteStatement;
+import org.batfish.question.statement.ForEachIntegerStatement;
 import org.batfish.question.statement.ForEachInterfaceStatement;
+import org.batfish.question.statement.ForEachIpStatement;
 import org.batfish.question.statement.ForEachIpsecVpnStatement;
 import org.batfish.question.statement.ForEachLineStatement;
 import org.batfish.question.statement.ForEachMatchProtocolStatement;
@@ -130,11 +133,17 @@ import org.batfish.question.statement.ForEachMatchRouteFilterStatement;
 import org.batfish.question.statement.ForEachNodeBgpGeneratedRouteStatement;
 import org.batfish.question.statement.ForEachNodeStatement;
 import org.batfish.question.statement.ForEachOspfOutboundPolicyStatement;
+import org.batfish.question.statement.ForEachPolicyMapClauseStatement;
+import org.batfish.question.statement.ForEachPolicyMapStatement;
+import org.batfish.question.statement.ForEachPrefixSpaceStatement;
+import org.batfish.question.statement.ForEachPrefixStatement;
 import org.batfish.question.statement.ForEachProtocolStatement;
 import org.batfish.question.statement.ForEachRemoteIpsecVpnStatement;
-import org.batfish.question.statement.ForEachRouteFilterInSetStatement;
+import org.batfish.question.statement.ForEachRouteFilterLineStatement;
 import org.batfish.question.statement.ForEachRouteFilterStatement;
+import org.batfish.question.statement.ForEachStatement;
 import org.batfish.question.statement.ForEachStaticRouteStatement;
+import org.batfish.question.statement.ForEachStringStatement;
 import org.batfish.question.statement.IfStatement;
 import org.batfish.question.statement.Assignment;
 import org.batfish.question.statement.PrintfStatement;
@@ -1592,44 +1601,62 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
-   private Statement toStatement(Foreach_bgp_neighbor_statementContext ctx) {
-      return new ForEachBgpNeighborStatement(toStatements(ctx.statement()),
-            null);
-   }
-
-   private Statement toStatement(Foreach_clause_statementContext ctx) {
-      return new ForEachClauseStatement(toStatements(ctx.statement()), null);
-   }
-
-   private Statement toStatement(Foreach_generated_route_statementContext ctx) {
-      return new ForEachGeneratedRouteStatement(toStatements(ctx.statement()));
-   }
-
-   private Statement toStatement(Foreach_in_set_statementContext ctx) {
+   private ForEachStatement<?> toStatement(Foreach_in_set_statementContext ctx) {
       String var = ctx.v.getText();
       String setVar = ctx.set_var.getText();
       VariableType elementType = ctx.setVarType.elementType();
       List<Statement> statements = toStatements(ctx.statement());
       switch (elementType) {
 
+      case BGP_NEIGHBOR:
+         return new ForEachBgpNeighborStatement(statements, var, setVar);
+
+      case GENERATED_ROUTE:
+         return new ForEachGeneratedRouteStatement(statements, var, setVar);
+
+      case INT:
+         return new ForEachIntegerStatement(statements, var, setVar);
+
+      case INTERFACE:
+         return new ForEachInterfaceStatement(statements, var, setVar);
+
+      case IP:
+         return new ForEachIpStatement(statements, var, setVar);
+
+      case IPSEC_VPN:
+         return new ForEachIpsecVpnStatement(statements, var, setVar);
+
       case NODE:
          return new ForEachNodeStatement(statements, var, setVar);
 
-      case ACTION:
-      case BGP_NEIGHBOR:
-      case BOOLEAN:
-      case INT:
-      case INTERFACE:
-      case IP:
-      case IPSEC_VPN:
       case POLICY_MAP:
+         return new ForEachPolicyMapStatement(statements, var, setVar);
+
       case POLICY_MAP_CLAUSE:
+         return new ForEachPolicyMapClauseStatement(statements, var, setVar);
+
       case PREFIX:
+         return new ForEachPrefixStatement(statements, var, setVar);
+
       case PREFIX_SPACE:
+         return new ForEachPrefixSpaceStatement(statements, var, setVar);
+
+      case ROUTE_FILTER:
+         return new ForEachRouteFilterStatement(statements, var, setVar);
+
+      case ROUTE_FILTER_LINE:
+         return new ForEachRouteFilterLineStatement(statements, var, setVar);
+
+      case STATIC_ROUTE:
+         return new ForEachStaticRouteStatement(statements, var, setVar);
+
+      case STRING:
+         return new ForEachStringStatement(statements, var, setVar);
+
+      case ACTION:
+      case BOOLEAN:
       case RANGE:
       case REGEX:
-      case ROUTE_FILTER:
-      case ROUTE_FILTER_LINE:
       case SET_BGP_NEIGHBOR:
       case SET_INT:
       case SET_INTERFACE:
@@ -1644,76 +1671,68 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       case SET_ROUTE_FILTER_LINE:
       case SET_STATIC_ROUTE:
       case SET_STRING:
-      case STATIC_ROUTE:
-      case STRING:
       default:
          throw new BatfishException("element type not implemented: "
                + elementType);
       }
    }
 
-   private Statement toStatement(Foreach_interface_statementContext ctx) {
-      return new ForEachInterfaceStatement(toStatements(ctx.statement()));
-   }
-
-   private Statement toStatement(Foreach_ipsec_vpn_statementContext ctx) {
-      return new ForEachIpsecVpnStatement(toStatements(ctx.statement()));
-   }
-
-   private Statement toStatement(Foreach_line_statementContext ctx) {
-      return new ForEachLineStatement(toStatements(ctx.statement()));
-   }
-
-   private Statement toStatement(Foreach_match_protocol_statementContext ctx) {
-      return new ForEachMatchProtocolStatement(toStatements(ctx.statement()));
-   }
-
-   private Statement toStatement(Foreach_match_route_filter_statementContext ctx) {
-      return new ForEachMatchRouteFilterStatement(toStatements(ctx.statement()));
-   }
-
-   private Statement toStatement(
-         Foreach_node_bgp_generated_route_statementContext ctx) {
-      return new ForEachNodeBgpGeneratedRouteStatement(
-            toStatements(ctx.statement()));
-   }
-
-   private Statement toStatement(Foreach_node_statementContext ctx) {
+   private ForEachStatement<?> toStatement(Foreach_scoped_statementContext ctx) {
+      List<Statement> statements = toStatements(ctx.statement());
       String var = null;
+      String setVar = null;
       if (ctx.var != null) {
          var = ctx.var.getText();
       }
-      return new ForEachNodeStatement(toStatements(ctx.statement()), var);
-   }
-
-   private Statement toStatement(
-         Foreach_ospf_outbound_policy_statementContext ctx) {
-      return new ForEachOspfOutboundPolicyStatement(
-            toStatements(ctx.statement()));
-   }
-
-   private Statement toStatement(Foreach_protocol_statementContext ctx) {
-      return new ForEachProtocolStatement(toStatements(ctx.statement()));
-   }
-
-   private Statement toStatement(Foreach_remote_ipsec_vpn_statementContext ctx) {
-      return new ForEachRemoteIpsecVpnStatement(toStatements(ctx.statement()));
-   }
-
-   private Statement toStatement(
-         Foreach_route_filter_in_set_statementContext ctx) {
-      List<Statement> statements = toStatements(ctx.statement());
-      String set = ctx.set.getText();
-      return new ForEachRouteFilterInSetStatement(statements, set);
-   }
-
-   private Statement toStatement(Foreach_route_filter_statementContext ctx) {
-      return new ForEachRouteFilterStatement(toStatements(ctx.statement()));
-   }
-
-   private Statement toStatement(Foreach_static_route_statementContext ctx) {
-      return new ForEachStaticRouteStatement(toStatements(ctx.statement()));
-
+      if (ctx.BGP_NEIGHBOR() != null) {
+         return new ForEachBgpNeighborStatement(statements, var, setVar);
+      }
+      else if (ctx.CLAUSE() != null) {
+         return new ForEachClauseStatement(statements, var, setVar);
+      }
+      else if (ctx.GENERATED_ROUTE() != null) {
+         return new ForEachGeneratedRouteStatement(statements, var, setVar);
+      }
+      else if (ctx.INTERFACE() != null) {
+         return new ForEachInterfaceStatement(statements, var, setVar);
+      }
+      else if (ctx.IPSEC_VPN() != null) {
+         return new ForEachIpsecVpnStatement(statements, var, setVar);
+      }
+      else if (ctx.LINE() != null) {
+         return new ForEachLineStatement(statements, var, setVar);
+      }
+      else if (ctx.MATCH_PROTOCOL() != null) {
+         return new ForEachMatchProtocolStatement(statements, var, setVar);
+      }
+      else if (ctx.MATCH_ROUTE_FILTER() != null) {
+         return new ForEachMatchRouteFilterStatement(statements, var, setVar);
+      }
+      else if (ctx.NODE() != null) {
+         return new ForEachNodeStatement(statements, var, setVar);
+      }
+      else if (ctx.NODE_BGP_GENERATED_ROUTE() != null) {
+         return new ForEachNodeBgpGeneratedRouteStatement(statements, var,
+               setVar);
+      }
+      else if (ctx.OSPF_OUTBOUND_POLICY() != null) {
+         return new ForEachOspfOutboundPolicyStatement(statements, var, setVar);
+      }
+      else if (ctx.PROTOCOL() != null) {
+         return new ForEachProtocolStatement(statements, var, setVar);
+      }
+      else if (ctx.REMOTE_IPSEC_VPN() != null) {
+         return new ForEachRemoteIpsecVpnStatement(statements, var, setVar);
+      }
+      else if (ctx.ROUTE_FILTER() != null) {
+         return new ForEachRouteFilterStatement(statements, var, setVar);
+      }
+      else if (ctx.STATIC_ROUTE() != null) {
+         return new ForEachStaticRouteStatement(statements, var, setVar);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_STATEMENT, ctx);
+      }
    }
 
    private Statement toStatement(If_statementContext ctx) {
@@ -1806,56 +1825,11 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.assignment() != null) {
          return toStatement(ctx.assignment());
       }
-      else if (ctx.foreach_bgp_neighbor_statement() != null) {
-         return toStatement(ctx.foreach_bgp_neighbor_statement());
-      }
-      else if (ctx.foreach_clause_statement() != null) {
-         return toStatement(ctx.foreach_clause_statement());
-      }
-      else if (ctx.foreach_generated_route_statement() != null) {
-         return toStatement(ctx.foreach_generated_route_statement());
-      }
-      else if (ctx.foreach_interface_statement() != null) {
-         return toStatement(ctx.foreach_interface_statement());
-      }
-      else if (ctx.foreach_ipsec_vpn_statement() != null) {
-         return toStatement(ctx.foreach_ipsec_vpn_statement());
-      }
-      else if (ctx.foreach_line_statement() != null) {
-         return toStatement(ctx.foreach_line_statement());
-      }
-      else if (ctx.foreach_match_protocol_statement() != null) {
-         return toStatement(ctx.foreach_match_protocol_statement());
-      }
-      else if (ctx.foreach_match_route_filter_statement() != null) {
-         return toStatement(ctx.foreach_match_route_filter_statement());
-      }
-      else if (ctx.foreach_node_bgp_generated_route_statement() != null) {
-         return toStatement(ctx.foreach_node_bgp_generated_route_statement());
-      }
-      else if (ctx.foreach_node_statement() != null) {
-         return toStatement(ctx.foreach_node_statement());
-      }
-      else if (ctx.foreach_ospf_outbound_policy_statement() != null) {
-         return toStatement(ctx.foreach_ospf_outbound_policy_statement());
-      }
-      else if (ctx.foreach_protocol_statement() != null) {
-         return toStatement(ctx.foreach_protocol_statement());
-      }
-      else if (ctx.foreach_remote_ipsec_vpn_statement() != null) {
-         return toStatement(ctx.foreach_remote_ipsec_vpn_statement());
-      }
-      else if (ctx.foreach_route_filter_in_set_statement() != null) {
-         return toStatement(ctx.foreach_route_filter_in_set_statement());
-      }
-      else if (ctx.foreach_route_filter_statement() != null) {
-         return toStatement(ctx.foreach_route_filter_statement());
-      }
-      else if (ctx.foreach_static_route_statement() != null) {
-         return toStatement(ctx.foreach_static_route_statement());
-      }
       else if (ctx.foreach_in_set_statement() != null) {
          return toStatement(ctx.foreach_in_set_statement());
+      }
+      else if (ctx.foreach_scoped_statement() != null) {
+         return toStatement(ctx.foreach_scoped_statement());
       }
       else if (ctx.if_statement() != null) {
          return toStatement(ctx.if_statement());

@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.grammar.question.VariableType;
@@ -47,13 +46,17 @@ public class Environment {
 
    private Map<String, Boolean> _booleans;
 
-   private PolicyMapClause _clause;
-
    private Map<String, Configuration> _configurations;
 
    private int[] _failedAssertionCount;
 
    private GeneratedRoute _generatedRoute;
+
+   private Map<String, GeneratedRoute> _generatedRoutes;
+
+   private Map<String, Set<GeneratedRoute>> _generatedRouteSets;
+
+   private Integer _integer;
 
    private Map<String, Integer> _integers;
 
@@ -64,6 +67,8 @@ public class Environment {
    private Map<String, Interface> _interfaces;
 
    private Map<String, Set<Interface>> _interfaceSets;
+
+   private Ip _ip;
 
    private Map<String, Ip> _ips;
 
@@ -87,6 +92,8 @@ public class Environment {
 
    private PolicyMap _policyMap;
 
+   private PolicyMapClause _policyMapClause;
+
    private Map<String, PolicyMapClause> _policyMapClauses;
 
    private Map<String, Set<PolicyMapClause>> _policyMapClauseSets;
@@ -95,9 +102,13 @@ public class Environment {
 
    private Map<String, Set<PolicyMap>> _policyMapSets;
 
+   private Prefix _prefix;
+
    private Map<String, Prefix> _prefixes;
 
    private Map<String, Set<Prefix>> _prefixSets;
+
+   private PrefixSpace _prefixSpace;
 
    private Map<String, PrefixSpace> _prefixSpaces;
 
@@ -133,6 +144,10 @@ public class Environment {
 
    private Map<String, Set<StaticRoute>> _staticRouteSets;
 
+   private String _string;
+
+   private Map<String, String> _strings;
+
    private Map<String, Set<String>> _stringSets;
 
    private boolean[] _unsafe;
@@ -145,6 +160,8 @@ public class Environment {
       _bgpOriginationSpaceInitialized = new boolean[1];
       _booleans = new HashMap<String, Boolean>();
       _failedAssertionCount = new int[1];
+      _generatedRoutes = new HashMap<String, GeneratedRoute>();
+      _generatedRouteSets = new HashMap<String, Set<GeneratedRoute>>();
       _integers = new HashMap<String, Integer>();
       _integerSets = new HashMap<String, Set<Integer>>();
       _interfaces = new HashMap<String, Interface>();
@@ -171,6 +188,7 @@ public class Environment {
       _routeFilterLineSets = new HashMap<String, Set<RouteFilterLine>>();
       _staticRoutes = new HashMap<String, StaticRoute>();
       _staticRouteSets = new HashMap<String, Set<StaticRoute>>();
+      _strings = new HashMap<String, String>();
       _stringSets = new HashMap<String, Set<String>>();
       _unsafe = new boolean[1];
    }
@@ -192,6 +210,7 @@ public class Environment {
 
          case ACTION:
          case BGP_NEIGHBOR:
+         case GENERATED_ROUTE:
          case INTERFACE:
          case IP:
          case IPSEC_VPN:
@@ -236,15 +255,18 @@ public class Environment {
       copy._bgpNeighborSets = _bgpNeighborSets;
       copy._bgpOriginationSpaceInitialized = _bgpOriginationSpaceInitialized;
       copy._booleans = _booleans;
-      copy._clause = _clause;
       copy._configurations = _configurations;
       copy._failedAssertionCount = _failedAssertionCount;
       copy._generatedRoute = _generatedRoute;
+      copy._generatedRoutes = _generatedRoutes;
+      copy._generatedRouteSets = _generatedRouteSets;
+      copy._integer = _integer;
       copy._integers = _integers;
       copy._integerSets = _integerSets;
       copy._interface = _interface;
       copy._interfaces = _interfaces;
       copy._interfaceSets = _interfaceSets;
+      copy._ip = _ip;
       copy._ips = _ips;
       copy._ipSets = _ipSets;
       copy._ipsecVpn = _ipsecVpn;
@@ -258,10 +280,13 @@ public class Environment {
       copy._policyMap = _policyMap;
       copy._policyMaps = _policyMaps;
       copy._policyMapSets = _policyMapSets;
+      copy._policyMapClause = _policyMapClause;
       copy._policyMapClauses = _policyMapClauses;
       copy._policyMapClauseSets = _policyMapClauseSets;
+      copy._prefix = _prefix;
       copy._prefixes = _prefixes;
       copy._prefixSets = _prefixSets;
+      copy._prefixSpace = _prefixSpace;
       copy._prefixSpaces = _prefixSpaces;
       copy._prefixSpaceSets = _prefixSpaceSets;
       copy._protocol = _protocol;
@@ -279,15 +304,11 @@ public class Environment {
       copy._staticRoute = _staticRoute;
       copy._staticRoutes = _staticRoutes;
       copy._staticRouteSets = _staticRouteSets;
+      copy._string = _string;
+      copy._strings = _strings;
       copy._stringSets = _stringSets;
       copy._unsafe = _unsafe;
       return copy;
-   }
-
-   public Set<Configuration> getAllNodes() {
-      Set<Configuration> nodes = new TreeSet<Configuration>();
-      nodes.addAll(_configurations.values());
-      return nodes;
    }
 
    public boolean getAssertions() {
@@ -310,8 +331,8 @@ public class Environment {
       return _booleans;
    }
 
-   public PolicyMapClause getClause() {
-      return _clause;
+   public Map<String, Configuration> getConfigurations() {
+      return _configurations;
    }
 
    public int getFailedAssertions() {
@@ -320,6 +341,18 @@ public class Environment {
 
    public GeneratedRoute getGeneratedRoute() {
       return _generatedRoute;
+   }
+
+   public Map<String, GeneratedRoute> getGeneratedRoutes() {
+      return _generatedRoutes;
+   }
+
+   public Map<String, Set<GeneratedRoute>> getGeneratedRouteSets() {
+      return _generatedRouteSets;
+   }
+
+   public Integer getInteger() {
+      return _integer;
    }
 
    public Map<String, Integer> getIntegers() {
@@ -340,6 +373,10 @@ public class Environment {
 
    public Map<String, Set<Interface>> getInterfaceSets() {
       return _interfaceSets;
+   }
+
+   public Ip getIp() {
+      return _ip;
    }
 
    public Map<String, Ip> getIps() {
@@ -382,6 +419,10 @@ public class Environment {
       return _policyMap;
    }
 
+   public PolicyMapClause getPolicyMapClause() {
+      return _policyMapClause;
+   }
+
    public Map<String, PolicyMapClause> getPolicyMapClauses() {
       return _policyMapClauses;
    }
@@ -398,12 +439,20 @@ public class Environment {
       return _policyMapSets;
    }
 
+   public Prefix getPrefix() {
+      return _prefix;
+   }
+
    public Map<String, Prefix> getPrefixes() {
       return _prefixes;
    }
 
    public Map<String, Set<Prefix>> getPrefixSets() {
       return _prefixSets;
+   }
+
+   public PrefixSpace getPrefixSpace() {
+      return _prefixSpace;
    }
 
    public Map<String, PrefixSpace> getPrefixSpaces() {
@@ -464,6 +513,14 @@ public class Environment {
 
    public Map<String, Set<StaticRoute>> getStaticRouteSets() {
       return _staticRouteSets;
+   }
+
+   public String getString() {
+      return _string;
+   }
+
+   public Map<String, String> getStrings() {
+      return _strings;
    }
 
    public Map<String, Set<String>> getStringSets() {
@@ -626,10 +683,6 @@ public class Environment {
       _bgpNeighbor = bgpNeighbor;
    }
 
-   public void setClause(PolicyMapClause clause) {
-      _clause = clause;
-   }
-
    public void setConfigurations(Map<String, Configuration> configurations) {
       _configurations = configurations;
    }
@@ -638,8 +691,16 @@ public class Environment {
       _generatedRoute = generatedRoute;
    }
 
+   public void setInteger(Integer i) {
+      _integer = i;
+   }
+
    public void setInterface(Interface iface) {
       _interface = iface;
+   }
+
+   public void setIp(Ip ip) {
+      _ip = ip;
    }
 
    public void setIpsecVpn(IpsecVpn ipsecVpn) {
@@ -661,6 +722,18 @@ public class Environment {
 
    public void setPolicyMap(PolicyMap policyMap) {
       _policyMap = policyMap;
+   }
+
+   public void setPolicyMapClause(PolicyMapClause policyMapClause) {
+      _policyMapClause = policyMapClause;
+   }
+
+   public void setPrefix(Prefix prefix) {
+      _prefix = prefix;
+   }
+
+   public void setPrefixSpace(PrefixSpace prefixSpace) {
+      _prefixSpace = prefixSpace;
    }
 
    public void setProtocolSet(Set<RoutingProtocol> protocols) {
@@ -689,6 +762,10 @@ public class Environment {
 
    public void setStaticRoute(StaticRoute staticRoute) {
       _staticRoute = staticRoute;
+   }
+
+   public void setString(String string) {
+      _string = string;
    }
 
    public void setUnsafe(boolean b) {

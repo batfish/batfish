@@ -11,7 +11,7 @@ public enum BaseCasePolicyMapClauseExpr implements PolicyMapClauseExpr {
    public PolicyMapClause evaluate(Environment environment) {
       switch (this) {
       case CLAUSE:
-         return environment.getClause();
+         return environment.getPolicyMapClause();
 
       default:
          throw new BatfishException("Invalid "

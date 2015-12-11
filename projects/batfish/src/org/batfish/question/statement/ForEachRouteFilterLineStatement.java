@@ -8,10 +8,11 @@ import java.util.Set;
 import org.batfish.question.Environment;
 import org.batfish.representation.RouteFilterLine;
 
-public class ForEachLineStatement extends ForEachStatement<RouteFilterLine> {
+public class ForEachRouteFilterLineStatement extends
+      ForEachStatement<RouteFilterLine> {
 
-   public ForEachLineStatement(List<Statement> statements, String var,
-         String setVar) {
+   public ForEachRouteFilterLineStatement(List<Statement> statements,
+         String var, String setVar) {
       super(statements, var, setVar);
    }
 

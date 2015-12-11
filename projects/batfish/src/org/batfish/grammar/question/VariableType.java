@@ -9,6 +9,7 @@ public enum VariableType {
    ACTION("action"),
    BGP_NEIGHBOR("bgp_neighbor"),
    BOOLEAN("boolean"),
+   GENERATED_ROUTE("generated_route"),
    INT("int"),
    INTERFACE("interface"),
    IP("ip"),

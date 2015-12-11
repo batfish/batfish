@@ -1,30 +1,38 @@
 package org.batfish.question.statement;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.batfish.common.BatfishLogger;
-import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.representation.IpsecVpn;
 
-public class ForEachIpsecVpnStatement implements Statement {
+public class ForEachIpsecVpnStatement extends ForEachStatement<IpsecVpn> {
 
-   private List<Statement> _statements;
-
-   public ForEachIpsecVpnStatement(List<Statement> statements) {
-      _statements = statements;
+   public ForEachIpsecVpnStatement(List<Statement> statements, String var,
+         String setVar) {
+      super(statements, var, setVar);
    }
 
    @Override
-   public void execute(Environment environment, BatfishLogger logger,
-         Settings settings) {
-      for (IpsecVpn ipsecVpn : environment.getNode().getIpsecVpns().values()) {
-         Environment statementEnv = environment.copy();
-         statementEnv.setIpsecVpn(ipsecVpn);
-         for (Statement statement : _statements) {
-            statement.execute(statementEnv, logger, settings);
-         }
-      }
+   protected Collection<IpsecVpn> getCollection(Environment environment) {
+      return environment.getNode().getIpsecVpns().values();
+   }
+
+   @Override
+   protected Map<String, Set<IpsecVpn>> getSetMap(Environment environment) {
+      return environment.getIpsecVpnSets();
+   }
+
+   @Override
+   protected Map<String, IpsecVpn> getVarMap(Environment environment) {
+      return environment.getIpsecVpns();
+   }
+
+   @Override
+   protected void writeVal(Environment environment, IpsecVpn t) {
+      environment.setIpsecVpn(t);
    }
 
 }

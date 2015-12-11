@@ -341,6 +341,11 @@ NODE
    'node'
 ;
 
+NODE_BGP_GENERATED_ROUTE
+:
+   'node_bgp_generated_route'
+;
+
 NOT
 :
    'not'

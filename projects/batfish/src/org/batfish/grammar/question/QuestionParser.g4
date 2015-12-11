@@ -369,105 +369,6 @@ flow_constraint_src_port
    )
 ;
 
-foreach_bgp_neighbor_statement
-:
-   FOREACH BGP_NEIGHBOR OPEN_BRACE statement ["bgp_neighbor"]+ CLOSE_BRACE
-;
-
-foreach_clause_statement
-:
-   FOREACH CLAUSE OPEN_BRACE statement ["clause"]+ CLOSE_BRACE
-;
-
-foreach_generated_route_statement
-:
-   FOREACH GENERATED_ROUTE OPEN_BRACE statement ["generated_route"]+
-   CLOSE_BRACE
-;
-
-foreach_interface_statement
-:
-   FOREACH INTERFACE OPEN_BRACE statement ["interface"]+ CLOSE_BRACE
-;
-
-foreach_ipsec_vpn_statement
-:
-   FOREACH IPSEC_VPN OPEN_BRACE statement ["ipsec_vpn"]+ CLOSE_BRACE
-;
-
-foreach_line_statement
-:
-   FOREACH LINE OPEN_BRACE statement ["route_filter_line"]+ CLOSE_BRACE
-;
-
-foreach_match_protocol_statement
-:
-   FOREACH MATCH_PROTOCOL OPEN_BRACE statement ["match_protocol"]+ CLOSE_BRACE
-;
-
-foreach_match_route_filter_statement
-:
-   FOREACH MATCH_ROUTE_FILTER OPEN_BRACE statement ["match_route_filter"]+
-   CLOSE_BRACE
-;
-
-foreach_node_bgp_generated_route_statement
-:
-   FOREACH NODE PERIOD BGP PERIOD GENERATED_ROUTE OPEN_BRACE statement
-   ["generated_route"]+ CLOSE_BRACE
-;
-
-foreach_node_statement [String scope]
-:
-   FOREACH NODE
-   (
-      (
-         var = VARIABLE
-         {_typeBindings.put($var.getText(), VariableType.NODE);}
-
-         OPEN_BRACE statement [scope]+ CLOSE_BRACE
-      )
-      |
-      (
-         OPEN_BRACE statement ["node"]+ CLOSE_BRACE
-      )
-   )
-;
-
-foreach_ospf_outbound_policy_statement
-:
-   FOREACH OSPF_OUTBOUND_POLICY OPEN_BRACE statement ["policy"]+ CLOSE_BRACE
-;
-
-foreach_protocol_statement
-:
-   FOREACH PROTOCOL OPEN_BRACE statement ["protocol"]+ CLOSE_BRACE
-;
-
-foreach_remote_ipsec_vpn_statement
-:
-   FOREACH REMOTE_IPSEC_VPN OPEN_BRACE statement ["remote_ipsec_vpn"]+
-   CLOSE_BRACE
-;
-
-foreach_route_filter_statement
-:
-   FOREACH ROUTE_FILTER OPEN_BRACE statement ["route_filter"]+ CLOSE_BRACE
-;
-
-foreach_route_filter_in_set_statement
-:
-   FOREACH ROUTE_FILTER COLON set = VARIABLE
-   {_typeBindings.get($set.getText()) == VariableType.SET_ROUTE_FILTER}?
-
-   OPEN_BRACE statement ["route_filter"]+ CLOSE_BRACE
-;
-
-foreach_static_route_statement
-:
-   FOREACH STATIC_ROUTE OPEN_BRACE statement ["static_route"]+ CLOSE_BRACE
-;
-
 foreach_in_set_statement [String scope]
 locals [VariableType setVarType]
 :
@@ -475,6 +376,117 @@ locals [VariableType setVarType]
    {$setVarType = _typeBindings.get($set_var.getText()); _typeBindings.put($v.getText(), $setVarType.elementType());}
 
    OPEN_BRACE statement [scope]+ CLOSE_BRACE
+;
+
+foreach_scoped_statement [String scope]
+locals [VariableType varType, String newScope]
+:
+   FOREACH
+   (
+      {$scope.equals("node")}?
+
+      BGP_NEIGHBOR
+      {$varType = VariableType.BGP_NEIGHBOR; $newScope = "bgp_neighbor";}
+
+      |
+      {$scope.equals("policy")}?
+
+      CLAUSE
+      {$varType = VariableType.POLICY_MAP_CLAUSE; $newScope = "clause";}
+
+      |
+      {$scope.equals("bgp_neighbor") || $scope.equals("node")}?
+
+      GENERATED_ROUTE
+      {$varType = VariableType.GENERATED_ROUTE; $newScope = "generated_route";}
+
+      |
+      {$scope.equals("node")}?
+
+      INTERFACE
+      {$varType = VariableType.INTERFACE; $newScope = "interface";}
+
+      |
+      {$scope.equals("node")}?
+
+      IPSEC_VPN
+      {$varType = VariableType.IPSEC_VPN; $newScope = "ipsec_vpn";}
+
+      |
+      {$scope.equals("route_filter")}?
+
+      LINE
+      {$varType = VariableType.ROUTE_FILTER_LINE; $newScope = "route_filter_line";}
+
+      |
+      {$scope.equals("clause")}?
+
+      MATCH_PROTOCOL
+      {$varType = null; $newScope = "match_protocol";}
+
+      |
+      {$scope.equals("clause")}?
+
+      MATCH_ROUTE_FILTER
+      {$varType = null; $newScope = "match_route_filter";}
+
+      |
+      {$scope.equals("verify")}?
+
+      NODE
+      {$varType = VariableType.NODE; $newScope = "node";}
+
+      |
+      {$scope.equals("node")}?
+
+      NODE_BGP_GENERATED_ROUTE
+      {$varType = VariableType.GENERATED_ROUTE; $newScope = "generated_route";}
+
+      |
+      {$scope.equals("node")}?
+
+      OSPF_OUTBOUND_POLICY
+      {$varType = VariableType.POLICY_MAP; $newScope = "policy";}
+
+      |
+      {$scope.equals("match_protocol")}?
+
+      PROTOCOL
+      {$varType = null; $newScope = "protocol";}
+
+      |
+      {$scope.equals("ipsec_vpn")}?
+
+      REMOTE_IPSEC_VPN
+      {$varType = VariableType.IPSEC_VPN; $newScope = "remote_ipsec_vpn";}
+
+      |
+      {$scope.equals("match_route_filter")}?
+
+      ROUTE_FILTER
+      {$varType = VariableType.ROUTE_FILTER; $newScope = "route_filter";}
+
+      |
+      {$scope.equals("node")}?
+
+      STATIC_ROUTE
+      {$varType = VariableType.STATIC_ROUTE; $newScope = "static_route";}
+
+   )
+   (
+      (
+         {$varType != null}?
+
+         var = VARIABLE
+         {_typeBindings.put($var.getText(), $varType);}
+
+         OPEN_BRACE statement [scope]+ CLOSE_BRACE
+      )
+      |
+      (
+         OPEN_BRACE statement [$newScope]+ CLOSE_BRACE
+      )
+   )
 ;
 
 ge_expr
@@ -1374,68 +1386,8 @@ statement [String scope]
 :
    assertion [scope]
    | assignment
-   |
-   {$scope.equals("node")}?
-
-   foreach_bgp_neighbor_statement
-   |
-   {$scope.equals("policy")}?
-
-   foreach_clause_statement
-   |
-   {$scope.equals("bgp_neighbor") || $scope.equals("node")}?
-
-   foreach_generated_route_statement
-   |
-   {$scope.equals("node")}?
-
-   foreach_interface_statement
-   |
-   {$scope.equals("node")}?
-
-   foreach_ipsec_vpn_statement
-   |
-   {$scope.equals("route_filter")}?
-
-   foreach_line_statement
-   |
-   {$scope.equals("clause")}?
-
-   foreach_match_protocol_statement
-   |
-   {$scope.equals("clause")}?
-
-   foreach_match_route_filter_statement
-   |
-   {$scope.equals("node")}?
-
-   foreach_node_bgp_generated_route_statement
-   |
-   {$scope.equals("verify")}?
-
-   foreach_node_statement [scope]
-   |
-   {$scope.equals("node")}?
-
-   foreach_ospf_outbound_policy_statement
-   |
-   {$scope.equals("match_protocol")}?
-
-   foreach_protocol_statement
-   |
-   {$scope.equals("ipsec_vpn")}?
-
-   foreach_remote_ipsec_vpn_statement
-   | foreach_route_filter_in_set_statement
-   |
-   {$scope.equals("match_route_filter")}?
-
-   foreach_route_filter_statement
-   |
-   {$scope.equals("node")}?
-
-   foreach_static_route_statement
    | foreach_in_set_statement [scope]
+   | foreach_scoped_statement [scope]
    | if_statement [scope]
    | method [scope]
    | printf_statement

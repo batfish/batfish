@@ -8,6 +8,7 @@ import org.batfish.question.Environment;
 import org.batfish.question.Expr;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
+import org.batfish.representation.GeneratedRoute;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpsecVpn;
@@ -45,6 +46,11 @@ public class Assignment implements Statement {
 
       case BOOLEAN:
          environment.getBooleans().put(_variable, (Boolean) value);
+         break;
+
+      case GENERATED_ROUTE:
+         environment.getGeneratedRoutes()
+               .put(_variable, (GeneratedRoute) value);
          break;
 
       case INT:

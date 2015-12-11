@@ -1,38 +1,65 @@
 package org.batfish.question.statement;
 
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.batfish.common.BatfishLogger;
-import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
 import org.batfish.representation.PolicyMapMatchType;
 
-public class ForEachMatchRouteFilterStatement implements Statement {
+public class ForEachMatchRouteFilterStatement extends
+      ForEachStatement<PolicyMapMatchRouteFilterListLine> {
 
-   List<Statement> _statements;
-
-   public ForEachMatchRouteFilterStatement(List<Statement> statements) {
-      _statements = statements;
+   public ForEachMatchRouteFilterStatement(List<Statement> statements,
+         String var, String setVar) {
+      super(statements, var, setVar);
    }
 
    @Override
-   public void execute(Environment environment, BatfishLogger logger,
-         Settings settings) {
-      PolicyMapClause clause = environment.getClause();
+   protected void elementSideEffect(Environment environment,
+         PolicyMapMatchRouteFilterListLine t) {
+      environment.setRouteFilterSet(t.getLists());
+   }
+
+   @Override
+   protected Collection<PolicyMapMatchRouteFilterListLine> getCollection(
+         Environment environment) {
+      Set<PolicyMapMatchRouteFilterListLine> lines = new LinkedHashSet<PolicyMapMatchRouteFilterListLine>();
+      PolicyMapClause clause = environment.getPolicyMapClause();
       for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
          if (matchLine.getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
-            Environment statementEnv = environment.copy();
-            PolicyMapMatchRouteFilterListLine matchRouteFilterLine = (PolicyMapMatchRouteFilterListLine) matchLine;
-            statementEnv.setMatchRouteFilterLine(matchRouteFilterLine);
-            statementEnv.setRouteFilterSet(matchRouteFilterLine.getLists());
-            for (Statement statement : _statements) {
-               statement.execute(statementEnv, logger, settings);
-            }
+            PolicyMapMatchRouteFilterListLine line = (PolicyMapMatchRouteFilterListLine) matchLine;
+            lines.add(line);
          }
       }
+      return lines;
+   }
+
+   @Override
+   protected Map<String, Set<PolicyMapMatchRouteFilterListLine>> getSetMap(
+         Environment environment) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   @Override
+   protected Map<String, PolicyMapMatchRouteFilterListLine> getVarMap(
+         Environment environment) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   @Override
+   protected void writeVal(Environment environment,
+         PolicyMapMatchRouteFilterListLine t) {
+      environment.setMatchRouteFilterLine(t);
    }
 
 }

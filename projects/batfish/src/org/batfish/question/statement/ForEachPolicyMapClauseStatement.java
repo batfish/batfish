@@ -8,10 +8,11 @@ import java.util.Set;
 import org.batfish.question.Environment;
 import org.batfish.representation.PolicyMapClause;
 
-public class ForEachClauseStatement extends ForEachStatement<PolicyMapClause> {
+public class ForEachPolicyMapClauseStatement extends
+      ForEachStatement<PolicyMapClause> {
 
-   public ForEachClauseStatement(List<Statement> statements, String var,
-         String setVar) {
+   public ForEachPolicyMapClauseStatement(List<Statement> statements,
+         String var, String setVar) {
       super(statements, var, setVar);
    }
 

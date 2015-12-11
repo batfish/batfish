@@ -1,32 +1,38 @@
 package org.batfish.question.statement;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.batfish.common.BatfishLogger;
-import org.batfish.main.Settings;
 import org.batfish.question.Environment;
-import org.batfish.representation.Configuration;
 import org.batfish.representation.StaticRoute;
 
-public class ForEachStaticRouteStatement implements Statement {
+public class ForEachStaticRouteStatement extends ForEachStatement<StaticRoute> {
 
-   List<Statement> _statements;
-
-   public ForEachStaticRouteStatement(List<Statement> statements) {
-      _statements = statements;
+   public ForEachStaticRouteStatement(List<Statement> statements, String var,
+         String setVar) {
+      super(statements, var, setVar);
    }
 
    @Override
-   public void execute(Environment environment, BatfishLogger logger,
-         Settings settings) {
-      Configuration node = environment.getNode();
-      for (StaticRoute staticRoute : node.getStaticRoutes()) {
-         Environment statementEnv = environment.copy();
-         statementEnv.setStaticRoute(staticRoute);
-         for (Statement statement : _statements) {
-            statement.execute(statementEnv, logger, settings);
-         }
-      }
+   protected Collection<StaticRoute> getCollection(Environment environment) {
+      return environment.getNode().getStaticRoutes();
+   }
+
+   @Override
+   protected Map<String, Set<StaticRoute>> getSetMap(Environment environment) {
+      return environment.getStaticRouteSets();
+   }
+
+   @Override
+   protected Map<String, StaticRoute> getVarMap(Environment environment) {
+      return environment.getStaticRoutes();
+   }
+
+   @Override
+   protected void writeVal(Environment environment, StaticRoute t) {
+      environment.setStaticRoute(t);
    }
 
 }
