@@ -175,6 +175,11 @@ boolean_expr
    | property_boolean_expr
    | true_expr
    | var_boolean_expr
+   | lhs = boolean_expr
+   (
+      DOUBLE_EQUALS
+      | NOT_EQUALS
+   ) rhs = boolean_expr
 ;
 
 boolean_literal
@@ -209,14 +214,14 @@ defaults
 ;
 
 eq_expr
+locals [VariableType varType]
 :
-   (
-      lhs_int = int_expr DOUBLE_EQUALS rhs_int = int_expr
-   )
-   |
-   (
-      lhs_string = string_expr DOUBLE_EQUALS rhs_string = string_expr
-   )
+   lhs = expr
+   {$varType = $lhs.varType;}
+
+   DOUBLE_EQUALS rhs = expr
+   {$varType == $rhs.varType}?
+
 ;
 
 explicit_flow
@@ -230,69 +235,93 @@ explicit_flow
    )? CLOSE_PAREN
 ;
 
-expr
+expr returns [VariableType varType]
 locals [boolean isVar, String var]
 @init {$isVar = _input.LT(1).getType() == VARIABLE && _input.LT(2).getType() != PERIOD; if ($isVar) {$var = _input.LT(1).getText();}}
 :
    {!$isVar || _typeBindings.get($var) == VariableType.BGP_NEIGHBOR}?
 
    bgp_neighbor_expr
-   |
-   {!$isVar || _typeBindings.get($var) == VariableType.BOOLEAN}?
+   {$varType = VariableType.BGP_NEIGHBOR;}
 
-   boolean_expr
    |
    {!$isVar || _typeBindings.get($var) == VariableType.INT}?
 
    int_expr
+   {$varType = VariableType.INT;}
+
    |
    {!$isVar || _typeBindings.get($var) == VariableType.INTERFACE}?
 
    interface_expr
+   {$varType = VariableType.INTERFACE;}
+
    |
    {!$isVar || _typeBindings.get($var) == VariableType.IP}?
 
    ip_expr
+   {$varType = VariableType.IP;}
+
    |
    {!$isVar || _typeBindings.get($var) == VariableType.IPSEC_VPN}?
 
    ipsec_vpn_expr
+   {$varType = VariableType.IPSEC_VPN;}
+
    |
    {!$isVar || _typeBindings.get($var) == VariableType.NODE}?
 
    node_expr
+   {$varType = VariableType.NODE;}
+
    |
    {!$isVar || _typeBindings.get($var) == VariableType.POLICY_MAP}?
 
    policy_map_expr
+   {$varType = VariableType.POLICY_MAP;}
+
    |
    {!$isVar || _typeBindings.get($var) == VariableType.POLICY_MAP_CLAUSE}?
 
    policy_map_clause_expr
+   {$varType = VariableType.POLICY_MAP_CLAUSE;}
+
    |
    {!$isVar || _typeBindings.get($var) == VariableType.PREFIX}?
 
    prefix_expr
+   {$varType = VariableType.PREFIX;}
+
    |
    {!$isVar || _typeBindings.get($var) == VariableType.PREFIX_SPACE}?
 
    prefix_space_expr
+   {$varType = VariableType.PREFIX_SPACE;}
+
    |
    {!$isVar || _typeBindings.get($var) == VariableType.ROUTE_FILTER}?
 
    route_filter_expr
+   {$varType = VariableType.ROUTE_FILTER;}
+
    |
    {!$isVar || _typeBindings.get($var) == VariableType.ROUTE_FILTER_LINE}?
 
    route_filter_line_expr
+   {$varType = VariableType.ROUTE_FILTER_LINE;}
+
    |
    {!$isVar || _typeBindings.get($var) == VariableType.STATIC_ROUTE}?
 
    static_route_expr
+   {$varType = VariableType.STATIC_ROUTE;}
+
    |
    {!$isVar || _typeBindings.get($var) == VariableType.STRING}?
 
    string_expr
+   {$varType = VariableType.STRING;}
+
 ;
 
 failure_question
@@ -858,14 +887,14 @@ multipath_question
 ;
 
 neq_expr
+locals [VariableType varType]
 :
-   (
-      lhs_int = int_expr NOT_EQUALS rhs_int = int_expr
-   )
-   |
-   (
-      lhs_string = string_expr NOT_EQUALS rhs_string = string_expr
-   )
+   lhs = expr
+   {$varType = $lhs.varType;}
+
+   NOT_EQUALS rhs = expr
+   {$varType == $rhs.varType}?
+
 ;
 
 node_bgp_boolean_expr
@@ -1047,11 +1076,20 @@ prefix_space_prefix_space_expr
    )
 ;
 
+printable_expr
+:
+   boolean_expr
+   | expr
+;
+
 printf_statement
 :
    PRINTF OPEN_PAREN format_string = string_expr
    (
-      COMMA replacements += expr
+      COMMA
+      (
+         replacements += printable_expr
+      )
    )* CLOSE_PAREN SEMICOLON
 ;
 
@@ -1260,8 +1298,7 @@ set_add_method [VariableType type, String caller]
       |
       {$type == VariableType.SET_STRING}?
 
-      expr // at end on purpose
-
+      string_expr
    ) CLOSE_PAREN
 ;
 
@@ -1323,8 +1360,7 @@ locals [VariableType type]
       |
       {$type == VariableType.SET_STRING}?
 
-      expr // at end on purpose
-
+      string_expr
    ) CLOSE_PAREN
 ;
 

@@ -11,17 +11,21 @@ verify {
       if ($vpn_nodes.contains(node)) {
          foreach ipsec_vpn {
             if (ipsec_vpn.has_remote_ipsec_vpn) {
-               $current_vpn_neighbors.add(ipsec_vpn.remote_ipsec_vpn.owner);
+               foreach remote_ipsec_vpn {
+                  $current_vpn_neighbors.add(remote_ipsec_vpn.owner);
+               }
             }
          }
          foreach $vpn_node : $vpn_nodes {
-            assert {
-               $current_vpn_neighbors.contains($vpn_node)
-            }
-            onfailure {
-               printf("VPN node '%s' lacks connectivity with VPN node '%s'\n",
-                  node.name,
-                  $vpn_node.name);
+            if (node != $vpn_node) {
+               assert {
+                  $current_vpn_neighbors.contains($vpn_node)
+               }
+               onfailure {
+                  printf("VPN node '%s' lacks connectivity with VPN node '%s'\n",
+                     node.name,
+                     $vpn_node.name);
+               }
             }
          }
       }

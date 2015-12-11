@@ -12,7 +12,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.BatfishExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.question.QuestionParser.Foreach_scoped_statementContext;
+import org.batfish.grammar.question.QuestionParser.Printable_exprContext;
 import org.batfish.grammar.question.QuestionParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.question.Expr;
@@ -35,6 +35,8 @@ import org.batfish.question.bgp_neighbor_expr.VarBgpNeighborExpr;
 import org.batfish.question.boolean_expr.AndExpr;
 import org.batfish.question.boolean_expr.BaseCaseBooleanExpr;
 import org.batfish.question.boolean_expr.BooleanExpr;
+import org.batfish.question.boolean_expr.EqExpr;
+import org.batfish.question.boolean_expr.NeqExpr;
 import org.batfish.question.boolean_expr.SetContainsExpr;
 import org.batfish.question.boolean_expr.IfExpr;
 import org.batfish.question.boolean_expr.NotExpr;
@@ -50,12 +52,10 @@ import org.batfish.question.boolean_expr.iface.IsisL2ActiveInterfaceBooleanExpr;
 import org.batfish.question.boolean_expr.iface.IsisL2PassiveInterfaceBooleanExpr;
 import org.batfish.question.boolean_expr.iface.OspfActiveInterfaceBooleanExpr;
 import org.batfish.question.boolean_expr.iface.OspfPassiveInterfaceBooleanExpr;
-import org.batfish.question.boolean_expr.integer.IntEqExpr;
 import org.batfish.question.boolean_expr.integer.IntGeExpr;
 import org.batfish.question.boolean_expr.integer.IntGtExpr;
 import org.batfish.question.boolean_expr.integer.IntLeExpr;
 import org.batfish.question.boolean_expr.integer.IntLtExpr;
-import org.batfish.question.boolean_expr.integer.IntNeqExpr;
 import org.batfish.question.boolean_expr.ipsec_vpn.CompatibleIkeProposalsIpsecVpnBooleanExpr;
 import org.batfish.question.boolean_expr.ipsec_vpn.CompatibleIpsecProposalsIpsecVpnBooleanExpr;
 import org.batfish.question.boolean_expr.ipsec_vpn.HasRemoteIpsecVpnIpsecVpnBooleanExpr;
@@ -71,12 +71,10 @@ import org.batfish.question.boolean_expr.prefix_space.OverlapsPrefixSpaceBoolean
 import org.batfish.question.boolean_expr.route_filter_line.PermitLineBooleanExpr;
 import org.batfish.question.boolean_expr.static_route.HasNextHopInterfaceStaticRouteBooleanExpr;
 import org.batfish.question.boolean_expr.static_route.HasNextHopIpStaticRouteBooleanExpr;
-import org.batfish.question.boolean_expr.string.StringEqExpr;
 import org.batfish.question.boolean_expr.string.StringGeExpr;
 import org.batfish.question.boolean_expr.string.StringGtExpr;
 import org.batfish.question.boolean_expr.string.StringLeExpr;
 import org.batfish.question.boolean_expr.string.StringLtExpr;
-import org.batfish.question.boolean_expr.string.StringNeqExpr;
 import org.batfish.question.int_expr.DifferenceIntExpr;
 import org.batfish.question.int_expr.IntExpr;
 import org.batfish.question.int_expr.LiteralIntExpr;
@@ -620,19 +618,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private BooleanExpr toBooleanExpr(Eq_exprContext ctx) {
-      if (ctx.lhs_int != null) {
-         IntExpr lhs = toIntExpr(ctx.lhs_int);
-         IntExpr rhs = toIntExpr(ctx.rhs_int);
-         return new IntEqExpr(lhs, rhs);
-      }
-      else if (ctx.lhs_string != null) {
-         StringExpr lhs = toStringExpr(ctx.lhs_string);
-         StringExpr rhs = toStringExpr(ctx.rhs_string);
-         return new StringEqExpr(lhs, rhs);
-      }
-      else {
-         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
-      }
+      Expr lhs = toExpr(ctx.lhs);
+      Expr rhs = toExpr(ctx.rhs);
+      return new EqExpr(lhs, rhs);
    }
 
    private BooleanExpr toBooleanExpr(Ge_exprContext ctx) {
@@ -790,19 +778,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private BooleanExpr toBooleanExpr(Neq_exprContext ctx) {
-      if (ctx.lhs_int != null) {
-         IntExpr lhs = toIntExpr(ctx.lhs_int);
-         IntExpr rhs = toIntExpr(ctx.rhs_int);
-         return new IntNeqExpr(lhs, rhs);
-      }
-      else if (ctx.lhs_string != null) {
-         StringExpr lhs = toStringExpr(ctx.lhs_string);
-         StringExpr rhs = toStringExpr(ctx.rhs_string);
-         return new StringNeqExpr(lhs, rhs);
-      }
-      else {
-         throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
-      }
+      Expr lhs = toExpr(ctx.lhs);
+      Expr rhs = toExpr(ctx.rhs);
+      return new NeqExpr(lhs, rhs);
    }
 
    private BooleanExpr toBooleanExpr(Node_boolean_exprContext ctx) {
@@ -980,8 +958,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.static_route_expr() != null) {
          expr = toStaticRouteExpr(ctx.static_route_expr());
       }
-      else if (ctx.expr() != null) {
-         expr = toExpr(ctx.expr());
+      else if (ctx.string_expr() != null) {
+         expr = toStringExpr(ctx.string_expr());
       }
       else {
          throw conversionError(ERR_CONVERT_BOOLEAN, ctx);
@@ -1010,9 +988,6 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private Expr toExpr(ExprContext ctx) {
       if (ctx.bgp_neighbor_expr() != null) {
          return toBgpNeighborExpr(ctx.bgp_neighbor_expr());
-      }
-      else if (ctx.boolean_expr() != null) {
-         return toBooleanExpr(ctx.boolean_expr());
       }
       else if (ctx.int_expr() != null) {
          return toIntExpr(ctx.int_expr());
@@ -1052,6 +1027,18 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else if (ctx.string_expr() != null) {
          return toStringExpr(ctx.string_expr());
+      }
+      else {
+         throw conversionError(ERR_CONVERT_PRINTABLE, ctx);
+      }
+   }
+
+   private Expr toExpr(Printable_exprContext ctx) {
+      if (ctx.expr() != null) {
+         return toExpr(ctx.expr());
+      }
+      else if (ctx.boolean_expr() != null) {
+         return toBooleanExpr(ctx.boolean_expr());
       }
       else {
          throw conversionError(ERR_CONVERT_PRINTABLE, ctx);
@@ -1754,7 +1741,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private Statement toStatement(Printf_statementContext ctx) {
       StringExpr formatString = toStringExpr(ctx.format_string);
       List<Expr> replacements = new ArrayList<Expr>();
-      for (ExprContext pexpr : ctx.replacements) {
+      for (Printable_exprContext pexpr : ctx.replacements) {
          Expr replacement = toExpr(pexpr);
          replacements.add(replacement);
       }
@@ -1799,8 +1786,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.static_route_expr() != null) {
          expr = toStaticRouteExpr(ctx.static_route_expr());
       }
-      else if (ctx.expr() != null) {
-         expr = toExpr(ctx.expr());
+      else if (ctx.string_expr() != null) {
+         expr = toStringExpr(ctx.string_expr());
       }
       else {
          throw conversionError(ERR_CONVERT_STATEMENT, ctx);
