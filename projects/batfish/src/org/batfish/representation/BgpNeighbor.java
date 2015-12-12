@@ -8,7 +8,7 @@ import java.util.Set;
  * Represents a peering with a single router (by ip address) acting as a bgp
  * peer to the router whose configuration's BGP process contains this object
  */
-public class BgpNeighbor implements Serializable {
+public final class BgpNeighbor implements Serializable {
 
    /**
     *
@@ -19,6 +19,8 @@ public class BgpNeighbor implements Serializable {
     * The ip address of this peer for the purpose of this peering
     */
    private Ip _address;
+
+   private transient final Set<BgpNeighbor> _candidateRemoteBgpNeighbors;
 
    /**
     * The cluster id associated with this peer to be used in route reflection
@@ -86,6 +88,8 @@ public class BgpNeighbor implements Serializable {
     */
    private Integer _remoteAs;
 
+   private transient BgpNeighbor _remoteBgpNeighbor;
+
    /**
     * Flag governing whether to include community numbers in outgoing route
     * advertisements to this peer
@@ -97,6 +101,7 @@ public class BgpNeighbor implements Serializable {
       _inboundPolicyMaps = new LinkedHashSet<PolicyMap>();
       _originationPolicies = new LinkedHashSet<PolicyMap>();
       _generatedRoutes = new LinkedHashSet<GeneratedRoute>();
+      _candidateRemoteBgpNeighbors = new LinkedHashSet<BgpNeighbor>();
    }
 
    /**
@@ -146,6 +151,10 @@ public class BgpNeighbor implements Serializable {
     */
    public Ip getAddress() {
       return _address;
+   }
+
+   public Set<BgpNeighbor> getCandidateRemoteBgpNeighbors() {
+      return _candidateRemoteBgpNeighbors;
    }
 
    /**
@@ -230,6 +239,10 @@ public class BgpNeighbor implements Serializable {
       return _remoteAs;
    }
 
+   public BgpNeighbor getRemoteBgpNeighbor() {
+      return _remoteBgpNeighbor;
+   }
+
    /**
     * @return {@link #_sendCommunity}
     */
@@ -289,6 +302,10 @@ public class BgpNeighbor implements Serializable {
     */
    public void setRemoteAs(Integer remoteAs) {
       _remoteAs = remoteAs;
+   }
+
+   public void setRemoteBgpNeighbor(BgpNeighbor remoteBgpNeighbor) {
+      _remoteBgpNeighbor = remoteBgpNeighbor;
    }
 
    /**

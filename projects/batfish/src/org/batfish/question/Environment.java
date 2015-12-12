@@ -120,6 +120,8 @@ public class Environment {
 
    private Set<RoutingProtocol> _protocols;
 
+   private boolean[] _remoteBgpNeighborsInitialized;
+
    private IpsecVpn _remoteIpsecVpn;
 
    private boolean[] _remoteIpsecVpnsInitialized;
@@ -181,6 +183,7 @@ public class Environment {
       _prefixSpaces = new HashMap<String, PrefixSpace>();
       _prefixSpaceSets = new HashMap<String, Set<PrefixSpace>>();
       _protocolDependencyAnalysis = new ProtocolDependencyAnalysis[1];
+      _remoteBgpNeighborsInitialized = new boolean[1];
       _remoteIpsecVpnsInitialized = new boolean[1];
       _routeFilters = new HashMap<String, RouteFilterList>();
       _routeFilterLines = new HashMap<String, RouteFilterLine>();
@@ -292,6 +295,7 @@ public class Environment {
       copy._protocol = _protocol;
       copy._protocolDependencyAnalysis = _protocolDependencyAnalysis;
       copy._protocols = _protocols;
+      copy._remoteBgpNeighborsInitialized = _remoteBgpNeighborsInitialized;
       copy._remoteIpsecVpn = _remoteIpsecVpn;
       copy._remoteIpsecVpnsInitialized = _remoteIpsecVpnsInitialized;
       copy._routeFilter = _routeFilter;
@@ -625,6 +629,62 @@ public class Environment {
       }
       _protocolDependencyAnalysis[0] = new ProtocolDependencyAnalysis(
             _configurations);
+   }
+
+   public void initRemoteBgpNeighbors() {
+      if (!_remoteBgpNeighborsInitialized[0]) {
+         Map<BgpNeighbor, Ip> remoteAddresses = new HashMap<BgpNeighbor, Ip>();
+         Map<Ip, Set<BgpNeighbor>> localAddresses = new HashMap<Ip, Set<BgpNeighbor>>();
+         for (Configuration node : _configurations.values()) {
+            BgpProcess proc = node.getBgpProcess();
+            if (proc != null) {
+               for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
+                  if (bgpNeighbor.getPrefix().getPrefixLength() < 32) {
+                     throw new BatfishException(
+                           "Do not support dynamic bgp sessions at this time");
+                  }
+                  Ip remoteAddress = bgpNeighbor.getAddress();
+                  if (remoteAddress == null) {
+                     throw new BatfishException(
+                           "Could not determine remote address");
+                  }
+                  Ip localAddress = bgpNeighbor.getLocalIp();
+                  if (localAddress == null) {
+                     throw new BatfishException(
+                           "Could not determine local address");
+                  }
+                  remoteAddresses.put(bgpNeighbor, remoteAddress);
+                  Set<BgpNeighbor> localAddressOwners = localAddresses
+                        .get(localAddress);
+                  if (localAddressOwners == null) {
+                     localAddressOwners = new HashSet<BgpNeighbor>();
+                     localAddresses.put(localAddress, localAddressOwners);
+                  }
+                  localAddressOwners.add(bgpNeighbor);
+               }
+            }
+         }
+         for (Entry<BgpNeighbor, Ip> e : remoteAddresses.entrySet()) {
+            BgpNeighbor bgpNeighbor = e.getKey();
+            Ip remoteAddress = e.getValue();
+            Ip localAddress = bgpNeighbor.getLocalIp();
+            Set<BgpNeighbor> remoteBgpNeighborCandidates = localAddresses
+                  .get(remoteAddress);
+            if (remoteBgpNeighborCandidates != null) {
+               for (BgpNeighbor remoteBgpNeighborCandidate : remoteBgpNeighborCandidates) {
+                  Ip reciprocalRemoteIp = remoteBgpNeighborCandidate
+                        .getAddress();
+                  if (localAddress.equals(reciprocalRemoteIp)) {
+                     bgpNeighbor.getCandidateRemoteBgpNeighbors().add(
+                           remoteBgpNeighborCandidate);
+                     bgpNeighbor
+                           .setRemoteBgpNeighbor(remoteBgpNeighborCandidate);
+                  }
+               }
+            }
+         }
+         _remoteBgpNeighborsInitialized[0] = true;
+      }
    }
 
    public void initRemoteIpsecVpns() {
