@@ -84,7 +84,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          Ip ip = e.getKey();
          IpBgpGroup ig = e.getValue();
          ig.cascadeInheritance();
-         BgpNeighbor neighbor = new BgpNeighbor(ip);
+         BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
+         neighbor.setGroupName(ig.getGroupName());
          // import policies
          for (String importPolicyName : ig.getImportPolicies()) {
             PolicyMap importPolicy = _c.getPolicyMaps().get(importPolicyName);

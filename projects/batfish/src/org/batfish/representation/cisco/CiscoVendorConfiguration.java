@@ -645,12 +645,12 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             if (lpg instanceof IpBgpPeerGroup) {
                IpBgpPeerGroup ipg = (IpBgpPeerGroup) lpg;
                Ip neighborAddress = ipg.getIp();
-               newNeighbor = new BgpNeighbor(neighborAddress);
+               newNeighbor = new BgpNeighbor(neighborAddress, c);
             }
             else if (lpg instanceof DynamicBgpPeerGroup) {
                DynamicBgpPeerGroup dpg = (DynamicBgpPeerGroup) lpg;
                Prefix neighborAddressRange = dpg.getPrefix();
-               newNeighbor = new BgpNeighbor(neighborAddressRange);
+               newNeighbor = new BgpNeighbor(neighborAddressRange, c);
             }
             else {
                throw new VendorConversionException(

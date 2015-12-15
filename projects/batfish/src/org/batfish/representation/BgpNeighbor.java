@@ -20,7 +20,7 @@ public final class BgpNeighbor implements Serializable {
     */
    private Ip _address;
 
-   private transient final Set<BgpNeighbor> _candidateRemoteBgpNeighbors;
+   private transient Set<BgpNeighbor> _candidateRemoteBgpNeighbors;
 
    /**
     * The cluster id associated with this peer to be used in route reflection
@@ -77,6 +77,8 @@ public final class BgpNeighbor implements Serializable {
     */
    private Set<PolicyMap> _outboundPolicyMaps;
 
+   private final Configuration _owner;
+
    /**
     * Ip range from which to accept dynamic BGP peering sessions.
     */
@@ -96,12 +98,12 @@ public final class BgpNeighbor implements Serializable {
     */
    private Boolean _sendCommunity;
 
-   private BgpNeighbor() {
+   private BgpNeighbor(Configuration owner) {
       _outboundPolicyMaps = new LinkedHashSet<PolicyMap>();
       _inboundPolicyMaps = new LinkedHashSet<PolicyMap>();
       _originationPolicies = new LinkedHashSet<PolicyMap>();
       _generatedRoutes = new LinkedHashSet<GeneratedRoute>();
-      _candidateRemoteBgpNeighbors = new LinkedHashSet<BgpNeighbor>();
+      _owner = owner;
    }
 
    /**
@@ -110,8 +112,8 @@ public final class BgpNeighbor implements Serializable {
     *
     * @param address
     */
-   public BgpNeighbor(Ip address) {
-      this();
+   public BgpNeighbor(Ip address, Configuration owner) {
+      this(owner);
       _address = address;
    }
 
@@ -121,8 +123,8 @@ public final class BgpNeighbor implements Serializable {
     *
     * @param prefix
     */
-   public BgpNeighbor(Prefix prefix) {
-      this();
+   public BgpNeighbor(Prefix prefix, Configuration owner) {
+      this(owner);
       _prefix = prefix;
    }
 
@@ -220,6 +222,10 @@ public final class BgpNeighbor implements Serializable {
       return _outboundPolicyMaps;
    }
 
+   public Configuration getOwner() {
+      return _owner;
+   }
+
    /**
     * @return {@link #_prefix} if non-null, else /32 prefix of {@link #_address}
     */
@@ -248,6 +254,10 @@ public final class BgpNeighbor implements Serializable {
     */
    public Boolean getSendCommunity() {
       return _sendCommunity;
+   }
+
+   public void initCandidateRemoteBgpNeighbors() {
+      _candidateRemoteBgpNeighbors = new LinkedHashSet<BgpNeighbor>();
    }
 
    /**

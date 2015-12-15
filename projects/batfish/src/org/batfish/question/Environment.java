@@ -1,5 +1,6 @@
 package org.batfish.question;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -120,6 +121,8 @@ public class Environment {
 
    private Set<RoutingProtocol> _protocols;
 
+   private BgpNeighbor _remoteBgpNeighbor;
+
    private boolean[] _remoteBgpNeighborsInitialized;
 
    private IpsecVpn _remoteIpsecVpn;
@@ -196,6 +199,7 @@ public class Environment {
       _unsafe = new boolean[1];
    }
 
+   @SuppressWarnings("unchecked")
    public void applyParameters(QuestionParameters parameters) {
       for (Entry<String, Object> e : parameters.getStore().entrySet()) {
          String key = e.getKey();
@@ -209,6 +213,12 @@ public class Environment {
 
          case INT:
             _integers.put(var, (Integer) value);
+            break;
+
+         case SET_STRING:
+            Set<String> strSet = Collections.checkedSet((Set<String>) value,
+                  String.class);
+            _stringSets.put(var, strSet);
             break;
 
          case ACTION:
@@ -239,7 +249,6 @@ public class Environment {
          case SET_ROUTE_FILTER:
          case SET_ROUTE_FILTER_LINE:
          case SET_STATIC_ROUTE:
-         case SET_STRING:
          case STATIC_ROUTE:
          case STRING:
          default:
@@ -295,6 +304,7 @@ public class Environment {
       copy._protocol = _protocol;
       copy._protocolDependencyAnalysis = _protocolDependencyAnalysis;
       copy._protocols = _protocols;
+      copy._remoteBgpNeighbor = _remoteBgpNeighbor;
       copy._remoteBgpNeighborsInitialized = _remoteBgpNeighborsInitialized;
       copy._remoteIpsecVpn = _remoteIpsecVpn;
       copy._remoteIpsecVpnsInitialized = _remoteIpsecVpnsInitialized;
@@ -475,6 +485,10 @@ public class Environment {
       return _protocols;
    }
 
+   public BgpNeighbor getRemoteBgpNeighbor() {
+      return _remoteBgpNeighbor;
+   }
+
    public IpsecVpn getRemoteIpsecVpn() {
       return _remoteIpsecVpn;
    }
@@ -639,6 +653,7 @@ public class Environment {
             BgpProcess proc = node.getBgpProcess();
             if (proc != null) {
                for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
+                  bgpNeighbor.initCandidateRemoteBgpNeighbors();
                   if (bgpNeighbor.getPrefix().getPrefixLength() < 32) {
                      throw new BatfishException(
                            "Do not support dynamic bgp sessions at this time");
@@ -798,6 +813,10 @@ public class Environment {
 
    public void setProtocolSet(Set<RoutingProtocol> protocols) {
       _protocols = protocols;
+   }
+
+   public void setRemoteBgpNeighbor(BgpNeighbor remoteBgpNeighbor) {
+      _remoteBgpNeighbor = remoteBgpNeighbor;
    }
 
    public void setRemoteIpsecVpn(IpsecVpn remoteIpsecVpn) {

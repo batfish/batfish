@@ -10,7 +10,8 @@ package org.batfish.grammar.question;
 }
 
 @members {
-   private java.util.Map<String, VariableType> _typeBindings = new java.util.HashMap<String, VariableType>(); 
+   private java.util.Map<String, VariableType> _typeBindings = new java.util.HashMap<String, VariableType>();
+    
    private VariableType retrieveTypeBinding(String var) {
       VariableType ret = _typeBindings.get(var);
       if (ret == null) {
@@ -18,6 +19,14 @@ package org.batfish.grammar.question;
       }
       return ret;
    }
+
+   private void assertTypeBinding(String var, VariableType expectedType) {
+      VariableType actualType = retrieveTypeBinding(var);
+      if (actualType != expectedType) {
+         throw new org.batfish.common.BatfishException("Variable '" + var + "' is of type '" + actualType.toString() + "', but expected type '" + expectedType.toString() + "'");
+      }
+   }
+
 }
 
 action
@@ -106,18 +115,38 @@ assignment
 bgp_neighbor_boolean_expr
 :
    caller = bgp_neighbor_expr PERIOD
-   bgp_neighbor_has_generated_route_boolean_expr
+   (
+      bgp_neighbor_has_generated_route_boolean_expr
+      | bgp_neighbor_has_remote_bgp_neighbor_boolean_expr
+      | bgp_neighbor_has_single_remote_bgp_neighbor_boolean_expr
+   )
 ;
 
 bgp_neighbor_expr
 :
    BGP_NEIGHBOR
+   | REMOTE_BGP_NEIGHBOR
    | var_bgp_neighbor_expr
+;
+
+bgp_neighbor_group_string_expr
+:
+   GROUP
 ;
 
 bgp_neighbor_has_generated_route_boolean_expr
 :
    HAS_GENERATED_ROUTE
+;
+
+bgp_neighbor_has_remote_bgp_neighbor_boolean_expr
+:
+   HAS_REMOTE_BGP_NEIGHBOR
+;
+
+bgp_neighbor_has_single_remote_bgp_neighbor_boolean_expr
+:
+   HAS_SINGLE_REMOTE_BGP_NEIGHBOR
 ;
 
 bgp_neighbor_int_expr
@@ -148,6 +177,24 @@ bgp_neighbor_local_ip_ip_expr
    LOCAL_IP
 ;
 
+bgp_neighbor_name_string_expr
+:
+   NAME
+;
+
+bgp_neighbor_node_expr
+:
+   caller = bgp_neighbor_expr PERIOD
+   (
+      bgp_neighbor_owner_node_expr
+   )
+;
+
+bgp_neighbor_owner_node_expr
+:
+   OWNER
+;
+
 bgp_neighbor_remote_as_int_expr
 :
    REMOTE_AS
@@ -156,6 +203,15 @@ bgp_neighbor_remote_as_int_expr
 bgp_neighbor_remote_ip_ip_expr
 :
    REMOTE_IP
+;
+
+bgp_neighbor_string_expr
+:
+   caller = bgp_neighbor_expr PERIOD
+   (
+      bgp_neighbor_group_string_expr
+      | bgp_neighbor_name_string_expr
+   )
 ;
 
 boolean_expr
@@ -200,11 +256,29 @@ default_binding
       {_typeBindings.put($var.getText(), VariableType.INT);}
 
       | IP_ADDRESS
+      {_typeBindings.put($var.getText(), VariableType.IP);}
+
       | IP_PREFIX
+      {_typeBindings.put($var.getText(), VariableType.PREFIX);}
+
       | ip_constraint_complex
       | range
       | REGEX
-      | STRING_LITERAL
+      |
+      (
+         SET str_set = STRING OPEN_BRACE
+         (
+            str_elem += STRING_LITERAL
+            (
+               COMMA str_elem += STRING_LITERAL
+            )*
+         )? CLOSE_BRACE
+      )
+      {_typeBindings.put($var.getText(), VariableType.SET_STRING);}
+
+      | str = STRING_LITERAL
+      {_typeBindings.put($var.getText(), VariableType.STRING);}
+
    ) SEMICOLON
 ;
 
@@ -239,85 +313,85 @@ expr returns [VariableType varType]
 locals [boolean isVar, String var]
 @init {$isVar = _input.LT(1).getType() == VARIABLE && _input.LT(2).getType() != PERIOD; if ($isVar) {$var = _input.LT(1).getText();}}
 :
-   {!$isVar || _typeBindings.get($var) == VariableType.BGP_NEIGHBOR}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.BGP_NEIGHBOR}?
 
    bgp_neighbor_expr
    {$varType = VariableType.BGP_NEIGHBOR;}
 
    |
-   {!$isVar || _typeBindings.get($var) == VariableType.INT}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.INT}?
 
    int_expr
    {$varType = VariableType.INT;}
 
    |
-   {!$isVar || _typeBindings.get($var) == VariableType.INTERFACE}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.INTERFACE}?
 
    interface_expr
    {$varType = VariableType.INTERFACE;}
 
    |
-   {!$isVar || _typeBindings.get($var) == VariableType.IP}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.IP}?
 
    ip_expr
    {$varType = VariableType.IP;}
 
    |
-   {!$isVar || _typeBindings.get($var) == VariableType.IPSEC_VPN}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.IPSEC_VPN}?
 
    ipsec_vpn_expr
    {$varType = VariableType.IPSEC_VPN;}
 
    |
-   {!$isVar || _typeBindings.get($var) == VariableType.NODE}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.NODE}?
 
    node_expr
    {$varType = VariableType.NODE;}
 
    |
-   {!$isVar || _typeBindings.get($var) == VariableType.POLICY_MAP}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.POLICY_MAP}?
 
    policy_map_expr
    {$varType = VariableType.POLICY_MAP;}
 
    |
-   {!$isVar || _typeBindings.get($var) == VariableType.POLICY_MAP_CLAUSE}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.POLICY_MAP_CLAUSE}?
 
    policy_map_clause_expr
    {$varType = VariableType.POLICY_MAP_CLAUSE;}
 
    |
-   {!$isVar || _typeBindings.get($var) == VariableType.PREFIX}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.PREFIX}?
 
    prefix_expr
    {$varType = VariableType.PREFIX;}
 
    |
-   {!$isVar || _typeBindings.get($var) == VariableType.PREFIX_SPACE}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.PREFIX_SPACE}?
 
    prefix_space_expr
    {$varType = VariableType.PREFIX_SPACE;}
 
    |
-   {!$isVar || _typeBindings.get($var) == VariableType.ROUTE_FILTER}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.ROUTE_FILTER}?
 
    route_filter_expr
    {$varType = VariableType.ROUTE_FILTER;}
 
    |
-   {!$isVar || _typeBindings.get($var) == VariableType.ROUTE_FILTER_LINE}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.ROUTE_FILTER_LINE}?
 
    route_filter_line_expr
    {$varType = VariableType.ROUTE_FILTER_LINE;}
 
    |
-   {!$isVar || _typeBindings.get($var) == VariableType.STATIC_ROUTE}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.STATIC_ROUTE}?
 
    static_route_expr
    {$varType = VariableType.STATIC_ROUTE;}
 
    |
-   {!$isVar || _typeBindings.get($var) == VariableType.STRING}?
+   {!$isVar || retrieveTypeBinding($var) == VariableType.STRING}?
 
    string_expr
    {$varType = VariableType.STRING;}
@@ -402,7 +476,7 @@ foreach_in_set_statement [String scope]
 locals [VariableType setVarType]
 :
    FOREACH v = VARIABLE COLON set_var = VARIABLE
-   {$setVarType = _typeBindings.get($set_var.getText()); _typeBindings.put($v.getText(), $setVarType.elementType());}
+   {$setVarType = retrieveTypeBinding($set_var.getText()); _typeBindings.put($v.getText(), $setVarType.elementType());}
 
    OPEN_BRACE statement [scope]+ CLOSE_BRACE
 ;
@@ -482,6 +556,12 @@ locals [VariableType varType, String newScope]
 
       PROTOCOL
       {$varType = null; $newScope = "protocol";}
+
+      |
+      {$scope.equals("bgp_neighbor")}?
+
+      REMOTE_BGP_NEIGHBOR
+      {$varType = VariableType.BGP_NEIGHBOR; $newScope = "remote_bgp_neighbor";}
 
       |
       {$scope.equals("ipsec_vpn")}?
@@ -568,6 +648,14 @@ if_statement [String scope]
          false_statements += statement [scope]
       )* CLOSE_BRACE
    )?
+;
+
+increment_statement
+:
+   var = VARIABLE
+   {assertTypeBinding($var.getText(), VariableType.INT);}
+
+   DOUBLE_PLUS SEMICOLON
 ;
 
 ingress_path_question
@@ -943,6 +1031,7 @@ node_constraint
 node_expr
 :
    NODE
+   | bgp_neighbor_node_expr
    | ipsec_vpn_node_expr
    | var_node_expr
 ;
@@ -1077,7 +1166,11 @@ prefix_space_prefix_space_expr
 ;
 
 printable_expr
+locals [boolean isVar, String var]
+@init {$isVar = _input.LT(1).getType() == VARIABLE && _input.LT(2).getType() != PERIOD; if ($isVar) {$var = _input.LT(1).getText();}}
 :
+   {!$isVar || retrieveTypeBinding($var) == VariableType.BOOLEAN}?
+
    boolean_expr
    | expr
 ;
@@ -1425,6 +1518,7 @@ statement [String scope]
    | foreach_in_set_statement [scope]
    | foreach_scoped_statement [scope]
    | if_statement [scope]
+   | increment_statement
    | method [scope]
    | printf_statement
    | set_declaration_statement
@@ -1498,13 +1592,15 @@ static_route_string_expr
 
 string_expr
 :
-   interface_string_expr
+   bgp_neighbor_string_expr
+   | interface_string_expr
    | ipsec_vpn_string_expr
    | node_string_expr
    | protocol_string_expr
    | route_filter_string_expr
    | static_route_string_expr
    | string_literal_string_expr
+   | var_string_expr
 ;
 
 string_literal_string_expr

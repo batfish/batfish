@@ -166,6 +166,11 @@ GLOBAL
    'global'
 ;
 
+GROUP
+:
+   'group'
+;
+
 HAS_GENERATED_ROUTE
 :
    'has_generated_route'
@@ -186,9 +191,19 @@ HAS_NEXT_HOP_IP
    'has_next_hop_ip'
 ;
 
+HAS_REMOTE_BGP_NEIGHBOR
+:
+   'has_remote_bgp_neighbor'
+;
+
 HAS_REMOTE_IPSEC_VPN
 :
    'has_remote_ipsec_vpn'
+;
+
+HAS_SINGLE_REMOTE_BGP_NEIGHBOR
+:
+   'has_single_remote_bgp_neighbor'
 ;
 
 HAS_SINGLE_REMOTE_IPSEC_VPN
@@ -429,6 +444,11 @@ REACHABILITY
 REMOTE_AS
 :
    'remote_as'
+;
+
+REMOTE_BGP_NEIGHBOR
+:
+   'remote_bgp_neighbor'
 ;
 
 REMOTE_IP

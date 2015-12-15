@@ -9,12 +9,19 @@ package org.batfish.grammar.question;
 }
 
 tokens {
+   CLOSE_ANGLE_BRACKET,
+   CLOSE_BRACE,
+   COMMA,
    DEC,
    FALSE,
    IP_ADDRESS,
    IP_PREFIX,
    MINUS,
+   OPEN_ANGLE_BRACKET,
+   OPEN_BRACE,
    REGEX,
+   SET,
+   STRING,
    STRING_LITERAL,
    TRUE
 }
@@ -142,10 +149,37 @@ M_QuotedString_TEXT
 
 M_QuotedString_DOUBLE_QUOTE
 :
-   '"' -> channel ( HIDDEN ) , mode ( DEFAULT_MODE )
+   '"' -> channel ( HIDDEN ) , popMode
+;
+
+mode M_SetType;
+
+M_SetType_CLOSE_ANGLE_BRACKET
+:
+   '>' -> type(CLOSE_ANGLE_BRACKET), popMode
+;
+
+M_SetType_OPEN_ANGLE_BRACKET
+:
+   '<' -> type(OPEN_ANGLE_BRACKET)
+;
+
+M_SetType_STRING
+:
+   'string' -> type(STRING)
 ;
 
 mode M_Value;
+
+M_Value_CLOSE_BRACE
+:
+   '}' -> type(CLOSE_BRACE)
+;
+
+M_Value_COMMA
+:
+   ',' -> type(COMMA)
+;
 
 M_Value_DEC
 :
@@ -190,6 +224,11 @@ M_Value_MINUS
    '-' -> type ( MINUS ) , pushMode ( M_Negative )
 ;
 
+M_Value_OPEN_BRACE
+:
+   '{' -> type(OPEN_BRACE)
+;
+
 M_Value_REGEX
 :
    'regex<' ~'>'* '>' -> type ( REGEX ) , popMode
@@ -198,6 +237,11 @@ M_Value_REGEX
 M_Value_TRUE
 :
    'true' -> type ( TRUE ) , popMode
+;
+
+M_Value_SET
+:
+   'set' -> type(SET), pushMode(M_SetType)
 ;
 
 M_Value_STRING_LITERAL

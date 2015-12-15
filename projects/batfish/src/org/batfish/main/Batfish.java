@@ -1522,7 +1522,7 @@ public class Batfish implements AutoCloseable {
                   stubInterface.setBandwidth(10E9d);
 
                   // create neighbor within bgp process
-                  BgpNeighbor edgeNeighbor = new BgpNeighbor(prefix);
+                  BgpNeighbor edgeNeighbor = new BgpNeighbor(prefix, stub);
                   edgeNeighbor.getOriginationPolicies().add(
                         stubOriginationPolicy);
                   edgeNeighbor.setRemoteAs(edgeAs);

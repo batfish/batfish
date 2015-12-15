@@ -5,13 +5,18 @@ import org.batfish.question.Environment;
 import org.batfish.representation.BgpNeighbor;
 
 public enum BaseCaseBgpNeighborExpr implements BgpNeighborExpr {
-   BGP_NEIGHBOR;
+   BGP_NEIGHBOR,
+   REMOTE_BGP_NEIGHBOR;
 
    @Override
    public BgpNeighbor evaluate(Environment environment) {
       switch (this) {
       case BGP_NEIGHBOR:
          return environment.getBgpNeighbor();
+
+      case REMOTE_BGP_NEIGHBOR:
+         environment.initRemoteBgpNeighbors();
+         return environment.getRemoteBgpNeighbor();
 
       default:
          throw new BatfishException("Invalid "

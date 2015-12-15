@@ -24,6 +24,7 @@ binding
       | IP_ADDRESS
       | IP_PREFIX
       | STRING_LITERAL
+      | string_set
    )
 ;
 
@@ -46,4 +47,15 @@ parameters
 regex
 :
    REGEX
+;
+
+string_set
+:
+   SET OPEN_ANGLE_BRACKET STRING CLOSE_ANGLE_BRACKET OPEN_BRACE
+   (
+      str_elem += STRING_LITERAL
+      (
+         COMMA str_elem += STRING_LITERAL
+      )*
+   )? CLOSE_BRACE
 ;
