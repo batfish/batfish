@@ -626,8 +626,7 @@ public class Batfish implements AutoCloseable {
       ProtocolDependencyAnalysis analysis = new ProtocolDependencyAnalysis(
             configurations);
       analysis.printDependencies(_logger);
-      analysis.writeGraph(_settings.getProtocolDependencyGraphInputPath(),
-            _settings.getProtocolDependencyGraphOutputPath(), _logger);
+      analysis.writeGraphs(_settings, _logger);
    }
 
    private void answerReachability(ReachabilityQuestion question) {

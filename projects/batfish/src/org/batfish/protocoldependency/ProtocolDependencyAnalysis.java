@@ -1,21 +1,30 @@
 package org.batfish.protocoldependency;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
+import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.dot.Digraph;
-import org.batfish.dot.DotInput;
-import org.batfish.dot.DotJob;
-import org.batfish.dot.Edge;
-import org.batfish.dot.Node;
+import org.batfish.graphviz.GraphvizDigraph;
+import org.batfish.graphviz.GraphvizJob;
+import org.batfish.graphviz.GraphvizEdge;
+import org.batfish.graphviz.GraphvizInput;
+import org.batfish.graphviz.GraphvizNode;
+import org.batfish.graphviz.GraphvizResult;
+import org.batfish.job.BatfishJobExecutor;
+import org.batfish.main.Settings;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
@@ -61,27 +70,41 @@ public final class ProtocolDependencyAnalysis {
       _dependencyDatabase.clearPotentialImports();
    }
 
-   private void collectEdges(Set<Edge> edges, Map<String, Node> nodes,
-         DependentRoute route) {
+   private void collectEdges(Map<Prefix, Set<GraphvizEdge>> prefixEdges,
+         Map<String, GraphvizNode> nodes, DependentRoute route) {
+      Prefix fromPrefix = route.getPrefix();
       String nodeId = route.getDotNodeId();
       String nodeLabel = getDotNodeLabel(route);
-      Node node = nodes.get(nodeId);
+      GraphvizNode node = nodes.get(nodeId);
       if (node == null) {
-         node = new Node(nodeId);
+         node = new GraphvizNode(nodeId);
          node.setLabel(nodeLabel);
          nodes.put(nodeId, node);
       }
       for (DependentRoute dependency : route.getDependencies()) {
+         Prefix toPrefix = dependency.getPrefix();
          String dependencyNodeId = dependency.getDotNodeId();
          String dependencyNodeLabel = getDotNodeLabel(dependency);
-         Node dependencyNode = nodes.get(dependencyNodeId);
+         GraphvizNode dependencyNode = nodes.get(dependencyNodeId);
          if (dependencyNode == null) {
-            dependencyNode = new Node(dependencyNodeId);
+            dependencyNode = new GraphvizNode(dependencyNodeId);
             dependencyNode.setLabel(dependencyNodeLabel);
             nodes.put(dependencyNodeId, dependencyNode);
          }
-         Edge edge = new Edge(node, dependencyNode);
-         edges.add(edge);
+         GraphvizEdge edge = new GraphvizEdge(node, dependencyNode);
+         Set<GraphvizEdge> fromEdges = prefixEdges.get(fromPrefix);
+         if (fromEdges == null) {
+            fromEdges = new LinkedHashSet<GraphvizEdge>();
+            prefixEdges.put(fromPrefix, fromEdges);
+         }
+         Set<GraphvizEdge> toEdges = prefixEdges.get(toPrefix);
+         if (toEdges == null) {
+            toEdges = new LinkedHashSet<GraphvizEdge>();
+            prefixEdges.put(toPrefix, toEdges);
+         }
+         fromEdges.add(edge);
+         toEdges.add(edge);
+         collectEdges(prefixEdges, nodes, dependency);
       }
    }
 
@@ -109,27 +132,41 @@ public final class ProtocolDependencyAnalysis {
       return _dependencyDatabase;
    }
 
-   private DotInput getDotInput() {
-      Digraph graph = new Digraph();
-      Set<Edge> edges = new HashSet<Edge>();
-      Map<String, Node> nodes = new HashMap<String, Node>();
+   private String getDotNodeLabel(DependentRoute route) {
+      return route.getNode() + ":" + route.getProtocol().toString() + ":"
+            + route.getPrefix();
+   }
+
+   private Map<Prefix, GraphvizInput> getGraphs() {
+      Map<Prefix, GraphvizInput> graphs = new HashMap<Prefix, GraphvizInput>();
+      Map<Prefix, Set<GraphvizEdge>> prefixEdges = new HashMap<Prefix, Set<GraphvizEdge>>();
+      Map<String, GraphvizNode> allNodes = new HashMap<String, GraphvizNode>();
       Set<DependentRoute> routes = _dependencyDatabase.getDependentRoutes();
+      Set<Prefix> prefixes = new LinkedHashSet<Prefix>();
       int i = 0;
       for (DependentRoute route : routes) {
          route.setDotNodeId("node" + i);
          i++;
+         prefixes.add(route.getPrefix());
       }
       for (DependentRoute route : routes) {
-         collectEdges(edges, nodes, route);
+         collectEdges(prefixEdges, allNodes, route);
       }
-      graph.getEdges().addAll(edges);
-      graph.getNodes().addAll(nodes.values());
-      return graph;
-   }
-
-   private String getDotNodeLabel(DependentRoute route) {
-      return route.getNode() + ":" + route.getProtocol().toString() + ":"
-            + route.getPrefix();
+      for (Entry<Prefix, Set<GraphvizEdge>> e : prefixEdges.entrySet()) {
+         Prefix prefix = e.getKey();
+         Set<GraphvizEdge> edges = e.getValue();
+         GraphvizDigraph graph = new GraphvizDigraph();
+         graphs.put(prefix, graph);
+         graph.getEdges().addAll(edges);
+         Set<GraphvizNode> nodes = graph.getNodes();
+         for (GraphvizEdge edge : edges) {
+            GraphvizNode fromNode = edge.getFromNode();
+            GraphvizNode toNode = edge.getToNode();
+            nodes.add(fromNode);
+            nodes.add(toNode);
+         }
+      }
+      return graphs;
    }
 
    private Set<PotentialExport> getPermittedExports(
@@ -156,7 +193,8 @@ public final class ProtocolDependencyAnalysis {
       Set<PotentialExport> permittedExports = new LinkedHashSet<PotentialExport>();
       for (PotentialExport originationExport : originationExports) {
          Prefix prefix = originationExport.getPrefix();
-         RoutingProtocol protocol = originationExport.getProtocol();
+         RoutingProtocol protocol = originationExport.getDependency()
+               .getProtocol();
          for (PolicyMap exportPolicy : exportPolicies) {
             if (policyPermits(exportPolicy, prefix, protocol,
                   permittedProtocols)) {
@@ -860,13 +898,41 @@ public final class ProtocolDependencyAnalysis {
       _dependencyDatabase.removeCycles();
    }
 
-   public void writeGraph(String protocolDependencyGraphInputPath,
-         String protocolDependencyGraphOutputPath, BatfishLogger logger) {
-      DotJob dotJob = new DotJob(logger);
-      DotInput dotInput = getDotInput();
-      dotJob.setInput(dotInput);
-      dotJob.writeSvg(new File(protocolDependencyGraphInputPath), new File(
-            protocolDependencyGraphOutputPath));
+   public void writeGraphs(Settings settings, BatfishLogger logger) {
+      String protocolDependencyGraphPath = settings
+            .getProtocolDependencyGraphPath();
+      new File(protocolDependencyGraphPath).mkdirs();
+      Map<Prefix, GraphvizInput> graphs = getGraphs();
+      BatfishJobExecutor<GraphvizJob, GraphvizResult, Map<String, byte[]>> executor = new BatfishJobExecutor<GraphvizJob, GraphvizResult, Map<String, byte[]>>(
+            settings, logger);
+      Map<String, byte[]> output = new TreeMap<String, byte[]>();
+      List<GraphvizJob> jobs = new ArrayList<GraphvizJob>();
+      for (Entry<Prefix, GraphvizInput> e : graphs.entrySet()) {
+         Prefix prefix = e.getKey();
+         GraphvizInput input = e.getValue();
+         String sanitizedPrefix = prefix.toString().replace('/', '_');
+         String graphFile = Paths.get(protocolDependencyGraphPath, "dot",
+               sanitizedPrefix + ".dot").toString();
+         String svgFile = Paths.get(protocolDependencyGraphPath, "svg",
+               sanitizedPrefix + ".svg").toString();
+         GraphvizJob job = new GraphvizJob(input, graphFile, svgFile, prefix);
+         jobs.add(job);
+      }
+      executor.executeJobs(jobs, output);
+      for (Entry<String, byte[]> e : output.entrySet()) {
+         String outputPath = e.getKey();
+         byte[] outputBytes = e.getValue();
+         logger.debug("Writing: \"" + outputPath + "\" ..");
+         try {
+            FileUtils.writeByteArrayToFile(new File(outputPath), outputBytes);
+         }
+         catch (IOException ex) {
+            throw new BatfishException(
+                  "Failed to write graphviz output file: \"" + outputPath
+                        + "\"", ex);
+         }
+         logger.debug("OK\n");
+      }
    }
 
 }

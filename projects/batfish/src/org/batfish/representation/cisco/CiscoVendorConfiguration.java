@@ -1583,13 +1583,14 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
       LineAction action = fromLine.getAction();
       Ip ip = fromLine.getSourceIp();
-      int prefixLength = fromLine.getSourceWildcard().inverted()
-            .numSubnetBits();
-      Prefix prefix = new Prefix(ip, prefixLength);
       long minSubnet = fromLine.getDestinationIp().asLong();
       long maxSubnet = minSubnet | fromLine.getDestinationWildcard().asLong();
       int minPrefixLength = fromLine.getDestinationIp().numSubnetBits();
       int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
+      int statedPrefixLength = fromLine.getSourceWildcard().inverted()
+            .numSubnetBits();
+      int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
+      Prefix prefix = new Prefix(ip, prefixLength);
       return new RouteFilterLine(action, prefix, new SubRange(minPrefixLength,
             maxPrefixLength));
    }

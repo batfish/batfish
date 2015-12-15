@@ -1,8 +1,8 @@
-package org.batfish.dot;
+package org.batfish.graphviz;
 
 import org.batfish.util.NamedStructure;
 
-public class Node extends NamedStructure {
+public class GraphvizNode extends NamedStructure {
 
    /**
     *
@@ -11,7 +11,7 @@ public class Node extends NamedStructure {
 
    private String _label;
 
-   public Node(String name) {
+   public GraphvizNode(String name) {
       super(name);
    }
 

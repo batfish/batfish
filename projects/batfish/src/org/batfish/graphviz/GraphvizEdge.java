@@ -1,23 +1,23 @@
-package org.batfish.dot;
+package org.batfish.graphviz;
 
 import org.batfish.common.Pair;
 
-public class Edge extends Pair<Node, Node> {
+public class GraphvizEdge extends Pair<GraphvizNode, GraphvizNode> {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   public Edge(Node t1, Node t2) {
+   public GraphvizEdge(GraphvizNode t1, GraphvizNode t2) {
       super(t1, t2);
    }
 
-   public Node fromNode() {
+   public GraphvizNode getFromNode() {
       return _t1;
    }
 
-   public Node toNode() {
+   public GraphvizNode getToNode() {
       return _t2;
    }
 

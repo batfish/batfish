@@ -70,8 +70,7 @@ public class BfConsts {
    public static final String RELPATH_NXTNET_INPUT_FILE = "nxtnet_input.pl";
    public static final String RELPATH_NXTNET_OUTPUT_DIR = "nxtnet_output";
    public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
-   public static final String RELPATH_PROTOCOL_DEPENDENCY_GRAPH_INPUT = "pdgraph.dot";
-   public static final String RELPATH_PROTOCOL_DEPENDENCY_GRAPH_OUTPUT = "pdgraph.svg";
+   public static final String RELPATH_PROTOCOL_DEPENDENCY_GRAPH = "pdgraphs";
    public static final String RELPATH_QUERIES_DIR = "queries";
    public static final String RELPATH_QUESTION_FILE = "question";
    public static final String RELPATH_QUESTION_PARAM_FILE = "parameters";
