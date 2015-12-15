@@ -11,6 +11,8 @@ public class DependentRoute implements Comparable<DependentRoute> {
 
    private final Set<DependentRoute> _dependencies;
 
+   private transient String _dotNodeId;
+
    private final String _node;
 
    private final Prefix _prefix;
@@ -59,6 +61,10 @@ public class DependentRoute implements Comparable<DependentRoute> {
       return closure;
    }
 
+   public String getDotNodeId() {
+      return _dotNodeId;
+   }
+
    public String getNode() {
       return _node;
    }
@@ -96,6 +102,10 @@ public class DependentRoute implements Comparable<DependentRoute> {
       }
       closure.add(this);
       return closure;
+   }
+
+   public void setDotNodeId(String dotNodeId) {
+      _dotNodeId = dotNodeId;
    }
 
    @Override

@@ -382,6 +382,10 @@ public final class Settings extends BaseSettings {
 
    private boolean _printSymmetricEdges;
 
+   private String _protocolDependencyGraphInputPath;
+
+   private String _protocolDependencyGraphPath;
+
    private boolean _query;
 
    private boolean _queryAll;
@@ -684,6 +688,14 @@ public final class Settings extends BaseSettings {
 
    public boolean getPrintSymmetricEdgePairs() {
       return _printSymmetricEdges;
+   }
+
+   public String getProtocolDependencyGraphInputPath() {
+      return _protocolDependencyGraphInputPath;
+   }
+
+   public String getProtocolDependencyGraphOutputPath() {
+      return _protocolDependencyGraphPath;
    }
 
    public boolean getQuery() {
@@ -1288,6 +1300,16 @@ public final class Settings extends BaseSettings {
 
    public void setPrecomputedRoutesPath(String writeRoutesPath) {
       _precomputedRoutesPath = writeRoutesPath;
+   }
+
+   public void setProtocolDependencyGraphInputPath(
+         String protocolDependencyGraphInputPath) {
+      _protocolDependencyGraphInputPath = protocolDependencyGraphInputPath;
+   }
+
+   public void setProtocolDependencyGraphOutputPath(
+         String protocolDependencyGraphPath) {
+      _protocolDependencyGraphPath = protocolDependencyGraphPath;
    }
 
    public void setQuestionParametersPath(String questionParametersPath) {

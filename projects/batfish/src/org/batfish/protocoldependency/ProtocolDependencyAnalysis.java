@@ -1,5 +1,6 @@
 package org.batfish.protocoldependency;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +11,11 @@ import java.util.Set;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.dot.Digraph;
+import org.batfish.dot.DotInput;
+import org.batfish.dot.DotJob;
+import org.batfish.dot.Edge;
+import org.batfish.dot.Node;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
@@ -55,6 +61,30 @@ public final class ProtocolDependencyAnalysis {
       _dependencyDatabase.clearPotentialImports();
    }
 
+   private void collectEdges(Set<Edge> edges, Map<String, Node> nodes,
+         DependentRoute route) {
+      String nodeId = route.getDotNodeId();
+      String nodeLabel = getDotNodeLabel(route);
+      Node node = nodes.get(nodeId);
+      if (node == null) {
+         node = new Node(nodeId);
+         node.setLabel(nodeLabel);
+         nodes.put(nodeId, node);
+      }
+      for (DependentRoute dependency : route.getDependencies()) {
+         String dependencyNodeId = dependency.getDotNodeId();
+         String dependencyNodeLabel = getDotNodeLabel(dependency);
+         Node dependencyNode = nodes.get(dependencyNodeId);
+         if (dependencyNode == null) {
+            dependencyNode = new Node(dependencyNodeId);
+            dependencyNode.setLabel(dependencyNodeLabel);
+            nodes.put(dependencyNodeId, dependencyNode);
+         }
+         Edge edge = new Edge(node, dependencyNode);
+         edges.add(edge);
+      }
+   }
+
    private Set<RoutingProtocol> getClausePermittedProtocols(
          Set<RoutingProtocol> permittedProtocols, PolicyMapClause clause) {
       Set<RoutingProtocol> protocols = new HashSet<RoutingProtocol>();
@@ -77,6 +107,29 @@ public final class ProtocolDependencyAnalysis {
 
    public DependencyDatabase getDependencyDatabase() {
       return _dependencyDatabase;
+   }
+
+   private DotInput getDotInput() {
+      Digraph graph = new Digraph();
+      Set<Edge> edges = new HashSet<Edge>();
+      Map<String, Node> nodes = new HashMap<String, Node>();
+      Set<DependentRoute> routes = _dependencyDatabase.getDependentRoutes();
+      int i = 0;
+      for (DependentRoute route : routes) {
+         route.setDotNodeId("node" + i);
+         i++;
+      }
+      for (DependentRoute route : routes) {
+         collectEdges(edges, nodes, route);
+      }
+      graph.getEdges().addAll(edges);
+      graph.getNodes().addAll(nodes.values());
+      return graph;
+   }
+
+   private String getDotNodeLabel(DependentRoute route) {
+      return route.getNode() + ":" + route.getProtocol().toString() + ":"
+            + route.getPrefix();
    }
 
    private Set<PotentialExport> getPermittedExports(
@@ -805,6 +858,15 @@ public final class ProtocolDependencyAnalysis {
 
    private void removeCycles() {
       _dependencyDatabase.removeCycles();
+   }
+
+   public void writeGraph(String protocolDependencyGraphInputPath,
+         String protocolDependencyGraphOutputPath, BatfishLogger logger) {
+      DotJob dotJob = new DotJob(logger);
+      DotInput dotInput = getDotInput();
+      dotJob.setInput(dotInput);
+      dotJob.writeSvg(new File(protocolDependencyGraphInputPath), new File(
+            protocolDependencyGraphOutputPath));
    }
 
 }

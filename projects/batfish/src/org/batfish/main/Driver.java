@@ -53,6 +53,10 @@ public class Driver {
          settings.setTestRigPath(Paths.get(baseDir,
                BfConsts.RELPATH_TEST_RIG_DIR).toString());
          settings.setLogicDir(_mainSettings.getLogicDir());
+         settings.setProtocolDependencyGraphInputPath(Paths.get(baseDir,
+               BfConsts.RELPATH_PROTOCOL_DEPENDENCY_GRAPH_INPUT).toString());
+         settings.setProtocolDependencyGraphOutputPath(Paths.get(baseDir,
+               BfConsts.RELPATH_PROTOCOL_DEPENDENCY_GRAPH_OUTPUT).toString());
          String envName = settings.getEnvironmentName();
          if (envName != null) {
             envSettings.setName(envName);
