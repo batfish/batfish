@@ -1,31 +1,42 @@
 package org.batfish.question.statement;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.batfish.common.BatfishLogger;
-import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.representation.IpsecVpn;
 
-public class ForEachRemoteIpsecVpnStatement implements Statement {
+public class ForEachRemoteIpsecVpnStatement extends ForEachStatement<IpsecVpn> {
 
-   private List<Statement> _statements;
-
-   public ForEachRemoteIpsecVpnStatement(List<Statement> statements) {
-      _statements = statements;
+   public ForEachRemoteIpsecVpnStatement(List<Statement> statements,
+         String var, String setVar) {
+      super(statements, var, setVar);
    }
 
    @Override
-   public void execute(Environment environment, BatfishLogger logger,
-         Settings settings) {
-      for (IpsecVpn remoteIpsecVpn : environment.getIpsecVpn()
-            .getCandidateRemoteIpsecVpns()) {
-         Environment statementEnv = environment.copy();
-         statementEnv.setRemoteIpsecVpn(remoteIpsecVpn);
-         for (Statement statement : _statements) {
-            statement.execute(statementEnv, logger, settings);
-         }
-      }
+   protected Collection<IpsecVpn> getCollection(Environment environment) {
+      return environment.getIpsecVpn().getCandidateRemoteIpsecVpns();
+   }
+
+   @Override
+   protected Map<String, Set<IpsecVpn>> getSetMap(Environment environment) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   @Override
+   protected Map<String, IpsecVpn> getVarMap(Environment environment) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   @Override
+   protected void writeVal(Environment environment, IpsecVpn t) {
+      environment.setRemoteIpsecVpn(t);
    }
 
 }

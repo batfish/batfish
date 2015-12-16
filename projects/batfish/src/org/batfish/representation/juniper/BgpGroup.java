@@ -22,6 +22,8 @@ public class BgpGroup implements Serializable {
 
    private final List<String> _exportPolicies;
 
+   protected String _groupName;
+
    private final List<String> _importPolicies;
 
    private transient boolean _inherited;
@@ -56,6 +58,9 @@ public class BgpGroup implements Serializable {
          if (_exportPolicies.size() == 0) {
             _exportPolicies.addAll(_parent._exportPolicies);
          }
+         if (_groupName == null) {
+            _groupName = _parent._groupName;
+         }
          if (_importPolicies.size() == 0) {
             _importPolicies.addAll(_parent._importPolicies);
          }
@@ -80,6 +85,10 @@ public class BgpGroup implements Serializable {
 
    public final List<String> getExportPolicies() {
       return _exportPolicies;
+   }
+
+   public String getGroupName() {
+      return _groupName;
    }
 
    public final List<String> getImportPolicies() {

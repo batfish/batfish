@@ -8,6 +8,7 @@ import org.batfish.question.Environment;
 import org.batfish.question.Expr;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
+import org.batfish.representation.GeneratedRoute;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpsecVpn;
@@ -45,6 +46,11 @@ public class Assignment implements Statement {
 
       case BOOLEAN:
          environment.getBooleans().put(_variable, (Boolean) value);
+         break;
+
+      case GENERATED_ROUTE:
+         environment.getGeneratedRoutes()
+               .put(_variable, (GeneratedRoute) value);
          break;
 
       case INT:
@@ -103,10 +109,19 @@ public class Assignment implements Statement {
       case ACTION:
       case RANGE:
       case REGEX:
+      case SET_BGP_NEIGHBOR:
       case SET_INT:
+      case SET_INTERFACE:
       case SET_IP:
+      case SET_IPSEC_VPN:
+      case SET_NODE:
+      case SET_POLICY_MAP:
+      case SET_POLICY_MAP_CLAUSE:
       case SET_PREFIX:
+      case SET_PREFIX_SPACE:
       case SET_ROUTE_FILTER:
+      case SET_ROUTE_FILTER_LINE:
+      case SET_STATIC_ROUTE:
       case SET_STRING:
       default:
          throw new BatfishException("Unsupported variable type: " + _type);

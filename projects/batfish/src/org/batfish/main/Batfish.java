@@ -623,7 +623,10 @@ public class Batfish implements AutoCloseable {
    private void answerProtocolDependencies(ProtocolDependenciesQuestion question) {
       checkConfigurations();
       Map<String, Configuration> configurations = loadConfigurations();
-      new ProtocolDependencyAnalysis(configurations).printDependencies(_logger);
+      ProtocolDependencyAnalysis analysis = new ProtocolDependencyAnalysis(
+            configurations);
+      analysis.printDependencies(_logger);
+      analysis.writeGraphs(_settings, _logger);
    }
 
    private void answerReachability(ReachabilityQuestion question) {
@@ -1301,14 +1304,14 @@ public class Batfish implements AutoCloseable {
          String flatConfigText = e.getValue();
          String outputFileAsString = outputFile.toString();
          _logger.debug("Writing config to \"" + outputFileAsString + "\"...");
-         writeFile(outputFileAsString, flatConfigText);
+         Util.writeFile(outputFileAsString, flatConfigText);
          _logger.debug("OK\n");
       }
       Path inputTopologyPath = Paths.get(inputPath, TOPOLOGY_FILENAME);
       Path outputTopologyPath = Paths.get(outputPath, TOPOLOGY_FILENAME);
       if (Files.isRegularFile(inputTopologyPath)) {
          String topologyFileText = Util.readFile(inputTopologyPath.toFile());
-         writeFile(outputTopologyPath.toString(), topologyFileText);
+         Util.writeFile(outputTopologyPath.toString(), topologyFileText);
       }
    }
 
@@ -1522,7 +1525,7 @@ public class Batfish implements AutoCloseable {
                   stubInterface.setBandwidth(10E9d);
 
                   // create neighbor within bgp process
-                  BgpNeighbor edgeNeighbor = new BgpNeighbor(prefix);
+                  BgpNeighbor edgeNeighbor = new BgpNeighbor(prefix, stub);
                   edgeNeighbor.getOriginationPolicies().add(
                         stubOriginationPolicy);
                   edgeNeighbor.setRemoteAs(edgeAs);
@@ -3218,16 +3221,6 @@ public class Batfish implements AutoCloseable {
       populateConfigurationFactBins(configurations.values(), factBins);
    }
 
-   private void writeFile(String outputPath, String output) {
-      File outputFile = new File(outputPath);
-      try {
-         FileUtils.write(outputFile, output);
-      }
-      catch (IOException e) {
-         throw new BatfishException("Failed to write file: " + outputPath, e);
-      }
-   }
-
    private void writeFlowSinkFacts(InterfaceSet flowSinks,
          Map<String, StringBuilder> cpFactBins) {
       StringBuilder sb = cpFactBins.get("SetFlowSinkInterface");
@@ -3330,7 +3323,7 @@ public class Batfish implements AutoCloseable {
          }
       }
       String output = sb.toString();
-      writeFile(nxtnetInputFile, output);
+      Util.writeFile(nxtnetInputFile, output);
    }
 
    private void writeNxtnetPrecomputedRoutes(EnvironmentSettings envSettings) {

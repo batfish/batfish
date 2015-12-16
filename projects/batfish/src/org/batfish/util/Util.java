@@ -264,6 +264,16 @@ public class Util {
       return sb.toString();
    }
 
+   public static void writeFile(String outputPath, String output) {
+      File outputFile = new File(outputPath);
+      try {
+         FileUtils.write(outputFile, output);
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to write file: " + outputPath, e);
+      }
+   }
+
    private Util() {
    }
 

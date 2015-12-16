@@ -1,31 +1,38 @@
 package org.batfish.question.statement;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.batfish.common.BatfishLogger;
-import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.representation.RouteFilterLine;
 
-public class ForEachLineStatement implements Statement {
+public class ForEachLineStatement extends ForEachStatement<RouteFilterLine> {
 
-   private final List<Statement> _statements;
-
-   public ForEachLineStatement(List<Statement> statements) {
-      _statements = statements;
+   public ForEachLineStatement(List<Statement> statements, String var,
+         String setVar) {
+      super(statements, var, setVar);
    }
 
    @Override
-   public void execute(Environment environment, BatfishLogger logger,
-         Settings settings) {
-      List<RouteFilterLine> lines = environment.getRouteFilter().getLines();
-      for (RouteFilterLine line : lines) {
-         Environment statementEnv = environment.copy();
-         statementEnv.setRouteFilterLine(line);
-         for (Statement statement : _statements) {
-            statement.execute(statementEnv, logger, settings);
-         }
-      }
+   protected Collection<RouteFilterLine> getCollection(Environment environment) {
+      return environment.getRouteFilter().getLines();
+   }
+
+   @Override
+   protected Map<String, Set<RouteFilterLine>> getSetMap(Environment environment) {
+      return environment.getRouteFilterLineSets();
+   }
+
+   @Override
+   protected Map<String, RouteFilterLine> getVarMap(Environment environment) {
+      return environment.getRouteFilterLines();
+   }
+
+   @Override
+   protected void writeVal(Environment environment, RouteFilterLine t) {
+      environment.setRouteFilterLine(t);
    }
 
 }

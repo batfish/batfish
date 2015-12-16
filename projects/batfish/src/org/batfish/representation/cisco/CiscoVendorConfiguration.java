@@ -645,12 +645,12 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             if (lpg instanceof IpBgpPeerGroup) {
                IpBgpPeerGroup ipg = (IpBgpPeerGroup) lpg;
                Ip neighborAddress = ipg.getIp();
-               newNeighbor = new BgpNeighbor(neighborAddress);
+               newNeighbor = new BgpNeighbor(neighborAddress, c);
             }
             else if (lpg instanceof DynamicBgpPeerGroup) {
                DynamicBgpPeerGroup dpg = (DynamicBgpPeerGroup) lpg;
                Prefix neighborAddressRange = dpg.getPrefix();
-               newNeighbor = new BgpNeighbor(neighborAddressRange);
+               newNeighbor = new BgpNeighbor(neighborAddressRange, c);
             }
             else {
                throw new VendorConversionException(
@@ -1583,13 +1583,14 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
       LineAction action = fromLine.getAction();
       Ip ip = fromLine.getSourceIp();
-      int prefixLength = fromLine.getSourceWildcard().inverted()
-            .numSubnetBits();
-      Prefix prefix = new Prefix(ip, prefixLength);
       long minSubnet = fromLine.getDestinationIp().asLong();
       long maxSubnet = minSubnet | fromLine.getDestinationWildcard().asLong();
       int minPrefixLength = fromLine.getDestinationIp().numSubnetBits();
       int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
+      int statedPrefixLength = fromLine.getSourceWildcard().inverted()
+            .numSubnetBits();
+      int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
+      Prefix prefix = new Prefix(ip, prefixLength);
       return new RouteFilterLine(action, prefix, new SubRange(minPrefixLength,
             maxPrefixLength));
    }

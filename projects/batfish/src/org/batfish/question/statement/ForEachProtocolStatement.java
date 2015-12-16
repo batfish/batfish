@@ -1,32 +1,42 @@
 package org.batfish.question.statement;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.batfish.common.BatfishLogger;
-import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.representation.RoutingProtocol;
 
-public class ForEachProtocolStatement implements Statement {
+public class ForEachProtocolStatement extends ForEachStatement<RoutingProtocol> {
 
-   List<Statement> _statements;
-
-   public ForEachProtocolStatement(List<Statement> statements) {
-      _statements = statements;
+   public ForEachProtocolStatement(List<Statement> statements, String var,
+         String setVar) {
+      super(statements, var, setVar);
    }
 
    @Override
-   public void execute(Environment environment, BatfishLogger logger,
-         Settings settings) {
-      Set<RoutingProtocol> protocols = environment.getProtocols();
-      for (RoutingProtocol protocol : protocols) {
-         Environment statementEnv = environment.copy();
-         statementEnv.setRoutingProtocol(protocol);
-         for (Statement statement : _statements) {
-            statement.execute(statementEnv, logger, settings);
-         }
-      }
+   protected Collection<RoutingProtocol> getCollection(Environment environment) {
+      return environment.getProtocols();
+   }
+
+   @Override
+   protected Map<String, Set<RoutingProtocol>> getSetMap(Environment environment) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   @Override
+   protected Map<String, RoutingProtocol> getVarMap(Environment environment) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   @Override
+   protected void writeVal(Environment environment, RoutingProtocol t) {
+      environment.setRoutingProtocol(t);
    }
 
 }

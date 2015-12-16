@@ -54,7 +54,7 @@ verify {
                      node.name,
                      ipsec_vpn.ipsec_policy_name,
                      ipsec_vpn.remote_ipsec_vpn.name,
-                     ipsec_vpn.remote_ipsec_vpn.owner_name,
+                     ipsec_vpn.remote_ipsec_vpn.owner.name,
                      ipsec_vpn.remote_ipsec_vpn.ipsec_policy_name);
                }
             }
@@ -94,8 +94,8 @@ verify {
             }
          }
       }
-      $num_missing_endpoints := $num_ipsec_vpns - $num_matched_ipsec_vpns;
    }
+   $num_missing_endpoints := $num_ipsec_vpns - $num_matched_ipsec_vpns;
    printf("****Summary****\n");
    unless ($no_check_endpoint){
       printf("MISSING_ENDPOINT: %s/%s\n", $num_missing_endpoints, $num_ipsec_vpns);

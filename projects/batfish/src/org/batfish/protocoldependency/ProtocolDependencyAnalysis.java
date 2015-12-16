@@ -1,15 +1,31 @@
 package org.batfish.protocoldependency;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
+import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.graphviz.GraphvizDigraph;
+import org.batfish.graphviz.GraphvizJob;
+import org.batfish.graphviz.GraphvizEdge;
+import org.batfish.graphviz.GraphvizInput;
+import org.batfish.graphviz.GraphvizNode;
+import org.batfish.graphviz.GraphvizResult;
+import org.batfish.job.BatfishJobExecutor;
+import org.batfish.main.Settings;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
@@ -31,6 +47,7 @@ import org.batfish.representation.PrefixSpaceList;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.StaticRoute;
+import org.batfish.util.Util;
 
 /**
  * TODO: ospfe1
@@ -53,6 +70,113 @@ public final class ProtocolDependencyAnalysis {
    private void cleanDatabase() {
       _dependencyDatabase.clearPotentialExports();
       _dependencyDatabase.clearPotentialImports();
+   }
+
+   private void collectEdges(Map<Prefix, Set<GraphvizEdge>> prefixEdges,
+         Map<String, GraphvizNode> nodes, DependentRoute route) {
+      Prefix fromPrefix = route.getPrefix();
+      String nodeId = route.getDotNodeId();
+      String nodeLabel = getDotNodeLabel(route);
+      GraphvizNode node = nodes.get(nodeId);
+      if (node == null) {
+         node = new GraphvizNode(nodeId,
+               GraphvizDigraph.getGraphName(fromPrefix));
+         node.setLabel(nodeLabel);
+         nodes.put(nodeId, node);
+      }
+      for (DependentRoute dependency : route.getDependencies()) {
+         Prefix toPrefix = dependency.getPrefix();
+         String dependencyNodeId = dependency.getDotNodeId();
+         String dependencyNodeLabel = getDotNodeLabel(dependency);
+         GraphvizNode dependencyNode = nodes.get(dependencyNodeId);
+         if (dependencyNode == null) {
+            dependencyNode = new GraphvizNode(dependencyNodeId,
+                  GraphvizDigraph.getGraphName(toPrefix));
+            dependencyNode.setLabel(dependencyNodeLabel);
+            nodes.put(dependencyNodeId, dependencyNode);
+         }
+         GraphvizEdge edge = new GraphvizEdge(node, dependencyNode);
+         Set<GraphvizEdge> fromEdges = prefixEdges.get(fromPrefix);
+         if (fromEdges == null) {
+            fromEdges = new LinkedHashSet<GraphvizEdge>();
+            prefixEdges.put(fromPrefix, fromEdges);
+         }
+         Set<GraphvizEdge> toEdges = prefixEdges.get(toPrefix);
+         if (toEdges == null) {
+            toEdges = new LinkedHashSet<GraphvizEdge>();
+            prefixEdges.put(toPrefix, toEdges);
+         }
+         fromEdges.add(edge);
+         toEdges.add(edge);
+         collectEdges(prefixEdges, nodes, dependency);
+      }
+   }
+
+   private String computeMasterHtmlText(Set<Prefix> prefixes) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("<!DOCTYPE html>\n");
+      sb.append("<html>\n");
+      sb.append("<head>\n");
+      sb.append(" <title>Protocol dependency analysis</title>\n");
+      sb.append(" <style>\n");
+
+      sb.append("  .menu {\n");
+      sb.append("   overflow:hidden;\n");
+      sb.append("   padding:0;\n");
+      sb.append("   margin:0;\n");
+      sb.append("   height:100vh;\n");
+      sb.append("   width:150px;\n");
+      sb.append("   float:left;\n");
+      sb.append("  }\n");
+
+      sb.append("  .mainContent {\n");
+      sb.append("   overflow:hidden;\n");
+      sb.append("   padding:0;\n");
+      sb.append("   margin:0;\n");
+      sb.append("   height:100vh;\n");
+      sb.append("  }\n");
+
+      sb.append("  iframe {\n");
+      sb.append("   width:100%;\n");
+      sb.append("   height:100%;\n");
+      sb.append("   padding:0;\n");
+      sb.append("   margin:0;\n");
+      sb.append("  }\n");
+
+      sb.append("  body {\n");
+      sb.append("   overflow:hidden;\n");
+      sb.append("   margin:0;\n");
+      sb.append("  }\n");
+
+      sb.append(" </style>\n");
+      sb.append("</head>\n");
+      sb.append("<body>\n");
+      sb.append(" <div class=\"menu\">\n");
+      sb.append("  <iframe srcdoc=\"\n\n\n");
+
+      // begin srcdoc
+      sb.append("<table>\n");
+      for (Prefix prefix : prefixes) {
+         String url = GraphvizDigraph.getGraphName(prefix) + ".html";
+         sb.append("<tr><td><a href='");
+         sb.append(url);
+         sb.append("' target='mainframe'>");
+         sb.append(prefix.toString());
+         sb.append("</a></tr></td>\n");
+      }
+      sb.append("</table>\n");
+      sb.append("</body>\n");
+      // end srcdoc
+
+      sb.append("\">\n\n\n</iframe>\n\n\n");
+      sb.append(" </div>\n");
+      sb.append(" <div class=\"mainContent\">\n");
+      sb.append("  <iframe id=\"mainframe\" name=\"mainframe\" srcdoc=\"\">\n");
+      sb.append("  </iframe>\n");
+      sb.append(" </div>\n");
+      sb.append("</body>\n");
+      sb.append("</html>\n");
+      return sb.toString();
    }
 
    private Set<RoutingProtocol> getClausePermittedProtocols(
@@ -79,6 +203,44 @@ public final class ProtocolDependencyAnalysis {
       return _dependencyDatabase;
    }
 
+   private String getDotNodeLabel(DependentRoute route) {
+      return route.getNode() + ":" + route.getProtocol().toString() + ":"
+            + route.getPrefix();
+   }
+
+   private Map<Prefix, GraphvizInput> getGraphs() {
+      Map<Prefix, GraphvizInput> graphs = new HashMap<Prefix, GraphvizInput>();
+      Map<Prefix, Set<GraphvizEdge>> prefixEdges = new HashMap<Prefix, Set<GraphvizEdge>>();
+      Map<String, GraphvizNode> allNodes = new HashMap<String, GraphvizNode>();
+      Set<DependentRoute> routes = _dependencyDatabase.getDependentRoutes();
+      Set<Prefix> prefixes = new LinkedHashSet<Prefix>();
+      int i = 0;
+      for (DependentRoute route : routes) {
+         route.setDotNodeId("node" + i);
+         i++;
+         prefixes.add(route.getPrefix());
+      }
+      for (DependentRoute route : routes) {
+         collectEdges(prefixEdges, allNodes, route);
+      }
+      for (Entry<Prefix, Set<GraphvizEdge>> e : prefixEdges.entrySet()) {
+         Prefix prefix = e.getKey();
+         Set<GraphvizEdge> edges = e.getValue();
+         GraphvizDigraph graph = new GraphvizDigraph(
+               GraphvizDigraph.getGraphName(prefix));
+         graphs.put(prefix, graph);
+         graph.getEdges().addAll(edges);
+         Set<GraphvizNode> nodes = graph.getNodes();
+         for (GraphvizEdge edge : edges) {
+            GraphvizNode fromNode = edge.getFromNode();
+            GraphvizNode toNode = edge.getToNode();
+            nodes.add(fromNode);
+            nodes.add(toNode);
+         }
+      }
+      return graphs;
+   }
+
    private Set<PotentialExport> getPermittedExports(
          RoutingProtocol exportProtocol,
          Set<RoutingProtocol> permittedProtocols, String node,
@@ -103,7 +265,8 @@ public final class ProtocolDependencyAnalysis {
       Set<PotentialExport> permittedExports = new LinkedHashSet<PotentialExport>();
       for (PotentialExport originationExport : originationExports) {
          Prefix prefix = originationExport.getPrefix();
-         RoutingProtocol protocol = originationExport.getProtocol();
+         RoutingProtocol protocol = originationExport.getDependency()
+               .getProtocol();
          for (PolicyMap exportPolicy : exportPolicies) {
             if (policyPermits(exportPolicy, prefix, protocol,
                   permittedProtocols)) {
@@ -805,6 +968,54 @@ public final class ProtocolDependencyAnalysis {
 
    private void removeCycles() {
       _dependencyDatabase.removeCycles();
+   }
+
+   public void writeGraphs(Settings settings, BatfishLogger logger) {
+      String protocolDependencyGraphPath = settings
+            .getProtocolDependencyGraphPath();
+      new File(protocolDependencyGraphPath).mkdirs();
+      Map<Prefix, GraphvizInput> graphs = getGraphs();
+      BatfishJobExecutor<GraphvizJob, GraphvizResult, Map<String, byte[]>> executor = new BatfishJobExecutor<GraphvizJob, GraphvizResult, Map<String, byte[]>>(
+            settings, logger);
+      Map<String, byte[]> output = new TreeMap<String, byte[]>();
+      List<GraphvizJob> jobs = new ArrayList<GraphvizJob>();
+      for (Entry<Prefix, GraphvizInput> e : graphs.entrySet()) {
+         Prefix prefix = e.getKey();
+         GraphvizInput input = e.getValue();
+         String graphName = GraphvizDigraph.getGraphName(prefix);
+         String graphFile = Paths.get(protocolDependencyGraphPath, "dot",
+               graphName + ".dot").toString();
+         String svgFile = Paths.get(protocolDependencyGraphPath, "svg",
+               graphName + ".svg").toString();
+         String htmlFile = Paths.get(protocolDependencyGraphPath, "html",
+               graphName + ".html").toString();
+         GraphvizJob job = new GraphvizJob(input, graphFile, svgFile, htmlFile,
+               prefix);
+         jobs.add(job);
+      }
+      executor.executeJobs(jobs, output);
+      for (Entry<String, byte[]> e : output.entrySet()) {
+         String outputPath = e.getKey();
+         byte[] outputBytes = e.getValue();
+         logger.debug("Writing: \"" + outputPath + "\" ..");
+         try {
+            FileUtils.writeByteArrayToFile(new File(outputPath), outputBytes);
+         }
+         catch (IOException ex) {
+            throw new BatfishException(
+                  "Failed to write graphviz output file: \"" + outputPath
+                        + "\"", ex);
+         }
+         logger.debug("OK\n");
+      }
+      String masterHtmlFile = Paths.get(protocolDependencyGraphPath, "html",
+            "index.html").toString();
+      Set<Prefix> prefixes = new TreeSet<Prefix>();
+      prefixes.addAll(graphs.keySet());
+      String masterHtmlText = computeMasterHtmlText(prefixes);
+      logger.debug("Writing: \"" + masterHtmlFile + "\" ..");
+      Util.writeFile(masterHtmlFile, masterHtmlText);
+      logger.debug("OK\n");
    }
 
 }

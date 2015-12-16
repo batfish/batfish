@@ -2,14 +2,17 @@ package org.batfish.question.statement;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.batfish.question.Environment;
 import org.batfish.representation.PolicyMapClause;
 
 public class ForEachClauseStatement extends ForEachStatement<PolicyMapClause> {
 
-   public ForEachClauseStatement(List<Statement> statements, String var) {
-      super(statements, var);
+   public ForEachClauseStatement(List<Statement> statements, String var,
+         String setVar) {
+      super(statements, var, setVar);
    }
 
    @Override
@@ -18,18 +21,18 @@ public class ForEachClauseStatement extends ForEachStatement<PolicyMapClause> {
    }
 
    @Override
-   protected PolicyMapClause getOldVarVal(Environment environment) {
-      return environment.getPolicyMapClauses().get(_var);
+   protected Map<String, Set<PolicyMapClause>> getSetMap(Environment environment) {
+      return environment.getPolicyMapClauseSets();
+   }
+
+   @Override
+   protected Map<String, PolicyMapClause> getVarMap(Environment environment) {
+      return environment.getPolicyMapClauses();
    }
 
    @Override
    protected void writeVal(Environment environment, PolicyMapClause t) {
-      environment.setClause(t);
-   }
-
-   @Override
-   protected void writeVarVal(Environment environment, PolicyMapClause t) {
-      environment.getPolicyMapClauses().put(_var, t);
+      environment.setPolicyMapClause(t);
    }
 
 }

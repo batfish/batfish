@@ -1,6 +1,10 @@
 package org.batfish.grammar.question;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
 import org.batfish.grammar.BatfishExtractor;
@@ -43,6 +47,14 @@ public class QuestionParametersExtractor extends
       else if (ctx.STRING_LITERAL() != null) {
          type = VariableType.STRING;
          value = ctx.STRING_LITERAL().getText();
+      }
+      else if (ctx.string_set() != null) {
+         Set<String> strSet = new LinkedHashSet<String>();
+         for (Token t : ctx.string_set().str_elem) {
+            strSet.add(t.getText());
+         }
+         type = VariableType.SET_STRING;
+         value = strSet;
       }
       else {
          throw new BatfishException("Invalid binding for variable: \"" + var

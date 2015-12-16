@@ -8,7 +8,7 @@ import java.util.Set;
  * Represents a peering with a single router (by ip address) acting as a bgp
  * peer to the router whose configuration's BGP process contains this object
  */
-public class BgpNeighbor implements Serializable {
+public final class BgpNeighbor implements Serializable {
 
    /**
     *
@@ -19,6 +19,8 @@ public class BgpNeighbor implements Serializable {
     * The ip address of this peer for the purpose of this peering
     */
    private Ip _address;
+
+   private transient Set<BgpNeighbor> _candidateRemoteBgpNeighbors;
 
    /**
     * The cluster id associated with this peer to be used in route reflection
@@ -75,6 +77,8 @@ public class BgpNeighbor implements Serializable {
     */
    private Set<PolicyMap> _outboundPolicyMaps;
 
+   private final Configuration _owner;
+
    /**
     * Ip range from which to accept dynamic BGP peering sessions.
     */
@@ -86,17 +90,20 @@ public class BgpNeighbor implements Serializable {
     */
    private Integer _remoteAs;
 
+   private transient BgpNeighbor _remoteBgpNeighbor;
+
    /**
     * Flag governing whether to include community numbers in outgoing route
     * advertisements to this peer
     */
    private Boolean _sendCommunity;
 
-   private BgpNeighbor() {
+   private BgpNeighbor(Configuration owner) {
       _outboundPolicyMaps = new LinkedHashSet<PolicyMap>();
       _inboundPolicyMaps = new LinkedHashSet<PolicyMap>();
       _originationPolicies = new LinkedHashSet<PolicyMap>();
       _generatedRoutes = new LinkedHashSet<GeneratedRoute>();
+      _owner = owner;
    }
 
    /**
@@ -105,8 +112,8 @@ public class BgpNeighbor implements Serializable {
     *
     * @param address
     */
-   public BgpNeighbor(Ip address) {
-      this();
+   public BgpNeighbor(Ip address, Configuration owner) {
+      this(owner);
       _address = address;
    }
 
@@ -116,8 +123,8 @@ public class BgpNeighbor implements Serializable {
     *
     * @param prefix
     */
-   public BgpNeighbor(Prefix prefix) {
-      this();
+   public BgpNeighbor(Prefix prefix, Configuration owner) {
+      this(owner);
       _prefix = prefix;
    }
 
@@ -146,6 +153,10 @@ public class BgpNeighbor implements Serializable {
     */
    public Ip getAddress() {
       return _address;
+   }
+
+   public Set<BgpNeighbor> getCandidateRemoteBgpNeighbors() {
+      return _candidateRemoteBgpNeighbors;
    }
 
    /**
@@ -211,6 +222,10 @@ public class BgpNeighbor implements Serializable {
       return _outboundPolicyMaps;
    }
 
+   public Configuration getOwner() {
+      return _owner;
+   }
+
    /**
     * @return {@link #_prefix} if non-null, else /32 prefix of {@link #_address}
     */
@@ -230,11 +245,19 @@ public class BgpNeighbor implements Serializable {
       return _remoteAs;
    }
 
+   public BgpNeighbor getRemoteBgpNeighbor() {
+      return _remoteBgpNeighbor;
+   }
+
    /**
     * @return {@link #_sendCommunity}
     */
    public Boolean getSendCommunity() {
       return _sendCommunity;
+   }
+
+   public void initCandidateRemoteBgpNeighbors() {
+      _candidateRemoteBgpNeighbors = new LinkedHashSet<BgpNeighbor>();
    }
 
    /**
@@ -289,6 +312,10 @@ public class BgpNeighbor implements Serializable {
     */
    public void setRemoteAs(Integer remoteAs) {
       _remoteAs = remoteAs;
+   }
+
+   public void setRemoteBgpNeighbor(BgpNeighbor remoteBgpNeighbor) {
+      _remoteBgpNeighbor = remoteBgpNeighbor;
    }
 
    /**

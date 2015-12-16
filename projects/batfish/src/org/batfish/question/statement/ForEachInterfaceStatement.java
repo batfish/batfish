@@ -1,30 +1,38 @@
 package org.batfish.question.statement;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.batfish.common.BatfishLogger;
-import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.representation.Interface;
 
-public class ForEachInterfaceStatement implements Statement {
+public class ForEachInterfaceStatement extends ForEachStatement<Interface> {
 
-   private List<Statement> _statements;
-
-   public ForEachInterfaceStatement(List<Statement> statements) {
-      _statements = statements;
+   public ForEachInterfaceStatement(List<Statement> statements, String var,
+         String setVar) {
+      super(statements, var, setVar);
    }
 
    @Override
-   public void execute(Environment environment, BatfishLogger logger,
-         Settings settings) {
-      for (Interface iface : environment.getNode().getInterfaces().values()) {
-         Environment statementEnv = environment.copy();
-         statementEnv.setInterface(iface);
-         for (Statement statement : _statements) {
-            statement.execute(statementEnv, logger, settings);
-         }
-      }
+   protected Collection<Interface> getCollection(Environment environment) {
+      return environment.getNode().getInterfaces().values();
+   }
+
+   @Override
+   protected Map<String, Set<Interface>> getSetMap(Environment environment) {
+      return environment.getInterfaceSets();
+   }
+
+   @Override
+   protected Map<String, Interface> getVarMap(Environment environment) {
+      return environment.getInterfaces();
+   }
+
+   @Override
+   protected void writeVal(Environment environment, Interface t) {
+      environment.setInterface(t);
    }
 
 }

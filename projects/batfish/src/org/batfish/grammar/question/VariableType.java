@@ -1,104 +1,81 @@
 package org.batfish.grammar.question;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.batfish.common.BatfishException;
 
 public enum VariableType {
-   ACTION,
-   BGP_NEIGHBOR,
-   BOOLEAN,
-   INT,
-   INTERFACE,
-   IP,
-   IPSEC_VPN,
-   NODE,
-   POLICY_MAP,
-   POLICY_MAP_CLAUSE,
-   PREFIX,
-   PREFIX_SPACE,
-   RANGE,
-   REGEX,
-   ROUTE_FILTER,
-   ROUTE_FILTER_LINE,
-   SET_INT,
-   SET_IP,
-   SET_PREFIX,
-   SET_ROUTE_FILTER,
-   SET_STRING,
-   STATIC_ROUTE,
-   STRING;
+   ACTION("action"),
+   BGP_NEIGHBOR("bgp_neighbor"),
+   BOOLEAN("boolean"),
+   GENERATED_ROUTE("generated_route"),
+   INT("int"),
+   INTERFACE("interface"),
+   IP("ip"),
+   IPSEC_VPN("ipsec_vpn"),
+   NODE("node"),
+   POLICY_MAP("policy_map"),
+   POLICY_MAP_CLAUSE("policy_map_clause"),
+   PREFIX("prefix"),
+   PREFIX_SPACE("prefix_space"),
+   RANGE("range"),
+   REGEX("regex"),
+   ROUTE_FILTER("route_filter"),
+   ROUTE_FILTER_LINE("route_filter_line"),
+   SET_BGP_NEIGHBOR("set<bgp_neighbor>"),
+   SET_INT("set<int>"),
+   SET_INTERFACE("set<integer>"),
+   SET_IP("set<ip>"),
+   SET_IPSEC_VPN("set<ipsec_vpn>"),
+   SET_NODE("set<node>"),
+   SET_POLICY_MAP("set<policy_map>"),
+   SET_POLICY_MAP_CLAUSE("set<policy_map_clause>"),
+   SET_PREFIX("set<prefix>"),
+   SET_PREFIX_SPACE("set<prefix_space>"),
+   SET_ROUTE_FILTER("set<route_filter>"),
+   SET_ROUTE_FILTER_LINE("set<route_filter_line>"),
+   SET_STATIC_ROUTE("set<static_route>"),
+   SET_STRING("set<string>"),
+   STATIC_ROUTE("static_route"),
+   STRING("string");
+
+   private static final Map<String, VariableType> _nameMap = initNameMap();
 
    public static VariableType fromString(String typeStr) {
-      switch (typeStr) {
-      case "set<route_filter>":
-         return SET_ROUTE_FILTER;
-
-      case "set<ip>":
-         return SET_IP;
-
-      case "set<prefix>":
-         return SET_PREFIX;
-
-      case "set<string>":
-         return SET_STRING;
-
-      case "set<int>":
-         return SET_INT;
-
-      case "action":
-         return ACTION;
-
-      case "bgp_neighbor":
-         return BGP_NEIGHBOR;
-
-      case "boolean":
-         return BOOLEAN;
-
-      case "int":
-         return INT;
-
-      case "interface":
-         return INTERFACE;
-
-      case "ip":
-         return IP;
-
-      case "node":
-         return NODE;
-
-      case "policy_map":
-         return POLICY_MAP;
-
-      case "policy_map_clause":
-         return POLICY_MAP_CLAUSE;
-
-      case "prefix":
-         return PREFIX;
-
-      case "prefix_space":
-         return PREFIX_SPACE;
-
-      case "range":
-         return RANGE;
-
-      case "regex":
-         return REGEX;
-
-      case "route_filter":
-         return ROUTE_FILTER;
-
-      case "route_filter_line":
-         return ROUTE_FILTER_LINE;
-
-      case "static_route":
-         return STATIC_ROUTE;
-
-      case "string":
-         return STRING;
-
-      default:
-         throw new BatfishException("Invalid variable type string: \""
-               + typeStr + "\"");
+      VariableType value = _nameMap.get(typeStr);
+      if (value == null) {
+         throw new BatfishException("invalid "
+               + VariableType.class.getSimpleName() + " name");
       }
+      return value;
+   }
 
+   private static Map<String, VariableType> initNameMap() {
+      Map<String, VariableType> nameMap = new HashMap<String, VariableType>();
+      for (VariableType type : values()) {
+         nameMap.put(type._name, type);
+      }
+      return nameMap;
+   }
+
+   private final String _name;
+
+   private VariableType(String name) {
+      _name = name;
+   }
+
+   public VariableType elementType() {
+      String prefix = "set<";
+      if (!_name.startsWith(prefix)) {
+         throw new BatfishException("Not a set type: " + this);
+      }
+      String elementTypeName = _name.substring(prefix.length(),
+            _name.length() - 1);
+      return fromString(elementTypeName);
+   }
+
+   public String getName() {
+      return _name;
    }
 }

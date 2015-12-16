@@ -1,36 +1,53 @@
 package org.batfish.question.statement;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.batfish.common.BatfishLogger;
-import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
 
-public class ForEachNodeBgpGeneratedRouteStatement implements Statement {
+public class ForEachNodeBgpGeneratedRouteStatement extends
+      ForEachStatement<GeneratedRoute> {
 
-   private List<Statement> _statements;
-
-   public ForEachNodeBgpGeneratedRouteStatement(List<Statement> statements) {
-      _statements = statements;
+   public ForEachNodeBgpGeneratedRouteStatement(List<Statement> statements,
+         String var, String setVar) {
+      super(statements, var, setVar);
    }
 
    @Override
-   public void execute(Environment environment, BatfishLogger logger,
-         Settings settings) {
+   protected Collection<GeneratedRoute> getCollection(Environment environment) {
       Configuration node = environment.getNode();
       BgpProcess proc = node.getBgpProcess();
       if (proc != null) {
-         for (GeneratedRoute generatedRoute : proc.getGeneratedRoutes()) {
-            Environment statementEnv = environment.copy();
-            statementEnv.setGeneratedRoute(generatedRoute);
-            for (Statement statement : _statements) {
-               statement.execute(statementEnv, logger, settings);
-            }
-         }
+         return proc.getGeneratedRoutes();
       }
+      else {
+         return Collections.emptyList();
+      }
+   }
+
+   @Override
+   protected Map<String, Set<GeneratedRoute>> getSetMap(Environment environment) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   @Override
+   protected Map<String, GeneratedRoute> getVarMap(Environment environment) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   @Override
+   protected void writeVal(Environment environment, GeneratedRoute t) {
+      environment.setGeneratedRoute(t);
    }
 
 }

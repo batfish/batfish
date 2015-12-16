@@ -247,6 +247,10 @@ public class DependencyDatabase {
       return null;
    }
 
+   public Set<DependentRoute> getDependentRoutes() {
+      return _dependentRoutes;
+   }
+
    public Set<DependentRoute> getDependentRoutes(String node) {
       return _dependentRoutesByNode.get(node);
    }

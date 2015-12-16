@@ -9,7 +9,12 @@ package org.batfish.grammar.question;
 }
 
 tokens {
+   BOOLEAN,
    INT,
+   POLICY_MAP,
+   POLICY_MAP_CLAUSE,
+   PREFIX_SPACE,
+   ROUTE_FILTER_LINE,
    STRING,
    STRING_LITERAL
 }
@@ -161,6 +166,11 @@ GLOBAL
    'global'
 ;
 
+GROUP
+:
+   'group'
+;
+
 HAS_GENERATED_ROUTE
 :
    'has_generated_route'
@@ -181,9 +191,19 @@ HAS_NEXT_HOP_IP
    'has_next_hop_ip'
 ;
 
+HAS_REMOTE_BGP_NEIGHBOR
+:
+   'has_remote_bgp_neighbor'
+;
+
 HAS_REMOTE_IPSEC_VPN
 :
    'has_remote_ipsec_vpn'
+;
+
+HAS_SINGLE_REMOTE_BGP_NEIGHBOR
+:
+   'has_single_remote_bgp_neighbor'
 ;
 
 HAS_SINGLE_REMOTE_IPSEC_VPN
@@ -336,6 +356,11 @@ NODE
    'node'
 ;
 
+NODE_BGP_GENERATED_ROUTE
+:
+   'node_bgp_generated_route'
+;
+
 NOT
 :
    'not'
@@ -366,9 +391,9 @@ OVERLAPS
    'overlaps'
 ;
 
-OWNER_NAME
+OWNER
 :
-   'owner_name'
+   'owner'
 ;
 
 PASSIVE
@@ -419,6 +444,11 @@ REACHABILITY
 REMOTE_AS
 :
    'remote_as'
+;
+
+REMOTE_BGP_NEIGHBOR
+:
+   'remote_bgp_neighbor'
 ;
 
 REMOTE_IP
@@ -760,9 +790,19 @@ M_QuotedString_DOUBLE_QUOTE
 
 mode M_Set;
 
+M_Set_BGP_NEIGHBOR
+:
+   'bgp_neighbor' -> type ( BGP_NEIGHBOR )
+;
+
 M_Set_INT
 :
    'int' -> type ( INT )
+;
+
+M_Set_INTERFACE
+:
+   'interface' -> type ( INTERFACE )
 ;
 
 M_Set_IP
@@ -770,9 +810,34 @@ M_Set_IP
    'ip' -> type ( IP )
 ;
 
-M_Set_OPEN_ANGLE_BRACKET
+M_Set_IPSEC_VPN
 :
-   '<' -> channel ( HIDDEN )
+   'ipsec_vpn' -> type ( IPSEC_VPN )
+;
+
+M_Set_NODE
+:
+   'node' -> type ( NODE )
+;
+
+M_Set_POLICY_MAP
+:
+   'policy_map' -> type ( POLICY_MAP )
+;
+
+M_Set_POLICY_MAP_CLAUSE
+:
+   'policy_map_clause' -> type ( POLICY_MAP_CLAUSE )
+;
+
+M_Set_PREFIX
+:
+   'prefix' -> type ( PREFIX )
+;
+
+M_Set_PREFIX_SPACE
+:
+   'prefix_space' -> type ( PREFIX_SPACE )
 ;
 
 M_Set_ROUTE_FILTER
@@ -780,9 +845,24 @@ M_Set_ROUTE_FILTER
    'route_filter' -> type ( ROUTE_FILTER )
 ;
 
+M_Set_ROUTE_FILTER_LINE
+:
+   'route_filter_line' -> type ( ROUTE_FILTER_LINE )
+;
+
+M_Set_STATIC_ROUTE
+:
+   'static_route' -> type ( STATIC_ROUTE )
+;
+
 M_Set_STRING
 :
    'string' -> type ( STRING )
+;
+
+M_Set_OPEN_ANGLE_BRACKET
+:
+   '<' -> channel ( HIDDEN )
 ;
 
 M_Set_CLOSE_ANGLE_BRACKET
