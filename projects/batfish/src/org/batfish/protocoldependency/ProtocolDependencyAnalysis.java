@@ -171,7 +171,7 @@ public final class ProtocolDependencyAnalysis {
       sb.append("\">\n\n\n</iframe>\n\n\n");
       sb.append(" </div>\n");
       sb.append(" <div class=\"mainContent\">\n");
-      sb.append("  <iframe id=\"mainframe\" name=\"mainframe\" src=\"graph_0_0_0_0_0.html\">\n");
+      sb.append("  <iframe id=\"mainframe\" name=\"mainframe\" srcdoc=\"\">\n");
       sb.append("  </iframe>\n");
       sb.append(" </div>\n");
       sb.append("</body>\n");
