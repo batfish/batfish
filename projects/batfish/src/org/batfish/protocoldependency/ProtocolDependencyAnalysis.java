@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
@@ -46,6 +47,7 @@ import org.batfish.representation.PrefixSpaceList;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.StaticRoute;
+import org.batfish.util.Util;
 
 /**
  * TODO: ospfe1
@@ -77,7 +79,8 @@ public final class ProtocolDependencyAnalysis {
       String nodeLabel = getDotNodeLabel(route);
       GraphvizNode node = nodes.get(nodeId);
       if (node == null) {
-         node = new GraphvizNode(nodeId);
+         node = new GraphvizNode(nodeId,
+               GraphvizDigraph.getGraphName(fromPrefix));
          node.setLabel(nodeLabel);
          nodes.put(nodeId, node);
       }
@@ -87,7 +90,8 @@ public final class ProtocolDependencyAnalysis {
          String dependencyNodeLabel = getDotNodeLabel(dependency);
          GraphvizNode dependencyNode = nodes.get(dependencyNodeId);
          if (dependencyNode == null) {
-            dependencyNode = new GraphvizNode(dependencyNodeId);
+            dependencyNode = new GraphvizNode(dependencyNodeId,
+                  GraphvizDigraph.getGraphName(toPrefix));
             dependencyNode.setLabel(dependencyNodeLabel);
             nodes.put(dependencyNodeId, dependencyNode);
          }
@@ -106,6 +110,73 @@ public final class ProtocolDependencyAnalysis {
          toEdges.add(edge);
          collectEdges(prefixEdges, nodes, dependency);
       }
+   }
+
+   private String computeMasterHtmlText(Set<Prefix> prefixes) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("<!DOCTYPE html>\n");
+      sb.append("<html>\n");
+      sb.append("<head>\n");
+      sb.append(" <title>Protocol dependency analysis</title>\n");
+      sb.append(" <style>\n");
+
+      sb.append("  .menu {\n");
+      sb.append("   overflow:hidden;\n");
+      sb.append("   padding:0;\n");
+      sb.append("   margin:0;\n");
+      sb.append("   height:100vh;\n");
+      sb.append("   width:150px;\n");
+      sb.append("   float:left;\n");
+      sb.append("  }\n");
+
+      sb.append("  .mainContent {\n");
+      sb.append("   overflow:hidden;\n");
+      sb.append("   padding:0;\n");
+      sb.append("   margin:0;\n");
+      sb.append("   height:100vh;\n");
+      sb.append("  }\n");
+
+      sb.append("  iframe {\n");
+      sb.append("   width:100%;\n");
+      sb.append("   height:100%;\n");
+      sb.append("   padding:0;\n");
+      sb.append("   margin:0;\n");
+      sb.append("  }\n");
+
+      sb.append("  body {\n");
+      sb.append("   overflow:hidden;\n");
+      sb.append("   margin:0;\n");
+      sb.append("  }\n");
+
+      sb.append(" </style>\n");
+      sb.append("</head>\n");
+      sb.append("<body>\n");
+      sb.append(" <div class=\"menu\">\n");
+      sb.append("  <iframe srcdoc=\"\n\n\n");
+
+      // begin srcdoc
+      sb.append("<table>\n");
+      for (Prefix prefix : prefixes) {
+         String url = GraphvizDigraph.getGraphName(prefix) + ".html";
+         sb.append("<tr><td><a href='");
+         sb.append(url);
+         sb.append("' target='mainframe'>");
+         sb.append(prefix.toString());
+         sb.append("</a></tr></td>\n");
+      }
+      sb.append("</table>\n");
+      sb.append("</body>\n");
+      // end srcdoc
+
+      sb.append("\">\n\n\n</iframe>\n\n\n");
+      sb.append(" </div>\n");
+      sb.append(" <div class=\"mainContent\">\n");
+      sb.append("  <iframe id=\"mainframe\" name=\"mainframe\" src=\"graph_0_0_0_0_0.html\">\n");
+      sb.append("  </iframe>\n");
+      sb.append(" </div>\n");
+      sb.append("</body>\n");
+      sb.append("</html>\n");
+      return sb.toString();
    }
 
    private Set<RoutingProtocol> getClausePermittedProtocols(
@@ -155,7 +226,8 @@ public final class ProtocolDependencyAnalysis {
       for (Entry<Prefix, Set<GraphvizEdge>> e : prefixEdges.entrySet()) {
          Prefix prefix = e.getKey();
          Set<GraphvizEdge> edges = e.getValue();
-         GraphvizDigraph graph = new GraphvizDigraph();
+         GraphvizDigraph graph = new GraphvizDigraph(
+               GraphvizDigraph.getGraphName(prefix));
          graphs.put(prefix, graph);
          graph.getEdges().addAll(edges);
          Set<GraphvizNode> nodes = graph.getNodes();
@@ -910,12 +982,15 @@ public final class ProtocolDependencyAnalysis {
       for (Entry<Prefix, GraphvizInput> e : graphs.entrySet()) {
          Prefix prefix = e.getKey();
          GraphvizInput input = e.getValue();
-         String sanitizedPrefix = prefix.toString().replace('/', '_');
+         String graphName = GraphvizDigraph.getGraphName(prefix);
          String graphFile = Paths.get(protocolDependencyGraphPath, "dot",
-               sanitizedPrefix + ".dot").toString();
+               graphName + ".dot").toString();
          String svgFile = Paths.get(protocolDependencyGraphPath, "svg",
-               sanitizedPrefix + ".svg").toString();
-         GraphvizJob job = new GraphvizJob(input, graphFile, svgFile, prefix);
+               graphName + ".svg").toString();
+         String htmlFile = Paths.get(protocolDependencyGraphPath, "html",
+               graphName + ".html").toString();
+         GraphvizJob job = new GraphvizJob(input, graphFile, svgFile, htmlFile,
+               prefix);
          jobs.add(job);
       }
       executor.executeJobs(jobs, output);
@@ -933,6 +1008,14 @@ public final class ProtocolDependencyAnalysis {
          }
          logger.debug("OK\n");
       }
+      String masterHtmlFile = Paths.get(protocolDependencyGraphPath, "html",
+            "index.html").toString();
+      Set<Prefix> prefixes = new TreeSet<Prefix>();
+      prefixes.addAll(graphs.keySet());
+      String masterHtmlText = computeMasterHtmlText(prefixes);
+      logger.debug("Writing: \"" + masterHtmlFile + "\" ..");
+      Util.writeFile(masterHtmlFile, masterHtmlText);
+      logger.debug("OK\n");
    }
 
 }

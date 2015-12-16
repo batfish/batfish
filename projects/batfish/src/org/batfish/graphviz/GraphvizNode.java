@@ -9,10 +9,13 @@ public class GraphvizNode extends NamedStructure {
     */
    private static final long serialVersionUID = 1L;
 
+   private String _graphName;
+
    private String _label;
 
-   public GraphvizNode(String name) {
+   public GraphvizNode(String name, String graphName) {
       super(name);
+      _graphName = graphName;
    }
 
    public String getLabel() {
@@ -25,7 +28,8 @@ public class GraphvizNode extends NamedStructure {
 
    @Override
    public String toString() {
-      return _name + "[label=\"" + _label + "\"];";
+      return _name + "[label=\"" + _label + "\" URL=\"" + _graphName
+            + ".html\"];";
    }
 
 }

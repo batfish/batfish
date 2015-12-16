@@ -19,6 +19,8 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
 
    private final String _graphFile;
 
+   private final String _htmlFile;
+
    private final GraphvizInput _input;
 
    private final Prefix _prefix;
@@ -26,9 +28,10 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
    private final String _svgFile;
 
    public GraphvizJob(GraphvizInput input, String graphFile, String svgFile,
-         Prefix prefix) {
+         String htmlFile, Prefix prefix) {
       _input = input;
       _graphFile = graphFile;
+      _htmlFile = htmlFile;
       _svgFile = svgFile;
       _prefix = prefix;
    }
@@ -37,15 +40,121 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
    public GraphvizResult call() throws Exception {
       long startTime = System.currentTimeMillis();
       long elapsedTime;
-      byte[] graphBytes;
+      Throwable failureCause = null;
+      byte[] graphBytes = null;
+      byte[] htmlBytes = null;
+      byte[] svgBytes = null;
+      try {
+         graphBytes = computeGraph();
+         byte[] mapBytes = computeMap(graphBytes);
+         htmlBytes = computeHtml(mapBytes);
+         svgBytes = computeSvg(graphBytes);
+      }
+      catch (BatfishException e) {
+         failureCause = e;
+      }
+      elapsedTime = System.currentTimeMillis() - startTime;
+      if (failureCause != null) {
+         return new GraphvizResult(elapsedTime, _prefix, failureCause);
+      }
+      else {
+         return new GraphvizResult(elapsedTime, _graphFile, graphBytes,
+               _svgFile, svgBytes, _htmlFile, htmlBytes, _prefix);
+      }
+   }
+
+   private byte[] computeGraph() {
+      byte[] graphBytes = null;
       try {
          graphBytes = _input.toString().getBytes("UTF-8");
       }
       catch (UnsupportedEncodingException e) {
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new GraphvizResult(elapsedTime, _graphFile, _svgFile, _prefix,
-               new BatfishException("Failed to convert dot input to bytes", e));
+         throw new BatfishException(
+               "Failed to convert graphviz input to bytes", e);
       }
+      return graphBytes;
+   }
+
+   private byte[] computeHtml(byte[] mapBytes) {
+      String mapText = null;
+      try {
+         mapText = new String(mapBytes, "UTF-8");
+      }
+      catch (UnsupportedEncodingException e) {
+         throw new BatfishException("Could not convert map bytes to string", e);
+      }
+      String graphName = GraphvizDigraph.getGraphName(_prefix);
+      StringBuilder sb = new StringBuilder();
+      sb.append("<!DOCTYPE html>\n");
+      sb.append("<html>\n");
+      sb.append("<head>\n");
+      sb.append("<script>\n");
+      sb.append("window.onload = function() { window.scrollTo( (window.scrollMaxX)/2, (window.scrollMaxY)/2 ); }\n");
+      sb.append("</script>\n");
+      sb.append("</head>\n");
+      sb.append("<body>\n");
+      sb.append("<img src=\"../svg/" + graphName + ".svg\" usemap=\"#"
+            + graphName + "\" />\n");
+      sb.append(mapText);
+      sb.append("</body>\n");
+      sb.append("</html>\n");
+      byte[] htmlBytes = null;
+      try {
+         htmlBytes = sb.toString().getBytes("UTF-8");
+      }
+      catch (UnsupportedEncodingException e) {
+         throw new BatfishException("Could not convert map bytes to string", e);
+      }
+      return htmlBytes;
+   }
+
+   private byte[] computeMap(byte[] graphBytes) {
+      DefaultExecutor executor = new DefaultExecutor();
+      ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+      ByteArrayOutputStream errStream = new ByteArrayOutputStream();
+      ByteArrayInputStream inStream = new ByteArrayInputStream(graphBytes);
+      executor.setStreamHandler(new PumpStreamHandler(outStream, errStream,
+            inStream));
+      executor.setExitValue(0);
+      CommandLine cmdLine = new CommandLine(GRAPHVIZ_COMMAND);
+      cmdLine.addArgument("-Tcmapx");
+      StringBuilder cmdLineSb = new StringBuilder();
+      cmdLineSb.append(GRAPHVIZ_COMMAND + " ");
+      cmdLineSb.append(org.batfish.common.Util.joinStrings(" ",
+            cmdLine.getArguments()));
+      String cmdLineString = cmdLineSb.toString();
+      boolean failure = false;
+      try {
+         executor.execute(cmdLine);
+      }
+      catch (ExecuteException e) {
+         failure = true;
+      }
+      catch (IOException e) {
+         throw new BatfishException("Unknown error running graphviz", e);
+      }
+      byte[] mapBytes = outStream.toByteArray();
+      byte[] errRaw = errStream.toByteArray();
+      String err = null;
+      try {
+         err = new String(errRaw, "UTF-8");
+      }
+      catch (IOException e) {
+         throw new BatfishException("Error reading nxnet output", e);
+      }
+      StringBuilder sb = new StringBuilder();
+      if (failure) {
+         sb.append("graphviz terminated abnormally:\n");
+         sb.append("graphviz command line: " + cmdLineString + "\n");
+         sb.append(err);
+         throw new BatfishException(sb.toString());
+      }
+      else {
+         return mapBytes;
+      }
+   }
+
+   private byte[] computeSvg(byte[] graphBytes) {
       DefaultExecutor executor = new DefaultExecutor();
       ByteArrayOutputStream outStream = new ByteArrayOutputStream();
       ByteArrayOutputStream errStream = new ByteArrayOutputStream();
@@ -68,9 +177,7 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
          failure = true;
       }
       catch (IOException e) {
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new GraphvizResult(elapsedTime, _graphFile, _svgFile, _prefix,
-               new BatfishException("Unknown error running graphviz", e));
+         throw new BatfishException("Unknown error running graphviz", e);
       }
       byte[] svgBytes = outStream.toByteArray();
       byte[] errRaw = errStream.toByteArray();
@@ -79,23 +186,17 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
          err = new String(errRaw, "UTF-8");
       }
       catch (IOException e) {
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new GraphvizResult(elapsedTime, _graphFile, _svgFile, _prefix,
-               new BatfishException("Error reading nxnet output", e));
+         throw new BatfishException("Error reading nxnet output", e);
       }
       StringBuilder sb = new StringBuilder();
       if (failure) {
          sb.append("graphviz terminated abnormally:\n");
          sb.append("graphviz command line: " + cmdLineString + "\n");
          sb.append(err);
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new GraphvizResult(elapsedTime, _graphFile, _svgFile, _prefix,
-               new BatfishException(sb.toString()));
+         throw new BatfishException(sb.toString());
       }
       else {
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new GraphvizResult(elapsedTime, _graphFile, graphBytes,
-               _svgFile, svgBytes, _prefix);
+         return svgBytes;
       }
    }
 
