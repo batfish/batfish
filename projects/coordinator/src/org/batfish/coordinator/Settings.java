@@ -11,12 +11,12 @@ import org.batfish.coordinator.queues.WorkQueue;
 public class Settings extends BaseSettings {
 
    private static final String ARG_AUTHORIZER_TYPE = "authorizertype";
-   private static final String ARG_DB_AUTHORIZER_CONN_STRING = "dbconnection";
-   private static final String ARG_DISABLE_SSL = "disablessl";
    /**
     * (not wired to command line)
     */
    private static final String ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS = "dbcacheexpiry";
+   private static final String ARG_DB_AUTHORIZER_CONN_STRING = "dbconnection";
+   private static final String ARG_DISABLE_SSL = "disablessl";
    private static final String ARG_FILE_AUTHORIZER_PERMS_FILE = "coordinator.FileAuthPermsFile";
    private static final String ARG_FILE_AUTHORIZER_ROOT_DIR = "coordinator.FileAuthRootDir";
    private static final String ARG_FILE_AUTHORIZER_USERS_FILE = "coordinator.FileAuthUsersFile";
@@ -167,7 +167,8 @@ public class Settings extends BaseSettings {
 
    private void initConfigDefaults() {
       setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none.toString());
-      setDefaultProperty(ARG_DB_AUTHORIZER_CONN_STRING, "jdbc:mysql://localhost/batfish_test?user=batfish&password=batfish");
+      setDefaultProperty(ARG_DB_AUTHORIZER_CONN_STRING,
+            "jdbc:mysql://localhost/batfish_test?user=batfish&password=batfish");
       setDefaultProperty(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, 60 * 1000);
       setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
       setDefaultProperty(ARG_FILE_AUTHORIZER_PERMS_FILE, "perms.json");
@@ -200,10 +201,11 @@ public class Settings extends BaseSettings {
       addOption(ARG_AUTHORIZER_TYPE, "type of authorizer to use",
             "authorizer type");
 
-      addOption(ARG_DB_AUTHORIZER_CONN_STRING, "connection string for authorizer db",
-            "connection string");
+      addOption(ARG_DB_AUTHORIZER_CONN_STRING,
+            "connection string for authorizer db", "connection string");
 
-      addOption(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, "when to expire information from authorizer database",
+      addOption(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS,
+            "when to expire information from authorizer database",
             "expiration time (ms)");
 
       addBooleanOption(ARG_DISABLE_SSL, "disable coordinator ssl");

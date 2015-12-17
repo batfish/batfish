@@ -2208,16 +2208,19 @@ public class Batfish implements AutoCloseable {
             questionText, _settings.getThrowOnParserError(),
             _settings.getThrowOnLexerError());
       QuestionParametersExtractor extractor = new QuestionParametersExtractor();
+      ParserRuleContext tree = null;
       try {
-         ParserRuleContext tree = parse(parser, questionParametersPath);
-         _logger.info("\tPost-processing...");
-         extractor.processParseTree(tree);
-         _logger.info("OK\n");
+         tree = parse(parser, questionParametersPath);
       }
       catch (ParserBatfishException e) {
          String error = "Error parsing question parameters: \""
                + questionParametersPath + "\"";
          throw new BatfishException(error, e);
+      }
+      try {
+         _logger.info("\tPost-processing...");
+         extractor.processParseTree(tree);
+         _logger.info("OK\n");
       }
       catch (Exception e) {
          String error = "Error post-processing parse tree of question parameters file: \""
