@@ -30,6 +30,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.UnzipUtility;
 import org.batfish.common.WorkItem;
 import org.batfish.common.AppZip;
+import org.batfish.common.ZipUtility;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -396,9 +397,12 @@ public class WorkMgr {
             zipfile.delete();
          }
 
-         AppZip appZip = new AppZip();
-         appZip.zip(file.getAbsolutePath(), zipfile.getAbsolutePath());
+         //AppZip appZip = new AppZip();
+         //appZip.zip();
+         ZipUtility.zipFiles(file.getAbsolutePath(), zipfile.getAbsolutePath());
 
+         //TODO: delete the zipfile
+         
          return zipfile;
       }
 

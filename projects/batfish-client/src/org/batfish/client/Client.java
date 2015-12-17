@@ -24,6 +24,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Util;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.ZipUtility;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
@@ -522,13 +523,26 @@ public class Client {
             }
 
             String diffEnvName = words[1];
-            String diffEnvFile = words[2];
+            String diffEnvLocation = words[2];
+
+            File envFilePointer = new File(diffEnvLocation);
+            
+            String uploadFilename = diffEnvLocation;
+            
+            if (envFilePointer.isDirectory()) {
+               uploadFilename = File.createTempFile("diffenv", "zip").getAbsolutePath();               
+               ZipUtility.zipFiles(envFilePointer.getAbsolutePath(), uploadFilename);
+            }     
 
             // upload the environment
             boolean resultUpload = _workHelper.uploadEnvironment(
                   _currContainerName, _currTestrigName, diffEnvName,
-                  diffEnvFile);
+                  uploadFilename);
 
+            //unequal means we must have created a temporary file
+            if (uploadFilename != diffEnvLocation) 
+               new File(uploadFilename).delete();
+            
             if (resultUpload) {
                _logger.output("Successfully uploaded environment.\n");
             }
@@ -557,9 +571,8 @@ public class Client {
             String uploadFilename = testrigLocation;
             
             if (testrigFilePointer.isDirectory()) {
-                 uploadFilename = File.createTempFile("testrig", null).getAbsolutePath();               
-               AppZip appZip = new AppZip();
-               appZip.zip(testrigFilePointer.getAbsolutePath(), uploadFilename);
+               uploadFilename = File.createTempFile("testrig", "zip").getAbsolutePath();               
+               ZipUtility.zipFiles(testrigFilePointer.getAbsolutePath(), uploadFilename);
             }     
                         
             // upload the testrig
