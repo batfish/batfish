@@ -74,6 +74,14 @@ package org.batfish.grammar.question;
       }
    }
 
+   private void assertMatchingExprType(ExprContext lhs, ExprContext rhs) {
+      VariableType lhsType = lhs.varType;
+      VariableType rhsType = rhs.varType;
+      if (lhsType != rhsType) {
+         throw new org.batfish.common.BatfishException("Expression '" + lhs.getText() + "' of type '" + lhsType.toString() + "' cannot be compared to expression '" + rhs.getText()+ "' of type '" + rhsType.toString());
+      }
+   }
+
 }
 
 action
@@ -342,13 +350,9 @@ defaults
 ;
 
 eq_expr
-locals [VariableType varType]
 :
-   lhs = expr
-   {$varType = $lhs.varType;}
-
-   DOUBLE_EQUALS rhs = expr
-   {$varType == $rhs.varType}?
+   lhs = expr DOUBLE_EQUALS rhs = expr
+   {assertMatchingExprType(_localctx.lhs, _localctx.rhs);}
 
 ;
 
@@ -736,8 +740,8 @@ interface_boolean_expr
    (
       interface_enabled_boolean_expr
       | interface_has_ip_boolean_expr
+      | interface_is_loopback_boolean_expr
       | interface_isis_boolean_expr
-      | interface_isloopback_boolean_expr
       | interface_ospf_boolean_expr
    )
 ;
@@ -772,6 +776,11 @@ interface_ip_ip_expr
    IP
 ;
 
+interface_is_loopback_boolean_expr
+:
+   IS_LOOPBACK
+;
+
 interface_isis_l1_active_boolean_expr
 :
    L1_ACTIVE
@@ -803,11 +812,6 @@ interface_isis_boolean_expr
    )
 ;
 
-interface_isloopback_boolean_expr
-:
-   IS_LOOPBACK
-;
-
 interface_name_string_expr
 :
    NAME
@@ -834,7 +838,11 @@ interface_ospf_boolean_expr
 
 interface_prefix_expr
 :
-   caller = interface_expr PERIOD interface_prefix_prefix_expr
+   caller = interface_expr PERIOD
+   (
+      interface_prefix_prefix_expr
+      | interface_subnet_prefix_expr
+   )
 ;
 
 interface_prefix_prefix_expr
@@ -845,6 +853,11 @@ interface_prefix_prefix_expr
 interface_string_expr
 :
    INTERFACE PERIOD interface_name_string_expr
+;
+
+interface_subnet_prefix_expr
+:
+   SUBNET
 ;
 
 ip_constraint
@@ -873,6 +886,11 @@ ip_expr
    bgp_neighbor_ip_expr
    | interface_ip_expr
    | static_route_ip_expr
+   | IP_ADDRESS
+   |
+   {v(VariableType.IP)}?
+
+   var_ip_expr
 ;
 
 ipsec_vpn_boolean_expr
@@ -1753,6 +1771,11 @@ var_int_expr
 ;
 
 var_interface_expr
+:
+   VARIABLE
+;
+
+var_ip_expr
 :
    VARIABLE
 ;
