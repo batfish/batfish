@@ -45,7 +45,7 @@ verify {
       if (node.bgp.has_generated_route) then {
          printf("\tBGP Aggregate/Generated routes:\n");
       }
-      foreach node.bgp.generated_route {
+      foreach node_bgp_generated_route {
          printf("\t\tPrefix: %s\n", generated_route.prefix);
       }
       if (node.static.configured) then {

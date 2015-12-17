@@ -24,35 +24,39 @@ import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 /**
- * 
+ *
  */
 /**
- * 
+ *
  */
 @Path(CoordConsts.SVC_BASE_WORK_MGR)
 public class WorkMgrService {
 
    BatfishLogger _logger = Main.getLogger();
 
-   private void checkStringParam(String paramStr, String message) {
-      if (paramStr == null || paramStr.equals(""))
-         throw new IllegalArgumentException(message);
-   }
-
    private void checkApiKeyValidity(String apiKey) throws Exception {
-      if (!Main.getAuthorizer().isValidWorkApiKey(apiKey))
+      if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
          throw new AccessControlException("api key is invalid");
+      }
    }
 
-   private void checkContainerAccessibility(String apiKey, String containerName) throws Exception {
-      if (!Main.getAuthorizer().isAccessibleContainer(apiKey,
-            containerName))         
-         throw new AccessControlException("container is not accessible by the api key");
+   private void checkContainerAccessibility(String apiKey, String containerName)
+         throws Exception {
+      if (!Main.getAuthorizer().isAccessibleContainer(apiKey, containerName)) {
+         throw new AccessControlException(
+               "container is not accessible by the api key");
+      }
+   }
+
+   private void checkStringParam(String paramStr, String message) {
+      if (paramStr == null || paramStr.equals("")) {
+         throw new IllegalArgumentException(message);
+      }
    }
 
    /**
-    * Deletes the specified container 
-    * 
+    * Deletes the specified container
+    *
     * @param apiKey
     * @param containerName
     * @return
@@ -66,18 +70,22 @@ public class WorkMgrService {
       try {
          _logger.info("WMS:delContainer " + containerName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(containerName, "Container name not supplied or is empty");;
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerName,
+               "Container name not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
-         
+
          Main.getWorkMgr().delContainer(containerName);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
                (new JSONObject().put("result", "true"))));
 
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          _logger.error("WMS:delContainer exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
@@ -91,8 +99,9 @@ public class WorkMgrService {
    }
 
    /**
-    * Deletes the specified environment under the specified container and testrig
-    * 
+    * Deletes the specified environment under the specified container and
+    * testrig
+    *
     * @param apiKey
     * @param containerName
     * @param envName
@@ -110,10 +119,15 @@ public class WorkMgrService {
       try {
          _logger.info("WMS:delEnvironment " + containerName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(containerName, "Container name not supplied or is empty");;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");;
-         checkStringParam(envName, "Environment name not supplied or is empty");;
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerName,
+               "Container name not supplied or is empty");
+         ;
+         checkStringParam(testrigName, "Testrig name not supplied or is empty");
+         ;
+         checkStringParam(envName, "Environment name not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
 
@@ -123,7 +137,8 @@ public class WorkMgrService {
                (new JSONObject().put("result", "true"))));
 
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          _logger
                .error("WMS:delEnvironment exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
@@ -139,7 +154,7 @@ public class WorkMgrService {
 
    /**
     * Deletes the specified question under the specified container, testrig
-    * 
+    *
     * @param apiKey
     * @param containerName
     * @param questionName
@@ -157,10 +172,16 @@ public class WorkMgrService {
       try {
          _logger.info("WMS:delQuestion " + containerName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(containerName, "Container name not supplied or is empty");;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");;
-         checkStringParam(questionName, "Question name not supplied or is empty");;
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerName,
+               "Container name not supplied or is empty");
+         ;
+         checkStringParam(testrigName, "Testrig name not supplied or is empty");
+         ;
+         checkStringParam(questionName,
+               "Question name not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
 
@@ -171,7 +192,8 @@ public class WorkMgrService {
                (new JSONObject().put("result", "true"))));
 
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          _logger.error("WMS:delQuestion exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
@@ -186,7 +208,7 @@ public class WorkMgrService {
 
    /**
     * Deletes the specified testrig under the specified container
-    * 
+    *
     * @param apiKey
     * @param containerName
     * @param testrigName
@@ -202,9 +224,13 @@ public class WorkMgrService {
       try {
          _logger.info("WMS:delTestrig " + containerName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(containerName, "Container name not supplied or is empty");;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");;
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerName,
+               "Container name not supplied or is empty");
+         ;
+         checkStringParam(testrigName, "Testrig name not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
 
@@ -214,7 +240,8 @@ public class WorkMgrService {
                (new JSONObject().put("result", "true"))));
 
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          _logger.error("WMS:delTestrig exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
@@ -238,8 +265,8 @@ public class WorkMgrService {
    }
 
    /**
-    * Fetches the specified object from the specified container, testrig 
-    * 
+    * Fetches the specified object from the specified container, testrig
+    *
     * @param apiKey
     * @param containerName
     * @param testrigName
@@ -258,9 +285,13 @@ public class WorkMgrService {
          _logger.info("WMS:getObject " + testrigName + " --> " + objectName
                + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(containerName, "Container name not supplied or is empty");;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");;         
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerName,
+               "Container name not supplied or is empty");
+         ;
+         checkStringParam(testrigName, "Testrig name not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
 
@@ -279,10 +310,10 @@ public class WorkMgrService {
                .header(CoordConsts.SVC_WORK_FILENAME_HDR, file.getName())
                .build();
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          return Response.status(Response.Status.BAD_REQUEST)
-               .entity(e.getMessage()).type(MediaType.TEXT_PLAIN)
-               .build();
+               .entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
@@ -311,7 +342,7 @@ public class WorkMgrService {
 
    /**
     * Obtains the counts of completed and incomplete work iterms
-    * 
+    *
     * @param apiKey
     * @param workId
     * @return
@@ -325,8 +356,10 @@ public class WorkMgrService {
       try {
          _logger.info("WMS:getWorkStatus " + workId + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(workId, "work id not supplied or is empty");;         
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(workId, "work id not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
 
          QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
@@ -336,14 +369,16 @@ public class WorkMgrService {
                   Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                         "work with the specified id does not exist or is not inaccessible"));
          }
-         
-         checkContainerAccessibility(apiKey, work.getWorkItem().getContainerName());
-         
+
+         checkContainerAccessibility(apiKey, work.getWorkItem()
+               .getContainerName());
+
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-                  (new JSONObject().put(CoordConsts.SVC_WORKSTATUS_KEY, work
-                        .getStatus().toString()))));
+               (new JSONObject().put(CoordConsts.SVC_WORKSTATUS_KEY, work
+                     .getStatus().toString()))));
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          _logger.error("WMS:getWorkStatus exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
@@ -358,7 +393,7 @@ public class WorkMgrService {
 
    /**
     * Initializes a new container
-    * 
+    *
     * @param apiKey
     * @param containerPrefix
     * @return
@@ -372,8 +407,11 @@ public class WorkMgrService {
       try {
          _logger.info("WMS:initContainer " + containerPrefix + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(containerPrefix, "Container prefix not supplied or is empty");;         
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerPrefix,
+               "Container prefix not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
 
          String containerName = Main.getWorkMgr()
@@ -385,7 +423,8 @@ public class WorkMgrService {
                (new JSONObject().put(CoordConsts.SVC_CONTAINER_NAME_KEY,
                      containerName))));
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          _logger.error("WMS:initContainer exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
@@ -400,7 +439,7 @@ public class WorkMgrService {
 
    /**
     * List the containers that the specified API key can access
-    * 
+    *
     * @param apiKey
     * @return
     */
@@ -412,7 +451,8 @@ public class WorkMgrService {
       try {
          _logger.info("WMS:listContainers " + apiKey + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
 
          String[] containerList = Main.getWorkMgr().listContainers(apiKey);
@@ -421,8 +461,10 @@ public class WorkMgrService {
                (new JSONObject().put(CoordConsts.SVC_CONTAINER_LIST_KEY,
                      new JSONArray(Arrays.asList(containerList))))));
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
-         _logger.error("WMS:listContainers exception: " + e.getMessage() + "\n");
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
+         _logger
+               .error("WMS:listContainers exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
       }
@@ -436,7 +478,7 @@ public class WorkMgrService {
 
    /**
     * Lists the environments under the specified container, testrig
-    * 
+    *
     * @param apiKey
     * @param containerName
     * @param testrigName
@@ -453,9 +495,13 @@ public class WorkMgrService {
          _logger.info("WMS:listEnvironments " + apiKey + " " + containerName
                + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(containerName, "Container name not supplied or is empty");;         
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");;         
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerName,
+               "Container name not supplied or is empty");
+         ;
+         checkStringParam(testrigName, "Testrig name not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
 
@@ -466,7 +512,8 @@ public class WorkMgrService {
                (new JSONObject().put(CoordConsts.SVC_ENVIRONMENT_LIST_KEY,
                      new JSONArray(Arrays.asList(environmentList))))));
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          _logger.error("WMS:listEnvironment exception: " + e.getMessage()
                + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
@@ -482,7 +529,7 @@ public class WorkMgrService {
 
    /**
     * Lists the questions under the specified container, testrig
-    * 
+    *
     * @param apiKey
     * @param containerName
     * @param testrigName
@@ -499,9 +546,13 @@ public class WorkMgrService {
          _logger.info("WMS:listQuestions " + apiKey + " " + containerName
                + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(containerName, "Container name not supplied or is empty");;         
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");;         
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerName,
+               "Container name not supplied or is empty");
+         ;
+         checkStringParam(testrigName, "Testrig name not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
 
@@ -512,7 +563,8 @@ public class WorkMgrService {
                (new JSONObject().put(CoordConsts.SVC_QUESTION_LIST_KEY,
                      new JSONArray(Arrays.asList(questionList))))));
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          _logger.error("WMS:listQuestion exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
@@ -527,7 +579,7 @@ public class WorkMgrService {
 
    /**
     * Lists the testrigs under the specified container
-    * 
+    *
     * @param apiKey
     * @param containerName
     * @return
@@ -542,8 +594,11 @@ public class WorkMgrService {
          _logger
                .info("WMS:listTestrigs " + apiKey + " " + containerName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(containerName, "Container name not supplied or is empty");;         
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerName,
+               "Container name not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
 
@@ -553,7 +608,8 @@ public class WorkMgrService {
                (new JSONObject().put(CoordConsts.SVC_TESTRIG_LIST_KEY,
                      new JSONArray(Arrays.asList(testrigList))))));
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          _logger.error("WMS:listTestrig exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
@@ -567,8 +623,8 @@ public class WorkMgrService {
    }
 
    /**
-    * Queues new work 
-    * 
+    * Queues new work
+    *
     * @param apiKey
     * @param workItemStr
     * @return
@@ -582,8 +638,11 @@ public class WorkMgrService {
       try {
          _logger.info("WMS:queueWork " + apiKey + " " + workItemStr + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(workItemStr, "Workitem string not supplied or is empty");;         
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(workItemStr,
+               "Workitem string not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
 
          WorkItem workItem = WorkItem.FromJsonString(workItemStr);
@@ -595,7 +654,8 @@ public class WorkMgrService {
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
                (new JSONObject().put("result", result))));
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          _logger.error("WMS:queueWork exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
@@ -636,7 +696,7 @@ public class WorkMgrService {
 
    /**
     * Uploads a new environment under the container, testrig
-    * 
+    *
     * @param apiKey
     * @param containerName
     * @param testrigName
@@ -658,10 +718,15 @@ public class WorkMgrService {
          _logger.info("WMS:uploadEnvironment " + apiKey + " " + containerName
                + " " + testrigName + " / " + envName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(containerName, "Container name not supplied or is empty");;         
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");;         
-         checkStringParam(envName, "Environment name not supplied or is empty");;         
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerName,
+               "Container name not supplied or is empty");
+         ;
+         checkStringParam(testrigName, "Testrig name not supplied or is empty");
+         ;
+         checkStringParam(envName, "Environment name not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
 
@@ -669,10 +734,12 @@ public class WorkMgrService {
                envName, fileStream);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               (new JSONObject().put("result", "successfully uploaded environment"))));
+               (new JSONObject().put("result",
+                     "successfully uploaded environment"))));
 
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          _logger.error("WMS:uploadEnvironment exception: " + e.getMessage()
                + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
@@ -687,10 +754,9 @@ public class WorkMgrService {
    }
 
    /**
-    * Uploads a new questions under container, testrig. 
-    * Expects a file containing the question and a file 
-    * containing the parameters.
-    * 
+    * Uploads a new questions under container, testrig. Expects a file
+    * containing the question and a file containing the parameters.
+    *
     * @param apiKey
     * @param containerName
     * @param testrigName
@@ -714,10 +780,15 @@ public class WorkMgrService {
          _logger.info("WMS:uploadQuestion " + apiKey + " " + containerName
                + " " + testrigName + " / " + qName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(containerName, "Container name not supplied or is empty");;         
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");;         
-         checkStringParam(qName, "Question name not supplied or is empty");;         
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerName,
+               "Container name not supplied or is empty");
+         ;
+         checkStringParam(testrigName, "Testrig name not supplied or is empty");
+         ;
+         checkStringParam(qName, "Question name not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
 
@@ -725,10 +796,12 @@ public class WorkMgrService {
                fileStream, paramFileStream);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               (new JSONObject().put("result", "successfully uploaded question"))));
+               (new JSONObject()
+                     .put("result", "successfully uploaded question"))));
 
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          _logger
                .error("WMS:uploadQuestion exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
@@ -744,7 +817,7 @@ public class WorkMgrService {
 
    /**
     * Uploads a new testrig under the specified container
-    * 
+    *
     * @param apiKey
     * @param containerName
     * @param testrigName
@@ -764,19 +837,25 @@ public class WorkMgrService {
          _logger.info("WMS:uploadTestrig " + apiKey + " " + containerName + " "
                + testrigName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");;
-         checkStringParam(containerName, "Container name not supplied or is empty");;         
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");;         
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerName,
+               "Container name not supplied or is empty");
+         ;
+         checkStringParam(testrigName, "Testrig name not supplied or is empty");
+         ;
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
 
          Main.getWorkMgr()
                .uploadTestrig(containerName, testrigName, fileStream);
 
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               (new JSONObject().put("result", "successfully uploaded testrig"))));
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, (new JSONObject()
+                     .put("result", "successfully uploaded testrig"))));
       }
-      catch (FileExistsException | FileNotFoundException | IllegalArgumentException | AccessControlException e) {
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
          _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));

@@ -10,7 +10,54 @@ package org.batfish.grammar.question;
 }
 
 @members {
+
    private java.util.Map<String, VariableType> _typeBindings = new java.util.HashMap<String, VariableType>();
+    
+   private java.util.Set<String> _immutableVars = new java.util.HashSet<String>();
+    
+   private Token next() {
+      return _input.LT(1);
+   }
+   
+   private Token second() {
+      return _input.LT(2);
+   }
+    
+   private boolean v(VariableType type) {
+      return next().getType() == VARIABLE && retrieveTypeBinding(next().getText()) == type;
+   }
+
+   private boolean vp(VariableType type) {
+      return next().getType() != VARIABLE || second().getType() == PERIOD || retrieveTypeBinding(next().getText()) == type;
+   }
+
+   private void assertMutable(String var) {
+      if (_immutableVars.contains(var)) {
+         throw new org.batfish.common.BatfishException("Attempt to alter immutable variable: \"" + var + "\"");
+      }
+   }
+
+   private void createTypeBinding(String var, VariableType type) {
+      assertMutable(var);
+      VariableType oldType = _typeBindings.get(var);
+      if (oldType != null) {
+         throw new org.batfish.common.BatfishException("Attempt to create variable \"" + var + "\" with type: \"" + type + "\", but it already exists and has previously assigned type: \"" + oldType + "\"");
+      }
+      else {
+         _typeBindings.put(var, type);
+      }
+   }
+    
+   private void createOrVerifyTypeBinding(String var, VariableType type) {
+      assertMutable(var);
+      VariableType oldType = _typeBindings.get(var);
+      if (oldType != null && oldType != type) {
+         throw new org.batfish.common.BatfishException("Attempt to update variable \"" + var + "\" with value of type: \"" + type + "\", but it has previously assigned type: \"" + oldType + "\"");
+      }
+      else {
+         _typeBindings.put(var, type);
+      }
+   }
     
    private VariableType retrieveTypeBinding(String var) {
       VariableType ret = _typeBindings.get(var);
@@ -65,49 +112,49 @@ assignment
    var = VARIABLE COLON_EQUALS
    (
       bgp_neighbor_expr
-      {_typeBindings.put($var.getText(), VariableType.BGP_NEIGHBOR);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.BGP_NEIGHBOR);}
 
       | boolean_expr
-      {_typeBindings.put($var.getText(), VariableType.BOOLEAN);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.BOOLEAN);}
 
       | int_expr
-      {_typeBindings.put($var.getText(), VariableType.INT);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.INT);}
 
       | interface_expr
-      {_typeBindings.put($var.getText(), VariableType.INTERFACE);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.INTERFACE);}
 
       | ip_expr
-      {_typeBindings.put($var.getText(), VariableType.IP);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.IP);}
 
       | ipsec_vpn_expr
-      {_typeBindings.put($var.getText(), VariableType.IPSEC_VPN);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.IPSEC_VPN);}
 
       | node_expr
-      {_typeBindings.put($var.getText(), VariableType.NODE);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.NODE);}
 
       | policy_map_expr
-      {_typeBindings.put($var.getText(), VariableType.POLICY_MAP);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.POLICY_MAP);}
 
       | policy_map_clause_expr
-      {_typeBindings.put($var.getText(), VariableType.POLICY_MAP_CLAUSE);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.POLICY_MAP_CLAUSE);}
 
       | prefix_expr
-      {_typeBindings.put($var.getText(), VariableType.PREFIX);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.PREFIX);}
 
       | prefix_space_expr
-      {_typeBindings.put($var.getText(), VariableType.PREFIX_SPACE);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.PREFIX_SPACE);}
 
       | route_filter_expr
-      {_typeBindings.put($var.getText(), VariableType.ROUTE_FILTER);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.ROUTE_FILTER);}
 
       | route_filter_line_expr
-      {_typeBindings.put($var.getText(), VariableType.ROUTE_FILTER_LINE);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.ROUTE_FILTER_LINE);}
 
       | static_route_expr
-      {_typeBindings.put($var.getText(), VariableType.STATIC_ROUTE);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.STATIC_ROUTE);}
 
       | string_expr
-      {_typeBindings.put($var.getText(), VariableType.STRING);}
+      {createOrVerifyTypeBinding($var.getText(), VariableType.STRING);}
 
    ) SEMICOLON
 ;
@@ -126,7 +173,10 @@ bgp_neighbor_expr
 :
    BGP_NEIGHBOR
    | REMOTE_BGP_NEIGHBOR
-   | var_bgp_neighbor_expr
+   |
+   {v(VariableType.BGP_NEIGHBOR)}?
+
+   var_bgp_neighbor_expr
 ;
 
 bgp_neighbor_group_string_expr
@@ -230,7 +280,11 @@ boolean_expr
    | or_expr
    | property_boolean_expr
    | true_expr
-   | var_boolean_expr
+   |
+   |
+   {v(VariableType.BOOLEAN)}?
+
+   var_boolean_expr
    | lhs = boolean_expr
    (
       DOUBLE_EQUALS
@@ -250,16 +304,16 @@ default_binding
    (
       action
       | boolean_literal
-      {_typeBindings.put($var.getText(), VariableType.BOOLEAN);}
+      {createTypeBinding($var.getText(), VariableType.BOOLEAN);}
 
       | integer_literal
-      {_typeBindings.put($var.getText(), VariableType.INT);}
+      {createTypeBinding($var.getText(), VariableType.INT);}
 
       | IP_ADDRESS
-      {_typeBindings.put($var.getText(), VariableType.IP);}
+      {createTypeBinding($var.getText(), VariableType.IP);}
 
       | IP_PREFIX
-      {_typeBindings.put($var.getText(), VariableType.PREFIX);}
+      {createTypeBinding($var.getText(), VariableType.PREFIX);}
 
       | ip_constraint_complex
       | range
@@ -274,10 +328,10 @@ default_binding
             )*
          )? CLOSE_BRACE
       )
-      {_typeBindings.put($var.getText(), VariableType.SET_STRING);}
+      {createTypeBinding($var.getText(), VariableType.SET_STRING);}
 
       | str = STRING_LITERAL
-      {_typeBindings.put($var.getText(), VariableType.STRING);}
+      {createTypeBinding($var.getText(), VariableType.STRING);}
 
    ) SEMICOLON
 ;
@@ -310,88 +364,86 @@ explicit_flow
 ;
 
 expr returns [VariableType varType]
-locals [boolean isVar, String var]
-@init {$isVar = _input.LT(1).getType() == VARIABLE && _input.LT(2).getType() != PERIOD; if ($isVar) {$var = _input.LT(1).getText();}}
 :
-   {!$isVar || retrieveTypeBinding($var) == VariableType.BGP_NEIGHBOR}?
+   {vp(VariableType.BGP_NEIGHBOR)}?
 
    bgp_neighbor_expr
    {$varType = VariableType.BGP_NEIGHBOR;}
 
    |
-   {!$isVar || retrieveTypeBinding($var) == VariableType.INT}?
+   {vp(VariableType.INT)}?
 
    int_expr
    {$varType = VariableType.INT;}
 
    |
-   {!$isVar || retrieveTypeBinding($var) == VariableType.INTERFACE}?
+   {vp(VariableType.INTERFACE)}?
 
    interface_expr
    {$varType = VariableType.INTERFACE;}
 
    |
-   {!$isVar || retrieveTypeBinding($var) == VariableType.IP}?
+   {vp(VariableType.IP)}?
 
    ip_expr
    {$varType = VariableType.IP;}
 
    |
-   {!$isVar || retrieveTypeBinding($var) == VariableType.IPSEC_VPN}?
+   {vp(VariableType.IPSEC_VPN)}?
 
    ipsec_vpn_expr
    {$varType = VariableType.IPSEC_VPN;}
 
    |
-   {!$isVar || retrieveTypeBinding($var) == VariableType.NODE}?
+   {vp(VariableType.NODE)}?
 
    node_expr
    {$varType = VariableType.NODE;}
 
    |
-   {!$isVar || retrieveTypeBinding($var) == VariableType.POLICY_MAP}?
+   {vp(VariableType.POLICY_MAP)}?
 
    policy_map_expr
    {$varType = VariableType.POLICY_MAP;}
 
    |
-   {!$isVar || retrieveTypeBinding($var) == VariableType.POLICY_MAP_CLAUSE}?
+   {vp(VariableType.POLICY_MAP_CLAUSE)}?
 
    policy_map_clause_expr
    {$varType = VariableType.POLICY_MAP_CLAUSE;}
 
    |
-   {!$isVar || retrieveTypeBinding($var) == VariableType.PREFIX}?
+   {vp(VariableType.PREFIX)}?
 
    prefix_expr
    {$varType = VariableType.PREFIX;}
 
    |
-   {!$isVar || retrieveTypeBinding($var) == VariableType.PREFIX_SPACE}?
+   {vp(VariableType.PREFIX_SPACE)}?
 
    prefix_space_expr
    {$varType = VariableType.PREFIX_SPACE;}
 
    |
-   {!$isVar || retrieveTypeBinding($var) == VariableType.ROUTE_FILTER}?
+   {vp(VariableType.ROUTE_FILTER)}?
 
    route_filter_expr
    {$varType = VariableType.ROUTE_FILTER;}
 
    |
-   {!$isVar || retrieveTypeBinding($var) == VariableType.ROUTE_FILTER_LINE}?
+   {vp(VariableType.ROUTE_FILTER_LINE)}?
 
    route_filter_line_expr
    {$varType = VariableType.ROUTE_FILTER_LINE;}
 
    |
-   {!$isVar || retrieveTypeBinding($var) == VariableType.STATIC_ROUTE}?
+   {vp(VariableType.STATIC_ROUTE)}?
 
    static_route_expr
    {$varType = VariableType.STATIC_ROUTE;}
 
    |
-   {!$isVar || retrieveTypeBinding($var) == VariableType.STRING}?
+   {vp(VariableType.STRING)}?
 
    string_expr
    {$varType = VariableType.STRING;}
@@ -476,7 +528,7 @@ foreach_in_set_statement [String scope]
 locals [VariableType setVarType]
 :
    FOREACH v = VARIABLE COLON set_var = VARIABLE
-   {$setVarType = retrieveTypeBinding($set_var.getText()); _typeBindings.put($v.getText(), $setVarType.elementType());}
+   {$setVarType = retrieveTypeBinding($set_var.getText()); createTypeBinding($v.getText(), $setVarType.elementType()); _immutableVars.add($v.getText());}
 
    OPEN_BRACE statement [scope]+ CLOSE_BRACE
 ;
@@ -587,7 +639,7 @@ locals [VariableType varType, String newScope]
          {$varType != null}?
 
          var = VARIABLE
-         {_typeBindings.put($var.getText(), $varType);}
+         {createTypeBinding($var.getText(), $varType); _immutableVars.add($var.getText());}
 
          OPEN_BRACE statement [scope]+ CLOSE_BRACE
       )
@@ -698,7 +750,11 @@ interface_enabled_boolean_expr
 interface_expr
 :
    INTERFACE
-   | var_interface_expr
+   |
+   |
+   {v(VariableType.INTERFACE)}?
+
+   var_interface_expr
 ;
 
 interface_has_ip_boolean_expr
@@ -1033,7 +1089,10 @@ node_expr
    NODE
    | bgp_neighbor_node_expr
    | ipsec_vpn_node_expr
-   | var_node_expr
+   |
+   {v(VariableType.NODE)}?
+
+   var_node_expr
 ;
 
 node_has_generated_route_boolean_expr
@@ -1113,7 +1172,10 @@ policy_map_clause_boolean_expr
 policy_map_clause_expr
 :
    CLAUSE
-   | var_policy_map_clause_expr
+   |
+   {v(VariableType.POLICY_MAP_CLAUSE)}?
+
+   var_policy_map_clause_expr
 ;
 
 policy_map_clause_permit_boolean_expr
@@ -1123,6 +1185,8 @@ policy_map_clause_permit_boolean_expr
 
 policy_map_expr
 :
+   {v(VariableType.POLICY_MAP)}?
+
    var_policy_map_expr
 ;
 
@@ -1145,7 +1209,10 @@ prefix_space_expr
 :
    node_prefix_space_expr
    | caller = prefix_space_expr PERIOD prefix_space_prefix_space_expr
-   | var_prefix_space_expr
+   |
+   {v(VariableType.PREFIX_SPACE)}?
+
+   var_prefix_space_expr
 ;
 
 prefix_space_intersection_prefix_space_expr
@@ -1166,10 +1233,8 @@ prefix_space_prefix_space_expr
 ;
 
 printable_expr
-locals [boolean isVar, String var]
-@init {$isVar = _input.LT(1).getType() == VARIABLE && _input.LT(2).getType() != PERIOD; if ($isVar) {$var = _input.LT(1).getText();}}
 :
-   {!$isVar || retrieveTypeBinding($var) == VariableType.BOOLEAN}?
+   {vp(VariableType.BOOLEAN)}?
 
    boolean_expr
    | expr
@@ -1308,13 +1373,19 @@ reachability_question
 route_filter_expr
 :
    route_filter_route_filter_expr
-   | var_route_filter_expr
+   |
+   {v(VariableType.ROUTE_FILTER)}?
+
+   var_route_filter_expr
 ;
 
 route_filter_line_expr
 :
    route_filter_line_line_expr
-   | var_route_filter_line_expr
+   |
+   {v(VariableType.ROUTE_FILTER)}?
+
+   var_route_filter_line_expr
 ;
 
 route_filter_line_line_expr
@@ -1490,7 +1561,7 @@ locals [String typeStr, VariableType type, VariableType oldType]
       {
          $typeStr += $settype.getText() + ">";
          $type = VariableType.fromString($typeStr);
-         _typeBindings.put($var.getText(), $type);
+         createTypeBinding($var.getText(), $type);
       }
 
    )
@@ -1542,7 +1613,10 @@ static_route_boolean_expr
 static_route_expr
 :
    STATIC_ROUTE
-   | var_static_route_expr
+   |
+   {v(VariableType.STATIC_ROUTE)}?
+
+   var_static_route_expr
 ;
 
 static_route_has_next_hop_interface_boolean_expr
@@ -1600,7 +1674,10 @@ string_expr
    | route_filter_string_expr
    | static_route_string_expr
    | string_literal_string_expr
-   | var_string_expr
+   |
+   {v(VariableType.STRING)}?
+
+   var_string_expr
 ;
 
 string_literal_string_expr
@@ -1654,7 +1731,10 @@ val_int_expr
    | literal_int_expr
    | set_size_int_expr
    | static_route_int_expr
-   | var_int_expr
+   |
+   {v(VariableType.INT)}?
+
+   var_int_expr
 ;
 
 var_bgp_neighbor_expr
@@ -1665,13 +1745,6 @@ var_bgp_neighbor_expr
 var_boolean_expr
 :
    var = VARIABLE
-;
-
-var_expr returns [VariableType varType]
-:
-   v = VARIABLE
-   {$varType = _typeBindings.get($v.getText());}
-
 ;
 
 var_int_expr

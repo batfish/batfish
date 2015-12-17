@@ -39,7 +39,7 @@ verify {
                   foreach remote_ipsec_vpn {
                      printf("\tCANDIDATE REMOTE VPN: '%s' on node '%s'\n",
                         remote_ipsec_vpn.name,
-                        remote_ipsec_vpn.owner_name);
+                        remote_ipsec_vpn.owner.name);
                   }
                }
             }
@@ -72,7 +72,7 @@ verify {
                      ipsec_vpn.remote_ipsec_vpn.name,
                      ipsec_vpn.remote_ipsec_vpn.ike_policy_name,
                      ipsec_vpn.remote_ipsec_vpn.ike_gateway_name,
-                     ipsec_vpn.remote_ipsec_vpn.owner_name);
+                     ipsec_vpn.remote_ipsec_vpn.owner.name);
                }
             }
             unless ($no_check_psk){
@@ -85,7 +85,7 @@ verify {
                      ipsec_vpn.name,
                      node.name,
                      ipsec_vpn.remote_ipsec_vpn.name,
-                     ipsec_vpn.remote_ipsec_vpn.owner_name);
+                     ipsec_vpn.remote_ipsec_vpn.owner.name);
                   printf("local VPNs '%s' remote vpn '%s' reciprocal vpn '%s' .\n",
                      ipsec_vpn.name,
                      ipsec_vpn.remote_ipsec_vpn.name,

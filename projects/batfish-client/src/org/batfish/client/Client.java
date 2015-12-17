@@ -34,7 +34,7 @@ public class Client {
    private static final String COMMAND_ANSWER = "answer";
    private static final String COMMAND_ANSWER_DIFF = "answer-diff";
    private static final String COMMAND_CAT = "cat";
-   //private static final String COMMAND_CHANGE_DIR = "cd";
+   // private static final String COMMAND_CHANGE_DIR = "cd";
    private static final String COMMAND_CLEAR_SCREEN = "cls";
    private static final String COMMAND_DEL_CONTAINER = "del-container";
    private static final String COMMAND_DEL_ENVIRONMENT = "del-environment";
@@ -51,7 +51,7 @@ public class Client {
    private static final String COMMAND_LIST_ENVIRONMENTS = "list-environments";
    private static final String COMMAND_LIST_QUESTIONS = "list-questions";
    private static final String COMMAND_LIST_TESTRIGS = "list-testrigs";
-   private static final String COMMAND_PWD = "pwd";   
+   private static final String COMMAND_PWD = "pwd";
    private static final String COMMAND_QUIT = "quit";
    private static final String COMMAND_SET_CONTAINER = "set-container";
    private static final String COMMAND_SET_DIFF_ENV = "set-diff-environment";
@@ -68,12 +68,11 @@ public class Client {
       descs.put(COMMAND_ANSWER_DIFF, COMMAND_ANSWER_DIFF
             + " <question-name> <question-file>\n"
             + "\t Answer the question for the differential environment");
-      descs.put(COMMAND_CAT, COMMAND_CAT
-            + " <filename>\n"
+      descs.put(COMMAND_CAT, COMMAND_CAT + " <filename>\n"
             + "\t Print the contents of the file");
-//      descs.put(COMMAND_CHANGE_DIR, COMMAND_CHANGE_DIR
-//            + " <dirname>\n"
-//            + "\t Change the working directory");
+      // descs.put(COMMAND_CHANGE_DIR, COMMAND_CHANGE_DIR
+      // + " <dirname>\n"
+      // + "\t Change the working directory");
       descs.put(COMMAND_CLEAR_SCREEN, COMMAND_CLEAR_SCREEN + "\n"
             + "\t Clear screen");
       descs.put(COMMAND_DEL_CONTAINER, COMMAND_DEL_CONTAINER
@@ -379,33 +378,34 @@ public class Client {
          }
          case COMMAND_CAT: {
             String filename = words[1];
-            
-            try (BufferedReader br = new BufferedReader(new FileReader(
-                  filename))) {
+
+            try (BufferedReader br = new BufferedReader(
+                  new FileReader(filename))) {
                String line = null;
                while ((line = br.readLine()) != null) {
                   _logger.output(line + "\n");
                }
             }
-            
+
             break;
          }
-//         case COMMAND_CHANGE_DIR: {
-//            String dirname = words[1];
-//            
-//            File directory = new File(dirname).getAbsoluteFile();
-//            if (directory.exists())
-//            {
-//                boolean result = (System.setProperty("user.dir", directory.getAbsolutePath()) != null);
-//                _logger.output("Directory changed to " + dirname + "\n");
-//            }
-//            else 
-//            {
-//               _logger.output("Specified directory does not exist\n");               
-//            }
-//
-//            break;
-//         }
+         // case COMMAND_CHANGE_DIR: {
+         // String dirname = words[1];
+         //
+         // File directory = new File(dirname).getAbsoluteFile();
+         // if (directory.exists())
+         // {
+         // boolean result = (System.setProperty("user.dir",
+         // directory.getAbsolutePath()) != null);
+         // _logger.output("Directory changed to " + dirname + "\n");
+         // }
+         // else
+         // {
+         // _logger.output("Specified directory does not exist\n");
+         // }
+         //
+         // break;
+         // }
          case COMMAND_DEL_CONTAINER: {
             String containerName = words[1];
             boolean result = _workHelper.delContainer(containerName);
@@ -445,11 +445,11 @@ public class Client {
             _logger.outputf("Result of deleting testrig: %s\n", result);
             break;
          }
-         case COMMAND_DIR: {            
-            String dirname = (words.length == 2)? words[1] : ".";
-               
+         case COMMAND_DIR: {
+            String dirname = (words.length == 2) ? words[1] : ".";
+
             File currDirectory = new File(dirname);
-            for (File file: currDirectory.listFiles()) {
+            for (File file : currDirectory.listFiles()) {
                _logger.output(file.getName() + "\n");
             }
             break;
@@ -642,7 +642,7 @@ public class Client {
          }
          case COMMAND_PWD: {
             final String dir = System.getProperty("user.dir");
-            _logger.output("working directory = " + dir + "\n");            
+            _logger.output("working directory = " + dir + "\n");
             break;
          }
          case COMMAND_SET_CONTAINER: {
