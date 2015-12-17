@@ -274,13 +274,13 @@ public class WorkMgrService {
     * @return
     */
    @POST
-   @Path(CoordConsts.SVC_WORK_GET_OBJECT_RSC)
+   @Path(CoordConsts.SVC_GET_OBJECT_RSC)
    @Produces(MediaType.APPLICATION_OCTET_STREAM)
    public Response getObject(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
-         @FormDataParam(CoordConsts.SVC_WORK_OBJECT_KEY) String objectName) {
+         @FormDataParam(CoordConsts.SVC_OBJECT_KEY) String objectName) {
       try {
          _logger.info("WMS:getObject " + testrigName + " --> " + objectName
                + "\n");
@@ -307,7 +307,7 @@ public class WorkMgrService {
                .ok(file, MediaType.APPLICATION_OCTET_STREAM)
                .header("Content-Disposition",
                      "attachment; filename=\"" + file.getName() + "\"")
-               .header(CoordConsts.SVC_WORK_FILENAME_HDR, file.getName())
+               .header(CoordConsts.SVC_FILENAME_HDR, file.getName())
                .build();
       }
       catch (FileExistsException | FileNotFoundException
@@ -324,7 +324,7 @@ public class WorkMgrService {
    }
 
    @GET
-   @Path(CoordConsts.SVC_WORK_GETSTATUS_RSC)
+   @Path(CoordConsts.SVC_GETSTATUS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
       try {
@@ -348,7 +348,7 @@ public class WorkMgrService {
     * @return
     */
    @POST
-   @Path(CoordConsts.SVC_WORK_GET_WORKSTATUS_RSC)
+   @Path(CoordConsts.SVC_GET_WORKSTATUS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getWorkStatus(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
@@ -630,7 +630,7 @@ public class WorkMgrService {
     * @return
     */
    @POST
-   @Path(CoordConsts.SVC_WORK_QUEUE_WORK_RSC)
+   @Path(CoordConsts.SVC_QUEUE_WORK_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray queueWork(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
@@ -706,7 +706,7 @@ public class WorkMgrService {
     * @return
     */
    @POST
-   @Path(CoordConsts.SVC_WORK_UPLOAD_CUSTOM_OBJECT_RSC)
+   @Path(CoordConsts.SVC_UPLOAD_CUSTOM_OBJECT_RSC)
    @Consumes(MediaType.MULTIPART_FORM_DATA)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray uploadCustomObject(
@@ -764,7 +764,7 @@ public class WorkMgrService {
     * @return
     */
    @POST
-   @Path(CoordConsts.SVC_WORK_UPLOAD_ENV_RSC)
+   @Path(CoordConsts.SVC_UPLOAD_ENV_RSC)
    @Consumes(MediaType.MULTIPART_FORM_DATA)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray uploadEnvironment(
@@ -825,7 +825,7 @@ public class WorkMgrService {
     * @return
     */
    @POST
-   @Path(CoordConsts.SVC_WORK_UPLOAD_QUESTION_RSC)
+   @Path(CoordConsts.SVC_UPLOAD_QUESTION_RSC)
    @Consumes(MediaType.MULTIPART_FORM_DATA)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray uploadQuestion(
@@ -884,7 +884,7 @@ public class WorkMgrService {
     * @return
     */
    @POST
-   @Path(CoordConsts.SVC_WORK_UPLOAD_TESTRIG_RSC)
+   @Path(CoordConsts.SVC_UPLOAD_TESTRIG_RSC)
    @Consumes(MediaType.MULTIPART_FORM_DATA)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray uploadTestrig(

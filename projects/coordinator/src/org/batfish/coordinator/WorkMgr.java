@@ -29,7 +29,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.UnzipUtility;
 import org.batfish.common.WorkItem;
-import org.batfish.common.AppZip;
 import org.batfish.common.ZipUtility;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;

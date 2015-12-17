@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.io.output.WriterOutputStream;
-import org.batfish.common.AppZip;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Util;
