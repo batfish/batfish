@@ -1,19 +1,24 @@
 #!/usr/bin/env bash
 
 batfish_analyze_link_failures() {
+   bash -c '_batfish_analyze_link_failures "$@"' _batfish_analyze_link_failures "$@" || return 1
+}
+export -f batfish_analyze_link_failures
+
+_batfish_analyze_link_failures() {
    batfish_expect_args 1 $# || return 1
-   local TEST_RIG_RELATIVE=$1
+   export TEST_RIG_RELATIVE=$1
    if [ "$(echo $TEST_RIG_RELATIVE | head -c1)" = "/" ]; then
-      local TEST_RIG=$TEST_RIG_RELATIVE
+      export TEST_RIG=$TEST_RIG_RELATIVE
    else
-      local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
+      export TEST_RIG=$PWD/$TEST_RIG_RELATIVE
    fi
-   local TEST_RIG=$1
-   local NAME=$(basename $TEST_RIG)
-   local BASE=$PWD/$NAME
-   local ENV=failure-default
-   local QUESTIONNAME=failure
-   local TOPOLOGY_HEADER=BATFISH_TOPOLOGY
+   export TEST_RIG=$1
+   export NAME=$(basename $TEST_RIG)
+   export BASE=$PWD/$NAME
+   export ENV=failure-default
+   export QUESTIONNAME=failure
+   export TOPOLOGY_HEADER=BATFISH_TOPOLOGY
 
    echo "Prepare test-rig"
    $BATFISH_CONFIRM && { batfish_prepare_test_rig $TEST_RIG $BASE || return 1 ; }
@@ -33,7 +38,9 @@ batfish_analyze_link_failures() {
    echo "Query data plane predicates"
    $BATFISH_CONFIRM && { batfish_query_data_plane $BASE $ENV || return 1 ; }
 
-   batfish_print_symmetric_edges $BASE | while read EDGE_RAW REV_EDGE_RAW; do
+   batfish_analyze_link_failures_helper() {
+      local EDGE_RAW="$1"
+      local REV_EDGE_RAW="$2"
       local EDGE=$(echo $EDGE_RAW | tr '/' '_' | tr ':' '_')
       local ENV_CURRENT=failure-$EDGE
       local RESULT_CURRENT=$PWD/$NAME-$ENV_CURRENT-$QUESTIONNAME-result
@@ -53,29 +60,35 @@ batfish_analyze_link_failures() {
       echo "Inject discovered packets into network model for $EDGE_RAW"
       $BATFISH_CONFIRM && { batfish_post_flows_diff $BASE $ENV $ENV_CURRENT $QUESTIONNAME || return 1 ; }
 
-      echo "Get flow histories from LogicBlox for $EDGE_RAW"
+      echo "Get flow histories for $EDGE_RAW"
       $BATFISH_CONFIRM && { batfish_get_history_diff $BASE $ENV $ENV_CURRENT $QUESTIONNAME $RESULT_CURRENT || return 1 ; }
 
-      echo "Delete current workspace (workaround)"
-      $BATFISH_CONFIRM && { batfish_delete_workspace $BASE $ENV_CURRENT || return 1 ; }
-      
-   done
+   }
+   export -f batfish_analyze_link_failures_helper
+
+   batfish_print_symmetric_edges $BASE | $BATFISH_PARALLEL --colsep ' ' batfish_analyze_link_failures_helper "{1}" "{2}"
+
 }
-export -f batfish_analyze_link_failures
+export -f _batfish_analyze_link_failures
 
 batfish_analyze_node_failures() {
+   bash -c '_batfish_analyze_node_failures "$@"' _batfish_analyze_node_failures "$@" || return 1
+}
+export -f batfish_analyze_node_failures
+
+_batfish_analyze_node_failures() {
    batfish_expect_args 1 $# || return 1
-   local TEST_RIG_RELATIVE=$1
+   export TEST_RIG_RELATIVE=$1
    if [ "$(echo $TEST_RIG_RELATIVE | head -c1)" = "/" ]; then
-      local TEST_RIG=$TEST_RIG_RELATIVE
+      export TEST_RIG=$TEST_RIG_RELATIVE
    else
-      local TEST_RIG=$PWD/$TEST_RIG_RELATIVE
+      export TEST_RIG=$PWD/$TEST_RIG_RELATIVE
    fi
-   local TEST_RIG=$1
-   local NAME=$(basename $TEST_RIG)
-   local BASE=$PWD/$NAME
-   local ENV=failure-default
-   local QUESTIONNAME=failure
+   export TEST_RIG=$1
+   export NAME=$(basename $TEST_RIG)
+   export BASE=$PWD/$NAME
+   export ENV=failure-default
+   export QUESTIONNAME=failure
 
    echo "Prepare test-rig"
    $BATFISH_CONFIRM && { batfish_prepare_test_rig $TEST_RIG $BASE || return 1 ; }
@@ -95,7 +108,8 @@ batfish_analyze_node_failures() {
    echo "Query data plane predicates"
    $BATFISH_CONFIRM && { batfish_query_data_plane $BASE $ENV || return 1 ; }
 
-   $GNU_FIND $BASE/indep -type f -printf '%f\n' | sort | while read NODE_RAW; do
+   batfish_analyze_node_failures_helper() {
+      local NODE_RAW=$1
       local NODE=$(echo $NODE_RAW | tr '/' '_')
       local ENV_CURRENT=failure-$NODE
       local RESULT_CURRENT=$PWD/$NAME-$ENV_CURRENT-$QUESTIONNAME-result
@@ -115,15 +129,14 @@ batfish_analyze_node_failures() {
       echo "Inject discovered packets into network model for $NODE"
       $BATFISH_CONFIRM && { batfish_post_flows_diff $BASE $ENV $ENV_CURRENT $QUESTIONNAME || return 1 ; }
 
-      echo "Get flow histories from LogicBlox for $NODE"
+      echo "Get flow histories for $NODE"
       $BATFISH_CONFIRM && { batfish_get_history_diff $BASE $ENV $ENV_CURRENT $QUESTIONNAME $RESULT_CURRENT || return 1 ; }
+   }
+   export -f batfish_analyze_node_failures_helper
 
-      echo "Delete current workspace (workaround)"
-      $BATFISH_CONFIRM && { batfish_delete_workspace $BASE $ENV_CURRENT || return 1 ; }
-      
-   done
+   $GNU_FIND $BASE/indep -type f -printf '%f\n' | sort | $BATFISH_PARALLEL batfish_analyze_node_failures_helper {}
 }
-export -f batfish_analyze_node_failures
+export -f _batfish_analyze_node_failures
 
 batfish_answer_failure() {
    batfish_date

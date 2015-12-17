@@ -46,7 +46,7 @@ batfish_analyze_multipath() {
    echo "Inject discovered packets into network model"
    $BATFISH_CONFIRM && { batfish_post_flows $BASE $ENV $QUESTIONNAME || return 1 ; }
 
-   echo "Get flow histories from LogicBlox"
+   echo "Get flow histories"
    $BATFISH_CONFIRM && { batfish_get_history $BASE $ENV $QUESTIONNAME $RESULT|| return 1 ; }
 }
 export -f batfish_analyze_multipath

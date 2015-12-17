@@ -12,7 +12,7 @@ Prerequisites:
    ant
    GNU parallel
    java 7 jdk
-   logicblox 4.3.X+ (not required for all tasks)
+   nxtnet (not required for all tasks)
    python
    z3
 
@@ -20,10 +20,10 @@ Steps:
 NOTE: Some steps will begin with (SERVER), and some with (CLIENT). The SERVER is the machine running LogicBlox. The CLIENT is the machine containing the test rig and batfish binaries. If the SERVER and the CLIENT are the same machine, then run all steps (except where otherwise indicated).
 NOTE: After any step involving modifications to .bashrc or equivalent, make sure to reload your shell or take other action to load the changes.
 
-1. (CLIENT) Install gnu parallel 20150109 or later (20150109 available at <http://alpha.gnu.org/gnu/parallel/paralell-20150109.tar.bz2>)
+1. Install gnu parallel 20150109 or later (20150109 available at <http://alpha.gnu.org/gnu/parallel/paralell-20150109.tar.bz2>)
 standard autotools install (extract, configure, make, make install)
 
-2. (CLIENT) Install z3 - use master branch
+2. Install z3 - use master branch
 git clone https://github.com/Z3Prover/z3
 cd z3
 python scripts/mk_make.py --java
@@ -31,59 +31,22 @@ cd build
 make -j<number-of-jobs>
 make install # as administrator (sudo or whatever)
 
-3. (SERVER) Install LogicBlox >= 4.3.1 and fix lb-web-server timeout
-- edit <logicblox-root>/config/lb-web-server.conf
-- change all tcp_server_max_idle_time lines to read:
-tcp_server_max_idle_time = 0
+3. Install nxtnet into your path
 
-4. (SERVER AND CLIENT) Clone batfish
+4. Clone batfish
 git clone https://github.com/arifogel/batfish.git
 
-5. prepare your environment for logicblox and batfish by adding the following to your .bashrc or equivalent
-#(SERVER)
-   export LB_HOME=<logicblox-root>
-    . <logicblox-root>/etc/profile.d/logicblox.sh
-    alias rlb="killall -9 lb-server; killall -9 lb-pager; lb services stop && rm -rf ~/lb_deployment/* /run/shm/LB_${USER} /tmp/LB_${USER}_* && LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start"
-    alias slb="LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start"
-    alias klb="killall -9 lb-server; killall -9 lb-pager; lb services stop; rm -rf ~/lb_deployment/* /run/shm/LB_${USER} /tmp/LB_${USER}_*"
-
-#(SERVER AND CLIENT)
+5. prepare your environment for batfish by adding the following to your .bashrc or equivalent
     . <batfish-root>/tools/batfish_functions.sh
-rlb will kill logicblox, completely purge all logicblox data, and restart logicblox
-klb will kill logicblox and completely purge all logicblox data
-slb will start logicblox
-if you want to kill logicblox without purging data, run:
-    lb services stop
-sourcing batfish_functions.sh will give your shell access to batfish functions.
-LB_HOME is needed for ant to compile logic files.
-sourcing logicblox.sh is required to run LogicBlox
+Sourcing batfish_functions.sh will give your shell access to batfish functions. You may prefer to source it manually if you do not want to clutter up your environment in every interactive bash session.
 
-6. (SERVER) start logicblox
-type:
-    slb
-
-7. (SERVER) compile logic
-    batfish_build lbcompile
-
-8. (CLIENT) compile batfish
-    batfish_build # implies lbcompile which only does work if LogicBlox is installed
-Note that 'batfish_build' runs 'ant' in the batfish project directory with corresponding args.
+6. compile batfish
+   batfish_build_all
+Note that 'batfish_build' runs 'ant' in each batfish project directory with corresponding args.
 You can clean all generated output with:
-   batfish_build distclean
+   batfish_build_all distclean
 
-9. ***DO THIS STEP ONLY IF CLIENT != SERVER*** (CLIENT)
-Set up your .bashrc or equivalent on your CLIENT with batfish common arguments needed to access SERVER
-NOTE the default values for the following arguments:
--lbhost -> localhost
--lbport -> 5518
--lbwebport -> 8080
--lbwebadminport -> 5519
-NOTE that the built logic will reside on the SERVER at <batfish-repo-root>/projects/batfish/bin/org/batfish/logic
-.bashrc:
-   export BATFISH_REMOTE_LOGIC_DIR=<MANDATORY_absolute_path_to_built_logic_on_SERVER_filesystem>'
-   export BATFISH_COMMON_ARGS="-lbhost <OPTIONAL_hostname_of_SERVER> -lbport <OPTIONAL_ConnectBlox_port_on_SERVER> -lbwebport <OPTIONAL_lb_web_port_on_SERVER> -lbwebadminport <OPTIONAL_lb_web_admin_port_on_SERVER> -logicdir $BATFISH_REMOTE_LOGIC_DIR"
-
-10. run batfish
+7. run batfish
 The output of this step will be placed in the current folder.
 If you want to confirm running of each subtask, run:
     batfish_confirm_analyze_multipath /path/to/test/rig
@@ -101,17 +64,16 @@ you should see the following output in the current folder:
 example (directory) - base directory of intermediate output
 example-multipath-default-multipath-result - result of multipath consistency check. If multipath consistency is satisfied, this file will be empty. Otherwise, it will contain counterexample pairs of ingress node and packet that violate multipath consistency. Traceroutes for such packets are included.
 
-Results of intermediate computations during data plane generation are stored in predicates in a LogicBlox database.  To see the schema and comments for the LogicBlox predicates, run:
+Results of intermediate computations during data plane generation are stored in predicates in the output directory.  To see the schema and comments for the predicates, run:
    batfish -predhelp <predicate-name..>
 To see help for ALL predicates, including IDB (derived) predicates, use the '-predhelp' flag without arguments:
    batfish -predhelp
-Individual predicates for a processed test rig can be dumped to stdout by finding the LogicBlox workspace name and running:
-   batfish_query_predicate <workspacename> <predicate>
-The <workspacename> is constructed as "<testrig-directory-name>:<environment-name>.
-The <environment-name> for this example -s 'multipath-default', which follows 'example-' (where 'example' is the <testrig-directory-name>)in the name of the result file.
-**
+Individual predicates for a processed test rig can be dumped to stdout by running:
+   batfish_query_predicate <testrigname> <environmentname> <predicates..>
+The <environment-name> for this example is 'multipath-default'.
+** TODO: Explain environment management **
 So for example, one could query the routing tables by running:
-   batfish_query 'example:multipath-default' 'InstalledRoute'
+   batfish_query_predicate example multipath-default InstalledRoute
 
 Other intermediate output is stored in the 'example' base directory mentioned above.
 Within this base directory one finds:
@@ -122,13 +84,15 @@ Within this base directory one finds:
    environments (directory): holds the environments used in intermediate computation. In the example this contains a single environment called 'multipath-default'. Within this directory we see:
       dp : a serialized representation of the data plane induced by the environment
 
-      dump (directory): This folder contains files named for LogicBlox EDB (input) predicates. Note that these files are in raw CSV format (with '|' as a delimiter), and may not be very legible, even with the schema.
+      cp_facts (directory): This folder contains files named for input predicates. Note that these files are in raw CSV format (with '|' as a delimiter), and may not be very legible, even with the schema.
 
       env (directory): a directory in which modifications to a default environment are specified. Modifications could include failed nodes, failed interfaces, failed links, or updated configuration files.
+
+      **TODO: explain nxtnet* files/dirs, precomputedroutes
 
 ***
 One can also run a single-node-failure or single-link-failure consistency check with:
    batfish_analyze_node_failures <batfish-root>/test_rigs/example
 OR
    batfish_analyze_link_failures <batfish-root>/test_rigs/example
-Since these checks produce multiple environments, it may be instructive to example the output for those environments after running each command.
+Since these checks produce multiple environments, it may be instructive to examine the output for those environments after running each command.
