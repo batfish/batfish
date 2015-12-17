@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.io.output.WriterOutputStream;
+import org.batfish.common.AppZip;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Util;
@@ -94,10 +95,10 @@ public class Client {
       descs.put(COMMAND_INIT_CONTAINER, COMMAND_INIT_CONTAINER
             + " <container-name-prefix>\n" + "\t Initialize a new container");
       descs.put(COMMAND_INIT_DIFF_ENV, COMMAND_INIT_DIFF_ENV
-            + " <environment-name> <environment-file>\n"
+            + " <environment-name> <environment zipfile or directory>\n"
             + "\t Initialize the differential environment");
       descs.put(COMMAND_INIT_TESTRIG, COMMAND_INIT_TESTRIG
-            + " <environment-name> <environment-file>\n"
+            + " <environment-name> <testrig zipfile or directory>\n"
             + "\t Initialize the testrig with default environment");
       descs.put(COMMAND_LIST_CONTAINERS, COMMAND_LIST_CONTAINERS + "\n"
             + "\t List the containers to which you have access");
@@ -549,12 +550,26 @@ public class Client {
             }
 
             String testrigName = words[1];
-            String testrigFile = words[2];
+            String testrigLocation = words[2];
 
+            File testrigFilePointer = new File(testrigLocation);
+            
+            String uploadFilename = testrigLocation;
+            
+            if (testrigFilePointer.isDirectory()) {
+                 uploadFilename = File.createTempFile("testrig", null).getAbsolutePath();               
+               AppZip appZip = new AppZip();
+               appZip.zip(testrigFilePointer.getAbsolutePath(), uploadFilename);
+            }     
+                        
             // upload the testrig
             boolean resultUpload = _workHelper.uploadTestrig(
-                  _currContainerName, testrigName, testrigFile);
+                  _currContainerName, testrigName, uploadFilename);
 
+            //unequal means we must have created a temporary file
+            if (uploadFilename != testrigLocation) 
+               new File(uploadFilename).delete();
+               
             if (resultUpload) {
                _logger
                      .output("Successfully uploaded testrig. Starting parsing\n");
