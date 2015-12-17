@@ -212,32 +212,37 @@ batfish_format_flows() {
 }
 export -f batfish_format_flows
 
+batfish_gendoc() {
+   echo "Generating documentation under batfish_doc"
+   javadoc -d batfish_doc -sourcepath "$COMMON_PATH/src;$BATFISH_PATH/src;$COORDINATOR_PATH/src;$BATFISH_CLIENT_PATH/src" -subpackages org.batfish
+}
+
 batfish_get_history() {
    batfish_date
-   echo ": START: Get flow histories from LogicBlox"
+   echo ": START: Get flow histories"
    batfish_expect_args 4 $# || return 1
    local BASE=$1
    local ENV=$2
    local QUESTIONNAME=$3
    local RESULT=$4
-   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -history -logtee -loglevel output -logfile $RESULT
+   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -history -logtee -loglevel output -logfile $RESULT || return 1
    batfish_date
-   echo ": END: Get flow histories from LogicBlox"
+   echo ": END: Get flow histories"
 }
 export -f batfish_get_history
 
 batfish_get_history_diff() {
    batfish_date
-   echo ": START: Get flow histories from LogicBlox"
+   echo ": START: Get flow"
    batfish_expect_args 5 $# || return 1
    local BASE=$1
    local ENV=$2
    local DIFF_ENV=$3
    local QUESTIONNAME=$4
    local RESULT=$5
-   batfish -autobasedir $BASE -env $ENV -diffquestion -diffenv $DIFF_ENV -questionname $QUESTIONNAME -history -logtee -loglevel output -logfile $RESULT
+   batfish -autobasedir $BASE -env $ENV -diffquestion -diffenv $DIFF_ENV -questionname $QUESTIONNAME -history -logtee -loglevel output -logfile $RESULT || return 1
    batfish_date
-   echo ": END: Get flow histories from LogicBlox"
+   echo ": END: Get flow histories"
 }
 export -f batfish_get_history_diff
 
@@ -250,88 +255,11 @@ batfish_get_topology_interfaces() {
    local DIFF_ENV=$3
    local QUESTIONNAME=$4
    local RESULT=$5
-   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -questionname $QUESTIONNAME -getdiffhistory -logtee -loglevel output -logfile $RESULT
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -questionname $QUESTIONNAME -getdiffhistory -logtee -loglevel output -logfile $RESULT || return 1
    batfish_date
    echo ": END: Get topology interfaces"
 }
 export -f batfish_get_topology_interfaces
-
-batfish_inject_packets() {
-   batfish_date
-   echo ": START: Inject concrete packets into network model"
-   batfish_expect_args 3 $# || return 1
-   local WORKSPACE=$1
-   local QUERY_PATH=$2
-   local DUMP_DIR=$3
-   local OLD_PWD=$PWD
-   cd $QUERY_PATH
-   batfish -workspace $WORKSPACE -flow -flowpath $QUERY_PATH -dumptraffic -dumpdir $DUMP_DIR || return 1
-   batfish_format_flows $DUMP_DIR || return 1
-   cd $OLD_PWD
-   batfish_date
-   echo ": END: Inject concrete packets into network model"
-}
-export -f batfish_inject_packets
-
-batfish_gendoc() {
-   echo "Generating documentation under batfish_doc"
-   javadoc -d batfish_doc -sourcepath "$COMMON_PATH/src;$BATFISH_PATH/src;$COORDINATOR_PATH/src;$BATFISH_CLIENT_PATH/src" -subpackages org.batfish
-}
-
-batfish_generate_z3_reachability() {
-   batfish_date
-   echo ": START: Extract z3 reachability relations"
-   batfish_expect_args 4 $# || return 1
-   local DP_DIR=$1
-   local INDEP_SERIAL_PATH=$2
-   local REACH_PATH=$3
-   local NODE_SET_PATH=$4
-   batfish -sipath $INDEP_SERIAL_PATH -dpdir $DP_DIR -z3 -z3path $REACH_PATH -nodes $NODE_SET_PATH || return 1
-   batfish_date
-   echo ": END: Extract z3 reachability relations"
-}
-export -f batfish_generate_z3_reachability
-
-batfish_get_concrete_failure_packets() {
-   batfish_date
-   echo ": START: Get concrete failure packets"
-   batfish_expect_args 5 $# || return 1
-   local QUERY_PATH=$1
-   local FAILURE_QUERY_PATH=$2
-   local FAILURE_REACH_QUERY_NAME=$3
-   local LABEL=$4
-   local FAILURE_LABEL=$5
-   local OLD_PWD=$PWD
-   local NODES=$QUERY_PATH/nodes-$LABEL                                                                                                    
-   local FAILURE_NODES=$FAILURE_QUERY_PATH/nodes-$FAILURE_LABEL
-   local COMBINED_NODES=$FAILURE_QUERY_PATH/nodes
-   cat $NODES $FAILURE_NODES | sort -u > $COMBINED_NODES
-   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
-      return 1
-   fi
-   cd $FAILURE_QUERY_PATH
-   cat $NODES | $BATFISH_PARALLEL batfish_get_concrete_failure_packets_decreased {} $FAILURE_REACH_QUERY_NAME \;
-   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
-      return 1
-   fi
-   cat $FAILURE_NODES | $BATFISH_PARALLEL batfish_get_concrete_failure_packets_increased {} $FAILURE_REACH_QUERY_NAME \;
-   if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
-      return 1
-   fi
-   cd $OLD_PWD
-   batfish_date
-   echo ": END: Get concrete inconsistent packets"
-}
-export -f batfish_get_concrete_failure_packets
-
-batfish_nuke_reset_logicblox() {
-   killall -9 lb-server
-   killall -9 lb-pager
-   lb services stop || return 1
-   rm -rf ~/lb_deployment/*
-   LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start || return 1
-}
-export -f batfish_nuke_reset_logicblox
 
 batfish_output_topology() {
    batfish_expect_args 1 $# || return 1
@@ -347,7 +275,7 @@ batfish_post_flows() {
    local BASE=$1
    local ENV=$2
    local QUESTIONNAME=$3
-   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -nxtnettraffic
+   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -nxtnettraffic || return 1
    batfish_date
    echo ": END: Inject discovered packets into network model"
 }
@@ -361,7 +289,7 @@ batfish_post_flows_diff() {
    local ENV=$2
    local DIFF_ENV=$3
    local QUESTIONNAME=$4
-   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -questionname $QUESTIONNAME -nxtnettraffic
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -diffquestion -questionname $QUESTIONNAME -nxtnettraffic || return 1
    batfish_date
    echo ": END: Inject discovered packets into network model (differential)"
 }
@@ -418,7 +346,7 @@ batfish_query_data_plane_diff() {
    local BASE=$1
    local ENV=$2
    local DIFF_ENV=$3
-   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -dp || return 1
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -diffactive -dp || return 1
    batfish_date
    echo ": END: Query data plane predicates (differential)"
 }
