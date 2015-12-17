@@ -58,6 +58,7 @@ public class Client {
    private static final String COMMAND_SET_DIFF_ENV = "set-diff-environment";
    private static final String COMMAND_SET_LOGLEVEL = "set-loglevel";
    private static final String COMMAND_SET_TESTRIG = "set-testrig";
+   private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
 
    private static final Map<String, String> MAP_COMMANDS = initCommands();
 
@@ -121,6 +122,9 @@ public class Client {
             + "\t Set the loglevel. Default is output");
       descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG + " <testrig-name>\n"
             + "\t Set the current testrig");
+      descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT 
+            + " <object-name> <object-file>\n"
+            + "\t Uploads a custom object");
       return descs;
    }
 
@@ -690,6 +694,21 @@ public class Client {
             }
             break;
          }
+         case COMMAND_UPLOAD_CUSTOM_OBJECT: {
+            if (!isSetContainer() || !isSetTestrig()) {
+               break;
+            }
+
+            String objectName = words[1];
+            String objectFile = words[2];
+
+            // upload the object
+            boolean resultUpload = _workHelper.uploadCustomObject(
+                  _currContainerName, _currTestrigName, objectName,
+                  objectFile);
+
+            break;
+         }         
          default:
             _logger.error("Unsupported command " + words[0] + "\n");
             _logger.error("Type 'help' to see the list of valid commands\n");

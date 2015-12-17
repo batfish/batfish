@@ -600,6 +600,47 @@ public class WorkMgr {
       return success;
    }
 
+   public void uploadCustomObject(String containerName, String testrigName,
+         String objectName, InputStream fileStream)
+         throws Exception {
+
+      File containerDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName)
+            .toFile();
+
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException("Container " + containerName
+               + " does not exist");
+      }
+
+      File testrigDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName,
+            testrigName).toFile();
+
+      if (!testrigDir.exists()) {
+         throw new FileNotFoundException("testrig " + testrigName
+               + " does not exist");
+      }
+      
+      File file = Paths.get(Main.getSettings().getTestrigStorageLocation(),
+            containerName, testrigName, BfConsts.RELPATH_CUSTOM_OBJECTS, objectName).toFile();
+
+      File parentFolder = file.getParentFile();
+      
+      if (!parentFolder.mkdirs()) {
+         throw new Exception("failed to create directory "
+               + parentFolder.getAbsolutePath());
+      }
+
+      try (OutputStream fileOutputStream = new FileOutputStream(file)) {
+         int read = 0;
+         final byte[] bytes = new byte[1024];
+         while ((read = fileStream.read(bytes)) != -1) {
+            fileOutputStream.write(bytes, 0, read);
+         }
+      }
+   }
+
    public void uploadEnvironment(String containerName, String testrigName,
          String envName, InputStream fileStream) throws Exception {
 
@@ -722,9 +763,6 @@ public class WorkMgr {
 
       File paramFile = Paths.get(qDir.getAbsolutePath(),
             BfConsts.RELPATH_QUESTION_PARAM_FILE).toFile();
-
-      System.out.println("parameters file = "
-            + BfConsts.RELPATH_QUESTION_PARAM_FILE + "\n");
 
       try (OutputStream paramFileOutputStream = new FileOutputStream(paramFile)) {
          int read = 0;

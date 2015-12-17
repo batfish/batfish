@@ -747,6 +747,43 @@ public class BfCoordWorkHelper {
       }
    }
 
+   public boolean uploadCustomObject(String containerName, String testrigName,
+         String objName, String objFileName) {
+      try {
+
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_WORK_UPLOAD_CUSTOM_OBJECT_RSC);
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
+               _settings.getApiKey());
+         addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
+               containerName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_TESTRIG_NAME_KEY,
+               testrigName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_CUSTOM_OBJECT_NAME_KEY, objName);
+         addFileMultiPart(multiPart, CoordConsts.SVC_FILE_KEY, objFileName);
+
+         return postData(webTarget, multiPart) != null;
+      }
+      catch (Exception e) {
+         if (e.getMessage().contains("FileNotFoundException")) {
+            _logger.errorf("File not found: %s\n", objFileName);
+         }
+         else {
+            _logger
+                  .errorf(
+                        "Exception when uploading custom object to %s using (%s, %s, %s): %s\n",
+                        _coordWorkMgr, testrigName, objName, objFileName,
+                        ExceptionUtils.getStackTrace(e));
+         }
+         return false;
+      }
+   }
+
    public boolean uploadEnvironment(String containerName, String testrigName,
          String envName, String zipfileName) {
       try {
