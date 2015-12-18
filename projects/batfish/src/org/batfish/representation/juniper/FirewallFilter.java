@@ -1,10 +1,11 @@
 package org.batfish.representation.juniper;
 
-import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public final class FirewallFilter implements Serializable {
+import org.batfish.util.ReferenceCountedStructure;
+
+public final class FirewallFilter extends ReferenceCountedStructure {
 
    /**
     *

@@ -20,6 +20,29 @@ public class Interface extends NamedStructure {
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
                                                        // method stub
+
+   }
+
+   public static InterfaceType computeInterfaceType(String name,
+         ConfigurationFormat format) {
+      switch (format) {
+      case ARISTA:
+      case CISCO:
+      case CISCO_IOS_XR:
+         return computeCiscoInterfaceType(name);
+
+      case FLAT_JUNIPER:
+      case JUNIPER:
+      case JUNIPER_SWITCH:
+         return computeJuniperInterfaceType(name);
+
+      case UNKNOWN:
+      case VXWORKS:
+      default:
+         throw new BatfishException(
+               "Cannot compute interface type for unsupported configuration format: "
+                     + format.toString());
+      }
    }
 
    private static InterfaceType computeJuniperInterfaceType(String name) {
@@ -100,26 +123,8 @@ public class Interface extends NamedStructure {
       _allowedVlans.addAll(ranges);
    }
 
-   public InterfaceType computeInterfaceType() {
-      ConfigurationFormat format = _owner.getVendor();
-      switch (_owner.getVendor()) {
-      case ARISTA:
-      case CISCO:
-      case CISCO_IOS_XR:
-         return computeCiscoInterfaceType(_name);
-
-      case FLAT_JUNIPER:
-      case JUNIPER:
-      case JUNIPER_SWITCH:
-         return computeJuniperInterfaceType(_name);
-
-      case UNKNOWN:
-      case VXWORKS:
-      default:
-         throw new BatfishException(
-               "Cannot compute interface type for unsupported configuration format: "
-                     + format.toString());
-      }
+   private InterfaceType computeInterfaceType() {
+      return computeInterfaceType(_name, _owner.getVendor());
    }
 
    public int getAccessVlan() {
