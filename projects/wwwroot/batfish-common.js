@@ -93,7 +93,7 @@ function bfPostData(rscEndPoint, data, callback, entryPoint, remainingCalls) {
                     callback(response[1], entryPoint, remainingCalls);
             }
             else {
-                alert(taskname + " failed: " + response[1]);
+                alert(entryPoint + " failed: " + response[1]);
             }
         }
     });

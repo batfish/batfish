@@ -59,13 +59,11 @@ function queueWork(worktype, entryPoint, remainingCalls) {
         alert("Testrig name is empty");
         return;
     }
-
-    //var questionName = jQuery("#txtQuestionName").val();
-    //if (questionName == ""
-    //      && (worktype == "answerquestion" || worktype == "postflows")) {
-    //   alert("Question name is empty");
-    //   return;
-    //}
+    var questionName = jQuery("#txtQuestionName").val();
+    if (questionName == "" && worktype == "answerquestion") {
+       alert("Question name is empty");
+       return;
+    }
 
     // real work begins
     bfUpdateDebugInfo("Doing work " + worktype);
@@ -110,10 +108,11 @@ function queueWork(worktype, entryPoint, remainingCalls) {
             reqParams[COMMAND_ANSWER] = "";
             reqParams[ARG_QUESTION_NAME] = questionName;
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
-            reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
-            if (differentialQuery) {
+            if (diffEnvName != "") {
                 reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
             }
+            reqParams[COMMAND_NXTNET_TRAFFIC] = "";
+            reqParams[COMMAND_GET_HISTORY] = "";
             break;
         default:
             alert("Unsupported work command", worktype);
@@ -235,6 +234,33 @@ function startCalls(entryPoint, calls) {
     makeNextCall(entryPoint, callList);
 }
 
+// this is a test function whose contents change based on what we want to test
+function testMe() {
+    containerName = "js_9b23b69d-e0f7-4034-8d4c-954a1c9eaa86";
+
+    testrigName = "tr-" + bfGetGuid();
+
+    var zip = new JSZip();
+
+    var example = zip.folder("example");
+    var configs = example.folder("configs");
+    configs.file("cool.cfg", "cool cool cool");
+
+    var content = zip.generate({ type: "blob" });
+
+    bfUpdateDebugInfo("Uploading testrig");
+
+    // begin the work now
+    var data = new FormData();
+    data.append(SVC_API_KEY, API_KEY);
+    data.append(SVC_CONTAINER_NAME_KEY, containerName);
+    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
+    data.append(SVC_ZIPFILE_KEY, content);
+
+    bfPostData(SVC_UPLOAD_TESTRIG_RSC, data, uploadTestrig_cb, "testme", []);
+
+}
+
 function uploadDiffEnvironment(entryPoint, remainingCalls) {
 
     // sanity check inputs
@@ -297,6 +323,8 @@ function uploadQuestion(entryPoint, remainingCalls) {
        alert("Specify a question name");
        return;
    }
+   var paramsString = jQuery("#txtQuestionParams").val();
+   var paramBlob = new Blob([paramsString]);
 
    var data = new FormData();
    data.append(SVC_API_KEY, API_KEY);
@@ -304,6 +332,7 @@ function uploadQuestion(entryPoint, remainingCalls) {
    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
    data.append(SVC_QUESTION_NAME_KEY, qName);
    data.append(SVC_FILE_KEY, qFile);
+   data.append(SVC_FILE2_KEY, paramBlob);
 
    bfPostData(SVC_UPLOAD_QUESTION_RSC, data, uploadQuestion_cb, entryPoint, remainingCalls);
 }

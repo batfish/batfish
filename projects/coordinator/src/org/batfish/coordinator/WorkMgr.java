@@ -821,7 +821,7 @@ public class WorkMgr {
       if (fileList.length != 1 || !fileList[0].isDirectory()) {
          FileUtils.deleteDirectory(testrigDir);
          throw new Exception(
-               "Unexpected packaging of test rig. There should be just one top-level folder");
+               "Unexpected packaging of test rig. There should be just one top-level folder. Got " + fileList.length);
       }
 
       File[] subFileList = fileList[0].listFiles();

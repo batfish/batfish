@@ -3,6 +3,7 @@
 <head>
     <title>Batfish demo</title>
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.11.2.min.js"></script>
+    <script src="libs/jszip.js"></script>
     <script src="bfconsts.js"></script>
     <script src="coordconsts.js"></script>
     <script src="batfish-common.js"></script>
@@ -22,10 +23,13 @@
 <body>
     <!-- 
     TODO:
-          - parameter support in answers
+          - output chaining and multiple entry points
           - pointing at directories (in addition to zip files)
         -->
     <h1>Batfish  Demo</h1>
+    <div id="divTest" style="display: none">
+        <input type="button" id="btnTest" value="Test me!" onclick="testMe()" />
+    </div>
         <table>
             <tr>
                 <td>
@@ -68,6 +72,7 @@
                             <tr>
                                 <td> Query: </td>
                                 <td> <input type="text" id="txtQuestionName" /> </td>
+                                <td> <input type="text" id="txtQuestionParams" /> </td>
                                 <td> <input type="file" id="fileUploadQuestion" /> </td>
                                 <td> <input type="button" id="btnUploadQuestion" value="Upload query" 
                                     onclick="startCalls('btnUploadQuestion', 'uploadquestion::answerquestion')" /> </td>
