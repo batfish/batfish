@@ -6,6 +6,7 @@ $(document).ready(function() {
 var epCurrWorkChecker = new Object();
 var epWorkGuid = new Object();
 var epOutput = new Object();
+var epQuestionName = new Object();
 
 function checkWork(entryPoint, remainingCalls) {
    // delete any old work checker
@@ -65,6 +66,7 @@ function finishEntryPoint(entryPoint, remainingCalls) {
     delete epCurrWorkChecker[entryPoint];
     delete epOutput[entryPoint];
     delete epWorkGuid[entryPoint];
+    delete eqQuestionName[entryPoint];
 }
 
 function getLog(entryPoint, remainingCalls) {
@@ -181,9 +183,8 @@ function queueWork(worktype, entryPoint, remainingCalls) {
         alert("Testrig name is empty");
         return;
     }
-    var questionName = jQuery("#txtQuestionName").val();
-    if (questionName == "" && worktype == "answerquestion") {
-        alert("Question name is empty");
+    if (!(entryPoint in epQuestionName) && worktype == "answerquestion") {
+        alert("Question name is not set");
         return;
     }
 
@@ -228,7 +229,7 @@ function queueWork(worktype, entryPoint, remainingCalls) {
             break;
         case "answerquestion":
             reqParams[COMMAND_ANSWER] = "";
-            reqParams[ARG_QUESTION_NAME] = questionName;
+            reqParams[ARG_QUESTION_NAME] = epQuestionName[entryPoint];
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
             if (diffEnvName != "") {
                 reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
@@ -269,7 +270,7 @@ function startCalls(entryPoint, calls) {
 // this is a test function whose contents change based on what we want to test
 function testMe() {
     containerName = "js_9b23b69d-e0f7-4034-8d4c-954a1c9eaa86";
-    uploadQuestion("testme", []);
+    queueWork("answerquestion", "abc", []);
 }
 
 function uploadDiffEnvironment(entryPoint, remainingCalls) {
@@ -328,7 +329,7 @@ function uploadQuestion(entryPoint, remainingCalls) {
       alert("Select a question file");
       return;
    }
-   var qName = bfGetGuid();
+   epQuestionName[entryPoint] = bfGetGuid();
 
    var paramsString = jQuery("#txtQuestionParams").val();
    var paramBlob = new Blob([paramsString]);
@@ -337,7 +338,7 @@ function uploadQuestion(entryPoint, remainingCalls) {
    data.append(SVC_API_KEY, API_KEY);
    data.append(SVC_CONTAINER_NAME_KEY, containerName);
    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
-   data.append(SVC_QUESTION_NAME_KEY, qName);
+   data.append(SVC_QUESTION_NAME_KEY, epQuestionName[entryPoint]);
    data.append(SVC_FILE_KEY, qFile);
    data.append(SVC_FILE2_KEY, paramBlob);
 
