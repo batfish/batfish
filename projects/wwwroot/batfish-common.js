@@ -1,36 +1,25 @@
 "use strict";
 
-var LOG_LEVEL_OUTPUT = "output";
-var LOG_LEVEL_WARN = "warn";
+var SVC_WORK_MGR_ROOT;
+var LOG_LEVEL = "warn";  //output, debug, ...
 
 $(document).ajaxError(function(event, request, settings, thrownError) {
    bfUpdateDebugInfo(settings.url + " " + thrownError + " " + request);
 });
 
 var debugLog = [];
-
 var maxLogEntries = 10000;
 
-function bfDownloadObject(testrigName, objectName) {
-   var uri = encodeURI(SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?"
-         + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY
-         + "=" + objectName);
-
-   bfUpdateDebugInfo("Fetching " + uri);
-
-   window.location.assign(uri);
+function bfGetGuid() {
+    function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16)
+              .substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4()
+          + s4() + s4();
 }
 
-function bfGenericCallback(taskname, result) {
-   if (result[0] === SVC_SUCCESS_KEY) {
-      bfUpdateDebugInfo(taskname + " succeeded");
-   }
-   else {
-      alert(taskname + "failed: " + result[1]);
-   }
-}
-
-function bfGetObject(containerName, testrigName, objectName, callback, entryPoint, remainingCalls) {
+function bfGetObject(containerName, testrigName, objectName, cbSuccess, cbFailure, entryPoint, remainingCalls) {
     var url_parm = SVC_WORK_MGR_ROOT + SVC_GET_OBJECT_RSC;
     console.log("bfGetObject: ", entryPoint, objectName);
 
@@ -49,11 +38,12 @@ function bfGetObject(containerName, testrigName, objectName, callback, entryPoin
 
         success: function (responseObject) {
             bfUpdateDebugInfo("Fetched " + objectName);
-            if (callback != undefined)
-                callback(responseObject, entryPoint, remainingCalls);
+            if (cbSuccess != undefined)
+                cbSuccess(responseObject, entryPoint, remainingCalls);
         }
     }).fail(function () {
-      bfUpdateDebugInfo("Failed to fetch " + objectName);
+        if (cbFailure != undefined)
+            cbFailure("Failed to fetch " + objectName, entryPoint, remainingCalls);
    });
 }
 
@@ -62,16 +52,7 @@ function bfGetTimestamp() {
    return now.toLocaleTimeString();
 }
 
-function bfGetGuid() {
-    function s4() {
-        return Math.floor((1 + Math.random()) * 0x10000).toString(16)
-              .substring(1);
-    }
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4()
-          + s4() + s4();
-}
-
-function bfPostData(rscEndPoint, data, callback, entryPoint, remainingCalls) {
+function bfPostData(rscEndPoint, data, cbSuccess, cbFailure, entryPoint, remainingCalls) {
 
     var url_parm = SVC_WORK_MGR_ROOT + rscEndPoint;
     console.log("bfPostData: ", entryPoint, url_parm);
@@ -84,33 +65,29 @@ function bfPostData(rscEndPoint, data, callback, entryPoint, remainingCalls) {
         data: data,
 
         error: function (_, textStatus, errorThrown) {
-            alert(entryPoint + " failed: ", textStatus, errorThrown);
+            if (cbFailure != undefined)
+                cbFailure("PostData failed: " + textStatus + " " + errorThrown, entryPoint, remainingCalls);
         },
         success: function (response, textStatus) {
             if (response[0] === SVC_SUCCESS_KEY) {
                 bfUpdateDebugInfo(entryPoint + " succeeded");
-                if (callback != undefined)
-                    callback(response[1], entryPoint, remainingCalls);
+                if (cbSuccess != undefined)
+                    cbSuccess(response[1], entryPoint, remainingCalls);
             }
             else {
-                alert(entryPoint + " failed: " + response[1]);
+                if (cbFailure != undefined)
+                    cbFailure("API call fail: " + response[1], entryPoint, remainingCalls);
             }
         }
     });
 }
 
-function bfUpdateCoordinatorLocation() {
+function bfInitialize() {
+    var hostname = (runLocal)? "localhost" : location.hostname;
+    var protocol = (SVC_DISABLE_SSL) ? "http" : "https";
+    SVC_WORK_MGR_ROOT = protocol + "://" + hostname + ":" + SVC_WORK_PORT + SVC_BASE_WORK_MGR + "/";
 
-   var coordinatorHost = jQuery("#txtCoordinatorHost").val();
-   if (coordinatorHost == "") {
-      alert("Specify a coordinator host");
-      return;
-   }
-
-   SVC_WORK_MGR_ROOT = "http://" + coordinatorHost + ":9997/batfishworkmgr/";
-   SVC_POOL_MGR_ROOT = "http://" + coordinatorHost + ":9998/batfishpoolmgr/";
-
-   bfUpdateDebugInfo("Coordinator host is updated to " + coordinatorHost);
+   bfUpdateDebugInfo("Coordinator location is set to " + SVC_WORK_MGR_ROOT);
 }
 
 function bfUpdateDebugInfo(string) {

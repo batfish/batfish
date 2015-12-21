@@ -7,7 +7,6 @@
     <script src="bfconsts.js"></script>
     <script src="coordconsts.js"></script>
     <script src="batfish-common.js"></script>
-    <script src ="demo-settings.js"></script>
     <script src="workclient.js"></script>
     <script>
         var API_KEY = "0000000";
@@ -15,8 +14,8 @@
         var containerName = "";
         var testrigName = "js_testrig";
         var envName = "default";
-        var diffEnvName = "";
-        var logLevel = LOG_LEVEL_WARN;
+        var diffEnvName = "delta";
+        var runLocal = true;
     </script>
     <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
@@ -27,7 +26,7 @@
           - pointing at directories (in addition to zip files)
         -->
     <h1>Batfish  Demo</h1>
-    <div id="divTest" style="display: none">
+    <div id="divTest" style="display: normal">
         <input type="button" id="btnTest" value="Test me!" onclick="testMe()" />
     </div>
         <table>
@@ -45,7 +44,6 @@
                             </tr>
                             <tr>
                                 <td> Differential Environment: </td>
-                                <td> <input type="text" id="txtDiffEnvironmentName" value="delta" /> </td>
                                 <td> <input type="file" id="fileUploadDiffEnvironment" /> </td>
                                 <td> <input type="button" id="btnUploadDiffEnvironment" value="Upload environment" 
                                     onclick="startCalls('btnUploadDiffEnvironment', 'uploaddiffenvironment')" /> 
@@ -57,10 +55,10 @@
 
                         <table>
                             <tr>
-                               <td> <input type="button" id="btnGenerateDataPlane" value="Generate base data plane" style="width:300px" 
+                               <td> <input type="button" id="btnGenerateDataPlane" value="Generate base data plane"  
                                    onclick="startCalls('btnGenerateDataPlane', 'generatedataplane::getdataplane')" /> 
                                </td>
-                                <td> <input type="button" id="btnWorkGenerateDiffDataPlane" value="Generate differential data plane" style="width:300px" 
+                                <td> <input type="button" id="btnWorkGenerateDiffDataPlane" value="Generate differential data plane" 
                                     onclick="startCalls('btnGenerateDiffDataPlane', 'generatediffdataplane::getdiffdataplane')" /> 
                                 </td>
                             </tr>
@@ -70,11 +68,11 @@
 
                         <table>
                             <tr>
-                                <td> Query: </td>
-                                <td> <input type="text" id="txtQuestionName" /> </td>
-                                <td> <input type="text" id="txtQuestionParams" /> </td>
+                                <td> Question: </td>
                                 <td> <input type="file" id="fileUploadQuestion" /> </td>
-                                <td> <input type="button" id="btnUploadQuestion" value="Upload query" 
+                                <td> Parameters: </td>
+                                <td> <input type="text" id="txtQuestionParams" /> </td>
+                                <td> <input type="button" id="btnUploadQuestion" value="Answer" 
                                     onclick="startCalls('btnUploadQuestion', 'uploadquestion::answerquestion')" /> </td>
                             </tr>
                         </table>
@@ -88,7 +86,7 @@
                 <textarea id="divDebugInfo" style="display: normal; border-radius: 5pt"cols="100" rows="10"></textarea>
             </td>
             <td>
-                <form class="myform">
+<!--                <form class="myform">
 
                 Coordinator: &nbsp &nbsp
                 <input type="text" id="txtCoordinatorHost" value="localhost" /> &nbsp &nbsp
@@ -111,7 +109,7 @@
                         <input type="text" disabled id="txtIncompleteWorks" size="3"/>
                 </div>
                 </form>
-                <br />
+                <br />-->
                 Output: <br />
                 <textarea id="divOutputInfo" style="display: normal; border-radius:5px" cols="80" rows="30"></textarea>
                 <br />

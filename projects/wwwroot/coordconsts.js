@@ -2,9 +2,16 @@
 // These constants come from 'CoordConsts.java'.
 // Make sure they are in sync with what is there.
 
-var SVC_POOL_MGR_ROOT = "https://localhost:9998/batfishpoolmgr/";
-var SVC_WORK_MGR_ROOT = "https://localhost:9997/batfishworkmgr/";
+/**
+ * Constants for where and how services are hosted
+ */
 
+var SVC_BASE_POOL_MGR = "/batfishpoolmgr";
+var SVC_BASE_WORK_MGR = "/batfishworkmgr";
+var SVC_POOL_PORT = 9998;
+var SVC_WORK_PORT = 9997;
+var SVC_DISABLE_SSL = false;
+   
 /**
  * Various constants used as keys on multi-part form data
  */
