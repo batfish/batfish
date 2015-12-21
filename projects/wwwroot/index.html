@@ -15,15 +15,25 @@
         var testrigName = "js_testrig";
         var envName = "default";
         var diffEnvName = "delta";
-        var runLocal = true;
+
+        //this function populates the config text box with the chosen file
+        function loadConfigText() {
+            var configFile = jQuery("#fileConfig").get(0).files[0];
+
+            var r = new FileReader();
+            r.onload = function (e) {
+                var contents = e.target.result;
+                jQuery('#txtConfig').val(contents);
+            }
+            r.readAsText(configFile);
+        }
     </script>
     <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
     <!-- 
     TODO:
-          - output chaining and multiple entry points
-          - pointing at directories (in addition to zip files)
+          - output chaining
         -->
     <h1>Batfish  Demo</h1>
     <div id="divTest" style="display: normal">
@@ -36,7 +46,18 @@
 
                         <table>
                             <tr>
-                                <td> Configuration: </td>
+                             <td> Configuration (select a file or enter your own text): </td>
+                             <td> <input type="file" id="fileConfig" /> </td>
+                                <script>
+                                    jQuery('#fileConfig').change(loadConfigText); 
+                                </script>
+                             <td> <textarea id="txtConfig" style="display: normal; border-radius:5px" cols="50" rows="20"></textarea> </td>
+                                <td> <input type="button" id="btnUploadConfigTest" value="Upload Configuration" 
+                                    onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadconfigtext::parsevendorspecific::parsevendorindependent')" />
+                                </td>
+                             </tr>
+                            <tr>
+                                <td> Testrig: </td>
                                 <td> <input type="file" id="fileUploadTestrig" /> </td>
                                 <td> <input type="button" id="btnUploadTestrig" value="Upload Configuration" 
                                     onclick="startCalls('btnUploadTestrig', 'initcontainer::inittestrig::parsevendorspecific::parsevendorindependent')" />
@@ -86,30 +107,6 @@
                 <textarea id="divDebugInfo" style="display: normal; border-radius: 5pt"cols="100" rows="10"></textarea>
             </td>
             <td>
-<!--                <form class="myform">
-
-                Coordinator: &nbsp &nbsp
-                <input type="text" id="txtCoordinatorHost" value="localhost" /> &nbsp &nbsp
-                <input type="button" id="btnCoordinatorHost" value="Update" onclick="bfUpdateCoordinatorLocation()" />
-                <br /> <br />
-
-                Worker: &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
-                <input type="text" id="txtAddWorker" value="localhost:9999" /> &nbsp &nbsp
-                <input type="button" id="btnAddWorker" value="Add worker" onclick="fnAddWorker()" />
-                <br />
-
-                <div style="display: none">
-                    <br /><br />
-                    <b> [Refresh to learn the latest on the status of coordinator's work queues]</b>
-                    <br />
-                        <input type="button" id="btnGetWorkStatus" value="Referesh work queue status" onclick="fnGetCoordinatorWorkQueueStatus()" />
-                        Completed works
-                        <input type="text" disabled id="txtCompletedWorks" size="3"/>
-                        Incomplete works
-                        <input type="text" disabled id="txtIncompleteWorks" size="3"/>
-                </div>
-                </form>
-                <br />-->
                 Output: <br />
                 <textarea id="divOutputInfo" style="display: normal; border-radius:5px" cols="80" rows="30"></textarea>
                 <br />

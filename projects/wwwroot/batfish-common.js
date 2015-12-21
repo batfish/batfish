@@ -83,7 +83,9 @@ function bfPostData(rscEndPoint, data, cbSuccess, cbFailure, entryPoint, remaini
 }
 
 function bfInitialize() {
-    var hostname = (runLocal)? "localhost" : location.hostname;
+    var hostname = location.hostname;
+    if (hostname == "")
+        hostname = "localhost";
     var protocol = (SVC_DISABLE_SSL) ? "http" : "https";
     SVC_WORK_MGR_ROOT = protocol + "://" + hostname + ":" + SVC_WORK_PORT + SVC_BASE_WORK_MGR + "/";
 

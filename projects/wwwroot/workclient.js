@@ -101,15 +101,6 @@ function genericFailure_cb(message, entryPoint, remainingCalls) {
 }
 
 function initContainer(entryPoint, remainingCalls) {
-
-    //we want to make sure that the testrig file supplied before we creaate the container
-    var testrigFile = jQuery("#fileUploadTestrig").get(0).files[0];
-
-    if (typeof testrigFile === 'undefined') {
-        alert("Select a testrig file");
-        return;
-    }
-
     if (containerPrefix == "") {
         alert("Container name is not set");
         return;
@@ -151,6 +142,9 @@ function makeNextCall(entryPoint, callList) {
                 break;
             case "inittestrig":
                 uploadTestrig(entryPoint, callList);
+                break;
+            case "uploadconfigtext":
+                uploadConfigText(entryPoint, callList);
                 break;
             case "parsevendorspecific":
             case "parsevendorindependent":
@@ -273,6 +267,47 @@ function testMe() {
     queueWork("answerquestion", "abc", []);
 }
 
+function uploadConfigText(entryPoint, remainingCalls) {
+    // sanity check inputs
+    if (containerName == "") {
+        alert("Container name is not set");
+        return;
+    }
+    if (testrigName == "") {
+        alert("Testrig name is not set");
+        return;
+    }
+    var configText = jQuery("#txtConfig").val();
+    if (configText == "") {
+        alert("Enter configuration");
+        return;
+    }
+
+    bfUpdateDebugInfo("Uploading config text");
+
+    var zip = new JSZip();
+
+    var topLevelFolder = zip.folder("testrig");
+    var configFolder = topLevelFolder.folder("configs");
+    configFolder.file("device.cfg", configText);
+
+    var content = zip.generate({ type: "blob" });
+
+    // begin the work now
+    var data = new FormData();
+    data.append(SVC_API_KEY, API_KEY);
+    data.append(SVC_CONTAINER_NAME_KEY, containerName);
+    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
+    data.append(SVC_ZIPFILE_KEY, content);
+
+    bfPostData(SVC_UPLOAD_TESTRIG_RSC, data, uploadConfigText_cb, genericFailure_cb, entryPoint, remainingCalls);
+}
+
+function uploadConfigText_cb(response, entryPoint, remainingCalls) {
+    bfUpdateDebugInfo("Uploaded config text.");
+    makeNextCall(entryPoint, remainingCalls);
+}
+
 function uploadDiffEnvironment(entryPoint, remainingCalls) {
 
     // sanity check inputs
@@ -313,7 +348,6 @@ function uploadDiffEnvironment_cb(response, entryPoint, remainingCalls) {
     makeNextCall(entryPoint, remainingCalls);
 }
 
-
 function uploadQuestion(entryPoint, remainingCalls) {
     // sanity check inputs
     if (containerName == "") {
@@ -351,7 +385,6 @@ function uploadQuestion_cb(response, entryPoint, remainingCalls) {
 }
 
 function uploadTestrig(entryPoint, remainingCalls) {
-
     // sanity check inputs
     if (containerName == "") {
         alert("Container name is not set");
