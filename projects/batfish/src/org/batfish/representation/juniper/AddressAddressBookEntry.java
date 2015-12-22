@@ -1,10 +1,12 @@
 package org.batfish.representation.juniper;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.batfish.main.Warnings;
-import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.Prefix;
 
-public final class FwFromSourceAddress extends FwFrom {
+public final class AddressAddressBookEntry extends AddressBookEntry {
 
    /**
     *
@@ -13,17 +15,18 @@ public final class FwFromSourceAddress extends FwFrom {
 
    private final Prefix _prefix;
 
-   public FwFromSourceAddress(Prefix prefix) {
+   public AddressAddressBookEntry(String name, Prefix prefix) {
+      super(name);
       _prefix = prefix;
-   }
-
-   @Override
-   public void applyTo(IpAccessListLine line, Warnings w) {
-      line.getSourceIpRanges().add(_prefix);
    }
 
    public Prefix getPrefix() {
       return _prefix;
+   }
+
+   @Override
+   public Set<Prefix> getPrefixes(Warnings w) {
+      return Collections.singleton(_prefix);
    }
 
 }

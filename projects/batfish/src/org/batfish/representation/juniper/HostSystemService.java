@@ -1,0 +1,32 @@
+package org.batfish.representation.juniper;
+
+public enum HostSystemService {
+   ALL,
+   ANY_SERVICE,
+   DNS,
+   FINGER,
+   FTP,
+   HTTP,
+   HTTPS,
+   IDENT_RESET,
+   IKE,
+   LSPING,
+   NETCONF,
+   NTP,
+   PING,
+   R2CP,
+   REVERSE_SSH,
+   REVERSE_TELNET,
+   RLOGIN,
+   RPM,
+   RSH,
+   SIP,
+   SNMP,
+   SNMP_TRAP,
+   SSH,
+   TELNET,
+   TFTP,
+   TRACEROUTE,
+   XNM_CLEAR_TEXT,
+   XNM_SSL
+}

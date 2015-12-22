@@ -314,7 +314,7 @@ public class DependencyDatabase {
          Set<DependentRoute> dependentClosure = dependentRoute
                .getDependentClosure();
          if (dependentClosure.contains(dependentRoute)) {
-            assert Boolean.TRUE;
+            throw new BatfishException("Not sure what to do with cycle");
          }
       }
    }

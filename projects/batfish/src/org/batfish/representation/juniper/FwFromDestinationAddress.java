@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.Prefix;
 
@@ -17,7 +18,7 @@ public final class FwFromDestinationAddress extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line) {
+   public void applyTo(IpAccessListLine line, Warnings w) {
       line.getDestinationIpRanges().add(_prefix);
    }
 

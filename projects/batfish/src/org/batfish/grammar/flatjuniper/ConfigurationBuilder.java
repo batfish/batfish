@@ -53,6 +53,14 @@ import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpsecPolicy;
 import org.batfish.representation.IpsecProposal;
+import org.batfish.representation.juniper.AddressAddressBookEntry;
+import org.batfish.representation.juniper.AddressBook;
+import org.batfish.representation.juniper.AddressBookEntry;
+import org.batfish.representation.juniper.AddressSetAddressBookEntry;
+import org.batfish.representation.juniper.AddressSetEntry;
+import org.batfish.representation.juniper.HostInboundSettings;
+import org.batfish.representation.juniper.HostProtocol;
+import org.batfish.representation.juniper.HostSystemService;
 import org.batfish.representation.juniper.IpsecVpn;
 import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
 import org.batfish.representation.juniper.IsisLevelSettings;
@@ -63,13 +71,16 @@ import org.batfish.representation.juniper.OspfArea;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
 import org.batfish.representation.juniper.PsFrom;
+import org.batfish.representation.juniper.FwFromApplication;
 import org.batfish.representation.juniper.PsFromAsPath;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCommunity;
+import org.batfish.representation.juniper.FwFromDestinationAddressBookEntry;
 import org.batfish.representation.juniper.PsFromInterface;
 import org.batfish.representation.juniper.PsFromPrefixList;
 import org.batfish.representation.juniper.PsFromProtocol;
 import org.batfish.representation.juniper.PsFromRouteFilter;
+import org.batfish.representation.juniper.FwFromSourceAddressBookEntry;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAccept;
@@ -91,6 +102,7 @@ import org.batfish.representation.juniper.RouteFilterLineUpTo;
 import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.StaticRoute;
+import org.batfish.representation.juniper.Zone;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.util.JuniperUtils;
 import org.batfish.util.SubRange;
@@ -115,6 +127,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private static final String F_FIREWALL_TERM_THEN_ROUTING_INSTANCE = "firewall - filter - term - then - routing-instance";
 
    private static final String F_IPV6 = "ipv6 - other";
+
+   private static final String F_PERMIT_TUNNEL = "security - policies - from-zone - to-zone - policy - then - permit - tunnel";
 
    private static final String F_POLICY_TERM_THEN_NEXT_HOP = "policy-statement - term - then - next-hop";
 
@@ -373,6 +387,158 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
    }
 
+   private static HostProtocol toHostProtocol(Hib_protocolContext ctx) {
+      if (ctx.ALL() != null) {
+         return HostProtocol.ALL;
+      }
+      else if (ctx.BFD() != null) {
+         return HostProtocol.BFD;
+      }
+      else if (ctx.BGP() != null) {
+         return HostProtocol.BGP;
+      }
+      else if (ctx.DVMRP() != null) {
+         return HostProtocol.DVMRP;
+      }
+      else if (ctx.IGMP() != null) {
+         return HostProtocol.IGMP;
+      }
+      else if (ctx.LDP() != null) {
+         return HostProtocol.LDP;
+      }
+      else if (ctx.MSDP() != null) {
+         return HostProtocol.MSDP;
+      }
+      else if (ctx.NHRP() != null) {
+         return HostProtocol.NHRP;
+      }
+      else if (ctx.OSPF() != null) {
+         return HostProtocol.OSPF;
+      }
+      else if (ctx.OSPF3() != null) {
+         return HostProtocol.OSPF3;
+      }
+      else if (ctx.PGM() != null) {
+         return HostProtocol.PGM;
+      }
+      else if (ctx.PIM() != null) {
+         return HostProtocol.PIM;
+      }
+      else if (ctx.RIP() != null) {
+         return HostProtocol.RIP;
+      }
+      else if (ctx.RIPNG() != null) {
+         return HostProtocol.RIPNG;
+      }
+      else if (ctx.ROUTER_DISCOVERY() != null) {
+         return HostProtocol.ROUTER_DISCOVERY;
+      }
+      else if (ctx.RSVP() != null) {
+         return HostProtocol.RSVP;
+      }
+      else if (ctx.SAP() != null) {
+         return HostProtocol.SAP;
+      }
+      else if (ctx.VRRP() != null) {
+         return HostProtocol.VRRP;
+      }
+      else {
+         throw new BatfishException("Invalid host protocol");
+      }
+   }
+
+   private static HostSystemService toHostSystemService(
+         Hib_system_serviceContext ctx) {
+      if (ctx.ALL() != null) {
+         return HostSystemService.ALL;
+      }
+      else if (ctx.ANY_SERVICE() != null) {
+         return HostSystemService.ANY_SERVICE;
+      }
+      else if (ctx.DNS() != null) {
+         return HostSystemService.DNS;
+      }
+      else if (ctx.FINGER() != null) {
+         return HostSystemService.FINGER;
+      }
+      else if (ctx.FTP() != null) {
+         return HostSystemService.FTP;
+      }
+      else if (ctx.HTTP() != null) {
+         return HostSystemService.HTTP;
+      }
+      else if (ctx.HTTPS() != null) {
+         return HostSystemService.HTTPS;
+      }
+      else if (ctx.IDENT_RESET() != null) {
+         return HostSystemService.IDENT_RESET;
+      }
+      else if (ctx.IKE() != null) {
+         return HostSystemService.IKE;
+      }
+      else if (ctx.LSPING() != null) {
+         return HostSystemService.LSPING;
+      }
+      else if (ctx.NETCONF() != null) {
+         return HostSystemService.NETCONF;
+      }
+      else if (ctx.NTP() != null) {
+         return HostSystemService.NTP;
+      }
+      else if (ctx.PING() != null) {
+         return HostSystemService.PING;
+      }
+      else if (ctx.R2CP() != null) {
+         return HostSystemService.R2CP;
+      }
+      else if (ctx.REVERSE_SSH() != null) {
+         return HostSystemService.REVERSE_SSH;
+      }
+      else if (ctx.REVERSE_TELNET() != null) {
+         return HostSystemService.REVERSE_TELNET;
+      }
+      else if (ctx.RLOGIN() != null) {
+         return HostSystemService.RLOGIN;
+      }
+      else if (ctx.RPM() != null) {
+         return HostSystemService.RPM;
+      }
+      else if (ctx.RSH() != null) {
+         return HostSystemService.RSH;
+      }
+      else if (ctx.SIP() != null) {
+         return HostSystemService.SIP;
+      }
+      else if (ctx.SNMP() != null) {
+         return HostSystemService.SNMP;
+      }
+      else if (ctx.SNMP_TRAP() != null) {
+         return HostSystemService.SNMP_TRAP;
+      }
+      else if (ctx.SSH() != null) {
+         return HostSystemService.SSH;
+      }
+      else if (ctx.TELNET() != null) {
+         return HostSystemService.TELNET;
+      }
+      else if (ctx.TFTP() != null) {
+         return HostSystemService.TFTP;
+      }
+      else if (ctx.TRACEROUTE() != null) {
+         return HostSystemService.TRACEROUTE;
+      }
+      else if (ctx.XNM_CLEAR_TEXT() != null) {
+         return HostSystemService.XNM_CLEAR_TEXT;
+      }
+      else if (ctx.XNM_SSL() != null) {
+         return HostSystemService.XNM_SSL;
+      }
+      else {
+         throw new BatfishException("Invalid host system service");
+      }
+
+   }
+
    private static IkeAuthenticationAlgorithm toIkeAuthenticationAlgorithm(
          Ike_authentication_algorithmContext ctx) {
       if (ctx.MD5() != null) {
@@ -566,6 +732,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private JuniperVendorConfiguration _configuration;
 
+   private AddressBook _currentAddressBook;
+
+   private AddressSetAddressBookEntry _currentAddressSetAddressBookEntry;
+
    private AggregateRoute _currentAggregateRoute;
 
    private OspfArea _currentArea;
@@ -578,9 +748,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private Family _currentFirewallFamily;
 
+   private Zone _currentFromZone;
+
    private FwTerm _currentFwTerm;
 
    private GeneratedRoute _currentGeneratedRoute;
+
+   private HostInboundSettings _currentHostInboundSettings;
 
    private IkeGateway _currentIkeGateway;
 
@@ -628,6 +802,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private StaticRoute _currentStaticRoute;
 
+   private Zone _currentToZone;
+
+   private Zone _currentZone;
+
    private FlatJuniperCombinedParser _parser;
 
    private final Map<PsTerm, RouteFilter> _termRouteFilters;
@@ -647,6 +825,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _termRouteFilters = new HashMap<PsTerm, RouteFilter>();
       _unimplementedFeatures = unimplementedFeatures;
       _w = warnings;
+   }
+
+   @Override
+   public void enterAbt_address_set(Abt_address_setContext ctx) {
+      String name = ctx.name.getText();
+      AddressBookEntry entry = _currentAddressBook.getEntries().get(name);
+      if (entry == null) {
+         entry = new AddressSetAddressBookEntry(name);
+         _currentAddressBook.getEntries().put(name, entry);
+      }
+      try {
+         _currentAddressSetAddressBookEntry = (AddressSetAddressBookEntry) entry;
+      }
+      catch (ClassCastException e) {
+         throw new BatfishException(
+               "Cannot create address-set address-book entry \""
+                     + name
+                     + "\" because a different type of address-book entry with that name already exists",
+               e);
+      }
    }
 
    @Override
@@ -1177,6 +1375,97 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterSpt_from_zone(Spt_from_zoneContext ctx) {
+      String fromName = ctx.from.getText();
+      _currentFromZone = _configuration.getZones().get(fromName);
+      if (_currentFromZone == null) {
+         _currentFromZone = new Zone(fromName,
+               _configuration.getGlobalAddressBooks());
+         _configuration.getZones().put(fromName, _currentFromZone);
+      }
+      String toName = ctx.to.getText();
+      _currentToZone = _configuration.getZones().get(toName);
+      if (_currentToZone == null) {
+         _currentToZone = new Zone(toName,
+               _configuration.getGlobalAddressBooks());
+         _configuration.getZones().put(toName, _currentToZone);
+      }
+      _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
+      if (_currentFilter == null) {
+         String policyName = "~FROM_ZONE~" + fromName + "~TO_ZONE~" + toName;
+         _currentFilter = new FirewallFilter(policyName, Family.INET);
+         _configuration.getFirewallFilters().put(policyName, _currentFilter);
+         _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
+      }
+   }
+
+   @Override
+   public void enterSpt_policy(Spt_policyContext ctx) {
+      String termName = ctx.name.getText();
+      _currentFwTerm = _currentFilter.getTerms().get(termName);
+      if (_currentFwTerm == null) {
+         _currentFwTerm = new FwTerm(termName);
+         _currentFilter.getTerms().put(termName, _currentFwTerm);
+      }
+   }
+
+   @Override
+   public void enterSzszt_address_book(Szszt_address_bookContext ctx) {
+      _currentAddressBook = _currentZone.getAddressBook();
+   }
+
+   @Override
+   public void enterSzszt_interfaces(Szszt_interfacesContext ctx) {
+      Interface zoneInterface = initInterface(ctx.interface_id());
+      _currentHostInboundSettings = _currentZone
+            .getInterfaceHostInboundSettings().get(zoneInterface);
+      if (_currentHostInboundSettings == null) {
+         _currentHostInboundSettings = new HostInboundSettings();
+         _currentZone.getInterfaceHostInboundSettings().put(zoneInterface,
+               _currentHostInboundSettings);
+      }
+   }
+
+   @Override
+   public void enterSzt_security_zone(Szt_security_zoneContext ctx) {
+      String zoneName = ctx.zone().getText();
+      _currentZone = _configuration.getZones().get(zoneName);
+      if (_currentZone == null) {
+         _currentZone = new Zone(zoneName,
+               _configuration.getGlobalAddressBooks());
+         _configuration.getZones().put(zoneName, _currentZone);
+      }
+      _currentHostInboundSettings = _currentZone.getHostInboundSettings();
+   }
+
+   @Override
+   public void exitAbast_address(Abast_addressContext ctx) {
+      String name = ctx.name.getText();
+      _currentAddressSetAddressBookEntry.getEntries().add(
+            new AddressSetEntry(name, _currentAddressBook));
+   }
+
+   @Override
+   public void exitAbast_address_set(Abast_address_setContext ctx) {
+      String name = ctx.name.getText();
+      _currentAddressSetAddressBookEntry.getEntries().add(
+            new AddressSetEntry(name, _currentAddressBook));
+   }
+
+   @Override
+   public void exitAbt_address(Abt_addressContext ctx) {
+      String name = ctx.name.getText();
+      Prefix prefix = new Prefix(ctx.abt_address_tail().IP_PREFIX().getText());
+      AddressBookEntry addressEntry = new AddressAddressBookEntry(name, prefix);
+      _currentZone.getAddressBook().getEntries().put(name, addressEntry);
+   }
+
+   @Override
+   public void exitAbt_address_set(Abt_address_setContext ctx) {
+      _currentAddressSetAddressBookEntry = null;
+   }
+
+   @Override
    public void exitAgt_as_path(Agt_as_pathContext ctx) {
       AsPath asPath = toAsPath(ctx.path);
       _currentAggregateRoute.setAsPath(asPath);
@@ -1474,6 +1763,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          String policy = ctx.policy.getText();
          _currentGeneratedRoute.getPolicies().add(policy);
       }
+   }
+
+   @Override
+   public void exitHibt_protocols(Hibt_protocolsContext ctx) {
+      HostProtocol protocol = toHostProtocol(ctx.hib_protocol());
+      _currentHostInboundSettings.getProtocols().add(protocol);
+   }
+
+   @Override
+   public void exitHibt_system_services(Hibt_system_servicesContext ctx) {
+      HostSystemService service = toHostSystemService(ctx.hib_system_service());
+      _currentHostInboundSettings.getServices().add(service);
    }
 
    @Override
@@ -1901,6 +2202,112 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitSpmt_application(Spmt_applicationContext ctx) {
+      if (ctx.ANY() != null) {
+         return;
+      }
+      else {
+         String name = ctx.name.getText();
+         FwFromApplication from = new FwFromApplication(name,
+               _configuration.getApplications());
+         _currentFwTerm.getFromApplications().add(from);
+      }
+   }
+
+   @Override
+   public void exitSpmt_destination_address(Spmt_destination_addressContext ctx) {
+      if (ctx.address_specifier().ANY() != null) {
+         return;
+      }
+      else if (ctx.address_specifier().ANY_IPV4() != null) {
+         return;
+      }
+      else if (ctx.address_specifier().ANY_IPV6() != null) {
+         return;
+      }
+      else if (ctx.address_specifier().variable() != null) {
+         String addressBookEntryName = ctx.address_specifier().variable()
+               .getText();
+         FwFrom match = new FwFromDestinationAddressBookEntry(
+               _currentToZone.getAddressBook(), addressBookEntryName);
+         _currentFwTerm.getFroms().add(match);
+      }
+      else {
+         throw new BatfishException("Invalid address-specifier");
+      }
+   }
+
+   @Override
+   public void exitSpmt_source_address(Spmt_source_addressContext ctx) {
+      if (ctx.address_specifier().ANY() != null) {
+         return;
+      }
+      else if (ctx.address_specifier().ANY_IPV4() != null) {
+         return;
+      }
+      else if (ctx.address_specifier().ANY_IPV6() != null) {
+         return;
+      }
+      else if (ctx.address_specifier().variable() != null) {
+         String addressBookEntryName = ctx.address_specifier().variable()
+               .getText();
+         FwFrom match = new FwFromSourceAddressBookEntry(
+               _currentFromZone.getAddressBook(), addressBookEntryName);
+         _currentFwTerm.getFroms().add(match);
+      }
+      else {
+         throw new BatfishException("Invalid address-specifier");
+      }
+   }
+
+   @Override
+   public void exitSpmt_source_identity(Spmt_source_identityContext ctx) {
+      if (ctx.ANY() != null) {
+         return;
+      }
+      else {
+         throw new UnsupportedOperationException(
+               "no implementation for generated method"); // TODO Auto-generated
+                                                          // method stub
+      }
+   }
+
+   @Override
+   public void exitSpt_default_policy_tail(Spt_default_policy_tailContext ctx) {
+      if (ctx.PERMIT_ALL() != null) {
+         _configuration.setSecurityPolicyDefaultPermit(true);
+      }
+   }
+
+   @Override
+   public void exitSpt_from_zone(Spt_from_zoneContext ctx) {
+      _currentFilter = null;
+   }
+
+   @Override
+   public void exitSpt_policy(Spt_policyContext ctx) {
+      _currentFwTerm = null;
+   }
+
+   @Override
+   public void exitSptt_deny(Sptt_denyContext ctx) {
+      _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
+   }
+
+   @Override
+   public void exitSptt_permit(Sptt_permitContext ctx) {
+      if (ctx.sptt_permit_tail().sptpt_tunnel() != null) {
+         // Used for dynamic VPNs (no bind interface tied to a zone)
+         // TODO: change from deny to appropriate action when implemented
+         todo(ctx, F_PERMIT_TUNNEL);
+         _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
+      }
+      else {
+         _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
+      }
+   }
+
+   @Override
    public void exitSrt_discard(Srt_discardContext ctx) {
       _currentStaticRoute.setDrop(true);
    }
@@ -1938,6 +2345,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitSt_host_name(St_host_nameContext ctx) {
       String hostname = ctx.variable().getText();
       _currentRoutingInstance.setHostname(hostname);
+   }
+
+   @Override
+   public void exitSzszt_address_book(Szszt_address_bookContext ctx) {
+      _currentAddressBook = null;
+   }
+
+   @Override
+   public void exitSzszt_interfaces(Szszt_interfacesContext ctx) {
+      _currentHostInboundSettings = _currentZone.getHostInboundSettings();
+   }
+
+   @Override
+   public void exitSzt_security_zone(Szt_security_zoneContext ctx) {
+      _currentZone = null;
+      _currentHostInboundSettings = null;
    }
 
    @Override

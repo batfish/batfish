@@ -16,11 +16,15 @@ public class JuniperConfiguration implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
+   protected final Map<String, Application> _applications;
+
    protected final Map<String, CommunityList> _communityLists;
 
    protected final RoutingInstance _defaultRoutingInstance;
 
    protected final Map<String, FirewallFilter> _filters;
+
+   protected final Map<String, AddressBook> _globalAddressBooks;
 
    protected final Map<String, IkeGateway> _ikeGateways;
 
@@ -42,10 +46,16 @@ public class JuniperConfiguration implements Serializable {
 
    protected final Map<String, RoutingInstance> _routingInstances;
 
+   private boolean _securityPolicyDefaultPermit;
+
+   protected final Map<String, Zone> _zones;
+
    public JuniperConfiguration() {
+      _applications = new TreeMap<String, Application>();
       _communityLists = new TreeMap<String, CommunityList>();
       _defaultRoutingInstance = new RoutingInstance(DEFAULT_ROUTING_INSTANCE);
       _filters = new TreeMap<String, FirewallFilter>();
+      _globalAddressBooks = new TreeMap<String, AddressBook>();
       _ikeGateways = new TreeMap<String, IkeGateway>();
       _ikePolicies = new TreeMap<String, IkePolicy>();
       _ikeProposals = new TreeMap<String, IkeProposal>();
@@ -56,6 +66,11 @@ public class JuniperConfiguration implements Serializable {
       _policyStatements = new TreeMap<String, PolicyStatement>();
       _routeFilters = new TreeMap<String, RouteFilter>();
       _routingInstances = new TreeMap<String, RoutingInstance>();
+      _zones = new TreeMap<String, Zone>();
+   }
+
+   public Map<String, Application> getApplications() {
+      return _applications;
    }
 
    public final Map<String, CommunityList> getCommunityLists() {
@@ -68,6 +83,10 @@ public class JuniperConfiguration implements Serializable {
 
    public final Map<String, FirewallFilter> getFirewallFilters() {
       return _filters;
+   }
+
+   public Map<String, AddressBook> getGlobalAddressBooks() {
+      return _globalAddressBooks;
    }
 
    public final String getHostname() {
@@ -114,8 +133,21 @@ public class JuniperConfiguration implements Serializable {
       return _routingInstances;
    }
 
+   public boolean getSecurityPolicyDefaultPermit() {
+      return _securityPolicyDefaultPermit;
+   }
+
+   public Map<String, Zone> getZones() {
+      return _zones;
+   }
+
    public final void setHostname(String hostname) {
       _defaultRoutingInstance.setHostname(hostname);
+   }
+
+   public void setSecurityPolicyDefaultPermit(
+         boolean securityPolicyDefaultPermit) {
+      _securityPolicyDefaultPermit = securityPolicyDefaultPermit;
    }
 
 }

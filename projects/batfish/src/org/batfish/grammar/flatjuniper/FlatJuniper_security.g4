@@ -88,64 +88,68 @@ gdt_ike_user_type
    )
 ;
 
+hib_protocol
+:
+   ALL
+   | BFD
+   | BGP
+   | DVMRP
+   | IGMP
+   | LDP
+   | MSDP
+   | NHRP
+   | OSPF
+   | OSPF3
+   | PGM
+   | PIM
+   | RIP
+   | RIPNG
+   | ROUTER_DISCOVERY
+   | RSVP
+   | SAP
+   | VRRP
+;
+
+hib_system_service
+:
+   ALL
+   | ANY_SERVICE
+   | DNS
+   | FINGER
+   | FTP
+   | HTTP
+   | HTTPS
+   | IDENT_RESET
+   | IKE
+   | LSPING
+   | NETCONF
+   | NTP
+   | PING
+   | R2CP
+   | REVERSE_SSH
+   | REVERSE_TELNET
+   | RLOGIN
+   | RPM
+   | RSH
+   | SIP
+   | SNMP
+   | SNMP_TRAP
+   | SSH
+   | TELNET
+   | TFTP
+   | TRACEROUTE
+   | XNM_CLEAR_TEXT
+   | XNM_SSL
+;
+
 hibt_protocols
 :
-   PROTOCOLS
-   (
-      ALL
-      | BFD
-      | BGP
-      | DVMRP
-      | IGMP
-      | LDP
-      | MSDP
-      | NHRP
-      | OSPF
-      | OSPF3
-      | PGM
-      | PIM
-      | RIP
-      | RIPNG
-      | ROUTER_DISCOVERY
-      | RSVP
-      | SAP
-      | VRRP
-   )
+   PROTOCOLS hib_protocol
 ;
 
 hibt_system_services
 :
-   SYSTEM_SERVICES
-   (
-      ALL
-      | ANY_SERVICE
-      | DNS
-      | FINGER
-      | FTP
-      | HTTP
-      | HTTPS
-      | IDENT_RESET
-      | IKE
-      | LSPING
-      | NETCONF
-      | NTP
-      | PING
-      | R2CP
-      | REVERSE_SSH
-      | REVERSE_TELNET
-      | RLOGIN
-      | RPM
-      | RSH
-      | SIP
-      | SNMP
-      | SNMP_TRAP
-      | SSH
-      | TELNET
-      | TFTP
-      | TRACEROUTE
-      | XNM_CLEAR_TEXT
-      | XNM_SSL
-   )
+   SYSTEM_SERVICES hib_system_service
 ;
 
 ike_authentication_algorithm

@@ -567,9 +567,16 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          IpAccessListLine line = new IpAccessListLine();
          line.setAction(action);
          for (FwFrom from : term.getFroms()) {
-            from.applyTo(line);
+            from.applyTo(line, _w);
          }
-         lines.add(line);
+         if (!term.getFromApplications().isEmpty()) {
+            for (FwFromApplication fromApplication : term.getFromApplications()) {
+               fromApplication.applyTo(line, lines, _w);
+            }
+         }
+         else {
+            lines.add(line);
+         }
       }
       IpAccessList list = new IpAccessList(name, lines);
       return list;
