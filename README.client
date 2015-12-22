@@ -1,0 +1,48 @@
+
+Instructions for a simple demo that uses the batfish client.
+
+On three separate shells, in which tools/batfish_functions.sh has been sourced, run the following three commands in the following order:
+
+% coordinator
+
+% batfish -servicemode -register true
+
+% batfish_client
+
+------------------------------
+
+The following commands are typed on the batfish client's shell. They assume that the client was started in the top-level batfish directory:
+
+# these commands initialize the testrig
+batfish> init-container r
+batfish> init-testrig e test_rigs/example
+
+# these commands answer two simple questiosn around what routers are running
+batfish> answer p  example_questions/print-ebgp-nodes.q
+batfish> answer p1 example_questions/print-ibgp-nodes.q
+
+# these commands check for unique IP assignments and if loopbacks are correctly configured
+batfish> answer u example_questions/unique-ip-assignments.q
+batfish> answer o example_questions/ospf-loopbacks.q
+
+# this command generates the dataplanne
+batfish> generate-dataplane
+
+# virtual traceroutes
+batfish> answer t1 example_questions/traceroute.q ingress_node=as2host1
+batfish> answer t2 example_questions/traceroute.q ingress_node=as3core1 dst_ip=2.128.0.101
+
+# reachability analysis
+batfish> answer rall example_questions/reachability.q
+batfish> answer rdst example_questions/reachability.q final_node=as2host1
+batfish>  answer rdstsrc example_questions/reachability.q final_node=as2host1 ingress_node=as1core1
+
+# multipath consistency
+batfish> answer m ../../example_questions/multipath.q
+
+# initialize the delta environment
+batfish>  init-diff-environment delta example_environments/delta
+batfish> generate-diff-dataplane
+
+# reachability differences
+batfish> answer f example_questions/failure.q
