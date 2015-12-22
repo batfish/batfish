@@ -9,24 +9,28 @@
     <script src="batfish-common.js"></script>
     <script src="workclient.js"></script>
     <script>
-        var API_KEY = "0000000";
+        var apiKey = "0000000";
         var containerPrefix = "js";
         var containerName = "";
         var testrigName = "js_testrig";
         var envName = "default";
         var diffEnvName = "delta";
 
-        //this function populates the config text box with the chosen file
-        function loadConfigText() {
-            var configFile = jQuery("#fileConfig").get(0).files[0];
+        //............text area for debug and output
+        var elementDebugText = '#txtDebug';
+        var elementOutputText = '#txtOutput';
 
-            var r = new FileReader();
-            r.onload = function (e) {
-                var contents = e.target.result;
-                jQuery('#txtConfig').val(contents);
-            }
-            r.readAsText(configFile);
-        }
+        //............from where to get the config information
+        var elementTestrigFile = '#fileTestrig';
+        //var elementConfigTextArea = '#txtConfig';
+
+        //.............from where to get the differential environment file information
+        var elementDiffEnvFile = '#fileDiffEnv';
+
+        //..............from where to the get question information
+        var elementQuestionFile = '#fileQuestion';
+        var elementQuestionParams = '#txtQuestionParams';
+        //var elementQuestionText = '#txtQuestion';
     </script>
     <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
@@ -46,26 +50,15 @@
 
                         <table>
                             <tr>
-                             <td> Configuration (select a file or enter your own text): </td>
-                             <td> <input type="file" id="fileConfig" /> </td>
-                                <script>
-                                    jQuery('#fileConfig').change(loadConfigText); 
-                                </script>
-                             <td> <textarea id="txtConfig" style="display: normal; border-radius:5px" cols="50" rows="20"></textarea> </td>
-                                <td> <input type="button" id="btnUploadConfigTest" value="Upload Configuration" 
-                                    onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadconfigtext::parsevendorspecific::parsevendorindependent')" />
-                                </td>
-                             </tr>
-                            <tr>
                                 <td> Testrig: </td>
-                                <td> <input type="file" id="fileUploadTestrig" /> </td>
+                                <td> <input type="file" id="fileTestrig" /> </td>
                                 <td> <input type="button" id="btnUploadTestrig" value="Upload Configuration" 
-                                    onclick="startCalls('btnUploadTestrig', 'initcontainer::inittestrig::parsevendorspecific::parsevendorindependent')" />
+                                    onclick="startCalls('btnUploadTestrig', 'initcontainer::uploadtestrigfile::parsevendorspecific::parsevendorindependent')" />
                                 </td>
                             </tr>
                             <tr>
                                 <td> Differential Environment: </td>
-                                <td> <input type="file" id="fileUploadDiffEnvironment" /> </td>
+                                <td> <input type="file" id="fileDiffEnv" /> </td>
                                 <td> <input type="button" id="btnUploadDiffEnvironment" value="Upload environment" 
                                     onclick="startCalls('btnUploadDiffEnvironment', 'uploaddiffenvironment')" /> 
                                 </td>
@@ -90,11 +83,11 @@
                         <table>
                             <tr>
                                 <td> Question: </td>
-                                <td> <input type="file" id="fileUploadQuestion" /> </td>
+                                <td> <input type="file" id="fileQuestion" /> </td>
                                 <td> Parameters: </td>
                                 <td> <input type="text" id="txtQuestionParams" /> </td>
                                 <td> <input type="button" id="btnUploadQuestion" value="Answer" 
-                                    onclick="startCalls('btnUploadQuestion', 'uploadquestion::answerquestion')" /> </td>
+                                    onclick="startCalls('btnUploadQuestion', 'uploadquestionfile::answerquestion')" /> </td>
                             </tr>
                         </table>
 
@@ -104,11 +97,11 @@
 
                 <br />
                 Debug information: <br />
-                <textarea id="divDebugInfo" style="display: normal; border-radius: 5pt"cols="100" rows="10"></textarea>
+                <textarea id="txtDebug" style="display: normal; border-radius: 5pt"cols="100" rows="10"></textarea>
             </td>
             <td>
                 Output: <br />
-                <textarea id="divOutputInfo" style="display: normal; border-radius:5px" cols="80" rows="30"></textarea>
+                <textarea id="txtOutput" style="display: normal; border-radius:5px" cols="80" rows="30"></textarea>
                 <br />
             </td>
         </tr>

@@ -1,11 +1,16 @@
 "use strict";
 
+$(document).ready(function () {
+    bfCheckLibConfiguration();
+    bfInitialize();
+});
+
+$(document).ajaxError(function (event, request, settings, thrownError) {
+    bfUpdateDebugInfo(settings.url + " " + thrownError + " " + request);
+});
+
 var SVC_WORK_MGR_ROOT;
 var LOG_LEVEL = "warn";  //output, debug, ...
-
-$(document).ajaxError(function(event, request, settings, thrownError) {
-   bfUpdateDebugInfo(settings.url + " " + thrownError + " " + request);
-});
 
 var debugLog = [];
 var maxLogEntries = 10000;
@@ -24,7 +29,7 @@ function bfGetObject(containerName, testrigName, objectName, cbSuccess, cbFailur
     console.log("bfGetObject: ", entryPoint, objectName);
 
     var data = new FormData();
-    data.append(SVC_API_KEY, API_KEY);
+    data.append(SVC_API_KEY, apiKey);
     data.append(SVC_CONTAINER_NAME_KEY, containerName);
     data.append(SVC_TESTRIG_NAME_KEY, testrigName);
     data.append(SVC_OBJECT_KEY, objectName);
@@ -37,7 +42,7 @@ function bfGetObject(containerName, testrigName, objectName, cbSuccess, cbFailur
         data: data,
 
         success: function (responseObject) {
-            bfUpdateDebugInfo("Fetched " + objectName);
+            //bfUpdateDebugInfo("Fetched " + objectName);
             if (cbSuccess != undefined)
                 cbSuccess(responseObject, entryPoint, remainingCalls);
         }
@@ -70,7 +75,7 @@ function bfPostData(rscEndPoint, data, cbSuccess, cbFailure, entryPoint, remaini
         },
         success: function (response, textStatus) {
             if (response[0] === SVC_SUCCESS_KEY) {
-                bfUpdateDebugInfo(entryPoint + " succeeded");
+                //bfUpdateDebugInfo(entryPoint + " succeeded");
                 if (cbSuccess != undefined)
                     cbSuccess(response[1], entryPoint, remainingCalls);
             }
@@ -82,7 +87,40 @@ function bfPostData(rscEndPoint, data, cbSuccess, cbFailure, entryPoint, remaini
     });
 }
 
+//checks if we are properly configured
+function bfCheckLibConfiguration() {
+
+    //check that the names of mandatory HTML elements are defined
+    if (typeof elementDebugText === 'undefined' || !$(elementDebugText).length)
+        alert("Debug text element (elementDebugText) is not defined");
+
+    if (typeof elementOutputText === 'undefined' || !$(elementOutputText).length)
+        alert("Output text element (elementOutputText) is not defined");
+
+    //check that various variables are properly declared and defined
+    if (typeof apiKey === 'undefined' || apiKey == "")
+        alert("API key (apiKey) is not defined");
+
+    if (typeof containerPrefix === 'undefined' || containerPrefix == "")
+        alert("Container prefix (containerPrefix) is not defined");
+
+    //empty container name is OK
+    if (typeof containerName === 'undefined')
+        alert("Container name variable (containerPrefix) is not declared");
+
+    if (typeof testrigName === 'undefined' || testrigName == "")
+        alert("Testrig name (testrigName) is not defined");
+
+    if (typeof envName === 'undefined' || envName == "")
+        alert("Environment name (envName) is not defined");
+
+    if (typeof diffEnvName === 'undefined' || diffEnvName == "")
+        alert("Differential environment name (diffEnvName) is not defined");
+
+}
+
 function bfInitialize() {
+
     var hostname = location.hostname;
     if (hostname == "")
         hostname = "localhost";
@@ -97,6 +135,6 @@ function bfUpdateDebugInfo(string) {
    while (debugLog.length > maxLogEntries) {
       debugLog.shift();
    }
-   $("#divDebugInfo").html(debugLog.join("\n"));
+   $(elementDebugText).html(debugLog.join("\n"));
 }
 
