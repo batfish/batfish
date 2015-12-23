@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.security.AccessControlException;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.zip.ZipException;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -798,7 +799,7 @@ public class WorkMgrService {
 
       }
       catch (FileExistsException | FileNotFoundException
-            | IllegalArgumentException | AccessControlException e) {
+            | IllegalArgumentException | AccessControlException | ZipException e) {
          _logger.error("WMS:uploadEnvironment exception: " + e.getMessage()
                + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
@@ -914,7 +915,7 @@ public class WorkMgrService {
                      .put("result", "successfully uploaded testrig"))));
       }
       catch (FileExistsException | FileNotFoundException
-            | IllegalArgumentException | AccessControlException e) {
+            | IllegalArgumentException | AccessControlException | ZipException e ) {
          _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
