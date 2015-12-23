@@ -16,7 +16,7 @@ public class JuniperConfiguration implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   protected final Map<String, Application> _applications;
+   protected final Map<String, BaseApplication> _applications;
 
    protected final Map<String, CommunityList> _communityLists;
 
@@ -51,7 +51,7 @@ public class JuniperConfiguration implements Serializable {
    protected final Map<String, Zone> _zones;
 
    public JuniperConfiguration() {
-      _applications = new TreeMap<String, Application>();
+      _applications = new TreeMap<String, BaseApplication>();
       _communityLists = new TreeMap<String, CommunityList>();
       _defaultRoutingInstance = new RoutingInstance(DEFAULT_ROUTING_INSTANCE);
       _filters = new TreeMap<String, FirewallFilter>();
@@ -69,7 +69,7 @@ public class JuniperConfiguration implements Serializable {
       _zones = new TreeMap<String, Zone>();
    }
 
-   public Map<String, Application> getApplications() {
+   public Map<String, BaseApplication> getApplications() {
       return _applications;
    }
 

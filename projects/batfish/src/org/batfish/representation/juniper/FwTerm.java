@@ -15,6 +15,8 @@ public final class FwTerm implements Serializable {
 
    private final Set<FwFrom> _froms;
 
+   private boolean _ipv6;
+
    private final String _name;
 
    private final Set<FwThen> _thens;
@@ -34,12 +36,20 @@ public final class FwTerm implements Serializable {
       return _froms;
    }
 
+   public boolean getIpv6() {
+      return _ipv6;
+   }
+
    public String getName() {
       return _name;
    }
 
    public Set<FwThen> getThens() {
       return _thens;
+   }
+
+   public void setIpv6(boolean ipv6) {
+      _ipv6 = ipv6;
    }
 
 }

@@ -8,6 +8,8 @@ import org.batfish.common.BatfishException;
 public enum NamedPort {
    AFS(1483),
    AOL(5190),
+   BFD_CONTROL(3784),
+   BFD_ECHO(3785),
    BGP(179),
    BIFFudp_OR_EXECtcp(512),
    BOOTPC(68),
@@ -60,6 +62,7 @@ public enum NamedPort {
    NETBIOS_DGM(138),
    NETBIOS_NS(137),
    NETBIOS_SSN(139),
+   NETCONF_SSH(830),
    NFSD(2049),
    NNTP(119),
    NON500_ISAKMP(4500),
@@ -71,13 +74,19 @@ public enum NamedPort {
    POP2(109),
    POP3(110),
    PPTP(1723),
+   R2CP(28762),
    RADIUS_ACCT_CISCO(1646),
    RADIUS_ACCT_JUNIPER(1813),
    RADIUS_CISCO(1645),
    RADIUS_JUNIPER(1812),
+   REVERSE_SSH(2901),
+   REVERSE_TELNET(2900),
    RIP(520),
    RKINIT(2108),
+   SAP(9875),
    SECUREID_UDP(5510),
+   SIP_5060(5060),
+   SIP_5061(5061),
    SMTP(25),
    SNMP(161),
    SNMPTRAP(162),
@@ -93,9 +102,12 @@ public enum NamedPort {
    TFTP(69),
    TIME(37),
    TIMED(525),
+   TRACEROUTE(33434),
    UUCP(540),
    WHOIS(43),
-   XDMCP(177);
+   XDMCP(177),
+   XNM_CLEAR_TEXT(3221),
+   XNM_SSL(3220);
 
    private static final Map<Integer, NamedPort> NUMBER_TO_PORT_MAP = buildNumberToPortMap();
 

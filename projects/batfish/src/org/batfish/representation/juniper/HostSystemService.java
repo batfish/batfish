@@ -1,5 +1,14 @@
 package org.batfish.representation.juniper;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.batfish.common.BatfishException;
+import org.batfish.representation.IpAccessListLine;
+import org.batfish.representation.IpProtocol;
+import org.batfish.representation.NamedPort;
+import org.batfish.util.SubRange;
+
 public enum HostSystemService {
    ALL,
    ANY_SERVICE,
@@ -28,5 +37,290 @@ public enum HostSystemService {
    TFTP,
    TRACEROUTE,
    XNM_CLEAR_TEXT,
-   XNM_SSL
+   XNM_SSL;
+
+   private boolean _initialized;
+
+   private List<IpAccessListLine> _lines;
+
+   public List<IpAccessListLine> getLines() {
+      init();
+      return _lines;
+   }
+
+   private void init() {
+      if (_initialized) {
+         return;
+      }
+      _initialized = true;
+      _lines = new ArrayList<IpAccessListLine>();
+      switch (this) {
+
+      case ALL: {
+         for (HostSystemService other : values()) {
+            if (other != ALL && other != ANY_SERVICE) {
+               _lines.addAll(other.getLines());
+            }
+         }
+         break;
+      }
+
+      case ANY_SERVICE: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getProtocols().add(IpProtocol.UDP);
+         break;
+      }
+
+      case DNS: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getProtocols().add(IpProtocol.UDP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.DOMAIN.number(), NamedPort.DOMAIN
+                     .number()));
+         break;
+      }
+
+      case FINGER: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.FINGER.number(), NamedPort.FINGER
+                     .number()));
+         break;
+      }
+
+      case FTP: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.FTP.number(), NamedPort.FTP.number()));
+         break;
+      }
+
+      case HTTP: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.HTTP.number(), NamedPort.HTTP.number()));
+         break;
+      }
+
+      case HTTPS: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getDstPortRanges()
+               .add(new SubRange(NamedPort.HTTPS.number(), NamedPort.HTTPS
+                     .number()));
+         break;
+      }
+
+      case IDENT_RESET: {
+         // TODO: ??? (Juniper documentation is opaque)
+         break;
+      }
+
+      case IKE: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.UDP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.ISAKMP.number(), NamedPort.ISAKMP
+                     .number()));
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.NON500_ISAKMP.number(),
+                     NamedPort.NON500_ISAKMP.number()));
+         break;
+      }
+
+      case LSPING: {
+         // TODO: ??? (Juniper documentation is missing or hiding for this
+         // service)
+         break;
+      }
+
+      case NETCONF: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.NETCONF_SSH.number(),
+                     NamedPort.NETCONF_SSH.number()));
+         break;
+      }
+
+      case NTP: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.UDP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.NTP.number(), NamedPort.NTP.number()));
+         break;
+      }
+
+      case PING: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.ICMP);
+         // TODO: PING (ECHO REQUEST) uses ICMP (an IP Protocol) type 8. need to
+         // add support for ICMP types in packet headers
+         break;
+      }
+
+      case R2CP: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.UDP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.R2CP.number(), NamedPort.R2CP.number()));
+         break;
+      }
+
+      case REVERSE_SSH: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.REVERSE_SSH.number(),
+                     NamedPort.REVERSE_SSH.number()));
+         break;
+      }
+
+      case REVERSE_TELNET: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.REVERSE_TELNET.number(),
+                     NamedPort.REVERSE_TELNET.number()));
+         break;
+      }
+
+      case RLOGIN: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.LOGINtcp_OR_WHOudp.number(),
+                     NamedPort.LOGINtcp_OR_WHOudp.number()));
+         break;
+      }
+
+      case RPM: {
+         // TODO: It appears there is no default port, and the port must be
+         // deduced from other settings. It can be any combination of TCP/UDP
+         break;
+      }
+
+      case RSH: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.CMDtcp_OR_SYSLOGudp.number(),
+                     NamedPort.CMDtcp_OR_SYSLOGudp.number()));
+         break;
+      }
+
+      case SIP: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getProtocols().add(IpProtocol.UDP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.SIP_5060.number(), NamedPort.SIP_5061
+                     .number()));
+         break;
+      }
+
+      case SNMP: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.UDP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.SNMP.number(), NamedPort.SNMP.number()));
+         break;
+      }
+
+      case SNMP_TRAP: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.UDP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.SNMPTRAP.number(), NamedPort.SNMPTRAP
+                     .number()));
+         break;
+      }
+
+      case SSH: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.SSH.number(), NamedPort.SSH.number()));
+         break;
+      }
+
+      case TELNET: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.TELNET.number(), NamedPort.TELNET
+                     .number()));
+         break;
+      }
+
+      case TFTP: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.UDP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.TFTP.number(), NamedPort.TFTP.number()));
+         break;
+      }
+
+      case TRACEROUTE: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.UDP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.TRACEROUTE.number(), NamedPort.TRACEROUTE
+                     .number()));
+         break;
+      }
+
+      case XNM_CLEAR_TEXT: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.XNM_CLEAR_TEXT.number(),
+                     NamedPort.XNM_CLEAR_TEXT.number()));
+         break;
+      }
+
+      case XNM_SSL: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.TCP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.XNM_SSL.number(), NamedPort.XNM_SSL
+                     .number()));
+         break;
+      }
+
+      default:
+         throw new BatfishException(
+               "missing definition for host-inbound-traffic system-service: \""
+                     + name() + "\"");
+      }
+   }
 }

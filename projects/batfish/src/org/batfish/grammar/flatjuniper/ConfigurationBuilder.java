@@ -58,6 +58,9 @@ import org.batfish.representation.juniper.AddressBook;
 import org.batfish.representation.juniper.AddressBookEntry;
 import org.batfish.representation.juniper.AddressSetAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetEntry;
+import org.batfish.representation.juniper.Application;
+import org.batfish.representation.juniper.BaseApplication;
+import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.HostInboundSettings;
 import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
@@ -66,6 +69,7 @@ import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
 import org.batfish.representation.juniper.IsisLevelSettings;
 import org.batfish.representation.juniper.IsisSettings;
 import org.batfish.representation.juniper.JuniperVendorConfiguration;
+import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.OspfArea;
 import org.batfish.representation.juniper.PolicyStatement;
@@ -330,6 +334,587 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else {
          NamedPort namedPort = getNamedPort(ctx);
          return namedPort.number();
+      }
+   }
+
+   private static Application toApplication(Junos_applicationContext ctx) {
+      if (ctx.JUNOS_AOL() != null) {
+         return JunosApplication.JUNOS_AOL;
+      }
+      else if (ctx.JUNOS_BGP() != null) {
+         return JunosApplication.JUNOS_BGP;
+      }
+      else if (ctx.JUNOS_BIFF() != null) {
+         return JunosApplication.JUNOS_BIFF;
+      }
+      else if (ctx.JUNOS_BOOTPC() != null) {
+         return JunosApplication.JUNOS_BOOTPC;
+      }
+      else if (ctx.JUNOS_BOOTPS() != null) {
+         return JunosApplication.JUNOS_BOOTPS;
+      }
+      else if (ctx.JUNOS_CHARGEN() != null) {
+         return JunosApplication.JUNOS_CHARGEN;
+      }
+      else if (ctx.JUNOS_CIFS() != null) {
+         return JunosApplication.JUNOS_CIFS;
+      }
+      else if (ctx.JUNOS_CVSPSERVER() != null) {
+         return JunosApplication.JUNOS_CVSPSERVER;
+      }
+      else if (ctx.JUNOS_DHCP_CLIENT() != null) {
+         return JunosApplication.JUNOS_DHCP_CLIENT;
+      }
+      else if (ctx.JUNOS_DHCP_RELAY() != null) {
+         return JunosApplication.JUNOS_DHCP_RELAY;
+      }
+      else if (ctx.JUNOS_DHCP_SERVER() != null) {
+         return JunosApplication.JUNOS_DHCP_SERVER;
+      }
+      else if (ctx.JUNOS_DISCARD() != null) {
+         return JunosApplication.JUNOS_DISCARD;
+      }
+      else if (ctx.JUNOS_DNS_TCP() != null) {
+         return JunosApplication.JUNOS_DNS_TCP;
+      }
+      else if (ctx.JUNOS_DNS_UDP() != null) {
+         return JunosApplication.JUNOS_DNS_UDP;
+      }
+      else if (ctx.JUNOS_ECHO() != null) {
+         return JunosApplication.JUNOS_ECHO;
+      }
+      else if (ctx.JUNOS_FINGER() != null) {
+         return JunosApplication.JUNOS_FINGER;
+      }
+      else if (ctx.JUNOS_FTP() != null) {
+         return JunosApplication.JUNOS_FTP;
+      }
+      else if (ctx.JUNOS_GNUTELLA() != null) {
+         return JunosApplication.JUNOS_GNUTELLA;
+      }
+      else if (ctx.JUNOS_GOPHER() != null) {
+         return JunosApplication.JUNOS_GOPHER;
+      }
+      else if (ctx.JUNOS_GRE() != null) {
+         return JunosApplication.JUNOS_GRE;
+      }
+      else if (ctx.JUNOS_GTP() != null) {
+         return JunosApplication.JUNOS_GTP;
+      }
+      else if (ctx.JUNOS_H323() != null) {
+         return JunosApplication.JUNOS_H323;
+      }
+      else if (ctx.JUNOS_HTTP() != null) {
+         return JunosApplication.JUNOS_HTTP;
+      }
+      else if (ctx.JUNOS_HTTP_EXT() != null) {
+         return JunosApplication.JUNOS_HTTP_EXT;
+      }
+      else if (ctx.JUNOS_HTTPS() != null) {
+         return JunosApplication.JUNOS_HTTPS;
+      }
+      else if (ctx.JUNOS_ICMP_ALL() != null) {
+         return JunosApplication.JUNOS_ICMP_ALL;
+      }
+      else if (ctx.JUNOS_ICMP_PING() != null) {
+         return JunosApplication.JUNOS_ICMP_PING;
+      }
+      else if (ctx.JUNOS_ICMP6_ALL() != null) {
+         return JunosApplication.JUNOS_ICMP6_ALL;
+      }
+      else if (ctx.JUNOS_ICMP6_DST_UNREACH_ADDR() != null) {
+         return JunosApplication.JUNOS_ICMP6_DST_UNREACH_ADDR;
+      }
+      else if (ctx.JUNOS_ICMP6_DST_UNREACH_ADMIN() != null) {
+         return JunosApplication.JUNOS_ICMP6_DST_UNREACH_ADMIN;
+      }
+      else if (ctx.JUNOS_ICMP6_DST_UNREACH_BEYOND() != null) {
+         return JunosApplication.JUNOS_ICMP6_DST_UNREACH_BEYOND;
+      }
+      else if (ctx.JUNOS_ICMP6_DST_UNREACH_PORT() != null) {
+         return JunosApplication.JUNOS_ICMP6_DST_UNREACH_PORT;
+      }
+      else if (ctx.JUNOS_ICMP6_DST_UNREACH_ROUTE() != null) {
+         return JunosApplication.JUNOS_ICMP6_DST_UNREACH_ROUTE;
+      }
+      else if (ctx.JUNOS_ICMP6_ECHO_REPLY() != null) {
+         return JunosApplication.JUNOS_ICMP6_ECHO_REPLY;
+      }
+      else if (ctx.JUNOS_ICMP6_ECHO_REQUEST() != null) {
+         return JunosApplication.JUNOS_ICMP6_ECHO_REQUEST;
+      }
+      else if (ctx.JUNOS_ICMP6_PACKET_TO_BIG() != null) {
+         return JunosApplication.JUNOS_ICMP6_PACKET_TO_BIG;
+      }
+      else if (ctx.JUNOS_ICMP6_PARAM_PROB_HEADER() != null) {
+         return JunosApplication.JUNOS_ICMP6_PARAM_PROB_HEADER;
+      }
+      else if (ctx.JUNOS_ICMP6_PARAM_PROB_NEXTHDR() != null) {
+         return JunosApplication.JUNOS_ICMP6_PARAM_PROB_NEXTHDR;
+      }
+      else if (ctx.JUNOS_ICMP6_PARAM_PROB_OPTION() != null) {
+         return JunosApplication.JUNOS_ICMP6_PARAM_PROB_OPTION;
+      }
+      else if (ctx.JUNOS_ICMP6_TIME_EXCEED_REASSEMBLY() != null) {
+         return JunosApplication.JUNOS_ICMP6_TIME_EXCEED_REASSEMBLY;
+      }
+      else if (ctx.JUNOS_ICMP6_TIME_EXCEED_TRANSIT() != null) {
+         return JunosApplication.JUNOS_ICMP6_TIME_EXCEED_TRANSIT;
+      }
+      else if (ctx.JUNOS_IDENT() != null) {
+         return JunosApplication.JUNOS_IDENT;
+      }
+      else if (ctx.JUNOS_IKE() != null) {
+         return JunosApplication.JUNOS_IKE;
+      }
+      else if (ctx.JUNOS_IKE_NAT() != null) {
+         return JunosApplication.JUNOS_IKE_NAT;
+      }
+      else if (ctx.JUNOS_IMAP() != null) {
+         return JunosApplication.JUNOS_IMAP;
+      }
+      else if (ctx.JUNOS_IMAPS() != null) {
+         return JunosApplication.JUNOS_IMAPS;
+      }
+      else if (ctx.JUNOS_INTERNET_LOCATOR_SERVICE() != null) {
+         return JunosApplication.JUNOS_INTERNET_LOCATOR_SERVICE;
+      }
+      else if (ctx.JUNOS_IRC() != null) {
+         return JunosApplication.JUNOS_IRC;
+      }
+      else if (ctx.JUNOS_L2TP() != null) {
+         return JunosApplication.JUNOS_L2TP;
+      }
+      else if (ctx.JUNOS_LDAP() != null) {
+         return JunosApplication.JUNOS_LDAP;
+      }
+      else if (ctx.JUNOS_LDP_TCP() != null) {
+         return JunosApplication.JUNOS_LDP_TCP;
+      }
+      else if (ctx.JUNOS_LDP_UDP() != null) {
+         return JunosApplication.JUNOS_LDP_UDP;
+      }
+      else if (ctx.JUNOS_LPR() != null) {
+         return JunosApplication.JUNOS_LPR;
+      }
+      else if (ctx.JUNOS_MAIL() != null) {
+         return JunosApplication.JUNOS_MAIL;
+      }
+      else if (ctx.JUNOS_MGCP() != null) {
+         return JunosApplication.JUNOS_MGCP;
+      }
+      else if (ctx.JUNOS_MGCP_CA() != null) {
+         return JunosApplication.JUNOS_MGCP_CA;
+      }
+      else if (ctx.JUNOS_MGCP_UA() != null) {
+         return JunosApplication.JUNOS_MGCP_UA;
+      }
+      else if (ctx.JUNOS_MS_RPC() != null) {
+         return JunosApplication.JUNOS_MS_RPC;
+      }
+      else if (ctx.JUNOS_MS_RPC_ANY() != null) {
+         return JunosApplication.JUNOS_MS_RPC_ANY;
+      }
+      else if (ctx.JUNOS_MS_RPC_EPM() != null) {
+         return JunosApplication.JUNOS_MS_RPC_EPM;
+      }
+      else if (ctx.JUNOS_MS_RPC_IIS_COM() != null) {
+         return JunosApplication.JUNOS_MS_RPC_IIS_COM;
+      }
+      else if (ctx.JUNOS_MS_RPC_IIS_COM_1() != null) {
+         return JunosApplication.JUNOS_MS_RPC_IIS_COM_1;
+      }
+      else if (ctx.JUNOS_MS_RPC_IIS_COM_ADMINBASE() != null) {
+         return JunosApplication.JUNOS_MS_RPC_IIS_COM_ADMINBASE;
+      }
+      else if (ctx.JUNOS_MS_RPC_MSEXCHANGE() != null) {
+         return JunosApplication.JUNOS_MS_RPC_MSEXCHANGE;
+      }
+      else if (ctx.JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_NSP() != null) {
+         return JunosApplication.JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_NSP;
+      }
+      else if (ctx.JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_RFR() != null) {
+         return JunosApplication.JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_RFR;
+      }
+      else if (ctx.JUNOS_MS_RPC_MSEXCHANGE_INFO_STORE() != null) {
+         return JunosApplication.JUNOS_MS_RPC_MSEXCHANGE_INFO_STORE;
+      }
+      else if (ctx.JUNOS_MS_RPC_TCP() != null) {
+         return JunosApplication.JUNOS_MS_RPC_TCP;
+      }
+      else if (ctx.JUNOS_MS_RPC_UDP() != null) {
+         return JunosApplication.JUNOS_MS_RPC_UDP;
+      }
+      else if (ctx.JUNOS_MS_RPC_UUID_ANY_TCP() != null) {
+         return JunosApplication.JUNOS_MS_RPC_UUID_ANY_TCP;
+      }
+      else if (ctx.JUNOS_MS_RPC_UUID_ANY_UDP() != null) {
+         return JunosApplication.JUNOS_MS_RPC_UUID_ANY_UDP;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC_ADMIN() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC_ADMIN;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC_ADMIN2() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC_ADMIN2;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC_MGMT() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC_MGMT;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC_WEBM_CALLRESULT() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC_WEBM_CALLRESULT;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC_WEBM_CLASSOBJECT() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC_WEBM_CLASSOBJECT;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC_WEBM_LEVEL1LOGIN() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC_WEBM_LEVEL1LOGIN;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC_WEBM_LOGIN_CLIENTID() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC_WEBM_LOGIN_CLIENTID;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC_WEBM_LOGIN_HELPER() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC_WEBM_LOGIN_HELPER;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC_WEBM_OBJECTSINK() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC_WEBM_OBJECTSINK;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC_WEBM_REFRESHING_SERVICES() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC_WEBM_REFRESHING_SERVICES;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC_WEBM_REMOTE_REFRESHER() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC_WEBM_REMOTE_REFRESHER;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC_WEBM_SERVICES() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC_WEBM_SERVICES;
+      }
+      else if (ctx.JUNOS_MS_RPC_WMIC_WEBM_SHUTDOWN() != null) {
+         return JunosApplication.JUNOS_MS_RPC_WMIC_WEBM_SHUTDOWN;
+      }
+      else if (ctx.JUNOS_MS_SQL() != null) {
+         return JunosApplication.JUNOS_MS_SQL;
+      }
+      else if (ctx.JUNOS_MSN() != null) {
+         return JunosApplication.JUNOS_MSN;
+      }
+      else if (ctx.JUNOS_NBDS() != null) {
+         return JunosApplication.JUNOS_NBDS;
+      }
+      else if (ctx.JUNOS_NBNAME() != null) {
+         return JunosApplication.JUNOS_NBNAME;
+      }
+      else if (ctx.JUNOS_NETBIOS_SESSION() != null) {
+         return JunosApplication.JUNOS_NETBIOS_SESSION;
+      }
+      else if (ctx.JUNOS_NFS() != null) {
+         return JunosApplication.JUNOS_NFS;
+      }
+      else if (ctx.JUNOS_NFSD_TCP() != null) {
+         return JunosApplication.JUNOS_NFSD_TCP;
+      }
+      else if (ctx.JUNOS_NFSD_UDP() != null) {
+         return JunosApplication.JUNOS_NFSD_UDP;
+      }
+      else if (ctx.JUNOS_NNTP() != null) {
+         return JunosApplication.JUNOS_NNTP;
+      }
+      else if (ctx.JUNOS_NS_GLOBAL() != null) {
+         return JunosApplication.JUNOS_NS_GLOBAL;
+      }
+      else if (ctx.JUNOS_NS_GLOBAL_PRO() != null) {
+         return JunosApplication.JUNOS_NS_GLOBAL_PRO;
+      }
+      else if (ctx.JUNOS_NSM() != null) {
+         return JunosApplication.JUNOS_NSM;
+      }
+      else if (ctx.JUNOS_NTALK() != null) {
+         return JunosApplication.JUNOS_NTALK;
+      }
+      else if (ctx.JUNOS_NTP() != null) {
+         return JunosApplication.JUNOS_NTP;
+      }
+      else if (ctx.JUNOS_OSPF() != null) {
+         return JunosApplication.JUNOS_OSPF;
+      }
+      else if (ctx.JUNOS_PC_ANYWHERE() != null) {
+         return JunosApplication.JUNOS_PC_ANYWHERE;
+      }
+      else if (ctx.JUNOS_PERSISTENT_NAT() != null) {
+         return JunosApplication.JUNOS_PERSISTENT_NAT;
+      }
+      else if (ctx.JUNOS_PING() != null) {
+         return JunosApplication.JUNOS_PING;
+      }
+      else if (ctx.JUNOS_PINGV6() != null) {
+         return JunosApplication.JUNOS_PINGV6;
+      }
+      else if (ctx.JUNOS_POP3() != null) {
+         return JunosApplication.JUNOS_POP3;
+      }
+      else if (ctx.JUNOS_PPTP() != null) {
+         return JunosApplication.JUNOS_PPTP;
+      }
+      else if (ctx.JUNOS_PRINTER() != null) {
+         return JunosApplication.JUNOS_PRINTER;
+      }
+      else if (ctx.JUNOS_R2CP() != null) {
+         return JunosApplication.JUNOS_R2CP;
+      }
+      else if (ctx.JUNOS_RADACCT() != null) {
+         return JunosApplication.JUNOS_RADACCT;
+      }
+      else if (ctx.JUNOS_RADIUS() != null) {
+         return JunosApplication.JUNOS_RADIUS;
+      }
+      else if (ctx.JUNOS_REALAUDIO() != null) {
+         return JunosApplication.JUNOS_REALAUDIO;
+      }
+      else if (ctx.JUNOS_RIP() != null) {
+         return JunosApplication.JUNOS_RIP;
+      }
+      else if (ctx.JUNOS_ROUTING_INBOUND() != null) {
+         return JunosApplication.JUNOS_ROUTING_INBOUND;
+      }
+      else if (ctx.JUNOS_RSH() != null) {
+         return JunosApplication.JUNOS_RSH;
+      }
+      else if (ctx.JUNOS_RTSP() != null) {
+         return JunosApplication.JUNOS_RTSP;
+      }
+      else if (ctx.JUNOS_SCCP() != null) {
+         return JunosApplication.JUNOS_SCCP;
+      }
+      else if (ctx.JUNOS_SCTP_ANY() != null) {
+         return JunosApplication.JUNOS_SCTP_ANY;
+      }
+      else if (ctx.JUNOS_SIP() != null) {
+         return JunosApplication.JUNOS_SIP;
+      }
+      else if (ctx.JUNOS_SMB() != null) {
+         return JunosApplication.JUNOS_SMB;
+      }
+      else if (ctx.JUNOS_SMB_SESSION() != null) {
+         return JunosApplication.JUNOS_SMB_SESSION;
+      }
+      else if (ctx.JUNOS_SMTP() != null) {
+         return JunosApplication.JUNOS_SMTP;
+      }
+      else if (ctx.JUNOS_SNMP_AGENTX() != null) {
+         return JunosApplication.JUNOS_SNMP_AGENTX;
+      }
+      else if (ctx.JUNOS_SNPP() != null) {
+         return JunosApplication.JUNOS_SNPP;
+      }
+      else if (ctx.JUNOS_SQL_MONITOR() != null) {
+         return JunosApplication.JUNOS_SQL_MONITOR;
+      }
+      else if (ctx.JUNOS_SQLNET_V1() != null) {
+         return JunosApplication.JUNOS_SQLNET_V1;
+      }
+      else if (ctx.JUNOS_SQLNET_V2() != null) {
+         return JunosApplication.JUNOS_SQLNET_V2;
+      }
+      else if (ctx.JUNOS_SSH() != null) {
+         return JunosApplication.JUNOS_SSH;
+      }
+      else if (ctx.JUNOS_STUN() != null) {
+         return JunosApplication.JUNOS_STUN;
+      }
+      else if (ctx.JUNOS_SUN_RPC() != null) {
+         return JunosApplication.JUNOS_SUN_RPC;
+      }
+      else if (ctx.JUNOS_SUN_RPC_ANY() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_ANY;
+      }
+      else if (ctx.JUNOS_SUN_RPC_ANY_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_ANY_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_ANY_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_ANY_UDP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_MOUNTD() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_MOUNTD;
+      }
+      else if (ctx.JUNOS_SUN_RPC_MOUNTD_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_MOUNTD_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_MOUNTD_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_MOUNTD_UDP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_NFS() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_NFS;
+      }
+      else if (ctx.JUNOS_SUN_RPC_NFS_ACCESS() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_NFS_ACCESS;
+      }
+      else if (ctx.JUNOS_SUN_RPC_NFS_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_NFS_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_NFS_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_NFS_UDP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_NLOCKMGR() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_NLOCKMGR;
+      }
+      else if (ctx.JUNOS_SUN_RPC_NLOCKMGR_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_NLOCKMGR_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_NLOCKMGR_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_NLOCKMGR_UDP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_PORTMAP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_PORTMAP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_PORTMAP_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_PORTMAP_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_PORTMAP_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_RQUOTAD() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_RQUOTAD;
+      }
+      else if (ctx.JUNOS_SUN_RPC_RQUOTAD_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_RQUOTAD_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_RQUOTAD_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_RQUOTAD_UDP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_RUSERD() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_RUSERD;
+      }
+      else if (ctx.JUNOS_SUN_RPC_RUSERD_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_RUSERD_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_RUSERD_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_RUSERD_UDP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_SADMIND() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_SADMIND;
+      }
+      else if (ctx.JUNOS_SUN_RPC_SADMIND_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_SADMIND_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_SADMIND_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_SADMIND_UDP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_SPRAYD() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_SPRAYD;
+      }
+      else if (ctx.JUNOS_SUN_RPC_SPRAYD_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_SPRAYD_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_SPRAYD_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_SPRAYD_UDP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_STATUS() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_STATUS;
+      }
+      else if (ctx.JUNOS_SUN_RPC_STATUS_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_STATUS_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_STATUS_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_STATUS_UDP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_UDP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_WALLD() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_WALLD;
+      }
+      else if (ctx.JUNOS_SUN_RPC_WALLD_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_WALLD_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_WALLD_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_WALLD_UDP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_YPBIND() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_YPBIND;
+      }
+      else if (ctx.JUNOS_SUN_RPC_YPBIND_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_YPBIND_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_YPBIND_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_YPBIND_UDP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_YPSERV() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_YPSERV;
+      }
+      else if (ctx.JUNOS_SUN_RPC_YPSERV_TCP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_YPSERV_TCP;
+      }
+      else if (ctx.JUNOS_SUN_RPC_YPSERV_UDP() != null) {
+         return JunosApplication.JUNOS_SUN_RPC_YPSERV_UDP;
+      }
+      else if (ctx.JUNOS_SYSLOG() != null) {
+         return JunosApplication.JUNOS_SYSLOG;
+      }
+      else if (ctx.JUNOS_TACACS() != null) {
+         return JunosApplication.JUNOS_TACACS;
+      }
+      else if (ctx.JUNOS_TACACS_DS() != null) {
+         return JunosApplication.JUNOS_TACACS_DS;
+      }
+      else if (ctx.JUNOS_TALK() != null) {
+         return JunosApplication.JUNOS_TALK;
+      }
+      else if (ctx.JUNOS_TCP_ANY() != null) {
+         return JunosApplication.JUNOS_TCP_ANY;
+      }
+      else if (ctx.JUNOS_TELNET() != null) {
+         return JunosApplication.JUNOS_TELNET;
+      }
+      else if (ctx.JUNOS_TFTP() != null) {
+         return JunosApplication.JUNOS_TFTP;
+      }
+      else if (ctx.JUNOS_UDP_ANY() != null) {
+         return JunosApplication.JUNOS_UDP_ANY;
+      }
+      else if (ctx.JUNOS_UUCP() != null) {
+         return JunosApplication.JUNOS_UUCP;
+      }
+      else if (ctx.JUNOS_VDO_LIVE() != null) {
+         return JunosApplication.JUNOS_VDO_LIVE;
+      }
+      else if (ctx.JUNOS_VNC() != null) {
+         return JunosApplication.JUNOS_VNC;
+      }
+      else if (ctx.JUNOS_WAIS() != null) {
+         return JunosApplication.JUNOS_WAIS;
+      }
+      else if (ctx.JUNOS_WHO() != null) {
+         return JunosApplication.JUNOS_WHO;
+      }
+      else if (ctx.JUNOS_WHOIS() != null) {
+         return JunosApplication.JUNOS_WHOIS;
+      }
+      else if (ctx.JUNOS_WINFRAME() != null) {
+         return JunosApplication.JUNOS_WINFRAME;
+      }
+      else if (ctx.JUNOS_WXCONTROL() != null) {
+         return JunosApplication.JUNOS_WXCONTROL;
+      }
+      else if (ctx.JUNOS_X_WINDOWS() != null) {
+         return JunosApplication.JUNOS_X_WINDOWS;
+      }
+      else if (ctx.JUNOS_XNM_CLEAR_TEXT() != null) {
+         return JunosApplication.JUNOS_XNM_CLEAR_TEXT;
+      }
+      else if (ctx.JUNOS_XNM_SSL() != null) {
+         return JunosApplication.JUNOS_XNM_SSL;
+      }
+      else if (ctx.JUNOS_YMSG() != null) {
+         return JunosApplication.JUNOS_YMSG;
+      }
+      else {
+         throw new BatfishException(
+               "missing application mapping for application: \""
+                     + ctx.getText() + "\"");
       }
    }
 
@@ -715,6 +1300,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
    }
 
+   private static SubRange toSubRange(SubrangeContext ctx) {
+      int low = toInt(ctx.low);
+      int high = (ctx.high != null) ? toInt(ctx.high) : low;
+      return new SubRange(low, high);
+   }
+
    private static String unquote(String text) {
       if (text.length() == 0) {
          return text;
@@ -737,6 +1328,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private AddressSetAddressBookEntry _currentAddressSetAddressBookEntry;
 
    private AggregateRoute _currentAggregateRoute;
+
+   private BaseApplication _currentApplication;
+
+   private Term _currentApplicationTerm;
 
    private OspfArea _currentArea;
 
@@ -844,6 +1439,27 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                      + name
                      + "\" because a different type of address-book entry with that name already exists",
                e);
+      }
+   }
+
+   @Override
+   public void enterAppst_application(Appst_applicationContext ctx) {
+      String name = ctx.name.getText();
+      _currentApplication = _configuration.getApplications().get(name);
+      if (_currentApplication == null) {
+         _currentApplication = new BaseApplication(name);
+         _configuration.getApplications().put(name, _currentApplication);
+      }
+      _currentApplicationTerm = _currentApplication.getMainTerm();
+   }
+
+   @Override
+   public void enterAppst_term(Appst_termContext ctx) {
+      String name = ctx.name.getText();
+      _currentApplicationTerm = _currentApplication.getTerms().get(name);
+      if (_currentApplicationTerm == null) {
+         _currentApplicationTerm = new Term(name);
+         _currentApplication.getTerms().put(name, _currentApplicationTerm);
       }
    }
 
@@ -1478,6 +2094,35 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitAppst_application(Appst_applicationContext ctx) {
+      _currentApplication = null;
+      _currentApplicationTerm = null;
+   }
+
+   @Override
+   public void exitAppst_term(Appst_termContext ctx) {
+      _currentApplicationTerm = _currentApplication.getMainTerm();
+   }
+
+   @Override
+   public void exitApptt_destination_port(Apptt_destination_portContext ctx) {
+      SubRange subrange = toSubRange(ctx.subrange());
+      _currentApplicationTerm.getLine().getDstPortRanges().add(subrange);
+   }
+
+   @Override
+   public void exitApptt_protocol(Apptt_protocolContext ctx) {
+      IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
+      _currentApplicationTerm.getLine().getProtocols().add(protocol);
+   }
+
+   @Override
+   public void exitApptt_source_port(Apptt_source_portContext ctx) {
+      SubRange subrange = toSubRange(ctx.subrange());
+      _currentApplicationTerm.getLine().getSrcPortRanges().add(subrange);
+   }
+
+   @Override
    public void exitAt_interface(At_interfaceContext ctx) {
       _currentOspfInterface = null;
    }
@@ -1665,9 +2310,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       else if (ctx.range() != null) {
          for (SubrangeContext subrangeContext : ctx.range().range_list) {
-            int low = toInt(subrangeContext.low);
-            int high = toInt(subrangeContext.high);
-            SubRange subrange = new SubRange(low, high);
+            SubRange subrange = toSubRange(subrangeContext);
             FwFrom from = new FwFromDestinationPort(subrange);
             _currentFwTerm.getFroms().add(from);
          }
@@ -1700,9 +2343,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       else if (ctx.range() != null) {
          for (SubrangeContext subrangeContext : ctx.range().range_list) {
-            int low = toInt(subrangeContext.low);
-            int high = toInt(subrangeContext.high);
-            SubRange subrange = new SubRange(low, high);
+            SubRange subrange = toSubRange(subrangeContext);
             FwFrom from = new FwFromSourcePort(subrange);
             _currentFwTerm.getFroms().add(from);
          }
@@ -2206,6 +2847,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (ctx.ANY() != null) {
          return;
       }
+      else if (ctx.junos_application() != null) {
+         Application application = toApplication(ctx.junos_application());
+         if (application.getIpv6()) {
+            _currentFwTerm.setIpv6(true);
+         }
+         else {
+            FwFromApplication from = new FwFromApplication(application);
+            _currentFwTerm.getFromApplications().add(from);
+         }
+      }
       else {
          String name = ctx.name.getText();
          FwFromApplication from = new FwFromApplication(name,
@@ -2223,6 +2874,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          return;
       }
       else if (ctx.address_specifier().ANY_IPV6() != null) {
+         _currentFwTerm.setIpv6(true);
          return;
       }
       else if (ctx.address_specifier().variable() != null) {
@@ -2246,6 +2898,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          return;
       }
       else if (ctx.address_specifier().ANY_IPV6() != null) {
+         _currentFwTerm.setIpv6(true);
          return;
       }
       else if (ctx.address_specifier().variable() != null) {
@@ -2286,6 +2939,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitSpt_policy(Spt_policyContext ctx) {
+      if (_currentFwTerm.getIpv6()) {
+         _currentFilter.getTerms().remove(_currentFwTerm.getName());
+      }
       _currentFwTerm = null;
    }
 

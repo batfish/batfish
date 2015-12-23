@@ -289,6 +289,7 @@
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniperParser.g4"/>
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniperLexer.g4"/>
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniperLexer.tokens"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_applications.g4"/>
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_bgp.g4"/>
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_common.g4"/>
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_firewall.g4"/>

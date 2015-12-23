@@ -18,7 +18,7 @@ public final class FwFromApplication implements Serializable {
 
    private final String _applicationName;
 
-   private final Map<String, Application> _applications;
+   private final Map<String, BaseApplication> _applications;
 
    public FwFromApplication(Application application) {
       _applicationName = null;
@@ -27,7 +27,7 @@ public final class FwFromApplication implements Serializable {
    }
 
    public FwFromApplication(String applicationName,
-         Map<String, Application> applications) {
+         Map<String, BaseApplication> applications) {
       _applicationName = applicationName;
       _application = null;
       _applications = applications;
