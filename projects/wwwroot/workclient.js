@@ -52,6 +52,15 @@ function checkWork_cb(response, entryPoint, remainingCalls) {
     }
 }
 
+function errorCheck(isError, message, entryPoint) {
+    if (isError) {
+        finishEntryPoint(entryPoint);
+        alert(message);
+        return true;
+    }
+    return false;
+}
+
 // we are done with this entrypoint
 // display any output and delete everything
 function finishEntryPoint(entryPoint, remainingCalls) {
@@ -65,18 +74,10 @@ function finishEntryPoint(entryPoint, remainingCalls) {
 }
 
 function getLog(entryPoint, remainingCalls) {
-    if (containerName == "") {
-        alert("Container name is empty");
-        return;
-    }
-   if (testrigName == "") {
-      alert("Testrig name is empty.");
-      return;
-   }
-   if (!(entryPoint in epWorkGuid)) {
-       alert("epWorkGuid is not set");
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is empty", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is empty.", entryPoint) ||
+        errorCheck(!(entryPoint in epWorkGuid), "epWorkGuid is not set", entryPoint))
        return;
-   }
 
    var objectName = epWorkGuid[entryPoint] + ".log";
 
@@ -96,10 +97,8 @@ function genericFailure_cb(message, entryPoint, remainingCalls) {
 }
 
 function initContainer(entryPoint, remainingCalls) {
-    if (containerPrefix == "") {
-        alert("Container name is not set");
+    if (errorCheck(bfIsInvalidStr(containerPrefix), "Container name is not set", entryPoint))
         return;
-    }
 
     bfUpdateDebugInfo("Init'ing container");
 
@@ -163,18 +162,12 @@ function makeNextCall(entryPoint, callList) {
 
 function queueWork(worktype, entryPoint, remainingCalls) {
 
-    if (containerName == "") {
-        alert("Container name is empty");
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is empty", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is empty", entryPoint) ||
+        //if the worktype is answer question, we must have a questioname in epQuestionName
+        errorCheck((!(entryPoint in epQuestionName) && worktype == "answerquestion"), 
+                   "Question name is not set", entryPoint))
         return;
-    }
-    if (testrigName == "") {
-        alert("Testrig name is empty");
-        return;
-    }
-    if (!(entryPoint in epQuestionName) && worktype == "answerquestion") {
-        alert("Question name is not set");
-        return;
-    }
 
     // real work begins
     bfUpdateDebugInfo("Queueing work of type " + worktype);
@@ -263,28 +256,17 @@ function testMe() {
 
 function uploadDiffEnvironment(entryPoint, remainingCalls) {
 
-    // sanity check inputs
-    if (containerName == "") {
-        alert("Container name is not set");
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint) ||
+        errorCheck(bfIsInvalidStr(diffEnvName), "Diff environment name is not set", entryPoint) ||
+        errorCheck((typeof elementDiffEnvFile === 'undefined' || bfIsInvalidElement(elementDiffEnvFile)),
+                    "Diff environment file selector (elementDiffEnvFile) is not configured in the HTML header",
+                    entryPoint))
         return;
-    }
-    if (testrigName == "") {
-        alert("Testrig name is not set");
-        return;
-    }
-    if (typeof elementDiffEnvFile === 'undefined' || !$(elementDiffEnvFile).length) {
-        alert("Diff environment file selector (elementDiffEnvFile) is not configured in the HTML header");
-        return;
-    }
+
     var envFile = jQuery(elementDiffEnvFile).get(0).files[0];
-    if (typeof envFile === 'undefined') {
-        alert("Select a differential environment file");
+    if (errorCheck(typeof envFile === 'undefined', "Select a differential environment file", entryPoint))
         return;
-    }
-    if (diffEnvName == "") {
-        alert("Diff environment name is not set");
-        return;
-    }
 
     bfUpdateDebugInfo("Uploading differential environment");
 
@@ -307,29 +289,22 @@ function uploadDiffEnvironment_cb(response, entryPoint, remainingCalls) {
 
 function uploadQuestionFile(entryPoint, remainingCalls) {
     // sanity check inputs
-    if (containerName == "") {
-        alert("Container name is not set");
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint) ||
+        errorCheck(typeof elementQuestionFile === 'undefined' || bfIsInvalidElement(elementQuestionFile),
+                   "Questoin file element (elementQuestionFile) is not configured in the HTML header",
+                    entryPoint) ||
+        errorCheck(typeof elementQuestionParams === 'undefined' || bfIsInvalidElement(elementQuestionParams),
+                   "Question parameters element (elementQuestionParams) is not configured in the HTML header",
+                    entryPoint))
         return;
-    }
-    if (testrigName == "") {
-        alert("Testrig name is not set");
-        return;
-    }
-    if (typeof elementQuestionFile === 'undefined' || !$(elementQuestionFile).length) {
-        alert("Questoin file element (elementQuestionFile) is not configured in the HTML header");
-        return;
-    }
+ 
     var qFile = jQuery(elementQuestionFile).get(0).files[0];
-   if (typeof qFile === 'undefined') {
-      alert("Select a question file");
+    if (errorCheck(typeof qFile === 'undefined'), "Select a question file", entryPoint)
       return;
-   }
-   epQuestionName[entryPoint] = bfGetGuid();
 
-   if (typeof elementQuestionParams === 'undefined' || !$(elementQuestionParams).length) {
-       alert("Question parameters element (elementQuestionParams) is not configured in the HTML header");
-       return;
-   }
+    epQuestionName[entryPoint] = bfGetGuid();
+
    var paramsString = jQuery(elementQuestionParams).val();
    var paramBlob = new Blob([paramsString]);
 
@@ -346,23 +321,17 @@ function uploadQuestionFile(entryPoint, remainingCalls) {
 
 function uploadQuestionText(entryPoint, remainingCalls) {
     // sanity check inputs
-    if (containerName == "") {
-        alert("Container name is not set");
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint) ||
+        errorCheck(typeof elementQuestionText === 'undefined' || bfIsInvalidElement(elementQuestionText),
+                   "Question text element (elementQuestionText) is not configured in the HTML header",
+                    entryPoint))
         return;
-    }
-    if (testrigName == "") {
-        alert("Testrig name is not set");
-        return;
-    }
-    if (typeof elementQuestionText === 'undefined' || !$(elementQuestionText).length) {
-        alert("Question text element (elementQuestionText) is not configured in the HTML header");
-        return;
-    }
+
     var qText = jQuery(elementQuestionText).val();
-    if (qText == "") {
-        alert("Enter question text");
+    if (errorCheck(bfIsInvalidStr(qText), "Enter question text", entryPoint))
         return;
-    }
+
     var qBlob = new Blob([qText]);
 
     //parameters will be empty for this
@@ -388,23 +357,16 @@ function uploadQuestion_cb(response, entryPoint, remainingCalls) {
 
 function uploadTestrigFile(entryPoint, remainingCalls) {
     // sanity check inputs
-    if (containerName == "") {
-        alert("Container name is not set");
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint) ||
+        errorCheck(typeof elementTestrigFile === 'undefined' || bfIsInvalidElement(elementTestrigFile),
+                   "Testrig file element (elementTestrigFile) is not configured in the HTML header",
+                    entryPoint))
         return;
-    }
-    if (testrigName == "") {
-        alert("Testrig name is not set");
-        return;
-    }
-    if (typeof elementTestrigFile === 'undefined' || !$(elementTestrigFile).length) {
-        alert("Testrig file element (elementTestrigFile) is not configured in the HTML header");
-        return;
-    }
+
     var testrigFile = jQuery(elementTestrigFile).get(0).files[0];
-    if (typeof testrigFile === 'undefined') {
-        alert("Select a testrig file");
+    if (errorCheck(typeof testrigFile === 'undefined', "Select a testrig file", entryPoint))
         return;
-    }
 
     bfUpdateDebugInfo("Uploading testrig");
 
@@ -420,23 +382,16 @@ function uploadTestrigFile(entryPoint, remainingCalls) {
 
 function uploadTestrigText(entryPoint, remainingCalls) {
     // sanity check inputs
-    if (containerName == "") {
-        alert("Container name is not set");
-        return;
-    }
-    if (testrigName == "") {
-        alert("Testrig name is not set");
-        return;
-    }
-    if (typeof elementConfigText === 'undefined' || !$(elementConfigText).length) {
-        alert("Config text element (elementConfigText) is not configured in the HTML header");
-        return;
-    }
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint) ||
+        errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
+                    "Config text element (elementConfigText) is not configured in the HTML header",
+                    entryPoint))
+      return;
+
     var configText = jQuery(elementConfigText).val();
-    if (configText == "") {
-        alert("Enter configuration");
+    if (errorCheck(bfIsInvalidStr(configText), "Enter configuration", entryPoint))
         return;
-    }
 
     bfUpdateDebugInfo("Uploading config text");
 

@@ -57,6 +57,14 @@ function bfGetTimestamp() {
    return now.toLocaleTimeString();
 }
 
+function bfIsInvalidStr(str) {
+    return (!str || /^\s*$/.test(str));
+}
+
+function bfIsInvalidElement(element) {
+    return !$(element).length
+}
+
 function bfPostData(rscEndPoint, data, cbSuccess, cbFailure, entryPoint, remainingCalls) {
 
     var url_parm = SVC_WORK_MGR_ROOT + rscEndPoint;
@@ -91,30 +99,30 @@ function bfPostData(rscEndPoint, data, cbSuccess, cbFailure, entryPoint, remaini
 function bfCheckLibConfiguration() {
 
     //check that the names of mandatory HTML elements are defined
-    if (typeof elementDebugText === 'undefined' || !$(elementDebugText).length)
+    if (typeof elementDebugText === 'undefined' || bfIsInvalidElement(elementDebugText))
         alert("Debug text element (elementDebugText) is not defined");
 
-    if (typeof elementOutputText === 'undefined' || !$(elementOutputText).length)
+    if (typeof elementOutputText === 'undefined' || bfIsInvalidElement(elementOutputText))
         alert("Output text element (elementOutputText) is not defined");
 
     //check that various variables are properly declared and defined
-    if (typeof apiKey === 'undefined' || apiKey == "")
+    if (typeof apiKey === 'undefined' || bfIsInvalidStr(apiKey))
         alert("API key (apiKey) is not defined");
 
-    if (typeof containerPrefix === 'undefined' || containerPrefix == "")
+    if (typeof containerPrefix === 'undefined' || bfIsInvalidStr(containerPrefix))
         alert("Container prefix (containerPrefix) is not defined");
 
     //empty container name is OK
     if (typeof containerName === 'undefined')
         alert("Container name variable (containerPrefix) is not declared");
 
-    if (typeof testrigName === 'undefined' || testrigName == "")
+    if (typeof testrigName === 'undefined' || bfIsInvalidStr(testrigName))
         alert("Testrig name (testrigName) is not defined");
 
-    if (typeof envName === 'undefined' || envName == "")
+    if (typeof envName === 'undefined' || bfIsInvalidStr(envName))
         alert("Environment name (envName) is not defined");
 
-    if (typeof diffEnvName === 'undefined' || diffEnvName == "")
+    if (typeof diffEnvName === 'undefined' || bfIsInvalidStr(diffEnvName))
         alert("Differential environment name (diffEnvName) is not defined");
 
 }

@@ -29,5 +29,6 @@ function loadText(srcUrl, dstTextBox) {
 
 // this is a test function whose contents change based on what we want to test
 function testMe() {
+    exit();
     alert("Nothing to test");
 }
