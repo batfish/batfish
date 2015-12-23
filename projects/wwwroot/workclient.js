@@ -428,21 +428,31 @@ function uploadTestrigSmart(entryPoint, remainingCalls) {
 
             var srcUrl = jQuery(elementConfigSelect).val();
 
-            var oReq = new XMLHttpRequest();
-            oReq.open("GET", srcUrl, true);
-            oReq.responseType = "blob";
+            //var oReq = new XMLHttpRequest();
+            //oReq.open("GET", srcUrl, true);
+            //oReq.responseType = "blob";
 
-            oReq.onload = function (oEvent) {
-                var blob = oReq.response; // Note: not oReq.responseText
-                if (oReq.status != 200) {
-                    errorCheck(true, "Failed to fetch " + srcUrl + ". Status code = " + oReq.status, entryPoint);
-                }
-                else {
-                    uploadTestrigFinal(entryPoint, remainingCalls, blob);
-                }
-            };
+            //oReq.onload = function (oEvent) {
+            //    var blob = oReq.response; // Note: not oReq.responseText
+            //    if (oReq.status != 200) {
+            //        errorCheck(true, "Failed to fetch " + srcUrl + ". Status code = " + oReq.status, entryPoint);
+            //    }
+            //    else {
+            //        uploadTestrigFinal(entryPoint, remainingCalls, blob);
+            //    }
+            //};
 
-            oReq.send(null);
+            //oReq.send(null);
+
+            // loading a zip file
+            JSZipUtils.getBinaryContent(srcUrl, function (err, data) {
+                if (err) {
+                    throw err; // or handle the error
+                }
+                var zip = new JSZip(data);
+                var content = zip.generate({ type: "blob" });
+                uploadTestrigFinal(entryPoint, remainingCalls, content);
+            });
         }
         else {
             //the source is the file
