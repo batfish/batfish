@@ -13,7 +13,11 @@ var SVC_WORK_MGR_ROOT;
 var LOG_LEVEL = "warn";  //output, debug, ...
 
 var debugLog = [];
-var maxLogEntries = 10000;
+var maxLogEntries = 1000;
+
+var outputLog = [];
+var maxOutputEntries = 10;
+var outputCounter = 0;
 
 function bfGetGuid() {
     function s4() {
@@ -141,8 +145,19 @@ function bfInitialize() {
 function bfUpdateDebugInfo(string) {
    debugLog.splice(0, 0, bfGetTimestamp() + " " + string);
    while (debugLog.length > maxLogEntries) {
-      debugLog.shift();
+      debugLog.pop();
    }
    $(elementDebugText).html(debugLog.join("\n"));
+}
+
+function bfUpdateOutput(string) {
+    var outputBeginMarker = "-------- <output " + outputCounter++ + "> -----------\n";
+    var outputEndMarker = "\n-------- </output> ------------\n";
+
+    outputLog.splice(0, 0, outputBeginMarker + string + outputEndMarker);
+    while (outputLog.length > maxOutputEntries) {
+        outputLog.pop();
+    }
+    $(elementOutputText).html(outputLog.join("\n"));
 }
 

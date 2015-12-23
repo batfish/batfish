@@ -65,7 +65,8 @@ function errorCheck(isError, message, entryPoint) {
 // display any output and delete everything
 function finishEntryPoint(entryPoint, remainingCalls) {
 
-    jQuery(elementOutputText).val(epOutput[entryPoint]);
+    //jQuery(elementOutputText).val(epOutput[entryPoint]);
+    bfUpdateOutput(epOutput[entryPoint]);
 
     delete epCurrWorkChecker[entryPoint];
     delete epOutput[entryPoint];
@@ -132,6 +133,9 @@ function makeNextCall(entryPoint, callList) {
                 break;
             case "uploadtestrigfile":
                 uploadTestrigFile(entryPoint, callList);
+                break;
+            case "uploadtestrigsmart":
+                uploadTestrigSmart(entryPoint, callList);
                 break;
             case "uploadtestrigtext":
                 uploadTestrigText(entryPoint, callList);
@@ -356,10 +360,7 @@ function uploadQuestion_cb(response, entryPoint, remainingCalls) {
 }
 
 function uploadTestrigFile(entryPoint, remainingCalls) {
-    // sanity check inputs
-    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
-        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint) ||
-        errorCheck(typeof elementTestrigFile === 'undefined' || bfIsInvalidElement(elementTestrigFile),
+    if (errorCheck(typeof elementTestrigFile === 'undefined' || bfIsInvalidElement(elementTestrigFile),
                    "Testrig file element (elementTestrigFile) is not configured in the HTML header",
                     entryPoint))
         return;
@@ -368,23 +369,93 @@ function uploadTestrigFile(entryPoint, remainingCalls) {
     if (errorCheck(typeof testrigFile === 'undefined', "Select a testrig file", entryPoint))
         return;
 
+    uploadTestrigFinal(entryPoint, remainingCalls, testrigFile);
+}
+
+function uploadTestrigFinal(entryPoint, remainingCalls, testrigBlobOrFile) {
+    // sanity check inputs
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint))
+        return;
+
     bfUpdateDebugInfo("Uploading testrig");
 
     // begin the work now
-   var data = new FormData();
-   data.append(SVC_API_KEY, apiKey);
-   data.append(SVC_CONTAINER_NAME_KEY, containerName);
-   data.append(SVC_TESTRIG_NAME_KEY, testrigName);
-   data.append(SVC_ZIPFILE_KEY, testrigFile);
+    var data = new FormData();
+    data.append(SVC_API_KEY, apiKey);
+    data.append(SVC_CONTAINER_NAME_KEY, containerName);
+    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
+    data.append(SVC_ZIPFILE_KEY, testrigBlobOrFile);
 
-   bfPostData(SVC_UPLOAD_TESTRIG_RSC, data, uploadTestrig_cb, genericFailure_cb, entryPoint, remainingCalls);
+    //var contents;
+    //var r = new FileReader();
+    //r.onload = function (e) {
+    //    contents = e.target.result;
+    //}
+    //r.readAsText(testrigBlobOrFile);
+
+    //data.append(SVC_ZIPFILE_KEY, contents);
+
+    bfPostData(SVC_UPLOAD_TESTRIG_RSC, data, uploadTestrig_cb, genericFailure_cb, entryPoint, remainingCalls);
+}
+
+function uploadTestrigSmart(entryPoint, remainingCalls) {
+    // sanity check inputs
+    if (errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
+                    "Config text element (elementConfigText) is not configured in the HTML header",
+                    entryPoint))
+        return;
+
+    var configText = jQuery(elementConfigText).val();
+    if (errorCheck(bfIsInvalidStr(configText), "Enter configuration", entryPoint))
+        return;
+
+    if (configText == PackagedTestrigIndicator) {
+        //now check if the source should be a local file or a URL
+        if (errorCheck(typeof elementTestrigFile === 'undefined' || bfIsInvalidElement(elementTestrigFile),
+               "Testrig file element (elementTestrigFile) is not configured in the HTML header",
+                entryPoint))
+            return;
+
+        var testrigFile = jQuery(elementTestrigFile).get(0).files[0];
+
+        if (typeof testrigFile === 'undefined') {
+            //undefined means that the source if a URL
+            if (errorCheck(typeof elementConfigSelect === 'undefined' || bfIsInvalidElement(elementConfigSelect),
+                   "Config select element (elementConfigSelect) is not configured in the HTML header",
+                    entryPoint))
+                return;
+
+            var srcUrl = jQuery(elementConfigSelect).val();
+
+            var oReq = new XMLHttpRequest();
+            oReq.open("GET", srcUrl, true);
+            oReq.responseType = "blob";
+
+            oReq.onload = function (oEvent) {
+                var blob = oReq.response; // Note: not oReq.responseText
+                if (oReq.status != 200) {
+                    errorCheck(true, "Failed to fetch " + srcUrl + ". Status code = " + oReq.status, entryPoint);
+                }
+                else {
+                    uploadTestrigFinal(entryPoint, remainingCalls, blob);
+                }
+            };
+
+            oReq.send(null);
+        }
+        else {
+            //the source is the file
+            uploadTestrigFinal(entryPoint, remainingCalls, testrigFile);
+        }        
+    }
+    else {
+        uploadTestrigText(entryPoint, remainingCalls)
+    }
 }
 
 function uploadTestrigText(entryPoint, remainingCalls) {
-    // sanity check inputs
-    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
-        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint) ||
-        errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
+    if (errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
                     "Config text element (elementConfigText) is not configured in the HTML header",
                     entryPoint))
       return;
@@ -403,14 +474,7 @@ function uploadTestrigText(entryPoint, remainingCalls) {
 
     var content = zip.generate({ type: "blob" });
 
-    // begin the work now
-    var data = new FormData();
-    data.append(SVC_API_KEY, apiKey);
-    data.append(SVC_CONTAINER_NAME_KEY, containerName);
-    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
-    data.append(SVC_ZIPFILE_KEY, content);
-
-    bfPostData(SVC_UPLOAD_TESTRIG_RSC, data, uploadTestrig_cb, genericFailure_cb, entryPoint, remainingCalls);
+    uploadTestrigFinal(entryPoint, remainingCalls, content);
 }
 
 function uploadTestrig_cb(response, entryPoint, remainingCalls) {

@@ -22,37 +22,57 @@
         var elementOutputText = '#txtOutput';
 
         //............from where to get the config information
-        //var elementTestrigFile = '#fileTestrig';
+        var elementTestrigFile = '#fileConfig';
         var elementConfigText = '#txtConfig';
+        var elementConfigSelect = '#configSelect';
 
         //.............from where to get the differential environment file information
-        //var elementDiffEnvFile = '#fileDiffEnv';
+        var elementDiffEnvFile = '#fileDiffEnv';
 
         //..............from where to the get question information
-        //var elementQuestionFile = '#fileQuestion';
-        //var elementQuestionParams = '#txtQuestionParams';
+        var elementQuestionFile = '#fileQuestion';
+        var elementQuestionParams = '#txtQuestionParams';
         var elementQuestionText = '#txtQuestion';
+        var elementQuestionSelect = '#questionSelect';
     </script>
     <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <!-- 
-    TODO:
-          - output chaining
-        -->
-    <div id="divTest" style="display: normal">
+    <div id="divTest" style="display: none">
         <input type="button" id="btnTest" value="Test me!" onclick="testMe()" />
     </div>
+    <table>
+        <tr>
+            <td bgcolor="#FFDDDD">
+                <h2>Instructions
+                </h2>
+                <ol>
+                    <li>Enter configuration: choose your own file, type it in the text box, or select one of our samples. 
+            When choosing your file, you can choose an individual configuration file or a zipped testrig. 
+                    </li>
+                    <li>Press "Upload configuration."
+                    </li>
+                    <li>Enter query: choose your own query, type it in the text box, or select one of our samples.
+                    </li>
+                    <li>Press "Answer question."
+                    </li>
+                </ol>
+                <p>
+                Steps 4 and 5 can be repeated any number of times once the configuration has been uploaded. Upload a new configuration to analyze another. 
+            </td>
+        </tr>
+    </table>
+
     <table>
         <tr>
             <td>
                 <form class="myform">
                     <table>
                         <tr>
-                            <td>
+                            <td bgcolor="#DDFFDD">
                                 <table>
                                     <tr align="center">
-                                        <td>Configuration file [Upload a file, type it, or select one of our samples]
+                                        <td colspan="2"><h3>Enter configuration [Choose your file, type configuration, or select from our samples]</h3>
                                         </td>
                                     </tr>
                                     <tr>
@@ -64,15 +84,18 @@
                                             <script> jQuery('#fileConfig').change(loadConfigText); </script>
                                             <br />
                                             <br />
-                                            <input type="button" id="btnExampleConfig1" value="Border router" onclick="loadText('samples/as1border1.cfg.txt', '#txtConfig')" />
-                                            <br />
-                                            <input type="button" id="btnExampleConfig2" value="Core router" onclick="loadText('samples/as1core1.cfg.txt', '#txtConfig')" />
+                                            <select id="configSelect" onchange="loadText(elementConfigSelect, elementConfigText, elementTestrigFile)">
+                                                <option disabled selected>-- select a sample config -- </option>
+                                                <option value="samples/as1border1.cfg.txt">Border router</option>
+                                                <option value="samples/as1core1.cfg.txt">Core router</option>
+                                                <option value="samples/example.zip">Example testrig</option>
+                                            </select>
                                         </td>
                                     </tr>
                                     <tr align="center">
                                         <td>
                                             <input type="button" id="btnUploadConfigTest" value="Upload Configuration"
-                                                onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigtext::parsevendorspecific::parsevendorindependent::generatedataplane::getdataplane')" />
+                                                onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::generatedataplane::getdataplane')" />
                                         </td>
                                     </tr>
                                 </table>
@@ -86,10 +109,10 @@
                         </tr>
 
                         <tr>
-                            <td>
+                            <td bgcolor="#DDFFDD">
                                 <table>
                                     <tr align="center">
-                                        <td>Question file [Upload a question, type it, or select one of our samples]
+                                        <td colspan="2"><h3></h3>Enter question [Choose your file, type the question, or select from our samples]
                         </td>
                                     </tr>
                                     <tr>
@@ -101,9 +124,11 @@
                                             <script> jQuery('#fileQuestion').change(loadQuestionText); </script>
                                             <br />
                                             <br />
-                                            <input type="button" id="btnExampleQuestion1" value="Unique IP assignments" onclick="loadText('samples/unique-ip-assignments.q.txt', '#txtQuestion')" />
-                                            <br />
-                                            <input type="button" id="Button2" value="EBGP nodes" onclick="loadText('samples/print-ebgp-nodes.q.txt', '#txtQuestion')" />
+                                            <select id="questionSelect" onchange="loadText(elementQuestionSelect, elementQuestionText, elementQuestionFile)">
+                                                <option disabled selected>-- select a sample question -- </option>
+                                                <option value="samples/unique-ip-assignments.q.txt">Unique IP assignments</option>
+                                                <option value="samples/print-ebgp-nodes.q.txt">List EBGP nodes</option>
+                                            </select>
                                         </td>
                                     </tr>
                                     <tr align="center">
@@ -119,9 +144,13 @@
                     </table>
                 </form>
             </td>
-            <td>Output:
+            <td>
+
+            </td>
+            <td align=center bgcolor="#DDDDFF">
+                <h3>Output</h3>
                 <br />
-                <textarea id="txtOutput" style="display: normal; border-radius: 5px" cols="50" rows="30"></textarea>
+                <textarea id="txtOutput" style="display: normal; border-radius: 5px" cols="60" rows="50"></textarea>
             </td>
         </tr>
     </table>
