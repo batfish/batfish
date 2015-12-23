@@ -1,6 +1,4 @@
 ﻿
-var PackagedTestrigIndicator = "############ packaged testrig entered ############";
-
 //this function populates the config text box with the chosen file
 function loadConfigText() {
 
@@ -19,9 +17,27 @@ function loadConfigText() {
     var configFile = jQuery(elementTestrigFile).get(0).files[0];
 
     if (configFile.type && configFile.type == 'application/x-zip-compressed') {
-        jQuery(elementConfigText).val(PackagedTestrigIndicator);
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            try {
+                testrigZip = new JSZip(e.target.result);
+                jQuery(elementConfigText).val("Packaged testrig contents:\n" + zipToOverviewText(testrigZip, "    "));
+            }
+            catch (e) {
+                errorCheck(true, "Looks like a bad zip file: " + e.message, "loadconfigtext");
+
+                //empty the textbox and the file chooser
+                jQuery(elementConfigText).val("");
+                jQuery(elementTestrigFile).val('');
+            }
+            
+        }
+        reader.readAsArrayBuffer(configFile);
     }
     else {
+        //empty testrigZip
+        testrigZip = "";
+
         var r = new FileReader();
         r.onload = function (e) {
             var contents = e.target.result;
@@ -74,15 +90,36 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
         errorCheck(typeof dstTextBox === 'undefined' || bfIsInvalidElement(dstTextBox),
            "Dst text box id is incorrect", "loadtext") ||
         errorCheck(typeof elementLocalFile === 'undefined' || bfIsInvalidElement(elementLocalFile),
-           "Local file element is incorrect", "loadtext"))
+           "Local file element is incorrect", "loadtext") || 
+        errorCheck(typeof elementConfigSelect === 'undefined' || bfIsInvalidElement(elementConfigSelect),
+            "Config select element (elementConfigSelect) is not configured in te HTML header",
+            "loadtext"))
         return;
 
     var srcUrl = jQuery(dropDownId).val();
 
     //check if the source URL corresponds to a zip file, which can only happen for configs (not questions)
     var match = srcUrl.match(/^.+(\.[^\.]+)$/);
+
     if (match && match[1] == ".zip") {
-        jQuery(dstTextBox).val(PackagedTestrigIndicator);
+
+        // loading a zip file
+        JSZipUtils.getBinaryContent(srcUrl, function (err, data) {
+            if (err) {
+                errorCheck(true, "Failed to fetch config/question " + srcUrl, "loadtext");
+            }
+            try {
+                testrigZip = new JSZip(data);
+                jQuery(dstTextBox).val("Packaged testrig contents:\n" + zipToOverviewText(testrigZip, "    "));
+            }
+            catch (e) {
+                errorCheck(true, "Looks like a bad zip file: " + e.message, "loadconfigtext");
+
+                //empty the textbox and the drop down menu
+                jQuery(dstTextBox).val("");
+                jQuery(dropDownId).prop('selectedIndex', 0);
+            }
+            });        
     }
     else {
         jQuery.ajax({
@@ -91,8 +128,17 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
                 jQuery(dstTextBox).val(data);
             }
         }).fail(function () {
-            errorCheck(true, "Failed to fetch config/question from server: " + srcUrl, "loadtext");
+            errorCheck(true, "Failed to fetch config/question " + srcUrl, "loadtext");
+
+            //empty the textbox and the drop down menu
+            jQuery(dstTextBox).val("");
+            jQuery(dropDownId).prop('selectedIndex', 0);
         });
+
+        //if we were the testrig, unset the testrigzip
+        if (dropDownId == elementConfigSelect) {
+            testrigZip = "";
+        }
     }
 
     //if a local file had been chosen, cancel that 
@@ -104,4 +150,14 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
 function testMe() {
     exit();
     alert("Nothing to test");
+}
+
+
+function zipToOverviewText(zip, strPrefix) {
+    var overviewText = "";
+        // that, or a good ol' for(var entryName in zip.files)
+    $.each(zip.files, function (index, zipEntry) {
+        overviewText += strPrefix + zipEntry.name + "\n";
+    });
+    return overviewText;
 }

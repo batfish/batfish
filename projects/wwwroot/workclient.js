@@ -387,15 +387,6 @@ function uploadTestrigFinal(entryPoint, remainingCalls, testrigBlobOrFile) {
     data.append(SVC_TESTRIG_NAME_KEY, testrigName);
     data.append(SVC_ZIPFILE_KEY, testrigBlobOrFile);
 
-    //var contents;
-    //var r = new FileReader();
-    //r.onload = function (e) {
-    //    contents = e.target.result;
-    //}
-    //r.readAsText(testrigBlobOrFile);
-
-    //data.append(SVC_ZIPFILE_KEY, contents);
-
     bfPostData(SVC_UPLOAD_TESTRIG_RSC, data, uploadTestrig_cb, genericFailure_cb, entryPoint, remainingCalls);
 }
 
@@ -406,61 +397,12 @@ function uploadTestrigSmart(entryPoint, remainingCalls) {
                     entryPoint))
         return;
 
-    var configText = jQuery(elementConfigText).val();
-    if (errorCheck(bfIsInvalidStr(configText), "Enter configuration", entryPoint))
-        return;
-
-    if (configText == PackagedTestrigIndicator) {
-        //now check if the source should be a local file or a URL
-        if (errorCheck(typeof elementTestrigFile === 'undefined' || bfIsInvalidElement(elementTestrigFile),
-               "Testrig file element (elementTestrigFile) is not configured in the HTML header",
-                entryPoint))
-            return;
-
-        var testrigFile = jQuery(elementTestrigFile).get(0).files[0];
-
-        if (typeof testrigFile === 'undefined') {
-            //undefined means that the source if a URL
-            if (errorCheck(typeof elementConfigSelect === 'undefined' || bfIsInvalidElement(elementConfigSelect),
-                   "Config select element (elementConfigSelect) is not configured in the HTML header",
-                    entryPoint))
-                return;
-
-            var srcUrl = jQuery(elementConfigSelect).val();
-
-            //var oReq = new XMLHttpRequest();
-            //oReq.open("GET", srcUrl, true);
-            //oReq.responseType = "blob";
-
-            //oReq.onload = function (oEvent) {
-            //    var blob = oReq.response; // Note: not oReq.responseText
-            //    if (oReq.status != 200) {
-            //        errorCheck(true, "Failed to fetch " + srcUrl + ". Status code = " + oReq.status, entryPoint);
-            //    }
-            //    else {
-            //        uploadTestrigFinal(entryPoint, remainingCalls, blob);
-            //    }
-            //};
-
-            //oReq.send(null);
-
-            // loading a zip file
-            JSZipUtils.getBinaryContent(srcUrl, function (err, data) {
-                if (err) {
-                    throw err; // or handle the error
-                }
-                var zip = new JSZip(data);
-                var content = zip.generate({ type: "blob" });
-                uploadTestrigFinal(entryPoint, remainingCalls, content);
-            });
-        }
-        else {
-            //the source is the file
-            uploadTestrigFinal(entryPoint, remainingCalls, testrigFile);
-        }        
+    if (testrigZip == "") {
+        uploadTestrigText(entryPoint, remainingCalls)
     }
     else {
-        uploadTestrigText(entryPoint, remainingCalls)
+        var content = testrigZip.generate({ type: "blob" });
+        uploadTestrigFinal(entryPoint, remainingCalls, content);
     }
 }
 

@@ -129,6 +129,9 @@ function bfCheckLibConfiguration() {
     if (typeof diffEnvName === 'undefined' || bfIsInvalidStr(diffEnvName))
         alert("Differential environment name (diffEnvName) is not defined");
 
+    if (typeof testrigZip === 'undefined')
+        alert("Testrig zip variable (testrigZip) is not declared");
+
 }
 
 function bfInitialize() {
@@ -160,4 +163,3 @@ function bfUpdateOutput(string) {
     }
     $(elementOutputText).html(outputLog.join("\n"));
 }
-

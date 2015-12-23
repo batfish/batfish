@@ -24,6 +24,9 @@
         var envName = "default";
         var diffEnvName = "delta";
 
+        //this variable holds the testrig zip'd contents
+        var testrigZip = "";
+
         //............text area for debug and output
         var elementDebugText = '#txtDebug';
         var elementOutputText = '#txtOutput';
@@ -48,24 +51,23 @@
     <div id="divTest" style="display: none">
         <input type="button" id="btnTest" value="Test me!" onclick="testMe()" />
     </div>
-    <table>
+    <table width="100%>
         <tr>
             <td bgcolor="#FFDDDD">
                 <h2>Instructions
                 </h2>
                 <ol>
-                    <li>Enter configuration: choose your own file, type it in the text box, or select one of our samples. 
-            When choosing your file, you can choose an individual configuration file or a zipped testrig. 
+                    <li>Enter configuration, which can be an individual device or a zipped testrig. 
                     </li>
                     <li>Press "Upload configuration."
                     </li>
-                    <li>Enter query: choose your own query, type it in the text box, or select one of our samples.
+                    <li>Enter query.
                     </li>
                     <li>Press "Answer question."
                     </li>
                 </ol>
                 <p>
-                Steps 4 and 5 can be repeated any number of times once the configuration has been uploaded. Upload a new configuration to analyze another. 
+                Steps 4 and 5 can be repeated multiple times once the configuration has been uploaded. Upload a new configuration to analyze another. 
             </td>
         </tr>
     </table>
