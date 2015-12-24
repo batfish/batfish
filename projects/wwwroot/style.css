@@ -54,6 +54,12 @@ td {
     color: #000;
 }
 
+.myform input[type="button"]:disabled {
+    font-family: 'Segoe UI';
+    font-size: 14px;
+    color: #888;
+}
+
 
 .bootstrap-frm {
     margin-left:auto;

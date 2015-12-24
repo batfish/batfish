@@ -103,7 +103,9 @@
                                     </tr>
                                     <tr align="center">
                                         <td>
-                                            <input type="button" id="btnUploadConfigTest" value="Upload Configuration"
+                                            <input type="button" id="btnUploadConfigTest" value="Upload Base Configuration"
+                                                onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::generatedataplane::getdataplane')" />
+                                            <input type="button" id="btnUploadDiffEnv" value="Upload Delta Configuration" disabled
                                                 onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::generatedataplane::getdataplane')" />
                                         </td>
                                     </tr>
@@ -121,7 +123,7 @@
                             <td bgcolor="#DDFFDD">
                                 <table>
                                     <tr align="center">
-                                        <td colspan="2"><h3></h3>Enter question [Choose your file, type the question, or select from our samples]
+                                        <td colspan="2"><h3>Enter question [Choose your file, type the question, or select from our samples]</h3>
                         </td>
                                     </tr>
                                     <tr>
@@ -142,7 +144,7 @@
                                     </tr>
                                     <tr align="center">
                                         <td>
-                                            <input type="button" id="btnUploadQuestion" value="Answer question"
+                                            <input type="button" id="btnUploadQuestion" value="Answer question" disabled
                                                 onclick="startCalls('btnUploadConfigText', 'uploadquestiontext::answerquestion')" />
                                         </td>
                                     </tr>
@@ -159,7 +161,7 @@
             <td align=center bgcolor="#DDDDFF">
                 <h3>Output</h3>
                 <br />
-                <textarea id="txtOutput" style="display: normal; border-radius: 5px" cols="60" rows="50"></textarea>
+                <textarea id="txtOutput" style="display: normal; border-radius: 5px" cols="60" rows="50" readonly></textarea>
             </td>
         </tr>
     </table>
@@ -173,7 +175,7 @@
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <textarea id="txtDebug" style="display: normal; border-radius: 5pt" cols="120" rows="10"></textarea>
+                            <textarea id="txtDebug" style="display: normal; border-radius: 5pt" cols="120" rows="10" readonly></textarea>
                         </td>
                     </tr>
                 </table>

@@ -154,8 +154,8 @@ function bfUpdateDebugInfo(string) {
 }
 
 function bfUpdateOutput(string) {
-    var outputBeginMarker = "-------- <output " + outputCounter++ + "> -----------\n";
-    var outputEndMarker = "\n-------- </output> ------------\n";
+    var outputBeginMarker = "------------------ <output " + outputCounter++ + "> -------------------\n";
+    var outputEndMarker = "\n"; //-------- </output> ------------\n";
 
     outputLog.splice(0, 0, outputBeginMarker + string + outputEndMarker);
     while (outputLog.length > maxOutputEntries) {
