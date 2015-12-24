@@ -1,4 +1,6 @@
-﻿
+﻿/// <reference path="batfish-common.js" />
+/// <reference path="workclient.js" />
+
 //this function populates the config text box with the chosen file
 function loadConfigText() {
 

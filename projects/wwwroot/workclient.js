@@ -1,3 +1,5 @@
+/// <reference path="batfish-common.js" />
+
 //these structures are indexed on entrypoint
 var epCurrWorkChecker = new Object();
 var epWorkGuid = new Object();
@@ -147,10 +149,14 @@ function makeNextCall(entryPoint, callList) {
             case "generatediffdataplane":
             case "getdiffdataplane":
             case "answerquestion":
+            case "answerdiffquestion":
                 queueWork(nextCall, entryPoint, callList);
                 break;
-            case "uploaddiffenvironment":
-                uploadDiffEnvironment(entryPoint, callList);
+            case "uploaddiffenvfile":
+                uploadDiffEnvFile(entryPoint, callList);
+                break;
+            case "uploaddiffenvsmart":
+                uploadDiffEnvSmart(entryPoint, callList);
                 break;
             case "uploadquestionfile":
                 uploadQuestionFile(entryPoint, callList);
@@ -158,19 +164,53 @@ function makeNextCall(entryPoint, callList) {
             case "uploadquestiontext":
                 uploadQuestionText(entryPoint, callList);
                 break;
+            case "postdiffenvinit":
+                postDiffEnvInit(entryPoint, callList);
+                break;
+            case "posttestriginit":
+                postTestrigInit(entryPoint, callList);
+                break;
             default:
                 alert("Unsupported call", nextCall);
         }
     }
 }
 
+function postDiffEnvInit(entryPoint, remainingCalls) {
+    if (errorCheck((typeof elementAnswerDiffQuestionBtn === 'undefined' || bfIsInvalidElement(elementAnswerDiffQuestionBtn)),
+                "Answer diff question button element (elementAnswerDiffQuestionBtn) is not configured in the HTML header",
+                entryPoint))
+        return;
+
+    jQuery(elementAnswerDiffQuestionBtn).prop('disabled', false);
+
+    makeNextCall(entryPoint, remainingCalls);
+}
+
+function postTestrigInit(entryPoint, remainingCalls) {
+    if (errorCheck((typeof elementUploadBaseTestrigBtn === 'undefined' || bfIsInvalidElement(elementUploadBaseTestrigBtn)),
+                "Upload base config button element (elementUploadBaseTestrigBtn) is not configured in the HTML header",
+                entryPoint) ||
+        errorCheck((typeof elementUploadDiffEnvBtn === 'undefined' || bfIsInvalidElement(elementUploadDiffEnvBtn)),
+                "Upload differential config button element (elementUploadDiffEnvBtn) is not configured in the HTML header",
+                entryPoint) ||
+        errorCheck((typeof elementAnswerQuestionBtn === 'undefined' || bfIsInvalidElement(elementAnswerQuestionBtn)),
+                "Answer question button element (elementAnswerQuestionBtn) is not configured in the HTML header",
+                entryPoint))
+        return;
+
+    jQuery(elementUploadBaseTestrigBtn).prop('disabled', true);
+    jQuery(elementUploadDiffEnvBtn).prop('disabled', false);
+    jQuery(elementAnswerQuestionBtn).prop('disabled', false);
+
+    makeNextCall(entryPoint, remainingCalls);
+}
+
+
 function queueWork(worktype, entryPoint, remainingCalls) {
 
     if (errorCheck(bfIsInvalidStr(containerName), "Container name is empty", entryPoint) ||
-        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is empty", entryPoint) ||
-        //if the worktype is answer question, we must have a questioname in epQuestionName
-        errorCheck((!(entryPoint in epQuestionName) && worktype == "answerquestion"), 
-                   "Question name is not set", entryPoint))
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is empty", entryPoint))
         return;
 
     // real work begins
@@ -213,14 +253,28 @@ function queueWork(worktype, entryPoint, remainingCalls) {
             reqParams[ARG_DIFF_ACTIVE] = "";
             break;
         case "answerquestion":
+        case "answerdiffquestion":
+            //many checks and tasks are common to both answer commands; do those first, and then special case for diff
+            if (errorCheck(!(entryPoint in epQuestionName), "Question name is not set in epQuestionName", entryPoint))
+                return;
+
             reqParams[COMMAND_ANSWER] = "";
             reqParams[ARG_QUESTION_NAME] = epQuestionName[entryPoint];
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
-            if (diffEnvName != "") {
+            if (! bfIsInvalidStr(diffEnvName)) {
                 reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
             }
             reqParams[COMMAND_NXTNET_TRAFFIC] = "";
             reqParams[COMMAND_GET_HISTORY] = "";
+
+            if (worktype == "answerdiffquestion") {
+                if (errorCheck(bfIsInvalidStr(diffEnvName), "Diff environment is not set", entryPoint))
+                    return;
+
+                reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
+                reqParams[ARG_DIFF_ACTIVE] = "";
+            }
+
             break;
         default:
             alert("Unsupported work command", worktype);
@@ -258,12 +312,26 @@ function testMe() {
     queueWork("answerquestion", "abc", []);
 }
 
-function uploadDiffEnvironment(entryPoint, remainingCalls) {
+function txtToConfigBlob(entryPoint, elementText) {
 
-    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
-        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint) ||
-        errorCheck(bfIsInvalidStr(diffEnvName), "Diff environment name is not set", entryPoint) ||
-        errorCheck((typeof elementDiffEnvFile === 'undefined' || bfIsInvalidElement(elementDiffEnvFile)),
+    var configText = jQuery(elementText).val();
+    if (errorCheck(bfIsInvalidStr(configText), "Enter text", entryPoint))
+        return;
+
+    var zip = new JSZip();
+
+    var topLevelFolder = zip.folder("testrig");
+    var configFolder = topLevelFolder.folder("configs");
+    configFolder.file("device.cfg", configText);
+
+    var content = zip.generate({ type: "blob" });
+
+    return content;
+}
+
+function uploadDifEnvFile(entryPoint, remainingCalls) {
+
+    if (errorCheck((typeof elementDiffEnvFile === 'undefined' || bfIsInvalidElement(elementDiffEnvFile)),
                     "Diff environment file selector (elementDiffEnvFile) is not configured in the HTML header",
                     entryPoint))
         return;
@@ -272,21 +340,53 @@ function uploadDiffEnvironment(entryPoint, remainingCalls) {
     if (errorCheck(typeof envFile === 'undefined', "Select a differential environment file", entryPoint))
         return;
 
-    bfUpdateDebugInfo("Uploading differential environment");
-
-    // begin the work now
-
-   var data = new FormData();
-   data.append(SVC_API_KEY, apiKey);
-   data.append(SVC_CONTAINER_NAME_KEY, containerName);
-   data.append(SVC_TESTRIG_NAME_KEY, testrigName);
-   data.append(SVC_ENV_NAME_KEY, diffEnvName);
-   data.append(SVC_ZIPFILE_KEY, envFile);
-
-   bfPostData(SVC_UPLOAD_ENV_RSC, data, uploadDiffEnvironment_cb, genericFailure_cb, entryPoint, remainingCalls);
+    uploadDiffEnvFinal(entryPoint, remainingCalls, envFile);
 }
 
-function uploadDiffEnvironment_cb(response, entryPoint, remainingCalls) {
+function uploadDiffEnvFinal(entryPoint, remainingCalls, envBlobOrFile) {
+
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint))
+        return;
+
+    diffEnvName = "de_" + bfGetGuid();
+
+    bfUpdateDebugInfo("Uploading differential environment");
+
+    var data = new FormData();
+    data.append(SVC_API_KEY, apiKey);
+    data.append(SVC_CONTAINER_NAME_KEY, containerName);
+    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
+    data.append(SVC_ENV_NAME_KEY, diffEnvName);
+    data.append(SVC_ZIPFILE_KEY, envBlobOrFile);
+
+    bfPostData(SVC_UPLOAD_ENV_RSC, data, uploadDifEnv_cb, genericFailure_cb, entryPoint, remainingCalls);
+}
+
+function uploadDiffEnvSmart(entryPoint, remainingCalls) {
+    // sanity check inputs
+    if (errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
+                    "Config text element (elementConfigText) is not configured in the HTML header",
+                    entryPoint))
+        return;
+
+    if (testrigZip == "") {
+        if (errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
+                        "Config text element (elementConfigText) is not configured in the HTML header",
+                        entryPoint))
+            return;
+
+        var content = txtToConfigBlob(entryPoint, elementConfigText);
+        uploadDiffEnvFinal(entryPoint, remainingCalls, content);
+    }
+    else {
+        var content = testrigZip.generate({ type: "blob" });
+        uploadDiffEnvFinal(entryPoint, remainingCalls, content);
+    }
+}
+
+
+function uploadDifEnv_cb(response, entryPoint, remainingCalls) {
     bfUpdateDebugInfo("Uploaded diff environment.");
     makeNextCall(entryPoint, remainingCalls);
 }
@@ -398,7 +498,13 @@ function uploadTestrigSmart(entryPoint, remainingCalls) {
         return;
 
     if (testrigZip == "") {
-        uploadTestrigText(entryPoint, remainingCalls)
+        if (errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
+                        "Config text element (elementConfigText) is not configured in the HTML header",
+                        entryPoint))
+            return;
+
+        var content = txtToConfigBlob(entryPoint, elementConfigText);
+        uploadTestrigFinal(entryPoint, remainingCalls, content);
     }
     else {
         var content = testrigZip.generate({ type: "blob" });
@@ -406,28 +512,28 @@ function uploadTestrigSmart(entryPoint, remainingCalls) {
     }
 }
 
-function uploadTestrigText(entryPoint, remainingCalls) {
-    if (errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
-                    "Config text element (elementConfigText) is not configured in the HTML header",
-                    entryPoint))
-      return;
+//function uploadTestrigText(entryPoint, remainingCalls) {
+//    if (errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
+//                    "Config text element (elementConfigText) is not configured in the HTML header",
+//                    entryPoint))
+//      return;
 
-    var configText = jQuery(elementConfigText).val();
-    if (errorCheck(bfIsInvalidStr(configText), "Enter configuration", entryPoint))
-        return;
+//    var configText = jQuery(elementConfigText).val();
+//    if (errorCheck(bfIsInvalidStr(configText), "Enter configuration", entryPoint))
+//        return;
 
-    bfUpdateDebugInfo("Uploading config text");
+//    bfUpdateDebugInfo("Uploading config text");
 
-    var zip = new JSZip();
+//    var zip = new JSZip();
 
-    var topLevelFolder = zip.folder("testrig");
-    var configFolder = topLevelFolder.folder("configs");
-    configFolder.file("device.cfg", configText);
+//    var topLevelFolder = zip.folder("testrig");
+//    var configFolder = topLevelFolder.folder("configs");
+//    configFolder.file("device.cfg", configText);
 
-    var content = zip.generate({ type: "blob" });
+//    var content = zip.generate({ type: "blob" });
 
-    uploadTestrigFinal(entryPoint, remainingCalls, content);
-}
+//    uploadTestrigFinal(entryPoint, remainingCalls, content);
+//}
 
 function uploadTestrig_cb(response, entryPoint, remainingCalls) {
     bfUpdateDebugInfo("Uploaded testrig.");

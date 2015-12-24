@@ -126,8 +126,8 @@ function bfCheckLibConfiguration() {
     if (typeof envName === 'undefined' || bfIsInvalidStr(envName))
         alert("Environment name (envName) is not defined");
 
-    if (typeof diffEnvName === 'undefined' || bfIsInvalidStr(diffEnvName))
-        alert("Differential environment name (diffEnvName) is not defined");
+    if (typeof diffEnvName === 'undefined')
+        alert("Differential environment name (diffEnvName) is not declared");
 
     if (typeof testrigZip === 'undefined')
         alert("Testrig zip variable (testrigZip) is not declared");

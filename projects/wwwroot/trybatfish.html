@@ -22,9 +22,9 @@
         var containerName = "";
         var testrigName = "js_testrig";
         var envName = "default";
-        var diffEnvName = "delta";
+        var diffEnvName = "";
 
-        //this variable holds the testrig zip'd contents
+        //this variable holds the zip'd contents or base or differential testrig
         var testrigZip = "";
 
         //............text area for debug and output
@@ -44,6 +44,13 @@
         var elementQuestionParams = '#txtQuestionParams';
         var elementQuestionText = '#txtQuestion';
         var elementQuestionSelect = '#questionSelect';
+
+        //............buttons for triggering various actions
+        var elementUploadBaseTestrigBtn = '#btnUploadConfig';
+        var elementUploadDiffEnvBtn = '#btnUploadDiffEnv';
+        var elementAnswerQuestionBtn = '#btnAnswerQuestion';
+        var elementAnswerDiffQuestionBtn = '#btnAnswerDiffQuestion';
+
     </script>
     <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
@@ -57,17 +64,21 @@
                 <h2>Instructions
                 </h2>
                 <ol>
-                    <li>Enter configuration, which can be an individual device or a zipped testrig. 
+                    <li>Enter configuration, which can be an individual device or a zipped testrig, and press "Upload base configuration."
                     </li>
-                    <li>Press "Upload configuration."
+                    <li>Enter question, and press "Answer question."
                     </li>
-                    <li>Enter query.
-                    </li>
-                    <li>Press "Answer question."
+                    <li> To ask questions about a planned configuration change, 
+                    <ol>
+                        <li> Enter the delta configuration that has configuration files that differ from the base, and press "Upload delta configuration."
+                        </li>
+                        <li> Enter question, and press "Answer delta question." 
+                        </li>
+                    </ol>      
                     </li>
                 </ol>
                 <p>
-                Steps 4 and 5 can be repeated multiple times once the configuration has been uploaded. Upload a new configuration to analyze another. 
+                Steps 2 and 3 can be repeated multiple times for different questions and delta configuratins.  To analyze a new base configuration, start again (reload the page). 
             </td>
         </tr>
     </table>
@@ -81,7 +92,7 @@
                             <td bgcolor="#DDFFDD">
                                 <table>
                                     <tr align="center">
-                                        <td colspan="2"><h3>Enter configuration [Choose your file, type configuration, or select from our samples]</h3>
+                                        <td colspan="2"><h3>Enter configuration [Choose your file, type configuration, or select a sample to explore]</h3>
                                         </td>
                                     </tr>
                                     <tr>
@@ -103,10 +114,10 @@
                                     </tr>
                                     <tr align="center">
                                         <td>
-                                            <input type="button" id="btnUploadConfigTest" value="Upload Base Configuration"
-                                                onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::generatedataplane::getdataplane')" />
-                                            <input type="button" id="btnUploadDiffEnv" value="Upload Delta Configuration" disabled
-                                                onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::generatedataplane::getdataplane')" />
+                                            <input type="button" id="btnUploadConfig" value="Upload base configuration"
+                                                onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::generatedataplane::getdataplane::posttestriginit')" />
+                                            <input type="button" id="btnUploadDiffEnv" value="Upload delta configuration" disabled
+                                                onclick="startCalls('btnUploadConfigText', 'uploaddiffenvsmart::generatediffdataplane::getdiffdataplane::postdiffenvinit')" />
                                         </td>
                                     </tr>
                                 </table>
@@ -144,8 +155,10 @@
                                     </tr>
                                     <tr align="center">
                                         <td>
-                                            <input type="button" id="btnUploadQuestion" value="Answer question" disabled
+                                            <input type="button" id="btnAnswerQuestion" value="Answer about base" disabled
                                                 onclick="startCalls('btnUploadConfigText', 'uploadquestiontext::answerquestion')" />
+                                            <input type="button" id="btnAnswerDiffQuestion" value="Answer about delta" disabled
+                                                onclick="startCalls('btnUploadConfigText', 'uploadquestiontext::answerdiffquestion')" />
                                         </td>
                                     </tr>
                                 </table>
