@@ -1,12 +1,12 @@
 package org.batfish.representation.juniper;
 
-import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.batfish.representation.Prefix;
+import org.batfish.util.ReferenceCountedStructure;
 
-public class PrefixList implements Serializable {
+public class PrefixList extends ReferenceCountedStructure {
 
    /**
     *

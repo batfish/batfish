@@ -231,6 +231,8 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_SERVICE_PORT = "serviceport";
 
+   private static final String ARG_SYNTHESIZE_JSON_TOPOLOGY = "synthesizejsontopology";
+
    private static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
 
    private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
@@ -421,6 +423,8 @@ public final class Settings extends BaseSettings {
    private boolean _shuffleJobs;
 
    private boolean _simplify;
+
+   private boolean _synthesizeJsonTopology;
 
    private boolean _synthesizeTopology;
 
@@ -764,6 +768,10 @@ public final class Settings extends BaseSettings {
       return _simplify;
    }
 
+   public boolean getSynthesizeJsonTopology() {
+      return _synthesizeJsonTopology;
+   }
+
    public boolean getSynthesizeTopology() {
       return _synthesizeTopology;
    }
@@ -886,6 +894,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_SERVICE_HOST, "0.0.0.0");
       setDefaultProperty(ARG_SERVICE_MODE, false);
       setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
+      setDefaultProperty(ARG_SYNTHESIZE_JSON_TOPOLOGY, false);
       setDefaultProperty(ARG_SYNTHESIZE_TOPOLOGY, false);
       setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, false);
       setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, false);
@@ -1079,6 +1088,9 @@ public final class Settings extends BaseSettings {
 
       addOption(ARG_SERVICE_PORT, "port for batfish service", ARGNAME_PORT);
 
+      addBooleanOption(ARG_SYNTHESIZE_JSON_TOPOLOGY,
+            "synthesize json topology from interface ip subnet information");
+
       addBooleanOption(ARG_SYNTHESIZE_TOPOLOGY,
             "synthesize topology from interface ip subnet information");
 
@@ -1231,6 +1243,7 @@ public final class Settings extends BaseSettings {
       _servicePort = getIntOptionValue(ARG_SERVICE_PORT);
       _shuffleJobs = !getBooleanOptionValue(ARG_NO_SHUFFLE);
       _simplify = !getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
+      _synthesizeJsonTopology = getBooleanOptionValue(ARG_SYNTHESIZE_JSON_TOPOLOGY);
       _synthesizeTopology = getBooleanOptionValue(ARG_SYNTHESIZE_TOPOLOGY);
       _throwOnLexerError = getBooleanOptionValue(ARG_THROW_ON_LEXER_ERROR);
       _throwOnParserError = getBooleanOptionValue(ARG_THROW_ON_PARSER_ERROR);

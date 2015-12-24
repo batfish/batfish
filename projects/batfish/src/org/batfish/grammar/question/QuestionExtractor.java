@@ -92,6 +92,8 @@ import org.batfish.question.interface_expr.BaseCaseInterfaceExpr;
 import org.batfish.question.interface_expr.InterfaceExpr;
 import org.batfish.question.interface_expr.VarInterfaceExpr;
 import org.batfish.question.ip_expr.IpExpr;
+import org.batfish.question.ip_expr.LiteralIpExpr;
+import org.batfish.question.ip_expr.VarIpExpr;
 import org.batfish.question.ip_expr.bgp_neighbor.LocalIpBgpNeighborIpExpr;
 import org.batfish.question.ip_expr.bgp_neighbor.RemoteIpBgpNeighborIpExpr;
 import org.batfish.question.ip_expr.iface.IpInterfaceIpExpr;
@@ -111,6 +113,7 @@ import org.batfish.question.policy_map_expr.PolicyMapExpr;
 import org.batfish.question.policy_map_expr.VarPolicyMapExpr;
 import org.batfish.question.prefix_expr.PrefixExpr;
 import org.batfish.question.prefix_expr.iface.PrefixInterfacePrefixExpr;
+import org.batfish.question.prefix_expr.iface.SubnetInterfacePrefixExpr;
 import org.batfish.question.prefix_expr.static_route.PrefixStaticRoutePrefixExpr;
 import org.batfish.question.prefix_space_expr.PrefixSpaceExpr;
 import org.batfish.question.prefix_space_expr.VarPrefixSpaceExpr;
@@ -707,7 +710,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.interface_isis_boolean_expr() != null) {
          return toBooleanExpr(caller, ctx.interface_isis_boolean_expr());
       }
-      else if (ctx.interface_isloopback_boolean_expr() != null) {
+      else if (ctx.interface_is_loopback_boolean_expr() != null) {
          return new IsLoopbackInterfaceBooleanExpr(caller);
       }
       else if (ctx.interface_ospf_boolean_expr() != null) {
@@ -1217,6 +1220,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.static_route_ip_expr() != null) {
          return toIpExpr(ctx.static_route_ip_expr());
       }
+      else if (ctx.IP_ADDRESS() != null) {
+         return new LiteralIpExpr(new Ip(ctx.IP_ADDRESS().getText()));
+      }
+      else if (ctx.var_ip_expr() != null) {
+         return new VarIpExpr(ctx.var_ip_expr().VARIABLE().getText());
+      }
       else {
          throw conversionError(ERR_CONVERT_IP, ctx);
       }
@@ -1349,6 +1358,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       InterfaceExpr caller = toInterfaceExpr(ctx.caller);
       if (ctx.interface_prefix_prefix_expr() != null) {
          return new PrefixInterfacePrefixExpr(caller);
+      }
+      else if (ctx.interface_subnet_prefix_expr() != null) {
+         return new SubnetInterfacePrefixExpr(caller);
       }
       else {
          throw conversionError(ERR_CONVERT_PREFIX, ctx);

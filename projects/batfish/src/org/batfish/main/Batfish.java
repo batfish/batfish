@@ -159,6 +159,9 @@ import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.ReachableQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -2833,6 +2836,11 @@ public class Batfish implements AutoCloseable {
          return;
       }
 
+      if (_settings.getSynthesizeJsonTopology()) {
+         writeJsonTopology();
+         return;
+      }
+
       if (_settings.getAnswer()) {
          answer();
          action = true;
@@ -3245,6 +3253,35 @@ public class Batfish implements AutoCloseable {
             + "\"...");
       serializeObject(topology, ibgpTopologyFile);
       _logger.info("OK\n");
+   }
+
+   private void writeJsonTopology() {
+      try {
+         Map<String, Configuration> configs = loadConfigurations();
+         EdgeSet textEdges = synthesizeTopology(configs);
+         JSONArray jEdges = new JSONArray();
+         for (Edge textEdge : textEdges) {
+            Configuration node1 = configs.get(textEdge.getNode1());
+            Configuration node2 = configs.get(textEdge.getNode2());
+            Interface interface1 = node1.getInterfaces()
+                  .get(textEdge.getInt1());
+            Interface interface2 = node2.getInterfaces()
+                  .get(textEdge.getInt2());
+            JSONObject jEdge = new JSONObject();
+            jEdge.put("interface1", interface1.toJSONObject());
+            jEdge.put("interface2", interface2.toJSONObject());
+            jEdges.put(jEdge);
+         }
+         JSONObject master = new JSONObject();
+         JSONObject topology = new JSONObject();
+         topology.put("edges", jEdges);
+         master.put("topology", topology);
+         String text = master.toString(3);
+         _logger.output(text);
+      }
+      catch (JSONException e) {
+         throw new BatfishException("Failed to synthesize JSON topology", e);
+      }
    }
 
    private void writeNxtnetInput(Set<String> outputSymbols,

@@ -2,8 +2,8 @@ package org.batfish.util;
 
 import java.io.Serializable;
 
-public abstract class NamedStructure implements Comparable<NamedStructure>,
-      Serializable {
+public abstract class NamedStructure extends ReferenceCountedStructure
+      implements Comparable<NamedStructure>, Serializable {
 
    private static final long serialVersionUID = 1L;
 

@@ -1,6 +1,5 @@
 package org.batfish.representation.juniper;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -14,9 +13,10 @@ import org.batfish.representation.IsoAddress;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.SwitchportMode;
+import org.batfish.util.NamedStructure;
 import org.batfish.util.SubRange;
 
-public class Interface implements Serializable {
+public class Interface extends NamedStructure {
 
    private static final long serialVersionUID = 1L;
 
@@ -53,8 +53,6 @@ public class Interface implements Serializable {
 
    private IsoAddress _isoAddress;
 
-   private String _name;
-
    private int _nativeVlan;
 
    private Ip _ospfActiveArea;
@@ -80,7 +78,7 @@ public class Interface implements Serializable {
    private final Map<String, Interface> _units;
 
    public Interface(String name) {
-      _name = name;
+      super(name);
       _active = true;
       _allPrefixes = new LinkedHashSet<Prefix>();
       _allPrefixIps = new LinkedHashSet<Ip>();
@@ -132,10 +130,6 @@ public class Interface implements Serializable {
 
    public IsoAddress getIsoAddress() {
       return _isoAddress;
-   }
-
-   public String getName() {
-      return _name;
    }
 
    public int getNativeVlan() {

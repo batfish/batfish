@@ -496,6 +496,11 @@ STATIC_ROUTE
    'static_route'
 ;
 
+SUBNET
+:
+   'subnet'
+;
+
 TESTRIG
 :
    'testrig'

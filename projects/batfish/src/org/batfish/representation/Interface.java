@@ -5,13 +5,60 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.batfish.common.BatfishException;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.util.NamedStructure;
 import org.batfish.util.SubRange;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 public class Interface extends NamedStructure {
 
    private static final long serialVersionUID = 1L;
+
+   private static InterfaceType computeCiscoInterfaceType(String name) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+
+   }
+
+   public static InterfaceType computeInterfaceType(String name,
+         ConfigurationFormat format) {
+      switch (format) {
+      case ARISTA:
+      case CISCO:
+      case CISCO_IOS_XR:
+         return computeCiscoInterfaceType(name);
+
+      case FLAT_JUNIPER:
+      case JUNIPER:
+      case JUNIPER_SWITCH:
+         return computeJuniperInterfaceType(name);
+
+      case UNKNOWN:
+      case VXWORKS:
+      default:
+         throw new BatfishException(
+               "Cannot compute interface type for unsupported configuration format: "
+                     + format.toString());
+      }
+   }
+
+   private static InterfaceType computeJuniperInterfaceType(String name) {
+      if (name.startsWith("st")) {
+         return InterfaceType.VPN;
+      }
+      else if (name.startsWith("reth")) {
+         return InterfaceType.REDUNDANT;
+      }
+      else if (name.startsWith("ae")) {
+         return InterfaceType.AGGREGATED;
+      }
+      else {
+         return InterfaceType.PHYSICAL;
+      }
+   }
 
    private int _accessVlan;
 
@@ -74,6 +121,10 @@ public class Interface extends NamedStructure {
 
    public void addAllowedRanges(List<SubRange> ranges) {
       _allowedVlans.addAll(ranges);
+   }
+
+   private InterfaceType computeInterfaceType() {
+      return computeInterfaceType(_name, _owner.getVendor());
    }
 
    public int getAccessVlan() {
@@ -261,6 +312,16 @@ public class Interface extends NamedStructure {
    public void setSwitchportTrunkEncapsulation(
          SwitchportEncapsulationType encapsulation) {
       _switchportTrunkEncapsulation = encapsulation;
+   }
+
+   public JSONObject toJSONObject() throws JSONException {
+      JSONObject iface = new JSONObject();
+      iface.put("node", _owner.getName());
+      iface.put("name", _name);
+      iface.put("prefix", _prefix.toString());
+      InterfaceType interfaceType = computeInterfaceType();
+      iface.put("type", interfaceType.toString());
+      return iface;
    }
 
 }
