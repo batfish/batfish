@@ -168,7 +168,7 @@ public class Main {
       try {
          _settings = new Settings(args);
          _logger = new BatfishLogger(_settings.getLogLevel(), false,
-               _settings.getLogFile(), false);
+               _settings.getLogFile(), false, true);
          initAuthorizer();
          initPoolManager();
          initWorkManager();

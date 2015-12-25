@@ -231,7 +231,7 @@ public class Driver {
       }
       _mainLogger = new BatfishLogger(_mainSettings.getLogLevel(),
             _mainSettings.getTimestamp(), _mainSettings.getLogFile(),
-            _mainSettings.getLogTee());
+            _mainSettings.getLogTee(), true);
       System.setErr(_mainLogger.getPrintStream());
       System.setOut(_mainLogger.getPrintStream());
       _mainSettings.setLogger(_mainLogger);
@@ -400,7 +400,7 @@ public class Driver {
 
                final BatfishLogger jobLogger = new BatfishLogger(
                      settings.getLogLevel(), settings.getTimestamp(),
-                     settings.getLogFile(), settings.getLogTee());
+                     settings.getLogFile(), settings.getLogTee(), false);
                settings.setLogger(jobLogger);
 
                final Task task = new Task(args);

@@ -721,7 +721,7 @@ public class Client {
    private void RunBatchMode() {
 
       _logger = new BatfishLogger(_settings.getLogLevel(), false,
-            _settings.getLogFile(), false);
+            _settings.getLogFile(), false, false);
 
       String workMgr = _settings.getServiceHost() + ":"
             + _settings.getServiceWorkPort();
