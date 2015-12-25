@@ -4,7 +4,7 @@
     <title>Try Batfish</title>
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.11.2.min.js"></script>
     <script src="libs/jszip.js"></script>
-    
+
     <!-- Mandatory in IE 6, 7, 8 and 9. -->
     <!--[if IE]>
     <script type="text/javascript" src="dist/jszip-utils-ie.js"></script>
@@ -58,30 +58,28 @@
     <div id="divTest" style="display: none">
         <input type="button" id="btnTest" value="Test me!" onclick="testMe()" />
     </div>
-    <table width="100%>
-        <tr>
-            <td bgcolor="#FFDDDD">
-                <h2>Instructions
-                </h2>
-                <ol>
-                    <li>Enter configuration, which can be an individual device or a zipped testrig, and press "Upload base configuration."
+    <h2>
+        <input type="button" value="Toggle instructions" width="50px" onclick="jQuery('#instructions').toggle()" />
+    </h2>
+    <div id="instructions">
+        <ol>
+            <li>Enter configuration, which can be an individual device or a zipped testrig, and press <b>Upload base configuration</b>.
                     </li>
-                    <li>Enter question, and press "Answer question."
+            <li>Enter question, and press <b>Answer about base</b>.
                     </li>
-                    <li> To ask questions about a planned configuration change, 
-                    <ol>
-                        <li> Enter the delta configuration that has configuration files that differ from the base, and press "Upload delta configuration."
-                        </li>
-                        <li> Enter question, and press "Answer delta question." 
-                        </li>
-                    </ol>      
-                    </li>
-                </ol>
-                <p>
-                Steps 2 and 3 can be repeated multiple times for different questions and delta configuratins.  To analyze a new base configuration, start again (reload the page). 
-            </td>
-        </tr>
-    </table>
+            <li>To ask questions about a planned configuration change, 
+                   
+                            <ol>
+                                <li>Enter the configuration delta (i.e., files that differ from the base), and press <b>Upload delta configuration</b>.
+                                </li>
+                                <li>Enter question, and press <b>Answer about delta</b>. 
+                                </li>
+                            </ol>
+            </li>
+        </ol>
+        <p>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Steps 2 and 3 can be repeated multiple times for different questions and delta configuratins.  To analyze a new base configuration, start again (reload the page).                
+    </div>
 
     <table>
         <tr>
@@ -92,7 +90,8 @@
                             <td bgcolor="#DDFFDD">
                                 <table>
                                     <tr align="center">
-                                        <td colspan="2"><h3>Enter configuration [Choose your file, type configuration, or select a sample to explore]</h3>
+                                        <td colspan="2">
+                                            <h3>Enter configuration [Choose your file, type configuration, or select a sample to explore]</h3>
                                         </td>
                                     </tr>
                                     <tr>
@@ -134,8 +133,9 @@
                             <td bgcolor="#DDFFDD">
                                 <table>
                                     <tr align="center">
-                                        <td colspan="2"><h3>Enter question [Choose your file, type the question, or select from our samples]</h3>
-                        </td>
+                                        <td colspan="2">
+                                            <h3>Enter question [Choose your file, type the question, or select from our samples]</h3>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td>
@@ -168,32 +168,17 @@
                     </table>
                 </form>
             </td>
-            <td>
-
-            </td>
-            <td align=center bgcolor="#DDDDFF">
+            <td></td>
+            <td align="center" bgcolor="#DDDDFF">
                 <h3>Output</h3>
                 <br />
                 <textarea id="txtOutput" style="display: normal; border-radius: 5px" cols="60" rows="50" readonly></textarea>
             </td>
         </tr>
     </table>
-    <table>
-        <tr>
-            <td>
-                <table>
-                    <tr>
-                        <td colspan="2">Activity log
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <textarea id="txtDebug" style="display: normal; border-radius: 5pt" cols="120" rows="10" readonly></textarea>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+    <div id="activityLog" align="center">
+    <h3>Activity log</h3>
+    <textarea id="txtDebug" style="display: normal; border-radius: 5pt" rows="10" cols="140" readonly></textarea>
+    </div>
 </body>
 </html>
