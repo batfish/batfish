@@ -4,6 +4,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -31,6 +32,8 @@ public class Driver {
 
    private static boolean _idle = true;
 
+   private static Date _lastPollFromCoordinator = new Date();
+   
    private static BatfishLogger _mainLogger = null;
 
    private static Settings _mainSettings = null;
@@ -188,6 +191,7 @@ public class Driver {
    }
 
    public static boolean getIdle() {
+      _lastPollFromCoordinator = new Date();
       return _idle;
    }
 
@@ -244,21 +248,23 @@ public class Driver {
 
          try {
             if (_mainSettings.getCoordinatorRegister()) {
-               boolean registrationSuccess;
-               do {
-                  registrationSuccess = registerWithCoordinator();
-                  if (!registrationSuccess) {
-                     ;
-                     _mainLogger
-                           .error("Unable to register  with coordinator\n");
-                     Thread.sleep(1000); // 1 second
-                  }
-               } while (!registrationSuccess);
+               //this function does not return until registration succeeds
+               registerWithCoordinatorPersistent();
             }
 
-            // sleep indefinitely, in 10 minute chunks
+            // sleep indefinitely, in 1 minute chunks
             while (true) {
-               Thread.sleep(10 * 60 * 1000); // 10 minutes
+               Thread.sleep(1 * 60 * 1000); // 1 minute
+               
+               //every time we wake up, we check if the coordinator has polled us recently
+               //if not, re-register the service. the coordinator might have died and come back.
+               if (_mainSettings.getCoordinatorRegister() &&
+                    new Date().getTime() - _lastPollFromCoordinator.getTime() 
+                                 > 30 * 1000) {
+                  //this function does not return until registration succeeds
+                  registerWithCoordinatorPersistent();
+               }
+                  
             }
          }
          catch (Exception ex) {
@@ -323,8 +329,7 @@ public class Driver {
          return true;
       }
       catch (ProcessingException e) {
-         _mainLogger.errorf("unable to connect to %s: %s\n", workMgr,
-               ExceptionUtils.getStackTrace(e));
+         _mainLogger.errorf("unable to connect to %s\n", workMgr);
          return false;
       }
       catch (Exception e) {
@@ -333,6 +338,19 @@ public class Driver {
       }
    }
 
+   private static void registerWithCoordinatorPersistent() throws InterruptedException {
+      boolean registrationSuccess;
+      do {
+         registrationSuccess = registerWithCoordinator();
+         if (!registrationSuccess) {
+            ;
+            _mainLogger
+                  .error("Unable to register  with coordinator\n");
+            Thread.sleep(10* 1000); // 10 seconds
+         }
+      } while (!registrationSuccess);
+   }
+   
    private static boolean RunBatfish(Settings settings) {
       BatfishLogger logger = settings.getLogger();
       boolean noError = true;

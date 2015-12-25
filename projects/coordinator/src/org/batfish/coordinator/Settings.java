@@ -180,7 +180,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_LOG_LEVEL,
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
       setDefaultProperty(ARG_PERIOD_ASSIGN_WORK_MS, 1000);
-      setDefaultProperty(ARG_PERIOD_CHECK_WORK_MS, 5000);
+      setDefaultProperty(ARG_PERIOD_CHECK_WORK_MS, 1000);
       setDefaultProperty(ARG_PERIOD_WORKER_STATUS_REFRESH_MS, 10000);
       setDefaultProperty(ARG_QUEUE_COMPLETED_WORK, "batfishcompletedwork");
       setDefaultProperty(ARG_QUEUE_INCOMPLETE_WORK, "batfishincompletework");
