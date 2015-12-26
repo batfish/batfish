@@ -466,6 +466,40 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             name, _c);
       String inAclName = iface.getIncomingFilter();
       if (inAclName != null) {
+         Zone zone = _interfaceZones.get(iface);
+         String zoneName = zone.getName();
+         if (zone != null) {
+            // filter for interface in zone
+            FirewallFilter zoneInboundInterfaceFilter = zone
+                  .getInboundInterfaceFilters().get(iface);
+            if (zoneInboundInterfaceFilter != null) {
+               String zoneInboundInterfaceFilterName = zoneInboundInterfaceFilter
+                     .getName();
+               zoneInboundInterfaceFilter
+                     .getReferers()
+                     .put(iface,
+                           "Interface: \""
+                                 + iface.getName()
+                                 + "\" refers to inbound filter for interface in zone : \""
+                                 + zoneName + "\"");
+               IpAccessList zoneInboundInterfaceFilterList = _c
+                     .getIpAccessLists().get(zoneInboundInterfaceFilterName);
+               newIface.setInboundFilter(zoneInboundInterfaceFilterList);
+            }
+            else {
+               // filter for zone
+               FirewallFilter zoneInboundFilter = zone.getInboundFilter();
+               String zoneInboundFilterName = zoneInboundFilter.getName();
+               zoneInboundFilter.getReferers().put(
+                     iface,
+                     "Interface: \"" + iface.getName()
+                           + "\" refers to inbound filter for zone : \""
+                           + zoneName + "\"");
+               IpAccessList zoneInboundFilterList = _c.getIpAccessLists().get(
+                     zoneInboundFilterName);
+               newIface.setInboundFilter(zoneInboundFilterList);
+            }
+         }
          IpAccessList inAcl = _c.getIpAccessLists().get(inAclName);
          if (inAcl == null) {
             _w.redFlag("missing incoming acl: \"" + inAclName + "\"");
@@ -568,6 +602,12 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          line.setAction(action);
          for (FwFrom from : term.getFroms()) {
             from.applyTo(line, _w);
+         }
+         for (FwFromHostProtocol from : term.getFromHostProtocols()) {
+            from.applyTo(lines, _w);
+         }
+         for (FwFromHostService from : term.getFromHostServices()) {
+            from.applyTo(lines, _w);
          }
          if (!term.getFromApplications().isEmpty()) {
             for (FwFromApplication fromApplication : term.getFromApplications()) {

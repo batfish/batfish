@@ -32,6 +32,8 @@ public class JuniperConfiguration implements Serializable {
 
    protected final Map<String, IkeProposal> _ikeProposals;
 
+   protected final Map<Interface, Zone> _interfaceZones;
+
    protected final Map<String, IpsecPolicy> _ipsecPolicies;
 
    protected final Map<String, IpsecProposal> _ipsecProposals;
@@ -59,6 +61,7 @@ public class JuniperConfiguration implements Serializable {
       _ikeGateways = new TreeMap<String, IkeGateway>();
       _ikePolicies = new TreeMap<String, IkePolicy>();
       _ikeProposals = new TreeMap<String, IkeProposal>();
+      _interfaceZones = new TreeMap<Interface, Zone>();
       _ipsecPolicies = new TreeMap<String, IpsecPolicy>();
       _ipsecProposals = new TreeMap<String, IpsecProposal>();
       _ipsecVpns = new TreeMap<String, IpsecVpn>();
@@ -103,6 +106,10 @@ public class JuniperConfiguration implements Serializable {
 
    public final Map<String, IkeProposal> getIkeProposals() {
       return _ikeProposals;
+   }
+
+   public Map<Interface, Zone> getInterfaceZones() {
+      return _interfaceZones;
    }
 
    public final Map<String, IpsecPolicy> getIpsecPolicies() {

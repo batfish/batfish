@@ -61,7 +61,8 @@ import org.batfish.representation.juniper.AddressSetEntry;
 import org.batfish.representation.juniper.Application;
 import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.BaseApplication.Term;
-import org.batfish.representation.juniper.HostInboundSettings;
+import org.batfish.representation.juniper.FwFromHostProtocol;
+import org.batfish.representation.juniper.FwFromHostService;
 import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
 import org.batfish.representation.juniper.IpsecVpn;
@@ -1349,8 +1350,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private GeneratedRoute _currentGeneratedRoute;
 
-   private HostInboundSettings _currentHostInboundSettings;
-
    private IkeGateway _currentIkeGateway;
 
    private IkePolicy _currentIkePolicy;
@@ -1400,6 +1399,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private Zone _currentToZone;
 
    private Zone _currentZone;
+
+   private FirewallFilter _currentZoneInboundFilter;
+
+   private Interface _currentZoneInterface;
 
    private FlatJuniperCombinedParser _parser;
 
@@ -1998,12 +2001,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentFromZone = new Zone(fromName,
                _configuration.getGlobalAddressBooks());
          _configuration.getZones().put(fromName, _currentFromZone);
+         _configuration.getFirewallFilters().put(
+               _currentFromZone.getInboundFilter().getName(),
+               _currentFromZone.getInboundFilter());
       }
       String toName = ctx.to.getText();
       _currentToZone = _configuration.getZones().get(toName);
       if (_currentToZone == null) {
          _currentToZone = new Zone(toName,
                _configuration.getGlobalAddressBooks());
+         _configuration.getFirewallFilters().put(
+               _currentToZone.getInboundFilter().getName(),
+               _currentToZone.getInboundFilter());
          _configuration.getZones().put(toName, _currentToZone);
       }
       _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
@@ -2031,15 +2040,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterSzszt_interfaces(Szszt_interfacesContext ctx) {
-      Interface zoneInterface = initInterface(ctx.interface_id());
-      _currentHostInboundSettings = _currentZone
-            .getInterfaceHostInboundSettings().get(zoneInterface);
-      if (_currentHostInboundSettings == null) {
-         _currentHostInboundSettings = new HostInboundSettings();
-         _currentZone.getInterfaceHostInboundSettings().put(zoneInterface,
-               _currentHostInboundSettings);
+   public void enterSzszt_host_inbound_traffic(
+         Szszt_host_inbound_trafficContext ctx) {
+      if (_currentZoneInterface != null) {
+         _currentZoneInboundFilter = _currentZone.getInboundInterfaceFilters()
+               .get(_currentZoneInterface);
+         if (_currentZoneInboundFilter == null) {
+            String name = "~ZONE_INTERFACE_FILTER~" + _currentZone.getName()
+                  + "~INTERFACE~" + _currentZoneInterface.getName();
+            _currentZoneInboundFilter = new FirewallFilter(name, Family.INET);
+            _configuration.getFirewallFilters().put(name,
+                  _currentZoneInboundFilter);
+            _currentZone.getInboundInterfaceFilters().put(
+                  _currentZoneInterface, _currentZoneInboundFilter);
+         }
       }
+   }
+
+   @Override
+   public void enterSzszt_interfaces(Szszt_interfacesContext ctx) {
+      _currentZoneInterface = initInterface(ctx.interface_id());
+      _configuration.getInterfaceZones().put(_currentZoneInterface,
+            _currentZone);
    }
 
    @Override
@@ -2049,9 +2071,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_currentZone == null) {
          _currentZone = new Zone(zoneName,
                _configuration.getGlobalAddressBooks());
+         _configuration.getFirewallFilters().put(
+               _currentZone.getInboundFilter().getName(),
+               _currentZone.getInboundFilter());
          _configuration.getZones().put(zoneName, _currentZone);
       }
-      _currentHostInboundSettings = _currentZone.getHostInboundSettings();
+      _currentZoneInboundFilter = _currentZone.getInboundFilter();
    }
 
    @Override
@@ -2409,13 +2434,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitHibt_protocols(Hibt_protocolsContext ctx) {
       HostProtocol protocol = toHostProtocol(ctx.hib_protocol());
-      _currentHostInboundSettings.getProtocols().add(protocol);
+      String termName = protocol.name();
+      FwTerm newTerm = new FwTerm(termName);
+      _currentZoneInboundFilter.getTerms().put(termName, newTerm);
+      newTerm.getFromHostProtocols().add(new FwFromHostProtocol(protocol));
    }
 
    @Override
    public void exitHibt_system_services(Hibt_system_servicesContext ctx) {
       HostSystemService service = toHostSystemService(ctx.hib_system_service());
-      _currentHostInboundSettings.getServices().add(service);
+      String termName = service.name();
+      FwTerm newTerm = new FwTerm(termName);
+      _currentZoneInboundFilter.getTerms().put(termName, newTerm);
+      newTerm.getFromHostServices().add(new FwFromHostService(service));
    }
 
    @Override
@@ -3010,13 +3041,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitSzszt_interfaces(Szszt_interfacesContext ctx) {
-      _currentHostInboundSettings = _currentZone.getHostInboundSettings();
+      _currentZoneInterface = null;
    }
 
    @Override
    public void exitSzt_security_zone(Szt_security_zoneContext ctx) {
       _currentZone = null;
-      _currentHostInboundSettings = null;
+      _currentZoneInboundFilter = null;
    }
 
    @Override
