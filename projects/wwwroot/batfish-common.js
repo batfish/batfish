@@ -109,6 +109,9 @@ function bfCheckLibConfiguration() {
     if (typeof elementOutputText === 'undefined' || bfIsInvalidElement(elementOutputText))
         alert("Output text element (elementOutputText) is not defined");
 
+    if (typeof elementSpinDiv === 'undefined' || bfIsInvalidElement(elementSpinDiv))
+        alert("Spin div element is not defined");
+
     //check that various variables are properly declared and defined
     if (typeof apiKey === 'undefined' || bfIsInvalidStr(apiKey))
         alert("API key (apiKey) is not defined");

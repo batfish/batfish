@@ -1,6 +1,29 @@
 ﻿/// <reference path="batfish-common.js" />
 /// <reference path="workclient.js" />
 
+var spinOpts = {
+    lines: 13 // The number of lines to draw
+, length: 28 // The length of each line
+, width: 14 // The line thickness
+, radius: 42 // The radius of the inner circle
+, scale: 1 // Scales overall size of the spinner
+, corners: 1 // Corner roundness (0..1)
+, color: '#000' // #rgb or #rrggbb or array of colors
+, opacity: 0.25 // Opacity of the lines
+, rotate: 0 // The rotation offset
+, direction: 1 // 1: clockwise, -1: counterclockwise
+, speed: 1 // Rounds per second
+, trail: 60 // Afterglow percentage
+, fps: 20 // Frames per second when using setTimeout() as a fallback for CSS
+, zIndex: 2e9 // The z-index (defaults to 2000000000)
+, className: 'spinner' // The CSS class to assign to the spinner
+, top: '50%' // Top position relative to parent
+, left: '50%' // Left position relative to parent
+, shadow: false // Whether to render a shadow
+, hwaccel: false // Whether to use hardware acceleration
+, position: 'absolute' // Element positioning
+}
+
 //this function populates the config text box with the chosen file
 function loadConfigText() {
 
@@ -32,7 +55,7 @@ function loadConfigText() {
                 jQuery(elementConfigText).val("");
                 jQuery(elementTestrigFile).val('');
             }
-            
+
         }
         reader.readAsArrayBuffer(configFile);
     }
@@ -92,7 +115,7 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
         errorCheck(typeof dstTextBox === 'undefined' || bfIsInvalidElement(dstTextBox),
            "Dst text box id is incorrect", "loadtext") ||
         errorCheck(typeof elementLocalFile === 'undefined' || bfIsInvalidElement(elementLocalFile),
-           "Local file element is incorrect", "loadtext") || 
+           "Local file element is incorrect", "loadtext") ||
         errorCheck(typeof elementConfigSelect === 'undefined' || bfIsInvalidElement(elementConfigSelect),
             "Config select element (elementConfigSelect) is not configured in te HTML header",
             "loadtext"))
@@ -121,7 +144,7 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
                 jQuery(dstTextBox).val("");
                 jQuery(dropDownId).prop('selectedIndex', 0);
             }
-            });        
+        });
     }
     else {
         jQuery.ajax({
@@ -157,7 +180,7 @@ function testMe() {
 
 function zipToOverviewText(zip, strPrefix) {
     var overviewText = "";
-        // that, or a good ol' for(var entryName in zip.files)
+    // that, or a good ol' for(var entryName in zip.files)
     $.each(zip.files, function (index, zipEntry) {
         overviewText += strPrefix + zipEntry.name + "\n";
     });

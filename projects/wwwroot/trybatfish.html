@@ -3,8 +3,9 @@
 <head>
     <title>Try Batfish</title>
     <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.11.2.min.js"></script>
-    <script src="libs/jszip.js"></script>
-
+    <script src="libs/jszip.min.js"></script>
+    <script src="libs/spin.min.js"></script>
+    <script src="libs/jquery.spin.js"></script>
     <!-- Mandatory in IE 6, 7, 8 and 9. -->
     <!--[if IE]>
     <script type="text/javascript" src="dist/jszip-utils-ie.js"></script>
@@ -51,6 +52,9 @@
         var elementAnswerQuestionBtn = '#btnAnswerQuestion';
         var elementAnswerDiffQuestionBtn = '#btnAnswerDiffQuestion';
 
+        //spin
+        var elementSpinDiv = '#spinwrapper';
+
     </script>
     <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
@@ -81,7 +85,16 @@
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Steps 2 and 3 can be repeated multiple times for different questions and delta configurations.  To analyze a new base configuration, start again (reload the page).                
     </div>
 
+   <div id="spinwrapper"></div>   
+
     <table>
+        <tr>
+            <td colspan="2">
+                <div id="myspinner"></div>
+            </td>
+        </tr>
+
+        </div>
         <tr>
             <td>
                 <form class="myform">

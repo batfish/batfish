@@ -70,6 +70,8 @@ function finishEntryPoint(entryPoint, remainingCalls) {
     //jQuery(elementOutputText).val(epOutput[entryPoint]);
     bfUpdateOutput(epOutput[entryPoint]);
 
+    jQuery(elementSpinDiv).spin(false);
+
     delete epCurrWorkChecker[entryPoint];
     delete epOutput[entryPoint];
     delete epWorkGuid[entryPoint];
@@ -298,6 +300,8 @@ function queueWork_cb(response, entryPoint, remainingCalls) {
 function startCalls(entryPoint, calls) {
 
     entryPoint += "__" + bfGetGuid();
+
+    jQuery(elementSpinDiv).spin();
 
     //initialize the epOutput to empty
     epOutput[entryPoint] = "";
