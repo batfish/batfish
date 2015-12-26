@@ -27,6 +27,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.UnzipUtility;
 import org.batfish.common.WorkItem;
 import org.batfish.common.ZipUtility;
@@ -281,6 +282,11 @@ public class WorkMgr {
       }
 
       _workQueueMgr.processStatusCheckResult(work, status);
+      
+      //if the task ended, send a hint to the pool manager to look up worker status
+      if (status == TaskStatus.TerminatedAbnormally || status == TaskStatus.TerminatedNormally) {
+         Main.getPoolMgr().refreshWorkerStatus(worker);        
+      }
    }
 
    public void delContainer(String containerName) throws Exception {
