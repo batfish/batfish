@@ -336,6 +336,9 @@ public class Batfish implements AutoCloseable {
 
    private Settings _settings;
 
+   //this variable is used communicate with parent thread on how the job finished
+   private boolean _terminatedWithException;
+   
    private long _timerCount;
 
    private File _tmpLogicDir;
@@ -348,6 +351,7 @@ public class Batfish implements AutoCloseable {
       _logger = _settings.getLogger();
       _tmpLogicDir = null;
       _entityTables = new HashMap<EnvironmentSettings, EntityTable>();
+      _terminatedWithException = false;
    }
 
    private void anonymizeConfigurations() {
@@ -1957,6 +1961,10 @@ public class Batfish implements AutoCloseable {
       return consumedEdges;
    }
 
+   public boolean GetTerminatedWithException() {
+      return _terminatedWithException;
+   }
+   
    private void histogram(String testRigPath) {
       Map<File, String> configurationData = readConfigurationFiles(testRigPath);
       Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(configurationData);
@@ -3143,6 +3151,10 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   public void SetTerminatedWithException(boolean terminatedWithException) {
+      _terminatedWithException = terminatedWithException;
+   }
+   
    private Synthesizer synthesizeDataPlane(
          Map<String, Configuration> configurations, File dataPlanePath) {
       _logger.info("\n*** GENERATING Z3 LOGIC ***\n");

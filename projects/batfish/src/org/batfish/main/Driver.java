@@ -351,23 +351,51 @@ public class Driver {
       } while (!registrationSuccess);
    }
    
+   @SuppressWarnings("deprecation")
    private static boolean RunBatfish(Settings settings) {
-      BatfishLogger logger = settings.getLogger();
-      boolean noError = true;
-      try (Batfish batfish = new Batfish(settings)) {
-         batfish.run();
-      }
-      catch (CleanBatfishException e) {
-         noError = false;
-         logger.error("FATAL ERROR: " + e.getMessage());
+      
+      final BatfishLogger logger = settings.getLogger();
+
+      try {
+         final Batfish batfish = new Batfish(settings);
+
+         Thread thread = new Thread() {
+            @Override
+            public void run() {
+               try {
+                  batfish.run();
+                  batfish.SetTerminatedWithException(false);
+               }
+               catch (CleanBatfishException e) {
+                  batfish.SetTerminatedWithException(true);
+                  logger.error("FATAL ERROR: " + e.getMessage());
+               }
+               catch (Exception e) {
+                  String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                  logger.error(stackTrace);
+                  batfish.SetTerminatedWithException(true);
+               }
+            }
+         };
+
+         thread.start();
+         thread.join(settings.getMaxRuntimeMs());
+
+         if (thread.isAlive()) {         
+            //this is deprecated but we should be safe since we don't have locks and such
+            thread.stop();
+            logger.error("Batfish worker took too long. Terminated.");
+            batfish.SetTerminatedWithException(true);
+         }
+
+         batfish.close();
+         return ! batfish.GetTerminatedWithException();
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          logger.error(stackTrace);
-         noError = false;
+         return false;         
       }
-
-      return noError;
    }
 
    public static List<String> RunBatfishThroughService(String taskId,
@@ -403,6 +431,8 @@ public class Driver {
                      settings.getLogFile(), settings.getLogTee(), false);
                settings.setLogger(jobLogger);
 
+               settings.setMaxRuntimeMs(_mainSettings.getMaxRuntimeMs());
+               
                final Task task = new Task(args);
 
                logTask(taskId, task);

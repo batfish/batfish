@@ -195,6 +195,8 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_LOG_TEE = "logtee";
 
+   private static final String ARG_MAX_RUNTIME_MS = "maxruntime";
+
    private static final String ARG_NO_OUTPUT = "nooutput";
 
    private static final String ARG_NO_SHUFFLE = "noshuffle";
@@ -220,7 +222,7 @@ public final class Settings extends BaseSettings {
    private static final String ARG_QUERY = "query";
 
    private static final String ARG_QUERY_ALL = "all";
-
+   
    private static final String ARG_SEQUENTIAL = "sequential";
 
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
@@ -352,6 +354,8 @@ public final class Settings extends BaseSettings {
 
    private boolean _logTee;
 
+   private int _maxRuntimeMs;
+   
    private String _nodeRolesPath;
 
    private boolean _noOutput;
@@ -632,6 +636,10 @@ public final class Settings extends BaseSettings {
       return _logTee;
    }
 
+   public int getMaxRuntimeMs() {
+      return _maxRuntimeMs;
+   }
+   
    public String getNodeRolesPath() {
       return _nodeRolesPath;
    }
@@ -870,6 +878,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_TEE, false);
       setDefaultProperty(BfConsts.ARG_LOG_LEVEL, "debug");
+      setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
       setDefaultProperty(ARG_NO_OUTPUT, false);
       setDefaultProperty(ARG_NO_SHUFFLE, false);
       setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
@@ -1017,6 +1026,9 @@ public final class Settings extends BaseSettings {
 
       addBooleanOption(ARG_LOG_TEE,
             "print output to both logfile and standard out");
+
+      addOption(ARG_MAX_RUNTIME_MS,
+                "maximum time (in ms) to allow a task to run", ARGNAME_NUMBER);
 
       addBooleanOption(ARG_NO_OUTPUT, "do not produce output files");
 
@@ -1214,6 +1226,7 @@ public final class Settings extends BaseSettings {
       _jobs = getIntOptionValue(ARG_JOBS);
       _keepBlocks = getBooleanOptionValue(BfConsts.COMMAND_KEEP_BLOCKS);
       _logTee = getBooleanOptionValue(ARG_LOG_TEE);
+      _maxRuntimeMs = getIntOptionValue(ARG_MAX_RUNTIME_MS);
       _noOutput = getBooleanOptionValue(ARG_NO_OUTPUT);
       _nxtnetDataPlane = getBooleanOptionValue(BfConsts.COMMAND_NXTNET_DATA_PLANE);
       _nxtnetTraffic = getBooleanOptionValue(BfConsts.COMMAND_NXTNET_TRAFFIC);
@@ -1297,6 +1310,10 @@ public final class Settings extends BaseSettings {
       _logicDir = logicDir;
    }
 
+   public void setMaxRuntimeMs(int runtimeMs) {
+      _maxRuntimeMs = runtimeMs;
+   }
+   
    public void setNodeRolesPath(String nodeRolesPath) {
       _nodeRolesPath = nodeRolesPath;
    }

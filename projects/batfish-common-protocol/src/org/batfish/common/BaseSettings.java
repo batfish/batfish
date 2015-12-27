@@ -49,7 +49,7 @@ public abstract class BaseSettings {
             .desc(description).longOpt(key).build());
    }
 
-   protected final void addOption(String key, String argName, String description) {
+   protected final void addOption(String key, String description, String argName) {
       _options.addOption(Option.builder().argName(argName).hasArg()
             .desc(description).longOpt(key).build());
    }
