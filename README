@@ -8,6 +8,9 @@ Source:   http://github.com/arifogel/batfish
 Instructions for building and running Batfish
 **************************************************
 
+NOTE:
+Docker containers are available in docker/client and docker/server.
+
 Prerequisites:
    ant
    GNU parallel

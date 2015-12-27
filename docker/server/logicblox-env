@@ -1,0 +1,11 @@
+. /data/logicblox-4.1.3/etc/profile.d/logicblox.sh
+export LB_HOME=$LOGICBLOX_HOME/..
+
+# Kill logicblox, completely purge all logicblox data, and restart logicblox
+alias rlb='killall -9 lb-server; killall -9 lb-pager; lb services stop && rm -rf ~/lb_deployment/* && LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start'
+
+# Kill logicblox and completely purge all logicblox data
+alias klb='killall -9 lb-server; killall -9 lb-pager; lb services stop; rm -rf ~/lb_deployment/*'
+
+# Start logicblox
+alias slb='LB_CONNECTBLOX_ENABLE_ADMIN=1 lb services start'
