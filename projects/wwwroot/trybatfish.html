@@ -67,14 +67,14 @@
     </h2>
     <div id="instructions">
         <ol>
-            <li>Enter configuration, which can be an individual device or a zipped testrig, and press <b>Upload base configuration</b>.
+            <li>Enter configuration, which can be an individual device or a zipped testrig, and press <b>Process base configuration</b>.
                     </li>
             <li>Enter question, and press <b>Answer about base</b>.
                     </li>
             <li>To ask questions about a planned configuration change, 
                    
                             <ol>
-                                <li>Enter the configuration delta (i.e., files that differ from the base), and press <b>Upload delta configuration</b>.
+                                <li>Enter the configuration delta (i.e., files that differ from the base), and press <b>Process delta configuration</b>.
                                 </li>
                                 <li>Enter question, and press <b>Answer about delta</b>. 
                                 </li>
@@ -127,9 +127,9 @@
                                     </tr>
                                     <tr align="center">
                                         <td>
-                                            <input type="button" id="btnUploadConfig" value="Upload base configuration"
+                                            <input type="button" id="btnUploadConfig" value="Process base configuration"
                                                 onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::generatedataplane::getdataplane::posttestriginit')" />
-                                            <input type="button" id="btnUploadDiffEnv" value="Upload delta configuration" disabled
+                                            <input type="button" id="btnUploadDiffEnv" value="Process delta configuration" disabled
                                                 onclick="startCalls('btnUploadConfigText', 'uploaddiffenvsmart::generatediffdataplane::getdiffdataplane::postdiffenvinit')" />
                                         </td>
                                     </tr>
