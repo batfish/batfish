@@ -206,6 +206,11 @@ APPLICATION
    'application'
 ;
 
+APPLICATION_PROTOCOL
+:
+   'application-protocol'
+;
+
 APPLICATION_TRACKING
 :
    'application-tracking'
@@ -258,7 +263,7 @@ AS_OVERRIDE
 
 AS_PATH
 :
-   'as-path' -> pushMode(M_AsPath)
+   'as-path' -> pushMode ( M_AsPath )
 ;
 
 AS_PATH_EXPAND
@@ -358,7 +363,7 @@ BIFF
 
 BIND_INTERFACE
 :
-   'bind-interface' -> pushMode(M_Interface)
+   'bind-interface' -> pushMode ( M_Interface )
 ;
 
 BMP
@@ -567,7 +572,7 @@ DES_CBC
 
 DESCRIPTION
 :
-   'description' -> pushMode(M_Description)
+   'description' -> pushMode ( M_Description )
 ;
 
 DESTINATION_ADDRESS
@@ -672,7 +677,7 @@ DSA_SIGNATURES
 
 DSCP
 :
-   'dscp' -> pushMode(M_DSCP)
+   'dscp' -> pushMode ( M_DSCP )
 ;
 
 DSTOPTS
@@ -812,7 +817,7 @@ EXTERNAL
 
 EXTERNAL_INTERFACE
 :
-   'external-interface' -> pushMode(M_Interface)
+   'external-interface' -> pushMode ( M_Interface )
 ;
 
 EXTERNAL_PREFERENCE
@@ -972,7 +977,7 @@ GRE
 
 GROUP
 :
-   'group' -> pushMode(M_VarOrWildcard)
+   'group' -> pushMode ( M_VarOrWildcard )
 ;
 
 GROUP_IKE_ID
@@ -1105,6 +1110,16 @@ ICMP6
    'icmp6'
 ;
 
+ICMP6_CODE
+:
+   'icmp6-code'
+;
+
+ICMP6_TYPE
+:
+   'icmp6-type'
+;
+
 ICMPV6
 :
    'icmpv6'
@@ -1130,6 +1145,11 @@ IGMP_SNOOPING
    'igmp-snooping'
 ;
 
+IGNORE
+:
+   'ignore'
+;
+
 IGNORE_L3_INCOMPLETES
 :
    'ignore-l3-incompletes'
@@ -1143,6 +1163,11 @@ IGP
 IKE
 :
    'ike'
+;
+
+IKE_ESP_NAT
+:
+   'ike-esp-nat'
 ;
 
 IKE_POLICY
@@ -1272,7 +1297,7 @@ INSTANCE_TYPE
 
 INTERFACE
 :
-   'interface' -> pushMode(M_Interface)
+   'interface' -> pushMode ( M_Interface )
 ;
 
 INTERFACE_MODE
@@ -1367,12 +1392,967 @@ ISIS
 
 ISO
 :
-   'iso' -> pushMode(M_ISO)
+   'iso' -> pushMode ( M_ISO )
+;
+
+JUNOS_AOL
+:
+   'junos-aol'
+;
+
+JUNOS_BGP
+:
+   'junos-bgp'
+;
+
+JUNOS_BIFF
+:
+   'junos-biff'
+;
+
+JUNOS_BOOTPC
+:
+   'junos-bootpc'
+;
+
+JUNOS_BOOTPS
+:
+   'junos-bootps'
+;
+
+JUNOS_CHARGEN
+:
+   'junos-chargen'
+;
+
+JUNOS_CIFS
+:
+   'junos-cifs'
+;
+
+JUNOS_CVSPSERVER
+:
+   'junos-cvspserver'
+;
+
+JUNOS_DHCP_CLIENT
+:
+   'junos-dhcp-client'
+;
+
+JUNOS_DHCP_RELAY
+:
+   'junos-dhcp-relay'
+;
+
+JUNOS_DHCP_SERVER
+:
+   'junos-dhcp-server'
+;
+
+JUNOS_DISCARD
+:
+   'junos-discard'
+;
+
+JUNOS_DNS_TCP
+:
+   'junos-dns-tcp'
+;
+
+JUNOS_DNS_UDP
+:
+   'junos-dns-udp'
+;
+
+JUNOS_ECHO
+:
+   'junos-echo'
+;
+
+JUNOS_FINGER
+:
+   'junos-finger'
+;
+
+JUNOS_FTP
+:
+   'junos-ftp'
+;
+
+JUNOS_GNUTELLA
+:
+   'junos-gnutella'
+;
+
+JUNOS_GOPHER
+:
+   'junos-gopher'
+;
+
+JUNOS_GRE
+:
+   'junos-gre'
+;
+
+JUNOS_GTP
+:
+   'junos-gtp'
+;
+
+JUNOS_H323
+:
+   'junos-h323'
 ;
 
 JUNOS_HOST
 :
    'junos-host'
+;
+
+JUNOS_HTTP
+:
+   'junos-http'
+;
+
+JUNOS_HTTP_EXT
+:
+   'junos-http-ext'
+;
+
+JUNOS_HTTPS
+:
+   'junos-https'
+;
+
+JUNOS_ICMP_ALL
+:
+   'junos-icmp-all'
+;
+
+JUNOS_ICMP_PING
+:
+   'junos-icmp-ping'
+;
+
+JUNOS_ICMP6_ALL
+:
+   'junos-icmp6-all'
+;
+
+JUNOS_ICMP6_DST_UNREACH_ADDR
+:
+   'junos-icmp6-dst-unreach-addr'
+;
+
+JUNOS_ICMP6_DST_UNREACH_ADMIN
+:
+   'junos-icmp6-dst-unreach-admin'
+;
+
+JUNOS_ICMP6_DST_UNREACH_BEYOND
+:
+   'junos-icmp6-dst-unreach-beyond'
+;
+
+JUNOS_ICMP6_DST_UNREACH_PORT
+:
+   'junos-icmp6-dst-unreach-port'
+;
+
+JUNOS_ICMP6_DST_UNREACH_ROUTE
+:
+   'junos-icmp6-dst-unreach-route'
+;
+
+JUNOS_ICMP6_ECHO_REPLY
+:
+   'junos-icmp6-echo-reply'
+;
+
+JUNOS_ICMP6_ECHO_REQUEST
+:
+   'junos-icmp6-echo-request'
+;
+
+JUNOS_ICMP6_PACKET_TO_BIG
+:
+   'junos-icmp6-packet-to-big'
+;
+
+JUNOS_ICMP6_PARAM_PROB_HEADER
+:
+   'junos-icmp6-param-prob-header'
+;
+
+JUNOS_ICMP6_PARAM_PROB_NEXTHDR
+:
+   'junos-icmp6-param-prob-nexthdr'
+;
+
+JUNOS_ICMP6_PARAM_PROB_OPTION
+:
+   'junos-icmp6-param-prob-option'
+;
+
+JUNOS_ICMP6_TIME_EXCEED_REASSEMBLY
+:
+   'junos-icmp6-time-exceed-reassembly'
+;
+
+JUNOS_ICMP6_TIME_EXCEED_TRANSIT
+:
+   'junos-icmp6-time-exceed-transit'
+;
+
+JUNOS_IDENT
+:
+   'junos-ident'
+;
+
+JUNOS_IKE
+:
+   'junos-ike'
+;
+
+JUNOS_IKE_NAT
+:
+   'junos-ike-nat'
+;
+
+JUNOS_IMAP
+:
+   'junos-imap'
+;
+
+JUNOS_IMAPS
+:
+   'junos-imaps'
+;
+
+JUNOS_INTERNET_LOCATOR_SERVICE
+:
+   'junos-internet-locator-service'
+;
+
+JUNOS_IRC
+:
+   'junos-irc'
+;
+
+JUNOS_L2TP
+:
+   'junos-l2tp'
+;
+
+JUNOS_LDAP
+:
+   'junos-ldap'
+;
+
+JUNOS_LDP_TCP
+:
+   'junos-ldp-tcp'
+;
+
+JUNOS_LDP_UDP
+:
+   'junos-ldp-udp'
+;
+
+JUNOS_LPR
+:
+   'junos-lpr'
+;
+
+JUNOS_MAIL
+:
+   'junos-mail'
+;
+
+JUNOS_MGCP
+:
+   'junos-mgcp'
+;
+
+JUNOS_MGCP_CA
+:
+   'junos-mgcp-ca'
+;
+
+JUNOS_MGCP_UA
+:
+   'junos-mgcp-ua'
+;
+
+JUNOS_MS_RPC
+:
+   'junos-ms-rpc'
+;
+
+JUNOS_MS_RPC_ANY
+:
+   'junos-ms-rpc-any'
+;
+
+JUNOS_MS_RPC_EPM
+:
+   'junos-ms-rpc-epm'
+;
+
+JUNOS_MS_RPC_IIS_COM
+:
+   'junos-ms-rpc-iis-com'
+;
+
+JUNOS_MS_RPC_IIS_COM_1
+:
+   'junos-ms-rpc-iis-com-1'
+;
+
+JUNOS_MS_RPC_IIS_COM_ADMINBASE
+:
+   'junos-ms-rpc-iis-com-adminbase'
+;
+
+JUNOS_MS_RPC_MSEXCHANGE
+:
+   'junos-ms-rpc-msexchange'
+;
+
+JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_NSP
+:
+   'junos-ms-rpc-msexchange-directory-nsp'
+;
+
+JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_RFR
+:
+   'junos-ms-rpc-msexchange-directory-rfr'
+;
+
+JUNOS_MS_RPC_MSEXCHANGE_INFO_STORE
+:
+   'junos-ms-rpc-msexchange-info-store'
+;
+
+JUNOS_MS_RPC_TCP
+:
+   'junos-ms-rpc-tcp'
+;
+
+JUNOS_MS_RPC_UDP
+:
+   'junos-ms-rpc-udp'
+;
+
+JUNOS_MS_RPC_UUID_ANY_TCP
+:
+   'junos-ms-rpc-uuid-any-tcp'
+;
+
+JUNOS_MS_RPC_UUID_ANY_UDP
+:
+   'junos-ms-rpc-uuid-any-udp'
+;
+
+JUNOS_MS_RPC_WMIC
+:
+   'junos-ms-rpc-wmic'
+;
+
+JUNOS_MS_RPC_WMIC_ADMIN
+:
+   'junos-ms-rpc-wmic-admin'
+;
+
+JUNOS_MS_RPC_WMIC_ADMIN2
+:
+   'junos-ms-rpc-wmic-admin2'
+;
+
+JUNOS_MS_RPC_WMIC_MGMT
+:
+   'junos-ms-rpc-wmic-mgmt'
+;
+
+JUNOS_MS_RPC_WMIC_WEBM_CALLRESULT
+:
+   'junos-ms-rpc-wmic-webm-callresult'
+;
+
+JUNOS_MS_RPC_WMIC_WEBM_CLASSOBJECT
+:
+   'junos-ms-rpc-wmic-webm-classobject'
+;
+
+JUNOS_MS_RPC_WMIC_WEBM_LEVEL1LOGIN
+:
+   'junos-ms-rpc-wmic-webm-level1login'
+;
+
+JUNOS_MS_RPC_WMIC_WEBM_LOGIN_CLIENTID
+:
+   'junos-ms-rpc-wmic-webm-login-clientid'
+;
+
+JUNOS_MS_RPC_WMIC_WEBM_LOGIN_HELPER
+:
+   'junos-ms-rpc-wmic-webm-login-helper'
+;
+
+JUNOS_MS_RPC_WMIC_WEBM_OBJECTSINK
+:
+   'junos-ms-rpc-wmic-webm-objectsink'
+;
+
+JUNOS_MS_RPC_WMIC_WEBM_REFRESHING_SERVICES
+:
+   'junos-ms-rpc-wmic-webm-refreshing-services'
+;
+
+JUNOS_MS_RPC_WMIC_WEBM_REMOTE_REFRESHER
+:
+   'junos-ms-rpc-wmic-webm-remote-refresher'
+;
+
+JUNOS_MS_RPC_WMIC_WEBM_SERVICES
+:
+   'junos-ms-rpc-wmic-webm-services'
+;
+
+JUNOS_MS_RPC_WMIC_WEBM_SHUTDOWN
+:
+   'junos-ms-rpc-wmic-webm-shutdown'
+;
+
+JUNOS_MS_SQL
+:
+   'junos-ms-sql'
+;
+
+JUNOS_MSN
+:
+   'junos-msn'
+;
+
+JUNOS_NBDS
+:
+   'junos-nbds'
+;
+
+JUNOS_NBNAME
+:
+   'junos-nbname'
+;
+
+JUNOS_NETBIOS_SESSION
+:
+   'junos-netbios-session'
+;
+
+JUNOS_NFS
+:
+   'junos-nfs'
+;
+
+JUNOS_NFSD_TCP
+:
+   'junos-nfsd-tcp'
+;
+
+JUNOS_NFSD_UDP
+:
+   'junos-nfsd-udp'
+;
+
+JUNOS_NNTP
+:
+   'junos-nntp'
+;
+
+JUNOS_NS_GLOBAL
+:
+   'junos-ns-global'
+;
+
+JUNOS_NS_GLOBAL_PRO
+:
+   'junos-ns-global-pro'
+;
+
+JUNOS_NSM
+:
+   'junos-nsm'
+;
+
+JUNOS_NTALK
+:
+   'junos-ntalk'
+;
+
+JUNOS_NTP
+:
+   'junos-ntp'
+;
+
+JUNOS_OSPF
+:
+   'junos-ospf'
+;
+
+JUNOS_PC_ANYWHERE
+:
+   'junos-pc-anywhere'
+;
+
+JUNOS_PERSISTENT_NAT
+:
+   'junos-persistent-nat'
+;
+
+JUNOS_PING
+:
+   'junos-ping'
+;
+
+JUNOS_PINGV6
+:
+   'junos-pingv6'
+;
+
+JUNOS_POP3
+:
+   'junos-pop3'
+;
+
+JUNOS_PPTP
+:
+   'junos-pptp'
+;
+
+JUNOS_PRINTER
+:
+   'junos-printer'
+;
+
+JUNOS_R2CP
+:
+   'junos-r2cp'
+;
+
+JUNOS_RADACCT
+:
+   'junos-radacct'
+;
+
+JUNOS_RADIUS
+:
+   'junos-radius'
+;
+
+JUNOS_REALAUDIO
+:
+   'junos-realaudio'
+;
+
+JUNOS_RIP
+:
+   'junos-rip'
+;
+
+JUNOS_ROUTING_INBOUND
+:
+   'junos-routing-inbound'
+;
+
+JUNOS_RSH
+:
+   'junos-rsh'
+;
+
+JUNOS_RTSP
+:
+   'junos-rtsp'
+;
+
+JUNOS_SCCP
+:
+   'junos-sccp'
+;
+
+JUNOS_SCTP_ANY
+:
+   'junos-sctp-any'
+;
+
+JUNOS_SIP
+:
+   'junos-sip'
+;
+
+JUNOS_SMB
+:
+   'junos-smb'
+;
+
+JUNOS_SMB_SESSION
+:
+   'junos-smb-session'
+;
+
+JUNOS_SMTP
+:
+   'junos-smtp'
+;
+
+JUNOS_SNMP_AGENTX
+:
+   'junos-snmp-agentx'
+;
+
+JUNOS_SNPP
+:
+   'junos-snpp'
+;
+
+JUNOS_SQL_MONITOR
+:
+   'junos-sql-monitor'
+;
+
+JUNOS_SQLNET_V1
+:
+   'junos-sqlnet-v1'
+;
+
+JUNOS_SQLNET_V2
+:
+   'junos-sqlnet-v2'
+;
+
+JUNOS_SSH
+:
+   'junos-ssh'
+;
+
+JUNOS_STUN
+:
+   'junos-stun'
+;
+
+JUNOS_SUN_RPC
+:
+   'junos-sun-rpc'
+;
+
+JUNOS_SUN_RPC_ANY
+:
+   'junos-sun-rpc-any'
+;
+
+JUNOS_SUN_RPC_ANY_TCP
+:
+   'junos-sun-rpc-any-tcp'
+;
+
+JUNOS_SUN_RPC_ANY_UDP
+:
+   'junos-sun-rpc-any-udp'
+;
+
+JUNOS_SUN_RPC_MOUNTD
+:
+   'junos-sun-rpc-mountd'
+;
+
+JUNOS_SUN_RPC_MOUNTD_TCP
+:
+   'junos-sun-rpc-mountd-tcp'
+;
+
+JUNOS_SUN_RPC_MOUNTD_UDP
+:
+   'junos-sun-rpc-mountd-udp'
+;
+
+JUNOS_SUN_RPC_NFS
+:
+   'junos-sun-rpc-nfs'
+;
+
+JUNOS_SUN_RPC_NFS_ACCESS
+:
+   'junos-sun-rpc-nfs-access'
+;
+
+JUNOS_SUN_RPC_NFS_TCP
+:
+   'junos-sun-rpc-nfs-tcp'
+;
+
+JUNOS_SUN_RPC_NFS_UDP
+:
+   'junos-sun-rpc-nfs-udp'
+;
+
+JUNOS_SUN_RPC_NLOCKMGR
+:
+   'junos-sun-rpc-nlockmgr'
+;
+
+JUNOS_SUN_RPC_NLOCKMGR_TCP
+:
+   'junos-sun-rpc-nlockmgr-tcp'
+;
+
+JUNOS_SUN_RPC_NLOCKMGR_UDP
+:
+   'junos-sun-rpc-nlockmgr-udp'
+;
+
+JUNOS_SUN_RPC_PORTMAP
+:
+   'junos-sun-rpc-portmap'
+;
+
+JUNOS_SUN_RPC_PORTMAP_TCP
+:
+   'junos-sun-rpc-portmap-tcp'
+;
+
+JUNOS_SUN_RPC_PORTMAP_UDP
+:
+   'junos-sun-rpc-portmap-udp'
+;
+
+JUNOS_SUN_RPC_RQUOTAD
+:
+   'junos-sun-rpc-rquotad'
+;
+
+JUNOS_SUN_RPC_RQUOTAD_TCP
+:
+   'junos-sun-rpc-rquotad-tcp'
+;
+
+JUNOS_SUN_RPC_RQUOTAD_UDP
+:
+   'junos-sun-rpc-rquotad-udp'
+;
+
+JUNOS_SUN_RPC_RUSERD
+:
+   'junos-sun-rpc-ruserd'
+;
+
+JUNOS_SUN_RPC_RUSERD_TCP
+:
+   'junos-sun-rpc-ruserd-tcp'
+;
+
+JUNOS_SUN_RPC_RUSERD_UDP
+:
+   'junos-sun-rpc-ruserd-udp'
+;
+
+JUNOS_SUN_RPC_SADMIND
+:
+   'junos-sun-rpc-sadmind'
+;
+
+JUNOS_SUN_RPC_SADMIND_TCP
+:
+   'junos-sun-rpc-sadmind-tcp'
+;
+
+JUNOS_SUN_RPC_SADMIND_UDP
+:
+   'junos-sun-rpc-sadmind-udp'
+;
+
+JUNOS_SUN_RPC_SPRAYD
+:
+   'junos-sun-rpc-sprayd'
+;
+
+JUNOS_SUN_RPC_SPRAYD_TCP
+:
+   'junos-sun-rpc-sprayd-tcp'
+;
+
+JUNOS_SUN_RPC_SPRAYD_UDP
+:
+   'junos-sun-rpc-sprayd-udp'
+;
+
+JUNOS_SUN_RPC_STATUS
+:
+   'junos-sun-rpc-status'
+;
+
+JUNOS_SUN_RPC_STATUS_TCP
+:
+   'junos-sun-rpc-status-tcp'
+;
+
+JUNOS_SUN_RPC_STATUS_UDP
+:
+   'junos-sun-rpc-status-udp'
+;
+
+JUNOS_SUN_RPC_TCP
+:
+   'junos-sun-rpc-tcp'
+;
+
+JUNOS_SUN_RPC_UDP
+:
+   'junos-sun-rpc-udp'
+;
+
+JUNOS_SUN_RPC_WALLD
+:
+   'junos-sun-rpc-walld'
+;
+
+JUNOS_SUN_RPC_WALLD_TCP
+:
+   'junos-sun-rpc-walld-tcp'
+;
+
+JUNOS_SUN_RPC_WALLD_UDP
+:
+   'junos-sun-rpc-walld-udp'
+;
+
+JUNOS_SUN_RPC_YPBIND
+:
+   'junos-sun-rpc-ypbind'
+;
+
+JUNOS_SUN_RPC_YPBIND_TCP
+:
+   'junos-sun-rpc-ypbind-tcp'
+;
+
+JUNOS_SUN_RPC_YPBIND_UDP
+:
+   'junos-sun-rpc-ypbind-udp'
+;
+
+JUNOS_SUN_RPC_YPSERV
+:
+   'junos-sun-rpc-ypserv'
+;
+
+JUNOS_SUN_RPC_YPSERV_TCP
+:
+   'junos-sun-rpc-ypserv-tcp'
+;
+
+JUNOS_SUN_RPC_YPSERV_UDP
+:
+   'junos-sun-rpc-ypserv-udp'
+;
+
+JUNOS_SYSLOG
+:
+   'junos-syslog'
+;
+
+JUNOS_TACACS
+:
+   'junos-tacacs'
+;
+
+JUNOS_TACACS_DS
+:
+   'junos-tacacs-ds'
+;
+
+JUNOS_TALK
+:
+   'junos-talk'
+;
+
+JUNOS_TCP_ANY
+:
+   'junos-tcp-any'
+;
+
+JUNOS_TELNET
+:
+   'junos-telnet'
+;
+
+JUNOS_TFTP
+:
+   'junos-tftp'
+;
+
+JUNOS_UDP_ANY
+:
+   'junos-udp-any'
+;
+
+JUNOS_UUCP
+:
+   'junos-uucp'
+;
+
+JUNOS_VDO_LIVE
+:
+   'junos-vdo-live'
+;
+
+JUNOS_VNC
+:
+   'junos-vnc'
+;
+
+JUNOS_WAIS
+:
+   'junos-wais'
+;
+
+JUNOS_WHO
+:
+   'junos-who'
+;
+
+JUNOS_WHOIS
+:
+   'junos-whois'
+;
+
+JUNOS_WINFRAME
+:
+   'junos-winframe'
+;
+
+JUNOS_WXCONTROL
+:
+   'junos-wxcontrol'
+;
+
+JUNOS_X_WINDOWS
+:
+   'junos-x-windows'
+;
+
+JUNOS_XNM_CLEAR_TEXT
+:
+   'junos-xnm-clear-text'
+;
+
+JUNOS_XNM_SSL
+:
+   'junos-xnm-ssl'
+;
+
+JUNOS_YMSG
+:
+   'junos-ymsg'
 ;
 
 KEEP
@@ -1544,6 +2524,7 @@ LOCAL_IDENTITY
 :
    'local-identity'
 ;
+
 LOCAL_PREFERENCE
 :
    'local-preference'
@@ -1626,7 +2607,7 @@ M
 
 MAC
 :
-   'mac' -> pushMode(M_MacAddress)
+   'mac' -> pushMode ( M_MacAddress )
 ;
 
 MAIN
@@ -1706,12 +2687,27 @@ METRIC_OUT
 
 METRIC_TYPE
 :
-   'metric-type' -> pushMode(M_MetricType)
+   'metric-type' -> pushMode ( M_MetricType )
 ;
 
 MEMBERS
 :
-   'members' -> pushMode(M_Members)
+   'members' -> pushMode ( M_Members )
+;
+
+MGCP_CA
+:
+   'mgcp-ca'
+;
+
+MGCP_UA
+:
+   'mgcp-ua'
+;
+
+MS_RPC
+:
+   'ms-rpc'
 ;
 
 MLD
@@ -1766,7 +2762,7 @@ MULTICAST
 
 MULTICAST_MAC
 :
-   'multicast-mac' -> pushMode(M_MacAddress)
+   'multicast-mac' -> pushMode ( M_MacAddress )
 ;
 
 MULTIHOP
@@ -1867,6 +2863,11 @@ NETWORK_SUMMARY_EXPORT
 NETWORK_UNREACHABLE
 :
    'network-unreachable'
+;
+
+NEVER
+:
+   'never'
 ;
 
 NEXT
@@ -2326,7 +3327,7 @@ PREFIX_LIMIT
 
 PREFIX_LIST
 :
-   'prefix-list' -> pushMode(M_PrefixListName)
+   'prefix-list' -> pushMode ( M_PrefixListName )
 ;
 
 PREFIX_LIST_FILTER
@@ -2409,6 +3410,11 @@ PROXY_IDENTITY
    'proxy-identity'
 ;
 
+Q931
+:
+   'q931'
+;
+
 QUALIFIED_NEXT_HOP
 :
    'qualified-next-hop'
@@ -2437,6 +3443,16 @@ RADIUS_OPTIONS
 RADIUS_SERVER
 :
    'radius-server'
+;
+
+RAS
+:
+   'ras'
+;
+
+REALAUDIO
+:
+   'realaudio'
 ;
 
 READVERTISE
@@ -2566,7 +3582,7 @@ ROUTE
 
 ROUTE_DISTINGUISHER
 :
-   'route-distinguisher' -> pushMode(M_RouteDistinguisher)
+   'route-distinguisher' -> pushMode ( M_RouteDistinguisher )
 ;
 
 ROUTE_FILTER
@@ -2609,6 +3625,11 @@ ROUTING_OPTIONS
    'routing-options'
 ;
 
+RPC_PROGRAM_NUMBER
+:
+   'rpc-program-number'
+;
+
 RPF_CHECK
 :
    'rpf-check'
@@ -2639,6 +3660,11 @@ RSVP
    'rsvp'
 ;
 
+RTSP
+:
+   'rtsp'
+;
+
 RULE
 :
    'rule'
@@ -2662,6 +3688,11 @@ SAMPLING
 SAP
 :
    'sap'
+;
+
+SCCP
+:
+   'sccp'
 ;
 
 SCREEN
@@ -2757,6 +3788,11 @@ SIMPLE
 SIP
 :
    'sip'
+;
+
+SQLNET_V2
+:
+   'sqlnet-v2'
 ;
 
 SRLG
@@ -2856,7 +3892,7 @@ SOURCE_QUENCH
 
 SPEED
 :
-   'speed' -> pushMode(M_Speed)
+   'speed' -> pushMode ( M_Speed )
 ;
 
 SPF_OPTIONS
@@ -2902,6 +3938,11 @@ STP
 SUBTRACT
 :
    'subtract'
+;
+
+SUN_RPC
+:
+   'sun-rpc'
 ;
 
 SUNRPC
@@ -3164,6 +4205,11 @@ USER
    'user'
 ;
 
+UUID
+:
+   'uuid'
+;
+
 V1_ONLY
 :
    'v1-only'
@@ -3171,7 +4217,7 @@ V1_ONLY
 
 VERSION
 :
-   'version' -> pushMode(M_Version)
+   'version' -> pushMode ( M_Version )
 ;
 
 VIRTUAL_ADDRESS
@@ -3191,7 +4237,7 @@ VIRTUAL_SWITCH
 
 VLAN
 :
-   'vlan' -> pushMode(M_Vlan)
+   'vlan' -> pushMode ( M_Vlan )
 ;
 
 VLANS
@@ -3256,7 +4302,7 @@ VRF_TABLE_LABEL
 
 VRF_TARGET
 :
-   'vrf-target' -> pushMode(M_VrfTarget)
+   'vrf-target' -> pushMode ( M_VrfTarget )
 ;
 
 VRRP
@@ -3535,12 +4581,15 @@ IPV6_PREFIX
 
 LINE_COMMENT
 :
-   '#' F_NonNewlineChar* F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> channel(HIDDEN)
+   '#' F_NonNewlineChar* F_NewlineChar+
+   {enableIPV6_ADDRESS = true;}
+
+   -> channel ( HIDDEN )
 ;
 
 MULTILINE_COMMENT
 :
-   '/*' .*? '*/' -> channel(HIDDEN)
+   '/*' .*? '*/' -> channel ( HIDDEN )
 ;
 
 NEWLINE
@@ -3599,7 +4648,7 @@ WILDCARD
 
 WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 fragment
@@ -3710,22 +4759,25 @@ mode M_AsPath;
 
 M_AsPath_NEWLINE
 :
-   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
+   F_NewlineChar+
+   {enableIPV6_ADDRESS = true;}
+
+   -> type ( NEWLINE ) , popMode
 ;
 
 M_AsPath_ORIGIN
 :
-   'origin' -> type(ORIGIN), popMode
+   'origin' -> type ( ORIGIN ) , popMode
 ;
 
 M_AsPath_PATH
 :
-   'path' -> type(PATH), mode(M_AsPathPath)
+   'path' -> type ( PATH ) , mode ( M_AsPathPath )
 ;
 
 M_AsPath_TERM
 :
-   'term' -> type(TERM), popMode
+   'term' -> type ( TERM ) , popMode
 ;
 
 M_AsPath_VARIABLE
@@ -3733,56 +4785,56 @@ M_AsPath_VARIABLE
    (
       F_Digit
       | F_Variable_RequiredVarChar
-   ) F_Variable_VarChar* -> type(VARIABLE), mode(M_AsPathRegex)
+   ) F_Variable_VarChar* -> type ( VARIABLE ) , mode ( M_AsPathRegex )
 ;
 
 M_AsPath_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_AsPathPath;
 
 M_AsPathPath_DEC
 :
-   [0-9]+ -> type(DEC), popMode
+   [0-9]+ -> type ( DEC ) , popMode
 ;
 
 M_AsPathPath_DOUBLE_QUOTE
 :
-   '"' -> channel(HIDDEN), mode(M_AsPathExpr)
+   '"' -> channel ( HIDDEN ) , mode ( M_AsPathExpr )
 ;
 
 M_AsPathPath_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_AsPathExpr;
 
 M_AsPathExpr_DEC
 :
-   [0-9]+ -> type(DEC)
+   [0-9]+ -> type ( DEC )
 ;
 
 M_AsPathExpr_OPEN_BRACKET
 :
-   '[' -> type(OPEN_BRACKET)
+   '[' -> type ( OPEN_BRACKET )
 ;
 
 M_AsPathExpr_CLOSE_BRACKET
 :
-   ']' -> type(CLOSE_BRACKET)
+   ']' -> type ( CLOSE_BRACKET )
 ;
 
 M_AsPathExpr_DOUBLE_QUOTE
 :
-   '"' -> channel(HIDDEN), popMode
+   '"' -> channel ( HIDDEN ) , popMode
 ;
 
 M_AsPathExpr_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_AsPathRegex;
@@ -3794,17 +4846,20 @@ AS_PATH_REGEX
 
 M_AsPathRegex_DOUBLE_QUOTE
 :
-   '"' -> channel(HIDDEN)
+   '"' -> channel ( HIDDEN )
 ;
 
 M_AsPathRegex_NEWLINE
 :
-   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
+   F_NewlineChar+
+   {enableIPV6_ADDRESS = true;}
+
+   -> type ( NEWLINE ) , popMode
 ;
 
 M_AsPathRegex_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_Description;
@@ -3816,127 +4871,144 @@ M_Description_DESCRIPTION
 
 M_Description_NEWLINE
 :
-   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
+   F_NewlineChar+
+   {enableIPV6_ADDRESS = true;}
+
+   -> type ( NEWLINE ) , popMode
 ;
 
 M_Description_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_DSCP;
 
 M_DSCP_VARIABLE
 :
-   F_NonWhitespaceChar+ -> type(VARIABLE)
+   F_NonWhitespaceChar+ -> type ( VARIABLE )
 ;
 
 M_DSCP_NEWLINE
 :
-   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
+   F_NewlineChar+
+   {enableIPV6_ADDRESS = true;}
+
+   -> type ( NEWLINE ) , popMode
 ;
 
 M_DSCP_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_Interface;
 
 M_Interface_NEWLINE
 :
-   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
+   F_NewlineChar+
+   {enableIPV6_ADDRESS = true;}
+
+   -> type ( NEWLINE ) , popMode
 ;
 
 M_Interface_INTERFACE
 :
-   'interface' -> type(INTERFACE)
+   'interface' -> type ( INTERFACE )
 ;
 
 M_Interface_PORT_OVERLOADING
 :
-   'port-overloading' -> type(PORT_OVERLOADING), popMode
+   'port-overloading' -> type ( PORT_OVERLOADING ) , popMode
 ;
 
 M_Interface_PORT_OVERLOADING_FACTOR
 :
-   'port-overloading-factor' -> type(PORT_OVERLOADING_FACTOR), popMode
+   'port-overloading-factor' -> type ( PORT_OVERLOADING_FACTOR ) , popMode
 ;
 
 M_Interface_QUOTE
 :
-   '"' -> channel(HIDDEN), mode(M_InterfaceQuote)
+   '"' -> channel ( HIDDEN ) , mode ( M_InterfaceQuote )
 ;
 
 M_Interface_VARIABLE
 :
-   F_Variable_RequiredVarChar F_Variable_InterfaceVarChar* -> type(VARIABLE), popMode
+   F_Variable_RequiredVarChar F_Variable_InterfaceVarChar* -> type ( VARIABLE )
+   , popMode
 ;
 
 M_Interface_WILDCARD
 :
-   '<' ~'>'* '>' -> type(WILDCARD), popMode
+   '<' ~'>'* '>' -> type ( WILDCARD ) , popMode
 ;
 
 M_Interface_IP_ADDRESS
 :
-   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type(IP_ADDRESS), popMode
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type ( IP_ADDRESS ) ,
+   popMode
 ;
 
 M_Interface_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_InterfaceQuote;
 
 M_InterfaceQuote_QUOTE
 :
-   '"' -> channel(HIDDEN), popMode
+   '"' -> channel ( HIDDEN ) , popMode
 ;
 
 M_InterfaceQuote_VARIABLE
 :
-   F_Variable_RequiredVarChar F_Variable_InterfaceVarChar* -> type(VARIABLE)
+   F_Variable_RequiredVarChar F_Variable_InterfaceVarChar* -> type ( VARIABLE )
 ;
 
 M_InterfaceQuote_WILDCARD
 :
-   '<' ~'>'* '>' -> type(WILDCARD)
+   '<' ~'>'* '>' -> type ( WILDCARD )
 ;
 
 mode M_ISO;
 
 M_ISO_ADDRESS
 :
-   'address' -> type(ADDRESS), mode(M_ISO_Address)
+   'address' -> type ( ADDRESS ) , mode ( M_ISO_Address )
 ;
 
 M_ISO_MTU
 :
-   'mtu' -> type(MTU), popMode
+   'mtu' -> type ( MTU ) , popMode
 ;
 
 M_ISO_Newline
 :
-   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
+   F_NewlineChar+
+   {enableIPV6_ADDRESS = true;}
+
+   -> type ( NEWLINE ) , popMode
 ;
 
 M_ISO_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_ISO_Address;
 
 M_ISO_Address_ISO_ADDRESS
 :
-   F_HexDigit+ ('.' F_HexDigit+)+ -> type(ISO_ADDRESS), popMode
+   F_HexDigit+
+   (
+      '.' F_HexDigit+
+   )+ -> type ( ISO_ADDRESS ) , popMode
 ;
 
 M_ISO_Address_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_MacAddress;
@@ -3950,69 +5022,72 @@ MAC_ADDRESS
 
 M_MacAddress_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_Members;
 
 M_Members_ASTERISK
 :
-   '*' -> type(ASTERISK)
+   '*' -> type ( ASTERISK )
 ;
 
 M_Members_CARAT
 :
-   '^' -> type(CARAT)
+   '^' -> type ( CARAT )
 ;
 
 M_Members_CLOSE_BRACE
 :
-   '}' -> type(CLOSE_BRACE)
+   '}' -> type ( CLOSE_BRACE )
 ;
 
 M_Members_CLOSE_BRACKET
 :
-   ']' -> type(CLOSE_BRACKET)
+   ']' -> type ( CLOSE_BRACKET )
 ;
 
 M_Members_CLOSE_PAREN
 :
-   ')' -> type(CLOSE_PAREN)
+   ')' -> type ( CLOSE_PAREN )
 ;
 
 M_Members_COLON
 :
-   ':' -> type(COLON)
+   ':' -> type ( COLON )
 ;
 
 M_Members_DASH
 :
-   '-' -> type(DASH)
+   '-' -> type ( DASH )
 ;
 
 M_Members_DEC
 :
-   F_Digit+ -> type(DEC)
+   F_Digit+ -> type ( DEC )
 ;
 
 M_Members_DOLLAR
 :
-   '$' -> type(DOLLAR)
+   '$' -> type ( DOLLAR )
 ;
 
 M_Members_DOUBLE_QUOTE
 :
-   '"' -> channel(HIDDEN)
+   '"' -> channel ( HIDDEN )
 ;
 
 M_Members_L
 :
-   'L' -> type(L)
+   'L' -> type ( L )
 ;
 
 M_Members_NEWLINE
 :
-   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
+   F_NewlineChar+
+   {enableIPV6_ADDRESS = true;}
+
+   -> type ( NEWLINE ) , popMode
 ;
 
 NO_ADVERTISE
@@ -4022,59 +5097,59 @@ NO_ADVERTISE
 
 M_Members_NO_EXPORT
 :
-   'no-export' -> type(NO_EXPORT)
+   'no-export' -> type ( NO_EXPORT )
 ;
 
 M_Members_OPEN_BRACE
 :
-   '{' -> type(OPEN_BRACE)
+   '{' -> type ( OPEN_BRACE )
 ;
 
 M_Members_OPEN_BRACKET
 :
-   '[' -> type(OPEN_BRACKET)
+   '[' -> type ( OPEN_BRACKET )
 ;
 
 M_Members_OPEN_PAREN
 :
-   '(' -> type(OPEN_PAREN)
+   '(' -> type ( OPEN_PAREN )
 ;
 
 M_Members_ORIGIN
 :
-   'origin' -> type(ORIGIN)
+   'origin' -> type ( ORIGIN )
 ;
 
 M_Members_PERIOD
 :
-   '.' -> type(PERIOD)
+   '.' -> type ( PERIOD )
 ;
 
 M_Members_PIPE
 :
-   '|' -> type(PIPE)
+   '|' -> type ( PIPE )
 ;
 
 M_Members_TARGET
 :
-   'target' -> type(TARGET)
+   'target' -> type ( TARGET )
 ;
 
 M_Members_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_PrefixListName;
 
 M_PrefixLsitName_VARIABLE
 :
-      ~[ \t\n\r&|()"]+ -> type(VARIABLE), popMode
+   ~[ \t\n\r&|()"]+ -> type ( VARIABLE ) , popMode
 ;
 
 M_PrefixListName_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_MetricType;
@@ -4091,80 +5166,83 @@ METRIC_TYPE_2
 
 M_MetricType_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_RouteDistinguisher;
 
 M_RouteDistinguisher_COLON
 :
-   ':' -> type(COLON)
+   ':' -> type ( COLON )
 ;
 
 M_RouteDistinguisher_IP_ADDRESS
 :
-   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type(IP_ADDRESS)
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type ( IP_ADDRESS )
 ;
 
 M_RouteDistinguisher_DEC
 :
-   F_Digit+ -> type(DEC)
+   F_Digit+ -> type ( DEC )
 ;
 
 M_RouteDistinguisher_NEWLINE
 :
-   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
+   F_NewlineChar+
+   {enableIPV6_ADDRESS = true;}
+
+   -> type ( NEWLINE ) , popMode
 ;
 
 M_RouteDistinguisher_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_Speed;
 
 M_Speed_DEC
 :
-   F_Digit+ -> type(DEC)
+   F_Digit+ -> type ( DEC )
 ;
 
 M_Speed_G
 :
-   'g' -> type(G), popMode
+   'g' -> type ( G ) , popMode
 ;
 
 M_Speed_M
 :
-   'm' -> type(M), popMode
+   'm' -> type ( M ) , popMode
 ;
 
 M_Speed_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_VarOrWildcard;
 
 M_VarOrWildcard_VARIABLE
 :
-   ~[ \t\u000C\r\n<]+ -> type(VARIABLE), popMode
+   ~[ \t\u000C\r\n<]+ -> type ( VARIABLE ) , popMode
 ;
 
 M_VarOrWildcard_WILDCARD
 :
-   '<' ~'>'* '>' -> type(WILDCARD), popMode
+   '<' ~'>'* '>' -> type ( WILDCARD ) , popMode
 ;
 
 M_VarOrWildcard_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_Version;
 
 M_Version_V1_ONLY
 :
-   'v1-only' -> type(V1_ONLY), popMode
+   'v1-only' -> type ( V1_ONLY ) , popMode
 ;
 
 M_Version_VERSION_STRING
@@ -4174,74 +5252,77 @@ M_Version_VERSION_STRING
 
 M_Version_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_Vlan;
 
 M_Vlan_MEMBERS
 :
-   'members' -> type(MEMBERS), popMode
+   'members' -> type ( MEMBERS ) , popMode
 ;
 
 M_Vlan_UNIT
 :
-   'unit' -> type(UNIT), popMode
+   'unit' -> type ( UNIT ) , popMode
 ;
 
 M_Vlan_VARIABLE
 :
-   ~[ \t\n\r&|()"]+ -> type(VARIABLE), popMode
+   ~[ \t\n\r&|()"]+ -> type ( VARIABLE ) , popMode
 ;
 
 M_Vlan_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_VrfTarget;
 
 M_VrfTarget_COLON
 :
-   ':' -> type(COLON)
+   ':' -> type ( COLON )
 ;
 
 M_VrfTarget_DEC
 :
-   F_Digit+ -> type(DEC)
+   F_Digit+ -> type ( DEC )
 ;
 
 M_VrfTarget_EXPORT
 :
-   'export' -> type(EXPORT)
+   'export' -> type ( EXPORT )
 ;
 
 M_VrfTarget_IMPORT
 :
-   'import' -> type(IMPORT)
+   'import' -> type ( IMPORT )
 ;
 
 M_VrfTarget_L
 :
-   'L' -> type(L)
+   'L' -> type ( L )
 ;
 
 M_VrfTarget_NEWLINE
 :
-   F_NewlineChar+ {enableIPV6_ADDRESS = true;} -> type(NEWLINE), popMode
+   F_NewlineChar+
+   {enableIPV6_ADDRESS = true;}
+
+   -> type ( NEWLINE ) , popMode
 ;
 
 M_VrfTarget_PERIOD
 :
-   '.' -> type(PERIOD)
+   '.' -> type ( PERIOD )
 ;
 
 M_VrfTarget_TARGET
 :
-   'target' -> type(TARGET)
+   'target' -> type ( TARGET )
 ;
 
 M_VrfTarget_WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> channel ( HIDDEN )
 ;

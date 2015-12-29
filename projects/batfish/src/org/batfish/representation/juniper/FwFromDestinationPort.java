@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.util.SubRange;
 
@@ -21,7 +22,7 @@ public final class FwFromDestinationPort extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line) {
+   public void applyTo(IpAccessListLine line, Warnings w) {
       line.getDstPortRanges().add(_portRange);
    }
 

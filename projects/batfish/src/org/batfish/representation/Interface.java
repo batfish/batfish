@@ -72,6 +72,8 @@ public class Interface extends NamedStructure {
 
    private String _description;
 
+   private IpAccessList _inboundFilter;
+
    private IpAccessList _incomingFilter;
 
    private Integer _isisCost;
@@ -149,6 +151,10 @@ public class Interface extends NamedStructure {
 
    public String getDescription() {
       return _description;
+   }
+
+   public IpAccessList getInboundFilter() {
+      return _inboundFilter;
    }
 
    public IpAccessList getIncomingFilter() {
@@ -247,6 +253,10 @@ public class Interface extends NamedStructure {
 
    public void setDescription(String description) {
       _description = description;
+   }
+
+   public void setInboundFilter(IpAccessList inboundFilter) {
+      _inboundFilter = inboundFilter;
    }
 
    public void setIncomingFilter(IpAccessList filter) {

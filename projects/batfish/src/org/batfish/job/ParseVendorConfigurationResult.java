@@ -44,8 +44,11 @@ public class ParseVendorConfigurationResult extends
       if (logger.isActive(BatfishLogger.LEVEL_INFO)) {
          terseLogLevelPrefix = "";
       }
-      else {
+      else if (_vc != null) {
          terseLogLevelPrefix = _vc.getHostname().toString() + ": ";
+      }
+      else {
+         terseLogLevelPrefix = _file.toString() + ": ";
       }
       logger.append(_history, terseLogLevelPrefix);
    }
