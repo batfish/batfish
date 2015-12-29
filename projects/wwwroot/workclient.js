@@ -1,599 +1,545 @@
-$(document).ready(function() {
-   fnGetCoordinatorWorkQueueStatus();
-});
+/// <reference path="batfish-common.js" />
 
-var currWorkChecker;
+//these structures are indexed on entrypoint
+var epCurrWorkChecker = new Object();
+var epWorkGuid = new Object();
+var epOutput = new Object();
+var epQuestionName = new Object();
 
-var WorkGuids = {};
-
-function cbCheckWork(taskname, result, worktype) {
-   if (result[0] === SVC_SUCCESS_KEY) {
-
-      var status = result[1][SVC_WORKSTATUS_KEY];
-
-      bfUpdateDebugInfo(taskname + " returned with response " + status);
-
-      jQuery("#txtCheckWorkStatus").val(status);
-
-      switch (status) {
-      case "TERMINATEDNORMALLY":
-         doFollowOnWork(worktype);
-         break;
-      case "TERMINATEDABNORMALLY":
-      case "ASSIGNMENTERROR":
-         break;
-      case "UNASSIGNED":
-      case "TRYINGTOASSIGN":
-      case "ASSIGNED":
-      case "CHECKINGSTATUS":
-         // fire again
-         currWorkChecker = window.setTimeout(function() {
-            fnCheckWork(worktype)
-         }, 2 * 1000);
-         break;
-      default:
-         bfUpdateDebugInfo("Got unknown work status: ", status);
-      }
-   }
-   else {
-      bfUpdateDebugInfo("Work status check failed: " + result[1]);
-   }
-}
-
-function cbDoWork(taskname, result, worktype) {
-   if (result[0] === SVC_SUCCESS_KEY) {
-      bfUpdateDebugInfo(taskname + " succeeded. Will start polling for status");
-      fnCheckWork(worktype);
-   }
-   else {
-      alert("Work queuing failed: " + result[1]);
-   }
-}
-
-function cbGetCoordinatorWorkQueueStatus(taskname, result) {
-
-   if (result[0] === SVC_SUCCESS_KEY) {
-      var cWorks = result[1]["completed-works"];
-      var iWorks = result[1]["incomplete-works"];
-
-      jQuery("#txtCompletedWorks").val(cWorks);
-      jQuery("#txtIncompleteWorks").val(iWorks);
-
-      bfUpdateDebugInfo("Coordinator work queue status refreshed");
-   }
-   else {
-      alert(taskname + "failed: " + result[1]);
-   }
-}
-
-function cbUploadData(uploadtype) {
-
-   switch (uploadtype) {
-   case "question":
-      fnDoWork("answerquestion");
-      break;
-   case "testrig":
-   case "environment":
-      break;
-   default:
-      alert("Unknown upload type " + uploadtype);
-   }
-}
-
-function doFollowOnWork(worktype) {
-
-   if (DEMO_MODE == 0)
-      return;
-
-   var dataPlaneQuery = document.getElementById("chkDataPlaneQuery").checked;
-   var differentialQuery = document.getElementById("chkDifferentialQuery").checked;
-   var qName = jQuery("#txtQuestionName").val();
-   switch (worktype) {
-   case "vendorspecific":
-      fnDoWork("vendorindependent");
-      break;
-   case "vendorindependent":
-      // no follow on work to be done here
-      bfUpdateDebugInfo("Done generating common control plane");
-      break;
-   case "generatefacts":
-      // no follow on work to be done here
-      bfUpdateDebugInfo("Done dumping control plane for base environment");
-      break;
-   case "generatedifffacts":
-      // no follow on work to be done here
-      bfUpdateDebugInfo("Done dumping control plane for differential environment");
-      break;
-   case "generatedataplane":
-      fnDoWork("getdataplane");
-      break;
-   case "generatediffdataplane":
-      fnDoWork("getdiffdataplane");
-      break;
-   case "getdataplane":
-      // no follow on work to be done here
-      bfUpdateDebugInfo("Done generating base data plane");
-      break;
-   case "getdiffdataplane":
-      // no follow on work to be done here
-      bfUpdateDebugInfo("Done generating differential data plane");
-      break;
-   case "gethistory":
-      // no follow on work to be done here
-      bfUpdateDebugInfo("Done answering query");
-      break;
-   case "getdiffhistory":
-      // no follow on work to be done here
-      bfUpdateDebugInfo("Done answering differential query");
-      break;
-   case "getz3encoding":
-      // no follow on work to be done here
-      bfUpdateDebugInfo("Done dumping z3 encoding");
-      break;
-   case "answerquestion":
-      if (dataPlaneQuery) {
-         if (differentialQuery) {
-            fnDoWork("postdiffflows");
-         }
-         else {
-            fnDoWork("postflows");
-         }
-      }
-      else {
-         bfUpdateDebugInfo("Done answering query");
-      }
-      break;
-   case "postflows":
-      fnDoWork("gethistory");
-      break;
-   case "postdiffflows":
-      fnDoWork("getdiffhistory");
-      break;
-   case "getflowtraces":
-      // no follow on work to be done here
-      bfUpdateDebugInfo("Done answering query");
-      break;
-   case "writeroutes":
-      // no follow on work to be done here
-      bfUpdateDebugInfo("Done generating precomputed routes");
-      break;
-   default:
-      alert("Unsupported work command", worktype);
-   }
-}
-
-function fnAddWorker() {
-   var worker = jQuery("#txtAddWorker").val();
-
-   if (worker == "") {
-      alert("Specify a worker first");
-      return;
-   }
-
-   bfGetJson("AddWorker-" + worker, SVC_POOL_MGR_ROOT + SVC_POOL_UPDATE_RSC
-         + "?add=" + worker, bfGenericCallback, "");
-}
-
-function fnAnswerQuestion() {
-   var testrigName = jQuery("#txtTestrigName").val();
-   if (testrigName == "") {
-      alert("Specify a testrig name");
-      return;
-   }
-   var qFile = jQuery("#fileUploadQuestion").get(0).files[0];
-   var fileSpecified = (typeof qFile === 'undefined');
-   var qName = jQuery("#txtQuestionName").val();
-   var nameSpecified = (qName != "");
-   if (!nameSpecified) {
-      if (fileSpecified) {
-         jQuery("#txtQuestionName").val(qFile.name);
-         qName = jQuery("#txtQuestionName").val();
-      }
-      else {
-         alert("Specify a question name");
-         return;
-      }
-   }
-   fnDoWork("answerquestion");
-}
-
-function fnCheckWork(worktype) {
-
+function checkWork(entryPoint, remainingCalls) {
    // delete any old work checker
-   window.clearTimeout(currWorkChecker);
+   window.clearTimeout(epCurrWorkChecker[entryPoint]);
 
-   var uuid = jQuery("#txtWorkGuid").val();
-   if (uuid == "") {
+   if  (!(entryPoint in epWorkGuid)) {
       alert("Work GUID is empty. Cannot check status");
       return;
    }
 
-   bfGetJson("Checkwork-" + uuid, SVC_WORK_MGR_ROOT
-         + SVC_WORK_GET_WORKSTATUS_RSC + "?" + SVC_WORKID_KEY + "=" + uuid,
-         cbCheckWork, worktype);
+   var data = new FormData();
+   data.append(SVC_API_KEY, apiKey);
+   data.append(SVC_WORKID_KEY, epWorkGuid[entryPoint]);
+
+   bfPostData(SVC_GET_WORKSTATUS_RSC, data, checkWork_cb, genericFailure_cb, entryPoint, remainingCalls);
 }
 
-function fnDoWork(worktype) {
-   var uuidCurrWork = guid();
+function checkWork_cb(response, entryPoint, remainingCalls) {
+    var status = response[SVC_WORKSTATUS_KEY];
 
-   WorkGuids[worktype] = uuidCurrWork;
+    bfUpdateDebugInfo("Workcheck returned with response " + status);
 
-   // set the guid of the text field
-   jQuery("#txtWorkGuid").val(uuidCurrWork);
-
-   var testrigName = jQuery("#txtTestrigName").val();
-   if (testrigName == "") {
-      alert("Testrig name is empty");
-      return;
-   }
-
-   var envName = jQuery("#txtEnvironmentName").val();
-   if (envName == "" && worktype.substring(0, 6) == "vendor") { // vendor*
-      // worktype
-      // does not
-      // need an
-      // environment
-      alert("Environment name is empty");
-      return;
-   }
-
-   var diffEnvName = jQuery("#txtDiffEnvironmentName").val();
-
-   var outputEnvName = jQuery("#txtOutputEnvironmentName").val();
-   if (outputEnvName == "" && worktype == "writeroutes") {
-      alert("Output environment name is empty");
-      return;
-   }
-
-   var questionName = jQuery("#txtQuestionName").val();
-   if (questionName == ""
-         && (worktype == "answerquestion" || worktype == "postflows")) {
-      alert("Question name is empty");
-      return;
-   }
-
-   var dataPlaneQuery = document.getElementById("chkDataPlaneQuery").checked;
-   var differentialQuery = document.getElementById("chkDifferentialQuery").checked;
-
-   var reqParams = {};
-
-   switch (worktype) {
-   case "gethistory":
-      reqParams[COMMAND_GET_HISTORY] = "";
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      reqParams[ARG_QUESTION_NAME] = questionName;
-      reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
-      break;
-   case "getdiffhistory":
-      reqParams[COMMAND_GET_DIFFERENTIAL_HISTORY] = "";
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
-      reqParams[ARG_QUESTION_NAME] = questionName;
-      reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
-      break;
-   case "vendorspecific":
-      reqParams[COMMAND_PARSE_VENDOR_SPECIFIC] = "";
-      reqParams[ARG_UNIMPLEMENTED_SUPPRESS] = "";
-      reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_WARN;
-      break;
-   case "vendorindependent":
-      reqParams[COMMAND_PARSE_VENDOR_INDEPENDENT] = "";
-      reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_WARN;
-      break;
-   case "generatefacts":
-      reqParams[COMMAND_GENERATE_FACT] = "";
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_WARN;
-      break;
-   case "generatedifffacts":
-      reqParams[COMMAND_GENERATE_FACT] = "";
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
-      reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_WARN;
-      break;
-   case "generatedataplane":
-      reqParams[COMMAND_CREATE_WORKSPACE] = "";
-      reqParams[COMMAND_FACTS] = "";
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      break;
-   case "generatediffdataplane":
-      reqParams[COMMAND_CREATE_WORKSPACE] = "";
-      reqParams[COMMAND_FACTS] = "";
-      reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      break;
-   case "getdataplane":
-      reqParams[COMMAND_DUMP_DP] = "";
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      break;
-   case "getdiffdataplane":
-      reqParams[COMMAND_DUMP_DP] = "";
-      reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      break;
-   case "getz3encoding":
-      reqParams[COMMAND_SYNTHESIZE_Z3_DATA_PLANE] = "";
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      break;
-   case "answerquestion":
-      reqParams[COMMAND_ANSWER] = "";
-      reqParams[ARG_QUESTION_NAME] = questionName;
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      reqParams[ARG_LOG_LEVEL] = LOG_LEVEL_OUTPUT;
-      if (differentialQuery) {
-         reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
-      }
-      break;
-   case "postflows":
-      reqParams[COMMAND_POST_FLOWS] = "";
-      reqParams[ARG_QUESTION_NAME] = questionName;
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      break;
-   case "postdiffflows":
-      reqParams[COMMAND_POST_DIFFERENTIAL_FLOWS] = "";
-      reqParams[ARG_QUESTION_NAME] = questionName;
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
-      break;
-   case "getflowtraces":
-      reqParams[COMMAND_QUERY] = "";
-      reqParams[ARG_PREDICATES] = PREDICATE_FLOW_PATH_HISTORY;
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      break;
-   case "writeroutes":
-      reqParams[COMMAND_WRITE_ROUTES] = "";
-      reqParams[ARG_OUTPUT_ENV] = outputEnvName;
-      reqParams[ARG_ENVIRONMENT_NAME] = envName;
-      break;
-   default:
-      alert("Unsupported work command", worktype);
-   }
-
-   var workItem = JSON.stringify([ uuidCurrWork, testrigName, reqParams, {} ]);
-   var rawURL = SVC_WORK_MGR_ROOT + SVC_WORK_QUEUE_WORK_RSC + "?"
-         + SVC_WORKITEM_KEY + "=" + workItem;
-   var encodedURL = encodeURI(rawURL);
-
-   bfGetJson("DoWork:" + worktype, encodedURL, cbDoWork, worktype);
+    switch (status) {
+        case "TERMINATEDNORMALLY":
+            getLog(entryPoint, remainingCalls);
+            delete epCurrWorkChecker[entryPoint];
+            delete epWorkGuid[entryPoint];
+            break;
+        case "TERMINATEDABNORMALLY":
+        case "ASSIGNMENTERROR":
+            //we ignore the remaining calls if work terminated abnormally
+            getLog(entryPoint, []);
+            delete epCurrWorkChecker[entryPoint];
+            delete epWorkGuid[entryPoint];
+            break;
+        case "UNASSIGNED":
+        case "TRYINGTOASSIGN":
+        case "ASSIGNED":
+        case "CHECKINGSTATUS":
+            // fire again
+            epCurrWorkChecker[entryPoint] = window.setTimeout(function () {
+                checkWork(entryPoint, remainingCalls)
+            }, 2 * 1000);
+            break;
+        default:
+            bfUpdateDebugInfo("Got unknown work status: ", status);
+    }
 }
 
-function fnGetCoordinatorWorkQueueStatus() {
-   bfGetJson("GetCoordinatorWorkQueueStatus", SVC_WORK_MGR_ROOT
-         + SVC_WORK_GETSTATUS_RSC, cbGetCoordinatorWorkQueueStatus, "");
+function errorCheck(isError, message, entryPoint) {
+    if (isError) {
+        finishEntryPoint(entryPoint);
+        alert(message);
+        return true;
+    }
+    return false;
 }
 
-function fnGetLog(worktype) {
-   var testrigName = jQuery("#txtTestrigName").val();
-   if (testrigName == "") {
-      alert("Testrig name is empty.");
-      return;
-   }
+// we are done with this entrypoint
+// display any output and delete everything
+function finishEntryPoint(entryPoint, remainingCalls) {
 
-   var uuidWork = "";
+    //jQuery(elementOutputText).val(epOutput[entryPoint]);
+    bfUpdateOutput(epOutput[entryPoint]);
 
-   if (typeof worktype === 'undefined') {
-      uuidWork = jQuery("#txtWorkGuid").val();
-   }
-   else {
-      uuidWork = WorkGuids[worktype];
-   }
+    jQuery(elementSpinDiv).spin(false);
 
-   if (uuidWork == "") {
-      alert("Work GUID is empty");
-      return;
-   }
-
-   bfGetObject(testrigName, uuidWork + ".log");
+    delete epCurrWorkChecker[entryPoint];
+    delete epOutput[entryPoint];
+    delete epWorkGuid[entryPoint];
+    delete epQuestionName[entryPoint];
 }
 
-function fnGetObject(worktype) {
+function getLog(entryPoint, remainingCalls) {
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is empty", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is empty.", entryPoint) ||
+        errorCheck(!(entryPoint in epWorkGuid), "epWorkGuid is not set", entryPoint))
+       return;
 
-   var testrigName = jQuery("#txtTestrigName").val();
+   var objectName = epWorkGuid[entryPoint] + ".log";
 
-   if (testrigName == "") {
-      alert("Testrig name is empty");
-      return;
-   }
-
-   var envName = jQuery("#txtEnvironmentName").val();
-   if (envName == "" && worktype.substring(0, 6) == "vendor") { // vendor*
-      // worktype
-      // does not
-      // need an
-      // environment
-      alert("Environment name is empty");
-      return;
-   }
-
-   var objectName = "";
-
-   switch (worktype) {
-   case "vendorspecific":
-      objectName = RELPATH_VENDOR_SPECIFIC_CONFIG_DIR;
-      bfGetObject(testrigName, objectName);
-      break;
-   case "vendorindependent":
-      objectName = RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR;
-      bfGetObject(testrigName, objectName);
-      break;
-   case "generatefacts":
-      objectName = [ RELPATH_ENVIRONMENTS_DIR, envName, RELPATH_FACT_DUMP_DIR ]
-            .join("/");
-      bfGetObject(testrigName, objectName);
-      break;
-   case "getdataplane":
-      objectName = [ RELPATH_ENVIRONMENTS_DIR, envName, RELPATH_DATA_PLANE_DIR ]
-            .join("/");
-      bfGetObject(testrigName, objectName);
-      break;
-   case "getz3encoding":
-      objectName = [ RELPATH_ENVIRONMENTS_DIR, envName,
-            RELPATH_Z3_DATA_PLANE_FILE ].join("/");
-      bfGetObject(testrigName, objectName);
-      break;
-   case "getflowtraces":
-      objectName = [ RELPATH_ENVIRONMENTS_DIR, envName, RELPATH_QUERY_DUMP_DIR ]
-            .join("/");
-      bfDownloadObject(testrigName, objectName);
-      break;
-   default:
-      alert("Unsupported worktype for get result", worktype);
-   }
-
-   if (objectName == "") {
-      alert("Could not determine the right object name to fetch");
-      return;
-   }
-
+   bfGetObject(containerName, testrigName, objectName, getLog_cb, genericFailure_cb, entryPoint, remainingCalls);
 }
 
-function fnUploadDiffEnvironment() {
+function getLog_cb(responseObject, entryPoint, remainingCalls) {
+    epOutput[entryPoint] += responseObject;
+    makeNextCall(entryPoint, remainingCalls);
+}
 
-   var testrigName = jQuery("#txtTestrigName").val();
-   if (testrigName == "") {
-      alert("Specify a testrig name");
-      return;
-   }
+// we encountered a failure
+// add the failure message to output and then finish
+function genericFailure_cb(message, entryPoint, remainingCalls) {
+    epOutput[entryPoint] += message;
+    finishEntryPoint(entryPoint);
+}
 
-   var envName = jQuery("#txtDiffEnvironmentName").val();
-   if (envName == "") {
-      alert("Specify a differential environment name");
-      return;
-   }
+function initContainer(entryPoint, remainingCalls) {
+    if (errorCheck(bfIsInvalidStr(containerPrefix), "Container name is not set", entryPoint))
+        return;
 
-   var envFile = jQuery("#fileUploadDiffEnvironment").get(0).files[0];
-   if (typeof envFile === 'undefined') {
-      alert("Select a differential environment file");
+    bfUpdateDebugInfo("Init'ing container");
+
+    var data = new FormData();
+    data.append(SVC_API_KEY, apiKey);
+    data.append(SVC_CONTAINER_PREFIX_KEY, containerPrefix);
+
+    bfPostData(SVC_INIT_CONTAINER_RSC, data, initContainer_cb, genericFailure_cb, entryPoint, remainingCalls);
+}
+
+function initContainer_cb(response, entryPoint, remainingCalls) {
+    containerName = response[SVC_CONTAINER_NAME_KEY];
+    bfUpdateDebugInfo("Init'd container " + containerName);
+    makeNextCall(entryPoint, remainingCalls);
+}
+
+function makeNextCall(entryPoint, callList) {
+
+    if (callList.length == 0) {
+        bfUpdateDebugInfo("Done with all the calls for " + entryPoint)
+
+        finishEntryPoint(entryPoint);
+    }
+    else {
+        var nextCall = callList[0];
+        callList.shift();
+
+        switch (nextCall) {
+            case "initcontainer":
+                initContainer(entryPoint, callList);
+                break;
+            case "uploadtestrigfile":
+                uploadTestrigFile(entryPoint, callList);
+                break;
+            case "uploadtestrigsmart":
+                uploadTestrigSmart(entryPoint, callList);
+                break;
+            case "uploadtestrigtext":
+                uploadTestrigText(entryPoint, callList);
+                break;
+            case "parsevendorspecific":
+            case "parsevendorindependent":
+            case "generatedataplane":
+            case "getdataplane":
+            case "generatediffdataplane":
+            case "getdiffdataplane":
+            case "answerquestion":
+            case "answerdiffquestion":
+                queueWork(nextCall, entryPoint, callList);
+                break;
+            case "uploaddiffenvfile":
+                uploadDiffEnvFile(entryPoint, callList);
+                break;
+            case "uploaddiffenvsmart":
+                uploadDiffEnvSmart(entryPoint, callList);
+                break;
+            case "uploadquestionfile":
+                uploadQuestionFile(entryPoint, callList);
+                break;
+            case "uploadquestiontext":
+                uploadQuestionText(entryPoint, callList);
+                break;
+            case "postdiffenvinit":
+                postDiffEnvInit(entryPoint, callList);
+                break;
+            case "posttestriginit":
+                postTestrigInit(entryPoint, callList);
+                break;
+            default:
+                alert("Unsupported call", nextCall);
+        }
+    }
+}
+
+function postDiffEnvInit(entryPoint, remainingCalls) {
+    if (errorCheck((typeof elementAnswerDiffQuestionBtn === 'undefined' || bfIsInvalidElement(elementAnswerDiffQuestionBtn)),
+                "Answer diff question button element (elementAnswerDiffQuestionBtn) is not configured in the HTML header",
+                entryPoint))
+        return;
+
+    jQuery(elementAnswerDiffQuestionBtn).prop('disabled', false);
+
+    makeNextCall(entryPoint, remainingCalls);
+}
+
+function postTestrigInit(entryPoint, remainingCalls) {
+    if (errorCheck((typeof elementUploadBaseTestrigBtn === 'undefined' || bfIsInvalidElement(elementUploadBaseTestrigBtn)),
+                "Upload base config button element (elementUploadBaseTestrigBtn) is not configured in the HTML header",
+                entryPoint) ||
+        errorCheck((typeof elementUploadDiffEnvBtn === 'undefined' || bfIsInvalidElement(elementUploadDiffEnvBtn)),
+                "Upload differential config button element (elementUploadDiffEnvBtn) is not configured in the HTML header",
+                entryPoint) ||
+        errorCheck((typeof elementAnswerQuestionBtn === 'undefined' || bfIsInvalidElement(elementAnswerQuestionBtn)),
+                "Answer question button element (elementAnswerQuestionBtn) is not configured in the HTML header",
+                entryPoint))
+        return;
+
+    jQuery(elementUploadBaseTestrigBtn).prop('disabled', true);
+    jQuery(elementUploadDiffEnvBtn).prop('disabled', false);
+    jQuery(elementAnswerQuestionBtn).prop('disabled', false);
+
+    makeNextCall(entryPoint, remainingCalls);
+}
+
+
+function queueWork(worktype, entryPoint, remainingCalls) {
+
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is empty", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is empty", entryPoint))
+        return;
+
+    // real work begins
+    bfUpdateDebugInfo("Queueing work of type " + worktype);
+
+    epWorkGuid[entryPoint] = bfGetGuid();
+
+    var reqParams = {};
+    reqParams[ARG_LOG_LEVEL] = LOG_LEVEL;
+
+    switch (worktype) {
+        case "parsevendorspecific":
+            reqParams[COMMAND_PARSE_VENDOR_SPECIFIC] = "";
+            reqParams[ARG_UNIMPLEMENTED_SUPPRESS] = "";
+            break;
+        case "parsevendorindependent":
+            reqParams[COMMAND_PARSE_VENDOR_INDEPENDENT] = "";
+            break;
+        case "generatedataplane":
+            reqParams[COMMAND_WRITE_CP_FACTS] = "";
+            reqParams[COMMAND_DUMP_DP] = "";
+            reqParams[COMMAND_NXTNET_DATA_PLANE] = "";
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
+            break;
+        case "generatediffdataplane":
+            reqParams[COMMAND_WRITE_CP_FACTS] = "";
+            reqParams[COMMAND_DUMP_DP] = "";
+            reqParams[COMMAND_NXTNET_DATA_PLANE] = "";
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
+            reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
+            reqParams[ARG_DIFF_ACTIVE] = "";
+        case "getdataplane":
+            reqParams[COMMAND_DUMP_DP] = "";
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
+            break;
+        case "getdiffdataplane":
+            reqParams[COMMAND_DUMP_DP] = "";
+            reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
+            reqParams[ARG_DIFF_ACTIVE] = "";
+            break;
+        case "answerquestion":
+        case "answerdiffquestion":
+            //many checks and tasks are common to both answer commands; do those first, and then special case for diff
+            if (errorCheck(!(entryPoint in epQuestionName), "Question name is not set in epQuestionName", entryPoint))
+                return;
+
+            reqParams[COMMAND_ANSWER] = "";
+            reqParams[ARG_QUESTION_NAME] = epQuestionName[entryPoint];
+            reqParams[ARG_ENVIRONMENT_NAME] = envName;
+            if (! bfIsInvalidStr(diffEnvName)) {
+                reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
+            }
+            reqParams[COMMAND_NXTNET_TRAFFIC] = "";
+            reqParams[COMMAND_GET_HISTORY] = "";
+
+            if (worktype == "answerdiffquestion") {
+                if (errorCheck(bfIsInvalidStr(diffEnvName), "Diff environment is not set", entryPoint))
+                    return;
+
+                reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
+                reqParams[ARG_DIFF_ACTIVE] = "";
+            }
+
+            break;
+        default:
+            alert("Unsupported work command", worktype);
+    }
+
+    var workItem = JSON.stringify([epWorkGuid[entryPoint], containerName, testrigName, reqParams, {}]);
+
+    var data = new FormData();
+    data.append(SVC_API_KEY, apiKey);
+    data.append(SVC_WORKITEM_KEY, workItem);
+
+    bfPostData(SVC_QUEUE_WORK_RSC, data, queueWork_cb, genericFailure_cb, entryPoint, remainingCalls);
+}
+
+function queueWork_cb(response, entryPoint, remainingCalls) {
+    bfUpdateDebugInfo("Work queued. Beginning to poll for status");
+    checkWork(entryPoint, remainingCalls);
+}
+
+
+function startCalls(entryPoint, calls) {
+
+    entryPoint += "__" + bfGetGuid();
+
+    jQuery(elementSpinDiv).spin();
+
+    //initialize the epOutput to empty
+    epOutput[entryPoint] = "";
+
+    var callList = calls.split("::");
+    makeNextCall(entryPoint, callList);
+}
+
+// this is a test function whose contents change based on what we want to test
+function testMe() {
+    containerName = "js_9b23b69d-e0f7-4034-8d4c-954a1c9eaa86";
+    queueWork("answerquestion", "abc", []);
+}
+
+function txtToConfigBlob(entryPoint, elementText) {
+
+    var configText = jQuery(elementText).val();
+    if (errorCheck(bfIsInvalidStr(configText), "Enter text", entryPoint))
+        return;
+
+    var zip = new JSZip();
+
+    var topLevelFolder = zip.folder("testrig");
+    var configFolder = topLevelFolder.folder("configs");
+    configFolder.file("device.cfg", configText);
+
+    var content = zip.generate({ type: "blob" });
+
+    return content;
+}
+
+function uploadDifEnvFile(entryPoint, remainingCalls) {
+
+    if (errorCheck((typeof elementDiffEnvFile === 'undefined' || bfIsInvalidElement(elementDiffEnvFile)),
+                    "Diff environment file selector (elementDiffEnvFile) is not configured in the HTML header",
+                    entryPoint))
+        return;
+
+    var envFile = jQuery(elementDiffEnvFile).get(0).files[0];
+    if (errorCheck(typeof envFile === 'undefined', "Select a differential environment file", entryPoint))
+        return;
+
+    uploadDiffEnvFinal(entryPoint, remainingCalls, envFile);
+}
+
+function uploadDiffEnvFinal(entryPoint, remainingCalls, envBlobOrFile) {
+
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint))
+        return;
+
+    diffEnvName = "de_" + bfGetGuid();
+
+    bfUpdateDebugInfo("Uploading differential environment");
+
+    var data = new FormData();
+    data.append(SVC_API_KEY, apiKey);
+    data.append(SVC_CONTAINER_NAME_KEY, containerName);
+    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
+    data.append(SVC_ENV_NAME_KEY, diffEnvName);
+    data.append(SVC_ZIPFILE_KEY, envBlobOrFile);
+
+    bfPostData(SVC_UPLOAD_ENV_RSC, data, uploadDifEnv_cb, genericFailure_cb, entryPoint, remainingCalls);
+}
+
+function uploadDiffEnvSmart(entryPoint, remainingCalls) {
+    // sanity check inputs
+    if (errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
+                    "Config text element (elementConfigText) is not configured in the HTML header",
+                    entryPoint))
+        return;
+
+    if (testrigZip == "") {
+        if (errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
+                        "Config text element (elementConfigText) is not configured in the HTML header",
+                        entryPoint))
+            return;
+
+        var content = txtToConfigBlob(entryPoint, elementConfigText);
+        uploadDiffEnvFinal(entryPoint, remainingCalls, content);
+    }
+    else {
+        var content = testrigZip.generate({ type: "blob" });
+        uploadDiffEnvFinal(entryPoint, remainingCalls, content);
+    }
+}
+
+
+function uploadDifEnv_cb(response, entryPoint, remainingCalls) {
+    bfUpdateDebugInfo("Uploaded diff environment.");
+    makeNextCall(entryPoint, remainingCalls);
+}
+
+function uploadQuestionFile(entryPoint, remainingCalls) {
+    // sanity check inputs
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint) ||
+        errorCheck(typeof elementQuestionFile === 'undefined' || bfIsInvalidElement(elementQuestionFile),
+                   "Questoin file element (elementQuestionFile) is not configured in the HTML header",
+                    entryPoint) ||
+        errorCheck(typeof elementQuestionParams === 'undefined' || bfIsInvalidElement(elementQuestionParams),
+                   "Question parameters element (elementQuestionParams) is not configured in the HTML header",
+                    entryPoint))
+        return;
+ 
+    var qFile = jQuery(elementQuestionFile).get(0).files[0];
+    if (errorCheck(typeof qFile === 'undefined'), "Select a question file", entryPoint)
       return;
-   }
+
+    epQuestionName[entryPoint] = bfGetGuid();
+
+   var paramsString = jQuery(elementQuestionParams).val();
+   var paramBlob = new Blob([paramsString]);
 
    var data = new FormData();
+   data.append(SVC_API_KEY, apiKey);
+   data.append(SVC_CONTAINER_NAME_KEY, containerName);
    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
-   data.append(SVC_ENV_NAME_KEY, envName);
-   data.append(SVC_ZIPFILE_KEY, envFile);
-
-   bfUploadData("UploadEnvironment-" + envName, SVC_WORK_MGR_ROOT
-         + SVC_WORK_UPLOAD_ENV_RSC, data, cbUploadData, "environment");
-}
-
-function fnUploadEnvironment() {
-
-   var testrigName = jQuery("#txtTestrigName").val();
-   if (testrigName == "") {
-      alert("Specify a testrig name");
-      return;
-   }
-
-   var envName = jQuery("#txtEnvironmentName").val();
-   if (envName == "") {
-      alert("Specify an environment name");
-      return;
-   }
-
-   var envFile = jQuery("#fileUploadEnvironment").get(0).files[0];
-   if (typeof envFile === 'undefined') {
-      alert("Select an environment file");
-      return;
-   }
-
-   var data = new FormData();
-   data.append(SVC_TESTRIG_NAME_KEY, testrigName);
-   data.append(SVC_ENV_NAME_KEY, envName);
-   data.append(SVC_ZIPFILE_KEY, envFile);
-
-   bfUploadData("UploadEnvironment-" + envName, SVC_WORK_MGR_ROOT
-         + SVC_WORK_UPLOAD_ENV_RSC, data, cbUploadData, "environment");
-}
-
-function fnUploadQuestion() {
-
-   var testrigName = jQuery("#txtTestrigName").val();
-   if (testrigName == "") {
-      alert("Specify a testrig name");
-      return;
-   }
-
-   var qFile = jQuery("#fileUploadQuestion").get(0).files[0];
-   if (typeof qFile === 'undefined') {
-      alert("Select a question file");
-      return;
-   }
-
-   var qName = jQuery("#txtQuestionName").val();
-
-   if (qName == "") {
-      if (DEMO_MODE == 0) {
-         alert("Specify a question name");
-         return;
-      }
-      else {
-         jQuery("#txtQuestionName").val(qFile.name);
-         qName = jQuery("#txtQuestionName").val();
-      }
-   }
-
-   var data = new FormData();
-   data.append(SVC_TESTRIG_NAME_KEY, testrigName);
-   data.append(SVC_QUESTION_NAME_KEY, qName);
+   data.append(SVC_QUESTION_NAME_KEY, epQuestionName[entryPoint]);
    data.append(SVC_FILE_KEY, qFile);
+   data.append(SVC_FILE2_KEY, paramBlob);
 
-   bfUploadData("UploadQuestion-" + qName, SVC_WORK_MGR_ROOT
-         + SVC_WORK_UPLOAD_QUESTION_RSC, data, undefined, undefined);
+   bfPostData(SVC_UPLOAD_QUESTION_RSC, data, uploadQuestion_cb, genericFailure_cb, entryPoint, remainingCalls);
 }
 
-function fnUploadTestrig() {
+function uploadQuestionText(entryPoint, remainingCalls) {
+    // sanity check inputs
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint) ||
+        errorCheck(typeof elementQuestionText === 'undefined' || bfIsInvalidElement(elementQuestionText),
+                   "Question text element (elementQuestionText) is not configured in the HTML header",
+                    entryPoint))
+        return;
 
-   var testrigName = jQuery("#txtTestrigName").val();
+    var qText = jQuery(elementQuestionText).val();
+    if (errorCheck(bfIsInvalidStr(qText), "Enter question text", entryPoint))
+        return;
 
-   if (testrigName == "") {
-      alert("Specify a testrig name");
-      return;
-   }
+    var qBlob = new Blob([qText]);
 
-   var testrigFile = jQuery("#fileUploadTestrig").get(0).files[0];
+    //parameters will be empty for this
+    var paramBlob = new Blob([""]);
 
-   if (typeof testrigFile === 'undefined') {
-      alert("Select a testrig file");
-      return;
-   }
+    epQuestionName[entryPoint] = bfGetGuid();
 
-   var data = new FormData();
-   data.append(SVC_TESTRIG_NAME_KEY, testrigName);
-   data.append(SVC_ZIPFILE_KEY, testrigFile);
+    var data = new FormData();
+    data.append(SVC_API_KEY, apiKey);
+    data.append(SVC_CONTAINER_NAME_KEY, containerName);
+    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
+    data.append(SVC_QUESTION_NAME_KEY, epQuestionName[entryPoint]);
+    data.append(SVC_FILE_KEY, qBlob);
+    data.append(SVC_FILE2_KEY, paramBlob);
 
-   bfUploadData("UploadTestrig " + testrigName, SVC_WORK_MGR_ROOT
-         + SVC_WORK_UPLOAD_TESTRIG_RSC, data, cbUploadData, "testrig");
+    bfPostData(SVC_UPLOAD_QUESTION_RSC, data, uploadQuestion_cb, genericFailure_cb, entryPoint, remainingCalls);
 }
 
-function fnWriteRoutes() {
-   var testrigName = jQuery("#txtTestrigName").val();
-   if (testrigName == "") {
-      alert("Specify a testrig name");
-      return;
-   }
-
-   var iName = jQuery("#txtEnvironmentName").val();
-   var iNameSpecified = (iName != "");
-   if (!iNameSpecified) {
-      alert("Specify an input environment name");
-      return;
-   }
-
-   var oName = jQuery("#txtOutputEnvironmentName").val();
-   var oNameSpecified = (oName != "");
-   if (!oNameSpecified) {
-      alert("Specify an output environment name");
-      return;
-   }
-
-   fnDoWork("writeroutes");
+function uploadQuestion_cb(response, entryPoint, remainingCalls) {
+    bfUpdateDebugInfo("Uploaded question.");
+    makeNextCall(entryPoint, remainingCalls);
 }
 
-function guid() {
-   function s4() {
-      return Math.floor((1 + Math.random()) * 0x10000).toString(16)
-            .substring(1);
-   }
-   return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4()
-         + s4() + s4();
+function uploadTestrigFile(entryPoint, remainingCalls) {
+    if (errorCheck(typeof elementTestrigFile === 'undefined' || bfIsInvalidElement(elementTestrigFile),
+                   "Testrig file element (elementTestrigFile) is not configured in the HTML header",
+                    entryPoint))
+        return;
+
+    var testrigFile = jQuery(elementTestrigFile).get(0).files[0];
+    if (errorCheck(typeof testrigFile === 'undefined', "Select a testrig file", entryPoint))
+        return;
+
+    uploadTestrigFinal(entryPoint, remainingCalls, testrigFile);
+}
+
+function uploadTestrigFinal(entryPoint, remainingCalls, testrigBlobOrFile) {
+    // sanity check inputs
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is not set", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint))
+        return;
+
+    bfUpdateDebugInfo("Uploading testrig");
+
+    // begin the work now
+    var data = new FormData();
+    data.append(SVC_API_KEY, apiKey);
+    data.append(SVC_CONTAINER_NAME_KEY, containerName);
+    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
+    data.append(SVC_ZIPFILE_KEY, testrigBlobOrFile);
+
+    bfPostData(SVC_UPLOAD_TESTRIG_RSC, data, uploadTestrig_cb, genericFailure_cb, entryPoint, remainingCalls);
+}
+
+function uploadTestrigSmart(entryPoint, remainingCalls) {
+    // sanity check inputs
+    if (errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
+                    "Config text element (elementConfigText) is not configured in the HTML header",
+                    entryPoint))
+        return;
+
+    if (testrigZip == "") {
+        if (errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
+                        "Config text element (elementConfigText) is not configured in the HTML header",
+                        entryPoint))
+            return;
+
+        var content = txtToConfigBlob(entryPoint, elementConfigText);
+        uploadTestrigFinal(entryPoint, remainingCalls, content);
+    }
+    else {
+        var content = testrigZip.generate({ type: "blob" });
+        uploadTestrigFinal(entryPoint, remainingCalls, content);
+    }
+}
+
+//function uploadTestrigText(entryPoint, remainingCalls) {
+//    if (errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
+//                    "Config text element (elementConfigText) is not configured in the HTML header",
+//                    entryPoint))
+//      return;
+
+//    var configText = jQuery(elementConfigText).val();
+//    if (errorCheck(bfIsInvalidStr(configText), "Enter configuration", entryPoint))
+//        return;
+
+//    bfUpdateDebugInfo("Uploading config text");
+
+//    var zip = new JSZip();
+
+//    var topLevelFolder = zip.folder("testrig");
+//    var configFolder = topLevelFolder.folder("configs");
+//    configFolder.file("device.cfg", configText);
+
+//    var content = zip.generate({ type: "blob" });
+
+//    uploadTestrigFinal(entryPoint, remainingCalls, content);
+//}
+
+function uploadTestrig_cb(response, entryPoint, remainingCalls) {
+    bfUpdateDebugInfo("Uploaded testrig.");
+    makeNextCall(entryPoint, remainingCalls);
 }

@@ -121,7 +121,7 @@ public class PoolMgr {
       }
    }
 
-   private void refreshWorkerStatus(String worker) {
+   public void refreshWorkerStatus(String worker) {
       // _logger.debug("PM:RefreshWorkerStatus: refreshing status of " + worker
       // +"\n");
 

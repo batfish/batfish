@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.security.AccessControlException;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.zip.ZipException;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -274,13 +275,13 @@ public class WorkMgrService {
     * @return
     */
    @POST
-   @Path(CoordConsts.SVC_WORK_GET_OBJECT_RSC)
+   @Path(CoordConsts.SVC_GET_OBJECT_RSC)
    @Produces(MediaType.APPLICATION_OCTET_STREAM)
    public Response getObject(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
-         @FormDataParam(CoordConsts.SVC_WORK_OBJECT_KEY) String objectName) {
+         @FormDataParam(CoordConsts.SVC_OBJECT_KEY) String objectName) {
       try {
          _logger.info("WMS:getObject " + testrigName + " --> " + objectName
                + "\n");
@@ -307,7 +308,7 @@ public class WorkMgrService {
                .ok(file, MediaType.APPLICATION_OCTET_STREAM)
                .header("Content-Disposition",
                      "attachment; filename=\"" + file.getName() + "\"")
-               .header(CoordConsts.SVC_WORK_FILENAME_HDR, file.getName())
+               .header(CoordConsts.SVC_FILENAME_HDR, file.getName())
                .build();
       }
       catch (FileExistsException | FileNotFoundException
@@ -324,7 +325,7 @@ public class WorkMgrService {
    }
 
    @GET
-   @Path(CoordConsts.SVC_WORK_GETSTATUS_RSC)
+   @Path(CoordConsts.SVC_GETSTATUS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
       try {
@@ -348,7 +349,7 @@ public class WorkMgrService {
     * @return
     */
    @POST
-   @Path(CoordConsts.SVC_WORK_GET_WORKSTATUS_RSC)
+   @Path(CoordConsts.SVC_GET_WORKSTATUS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getWorkStatus(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
@@ -630,7 +631,7 @@ public class WorkMgrService {
     * @return
     */
    @POST
-   @Path(CoordConsts.SVC_WORK_QUEUE_WORK_RSC)
+   @Path(CoordConsts.SVC_QUEUE_WORK_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray queueWork(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
@@ -695,6 +696,65 @@ public class WorkMgrService {
    }
 
    /**
+    * Uploads a custom object under container, testrig. 
+    *  
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @param qName
+    * @param fileStream
+    * @param paramFileStream
+    * @return
+    */
+   @POST
+   @Path(CoordConsts.SVC_UPLOAD_CUSTOM_OBJECT_RSC)
+   @Consumes(MediaType.MULTIPART_FORM_DATA)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray uploadCustomObject(
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
+         @FormDataParam(CoordConsts.SVC_CUSTOM_OBJECT_NAME_KEY) String objectName,
+         @FormDataParam(CoordConsts.SVC_FILE_KEY) InputStream fileStream) {
+      try {
+         _logger.info("WMS:uploadQuestion " + apiKey + " " + containerName
+               + " " + testrigName + " / " + objectName + "\n");
+
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerName,
+               "Container name not supplied or is empty");
+         ;
+         checkStringParam(testrigName, "Testrig name not supplied or is empty");
+         ;
+         checkStringParam(objectName, "Object name not supplied or is empty");
+         ;
+         checkApiKeyValidity(apiKey);
+         checkContainerAccessibility(apiKey, containerName);
+
+         Main.getWorkMgr().uploadCustomObject(containerName, testrigName, objectName, fileStream); 
+
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               (new JSONObject()
+                     .put("result", "successfully uploaded custom object"))));
+
+      }
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
+         _logger
+               .error("WMS:uploadCustomObject exception: " + e.getMessage() + "\n");
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:uploadCustomObject exception: " + stackTrace);
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+   }
+
+   /**
     * Uploads a new environment under the container, testrig
     *
     * @param apiKey
@@ -705,7 +765,7 @@ public class WorkMgrService {
     * @return
     */
    @POST
-   @Path(CoordConsts.SVC_WORK_UPLOAD_ENV_RSC)
+   @Path(CoordConsts.SVC_UPLOAD_ENV_RSC)
    @Consumes(MediaType.MULTIPART_FORM_DATA)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray uploadEnvironment(
@@ -739,7 +799,7 @@ public class WorkMgrService {
 
       }
       catch (FileExistsException | FileNotFoundException
-            | IllegalArgumentException | AccessControlException e) {
+            | IllegalArgumentException | AccessControlException | ZipException e) {
          _logger.error("WMS:uploadEnvironment exception: " + e.getMessage()
                + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
@@ -766,7 +826,7 @@ public class WorkMgrService {
     * @return
     */
    @POST
-   @Path(CoordConsts.SVC_WORK_UPLOAD_QUESTION_RSC)
+   @Path(CoordConsts.SVC_UPLOAD_QUESTION_RSC)
    @Consumes(MediaType.MULTIPART_FORM_DATA)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray uploadQuestion(
@@ -825,7 +885,7 @@ public class WorkMgrService {
     * @return
     */
    @POST
-   @Path(CoordConsts.SVC_WORK_UPLOAD_TESTRIG_RSC)
+   @Path(CoordConsts.SVC_UPLOAD_TESTRIG_RSC)
    @Consumes(MediaType.MULTIPART_FORM_DATA)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray uploadTestrig(
@@ -855,7 +915,7 @@ public class WorkMgrService {
                      .put("result", "successfully uploaded testrig"))));
       }
       catch (FileExistsException | FileNotFoundException
-            | IllegalArgumentException | AccessControlException e) {
+            | IllegalArgumentException | AccessControlException | ZipException e ) {
          _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));

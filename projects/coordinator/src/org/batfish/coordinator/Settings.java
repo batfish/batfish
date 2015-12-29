@@ -32,7 +32,7 @@ public class Settings extends BaseSettings {
    private static final String ARG_SERVICE_HOST = "coordinator.ServiceHost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinator.PoolPort";
    private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";
-   private static final String ARG_SSL_KEYSTORE_FILE = "coordinator.SslKeyStoreFile";
+   private static final String ARG_SSL_KEYSTORE_FILE = "sslkeystorefile";
    private static final String ARG_SSL_KEYSTORE_PASSWORD = "coordinator.SslKeyStorePassword";
    private static final String ARG_STORAGE_ACCOUNT_KEY = "coordinator.StorageAccountKey";
    private static final String ARG_STORAGE_ACCOUNT_NAME = "coordinator.StorageAccountName";
@@ -54,6 +54,7 @@ public class Settings extends BaseSettings {
    private String _serviceHost;
    private int _servicePoolPort;
    private int _serviceWorkPort;
+   private String _sslKeystoreFilename;
    private String _storageAccountKey;
    private String _storageAccountName;
    private String _storageProtocol;
@@ -138,7 +139,7 @@ public class Settings extends BaseSettings {
    }
 
    public String getSslKeystoreFilename() {
-      return _config.getString(ARG_SSL_KEYSTORE_FILE);
+      return _sslKeystoreFilename; 
    }
 
    public String getSslKeystorePassword() {
@@ -179,7 +180,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_LOG_LEVEL,
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
       setDefaultProperty(ARG_PERIOD_ASSIGN_WORK_MS, 1000);
-      setDefaultProperty(ARG_PERIOD_CHECK_WORK_MS, 5000);
+      setDefaultProperty(ARG_PERIOD_CHECK_WORK_MS, 1000);
       setDefaultProperty(ARG_PERIOD_WORKER_STATUS_REFRESH_MS, 10000);
       setDefaultProperty(ARG_QUEUE_COMPLETED_WORK, "batfishcompletedwork");
       setDefaultProperty(ARG_QUEUE_INCOMPLETE_WORK, "batfishincompletework");
@@ -237,6 +238,9 @@ public class Settings extends BaseSettings {
       addOption(ARG_SERVICE_WORK_PORT, "port for work management service",
             "port_number_work_service");
 
+      addOption(ARG_SSL_KEYSTORE_FILE, "which keystore file to use for ssl",
+            "keystor (.jks) file");
+      
       addOption(ARG_TESTRIG_STORAGE_LOCATION, "where to store test rigs",
             "testrig_storage_location");
 
@@ -260,6 +264,7 @@ public class Settings extends BaseSettings {
       _servicePoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
       _serviceWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
       _serviceHost = getStringOptionValue(ARG_SERVICE_HOST);
+      _sslKeystoreFilename = getStringOptionValue(ARG_SSL_KEYSTORE_FILE);
       _storageAccountKey = getStringOptionValue(ARG_STORAGE_ACCOUNT_KEY);
       _storageAccountName = getStringOptionValue(ARG_STORAGE_ACCOUNT_NAME);
       _storageProtocol = getStringOptionValue(ARG_STORAGE_PROTOCOL);

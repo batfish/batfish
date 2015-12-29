@@ -10,7 +10,7 @@ table {
     border: 0;
     width:auto;
     vertical-align: top;
-    border-spacing: 10px 10px;
+    border-spacing: 2px 2px;
     table-layout: fixed;
 }
 
@@ -25,7 +25,7 @@ td {
 
     max-width: 800px;
     background: #FFF;
-    padding: 20px 30px 20px 30px;
+    padding: 10px 10px 10px 10px;
     font-family: 'Segoe UI';
     font-size: 14px;
     color: #888;
@@ -52,6 +52,12 @@ td {
     font-family: 'Segoe UI';
     font-size: 14px;
     color: #000;
+}
+
+.myform input[type="button"]:disabled {
+    font-family: 'Segoe UI';
+    font-size: 14px;
+    color: #888;
 }
 
 

@@ -1,145 +1,59 @@
 "use strict";
 
-// These constants come from 'BfConsts.java'.
-// Make sure they are in sync with what is there.
-var ARG_DIFF_ACTIVE = "diffactive";
-var ARG_DIFF_ENVIRONMENT_NAME = "diffenv";
-var ARG_ENVIRONMENT_NAME = "env";
-var ARG_LOG_LEVEL = "loglevel";
-var ARG_OUTPUT_ENV = "outputenv";
-var ARG_PEDANTIC_AS_ERROR = "pedanticerror";
-var ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
-var ARG_PREDICATES = "predicates";
-var ARG_QUESTION_NAME = "questionname";
-var ARG_RED_FLAG_AS_ERROR = "redflagerror";
-var ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
-var ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
-var ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
-
-var COMMAND_ANSWER = "answer";
-var COMMAND_CREATE_WORKSPACE = "createworkspace";
-var COMMAND_DUMP_DP = "dp";
-var COMMAND_FACTS = "facts";
-var COMMAND_GENERATE_FACT = "dumpcp";
-var COMMAND_GET_DIFFERENTIAL_HISTORY = "getdiffhistory";
-var COMMAND_GET_HISTORY = "gethistory";
-var COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
-var COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
-var COMMAND_POST_DIFFERENTIAL_FLOWS = "postdiffflows";
-var COMMAND_POST_FLOWS = "postflows";
-var COMMAND_QUERY = "query";
-var COMMAND_SYNTHESIZE_Z3_DATA_PLANE = "z3";
-var COMMAND_WRITE_ROUTES = "writeroutes";
-
-var LOG_LEVEL_OUTPUT = "output";
-var LOG_LEVEL_WARN = "warn";
-
-var PREDICATE_FLOW_PATH_HISTORY = "FlowPathHistory";
-
-var RELPATH_DATA_PLANE_DIR = "dp";
-var RELPATH_ENV_DIR = "env";
-var RELPATH_ENV_NODE_SET = "env-node-set";
-var RELPATH_ENVIRONMENTS_DIR = "environments";
-var RELPATH_FACT_DUMP_DIR = "dump";
-var RELPATH_FLOWS_DUMP_DIR = "flowdump";
-var RELPATH_LB_HOSTNAME_PATH = "lb";
-var RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";
-var RELPATH_QUERIES_DIR = "queries";
-var RELPATH_QUERY_DUMP_DIR = "querydump";
-var RELPATH_QUESTION_FILE = "question";
-var RELPATH_QUESTIONS_DIR = "questions";
-var RELPATH_TEST_RIG_DIR = "testrig";
-var RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
-var RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
-var RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
-
-// These constants come from 'CoordConsts.java'.
-// Make sure they are in sync with what is there.
-var SVC_ENV_NAME_KEY = "envname";
-var SVC_FAILURE_KEY = "failure";
-var SVC_FILE_KEY = "file";
-var SVC_POOL_GETSTATUS_RSC = "getstatus";
-var SVC_POOL_MGR_ROOT = "http://localhost:9998/batfishpoolmgr/";
-var SVC_POOL_UPDATE_RSC = "updatepool";
-var SVC_QUESTION_NAME_KEY = "questionname";
-var SVC_SUCCESS_KEY = "success";
-var SVC_TESTRIG_NAME_KEY = "testrigname";
-var SVC_WORK_GET_OBJECT_RSC = "getobject";
-var SVC_WORK_GET_WORKSTATUS_RSC = "getworkstatus";
-var SVC_WORK_GETSTATUS_RSC = "getstatus";
-var SVC_WORK_MGR_ROOT = "http://localhost:9997/batfishworkmgr/";
-var SVC_WORK_OBJECT_KEY = "object";
-var SVC_WORK_QUEUE_WORK_RSC = "queuework";
-var SVC_WORK_UPLOAD_ENV_RSC = "uploadenvironment";
-var SVC_WORK_UPLOAD_QUESTION_RSC = "uploadquestion";
-var SVC_WORK_UPLOAD_TESTRIG_RSC = "uploadtestrig";
-var SVC_WORKID_KEY = "workid";
-var SVC_WORKITEM_KEY = "workitem";
-var SVC_WORKSPACE_NAME_KEY = "workspace";
-var SVC_WORKSTATUS_KEY = "workstatus";
-var SVC_ZIPFILE_KEY = "zipfile";
-
-$(document).ajaxError(function(event, request, settings, thrownError) {
-   bfUpdateDebugInfo(settings.url + " " + thrownError + " " + request);
+$(document).ready(function () {
+    bfCheckLibConfiguration();
+    bfInitialize();
 });
 
+$(document).ajaxError(function (event, request, settings, thrownError) {
+    bfUpdateDebugInfo(settings.url + " " + thrownError + " " + request);
+});
+
+var SVC_WORK_MGR_ROOT;
+var LOG_LEVEL = "warn";  //output, debug, ...
+
 var debugLog = [];
+var maxLogEntries = 1000;
 
-var maxLogEntries = 10000;
+var outputLog = [];
+var maxOutputEntries = 10;
+var outputCounter = 0;
 
-function bfDownloadObject(testrigName, objectName) {
-   var uri = encodeURI(SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?"
-         + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY
-         + "=" + objectName);
-
-   bfUpdateDebugInfo("Fetching " + uri);
-
-   window.location.assign(uri);
+function bfGetGuid() {
+    function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16)
+              .substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4()
+          + s4() + s4();
 }
 
-function bfGenericCallback(taskname, result) {
-   if (result[0] === SVC_SUCCESS_KEY) {
-      bfUpdateDebugInfo(taskname + " succeeded");
-   }
-   else {
-      alert(taskname + "failed: " + result[1]);
-   }
-}
+function bfGetObject(containerName, testrigName, objectName, cbSuccess, cbFailure, entryPoint, remainingCalls) {
+    var url_parm = SVC_WORK_MGR_ROOT + SVC_GET_OBJECT_RSC;
+    console.log("bfGetObject: ", entryPoint, objectName);
 
-function bfGetJson(taskname, url_parm, callback, worktype) {
-   console.log("bfGetJsonRequest: ", taskname, url_parm);
-   $
-         .ajax({
-            type : "GET", // GET or POST or PUT or DELETE verb
-            url : url_parm, // Location of the service
-            dataType : "json", // Expected data format from server
+    var data = new FormData();
+    data.append(SVC_API_KEY, apiKey);
+    data.append(SVC_CONTAINER_NAME_KEY, containerName);
+    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
+    data.append(SVC_OBJECT_KEY, objectName);
 
-            error : function(_, textStatus, errorThrown) {
-               alert(taskname + " failed: ", textStatus, errorThrown);
-            },
-            success : function(response, textStatus) {
-               console.log("bfGetJsonResponse: ", taskname, JSON
-                     .stringify(response));
-               callback(taskname, response, worktype);
-            }
-         });
-}
+    jQuery.ajax({
+        url: url_parm,
+        type: "POST",
+        contentType: false,
+        processData: false,
+        data: data,
 
-function bfGetObject(testrigName, objectName) {
-   var uri = encodeURI(SVC_WORK_MGR_ROOT + SVC_WORK_GET_OBJECT_RSC + "?"
-         + SVC_TESTRIG_NAME_KEY + "=" + testrigName + "&" + SVC_WORK_OBJECT_KEY
-         + "=" + objectName);
-
-   bfUpdateDebugInfo("Fetching " + uri);
-
-   $.get(uri, function(data) {
-      var op = document.getElementById("divOutputInfo");
-      op.textContent = data;
-   }).fail(function() {
-      bfUpdateDebugInfo("Failed to fetch " + uri);
+        success: function (responseObject) {
+            //bfUpdateDebugInfo("Fetched " + objectName);
+            if (cbSuccess != undefined)
+                cbSuccess(responseObject, entryPoint, remainingCalls);
+        }
+    }).fail(function () {
+        if (cbFailure != undefined)
+            cbFailure("Failed to fetch " + objectName, entryPoint, remainingCalls);
    });
-
-   // window.location.assign(uri);
 }
 
 function bfGetTimestamp() {
@@ -147,50 +61,108 @@ function bfGetTimestamp() {
    return now.toLocaleTimeString();
 }
 
-function bfUpdateCoordinatorLocation() {
+function bfIsInvalidStr(str) {
+    return (!str || /^\s*$/.test(str));
+}
 
-   var coordinatorHost = jQuery("#txtCoordinatorHost").val();
+function bfIsInvalidElement(element) {
+    return !$(element).length
+}
 
-   if (coordinatorHost == "") {
-      alert("Specify a coordinator host");
-      return;
-   }
+function bfPostData(rscEndPoint, data, cbSuccess, cbFailure, entryPoint, remainingCalls) {
 
-   SVC_WORK_MGR_ROOT = "http://" + coordinatorHost + ":9997/batfishworkmgr/";
-   SVC_POOL_MGR_ROOT = "http://" + coordinatorHost + ":9998/batfishpoolmgr/";
+    var url_parm = SVC_WORK_MGR_ROOT + rscEndPoint;
+    console.log("bfPostData: ", entryPoint, url_parm);
 
-   bfUpdateDebugInfo("Coordinator host is updated to " + coordinatorHost);
+    jQuery.ajax({
+        url: url_parm,
+        type: "POST",
+        contentType: false,
+        processData: false,
+        data: data,
+
+        error: function (_, textStatus, errorThrown) {
+            if (cbFailure != undefined)
+                cbFailure("PostData failed: " + textStatus + " " + errorThrown, entryPoint, remainingCalls);
+        },
+        success: function (response, textStatus) {
+            if (response[0] === SVC_SUCCESS_KEY) {
+                //bfUpdateDebugInfo(entryPoint + " succeeded");
+                if (cbSuccess != undefined)
+                    cbSuccess(response[1], entryPoint, remainingCalls);
+            }
+            else {
+                if (cbFailure != undefined)
+                    cbFailure("API call fail: " + response[1], entryPoint, remainingCalls);
+            }
+        }
+    });
+}
+
+//checks if we are properly configured
+function bfCheckLibConfiguration() {
+
+    //check that the names of mandatory HTML elements are defined
+    if (typeof elementDebugText === 'undefined' || bfIsInvalidElement(elementDebugText))
+        alert("Debug text element (elementDebugText) is not defined");
+
+    if (typeof elementOutputText === 'undefined' || bfIsInvalidElement(elementOutputText))
+        alert("Output text element (elementOutputText) is not defined");
+
+    if (typeof elementSpinDiv === 'undefined' || bfIsInvalidElement(elementSpinDiv))
+        alert("Spin div element is not defined");
+
+    //check that various variables are properly declared and defined
+    if (typeof apiKey === 'undefined' || bfIsInvalidStr(apiKey))
+        alert("API key (apiKey) is not defined");
+
+    if (typeof containerPrefix === 'undefined' || bfIsInvalidStr(containerPrefix))
+        alert("Container prefix (containerPrefix) is not defined");
+
+    //empty container name is OK
+    if (typeof containerName === 'undefined')
+        alert("Container name variable (containerPrefix) is not declared");
+
+    if (typeof testrigName === 'undefined' || bfIsInvalidStr(testrigName))
+        alert("Testrig name (testrigName) is not defined");
+
+    if (typeof envName === 'undefined' || bfIsInvalidStr(envName))
+        alert("Environment name (envName) is not defined");
+
+    if (typeof diffEnvName === 'undefined')
+        alert("Differential environment name (diffEnvName) is not declared");
+
+    if (typeof testrigZip === 'undefined')
+        alert("Testrig zip variable (testrigZip) is not declared");
+
+}
+
+function bfInitialize() {
+
+    var hostname = location.hostname;
+    if (hostname == "")
+        hostname = "localhost";
+    var protocol = (SVC_DISABLE_SSL) ? "http" : "https";
+    SVC_WORK_MGR_ROOT = protocol + "://" + hostname + ":" + SVC_WORK_PORT + SVC_BASE_WORK_MGR + "/";
+
+   bfUpdateDebugInfo("Coordinator location is set to " + SVC_WORK_MGR_ROOT);
 }
 
 function bfUpdateDebugInfo(string) {
    debugLog.splice(0, 0, bfGetTimestamp() + " " + string);
    while (debugLog.length > maxLogEntries) {
-      debugLog.shift();
+      debugLog.pop();
    }
-   $("#divDebugInfo").html(debugLog.join("\n"));
+   $(elementDebugText).html(debugLog.join("\n"));
 }
 
-function bfUploadData(taskname, url_parm, data, callback, worktype) {
-   console.log("bfUploadData: ", taskname, url_parm);
-   jQuery.ajax({
-      url : url_parm,
-      type : "POST",
-      contentType : false,
-      processData : false,
-      data : data,
+function bfUpdateOutput(string) {
+    var outputBeginMarker = "------------------ <output " + outputCounter++ + "> -------------------\n";
+    var outputEndMarker = "\n"; //-------- </output> ------------\n";
 
-      error : function(_, textStatus, errorThrown) {
-         alert(taskname + " failed: ", textStatus, errorThrown);
-      },
-      success : function(response, textStatus) {
-         if (response[0] === SVC_SUCCESS_KEY) {
-            bfUpdateDebugInfo(taskname + " succeeded");
-            if (callback != undefined)
-               callback(worktype);
-         }
-         else {
-            alert(taskname + " failed: " + response[1]);
-         }
-      }
-   });
+    outputLog.splice(0, 0, outputBeginMarker + string + outputEndMarker);
+    while (outputLog.length > maxOutputEntries) {
+        outputLog.pop();
+    }
+    $(elementOutputText).html(outputLog.join("\n"));
 }
