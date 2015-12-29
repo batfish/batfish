@@ -62,6 +62,8 @@
         //spin
         var elementSpinDiv = '#spinwrapper';
 
+        var fnDrawTopology = ParseJsonTopology;
+        var fnShowHighlights = SetupHighlightsMenu;
     </script>
     <link rel="stylesheet" type="text/css" href="style.css" />
 	<link rel="stylesheet" href="styles/graph.css" type="text/css">
@@ -139,7 +141,7 @@
                                     <tr align="center">
                                         <td>
                                             <input type="button" id="btnUploadConfig" value="Process base configuration"
-                                                onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::generatedataplane::getdataplane::drawtopology::posttestriginit')" />
+                                                onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::drawtopology::posttestriginit')" />
                                             <input type="button" id="btnUploadDiffEnv" value="Process delta configuration" disabled
                                                 onclick="startCalls('btnUploadConfigText', 'uploaddiffenvsmart::generatediffdataplane::getdiffdataplane::postdiffenvinit')" />
                                         </td>
@@ -186,9 +188,9 @@
                                     <tr align="center">
                                         <td>
                                             <input type="button" id="btnAnswerQuestion" value="Answer about base" disabled
-                                                onclick="startCalls('btnUploadConfigText', 'uploadquestiontext::answerquestion')" />
+                                                onclick="startCalls('btnUploadConfigText', 'uploadquestiontext::answerquestion::drawanswer')" />
                                             <input type="button" id="btnAnswerDiffQuestion" value="Answer about delta" disabled
-                                                onclick="startCalls('btnUploadConfigText', 'uploadquestiontext::answerdiffquestion')" />
+                                                onclick="startCalls('btnUploadConfigText', 'uploadquestiontext::answerdiffquestion::drawanswer')" />
                                         </td>
                                     </tr>
                                 </table>

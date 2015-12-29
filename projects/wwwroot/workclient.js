@@ -93,7 +93,8 @@ function getLog_cb(responseObject, entryPoint, remainingCalls) {
     switch (remainingCalls[0]) {
         case "drawtopology":
             if (fnDrawTopology != undefined)
-                fnDrawTopology(responseObject);
+                if (!fnDrawTopology(responseObject))
+                    finishEntryPoint(entryPoint, remainingCalls);
             break;
         default:
             epOutput[entryPoint] += responseObject;
@@ -162,6 +163,9 @@ function makeNextCall(entryPoint, callList) {
             case "answerdiffquestion":
             case "drawtopology":
                 queueWork(nextCall, entryPoint, callList);
+                break;
+            case "drawanswer":
+                testDrawAnswer(entryPoint, callList);
                 break;
             case "uploaddiffenvfile":
                 uploadDiffEnvFile(entryPoint, callList);
@@ -323,12 +327,6 @@ function startCalls(entryPoint, calls) {
     callList.unshift("start");
 
     makeNextCall(entryPoint, callList);
-}
-
-// this is a test function whose contents change based on what we want to test
-function testMe() {
-    containerName = "js_9b23b69d-e0f7-4034-8d4c-954a1c9eaa86";
-    queueWork("answerquestion", "abc", []);
 }
 
 function txtToConfigBlob(entryPoint, elementText) {
@@ -557,4 +555,23 @@ function uploadTestrigSmart(entryPoint, remainingCalls) {
 function uploadTestrig_cb(response, entryPoint, remainingCalls) {
     bfUpdateDebugInfo("Uploaded testrig.");
     makeNextCall(entryPoint, remainingCalls);
+}
+
+function testDrawAnswer(entryPoint, remainingCalls) {
+
+    if (fnShowHighlights != undefined)
+
+        var srcUrl = "testdata/highlights.json.txt";
+
+        jQuery.ajax({
+            url: srcUrl,
+            success: function (data) {
+                if (!fnShowHighlights(data))
+                    errorCheck(true, "show highlights failed", entryPoint);
+                else
+                    finishEntryPoint(entryPoint, remainingCalls);
+            }
+        }).fail(function () {
+            errorCheck(true, "Failed to fetch config/question " + srcUrl, "loadtext");
+        });
 }

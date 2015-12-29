@@ -147,30 +147,38 @@ function SetupToolTips() {
  	}
  }
  
-function SetupHighlightsMenu()
-{
-	// Add a new select element 
-    $('<select>').attr({'name':'hs','id':'hs','data-native-menu':'false'}).appendTo('[data-role="content"]');
-    $('<option>').html('Select a view to highlight').appendTo('#hs');
-    
-    // Add choices.
-    var index;
-    for (index = 0; index < views.length; index++)
-    {
-    	//console.log(nodes[index].id());
-    	$('<option>').attr({'value': index}).html(views[index].name).appendTo('#hs');
+function SetupHighlightsMenu(data)
+ {
+    try {
+        views = JSON.parse(data);
+
+        cy.ready(function () {
+            // Add a new select element 
+            $('<select>').attr({ 'name': 'hs', 'id': 'hs', 'data-native-menu': 'false' }).appendTo('[data-role="content"]');
+            $('<option>').html('Select a view to highlight').appendTo('#hs');
+
+            // Add choices.
+            var index;
+            for (index = 0; index < views.length; index++) {
+                //console.log(nodes[index].id());
+                $('<option>').attr({ 'value': index }).html(views[index].name).appendTo('#hs');
+            }
+
+            // Add handler
+            $('select').selectmenu({
+                select: function (event, ui) {
+                    console.log(ui.item.value);
+                    HighlightView(previousView, "off");
+                    HighlightView(ui.item.value, 'on');
+                    previousView = ui.item.value;
+                }
+            });
+        });
+    } catch (e) {
+        return false;
     }
-    
-    // Add handler
-    $('select').selectmenu({
-    	select: function( event, ui ) {
-    		console.log(ui.item.value);
-    		HighlightView(previousView, "off");
-    		HighlightView(ui.item.value, 'on');
-    		previousView = ui.item.value;
-    	}
-    });
-       
+
+    return true;
 }
 
 function AddHighlightMenu()
@@ -181,8 +189,7 @@ function AddHighlightMenu()
 		success: function (data, status) {
 			if (status == 'success')
 			{
-				views = data;
-				SetupHighlightsMenu();
+				SetupHighlightsMenu(data);
 			}
 		},
 		error : function (xhr, status, error) {
@@ -261,17 +268,31 @@ function AddLink(link) {
 	}
 }
 
-function ParseJsonTopology(data)
+function ParseJsonTopology(dataRaw)
 {
-	var edges = data.topology.edges;
-	var index;
-	for (index = 0; index < edges.length; index++)
-	{
-		AddLink(edges[index]);
-	}
-	SetupToolTips();
-	AddHighlightMenu();
-	DoAutoLayout();
+    try {
+        var data = JSON.parse(dataRaw);
+
+        //TODO: more sanity checking
+        var edges = data.topology.edges;
+
+        cy.ready(function() {
+            var index;
+            for (index = 0; index < edges.length; index++)
+            {
+                AddLink(edges[index]);
+            }
+            SetupToolTips();
+            //AddHighlightMenu();
+            DoAutoLayout();
+
+            cy.center();
+        });
+    } catch (e) {
+        return false;
+    }
+
+    return true;
 }
 
 function PlotJsonTopology(myURL) {
@@ -314,17 +335,17 @@ function SetupCy() {
 	});
 }
 
-/*
+
 $(document).ready(function() {
 	
 	SetupCy();
-	cy.ready(function() {
-		PlotJsonTopology(defaultTopologyURL);
-		cy.center();
+	//cy.ready(function() {
+	//	PlotJsonTopology(defaultTopologyURL);
+	//	cy.center();
 		
-	});
+	//});
 });
-*/
+
 
 
 //----------------------------------
