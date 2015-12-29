@@ -173,8 +173,13 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
 
 // this is a test function whose contents change based on what we want to test
 function testMe() {
-    exit();
-    alert("Nothing to test");
+	SetupCy();
+	cy.ready(function() {
+		PlotJsonTopology(defaultTopologyURL);
+		cy.center();
+		
+	});  
+
 }
 
 

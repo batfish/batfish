@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Try Batfish</title>
-    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.11.2.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.11.3.min.js"></script>
     <script src="libs/jszip.min.js"></script>
     <script src="libs/spin.min.js"></script>
     <script src="libs/jquery.spin.js"></script>
@@ -17,6 +17,13 @@
     <script src="batfish-common.js"></script>
     <script src="workclient.js"></script>
     <script src="trybatfish.js"></script>
+    <script src="libs/jquery-ui.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.js"></script>
+	<script src="libs/cytoscape.js"></script>
+	<script src="libs/cytoscape-qtip.js"></script>
+	<script src="scripts/globals.js"></script>
+	<script src="scripts/topology.js"></script>
+    
     <script>
         var apiKey = "0000000";
         var containerPrefix = "js";
@@ -57,9 +64,13 @@
 
     </script>
     <link rel="stylesheet" type="text/css" href="style.css" />
+	<link rel="stylesheet" href="styles/graph.css" type="text/css">
+	<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.css">
+	<link rel="stylesheet" href="styles/jquery-ui.css" type="text/css">
+
 </head>
 <body>
-    <div id="divTest" style="display: none">
+    <div id="divTest">
         <input type="button" id="btnTest" value="Test me!" onclick="testMe()" />
     </div>
     <h2>
@@ -89,7 +100,7 @@
 
     <table>
         <tr>
-            <td colspan="2">
+            <td colspan="3">
                 <div id="myspinner"></div>
             </td>
         </tr>
@@ -100,11 +111,11 @@
                 <form class="myform">
                     <table>
                         <tr>
-                            <td bgcolor="#DDFFDD">
+                            <td bgcolor="#DDFFDD" style="padding-right:-2px">
                                 <table>
                                     <tr align="center">
                                         <td colspan="2">
-                                            <h3>Enter configuration [Choose your file, type configuration, or select a sample to explore]</h3>
+                                            <h3>Enter Configuration [Choose your file, type configuration, or select a sample to explore]</h3>
                                         </td>
                                     </tr>
                                     <tr>
@@ -188,10 +199,21 @@
                 </form>
             </td>
             <td></td>
-            <td align="center" bgcolor="#DDDDFF">
-                <h3>Output</h3>
-                <br />
-                <textarea id="txtOutput" style="display: normal; border-radius: 5px" cols="90" rows="50" readonly></textarea>
+            <td>
+            	<table>
+            		<tr>
+            			<td>
+            				<div id="cy"></div>
+        				</td>
+    				</tr>
+  					<tr>
+						<td align="center" bgcolor="#DDDDFF">
+							<h3>Output</h3>
+							<br />
+							<textarea id="txtOutput" style="display: normal; border-radius: 5px" cols="90" rows="21" readonly></textarea>						
+						</td>
+					</tr>
+            	</table>
             </td>
         </tr>
     </table>
