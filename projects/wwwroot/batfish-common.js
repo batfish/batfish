@@ -99,6 +99,21 @@ function bfPostData(rscEndPoint, data, cbSuccess, cbFailure, entryPoint, remaini
     });
 }
 
+
+function bfPutObject(containerName, testrigName, objectName, blobToPut,
+                      cbSuccess, cbFailure, entryPoint, remainingCalls) {
+    console.log("bfPutObject: ", entryPoint, objectName);
+
+    var data = new FormData();
+    data.append(SVC_API_KEY, apiKey);
+    data.append(SVC_CONTAINER_NAME_KEY, containerName);
+    data.append(SVC_TESTRIG_NAME_KEY, testrigName);
+    data.append(SVC_OBJECT_KEY, objectName);
+    data.append(SVC_FILE_KEY, blobToPut);
+
+    bfPostData(SVC_UPLOAD_CUSTOM_OBJECT_RSC, data, cbSuccess, cbFailure, entryPoint, remainingCalls);
+}
+
 //checks if we are properly configured
 function bfCheckLibConfiguration() {
 

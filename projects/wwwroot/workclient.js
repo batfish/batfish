@@ -90,7 +90,14 @@ function getLog(entryPoint, remainingCalls) {
 }
 
 function getLog_cb(responseObject, entryPoint, remainingCalls) {
-    epOutput[entryPoint] += responseObject;
+    switch (remainingCalls[0]) {
+        case "drawtopology":
+            if (fnDrawTopology != undefined)
+                fnDrawTopology(responseObject);
+            break;
+        default:
+            epOutput[entryPoint] += responseObject;
+    }
     makeNextCall(entryPoint, remainingCalls);
 }
 
@@ -120,16 +127,17 @@ function initContainer_cb(response, entryPoint, remainingCalls) {
     makeNextCall(entryPoint, remainingCalls);
 }
 
+//the first element of the calllist is what we just finished.
 function makeNextCall(entryPoint, callList) {
 
-    if (callList.length == 0) {
+    if (callList.length <= 1) {
         bfUpdateDebugInfo("Done with all the calls for " + entryPoint)
 
         finishEntryPoint(entryPoint);
     }
     else {
-        var nextCall = callList[0];
         callList.shift();
+        var nextCall = callList[0];
 
         switch (nextCall) {
             case "initcontainer":
@@ -152,6 +160,7 @@ function makeNextCall(entryPoint, callList) {
             case "getdiffdataplane":
             case "answerquestion":
             case "answerdiffquestion":
+            case "drawtopology":
                 queueWork(nextCall, entryPoint, callList);
                 break;
             case "uploaddiffenvfile":
@@ -278,6 +287,9 @@ function queueWork(worktype, entryPoint, remainingCalls) {
             }
 
             break;
+        case "drawtopology":
+            reqParams[ARG_SYNTHESIZE_JSON_TOPOLOGY] = "";
+            break;
         default:
             alert("Unsupported work command", worktype);
     }
@@ -307,6 +319,9 @@ function startCalls(entryPoint, calls) {
     epOutput[entryPoint] = "";
 
     var callList = calls.split("::");
+
+    callList.unshift("start");
+
     makeNextCall(entryPoint, callList);
 }
 

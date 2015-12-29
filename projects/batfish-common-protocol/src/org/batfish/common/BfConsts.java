@@ -28,6 +28,8 @@ public class BfConsts {
    public static final String ARG_QUESTION_NAME = "questionname";
    public static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
    public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
+   public static final String ARG_SYNTHESIZE_JSON_TOPOLOGY = "synthesizejsontopology";
+   public static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
    public static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
    public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
    public static final String ARG_USE_PRECOMPUTED_ADVERTISEMENTS = "useprecomputedadvertisements";
