@@ -150,15 +150,25 @@ function SetupToolTips() {
 	}	
  }
  
+ function HighlightPaths(paths, onoff, parentColor)
+ {
+	if (defined(paths)) {
+		for (var i = 0; i < paths.length; i++) {
+			var path = paths[i];
+			HighlightLinks(path.links, onoff, defined(path.color) ? path.color : parentColor);
+		}
+	}	
+ }
+ 
  function HighlightView(viewId, onoff)
  {
- 	if (viewId == "")
- 	{
- 		return;
- 	}
- 	var parentColor = view.color;
- 	HighlightNodes(view.views[viewId].nodes, onoff, parentColor);
- 	HighlightLinks(view.views[viewId].links, onoff, parentColor);
+	if (viewId != "") {
+		var parentColor = view.color;
+		HighlightNodes(view.views[viewId].nodes, onoff, parentColor);
+		HighlightLinks(view.views[viewId].links, onoff, parentColor);
+		HighlightPaths(view.views[viewId].paths, onoff, parentColor);
+	}
+
  }
  
 function SetupHighlightsMenu(data)

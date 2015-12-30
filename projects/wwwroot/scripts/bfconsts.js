@@ -89,3 +89,4 @@ var defaultHighlightsURL  = "data/highlights.json";
 var colors = {};
 colors.defaultColor = '#888';
 colors.error = '#f00';
+colors.ok = "#0f0";
