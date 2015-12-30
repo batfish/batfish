@@ -17,7 +17,6 @@ Prerequisites:
    z3
 
 Steps:
-NOTE: Some steps will begin with (SERVER), and some with (CLIENT). The SERVER is the machine running LogicBlox. The CLIENT is the machine containing the test rig and batfish binaries. If the SERVER and the CLIENT are the same machine, then run all steps (except where otherwise indicated).
 NOTE: After any step involving modifications to .bashrc or equivalent, make sure to reload your shell or take other action to load the changes.
 
 1. Install gnu parallel 20150109 or later (20150109 available at <http://alpha.gnu.org/gnu/parallel/paralell-20150109.tar.bz2>)

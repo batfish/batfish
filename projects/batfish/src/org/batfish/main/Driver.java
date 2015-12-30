@@ -33,7 +33,7 @@ public class Driver {
    private static boolean _idle = true;
 
    private static Date _lastPollFromCoordinator = new Date();
-   
+
    private static BatfishLogger _mainLogger = null;
 
    private static Settings _mainSettings = null;
@@ -248,23 +248,25 @@ public class Driver {
 
          try {
             if (_mainSettings.getCoordinatorRegister()) {
-               //this function does not return until registration succeeds
+               // this function does not return until registration succeeds
                registerWithCoordinatorPersistent();
             }
 
             // sleep indefinitely, in 1 minute chunks
             while (true) {
                Thread.sleep(1 * 60 * 1000); // 1 minute
-               
-               //every time we wake up, we check if the coordinator has polled us recently
-               //if not, re-register the service. the coordinator might have died and come back.
-               if (_mainSettings.getCoordinatorRegister() &&
-                    new Date().getTime() - _lastPollFromCoordinator.getTime() 
-                                 > 30 * 1000) {
-                  //this function does not return until registration succeeds
+
+               // every time we wake up, we check if the coordinator has polled
+               // us recently
+               // if not, re-register the service. the coordinator might have
+               // died and come back.
+               if (_mainSettings.getCoordinatorRegister()
+                     && new Date().getTime()
+                           - _lastPollFromCoordinator.getTime() > 30 * 1000) {
+                  // this function does not return until registration succeeds
                   registerWithCoordinatorPersistent();
                }
-                  
+
             }
          }
          catch (Exception ex) {
@@ -338,22 +340,22 @@ public class Driver {
       }
    }
 
-   private static void registerWithCoordinatorPersistent() throws InterruptedException {
+   private static void registerWithCoordinatorPersistent()
+         throws InterruptedException {
       boolean registrationSuccess;
       do {
          registrationSuccess = registerWithCoordinator();
          if (!registrationSuccess) {
             ;
-            _mainLogger
-                  .error("Unable to register  with coordinator\n");
-            Thread.sleep(10* 1000); // 10 seconds
+            _mainLogger.error("Unable to register  with coordinator\n");
+            Thread.sleep(10 * 1000); // 10 seconds
          }
       } while (!registrationSuccess);
    }
-   
+
    @SuppressWarnings("deprecation")
    private static boolean RunBatfish(Settings settings) {
-      
+
       final BatfishLogger logger = settings.getLogger();
 
       try {
@@ -381,20 +383,21 @@ public class Driver {
          thread.start();
          thread.join(settings.getMaxRuntimeMs());
 
-         if (thread.isAlive()) {         
-            //this is deprecated but we should be safe since we don't have locks and such
+         if (thread.isAlive()) {
+            // this is deprecated but we should be safe since we don't have
+            // locks and such
             thread.stop();
             logger.error("Batfish worker took too long. Terminated.");
             batfish.SetTerminatedWithException(true);
          }
 
          batfish.close();
-         return ! batfish.GetTerminatedWithException();
+         return !batfish.GetTerminatedWithException();
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          logger.error(stackTrace);
-         return false;         
+         return false;
       }
    }
 
@@ -432,7 +435,7 @@ public class Driver {
                settings.setLogger(jobLogger);
 
                settings.setMaxRuntimeMs(_mainSettings.getMaxRuntimeMs());
-               
+
                final Task task = new Task(args);
 
                logTask(taskId, task);

@@ -87,7 +87,8 @@ public class Interface extends NamedStructure {
          return InterfaceType.VLAN;
       }
       else {
-         return InterfaceType.PHYSICAL;
+         throw new BatfishException(
+               "Missing mapping to interface type for name: \"" + name + "\"");
       }
    }
 

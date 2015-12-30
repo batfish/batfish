@@ -139,7 +139,7 @@ public class Settings extends BaseSettings {
    }
 
    public String getSslKeystoreFilename() {
-      return _sslKeystoreFilename; 
+      return _sslKeystoreFilename;
    }
 
    public String getSslKeystorePassword() {
@@ -240,7 +240,7 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_SSL_KEYSTORE_FILE, "which keystore file to use for ssl",
             "keystor (.jks) file");
-      
+
       addOption(ARG_TESTRIG_STORAGE_LOCATION, "where to store test rigs",
             "testrig_storage_location");
 

@@ -86,20 +86,23 @@ public class Main {
                .port(_settings.getServicePoolPort()).build();
 
          _logger.info("Starting pool manager at " + poolMgrUri + "\n");
-        
-         //first find the file as specified.
-         //if that does not work, find it relative to the binary
-         File keystoreFile = new File(_settings.getSslKeystoreFilename());         
-         if (!keystoreFile.exists())
-               keystoreFile = Paths.get(
-                     org.batfish.common.Util.getJarOrClassDir(
-                     ConfigurationLocator.class).getAbsolutePath(),
-               _settings.getSslKeystoreFilename()).toFile();
+
+         // first find the file as specified.
+         // if that does not work, find it relative to the binary
+         File keystoreFile = new File(_settings.getSslKeystoreFilename());
+         if (!keystoreFile.exists()) {
+            keystoreFile = Paths.get(
+                  org.batfish.common.Util.getJarOrClassDir(
+                        ConfigurationLocator.class).getAbsolutePath(),
+                  _settings.getSslKeystoreFilename()).toFile();
+         }
 
          if (!keystoreFile.exists()) {
             System.err
-                  .printf("org.batfish.coordinator: keystore file not found at %s or %s\n",
-                        _settings.getSslKeystoreFilename(), keystoreFile.getAbsolutePath());
+                  .printf(
+                        "org.batfish.coordinator: keystore file not found at %s or %s\n",
+                        _settings.getSslKeystoreFilename(),
+                        keystoreFile.getAbsolutePath());
             System.exit(1);
          }
 
@@ -136,19 +139,22 @@ public class Main {
 
          _logger.info("Starting work manager at " + workMgrUri + "\n");
 
-         //first find the file as specified.
-         //if that does not work, find it relative to the binary
-         File keystoreFile = new File(_settings.getSslKeystoreFilename());         
-         if (!keystoreFile.exists())
-               keystoreFile = Paths.get(
-                     org.batfish.common.Util.getJarOrClassDir(
-                     ConfigurationLocator.class).getAbsolutePath(),
-               _settings.getSslKeystoreFilename()).toFile();
+         // first find the file as specified.
+         // if that does not work, find it relative to the binary
+         File keystoreFile = new File(_settings.getSslKeystoreFilename());
+         if (!keystoreFile.exists()) {
+            keystoreFile = Paths.get(
+                  org.batfish.common.Util.getJarOrClassDir(
+                        ConfigurationLocator.class).getAbsolutePath(),
+                  _settings.getSslKeystoreFilename()).toFile();
+         }
 
          if (!keystoreFile.exists()) {
             System.err
-                  .printf("org.batfish.coordinator: keystore file not found at %s or %s\n",
-                        _settings.getSslKeystoreFilename(), keystoreFile.getAbsolutePath());
+                  .printf(
+                        "org.batfish.coordinator: keystore file not found at %s or %s\n",
+                        _settings.getSslKeystoreFilename(),
+                        keystoreFile.getAbsolutePath());
             System.exit(1);
          }
 

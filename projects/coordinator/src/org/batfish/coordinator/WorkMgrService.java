@@ -308,8 +308,7 @@ public class WorkMgrService {
                .ok(file, MediaType.APPLICATION_OCTET_STREAM)
                .header("Content-Disposition",
                      "attachment; filename=\"" + file.getName() + "\"")
-               .header(CoordConsts.SVC_FILENAME_HDR, file.getName())
-               .build();
+               .header(CoordConsts.SVC_FILENAME_HDR, file.getName()).build();
       }
       catch (FileExistsException | FileNotFoundException
             | IllegalArgumentException | AccessControlException e) {
@@ -696,8 +695,8 @@ public class WorkMgrService {
    }
 
    /**
-    * Uploads a custom object under container, testrig. 
-    *  
+    * Uploads a custom object under container, testrig.
+    * 
     * @param apiKey
     * @param containerName
     * @param testrigName
@@ -732,17 +731,18 @@ public class WorkMgrService {
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
 
-         Main.getWorkMgr().uploadCustomObject(containerName, testrigName, objectName, fileStream); 
+         Main.getWorkMgr().uploadCustomObject(containerName, testrigName,
+               objectName, fileStream);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               (new JSONObject()
-                     .put("result", "successfully uploaded custom object"))));
+               (new JSONObject().put("result",
+                     "successfully uploaded custom object"))));
 
       }
       catch (FileExistsException | FileNotFoundException
             | IllegalArgumentException | AccessControlException e) {
-         _logger
-               .error("WMS:uploadCustomObject exception: " + e.getMessage() + "\n");
+         _logger.error("WMS:uploadCustomObject exception: " + e.getMessage()
+               + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));
       }
@@ -915,7 +915,7 @@ public class WorkMgrService {
                      .put("result", "successfully uploaded testrig"))));
       }
       catch (FileExistsException | FileNotFoundException
-            | IllegalArgumentException | AccessControlException | ZipException e ) {
+            | IllegalArgumentException | AccessControlException | ZipException e) {
          _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");
          return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                e.getMessage()));

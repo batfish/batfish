@@ -222,7 +222,7 @@ public final class Settings extends BaseSettings {
    private static final String ARG_QUERY = "query";
 
    private static final String ARG_QUERY_ALL = "all";
-   
+
    private static final String ARG_SEQUENTIAL = "sequential";
 
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
@@ -351,7 +351,7 @@ public final class Settings extends BaseSettings {
    private boolean _logTee;
 
    private int _maxRuntimeMs;
-   
+
    private String _nodeRolesPath;
 
    private boolean _noOutput;
@@ -635,7 +635,7 @@ public final class Settings extends BaseSettings {
    public int getMaxRuntimeMs() {
       return _maxRuntimeMs;
    }
-   
+
    public String getNodeRolesPath() {
       return _nodeRolesPath;
    }
@@ -1024,7 +1024,7 @@ public final class Settings extends BaseSettings {
             "print output to both logfile and standard out");
 
       addOption(ARG_MAX_RUNTIME_MS,
-                "maximum time (in ms) to allow a task to run", ARGNAME_NUMBER);
+            "maximum time (in ms) to allow a task to run", ARGNAME_NUMBER);
 
       addBooleanOption(ARG_NO_OUTPUT, "do not produce output files");
 
@@ -1309,7 +1309,7 @@ public final class Settings extends BaseSettings {
    public void setMaxRuntimeMs(int runtimeMs) {
       _maxRuntimeMs = runtimeMs;
    }
-   
+
    public void setNodeRolesPath(String nodeRolesPath) {
       _nodeRolesPath = nodeRolesPath;
    }
