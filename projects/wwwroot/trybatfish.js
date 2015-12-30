@@ -41,7 +41,7 @@ function loadConfigText() {
 
     var configFile = jQuery(elementTestrigFile).get(0).files[0];
 
-    if (configFile.type && configFile.type == 'application/x-zip-compressed') {
+    if (configFile.type && (configFile.type == 'application/x-zip-compressed' || configFile.type == 'application/zip')) {
         var reader = new FileReader();
         reader.onload = function (e) {
             try {
