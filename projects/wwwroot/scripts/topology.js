@@ -2,7 +2,7 @@
 
 var previousView = "";
 var layoutData;
-var views;
+var view;
 
 //-----------------------------------------------------------------------------
 
@@ -118,14 +118,36 @@ function SetupToolTips() {
  *  Highlighting
  */
 
- function HighlightElement(id, onoff, vtt)
+ function HighlightElement(id, onoff, vtt, color)
  {
  	var e = cy.getElementById(id);
  	var property = e.isNode() ? 'background-color' : 'line-color';
- 	var color = (onoff == 'on') ? highlightColor : defaultColor;
- 	e.style(property, color);
- 	var vtt = (onoff == 'on') ? vtt : '';
- 	e.data('vtt', vtt);
+ 	e.style(property, (onoff == 'on') ? colors[color] : colors.defaultColor);
+ 	e.data('vtt', (onoff == 'on') ? vtt : '');
+ }
+ 
+ function HighlightNodes(nodes, onoff, parentColor)
+ {
+ 	if (defined(nodes))
+	{
+		for (var i = 0; i < nodes.length; i++) {
+			var node = nodes[i];
+			console.log(node.name);
+			HighlightElement(node.name, onoff, node.description, defined(node.color) ? nodes.color : parentColor);
+		}
+	}
+ }
+ 
+ function HighlightLinks(links, onoff, parentColor)
+ {
+	if (defined(links)) {
+		for (var i = 0; i < links.length; i++) {
+			var link = links[i];
+			var linkId = GetLinkIds(link)[2];
+			console.log(linkId);
+			HighlightElement(linkId, onoff, link.description, defined(link.color) ? link.color : parentColor);
+		}
+	}	
  }
  
  function HighlightView(viewId, onoff)
@@ -134,34 +156,26 @@ function SetupToolTips() {
  	{
  		return;
  	}
- 	for (var i = 0; i < views[viewId].nodes.length; i++)
- 	{
- 		console.log(views[viewId].nodes[i].name);
- 		HighlightElement(views[viewId].nodes[i].name, onoff, views[viewId].nodes[i].description);
- 	}
- 	for (var i = 0; i < views[viewId].links.length; i++)
- 	{
- 		var linkId = GetLinkIds(views[viewId].links[i])[2];
- 		console.log(linkId);
- 		HighlightElement(linkId, onoff, views[viewId].links[i].description);
- 	}
+ 	var parentColor = view.color;
+ 	HighlightNodes(view.views[viewId].nodes, onoff, parentColor);
+ 	HighlightLinks(view.views[viewId].links, onoff, parentColor);
  }
  
 function SetupHighlightsMenu(data)
  {
     try {
-        views = JSON.parse(data);
+        view = JSON.parse(data);
 
         cy.ready(function () {
             // Add a new select element 
             $('<select>').attr({ 'name': 'hs', 'id': 'hs', 'data-native-menu': 'false' }).appendTo('[data-role="content"]');
-            $('<option>').html('Select a view to highlight').appendTo('#hs');
+            $('<option>').html(view.name).appendTo('#hs');
 
             // Add choices.
             var index;
-            for (index = 0; index < views.length; index++) {
+            for (index = 0; index < view.views.length; index++) {
                 //console.log(nodes[index].id());
-                $('<option>').attr({ 'value': index }).html(views[index].name).appendTo('#hs');
+                $('<option>').attr({ 'value': index }).html(view.views[index].name).appendTo('#hs');
             }
 
             // Add handler
@@ -175,6 +189,7 @@ function SetupHighlightsMenu(data)
             });
         });
     } catch (e) {
+    	console.log(e);
         return false;
     }
 

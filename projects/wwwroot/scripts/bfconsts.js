@@ -1,5 +1,4 @@
-﻿
-// These constants come from 'BfConsts.java'.
+﻿// These constants come from 'BfConsts.java'.
 // Make sure they are in sync with what is there.
 
 var ARG_BLOCK_NAMES = "blocknames";
@@ -79,3 +78,14 @@ var SVC_RUN_TASK_RSC = "run";
 var SVC_SUCCESS_KEY = "success";
 var SVC_TASK_KEY = "task";
 var SVC_TASKID_KEY = "taskid";
+
+/* These are needed for topology plotting */
+var cy;
+var nodesAdded = 0;
+var linksAdded = 0;
+var defaultTopologyURL = "testdata/rhythmone.net.json";
+var defaultLayoutURL = "data/rhythmone.net.layout.json";
+var defaultHighlightsURL  = "data/highlights.json";
+var colors = {};
+colors.defaultColor = '#888';
+colors.error = '#f00';
