@@ -6,6 +6,4 @@ public interface ComplexExpr {
 
    List<Expr> getSubExpressions();
 
-   // void optimize();
-
 }

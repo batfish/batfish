@@ -1222,6 +1222,7 @@ sptpt_tunnel_tail
 sptt_deny
 :
    DENY
+   | REJECT
 ;
 
 sptt_permit

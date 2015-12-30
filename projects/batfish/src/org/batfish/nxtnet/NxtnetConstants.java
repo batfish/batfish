@@ -50,6 +50,9 @@ public class NxtnetConstants {
             "SetBgpOriginationPolicy_flat",
             "SetCommunityListLine",
             "SetCommunityListLinePermit",
+            "SetCrossZoneFilter",
+            "SetDefaultCrossZoneAccept",
+            "SetDefaultInboundAccept",
             "SetFakeInterface",
             "SetFlowSinkInterface",
             "SetGeneratedRouteDiscard_flat",
@@ -57,9 +60,11 @@ public class NxtnetConstants {
             "SetGeneratedRouteMetric_flat",
             "SetGeneratedRoutePolicy_flat",
             "SetIbgpNeighbors",
+            "SetInboundInterfaceFilter",
             "SetInterfaceFilterIn",
             "SetInterfaceFilterOut",
             "SetInterfaceRoutingPolicy",
+            "SetInterfaceZone",
             "SetIpAccessListLine_deny",
             "SetIpAccessListLine_dstIpRange",
             "SetIpAccessListLine_dstPortRange",
@@ -125,7 +130,9 @@ public class NxtnetConstants {
             "SetSwitchportTrunkAllows",
             "SetSwitchportTrunkEncapsulation",
             "SetSwitchportTrunkNative",
-            "SetVlanInterface" };
+            "SetVlanInterface",
+            "SetZoneFromHostFilter",
+            "SetZoneToHostFilter" };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }
@@ -216,10 +223,15 @@ public class NxtnetConstants {
             "SetAsPathLinePermit",
             "SetCommunityListLine",
             "SetCommunityListLinePermit",
+            "SetCrossZoneFilter",
+            "SetDefaultCrossZoneAccept",
+            "SetDefaultInboundAccept",
             "SetFakeInterface",
             "SetFlowSinkInterface",
+            "SetInboundInterfaceFilter",
             "SetInterfaceFilterIn",
             "SetInterfaceFilterOut",
+            "SetInterfaceZone",
             "SetInterfaceRoutingPolicy",
             "SetIpAccessListLine_deny",
             "SetIpAccessListLine_dstIpRange",
@@ -266,7 +278,9 @@ public class NxtnetConstants {
             "SetSwitchportTrunkAllows",
             "SetSwitchportTrunkEncapsulation",
             "SetSwitchportTrunkNative",
-            "SetVlanInterface" };
+            "SetVlanInterface",
+            "SetZoneFromHostFilter",
+            "SetZoneToHostFilter" };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }
@@ -305,6 +319,21 @@ public class NxtnetConstants {
             "Flow_srcIp",
             "Flow_srcPort",
             "Flow_tag",
+            // BEGIN DEBUG SYMBOLS
+            /*
+             * "IpAccessListMatch", "FlowDeniedIn", "FlowDeniedInInterfaceAcl",
+             * "FlowDeniedInCrossZoneFilter", "FlowDeniedInInboundFilter",
+             * "FlowDeniedInToHostFilter", "FlowDeniedOut",
+             * "FlowDeniedOutInterfaceAcl", "FlowDeniedOutCrossZone",
+             * "FlowDeniedOutHostOut", "FlowReachPostIn",
+             * "FlowReachPostInInterface", "FlowReachPreInInterface",
+             * "FlowReachPreOutEdge", "FlowReachPostInboundFilter",
+             * "FlowReachPostHostInFilter", "FlowReachPostIncomingInterfaceAcl",
+             * "FlowReachPostInboundCrossZoneAcl",
+             * "FlowReachPostOutboundCrossZoneAcl",
+             * "FlowReachPostOutgoingInterfaceAcl", "IpAccessListDeny",
+             */
+            // END DEBUG SYMBOLS
             "FlowPathAcceptedEdge",
             "FlowPathDeniedInEdge",
             "FlowPathDeniedOutEdge",

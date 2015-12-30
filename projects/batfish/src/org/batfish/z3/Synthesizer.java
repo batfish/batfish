@@ -29,6 +29,7 @@ import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.LineAction;
 import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapAction;
 import org.batfish.representation.PolicyMapClause;
@@ -39,6 +40,7 @@ import org.batfish.representation.PolicyMapSetLine;
 import org.batfish.representation.PolicyMapSetNextHopLine;
 import org.batfish.representation.PolicyMapSetType;
 import org.batfish.representation.Prefix;
+import org.batfish.representation.Zone;
 import org.batfish.util.SubRange;
 import org.batfish.util.Util;
 import org.batfish.z3.node.AcceptExpr;
@@ -49,6 +51,7 @@ import org.batfish.z3.node.AclPermitExpr;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.BooleanExpr;
 import org.batfish.z3.node.Comment;
+import org.batfish.z3.node.DebugExpr;
 import org.batfish.z3.node.DeclareRelExpr;
 import org.batfish.z3.node.DeclareVarExpr;
 import org.batfish.z3.node.DestinationRouteExpr;
@@ -58,11 +61,15 @@ import org.batfish.z3.node.ExternalDestinationIpExpr;
 import org.batfish.z3.node.ExternalSourceIpExpr;
 import org.batfish.z3.node.ExtractExpr;
 import org.batfish.z3.node.FalseExpr;
+import org.batfish.z3.node.InboundInterfaceExpr;
 import org.batfish.z3.node.IntExpr;
 import org.batfish.z3.node.LitIntExpr;
 import org.batfish.z3.node.NodeAcceptExpr;
 import org.batfish.z3.node.NodeDropExpr;
 import org.batfish.z3.node.NodeTransitExpr;
+import org.batfish.z3.node.NonInboundNullSrcZoneExpr;
+import org.batfish.z3.node.NonInboundSrcInterfaceExpr;
+import org.batfish.z3.node.NonInboundSrcZoneExpr;
 import org.batfish.z3.node.NotExpr;
 import org.batfish.z3.node.OrExpr;
 import org.batfish.z3.node.OriginateExpr;
@@ -87,6 +94,7 @@ import org.batfish.z3.node.RuleExpr;
 import org.batfish.z3.node.SaneExpr;
 import org.batfish.z3.node.Statement;
 import org.batfish.z3.node.TrueExpr;
+import org.batfish.z3.node.UnoriginalExpr;
 import org.batfish.z3.node.VarIntExpr;
 
 import com.microsoft.z3.BitVecExpr;
@@ -98,7 +106,6 @@ import com.microsoft.z3.Z3Exception;
 public class Synthesizer {
    public static final String DST_IP_VAR = "dst_ip";
    public static final String DST_PORT_VAR = "dst_port";
-   public static final String FAKE_INTERFACE_PREFIX = "TenGigabitEthernet200/";
    private static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
    public static final int IP_BITS = 32;
    public static final String IP_PROTOCOL_VAR = "ip_prot";
@@ -110,15 +117,10 @@ public class Synthesizer {
    public static final String SRC_IP_VAR = "src_ip";
    public static final String SRC_PORT_VAR = "src_port";
 
-   public static List<Statement> getDeclareVarExprs() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements.add(new Comment("Variable Declarations"));
-      for (Entry<String, Integer> e : PACKET_VAR_SIZES.entrySet()) {
-         String var = e.getKey();
-         int size = e.getValue();
-         statements.add(new DeclareVarExpr(var, size));
-      }
-      return statements;
+   @SuppressWarnings("unused")
+   private static void debug(BooleanExpr condition, List<Statement> statements) {
+      RuleExpr rule = new RuleExpr(condition, DebugExpr.INSTANCE);
+      statements.add(rule);
    }
 
    private static List<String> getPacketVars() {
@@ -238,9 +240,6 @@ public class Synthesizer {
          }
          Set<Interface> interfaces = _topologyInterfaces.get(hostname);
          String interfaceName = edge.getInt1();
-         if (interfaceName.startsWith(FAKE_INTERFACE_PREFIX)) {
-            continue;
-         }
          Interface i = _configurations.get(hostname).getInterfaces()
                .get(interfaceName);
          interfaces.add(i);
@@ -288,9 +287,6 @@ public class Synthesizer {
          FibRow[] fib = fibSet.toArray(new FibRow[] {});
          for (int i = 0; i < fib.length; i++) {
             FibRow currentRow = fib[i];
-            if (currentRow.getInterface().startsWith(FAKE_INTERFACE_PREFIX)) {
-               continue;
-            }
             Set<FibRow> notRows = new TreeSet<FibRow>();
             for (int j = i + 1; j < fib.length; j++) {
                FibRow specificRow = fib[j];
@@ -480,6 +476,189 @@ public class Synthesizer {
       return statements;
    }
 
+   private List<Statement> getInboundInterfaceToNodeAccept() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements.add(new Comment(
+            "Rules for connecting inbound_interface to node_accept"));
+      for (Configuration c : _configurations.values()) {
+         String hostname = c.getHostname();
+         NodeAcceptExpr nodeAccept = new NodeAcceptExpr(hostname);
+         for (Interface i : c.getInterfaces().values()) {
+            String ifaceName = i.getName();
+            InboundInterfaceExpr inboundInterface = new InboundInterfaceExpr(
+                  hostname, ifaceName);
+            // deal with origination totally independently of zone stuff
+            AndExpr originateAcceptConditions = new AndExpr();
+            OriginateExpr originate = new OriginateExpr(hostname);
+            originateAcceptConditions.addConjunct(inboundInterface);
+            originateAcceptConditions.addConjunct(originate);
+            RuleExpr originateToNodeAccept = new RuleExpr(
+                  originateAcceptConditions, nodeAccept);
+            statements.add(originateToNodeAccept);
+
+            Zone inboundZone = i.getZone();
+            AndExpr acceptConditions = new AndExpr();
+            acceptConditions.addConjunct(inboundInterface);
+            if (inboundZone != null) {
+               IpAccessList hostFilter = inboundZone.getToHostFilter();
+               if (hostFilter != null) {
+                  AclPermitExpr hostFilterPermit = new AclPermitExpr(hostname,
+                        hostFilter.getName());
+                  acceptConditions.addConjunct(hostFilterPermit);
+               }
+               String inboundFilterName;
+               IpAccessList inboundInterfaceFilter = inboundZone
+                     .getInboundInterfaceFilters().get(i);
+               if (inboundInterfaceFilter != null) {
+                  inboundFilterName = inboundInterfaceFilter.getName();
+               }
+               else {
+                  IpAccessList inboundFilter = inboundZone.getInboundFilter();
+                  inboundFilterName = inboundFilter.getName();
+               }
+               AclPermitExpr inboundFilterPermit = new AclPermitExpr(hostname,
+                     inboundFilterName);
+               acceptConditions.addConjunct(inboundFilterPermit);
+            }
+            else {
+               // no inbound zone.
+               // accept if packet was orginated at this node and default
+               // inbound action is accept
+               if (c.getDefaultInboundAction() == LineAction.REJECT
+                     || c.getDefaultCrossZoneAction() == LineAction.REJECT) {
+                  acceptConditions.addConjunct(originate);
+               }
+            }
+
+            if (inboundZone != null) {
+               OrExpr crossFilterSatisfied = new OrExpr();
+               // If packet came in on inbound interface, accept.
+               PostInInterfaceExpr postInInboundInterface = new PostInInterfaceExpr(
+                     hostname, ifaceName);
+               crossFilterSatisfied.addDisjunct(postInInboundInterface);
+
+               // Otherwise, the packet must be permitted by the appropriate
+               // cross-zone filter
+               for (Zone srcZone : c.getZones().values()) {
+                  AndExpr crossZoneConditions = new AndExpr();
+                  String srcZoneName = srcZone.getName();
+                  IpAccessList crossZoneFilter = srcZone.getToZonePolicies()
+                        .get(inboundZone.getName());
+                  NonInboundSrcZoneExpr nonInboundSrcZone = new NonInboundSrcZoneExpr(
+                        hostname, srcZoneName);
+                  crossZoneConditions.addConjunct(nonInboundSrcZone);
+
+                  if (crossZoneFilter != null) {
+                     AclPermitExpr crossZonePermit = new AclPermitExpr(
+                           hostname, crossZoneFilter.getName());
+                     crossZoneConditions.addConjunct(crossZonePermit);
+                     crossFilterSatisfied.addDisjunct(crossZoneConditions);
+                  }
+                  else if (c.getDefaultCrossZoneAction() == LineAction.ACCEPT) {
+                     crossFilterSatisfied.addDisjunct(crossZoneConditions);
+                  }
+               }
+               // handle case where src interface is not in a zone
+               if (c.getDefaultCrossZoneAction() == LineAction.ACCEPT) {
+                  NonInboundNullSrcZoneExpr nonInboundNullSrcZone = new NonInboundNullSrcZoneExpr(
+                        hostname);
+                  crossFilterSatisfied.addDisjunct(nonInboundNullSrcZone);
+               }
+               acceptConditions.addConjunct(crossFilterSatisfied);
+            }
+
+            RuleExpr inboundInterfaceToNodeAccept = new RuleExpr(
+                  acceptConditions, nodeAccept);
+            statements.add(inboundInterfaceToNodeAccept);
+         }
+      }
+      return statements;
+   }
+
+   private List<Statement> getInboundInterfaceToNodeDrop() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements.add(new Comment(
+            "Rules for connecting inbound_interface to node_deny"));
+      for (Configuration c : _configurations.values()) {
+         String hostname = c.getHostname();
+         NodeDropExpr nodeDrop = new NodeDropExpr(hostname);
+         UnoriginalExpr unoriginal = new UnoriginalExpr(hostname);
+         for (Interface i : c.getInterfaces().values()) {
+            String ifaceName = i.getName();
+            InboundInterfaceExpr inboundInterface = new InboundInterfaceExpr(
+                  hostname, ifaceName);
+            Zone inboundZone = i.getZone();
+            AndExpr dropConditions = new AndExpr();
+            dropConditions.addConjunct(unoriginal);
+            dropConditions.addConjunct(inboundInterface);
+            OrExpr failConditions = new OrExpr();
+            if (inboundZone != null) {
+               IpAccessList hostFilter = inboundZone.getToHostFilter();
+               if (hostFilter != null) {
+                  AclDenyExpr hostFilterDeny = new AclDenyExpr(hostname,
+                        hostFilter.getName());
+                  failConditions.addDisjunct(hostFilterDeny);
+               }
+               String inboundFilterName;
+               IpAccessList inboundInterfaceFilter = inboundZone
+                     .getInboundInterfaceFilters().get(i);
+               if (inboundInterfaceFilter != null) {
+                  inboundFilterName = inboundInterfaceFilter.getName();
+               }
+               else {
+                  IpAccessList inboundFilter = inboundZone.getInboundFilter();
+                  inboundFilterName = inboundFilter.getName();
+               }
+               AclDenyExpr inboundFilterDeny = new AclDenyExpr(hostname,
+                     inboundFilterName);
+               failConditions.addDisjunct(inboundFilterDeny);
+            }
+            else if (c.getDefaultInboundAction() == LineAction.REJECT
+                  || c.getDefaultCrossZoneAction() == LineAction.REJECT) {
+               failConditions.addDisjunct(unoriginal);
+            }
+
+            if (inboundZone != null) {
+               OrExpr crossFilterFailed = new OrExpr();
+               // If packet didn't come in on inbound interface, drop if denied
+               // by the appropriate cross-zone filter
+               // permitted by the appropriate cross-zone policy
+               for (Zone srcZone : c.getZones().values()) {
+                  AndExpr crossZoneConditions = new AndExpr();
+                  String srcZoneName = srcZone.getName();
+                  IpAccessList crossZoneFilter = srcZone.getToZonePolicies()
+                        .get(inboundZone.getName());
+                  NonInboundSrcZoneExpr nonInboundSrcZone = new NonInboundSrcZoneExpr(
+                        hostname, srcZoneName);
+                  crossZoneConditions.addConjunct(nonInboundSrcZone);
+
+                  if (crossZoneFilter != null) {
+                     AclDenyExpr crossZoneDeny = new AclDenyExpr(hostname,
+                           crossZoneFilter.getName());
+                     crossZoneConditions.addConjunct(crossZoneDeny);
+                     crossFilterFailed.addDisjunct(crossZoneConditions);
+                  }
+                  else if (c.getDefaultCrossZoneAction() == LineAction.REJECT) {
+                     crossFilterFailed.addDisjunct(crossZoneConditions);
+                  }
+               }
+               // handle case where src interface is not in a zone
+               if (c.getDefaultCrossZoneAction() == LineAction.REJECT) {
+                  NonInboundNullSrcZoneExpr nonInboundNullSrcZone = new NonInboundNullSrcZoneExpr(
+                        hostname);
+                  crossFilterFailed.addDisjunct(nonInboundNullSrcZone);
+               }
+               failConditions.addDisjunct(crossFilterFailed);
+            }
+            dropConditions.addConjunct(failConditions);
+            RuleExpr inboundInterfaceToNodeDrop = new RuleExpr(dropConditions,
+                  nodeDrop);
+            statements.add(inboundInterfaceToNodeDrop);
+         }
+      }
+      return statements;
+   }
+
    private List<Statement> getMatchAclRules() {
       List<Statement> statements = new ArrayList<Statement>();
       Comment comment = new Comment("Rules for how packets can match acl lines");
@@ -487,6 +666,7 @@ public class Synthesizer {
       Map<String, Map<String, IpAccessList>> matchAcls = new TreeMap<String, Map<String, IpAccessList>>();
       // first we find out which acls we need to process
       for (String hostname : _topologyInterfaces.keySet()) {
+         Configuration node = _configurations.get(hostname);
          Map<String, IpAccessList> aclMap = new TreeMap<String, IpAccessList>();
          Set<Interface> interfaces = _topologyInterfaces.get(hostname);
          for (Interface iface : interfaces) {
@@ -515,6 +695,28 @@ public class Synthesizer {
                      }
                   }
                }
+            }
+         }
+         for (Zone zone : node.getZones().values()) {
+            IpAccessList fromHostFilter = zone.getFromHostFilter();
+            if (fromHostFilter != null) {
+               aclMap.put(fromHostFilter.getName(), fromHostFilter);
+            }
+            IpAccessList toHostFilter = zone.getToHostFilter();
+            if (toHostFilter != null) {
+               aclMap.put(toHostFilter.getName(), toHostFilter);
+            }
+            IpAccessList inboundFilter = zone.getInboundFilter();
+            if (inboundFilter != null) {
+               aclMap.put(inboundFilter.getName(), inboundFilter);
+            }
+            for (IpAccessList inboundInterfaceFilter : zone
+                  .getInboundInterfaceFilters().values()) {
+               aclMap.put(inboundInterfaceFilter.getName(),
+                     inboundInterfaceFilter);
+            }
+            for (IpAccessList toZoneFilter : zone.getToZonePolicies().values()) {
+               aclMap.put(toZoneFilter.getName(), toZoneFilter);
             }
          }
          if (aclMap.size() > 0) {
@@ -885,6 +1087,55 @@ public class Synthesizer {
       return statements;
    }
 
+   private List<Statement> getPostInInterfaceToNonInboundSrcInterface() {
+      List<Statement> statements = new ArrayList<Statement>();
+      statements
+            .add(new Comment(
+                  "Rules for connecting postin_interface to non_inbound_src_interface"));
+      for (Configuration c : _configurations.values()) {
+         String hostname = c.getHostname();
+         for (Interface i : c.getInterfaces().values()) {
+            String ifaceName = i.getName();
+            AndExpr conditions = new AndExpr();
+            OrExpr dstIpMatchesInterface = new OrExpr();
+            Prefix prefix = i.getPrefix();
+            if (prefix != null) {
+               Ip ip = prefix.getAddress();
+               EqExpr dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR),
+                     new LitIntExpr(ip));
+               dstIpMatchesInterface.addDisjunct(dstIpMatches);
+            }
+            NotExpr dstIpNoMatchSrcInterface = new NotExpr(
+                  dstIpMatchesInterface);
+            conditions.addConjunct(dstIpNoMatchSrcInterface);
+            PostInInterfaceExpr postInInterface = new PostInInterfaceExpr(
+                  hostname, ifaceName);
+            conditions.addConjunct(postInInterface);
+            NonInboundSrcInterfaceExpr nonInboundSrcInterface = new NonInboundSrcInterfaceExpr(
+                  hostname, ifaceName);
+            Zone srcZone = i.getZone();
+            if (srcZone != null) {
+               NonInboundSrcZoneExpr nonInboundSrcZone = new NonInboundSrcZoneExpr(
+                     hostname, srcZone.getName());
+               RuleExpr nonInboundSrcInterfaceToNonInboundSrcZone = new RuleExpr(
+                     nonInboundSrcInterface, nonInboundSrcZone);
+               statements.add(nonInboundSrcInterfaceToNonInboundSrcZone);
+            }
+            else if (c.getDefaultCrossZoneAction() == LineAction.ACCEPT) {
+               NonInboundNullSrcZoneExpr nonInboundNullSrcZone = new NonInboundNullSrcZoneExpr(
+                     hostname);
+               RuleExpr nonInboundSrcInterfaceToNonInboundNullSrcZone = new RuleExpr(
+                     nonInboundSrcInterface, nonInboundNullSrcZone);
+               statements.add(nonInboundSrcInterfaceToNonInboundNullSrcZone);
+            }
+            RuleExpr postInInterfaceToNonInboundSrcInterface = new RuleExpr(
+                  conditions, nonInboundSrcInterface);
+            statements.add(postInInterfaceToNonInboundSrcInterface);
+         }
+      }
+      return statements;
+   }
+
    private List<Statement> getPostInInterfaceToPostInRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment(
@@ -892,45 +1143,82 @@ public class Synthesizer {
       for (Entry<String, Set<Interface>> e : _topologyInterfaces.entrySet()) {
          String hostname = e.getKey();
          Set<Interface> interfaces = e.getValue();
+         UnoriginalExpr unoriginal = new UnoriginalExpr(hostname);
          for (Interface i : interfaces) {
             String ifaceName = i.getName();
             PostInInterfaceExpr postInIface = new PostInInterfaceExpr(hostname,
                   ifaceName);
             PostInExpr postIn = new PostInExpr(hostname);
-            RuleExpr rule = new RuleExpr(postInIface, postIn);
-            statements.add(rule);
+            RuleExpr postInInterfaceToPostIn = new RuleExpr(postInIface, postIn);
+            statements.add(postInInterfaceToPostIn);
+            RuleExpr postInInterfaceToUnoriginal = new RuleExpr(postInIface,
+                  unoriginal);
+            statements.add(postInInterfaceToUnoriginal);
          }
       }
       return statements;
    }
 
-   private List<Statement> getPostInToNodeAcceptRules() {
+   private List<Statement> getPostInToInboundInterface() {
       List<Statement> statements = new ArrayList<Statement>();
-      statements
-            .add(new Comment("Rules for connecting post_in to node_accept"));
+      statements.add(new Comment(
+            "Rules for connecting post_in to inbound_interface"));
       for (Configuration c : _configurations.values()) {
          String hostname = c.getHostname();
-         OrExpr someDstIpMatches = new OrExpr();
+         PostInExpr postIn = new PostInExpr(hostname);
          for (Interface i : c.getInterfaces().values()) {
+            String ifaceName = i.getName();
+            OrExpr dstIpMatchesInterface = new OrExpr();
             Prefix prefix = i.getPrefix();
             if (prefix != null) {
                Ip ip = prefix.getAddress();
                EqExpr dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR),
                      new LitIntExpr(ip));
-               someDstIpMatches.addDisjunct(dstIpMatches);
+               dstIpMatchesInterface.addDisjunct(dstIpMatches);
             }
+            AndExpr inboundInterfaceConditions = new AndExpr();
+            inboundInterfaceConditions.addConjunct(dstIpMatchesInterface);
+            inboundInterfaceConditions.addConjunct(postIn);
+            InboundInterfaceExpr inboundInterface = new InboundInterfaceExpr(
+                  hostname, ifaceName);
+            RuleExpr postInToInboundInterface = new RuleExpr(
+                  inboundInterfaceConditions, inboundInterface);
+            statements.add(postInToInboundInterface);
          }
-         PostInExpr postIn = new PostInExpr(hostname);
-         NodeAcceptExpr nodeAccept = new NodeAcceptExpr(hostname);
-         AndExpr conditions = new AndExpr();
-         conditions.addConjunct(postIn);
-         conditions.addConjunct(someDstIpMatches);
-         RuleExpr rule = new RuleExpr(conditions, nodeAccept);
-         statements.add(rule);
       }
       return statements;
    }
 
+   /*
+    * private List<Statement> getPostInToNodeAcceptRules() { List<Statement>
+    * statements = new ArrayList<Statement>(); statements .add(new
+    * Comment("Rules for connecting post_in to node_accept")); for
+    * (Configuration c : _configurations.values()) { String hostname =
+    * c.getHostname(); PostInExpr postIn = new PostInExpr(hostname); for
+    * (Interface i : c.getInterfaces().values()) { String ifaceName =
+    * i.getName(); OrExpr someDstIpMatches = new OrExpr(); Prefix prefix =
+    * i.getPrefix(); if (prefix != null) { Ip ip = prefix.getAddress(); EqExpr
+    * dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR), new LitIntExpr(ip));
+    * someDstIpMatches.addDisjunct(dstIpMatches); } AndExpr
+    * inboundInterfaceConditions = new AndExpr();
+    * inboundInterfaceConditions.addConjunct(someDstIpMatches);
+    * inboundInterfaceConditions.addConjunct(postIn); InboundInterfaceExpr
+    * inboundInterface = new InboundInterfaceExpr( hostname, ifaceName);
+    * RuleExpr postInToInboundInterface = new RuleExpr(
+    * inboundInterfaceConditions, inboundInterface); AndExpr acceptConditions =
+    * new AndExpr(); PassHostFilterExpr passHostFilter = new
+    * PassHostFilterExpr(hostname); PassInboundFilterExpr passInboundFilter =
+    * new PassInboundFilterExpr( hostname, ifaceName); PostInInterfaceExpr
+    * postInInterface = new PostInInterfaceExpr( hostname, ifaceName);
+    * acceptConditions.addConjunct(postInInterface);
+    * acceptConditions.addConjunct(passHostFilter);
+    * acceptConditions.addConjunct(passInboundFilter);
+    * statements.add(postInToInboundInterface); } NodeAcceptExpr nodeAccept =
+    * new NodeAcceptExpr(hostname); AndExpr conditions = new AndExpr();
+    * conditions.addConjunct(postIn); conditions.addConjunct(someDstIpMatches);
+    * RuleExpr rule = new RuleExpr(conditions, nodeAccept);
+    * statements.add(rule); } return statements; }
+    */
    private List<Statement> getPostInToPreOutRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements
@@ -989,8 +1277,7 @@ public class Synthesizer {
          Set<Interface> interfaces = _topologyInterfaces.get(hostname);
          for (Interface iface : interfaces) {
             String ifaceName = iface.getName();
-            if (ifaceName.startsWith(FAKE_INTERFACE_PREFIX)
-                  || isFlowSink(hostname, ifaceName)) {
+            if (isFlowSink(hostname, ifaceName)) {
                continue;
             }
             NodeDropExpr nodeDrop = new NodeDropExpr(hostname);
@@ -1039,10 +1326,6 @@ public class Synthesizer {
          String hostnameIn = edge.getNode2();
          String intOut = edge.getInt1();
          String intIn = edge.getInt2();
-         if (intIn.startsWith(FAKE_INTERFACE_PREFIX)
-               || intOut.startsWith(FAKE_INTERFACE_PREFIX)) {
-            continue;
-         }
          PreOutEdgeExpr preOutEdge = new PreOutEdgeExpr(hostnameOut, intOut,
                hostnameIn, intIn);
          PreOutInterfaceExpr preOutInt = new PreOutInterfaceExpr(hostnameOut,
@@ -1059,32 +1342,121 @@ public class Synthesizer {
             .add(new Comment(
                   "Connect preout_interface to postout_interface, possibly through acl"));
       for (String hostname : _topologyInterfaces.keySet()) {
+         Configuration c = _configurations.get(hostname);
          Set<Interface> interfaces = _topologyInterfaces.get(hostname);
+         OriginateExpr originate = new OriginateExpr(hostname);
+         UnoriginalExpr unoriginal = new UnoriginalExpr(hostname);
          for (Interface iface : interfaces) {
             String ifaceName = iface.getName();
-            if (ifaceName.startsWith(FAKE_INTERFACE_PREFIX)) {
-               continue;
-            }
             NodeDropExpr nodeDrop = new NodeDropExpr(hostname);
             PreOutInterfaceExpr preOutIface = new PreOutInterfaceExpr(hostname,
                   ifaceName);
             PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(
                   hostname, ifaceName);
-            AndExpr conditions = new AndExpr();
-            conditions.addConjunct(preOutIface);
+
+            AndExpr outConditions = new AndExpr();
+            AndExpr dropConditions = new AndExpr();
+            outConditions.addConjunct(preOutIface);
+            dropConditions.addConjunct(preOutIface);
+            OrExpr filterDeny = new OrExpr();
+            OrExpr crossZonePermit = new OrExpr();
             IpAccessList outAcl = iface.getOutgoingFilter();
             if (outAcl != null) {
                String aclName = outAcl.getName();
                AclPermitExpr aclPermit = new AclPermitExpr(hostname, aclName);
-               conditions.addConjunct(aclPermit);
-               AndExpr dropConditions = new AndExpr();
+               outConditions.addConjunct(aclPermit);
                AclDenyExpr aclDeny = new AclDenyExpr(hostname, aclName);
-               dropConditions.addConjunct(preOutIface);
-               dropConditions.addConjunct(aclDeny);
-               RuleExpr drop = new RuleExpr(dropConditions, nodeDrop);
-               statements.add(drop);
+               filterDeny.addDisjunct(aclDeny);
             }
-            RuleExpr preOutToPostOut = new RuleExpr(conditions, postOutIface);
+            dropConditions.addConjunct(filterDeny);
+            // handle cross-zone filter
+            // first handle case where outgoing interface has no zone
+            Zone outZone = iface.getZone();
+            if (outZone == null) {
+               if (c.getDefaultCrossZoneAction() == LineAction.REJECT) {
+                  filterDeny.addDisjunct(unoriginal);
+               }
+               else {
+                  crossZonePermit.addDisjunct(TrueExpr.INSTANCE);
+               }
+            }
+            else {
+               // outgoing interface has zone
+
+               // now handle case of original packet
+               IpAccessList fromHostFilter = outZone.getFromHostFilter();
+               if (fromHostFilter != null) {
+                  String fromHostFilterName = fromHostFilter.getName();
+                  AclPermitExpr hostFilterPermit = new AclPermitExpr(hostname,
+                        fromHostFilterName);
+                  AndExpr originateCrossZonePermit = new AndExpr();
+                  originateCrossZonePermit.addConjunct(hostFilterPermit);
+                  originateCrossZonePermit.addConjunct(originate);
+                  crossZonePermit.addDisjunct(originateCrossZonePermit);
+                  AclDenyExpr hostFilterDeny = new AclDenyExpr(hostname,
+                        fromHostFilterName);
+                  AndExpr originateCrossZoneDeny = new AndExpr();
+                  originateCrossZoneDeny.addConjunct(hostFilterDeny);
+                  originateCrossZoneDeny.addConjunct(originate);
+                  filterDeny.addDisjunct(originateCrossZoneDeny);
+               }
+               else {
+                  crossZonePermit.addDisjunct(originate);
+               }
+
+               // now handle unoriginal packets
+               // null src zone:
+               NonInboundNullSrcZoneExpr nonInboundNullSrcZone = new NonInboundNullSrcZoneExpr(
+                     hostname);
+               if (c.getDefaultCrossZoneAction() == LineAction.REJECT) {
+                  filterDeny.addDisjunct(nonInboundNullSrcZone);
+               }
+               else {
+                  // default for null src zone is to accept
+                  crossZonePermit.addDisjunct(nonInboundNullSrcZone);
+               }
+
+               // now handle cases of each possible src zone (still unoriginal)
+               for (Zone srcZone : c.getZones().values()) {
+                  String srcZoneName = srcZone.getName();
+                  NonInboundSrcZoneExpr nonInboundSrcZone = new NonInboundSrcZoneExpr(
+                        hostname, srcZoneName);
+                  IpAccessList crossZoneFilter = srcZone.getToZonePolicies()
+                        .get(outZone.getName());
+                  // no policy for this pair of zones - use default cross-zone
+                  // action
+                  if (crossZoneFilter == null) {
+                     if (c.getDefaultCrossZoneAction() == LineAction.REJECT) {
+                        filterDeny.addDisjunct(nonInboundSrcZone);
+                     }
+                     else {
+                        crossZonePermit.addDisjunct(nonInboundSrcZone);
+                     }
+                  }
+                  else {
+                     // there is a cross-zone filter
+                     String crossZoneFilterName = crossZoneFilter.getName();
+                     AclPermitExpr crossZoneFilterPermit = new AclPermitExpr(
+                           hostname, crossZoneFilterName);
+                     AclDenyExpr crossZoneFilterDeny = new AclDenyExpr(
+                           hostname, crossZoneFilterName);
+                     AndExpr deniedByCrossZoneFilter = new AndExpr();
+                     deniedByCrossZoneFilter.addConjunct(nonInboundSrcZone);
+                     deniedByCrossZoneFilter.addConjunct(crossZoneFilterDeny);
+                     filterDeny.addDisjunct(deniedByCrossZoneFilter);
+                     AndExpr allowedByCrossZoneFilter = new AndExpr();
+                     allowedByCrossZoneFilter.addConjunct(nonInboundSrcZone);
+                     allowedByCrossZoneFilter
+                           .addConjunct(crossZoneFilterPermit);
+                     crossZonePermit.addDisjunct(allowedByCrossZoneFilter);
+                  }
+
+               }
+            }
+            outConditions.addConjunct(crossZonePermit);
+            RuleExpr drop = new RuleExpr(dropConditions, nodeDrop);
+            statements.add(drop);
+            RuleExpr preOutToPostOut = new RuleExpr(outConditions, postOutIface);
             statements.add(preOutToPostOut);
          }
       }
@@ -1147,24 +1519,6 @@ public class Synthesizer {
       return statements;
    }
 
-   private List<Statement> getRelDeclExprs(List<Statement> existingStatements) {
-      List<Statement> statements = new ArrayList<Statement>();
-      Comment header = new Comment("Relation declarations");
-      statements.add(header);
-      Set<String> relations = new TreeSet<String>();
-      for (Statement existingStatement : existingStatements) {
-         relations.addAll(existingStatement.getRelations());
-      }
-      relations.add(QueryRelationExpr.NAME);
-      for (String packetRel : relations) {
-         List<Integer> sizes = new ArrayList<Integer>();
-         sizes.addAll(PACKET_VAR_SIZES.values());
-         DeclareRelExpr declaration = new DeclareRelExpr(packetRel, sizes);
-         statements.add(declaration);
-      }
-      return statements;
-   }
-
    private List<Statement> getRoleOriginateToNodeOriginateRules() {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment(
@@ -1216,10 +1570,7 @@ public class Synthesizer {
          String hostnameIn = edge.getNode2();
          String intOut = edge.getInt1();
          String intIn = edge.getInt2();
-         if (intIn.startsWith(FAKE_INTERFACE_PREFIX)
-               || isFlowSink(hostnameIn, intIn)
-               || intOut.startsWith(FAKE_INTERFACE_PREFIX)
-               || isFlowSink(hostnameOut, intOut)) {
+         if (isFlowSink(hostnameIn, intIn) || isFlowSink(hostnameOut, intOut)) {
             continue;
          }
 
@@ -1255,8 +1606,7 @@ public class Synthesizer {
          Set<Interface> topologyInterfaces = _topologyInterfaces.get(hostname);
          for (Interface i : interfaces.values()) {
             String ifaceName = i.getName();
-            if ((!i.getActive() && !topologyInterfaces.contains(i))
-                  || ifaceName.startsWith(FAKE_INTERFACE_PREFIX)) {
+            if ((!i.getActive() && !topologyInterfaces.contains(i))) {
                prunedInterfaces.add(ifaceName);
             }
             if (!i.getActive() && topologyInterfaces.contains(i)) {
@@ -1271,81 +1621,6 @@ public class Synthesizer {
       }
    }
 
-   public String synthesize() {
-      List<Statement> statements = new ArrayList<Statement>();
-      List<Statement> rules = new ArrayList<Statement>();
-      List<Statement> varDecls = getVarDeclExprs();
-      List<Statement> dropRules = getDropRules();
-      List<Statement> acceptRules = getAcceptRules();
-      List<Statement> sane = getSane();
-      List<Statement> flowSinkAcceptRules = getFlowSinkAcceptRules();
-      List<Statement> originateToPostInRules = getOriginateToPostInRules();
-      List<Statement> postInInterfaceToPostInRules = getPostInInterfaceToPostInRules();
-      List<Statement> postInToNodeAcceptRules = getPostInToNodeAcceptRules();
-      List<Statement> postInToPreOutRules = getPostInToPreOutRules();
-      List<Statement> preOutToDestRouteRules = getPreOutToDestRouteRules();
-      List<Statement> destRouteToPreOutEdgeRules = getDestRouteToPreOutEdgeRules();
-      List<Statement> preOutEdgeToPreOutInterfaceRules = getPreOutEdgeToPreOutInterfaceRules();
-      List<Statement> policyRouteRules = getPolicyRouteRules();
-      List<Statement> matchAclRules = getMatchAclRules();
-      List<Statement> toNeighborsRules = getToNeighborsRules();
-      List<Statement> preInInterfaceToPostInInterfaceRules = getPreInInterfaceToPostInInterfaceRules();
-      List<Statement> preOutInterfaceToPostOutInterfaceRules = getPreOutInterfaceToPostOutInterfaceRules();
-      List<Statement> nodeAcceptToRoleAcceptRules = getNodeAcceptToRoleAcceptRules();
-      List<Statement> externalSrcIpRules = getExternalSrcIpRules();
-      List<Statement> externalDstIpRules = getExternalDstIpRules();
-      List<Statement> postOutIfaceToNodeTransitRules = getPostOutIfaceToNodeTransitRules();
-      List<Statement> roleOriginateToNodeOriginateRules = getRoleOriginateToNodeOriginateRules();
-
-      rules.addAll(dropRules);
-      rules.addAll(acceptRules);
-      rules.addAll(sane);
-      rules.addAll(flowSinkAcceptRules);
-      rules.addAll(originateToPostInRules);
-      rules.addAll(postInInterfaceToPostInRules);
-      rules.addAll(postInToNodeAcceptRules);
-      rules.addAll(postInToPreOutRules);
-      rules.addAll(preOutToDestRouteRules);
-      rules.addAll(destRouteToPreOutEdgeRules);
-      rules.addAll(preOutEdgeToPreOutInterfaceRules);
-      rules.addAll(policyRouteRules);
-      rules.addAll(matchAclRules);
-      rules.addAll(toNeighborsRules);
-      rules.addAll(preInInterfaceToPostInInterfaceRules);
-      rules.addAll(preOutInterfaceToPostOutInterfaceRules);
-      rules.addAll(nodeAcceptToRoleAcceptRules);
-      rules.addAll(externalSrcIpRules);
-      rules.addAll(externalDstIpRules);
-      rules.addAll(postOutIfaceToNodeTransitRules);
-      rules.addAll(roleOriginateToNodeOriginateRules);
-
-      List<Statement> relDecls = getRelDeclExprs(rules);
-
-      statements.addAll(varDecls);
-      statements.addAll(relDecls);
-      statements.addAll(rules);
-
-      StringBuilder sb = new StringBuilder();
-      for (Statement statement : statements) {
-         if (_simplify) {
-            Statement simplifiedStatement = statement.simplify();
-
-            simplifiedStatement.print(sb, 0);
-         }
-         else {
-            statement.print(sb, 0);
-         }
-         sb.append("\n");
-      }
-
-      String output = sb.toString();
-      // hack to fix interface names with colons
-      output = output.replace(":", "_COLON_");
-      // hack to fix node: "(none)"
-      output = output.replace("(none)", "_none_");
-      return output;
-   }
-
    public NodProgram synthesizeNodProgram(Context ctx) throws Z3Exception {
       NodProgram nodProgram = new NodProgram(ctx);
 
@@ -1356,7 +1631,10 @@ public class Synthesizer {
       List<Statement> flowSinkAcceptRules = getFlowSinkAcceptRules();
       List<Statement> originateToPostInRules = getOriginateToPostInRules();
       List<Statement> postInInterfaceToPostInRules = getPostInInterfaceToPostInRules();
-      List<Statement> postInToNodeAcceptRules = getPostInToNodeAcceptRules();
+      List<Statement> postInInterfaceToNonInboundSrcInterface = getPostInInterfaceToNonInboundSrcInterface();
+      List<Statement> postInToInboundInterface = getPostInToInboundInterface();
+      List<Statement> inboundInterfaceToNodeAccept = getInboundInterfaceToNodeAccept();
+      List<Statement> inboundInterfaceToNodeDrop = getInboundInterfaceToNodeDrop();
       List<Statement> postInToPreOutRules = getPostInToPreOutRules();
       List<Statement> preOutToDestRouteRules = getPreOutToDestRouteRules();
       List<Statement> destRouteToPreOutEdgeRules = getDestRouteToPreOutEdgeRules();
@@ -1378,7 +1656,10 @@ public class Synthesizer {
       ruleStatements.addAll(flowSinkAcceptRules);
       ruleStatements.addAll(originateToPostInRules);
       ruleStatements.addAll(postInInterfaceToPostInRules);
-      ruleStatements.addAll(postInToNodeAcceptRules);
+      ruleStatements.addAll(postInInterfaceToNonInboundSrcInterface);
+      ruleStatements.addAll(postInToInboundInterface);
+      ruleStatements.addAll(inboundInterfaceToNodeAccept);
+      ruleStatements.addAll(inboundInterfaceToNodeDrop);
       ruleStatements.addAll(postInToPreOutRules);
       ruleStatements.addAll(preOutToDestRouteRules);
       ruleStatements.addAll(destRouteToPreOutEdgeRules);
@@ -1413,7 +1694,14 @@ public class Synthesizer {
          deBruinIndex++;
       }
       List<BoolExpr> rules = nodProgram.getRules();
-      for (Statement statement : ruleStatements) {
+      for (Statement rawStatement : ruleStatements) {
+         Statement statement;
+         if (_simplify) {
+            statement = rawStatement.simplify();
+         }
+         else {
+            statement = rawStatement;
+         }
          if (statement instanceof RuleExpr) {
             RuleExpr ruleExpr = (RuleExpr) statement;
             BoolExpr rule = ruleExpr.toBoolExpr(nodProgram);
