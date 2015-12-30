@@ -17,10 +17,15 @@ public class Interface extends NamedStructure {
    private static final long serialVersionUID = 1L;
 
    private static InterfaceType computeCiscoInterfaceType(String name) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
-
+      if (name.startsWith("Port-channel")) {
+         return InterfaceType.AGGREGATED;
+      }
+      else if (name.startsWith("Vlan")) {
+         return InterfaceType.VLAN;
+      }
+      else {
+         return InterfaceType.PHYSICAL;
+      }
    }
 
    public static InterfaceType computeInterfaceType(String name,
