@@ -147,6 +147,7 @@ function SetupToolTips() {
  	}
  }
  
+<<<<<<< HEAD
 function SetupHighlightsMenu()
 {
 	// Add a new select element 
@@ -171,6 +172,40 @@ function SetupHighlightsMenu()
     	}
     });
        
+=======
+function SetupHighlightsMenu(data)
+ {
+    try {
+        views = JSON.parse(data);
+
+        cy.ready(function () {
+            // Add a new select element 
+            $('<select>').attr({ 'name': 'hs', 'id': 'hs', 'data-native-menu': 'false' }).appendTo('[data-role="content"]');
+            $('<option>').html('Select a view to highlight').appendTo('#hs');
+
+            // Add choices.
+            var index;
+            for (index = 0; index < views.length; index++) {
+                //console.log(nodes[index].id());
+                $('<option>').attr({ 'value': index }).html(views[index].name).appendTo('#hs');
+            }
+
+            // Add handler
+            $('select').selectmenu({
+                select: function (event, ui) {
+                    console.log(ui.item.value);
+                    HighlightView(previousView, "off");
+                    HighlightView(ui.item.value, 'on');
+                    previousView = ui.item.value;
+                }
+            });
+        });
+    } catch (e) {
+        return false;
+    }
+
+    return true;
+>>>>>>> 8e2c8bfd5b00cd01e0b993cfe6c28b0472a04db1
 }
 
 function AddHighlightMenu()
@@ -181,8 +216,12 @@ function AddHighlightMenu()
 		success: function (data, status) {
 			if (status == 'success')
 			{
+<<<<<<< HEAD
 				views = data;
 				SetupHighlightsMenu();
+=======
+				SetupHighlightsMenu(data);
+>>>>>>> 8e2c8bfd5b00cd01e0b993cfe6c28b0472a04db1
 			}
 		},
 		error : function (xhr, status, error) {
@@ -261,6 +300,7 @@ function AddLink(link) {
 	}
 }
 
+<<<<<<< HEAD
 function ParseJsonTopology(data)
 {
 	var edges = data.topology.edges;
@@ -272,6 +312,33 @@ function ParseJsonTopology(data)
 	SetupToolTips();
 	AddHighlightMenu();
 	DoAutoLayout();
+=======
+function ParseJsonTopology(dataRaw)
+{
+    try {
+        var data = JSON.parse(dataRaw);
+
+        //TODO: more sanity checking
+        var edges = data.topology.edges;
+
+        cy.ready(function() {
+            var index;
+            for (index = 0; index < edges.length; index++)
+            {
+                AddLink(edges[index]);
+            }
+            SetupToolTips();
+            //AddHighlightMenu();
+            DoAutoLayout();
+
+            cy.center();
+        });
+    } catch (e) {
+        return false;
+    }
+
+    return true;
+>>>>>>> 8e2c8bfd5b00cd01e0b993cfe6c28b0472a04db1
 }
 
 function PlotJsonTopology(myURL) {
@@ -314,17 +381,9 @@ function SetupCy() {
 	});
 }
 
-/*
 $(document).ready(function() {
-	
 	SetupCy();
-	cy.ready(function() {
-		PlotJsonTopology(defaultTopologyURL);
-		cy.center();
-		
-	});
 });
-*/
 
 
 //----------------------------------

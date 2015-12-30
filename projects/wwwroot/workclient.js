@@ -90,7 +90,15 @@ function getLog(entryPoint, remainingCalls) {
 }
 
 function getLog_cb(responseObject, entryPoint, remainingCalls) {
-    epOutput[entryPoint] += responseObject;
+    switch (remainingCalls[0]) {
+        case "drawtopology":
+            if (fnDrawTopology != undefined)
+                if (!fnDrawTopology(responseObject))
+                    finishEntryPoint(entryPoint, remainingCalls);
+            break;
+        default:
+            epOutput[entryPoint] += responseObject;
+    }
     makeNextCall(entryPoint, remainingCalls);
 }
 
@@ -120,16 +128,17 @@ function initContainer_cb(response, entryPoint, remainingCalls) {
     makeNextCall(entryPoint, remainingCalls);
 }
 
+//the first element of the calllist is what we just finished.
 function makeNextCall(entryPoint, callList) {
 
-    if (callList.length == 0) {
+    if (callList.length <= 1) {
         bfUpdateDebugInfo("Done with all the calls for " + entryPoint)
 
         finishEntryPoint(entryPoint);
     }
     else {
-        var nextCall = callList[0];
         callList.shift();
+        var nextCall = callList[0];
 
         switch (nextCall) {
             case "initcontainer":
@@ -152,7 +161,11 @@ function makeNextCall(entryPoint, callList) {
             case "getdiffdataplane":
             case "answerquestion":
             case "answerdiffquestion":
+            case "drawtopology":
                 queueWork(nextCall, entryPoint, callList);
+                break;
+            case "drawanswer":
+                testDrawAnswer(entryPoint, callList);
                 break;
             case "uploaddiffenvfile":
                 uploadDiffEnvFile(entryPoint, callList);
@@ -278,6 +291,9 @@ function queueWork(worktype, entryPoint, remainingCalls) {
             }
 
             break;
+        case "drawtopology":
+            reqParams[ARG_SYNTHESIZE_JSON_TOPOLOGY] = "";
+            break;
         default:
             alert("Unsupported work command", worktype);
     }
@@ -307,13 +323,10 @@ function startCalls(entryPoint, calls) {
     epOutput[entryPoint] = "";
 
     var callList = calls.split("::");
-    makeNextCall(entryPoint, callList);
-}
 
-// this is a test function whose contents change based on what we want to test
-function testMe() {
-    containerName = "js_9b23b69d-e0f7-4034-8d4c-954a1c9eaa86";
-    queueWork("answerquestion", "abc", []);
+    callList.unshift("start");
+
+    makeNextCall(entryPoint, callList);
 }
 
 function txtToConfigBlob(entryPoint, elementText) {
@@ -542,4 +555,23 @@ function uploadTestrigSmart(entryPoint, remainingCalls) {
 function uploadTestrig_cb(response, entryPoint, remainingCalls) {
     bfUpdateDebugInfo("Uploaded testrig.");
     makeNextCall(entryPoint, remainingCalls);
+}
+
+function testDrawAnswer(entryPoint, remainingCalls) {
+
+    if (fnShowHighlights != undefined)
+
+        var srcUrl = "testdata/highlights.json.txt";
+
+        jQuery.ajax({
+            url: srcUrl,
+            success: function (data) {
+                if (!fnShowHighlights(data))
+                    errorCheck(true, "show highlights failed", entryPoint);
+                else
+                    finishEntryPoint(entryPoint, remainingCalls);
+            }
+        }).fail(function () {
+            errorCheck(true, "Failed to fetch config/question " + srcUrl, "loadtext");
+        });
 }
