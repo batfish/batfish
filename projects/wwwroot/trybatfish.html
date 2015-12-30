@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Try Batfish</title>
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.11.3.min.js"></script>
+    <script src="libs/jszip.min.js"></script>
+    <script src="libs/spin.min.js"></script>
+    <script src="libs/jquery.spin.js"></script>
+    <!-- Mandatory in IE 6, 7, 8 and 9. -->
+    <!--[if IE]>
+    <script type="text/javascript" src="dist/jszip-utils-ie.js"></script>
+    <![endif]-->
+    <script src="libs/jszip-utils.js"></script>
+
+    <script src="bfconsts.js"></script>
+    <script src="coordconsts.js"></script>
+    <script src="batfish-common.js"></script>
+    <script src="workclient.js"></script>
+    <script src="trybatfish.js"></script>
+    <script src="libs/jquery-ui.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.js"></script>
+	<script src="libs/cytoscape.js"></script>
+	<script src="libs/cytoscape-qtip.js"></script>
+	<script src="scripts/globals.js"></script>
+	<script src="scripts/topology.js"></script>
+    
+    <script>
+        var apiKey = "0000000";
+        var containerPrefix = "js";
+        var containerName = "";
+        var testrigName = "js_testrig";
+        var envName = "default";
+        var diffEnvName = "";
+
+        //this variable holds the zip'd contents or base or differential testrig
+        var testrigZip = "";
+
+        //............text area for debug and output
+        var elementDebugText = '#txtDebug';
+        var elementOutputText = '#txtOutput';
+
+        //............from where to get the config information
+        var elementTestrigFile = '#fileConfig';
+        var elementConfigText = '#txtConfig';
+        var elementConfigSelect = '#configSelect';
+
+        //.............from where to get the differential environment file information
+        var elementDiffEnvFile = '#fileDiffEnv';
+
+        //..............from where to the get question information
+        var elementQuestionFile = '#fileQuestion';
+        var elementQuestionParams = '#txtQuestionParams';
+        var elementQuestionText = '#txtQuestion';
+        var elementQuestionSelect = '#questionSelect';
+
+        //............buttons for triggering various actions
+        var elementUploadBaseTestrigBtn = '#btnUploadConfig';
+        var elementUploadDiffEnvBtn = '#btnUploadDiffEnv';
+        var elementAnswerQuestionBtn = '#btnAnswerQuestion';
+        var elementAnswerDiffQuestionBtn = '#btnAnswerDiffQuestion';
+
+        //spin
+        var elementSpinDiv = '#spinwrapper';
+
+        var fnDrawTopology = ParseJsonTopology;
+        var fnShowHighlights = SetupHighlightsMenu;
+    </script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+	<link rel="stylesheet" href="styles/graph.css" type="text/css">
+	<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.css">
+	<link rel="stylesheet" href="styles/jquery-ui.css" type="text/css">
+
+</head>
+<body>
+    <div id="divTest">
+        <input type="button" id="btnTest" value="Test me!" onclick="testMe()" />
+    </div>
+    <h2>
+        <input type="button" value="Toggle instructions" width="50px" onclick="jQuery('#instructions').toggle()" />
+    </h2>
+    <div id="instructions">
+        <ol>
+            <li>Enter configuration, which can be an individual device or a zipped testrig, and press <b>Process base configuration</b>.
+                    </li>
+            <li>Enter question, and press <b>Answer about base</b>.
+                    </li>
+            <li>To ask questions about a planned configuration change, 
+                   
+                            <ol>
+                                <li>Enter the configuration delta (i.e., files that differ from the base), and press <b>Process delta configuration</b>.
+                                </li>
+                                <li>Enter question, and press <b>Answer about delta</b>. 
+                                </li>
+                            </ol>
+            </li>
+        </ol>
+        <p>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Steps 2 and 3 can be repeated multiple times for different questions and delta configurations.  To analyze a new base configuration, start again (reload the page).                
+    </div>
+
+   <div id="spinwrapper"></div>   
+
+    <table>
+        <tr>
+            <td colspan="3">
+                <div id="myspinner"></div>
+            </td>
+        </tr>
+
+        </div>
+        <tr>
+            <td>
+                <form class="myform">
+                    <table>
+                        <tr>
+                            <td bgcolor="#DDFFDD" style="padding-right:-2px">
+                                <table>
+                                    <tr align="center">
+                                        <td colspan="2">
+                                            <h3>Enter Configuration [Choose your file, type configuration, or select a sample to explore]</h3>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <textarea id="txtConfig" style="display: normal; border-radius: 5px" cols="50" rows="20"></textarea>
+                                        </td>
+                                        <td>
+                                            <input type="file" id="fileConfig"/>
+                                            <script> jQuery('#fileConfig').change(loadConfigText); </script>
+                                            <br />
+                                            <br />
+                                            <select id="configSelect" onchange="loadText(elementConfigSelect, elementConfigText, elementTestrigFile)">
+                                                <option disabled selected>-- select a sample config -- </option>
+                                                <option value="samples/as1border1.cfg.txt">Example border router</option>
+                                                <option value="samples/as1core1.cfg.txt">Example core router</option>
+                                                <option value="samples/example.zip">Example base testrig</option>
+                                                <option value="samples/delta.zip">Example delta testrig</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr align="center">
+                                        <td>
+                                            <input type="button" id="btnUploadConfig" value="Process base configuration"
+                                                onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::drawtopology::posttestriginit')" />
+                                            <input type="button" id="btnUploadDiffEnv" value="Process delta configuration" disabled
+                                                onclick="startCalls('btnUploadConfigText', 'uploaddiffenvsmart::generatediffdataplane::getdiffdataplane::postdiffenvinit')" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="2">
+                                <hr />
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td bgcolor="#DDFFDD">
+                                <table>
+                                    <tr align="center">
+                                        <td colspan="2">
+                                            <h3>Enter question [Choose your file, type the question, or select from our samples]</h3>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <textarea id="txtQuestion" style="display: normal; border-radius: 5px" cols="50" rows="20"></textarea>
+                                        </td>
+                                        <td>
+                                            <input type="file" id="fileQuestion" />
+                                            <script> jQuery('#fileQuestion').change(loadQuestionText); </script>
+                                            <br />
+                                            <br />
+                                            <select id="questionSelect" onchange="loadText(elementQuestionSelect, elementQuestionText, elementQuestionFile)">
+                                                <option disabled selected>-- select a sample question -- </option>
+                                                <option value="samples/unique-ip-assignments.q.txt">Unique IP assignments</option>
+                                                <option value="samples/print-ebgp-nodes.q.txt">List EBGP nodes</option>
+                                                <option value="samples/ospf-loopbacks.q.txt">OSPF loopback announcements</option>
+                                                <option value="samples/traceroute.q.txt">Traceroute</option>
+                                                <option value="samples/multipath.q.txt">Multipath consistency</option>
+                                                <option value="samples/reachability.q.txt">Reachability between devices</option>
+                                                <option value="samples/failure.q.txt">Base vs delta reachability</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr align="center">
+                                        <td>
+                                            <input type="button" id="btnAnswerQuestion" value="Answer about base" disabled
+                                                onclick="startCalls('btnUploadConfigText', 'uploadquestiontext::answerquestion::drawanswer')" />
+                                            <input type="button" id="btnAnswerDiffQuestion" value="Answer about delta" disabled
+                                                onclick="startCalls('btnUploadConfigText', 'uploadquestiontext::answerdiffquestion::drawanswer')" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+
+                    </table>
+                </form>
+            </td>
+            <td></td>
+            <td>
+            	<table>
+            		<tr>
+            			<td>
+            				<div id="cy"></div>
+        				</td>
+    				</tr>
+  					<tr>
+						<td align="center" bgcolor="#DDDDFF">
+							<h3>Output</h3>
+							<br />
+							<textarea id="txtOutput" style="display: normal; border-radius: 5px" cols="90" rows="21" readonly></textarea>						
+						</td>
+					</tr>
+            	</table>
+            </td>
+        </tr>
+    </table>
+    <div id="activityLog" align="center">
+    <h3>Activity log</h3>
+    <textarea id="txtDebug" style="display: normal; border-radius: 5pt" rows="10" cols="140" readonly></textarea>
+    </div>
+</body>
+</html>

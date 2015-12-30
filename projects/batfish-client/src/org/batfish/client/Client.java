@@ -23,6 +23,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Util;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.ZipUtility;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
@@ -56,6 +57,7 @@ public class Client {
    private static final String COMMAND_SET_DIFF_ENV = "set-diff-environment";
    private static final String COMMAND_SET_LOGLEVEL = "set-loglevel";
    private static final String COMMAND_SET_TESTRIG = "set-testrig";
+   private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
 
    private static final Map<String, String> MAP_COMMANDS = initCommands();
 
@@ -93,10 +95,10 @@ public class Client {
       descs.put(COMMAND_INIT_CONTAINER, COMMAND_INIT_CONTAINER
             + " <container-name-prefix>\n" + "\t Initialize a new container");
       descs.put(COMMAND_INIT_DIFF_ENV, COMMAND_INIT_DIFF_ENV
-            + " <environment-name> <environment-file>\n"
+            + " <environment-name> <environment zipfile or directory>\n"
             + "\t Initialize the differential environment");
       descs.put(COMMAND_INIT_TESTRIG, COMMAND_INIT_TESTRIG
-            + " <environment-name> <environment-file>\n"
+            + " <environment-name> <testrig zipfile or directory>\n"
             + "\t Initialize the testrig with default environment");
       descs.put(COMMAND_LIST_CONTAINERS, COMMAND_LIST_CONTAINERS + "\n"
             + "\t List the containers to which you have access");
@@ -119,6 +121,8 @@ public class Client {
             + "\t Set the loglevel. Default is output");
       descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG + " <testrig-name>\n"
             + "\t Set the current testrig");
+      descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT
+            + " <object-name> <object-file>\n" + "\t Uploads a custom object");
       return descs;
    }
 
@@ -521,12 +525,28 @@ public class Client {
             }
 
             String diffEnvName = words[1];
-            String diffEnvFile = words[2];
+            String diffEnvLocation = words[2];
+
+            File envFilePointer = new File(diffEnvLocation);
+
+            String uploadFilename = diffEnvLocation;
+
+            if (envFilePointer.isDirectory()) {
+               uploadFilename = File.createTempFile("diffenv", "zip")
+                     .getAbsolutePath();
+               ZipUtility.zipFiles(envFilePointer.getAbsolutePath(),
+                     uploadFilename);
+            }
 
             // upload the environment
             boolean resultUpload = _workHelper.uploadEnvironment(
                   _currContainerName, _currTestrigName, diffEnvName,
-                  diffEnvFile);
+                  uploadFilename);
+
+            // unequal means we must have created a temporary file
+            if (uploadFilename != diffEnvLocation) {
+               new File(uploadFilename).delete();
+            }
 
             if (resultUpload) {
                _logger.output("Successfully uploaded environment.\n");
@@ -549,11 +569,27 @@ public class Client {
             }
 
             String testrigName = words[1];
-            String testrigFile = words[2];
+            String testrigLocation = words[2];
+
+            File testrigFilePointer = new File(testrigLocation);
+
+            String uploadFilename = testrigLocation;
+
+            if (testrigFilePointer.isDirectory()) {
+               uploadFilename = File.createTempFile("testrig", "zip")
+                     .getAbsolutePath();
+               ZipUtility.zipFiles(testrigFilePointer.getAbsolutePath(),
+                     uploadFilename);
+            }
 
             // upload the testrig
             boolean resultUpload = _workHelper.uploadTestrig(
-                  _currContainerName, testrigName, testrigFile);
+                  _currContainerName, testrigName, uploadFilename);
+
+            // unequal means we must have created a temporary file
+            if (uploadFilename != testrigLocation) {
+               new File(uploadFilename).delete();
+            }
 
             if (resultUpload) {
                _logger
@@ -662,6 +698,20 @@ public class Client {
             }
             break;
          }
+         case COMMAND_UPLOAD_CUSTOM_OBJECT: {
+            if (!isSetContainer() || !isSetTestrig()) {
+               break;
+            }
+
+            String objectName = words[1];
+            String objectFile = words[2];
+
+            // upload the object
+            boolean resultUpload = _workHelper.uploadCustomObject(
+                  _currContainerName, _currTestrigName, objectName, objectFile);
+
+            break;
+         }
          default:
             _logger.error("Unsupported command " + words[0] + "\n");
             _logger.error("Type 'help' to see the list of valid commands\n");
@@ -675,7 +725,7 @@ public class Client {
    private void RunBatchMode() {
 
       _logger = new BatfishLogger(_settings.getLogLevel(), false,
-            _settings.getLogFile(), false);
+            _settings.getLogFile(), false, false);
 
       String workMgr = _settings.getServiceHost() + ":"
             + _settings.getServiceWorkPort();

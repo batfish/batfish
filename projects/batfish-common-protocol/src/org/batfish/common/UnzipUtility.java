@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -14,6 +15,7 @@ import java.util.zip.ZipInputStream;
  *
  * @author www.codejava.net
  *
+ *         minor local changes tagged with <ratul>
  */
 public class UnzipUtility {
    /**
@@ -49,6 +51,13 @@ public class UnzipUtility {
     * @throws IOException
     */
    public void unzip(File zipFile, String destDirectory) throws IOException {
+
+      // <ratul>
+      // this lets us check if the zip file is proper
+      // for bad zip files this will throw an exception
+      ZipFile zipTest = new ZipFile(zipFile);
+      zipTest.close();
+
       File destDir = new File(destDirectory);
       if (!destDir.exists()) {
          destDir.mkdir();

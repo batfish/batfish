@@ -195,6 +195,8 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_LOG_TEE = "logtee";
 
+   private static final String ARG_MAX_RUNTIME_MS = "maxruntime";
+
    private static final String ARG_NO_OUTPUT = "nooutput";
 
    private static final String ARG_NO_SHUFFLE = "noshuffle";
@@ -230,10 +232,6 @@ public final class Settings extends BaseSettings {
    private static final String ARG_SERVICE_MODE = "servicemode";
 
    private static final String ARG_SERVICE_PORT = "serviceport";
-
-   private static final String ARG_SYNTHESIZE_JSON_TOPOLOGY = "synthesizejsontopology";
-
-   private static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
 
    private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
 
@@ -351,6 +349,8 @@ public final class Settings extends BaseSettings {
    private String _logLevel;
 
    private boolean _logTee;
+
+   private int _maxRuntimeMs;
 
    private String _nodeRolesPath;
 
@@ -632,6 +632,10 @@ public final class Settings extends BaseSettings {
       return _logTee;
    }
 
+   public int getMaxRuntimeMs() {
+      return _maxRuntimeMs;
+   }
+
    public String getNodeRolesPath() {
       return _nodeRolesPath;
    }
@@ -870,6 +874,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_TEE, false);
       setDefaultProperty(BfConsts.ARG_LOG_LEVEL, "debug");
+      setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
       setDefaultProperty(ARG_NO_OUTPUT, false);
       setDefaultProperty(ARG_NO_SHUFFLE, false);
       setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
@@ -894,8 +899,8 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_SERVICE_HOST, "0.0.0.0");
       setDefaultProperty(ARG_SERVICE_MODE, false);
       setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
-      setDefaultProperty(ARG_SYNTHESIZE_JSON_TOPOLOGY, false);
-      setDefaultProperty(ARG_SYNTHESIZE_TOPOLOGY, false);
+      setDefaultProperty(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY, false);
+      setDefaultProperty(BfConsts.ARG_SYNTHESIZE_TOPOLOGY, false);
       setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, false);
       setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, false);
       setDefaultProperty(ARG_TIMESTAMP, false);
@@ -1018,6 +1023,9 @@ public final class Settings extends BaseSettings {
       addBooleanOption(ARG_LOG_TEE,
             "print output to both logfile and standard out");
 
+      addOption(ARG_MAX_RUNTIME_MS,
+            "maximum time (in ms) to allow a task to run", ARGNAME_NUMBER);
+
       addBooleanOption(ARG_NO_OUTPUT, "do not produce output files");
 
       addBooleanOption(ARG_NO_SHUFFLE, "do not shuffle parallel jobs");
@@ -1088,10 +1096,10 @@ public final class Settings extends BaseSettings {
 
       addOption(ARG_SERVICE_PORT, "port for batfish service", ARGNAME_PORT);
 
-      addBooleanOption(ARG_SYNTHESIZE_JSON_TOPOLOGY,
+      addBooleanOption(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY,
             "synthesize json topology from interface ip subnet information");
 
-      addBooleanOption(ARG_SYNTHESIZE_TOPOLOGY,
+      addBooleanOption(BfConsts.ARG_SYNTHESIZE_TOPOLOGY,
             "synthesize topology from interface ip subnet information");
 
       addBooleanOption(ARG_THROW_ON_LEXER_ERROR,
@@ -1214,6 +1222,7 @@ public final class Settings extends BaseSettings {
       _jobs = getIntOptionValue(ARG_JOBS);
       _keepBlocks = getBooleanOptionValue(BfConsts.COMMAND_KEEP_BLOCKS);
       _logTee = getBooleanOptionValue(ARG_LOG_TEE);
+      _maxRuntimeMs = getIntOptionValue(ARG_MAX_RUNTIME_MS);
       _noOutput = getBooleanOptionValue(ARG_NO_OUTPUT);
       _nxtnetDataPlane = getBooleanOptionValue(BfConsts.COMMAND_NXTNET_DATA_PLANE);
       _nxtnetTraffic = getBooleanOptionValue(BfConsts.COMMAND_NXTNET_TRAFFIC);
@@ -1243,8 +1252,8 @@ public final class Settings extends BaseSettings {
       _servicePort = getIntOptionValue(ARG_SERVICE_PORT);
       _shuffleJobs = !getBooleanOptionValue(ARG_NO_SHUFFLE);
       _simplify = !getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
-      _synthesizeJsonTopology = getBooleanOptionValue(ARG_SYNTHESIZE_JSON_TOPOLOGY);
-      _synthesizeTopology = getBooleanOptionValue(ARG_SYNTHESIZE_TOPOLOGY);
+      _synthesizeJsonTopology = getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
+      _synthesizeTopology = getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_TOPOLOGY);
       _throwOnLexerError = getBooleanOptionValue(ARG_THROW_ON_LEXER_ERROR);
       _throwOnParserError = getBooleanOptionValue(ARG_THROW_ON_PARSER_ERROR);
       _timestamp = getBooleanOptionValue(ARG_TIMESTAMP);
@@ -1295,6 +1304,10 @@ public final class Settings extends BaseSettings {
 
    public void setLogicDir(String logicDir) {
       _logicDir = logicDir;
+   }
+
+   public void setMaxRuntimeMs(int runtimeMs) {
+      _maxRuntimeMs = runtimeMs;
    }
 
    public void setNodeRolesPath(String nodeRolesPath) {
