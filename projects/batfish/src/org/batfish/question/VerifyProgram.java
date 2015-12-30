@@ -43,6 +43,11 @@ public class VerifyProgram {
       return _environment.getFailedAssertions();
    }
 
+   public String getJson() {
+      QMap query = _environment.getQuery();
+      return query.toString();
+   }
+
    public List<Statement> getStatements() {
       return _statements;
    }

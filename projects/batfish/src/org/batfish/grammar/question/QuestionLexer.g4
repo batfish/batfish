@@ -161,6 +161,16 @@ GENERATED_ROUTE
    'generated_route'
 ;
 
+GET
+:
+   'get'
+;
+
+GET_MAP
+:
+   'get_map'
+;
+
 GLOBAL
 :
    'global'
@@ -436,6 +446,11 @@ PROTOCOL_DEPENDENCIES
    'protocol-dependencies'
 ;
 
+QUERY
+:
+   'query'
+;
+
 REACHABILITY
 :
    'reachability'
@@ -692,6 +707,11 @@ VARIABLE
    '$' F_VarChar+
 ;
 
+VIEW
+:
+   'view'
+;
+
 WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
@@ -823,6 +843,11 @@ M_Set_IPSEC_VPN
 M_Set_NODE
 :
    'node' -> type ( NODE )
+;
+
+M_Set_OPEN_PAREN
+:
+   '(' -> type(OPEN_PAREN), popMode
 ;
 
 M_Set_POLICY_MAP

@@ -733,6 +733,11 @@ public class Batfish implements AutoCloseable {
             _logger.output("No violations detected\n");
          }
       }
+      String jsonPath = _settings.getAnswerJsonPath();
+      if (jsonPath != null) {
+         String jsonOutput = program.getJson();
+         Util.writeFile(jsonPath, jsonOutput);
+      }
    }
 
    /**

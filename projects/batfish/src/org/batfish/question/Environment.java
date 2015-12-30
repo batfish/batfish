@@ -81,6 +81,8 @@ public class Environment {
 
    private Map<String, Set<Ip>> _ipSets;
 
+   private Map<String, QMap> _maps;
+
    private PolicyMapMatchProtocolLine _matchProtocolLine;
 
    private PolicyMapMatchRouteFilterListLine _matchRouteFilterLine;
@@ -120,6 +122,8 @@ public class Environment {
    private ProtocolDependencyAnalysis[] _protocolDependencyAnalysis;
 
    private Set<RoutingProtocol> _protocols;
+
+   private QMap _query;
 
    private BgpNeighbor _remoteBgpNeighbor;
 
@@ -175,6 +179,7 @@ public class Environment {
       _ipsecVpns = new HashMap<String, IpsecVpn>();
       _ipSets = new HashMap<String, Set<Ip>>();
       _ipsecVpnSets = new HashMap<String, Set<IpsecVpn>>();
+      _maps = new HashMap<String, QMap>();
       _nodes = new HashMap<String, Configuration>();
       _nodeSets = new HashMap<String, Set<Configuration>>();
       _policyMaps = new HashMap<String, PolicyMap>();
@@ -186,6 +191,7 @@ public class Environment {
       _prefixSpaces = new HashMap<String, PrefixSpace>();
       _prefixSpaceSets = new HashMap<String, Set<PrefixSpace>>();
       _protocolDependencyAnalysis = new ProtocolDependencyAnalysis[1];
+      _query = new QMap("query");
       _remoteBgpNeighborsInitialized = new boolean[1];
       _remoteIpsecVpnsInitialized = new boolean[1];
       _routeFilters = new HashMap<String, RouteFilterList>();
@@ -227,6 +233,7 @@ public class Environment {
          case INTERFACE:
          case IP:
          case IPSEC_VPN:
+         case MAP:
          case NODE:
          case POLICY_MAP:
          case POLICY_MAP_CLAUSE:
@@ -284,6 +291,7 @@ public class Environment {
       copy._ipsecVpn = _ipsecVpn;
       copy._ipsecVpns = _ipsecVpns;
       copy._ipsecVpnSets = _ipsecVpnSets;
+      copy._maps = _maps;
       copy._matchProtocolLine = _matchProtocolLine;
       copy._matchRouteFilterLine = _matchRouteFilterLine;
       copy._node = _node;
@@ -304,6 +312,7 @@ public class Environment {
       copy._protocol = _protocol;
       copy._protocolDependencyAnalysis = _protocolDependencyAnalysis;
       copy._protocols = _protocols;
+      copy._query = _query;
       copy._remoteBgpNeighbor = _remoteBgpNeighbor;
       copy._remoteBgpNeighborsInitialized = _remoteBgpNeighborsInitialized;
       copy._remoteIpsecVpn = _remoteIpsecVpn;
@@ -413,6 +422,10 @@ public class Environment {
       return _ipSets;
    }
 
+   public Map<String, QMap> getMaps() {
+      return _maps;
+   }
+
    public PolicyMapMatchProtocolLine getMatchProtocolLine() {
       return _matchProtocolLine;
    }
@@ -483,6 +496,10 @@ public class Environment {
 
    public Set<RoutingProtocol> getProtocols() {
       return _protocols;
+   }
+
+   public QMap getQuery() {
+      return _query;
    }
 
    public BgpNeighbor getRemoteBgpNeighbor() {
