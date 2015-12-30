@@ -25,6 +25,7 @@ import org.batfish.representation.IpProtocol;
 import org.batfish.representation.IpsecAuthenticationAlgorithm;
 import org.batfish.representation.IpsecProtocol;
 import org.batfish.representation.IsoAddress;
+import org.batfish.representation.LineAction;
 import org.batfish.representation.NamedPort;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RoutingProtocol;
@@ -1995,32 +1996,62 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterSpt_from_zone(Spt_from_zoneContext ctx) {
-      String fromName = ctx.from.getText();
-      _currentFromZone = _configuration.getZones().get(fromName);
-      if (_currentFromZone == null) {
-         _currentFromZone = new Zone(fromName,
-               _configuration.getGlobalAddressBooks());
-         _configuration.getZones().put(fromName, _currentFromZone);
-         _configuration.getFirewallFilters().put(
-               _currentFromZone.getInboundFilter().getName(),
-               _currentFromZone.getInboundFilter());
+      if (ctx.from.JUNOS_HOST() != null && ctx.to.JUNOS_HOST() != null) {
+         _w.redFlag("Cannot create security policy from junos-host to junos-host");
       }
-      String toName = ctx.to.getText();
-      _currentToZone = _configuration.getZones().get(toName);
-      if (_currentToZone == null) {
-         _currentToZone = new Zone(toName,
-               _configuration.getGlobalAddressBooks());
-         _configuration.getFirewallFilters().put(
-               _currentToZone.getInboundFilter().getName(),
-               _currentToZone.getInboundFilter());
-         _configuration.getZones().put(toName, _currentToZone);
-      }
-      _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
-      if (_currentFilter == null) {
+      else {
+         String fromName = ctx.from.getText();
+         String toName = ctx.to.getText();
          String policyName = "~FROM_ZONE~" + fromName + "~TO_ZONE~" + toName;
-         _currentFilter = new FirewallFilter(policyName, Family.INET);
-         _configuration.getFirewallFilters().put(policyName, _currentFilter);
-         _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
+         if (ctx.from.JUNOS_HOST() == null) {
+            _currentFromZone = _configuration.getZones().get(fromName);
+            if (_currentFromZone == null) {
+               _currentFromZone = new Zone(fromName,
+                     _configuration.getGlobalAddressBooks());
+               _configuration.getZones().put(fromName, _currentFromZone);
+               _configuration.getFirewallFilters().put(
+                     _currentFromZone.getInboundFilter().getName(),
+                     _currentFromZone.getInboundFilter());
+            }
+         }
+         if (ctx.to.JUNOS_HOST() == null) {
+            _currentToZone = _configuration.getZones().get(toName);
+            if (_currentToZone == null) {
+               _currentToZone = new Zone(toName,
+                     _configuration.getGlobalAddressBooks());
+               _configuration.getFirewallFilters().put(
+                     _currentToZone.getInboundFilter().getName(),
+                     _currentToZone.getInboundFilter());
+               _configuration.getZones().put(toName, _currentToZone);
+            }
+         }
+         if (ctx.from.JUNOS_HOST() != null) {
+            _currentFilter = _currentToZone.getFromHostFilter();
+            if (_currentFilter == null) {
+               _currentFilter = new FirewallFilter(policyName, Family.INET);
+               _configuration.getFirewallFilters().put(policyName,
+                     _currentFilter);
+               _currentToZone.setFromHostFilter(_currentFilter);
+            }
+         }
+         else if (ctx.to.JUNOS_HOST() != null) {
+            _currentFilter = _currentFromZone.getToHostFilter();
+            if (_currentFilter == null) {
+               _currentFilter = new FirewallFilter(policyName, Family.INET);
+               _configuration.getFirewallFilters().put(policyName,
+                     _currentFilter);
+               _currentFromZone.setToHostFilter(_currentFilter);
+            }
+         }
+         else {
+            _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
+            if (_currentFilter == null) {
+               _currentFilter = new FirewallFilter(policyName, Family.INET);
+               _configuration.getFirewallFilters().put(policyName,
+                     _currentFilter);
+               _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
+            }
+         }
       }
    }
 
@@ -2060,8 +2091,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterSzszt_interfaces(Szszt_interfacesContext ctx) {
       _currentZoneInterface = initInterface(ctx.interface_id());
-      _configuration.getInterfaceZones().put(_currentZoneInterface,
-            _currentZone);
+      _currentZone.getInterfaces().add(_currentZoneInterface);
    }
 
    @Override
@@ -2438,6 +2468,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       FwTerm newTerm = new FwTerm(termName);
       _currentZoneInboundFilter.getTerms().put(termName, newTerm);
       newTerm.getFromHostProtocols().add(new FwFromHostProtocol(protocol));
+      newTerm.getThens().add(FwThenAccept.INSTANCE);
    }
 
    @Override
@@ -2447,6 +2478,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       FwTerm newTerm = new FwTerm(termName);
       _currentZoneInboundFilter.getTerms().put(termName, newTerm);
       newTerm.getFromHostServices().add(new FwFromHostService(service));
+      newTerm.getThens().add(FwThenAccept.INSTANCE);
    }
 
    @Override
@@ -2959,7 +2991,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitSpt_default_policy_tail(Spt_default_policy_tailContext ctx) {
       if (ctx.PERMIT_ALL() != null) {
-         _configuration.setSecurityPolicyDefaultPermit(true);
+         _configuration.setDefaultCrossZoneAction(LineAction.ACCEPT);
+      }
+      else if (ctx.DENY_ALL() != null) {
+         _configuration.setDefaultCrossZoneAction(LineAction.REJECT);
       }
    }
 

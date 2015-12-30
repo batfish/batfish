@@ -10,6 +10,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.grammar.BatfishExtractor;
 import org.batfish.grammar.question.QuestionParametersParser.BindingContext;
 import org.batfish.grammar.question.QuestionParametersParser.ParametersContext;
+import org.batfish.question.ForwardingAction;
 import org.batfish.question.QuestionParameters;
 import org.batfish.representation.Ip;
 import org.batfish.representation.Prefix;
@@ -24,7 +25,23 @@ public class QuestionParametersExtractor extends
       String var = ctx.VARIABLE().getText();
       VariableType type;
       Object value;
-      if (ctx.bool() != null) {
+      if (ctx.action() != null) {
+         type = VariableType.ACTION;
+         if (ctx.action().ACCEPT() != null) {
+            value = ForwardingAction.ACCEPT;
+         }
+         else if (ctx.action().DROP() != null) {
+            value = ForwardingAction.DROP;
+         }
+         else if (ctx.action().DEBUG() != null) {
+            value = ForwardingAction.DEBUG;
+         }
+         else {
+            throw new BatfishException("invalid action: "
+                  + ctx.action().getText());
+         }
+      }
+      else if (ctx.bool() != null) {
          type = VariableType.BOOLEAN;
          value = Boolean.parseBoolean(ctx.bool().getText());
       }

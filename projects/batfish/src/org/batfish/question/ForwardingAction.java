@@ -4,6 +4,7 @@ import org.batfish.common.BatfishException;
 
 public enum ForwardingAction {
    ACCEPT,
+   DEBUG,
    DROP,
    DROP_ACL,
    DROP_ACL_IN,

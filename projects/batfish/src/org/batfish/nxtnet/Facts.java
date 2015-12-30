@@ -153,6 +153,13 @@ public class Facts {
       map.put("SetIbgpNeighbors", "NODE1|IP1|NODE2|IP2");
       map.put("SetPrecomputedRoute_flat",
             "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|NEXTHOPIP|ADMIN|COST|PROTOCOL|TAG");
+      map.put("SetInterfaceZone", "NODE|INTERFACE|ZONE");
+      map.put("SetDefaultCrossZoneAccept", "NODE");
+      map.put("SetDefaultInboundAccept", "NODE");
+      map.put("SetCrossZoneFilter", "NODE|SRCZONE|DSTZONE|FILTER");
+      map.put("SetInboundInterfaceFilter", "NODE|INTERFACE|FILTER");
+      map.put("SetZoneFromHostFilter", "NODE|ZONE|FILTER");
+      map.put("SetZoneToHostFilter", "NODE|ZONE|FILTER");
       return Collections.unmodifiableMap(map);
    }
 

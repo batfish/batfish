@@ -18,4 +18,11 @@ public class Comment extends Statement {
       }
    }
 
+   @Override
+   public String toString() {
+      StringBuilder sb = new StringBuilder();
+      print(sb, 0);
+      return sb.toString();
+   }
+
 }

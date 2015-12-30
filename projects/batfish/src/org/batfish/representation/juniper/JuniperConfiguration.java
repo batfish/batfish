@@ -6,6 +6,7 @@ import java.util.TreeMap;
 
 import org.batfish.representation.IkeProposal;
 import org.batfish.representation.IpsecProposal;
+import org.batfish.representation.LineAction;
 
 public class JuniperConfiguration implements Serializable {
 
@@ -19,6 +20,8 @@ public class JuniperConfiguration implements Serializable {
    protected final Map<String, BaseApplication> _applications;
 
    protected final Map<String, CommunityList> _communityLists;
+
+   protected LineAction _defaultCrossZoneAction;
 
    protected final RoutingInstance _defaultRoutingInstance;
 
@@ -48,13 +51,12 @@ public class JuniperConfiguration implements Serializable {
 
    protected final Map<String, RoutingInstance> _routingInstances;
 
-   private boolean _securityPolicyDefaultPermit;
-
    protected final Map<String, Zone> _zones;
 
    public JuniperConfiguration() {
       _applications = new TreeMap<String, BaseApplication>();
       _communityLists = new TreeMap<String, CommunityList>();
+      _defaultCrossZoneAction = LineAction.REJECT;
       _defaultRoutingInstance = new RoutingInstance(DEFAULT_ROUTING_INSTANCE);
       _filters = new TreeMap<String, FirewallFilter>();
       _globalAddressBooks = new TreeMap<String, AddressBook>();
@@ -78,6 +80,10 @@ public class JuniperConfiguration implements Serializable {
 
    public final Map<String, CommunityList> getCommunityLists() {
       return _communityLists;
+   }
+
+   public LineAction getDefaultCrossZoneAction() {
+      return _defaultCrossZoneAction;
    }
 
    public final RoutingInstance getDefaultRoutingInstance() {
@@ -108,10 +114,6 @@ public class JuniperConfiguration implements Serializable {
       return _ikeProposals;
    }
 
-   public Map<Interface, Zone> getInterfaceZones() {
-      return _interfaceZones;
-   }
-
    public final Map<String, IpsecPolicy> getIpsecPolicies() {
       return _ipsecPolicies;
    }
@@ -140,21 +142,16 @@ public class JuniperConfiguration implements Serializable {
       return _routingInstances;
    }
 
-   public boolean getSecurityPolicyDefaultPermit() {
-      return _securityPolicyDefaultPermit;
-   }
-
    public Map<String, Zone> getZones() {
       return _zones;
    }
 
-   public final void setHostname(String hostname) {
-      _defaultRoutingInstance.setHostname(hostname);
+   public void setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {
+      _defaultCrossZoneAction = defaultCrossZoneAction;
    }
 
-   public void setSecurityPolicyDefaultPermit(
-         boolean securityPolicyDefaultPermit) {
-      _securityPolicyDefaultPermit = securityPolicyDefaultPermit;
+   public final void setHostname(String hostname) {
+      _defaultRoutingInstance.setHostname(hostname);
    }
 
 }

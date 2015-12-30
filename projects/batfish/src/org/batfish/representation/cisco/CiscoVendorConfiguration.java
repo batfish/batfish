@@ -1637,6 +1637,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       final Configuration c = new Configuration(_hostname);
       c.setVendor(_vendor);
       c.setRoles(_roles);
+      c.setDefaultInboundAction(LineAction.ACCEPT);
+      c.setDefaultCrossZoneAction(LineAction.ACCEPT);
 
       // convert as path access lists to vendor independent format
       for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {

@@ -1479,6 +1479,15 @@ need_PolicyMapMatchRoute(Map, Route) :-
 'IpAccessListDeny'(List, Line, Flow) :-
    'SetIpAccessListLine_deny'(List, Line),
    'IpAccessListFirstMatch'(List, Flow, Line) /*fn*/.
+'IpAccessListExists'(List) :-
+   'SetIpAccessListLine_permit'(List, _).
+'IpAccessListExists'(List) :-
+   'SetIpAccessListLine_deny'(List, _).
+
+'IpAccessListDeny'(List, -1, Flow) :-
+   \+ 'IpAccessListMatch'(List, _, Flow) /*fn*/,
+   'IpAccessListExists'(List),
+   'Flow'(Flow).
 
 'IpAccessListPermit'(List, Line, Flow) :-
    'SetIpAccessListLine_permit'(List, Line),
@@ -2849,10 +2858,13 @@ need_RouteFilterMatchNetwork(List, Network) :-
 'Ip'(DstIp)
 :-
    'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Tag).
+
+/*owner accept*/
 'FlowAccepted'(Flow, Node) :-
    'FlowReachPostIn'(Flow, Node),
    'Flow_dstIp'(Flow, DstIp) /*fn*/,
    'HasIp'(Node, DstIp).
+/*flow sink accept*/
 'FlowAccepted'(Flow, Node) :-
    'FlowReachPostOutInterface'(Flow, Node, Interface),
    'SetFlowSinkInterface'(Node, Interface).
@@ -2866,20 +2878,233 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'SetInterfaceFilterOut'(Node, Interface, Filter).
 
 'FlowDeniedIn'(Flow, Node, Interface, Filter, Line) :-
+   'FlowDeniedInInterfaceAcl'(Flow, Node, Interface, Filter, Line) ;
+   'FlowDeniedInCrossZoneFilter'(Flow, Node, Interface, Filter, Line) ;
+   'FlowDeniedInInboundFilter'(Flow, Node, Interface, Filter, Line) ;
+   'FlowDeniedInToHostFilter'(Flow, Node, Interface, Filter, Line).
+
+/* denied in by missing cross-zone policy with default-deny*/
+'FlowDeniedInCrossZoneFilter'(Flow, Node, SrcInt, 'DefaultCrossZoneDeny', 0) :-
+   'FlowReachPostIncomingInterfaceAcl'(Flow, Node, SrcInt),
+   'FlowInboundInterface'(Flow, Node, InboundInt),
+   \+ 'SetDefaultCrossZoneAccept'(Node), /*default deny*/
+   (
+      \+ 'SetInterfaceZone'(Node, InboundInt, _) ;  /*no policy due to missing inbound zone*/
+      'FlowNonInboundNullSrcZone'(Flow, Node) ; /*no policy due to missing src zone*/
+      ( /* no cross-zone filter*/
+         'SetInterfaceZone'(Node, InboundInt, InboundZone),
+         'FlowNonInboundSrcZone'(Flow, Node, SrcZone),
+         \+ 'SetCrossZoneFilter'(Node, SrcZone, InboundZone, _)
+      )
+   ).
+/* denied in by cross-zone policy*/
+'FlowDeniedInCrossZoneFilter'(Flow, Node, SrcInt, CrossZoneFilter, Line) :-
+   'FlowReachPostIncomingInterfaceAcl'(Flow, Node, SrcInt),
+   'FlowInboundInterface'(Flow, Node, InboundInt),
+   'SetInterfaceZone'(Node, InboundInt, InboundZone),
+   'FlowNonInboundSrcZone'(Flow, Node, SrcZone),
+   'SetCrossZoneFilter'(Node, SrcZone, InboundZone, CrossZoneFilter),
+   'IpAccessListDeny'(CrossZoneFilter, Line, Flow).
+
+/*denied in by to-host filter*/
+'FlowDeniedInToHostFilter'(Flow, Node, SrcInt, ToHostFilter, Line) :-
+   'FlowReachPostInboundFilter'(Flow, Node, SrcInt),
+   'FlowInboundInterface'(Flow, Node, InboundInt),
+   'SetInterfaceZone'(Node, InboundInt, InboundZone),
+   'SetZoneToHostFilter'(Node, InboundZone, ToHostFilter),
+   'IpAccessListDeny'(ToHostFilter, Line, Flow).
+
+/*denied in by missing inbound filter default-deny*/
+'FlowDeniedInInboundFilter'(Flow, Node, SrcInt, 'DefaultCrossZoneDeny', 0) :-
+   'FlowReachPostInboundCrossZoneAcl'(Flow, Node, SrcInt),
+   'FlowInboundInterface'(Flow, Node, InboundInt),
+   \+ 'SetDefaultInboundAccept'(Node), /*default deny*/
+   (
+      \+ 'SetInterfaceZone'(Node, InboundInt, _) ;  /*no policy due to missing inbound zone*/
+      ( /* no cross-zone filter*/
+         'SetInterfaceZone'(Node, InboundInt, InboundZone),
+         \+ 'SetInboundInterfaceFilter'(Node, InboundInt, _)
+      )
+   ).
+/*denied in by inbound filter*/
+'FlowDeniedInInboundFilter'(Flow, Node, SrcInt, InboundFilter, Line) :-
+   'FlowReachPostInboundCrossZoneAcl'(Flow, Node, SrcInt),
+   'FlowInboundInterface'(Flow, Node, InboundInt),
+   'SetInterfaceZone'(Node, InboundInt, InboundZone),
+   'SetInboundInterfaceFilter'(Node, InboundInt, InboundFilter),
+   'IpAccessListDeny'(InboundFilter, Line, Flow).
+
+/*denied in by interface incoming acl*/
+'FlowDeniedInInterfaceAcl'(Flow, Node, Interface, Filter, Line) :-
    'FlowReachPreInInterface'(Flow, Node, Interface),
-   'FlowDenyIn'(Flow, Node, Interface, Filter, Line).   
-
-'FlowDeniedOut'(Flow, Node, Interface, Filter, Line) :-
-   'FlowReachPreOutInterface'(Flow, Node, Interface),
-   'FlowDenyOut'(Flow, Node, Interface, Filter, Line).   
-
-'FlowDenyIn'(Flow, Node, Interface, Filter, Line) :-
    'SetInterfaceFilterIn'(Node, Interface, Filter),
    'IpAccessListDeny'(Filter, Line, Flow).
 
-'FlowDenyOut'(Flow, Node, Interface, Filter, Line) :-
+
+'FlowReachPostInboundCrossZoneAcl'(Flow, Node, SrcInt) :-
+   'FlowReachPostIncomingInterfaceAcl'(Flow, Node, SrcInt),
+   (
+      ( /*default accept with no policy*/
+         'SetDefaultCrossZoneAccept'(Node),
+         ( 
+           'FlowNonInboundNullSrcZone'(Flow, Node) ; /*no policy because null src zone*/
+           'FlowInboundInterface'(Flow, Node, SrcInt) ; /* no policy because inbound interface and src interface are same*/
+           \+ 'SetInterfaceZone'(Node, InboundInt, _) ; /*no policy because no inbound zone*/
+           ( /*no policy for this pair of zones*/
+              'SetInterfaceZone'(Node, InboundInt, InboundZone),
+              \+ 'SetCrossZoneFilter'(Node, SrcZone, InboundZone, _)
+           )
+         )
+      ) ;
+      ( /*policy exists and permits*/
+         'FlowInboundInterface'(Flow, Node, InboundInt),
+         'SetInterfaceZone'(Node, InboundInt, InboundZone),
+         'SetCrossZoneFilter'(Node, SrcZone, InboundZone, CrossZoneFilter),
+         \+ 'IpAccessListDeny'(CrossZoneFilter, Line, Flow)
+      )
+   ).
+
+'FlowReachPostHostInFilter'(Flow, Node, SrcInt) :-
+   'FlowReachPostInboundFilter'(Flow, Node, SrcInt),
+   'FlowInboundInterface'(Flow, Node, InboundInt),
+   (
+      \+ 'SetInterfaceZone'(Node, InboundInt, _) ; /*no policy because no inbound zone*/
+      (
+         'SetInterfaceZone'(Node, InboundInt, InboundZone),
+         (
+            \+ 'SetZoneToHostFilter'(Node, InboundInt, _) ; /* no policy because while there is inbound zone, interface has no toHost filter*/
+            (
+               'SetZoneToHostFilter'(Node, InboundInt, ToHostFilter),
+               \+ 'IpAccessListDeny'(ToHostFilter, _, Flow)
+            )
+         )
+      )
+   ).
+
+'FlowReachPostInboundFilter'(Flow, Node, SrcInt) :-
+   'FlowReachPostInboundCrossZoneAcl'(Flow, Node, SrcInt),
+   'FlowInboundInterface'(Flow, Node, InboundInt),
+   (
+      ( /*default accept with no policy*/
+         'SetDefaultInboundAccept'(Node),
+         (
+            \+ 'SetInterfaceZone'(Node, InboundInt, _) ; /*no policy because no inbound zone*/
+            ( /* no policy because while there is inbound zone, interface has no inbound filter*/
+               'SetInterfaceZone'(Node, InboundInt, _),
+               \+ 'SetInboundInterfaceFilter'(Node, InboundInt, _)
+            )
+         )
+      ) ;
+      (
+         'SetInterfaceZone'(Node, InboundInt, InboundZone),
+         'SetInboundInterfaceFilter'(Node, InboundInt, InboundFilter),
+         \+ 'IpAccessListDeny'(InboundFilter, _, Flow)
+      )
+   ).
+
+'FlowReachPostIncomingInterfaceAcl'(Flow, Node, Interface) :-
+   'FlowReachPreInInterface'(Flow, Node, Interface),
+   (
+      \+ 'SetInterfaceFilterIn'(Node, Interface, _) ;
+      (
+         'SetInterfaceFilterIn'(Node, Interface, Filter),
+         \+ 'IpAccessListDeny'(Filter, Line, Flow)
+      )
+   ).
+
+'FlowDeniedOut'(Flow, Node, Interface, Filter, Line) :-
+   'FlowDeniedOutInterfaceAcl'(Flow, Node, Interface, Filter, Line) ;
+   'FlowDeniedOutCrossZone'(Flow, Node, Interface, Filter, Line) ;
+   'FlowDeniedOutHostOut'(Flow, Node, Interface, Filter, Line).
+
+/*unoriginal with no src zone denied out by cross-zone default-deny*/
+'FlowDeniedOutCrossZone'(Flow, Node, Interface, 'DefaultCrossZoneDeny', 0) :-
+   'FlowReachPostOutgoingInterfaceAcl'(Flow, Node, Interface),
+   'FlowNonInboundNullSrcZone'(Flow, Node),
+   \+ 'SetDefaultCrossZoneAccept'(Node).
+/*unoriginal with src zone but no dst zone denied out by cross-zone default-deny*/
+'FlowDeniedOutCrossZone'(Flow, Node, Interface, 'DefaultCrossZoneDeny', 0) :-
+   'FlowReachPostOutgoingInterfaceAcl'(Flow, Node, Interface),
+   'FlowNonInboundSrcZone'(Flow, Node, _),
+   \+ 'SetDefaultCrossZoneAccept'(Node),
+   \+ 'SetInterfaceZone'(Node, Interface, _).
+/*unoriginal with src zone and dst zone but no cross-zone filter denied out by cross-zone default-deny*/
+'FlowDeniedOutCrossZone'(Flow, Node, Interface, 'DefaultCrossZoneDeny', 0) :-
+   'FlowReachPostOutgoingInterfaceAcl'(Flow, Node, Interface),
+   'FlowNonInboundSrcZone'(Flow, Node, SrcZone),
+   \+ 'SetDefaultCrossZoneAccept'(Node),
+   'SetInterfaceZone'(Node, Interface, DstZone),
+   \+ 'SetCrossZoneFilter'(Node, SrcZone, DstZone, _).
+/*unoriginal with src zone and dst zone and cross-zone filter denied out by cross-zone filter*/
+'FlowDeniedOutCrossZone'(Flow, Node, Interface, CrossZoneFilter, Line) :-
+   'FlowReachPostOutgoingInterfaceAcl'(Flow, Node, Interface),
+   'FlowNonInboundSrcZone'(Flow, Node, SrcZone),
+   'SetInterfaceZone'(Node, Interface, DstZone),
+   'SetCrossZoneFilter'(Node, SrcZone, DstZone, CrossZoneFilter),
+   'IpAccessListDeny'(CrossZoneFilter, Line, Flow).
+
+/*original denied by host-out filter*/
+'FlowDeniedOutHostOut'(Flow, Node, Interface, FromHostFilter, Line) :-
+   'FlowReachPreOutInterface'(Flow, Node, Interface),
+   'FlowReachPostOutgoingInterfaceAcl'(Flow, Node, Interface),
+   'Flow_node'(Flow, Node) /*fn*/,
+   'SetInterfaceZone'(Node, Interface, DstZone),
+   'SetZoneFromHostFilter'(Node, DstZone, FromHostFilter),
+   'IpAccessListDeny'(FromHostFilter, Line, Flow).
+
+/*denied out by interface acl*/
+'FlowDeniedOutInterfaceAcl'(Flow, Node, Interface, Filter, Line) :-
+   'FlowReachPreOutInterface'(Flow, Node, Interface),
    'SetInterfaceFilterOut'(Node, Interface, Filter),
    'IpAccessListDeny'(Filter, Line, Flow).
+
+'FlowReachPostOutboundCrossZoneAcl'(Flow, Node, Interface) :-
+   'FlowReachPostOutgoingInterfaceAcl'(Flow, Node, Interface),
+   (
+      ( /*unoriginal, no policy, default is to accept*/
+         'SetDefaultCrossZoneAccept'(Node),
+         (
+            'FlowReachNonInboundNullSrcZone'(Flow, Node) ; /*no policy because no src zone*/
+            \+ 'SetInterfaceZone'(Node, Interface, _) ; /*no policy because no dst zone*/
+            ( /*there is a destination zone and a source zone but no cross-zone filter*/
+               'SetInterfaceZone'(Node, Interface, DstZone),
+               'FlowReachNonInboundSrcZone'(Flow, Node, SrcZone),
+               \+ 'SetCrossZoneFilter'(Node, SrcZone, DstZone, _)
+            )
+         )
+      ) ;
+      ( /*the packet is original*/
+         'Flow_node'(Flow, Node) /*fn*/,
+         (
+            \+ 'SetInterfaceZone'(Node, Interface, _) ; /*no policy because no dst zone*/
+            ( /*there is a destination zone but no from-host filter*/
+               'SetInterfaceZone'(Node, Interface, DstZone),
+               \+ 'SetZoneFromHostFilter'(Node, DstZone, _)
+            ) ;
+            ( /*from-host filter permits*/
+               'SetInterfaceZone'(Node, Interface, DstZone),
+               'SetZoneFromHostFilter'(Node, DstZone, FromHostFilter),
+               \+ 'IpAccessListDeny'(FromHostFilter, _, Flow)
+            )
+         )
+      ) ;
+      ( /*unoriginal, cross-zone filter permits*/
+         'FlowReachNonInboundSrcZone'(Flow, Node, SrcZone),
+         'SetInterfaceZone'(Node, Interface, DstZone),
+         'SetCrossZoneFilter'(Node, SrcZone, DstZone, CrossZoneFilter),
+         \+ 'IpAccessListDeny'(CrossZoneFilter, _, Flow)
+      )
+   ).
+
+'FlowReachPostOutgoingInterfaceAcl'(Flow, Node, Interface) :-
+   'FlowReachPreOutInterface'(Flow, Node, Interface),
+   (
+      \+ 'SetInterfaceFilterOut'(Node, Interface, _) ;
+      (
+         'SetInterfaceFilterOut'(Node, Interface, Filter),
+         \+ 'IpAccessListDeny'(Filter, _, Flow)
+      )
+   ).
 
 'FlowDropped'(Flow, Node) :-
    'FlowDeniedIn'(Flow, Node, _, _, _).   
@@ -2891,6 +3116,10 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'FlowNoRoute'(Flow, Node).
 'FlowDropped'(Flow, Node) :-
    'FlowNullRouted'(Flow, Node).
+
+'FlowInboundInterface'(Flow, Node, InboundInt) :-
+   'FlowReachPostIncomingInterfaceAcl'(Flow, Node, _),
+   'FlowMatchInterface'(Flow, Node, InboundInt).
 
 'FlowNeighborUnreachable'(Flow, Node, NeighborIp) :-
    'Flow_dstIp'(Flow, DstIp) /*fn*/,
@@ -2908,6 +3137,10 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'FlowDropped'(Flow, _) ;
    'FlowLoop'(Flow, _, _).
 
+'FlowMatchInterface'(Flow, Node, Int) :-
+   'Flow_dstIp'(Flow, DstIp) /*fn*/,
+   'IpReadyInt'(Node, Int, DstIp, _).
+
 'FlowMatchRoute'(Flow, Route) :-
    'Flow_dstIp'(Flow, DstIp) /*fn*/,
    'FlowReachPostIn'(Flow, Node),
@@ -2920,6 +3153,18 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'FlowReachPreOut'(Flow, Node),
    'Flow_dstIp'(Flow, DstIp) /*fn*/,
    \+ 'FibRoute'(Node, DstIp).
+
+'FlowNonInboundNullSrcZone'(Flow, Node) :-
+   'FlowNonInboundSrcInterface'(Flow, Node, SrcInt),
+   \+ 'SetInterfaceZone'(Node, SrcInt, _).
+
+'FlowNonInboundSrcInterface'(Flow, Node, SrcInt) :-
+   \+ 'FlowMatchInterface'(Flow, Node, SrcInt),
+   'FlowReachPostIncomingInterfaceAcl'(Flow, Node, SrcInt).
+
+'FlowNonInboundSrcZone'(Flow, Node, SrcZone) :-
+   'FlowNonInboundSrcInterface'(Flow, Node, SrcInt),
+   'SetInterfaceZone'(Node, SrcInt, SrcZone).
 
 'FlowNullRouted'(Flow, Node) :-
    'Flow_dstIp'(Flow, DstIp) /*fn*/,
@@ -2971,15 +3216,14 @@ need_RouteFilterMatchNetwork(List, Network) :-
 'FlowReachPostIn'(Flow, Node) :-
    'Flow_node'(Flow, Node) /*fn*/.   
 'FlowReachPostIn'(Flow, Node) :-
-   'FlowReachPostInInterface'(Flow, Node, _).
+   'FlowReachPostHostInFilter'(Flow, Node, _).
 
 'FlowReachPostInInterface'(Flow, Node, Interface) :-
    'FlowReachPreInInterface'(Flow, Node, Interface),
    \+ 'FlowDenyIn'(Flow, Node, Interface, _, _).
 
 'FlowReachPostOutInterface'(Flow, Node, Interface) :-
-   'FlowReachPreOutInterface'(Flow, Node, Interface),
-   \+ 'FlowDenyOut'(Flow, Node, Interface, _, _).
+   'FlowReachPostOutboundCrossZoneAcl'(Flow, Node, Interface).
 
 'FlowReachPreInInterface'(Flow, Node, Interface) :-
    'FlowReachPostOutInterface'(Flow, PrevNode, PrevInterface),
