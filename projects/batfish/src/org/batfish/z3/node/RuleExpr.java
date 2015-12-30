@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.batfish.common.BatfishException;
 import org.batfish.z3.NodProgram;
 
 import com.microsoft.z3.BoolExpr;
@@ -54,7 +55,7 @@ public class RuleExpr extends Statement implements ComplexExpr {
             return new Comment("(vacuous rule)");
          }
          else if (newSubExpression == FalseExpr.INSTANCE) {
-            throw new Error("Unsatisfiable!");
+            throw new BatfishException("Unsatisfiable!");
          }
          else {
             return new RuleExpr(newSubExpression);

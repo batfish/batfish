@@ -338,6 +338,85 @@ SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol, tag) ->
    IpProtocol(protocol),
    FlowTag(tag).
 
+FlowDeniedInCrossZoneFilter(flow, node, interface, filter, line) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter),
+   int(line).
+
+FlowDeniedInInboundFilter(flow, node, interface, filter, line) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter),
+   int(line).
+
+FlowDeniedInInterfaceAcl(flow, node, interface, filter, line) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter),
+   int(line).
+
+FlowDeniedInToHostFilter(flow, node, interface, filter, line) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter),
+   int(line).
+
+FlowDeniedOutCrossZone(flow, node, interface, filter, line) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter),
+   int(line).
+
+FlowDeniedOutHostOut(flow, node, interface, filter, line) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter),
+   int(line).
+
+FlowDeniedOutInterfaceAcl(flow, node, interface, filter, line) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter),
+   int(line).
+
+FlowReachPostHostInFilter(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowReachPostInboundCrossZoneAcl(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowReachPostInboundFilter(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowReachPostIncomingInterfaceAcl(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowReachPostOutboundCrossZoneAcl(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowReachPostOutgoingInterfaceAcl(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
 // END CODE
    }),
    //constructors

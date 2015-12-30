@@ -94,6 +94,43 @@ SetIpAccessListLine_srcPortRange(list, line, srcPort_start, srcPort_end) ->
    int(srcPort_start),
    int(srcPort_end).
 
+SetCrossZoneFilter(node, srcZone, dstZone, filter) ->
+   Node(node),
+   Zone(srcZone),
+   Zone(dstZone),
+   IpAccessList(filter).
+
+SetDefaultCrossZoneAccept(node) ->
+   Node(node).
+
+SetDefaultInboundAccept(node) ->
+   Node(node).
+
+SetInboundInterfaceFilter(node, interface, filter) ->
+   Node(node),
+   Interface(interface),
+   IpAccessList(filter).
+
+SetInterfaceZone(node, interface, zone) ->
+   Node(node),
+   Interface(interface),
+   Zone(zone).
+
+SetZoneFromHostFilter(node, zone, filter) ->
+   Node(node),
+   Zone(zone),
+   IpAccessList(filter).
+
+SetZoneToHostFilter(node, zone, filter) ->
+   Node(node),
+   Zone(zone),
+   IpAccessList(filter).
+
+Zone(zone),
+   Zone_name(zone:name)
+->
+   string(name).
+
 // END CODE
    })
 } <-- .

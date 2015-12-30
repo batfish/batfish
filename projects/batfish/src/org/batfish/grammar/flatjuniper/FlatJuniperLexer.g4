@@ -1322,7 +1322,7 @@ INTERFACE_TRANSMIT_STATISTICS
 
 INTERFACES
 :
-   'interfaces'
+   'interfaces' -> pushMode ( M_Interface )
 ;
 
 INTERFACE_ROUTES

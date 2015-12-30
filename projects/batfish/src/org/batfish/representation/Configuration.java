@@ -26,6 +26,10 @@ public final class Configuration extends NamedStructure {
 
    private final Set<ConnectedRoute> _connectedRoutes;
 
+   private LineAction _defaultCrossZoneAction;
+
+   private LineAction _defaultInboundAction;
+
    private final Map<String, IkeGateway> _ikeGateways;
 
    private final Map<String, IkePolicy> _ikePolicies;
@@ -56,6 +60,8 @@ public final class Configuration extends NamedStructure {
 
    private ConfigurationFormat _vendor;
 
+   private final Map<String, Zone> _zones;
+
    public Configuration(String hostname) {
       super(hostname);
       _aggregateRoutes = new LinkedHashSet<GeneratedRoute>();
@@ -75,6 +81,7 @@ public final class Configuration extends NamedStructure {
       _roles = new RoleSet();
       _routeFilterLists = new HashMap<String, RouteFilterList>();
       _staticRoutes = new LinkedHashSet<StaticRoute>();
+      _zones = new TreeMap<String, Zone>();
    }
 
    public Map<String, AsPathAccessList> getAsPathAccessLists() {
@@ -95,6 +102,14 @@ public final class Configuration extends NamedStructure {
 
    public Set<ConnectedRoute> getConnectedRoutes() {
       return _connectedRoutes;
+   }
+
+   public LineAction getDefaultCrossZoneAction() {
+      return _defaultCrossZoneAction;
+   }
+
+   public LineAction getDefaultInboundAction() {
+      return _defaultInboundAction;
    }
 
    public Set<GeneratedRoute> getGeneratedRoutes() {
@@ -165,8 +180,20 @@ public final class Configuration extends NamedStructure {
       return _vendor;
    }
 
+   public Map<String, Zone> getZones() {
+      return _zones;
+   }
+
    public void setBgpProcess(BgpProcess process) {
       _bgpProcess = process;
+   }
+
+   public void setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {
+      _defaultCrossZoneAction = defaultCrossZoneAction;
+   }
+
+   public void setDefaultInboundAction(LineAction defaultInboundAction) {
+      _defaultInboundAction = defaultInboundAction;
    }
 
    public void setIsisProcess(IsisProcess process) {

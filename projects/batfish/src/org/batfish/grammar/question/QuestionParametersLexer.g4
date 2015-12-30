@@ -9,10 +9,13 @@ package org.batfish.grammar.question;
 }
 
 tokens {
+   ACCEPT,
    CLOSE_ANGLE_BRACKET,
    CLOSE_BRACE,
    COMMA,
+   DEBUG,
    DEC,
+   DROP,
    FALSE,
    IP_ADDRESS,
    IP_PREFIX,
@@ -152,33 +155,121 @@ M_QuotedString_DOUBLE_QUOTE
    '"' -> channel ( HIDDEN ) , popMode
 ;
 
+mode M_SetElement;
+
+M_SetElement_CLOSE_BRACE
+:
+   '}' -> type ( CLOSE_BRACE ) , popMode
+;
+
+M_SetElement_COMMA
+:
+   ',' -> type ( COMMA )
+;
+
+M_SetElement_DEC
+:
+   (
+      '0'
+      |
+      (
+         F_PositiveDecimalDigit F_DecimalDigit*
+      )
+   ) -> type ( DEC ) , popMode
+;
+
+M_SetElement_DOUBLE_QUOTE
+:
+   '"' -> channel ( HIDDEN ) , pushMode ( M_QuotedString )
+;
+
+M_SetElement_FALSE
+:
+   'false' -> type ( FALSE ) , popMode
+;
+
+M_SetElement_HASH
+:
+   '#' -> channel ( HIDDEN ) , pushMode ( M_Comment )
+;
+
+M_SetElement_IP_ADDRESS
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type ( IP_ADDRESS ) ,
+   popMode
+;
+
+M_SetElement_IP_PREFIX
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte '/' F_DecimalDigit+ ->
+   type ( IP_PREFIX ) , popMode
+;
+
+M_SetElement_MINUS
+:
+   '-' -> type ( MINUS ) , pushMode ( M_Negative )
+;
+
+M_SetElement_REGEX
+:
+   'regex<' ~'>'* '>' -> type ( REGEX ) , popMode
+;
+
+M_SetElement_TRUE
+:
+   'true' -> type ( TRUE ) , popMode
+;
+
+M_SetElement_STRING_LITERAL
+:
+   F_LeadingVarChar F_VarChar* -> type ( STRING_LITERAL ) , popMode
+;
+
+M_SetElement_WS
+:
+   (
+      F_WhitespaceChar
+      | F_NewlineChar
+   )+ -> channel ( HIDDEN )
+;
+
 mode M_SetType;
 
 M_SetType_CLOSE_ANGLE_BRACKET
 :
-   '>' -> type(CLOSE_ANGLE_BRACKET), popMode
+   '>' -> type ( CLOSE_ANGLE_BRACKET ) , popMode
 ;
 
 M_SetType_OPEN_ANGLE_BRACKET
 :
-   '<' -> type(OPEN_ANGLE_BRACKET)
+   '<' -> type ( OPEN_ANGLE_BRACKET )
 ;
 
 M_SetType_STRING
 :
-   'string' -> type(STRING)
+   'string' -> type ( STRING )
 ;
 
 mode M_Value;
 
+M_Value_ACCEPT
+:
+   'accept' -> type ( ACCEPT ) , popMode
+;
+
 M_Value_CLOSE_BRACE
 :
-   '}' -> type(CLOSE_BRACE)
+   '}' -> type ( CLOSE_BRACE )
 ;
 
 M_Value_COMMA
 :
-   ',' -> type(COMMA)
+   ',' -> type ( COMMA )
+;
+
+M_Value_DEBUG
+:
+   'debug' -> type ( DEBUG ) , popMode
 ;
 
 M_Value_DEC
@@ -194,7 +285,12 @@ M_Value_DEC
 
 M_Value_DOUBLE_QUOTE
 :
-   '"' -> channel ( HIDDEN ) , pushMode ( M_QuotedString )
+   '"' -> channel ( HIDDEN ) , mode ( M_QuotedString )
+;
+
+M_Value_DROP
+:
+   'drop' -> type ( DROP ) , popMode
 ;
 
 M_Value_FALSE
@@ -226,7 +322,7 @@ M_Value_MINUS
 
 M_Value_OPEN_BRACE
 :
-   '{' -> type(OPEN_BRACE)
+   '{' -> type ( OPEN_BRACE ) , mode ( M_SetElement )
 ;
 
 M_Value_REGEX
@@ -241,7 +337,7 @@ M_Value_TRUE
 
 M_Value_SET
 :
-   'set' -> type(SET), pushMode(M_SetType)
+   'set' -> type ( SET ) , pushMode ( M_SetType )
 ;
 
 M_Value_STRING_LITERAL

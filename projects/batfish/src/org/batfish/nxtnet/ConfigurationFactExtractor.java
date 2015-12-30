@@ -25,6 +25,7 @@ import org.batfish.representation.IpProtocol;
 import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.IsisLevel;
 import org.batfish.representation.IsisProcess;
+import org.batfish.representation.LineAction;
 import org.batfish.representation.OriginType;
 import org.batfish.representation.OspfArea;
 import org.batfish.representation.OspfMetricType;
@@ -58,15 +59,13 @@ import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.StaticRoute;
 import org.batfish.representation.SwitchportEncapsulationType;
+import org.batfish.representation.Zone;
 import org.batfish.util.SubRange;
 import org.batfish.util.Util;
-import org.batfish.z3.Synthesizer;
 
 public class ConfigurationFactExtractor {
 
    private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
-
-   private static final String FLOW_SINK_INTERFACE_PREFIX = "TenGigabitEthernet100/";
 
    private Set<Long> _allCommunities;
 
@@ -372,6 +371,7 @@ public class ConfigurationFactExtractor {
       writeIsis();
       writeIsisOutboundPolicyMaps();
       writeIsisGeneratedRoutes();
+      writeZoneFacts();
    }
 
    private void writeGeneratedRoutes() {
@@ -415,9 +415,6 @@ public class ConfigurationFactExtractor {
    }
 
    private void writeInterfaces() {
-      StringBuilder wSetFakeInterface = _factBins.get("SetFakeInterface");
-      StringBuilder wSetFlowSinkInterface = _factBins
-            .get("SetFlowSinkInterface");
       StringBuilder wSetOspfInterfaceCost = _factBins
             .get("SetOspfInterfaceCost");
       StringBuilder wSetInterfaceFilterIn = _factBins
@@ -429,17 +426,6 @@ public class ConfigurationFactExtractor {
       String hostname = _configuration.getHostname();
       for (Interface i : _configuration.getInterfaces().values()) {
          String interfaceName = i.getName();
-
-         // flow sinks
-         if (interfaceName.startsWith(FLOW_SINK_INTERFACE_PREFIX)) {
-            wSetFlowSinkInterface.append(hostname + "|" + interfaceName + "\n");
-         }
-
-         // fake interfaces
-         if (interfaceName.startsWith(FLOW_SINK_INTERFACE_PREFIX)
-               || interfaceName.startsWith(Synthesizer.FAKE_INTERFACE_PREFIX)) {
-            wSetFakeInterface.append(hostname + "|" + interfaceName + "\n");
-         }
 
          OspfProcess proc = _configuration.getOspfProcess();
          // TODO: support ospf running on vlan interface properly
@@ -1263,6 +1249,69 @@ public class ConfigurationFactExtractor {
          if (vlan != null) {
             wSetVlanInterface.append(hostname + "|" + ifaceName + "|" + vlan
                   + "\n");
+         }
+      }
+   }
+
+   private void writeZoneFacts() {
+      StringBuilder wSetCrossZoneFilter = _factBins.get("SetCrossZoneFilter");
+      StringBuilder wSetDefaultCrossZoneAccept = _factBins
+            .get("SetDefaultCrossZoneAccept");
+      StringBuilder wSetDefaultInboundAccept = _factBins
+            .get("SetDefaultInboundAccept");
+      StringBuilder wSetInboundInterfaceFilter = _factBins
+            .get("SetInboundInterfaceFilter");
+      StringBuilder wSetInterfaceZone = _factBins.get("SetInterfaceZone");
+      StringBuilder wSetZoneFromHostFilter = _factBins
+            .get("SetZoneFromHostFilter");
+      StringBuilder wSetZoneToHostFilter = _factBins.get("SetZoneToHostFilter");
+      String hostname = _configuration.getHostname();
+      for (Zone srcZone : _configuration.getZones().values()) {
+         String srcZoneName = hostname + ":" + srcZone.getName();
+         for (Entry<Interface, IpAccessList> e : srcZone
+               .getInboundInterfaceFilters().entrySet()) {
+            String ifaceName = e.getKey().getName();
+            IpAccessList inboundFilter = e.getValue();
+            String inboundFilterName = hostname + ":" + inboundFilter.getName();
+            wSetInboundInterfaceFilter.append(hostname + "|" + ifaceName + "|"
+                  + inboundFilterName + "\n");
+         }
+         for (Entry<String, IpAccessList> e : srcZone.getToZonePolicies()
+               .entrySet()) {
+            String dstZoneName = hostname + ":" + e.getKey();
+            IpAccessList crossZoneFilter = e.getValue();
+            String crossZoneFilterName = hostname + ":"
+                  + crossZoneFilter.getName();
+            wSetCrossZoneFilter.append(hostname + "|" + srcZoneName + "|"
+                  + dstZoneName + "|" + crossZoneFilterName + "\n");
+         }
+         IpAccessList fromHostFilter = srcZone.getFromHostFilter();
+         if (fromHostFilter != null) {
+            String fromHostFilterName = hostname + ":"
+                  + fromHostFilter.getName();
+            wSetZoneFromHostFilter.append(hostname + "|" + srcZoneName + "|"
+                  + fromHostFilterName + "\n");
+         }
+         IpAccessList toHostFilter = srcZone.getToHostFilter();
+         if (toHostFilter != null) {
+            String toHostFilterName = hostname + ":" + toHostFilter.getName();
+            wSetZoneToHostFilter.append(hostname + "|" + srcZoneName + "|"
+                  + toHostFilterName + "\n");
+         }
+      }
+      if (_configuration.getDefaultCrossZoneAction() == LineAction.ACCEPT) {
+         wSetDefaultCrossZoneAccept.append(hostname + "\n");
+      }
+      if (_configuration.getDefaultInboundAction() == LineAction.ACCEPT) {
+         wSetDefaultInboundAccept.append(hostname + "\n");
+      }
+      for (Interface iface : _configuration.getInterfaces().values()) {
+         String ifaceName = iface.getName();
+         Zone zone = iface.getZone();
+         if (zone != null) {
+            String zoneName = hostname + ":" + zone.getName();
+            wSetInterfaceZone.append(hostname + "|" + ifaceName + "|"
+                  + zoneName + "\n");
          }
       }
    }

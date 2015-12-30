@@ -17,10 +17,79 @@ public class Interface extends NamedStructure {
    private static final long serialVersionUID = 1L;
 
    private static InterfaceType computeCiscoInterfaceType(String name) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
-
+      if (name.startsWith("Async")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("ATM")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("Bundle-Ether")) {
+         return InterfaceType.AGGREGATED;
+      }
+      else if (name.startsWith("cmp-mgmt")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("Embedded-Service-Engine")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("Ethernet")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("FastEthernet")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("GigabitEthernet")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("GMPLS")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("HundredGigE")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("Group-Async")) {
+         return InterfaceType.AGGREGATED;
+      }
+      else if (name.startsWith("Loopback")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("Management")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("mgmt")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("MgmtEth")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("Null")) {
+         throw new BatfishException("Don't know what to do with this");
+      }
+      else if (name.startsWith("Port-channel")) {
+         return InterfaceType.AGGREGATED;
+      }
+      else if (name.startsWith("POS")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("Serial")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("TenGigabitEthernet")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("Tunnel")) {
+         return InterfaceType.VPN;
+      }
+      else if (name.startsWith("tunnel-te")) {
+         return InterfaceType.VPN;
+      }
+      else if (name.startsWith("Vlan")) {
+         return InterfaceType.VLAN;
+      }
+      else {
+         throw new BatfishException(
+               "Missing mapping to interface type for name: \"" + name + "\"");
+      }
    }
 
    public static InterfaceType computeInterfaceType(String name,
@@ -109,6 +178,8 @@ public class Interface extends NamedStructure {
    private SwitchportMode _switchportMode;
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
+
+   private Zone _zone;
 
    public Interface(String name, Configuration owner) {
       super(name);
@@ -229,6 +300,10 @@ public class Interface extends NamedStructure {
       return _switchportTrunkEncapsulation;
    }
 
+   public Zone getZone() {
+      return _zone;
+   }
+
    public boolean isLoopback(ConfigurationFormat vendor) {
       if (vendor == ConfigurationFormat.JUNIPER
             || vendor == ConfigurationFormat.FLAT_JUNIPER) {
@@ -322,6 +397,10 @@ public class Interface extends NamedStructure {
    public void setSwitchportTrunkEncapsulation(
          SwitchportEncapsulationType encapsulation) {
       _switchportTrunkEncapsulation = encapsulation;
+   }
+
+   public void setZone(Zone zone) {
+      _zone = zone;
    }
 
    public JSONObject toJSONObject() throws JSONException {

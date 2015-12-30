@@ -10,6 +10,7 @@ import org.batfish.representation.Prefix;
 import org.batfish.util.SubRange;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AndExpr;
+import org.batfish.z3.node.DebugExpr;
 import org.batfish.z3.node.DropExpr;
 import org.batfish.z3.node.NodeAcceptExpr;
 import org.batfish.z3.node.NodeDropExpr;
@@ -87,6 +88,11 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
                finalActions.addDisjunct(AcceptExpr.INSTANCE);
             }
             break;
+
+         case DEBUG:
+            finalActions.addDisjunct(DebugExpr.INSTANCE);
+            break;
+
          case DROP:
             if (_finalNodes.size() > 0) {
                for (String finalNode : _finalNodes) {
@@ -98,6 +104,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
                finalActions.addDisjunct(DropExpr.INSTANCE);
             }
             break;
+
          case DROP_ACL:
          case DROP_ACL_IN:
          case DROP_ACL_OUT:

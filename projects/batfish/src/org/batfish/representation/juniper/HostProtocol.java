@@ -6,6 +6,7 @@ import java.util.List;
 import org.batfish.common.BatfishException;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.LineAction;
 import org.batfish.representation.NamedPort;
 import org.batfish.representation.Prefix;
 import org.batfish.util.SubRange;
@@ -39,7 +40,7 @@ public enum HostProtocol {
       return _lines;
    }
 
-   private void init() {
+   private synchronized void init() {
       if (_initialized) {
          return;
       }
@@ -195,10 +196,16 @@ public enum HostProtocol {
          break;
       }
 
-      default:
+      default: {
          throw new BatfishException(
                "missing definition for host-inbound-traffic protocol: \""
                      + name() + "\"");
       }
+      }
+
+      for (IpAccessListLine line : _lines) {
+         line.setAction(LineAction.ACCEPT);
+      }
+
    }
 }

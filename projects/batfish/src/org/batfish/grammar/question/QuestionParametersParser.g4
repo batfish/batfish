@@ -14,11 +14,19 @@ package org.batfish.grammar.question;
    
 }
 
+action
+:
+   ACCEPT
+   | DEBUG
+   | DROP
+;
+
 binding
 :
    VARIABLE EQUALS
    (
-      bool
+      action
+      | bool
       | integer
       | REGEX
       | IP_ADDRESS

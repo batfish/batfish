@@ -6,6 +6,7 @@ import java.util.List;
 import org.batfish.common.BatfishException;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.LineAction;
 import org.batfish.representation.NamedPort;
 import org.batfish.util.SubRange;
 
@@ -48,7 +49,7 @@ public enum HostSystemService {
       return _lines;
    }
 
-   private void init() {
+   private synchronized void init() {
       if (_initialized) {
          return;
       }
@@ -317,10 +318,16 @@ public enum HostSystemService {
          break;
       }
 
-      default:
+      default: {
          throw new BatfishException(
                "missing definition for host-inbound-traffic system-service: \""
                      + name() + "\"");
       }
+      }
+
+      for (IpAccessListLine line : _lines) {
+         line.setAction(LineAction.ACCEPT);
+      }
+
    }
 }
