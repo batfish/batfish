@@ -221,7 +221,7 @@ public enum JunosApplication implements Application {
       return _baseApplication.getIpv6();
    }
 
-   private void init() {
+   private synchronized void init() {
       if (_initialized) {
          return;
       }

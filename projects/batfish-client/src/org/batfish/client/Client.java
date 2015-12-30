@@ -121,9 +121,8 @@ public class Client {
             + "\t Set the loglevel. Default is output");
       descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG + " <testrig-name>\n"
             + "\t Set the current testrig");
-      descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT 
-            + " <object-name> <object-file>\n"
-            + "\t Uploads a custom object");
+      descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT
+            + " <object-name> <object-file>\n" + "\t Uploads a custom object");
       return descs;
    }
 
@@ -529,23 +528,26 @@ public class Client {
             String diffEnvLocation = words[2];
 
             File envFilePointer = new File(diffEnvLocation);
-            
+
             String uploadFilename = diffEnvLocation;
-            
+
             if (envFilePointer.isDirectory()) {
-               uploadFilename = File.createTempFile("diffenv", "zip").getAbsolutePath();               
-               ZipUtility.zipFiles(envFilePointer.getAbsolutePath(), uploadFilename);
-            }     
+               uploadFilename = File.createTempFile("diffenv", "zip")
+                     .getAbsolutePath();
+               ZipUtility.zipFiles(envFilePointer.getAbsolutePath(),
+                     uploadFilename);
+            }
 
             // upload the environment
             boolean resultUpload = _workHelper.uploadEnvironment(
                   _currContainerName, _currTestrigName, diffEnvName,
                   uploadFilename);
 
-            //unequal means we must have created a temporary file
-            if (uploadFilename != diffEnvLocation) 
+            // unequal means we must have created a temporary file
+            if (uploadFilename != diffEnvLocation) {
                new File(uploadFilename).delete();
-            
+            }
+
             if (resultUpload) {
                _logger.output("Successfully uploaded environment.\n");
             }
@@ -570,22 +572,25 @@ public class Client {
             String testrigLocation = words[2];
 
             File testrigFilePointer = new File(testrigLocation);
-            
+
             String uploadFilename = testrigLocation;
-            
+
             if (testrigFilePointer.isDirectory()) {
-               uploadFilename = File.createTempFile("testrig", "zip").getAbsolutePath();               
-               ZipUtility.zipFiles(testrigFilePointer.getAbsolutePath(), uploadFilename);
-            }     
-                        
+               uploadFilename = File.createTempFile("testrig", "zip")
+                     .getAbsolutePath();
+               ZipUtility.zipFiles(testrigFilePointer.getAbsolutePath(),
+                     uploadFilename);
+            }
+
             // upload the testrig
             boolean resultUpload = _workHelper.uploadTestrig(
                   _currContainerName, testrigName, uploadFilename);
 
-            //unequal means we must have created a temporary file
-            if (uploadFilename != testrigLocation) 
+            // unequal means we must have created a temporary file
+            if (uploadFilename != testrigLocation) {
                new File(uploadFilename).delete();
-               
+            }
+
             if (resultUpload) {
                _logger
                      .output("Successfully uploaded testrig. Starting parsing\n");
@@ -703,11 +708,10 @@ public class Client {
 
             // upload the object
             boolean resultUpload = _workHelper.uploadCustomObject(
-                  _currContainerName, _currTestrigName, objectName,
-                  objectFile);
+                  _currContainerName, _currTestrigName, objectName, objectFile);
 
             break;
-         }         
+         }
          default:
             _logger.error("Unsupported command " + words[0] + "\n");
             _logger.error("Type 'help' to see the list of valid commands\n");

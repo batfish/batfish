@@ -126,49 +126,46 @@ function SetupToolTips() {
  	e.data('vtt', (onoff == 'on') ? vtt : '');
  }
  
- function HighlightNodes(nodes, onoff, parentColor)
- {
- 	if (defined(nodes))
-	{
-		for (var i = 0; i < nodes.length; i++) {
-			var node = nodes[i];
-			console.log(node.name);
-			HighlightElement(node.name, onoff, node.description, defined(node.color) ? nodes.color : parentColor);
-		}
+ 
+function HighlightNodes(nodes, onoff, parentColor) {
+	for (var i = 0; i < nodes.length; i++) {
+		var node = nodes[i];
+		console.log(node.name);
+		HighlightElement(node.name, onoff, node.description, defined(node.color) ? nodes.color : parentColor);
 	}
- }
- 
- function HighlightLinks(links, onoff, parentColor)
- {
-	if (defined(links)) {
-		for (var i = 0; i < links.length; i++) {
-			var link = links[i];
-			var linkId = GetLinkIds(link)[2];
-			console.log(linkId);
-			HighlightElement(linkId, onoff, link.description, defined(link.color) ? link.color : parentColor);
-		}
-	}	
- }
- 
- function HighlightPaths(paths, onoff, parentColor)
- {
-	if (defined(paths)) {
-		for (var i = 0; i < paths.length; i++) {
-			var path = paths[i];
-			HighlightLinks(path.links, onoff, defined(path.color) ? path.color : parentColor);
-		}
-	}	
- }
+}
+
+function HighlightLinks(links, onoff, parentColor) {
+	for (var i = 0; i < links.length; i++) {
+		var link = links[i];
+		var linkId = GetLinkIds(link)[2];
+		console.log(linkId);
+		HighlightElement(linkId, onoff, link.description, defined(link.color) ? link.color : parentColor);
+	}
+}
+
+function HighlightPaths(paths, onoff, parentColor) {
+	for (var i = 0; i < paths.length; i++) {
+		var path = paths[i];
+		HighlightLinks(path.links, onoff, defined(path.color) ? path.color : parentColor);
+	}
+}
  
  function HighlightView(viewId, onoff)
  {
 	if (viewId != "") {
 		var parentColor = view.color;
-		HighlightNodes(view.views[viewId].nodes, onoff, parentColor);
-		HighlightLinks(view.views[viewId].links, onoff, parentColor);
-		HighlightPaths(view.views[viewId].paths, onoff, parentColor);
+		var thisView = view.views[viewId];
+		if (defined(thisView))
+		{
+			if (defined(thisView.nodes)) 
+				HighlightNodes(view.views[viewId].nodes, onoff, parentColor);
+			if (defined(thisView.links))
+				HighlightLinks(view.views[viewId].links, onoff, parentColor);
+			if (defined(thisView.paths))
+				HighlightPaths(view.views[viewId].paths, onoff, parentColor);
+		}
 	}
-
  }
  
 function SetupHighlightsMenu(data)

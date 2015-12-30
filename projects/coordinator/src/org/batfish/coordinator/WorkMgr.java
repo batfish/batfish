@@ -282,10 +282,12 @@ public class WorkMgr {
       }
 
       _workQueueMgr.processStatusCheckResult(work, status);
-      
-      //if the task ended, send a hint to the pool manager to look up worker status
-      if (status == TaskStatus.TerminatedAbnormally || status == TaskStatus.TerminatedNormally) {
-         Main.getPoolMgr().refreshWorkerStatus(worker);        
+
+      // if the task ended, send a hint to the pool manager to look up worker
+      // status
+      if (status == TaskStatus.TerminatedAbnormally
+            || status == TaskStatus.TerminatedNormally) {
+         Main.getPoolMgr().refreshWorkerStatus(worker);
       }
    }
 
@@ -402,12 +404,12 @@ public class WorkMgr {
             zipfile.delete();
          }
 
-         //AppZip appZip = new AppZip();
-         //appZip.zip();
+         // AppZip appZip = new AppZip();
+         // appZip.zip();
          ZipUtility.zipFiles(file.getAbsolutePath(), zipfile.getAbsolutePath());
 
-         //TODO: delete the zipfile
-         
+         // TODO: delete the zipfile
+
          return zipfile;
       }
 
@@ -606,8 +608,7 @@ public class WorkMgr {
    }
 
    public void uploadCustomObject(String containerName, String testrigName,
-         String objectName, InputStream fileStream)
-         throws Exception {
+         String objectName, InputStream fileStream) throws Exception {
 
       File containerDir = Paths.get(
             Main.getSettings().getTestrigStorageLocation(), containerName)
@@ -626,12 +627,13 @@ public class WorkMgr {
          throw new FileNotFoundException("testrig " + testrigName
                + " does not exist");
       }
-      
+
       File file = Paths.get(Main.getSettings().getTestrigStorageLocation(),
-            containerName, testrigName, BfConsts.RELPATH_CUSTOM_OBJECTS, objectName).toFile();
+            containerName, testrigName, BfConsts.RELPATH_CUSTOM_OBJECTS,
+            objectName).toFile();
 
       File parentFolder = file.getParentFile();
-      
+
       if (!parentFolder.mkdirs()) {
          throw new Exception("failed to create directory "
                + parentFolder.getAbsolutePath());
@@ -827,7 +829,8 @@ public class WorkMgr {
       if (fileList.length != 1 || !fileList[0].isDirectory()) {
          FileUtils.deleteDirectory(testrigDir);
          throw new Exception(
-               "Unexpected packaging of test rig. There should be just one top-level folder. Got " + fileList.length);
+               "Unexpected packaging of test rig. There should be just one top-level folder. Got "
+                     + fileList.length);
       }
 
       File[] subFileList = fileList[0].listFiles();
