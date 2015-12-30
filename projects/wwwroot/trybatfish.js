@@ -173,18 +173,8 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
 
 // this is a test function whose contents change based on what we want to test
 function testMe() {
-<<<<<<< HEAD
-	SetupCy();
-	cy.ready(function() {
-		PlotJsonTopology(defaultTopologyURL);
-		cy.center();
-		
-	});  
-
-=======
     containerName = "js_41aceec6-018e-4434-bd97-e1c9430333a6";
     startCalls("testme", "drawtopology::drawanswer");
->>>>>>> 8e2c8bfd5b00cd01e0b993cfe6c28b0472a04db1
 }
 
 
