@@ -21,11 +21,14 @@ public final class GetMapMapMapExpr extends MapMapExpr {
    @Override
    public QMap evaluate(Environment environment) {
       String key = _key.print(environment);
+      if (key == null) {
+         throw new BatfishException("Cannot add map with null key");
+      }
       QMap caller = _caller.evaluate(environment);
       Map<String, QMap> maps = caller.getMaps();
       QMap map = maps.get(key);
       if (map == null) {
-         map = new QMap(key);
+         map = new QMap();
          caller.getTypeBindings().put(key, VariableType.MAP);
          maps.put(key, map);
       }

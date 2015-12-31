@@ -103,6 +103,7 @@ import org.batfish.question.ipsec_vpn_expr.IpsecVpnExpr;
 import org.batfish.question.ipsec_vpn_expr.ipsec_vpn.RemoteIpsecVpnIpsecVpnExpr;
 import org.batfish.question.map_expr.BaseCaseMapExpr;
 import org.batfish.question.map_expr.MapExpr;
+import org.batfish.question.map_expr.NewMapExpr;
 import org.batfish.question.map_expr.VarMapExpr;
 import org.batfish.question.map_expr.map.GetMapMapMapExpr;
 import org.batfish.question.node_expr.BaseCaseNodeExpr;
@@ -119,6 +120,8 @@ import org.batfish.question.prefix_expr.PrefixExpr;
 import org.batfish.question.prefix_expr.iface.PrefixInterfacePrefixExpr;
 import org.batfish.question.prefix_expr.iface.SubnetInterfacePrefixExpr;
 import org.batfish.question.prefix_expr.static_route.PrefixStaticRoutePrefixExpr;
+import org.batfish.question.prefix_set_expr.PrefixSetExpr;
+import org.batfish.question.prefix_set_expr.iface.AllPrefixesInterfacePrefixSetExpr;
 import org.batfish.question.prefix_space_expr.PrefixSpaceExpr;
 import org.batfish.question.prefix_space_expr.VarPrefixSpaceExpr;
 import org.batfish.question.prefix_space_expr.node.BgpOriginationSpaceExplicitNodePrefixSpaceExpr;
@@ -185,6 +188,8 @@ import org.batfish.question.string_expr.node.NameNodeStringExpr;
 import org.batfish.question.string_expr.protocol.ProtocolStringExpr;
 import org.batfish.question.string_expr.route_filter.RouteFilterStringExpr;
 import org.batfish.question.string_expr.static_route.StaticRouteStringExpr;
+import org.batfish.question.string_set_expr.StringSetExpr;
+import org.batfish.question.string_set_expr.map.KeysMapStringSetExpr;
 import org.batfish.representation.Flow;
 import org.batfish.representation.FlowBuilder;
 import org.batfish.representation.Ip;
@@ -220,6 +225,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private static final String ERR_CONVERT_PREFIX = "Cannot convert parse tree node to prefix expression";
 
+   private static final String ERR_CONVERT_PREFIX_SET = "Cannot convert parse tree node to prefix-set expression";
+
    private static final String ERR_CONVERT_PREFIX_SPACE = "Cannot convert parse tree node to prefix_space expression";
 
    private static final String ERR_CONVERT_PRINTABLE = "Cannot convert parse tree node to printable expression";
@@ -232,7 +239,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private static final String ERR_CONVERT_STATIC_ROUTE = "Cannot convert parse tree node to static_route expression";
 
-   private static final String ERR_CONVERT_STRING = "Cannot convert parse tree node to string expression";
+   private static final String ERR_CONVERT_STRING = "Cannot convert parse tree node to string expression";;
+
+   private static final String ERR_CONVERT_STRING_SET = "Cannot convert parse tree node to string-set expression";;
 
    private FlowBuilder _currentFlowBuilder;
 
@@ -1069,6 +1078,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.route_filter_line_expr() != null) {
          return toRouteFilterLineExpr(ctx.route_filter_line_expr());
       }
+      else if (ctx.set_prefix_expr() != null) {
+         return toPrefixSetExpr(ctx.set_prefix_expr());
+      }
+      else if (ctx.set_string_expr() != null) {
+         return toStringSetExpr(ctx.set_string_expr());
+      }
       else if (ctx.static_route_expr() != null) {
          return toStaticRouteExpr(ctx.static_route_expr());
       }
@@ -1282,6 +1297,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       if (ctx.QUERY() != null) {
          return BaseCaseMapExpr.QUERY;
       }
+      else if (ctx.new_map_expr() != null) {
+         return new NewMapExpr();
+      }
       else if (ctx.caller != null) {
          MapExpr caller = toMapExpr(ctx.caller);
          if (ctx.map_map_expr() != null) {
@@ -1480,6 +1498,25 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else {
          throw new BatfishException("invalid ip constraint: " + ctx.getText());
+      }
+   }
+
+   private PrefixSetExpr toPrefixSetExpr(Interface_set_prefix_exprContext ctx) {
+      InterfaceExpr caller = toInterfaceExpr(ctx.caller);
+      if (ctx.interface_all_prefixes_set_prefix_expr() != null) {
+         return new AllPrefixesInterfacePrefixSetExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_PREFIX_SET, ctx);
+      }
+   }
+
+   private PrefixSetExpr toPrefixSetExpr(Set_prefix_exprContext ctx) {
+      if (ctx.interface_set_prefix_expr() != null) {
+         return toPrefixSetExpr(ctx.interface_set_prefix_expr());
+      }
+      else {
+         throw conversionError(ERR_CONVERT_PREFIX_SET, ctx);
       }
    }
 
@@ -1683,6 +1720,14 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          RouteFilterLineExpr expr = toRouteFilterLineExpr(ctx
                .route_filter_line_expr());
          return new Assignment(variable, expr, VariableType.ROUTE_FILTER_LINE);
+      }
+      else if (ctx.set_prefix_expr() != null) {
+         PrefixSetExpr expr = toPrefixSetExpr(ctx.set_prefix_expr());
+         return new Assignment(variable, expr, VariableType.SET_PREFIX);
+      }
+      else if (ctx.set_string_expr() != null) {
+         StringSetExpr expr = toStringSetExpr(ctx.set_string_expr());
+         return new Assignment(variable, expr, VariableType.SET_STRING);
       }
       else if (ctx.static_route_expr() != null) {
          StaticRouteExpr expr = toStaticRouteExpr(ctx.static_route_expr());
@@ -2159,6 +2204,25 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private StringExpr toStringExpr(Var_string_exprContext ctx) {
       String var = ctx.VARIABLE().getText();
       return new VarStringExpr(var);
+   }
+
+   private StringSetExpr toStringSetExpr(Map_set_string_exprContext ctx) {
+      MapExpr caller = toMapExpr(ctx.caller);
+      if (ctx.map_keys_set_string_expr() != null) {
+         return new KeysMapStringSetExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_STRING_SET, ctx);
+      }
+   }
+
+   private StringSetExpr toStringSetExpr(Set_string_exprContext ctx) {
+      if (ctx.map_set_string_expr() != null) {
+         return toStringSetExpr(ctx.map_set_string_expr());
+      }
+      else {
+         throw conversionError(ERR_CONVERT_STRING_SET, ctx);
+      }
    }
 
    private SubRange toSubRange(SubrangeContext ctx) {

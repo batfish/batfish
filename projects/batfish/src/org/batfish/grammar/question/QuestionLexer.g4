@@ -41,6 +41,11 @@ ADD
    'add'
 ;
 
+ALL_PREFIXES
+:
+   'all_prefixes'
+;
+
 ADMINISTRATIVE_COST
 :
    'administrative_cost'
@@ -291,6 +296,11 @@ IS_LOOPBACK
    'is_loopback'
 ;
 
+KEYS
+:
+   'keys'
+;
+
 L1_ACTIVE
 :
    'l1_active'
@@ -359,6 +369,11 @@ NEXT_HOP_INTERFACE
 NEXT_HOP_IP
 :
    'next_hop_ip'
+;
+
+NEW_MAP
+:
+   'new_map'
 ;
 
 NODE
