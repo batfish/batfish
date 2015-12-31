@@ -41,6 +41,11 @@ ADD
    'add'
 ;
 
+ALL_PREFIXES
+:
+   'all_prefixes'
+;
+
 ADMINISTRATIVE_COST
 :
    'administrative_cost'
@@ -159,6 +164,16 @@ FOREACH
 GENERATED_ROUTE
 :
    'generated_route'
+;
+
+GET
+:
+   'get'
+;
+
+GET_MAP
+:
+   'get_map'
 ;
 
 GLOBAL
@@ -281,6 +296,11 @@ IS_LOOPBACK
    'is_loopback'
 ;
 
+KEYS
+:
+   'keys'
+;
+
 L1_ACTIVE
 :
    'l1_active'
@@ -349,6 +369,11 @@ NEXT_HOP_INTERFACE
 NEXT_HOP_IP
 :
    'next_hop_ip'
+;
+
+NEW_MAP
+:
+   'new_map'
 ;
 
 NODE
@@ -434,6 +459,11 @@ PROTOCOL
 PROTOCOL_DEPENDENCIES
 :
    'protocol-dependencies'
+;
+
+QUERY
+:
+   'query'
 ;
 
 REACHABILITY
@@ -692,6 +722,11 @@ VARIABLE
    '$' F_VarChar+
 ;
 
+VIEW
+:
+   'view'
+;
+
 WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
@@ -823,6 +858,11 @@ M_Set_IPSEC_VPN
 M_Set_NODE
 :
    'node' -> type ( NODE )
+;
+
+M_Set_OPEN_PAREN
+:
+   '(' -> type(OPEN_PAREN), popMode
 ;
 
 M_Set_POLICY_MAP

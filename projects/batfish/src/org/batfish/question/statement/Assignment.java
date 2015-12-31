@@ -1,11 +1,14 @@
 package org.batfish.question.statement;
 
+import java.util.Set;
+
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.grammar.question.VariableType;
 import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;
+import org.batfish.question.QMap;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
@@ -34,6 +37,7 @@ public class Assignment implements Statement {
       _type = type;
    }
 
+   @SuppressWarnings("unchecked")
    @Override
    public void execute(Environment environment, BatfishLogger logger,
          Settings settings) {
@@ -69,6 +73,10 @@ public class Assignment implements Statement {
          environment.getIpsecVpns().put(_variable, (IpsecVpn) value);
          break;
 
+      case MAP:
+         environment.getMaps().put(_variable, (QMap) value);
+         break;
+
       case NODE:
          environment.getNodes().put(_variable, (Configuration) value);
          break;
@@ -99,11 +107,20 @@ public class Assignment implements Statement {
                (RouteFilterLine) value);
          break;
 
+      case SET_PREFIX:
+         environment.getPrefixSets().put(_variable, (Set<Prefix>) value);
+         break;
+
+      case SET_STRING:
+         environment.getStringSets().put(_variable, (Set<String>) value);
+         break;
+
       case STATIC_ROUTE:
          environment.getStaticRoutes().put(_variable, (StaticRoute) value);
          break;
 
       case STRING:
+         environment.getStrings().put(_variable, (String) value);
          break;
 
       case ACTION:
@@ -117,12 +134,10 @@ public class Assignment implements Statement {
       case SET_NODE:
       case SET_POLICY_MAP:
       case SET_POLICY_MAP_CLAUSE:
-      case SET_PREFIX:
       case SET_PREFIX_SPACE:
       case SET_ROUTE_FILTER:
       case SET_ROUTE_FILTER_LINE:
       case SET_STATIC_ROUTE:
-      case SET_STRING:
       default:
          throw new BatfishException("Unsupported variable type: " + _type);
 

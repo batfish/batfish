@@ -14,6 +14,7 @@ public enum VariableType {
    INTERFACE("interface"),
    IP("ip"),
    IPSEC_VPN("ipsec_vpn"),
+   MAP("map"),
    NODE("node"),
    POLICY_MAP("policy_map"),
    POLICY_MAP_CLAUSE("policy_map_clause"),

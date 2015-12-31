@@ -137,6 +137,9 @@ assignment
       | ipsec_vpn_expr
       {createOrVerifyTypeBinding($var.getText(), VariableType.IPSEC_VPN);}
 
+      | map_expr
+      {createOrVerifyTypeBinding($var.getText(), VariableType.MAP);}
+
       | node_expr
       {createOrVerifyTypeBinding($var.getText(), VariableType.NODE);}
 
@@ -157,6 +160,12 @@ assignment
 
       | route_filter_line_expr
       {createOrVerifyTypeBinding($var.getText(), VariableType.ROUTE_FILTER_LINE);}
+
+      | set_prefix_expr
+      {createOrVerifyTypeBinding($var.getText(), VariableType.SET_PREFIX);}
+
+      | set_string_expr
+      {createOrVerifyTypeBinding($var.getText(), VariableType.SET_STRING);}
 
       | static_route_expr
       {createOrVerifyTypeBinding($var.getText(), VariableType.STATIC_ROUTE);}
@@ -399,6 +408,10 @@ expr returns [VariableType varType]
    {$varType = VariableType.IPSEC_VPN;}
 
    |
+   {vp(VariableType.MAP)}?
+
+   map_expr
+   |
    {vp(VariableType.NODE)}?
 
    node_expr
@@ -440,6 +453,17 @@ expr returns [VariableType varType]
    route_filter_line_expr
    {$varType = VariableType.ROUTE_FILTER_LINE;}
 
+   |
+   {vp(VariableType.SET_PREFIX)}?
+
+   set_prefix_expr
+   {$varType = VariableType.SET_PREFIX;}
+
+   |
+   {vp(VariableType.SET_STRING)}?
+
+   set_string_expr
+   {$varType = VariableType.SET_STRING;}
    |
    {vp(VariableType.STATIC_ROUTE)}?
 
@@ -734,6 +758,11 @@ integer_literal
    MINUS? DEC
 ;
 
+interface_all_prefixes_set_prefix_expr
+:
+   ALL_PREFIXES
+;
+
 interface_boolean_expr
 :
    caller = interface_expr PERIOD
@@ -848,6 +877,11 @@ interface_prefix_expr
 interface_prefix_prefix_expr
 :
    PREFIX
+;
+
+interface_set_prefix_expr
+:
+   caller=interface_expr PERIOD (interface_all_prefixes_set_prefix_expr)
 ;
 
 interface_string_expr
@@ -1038,6 +1072,58 @@ lt_expr
    )
 ;
 
+map_expr
+:
+   QUERY
+   | new_map_expr
+   | caller=map_expr PERIOD map_map_expr
+   |
+   {v(VariableType.MAP)}?
+
+   var_map_expr
+;
+
+map_get_map_map_expr
+:
+   GET_MAP OPEN_PAREN key = printable_expr CLOSE_PAREN
+;
+
+map_get_string_expr
+:
+   GET OPEN_PAREN key = printable_expr CLOSE_PAREN
+;
+
+map_keys_set_string_expr
+:
+   KEYS
+;
+
+map_map_expr
+:
+   (
+      map_get_map_map_expr
+   )
+;
+
+map_set_method
+:
+   caller=map_expr PERIOD SET OPEN_PAREN key = printable_expr COMMA value =
+   printable_expr CLOSE_PAREN SEMICOLON
+;
+
+map_set_string_expr
+:
+   caller=map_expr PERIOD (map_keys_set_string_expr)
+;
+
+map_string_expr
+:
+   caller=map_expr PERIOD
+   (
+      map_get_string_expr
+   )
+;
+
 method [String scope]
 :
    caller = VARIABLE PERIOD typed_method [scope, $caller.getText()] SEMICOLON
@@ -1057,6 +1143,11 @@ locals [VariableType varType]
    NOT_EQUALS rhs = expr
    {$varType == $rhs.varType}?
 
+;
+
+new_map_expr
+:
+   NEW_MAP
 ;
 
 node_bgp_boolean_expr
@@ -1591,6 +1682,11 @@ locals [String typeStr, VariableType type, VariableType oldType]
    SEMICOLON
 ;
 
+set_prefix_expr
+:
+   interface_set_prefix_expr
+;
+
 set_size_int_expr
 locals [VariableType type]
 :
@@ -1598,6 +1694,11 @@ locals [VariableType type]
    {$type = _typeBindings.get($caller.getText());}
 
    PERIOD SIZE
+;
+
+set_string_expr
+:
+   map_set_string_expr
 ;
 
 statement [String scope]
@@ -1608,6 +1709,7 @@ statement [String scope]
    | foreach_scoped_statement [scope]
    | if_statement [scope]
    | increment_statement
+   | map_set_method
    | method [scope]
    | printf_statement
    | set_declaration_statement
@@ -1687,11 +1789,13 @@ string_expr
    bgp_neighbor_string_expr
    | interface_string_expr
    | ipsec_vpn_string_expr
+   | map_string_expr
    | node_string_expr
    | protocol_string_expr
    | route_filter_string_expr
    | static_route_string_expr
    | string_literal_string_expr
+   | s1=string_expr PLUS s2=string_expr
    |
    {v(VariableType.STRING)}?
 
@@ -1776,6 +1880,16 @@ var_interface_expr
 ;
 
 var_ip_expr
+:
+   VARIABLE
+;
+
+var_list_expr
+:
+   VARIABLE
+;
+
+var_map_expr
 :
    VARIABLE
 ;
