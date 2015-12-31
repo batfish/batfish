@@ -137,6 +137,9 @@ assignment
       | ipsec_vpn_expr
       {createOrVerifyTypeBinding($var.getText(), VariableType.IPSEC_VPN);}
 
+      | map_expr
+      {createOrVerifyTypeBinding($var.getText(), VariableType.MAP);}
+
       | node_expr
       {createOrVerifyTypeBinding($var.getText(), VariableType.NODE);}
 
@@ -398,6 +401,10 @@ expr returns [VariableType varType]
    ipsec_vpn_expr
    {$varType = VariableType.IPSEC_VPN;}
 
+   |
+   {vp(VariableType.MAP)}?
+
+   map_expr
    |
    {vp(VariableType.NODE)}?
 
@@ -1038,6 +1045,47 @@ lt_expr
    )
 ;
 
+map_expr
+:
+   QUERY
+   | caller=map_expr PERIOD map_map_expr
+   |
+   {v(VariableType.MAP)}?
+
+   var_map_expr
+;
+
+map_get_map_map_expr
+:
+   GET_MAP OPEN_PAREN key = printable_expr CLOSE_PAREN
+;
+
+map_get_string_expr
+:
+   GET OPEN_PAREN key = printable_expr CLOSE_PAREN
+;
+
+map_map_expr
+:
+   (
+      map_get_map_map_expr
+   )
+;
+
+map_set_method
+:
+   caller=map_expr PERIOD SET OPEN_PAREN key = printable_expr COMMA value =
+   printable_expr CLOSE_PAREN SEMICOLON
+;
+
+map_string_expr
+:
+   caller=map_expr PERIOD
+   (
+      map_get_string_expr
+   )
+;
+
 method [String scope]
 :
    caller = VARIABLE PERIOD typed_method [scope, $caller.getText()] SEMICOLON
@@ -1608,6 +1656,7 @@ statement [String scope]
    | foreach_scoped_statement [scope]
    | if_statement [scope]
    | increment_statement
+   | map_set_method
    | method [scope]
    | printf_statement
    | set_declaration_statement
@@ -1687,11 +1736,13 @@ string_expr
    bgp_neighbor_string_expr
    | interface_string_expr
    | ipsec_vpn_string_expr
+   | map_string_expr
    | node_string_expr
    | protocol_string_expr
    | route_filter_string_expr
    | static_route_string_expr
    | string_literal_string_expr
+   | s1=string_expr PLUS s2=string_expr
    |
    {v(VariableType.STRING)}?
 
@@ -1776,6 +1827,16 @@ var_interface_expr
 ;
 
 var_ip_expr
+:
+   VARIABLE
+;
+
+var_list_expr
+:
+   VARIABLE
+;
+
+var_map_expr
 :
    VARIABLE
 ;

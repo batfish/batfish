@@ -16,6 +16,7 @@ public class BfConsts {
    // if you change the value of these constants,
    // ensure that the clients (including the javascript client) are up to date
    //
+   public static final String ARG_ANSWER_JSON_PATH = "answerjsonpath";
    public static final String ARG_BLOCK_NAMES = "blocknames";
    public static final String ARG_DIFF_ACTIVE = "diffactive";
    public static final String ARG_DIFF_ENVIRONMENT_NAME = "diffenv";

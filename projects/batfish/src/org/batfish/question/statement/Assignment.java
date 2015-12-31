@@ -6,6 +6,7 @@ import org.batfish.grammar.question.VariableType;
 import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;
+import org.batfish.question.QMap;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
@@ -67,6 +68,10 @@ public class Assignment implements Statement {
 
       case IPSEC_VPN:
          environment.getIpsecVpns().put(_variable, (IpsecVpn) value);
+         break;
+
+      case MAP:
+         environment.getMaps().put(_variable, (QMap) value);
          break;
 
       case NODE:

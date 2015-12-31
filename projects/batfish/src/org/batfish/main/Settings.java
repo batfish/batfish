@@ -276,6 +276,8 @@ public final class Settings extends BaseSettings {
 
    private boolean _answer;
 
+   private String _answerJsonPath;
+
    private String _autoBaseDir;
 
    private EnvironmentSettings _baseEnvironmentSettings;
@@ -490,6 +492,10 @@ public final class Settings extends BaseSettings {
 
    public boolean getAnswer() {
       return _answer;
+   }
+
+   public String getAnswerJsonPath() {
+      return _answerJsonPath;
    }
 
    public String getAutoBaseDir() {
@@ -846,6 +852,7 @@ public final class Settings extends BaseSettings {
 
    private void initConfigDefaults() {
       setDefaultProperty(ARG_ANONYMIZE, false);
+      setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
       setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[] {});
       setDefaultProperty(ARG_BUILD_PREDICATE_INFO, null);
       setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
@@ -930,6 +937,9 @@ public final class Settings extends BaseSettings {
 
       addBooleanOption(ARG_ANONYMIZE,
             "created anonymized versions of configs in test rig");
+
+      addOption(BfConsts.ARG_ANSWER_JSON_PATH,
+            "save query json output to specified file", ARGNAME_PATH);
 
       addOption(ARG_AUTO_BASE_DIR,
             "path to base dir for automatic i/o path selection", ARGNAME_PATH);
@@ -1194,6 +1204,7 @@ public final class Settings extends BaseSettings {
       // REGULAR OPTIONS
       _anonymize = getBooleanOptionValue(ARG_ANONYMIZE);
       _answer = getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
+      _answerJsonPath = getStringOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
       _autoBaseDir = getStringOptionValue(ARG_AUTO_BASE_DIR);
       _blockNames = getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);
       _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);

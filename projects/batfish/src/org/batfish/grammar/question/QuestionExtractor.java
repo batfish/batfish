@@ -101,6 +101,10 @@ import org.batfish.question.ip_expr.static_route.NextHopIpStaticRouteIpExpr;
 import org.batfish.question.ipsec_vpn_expr.BaseCaseIpsecVpnExpr;
 import org.batfish.question.ipsec_vpn_expr.IpsecVpnExpr;
 import org.batfish.question.ipsec_vpn_expr.ipsec_vpn.RemoteIpsecVpnIpsecVpnExpr;
+import org.batfish.question.map_expr.BaseCaseMapExpr;
+import org.batfish.question.map_expr.MapExpr;
+import org.batfish.question.map_expr.VarMapExpr;
+import org.batfish.question.map_expr.map.GetMapMapMapExpr;
 import org.batfish.question.node_expr.BaseCaseNodeExpr;
 import org.batfish.question.node_expr.NodeExpr;
 import org.batfish.question.node_expr.VarNodeExpr;
@@ -132,6 +136,7 @@ import org.batfish.question.statement.ForEachInterfaceStatement;
 import org.batfish.question.statement.ForEachIpStatement;
 import org.batfish.question.statement.ForEachIpsecVpnStatement;
 import org.batfish.question.statement.ForEachLineStatement;
+import org.batfish.question.statement.ForEachMapStatement;
 import org.batfish.question.statement.ForEachMatchProtocolStatement;
 import org.batfish.question.statement.ForEachMatchRouteFilterStatement;
 import org.batfish.question.statement.ForEachNodeBgpGeneratedRouteStatement;
@@ -152,6 +157,7 @@ import org.batfish.question.statement.ForEachStringStatement;
 import org.batfish.question.statement.IfStatement;
 import org.batfish.question.statement.Assignment;
 import org.batfish.question.statement.IncrementStatement;
+import org.batfish.question.statement.MapSetMethod;
 import org.batfish.question.statement.PrintfStatement;
 import org.batfish.question.statement.SetAddStatement;
 import org.batfish.question.statement.SetClearStatement;
@@ -161,6 +167,7 @@ import org.batfish.question.statement.UnlessStatement;
 import org.batfish.question.static_route_expr.BaseCaseStaticRouteExpr;
 import org.batfish.question.static_route_expr.StaticRouteExpr;
 import org.batfish.question.static_route_expr.VarStaticRouteExpr;
+import org.batfish.question.string_expr.StringConcatenateExpr;
 import org.batfish.question.string_expr.StringExpr;
 import org.batfish.question.string_expr.StringLiteralStringExpr;
 import org.batfish.question.string_expr.VarStringExpr;
@@ -173,6 +180,7 @@ import org.batfish.question.string_expr.ipsec_vpn.IkePolicyNameIpsecVpnStringExp
 import org.batfish.question.string_expr.ipsec_vpn.IpsecPolicyNameIpsecVpnStringExpr;
 import org.batfish.question.string_expr.ipsec_vpn.NameIpsecVpnStringExpr;
 import org.batfish.question.string_expr.ipsec_vpn.PreSharedKeyHashIpsecVpnStringExpr;
+import org.batfish.question.string_expr.map.GetMapStringExpr;
 import org.batfish.question.string_expr.node.NameNodeStringExpr;
 import org.batfish.question.string_expr.protocol.ProtocolStringExpr;
 import org.batfish.question.string_expr.route_filter.RouteFilterStringExpr;
@@ -202,6 +210,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private static final String ERR_CONVERT_IPSEC_VPN = "Cannot convert parse tree node to ipsec_vpn expression";
 
+   private static final String ERR_CONVERT_MAP_EXPR = "Cannot convert parse tree node to map expression";
+
    private static final String ERR_CONVERT_NODE = "Cannot convert parse tree node to node expression";
 
    private static final String ERR_CONVERT_POLICY_MAP = "Cannot convert parse tree node to policy map expression";
@@ -222,7 +232,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private static final String ERR_CONVERT_STATIC_ROUTE = "Cannot convert parse tree node to static_route expression";
 
-   private static final String ERR_CONVERT_STRING = "Cannot convert parse tree node to string expression";;
+   private static final String ERR_CONVERT_STRING = "Cannot convert parse tree node to string expression";
 
    private FlowBuilder _currentFlowBuilder;
 
@@ -1268,6 +1278,42 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
+   private MapExpr toMapExpr(Map_exprContext ctx) {
+      if (ctx.QUERY() != null) {
+         return BaseCaseMapExpr.QUERY;
+      }
+      else if (ctx.caller != null) {
+         MapExpr caller = toMapExpr(ctx.caller);
+         if (ctx.map_map_expr() != null) {
+            return toMapExpr(caller, ctx.map_map_expr());
+         }
+         else {
+            throw conversionError(ERR_CONVERT_MAP_EXPR, ctx);
+         }
+      }
+      else if (ctx.var_map_expr() != null) {
+         String var = ctx.var_map_expr().VARIABLE().getText();
+         return new VarMapExpr(var);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_MAP_EXPR, ctx);
+      }
+   }
+
+   private MapExpr toMapExpr(MapExpr caller, Map_get_map_map_exprContext ctx) {
+      Expr key = toExpr(ctx.key);
+      return new GetMapMapMapExpr(caller, key);
+   }
+
+   private MapExpr toMapExpr(MapExpr caller, Map_map_exprContext ctx) {
+      if (ctx.map_get_map_map_expr() != null) {
+         return toMapExpr(caller, ctx.map_get_map_map_expr());
+      }
+      else {
+         throw conversionError(ERR_CONVERT_MAP_EXPR, ctx);
+      }
+   }
+
    private NodeExpr toNodeExpr(Bgp_neighbor_node_exprContext ctx) {
       BgpNeighborExpr caller = toBgpNeighborExpr(ctx.caller);
       if (ctx.bgp_neighbor_owner_node_expr() != null) {
@@ -1604,6 +1650,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          IpsecVpnExpr expr = toIpsecVpnExpr(ctx.ipsec_vpn_expr());
          return new Assignment(variable, expr, VariableType.IPSEC_VPN);
       }
+      else if (ctx.map_expr() != null) {
+         MapExpr expr = toMapExpr(ctx.map_expr());
+         return new Assignment(variable, expr, VariableType.MAP);
+      }
       else if (ctx.node_expr() != null) {
          NodeExpr expr = toNodeExpr(ctx.node_expr());
          return new Assignment(variable, expr, VariableType.NODE);
@@ -1671,6 +1721,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
       case IPSEC_VPN:
          return new ForEachIpsecVpnStatement(statements, var, setVar);
+
+      case MAP:
+         return new ForEachMapStatement(statements, var, setVar);
 
       case NODE:
          return new ForEachNodeStatement(statements, var, setVar);
@@ -1796,6 +1849,13 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return new IncrementStatement(var);
    }
 
+   private Statement toStatement(Map_set_methodContext ctx) {
+      MapExpr caller = toMapExpr(ctx.caller);
+      Expr key = toExpr(ctx.key);
+      Expr value = toExpr(ctx.value);
+      return new MapSetMethod(caller, key, value);
+   }
+
    private Statement toStatement(MethodContext ctx) {
       if (ctx.typed_method() != null) {
          return toStatement(ctx.typed_method());
@@ -1890,6 +1950,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else if (ctx.if_statement() != null) {
          return toStatement(ctx.if_statement());
+      }
+      else if (ctx.map_set_method() != null) {
+         return toStatement(ctx.map_set_method());
       }
       else if (ctx.method() != null) {
          return toStatement(ctx.method());
@@ -1993,6 +2056,22 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
+   private StringExpr toStringExpr(Map_string_exprContext ctx) {
+      MapExpr caller = toMapExpr(ctx.caller);
+      if (ctx.map_get_string_expr() != null) {
+         return toStringExpr(caller, ctx.map_get_string_expr());
+      }
+      else {
+         throw conversionError(ERR_CONVERT_STRING, ctx);
+      }
+   }
+
+   private StringExpr toStringExpr(MapExpr caller,
+         Map_get_string_exprContext ctx) {
+      Expr key = toExpr(ctx.key);
+      return new GetMapStringExpr(caller, key);
+   }
+
    private StringExpr toStringExpr(Node_string_exprContext ctx) {
       NodeExpr caller = toNodeExpr(ctx.node_expr());
       if (ctx.node_name_string_expr() != null) {
@@ -2040,6 +2119,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.ipsec_vpn_string_expr() != null) {
          return toStringExpr(ctx.ipsec_vpn_string_expr());
       }
+      else if (ctx.map_string_expr() != null) {
+         return toStringExpr(ctx.map_string_expr());
+      }
       else if (ctx.node_string_expr() != null) {
          return toStringExpr(ctx.node_string_expr());
       }
@@ -2057,6 +2139,11 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else if (ctx.var_string_expr() != null) {
          return toStringExpr(ctx.var_string_expr());
+      }
+      else if (ctx.PLUS() != null) {
+         StringExpr s1 = toStringExpr(ctx.s1);
+         StringExpr s2 = toStringExpr(ctx.s2);
+         return new StringConcatenateExpr(s1, s2);
       }
       else {
          throw conversionError(ERR_CONVERT_STRING, ctx);
