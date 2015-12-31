@@ -1,11 +1,16 @@
 package org.batfish.representation;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.batfish.common.BatfishException;
 import org.batfish.util.Util;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 public class FlowHistory {
 
@@ -27,6 +32,99 @@ public class FlowHistory {
          envTraceSetMap.put(environment, traces);
       }
       traces.add(trace);
+   }
+
+   public String toJsonString(String queryName,
+         Map<String, Configuration> baseConfigurations, String baseEnvName,
+         Map<String, Configuration> diffConfigurations, String diffEnvName) {
+      try {
+         JSONObject query = new JSONObject();
+         query.put("name", queryName);
+         query.put("type", "query");
+         JSONObject views = new JSONObject();
+         query.put("views", views);
+         int flowNum = 0;
+         for (Entry<Flow, Map<String, Set<FlowTrace>>> e : _data.entrySet()) {
+            flowNum++;
+            Flow flow = e.getKey();
+            Map<String, Set<FlowTrace>> envTraces = e.getValue();
+            for (Entry<String, Set<FlowTrace>> e2 : envTraces.entrySet()) {
+               String env = e2.getKey();
+               Map<String, Configuration> currentConfigurations;
+               if (env.equals(baseEnvName)) {
+                  currentConfigurations = baseConfigurations;
+               }
+               else if (diffEnvName != null && env.equals(diffEnvName)) {
+                  currentConfigurations = diffConfigurations;
+               }
+               else {
+                  throw new BatfishException(
+                        "Could not determine which set of configurations to use for this set of flow traces");
+               }
+               Set<FlowTrace> traces = e2.getValue();
+               int acceptNum = 0;
+               int dropNum = 0;
+               JSONObject view = new JSONObject();
+               String viewName = env + ":Flow" + flowNum;
+               views.put(viewName, view);
+               view.put("name", viewName);
+               view.put("type", "view");
+               view.put("description", flow.toString());
+               JSONObject paths = new JSONObject();
+               view.put("paths", paths);
+               for (FlowTrace trace : traces) {
+                  int num;
+                  String disposition;
+                  String color;
+                  if (trace.getDisposition() == FlowDisposition.ACCEPTED) {
+                     acceptNum++;
+                     num = acceptNum;
+                     disposition = "Accept";
+                     color = "ok";
+                  }
+                  else {
+                     dropNum++;
+                     num = dropNum;
+                     disposition = "Drop";
+                     color = "error";
+                  }
+                  String pathName = viewName + ":" + disposition + num;
+                  JSONObject path = new JSONObject();
+                  paths.put(pathName, path);
+                  path.put("name", pathName);
+                  path.put("color", color);
+                  JSONArray links = new JSONArray();
+                  path.put("links", links);
+                  int hopNum = 0;
+                  for (Edge edge : trace.getHops()) {
+                     hopNum++;
+                     String linkName = pathName + ":Hop" + hopNum;
+                     JSONObject link = new JSONObject();
+                     links.put(link);
+                     link.put("name", linkName);
+                     link.put("type", "link");
+                     String node1Name = edge.getNode1();
+                     String int1Name = edge.getInt1();
+                     Configuration node1 = currentConfigurations.get(node1Name);
+                     Interface int1 = node1.getInterfaces().get(int1Name);
+                     JSONObject interface1 = int1.toJSONObject();
+                     link.put("interface1", interface1);
+                     String node2Name = edge.getNode2();
+                     String int2Name = edge.getInt2();
+                     Configuration node2 = currentConfigurations.get(node2Name);
+                     Interface int2 = node2.getInterfaces().get(int2Name);
+                     JSONObject interface2 = int2.toJSONObject();
+                     link.put("interface2", interface2);
+                  }
+               }
+            }
+         }
+         return query.toString(3);
+      }
+      catch (JSONException e) {
+         throw new BatfishException("Error converting history for query: \""
+               + queryName + "\" to JSONObject", e);
+      }
    }
 
    @Override

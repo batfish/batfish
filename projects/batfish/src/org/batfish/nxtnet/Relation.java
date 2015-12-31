@@ -22,6 +22,10 @@ public class Relation {
       public Relation build(PredicateInfo predicateInfo, String nxtnetText) {
          LBValueTypeList columnValueTypes = predicateInfo
                .getPredicateValueTypes(_name);
+         if (columnValueTypes == null) {
+            throw new BatfishException("Missing schema for predicate: \""
+                  + _name + "\"");
+         }
          int numColumns = columnValueTypes.size();
          String[] lines = nxtnetText.split("\n|\r\n");
          int numLines;
