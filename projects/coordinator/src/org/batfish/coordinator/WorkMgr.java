@@ -130,9 +130,9 @@ public class WorkMgr {
                Main.getSettings().getTestrigStorageLocation(),
                work.getWorkItem().getContainerName(),
                work.getWorkItem().getTestrigName()).toFile();
-         task.put("autobasedir", autobasedir.getAbsolutePath());
+         task.put(BfConsts.ARG_AUTO_BASE_DIR, autobasedir.getAbsolutePath());
          task.put(
-               "logfile",
+               BfConsts.ARG_LOG_FILE,
                Paths.get(autobasedir.getAbsolutePath(),
                      work.getId().toString() + ".log").toString());
 

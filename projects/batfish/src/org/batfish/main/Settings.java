@@ -147,8 +147,6 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_ANONYMIZE = "anonymize";
 
-   private static final String ARG_AUTO_BASE_DIR = "autobasedir";
-
    private static final String ARG_BUILD_PREDICATE_INFO = "bpi";
 
    private static final String ARG_COORDINATOR_HOST = "coordinatorhost";
@@ -190,8 +188,6 @@ public final class Settings extends BaseSettings {
    private static final String ARG_IGNORE_UNSUPPORTED = "ignoreunsupported";
 
    private static final String ARG_JOBS = "jobs";
-
-   private static final String ARG_LOG_FILE = "logfile";
 
    private static final String ARG_LOG_TEE = "logtee";
 
@@ -878,7 +874,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_HISTOGRAM, false);
       setDefaultProperty(ARG_IGNORE_UNSUPPORTED, false);
       setDefaultProperty(ARG_JOBS, Integer.MAX_VALUE);
-      setDefaultProperty(ARG_LOG_FILE, null);
+      setDefaultProperty(BfConsts.ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_TEE, false);
       setDefaultProperty(BfConsts.ARG_LOG_LEVEL, "debug");
       setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
@@ -941,7 +937,7 @@ public final class Settings extends BaseSettings {
       addOption(BfConsts.ARG_ANSWER_JSON_PATH,
             "save query json output to specified file", ARGNAME_PATH);
 
-      addOption(ARG_AUTO_BASE_DIR,
+      addOption(BfConsts.ARG_AUTO_BASE_DIR,
             "path to base dir for automatic i/o path selection", ARGNAME_PATH);
 
       addListOption(BfConsts.ARG_BLOCK_NAMES,
@@ -1028,7 +1024,7 @@ public final class Settings extends BaseSettings {
       addBooleanOption(ARG_HISTOGRAM,
             "build histogram of unimplemented features");
 
-      addOption(ARG_LOG_FILE, "path to main log file", ARGNAME_PATH);
+      addOption(BfConsts.ARG_LOG_FILE, "path to main log file", ARGNAME_PATH);
 
       addBooleanOption(ARG_LOG_TEE,
             "print output to both logfile and standard out");
@@ -1187,7 +1183,7 @@ public final class Settings extends BaseSettings {
       _printSemantics = false;
 
       // SPECIAL OPTIONS
-      _logFile = getStringOptionValue(ARG_LOG_FILE);
+      _logFile = getStringOptionValue(BfConsts.ARG_LOG_FILE);
       _logLevel = getStringOptionValue(BfConsts.ARG_LOG_LEVEL);
       if (getBooleanOptionValue(ARG_HELP)) {
          _canExecute = false;
@@ -1205,7 +1201,7 @@ public final class Settings extends BaseSettings {
       _anonymize = getBooleanOptionValue(ARG_ANONYMIZE);
       _answer = getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
       _answerJsonPath = getStringOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
-      _autoBaseDir = getStringOptionValue(ARG_AUTO_BASE_DIR);
+      _autoBaseDir = getStringOptionValue(BfConsts.ARG_AUTO_BASE_DIR);
       _blockNames = getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);
       _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
       _coordinatorPoolPort = getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
