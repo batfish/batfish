@@ -164,7 +164,7 @@ public class Flow implements Comparable<Flow> {
          srcPort = "N/A";
          dstPort = "N/A";
       }
-      return "Flow<ingres_node:" + _ingressNode + ", src_ip:" + _srcIp
+      return "Flow<ingress_node:" + _ingressNode + ", src_ip:" + _srcIp
             + ", dst_ip:" + _dstIp + ", ip_protocol:" + _ipProtocol
             + ", src_port:" + srcPort + ", dst_port:" + dstPort + ", tag:"
             + _tag + ">";
