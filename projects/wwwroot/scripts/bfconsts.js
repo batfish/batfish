@@ -1,10 +1,13 @@
 ﻿// These constants come from 'BfConsts.java'.
 // Make sure they are in sync with what is there.
 
+var ARG_ANSWER_JSON_PATH = "answerjsonpath";
+var ARG_AUTO_BASE_DIR = "autobasedir";
 var ARG_BLOCK_NAMES = "blocknames";
 var ARG_DIFF_ACTIVE = "diffactive";
 var ARG_DIFF_ENVIRONMENT_NAME = "diffenv";
 var ARG_ENVIRONMENT_NAME = "env";
+var ARG_LOG_FILE = "logfile";
 var ARG_LOG_LEVEL = "loglevel";
 var ARG_OUTPUT_ENV = "outputenv";
 var ARG_PEDANTIC_AS_ERROR = "pedanticerror";
