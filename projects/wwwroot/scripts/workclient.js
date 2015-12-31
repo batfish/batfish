@@ -1,4 +1,6 @@
 /// <reference path="batfish-common.js" />
+/// <reference path="bfconsts.js"/>
+/// <reference path="coordconsts.js"/>
 
 //these structures are indexed on entrypoint
 var epCurrWorkChecker = new Object();
@@ -30,6 +32,8 @@ function checkWork_cb(response, entryPoint, remainingCalls) {
     switch (status) {
         case "TERMINATEDNORMALLY":
             getLog(entryPoint, remainingCalls);
+            if (remainingCalls[0] == "answerquestion" || remainingCalls[0] == "answerdiffquestion")
+                getAnsJson(entryPoint, remainingCalls);
             delete epCurrWorkChecker[entryPoint];
             delete epWorkGuid[entryPoint];
             break;
@@ -78,13 +82,30 @@ function finishEntryPoint(entryPoint, remainingCalls) {
     delete epQuestionName[entryPoint];
 }
 
+function getAnsJson(entryPoint, remainingCalls) {
+    if (errorCheck(bfIsInvalidStr(containerName), "Container name is empty", entryPoint) ||
+        errorCheck(bfIsInvalidStr(testrigName), "Testrig name is empty.", entryPoint) ||
+        errorCheck(!(entryPoint in epWorkGuid), "epWorkGuid is not set", entryPoint))
+        return;
+
+    var objectName = epWorkGuid[entryPoint] + SUFFIX_ANSWER_JSON_FILE;
+
+    bfGetObject(containerName, testrigName, objectName, getAnsJson_cb, genericFailure_cb, entryPoint, remainingCalls);
+}
+
+function getAnsJson_cb(responseObject, entryPoint, remainingCalls) {
+    if (fnShowHighlights != undefined)
+        if (!fnShowHighlights(responseObject))
+            finishEntryPoint(entryPoint, remainingCalls);
+}
+
 function getLog(entryPoint, remainingCalls) {
     if (errorCheck(bfIsInvalidStr(containerName), "Container name is empty", entryPoint) ||
         errorCheck(bfIsInvalidStr(testrigName), "Testrig name is empty.", entryPoint) ||
         errorCheck(!(entryPoint in epWorkGuid), "epWorkGuid is not set", entryPoint))
        return;
 
-   var objectName = epWorkGuid[entryPoint] + ".log";
+   var objectName = epWorkGuid[entryPoint] + SUFFIX_LOG_FILE;
 
    bfGetObject(containerName, testrigName, objectName, getLog_cb, genericFailure_cb, entryPoint, remainingCalls);
 }
@@ -165,7 +186,7 @@ function makeNextCall(entryPoint, callList) {
                 queueWork(nextCall, entryPoint, callList);
                 break;
             case "drawanswer":
-                testDrawAnswer(entryPoint, callList);
+                getAnsJson(entryPoint, callList);
                 break;
             case "uploaddiffenvfile":
                 uploadDiffEnvFile(entryPoint, callList);
@@ -529,6 +550,11 @@ function uploadTestrigSmart(entryPoint, remainingCalls) {
     }
 }
 
+function uploadTestrig_cb(response, entryPoint, remainingCalls) {
+    bfUpdateDebugInfo("Uploaded testrig.");
+    makeNextCall(entryPoint, remainingCalls);
+}
+
 //function uploadTestrigText(entryPoint, remainingCalls) {
 //    if (errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
 //                    "Config text element (elementConfigText) is not configured in the HTML header",
@@ -552,26 +578,21 @@ function uploadTestrigSmart(entryPoint, remainingCalls) {
 //    uploadTestrigFinal(entryPoint, remainingCalls, content);
 //}
 
-function uploadTestrig_cb(response, entryPoint, remainingCalls) {
-    bfUpdateDebugInfo("Uploaded testrig.");
-    makeNextCall(entryPoint, remainingCalls);
-}
+//function testDrawAnswer(entryPoint, remainingCalls) {
 
-function testDrawAnswer(entryPoint, remainingCalls) {
+//    if (fnShowHighlights != undefined)
 
-    if (fnShowHighlights != undefined)
+//        var srcUrl = "testdata/highlights.json.txt";
 
-        var srcUrl = "testdata/highlights.json.txt";
-
-        jQuery.ajax({
-            url: srcUrl,
-            success: function (data) {
-                if (!fnShowHighlights(data))
-                    errorCheck(true, "show highlights failed", entryPoint);
-                else
-                    finishEntryPoint(entryPoint, remainingCalls);
-            }
-        }).fail(function () {
-            errorCheck(true, "Failed to fetch config/question " + srcUrl, "loadtext");
-        });
-}
+//        jQuery.ajax({
+//            url: srcUrl,
+//            success: function (data) {
+//                if (!fnShowHighlights(data))
+//                    errorCheck(true, "show highlights failed", entryPoint);
+//                else
+//                    finishEntryPoint(entryPoint, remainingCalls);
+//            }
+//        }).fail(function () {
+//            errorCheck(true, "Failed to fetch config/question " + srcUrl, "loadtext");
+//        });
+//}

@@ -70,8 +70,11 @@ var RELPATH_TEST_RIG_DIR = "testrig";
 var RELPATH_TOPOLOGY_FILE = "topology";
 var RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
 var RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
-
 var RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
+
+var SUFFIX_ANSWER_JSON_FILE = ".ans";
+var SUFFIX_LOG_FILE = ".log";
+
 var SVC_BASE_RSC = "/batfishservice";
 var SVC_FAILURE_KEY = "failure";
 var SVC_GET_STATUS_RSC = "getstatus";

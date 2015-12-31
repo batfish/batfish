@@ -134,7 +134,11 @@ public class WorkMgr {
          task.put(
                BfConsts.ARG_LOG_FILE,
                Paths.get(autobasedir.getAbsolutePath(),
-                     work.getId().toString() + ".log").toString());
+                     work.getId().toString() + BfConsts.SUFFIX_LOG_FILE).toString());
+         task.put(
+               BfConsts.ARG_ANSWER_JSON_PATH,
+               Paths.get(autobasedir.getAbsolutePath(),
+                     work.getId().toString() + BfConsts.SUFFIX_ANSWER_JSON_FILE).toString());
 
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client

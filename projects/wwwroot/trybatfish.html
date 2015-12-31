@@ -12,18 +12,18 @@
     <![endif]-->
     <script src="libs/jszip-utils.js"></script>
 
-	<script src="scripts/utils.js"></script>
+    <script src="scripts/utils.js"></script>
     <script src="scripts/bfconsts.js"></script>
     <script src="scripts/coordconsts.js"></script>
     <script src="scripts/batfish-common.js"></script>
     <script src="scripts/workclient.js"></script>
     <script src="scripts/trybatfish.js"></script>
     <script src="libs/jquery-ui.js"></script>
-	<script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.js"></script>
-	<script src="libs/cytoscape.js"></script>
-	<script src="libs/cytoscape-qtip.js"></script>
-	<script src="scripts/topology.js"></script>
-    
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.js"></script>
+    <script src="libs/cytoscape.js"></script>
+    <script src="libs/cytoscape-qtip.js"></script>
+    <script src="scripts/topology.js"></script>
+
     <script>
         var apiKey = "0000000";
         var containerPrefix = "js";
@@ -66,10 +66,9 @@
         var fnShowHighlights = SetupHighlightsMenu;
     </script>
     <link rel="stylesheet" type="text/css" href="styles/style.css" />
-	<link rel="stylesheet" href="styles/graph.css" type="text/css">
-	<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.css">
-	<link rel="stylesheet" href="styles/jquery-ui.css" type="text/css">
-
+    <link rel="stylesheet" href="styles/graph.css" type="text/css">
+    <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.css">
+    <link rel="stylesheet" href="styles/jquery-ui.css" type="text/css">
 </head>
 <body>
     <div id="divTest">
@@ -86,19 +85,22 @@
                     </li>
             <li>To ask questions about a planned configuration change, 
                    
-                            <ol>
-                                <li>Enter the configuration delta (i.e., files that differ from the base), and press <b>Process delta configuration</b>.
+                           
+
+                <ol>
+                    <li>Enter the configuration delta (i.e., files that differ from the base), and press <b>Process delta configuration</b>.
                                 </li>
-                                <li>Enter question, and press <b>Answer about delta</b>. 
+                    <li>Enter question, and press <b>Answer about delta</b>. 
                                 </li>
-                            </ol>
+                </ol>
             </li>
         </ol>
         <p>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Steps 2 and 3 can be repeated multiple times for different questions and delta configurations.  To analyze a new base configuration, start again (reload the page).                
+   
     </div>
 
-   <div id="spinwrapper"></div>   
+    <div id="spinwrapper"></div>
 
     <table>
         <tr>
@@ -108,12 +110,13 @@
         </tr>
 
         </div>
+       
         <tr>
             <td>
                 <form class="myform">
                     <table>
                         <tr>
-                            <td bgcolor="#DDFFDD" style="padding-right:-2px">
+                            <td bgcolor="#DDFFDD" style="padding-right: -2px">
                                 <table>
                                     <tr align="center">
                                         <td colspan="2">
@@ -125,7 +128,7 @@
                                             <textarea id="txtConfig" style="display: normal; border-radius: 5px" cols="50" rows="20"></textarea>
                                         </td>
                                         <td>
-                                            <input type="file" id="fileConfig"/>
+                                            <input type="file" id="fileConfig" />
                                             <script> jQuery('#fileConfig').change(loadConfigText); </script>
                                             <br />
                                             <br />
@@ -188,9 +191,9 @@
                                     <tr align="center">
                                         <td>
                                             <input type="button" id="btnAnswerQuestion" value="Answer about base" disabled
-                                                onclick="startCalls('btnUploadConfigText', 'uploadquestiontext::answerquestion::drawanswer')" />
+                                                onclick="startCalls('btnAnswerQuestion', 'uploadquestiontext::answerquestion')" />
                                             <input type="button" id="btnAnswerDiffQuestion" value="Answer about delta" disabled
-                                                onclick="startCalls('btnUploadConfigText', 'uploadquestiontext::answerdiffquestion::drawanswer')" />
+                                                onclick="startCalls('btnAnswerDiffQuestion', 'uploadquestiontext::answerdiffquestion')" />
                                         </td>
                                     </tr>
                                 </table>
@@ -202,27 +205,27 @@
             </td>
             <td></td>
             <td>
-            	<table>
-            		<tr>
-            			<td>
-            				<div id="cy"></div>
-            				<div data-role="content"></div>
-        				</td>
-    				</tr>
-  					<tr>
-						<td align="center" bgcolor="#DDDDFF">
-							<h3>Output</h3>
-							<br />
-							<textarea id="txtOutput" style="display: normal; border-radius: 5px" cols="90" rows="21" readonly></textarea>						
-						</td>
-					</tr>
-            	</table>
+                <table>
+                    <tr>
+                        <td>
+                            <div id="cy"></div>
+                            <div data-role="content"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center" bgcolor="#DDDDFF">
+                            <h3>Output</h3>
+                            <br />
+                            <textarea id="txtOutput" style="display: normal; border-radius: 5px" cols="90" rows="21" readonly></textarea>
+                        </td>
+                    </tr>
+                </table>
             </td>
         </tr>
     </table>
     <div id="activityLog" align="center">
-    <h3>Activity log</h3>
-    <textarea id="txtDebug" style="display: normal; border-radius: 5pt" rows="10" cols="140" readonly></textarea>
+        <h3>Activity log</h3>
+        <textarea id="txtDebug" style="display: normal; border-radius: 5pt" rows="10" cols="140" readonly></textarea>
     </div>
 </body>
 </html>
