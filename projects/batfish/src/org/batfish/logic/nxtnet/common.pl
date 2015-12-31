@@ -2862,6 +2862,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
 /*owner accept*/
 'FlowAccepted'(Flow, Node) :-
    'FlowReachPostIn'(Flow, Node),
+   'FlowInboundInterface'(Flow, Node, _),
    'Flow_dstIp'(Flow, DstIp) /*fn*/,
    'HasIp'(Node, DstIp).
 /*flow sink accept*/
@@ -2942,13 +2943,14 @@ need_RouteFilterMatchNetwork(List, Network) :-
 
 
 'FlowReachPostInboundCrossZoneAcl'(Flow, Node, SrcInt) :-
+   'FlowInboundInterface'(Flow, Node, InboundInt),
    'FlowReachPostIncomingInterfaceAcl'(Flow, Node, SrcInt),
    (
       ( /*default accept with no policy*/
          'SetDefaultCrossZoneAccept'(Node),
          ( 
            'FlowNonInboundNullSrcZone'(Flow, Node) ; /*no policy because null src zone*/
-           'FlowInboundInterface'(Flow, Node, SrcInt) ; /* no policy because inbound interface and src interface are same*/
+           SrcInt == InboundInt ; /* no policy because inbound interface and src interface are same*/
            \+ 'SetInterfaceZone'(Node, InboundInt, _) ; /*no policy because no inbound zone*/
            ( /*no policy for this pair of zones*/
               'SetInterfaceZone'(Node, InboundInt, InboundZone),
@@ -2957,7 +2959,6 @@ need_RouteFilterMatchNetwork(List, Network) :-
          )
       ) ;
       ( /*policy exists and permits*/
-         'FlowInboundInterface'(Flow, Node, InboundInt),
          'SetInterfaceZone'(Node, InboundInt, InboundZone),
          'SetCrossZoneFilter'(Node, SrcZone, InboundZone, CrossZoneFilter),
          \+ 'IpAccessListDeny'(CrossZoneFilter, Line, Flow)
@@ -3217,6 +3218,10 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'Flow_node'(Flow, Node) /*fn*/.   
 'FlowReachPostIn'(Flow, Node) :-
    'FlowReachPostHostInFilter'(Flow, Node, _).
+'FlowReachPostIn'(Flow, Node) :-
+   'FlowReachPostIncomingInterfaceAcl'(Flow, Node, _),
+   'Flow_dstIp'(Flow, DstIp) /*fn*/,
+   \+ 'HasIp'(Node, DstIp).
 
 'FlowReachPostInInterface'(Flow, Node, Interface) :-
    'FlowReachPreInInterface'(Flow, Node, Interface),
