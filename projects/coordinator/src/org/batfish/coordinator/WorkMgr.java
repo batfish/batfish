@@ -130,11 +130,15 @@ public class WorkMgr {
                Main.getSettings().getTestrigStorageLocation(),
                work.getWorkItem().getContainerName(),
                work.getWorkItem().getTestrigName()).toFile();
-         task.put("autobasedir", autobasedir.getAbsolutePath());
+         task.put(BfConsts.ARG_AUTO_BASE_DIR, autobasedir.getAbsolutePath());
          task.put(
-               "logfile",
+               BfConsts.ARG_LOG_FILE,
                Paths.get(autobasedir.getAbsolutePath(),
-                     work.getId().toString() + ".log").toString());
+                     work.getId().toString() + BfConsts.SUFFIX_LOG_FILE).toString());
+         task.put(
+               BfConsts.ARG_ANSWER_JSON_PATH,
+               Paths.get(autobasedir.getAbsolutePath(),
+                     work.getId().toString() + BfConsts.SUFFIX_ANSWER_JSON_FILE).toString());
 
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client

@@ -38,8 +38,10 @@ verify {
                   }
                   printf("\n");
                   $v := $views.get_map(interface.ip);
+                  $v.set("name", interface.ip);
                   $v.set("type", "view");
                   $n := $v.get_map("nodes").get_map(node.name);
+                  $n.set("name", node.name);
                   $n.set("type", "node");
                   $n.set("description", $n.get("description") + " " + interface.name);
                }

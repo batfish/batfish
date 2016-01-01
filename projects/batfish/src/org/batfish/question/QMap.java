@@ -7,16 +7,10 @@ import java.util.Map.Entry;
 
 import org.batfish.common.BatfishException;
 import org.batfish.grammar.question.VariableType;
-import org.batfish.util.NamedStructure;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class QMap extends NamedStructure {
-
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+public class QMap {
 
    private final Map<String, QMap> _maps;
 
@@ -24,8 +18,7 @@ public class QMap extends NamedStructure {
 
    private final Map<String, VariableType> _typeBindings;
 
-   public QMap(String name) {
-      super(name);
+   public QMap() {
       _maps = new LinkedHashMap<String, QMap>();
       _strings = new LinkedHashMap<String, String>();
       _typeBindings = new HashMap<String, VariableType>();
@@ -43,19 +36,28 @@ public class QMap extends NamedStructure {
       return _typeBindings;
    }
 
-   public JSONObject toJsonObject() throws JSONException {
+   public JSONObject toJsonObject() {
       JSONObject output = new JSONObject();
-      output.put("name", _name);
       for (Entry<String, String> e : _strings.entrySet()) {
          String key = e.getKey();
          String value = e.getValue();
-         output.put(key, value);
+         try {
+            output.put(key, value);
+         }
+         catch (JSONException e2) {
+            throw new BatfishException("Error converting to json object", e2);
+         }
       }
       for (Entry<String, QMap> e : _maps.entrySet()) {
          String key = e.getKey();
          QMap value = e.getValue();
          JSONObject valueObj = value.toJsonObject();
-         output.put(key, valueObj);
+         try {
+            output.put(key, valueObj);
+         }
+         catch (JSONException e3) {
+            throw new BatfishException("Error converting to json object", e3);
+         }
       }
       return output;
    }

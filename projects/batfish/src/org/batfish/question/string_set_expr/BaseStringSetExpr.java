@@ -1,10 +1,10 @@
-package org.batfish.question.string_expr;
+package org.batfish.question.string_set_expr;
 
 import org.batfish.question.Environment;
 
-public abstract class BaseStringExpr implements StringExpr {
+public abstract class BaseStringSetExpr implements StringSetExpr {
 
-   public static String print(StringExpr expr, Environment environment) {
+   public static String print(StringSetExpr expr, Environment environment) {
       return expr.evaluate(environment).toString();
    }
 

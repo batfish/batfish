@@ -191,7 +191,7 @@ public class Environment {
       _prefixSpaces = new HashMap<String, PrefixSpace>();
       _prefixSpaceSets = new HashMap<String, Set<PrefixSpace>>();
       _protocolDependencyAnalysis = new ProtocolDependencyAnalysis[1];
-      _query = new QMap("query");
+      _query = new QMap();
       _remoteBgpNeighborsInitialized = new boolean[1];
       _remoteIpsecVpnsInitialized = new boolean[1];
       _routeFilters = new HashMap<String, RouteFilterList>();

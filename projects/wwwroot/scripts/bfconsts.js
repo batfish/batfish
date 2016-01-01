@@ -1,10 +1,13 @@
 ﻿// These constants come from 'BfConsts.java'.
 // Make sure they are in sync with what is there.
 
+var ARG_ANSWER_JSON_PATH = "answerjsonpath";
+var ARG_AUTO_BASE_DIR = "autobasedir";
 var ARG_BLOCK_NAMES = "blocknames";
 var ARG_DIFF_ACTIVE = "diffactive";
 var ARG_DIFF_ENVIRONMENT_NAME = "diffenv";
 var ARG_ENVIRONMENT_NAME = "env";
+var ARG_LOG_FILE = "logfile";
 var ARG_LOG_LEVEL = "loglevel";
 var ARG_OUTPUT_ENV = "outputenv";
 var ARG_PEDANTIC_AS_ERROR = "pedanticerror";
@@ -67,8 +70,11 @@ var RELPATH_TEST_RIG_DIR = "testrig";
 var RELPATH_TOPOLOGY_FILE = "topology";
 var RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
 var RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
-
 var RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
+
+var SUFFIX_ANSWER_JSON_FILE = ".ans";
+var SUFFIX_LOG_FILE = ".log";
+
 var SVC_BASE_RSC = "/batfishservice";
 var SVC_FAILURE_KEY = "failure";
 var SVC_GET_STATUS_RSC = "getstatus";
