@@ -173,8 +173,9 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
 
 // this is a test function whose contents change based on what we want to test
 function testMe() {
-    containerName = "js_41aceec6-018e-4434-bd97-e1c9430333a6";
-    startCalls("testme", "drawtopology::drawanswer");
+    //containerName = "js_41aceec6-018e-4434-bd97-e1c9430333a6";
+    //startCalls("testme", "drawtopology::drawanswer");
+    AddHighlightMenu();
 }
 
 
