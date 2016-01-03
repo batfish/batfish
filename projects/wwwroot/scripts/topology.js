@@ -4,26 +4,28 @@ var previousView = "";
 var layoutData;
 var view;
 
+$(document).ready(function() {
+	SetupCy();
+});
+
 //-----------------------------------------------------------------------------
 
 /*
  * Layout functions.
  */
-function DoAutoLayout()
-{
+function DoAutoLayout() {
 	//var layout = cy.makeLayout({ name: 'circle' });
 	var layout = cy.makeLayout({
-            name: 'concentric',
-            concentric: function( node ){
-              return node.degree();
-            },
-            levelWidth: function( nodes ){
-              return 2;
-            }
-        });
+		name : 'concentric',
+		concentric : function(node) {
+			return node.degree();
+		},
+		levelWidth : function(nodes) {
+			return 2;
+		}
+	});
 	layout.run();
 }
-
 
 function RunPresetayout() {
 	var layout = cy.makeLayout({
@@ -35,24 +37,21 @@ function RunPresetayout() {
 	layout.run();
 }
 
-
-function DoPresetLayout()
-{
-	$.ajax ({
-		url: defaultLayoutURL,
-		dataType: 'json',
-		success: function (data, status) {
-			if (status == 'success')
-			{
+function DoPresetLayout() {
+	$.ajax({
+		url : defaultLayoutURL,
+		dataType : 'json',
+		success : function(data, status) {
+			if (status == 'success') {
 				layoutData = data;
 				RunPresetayout();
 			}
 		},
-		error : function (xhr, status, error) {
+		error : function(xhr, status, error) {
 			console.log(status);
 			console.log(error);
 		}
-	});	
+	});
 }
 
 /*
@@ -62,11 +61,21 @@ function SaveLayout() {
 	var nodes = cy.nodes("*");
 	var index;
 	var nodePositions = {};
-	for (index = 0; index < nodes.length; index++)
-	{
+	for ( index = 0; index < nodes.length; index++) {
 		nodePositions[nodes[index].id()] = nodes[index].position();
 	}
+	//bfPutObject(containerName,testrigName, containerName + '/layout', JSON.stringify(nodePositions), LayoutSaved, genericFailure_cb, '', '');
 	console.log(JSON.stringify(nodePositions));
+}
+
+function LayoutSaved()
+{
+	console.log("succcessfuly saved layout");
+}
+
+function LayoutSaveError()
+{
+	console.log(error);
 }
 //-----------------------------------------------------------------------------
 
@@ -74,13 +83,11 @@ function SaveLayout() {
  * Tooltip functions.
  */
 
-function NodeToolTip(n)
-{
+function NodeToolTip(n) {
 	return n.id() + "<br> " + n.data('vtt');
 }
 
-function LinkToolTip(l)
-{
+function LinkToolTip(l) {
 	var endPoints = l.id().split("#");
 	return endPoints[0] + '<br>' + endPoints[1] + '<br>' + l.data('linktype') + '<br>' + l.data('vtt');
 }
@@ -89,13 +96,11 @@ function SetupToolTips() {
 	// qtip api on cy elements
 	cy.elements().qtip({
 		content : function() {
-			if (this.isNode())
-			{
+			if (this.isNode()) {
 				return NodeToolTip(this);
-			}
-			else if (this.isEdge())
-			
-			return LinkToolTip(this);
+			} else if (this.isEdge())
+
+				return LinkToolTip(this);
 		},
 		position : {
 			target : $('#cy'),
@@ -118,14 +123,29 @@ function SetupToolTips() {
  *  Highlighting
  */
 
- function HighlightElement(id, onoff, vtt, color)
- {
- 	var e = cy.getElementById(id);
- 	var property = e.isNode() ? 'background-color' : 'line-color';
- 	e.style(property, (onoff == 'on') ? colors[color] : colors.defaultColor);
- 	e.data('vtt', (onoff == 'on') ? vtt : '');
- }
- 
+function HighlightElement(id, onoff, vtt, color) {
+	var e = cy.getElementById(id);
+	var property = e.isNode() ? 'background-color' : 'line-color';
+	if (onoff == 'off') {
+		e.style(property, ColorEnum.default);
+		e.data('vtt', '');
+	} else {
+		e.data('vtt', vtt);
+		if (e.style(property) == ColorEnum.default)
+		{
+			e.style(property, ColorEnum[color]);
+		}
+		else 
+		{
+			if (e.style(property) != ColorEnum[color])
+			{
+				e.style(property, ColorEnum.maybe);
+			}
+		}
+	}
+
+}
+
 function HighlightNodes(nodes, onoff, parentColor) {
 	for (var i in nodes) {
 		if (nodes.hasOwnProperty(i)) {
@@ -142,27 +162,30 @@ function HighlightLinks(links, onoff, parentColor) {
 			var link = links[i];
 			var linkId = GetLinkIds(link)[2];
 			console.log(linkId);
-			HighlightElement(linkId, onoff, link.description, defined(link.color) ? link.color : parentColor);
+			// TODO: change it to link.descriotion once Ari makes changes?
+			HighlightElement(linkId, onoff, link.name, defined(link.color) ? link.color : parentColor);
+			HighlightElement(link.interface1.node, onoff, link.name, defined(link.color) ? link.color : parentColor);
+			HighlightElement(link.interface2.node, onoff, link.name, defined(link.color) ? link.color : parentColor);
+		}
+	}
+}
+
+function HighlightPaths(paths, onoff, parentColor) {
+	for (var i in paths) {
+		if (paths.hasOwnProperty(i)) {
+			var path = paths[i];
+			HighlightLinks(path.links, onoff, defined(path.color) ? path.color : parentColor);
 		}
 	}
 }
 
 
-function HighlightPaths(paths, onoff, parentColor) {
-	for (var i = 0; i < paths.length; i++) {
-		var path = paths[i];
-		HighlightLinks(path.links, onoff, defined(path.color) ? path.color : parentColor);
-	}
-}
- 
- function HighlightView(viewId, onoff)
- {
+function HighlightView(viewId, onoff) {
 	if (viewId != "") {
 		var parentColor = view.color;
 		var thisView = view.views[viewId];
-		if (defined(thisView))
-		{
-			if (defined(thisView.nodes)) 
+		if (defined(thisView)) {
+			if (defined(thisView.nodes))
 				HighlightNodes(view.views[viewId].nodes, onoff, parentColor);
 			if (defined(thisView.links))
 				HighlightLinks(view.views[viewId].links, onoff, parentColor);
@@ -170,47 +193,49 @@ function HighlightPaths(paths, onoff, parentColor) {
 				HighlightPaths(view.views[viewId].paths, onoff, parentColor);
 		}
 	}
- }
- 
-function SetupHighlightsMenu(data)
- {
-    try {
-        view = JSON.parse(data);
-
-        cy.ready(function () {
-            // Add a new select element 
-            $('<select>').attr({ 'name': 'hs', 'id': 'hs', 'data-native-menu': 'false' }).appendTo('[data-role="content"]');
-            $('<option>').html(view.name).appendTo('#hs');
-
-            // Add choices.
-            var viewList = view.views;
-            for (var viewName in viewList)
-            {
-            	if (viewList.hasOwnProperty(viewName)) {
-            		console.log(viewName);
-            		$('<option>').attr({ 'value': viewName}).html(viewName).appendTo('#hs');
-            	}
-            }
-            
-            // Add handler
-            $('select').selectmenu({
-                select: function (event, ui) {
-                    console.log(ui.item.value);
-                    HighlightView(previousView, "off");
-                    HighlightView(ui.item.value, 'on');
-                    previousView = ui.item.value;
-                }
-            });
-        });
-    } catch (e) {
-    	console.log(e);
-        return false;
-    }
-
-    return true;
 }
 
+function SetupHighlightsMenu(data) {
+	try {
+		view = JSON.parse(data);
 
+		cy.ready(function() {
+			// Add a new select element
+			$('<select>').attr({
+				'name' : 'hs',
+				'id' : 'hs',
+				'data-native-menu' : 'false'
+			}).appendTo('[data-role="content"]');
+			$('<option>').html(view.name).appendTo('#hs');
+
+			// Add choices.
+			var viewList = view.views;
+			for (var viewName in viewList) {
+				if (viewList.hasOwnProperty(viewName)) {
+					console.log(viewName);
+					$('<option>').attr({
+						'value' : viewName
+					}).html(viewName).appendTo('#hs');
+				}
+			}
+
+			// Add handler
+			$('select').selectmenu({
+				select : function(event, ui) {
+					console.log(ui.item.value);
+					HighlightView(previousView, "off");
+					HighlightView(ui.item.value, 'on');
+					previousView = ui.item.value;
+				}
+			});
+		});
+	} catch (e) {
+		console.log(e);
+		return false;
+	}
+
+	return true;
+}
 
 /*-----------------------------------------*/
 /*
@@ -218,11 +243,16 @@ function SetupHighlightsMenu(data)
  */
 /*------------------------------------------*/
 
-function GetIfIds(link)
-{
+function GetIfIds(link) {
 	var ifIds = [];
-	ifIds.push(link.interface1.node + ":" + link.interface1.name);
-	ifIds.push(link.interface2.node + ":" + link.interface2.name);
+
+	if (defined(link.interface1.name) && defined(link.interface2.name)) {
+		ifIds.push(link.interface1.node + ":" + link.interface1.name);
+		ifIds.push(link.interface2.node + ":" + link.interface2.name);
+	} else {
+		ifIds.push(link.interface1.node + ":" + link.interface1.interface_name);
+		ifIds.push(link.interface2.node + ":" + link.interface2.interface_name);
+	}
 	return ifIds;
 }
 
@@ -230,7 +260,10 @@ function AddNode(nodeId) {
 	if (cy.getElementById(nodeId).length == 0) {
 		cy.add({
 			group : 'nodes',
-			data : {id : nodeId, vtt: ''}
+			data : {
+				id : nodeId,
+				vtt : ''
+			}
 		});
 		nodesAdded++;
 	}
@@ -263,7 +296,7 @@ function AddLink(link) {
 	AddNode(link.interface1.node);
 	AddNode(link.interface2.node);
 
-	var linkIds = GetLinkIds(link); 
+	var linkIds = GetLinkIds(link);
 	var srcDst = GetSrcDst(link);
 	if (cy.getElementById(linkIds[0]).length == 0 && cy.getElementById(linkIds[1]).length == 0) {
 		cy.add({
@@ -273,7 +306,7 @@ function AddLink(link) {
 				source : srcDst[0],
 				target : srcDst[1],
 				linktype : link.interface1.type,
-				vtt: ''
+				vtt : ''
 			}
 		});
 		linksAdded++;
@@ -309,68 +342,58 @@ function SetupCy() {
 			css : {
 				'width' : 80,
 				'height' : 80,
-				'background-color': '#888',
+				'background-color' : '#888',
 				'label' : 'data(id)'
 			}
 		}, {
 			selector : 'edge',
 			css : {
-				'width': 3,
+				'width' : 3,
 				'line-color' : "#888"
 			}
 		}]
 	});
 }
 
-$(document).ready(function() {
-	SetupCy();
-});
-
-
 //----------------------------------
 
 /*
  * Helper functions.
  */
-function PrintLinkIdsToConsole()
-{
+function PrintLinkIdsToConsole() {
 	var links = cy.edges("*");
 	var index;
-	for (index = 0; index < links.length; index++)
-	{
+	for ( index = 0; index < links.length; index++) {
 		console.log(links[index].id() + links[index].data('linktype'));
 	}
 }
 
-function DownloadJsonTopology(myURL) {
-	$.ajax ({
-		url: myURL,
-		success: function (data, status) {
-			if (status == 'success')
-			{
+function DownTopology(myURL) {
+	$.ajax({
+		url : myURL,
+		success : function(data, status) {
+			if (status == 'success') {
 				ParseTopology(data);
 			}
 		},
-		error : function (xhr, status, error) {
+		error : function(xhr, status, error) {
 			console.log(status);
 			console.log(error);
 		}
 	});
 }
 
-function AddHighlightMenu()
-{
-	$.ajax ({
-		url: 'testdata/highlights.json.txt',
-		success: function (data, status) {
-			if (status == 'success')
-			{
+function AddHighlightMenu() {
+	$.ajax({
+		url : 'testdata/highlights.json.txt',
+		success : function(data, status) {
+			if (status == 'success') {
 				SetupHighlightsMenu(data);
 			}
 		},
-		error : function (xhr, status, error) {
+		error : function(xhr, status, error) {
 			console.log(status);
 			console.log(error);
 		}
-	});	     
+	});
 }
