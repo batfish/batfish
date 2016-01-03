@@ -92,6 +92,8 @@ public class FlowHistory {
                   JSONObject path = new JSONObject();
                   paths.put(pathName, path);
                   path.put("name", pathName);
+                  path.put("type", "path");
+                  path.put("description", trace.getNotes());
                   path.put("color", color);
                   JSONArray links = new JSONArray();
                   path.put("links", links);

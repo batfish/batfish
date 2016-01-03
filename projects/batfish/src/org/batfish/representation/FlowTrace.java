@@ -72,8 +72,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
                "Could not determine flow disposition for trace: " + historyLine);
       }
       _disposition = disposition;
-      _notes = notes;
-
+      _notes = "Disposition: " + _disposition + notes;
    }
 
    @Override
@@ -142,11 +141,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
          sb.append("Hop " + num + ": " + hop.getNode1() + ":" + hop.getInt1()
                + " -> " + hop.getNode2() + ":" + hop.getInt2() + "\n");
       }
-      sb.append("Disposition: " + _disposition);
-      if (_disposition == FlowDisposition.DENIED_IN
-            || _disposition == FlowDisposition.DENIED_OUT) {
-         sb.append(" " + _notes);
-      }
+      sb.append(_notes);
       sb.append("\n");
       return sb.toString();
    }

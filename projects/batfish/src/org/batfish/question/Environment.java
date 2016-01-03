@@ -49,6 +49,8 @@ public class Environment {
 
    private Map<String, Configuration> _configurations;
 
+   private Set<RoutingProtocol> _currentProtocols;
+
    private int[] _failedAssertionCount;
 
    private GeneratedRoute _generatedRoute;
@@ -121,7 +123,7 @@ public class Environment {
 
    private ProtocolDependencyAnalysis[] _protocolDependencyAnalysis;
 
-   private Set<RoutingProtocol> _protocols;
+   private Map<String, RoutingProtocol> _protocols;
 
    private QMap _query;
 
@@ -191,6 +193,7 @@ public class Environment {
       _prefixSpaces = new HashMap<String, PrefixSpace>();
       _prefixSpaceSets = new HashMap<String, Set<PrefixSpace>>();
       _protocolDependencyAnalysis = new ProtocolDependencyAnalysis[1];
+      _protocols = new HashMap<String, RoutingProtocol>();
       _query = new QMap();
       _remoteBgpNeighborsInitialized = new boolean[1];
       _remoteIpsecVpnsInitialized = new boolean[1];
@@ -239,6 +242,7 @@ public class Environment {
          case POLICY_MAP_CLAUSE:
          case PREFIX:
          case PREFIX_SPACE:
+         case PROTOCOL:
          case RANGE:
          case REGEX:
          case ROUTE_FILTER:
@@ -310,6 +314,7 @@ public class Environment {
       copy._prefixSpaces = _prefixSpaces;
       copy._prefixSpaceSets = _prefixSpaceSets;
       copy._protocol = _protocol;
+      copy._currentProtocols = _currentProtocols;
       copy._protocolDependencyAnalysis = _protocolDependencyAnalysis;
       copy._protocols = _protocols;
       copy._query = _query;
@@ -356,6 +361,10 @@ public class Environment {
 
    public Map<String, Configuration> getConfigurations() {
       return _configurations;
+   }
+
+   public Set<RoutingProtocol> getCurrentProtocols() {
+      return _currentProtocols;
    }
 
    public int getFailedAssertions() {
@@ -494,7 +503,7 @@ public class Environment {
       return _protocol;
    }
 
-   public Set<RoutingProtocol> getProtocols() {
+   public Map<String, RoutingProtocol> getProtocols() {
       return _protocols;
    }
 
@@ -828,8 +837,8 @@ public class Environment {
       _prefixSpace = prefixSpace;
    }
 
-   public void setProtocolSet(Set<RoutingProtocol> protocols) {
-      _protocols = protocols;
+   public void setProtocolSet(Set<RoutingProtocol> currentProtocols) {
+      _currentProtocols = currentProtocols;
    }
 
    public void setRemoteBgpNeighbor(BgpNeighbor remoteBgpNeighbor) {

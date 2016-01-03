@@ -4,7 +4,7 @@
  */
 defaults {
    // The node at which the flow is created
-   $ingress_node="_REPLACE_ME_IN_QUESTION_OR_PARAMETERS_FILE_"
+   $ingress_node="_REPLACE_ME_IN_QUESTION_OR_PARAMETERS_FILE_";
 
    // The source IP in the header of the flow
    $src_ip=0.0.0.0;

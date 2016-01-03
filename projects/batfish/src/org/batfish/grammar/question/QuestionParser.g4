@@ -464,6 +464,7 @@ expr returns [VariableType varType]
 
    set_string_expr
    {$varType = VariableType.SET_STRING;}
+
    |
    {vp(VariableType.STATIC_ROUTE)}?
 
@@ -881,12 +882,15 @@ interface_prefix_prefix_expr
 
 interface_set_prefix_expr
 :
-   caller=interface_expr PERIOD (interface_all_prefixes_set_prefix_expr)
+   caller = interface_expr PERIOD
+   (
+      interface_all_prefixes_set_prefix_expr
+   )
 ;
 
 interface_string_expr
 :
-   INTERFACE PERIOD interface_name_string_expr
+   caller = interface_expr PERIOD interface_name_string_expr
 ;
 
 interface_subnet_prefix_expr
@@ -1017,7 +1021,7 @@ ipsec_vpn_remote_ipsec_vpn_ipsec_vpn_expr
 
 ipsec_vpn_string_expr
 :
-   ipsec_vpn_expr PERIOD
+   caller = ipsec_vpn_expr PERIOD
    (
       ipsec_vpn_ike_gateway_name_string_expr
       | ipsec_vpn_ike_policy_name_string_expr
@@ -1076,7 +1080,7 @@ map_expr
 :
    QUERY
    | new_map_expr
-   | caller=map_expr PERIOD map_map_expr
+   | caller = map_expr PERIOD map_map_expr
    |
    {v(VariableType.MAP)}?
 
@@ -1107,18 +1111,21 @@ map_map_expr
 
 map_set_method
 :
-   caller=map_expr PERIOD SET OPEN_PAREN key = printable_expr COMMA value =
+   caller = map_expr PERIOD SET OPEN_PAREN key = printable_expr COMMA value =
    printable_expr CLOSE_PAREN SEMICOLON
 ;
 
 map_set_string_expr
 :
-   caller=map_expr PERIOD (map_keys_set_string_expr)
+   caller = map_expr PERIOD
+   (
+      map_keys_set_string_expr
+   )
 ;
 
 map_string_expr
 :
-   caller=map_expr PERIOD
+   caller = map_expr PERIOD
    (
       map_get_string_expr
    )
@@ -1254,7 +1261,7 @@ node_static_configured_boolean_expr
 
 node_string_expr
 :
-   node_expr PERIOD node_name_string_expr
+   caller = node_expr PERIOD node_name_string_expr
 ;
 
 not_expr
@@ -1377,6 +1384,15 @@ protocol_dependencies_question
    PROTOCOL_DEPENDENCIES
 ;
 
+protocol_expr
+:
+   PROTOCOL
+   |
+   {v(VariableType.PROTOCOL)}?
+
+   var_protocol_expr
+;
+
 protocol_name_string_expr
 :
    NAME
@@ -1384,7 +1400,7 @@ protocol_name_string_expr
 
 protocol_string_expr
 :
-   PROTOCOL PERIOD protocol_name_string_expr
+   caller = protocol_expr PERIOD protocol_name_string_expr
 ;
 
 question
@@ -1514,7 +1530,7 @@ route_filter_route_filter_expr
 
 route_filter_string_expr
 :
-   ROUTE_FILTER PERIOD route_filter_name_string_expr
+   caller = route_filter_expr PERIOD route_filter_name_string_expr
 ;
 
 set_add_method [VariableType type, String caller]
@@ -1781,10 +1797,11 @@ static_route_prefix_prefix_expr
 
 static_route_string_expr
 :
-   STATIC_ROUTE PERIOD static_route_next_hop_interface_string_expr
+   caller = static_route_expr PERIOD
+   static_route_next_hop_interface_string_expr
 ;
 
-string_expr
+base_string_expr
 :
    bgp_neighbor_string_expr
    | interface_string_expr
@@ -1794,12 +1811,17 @@ string_expr
    | protocol_string_expr
    | route_filter_string_expr
    | static_route_string_expr
-   | string_literal_string_expr
-   | s1=string_expr PLUS s2=string_expr
    |
    {v(VariableType.STRING)}?
 
    var_string_expr
+;
+
+string_expr
+:
+   base_string_expr
+   | string_literal_string_expr
+   | s1 = string_expr PLUS s2 = string_expr
 ;
 
 string_literal_string_expr
@@ -1915,6 +1937,11 @@ var_prefix_expr
 ;
 
 var_prefix_space_expr
+:
+   VARIABLE
+;
+
+var_protocol_expr
 :
    VARIABLE
 ;
