@@ -177,7 +177,7 @@ function testMe() {
 
     var blob = JSON.stringify("{'name': 'tester'}");
 
-    bfPutObject(containerName, testrigName, "layout", blob, testMeSuccess_cb, testMeFailure_cb, "testme", []);
+    bfPutObject(containerName, testrigName, "co/layout", blob, testMeSuccess_cb, testMeFailure_cb, "testme", []);
 
     //startCalls("testme", "drawtopology::drawanswer");
     //AddHighlightMenu();
@@ -189,7 +189,7 @@ function testMeFailure_cb(message) {
 
 function testMeSuccess_cb(response, entryPoint, remainingCalls) {
     //console.log("testme success: " + JSON.parse(response));
-    //bfGetObject(containerName, testrigName, "customobjects/layout", testMeSuccess_cb, testMeFailure_cb, "testme", []);
+    bfGetObject(containerName, testrigName, "co/layout", testMeSuccess_cb, testMeFailure_cb, "testme", []);
 }
 
 

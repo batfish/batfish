@@ -59,7 +59,6 @@ public class BfConsts {
    public static final String RELPATH_CONFIG_FILE_NAME_DIR = "config.properties";
    public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
    public static final String RELPATH_CONTROL_PLANE_FACTS_DIR = "cp_facts";
-   public static final String RELPATH_CUSTOM_OBJECTS = "customobjects";
    public static final String RELPATH_DATA_PLANE_DIR = "dp";
    public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "default";
    public static final String RELPATH_DIFF = "diff";
