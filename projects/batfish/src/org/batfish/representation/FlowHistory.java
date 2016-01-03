@@ -65,14 +65,6 @@ public class FlowHistory {
                Set<FlowTrace> traces = e2.getValue();
                int acceptNum = 0;
                int dropNum = 0;
-               JSONObject view = new JSONObject();
-               String viewName = env + ":Flow" + flowNum;
-               views.put(viewName, view);
-               view.put("name", viewName);
-               view.put("type", "view");
-               view.put("description", flow.toString());
-               JSONObject paths = new JSONObject();
-               view.put("paths", paths);
                for (FlowTrace trace : traces) {
                   int num;
                   String disposition;
@@ -89,19 +81,21 @@ public class FlowHistory {
                      disposition = "Drop";
                      color = "error";
                   }
-                  String pathName = viewName + ":" + disposition + num;
-                  JSONObject path = new JSONObject();
-                  paths.put(pathName, path);
-                  path.put("name", pathName);
-                  path.put("type", "path");
-                  path.put("description", trace.getNotes());
-                  path.put("color", color);
+                  String viewName = env + ":Flow" + flowNum + ":" + disposition
+                        + num;
+                  JSONObject view = new JSONObject();
+                  views.put(viewName, view);
+                  view.put("name", viewName);
+                  view.put("type", "view");
+                  view.put("description",
+                        flow.toString() + "\n" + trace.getNotes());
+                  view.put("color", color);
                   JSONArray links = new JSONArray();
-                  path.put("links", links);
+                  view.put("links", links);
                   int hopNum = 0;
                   for (Edge edge : trace.getHops()) {
                      hopNum++;
-                     String linkName = pathName + ":Hop" + hopNum;
+                     String linkName = viewName + ":Hop" + hopNum;
                      JSONObject link = new JSONObject();
                      links.put(link);
                      link.put("name", linkName);

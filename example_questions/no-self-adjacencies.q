@@ -62,12 +62,13 @@ verify {
                   $link_int1.set("type", "interface");
                   $link_int1.set("node", node.name);
                   $link_int1.set("name", $interface1);
-                  $link_int1.set("all_prefixes", $subnet_interfaces.get_map($subnet_name).get_map("interfaces").get($interface1));
                   $link_int2 := $link.get_map("interface2");
                   $link_int2.set("type", "interface");
                   $link_int2.set("node", node.name);
                   $link_int2.set("name", $interface2);
-                  $link_int2.set("all_prefixes", $subnet_interfaces.get_map($subnet_name).get_map("interfaces").get($interface2));
+                  $link.set("description",
+                     node.name + ":" + $interface1 + " prefixes: " + $subnet_interfaces.get_map($subnet_name).get_map("interfaces").get($interface1) + "\n" +
+                     node.name + ":" + $interface2 + " prefixes: " + $subnet_interfaces.get_map($subnet_name).get_map("interfaces").get($interface2));
                }
             }
          }
