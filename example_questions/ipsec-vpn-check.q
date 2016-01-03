@@ -6,6 +6,10 @@ defaults {
    $no_check_psk=false;
 }
 verify {
+   query.set("name", "IPSEC VPN Check");
+   query.set("color", "error");
+   query.set("type", "query");
+   $views := query.get_map("views");
    $num_ipsec_vpns := 0;
    $num_ipsec_vpns_with_nondeterministic_endpoint := 0;
    $num_matched_ipsec_vpns := 0;
@@ -23,6 +27,14 @@ verify {
                printf("MISSING_ENDPOINT: Could not determine remote Ipsec VPN for Ipsec VPN '%s' on node '%s'\n",
                   ipsec_vpn.name,
                   node.name);
+                  $view_name := "MISSING_ENDPOINT";
+                  $view := $views.get_map($view_name);
+                  $view.set("name", $view_name);
+                  $view.set("type", "view");
+                  $n := $view.get_map("nodes").get_map(node.name);
+                  $n.set("name", node.name);
+                  $n.set("type", "node");
+                  $n.set("description", $n.get("description") + "Could not determine remote IPSEC VPN for IPSEC VPN '" + ipsec_vpn.name + "'\n");
             }
          }
          if (ipsec_vpn.has_remote_ipsec_vpn){
@@ -36,10 +48,19 @@ verify {
                   printf("NON_UNIQUE_ENDPOINT: Could not uniquely determine remote VPN for Ipsec VPN '%s' on node '%s' from candidate remote VPNs:\n",
                      ipsec_vpn.name,
                      node.name);
+                     $view_name := "NON_UNIQUE_ENDPOINT";
+                     $view := $views.get_map($view_name);
+                     $view.set("name", $view_name);
+                     $view.set("type", "view");
+                     $n := $view.get_map("nodes").get_map(node.name);
+                     $n.set("name", node.name);
+                     $n.set("type", "node");
+                     $n.set("description", $n.get("description") + "Could not uniquely determine remote IPSEC VPN for IPSEC VPN '" + ipsec_vpn.name + "' among candidate remote IPSEC VPNs:\n");
                   foreach remote_ipsec_vpn {
                      printf("\tCANDIDATE REMOTE VPN: '%s' on node '%s'\n",
                         remote_ipsec_vpn.name,
                         remote_ipsec_vpn.owner.name);
+                        $n.set("description", $n.get("description") + "\t" + remote_ipsec_vpn.name + " on node '" + remote_ipsec_vpn.owner.name + "\n");
                   }
                }
             }
@@ -56,6 +77,17 @@ verify {
                      ipsec_vpn.remote_ipsec_vpn.name,
                      ipsec_vpn.remote_ipsec_vpn.owner.name,
                      ipsec_vpn.remote_ipsec_vpn.ipsec_policy_name);
+                     $view_name := "INCOMPATIBLE_IPSEC_PROPOSALS:" + node.name + ":" + ipsec_vpn.name + ":" + ipsec_vpn.remote_ipsec_vpn.owner.name + ":" + ipsec_vpn.remote_ipsec_vpn.name;
+                     $view := $views.get_map($view_name);
+                     $view.set("name", $view_name);
+                     $view.set("type", "view");
+                     $view.set("description", "Ipsec VPNs '" + ipsec_vpn.name + "' on node '" + node.name + "' with Ipsec policy '" + ipsec_vpn.ipsec_policy_name + "' and '" + ipsec_vpn.remote_ipsec_vpn.name + "' on node '" + ipsec_vpn.remote_ipsec_vpn.owner.name + "' with Ipsec policy '" + ipsec_vpn.remote_ipsec_vpn.ipsec_policy_name + "' do not have compatible Ipsec proposals.");
+                     $n1 := $view.get_map("nodes").get_map(node.name);
+                     $n1.set("name", node.name);
+                     $n1.set("type", "node");
+                     $n2 := $view.get_map("nodes").get_map(ipsec_vpn.remote_ipsec_vpn.owner.name);
+                     $n2.set("name", ipsec_vpn.remote_ipsec_vpn.owner.name);
+                     $n2.set("type", "node");
                }
             }
             unless ($no_check_ike){
@@ -73,6 +105,17 @@ verify {
                      ipsec_vpn.remote_ipsec_vpn.ike_policy_name,
                      ipsec_vpn.remote_ipsec_vpn.ike_gateway_name,
                      ipsec_vpn.remote_ipsec_vpn.owner.name);
+                     $view_name := "INCOMPATIBLE_IKE_PROPOSALS:" + node.name + ":" + ipsec_vpn.name + ":" + ipsec_vpn.remote_ipsec_vpn.owner.name + ":" + ipsec_vpn.remote_ipsec_vpn.name;
+                     $view := $views.get_map($view_name);
+                     $view.set("name", $view_name);
+                     $view.set("type", "view");
+                     $view.set("description", "Ipsec VPNs '" + ipsec_vpn.name + "' on node '" + node.name + "' with IKE policy '" + ipsec_vpn.ike_policy_name + "' on gateway '" + ipsec_vpn.ike_gateway_name + "'and '" + ipsec_vpn.remote_ipsec_vpn.name + "' on node '" + ipsec_vpn.remote_ipsec_vpn.owner.name + "' with IKE policy '" + ipsec_vpn.remote_ipsec_vpn.ike_policy_name + "' on gateway '" + ipsec_vpn.remote_ipsec_vpn.ike_gateway_name + "' do not have compatible IKE proposals.");
+                     $n1 := $view.get_map("nodes").get_map(node.name);
+                     $n1.set("name", node.name);
+                     $n1.set("type", "node");
+                     $n2 := $view.get_map("nodes").get_map(ipsec_vpn.remote_ipsec_vpn.owner.name);
+                     $n2.set("name", ipsec_vpn.remote_ipsec_vpn.owner.name);
+                     $n2.set("type", "node");
                }
             }
             unless ($no_check_psk){
@@ -90,6 +133,17 @@ verify {
                      ipsec_vpn.name,
                      ipsec_vpn.remote_ipsec_vpn.name,
                      ipsec_vpn.remote_ipsec_vpn.remote_ipsec_vpn.name);
+                     $view_name := "PRE_SHARED_KEY_MISMATCH:" + node.name + ":" + ipsec_vpn.name + ":" + ipsec_vpn.remote_ipsec_vpn.owner.name + ":" + ipsec_vpn.remote_ipsec_vpn.name;
+                     $view := $views.get_map($view_name);
+                     $view.set("name", $view_name);
+                     $view.set("type", "view");
+                     $view.set("description", "Ipsec VPNs '" + ipsec_vpn.name + "' on node '" + node.name + "'and '" + ipsec_vpn.remote_ipsec_vpn.name + "' on node '" + ipsec_vpn.remote_ipsec_vpn.owner.name + "' do not have the same pre-shared-key.");
+                     $n1 := $view.get_map("nodes").get_map(node.name);
+                     $n1.set("name", node.name);
+                     $n1.set("type", "node");
+                     $n2 := $view.get_map("nodes").get_map(ipsec_vpn.remote_ipsec_vpn.owner.name);
+                     $n2.set("name", ipsec_vpn.remote_ipsec_vpn.owner.name);
+                     $n2.set("type", "node");
                }
             }
          }
