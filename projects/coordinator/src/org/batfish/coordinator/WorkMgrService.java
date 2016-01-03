@@ -281,7 +281,7 @@ public class WorkMgrService {
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
-         @FormDataParam(CoordConsts.SVC_OBJECT_KEY) String objectName) {
+         @FormDataParam(CoordConsts.SVC_OBJECT_NAME_KEY) String objectName) {
       try {
          _logger.info("WMS:getObject " + testrigName + " --> " + objectName
                + "\n");
@@ -292,6 +292,8 @@ public class WorkMgrService {
                "Container name not supplied or is empty");
          ;
          checkStringParam(testrigName, "Testrig name not supplied or is empty");
+         ;
+         checkStringParam(objectName, "Object name not supplied or is empty");
          ;
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
@@ -713,7 +715,7 @@ public class WorkMgrService {
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
-         @FormDataParam(CoordConsts.SVC_CUSTOM_OBJECT_NAME_KEY) String objectName,
+         @FormDataParam(CoordConsts.SVC_OBJECT_NAME_KEY) String objectName,
          @FormDataParam(CoordConsts.SVC_FILE_KEY) InputStream fileStream) {
       try {
          _logger.info("WMS:uploadQuestion " + apiKey + " " + containerName

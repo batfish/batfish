@@ -638,9 +638,17 @@ public class WorkMgr {
 
       File parentFolder = file.getParentFile();
 
-      if (!parentFolder.mkdirs()) {
-         throw new Exception("failed to create directory "
-               + parentFolder.getAbsolutePath());
+      if (! parentFolder.exists()) {
+         if (!parentFolder.mkdirs()) {
+            throw new Exception("failed to create directory "
+                  + parentFolder.getAbsolutePath());
+         }
+      }
+      else {
+         if (!parentFolder.isDirectory()) {
+            throw new Exception(parentFolder.getAbsolutePath() 
+                  + " already exists but is not a folder");            
+         }
       }
 
       try (OutputStream fileOutputStream = new FileOutputStream(file)) {
