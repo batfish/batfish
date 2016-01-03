@@ -8,6 +8,7 @@ import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.util.Util;
+import org.batfish.z3.Synthesizer;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -113,9 +114,27 @@ public class FlowHistory {
                      link.put("interface1", interface1);
                      String node2Name = edge.getNode2();
                      String int2Name = edge.getInt2();
-                     Configuration node2 = currentConfigurations.get(node2Name);
-                     Interface int2 = node2.getInterfaces().get(int2Name);
-                     JSONObject interface2 = int2.toJSONObject();
+                     JSONObject interface2;
+                     if (node2Name.equals(Synthesizer.NODE_NONE_NAME)) {
+                        interface2 = new JSONObject();
+                        interface2.put("name", int2Name);
+                        String int2Type;
+                        switch (int2Name) {
+                        case Synthesizer.FLOW_SINK_TERMINATION_NAME:
+                           int2Type = "FLOW_SINK_TERMINATION";
+                           break;
+                        default:
+                           int2Type = "UNKNOWN";
+                        }
+                        interface2.put("type", int2Type);
+                        interface2.put("node", node2Name);
+                     }
+                     else {
+                        Configuration node2 = currentConfigurations
+                              .get(node2Name);
+                        Interface int2 = node2.getInterfaces().get(int2Name);
+                        interface2 = int2.toJSONObject();
+                     }
                      link.put("interface2", interface2);
                   }
                }

@@ -106,10 +106,10 @@ import com.microsoft.z3.Z3Exception;
 public class Synthesizer {
    public static final String DST_IP_VAR = "dst_ip";
    public static final String DST_PORT_VAR = "dst_port";
-   private static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
+   public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
    public static final int IP_BITS = 32;
    public static final String IP_PROTOCOL_VAR = "ip_prot";
-   private static final String NODE_NONE_NAME = "(none)";
+   public static final String NODE_NONE_NAME = "(none)";
    public static final Map<String, Integer> PACKET_VAR_SIZES = initPacketVarSizes();
    public static final List<String> PACKET_VARS = getPacketVars();
    public static final int PORT_BITS = 16;

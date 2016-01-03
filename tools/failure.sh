@@ -55,18 +55,18 @@ _batfish_analyze_link_failures() {
       $BATFISH_CONFIRM && { batfish_query_data_plane_diff $BASE $ENV $ENV_CURRENT || return 1 ; }
 
       echo "Answer failure consistency question for $EDGE_RAW"
-      $BATFISH_CONFIRM && { batfish_answer_failure $BASE $ENV $ENV_CURRENT $QUESTIONNAME || return 1 ; }
+      $BATFISH_CONFIRM && { BATFISH_COMMON_ARGS="$BATFISH_COMMON_ARGS $BATFISH_NESTED_COMMON_ARGS" batfish_answer_failure $BASE $ENV $ENV_CURRENT $QUESTIONNAME || return 1 ; }
    
       echo "Inject discovered packets into network model for $EDGE_RAW"
       $BATFISH_CONFIRM && { batfish_post_flows_diff $BASE $ENV $ENV_CURRENT $QUESTIONNAME || return 1 ; }
 
       echo "Get flow histories for $EDGE_RAW"
-      $BATFISH_CONFIRM && { batfish_get_history_diff $BASE $ENV $ENV_CURRENT $QUESTIONNAME $RESULT_CURRENT || return 1 ; }
+      $BATFISH_CONFIRM && { batfish_get_history_diff $BASE $ENV $ENV_CURRENT $QUESTIONNAME $RESULT_CURRENT ${RESULT_CURRENT}.json || return 1 ; }
 
    }
    export -f batfish_analyze_link_failures_helper
 
-   batfish_print_symmetric_edges $BASE | $BATFISH_PARALLEL --colsep ' ' batfish_analyze_link_failures_helper "{1}" "{2}"
+   batfish_print_symmetric_edges $BASE | $BATFISH_PARALLEL $BATFISH_PARALLEL_ARGS --colsep ' ' batfish_analyze_link_failures_helper "{1}" "{2}"
 
 }
 export -f _batfish_analyze_link_failures
@@ -124,17 +124,17 @@ _batfish_analyze_node_failures() {
       $BATFISH_CONFIRM && { batfish_query_data_plane_diff $BASE $ENV $ENV_CURRENT || return 1 ; }
 
       echo "Answer failure consistency question for $NODE"
-      $BATFISH_CONFIRM && { batfish_answer_failure $BASE $ENV $ENV_CURRENT $QUESTIONNAME || return 1 ; }
+      $BATFISH_CONFIRM && { BATFISH_COMMON_ARGS="$BATFISH_COMMON_ARGS $BATFISH_NESTED_COMMON_ARGS" batfish_answer_failure $BASE $ENV $ENV_CURRENT $QUESTIONNAME || return 1 ; }
    
       echo "Inject discovered packets into network model for $NODE"
       $BATFISH_CONFIRM && { batfish_post_flows_diff $BASE $ENV $ENV_CURRENT $QUESTIONNAME || return 1 ; }
 
       echo "Get flow histories for $NODE"
-      $BATFISH_CONFIRM && { batfish_get_history_diff $BASE $ENV $ENV_CURRENT $QUESTIONNAME $RESULT_CURRENT || return 1 ; }
+      $BATFISH_CONFIRM && { batfish_get_history_diff $BASE $ENV $ENV_CURRENT $QUESTIONNAME $RESULT_CURRENT ${RESULT_CURRENT}.json || return 1 ; }
    }
    export -f batfish_analyze_node_failures_helper
 
-   $GNU_FIND $BASE/indep -type f -printf '%f\n' | sort | $BATFISH_PARALLEL batfish_analyze_node_failures_helper {}
+   $GNU_FIND $BASE/indep -type f -printf '%f\n' | sort | $BATFISH_PARALLEL $BATFISH_PARALLEL_ARGS batfish_analyze_node_failures_helper {}
 }
 export -f _batfish_analyze_node_failures
 
