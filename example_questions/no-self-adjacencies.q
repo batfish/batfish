@@ -54,18 +54,19 @@ verify {
                if ($interface1 < $interface2) {
                   $link_name := $subnet_name + ":" + $interface1 + ":" + $interface2;
                   $view := $views.get_map(node.name);
+                  $view.set("name", node.name);
                   $view.set("type", "view");
                   $link := $view.get_map("links").get_map($link_name);
                   $link.set("type", "link");
                   $link_int1 := $link.get_map("interface1");
                   $link_int1.set("type", "interface");
                   $link_int1.set("node", node.name);
-                  $link_int1.set("interface_name", $interface1);
+                  $link_int1.set("name", $interface1);
                   $link_int1.set("all_prefixes", $subnet_interfaces.get_map($subnet_name).get_map("interfaces").get($interface1));
                   $link_int2 := $link.get_map("interface2");
                   $link_int2.set("type", "interface");
                   $link_int2.set("node", node.name);
-                  $link_int2.set("interface_name", $interface2);
+                  $link_int2.set("name", $interface2);
                   $link_int2.set("all_prefixes", $subnet_interfaces.get_map($subnet_name).get_map("interfaces").get($interface2));
                }
             }
