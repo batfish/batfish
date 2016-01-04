@@ -515,6 +515,7 @@ public class Batfish implements AutoCloseable {
             views.put(viewName, view);
             view.put("name", viewName);
             view.put("type", "view");
+            view.put("color", "error");
             JSONObject nodes = new JSONObject();
             view.put("nodes", nodes);
             for (Entry<AclLine, Boolean> e : output.entrySet()) {
