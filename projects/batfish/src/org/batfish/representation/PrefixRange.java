@@ -20,11 +20,11 @@ public class PrefixRange extends Pair<Prefix, SubRange> {
    }
 
    public SubRange getLengthRange() {
-      return _t2;
+      return _second;
    }
 
    public Prefix getPrefix() {
-      return _t1;
+      return _first;
    }
 
    public boolean includesPrefix(Prefix argPrefix) {

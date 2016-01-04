@@ -84,6 +84,11 @@ package org.batfish.grammar.question;
 
 }
 
+acl_reachability_question
+:
+   ACL_REACHABILITY OPEN_BRACE CLOSE_BRACE
+;
+
 action
 :
    ACCEPT
@@ -1407,7 +1412,8 @@ question
 :
    defaults?
    (
-      failure_question
+      acl_reachability_question
+      | failure_question
       | ingress_path_question
       | local_path_question
       | multipath_question

@@ -216,6 +216,18 @@ public class Synthesizer {
    private List<String> _warnings;
 
    public Synthesizer(Map<String, Configuration> configurations,
+         boolean simplify) {
+      _configurations = configurations;
+      _fibs = null;
+      _prFibs = null;
+      _topologyEdges = null;
+      _flowSinks = null;
+      _simplify = simplify;
+      _topologyInterfaces = null;
+      _warnings = new ArrayList<String>();
+   }
+
+   public Synthesizer(Map<String, Configuration> configurations,
          DataPlane dataPlane, boolean simplify) {
       _configurations = configurations;
       _fibs = dataPlane.getFibs();
@@ -665,62 +677,76 @@ public class Synthesizer {
       statements.add(comment);
       Map<String, Map<String, IpAccessList>> matchAcls = new TreeMap<String, Map<String, IpAccessList>>();
       // first we find out which acls we need to process
-      for (String hostname : _topologyInterfaces.keySet()) {
-         Configuration node = _configurations.get(hostname);
-         Map<String, IpAccessList> aclMap = new TreeMap<String, IpAccessList>();
-         Set<Interface> interfaces = _topologyInterfaces.get(hostname);
-         for (Interface iface : interfaces) {
-            if (iface.getPrefix() != null) {
-               IpAccessList aclIn = iface.getIncomingFilter();
-               IpAccessList aclOut = iface.getOutgoingFilter();
-               PolicyMap routePolicy = iface.getRoutingPolicy();
-               if (aclIn != null) {
-                  String name = aclIn.getName();
-                  aclMap.put(name, aclIn);
-               }
-               if (aclOut != null) {
-                  String name = aclOut.getName();
-                  aclMap.put(name, aclOut);
-               }
-               if (routePolicy != null) {
-                  for (PolicyMapClause clause : routePolicy.getClauses()) {
-                     for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
-                        if (matchLine.getType() == PolicyMapMatchType.IP_ACCESS_LIST) {
-                           PolicyMapMatchIpAccessListLine matchAclLine = (PolicyMapMatchIpAccessListLine) matchLine;
-                           for (IpAccessList acl : matchAclLine.getLists()) {
-                              String name = acl.getName();
-                              aclMap.put(name, acl);
+      // if data plane was provided as input, only check acls for topology
+      // nodes/interfaces
+      if (_topologyInterfaces != null) {
+         for (String hostname : _topologyInterfaces.keySet()) {
+            Configuration node = _configurations.get(hostname);
+            Map<String, IpAccessList> aclMap = new TreeMap<String, IpAccessList>();
+            Set<Interface> interfaces = _topologyInterfaces.get(hostname);
+            for (Interface iface : interfaces) {
+               if (iface.getPrefix() != null) {
+                  IpAccessList aclIn = iface.getIncomingFilter();
+                  IpAccessList aclOut = iface.getOutgoingFilter();
+                  PolicyMap routePolicy = iface.getRoutingPolicy();
+                  if (aclIn != null) {
+                     String name = aclIn.getName();
+                     aclMap.put(name, aclIn);
+                  }
+                  if (aclOut != null) {
+                     String name = aclOut.getName();
+                     aclMap.put(name, aclOut);
+                  }
+                  if (routePolicy != null) {
+                     for (PolicyMapClause clause : routePolicy.getClauses()) {
+                        for (PolicyMapMatchLine matchLine : clause
+                              .getMatchLines()) {
+                           if (matchLine.getType() == PolicyMapMatchType.IP_ACCESS_LIST) {
+                              PolicyMapMatchIpAccessListLine matchAclLine = (PolicyMapMatchIpAccessListLine) matchLine;
+                              for (IpAccessList acl : matchAclLine.getLists()) {
+                                 String name = acl.getName();
+                                 aclMap.put(name, acl);
+                              }
                            }
                         }
                      }
                   }
                }
             }
+            for (Zone zone : node.getZones().values()) {
+               IpAccessList fromHostFilter = zone.getFromHostFilter();
+               if (fromHostFilter != null) {
+                  aclMap.put(fromHostFilter.getName(), fromHostFilter);
+               }
+               IpAccessList toHostFilter = zone.getToHostFilter();
+               if (toHostFilter != null) {
+                  aclMap.put(toHostFilter.getName(), toHostFilter);
+               }
+               IpAccessList inboundFilter = zone.getInboundFilter();
+               if (inboundFilter != null) {
+                  aclMap.put(inboundFilter.getName(), inboundFilter);
+               }
+               for (IpAccessList inboundInterfaceFilter : zone
+                     .getInboundInterfaceFilters().values()) {
+                  aclMap.put(inboundInterfaceFilter.getName(),
+                        inboundInterfaceFilter);
+               }
+               for (IpAccessList toZoneFilter : zone.getToZonePolicies()
+                     .values()) {
+                  aclMap.put(toZoneFilter.getName(), toZoneFilter);
+               }
+            }
+            if (aclMap.size() > 0) {
+               matchAcls.put(hostname, aclMap);
+            }
          }
-         for (Zone zone : node.getZones().values()) {
-            IpAccessList fromHostFilter = zone.getFromHostFilter();
-            if (fromHostFilter != null) {
-               aclMap.put(fromHostFilter.getName(), fromHostFilter);
-            }
-            IpAccessList toHostFilter = zone.getToHostFilter();
-            if (toHostFilter != null) {
-               aclMap.put(toHostFilter.getName(), toHostFilter);
-            }
-            IpAccessList inboundFilter = zone.getInboundFilter();
-            if (inboundFilter != null) {
-               aclMap.put(inboundFilter.getName(), inboundFilter);
-            }
-            for (IpAccessList inboundInterfaceFilter : zone
-                  .getInboundInterfaceFilters().values()) {
-               aclMap.put(inboundInterfaceFilter.getName(),
-                     inboundInterfaceFilter);
-            }
-            for (IpAccessList toZoneFilter : zone.getToZonePolicies().values()) {
-               aclMap.put(toZoneFilter.getName(), toZoneFilter);
-            }
-         }
-         if (aclMap.size() > 0) {
-            matchAcls.put(hostname, aclMap);
+      }
+      else {
+         // topology is null. just add all acls.
+         for (Entry<String, Configuration> e : _configurations.entrySet()) {
+            String hostname = e.getKey();
+            Configuration c = e.getValue();
+            matchAcls.put(hostname, c.getIpAccessLists());
          }
       }
       for (Entry<String, Map<String, IpAccessList>> e : matchAcls.entrySet()) {
@@ -1621,9 +1647,19 @@ public class Synthesizer {
       }
    }
 
-   public NodProgram synthesizeNodProgram(Context ctx) throws Z3Exception {
-      NodProgram nodProgram = new NodProgram(ctx);
+   public NodProgram synthesizeNodAclProgram(Context ctx) throws Z3Exception {
 
+      List<Statement> ruleStatements = new ArrayList<Statement>();
+      List<Statement> sane = getSane();
+      List<Statement> matchAclRules = getMatchAclRules();
+
+      ruleStatements.addAll(sane);
+      ruleStatements.addAll(matchAclRules);
+      return synthesizeNodProgram(ctx, ruleStatements);
+   }
+
+   public NodProgram synthesizeNodDataPlaneProgram(Context ctx)
+         throws Z3Exception {
       List<Statement> ruleStatements = new ArrayList<Statement>();
       List<Statement> dropRules = getDropRules();
       List<Statement> acceptRules = getAcceptRules();
@@ -1675,6 +1711,12 @@ public class Synthesizer {
       ruleStatements.addAll(postOutIfaceToNodeTransitRules);
       ruleStatements.addAll(roleOriginateToNodeOriginateRules);
 
+      return synthesizeNodProgram(ctx, ruleStatements);
+   }
+
+   private NodProgram synthesizeNodProgram(Context ctx,
+         List<Statement> ruleStatements) {
+      NodProgram nodProgram = new NodProgram(ctx);
       Map<String, FuncDecl> relDeclFuncDecls = getRelDeclFuncDecls(
             ruleStatements, ctx);
       nodProgram.getRelationDeclarations().putAll(relDeclFuncDecls);

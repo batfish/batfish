@@ -1,6 +1,7 @@
 package org.batfish.question;
 
 public enum QuestionType {
+   ACL_REACHABILITY,
    DESTINATION,
    FAILURE,
    INGRESS_PATH,

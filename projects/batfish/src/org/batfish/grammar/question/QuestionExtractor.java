@@ -15,6 +15,7 @@ import org.batfish.grammar.BatfishExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.question.QuestionParser.*;
 import org.batfish.common.BatfishException;
+import org.batfish.question.AclReachabilityQuestion;
 import org.batfish.question.Expr;
 import org.batfish.question.FailureQuestion;
 import org.batfish.question.ForwardingAction;
@@ -532,6 +533,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          Statement statement = toStatement(sctx);
          _verifyProgram.getStatements().add(statement);
       }
+   }
+
+   @Override
+   public void exitAcl_reachability_question(
+         Acl_reachability_questionContext ctx) {
+      _question = new AclReachabilityQuestion();
    }
 
    @Override

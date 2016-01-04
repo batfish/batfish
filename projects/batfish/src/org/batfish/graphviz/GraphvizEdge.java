@@ -14,17 +14,17 @@ public class GraphvizEdge extends Pair<GraphvizNode, GraphvizNode> {
    }
 
    public GraphvizNode getFromNode() {
-      return _t1;
+      return _first;
    }
 
    public GraphvizNode getToNode() {
-      return _t2;
+      return _second;
    }
 
    @Override
    public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append(_t1.getName() + " -> " + _t2.getName() + ";");
+      sb.append(_first.getName() + " -> " + _second.getName() + ";");
       return sb.toString();
    }
 
