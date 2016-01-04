@@ -15,19 +15,19 @@ public class IpEdge extends Pair<NodeIpPair, NodeIpPair> {
    }
 
    public Ip getIp1() {
-      return _t1.getIp();
+      return _first.getIp();
    }
 
    public Ip getIp2() {
-      return _t2.getIp();
+      return _second.getIp();
    }
 
    public String getNode1() {
-      return _t1.getNode();
+      return _first.getNode();
    }
 
    public String getNode2() {
-      return _t2.getNode();
+      return _second.getNode();
    }
 
 }

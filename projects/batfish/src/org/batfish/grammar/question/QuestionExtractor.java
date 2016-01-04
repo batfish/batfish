@@ -15,6 +15,7 @@ import org.batfish.grammar.BatfishExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.question.QuestionParser.*;
 import org.batfish.common.BatfishException;
+import org.batfish.question.AclReachabilityQuestion;
 import org.batfish.question.Expr;
 import org.batfish.question.FailureQuestion;
 import org.batfish.question.ForwardingAction;
@@ -532,6 +533,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          Statement statement = toStatement(sctx);
          _verifyProgram.getStatements().add(statement);
       }
+   }
+
+   @Override
+   public void exitAcl_reachability_question(
+         Acl_reachability_questionContext ctx) {
+      _question = new AclReachabilityQuestion();
    }
 
    @Override
@@ -1799,6 +1806,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
       case ACTION:
       case BOOLEAN:
+      case PROTOCOL:
       case RANGE:
       case REGEX:
       case SET_BGP_NEIGHBOR:
@@ -2056,6 +2064,39 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
+   private StringExpr toStringExpr(Base_string_exprContext ctx) {
+      if (ctx.bgp_neighbor_string_expr() != null) {
+         return toStringExpr(ctx.bgp_neighbor_string_expr());
+      }
+      else if (ctx.interface_string_expr() != null) {
+         return toStringExpr(ctx.interface_string_expr());
+      }
+      else if (ctx.ipsec_vpn_string_expr() != null) {
+         return toStringExpr(ctx.ipsec_vpn_string_expr());
+      }
+      else if (ctx.map_string_expr() != null) {
+         return toStringExpr(ctx.map_string_expr());
+      }
+      else if (ctx.node_string_expr() != null) {
+         return toStringExpr(ctx.node_string_expr());
+      }
+      else if (ctx.protocol_string_expr() != null) {
+         return toStringExpr(ctx.protocol_string_expr());
+      }
+      else if (ctx.static_route_string_expr() != null) {
+         return toStringExpr(ctx.static_route_string_expr());
+      }
+      else if (ctx.route_filter_string_expr() != null) {
+         return toStringExpr(ctx.route_filter_string_expr());
+      }
+      else if (ctx.var_string_expr() != null) {
+         return toStringExpr(ctx.var_string_expr());
+      }
+      else {
+         throw conversionError(ERR_CONVERT_STRING, ctx);
+      }
+   }
+
    private BgpNeighborStringExpr toStringExpr(
          Bgp_neighbor_string_exprContext ctx) {
       BgpNeighborExpr caller = toBgpNeighborExpr(ctx.caller);
@@ -2155,35 +2196,11 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private StringExpr toStringExpr(String_exprContext ctx) {
-      if (ctx.bgp_neighbor_string_expr() != null) {
-         return toStringExpr(ctx.bgp_neighbor_string_expr());
-      }
-      else if (ctx.interface_string_expr() != null) {
-         return toStringExpr(ctx.interface_string_expr());
-      }
-      else if (ctx.ipsec_vpn_string_expr() != null) {
-         return toStringExpr(ctx.ipsec_vpn_string_expr());
-      }
-      else if (ctx.map_string_expr() != null) {
-         return toStringExpr(ctx.map_string_expr());
-      }
-      else if (ctx.node_string_expr() != null) {
-         return toStringExpr(ctx.node_string_expr());
-      }
-      else if (ctx.protocol_string_expr() != null) {
-         return toStringExpr(ctx.protocol_string_expr());
-      }
-      else if (ctx.static_route_string_expr() != null) {
-         return toStringExpr(ctx.static_route_string_expr());
-      }
-      else if (ctx.route_filter_string_expr() != null) {
-         return toStringExpr(ctx.route_filter_string_expr());
+      if (ctx.base_string_expr() != null) {
+         return toStringExpr(ctx.base_string_expr());
       }
       else if (ctx.string_literal_string_expr() != null) {
          return toStringExpr(ctx.string_literal_string_expr());
-      }
-      else if (ctx.var_string_expr() != null) {
-         return toStringExpr(ctx.var_string_expr());
       }
       else if (ctx.PLUS() != null) {
          StringExpr s1 = toStringExpr(ctx.s1);

@@ -20,6 +20,7 @@ public enum VariableType {
    POLICY_MAP_CLAUSE("policy_map_clause"),
    PREFIX("prefix"),
    PREFIX_SPACE("prefix_space"),
+   PROTOCOL("protocol"),
    RANGE("range"),
    REGEX("regex"),
    ROUTE_FILTER("route_filter"),

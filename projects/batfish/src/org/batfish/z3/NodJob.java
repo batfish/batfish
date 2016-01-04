@@ -28,7 +28,7 @@ import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
 
-public class NodJob extends BatfishJob<NodJobResult> {
+public final class NodJob extends BatfishJob<NodJobResult> {
 
    private Synthesizer _dataPlaneSynthesizer;
 
@@ -55,7 +55,7 @@ public class NodJob extends BatfishJob<NodJobResult> {
       try {
          ctx = new Context();
          NodProgram baseProgram = _dataPlaneSynthesizer
-               .synthesizeNodProgram(ctx);
+               .synthesizeNodDataPlaneProgram(ctx);
          NodProgram queryProgram = _querySynthesizer.getNodProgram(baseProgram);
          NodProgram program = baseProgram.append(queryProgram);
          Params p = ctx.mkParams();

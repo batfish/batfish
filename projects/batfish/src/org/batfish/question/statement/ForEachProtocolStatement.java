@@ -17,7 +17,7 @@ public class ForEachProtocolStatement extends ForEachStatement<RoutingProtocol> 
 
    @Override
    protected Collection<RoutingProtocol> getCollection(Environment environment) {
-      return environment.getProtocols();
+      return environment.getCurrentProtocols();
    }
 
    @Override

@@ -14,16 +14,16 @@ public class NodeInterfacePair extends Pair<String, String> {
    }
 
    public String getHostname() {
-      return _t1;
+      return _first;
    }
 
    public String getInterface() {
-      return _t2;
+      return _second;
    }
 
    @Override
    public String toString() {
-      return _t1 + ":" + _t2;
+      return _first + ":" + _second;
    }
 
 }

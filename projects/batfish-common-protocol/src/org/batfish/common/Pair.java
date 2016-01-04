@@ -2,25 +2,25 @@ package org.batfish.common;
 
 import java.io.Serializable;
 
-public abstract class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? super T2>>
+public class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? super T2>>
       implements Serializable, Comparable<Pair<T1, T2>> {
 
    private static final long serialVersionUID = 1L;
 
-   protected final T1 _t1;
+   protected final T1 _first;
 
-   protected final T2 _t2;
+   protected final T2 _second;
 
    public Pair(T1 t1, T2 t2) {
-      _t1 = t1;
-      _t2 = t2;
+      _first = t1;
+      _second = t2;
    }
 
    @Override
    public int compareTo(Pair<T1, T2> rhs) {
-      int first = _t1.compareTo(rhs._t1);
+      int first = _first.compareTo(rhs._first);
       if (first == 0) {
-         return _t2.compareTo(rhs._t2);
+         return _second.compareTo(rhs._second);
       }
       else {
          return first;
@@ -36,37 +36,45 @@ public abstract class Pair<T1 extends Comparable<? super T1>, T2 extends Compara
          return false;
       }
       Pair<?, ?> other = (Pair<?, ?>) obj;
-      if (_t1 == null) {
-         if (other._t1 != null) {
+      if (_first == null) {
+         if (other._first != null) {
             return false;
          }
       }
-      else if (!_t1.equals(other._t1)) {
+      else if (!_first.equals(other._first)) {
          return false;
       }
-      if (_t2 == null) {
-         if (other._t2 != null) {
+      if (_second == null) {
+         if (other._second != null) {
             return false;
          }
       }
-      else if (!_t2.equals(other._t2)) {
+      else if (!_second.equals(other._second)) {
          return false;
       }
       return true;
+   }
+
+   public final T1 getFirst() {
+      return _first;
+   }
+
+   public final T2 getSecond() {
+      return _second;
    }
 
    @Override
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((_t1 == null) ? 0 : _t1.hashCode());
-      result = prime * result + ((_t2 == null) ? 0 : _t2.hashCode());
+      result = prime * result + ((_first == null) ? 0 : _first.hashCode());
+      result = prime * result + ((_second == null) ? 0 : _second.hashCode());
       return result;
    }
 
    @Override
    public String toString() {
-      return "<" + _t1.toString() + ":" + _t2.toString() + ">";
+      return "<" + _first.toString() + ":" + _second.toString() + ">";
    }
 
 }

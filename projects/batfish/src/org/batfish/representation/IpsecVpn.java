@@ -63,7 +63,7 @@ public final class IpsecVpn extends Pair<Configuration, String> {
    }
 
    public Configuration getConfiguration() {
-      return _t1;
+      return _first;
    }
 
    public IkeGateway getGateway() {
@@ -75,7 +75,7 @@ public final class IpsecVpn extends Pair<Configuration, String> {
    }
 
    public String getName() {
-      return _t2;
+      return _second;
    }
 
    public IpsecVpn getRemoteIpsecVpn() {

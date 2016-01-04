@@ -8,6 +8,7 @@ import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.util.Util;
+import org.batfish.z3.Synthesizer;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -64,14 +65,6 @@ public class FlowHistory {
                Set<FlowTrace> traces = e2.getValue();
                int acceptNum = 0;
                int dropNum = 0;
-               JSONObject view = new JSONObject();
-               String viewName = env + ":Flow" + flowNum;
-               views.put(viewName, view);
-               view.put("name", viewName);
-               view.put("type", "view");
-               view.put("description", flow.toString());
-               JSONObject paths = new JSONObject();
-               view.put("paths", paths);
                for (FlowTrace trace : traces) {
                   int num;
                   String disposition;
@@ -88,17 +81,21 @@ public class FlowHistory {
                      disposition = "Drop";
                      color = "error";
                   }
-                  String pathName = viewName + ":" + disposition + num;
-                  JSONObject path = new JSONObject();
-                  paths.put(pathName, path);
-                  path.put("name", pathName);
-                  path.put("color", color);
+                  String viewName = env + ":Flow" + flowNum + ":" + disposition
+                        + num;
+                  JSONObject view = new JSONObject();
+                  views.put(viewName, view);
+                  view.put("name", viewName);
+                  view.put("type", "view");
+                  view.put("description",
+                        flow.toString() + "\n" + trace.getNotes());
+                  view.put("color", color);
                   JSONArray links = new JSONArray();
-                  path.put("links", links);
+                  view.put("links", links);
                   int hopNum = 0;
                   for (Edge edge : trace.getHops()) {
                      hopNum++;
-                     String linkName = pathName + ":Hop" + hopNum;
+                     String linkName = viewName + ":Hop" + hopNum;
                      JSONObject link = new JSONObject();
                      links.put(link);
                      link.put("name", linkName);
@@ -111,9 +108,27 @@ public class FlowHistory {
                      link.put("interface1", interface1);
                      String node2Name = edge.getNode2();
                      String int2Name = edge.getInt2();
-                     Configuration node2 = currentConfigurations.get(node2Name);
-                     Interface int2 = node2.getInterfaces().get(int2Name);
-                     JSONObject interface2 = int2.toJSONObject();
+                     JSONObject interface2;
+                     if (node2Name.equals(Synthesizer.NODE_NONE_NAME)) {
+                        interface2 = new JSONObject();
+                        interface2.put("name", int2Name);
+                        String int2Type;
+                        switch (int2Name) {
+                        case Synthesizer.FLOW_SINK_TERMINATION_NAME:
+                           int2Type = "FLOW_SINK_TERMINATION";
+                           break;
+                        default:
+                           int2Type = "UNKNOWN";
+                        }
+                        interface2.put("type", int2Type);
+                        interface2.put("node", node2Name);
+                     }
+                     else {
+                        Configuration node2 = currentConfigurations
+                              .get(node2Name);
+                        Interface int2 = node2.getInterfaces().get(int2Name);
+                        interface2 = int2.toJSONObject();
+                     }
                      link.put("interface2", interface2);
                   }
                }
