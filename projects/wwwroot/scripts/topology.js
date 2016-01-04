@@ -8,75 +8,8 @@ $(document).ready(function() {
 	SetupCy();
 });
 
-//-----------------------------------------------------------------------------
 
-/*
- * Layout functions.
- */
-function DoAutoLayout() {
-	//var layout = cy.makeLayout({ name: 'circle' });
-	var layout = cy.makeLayout({
-		name : 'concentric',
-		concentric : function(node) {
-			return node.degree();
-		},
-		levelWidth : function(nodes) {
-			return 2;
-		}
-	});
-	layout.run();
-}
 
-function RunPresetayout() {
-	var layout = cy.makeLayout({
-		name : 'preset',
-		positions : function(node) {
-			return layoutData[node.id()];
-		}
-	});
-	layout.run();
-}
-
-function DoPresetLayout() {
-	$.ajax({
-		url : defaultLayoutURL,
-		dataType : 'json',
-		success : function(data, status) {
-			if (status == 'success') {
-				layoutData = data;
-				RunPresetayout();
-			}
-		},
-		error : function(xhr, status, error) {
-			console.log(status);
-			console.log(error);
-		}
-	});
-}
-
-/*
- * Save current layout.
- */
-function SaveLayout() {
-	var nodes = cy.nodes("*");
-	var index;
-	var nodePositions = {};
-	for ( index = 0; index < nodes.length; index++) {
-		nodePositions[nodes[index].id()] = nodes[index].position();
-	}
-	//bfPutObject(containerName,testrigName, containerName + '/layout', JSON.stringify(nodePositions), LayoutSaved, genericFailure_cb, '', '');
-	console.log(JSON.stringify(nodePositions));
-}
-
-function LayoutSaved()
-{
-	console.log("succcessfuly saved layout");
-}
-
-function LayoutSaveError()
-{
-	console.log(error);
-}
 //-----------------------------------------------------------------------------
 
 /*
@@ -256,6 +189,56 @@ function SetupHighlightsMenu(data) {
  * Core Plotting Functions
  */
 /*------------------------------------------*/
+function SaveLayout () {
+	var nodes = cy.nodes("*");
+	var index;
+	var nodePositions = {};
+	for ( index = 0; index < nodes.length; index++) {
+		nodePositions[nodes[index].id()] = nodes[index].position();
+	}
+	bfPutObject(containerName, testrigName, layoutPath, JSON.stringify(nodePositions), testMeSuccess_cb, testMeFailure_cb, "testme", []);
+	console.log(JSON.stringify(nodePositions));
+}
+
+function DoLayout()
+{
+	bfGetObject(containerName, testrigName, layoutPath, FoundSavedLayout, NoSavedLayout, "testme", []);
+}
+
+function NoSavedLayout(errMsg, entryPoint, remainingCalls)
+{
+	DoAutoLayout();
+}
+
+function FoundSavedLayout(dataRaw, entryPoint, remainingCalls)
+{
+	DoPresetLayout(dataRaw);
+}
+
+function DoAutoLayout() {
+	//var layout = cy.makeLayout({ name: 'circle' });
+	var layout = cy.makeLayout({
+		name : 'concentric',
+		concentric : function(node) {
+			return node.degree();
+		},
+		levelWidth : function(nodes) {
+			return 2;
+		}
+	});
+	layout.run();
+}
+
+function DoPresetLayout(dataRaw) {
+	layoutData = JSON.parse(dataRaw);
+	var layout = cy.makeLayout({
+		name : 'preset',
+		positions : function(node) {
+			return layoutData[node.id()];
+		}
+	});
+	layout.run();
+}
 
 function GetIfIds(link) {
 	var ifIds = [];
@@ -337,7 +320,7 @@ function ParseTopology(dataRaw) {
 				AddLink(edges[index]);
 			}
 			SetupToolTips();
-			DoAutoLayout();
+			DoLayout();
 			cy.center();
 		});
 	} catch (e) {

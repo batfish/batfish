@@ -10,3 +10,4 @@ var  ColorEnum = Object.freeze({
 	'ok' : '#0f0',
 	'maybe' : '#ff0'
 });
+var layoutPath = "testrig/layout";
