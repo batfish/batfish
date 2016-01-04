@@ -540,9 +540,9 @@ public class Batfish implements AutoCloseable {
                StringBuilder nodeDescriptionBuilder = nodeDescriptions
                      .get(hostname);
                if (!sat) {
-                  nodeDescriptionBuilder.append(String
-                        .format("ACL: \"%s\", line: %d is UNREACHABLE\n",
-                              aclName, line));
+                  nodeDescriptionBuilder.append(String.format(
+                        "ACL: \"%s\", line: %d is UNREACHABLE<br>", aclName,
+                        line));
                }
             }
             for (String hostname : nodeObjects.keySet()) {

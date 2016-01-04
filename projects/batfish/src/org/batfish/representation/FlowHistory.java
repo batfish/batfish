@@ -87,8 +87,9 @@ public class FlowHistory {
                   views.put(viewName, view);
                   view.put("name", viewName);
                   view.put("type", "view");
-                  view.put("description",
-                        flow.toString() + "\n" + trace.getNotes());
+                  view.put("description", flow.toString().replace("<", "&lt;")
+                        .replace(">", "&gt;")
+                        + "<br>" + trace.getNotes());
                   view.put("color", color);
                   JSONArray links = new JSONArray();
                   view.put("links", links);

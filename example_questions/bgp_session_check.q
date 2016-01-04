@@ -37,7 +37,7 @@ verify {
                   $n := $view.get_map("nodes").get_map(node.name);
                   $n.set("name", node.name);
                   $n.set("type", "node");
-                  $n.set("description", $n.get("description") + "Could not determine remote BGP neighbor for BGP neighbor '" + bgp_neighbor.name + "' group '" + bgp_neighbor.group + "'\n");
+                  $n.set("description", $n.get("description") + "Could not determine remote BGP neighbor for BGP neighbor '" + bgp_neighbor.name + "' group '" + bgp_neighbor.group + "'<br>");
                }
             }
             if (bgp_neighbor.has_remote_bgp_neighbor){
@@ -58,12 +58,12 @@ verify {
                      $n := $view.get_map("nodes").get_map(node.name);
                      $n.set("name", node.name);
                      $n.set("type", "node");
-                     $n.set("description", $n.get("description") + "Could not uniquely determine remote BGP neighbor for BGP neighbor '" + bgp_neighbor.name + "' group '" + bgp_neighbor.group + "' among candidate remote BGP neighbors:\n");
+                     $n.set("description", $n.get("description") + "Could not uniquely determine remote BGP neighbor for BGP neighbor '" + bgp_neighbor.name + "' group '" + bgp_neighbor.group + "' among candidate remote BGP neighbors:<br>");
                      foreach remote_bgp_neighbor {
                         printf("\tCANDIDATE REMOTE BGP NEIGHBOR: '%s' on node '%s'\n",
                            remote_bgp_neighbor.name,
                            remote_bgp_neighbor.owner.name);
-                        $n.set("description", $n.get("description") + "\t" + remote_bgp_neighbor.name + " on node '" + remote_bgp_neighbor.owner.name + "\n");
+                        $n.set("description", $n.get("description") + "&nbsp;" + remote_bgp_neighbor.name + " on node '" + remote_bgp_neighbor.owner.name + "<br>");
                      }
                   }
                }
