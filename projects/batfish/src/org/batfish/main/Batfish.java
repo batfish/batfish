@@ -1704,6 +1704,23 @@ public class Batfish implements AutoCloseable {
          populateFlowHistory(flowHistory, _envSettings, _envSettings.getName(),
                tag);
       }
+      String jsonOutputPath = _settings.getAnswerJsonPath();
+      if (jsonOutputPath != null) {
+         String jsonOutput;
+         if (_settings.getDiffQuestion()) {
+            Map<String, Configuration> baseConfigurations = loadConfigurations(_baseEnvSettings);
+            Map<String, Configuration> diffConfigurations = loadConfigurations(_diffEnvSettings);
+            jsonOutput = flowHistory.toJsonString(_settings.getQuestionName(),
+                  baseConfigurations, _baseEnvSettings.getName(),
+                  diffConfigurations, _diffEnvSettings.getName());
+         }
+         else {
+            Map<String, Configuration> configurations = loadConfigurations();
+            jsonOutput = flowHistory.toJsonString(_settings.getQuestionName(),
+                  configurations, _envSettings.getName(), null, null);
+         }
+         Util.writeFile(jsonOutputPath, jsonOutput);
+      }
       _logger.output(flowHistory.toString());
    }
 

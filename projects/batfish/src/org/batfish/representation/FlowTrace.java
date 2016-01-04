@@ -8,14 +8,15 @@ import org.batfish.common.BatfishException;
 
 public class FlowTrace implements Comparable<FlowTrace> {
 
-   private FlowDisposition _disposition;
+   private final FlowDisposition _disposition;
 
-   private List<Edge> _hops;
+   private final List<Edge> _hops;
 
-   private String _notes;
+   private final String _notes;
 
    public FlowTrace(String historyLine) {
-      _notes = "";
+      FlowDisposition disposition = null;
+      String notes = "";
       _hops = new ArrayList<Edge>();
       String[] hops = historyLine.split("(\\];\\[)|(\\])|(\\[)");
       for (String hop : hops) {
@@ -27,49 +28,52 @@ public class FlowTrace implements Comparable<FlowTrace> {
             String[] interfaceStrs = hop.split("->");
             String[] int1parts = interfaceStrs[0].split(":");
             String[] int2parts = interfaceStrs[1].split(":");
-            String node1 = int1parts[0].replace("'", "");
-            String node2 = int2parts[0].replace("'", "");
-            String int1 = int1parts[1].replace("'", "");
-            String int2 = int2parts[1].replace("'", "");
+            String node1 = int1parts[0].replace("'", "").trim();
+            String node2 = int2parts[0].replace("'", "").trim();
+            String int1 = int1parts[1].replace("'", "").trim();
+            String int2 = int2parts[1].replace("'", "").trim();
             NodeInterfacePair outgoingInterface = new NodeInterfacePair(node1,
                   int1);
             NodeInterfacePair incomingInterface = new NodeInterfacePair(node2,
                   int2);
             if (int1parts.length > 2) {
                if (int1parts[2].contains("deniedOut")) {
-                  _disposition = FlowDisposition.DENIED_OUT;
+                  disposition = FlowDisposition.DENIED_OUT;
                   for (int i = 3; i < int1parts.length; i++) {
-                     _notes += "{" + int1parts[i].replace("'", "") + "}";
+                     notes += "{" + int1parts[i].replace("'", "") + "}";
                   }
                }
             }
             if (int2parts.length > 2) {
                if (int2parts[2].contains("deniedIn")) {
-                  _disposition = FlowDisposition.DENIED_IN;
+                  disposition = FlowDisposition.DENIED_IN;
                   for (int i = 3; i < int2parts.length; i++) {
-                     _notes += "{" + int2parts[i].replace("'", "") + "}";
+                     notes += "{" + int2parts[i].replace("'", "") + "}";
                   }
                }
             }
             _hops.add(new Edge(outgoingInterface, incomingInterface));
          }
          else if (hop.contains("accepted")) {
-            _disposition = FlowDisposition.ACCEPTED;
+            disposition = FlowDisposition.ACCEPTED;
          }
          else if (hop.contains("nullRouted")) {
-            _disposition = FlowDisposition.NULL_ROUTED;
+            disposition = FlowDisposition.NULL_ROUTED;
          }
          else if (hop.contains("noRoute")) {
-            _disposition = FlowDisposition.NO_ROUTE;
+            disposition = FlowDisposition.NO_ROUTE;
          }
          else if (hop.contains("neighborUnreachable")) {
-            _disposition = FlowDisposition.NEIGHBOR_UNREACHABLE;
+            disposition = FlowDisposition.NEIGHBOR_UNREACHABLE;
          }
       }
-      if (_disposition == null) {
+      if (disposition == null) {
          throw new BatfishException(
                "Could not determine flow disposition for trace: " + historyLine);
       }
+      _disposition = disposition;
+      _notes = notes;
+
    }
 
    @Override
@@ -106,6 +110,14 @@ public class FlowTrace implements Comparable<FlowTrace> {
          return false;
       }
       return true;
+   }
+
+   public FlowDisposition getDisposition() {
+      return _disposition;
+   }
+
+   public List<Edge> getHops() {
+      return _hops;
    }
 
    public String getNotes() {

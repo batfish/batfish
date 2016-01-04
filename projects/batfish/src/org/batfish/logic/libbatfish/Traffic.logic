@@ -417,6 +417,30 @@ FlowReachPostOutgoingInterfaceAcl(flow, node, interface) ->
    Node(node),
    Interface(interface).
 
+FlowInboundInterface(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowMatchInterface(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
+FlowNonInboundNullSrcZone(flow, node) ->
+   Flow(flow),
+   Node(node).
+
+FlowNonInboundSrcZone(flow, node, zone) ->
+   Flow(flow),
+   Node(node),
+   Zone(zone).
+
+FlowNonInboundSrcInterface(flow, node, interface) ->
+   Flow(flow),
+   Node(node),
+   Interface(interface).
+
 // END CODE
    }),
    //constructors

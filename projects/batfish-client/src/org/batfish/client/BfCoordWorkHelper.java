@@ -226,7 +226,7 @@ public class BfCoordWorkHelper {
                containerName);
          addTextMultiPart(multiPart, CoordConsts.SVC_TESTRIG_NAME_KEY,
                testrigName);
-         addTextMultiPart(multiPart, CoordConsts.SVC_OBJECT_KEY, objectName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_OBJECT_NAME_KEY, objectName);
 
          Response response = webTarget.request(
                MediaType.APPLICATION_OCTET_STREAM).post(
@@ -761,7 +761,7 @@ public class BfCoordWorkHelper {
                containerName);
          addTextMultiPart(multiPart, CoordConsts.SVC_TESTRIG_NAME_KEY,
                testrigName);
-         addTextMultiPart(multiPart, CoordConsts.SVC_CUSTOM_OBJECT_NAME_KEY,
+         addTextMultiPart(multiPart, CoordConsts.SVC_OBJECT_NAME_KEY,
                objName);
          addFileMultiPart(multiPart, CoordConsts.SVC_FILE_KEY, objFileName);
 

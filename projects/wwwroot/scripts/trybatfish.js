@@ -173,9 +173,23 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
 
 // this is a test function whose contents change based on what we want to test
 function testMe() {
-    //containerName = "js_41aceec6-018e-4434-bd97-e1c9430333a6";
+    containerName = "js_41aceec6-018e-4434-bd97-e1c9430333a6";
+
+    var blob = JSON.stringify("{'name': 'tester'}");
+
+    bfPutObject(containerName, testrigName, "layout", blob, testMeSuccess_cb, testMeFailure_cb, "testme", []);
+
     //startCalls("testme", "drawtopology::drawanswer");
-    AddHighlightMenu();
+    //AddHighlightMenu();
+}
+
+function testMeFailure_cb(message) {
+    console.log(message);
+}
+
+function testMeSuccess_cb(response, entryPoint, remainingCalls) {
+    //console.log("testme success: " + JSON.parse(response));
+    //bfGetObject(containerName, testrigName, "customobjects/layout", testMeSuccess_cb, testMeFailure_cb, "testme", []);
 }
 
 
