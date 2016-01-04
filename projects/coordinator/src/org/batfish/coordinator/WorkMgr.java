@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -130,11 +131,17 @@ public class WorkMgr {
                Main.getSettings().getTestrigStorageLocation(),
                work.getWorkItem().getContainerName(),
                work.getWorkItem().getTestrigName()).toFile();
-         task.put("autobasedir", autobasedir.getAbsolutePath());
+         task.put(BfConsts.ARG_AUTO_BASE_DIR, autobasedir.getAbsolutePath());
          task.put(
-               "logfile",
+               BfConsts.ARG_LOG_FILE,
                Paths.get(autobasedir.getAbsolutePath(),
-                     work.getId().toString() + ".log").toString());
+                     work.getId().toString() + BfConsts.SUFFIX_LOG_FILE)
+                     .toString());
+         task.put(
+               BfConsts.ARG_ANSWER_JSON_PATH,
+               Paths.get(autobasedir.getAbsolutePath(),
+                     work.getId().toString() + BfConsts.SUFFIX_ANSWER_JSON_FILE)
+                     .toString());
 
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client
@@ -389,10 +396,34 @@ public class WorkMgr {
    }
 
    public File getObject(String containerName, String testrigName,
-         String objectName) {
+         String objectName) throws Exception {
+
+      File containerDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName)
+            .toFile();
+
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException("Container " + containerName
+               + " does not exist");
+      }
+
+      File testrigDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName,
+            testrigName).toFile();
+
+      if (!testrigDir.exists()) {
+         throw new FileNotFoundException("testrig " + testrigName
+               + " does not exist");
+      }
 
       File file = Paths.get(Main.getSettings().getTestrigStorageLocation(),
             containerName, testrigName, objectName).toFile();
+
+      // check if we got an object name outside of the testrig folder,
+      // perhaps because of ".." in the name; disallow it
+      if (!file.getCanonicalPath().contains(testrigDir.getCanonicalPath())) {
+         throw new AccessControlException("Illegal object name: " + objectName);
+      }
 
       if (file.isFile()) {
          return file;
@@ -579,6 +610,60 @@ public class WorkMgr {
       }
    }
 
+   public void putObject(String containerName, String testrigName,
+         String objectName, InputStream fileStream) throws Exception {
+
+      File containerDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName)
+            .toFile();
+
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException("Container " + containerName
+               + " does not exist");
+      }
+
+      File testrigDir = Paths.get(
+            Main.getSettings().getTestrigStorageLocation(), containerName,
+            testrigName).toFile();
+
+      if (!testrigDir.exists()) {
+         throw new FileNotFoundException("testrig " + testrigName
+               + " does not exist");
+      }
+
+      File file = Paths.get(Main.getSettings().getTestrigStorageLocation(),
+            containerName, testrigName, objectName).toFile();
+
+      // check if we got an object name outside of the testrig folder,
+      // perhaps because of ".." in the name; disallow it
+      if (!file.getCanonicalPath().contains(testrigDir.getCanonicalPath())) {
+         throw new Exception("Illegal object name: " + objectName);
+      }
+
+      File parentFolder = file.getParentFile();
+
+      if (!parentFolder.exists()) {
+         if (!parentFolder.mkdirs()) {
+            throw new Exception("failed to create directory "
+                  + parentFolder.getAbsolutePath());
+         }
+      }
+      else {
+         if (!parentFolder.isDirectory()) {
+            throw new Exception(parentFolder.getAbsolutePath()
+                  + " already exists but is not a folder");
+         }
+      }
+
+      try (OutputStream fileOutputStream = new FileOutputStream(file)) {
+         int read = 0;
+         final byte[] bytes = new byte[1024];
+         while ((read = fileStream.read(bytes)) != -1) {
+            fileOutputStream.write(bytes, 0, read);
+         }
+      }
+   }
+
    public boolean queueWork(WorkItem workItem) throws Exception {
 
       File testrigDir = Paths.get(
@@ -605,47 +690,6 @@ public class WorkMgr {
       }
 
       return success;
-   }
-
-   public void uploadCustomObject(String containerName, String testrigName,
-         String objectName, InputStream fileStream) throws Exception {
-
-      File containerDir = Paths.get(
-            Main.getSettings().getTestrigStorageLocation(), containerName)
-            .toFile();
-
-      if (!containerDir.exists()) {
-         throw new FileNotFoundException("Container " + containerName
-               + " does not exist");
-      }
-
-      File testrigDir = Paths.get(
-            Main.getSettings().getTestrigStorageLocation(), containerName,
-            testrigName).toFile();
-
-      if (!testrigDir.exists()) {
-         throw new FileNotFoundException("testrig " + testrigName
-               + " does not exist");
-      }
-
-      File file = Paths.get(Main.getSettings().getTestrigStorageLocation(),
-            containerName, testrigName, BfConsts.RELPATH_CUSTOM_OBJECTS,
-            objectName).toFile();
-
-      File parentFolder = file.getParentFile();
-
-      if (!parentFolder.mkdirs()) {
-         throw new Exception("failed to create directory "
-               + parentFolder.getAbsolutePath());
-      }
-
-      try (OutputStream fileOutputStream = new FileOutputStream(file)) {
-         int read = 0;
-         final byte[] bytes = new byte[1024];
-         while ((read = fileStream.read(bytes)) != -1) {
-            fileOutputStream.write(bytes, 0, read);
-         }
-      }
    }
 
    public void uploadEnvironment(String containerName, String testrigName,

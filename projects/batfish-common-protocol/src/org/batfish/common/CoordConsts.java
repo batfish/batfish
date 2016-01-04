@@ -31,7 +31,6 @@ public class CoordConsts {
    public static final String SVC_CONTAINER_NAME_KEY = "container";
 
    public static final String SVC_CONTAINER_PREFIX_KEY = "containerprefix";
-   public static final String SVC_CUSTOM_OBJECT_NAME_KEY = "customobjectname";
    /**
     * Constants for endpoints of various service calls
     */
@@ -55,18 +54,18 @@ public class CoordConsts {
    public static final String SVC_LIST_ENVIRONMENTS_RSC = "listenvironments";
    public static final String SVC_LIST_QUESTIONS_RSC = "listquestions";
    public static final String SVC_LIST_TESTRIGS_RSC = "listtestrigs";
-   public static final String SVC_OBJECT_KEY = "object";
+   public static final String SVC_OBJECT_NAME_KEY = "objectname";
 
    public static final String SVC_POOL_GETSTATUS_RSC = "getstatus";
    public static final Integer SVC_POOL_PORT = 9998;
    public static final String SVC_POOL_UPDATE_RSC = "updatepool";
+   public static final String SVC_PUT_OBJECT_RSC = "putobject";
    public static final String SVC_QUESTION_LIST_KEY = "questionlist";
    public static final String SVC_QUESTION_NAME_KEY = "questionname";
    public static final String SVC_QUEUE_WORK_RSC = "queuework";
    public static final String SVC_SUCCESS_KEY = "success";
    public static final String SVC_TESTRIG_LIST_KEY = "testriglist";
    public static final String SVC_TESTRIG_NAME_KEY = "testrigname";
-   public static final String SVC_UPLOAD_CUSTOM_OBJECT_RSC = "uploadcustomobject";
    public static final String SVC_UPLOAD_ENV_RSC = "uploadenvironment";
    public static final String SVC_UPLOAD_QUESTION_RSC = "uploadquestion";
    public static final String SVC_UPLOAD_TESTRIG_RSC = "uploadtestrig";

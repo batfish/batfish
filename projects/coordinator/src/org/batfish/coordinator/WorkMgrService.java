@@ -281,7 +281,7 @@ public class WorkMgrService {
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
-         @FormDataParam(CoordConsts.SVC_OBJECT_KEY) String objectName) {
+         @FormDataParam(CoordConsts.SVC_OBJECT_NAME_KEY) String objectName) {
       try {
          _logger.info("WMS:getObject " + testrigName + " --> " + objectName
                + "\n");
@@ -292,6 +292,8 @@ public class WorkMgrService {
                "Container name not supplied or is empty");
          ;
          checkStringParam(testrigName, "Testrig name not supplied or is empty");
+         ;
+         checkStringParam(objectName, "Object name not supplied or is empty");
          ;
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
@@ -623,6 +625,66 @@ public class WorkMgrService {
    }
 
    /**
+    * Uploads a custom object under container, testrig.
+    *
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @param qName
+    * @param fileStream
+    * @param paramFileStream
+    * @return
+    */
+   @POST
+   @Path(CoordConsts.SVC_PUT_OBJECT_RSC)
+   @Consumes(MediaType.MULTIPART_FORM_DATA)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray putObject(
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
+         @FormDataParam(CoordConsts.SVC_OBJECT_NAME_KEY) String objectName,
+         @FormDataParam(CoordConsts.SVC_FILE_KEY) InputStream fileStream) {
+      try {
+         _logger.info("WMS:uploadQuestion " + apiKey + " " + containerName
+               + " " + testrigName + " / " + objectName + "\n");
+
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         checkStringParam(containerName,
+               "Container name not supplied or is empty");
+         ;
+         checkStringParam(testrigName, "Testrig name not supplied or is empty");
+         ;
+         checkStringParam(objectName, "Object name not supplied or is empty");
+         ;
+         checkApiKeyValidity(apiKey);
+         checkContainerAccessibility(apiKey, containerName);
+
+         Main.getWorkMgr().putObject(containerName, testrigName,
+               objectName, fileStream);
+
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               (new JSONObject().put("result",
+                     "successfully uploaded custom object"))));
+
+      }
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
+         _logger.error("WMS:uploadCustomObject exception: " + e.getMessage()
+               + "\n");
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:uploadCustomObject exception: " + stackTrace);
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+   }
+
+   /**
     * Queues new work
     *
     * @param apiKey
@@ -694,65 +756,6 @@ public class WorkMgrService {
       }
    }
 
-   /**
-    * Uploads a custom object under container, testrig.
-    *
-    * @param apiKey
-    * @param containerName
-    * @param testrigName
-    * @param qName
-    * @param fileStream
-    * @param paramFileStream
-    * @return
-    */
-   @POST
-   @Path(CoordConsts.SVC_UPLOAD_CUSTOM_OBJECT_RSC)
-   @Consumes(MediaType.MULTIPART_FORM_DATA)
-   @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray uploadCustomObject(
-         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
-         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
-         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
-         @FormDataParam(CoordConsts.SVC_CUSTOM_OBJECT_NAME_KEY) String objectName,
-         @FormDataParam(CoordConsts.SVC_FILE_KEY) InputStream fileStream) {
-      try {
-         _logger.info("WMS:uploadQuestion " + apiKey + " " + containerName
-               + " " + testrigName + " / " + objectName + "\n");
-
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(containerName,
-               "Container name not supplied or is empty");
-         ;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");
-         ;
-         checkStringParam(objectName, "Object name not supplied or is empty");
-         ;
-         checkApiKeyValidity(apiKey);
-         checkContainerAccessibility(apiKey, containerName);
-
-         Main.getWorkMgr().uploadCustomObject(containerName, testrigName,
-               objectName, fileStream);
-
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               (new JSONObject().put("result",
-                     "successfully uploaded custom object"))));
-
-      }
-      catch (FileExistsException | FileNotFoundException
-            | IllegalArgumentException | AccessControlException e) {
-         _logger.error("WMS:uploadCustomObject exception: " + e.getMessage()
-               + "\n");
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
-               e.getMessage()));
-      }
-      catch (Exception e) {
-         String stackTrace = ExceptionUtils.getFullStackTrace(e);
-         _logger.error("WMS:uploadCustomObject exception: " + stackTrace);
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
-               e.getMessage()));
-      }
-   }
 
    /**
     * Uploads a new environment under the container, testrig

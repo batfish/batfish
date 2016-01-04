@@ -1,3 +1,6 @@
+/// <reference path="bfconsts.js" />
+/// <reference path="coordconsts.js" />
+
 "use strict";
 
 $(document).ready(function () {
@@ -36,7 +39,7 @@ function bfGetObject(containerName, testrigName, objectName, cbSuccess, cbFailur
     data.append(SVC_API_KEY, apiKey);
     data.append(SVC_CONTAINER_NAME_KEY, containerName);
     data.append(SVC_TESTRIG_NAME_KEY, testrigName);
-    data.append(SVC_OBJECT_KEY, objectName);
+    data.append(SVC_OBJECT_NAME_KEY, objectName);
 
     jQuery.ajax({
         url: url_parm,
@@ -108,10 +111,10 @@ function bfPutObject(containerName, testrigName, objectName, blobToPut,
     data.append(SVC_API_KEY, apiKey);
     data.append(SVC_CONTAINER_NAME_KEY, containerName);
     data.append(SVC_TESTRIG_NAME_KEY, testrigName);
-    data.append(SVC_OBJECT_KEY, objectName);
+    data.append(SVC_OBJECT_NAME_KEY, objectName);
     data.append(SVC_FILE_KEY, blobToPut);
 
-    bfPostData(SVC_UPLOAD_CUSTOM_OBJECT_RSC, data, cbSuccess, cbFailure, entryPoint, remainingCalls);
+    bfPostData(SVC_PUT_OBJECT_RSC, data, cbSuccess, cbFailure, entryPoint, remainingCalls);
 }
 
 //checks if we are properly configured

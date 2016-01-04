@@ -2,7 +2,7 @@
 
 var previousView = "";
 var layoutData;
-var views;
+var view;
 
 //-----------------------------------------------------------------------------
 
@@ -118,52 +118,80 @@ function SetupToolTips() {
  *  Highlighting
  */
 
- function HighlightElement(id, onoff, vtt)
+ function HighlightElement(id, onoff, vtt, color)
  {
  	var e = cy.getElementById(id);
  	var property = e.isNode() ? 'background-color' : 'line-color';
- 	var color = (onoff == 'on') ? highlightColor : defaultColor;
- 	e.style(property, color);
- 	var vtt = (onoff == 'on') ? vtt : '';
- 	e.data('vtt', vtt);
+ 	e.style(property, (onoff == 'on') ? colors[color] : colors.defaultColor);
+ 	e.data('vtt', (onoff == 'on') ? vtt : '');
  }
+ 
+function HighlightNodes(nodes, onoff, parentColor) {
+	for (var i in nodes) {
+		if (nodes.hasOwnProperty(i)) {
+			var node = nodes[i];
+			console.log(node.name);
+			HighlightElement(node.name, onoff, node.description, defined(node.color) ? node.color : parentColor);
+		}
+	}
+}
+
+function HighlightLinks(links, onoff, parentColor) {
+	for (var i in links) {
+		if (links.hasOwnProperty(i)) {
+			var link = links[i];
+			var linkId = GetLinkIds(link)[2];
+			console.log(linkId);
+			HighlightElement(linkId, onoff, link.description, defined(link.color) ? link.color : parentColor);
+		}
+	}
+}
+
+
+function HighlightPaths(paths, onoff, parentColor) {
+	for (var i = 0; i < paths.length; i++) {
+		var path = paths[i];
+		HighlightLinks(path.links, onoff, defined(path.color) ? path.color : parentColor);
+	}
+}
  
  function HighlightView(viewId, onoff)
  {
- 	if (viewId == "")
- 	{
- 		return;
- 	}
- 	for (var i = 0; i < views[viewId].nodes.length; i++)
- 	{
- 		console.log(views[viewId].nodes[i].name);
- 		HighlightElement(views[viewId].nodes[i].name, onoff, views[viewId].nodes[i].description);
- 	}
- 	for (var i = 0; i < views[viewId].links.length; i++)
- 	{
- 		var linkId = GetLinkIds(views[viewId].links[i])[2];
- 		console.log(linkId);
- 		HighlightElement(linkId, onoff, views[viewId].links[i].description);
- 	}
+	if (viewId != "") {
+		var parentColor = view.color;
+		var thisView = view.views[viewId];
+		if (defined(thisView))
+		{
+			if (defined(thisView.nodes)) 
+				HighlightNodes(view.views[viewId].nodes, onoff, parentColor);
+			if (defined(thisView.links))
+				HighlightLinks(view.views[viewId].links, onoff, parentColor);
+			if (defined(thisView.paths))
+				HighlightPaths(view.views[viewId].paths, onoff, parentColor);
+		}
+	}
  }
  
 function SetupHighlightsMenu(data)
  {
     try {
-        views = JSON.parse(data);
+        view = JSON.parse(data);
 
         cy.ready(function () {
             // Add a new select element 
             $('<select>').attr({ 'name': 'hs', 'id': 'hs', 'data-native-menu': 'false' }).appendTo('[data-role="content"]');
-            $('<option>').html('Select a view to highlight').appendTo('#hs');
+            $('<option>').html(view.name).appendTo('#hs');
 
             // Add choices.
-            var index;
-            for (index = 0; index < views.length; index++) {
-                //console.log(nodes[index].id());
-                $('<option>').attr({ 'value': index }).html(views[index].name).appendTo('#hs');
+            var viewList = view.views;
+            for (var viewName in viewList)
+            {
+            	if (viewList.hasOwnProperty(viewName)) {
+            		console.log(viewName);
+            		$('<option>').attr({ 'value': viewName}).html(viewName).appendTo('#hs');
+            	}
             }
-
+            
             // Add handler
             $('select').selectmenu({
                 select: function (event, ui) {
@@ -175,30 +203,14 @@ function SetupHighlightsMenu(data)
             });
         });
     } catch (e) {
+    	console.log(e);
         return false;
     }
 
     return true;
 }
 
-function AddHighlightMenu()
-{
-	$.ajax ({
-		url: defaultHighlightsURL,
-		dataType: 'json',
-		success: function (data, status) {
-			if (status == 'success')
-			{
-				SetupHighlightsMenu(data);
-			}
-		},
-		error : function (xhr, status, error) {
-			console.log(status);
-			console.log(error);
-		}
-	});	
-       
-}
+
 
 /*-----------------------------------------*/
 /*
@@ -268,48 +280,23 @@ function AddLink(link) {
 	}
 }
 
-function ParseJsonTopology(dataRaw)
-{
-    try {
-        var data = JSON.parse(dataRaw);
-
-        //TODO: more sanity checking
-        var edges = data.topology.edges;
-
-        cy.ready(function() {
-            var index;
-            for (index = 0; index < edges.length; index++)
-            {
-                AddLink(edges[index]);
-            }
-            SetupToolTips();
-            //AddHighlightMenu();
-            DoAutoLayout();
-
-            cy.center();
-        });
-    } catch (e) {
-        return false;
-    }
-
-    return true;
-}
-
-function PlotJsonTopology(myURL) {
-	$.ajax ({
-		url: myURL,
-		dataType: 'json',
-		success: function (data, status) {
-			if (status == 'success')
-			{
-				ParseJsonTopology(data);
+function ParseTopology(dataRaw) {
+	try {
+		var data = JSON.parse(dataRaw);
+		var edges = data.topology.edges;
+		cy.ready(function() {
+			var index;
+			for ( index = 0; index < edges.length; index++) {
+				AddLink(edges[index]);
 			}
-		},
-		error : function (xhr, status, error) {
-			console.log(status);
-			console.log(error);
-		}
-	});
+			SetupToolTips();
+			DoAutoLayout();
+			cy.center();
+		});
+	} catch (e) {
+		return false;
+	}
+	return true;
 }
 
 function SetupCy() {
@@ -354,50 +341,36 @@ function PrintLinkIdsToConsole()
 		console.log(links[index].id() + links[index].data('linktype'));
 	}
 }
-function GenerateViewJson()
-{
-	var views = [];
-	
-	views[0] = {};
-	
-	views[0].name = "DuplicateIP";
-	views[0].descritption = "Duplicate IP";
-	views[0].nodes = [];
-	views[0].links = [];
-	
-	views[0].nodes[0] = {};
-	views[0].nodes[0].name = 'VC1';
-	views[0].nodes[0].description = 'arrrgh';
-	
-	views[0].nodes[1] = {};
-	views[0].nodes[1].name = 'pvmg';
-	views[0].nodes[1].description = 'awsome';
 
-	
-	views[1] = {};
-	views[1].name = "SelfLinks";
-	views[1].description = "SelfLinks";
-	views[1].nodes = [];
-	views[1].links = [];
-		
-	views[1].links[0] = {};
-	views[1].links[0].interface1 = {};
-	views[1].links[0].interface2 = {};
-	views[1].links[0].interface1.node = "20151110-10.178.0.1";
-	views[1].links[0].interface1.name = "st0.22";
-	views[1].links[0].interface2.node = "20151110-10.178.0.1";
-	views[1].links[0].interface2.name = "st0.20";
-	
-	views[1].links[1] = {};
-	views[1].links[1].interface1 = {};
-	views[1].links[1].interface2 = {};
-	views[1].links[1].interface1.node = "20151110-10.178.0.1";
-	views[1].links[1].interface1.name = "st0.103";
-	views[1].links[1].interface2.node = "20151110-10.178.0.1";
-	views[1].links[1].interface2.name = "st0.104";
-	
-	
-	console.log(JSON.stringify(views));
-	
+function DownloadJsonTopology(myURL) {
+	$.ajax ({
+		url: myURL,
+		success: function (data, status) {
+			if (status == 'success')
+			{
+				ParseTopology(data);
+			}
+		},
+		error : function (xhr, status, error) {
+			console.log(status);
+			console.log(error);
+		}
+	});
 }
 
+function AddHighlightMenu()
+{
+	$.ajax ({
+		url: 'testdata/highlights.json.txt',
+		success: function (data, status) {
+			if (status == 'success')
+			{
+				SetupHighlightsMenu(data);
+			}
+		},
+		error : function (xhr, status, error) {
+			console.log(status);
+			console.log(error);
+		}
+	});	     
+}

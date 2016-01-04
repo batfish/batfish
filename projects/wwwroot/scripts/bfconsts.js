@@ -1,11 +1,13 @@
-﻿
-// These constants come from 'BfConsts.java'.
+﻿// These constants come from 'BfConsts.java'.
 // Make sure they are in sync with what is there.
 
+var ARG_ANSWER_JSON_PATH = "answerjsonpath";
+var ARG_AUTO_BASE_DIR = "autobasedir";
 var ARG_BLOCK_NAMES = "blocknames";
 var ARG_DIFF_ACTIVE = "diffactive";
 var ARG_DIFF_ENVIRONMENT_NAME = "diffenv";
 var ARG_ENVIRONMENT_NAME = "env";
+var ARG_LOG_FILE = "logfile";
 var ARG_LOG_LEVEL = "loglevel";
 var ARG_OUTPUT_ENV = "outputenv";
 var ARG_PEDANTIC_AS_ERROR = "pedanticerror";
@@ -42,7 +44,6 @@ var RELPATH_BASE = "base";
 var RELPATH_CONFIG_FILE_NAME_DIR = "config.properties";
 var RELPATH_CONFIGURATIONS_DIR = "configs";
 var RELPATH_CONTROL_PLANE_FACTS_DIR = "cp_facts";
-var RELPATH_CUSTOM_OBJECTS = "customobjects";
 var RELPATH_DATA_PLANE_DIR = "dp";
 var RELPATH_DEFAULT_ENVIRONMENT_NAME = "default";
 var RELPATH_DIFF = "diff";
@@ -68,8 +69,11 @@ var RELPATH_TEST_RIG_DIR = "testrig";
 var RELPATH_TOPOLOGY_FILE = "topology";
 var RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
 var RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
-
 var RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
+
+var SUFFIX_ANSWER_JSON_FILE = ".ans";
+var SUFFIX_LOG_FILE = ".log";
+
 var SVC_BASE_RSC = "/batfishservice";
 var SVC_FAILURE_KEY = "failure";
 var SVC_GET_STATUS_RSC = "getstatus";
@@ -79,3 +83,15 @@ var SVC_RUN_TASK_RSC = "run";
 var SVC_SUCCESS_KEY = "success";
 var SVC_TASK_KEY = "task";
 var SVC_TASKID_KEY = "taskid";
+
+/* These are needed for topology plotting */
+var cy;
+var nodesAdded = 0;
+var linksAdded = 0;
+var defaultTopologyURL = "testdata/rhythmone.net.json";
+var defaultLayoutURL = "data/rhythmone.net.layout.json";
+var defaultHighlightsURL  = "data/highlights.json";
+var colors = {};
+colors.defaultColor = '#888';
+colors.error = '#f00';
+colors.ok = "#0f0";

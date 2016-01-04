@@ -17,10 +17,12 @@ public class BfConsts {
    // ensure that the clients (including the javascript client) are up to date
    //
    public static final String ARG_ANSWER_JSON_PATH = "answerjsonpath";
+   public static final String ARG_AUTO_BASE_DIR = "autobasedir";
    public static final String ARG_BLOCK_NAMES = "blocknames";
    public static final String ARG_DIFF_ACTIVE = "diffactive";
    public static final String ARG_DIFF_ENVIRONMENT_NAME = "diffenv";
    public static final String ARG_ENVIRONMENT_NAME = "env";
+   public static final String ARG_LOG_FILE = "logfile";
    public static final String ARG_LOG_LEVEL = "loglevel";
    public static final String ARG_OUTPUT_ENV = "outputenv";
    public static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
@@ -57,7 +59,6 @@ public class BfConsts {
    public static final String RELPATH_CONFIG_FILE_NAME_DIR = "config.properties";
    public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
    public static final String RELPATH_CONTROL_PLANE_FACTS_DIR = "cp_facts";
-   public static final String RELPATH_CUSTOM_OBJECTS = "customobjects";
    public static final String RELPATH_DATA_PLANE_DIR = "dp";
    public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "default";
    public static final String RELPATH_DIFF = "diff";
@@ -83,8 +84,11 @@ public class BfConsts {
    public static final String RELPATH_TOPOLOGY_FILE = "topology";
    public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
    public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
-
    public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
+
+   public static final String SUFFIX_ANSWER_JSON_FILE = ".ans";
+   public static final String SUFFIX_LOG_FILE = ".log";
+
    public static final String SVC_BASE_RSC = "/batfishservice";
    public static final String SVC_FAILURE_KEY = "failure";
    public static final String SVC_GET_STATUS_RSC = "getstatus";
