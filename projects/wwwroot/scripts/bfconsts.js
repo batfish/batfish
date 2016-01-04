@@ -44,7 +44,6 @@ var RELPATH_BASE = "base";
 var RELPATH_CONFIG_FILE_NAME_DIR = "config.properties";
 var RELPATH_CONFIGURATIONS_DIR = "configs";
 var RELPATH_CONTROL_PLANE_FACTS_DIR = "cp_facts";
-var RELPATH_CUSTOM_OBJECTS = "customobjects";
 var RELPATH_DATA_PLANE_DIR = "dp";
 var RELPATH_DEFAULT_ENVIRONMENT_NAME = "default";
 var RELPATH_DIFF = "diff";

@@ -175,12 +175,11 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
 function testMe() {
     //containerName = "js_41aceec6-018e-4434-bd97-e1c9430333a6";
 
-    //var blob = JSON.stringify("{'name': 'tester'}");
-
-    //bfPutObject(containerName, testrigName, "layout", blob, testMeSuccess_cb, testMeFailure_cb, "testme", []);
+    var blob = 
+    bfPutObject(containerName, testrigName, "layout", blob, testMeSuccess_cb, testMeFailure_cb, "testme", []);
 
     //startCalls("testme", "drawtopology::drawanswer");
-    AddHighlightMenu();
+    //AddHighlightMenu();
 }
 
 function testMeFailure_cb(message) {
@@ -188,8 +187,8 @@ function testMeFailure_cb(message) {
 }
 
 function testMeSuccess_cb(response, entryPoint, remainingCalls) {
-    //console.log("testme success: " + JSON.parse(response));
-    //bfGetObject(containerName, testrigName, "customobjects/layout", testMeSuccess_cb, testMeFailure_cb, "testme", []);
+    console.log("testme success: ");
+    //bfGetObject(containerName, testrigName, "co/layout", testMeSuccess_cb, testMeFailure_cb, "testme", []);
 }
 
 

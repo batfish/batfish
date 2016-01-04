@@ -750,7 +750,7 @@ public class BfCoordWorkHelper {
 
          Client client = getClientBuilder().build();
          WebTarget webTarget = getTarget(client,
-               CoordConsts.SVC_UPLOAD_CUSTOM_OBJECT_RSC);
+               CoordConsts.SVC_PUT_OBJECT_RSC);
 
          MultiPart multiPart = new MultiPart();
          multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
