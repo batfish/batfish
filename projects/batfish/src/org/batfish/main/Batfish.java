@@ -491,15 +491,74 @@ public class Batfish implements AutoCloseable {
       }
       int numAclsWithUnreachableLines = aclsWithUnreachableLines.size();
       int numAcls = allAcls.size();
-      double percentUnreachableAcls = 100d
-            * (numAclsWithUnreachableLines) / (numAcls);
-      double percentUnreachableLines = 100d * (numUnreachableLines)
-            / (numLines);
+      double percentUnreachableAcls = 100d * numAclsWithUnreachableLines
+            / numAcls;
+      double percentUnreachableLines = 100d * numUnreachableLines / numLines;
       _logger.outputf("SUMMARY:\n");
       _logger.outputf("\t%d/%d (%.1f%%) acls have unreachable lines\n",
             numAclsWithUnreachableLines, numAcls, percentUnreachableAcls);
       _logger.outputf("\t%d/%d (%.1f%%) acl lines are unreachable\n",
             numUnreachableLines, numLines, percentUnreachableLines);
+      String jsonOutputPath = _settings.getAnswerJsonPath();
+      if (jsonOutputPath != null) {
+         String jsonOutput = null;
+         try {
+            JSONObject query = new JSONObject();
+            Map<String, StringBuilder> nodeDescriptions = new HashMap<String, StringBuilder>();
+            Map<String, JSONObject> nodeObjects = new HashMap<String, JSONObject>();
+            query.put("name", _settings.getQuestionName());
+            query.put("type", "query");
+            JSONObject views = new JSONObject();
+            query.put("views", views);
+            String viewName = "Nodes with unreachable ACL lines";
+            JSONObject view = new JSONObject();
+            views.put(viewName, view);
+            view.put("name", viewName);
+            view.put("type", "view");
+            JSONObject nodes = new JSONObject();
+            view.put("nodes", nodes);
+            for (Entry<AclLine, Boolean> e : output.entrySet()) {
+               AclLine aclLine = e.getKey();
+               boolean sat = e.getValue();
+               String hostname = aclLine.getHostname();
+               String aclName = aclLine.getAclName();
+               int line = aclLine.getLine();
+               JSONObject node;
+               if (nodeObjects.containsKey(hostname)) {
+                  node = nodes.getJSONObject(hostname);
+               }
+               else {
+                  node = new JSONObject();
+                  nodes.put(hostname, node);
+                  node.put("name", hostname);
+                  node.put("type", "node");
+                  StringBuilder nodeDescriptionBuilder = new StringBuilder();
+                  nodeObjects.put(hostname, node);
+                  nodeDescriptions.put(hostname, nodeDescriptionBuilder);
+               }
+               StringBuilder nodeDescriptionBuilder = nodeDescriptions
+                     .get(hostname);
+               if (!sat) {
+                  nodeDescriptionBuilder.append(String
+                        .format("ACL: \"%s\", line: %d is UNREACHABLE\n",
+                              aclName, line));
+               }
+            }
+            for (String hostname : nodeObjects.keySet()) {
+               JSONObject node = nodeObjects.get(hostname);
+               StringBuilder descriptionBuilder = nodeDescriptions
+                     .get(hostname);
+               node.put("description", descriptionBuilder.toString());
+            }
+            jsonOutput = query.toString(3);
+         }
+         catch (JSONException e) {
+            throw new BatfishException(
+                  "Error converting acl reachability analysis output to json",
+                  e);
+         }
+         Util.writeFile(jsonOutputPath, jsonOutput);
+      }
    }
 
    private void answerDestination(DestinationQuestion question) {
