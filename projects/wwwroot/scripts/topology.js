@@ -131,14 +131,10 @@ function HighlightElement(id, onoff, vtt, color) {
 		e.data('vtt', '');
 	} else {
 		e.data('vtt', vtt);
-		if (e.style(property) == ColorEnum.default)
-		{
+		if (e.style(property) == ColorEnum.default) {
 			e.style(property, ColorEnum[color]);
-		}
-		else 
-		{
-			if (e.style(property) != ColorEnum[color])
-			{
+		} else {
+			if (e.style(property) != ColorEnum[color]) {
 				e.style(property, ColorEnum.maybe);
 			}
 		}
@@ -146,31 +142,29 @@ function HighlightElement(id, onoff, vtt, color) {
 
 }
 
-function HighlightNodes(nodes, onoff, parentColor) {
+function HighlightNodes(nodes, onoff, parentColor, parentDescription) {
 	for (var i in nodes) {
 		if (nodes.hasOwnProperty(i)) {
 			var node = nodes[i];
 			console.log(node.name);
-			HighlightElement(node.name, onoff, node.description, defined(node.color) ? node.color : parentColor);
+			HighlightElement(node.name, onoff, defined(node.description) ? node.description : parentDescription, defined(node.color) ? node.color : parentColor);
 		}
 	}
 }
 
-function HighlightLinks(links, onoff, parentColor) {
+function HighlightLinks(links, onoff, parentColor, parentDescription) {
 	for (var i in links) {
 		if (links.hasOwnProperty(i)) {
 			var link = links[i];
 			var linkId = GetLinkIds(link)[2];
-			console.log(linkId);
-			// TODO: change it to link.descriotion once Ari makes changes?
-			HighlightElement(linkId, onoff, link.name, defined(link.color) ? link.color : parentColor);
-			HighlightElement(link.interface1.node, onoff, link.name, defined(link.color) ? link.color : parentColor);
-			HighlightElement(link.interface2.node, onoff, link.name, defined(link.color) ? link.color : parentColor);
+			HighlightElement(linkId, onoff, defined(link.description) ? link.description : parentDescription, defined(link.color) ? link.color : parentColor);
+			HighlightElement(link.interface1.node, onoff, defined(link.description) ? link.description : parentDescription, defined(link.color) ? link.color : parentColor);
+			HighlightElement(link.interface2.node, onoff, defined(link.description) ? link.description : parentDescription, defined(link.color) ? link.color : parentColor);
 		}
 	}
 }
 
-function HighlightPaths(paths, onoff, parentColor) {
+function HighlightPaths(paths, onoff, parentColor, parentDescription) {
 	for (var i in paths) {
 		if (paths.hasOwnProperty(i)) {
 			var path = paths[i];
@@ -179,34 +173,54 @@ function HighlightPaths(paths, onoff, parentColor) {
 	}
 }
 
-
 function HighlightView(viewId, onoff) {
 	if (viewId != "") {
 		var parentColor = view.color;
+		var parentDescription = view.description;
 		var thisView = view.views[viewId];
 		if (defined(thisView)) {
+			if (defined(thisView.color))
+				parentColor = thisView.color;
+			if (defined(thisView.description))
+				parentDescription = thisView.description;
 			if (defined(thisView.nodes))
-				HighlightNodes(view.views[viewId].nodes, onoff, parentColor);
+				HighlightNodes(view.views[viewId].nodes, onoff, parentColor, parentDescription);
 			if (defined(thisView.links))
-				HighlightLinks(view.views[viewId].links, onoff, parentColor);
+				HighlightLinks(view.views[viewId].links, onoff, parentColor, parentDescription);
 			if (defined(thisView.paths))
-				HighlightPaths(view.views[viewId].paths, onoff, parentColor);
+				HighlightPaths(view.views[viewId].paths, onoff, parentColor, parentDescription);
 		}
 	}
 }
 
+function ClearHighlights()
+{
+	cy.nodes().forEach(function( e ){
+		e.style('background-color', ColorEnum.default);
+		e.data('vtt', '');
+	});
+	cy.edges().forEach(function( e ){
+		e.style('line-color', ColorEnum.default);
+		e.data('vtt', '');
+	});
+}
 function SetupHighlightsMenu(data) {
 	try {
 		view = JSON.parse(data);
 
 		cy.ready(function() {
-			// Add a new select element
+			ClearHighlights();
+			// add a new select element if we do not have a previous one.
+			if (document.getElementById('hs') != null) {
+				$('#hs').remove();
+			}
 			$('<select>').attr({
 				'name' : 'hs',
 				'id' : 'hs',
 				'data-native-menu' : 'false'
 			}).appendTo('[data-role="content"]');
-			$('<option>').html(view.name).appendTo('#hs');
+
+			$('<option>').html(view.name).appendTo('#hs'); 
 
 			// Add choices.
 			var viewList = view.views;
