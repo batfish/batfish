@@ -71,7 +71,7 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
             Synthesizer dataPlaneSynthesizer = _dataPlaneSynthesizers.get(i);
             QuerySynthesizer querySynthesizer = _querySynthesizers.get(i);
             NodProgram baseProgram = dataPlaneSynthesizer
-                  .synthesizeNodProgram(ctx);
+                  .synthesizeNodDataPlaneProgram(ctx);
             NodProgram queryProgram = querySynthesizer
                   .getNodProgram(baseProgram);
             NodProgram program = baseProgram.append(queryProgram);

@@ -30,11 +30,11 @@ public class BatfishLogger {
       }
 
       public int getLevel() {
-         return _t1;
+         return _first;
       }
 
       public String getMessage() {
-         return _t2;
+         return _second;
       }
    }
 
@@ -311,6 +311,10 @@ public class BatfishLogger {
 
    public void warn(String msg) {
       write(LEVEL_WARN, msg);
+   }
+
+   public void warnf(String format, Object... args) {
+      warn(String.format(format, args));
    }
 
    private synchronized void write(int level, String msg) {

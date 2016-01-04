@@ -26,6 +26,11 @@ ACCEPT
    'accept'
 ;
 
+ACL_REACHABILITY
+:
+   'acl-reachability'
+;
+
 ACTION
 :
    'action'
@@ -862,7 +867,7 @@ M_Set_NODE
 
 M_Set_OPEN_PAREN
 :
-   '(' -> type(OPEN_PAREN), popMode
+   '(' -> type ( OPEN_PAREN ) , popMode
 ;
 
 M_Set_POLICY_MAP

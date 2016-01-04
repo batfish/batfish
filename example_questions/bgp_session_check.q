@@ -4,6 +4,10 @@ defaults {
    $foreign_bgp_groups=set<string>{};
 }
 verify {
+   query.set("name", "BGP Session Check");
+   query.set("color", "error");
+   query.set("type", "query");
+   $views := query.get_map("views");
    $total_num_bgp_neighbors := 0;
    $num_bgp_neighbors := 0;
    $num_bgp_neighbors_with_nondeterministic_endpoint := 0;
@@ -26,6 +30,14 @@ verify {
                      bgp_neighbor.name,
                      bgp_neighbor.group,
                      node.name);
+                  $view_name := "MISSING_ENDPOINT";
+                  $view := $views.get_map($view_name);
+                  $view.set("name", $view_name);
+                  $view.set("type", "view");
+                  $n := $view.get_map("nodes").get_map(node.name);
+                  $n.set("name", node.name);
+                  $n.set("type", "node");
+                  $n.set("description", $n.get("description") + "Could not determine remote BGP neighbor for BGP neighbor '" + bgp_neighbor.name + "' group '" + bgp_neighbor.group + "'\n");
                }
             }
             if (bgp_neighbor.has_remote_bgp_neighbor){
@@ -39,10 +51,19 @@ verify {
                      printf("NON_UNIQUE_ENDPOINT: Could not uniquely determine remote BGP neighbor for BGP neighbor '%s' on node '%s' from candidate remote BGP neighbors:\n",
                         bgp_neighbor.name,
                         node.name);
+                     $view_name := "NON_UNIQUE_ENDPOINT";
+                     $view := $views.get_map($view_name);
+                     $view.set("name", $view_name);
+                     $view.set("type", "view");
+                     $n := $view.get_map("nodes").get_map(node.name);
+                     $n.set("name", node.name);
+                     $n.set("type", "node");
+                     $n.set("description", $n.get("description") + "Could not uniquely determine remote BGP neighbor for BGP neighbor '" + bgp_neighbor.name + "' group '" + bgp_neighbor.group + "' among candidate remote BGP neighbors:\n");
                      foreach remote_bgp_neighbor {
                         printf("\tCANDIDATE REMOTE BGP NEIGHBOR: '%s' on node '%s'\n",
                            remote_bgp_neighbor.name,
                            remote_bgp_neighbor.owner.name);
+                        $n.set("description", $n.get("description") + "\t" + remote_bgp_neighbor.name + " on node '" + remote_bgp_neighbor.owner.name + "\n");
                      }
                   }
                }

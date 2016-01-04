@@ -15,11 +15,11 @@ public class NodeIpPair extends Pair<String, Ip> {
    }
 
    public Ip getIp() {
-      return _t2;
+      return _second;
    }
 
    public String getNode() {
-      return _t1;
+      return _first;
    }
 
 }

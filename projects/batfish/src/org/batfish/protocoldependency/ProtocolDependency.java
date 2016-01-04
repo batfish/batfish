@@ -15,11 +15,11 @@ public class ProtocolDependency extends Pair<RoutingProtocol, Integer> {
    }
 
    public Integer getIndirectionLevel() {
-      return _t2;
+      return _second;
    }
 
    public RoutingProtocol getProtocol() {
-      return _t1;
+      return _first;
    }
 
 }

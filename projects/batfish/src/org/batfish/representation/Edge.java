@@ -17,27 +17,27 @@ public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
    }
 
    public String getInt1() {
-      return _t1.getInterface();
+      return _first.getInterface();
    }
 
    public String getInt2() {
-      return _t2.getInterface();
+      return _second.getInterface();
    }
 
    public NodeInterfacePair getInterface1() {
-      return _t1;
+      return _first;
    }
 
    public NodeInterfacePair getInterface2() {
-      return _t2;
+      return _second;
    }
 
    public String getNode1() {
-      return _t1.getHostname();
+      return _first.getHostname();
    }
 
    public String getNode2() {
-      return _t2.getHostname();
+      return _second.getHostname();
    }
 
    @Override

@@ -166,8 +166,6 @@ public enum HostProtocol {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
          line.getProtocols().add(IpProtocol.ICMP);
-         line.getDstPortRanges().add(
-               new SubRange(NamedPort.RIP.number(), NamedPort.RIP.number()));
          break;
       }
 

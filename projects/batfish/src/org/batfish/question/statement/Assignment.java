@@ -21,6 +21,7 @@ import org.batfish.representation.Prefix;
 import org.batfish.representation.PrefixSpace;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
+import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.StaticRoute;
 
 public class Assignment implements Statement {
@@ -96,6 +97,10 @@ public class Assignment implements Statement {
 
       case PREFIX_SPACE:
          environment.getPrefixSpaces().put(_variable, (PrefixSpace) value);
+         break;
+
+      case PROTOCOL:
+         environment.getProtocols().put(_variable, (RoutingProtocol) value);
          break;
 
       case ROUTE_FILTER:

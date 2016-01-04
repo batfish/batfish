@@ -3069,7 +3069,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
             \+ 'SetInterfaceZone'(Node, Interface, _) ; /*no policy because no dst zone*/
             ( /*there is a destination zone and a source zone but no cross-zone filter*/
                'SetInterfaceZone'(Node, Interface, DstZone),
-               'FlowReachNonInboundSrcZone'(Flow, Node, SrcZone),
+               'FlowNonInboundSrcZone'(Flow, Node, SrcZone),
                \+ 'SetCrossZoneFilter'(Node, SrcZone, DstZone, _)
             )
          )
@@ -3090,7 +3090,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
          )
       ) ;
       ( /*unoriginal, cross-zone filter permits*/
-         'FlowReachNonInboundSrcZone'(Flow, Node, SrcZone),
+         'FlowNonInboundSrcZone'(Flow, Node, SrcZone),
          'SetInterfaceZone'(Node, Interface, DstZone),
          'SetCrossZoneFilter'(Node, SrcZone, DstZone, CrossZoneFilter),
          \+ 'IpAccessListDeny'(CrossZoneFilter, _, Flow)

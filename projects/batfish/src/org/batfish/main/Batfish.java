@@ -69,6 +69,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.common.Pair;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
@@ -107,6 +108,7 @@ import org.batfish.nxtnet.PredicateInfo;
 import org.batfish.nxtnet.Relation;
 import org.batfish.nxtnet.TopologyFactExtractor;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
+import org.batfish.question.AclReachabilityQuestion;
 import org.batfish.question.DestinationQuestion;
 import org.batfish.question.FailureQuestion;
 import org.batfish.question.IngressPathQuestion;
@@ -132,6 +134,7 @@ import org.batfish.representation.FlowHistory;
 import org.batfish.representation.FlowTrace;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
+import org.batfish.representation.IpAccessList;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.OspfArea;
 import org.batfish.representation.OspfProcess;
@@ -149,11 +152,15 @@ import org.batfish.util.StringFilter;
 import org.batfish.util.SubRange;
 import org.batfish.util.UrlZipExplorer;
 import org.batfish.util.Util;
+import org.batfish.z3.AclLine;
+import org.batfish.z3.AclReachabilityQuerySynthesizer;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodJob;
 import org.batfish.z3.NodJobResult;
+import org.batfish.z3.NodSatJob;
+import org.batfish.z3.NodSatResult;
 import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
@@ -365,6 +372,10 @@ public class Batfish implements AutoCloseable {
       boolean diff = false;
       Question question = parseQuestion();
       switch (question.getType()) {
+      case ACL_REACHABILITY:
+         answerAclReachability((AclReachabilityQuestion) question);
+         break;
+
       case DESTINATION:
          answerDestination((DestinationQuestion) question);
          dp = true;
@@ -419,6 +430,135 @@ public class Batfish implements AutoCloseable {
       if (!dp) {
          _settings.setNxtnetTraffic(false);
          _settings.setHistory(false);
+      }
+   }
+
+   private void answerAclReachability(AclReachabilityQuestion question) {
+      checkConfigurations();
+      Map<String, Configuration> configurations = loadConfigurations();
+      Synthesizer aclSynthesizer = synthesizeAcls(configurations);
+      List<NodSatJob<AclLine>> jobs = new ArrayList<NodSatJob<AclLine>>();
+      for (Entry<String, Configuration> e : configurations.entrySet()) {
+         String hostname = e.getKey();
+         Configuration c = e.getValue();
+         for (Entry<String, IpAccessList> e2 : c.getIpAccessLists().entrySet()) {
+            String aclName = e2.getKey();
+            // skip juniper srx inbound filters, as they can't really contain
+            // operator error
+            if (aclName.contains("~ZONE_INTERFACE_FILTER~")
+                  || aclName.contains("~INBOUND_ZONE_FILTER~")) {
+               continue;
+            }
+            IpAccessList acl = e2.getValue();
+            int numLines = acl.getLines().size();
+            AclReachabilityQuerySynthesizer query = new AclReachabilityQuerySynthesizer(
+                  hostname, aclName, numLines);
+            NodSatJob<AclLine> job = new NodSatJob<AclLine>(aclSynthesizer,
+                  query);
+            jobs.add(job);
+         }
+      }
+      Map<AclLine, Boolean> output = new TreeMap<AclLine, Boolean>();
+      computeNodSatOutput(jobs, output);
+      Set<Pair<String, String>> aclsWithUnreachableLines = new TreeSet<Pair<String, String>>();
+      Set<Pair<String, String>> allAcls = new TreeSet<Pair<String, String>>();
+      int numUnreachableLines = 0;
+      int numLines = output.entrySet().size();
+      for (Entry<AclLine, Boolean> e : output.entrySet()) {
+         AclLine aclLine = e.getKey();
+         boolean sat = e.getValue();
+         String hostname = aclLine.getHostname();
+         String aclName = aclLine.getAclName();
+         int line = aclLine.getLine();
+         Pair<String, String> qualifiedAclName = new Pair<String, String>(
+               hostname, aclName);
+         allAcls.add(qualifiedAclName);
+         if (sat) {
+            _logger.outputf("%s:%s:%d is REACHABLE\n", hostname, aclName, line);
+         }
+         else {
+            _logger.outputf("%s:%s:%d is UNREACHABLE\n", hostname, aclName,
+                  line);
+            numUnreachableLines++;
+            aclsWithUnreachableLines.add(qualifiedAclName);
+         }
+      }
+      for (Pair<String, String> qualfiedAcl : aclsWithUnreachableLines) {
+         String hostname = qualfiedAcl.getFirst();
+         String aclName = qualfiedAcl.getSecond();
+         _logger.outputf("%s:%s has at least 1 unreachable line\n", hostname,
+               aclName);
+      }
+      int numAclsWithUnreachableLines = aclsWithUnreachableLines.size();
+      int numAcls = allAcls.size();
+      double percentUnreachableAcls = 100d * numAclsWithUnreachableLines
+            / numAcls;
+      double percentUnreachableLines = 100d * numUnreachableLines / numLines;
+      _logger.outputf("SUMMARY:\n");
+      _logger.outputf("\t%d/%d (%.1f%%) acls have unreachable lines\n",
+            numAclsWithUnreachableLines, numAcls, percentUnreachableAcls);
+      _logger.outputf("\t%d/%d (%.1f%%) acl lines are unreachable\n",
+            numUnreachableLines, numLines, percentUnreachableLines);
+      String jsonOutputPath = _settings.getAnswerJsonPath();
+      if (jsonOutputPath != null) {
+         String jsonOutput = null;
+         try {
+            JSONObject query = new JSONObject();
+            Map<String, StringBuilder> nodeDescriptions = new HashMap<String, StringBuilder>();
+            Map<String, JSONObject> nodeObjects = new HashMap<String, JSONObject>();
+            query.put("name", _settings.getQuestionName());
+            query.put("type", "query");
+            JSONObject views = new JSONObject();
+            query.put("views", views);
+            String viewName = "Nodes with unreachable ACL lines";
+            JSONObject view = new JSONObject();
+            views.put(viewName, view);
+            view.put("name", viewName);
+            view.put("type", "view");
+            view.put("color", "error");
+            JSONObject nodes = new JSONObject();
+            view.put("nodes", nodes);
+            for (Entry<AclLine, Boolean> e : output.entrySet()) {
+               AclLine aclLine = e.getKey();
+               boolean sat = e.getValue();
+               String hostname = aclLine.getHostname();
+               String aclName = aclLine.getAclName();
+               int line = aclLine.getLine();
+               JSONObject node;
+               if (nodeObjects.containsKey(hostname)) {
+                  node = nodes.getJSONObject(hostname);
+               }
+               else {
+                  node = new JSONObject();
+                  nodes.put(hostname, node);
+                  node.put("name", hostname);
+                  node.put("type", "node");
+                  StringBuilder nodeDescriptionBuilder = new StringBuilder();
+                  nodeObjects.put(hostname, node);
+                  nodeDescriptions.put(hostname, nodeDescriptionBuilder);
+               }
+               StringBuilder nodeDescriptionBuilder = nodeDescriptions
+                     .get(hostname);
+               if (!sat) {
+                  nodeDescriptionBuilder.append(String
+                        .format("ACL: \"%s\", line: %d is UNREACHABLE\n",
+                              aclName, line));
+               }
+            }
+            for (String hostname : nodeObjects.keySet()) {
+               JSONObject node = nodeObjects.get(hostname);
+               StringBuilder descriptionBuilder = nodeDescriptions
+                     .get(hostname);
+               node.put("description", descriptionBuilder.toString());
+            }
+            jsonOutput = query.toString(3);
+         }
+         catch (JSONException e) {
+            throw new BatfishException(
+                  "Error converting acl reachability analysis output to json",
+                  e);
+         }
+         Util.writeFile(jsonOutputPath, jsonOutput);
       }
    }
 
@@ -1113,6 +1253,16 @@ public class Batfish implements AutoCloseable {
       executor.executeJobs(jobs, flows);
       printElapsedTime();
       return flows;
+   }
+
+   private <Key> void computeNodSatOutput(List<NodSatJob<Key>> jobs,
+         Map<Key, Boolean> output) {
+      _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
+      resetTimer();
+      BatfishJobExecutor<NodSatJob<Key>, NodSatResult<Key>, Map<Key, Boolean>> executor = new BatfishJobExecutor<NodSatJob<Key>, NodSatResult<Key>, Map<Key, Boolean>>(
+            _settings, _logger);
+      executor.executeJobs(jobs, output);
+      printElapsedTime();
    }
 
    public Topology computeTopology(String testRigPath,
@@ -3176,6 +3326,27 @@ public class Batfish implements AutoCloseable {
 
    public void SetTerminatedWithException(boolean terminatedWithException) {
       _terminatedWithException = terminatedWithException;
+   }
+
+   private Synthesizer synthesizeAcls(Map<String, Configuration> configurations) {
+      _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
+      resetTimer();
+
+      _logger.info("Synthesizing Z3 ACL logic...");
+      Synthesizer s = new Synthesizer(configurations, _settings.getSimplify());
+
+      List<String> warnings = s.getWarnings();
+      int numWarnings = warnings.size();
+      if (numWarnings == 0) {
+         _logger.info("OK\n");
+      }
+      else {
+         for (String warning : warnings) {
+            _logger.warn(warning);
+         }
+      }
+      printElapsedTime();
+      return s;
    }
 
    private Synthesizer synthesizeDataPlane(

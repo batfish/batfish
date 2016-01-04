@@ -234,13 +234,14 @@ export -f batfish_get_history
 batfish_get_history_diff() {
    batfish_date
    echo ": START: Get flow"
-   batfish_expect_args 5 $# || return 1
+   batfish_expect_args 6 $# || return 1
    local BASE=$1
    local ENV=$2
    local DIFF_ENV=$3
    local QUESTIONNAME=$4
    local RESULT=$5
-   batfish -autobasedir $BASE -env $ENV -diffquestion -diffenv $DIFF_ENV -questionname $QUESTIONNAME -history -logtee -loglevel output -logfile $RESULT || return 1
+   local RESULT_JSON=$6
+   batfish -autobasedir $BASE -env $ENV -diffquestion -diffenv $DIFF_ENV -questionname $QUESTIONNAME -history -logtee -loglevel output -logfile $RESULT -answerjsonpath $RESULT_JSON || return 1
    batfish_date
    echo ": END: Get flow histories"
 }
