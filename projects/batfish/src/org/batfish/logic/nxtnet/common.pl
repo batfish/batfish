@@ -2862,7 +2862,6 @@ need_RouteFilterMatchNetwork(List, Network) :-
 /*owner accept*/
 'FlowAccepted'(Flow, Node) :-
    'FlowReachPostIn'(Flow, Node),
-   'FlowInboundInterface'(Flow, Node, _),
    'Flow_dstIp'(Flow, DstIp) /*fn*/,
    'HasIp'(Node, DstIp).
 /*flow sink accept*/
@@ -3292,10 +3291,20 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
 
 'FlowPathAcceptedEdge'(Flow, I, Node1, Int1, Node2, Int2, History) :-
    'FlowPathIntermediateEdge'(Flow, I, _, Node1, Int1, Node2, Int2, OldHistory),
-   'FlowAccepted'(Flow, Node2),
+   (
+      (
+         'FlowAccepted'(Flow, Node2),
+         'Flow_dstIp'(Flow, DstIp) /*fn*/,
+         'HasIp'(Node2, DstIp)
+      ) ;
+      (
+         'FlowAccepted'(Flow, Node1),
+         Int2 = 'flow_sink_termination'
+      )
+   ),
    History = [OldHistory, ':accepted'].
 'FlowPathAcceptedEdge'(Flow, I, Node1, Int1, Node2, Int2, History) :-
-   \+ 'FlowPathIntermediateEdge'(Flow, _, _, _, _, Node1, _, _),
+   \+ 'FlowPathIntermediateEdge'(Flow, _, _, _, _, _, _, _),
    Node2 = '(none)',
    I = 0,
    Int1 = 'null_interface',
@@ -3397,7 +3406,14 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
       )
    ),
    'FlowReachPostOutInterface'(Flow, Node1, Int1),
-   'FlowReachPostInInterface'(Flow, Node2, Int2),
+   (
+      'FlowReachPostInInterface'(Flow, Node2, Int2) ;
+      (
+         'SetFlowSinkInterface'(Node1, Int1),
+         Node2 = '(none)',
+         Int2 = 'flow_sink_termination'
+      )
+   ),
    CurrentHistory =['[\'', Node1, '\':\'', Int1, '\'', AllowedOutStr,
 	    '-> \'', Node2, '\':\'', Int2, '\'', AllowedInStr,
 		    ']'].

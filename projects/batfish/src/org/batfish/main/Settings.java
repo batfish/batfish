@@ -11,7 +11,7 @@ import org.batfish.config.ConfigurationLocator;
 
 public final class Settings extends BaseSettings {
 
-   public final class EnvironmentSettings {
+   public static final class EnvironmentSettings {
 
       private String _controlPlaneFactsDir;
 
@@ -34,6 +34,8 @@ public final class Settings extends BaseSettings {
       private String _nxtnetTrafficInputFile;
 
       private String _nxtnetTrafficOutputDir;
+
+      private String _precomputedRoutesPath;
 
       private String _serializedTopologyPath;
 
@@ -81,6 +83,10 @@ public final class Settings extends BaseSettings {
 
       public String getNxtnetTrafficOutputDir() {
          return _nxtnetTrafficOutputDir;
+      }
+
+      public String getPrecomputedRoutesPath() {
+         return _precomputedRoutesPath;
       }
 
       public String getSerializedTopologyPath() {
@@ -133,6 +139,10 @@ public final class Settings extends BaseSettings {
 
       public void setNxtnetTrafficOutputDir(String nxtnetTrafficOutputDir) {
          _nxtnetTrafficOutputDir = nxtnetTrafficOutputDir;
+      }
+
+      public void setPrecomputedRoutesPath(String writeRoutesPath) {
+         _precomputedRoutesPath = writeRoutesPath;
       }
 
       public void setSerializedTopologyPath(String serializedTopologyPath) {
@@ -1323,10 +1333,6 @@ public final class Settings extends BaseSettings {
 
    public void setNxtnetTraffic(boolean postFlows) {
       _nxtnetTraffic = postFlows;
-   }
-
-   public void setPrecomputedRoutesPath(String writeRoutesPath) {
-      _precomputedRoutesPath = writeRoutesPath;
    }
 
    public void setProtocolDependencyGraphPath(String protocolDependencyGraphPath) {
