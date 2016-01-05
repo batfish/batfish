@@ -67,7 +67,7 @@ verify {
                   $link_int2.set("node", node.name);
                   $link_int2.set("name", $interface2);
                   $link.set("description",
-                     node.name + ":" + $interface1 + " prefixes: " + $subnet_interfaces.get_map($subnet_name).get_map("interfaces").get($interface1) + "\n" +
+                     node.name + ":" + $interface1 + " prefixes: " + $subnet_interfaces.get_map($subnet_name).get_map("interfaces").get($interface1) + "<br>" +
                      node.name + ":" + $interface2 + " prefixes: " + $subnet_interfaces.get_map($subnet_name).get_map("interfaces").get($interface2));
                }
             }

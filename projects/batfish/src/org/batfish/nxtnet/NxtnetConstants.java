@@ -320,6 +320,7 @@ public class NxtnetConstants {
             "Flow_srcPort",
             "Flow_tag",
             // BEGIN DEBUG SYMBOLS
+            "FlowAccepted",
             "FlowDeniedIn",
             "FlowDeniedInCrossZoneFilter",
             "FlowDeniedInInboundFilter",
@@ -330,6 +331,7 @@ public class NxtnetConstants {
             "FlowDeniedOutHostOut",
             "FlowDeniedOutInterfaceAcl",
             "FlowInboundInterface",
+            "FlowMatchRoute",
             "FlowNonInboundNullSrcZone",
             "FlowNonInboundSrcInterface",
             "FlowNonInboundSrcZone",

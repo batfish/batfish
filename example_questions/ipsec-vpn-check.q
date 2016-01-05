@@ -34,7 +34,7 @@ verify {
                   $n := $view.get_map("nodes").get_map(node.name);
                   $n.set("name", node.name);
                   $n.set("type", "node");
-                  $n.set("description", $n.get("description") + "Could not determine remote IPSEC VPN for IPSEC VPN '" + ipsec_vpn.name + "'\n");
+                  $n.set("description", $n.get("description") + "Could not determine remote IPSEC VPN for IPSEC VPN '" + ipsec_vpn.name + "'<br>");
             }
          }
          if (ipsec_vpn.has_remote_ipsec_vpn){
@@ -55,12 +55,12 @@ verify {
                      $n := $view.get_map("nodes").get_map(node.name);
                      $n.set("name", node.name);
                      $n.set("type", "node");
-                     $n.set("description", $n.get("description") + "Could not uniquely determine remote IPSEC VPN for IPSEC VPN '" + ipsec_vpn.name + "' among candidate remote IPSEC VPNs:\n");
+                     $n.set("description", $n.get("description") + "Could not uniquely determine remote IPSEC VPN for IPSEC VPN '" + ipsec_vpn.name + "' among candidate remote IPSEC VPNs:<br>");
                   foreach remote_ipsec_vpn {
                      printf("\tCANDIDATE REMOTE VPN: '%s' on node '%s'\n",
                         remote_ipsec_vpn.name,
                         remote_ipsec_vpn.owner.name);
-                        $n.set("description", $n.get("description") + "\t" + remote_ipsec_vpn.name + " on node '" + remote_ipsec_vpn.owner.name + "\n");
+                        $n.set("description", $n.get("description") + "&nbsp;" + remote_ipsec_vpn.name + " on node '" + remote_ipsec_vpn.owner.name + "<br>");
                   }
                }
             }
