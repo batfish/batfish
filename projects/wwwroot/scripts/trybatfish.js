@@ -22,7 +22,7 @@ var spinOpts = {
 , shadow: false // Whether to render a shadow
 , hwaccel: false // Whether to use hardware acceleration
 , position: 'absolute' // Element positioning
-}
+};
 
 //this function populates the config text box with the chosen file
 function loadConfigText() {
@@ -56,7 +56,7 @@ function loadConfigText() {
                 jQuery(elementTestrigFile).val('');
             }
 
-        }
+        };
         reader.readAsArrayBuffer(configFile);
     }
     else {
@@ -67,7 +67,7 @@ function loadConfigText() {
         r.onload = function (e) {
             var contents = e.target.result;
             jQuery(elementConfigText).val(contents);
-        }
+        };
         r.readAsText(configFile);
     }
 
@@ -97,7 +97,7 @@ function loadQuestionText() {
     r.onload = function (e) {
         var contents = e.target.result;
         jQuery(elementQuestionText).val(contents);
-    }
+    };
     r.readAsText(questionFile);
 
     //if a question had been selected from the drop down menu, remove it
@@ -173,14 +173,13 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
 
 // this is a test function whose contents change based on what we want to test
 function testMe() {
-    containerName = "js_41aceec6-018e-4434-bd97-e1c9430333a6";
+    //containerName = "js_41aceec6-018e-4434-bd97-e1c9430333a6";
 
-    var blob = JSON.stringify("{'name': 'tester'}");
-
-    bfPutObject(containerName, testrigName, "co/layout", blob, testMeSuccess_cb, testMeFailure_cb, "testme", []);
+    //var blob = 
+    //bfPutObject(containerName, testrigName, "layout", blob, testMeSuccess_cb, testMeFailure_cb, "testme", []);
 
     //startCalls("testme", "drawtopology::drawanswer");
-    //AddHighlightMenu();
+    AddHighlightMenu();
 }
 
 function testMeFailure_cb(message) {
@@ -188,8 +187,8 @@ function testMeFailure_cb(message) {
 }
 
 function testMeSuccess_cb(response, entryPoint, remainingCalls) {
-    //console.log("testme success: " + JSON.parse(response));
-    bfGetObject(containerName, testrigName, "co/layout", testMeSuccess_cb, testMeFailure_cb, "testme", []);
+    console.log("testme success: ");
+    //bfGetObject(containerName, testrigName, "co/layout", testMeSuccess_cb, testMeFailure_cb, "testme", []);
 }
 
 

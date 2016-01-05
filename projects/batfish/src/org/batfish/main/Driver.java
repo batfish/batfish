@@ -84,7 +84,7 @@ public class Driver {
                   BfConsts.RELPATH_TOPOLOGY_FILE).toString());
             envSettings.setDeltaConfigurationsDir(envDirPath.resolve(
                   BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
-            settings.setPrecomputedRoutesPath(envPath.resolve(
+            envSettings.setPrecomputedRoutesPath(envPath.resolve(
                   BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
          }
          String diffEnvName = settings.getDiffEnvironmentName();
@@ -111,17 +111,17 @@ public class Driver {
                   BfConsts.RELPATH_TOPOLOGY_FILE).toString());
             diffEnvSettings.setDeltaConfigurationsDir(diffEnvDirPath.resolve(
                   BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
+            diffEnvSettings.setPrecomputedRoutesPath(diffEnvPath.resolve(
+                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
             if (settings.getDiffActive()) {
                settings.setActiveEnvironmentSettings(diffEnvSettings);
-               settings.setPrecomputedRoutesPath(diffEnvPath.resolve(
-                     BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
             }
          }
          String outputEnvName = settings.getOutputEnvironmentName();
          if (outputEnvName != null) {
             Path outputEnvPath = Paths.get(baseDir,
                   BfConsts.RELPATH_ENVIRONMENTS_DIR, outputEnvName);
-            settings.setPrecomputedRoutesPath(outputEnvPath.resolve(
+            envSettings.setPrecomputedRoutesPath(outputEnvPath.resolve(
                   BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
          }
          String questionName = settings.getQuestionName();

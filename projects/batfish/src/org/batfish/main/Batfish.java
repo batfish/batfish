@@ -540,9 +540,9 @@ public class Batfish implements AutoCloseable {
                StringBuilder nodeDescriptionBuilder = nodeDescriptions
                      .get(hostname);
                if (!sat) {
-                  nodeDescriptionBuilder.append(String
-                        .format("ACL: \"%s\", line: %d is UNREACHABLE\n",
-                              aclName, line));
+                  nodeDescriptionBuilder.append(String.format(
+                        "ACL: \"%s\", line: %d is UNREACHABLE<br>", aclName,
+                        line));
                }
             }
             for (String hostname : nodeObjects.keySet()) {
@@ -687,7 +687,7 @@ public class Batfish implements AutoCloseable {
          ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
                ingressNode, edge, true);
          ReachEdgeQuerySynthesizer noReachQuery = new ReachEdgeQuerySynthesizer(
-               ingressNode, edge, false);
+               ingressNode, edge, true);
          noReachQuery.setNegate(true);
          List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
          queries.add(reachQuery);
@@ -2247,7 +2247,7 @@ public class Batfish implements AutoCloseable {
 
    private void nxtnetDataPlane() {
       nxtnetDataPlane(_envSettings);
-      writeRoutes(_settings.getPrecomputedRoutesPath());
+      writeRoutes(_envSettings.getPrecomputedRoutesPath());
    }
 
    private void nxtnetDataPlane(EnvironmentSettings envSettings) {
@@ -3573,7 +3573,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void writeNxtnetPrecomputedRoutes(EnvironmentSettings envSettings) {
-      String precomputedRoutesPath = _settings.getPrecomputedRoutesPath();
+      String precomputedRoutesPath = envSettings.getPrecomputedRoutesPath();
       Map<String, StringBuilder> prFactBins = new HashMap<String, StringBuilder>();
       initControlPlaneFactBins(prFactBins, true);
       Set<String> prPredicates = new HashSet<String>();
