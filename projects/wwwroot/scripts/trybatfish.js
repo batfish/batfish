@@ -175,11 +175,11 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
 function testMe() {
     //containerName = "js_41aceec6-018e-4434-bd97-e1c9430333a6";
 
-    var blob = 
-    bfPutObject(containerName, testrigName, "layout", blob, testMeSuccess_cb, testMeFailure_cb, "testme", []);
+    //var blob = 
+    //bfPutObject(containerName, testrigName, "layout", blob, testMeSuccess_cb, testMeFailure_cb, "testme", []);
 
     //startCalls("testme", "drawtopology::drawanswer");
-    //AddHighlightMenu();
+    AddHighlightMenu();
 }
 
 function testMeFailure_cb(message) {
