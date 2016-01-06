@@ -3084,14 +3084,14 @@ public class Batfish implements AutoCloseable {
          String testRigPath = _settings.getTestRigPath();
          String outputPath = _settings.getSerializeVendorPath();
          serializeVendorConfigs(testRigPath, outputPath);
-         return;
+         action = true;;
       }
 
       if (_settings.getSerializeIndependent()) {
          String inputPath = _settings.getSerializeVendorPath();
          String outputPath = _settings.getSerializeIndependentPath();
          serializeIndependentConfigs(inputPath, outputPath);
-         return;
+         action = true;;
       }
 
       Map<String, StringBuilder> cpFactBins = null;
@@ -3134,7 +3134,7 @@ public class Batfish implements AutoCloseable {
 
       if (_settings.getDataPlane()) {
          computeDataPlane();
-         return;
+         action = true;;
       }
 
       if (_settings.getNxtnetTraffic()) {
