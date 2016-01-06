@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import java.util.Set;
 
 import org.batfish.main.Warnings;
+import org.batfish.representation.Configuration;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.Prefix;
 
@@ -24,7 +25,7 @@ public final class FwFromSourceAddressBookEntry extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line, Warnings w) {
+   public void applyTo(IpAccessListLine line, Warnings w, Configuration c) {
       Set<Prefix> prefixes = _localAddressBook.getPrefixes(
             _addressBookEntryName, w);
       line.getSourceIpRanges().addAll(prefixes);
