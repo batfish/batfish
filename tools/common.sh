@@ -247,6 +247,22 @@ batfish_get_history_diff() {
 }
 export -f batfish_get_history_diff
 
+batfish_get_history_diff_active() {
+   batfish_date
+   echo ": START: Get flow"
+   batfish_expect_args 6 $# || return 1
+   local BASE=$1
+   local ENV=$2
+   local DIFF_ENV=$3
+   local QUESTIONNAME=$4
+   local RESULT=$5
+   local RESULT_JSON=$6
+   batfish -autobasedir $BASE -env $ENV -diffactive -diffenv $DIFF_ENV -questionname $QUESTIONNAME -history -logtee -loglevel output -logfile $RESULT -answerjsonpath $RESULT_JSON || return 1
+   batfish_date
+   echo ": END: Get flow histories"
+}
+export -f batfish_get_history_diff_active
+
 batfish_get_topology_interfaces() {
    batfish_date
    echo ": START: Get topology interfaces"
@@ -295,6 +311,20 @@ batfish_post_flows_diff() {
    echo ": END: Inject discovered packets into network model (differential)"
 }
 export -f batfish_post_flows_diff
+
+batfish_post_flows_diff_active() {
+   batfish_date
+   echo ": START: Inject discovered packets into network model (use delta environment)"
+   batfish_expect_args 4 $# || return 1
+   local BASE=$1
+   local ENV=$2
+   local DIFF_ENV=$3
+   local QUESTIONNAME=$4
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -diffactive -questionname $QUESTIONNAME -nxtnettraffic || return 1
+   batfish_date
+   echo ": END: Inject discovered packets into network model (use delta environment)"
+}
+export -f batfish_post_flows_diff_active
 
 batfish_prepare_default_environment() {
    batfish_date

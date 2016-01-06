@@ -64,6 +64,7 @@ import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.FwFromHostProtocol;
 import org.batfish.representation.juniper.FwFromHostService;
+import org.batfish.representation.juniper.FwFromSourcePrefixList;
 import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
 import org.batfish.representation.juniper.IpsecVpn;
@@ -2406,6 +2407,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitFwfromt_source_prefix_list(
+         Fwfromt_source_prefix_listContext ctx) {
+      String name = ctx.name.getText();
+      FwFrom from = new FwFromSourcePrefixList(name);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
    public void exitFwft_term(Fwft_termContext ctx) {
       _currentFwTerm = null;
    }
@@ -3005,9 +3014,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitSpt_policy(Spt_policyContext ctx) {
-      if (_currentFwTerm.getIpv6()) {
-         _currentFilter.getTerms().remove(_currentFwTerm.getName());
-      }
       _currentFwTerm = null;
    }
 
