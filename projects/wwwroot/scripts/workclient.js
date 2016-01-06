@@ -174,12 +174,9 @@ function makeNextCall(entryPoint, callList) {
             case "uploadtestrigtext":
                 uploadTestrigText(entryPoint, callList);
                 break;
-            case "parsevendorspecific":
-            case "parsevendorindependent":
+            case "parse":
             case "generatedataplane":
-            case "getdataplane":
             case "generatediffdataplane":
-            case "getdiffdataplane":
             case "answerquestion":
             case "answerdiffquestion":
             case "drawtopology":
@@ -258,11 +255,9 @@ function queueWork(worktype, entryPoint, remainingCalls) {
     reqParams[ARG_LOG_LEVEL] = LOG_LEVEL;
 
     switch (worktype) {
-        case "parsevendorspecific":
+        case "parse":
             reqParams[COMMAND_PARSE_VENDOR_SPECIFIC] = "";
             reqParams[ARG_UNIMPLEMENTED_SUPPRESS] = "";
-            break;
-        case "parsevendorindependent":
             reqParams[COMMAND_PARSE_VENDOR_INDEPENDENT] = "";
             break;
         case "generatedataplane":
@@ -277,15 +272,6 @@ function queueWork(worktype, entryPoint, remainingCalls) {
             reqParams[COMMAND_NXTNET_DATA_PLANE] = "";
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
             reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
-            reqParams[ARG_DIFF_ACTIVE] = "";
-        case "getdataplane":
-            reqParams[COMMAND_DUMP_DP] = "";
-            reqParams[ARG_ENVIRONMENT_NAME] = envName;
-            break;
-        case "getdiffdataplane":
-            reqParams[COMMAND_DUMP_DP] = "";
-            reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
-            reqParams[ARG_ENVIRONMENT_NAME] = envName;
             reqParams[ARG_DIFF_ACTIVE] = "";
             break;
         case "answerquestion":
