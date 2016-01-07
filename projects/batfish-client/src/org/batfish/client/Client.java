@@ -471,15 +471,6 @@ public class Client {
                break;
             }
 
-            // get the data plane
-            WorkItem wItemGetDp = _workHelper.getWorkItemGetDataPlane(
-                  _currContainerName, _currTestrigName, _currEnv);
-            boolean resultGetDp = execute(wItemGetDp);
-
-            if (!resultGetDp) {
-               break;
-            }
-
             break;
          }
          case COMMAND_GEN_DIFF_DP: {
@@ -494,15 +485,6 @@ public class Client {
             boolean resultGenDdp = execute(wItemGenDdp);
 
             if (!resultGenDdp) {
-               break;
-            }
-
-            // get the data plane
-            WorkItem wItemGetDdp = _workHelper.getWorkItemGetDiffDataPlane(
-                  _currContainerName, _currTestrigName, _currEnv, _currDiffEnv);
-            boolean resultGetDdp = execute(wItemGetDdp);
-
-            if (!resultGetDdp) {
                break;
             }
 
@@ -600,20 +582,11 @@ public class Client {
             }
 
             // vendor specific parsing
-            WorkItem wItemPvs = _workHelper.getWorkItemParseVendorSpecific(
+            WorkItem wItemParse = _workHelper.getWorkItemParse(
                   _currContainerName, testrigName);
-            boolean resultPvs = execute(wItemPvs);
+            boolean resultPvs = execute(wItemParse);
 
             if (!resultPvs) {
-               break;
-            }
-
-            // vendor independent parsing
-            WorkItem wItemPvi = _workHelper.getWorkItemParseVendorIndependent(
-                  _currContainerName, testrigName);
-            boolean resultPvi = execute(wItemPvi);
-
-            if (!resultPvi) {
                break;
             }
 
