@@ -1,1 +1,1 @@
-multipath
+../../../example_questions/multipath.q
