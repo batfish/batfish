@@ -1,1 +1,1 @@
-failure
+/home/arifogel/git/batfish/example_questions/failure.q
