@@ -1,5 +1,7 @@
 /// <reference path="bfconsts.js" />
 /// <reference path="coordconsts.js" />
+/// <reference path="../libs/js.cookie.js" />
+/// <reference path="../libs/jquery-1.11.3.min.js" />
 
 "use strict";
 
@@ -21,6 +23,8 @@ var maxLogEntries = 1000;
 var outputLog = [];
 var maxOutputEntries = 10;
 var outputCounter = 0;
+
+var cookieApiKey = "apikey";
 
 function bfGetGuid() {
     function s4() {
@@ -163,8 +167,45 @@ function bfInitialize() {
     var protocol = (SVC_DISABLE_SSL) ? "http" : "https";
     SVC_WORK_MGR_ROOT = protocol + "://" + hostname + ":" + SVC_WORK_PORT + SVC_BASE_WORK_MGR + "/";
 
-   bfUpdateDebugInfo("Coordinator location is set to " + SVC_WORK_MGR_ROOT);
+    bfUpdateDebugInfo("Coordinator location is set to " + SVC_WORK_MGR_ROOT);
+
+    apiKey = Cookies.get(cookieApiKey);
+
+    if (bfIsInvalidStr(apiKey))
+        apiKey = defaultApiKey;
+
+    bfConfigureApiKeyDivs();
 }
+
+function bfConfigureApiKeyDivs() {
+
+    if (apiKey != defaultApiKey) {
+        $('#txtResetApiKey').val(apiKey);
+        $(elementYesApiKey).show();
+        $(elementNoApiKey).hide();
+    }
+    else {
+        $('#txtSetApiKey').val(apiKey);
+        $(elementNoApiKey).show();
+        $(elementYesApiKey).hide();
+    }
+}
+
+function bfSetApiKey(txtElement) {
+    var value = $(txtElement).val();
+
+    if (bfIsInvalidStr(value) || value == defaultApiKey) {
+        apiKey = defaultApiKey;
+        Cookies.remove(cookieApiKey);
+    }
+    else {
+        apiKey = value;
+        Cookies.set(cookieApiKey, value);
+    }
+
+    bfConfigureApiKeyDivs();
+}
+
 
 function bfUpdateDebugInfo(string) {
    debugLog.splice(0, 0, bfGetTimestamp() + " " + string);

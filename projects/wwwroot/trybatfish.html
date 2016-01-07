@@ -6,6 +6,7 @@
     <script src="libs/jszip.min.js"></script>
     <script src="libs/spin.min.js"></script>
     <script src="libs/jquery.spin.js"></script>
+    <script src="libs/js.cookie.js"></script>
     <!-- Mandatory in IE 6, 7, 8 and 9. -->
     <!--[if IE]>
     <script type="text/javascript" src="dist/jszip-utils-ie.js"></script>
@@ -26,6 +27,8 @@
     <script src="scripts/topology.js"></script>
 
     <script>
+
+        var defaultApiKey = "0000-0000-0000-0000-0000";
 
         var apiKey = "0000000";
         var containerPrefix = "js";
@@ -61,64 +64,86 @@
         var elementAnswerQuestionBtn = '#btnAnswerQuestion';
         var elementAnswerDiffQuestionBtn = '#btnAnswerDiffQuestion';
 
-        //spin
         var elementSpinDiv = '#spinwrapper';
+
+        var elementNoApiKey = '#noApiKey';
+        var elementYesApiKey = '#yesApiKey';
 
         var fnDrawTopology = ParseTopology;
         var fnShowHighlights = SetupHighlightsMenu;
     </script>
 
- 	<link rel="stylesheet" href="styles/jquery-ui.css" type="text/css">
+    <link rel="stylesheet" href="styles/jquery-ui.css" type="text/css">
     <link rel="stylesheet" type="text/css" href="styles/style.css" />
     <link rel="stylesheet" href="styles/graph.css" type="text/css">
     <link rel="stylesheet" type="text/css" href="libs/jquery.qtip.css">
-   
 </head>
 <body>
 
-<!--
+    <!--
     <div id="divTest">
         <input type="button" id="btnTest" value="Test me!" onclick="testMe()" />
     </div>
 -->
-
-    <h2>
+    <p>
         <input type="button" value="Toggle instructions" width="50px" onclick="jQuery('#instructions').toggle()" />
-    </h2>
+    </p>
     <div id="instructions">
-        <ol>
-            <li>Enter configuration, which can be an individual device or a zipped testrig, and press <b>Process base configuration</b>.
+        <h2>
+            <ol>
+                <li>Enter configuration, which can be an individual device or a zipped testrig, and press <b>Process base configuration</b>.
                     </li>
-            <li>Enter question, and press <b>Answer about base</b>.
+                <li>Enter question, and press <b>Answer about base</b>.
                     </li>
-            <li>To ask questions about a planned configuration change, 
+                <li>To ask questions about a planned configuration change: 
                    
-                           
-
-                <ol>
-                    <li>Enter the configuration delta (i.e., files that differ from the base), and press <b>Process delta configuration</b>.
+                    <ol>
+                        <li>Enter the configuration delta (i.e., files that differ from the base), and press <b>Process delta configuration</b>.
                                 </li>
-                    <li>Enter question, and press <b>Answer about delta</b>. 
+                        <li>Enter question, and press <b>Answer about delta</b>. 
                                 </li>
-                </ol>
-            </li>
-        </ol>
-        <p>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Steps 2 and 3 can be repeated multiple times for different questions and delta configurations.  To analyze a new base configuration, start again (reload the page).                
-   
+                    </ol>
+                </li>
+            </ol>
+            <p>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Steps 2 and 3 can be repeated multiple times for different questions and delta configurations.  To analyze a new base configuration, start again (reload the page).                
+           
+            </p>
+        </h2>
     </div>
 
     <div id="spinwrapper"></div>
 
-    <table>
-        <tr>
-            <td colspan="3">
-                <div id="myspinner"></div>
-            </td>
-        </tr>
+    <div id="noApiKey">
+        <table style="width: 100%">
+            <tr>
+                <td bgcolor="#aa0000">
+                    <h2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Your API key is not set. Others can read the configuration data you upload. 
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+                   <textarea id="txtSetApiKey" style="display: normal; border-radius: 5px" cols="50" rows="1"></textarea>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+                   <input type="button" value="Set API key" onclick="bfSetApiKey('#txtSetApiKey')" />
+                    </h2>
+                </td>
+            </tr>
+        </table>
+    </div>
 
-        </div>
-       
+    <div id="yesApiKey" style="display: none">
+        <table style="width: 100%">
+            <tr>
+                <td bgcolor="#00aa00" valign="top">
+                    <h2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Your API key is set to 
+                   <textarea id="txtResetApiKey" style="display: normal; border-radius: 5px" cols="50" rows="1"></textarea>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+            <input type="button" value="Change API key (blank to reset)" onclick="bfSetApiKey('#txtResetApiKey')" />
+                    </h2>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table>
         <tr>
             <td>
                 <form class="myform">
@@ -216,23 +241,23 @@
                 <table>
                     <tr>
                         <td>
-                        	<table>
-                        		<tr>
-                        			<td colspan="2">
-                        				<div id="cy"></div>
-                        			</td>
-                    			</tr>
-                        			<tr>
-                        				<td>
-                        					<button id="btnSaveLayout" onclick="SaveLayout()"> Save Layout</button>
-                        					<button id="btnAutoLayout" onclick="DoAutoLayout()"> Auto Layout</button>
-                        				</td>
-                        				<td>
-                        					<div data-role="content"></div>
-                        				</td>
-                        			
-                        		</tr>
-                        	</table>  
+                            <table>
+                                <tr>
+                                    <td colspan="2">
+                                        <div id="cy"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <button id="btnSaveLayout" onclick="SaveLayout()">Save Layout</button>
+                                        <button id="btnAutoLayout" onclick="DoAutoLayout()">Auto Layout</button>
+                                    </td>
+                                    <td>
+                                        <div data-role="content"></div>
+                                    </td>
+
+                                </tr>
+                            </table>
                         </td>
                     </tr>
                     <tr>
