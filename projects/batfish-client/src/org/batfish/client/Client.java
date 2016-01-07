@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.common.BfConsts;
@@ -59,12 +60,17 @@ public class Client {
    private static final String COMMAND_SET_TESTRIG = "set-testrig";
    private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
 
+   private static final String DEFAULT_CONTAINER_PREFIX = "cp";
+   private static final String DEFAULT_DIFF_ENV_PREFIX = "delta";
+   private static final String DEFAULT_ENV_NAME = "default";
+   private static final String DEFAULT_TESTRIG_NAME = "default_rig";
+
    private static final Map<String, String> MAP_COMMANDS = initCommands();
 
    private static Map<String, String> initCommands() {
       Map<String, String> descs = new TreeMap<String, String>();
       descs.put(COMMAND_ANSWER, COMMAND_ANSWER
-            + " <question-name> <question-file>\n"
+            + " <question-file> [parameter values]\n"
             + "\t Answer the question for the default environment");
       descs.put(COMMAND_ANSWER_DIFF, COMMAND_ANSWER_DIFF
             + " <question-name> <question-file>\n"
@@ -93,12 +99,12 @@ public class Client {
       descs.put(COMMAND_HELP, COMMAND_HELP + "\n"
             + "\t Print the list of supported commands");
       descs.put(COMMAND_INIT_CONTAINER, COMMAND_INIT_CONTAINER
-            + " <container-name-prefix>\n" + "\t Initialize a new container");
+            + " [<container-name-prefix>]\n" + "\t Initialize a new container");
       descs.put(COMMAND_INIT_DIFF_ENV, COMMAND_INIT_DIFF_ENV
-            + " <environment-name> <environment zipfile or directory>\n"
+            + " <environment zipfile or directory> [<environment-name>]\n"
             + "\t Initialize the differential environment");
       descs.put(COMMAND_INIT_TESTRIG, COMMAND_INIT_TESTRIG
-            + " <environment-name> <testrig zipfile or directory>\n"
+            + " <testrig zipfile or directory> [<environment-name>]\n"
             + "\t Initialize the testrig with default environment");
       descs.put(COMMAND_LIST_CONTAINERS, COMMAND_LIST_CONTAINERS + "\n"
             + "\t List the containers to which you have access");
@@ -296,13 +302,13 @@ public class Client {
                break;
             }
 
-            String questionName = words[1];
-            String questionFile = words[2];
+            String questionFile = words[1];
+            String questionName = UUID.randomUUID().toString();
 
             File paramsFile = null;
 
             try {
-               paramsFile = createParamsFile(words, 3, words.length - 1);
+               paramsFile = createParamsFile(words, 2, words.length - 1);
             }
             catch (Exception e) {
                _logger.error("Could not create params file\n");
@@ -495,7 +501,8 @@ public class Client {
             break;
          }
          case COMMAND_INIT_CONTAINER: {
-            String containerPrefix = words[1];
+            String containerPrefix = (words.length > 1) ? words[1]
+                  : DEFAULT_CONTAINER_PREFIX;
             _currContainerName = _workHelper.initContainer(containerPrefix);
             _logger.outputf("Init'ed and set active container to %s\n",
                   _currContainerName);
@@ -506,8 +513,9 @@ public class Client {
                break;
             }
 
-            String diffEnvName = words[1];
-            String diffEnvLocation = words[2];
+            String diffEnvLocation = words[1];
+            String diffEnvName = (words.length > 2) ? words[2]
+                  : DEFAULT_DIFF_ENV_PREFIX + UUID.randomUUID().toString();
 
             File envFilePointer = new File(diffEnvLocation);
 
@@ -550,8 +558,9 @@ public class Client {
                break;
             }
 
-            String testrigName = words[1];
-            String testrigLocation = words[2];
+            String testrigLocation = words[1];
+            String testrigName = (words.length > 2) ? words[2]
+                  : DEFAULT_TESTRIG_NAME;
 
             File testrigFilePointer = new File(testrigLocation);
 
@@ -592,7 +601,7 @@ public class Client {
 
             // set the name of the current testrig
             _currTestrigName = testrigName;
-            _currEnv = "default";
+            _currEnv = DEFAULT_ENV_NAME;
             _logger.outputf(
                   "Active (testrig, environment) is now set to (%s, %s)\n",
                   _currTestrigName, _currEnv);

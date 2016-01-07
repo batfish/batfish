@@ -373,7 +373,7 @@ function uploadDiffEnvFinal(entryPoint, remainingCalls, envBlobOrFile) {
         errorCheck(bfIsInvalidStr(testrigName), "Testrig name is not set", entryPoint))
         return;
 
-    diffEnvName = "de_" + bfGetGuid();
+    diffEnvName = "delta_" + bfGetGuid();
 
     bfUpdateDebugInfo("Uploading differential environment");
 
