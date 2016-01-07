@@ -1,1 +1,1 @@
-/home/arifogel/git/batfish/example_questions/no-self-adjacencies.q
+../../../example_questions/no-self-adjacencies.q

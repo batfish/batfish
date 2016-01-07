@@ -1,1 +1,1 @@
-/home/arifogel/git/batfish/example_questions/multipath.q
+../../../example_questions/multipath.q
