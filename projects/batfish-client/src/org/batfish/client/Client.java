@@ -555,7 +555,10 @@ public class Client {
          }
          case COMMAND_INIT_TESTRIG: {
             if (!isSetContainer()) {
-               break;
+               String containerPrefix = DEFAULT_CONTAINER_PREFIX;
+               _currContainerName = _workHelper.initContainer(containerPrefix);
+               _logger.outputf("Init'ed and set active container to %s\n",
+                     _currContainerName);
             }
 
             String testrigLocation = words[1];
@@ -590,7 +593,6 @@ public class Client {
                break;
             }
 
-            // vendor specific parsing
             WorkItem wItemParse = _workHelper.getWorkItemParse(
                   _currContainerName, testrigName);
             boolean resultPvs = execute(wItemParse);

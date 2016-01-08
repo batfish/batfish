@@ -355,13 +355,6 @@ public class BfCoordWorkHelper {
          String testrigName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
-      wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
-      return wItem;
-   }
-
-   public WorkItem getWorkItemParseVendorSpecific(String containerName,
-         String testrigName) {
-      WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
       wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
       return wItem;

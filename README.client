@@ -1,48 +1,48 @@
 
-Instructions for a simple demo that uses the batfish client.
+# Instructions for a simple demo that uses the batfish client.
+# This file also serves as input the client when used with -cmdfile option
 
-On three separate shells, in which tools/batfish_functions.sh has been sourced, run the following three commands in the following order:
+# Before starting the client, unless you are pointing the client to a remote coordinator,
+# run the following commands on separate shells in which tools/batfish_functions.sh has been sourced
+# % coordinator
+# % batfish -servicemode -register true
 
-% coordinator
+# Then, start the client
+# % batfish_client
 
-% batfish -servicemode -register true
+# ------------------
+# The following commands are typed on the batfish client's shell. 
+# They assume that the client was started in the top-level batfish directory.
 
-% batfish_client
+# initialize the testrig
+init-testrig test_rigs/example
 
-------------------------------
+# answer two simple questiosn around what routers are running
+answer example_questions/print-ebgp-nodes.q
+answer example_questions/print-ibgp-nodes.q
 
-The following commands are typed on the batfish client's shell. They assume that the client was started in the top-level batfish directory:
+# unique IP assignments and if loopbacks are correctly configured
+answer example_questions/unique-ip-assignments.q
+answer example_questions/ospf-loopbacks.q
 
-# these commands initialize the testrig
-batfish> init-container r
-batfish> init-testrig e test_rigs/example
-
-# these commands answer two simple questiosn around what routers are running
-batfish> answer p  example_questions/print-ebgp-nodes.q
-batfish> answer p1 example_questions/print-ibgp-nodes.q
-
-# these commands check for unique IP assignments and if loopbacks are correctly configured
-batfish> answer u example_questions/unique-ip-assignments.q
-batfish> answer o example_questions/ospf-loopbacks.q
-
-# this command generates the dataplanne
-batfish> generate-dataplane
+# generate the dataplanne
+generate-dataplane
 
 # virtual traceroutes
-batfish> answer t1 example_questions/traceroute.q ingress_node=as2host1
-batfish> answer t2 example_questions/traceroute.q ingress_node=as3core1 dst_ip=2.128.0.101
+answer example_questions/traceroute.q ingress_node=as2host1
+answer example_questions/traceroute.q ingress_node=as3core1 dst_ip=2.128.0.101
 
 # reachability analysis
-batfish> answer rall example_questions/reachability.q
-batfish> answer rdst example_questions/reachability.q final_node=as2host1
-batfish>  answer rdstsrc example_questions/reachability.q final_node=as2host1 ingress_node=as1core1
+answer example_questions/reachability.q
+answer example_questions/reachability.q final_node=as2host1
+answer example_questions/reachability.q final_node=as2host1 ingress_node=as1core1
 
 # multipath consistency
-batfish> answer m ../../example_questions/multipath.q
+answer example_questions/multipath.q
 
 # initialize the delta environment
-batfish>  init-diff-environment delta example_environments/delta
-batfish> generate-diff-dataplane
+init-diff-environment example_environments/delta
+generate-diff-dataplane
 
-# reachability differences
-batfish> answer f example_questions/failure.q
+# reachability differences between default and delta environments
+answer example_questions/failure.q
