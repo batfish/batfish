@@ -6,18 +6,10 @@ Created on Jan 7, 2016
 
 import re
 import sys
-import os
-import errno
 from os.path import basename, join
 
-from batfish_exception import BatfishException
-
-def make_sure_path_exists(path):
-    try:
-        os.makedirs(path)
-    except OSError as exception:
-        if exception.errno != errno.EEXIST:
-            raise
+from org.batfish.util.util import make_sure_path_exists
+from org.batfish.util.batfish_exception import BatfishException
 
 sensitive_line_regex =  (
                          r'(!?\s*)('
