@@ -11,36 +11,44 @@ import org.batfish.coordinator.queues.WorkQueue;
 public class Settings extends BaseSettings {
 
    private static final String ARG_AUTHORIZER_TYPE = "authorizertype";
-   /**
-    * (not wired to command line)
-    */
+   private static final String ARG_CONTAINERS_LOCATION = "containerslocation";
    private static final String ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS = "dbcacheexpiry";
    private static final String ARG_DB_AUTHORIZER_CONN_STRING = "dbconnection";
    private static final String ARG_DISABLE_SSL = "disablessl";
-   private static final String ARG_FILE_AUTHORIZER_PERMS_FILE = "coordinator.FileAuthPermsFile";
-   private static final String ARG_FILE_AUTHORIZER_ROOT_DIR = "coordinator.FileAuthRootDir";
-   private static final String ARG_FILE_AUTHORIZER_USERS_FILE = "coordinator.FileAuthUsersFile";
    private static final String ARG_HELP = "help";
    private static final String ARG_LOG_FILE = "logfile";
    private static final String ARG_LOG_LEVEL = "loglevel";
-   private static final String ARG_PERIOD_ASSIGN_WORK_MS = "coordinator.PeriodAssignWorkMs";
-   private static final String ARG_PERIOD_CHECK_WORK_MS = "coordinator.PeriodCheckWorkMs";
-   private static final String ARG_PERIOD_WORKER_STATUS_REFRESH_MS = "coordinator.PeriodWorkerRefreshMs";
-   private static final String ARG_QUEUE_COMPLETED_WORK = "coordinator.Q_CompletedWork";
-   private static final String ARG_QUEUE_INCOMPLETE_WORK = "coordinator.Q_IncompleteWork";
-   private static final String ARG_QUEUE_TYPE = "coordinator.Q_Type";
-   private static final String ARG_SERVICE_HOST = "coordinator.ServiceHost";
-   private static final String ARG_SERVICE_POOL_PORT = "coordinator.PoolPort";
-   private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";
+   private static final String ARG_PERIOD_ASSIGN_WORK_MS = "periodassignworkms";
+   private static final String ARG_PERIOD_CHECK_WORK_MS = "periodcheckworkms";
+   private static final String ARG_PERIOD_WORKER_STATUS_REFRESH_MS = "periodworkerrefreshms";
+   private static final String ARG_QUEUE_COMPLETED_WORK = "qcompletedwork";
+   private static final String ARG_QUEUE_INCOMPLETE_WORK = "qincompletework";
+   private static final String ARG_QUEUE_TYPE = "qtype";
+   private static final String ARG_SERVICE_HOST = "servicehost";
+   private static final String ARG_SERVICE_POOL_PORT = "poolport";
+   private static final String ARG_SERVICE_WORK_PORT = "workport";
    private static final String ARG_SSL_KEYSTORE_FILE = "sslkeystorefile";
-   private static final String ARG_SSL_KEYSTORE_PASSWORD = "coordinator.SslKeyStorePassword";
-   private static final String ARG_STORAGE_ACCOUNT_KEY = "coordinator.StorageAccountKey";
-   private static final String ARG_STORAGE_ACCOUNT_NAME = "coordinator.StorageAccountName";
-   private static final String ARG_STORAGE_PROTOCOL = "coordinator.StorageProtocol";
-   private static final String ARG_TESTRIG_STORAGE_LOCATION = "coordinator.TestrigStorageLocation";
+
+   /**
+    * Need when using Azure queues for storing work items
+    */
+   private static final String ARG_STORAGE_ACCOUNT_KEY = "storageaccountkey";
+   private static final String ARG_STORAGE_ACCOUNT_NAME = "storageaccountname";
+   private static final String ARG_STORAGE_PROTOCOL = "storageprotocol";
+
+   /**
+    * (the arguments below are not wired to command line)
+    */
+   private static final String ARG_FILE_AUTHORIZER_PERMS_FILE = "fileauthpermsfile";
+   private static final String ARG_FILE_AUTHORIZER_ROOT_DIR = "fileauthrootdir";
+   private static final String ARG_FILE_AUTHORIZER_USERS_FILE = "fileauthusersfile";
+
+   private static final String ARG_SSL_KEYSTORE_PASSWORD = "sslkeystorepassword";
+
    private static final String EXECUTABLE_NAME = "coordinator";
 
    private Authorizer.Type _authorizerType;
+   private String _containersLocation;
    private String _dbAuthorizerConnString;
    private long _dbCacheExpiryMs;
    private String _logFile;
@@ -58,7 +66,6 @@ public class Settings extends BaseSettings {
    private String _storageAccountKey;
    private String _storageAccountName;
    private String _storageProtocol;
-   private String _testrigStorageLocation;
    private boolean _useSsl;
 
    public Settings(String[] args) throws Exception {
@@ -158,8 +165,8 @@ public class Settings extends BaseSettings {
       return _storageProtocol;
    }
 
-   public String getTestrigStorageLocation() {
-      return _testrigStorageLocation;
+   public String getContainersLocation() {
+      return _containersLocation;
    }
 
    public boolean getUseSsl() {
@@ -170,7 +177,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none.toString());
       setDefaultProperty(ARG_DB_AUTHORIZER_CONN_STRING,
             "jdbc:mysql://localhost/batfish_test?user=batfish&password=batfish");
-      setDefaultProperty(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, 60 * 1000);
+      setDefaultProperty(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, 15 * 60 * 1000); //15 minutes
       setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
       setDefaultProperty(ARG_FILE_AUTHORIZER_PERMS_FILE, "perms.json");
       setDefaultProperty(ARG_FILE_AUTHORIZER_ROOT_DIR, "fileauthorizer");
@@ -195,7 +202,7 @@ public class Settings extends BaseSettings {
             "zRTT++dVryOWXJyAM7NM0TuQcu0Y23BgCQfkt7xh2f/Mm+r6c8/XtPTY0xxaF6tPSACJiuACsjotDeNIVyXM8Q==");
       setDefaultProperty(ARG_STORAGE_ACCOUNT_NAME, "testdrive");
       setDefaultProperty(ARG_STORAGE_PROTOCOL, "http");
-      setDefaultProperty(ARG_TESTRIG_STORAGE_LOCATION, "containers");
+      setDefaultProperty(ARG_CONTAINERS_LOCATION, "containers");
    }
 
    private void initOptions() {
@@ -241,8 +248,8 @@ public class Settings extends BaseSettings {
       addOption(ARG_SSL_KEYSTORE_FILE, "which keystore file to use for ssl",
             "keystor (.jks) file");
 
-      addOption(ARG_TESTRIG_STORAGE_LOCATION, "where to store test rigs",
-            "testrig_storage_location");
+      addOption(ARG_CONTAINERS_LOCATION, "where to store containers",
+            "containers_location");
 
    }
 
@@ -268,7 +275,7 @@ public class Settings extends BaseSettings {
       _storageAccountKey = getStringOptionValue(ARG_STORAGE_ACCOUNT_KEY);
       _storageAccountName = getStringOptionValue(ARG_STORAGE_ACCOUNT_NAME);
       _storageProtocol = getStringOptionValue(ARG_STORAGE_PROTOCOL);
-      _testrigStorageLocation = getStringOptionValue(ARG_TESTRIG_STORAGE_LOCATION);
+      _containersLocation = getStringOptionValue(ARG_CONTAINERS_LOCATION);
       _periodWorkerStatusRefreshMs = getLongOptionValue(ARG_PERIOD_WORKER_STATUS_REFRESH_MS);
       _periodAssignWorkMs = getLongOptionValue(ARG_PERIOD_ASSIGN_WORK_MS);
       _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK_MS);

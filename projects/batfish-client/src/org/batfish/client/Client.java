@@ -163,7 +163,7 @@ public class Client {
 
    public Client(Settings settings) {
       _settings = settings;
-
+      
       if (settings.getCommandFile() != null) {
          RunBatchMode();
       }
@@ -766,6 +766,10 @@ public class Client {
          PrintStream ps = new PrintStream(os, true);
          _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
 
+         _logger.outputf("Will use coordinator at %s://%s\n", 
+               (_settings.getUseSsl())? "https" : "http",               
+               _settings.getCoordinatorHost());
+         
          String workMgr = _settings.getCoordinatorHost() + ":"
                + _settings.getCoordinatorWorkPort();
          String poolMgr = _settings.getCoordinatorHost() + ":"

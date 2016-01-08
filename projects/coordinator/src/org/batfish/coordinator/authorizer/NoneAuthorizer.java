@@ -10,7 +10,7 @@ public class NoneAuthorizer implements Authorizer {
    }
 
    @Override
-   public boolean isAccessibleContainer(String apiKey, String containerName) {
+   public boolean isAccessibleContainer(String apiKey, String containerName, boolean logError) {
       return true;
    }
 

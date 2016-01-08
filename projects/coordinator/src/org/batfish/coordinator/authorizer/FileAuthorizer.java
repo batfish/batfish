@@ -69,7 +69,7 @@ public class FileAuthorizer implements Authorizer {
    }
 
    @Override
-   public boolean isAccessibleContainer(String apiKey, String containerName)
+   public boolean isAccessibleContainer(String apiKey, String containerName, boolean logError)
          throws Exception {
       String allPerms = FileUtils.readFileToString(_permsFile);
       JSONObject jObj = new JSONObject(allPerms);
@@ -91,8 +91,10 @@ public class FileAuthorizer implements Authorizer {
          }
       }
 
-      _logger.infof("Authorizer: %s is NOT allowed to access %s\n", apiKey,
-            containerName);
+      if (logError)
+         _logger.infof("Authorizer: %s is NOT allowed to access %s\n", apiKey,
+               containerName);
+
       return false;
    }
 

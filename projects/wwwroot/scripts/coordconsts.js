@@ -12,7 +12,7 @@ var SVC_POOL_PORT = 9998;
 var SVC_WORK_PORT = 9997;
 var SVC_DISABLE_SSL = false;
 
-var DEFAULT_API_KEY = "00-00-00-00";
+var DEFAULT_API_KEY = "00000000000000000000000000000000";
       
 /**
  * Various constants used as keys on multi-part form data

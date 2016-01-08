@@ -43,7 +43,7 @@ public class WorkMgrService {
 
    private void checkContainerAccessibility(String apiKey, String containerName)
          throws Exception {
-      if (!Main.getAuthorizer().isAccessibleContainer(apiKey, containerName)) {
+      if (!Main.getAuthorizer().isAccessibleContainer(apiKey, containerName, true)) {
          throw new AccessControlException(
                "container is not accessible by the api key");
       }
@@ -457,6 +457,9 @@ public class WorkMgrService {
          ;
          checkApiKeyValidity(apiKey);
 
+         if (apiKey.equals(CoordConsts.DEFAULT_API_KEY))
+            throw new AccessControlException("Listing containers is not allowed with Default API key");
+         
          String[] containerList = Main.getWorkMgr().listContainers(apiKey);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
