@@ -1,3 +1,6 @@
+# Author: Todd Millstein
+# Copyright 2016
+
 # This script parses Javadoc comments in Batfish question files and produces a documentation page batfish-questions.html.
 
 # If a command-line argument is given, it is used as the directory name in which to find Batfish questions;
