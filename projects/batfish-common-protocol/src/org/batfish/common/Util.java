@@ -25,7 +25,8 @@ public final class Util {
 
    public static ClientBuilder getClientBuilder(boolean secure, boolean trustAll)
          throws Exception {
-      if (secure && trustAll) {
+      if (secure) {
+         if (trustAll) {
          SSLContext sslcontext = SSLContext.getInstance("TLS");
          sslcontext.init(null, new TrustManager[] { new X509TrustManager() {
             @Override
@@ -47,6 +48,10 @@ public final class Util {
 
          return ClientBuilder.newBuilder().sslContext(sslcontext)
                .hostnameVerifier(new TrustAllHostNameVerifier());
+         }
+         else {
+            return ClientBuilder.newBuilder();                       
+         }
       }
       else {
          return ClientBuilder.newBuilder();

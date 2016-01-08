@@ -711,10 +711,10 @@ public class Client {
       _logger = new BatfishLogger(_settings.getLogLevel(), false,
             _settings.getLogFile(), false, false);
 
-      String workMgr = _settings.getServiceHost() + ":"
-            + _settings.getServiceWorkPort();
-      String poolMgr = _settings.getServiceHost() + ":"
-            + _settings.getServicePoolPort();
+      String workMgr = _settings.getCoordinatorHost() + ":"
+            + _settings.getCoordinatorWorkPort();
+      String poolMgr = _settings.getCoordinatorHost() + ":"
+            + _settings.getCoordinatorPoolPort();
 
       _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings);
       _poolHelper = new BfCoordPoolHelper(poolMgr);
@@ -766,10 +766,10 @@ public class Client {
          PrintStream ps = new PrintStream(os, true);
          _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
 
-         String workMgr = _settings.getServiceHost() + ":"
-               + _settings.getServiceWorkPort();
-         String poolMgr = _settings.getServiceHost() + ":"
-               + _settings.getServicePoolPort();
+         String workMgr = _settings.getCoordinatorHost() + ":"
+               + _settings.getCoordinatorWorkPort();
+         String poolMgr = _settings.getCoordinatorHost() + ":"
+               + _settings.getCoordinatorPoolPort();
 
          _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings);
          _poolHelper = new BfCoordPoolHelper(poolMgr);

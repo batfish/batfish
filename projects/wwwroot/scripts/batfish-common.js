@@ -172,20 +172,20 @@ function bfInitialize() {
     apiKey = Cookies.get(cookieApiKey);
 
     if (bfIsInvalidStr(apiKey))
-        apiKey = defaultApiKey;
+        apiKey = DEFAULT_API_KEY;
 
     bfConfigureApiKeyDivs();
 }
 
 function bfConfigureApiKeyDivs() {
 
-    if (apiKey != defaultApiKey) {
+    if (apiKey != DEFAULT_API_KEY) {
         $('#txtResetApiKey').val(apiKey);
         $(elementYesApiKey).show();
         $(elementNoApiKey).hide();
     }
     else {
-        $('#txtSetApiKey').val(apiKey);
+        $('#txtSetApiKey').val("");
         $(elementNoApiKey).show();
         $(elementYesApiKey).hide();
     }
@@ -194,8 +194,8 @@ function bfConfigureApiKeyDivs() {
 function bfSetApiKey(txtElement) {
     var value = $(txtElement).val();
 
-    if (bfIsInvalidStr(value) || value == defaultApiKey) {
-        apiKey = defaultApiKey;
+    if (bfIsInvalidStr(value) || value == DEFAULT_API_KEY) {
+        apiKey = DEFAULT_API_KEY;
         Cookies.remove(cookieApiKey);
     }
     else {

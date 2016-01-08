@@ -2,13 +2,15 @@
 # Instructions for a simple demo that uses the batfish client.
 # This file also serves as input the client when used with -cmdfile option
 
-# Before starting the client, unless you are pointing the client to a remote coordinator,
-# run the following commands on separate shells in which tools/batfish_functions.sh has been sourced
+# If you want to test everything locally, run the following commands on 
+# separate shells in which tools/batfish_functions.sh has been sourced
 # % coordinator
 # % batfish -servicemode -register true
-
 # Then, start the client
-# % batfish_client
+# % batfish_client --coordinatorhost localhost
+
+# If you are testing against www.batfish.org
+# % batfish_client 
 
 # ------------------
 # The following commands are typed on the batfish client's shell. 
