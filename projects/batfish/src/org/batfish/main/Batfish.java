@@ -206,8 +206,8 @@ public class Batfish implements AutoCloseable {
    private static final String INSTALLED_ROUTE_PREDICATE_NAME = "InstalledRoute";
 
    /**
-    * A byte-array containing the first 4 bytes comprising the header for a file
-    * that is the output of java serialization
+    * A byte-array containing the first 4 bytes of the header for a file that is
+    * the output of java serialization
     */
    private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = {
          (byte) 0xac,
