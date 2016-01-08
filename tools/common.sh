@@ -551,6 +551,11 @@ _batfish_replace_symlink() {
 }
 export -f _batfish_replace_symlink
 
+batfish_scrubber() {
+   $BATFISH_ROOT/projects/batfish_scrubber/bin/batfish_scrubber "$@"
+}
+export -f batfish_scrubber
+
 batfish_serialize_independent() {
    batfish_date
    echo ": START: Parse vendor structures and serialize vendor-independent structures"
