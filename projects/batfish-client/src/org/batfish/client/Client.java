@@ -70,10 +70,10 @@ public class Client {
    private static Map<String, String> initCommands() {
       Map<String, String> descs = new TreeMap<String, String>();
       descs.put(COMMAND_ANSWER, COMMAND_ANSWER
-            + " <question-file> [parameter values]\n"
+            + " <question-file> [param1=value1 [param2=value2] ...]\n"
             + "\t Answer the question for the default environment");
       descs.put(COMMAND_ANSWER_DIFF, COMMAND_ANSWER_DIFF
-            + " <question-name> <question-file>\n"
+            + " <question-file>  [param1=value1 [param2=value2] ...]\n"
             + "\t Answer the question for the differential environment");
       descs.put(COMMAND_CAT, COMMAND_CAT + " <filename>\n"
             + "\t Print the contents of the file");
@@ -346,8 +346,8 @@ public class Client {
                break;
             }
 
-            String questionName = words[1];
-            String questionFile = words[2];
+            String questionFile = words[1];
+            String questionName = UUID.randomUUID().toString();
 
             File paramsFile = null;
 
