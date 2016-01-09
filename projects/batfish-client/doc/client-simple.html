@@ -60,7 +60,7 @@
             <td>Generates the dataplane for the supplied testrig. This is needed for asking questions related to forwarding behavior of the network, and not needed for configuration-level questions (e.g., IP address configuration).</td>
         </tr>
         <tr>
-            <td><i>answer &lt;questionfile&gt; [param1=value1, ...]</i></td>
+            <td><i>answer &lt;questionfile&gt; [param1=value1] ...</i></td>
             <td>Answers the question specified in the file. See <a href="batfish-questions.html">here</a> for a list of example questions that we support. If the question has parameters, those can be supplied as the name=value pairs.</td>
         </tr>
         <tr>
@@ -72,7 +72,7 @@
             <td>Generates the dataplane for the delta testrig.</td>
         </tr>
         <tr>
-            <td><i>answer-diff &lt;questionfile&gt; [param1=value1, ...]</i></td>
+            <td><i>answer-diff &lt;questionfile&gt; [param1=value1] ... </i></td>
             <td>Answers questions about the delta testrig. If a question is non-differential (i.e., not about differences between base and delta testrigs), the <i>answer</i> command will answer with respect to the base environment. Use the <i>answer-diff</i> command to answer non-differential questions about the delta testrig. For differential questions, either of the two answer commands may be used.</td>
         </tr>
     </table>
