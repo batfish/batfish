@@ -23,12 +23,9 @@ import os
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
-from os import listdir
-from os.path import isfile, join
-
-from batfish_exception import BatfishException
+from org.batfish.util.batfish_exception import BatfishException
 from options import Options
-from scrub import scrub
+from questions_to_html import questionsToHTML
 
 __all__ = []
 __version__ = 0.1
@@ -85,32 +82,29 @@ USAGE
         parser.add_argument('-o', '--outputdir', dest='outputDir', default=None, help="path to output directory", metavar="path")
         #parser.add_argument("-r", "--recursive", dest="recurse", action="store_true", help="recurse into subfolders [default: %(default)s]")
         parser.add_argument("-v", "--verbose", dest="verbose", action="count", help="set verbosity level [default: %(default)s]")
+        parser.add_argument("-d", "--debug", dest="debug", help="print debug messages", action='store_true')
         #parser.add_argument("-i", "--include", dest="include", help="only include paths matching this regex pattern. Note: exclude is given preference over include. [default: %(default)s]", metavar="RE" )
         #parser.add_argument("-e", "--exclude", dest="exclude", help="exclude paths matching this regex pattern. [default: %(default)s]", metavar="RE" )
         parser.add_argument('-V', '--version', action='version', version=program_version_message)
-        parser.add_argument('-i', '--inputdir', dest="inputDir", help="path to directory with source configuration file(s)", default=None, metavar="path", required=True)
+        parser.add_argument('-i', '--inputdir', dest="inputDir", help="path to directory with source question file(s)", default=None, metavar="path", required=True)
 
         # Process arguments
         args = parser.parse_args()
 
         inputDir = args.inputDir
         options = Options()
+        options.debug = args.debug
         options.inputDir = inputDir
         options.verbose = args.verbose
         options.outputDir = args.outputDir
 
-        if inputDir == None:
-            raise BatfishException("No input directory specified"), None, sys.exc_info()[2]
-        inputFiles = [join(inputDir, f) for f in listdir(inputDir) if isfile(join(inputDir, f))]
-        for inputFile in inputFiles:
-            ### do something with inpath ###
-            scrub(inputFile, options)
+        questionsToHTML(inputDir, options)
         return 0
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 0
     except BatfishException as e:
-        raise BatfishException("error running batfish_scrubber", e), None, sys.exc_info()[2]
+        raise BatfishException("error running questions_to_html", e), None, sys.exc_info()[2]
     except Exception, e:
         if DEBUG or TESTRUN:
             raise(e)

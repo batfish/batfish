@@ -529,10 +529,10 @@ _batfish_replace_symlinks() {
    cd $BATFISH_ROOT
    if [ -d ".git" ]; then
       echo "(Cygwin workaround) Updating git index to ignore changes to symlinks"
-      git update-index --assume-unchanged $($GNU_FIND . -type l) || return 1
+      git update-index --assume-unchanged $($GNU_FIND projects -type l) || return 1
    fi
    echo "(Cygwin workaround) Replacing symlinks"
-   $GNU_FIND . -type l | parallel _batfish_replace_symlink "{}" \;
+   $GNU_FIND projects -type l | parallel _batfish_replace_symlink "{}" \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -552,7 +552,7 @@ _batfish_replace_symlink() {
 export -f _batfish_replace_symlink
 
 batfish_scrubber() {
-   $BATFISH_ROOT/projects/batfish_scrubber/bin/batfish_scrubber "$@"
+   $BATFISH_ROOT/projects/pybatfish/bin/batfish_scrubber "$@"
 }
 export -f batfish_scrubber
 
@@ -710,4 +710,9 @@ _common_build() {
    ant "$@" || return 1
 }
 export -f _common_build
+
+questions_doc() {
+   $BATFISH_ROOT/projects/pybatfish/bin/questions_to_html -i $BATFISH_ROOT/example_questions -o $BATFISH_ROOT/example_questions "$@"
+}
+export -f questions_doc
 
