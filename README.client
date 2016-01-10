@@ -16,8 +16,8 @@
 # The following commands are typed on the batfish client's shell. 
 # They assume that the client was started in the top-level batfish directory.
 
-# initialize the testrig
-init-testrig test_rigs/example
+# initialize the testrig; only parsing for now; we'll do dataplane later
+init-testrig -nodataplane test_rigs/example
 
 # answer two simple questiosn around what routers are running
 answer example_questions/print-ebgp-nodes.q
@@ -42,9 +42,8 @@ answer example_questions/reachability.q final_node=as2host1 ingress_node=as1core
 # multipath consistency
 answer example_questions/multipath.q
 
-# initialize the delta environment
+# initialize the delta environment and generate its dataplane
 init-diff-environment example_environments/delta
-generate-diff-dataplane
 
 # reachability differences between default and delta environments
 answer example_questions/failure.q

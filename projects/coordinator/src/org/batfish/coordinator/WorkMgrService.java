@@ -37,7 +37,7 @@ public class WorkMgrService {
 
    private void checkApiKeyValidity(String apiKey) throws Exception {
       if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
-         throw new AccessControlException("api key is invalid");
+         throw new AccessControlException("Invalid API key: " + apiKey);
       }
    }
 

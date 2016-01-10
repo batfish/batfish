@@ -176,7 +176,7 @@ public class Settings extends BaseSettings {
    private void initConfigDefaults() {
       setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none.toString());
       setDefaultProperty(ARG_DB_AUTHORIZER_CONN_STRING,
-            "jdbc:mysql://localhost/batfish_test?user=batfish&password=batfish");
+            "jdbc:mysql://localhost/batfish?user=batfish&password=batfish");
       setDefaultProperty(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, 15 * 60 * 1000); //15 minutes
       setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
       setDefaultProperty(ARG_FILE_AUTHORIZER_PERMS_FILE, "perms.json");
