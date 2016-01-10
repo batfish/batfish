@@ -20,12 +20,12 @@
 init-testrig -nodataplane test_rigs/example
 
 # answer two simple questiosn around what routers are running
-answer example_questions/print-ebgp-nodes.q
-answer example_questions/print-ibgp-nodes.q
+answer example_questions/print_ebgp_nodes.q
+answer example_questions/print_ibgp_nodes.q
 
 # unique IP assignments and if loopbacks are correctly configured
-answer example_questions/unique-ip-assignments.q
-answer example_questions/ospf-loopbacks.q
+answer example_questions/unique_ip_assignments.q
+answer example_questions/ospf_loopbacks.q
 
 # generate the dataplanne
 generate-dataplane
@@ -45,5 +45,5 @@ answer example_questions/multipath.q
 # initialize the delta environment and generate its dataplane
 init-diff-environment example_environments/delta
 
-# reachability differences between default and delta environments
-answer example_questions/failure.q
+# reduced reachability between default and delta environments
+answer example_questions/reduced_reachability.q

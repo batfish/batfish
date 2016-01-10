@@ -28,7 +28,7 @@ ACCEPT
 
 ACL_REACHABILITY
 :
-   'acl-reachability'
+   'acl_reachability'
 ;
 
 ACTION
@@ -141,11 +141,6 @@ ENABLED
    'enabled'
 ;
 
-FAILURE
-:
-   'failure'
-;
-
 FALSE
 :
    'false'
@@ -253,7 +248,7 @@ INGRESS_NODE
 
 INGRESS_PATH
 :
-   'ingress-path'
+   'ingress_path'
 ;
 
 INPUT
@@ -343,7 +338,7 @@ LOCAL_IP
 
 LOCAL_PATH
 :
-   'local-path'
+   'local_path'
 ;
 
 MATCH_PROTOCOL
@@ -474,6 +469,11 @@ QUERY
 REACHABILITY
 :
    'reachability'
+;
+
+REDUCED_REACHABILITY
+:
+   'reduced_reachability'
 ;
 
 REMOTE_AS

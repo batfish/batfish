@@ -146,7 +146,7 @@ batfish_answer_failure() {
    local ENV=$2
    local DIFF_ENV=$3
    local QUESTIONNAME=$4
-   local QUESTION_SRC=$BATFISH_ROOT/example_questions/failure.q
+   local QUESTION_SRC=$BATFISH_ROOT/example_questions/reduced_reachability.q
    local QUESTION_DST_DIR=$BASE/questions/$QUESTIONNAME
    local QUESTION_DST=$QUESTION_DST_DIR/question
    mkdir -p $QUESTION_DST_DIR

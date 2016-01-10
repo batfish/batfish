@@ -110,7 +110,7 @@ import org.batfish.nxtnet.TopologyFactExtractor;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
 import org.batfish.question.AclReachabilityQuestion;
 import org.batfish.question.DestinationQuestion;
-import org.batfish.question.FailureQuestion;
+import org.batfish.question.ReducedReachabilityQuestion;
 import org.batfish.question.IngressPathQuestion;
 import org.batfish.question.LocalPathQuestion;
 import org.batfish.question.MultipathQuestion;
@@ -382,12 +382,6 @@ public class Batfish implements AutoCloseable {
          diff = true;
          break;
 
-      case FAILURE:
-         answerFailure((FailureQuestion) question);
-         dp = true;
-         diff = true;
-         break;
-
       case INGRESS_PATH:
          answerIngressPath((IngressPathQuestion) question);
          dp = true;
@@ -412,6 +406,12 @@ public class Batfish implements AutoCloseable {
       case REACHABILITY:
          answerReachability((ReachabilityQuestion) question);
          dp = true;
+         break;
+
+      case REDUCED_REACHABILITY:
+         answerReducedReachability((ReducedReachabilityQuestion) question);
+         dp = true;
+         diff = true;
          break;
 
       case TRACEROUTE:
@@ -567,73 +567,6 @@ public class Batfish implements AutoCloseable {
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
                                                        // method stub
-   }
-
-   private void answerFailure(FailureQuestion question) {
-      checkDifferentialDataPlaneQuestionDependencies();
-      String tag = getDifferentialFlowTag();
-
-      // load base configurations and generate base data plane
-      Map<String, Configuration> baseConfigurations = loadConfigurations(_baseEnvSettings);
-      File baseDataPlanePath = new File(_baseEnvSettings.getDataPlanePath());
-      Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(
-            baseConfigurations, baseDataPlanePath);
-
-      // load diff configurations and generate diff data plane
-      Map<String, Configuration> diffConfigurations = loadConfigurations(_diffEnvSettings);
-      File diffDataPlanePath = new File(_diffEnvSettings.getDataPlanePath());
-      Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(
-            diffConfigurations, diffDataPlanePath);
-
-      Set<String> commonNodes = new TreeSet<String>();
-      commonNodes.addAll(baseConfigurations.keySet());
-      commonNodes.retainAll(diffConfigurations.keySet());
-
-      NodeSet blacklistNodes = getNodeBlacklist(_diffEnvSettings);
-      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(_diffEnvSettings);
-      EdgeSet blacklistEdges = getEdgeBlacklist(_diffEnvSettings);
-
-      BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
-            null, blacklistNodes, blacklistInterfaces, blacklistEdges,
-            baseConfigurations);
-
-      // compute composite program and flows
-      List<Synthesizer> synthesizers = new ArrayList<Synthesizer>();
-      synthesizers.add(baseDataPlaneSynthesizer);
-      synthesizers.add(diffDataPlaneSynthesizer);
-      synthesizers.add(baseDataPlaneSynthesizer);
-
-      List<CompositeNodJob> jobs = new ArrayList<CompositeNodJob>();
-
-      // generate base reachability and diff blackhole and blacklist queries
-      for (String node : commonNodes) {
-         ReachableQuerySynthesizer reachableQuery = new ReachableQuerySynthesizer(
-               node, null);
-         ReachableQuerySynthesizer blackHoleQuery = new ReachableQuerySynthesizer(
-               node, null);
-         blackHoleQuery.setNegate(true);
-         NodeSet nodes = new NodeSet();
-         nodes.add(node);
-         List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
-         queries.add(reachableQuery);
-         queries.add(blackHoleQuery);
-         queries.add(blacklistQuery);
-         CompositeNodJob job = new CompositeNodJob(synthesizers, queries,
-               nodes, tag);
-         jobs.add(job);
-      }
-
-      Set<Flow> flows = computeCompositeNodOutput(jobs);
-
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      initTrafficFactBins(trafficFactBins);
-      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
-      for (Flow flow : flows) {
-         wSetFlowOriginate.append(flow.toLBLine());
-         _logger.debug("Found: " + flow.toString() + "\n");
-      }
-      dumpTrafficFacts(trafficFactBins, _baseEnvSettings);
-      dumpTrafficFacts(trafficFactBins, _diffEnvSettings);
    }
 
    private void answerIngressPath(IngressPathQuestion question) {
@@ -842,6 +775,73 @@ public class Batfish implements AutoCloseable {
          wSetFlowOriginate.append(flow.toLBLine());
       }
       dumpTrafficFacts(trafficFactBins);
+   }
+
+   private void answerReducedReachability(ReducedReachabilityQuestion question) {
+      checkDifferentialDataPlaneQuestionDependencies();
+      String tag = getDifferentialFlowTag();
+
+      // load base configurations and generate base data plane
+      Map<String, Configuration> baseConfigurations = loadConfigurations(_baseEnvSettings);
+      File baseDataPlanePath = new File(_baseEnvSettings.getDataPlanePath());
+      Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(
+            baseConfigurations, baseDataPlanePath);
+
+      // load diff configurations and generate diff data plane
+      Map<String, Configuration> diffConfigurations = loadConfigurations(_diffEnvSettings);
+      File diffDataPlanePath = new File(_diffEnvSettings.getDataPlanePath());
+      Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(
+            diffConfigurations, diffDataPlanePath);
+
+      Set<String> commonNodes = new TreeSet<String>();
+      commonNodes.addAll(baseConfigurations.keySet());
+      commonNodes.retainAll(diffConfigurations.keySet());
+
+      NodeSet blacklistNodes = getNodeBlacklist(_diffEnvSettings);
+      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(_diffEnvSettings);
+      EdgeSet blacklistEdges = getEdgeBlacklist(_diffEnvSettings);
+
+      BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
+            null, blacklistNodes, blacklistInterfaces, blacklistEdges,
+            baseConfigurations);
+
+      // compute composite program and flows
+      List<Synthesizer> synthesizers = new ArrayList<Synthesizer>();
+      synthesizers.add(baseDataPlaneSynthesizer);
+      synthesizers.add(diffDataPlaneSynthesizer);
+      synthesizers.add(baseDataPlaneSynthesizer);
+
+      List<CompositeNodJob> jobs = new ArrayList<CompositeNodJob>();
+
+      // generate base reachability and diff blackhole and blacklist queries
+      for (String node : commonNodes) {
+         ReachableQuerySynthesizer reachableQuery = new ReachableQuerySynthesizer(
+               node, null);
+         ReachableQuerySynthesizer blackHoleQuery = new ReachableQuerySynthesizer(
+               node, null);
+         blackHoleQuery.setNegate(true);
+         NodeSet nodes = new NodeSet();
+         nodes.add(node);
+         List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
+         queries.add(reachableQuery);
+         queries.add(blackHoleQuery);
+         queries.add(blacklistQuery);
+         CompositeNodJob job = new CompositeNodJob(synthesizers, queries,
+               nodes, tag);
+         jobs.add(job);
+      }
+
+      Set<Flow> flows = computeCompositeNodOutput(jobs);
+
+      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
+      initTrafficFactBins(trafficFactBins);
+      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
+      for (Flow flow : flows) {
+         wSetFlowOriginate.append(flow.toLBLine());
+         _logger.debug("Found: " + flow.toString() + "\n");
+      }
+      dumpTrafficFacts(trafficFactBins, _baseEnvSettings);
+      dumpTrafficFacts(trafficFactBins, _diffEnvSettings);
    }
 
    private void answerTraceroute(TracerouteQuestion question) {

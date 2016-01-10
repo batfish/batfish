@@ -484,11 +484,6 @@ expr returns [VariableType varType]
 
 ;
 
-failure_question
-:
-   FAILURE
-;
-
 false_expr
 :
    FALSE
@@ -1413,7 +1408,7 @@ question
    defaults?
    (
       acl_reachability_question
-      | failure_question
+      | reduced_reachability_question
       | ingress_path_question
       | local_path_question
       | multipath_question
@@ -1499,6 +1494,11 @@ reachability_question
    (
       COMMA reachability_constraint
    )* CLOSE_BRACE
+;
+
+reduced_reachability_question
+:
+   REDUCED_REACHABILITY
 ;
 
 route_filter_expr

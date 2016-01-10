@@ -17,7 +17,7 @@ import org.batfish.grammar.question.QuestionParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.question.AclReachabilityQuestion;
 import org.batfish.question.Expr;
-import org.batfish.question.FailureQuestion;
+import org.batfish.question.ReducedReachabilityQuestion;
 import org.batfish.question.ForwardingAction;
 import org.batfish.question.GeneratedRoutePrefixExpr;
 import org.batfish.question.IngressPathQuestion;
@@ -338,12 +338,6 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    @Override
-   public void enterFailure_question(Failure_questionContext ctx) {
-      FailureQuestion failureQuestion = new FailureQuestion();
-      _question = failureQuestion;
-   }
-
-   @Override
    public void enterFlow_constraint_dst_ip(Flow_constraint_dst_ipContext ctx) {
       String valueText = ctx.dst_ip.getText();
       Ip dstIp;
@@ -515,6 +509,13 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void enterReachability_question(Reachability_questionContext ctx) {
       _reachabilityQuestion = new ReachabilityQuestion();
       _question = _reachabilityQuestion;
+   }
+
+   @Override
+   public void enterReduced_reachability_question(
+         Reduced_reachability_questionContext ctx) {
+      ReducedReachabilityQuestion reducedReachabilityQuestion = new ReducedReachabilityQuestion();
+      _question = reducedReachabilityQuestion;
    }
 
    @Override

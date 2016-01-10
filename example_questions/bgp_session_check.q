@@ -1,3 +1,10 @@
+/**
+ * Check that each BGP neighbor definition for each configuration corresponds
+ * uniquely to some other BGP neighbor definition on some other configuration.
+ * @param no_check_endpoint If set to true, don't check for matching BGP neighbor definitions
+ * @param no_check_unique If set to true, don't check for UNIQUE matching BGP neighbor definitions
+ * @param foreign_bgp_groups A set of strings signifying BGP groups for which no checks are performed. For instance, set this parameter to set&lt;string&gt;{"partners", "customers"} if you don't want to check your configurations for matching BGP neighbor definitions for BGP neighbors in the "partners" or "customers" groups because e.g. you don't own the configurations containing the matching definitions. 
+ */
 defaults {
    $no_check_endpoint=false;
    $no_check_unique=false;
