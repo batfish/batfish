@@ -13,7 +13,13 @@ public final class GroupBgpNeighborStringExpr extends BgpNeighborStringExpr {
    @Override
    public String evaluate(Environment environment) {
       BgpNeighbor caller = _caller.evaluate(environment);
-      return caller.getGroupName();
+      String groupName = caller.getGroupName();
+      if (groupName != null) {
+         return caller.getGroupName();
+      }
+      else {
+         return "";
+      }
    }
 
 }
