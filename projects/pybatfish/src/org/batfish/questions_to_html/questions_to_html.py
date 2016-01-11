@@ -133,14 +133,17 @@ def firstSentence(s):
 
 def commentToSummaryHTML(comment, style):
     res = ""
-    res += "<table><tr class=\"d" + str(style) + "\">" + nl
+#    res += "<table><tr class=\"d" + str(style) + "\">" + nl
+    res += "<tr class=\"d" + str(style) + "\">" + nl
     res += "<td>" + nl
     commentParams = comment["params"]
     pnames = map(lambda p: p["name"], commentParams)
     res += "<a href=\"#" + comment["name"] + "\">" + comment["name"] + "</a>" + "(" + string.join(pnames, ", ") + ")" + nl
-    res += "<div>" + firstSentence(comment["desc"]) + "<div>" + nl
     res += "</td>" + nl
-    res += "</tr></table><br/>" + nl + nl
+    res += "<td> <div>" + firstSentence(comment["desc"]) + "</div>" + nl
+    res += "</td>" + nl
+#    res += "</tr></table><br/>" + nl + nl
+    res += "</tr>" + nl + nl
 
     return res
 
@@ -195,10 +198,12 @@ def questionsToHTML(inputDir, options):
         comments = [parseComment(inputFile, inputDir, options) for inputFile in files if (len(inputFile) > 1 and len(inputFile) == inputFile.rfind(".q") + 2)]
     
         html += "<H4>Summary</H4>" + nl
+        html += "<table border=1 cellpadding=10>" + nl
         style = 0
         for c in comments:
             html += commentToSummaryHTML(c, style)
             style = abs(style - 1)
+        html += "</table>" + nl
             
         html += "<H4>Detailed Descriptions</H4>" + nl
         for c in comments:
