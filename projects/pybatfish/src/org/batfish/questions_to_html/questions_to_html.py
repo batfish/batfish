@@ -59,8 +59,9 @@ def parseParam(s):
 # parse the given file to grab the comment describing this property
 # we assume the comment is in Javadoc syntax
 def parseComment(fname, inputDir, options):
-    f = open(inputDir + "/" + fname)
-    res = {"desc":"", "params":[]}
+    fullfname = inputDir + "/" + fname
+    f = open(fullfname)
+    res = {"file":fullfname, "desc":"", "params":[]}
     state = 0
     param = None
 
@@ -116,12 +117,6 @@ def parseComment(fname, inputDir, options):
 
 nl = "\n"
 
-# <tr id="i0" class="altColor">
-# <td class="colFirst"><code>protected void</code></td>
-# <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/apache/commons/cli/CommandLine.html#addArg-java.lang.String-">addArg</a></span>(<a href="http://download.oracle.com/javase/6/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;arg)</code>
-# <div class="block">Add left-over unrecognized option/argument.</div>
-# </td>
-# </tr>
 
 # Return the first sentence of the given string.  It is the portion of the string up to a period followed by some whitespace or the end of the string.
 # If no such period exists then return the whole string.
@@ -165,7 +160,16 @@ def commentToHTML(comment):
         for p in comment["params"]:
             res += "<dd><code>" + p["name"] + "</code>" + " - " + p["desc"] + "</dd>" + nl
         res += "</dl>" + nl
-    res += nl
+        
+    res += "<p>"
+    divid = "def_" + comment["name"]
+    res += "<input type=\"button\" value=\"Toggle Definition\""
+    res += "onclick=\"jQuery('#" + divid + "').toggle()\" />" + nl
+    res += "<div id=\"" + divid + "\" " + "style=\"display:none\">"
+    f = open(comment["file"])
+    defn = f.read()
+    res += "<p><pre>" + defn + "</pre></p>"
+    res += "</div>" + nl + nl
     return res
 
 
@@ -174,8 +178,11 @@ def commentToHTML(comment):
 def questionsToHTML(inputDir, options):
     try:
         html = "<HTML>" + nl
-        html += "<HEAD><TITLE>Batfish Questions</TITLE></HEAD>" + nl
-    
+        html += "<HEAD>"
+        html += "<TITLE>Batfish Questions</TITLE>" + nl
+        html += "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js\"></script>" + nl
+        html += "</HEAD>" + nl
+        
         html += "<style type=\"text/css\">" + nl
         html += "tr.d0 td { background-color: #FFFFFF; color: black; }" + nl
         html += "tr.d1 td { background-color: #EEEEEF; color: black; }" + nl
