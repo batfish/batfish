@@ -23,14 +23,10 @@ export DOC_FINAL_DST="${HTML_ROOT}/doc"
 
 TARGET_HOST="www.batfish.org"
 
-# first, delete the target directories if they exist
-#ssh ${TARGET_HOST} rm -rf ${WWWROOT_TMP_DST} 
-#ssh ${TARGET_HOST} rm -rf ${DOC_TMP_DST}
+# copy the pieces to temporary resting place on the target host
+rsync -rvzL ${WWWROOT_SRC} ${TARGET_HOST}:${WWWROOT_TMP_DST} 
+rsync -rvzL ${DOC_SRC} ${TARGET_HOST}:${DOC_TMP_DST} 
 
-# second, copy over the necessary pieces to its temporary resting place on the target host
-rsync -L ${WWWROOT_SRC} ${TARGET_HOST}:${WWWROOT_TMP_DST} 
-rsync -L ${DOC_SRC} ${TARGET_HOST}:${DOC_TMP_DST} 
-
-# finally, copy from the temporay place to the final resting place (requires sudo)
+# copy from the temporay place to the final resting place (requires sudo)
 ssh ${TARGET_HOST} sudo cp -r ${WWWROOT_TMP_DST}/* ${WWWROOT_FINAL_DST}/
 ssh ${TARGET_HOST} sudo cp -r ${DOC_TMP_DST}/* ${DOC_FINAL_DST}/
