@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -9,31 +9,35 @@
 
     <h2>Simple manual for the Batfish client</h2>
 
-    The Batfish client can be used interactively or in batch mode. By default, it will start in interactive mode, where you can enter commands one by one. In batch mode, it will read and execute commands from a file. 
+    <h3>Pre-requisites
+    </h3>
+
+    Java 1.7 or higher.
 
     <h3>Starting the client
     </h3>
 
-    To start the client run 
+
+    To start the Batfish client run:
     <br />
-    <b><i>% java -jar batfish-client.jar [command line options]</i></b>
+    <b><i>% java -jar batfish-client.jar [options]</i></b>
 
     <p>
-        Run with the '-help' option to see the command line options supported by the client. The most relevant ones are:
+        Run with the '-help' option to see the complete list of options. The commonly-used ones are:
     </p>
 
-    <table border="1">
-        <tr>
-            <td><i>-cmdfile &lt;filename&gt;</i></td>
-            <td>Runs in batch mode and executes commands from the specified file</td>
-        </tr>
+    <table border="1" cellpadding="5">
         <tr>
             <td><i>-apikey &lt;key&gt;</i></td>
             <td>Specify the API key</td>
         </tr>
         <tr>
+            <td><i>-cmdfile &lt;filename&gt;</i></td>
+            <td>Runs in batch mode and executes commands from the specified file. By default, the client starts in interactive mode, where you can enter commands one at a time.</td>
+        </tr>
+        <tr>
             <td><i>-logfile &lt;filename&gt;</i></td>
-            <td>File to which the log should be written</td>
+            <td>File to which the log should be written. Useful when running in batch mode.</td>
         </tr>
     </table>
 
@@ -44,13 +48,11 @@
     <h3>Using the client
     </h3>
 
-    Once the client is running, you can see the full list of commands it supports by typing "help" on the console. 
-    
-    <p>
-        Common commands are listed below, in the order in which they will be used for typical analysis.
-    </p>
+    Once the client is running, you can see the full list of supported commands using the "help" command. Common commands are listed below, in the order in which they will be used for typical analysis.
 
-    <table border="1">
+    <p>
+
+    <table border="1" cellpadding=5>
         <tr>
             <td style="width: 320px"><i>init-testrig &lt;zipfile or directory&gt;</i></td>
             <td>Uploads and processes the testrig. The testrig directory should contain a sub-directory called configs, which contains all device configurations. In parallel to that directory, you can supply other optional information (e.g., topology or device roles). See an example testrig <a href="http://github.com/arifogel/batfish/tree/master/test_rigs/example">here</a>. The zipfile is expected to be a zipped version of such a testrig directory.</td>
