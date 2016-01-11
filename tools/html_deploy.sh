@@ -14,8 +14,8 @@ export BATFISH_TOOLS_PATH="$($GNU_READLINK -f $(dirname $BATFISH_SOURCED_SCRIPT)
 export WWWROOT_SRC="${BATFISH_TOOLS_PATH}/../projects/wwwroot/"
 export DOC_SRC="${BATFISH_TOOLS_PATH}/../doc/"
 
-export WWWROOT_TMP_DST=/home/ratul/wwwroot
-export DOC_TMP_DST=/home/ratul/doc
+export WWWROOT_TMP_DST=wwwroot
+export DOC_TMP_DST=doc
 
 export HTML_ROOT="/var/www/www.batfish.org/";
 export WWWROOT_FINAL_DST="${HTML_ROOT}/trybatfish"
