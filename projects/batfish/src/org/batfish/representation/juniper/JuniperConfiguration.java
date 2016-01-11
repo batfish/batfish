@@ -56,7 +56,7 @@ public class JuniperConfiguration implements Serializable {
    public JuniperConfiguration() {
       _applications = new TreeMap<String, BaseApplication>();
       _communityLists = new TreeMap<String, CommunityList>();
-      _defaultCrossZoneAction = LineAction.REJECT;
+      _defaultCrossZoneAction = LineAction.ACCEPT;
       _defaultRoutingInstance = new RoutingInstance(DEFAULT_ROUTING_INSTANCE);
       _filters = new TreeMap<String, FirewallFilter>();
       _globalAddressBooks = new TreeMap<String, AddressBook>();
