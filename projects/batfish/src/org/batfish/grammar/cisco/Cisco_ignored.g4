@@ -110,6 +110,7 @@ null_block_stanza
       )
       | NO_BANNER
       | NSR
+      | NTP
       | ONE
       | OPENFLOW
       | PLAT
@@ -721,7 +722,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | NETWORK_OBJECT
       | NETWORK_CLOCK_PARTICIPATE
       | NETWORK_CLOCK_SELECT
-      | NTP
       | OBJECT_GROUP
       | OWNER
       | PAGER
