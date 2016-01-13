@@ -161,6 +161,11 @@ FOREACH
    'foreach'
 ;
 
+FORMAT
+:
+   'format'
+;
+
 GENERATED_ROUTE
 :
    'generated_route'

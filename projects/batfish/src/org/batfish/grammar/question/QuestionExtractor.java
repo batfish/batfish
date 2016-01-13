@@ -171,6 +171,7 @@ import org.batfish.question.statement.UnlessStatement;
 import org.batfish.question.static_route_expr.BaseCaseStaticRouteExpr;
 import org.batfish.question.static_route_expr.StaticRouteExpr;
 import org.batfish.question.static_route_expr.VarStaticRouteExpr;
+import org.batfish.question.string_expr.FormatStringExpr;
 import org.batfish.question.string_expr.StringConcatenateExpr;
 import org.batfish.question.string_expr.StringExpr;
 import org.batfish.question.string_expr.StringLiteralStringExpr;
@@ -2069,6 +2070,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       if (ctx.bgp_neighbor_string_expr() != null) {
          return toStringExpr(ctx.bgp_neighbor_string_expr());
       }
+      else if (ctx.format_string_expr() != null) {
+         return toStringExpr(ctx.format_string_expr());
+      }
       else if (ctx.interface_string_expr() != null) {
          return toStringExpr(ctx.interface_string_expr());
       }
@@ -2110,6 +2114,16 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else {
          throw conversionError(ERR_CONVERT_STRING, ctx);
       }
+   }
+
+   private StringExpr toStringExpr(Format_string_exprContext ctx) {
+      StringExpr formatString = toStringExpr(ctx.format_string);
+      List<Expr> replacements = new ArrayList<Expr>();
+      for (Printable_exprContext pexpr : ctx.replacements) {
+         Expr replacement = toExpr(pexpr);
+         replacements.add(replacement);
+      }
+      return new FormatStringExpr(formatString, replacements);
    }
 
    private StringExpr toStringExpr(Interface_string_exprContext ctx) {
