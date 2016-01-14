@@ -191,6 +191,11 @@ bgp_neighbor_boolean_expr
    )
 ;
 
+bgp_neighbor_description_string_expr
+:
+   DESCRIPTION
+;
+
 bgp_neighbor_expr
 :
    BGP_NEIGHBOR
@@ -281,7 +286,8 @@ bgp_neighbor_string_expr
 :
    caller = bgp_neighbor_expr PERIOD
    (
-      bgp_neighbor_group_string_expr
+      bgp_neighbor_description_string_expr
+      | bgp_neighbor_group_string_expr
       | bgp_neighbor_name_string_expr
    )
 ;

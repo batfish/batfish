@@ -52,11 +52,13 @@ verify {
             onfailure {
                $num_ebgp_local_ip_on_loopback++;
                $view_name := "EBGP_LOCAL_IP_ON_LOOPBACK";
-               $base_msg := format("Local IP %s of eBGP session configured with remote IP %s, local AS %s, and remote AS %s identified as the address of a loopback interface.",
+               $base_msg := format("Local IP %s of eBGP session configured with remote IP %s, local AS %s, remote AS %s, group '%s', and description '%s' identified as the address of a loopback interface.",
                   bgp_neighbor.local_ip,
                   bgp_neighbor.remote_ip,
                   bgp_neighbor.local_as,
-                  bgp_neighbor.remote_as);
+                  bgp_neighbor.remote_as,
+                  bgp_neighbor.group,
+                  bgp_neighbor.description);
                printf("%s: %s: %s\n",
                   $view_name,
                   node.name,
@@ -81,10 +83,12 @@ verify {
                onfailure {
                   $num_ebgp_remote_ip_on_loopback++;
                   $view_name := "EBGP_REMOTE_IP_ON_LOOPBACK";
-                  $base_msg := format("Remote IP %s of eBGP session configured with local AS %s and remote AS %s identified as the address of a loopback interface.",
+                  $base_msg := format("Remote IP %s of eBGP session configured with local AS %s, remote AS %s, group '%s', and description '%s' identified as the address of a loopback interface.",
                      bgp_neighbor.remote_ip,
                      bgp_neighbor.local_as,
-                     bgp_neighbor.remote_as);
+                     bgp_neighbor.remote_as,
+                     bgp_neighbor.group,
+                     bgp_neighbor.description);
                   printf("%s: %s: %s\n",
                      $view_name,
                      node.name,
@@ -109,10 +113,12 @@ verify {
             onfailure {
                $num_ebgp_remote_ip_unknown++;
                $view_name := "EBGP_REMOTE_IP_UNKNOWN";
-               $base_msg := format("Remote IP %s of eBGP session configured with local AS %s and remote AS %s not identified as the address of a known interface.",
+               $base_msg := format("Remote IP %s of eBGP session configured with local AS %s, remote AS %s, group '%s', and description '%s' not identified as the address of a known interface.",
                   bgp_neighbor.remote_ip,
                   bgp_neighbor.local_as,
-                  bgp_neighbor.remote_as);
+                  bgp_neighbor.remote_as,
+                  bgp_neighbor.group,
+                  bgp_neighbor.description);
                printf("%s: %s: %s\n",
                   $view_name,
                   node.name,
@@ -137,10 +143,12 @@ verify {
             onfailure {
                $num_ibgp_local_ip_on_non_loopback++;
                $view_name := "IBGP_LOCAL_IP_ON_NON_LOOPBACK";
-               $base_msg := format("Local IP %s of iBGP session configured with remote IP %s and AS %s identified as the address of a non-loopback interface.",
+               $base_msg := format("Local IP %s of iBGP session configured with remote IP %s, AS %s, group '%s', and description '%s' identified as the address of a non-loopback interface.",
                   bgp_neighbor.local_ip,
                   bgp_neighbor.remote_ip,
-                  bgp_neighbor.local_as);
+                  bgp_neighbor.local_as,
+                  bgp_neighbor.group,
+                  bgp_neighbor.description);
                printf("%s: %s: %s\n",
                   $view_name,
                   node.name,
@@ -163,9 +171,11 @@ verify {
                onfailure {
                   $num_ibgp_remote_ip_on_non_loopback++;
                   $view_name := "IBGP_REMOTE_IP_ON_NON_LOOPBACK";
-                  $base_msg := format("Remote IP %s of iBGP session configured with AS %s identified as the address of a non-loopback interface.",
+                  $base_msg := format("Remote IP %s of iBGP session configured with AS %s, group '%s', and description '%s' identified as the address of a non-loopback interface.",
                      bgp_neighbor.remote_ip,
-                     bgp_neighbor.local_as);
+                     bgp_neighbor.local_as,
+                     bgp_neighbor.group,
+                     bgp_neighbor.description);
                   printf("%s: %s: %s\n",
                      $view_name,
                      node.name,
@@ -188,9 +198,11 @@ verify {
             onfailure {
                $num_ibgp_remote_ip_unknown++;
                $view_name := "IBGP_REMOTE_IP_UNKNOWN";
-               $base_msg := format("Remote IP %s of iBGP session configured with AS %s not identified as the address of a known interface.",
+               $base_msg := format("Remote IP %s of iBGP session configured with AS %s, group '%s', and description '%s' not identified as the address of a known interface.",
                   bgp_neighbor.remote_ip,
-                  bgp_neighbor.local_as);
+                  bgp_neighbor.local_as,
+                  bgp_neighbor.group,
+                  bgp_neighbor.description);
                printf("%s: %s: %s\n",
                   $view_name,
                   node.name,

@@ -177,6 +177,7 @@ import org.batfish.question.string_expr.StringExpr;
 import org.batfish.question.string_expr.StringLiteralStringExpr;
 import org.batfish.question.string_expr.VarStringExpr;
 import org.batfish.question.string_expr.bgp_neighbor.BgpNeighborStringExpr;
+import org.batfish.question.string_expr.bgp_neighbor.DescriptionBgpNeighborStringExpr;
 import org.batfish.question.string_expr.bgp_neighbor.GroupBgpNeighborStringExpr;
 import org.batfish.question.string_expr.bgp_neighbor.NameBgpNeighborStringExpr;
 import org.batfish.question.string_expr.iface.InterfaceStringExpr;
@@ -2105,7 +2106,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private BgpNeighborStringExpr toStringExpr(
          Bgp_neighbor_string_exprContext ctx) {
       BgpNeighborExpr caller = toBgpNeighborExpr(ctx.caller);
-      if (ctx.bgp_neighbor_group_string_expr() != null) {
+      if (ctx.bgp_neighbor_description_string_expr() != null) {
+         return new DescriptionBgpNeighborStringExpr(caller);
+      }
+      else if (ctx.bgp_neighbor_group_string_expr() != null) {
          return new GroupBgpNeighborStringExpr(caller);
       }
       else if (ctx.bgp_neighbor_name_string_expr() != null) {

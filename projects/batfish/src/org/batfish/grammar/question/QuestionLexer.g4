@@ -116,6 +116,11 @@ DEFAULTS
    'defaults'
 ;
 
+DESCRIPTION
+:
+   'description'
+;
+
 DROP
 :
    'drop'
