@@ -23,10 +23,17 @@ StaticRoute(route),
    Route_tag[route] = tag
 <-
    LongestPrefixNetworkMatch(node, nextHopIp, matchNet),
-   network != matchNet,
+   Network_address[matchNet] = matchNet_start,
+   Network_end[matchNet] = matchNet_end,
+   Network_address[network] = network_start,
+   Network_end[network] = network_end,
    SetStaticRoute(node, network, nextHopIp, admin, tag),
    cost = 0,
-   protocol = RoutingProtocol_STATIC[].
+   protocol = RoutingProtocol_STATIC[],
+   (
+      matchNet_start > network_start ;
+      matchNet_end < network_end
+   ).
 
 lang:compiler:error:ENTITY_CREATION_RECURSION[]=false.
 lang:compiler:warning:ENTITY_CREATION_RECURSION[]=false.
