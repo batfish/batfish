@@ -2850,10 +2850,18 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'Route_tag'(Route, Tag) /*fn*/
 :-
    'LongestPrefixNetworkMatch'(Node, NextHopIp, MatchNet),
-   Network \== MatchNet,
+   'Network_address'(MatchNet, MatchNet_start) /*fn*/,
+   'Network_end'(MatchNet, MatchNet_end) /*fn*/,
+   'Network_address'(Network, Network_start) /*fn*/,
+   'Network_end'(Network, Network_end) /*fn*/,
    'SetStaticRoute'(Node, Network, NextHopIp, Admin, Tag),
    Cost = 0,
-   Protocol = 'static'.
+   Protocol = 'static',
+   (
+      MatchNet_start > Network_start ;
+      MatchNet_end < Network_end
+   ).
+
 'Ip'(SrcIp),
 'Ip'(DstIp)
 :-
