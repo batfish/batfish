@@ -116,6 +116,11 @@ DEFAULTS
    'defaults'
 ;
 
+DESCRIPTION
+:
+   'description'
+;
+
 DROP
 :
    'drop'
@@ -159,6 +164,11 @@ FLOW
 FOREACH
 :
    'foreach'
+;
+
+FORMAT
+:
+   'format'
 ;
 
 GENERATED_ROUTE

@@ -191,6 +191,11 @@ bgp_neighbor_boolean_expr
    )
 ;
 
+bgp_neighbor_description_string_expr
+:
+   DESCRIPTION
+;
+
 bgp_neighbor_expr
 :
    BGP_NEIGHBOR
@@ -281,7 +286,8 @@ bgp_neighbor_string_expr
 :
    caller = bgp_neighbor_expr PERIOD
    (
-      bgp_neighbor_group_string_expr
+      bgp_neighbor_description_string_expr
+      | bgp_neighbor_group_string_expr
       | bgp_neighbor_name_string_expr
    )
 ;
@@ -677,6 +683,17 @@ locals [VariableType varType, String newScope]
          OPEN_BRACE statement [$newScope]+ CLOSE_BRACE
       )
    )
+;
+
+format_string_expr
+:
+   FORMAT OPEN_PAREN format_string = string_expr
+   (
+      COMMA
+      (
+         replacements += printable_expr
+      )
+   )* CLOSE_PAREN
 ;
 
 ge_expr
@@ -1810,6 +1827,7 @@ static_route_string_expr
 base_string_expr
 :
    bgp_neighbor_string_expr
+   | format_string_expr
    | interface_string_expr
    | ipsec_vpn_string_expr
    | map_string_expr

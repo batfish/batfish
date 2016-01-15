@@ -1304,6 +1304,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitDescription_bgp_tail(Description_bgp_tailContext ctx) {
+      String description = ctx.description_line().text.getText().trim();
+      _currentPeerGroup.setDescription(description);
+   }
+
+   @Override
    public void exitDistribute_list_bgp_tail(Distribute_list_bgp_tailContext ctx) {
       todo(ctx, F_BGP_NEIGHBOR_DISTRIBUTE_LIST);
    }

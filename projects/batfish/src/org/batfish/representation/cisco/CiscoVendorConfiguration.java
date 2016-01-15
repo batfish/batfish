@@ -635,6 +635,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          boolean sendCommunity = lpg.getSendCommunity();
+         String description = lpg.getDescription();
          if (lpg.getActive() && !lpg.getShutdown()) {
             if (lpg.getRemoteAS() == null) {
                _w.redFlag("No remote-as set for peer: " + lpg.getName());
@@ -680,6 +681,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             newNeighbor.getOriginationPolicies().addAll(originationPolicies);
             newNeighbor.setSendCommunity(sendCommunity);
             newNeighbor.setDefaultMetric(defaultMetric);
+            newNeighbor.setDescription(description);
          }
       }
       return newBgpProcess;

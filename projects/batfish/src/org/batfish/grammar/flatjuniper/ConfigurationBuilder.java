@@ -2915,6 +2915,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitSect_zones(Sect_zonesContext ctx) {
+      _configuration.setDefaultCrossZoneAction(LineAction.REJECT);
+   }
+
+   @Override
    public void exitSpmt_application(Spmt_applicationContext ctx) {
       if (ctx.ANY() != null) {
          return;

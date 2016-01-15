@@ -1,30 +1,27 @@
-package org.batfish.question.statement;
+package org.batfish.question.string_expr;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.MissingFormatArgumentException;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
-import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;
-import org.batfish.question.string_expr.StringExpr;
 
-public class PrintfStatement implements Statement {
+public final class FormatStringExpr extends BaseStringExpr implements
+      StringExpr {
 
    private final StringExpr _formatString;
 
    private final List<Expr> _replacements;
 
-   public PrintfStatement(StringExpr formatString, List<Expr> replacements) {
+   public FormatStringExpr(StringExpr formatString, List<Expr> replacements) {
       _formatString = formatString;
       _replacements = replacements;
    }
 
    @Override
-   public void execute(Environment environment, BatfishLogger logger,
-         Settings settings) {
+   public String evaluate(Environment environment) {
       String formatString = _formatString.print(environment);
       List<Object> replacements = new ArrayList<Object>();
       for (Expr replacementExpr : _replacements) {
@@ -32,11 +29,12 @@ public class PrintfStatement implements Statement {
          replacements.add(replacement);
       }
       try {
-         logger.outputf(formatString, replacements.toArray());
+         String output = String.format(formatString, replacements.toArray());
+         return output;
       }
       catch (MissingFormatArgumentException e) {
-         throw new BatfishException("printf error on format string: \""
-               + formatString + "\" with arguments: " + replacements.toString());
+         throw new BatfishException("error on format string: \"" + formatString
+               + "\" with arguments: " + replacements.toString());
       }
    }
 
