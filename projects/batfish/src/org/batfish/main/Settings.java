@@ -21,6 +21,8 @@ public final class Settings extends BaseSettings {
 
       private String _edgeBlacklistPath;
 
+      private String _envPath;
+
       private String _interfaceBlacklistPath;
 
       private String _name;
@@ -55,6 +57,10 @@ public final class Settings extends BaseSettings {
 
       public String getEdgeBlacklistPath() {
          return _edgeBlacklistPath;
+      }
+
+      public String getEnvPath() {
+         return _envPath;
       }
 
       public String getInterfaceBlacklistPath() {
@@ -111,6 +117,10 @@ public final class Settings extends BaseSettings {
 
       public void setEdgeBlacklistPath(String edgeBlacklistPath) {
          _edgeBlacklistPath = edgeBlacklistPath;
+      }
+
+      public void setEnvPath(String envPath) {
+         _envPath = envPath;
       }
 
       public void setInterfaceBlacklistPath(String interfaceBlacklistPath) {
@@ -349,8 +359,6 @@ public final class Settings extends BaseSettings {
    private String _logFile;
 
    private BatfishLogger _logger;
-
-   private String _logicDir;
 
    private String _logicSrcDir;
 
@@ -626,10 +634,6 @@ public final class Settings extends BaseSettings {
 
    public BatfishLogger getLogger() {
       return _logger;
-   }
-
-   public String getLogicDir() {
-      return _logicDir;
    }
 
    public String getLogicSrcDir() {
@@ -1299,12 +1303,20 @@ public final class Settings extends BaseSettings {
       _activeEnvironmentSettings = envSettings;
    }
 
+   public void setDiffActive(boolean diffActive) {
+      _diffActive = diffActive;
+   }
+
    public void setDiffEnvironmentName(String diffEnvironmentName) {
       _diffEnvironmentName = diffEnvironmentName;
    }
 
    public void setDiffQuestion(boolean diffQuestion) {
       _diffQuestion = diffQuestion;
+   }
+
+   public void setDumpControlPlaneFacts(boolean dumpControlPlaneFacts) {
+      _writeControlPlaneFacts = dumpControlPlaneFacts;
    }
 
    public void setEnvironmentName(String envName) {
@@ -1317,10 +1329,6 @@ public final class Settings extends BaseSettings {
 
    public void setLogger(BatfishLogger logger) {
       _logger = logger;
-   }
-
-   public void setLogicDir(String logicDir) {
-      _logicDir = logicDir;
    }
 
    public void setMaxRuntimeMs(int runtimeMs) {

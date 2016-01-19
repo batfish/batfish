@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Set;
@@ -257,6 +258,146 @@ public class Batfish implements AutoCloseable {
     */
    private static final String TOPOLOGY_FILENAME = "topology.net";
 
+   public static void applyAutoBaseDir(final Settings settings) {
+      String baseDir = settings.getAutoBaseDir();
+      if (baseDir != null) {
+         EnvironmentSettings envSettings = settings
+               .getBaseEnvironmentSettings();
+         EnvironmentSettings diffEnvSettings = settings
+               .getDiffEnvironmentSettings();
+         settings.setSerializeIndependentPath(Paths.get(baseDir,
+               BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR).toString());
+         settings.setSerializeVendorPath(Paths.get(baseDir,
+               BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR).toString());
+         settings.setTestRigPath(Paths.get(baseDir,
+               BfConsts.RELPATH_TEST_RIG_DIR).toString());
+         settings.setProtocolDependencyGraphPath(Paths.get(baseDir,
+               BfConsts.RELPATH_PROTOCOL_DEPENDENCY_GRAPH).toString());
+         String envName = settings.getEnvironmentName();
+         if (envName != null) {
+            envSettings.setName(envName);
+            Path envPath = Paths.get(baseDir,
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
+            envSettings.setControlPlaneFactsDir(envPath.resolve(
+                  BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString());
+            envSettings.setNxtnetDataPlaneInputFile(envPath.resolve(
+                  BfConsts.RELPATH_NXTNET_INPUT_FILE).toString());
+            envSettings.setNxtnetDataPlaneOutputDir(envPath.resolve(
+                  BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
+            envSettings.setDataPlanePath(envPath.resolve(
+                  BfConsts.RELPATH_DATA_PLANE_DIR).toString());
+            settings.setZ3DataPlaneFile(envPath.resolve(
+                  BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString());
+            Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
+            envSettings.setEnvPath(envDirPath.toString());
+            envSettings.setNodeBlacklistPath(envDirPath.resolve(
+                  BfConsts.RELPATH_NODE_BLACKLIST_FILE).toString());
+            envSettings.setInterfaceBlacklistPath(envDirPath.resolve(
+                  BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE).toString());
+            envSettings.setEdgeBlacklistPath(envDirPath.resolve(
+                  BfConsts.RELPATH_EDGE_BLACKLIST_FILE).toString());
+            envSettings.setSerializedTopologyPath(envDirPath.resolve(
+                  BfConsts.RELPATH_TOPOLOGY_FILE).toString());
+            envSettings.setDeltaConfigurationsDir(envDirPath.resolve(
+                  BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
+            envSettings.setPrecomputedRoutesPath(envPath.resolve(
+                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
+         }
+         String diffEnvName = settings.getDiffEnvironmentName();
+         if (diffEnvName != null) {
+            diffEnvSettings.setName(diffEnvName);
+            Path diffEnvPath = Paths.get(baseDir,
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR, diffEnvName);
+            diffEnvSettings.setControlPlaneFactsDir(diffEnvPath.resolve(
+                  BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString());
+            diffEnvSettings.setNxtnetDataPlaneInputFile(diffEnvPath.resolve(
+                  BfConsts.RELPATH_NXTNET_INPUT_FILE).toString());
+            diffEnvSettings.setNxtnetDataPlaneOutputDir(diffEnvPath.resolve(
+                  BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
+            diffEnvSettings.setDataPlanePath(diffEnvPath.resolve(
+                  BfConsts.RELPATH_DATA_PLANE_DIR).toString());
+            Path diffEnvDirPath = diffEnvPath.resolve(BfConsts.RELPATH_ENV_DIR);
+            diffEnvSettings.setEnvPath(diffEnvDirPath.toString());
+            diffEnvSettings.setNodeBlacklistPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_NODE_BLACKLIST_FILE).toString());
+            diffEnvSettings.setInterfaceBlacklistPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE).toString());
+            diffEnvSettings.setEdgeBlacklistPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_EDGE_BLACKLIST_FILE).toString());
+            diffEnvSettings.setSerializedTopologyPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_TOPOLOGY_FILE).toString());
+            diffEnvSettings.setDeltaConfigurationsDir(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
+            diffEnvSettings.setPrecomputedRoutesPath(diffEnvPath.resolve(
+                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
+            if (settings.getDiffActive()) {
+               settings.setActiveEnvironmentSettings(diffEnvSettings);
+            }
+         }
+         String outputEnvName = settings.getOutputEnvironmentName();
+         if (outputEnvName != null) {
+            Path outputEnvPath = Paths.get(baseDir,
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR, outputEnvName);
+            envSettings.setPrecomputedRoutesPath(outputEnvPath.resolve(
+                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
+         }
+         String questionName = settings.getQuestionName();
+         if (questionName != null) {
+            Path questionPath = Paths.get(baseDir,
+                  BfConsts.RELPATH_QUESTIONS_DIR, questionName);
+            settings.setQuestionPath(questionPath.resolve(
+                  BfConsts.RELPATH_QUESTION_FILE).toString());
+            settings.setQuestionParametersPath(questionPath.resolve(
+                  BfConsts.RELPATH_QUESTION_PARAM_FILE).toString());
+            if (diffEnvName != null) {
+               diffEnvSettings.setTrafficFactDumpDir(questionPath
+                     .resolve(
+                           Paths.get(BfConsts.RELPATH_DIFF, envName,
+                                 diffEnvName,
+                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
+                                 .toString()).toString());
+               diffEnvSettings.setNxtnetTrafficInputFile(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,
+                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
+                     .toString());
+               diffEnvSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,
+                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
+                     .toString());
+               envSettings.setTrafficFactDumpDir(questionPath
+                     .resolve(
+                           Paths.get(BfConsts.RELPATH_BASE, envName,
+                                 diffEnvName,
+                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
+                                 .toString()).toString());
+               envSettings.setNxtnetTrafficInputFile(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName, diffEnvName,
+                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
+                     .toString());
+               envSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName, diffEnvName,
+                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
+                     .toString());
+            }
+            else {
+               envSettings.setTrafficFactDumpDir(questionPath
+                     .resolve(
+                           Paths.get(BfConsts.RELPATH_BASE, envName,
+                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
+                                 .toString()).toString());
+               envSettings.setNxtnetTrafficInputFile(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName,
+                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
+                     .toString());
+               envSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName,
+                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
+                     .toString());
+            }
+         }
+      }
+   }
+
    public static String flatten(String input, BatfishLogger logger,
          Settings settings) {
       JuniperCombinedParser jparser = new JuniperCombinedParser(input,
@@ -368,9 +509,18 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answer() {
-      boolean dp = false;
-      boolean diff = false;
       Question question = parseQuestion();
+      boolean dp = question.getDataPlane();
+      boolean diff = question.getDifferential();
+      boolean diffActive = (question.getDiffActive() || _settings
+            .getDiffActive()) && !diff;
+      _settings.setDiffActive(diffActive);
+      _settings.setDiffQuestion(diff);
+      if (!dp) {
+         _settings.setNxtnetTraffic(false);
+         _settings.setHistory(false);
+      }
+      initQuestionEnvironments(question, diff, diffActive, dp);
       switch (question.getType()) {
       case ACL_REACHABILITY:
          answerAclReachability((AclReachabilityQuestion) question);
@@ -378,25 +528,18 @@ public class Batfish implements AutoCloseable {
 
       case DESTINATION:
          answerDestination((DestinationQuestion) question);
-         dp = true;
-         diff = true;
          break;
 
       case INGRESS_PATH:
          answerIngressPath((IngressPathQuestion) question);
-         dp = true;
-         diff = true;
          break;
 
       case LOCAL_PATH:
          answerLocalPath((LocalPathQuestion) question);
-         dp = true;
-         diff = true;
          break;
 
       case MULTIPATH:
          answerMultipath((MultipathQuestion) question);
-         dp = true;
          break;
 
       case PROTOCOL_DEPENDENCIES:
@@ -405,18 +548,14 @@ public class Batfish implements AutoCloseable {
 
       case REACHABILITY:
          answerReachability((ReachabilityQuestion) question);
-         dp = true;
          break;
 
       case REDUCED_REACHABILITY:
          answerReducedReachability((ReducedReachabilityQuestion) question);
-         dp = true;
-         diff = true;
          break;
 
       case TRACEROUTE:
          answerTraceroute((TracerouteQuestion) question);
-         dp = true;
          break;
 
       case VERIFY:
@@ -425,11 +564,6 @@ public class Batfish implements AutoCloseable {
 
       default:
          throw new BatfishException("Unknown question type");
-      }
-      _settings.setDiffQuestion(diff);
-      if (!dp) {
-         _settings.setNxtnetTraffic(false);
-         _settings.setHistory(false);
       }
    }
 
@@ -1189,8 +1323,12 @@ public class Batfish implements AutoCloseable {
    }
 
    private void computeDataPlane() {
-      checkDataPlaneFacts(_envSettings);
-      String dataPlanePath = _envSettings.getDataPlanePath();
+      computeDataPlane(_envSettings);
+   }
+
+   private void computeDataPlane(EnvironmentSettings envSettings) {
+      checkDataPlaneFacts(envSettings);
+      String dataPlanePath = envSettings.getDataPlanePath();
       if (dataPlanePath == null) {
          throw new BatfishException("Missing path to data plane");
       }
@@ -1313,6 +1451,13 @@ public class Batfish implements AutoCloseable {
       return configurations;
    }
 
+   private boolean dataPlaneDependenciesExist(EnvironmentSettings envSettings) {
+      checkConfigurations();
+      String dpPath = envSettings.getDataPlanePath();
+      File dp = new File(dpPath);
+      return dp.exists();
+   }
+
    public Map<String, Configuration> deserializeConfigurations(
          String serializedConfigPath) {
       _logger
@@ -1420,6 +1565,11 @@ public class Batfish implements AutoCloseable {
          EnvironmentSettings envSettings) {
       _logger.info("\n*** DUMPING TRAFFIC FACTS ***\n");
       dumpFacts(factBins, envSettings.getTrafficFactsDir());
+   }
+
+   private boolean environmentExists(EnvironmentSettings envSettings) {
+      checkBaseDirExists();
+      return new File(envSettings.getDataPlanePath()).getParentFile().exists();
    }
 
    private void flatten(String inputPath, String outputPath) {
@@ -2176,6 +2326,65 @@ public class Batfish implements AutoCloseable {
          _entityTables.put(envSettings, entityTable);
       }
       return entityTable;
+   }
+
+   private void initQuestionEnvironment(EnvironmentSettings envSettings,
+         Question question, boolean dp) {
+      if (!environmentExists(envSettings)) {
+         File envPath = new File(envSettings.getEnvPath());
+         // create environment required folders
+         envPath.mkdirs();
+         // write node blacklist from question
+         if (!question.getNodeBlacklist().isEmpty()) {
+            StringBuilder nodeBlacklistSb = new StringBuilder();
+            for (String node : question.getNodeBlacklist()) {
+               nodeBlacklistSb.append(node + "\n");
+            }
+            String nodeBlacklist = nodeBlacklistSb.toString();
+            Util.writeFile(envSettings.getNodeBlacklistPath(), nodeBlacklist);
+         }
+         // write interface blacklist from question
+         if (!question.getInterfaceBlacklist().isEmpty()) {
+            StringBuilder interfaceBlacklistSb = new StringBuilder();
+            for (NodeInterfacePair pair : question.getInterfaceBlacklist()) {
+               interfaceBlacklistSb.append(pair.getHostname() + ":"
+                     + pair.getInterface() + "\n");
+            }
+            String interfaceBlacklist = interfaceBlacklistSb.toString();
+            Util.writeFile(envSettings.getInterfaceBlacklistPath(),
+                  interfaceBlacklist);
+         }
+      }
+      if (!dataPlaneDependenciesExist(envSettings)) {
+         _settings.setDumpControlPlaneFacts(true);
+         boolean usePrecomputedFacts = _settings.getUsePrecomputedFacts();
+         Map<String, StringBuilder> cpFactBins = new LinkedHashMap<String, StringBuilder>();
+         initControlPlaneFactBins(cpFactBins, !usePrecomputedFacts);
+         if (!usePrecomputedFacts) {
+            computeControlPlaneFacts(cpFactBins);
+         }
+         nxtnetDataPlane(envSettings);
+         writeRoutes(envSettings.getPrecomputedRoutesPath());
+         computeDataPlane(envSettings);
+         _entityTables.clear();
+      }
+   }
+
+   private void initQuestionEnvironments(Question question, boolean diff,
+         boolean diffActive, boolean dp) {
+      if (diff || !diffActive) {
+         initQuestionEnvironment(_baseEnvSettings, question, dp);
+      }
+      if (diff || diffActive) {
+         if (_settings.getDiffEnvironmentName() == null
+               || (diffActive && !_settings.getDiffActive())) {
+            String diffEnvironmentName = UUID.randomUUID().toString();
+            _settings.setDiffEnvironmentName(diffEnvironmentName);
+            applyAutoBaseDir(_settings);
+            _envSettings = _diffEnvSettings;
+         }
+         initQuestionEnvironment(_diffEnvSettings, question, dp);
+      }
    }
 
    private boolean isJavaSerializationData(File inputFile) {
@@ -2997,7 +3206,8 @@ public class Batfish implements AutoCloseable {
             || _settings.getDataPlane() || _settings.getWriteRoutes()
             || _settings.getWriteBgpAdvertisements()
             || _settings.getWriteIbgpNeighbors() || _settings.getHistory()
-            || _settings.getNxtnetDataPlane() || _settings.getNxtnetTraffic()) {
+            || _settings.getNxtnetDataPlane() || _settings.getNxtnetTraffic()
+            || _settings.getAnswer()) {
          Map<String, String> logicFiles = getSemanticsFiles();
          _predicateInfo = getPredicateInfo(logicFiles);
          // Print predicate semantics and quit if requested
@@ -3020,11 +3230,6 @@ public class Batfish implements AutoCloseable {
       if (_settings.getSynthesizeJsonTopology()) {
          writeJsonTopology();
          return;
-      }
-
-      if (_settings.getAnswer()) {
-         answer();
-         action = true;
       }
 
       if (_settings.getBuildPredicateInfo()) {
@@ -3085,7 +3290,6 @@ public class Batfish implements AutoCloseable {
          String outputPath = _settings.getSerializeVendorPath();
          serializeVendorConfigs(testRigPath, outputPath);
          action = true;
-         ;
       }
 
       if (_settings.getSerializeIndependent()) {
@@ -3093,7 +3297,6 @@ public class Batfish implements AutoCloseable {
          String outputPath = _settings.getSerializeIndependentPath();
          serializeIndependentConfigs(inputPath, outputPath);
          action = true;
-         ;
       }
 
       Map<String, StringBuilder> cpFactBins = null;
@@ -3126,6 +3329,11 @@ public class Batfish implements AutoCloseable {
          if (_settings.getKeepBlocks()) {
             keepBlocks(blockNames);
          }
+         action = true;
+      }
+
+      if (_settings.getAnswer()) {
+         answer();
          action = true;
       }
 

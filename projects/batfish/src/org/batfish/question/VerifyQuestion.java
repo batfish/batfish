@@ -5,8 +5,18 @@ public class VerifyQuestion extends Question {
    private VerifyProgram _program;
 
    public VerifyQuestion(QuestionParameters parameters) {
-      super(QuestionType.VERIFY);
+      super(QuestionType.VERIFY, parameters);
       _program = new VerifyProgram(parameters);
+   }
+
+   @Override
+   public boolean getDataPlane() {
+      return false;
+   }
+
+   @Override
+   public boolean getDifferential() {
+      return false;
    }
 
    public VerifyProgram getProgram() {

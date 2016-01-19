@@ -1,8 +1,6 @@
 package org.batfish.main;
 
 import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -22,7 +20,6 @@ import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Util;
-import org.batfish.main.Settings.EnvironmentSettings;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -41,145 +38,6 @@ public class Driver {
    private static HashMap<String, Task> _taskLog;
 
    private static final String SERVICE_URL = "http://0.0.0.0";
-
-   private static void applyAutoBaseDir(final Settings settings) {
-      String baseDir = settings.getAutoBaseDir();
-      if (baseDir != null) {
-         EnvironmentSettings envSettings = settings
-               .getBaseEnvironmentSettings();
-         EnvironmentSettings diffEnvSettings = settings
-               .getDiffEnvironmentSettings();
-         settings.setSerializeIndependentPath(Paths.get(baseDir,
-               BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR).toString());
-         settings.setSerializeVendorPath(Paths.get(baseDir,
-               BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR).toString());
-         settings.setTestRigPath(Paths.get(baseDir,
-               BfConsts.RELPATH_TEST_RIG_DIR).toString());
-         settings.setLogicDir(_mainSettings.getLogicDir());
-         settings.setProtocolDependencyGraphPath(Paths.get(baseDir,
-               BfConsts.RELPATH_PROTOCOL_DEPENDENCY_GRAPH).toString());
-         String envName = settings.getEnvironmentName();
-         if (envName != null) {
-            envSettings.setName(envName);
-            Path envPath = Paths.get(baseDir,
-                  BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
-            envSettings.setControlPlaneFactsDir(envPath.resolve(
-                  BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString());
-            envSettings.setNxtnetDataPlaneInputFile(envPath.resolve(
-                  BfConsts.RELPATH_NXTNET_INPUT_FILE).toString());
-            envSettings.setNxtnetDataPlaneOutputDir(envPath.resolve(
-                  BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
-            envSettings.setDataPlanePath(envPath.resolve(
-                  BfConsts.RELPATH_DATA_PLANE_DIR).toString());
-            settings.setZ3DataPlaneFile(envPath.resolve(
-                  BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString());
-            Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
-            envSettings.setNodeBlacklistPath(envDirPath.resolve(
-                  BfConsts.RELPATH_NODE_BLACKLIST_FILE).toString());
-            envSettings.setInterfaceBlacklistPath(envDirPath.resolve(
-                  BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE).toString());
-            envSettings.setEdgeBlacklistPath(envDirPath.resolve(
-                  BfConsts.RELPATH_EDGE_BLACKLIST_FILE).toString());
-            envSettings.setSerializedTopologyPath(envDirPath.resolve(
-                  BfConsts.RELPATH_TOPOLOGY_FILE).toString());
-            envSettings.setDeltaConfigurationsDir(envDirPath.resolve(
-                  BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
-            envSettings.setPrecomputedRoutesPath(envPath.resolve(
-                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
-         }
-         String diffEnvName = settings.getDiffEnvironmentName();
-         if (diffEnvName != null) {
-            diffEnvSettings.setName(diffEnvName);
-            Path diffEnvPath = Paths.get(baseDir,
-                  BfConsts.RELPATH_ENVIRONMENTS_DIR, diffEnvName);
-            diffEnvSettings.setControlPlaneFactsDir(diffEnvPath.resolve(
-                  BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString());
-            diffEnvSettings.setNxtnetDataPlaneInputFile(diffEnvPath.resolve(
-                  BfConsts.RELPATH_NXTNET_INPUT_FILE).toString());
-            diffEnvSettings.setNxtnetDataPlaneOutputDir(diffEnvPath.resolve(
-                  BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
-            diffEnvSettings.setDataPlanePath(diffEnvPath.resolve(
-                  BfConsts.RELPATH_DATA_PLANE_DIR).toString());
-            Path diffEnvDirPath = diffEnvPath.resolve(BfConsts.RELPATH_ENV_DIR);
-            diffEnvSettings.setNodeBlacklistPath(diffEnvDirPath.resolve(
-                  BfConsts.RELPATH_NODE_BLACKLIST_FILE).toString());
-            diffEnvSettings.setInterfaceBlacklistPath(diffEnvDirPath.resolve(
-                  BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE).toString());
-            diffEnvSettings.setEdgeBlacklistPath(diffEnvDirPath.resolve(
-                  BfConsts.RELPATH_EDGE_BLACKLIST_FILE).toString());
-            diffEnvSettings.setSerializedTopologyPath(diffEnvDirPath.resolve(
-                  BfConsts.RELPATH_TOPOLOGY_FILE).toString());
-            diffEnvSettings.setDeltaConfigurationsDir(diffEnvDirPath.resolve(
-                  BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
-            diffEnvSettings.setPrecomputedRoutesPath(diffEnvPath.resolve(
-                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
-            if (settings.getDiffActive()) {
-               settings.setActiveEnvironmentSettings(diffEnvSettings);
-            }
-         }
-         String outputEnvName = settings.getOutputEnvironmentName();
-         if (outputEnvName != null) {
-            Path outputEnvPath = Paths.get(baseDir,
-                  BfConsts.RELPATH_ENVIRONMENTS_DIR, outputEnvName);
-            envSettings.setPrecomputedRoutesPath(outputEnvPath.resolve(
-                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
-         }
-         String questionName = settings.getQuestionName();
-         if (questionName != null) {
-            Path questionPath = Paths.get(baseDir,
-                  BfConsts.RELPATH_QUESTIONS_DIR, questionName);
-            settings.setQuestionPath(questionPath.resolve(
-                  BfConsts.RELPATH_QUESTION_FILE).toString());
-            settings.setQuestionParametersPath(questionPath.resolve(
-                  BfConsts.RELPATH_QUESTION_PARAM_FILE).toString());
-            if (diffEnvName != null) {
-               diffEnvSettings.setTrafficFactDumpDir(questionPath
-                     .resolve(
-                           Paths.get(BfConsts.RELPATH_DIFF, envName,
-                                 diffEnvName,
-                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
-                                 .toString()).toString());
-               diffEnvSettings.setNxtnetTrafficInputFile(questionPath.resolve(
-                     Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,
-                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
-                     .toString());
-               diffEnvSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
-                     Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,
-                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
-                     .toString());
-               envSettings.setTrafficFactDumpDir(questionPath
-                     .resolve(
-                           Paths.get(BfConsts.RELPATH_BASE, envName,
-                                 diffEnvName,
-                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
-                                 .toString()).toString());
-               envSettings.setNxtnetTrafficInputFile(questionPath.resolve(
-                     Paths.get(BfConsts.RELPATH_BASE, envName, diffEnvName,
-                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
-                     .toString());
-               envSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
-                     Paths.get(BfConsts.RELPATH_BASE, envName, diffEnvName,
-                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
-                     .toString());
-            }
-            else {
-               envSettings.setTrafficFactDumpDir(questionPath
-                     .resolve(
-                           Paths.get(BfConsts.RELPATH_BASE, envName,
-                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
-                                 .toString()).toString());
-               envSettings.setNxtnetTrafficInputFile(questionPath.resolve(
-                     Paths.get(BfConsts.RELPATH_BASE, envName,
-                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
-                     .toString());
-               envSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
-                     Paths.get(BfConsts.RELPATH_BASE, envName,
-                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
-                     .toString());
-            }
-         }
-      }
-   }
 
    private static synchronized boolean claimIdle() {
       if (_idle) {
@@ -276,7 +134,7 @@ public class Driver {
       }
       else if (_mainSettings.canExecute()) {
          _mainSettings.setLogger(_mainLogger);
-         applyAutoBaseDir(_mainSettings);
+         Batfish.applyAutoBaseDir(_mainSettings);
          if (!RunBatfish(_mainSettings)) {
             System.exit(1);
          }
@@ -413,7 +271,7 @@ public class Driver {
       }
 
       try {
-         applyAutoBaseDir(settings);
+         Batfish.applyAutoBaseDir(settings);
       }
       catch (Exception e) {
          return Arrays.asList("failure",

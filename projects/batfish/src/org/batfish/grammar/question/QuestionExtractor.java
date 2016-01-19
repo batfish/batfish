@@ -428,26 +428,26 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    @Override
    public void enterIngress_path_question(Ingress_path_questionContext ctx) {
-      IngressPathQuestion question = new IngressPathQuestion();
+      IngressPathQuestion question = new IngressPathQuestion(_parameters);
       _question = question;
    }
 
    @Override
    public void enterLocal_path_question(Local_path_questionContext ctx) {
-      LocalPathQuestion question = new LocalPathQuestion();
+      LocalPathQuestion question = new LocalPathQuestion(_parameters);
       _question = question;
    }
 
    @Override
    public void enterMultipath_question(Multipath_questionContext ctx) {
-      MultipathQuestion multipathQuestion = new MultipathQuestion();
+      MultipathQuestion multipathQuestion = new MultipathQuestion(_parameters);
       _question = multipathQuestion;
    }
 
    @Override
    public void enterProtocol_dependencies_question(
          Protocol_dependencies_questionContext ctx) {
-      _question = new ProtocolDependenciesQuestion();
+      _question = new ProtocolDependenciesQuestion(_parameters);
    }
 
    @Override
@@ -509,20 +509,21 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    @Override
    public void enterReachability_question(Reachability_questionContext ctx) {
-      _reachabilityQuestion = new ReachabilityQuestion();
+      _reachabilityQuestion = new ReachabilityQuestion(_parameters);
       _question = _reachabilityQuestion;
    }
 
    @Override
    public void enterReduced_reachability_question(
          Reduced_reachability_questionContext ctx) {
-      ReducedReachabilityQuestion reducedReachabilityQuestion = new ReducedReachabilityQuestion();
+      ReducedReachabilityQuestion reducedReachabilityQuestion = new ReducedReachabilityQuestion(
+            _parameters);
       _question = reducedReachabilityQuestion;
    }
 
    @Override
    public void enterTraceroute_question(Traceroute_questionContext ctx) {
-      TracerouteQuestion question = new TracerouteQuestion();
+      TracerouteQuestion question = new TracerouteQuestion(_parameters);
       _question = question;
       _tracerouteFlows = question.getFlows();
    }
@@ -541,7 +542,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    @Override
    public void exitAcl_reachability_question(
          Acl_reachability_questionContext ctx) {
-      _question = new AclReachabilityQuestion();
+      _question = new AclReachabilityQuestion(_parameters);
    }
 
    @Override
