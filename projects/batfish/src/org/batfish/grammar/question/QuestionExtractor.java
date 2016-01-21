@@ -193,7 +193,6 @@ import org.batfish.question.string_expr.route_filter.RouteFilterStringExpr;
 import org.batfish.question.string_expr.static_route.StaticRouteStringExpr;
 import org.batfish.question.string_set_expr.StringSetExpr;
 import org.batfish.question.string_set_expr.map.KeysMapStringSetExpr;
-import org.batfish.representation.Flow;
 import org.batfish.representation.FlowBuilder;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
@@ -258,7 +257,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private ReachabilityQuestion _reachabilityQuestion;
 
-   private Set<Flow> _tracerouteFlows;
+   private Set<FlowBuilder> _tracerouteFlowBuilders;
 
    private VerifyProgram _verifyProgram;
 
@@ -525,7 +524,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void enterTraceroute_question(Traceroute_questionContext ctx) {
       TracerouteQuestion question = new TracerouteQuestion(_parameters);
       _question = question;
-      _tracerouteFlows = question.getFlows();
+      _tracerouteFlowBuilders = question.getFlowBuilders();
    }
 
    @Override
@@ -547,8 +546,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    @Override
    public void exitExplicit_flow(Explicit_flowContext ctx) {
-      Flow flow = _currentFlowBuilder.build();
-      _tracerouteFlows.add(flow);
+      _tracerouteFlowBuilders.add(_currentFlowBuilder);
+      _currentFlowBuilder = null;
    }
 
    public Question getQuestion() {

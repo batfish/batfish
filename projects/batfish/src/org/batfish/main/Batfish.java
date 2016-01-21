@@ -131,6 +131,7 @@ import org.batfish.representation.Configuration;
 import org.batfish.representation.DataPlane;
 import org.batfish.representation.Edge;
 import org.batfish.representation.Flow;
+import org.batfish.representation.FlowBuilder;
 import org.batfish.representation.FlowHistory;
 import org.batfish.representation.FlowTrace;
 import org.batfish.representation.Interface;
@@ -980,11 +981,14 @@ public class Batfish implements AutoCloseable {
 
    private void answerTraceroute(TracerouteQuestion question) {
       checkDataPlaneQuestionDependencies();
-      Set<Flow> flows = question.getFlows();
+      Set<FlowBuilder> flowBuilders = question.getFlowBuilders();
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
       initTrafficFactBins(trafficFactBins);
       StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
-      for (Flow flow : flows) {
+      String tag = getFlowTag();
+      for (FlowBuilder flowBuilder : flowBuilders) {
+         flowBuilder.setTag(tag);
+         Flow flow = flowBuilder.build();
          wSetFlowOriginate.append(flow.toLBLine());
       }
       dumpTrafficFacts(trafficFactBins);
