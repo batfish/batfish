@@ -96,6 +96,20 @@
 'AdministrativeDistance'('juniper', 'ospfIA', 10) /*fn*/.
 'AdministrativeDistance'('juniper', 'ospfE1', 150) /*fn*/.
 'AdministrativeDistance'('juniper', 'ospfE2', 150) /*fn*/.
+
+/* TODO: may need to change these */
+'AdministrativeDistance'('vyos', 'bgp', 170) /*fn*/.
+'AdministrativeDistance'('vyos', 'ibgp', 170) /*fn*/.
+'AdministrativeDistance'('vyos', 'connected', 0) /*fn*/.
+'AdministrativeDistance'('vyos', 'isisL1', 15) /*fn*/.
+'AdministrativeDistance'('vyos', 'isisL2', 18) /*fn*/.
+'AdministrativeDistance'('vyos', 'isisEL1', 160) /*fn*/.
+'AdministrativeDistance'('vyos', 'isisEL2', 165) /*fn*/.
+'AdministrativeDistance'('vyos', 'ospf', 10) /*fn*/.
+'AdministrativeDistance'('vyos', 'ospfIA', 10) /*fn*/.
+'AdministrativeDistance'('vyos', 'ospfE1', 150) /*fn*/.
+'AdministrativeDistance'('vyos', 'ospfE2', 150) /*fn*/.
+
 'PolicyMap'(Map) :-
    'SetBgpExportPolicy_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Map).
 

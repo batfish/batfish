@@ -9,6 +9,8 @@ CiscoLexer*.java
 CiscoParser*.java
 FlatJuniperLexer*.java
 FlatJuniperParser*.java
+FlatVyosLexer*.java
+FlatVyosParser*.java
 GNS3TopologyLexer*.java
 GNS3TopologyParser*.java
 JuniperLexer*.java
@@ -21,3 +23,5 @@ QuestionParametersLexer*.java
 QuestionParametersParser*.java
 RoleLexer*.java
 RoleParser*.java
+VyosLexer*.java
+VyosParser*.java

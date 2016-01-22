@@ -44,12 +44,21 @@ public class FlattenVendorConfigurationJob extends
       ConfigurationFormat format = Format
             .identifyConfigurationFormat(_fileText);
 
-      if (format == ConfigurationFormat.JUNIPER) {
+      if (format == ConfigurationFormat.JUNIPER
+            || format == ConfigurationFormat.VYOS) {
+         String header = null;
+         if (format == ConfigurationFormat.JUNIPER) {
+            header = Format.BATFISH_FLATTENED_JUNIPER_HEADER;
+         }
+         if (format == ConfigurationFormat.VYOS) {
+            header = Format.BATFISH_FLATTENED_VYOS_HEADER;
+         }
          _logger.debug("Flattening config: \"" + _inputFile.toString()
                + "\"...");
          String flatConfigText = null;
          try {
-            flatConfigText = Batfish.flatten(_fileText, _logger, _settings);
+            flatConfigText = Batfish.flatten(_fileText, _logger, _settings,
+                  format, header);
          }
          catch (ParserBatfishException e) {
             String error = "Error parsing configuration file: \""

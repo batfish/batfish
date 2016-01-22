@@ -5,10 +5,12 @@ public enum ConfigurationFormat {
    CISCO("cisco"),
    CISCO_IOS_XR("cisco"),
    FLAT_JUNIPER("juniper"),
+   FLAT_VYOS("vyos"),
    JUNIPER("juniper"),
    JUNIPER_SWITCH("juniper"),
    UNKNOWN("unknown"),
-   VXWORKS("vxworks");
+   VXWORKS("vxworks"),
+   VYOS("vyos");
 
    private String _vendorString;
 

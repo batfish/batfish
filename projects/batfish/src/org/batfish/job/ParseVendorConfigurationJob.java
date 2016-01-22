@@ -9,6 +9,8 @@ import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
+import org.batfish.grammar.flatvyos.FlatVyosCombinedParser;
+import org.batfish.grammar.flatvyos.FlatVyosControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -71,13 +73,42 @@ public class ParseVendorConfigurationJob extends
                _warnings);
          break;
 
+      case VYOS:
+         if (_settings.flattenOnTheFly()) {
+            _logger
+                  .warn("Flattening: \""
+                        + currentPath
+                        + "\" on-the-fly; line-numbers reported for this file will be spurious\n");
+            _fileText = Batfish.flatten(_fileText, _logger, _settings,
+                  ConfigurationFormat.VYOS,
+                  Format.BATFISH_FLATTENED_VYOS_HEADER);
+         }
+         else {
+            elapsedTime = System.currentTimeMillis() - startTime;
+            return new ParseVendorConfigurationResult(elapsedTime,
+                  _logger.getHistory(), _file, new BatfishException(
+                        "Vyos configurations must be flattened prior to this stage: \""
+                              + _file.toString() + "\""));
+         }
+         // MISSING BREAK IS INTENTIONAL
+      case FLAT_VYOS:
+         FlatVyosCombinedParser flatVyosParser = new FlatVyosCombinedParser(
+               _fileText, _settings.getThrowOnParserError(),
+               _settings.getThrowOnLexerError());
+         combinedParser = flatVyosParser;
+         extractor = new FlatVyosControlPlaneExtractor(_fileText,
+               flatVyosParser, _warnings);
+         break;
+
       case JUNIPER:
          if (_settings.flattenOnTheFly()) {
             _logger
                   .warn("Flattening: \""
                         + currentPath
                         + "\" on-the-fly; line-numbers reported for this file will be spurious\n");
-            _fileText = Batfish.flatten(_fileText, _logger, _settings);
+            _fileText = Batfish.flatten(_fileText, _logger, _settings,
+                  ConfigurationFormat.JUNIPER,
+                  Format.BATFISH_FLATTENED_JUNIPER_HEADER);
          }
          else {
             elapsedTime = System.currentTimeMillis() - startTime;

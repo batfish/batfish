@@ -89,6 +89,8 @@ import org.batfish.grammar.topology.GNS3TopologyExtractor;
 import org.batfish.grammar.topology.RoleCombinedParser;
 import org.batfish.grammar.topology.RoleExtractor;
 import org.batfish.grammar.topology.TopologyExtractor;
+import org.batfish.grammar.vyos.VyosCombinedParser;
+import org.batfish.grammar.vyos.VyosFlattener;
 import org.batfish.job.BatfishJobExecutor;
 import org.batfish.job.ConvertConfigurationJob;
 import org.batfish.job.ConvertConfigurationResult;
@@ -400,14 +402,34 @@ public class Batfish implements AutoCloseable {
    }
 
    public static String flatten(String input, BatfishLogger logger,
-         Settings settings) {
-      JuniperCombinedParser jparser = new JuniperCombinedParser(input,
-            settings.getThrowOnParserError(), settings.getThrowOnLexerError());
-      ParserRuleContext jtree = parse(jparser, logger, settings);
-      JuniperFlattener flattener = new JuniperFlattener();
-      ParseTreeWalker walker = new ParseTreeWalker();
-      walker.walk(flattener, jtree);
-      return flattener.getFlattenedConfigurationText();
+         Settings settings, ConfigurationFormat format, String header) {
+      switch (format) {
+      case JUNIPER: {
+         JuniperCombinedParser parser = new JuniperCombinedParser(input,
+               settings.getThrowOnParserError(),
+               settings.getThrowOnLexerError());
+         ParserRuleContext tree = parse(parser, logger, settings);
+         JuniperFlattener flattener = new JuniperFlattener(header);
+         ParseTreeWalker walker = new ParseTreeWalker();
+         walker.walk(flattener, tree);
+         return flattener.getFlattenedConfigurationText();
+      }
+
+      case VYOS: {
+         VyosCombinedParser parser = new VyosCombinedParser(input,
+               settings.getThrowOnParserError(),
+               settings.getThrowOnLexerError());
+         ParserRuleContext tree = parse(parser, logger, settings);
+         VyosFlattener flattener = new VyosFlattener(header);
+         ParseTreeWalker walker = new ParseTreeWalker();
+         walker.walk(flattener, tree);
+         return flattener.getFlattenedConfigurationText();
+      }
+
+      // $CASES-OMITTED$
+      default:
+         throw new BatfishException("Invalid format for flattening");
+      }
    }
 
    private static void initControlPlaneFactBins(

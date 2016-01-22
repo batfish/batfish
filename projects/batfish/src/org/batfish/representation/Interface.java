@@ -105,6 +105,10 @@ public class Interface extends NamedStructure {
       case JUNIPER_SWITCH:
          return computeJuniperInterfaceType(name);
 
+      case VYOS:
+      case FLAT_VYOS:
+         return computeVyosInterfaceType(name);
+
       case UNKNOWN:
       case VXWORKS:
       default:
@@ -123,6 +127,15 @@ public class Interface extends NamedStructure {
       }
       else if (name.startsWith("ae")) {
          return InterfaceType.AGGREGATED;
+      }
+      else {
+         return InterfaceType.PHYSICAL;
+      }
+   }
+
+   private static InterfaceType computeVyosInterfaceType(String name) {
+      if (name.startsWith("vti")) {
+         return InterfaceType.VPN;
       }
       else {
          return InterfaceType.PHYSICAL;
