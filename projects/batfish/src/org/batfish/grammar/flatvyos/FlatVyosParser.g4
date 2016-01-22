@@ -21,7 +21,7 @@ s_null
 :
    (
       SERVICE
-   ) s_null_filler
+   ) null_filler
 ;
 
 s_system
@@ -67,7 +67,7 @@ st_null
       | SYSLOG
       | TASK_SCHEDULER
       | TIME_ZONE
-   ) s_null_filler
+   ) null_filler
 ;
 
 statement

@@ -25,6 +25,7 @@ public String printStateVariables() {
 }
 
 tokens {
+   DESCRIPTION_TEXT,
    ISO_ADDRESS,
    PIPE
 }
@@ -54,6 +55,11 @@ ACCESS_PROFILE
 ACCOUNTING
 :
    'accounting'
+;
+
+ACTION
+:
+   'action'
 ;
 
 ACTIVE
@@ -104,6 +110,16 @@ ADVERTISE_INTERVAL
 ADVERTISE_PEER_AS
 :
    'advertise-peer-as'
+;
+
+AES128
+:
+   'aes128'
+;
+
+AES256
+:
+   'aes256'
 ;
 
 AFS
@@ -221,21 +237,6 @@ APPLICATIONS
    'applications'
 ;
 
-APPLY_GROUPS
-:
-   'apply-groups'
-;
-
-APPLY_GROUPS_EXCEPT
-:
-   'apply-groups-except'
-;
-
-APPLY_PATH
-:
-   'apply-path'
-;
-
 AREA
 :
    'area'
@@ -263,7 +264,7 @@ AS_OVERRIDE
 
 AS_PATH
 :
-   'as-path' -> pushMode ( M_AsPath )
+   'as-path'
 ;
 
 AS_PATH_EXPAND
@@ -304,6 +305,11 @@ AUTHENTICATION_METHOD
 AUTHENTICATION_ORDER
 :
    'authentication-order'
+;
+
+AUTO_UPDATE
+:
+   'auto-update'
 ;
 
 AUTONOMOUS_SYSTEM
@@ -366,14 +372,24 @@ BIFF
    'biff'
 ;
 
-BIND_INTERFACE
+BIND
 :
-   'bind-interface' -> pushMode ( M_Interface )
+   'bind'
+;
+
+BLACKHOLE
+:
+   'blackhole'
 ;
 
 BMP
 :
    'bmp'
+;
+
+BONDING
+:
+   'bonding'
 ;
 
 BOOTPC
@@ -465,6 +481,11 @@ COMPATIBLE
    'compatible'
 ;
 
+COMPRESSION
+:
+   'compression'
+;
+
 CONFIG_MANAGEMENT
 :
    'config-management'
@@ -473,6 +494,11 @@ CONFIG_MANAGEMENT
 CONDITION
 :
    'condition'
+;
+
+CONNECTION_TYPE
+:
+   'connection-type'
 ;
 
 CONNECTIONS
@@ -640,6 +666,81 @@ DH_GROUP
    'dh-group'
 ;
 
+DH_GROUP2
+:
+   'dh-group2'
+;
+
+DH_GROUP5
+:
+   'dh-group5'
+;
+
+DH_GROUP14
+:
+   'dh-group14'
+;
+
+DH_GROUP15
+:
+   'dh-group15'
+;
+
+DH_GROUP16
+:
+   'dh-group16'
+;
+
+DH_GROUP17
+:
+   'dh-group17'
+;
+
+DH_GROUP18
+:
+   'dh-group18'
+;
+
+DH_GROUP19
+:
+   'dh-group19'
+;
+
+DH_GROUP20
+:
+   'dh-group20'
+;
+
+DH_GROUP21
+:
+   'dh-group21'
+;
+
+DH_GROUP22
+:
+   'dh-group22'
+;
+
+DH_GROUP23
+:
+   'dh-group23'
+;
+
+DH_GROUP24
+:
+   'dh-group24'
+;
+
+DH_GROUP25
+:
+   'dh-group25'
+;
+
+DH_GROUP26
+:
+   'dh-group26'
+;
+
 DHCP
 :
    'dhcp'
@@ -663,6 +764,11 @@ DISABLE_4BYTE_AS
 DISCARD
 :
    'discard'
+;
+
+DISTANCE
+:
+   'distance'
 ;
 
 DNS
@@ -692,7 +798,7 @@ DSA_SIGNATURES
 
 DSCP
 :
-   'dscp' -> pushMode ( M_DSCP )
+   'dscp'
 ;
 
 DSTOPTS
@@ -700,9 +806,19 @@ DSTOPTS
    'dstopts'
 ;
 
+DUMMY
+:
+   'dummy'
+;
+
 DUMPONPANIC
 :
    'dump-on-panic'
+;
+
+DUPLEX
+:
+   'duplex'
 ;
 
 DVMRP
@@ -755,6 +871,11 @@ ENCAPSULATION
    'encapsulation'
 ;
 
+ENCRYPTION
+:
+   'encryption'
+;
+
 ENCRYPTION_ALGORITHM
 :
    'encryption-algorithm'
@@ -765,6 +886,11 @@ ESP
    'esp'
 ;
 
+ESP_GROUP
+:
+   'esp-group'
+;
+
 ESTABLISH_TUNNELS
 :
    'establish-tunnels'
@@ -773,6 +899,11 @@ ESTABLISH_TUNNELS
 ETHER_OPTIONS
 :
    'ether-options'
+;
+
+ETHERNET
+:
+   'ethernet'
 ;
 
 ETHERNET_SWITCHING
@@ -828,11 +959,6 @@ EXPRESSION
 EXTERNAL
 :
    'external'
-;
-
-EXTERNAL_INTERFACE
-:
-   'external-interface' -> pushMode ( M_Interface )
 ;
 
 EXTERNAL_PREFERENCE
@@ -975,6 +1101,11 @@ GATEWAY
    'gateway'
 ;
 
+GE
+:
+   'ge'
+;
+
 GENERATE
 :
    'generate'
@@ -997,7 +1128,7 @@ GRE
 
 GROUP
 :
-   'group' -> pushMode ( M_VarOrWildcard )
+   'group'
 ;
 
 GROUP_IKE_ID
@@ -1028,6 +1159,11 @@ GROUP5
 GROUPS
 :
    'groups'
+;
+
+HASH
+:
+   'hash'
 ;
 
 HELLO_AUTHENTICATION_KEY
@@ -1110,6 +1246,11 @@ HTTPS
    'https'
 ;
 
+HW_ID
+:
+   'hw-id'
+;
+
 ICMP
 :
    'icmp'
@@ -1143,6 +1284,11 @@ ICMP6_TYPE
 ICMPV6
 :
    'icmpv6'
+;
+
+ID
+:
+   'id'
 ;
 
 IDENT
@@ -1190,6 +1336,11 @@ IKE_ESP_NAT
    'ike-esp-nat'
 ;
 
+IKE_GROUP
+:
+   'ike-group'
+;
+
 IKE_POLICY
 :
    'ike-policy'
@@ -1198,6 +1349,21 @@ IKE_POLICY
 IKE_USER_TYPE
 :
    'ike-user-type'
+;
+
+IKEV1
+:
+   'ikev1'
+;
+
+IKEV2
+:
+   'ikev2'
+;
+
+IKEV2_REAUTH
+:
+   'ikev2-reauth'
 ;
 
 IMAP
@@ -1275,6 +1441,11 @@ INET6_VPN
    'inet6-vpn'
 ;
 
+INITIATE
+:
+   'initiate'
+;
+
 INNER
 :
    'inner'
@@ -1317,7 +1488,7 @@ INSTANCE_TYPE
 
 INTERFACE
 :
-   'interface' -> pushMode ( M_Interface )
+   'interface'
 ;
 
 INTERFACE_MODE
@@ -1342,7 +1513,7 @@ INTERFACE_TRANSMIT_STATISTICS
 
 INTERFACES
 :
-   'interfaces' -> pushMode ( M_Interface )
+   'interfaces'
 ;
 
 INTERFACE_ROUTES
@@ -1385,6 +1556,11 @@ IPSEC
    'ipsec'
 ;
 
+IPSEC_INTERFACES
+:
+   'ipsec-interfaces'
+;
+
 IPSEC_POLICY
 :
    'ipsec-policy'
@@ -1425,6 +1601,11 @@ KERBEROS_SEC
    'kerberos-sec'
 ;
 
+KEY_EXCHANGE
+:
+   'key-exchange'
+;
+
 KEYS
 :
    'keys'
@@ -1463,6 +1644,11 @@ L
 L2CIRCUIT
 :
    'l2circuit'
+;
+
+L2TPV3
+:
+   'l2tpv3'
 ;
 
 L2VPN
@@ -1525,6 +1711,11 @@ LDP
    'ldp'
 ;
 
+LE
+:
+   'le'
+;
+
 LEARN_VLAN_1P_PRIORITY
 :
    'learn-vlan-1p-priority'
@@ -1533,6 +1724,11 @@ LEARN_VLAN_1P_PRIORITY
 LEVEL
 :
    'level'
+;
+
+LIFETIME
+:
+   'lifetime'
 ;
 
 LIFETIME_KILOBYTES
@@ -1618,6 +1814,11 @@ LOGIN
 LONGER
 :
    'longer'
+;
+
+LOOPBACK
+:
+   'loopback'
 ;
 
 LOOPS
@@ -1730,6 +1931,11 @@ MEDIUM_LOW
    'medium-low'
 ;
 
+MEMBERS
+:
+   'members'
+;
+
 METRIC
 :
    'metric'
@@ -1747,12 +1953,7 @@ METRIC_OUT
 
 METRIC_TYPE
 :
-   'metric-type' -> pushMode ( M_MetricType )
-;
-
-MEMBERS
-:
-   'members' -> pushMode ( M_Members )
+   'metric-type'
 ;
 
 MGCP_CA
@@ -1950,6 +2151,11 @@ NEXT_TABLE
    'next-table'
 ;
 
+NEXTHOP_SELF
+:
+   'nexthop-self'
+;
+
 NFSD
 :
    'nfsd'
@@ -1973,6 +2179,11 @@ NTALK
 NO_ACTIVE_BACKBONE
 :
    'no-active-backbone'
+;
+
+NO_ADVERTISE
+:
+   'no-advertise'
 ;
 
 NO_ANTI_REPLAY
@@ -2080,6 +2291,11 @@ OFFSET
    'offset'
 ;
 
+OPENVPN
+:
+   'openvpn'
+;
+
 OPTIONS
 :
    'options'
@@ -2175,6 +2391,11 @@ PATH_SELECTION
    'path-selection'
 ;
 
+PEER
+:
+   'peer'
+;
+
 PEER_ADDRESS
 :
    'peer-address'
@@ -2218,6 +2439,11 @@ PERMIT_ALL
 PERSISTENT_NAT
 :
    'persistent-nat'
+;
+
+PFS
+:
+   'pfs'
 ;
 
 PGM
@@ -2345,6 +2571,11 @@ PRE_SHARED_KEYS
    'pre-shared-keys'
 ;
 
+PRE_SHARED_SECRET
+:
+   'pre-shared-secret'
+;
+
 PRECEDENCE
 :
    'precedence'
@@ -2392,7 +2623,7 @@ PREFIX_LIMIT
 
 PREFIX_LIST
 :
-   'prefix-list' -> pushMode ( M_PrefixListName )
+   'prefix-list'
 ;
 
 PREFIX_LIST_FILTER
@@ -2473,6 +2704,11 @@ PROXY_ARP
 PROXY_IDENTITY
 :
    'proxy-identity'
+;
+
+PSEUDO_ETHERNET
+:
+   'pseudo-ethernet'
 ;
 
 Q931
@@ -2560,6 +2796,16 @@ REMOTE
    'remote'
 ;
 
+REMOTE_AS
+:
+   'remote-as'
+;
+
+REMOTE_ID
+:
+   'remote-id'
+;
+
 REMOVE_PRIVATE
 :
    'remove-private'
@@ -2578,6 +2824,11 @@ RESOLUTION
 RESOLVE
 :
    'resolve'
+;
+
+RESPOND
+:
+   'respond'
 ;
 
 RESTRICT
@@ -2647,12 +2898,17 @@ ROUTE
 
 ROUTE_DISTINGUISHER
 :
-   'route-distinguisher' -> pushMode ( M_RouteDistinguisher )
+   'route-distinguisher'
 ;
 
 ROUTE_FILTER
 :
    'route-filter'
+;
+
+ROUTE_MAP
+:
+   'route-map'
 ;
 
 ROUTE_TYPE
@@ -2703,6 +2959,11 @@ RPF_CHECK
 RPM
 :
    'rpm'
+;
+
+RSA
+:
+   'rsa'
 ;
 
 RSA_SIGNATURES
@@ -2820,19 +3081,24 @@ SFLOW
    'sflow'
 ;
 
-SHA_256
-:
-   'sha-256'
-;
-
-SHA_384
-:
-   'sha-384'
-;
-
 SHA1
 :
    'sha1'
+;
+
+SHA256
+:
+   'sha256'
+;
+
+SHA384
+:
+   'sha384'
+;
+
+SHA512
+:
+   'sha512'
 ;
 
 SHARED_IKE_ID
@@ -2850,9 +3116,19 @@ SIMPLE
    'simple'
 ;
 
+SMP_AFFINITY
+:
+   'smp_affinity'
+;
+
 SIP
 :
    'sip'
+;
+
+SITE_TO_SITE
+:
+   'site-to-site'
 ;
 
 SQLNET_V2
@@ -2903,6 +3179,11 @@ SNPP
 SOCKS
 :
    'socks'
+;
+
+SOFT_RECONFIGURATION
+:
+   'soft-reconfiguration'
 ;
 
 SONET_OPTIONS
@@ -3140,6 +3421,11 @@ THEN
    'then'
 ;
 
+THREEDES
+:
+   '3des'
+;
+
 THREEDES_CBC
 :
    '3des-cbc'
@@ -3163,6 +3449,11 @@ TIME_ZONE
 TIMED
 :
    'timed'
+;
+
+TIMERS
+:
+   'timers'
 ;
 
 TO
@@ -3193,6 +3484,11 @@ TRACK
 TRAFFIC_ENGINEERING
 :
    'traffic-engineering'
+;
+
+TRANSPORT
+:
+   'transport'
 ;
 
 TRAPS
@@ -3287,7 +3583,7 @@ V1_ONLY
 
 VERSION
 :
-   'version' -> pushMode ( M_Version )
+   'version'
 ;
 
 VIRTUAL_ADDRESS
@@ -3307,7 +3603,7 @@ VIRTUAL_SWITCH
 
 VLAN
 :
-   'vlan' -> pushMode ( M_Vlan )
+   'vlan'
 ;
 
 VLANS
@@ -3372,7 +3668,7 @@ VRF_TABLE_LABEL
 
 VRF_TARGET
 :
-   'vrf-target' -> pushMode ( M_VrfTarget )
+   'vrf-target'
 ;
 
 VRRP
@@ -3390,6 +3686,16 @@ VSTP
    'vstp'
 ;
 
+VTI
+:
+   'vti'
+;
+
+VXLAN
+:
+   'vxlan'
+;
+
 WHO
 :
    'who'
@@ -3398,6 +3704,21 @@ WHO
 WIDE_METRICS_ONLY
 :
    'wide-metrics-only'
+;
+
+WIRELESS
+:
+   'wireless'
+;
+
+WIRELESSMODEM
+:
+   'wirelessmodem'
+;
+
+X509
+:
+   'x509'
 ;
 
 XAUTH
@@ -3676,11 +3997,6 @@ OPEN_BRACE
    '{'
 ;
 
-OPEN_BRACKET
-:
-   '['
-;
-
 OPEN_PAREN
 :
    '('
@@ -3709,11 +4025,6 @@ SINGLE_QUOTE
 UNDERSCORE
 :
    '_'
-;
-
-WILDCARD
-:
-   '<' ~'>'* '>'
 ;
 
 WS
@@ -3825,118 +4136,11 @@ F_WhitespaceChar
    [ \t\u000C]
 ;
 
-mode M_AsPath;
-
-M_AsPath_NEWLINE
-:
-   F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
-
-   -> type ( NEWLINE ) , popMode
-;
-
-M_AsPath_ORIGIN
-:
-   'origin' -> type ( ORIGIN ) , popMode
-;
-
-M_AsPath_PATH
-:
-   'path' -> type ( PATH ) , mode ( M_AsPathPath )
-;
-
-M_AsPath_TERM
-:
-   'term' -> type ( TERM ) , popMode
-;
-
-M_AsPath_VARIABLE
-:
-   (
-      F_Digit
-      | F_Variable_RequiredVarChar
-   ) F_Variable_VarChar* -> type ( VARIABLE ) , mode ( M_AsPathRegex )
-;
-
-M_AsPath_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_AsPathPath;
-
-M_AsPathPath_DEC
-:
-   [0-9]+ -> type ( DEC ) , popMode
-;
-
-M_AsPathPath_DOUBLE_QUOTE
-:
-   '"' -> channel ( HIDDEN ) , mode ( M_AsPathExpr )
-;
-
-M_AsPathPath_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_AsPathExpr;
-
-M_AsPathExpr_DEC
-:
-   [0-9]+ -> type ( DEC )
-;
-
-M_AsPathExpr_OPEN_BRACKET
-:
-   '[' -> type ( OPEN_BRACKET )
-;
-
-M_AsPathExpr_CLOSE_BRACKET
-:
-   ']' -> type ( CLOSE_BRACKET )
-;
-
-M_AsPathExpr_DOUBLE_QUOTE
-:
-   '"' -> channel ( HIDDEN ) , popMode
-;
-
-M_AsPathExpr_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_AsPathRegex;
-
-AS_PATH_REGEX
-:
-   [0-9,^$[\]\-*.{}+|()] [0-9,^$[\]\-*.{}+|() _?]*
-;
-
-M_AsPathRegex_DOUBLE_QUOTE
-:
-   '"' -> channel ( HIDDEN )
-;
-
-M_AsPathRegex_NEWLINE
-:
-   F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
-
-   -> type ( NEWLINE ) , popMode
-;
-
-M_AsPathRegex_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
 mode M_Description;
 
-M_Description_DESCRIPTION
+M_Description_DESCRIPTION_TEXT
 :
-   F_NonWhitespaceChar F_NonNewlineChar*
+   F_NonWhitespaceChar F_NonNewlineChar* -> type ( DESCRIPTION_TEXT )
 ;
 
 M_Description_NEWLINE
@@ -3950,95 +4154,6 @@ M_Description_NEWLINE
 M_Description_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_DSCP;
-
-M_DSCP_VARIABLE
-:
-   F_NonWhitespaceChar+ -> type ( VARIABLE )
-;
-
-M_DSCP_NEWLINE
-:
-   F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
-
-   -> type ( NEWLINE ) , popMode
-;
-
-M_DSCP_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_Interface;
-
-M_Interface_NEWLINE
-:
-   F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
-
-   -> type ( NEWLINE ) , popMode
-;
-
-M_Interface_INTERFACE
-:
-   'interface' -> type ( INTERFACE )
-;
-
-M_Interface_PORT_OVERLOADING
-:
-   'port-overloading' -> type ( PORT_OVERLOADING ) , popMode
-;
-
-M_Interface_PORT_OVERLOADING_FACTOR
-:
-   'port-overloading-factor' -> type ( PORT_OVERLOADING_FACTOR ) , popMode
-;
-
-M_Interface_QUOTE
-:
-   '"' -> channel ( HIDDEN ) , mode ( M_InterfaceQuote )
-;
-
-M_Interface_VARIABLE
-:
-   F_Variable_RequiredVarChar F_Variable_InterfaceVarChar* -> type ( VARIABLE )
-   , popMode
-;
-
-M_Interface_WILDCARD
-:
-   '<' ~'>'* '>' -> type ( WILDCARD ) , popMode
-;
-
-M_Interface_IP_ADDRESS
-:
-   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type ( IP_ADDRESS ) ,
-   popMode
-;
-
-M_Interface_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_InterfaceQuote;
-
-M_InterfaceQuote_QUOTE
-:
-   '"' -> channel ( HIDDEN ) , popMode
-;
-
-M_InterfaceQuote_VARIABLE
-:
-   F_Variable_RequiredVarChar F_Variable_InterfaceVarChar* -> type ( VARIABLE )
-;
-
-M_InterfaceQuote_WILDCARD
-:
-   '<' ~'>'* '>' -> type ( WILDCARD )
 ;
 
 mode M_ISO;
@@ -4095,180 +4210,6 @@ M_MacAddress_WS
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
-mode M_Members;
-
-M_Members_ASTERISK
-:
-   '*' -> type ( ASTERISK )
-;
-
-M_Members_CARAT
-:
-   '^' -> type ( CARAT )
-;
-
-M_Members_CLOSE_BRACE
-:
-   '}' -> type ( CLOSE_BRACE )
-;
-
-M_Members_CLOSE_BRACKET
-:
-   ']' -> type ( CLOSE_BRACKET )
-;
-
-M_Members_CLOSE_PAREN
-:
-   ')' -> type ( CLOSE_PAREN )
-;
-
-M_Members_COLON
-:
-   ':' -> type ( COLON )
-;
-
-M_Members_DASH
-:
-   '-' -> type ( DASH )
-;
-
-M_Members_DEC
-:
-   F_Digit+ -> type ( DEC )
-;
-
-M_Members_DOLLAR
-:
-   '$' -> type ( DOLLAR )
-;
-
-M_Members_DOUBLE_QUOTE
-:
-   '"' -> channel ( HIDDEN )
-;
-
-M_Members_L
-:
-   'L' -> type ( L )
-;
-
-M_Members_NEWLINE
-:
-   F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
-
-   -> type ( NEWLINE ) , popMode
-;
-
-NO_ADVERTISE
-:
-   'no-advertise'
-;
-
-M_Members_NO_EXPORT
-:
-   'no-export' -> type ( NO_EXPORT )
-;
-
-M_Members_OPEN_BRACE
-:
-   '{' -> type ( OPEN_BRACE )
-;
-
-M_Members_OPEN_BRACKET
-:
-   '[' -> type ( OPEN_BRACKET )
-;
-
-M_Members_OPEN_PAREN
-:
-   '(' -> type ( OPEN_PAREN )
-;
-
-M_Members_ORIGIN
-:
-   'origin' -> type ( ORIGIN )
-;
-
-M_Members_PERIOD
-:
-   '.' -> type ( PERIOD )
-;
-
-M_Members_PIPE
-:
-   '|' -> type ( PIPE )
-;
-
-M_Members_TARGET
-:
-   'target' -> type ( TARGET )
-;
-
-M_Members_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_PrefixListName;
-
-M_PrefixLsitName_VARIABLE
-:
-   ~[ \t\n\r&|()"]+ -> type ( VARIABLE ) , popMode
-;
-
-M_PrefixListName_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_MetricType;
-
-METRIC_TYPE_1
-:
-   '1' -> popMode
-;
-
-METRIC_TYPE_2
-:
-   '2' -> popMode
-;
-
-M_MetricType_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_RouteDistinguisher;
-
-M_RouteDistinguisher_COLON
-:
-   ':' -> type ( COLON )
-;
-
-M_RouteDistinguisher_IP_ADDRESS
-:
-   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type ( IP_ADDRESS )
-;
-
-M_RouteDistinguisher_DEC
-:
-   F_Digit+ -> type ( DEC )
-;
-
-M_RouteDistinguisher_NEWLINE
-:
-   F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
-
-   -> type ( NEWLINE ) , popMode
-;
-
-M_RouteDistinguisher_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
 mode M_Speed;
 
 M_Speed_AUTO
@@ -4297,112 +4238,6 @@ M_Speed_NEWLINE
 ;
 
 M_Speed_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_VarOrWildcard;
-
-M_VarOrWildcard_VARIABLE
-:
-   ~[ \t\u000C\r\n<]+ -> type ( VARIABLE ) , popMode
-;
-
-M_VarOrWildcard_WILDCARD
-:
-   '<' ~'>'* '>' -> type ( WILDCARD ) , popMode
-;
-
-M_VarOrWildcard_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_Version;
-
-M_Version_V1_ONLY
-:
-   'v1-only' -> type ( V1_ONLY ) , popMode
-;
-
-M_Version_VERSION_STRING
-:
-   ~[ \t\u000C\r\n;]+ -> popMode
-;
-
-M_Version_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_Vlan;
-
-M_Vlan_MEMBERS
-:
-   'members' -> type ( MEMBERS ) , popMode
-;
-
-M_Vlan_UNIT
-:
-   'unit' -> type ( UNIT ) , popMode
-;
-
-M_Vlan_VARIABLE
-:
-   ~[ \t\n\r&|()"]+ -> type ( VARIABLE ) , popMode
-;
-
-M_Vlan_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_VrfTarget;
-
-M_VrfTarget_COLON
-:
-   ':' -> type ( COLON )
-;
-
-M_VrfTarget_DEC
-:
-   F_Digit+ -> type ( DEC )
-;
-
-M_VrfTarget_EXPORT
-:
-   'export' -> type ( EXPORT )
-;
-
-M_VrfTarget_IMPORT
-:
-   'import' -> type ( IMPORT )
-;
-
-M_VrfTarget_L
-:
-   'L' -> type ( L )
-;
-
-M_VrfTarget_NEWLINE
-:
-   F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
-
-   -> type ( NEWLINE ) , popMode
-;
-
-M_VrfTarget_PERIOD
-:
-   '.' -> type ( PERIOD )
-;
-
-M_VrfTarget_TARGET
-:
-   'target' -> type ( TARGET )
-;
-
-M_VrfTarget_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;

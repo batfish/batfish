@@ -13,7 +13,12 @@ s_protocols
 
 s_protocols_static
 :
-   STATIC s_null_filler
+   STATIC s_protocols_static_tail
+;
+
+s_protocols_static_tail
+:
+   statict_route
 ;
 
 s_protocols_tail
@@ -31,3 +36,23 @@ s_protocols_null
    ) s_null_filler
 ;
 */
+srt_blackhole
+:
+   BLACKHOLE
+;
+
+srt_next_hop
+:
+   NEXT_HOP IP_ADDRESS DISTANCE distance = DEC
+;
+
+statict_route
+:
+   ROUTE IP_PREFIX statict_route_tail
+;
+
+statict_route_tail
+:
+   srt_blackhole
+   | srt_next_hop
+;

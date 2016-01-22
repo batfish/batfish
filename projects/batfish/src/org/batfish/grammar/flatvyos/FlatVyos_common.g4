@@ -24,35 +24,6 @@ administrator_ip
    DEC PERIOD DEC PERIOD DEC PERIOD DEC
 ;
 
-apply
-:
-// intentional blank
-
-   | s_apply_groups
-   | s_apply_groups_except
-;
-
-as_path_expr
-:
-   (
-      items += as_unit
-   )+
-;
-
-as_set
-:
-   OPEN_BRACKET
-   (
-      items += DEC
-   )+ CLOSE_BRACKET
-;
-
-as_unit
-:
-   as_set
-   | DEC
-;
-
 ec_administrator
 :
    administrator_as
@@ -108,12 +79,22 @@ icmp_type
    | UNREACHABLE
 ;
 
-interface_id
+interface_type
 :
-   name = VARIABLE
-   (
-      PERIOD unit = DEC
-   )?
+   BONDING
+   | BRIDGE
+   | DUMMY
+   | ETHERNET
+   | INPUT
+   | L2TPV3
+   | LOOPBACK
+   | OPENVPN
+   | PSEUDO_ETHERNET
+   | TUNNEL
+   | VTI
+   | VXLAN
+   | WIRELESS
+   | WIRELESSMODEM
 ;
 
 ip_option
@@ -153,19 +134,9 @@ origin_type
    | INCOMPLETE
 ;
 
-s_apply_groups
+description
 :
-   APPLY_GROUPS name = variable
-;
-
-s_apply_groups_except
-:
-   APPLY_GROUPS_EXCEPT name = variable
-;
-
-s_description
-:
-   DESCRIPTION description = M_Description_DESCRIPTION?
+   DESCRIPTION text = DESCRIPTION_TEXT?
 ;
 
 pe_conjunction
@@ -292,7 +263,7 @@ subrange
    )?
 ;
 
-s_null_filler
+null_filler
 :
    ~NEWLINE*
 ;
@@ -316,6 +287,5 @@ standard_community
 
 variable
 :
-   text = ~( APPLY_GROUPS | APPLY_GROUPS_EXCEPT | APPLY_PATH | NEWLINE |
-   OPEN_PAREN | OPEN_BRACKET | OPEN_BRACE | WILDCARD )
+   text = ~( NEWLINE | OPEN_PAREN | OPEN_BRACE )
 ;
