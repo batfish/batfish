@@ -52,7 +52,7 @@ st_default_address_selection
 
 st_host_name
 :
-   HOST_NAME variable
+   HOST_NAME name = variable
 ;
 
 st_null

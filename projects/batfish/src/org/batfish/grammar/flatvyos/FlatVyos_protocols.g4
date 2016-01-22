@@ -1,7 +1,6 @@
 parser grammar FlatVyos_protocols;
 
-import
-FlatVyos_common, FlatVyos_bgp;
+import FlatVyos_common, FlatVyos_bgp;
 
 options {
    tokenVocab = FlatVyosLexer;
@@ -22,6 +21,7 @@ s_protocols_tail
    s_protocols_bgp
    | s_protocols_static
    //| s_protocols_null
+
 ;
 
 /*

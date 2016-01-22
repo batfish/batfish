@@ -4273,7 +4273,7 @@ mode M_Speed;
 
 M_Speed_AUTO
 :
-   'auto' -> type(AUTO), popMode
+   'auto' -> type ( AUTO ) , popMode
 ;
 
 M_Speed_DEC
@@ -4293,7 +4293,7 @@ M_Speed_M
 
 M_Speed_NEWLINE
 :
-   F_NewlineChar+ -> type(NEWLINE), popMode
+   F_NewlineChar+ -> type ( NEWLINE ) , popMode
 ;
 
 M_Speed_WS

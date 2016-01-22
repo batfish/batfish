@@ -1,7 +1,6 @@
 parser grammar FlatVyos_interfaces;
 
-import
-FlatVyos_common;
+import FlatVyos_common;
 
 options {
    tokenVocab = FlatVyosLexer;
