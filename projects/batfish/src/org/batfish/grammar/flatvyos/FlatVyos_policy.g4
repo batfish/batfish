@@ -27,11 +27,7 @@ plt_rule_tail
 
 plrt_action
 :
-   ACTION
-   (
-      PERMIT
-      | DENY
-   )
+   ACTION action = line_action
 ;
 
 plrt_description
@@ -41,12 +37,12 @@ plrt_description
 
 plrt_ge
 :
-   GE DEC
+   GE num = DEC
 ;
 
 plrt_le
 :
-   LE DEC
+   LE num = DEC
 ;
 
 plrt_prefix
@@ -83,11 +79,7 @@ rmmt_ip_address_prefix_list
 
 rmrt_action
 :
-   ACTION
-   (
-      PERMIT
-      | DENY
-   )
+   ACTION action = line_action
 ;
 
 rmrt_description

@@ -3,9 +3,9 @@ package org.batfish.representation;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public final class IkePolicy extends NamedStructure {
+public final class IkePolicy extends ComparableStructure<String> {
 
    /**
     *

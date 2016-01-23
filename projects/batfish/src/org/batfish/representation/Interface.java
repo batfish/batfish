@@ -7,12 +7,12 @@ import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.main.ConfigurationFormat;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 import org.batfish.util.SubRange;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class Interface extends NamedStructure {
+public class Interface extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
@@ -210,7 +210,7 @@ public class Interface extends NamedStructure {
    }
 
    private InterfaceType computeInterfaceType() {
-      return computeInterfaceType(_name, _owner.getVendor());
+      return computeInterfaceType(_key, _owner.getVendor());
    }
 
    public int getAccessVlan() {
@@ -320,11 +320,11 @@ public class Interface extends NamedStructure {
    public boolean isLoopback(ConfigurationFormat vendor) {
       if (vendor == ConfigurationFormat.JUNIPER
             || vendor == ConfigurationFormat.FLAT_JUNIPER) {
-         if (!_name.contains(".")) {
+         if (!_key.contains(".")) {
             return false;
          }
       }
-      return _name.toLowerCase().startsWith("lo");
+      return _key.toLowerCase().startsWith("lo");
    }
 
    public void setAccessVlan(int vlan) {
@@ -419,7 +419,7 @@ public class Interface extends NamedStructure {
    public JSONObject toJSONObject() throws JSONException {
       JSONObject iface = new JSONObject();
       iface.put("node", _owner.getName());
-      iface.put("name", _name);
+      iface.put("name", _key);
       iface.put("prefix", _prefix.toString());
       InterfaceType interfaceType = computeInterfaceType();
       iface.put("type", interfaceType.toString());

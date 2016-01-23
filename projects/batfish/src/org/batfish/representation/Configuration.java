@@ -8,9 +8,9 @@ import java.util.TreeMap;
 
 import org.batfish.collections.RoleSet;
 import org.batfish.main.ConfigurationFormat;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public final class Configuration extends NamedStructure {
+public final class Configuration extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
@@ -117,7 +117,7 @@ public final class Configuration extends NamedStructure {
    }
 
    public String getHostname() {
-      return _name;
+      return _key;
    }
 
    public Map<String, IkeGateway> getIkeGateways() {

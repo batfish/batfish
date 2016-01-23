@@ -1,9 +1,9 @@
 package org.batfish.representation;
 
 import org.batfish.representation.Ip;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public class IkeGateway extends NamedStructure {
+public class IkeGateway extends ComparableStructure<String> {
 
    /**
     *

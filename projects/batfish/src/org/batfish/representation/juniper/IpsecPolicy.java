@@ -4,9 +4,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.batfish.representation.DiffieHellmanGroup;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public class IpsecPolicy extends NamedStructure {
+public class IpsecPolicy extends ComparableStructure<String> {
 
    /**
     *

@@ -43,7 +43,7 @@ srt_blackhole
 
 srt_next_hop
 :
-   NEXT_HOP IP_ADDRESS DISTANCE distance = DEC
+   NEXT_HOP nexthop=IP_ADDRESS DISTANCE distance = DEC
 ;
 
 statict_route

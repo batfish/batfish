@@ -7,9 +7,9 @@ import java.util.TreeMap;
 
 import org.batfish.main.Warnings;
 import org.batfish.representation.Prefix;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public final class AddressBook extends NamedStructure {
+public final class AddressBook extends ComparableStructure<String> {
 
    /**
     *
@@ -42,7 +42,7 @@ public final class AddressBook extends NamedStructure {
       }
       if (entry == null) {
          w.redFlag("Could not find entry: \"" + entryName
-               + "\" in address book: \"" + _name
+               + "\" in address book: \"" + _key
                + "\" or any global address book");
          return Collections.emptySet();
       }

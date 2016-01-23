@@ -8,11 +8,12 @@ import java.util.Map;
 
 import org.batfish.main.Warnings;
 import org.batfish.representation.IpAccessListLine;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public class BaseApplication extends NamedStructure implements Application {
+public class BaseApplication extends ComparableStructure<String> implements
+      Application {
 
-   public static class Term extends NamedStructure {
+   public static class Term extends ComparableStructure<String> {
 
       /**
        *
@@ -86,7 +87,7 @@ public class BaseApplication extends NamedStructure implements Application {
    }
 
    private String getMainTermName() {
-      return "~MAIN_TERM~" + _name;
+      return "~MAIN_TERM~" + _key;
    }
 
    public Map<String, Term> getTerms() {

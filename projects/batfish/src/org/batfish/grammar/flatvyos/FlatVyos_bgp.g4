@@ -24,13 +24,14 @@ bnt_remote_as
    REMOTE_AS asnum = DEC
 ;
 
-bnt_route_map
+bnt_route_map_export
 :
-   ROUTE_MAP
-   (
-      IMPORT
-      | EXPORT
-   ) name = variable
+   ROUTE_MAP EXPORT name = variable
+;
+
+bnt_route_map_import
+:
+   ROUTE_MAP IMPORT name = variable
 ;
 
 bt_neighbor
@@ -43,7 +44,8 @@ bt_neighbor_tail
    bnt_nexthop_self
    | bnt_null
    | bnt_remote_as
-   | bnt_route_map
+   | bnt_route_map_export
+   | bnt_route_map_import
 ;
 
 s_protocols_bgp

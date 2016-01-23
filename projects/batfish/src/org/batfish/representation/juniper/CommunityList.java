@@ -4,9 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public final class CommunityList extends NamedStructure implements Serializable {
+public final class CommunityList extends ComparableStructure<String> implements
+      Serializable {
 
    /**
     *

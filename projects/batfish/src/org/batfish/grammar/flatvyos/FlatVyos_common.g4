@@ -127,6 +127,12 @@ ip_protocol
    | VRRP
 ;
 
+line_action
+:
+   DENY
+   | PERMIT
+;
+
 origin_type
 :
    EGP
