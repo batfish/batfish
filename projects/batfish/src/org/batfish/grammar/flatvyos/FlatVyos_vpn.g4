@@ -16,7 +16,7 @@ esppt_encryption
    )
 ;
 
-esptt_hash
+esppt_hash
 :
    HASH hash_algorithm
 ;
@@ -76,7 +76,7 @@ espt_proposal
 espt_proposal_tail
 :
    esppt_encryption
-   | esptt_hash
+   | esppt_hash
 ;
 
 hash_algorithm

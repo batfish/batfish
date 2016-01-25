@@ -5,8 +5,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.batfish.collections.RoleSet;
+import org.batfish.representation.Ip;
 
 public class VyosConfiguration implements Serializable {
 
@@ -17,9 +19,17 @@ public class VyosConfiguration implements Serializable {
 
    private BgpProcess _bgpProcess;
 
+   protected final Map<String, EspGroup> _espGroups;
+
    protected String _hostname;
 
+   protected final Map<String, IkeGroup> _ikeGroups;
+
    protected final Map<String, Interface> _interfaces;
+
+   protected final Set<String> _ipsecInterfaces;
+
+   protected final Map<Ip, IpsecPeer> _ipsecPeers;
 
    protected final Map<String, PrefixList> _prefixLists;
 
@@ -31,7 +41,11 @@ public class VyosConfiguration implements Serializable {
 
    public VyosConfiguration() {
       _roles = new RoleSet();
+      _espGroups = new TreeMap<String, EspGroup>();
+      _ikeGroups = new TreeMap<String, IkeGroup>();
       _interfaces = new TreeMap<String, Interface>();
+      _ipsecInterfaces = new TreeSet<String>();
+      _ipsecPeers = new TreeMap<Ip, IpsecPeer>();
       _prefixLists = new TreeMap<String, PrefixList>();
       _routeMaps = new TreeMap<String, RouteMap>();
       _staticNextHopRoutes = new HashSet<StaticNextHopRoute>();
@@ -41,12 +55,28 @@ public class VyosConfiguration implements Serializable {
       return _bgpProcess;
    }
 
+   public Map<String, EspGroup> getEspGroups() {
+      return _espGroups;
+   }
+
    public String getHostname() {
       return _hostname;
    }
 
+   public Map<String, IkeGroup> getIkeGroups() {
+      return _ikeGroups;
+   }
+
    public Map<String, Interface> getInterfaces() {
       return _interfaces;
+   }
+
+   public Set<String> getIpsecInterfaces() {
+      return _ipsecInterfaces;
+   }
+
+   public Map<Ip, IpsecPeer> getIpsecPeers() {
+      return _ipsecPeers;
    }
 
    public Map<String, PrefixList> getPrefixLists() {
