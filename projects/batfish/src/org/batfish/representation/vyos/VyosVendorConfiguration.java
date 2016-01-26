@@ -36,9 +36,9 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
 
    private ConfigurationFormat _format;
 
-   private Set<String> _unimplementedFeatures;
+   private transient Set<String> _unimplementedFeatures;
 
-   private Warnings _w;
+   private transient Warnings _w;
 
    private void convertInterfaces() {
       for (Entry<String, Interface> e : _interfaces.entrySet()) {
@@ -79,9 +79,27 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
          _c.getIpsecVpns().put(newIpsecVpnName, newIpsecVpn);
          IkeGateway newIkeGateway = new IkeGateway(newIkeGatewayName);
          _c.getIkeGateways().put(newIkeGatewayName, newIkeGateway);
+
          newIpsecVpn.setGateway(newIkeGateway);
          newIkeGateway.setLocalId(ipsecPeer.getAuthenticationId());
          newIkeGateway.setRemoteId(ipsecPeer.getAuthenticationRemoteId());
+
+         // bind interface
+         String bindInterfaceName = ipsecPeer.getBindInterface();
+         org.batfish.representation.Interface newBindInterface = _c
+               .getInterfaces().get(bindInterfaceName);
+         if (newBindInterface != null) {
+            Interface bindInterface = _interfaces.get(bindInterfaceName);
+            bindInterface.getReferers().put(
+                  ipsecPeer,
+                  "bind interface for site-to-site peer \"" + newIpsecVpnName
+                        + "\"");
+            newIpsecVpn.setBindInterface(newBindInterface);
+         }
+         else {
+            _w.redFlag("Reference to undefined bind-interface: \""
+                  + bindInterfaceName + "\"");
+         }
 
          // convert the referenced ike group
          String ikeGroupName = ipsecPeer.getIkeGroup();
@@ -240,6 +258,7 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
    @Override
    public Configuration toVendorIndependentConfiguration(Warnings warnings)
          throws VendorConversionException {
+      _w = warnings;
       _c = new Configuration(_hostname);
       _c.setVendor(_format);
       _c.setDefaultCrossZoneAction(LineAction.ACCEPT);
@@ -249,8 +268,20 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
       convertRouteMaps();
       convertInterfaces();
       convertVpns();
+      warnAndDisableUnreferencedVtiInterfaces();
 
       return _c;
+   }
+
+   private void warnAndDisableUnreferencedVtiInterfaces() {
+      for (Entry<String, Interface> ifaceEntry : _interfaces.entrySet()) {
+         Interface iface = ifaceEntry.getValue();
+         if (iface.getType() == InterfaceType.VTI && iface.isUnused()) {
+            String name = ifaceEntry.getKey();
+            _c.getInterfaces().remove(name);
+            _w.redFlag("Disabling unused VTI interface: \"" + name + "\"");
+         }
+      }
    }
 
 }

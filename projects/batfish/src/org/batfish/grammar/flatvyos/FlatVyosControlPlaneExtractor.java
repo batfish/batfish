@@ -300,6 +300,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
          InterfaceType type = toInterfaceType(ctx.interface_type());
          double bandwidth = Interface.getDefaultBandwidth(type);
          _currentInterface.setBandwidth(bandwidth);
+         _currentInterface.setType(type);
       }
    }
 

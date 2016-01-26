@@ -41,6 +41,8 @@ public class Interface extends ComparableStructure<String> {
 
    private Prefix _prefix;
 
+   private InterfaceType _type;
+
    public Interface(String name) {
       super(name);
    }
@@ -57,6 +59,10 @@ public class Interface extends ComparableStructure<String> {
       return _prefix;
    }
 
+   public InterfaceType getType() {
+      return _type;
+   }
+
    public void setBandwidth(double bandwidth) {
       _bandwidth = bandwidth;
    }
@@ -67,6 +73,10 @@ public class Interface extends ComparableStructure<String> {
 
    public void setPrefix(Prefix prefix) {
       _prefix = prefix;
+   }
+
+   public void setType(InterfaceType type) {
+      _type = type;
    }
 
 }
