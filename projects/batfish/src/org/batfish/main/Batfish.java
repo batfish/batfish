@@ -113,6 +113,7 @@ import org.batfish.nxtnet.TopologyFactExtractor;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
 import org.batfish.question.AclReachabilityQuestion;
 import org.batfish.question.DestinationQuestion;
+import org.batfish.question.Environment;
 import org.batfish.question.ReducedReachabilityQuestion;
 import org.batfish.question.IngressPathQuestion;
 import org.batfish.question.LocalPathQuestion;
@@ -139,6 +140,7 @@ import org.batfish.representation.FlowTrace;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
+import org.batfish.representation.IpsecVpn;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.OspfArea;
 import org.batfish.representation.OspfProcess;
@@ -1554,6 +1556,28 @@ public class Batfish implements AutoCloseable {
       return vendorConfigurations;
    }
 
+   private void disableUnusableVpnInterfaces(
+         Map<String, Configuration> configurations,
+         EnvironmentSettings envSettings) {
+      Environment environment = new Environment();
+      environment.setConfigurations(configurations);
+      environment.initRemoteIpsecVpns();
+      for (Configuration c : configurations.values()) {
+         for (IpsecVpn vpn : c.getIpsecVpns().values()) {
+            if (vpn.getRemoteIpsecVpn() == null) {
+               String hostname = c.getHostname();
+               Interface bindInterface = vpn.getBindInterface();
+               bindInterface.setActive(false);
+               String bindInterfaceName = bindInterface.getName();
+               _logger
+                     .warnf(
+                           "WARNING: Disabling unusable vpn interface because we cannot determine remote endpoint: \"%s:%s\"\n",
+                           hostname, bindInterfaceName);
+            }
+         }
+      }
+   }
+
    private void dumpControlPlaneFacts(EnvironmentSettings envSettings,
          Map<String, StringBuilder> factBins) {
       _logger.info("\n*** DUMPING CONTROL PLANE FACTS ***\n");
@@ -2464,6 +2488,7 @@ public class Batfish implements AutoCloseable {
       processNodeBlacklist(configurations, envSettings);
       processInterfaceBlacklist(configurations, envSettings);
       processDeltaConfigurations(configurations, envSettings);
+      disableUnusableVpnInterfaces(configurations, envSettings);
       return configurations;
    }
 

@@ -1,5 +1,7 @@
 package org.batfish.representation.vyos;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -35,6 +37,8 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
    private Configuration _c;
 
    private ConfigurationFormat _format;
+
+   private transient Map<Ip, org.batfish.representation.Interface> _ipToInterfaceMap;
 
    private transient Set<String> _unimplementedFeatures;
 
@@ -83,6 +87,17 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
          newIpsecVpn.setGateway(newIkeGateway);
          newIkeGateway.setLocalId(ipsecPeer.getAuthenticationId());
          newIkeGateway.setRemoteId(ipsecPeer.getAuthenticationRemoteId());
+         Ip localAddress = ipsecPeer.getLocalAddress();
+         org.batfish.representation.Interface externalInterface = _ipToInterfaceMap
+               .get(localAddress);
+         if (externalInterface == null) {
+            _w.redFlag("Could not determine external interface for vpn \""
+                  + newIpsecVpnName + "\" from local-address: "
+                  + localAddress.toString());
+         }
+         else {
+            newIkeGateway.setExternalInterface(externalInterface);
+         }
 
          // bind interface
          String bindInterfaceName = ipsecPeer.getBindInterface();
@@ -221,6 +236,7 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
       newIface.setDescription(iface.getDescription());
       Prefix prefix = iface.getPrefix();
       if (prefix != null) {
+         _ipToInterfaceMap.put(prefix.getAddress(), newIface);
          newIface.setPrefix(iface.getPrefix());
          newIface.getAllPrefixes().add(iface.getPrefix());
       }
@@ -258,6 +274,7 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
    @Override
    public Configuration toVendorIndependentConfiguration(Warnings warnings)
          throws VendorConversionException {
+      _ipToInterfaceMap = new HashMap<Ip, org.batfish.representation.Interface>();
       _w = warnings;
       _c = new Configuration(_hostname);
       _c.setVendor(_format);
