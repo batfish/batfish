@@ -1,5 +1,6 @@
 package org.batfish.representation.vyos;
 
+import org.batfish.representation.IkeAuthenticationMethod;
 import org.batfish.representation.Ip;
 import org.batfish.util.ComparableStructure;
 
@@ -12,7 +13,7 @@ public class IpsecPeer extends ComparableStructure<Ip> {
 
    private String _authenticationId;
 
-   private IpsecAuthenticationMode _authenticationMode;
+   private IkeAuthenticationMethod _authenticationMode;
 
    private String _authenticationPreSharedSecretHash;
 
@@ -38,7 +39,7 @@ public class IpsecPeer extends ComparableStructure<Ip> {
       return _authenticationId;
    }
 
-   public IpsecAuthenticationMode getAuthenticationMode() {
+   public IkeAuthenticationMethod getAuthenticationMode() {
       return _authenticationMode;
    }
 
@@ -78,7 +79,7 @@ public class IpsecPeer extends ComparableStructure<Ip> {
       _authenticationId = authenticationId;
    }
 
-   public void setAuthenticationMode(IpsecAuthenticationMode authenticationMode) {
+   public void setAuthenticationMode(IkeAuthenticationMethod authenticationMode) {
       _authenticationMode = authenticationMode;
    }
 

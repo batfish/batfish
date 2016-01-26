@@ -12,6 +12,7 @@ import org.batfish.grammar.flatvyos.FlatVyosParser.*;
 import org.batfish.main.Warnings;
 import org.batfish.representation.DiffieHellmanGroup;
 import org.batfish.representation.EncryptionAlgorithm;
+import org.batfish.representation.IkeAuthenticationMethod;
 import org.batfish.representation.Ip;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.Prefix;
@@ -25,7 +26,6 @@ import org.batfish.representation.vyos.IkeGroup;
 import org.batfish.representation.vyos.IkeProposal;
 import org.batfish.representation.vyos.Interface;
 import org.batfish.representation.vyos.InterfaceType;
-import org.batfish.representation.vyos.IpsecAuthenticationMode;
 import org.batfish.representation.vyos.IpsecPeer;
 import org.batfish.representation.vyos.PfsSource;
 import org.batfish.representation.vyos.PrefixList;
@@ -642,13 +642,14 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
    public void exitS2sat_mode(S2sat_modeContext ctx) {
       if (ctx.PRE_SHARED_SECRET() != null) {
          _currentIpsecPeer
-               .setAuthenticationMode(IpsecAuthenticationMode.PRE_SHARED_SECRET);
+               .setAuthenticationMode(IkeAuthenticationMethod.PRE_SHARED_KEYS);
       }
       else if (ctx.RSA() != null) {
-         _currentIpsecPeer.setAuthenticationMode(IpsecAuthenticationMode.RSA);
+         _currentIpsecPeer
+               .setAuthenticationMode(IkeAuthenticationMethod.RSA_SIGNATURES);
       }
       else if (ctx.X509() != null) {
-         _currentIpsecPeer.setAuthenticationMode(IpsecAuthenticationMode.X509);
+         _currentIpsecPeer.setAuthenticationMode(IkeAuthenticationMethod.X509);
       }
    }
 

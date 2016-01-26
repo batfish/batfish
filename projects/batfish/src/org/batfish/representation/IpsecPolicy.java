@@ -15,6 +15,8 @@ public class IpsecPolicy extends ComparableStructure<String> {
 
    private DiffieHellmanGroup _pfsKeyGroup;
 
+   private boolean _pfsKeyGroupDynamicIke;
+
    private Map<String, IpsecProposal> _proposals;
 
    public IpsecPolicy(String name) {
@@ -26,12 +28,20 @@ public class IpsecPolicy extends ComparableStructure<String> {
       return _pfsKeyGroup;
    }
 
+   public boolean getPfsKeyGroupDynamicIke() {
+      return _pfsKeyGroupDynamicIke;
+   }
+
    public Map<String, IpsecProposal> getProposals() {
       return _proposals;
    }
 
    public void setPfsKeyGroup(DiffieHellmanGroup dhGroup) {
       _pfsKeyGroup = dhGroup;
+   }
+
+   public void setPfsKeyGroupDynamicIke(boolean pfsKeyGroupDynamicIke) {
+      _pfsKeyGroupDynamicIke = pfsKeyGroupDynamicIke;
    }
 
 }

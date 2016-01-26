@@ -20,10 +20,6 @@ public class RouteFilterList extends ComparableStructure<String> {
       _lines.add(r);
    }
 
-   public void addLines(List<RouteFilterLine> r) {
-      _lines.addAll(r);
-   }
-
    public List<RouteFilterLine> getLines() {
       return _lines;
    }
