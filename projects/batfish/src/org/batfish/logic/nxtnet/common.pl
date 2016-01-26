@@ -125,7 +125,7 @@
    'SetBgpOriginationPolicy_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Map).
 % advertise a transit route received through ibgp or ebgp
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, Advert) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
 'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
 'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
 'BgpAdvertisement_localPref'(Advert, LocalPref) /*fn*/,
@@ -169,7 +169,7 @@
    'BgpNeighbors'(SrcNode, SrcIp, DstNode, DstIp).
 % advertise an internally received route
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, Network, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, Advert) /*fn*/,
+'BgpAdvertisement_constructor'(Type, Network, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
 'AdvertisementPathSize'(Advert, PathSize) /*fn*/,
 'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
 'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
@@ -300,7 +300,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 % ebgp transformed incoming
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, Advert) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, TLocalPref, TMed, Advert) /*fn*/,
 'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
 'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
 'BgpAdvertisement_localPref'(Advert, TLocalPref) /*fn*/,
@@ -418,7 +418,7 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 % ebgp transformed outgoing
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, Advert) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, TLocalPref, TMed, Advert) /*fn*/,
 'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
 'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
 'BgpAdvertisement_localPref'(Advert, TLocalPref) /*fn*/,
@@ -552,7 +552,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
 % ibgp advertisement from bgp
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, Advert) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
 'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
 'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
 'BgpAdvertisement_localPref'(Advert, LocalPref) /*fn*/,
@@ -585,7 +585,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'IbgpNeighbors'(SrcNode, SrcIp, DstNode, DstIp).
 % advertise an internally received route
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, Network, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, Advert) /*fn*/,
+'BgpAdvertisement_constructor'(Type, Network, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
 'AdvertisementPathSize'(Advert, PathSize) /*fn*/,
 'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
 'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
@@ -716,7 +716,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 % ibgp transformed incoming
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, Advert) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, TLocalPref, TMed, Advert) /*fn*/,
 'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
 'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
 'BgpAdvertisement_localPref'(Advert, TLocalPref) /*fn*/,
@@ -840,7 +840,7 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 % ibgp transformed outgoing
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, Advert) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, TLocalPref, TMed, Advert) /*fn*/,
 'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
 'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
 'BgpAdvertisement_localPref'(Advert, TLocalPref) /*fn*/,
@@ -941,7 +941,7 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 % ibgp route reflection
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, Advert) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
 'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
 'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
 'BgpAdvertisement_localPref'(Advert, LocalPref) /*fn*/,
@@ -1132,14 +1132,12 @@ need_PolicyMapMatchAdvert(Map, Advert)
 'SetRemoteAs'(Node, NeighborNetwork, RemoteAs) :-
    'SetRemoteAs_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, RemoteAs),
    'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
+
 'BgpAdvertisement_details'(Type, DstIpBlock, NextHopIp, SrcIp, DstIp, SrcProtocol, SrcNode, DstNode, LocalPref, Med, OriginatorIp, OriginType)
 :-
-   'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, Advert) /*fn*/,
-   'BgpAdvertisement_srcNode'(Advert, SrcNode) /*fn*/,
-   'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-   'BgpAdvertisement_localPref'(Advert, LocalPref) /*fn*/,
-   'BgpAdvertisement_med'(Advert, Med) /*fn*/,
+   'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
    'BgpAdvertisement_originatorIp'(Advert, OriginatorIp) /*fn*/.
+
 'CommunityListFirstMatch'(List, Community, FirstLine ) /*fn*/:-
    agg(FirstLine = min(Line),( 'CommunityListMatch'(List, Line, Community))).
 
@@ -2595,7 +2593,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'PrecomputedAdvertisement_index'(Advert, PcIndex).
 
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, Network, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, Advert) /*fn*/,
+'BgpAdvertisement_constructor'(Type, Network, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
 'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
 'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
 'BgpAdvertisement_localPref'(Advert, LocalPref) /*fn*/,
@@ -3598,7 +3596,7 @@ function_sig('OspfE1Route_constructor', 5).
 function_sig('MinAdmin', 3).
 function_sig('Route_nextHopIp', 2).
 function_sig('SetLinkLoadLimitIn', 3).
-function_sig('BgpAdvertisement_constructor', 10).
+function_sig('BgpAdvertisement_constructor', 12).
 function_sig('MinContributingRouteAdmin', 2).
 function_sig('BgpAdvertisement_srcIp', 2).
 function_sig('RouteDetails_nextHop', 2).
