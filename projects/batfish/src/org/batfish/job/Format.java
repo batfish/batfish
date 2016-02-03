@@ -16,9 +16,13 @@ public final class Format {
          return ConfigurationFormat.CISCO_IOS_XR;
       }
       char firstChar = fileText.trim().charAt(0);
-      Matcher setMatcher = Pattern.compile("\nset ").matcher(fileText);
+      Matcher setMatcher = Pattern.compile("(?m)^set ").matcher(fileText);
       Matcher flattenedJuniperMatcher = Pattern.compile(
             Pattern.quote(BATFISH_FLATTENED_JUNIPER_HEADER)).matcher(fileText);
+      Matcher aristaMatcher = Pattern.compile("(?m)^boot system flash.*\\.swi")
+            .matcher(fileText);
+      Matcher ciscoLike = Pattern.compile(
+            "(?m)(^boot system flash.*$)|(^interface .*$)").matcher(fileText);
       if (fileText.contains("set system config-management commit-revisions")) {
          return ConfigurationFormat.FLAT_VYOS;
       }
@@ -29,30 +33,11 @@ public final class Format {
                      .contains("commit-revisions"))) {
          return ConfigurationFormat.VYOS;
       }
-      else if (firstChar == '!') {
-         Matcher aristaMatcher = Pattern.compile("boot system flash.*\\.swi")
-               .matcher(fileText);
-         if (fileText.contains("set prompt")) {
-            return ConfigurationFormat.VXWORKS;
-         }
-         else if (aristaMatcher.find()) {
-            return ConfigurationFormat.ARISTA;
-         }
-         else {
-            String[] lines = fileText.split("\\n");
-            for (String line : lines) {
-               String trimmedLine = line.trim();
-               if (trimmedLine.length() == 0 || trimmedLine.startsWith("!")) {
-                  continue;
-               }
-               if (line.startsWith("version")) {
-                  return ConfigurationFormat.CISCO;
-               }
-               else {
-                  return ConfigurationFormat.CISCO; // may change in future
-               }
-            }
-         }
+      else if (aristaMatcher.find()) {
+         return ConfigurationFormat.ARISTA;
+      }
+      else if (firstChar == '!' && fileText.contains("set prompt")) {
+         return ConfigurationFormat.VXWORKS;
       }
       else if (fileText.contains("set hostname")) {
          return ConfigurationFormat.JUNIPER_SWITCH;
@@ -68,6 +53,12 @@ public final class Format {
                   && fileText.contains("host-name") && fileText
                      .contains("interfaces"))) {
          return ConfigurationFormat.JUNIPER;
+      }
+      else if (aristaMatcher.find()) {
+         return ConfigurationFormat.ARISTA;
+      }
+      else if (ciscoLike.find()) {
+         return ConfigurationFormat.CISCO;
       }
       return ConfigurationFormat.UNKNOWN;
    }
