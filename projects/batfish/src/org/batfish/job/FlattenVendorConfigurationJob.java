@@ -65,14 +65,16 @@ public class FlattenVendorConfigurationJob extends
                   + inputFileAsString + "\"";
             elapsedTime = System.currentTimeMillis() - startTime;
             return new FlattenVendorConfigurationResult(elapsedTime,
-                  _logger.getHistory(), new BatfishException(error, e));
+                  _logger.getHistory(), _outputFile, new BatfishException(
+                        error, e));
          }
          catch (Exception e) {
             String error = "Error post-processing parse tree of configuration file: \""
                   + inputFileAsString + "\"";
             elapsedTime = System.currentTimeMillis() - startTime;
             return new FlattenVendorConfigurationResult(elapsedTime,
-                  _logger.getHistory(), new BatfishException(error, e));
+                  _logger.getHistory(), _outputFile, new BatfishException(
+                        error, e));
          }
          finally {
             for (String warning : _warnings.getRedFlagWarnings()) {
@@ -93,7 +95,7 @@ public class FlattenVendorConfigurationJob extends
             && format == ConfigurationFormat.UNKNOWN) {
          elapsedTime = System.currentTimeMillis() - startTime;
          return new FlattenVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), new BatfishException(
+               _logger.getHistory(), _outputFile, new BatfishException(
                      "Unknown configuration format for: \""
                            + _inputFile.toString() + "\""));
       }

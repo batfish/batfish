@@ -74,7 +74,8 @@ interface_stanza
 :
    INTERFACE iname = interface_name
    (
-      MULTIPOINT
+      L2TRANSPORT
+      | MULTIPOINT
       | POINT_TO_POINT
    )? NEWLINE interface_stanza_tail
 ;
@@ -88,9 +89,14 @@ interface_stanza_tail
 
 ip_access_group_if_stanza
 :
-   IP PORT? ACCESS_GROUP name = .
    (
-      IN
+      IP
+      | IPV4
+   ) PORT? ACCESS_GROUP name = .
+   (
+      EGRESS
+      | IN
+      | INGRESS
       | OUT
    ) NEWLINE
 ;
@@ -195,10 +201,10 @@ null_if_stanza
    (
       NO? SWITCHPORT NEWLINE
    )
-   | null_standalone_if_stanza
+   | null_block_if_stanza
 ;
 
-null_standalone_if_stanza
+null_block_if_stanza
 :
    NO?
    (
@@ -236,6 +242,7 @@ null_standalone_if_stanza
       | ENCAPSULATION
       | FAIR_QUEUE
       | FAST_REROUTE
+      | FLOW
       | FLOWCONTROL
       | FORWARDER
       | FRAME_RELAY
@@ -306,7 +313,9 @@ null_standalone_if_stanza
       (
          IPV4
          (
-            UNNUMBERED
+            MTU
+            | UNNUMBERED
+            | UNREACHABLES
          )
       )
       | IPV6
@@ -414,6 +423,15 @@ null_standalone_if_stanza
       | WRR_QUEUE
       | X25
       | XCONNECT
+   ) ~NEWLINE* NEWLINE null_block_if_substanza*
+;
+
+null_block_if_substanza
+:
+   NO?
+   (
+      RECEIVE
+      | TRANSMIT
    ) ~NEWLINE* NEWLINE
 ;
 

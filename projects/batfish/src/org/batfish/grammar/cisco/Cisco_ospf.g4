@@ -101,7 +101,13 @@ maximum_paths_ro_stanza
 
 network_ro_stanza
 :
-   NETWORK ip = IP_ADDRESS wildcard = IP_ADDRESS AREA
+   NETWORK
+   (
+      (
+         ip = IP_ADDRESS wildcard = IP_ADDRESS
+      )
+      | prefix = IP_PREFIX
+   ) AREA
    (
       area_int = DEC
       | area_ip = IP_ADDRESS
@@ -128,6 +134,7 @@ null_standalone_ro_stanza
       | BFD
       | DISTRIBUTE_LIST
       | LOG_ADJACENCY_CHANGES
+      | MAX_LSA
       | MAX_METRIC
       | NSF
    ) ~NEWLINE* NEWLINE

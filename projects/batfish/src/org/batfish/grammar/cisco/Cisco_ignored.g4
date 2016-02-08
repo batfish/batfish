@@ -122,6 +122,7 @@ null_block_stanza
       | RMON
       | ROLE
       | SAMPLER
+      | SAMPLER_MAP
       | SCCP
       | SDR
       | SFLOW
@@ -372,6 +373,7 @@ null_block_substanza
          | PROTOCOL
          | QUEUE_BUFFERS
          | QUEUE_LIMIT
+         | RANDOM
          | RANDOM_DETECT
          | RD
          | REAL

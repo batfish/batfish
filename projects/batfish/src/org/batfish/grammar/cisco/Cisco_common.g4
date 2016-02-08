@@ -190,6 +190,7 @@ protocol
    | IGMP
    | IP
    | IPINIP
+   | IPV4
    | IPV6
    | OSPF
    | PIM
