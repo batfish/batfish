@@ -26,11 +26,9 @@ public final class Format {
       if (fileText.contains("set system config-management commit-revisions")) {
          return ConfigurationFormat.FLAT_VYOS;
       }
-      else if (firstChar == '#'
-            || (fileText.contains("system") && fileText.contains("{")
-                  && fileText.contains("}")
-                  && fileText.contains("config-management") && fileText
-                     .contains("commit-revisions"))) {
+      else if (fileText.contains("system") && fileText.contains("{")
+            && fileText.contains("}") && fileText.contains("config-management")
+            && fileText.contains("commit-revisions")) {
          return ConfigurationFormat.VYOS;
       }
       else if (aristaMatcher.find()) {
