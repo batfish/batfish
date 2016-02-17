@@ -3,19 +3,29 @@ package org.batfish.question;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.batfish.representation.Flow;
+import org.batfish.representation.FlowBuilder;
 
 public class TracerouteQuestion extends Question {
 
-   private Set<Flow> _flows;
+   private Set<FlowBuilder> _flowBuilders;
 
-   public TracerouteQuestion() {
-      super(QuestionType.TRACEROUTE);
-      _flows = new HashSet<Flow>();
+   public TracerouteQuestion(QuestionParameters parameters) {
+      super(QuestionType.TRACEROUTE, parameters);
+      _flowBuilders = new HashSet<FlowBuilder>();
    }
 
-   public Set<Flow> getFlows() {
-      return _flows;
+   @Override
+   public boolean getDataPlane() {
+      return true;
+   }
+
+   @Override
+   public boolean getDifferential() {
+      return false;
+   }
+
+   public Set<FlowBuilder> getFlowBuilders() {
+      return _flowBuilders;
    }
 
 }

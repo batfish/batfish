@@ -1605,7 +1605,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          RouteFilterLine newLine = toRouteFilterLine(fromLine);
          lines.add(newLine);
       }
-      newList.addLines(lines);
+      newList.getLines().addAll(lines);
       return newList;
 
    }

@@ -2,9 +2,9 @@ package org.batfish.representation;
 
 import java.util.List;
 
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public class IpAccessList extends NamedStructure {
+public class IpAccessList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
@@ -21,7 +21,7 @@ public class IpAccessList extends NamedStructure {
 
    @Override
    public String toString() {
-      String output = super.toString() + "\n" + "Identifier: " + _name;
+      String output = super.toString() + "\n" + "Identifier: " + _key;
       for (IpAccessListLine line : _lines) {
          output += "\n" + line;
       }

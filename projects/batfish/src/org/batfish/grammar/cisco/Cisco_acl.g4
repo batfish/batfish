@@ -164,7 +164,13 @@ extended_access_list_tail
    )? dstipr = access_list_ip_range
    (
       alps_dst = port_specifier
-   )? feature = extended_access_list_additional_feature? NEWLINE
+   )? feature = extended_access_list_additional_feature?
+   (
+      NEXTHOP1 IPV4 nexthop1 = IP_ADDRESS
+      (
+         NEXTHOP2 IPV4 nexthop2 = IP_ADDRESS
+      )?
+   )? NEWLINE
 ;
 
 interface_rs_stanza

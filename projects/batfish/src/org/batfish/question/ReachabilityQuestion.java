@@ -28,8 +28,8 @@ public class ReachabilityQuestion extends Question {
 
    private Set<Prefix> _srcPrefixes;
 
-   public ReachabilityQuestion() {
-      super(QuestionType.REACHABILITY);
+   public ReachabilityQuestion(QuestionParameters parameters) {
+      super(QuestionType.REACHABILITY, parameters);
       _actions = EnumSet.noneOf(ForwardingAction.class);
       // default action-- may change
       _actions.add(ForwardingAction.ACCEPT);
@@ -43,6 +43,16 @@ public class ReachabilityQuestion extends Question {
 
    public Set<ForwardingAction> getActions() {
       return _actions;
+   }
+
+   @Override
+   public boolean getDataPlane() {
+      return true;
+   }
+
+   @Override
+   public boolean getDifferential() {
+      return false;
    }
 
    public Set<SubRange> getDstPortRange() {

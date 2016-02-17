@@ -4,9 +4,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.batfish.representation.DiffieHellmanGroup;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public class IpsecPolicy extends NamedStructure {
+public class IpsecPolicy extends ComparableStructure<String> {
 
    /**
     *
@@ -14,6 +14,8 @@ public class IpsecPolicy extends NamedStructure {
    private static final long serialVersionUID = 1L;
 
    private DiffieHellmanGroup _pfsKeyGroup;
+
+   private boolean _pfsKeyGroupDynamicIke;
 
    private Map<String, IpsecProposal> _proposals;
 
@@ -26,12 +28,20 @@ public class IpsecPolicy extends NamedStructure {
       return _pfsKeyGroup;
    }
 
+   public boolean getPfsKeyGroupDynamicIke() {
+      return _pfsKeyGroupDynamicIke;
+   }
+
    public Map<String, IpsecProposal> getProposals() {
       return _proposals;
    }
 
    public void setPfsKeyGroup(DiffieHellmanGroup dhGroup) {
       _pfsKeyGroup = dhGroup;
+   }
+
+   public void setPfsKeyGroupDynamicIke(boolean pfsKeyGroupDynamicIke) {
+      _pfsKeyGroupDynamicIke = pfsKeyGroupDynamicIke;
    }
 
 }

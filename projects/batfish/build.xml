@@ -204,8 +204,12 @@
          <fileset dir="src" includes="org/batfish/grammar/cisco/CiscoParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/flatjuniper/FlatJuniperLexer*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/flatjuniper/FlatJuniperParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/flatvyos/FlatVyosLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/flatvyos/FlatVyosParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/juniper/JuniperLexer*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/juniper/JuniperParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/vyos/VyosLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/vyos/VyosParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/question/QuestionLexer*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/question/QuestionParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/question/QuestionParametersLexer*.java"/>
@@ -247,12 +251,14 @@
          <antlr4lexer grammar.name="BatfishTopologyLexer" grammar.packagedir="org/batfish/grammar/topology"/>
          <antlr4lexer grammar.name="CiscoLexer" grammar.packagedir="org/batfish/grammar/cisco"/>
          <antlr4lexer grammar.name="FlatJuniperLexer" grammar.packagedir="org/batfish/grammar/flatjuniper"/>
+         <antlr4lexer grammar.name="FlatVyosLexer" grammar.packagedir="org/batfish/grammar/flatvyos"/>
          <antlr4lexer grammar.name="GNS3TopologyLexer" grammar.packagedir="org/batfish/grammar/topology"/>
          <antlr4lexer grammar.name="JuniperLexer" grammar.packagedir="org/batfish/grammar/juniper"/>
          <antlr4lexer grammar.name="LogiQLLexer" grammar.packagedir="org/batfish/grammar/logicblox"/>
          <antlr4lexer grammar.name="QuestionLexer" grammar.packagedir="org/batfish/grammar/question"/>
          <antlr4lexer grammar.name="QuestionParametersLexer" grammar.packagedir="org/batfish/grammar/question"/>
          <antlr4lexer grammar.name="RoleLexer" grammar.packagedir="org/batfish/grammar/topology"/>
+         <antlr4lexer grammar.name="VyosLexer" grammar.packagedir="org/batfish/grammar/vyos"/>
       </parallel>
    </target>
 
@@ -303,6 +309,19 @@
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_security.g4"/>
             </dependencies>
          </antlr4parser>
+         <antlr4parser grammar.name="FlatVyosParser" grammar.packagedir="org/batfish/grammar/flatvyos">
+            <dependencies>
+               <fileset dir="src/org/batfish/grammar/flatvyos" includes="FlatVyosParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatvyos" includes="FlatVyosLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatvyos" includes="FlatVyosLexer.tokens"/>
+               <fileset dir="src/org/batfish/grammar/flatvyos" includes="FlatVyos_bgp.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatvyos" includes="FlatVyos_common.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatvyos" includes="FlatVyos_interfaces.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatvyos" includes="FlatVyos_protocols.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatvyos" includes="FlatVyos_policy.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatvyos" includes="FlatVyos_vpn.g4"/>
+            </dependencies>
+         </antlr4parser>
          <antlr4parser grammar.name="GNS3TopologyParser" grammar.packagedir="org/batfish/grammar/topology">
             <dependencies>
                <fileset dir="src/org/batfish/grammar/topology" includes="GNS3TopologyParser.g4"/>
@@ -343,6 +362,13 @@
                <fileset dir="src/org/batfish/grammar/topology" includes="RoleParser.g4"/>
                <fileset dir="src/org/batfish/grammar/topology" includes="RoleLexer.g4"/>
                <fileset dir="src/org/batfish/grammar/topology" includes="RoleLexer.tokens"/>
+            </dependencies>
+         </antlr4parser>
+         <antlr4parser grammar.name="VyosParser" grammar.packagedir="org/batfish/grammar/vyos">
+            <dependencies>
+               <fileset dir="src/org/batfish/grammar/vyos" includes="VyosParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/vyos" includes="VyosLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/vyos" includes="VyosLexer.tokens"/>
             </dependencies>
          </antlr4parser>
       </parallel>

@@ -4,9 +4,9 @@ import org.batfish.representation.DiffieHellmanGroup;
 import org.batfish.representation.EncryptionAlgorithm;
 import org.batfish.representation.IkeAuthenticationAlgorithm;
 import org.batfish.representation.IkeAuthenticationMethod;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public final class IkeProposal extends NamedStructure {
+public final class IkeProposal extends ComparableStructure<String> {
 
    public static final IkeProposal PSK_3DES_DH2_MD5 = initPSK_3DES_DH2_MD5();
 

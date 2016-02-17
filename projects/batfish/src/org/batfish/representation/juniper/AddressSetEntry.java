@@ -4,9 +4,9 @@ import java.util.Set;
 
 import org.batfish.main.Warnings;
 import org.batfish.representation.Prefix;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public final class AddressSetEntry extends NamedStructure {
+public final class AddressSetEntry extends ComparableStructure<String> {
 
    /**
     *
@@ -21,7 +21,7 @@ public final class AddressSetEntry extends NamedStructure {
    }
 
    public Set<Prefix> getPrefixes(Warnings w) {
-      return _book.getPrefixes(_name, w);
+      return _book.getPrefixes(_key, w);
    }
 
 }

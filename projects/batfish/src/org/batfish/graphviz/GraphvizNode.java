@@ -1,8 +1,8 @@
 package org.batfish.graphviz;
 
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public class GraphvizNode extends NamedStructure {
+public class GraphvizNode extends ComparableStructure<String> {
 
    /**
     *
@@ -28,7 +28,7 @@ public class GraphvizNode extends NamedStructure {
 
    @Override
    public String toString() {
-      return _name + "[label=\"" + _label + "\" URL=\"" + _graphName
+      return _key + "[label=\"" + _label + "\" URL=\"" + _graphName
             + ".html\"];";
    }
 

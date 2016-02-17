@@ -1321,6 +1321,11 @@ EGP
    'egp'
 ;
 
+EGRESS
+:
+   'egress'
+;
+
 EIGRP
 :
    'eigrp'
@@ -2055,6 +2060,11 @@ INCOMPLETE
    'incomplete'
 ;
 
+INGRESS
+:
+   'ingress'
+;
+
 INHERIT
 :
    'inherit'
@@ -2270,6 +2280,11 @@ L2TP
 L2TP_CLASS
 :
    'l2tp-class'
+;
+
+L2TRANSPORT
+:
+   'l2transport'
 ;
 
 LABEL
@@ -2620,6 +2635,11 @@ MASK
 MATCH
 :
    'match'
+;
+
+MAX_LSA
+:
+   'max-lsa'
 ;
 
 MAX_LSP_LIFETIME
@@ -3025,6 +3045,16 @@ NEXT_HOP_SELF
 NEXTHOP
 :
    'nexthop'
+;
+
+NEXTHOP1
+:
+   'nexthop1'
+;
+
+NEXTHOP2
+:
+   'nexthop2'
 ;
 
 NHOP_ONLY
@@ -3632,6 +3662,11 @@ RADIUS_SERVER
    'radius-server'
 ;
 
+RANDOM
+:
+   'random'
+;
+
 RANDOM_DETECT
 :
    'random-detect'
@@ -3940,6 +3975,11 @@ SAME_SECURITY_TRAFFIC
 SAMPLER
 :
    'sampler'
+;
+
+SAMPLER_MAP
+:
+   'sampler-map'
 ;
 
 SAP
@@ -4692,6 +4732,11 @@ TRANSCEIVER
 TRANSLATE
 :
    'translate'
+;
+
+TRANSMIT
+:
+   'transmit'
 ;
 
 TRANSPORT
@@ -5879,6 +5924,11 @@ M_Interface_POINT_TO_POINT
 M_Interface_POLICY
 :
    'policy' -> type(POLICY), popMode
+;
+
+M_Interface_L2TRANSPORT
+:
+   'l2transport' -> type(L2TRANSPORT), popMode
 ;
 
 M_Interface_MODULE

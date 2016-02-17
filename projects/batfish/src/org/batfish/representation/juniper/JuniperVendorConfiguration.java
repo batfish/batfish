@@ -1017,7 +1017,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       warnUnreferencedIkeGateways();
       warnUnreferencedIpsecPropsals();
       warnUnreferencedIpsecPolicies();
-      warnUnreferencedStInterfaces();
+      warnAndDisableUnreferencedStInterfaces();
       return _c;
    }
 
@@ -1105,6 +1105,20 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return newZone;
    }
 
+   private void warnAndDisableUnreferencedStInterfaces() {
+      for (Interface i : _defaultRoutingInstance.getInterfaces().values()) {
+         for (Entry<String, Interface> e : i.getUnits().entrySet()) {
+            String name = e.getKey();
+            Interface iface = e.getValue();
+            if (org.batfish.representation.Interface.computeInterfaceType(name,
+                  _vendor) == InterfaceType.VPN && iface.isUnused()) {
+               _w.redFlag("Unused vpn tunnel interface: \"" + name + "\"");
+               _c.getInterfaces().remove(name);
+            }
+         }
+      }
+   }
+
    private void warnUnreferencedFirewallFilters() {
       for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
          String name = e.getKey();
@@ -1171,19 +1185,6 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          PolicyStatement ps = e.getValue();
          if (ps.isUnused()) {
             _w.redFlag("Unused policy-statement: \"" + name + "\"");
-         }
-      }
-   }
-
-   private void warnUnreferencedStInterfaces() {
-      for (Interface i : _defaultRoutingInstance.getInterfaces().values()) {
-         for (Entry<String, Interface> e : i.getUnits().entrySet()) {
-            String name = e.getKey();
-            Interface iface = e.getValue();
-            if (org.batfish.representation.Interface.computeInterfaceType(name,
-                  _vendor) == InterfaceType.VPN && iface.isUnused()) {
-               _w.redFlag("Unused vpn tunnel interface: \"" + name + "\"");
-            }
          }
       }
    }

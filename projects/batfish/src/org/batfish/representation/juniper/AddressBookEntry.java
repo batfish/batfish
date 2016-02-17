@@ -4,9 +4,9 @@ import java.util.Set;
 
 import org.batfish.main.Warnings;
 import org.batfish.representation.Prefix;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public abstract class AddressBookEntry extends NamedStructure {
+public abstract class AddressBookEntry extends ComparableStructure<String> {
 
    /**
     *

@@ -81,8 +81,8 @@ public class FlowHistory {
                      disposition = "Drop";
                      color = "error";
                   }
-                  String viewName = env + ":Flow" + flowNum + ":" + disposition
-                        + num;
+                  String viewName = "Flow" + flowNum + ":" + env + ":"
+                        + disposition + num;
                   JSONObject view = new JSONObject();
                   views.put(viewName, view);
                   view.put("name", viewName);

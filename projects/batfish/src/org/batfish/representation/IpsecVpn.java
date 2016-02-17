@@ -27,19 +27,29 @@ public final class IpsecVpn extends Pair<Configuration, String> {
    }
 
    public Boolean compatibleIkeProposals(IpsecVpn remoteIpsecVpn) {
-      for (IkeProposal lhs : _gateway.getIkePolicy().getProposals().values()) {
-         for (IkeProposal rhs : remoteIpsecVpn.getGateway().getIkePolicy()
-               .getProposals().values()) {
-            if (lhs.compatibleWith(rhs)) {
-               return true;
-            }
-         }
-      }
-      return false;
+      IkeProposal activeIkeProposal = getActiveIkeProposal(remoteIpsecVpn);
+      return activeIkeProposal != null;
    }
 
    public Boolean compatibleIpsecProposals(IpsecVpn remoteIpsecVpn) {
-      if (_ipsecPolicy.getPfsKeyGroup() != remoteIpsecVpn.getIpsecPolicy()
+      // handle dynamic pfs key group
+      if (_ipsecPolicy.getPfsKeyGroupDynamicIke()) {
+         IkeProposal activeProposal = getActiveIkeProposal(remoteIpsecVpn);
+         if (activeProposal == null) {
+            return false;
+         }
+         if (!remoteIpsecVpn.getIpsecPolicy().getPfsKeyGroupDynamicIke()) {
+            // remote vpn uses static pfs key group.
+            if (!activeProposal.getDiffieHellmanGroup().equals(
+                  remoteIpsecVpn.getIpsecPolicy().getPfsKeyGroup())) {
+               return false;
+            }
+         }
+         // else remote vpn also uses dynamic pfs key group. They must agree as
+         // long as a compatible proposal is selected, which has already
+         // happened.
+      }
+      else if (_ipsecPolicy.getPfsKeyGroup() != remoteIpsecVpn.getIpsecPolicy()
             .getPfsKeyGroup()) {
          return false;
       }
@@ -52,6 +62,18 @@ public final class IpsecVpn extends Pair<Configuration, String> {
          }
       }
       return false;
+   }
+
+   private IkeProposal getActiveIkeProposal(IpsecVpn remoteIpsecVpn) {
+      for (IkeProposal lhs : _gateway.getIkePolicy().getProposals().values()) {
+         for (IkeProposal rhs : remoteIpsecVpn.getGateway().getIkePolicy()
+               .getProposals().values()) {
+            if (lhs.compatibleWith(rhs)) {
+               return lhs;
+            }
+         }
+      }
+      return null;
    }
 
    public Interface getBindInterface() {

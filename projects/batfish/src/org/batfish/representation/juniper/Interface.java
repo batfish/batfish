@@ -13,10 +13,10 @@ import org.batfish.representation.IsoAddress;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.SwitchportMode;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 import org.batfish.util.SubRange;
 
-public class Interface extends NamedStructure {
+public class Interface extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 

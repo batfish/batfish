@@ -5,9 +5,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public final class RouteFilter extends NamedStructure implements Serializable {
+public final class RouteFilter extends ComparableStructure<String> implements
+      Serializable {
 
    /**
     *

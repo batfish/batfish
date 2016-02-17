@@ -3,9 +3,9 @@ package org.batfish.representation;
 import org.batfish.representation.EncryptionAlgorithm;
 import org.batfish.representation.IpsecAuthenticationAlgorithm;
 import org.batfish.representation.IpsecProtocol;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public class IpsecProposal extends NamedStructure {
+public class IpsecProposal extends ComparableStructure<String> {
 
    public static final IpsecProposal G2_ESP_3DES_SHA = initG2_ESP_3DES_SHA();
 
