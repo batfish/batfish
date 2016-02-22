@@ -61,9 +61,33 @@ DOUBLE_QUOTE
    '"' -> pushMode ( M_QuotedString )
 ;
 
+LINE_COMMENT
+:
+   '!' -> pushMode(M_LineComment), channel(HIDDEN)
+;
+
 PERIOD
 :
    '.'
+;
+
+fragment
+F_Newline
+:
+   [\r\n]+
+;
+
+fragment
+F_NonNewline
+:
+   ~[\r\n]
+;
+
+mode M_LineComment;
+
+M_LineComment_FILLER
+:
+   F_NonNewline+ F_Newline -> channel(HIDDEN), popMode
 ;
 
 mode M_QuotedString;
