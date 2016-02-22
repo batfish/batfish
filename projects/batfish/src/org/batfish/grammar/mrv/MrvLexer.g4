@@ -87,7 +87,7 @@ mode M_LineComment;
 
 M_LineComment_FILLER
 :
-   F_NonNewline+ F_Newline -> channel(HIDDEN), popMode
+   F_NonNewline* F_Newline -> channel(HIDDEN), popMode
 ;
 
 mode M_QuotedString;
