@@ -26,6 +26,9 @@ public final class Format {
       if (fileText.contains("set system config-management commit-revisions")) {
          return ConfigurationFormat.FLAT_VYOS;
       }
+      else if (fileText.contains("System.SystemName")) {
+         return ConfigurationFormat.MRV;
+      }
       else if (fileText.contains("system") && fileText.contains("{")
             && fileText.contains("}") && fileText.contains("config-management")
             && fileText.contains("commit-revisions")) {
