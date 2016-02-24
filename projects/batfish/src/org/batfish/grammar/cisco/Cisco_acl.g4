@@ -453,7 +453,7 @@ nexus_access_list_stanza
 nexus_access_list_tail
 :
    (
-      num = DEC
+      SEQ? num = DEC
    )? extended_access_list_tail
 ;
 
@@ -600,6 +600,8 @@ standard_access_list_stanza
 
 standard_access_list_tail
 :
-   ala = access_list_action ipr = access_list_ip_range LOG? NEWLINE
+   (
+      SEQ? num=DEC
+   )? ala = access_list_action ipr = access_list_ip_range LOG? NEWLINE
 ;
 

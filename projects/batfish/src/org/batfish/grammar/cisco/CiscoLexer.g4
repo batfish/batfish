@@ -4372,6 +4372,11 @@ STACK_MIB
    'stack-mib'
 ;
 
+STACK_UNIT
+:
+   'stack-unit'
+;
+
 STANDARD
 :
    'standard'
@@ -4862,6 +4867,11 @@ UNREACHABLES
 UNICAST
 :
    'unicast'
+;
+
+UNTAGGED
+:
+   'untagged'
 ;
 
 UPDATE_CALENDAR
