@@ -4769,6 +4769,11 @@ TRACE
    'trace'
 ;
 
+TRACEROUTE
+:
+   'traceroute'
+;
+
 TRACK
 :
    'track'
@@ -5179,6 +5184,11 @@ WITHOUT_CSD
 WLAN
 :
    'wlan'
+;
+
+WRED_PROFILE
+:
+   'wred-profile'
 ;
 
 WRR_QUEUE

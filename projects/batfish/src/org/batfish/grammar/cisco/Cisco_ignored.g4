@@ -153,6 +153,7 @@ null_block_stanza
       | VOICE_PORT
       | VPC
       | VPDN_GROUP
+      | WRED_PROFILE
    ) ~NEWLINE* NEWLINE
    (
       description_line

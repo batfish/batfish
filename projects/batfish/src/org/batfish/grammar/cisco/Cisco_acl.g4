@@ -100,6 +100,7 @@ extended_access_list_additional_feature
       | RST
       | SOURCE_QUENCH
       | TIME_EXCEEDED
+      | TRACEROUTE
       | TRACKED
       | TTL_EXCEEDED
       | TTL EQ DEC
@@ -170,7 +171,7 @@ extended_access_list_tail
    )? dstipr = access_list_ip_range
    (
       alps_dst = port_specifier
-   )? feature = extended_access_list_additional_feature?
+   )? features += extended_access_list_additional_feature*
    (
       NEXTHOP1 IPV4 nexthop1 = IP_ADDRESS
       (
