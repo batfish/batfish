@@ -52,6 +52,9 @@
                   <arg value="UTF-8"/>
                   <arg value="-Werror"/>
                </java>
+            	<touch>
+            		<fileset dir="src/@{grammar.packagedir}" includes="*.java"/>
+            	</touch>
             </sequential>
          </outofdate>
       </sequential>
