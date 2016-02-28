@@ -286,6 +286,7 @@ null_block_if_stanza
                (
                   AUTHENTICATION
                   | AUTHENTICATION_KEY
+                  | BFD
                   | MESSAGE_DIGEST_KEY
                   | MTU_IGNORE
                   | NETWORK
@@ -345,12 +346,14 @@ null_block_if_stanza
       | MDIX
       | MEDIA_TYPE
       | MEMBER
+      | MINIMUM_LINKS
       | MLAG
       | MLS
       | MOBILITY
       | MOP
       | MPLS
       | MTU
+      | NAME
       | NAMEIF
       | NEGOTIATE
       | NEGOTIATION
@@ -362,6 +365,7 @@ null_block_if_stanza
       | PEER
       | PHYSICAL_LAYER
       | PORT_CHANNEL
+      | PORT_CHANNEL_PROTOCOL
       | POS
       | POWER
       | PPP
@@ -411,6 +415,7 @@ null_block_if_stanza
          )
       )
       | TAG_SWITCHING
+      | TAGGED
       | TCAM
       | TRUST
       | TUNNEL
@@ -420,6 +425,7 @@ null_block_if_stanza
       | UNTAGGED
       | VPC
       | VRRP
+      | VRRP_GROUP
       | WEIGHTING
       | WRR_QUEUE
       | X25
@@ -431,8 +437,11 @@ null_block_if_substanza
 :
    NO?
    (
-      RECEIVE
+      ADDRESS
+      | PRIORITY
+      | RECEIVE
       | TRANSMIT
+      | VIRTUAL_ADDRESS
    ) ~NEWLINE* NEWLINE
 ;
 

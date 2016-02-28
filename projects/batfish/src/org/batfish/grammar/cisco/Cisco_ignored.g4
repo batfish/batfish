@@ -16,6 +16,8 @@ null_block_stanza
       | ATM
       | BASH
       | BFD
+      | BSD_USERNAME
+      | CAM_PROFILE
       | CEF
       | CHAT_SCRIPT
       | CLASS_MAP
@@ -89,6 +91,7 @@ null_block_stanza
       | KRON
       | L2TP_CLASS
       | LINE
+      | LINECARD
       | LOGGING
       | MAC
       | MAC_LEARN
@@ -131,6 +134,7 @@ null_block_stanza
       | STACK_UNIT
       | STCAPP
       | SVCLC
+      | SWITCH_PROFILE
       | TACACS
       | TACACS_SERVER
       | TCP

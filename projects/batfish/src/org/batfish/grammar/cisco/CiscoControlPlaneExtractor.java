@@ -471,7 +471,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ipPrefixToken.getType() != CiscoLexer.IP_PREFIX) {
          throw new BatfishException(
                "attempted to get prefix length from non-IP_PREFIX token: "
-                     + ipPrefixToken.getType());
+                     + ipPrefixToken.getType() + " with text: \"" + ipPrefixToken.getText() + "\"");
       }
       String text = ipPrefixToken.getText();
       String[] parts = text.split("/");
@@ -832,6 +832,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String name;
       if (ctx.numbered != null) {
          name = ctx.numbered.name.getText();
+      }
+      else if (ctx.block != null) {
+         name = ctx.block.name.getText();
       }
       else {
          name = ctx.named.name.getText();
@@ -1669,8 +1672,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitMatch_community_list_rm_stanza(
          Match_community_list_rm_stanzaContext ctx) {
       Set<String> names = new TreeSet<String>();
-      for (Token t : ctx.name_list) {
-         names.add(t.getText());
+      for (VariableContext name : ctx.name_list) {
+         names.add(name.getText());
       }
       RouteMapMatchCommunityListLine line = new RouteMapMatchCommunityListLine(
             names);
@@ -1884,7 +1887,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          todo(ctx, F_IPV6);
       }
       else if (ctx.peergroup != null) {
-         throw new BatfishException("'no shutdown' of  peer group unsupported");
+         _w.redFlag("'no shutdown' of  peer group unsupported");
       }
    }
 

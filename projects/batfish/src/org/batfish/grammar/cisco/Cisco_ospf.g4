@@ -24,6 +24,18 @@ area_nssa_ro_stanza
    )* NEWLINE
 ;
 
+area_stub_ro_stanza
+:
+   AREA
+   (
+      area_int = DEC
+      | area_ip = IP_ADDRESS
+   ) STUB
+   (
+      NO_SUMMARY
+   )* NEWLINE
+;
+
 auto_cost_ipv6_ro_stanza
 :
    AUTO_COST REFERENCE_BANDWIDTH DEC NEWLINE
@@ -137,6 +149,7 @@ null_standalone_ro_stanza
       | MAX_LSA
       | MAX_METRIC
       | NSF
+      | RFC1583COMPATIBILITY
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -237,6 +250,7 @@ redistribute_static_ro_stanza
 ro_stanza
 :
    area_nssa_ro_stanza
+   | area_stub_ro_stanza
    | default_information_ro_stanza
    | distance_ro_stanza
    | maximum_paths_ro_stanza

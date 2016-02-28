@@ -124,6 +124,11 @@ ACCOUNTING_THRESHOLD
    'accounting-threshold'
 ;
 
+ACK
+:
+   'ack'
+;
+
 ACTION
 :
    'action'
@@ -591,6 +596,11 @@ BROADCAST_ADDRESS
    'broadcast-address'
 ;
 
+BSD_USERNAME
+:
+   'bsd-username'
+;
+
 BUNDLE
 :
    'bundle'
@@ -634,6 +644,11 @@ CALL_HOME
 CALLER_ID
 :
    'caller-id'
+;
+
+CAM_PROFILE
+:
+   'cam-profile'
 ;
 
 CARD
@@ -909,6 +924,11 @@ COPY
 COST
 :
    'cost'
+;
+
+COUNT
+:
+   'count'
 ;
 
 COUNTER
@@ -2417,6 +2437,11 @@ LINE
    'line'
 ;
 
+LINECARD
+:
+   'linecard'
+;
+
 LINECODE
 :
    'linecode'
@@ -2755,6 +2780,11 @@ MICROCODE
 MINIMAL
 :
    'minimal'
+;
+
+MINIMUM_LINKS
+:
+   'minimum-links'
 ;
 
 MLAG
@@ -3457,6 +3487,11 @@ PORT_CHANNEL
    'port-channel'
 ;
 
+PORT_CHANNEL_PROTOCOL
+:
+   'port-channel-protocol'
+;
+
 PORT_OBJECT
 :
    'port-object'
@@ -3865,6 +3900,11 @@ REVISION
 REVOCATION_CHECK
 :
    'revocation-check'
+;
+
+RFC1583COMPATIBILITY
+:
+   'rfc1583compatibility'
 ;
 
 RING
@@ -4424,6 +4464,11 @@ STP
    'stp'
 ;
 
+STUB
+:
+   'stub'
+;
+
 SUBJECT_NAME
 :
    'subject-name'
@@ -4487,6 +4532,11 @@ SVCLC
 SWITCH
 :
    'switch'
+;
+
+SWITCH_PROFILE
+:
+   'switch-profile'
 ;
 
 SWITCHBACK
@@ -4567,6 +4617,11 @@ TAG
 TAG_SWITCHING
 :
    'tag-switching'
+;
+
+TAGGED
+:
+   'tagged'
 ;
 
 TALK
@@ -4949,6 +5004,11 @@ VIRTUAL
    'virtual'
 ;
 
+VIRTUAL_ADDRESS
+:
+   'virtual-address'
+;
+
 VIRTUAL_REASSEMBLY
 :
    'virtual-reassembly'
@@ -5054,6 +5114,11 @@ VRF
 VRRP
 :
    'vrrp'
+;
+
+VRRP_GROUP
+:
+   'vrrp-group'
 ;
 
 VSERVER

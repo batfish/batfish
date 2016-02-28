@@ -364,12 +364,23 @@ no_neighbor_activate_rb_stanza
 
 no_neighbor_shutdown_rb_stanza
 :
-   NO NEIGHBOR
    (
-      ip = IP_ADDRESS
-      | ip6 = IPV6_ADDRESS
-      | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
-   ) SHUTDOWN NEWLINE
+      NO NEIGHBOR
+      (
+         ip = IP_ADDRESS
+         | ip6 = IPV6_ADDRESS
+         | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
+      ) SHUTDOWN NEWLINE
+   )
+   |
+   (
+      NEIGHBOR
+      (
+         ip = IP_ADDRESS
+         | ip6 = IPV6_ADDRESS
+         | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
+      ) NO SHUTDOWN NEWLINE
+   )
 ;
 
 no_redistribute_connected_rb_stanza
@@ -400,6 +411,7 @@ null_bgp_tail
          )
       )
       | BESTPATH
+      | BFD
       |
       (
          BGP
@@ -490,7 +502,7 @@ remove_private_as_bgp_tail
 
 route_map_bgp_tail
 :
-   ROUTE_MAP name = VARIABLE
+   ROUTE_MAP name = variable
    (
       IN
       | OUT

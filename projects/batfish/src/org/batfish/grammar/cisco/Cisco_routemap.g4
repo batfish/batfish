@@ -23,11 +23,7 @@ match_community_list_rm_stanza
 :
    MATCH COMMUNITY
    (
-      name_list +=
-      (
-         VARIABLE
-         | DEC
-      )
+      name_list += variable
    )+ NEWLINE
 ;
 
@@ -266,7 +262,7 @@ set_next_hop_peer_address_stanza
 
 set_next_hop_rm_stanza
 :
-   SET IP NEXT_HOP
+   SET IP? NEXT_HOP
    (
       nexthop_list += IP_ADDRESS
    )+ NEWLINE

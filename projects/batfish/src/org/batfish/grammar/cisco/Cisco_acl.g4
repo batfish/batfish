@@ -75,6 +75,9 @@ bandwidth_irs_stanza
 extended_access_list_additional_feature
 :
    (
+      ACK
+      | COUNT
+      |
       (
          DSCP variable
       )
@@ -158,6 +161,9 @@ extended_access_list_stanza
 
 extended_access_list_tail
 :
+   (
+      SEQ? DEC
+   )?
    ala = access_list_action prot = protocol srcipr = access_list_ip_range
    (
       alps_src = port_specifier
@@ -215,14 +221,20 @@ ip_as_path_access_list_tail
 
 ip_community_list_expanded_stanza
 :
-   named = ip_community_list_expanded_named_stanza
-   | numbered = ip_community_list_expanded_numbered_stanza
+   numbered = ip_community_list_expanded_numbered_stanza
+   | named = ip_community_list_expanded_named_stanza
+   | block = ip_community_list_expanded_block_stanza
+;
+
+ip_community_list_expanded_block_stanza
+:
+   IP COMMUNITY_LIST name = variable NEWLINE ip_community_list_expanded_tail*
 ;
 
 ip_community_list_expanded_named_stanza
 locals [boolean again]
 :
-   IP COMMUNITY_LIST EXPANDED name = VARIABLE ip_community_list_expanded_tail
+   IP COMMUNITY_LIST EXPANDED name = variable ip_community_list_expanded_tail
    {
 		$again = _input.LT(1).getType() == IP &&
 		_input.LT(2).getType() == COMMUNITY_LIST &&
@@ -462,7 +474,11 @@ nexus_prefix_list_stanza
    (
       IP
       | IPV6
-   ) PREFIX_LIST name = variable NEWLINE ip_prefix_list_tail*
+   ) PREFIX_LIST name = variable NEWLINE
+   (
+      ip_prefix_list_null_tail
+      | ip_prefix_list_tail
+   )*
 ;
 
 null_as_path_regex
