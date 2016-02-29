@@ -11,6 +11,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
 import org.batfish.grammar.flatvyos.FlatVyosCombinedParser;
 import org.batfish.grammar.flatvyos.FlatVyosControlPlaneExtractor;
+import org.batfish.grammar.mrv.MrvCombinedParser;
+import org.batfish.grammar.mrv.MrvControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -125,6 +127,15 @@ public class ParseVendorConfigurationJob extends
          combinedParser = flatJuniperParser;
          extractor = new FlatJuniperControlPlaneExtractor(_fileText,
                flatJuniperParser, _warnings);
+         break;
+
+      case MRV:
+         MrvCombinedParser mrvParser = new MrvCombinedParser(_fileText,
+               _settings.getThrowOnParserError(),
+               _settings.getThrowOnLexerError());
+         combinedParser = mrvParser;
+         extractor = new MrvControlPlaneExtractor(_fileText, mrvParser,
+               _warnings);
          break;
 
       case JUNIPER_SWITCH:

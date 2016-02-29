@@ -3046,6 +3046,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitSrt_metric(Srt_metricContext ctx) {
+      int metric = toInt(ctx.metric);
+      _currentStaticRoute.setMetric(metric);
+   }
+
+   @Override
    public void exitSrt_next_hop(Srt_next_hopContext ctx) {
       if (ctx.IP_ADDRESS() != null) {
          Ip nextHopIp = new Ip(ctx.IP_ADDRESS().getText());

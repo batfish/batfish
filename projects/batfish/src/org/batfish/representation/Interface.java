@@ -109,6 +109,10 @@ public class Interface extends ComparableStructure<String> {
       case FLAT_VYOS:
          return computeVyosInterfaceType(name);
 
+      case MRV:
+         // TODO: find out if other interface types are possible
+         return InterfaceType.PHYSICAL;
+
       case UNKNOWN:
       case VXWORKS:
       default:

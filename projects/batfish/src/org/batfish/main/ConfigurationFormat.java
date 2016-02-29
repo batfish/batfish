@@ -8,6 +8,7 @@ public enum ConfigurationFormat {
    FLAT_VYOS("vyos"),
    JUNIPER("juniper"),
    JUNIPER_SWITCH("juniper"),
+   MRV("mrv"),
    UNKNOWN("unknown"),
    VXWORKS("vxworks"),
    VYOS("vyos");

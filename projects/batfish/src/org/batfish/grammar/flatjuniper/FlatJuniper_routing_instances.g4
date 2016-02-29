@@ -338,6 +338,7 @@ rot_null
 :
    (
       FORWARDING_TABLE
+      | GRACEFUL_RESTART
       | MULTICAST
       | MULTIPATH
       | NONSTOP_ROUTING
@@ -499,6 +500,7 @@ srt_common
    | srt_community
    | srt_discard
    | srt_install
+   | srt_metric
    | srt_next_hop
    | srt_next_table
    | srt_no_readvertise
@@ -525,6 +527,11 @@ srt_discard
 srt_install
 :
    INSTALL
+;
+
+srt_metric
+:
+   METRIC metric = DEC
 ;
 
 srt_next_hop

@@ -417,6 +417,7 @@ null_block_if_stanza
       | TX_QUEUE
       | UC_TX_QUEUE
       | UDLD
+      | UNTAGGED
       | VPC
       | VRRP
       | WEIGHTING

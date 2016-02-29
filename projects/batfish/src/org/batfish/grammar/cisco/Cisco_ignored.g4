@@ -116,6 +116,7 @@ null_block_stanza
       | PLAT
       | POLICY_MAP
       | POWEROFF
+      | PROTOCOL
       | PSEUDOWIRE_CLASS
       | PTP
       | REDUNDANCY
@@ -127,6 +128,7 @@ null_block_stanza
       | SDR
       | SFLOW
       | SPANNING_TREE
+      | STACK_UNIT
       | STCAPP
       | SVCLC
       | TACACS
@@ -171,6 +173,7 @@ null_block_substanza
          | ADDRESS
          | ADDRESS_POOL
          | ADMINISTRATIVE_WEIGHT
+         | ADVERTISE
          | AESA
          | ANYCONNECT
          | ARCHIVE_LENGTH
