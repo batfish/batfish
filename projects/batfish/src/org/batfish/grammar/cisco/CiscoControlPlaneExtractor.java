@@ -471,7 +471,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ipPrefixToken.getType() != CiscoLexer.IP_PREFIX) {
          throw new BatfishException(
                "attempted to get prefix length from non-IP_PREFIX token: "
-                     + ipPrefixToken.getType() + " with text: \"" + ipPrefixToken.getText() + "\"");
+                     + ipPrefixToken.getType() + " with text: \""
+                     + ipPrefixToken.getText() + "\"");
       }
       String text = ipPrefixToken.getText();
       String[] parts = text.split("/");
@@ -1020,6 +1021,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       boolean isIpv6 = ctx.IPV6() != null;
       String name = ctx.name.getText();
       _currentPrefixList = new PrefixList(name, isIpv6);
+      _configuration.getPrefixLists().put(name, _currentPrefixList);
    }
 
    @Override
@@ -1767,8 +1769,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitNetwork_ro_stanza(Network_ro_stanzaContext ctx) {
-      Ip prefix = toIp(ctx.ip);
-      Ip wildcard = toIp(ctx.wildcard);
+      Ip address;
+      Ip wildcard;
+      if (ctx.prefix != null) {
+         Prefix prefix = new Prefix(ctx.prefix.getText());
+         address = prefix.getAddress();
+         wildcard = prefix.getPrefixWildcard();
+      }
+      else {
+         address = toIp(ctx.ip);
+         wildcard = toIp(ctx.wildcard);
+      }
       long area;
       if (ctx.area_int != null) {
          area = toLong(ctx.area_int);
@@ -1779,7 +1790,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          throw new BatfishException("bad area");
       }
-      OspfWildcardNetwork network = new OspfWildcardNetwork(prefix, wildcard,
+      OspfWildcardNetwork network = new OspfWildcardNetwork(address, wildcard,
             area);
       _currentOspfProcess.getWildcardNetworks().add(network);
    }
