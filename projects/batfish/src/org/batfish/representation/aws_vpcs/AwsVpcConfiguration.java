@@ -14,6 +14,10 @@ public class AwsVpcConfiguration implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+   private Map<String,RouteTable> _routeTables = new HashMap<String,RouteTable>();
+
+   private Map<String,Subnet> _subnets = new HashMap<String,Subnet>();
+	
 	private Map<String,Vpc> _vpcs = new HashMap<String,Vpc>();
 
 	public void AddConfigElement(JSONObject jsonObj, BatfishLogger logger) throws JSONException {
@@ -35,7 +39,15 @@ public class AwsVpcConfiguration implements Serializable {
 	private void AddConfigElement(String elementType, 
 			JSONObject jsonObject, BatfishLogger logger) throws JSONException {
 		switch (elementType) {
-		case "Vpcs":
+		case AwsVpcConfigElement.JSON_KEY_ROUTE_TABLES:
+		   RouteTable routeTable = new RouteTable(jsonObject, logger);
+		   _routeTables.put(routeTable.getId(), routeTable);
+		   break;
+      case AwsVpcConfigElement.JSON_KEY_SUBNETS:
+         Subnet subnet = new Subnet(jsonObject, logger);
+         _subnets.put(subnet.getId(), subnet);
+         break;
+		case AwsVpcConfigElement.JSON_KEY_VPCS:
 			Vpc vpc = new Vpc(jsonObject, logger);
 			_vpcs.put(vpc.getId(),  vpc);
 			break;

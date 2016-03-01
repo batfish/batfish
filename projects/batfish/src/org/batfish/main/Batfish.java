@@ -3623,11 +3623,15 @@ public class Batfish implements AutoCloseable {
 	}
 
 	private void serializeVendorConfigs(String testRigPath, String outputPath) {
+	   
+	   boolean configsFound = false;
+	   
 		//look for network configs
 		File networkConfigsPath =  Paths.get(testRigPath,
 				BfConsts.RELPATH_CONFIGURATIONS_DIR).toFile();
 		if (networkConfigsPath.exists()) {
 			serializeNetworkConfigs(testRigPath, outputPath);
+			configsFound = true;
 		}	   
 		
 		//look for AWS VPC configs
@@ -3635,7 +3639,12 @@ public class Batfish implements AutoCloseable {
 				BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR).toFile();
 		if (awsVpcConfigsPath.exists()) {
 			serializeAwsVpcConfigs(testRigPath, outputPath);
+         configsFound = true;
 		}	   
+		
+		if (!configsFound) {
+	      throw new BatfishException("No valid configurations found");
+	   }
 	}
 
 	public void SetTerminatedWithException(boolean terminatedWithException) {
