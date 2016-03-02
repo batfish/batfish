@@ -451,6 +451,11 @@ AUTO_COST
    'auto-cost'
 ;
 
+AUTO_RECOVERY
+:
+   'auto-recovery'
+;
+
 AUTO_SUMMARY
 :
    'auto-summary'

@@ -145,6 +145,7 @@ null_standalone_ro_stanza
       | AUTO_COST
       | BFD
       | DISTRIBUTE_LIST
+      | GRACEFUL_RESTART
       | LOG_ADJACENCY_CHANGES
       | MAX_LSA
       | MAX_METRIC

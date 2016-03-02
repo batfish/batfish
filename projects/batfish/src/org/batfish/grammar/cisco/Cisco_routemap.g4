@@ -58,7 +58,7 @@ match_ip_access_list_rm_stanza
 
 match_ip_prefix_list_rm_stanza
 :
-   MATCH IP ADDRESS PREFIX_LIST
+   MATCH IP ADDRESS IP? PREFIX_LIST
    (
       name_list +=
       (

@@ -190,6 +190,7 @@ null_block_substanza
          | AUTHORIZATION
          | AUTHORIZATION_REQUIRED
          | AUTHORIZATION_SERVER_GROUP
+         | AUTO_RECOVERY
          | AUTO_SYNC
          | AUTOSELECT
          | BACKGROUND_ROUTES_ENABLE
