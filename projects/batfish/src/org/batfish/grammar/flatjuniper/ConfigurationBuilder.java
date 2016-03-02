@@ -74,6 +74,7 @@ import org.batfish.representation.juniper.IsisSettings;
 import org.batfish.representation.juniper.JuniperVendorConfiguration;
 import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.NamedBgpGroup;
+import org.batfish.representation.juniper.NodeDevice;
 import org.batfish.representation.juniper.OspfArea;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
@@ -1665,8 +1666,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       else {
          String ifaceName = ctx.name.getText();
-         Map<String, Interface> interfaces = _currentRoutingInstance
-               .getInterfaces();
+         Map<String, Interface> interfaces;
+         if (ctx.node == null) {
+            interfaces = _currentRoutingInstance.getInterfaces();
+         }
+         else {
+            String nodeDeviceName = ctx.node.getText();
+            NodeDevice nodeDevice = _currentRoutingInstance.getNodeDevices()
+                  .get(nodeDeviceName);
+            if (nodeDevice == null) {
+               nodeDevice = new NodeDevice(nodeDeviceName);
+               _currentRoutingInstance.getNodeDevices().put(nodeDeviceName,
+                     nodeDevice);
+            }
+            interfaces = nodeDevice.getInterfaces();
+         }
          _currentInterface = interfaces.get(ifaceName);
          if (_currentInterface == null) {
             _currentInterface = new Interface(ifaceName);

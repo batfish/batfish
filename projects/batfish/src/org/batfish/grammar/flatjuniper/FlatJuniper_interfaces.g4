@@ -55,7 +55,25 @@ efamt_vlan
 
 eot_802_3ad
 :
-   EIGHT02_3AD name = variable
+   EIGHT02_3AD eot_802_3ad_tail
+;
+
+eot_802_3ad_tail
+:
+   eot802_3adt_interface
+   | eot802_3adt_lacp
+;
+
+eot802_3adt_interface
+:
+   (
+      node = variable COLON
+   )? name = variable
+;
+
+eot802_3adt_lacp
+:
+   LACP FORCE_UP
 ;
 
 eot_auto_negotiation
@@ -318,7 +336,12 @@ intt_named
 :
    (
       WILDCARD
-      | name = variable
+      |
+      (
+         (
+            node = variable COLON
+         )? name = variable
+      )
    ) intt_named_tail
 ;
 

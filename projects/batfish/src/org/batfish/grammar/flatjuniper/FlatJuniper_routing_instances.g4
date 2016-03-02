@@ -263,6 +263,11 @@ rit_vrf_target_tail
    | vtt_import
 ;
 
+roast_loops
+:
+   LOOPS DEC
+;
+
 rot_aggregate
 :
    AGGREGATE ROUTE IP_PREFIX
@@ -288,7 +293,13 @@ rot_auto_export
 
 rot_autonomous_system
 :
-   AUTONOMOUS_SYSTEM as = DEC
+   AUTONOMOUS_SYSTEM as = DEC rot_autonomous_system_tail
+;
+
+rot_autonomous_system_tail
+:
+   apply
+   | roast_loops
 ;
 
 rot_martians

@@ -304,6 +304,7 @@
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_applications.g4"/>
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_bgp.g4"/>
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_common.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_fabric.g4"/>
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_firewall.g4"/>
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_interfaces.g4"/>
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_isis.g4"/>

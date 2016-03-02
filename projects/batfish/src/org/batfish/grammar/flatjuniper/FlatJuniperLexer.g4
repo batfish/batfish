@@ -157,6 +157,11 @@ ALIAS
    'alias'
 ;
 
+ALIASES
+:
+   'aliases'
+;
+
 ALL
 :
    'all'
@@ -826,6 +831,11 @@ EXTERNAL_PREFERENCE
    'external-preference'
 ;
 
+FABRIC
+:
+   'fabric'
+;
+
 FABRIC_OPTIONS
 :
    'fabric-options'
@@ -884,6 +894,11 @@ FLOW
 FLOW_CONTROL
 :
    'flow-control'
+;
+
+FORCE_UP
+:
+   'force-up'
 ;
 
 FORWARDING
@@ -1294,6 +1309,11 @@ INSTANCE
 INSTANCE_TYPE
 :
    'instance-type'
+;
+
+INTERCONNECT_DEVICE
+:
+   'interconnect-device'
 ;
 
 INTERFACE
@@ -2856,6 +2876,11 @@ NETCONF
    'netconf'
 ;
 
+NETWORK_DOMAIN
+:
+   'network-domain'
+;
+
 NETWORK_SUMMARY_EXPORT
 :
    'network-summary-export'
@@ -2994,6 +3019,16 @@ NO_NEIGHBOR_LEARN
 NO_TRAPS
 :
    'no-traps'
+;
+
+NODE_DEVICE
+:
+   'node-device'
+;
+
+NODE_GROUP
+:
+   'node-group'
 ;
 
 NONSTOP_ROUTING
@@ -3514,6 +3549,11 @@ RESOLUTION
 RESOLVE
 :
    'resolve'
+;
+
+RESOURCES
+:
+   'resources'
 ;
 
 RESTRICT

@@ -49,6 +49,8 @@ public class RoutingInstance implements Serializable {
 
    private final JuniperSystem _system;
 
+   private final Map<String, NodeDevice> _nodeDevices;
+
    public RoutingInstance(String name) {
       _isisSettings = new IsisSettings();
       _interfaces = new TreeMap<String, Interface>();
@@ -57,6 +59,7 @@ public class RoutingInstance implements Serializable {
       _globalMasterInterface = new Interface(MASTER_INTERFACE_NAME);
       _name = name;
       _namedBgpGroups = new TreeMap<String, NamedBgpGroup>();
+      _nodeDevices = new TreeMap<String, NodeDevice>();
       _ospfAreas = new TreeMap<Ip, OspfArea>();
       _ospfExportPolicies = new ArrayList<String>();
       _ospfReferenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
@@ -151,6 +154,10 @@ public class RoutingInstance implements Serializable {
 
    public void setRouterId(Ip routerId) {
       _routerId = routerId;
+   }
+
+   public Map<String, NodeDevice> getNodeDevices() {
+      return _nodeDevices;
    }
 
 }
