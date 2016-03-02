@@ -117,7 +117,7 @@ s_system_tail
 
 s_version
 :
-   VERSION M_Version_VERSION_STRING
+   VERSION VERSION_STRING
 ;
 
 s_vlans

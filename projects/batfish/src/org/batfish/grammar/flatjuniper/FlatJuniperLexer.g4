@@ -26,7 +26,8 @@ public String printStateVariables() {
 
 tokens {
    ISO_ADDRESS,
-   PIPE
+   PIPE,
+   VERSION_STRING
 }
 
 // Juniper Keywords
@@ -5245,9 +5246,14 @@ M_Version_V1_ONLY
    'v1-only' -> type ( V1_ONLY ) , popMode
 ;
 
+M_Version_QUOTED_STRING
+:
+   '"' ~'"'* '"' -> type ( VERSION_STRING ) , popMode
+;
+
 M_Version_VERSION_STRING
 :
-   ~[ \t\u000C\r\n;]+ -> popMode
+   ~[ \t\u000C\r\n;]+ -> type ( VERSION_STRING ) , popMode
 ;
 
 M_Version_WS
