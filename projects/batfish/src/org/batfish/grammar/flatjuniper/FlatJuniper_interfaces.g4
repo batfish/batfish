@@ -34,6 +34,11 @@ efamt_filter
    FILTER direction name = variable
 ;
 
+efamt_interface_mode
+:
+   INTERFACE_MODE ACCESS
+;
+
 efamt_native_vlan_id
 :
    NATIVE_VLAN_ID name = variable
@@ -145,6 +150,7 @@ famt_ethernet_switching_tail
 // intentional blank
 
    | efamt_filter
+   | efamt_interface_mode
    | efamt_native_vlan_id
    | efamt_port_mode
    | efamt_vlan
@@ -330,6 +336,11 @@ interface_mode
 intt_apply_groups
 :
    s_apply_groups
+;
+
+intt_interface_range
+:
+   INTERFACE_RANGE irange = variable MEMBER member = DOUBLE_QUOTED_STRING
 ;
 
 intt_named
@@ -639,6 +650,7 @@ s_interfaces
 s_interfaces_tail
 :
    intt_apply_groups
+   | intt_interface_range
    | intt_named
    | intt_null
 ;

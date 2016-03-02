@@ -1326,6 +1326,11 @@ INTERFACE_MODE
    'interface-mode'
 ;
 
+INTERFACE_RANGE
+:
+   'interface-range'
+;
+
 INTERFACE_SPECIFIC
 :
    'interface-specific'
@@ -2709,6 +2714,11 @@ METRIC_OUT
 METRIC_TYPE
 :
    'metric-type' -> pushMode ( M_MetricType )
+;
+
+MEMBER
+:
+   'member'
 ;
 
 MEMBERS
@@ -4945,6 +4955,16 @@ M_DSCP_WS
 
 mode M_Interface;
 
+M_Interface_APPLY_GROUPS
+:
+   'apply-groups' -> type ( APPLY_GROUPS ) , popMode
+;
+
+M_Interface_APPLY_GROUPS_EXCEPT
+:
+   'apply-groups-except' -> type ( APPLY_GROUPS_EXCEPT ) , popMode
+;
+
 M_Interface_NEWLINE
 :
    F_NewlineChar+
@@ -4956,6 +4976,11 @@ M_Interface_NEWLINE
 M_Interface_INTERFACE
 :
    'interface' -> type ( INTERFACE )
+;
+
+M_Interface_INTERFACE_RANGE
+:
+   'interface-range' -> type ( INTERFACE_RANGE ) , popMode
 ;
 
 M_Interface_PORT_OVERLOADING
