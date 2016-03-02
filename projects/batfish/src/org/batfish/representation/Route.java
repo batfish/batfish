@@ -30,4 +30,7 @@ public abstract class Route implements Serializable {
 
    public abstract RouteType getRouteType();
 
+   @Override
+   public abstract int hashCode();
+
 }

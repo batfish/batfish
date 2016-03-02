@@ -24,4 +24,13 @@ public class ConnectedRoute extends Route {
       return RouteType.CONNECTED;
    }
 
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + _prefix.hashCode();
+      result = prime * result + _nextHopIp.hashCode();
+      return result;
+   }
+
 }
