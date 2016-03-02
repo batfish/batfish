@@ -100,6 +100,11 @@ bgp_listen_range_rb_stanza
    )? NEWLINE
 ;
 
+bgp_redistribute_internal_rb_stanza
+:
+   BGP REDISTRIBUTE_INTERNAL NEWLINE
+;
+
 bgp_tail
 :
    activate_bgp_tail
@@ -145,6 +150,11 @@ cluster_id_bgp_tail
 cluster_id_rb_stanza
 :
    BGP cluster_id_bgp_tail
+;
+
+default_information_originate_rb_stanza
+:
+   DEFAULT_INFORMATION ORIGINATE NEWLINE
 ;
 
 default_metric_bgp_tail
@@ -557,6 +567,10 @@ redistribute_ospf_bgp_tail
       (
          METRIC metric = DEC
       )
+      |
+      (
+         MATCH ospf_route_type*
+      )
    )* NEWLINE
 ;
 
@@ -582,8 +596,10 @@ router_bgp_stanza
       | aggregate_address_rb_stanza
       | always_compare_med_rb_stanza
       | bgp_listen_range_rb_stanza
+      | bgp_redistribute_internal_rb_stanza
       | bgp_tail
       | cluster_id_rb_stanza
+      | default_information_originate_rb_stanza
       | neighbor_rb_stanza
       | nexus_neighbor_rb_stanza
       | no_bgp_enforce_first_as_stanza

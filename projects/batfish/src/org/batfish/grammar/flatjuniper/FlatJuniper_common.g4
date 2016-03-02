@@ -110,7 +110,9 @@ icmp_type
 
 interface_id
 :
-   name = VARIABLE
+   (
+      node = variable COLON
+   )? name = VARIABLE
    (
       PERIOD unit = DEC
    )?

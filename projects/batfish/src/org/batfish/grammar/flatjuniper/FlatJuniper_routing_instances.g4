@@ -542,7 +542,7 @@ srt_install
 
 srt_metric
 :
-   METRIC metric = DEC
+   METRIC metric = DEC (TYPE DEC)?
 ;
 
 srt_next_hop

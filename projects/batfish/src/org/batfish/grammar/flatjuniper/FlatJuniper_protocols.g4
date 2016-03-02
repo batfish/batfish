@@ -27,6 +27,8 @@ s_protocols_null
 :
    (
       BFD
+      | DCBX
+      | ICCP
       | IGMP
       | IGMP_SNOOPING
       | L2CIRCUIT

@@ -86,6 +86,11 @@ art_restrict
    RESTRICT
 ;
 
+ast_no_summaries
+:
+   NO_SUMMARIES
+;
+
 at_apply_groups
 :
    s_apply_groups
@@ -173,6 +178,16 @@ at_null
    ) s_null_filler
 ;
 
+at_stub
+:
+   STUB at_stub_tail
+;
+
+at_stub_tail
+:
+   ast_no_summaries
+;
+
 dlsat_default_metric
 :
    DEFAULT_METRIC DEC
@@ -232,6 +247,7 @@ ot_area_tail
    | at_label_switched_path
    | at_nssa
    | at_null
+   | at_stub
 ;
 
 ot_export

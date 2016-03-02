@@ -506,6 +506,11 @@ DAMPING
    'damping'
 ;
 
+DCBX
+:
+   'dcbx'
+;
+
 DDOS_PROTECTION
 :
    'ddos-protection'
@@ -1104,6 +1109,11 @@ HTTP
 HTTPS
 :
    'https'
+;
+
+ICCP
+:
+   'iccp'
 ;
 
 ICMP
@@ -2786,6 +2796,11 @@ MTU_DISCOVERY
    'mtu-discovery'
 ;
 
+MULTI_CHASSIS
+:
+   'multi-chassis'
+;
+
 MULTICAST
 :
    'multicast'
@@ -3024,6 +3039,11 @@ NO_RETAIN
 NO_NEIGHBOR_LEARN
 :
    'no-neighbor-learn'
+;
+
+NO_SUMMARIES
+:
+   'no-summaries'
 ;
 
 NO_TRAPS
@@ -3984,6 +4004,11 @@ STATION_PORT
 STP
 :
    'stp'
+;
+
+STUB
+:
+   'stub'
 ;
 
 SUBTRACT

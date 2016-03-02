@@ -3205,8 +3205,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    private Interface initInterface(Interface_idContext id) {
-      Map<String, Interface> interfaces = _currentRoutingInstance
-            .getInterfaces();
+      Map<String, Interface> interfaces;
+      if (id.node != null) {
+         String nodeDeviceName = id.node.getText();
+         NodeDevice nodeDevice = _currentRoutingInstance.getNodeDevices().get(
+               nodeDeviceName);
+         if (nodeDevice == null) {
+            nodeDevice = new NodeDevice(nodeDeviceName);
+            _currentRoutingInstance.getNodeDevices().put(nodeDeviceName,
+                  nodeDevice);
+         }
+         interfaces = nodeDevice.getInterfaces();
+      }
+      else {
+         interfaces = _currentRoutingInstance.getInterfaces();
+      }
       String name = id.name.getText();
       String unit = null;
       if (id.unit != null) {

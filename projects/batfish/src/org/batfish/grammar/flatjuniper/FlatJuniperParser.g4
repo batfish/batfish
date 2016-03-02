@@ -96,6 +96,7 @@ s_null
       (
          ACCESS
          | ETHERNET_SWITCHING_OPTIONS
+         | MULTI_CHASSIS
          | POE
          | SWITCH_OPTIONS
          | VIRTUAL_CHASSIS

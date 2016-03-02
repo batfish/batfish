@@ -486,6 +486,11 @@ AUTOSTATE
    'autostate'
 ;
 
+BACK_UP
+:
+   'back-up'
+;
+
 BACKGROUND_ROUTES_ENABLE
 :
    'background-routes-enable'
@@ -589,6 +594,11 @@ BOTH
 BRIDGE
 :
    'bridge'
+;
+
+BRIDGE_PRIORITY
+:
+   'bridge-priority'
 ;
 
 BROADCAST
@@ -1004,6 +1014,11 @@ DAYTIME
 DBL
 :
    'dbl'
+;
+
+DCB
+:
+   'dcb'
 ;
 
 DCBX
@@ -1573,6 +1588,11 @@ EXTENDED
 
 ;
 
+EXTERNAL
+:
+   'external'
+;
+
 FABRIC
 :
    'fabric'
@@ -1873,6 +1893,11 @@ HARDWARE
 HASH
 :
    'hash'
+;
+
+HEARTBEAT_INTERVAL
+:
+   'heartbeat-interval'
 ;
 
 HEARTBEAT_TIME
@@ -3177,6 +3202,11 @@ NSSA
    'nssa'
 ;
 
+NSSA_EXTERNAL
+:
+   'nssa-external'
+;
+
 NTP
 :
    'ntp'
@@ -3512,6 +3542,11 @@ PORT_UNREACHABLE
    'port-unreachable'
 ;
 
+PORTMODE
+:
+   'portmode'
+;
+
 POS
 :
    'pos'
@@ -3580,6 +3615,11 @@ PREPEND
 PRI_GROUP
 :
    'pri-group'
+;
+
+PRIMARY_PRIORITY
+:
+   'primary-priority'
 ;
 
 PRIORITY
@@ -3787,6 +3827,11 @@ REDISTRIBUTE
    'redistribute'
 ;
 
+REDISTRIBUTE_INTERNAL
+:
+   'redistribute-internal'
+;
+
 REDUNDANCY
 :
    'redundancy'
@@ -3810,6 +3855,11 @@ RELOAD
 RELOAD_DELAY
 :
    'reload-delay'
+;
+
+RELOAD_TYPE
+:
+   'reload-type'
 ;
 
 REMARK
@@ -4165,6 +4215,11 @@ SERVER_TYPE
 SERVICE
 :
    'service'
+;
+
+SERVICE_CLASS
+:
+   'service-class'
 ;
 
 SERVICE_MODULE
@@ -5037,6 +5092,16 @@ VIRTUAL_TEMPLATE
 VLAN
 :
    'vlan'
+;
+
+VLT
+:
+   'vlt'
+;
+
+VLT_PEER_LAG
+:
+   'vlt-peer-lag'
 ;
 
 VM_CPU

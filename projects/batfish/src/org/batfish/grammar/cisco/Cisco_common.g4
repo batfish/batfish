@@ -77,6 +77,18 @@ interface_name
    )
 ;
 
+ospf_route_type
+:
+   (
+      EXTERNAL DEC
+   )
+   | INTERNAL
+   |
+   (
+      NSSA_EXTERNAL DEC
+   )
+;
+
 port_specifier
 :
    (

@@ -168,6 +168,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("Ethernet", "Ethernet");
       prefixes.put("FastEthernet", "FastEthernet");
       prefixes.put("fe", "FastEthernet");
+      prefixes.put("fortyGigE", "FortyGigabitEthernet");
       prefixes.put("GigabitEthernet", "GigabitEthernet");
       prefixes.put("ge", "GigabitEthernet");
       prefixes.put("GMPLS", "GMPLS");

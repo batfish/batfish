@@ -28,6 +28,7 @@ null_block_stanza
       | CONTROLLER
       | COPY
       | CRYPTO
+      | DCB
       | DIAL_PEER
       | DOMAIN
       | END
@@ -90,6 +91,7 @@ null_block_stanza
       | KEY
       | KRON
       | L2TP_CLASS
+      | LACP
       | LINE
       | LINECARD
       | LOGGING
@@ -123,12 +125,14 @@ null_block_stanza
       | PSEUDOWIRE_CLASS
       | PTP
       | REDUNDANCY
+      | RELOAD_TYPE
       | RMON
       | ROLE
       | SAMPLER
       | SAMPLER_MAP
       | SCCP
       | SDR
+      | SERVICE_CLASS
       | SFLOW
       | SPANNING_TREE
       | STACK_UNIT
@@ -149,6 +153,7 @@ null_block_stanza
       (
          VLAN DEC
       )
+      | VLT
       | VOICE
       | VOICE_PORT
       | VPC
@@ -193,12 +198,14 @@ null_block_substanza
          | AUTO_RECOVERY
          | AUTO_SYNC
          | AUTOSELECT
+         | BACK_UP
          | BACKGROUND_ROUTES_ENABLE
          | BACKUPCRF
          | BANDWIDTH
          | BANNER
          | BIND
          | BRIDGE
+         | BRIDGE_PRIORITY
          | CABLELENGTH
          | CACHE
          | CACHE_TIMEOUT
@@ -232,6 +239,7 @@ null_block_substanza
          | DESTINATION
          | DEVICE
          | DIAGNOSTIC
+         | DISABLE
          | DNS_SERVER
          | DOMAIN_ID
          | DROP
@@ -272,6 +280,7 @@ null_block_substanza
          | GROUP_ALIAS
          | GROUP_POLICY
          | GROUP_URL
+         | HEARTBEAT_INTERVAL
          | HEARTBEAT_TIME
          | HIDDEN
          | HIDDEN_SHARES
@@ -375,6 +384,7 @@ null_block_substanza
          | PREEMPT
          | PREFIX
          | PRI_GROUP
+         | PRIMARY_PRIORITY
          | PRIORITY
          | PRIVILEGE
          | PROBE

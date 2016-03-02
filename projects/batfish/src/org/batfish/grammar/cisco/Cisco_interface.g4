@@ -42,6 +42,7 @@ if_stanza
    | description_if_stanza
    | ip_access_group_if_stanza
    | ip_address_if_stanza
+   | ip_address_dhcp_if_stanza
    | ip_address_secondary_if_stanza
    | ip_ospf_cost_if_stanza
    | ip_ospf_dead_interval_if_stanza
@@ -121,6 +122,11 @@ ip_address_if_stanza
    (
       STANDBY IP_ADDRESS
    )? NEWLINE
+;
+
+ip_address_dhcp_if_stanza
+:
+   IP ADDRESS DHCP NEWLINE
 ;
 
 ip_address_secondary_if_stanza
@@ -366,6 +372,7 @@ null_block_if_stanza
       | PHYSICAL_LAYER
       | PORT_CHANNEL
       | PORT_CHANNEL_PROTOCOL
+      | PORTMODE
       | POS
       | POWER
       | PPP
@@ -423,6 +430,7 @@ null_block_if_stanza
       | UC_TX_QUEUE
       | UDLD
       | UNTAGGED
+      | VLT_PEER_LAG
       | VPC
       | VRRP
       | VRRP_GROUP
