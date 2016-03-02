@@ -19,6 +19,8 @@ public final class Format {
       Matcher setMatcher = Pattern.compile("(?m)^set ").matcher(fileText);
       Matcher flattenedJuniperMatcher = Pattern.compile(
             Pattern.quote(BATFISH_FLATTENED_JUNIPER_HEADER)).matcher(fileText);
+      Matcher flatJuniperHostnameDeclarationMatcher = Pattern.compile(
+            "(?m)^set system host-name ").matcher(fileText);
       Matcher aristaMatcher = Pattern.compile("(?m)^boot system flash.*\\.swi")
             .matcher(fileText);
       Matcher ciscoLike = Pattern.compile(
@@ -44,7 +46,7 @@ public final class Format {
          return ConfigurationFormat.JUNIPER_SWITCH;
       }
       else if (flattenedJuniperMatcher.find(0)
-            || fileText.contains("set system host-name")
+            || flatJuniperHostnameDeclarationMatcher.find(0)
             || (fileText.contains("apply-groups") && setMatcher.find(0))) {
          return ConfigurationFormat.FLAT_JUNIPER;
       }
