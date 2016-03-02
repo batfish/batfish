@@ -51,17 +51,17 @@ public class ParseVendorConfigurationJob extends
       long elapsedTime;
       String currentPath = _file.getAbsolutePath();
       VendorConfiguration vc = null;
-      if (_fileText.length() == 0) {
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new ParseVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _file);
-      }
       BatfishCombinedParser<?, ?> combinedParser = null;
       ParserRuleContext tree = null;
       ControlPlaneExtractor extractor = null;
       ConfigurationFormat format = Format
             .identifyConfigurationFormat(_fileText);
 
+      if (format == ConfigurationFormat.EMPTY) {
+         elapsedTime = System.currentTimeMillis() - startTime;
+         return new ParseVendorConfigurationResult(elapsedTime,
+               _logger.getHistory(), _file);
+      }
       switch (format) {
 
       case ARISTA:
@@ -155,6 +155,7 @@ public class ParseVendorConfigurationJob extends
          return new ParseVendorConfigurationResult(elapsedTime,
                _logger.getHistory(), _file);
 
+      case EMPTY:
       case UNKNOWN:
       default:
          String unknownError = "Unknown configuration format for file: \""

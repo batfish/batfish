@@ -12,10 +12,14 @@ public final class Format {
    public static final String BATFISH_FLATTENED_VYOS_HEADER = "####BATFISH FLATTENED VYOS CONFIG####\n";
 
    public static ConfigurationFormat identifyConfigurationFormat(String fileText) {
+      String trimmedText = fileText.trim();
+      if (trimmedText.length() == 0) {
+         return ConfigurationFormat.EMPTY;
+      }
       if (fileText.contains("IOS XR")) {
          return ConfigurationFormat.CISCO_IOS_XR;
       }
-      char firstChar = fileText.trim().charAt(0);
+      char firstChar = trimmedText.charAt(0);
       Matcher setMatcher = Pattern.compile("(?m)^set ").matcher(fileText);
       Matcher flattenedJuniperMatcher = Pattern.compile(
             Pattern.quote(BATFISH_FLATTENED_JUNIPER_HEADER)).matcher(fileText);

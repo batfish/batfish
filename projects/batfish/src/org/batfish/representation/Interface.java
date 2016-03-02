@@ -113,6 +113,7 @@ public class Interface extends ComparableStructure<String> {
          // TODO: find out if other interface types are possible
          return InterfaceType.PHYSICAL;
 
+      case EMPTY:
       case UNKNOWN:
       case VXWORKS:
       default:
