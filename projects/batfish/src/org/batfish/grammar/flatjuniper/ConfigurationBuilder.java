@@ -1474,7 +1474,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Map<String, Interface> interfaces = _currentRoutingInstance
             .getInterfaces();
       String unitFullName = null;
-      if (ctx.ip != null) {
+      if (ctx.ALL() != null) {
+         _currentOspfInterface = _currentRoutingInstance
+               .getGlobalMasterInterface();
+      }
+      else if (ctx.ip != null) {
          Ip ip = new Ip(ctx.ip.getText());
          for (Interface iface : interfaces.values()) {
             for (Interface unit : iface.getUnits().values()) {

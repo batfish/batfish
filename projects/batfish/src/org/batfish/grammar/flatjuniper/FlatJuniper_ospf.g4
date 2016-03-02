@@ -117,7 +117,8 @@ at_interface
 :
    INTERFACE
    (
-      id = interface_id
+      ALL
+      | id = interface_id
       | ip = IP_ADDRESS
       | WILDCARD
    ) at_interface_tail

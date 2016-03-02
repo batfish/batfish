@@ -4980,6 +4980,11 @@ M_DSCP_WS
 
 mode M_Interface;
 
+M_Interface_ALL
+:
+   'all' -> type ( ALL ) , popMode
+;
+
 M_Interface_APPLY_GROUPS
 :
    'apply-groups' -> type ( APPLY_GROUPS ) , popMode
