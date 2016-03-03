@@ -18,14 +18,15 @@ public class IpPermissions implements Serializable {
    
    private String _ipProtocol;
    
-   private int _fromPort;
+   private int _fromPort = -1;
 
-   private int _toPort;
+   private int _toPort = -1;
             
    public IpPermissions(JSONObject jObj, BatfishLogger logger) throws JSONException {
       _ipProtocol = jObj.getString(AwsVpcConfigElement.JSON_KEY_IP_PROTOCOL);
-      _fromPort = jObj.getInt(AwsVpcConfigElement.JSON_KEY_FROM_PORT);
-      _toPort = jObj.getInt(AwsVpcConfigElement.JSON_KEY_TO_PORT);
+      
+      _fromPort = Utils.tryGetInt(jObj, AwsVpcConfigElement.JSON_KEY_FROM_PORT, _fromPort);
+      _toPort = Utils.tryGetInt(jObj, AwsVpcConfigElement.JSON_KEY_TO_PORT, _toPort);
       
       JSONArray ranges = jObj.getJSONArray(AwsVpcConfigElement.JSON_KEY_IP_RANGES);
 

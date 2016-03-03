@@ -25,8 +25,12 @@ public class Instance implements AwsVpcConfigElement, Serializable {
 
    public Instance(JSONObject jObj, BatfishLogger logger) throws JSONException {
       _instanceId = jObj.getString(JSON_KEY_INSTANCE_ID);
-      _vpcId = jObj.getString(JSON_KEY_VPC_ID);
-      _subnetId = jObj.getString(JSON_KEY_SUBNET_ID);
+      
+      if (jObj.has(JSON_KEY_VPC_ID)) {
+    	  _vpcId = jObj.getString(JSON_KEY_VPC_ID);
+
+    	  _subnetId = jObj.getString(JSON_KEY_SUBNET_ID);
+      }
       
       JSONArray securityGroups = jObj.getJSONArray(JSON_KEY_SECURITY_GROUPS);
       initSecurityGroups(securityGroups, logger);

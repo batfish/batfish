@@ -2563,11 +2563,28 @@ public class Batfish implements AutoCloseable {
 	private AwsVpcConfiguration parseAwsVpcConfigurations(Map<File, String> configurationData) {		
 		AwsVpcConfiguration config = new AwsVpcConfiguration();
 		for (File file : configurationData.keySet()) {
+			
+			//we stop classic link processing here because it interferes with VPC processing
+			if (file.toString().contains("classic-link")) {
+				_logger.errorf("%s has classic link configuration\n", file.toString());				
+				continue;
+			}
+			
+			JSONObject jsonObj = null;
 			try {
-				JSONObject jsonObj = new JSONObject(configurationData.get(file));
-				config.AddConfigElement(jsonObj, _logger);
+				jsonObj = new JSONObject(configurationData.get(file));
 			} catch (JSONException e) {
 				_logger.errorf("%s does not have valid json\n", file.toString());
+			}
+
+			if (jsonObj != null) {
+				try {
+					config.addConfigElement(jsonObj, _logger);
+				}
+				catch (JSONException e) {
+					throw new BatfishException(
+							"Problems parsing JSON in " + file.toString(), e);
+				}
 			}
 		}		
 		return config;

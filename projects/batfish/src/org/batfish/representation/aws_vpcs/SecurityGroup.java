@@ -25,6 +25,8 @@ public class SecurityGroup implements AwsVpcConfigElement, Serializable {
       _groupId = jObj.getString(JSON_KEY_GROUP_ID);
       _groupName = jObj.getString(JSON_KEY_GROUP_NAME);
       
+      //logger.debugf("doing security group %s\n", _groupId);
+
       JSONArray permsEgress = jObj.getJSONArray(JSON_KEY_IP_PERMISSIONS_EGRESS);
       initIpPerms(_ipPermsEgress, permsEgress, logger);      
 
