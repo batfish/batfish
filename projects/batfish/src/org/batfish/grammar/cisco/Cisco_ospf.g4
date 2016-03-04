@@ -36,6 +36,23 @@ area_stub_ro_stanza
    )* NEWLINE
 ;
 
+area_xr_ro_stanza
+:
+   AREA
+   (
+      area_int = DEC
+      | area_ip = IP_ADDRESS
+   )
+   NEWLINE
+   (
+     AUTHENTICATION MESSAGE_DIGEST? NEWLINE
+     |  NSSA NO_REDISTRIBUTION?
+         (DEFAULT_INFORMATION_ORIGINATE (METRIC DEC)? (METRIC_TYPE DIGIT)?)?
+         NO_SUMMARY? NEWLINE
+     | interface_xr_ro_stanza
+   )*
+;
+
 auto_cost_ipv6_ro_stanza
 :
    AUTO_COST REFERENCE_BANDWIDTH DEC NEWLINE
@@ -60,8 +77,13 @@ default_information_ro_stanza
       | ALWAYS
       |
       (
-         ROUTE_MAP map = VARIABLE
+         ROUTE_MAP map = VARIABLE 
+      )      
+      |
+      (
+         ROUTE_POLICY policy = VARIABLE 
       )
+      | TAG DEC
    )* NEWLINE
 ;
 
@@ -73,6 +95,22 @@ distance_ipv6_ro_stanza
 distance_ro_stanza
 :
    DISTANCE value = DEC NEWLINE
+;
+
+interface_xr_ro_stanza
+:
+   INTERFACE name = interface_name NEWLINE
+   interface_xr_ro_tail*
+;
+
+interface_xr_ro_tail
+:
+  (
+     NETWORK
+       (BROADCAST | NON_BROADCAST | (POINT_TO_MULTIPOINT NON_BROADCAST?) | POINT_TO_POINT)
+    | PRIORITY DEC
+    | PASSIVE (ENABLE | DISABLE)?
+  ) NEWLINE
 ;
 
 ipv6_ro_stanza
@@ -142,13 +180,17 @@ null_standalone_ro_stanza
             | IP_ADDRESS
          ) AUTHENTICATION
       )
+      | AUTHENTICATION MESSAGE_DIGEST? 
       | AUTO_COST
       | BFD
       | DISTRIBUTE_LIST
-      | LOG_ADJACENCY_CHANGES
+      | LOG_ADJACENCY_CHANGES DETAIL?
+      | LOG ADJACENCY CHANGES (DETAIL | DISABLE)?
       | MAX_LSA
       | MAX_METRIC
+      | MTU_IGNORE (DISABLE | ENABLE)?
       | NSF
+      | NSR
       | RFC1583COMPATIBILITY
    ) ~NEWLINE* NEWLINE
 ;
@@ -251,6 +293,7 @@ ro_stanza
 :
    area_nssa_ro_stanza
    | area_stub_ro_stanza
+   | area_xr_ro_stanza
    | default_information_ro_stanza
    | distance_ro_stanza
    | maximum_paths_ro_stanza
