@@ -6,11 +6,14 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.main.Warnings;
+import org.batfish.representation.Configuration;
+import org.batfish.representation.GenericConfigObject;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class AwsVpcConfiguration implements Serializable {
+public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
 
 	private static final long serialVersionUID = 1L;
 
@@ -146,4 +149,13 @@ public class AwsVpcConfiguration implements Serializable {
 			return false;
 		}	
 	}
+
+   public Map<String, Configuration> toConfigurations(Warnings warnings) {
+      Map<String, Configuration> configurations = new HashMap<String, Configuration>();
+      
+      configurations.put("hola1", new Configuration("hola1"));
+      configurations.put("hola2", new Configuration("hola2"));
+            
+      return configurations;
+   }
 }

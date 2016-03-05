@@ -137,6 +137,7 @@ import org.batfish.representation.Flow;
 import org.batfish.representation.FlowBuilder;
 import org.batfish.representation.FlowHistory;
 import org.batfish.representation.FlowTrace;
+import org.batfish.representation.GenericConfigObject;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
@@ -1452,7 +1453,7 @@ public class Batfish implements AutoCloseable {
 	}
 
 	private Map<String, Configuration> convertConfigurations(
-			Map<String, VendorConfiguration> vendorConfigurations) {
+			Map<String, GenericConfigObject> vendorConfigurations) {
 		_logger
 		.info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
 		resetTimer();
@@ -1468,7 +1469,7 @@ public class Batfish implements AutoCloseable {
 					_settings.getUnimplementedRecord()
 					&& _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
 					_settings.printParseTree());
-			VendorConfiguration vc = vendorConfigurations.get(hostname);
+			GenericConfigObject vc = vendorConfigurations.get(hostname);
 			ConvertConfigurationJob job = new ConvertConfigurationJob(_settings,
 					vc, hostname, warnings);
 			jobs.add(job);
@@ -1535,11 +1536,11 @@ public class Batfish implements AutoCloseable {
 		return o;
 	}
 
-	public Map<String, VendorConfiguration> deserializeVendorConfigurations(
+	public Map<String, GenericConfigObject> deserializeVendorConfigurations(
 			String serializedVendorConfigPath) {
 		_logger.info("\n*** DESERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
 		resetTimer();
-		Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<String, VendorConfiguration>();
+		Map<String, GenericConfigObject> vendorConfigurations = new TreeMap<String, GenericConfigObject>();
 		File dir = new File(serializedVendorConfigPath);
 		File[] serializedConfigs = dir.listFiles();
 		if (serializedConfigs == null) {
@@ -1549,7 +1550,7 @@ public class Batfish implements AutoCloseable {
 			String name = serializedConfig.getName();
 			_logger.info("Reading vendor config: \"" + serializedConfig + "\"");
 			Object object = deserializeObject(serializedConfig);
-			VendorConfiguration vc = (VendorConfiguration) object;
+			GenericConfigObject vc = (GenericConfigObject) object;
 			vendorConfigurations.put(name, vc);
 			_logger.info("...OK\n");
 		}
@@ -1948,7 +1949,7 @@ public class Batfish implements AutoCloseable {
 
 	public Map<String, Configuration> getConfigurations(
 			String serializedVendorConfigPath) {
-		Map<String, VendorConfiguration> vendorConfigurations = deserializeVendorConfigurations(serializedVendorConfigPath);
+		Map<String, GenericConfigObject> vendorConfigurations = deserializeVendorConfigurations(serializedVendorConfigPath);
 		Map<String, Configuration> configurations = convertConfigurations(vendorConfigurations);
 		return configurations;
 	}
@@ -1963,7 +1964,14 @@ public class Batfish implements AutoCloseable {
 				Map<File, String> deltaConfigsText = readConfigurationFiles(configParentDir
 						.toString(), BfConsts.RELPATH_CONFIGURATIONS_DIR);
 				Map<String, VendorConfiguration> vendorDeltaConfigs = parseVendorConfigurations(deltaConfigsText);
-				Map<String, Configuration> deltaConfigs = convertConfigurations(vendorDeltaConfigs);
+
+				//convert the map to the right type
+            Map<String, GenericConfigObject> castedConfigs = new HashMap<String, GenericConfigObject>();
+            for (String name : vendorDeltaConfigs.keySet()) {
+               castedConfigs.put(name, vendorDeltaConfigs.get(name));
+            }
+				
+				Map<String, Configuration> deltaConfigs = convertConfigurations(castedConfigs);
 				return deltaConfigs;
 			}
 		}
@@ -3534,8 +3542,8 @@ public class Batfish implements AutoCloseable {
 			.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
 			resetTimer();
 			new File(outputPath).mkdirs();
-			Path currentOutputPath = Paths.get(outputPath, 
-					BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR);
+			Path currentOutputPath = Paths.get(outputPath, 					
+					BfConsts.RELPATH_AWS_VPC_CONFIGS_FILE);
 			_logger.debug("Serializing AWS VPCs to "
 					+ currentOutputPath.toString() + "\"...");
 			serializeObject(config, currentOutputPath.toFile());
