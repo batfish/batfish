@@ -32,7 +32,7 @@ public class RouteTable implements AwsVpcEntity, Serializable {
       initRoutes(routes, logger);            
    }
    
-   public List<RouteTableAssociation> getRouteTableAssociations() {
+   public List<RouteTableAssociation> getAssociations() {
 	   return _routeTableAssociations;
    }
    

@@ -31,10 +31,18 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
       JSONArray entries = jObj.getJSONArray(JSON_KEY_ENTRIES);
       InitEntries(entries, logger);            
    }
+
+   public List<NetworkAclAssociation> getAssociations() {
+	   return _networkAclAssociations;
+   }
    
    @Override
    public String getId() {
       return _networkAclId;
+   }
+   
+   public String getVpcId() {
+	   return _vpcId;
    }
 
    private void InitAssociations(JSONArray associations, BatfishLogger logger) throws JSONException {
