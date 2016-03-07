@@ -9,18 +9,21 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class VgwTelemetry implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
 
-	private String _status;
-	private String _statusMessage;
-	private int _acceptedRouteCount;
-	private Ip _outsideIpAddress;
+   private int _acceptedRouteCount;
+   private Ip _outsideIpAddress;
+   private String _status;
+   private String _statusMessage;
 
-	public VgwTelemetry(JSONObject jObj, BatfishLogger logger) throws JSONException {
-		_status = jObj.getString(AwsVpcEntity.JSON_KEY_STATUS);
-		_statusMessage = jObj.getString(AwsVpcEntity.JSON_KEY_STATUS_MESSAGE);
-		_acceptedRouteCount = jObj.getInt(AwsVpcEntity.JSON_KEY_ACCEPTED_ROUTE_COUNT);
-		_outsideIpAddress = new Ip(jObj.getString(AwsVpcEntity.JSON_KEY_OUTSIDE_IP_ADDRESS));
+   public VgwTelemetry(JSONObject jObj, BatfishLogger logger)
+         throws JSONException {
+      _status = jObj.getString(AwsVpcEntity.JSON_KEY_STATUS);
+      _statusMessage = jObj.getString(AwsVpcEntity.JSON_KEY_STATUS_MESSAGE);
+      _acceptedRouteCount = jObj
+            .getInt(AwsVpcEntity.JSON_KEY_ACCEPTED_ROUTE_COUNT);
+      _outsideIpAddress = new Ip(
+            jObj.getString(AwsVpcEntity.JSON_KEY_OUTSIDE_IP_ADDRESS));
 
-	}
+   }
 }

@@ -37,6 +37,8 @@ public class RoutingInstance implements Serializable {
 
    private Map<String, NamedBgpGroup> _namedBgpGroups;
 
+   private final Map<String, NodeDevice> _nodeDevices;
+
    private Map<Ip, OspfArea> _ospfAreas;
 
    private List<String> _ospfExportPolicies;
@@ -48,8 +50,6 @@ public class RoutingInstance implements Serializable {
    private Ip _routerId;
 
    private final JuniperSystem _system;
-
-   private final Map<String, NodeDevice> _nodeDevices;
 
    public RoutingInstance(String name) {
       _isisSettings = new IsisSettings();
@@ -116,6 +116,10 @@ public class RoutingInstance implements Serializable {
       return _namedBgpGroups;
    }
 
+   public Map<String, NodeDevice> getNodeDevices() {
+      return _nodeDevices;
+   }
+
    public Map<Ip, OspfArea> getOspfAreas() {
       return _ospfAreas;
    }
@@ -154,10 +158,6 @@ public class RoutingInstance implements Serializable {
 
    public void setRouterId(Ip routerId) {
       _routerId = routerId;
-   }
-
-   public Map<String, NodeDevice> getNodeDevices() {
-      return _nodeDevices;
    }
 
 }

@@ -15,47 +15,59 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
    private static final long serialVersionUID = 1L;
 
    private String _groupId;
-   
+
    private String _groupName;
 
    private List<IpPermissions> _ipPermsEgress = new LinkedList<IpPermissions>();
 
    private List<IpPermissions> _ipPermsIngress = new LinkedList<IpPermissions>();
 
-   public SecurityGroup(JSONObject jObj, BatfishLogger logger) throws JSONException {
+   public SecurityGroup(JSONObject jObj, BatfishLogger logger)
+         throws JSONException {
       _groupId = jObj.getString(JSON_KEY_GROUP_ID);
       _groupName = jObj.getString(JSON_KEY_GROUP_NAME);
-      
-      //logger.debugf("doing security group %s\n", _groupId);
+
+      // logger.debugf("doing security group %s\n", _groupId);
 
       JSONArray permsEgress = jObj.getJSONArray(JSON_KEY_IP_PERMISSIONS_EGRESS);
-      initIpPerms(_ipPermsEgress, permsEgress, logger);      
+      initIpPerms(_ipPermsEgress, permsEgress, logger);
 
       JSONArray permsIngress = jObj.getJSONArray(JSON_KEY_IP_PERMISSIONS);
-      initIpPerms(_ipPermsIngress, permsIngress, logger);      
+      initIpPerms(_ipPermsIngress, permsIngress, logger);
    }
-   
+
+   private void addEgressAccessLines(List<IpPermissions> permsList,
+         List<IpAccessListLine> accessList) {
+      for (IpPermissions ipPerms : permsList) {
+         accessList.add(ipPerms.toEgressIpAccessListLine());
+      }
+   }
+
+   private void addIngressAccessLines(List<IpPermissions> permsList,
+         List<IpAccessListLine> accessList) {
+      for (IpPermissions ipPerms : permsList) {
+         accessList.add(ipPerms.toIngressIpAccessListLine());
+      }
+   }
+
+   public void addInOutAccessLines(List<IpAccessListLine> inboundRules,
+         List<IpAccessListLine> outboundRules) {
+      addIngressAccessLines(_ipPermsIngress, inboundRules);
+      addEgressAccessLines(_ipPermsEgress, outboundRules);
+   }
+
    @Override
    public String getId() {
       return _groupId;
    }
 
-   private void initIpPerms(List<IpPermissions> ipPermsList, JSONArray ipPermsJson, BatfishLogger logger) throws JSONException {
+   private void initIpPerms(List<IpPermissions> ipPermsList,
+         JSONArray ipPermsJson, BatfishLogger logger) throws JSONException {
 
       for (int index = 0; index < ipPermsJson.length(); index++) {
          JSONObject childObject = ipPermsJson.getJSONObject(index);
-         ipPermsList.add(new IpPermissions(childObject, logger));         
+         ipPermsList.add(new IpPermissions(childObject, logger));
       }
    }
 
-   public void addInOutAccessLines(List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules) {
-	   addAccessLines(_ipPermsIngress, inboundRules);
-	   addAccessLines(_ipPermsEgress, outboundRules);	   
-   }
-   
-   private void addAccessLines(List<IpPermissions> permsList, List<IpAccessListLine> accessList) {	   
-	   for (IpPermissions ipPerms : permsList) {
-		   accessList.add(ipPerms.toIpAccessListLine());
-	   }	   
-   }
 }

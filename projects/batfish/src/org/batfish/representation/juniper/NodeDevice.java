@@ -8,7 +8,7 @@ import org.batfish.util.ComparableStructure;
 public class NodeDevice extends ComparableStructure<String> {
 
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
 

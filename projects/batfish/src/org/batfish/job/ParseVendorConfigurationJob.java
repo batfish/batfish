@@ -138,6 +138,7 @@ public class ParseVendorConfigurationJob extends
                _warnings);
          break;
 
+      case AWS_VPC:
       case JUNIPER_SWITCH:
       case VXWORKS:
          String unsupportedError = "Unsupported configuration format: \""
