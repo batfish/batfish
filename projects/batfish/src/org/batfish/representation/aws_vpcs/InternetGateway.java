@@ -5,11 +5,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.representation.Configuration;
+import org.batfish.representation.Interface;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class InternetGateway implements AwsVpcConfigElement, Serializable {
+public class InternetGateway implements AwsVpcEntity, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -31,5 +33,24 @@ public class InternetGateway implements AwsVpcConfigElement, Serializable {
 	@Override
 	public String getId() {
 		return _internetGatewayId;
+	}
+
+	public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfiguration) {
+		   Configuration cfgNode = new Configuration(_internetGatewayId);
+		   
+		   for (String vpcId : _attachmentVpcIds) {
+
+			   Interface igwIface = new Interface(vpcId, cfgNode);			   
+			   cfgNode.getInterfaces().put(igwIface.getName(), igwIface);
+			   
+			   //add the interface to the vpc router
+			   Configuration vpcConfigNode = awsVpcConfiguration.getConfigurationNodes().get(vpcId);
+			   Interface vpcIface = new Interface(_internetGatewayId, vpcConfigNode);			   
+			   vpcConfigNode.getInterfaces().put(vpcIface.getName(), vpcIface);
+			   
+			   //TODO ari : assign address to both interfaces
+		   }
+
+		   return cfgNode;
 	}
 }

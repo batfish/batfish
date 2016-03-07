@@ -16,6 +16,6 @@ public class NetworkAclAssociation implements Serializable {
    private String _subnetId = null;
    
    public NetworkAclAssociation(JSONObject jObj, BatfishLogger logger) throws JSONException {
-         _subnetId = jObj.getString(AwsVpcConfigElement.JSON_KEY_SUBNET_ID);
+         _subnetId = jObj.getString(AwsVpcEntity.JSON_KEY_SUBNET_ID);
    }
 }

@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.Prefix;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -23,17 +24,22 @@ public class IpPermissions implements Serializable {
    private int _toPort = -1;
             
    public IpPermissions(JSONObject jObj, BatfishLogger logger) throws JSONException {
-      _ipProtocol = jObj.getString(AwsVpcConfigElement.JSON_KEY_IP_PROTOCOL);
+      _ipProtocol = jObj.getString(AwsVpcEntity.JSON_KEY_IP_PROTOCOL);
       
-      _fromPort = Utils.tryGetInt(jObj, AwsVpcConfigElement.JSON_KEY_FROM_PORT, _fromPort);
-      _toPort = Utils.tryGetInt(jObj, AwsVpcConfigElement.JSON_KEY_TO_PORT, _toPort);
+      _fromPort = Utils.tryGetInt(jObj, AwsVpcEntity.JSON_KEY_FROM_PORT, _fromPort);
+      _toPort = Utils.tryGetInt(jObj, AwsVpcEntity.JSON_KEY_TO_PORT, _toPort);
       
-      JSONArray ranges = jObj.getJSONArray(AwsVpcConfigElement.JSON_KEY_IP_RANGES);
+      JSONArray ranges = jObj.getJSONArray(AwsVpcEntity.JSON_KEY_IP_RANGES);
 
       for (int index = 0; index < ranges.length(); index++) {
           JSONObject childObject = ranges.getJSONObject(index);
-          _ipRanges.add(new Prefix(childObject.getString(AwsVpcConfigElement.JSON_KEY_CIDR_IP)));         
+          _ipRanges.add(new Prefix(childObject.getString(AwsVpcEntity.JSON_KEY_CIDR_IP)));         
        }
+   }
+
+   public IpAccessListLine toIpAccessListLine() {
+	   //TODO: ari
+	   return null;
    }
    
 }

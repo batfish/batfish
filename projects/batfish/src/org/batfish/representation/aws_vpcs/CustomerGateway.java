@@ -6,7 +6,7 @@ import org.batfish.representation.Ip;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class CustomerGateway implements AwsVpcConfigElement, Serializable {
+public class CustomerGateway implements AwsVpcEntity, Serializable {
 
 	private static final long serialVersionUID = 1L;
 

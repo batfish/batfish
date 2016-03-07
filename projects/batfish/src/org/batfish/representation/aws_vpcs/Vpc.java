@@ -1,13 +1,16 @@
 package org.batfish.representation.aws_vpcs;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.representation.Configuration;
+import org.batfish.representation.Interface;
 import org.batfish.representation.Prefix;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class Vpc implements AwsVpcConfigElement, Serializable {
+public class Vpc implements AwsVpcEntity, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -23,5 +26,14 @@ public class Vpc implements AwsVpcConfigElement, Serializable {
 	@Override
 	public String getId() {
 		return _vpcId;
+	}
+
+	public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfiguration) {
+		   Configuration cfgNode = new Configuration(_vpcId);
+		
+		   //we only create a node here
+		   //interfaces are added to this node as we traverse subnets and internetgateways
+		   
+		   return cfgNode;
 	}
 }

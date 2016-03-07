@@ -6,7 +6,7 @@ import org.batfish.representation.Prefix;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class VpcPeeringConnection implements AwsVpcConfigElement, Serializable {
+public class VpcPeeringConnection implements AwsVpcEntity, Serializable {
 
 	private static final long serialVersionUID = 1L;
 

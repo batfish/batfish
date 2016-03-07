@@ -5,11 +5,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.representation.IpAccessListLine;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class SecurityGroup implements AwsVpcConfigElement, Serializable {
+public class SecurityGroup implements AwsVpcEntity, Serializable {
 
    private static final long serialVersionUID = 1L;
 
@@ -45,5 +46,16 @@ public class SecurityGroup implements AwsVpcConfigElement, Serializable {
          JSONObject childObject = ipPermsJson.getJSONObject(index);
          ipPermsList.add(new IpPermissions(childObject, logger));         
       }
+   }
+
+   public void addInOutAccessLines(List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules) {
+	   addAccessLines(_ipPermsIngress, inboundRules);
+	   addAccessLines(_ipPermsEgress, outboundRules);	   
+   }
+   
+   private void addAccessLines(List<IpPermissions> permsList, List<IpAccessListLine> accessList) {	   
+	   for (IpPermissions ipPerms : permsList) {
+		   accessList.add(ipPerms.toIpAccessListLine());
+	   }	   
    }
 }

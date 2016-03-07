@@ -21,14 +21,14 @@ public class NetworkAclEntry implements Serializable {
 	private int _ruleNumber;
 
 	public NetworkAclEntry(JSONObject jObj, BatfishLogger logger) throws JSONException {
-		_cidrBlock = new Prefix(jObj.getString(AwsVpcConfigElement.JSON_KEY_CIDR_BLOCK));
+		_cidrBlock = new Prefix(jObj.getString(AwsVpcEntity.JSON_KEY_CIDR_BLOCK));
 
-		_isAllow = jObj.getString(AwsVpcConfigElement.JSON_KEY_RULE_ACTION).equals("allow") ? true : false;
+		_isAllow = jObj.getString(AwsVpcEntity.JSON_KEY_RULE_ACTION).equals("allow") ? true : false;
 
-		_isEgress = jObj.getBoolean(AwsVpcConfigElement.JSON_KEY_EGRESS);
+		_isEgress = jObj.getBoolean(AwsVpcEntity.JSON_KEY_EGRESS);
 
-		_protocol = jObj.getString(AwsVpcConfigElement.JSON_KEY_PROTOCOL);
+		_protocol = jObj.getString(AwsVpcEntity.JSON_KEY_PROTOCOL);
 
-		_ruleNumber = jObj.getInt(AwsVpcConfigElement.JSON_KEY_RULE_NUMBER);
+		_ruleNumber = jObj.getInt(AwsVpcEntity.JSON_KEY_RULE_NUMBER);
 	}
 }

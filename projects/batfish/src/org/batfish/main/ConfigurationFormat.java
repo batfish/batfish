@@ -2,6 +2,7 @@ package org.batfish.main;
 
 public enum ConfigurationFormat {
    ARISTA("arista"),
+   AWS_VPC("aws_vpc"),
    CISCO("cisco"),
    CISCO_IOS_XR("cisco"),
    FLAT_JUNIPER("juniper"),
