@@ -16,6 +16,15 @@ public class Interface extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
+   private static InterfaceType computeAwsInterfaceType(String name) {
+	   if (name.startsWith("v")) {
+		   return InterfaceType.VPN;
+	   }
+	   else {
+		   return InterfaceType.PHYSICAL;
+	   }
+   }
+
    private static InterfaceType computeCiscoInterfaceType(String name) {
       if (name.startsWith("Async")) {
          return InterfaceType.PHYSICAL;
@@ -95,6 +104,8 @@ public class Interface extends ComparableStructure<String> {
    public static InterfaceType computeInterfaceType(String name,
          ConfigurationFormat format) {
       switch (format) {
+      case AWS_VPC:
+    	  return computeAwsInterfaceType(name);
       case ARISTA:
       case CISCO:
       case CISCO_IOS_XR:

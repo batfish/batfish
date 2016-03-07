@@ -9,7 +9,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class NetworkAcl implements AwsVpcConfigElement, Serializable {
+public class NetworkAcl implements AwsVpcEntity, Serializable {
 
    private static final long serialVersionUID = 1L;
 
@@ -31,10 +31,18 @@ public class NetworkAcl implements AwsVpcConfigElement, Serializable {
       JSONArray entries = jObj.getJSONArray(JSON_KEY_ENTRIES);
       InitEntries(entries, logger);            
    }
+
+   public List<NetworkAclAssociation> getAssociations() {
+	   return _networkAclAssociations;
+   }
    
    @Override
    public String getId() {
       return _networkAclId;
+   }
+   
+   public String getVpcId() {
+	   return _vpcId;
    }
 
    private void InitAssociations(JSONArray associations, BatfishLogger logger) throws JSONException {

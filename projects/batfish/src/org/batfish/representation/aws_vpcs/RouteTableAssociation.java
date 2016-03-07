@@ -18,10 +18,18 @@ public class RouteTableAssociation implements Serializable {
    
    public RouteTableAssociation(JSONObject jObj, BatfishLogger logger) throws JSONException {
 
-       _isMain = jObj.getBoolean(AwsVpcConfigElement.JSON_KEY_MAIN);
+       _isMain = jObj.getBoolean(AwsVpcEntity.JSON_KEY_MAIN);
 
-      if (jObj.has(AwsVpcConfigElement.JSON_KEY_SUBNET_ID)) {
-         _subnetId = jObj.getString(AwsVpcConfigElement.JSON_KEY_SUBNET_ID);
+      if (jObj.has(AwsVpcEntity.JSON_KEY_SUBNET_ID)) {
+         _subnetId = jObj.getString(AwsVpcEntity.JSON_KEY_SUBNET_ID);
       }
    }
+   
+   public String getSubnetId() {
+	   return _subnetId;
+   }
+
+   public boolean isMain() {
+	   return _isMain;
+   }   
 }

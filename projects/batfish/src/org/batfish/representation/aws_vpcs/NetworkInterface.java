@@ -12,7 +12,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class NetworkInterface implements AwsVpcConfigElement, Serializable {
+public class NetworkInterface implements AwsVpcEntity, Serializable {
 
 	private static final long serialVersionUID = 1L;
 

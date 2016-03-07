@@ -9,7 +9,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class RouteTable implements AwsVpcConfigElement, Serializable {
+public class RouteTable implements AwsVpcEntity, Serializable {
 
    private static final long serialVersionUID = 1L;
 
@@ -26,10 +26,14 @@ public class RouteTable implements AwsVpcConfigElement, Serializable {
       _vpcId = jObj.getString(JSON_KEY_VPC_ID);
       
       JSONArray associations = jObj.getJSONArray(JSON_KEY_ASSOCIATIONS);
-      InitAssociations(associations, logger);
+      initAssociations(associations, logger);
       
       JSONArray routes = jObj.getJSONArray(JSON_KEY_ROUTES);
-      InitRoutes(routes, logger);            
+      initRoutes(routes, logger);            
+   }
+   
+   public List<RouteTableAssociation> getAssociations() {
+	   return _routeTableAssociations;
    }
    
    @Override
@@ -37,7 +41,15 @@ public class RouteTable implements AwsVpcConfigElement, Serializable {
       return _routeTableId;
    }
 
-   private void InitAssociations(JSONArray associations, BatfishLogger logger) throws JSONException {
+   public List<Route> getRoutes() {
+	   return _routes;
+   }
+   
+   public String getVpcId() {
+	   return _vpcId;
+   }
+   
+   private void initAssociations(JSONArray associations, BatfishLogger logger) throws JSONException {
 
       for (int index = 0; index < associations.length(); index++) {
          JSONObject childObject = associations.getJSONObject(index);
@@ -45,7 +57,7 @@ public class RouteTable implements AwsVpcConfigElement, Serializable {
       }
    }
 
-   private void InitRoutes(JSONArray routes, BatfishLogger logger) throws JSONException {
+   private void initRoutes(JSONArray routes, BatfishLogger logger) throws JSONException {
       
       for (int index = 0; index < routes.length(); index++) {
          JSONObject childObject = routes.getJSONObject(index);

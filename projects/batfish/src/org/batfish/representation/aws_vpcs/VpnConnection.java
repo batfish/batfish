@@ -10,7 +10,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class VpnConnection implements AwsVpcConfigElement, Serializable {
+public class VpnConnection implements AwsVpcEntity, Serializable {
 
 	private static final long serialVersionUID = 1L;
 

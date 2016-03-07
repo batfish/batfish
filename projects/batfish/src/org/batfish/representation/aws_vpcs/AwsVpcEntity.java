@@ -1,6 +1,6 @@
 package org.batfish.representation.aws_vpcs;
 
-public interface AwsVpcConfigElement {
+public interface AwsVpcEntity {
 
 	static final String JSON_KEY_ACCEPTED_ROUTE_COUNT = "AcceptedRouteCount";
 	static final String JSON_KEY_ACCEPTER_VPC_INFO = "AccepterVpcInfo";

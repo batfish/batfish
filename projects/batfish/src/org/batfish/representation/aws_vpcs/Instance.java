@@ -4,12 +4,17 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.main.ConfigurationFormat;
+import org.batfish.representation.Configuration;
+import org.batfish.representation.Interface;
+import org.batfish.representation.IpAccessListLine;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class Instance implements AwsVpcConfigElement, Serializable {
+public class Instance implements AwsVpcEntity, Serializable {
 
    private static final long serialVersionUID = 1L;
 
@@ -60,6 +65,42 @@ public class Instance implements AwsVpcConfigElement, Serializable {
          JSONObject childObject = routes.getJSONObject(index);
          _networkInterfaces.add(childObject.getString(JSON_KEY_NETWORK_INTERFACE_ID));         
       }
+   }
+   
+   public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfig) {
+	   Configuration cfgNode = new Configuration(_instanceId);
+	   	   	   
+	   List<IpAccessListLine> inboundRules = new LinkedList<IpAccessListLine>();
+	   List<IpAccessListLine> outboundRules = new LinkedList<IpAccessListLine>();
+	   
+	   for (String sGroupId : _securityGroups) {
+		   SecurityGroup sGroup = awsVpcConfig.getSecurityGroups().get(sGroupId);
+		   
+		   if (sGroup == null)
+			   throw new BatfishException("Security group " + sGroupId 
+					   + " for instance " + _instanceId + " not found");
+		   
+		   sGroup.addInOutAccessLines(inboundRules, outboundRules);
+	   }
+	   
+	   for (String interfaceId : _networkInterfaces) {
 
+		   NetworkInterface netInterface = awsVpcConfig.getNetworkInterfaces().get(interfaceId);
+
+		   if (netInterface == null)
+			   throw new BatfishException("Network interface " + interfaceId 
+					   + " for instance " + _instanceId + " not found");		   		   
+		   
+		   Interface iface = new Interface(interfaceId, cfgNode);
+		   
+		   //TODO: ari: configure the interface's address(es)
+		   
+		   //TODO: ari: attach inbound and outbound filters
+		
+		   cfgNode.getInterfaces().put(interfaceId, iface);
+		   
+	   }
+	   
+	   return cfgNode;	   
    }
 }
