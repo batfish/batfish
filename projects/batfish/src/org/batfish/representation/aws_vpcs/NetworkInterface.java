@@ -66,6 +66,10 @@ public class NetworkInterface implements AwsVpcEntity, Serializable {
       }
    }
 
+   public String getAttachmentInstanceId() {
+      return _attachmentInstanceId;
+   }
+
    @Override
    public String getId() {
       return _networkInterfaceId;

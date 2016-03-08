@@ -1,6 +1,7 @@
 package org.batfish.representation.aws_vpcs;
 
 import java.io.Serializable;
+
 import org.batfish.common.BatfishLogger;
 import org.batfish.representation.Prefix;
 import org.codehaus.jettison.json.JSONException;
@@ -32,13 +33,21 @@ public class VpcPeeringConnection implements AwsVpcEntity, Serializable {
 
       JSONObject requesterJson = jObj
             .getJSONObject(JSON_KEY_REQUESTER_VPC_INFO);
-      _requesterVpcId = accepterJson.getString(JSON_KEY_VPC_ID);
+      _requesterVpcId = requesterJson.getString(JSON_KEY_VPC_ID);
       _requesterVpcCidrBlock = new Prefix(
             requesterJson.getString(JSON_KEY_CIDR_BLOCK));
+   }
+
+   public String getAccepterVpcId() {
+      return _accepterVpcId;
    }
 
    @Override
    public String getId() {
       return _vpcPeeringConnectionId;
+   }
+
+   public String getRequesterVpcId() {
+      return _requesterVpcId;
    }
 }

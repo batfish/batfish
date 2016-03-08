@@ -6,6 +6,8 @@ import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.representation.Configuration;
+import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.StaticRoute;
@@ -47,13 +49,15 @@ public class Route implements Serializable {
          _targetType = TargetType.Gateway;
          _target = jObj.getString(AwsVpcEntity.JSON_KEY_GATEWAY_ID);
       }
-      else if (jObj.has(AwsVpcEntity.JSON_KEY_INSTANCE_ID)) {
-         _targetType = TargetType.Instance;
-         _target = jObj.getString(AwsVpcEntity.JSON_KEY_INSTANCE_ID);
-      }
       else if (jObj.has(AwsVpcEntity.JSON_KEY_NETWORK_INTERFACE_ID)) {
          _targetType = TargetType.NetworkInterface;
          _target = jObj.getString(AwsVpcEntity.JSON_KEY_NETWORK_INTERFACE_ID);
+      }
+      // NOTE: so far in practice this branch is never reached after moving
+      // networkInterfaceId above it!
+      else if (jObj.has(AwsVpcEntity.JSON_KEY_INSTANCE_ID)) {
+         _targetType = TargetType.Instance;
+         _target = jObj.getString(AwsVpcEntity.JSON_KEY_INSTANCE_ID);
       }
       else {
          throw new JSONException("Target not found in route " + jObj.toString());
@@ -61,7 +65,8 @@ public class Route implements Serializable {
    }
 
    public StaticRoute toStaticRoute(AwsVpcConfiguration awsVpcConfiguration,
-         Ip vpcAddress, Ip igwAddress, Ip vgwAddress, Subnet subnet) {
+         Ip vpcAddress, Ip igwAddress, Ip vgwAddress, Subnet subnet,
+         Configuration subnetCfgNode) {
       StaticRoute staticRoute;
       if (_state.equals("blackhole")) {
          staticRoute = new StaticRoute(_destinationCidrBlock, null,
@@ -104,29 +109,117 @@ public class Route implements Serializable {
          case NetworkInterface:
             NetworkInterface networkInterface = awsVpcConfiguration
                   .getNetworkInterfaces().get(_target);
-            if (!networkInterface.getSubnetId().equals(subnet.getId())) {
-               throw new BatfishException(
-                     "Do not support network interface on different subnet");
+            String networkInterfaceSubnetId = networkInterface.getSubnetId();
+            if (networkInterfaceSubnetId.equals(subnet.getId())) {
+               Set<Ip> networkInterfaceIps = new TreeSet<Ip>();
+               networkInterfaceIps.addAll(networkInterface
+                     .getIpAddressAssociations().keySet());
+               Ip lowestIp = networkInterfaceIps.toArray(new Ip[] {})[0];
+               if (!subnet.getCidrBlock().contains(lowestIp)) {
+                  throw new BatfishException(
+                        "Ip of network interface specified in static route not in containing subnet");
+               }
+               staticRoute = new StaticRoute(_destinationCidrBlock, lowestIp,
+                     null, DEFAULT_STATIC_ROUTE_ADMIN,
+                     DEFAULT_STATIC_ROUTE_COST);
             }
-            Set<Ip> networkInterfaceIps = new TreeSet<Ip>();
-            networkInterfaceIps.addAll(networkInterface
-                  .getIpAddressAssociations().keySet());
-            Ip lowestIp = networkInterfaceIps.toArray(new Ip[] {})[0];
-            if (!subnet.getCidrBlock().contains(lowestIp)) {
-               throw new BatfishException(
-                     "Ip of network interface specified in static route not in containing subnet");
+            else {
+               String networkInterfaceVpcId = awsVpcConfiguration.getSubnets()
+                     .get(networkInterfaceSubnetId).getVpcId();
+               String vpcId = subnet.getVpcId();
+               if (!vpcId.equals(networkInterfaceVpcId)) {
+                  throw new BatfishException(
+                        "Cannot peer with interface on different VPC");
+               }
+               // need to create a link between subnet on which route is created
+               // and instance containing network interface
+               String subnetIfaceName = _target;
+               Prefix instanceLinkPrefix = awsVpcConfiguration
+                     .getNextGeneratedLinkSubnet();
+               Prefix subnetIfacePrefix = instanceLinkPrefix;
+               Interface subnetIface = new Interface(subnetIfaceName,
+                     subnetCfgNode);
+               subnetCfgNode.getInterfaces().put(subnetIfaceName, subnetIface);
+               subnetIface.setPrefix(subnetIfacePrefix);
+               subnetIface.getAllPrefixes().add(subnetIfacePrefix);
+
+               // set up instance interface
+               String instanceId = networkInterface.getAttachmentInstanceId();
+               String instanceIfaceName = subnet.getId();
+               Configuration instanceCfgNode = awsVpcConfiguration
+                     .getConfigurationNodes().get(instanceId);
+               Prefix instanceIfacePrefix = new Prefix(
+                     instanceLinkPrefix.getEndAddress(),
+                     instanceLinkPrefix.getPrefixLength());
+               Interface instanceIface = new Interface(instanceIfaceName,
+                     instanceCfgNode);
+               instanceCfgNode.getInterfaces().put(instanceIfaceName,
+                     instanceIface);
+               instanceIface.setPrefix(instanceIfacePrefix);
+               instanceIface.getAllPrefixes().add(instanceIfacePrefix);
+               Ip nextHopIp = instanceIfacePrefix.getAddress();
+               staticRoute = new StaticRoute(_destinationCidrBlock, nextHopIp,
+                     null, DEFAULT_STATIC_ROUTE_ADMIN,
+                     DEFAULT_STATIC_ROUTE_COST);
             }
-            staticRoute = new StaticRoute(_destinationCidrBlock, lowestIp,
-                  null, DEFAULT_STATIC_ROUTE_ADMIN, DEFAULT_STATIC_ROUTE_COST);
             break;
 
          case VpcPeeringConnection:
-            // TODO: create route for vpc peering connection
-            awsVpcConfiguration.getWarnings().redFlag(
-                  "Skipping creating route to "
-                        + _destinationCidrBlock.toString()
-                        + " for vpc peering connection: \"" + _target + "\"");
-            return null;
+            // create route for vpc peering connection
+            String vpcPeeringConnectionid = _target;
+            VpcPeeringConnection vpcPeeringConnection = awsVpcConfiguration
+                  .getVpcPeeringConnections().get(vpcPeeringConnectionid);
+            String localVpcId = subnet.getVpcId();
+            String accepterVpcId = vpcPeeringConnection.getAccepterVpcId();
+            String requesterVpcId = vpcPeeringConnection.getRequesterVpcId();
+            String remoteVpcId = localVpcId.equals(accepterVpcId) ? requesterVpcId
+                  : accepterVpcId;
+            Configuration remoteVpcCfgNode = awsVpcConfiguration
+                  .getConfigurationNodes().get(remoteVpcId);
+            if (remoteVpcCfgNode == null) {
+               awsVpcConfiguration.getWarnings().redFlag(
+                     "VPC \"" + localVpcId
+                           + "\" cannot peer with non-existent VPC: \""
+                           + remoteVpcId + "\"");
+               return null;
+            }
+
+            // set up subnet interface if necessary
+            String subnetIfaceName = remoteVpcId;
+            String remoteVpcIfaceName = subnet.getId();
+            Ip remoteVpcIfaceAddress;
+            if (!subnetCfgNode.getInterfaces().containsKey(subnetIfaceName)) {
+               // create prefix on which subnet and remote vpc router will
+               // connect
+               Prefix peeringLinkPrefix = awsVpcConfiguration
+                     .getNextGeneratedLinkSubnet();
+               Prefix subnetIfacePrefix = peeringLinkPrefix;
+               Interface subnetIface = new Interface(subnetIfaceName,
+                     subnetCfgNode);
+               subnetCfgNode.getInterfaces().put(subnetIfaceName, subnetIface);
+               subnetIface.setPrefix(subnetIfacePrefix);
+               subnetIface.getAllPrefixes().add(subnetIfacePrefix);
+
+               // set up remote vpc router interface
+               Prefix remoteVpcIfacePrefix = new Prefix(
+                     peeringLinkPrefix.getEndAddress(),
+                     peeringLinkPrefix.getPrefixLength());
+               Interface remoteVpcIface = new Interface(remoteVpcIfaceName,
+                     remoteVpcCfgNode);
+               remoteVpcCfgNode.getInterfaces().put(remoteVpcIfaceName,
+                     remoteVpcIface);
+               remoteVpcIface.setPrefix(remoteVpcIfacePrefix);
+               remoteVpcIface.getAllPrefixes().add(remoteVpcIfacePrefix);
+            }
+            // interface pair exists now, so just retrieve existing information
+            remoteVpcIfaceAddress = remoteVpcCfgNode.getInterfaces()
+                  .get(remoteVpcIfaceName).getPrefix().getAddress();
+
+            // initialize static route on new link
+            staticRoute = new StaticRoute(_destinationCidrBlock,
+                  remoteVpcIfaceAddress, null, DEFAULT_STATIC_ROUTE_ADMIN,
+                  DEFAULT_STATIC_ROUTE_COST);
+            break;
 
          case Instance:
             // TODO: create route for instance

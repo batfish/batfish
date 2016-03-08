@@ -129,6 +129,10 @@ public class Subnet implements AwsVpcEntity, Serializable {
       return _internetGatewayId;
    }
 
+   public String getVpcId() {
+      return _vpcId;
+   }
+
    public String getVpnGatewayId() {
       return _vpnGatewayId;
    }
@@ -236,7 +240,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
       // TODO: ari convert routes in the route table to static routes
       for (Route route : myRouteTable.getRoutes()) {
          StaticRoute sRoute = route.toStaticRoute(awsVpcConfiguration,
-               vpcIfacePrefix.getAddress(), igwAddress, vgwAddress, this);
+               vpcIfacePrefix.getAddress(), igwAddress, vgwAddress, this,
+               cfgNode);
          if (sRoute != null) {
             cfgNode.getStaticRoutes().add(sRoute);
          }
