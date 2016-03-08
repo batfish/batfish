@@ -9,6 +9,7 @@ import org.batfish.representation.Configuration;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.Prefix;
+import org.batfish.representation.StaticRoute;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -63,6 +64,13 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
          // associate this gateway with the vpc
          awsVpcConfiguration.getVpcs().get(vpcId)
                .setInternetGatewayId(_internetGatewayId);
+
+         // add a route on the gateway to the vpc
+         Vpc vpc = awsVpcConfiguration.getVpcs().get(vpcId);
+         StaticRoute igwVpcRoute = new StaticRoute(vpc.getCidrBlock(),
+               vpcIfaceIp, null, Route.DEFAULT_STATIC_ROUTE_ADMIN,
+               Route.DEFAULT_STATIC_ROUTE_COST);
+         cfgNode.getStaticRoutes().add(igwVpcRoute);
 
       }
 

@@ -22,9 +22,13 @@ public class Instance implements AwsVpcEntity, Serializable {
 
    private static final long serialVersionUID = 1L;
 
+   private transient IpAccessList _inAcl;
+
    private String _instanceId;
 
    private List<String> _networkInterfaces = new LinkedList<String>();
+
+   private transient IpAccessList _outAcl;
 
    private List<String> _securityGroups = new LinkedList<String>();
 
@@ -57,6 +61,14 @@ public class Instance implements AwsVpcEntity, Serializable {
       return _instanceId;
    }
 
+   public IpAccessList getInAcl() {
+      return _inAcl;
+   }
+
+   public IpAccessList getOutAcl() {
+      return _outAcl;
+   }
+
    private void initNetworkInterfaces(JSONArray routes, BatfishLogger logger)
          throws JSONException {
 
@@ -83,6 +95,13 @@ public class Instance implements AwsVpcEntity, Serializable {
 
       List<IpAccessListLine> inboundRules = new LinkedList<IpAccessListLine>();
       List<IpAccessListLine> outboundRules = new LinkedList<IpAccessListLine>();
+      // create ACLs from inboundRules and outboundRules
+      IpAccessList inAcl = new IpAccessList(sgIngressAclName, inboundRules);
+      IpAccessList outAcl = new IpAccessList(sgEgressAclName, outboundRules);
+      cfgNode.getIpAccessLists().put(sgIngressAclName, inAcl);
+      cfgNode.getIpAccessLists().put(sgEgressAclName, outAcl);
+      _inAcl = inAcl;
+      _outAcl = outAcl;
 
       for (String sGroupId : _securityGroups) {
          SecurityGroup sGroup = awsVpcConfig.getSecurityGroups().get(sGroupId);
@@ -129,14 +148,9 @@ public class Instance implements AwsVpcEntity, Serializable {
          Ip lowestIp = privateIpAddresses.toArray(new Ip[] {})[0];
          iface.setPrefix(new Prefix(lowestIp, ifaceSubnet.getPrefixLength()));
 
-         // create ACLs from inboundRules and outboundRules
-         IpAccessList inAcl = new IpAccessList(sgIngressAclName, inboundRules);
-         IpAccessList outAcl = new IpAccessList(sgEgressAclName, outboundRules);
-         cfgNode.getIpAccessLists().put(sgIngressAclName, inAcl);
-         cfgNode.getIpAccessLists().put(sgEgressAclName, outAcl);
+         // apply ACLs to interface
          iface.setIncomingFilter(inAcl);
          iface.setOutgoingFilter(outAcl);
-
          cfgNode.getInterfaces().put(interfaceId, iface);
 
       }

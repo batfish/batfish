@@ -19,7 +19,7 @@ public class IpPermissions implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private static IpProtocol toIpProtocol(String ipProtocolAsString) {
+   public static IpProtocol toIpProtocol(String ipProtocolAsString) {
       switch (ipProtocolAsString) {
       case "tcp":
          return IpProtocol.TCP;

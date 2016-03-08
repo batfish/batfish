@@ -24,9 +24,9 @@ public class Route implements Serializable {
       VpcPeeringConnection
    }
 
-   private static final int DEFAULT_STATIC_ROUTE_ADMIN = 1;
+   public static final int DEFAULT_STATIC_ROUTE_ADMIN = 1;
 
-   private static final int DEFAULT_STATIC_ROUTE_COST = 0;
+   public static final int DEFAULT_STATIC_ROUTE_COST = 0;
 
    private static final long serialVersionUID = 1L;
 
@@ -157,6 +157,10 @@ public class Route implements Serializable {
                      instanceIface);
                instanceIface.setPrefix(instanceIfacePrefix);
                instanceIface.getAllPrefixes().add(instanceIfacePrefix);
+               Instance instance = awsVpcConfiguration.getInstances().get(
+                     instanceId);
+               instanceIface.setIncomingFilter(instance.getInAcl());
+               instanceIface.setOutgoingFilter(instance.getOutAcl());
                Ip nextHopIp = instanceIfacePrefix.getAddress();
                staticRoute = new StaticRoute(_destinationCidrBlock, nextHopIp,
                      null, DEFAULT_STATIC_ROUTE_ADMIN,

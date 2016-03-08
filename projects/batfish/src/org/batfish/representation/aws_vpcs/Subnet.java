@@ -3,12 +3,14 @@ package org.batfish.representation.aws_vpcs;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
+import org.batfish.representation.IpAccessList;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.StaticRoute;
 import org.codehaus.jettison.json.JSONException;
@@ -169,6 +171,11 @@ public class Subnet implements AwsVpcEntity, Serializable {
       vpcConfigNode.getInterfaces().put(vpcIface.getName(), vpcIface);
       vpcIface.getAllPrefixes().add(vpcIfacePrefix);
       vpcIface.setPrefix(vpcIfacePrefix);
+      // add a static route on the vpc router for this subnet
+      StaticRoute vpcToSubnetRoute = new StaticRoute(_cidrBlock,
+            subnetIfacePrefix.getAddress(), null,
+            Route.DEFAULT_STATIC_ROUTE_ADMIN, Route.DEFAULT_STATIC_ROUTE_COST);
+      vpcConfigNode.getStaticRoutes().add(vpcToSubnetRoute);
 
       // attach to igw if it exists
       _internetGatewayId = awsVpcConfiguration.getVpcs().get(_vpcId)
@@ -237,7 +244,6 @@ public class Subnet implements AwsVpcEntity, Serializable {
                + _subnetId);
       }
 
-      // TODO: ari convert routes in the route table to static routes
       for (Route route : myRouteTable.getRoutes()) {
          StaticRoute sRoute = route.toStaticRoute(awsVpcConfiguration,
                vpcIfacePrefix.getAddress(), igwAddress, vgwAddress, this,
@@ -247,14 +253,29 @@ public class Subnet implements AwsVpcEntity, Serializable {
          }
       }
 
-      // TODO: ari add a default deny at the end
-
       NetworkAcl myNetworkAcl = findMyNetworkAcl(awsVpcConfiguration
             .getNetworkAcls());
 
       if (myNetworkAcl == null) {
          throw new BatfishException("Could not find a network acl for subnet "
                + _subnetId);
+      }
+
+      IpAccessList inAcl = myNetworkAcl.getIngressAcl();
+      IpAccessList outAcl = myNetworkAcl.getEgressAcl();
+      cfgNode.getIpAccessLists().put(inAcl.getName(), inAcl);
+      cfgNode.getIpAccessLists().put(outAcl.getName(), outAcl);
+
+      for (Entry<String, Interface> eIface : cfgNode.getInterfaces().entrySet()) {
+         String ifaceName = eIface.getKey();
+         if (awsVpcConfiguration.getVpcs().containsKey(ifaceName)
+               || awsVpcConfiguration.getInternetGateways().containsKey(
+                     ifaceName)
+               || awsVpcConfiguration.getVpnGateways().containsKey(ifaceName)) {
+            Interface iface = eIface.getValue();
+            iface.setIncomingFilter(inAcl);
+            iface.setOutgoingFilter(outAcl);
+         }
       }
 
       // TODO: ari add acls in myNetworkAcl to the interface facing the VPC

@@ -1,10 +1,20 @@
 package org.batfish.representation.aws_vpcs;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.representation.IpAccessList;
+import org.batfish.representation.IpAccessListLine;
+import org.batfish.representation.IpProtocol;
+import org.batfish.representation.LineAction;
+import org.batfish.representation.Prefix;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -33,13 +43,60 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
       InitEntries(entries, logger);
    }
 
+   private IpAccessList getAcl(boolean isEgress) {
+      String listName = _networkAclId + (isEgress ? "_egress" : "_ingress");
+      Map<Integer, IpAccessListLine> lineMap = new TreeMap<Integer, IpAccessListLine>();
+      for (NetworkAclEntry entry : _entries) {
+         if ((isEgress && entry.getIsEgress())
+               || (!isEgress && !entry.getIsEgress())) {
+            IpAccessListLine line = new IpAccessListLine();
+            int key = entry.getRuleNumber();
+            if (entry.getIsAllow()) {
+               line.setAction(LineAction.ACCEPT);
+            }
+            else {
+               line.setAction(LineAction.REJECT);
+            }
+            Prefix prefix = entry.getCidrBlock();
+            if (!prefix.equals(Prefix.ZERO)) {
+               if (isEgress) {
+                  line.getDestinationIpRanges().add(prefix);
+               }
+               else {
+                  line.getSourceIpRanges().add(prefix);
+               }
+            }
+            IpProtocol protocol = IpPermissions.toIpProtocol(entry
+                  .getProtocol());
+            if (protocol != null) {
+               line.getProtocols().add(protocol);
+            }
+            // TODO: handle ports: ALWAYS use destination port
+            // range
+            lineMap.put(key, line);
+         }
+      }
+      List<IpAccessListLine> lines = new ArrayList<IpAccessListLine>();
+      lines.addAll(lineMap.values());
+      IpAccessList list = new IpAccessList(listName, lines);
+      return list;
+   }
+
    public List<NetworkAclAssociation> getAssociations() {
       return _networkAclAssociations;
+   }
+
+   public IpAccessList getEgressAcl() {
+      return getAcl(true);
    }
 
    @Override
    public String getId() {
       return _networkAclId;
+   }
+
+   public IpAccessList getIngressAcl() {
+      return getAcl(false);
    }
 
    public String getVpcId() {
@@ -65,4 +122,5 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
       }
 
    }
+
 }

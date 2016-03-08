@@ -15,9 +15,13 @@ public class NetworkAclEntry implements Serializable {
    private static final long serialVersionUID = 1L;
 
    private Prefix _cidrBlock;
+
    private boolean _isAllow;
+
    private boolean _isEgress;
+
    private String _protocol;
+
    private int _ruleNumber;
 
    public NetworkAclEntry(JSONObject jObj, BatfishLogger logger)
@@ -32,5 +36,25 @@ public class NetworkAclEntry implements Serializable {
       _protocol = jObj.getString(AwsVpcEntity.JSON_KEY_PROTOCOL);
 
       _ruleNumber = jObj.getInt(AwsVpcEntity.JSON_KEY_RULE_NUMBER);
+   }
+
+   public Prefix getCidrBlock() {
+      return _cidrBlock;
+   }
+
+   public boolean getIsAllow() {
+      return _isAllow;
+   }
+
+   public boolean getIsEgress() {
+      return _isEgress;
+   }
+
+   public String getProtocol() {
+      return _protocol;
+   }
+
+   public int getRuleNumber() {
+      return _ruleNumber;
    }
 }

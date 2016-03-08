@@ -25,6 +25,10 @@ public class Vpc implements AwsVpcEntity, Serializable {
       _cidrBlock = new Prefix(jObj.getString(JSON_KEY_CIDR_BLOCK));
    }
 
+   public Prefix getCidrBlock() {
+      return _cidrBlock;
+   }
+
    @Override
    public String getId() {
       return _vpcId;
