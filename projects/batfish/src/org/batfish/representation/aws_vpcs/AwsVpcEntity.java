@@ -13,6 +13,7 @@ public interface AwsVpcEntity {
    static final String JSON_KEY_BGP_ASN = "BgpAsn";
    static final String JSON_KEY_CIDR_BLOCK = "CidrBlock";
    static final String JSON_KEY_CIDR_IP = "CidrIp";
+   static final String JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION = "CustomerGatewayConfiguration";
    static final String JSON_KEY_CUSTOMER_GATEWAY_ID = "CustomerGatewayId";
    static final String JSON_KEY_CUSTOMER_GATEWAYS = "CustomerGateways";
    static final String JSON_KEY_DESTINATION_CIDR_BLOCK = "DestinationCidrBlock";
@@ -75,5 +76,25 @@ public interface AwsVpcEntity {
    static final String JSON_KEY_VPN_GATEWAY_ID = "VpnGatewayId";
    static final String JSON_KEY_VPN_GATEWAYS = "VpnGateways";
 
+   static final String XML_KEY_ASN = "asn";
+   static final String XML_KEY_AUTHENTICATION_PROTOCOL = "authentication_protocol";
+   static final String XML_KEY_BGP = "bgp";
+   static final String XML_KEY_CUSTOMER_GATEWAY = "customer_gateway";
+   static final String XML_KEY_ENCRYPTION_PROTOCOL = "encryption_protocol";
+   static final String XML_KEY_IPSEC = "ipsec";
+   static final String XML_KEY_IPSEC_TUNNEL = "ipsec_tunnel";
+   static final String XML_KEY_IP_ADDRESS = "ip_address";
+   static final String XML_KEY_IKE = "ike";
+   static final String XML_KEY_LIFETIME = "lifetime";
+   static final String XML_KEY_MODE = "mode";
+   static final String XML_KEY_NETWORK_CIDR = "network_cidr";
+   static final String XML_KEY_PERFECT_FORWARD_SECRECY = "perfect_forward_secrecy";
+   static final String XML_KEY_PRE_SHARED_KEY = "pre_shared_key";
+   static final String XML_KEY_PROTOCOL = "protocol";
+   static final String XML_KEY_TUNNEL_INSIDE_ADDRESS = "tunnel_inside_address";
+   static final String XML_KEY_TUNNEL_OUTSIDE_ADDRESS = "tunnel_outside_address";
+   static final String XML_KEY_VPN_CONNECTION_ATTRIBUTES = "vpn_connection_attributes";
+   static final String XML_KEY_VPN_GATEWAY = "vpn_gateway";
+   
    public abstract String getId();
 }
