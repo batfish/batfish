@@ -73,6 +73,18 @@
 'AdministrativeDistance'('arista', 'ospfE1', 110) /*fn*/.
 'AdministrativeDistance'('arista', 'ospfE2', 110) /*fn*/.
 
+'AdministrativeDistance'('aws_vpc', 'bgp', 20) /*fn*/.
+'AdministrativeDistance'('aws_vpc', 'ibgp', 200) /*fn*/.
+'AdministrativeDistance'('aws_vpc', 'connected', 0) /*fn*/.
+'AdministrativeDistance'('aws_vpc', 'isisL1', 115) /*fn*/.
+'AdministrativeDistance'('aws_vpc', 'isisL2', 115) /*fn*/.
+'AdministrativeDistance'('aws_vpc', 'isisEL1', 115) /*fn*/.
+'AdministrativeDistance'('aws_vpc', 'isisEL2', 115) /*fn*/.
+'AdministrativeDistance'('aws_vpc', 'ospf', 110) /*fn*/.
+'AdministrativeDistance'('aws_vpc', 'ospfIA', 110) /*fn*/.
+'AdministrativeDistance'('aws_vpc', 'ospfE1', 110) /*fn*/.
+'AdministrativeDistance'('aws_vpc', 'ospfE2', 110) /*fn*/.
+
 'AdministrativeDistance'('cisco', 'bgp', 20) /*fn*/.
 'AdministrativeDistance'('cisco', 'ibgp', 200) /*fn*/.
 'AdministrativeDistance'('cisco', 'connected', 0) /*fn*/.

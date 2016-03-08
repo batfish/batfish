@@ -10,6 +10,7 @@ import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GenericConfigObject;
+import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.Prefix;
 import org.codehaus.jettison.json.JSONArray;
@@ -270,6 +271,13 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
       // set the right vendor
       for (Configuration cfgNode : _configurationNodes.values()) {
          cfgNode.setVendor(ConfigurationFormat.AWS_VPC);
+      }
+
+      // TODO: for now, set all interfaces to have the same bandwidth
+      for (Configuration cfgNode : _configurationNodes.values()) {
+         for (Interface iface : cfgNode.getInterfaces().values()) {
+            iface.setBandwidth(1E12d);
+         }
       }
 
       return _configurationNodes;
