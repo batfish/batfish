@@ -79,7 +79,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
          List<RouteTableAssociation> rtAssocs = routeTable.getAssociations();
 
          for (RouteTableAssociation rtAssoc : rtAssocs) {
-            if (rtAssoc.getSubnetId().equals(_subnetId)) {
+            if (_subnetId.equals(rtAssoc.getSubnetId())) {
                if (myRouteTable != null) {
                   throw new BatfishException(
                         "Found two associated route tables ("
