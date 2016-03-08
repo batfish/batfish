@@ -45,7 +45,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
          List<NetworkAclAssociation> naAssocs = networkAcl.getAssociations();
 
          for (NetworkAclAssociation naAssoc : naAssocs) {
-            if (naAssoc.getSubnetId().equals(_subnetId)) {
+            if (_subnetId.equals(naAssoc.getSubnetId())) {
                if (myNetworkAcl != null) {
                   throw new BatfishException(
                         "Found two associated network acls ("
