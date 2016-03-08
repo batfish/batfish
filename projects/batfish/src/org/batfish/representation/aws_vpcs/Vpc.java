@@ -14,7 +14,11 @@ public class Vpc implements AwsVpcEntity, Serializable {
 
    private Prefix _cidrBlock;
 
+   private transient String _internetGatewayId;
+
    private String _vpcId;
+
+   private transient String _vpnGatewayId;
 
    public Vpc(JSONObject jObj, BatfishLogger logger) throws JSONException {
       _vpcId = jObj.getString(JSON_KEY_VPC_ID);
@@ -24,6 +28,22 @@ public class Vpc implements AwsVpcEntity, Serializable {
    @Override
    public String getId() {
       return _vpcId;
+   }
+
+   public String getInternetGatewayId() {
+      return _internetGatewayId;
+   }
+
+   public String getVpnGatewayId() {
+      return _vpnGatewayId;
+   }
+
+   public void setInternetGatewayId(String internetGatewayId) {
+      _internetGatewayId = internetGatewayId;
+   }
+
+   public void setVpnGatewayId(String vpnGatewayId) {
+      _vpnGatewayId = vpnGatewayId;
    }
 
    public Configuration toConfigurationNode(
@@ -36,4 +56,5 @@ public class Vpc implements AwsVpcEntity, Serializable {
 
       return cfgNode;
    }
+
 }

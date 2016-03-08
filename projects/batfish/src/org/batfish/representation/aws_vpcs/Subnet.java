@@ -8,6 +8,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.Interface;
+import org.batfish.representation.Ip;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.StaticRoute;
 import org.codehaus.jettison.json.JSONException;
@@ -19,9 +20,13 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
    private Prefix _cidrBlock;
 
+   private transient String _internetGatewayId;
+
    private String _subnetId;
 
    private String _vpcId;
+
+   private transient String _vpnGatewayId;
 
    public Subnet(JSONObject jObj, BatfishLogger logger) throws JSONException {
       _cidrBlock = new Prefix(jObj.getString(JSON_KEY_CIDR_BLOCK));
@@ -120,6 +125,14 @@ public class Subnet implements AwsVpcEntity, Serializable {
       return _subnetId;
    }
 
+   public String getInternetGatewayId() {
+      return _internetGatewayId;
+   }
+
+   public String getVpnGatewayId() {
+      return _vpnGatewayId;
+   }
+
    public Configuration toConfigurationNode(
          AwsVpcConfiguration awsVpcConfiguration) {
       Configuration cfgNode = new Configuration(_subnetId);
@@ -153,6 +166,64 @@ public class Subnet implements AwsVpcEntity, Serializable {
       vpcIface.getAllPrefixes().add(vpcIfacePrefix);
       vpcIface.setPrefix(vpcIfacePrefix);
 
+      // attach to igw if it exists
+      _internetGatewayId = awsVpcConfiguration.getVpcs().get(_vpcId)
+            .getInternetGatewayId();
+      Ip igwAddress = null;
+      if (_internetGatewayId != null) {
+         // generate a prefix for the link between the igw and the subnet
+         Prefix igwSubnetLinkPrefix = awsVpcConfiguration
+               .getNextGeneratedLinkSubnet();
+         Prefix subnetIgwIfacePrefix = igwSubnetLinkPrefix;
+         Prefix igwSubnetIfacePrefix = new Prefix(
+               igwSubnetLinkPrefix.getEndAddress(),
+               igwSubnetLinkPrefix.getPrefixLength());
+
+         // add an interface that faces the igw
+         Interface subnetIgwIface = new Interface(_internetGatewayId, cfgNode);
+         cfgNode.getInterfaces().put(_internetGatewayId, subnetIgwIface);
+         subnetIgwIface.getAllPrefixes().add(subnetIgwIfacePrefix);
+         subnetIgwIface.setPrefix(subnetIgwIfacePrefix);
+
+         // add an interface to the igw facing the subnet
+         Configuration igwConfigNode = awsVpcConfiguration
+               .getConfigurationNodes().get(_internetGatewayId);
+         Interface igwSubnetIface = new Interface(_subnetId, igwConfigNode);
+         igwSubnetIface.setPrefix(igwSubnetIfacePrefix);
+         igwSubnetIface.getAllPrefixes().add(igwSubnetIfacePrefix);
+         igwConfigNode.getInterfaces().put(_subnetId, igwSubnetIface);
+         igwAddress = igwSubnetIfacePrefix.getAddress();
+      }
+
+      // attach to vgw if it exists
+      _vpnGatewayId = awsVpcConfiguration.getVpcs().get(_vpcId)
+            .getVpnGatewayId();
+      Ip vgwAddress = null;
+      if (_vpnGatewayId != null) {
+         // generate a prefix for the link between the vgw and the subnet
+         Prefix vgwSubnetLinkPrefix = awsVpcConfiguration
+               .getNextGeneratedLinkSubnet();
+         Prefix subnetVgwIfacePrefix = vgwSubnetLinkPrefix;
+         Prefix vgwSubnetIfacePrefix = new Prefix(
+               vgwSubnetLinkPrefix.getEndAddress(),
+               vgwSubnetLinkPrefix.getPrefixLength());
+
+         // add an interface that faces the vgw
+         Interface subnetVgwIface = new Interface(_vpnGatewayId, cfgNode);
+         cfgNode.getInterfaces().put(_vpnGatewayId, subnetVgwIface);
+         subnetVgwIface.getAllPrefixes().add(subnetVgwIfacePrefix);
+         subnetVgwIface.setPrefix(subnetVgwIfacePrefix);
+
+         // add an interface to the igw facing the subnet
+         Configuration vgwConfigNode = awsVpcConfiguration
+               .getConfigurationNodes().get(_vpnGatewayId);
+         Interface vgwSubnetIface = new Interface(_subnetId, vgwConfigNode);
+         vgwSubnetIface.setPrefix(vgwSubnetIfacePrefix);
+         vgwSubnetIface.getAllPrefixes().add(vgwSubnetIfacePrefix);
+         vgwConfigNode.getInterfaces().put(_subnetId, vgwSubnetIface);
+         igwAddress = vgwSubnetIfacePrefix.getAddress();
+      }
+
       // lets find the right route table for this subnet
       RouteTable myRouteTable = findMyRouteTable(awsVpcConfiguration
             .getRouteTables());
@@ -164,8 +235,11 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
       // TODO: ari convert routes in the route table to static routes
       for (Route route : myRouteTable.getRoutes()) {
-         StaticRoute sRoute = route.toStaticRoute();
-         cfgNode.getStaticRoutes().add(sRoute);
+         StaticRoute sRoute = route.toStaticRoute(awsVpcConfiguration,
+               vpcIfacePrefix.getAddress(), igwAddress, vgwAddress, this);
+         if (sRoute != null) {
+            cfgNode.getStaticRoutes().add(sRoute);
+         }
       }
 
       // TODO: ari add a default deny at the end

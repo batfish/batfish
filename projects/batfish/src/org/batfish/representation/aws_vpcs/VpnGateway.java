@@ -5,6 +5,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.representation.Configuration;
+import org.batfish.representation.Interface;
+import org.batfish.representation.Ip;
+import org.batfish.representation.Prefix;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -32,5 +36,36 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
    @Override
    public String getId() {
       return _vpnGatewayId;
+   }
+
+   public Configuration toConfigurationNode(
+         AwsVpcConfiguration awsVpcConfiguration) {
+      Configuration cfgNode = new Configuration(_vpnGatewayId);
+
+      for (String vpcId : _attachmentVpcIds) {
+
+         Interface vgwIface = new Interface(vpcId, cfgNode);
+         Prefix vgwIfacePrefix = awsVpcConfiguration
+               .getNextGeneratedLinkSubnet();
+         vgwIface.setPrefix(vgwIfacePrefix);
+         cfgNode.getInterfaces().put(vgwIface.getName(), vgwIface);
+
+         // add the interface to the vpc router
+         Configuration vpcConfigNode = awsVpcConfiguration
+               .getConfigurationNodes().get(vpcId);
+         Interface vpcIface = new Interface(_vpnGatewayId, vpcConfigNode);
+         Ip vpcIfaceIp = vgwIfacePrefix.getEndAddress();
+         Prefix vpcIfacePrefix = new Prefix(vpcIfaceIp,
+               vgwIfacePrefix.getPrefixLength());
+         vpcIface.setPrefix(vpcIfacePrefix);
+         vpcConfigNode.getInterfaces().put(vpcIface.getName(), vpcIface);
+
+         // associate this gateway with the vpc
+         awsVpcConfiguration.getVpcs().get(vpcId)
+               .setVpnGatewayId(_vpnGatewayId);
+
+      }
+
+      return cfgNode;
    }
 }

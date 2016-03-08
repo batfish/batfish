@@ -53,6 +53,8 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
 
    private Map<String, VpnGateway> _vpnGateways = new HashMap<String, VpnGateway>();
 
+   private transient Warnings _warnings;
+
    public AwsVpcConfiguration() {
       _currentGeneratedIpAsLong = INITIAL_GENERATED_IP;
    }
@@ -215,6 +217,10 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
       return _vpnGateways;
    }
 
+   public Warnings getWarnings() {
+      return _warnings;
+   }
+
    private boolean ignoreElement(String key) {
       switch (key) {
       case AwsVpcEntity.JSON_KEY_AVAILABILITY_ZONES:
@@ -230,6 +236,7 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
    }
 
    public Map<String, Configuration> toConfigurations(Warnings warnings) {
+      _warnings = warnings;
 
       for (String vpcId : _vpcs.keySet()) {
          Configuration cfgNode = _vpcs.get(vpcId).toConfigurationNode(this);
@@ -239,6 +246,12 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
       for (String igwId : _internetGateways.keySet()) {
          Configuration cfgNode = _internetGateways.get(igwId)
                .toConfigurationNode(this);
+         _configurationNodes.put(cfgNode.getName(), cfgNode);
+      }
+
+      for (String vgwId : _vpnGateways.keySet()) {
+         Configuration cfgNode = _vpnGateways.get(vgwId).toConfigurationNode(
+               this);
          _configurationNodes.put(cfgNode.getName(), cfgNode);
       }
 

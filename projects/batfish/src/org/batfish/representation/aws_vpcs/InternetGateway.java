@@ -60,6 +60,10 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
          vpcIface.setPrefix(vpcIfacePrefix);
          vpcConfigNode.getInterfaces().put(vpcIface.getName(), vpcIface);
 
+         // associate this gateway with the vpc
+         awsVpcConfiguration.getVpcs().get(vpcId)
+               .setInternetGatewayId(_internetGatewayId);
+
       }
 
       return cfgNode;
