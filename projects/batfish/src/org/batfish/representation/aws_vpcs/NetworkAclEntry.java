@@ -24,6 +24,10 @@ public class NetworkAclEntry implements Serializable {
 
    private int _ruleNumber;
 
+   private int _fromPort=-1;
+   
+   private int _toPort=-1;
+   
    public NetworkAclEntry(JSONObject jObj, BatfishLogger logger)
          throws JSONException {
       _cidrBlock = new Prefix(jObj.getString(AwsVpcEntity.JSON_KEY_CIDR_BLOCK));
@@ -36,6 +40,14 @@ public class NetworkAclEntry implements Serializable {
       _protocol = jObj.getString(AwsVpcEntity.JSON_KEY_PROTOCOL);
 
       _ruleNumber = jObj.getInt(AwsVpcEntity.JSON_KEY_RULE_NUMBER);
+      
+      if (jObj.has(AwsVpcEntity.JSON_KEY_PORT_RANGE)) {
+         JSONObject portRange = jObj.getJSONObject(AwsVpcEntity.JSON_KEY_PORT_RANGE);
+
+         _fromPort = portRange.getInt(AwsVpcEntity.JSON_KEY_FROM);
+
+         _toPort = portRange.getInt(AwsVpcEntity.JSON_KEY_TO);
+      }
    }
 
    public Prefix getCidrBlock() {

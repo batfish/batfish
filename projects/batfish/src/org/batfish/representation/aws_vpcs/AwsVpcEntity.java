@@ -20,6 +20,7 @@ public interface AwsVpcEntity {
    static final String JSON_KEY_DHCP_OPTIONS = "DhcpOptions";
    static final String JSON_KEY_EGRESS = "Egress";
    static final String JSON_KEY_ENTRIES = "Entries";
+   static final String JSON_KEY_FROM = "From";
    static final String JSON_KEY_FROM_PORT = "FromPort";
    static final String JSON_KEY_GATEWAY_ID = "GatewayId";
    static final String JSON_KEY_GROUP_ID = "GroupId";
@@ -43,6 +44,7 @@ public interface AwsVpcEntity {
    static final String JSON_KEY_OPTIONS = "Options";
    static final String JSON_KEY_OUTSIDE_IP_ADDRESS = "OutsideIpAddress";
    static final String JSON_KEY_PLACEMENT_GROUPS = "PlacementGroups";
+   static final String JSON_KEY_PORT_RANGE = "PortRange";
    static final String JSON_KEY_PRIVATE_IP_ADDRESS = "PrivateIpAddress";
    static final String JSON_KEY_PRIVATE_IP_ADDRESSES = "PrivateIpAddresses";
    static final String JSON_KEY_PROTOCOL = "Protocol";
@@ -63,6 +65,7 @@ public interface AwsVpcEntity {
    static final String JSON_KEY_SUBNET_ID = "SubnetId";
    static final String JSON_KEY_SUBNETS = "Subnets";
    static final String JSON_KEY_TAGS = "Tags";
+   static final String JSON_KEY_TO = "To";
    static final String JSON_KEY_TO_PORT = "ToPort";
    static final String JSON_KEY_TYPE = "Type";
    static final String JSON_KEY_VGW_TELEMETRY = "VgwTelemetry";
