@@ -14,20 +14,20 @@ public class NetworkAclEntry implements Serializable {
 	 */
    private static final long serialVersionUID = 1L;
 
-   private Prefix _cidrBlock;
+   private final Prefix _cidrBlock;
 
-   private boolean _isAllow;
+   private final int _fromPort;
 
-   private boolean _isEgress;
+   private final boolean _isAllow;
 
-   private String _protocol;
+   private final boolean _isEgress;
 
-   private int _ruleNumber;
+   private final String _protocol;
 
-   private int _fromPort=-1;
-   
-   private int _toPort=-1;
-   
+   private final int _ruleNumber;
+
+   private final int _toPort;
+
    public NetworkAclEntry(JSONObject jObj, BatfishLogger logger)
          throws JSONException {
       _cidrBlock = new Prefix(jObj.getString(AwsVpcEntity.JSON_KEY_CIDR_BLOCK));
@@ -40,18 +40,25 @@ public class NetworkAclEntry implements Serializable {
       _protocol = jObj.getString(AwsVpcEntity.JSON_KEY_PROTOCOL);
 
       _ruleNumber = jObj.getInt(AwsVpcEntity.JSON_KEY_RULE_NUMBER);
-      
+
       if (jObj.has(AwsVpcEntity.JSON_KEY_PORT_RANGE)) {
-         JSONObject portRange = jObj.getJSONObject(AwsVpcEntity.JSON_KEY_PORT_RANGE);
-
+         JSONObject portRange = jObj
+               .getJSONObject(AwsVpcEntity.JSON_KEY_PORT_RANGE);
          _fromPort = portRange.getInt(AwsVpcEntity.JSON_KEY_FROM);
-
          _toPort = portRange.getInt(AwsVpcEntity.JSON_KEY_TO);
+      }
+      else {
+         _fromPort = -1;
+         _toPort = -1;
       }
    }
 
    public Prefix getCidrBlock() {
       return _cidrBlock;
+   }
+
+   public int getFromPort() {
+      return _fromPort;
    }
 
    public boolean getIsAllow() {
@@ -68,5 +75,9 @@ public class NetworkAclEntry implements Serializable {
 
    public int getRuleNumber() {
       return _ruleNumber;
+   }
+
+   public int getToPort() {
+      return _toPort;
    }
 }

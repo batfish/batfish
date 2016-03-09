@@ -15,6 +15,7 @@ import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.IpProtocol;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.Prefix;
+import org.batfish.util.SubRange;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -71,8 +72,18 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
             if (protocol != null) {
                line.getProtocols().add(protocol);
             }
-            // TODO: handle ports: ALWAYS use destination port
-            // range
+            int fromPort = entry.getFromPort();
+            int toPort = entry.getToPort();
+            if (fromPort != -1 || toPort != -1) {
+               if (fromPort == -1) {
+                  fromPort = 0;
+               }
+               if (toPort == -1) {
+                  toPort = 65535;
+               }
+               SubRange portRange = new SubRange(fromPort, toPort);
+               line.getDstPortRanges().add(portRange);
+            }
             lineMap.put(key, line);
          }
       }
