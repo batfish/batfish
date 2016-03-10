@@ -231,6 +231,7 @@ srlg_stanza
 stanza
 :
    appletalk_access_list_stanza
+   | community_set_stanza
    | extended_access_list_stanza
    | hostname_stanza
    | interface_stanza

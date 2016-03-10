@@ -72,6 +72,29 @@ bandwidth_irs_stanza
    BANDWIDTH ~NEWLINE* NEWLINE
 ;
 
+community_set_stanza
+:
+   COMMUNITY_SET name = variable NEWLINE community_set_elem_list END_SET NEWLINE
+;
+
+community_set_elem_list
+:
+   (community_set_elem COMMA NEWLINE)* community_set_elem NEWLINE
+;
+
+community_set_elem
+:
+   COMMUNITY_SET_VALUE
+   | ACCEPT_OWN
+   | DFA_REGEX COMMUNITY_SET_REGEX
+   | INTERNET
+   | IOS_REGEX COMMUNITY_SET_REGEX
+   | LOCAL_AS
+   | NO_ADVERTISE
+   | NO_EXPORT
+   | PRIVATE_AS
+;
+
 extended_access_list_additional_feature
 :
    (
@@ -499,13 +522,21 @@ null_rs_stanza
 
 prefix_set_stanza
 :
-   PREFIX_SET name = variable NEWLINE prefix_set_tail* END_SET NEWLINE
+   PREFIX_SET name = variable NEWLINE prefix_set_elem_list END_SET NEWLINE
 ;
 
-prefix_set_tail
+prefix_set_elem_list
+:
+   | // no elements
+   | (prefix_set_elem COMMA NEWLINE)* prefix_set_elem NEWLINE
+;
+
+prefix_set_elem
 :
    (
-      prefix = IP_PREFIX
+      ipa = IP_ADDRESS
+      | prefix = IP_PREFIX
+      | ipv6a = IPV6_ADDRESS
       | ipv6_prefix = IPV6_PREFIX
    )
    (
@@ -520,7 +551,7 @@ prefix_set_tail
       (
          EQ eqpl = DEC
       )
-   )* NEWLINE
+   )*
 ;
 
 protocol_type_code_access_list_numbered_stanza

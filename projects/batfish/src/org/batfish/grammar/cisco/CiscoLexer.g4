@@ -72,6 +72,11 @@ ACCEPT_LIFETIME
    'accept-lifetime'
 ;
 
+ACCEPT_OWN
+:
+   'accept-own'
+;
+
 ACCESS
 :
    'access'
@@ -721,6 +726,11 @@ CGMP
    'cgmp'
 ;
 
+CHANGES
+:
+   'changes'
+;
+
 CHANNEL
 :
    'channel'
@@ -869,6 +879,11 @@ COMMUNITY_LIST
       enableDEC = false;
    }
 
+;
+
+COMMUNITY_SET
+:
+   'community-set'
 ;
 
 CONFDCONFIG
@@ -1141,6 +1156,11 @@ DESTINATION
    'destination'
 ;
 
+DETAIL
+:
+   'detail'
+;
+
 DETERMINISTIC_MED
 :
    'deterministic-med'
@@ -1159,6 +1179,11 @@ DEVICE_SENSOR
 DF
 :
    'df'
+;
+
+DFA_REGEX
+:
+   'dfa-regex'
 ;
 
 DHCP
@@ -2167,6 +2192,11 @@ INVALID_SPI_RECOVERY
    'invalid-spi-recovery'
 ;
 
+IOS_REGEX
+:
+   'ios-regex'
+;
+
 IP
 :
    'ip'
@@ -2762,6 +2792,11 @@ MEMORY_SIZE
    'memory-size'
 ;
 
+MESSAGE_DIGEST
+:
+   'message-digest'
+;
+
 MESSAGE_DIGEST_KEY
 :
    'message-digest-key'
@@ -3152,6 +3187,11 @@ NO_PREPEND
    'no-prepend'
 ;
 
+NO_REDISTRIBUTION
+:
+   'no-redistribution'
+;
+
 NO_SUMMARY
 :
    'no-summary'
@@ -3165,6 +3205,11 @@ NODE
 NON500_ISAKMP
 :
    'non500-isakmp'
+;
+
+NON_BROADCAST
+:
+   'non-broadcast'
 ;
 
 NONE
@@ -3477,6 +3522,11 @@ PLATFORM
    'platform'
 ;
 
+POINT_TO_MULTIPOINT
+:
+   'point-to-multipoint'
+;
+
 POINT_TO_POINT
 :
    'point-to-point'
@@ -3635,6 +3685,11 @@ PRIORITY_FLOW_CONTROL
 PRIORITY_QUEUE
 :
    'priority-queue'
+;
+
+PRIVATE_AS
+:
+   'private-as'
 ;
 
 PRIVATE_VLAN
@@ -5493,6 +5548,16 @@ COMMUNITY_LIST_NUM
 
 ;
 
+COMMUNITY_SET_REGEX
+:
+	SINGLE_QUOTE ~[':&<> ]* COLON ~[':&<> ]* SINGLE_QUOTE
+;
+
+COMMUNITY_SET_VALUE
+:
+	(F_Dec16 | ASTERISK) COLON (F_Dec16 | ASTERISK)
+;
+
 COMMENT_LINE
 :
    '!' F_NonNewline* F_Newline+ -> channel(HIDDEN)
@@ -5514,6 +5579,11 @@ DEC
    {enableDEC}?
 
    F_Digit*
+;
+
+DIGIT
+:
+   F_Digit
 ;
 
 DOUBLE_QUOTE
@@ -5683,6 +5753,27 @@ WS
 ;
 
 // Fragments
+
+fragment
+F_Dec16
+:
+   (
+      F_PositiveDigit F_Digit F_Digit F_Digit F_Digit
+   )
+   |
+   (
+      F_PositiveDigit F_Digit F_Digit F_Digit
+   )
+   |
+   (
+      F_PositiveDigit F_Digit F_Digit
+   )
+   |
+   (
+      F_PositiveDigit F_Digit
+   )
+   | F_Digit
+;
 
 fragment
 F_DecByte
