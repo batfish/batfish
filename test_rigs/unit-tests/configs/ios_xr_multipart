@@ -17,18 +17,6 @@ rsvp
  interface Bundle-Ether1
   bandwidth percentage 95
  !
- interface Bundle-Ether2
-  bandwidth percentage 95
- !
- interface Bundle-Ether3
-  bandwidth percentage 95
- !
- interface Bundle-Ether71
-  bandwidth percentage 85
- !
- interface Bundle-Ether72
-  bandwidth percentage 85
- !
  logging events nsr
  logging events issu
  authentication
@@ -36,6 +24,11 @@ rsvp
   window-size 8
  !
 !
+
+ssh server v2
+ssh server vrf default ipv4 access-list GNS-VTY-ACCESS
+cef load-balancing fields L4
+end
 
 ############ MultiConfigPart END
 
