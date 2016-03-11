@@ -64,7 +64,7 @@ public final class Format {
       else if (aristaMatcher.find()) {
          return ConfigurationFormat.ARISTA;
       }
-      else if (ciscoLike.find()) {
+      else if (ciscoLike.find() || firstChar == '!') {
          return ConfigurationFormat.CISCO;
       }
       return ConfigurationFormat.UNKNOWN;

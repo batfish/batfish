@@ -73,7 +73,7 @@ if_stanza
 
 interface_stanza
 :
-   INTERFACE iname = interface_name
+   INTERFACE PRECONFIGURE? iname = interface_name
    (
       L2TRANSPORT
       | MULTIPOINT

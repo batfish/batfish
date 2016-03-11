@@ -5153,6 +5153,11 @@ M_Members_COLON
    ':' -> type ( COLON )
 ;
 
+M_Members_COMMA
+:
+   ',' -> type(COMMA)
+;
+
 M_Members_DASH
 :
    '-' -> type ( DASH )

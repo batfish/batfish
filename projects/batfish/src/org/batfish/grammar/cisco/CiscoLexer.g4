@@ -3632,6 +3632,11 @@ PRE_SHARED_KEY
    'pre-shared-key'
 ;
 
+PRECONFIGURE
+:
+   'preconfigure'
+;
+
 PREDICTOR
 :
    'predictor'
@@ -5296,6 +5301,11 @@ WIDE
    'wide'
 ;
 
+WINDOW_SIZE
+:
+   'window-size'
+;
+
 WINS_SERVER
 :
    'wins-server'
@@ -5367,6 +5377,11 @@ XML_CONFIG
 ;
 
 // Other Tokens
+
+MULTICONFIGPART
+:
+   '############ MultiConfigPart' F_NonNewline* F_Newline+ -> channel(HIDDEN)
+;
 
 COMMUNITY_NUMBER
 :
@@ -6217,6 +6232,11 @@ M_Interface_PERIOD
    '.' -> type(PERIOD)
 ;
 
+M_Interface_PRECFONFIGURE
+:
+   'preconfigure' -> type(PRECONFIGURE)
+;
+
 M_Interface_PREFIX
 :
    F_Letter (F_Letter | '-')*
@@ -6262,6 +6282,7 @@ M_MOTD_C_ESCAPE_C
 :
    (
       '^C'
+      | ('^' F_Newline)
       | 'cC'
       | '\u0003'
    ) -> type(ESCAPE_C), mode(DEFAULT_MODE)
@@ -6271,7 +6292,7 @@ M_MOTD_C_MOTD
 :
    (
       (
-         '^' ~[^C\u0003]
+         '^' ~[^C\u0003\n\r]
       )
       |
       (

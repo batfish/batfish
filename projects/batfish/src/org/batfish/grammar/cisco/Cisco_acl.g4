@@ -517,6 +517,7 @@ null_rs_stanza
       AUTHENTICATION
       | KEY_SOURCE
       | LOGGING
+      | WINDOW_SIZE
    ) ~NEWLINE* NEWLINE
 ;
 
