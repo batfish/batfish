@@ -34,4 +34,14 @@ THIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)
 NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE
 
 !
+
+banner login ^
+***************************************************************************
+*                                                                         *
+*  This banner was seen in IOS XR                                         *
+*  It ends with a caret                                                   *
+*                                                                         *
+***************************************************************************
+^
+
 end
