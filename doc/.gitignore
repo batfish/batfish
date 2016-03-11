@@ -1,5 +1,5 @@
-batfish
-batfish-client
+batfish/doc
+batfish-client/doc
 batfish-questions.html
-batfish-common-protocol
-coordinator
+batfish-common-protocol/doc
+coordinator/doc

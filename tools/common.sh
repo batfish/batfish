@@ -215,10 +215,10 @@ export -f batfish_format_flows
 batfish_javadocs() {
    echo "Generating batfish project javadocs"
    batfish_build_all doc
-   cp -r $COMMON_PATH/doc $BATFISH_ROOT/doc/batfish-common-protocol
-   cp -r $BATFISH_PATH/doc $BATFISH_ROOT/doc/batfish
-   cp -r $BATFISH_CLIENT_PATH/doc $BATFISH_ROOT/doc/batfish-client
-   cp -r $COORDINATOR_PATH/doc $BATFISH_ROOT/doc/coordinator
+   cp -r $COMMON_PATH/doc $BATFISH_ROOT/doc/batfish-common-protocol/
+   cp -r $BATFISH_PATH/doc $BATFISH_ROOT/doc/batfish/
+   cp -r $BATFISH_CLIENT_PATH/doc $BATFISH_ROOT/doc/batfish-client/
+   cp -r $COORDINATOR_PATH/doc $BATFISH_ROOT/doc/coordinator/
 }
 export -f batfish_javadocs
 
