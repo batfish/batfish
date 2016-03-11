@@ -212,10 +212,15 @@ batfish_format_flows() {
 }
 export -f batfish_format_flows
 
-batfish_gendoc() {
-   echo "Generating documentation under batfish_doc"
-   javadoc -d batfish_doc -sourcepath "$COMMON_PATH/src;$BATFISH_PATH/src;$COORDINATOR_PATH/src;$BATFISH_CLIENT_PATH/src" -subpackages org.batfish
+batfish_javadocs() {
+   echo "Generating batfish project javadocs"
+   batfish_build_all doc
+   cp -r $COMMON_PATH/doc $BATFISH_ROOT/doc/batfish-common-protocol
+   cp -r $BATFISH_PATH/doc $BATFISH_ROOT/doc/batfish
+   cp -r $BATFISH_CLIENT_PATH/doc $BATFISH_ROOT/doc/batfish-client
+   cp -r $COORDINATOR_PATH/doc $BATFISH_ROOT/doc/coordinator
 }
+export -f batfish_javadocs
 
 batfish_get_history() {
    batfish_date
@@ -711,8 +716,8 @@ _common_build() {
 }
 export -f _common_build
 
-questions_doc() {
-   $BATFISH_ROOT/projects/pybatfish/bin/questions_to_html -i $BATFISH_ROOT/example_questions -o $BATFISH_ROOT/example_questions "$@"
+batfish_questions_doc() {
+   $BATFISH_ROOT/projects/pybatfish/bin/questions_to_html -i $BATFISH_ROOT/example_questions -o $BATFISH_ROOT/doc "$@"
 }
-export -f questions_doc
+export -f batfish_questions_doc
 
