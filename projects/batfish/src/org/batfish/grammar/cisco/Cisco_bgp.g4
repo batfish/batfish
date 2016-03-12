@@ -44,7 +44,6 @@ address_family_rb_stanza
    (
       aggregate_address_rb_stanza
       | bgp_tail
-      | neighbor_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | null_no_neighbor_rb_stanza
@@ -230,13 +229,26 @@ neighbor_rb_stanza
       ip = IP_ADDRESS
       | ip6 = IPV6_ADDRESS
       | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
-   )
+   ) NEWLINE
    (
-      bgp_tail
+      address_family_rb_stanza
+      | bgp_tail
       | inherit_peer_session_bgp_tail
       | filter_list_bgp_tail
       | remote_as_bgp_tail
-   )
+      | use_neighbor_group_bgp_tail
+   )*
+;
+
+neighbor_group_rb_stanza
+:
+   NEIGHBOR_GROUP VARIABLE NEWLINE
+
+   (
+      address_family_rb_stanza
+      | remote_as_bgp_tail
+      | update_source_bgp_tail
+   )*
 ;
 
 network_bgp_tail
@@ -324,6 +336,7 @@ locals [boolean active]
       (
          (
             bgp_tail
+	    | description_bgp_tail
             | nexus_neighbor_address_family
             | nexus_neighbor_inherit
             | no_shutdown_rb_stanza
@@ -426,7 +439,8 @@ null_bgp_tail
       (
          BGP
          (
-            BESTPATH
+	      ATTRIBUTE_DOWNLOAD
+            | BESTPATH
             | DAMPENING
             | DEFAULT
             | DETERMINISTIC_MED
@@ -507,7 +521,7 @@ remote_as_bgp_tail
 
 remove_private_as_bgp_tail
 :
-   REMOVE_PRIVATE_AS NEWLINE
+   (REMOVE_PRIVATE_AS | REMOVE_PRIVATE_CAP_A_CAP_S) NEWLINE
 ;
 
 route_map_bgp_tail
@@ -601,6 +615,7 @@ router_bgp_stanza
       | cluster_id_rb_stanza
       | default_information_originate_rb_stanza
       | neighbor_rb_stanza
+      | neighbor_group_rb_stanza
       | nexus_neighbor_rb_stanza
       | no_bgp_enforce_first_as_stanza
       | no_neighbor_activate_rb_stanza
@@ -628,7 +643,11 @@ router_id_rb_stanza
 
 send_community_bgp_tail
 :
-   SEND_COMMUNITY EXTENDED? BOTH? NEWLINE
+ (
+    SEND_COMMUNITY EXTENDED? BOTH?
+  | SEND_COMMUNITY_EBGP
+  | SEND_EXTENDED_COMMUNITY_EBGP
+ ) NEWLINE
 ;
 
 shutdown_bgp_tail
@@ -704,3 +723,9 @@ update_source_bgp_tail
 :
    UPDATE_SOURCE source = interface_name NEWLINE
 ;
+
+use_neighbor_group_bgp_tail
+:
+   USE NEIGHBOR_GROUP VARIABLE NEWLINE
+;
+

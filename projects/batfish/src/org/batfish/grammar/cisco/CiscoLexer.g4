@@ -391,6 +391,11 @@ ATM
    'atm'
 ;
 
+ATTRIBUTE_DOWNLOAD
+:
+   'attribute-download'
+;
+
 ATTRIBUTE_NAMES
 :
    'attribute-names'
@@ -3062,6 +3067,11 @@ NEIGHBOR
    'neighbor' -> pushMode(M_NEIGHBOR)
 ;
 
+NEIGHBOR_GROUP
+:
+   'neighbor-group' 
+;
+
 NEQ
 :
    'neq'
@@ -3305,6 +3315,11 @@ ORIGINATE
 OSPF
 :
    'ospf'
+;
+
+OSPFV3
+:
+   'ospfv3'
 ;
 
 OTHER_ACCESS
@@ -3947,6 +3962,11 @@ REMOVE_PRIVATE_AS
    'remove-private-as'
 ;
 
+REMOVE_PRIVATE_CAP_A_CAP_S
+:
+   'remove-private-AS'
+;
+
 REMOTE_SPAN
 :
    'remote-span'
@@ -4215,6 +4235,16 @@ SECURITY_LEVEL
 SEND_COMMUNITY
 :
    'send-community'
+;
+
+SEND_COMMUNITY_EBGP
+:
+   'send-community-ebgp'
+;
+
+SEND_EXTENDED_COMMUNITY_EBGP
+:
+   'send-extended-community-ebgp'
 ;
 
 SEND_LABEL
@@ -5067,6 +5097,11 @@ UPDATE_SOURCE
 UPGRADE
 :
    'upgrade'
+;
+
+USE
+:
+   'use'
 ;
 
 USE_VRF

@@ -255,6 +255,7 @@ stanza
    | router_bgp_stanza
    | router_isis_stanza
    | router_ospf_stanza
+   | router_ospfv3_stanza
    | router_rip_stanza
    | router_static_stanza
    | rsvp_stanza

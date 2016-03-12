@@ -169,6 +169,11 @@ null_ro_stanza
    null_standalone_ro_stanza
 ;
 
+null_rov3_stanza
+:
+   null_standalone_rov3_stanza
+;
+
 null_standalone_ro_stanza
 :
    NO?
@@ -185,13 +190,33 @@ null_standalone_ro_stanza
       | BFD
       | DISTRIBUTE_LIST
       | GRACEFUL_RESTART
+      | LOG
       | LOG_ADJACENCY_CHANGES
       | MAX_LSA
       | MAX_METRIC
-      | MTU_IGNORE (DISABLE | ENABLE)?
+      | MTU_IGNORE
       | NSF
       | NSR
       | RFC1583COMPATIBILITY
+   ) ~NEWLINE* NEWLINE
+;
+
+null_standalone_rov3_stanza
+:
+  (
+      AREA
+   | DEAD_INTERVAL
+   | DEFAULT_INFORMATION
+   | HELLO_INTERVAL
+   | INTERFACE
+   | LOG
+   | MTU_IGNORE
+   | NETWORK
+   | NSSA
+   | NSR
+   | PASSIVE
+   | PRIORITY
+   | ROUTER_ID
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -332,6 +357,12 @@ router_ospf_stanza_tail
    (
       rosl += ro_stanza
    )+
+;
+
+router_ospfv3_stanza
+:
+   ROUTER OSPFV3 procnum = DEC NEWLINE
+      null_rov3_stanza*
 ;
 
 summary_address_ro_stanza
