@@ -176,7 +176,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       Configuration vpnGatewayCfgNode = awsVpcConfiguration
             .getConfigurationNodes().get(_vpnGatewayId);
       for (int i = 0; i < _ipsecTunnels.size(); i++) {
-         String vpnId = _vpnConnectionId + "_" + i;
+         String vpnId = _vpnConnectionId + "-" + (i + 1);
          IpsecTunnel ipsecTunnel = _ipsecTunnels.get(i);
 
          // create representation structures and add to configuration node
