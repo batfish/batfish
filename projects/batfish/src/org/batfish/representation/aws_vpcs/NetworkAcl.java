@@ -2,13 +2,11 @@ package org.batfish.representation.aws_vpcs;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
