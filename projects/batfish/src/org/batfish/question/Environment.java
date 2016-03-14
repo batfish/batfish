@@ -761,6 +761,12 @@ public class Environment {
                .get(remoteAddress);
          if (remoteIpsecVpnCandidates != null) {
             for (IpsecVpn remoteIpsecVpnCandidate : remoteIpsecVpnCandidates) {
+               Ip remoteIpsecVpnLocalAddress = remoteIpsecVpnCandidate
+                     .getGateway().getLocalAddress();
+               if (remoteIpsecVpnLocalAddress != null
+                     && !remoteIpsecVpnLocalAddress.equals(remoteAddress)) {
+                  continue;
+               }
                Ip reciprocalRemoteAddress = remoteAddresses
                      .get(remoteIpsecVpnCandidate);
                Set<IpsecVpn> reciprocalVpns = externalAddresses

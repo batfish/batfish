@@ -2561,6 +2561,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitIkegt_local_address(Ikegt_local_addressContext ctx) {
+      Ip ip = new Ip(ctx.IP_ADDRESS().getText());
+      _currentIkeGateway.setLocalAddress(ip);
+   }
+
+   @Override
    public void exitIkeprt_authentication_algorithm(
          Ikeprt_authentication_algorithmContext ctx) {
       IkeAuthenticationAlgorithm alg = toIkeAuthenticationAlgorithm(ctx
