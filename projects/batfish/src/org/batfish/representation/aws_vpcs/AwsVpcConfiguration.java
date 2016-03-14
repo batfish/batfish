@@ -268,6 +268,10 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
          _configurationNodes.put(cfgNode.getName(), cfgNode);
       }
 
+      for (VpnConnection vpnConnection : _vpnConnections.values()) {
+         vpnConnection.applyToVpnGateway(this);
+      }
+
       // set the right vendor
       for (Configuration cfgNode : _configurationNodes.values()) {
          cfgNode.setVendor(ConfigurationFormat.AWS_VPC);
