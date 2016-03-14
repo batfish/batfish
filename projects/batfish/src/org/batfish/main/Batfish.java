@@ -1569,12 +1569,14 @@ public class Batfish implements AutoCloseable {
             if (vpn.getRemoteIpsecVpn() == null) {
                String hostname = c.getHostname();
                Interface bindInterface = vpn.getBindInterface();
-               bindInterface.setActive(false);
-               String bindInterfaceName = bindInterface.getName();
-               _logger
-                     .warnf(
-                           "WARNING: Disabling unusable vpn interface because we cannot determine remote endpoint: \"%s:%s\"\n",
-                           hostname, bindInterfaceName);
+               if (bindInterface != null) {
+                  bindInterface.setActive(false);
+                  String bindInterfaceName = bindInterface.getName();
+                  _logger
+                        .warnf(
+                              "WARNING: Disabling unusable vpn interface because we cannot determine remote endpoint: \"%s:%s\"\n",
+                              hostname, bindInterfaceName);
+               }
             }
          }
       }
