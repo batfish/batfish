@@ -2419,7 +2419,7 @@ public class Batfish implements AutoCloseable {
                   interfaceBlacklist);
          }
       }
-      if (!dataPlaneDependenciesExist(envSettings)) {
+      if (dp && !dataPlaneDependenciesExist(envSettings)) {
          _settings.setDumpControlPlaneFacts(true);
          boolean usePrecomputedFacts = _settings.getUsePrecomputedFacts();
          Map<String, StringBuilder> cpFactBins = new LinkedHashMap<String, StringBuilder>();
