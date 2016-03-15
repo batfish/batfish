@@ -17,6 +17,21 @@ address_aiimgp_stanza
    ADDRESS ~NEWLINE* NEWLINE
 ;
 
+address_family_multicast_stanza
+:
+   ADDRESS_FAMILY
+   (
+      IPV4
+      | IPV6
+   ) NEWLINE
+   (
+      MULTIPATH NEWLINE
+   )?
+   (
+      INTERFACE ~NEWLINE* NEWLINE
+   )?
+;
+
 address_family_vrfd_stanza
 :
    ADDRESS_FAMILY
@@ -160,6 +175,12 @@ ip_route_vrfc_stanza
    IP ROUTE ip_route_tail
 ;
 
+l2vpn_stanza
+:
+  L2VPN NEWLINE
+    xconnect_stanza*
+;
+
 macro_stanza
 :
    MACRO ~NEWLINE* NEWLINE
@@ -174,6 +195,15 @@ mgp_stanza
 :
    inband_mgp_stanza
 ;
+
+multicast_routing_stanza
+:
+  MULTICAST_ROUTING NEWLINE
+  (
+    address_family_multicast_stanza
+   )*
+;
+
 
 no_ip_access_list_stanza
 :
@@ -213,6 +243,36 @@ null_vrfd_stanza
    ) ~NEWLINE* NEWLINE
 ;
 
+peer_stanza
+:
+  PEER IP_ADDRESS NEWLINE
+  (
+     null_block_substanza
+  )*
+;
+
+p2p_stanza
+:
+  P2P VARIABLE NEWLINE
+    INTERFACE ~NEWLINE* NEWLINE
+    INTERFACE ~NEWLINE* NEWLINE
+;
+
+router_multicast_stanza
+:
+  ROUTER (IGMP | MLD | MSDP | PIM) NEWLINE
+  router_multicast_tail
+;
+
+router_multicast_tail
+:
+  (
+    null_block_substanza
+  | peer_stanza
+  )*
+;  
+
+
 srlg_interface_numeric_stanza
 :
    DEC ~NEWLINE* NEWLINE
@@ -243,6 +303,8 @@ stanza
    | ip_route_stanza
    | ipv6_router_ospf_stanza
    | ipx_sap_access_list_stanza
+   | l2vpn_stanza
+   | multicast_routing_stanza
    | mpls_ldp_stanza
    | mpls_traffic_eng_stanza
    | nexus_access_list_stanza
@@ -254,6 +316,7 @@ stanza
    | route_policy_stanza
    | router_bgp_stanza
    | router_isis_stanza
+   | router_multicast_stanza
    | router_ospf_stanza
    | router_ospfv3_stanza
    | router_rip_stanza
@@ -289,4 +352,10 @@ vrfd_stanza
 :
    address_family_vrfd_stanza
    | null_vrfd_stanza
+;
+
+xconnect_stanza
+:
+   XCONNECT GROUP VARIABLE NEWLINE
+     p2p_stanza*
 ;

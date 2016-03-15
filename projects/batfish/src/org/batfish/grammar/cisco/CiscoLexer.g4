@@ -926,6 +926,11 @@ CONNECTED
    'connected'
 ;
 
+CONNECT_SOURCE
+:
+   'connect-source'
+;
+
 CONSOLE
 :
    'console'
@@ -2372,6 +2377,11 @@ L2TRANSPORT
    'l2transport'
 ;
 
+L2VPN
+:
+   'l2vpn'
+;
+
 LABEL
 :
    'label'
@@ -2797,6 +2807,11 @@ MEMORY_SIZE
    'memory-size'
 ;
 
+MESH_GROUP
+:
+   'mesh-group'
+;
+
 MESSAGE_DIGEST
 :
    'message-digest'
@@ -2970,6 +2985,11 @@ MULTICAST_ROUTING
 MULTILINK
 :
    'multilink'
+;
+
+MULTIPATH
+:
+   'multipath'
 ;
 
 MULTIPOINT
@@ -3772,6 +3792,11 @@ PTP
    'ptp'
 ;
 
+P2P
+:
+   'p2p'
+;
+
 QOS
 :
    'qos'
@@ -4160,6 +4185,11 @@ SAMPLER_MAP
 SAP
 :
    'sap'
+;
+
+SA_FILTER
+:
+   'sa-filter'
 ;
 
 SCCP
