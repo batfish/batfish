@@ -1569,12 +1569,14 @@ public class Batfish implements AutoCloseable {
             if (vpn.getRemoteIpsecVpn() == null) {
                String hostname = c.getHostname();
                Interface bindInterface = vpn.getBindInterface();
-               bindInterface.setActive(false);
-               String bindInterfaceName = bindInterface.getName();
-               _logger
-                     .warnf(
-                           "WARNING: Disabling unusable vpn interface because we cannot determine remote endpoint: \"%s:%s\"\n",
-                           hostname, bindInterfaceName);
+               if (bindInterface != null) {
+                  bindInterface.setActive(false);
+                  String bindInterfaceName = bindInterface.getName();
+                  _logger
+                        .warnf(
+                              "WARNING: Disabling unusable vpn interface because we cannot determine remote endpoint: \"%s:%s\"\n",
+                              hostname, bindInterfaceName);
+               }
             }
          }
       }
@@ -2417,7 +2419,7 @@ public class Batfish implements AutoCloseable {
                   interfaceBlacklist);
          }
       }
-      if (!dataPlaneDependenciesExist(envSettings)) {
+      if (dp && !dataPlaneDependenciesExist(envSettings)) {
          _settings.setDumpControlPlaneFacts(true);
          boolean usePrecomputedFacts = _settings.getUsePrecomputedFacts();
          Map<String, StringBuilder> cpFactBins = new LinkedHashMap<String, StringBuilder>();

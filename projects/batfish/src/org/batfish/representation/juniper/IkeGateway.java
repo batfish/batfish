@@ -16,6 +16,8 @@ public class IkeGateway extends ComparableStructure<String> {
 
    private String _ikePolicy;
 
+   private Ip _localAddress;
+
    public IkeGateway(String name) {
       super(name);
    }
@@ -32,6 +34,10 @@ public class IkeGateway extends ComparableStructure<String> {
       return _ikePolicy;
    }
 
+   public Ip getLocalAddress() {
+      return _localAddress;
+   }
+
    public void setAddress(Ip address) {
       _address = address;
    }
@@ -42,6 +48,10 @@ public class IkeGateway extends ComparableStructure<String> {
 
    public void setIkePolicy(String ikePolicy) {
       _ikePolicy = ikePolicy;
+   }
+
+   public void setLocalAddress(Ip localAddress) {
+      _localAddress = localAddress;
    }
 
 }

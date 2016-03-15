@@ -401,6 +401,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
       // address
       newIkeGateway.setAddress(oldIkeGateway.getAddress());
+      newIkeGateway.setLocalAddress(oldIkeGateway.getLocalAddress());
 
       // external interface
       Interface oldExternalInterface = oldIkeGateway.getExternalInterface();

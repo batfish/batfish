@@ -84,10 +84,10 @@ public interface AwsVpcEntity {
    static final String XML_KEY_BGP = "bgp";
    static final String XML_KEY_CUSTOMER_GATEWAY = "customer_gateway";
    static final String XML_KEY_ENCRYPTION_PROTOCOL = "encryption_protocol";
+   static final String XML_KEY_IKE = "ike";
+   static final String XML_KEY_IP_ADDRESS = "ip_address";
    static final String XML_KEY_IPSEC = "ipsec";
    static final String XML_KEY_IPSEC_TUNNEL = "ipsec_tunnel";
-   static final String XML_KEY_IP_ADDRESS = "ip_address";
-   static final String XML_KEY_IKE = "ike";
    static final String XML_KEY_LIFETIME = "lifetime";
    static final String XML_KEY_MODE = "mode";
    static final String XML_KEY_NETWORK_CIDR = "network_cidr";
@@ -96,8 +96,9 @@ public interface AwsVpcEntity {
    static final String XML_KEY_PROTOCOL = "protocol";
    static final String XML_KEY_TUNNEL_INSIDE_ADDRESS = "tunnel_inside_address";
    static final String XML_KEY_TUNNEL_OUTSIDE_ADDRESS = "tunnel_outside_address";
+   static final String XML_KEY_VPN_CONNECTION = "vpn_connection";
    static final String XML_KEY_VPN_CONNECTION_ATTRIBUTES = "vpn_connection_attributes";
    static final String XML_KEY_VPN_GATEWAY = "vpn_gateway";
-   
+
    public abstract String getId();
 }

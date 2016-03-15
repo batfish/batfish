@@ -65,7 +65,7 @@ banner_stanza
             NEWLINE ~EOF_LITERAL* EOF_LITERAL
          )
       )
-   ) NEWLINE
+   ) NEWLINE?
 ;
 
 certificate_stanza
