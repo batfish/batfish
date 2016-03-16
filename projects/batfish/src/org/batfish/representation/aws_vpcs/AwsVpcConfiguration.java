@@ -12,6 +12,7 @@ import org.batfish.representation.Configuration;
 import org.batfish.representation.GenericConfigObject;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
+import org.batfish.representation.LineAction;
 import org.batfish.representation.Prefix;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -275,6 +276,8 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
       // set the right vendor
       for (Configuration cfgNode : _configurationNodes.values()) {
          cfgNode.setVendor(ConfigurationFormat.AWS_VPC);
+         cfgNode.setDefaultInboundAction(LineAction.ACCEPT);
+         cfgNode.setDefaultCrossZoneAction(LineAction.ACCEPT);
       }
 
       // TODO: for now, set all interfaces to have the same bandwidth
