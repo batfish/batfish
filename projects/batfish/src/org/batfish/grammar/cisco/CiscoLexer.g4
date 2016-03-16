@@ -391,6 +391,11 @@ ATM
    'atm'
 ;
 
+ATTRIBUTE_DOWNLOAD
+:
+   'attribute-download'
+;
+
 ATTRIBUTE_NAMES
 :
    'attribute-names'
@@ -919,6 +924,11 @@ CONGESTION_CONTROL
 CONNECTED
 :
    'connected'
+;
+
+CONNECT_SOURCE
+:
+   'connect-source'
 ;
 
 CONSOLE
@@ -2367,6 +2377,11 @@ L2TRANSPORT
    'l2transport'
 ;
 
+L2VPN
+:
+   'l2vpn'
+;
+
 LABEL
 :
    'label'
@@ -2792,6 +2807,11 @@ MEMORY_SIZE
    'memory-size'
 ;
 
+MESH_GROUP
+:
+   'mesh-group'
+;
+
 MESSAGE_DIGEST
 :
    'message-digest'
@@ -2967,6 +2987,11 @@ MULTILINK
    'multilink'
 ;
 
+MULTIPATH
+:
+   'multipath'
+;
+
 MULTIPOINT
 :
    'multipoint'
@@ -3060,6 +3085,11 @@ NEGOTIATION
 NEIGHBOR
 :
    'neighbor' -> pushMode(M_NEIGHBOR)
+;
+
+NEIGHBOR_GROUP
+:
+   'neighbor-group' 
 ;
 
 NEQ
@@ -3305,6 +3335,11 @@ ORIGINATE
 OSPF
 :
    'ospf'
+;
+
+OSPFV3
+:
+   'ospfv3'
 ;
 
 OTHER_ACCESS
@@ -3757,6 +3792,11 @@ PTP
    'ptp'
 ;
 
+P2P
+:
+   'p2p'
+;
+
 QOS
 :
    'qos'
@@ -3945,6 +3985,11 @@ REMOTE_PORT
 REMOVE_PRIVATE_AS
 :
    'remove-private-as'
+;
+
+REMOVE_PRIVATE_CAP_A_CAP_S
+:
+   'remove-private-AS'
 ;
 
 REMOTE_SPAN
@@ -4142,6 +4187,11 @@ SAP
    'sap'
 ;
 
+SA_FILTER
+:
+   'sa-filter'
+;
+
 SCCP
 :
    'sccp'
@@ -4215,6 +4265,16 @@ SECURITY_LEVEL
 SEND_COMMUNITY
 :
    'send-community'
+;
+
+SEND_COMMUNITY_EBGP
+:
+   'send-community-ebgp'
+;
+
+SEND_EXTENDED_COMMUNITY_EBGP
+:
+   'send-extended-community-ebgp'
 ;
 
 SEND_LABEL
@@ -5067,6 +5127,11 @@ UPDATE_SOURCE
 UPGRADE
 :
    'upgrade'
+;
+
+USE
+:
+   'use'
 ;
 
 USE_VRF

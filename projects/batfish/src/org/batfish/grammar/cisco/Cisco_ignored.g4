@@ -222,6 +222,7 @@ null_block_substanza
          | COMMAND
          | CONFORM_ACTION
          | CONGESTION_CONTROL
+	 | CONNECT_SOURCE
          | CONTEXT
          | CPTONE
          | CREDENTIALS
@@ -341,6 +342,7 @@ null_block_substanza
          | MAIN_CPU
          | MATCH
          | MAXIMUM
+	 | MESH_GROUP
          | MESSAGE_LENGTH
          | MODE
          | MODEM
@@ -420,6 +422,7 @@ null_block_substanza
          | ROUTE
          | ROUTE_TARGET
          | RULE
+	 | SA_FILTER
          | SCHEME
          | SECRET
          | SEND_LIFETIME
@@ -480,6 +483,7 @@ null_block_substanza
          | UPDATE_CALENDAR
          | USE_VRF
          | USERS
+	 | VERSION
          | VIOLATE_ACTION
          | VIRTUAL
          | VIRTUAL_TEMPLATE
