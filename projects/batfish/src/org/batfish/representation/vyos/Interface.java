@@ -1,5 +1,8 @@
 package org.batfish.representation.vyos;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.batfish.common.BatfishException;
 import org.batfish.representation.Prefix;
 import org.batfish.util.ComparableStructure;
@@ -35,6 +38,8 @@ public class Interface extends ComparableStructure<String> {
       }
    }
 
+   private final Set<Prefix> _allPrefixes;
+
    private double _bandwidth;
 
    private String _description;
@@ -45,6 +50,11 @@ public class Interface extends ComparableStructure<String> {
 
    public Interface(String name) {
       super(name);
+      _allPrefixes = new TreeSet<Prefix>();
+   }
+
+   public Set<Prefix> getAllPrefixes() {
+      return _allPrefixes;
    }
 
    public double getBandwidth() {

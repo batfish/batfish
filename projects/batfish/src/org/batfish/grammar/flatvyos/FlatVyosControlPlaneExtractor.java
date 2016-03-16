@@ -521,7 +521,10 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
       }
       else if (ctx.IP_PREFIX() != null) {
          Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
-         _currentInterface.setPrefix(prefix);
+         if (_currentInterface.getPrefix() == null) {
+            _currentInterface.setPrefix(prefix);
+         }
+         _currentInterface.getAllPrefixes().add(prefix);
       }
    }
 

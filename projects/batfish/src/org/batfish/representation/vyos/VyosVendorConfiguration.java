@@ -83,10 +83,10 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
          _c.getIpsecVpns().put(newIpsecVpnName, newIpsecVpn);
          IkeGateway newIkeGateway = new IkeGateway(newIkeGatewayName);
          _c.getIkeGateways().put(newIkeGatewayName, newIkeGateway);
-
          newIpsecVpn.setGateway(newIkeGateway);
          newIkeGateway.setLocalId(ipsecPeer.getAuthenticationId());
          newIkeGateway.setRemoteId(ipsecPeer.getAuthenticationRemoteId());
+         newIkeGateway.setAddress(peerAddress);
          Ip localAddress = ipsecPeer.getLocalAddress();
          org.batfish.representation.Interface externalInterface = _ipToInterfaceMap
                .get(localAddress);
@@ -126,10 +126,11 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
          else {
             ikeGroup.getReferers().put(
                   ipsecPeer,
-                  "ike group for site-to-site peer: \""
-                        + peerAddress.toString() + "\"");
+                  "ike group for site-to-site peer: \"" + newIpsecVpnName
+                        + "\"");
             IkePolicy newIkePolicy = new IkePolicy(ikeGroupName);
             _c.getIkePolicies().put(ikeGroupName, newIkePolicy);
+            newIkeGateway.setIkePolicy(newIkePolicy);
             newIkePolicy.setPreSharedKeyHash(ipsecPeer
                   .getAuthenticationPreSharedSecretHash());
 
@@ -165,9 +166,11 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
          else {
             espGroup.getReferers().put(
                   ipsecPeer,
-                  "esp-group for ipsec site-to-site peer: \""
-                        + peerAddress.toString() + "\"");
+                  "esp-group for ipsec site-to-site peer: \"" + newIpsecVpnName
+                        + "\"");
             IpsecPolicy newIpsecPolicy = new IpsecPolicy(espGroupName);
+            _c.getIpsecPolicies().put(espGroupName, newIpsecPolicy);
+            newIpsecVpn.setIpsecPolicy(newIpsecPolicy);
             if (espGroup.getPfsSource() == null) {
                espGroup.setPfsSource(PfsSource.IKE_GROUP);
             }
@@ -236,9 +239,11 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
       newIface.setDescription(iface.getDescription());
       Prefix prefix = iface.getPrefix();
       if (prefix != null) {
-         _ipToInterfaceMap.put(prefix.getAddress(), newIface);
          newIface.setPrefix(iface.getPrefix());
-         newIface.getAllPrefixes().add(iface.getPrefix());
+      }
+      newIface.getAllPrefixes().addAll(iface.getAllPrefixes());
+      for (Prefix p : newIface.getAllPrefixes()) {
+         _ipToInterfaceMap.put(p.getAddress(), newIface);
       }
       return newIface;
    }
