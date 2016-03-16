@@ -188,6 +188,11 @@ public class NxtnetConstants {
             "BgpAdvertisement_srcNode",
             "BgpAdvertisement_srcProtocol",
             "BgpAdvertisement_type",
+            // BEGIN DEBUG SYMBOLS
+            "BgpNeighbors",
+            "PolicyMapDenyAdvert",
+            "PolicyMapPermitAdvert",
+            // END DEBUG SYMBOLS
             "FibForwardPolicyRouteNextHopIp",
             "FibNetwork",
             "InstalledRoute",
