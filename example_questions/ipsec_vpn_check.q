@@ -33,17 +33,30 @@ verify {
                ipsec_vpn.has_remote_ipsec_vpn
             }
             onfailure {
-               printf("MISSING_ENDPOINT: Could not determine remote Ipsec VPN for Ipsec VPN '%s' on node '%s'\n",
-                  ipsec_vpn.name,
-                  node.name);
-                  $view_name := "MISSING_ENDPOINT";
-                  $view := $views.get_map($view_name);
-                  $view.set("name", $view_name);
-                  $view.set("type", "view");
-                  $n := $view.get_map("nodes").get_map(node.name);
-                  $n.set("name", node.name);
-                  $n.set("type", "node");
-                  $n.set("description", $n.get("description") + "Could not determine remote IPSEC VPN for IPSEC VPN '" + ipsec_vpn.name + "'<br>");
+               $view_name := "MISSING_ENDPOINT";
+               if (ipsec_vpn.has_remote_ip) {
+                  $remote_ip := format("%s", ipsec_vpn.remote_ip);
+               }
+               else {
+                  $remote_ip := "<unassigned>";
+               }
+               $base_msg := format("Could not determine remote Ipsec VPN with remote address %s for Ipsec VPN '%s'\n",
+                  $remote_ip,
+                  ipsec_vpn.name);
+               printf("%s: %s: %s\n",
+                  $view_name,
+                  node.name,
+                  $base_msg);
+               $view := $views.get_map($view_name);
+               $view.set("name", $view_name);
+               $view.set("type", "view");
+               $n := $view.get_map("nodes").get_map(node.name);
+               $n.set("name", node.name);
+               $n.set("type", "node");
+               $description := format("%s%s<br>",
+                  $n.get("description"),
+                  $base_msg);
+               $n.set("description", $description);
             }
          }
          if (ipsec_vpn.has_remote_ipsec_vpn){

@@ -940,6 +940,7 @@ ip_expr
 :
    bgp_neighbor_ip_expr
    | interface_ip_expr
+   | ipsec_vpn_ip_expr
    | static_route_ip_expr
    | IP_ADDRESS
    |
@@ -954,6 +955,7 @@ ipsec_vpn_boolean_expr
    (
       ipsec_vpn_compatible_ike_proposals_boolean_expr
       | ipsec_vpn_compatible_ipsec_proposals_boolean_expr
+      | ipsec_vpn_has_remote_ip_boolean_expr
       | ipsec_vpn_has_remote_ipsec_vpn_boolean_expr
       | ipsec_vpn_has_single_remote_ipsec_vpn_boolean_expr
    )
@@ -974,6 +976,15 @@ ipsec_vpn_expr
    IPSEC_VPN
    | REMOTE_IPSEC_VPN
    | ipsec_vpn_expr PERIOD ipsec_vpn_ipsec_vpn_expr
+   |
+   {v(VariableType.IPSEC_VPN)}?
+
+   var_ipsec_vpn_expr
+;
+
+ipsec_vpn_has_remote_ip_boolean_expr
+:
+   HAS_REMOTE_IP
 ;
 
 ipsec_vpn_has_remote_ipsec_vpn_boolean_expr
@@ -994,6 +1005,11 @@ ipsec_vpn_ike_gateway_name_string_expr
 ipsec_vpn_ike_policy_name_string_expr
 :
    IKE_POLICY_NAME
+;
+
+ipsec_vpn_ip_expr
+:
+   caller = ipsec_vpn_expr PERIOD ipsec_vpn_remote_ip_ip_expr
 ;
 
 ipsec_vpn_ipsec_policy_name_string_expr
@@ -1029,6 +1045,11 @@ ipsec_vpn_owner_node_expr
 ipsec_vpn_pre_shared_key_hash_string_expr
 :
    PRE_SHARED_KEY_HASH
+;
+
+ipsec_vpn_remote_ip_ip_expr
+:
+   REMOTE_IP
 ;
 
 ipsec_vpn_remote_ipsec_vpn_ipsec_vpn_expr
@@ -1928,6 +1949,11 @@ var_interface_expr
 var_ip_expr
 :
    VARIABLE
+;
+
+var_ipsec_vpn_expr
+:
+   var = VARIABLE
 ;
 
 var_list_expr

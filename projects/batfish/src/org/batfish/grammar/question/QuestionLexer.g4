@@ -221,6 +221,11 @@ HAS_REMOTE_BGP_NEIGHBOR
    'has_remote_bgp_neighbor'
 ;
 
+HAS_REMOTE_IP
+:
+   'has_remote_ip'
+;
+
 HAS_REMOTE_IPSEC_VPN
 :
    'has_remote_ipsec_vpn'
