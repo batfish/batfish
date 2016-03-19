@@ -36,6 +36,10 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
 
    }
 
+   public List<String> getAttachmentVpcIds() {
+      return _attachmentVpcIds;
+   }
+
    @Override
    public String getId() {
       return _vpnGatewayId;
@@ -76,9 +80,5 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
       }
 
       return cfgNode;
-   }
-
-   public List<String> getAttachmentVpcIds() {
-      return _attachmentVpcIds;
    }
 }

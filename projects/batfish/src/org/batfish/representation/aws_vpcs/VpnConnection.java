@@ -300,20 +300,27 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             int outgoingPrefixLength = outgoingPrefix.getPrefixLength();
             String originationPolicyName = vpnId + "_origination";
             PolicyMap originationPolicy = new PolicyMap(originationPolicyName);
-            vpnGatewayCfgNode.getPolicyMaps().put(originationPolicyName, originationPolicy);
+            vpnGatewayCfgNode.getPolicyMaps().put(originationPolicyName,
+                  originationPolicy);
             cgBgpNeighbor.getOriginationPolicies().add(originationPolicy);
             PolicyMapClause originationClause = new PolicyMapClause();
             originationPolicy.getClauses().add(originationClause);
             originationClause.setAction(PolicyMapAction.PERMIT);
-            RouteFilterList originationRouteFilter = new RouteFilterList(originationPolicyName);
-            vpnGatewayCfgNode.getRouteFilterLists().put(originationPolicyName, originationRouteFilter);
-            RouteFilterLine matchOutgoingPrefix = new RouteFilterLine(LineAction.ACCEPT, outgoingPrefix, new SubRange(outgoingPrefixLength, outgoingPrefixLength));
+            RouteFilterList originationRouteFilter = new RouteFilterList(
+                  originationPolicyName);
+            vpnGatewayCfgNode.getRouteFilterLists().put(originationPolicyName,
+                  originationRouteFilter);
+            RouteFilterLine matchOutgoingPrefix = new RouteFilterLine(
+                  LineAction.ACCEPT, outgoingPrefix, new SubRange(
+                        outgoingPrefixLength, outgoingPrefixLength));
             originationRouteFilter.addLine(matchOutgoingPrefix);
-            PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(Collections.singleton(originationRouteFilter));
+            PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
+                  Collections.singleton(originationRouteFilter));
             originationClause.getMatchLines().add(matchLine);
-            PolicyMapMatchProtocolLine matchStatic = new PolicyMapMatchProtocolLine(RoutingProtocol.STATIC);
+            PolicyMapMatchProtocolLine matchStatic = new PolicyMapMatchProtocolLine(
+                  RoutingProtocol.STATIC);
             originationClause.getMatchLines().add(matchStatic);
-//            cgBgpNeighbor.getOutboundPolicyMaps().add(originationPolicy);
+            // cgBgpNeighbor.getOutboundPolicyMaps().add(originationPolicy);
          }
 
          // static routes (if configured)
