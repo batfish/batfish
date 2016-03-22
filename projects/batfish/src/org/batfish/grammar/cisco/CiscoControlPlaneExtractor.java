@@ -1752,6 +1752,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitNeighbor_group_rb_stanza(Neighbor_group_rb_stanzaContext ctx) {
+      _currentIpPeerGroup = null;
+      _currentIpv6PeerGroup = null;
+      _currentNamedPeerGroup = null;
+      popPeer();
+   }
+
+   @Override
    public void exitNeighbor_rb_stanza(Neighbor_rb_stanzaContext ctx) {
       _currentDynamicPeerGroup = null;
       _currentIpPeerGroup = null;
