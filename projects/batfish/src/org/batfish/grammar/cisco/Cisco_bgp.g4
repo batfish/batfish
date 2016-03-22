@@ -241,8 +241,7 @@ neighbor_rb_stanza
 
 neighbor_group_rb_stanza
 :
-   NEIGHBOR_GROUP VARIABLE NEWLINE
-
+   NEIGHBOR_GROUP name = variable NEWLINE
    (
       address_family_rb_stanza
       | remote_as_bgp_tail

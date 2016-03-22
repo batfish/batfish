@@ -900,6 +900,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterNeighbor_group_rb_stanza(Neighbor_group_rb_stanzaContext ctx) {
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
+      String name = ctx.name.getText();
+      _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+      if (_currentNamedPeerGroup == null) {
+         proc.addNamedPeerGroup(name);
+         _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+      }
+      pushPeer(_currentNamedPeerGroup);
+   }
+
+   @Override
    public void enterNeighbor_rb_stanza(Neighbor_rb_stanzaContext ctx) {
       // do no further processing for unsupported address families / containers
       if (_currentPeerGroup == _dummyPeerGroup) {
