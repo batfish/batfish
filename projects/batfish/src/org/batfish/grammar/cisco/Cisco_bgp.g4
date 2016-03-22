@@ -232,7 +232,7 @@ neighbor_rb_stanza
       | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
    )
    (
-        bgp_tail
+      bgp_tail
       | inherit_peer_session_bgp_tail
       | filter_list_bgp_tail
       | remote_as_bgp_tail
@@ -338,7 +338,7 @@ locals [boolean active]
             | nexus_neighbor_inherit
             | no_shutdown_rb_stanza
             | remote_as_bgp_tail
-	    | use_neighbor_group_bgp_tail
+            | use_neighbor_group_bgp_tail
          ) nexus_neighbor_rb_stanza_tail [$addressFamilies]
       )
       | //intentional blank
@@ -437,7 +437,7 @@ null_bgp_tail
       (
          BGP
          (
-	      ATTRIBUTE_DOWNLOAD
+            ATTRIBUTE_DOWNLOAD
             | BESTPATH
             | DAMPENING
             | DEFAULT
@@ -519,7 +519,10 @@ remote_as_bgp_tail
 
 remove_private_as_bgp_tail
 :
-   (REMOVE_PRIVATE_AS | REMOVE_PRIVATE_CAP_A_CAP_S) NEWLINE
+   (
+      REMOVE_PRIVATE_AS
+      | REMOVE_PRIVATE_CAP_A_CAP_S
+   ) NEWLINE
 ;
 
 route_map_bgp_tail
@@ -641,11 +644,11 @@ router_id_rb_stanza
 
 send_community_bgp_tail
 :
- (
-    SEND_COMMUNITY EXTENDED? BOTH?
-  | SEND_COMMUNITY_EBGP
-  | SEND_EXTENDED_COMMUNITY_EBGP
- ) NEWLINE
+   (
+      SEND_COMMUNITY EXTENDED? BOTH?
+      | SEND_COMMUNITY_EBGP
+      | SEND_EXTENDED_COMMUNITY_EBGP
+   ) NEWLINE
 ;
 
 shutdown_bgp_tail
