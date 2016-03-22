@@ -451,7 +451,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (groupName != null) {
             NamedBgpPeerGroup parentPeerGroup = proc.getNamedPeerGroups().get(
                   groupName);
-            lpg.inheritUnsetFields(parentPeerGroup);
+            if (parentPeerGroup != null) {
+               lpg.inheritUnsetFields(parentPeerGroup);
+            }
+            else {
+               _w.redFlag("Reference to undefined parent peer group: \""
+                     + groupName + "\"");
+            }
          }
          lpg.inheritUnsetFields(proc.getMasterBgpPeerGroup());
       }
