@@ -202,6 +202,39 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       }
    }
 
+   private Ip getDefaultUpdateSource(final Configuration c, BgpProcess proc) {
+      Ip updateSource;
+      Ip processRouterId = proc.getRouterId();
+      if (processRouterId == null) {
+         processRouterId = new Ip(0l);
+         for (String iname : c.getInterfaces().keySet()) {
+            if (iname.startsWith("Loopback")) {
+               Prefix prefix = c.getInterfaces().get(iname).getPrefix();
+               if (prefix != null) {
+                  Ip currentIp = prefix.getAddress();
+                  if (currentIp.asLong() > processRouterId.asLong()) {
+                     processRouterId = currentIp;
+                  }
+               }
+            }
+         }
+         if (processRouterId.asLong() == 0) {
+            for (org.batfish.representation.Interface currentInterface : c
+                  .getInterfaces().values()) {
+               Prefix prefix = currentInterface.getPrefix();
+               if (prefix != null) {
+                  Ip currentIp = prefix.getAddress();
+                  if (currentIp.asLong() > processRouterId.asLong()) {
+                     processRouterId = currentIp;
+                  }
+               }
+            }
+         }
+      }
+      updateSource = processRouterId;
+      return updateSource;
+   }
+
    @Override
    public RoleSet getRoles() {
       return _roles;
@@ -428,34 +461,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          String updateSourceInterface = lpg.getUpdateSource();
          Ip updateSource;
          if (updateSourceInterface == null) {
-            Ip processRouterId = proc.getRouterId();
-            if (processRouterId == null) {
-               processRouterId = new Ip(0l);
-               for (String iname : c.getInterfaces().keySet()) {
-                  if (iname.startsWith("Loopback")) {
-                     Prefix prefix = c.getInterfaces().get(iname).getPrefix();
-                     if (prefix != null) {
-                        Ip currentIp = prefix.getAddress();
-                        if (currentIp.asLong() > processRouterId.asLong()) {
-                           processRouterId = currentIp;
-                        }
-                     }
-                  }
-               }
-               if (processRouterId.asLong() == 0) {
-                  for (org.batfish.representation.Interface currentInterface : c
-                        .getInterfaces().values()) {
-                     Prefix prefix = currentInterface.getPrefix();
-                     if (prefix != null) {
-                        Ip currentIp = prefix.getAddress();
-                        if (currentIp.asLong() > processRouterId.asLong()) {
-                           processRouterId = currentIp;
-                        }
-                     }
-                  }
-               }
-            }
-            updateSource = processRouterId;
+            updateSource = getDefaultUpdateSource(c, proc);
          }
          else {
             org.batfish.representation.Interface sourceInterface = c
@@ -468,16 +474,16 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   updateSource = sourceIp;
                }
                else {
-                  throw new VendorConversionException(
-                        "bgp update source interface: \""
-                              + updateSourceInterface
-                              + "\" not assigned an ip address");
+                  _w.redFlag("bgp update source interface: \""
+                        + updateSourceInterface
+                        + "\" not assigned an ip address");
+                  updateSource = getDefaultUpdateSource(c, proc);
                }
             }
             else {
-               throw new VendorConversionException(
-                     "reference to undefined interface: \""
-                           + updateSourceInterface + "\"");
+               _w.redFlag("reference to undefined update source interface: \""
+                     + updateSourceInterface + "\"");
+               updateSource = getDefaultUpdateSource(c, proc);
             }
          }
          PolicyMap newInboundPolicyMap = null;
