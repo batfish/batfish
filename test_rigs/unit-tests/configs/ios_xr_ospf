@@ -1,0 +1,46 @@
+!
+hostname xrOSPF
+!
+router ospf 52
+ nsr
+ log adjacency changes detail
+ router-id 169.232.1.4
+ authentication message-digest
+ mtu-ignore enable
+ nsf cisco
+ default-information originate metric 10 route-policy ospf_default_ipv4
+ area 0
+  interface Bundle-Ether101
+   network broadcast
+   priority 2
+  !
+  interface Bundle-Ether103
+   network broadcast
+   priority 2
+  !
+  interface Bundle-Ether201
+   passive enable
+  !
+  interface Loopback0
+   passive enable
+  !
+  interface TenGigE0/0/0/4
+   passive enable
+  !
+  interface TenGigE0/0/0/5
+   passive enable
+  !
+  interface HundredGigE0/2/0/0.292
+  !
+  interface HundredGigE0/2/0/3
+   network broadcast
+  !
+ !
+ area 60
+  authentication message-digest
+  nssa no-summary
+  interface TenGigE0/0/0/2
+   network broadcast
+  !
+ !
+end

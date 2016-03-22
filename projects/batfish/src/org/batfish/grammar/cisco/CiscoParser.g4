@@ -24,12 +24,15 @@ address_family_multicast_stanza
       IPV4
       | IPV6
    ) NEWLINE
-   (
-      MULTIPATH NEWLINE
-   )?
-   (
-      INTERFACE ~NEWLINE* NEWLINE
-   )?
+   address_family_multicast_tail
+;
+
+address_family_multicast_tail
+:
+  (
+     MULTIPATH NEWLINE
+  |  interface_multicast_stanza
+  )*
 ;
 
 address_family_vrfd_stanza
@@ -126,6 +129,13 @@ inband_mgp_stanza
 interface_imgp_stanza
 :
    INTERFACE ~NEWLINE* NEWLINE iimgp_stanza*
+;
+
+interface_multicast_stanza
+:
+ INTERFACE ~NEWLINE* NEWLINE
+   (BSR_BORDER NEWLINE)?
+   (ENABLE NEWLINE)?
 ;
 
 ip_default_gateway_stanza
@@ -267,7 +277,8 @@ router_multicast_stanza
 router_multicast_tail
 :
   (
-    null_block_substanza
+    address_family_multicast_stanza
+  | null_block_substanza
   | peer_stanza
   )*
 ;  

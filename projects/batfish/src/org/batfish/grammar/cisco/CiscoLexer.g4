@@ -626,6 +626,11 @@ BSD_USERNAME
    'bsd-username'
 ;
 
+BSR_BORDER
+:
+   'bsr-border'
+;
+
 BUNDLE
 :
    'bundle'

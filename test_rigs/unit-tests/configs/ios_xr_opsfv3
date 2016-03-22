@@ -1,0 +1,41 @@
+!
+hostname xrOSPFV3
+!
+router ospfv3 52
+ nsr
+ mtu-ignore
+ router-id 169.232.1.4
+ log adjacency changes detail
+ default-information originate metric 10 route-policy ospf_default_ipv6
+ area 0
+  interface Loopback0
+   passive
+  !
+  interface TenGigE0/0/0/4
+   passive
+  !
+  interface TenGigE0/0/0/5
+   passive
+  !
+  interface Bundle-Ether101
+   network broadcast
+   priority 2
+   dead-interval 3
+   hello-interval 1
+  !
+  interface Bundle-Ether103
+   network broadcast
+   priority 2
+   dead-interval 3
+   hello-interval 1
+  !
+  interface Bundle-Ether201
+   passive
+  !
+  interface HundredGigE0/2/0/3
+   network broadcast
+  !
+  interface HundredGigE0/2/0/0.292
+  !
+ !
+end

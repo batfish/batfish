@@ -44,6 +44,7 @@ address_family_rb_stanza
    (
       aggregate_address_rb_stanza
       | bgp_tail
+      | neighbor_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | null_no_neighbor_rb_stanza
@@ -229,15 +230,13 @@ neighbor_rb_stanza
       ip = IP_ADDRESS
       | ip6 = IPV6_ADDRESS
       | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
-   ) NEWLINE
+   )
    (
-      address_family_rb_stanza
-      | bgp_tail
+        bgp_tail
       | inherit_peer_session_bgp_tail
       | filter_list_bgp_tail
       | remote_as_bgp_tail
-      | use_neighbor_group_bgp_tail
-   )*
+   )
 ;
 
 neighbor_group_rb_stanza
@@ -336,11 +335,11 @@ locals [boolean active]
       (
          (
             bgp_tail
-	    | description_bgp_tail
             | nexus_neighbor_address_family
             | nexus_neighbor_inherit
             | no_shutdown_rb_stanza
             | remote_as_bgp_tail
+	    | use_neighbor_group_bgp_tail
          ) nexus_neighbor_rb_stanza_tail [$addressFamilies]
       )
       | //intentional blank

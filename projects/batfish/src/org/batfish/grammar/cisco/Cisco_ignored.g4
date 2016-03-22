@@ -405,6 +405,7 @@ null_block_substanza
          | RELOAD
          | RELOAD_DELAY
          | REMARK
+	 | REMOTE_AS
          | REMOTE_IP
          | REMOTE_PORT
          | REMOTE_SPAN
