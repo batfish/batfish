@@ -676,23 +676,30 @@ public class Environment {
          Map<BgpNeighbor, Ip> remoteAddresses = new HashMap<BgpNeighbor, Ip>();
          Map<Ip, Set<BgpNeighbor>> localAddresses = new HashMap<Ip, Set<BgpNeighbor>>();
          for (Configuration node : _configurations.values()) {
+            String hostname = node.getHostname();
             BgpProcess proc = node.getBgpProcess();
             if (proc != null) {
                for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
                   bgpNeighbor.initCandidateRemoteBgpNeighbors();
                   if (bgpNeighbor.getPrefix().getPrefixLength() < 32) {
                      throw new BatfishException(
-                           "Do not support dynamic bgp sessions at this time");
+                           hostname
+                                 + ": Do not support dynamic bgp sessions at this time: "
+                                 + bgpNeighbor.getPrefix());
                   }
                   Ip remoteAddress = bgpNeighbor.getAddress();
                   if (remoteAddress == null) {
                      throw new BatfishException(
-                           "Could not determine remote address");
+                           hostname
+                                 + ": Could not determine remote address of bgp neighbor: "
+                                 + bgpNeighbor);
                   }
                   Ip localAddress = bgpNeighbor.getLocalIp();
                   if (localAddress == null) {
                      throw new BatfishException(
-                           "Could not determine local address");
+                           hostname
+                                 + ": Could not determine local address reported to bgp neighbor: "
+                                 + remoteAddress);
                   }
                   remoteAddresses.put(bgpNeighbor, remoteAddress);
                   Set<BgpNeighbor> localAddressOwners = localAddresses
