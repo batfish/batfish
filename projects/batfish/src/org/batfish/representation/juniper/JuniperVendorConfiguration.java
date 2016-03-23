@@ -172,6 +172,21 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             }
          }
          if (localAddress == null) {
+            // check node devices
+            for (NodeDevice nd : _defaultRoutingInstance.getNodeDevices()
+                  .values()) {
+               for (Interface iface : nd.getInterfaces().values()) {
+                  for (Interface unit : iface.getUnits().values()) {
+                     Prefix unitPrefix = unit.getPrimaryPrefix();
+                     if (unitPrefix != null && unitPrefix.contains(ip)) {
+                        localAddress = unitPrefix.getAddress();
+                        break;
+                     }
+                  }
+               }
+            }
+         }
+         if (localAddress == null) {
             _w.redFlag("Could not determine local ip for bgp peering with neighbor ip: "
                   + ip);
          }
