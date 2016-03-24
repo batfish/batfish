@@ -44,6 +44,7 @@ import org.batfish.question.boolean_expr.NotExpr;
 import org.batfish.question.boolean_expr.OrExpr;
 import org.batfish.question.boolean_expr.VarBooleanExpr;
 import org.batfish.question.boolean_expr.bgp_neighbor.HasGeneratedRouteBgpNeighborBooleanExpr;
+import org.batfish.question.boolean_expr.bgp_neighbor.HasLocalIpBgpNeighborBooleanExpr;
 import org.batfish.question.boolean_expr.bgp_neighbor.HasRemoteBgpNeighborBgpNeighborBooleanExpr;
 import org.batfish.question.boolean_expr.bgp_neighbor.HasSingleRemoteBgpNeighborBgpNeighborBooleanExpr;
 import org.batfish.question.boolean_expr.iface.EnabledInterfaceBooleanExpr;
@@ -614,6 +615,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       BgpNeighborExpr caller = toBgpNeighborExpr(ctx.caller);
       if (ctx.bgp_neighbor_has_generated_route_boolean_expr() != null) {
          return new HasGeneratedRouteBgpNeighborBooleanExpr(caller);
+      }
+      else if (ctx.bgp_neighbor_has_local_ip_boolean_expr() != null) {
+         return new HasLocalIpBgpNeighborBooleanExpr(caller);
       }
       else if (ctx.bgp_neighbor_has_remote_bgp_neighbor_boolean_expr() != null) {
          return new HasRemoteBgpNeighborBgpNeighborBooleanExpr(caller);

@@ -186,6 +186,7 @@ bgp_neighbor_boolean_expr
    caller = bgp_neighbor_expr PERIOD
    (
       bgp_neighbor_has_generated_route_boolean_expr
+      | bgp_neighbor_has_local_ip_boolean_expr
       | bgp_neighbor_has_remote_bgp_neighbor_boolean_expr
       | bgp_neighbor_has_single_remote_bgp_neighbor_boolean_expr
    )
@@ -214,6 +215,11 @@ bgp_neighbor_group_string_expr
 bgp_neighbor_has_generated_route_boolean_expr
 :
    HAS_GENERATED_ROUTE
+;
+
+bgp_neighbor_has_local_ip_boolean_expr
+:
+   HAS_LOCAL_IP
 ;
 
 bgp_neighbor_has_remote_bgp_neighbor_boolean_expr

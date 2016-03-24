@@ -206,6 +206,11 @@ HAS_IP
    'has_ip'
 ;
 
+HAS_LOCAL_IP
+:
+   'has_local_ip'
+;
+
 HAS_NEXT_HOP_INTERFACE
 :
    'has_next_hop_interface'

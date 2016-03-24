@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.Prefix;
@@ -116,6 +117,15 @@ public class Interface implements Serializable {
 
    public List<SubRange> getAllowedVlans() {
       return _allowedVlans;
+   }
+
+   public Set<Prefix> getAllPrefixes() {
+      Set<Prefix> allPrefixes = new TreeSet<Prefix>();
+      if (_prefix != null) {
+         allPrefixes.add(_prefix);
+      }
+      allPrefixes.addAll(_secondaryPrefixes);
+      return allPrefixes;
    }
 
    public Double getBandwidth() {

@@ -202,8 +202,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       }
    }
 
-   private Ip getDefaultUpdateSource(final Configuration c, BgpProcess proc) {
-      Ip updateSource;
+   private Ip getBgpRouterId(final Configuration c, BgpProcess proc) {
+      Ip routerId;
       Ip processRouterId = proc.getRouterId();
       if (processRouterId == null) {
          processRouterId = new Ip(0l);
@@ -231,8 +231,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
       }
-      updateSource = processRouterId;
-      return updateSource;
+      routerId = processRouterId;
+      return routerId;
    }
 
    @Override
@@ -331,7 +331,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       org.batfish.representation.BgpProcess newBgpProcess = new org.batfish.representation.BgpProcess();
       Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       int defaultMetric = proc.getDefaultMetric();
-
+      Ip bgpRouterId = getBgpRouterId(c, proc);
+      newBgpProcess.setRouterId(bgpRouterId);
       Set<BgpAggregateNetwork> summaryOnlyNetworks = new HashSet<BgpAggregateNetwork>();
 
       // add generated routes for aggregate addresses
@@ -465,11 +466,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       for (LeafBgpPeerGroup lpg : leafGroups) {
          // update source
          String updateSourceInterface = lpg.getUpdateSource();
-         Ip updateSource;
-         if (updateSourceInterface == null) {
-            updateSource = getDefaultUpdateSource(c, proc);
-         }
-         else {
+         Ip updateSource = null;
+         if (updateSourceInterface != null) {
             org.batfish.representation.Interface sourceInterface = c
                   .getInterfaces().get(updateSourceInterface);
             if (sourceInterface != null) {
@@ -483,14 +481,27 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   _w.redFlag("bgp update source interface: \""
                         + updateSourceInterface
                         + "\" not assigned an ip address");
-                  updateSource = getDefaultUpdateSource(c, proc);
                }
             }
             else {
                _w.redFlag("reference to undefined update source interface: \""
                      + updateSourceInterface + "\"");
-               updateSource = getDefaultUpdateSource(c, proc);
             }
+         }
+         else {
+            Ip neighborAddress = lpg.getNeighborPrefix().getAddress();
+            for (Interface iface : _interfaces.values()) {
+               for (Prefix ifacePrefix : iface.getAllPrefixes()) {
+                  if (ifacePrefix.contains(neighborAddress)) {
+                     Ip ifaceAddress = ifacePrefix.getAddress();
+                     updateSource = ifaceAddress;
+                  }
+               }
+            }
+         }
+         if (updateSource == null) {
+            _w.redFlag("Could not determine update source for BGP neighbor: \""
+                  + lpg.getName() + "\"");
          }
          PolicyMap newInboundPolicyMap = null;
          String inboundRouteMapName = lpg.getInboundRouteMap();

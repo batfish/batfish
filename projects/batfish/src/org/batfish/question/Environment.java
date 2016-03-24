@@ -696,10 +696,7 @@ public class Environment {
                   }
                   Ip localAddress = bgpNeighbor.getLocalIp();
                   if (localAddress == null) {
-                     throw new BatfishException(
-                           hostname
-                                 + ": Could not determine local address reported to bgp neighbor: "
-                                 + remoteAddress);
+                     continue;
                   }
                   remoteAddresses.put(bgpNeighbor, remoteAddress);
                   Set<BgpNeighbor> localAddressOwners = localAddresses
