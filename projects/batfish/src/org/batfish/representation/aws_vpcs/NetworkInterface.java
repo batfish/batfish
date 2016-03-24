@@ -16,22 +16,25 @@ public class NetworkInterface implements AwsVpcEntity, Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private Ip _associationPublicIp;
+   private final Ip _associationPublicIp;
 
-   private String _attachmentInstanceId;
+   private final String _attachmentInstanceId;
 
-   private List<String> _groups = new LinkedList<String>();
+   private final List<String> _groups;
 
-   private Map<Ip, Ip> _ipAddressAssociations = new HashMap<Ip, Ip>();
+   private final Map<Ip, Ip> _ipAddressAssociations;
 
-   private String _networkInterfaceId;
+   private final String _networkInterfaceId;
 
-   private String _subnetId;
+   private final String _subnetId;
 
-   private String _vpcId;
+   private final String _vpcId;
 
    public NetworkInterface(JSONObject jObj, BatfishLogger logger)
          throws JSONException {
+      _groups = new LinkedList<String>();
+      _ipAddressAssociations = new HashMap<Ip, Ip>();
+
       _networkInterfaceId = jObj.getString(JSON_KEY_NETWORK_INTERFACE_ID);
 
       // logger.debugf("doing network interface %s\n", _networkInterfaceId);
@@ -53,6 +56,9 @@ public class NetworkInterface implements AwsVpcEntity, Serializable {
          JSONObject assocJson = jObj.getJSONObject(JSON_KEY_ASSOCIATION);
          _associationPublicIp = new Ip(assocJson.getString(JSON_KEY_PUBLIC_IP));
       }
+      else {
+         _associationPublicIp = null;
+      }
 
       if (jObj.has(JSON_KEY_ATTACHMENT)) {
          JSONObject attachJson = jObj.getJSONObject(JSON_KEY_ATTACHMENT);
@@ -64,10 +70,21 @@ public class NetworkInterface implements AwsVpcEntity, Serializable {
                   + " is not attached");
          }
       }
+      else {
+         _attachmentInstanceId = null;
+      }
+   }
+
+   public Ip getAssociationPublicIp() {
+      return _associationPublicIp;
    }
 
    public String getAttachmentInstanceId() {
       return _attachmentInstanceId;
+   }
+
+   public List<String> getGroups() {
+      return _groups;
    }
 
    @Override
@@ -79,8 +96,16 @@ public class NetworkInterface implements AwsVpcEntity, Serializable {
       return _ipAddressAssociations;
    }
 
+   public String getNetworkInterfaceId() {
+      return _networkInterfaceId;
+   }
+
    public String getSubnetId() {
       return _subnetId;
+   }
+
+   public String getVpcId() {
+      return _vpcId;
    }
 
    private void initIpAddressAssociations(JSONArray associations,

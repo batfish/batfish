@@ -11,10 +11,13 @@ public class VgwTelemetry implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private int _acceptedRouteCount;
-   private Ip _outsideIpAddress;
-   private String _status;
-   private String _statusMessage;
+   private final int _acceptedRouteCount;
+
+   private final Ip _outsideIpAddress;
+
+   private final String _status;
+
+   private final String _statusMessage;
 
    public VgwTelemetry(JSONObject jObj, BatfishLogger logger)
          throws JSONException {
@@ -25,5 +28,21 @@ public class VgwTelemetry implements Serializable {
       _outsideIpAddress = new Ip(
             jObj.getString(AwsVpcEntity.JSON_KEY_OUTSIDE_IP_ADDRESS));
 
+   }
+
+   public int getAcceptedRouteCount() {
+      return _acceptedRouteCount;
+   }
+
+   public Ip getOutsideIpAddress() {
+      return _outsideIpAddress;
+   }
+
+   public String getStatus() {
+      return _status;
+   }
+
+   public String getStatusMessage() {
+      return _statusMessage;
    }
 }

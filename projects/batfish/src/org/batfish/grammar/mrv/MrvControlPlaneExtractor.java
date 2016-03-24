@@ -15,6 +15,7 @@ import org.batfish.representation.mrv.MrvVendorConfiguration;
 public class MrvControlPlaneExtractor extends MrvParserBaseListener implements
       ControlPlaneExtractor {
 
+   @SuppressWarnings("unused")
    private MrvConfiguration _configuration;
 
    private MrvCombinedParser _parser;

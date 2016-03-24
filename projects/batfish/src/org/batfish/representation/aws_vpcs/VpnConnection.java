@@ -117,22 +117,25 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       }
    }
 
-   private String _customerGatewayId;
+   private final String _customerGatewayId;
 
-   private List<IpsecTunnel> _ipsecTunnels = new LinkedList<IpsecTunnel>();
+   private final List<IpsecTunnel> _ipsecTunnels;
 
-   private List<Prefix> _routes = new LinkedList<Prefix>();
+   private final List<Prefix> _routes;
 
-   private boolean _staticRoutesOnly = false;
+   private final boolean _staticRoutesOnly;
 
-   private List<VgwTelemetry> _vgwTelemetrys = new LinkedList<VgwTelemetry>();
+   private final List<VgwTelemetry> _vgwTelemetrys;
 
-   private String _vpnConnectionId;
+   private final String _vpnConnectionId;
 
-   private String _vpnGatewayId;
+   private final String _vpnGatewayId;
 
    public VpnConnection(JSONObject jObj, BatfishLogger logger)
          throws JSONException {
+      _vgwTelemetrys = new LinkedList<VgwTelemetry>();
+      _routes = new LinkedList<Prefix>();
+      _ipsecTunnels = new LinkedList<IpsecTunnel>();
       _vpnConnectionId = jObj.getString(JSON_KEY_VPN_CONNECTION_ID);
       _customerGatewayId = jObj.getString(JSON_KEY_CUSTOMER_GATEWAY_ID);
       _vpnGatewayId = jObj.getString(JSON_KEY_VPN_GATEWAY_ID);
@@ -183,6 +186,9 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
          JSONObject options = jObj.getJSONObject(JSON_KEY_OPTIONS);
          _staticRoutesOnly = Utils.tryGetBoolean(options,
                JSON_KEY_STATIC_ROUTES_ONLY, false);
+      }
+      else {
+         _staticRoutesOnly = false;
       }
    }
 
@@ -334,8 +340,36 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       }
    }
 
+   public String getCustomerGatewayId() {
+      return _customerGatewayId;
+   }
+
    @Override
    public String getId() {
       return _vpnConnectionId;
+   }
+
+   public List<IpsecTunnel> getIpsecTunnels() {
+      return _ipsecTunnels;
+   }
+
+   public List<Prefix> getRoutes() {
+      return _routes;
+   }
+
+   public boolean getStaticRoutesOnly() {
+      return _staticRoutesOnly;
+   }
+
+   public List<VgwTelemetry> getVgwTelemetrys() {
+      return _vgwTelemetrys;
+   }
+
+   public String getVpnConnectionId() {
+      return _vpnConnectionId;
+   }
+
+   public String getVpnGatewayId() {
+      return _vpnGatewayId;
    }
 }

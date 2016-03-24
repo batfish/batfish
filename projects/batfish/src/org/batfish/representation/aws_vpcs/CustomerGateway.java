@@ -10,13 +10,13 @@ public class CustomerGateway implements AwsVpcEntity, Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private String _bgpAsn;
+   private final String _bgpAsn;
 
-   private String _customerGatewayId;
+   private final String _customerGatewayId;
 
-   private Ip _ipAddress;
+   private final Ip _ipAddress;
 
-   private String _type;
+   private final String _type;
 
    public CustomerGateway(JSONObject jObj, BatfishLogger logger)
          throws JSONException {
@@ -26,8 +26,24 @@ public class CustomerGateway implements AwsVpcEntity, Serializable {
       _bgpAsn = jObj.getString(JSON_KEY_BGP_ASN);
    }
 
+   public String getBgpAsn() {
+      return _bgpAsn;
+   }
+
+   public String getCustomerGatewayId() {
+      return _customerGatewayId;
+   }
+
    @Override
    public String getId() {
       return _customerGatewayId;
+   }
+
+   public Ip getIpAddress() {
+      return _ipAddress;
+   }
+
+   public String getType() {
+      return _type;
    }
 }

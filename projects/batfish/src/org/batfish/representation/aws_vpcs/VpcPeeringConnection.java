@@ -11,15 +11,15 @@ public class VpcPeeringConnection implements AwsVpcEntity, Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private Prefix _accepterVpcCidrBlock;
+   private final Prefix _accepterVpcCidrBlock;
 
-   private String _accepterVpcId;
+   private final String _accepterVpcId;
 
-   private Prefix _requesterVpcCidrBlock;
+   private final Prefix _requesterVpcCidrBlock;
 
-   private String _requesterVpcId;
+   private final String _requesterVpcId;
 
-   private String _vpcPeeringConnectionId;
+   private final String _vpcPeeringConnectionId;
 
    public VpcPeeringConnection(JSONObject jObj, BatfishLogger logger)
          throws JSONException {
@@ -38,6 +38,10 @@ public class VpcPeeringConnection implements AwsVpcEntity, Serializable {
             requesterJson.getString(JSON_KEY_CIDR_BLOCK));
    }
 
+   public Prefix getAccepterVpcCidrBlock() {
+      return _accepterVpcCidrBlock;
+   }
+
    public String getAccepterVpcId() {
       return _accepterVpcId;
    }
@@ -47,7 +51,15 @@ public class VpcPeeringConnection implements AwsVpcEntity, Serializable {
       return _vpcPeeringConnectionId;
    }
 
+   public Prefix getRequesterVpcCidrBlock() {
+      return _requesterVpcCidrBlock;
+   }
+
    public String getRequesterVpcId() {
       return _requesterVpcId;
+   }
+
+   public String getVpcPeeringConnectionId() {
+      return _vpcPeeringConnectionId;
    }
 }

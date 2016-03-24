@@ -14,16 +14,18 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private String _groupId;
+   private final String _groupId;
 
-   private String _groupName;
+   private final String _groupName;
 
-   private List<IpPermissions> _ipPermsEgress = new LinkedList<IpPermissions>();
+   private final List<IpPermissions> _ipPermsEgress;
 
-   private List<IpPermissions> _ipPermsIngress = new LinkedList<IpPermissions>();
+   private final List<IpPermissions> _ipPermsIngress;
 
    public SecurityGroup(JSONObject jObj, BatfishLogger logger)
          throws JSONException {
+      _ipPermsEgress = new LinkedList<IpPermissions>();
+      _ipPermsIngress = new LinkedList<IpPermissions>();
       _groupId = jObj.getString(JSON_KEY_GROUP_ID);
       _groupName = jObj.getString(JSON_KEY_GROUP_NAME);
 
@@ -56,9 +58,25 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
       addEgressAccessLines(_ipPermsEgress, outboundRules);
    }
 
+   public String getGroupId() {
+      return _groupId;
+   }
+
+   public String getGroupName() {
+      return _groupName;
+   }
+
    @Override
    public String getId() {
       return _groupId;
+   }
+
+   public List<IpPermissions> getIpPermsEgress() {
+      return _ipPermsEgress;
+   }
+
+   public List<IpPermissions> getIpPermsIngress() {
+      return _ipPermsIngress;
    }
 
    private void initIpPerms(List<IpPermissions> ipPermsList,

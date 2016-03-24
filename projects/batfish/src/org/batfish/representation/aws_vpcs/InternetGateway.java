@@ -5,11 +5,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.batfish.common.BatfishLogger;
-import org.batfish.main.ConfigurationFormat;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
-import org.batfish.representation.LineAction;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.StaticRoute;
 import org.codehaus.jettison.json.JSONArray;

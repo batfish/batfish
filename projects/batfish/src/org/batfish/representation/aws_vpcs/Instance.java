@@ -8,13 +8,11 @@ import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.main.ConfigurationFormat;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.LineAction;
 import org.batfish.representation.Prefix;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -26,26 +24,26 @@ public class Instance implements AwsVpcEntity, Serializable {
 
    private transient IpAccessList _inAcl;
 
-   private String _instanceId;
+   private final String _instanceId;
 
-   private List<String> _networkInterfaces = new LinkedList<String>();
+   private final List<String> _networkInterfaces;
 
    private transient IpAccessList _outAcl;
 
-   private List<String> _securityGroups = new LinkedList<String>();
+   private final List<String> _securityGroups;
 
-   private String _subnetId;
+   private final String _subnetId;
 
-   private String _vpcId;
+   private final String _vpcId;
 
    public Instance(JSONObject jObj, BatfishLogger logger) throws JSONException {
+      _securityGroups = new LinkedList<String>();
+      _networkInterfaces = new LinkedList<String>();
       _instanceId = jObj.getString(JSON_KEY_INSTANCE_ID);
 
-      if (jObj.has(JSON_KEY_VPC_ID)) {
-         _vpcId = jObj.getString(JSON_KEY_VPC_ID);
-
-         _subnetId = jObj.getString(JSON_KEY_SUBNET_ID);
-      }
+      boolean hasVpcId = jObj.has(JSON_KEY_VPC_ID);
+      _vpcId = hasVpcId ? jObj.getString(JSON_KEY_VPC_ID) : null;
+      _subnetId = hasVpcId ? jObj.getString(JSON_KEY_SUBNET_ID) : null;
 
       JSONArray securityGroups = jObj.getJSONArray(JSON_KEY_SECURITY_GROUPS);
       initSecurityGroups(securityGroups, logger);
@@ -67,8 +65,28 @@ public class Instance implements AwsVpcEntity, Serializable {
       return _inAcl;
    }
 
+   public String getInstanceId() {
+      return _instanceId;
+   }
+
+   public List<String> getNetworkInterfaces() {
+      return _networkInterfaces;
+   }
+
    public IpAccessList getOutAcl() {
       return _outAcl;
+   }
+
+   public List<String> getSecurityGroups() {
+      return _securityGroups;
+   }
+
+   public String getSubnetId() {
+      return _subnetId;
+   }
+
+   public String getVpcId() {
+      return _vpcId;
    }
 
    private void initNetworkInterfaces(JSONArray routes, BatfishLogger logger)
