@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.batfish.collections.RoleSet;
 import org.batfish.main.ConfigurationFormat;
@@ -909,18 +910,21 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       }
 
       // convert interfaces
-      for (Entry<String, Interface> e : _defaultRoutingInstance.getInterfaces()
-            .entrySet()) {
-         // String name = e.getKey();
-         Interface iface = e.getValue();
-         // org.batfish.representation.Interface newIface = toInterface(iface);
-         // _c.getInterfaces().put(name, newIface);
-         for (Entry<String, Interface> eUnit : iface.getUnits().entrySet()) {
-            String unitName = eUnit.getKey();
-            Interface unitIface = eUnit.getValue();
-            org.batfish.representation.Interface newUnitIface = toInterface(unitIface);
-            _c.getInterfaces().put(unitName, newUnitIface);
+      Map<String, Interface> allInterfaces = new LinkedHashMap<String, Interface>();
+
+      for (Interface iface : _defaultRoutingInstance.getInterfaces().values()) {
+         allInterfaces.putAll(iface.getUnits());
+      }
+      for (NodeDevice nd : _defaultRoutingInstance.getNodeDevices().values()) {
+         for (Interface iface : nd.getInterfaces().values()) {
+            allInterfaces.putAll(iface.getUnits());
          }
+      }
+      for (Entry<String, Interface> eUnit : allInterfaces.entrySet()) {
+         String unitName = eUnit.getKey();
+         Interface unitIface = eUnit.getValue();
+         org.batfish.representation.Interface newUnitIface = toInterface(unitIface);
+         _c.getInterfaces().put(unitName, newUnitIface);
       }
 
       // copy ike proposals

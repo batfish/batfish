@@ -46,6 +46,11 @@ ADD
    'add'
 ;
 
+ADDRESS
+:
+   'address'
+;
+
 ALL_PREFIXES
 :
    'all_prefixes'

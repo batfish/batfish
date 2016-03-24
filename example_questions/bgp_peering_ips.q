@@ -33,10 +33,14 @@ verify {
    foreach node {
       foreach interface {
          if (interface.has_ip) then {
-            if (interface.is_loopback) then {
-               $loopbackips.add(interface.ip);
+            $interface_prefixes := interface.all_prefixes;
+            foreach $interface_prefix : $interface_prefixes {
+               $interface_ip := $interface_prefix.address;
+               if (interface.is_loopback) then {
+                  $loopbackips.add($interface_ip);
+               }
+               $allinterfaceips.add($interface_ip);
             }
-            $allinterfaceips.add(interface.ip);
          }
       }
    }
@@ -106,9 +110,7 @@ verify {
                }
             }
             assert {
-               not {
-                  $loopbackips.contains(bgp_neighbor.remote_ip)
-               }
+               $allinterfaceips.contains(bgp_neighbor.remote_ip)
             }
             onfailure {
                $num_ebgp_remote_ip_unknown++;

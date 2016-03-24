@@ -14,6 +14,10 @@ package org.batfish.grammar.question;
    private java.util.Map<String, VariableType> _typeBindings = new java.util.HashMap<String, VariableType>();
     
    private java.util.Set<String> _immutableVars = new java.util.HashSet<String>();
+
+   private String getParserPosition() {
+      return "" + _ctx.start.getLine() + ":" + _ctx.start.getCharPositionInLine();
+   }
     
    private Token next() {
       return _input.LT(1);
@@ -33,7 +37,7 @@ package org.batfish.grammar.question;
 
    private void assertMutable(String var) {
       if (_immutableVars.contains(var)) {
-         throw new org.batfish.common.BatfishException("Attempt to alter immutable variable: \"" + var + "\"");
+         throw new org.batfish.common.BatfishException(getParserPosition() + ": Attempt to alter immutable variable: \"" + var + "\"");
       }
    }
 
@@ -41,7 +45,7 @@ package org.batfish.grammar.question;
       assertMutable(var);
       VariableType oldType = _typeBindings.get(var);
       if (oldType != null) {
-         throw new org.batfish.common.BatfishException("Attempt to create variable \"" + var + "\" with type: \"" + type + "\", but it already exists and has previously assigned type: \"" + oldType + "\"");
+         throw new org.batfish.common.BatfishException(getParserPosition() + ": Attempt to create variable \"" + var + "\" with type: \"" + type + "\", but it already exists and has previously assigned type: \"" + oldType + "\"");
       }
       else {
          _typeBindings.put(var, type);
@@ -52,7 +56,7 @@ package org.batfish.grammar.question;
       assertMutable(var);
       VariableType oldType = _typeBindings.get(var);
       if (oldType != null && oldType != type) {
-         throw new org.batfish.common.BatfishException("Attempt to update variable \"" + var + "\" with value of type: \"" + type + "\", but it has previously assigned type: \"" + oldType + "\"");
+         throw new org.batfish.common.BatfishException(getParserPosition() + ": Attempt to update variable \"" + var + "\" with value of type: \"" + type + "\", but it has previously assigned type: \"" + oldType + "\"");
       }
       else {
          _typeBindings.put(var, type);
@@ -62,7 +66,7 @@ package org.batfish.grammar.question;
    private VariableType retrieveTypeBinding(String var) {
       VariableType ret = _typeBindings.get(var);
       if (ret == null) {
-         throw new org.batfish.common.BatfishException("Missing type for variable: " + var);
+         throw new org.batfish.common.BatfishException(getParserPosition() + ": Missing type for variable: \"" + var + "\"");
       }
       return ret;
    }
@@ -70,7 +74,7 @@ package org.batfish.grammar.question;
    private void assertTypeBinding(String var, VariableType expectedType) {
       VariableType actualType = retrieveTypeBinding(var);
       if (actualType != expectedType) {
-         throw new org.batfish.common.BatfishException("Variable '" + var + "' is of type '" + actualType.toString() + "', but expected type '" + expectedType.toString() + "'");
+         throw new org.batfish.common.BatfishException(getParserPosition() + ": Variable '" + var + "' is of type '" + actualType.toString() + "', but expected type '" + expectedType.toString() + "'");
       }
    }
 
@@ -78,7 +82,7 @@ package org.batfish.grammar.question;
       VariableType lhsType = lhs.varType;
       VariableType rhsType = rhs.varType;
       if (lhsType != rhsType) {
-         throw new org.batfish.common.BatfishException("Expression '" + lhs.getText() + "' of type '" + lhsType.toString() + "' cannot be compared to expression '" + rhs.getText()+ "' of type '" + rhsType.toString());
+         throw new org.batfish.common.BatfishException(getParserPosition() + ": Expression '" + lhs.getText() + "' of type '" + lhsType.toString() + "' cannot be compared to expression '" + rhs.getText()+ "' of type '" + rhsType.toString());
       }
    }
 
@@ -469,6 +473,12 @@ expr returns [VariableType varType]
 
    route_filter_line_expr
    {$varType = VariableType.ROUTE_FILTER_LINE;}
+
+   |
+   {vp(VariableType.SET_IP)}?
+
+   set_ip_expr
+   {$varType = VariableType.SET_IP;}
 
    |
    {vp(VariableType.SET_PREFIX)}?
@@ -947,6 +957,7 @@ ip_expr
    bgp_neighbor_ip_expr
    | interface_ip_expr
    | ipsec_vpn_ip_expr
+   | prefix_ip_expr
    | static_route_ip_expr
    | IP_ADDRESS
    |
@@ -1350,11 +1361,24 @@ policy_map_expr
    var_policy_map_expr
 ;
 
+prefix_address_ip_expr
+:
+   ADDRESS
+;
+
 prefix_expr
 :
    generated_route_prefix_expr
    | interface_prefix_expr
    | static_route_prefix_expr
+   {v(VariableType.PREFIX)}?
+
+   | var_prefix_expr
+;
+
+prefix_ip_expr
+:
+   caller = prefix_expr PERIOD prefix_address_ip_expr
 ;
 
 prefix_space_boolean_expr
@@ -1748,9 +1772,20 @@ locals [String typeStr, VariableType type, VariableType oldType]
    SEMICOLON
 ;
 
+set_ip_expr
+:
+   {v(VariableType.SET_IP)}?
+
+   | var_set_ip_expr
+;
+
 set_prefix_expr
 :
    interface_set_prefix_expr
+   |
+   {v(VariableType.SET_PREFIX)}?
+
+   | var_set_prefix_expr
 ;
 
 set_size_int_expr
@@ -2008,6 +2043,16 @@ var_route_filter_expr
 ;
 
 var_route_filter_line_expr
+:
+   VARIABLE
+;
+
+var_set_ip_expr
+:
+   VARIABLE
+;
+
+var_set_prefix_expr
 :
    VARIABLE
 ;

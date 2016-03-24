@@ -1671,11 +1671,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else {
          String ifaceName = ctx.name.getText();
          Map<String, Interface> interfaces;
+         String nodeDevicePrefix = "";
          if (ctx.node == null) {
             interfaces = _currentRoutingInstance.getInterfaces();
          }
          else {
             String nodeDeviceName = ctx.node.getText();
+            nodeDevicePrefix = nodeDeviceName + ":";
             NodeDevice nodeDevice = _currentRoutingInstance.getNodeDevices()
                   .get(nodeDeviceName);
             if (nodeDevice == null) {
@@ -1687,8 +1689,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          }
          _currentInterface = interfaces.get(ifaceName);
          if (_currentInterface == null) {
-            _currentInterface = new Interface(ifaceName);
-            interfaces.put(ifaceName, _currentInterface);
+            String fullIfaceName = nodeDevicePrefix + ifaceName;
+            _currentInterface = new Interface(fullIfaceName);
+            interfaces.put(fullIfaceName, _currentInterface);
          }
       }
       _currentMasterInterface = _currentInterface;

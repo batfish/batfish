@@ -202,8 +202,6 @@ public class Interface extends ComparableStructure<String> {
 
    private PolicyMap _routingPolicy;
 
-   private final Set<Prefix> _secondaryPrefixes;
-
    private SwitchportMode _switchportMode;
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
@@ -218,7 +216,6 @@ public class Interface extends ComparableStructure<String> {
       _owner = owner;
       _switchportMode = SwitchportMode.NONE;
       _allowedVlans = new ArrayList<SubRange>();
-      _secondaryPrefixes = new TreeSet<Prefix>();
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
@@ -315,10 +312,6 @@ public class Interface extends ComparableStructure<String> {
 
    public PolicyMap getRoutingPolicy() {
       return _routingPolicy;
-   }
-
-   public Set<Prefix> getSecondaryPrefixes() {
-      return _secondaryPrefixes;
    }
 
    public SwitchportMode getSwitchportMode() {

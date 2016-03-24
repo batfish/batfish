@@ -101,7 +101,10 @@ import org.batfish.question.ip_expr.bgp_neighbor.LocalIpBgpNeighborIpExpr;
 import org.batfish.question.ip_expr.bgp_neighbor.RemoteIpBgpNeighborIpExpr;
 import org.batfish.question.ip_expr.iface.IpInterfaceIpExpr;
 import org.batfish.question.ip_expr.ipsec_vpn.RemoteIpIpsecVpnIpExpr;
+import org.batfish.question.ip_expr.prefix.AddressPrefixIpExpr;
 import org.batfish.question.ip_expr.static_route.NextHopIpStaticRouteIpExpr;
+import org.batfish.question.ip_set_expr.IpSetExpr;
+import org.batfish.question.ip_set_expr.VarIpSetExpr;
 import org.batfish.question.ipsec_vpn_expr.BaseCaseIpsecVpnExpr;
 import org.batfish.question.ipsec_vpn_expr.IpsecVpnExpr;
 import org.batfish.question.ipsec_vpn_expr.ipsec_vpn.RemoteIpsecVpnIpsecVpnExpr;
@@ -121,10 +124,12 @@ import org.batfish.question.policy_map_clause_expr.VarPolicyMapClauseExpr;
 import org.batfish.question.policy_map_expr.PolicyMapExpr;
 import org.batfish.question.policy_map_expr.VarPolicyMapExpr;
 import org.batfish.question.prefix_expr.PrefixExpr;
+import org.batfish.question.prefix_expr.VarPrefixExpr;
 import org.batfish.question.prefix_expr.iface.PrefixInterfacePrefixExpr;
 import org.batfish.question.prefix_expr.iface.SubnetInterfacePrefixExpr;
 import org.batfish.question.prefix_expr.static_route.PrefixStaticRoutePrefixExpr;
 import org.batfish.question.prefix_set_expr.PrefixSetExpr;
+import org.batfish.question.prefix_set_expr.VarPrefixSetExpr;
 import org.batfish.question.prefix_set_expr.iface.AllPrefixesInterfacePrefixSetExpr;
 import org.batfish.question.prefix_space_expr.PrefixSpaceExpr;
 import org.batfish.question.prefix_space_expr.VarPrefixSpaceExpr;
@@ -217,6 +222,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private static final String ERR_CONVERT_INTERFACE = "Cannot convert parse tree node to interface expression";
 
    private static final String ERR_CONVERT_IP = "Cannot convert parse tree node to IP expression";
+
+   private static final String ERR_CONVERT_IP_SET = "Cannot convert parse tree node to ip-set expression";
 
    private static final String ERR_CONVERT_IPSEC_VPN = "Cannot convert parse tree node to ipsec_vpn expression";
 
@@ -1097,6 +1104,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.route_filter_line_expr() != null) {
          return toRouteFilterLineExpr(ctx.route_filter_line_expr());
       }
+      else if (ctx.set_ip_expr() != null) {
+         return toIpSetExpr(ctx.set_ip_expr());
+      }
       else if (ctx.set_prefix_expr() != null) {
          return toPrefixSetExpr(ctx.set_prefix_expr());
       }
@@ -1264,6 +1274,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.ipsec_vpn_ip_expr() != null) {
          return toIpExpr(ctx.ipsec_vpn_ip_expr());
       }
+      else if (ctx.prefix_ip_expr() != null) {
+         return toIpExpr(ctx.prefix_ip_expr());
+      }
       else if (ctx.static_route_ip_expr() != null) {
          return toIpExpr(ctx.static_route_ip_expr());
       }
@@ -1282,6 +1295,16 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       IpsecVpnExpr caller = toIpsecVpnExpr(ctx.caller);
       if (ctx.ipsec_vpn_remote_ip_ip_expr() != null) {
          return new RemoteIpIpsecVpnIpExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_IP, ctx);
+      }
+   }
+
+   private IpExpr toIpExpr(Prefix_ip_exprContext ctx) {
+      PrefixExpr caller = toPrefixExpr(ctx.caller);
+      if (ctx.prefix_address_ip_expr() != null) {
+         return new AddressPrefixIpExpr(caller);
       }
       else {
          throw conversionError(ERR_CONVERT_IP, ctx);
@@ -1323,6 +1346,19 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else {
          throw conversionError(ERR_CONVERT_IPSEC_VPN, ctx);
       }
+   }
+
+   private IpSetExpr toIpSetExpr(Set_ip_exprContext ctx) {
+      if (ctx.var_set_ip_expr() != null) {
+         return toIpSetExpr(ctx.var_set_ip_expr());
+      }
+      else {
+         throw conversionError(ERR_CONVERT_IP_SET, ctx);
+      }
+   }
+
+   private IpSetExpr toIpSetExpr(Var_set_ip_exprContext ctx) {
+      return new VarIpSetExpr(ctx.VARIABLE().getText());
    }
 
    private MapExpr toMapExpr(Map_exprContext ctx) {
@@ -1473,6 +1509,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.static_route_prefix_expr() != null) {
          return toPrefixExpr(ctx.static_route_prefix_expr());
       }
+      else if (ctx.var_prefix_expr() != null) {
+         return toPrefixExpr(ctx.var_prefix_expr());
+      }
       else {
          throw conversionError(ERR_CONVERT_PREFIX, ctx);
       }
@@ -1486,6 +1525,11 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else {
          throw conversionError(ERR_CONVERT_PREFIX, ctx);
       }
+   }
+
+   private PrefixExpr toPrefixExpr(Var_prefix_exprContext ctx) {
+      String var = ctx.VARIABLE().getText();
+      return new VarPrefixExpr(var);
    }
 
    private Set<Prefix> toPrefixSet(Ip_constraint_complexContext ctx) {
@@ -1547,9 +1591,16 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       if (ctx.interface_set_prefix_expr() != null) {
          return toPrefixSetExpr(ctx.interface_set_prefix_expr());
       }
+      else if (ctx.var_set_prefix_expr() != null) {
+         return toPrefixSetExpr(ctx.var_set_prefix_expr());
+      }
       else {
          throw conversionError(ERR_CONVERT_PREFIX_SET, ctx);
       }
+   }
+
+   private PrefixSetExpr toPrefixSetExpr(Var_set_prefix_exprContext ctx) {
+      return new VarPrefixSetExpr(ctx.VARIABLE().getText());
    }
 
    private PrefixSpaceExpr toPrefixSpaceExpr(Node_prefix_space_exprContext ctx) {

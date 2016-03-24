@@ -736,8 +736,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       newIface.setBandwidth(iface.getBandwidth());
       if (iface.getPrefix() != null) {
          newIface.setPrefix(iface.getPrefix());
+         newIface.getAllPrefixes().add(iface.getPrefix());
       }
-      newIface.getSecondaryPrefixes().addAll(iface.getSecondaryPrefixes());
+      newIface.getAllPrefixes().addAll(iface.getSecondaryPrefixes());
       boolean level1 = false;
       boolean level2 = false;
       if (_isisProcess != null) {
