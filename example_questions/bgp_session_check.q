@@ -3,16 +3,17 @@
  * uniquely to some other BGP neighbor definition on some other configuration.
  * Report eBGP(iBGP) peerings with local/remote IPs on (non-)loopback interfaces,
  * as well as unknown remote IPs for any BGP peerings. Check for half-open sessions
- * @param foreign_bgp_groups A set of strings signifying BGP groups for which no checks are performed. For instance, set this parameter to set&lt;string&gt;{"partners",  * @param no_check_ebgp_local_ip_on_loopback If set to true, don't check for eBGP local IPs on loopback interfaces
+ * @param foreign_bgp_groups A set of strings signifying BGP groups for which no checks are performed. For instance, set this parameter to set&lt;string&gt;{"partners", "customers"} if you don't want to check your configurations for matching BGP neighbor definitions for BGP neighbors in the "partners" or "customers" groups because e.g. you don't own the configurations containing the matching definitions. 
+ * @param no_check_ebgp_local_ip_on_loopback If set to true, don't check for eBGP local IPs on loopback interfaces
  * @param no_check_ebgp_remote_ip_on_loopback If set to true, don't check for eBGP remote IPs on loopback interfaces
  * @param no_check_ebgp_remote_ip_unknown If set to true, don't check for unknown eBGP remote IPs
  * @param no_check_half_open If set to true, don't check for half-open connections that are otherwise correctly configured
  * @param no_check_ibgp_local_ip_on_non_loopback If set to true, don't check for iBGP local IPs on non-loopback interfaces
  * @param no_check_ibgp_remote_ip_on_non_loopback If set to true, don't check for iBGP remote IPs on non-loopback interfaces
  * @param no_check_ibgp_remote_ip_unknown If set to true, don't check for unknown iBGP remote IPs
- * @param no_check_unbroken If set to true, don't check for broken BGP neighbor definitions
  * @param no_check_unique If set to true, don't check for UNIQUE matching BGP neighbor definitions
-"customers"} if you don't want to check your configurations for matching BGP neighbor definitions for BGP neighbors in the "partners" or "customers" groups because e.g. you don't own the configurations containing the matching definitions. 
+ * @param no_print_broken_total If set to true, don't print total broken sessions (including eBGP and iBGP)
+
  */
 defaults {
    $no_check_ebgp_local_ip_on_loopback=false;
