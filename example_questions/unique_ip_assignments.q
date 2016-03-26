@@ -11,11 +11,11 @@ verify {
    $dualassignedips:set<ip>;
    foreach node {
       foreach interface {
-         if (interface.has_ip) then {
+         if (interface.has_ip) {
             unless (and{interface.is_loopback, interface.ip == $loopbackip}) {
                $prev_num_ip_assignments := $assignedips.size;
                $assignedips.add(interface.ip);
-               if ($assignedips.size == $prev_num_ip_assignments) then {
+               if ($assignedips.size == $prev_num_ip_assignments) {
                   $dualassignedips.add(interface.ip);
                }
             }
@@ -24,7 +24,7 @@ verify {
    }
    foreach node {
       foreach interface {
-         if (interface.has_ip) then {
+         if (interface.has_ip) {
             unless (and{interface.is_loopback, interface.ip == $loopbackip}) {
                assert {
                   not {
@@ -36,7 +36,7 @@ verify {
                      node.name,
                      interface.name,
                      interface.ip);
-                  if (not {interface.enabled}) then {
+                  if (not {interface.enabled}) {
                      printf(" (interface is disabled)");
                   }
                   printf("\n");
