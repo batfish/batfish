@@ -360,15 +360,15 @@ default_binding
       (
          SET str_set = STRING OPEN_BRACE
          (
-            str_elem += STRING_LITERAL
+            str_elem += string_literal_string_expr
             (
-               COMMA str_elem += STRING_LITERAL
+               COMMA str_elem += string_literal_string_expr
             )*
          )? CLOSE_BRACE
       )
       {createTypeBinding($var.getText(), VariableType.SET_STRING);}
 
-      | str = STRING_LITERAL
+      | str = string_literal_string_expr
       {createTypeBinding($var.getText(), VariableType.STRING);}
 
    ) SEMICOLON
@@ -525,8 +525,8 @@ flow_constraint_ingress_node
 :
    INGRESS_NODE EQUALS
    (
-      ingress_node = STRING_LITERAL
-      | ingress_node = VARIABLE
+      ingress_node_str = string_literal_string_expr
+      | ingress_node_var = VARIABLE
    )
 ;
 
@@ -1251,7 +1251,7 @@ node_boolean_expr
 node_constraint
 :
    REGEX
-   | STRING_LITERAL
+   | string_literal_string_expr
    | VARIABLE
 ;
 
@@ -1910,9 +1910,16 @@ string_expr
    | s1 = string_expr PLUS s2 = string_expr
 ;
 
-string_literal_string_expr
+string_literal_string_expr returns [String text] @init {
+   $text = "";
+}
 :
-   STRING_LITERAL
+   DOUBLE_QUOTE
+   (
+      sl = STRING_LITERAL
+      {$text = $sl.getText();}
+
+   )? DOUBLE_QUOTE
 ;
 
 subrange

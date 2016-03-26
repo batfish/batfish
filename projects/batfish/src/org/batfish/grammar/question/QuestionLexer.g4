@@ -649,7 +649,7 @@ DOUBLE_PLUS
 
 DOUBLE_QUOTE
 :
-   '"' -> channel ( HIDDEN ) , pushMode ( M_QuotedString )
+   '"' -> pushMode ( M_QuotedString )
 ;
 
 EQUALS
@@ -855,7 +855,7 @@ M_QuotedString_TEXT
 
 M_QuotedString_DOUBLE_QUOTE
 :
-   '"' -> channel ( HIDDEN ) , popMode
+   '"' -> type ( DOUBLE_QUOTE ) , popMode
 ;
 
 mode M_Set;

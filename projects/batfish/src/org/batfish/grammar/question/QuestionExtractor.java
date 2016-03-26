@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.BatfishExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
@@ -323,14 +322,14 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.str_set != null) {
          type = VariableType.SET_STRING;
          Set<String> strSet = new LinkedHashSet<String>();
-         for (Token t : ctx.str_elem) {
-            strSet.add(t.getText());
+         for (String_literal_string_exprContext t : ctx.str_elem) {
+            strSet.add(t.text);
          }
          value = strSet;
       }
-      else if (ctx.STRING_LITERAL() != null) {
+      else if (ctx.str != null) {
          type = VariableType.STRING;
-         value = ctx.str.getText();
+         value = ctx.str.text;
       }
       else {
          throw new BatfishException("Invalid binding for variable: \"" + var
@@ -379,14 +378,13 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    @Override
    public void enterFlow_constraint_ingress_node(
          Flow_constraint_ingress_nodeContext ctx) {
-      String valueText = ctx.ingress_node.getText();
       String ingressNode;
-      if (ctx.VARIABLE() != null) {
-         String var = valueText.substring(1);
+      if (ctx.ingress_node_var != null) {
+         String var = ctx.ingress_node_var.getText().substring(1);
          ingressNode = _parameters.getString(var);
       }
       else {
-         ingressNode = valueText;
+         ingressNode = ctx.ingress_node_str.text;
       }
       _currentFlowBuilder.setIngressNode(ingressNode);
    }
@@ -1685,8 +1683,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          String regex = toRegex(ctx.REGEX().getText());
          return regex;
       }
-      else if (ctx.STRING_LITERAL() != null) {
-         return Pattern.quote(ctx.STRING_LITERAL().getText());
+      else if (ctx.string_literal_string_expr() != null) {
+         return Pattern.quote(ctx.string_literal_string_expr().text);
       }
       else if (ctx.VARIABLE() != null) {
          String var = ctx.VARIABLE().getText().substring(1);
@@ -2305,7 +2303,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private StringExpr toStringExpr(String_literal_string_exprContext ctx) {
-      String withEscapes = ctx.getText();
+      String withEscapes = ctx.text;
       String processed = Util.unescapeJavaString(withEscapes);
       return new StringLiteralStringExpr(processed);
    }

@@ -8,7 +8,7 @@ verify {
    $views := query.get_map("views");
    foreach node {
       foreach interface {
-         if (interface.is_loopback) then {
+         if (interface.is_loopback) {
             assert {
                or {
                   interface.ospf.active,
@@ -16,9 +16,23 @@ verify {
                }
             }
             onfailure {
-               $base_msg := format("Loopback interface %s is neither active nor passive wrt OSPF, so its network %s will not appear in OSPF RIB.",
+               if (interface.has_ip) {
+                  $ospf_network := interface.prefix;
+                  $ospf_network_str := format("%s",$ospf_network);
+               }
+               else {
+                  $ospf_network_str := "<unassigned>";
+               }
+               if (interface.enabled) {
+                  $interface_disabled_str := "";
+               }
+               else {
+                  $interface_disabled_str := " (interface is disabled)";
+               }
+               $base_msg := format("Loopback interface %s is neither active nor passive wrt OSPF, so its network %s will not appear in OSPF RIB.%s",
                   interface.name,
-                  interface.prefix);
+                  $ospf_network_str,
+                  $interface_disabled_str);
                printf("%s: %s\n",
                   node.name,
                   $base_msg);
