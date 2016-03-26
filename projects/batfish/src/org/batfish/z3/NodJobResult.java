@@ -41,4 +41,11 @@ public class NodJobResult extends BatfishJobResult<Set<Flow>> {
       return _flows;
    }
 
+   @Override
+   public String toString() {
+      int numFlows = _flows.size();
+      String result = "" + numFlows + " flows";
+      return result;
+   }
+
 }
