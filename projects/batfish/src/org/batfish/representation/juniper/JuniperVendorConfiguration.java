@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import org.batfish.collections.RoleSet;
 import org.batfish.main.ConfigurationFormat;
@@ -63,6 +64,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    private Configuration _c;
 
    private boolean _defaultAddressSelection;
+
+   private transient Interface _lo0;
+
+   private transient boolean _lo0Initialized;
 
    private final RoleSet _roles;
 
@@ -144,31 +149,25 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
          // inherit update-source
          Ip localAddress = ig.getLocalAddress();
-         if (localAddress == null && _defaultAddressSelection) {
-            Interface lo0 = _defaultRoutingInstance.getInterfaces().get(
-                  FIRST_LOOPBACK_INTERFACE_NAME);
-            if (lo0 != null) {
-               Interface lo0_0 = lo0.getUnits().get(
-                     FIRST_LOOPBACK_INTERFACE_NAME + ".0");
-               if (lo0_0 != null) {
-                  Prefix lo0_0Prefix = lo0_0.getPrimaryPrefix();
-                  if (lo0_0Prefix != null) {
-                     localAddress = lo0_0Prefix.getAddress();
+         if (localAddress == null) {
+            // assign the ip of the interface that is likely connected to this
+            // peer
+            outerloop: for (org.batfish.representation.Interface iface : _c
+                  .getInterfaces().values()) {
+               for (Prefix prefix : iface.getAllPrefixes()) {
+                  if (prefix.contains(ip)) {
+                     localAddress = prefix.getAddress();
+                     break outerloop;
                   }
                }
             }
          }
-         if (localAddress == null) {
-            // assign the ip of the interface that is likely connected to this
-            // peer
-            for (Interface iface : _defaultRoutingInstance.getInterfaces()
-                  .values()) {
-               for (Interface unit : iface.getUnits().values()) {
-                  Prefix unitPrefix = unit.getPrimaryPrefix();
-                  if (unitPrefix != null && unitPrefix.contains(ip)) {
-                     localAddress = unitPrefix.getAddress();
-                     break;
-                  }
+         if (localAddress == null && _defaultAddressSelection) {
+            initFirstLoopbackInterface();
+            if (_lo0 != null) {
+               Prefix lo0_0Prefix = _lo0.getPrimaryPrefix();
+               if (lo0_0Prefix != null) {
+                  localAddress = lo0_0Prefix.getAddress();
                }
             }
          }
@@ -281,6 +280,29 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    @Override
    public Warnings getWarnings() {
       return _w;
+   }
+
+   private void initFirstLoopbackInterface() {
+      if (_lo0Initialized) {
+         return;
+      }
+      _lo0Initialized = true;
+      _lo0 = _defaultRoutingInstance.getInterfaces().get(
+            FIRST_LOOPBACK_INTERFACE_NAME);
+      Pattern p = Pattern
+            .compile("[A-Za-z0-9][A-Za-z0-9]*:lo[0-9][0-9]*\\.[0-9][0-9]*");
+      if (_lo0 == null) {
+         for (NodeDevice nd : _defaultRoutingInstance.getNodeDevices().values()) {
+            for (Interface iface : nd.getInterfaces().values()) {
+               for (Interface unit : iface.getUnits().values()) {
+                  if (p.matcher(unit.getName()).matches()) {
+                     _lo0 = unit;
+                  }
+               }
+            }
+         }
+      }
+
    }
 
    private void placeInterfaceIntoArea(
