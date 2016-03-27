@@ -1432,7 +1432,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             icmpType = IcmpType.REDIRECT_MESSAGE;
          }
          if (feature.RST() != null) {
-            tcpFlagsByte &= TcpFlags.RESET;
+            tcpFlagsByte |= TcpFlags.RESET;
             tcpFlags = tcpFlagsByte;
          }
          if (feature.SOURCE_QUENCH() != null) {
