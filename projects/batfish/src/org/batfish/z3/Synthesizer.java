@@ -893,14 +893,14 @@ public class Synthesizer {
                   matchLineCriteria.addConjunct(exactMatch);
                }
 
-               // match icmp-type
+               // match icmp-code
                if (icmpType != -1) {
                   EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_CODE_VAR),
                         new LitIntExpr(icmpCode, ICMP_CODE_BITS));
                   matchLineCriteria.addConjunct(exactMatch);
                }
 
-               // match icmp-type
+               // match tcp-flags
                if (icmpType != -1) {
                   EqExpr exactMatch = new EqExpr(new VarIntExpr(TCP_FLAGS_VAR),
                         new LitIntExpr(tcpFlags, TCP_FLAGS_BITS));
