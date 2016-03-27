@@ -1607,10 +1607,6 @@ public class Synthesizer {
    private List<Statement> getSane() {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment("Make sure packet fields make sense"));
-      EqExpr tcp = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR), new LitIntExpr(
-            IpProtocol.TCP.number(), PROTOCOL_BITS));
-      EqExpr udp = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR), new LitIntExpr(
-            IpProtocol.UDP.number(), PROTOCOL_BITS));
       AndExpr noPortNumbers = new AndExpr();
       EqExpr noDstPort = new EqExpr(new VarIntExpr(DST_PORT_VAR),
             new LitIntExpr(0, PORT_BITS));
@@ -1618,10 +1614,41 @@ public class Synthesizer {
             new LitIntExpr(0, PORT_BITS));
       noPortNumbers.addConjunct(noDstPort);
       noPortNumbers.addConjunct(noSrcPort);
+      EqExpr noTcpFlags = new EqExpr(new VarIntExpr(TCP_FLAGS_VAR),
+            new LitIntExpr(TcpFlags.UNSET, TCP_FLAGS_BITS));
+      EqExpr noIcmpCode = new EqExpr(new VarIntExpr(ICMP_CODE_VAR),
+            new LitIntExpr(IcmpCode.UNSET, ICMP_CODE_BITS));
+      EqExpr noIcmpType = new EqExpr(new VarIntExpr(ICMP_TYPE_VAR),
+            new LitIntExpr(IcmpType.UNSET, ICMP_TYPE_BITS));
+      AndExpr noIcmp = new AndExpr();
+      noIcmp.addConjunct(noIcmpType);
+      noIcmp.addConjunct(noIcmpCode);
+      EqExpr icmpProtocol = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR),
+            new LitIntExpr(IpProtocol.ICMP.number(), PROTOCOL_BITS));
+      EqExpr tcpProtocol = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR),
+            new LitIntExpr(IpProtocol.TCP.number(), PROTOCOL_BITS));
+      EqExpr udpProtocol = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR),
+            new LitIntExpr(IpProtocol.UDP.number(), PROTOCOL_BITS));
+      AndExpr tcp = new AndExpr();
+      tcp.addConjunct(tcpProtocol);
+      tcp.addConjunct(noIcmp);
+      AndExpr udp = new AndExpr();
+      udp.addConjunct(udpProtocol);
+      udp.addConjunct(noIcmp);
+      udp.addConjunct(noTcpFlags);
+      AndExpr icmp = new AndExpr();
+      icmp.addConjunct(icmpProtocol);
+      icmp.addConjunct(noTcpFlags);
+      icmp.addConjunct(noPortNumbers);
+      AndExpr otherIp = new AndExpr();
+      otherIp.addConjunct(noIcmp);
+      otherIp.addConjunct(noTcpFlags);
+      otherIp.addConjunct(noPortNumbers);
       OrExpr isSane = new OrExpr();
+      isSane.addDisjunct(icmp);
       isSane.addDisjunct(tcp);
       isSane.addDisjunct(udp);
-      isSane.addDisjunct(noPortNumbers);
+      isSane.addDisjunct(otherIp);
       RuleExpr rule = new RuleExpr(isSane, SaneExpr.INSTANCE);
       statements.add(rule);
       return statements;
