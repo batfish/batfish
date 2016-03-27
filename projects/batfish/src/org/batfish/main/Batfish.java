@@ -612,6 +612,11 @@ public class Batfish implements AutoCloseable {
             }
             IpAccessList acl = e2.getValue();
             int numLines = acl.getLines().size();
+            if (numLines == 0) {
+               _logger.redflag("RED_FLAG: Acl \"" + hostname + ":" + aclName
+                     + "\" contains no lines\n");
+               continue;
+            }
             AclReachabilityQuerySynthesizer query = new AclReachabilityQuerySynthesizer(
                   hostname, aclName, numLines);
             NodSatJob<AclLine> job = new NodSatJob<AclLine>(aclSynthesizer,
@@ -630,18 +635,33 @@ public class Batfish implements AutoCloseable {
          boolean sat = e.getValue();
          String hostname = aclLine.getHostname();
          String aclName = aclLine.getAclName();
-         int line = aclLine.getLine();
          Pair<String, String> qualifiedAclName = new Pair<String, String>(
                hostname, aclName);
          allAcls.add(qualifiedAclName);
-         if (sat) {
-            _logger.outputf("%s:%s:%d is REACHABLE\n", hostname, aclName, line);
-         }
-         else {
-            _logger.outputf("%s:%s:%d is UNREACHABLE\n", hostname, aclName,
-                  line);
+         if (!sat) {
             numUnreachableLines++;
             aclsWithUnreachableLines.add(qualifiedAclName);
+         }
+      }
+      for (Entry<AclLine, Boolean> e : output.entrySet()) {
+         AclLine aclLine = e.getKey();
+         boolean sat = e.getValue();
+         String hostname = aclLine.getHostname();
+         String aclName = aclLine.getAclName();
+         Pair<String, String> qualifiedAclName = new Pair<String, String>(
+               hostname, aclName);
+         if (aclsWithUnreachableLines.contains(qualifiedAclName)) {
+            int line = aclLine.getLine();
+            if (sat) {
+               _logger.outputf("%s:%s:%d is REACHABLE\n", hostname, aclName,
+                     line);
+            }
+            else {
+               _logger.outputf("%s:%s:%d is UNREACHABLE\n", hostname, aclName,
+                     line);
+               numUnreachableLines++;
+               aclsWithUnreachableLines.add(qualifiedAclName);
+            }
          }
       }
       for (Pair<String, String> qualfiedAcl : aclsWithUnreachableLines) {
