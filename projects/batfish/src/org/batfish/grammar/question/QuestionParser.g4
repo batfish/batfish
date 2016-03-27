@@ -1377,9 +1377,10 @@ prefix_expr
    generated_route_prefix_expr
    | interface_prefix_expr
    | static_route_prefix_expr
+   |
    {v(VariableType.PREFIX)}?
 
-   | var_prefix_expr
+   var_prefix_expr
 ;
 
 prefix_ip_expr
