@@ -141,6 +141,7 @@ import org.batfish.representation.GenericConfigObject;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
+import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.IpsecVpn;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.OspfArea;
@@ -657,9 +658,12 @@ public class Batfish implements AutoCloseable {
                      line);
             }
             else {
-               _logger.outputf("%s:%s:%d is UNREACHABLE\n", hostname, aclName,
-                     line);
-               numUnreachableLines++;
+               Configuration c = configurations.get(aclLine.getHostname());
+               IpAccessList acl = c.getIpAccessLists()
+                     .get(aclLine.getAclName());
+               IpAccessListLine ipAccessListLine = acl.getLines().get(line);
+               _logger.outputf("%s:%s:%d is UNREACHABLE\n\t%s\n", hostname,
+                     aclName, line, ipAccessListLine.toString());
                aclsWithUnreachableLines.add(qualifiedAclName);
             }
          }
