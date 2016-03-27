@@ -16,6 +16,8 @@ public final class TcpFlags {
 
    public static final int SYN = 0x02;
 
+   public static final int UNSET = 0xff;
+
    public static final int URGENT = 0x20;
 
    private TcpFlags() {

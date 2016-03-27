@@ -7,7 +7,10 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.batfish.common.BatfishException;
+import org.batfish.representation.IcmpCode;
+import org.batfish.representation.IcmpType;
 import org.batfish.representation.Prefix;
+import org.batfish.representation.TcpFlags;
 import org.batfish.util.SubRange;
 
 public class ReachabilityQuestion extends Question {
@@ -45,9 +48,9 @@ public class ReachabilityQuestion extends Question {
       _ipProtocolRange = new TreeSet<SubRange>();
       _srcPortRange = new TreeSet<SubRange>();
       _srcPrefixes = new TreeSet<Prefix>();
-      _icmpType = -1;
-      _icmpCode = -1;
-      _tcpFlags = -1;
+      _icmpType = IcmpType.UNSET;
+      _icmpCode = IcmpCode.UNSET;
+      _tcpFlags = TcpFlags.UNSET;
    }
 
    public Set<ForwardingAction> getActions() {

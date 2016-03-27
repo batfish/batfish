@@ -209,9 +209,9 @@ public class Flow implements Comparable<Flow> {
       long src_port = _srcPort == null ? 0 : _srcPort;
       long dst_port = _dstPort == null ? 0 : _dstPort;
       long protocol = _ipProtocol.number();
-      long icmpType = _icmpType == null ? -1 : _icmpType;
-      long icmpCode = _icmpCode == null ? -1 : _icmpCode;
-      long tcpFlags = _tcpFlags == null ? -1 : _tcpFlags;
+      long icmpType = _icmpType == null ? IcmpType.UNSET : _icmpType;
+      long icmpCode = _icmpCode == null ? IcmpCode.UNSET : _icmpCode;
+      long tcpFlags = _tcpFlags == null ? TcpFlags.UNSET : _tcpFlags;
       String line = _ingressNode + "|" + src_ip + "|" + dst_ip + "|" + src_port
             + "|" + dst_port + "|" + protocol + "|" + icmpType + "|" + icmpCode
             + "|" + tcpFlags + "|" + _tag + "\n";

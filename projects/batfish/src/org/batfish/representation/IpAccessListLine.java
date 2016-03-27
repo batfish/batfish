@@ -39,9 +39,9 @@ public final class IpAccessListLine implements Serializable {
       _dstPortRanges = new ArrayList<SubRange>();
       _srcIpRanges = new TreeSet<Prefix>();
       _srcPortRanges = new ArrayList<SubRange>();
-      _icmpType = -1;
-      _icmpCode = -1;
-      _tcpFlags = -1;
+      _icmpType = IcmpType.UNSET;
+      _icmpCode = IcmpCode.UNSET;
+      _tcpFlags = TcpFlags.UNSET;
    }
 
    public LineAction getAction() {

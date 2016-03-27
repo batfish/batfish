@@ -18,6 +18,8 @@ public final class IcmpType {
 
    public static final int TRACEROUTE = 0x1e;
 
+   public static final int UNSET = 0xff;
+
    private IcmpType() {
    }
 

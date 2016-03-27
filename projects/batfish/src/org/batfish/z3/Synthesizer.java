@@ -24,6 +24,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.DataPlane;
 import org.batfish.representation.Edge;
+import org.batfish.representation.IcmpCode;
+import org.batfish.representation.IcmpType;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
@@ -40,6 +42,7 @@ import org.batfish.representation.PolicyMapSetLine;
 import org.batfish.representation.PolicyMapSetNextHopLine;
 import org.batfish.representation.PolicyMapSetType;
 import org.batfish.representation.Prefix;
+import org.batfish.representation.TcpFlags;
 import org.batfish.representation.Zone;
 import org.batfish.util.SubRange;
 import org.batfish.util.Util;
@@ -887,21 +890,21 @@ public class Synthesizer {
                statements.add(matchRule);
 
                // match icmp-type
-               if (icmpType != -1) {
+               if (icmpType != IcmpType.UNSET) {
                   EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_TYPE_VAR),
                         new LitIntExpr(icmpType, ICMP_TYPE_BITS));
                   matchLineCriteria.addConjunct(exactMatch);
                }
 
                // match icmp-code
-               if (icmpCode != -1) {
+               if (icmpCode != IcmpCode.UNSET) {
                   EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_CODE_VAR),
                         new LitIntExpr(icmpCode, ICMP_CODE_BITS));
                   matchLineCriteria.addConjunct(exactMatch);
                }
 
                // match tcp-flags
-               if (tcpFlags != -1) {
+               if (tcpFlags != TcpFlags.UNSET) {
                   EqExpr exactMatch = new EqExpr(new VarIntExpr(TCP_FLAGS_VAR),
                         new LitIntExpr(tcpFlags, TCP_FLAGS_BITS));
                   matchLineCriteria.addConjunct(exactMatch);

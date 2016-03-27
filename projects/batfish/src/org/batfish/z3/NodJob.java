@@ -12,8 +12,11 @@ import org.batfish.collections.NodeSet;
 import org.batfish.job.BatfishJob;
 import org.batfish.common.BatfishException;
 import org.batfish.representation.Flow;
+import org.batfish.representation.IcmpCode;
+import org.batfish.representation.IcmpType;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.TcpFlags;
 
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BitVecNum;
@@ -36,9 +39,9 @@ public final class NodJob extends BatfishJob<NodJobResult> {
       long dst_ip = 0;
       long src_port = 0;
       long dst_port = 0;
-      long icmp_type = -1;
-      long icmp_code = -1;
-      long tcp_flags = -1;
+      long icmp_type = IcmpType.UNSET;
+      long icmp_code = IcmpCode.UNSET;
+      long tcp_flags = TcpFlags.UNSET;
       long protocol = IpProtocol.IP.number();
       for (String varName : constraints.keySet()) {
          Long value = constraints.get(varName);

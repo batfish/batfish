@@ -17,6 +17,8 @@ import org.batfish.representation.CommunityList;
 import org.batfish.representation.CommunityListLine;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
+import org.batfish.representation.IcmpCode;
+import org.batfish.representation.IcmpType;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
@@ -59,6 +61,7 @@ import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.StaticRoute;
 import org.batfish.representation.SwitchportEncapsulationType;
+import org.batfish.representation.TcpFlags;
 import org.batfish.representation.Zone;
 import org.batfish.util.SubRange;
 import org.batfish.util.Util;
@@ -523,11 +526,11 @@ public class ConfigurationFactExtractor {
                wSetIpAccessListLine_dstPortRange.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
             }
-            if (line.getIcmpCode() != -1) {
+            if (line.getIcmpCode() != IcmpCode.UNSET) {
                wSetIpAccessListLine_icmpCode.append(name + "|" + i + "|"
                      + line.getIcmpCode() + "\n");
             }
-            if (line.getIcmpType() != -1) {
+            if (line.getIcmpType() != IcmpType.UNSET) {
                wSetIpAccessListLine_icmpType.append(name + "|" + i + "|"
                      + line.getIcmpType() + "\n");
             }
@@ -547,7 +550,7 @@ public class ConfigurationFactExtractor {
                wSetIpAccessListLine_srcPortRange.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
             }
-            if (line.getTcpFlags() != -1) {
+            if (line.getTcpFlags() != TcpFlags.UNSET) {
                wSetIpAccessListLine_tcpFlags.append(name + "|" + i + "|"
                      + line.getTcpFlags() + "\n");
             }

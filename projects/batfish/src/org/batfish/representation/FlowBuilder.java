@@ -30,9 +30,9 @@ public class FlowBuilder {
       _ipProtocol = IpProtocol.fromNumber(0);
       _srcIp = Ip.ZERO;
       _srcPort = 0;
-      _icmpType = -1;
-      _icmpCode = -1;
-      _tcpFlags = -1;
+      _icmpType = IcmpType.UNSET;
+      _icmpCode = IcmpCode.UNSET;
+      _tcpFlags = TcpFlags.UNSET;
    }
 
    public Flow build() {

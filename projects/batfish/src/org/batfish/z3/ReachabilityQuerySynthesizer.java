@@ -6,7 +6,10 @@ import java.util.Set;
 
 import org.batfish.common.BatfishException;
 import org.batfish.question.ForwardingAction;
+import org.batfish.representation.IcmpCode;
+import org.batfish.representation.IcmpType;
 import org.batfish.representation.Prefix;
+import org.batfish.representation.TcpFlags;
 import org.batfish.util.SubRange;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AndExpr;
@@ -175,7 +178,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
       }
 
       // add icmp-type constraints
-      if (_icmpType != -1) {
+      if (_icmpType != IcmpType.UNSET) {
          EqExpr exactMatch = new EqExpr(new VarIntExpr(
                Synthesizer.ICMP_TYPE_VAR), new LitIntExpr(_icmpType,
                Synthesizer.ICMP_TYPE_BITS));
@@ -183,7 +186,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
       }
 
       // add icmp-code constraints
-      if (_icmpCode != -1) {
+      if (_icmpCode != IcmpCode.UNSET) {
          EqExpr exactMatch = new EqExpr(new VarIntExpr(
                Synthesizer.ICMP_CODE_VAR), new LitIntExpr(_icmpCode,
                Synthesizer.ICMP_CODE_BITS));
@@ -191,7 +194,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
       }
 
       // add tcp-flags constraints
-      if (_tcpFlags != -1) {
+      if (_tcpFlags != TcpFlags.UNSET) {
          EqExpr exactMatch = new EqExpr(new VarIntExpr(
                Synthesizer.TCP_FLAGS_VAR), new LitIntExpr(_tcpFlags,
                Synthesizer.TCP_FLAGS_BITS));
