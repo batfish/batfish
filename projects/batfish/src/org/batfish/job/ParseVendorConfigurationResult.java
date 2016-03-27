@@ -85,4 +85,18 @@ public class ParseVendorConfigurationResult extends
       return _vc;
    }
 
+   @Override
+   public String toString() {
+      if (_vc == null) {
+         return "<EMPTY OR UNSUPPORTED FORMAT>";
+      }
+      else if (_vc.getHostname() == null) {
+         return "<File: \"" + _file.toString()
+               + "\" has indeterminate hostname>";
+      }
+      else {
+         return "<" + _vc.getHostname() + ">";
+      }
+   }
+
 }

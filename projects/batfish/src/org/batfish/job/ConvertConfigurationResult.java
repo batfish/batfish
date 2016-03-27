@@ -77,4 +77,14 @@ public class ConvertConfigurationResult extends
       return _name;
    }
 
+   @Override
+   public String toString() {
+      if (_configurations != null) {
+         return _configurations.keySet().toString();
+      }
+      else {
+         return "<EMPTY>";
+      }
+   }
+
 }

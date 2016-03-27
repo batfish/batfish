@@ -28,4 +28,24 @@ public class NodSatResult<Key> extends BatfishJobResult<Map<Key, Boolean>> {
    public void explainFailure(BatfishLogger logger) {
    }
 
+   @Override
+   public String toString() {
+      if (_results == null) {
+         return "<FAILED>";
+      }
+      else {
+         int numSat = 0;
+         int numUnsat = 0;
+         for (Boolean result : _results.values()) {
+            if (result) {
+               numSat++;
+            }
+            else {
+               numUnsat++;
+            }
+         }
+         return "<UNSAT: " + numUnsat + ", SAT: " + numSat + ">";
+      }
+   }
+
 }
