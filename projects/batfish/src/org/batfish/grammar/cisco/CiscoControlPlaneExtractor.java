@@ -517,6 +517,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          long ipAsLong = 0xFFFFFFFFl >>> pfxLength;
          return new Ip(ipAsLong);
       }
+      else if (ctx.ip != null) {
+         // basically same as host
+         return new Ip(0l);
+      }
       else {
          throw new BatfishException("bad extended ip access list ip range");
       }

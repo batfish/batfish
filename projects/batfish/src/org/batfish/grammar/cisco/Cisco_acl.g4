@@ -12,7 +12,10 @@ access_list_ip_range
       ip = IP_ADDRESS wildcard = IP_ADDRESS
    )
    | ANY
-   | HOST ip = IP_ADDRESS
+   |
+   (
+      HOST? ip = IP_ADDRESS
+   )
    | prefix = IP_PREFIX
    | ipv6_prefix = IPV6_PREFIX
 ;
@@ -601,10 +604,6 @@ standard_access_list_null_tail
 :
    (
       REMARK remark = M_REMARK_REMARK NEWLINE
-   )
-   |
-   (
-      ala = access_list_action ipr = IP_ADDRESS LOG? NEWLINE
    )
 ;
 
