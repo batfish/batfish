@@ -20,6 +20,10 @@ public class ReachabilityQuestion extends Question {
 
    private Pattern _finalNodeRegex;
 
+   private int _icmpCode;
+
+   private int _icmpType;
+
    private Pattern _ingressNodeRegex;
 
    private Set<SubRange> _ipProtocolRange;
@@ -27,6 +31,8 @@ public class ReachabilityQuestion extends Question {
    private Set<SubRange> _srcPortRange;
 
    private Set<Prefix> _srcPrefixes;
+
+   private int _tcpFlags;
 
    public ReachabilityQuestion(QuestionParameters parameters) {
       super(QuestionType.REACHABILITY, parameters);
@@ -39,6 +45,9 @@ public class ReachabilityQuestion extends Question {
       _ipProtocolRange = new TreeSet<SubRange>();
       _srcPortRange = new TreeSet<SubRange>();
       _srcPrefixes = new TreeSet<Prefix>();
+      _icmpType = -1;
+      _icmpCode = -1;
+      _tcpFlags = -1;
    }
 
    public Set<ForwardingAction> getActions() {
@@ -67,6 +76,14 @@ public class ReachabilityQuestion extends Question {
       return _finalNodeRegex;
    }
 
+   public int getIcmpCode() {
+      return _icmpCode;
+   }
+
+   public int getIcmpType() {
+      return _icmpType;
+   }
+
    public Pattern getIngressNodeRegex() {
       return _ingressNodeRegex;
    }
@@ -83,6 +100,10 @@ public class ReachabilityQuestion extends Question {
       return _srcPrefixes;
    }
 
+   public int getTcpFlags() {
+      return _tcpFlags;
+   }
+
    public void setFinalNodeRegex(String regex) {
       try {
          _finalNodeRegex = Pattern.compile(regex);
@@ -94,6 +115,14 @@ public class ReachabilityQuestion extends Question {
       }
    }
 
+   public void setIcmpCode(int icmpCode) {
+      _icmpCode = icmpCode;
+   }
+
+   public void setIcmpType(int icmpType) {
+      _icmpType = icmpType;
+   }
+
    public void setIngressNodeRegex(String regex) {
       try {
          _ingressNodeRegex = Pattern.compile(regex);
@@ -103,6 +132,10 @@ public class ReachabilityQuestion extends Question {
                "Supplied regex for ingress node is not a valid java regex: \""
                      + regex + "\"", e);
       }
+   }
+
+   public void setTcpFlags(int tcpFlags) {
+      _tcpFlags = tcpFlags;
    }
 
 }

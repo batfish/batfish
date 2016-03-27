@@ -12,6 +12,8 @@ import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.DebugExpr;
 import org.batfish.z3.node.DropExpr;
+import org.batfish.z3.node.EqExpr;
+import org.batfish.z3.node.LitIntExpr;
 import org.batfish.z3.node.NodeAcceptExpr;
 import org.batfish.z3.node.NodeDropExpr;
 import org.batfish.z3.node.OrExpr;
@@ -22,6 +24,7 @@ import org.batfish.z3.node.QueryRelationExpr;
 import org.batfish.z3.node.RangeMatchExpr;
 import org.batfish.z3.node.RuleExpr;
 import org.batfish.z3.node.SaneExpr;
+import org.batfish.z3.node.VarIntExpr;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Z3Exception;
@@ -36,6 +39,10 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
 
    private Set<String> _finalNodes;
 
+   private int _icmpCode;
+
+   private int _icmpType;
+
    private Set<String> _ingressNodes;
 
    private Set<SubRange> _ipProtocolRange;
@@ -44,11 +51,13 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
 
    private Set<SubRange> _srcPortRange;
 
+   private int _tcpFlags;
+
    public ReachabilityQuerySynthesizer(Set<ForwardingAction> actions,
          Set<Prefix> dstIpPrefixes, Set<SubRange> dstPortRange,
          Set<String> finalNodes, Set<String> ingressNodes,
          Set<SubRange> ipProtocolRange, Set<Prefix> srcIpPrefixes,
-         Set<SubRange> srcPortRange) {
+         Set<SubRange> srcPortRange, int icmpType, int icmpCode, int tcpFlags) {
       _actions = actions;
       _dstIpPrefixes = dstIpPrefixes;
       _dstPortRange = dstPortRange;
@@ -57,6 +66,9 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
       _ipProtocolRange = ipProtocolRange;
       _srcIpPrefixes = srcIpPrefixes;
       _srcPortRange = srcPortRange;
+      _icmpType = icmpType;
+      _icmpCode = icmpCode;
+      _tcpFlags = tcpFlags;
    }
 
    @Override
@@ -160,6 +172,30 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
                Synthesizer.IP_PROTOCOL_VAR, Synthesizer.PROTOCOL_BITS,
                _ipProtocolRange);
          queryConditions.addConjunct(rangeMatch);
+      }
+
+      // add icmp-type constraints
+      if (_icmpType != -1) {
+         EqExpr exactMatch = new EqExpr(new VarIntExpr(
+               Synthesizer.ICMP_TYPE_VAR), new LitIntExpr(_icmpType,
+               Synthesizer.ICMP_TYPE_BITS));
+         queryConditions.addConjunct(exactMatch);
+      }
+
+      // add icmp-code constraints
+      if (_icmpCode != -1) {
+         EqExpr exactMatch = new EqExpr(new VarIntExpr(
+               Synthesizer.ICMP_CODE_VAR), new LitIntExpr(_icmpCode,
+               Synthesizer.ICMP_CODE_BITS));
+         queryConditions.addConjunct(exactMatch);
+      }
+
+      // add tcp-flags constraints
+      if (_tcpFlags != -1) {
+         EqExpr exactMatch = new EqExpr(new VarIntExpr(
+               Synthesizer.TCP_FLAGS_VAR), new LitIntExpr(_tcpFlags,
+               Synthesizer.TCP_FLAGS_BITS));
+         queryConditions.addConjunct(exactMatch);
       }
 
       RuleExpr queryRule = new RuleExpr(queryConditions,

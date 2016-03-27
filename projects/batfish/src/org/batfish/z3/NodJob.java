@@ -30,6 +30,60 @@ import com.microsoft.z3.Z3Exception;
 
 public final class NodJob extends BatfishJob<NodJobResult> {
 
+   public static Flow createFlow(String node, Map<String, Long> constraints,
+         String tag) {
+      long src_ip = 0;
+      long dst_ip = 0;
+      long src_port = 0;
+      long dst_port = 0;
+      long icmp_type = -1;
+      long icmp_code = -1;
+      long tcp_flags = -1;
+      long protocol = IpProtocol.IP.number();
+      for (String varName : constraints.keySet()) {
+         Long value = constraints.get(varName);
+         switch (varName) {
+         case Synthesizer.SRC_IP_VAR:
+            src_ip = value;
+            break;
+
+         case Synthesizer.DST_IP_VAR:
+            dst_ip = value;
+            break;
+
+         case Synthesizer.SRC_PORT_VAR:
+            src_port = value;
+            break;
+
+         case Synthesizer.DST_PORT_VAR:
+            dst_port = value;
+            break;
+
+         case Synthesizer.IP_PROTOCOL_VAR:
+            protocol = value;
+            break;
+
+         case Synthesizer.ICMP_TYPE_VAR:
+            icmp_type = value;
+            break;
+
+         case Synthesizer.ICMP_CODE_VAR:
+            icmp_code = value;
+            break;
+
+         case Synthesizer.TCP_FLAGS_VAR:
+            tcp_flags = value;
+            break;
+
+         default:
+            throw new Error("invalid variable name");
+         }
+      }
+      return new Flow(node, new Ip(src_ip), new Ip(dst_ip), (int) src_port,
+            (int) dst_port, IpProtocol.fromNumber((int) protocol),
+            (int) icmp_type, (int) icmp_code, (int) tcp_flags, tag);
+   }
+
    private Synthesizer _dataPlaneSynthesizer;
 
    private final NodeSet _nodeSet;
@@ -142,40 +196,7 @@ public final class NodJob extends BatfishJob<NodJobResult> {
    }
 
    private Flow createFlow(String node, Map<String, Long> constraints) {
-      long src_ip = 0;
-      long dst_ip = 0;
-      long src_port = 0;
-      long dst_port = 0;
-      long protocol = IpProtocol.IP.number();
-      for (String varName : constraints.keySet()) {
-         Long value = constraints.get(varName);
-         switch (varName) {
-         case Synthesizer.SRC_IP_VAR:
-            src_ip = value;
-            break;
-
-         case Synthesizer.DST_IP_VAR:
-            dst_ip = value;
-            break;
-
-         case Synthesizer.SRC_PORT_VAR:
-            src_port = value;
-            break;
-
-         case Synthesizer.DST_PORT_VAR:
-            dst_port = value;
-            break;
-
-         case Synthesizer.IP_PROTOCOL_VAR:
-            protocol = value;
-            break;
-
-         default:
-            throw new Error("invalid variable name");
-         }
-      }
-      return new Flow(node, new Ip(src_ip), new Ip(dst_ip), (int) src_port,
-            (int) dst_port, IpProtocol.fromNumber((int) protocol), _tag);
+      return createFlow(node, constraints, _tag);
    }
 
 }

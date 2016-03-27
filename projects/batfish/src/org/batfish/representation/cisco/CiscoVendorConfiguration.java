@@ -860,6 +860,18 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          newLine.getDstPortRanges().addAll(fromLine.getDstPortRanges());
          newLine.getSrcPortRanges().addAll(fromLine.getSrcPortRanges());
+         Integer icmpType = fromLine.getIcmpType();
+         if (icmpType != null) {
+            newLine.setIcmpType(icmpType);
+         }
+         Integer icmpCode = fromLine.getIcmpCode();
+         if (icmpCode != null) {
+            newLine.setIcmpCode(icmpCode);
+         }
+         Integer tcpFlags = fromLine.getTcpFlags();
+         if (tcpFlags != null) {
+            newLine.setTcpFlags(tcpFlags);
+         }
          lines.add(newLine);
       }
       return new IpAccessList(name, lines);

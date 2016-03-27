@@ -227,6 +227,15 @@ public class EntityTable {
       currentFlowProperty = _relations.get("Flow_srcPort");
       List<Long> flowSrcPorts = getLongColumn(currentFlowProperty, 1);
 
+      currentFlowProperty = _relations.get("Flow_icmpType");
+      List<Long> flowIcmpTypes = getLongColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = _relations.get("Flow_icmpCode");
+      List<Long> flowIcmpCodes = getLongColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = _relations.get("Flow_tcpFlags");
+      List<Long> flowTcpFlags = getLongColumn(currentFlowProperty, 1);
+
       currentFlowProperty = _relations.get("Flow_tag");
       List<String> flowTags = getStringColumn(currentFlowProperty, 1);
 
@@ -243,9 +252,12 @@ public class EntityTable {
                .intValue());
          Ip srcIp = new Ip(flowSrcIps.get(i));
          int srcPort = flowSrcPorts.get(i).intValue();
+         int icmpType = flowIcmpTypes.get(i).intValue();
+         int icmpCode = flowIcmpCodes.get(i).intValue();
+         int tcpFlags = flowTcpFlags.get(i).intValue();
          String tag = flowTags.get(i);
          Flow flow = new Flow(node, srcIp, dstIp, srcPort, dstPort, protocol,
-               tag);
+               icmpType, icmpCode, tcpFlags, tag);
          _flows.put(flowIndex, flow);
       }
    }

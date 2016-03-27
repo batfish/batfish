@@ -37,7 +37,7 @@ public class StandardAccessListLine implements Serializable {
    public ExtendedAccessListLine toExtendedAccessListLine() {
       return new ExtendedAccessListLine(_action, IpProtocol.IP, _ip, _wildcard,
             Ip.ZERO, Ip.MAX, Collections.<SubRange> emptyList(),
-            Collections.<SubRange> emptyList());
+            Collections.<SubRange> emptyList(), null, null, null);
    }
 
 }

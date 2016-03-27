@@ -487,6 +487,20 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    @Override
+   public void enterReachability_constraint_icmp_code(
+         Reachability_constraint_icmp_codeContext ctx) {
+      int icmpCode = toInt(ctx.int_constraint());
+      _reachabilityQuestion.setIcmpCode(icmpCode);
+   }
+
+   @Override
+   public void enterReachability_constraint_icmp_type(
+         Reachability_constraint_icmp_typeContext ctx) {
+      int icmpType = toInt(ctx.int_constraint());
+      _reachabilityQuestion.setIcmpType(icmpType);
+   }
+
+   @Override
    public void enterReachability_constraint_ingress_node(
          Reachability_constraint_ingress_nodeContext ctx) {
       String regex = toRegex(ctx.node_constraint());
@@ -512,6 +526,13 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          Reachability_constraint_src_portContext ctx) {
       Set<SubRange> range = toRange(ctx.range_constraint());
       _reachabilityQuestion.getSrcPortRange().addAll(range);
+   }
+
+   @Override
+   public void enterReachability_constraint_tcp_flags(
+         Reachability_constraint_tcp_flagsContext ctx) {
+      int tcpFlags = toInt(ctx.int_constraint());
+      _reachabilityQuestion.setTcpFlags(tcpFlags);
    }
 
    @Override
@@ -1131,6 +1152,28 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else {
          throw conversionError(ERR_CONVERT_PRINTABLE, ctx);
+      }
+   }
+
+   private int toInt(Int_constraintContext ctx) {
+      if (ctx.DEC() != null) {
+         return Integer.parseInt(ctx.DEC().getText());
+      }
+      else if (ctx.VARIABLE() != null) {
+         String var = ctx.VARIABLE().getText().substring(1);
+         VariableType type = _parameters.getTypeBindings().get(var);
+         switch (type) {
+         case INT:
+            int value = (int) _parameters.getInt(var);
+            return value;
+
+            // $CASES-OMITTED$
+         default:
+            throw new BatfishException("invalid constraint");
+         }
+      }
+      else {
+         throw new BatfishException("invalid int constraint: " + ctx.getText());
       }
    }
 

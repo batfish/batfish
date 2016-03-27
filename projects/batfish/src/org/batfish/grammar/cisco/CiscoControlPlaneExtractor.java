@@ -19,6 +19,8 @@ import org.batfish.grammar.cisco.CiscoParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.main.RedFlagBatfishException;
 import org.batfish.main.Warnings;
+import org.batfish.representation.IcmpCode;
+import org.batfish.representation.IcmpType;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 import org.batfish.representation.IsisInterfaceMode;
@@ -32,6 +34,7 @@ import org.batfish.representation.Prefix;
 import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.SwitchportMode;
+import org.batfish.representation.TcpFlags;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.cisco.BgpAggregateNetwork;
 import org.batfish.representation.cisco.BgpPeerGroup;
@@ -110,6 +113,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private static final String F_EBGP_MULTIHOP = "bgp - ebgp multihop";
 
+   private static final String F_FRAGMENTS = "acl fragments";
+
    private static final String F_INTERFACE_MULTIPOINT = "interface multipoint";
 
    private static final String F_IP_DEFAULT_GATEWAY = "ip default-gateway";
@@ -131,6 +136,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    private static final String F_ROUTE_MAP_SET_METRIC_TYPE = "route-map - set metric-type";
 
    private static final String F_SWITCHING_MODE = "switching-mode";
+
+   private static final String F_TTL = "acl ttl eq number";
 
    private static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 
@@ -1365,9 +1372,90 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             : Collections.<SubRange> emptyList();
       List<SubRange> dstPortRanges = ctx.alps_dst != null ? getPortRanges(ctx.alps_dst)
             : Collections.<SubRange> emptyList();
+      Integer icmpType = null;
+      Integer icmpCode = null;
+      Integer tcpFlags = null;
+      int tcpFlagsByte = 0;
+      for (Extended_access_list_additional_featureContext feature : ctx.features) {
+         if (feature.ACK() != null) {
+            tcpFlagsByte |= TcpFlags.ACK;
+            tcpFlags = tcpFlagsByte;
+         }
+         if (feature.ECHO_REPLY() != null) {
+            icmpType = IcmpType.ECHO_REPLY;
+            icmpCode = IcmpCode.ECHO_REPLY;
+         }
+         if (feature.ECHO() != null) {
+            icmpType = IcmpType.ECHO_REQUEST;
+            icmpCode = IcmpCode.ECHO_REQUEST;
+         }
+         if (feature.ESTABLISHED() != null) {
+            // TODO: for now, just expect tcp-flags to be 0
+            tcpFlagsByte &= 0;
+            tcpFlags = tcpFlagsByte;
+         }
+         if (feature.FRAGMENTS() != null) {
+            todo(ctx, F_FRAGMENTS);
+         }
+         if (feature.HOST_UNKNOWN() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+            icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
+         }
+         if (feature.HOST_UNREACHABLE() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+            icmpCode = IcmpCode.DESTINATION_HOST_UNREACHABLE;
+         }
+         if (feature.NETWORK_UNKNOWN() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+            icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
+         }
+         if (feature.NET_UNREACHABLE() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+            icmpCode = IcmpCode.DESTINATION_NETWORK_UNREACHABLE;
+         }
+         if (feature.PACKET_TOO_BIG() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+            icmpCode = IcmpCode.PACKET_TOO_BIG;
+         }
+         if (feature.PARAMETER_PROBLEM() != null) {
+            icmpType = IcmpType.PARAMETER_PROBLEM;
+         }
+         if (feature.PORT_UNREACHABLE() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+            icmpCode = IcmpCode.DESTINATION_PORT_UNREACHABLE;
+         }
+         if (feature.REDIRECT() != null) {
+            icmpType = IcmpType.REDIRECT_MESSAGE;
+         }
+         if (feature.RST() != null) {
+            tcpFlagsByte &= TcpFlags.RESET;
+            tcpFlags = tcpFlagsByte;
+         }
+         if (feature.SOURCE_QUENCH() != null) {
+            icmpType = IcmpType.SOURCE_QUENCH;
+            icmpCode = IcmpCode.SOURCE_QUENCH;
+         }
+         if (feature.TIME_EXCEEDED() != null) {
+            icmpType = IcmpType.TIME_EXCEEDED;
+         }
+         if (feature.TTL() != null) {
+            todo(ctx, F_TTL);
+         }
+         if (feature.TTL_EXCEEDED() != null) {
+            icmpType = IcmpType.TIME_EXCEEDED;
+            icmpCode = IcmpCode.TTL_EXCEEDED;
+         }
+         if (feature.TRACEROUTE() != null) {
+            icmpType = IcmpType.TRACEROUTE;
+            icmpCode = IcmpCode.TRACEROUTE;
+         }
+         if (feature.UNREACHABLE() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+         }
+      }
       ExtendedAccessListLine line = new ExtendedAccessListLine(action,
             protocol, srcIp, srcWildcard, dstIp, dstWildcard, srcPortRanges,
-            dstPortRanges);
+            dstPortRanges, icmpType, icmpCode, tcpFlags);
       _currentExtendedAcl.addLine(line);
    }
 

@@ -107,6 +107,10 @@ public class Synthesizer {
    public static final String DST_IP_VAR = "dst_ip";
    public static final String DST_PORT_VAR = "dst_port";
    public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
+   public static final int ICMP_CODE_BITS = 8;
+   public static final String ICMP_CODE_VAR = "icmp_code";
+   public static final int ICMP_TYPE_BITS = 8;
+   public static final String ICMP_TYPE_VAR = "icmp_type";
    public static final int IP_BITS = 32;
    public static final String IP_PROTOCOL_VAR = "ip_prot";
    public static final String NODE_NONE_NAME = "(none)";
@@ -116,6 +120,8 @@ public class Synthesizer {
    public static final int PROTOCOL_BITS = 8;
    public static final String SRC_IP_VAR = "src_ip";
    public static final String SRC_PORT_VAR = "src_port";
+   public static final int TCP_FLAGS_BITS = 8;
+   public static final String TCP_FLAGS_VAR = "tcp_flags";
 
    @SuppressWarnings("unused")
    private static void debug(BooleanExpr condition, List<Statement> statements) {
@@ -130,6 +136,9 @@ public class Synthesizer {
       vars.add(SRC_PORT_VAR);
       vars.add(DST_PORT_VAR);
       vars.add(IP_PROTOCOL_VAR);
+      vars.add(ICMP_TYPE_VAR);
+      vars.add(ICMP_CODE_VAR);
+      vars.add(TCP_FLAGS_VAR);
       return vars;
    }
 
@@ -176,6 +185,9 @@ public class Synthesizer {
       varSizes.put(SRC_PORT_VAR, PORT_BITS);
       varSizes.put(DST_PORT_VAR, PORT_BITS);
       varSizes.put(IP_PROTOCOL_VAR, PROTOCOL_BITS);
+      varSizes.put(ICMP_TYPE_VAR, ICMP_TYPE_BITS);
+      varSizes.put(ICMP_CODE_VAR, ICMP_CODE_BITS);
+      varSizes.put(TCP_FLAGS_VAR, TCP_FLAGS_BITS);
       return varSizes;
    }
 
@@ -774,6 +786,9 @@ public class Synthesizer {
                srcPortRanges.addAll(line.getSrcPortRanges());
                Set<SubRange> dstPortRanges = new LinkedHashSet<SubRange>();
                dstPortRanges.addAll(line.getDstPortRanges());
+               int icmpType = line.getIcmpType();
+               int icmpCode = line.getIcmpCode();
+               int tcpFlags = line.getTcpFlags();
 
                AndExpr matchConditions = new AndExpr();
 
@@ -870,6 +885,27 @@ public class Synthesizer {
                RuleExpr matchRule = new RuleExpr(valid ? matchConditions
                      : FalseExpr.INSTANCE, match);
                statements.add(matchRule);
+
+               // match icmp-type
+               if (icmpType != -1) {
+                  EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_TYPE_VAR),
+                        new LitIntExpr(icmpType, ICMP_TYPE_BITS));
+                  matchLineCriteria.addConjunct(exactMatch);
+               }
+
+               // match icmp-type
+               if (icmpType != -1) {
+                  EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_CODE_VAR),
+                        new LitIntExpr(icmpCode, ICMP_CODE_BITS));
+                  matchLineCriteria.addConjunct(exactMatch);
+               }
+
+               // match icmp-type
+               if (icmpType != -1) {
+                  EqExpr exactMatch = new EqExpr(new VarIntExpr(TCP_FLAGS_VAR),
+                        new LitIntExpr(tcpFlags, TCP_FLAGS_BITS));
+                  matchLineCriteria.addConjunct(exactMatch);
+               }
 
                // no match rule
                AndExpr noMatchConditions = new AndExpr();

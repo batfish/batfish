@@ -472,6 +472,12 @@ public class ConfigurationFactExtractor {
             .get("SetIpAccessListLine_dstIpRange");
       StringBuilder wSetIpAccessListLine_dstPortRange = _factBins
             .get("SetIpAccessListLine_dstPortRange");
+      StringBuilder wSetIpAccessListLine_icmpCode = _factBins
+            .get("SetIpAccessListLine_icmpCode");
+      StringBuilder wSetIpAccessListLine_icmpType = _factBins
+            .get("SetIpAccessListLine_icmpType");
+      StringBuilder wSetIpAccessListLine_tcpFlags = _factBins
+            .get("SetIpAccessListLine_tcpFlags");
       StringBuilder wSetIpAccessListLine_permit = _factBins
             .get("SetIpAccessListLine_permit");
       StringBuilder wSetIpAccessListLine_protocol = _factBins
@@ -517,6 +523,14 @@ public class ConfigurationFactExtractor {
                wSetIpAccessListLine_dstPortRange.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
             }
+            if (line.getIcmpCode() != -1) {
+               wSetIpAccessListLine_icmpCode.append(name + "|" + i + "|"
+                     + line.getIcmpCode() + "\n");
+            }
+            if (line.getIcmpType() != -1) {
+               wSetIpAccessListLine_icmpType.append(name + "|" + i + "|"
+                     + line.getIcmpType() + "\n");
+            }
             for (IpProtocol protocol : line.getProtocols()) {
                wSetIpAccessListLine_protocol.append(name + "|" + i + "|"
                      + protocol.number() + "\n");
@@ -532,6 +546,10 @@ public class ConfigurationFactExtractor {
                long endPort = srcPortRange.getEnd();
                wSetIpAccessListLine_srcPortRange.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
+            }
+            if (line.getTcpFlags() != -1) {
+               wSetIpAccessListLine_tcpFlags.append(name + "|" + i + "|"
+                     + line.getTcpFlags() + "\n");
             }
          }
       }

@@ -12,8 +12,6 @@ import org.batfish.collections.NodeSet;
 import org.batfish.job.BatfishJob;
 import org.batfish.common.BatfishException;
 import org.batfish.representation.Flow;
-import org.batfish.representation.Ip;
-import org.batfish.representation.IpProtocol;
 
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BitVecNum;
@@ -171,40 +169,7 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
    }
 
    private Flow createFlow(String node, Map<String, Long> constraints) {
-      long src_ip = 0;
-      long dst_ip = 0;
-      long src_port = 0;
-      long dst_port = 0;
-      long protocol = IpProtocol.IP.number();
-      for (String varName : constraints.keySet()) {
-         Long value = constraints.get(varName);
-         switch (varName) {
-         case Synthesizer.SRC_IP_VAR:
-            src_ip = value;
-            break;
-
-         case Synthesizer.DST_IP_VAR:
-            dst_ip = value;
-            break;
-
-         case Synthesizer.SRC_PORT_VAR:
-            src_port = value;
-            break;
-
-         case Synthesizer.DST_PORT_VAR:
-            dst_port = value;
-            break;
-
-         case Synthesizer.IP_PROTOCOL_VAR:
-            protocol = value;
-            break;
-
-         default:
-            throw new Error("invalid variable name");
-         }
-      }
-      return new Flow(node, new Ip(src_ip), new Ip(dst_ip), (int) src_port,
-            (int) dst_port, IpProtocol.fromNumber((int) protocol), _tag);
+      return NodJob.createFlow(node, constraints, _tag);
    }
 
 }

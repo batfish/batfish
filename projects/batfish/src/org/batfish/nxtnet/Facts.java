@@ -28,6 +28,9 @@ public class Facts {
       map.put("SetIpAccessListLine_dstIpRange", "LIST|LINE|DSTIPSTART|DSTIPEND");
       map.put("SetIpAccessListLine_dstPortRange",
             "LIST|LINE|DSTPORTSTART|DSTPORTEND");
+      map.put("SetIpAccessListLine_icmpCode", "LIST|LINE|ICMPCODE");
+      map.put("SetIpAccessListLine_icmpType", "LIST|LINE|ICMPTYPE");
+      map.put("SetIpAccessListLine_tcpFlags", "LIST|LINE|TCPFLAGS");
       map.put("SetIpAccessListLine_permit", "LIST|LINE");
       map.put("SetIpAccessListLine_protocol", "LIST|LINE|PROTOCOL");
       map.put("SetIpAccessListLine_srcIpRange", "LIST|LINE|SRCIPSTART|SRCIPEND");

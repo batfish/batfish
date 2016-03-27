@@ -251,6 +251,16 @@ HAS_SINGLE_REMOTE_IPSEC_VPN
    'has_single_remote_ipsec_vpn'
 ;
 
+ICMP_CODE
+:
+   'icmp_code'
+;
+
+ICMP_TYPE
+:
+   'icmp_type'
+;
+
 IF
 :
    'if'
@@ -559,6 +569,11 @@ STATIC_ROUTE
 SUBNET
 :
    'subnet'
+;
+
+TCP_FLAGS
+:
+   'tcp_flags'
 ;
 
 TESTRIG

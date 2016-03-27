@@ -13,17 +13,31 @@ public class ExtendedAccessListLine implements Serializable {
    private static final long serialVersionUID = 1L;
 
    private LineAction _action;
+
    private Ip _dstIp;
+
    private List<SubRange> _dstPortRanges;
+
    private Ip _dstWildcard;
+
+   private Integer _icmpCode;
+
+   private Integer _icmpType;
+
    private IpProtocol _protocol;
+
    private Ip _srcIp;
+
    private List<SubRange> _srcPortRanges;
+
    private Ip _srcWildcard;
+
+   private Integer _tcpFlags;
 
    public ExtendedAccessListLine(LineAction action, IpProtocol protocol,
          Ip srcIp, Ip srcWildcard, Ip dstIp, Ip dstWildcard,
-         List<SubRange> srcPortRanges, List<SubRange> dstPortRanges) {
+         List<SubRange> srcPortRanges, List<SubRange> dstPortRanges,
+         Integer icmpType, Integer icmpCode, Integer tcpFlags) {
       _action = action;
       _protocol = protocol;
       _srcIp = srcIp;
@@ -32,6 +46,9 @@ public class ExtendedAccessListLine implements Serializable {
       _dstWildcard = dstWildcard;
       _srcPortRanges = srcPortRanges;
       _dstPortRanges = dstPortRanges;
+      _icmpType = icmpType;
+      _icmpCode = icmpCode;
+      _tcpFlags = tcpFlags;
    }
 
    public LineAction getAction() {
@@ -50,6 +67,14 @@ public class ExtendedAccessListLine implements Serializable {
       return _dstPortRanges;
    }
 
+   public Integer getIcmpCode() {
+      return _icmpCode;
+   }
+
+   public Integer getIcmpType() {
+      return _icmpType;
+   }
+
    public IpProtocol getProtocol() {
       return _protocol;
    }
@@ -64,6 +89,10 @@ public class ExtendedAccessListLine implements Serializable {
 
    public List<SubRange> getSrcPortRanges() {
       return _srcPortRanges;
+   }
+
+   public Integer getTcpFlags() {
+      return _tcpFlags;
    }
 
    @Override

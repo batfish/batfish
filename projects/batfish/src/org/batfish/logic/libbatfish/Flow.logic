@@ -17,6 +17,18 @@ Flow_dstPort[flow] = dstPort ->
    Flow(flow),
    int(dstPort).
 
+Flow_icmpCode[flow] = icmpCode ->
+   Flow(flow),
+   int(icmpCode).
+
+Flow_icmpType[flow] = icmpType ->
+   Flow(flow),
+   int(icmpType).
+
+Flow_tcpFlags[flow] = tcpFlags ->
+   Flow(flow),
+   int(tcpFlags).
+
 Flow_ipProtocol[flow] = protocol ->
    Flow(flow),
    IpProtocol(protocol).
@@ -50,6 +62,9 @@ IpProtocol(x),
    int(number).
 
 IpProtocol_ANY[] = x ->
+   IpProtocol(x).
+
+IpProtocol_ICMP[] = x ->
    IpProtocol(x).
 
 IpProtocol_TCP[] = x ->

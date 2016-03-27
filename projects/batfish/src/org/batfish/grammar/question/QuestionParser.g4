@@ -777,6 +777,12 @@ ingress_path_question
    INGRESS_PATH
 ;
 
+int_constraint
+:
+   DEC
+   | VARIABLE
+;
+
 int_expr
 :
    multiplicand1 = int_expr ASTERISK multiplicand2 = int_expr
@@ -1536,6 +1542,16 @@ reachability_constraint_final_node
    FINAL_NODE EQUALS node_constraint
 ;
 
+reachability_constraint_icmp_code
+:
+   ICMP_CODE EQUALS int_constraint
+;
+
+reachability_constraint_icmp_type
+:
+   ICMP_TYPE EQUALS int_constraint
+;
+
 reachability_constraint_ingress_node
 :
    INGRESS_NODE EQUALS node_constraint
@@ -1554,6 +1570,11 @@ reachability_constraint_src_ip
 reachability_constraint_src_port
 :
    SRC_PORT EQUALS range_constraint
+;
+
+reachability_constraint_tcp_flags
+:
+   TCP_FLAGS EQUALS int_constraint
 ;
 
 reachability_question
