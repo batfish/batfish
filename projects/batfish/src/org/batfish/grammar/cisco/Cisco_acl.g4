@@ -77,12 +77,15 @@ bandwidth_irs_stanza
 
 community_set_stanza
 :
-   COMMUNITY_SET name = variable NEWLINE community_set_elem_list END_SET NEWLINE
+   COMMUNITY_SET name = variable NEWLINE community_set_elem_list END_SET
+   NEWLINE
 ;
 
 community_set_elem_list
 :
-   (community_set_elem COMMA NEWLINE)* community_set_elem NEWLINE
+   (
+      community_set_elem COMMA NEWLINE
+   )* community_set_elem NEWLINE
 ;
 
 community_set_elem
@@ -190,8 +193,7 @@ extended_access_list_tail
 :
    (
       SEQ? DEC
-   )?
-   ala = access_list_action prot = protocol srcipr = access_list_ip_range
+   )? ala = access_list_action prot = protocol srcipr = access_list_ip_range
    (
       alps_src = port_specifier
    )? dstipr = access_list_ip_range
@@ -532,7 +534,11 @@ prefix_set_stanza
 prefix_set_elem_list
 :
    | // no elements
-   | (prefix_set_elem COMMA NEWLINE)* prefix_set_elem NEWLINE
+
+   |
+   (
+      prefix_set_elem COMMA NEWLINE
+   )* prefix_set_elem NEWLINE
 ;
 
 prefix_set_elem
@@ -649,7 +655,7 @@ standard_access_list_stanza
 standard_access_list_tail
 :
    (
-      SEQ? num=DEC
+      SEQ? num = DEC
    )? ala = access_list_action ipr = access_list_ip_range LOG? NEWLINE
 ;
 
