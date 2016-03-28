@@ -2444,7 +2444,6 @@ public class Batfish implements AutoCloseable {
                   envSettings);
          }
          nxtnetDataPlane(envSettings);
-         writeRoutes(envSettings.getPrecomputedRoutesPath(), envSettings);
          computeDataPlane(envSettings);
          _entityTables.clear();
       }
@@ -2539,6 +2538,7 @@ public class Batfish implements AutoCloseable {
             inputFacts, envSettings.getNxtnetDataPlaneInputFile(), envSettings);
       runNxtnet(envSettings.getNxtnetDataPlaneInputFile(),
             envSettings.getNxtnetDataPlaneOutputDir());
+      writeRoutes(envSettings.getPrecomputedRoutesPath(), envSettings);
    }
 
    private void nxtnetTraffic() {
