@@ -244,7 +244,7 @@ function postTestrigInit(entryPoint, remainingCalls) {
 	$(elementAnswerQuestionBtn).button("enable");
 	$(elementUploadDiffEnvBtn).button("enable");
   	$(elementTabs).tabs("option", "active", 2);
-  	
+	
     makeNextCall(entryPoint, remainingCalls);
 }
 
@@ -253,6 +253,7 @@ function postDiffEnvInit(entryPoint, remainingCalls) {
 	deltaConfigUploaded = true;
     $(elementAnswerDiffQuestionBtn).button('enable');
     $(elementTabs).tabs("option", "active", 2);
+    
     makeNextCall(entryPoint, remainingCalls);
 }
 
