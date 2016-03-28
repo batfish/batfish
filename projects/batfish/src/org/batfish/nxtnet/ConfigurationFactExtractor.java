@@ -1159,8 +1159,7 @@ public class ConfigurationFactExtractor {
       StringBuilder wSetIpInt = _factBins.get("SetIpInt");
       for (Interface i : _configuration.getInterfaces().values()) {
          String interfaceName = i.getName();
-         Prefix prefix = i.getPrefix();
-         if (prefix != null) {
+         for (Prefix prefix : i.getAllPrefixes()) {
             long address = prefix.getAddress().asLong();
             int prefix_length = prefix.getPrefixLength();
             long network_start = prefix.getNetworkAddress().asLong();
