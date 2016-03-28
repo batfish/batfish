@@ -88,6 +88,16 @@ SetIpAccessListLine_dstPortRange(list, line, dstPort_start, dstPort_end) ->
    int(dstPort_start),
    int(dstPort_end).
 
+SetIpAccessListLine_icmpCode(list, line, icmpCode) ->
+   IpAccessList(list),
+   int(line),
+   int(icmpCode).
+
+SetIpAccessListLine_icmpType(list, line, icmpType) ->
+   IpAccessList(list),
+   int(line),
+   int(icmpType).
+
 SetIpAccessListLine_permit(list, line) ->
    IpAccessList(list),
    int(line).
@@ -108,6 +118,11 @@ SetIpAccessListLine_srcPortRange(list, line, srcPort_start, srcPort_end) ->
    int(line),
    int(srcPort_start),
    int(srcPort_end).
+
+SetIpAccessListLine_tcpFlags(list, line, tcpFlags) ->
+   IpAccessList(list),
+   int(line),
+   int(tcpFlags).
 
 SetCrossZoneFilter(node, srcZone, dstZone, filter) ->
    Node(node),
