@@ -3,9 +3,9 @@ package org.batfish.representation;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public class RouteFilterList extends NamedStructure {
+public class RouteFilterList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
@@ -18,10 +18,6 @@ public class RouteFilterList extends NamedStructure {
 
    public void addLine(RouteFilterLine r) {
       _lines.add(r);
-   }
-
-   public void addLines(List<RouteFilterLine> r) {
-      _lines.addAll(r);
    }
 
    public List<RouteFilterLine> getLines() {

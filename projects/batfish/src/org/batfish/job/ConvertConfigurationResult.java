@@ -10,26 +10,26 @@ import org.batfish.representation.Configuration;
 public class ConvertConfigurationResult extends
       BatfishJobResult<Map<String, Configuration>> {
 
-   private Configuration _configuration;
+   private Map<String, Configuration> _configurations;
 
    private BatfishLoggerHistory _history;
 
-   private String _hostname;
+   private String _name;
 
    public ConvertConfigurationResult(long elapsedTime,
-         BatfishLoggerHistory history, String hostname,
-         Configuration configuration) {
+         BatfishLoggerHistory history, String name,
+         Map<String, Configuration> configurations) {
       super(elapsedTime);
       _history = history;
-      _hostname = hostname;
-      _configuration = configuration;
+      _name = name;
+      _configurations = configurations;
    }
 
    public ConvertConfigurationResult(long elapsedTime,
-         BatfishLoggerHistory history, String hostname, Throwable failureCause) {
+         BatfishLoggerHistory history, String name, Throwable failureCause) {
       super(elapsedTime, failureCause);
       _history = history;
-      _hostname = hostname;
+      _name = name;
    }
 
    private void appendHistory(BatfishLogger logger) {
@@ -38,7 +38,7 @@ public class ConvertConfigurationResult extends
          terseLogLevelPrefix = "";
       }
       else {
-         terseLogLevelPrefix = _hostname.toString() + ": ";
+         terseLogLevelPrefix = _name.toString() + ": ";
       }
       logger.append(_history, terseLogLevelPrefix);
    }
@@ -47,13 +47,15 @@ public class ConvertConfigurationResult extends
    public void applyTo(Map<String, Configuration> configurations,
          BatfishLogger logger) {
       appendHistory(logger);
-      if (_configuration != null) {
-         String hostname = _configuration.getHostname();
-         if (configurations.containsKey(hostname)) {
-            throw new BatfishException("Duplicate hostname: " + hostname);
-         }
-         else {
-            configurations.put(hostname, _configuration);
+      if (_configurations != null) {
+         for (String hostname : _configurations.keySet()) {
+            Configuration config = _configurations.get(hostname);
+            if (configurations.containsKey(hostname)) {
+               throw new BatfishException("Duplicate hostname: " + hostname);
+            }
+            else {
+               configurations.put(hostname, config);
+            }
          }
       }
    }
@@ -63,16 +65,26 @@ public class ConvertConfigurationResult extends
       appendHistory(logger);
    }
 
-   public Configuration getConfiguration() {
-      return _configuration;
+   public Map<String, Configuration> getConfigurations() {
+      return _configurations;
    }
 
    public BatfishLoggerHistory getHistory() {
       return _history;
    }
 
-   public String getNodeName() {
-      return _hostname;
+   public String getName() {
+      return _name;
+   }
+
+   @Override
+   public String toString() {
+      if (_configurations != null) {
+         return _configurations.keySet().toString();
+      }
+      else {
+         return "<EMPTY>";
+      }
    }
 
 }

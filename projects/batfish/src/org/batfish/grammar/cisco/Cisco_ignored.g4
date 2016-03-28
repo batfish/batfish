@@ -16,6 +16,8 @@ null_block_stanza
       | ATM
       | BASH
       | BFD
+      | BSD_USERNAME
+      | CAM_PROFILE
       | CEF
       | CHAT_SCRIPT
       | CLASS_MAP
@@ -26,6 +28,7 @@ null_block_stanza
       | CONTROLLER
       | COPY
       | CRYPTO
+      | DCB
       | DIAL_PEER
       | DOMAIN
       | END
@@ -88,7 +91,9 @@ null_block_stanza
       | KEY
       | KRON
       | L2TP_CLASS
+      | LACP
       | LINE
+      | LINECARD
       | LOGGING
       | MAC
       | MAC_LEARN
@@ -110,23 +115,30 @@ null_block_stanza
       )
       | NO_BANNER
       | NSR
+      | NTP
       | ONE
       | OPENFLOW
       | PLAT
       | POLICY_MAP
       | POWEROFF
+      | PROTOCOL
       | PSEUDOWIRE_CLASS
       | PTP
       | REDUNDANCY
+      | RELOAD_TYPE
       | RMON
       | ROLE
       | SAMPLER
+      | SAMPLER_MAP
       | SCCP
       | SDR
+      | SERVICE_CLASS
       | SFLOW
       | SPANNING_TREE
+      | STACK_UNIT
       | STCAPP
       | SVCLC
+      | SWITCH_PROFILE
       | TACACS
       | TACACS_SERVER
       | TCP
@@ -141,10 +153,12 @@ null_block_stanza
       (
          VLAN DEC
       )
+      | VLT
       | VOICE
       | VOICE_PORT
       | VPC
       | VPDN_GROUP
+      | WRED_PROFILE
    ) ~NEWLINE* NEWLINE
    (
       description_line
@@ -169,6 +183,7 @@ null_block_substanza
          | ADDRESS
          | ADDRESS_POOL
          | ADMINISTRATIVE_WEIGHT
+         | ADVERTISE
          | AESA
          | ANYCONNECT
          | ARCHIVE_LENGTH
@@ -180,14 +195,17 @@ null_block_substanza
          | AUTHORIZATION
          | AUTHORIZATION_REQUIRED
          | AUTHORIZATION_SERVER_GROUP
+         | AUTO_RECOVERY
          | AUTO_SYNC
          | AUTOSELECT
+         | BACK_UP
          | BACKGROUND_ROUTES_ENABLE
          | BACKUPCRF
          | BANDWIDTH
          | BANNER
          | BIND
          | BRIDGE
+         | BRIDGE_PRIORITY
          | CABLELENGTH
          | CACHE
          | CACHE_TIMEOUT
@@ -204,6 +222,7 @@ null_block_substanza
          | COMMAND
          | CONFORM_ACTION
          | CONGESTION_CONTROL
+	 | CONNECT_SOURCE
          | CONTEXT
          | CPTONE
          | CREDENTIALS
@@ -221,6 +240,7 @@ null_block_substanza
          | DESTINATION
          | DEVICE
          | DIAGNOSTIC
+         | DISABLE
          | DNS_SERVER
          | DOMAIN_ID
          | DROP
@@ -261,6 +281,7 @@ null_block_substanza
          | GROUP_ALIAS
          | GROUP_POLICY
          | GROUP_URL
+         | HEARTBEAT_INTERVAL
          | HEARTBEAT_TIME
          | HIDDEN
          | HIDDEN_SHARES
@@ -321,6 +342,7 @@ null_block_substanza
          | MAIN_CPU
          | MATCH
          | MAXIMUM
+	 | MESH_GROUP
          | MESSAGE_LENGTH
          | MODE
          | MODEM
@@ -364,6 +386,7 @@ null_block_substanza
          | PREEMPT
          | PREFIX
          | PRI_GROUP
+         | PRIMARY_PRIORITY
          | PRIORITY
          | PRIVILEGE
          | PROBE
@@ -371,6 +394,7 @@ null_block_substanza
          | PROTOCOL
          | QUEUE_BUFFERS
          | QUEUE_LIMIT
+         | RANDOM
          | RANDOM_DETECT
          | RD
          | REAL
@@ -381,6 +405,7 @@ null_block_substanza
          | RELOAD
          | RELOAD_DELAY
          | REMARK
+	 | REMOTE_AS
          | REMOTE_IP
          | REMOTE_PORT
          | REMOTE_SPAN
@@ -398,6 +423,7 @@ null_block_substanza
          | ROUTE
          | ROUTE_TARGET
          | RULE
+	 | SA_FILTER
          | SCHEME
          | SECRET
          | SEND_LIFETIME
@@ -458,6 +484,7 @@ null_block_substanza
          | UPDATE_CALENDAR
          | USE_VRF
          | USERS
+	 | VERSION
          | VIOLATE_ACTION
          | VIRTUAL
          | VIRTUAL_TEMPLATE
@@ -721,7 +748,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | NETWORK_OBJECT
       | NETWORK_CLOCK_PARTICIPATE
       | NETWORK_CLOCK_SELECT
-      | NTP
       | OBJECT_GROUP
       | OWNER
       | PAGER

@@ -1,3 +1,6 @@
+/**
+ * EXAMPLE traceroute query for provided 'example' test-rig (See documentation for 'traceroute' question).
+ */
 traceroute {
    flow(
       ingress_node = "as3core1",

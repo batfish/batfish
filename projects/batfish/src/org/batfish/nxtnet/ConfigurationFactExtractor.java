@@ -17,6 +17,8 @@ import org.batfish.representation.CommunityList;
 import org.batfish.representation.CommunityListLine;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
+import org.batfish.representation.IcmpCode;
+import org.batfish.representation.IcmpType;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
@@ -59,6 +61,7 @@ import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.StaticRoute;
 import org.batfish.representation.SwitchportEncapsulationType;
+import org.batfish.representation.TcpFlags;
 import org.batfish.representation.Zone;
 import org.batfish.util.SubRange;
 import org.batfish.util.Util;
@@ -472,6 +475,12 @@ public class ConfigurationFactExtractor {
             .get("SetIpAccessListLine_dstIpRange");
       StringBuilder wSetIpAccessListLine_dstPortRange = _factBins
             .get("SetIpAccessListLine_dstPortRange");
+      StringBuilder wSetIpAccessListLine_icmpCode = _factBins
+            .get("SetIpAccessListLine_icmpCode");
+      StringBuilder wSetIpAccessListLine_icmpType = _factBins
+            .get("SetIpAccessListLine_icmpType");
+      StringBuilder wSetIpAccessListLine_tcpFlags = _factBins
+            .get("SetIpAccessListLine_tcpFlags");
       StringBuilder wSetIpAccessListLine_permit = _factBins
             .get("SetIpAccessListLine_permit");
       StringBuilder wSetIpAccessListLine_protocol = _factBins
@@ -517,6 +526,14 @@ public class ConfigurationFactExtractor {
                wSetIpAccessListLine_dstPortRange.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
             }
+            if (line.getIcmpCode() != IcmpCode.UNSET) {
+               wSetIpAccessListLine_icmpCode.append(name + "|" + i + "|"
+                     + line.getIcmpCode() + "\n");
+            }
+            if (line.getIcmpType() != IcmpType.UNSET) {
+               wSetIpAccessListLine_icmpType.append(name + "|" + i + "|"
+                     + line.getIcmpType() + "\n");
+            }
             for (IpProtocol protocol : line.getProtocols()) {
                wSetIpAccessListLine_protocol.append(name + "|" + i + "|"
                      + protocol.number() + "\n");
@@ -532,6 +549,10 @@ public class ConfigurationFactExtractor {
                long endPort = srcPortRange.getEnd();
                wSetIpAccessListLine_srcPortRange.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
+            }
+            if (line.getTcpFlags() != TcpFlags.UNSET) {
+               wSetIpAccessListLine_tcpFlags.append(name + "|" + i + "|"
+                     + line.getTcpFlags() + "\n");
             }
          }
       }

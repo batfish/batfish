@@ -13,9 +13,9 @@ import org.batfish.question.string_expr.StringExpr;
 
 public class PrintfStatement implements Statement {
 
-   private StringExpr _formatString;
+   private final StringExpr _formatString;
 
-   private List<Expr> _replacements;
+   private final List<Expr> _replacements;
 
    public PrintfStatement(StringExpr formatString, List<Expr> replacements) {
       _formatString = formatString;

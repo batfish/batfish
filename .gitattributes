@@ -6,3 +6,4 @@
 *.lbp binary
 *.object binary
 *.sln -text
+*.png binary

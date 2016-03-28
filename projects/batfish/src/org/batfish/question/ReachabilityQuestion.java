@@ -7,7 +7,10 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.batfish.common.BatfishException;
+import org.batfish.representation.IcmpCode;
+import org.batfish.representation.IcmpType;
 import org.batfish.representation.Prefix;
+import org.batfish.representation.TcpFlags;
 import org.batfish.util.SubRange;
 
 public class ReachabilityQuestion extends Question {
@@ -20,6 +23,10 @@ public class ReachabilityQuestion extends Question {
 
    private Pattern _finalNodeRegex;
 
+   private int _icmpCode;
+
+   private int _icmpType;
+
    private Pattern _ingressNodeRegex;
 
    private Set<SubRange> _ipProtocolRange;
@@ -28,8 +35,10 @@ public class ReachabilityQuestion extends Question {
 
    private Set<Prefix> _srcPrefixes;
 
-   public ReachabilityQuestion() {
-      super(QuestionType.REACHABILITY);
+   private int _tcpFlags;
+
+   public ReachabilityQuestion(QuestionParameters parameters) {
+      super(QuestionType.REACHABILITY, parameters);
       _actions = EnumSet.noneOf(ForwardingAction.class);
       // default action-- may change
       _actions.add(ForwardingAction.ACCEPT);
@@ -39,10 +48,23 @@ public class ReachabilityQuestion extends Question {
       _ipProtocolRange = new TreeSet<SubRange>();
       _srcPortRange = new TreeSet<SubRange>();
       _srcPrefixes = new TreeSet<Prefix>();
+      _icmpType = IcmpType.UNSET;
+      _icmpCode = IcmpCode.UNSET;
+      _tcpFlags = TcpFlags.UNSET;
    }
 
    public Set<ForwardingAction> getActions() {
       return _actions;
+   }
+
+   @Override
+   public boolean getDataPlane() {
+      return true;
+   }
+
+   @Override
+   public boolean getDifferential() {
+      return false;
    }
 
    public Set<SubRange> getDstPortRange() {
@@ -55,6 +77,14 @@ public class ReachabilityQuestion extends Question {
 
    public Pattern getFinalNodeRegex() {
       return _finalNodeRegex;
+   }
+
+   public int getIcmpCode() {
+      return _icmpCode;
+   }
+
+   public int getIcmpType() {
+      return _icmpType;
    }
 
    public Pattern getIngressNodeRegex() {
@@ -73,6 +103,10 @@ public class ReachabilityQuestion extends Question {
       return _srcPrefixes;
    }
 
+   public int getTcpFlags() {
+      return _tcpFlags;
+   }
+
    public void setFinalNodeRegex(String regex) {
       try {
          _finalNodeRegex = Pattern.compile(regex);
@@ -84,6 +118,14 @@ public class ReachabilityQuestion extends Question {
       }
    }
 
+   public void setIcmpCode(int icmpCode) {
+      _icmpCode = icmpCode;
+   }
+
+   public void setIcmpType(int icmpType) {
+      _icmpType = icmpType;
+   }
+
    public void setIngressNodeRegex(String regex) {
       try {
          _ingressNodeRegex = Pattern.compile(regex);
@@ -93,6 +135,10 @@ public class ReachabilityQuestion extends Question {
                "Supplied regex for ingress node is not a valid java regex: \""
                      + regex + "\"", e);
       }
+   }
+
+   public void setTcpFlags(int tcpFlags) {
+      _tcpFlags = tcpFlags;
    }
 
 }

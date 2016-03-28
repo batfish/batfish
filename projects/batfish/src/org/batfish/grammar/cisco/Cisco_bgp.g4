@@ -100,6 +100,11 @@ bgp_listen_range_rb_stanza
    )? NEWLINE
 ;
 
+bgp_redistribute_internal_rb_stanza
+:
+   BGP REDISTRIBUTE_INTERNAL NEWLINE
+;
+
 bgp_tail
 :
    activate_bgp_tail
@@ -145,6 +150,11 @@ cluster_id_bgp_tail
 cluster_id_rb_stanza
 :
    BGP cluster_id_bgp_tail
+;
+
+default_information_originate_rb_stanza
+:
+   DEFAULT_INFORMATION ORIGINATE NEWLINE
 ;
 
 default_metric_bgp_tail
@@ -227,6 +237,16 @@ neighbor_rb_stanza
       | filter_list_bgp_tail
       | remote_as_bgp_tail
    )
+;
+
+neighbor_group_rb_stanza
+:
+   NEIGHBOR_GROUP name = variable NEWLINE
+   (
+      address_family_rb_stanza
+      | remote_as_bgp_tail
+      | update_source_bgp_tail
+   )*
 ;
 
 network_bgp_tail
@@ -318,6 +338,7 @@ locals [boolean active]
             | nexus_neighbor_inherit
             | no_shutdown_rb_stanza
             | remote_as_bgp_tail
+            | use_neighbor_group_bgp_tail
          ) nexus_neighbor_rb_stanza_tail [$addressFamilies]
       )
       | //intentional blank
@@ -364,12 +385,23 @@ no_neighbor_activate_rb_stanza
 
 no_neighbor_shutdown_rb_stanza
 :
-   NO NEIGHBOR
    (
-      ip = IP_ADDRESS
-      | ip6 = IPV6_ADDRESS
-      | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
-   ) SHUTDOWN NEWLINE
+      NO NEIGHBOR
+      (
+         ip = IP_ADDRESS
+         | ip6 = IPV6_ADDRESS
+         | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
+      ) SHUTDOWN NEWLINE
+   )
+   |
+   (
+      NEIGHBOR
+      (
+         ip = IP_ADDRESS
+         | ip6 = IPV6_ADDRESS
+         | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
+      ) NO SHUTDOWN NEWLINE
+   )
 ;
 
 no_redistribute_connected_rb_stanza
@@ -400,11 +432,13 @@ null_bgp_tail
          )
       )
       | BESTPATH
+      | BFD
       |
       (
          BGP
          (
-            BESTPATH
+            ATTRIBUTE_DOWNLOAD
+            | BESTPATH
             | DAMPENING
             | DEFAULT
             | DETERMINISTIC_MED
@@ -485,12 +519,15 @@ remote_as_bgp_tail
 
 remove_private_as_bgp_tail
 :
-   REMOVE_PRIVATE_AS NEWLINE
+   (
+      REMOVE_PRIVATE_AS
+      | REMOVE_PRIVATE_CAP_A_CAP_S
+   ) NEWLINE
 ;
 
 route_map_bgp_tail
 :
-   ROUTE_MAP name = VARIABLE
+   ROUTE_MAP name = variable
    (
       IN
       | OUT
@@ -545,6 +582,10 @@ redistribute_ospf_bgp_tail
       (
          METRIC metric = DEC
       )
+      |
+      (
+         MATCH ospf_route_type*
+      )
    )* NEWLINE
 ;
 
@@ -570,9 +611,12 @@ router_bgp_stanza
       | aggregate_address_rb_stanza
       | always_compare_med_rb_stanza
       | bgp_listen_range_rb_stanza
+      | bgp_redistribute_internal_rb_stanza
       | bgp_tail
       | cluster_id_rb_stanza
+      | default_information_originate_rb_stanza
       | neighbor_rb_stanza
+      | neighbor_group_rb_stanza
       | nexus_neighbor_rb_stanza
       | no_bgp_enforce_first_as_stanza
       | no_neighbor_activate_rb_stanza
@@ -600,7 +644,11 @@ router_id_rb_stanza
 
 send_community_bgp_tail
 :
-   SEND_COMMUNITY EXTENDED? BOTH? NEWLINE
+   (
+      SEND_COMMUNITY EXTENDED? BOTH?
+      | SEND_COMMUNITY_EBGP
+      | SEND_EXTENDED_COMMUNITY_EBGP
+   ) NEWLINE
 ;
 
 shutdown_bgp_tail
@@ -676,3 +724,9 @@ update_source_bgp_tail
 :
    UPDATE_SOURCE source = interface_name NEWLINE
 ;
+
+use_neighbor_group_bgp_tail
+:
+   USE NEIGHBOR_GROUP VARIABLE NEWLINE
+;
+

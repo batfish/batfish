@@ -12,7 +12,10 @@ access_list_ip_range
       ip = IP_ADDRESS wildcard = IP_ADDRESS
    )
    | ANY
-   | HOST ip = IP_ADDRESS
+   |
+   (
+      HOST? ip = IP_ADDRESS
+   )
    | prefix = IP_PREFIX
    | ipv6_prefix = IPV6_PREFIX
 ;
@@ -72,9 +75,38 @@ bandwidth_irs_stanza
    BANDWIDTH ~NEWLINE* NEWLINE
 ;
 
+community_set_stanza
+:
+   COMMUNITY_SET name = variable NEWLINE community_set_elem_list END_SET
+   NEWLINE
+;
+
+community_set_elem_list
+:
+   (
+      community_set_elem COMMA NEWLINE
+   )* community_set_elem NEWLINE
+;
+
+community_set_elem
+:
+   COMMUNITY_SET_VALUE
+   | ACCEPT_OWN
+   | DFA_REGEX COMMUNITY_SET_REGEX
+   | INTERNET
+   | IOS_REGEX COMMUNITY_SET_REGEX
+   | LOCAL_AS
+   | NO_ADVERTISE
+   | NO_EXPORT
+   | PRIVATE_AS
+;
+
 extended_access_list_additional_feature
 :
    (
+      ACK
+      | COUNT
+      |
       (
          DSCP variable
       )
@@ -97,6 +129,7 @@ extended_access_list_additional_feature
       | RST
       | SOURCE_QUENCH
       | TIME_EXCEEDED
+      | TRACEROUTE
       | TRACKED
       | TTL_EXCEEDED
       | TTL EQ DEC
@@ -158,13 +191,21 @@ extended_access_list_stanza
 
 extended_access_list_tail
 :
-   ala = access_list_action prot = protocol srcipr = access_list_ip_range
+   (
+      SEQ? DEC
+   )? ala = access_list_action prot = protocol srcipr = access_list_ip_range
    (
       alps_src = port_specifier
    )? dstipr = access_list_ip_range
    (
       alps_dst = port_specifier
-   )? feature = extended_access_list_additional_feature? NEWLINE
+   )? features += extended_access_list_additional_feature*
+   (
+      NEXTHOP1 IPV4 nexthop1 = IP_ADDRESS
+      (
+         NEXTHOP2 IPV4 nexthop2 = IP_ADDRESS
+      )?
+   )? NEWLINE
 ;
 
 interface_rs_stanza
@@ -209,14 +250,20 @@ ip_as_path_access_list_tail
 
 ip_community_list_expanded_stanza
 :
-   named = ip_community_list_expanded_named_stanza
-   | numbered = ip_community_list_expanded_numbered_stanza
+   numbered = ip_community_list_expanded_numbered_stanza
+   | named = ip_community_list_expanded_named_stanza
+   | block = ip_community_list_expanded_block_stanza
+;
+
+ip_community_list_expanded_block_stanza
+:
+   IP COMMUNITY_LIST name = variable NEWLINE ip_community_list_expanded_tail*
 ;
 
 ip_community_list_expanded_named_stanza
 locals [boolean again]
 :
-   IP COMMUNITY_LIST EXPANDED name = VARIABLE ip_community_list_expanded_tail
+   IP COMMUNITY_LIST EXPANDED name = variable ip_community_list_expanded_tail
    {
 		$again = _input.LT(1).getType() == IP &&
 		_input.LT(2).getType() == COMMUNITY_LIST &&
@@ -447,7 +494,7 @@ nexus_access_list_stanza
 nexus_access_list_tail
 :
    (
-      num = DEC
+      SEQ? num = DEC
    )? extended_access_list_tail
 ;
 
@@ -456,7 +503,11 @@ nexus_prefix_list_stanza
    (
       IP
       | IPV6
-   ) PREFIX_LIST name = variable NEWLINE ip_prefix_list_tail*
+   ) PREFIX_LIST name = variable NEWLINE
+   (
+      ip_prefix_list_null_tail
+      | ip_prefix_list_tail
+   )*
 ;
 
 null_as_path_regex
@@ -471,18 +522,31 @@ null_rs_stanza
       AUTHENTICATION
       | KEY_SOURCE
       | LOGGING
+      | WINDOW_SIZE
    ) ~NEWLINE* NEWLINE
 ;
 
 prefix_set_stanza
 :
-   PREFIX_SET name = variable NEWLINE prefix_set_tail* END_SET NEWLINE
+   PREFIX_SET name = variable NEWLINE prefix_set_elem_list END_SET NEWLINE
 ;
 
-prefix_set_tail
+prefix_set_elem_list
+:
+   | // no elements
+
+   |
+   (
+      prefix_set_elem COMMA NEWLINE
+   )* prefix_set_elem NEWLINE
+;
+
+prefix_set_elem
 :
    (
-      prefix = IP_PREFIX
+      ipa = IP_ADDRESS
+      | prefix = IP_PREFIX
+      | ipv6a = IPV6_ADDRESS
       | ipv6_prefix = IPV6_PREFIX
    )
    (
@@ -497,7 +561,7 @@ prefix_set_tail
       (
          EQ eqpl = DEC
       )
-   )* NEWLINE
+   )*
 ;
 
 protocol_type_code_access_list_numbered_stanza
@@ -547,10 +611,6 @@ standard_access_list_null_tail
    (
       REMARK remark = M_REMARK_REMARK NEWLINE
    )
-   |
-   (
-      ala = access_list_action ipr = IP_ADDRESS LOG? NEWLINE
-   )
 ;
 
 standard_access_list_named_stanza
@@ -594,6 +654,8 @@ standard_access_list_stanza
 
 standard_access_list_tail
 :
-   ala = access_list_action ipr = access_list_ip_range LOG? NEWLINE
+   (
+      SEQ? num = DEC
+   )? ala = access_list_action ipr = access_list_ip_range LOG? NEWLINE
 ;
 

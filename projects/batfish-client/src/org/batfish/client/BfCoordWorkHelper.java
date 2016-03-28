@@ -341,24 +341,6 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
-   public WorkItem getWorkItemGetDataPlane(String containerName,
-         String testrigName, String envName) {
-      WorkItem wItem = new WorkItem(containerName, testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
-      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
-      return wItem;
-   }
-
-   public WorkItem getWorkItemGetDiffDataPlane(String containerName,
-         String testrigName, String envName, String diffEnvName) {
-      WorkItem wItem = new WorkItem(containerName, testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
-      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
-      wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
-      wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
-      return wItem;
-   }
-
    public WorkItem getWorkItemGetFlowTraces(String containerName,
          String testrigName, String envName, String questionName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
@@ -369,17 +351,10 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
-   public WorkItem getWorkItemParseVendorIndependent(String containerName,
+   public WorkItem getWorkItemParse(String containerName,
          String testrigName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
-      wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
-      return wItem;
-   }
-
-   public WorkItem getWorkItemParseVendorSpecific(String containerName,
-         String testrigName) {
-      WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
       wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
       return wItem;

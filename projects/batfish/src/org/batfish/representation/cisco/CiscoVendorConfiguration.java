@@ -202,6 +202,39 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       }
    }
 
+   private Ip getBgpRouterId(final Configuration c, BgpProcess proc) {
+      Ip routerId;
+      Ip processRouterId = proc.getRouterId();
+      if (processRouterId == null) {
+         processRouterId = new Ip(0l);
+         for (String iname : c.getInterfaces().keySet()) {
+            if (iname.startsWith("Loopback")) {
+               Prefix prefix = c.getInterfaces().get(iname).getPrefix();
+               if (prefix != null) {
+                  Ip currentIp = prefix.getAddress();
+                  if (currentIp.asLong() > processRouterId.asLong()) {
+                     processRouterId = currentIp;
+                  }
+               }
+            }
+         }
+         if (processRouterId.asLong() == 0) {
+            for (org.batfish.representation.Interface currentInterface : c
+                  .getInterfaces().values()) {
+               Prefix prefix = currentInterface.getPrefix();
+               if (prefix != null) {
+                  Ip currentIp = prefix.getAddress();
+                  if (currentIp.asLong() > processRouterId.asLong()) {
+                     processRouterId = currentIp;
+                  }
+               }
+            }
+         }
+      }
+      routerId = processRouterId;
+      return routerId;
+   }
+
    @Override
    public RoleSet getRoles() {
       return _roles;
@@ -298,7 +331,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       org.batfish.representation.BgpProcess newBgpProcess = new org.batfish.representation.BgpProcess();
       Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       int defaultMetric = proc.getDefaultMetric();
-
+      Ip bgpRouterId = getBgpRouterId(c, proc);
+      newBgpProcess.setRouterId(bgpRouterId);
       Set<BgpAggregateNetwork> summaryOnlyNetworks = new HashSet<BgpAggregateNetwork>();
 
       // add generated routes for aggregate addresses
@@ -418,7 +452,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (groupName != null) {
             NamedBgpPeerGroup parentPeerGroup = proc.getNamedPeerGroups().get(
                   groupName);
-            lpg.inheritUnsetFields(parentPeerGroup);
+            if (parentPeerGroup != null) {
+               lpg.inheritUnsetFields(parentPeerGroup);
+            }
+            else {
+               _w.redFlag("Reference to undefined parent peer group: \""
+                     + groupName + "\"");
+            }
          }
          lpg.inheritUnsetFields(proc.getMasterBgpPeerGroup());
       }
@@ -426,38 +466,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       for (LeafBgpPeerGroup lpg : leafGroups) {
          // update source
          String updateSourceInterface = lpg.getUpdateSource();
-         Ip updateSource;
-         if (updateSourceInterface == null) {
-            Ip processRouterId = proc.getRouterId();
-            if (processRouterId == null) {
-               processRouterId = new Ip(0l);
-               for (String iname : c.getInterfaces().keySet()) {
-                  if (iname.startsWith("Loopback")) {
-                     Prefix prefix = c.getInterfaces().get(iname).getPrefix();
-                     if (prefix != null) {
-                        Ip currentIp = prefix.getAddress();
-                        if (currentIp.asLong() > processRouterId.asLong()) {
-                           processRouterId = currentIp;
-                        }
-                     }
-                  }
-               }
-               if (processRouterId.asLong() == 0) {
-                  for (org.batfish.representation.Interface currentInterface : c
-                        .getInterfaces().values()) {
-                     Prefix prefix = currentInterface.getPrefix();
-                     if (prefix != null) {
-                        Ip currentIp = prefix.getAddress();
-                        if (currentIp.asLong() > processRouterId.asLong()) {
-                           processRouterId = currentIp;
-                        }
-                     }
-                  }
-               }
-            }
-            updateSource = processRouterId;
-         }
-         else {
+         Ip updateSource = null;
+         if (updateSourceInterface != null) {
             org.batfish.representation.Interface sourceInterface = c
                   .getInterfaces().get(updateSourceInterface);
             if (sourceInterface != null) {
@@ -468,17 +478,30 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   updateSource = sourceIp;
                }
                else {
-                  throw new VendorConversionException(
-                        "bgp update source interface: \""
-                              + updateSourceInterface
-                              + "\" not assigned an ip address");
+                  _w.redFlag("bgp update source interface: \""
+                        + updateSourceInterface
+                        + "\" not assigned an ip address");
                }
             }
             else {
-               throw new VendorConversionException(
-                     "reference to undefined interface: \""
-                           + updateSourceInterface + "\"");
+               _w.redFlag("reference to undefined update source interface: \""
+                     + updateSourceInterface + "\"");
             }
+         }
+         else {
+            Ip neighborAddress = lpg.getNeighborPrefix().getAddress();
+            for (Interface iface : _interfaces.values()) {
+               for (Prefix ifacePrefix : iface.getAllPrefixes()) {
+                  if (ifacePrefix.contains(neighborAddress)) {
+                     Ip ifaceAddress = ifacePrefix.getAddress();
+                     updateSource = ifaceAddress;
+                  }
+               }
+            }
+         }
+         if (updateSource == null) {
+            _w.redFlag("Could not determine update source for BGP neighbor: \""
+                  + lpg.getName() + "\"");
          }
          PolicyMap newInboundPolicyMap = null;
          String inboundRouteMapName = lpg.getInboundRouteMap();
@@ -635,6 +658,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          boolean sendCommunity = lpg.getSendCommunity();
+         String description = lpg.getDescription();
          if (lpg.getActive() && !lpg.getShutdown()) {
             if (lpg.getRemoteAS() == null) {
                _w.redFlag("No remote-as set for peer: " + lpg.getName());
@@ -680,6 +704,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             newNeighbor.getOriginationPolicies().addAll(originationPolicies);
             newNeighbor.setSendCommunity(sendCommunity);
             newNeighbor.setDefaultMetric(defaultMetric);
+            newNeighbor.setDescription(description);
          }
       }
       return newBgpProcess;
@@ -711,8 +736,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       newIface.setBandwidth(iface.getBandwidth());
       if (iface.getPrefix() != null) {
          newIface.setPrefix(iface.getPrefix());
+         newIface.getAllPrefixes().add(iface.getPrefix());
       }
-      newIface.getSecondaryPrefixes().addAll(iface.getSecondaryPrefixes());
+      newIface.getAllPrefixes().addAll(iface.getSecondaryPrefixes());
       boolean level1 = false;
       boolean level2 = false;
       if (_isisProcess != null) {
@@ -834,6 +860,18 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          newLine.getDstPortRanges().addAll(fromLine.getDstPortRanges());
          newLine.getSrcPortRanges().addAll(fromLine.getSrcPortRanges());
+         Integer icmpType = fromLine.getIcmpType();
+         if (icmpType != null) {
+            newLine.setIcmpType(icmpType);
+         }
+         Integer icmpCode = fromLine.getIcmpCode();
+         if (icmpCode != null) {
+            newLine.setIcmpCode(icmpCode);
+         }
+         Integer tcpFlags = fromLine.getTcpFlags();
+         if (tcpFlags != null) {
+            newLine.setTcpFlags(tcpFlags);
+         }
          lines.add(newLine);
       }
       return new IpAccessList(name, lines);
@@ -1603,7 +1641,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          RouteFilterLine newLine = toRouteFilterLine(fromLine);
          lines.add(newLine);
       }
-      newList.addLines(lines);
+      newList.getLines().addAll(lines);
       return newList;
 
    }

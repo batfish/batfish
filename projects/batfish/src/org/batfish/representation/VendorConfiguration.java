@@ -7,7 +7,7 @@ import org.batfish.collections.RoleSet;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 
-public interface VendorConfiguration extends Serializable {
+public interface VendorConfiguration extends Serializable, GenericConfigObject {
 
    String getHostname();
 

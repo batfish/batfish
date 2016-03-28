@@ -37,6 +37,8 @@ public class RoutingInstance implements Serializable {
 
    private Map<String, NamedBgpGroup> _namedBgpGroups;
 
+   private final Map<String, NodeDevice> _nodeDevices;
+
    private Map<Ip, OspfArea> _ospfAreas;
 
    private List<String> _ospfExportPolicies;
@@ -57,6 +59,7 @@ public class RoutingInstance implements Serializable {
       _globalMasterInterface = new Interface(MASTER_INTERFACE_NAME);
       _name = name;
       _namedBgpGroups = new TreeMap<String, NamedBgpGroup>();
+      _nodeDevices = new TreeMap<String, NodeDevice>();
       _ospfAreas = new TreeMap<Ip, OspfArea>();
       _ospfExportPolicies = new ArrayList<String>();
       _ospfReferenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
@@ -111,6 +114,10 @@ public class RoutingInstance implements Serializable {
 
    public Map<String, NamedBgpGroup> getNamedBgpGroups() {
       return _namedBgpGroups;
+   }
+
+   public Map<String, NodeDevice> getNodeDevices() {
+      return _nodeDevices;
    }
 
    public Map<Ip, OspfArea> getOspfAreas() {

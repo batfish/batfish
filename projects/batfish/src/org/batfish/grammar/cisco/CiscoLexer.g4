@@ -72,6 +72,11 @@ ACCEPT_LIFETIME
    'accept-lifetime'
 ;
 
+ACCEPT_OWN
+:
+   'accept-own'
+;
+
 ACCESS
 :
    'access'
@@ -122,6 +127,11 @@ ACCOUNTING_SERVER_GROUP
 ACCOUNTING_THRESHOLD
 :
    'accounting-threshold'
+;
+
+ACK
+:
+   'ack'
 ;
 
 ACTION
@@ -381,6 +391,11 @@ ATM
    'atm'
 ;
 
+ATTRIBUTE_DOWNLOAD
+:
+   'attribute-download'
+;
+
 ATTRIBUTE_NAMES
 :
    'attribute-names'
@@ -446,6 +461,11 @@ AUTO_COST
    'auto-cost'
 ;
 
+AUTO_RECOVERY
+:
+   'auto-recovery'
+;
+
 AUTO_SUMMARY
 :
    'auto-summary'
@@ -474,6 +494,11 @@ AUTOSELECT
 AUTOSTATE
 :
    'autostate'
+;
+
+BACK_UP
+:
+   'back-up'
 ;
 
 BACKGROUND_ROUTES_ENABLE
@@ -581,6 +606,11 @@ BRIDGE
    'bridge'
 ;
 
+BRIDGE_PRIORITY
+:
+   'bridge-priority'
+;
+
 BROADCAST
 :
    'broadcast'
@@ -589,6 +619,16 @@ BROADCAST
 BROADCAST_ADDRESS
 :
    'broadcast-address'
+;
+
+BSD_USERNAME
+:
+   'bsd-username'
+;
+
+BSR_BORDER
+:
+   'bsr-border'
 ;
 
 BUNDLE
@@ -634,6 +674,11 @@ CALL_HOME
 CALLER_ID
 :
    'caller-id'
+;
+
+CAM_PROFILE
+:
+   'cam-profile'
 ;
 
 CARD
@@ -689,6 +734,11 @@ CFS
 CGMP
 :
    'cgmp'
+;
+
+CHANGES
+:
+   'changes'
 ;
 
 CHANNEL
@@ -841,6 +891,11 @@ COMMUNITY_LIST
 
 ;
 
+COMMUNITY_SET
+:
+   'community-set'
+;
+
 CONFDCONFIG
 :
    'confdConfig'
@@ -876,6 +931,11 @@ CONNECTED
    'connected'
 ;
 
+CONNECT_SOURCE
+:
+   'connect-source'
+;
+
 CONSOLE
 :
    'console'
@@ -909,6 +969,11 @@ COPY
 COST
 :
    'cost'
+;
+
+COUNT
+:
+   'count'
 ;
 
 COUNTER
@@ -979,6 +1044,11 @@ DAYTIME
 DBL
 :
    'dbl'
+;
+
+DCB
+:
+   'dcb'
 ;
 
 DCBX
@@ -1101,6 +1171,11 @@ DESTINATION
    'destination'
 ;
 
+DETAIL
+:
+   'detail'
+;
+
 DETERMINISTIC_MED
 :
    'deterministic-med'
@@ -1119,6 +1194,11 @@ DEVICE_SENSOR
 DF
 :
    'df'
+;
+
+DFA_REGEX
+:
+   'dfa-regex'
 ;
 
 DHCP
@@ -1319,6 +1399,11 @@ ECHO_REPLY
 EGP
 :
    'egp'
+;
+
+EGRESS
+:
+   'egress'
 ;
 
 EIGRP
@@ -1541,6 +1626,11 @@ EXTENDED
    'extended'
    { enableDEC = true; enableACL_NUM = false; }
 
+;
+
+EXTERNAL
+:
+   'external'
 ;
 
 FABRIC
@@ -1845,6 +1935,11 @@ HASH
    'hash'
 ;
 
+HEARTBEAT_INTERVAL
+:
+   'heartbeat-interval'
+;
+
 HEARTBEAT_TIME
 :
    'heartbeat-time'
@@ -2055,6 +2150,11 @@ INCOMPLETE
    'incomplete'
 ;
 
+INGRESS
+:
+   'ingress'
+;
+
 INHERIT
 :
    'inherit'
@@ -2105,6 +2205,11 @@ INTERVAL
 INVALID_SPI_RECOVERY
 :
    'invalid-spi-recovery'
+;
+
+IOS_REGEX
+:
+   'ios-regex'
 ;
 
 IP
@@ -2272,6 +2377,16 @@ L2TP_CLASS
    'l2tp-class'
 ;
 
+L2TRANSPORT
+:
+   'l2transport'
+;
+
+L2VPN
+:
+   'l2vpn'
+;
+
 LABEL
 :
    'label'
@@ -2400,6 +2515,11 @@ LIMIT_RESOURCE
 LINE
 :
    'line'
+;
+
+LINECARD
+:
+   'linecard'
 ;
 
 LINECODE
@@ -2622,6 +2742,11 @@ MATCH
    'match'
 ;
 
+MAX_LSA
+:
+   'max-lsa'
+;
+
 MAX_LSP_LIFETIME
 :
    'max-lsp-lifetime'
@@ -2687,6 +2812,16 @@ MEMORY_SIZE
    'memory-size'
 ;
 
+MESH_GROUP
+:
+   'mesh-group'
+;
+
+MESSAGE_DIGEST
+:
+   'message-digest'
+;
+
 MESSAGE_DIGEST_KEY
 :
    'message-digest-key'
@@ -2735,6 +2870,11 @@ MICROCODE
 MINIMAL
 :
    'minimal'
+;
+
+MINIMUM_LINKS
+:
+   'minimum-links'
 ;
 
 MLAG
@@ -2852,6 +2992,11 @@ MULTILINK
    'multilink'
 ;
 
+MULTIPATH
+:
+   'multipath'
+;
+
 MULTIPOINT
 :
    'multipoint'
@@ -2947,6 +3092,11 @@ NEIGHBOR
    'neighbor' -> pushMode(M_NEIGHBOR)
 ;
 
+NEIGHBOR_GROUP
+:
+   'neighbor-group' 
+;
+
 NEQ
 :
    'neq'
@@ -3027,6 +3177,16 @@ NEXTHOP
    'nexthop'
 ;
 
+NEXTHOP1
+:
+   'nexthop1'
+;
+
+NEXTHOP2
+:
+   'nexthop2'
+;
+
 NHOP_ONLY
 :
    'nhop-only'
@@ -3062,6 +3222,11 @@ NO_PREPEND
    'no-prepend'
 ;
 
+NO_REDISTRIBUTION
+:
+   'no-redistribution'
+;
+
 NO_SUMMARY
 :
    'no-summary'
@@ -3075,6 +3240,11 @@ NODE
 NON500_ISAKMP
 :
    'non500-isakmp'
+;
+
+NON_BROADCAST
+:
+   'non-broadcast'
 ;
 
 NONE
@@ -3110,6 +3280,11 @@ NSR
 NSSA
 :
    'nssa'
+;
+
+NSSA_EXTERNAL
+:
+   'nssa-external'
 ;
 
 NTP
@@ -3165,6 +3340,11 @@ ORIGINATE
 OSPF
 :
    'ospf'
+;
+
+OSPFV3
+:
+   'ospfv3'
 ;
 
 OTHER_ACCESS
@@ -3382,6 +3562,11 @@ PLATFORM
    'platform'
 ;
 
+POINT_TO_MULTIPOINT
+:
+   'point-to-multipoint'
+;
+
 POINT_TO_POINT
 :
    'point-to-point'
@@ -3427,6 +3612,11 @@ PORT_CHANNEL
    'port-channel'
 ;
 
+PORT_CHANNEL_PROTOCOL
+:
+   'port-channel-protocol'
+;
+
 PORT_OBJECT
 :
    'port-object'
@@ -3440,6 +3630,11 @@ PORT_SECURITY
 PORT_UNREACHABLE
 :
    'port-unreachable'
+;
+
+PORTMODE
+:
+   'portmode'
 ;
 
 POS
@@ -3477,6 +3672,11 @@ PRE_SHARED_KEY
    'pre-shared-key'
 ;
 
+PRECONFIGURE
+:
+   'preconfigure'
+;
+
 PREDICTOR
 :
    'predictor'
@@ -3512,6 +3712,11 @@ PRI_GROUP
    'pri-group'
 ;
 
+PRIMARY_PRIORITY
+:
+   'primary-priority'
+;
+
 PRIORITY
 :
    'priority'
@@ -3525,6 +3730,11 @@ PRIORITY_FLOW_CONTROL
 PRIORITY_QUEUE
 :
    'priority-queue'
+;
+
+PRIVATE_AS
+:
+   'private-as'
 ;
 
 PRIVATE_VLAN
@@ -3587,6 +3797,11 @@ PTP
    'ptp'
 ;
 
+P2P
+:
+   'p2p'
+;
+
 QOS
 :
    'qos'
@@ -3630,6 +3845,11 @@ RADIUS_COMMON_PW
 RADIUS_SERVER
 :
    'radius-server'
+;
+
+RANDOM
+:
+   'random'
 ;
 
 RANDOM_DETECT
@@ -3712,6 +3932,11 @@ REDISTRIBUTE
    'redistribute'
 ;
 
+REDISTRIBUTE_INTERNAL
+:
+   'redistribute-internal'
+;
+
 REDUNDANCY
 :
    'redundancy'
@@ -3737,6 +3962,11 @@ RELOAD_DELAY
    'reload-delay'
 ;
 
+RELOAD_TYPE
+:
+   'reload-type'
+;
+
 REMARK
 :
    'remark' -> pushMode(M_REMARK)
@@ -3760,6 +3990,11 @@ REMOTE_PORT
 REMOVE_PRIVATE_AS
 :
    'remove-private-as'
+;
+
+REMOVE_PRIVATE_CAP_A_CAP_S
+:
+   'remove-private-AS'
 ;
 
 REMOTE_SPAN
@@ -3830,6 +4065,11 @@ REVISION
 REVOCATION_CHECK
 :
    'revocation-check'
+;
+
+RFC1583COMPATIBILITY
+:
+   'rfc1583compatibility'
 ;
 
 RING
@@ -3942,9 +4182,19 @@ SAMPLER
    'sampler'
 ;
 
+SAMPLER_MAP
+:
+   'sampler-map'
+;
+
 SAP
 :
    'sap'
+;
+
+SA_FILTER
+:
+   'sa-filter'
 ;
 
 SCCP
@@ -4022,6 +4272,16 @@ SEND_COMMUNITY
    'send-community'
 ;
 
+SEND_COMMUNITY_EBGP
+:
+   'send-community-ebgp'
+;
+
+SEND_EXTENDED_COMMUNITY_EBGP
+:
+   'send-extended-community-ebgp'
+;
+
 SEND_LABEL
 :
    'send-label'
@@ -4080,6 +4340,11 @@ SERVER_TYPE
 SERVICE
 :
    'service'
+;
+
+SERVICE_CLASS
+:
+   'service-class'
 ;
 
 SERVICE_MODULE
@@ -4332,6 +4597,11 @@ STACK_MIB
    'stack-mib'
 ;
 
+STACK_UNIT
+:
+   'stack-unit'
+;
+
 STANDARD
 :
    'standard'
@@ -4377,6 +4647,11 @@ STORM_CONTROL
 STP
 :
    'stp'
+;
+
+STUB
+:
+   'stub'
 ;
 
 SUBJECT_NAME
@@ -4442,6 +4717,11 @@ SVCLC
 SWITCH
 :
    'switch'
+;
+
+SWITCH_PROFILE
+:
+   'switch-profile'
 ;
 
 SWITCHBACK
@@ -4522,6 +4802,11 @@ TAG
 TAG_SWITCHING
 :
    'tag-switching'
+;
+
+TAGGED
+:
+   'tagged'
 ;
 
 TALK
@@ -4669,6 +4954,11 @@ TRACE
    'trace'
 ;
 
+TRACEROUTE
+:
+   'traceroute'
+;
+
 TRACK
 :
    'track'
@@ -4692,6 +4982,11 @@ TRANSCEIVER
 TRANSLATE
 :
    'translate'
+;
+
+TRANSMIT
+:
+   'transmit'
 ;
 
 TRANSPORT
@@ -4819,6 +5114,11 @@ UNICAST
    'unicast'
 ;
 
+UNTAGGED
+:
+   'untagged'
+;
+
 UPDATE_CALENDAR
 :
    'update-calendar'
@@ -4832,6 +5132,11 @@ UPDATE_SOURCE
 UPGRADE
 :
    'upgrade'
+;
+
+USE
+:
+   'use'
 ;
 
 USE_VRF
@@ -4894,6 +5199,11 @@ VIRTUAL
    'virtual'
 ;
 
+VIRTUAL_ADDRESS
+:
+   'virtual-address'
+;
+
 VIRTUAL_REASSEMBLY
 :
    'virtual-reassembly'
@@ -4912,6 +5222,16 @@ VIRTUAL_TEMPLATE
 VLAN
 :
    'vlan'
+;
+
+VLT
+:
+   'vlt'
+;
+
+VLT_PEER_LAG
+:
+   'vlt-peer-lag'
 ;
 
 VM_CPU
@@ -5001,6 +5321,11 @@ VRRP
    'vrrp'
 ;
 
+VRRP_GROUP
+:
+   'vrrp-group'
+;
+
 VSERVER
 :
    'vserver'
@@ -5046,6 +5371,11 @@ WIDE
    'wide'
 ;
 
+WINDOW_SIZE
+:
+   'window-size'
+;
+
 WINS_SERVER
 :
    'wins-server'
@@ -5059,6 +5389,11 @@ WITHOUT_CSD
 WLAN
 :
    'wlan'
+;
+
+WRED_PROFILE
+:
+   'wred-profile'
 ;
 
 WRR_QUEUE
@@ -5112,6 +5447,11 @@ XML_CONFIG
 ;
 
 // Other Tokens
+
+MULTICONFIGPART
+:
+   '############ MultiConfigPart' F_NonNewline* F_Newline+ -> channel(HIDDEN)
+;
 
 COMMUNITY_NUMBER
 :
@@ -5293,6 +5633,16 @@ COMMUNITY_LIST_NUM
 
 ;
 
+COMMUNITY_SET_REGEX
+:
+	SINGLE_QUOTE ~[':&<> ]* COLON ~[':&<> ]* SINGLE_QUOTE
+;
+
+COMMUNITY_SET_VALUE
+:
+	(F_Dec16 | ASTERISK) COLON (F_Dec16 | ASTERISK)
+;
+
 COMMENT_LINE
 :
    '!' F_NonNewline* F_Newline+ -> channel(HIDDEN)
@@ -5314,6 +5664,11 @@ DEC
    {enableDEC}?
 
    F_Digit*
+;
+
+DIGIT
+:
+   F_Digit
 ;
 
 DOUBLE_QUOTE
@@ -5483,6 +5838,27 @@ WS
 ;
 
 // Fragments
+
+fragment
+F_Dec16
+:
+   (
+      F_PositiveDigit F_Digit F_Digit F_Digit F_Digit
+   )
+   |
+   (
+      F_PositiveDigit F_Digit F_Digit F_Digit
+   )
+   |
+   (
+      F_PositiveDigit F_Digit F_Digit
+   )
+   |
+   (
+      F_PositiveDigit F_Digit
+   )
+   | F_Digit
+;
 
 fragment
 F_DecByte
@@ -5881,6 +6257,11 @@ M_Interface_POLICY
    'policy' -> type(POLICY), popMode
 ;
 
+M_Interface_L2TRANSPORT
+:
+   'l2transport' -> type(L2TRANSPORT), popMode
+;
+
 M_Interface_MODULE
 :
    'module' -> type(MODULE)
@@ -5919,6 +6300,11 @@ M_Interface_NUMBER
 M_Interface_PERIOD
 :
    '.' -> type(PERIOD)
+;
+
+M_Interface_PRECFONFIGURE
+:
+   'preconfigure' -> type(PRECONFIGURE)
 ;
 
 M_Interface_PREFIX
@@ -5966,6 +6352,7 @@ M_MOTD_C_ESCAPE_C
 :
    (
       '^C'
+      | ('^' F_Newline)
       | 'cC'
       | '\u0003'
    ) -> type(ESCAPE_C), mode(DEFAULT_MODE)
@@ -5975,7 +6362,7 @@ M_MOTD_C_MOTD
 :
    (
       (
-         '^' ~[^C\u0003]
+         '^' ~[^C\u0003\n\r]
       )
       |
       (

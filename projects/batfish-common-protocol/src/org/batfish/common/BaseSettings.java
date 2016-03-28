@@ -57,11 +57,16 @@ public abstract class BaseSettings {
    protected final boolean getBooleanOptionValue(String key) {
       if (_line.hasOption(key)) {
          String value = _line.getOptionValue(key);
-         if (value == null) {
+         if (value == null || value.compareToIgnoreCase("true") == 0) {
             return true;
          }
+         else if (value.compareToIgnoreCase("false") == 0) {
+            return false;
+         }
          else {
-            return Boolean.parseBoolean(value);
+            throw new CleanBatfishException(
+                  "Error parsing command line: Invalid boolean value: \""
+                        + value + "\"");
          }
       }
       else {

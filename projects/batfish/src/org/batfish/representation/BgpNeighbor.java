@@ -32,6 +32,8 @@ public final class BgpNeighbor implements Serializable {
     */
    private Integer _defaultMetric;
 
+   private String _description;
+
    /**
     * The set of generated and/or aggregate routes to be potentially sent to
     * this peer before outbound policies are taken into account
@@ -173,6 +175,10 @@ public final class BgpNeighbor implements Serializable {
       return _defaultMetric;
    }
 
+   public String getDescription() {
+      return _description;
+   }
+
    /**
     * @return {@link #_generatedRoutes}
     */
@@ -276,6 +282,10 @@ public final class BgpNeighbor implements Serializable {
     */
    public void setDefaultMetric(Integer defaultMetric) {
       _defaultMetric = defaultMetric;
+   }
+
+   public void setDescription(String description) {
+      _description = description;
    }
 
    /**

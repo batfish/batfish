@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.common.BfConsts;
@@ -59,15 +60,20 @@ public class Client {
    private static final String COMMAND_SET_TESTRIG = "set-testrig";
    private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
 
+   private static final String DEFAULT_CONTAINER_PREFIX = "cp";
+   private static final String DEFAULT_DIFF_ENV_PREFIX = "delta";
+   private static final String DEFAULT_ENV_NAME = "default";
+   private static final String DEFAULT_TESTRIG_NAME = "default_rig";
+
    private static final Map<String, String> MAP_COMMANDS = initCommands();
 
    private static Map<String, String> initCommands() {
       Map<String, String> descs = new TreeMap<String, String>();
       descs.put(COMMAND_ANSWER, COMMAND_ANSWER
-            + " <question-name> <question-file>\n"
+            + " <question-file> [param1=value1 [param2=value2] ...]\n"
             + "\t Answer the question for the default environment");
       descs.put(COMMAND_ANSWER_DIFF, COMMAND_ANSWER_DIFF
-            + " <question-name> <question-file>\n"
+            + " <question-file>  [param1=value1 [param2=value2] ...]\n"
             + "\t Answer the question for the differential environment");
       descs.put(COMMAND_CAT, COMMAND_CAT + " <filename>\n"
             + "\t Print the contents of the file");
@@ -93,12 +99,12 @@ public class Client {
       descs.put(COMMAND_HELP, COMMAND_HELP + "\n"
             + "\t Print the list of supported commands");
       descs.put(COMMAND_INIT_CONTAINER, COMMAND_INIT_CONTAINER
-            + " <container-name-prefix>\n" + "\t Initialize a new container");
+            + " [<container-name-prefix>]\n" + "\t Initialize a new container");
       descs.put(COMMAND_INIT_DIFF_ENV, COMMAND_INIT_DIFF_ENV
-            + " <environment-name> <environment zipfile or directory>\n"
+            + " [-nodataplane] <environment zipfile or directory> [<environment-name>]\n"
             + "\t Initialize the differential environment");
       descs.put(COMMAND_INIT_TESTRIG, COMMAND_INIT_TESTRIG
-            + " <environment-name> <testrig zipfile or directory>\n"
+            + " [-nodataplane] <testrig zipfile or directory> [<environment name>]\n"
             + "\t Initialize the testrig with default environment");
       descs.put(COMMAND_LIST_CONTAINERS, COMMAND_LIST_CONTAINERS + "\n"
             + "\t List the containers to which you have access");
@@ -157,7 +163,7 @@ public class Client {
 
    public Client(Settings settings) {
       _settings = settings;
-
+      
       if (settings.getCommandFile() != null) {
          RunBatchMode();
       }
@@ -281,11 +287,12 @@ public class Client {
    }
 
    private void processCommand(String[] words) {
-
       try {
+         List<String> options = getCommandOptions(words);
+         List<String> parameters = getCommandParameters(words, options.size());
+         
          switch (words[0]) {
-         // this is almost a hidden command; it should not be invoked through
-         // here
+         // this is a hidden command for testing
          case "add-worker": {
             boolean result = _poolHelper.addBatfishWorker(words[1]);
             _logger.output("Result: " + result + "\n");
@@ -296,13 +303,13 @@ public class Client {
                break;
             }
 
-            String questionName = words[1];
-            String questionFile = words[2];
+            String questionFile = parameters.get(0);
+            String questionName = UUID.randomUUID().toString();
 
             File paramsFile = null;
 
             try {
-               paramsFile = createParamsFile(words, 3, words.length - 1);
+               paramsFile = createParamsFile(words, 2 + options.size(), words.length - 1);
             }
             catch (Exception e) {
                _logger.error("Could not create params file\n");
@@ -314,13 +321,10 @@ public class Client {
                   _currContainerName, _currTestrigName, questionName,
                   questionFile, paramsFile.getAbsolutePath());
 
-            if (resultUpload) {
-               _logger
-                     .output("Successfully uploaded question. Starting to answer\n");
-            }
-            else {
-               break;
-            }
+            if (!resultUpload)
+                break;
+
+            _logger.output("Uploaded question. Answering now.\n");
 
             // delete the temporary params file
             if (paramsFile != null) {
@@ -340,13 +344,13 @@ public class Client {
                break;
             }
 
-            String questionName = words[1];
-            String questionFile = words[2];
+            String questionFile = parameters.get(0);
+            String questionName = UUID.randomUUID().toString();
 
             File paramsFile = null;
 
             try {
-               paramsFile = createParamsFile(words, 3, words.length - 1);
+               paramsFile = createParamsFile(words, options.size() + 2, words.length - 1);
             }
             catch (Exception e) {
                _logger.error("Could not create params file\n");
@@ -358,15 +362,12 @@ public class Client {
                   _currContainerName, _currTestrigName, questionName,
                   questionFile, paramsFile.getAbsolutePath());
 
-            if (resultUpload) {
-               _logger
-                     .output("Successfully uploaded question. Starting to answer\n");
-            }
-            else {
+            if (!resultUpload)
                break;
-            }
+            
+            _logger.output("Uploaded question. Answering now.\n");
 
-            // delete the temporary params file
+               // delete the temporary params file
             if (paramsFile != null) {
                paramsFile.delete();
             }
@@ -410,7 +411,7 @@ public class Client {
          // break;
          // }
          case COMMAND_DEL_CONTAINER: {
-            String containerName = words[1];
+            String containerName = parameters.get(0);
             boolean result = _workHelper.delContainer(containerName);
             _logger.outputf("Result of deleting container: %s\n", result);
             break;
@@ -420,7 +421,7 @@ public class Client {
                break;
             }
 
-            String envName = words[1];
+            String envName = parameters.get(0);
             boolean result = _workHelper.delEnvironment(_currContainerName,
                   _currTestrigName, envName);
             _logger.outputf("Result of deleting environment: %s\n", result);
@@ -431,7 +432,7 @@ public class Client {
                break;
             }
 
-            String qName = words[1];
+            String qName = parameters.get(0);
             boolean result = _workHelper.delQuestion(_currContainerName,
                   _currTestrigName, qName);
             _logger.outputf("Result of deleting question: %s\n", result);
@@ -442,14 +443,14 @@ public class Client {
                break;
             }
 
-            String testrigName = words[1];
+            String testrigName = parameters.get(0);
             boolean result = _workHelper.delTestrig(_currContainerName,
                   testrigName);
             _logger.outputf("Result of deleting testrig: %s\n", result);
             break;
          }
          case COMMAND_DIR: {
-            String dirname = (words.length == 2) ? words[1] : ".";
+            String dirname = (parameters.size() == 1) ? parameters.get(0) : ".";
 
             File currDirectory = new File(dirname);
             for (File file : currDirectory.listFiles()) {
@@ -458,54 +459,11 @@ public class Client {
             break;
          }
          case COMMAND_GEN_DP: {
-            if (!isSetContainer() || !isSetTestrig()) {
-               break;
-            }
-
-            // generate the data plane
-            WorkItem wItemGenDp = _workHelper.getWorkItemGenerateDataPlane(
-                  _currContainerName, _currTestrigName, _currEnv);
-            boolean resultGenDp = execute(wItemGenDp);
-
-            if (!resultGenDp) {
-               break;
-            }
-
-            // get the data plane
-            WorkItem wItemGetDp = _workHelper.getWorkItemGetDataPlane(
-                  _currContainerName, _currTestrigName, _currEnv);
-            boolean resultGetDp = execute(wItemGetDp);
-
-            if (!resultGetDp) {
-               break;
-            }
-
+            generateDataplane();
             break;
          }
          case COMMAND_GEN_DIFF_DP: {
-            if (!isSetContainer() || !isSetTestrig() || !isSetDiffEnvironment()) {
-               break;
-            }
-
-            // generate the data plane
-            WorkItem wItemGenDdp = _workHelper
-                  .getWorkItemGenerateDiffDataPlane(_currContainerName,
-                        _currTestrigName, _currEnv, _currDiffEnv);
-            boolean resultGenDdp = execute(wItemGenDdp);
-
-            if (!resultGenDdp) {
-               break;
-            }
-
-            // get the data plane
-            WorkItem wItemGetDdp = _workHelper.getWorkItemGetDiffDataPlane(
-                  _currContainerName, _currTestrigName, _currEnv, _currDiffEnv);
-            boolean resultGetDdp = execute(wItemGetDdp);
-
-            if (!resultGetDdp) {
-               break;
-            }
-
+            generateDiffDataplane();
             break;
          }
          case COMMAND_HELP: {
@@ -513,117 +471,101 @@ public class Client {
             break;
          }
          case COMMAND_INIT_CONTAINER: {
-            String containerPrefix = words[1];
+            String containerPrefix = (words.length > 1) ? words[1]
+                  : DEFAULT_CONTAINER_PREFIX;
             _currContainerName = _workHelper.initContainer(containerPrefix);
-            _logger.outputf("Init'ed and set active container to %s\n",
-                  _currContainerName);
+            _logger.outputf("Active container set to %s\n", _currContainerName);
             break;
          }
          case COMMAND_INIT_DIFF_ENV: {
-            if (!isSetContainer() || !isSetTestrig()) {
+            if (!isSetContainer() || 
+                !isSetTestrig())
                break;
+
+            //check if we are being asked to not generate the dataplane
+            boolean generateDiffDataplane = true;
+            
+            if (options.size() == 1) {
+               if (options.get(0).equals("-nodataplane"))
+                  generateDiffDataplane = false;
+               else {
+                  _logger.outputf("Unknown option %s\n", options.get(0));
+                  break;
+               }
             }
 
-            String diffEnvName = words[1];
-            String diffEnvLocation = words[2];
+            String diffEnvLocation = parameters.get(0);
+            String diffEnvName = (parameters.size() > 1) ? parameters.get(1)
+                  : DEFAULT_DIFF_ENV_PREFIX + UUID.randomUUID().toString();
 
-            File envFilePointer = new File(diffEnvLocation);
-
-            String uploadFilename = diffEnvLocation;
-
-            if (envFilePointer.isDirectory()) {
-               uploadFilename = File.createTempFile("diffenv", "zip")
-                     .getAbsolutePath();
-               ZipUtility.zipFiles(envFilePointer.getAbsolutePath(),
-                     uploadFilename);
-            }
-
-            // upload the environment
-            boolean resultUpload = _workHelper.uploadEnvironment(
-                  _currContainerName, _currTestrigName, diffEnvName,
-                  uploadFilename);
-
-            // unequal means we must have created a temporary file
-            if (uploadFilename != diffEnvLocation) {
-               new File(uploadFilename).delete();
-            }
-
-            if (resultUpload) {
-               _logger.output("Successfully uploaded environment.\n");
-            }
-            else {
+            if (!uploadTestrigOrEnv(diffEnvLocation, diffEnvName, false))
                break;
-            }
-
+            
             _currDiffEnv = diffEnvName;
 
             _logger.outputf(
-                  "Active differential environment is now set to %s\n",
-                  _currDiffEnv);
+                  "Active delta environment is now %s\n", _currDiffEnv);
+
+            if (generateDiffDataplane) {
+               _logger.output("Generating delta dataplane\n");
+               
+               if (!generateDiffDataplane())
+                  break;
+
+               _logger.output("Generated delta dataplane\n");
+            }
 
             break;
          }
          case COMMAND_INIT_TESTRIG: {
+            boolean generateDataplane = true;
+            
+            if (options.size() == 1) {
+               if (options.get(0).equals("-nodataplane"))
+                  generateDataplane = false;
+               else {
+                  _logger.outputf("Unknown option %s\n", options.get(0));
+                  break;
+               }
+            }
+
+            String testrigLocation = parameters.get(0);
+            String testrigName = (parameters.size() > 1) ? parameters.get(1)
+                  : DEFAULT_TESTRIG_NAME;
+
+            //initialize the container if it hasn't been init'd before
             if (!isSetContainer()) {
-               break;
-            }
+               _currContainerName = _workHelper.initContainer(DEFAULT_CONTAINER_PREFIX);
+               _logger.outputf("Init'ed and set active container to %s\n",
+                     _currContainerName);
+            }                  
+               
+            if (!uploadTestrigOrEnv(testrigLocation, testrigName, true)) 
+               break; 
 
-            String testrigName = words[1];
-            String testrigLocation = words[2];
-
-            File testrigFilePointer = new File(testrigLocation);
-
-            String uploadFilename = testrigLocation;
-
-            if (testrigFilePointer.isDirectory()) {
-               uploadFilename = File.createTempFile("testrig", "zip")
-                     .getAbsolutePath();
-               ZipUtility.zipFiles(testrigFilePointer.getAbsolutePath(),
-                     uploadFilename);
-            }
-
-            // upload the testrig
-            boolean resultUpload = _workHelper.uploadTestrig(
-                  _currContainerName, testrigName, uploadFilename);
-
-            // unequal means we must have created a temporary file
-            if (uploadFilename != testrigLocation) {
-               new File(uploadFilename).delete();
-            }
-
-            if (resultUpload) {
-               _logger
-                     .output("Successfully uploaded testrig. Starting parsing\n");
-            }
-            else {
-               break;
-            }
-
-            // vendor specific parsing
-            WorkItem wItemPvs = _workHelper.getWorkItemParseVendorSpecific(
+            _logger.output("Uploaded testrig. Parsing now.\n");
+            
+            WorkItem wItemParse = _workHelper.getWorkItemParse(
                   _currContainerName, testrigName);
-            boolean resultPvs = execute(wItemPvs);
 
-            if (!resultPvs) {
+            if (!execute(wItemParse)) 
                break;
-            }
-
-            // vendor independent parsing
-            WorkItem wItemPvi = _workHelper.getWorkItemParseVendorIndependent(
-                  _currContainerName, testrigName);
-            boolean resultPvi = execute(wItemPvi);
-
-            if (!resultPvi) {
-               break;
-            }
-
+            
             // set the name of the current testrig
             _currTestrigName = testrigName;
-            _currEnv = "default";
+            _currEnv = DEFAULT_ENV_NAME;
             _logger.outputf(
-                  "Active (testrig, environment) is now set to (%s, %s)\n",
-                  _currTestrigName, _currEnv);
+                  "Active testrig is now %s\n", _currTestrigName);
 
+            if (generateDataplane) {
+               _logger.output("Generating dataplane now\n");
+               
+               if (!generateDataplane())
+                  break;
+
+               _logger.output("Generated dataplane\n");
+            }
+            
             break;
          }
          case COMMAND_LIST_CONTAINERS: {
@@ -667,28 +609,27 @@ public class Client {
             break;
          }
          case COMMAND_SET_CONTAINER: {
-            _currContainerName = words[1];
+            _currContainerName = parameters.get(0);
             _logger.outputf("Active container is now set to %s\n",
                   _currContainerName);
             break;
          }
          case COMMAND_SET_TESTRIG: {
-            _currTestrigName = words[1];
-            _currEnv = "default";
+            _currTestrigName = parameters.get(0);
+            _currEnv = DEFAULT_ENV_NAME;
             _logger.outputf(
-                  "Active (testrig, environment) is now set to (%s, %s)\n",
-                  _currTestrigName, _currEnv);
+                  "Active testrig is now %s\n", _currTestrigName);
             break;
          }
          case COMMAND_SET_DIFF_ENV: {
-            _currDiffEnv = words[1];
+            _currDiffEnv = parameters.get(0);
             _logger.outputf(
                   "Active differential environment is now set to %s\n",
                   _currDiffEnv);
             break;
          }
          case COMMAND_SET_LOGLEVEL: {
-            String logLevelStr = words[1];
+            String logLevelStr = parameters.get(0);
             try {
                _logger.setLogLevel(logLevelStr);
                _logger.output("Changed loglevel to " + logLevelStr + "\n");
@@ -703,11 +644,11 @@ public class Client {
                break;
             }
 
-            String objectName = words[1];
-            String objectFile = words[2];
+            String objectName = parameters.get(0);
+            String objectFile = parameters.get(1);
 
             // upload the object
-            boolean resultUpload = _workHelper.uploadCustomObject(
+            _workHelper.uploadCustomObject(
                   _currContainerName, _currTestrigName, objectName, objectFile);
 
             break;
@@ -722,15 +663,90 @@ public class Client {
       }
    }
 
+   private boolean uploadTestrigOrEnv(String fileOrDir, String testrigOrEnvName, boolean isTestrig) throws Exception {
+
+      File filePointer = new File(fileOrDir);
+
+      String uploadFilename = fileOrDir;
+
+      if (filePointer.isDirectory()) {
+         uploadFilename = File.createTempFile("testrigOrEnv", "zip")
+               .getAbsolutePath();
+         ZipUtility.zipFiles(filePointer.getAbsolutePath(),
+               uploadFilename);
+      }
+
+      boolean result = (isTestrig)?
+              _workHelper.uploadTestrig(
+                    _currContainerName, testrigOrEnvName, uploadFilename):
+              _workHelper.uploadEnvironment(
+                          _currContainerName, _currTestrigName, testrigOrEnvName,
+                          uploadFilename);
+
+      // unequal means we must have created a temporary file
+      if (uploadFilename != fileOrDir)
+         new File(uploadFilename).delete();
+      
+      return result;
+   }
+
+   private List<String> getCommandParameters(String[] words, int numOptions) {
+      List<String> parameters = new LinkedList<String>();
+      
+      for (int index=numOptions+1; index < words.length; index++)
+         parameters.add(words[index]);
+
+      return parameters;
+   }
+
+   private List<String> getCommandOptions(String[] words) {
+      List<String> options = new LinkedList<String>();
+      
+      int currIndex = 1;
+      
+      while (currIndex < words.length &&
+            words[currIndex].startsWith("-")) {
+         options.add(words[currIndex]);
+         currIndex++;
+      }
+      
+      return options;
+   }
+
+   private boolean generateDataplane() throws Exception {
+      if (!isSetContainer() || 
+          !isSetTestrig())
+         return false;
+
+      // generate the data plane
+      WorkItem wItemGenDp = _workHelper.getWorkItemGenerateDataPlane(
+            _currContainerName, _currTestrigName, _currEnv);
+
+      return execute(wItemGenDp);
+   }
+
+   private boolean generateDiffDataplane() throws Exception {
+      if (!isSetContainer() || 
+          !isSetTestrig()   || 
+          !isSetDiffEnvironment())
+          return false;
+
+      WorkItem wItemGenDdp = _workHelper
+            .getWorkItemGenerateDiffDataPlane(_currContainerName,
+                  _currTestrigName, _currEnv, _currDiffEnv);
+
+      return execute(wItemGenDdp);
+   }
+
    private void RunBatchMode() {
 
       _logger = new BatfishLogger(_settings.getLogLevel(), false,
             _settings.getLogFile(), false, false);
 
-      String workMgr = _settings.getServiceHost() + ":"
-            + _settings.getServiceWorkPort();
-      String poolMgr = _settings.getServiceHost() + ":"
-            + _settings.getServicePoolPort();
+      String workMgr = _settings.getCoordinatorHost() + ":"
+            + _settings.getCoordinatorWorkPort();
+      String poolMgr = _settings.getCoordinatorHost() + ":"
+            + _settings.getCoordinatorPoolPort();
 
       _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings);
       _poolHelper = new BfCoordPoolHelper(poolMgr);
@@ -782,10 +798,14 @@ public class Client {
          PrintStream ps = new PrintStream(os, true);
          _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
 
-         String workMgr = _settings.getServiceHost() + ":"
-               + _settings.getServiceWorkPort();
-         String poolMgr = _settings.getServiceHost() + ":"
-               + _settings.getServicePoolPort();
+         _logger.outputf("Will use coordinator at %s://%s\n", 
+               (_settings.getUseSsl())? "https" : "http",               
+               _settings.getCoordinatorHost());
+         
+         String workMgr = _settings.getCoordinatorHost() + ":"
+               + _settings.getCoordinatorWorkPort();
+         String poolMgr = _settings.getCoordinatorHost() + ":"
+               + _settings.getCoordinatorPoolPort();
 
          _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings);
          _poolHelper = new BfCoordPoolHelper(poolMgr);

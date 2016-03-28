@@ -1,5 +1,7 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.representation.Prefix;
+
 public abstract class LeafBgpPeerGroup extends BgpPeerGroup {
 
    /**
@@ -14,6 +16,8 @@ public abstract class LeafBgpPeerGroup extends BgpPeerGroup {
    public String getGroupName() {
       return _groupName;
    }
+
+   public abstract Prefix getNeighborPrefix();
 
    public String getPeerTemplateName() {
       return _peerTemplateName;

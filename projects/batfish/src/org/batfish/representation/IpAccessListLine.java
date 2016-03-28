@@ -19,6 +19,10 @@ public final class IpAccessListLine implements Serializable {
 
    private List<SubRange> _dstPortRanges;
 
+   private int _icmpCode;
+
+   private int _icmpType;
+
    private String _invalidMessage;
 
    private Set<IpProtocol> _protocols;
@@ -27,12 +31,17 @@ public final class IpAccessListLine implements Serializable {
 
    private List<SubRange> _srcPortRanges;
 
+   private int _tcpFlags;
+
    public IpAccessListLine() {
       _protocols = EnumSet.noneOf(IpProtocol.class);
       _dstIpRanges = new TreeSet<Prefix>();
       _dstPortRanges = new ArrayList<SubRange>();
       _srcIpRanges = new TreeSet<Prefix>();
       _srcPortRanges = new ArrayList<SubRange>();
+      _icmpType = IcmpType.UNSET;
+      _icmpCode = IcmpCode.UNSET;
+      _tcpFlags = TcpFlags.UNSET;
    }
 
    public LineAction getAction() {
@@ -45,6 +54,14 @@ public final class IpAccessListLine implements Serializable {
 
    public List<SubRange> getDstPortRanges() {
       return _dstPortRanges;
+   }
+
+   public int getIcmpCode() {
+      return _icmpCode;
+   }
+
+   public int getIcmpType() {
+      return _icmpType;
    }
 
    public String getInvalidMessage() {
@@ -63,12 +80,28 @@ public final class IpAccessListLine implements Serializable {
       return _srcPortRanges;
    }
 
+   public int getTcpFlags() {
+      return _tcpFlags;
+   }
+
    public void setAction(LineAction action) {
       _action = action;
    }
 
+   public void setIcmpCode(int icmpCode) {
+      _icmpCode = icmpCode;
+   }
+
+   public void setIcmpType(int icmpType) {
+      _icmpType = icmpType;
+   }
+
    public void setInvalidMessage(String invalidMessage) {
       _invalidMessage = invalidMessage;
+   }
+
+   public void setTcpFlags(int tcpFlags) {
+      _tcpFlags = tcpFlags;
    }
 
    @Override
@@ -76,7 +109,8 @@ public final class IpAccessListLine implements Serializable {
       return "[Action:" + _action + ", Protocols:" + _protocols.toString()
             + ", SourceIpRanges:" + _srcIpRanges + ", DestinationIpRanges:"
             + _dstIpRanges + ", SrcPortRanges:" + _srcPortRanges
-            + ", DstPortRanges:" + _dstPortRanges + "]";
+            + ", DstPortRanges:" + _dstPortRanges + ", IcmpType:" + _icmpType
+            + ", IcmpCode:" + _icmpCode + ", TcpFlags:" + _tcpFlags + "]";
    }
 
 }

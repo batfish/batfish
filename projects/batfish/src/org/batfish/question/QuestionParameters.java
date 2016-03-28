@@ -87,6 +87,12 @@ public class QuestionParameters {
       return (String) _store.get(var);
    }
 
+   @SuppressWarnings("unchecked")
+   public Set<String> getStringSet(String var) {
+      confirmTypeBinding(var, VariableType.SET_STRING);
+      return (Set<String>) _store.get(var);
+   }
+
    public Map<String, VariableType> getTypeBindings() {
       return _typeBindings;
    }

@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import org.batfish.representation.Ip;
+import org.batfish.representation.Prefix;
 
 public class IpBgpPeerGroup extends LeafBgpPeerGroup {
 
@@ -19,6 +20,11 @@ public class IpBgpPeerGroup extends LeafBgpPeerGroup {
    @Override
    public String getName() {
       return _ip.toString();
+   }
+
+   @Override
+   public Prefix getNeighborPrefix() {
+      return new Prefix(_ip, 32);
    }
 
 }

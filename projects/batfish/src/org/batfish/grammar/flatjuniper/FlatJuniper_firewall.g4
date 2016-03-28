@@ -141,7 +141,7 @@ fwfromt_source_port
 
 fwfromt_source_prefix_list
 :
-   SOURCE_PREFIX_LIST variable
+   SOURCE_PREFIX_LIST name = variable
 ;
 
 fwfromt_tcp_established

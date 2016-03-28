@@ -64,6 +64,7 @@ import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.FwFromHostProtocol;
 import org.batfish.representation.juniper.FwFromHostService;
+import org.batfish.representation.juniper.FwFromSourcePrefixList;
 import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
 import org.batfish.representation.juniper.IpsecVpn;
@@ -73,6 +74,7 @@ import org.batfish.representation.juniper.IsisSettings;
 import org.batfish.representation.juniper.JuniperVendorConfiguration;
 import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.NamedBgpGroup;
+import org.batfish.representation.juniper.NodeDevice;
 import org.batfish.representation.juniper.OspfArea;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
@@ -1472,7 +1474,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Map<String, Interface> interfaces = _currentRoutingInstance
             .getInterfaces();
       String unitFullName = null;
-      if (ctx.ip != null) {
+      if (ctx.ALL() != null) {
+         _currentOspfInterface = _currentRoutingInstance
+               .getGlobalMasterInterface();
+      }
+      else if (ctx.ip != null) {
          Ip ip = new Ip(ctx.ip.getText());
          for (Interface iface : interfaces.values()) {
             for (Interface unit : iface.getUnits().values()) {
@@ -1664,12 +1670,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       else {
          String ifaceName = ctx.name.getText();
-         Map<String, Interface> interfaces = _currentRoutingInstance
-               .getInterfaces();
+         Map<String, Interface> interfaces;
+         String nodeDevicePrefix = "";
+         if (ctx.node == null) {
+            interfaces = _currentRoutingInstance.getInterfaces();
+         }
+         else {
+            String nodeDeviceName = ctx.node.getText();
+            nodeDevicePrefix = nodeDeviceName + ":";
+            NodeDevice nodeDevice = _currentRoutingInstance.getNodeDevices()
+                  .get(nodeDeviceName);
+            if (nodeDevice == null) {
+               nodeDevice = new NodeDevice(nodeDeviceName);
+               _currentRoutingInstance.getNodeDevices().put(nodeDeviceName,
+                     nodeDevice);
+            }
+            interfaces = nodeDevice.getInterfaces();
+         }
          _currentInterface = interfaces.get(ifaceName);
          if (_currentInterface == null) {
-            _currentInterface = new Interface(ifaceName);
-            interfaces.put(ifaceName, _currentInterface);
+            String fullIfaceName = nodeDevicePrefix + ifaceName;
+            _currentInterface = new Interface(fullIfaceName);
+            interfaces.put(fullIfaceName, _currentInterface);
          }
       }
       _currentMasterInterface = _currentInterface;
@@ -2406,6 +2428,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitFwfromt_source_prefix_list(
+         Fwfromt_source_prefix_listContext ctx) {
+      String name = ctx.name.getText();
+      FwFrom from = new FwFromSourcePrefixList(name);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
    public void exitFwft_term(Fwft_termContext ctx) {
       _currentFwTerm = null;
    }
@@ -2531,6 +2561,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitIkegt_ike_policy(Ikegt_ike_policyContext ctx) {
       String name = ctx.name.getText();
       _currentIkeGateway.setIkePolicy(name);
+   }
+
+   @Override
+   public void exitIkegt_local_address(Ikegt_local_addressContext ctx) {
+      Ip ip = new Ip(ctx.IP_ADDRESS().getText());
+      _currentIkeGateway.setLocalAddress(ip);
    }
 
    @Override
@@ -2906,6 +2942,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitSect_zones(Sect_zonesContext ctx) {
+      _configuration.setDefaultCrossZoneAction(LineAction.REJECT);
+   }
+
+   @Override
    public void exitSpmt_application(Spmt_applicationContext ctx) {
       if (ctx.ANY() != null) {
          return;
@@ -3005,9 +3046,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitSpt_policy(Spt_policyContext ctx) {
-      if (_currentFwTerm.getIpv6()) {
-         _currentFilter.getTerms().remove(_currentFwTerm.getName());
-      }
       _currentFwTerm = null;
    }
 
@@ -3032,6 +3070,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitSrt_discard(Srt_discardContext ctx) {
       _currentStaticRoute.setDrop(true);
+   }
+
+   @Override
+   public void exitSrt_metric(Srt_metricContext ctx) {
+      int metric = toInt(ctx.metric);
+      _currentStaticRoute.setMetric(metric);
    }
 
    @Override
@@ -3174,8 +3218,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    private Interface initInterface(Interface_idContext id) {
-      Map<String, Interface> interfaces = _currentRoutingInstance
-            .getInterfaces();
+      Map<String, Interface> interfaces;
+      if (id.node != null) {
+         String nodeDeviceName = id.node.getText();
+         NodeDevice nodeDevice = _currentRoutingInstance.getNodeDevices().get(
+               nodeDeviceName);
+         if (nodeDevice == null) {
+            nodeDevice = new NodeDevice(nodeDeviceName);
+            _currentRoutingInstance.getNodeDevices().put(nodeDeviceName,
+                  nodeDevice);
+         }
+         interfaces = nodeDevice.getInterfaces();
+      }
+      else {
+         interfaces = _currentRoutingInstance.getInterfaces();
+      }
       String name = id.name.getText();
       String unit = null;
       if (id.unit != null) {

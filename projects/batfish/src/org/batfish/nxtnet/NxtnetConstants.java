@@ -68,10 +68,13 @@ public class NxtnetConstants {
             "SetIpAccessListLine_deny",
             "SetIpAccessListLine_dstIpRange",
             "SetIpAccessListLine_dstPortRange",
+            "SetIpAccessListLine_icmpCode",
+            "SetIpAccessListLine_icmpType",
             "SetIpAccessListLine_permit",
             "SetIpAccessListLine_protocol",
             "SetIpAccessListLine_srcIpRange",
             "SetIpAccessListLine_srcPortRange",
+            "SetIpAccessListLine_tcpFlags",
             "SetIpInt",
             "SetIsisArea",
             "SetIsisGeneratedRoute_flat",
@@ -188,6 +191,11 @@ public class NxtnetConstants {
             "BgpAdvertisement_srcNode",
             "BgpAdvertisement_srcProtocol",
             "BgpAdvertisement_type",
+            // BEGIN DEBUG SYMBOLS
+            "BgpNeighbors",
+            "PolicyMapDenyAdvert",
+            "PolicyMapPermitAdvert",
+            // END DEBUG SYMBOLS
             "FibForwardPolicyRouteNextHopIp",
             "FibNetwork",
             "InstalledRoute",
@@ -236,10 +244,13 @@ public class NxtnetConstants {
             "SetIpAccessListLine_deny",
             "SetIpAccessListLine_dstIpRange",
             "SetIpAccessListLine_dstPortRange",
+            "SetIpAccessListLine_icmpCode",
+            "SetIpAccessListLine_icmpType",
             "SetIpAccessListLine_permit",
             "SetIpAccessListLine_protocol",
             "SetIpAccessListLine_srcIpRange",
             "SetIpAccessListLine_srcPortRange",
+            "SetIpAccessListLine_tcpFlags",
             "SetIpInt",
             "SetLinkLoadLimitIn",
             "SetLinkLoadLimitOut",
@@ -300,10 +311,13 @@ public class NxtnetConstants {
       String[] facts = new String[] {
             "Flow_dstIp",
             "Flow_dstPort",
+            "Flow_icmpCode",
+            "Flow_icmpType",
             "Flow_ipProtocol",
             "Flow_node",
             "Flow_srcIp",
             "Flow_srcPort",
+            "Flow_tcpFlags",
             "Flow_tag" };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
@@ -314,10 +328,13 @@ public class NxtnetConstants {
       String[] facts = new String[] {
             "Flow_dstIp",
             "Flow_dstPort",
+            "Flow_icmpCode",
+            "Flow_icmpType",
             "Flow_ipProtocol",
             "Flow_node",
             "Flow_srcIp",
             "Flow_srcPort",
+            "Flow_tcpFlags",
             "Flow_tag",
             // BEGIN DEBUG SYMBOLS
             "FlowAccepted",

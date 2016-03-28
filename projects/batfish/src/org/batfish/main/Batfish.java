@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Set;
@@ -88,6 +89,8 @@ import org.batfish.grammar.topology.GNS3TopologyExtractor;
 import org.batfish.grammar.topology.RoleCombinedParser;
 import org.batfish.grammar.topology.RoleExtractor;
 import org.batfish.grammar.topology.TopologyExtractor;
+import org.batfish.grammar.vyos.VyosCombinedParser;
+import org.batfish.grammar.vyos.VyosFlattener;
 import org.batfish.job.BatfishJobExecutor;
 import org.batfish.job.ConvertConfigurationJob;
 import org.batfish.job.ConvertConfigurationResult;
@@ -110,7 +113,8 @@ import org.batfish.nxtnet.TopologyFactExtractor;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
 import org.batfish.question.AclReachabilityQuestion;
 import org.batfish.question.DestinationQuestion;
-import org.batfish.question.FailureQuestion;
+import org.batfish.question.Environment;
+import org.batfish.question.ReducedReachabilityQuestion;
 import org.batfish.question.IngressPathQuestion;
 import org.batfish.question.LocalPathQuestion;
 import org.batfish.question.MultipathQuestion;
@@ -130,11 +134,15 @@ import org.batfish.representation.Configuration;
 import org.batfish.representation.DataPlane;
 import org.batfish.representation.Edge;
 import org.batfish.representation.Flow;
+import org.batfish.representation.FlowBuilder;
 import org.batfish.representation.FlowHistory;
 import org.batfish.representation.FlowTrace;
+import org.batfish.representation.GenericConfigObject;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
+import org.batfish.representation.IpAccessListLine;
+import org.batfish.representation.IpsecVpn;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.OspfArea;
 import org.batfish.representation.OspfProcess;
@@ -148,6 +156,7 @@ import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.Topology;
 import org.batfish.representation.VendorConfiguration;
+import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.util.StringFilter;
 import org.batfish.util.SubRange;
 import org.batfish.util.UrlZipExplorer;
@@ -206,8 +215,8 @@ public class Batfish implements AutoCloseable {
    private static final String INSTALLED_ROUTE_PREDICATE_NAME = "InstalledRoute";
 
    /**
-    * A byte-array containing the first 4 bytes comprising the header for a file
-    * that is the output of java serialization
+    * A byte-array containing the first 4 bytes of the header for a file that is
+    * the output of java serialization
     */
    private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = {
          (byte) 0xac,
@@ -257,15 +266,175 @@ public class Batfish implements AutoCloseable {
     */
    private static final String TOPOLOGY_FILENAME = "topology.net";
 
+   public static void applyAutoBaseDir(final Settings settings) {
+      String baseDir = settings.getAutoBaseDir();
+      if (baseDir != null) {
+         EnvironmentSettings envSettings = settings
+               .getBaseEnvironmentSettings();
+         EnvironmentSettings diffEnvSettings = settings
+               .getDiffEnvironmentSettings();
+         settings.setSerializeIndependentPath(Paths.get(baseDir,
+               BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR).toString());
+         settings.setSerializeVendorPath(Paths.get(baseDir,
+               BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR).toString());
+         settings.setTestRigPath(Paths.get(baseDir,
+               BfConsts.RELPATH_TEST_RIG_DIR).toString());
+         settings.setProtocolDependencyGraphPath(Paths.get(baseDir,
+               BfConsts.RELPATH_PROTOCOL_DEPENDENCY_GRAPH).toString());
+         String envName = settings.getEnvironmentName();
+         if (envName != null) {
+            envSettings.setName(envName);
+            Path envPath = Paths.get(baseDir,
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR, envName);
+            envSettings.setControlPlaneFactsDir(envPath.resolve(
+                  BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString());
+            envSettings.setNxtnetDataPlaneInputFile(envPath.resolve(
+                  BfConsts.RELPATH_NXTNET_INPUT_FILE).toString());
+            envSettings.setNxtnetDataPlaneOutputDir(envPath.resolve(
+                  BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
+            envSettings.setDataPlanePath(envPath.resolve(
+                  BfConsts.RELPATH_DATA_PLANE_DIR).toString());
+            settings.setZ3DataPlaneFile(envPath.resolve(
+                  BfConsts.RELPATH_Z3_DATA_PLANE_FILE).toString());
+            Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
+            envSettings.setEnvPath(envDirPath.toString());
+            envSettings.setNodeBlacklistPath(envDirPath.resolve(
+                  BfConsts.RELPATH_NODE_BLACKLIST_FILE).toString());
+            envSettings.setInterfaceBlacklistPath(envDirPath.resolve(
+                  BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE).toString());
+            envSettings.setEdgeBlacklistPath(envDirPath.resolve(
+                  BfConsts.RELPATH_EDGE_BLACKLIST_FILE).toString());
+            envSettings.setSerializedTopologyPath(envDirPath.resolve(
+                  BfConsts.RELPATH_TOPOLOGY_FILE).toString());
+            envSettings.setDeltaConfigurationsDir(envDirPath.resolve(
+                  BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
+            envSettings.setPrecomputedRoutesPath(envPath.resolve(
+                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
+         }
+         String diffEnvName = settings.getDiffEnvironmentName();
+         if (diffEnvName != null) {
+            diffEnvSettings.setName(diffEnvName);
+            Path diffEnvPath = Paths.get(baseDir,
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR, diffEnvName);
+            diffEnvSettings.setControlPlaneFactsDir(diffEnvPath.resolve(
+                  BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR).toString());
+            diffEnvSettings.setNxtnetDataPlaneInputFile(diffEnvPath.resolve(
+                  BfConsts.RELPATH_NXTNET_INPUT_FILE).toString());
+            diffEnvSettings.setNxtnetDataPlaneOutputDir(diffEnvPath.resolve(
+                  BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString());
+            diffEnvSettings.setDataPlanePath(diffEnvPath.resolve(
+                  BfConsts.RELPATH_DATA_PLANE_DIR).toString());
+            Path diffEnvDirPath = diffEnvPath.resolve(BfConsts.RELPATH_ENV_DIR);
+            diffEnvSettings.setEnvPath(diffEnvDirPath.toString());
+            diffEnvSettings.setNodeBlacklistPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_NODE_BLACKLIST_FILE).toString());
+            diffEnvSettings.setInterfaceBlacklistPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE).toString());
+            diffEnvSettings.setEdgeBlacklistPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_EDGE_BLACKLIST_FILE).toString());
+            diffEnvSettings.setSerializedTopologyPath(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_TOPOLOGY_FILE).toString());
+            diffEnvSettings.setDeltaConfigurationsDir(diffEnvDirPath.resolve(
+                  BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
+            diffEnvSettings.setPrecomputedRoutesPath(diffEnvPath.resolve(
+                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
+            if (settings.getDiffActive()) {
+               settings.setActiveEnvironmentSettings(diffEnvSettings);
+            }
+         }
+         String outputEnvName = settings.getOutputEnvironmentName();
+         if (outputEnvName != null) {
+            Path outputEnvPath = Paths.get(baseDir,
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR, outputEnvName);
+            envSettings.setPrecomputedRoutesPath(outputEnvPath.resolve(
+                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
+         }
+         String questionName = settings.getQuestionName();
+         if (questionName != null) {
+            Path questionPath = Paths.get(baseDir,
+                  BfConsts.RELPATH_QUESTIONS_DIR, questionName);
+            settings.setQuestionPath(questionPath.resolve(
+                  BfConsts.RELPATH_QUESTION_FILE).toString());
+            settings.setQuestionParametersPath(questionPath.resolve(
+                  BfConsts.RELPATH_QUESTION_PARAM_FILE).toString());
+            if (diffEnvName != null) {
+               diffEnvSettings.setTrafficFactDumpDir(questionPath
+                     .resolve(
+                           Paths.get(BfConsts.RELPATH_DIFF, envName,
+                                 diffEnvName,
+                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
+                                 .toString()).toString());
+               diffEnvSettings.setNxtnetTrafficInputFile(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,
+                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
+                     .toString());
+               diffEnvSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_DIFF, envName, diffEnvName,
+                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
+                     .toString());
+               envSettings.setTrafficFactDumpDir(questionPath
+                     .resolve(
+                           Paths.get(BfConsts.RELPATH_BASE, envName,
+                                 diffEnvName,
+                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
+                                 .toString()).toString());
+               envSettings.setNxtnetTrafficInputFile(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName, diffEnvName,
+                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
+                     .toString());
+               envSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName, diffEnvName,
+                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
+                     .toString());
+            }
+            else {
+               envSettings.setTrafficFactDumpDir(questionPath
+                     .resolve(
+                           Paths.get(BfConsts.RELPATH_BASE, envName,
+                                 BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)
+                                 .toString()).toString());
+               envSettings.setNxtnetTrafficInputFile(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName,
+                           BfConsts.RELPATH_NXTNET_INPUT_FILE).toString())
+                     .toString());
+               envSettings.setNxtnetTrafficOutputDir(questionPath.resolve(
+                     Paths.get(BfConsts.RELPATH_BASE, envName,
+                           BfConsts.RELPATH_NXTNET_OUTPUT_DIR).toString())
+                     .toString());
+            }
+         }
+      }
+   }
+
    public static String flatten(String input, BatfishLogger logger,
-         Settings settings) {
-      JuniperCombinedParser jparser = new JuniperCombinedParser(input,
-            settings.getThrowOnParserError(), settings.getThrowOnLexerError());
-      ParserRuleContext jtree = parse(jparser, logger, settings);
-      JuniperFlattener flattener = new JuniperFlattener();
-      ParseTreeWalker walker = new ParseTreeWalker();
-      walker.walk(flattener, jtree);
-      return flattener.getFlattenedConfigurationText();
+         Settings settings, ConfigurationFormat format, String header) {
+      switch (format) {
+      case JUNIPER: {
+         JuniperCombinedParser parser = new JuniperCombinedParser(input,
+               settings.getThrowOnParserError(),
+               settings.getThrowOnLexerError());
+         ParserRuleContext tree = parse(parser, logger, settings);
+         JuniperFlattener flattener = new JuniperFlattener(header);
+         ParseTreeWalker walker = new ParseTreeWalker();
+         walker.walk(flattener, tree);
+         return flattener.getFlattenedConfigurationText();
+      }
+
+      case VYOS: {
+         VyosCombinedParser parser = new VyosCombinedParser(input,
+               settings.getThrowOnParserError(),
+               settings.getThrowOnLexerError());
+         ParserRuleContext tree = parse(parser, logger, settings);
+         VyosFlattener flattener = new VyosFlattener(header);
+         ParseTreeWalker walker = new ParseTreeWalker();
+         walker.walk(flattener, tree);
+         return flattener.getFlattenedConfigurationText();
+      }
+
+      // $CASES-OMITTED$
+      default:
+         throw new BatfishException("Invalid format for flattening");
+      }
    }
 
    private static void initControlPlaneFactBins(
@@ -368,9 +537,18 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answer() {
-      boolean dp = false;
-      boolean diff = false;
       Question question = parseQuestion();
+      boolean dp = question.getDataPlane();
+      boolean diff = question.getDifferential();
+      boolean diffActive = (question.getDiffActive() || _settings
+            .getDiffActive()) && !diff;
+      _settings.setDiffActive(diffActive);
+      _settings.setDiffQuestion(diff);
+      if (!dp) {
+         _settings.setNxtnetTraffic(false);
+         _settings.setHistory(false);
+      }
+      initQuestionEnvironments(question, diff, diffActive, dp);
       switch (question.getType()) {
       case ACL_REACHABILITY:
          answerAclReachability((AclReachabilityQuestion) question);
@@ -378,31 +556,18 @@ public class Batfish implements AutoCloseable {
 
       case DESTINATION:
          answerDestination((DestinationQuestion) question);
-         dp = true;
-         diff = true;
-         break;
-
-      case FAILURE:
-         answerFailure((FailureQuestion) question);
-         dp = true;
-         diff = true;
          break;
 
       case INGRESS_PATH:
          answerIngressPath((IngressPathQuestion) question);
-         dp = true;
-         diff = true;
          break;
 
       case LOCAL_PATH:
          answerLocalPath((LocalPathQuestion) question);
-         dp = true;
-         diff = true;
          break;
 
       case MULTIPATH:
          answerMultipath((MultipathQuestion) question);
-         dp = true;
          break;
 
       case PROTOCOL_DEPENDENCIES:
@@ -411,12 +576,14 @@ public class Batfish implements AutoCloseable {
 
       case REACHABILITY:
          answerReachability((ReachabilityQuestion) question);
-         dp = true;
+         break;
+
+      case REDUCED_REACHABILITY:
+         answerReducedReachability((ReducedReachabilityQuestion) question);
          break;
 
       case TRACEROUTE:
          answerTraceroute((TracerouteQuestion) question);
-         dp = true;
          break;
 
       case VERIFY:
@@ -425,11 +592,6 @@ public class Batfish implements AutoCloseable {
 
       default:
          throw new BatfishException("Unknown question type");
-      }
-      _settings.setDiffQuestion(diff);
-      if (!dp) {
-         _settings.setNxtnetTraffic(false);
-         _settings.setHistory(false);
       }
    }
 
@@ -451,6 +613,11 @@ public class Batfish implements AutoCloseable {
             }
             IpAccessList acl = e2.getValue();
             int numLines = acl.getLines().size();
+            if (numLines == 0) {
+               _logger.redflag("RED_FLAG: Acl \"" + hostname + ":" + aclName
+                     + "\" contains no lines\n");
+               continue;
+            }
             AclReachabilityQuerySynthesizer query = new AclReachabilityQuerySynthesizer(
                   hostname, aclName, numLines);
             NodSatJob<AclLine> job = new NodSatJob<AclLine>(aclSynthesizer,
@@ -469,18 +636,36 @@ public class Batfish implements AutoCloseable {
          boolean sat = e.getValue();
          String hostname = aclLine.getHostname();
          String aclName = aclLine.getAclName();
-         int line = aclLine.getLine();
          Pair<String, String> qualifiedAclName = new Pair<String, String>(
                hostname, aclName);
          allAcls.add(qualifiedAclName);
-         if (sat) {
-            _logger.outputf("%s:%s:%d is REACHABLE\n", hostname, aclName, line);
-         }
-         else {
-            _logger.outputf("%s:%s:%d is UNREACHABLE\n", hostname, aclName,
-                  line);
+         if (!sat) {
             numUnreachableLines++;
             aclsWithUnreachableLines.add(qualifiedAclName);
+         }
+      }
+      for (Entry<AclLine, Boolean> e : output.entrySet()) {
+         AclLine aclLine = e.getKey();
+         boolean sat = e.getValue();
+         String hostname = aclLine.getHostname();
+         String aclName = aclLine.getAclName();
+         Pair<String, String> qualifiedAclName = new Pair<String, String>(
+               hostname, aclName);
+         if (aclsWithUnreachableLines.contains(qualifiedAclName)) {
+            int line = aclLine.getLine();
+            if (sat) {
+               _logger.outputf("%s:%s:%d is REACHABLE\n", hostname, aclName,
+                     line);
+            }
+            else {
+               Configuration c = configurations.get(aclLine.getHostname());
+               IpAccessList acl = c.getIpAccessLists()
+                     .get(aclLine.getAclName());
+               IpAccessListLine ipAccessListLine = acl.getLines().get(line);
+               _logger.outputf("%s:%s:%d is UNREACHABLE\n\t%s\n", hostname,
+                     aclName, line, ipAccessListLine.toString());
+               aclsWithUnreachableLines.add(qualifiedAclName);
+            }
          }
       }
       for (Pair<String, String> qualfiedAcl : aclsWithUnreachableLines) {
@@ -566,81 +751,14 @@ public class Batfish implements AutoCloseable {
       checkDifferentialDataPlaneQuestionDependencies();
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
-   }
-
-   private void answerFailure(FailureQuestion question) {
-      checkDifferentialDataPlaneQuestionDependencies();
-      String tag = getDifferentialFlowTag();
-
-      // load base configurations and generate base data plane
-      Map<String, Configuration> baseConfigurations = loadConfigurations(_baseEnvSettings);
-      File baseDataPlanePath = new File(_baseEnvSettings.getDataPlanePath());
-      Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(
-            baseConfigurations, baseDataPlanePath);
-
-      // load diff configurations and generate diff data plane
-      Map<String, Configuration> diffConfigurations = loadConfigurations(_diffEnvSettings);
-      File diffDataPlanePath = new File(_diffEnvSettings.getDataPlanePath());
-      Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(
-            diffConfigurations, diffDataPlanePath);
-
-      Set<String> commonNodes = new TreeSet<String>();
-      commonNodes.addAll(baseConfigurations.keySet());
-      commonNodes.retainAll(diffConfigurations.keySet());
-
-      NodeSet blacklistNodes = getNodeBlacklist(_diffEnvSettings);
-      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(_diffEnvSettings);
-      EdgeSet blacklistEdges = getEdgeBlacklist(_diffEnvSettings);
-
-      BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
-            null, blacklistNodes, blacklistInterfaces, blacklistEdges,
-            baseConfigurations);
-
-      // compute composite program and flows
-      List<Synthesizer> synthesizers = new ArrayList<Synthesizer>();
-      synthesizers.add(baseDataPlaneSynthesizer);
-      synthesizers.add(diffDataPlaneSynthesizer);
-      synthesizers.add(baseDataPlaneSynthesizer);
-
-      List<CompositeNodJob> jobs = new ArrayList<CompositeNodJob>();
-
-      // generate base reachability and diff blackhole and blacklist queries
-      for (String node : commonNodes) {
-         ReachableQuerySynthesizer reachableQuery = new ReachableQuerySynthesizer(
-               node, null);
-         ReachableQuerySynthesizer blackHoleQuery = new ReachableQuerySynthesizer(
-               node, null);
-         blackHoleQuery.setNegate(true);
-         NodeSet nodes = new NodeSet();
-         nodes.add(node);
-         List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
-         queries.add(reachableQuery);
-         queries.add(blackHoleQuery);
-         queries.add(blacklistQuery);
-         CompositeNodJob job = new CompositeNodJob(synthesizers, queries,
-               nodes, tag);
-         jobs.add(job);
-      }
-
-      Set<Flow> flows = computeCompositeNodOutput(jobs);
-
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      initTrafficFactBins(trafficFactBins);
-      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
-      for (Flow flow : flows) {
-         wSetFlowOriginate.append(flow.toLBLine());
-         _logger.debug("Found: " + flow.toString() + "\n");
-      }
-      dumpTrafficFacts(trafficFactBins, _baseEnvSettings);
-      dumpTrafficFacts(trafficFactBins, _diffEnvSettings);
+      // method stub
    }
 
    private void answerIngressPath(IngressPathQuestion question) {
       checkDifferentialDataPlaneQuestionDependencies();
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      // method stub
    }
 
    private void answerLocalPath(LocalPathQuestion question) {
@@ -824,7 +942,8 @@ public class Batfish implements AutoCloseable {
                question.getDstPortRange(), activeFinalNodes,
                Collections.singleton(ingressNode),
                question.getIpProtocolRange(), question.getSrcPrefixes(),
-               question.getSrcPortRange());
+               question.getSrcPortRange(), question.getIcmpType(),
+               question.getIcmpCode(), question.getTcpFlags());
          NodeSet nodes = new NodeSet();
          nodes.add(ingressNode);
          NodJob job = new NodJob(dataPlaneSynthesizer, query, nodes, tag);
@@ -844,13 +963,83 @@ public class Batfish implements AutoCloseable {
       dumpTrafficFacts(trafficFactBins);
    }
 
-   private void answerTraceroute(TracerouteQuestion question) {
-      checkDataPlaneQuestionDependencies();
-      Set<Flow> flows = question.getFlows();
+   private void answerReducedReachability(ReducedReachabilityQuestion question) {
+      checkDifferentialDataPlaneQuestionDependencies();
+      String tag = getDifferentialFlowTag();
+
+      // load base configurations and generate base data plane
+      Map<String, Configuration> baseConfigurations = loadConfigurations(_baseEnvSettings);
+      File baseDataPlanePath = new File(_baseEnvSettings.getDataPlanePath());
+      Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(
+            baseConfigurations, baseDataPlanePath);
+
+      // load diff configurations and generate diff data plane
+      Map<String, Configuration> diffConfigurations = loadConfigurations(_diffEnvSettings);
+      File diffDataPlanePath = new File(_diffEnvSettings.getDataPlanePath());
+      Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(
+            diffConfigurations, diffDataPlanePath);
+
+      Set<String> commonNodes = new TreeSet<String>();
+      commonNodes.addAll(baseConfigurations.keySet());
+      commonNodes.retainAll(diffConfigurations.keySet());
+
+      NodeSet blacklistNodes = getNodeBlacklist(_diffEnvSettings);
+      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(_diffEnvSettings);
+      EdgeSet blacklistEdges = getEdgeBlacklist(_diffEnvSettings);
+
+      BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
+            null, blacklistNodes, blacklistInterfaces, blacklistEdges,
+            baseConfigurations);
+
+      // compute composite program and flows
+      List<Synthesizer> synthesizers = new ArrayList<Synthesizer>();
+      synthesizers.add(baseDataPlaneSynthesizer);
+      synthesizers.add(diffDataPlaneSynthesizer);
+      synthesizers.add(baseDataPlaneSynthesizer);
+
+      List<CompositeNodJob> jobs = new ArrayList<CompositeNodJob>();
+
+      // generate base reachability and diff blackhole and blacklist queries
+      for (String node : commonNodes) {
+         ReachableQuerySynthesizer reachableQuery = new ReachableQuerySynthesizer(
+               node, null);
+         ReachableQuerySynthesizer blackHoleQuery = new ReachableQuerySynthesizer(
+               node, null);
+         blackHoleQuery.setNegate(true);
+         NodeSet nodes = new NodeSet();
+         nodes.add(node);
+         List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
+         queries.add(reachableQuery);
+         queries.add(blackHoleQuery);
+         queries.add(blacklistQuery);
+         CompositeNodJob job = new CompositeNodJob(synthesizers, queries,
+               nodes, tag);
+         jobs.add(job);
+      }
+
+      Set<Flow> flows = computeCompositeNodOutput(jobs);
+
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
       initTrafficFactBins(trafficFactBins);
       StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
       for (Flow flow : flows) {
+         wSetFlowOriginate.append(flow.toLBLine());
+         _logger.debug("Found: " + flow.toString() + "\n");
+      }
+      dumpTrafficFacts(trafficFactBins, _baseEnvSettings);
+      dumpTrafficFacts(trafficFactBins, _diffEnvSettings);
+   }
+
+   private void answerTraceroute(TracerouteQuestion question) {
+      checkDataPlaneQuestionDependencies();
+      Set<FlowBuilder> flowBuilders = question.getFlowBuilders();
+      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
+      initTrafficFactBins(trafficFactBins);
+      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
+      String tag = getFlowTag();
+      for (FlowBuilder flowBuilder : flowBuilders) {
+         flowBuilder.setTag(tag);
+         Flow flow = flowBuilder.build();
          wSetFlowOriginate.append(flow.toLBLine());
       }
       dumpTrafficFacts(trafficFactBins);
@@ -1189,8 +1378,12 @@ public class Batfish implements AutoCloseable {
    }
 
    private void computeDataPlane() {
-      checkDataPlaneFacts(_envSettings);
-      String dataPlanePath = _envSettings.getDataPlanePath();
+      computeDataPlane(_envSettings);
+   }
+
+   private void computeDataPlane(EnvironmentSettings envSettings) {
+      checkDataPlaneFacts(envSettings);
+      String dataPlanePath = envSettings.getDataPlanePath();
       if (dataPlanePath == null) {
          throw new BatfishException("Missing path to data plane");
       }
@@ -1285,7 +1478,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private Map<String, Configuration> convertConfigurations(
-         Map<String, VendorConfiguration> vendorConfigurations) {
+         Map<String, GenericConfigObject> vendorConfigurations) {
       _logger
             .info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
       resetTimer();
@@ -1301,7 +1494,7 @@ public class Batfish implements AutoCloseable {
                _settings.getUnimplementedRecord()
                      && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
                _settings.printParseTree());
-         VendorConfiguration vc = vendorConfigurations.get(hostname);
+         GenericConfigObject vc = vendorConfigurations.get(hostname);
          ConvertConfigurationJob job = new ConvertConfigurationJob(_settings,
                vc, hostname, warnings);
          jobs.add(job);
@@ -1311,6 +1504,13 @@ public class Batfish implements AutoCloseable {
       executor.executeJobs(jobs, configurations);
       printElapsedTime();
       return configurations;
+   }
+
+   private boolean dataPlaneDependenciesExist(EnvironmentSettings envSettings) {
+      checkConfigurations();
+      String dpPath = envSettings.getDataPlanePath();
+      File dp = new File(dpPath);
+      return dp.exists();
    }
 
    public Map<String, Configuration> deserializeConfigurations(
@@ -1361,11 +1561,11 @@ public class Batfish implements AutoCloseable {
       return o;
    }
 
-   public Map<String, VendorConfiguration> deserializeVendorConfigurations(
+   public Map<String, GenericConfigObject> deserializeVendorConfigurations(
          String serializedVendorConfigPath) {
       _logger.info("\n*** DESERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       resetTimer();
-      Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<String, VendorConfiguration>();
+      Map<String, GenericConfigObject> vendorConfigurations = new TreeMap<String, GenericConfigObject>();
       File dir = new File(serializedVendorConfigPath);
       File[] serializedConfigs = dir.listFiles();
       if (serializedConfigs == null) {
@@ -1375,12 +1575,36 @@ public class Batfish implements AutoCloseable {
          String name = serializedConfig.getName();
          _logger.info("Reading vendor config: \"" + serializedConfig + "\"");
          Object object = deserializeObject(serializedConfig);
-         VendorConfiguration vc = (VendorConfiguration) object;
+         GenericConfigObject vc = (GenericConfigObject) object;
          vendorConfigurations.put(name, vc);
          _logger.info("...OK\n");
       }
       printElapsedTime();
       return vendorConfigurations;
+   }
+
+   private void disableUnusableVpnInterfaces(
+         Map<String, Configuration> configurations,
+         EnvironmentSettings envSettings) {
+      Environment environment = new Environment();
+      environment.setConfigurations(configurations);
+      environment.initRemoteIpsecVpns();
+      for (Configuration c : configurations.values()) {
+         for (IpsecVpn vpn : c.getIpsecVpns().values()) {
+            if (vpn.getRemoteIpsecVpn() == null) {
+               String hostname = c.getHostname();
+               Interface bindInterface = vpn.getBindInterface();
+               if (bindInterface != null) {
+                  bindInterface.setActive(false);
+                  String bindInterfaceName = bindInterface.getName();
+                  _logger
+                        .warnf(
+                              "WARNING: Disabling unusable vpn interface because we cannot determine remote endpoint: \"%s:%s\"\n",
+                              hostname, bindInterfaceName);
+               }
+            }
+         }
+      }
    }
 
    private void dumpControlPlaneFacts(EnvironmentSettings envSettings,
@@ -1422,8 +1646,14 @@ public class Batfish implements AutoCloseable {
       dumpFacts(factBins, envSettings.getTrafficFactsDir());
    }
 
+   private boolean environmentExists(EnvironmentSettings envSettings) {
+      checkBaseDirExists();
+      return new File(envSettings.getDataPlanePath()).getParentFile().exists();
+   }
+
    private void flatten(String inputPath, String outputPath) {
-      Map<File, String> configurationData = readConfigurationFiles(inputPath);
+      Map<File, String> configurationData = readConfigurationFiles(inputPath,
+            BfConsts.RELPATH_CONFIGURATIONS_DIR);
       Map<File, String> outputConfigurationData = new TreeMap<File, String>();
       File inputFolder = new File(inputPath);
       File[] configs = inputFolder.listFiles();
@@ -1746,7 +1976,7 @@ public class Batfish implements AutoCloseable {
 
    public Map<String, Configuration> getConfigurations(
          String serializedVendorConfigPath) {
-      Map<String, VendorConfiguration> vendorConfigurations = deserializeVendorConfigurations(serializedVendorConfigPath);
+      Map<String, GenericConfigObject> vendorConfigurations = deserializeVendorConfigurations(serializedVendorConfigPath);
       Map<String, Configuration> configurations = convertConfigurations(vendorConfigurations);
       return configurations;
    }
@@ -1758,10 +1988,18 @@ public class Batfish implements AutoCloseable {
          File deltaConfigurationsDirAsFile = new File(deltaConfigurationsDir);
          if (deltaConfigurationsDirAsFile.exists()) {
             File configParentDir = deltaConfigurationsDirAsFile.getParentFile();
-            Map<File, String> deltaConfigsText = readConfigurationFiles(configParentDir
-                  .toString());
+            Map<File, String> deltaConfigsText = readConfigurationFiles(
+                  configParentDir.toString(),
+                  BfConsts.RELPATH_CONFIGURATIONS_DIR);
             Map<String, VendorConfiguration> vendorDeltaConfigs = parseVendorConfigurations(deltaConfigsText);
-            Map<String, Configuration> deltaConfigs = convertConfigurations(vendorDeltaConfigs);
+
+            // convert the map to the right type
+            Map<String, GenericConfigObject> castedConfigs = new HashMap<String, GenericConfigObject>();
+            for (String name : vendorDeltaConfigs.keySet()) {
+               castedConfigs.put(name, vendorDeltaConfigs.get(name));
+            }
+
+            Map<String, Configuration> deltaConfigs = convertConfigurations(castedConfigs);
             return deltaConfigs;
          }
       }
@@ -2139,7 +2377,8 @@ public class Batfish implements AutoCloseable {
    }
 
    private void histogram(String testRigPath) {
-      Map<File, String> configurationData = readConfigurationFiles(testRigPath);
+      Map<File, String> configurationData = readConfigurationFiles(testRigPath,
+            BfConsts.RELPATH_CONFIGURATIONS_DIR);
       Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(configurationData);
       _logger.info("Building feature histogram...");
       MultiSet<String> histogram = new TreeMultiSet<String>();
@@ -2176,6 +2415,65 @@ public class Batfish implements AutoCloseable {
          _entityTables.put(envSettings, entityTable);
       }
       return entityTable;
+   }
+
+   private void initQuestionEnvironment(EnvironmentSettings envSettings,
+         Question question, boolean dp) {
+      if (!environmentExists(envSettings)) {
+         File envPath = new File(envSettings.getEnvPath());
+         // create environment required folders
+         envPath.mkdirs();
+         // write node blacklist from question
+         if (!question.getNodeBlacklist().isEmpty()) {
+            StringBuilder nodeBlacklistSb = new StringBuilder();
+            for (String node : question.getNodeBlacklist()) {
+               nodeBlacklistSb.append(node + "\n");
+            }
+            String nodeBlacklist = nodeBlacklistSb.toString();
+            Util.writeFile(envSettings.getNodeBlacklistPath(), nodeBlacklist);
+         }
+         // write interface blacklist from question
+         if (!question.getInterfaceBlacklist().isEmpty()) {
+            StringBuilder interfaceBlacklistSb = new StringBuilder();
+            for (NodeInterfacePair pair : question.getInterfaceBlacklist()) {
+               interfaceBlacklistSb.append(pair.getHostname() + ":"
+                     + pair.getInterface() + "\n");
+            }
+            String interfaceBlacklist = interfaceBlacklistSb.toString();
+            Util.writeFile(envSettings.getInterfaceBlacklistPath(),
+                  interfaceBlacklist);
+         }
+      }
+      if (dp && !dataPlaneDependenciesExist(envSettings)) {
+         _settings.setDumpControlPlaneFacts(true);
+         boolean usePrecomputedFacts = _settings.getUsePrecomputedFacts();
+         Map<String, StringBuilder> cpFactBins = new LinkedHashMap<String, StringBuilder>();
+         initControlPlaneFactBins(cpFactBins, !usePrecomputedFacts);
+         if (!usePrecomputedFacts) {
+            computeControlPlaneFacts(cpFactBins);
+         }
+         nxtnetDataPlane(envSettings);
+         writeRoutes(envSettings.getPrecomputedRoutesPath());
+         computeDataPlane(envSettings);
+         _entityTables.clear();
+      }
+   }
+
+   private void initQuestionEnvironments(Question question, boolean diff,
+         boolean diffActive, boolean dp) {
+      if (diff || !diffActive) {
+         initQuestionEnvironment(_baseEnvSettings, question, dp);
+      }
+      if (diff || diffActive) {
+         if (_settings.getDiffEnvironmentName() == null
+               || (diffActive && !_settings.getDiffActive())) {
+            String diffEnvironmentName = UUID.randomUUID().toString();
+            _settings.setDiffEnvironmentName(diffEnvironmentName);
+            applyAutoBaseDir(_settings);
+            _envSettings = _diffEnvSettings;
+         }
+         initQuestionEnvironment(_diffEnvSettings, question, dp);
+      }
    }
 
    private boolean isJavaSerializationData(File inputFile) {
@@ -2229,6 +2527,7 @@ public class Batfish implements AutoCloseable {
       processNodeBlacklist(configurations, envSettings);
       processInterfaceBlacklist(configurations, envSettings);
       processDeltaConfigurations(configurations, envSettings);
+      disableUnusableVpnInterfaces(configurations, envSettings);
       return configurations;
    }
 
@@ -2295,6 +2594,40 @@ public class Batfish implements AutoCloseable {
          String filename) {
       _logger.info("Parsing: \"" + filename + "\"...");
       return parse(parser);
+   }
+
+   private AwsVpcConfiguration parseAwsVpcConfigurations(
+         Map<File, String> configurationData) {
+      AwsVpcConfiguration config = new AwsVpcConfiguration();
+      for (File file : configurationData.keySet()) {
+
+         // we stop classic link processing here because it interferes with VPC
+         // processing
+         if (file.toString().contains("classic-link")) {
+            _logger.errorf("%s has classic link configuration\n",
+                  file.toString());
+            continue;
+         }
+
+         JSONObject jsonObj = null;
+         try {
+            jsonObj = new JSONObject(configurationData.get(file));
+         }
+         catch (JSONException e) {
+            _logger.errorf("%s does not have valid json\n", file.toString());
+         }
+
+         if (jsonObj != null) {
+            try {
+               config.addConfigElement(jsonObj, _logger);
+            }
+            catch (JSONException e) {
+               throw new BatfishException("Problems parsing JSON in "
+                     + file.toString(), e);
+            }
+         }
+      }
+      return config;
    }
 
    private Set<NodeInterfacePair> parseInterfaceBlacklist(
@@ -2858,12 +3191,12 @@ public class Batfish implements AutoCloseable {
       printPredicates(predicateNames);
    }
 
-   private Map<File, String> readConfigurationFiles(String testRigPath) {
-      _logger.info("\n*** READING CONFIGURATION FILES ***\n");
+   private Map<File, String> readConfigurationFiles(String testRigPath,
+         String configsType) {
+      _logger.infof("\n*** READING %s FILES ***\n", configsType);
       resetTimer();
       Map<File, String> configurationData = new TreeMap<File, String>();
-      File configsPath = Paths.get(testRigPath,
-            BfConsts.RELPATH_CONFIGURATIONS_DIR).toFile();
+      File configsPath = Paths.get(testRigPath, configsType).toFile();
       File[] configFilePaths = configsPath.listFiles(new FilenameFilter() {
          @Override
          public boolean accept(File dir, String name) {
@@ -2997,7 +3330,8 @@ public class Batfish implements AutoCloseable {
             || _settings.getDataPlane() || _settings.getWriteRoutes()
             || _settings.getWriteBgpAdvertisements()
             || _settings.getWriteIbgpNeighbors() || _settings.getHistory()
-            || _settings.getNxtnetDataPlane() || _settings.getNxtnetTraffic()) {
+            || _settings.getNxtnetDataPlane() || _settings.getNxtnetTraffic()
+            || _settings.getAnswer()) {
          Map<String, String> logicFiles = getSemanticsFiles();
          _predicateInfo = getPredicateInfo(logicFiles);
          // Print predicate semantics and quit if requested
@@ -3020,11 +3354,6 @@ public class Batfish implements AutoCloseable {
       if (_settings.getSynthesizeJsonTopology()) {
          writeJsonTopology();
          return;
-      }
-
-      if (_settings.getAnswer()) {
-         answer();
-         action = true;
       }
 
       if (_settings.getBuildPredicateInfo()) {
@@ -3084,14 +3413,14 @@ public class Batfish implements AutoCloseable {
          String testRigPath = _settings.getTestRigPath();
          String outputPath = _settings.getSerializeVendorPath();
          serializeVendorConfigs(testRigPath, outputPath);
-         return;
+         action = true;
       }
 
       if (_settings.getSerializeIndependent()) {
          String inputPath = _settings.getSerializeVendorPath();
          String outputPath = _settings.getSerializeIndependentPath();
          serializeIndependentConfigs(inputPath, outputPath);
-         return;
+         action = true;
       }
 
       Map<String, StringBuilder> cpFactBins = null;
@@ -3127,6 +3456,11 @@ public class Batfish implements AutoCloseable {
          action = true;
       }
 
+      if (_settings.getAnswer()) {
+         answer();
+         action = true;
+      }
+
       if (_settings.getQuery()) {
          query();
          return;
@@ -3134,7 +3468,7 @@ public class Batfish implements AutoCloseable {
 
       if (_settings.getDataPlane()) {
          computeDataPlane();
-         return;
+         action = true;
       }
 
       if (_settings.getNxtnetTraffic()) {
@@ -3182,6 +3516,7 @@ public class Batfish implements AutoCloseable {
       cmdLine.addArgument("-dir");
       cmdLine.addArgument(nxtnetOutputDir);
       cmdLine.addArgument("-rev-lookup");
+      cmdLine.addArgument("-mcc");
       cmdLine.addArgument(nxtnetInputFile);
       cmdLine.addArguments(logicFilenames);
       StringBuilder cmdLineSb = new StringBuilder();
@@ -3230,6 +3565,25 @@ public class Batfish implements AutoCloseable {
       printElapsedTime();
    }
 
+   private void serializeAwsVpcConfigs(String testRigPath, String outputPath) {
+      Map<File, String> configurationData = readConfigurationFiles(testRigPath,
+            BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR);
+      AwsVpcConfiguration config = parseAwsVpcConfigurations(configurationData);
+
+      if (!_settings.getNoOutput()) {
+         _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
+         resetTimer();
+         new File(outputPath).mkdirs();
+         Path currentOutputPath = Paths.get(outputPath,
+               BfConsts.RELPATH_AWS_VPC_CONFIGS_FILE);
+         _logger.debug("Serializing AWS VPCs to "
+               + currentOutputPath.toString() + "\"...");
+         serializeObject(config, currentOutputPath.toFile());
+         _logger.debug("OK\n");
+      }
+      printElapsedTime();
+   }
+
    private void serializeIndependentConfigs(
          Map<String, Configuration> configurations, String outputPath) {
       if (configurations == null) {
@@ -3258,30 +3612,9 @@ public class Batfish implements AutoCloseable {
       serializeIndependentConfigs(configurations, outputPath);
    }
 
-   private void serializeObject(Object object, File outputFile) {
-      FileOutputStream fos;
-      ObjectOutputStream oos;
-      try {
-         fos = new FileOutputStream(outputFile);
-         if (_settings.getSerializeToText()) {
-            XStream xstream = new XStream(new DomDriver("UTF-8"));
-            oos = xstream.createObjectOutputStream(fos);
-         }
-         else {
-            oos = new ObjectOutputStream(fos);
-         }
-         oos.writeObject(object);
-         oos.close();
-      }
-      catch (IOException e) {
-         throw new BatfishException(
-               "Failed to serialize object to output file: "
-                     + outputFile.toString(), e);
-      }
-   }
-
-   private void serializeVendorConfigs(String testRigPath, String outputPath) {
-      Map<File, String> configurationData = readConfigurationFiles(testRigPath);
+   private void serializeNetworkConfigs(String testRigPath, String outputPath) {
+      Map<File, String> configurationData = readConfigurationFiles(testRigPath,
+            BfConsts.RELPATH_CONFIGURATIONS_DIR);
       Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(configurationData);
       if (vendorConfigurations == null) {
          throw new BatfishException("Exiting due to parser errors");
@@ -3321,6 +3654,53 @@ public class Batfish implements AutoCloseable {
             _logger.debug("OK\n");
          }
          printElapsedTime();
+      }
+   }
+
+   private void serializeObject(Object object, File outputFile) {
+      FileOutputStream fos;
+      ObjectOutputStream oos;
+      try {
+         fos = new FileOutputStream(outputFile);
+         if (_settings.getSerializeToText()) {
+            XStream xstream = new XStream(new DomDriver("UTF-8"));
+            oos = xstream.createObjectOutputStream(fos);
+         }
+         else {
+            oos = new ObjectOutputStream(fos);
+         }
+         oos.writeObject(object);
+         oos.close();
+      }
+      catch (IOException e) {
+         throw new BatfishException(
+               "Failed to serialize object to output file: "
+                     + outputFile.toString(), e);
+      }
+   }
+
+   private void serializeVendorConfigs(String testRigPath, String outputPath) {
+
+      boolean configsFound = false;
+
+      // look for network configs
+      File networkConfigsPath = Paths.get(testRigPath,
+            BfConsts.RELPATH_CONFIGURATIONS_DIR).toFile();
+      if (networkConfigsPath.exists()) {
+         serializeNetworkConfigs(testRigPath, outputPath);
+         configsFound = true;
+      }
+
+      // look for AWS VPC configs
+      File awsVpcConfigsPath = Paths.get(testRigPath,
+            BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR).toFile();
+      if (awsVpcConfigsPath.exists()) {
+         serializeAwsVpcConfigs(testRigPath, outputPath);
+         configsFound = true;
+      }
+
+      if (!configsFound) {
+         throw new BatfishException("No valid configurations found");
       }
    }
 

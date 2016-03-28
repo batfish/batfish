@@ -86,6 +86,11 @@ art_restrict
    RESTRICT
 ;
 
+ast_no_summaries
+:
+   NO_SUMMARIES
+;
+
 at_apply_groups
 :
    s_apply_groups
@@ -112,7 +117,8 @@ at_interface
 :
    INTERFACE
    (
-      id = interface_id
+      ALL
+      | id = interface_id
       | ip = IP_ADDRESS
       | WILDCARD
    ) at_interface_tail
@@ -171,6 +177,16 @@ at_null
    (
       AUTHENTICATION_TYPE
    ) s_null_filler
+;
+
+at_stub
+:
+   STUB at_stub_tail
+;
+
+at_stub_tail
+:
+   ast_no_summaries
 ;
 
 dlsat_default_metric
@@ -232,6 +248,7 @@ ot_area_tail
    | at_label_switched_path
    | at_nssa
    | at_null
+   | at_stub
 ;
 
 ot_export

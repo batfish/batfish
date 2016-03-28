@@ -263,6 +263,11 @@ rit_vrf_target_tail
    | vtt_import
 ;
 
+roast_loops
+:
+   LOOPS DEC
+;
+
 rot_aggregate
 :
    AGGREGATE ROUTE IP_PREFIX
@@ -288,7 +293,13 @@ rot_auto_export
 
 rot_autonomous_system
 :
-   AUTONOMOUS_SYSTEM as = DEC
+   AUTONOMOUS_SYSTEM as = DEC rot_autonomous_system_tail
+;
+
+rot_autonomous_system_tail
+:
+   apply
+   | roast_loops
 ;
 
 rot_martians
@@ -338,6 +349,7 @@ rot_null
 :
    (
       FORWARDING_TABLE
+      | GRACEFUL_RESTART
       | MULTICAST
       | MULTIPATH
       | NONSTOP_ROUTING
@@ -499,6 +511,7 @@ srt_common
    | srt_community
    | srt_discard
    | srt_install
+   | srt_metric
    | srt_next_hop
    | srt_next_table
    | srt_no_readvertise
@@ -525,6 +538,11 @@ srt_discard
 srt_install
 :
    INSTALL
+;
+
+srt_metric
+:
+   METRIC metric = DEC (TYPE DEC)?
 ;
 
 srt_next_hop

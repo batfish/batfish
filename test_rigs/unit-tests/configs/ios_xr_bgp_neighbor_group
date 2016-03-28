@@ -1,0 +1,72 @@
+!
+hostname xrBGP_Neighbor_Group
+!
+router bgp 52
+ neighbor-group BGPMonitor
+  remote-as 65202
+  update-source Loopback0
+  address-family ipv4 unicast
+   route-policy deny_bgp_routes in
+   route-policy advertise_hpr_dc_and_isp_routes_ipv4 out
+  !
+  address-family ipv4 multicast
+   route-policy deny_bgp_routes in
+   route-policy advertise_hpr_dc_and_isp_routes_ipv4 out
+  !
+ !
+ neighbor-group UCLA-iBGP_ipv4
+  remote-as 52
+  update-source Loopback0
+  address-family ipv4 unicast
+   route-policy advertise_hpr_routes_only out
+   soft-reconfiguration inbound always
+  !
+  address-family ipv4 multicast
+   soft-reconfiguration inbound always
+  !
+ !
+ neighbor-group UCLA-iBGP_ipv6
+  remote-as 52
+  update-source Loopback0
+  address-family ipv6 unicast
+   soft-reconfiguration inbound always
+  !
+  address-family ipv6 multicast
+   soft-reconfiguration inbound always
+  !
+ !
+ neighbor-group UCLA-iBGP_border_ipv4
+  remote-as 52
+  update-source Loopback0
+  address-family ipv4 unicast
+   route-policy deny_default_network_ipv4 out
+   soft-reconfiguration inbound always
+  !
+  address-family ipv4 multicast
+   soft-reconfiguration inbound always
+  !
+ !
+ neighbor-group UCLA-iBGP_border_ipv6
+  remote-as 52
+  update-source Loopback0
+  address-family ipv6 unicast
+   soft-reconfiguration inbound always
+  !
+  address-family ipv6 multicast
+   soft-reconfiguration inbound always
+  !
+ !
+ neighbor 169.232.1.1
+  use neighbor-group UCLA-iBGP_ipv4
+  description cr01f2.csb1
+ !
+ neighbor 169.232.1.2
+  use neighbor-group UCLA-iBGP_ipv4
+  description cr01f1.anderson
+ !
+ neighbor 169.232.1.3
+  use neighbor-group UCLA-iBGP_border_ipv4
+  timers 30 90
+  description bd11f2.csb1
+ !
+end

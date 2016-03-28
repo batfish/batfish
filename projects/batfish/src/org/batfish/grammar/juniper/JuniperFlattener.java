@@ -4,19 +4,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.batfish.grammar.juniper.JuniperParser.*;
-import org.batfish.job.Format;
 
 public class JuniperFlattener extends JuniperParserBaseListener {
 
    private List<String> _currentBracketedWords;
+
    private List<String> _currentStatement;
+
    private String _flattenedConfigurationText;
+
+   private final String _header;
+
    private StatementContext _inactiveStatement;
+
    private boolean _inBrackets;
+
    private List<String> _setStatements;
+
    private List<List<String>> _stack;
 
-   public JuniperFlattener() {
+   public JuniperFlattener(String header) {
+      _header = header;
       _stack = new ArrayList<List<String>>();
       _setStatements = new ArrayList<String>();
    }
@@ -52,7 +60,7 @@ public class JuniperFlattener extends JuniperParserBaseListener {
    @Override
    public void exitJuniper_configuration(Juniper_configurationContext ctx) {
       StringBuilder sb = new StringBuilder();
-      sb.append(Format.BATFISH_FLATTENED_JUNIPER_HEADER);
+      sb.append(_header);
       for (String setStatement : _setStatements) {
          sb.append(setStatement + "\n");
       }

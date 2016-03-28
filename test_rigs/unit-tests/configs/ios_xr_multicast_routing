@@ -1,0 +1,14 @@
+!
+hostname MCastRouting
+!
+multicast-routing
+ address-family ipv4
+  multipath
+  interface all enable
+ !
+ address-family ipv6
+  multipath
+  interface all enable
+ !
+!
+end

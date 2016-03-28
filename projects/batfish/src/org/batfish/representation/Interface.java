@@ -7,14 +7,23 @@ import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.main.ConfigurationFormat;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 import org.batfish.util.SubRange;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class Interface extends NamedStructure {
+public class Interface extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
+
+   private static InterfaceType computeAwsInterfaceType(String name) {
+      if (name.startsWith("v")) {
+         return InterfaceType.VPN;
+      }
+      else {
+         return InterfaceType.PHYSICAL;
+      }
+   }
 
    private static InterfaceType computeCiscoInterfaceType(String name) {
       if (name.startsWith("Async")) {
@@ -95,6 +104,8 @@ public class Interface extends NamedStructure {
    public static InterfaceType computeInterfaceType(String name,
          ConfigurationFormat format) {
       switch (format) {
+      case AWS_VPC:
+         return computeAwsInterfaceType(name);
       case ARISTA:
       case CISCO:
       case CISCO_IOS_XR:
@@ -105,6 +116,15 @@ public class Interface extends NamedStructure {
       case JUNIPER_SWITCH:
          return computeJuniperInterfaceType(name);
 
+      case VYOS:
+      case FLAT_VYOS:
+         return computeVyosInterfaceType(name);
+
+      case MRV:
+         // TODO: find out if other interface types are possible
+         return InterfaceType.PHYSICAL;
+
+      case EMPTY:
       case UNKNOWN:
       case VXWORKS:
       default:
@@ -123,6 +143,15 @@ public class Interface extends NamedStructure {
       }
       else if (name.startsWith("ae")) {
          return InterfaceType.AGGREGATED;
+      }
+      else {
+         return InterfaceType.PHYSICAL;
+      }
+   }
+
+   private static InterfaceType computeVyosInterfaceType(String name) {
+      if (name.startsWith("vti")) {
+         return InterfaceType.VPN;
       }
       else {
          return InterfaceType.PHYSICAL;
@@ -173,8 +202,6 @@ public class Interface extends NamedStructure {
 
    private PolicyMap _routingPolicy;
 
-   private final Set<Prefix> _secondaryPrefixes;
-
    private SwitchportMode _switchportMode;
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
@@ -189,7 +216,6 @@ public class Interface extends NamedStructure {
       _owner = owner;
       _switchportMode = SwitchportMode.NONE;
       _allowedVlans = new ArrayList<SubRange>();
-      _secondaryPrefixes = new TreeSet<Prefix>();
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
@@ -197,7 +223,7 @@ public class Interface extends NamedStructure {
    }
 
    private InterfaceType computeInterfaceType() {
-      return computeInterfaceType(_name, _owner.getVendor());
+      return computeInterfaceType(_key, _owner.getVendor());
    }
 
    public int getAccessVlan() {
@@ -288,10 +314,6 @@ public class Interface extends NamedStructure {
       return _routingPolicy;
    }
 
-   public Set<Prefix> getSecondaryPrefixes() {
-      return _secondaryPrefixes;
-   }
-
    public SwitchportMode getSwitchportMode() {
       return _switchportMode;
    }
@@ -307,11 +329,11 @@ public class Interface extends NamedStructure {
    public boolean isLoopback(ConfigurationFormat vendor) {
       if (vendor == ConfigurationFormat.JUNIPER
             || vendor == ConfigurationFormat.FLAT_JUNIPER) {
-         if (!_name.contains(".")) {
+         if (!_key.contains(".")) {
             return false;
          }
       }
-      return _name.toLowerCase().startsWith("lo");
+      return _key.toLowerCase().startsWith("lo");
    }
 
    public void setAccessVlan(int vlan) {
@@ -406,7 +428,7 @@ public class Interface extends NamedStructure {
    public JSONObject toJSONObject() throws JSONException {
       JSONObject iface = new JSONObject();
       iface.put("node", _owner.getName());
-      iface.put("name", _name);
+      iface.put("name", _key);
       iface.put("prefix", _prefix.toString());
       InterfaceType interfaceType = computeInterfaceType();
       iface.put("type", interfaceType.toString());

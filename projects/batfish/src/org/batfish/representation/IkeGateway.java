@@ -1,9 +1,9 @@
 package org.batfish.representation;
 
 import org.batfish.representation.Ip;
-import org.batfish.util.NamedStructure;
+import org.batfish.util.ComparableStructure;
 
-public class IkeGateway extends NamedStructure {
+public class IkeGateway extends ComparableStructure<String> {
 
    /**
     *
@@ -15,6 +15,12 @@ public class IkeGateway extends NamedStructure {
    private Interface _externalInterface;
 
    private IkePolicy _ikePolicy;
+
+   private Ip _localAddress;
+
+   private String _localId;
+
+   private String _remoteId;
 
    public IkeGateway(String name) {
       super(name);
@@ -32,6 +38,18 @@ public class IkeGateway extends NamedStructure {
       return _ikePolicy;
    }
 
+   public Ip getLocalAddress() {
+      return _localAddress;
+   }
+
+   public String getLocalId() {
+      return _localId;
+   }
+
+   public String getRemoteId() {
+      return _remoteId;
+   }
+
    public void setAddress(Ip address) {
       _address = address;
    }
@@ -42,6 +60,18 @@ public class IkeGateway extends NamedStructure {
 
    public void setIkePolicy(IkePolicy ikePolicy) {
       _ikePolicy = ikePolicy;
+   }
+
+   public void setLocalAddress(Ip localAddress) {
+      _localAddress = localAddress;
+   }
+
+   public void setLocalId(String localId) {
+      _localId = localId;
+   }
+
+   public void setRemoteId(String remoteId) {
+      _remoteId = remoteId;
    }
 
 }

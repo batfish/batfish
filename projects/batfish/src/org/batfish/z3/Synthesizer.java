@@ -24,6 +24,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.DataPlane;
 import org.batfish.representation.Edge;
+import org.batfish.representation.IcmpCode;
+import org.batfish.representation.IcmpType;
 import org.batfish.representation.Interface;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
@@ -40,6 +42,7 @@ import org.batfish.representation.PolicyMapSetLine;
 import org.batfish.representation.PolicyMapSetNextHopLine;
 import org.batfish.representation.PolicyMapSetType;
 import org.batfish.representation.Prefix;
+import org.batfish.representation.TcpFlags;
 import org.batfish.representation.Zone;
 import org.batfish.util.SubRange;
 import org.batfish.util.Util;
@@ -107,6 +110,10 @@ public class Synthesizer {
    public static final String DST_IP_VAR = "dst_ip";
    public static final String DST_PORT_VAR = "dst_port";
    public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
+   public static final int ICMP_CODE_BITS = 8;
+   public static final String ICMP_CODE_VAR = "icmp_code";
+   public static final int ICMP_TYPE_BITS = 8;
+   public static final String ICMP_TYPE_VAR = "icmp_type";
    public static final int IP_BITS = 32;
    public static final String IP_PROTOCOL_VAR = "ip_prot";
    public static final String NODE_NONE_NAME = "(none)";
@@ -116,6 +123,8 @@ public class Synthesizer {
    public static final int PROTOCOL_BITS = 8;
    public static final String SRC_IP_VAR = "src_ip";
    public static final String SRC_PORT_VAR = "src_port";
+   public static final int TCP_FLAGS_BITS = 8;
+   public static final String TCP_FLAGS_VAR = "tcp_flags";
 
    @SuppressWarnings("unused")
    private static void debug(BooleanExpr condition, List<Statement> statements) {
@@ -130,6 +139,9 @@ public class Synthesizer {
       vars.add(SRC_PORT_VAR);
       vars.add(DST_PORT_VAR);
       vars.add(IP_PROTOCOL_VAR);
+      vars.add(ICMP_TYPE_VAR);
+      vars.add(ICMP_CODE_VAR);
+      vars.add(TCP_FLAGS_VAR);
       return vars;
    }
 
@@ -176,6 +188,9 @@ public class Synthesizer {
       varSizes.put(SRC_PORT_VAR, PORT_BITS);
       varSizes.put(DST_PORT_VAR, PORT_BITS);
       varSizes.put(IP_PROTOCOL_VAR, PROTOCOL_BITS);
+      varSizes.put(ICMP_TYPE_VAR, ICMP_TYPE_BITS);
+      varSizes.put(ICMP_CODE_VAR, ICMP_CODE_BITS);
+      varSizes.put(TCP_FLAGS_VAR, TCP_FLAGS_BITS);
       return varSizes;
    }
 
@@ -774,6 +789,9 @@ public class Synthesizer {
                srcPortRanges.addAll(line.getSrcPortRanges());
                Set<SubRange> dstPortRanges = new LinkedHashSet<SubRange>();
                dstPortRanges.addAll(line.getDstPortRanges());
+               int icmpType = line.getIcmpType();
+               int icmpCode = line.getIcmpCode();
+               int tcpFlags = line.getTcpFlags();
 
                AndExpr matchConditions = new AndExpr();
 
@@ -870,6 +888,27 @@ public class Synthesizer {
                RuleExpr matchRule = new RuleExpr(valid ? matchConditions
                      : FalseExpr.INSTANCE, match);
                statements.add(matchRule);
+
+               // match icmp-type
+               if (icmpType != IcmpType.UNSET) {
+                  EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_TYPE_VAR),
+                        new LitIntExpr(icmpType, ICMP_TYPE_BITS));
+                  matchLineCriteria.addConjunct(exactMatch);
+               }
+
+               // match icmp-code
+               if (icmpCode != IcmpCode.UNSET) {
+                  EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_CODE_VAR),
+                        new LitIntExpr(icmpCode, ICMP_CODE_BITS));
+                  matchLineCriteria.addConjunct(exactMatch);
+               }
+
+               // match tcp-flags
+               if (tcpFlags != TcpFlags.UNSET) {
+                  EqExpr exactMatch = new EqExpr(new VarIntExpr(TCP_FLAGS_VAR),
+                        new LitIntExpr(tcpFlags, TCP_FLAGS_BITS));
+                  matchLineCriteria.addConjunct(exactMatch);
+               }
 
                // no match rule
                AndExpr noMatchConditions = new AndExpr();
@@ -1568,10 +1607,6 @@ public class Synthesizer {
    private List<Statement> getSane() {
       List<Statement> statements = new ArrayList<Statement>();
       statements.add(new Comment("Make sure packet fields make sense"));
-      EqExpr tcp = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR), new LitIntExpr(
-            IpProtocol.TCP.number(), PROTOCOL_BITS));
-      EqExpr udp = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR), new LitIntExpr(
-            IpProtocol.UDP.number(), PROTOCOL_BITS));
       AndExpr noPortNumbers = new AndExpr();
       EqExpr noDstPort = new EqExpr(new VarIntExpr(DST_PORT_VAR),
             new LitIntExpr(0, PORT_BITS));
@@ -1579,10 +1614,41 @@ public class Synthesizer {
             new LitIntExpr(0, PORT_BITS));
       noPortNumbers.addConjunct(noDstPort);
       noPortNumbers.addConjunct(noSrcPort);
+      EqExpr noTcpFlags = new EqExpr(new VarIntExpr(TCP_FLAGS_VAR),
+            new LitIntExpr(TcpFlags.UNSET, TCP_FLAGS_BITS));
+      EqExpr noIcmpCode = new EqExpr(new VarIntExpr(ICMP_CODE_VAR),
+            new LitIntExpr(IcmpCode.UNSET, ICMP_CODE_BITS));
+      EqExpr noIcmpType = new EqExpr(new VarIntExpr(ICMP_TYPE_VAR),
+            new LitIntExpr(IcmpType.UNSET, ICMP_TYPE_BITS));
+      AndExpr noIcmp = new AndExpr();
+      noIcmp.addConjunct(noIcmpType);
+      noIcmp.addConjunct(noIcmpCode);
+      EqExpr icmpProtocol = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR),
+            new LitIntExpr(IpProtocol.ICMP.number(), PROTOCOL_BITS));
+      EqExpr tcpProtocol = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR),
+            new LitIntExpr(IpProtocol.TCP.number(), PROTOCOL_BITS));
+      EqExpr udpProtocol = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR),
+            new LitIntExpr(IpProtocol.UDP.number(), PROTOCOL_BITS));
+      AndExpr tcp = new AndExpr();
+      tcp.addConjunct(tcpProtocol);
+      tcp.addConjunct(noIcmp);
+      AndExpr udp = new AndExpr();
+      udp.addConjunct(udpProtocol);
+      udp.addConjunct(noIcmp);
+      udp.addConjunct(noTcpFlags);
+      AndExpr icmp = new AndExpr();
+      icmp.addConjunct(icmpProtocol);
+      icmp.addConjunct(noTcpFlags);
+      icmp.addConjunct(noPortNumbers);
+      AndExpr otherIp = new AndExpr();
+      otherIp.addConjunct(noIcmp);
+      otherIp.addConjunct(noTcpFlags);
+      otherIp.addConjunct(noPortNumbers);
       OrExpr isSane = new OrExpr();
+      isSane.addDisjunct(icmp);
       isSane.addDisjunct(tcp);
       isSane.addDisjunct(udp);
-      isSane.addDisjunct(noPortNumbers);
+      isSane.addDisjunct(otherIp);
       RuleExpr rule = new RuleExpr(isSane, SaneExpr.INSTANCE);
       statements.add(rule);
       return statements;

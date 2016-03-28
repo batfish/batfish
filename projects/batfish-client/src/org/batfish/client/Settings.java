@@ -8,32 +8,29 @@ import org.batfish.common.Util;
 
 public class Settings extends BaseSettings {
 
-   /*
-    * not wired to command line
-    */
-   private static final String ARG_API_KEY = "client.ApiKey";
+   private static final String ARG_API_KEY = "apikey";
    private static final String ARG_COMMAND_FILE = "cmdfile";
-   private static final String ARG_DISABLE_SSL = "coordinator.DisableSsl";
+   private static final String ARG_DISABLE_SSL = "disablessl";
    private static final String ARG_HELP = "help";
-   private static final String ARG_LOG_FILE = "client.LogFile";
-   private static final String ARG_LOG_LEVEL = "client.LogLevel";
-
-   private static final String ARG_PERIOD_CHECK_WORK = "client.PeriodCheckWorkMs";
-   private static final String ARG_SERVICE_HOST = "coordinator.ServiceHost";
-
-   private static final String ARG_SERVICE_POOL_PORT = "coordinator.PoolPort";
-   private static final String ARG_SERVICE_WORK_PORT = "coordinator.WorkPort";
-   private static final String ARG_TRUST_ALL_SSL_CERTS = "client.TrustAllSslCerts";
+   private static final String ARG_LOG_FILE = "logfile";
+   private static final String ARG_LOG_LEVEL = "loglevel";
+   private static final String ARG_PERIOD_CHECK_WORK = "periodcheckworkms";
+   private static final String ARG_COORDINATOR_HOST = "coordinatorhost";
+   private static final String ARG_SERVICE_POOL_PORT = "coordinatorpoolport";
+   private static final String ARG_SERVICE_WORK_PORT = "coordinatorworkport";
+   private static final String ARG_TRUST_ALL_SSL_CERTS = "trustallsslcerts";
 
    private static final String EXECUTABLE_NAME = "batfish_client";
 
+   private String _apiKey;
    private String _commandFile;
+   private String _coordinatorHost;
+   private int _coordinatorPoolPort;
+   private int _coordinatorWorkPort;
    private String _logFile;
    private String _logLevel;
    private long _periodCheckWorkMs;
-   private String _serviceHost;
-   private int _servicePoolPort;
-   private int _serviceWorkPort;
+   private boolean _trustAllSslCerts;
    private boolean _useSsl;
 
    public Settings(String[] args) throws Exception {
@@ -46,13 +43,25 @@ public class Settings extends BaseSettings {
    }
 
    public String getApiKey() {
-      return _config.getString(ARG_API_KEY);
+      return _apiKey;
    }
 
    public String getCommandFile() {
       return _commandFile;
    }
 
+   public String getCoordinatorHost() {
+      return _coordinatorHost;
+   }
+
+   public int getCoordinatorPoolPort() {
+      return _coordinatorPoolPort;
+   }
+
+   public int getCoordinatorWorkPort() {
+      return _coordinatorWorkPort;
+   }
+   
    public String getLogFile() {
       return _logFile;
    }
@@ -65,20 +74,8 @@ public class Settings extends BaseSettings {
       return _periodCheckWorkMs;
    }
 
-   public String getServiceHost() {
-      return _serviceHost;
-   }
-
-   public int getServicePoolPort() {
-      return _servicePoolPort;
-   }
-
-   public int getServiceWorkPort() {
-      return _serviceWorkPort;
-   }
-
    public boolean getTrustAllSslCerts() {
-      return _config.getBoolean(ARG_TRUST_ALL_SSL_CERTS);
+      return _trustAllSslCerts;
    }
 
    public boolean getUseSsl() {
@@ -86,19 +83,23 @@ public class Settings extends BaseSettings {
    }
 
    private void initConfigDefaults() {
+      setDefaultProperty(ARG_API_KEY, CoordConsts.DEFAULT_API_KEY);
       setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_LEVEL,
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
       setDefaultProperty(ARG_PERIOD_CHECK_WORK, 1000);
-      setDefaultProperty(ARG_SERVICE_HOST, "localhost");
+      setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
       setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
       setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_WORK_PORT);
-      setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, false);
+      setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, true);
    }
 
    private void initOptions() {
+      addOption(ARG_API_KEY,
+            "API key for the coordinator", "apikey");
+
       addOption(ARG_COMMAND_FILE,
             "read commands from the specified command file", "cmdfile");
 
@@ -113,7 +114,7 @@ public class Settings extends BaseSettings {
       addOption(ARG_PERIOD_CHECK_WORK, "period with which to check work (ms)",
             "period_check_work_ms");
 
-      addOption(ARG_SERVICE_HOST, "hostname for the service",
+      addOption(ARG_COORDINATOR_HOST, "hostname for the service",
             "base url for coordinator service");
 
       addOption(ARG_SERVICE_POOL_PORT, "port for pool management service",
@@ -122,6 +123,8 @@ public class Settings extends BaseSettings {
       addOption(ARG_SERVICE_WORK_PORT, "port for work management service",
             "port_number_work_service");
 
+      addBooleanOption(ARG_TRUST_ALL_SSL_CERTS, 
+            "whether we should trust any coordinator SSL certs (for testing locally)");
    }
 
    private void parseCommandLine(String[] args) {
@@ -132,13 +135,15 @@ public class Settings extends BaseSettings {
          System.exit(0);
       }
 
+      _apiKey = getStringOptionValue(ARG_API_KEY);
       _commandFile = getStringOptionValue(ARG_COMMAND_FILE);
       _logFile = getStringOptionValue(ARG_LOG_FILE);
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
       _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK);
-      _serviceHost = getStringOptionValue(ARG_SERVICE_HOST);
-      _servicePoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
-      _serviceWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
+      _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
+      _coordinatorPoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
+      _coordinatorWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
+      _trustAllSslCerts = getBooleanOptionValue(ARG_TRUST_ALL_SSL_CERTS);
       _useSsl = !getBooleanOptionValue(ARG_DISABLE_SSL);
    }
 

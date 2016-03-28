@@ -13,6 +13,7 @@ public abstract class BgpPeerGroup implements Serializable {
    protected Integer _defaultMetric;
    protected Boolean _defaultOriginate;
    protected String _defaultOriginateMap;
+   protected String _description;
    protected String _inboundPrefixList;
    protected String _inboundRouteMap;
    protected String _outboundPrefixList;
@@ -46,6 +47,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public String getDefaultOriginateMap() {
       return _defaultOriginateMap;
+   }
+
+   public String getDescription() {
+      return _description;
    }
 
    public String getInboundPrefixList() {
@@ -103,6 +108,9 @@ public abstract class BgpPeerGroup implements Serializable {
       if (_defaultOriginateMap == null) {
          _defaultOriginateMap = pg.getDefaultOriginateMap();
       }
+      if (_description == null) {
+         _description = pg.getDescription();
+      }
       if (_inboundPrefixList == null) {
          _inboundPrefixList = pg.getInboundPrefixList();
       }
@@ -154,6 +162,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public void setDefaultOriginateMap(String routeMapName) {
       _defaultOriginateMap = routeMapName;
+   }
+
+   public void setDescription(String description) {
+      _description = description;
    }
 
    public void setInboundPrefixList(String inboundPrefixList) {

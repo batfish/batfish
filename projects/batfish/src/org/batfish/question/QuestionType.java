@@ -3,12 +3,12 @@ package org.batfish.question;
 public enum QuestionType {
    ACL_REACHABILITY,
    DESTINATION,
-   FAILURE,
    INGRESS_PATH,
    LOCAL_PATH,
    MULTIPATH,
    PROTOCOL_DEPENDENCIES,
    REACHABILITY,
+   REDUCED_REACHABILITY,
    TRACEROUTE,
    VERIFY
 }

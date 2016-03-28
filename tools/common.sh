@@ -212,10 +212,15 @@ batfish_format_flows() {
 }
 export -f batfish_format_flows
 
-batfish_gendoc() {
-   echo "Generating documentation under batfish_doc"
-   javadoc -d batfish_doc -sourcepath "$COMMON_PATH/src;$BATFISH_PATH/src;$COORDINATOR_PATH/src;$BATFISH_CLIENT_PATH/src" -subpackages org.batfish
+batfish_javadocs() {
+   echo "Generating batfish project javadocs"
+   batfish_build_all doc
+   cp -r $COMMON_PATH/doc $BATFISH_ROOT/doc/batfish-common-protocol/
+   cp -r $BATFISH_PATH/doc $BATFISH_ROOT/doc/batfish/
+   cp -r $BATFISH_CLIENT_PATH/doc $BATFISH_ROOT/doc/batfish-client/
+   cp -r $COORDINATOR_PATH/doc $BATFISH_ROOT/doc/coordinator/
 }
+export -f batfish_javadocs
 
 batfish_get_history() {
    batfish_date
@@ -246,6 +251,22 @@ batfish_get_history_diff() {
    echo ": END: Get flow histories"
 }
 export -f batfish_get_history_diff
+
+batfish_get_history_diff_active() {
+   batfish_date
+   echo ": START: Get flow"
+   batfish_expect_args 6 $# || return 1
+   local BASE=$1
+   local ENV=$2
+   local DIFF_ENV=$3
+   local QUESTIONNAME=$4
+   local RESULT=$5
+   local RESULT_JSON=$6
+   batfish -autobasedir $BASE -env $ENV -diffactive -diffenv $DIFF_ENV -questionname $QUESTIONNAME -history -logtee -loglevel output -logfile $RESULT -answerjsonpath $RESULT_JSON || return 1
+   batfish_date
+   echo ": END: Get flow histories"
+}
+export -f batfish_get_history_diff_active
 
 batfish_get_topology_interfaces() {
    batfish_date
@@ -295,6 +316,20 @@ batfish_post_flows_diff() {
    echo ": END: Inject discovered packets into network model (differential)"
 }
 export -f batfish_post_flows_diff
+
+batfish_post_flows_diff_active() {
+   batfish_date
+   echo ": START: Inject discovered packets into network model (use delta environment)"
+   batfish_expect_args 4 $# || return 1
+   local BASE=$1
+   local ENV=$2
+   local DIFF_ENV=$3
+   local QUESTIONNAME=$4
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -diffactive -questionname $QUESTIONNAME -nxtnettraffic || return 1
+   batfish_date
+   echo ": END: Inject discovered packets into network model (use delta environment)"
+}
+export -f batfish_post_flows_diff_active
 
 batfish_prepare_default_environment() {
    batfish_date
@@ -499,10 +534,10 @@ _batfish_replace_symlinks() {
    cd $BATFISH_ROOT
    if [ -d ".git" ]; then
       echo "(Cygwin workaround) Updating git index to ignore changes to symlinks"
-      git update-index --assume-unchanged $($GNU_FIND . -type l) || return 1
+      git update-index --assume-unchanged $($GNU_FIND projects -type l) || return 1
    fi
    echo "(Cygwin workaround) Replacing symlinks"
-   $GNU_FIND . -type l | parallel _batfish_replace_symlink "{}" \;
+   $GNU_FIND projects -type l | parallel _batfish_replace_symlink "{}" \;
    if [ "${PIPESTATUS[0]}" -ne 0 -o "${PIPESTATUS[1]}" -ne 0 ]; then
       return 1
    fi
@@ -520,6 +555,11 @@ _batfish_replace_symlink() {
    cp -a "$ABSOLUTE_TARGET" "$SYMLINK" || return 1
 }
 export -f _batfish_replace_symlink
+
+batfish_scrubber() {
+   $BATFISH_ROOT/projects/pybatfish/bin/batfish_scrubber "$@"
+}
+export -f batfish_scrubber
 
 batfish_serialize_independent() {
    batfish_date
@@ -675,4 +715,9 @@ _common_build() {
    ant "$@" || return 1
 }
 export -f _common_build
+
+batfish_questions_doc() {
+   $BATFISH_ROOT/projects/pybatfish/bin/questions_to_html -i $BATFISH_ROOT/example_questions -o $BATFISH_ROOT/doc "$@"
+}
+export -f batfish_questions_doc
 

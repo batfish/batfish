@@ -34,6 +34,11 @@ efamt_filter
    FILTER direction name = variable
 ;
 
+efamt_interface_mode
+:
+   INTERFACE_MODE ACCESS
+;
+
 efamt_native_vlan_id
 :
    NATIVE_VLAN_ID name = variable
@@ -55,7 +60,25 @@ efamt_vlan
 
 eot_802_3ad
 :
-   EIGHT02_3AD name = variable
+   EIGHT02_3AD eot_802_3ad_tail
+;
+
+eot_802_3ad_tail
+:
+   eot802_3adt_interface
+   | eot802_3adt_lacp
+;
+
+eot802_3adt_interface
+:
+   (
+      node = variable COLON
+   )? name = variable
+;
+
+eot802_3adt_lacp
+:
+   LACP FORCE_UP
 ;
 
 eot_auto_negotiation
@@ -127,6 +150,7 @@ famt_ethernet_switching_tail
 // intentional blank
 
    | efamt_filter
+   | efamt_interface_mode
    | efamt_native_vlan_id
    | efamt_port_mode
    | efamt_vlan
@@ -314,11 +338,21 @@ intt_apply_groups
    s_apply_groups
 ;
 
+intt_interface_range
+:
+   INTERFACE_RANGE irange = variable MEMBER member = DOUBLE_QUOTED_STRING
+;
+
 intt_named
 :
    (
       WILDCARD
-      | name = variable
+      |
+      (
+         (
+            node = variable COLON
+         )? name = variable
+      )
    ) intt_named_tail
 ;
 
@@ -616,6 +650,7 @@ s_interfaces
 s_interfaces_tail
 :
    intt_apply_groups
+   | intt_interface_range
    | intt_named
    | intt_null
 ;

@@ -14,6 +14,10 @@ package org.batfish.grammar.question;
    private java.util.Map<String, VariableType> _typeBindings = new java.util.HashMap<String, VariableType>();
     
    private java.util.Set<String> _immutableVars = new java.util.HashSet<String>();
+
+   private String getParserPosition() {
+      return "" + _ctx.start.getLine() + ":" + _ctx.start.getCharPositionInLine();
+   }
     
    private Token next() {
       return _input.LT(1);
@@ -33,7 +37,7 @@ package org.batfish.grammar.question;
 
    private void assertMutable(String var) {
       if (_immutableVars.contains(var)) {
-         throw new org.batfish.common.BatfishException("Attempt to alter immutable variable: \"" + var + "\"");
+         throw new org.batfish.common.BatfishException(getParserPosition() + ": Attempt to alter immutable variable: \"" + var + "\"");
       }
    }
 
@@ -41,7 +45,7 @@ package org.batfish.grammar.question;
       assertMutable(var);
       VariableType oldType = _typeBindings.get(var);
       if (oldType != null) {
-         throw new org.batfish.common.BatfishException("Attempt to create variable \"" + var + "\" with type: \"" + type + "\", but it already exists and has previously assigned type: \"" + oldType + "\"");
+         throw new org.batfish.common.BatfishException(getParserPosition() + ": Attempt to create variable \"" + var + "\" with type: \"" + type + "\", but it already exists and has previously assigned type: \"" + oldType + "\"");
       }
       else {
          _typeBindings.put(var, type);
@@ -52,7 +56,7 @@ package org.batfish.grammar.question;
       assertMutable(var);
       VariableType oldType = _typeBindings.get(var);
       if (oldType != null && oldType != type) {
-         throw new org.batfish.common.BatfishException("Attempt to update variable \"" + var + "\" with value of type: \"" + type + "\", but it has previously assigned type: \"" + oldType + "\"");
+         throw new org.batfish.common.BatfishException(getParserPosition() + ": Attempt to update variable \"" + var + "\" with value of type: \"" + type + "\", but it has previously assigned type: \"" + oldType + "\"");
       }
       else {
          _typeBindings.put(var, type);
@@ -62,7 +66,7 @@ package org.batfish.grammar.question;
    private VariableType retrieveTypeBinding(String var) {
       VariableType ret = _typeBindings.get(var);
       if (ret == null) {
-         throw new org.batfish.common.BatfishException("Missing type for variable: " + var);
+         throw new org.batfish.common.BatfishException(getParserPosition() + ": Missing type for variable: \"" + var + "\"");
       }
       return ret;
    }
@@ -70,7 +74,7 @@ package org.batfish.grammar.question;
    private void assertTypeBinding(String var, VariableType expectedType) {
       VariableType actualType = retrieveTypeBinding(var);
       if (actualType != expectedType) {
-         throw new org.batfish.common.BatfishException("Variable '" + var + "' is of type '" + actualType.toString() + "', but expected type '" + expectedType.toString() + "'");
+         throw new org.batfish.common.BatfishException(getParserPosition() + ": Variable '" + var + "' is of type '" + actualType.toString() + "', but expected type '" + expectedType.toString() + "'");
       }
    }
 
@@ -78,7 +82,7 @@ package org.batfish.grammar.question;
       VariableType lhsType = lhs.varType;
       VariableType rhsType = rhs.varType;
       if (lhsType != rhsType) {
-         throw new org.batfish.common.BatfishException("Expression '" + lhs.getText() + "' of type '" + lhsType.toString() + "' cannot be compared to expression '" + rhs.getText()+ "' of type '" + rhsType.toString());
+         throw new org.batfish.common.BatfishException(getParserPosition() + ": Expression '" + lhs.getText() + "' of type '" + lhsType.toString() + "' cannot be compared to expression '" + rhs.getText()+ "' of type '" + rhsType.toString());
       }
    }
 
@@ -186,9 +190,15 @@ bgp_neighbor_boolean_expr
    caller = bgp_neighbor_expr PERIOD
    (
       bgp_neighbor_has_generated_route_boolean_expr
+      | bgp_neighbor_has_local_ip_boolean_expr
       | bgp_neighbor_has_remote_bgp_neighbor_boolean_expr
       | bgp_neighbor_has_single_remote_bgp_neighbor_boolean_expr
    )
+;
+
+bgp_neighbor_description_string_expr
+:
+   DESCRIPTION
 ;
 
 bgp_neighbor_expr
@@ -209,6 +219,11 @@ bgp_neighbor_group_string_expr
 bgp_neighbor_has_generated_route_boolean_expr
 :
    HAS_GENERATED_ROUTE
+;
+
+bgp_neighbor_has_local_ip_boolean_expr
+:
+   HAS_LOCAL_IP
 ;
 
 bgp_neighbor_has_remote_bgp_neighbor_boolean_expr
@@ -281,7 +296,8 @@ bgp_neighbor_string_expr
 :
    caller = bgp_neighbor_expr PERIOD
    (
-      bgp_neighbor_group_string_expr
+      bgp_neighbor_description_string_expr
+      | bgp_neighbor_group_string_expr
       | bgp_neighbor_name_string_expr
    )
 ;
@@ -344,15 +360,15 @@ default_binding
       (
          SET str_set = STRING OPEN_BRACE
          (
-            str_elem += STRING_LITERAL
+            str_elem += string_literal_string_expr
             (
-               COMMA str_elem += STRING_LITERAL
+               COMMA str_elem += string_literal_string_expr
             )*
          )? CLOSE_BRACE
       )
       {createTypeBinding($var.getText(), VariableType.SET_STRING);}
 
-      | str = STRING_LITERAL
+      | str = string_literal_string_expr
       {createTypeBinding($var.getText(), VariableType.STRING);}
 
    ) SEMICOLON
@@ -459,6 +475,12 @@ expr returns [VariableType varType]
    {$varType = VariableType.ROUTE_FILTER_LINE;}
 
    |
+   {vp(VariableType.SET_IP)}?
+
+   set_ip_expr
+   {$varType = VariableType.SET_IP;}
+
+   |
    {vp(VariableType.SET_PREFIX)}?
 
    set_prefix_expr
@@ -484,11 +506,6 @@ expr returns [VariableType varType]
 
 ;
 
-failure_question
-:
-   FAILURE
-;
-
 false_expr
 :
    FALSE
@@ -508,8 +525,8 @@ flow_constraint_ingress_node
 :
    INGRESS_NODE EQUALS
    (
-      ingress_node = STRING_LITERAL
-      | ingress_node = VARIABLE
+      ingress_node_str = string_literal_string_expr
+      | ingress_node_var = VARIABLE
    )
 ;
 
@@ -684,6 +701,17 @@ locals [VariableType varType, String newScope]
    )
 ;
 
+format_string_expr
+:
+   FORMAT OPEN_PAREN format_string = string_expr
+   (
+      COMMA
+      (
+         replacements += printable_expr
+      )
+   )* CLOSE_PAREN
+;
+
 ge_expr
 :
    (
@@ -747,6 +775,12 @@ increment_statement
 ingress_path_question
 :
    INGRESS_PATH
+;
+
+int_constraint
+:
+   DEC
+   | VARIABLE
 ;
 
 int_expr
@@ -928,6 +962,8 @@ ip_expr
 :
    bgp_neighbor_ip_expr
    | interface_ip_expr
+   | ipsec_vpn_ip_expr
+   | prefix_ip_expr
    | static_route_ip_expr
    | IP_ADDRESS
    |
@@ -942,6 +978,7 @@ ipsec_vpn_boolean_expr
    (
       ipsec_vpn_compatible_ike_proposals_boolean_expr
       | ipsec_vpn_compatible_ipsec_proposals_boolean_expr
+      | ipsec_vpn_has_remote_ip_boolean_expr
       | ipsec_vpn_has_remote_ipsec_vpn_boolean_expr
       | ipsec_vpn_has_single_remote_ipsec_vpn_boolean_expr
    )
@@ -962,6 +999,15 @@ ipsec_vpn_expr
    IPSEC_VPN
    | REMOTE_IPSEC_VPN
    | ipsec_vpn_expr PERIOD ipsec_vpn_ipsec_vpn_expr
+   |
+   {v(VariableType.IPSEC_VPN)}?
+
+   var_ipsec_vpn_expr
+;
+
+ipsec_vpn_has_remote_ip_boolean_expr
+:
+   HAS_REMOTE_IP
 ;
 
 ipsec_vpn_has_remote_ipsec_vpn_boolean_expr
@@ -982,6 +1028,11 @@ ipsec_vpn_ike_gateway_name_string_expr
 ipsec_vpn_ike_policy_name_string_expr
 :
    IKE_POLICY_NAME
+;
+
+ipsec_vpn_ip_expr
+:
+   caller = ipsec_vpn_expr PERIOD ipsec_vpn_remote_ip_ip_expr
 ;
 
 ipsec_vpn_ipsec_policy_name_string_expr
@@ -1017,6 +1068,11 @@ ipsec_vpn_owner_node_expr
 ipsec_vpn_pre_shared_key_hash_string_expr
 :
    PRE_SHARED_KEY_HASH
+;
+
+ipsec_vpn_remote_ip_ip_expr
+:
+   REMOTE_IP
 ;
 
 ipsec_vpn_remote_ipsec_vpn_ipsec_vpn_expr
@@ -1201,7 +1257,7 @@ node_boolean_expr
 node_constraint
 :
    REGEX
-   | STRING_LITERAL
+   | string_literal_string_expr
    | VARIABLE
 ;
 
@@ -1311,11 +1367,25 @@ policy_map_expr
    var_policy_map_expr
 ;
 
+prefix_address_ip_expr
+:
+   ADDRESS
+;
+
 prefix_expr
 :
    generated_route_prefix_expr
    | interface_prefix_expr
    | static_route_prefix_expr
+   |
+   {v(VariableType.PREFIX)}?
+
+   var_prefix_expr
+;
+
+prefix_ip_expr
+:
+   caller = prefix_expr PERIOD prefix_address_ip_expr
 ;
 
 prefix_space_boolean_expr
@@ -1413,7 +1483,7 @@ question
    defaults?
    (
       acl_reachability_question
-      | failure_question
+      | reduced_reachability_question
       | ingress_path_question
       | local_path_question
       | multipath_question
@@ -1473,6 +1543,16 @@ reachability_constraint_final_node
    FINAL_NODE EQUALS node_constraint
 ;
 
+reachability_constraint_icmp_code
+:
+   ICMP_CODE EQUALS int_constraint
+;
+
+reachability_constraint_icmp_type
+:
+   ICMP_TYPE EQUALS int_constraint
+;
+
 reachability_constraint_ingress_node
 :
    INGRESS_NODE EQUALS node_constraint
@@ -1493,12 +1573,22 @@ reachability_constraint_src_port
    SRC_PORT EQUALS range_constraint
 ;
 
+reachability_constraint_tcp_flags
+:
+   TCP_FLAGS EQUALS int_constraint
+;
+
 reachability_question
 :
    REACHABILITY OPEN_BRACE reachability_constraint
    (
       COMMA reachability_constraint
    )* CLOSE_BRACE
+;
+
+reduced_reachability_question
+:
+   REDUCED_REACHABILITY
 ;
 
 route_filter_expr
@@ -1704,9 +1794,20 @@ locals [String typeStr, VariableType type, VariableType oldType]
    SEMICOLON
 ;
 
+set_ip_expr
+:
+   {v(VariableType.SET_IP)}?
+
+   | var_set_ip_expr
+;
+
 set_prefix_expr
 :
    interface_set_prefix_expr
+   |
+   {v(VariableType.SET_PREFIX)}?
+
+   | var_set_prefix_expr
 ;
 
 set_size_int_expr
@@ -1810,6 +1911,7 @@ static_route_string_expr
 base_string_expr
 :
    bgp_neighbor_string_expr
+   | format_string_expr
    | interface_string_expr
    | ipsec_vpn_string_expr
    | map_string_expr
@@ -1830,9 +1932,16 @@ string_expr
    | s1 = string_expr PLUS s2 = string_expr
 ;
 
-string_literal_string_expr
+string_literal_string_expr returns [String text] @init {
+   $text = "";
+}
 :
-   STRING_LITERAL
+   DOUBLE_QUOTE
+   (
+      sl = STRING_LITERAL
+      {$text = $sl.getText();}
+
+   )? DOUBLE_QUOTE
 ;
 
 subrange
@@ -1912,6 +2021,11 @@ var_ip_expr
    VARIABLE
 ;
 
+var_ipsec_vpn_expr
+:
+   var = VARIABLE
+;
+
 var_list_expr
 :
    VARIABLE
@@ -1958,6 +2072,16 @@ var_route_filter_expr
 ;
 
 var_route_filter_line_expr
+:
+   VARIABLE
+;
+
+var_set_ip_expr
+:
+   VARIABLE
+;
+
+var_set_prefix_expr
 :
    VARIABLE
 ;

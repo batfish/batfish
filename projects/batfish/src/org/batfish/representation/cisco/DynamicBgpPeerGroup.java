@@ -20,6 +20,11 @@ public class DynamicBgpPeerGroup extends LeafBgpPeerGroup {
       return _prefix.toString();
    }
 
+   @Override
+   public Prefix getNeighborPrefix() {
+      return _prefix;
+   }
+
    public Prefix getPrefix() {
       return _prefix;
    }

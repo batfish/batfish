@@ -1,6 +1,11 @@
-/*
- * Trace a flow with parameters ($src_ip, $dst_ip, $src_port, $dst_port, $ip_protocol) that originates from $ingress_node.
- * MAKE SURE to supply parameter $ingress_node in parameters file or replace it below.
+/**
+ * Trace a flow with provided parameters. Be sure to provide a value for ingress_node to get any results
+ * @param ingress_node The node at which the trace originates (REQUIRED) (MUST BE QUOTED)
+ * @param src_ip The source IP address in the header. Defaults to 0.0.0.0
+ * @param dst_ip The destination IP address in the header. Defaults to 0.0.0.0
+ * @param src_port The source port in the header for TCP and UDP flows. Defaults to 0.
+ * @param dst_port The destination port in the header for TCP and UDP flows. Defaults to 0.
+ * @param ip_protocol The IP protocol number in the header (use 6 for TCP and 17 for UDP). Defaults to 0.
  */
 defaults {
    // The node at which the flow is created

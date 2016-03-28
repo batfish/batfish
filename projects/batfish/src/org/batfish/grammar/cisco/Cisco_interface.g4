@@ -42,6 +42,7 @@ if_stanza
    | description_if_stanza
    | ip_access_group_if_stanza
    | ip_address_if_stanza
+   | ip_address_dhcp_if_stanza
    | ip_address_secondary_if_stanza
    | ip_ospf_cost_if_stanza
    | ip_ospf_dead_interval_if_stanza
@@ -72,9 +73,10 @@ if_stanza
 
 interface_stanza
 :
-   INTERFACE iname = interface_name
+   INTERFACE PRECONFIGURE? iname = interface_name
    (
-      MULTIPOINT
+      L2TRANSPORT
+      | MULTIPOINT
       | POINT_TO_POINT
    )? NEWLINE interface_stanza_tail
 ;
@@ -88,9 +90,14 @@ interface_stanza_tail
 
 ip_access_group_if_stanza
 :
-   IP PORT? ACCESS_GROUP name = .
    (
-      IN
+      IP
+      | IPV4
+   ) PORT? ACCESS_GROUP name = .
+   (
+      EGRESS
+      | IN
+      | INGRESS
       | OUT
    ) NEWLINE
 ;
@@ -115,6 +122,11 @@ ip_address_if_stanza
    (
       STANDBY IP_ADDRESS
    )? NEWLINE
+;
+
+ip_address_dhcp_if_stanza
+:
+   IP ADDRESS DHCP NEWLINE
 ;
 
 ip_address_secondary_if_stanza
@@ -195,10 +207,10 @@ null_if_stanza
    (
       NO? SWITCHPORT NEWLINE
    )
-   | null_standalone_if_stanza
+   | null_block_if_stanza
 ;
 
-null_standalone_if_stanza
+null_block_if_stanza
 :
    NO?
    (
@@ -236,6 +248,7 @@ null_standalone_if_stanza
       | ENCAPSULATION
       | FAIR_QUEUE
       | FAST_REROUTE
+      | FLOW
       | FLOWCONTROL
       | FORWARDER
       | FRAME_RELAY
@@ -279,6 +292,7 @@ null_standalone_if_stanza
                (
                   AUTHENTICATION
                   | AUTHENTICATION_KEY
+                  | BFD
                   | MESSAGE_DIGEST_KEY
                   | MTU_IGNORE
                   | NETWORK
@@ -306,7 +320,9 @@ null_standalone_if_stanza
       (
          IPV4
          (
-            UNNUMBERED
+            MTU
+            | UNNUMBERED
+            | UNREACHABLES
          )
       )
       | IPV6
@@ -336,12 +352,14 @@ null_standalone_if_stanza
       | MDIX
       | MEDIA_TYPE
       | MEMBER
+      | MINIMUM_LINKS
       | MLAG
       | MLS
       | MOBILITY
       | MOP
       | MPLS
       | MTU
+      | NAME
       | NAMEIF
       | NEGOTIATE
       | NEGOTIATION
@@ -353,6 +371,8 @@ null_standalone_if_stanza
       | PEER
       | PHYSICAL_LAYER
       | PORT_CHANNEL
+      | PORT_CHANNEL_PROTOCOL
+      | PORTMODE
       | POS
       | POWER
       | PPP
@@ -402,18 +422,34 @@ null_standalone_if_stanza
          )
       )
       | TAG_SWITCHING
+      | TAGGED
       | TCAM
       | TRUST
       | TUNNEL
       | TX_QUEUE
       | UC_TX_QUEUE
       | UDLD
+      | UNTAGGED
+      | VLT_PEER_LAG
       | VPC
       | VRRP
+      | VRRP_GROUP
       | WEIGHTING
       | WRR_QUEUE
       | X25
       | XCONNECT
+   ) ~NEWLINE* NEWLINE null_block_if_substanza*
+;
+
+null_block_if_substanza
+:
+   NO?
+   (
+      ADDRESS
+      | PRIORITY
+      | RECEIVE
+      | TRANSMIT
+      | VIRTUAL_ADDRESS
    ) ~NEWLINE* NEWLINE
 ;
 

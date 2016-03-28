@@ -9,44 +9,48 @@ public final class Format {
 
    public static final String BATFISH_FLATTENED_JUNIPER_HEADER = "####BATFISH FLATTENED JUNIPER CONFIG####\n";
 
+   public static final String BATFISH_FLATTENED_VYOS_HEADER = "####BATFISH FLATTENED VYOS CONFIG####\n";
+
    public static ConfigurationFormat identifyConfigurationFormat(String fileText) {
+      String trimmedText = fileText.trim();
+      if (trimmedText.length() == 0) {
+         return ConfigurationFormat.EMPTY;
+      }
       if (fileText.contains("IOS XR")) {
          return ConfigurationFormat.CISCO_IOS_XR;
       }
-      char firstChar = fileText.trim().charAt(0);
-      Matcher setMatcher = Pattern.compile("\nset ").matcher(fileText);
-      Matcher flattenedMatcher = Pattern.compile(
+      char firstChar = trimmedText.charAt(0);
+      Matcher setMatcher = Pattern.compile("(?m)^set ").matcher(fileText);
+      Matcher flattenedJuniperMatcher = Pattern.compile(
             Pattern.quote(BATFISH_FLATTENED_JUNIPER_HEADER)).matcher(fileText);
-      if (firstChar == '!') {
-         Matcher aristaMatcher = Pattern.compile("boot system flash.*\\.swi")
-               .matcher(fileText);
-         if (fileText.contains("set prompt")) {
-            return ConfigurationFormat.VXWORKS;
-         }
-         else if (aristaMatcher.find()) {
-            return ConfigurationFormat.ARISTA;
-         }
-         else {
-            String[] lines = fileText.split("\\n");
-            for (String line : lines) {
-               String trimmedLine = line.trim();
-               if (trimmedLine.length() == 0 || trimmedLine.startsWith("!")) {
-                  continue;
-               }
-               if (line.startsWith("version")) {
-                  return ConfigurationFormat.CISCO;
-               }
-               else {
-                  return ConfigurationFormat.CISCO; // may change in future
-               }
-            }
-         }
+      Matcher flatJuniperHostnameDeclarationMatcher = Pattern.compile(
+            "(?m)^set system host-name ").matcher(fileText);
+      Matcher aristaMatcher = Pattern.compile("(?m)^boot system flash.*\\.swi")
+            .matcher(fileText);
+      Matcher ciscoLike = Pattern.compile(
+            "(?m)(^boot system flash.*$)|(^interface .*$)").matcher(fileText);
+      if (fileText.contains("set system config-management commit-revisions")) {
+         return ConfigurationFormat.FLAT_VYOS;
+      }
+      else if (fileText.contains("System.SystemName")) {
+         return ConfigurationFormat.MRV;
+      }
+      else if (fileText.contains("system") && fileText.contains("{")
+            && fileText.contains("}") && fileText.contains("config-management")
+            && fileText.contains("commit-revisions")) {
+         return ConfigurationFormat.VYOS;
+      }
+      else if (aristaMatcher.find()) {
+         return ConfigurationFormat.ARISTA;
+      }
+      else if (firstChar == '!' && fileText.contains("set prompt")) {
+         return ConfigurationFormat.VXWORKS;
       }
       else if (fileText.contains("set hostname")) {
          return ConfigurationFormat.JUNIPER_SWITCH;
       }
-      else if (flattenedMatcher.find(0)
-            || fileText.contains("set system host-name")
+      else if (flattenedJuniperMatcher.find(0)
+            || flatJuniperHostnameDeclarationMatcher.find(0)
             || (fileText.contains("apply-groups") && setMatcher.find(0))) {
          return ConfigurationFormat.FLAT_JUNIPER;
       }
@@ -56,6 +60,12 @@ public final class Format {
                   && fileText.contains("host-name") && fileText
                      .contains("interfaces"))) {
          return ConfigurationFormat.JUNIPER;
+      }
+      else if (aristaMatcher.find()) {
+         return ConfigurationFormat.ARISTA;
+      }
+      else if (ciscoLike.find() || firstChar == '!') {
+         return ConfigurationFormat.CISCO;
       }
       return ConfigurationFormat.UNKNOWN;
    }

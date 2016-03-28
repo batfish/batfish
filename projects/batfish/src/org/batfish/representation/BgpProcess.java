@@ -31,6 +31,8 @@ public class BgpProcess implements Serializable {
 
    private transient PrefixSpace _originationSpace;
 
+   private Ip _routerId;
+
    /**
     * Constructs a BgpProcess
     */
@@ -57,8 +59,16 @@ public class BgpProcess implements Serializable {
       return _originationSpace;
    }
 
+   public Ip getRouterId() {
+      return _routerId;
+   }
+
    public void setOriginationSpace(PrefixSpace originationSpace) {
       _originationSpace = originationSpace;
+   }
+
+   public void setRouterId(Ip routerId) {
+      _routerId = routerId;
    }
 
 }

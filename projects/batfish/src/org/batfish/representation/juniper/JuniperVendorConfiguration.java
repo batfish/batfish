@@ -3,11 +3,14 @@ package org.batfish.representation.juniper;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.batfish.collections.RoleSet;
 import org.batfish.main.ConfigurationFormat;
@@ -60,6 +63,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    private Configuration _c;
 
    private boolean _defaultAddressSelection;
+
+   private transient Interface _lo0;
+
+   private transient boolean _lo0Initialized;
 
    private final RoleSet _roles;
 
@@ -141,31 +148,25 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
          // inherit update-source
          Ip localAddress = ig.getLocalAddress();
-         if (localAddress == null && _defaultAddressSelection) {
-            Interface lo0 = _defaultRoutingInstance.getInterfaces().get(
-                  FIRST_LOOPBACK_INTERFACE_NAME);
-            if (lo0 != null) {
-               Interface lo0_0 = lo0.getUnits().get(
-                     FIRST_LOOPBACK_INTERFACE_NAME + ".0");
-               if (lo0_0 != null) {
-                  Prefix lo0_0Prefix = lo0_0.getPrimaryPrefix();
-                  if (lo0_0Prefix != null) {
-                     localAddress = lo0_0Prefix.getAddress();
+         if (localAddress == null) {
+            // assign the ip of the interface that is likely connected to this
+            // peer
+            outerloop: for (org.batfish.representation.Interface iface : _c
+                  .getInterfaces().values()) {
+               for (Prefix prefix : iface.getAllPrefixes()) {
+                  if (prefix.contains(ip)) {
+                     localAddress = prefix.getAddress();
+                     break outerloop;
                   }
                }
             }
          }
-         if (localAddress == null) {
-            // assign the ip of the interface that is likely connected to this
-            // peer
-            for (Interface iface : _defaultRoutingInstance.getInterfaces()
-                  .values()) {
-               for (Interface unit : iface.getUnits().values()) {
-                  Prefix unitPrefix = unit.getPrimaryPrefix();
-                  if (unitPrefix != null && unitPrefix.contains(ip)) {
-                     localAddress = unitPrefix.getAddress();
-                     break;
-                  }
+         if (localAddress == null && _defaultAddressSelection) {
+            initFirstLoopbackInterface();
+            if (_lo0 != null) {
+               Prefix lo0_0Prefix = _lo0.getPrimaryPrefix();
+               if (lo0_0Prefix != null) {
+                  localAddress = lo0_0Prefix.getAddress();
                }
             }
          }
@@ -280,6 +281,29 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return _w;
    }
 
+   private void initFirstLoopbackInterface() {
+      if (_lo0Initialized) {
+         return;
+      }
+      _lo0Initialized = true;
+      _lo0 = _defaultRoutingInstance.getInterfaces().get(
+            FIRST_LOOPBACK_INTERFACE_NAME);
+      Pattern p = Pattern
+            .compile("[A-Za-z0-9][A-Za-z0-9]*:lo[0-9][0-9]*\\.[0-9][0-9]*");
+      if (_lo0 == null) {
+         for (NodeDevice nd : _defaultRoutingInstance.getNodeDevices().values()) {
+            for (Interface iface : nd.getInterfaces().values()) {
+               for (Interface unit : iface.getUnits().values()) {
+                  if (p.matcher(unit.getName()).matches()) {
+                     _lo0 = unit;
+                  }
+               }
+            }
+         }
+      }
+
+   }
+
    private void placeInterfaceIntoArea(
          Map<Long, org.batfish.representation.OspfArea> newAreas, String name,
          Interface iface) {
@@ -291,6 +315,15 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          org.batfish.representation.OspfArea newArea = newAreas
                .get(ospfAreaLong);
          newArea.getInterfaces().add(newIface);
+         newIface.setOspfEnabled(true);
+      }
+      for (Ip passiveArea : iface.getOspfPassiveAreas()) {
+         long ospfAreaLong = passiveArea.asLong();
+         org.batfish.representation.OspfArea newArea = newAreas
+               .get(ospfAreaLong);
+         newArea.getInterfaces().add(newIface);
+         newIface.setOspfEnabled(true);
+         newIface.setOspfPassive(true);
       }
    }
 
@@ -390,6 +423,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
       // address
       newIkeGateway.setAddress(oldIkeGateway.getAddress());
+      newIkeGateway.setLocalAddress(oldIkeGateway.getLocalAddress());
 
       // external interface
       Interface oldExternalInterface = oldIkeGateway.getExternalInterface();
@@ -464,44 +498,44 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       String name = iface.getName();
       org.batfish.representation.Interface newIface = new org.batfish.representation.Interface(
             name, _c);
-      String inAclName = iface.getIncomingFilter();
-      if (inAclName != null) {
-         Zone zone = _interfaceZones.get(iface);
+      Zone zone = _interfaceZones.get(iface);
+      if (zone != null) {
+         String zoneName = zone.getName();
          if (zone != null) {
-            String zoneName = zone.getName();
-            if (zone != null) {
-               // filter for interface in zone
-               FirewallFilter zoneInboundInterfaceFilter = zone
-                     .getInboundInterfaceFilters().get(iface);
-               if (zoneInboundInterfaceFilter != null) {
-                  String zoneInboundInterfaceFilterName = zoneInboundInterfaceFilter
-                        .getName();
-                  zoneInboundInterfaceFilter
-                        .getReferers()
-                        .put(iface,
-                              "Interface: \""
-                                    + iface.getName()
-                                    + "\" refers to inbound filter for interface in zone : \""
-                                    + zoneName + "\"");
-                  IpAccessList zoneInboundInterfaceFilterList = _c
-                        .getIpAccessLists().get(zoneInboundInterfaceFilterName);
-                  newIface.setInboundFilter(zoneInboundInterfaceFilterList);
-               }
-               else {
-                  // filter for zone
-                  FirewallFilter zoneInboundFilter = zone.getInboundFilter();
-                  String zoneInboundFilterName = zoneInboundFilter.getName();
-                  zoneInboundFilter.getReferers().put(
-                        iface,
-                        "Interface: \"" + iface.getName()
-                              + "\" refers to inbound filter for zone : \""
-                              + zoneName + "\"");
-                  IpAccessList zoneInboundFilterList = _c.getIpAccessLists()
-                        .get(zoneInboundFilterName);
-                  newIface.setInboundFilter(zoneInboundFilterList);
-               }
+            // filter for interface in zone
+            FirewallFilter zoneInboundInterfaceFilter = zone
+                  .getInboundInterfaceFilters().get(iface);
+            if (zoneInboundInterfaceFilter != null) {
+               String zoneInboundInterfaceFilterName = zoneInboundInterfaceFilter
+                     .getName();
+               zoneInboundInterfaceFilter
+                     .getReferers()
+                     .put(iface,
+                           "Interface: \""
+                                 + iface.getName()
+                                 + "\" refers to inbound filter for interface in zone : \""
+                                 + zoneName + "\"");
+               IpAccessList zoneInboundInterfaceFilterList = _c
+                     .getIpAccessLists().get(zoneInboundInterfaceFilterName);
+               newIface.setInboundFilter(zoneInboundInterfaceFilterList);
+            }
+            else {
+               // filter for zone
+               FirewallFilter zoneInboundFilter = zone.getInboundFilter();
+               String zoneInboundFilterName = zoneInboundFilter.getName();
+               zoneInboundFilter.getReferers().put(
+                     iface,
+                     "Interface: \"" + iface.getName()
+                           + "\" refers to inbound filter for zone : \""
+                           + zoneName + "\"");
+               IpAccessList zoneInboundFilterList = _c.getIpAccessLists().get(
+                     zoneInboundFilterName);
+               newIface.setInboundFilter(zoneInboundFilterList);
             }
          }
+      }
+      String inAclName = iface.getIncomingFilter();
+      if (inAclName != null) {
          IpAccessList inAcl = _c.getIpAccessLists().get(inAclName);
          if (inAcl == null) {
             _w.redFlag("missing incoming acl: \"" + inAclName + "\"");
@@ -519,7 +553,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             _w.redFlag("missing outgoing acl: \"" + outAclName + "\"");
          }
          else {
-            _filters.get(inAclName).getReferers()
+            _filters.get(outAclName).getReferers()
                   .put(iface, "Outgoing ACL for interface: " + iface.getName());
             newIface.setOutgoingFilter(outAcl);
          }
@@ -617,7 +651,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          IpAccessListLine line = new IpAccessListLine();
          line.setAction(action);
          for (FwFrom from : term.getFroms()) {
-            from.applyTo(line, _w);
+            from.applyTo(line, _w, _c);
          }
          boolean addLine = term.getFromApplications().isEmpty()
                && term.getFromHostProtocols().isEmpty()
@@ -799,18 +833,6 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       _c.setVendor(_vendor);
       _c.setRoles(_roles);
 
-      // convert firewall filters to ipaccesslists
-      for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
-         String name = e.getKey();
-         FirewallFilter filter = e.getValue();
-         // TODO: support other filter families
-         if (filter.getFamily() != Family.INET) {
-            continue;
-         }
-         IpAccessList list = toIpAccessList(filter);
-         _c.getIpAccessLists().put(name, list);
-      }
-
       // convert prefix lists to route filter lists
       for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
          String name = e.getKey();
@@ -824,6 +846,44 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             rfl.addLine(line);
          }
          _c.getRouteFilterLists().put(name, rfl);
+      }
+
+      // remove ipv6 lines from firewall filters
+      for (FirewallFilter filter : _filters.values()) {
+         Set<String> toRemove = new HashSet<String>();
+         for (Entry<String, FwTerm> e2 : filter.getTerms().entrySet()) {
+            String termName = e2.getKey();
+            FwTerm term = e2.getValue();
+            if (term.getIpv6()) {
+               toRemove.add(termName);
+            }
+         }
+         for (String termName : toRemove) {
+            filter.getTerms().remove(termName);
+         }
+      }
+
+      // remove empty firewall filters (ipv6-only filters)
+      Map<String, FirewallFilter> allFilters = new LinkedHashMap<String, FirewallFilter>();
+      allFilters.putAll(_filters);
+      for (Entry<String, FirewallFilter> e : allFilters.entrySet()) {
+         String name = e.getKey();
+         FirewallFilter filter = e.getValue();
+         if (filter.getTerms().size() == 0) {
+            _filters.remove(name);
+         }
+      }
+
+      // convert firewall filters to ipaccesslists
+      for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
+         String name = e.getKey();
+         FirewallFilter filter = e.getValue();
+         // TODO: support other filter families
+         if (filter.getFamily() != Family.INET) {
+            continue;
+         }
+         IpAccessList list = toIpAccessList(filter);
+         _c.getIpAccessLists().put(name, list);
       }
 
       // convert route filters to route filter lists
@@ -856,18 +916,21 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       }
 
       // convert interfaces
-      for (Entry<String, Interface> e : _defaultRoutingInstance.getInterfaces()
-            .entrySet()) {
-         // String name = e.getKey();
-         Interface iface = e.getValue();
-         // org.batfish.representation.Interface newIface = toInterface(iface);
-         // _c.getInterfaces().put(name, newIface);
-         for (Entry<String, Interface> eUnit : iface.getUnits().entrySet()) {
-            String unitName = eUnit.getKey();
-            Interface unitIface = eUnit.getValue();
-            org.batfish.representation.Interface newUnitIface = toInterface(unitIface);
-            _c.getInterfaces().put(unitName, newUnitIface);
+      Map<String, Interface> allInterfaces = new LinkedHashMap<String, Interface>();
+
+      for (Interface iface : _defaultRoutingInstance.getInterfaces().values()) {
+         allInterfaces.putAll(iface.getUnits());
+      }
+      for (NodeDevice nd : _defaultRoutingInstance.getNodeDevices().values()) {
+         for (Interface iface : nd.getInterfaces().values()) {
+            allInterfaces.putAll(iface.getUnits());
          }
+      }
+      for (Entry<String, Interface> eUnit : allInterfaces.entrySet()) {
+         String unitName = eUnit.getKey();
+         Interface unitIface = eUnit.getValue();
+         org.batfish.representation.Interface newUnitIface = toInterface(unitIface);
+         _c.getInterfaces().put(unitName, newUnitIface);
       }
 
       // copy ike proposals
@@ -980,7 +1043,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       warnUnreferencedIkeGateways();
       warnUnreferencedIpsecPropsals();
       warnUnreferencedIpsecPolicies();
-      warnUnreferencedStInterfaces();
+      warnAndDisableUnreferencedStInterfaces();
       return _c;
    }
 
@@ -1068,6 +1131,20 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return newZone;
    }
 
+   private void warnAndDisableUnreferencedStInterfaces() {
+      for (Interface i : _defaultRoutingInstance.getInterfaces().values()) {
+         for (Entry<String, Interface> e : i.getUnits().entrySet()) {
+            String name = e.getKey();
+            Interface iface = e.getValue();
+            if (org.batfish.representation.Interface.computeInterfaceType(name,
+                  _vendor) == InterfaceType.VPN && iface.isUnused()) {
+               _w.redFlag("Unused vpn tunnel interface: \"" + name + "\"");
+               _c.getInterfaces().remove(name);
+            }
+         }
+      }
+   }
+
    private void warnUnreferencedFirewallFilters() {
       for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
          String name = e.getKey();
@@ -1134,19 +1211,6 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          PolicyStatement ps = e.getValue();
          if (ps.isUnused()) {
             _w.redFlag("Unused policy-statement: \"" + name + "\"");
-         }
-      }
-   }
-
-   private void warnUnreferencedStInterfaces() {
-      for (Interface i : _defaultRoutingInstance.getInterfaces().values()) {
-         for (Entry<String, Interface> e : i.getUnits().entrySet()) {
-            String name = e.getKey();
-            Interface iface = e.getValue();
-            if (org.batfish.representation.Interface.computeInterfaceType(name,
-                  _vendor) == InterfaceType.VPN && iface.isUnused()) {
-               _w.redFlag("Unused vpn tunnel interface: \"" + name + "\"");
-            }
          }
       }
    }

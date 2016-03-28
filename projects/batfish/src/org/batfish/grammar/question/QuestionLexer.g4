@@ -28,7 +28,7 @@ ACCEPT
 
 ACL_REACHABILITY
 :
-   'acl-reachability'
+   'acl_reachability'
 ;
 
 ACTION
@@ -44,6 +44,11 @@ ACTIVE
 ADD
 :
    'add'
+;
+
+ADDRESS
+:
+   'address'
 ;
 
 ALL_PREFIXES
@@ -116,6 +121,11 @@ DEFAULTS
    'defaults'
 ;
 
+DESCRIPTION
+:
+   'description'
+;
+
 DROP
 :
    'drop'
@@ -141,11 +151,6 @@ ENABLED
    'enabled'
 ;
 
-FAILURE
-:
-   'failure'
-;
-
 FALSE
 :
    'false'
@@ -164,6 +169,11 @@ FLOW
 FOREACH
 :
    'foreach'
+;
+
+FORMAT
+:
+   'format'
 ;
 
 GENERATED_ROUTE
@@ -201,6 +211,11 @@ HAS_IP
    'has_ip'
 ;
 
+HAS_LOCAL_IP
+:
+   'has_local_ip'
+;
+
 HAS_NEXT_HOP_INTERFACE
 :
    'has_next_hop_interface'
@@ -216,6 +231,11 @@ HAS_REMOTE_BGP_NEIGHBOR
    'has_remote_bgp_neighbor'
 ;
 
+HAS_REMOTE_IP
+:
+   'has_remote_ip'
+;
+
 HAS_REMOTE_IPSEC_VPN
 :
    'has_remote_ipsec_vpn'
@@ -229,6 +249,16 @@ HAS_SINGLE_REMOTE_BGP_NEIGHBOR
 HAS_SINGLE_REMOTE_IPSEC_VPN
 :
    'has_single_remote_ipsec_vpn'
+;
+
+ICMP_CODE
+:
+   'icmp_code'
+;
+
+ICMP_TYPE
+:
+   'icmp_type'
 ;
 
 IF
@@ -253,7 +283,7 @@ INGRESS_NODE
 
 INGRESS_PATH
 :
-   'ingress-path'
+   'ingress_path'
 ;
 
 INPUT
@@ -343,7 +373,7 @@ LOCAL_IP
 
 LOCAL_PATH
 :
-   'local-path'
+   'local_path'
 ;
 
 MATCH_PROTOCOL
@@ -476,6 +506,11 @@ REACHABILITY
    'reachability'
 ;
 
+REDUCED_REACHABILITY
+:
+   'reduced_reachability'
+;
+
 REMOTE_AS
 :
    'remote_as'
@@ -534,6 +569,11 @@ STATIC_ROUTE
 SUBNET
 :
    'subnet'
+;
+
+TCP_FLAGS
+:
+   'tcp_flags'
 ;
 
 TESTRIG
@@ -624,7 +664,7 @@ DOUBLE_PLUS
 
 DOUBLE_QUOTE
 :
-   '"' -> channel ( HIDDEN ) , pushMode ( M_QuotedString )
+   '"' -> pushMode ( M_QuotedString )
 ;
 
 EQUALS
@@ -830,7 +870,7 @@ M_QuotedString_TEXT
 
 M_QuotedString_DOUBLE_QUOTE
 :
-   '"' -> channel ( HIDDEN ) , popMode
+   '"' -> type ( DOUBLE_QUOTE ) , popMode
 ;
 
 mode M_Set;

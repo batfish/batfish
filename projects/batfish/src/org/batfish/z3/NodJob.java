@@ -12,8 +12,11 @@ import org.batfish.collections.NodeSet;
 import org.batfish.job.BatfishJob;
 import org.batfish.common.BatfishException;
 import org.batfish.representation.Flow;
+import org.batfish.representation.IcmpCode;
+import org.batfish.representation.IcmpType;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
+import org.batfish.representation.TcpFlags;
 
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BitVecNum;
@@ -29,6 +32,60 @@ import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
 
 public final class NodJob extends BatfishJob<NodJobResult> {
+
+   public static Flow createFlow(String node, Map<String, Long> constraints,
+         String tag) {
+      long src_ip = 0;
+      long dst_ip = 0;
+      long src_port = 0;
+      long dst_port = 0;
+      long icmp_type = IcmpType.UNSET;
+      long icmp_code = IcmpCode.UNSET;
+      long tcp_flags = TcpFlags.UNSET;
+      long protocol = IpProtocol.IP.number();
+      for (String varName : constraints.keySet()) {
+         Long value = constraints.get(varName);
+         switch (varName) {
+         case Synthesizer.SRC_IP_VAR:
+            src_ip = value;
+            break;
+
+         case Synthesizer.DST_IP_VAR:
+            dst_ip = value;
+            break;
+
+         case Synthesizer.SRC_PORT_VAR:
+            src_port = value;
+            break;
+
+         case Synthesizer.DST_PORT_VAR:
+            dst_port = value;
+            break;
+
+         case Synthesizer.IP_PROTOCOL_VAR:
+            protocol = value;
+            break;
+
+         case Synthesizer.ICMP_TYPE_VAR:
+            icmp_type = value;
+            break;
+
+         case Synthesizer.ICMP_CODE_VAR:
+            icmp_code = value;
+            break;
+
+         case Synthesizer.TCP_FLAGS_VAR:
+            tcp_flags = value;
+            break;
+
+         default:
+            throw new Error("invalid variable name");
+         }
+      }
+      return new Flow(node, new Ip(src_ip), new Ip(dst_ip), (int) src_port,
+            (int) dst_port, IpProtocol.fromNumber((int) protocol),
+            (int) icmp_type, (int) icmp_code, (int) tcp_flags, tag);
+   }
 
    private Synthesizer _dataPlaneSynthesizer;
 
@@ -142,40 +199,7 @@ public final class NodJob extends BatfishJob<NodJobResult> {
    }
 
    private Flow createFlow(String node, Map<String, Long> constraints) {
-      long src_ip = 0;
-      long dst_ip = 0;
-      long src_port = 0;
-      long dst_port = 0;
-      long protocol = IpProtocol.IP.number();
-      for (String varName : constraints.keySet()) {
-         Long value = constraints.get(varName);
-         switch (varName) {
-         case Synthesizer.SRC_IP_VAR:
-            src_ip = value;
-            break;
-
-         case Synthesizer.DST_IP_VAR:
-            dst_ip = value;
-            break;
-
-         case Synthesizer.SRC_PORT_VAR:
-            src_port = value;
-            break;
-
-         case Synthesizer.DST_PORT_VAR:
-            dst_port = value;
-            break;
-
-         case Synthesizer.IP_PROTOCOL_VAR:
-            protocol = value;
-            break;
-
-         default:
-            throw new Error("invalid variable name");
-         }
-      }
-      return new Flow(node, new Ip(src_ip), new Ip(dst_ip), (int) src_port,
-            (int) dst_port, IpProtocol.fromNumber((int) protocol), _tag);
+      return createFlow(node, constraints, _tag);
    }
 
 }

@@ -26,7 +26,8 @@ public String printStateVariables() {
 
 tokens {
    ISO_ADDRESS,
-   PIPE
+   PIPE,
+   VERSION_STRING
 }
 
 // Juniper Keywords
@@ -154,6 +155,11 @@ ALG
 ALIAS
 :
    'alias'
+;
+
+ALIASES
+:
+   'aliases'
 ;
 
 ALL
@@ -500,6 +506,11 @@ DAMPING
    'damping'
 ;
 
+DCBX
+:
+   'dcbx'
+;
+
 DDOS_PROTECTION
 :
    'ddos-protection'
@@ -825,6 +836,11 @@ EXTERNAL_PREFERENCE
    'external-preference'
 ;
 
+FABRIC
+:
+   'fabric'
+;
+
 FABRIC_OPTIONS
 :
    'fabric-options'
@@ -883,6 +899,11 @@ FLOW
 FLOW_CONTROL
 :
    'flow-control'
+;
+
+FORCE_UP
+:
+   'force-up'
 ;
 
 FORWARDING
@@ -1090,6 +1111,11 @@ HTTPS
    'https'
 ;
 
+ICCP
+:
+   'iccp'
+;
+
 ICMP
 :
    'icmp'
@@ -1295,6 +1321,11 @@ INSTANCE_TYPE
    'instance-type'
 ;
 
+INTERCONNECT_DEVICE
+:
+   'interconnect-device'
+;
+
 INTERFACE
 :
    'interface' -> pushMode ( M_Interface )
@@ -1303,6 +1334,11 @@ INTERFACE
 INTERFACE_MODE
 :
    'interface-mode'
+;
+
+INTERFACE_RANGE
+:
+   'interface-range'
 ;
 
 INTERFACE_SPECIFIC
@@ -2690,6 +2726,11 @@ METRIC_TYPE
    'metric-type' -> pushMode ( M_MetricType )
 ;
 
+MEMBER
+:
+   'member'
+;
+
 MEMBERS
 :
    'members' -> pushMode ( M_Members )
@@ -2753,6 +2794,11 @@ MTU
 MTU_DISCOVERY
 :
    'mtu-discovery'
+;
+
+MULTI_CHASSIS
+:
+   'multi-chassis'
 ;
 
 MULTICAST
@@ -2853,6 +2899,11 @@ NETBIOS_SSN
 NETCONF
 :
    'netconf'
+;
+
+NETWORK_DOMAIN
+:
+   'network-domain'
 ;
 
 NETWORK_SUMMARY_EXPORT
@@ -2990,9 +3041,24 @@ NO_NEIGHBOR_LEARN
    'no-neighbor-learn'
 ;
 
+NO_SUMMARIES
+:
+   'no-summaries'
+;
+
 NO_TRAPS
 :
    'no-traps'
+;
+
+NODE_DEVICE
+:
+   'node-device'
+;
+
+NODE_GROUP
+:
+   'node-group'
 ;
 
 NONSTOP_ROUTING
@@ -3515,6 +3581,11 @@ RESOLVE
    'resolve'
 ;
 
+RESOURCES
+:
+   'resources'
+;
+
 RESTRICT
 :
    'restrict'
@@ -3933,6 +4004,11 @@ STATION_PORT
 STP
 :
    'stp'
+;
+
+STUB
+:
+   'stub'
 ;
 
 SUBTRACT
@@ -4904,6 +4980,21 @@ M_DSCP_WS
 
 mode M_Interface;
 
+M_Interface_ALL
+:
+   'all' -> type ( ALL ) , popMode
+;
+
+M_Interface_APPLY_GROUPS
+:
+   'apply-groups' -> type ( APPLY_GROUPS ) , popMode
+;
+
+M_Interface_APPLY_GROUPS_EXCEPT
+:
+   'apply-groups-except' -> type ( APPLY_GROUPS_EXCEPT ) , popMode
+;
+
 M_Interface_NEWLINE
 :
    F_NewlineChar+
@@ -4915,6 +5006,11 @@ M_Interface_NEWLINE
 M_Interface_INTERFACE
 :
    'interface' -> type ( INTERFACE )
+;
+
+M_Interface_INTERFACE_RANGE
+:
+   'interface-range' -> type ( INTERFACE_RANGE ) , popMode
 ;
 
 M_Interface_PORT_OVERLOADING
@@ -5055,6 +5151,11 @@ M_Members_CLOSE_PAREN
 M_Members_COLON
 :
    ':' -> type ( COLON )
+;
+
+M_Members_COMMA
+:
+   ',' -> type(COMMA)
 ;
 
 M_Members_DASH
@@ -5245,9 +5346,14 @@ M_Version_V1_ONLY
    'v1-only' -> type ( V1_ONLY ) , popMode
 ;
 
+M_Version_QUOTED_STRING
+:
+   '"' ~'"'* '"' -> type ( VERSION_STRING ) , popMode
+;
+
 M_Version_VERSION_STRING
 :
-   ~[ \t\u000C\r\n;]+ -> popMode
+   ~[ \t\u000C\r\n;]+ -> type ( VERSION_STRING ) , popMode
 ;
 
 M_Version_WS

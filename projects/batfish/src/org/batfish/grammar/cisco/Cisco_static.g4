@@ -38,7 +38,8 @@ s_stanza
 
 static_route_s_stanza
 :
-   IP_PREFIX IP_ADDRESS NEWLINE
+   (IP_PREFIX | IPV6_PREFIX) (IP_ADDRESS | IPV6_ADDRESS | interface_name) (distance = DEC)?
+   DESCRIPTION? (TAG DEC)? PERMANENT? NEWLINE
 ;
 
 vrf_s_stanza

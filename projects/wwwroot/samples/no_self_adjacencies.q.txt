@@ -1,0 +1,1 @@
+../../../example_questions/no_self_adjacencies.q

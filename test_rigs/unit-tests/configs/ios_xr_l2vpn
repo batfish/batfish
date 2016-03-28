@@ -1,0 +1,23 @@
+!
+hostname L2VPN
+!
+l2vpn
+ xconnect group scidmz_155
+  p2p HGE_0-1_155
+   interface HundredGigE0/2/0/0.155
+   interface HundredGigE0/2/0/1.155
+  !
+ !
+ xconnect group scidmz_862
+  p2p HGE_0-1_862
+   interface HundredGigE0/2/0/0.862
+   interface HundredGigE0/2/0/1.862
+  !
+ !
+ xconnect group scidmz_963
+  p2p HGE_0-1_963
+   interface HundredGigE0/2/0/0.963
+   interface HundredGigE0/2/0/1.963
+  !
+ !
+end
