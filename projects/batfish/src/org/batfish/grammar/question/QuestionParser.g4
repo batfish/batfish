@@ -513,12 +513,33 @@ false_expr
 
 flow_constraint
 :
-   flow_constraint_ingress_node
+   flow_constraint_icmp_code
+   | flow_constraint_icmp_type
+   | flow_constraint_ingress_node
    | flow_constraint_ip_protocol
    | flow_constraint_dst_ip
    | flow_constraint_dst_port
    | flow_constraint_src_ip
    | flow_constraint_src_port
+   | flow_constraint_tcp_flags
+;
+
+flow_constraint_icmp_code
+:
+   ICMP_CODE EQUALS
+   (
+      icmp_code = DEC
+      | icmp_code = VARIABLE
+   )
+;
+
+flow_constraint_icmp_type
+:
+   ICMP_TYPE EQUALS
+   (
+      icmp_type = DEC
+      | icmp_type = VARIABLE
+   )
 ;
 
 flow_constraint_ingress_node
@@ -572,6 +593,15 @@ flow_constraint_src_port
    (
       src_port = DEC
       | src_port = VARIABLE
+   )
+;
+
+flow_constraint_tcp_flags
+:
+   TCP_FLAGS EQUALS
+   (
+      tcp_flags = DEC
+      | tcp_flags = VARIABLE
    )
 ;
 
