@@ -1,33 +1,110 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title>Try Batfish</title>
-    <script src="libs/jquery-1.11.3.min.js"></script>
-    <script src="libs/jszip.min.js"></script>
-    <script src="libs/spin.min.js"></script>
-    <script src="libs/jquery.spin.js"></script>
-    <!-- Mandatory in IE 6, 7, 8 and 9. -->
-    <!--[if IE]>
-    <script type="text/javascript" src="dist/jszip-utils-ie.js"></script>
-    <![endif]-->
-    <script src="libs/jszip-utils.js"></script>
-
+    <head>
+	<meta charset="utf-8">
+	
+	<title>Batfish</title>	
+ 	<link rel="stylesheet" href="styles/jquery-ui.css">
+    <link rel="stylesheet" href="styles/graph.css">
+    <link rel="stylesheet" href="styles/jquery.qtip.css">
+   
+	<style>
+		body {
+			font: 62.5% "Trebuchet MS", sans-serif;
+			margin: 5px;
+		}
+		.demoHeaders {
+			margin-top: 2em;
+		}
+		#dialog-link {
+			padding: .4em 1em .4em 20px;
+			text-decoration: none;
+			position: relative;
+		}
+		#dialog-link span.ui-icon {
+			margin: 0 5px 0 0;
+			position: absolute;
+			left: .2em;
+			top: 50%;
+			margin-top: -8px;
+		}
+		#icons {
+			margin: 0;
+			padding: 0;
+		}
+		#icons li {
+			margin: 2px;
+			position: relative;
+			padding: 4px 0;
+			cursor: pointer;
+			float: left;
+			list-style: none;
+		}
+		#icons span.ui-icon {
+			float: left;
+			margin: 0 4px;
+		}
+		.fakewindowcontain .ui-widget-overlay {
+			position: absolute;
+		}
+		select {
+			width: 200px;
+		}
+		.ui-tabs .ui-tabs-panel/* just in case you want to change the panel */ {
+			background: white;
+		}
+		#tabs {
+			background: transparent;
+			border: none;
+		}
+		#tabs .ui-widget-header {
+			background: transparent;
+			border: none;
+			border-bottom: 1px solid #c0c0c0;
+			-moz-border-radius: 0px;
+			-webkit-border-radius: 0px;
+			border-radius: 0px;
+		}
+		#tabs .ui-tabs-nav .ui-state-default {
+			background: transparent;
+			border: none;
+		}
+		#tabs .ui-tabs-nav .ui-state-active {
+			background: transparent url(styles/images/uiTabsArrow.png) no-repeat bottom center;
+			border: none;
+		}
+		#tabs .ui-tabs-nav .ui-state-default a {
+			color: #c0c0c0;
+		}
+		#tabs .ui-tabs-nav .ui-state-active a {
+			color: #459e00;
+		}
+	</style>
+		
+	<script src="libs/jquery.js"></script>
+	<script src="libs/jquery-ui.js"></script>
+	<script src="libs/jszip.js"></script>
+	<script src="libs/jszip-utils.js"></script>
+	<script src="libs/cytoscape.js"></script>
+    <script src="libs/cytoscape-qtip.js"></script>
+	<script src="libs/jquery.qtip.js"></script>
+	<script src="libs/spin.js"></script>
+	<script src="libs/jquery.spin.js"></script>
+	<script src="libs/jquery.dialogextend.js"></script>
+	
     <script src="scripts/utils.js"></script>
     <script src="scripts/bfconsts.js"></script>
     <script src="scripts/coordconsts.js"></script>
     <script src="scripts/batfish-common.js"></script>
     <script src="scripts/workclient.js"></script>
     <script src="scripts/trybatfish.js"></script>
-    <script src="libs/jquery-ui.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.js"></script>
-    <script src="libs/cytoscape.js"></script>
-    <script src="libs/cytoscape-qtip.js"></script>
     <script src="scripts/topologyconsts.js"></script>
     <script src="scripts/topology.js"></script>
-
-    <script>
-
-        var apiKey = "0000000";
+    	
+	<script>
+		
+		var apiKey = "0000000";
         var containerPrefix = "js";
         var containerName = "";
         var testrigName = "js_testrig";
@@ -37,6 +114,9 @@
         //this variable holds the zip'd contents or base or differential testrig
         var testrigZip = "";
 
+		// ........... tabs
+		var elementTabs = '#tabs';
+		
         //............text area for debug and output
         var elementDebugText = '#txtDebug';
         var elementOutputText = '#txtOutput';
@@ -45,6 +125,11 @@
         var elementTestrigFile = '#fileConfig';
         var elementConfigText = '#txtConfig';
         var elementConfigSelect = '#configSelect';
+        
+        //............from where to get the delta config information
+        var elementDeltaTestrigFile = '#deltaFileConfig';
+        var elementDeltaConfigText = '#deltaTxtConfig';
+        var elementDeltaConfigSelect = '#deltaConfigSelect';
 
         //.............from where to get the differential environment file information
         var elementDiffEnvFile = '#fileDiffEnv';
@@ -54,201 +139,260 @@
         var elementQuestionParams = '#txtQuestionParams';
         var elementQuestionText = '#txtQuestion';
         var elementQuestionSelect = '#questionSelect';
+        var elementPrevQuestionSelect = "#prevQuestions";
 
         //............buttons for triggering various actions
         var elementUploadBaseTestrigBtn = '#btnUploadConfig';
         var elementUploadDiffEnvBtn = '#btnUploadDiffEnv';
         var elementAnswerQuestionBtn = '#btnAnswerQuestion';
         var elementAnswerDiffQuestionBtn = '#btnAnswerDiffQuestion';
-
+        var elementBtnSaveLayout = "#btnSaveLayout";
+        var elementBtnAutoLayout = "#btnAutoLayout";
+        
+        var deltaConfigUploaded = false;
+        
         //spin
         var elementSpinDiv = '#spinwrapper';
 
         var fnDrawTopology = ParseTopology;
         var fnShowHighlights = SetupHighlightsMenu;
-    </script>
-
- 	<link rel="stylesheet" href="styles/jquery-ui.css" type="text/css">
-    <link rel="stylesheet" type="text/css" href="styles/style.css" />
-    <link rel="stylesheet" href="styles/graph.css" type="text/css">
-    <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.css">
-   
+        var fnSaveQuestion = saveQuestion;
+               
+	</script>
 </head>
+
 <body>
-
-<!--
-    <div id="divTest">
-        <input type="button" id="btnTest" value="Test me!" onclick="testMe()" />
-    </div>
--->
-
-    <h2>
-        <input type="button" value="Toggle instructions" width="50px" onclick="jQuery('#instructions').toggle()" />
-    </h2>
-    <div id="instructions">
-        <ol>
-            <li>Enter configuration, which can be an individual device or a zipped testrig, and press <b>Process base configuration</b>.
-                    </li>
-            <li>Enter question, and press <b>Answer about base</b>.
-                    </li>
-            <li>To ask questions about a planned configuration change, 
-                   
-                           
-
-                <ol>
-                    <li>Enter the configuration delta (i.e., files that differ from the base), and press <b>Process delta configuration</b>.
-                                </li>
-                    <li>Enter question, and press <b>Answer about delta</b>. 
-                                </li>
-                </ol>
-            </li>
-        </ol>
-        <p>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Steps 2 and 3 can be repeated multiple times for different questions and delta configurations.  To analyze a new base configuration, start again (reload the page).                
-   
-    </div>
-
-    <div id="spinwrapper"></div>
-
-    <table>
-        <tr>
-            <td colspan="3">
-                <div id="myspinner"></div>
-            </td>
-        </tr>
-
-        </div>
-       
-        <tr>
-            <td>
-                <form class="myform">
-                    <table>
-                        <tr>
-                            <td bgcolor="#DDFFDD" style="padding-right: -2px">
-                                <table>
-                                    <tr align="center">
-                                        <td colspan="2">
-                                            <h3>Enter Configuration [Choose your file, type configuration, or select a sample to explore]</h3>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <textarea id="txtConfig" style="display: normal; border-radius: 5px" cols="50" rows="20"></textarea>
-                                        </td>
-                                        <td>
-                                            <input type="file" id="fileConfig" />
-                                            <script> jQuery('#fileConfig').change(loadConfigText); </script>
-                                            <br />
-                                            <br />
-                                            <select id="configSelect" onchange="loadText(elementConfigSelect, elementConfigText, elementTestrigFile)">
-                                                <option disabled selected>-- select a sample config -- </option>
-                                                <option value="samples/as1border1.cfg.txt">Example border router</option>
-                                                <option value="samples/as1core1.cfg.txt">Example core router</option>
-                                                <option value="samples/example.zip">Example base testrig</option>
-                                                <option value="samples/delta.zip">Example delta testrig</option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                    <tr align="center">
-                                        <td>
-                                            <input type="button" id="btnUploadConfig" value="Process base configuration"
-                                                onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::drawtopology::posttestriginit')" />
-                                            <input type="button" id="btnUploadDiffEnv" value="Process delta configuration" disabled
-                                                onclick="startCalls('btnUploadConfigText', 'uploaddiffenvsmart::generatediffdataplane::getdiffdataplane::postdiffenvinit')" />
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td colspan="2">
-                                <hr />
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td bgcolor="#DDFFDD">
-                                <table>
-                                    <tr align="center">
-                                        <td colspan="2">
-                                            <h3>Enter question [Choose your file, type the question, or select from our samples]</h3>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <textarea id="txtQuestion" style="display: normal; border-radius: 5px" cols="50" rows="20"></textarea>
-                                        </td>
-                                        <td>
-                                            <input type="file" id="fileQuestion" />
-                                            <script> jQuery('#fileQuestion').change(loadQuestionText); </script>
-                                            <br />
-                                            <br />
-                                            <select id="questionSelect" onchange="loadText(elementQuestionSelect, elementQuestionText, elementQuestionFile)">
-                                                <option disabled selected>-- select a sample question -- </option>
-                                                <option value="samples/unique-ip-assignments.q.txt">Unique IP assignments</option>
-                                                <option value="samples/print-ebgp-nodes.q.txt">List EBGP nodes</option>
-                                                <option value="samples/ospf-loopbacks.q.txt">OSPF loopback announcements</option>
-                                                <option value="samples/traceroute.q.txt">Traceroute</option>
-                                                <option value="samples/multipath.q.txt">Multipath consistency</option>
-                                                <option value="samples/reachability.q.txt">Reachability between devices</option>
-                                                <option value="samples/failure.q.txt">Base vs delta reachability</option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                    <tr align="center">
-                                        <td>
-                                            <input type="button" id="btnAnswerQuestion" value="Answer about base" disabled
-                                                onclick="startCalls('btnAnswerQuestion', 'uploadquestiontext::answerquestion')" />
-                                            <input type="button" id="btnAnswerDiffQuestion" value="Answer about delta" disabled
-                                                onclick="startCalls('btnAnswerDiffQuestion', 'uploadquestiontext::answerdiffquestion')" />
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-
-                    </table>
-                </form>
-            </td>
-            <td></td>
-            <td>
-                <table>
-                    <tr>
-                        <td>
-                        	<table>
-                        		<tr>
-                        			<td colspan="2">
-                        				<div id="cy"></div>
-                        			</td>
-                    			</tr>
-                        			<tr>
-                        				<td>
-                        					<button id="btnSaveLayout" onclick="SaveLayout()"> Save Layout</button>
-                        					<button id="btnAutoLayout" onclick="DoAutoLayout()"> Auto Layout</button>
-                        				</td>
-                        				<td>
-                        					<div data-role="content"></div>
-                        				</td>
-                        			
-                        		</tr>
-                        	</table>  
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="center" bgcolor="#DDDDFF">
-                            <h3>Output</h3>
-                            <br />
-                            <textarea id="txtOutput" style="display: normal; border-radius: 5px" cols="90" rows="21" readonly></textarea>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-    <div id="activityLog" align="center">
-        <h3>Activity log</h3>
-        <textarea id="txtDebug" style="display: normal; border-radius: 5pt" rows="10" cols="140" readonly></textarea>
-    </div>
+	<div id="spinwrapper"></div> 
+	<h2 class="demoHeaders">Batfish</h2>
+	<div id="tabs">
+		<ul>
+			<li><a href="#login">Login</a></li>
+			<li><a href="#upload">Upload config</a></li>
+			<li><a href="#topology">Topology and Output</a></li>
+			<li><a href="#debug">Debug</a></li>
+		</ul>
+		
+		<div id="login">
+			<table>
+				<tr>
+					<td align="left">API Key</td>
+					<td align="right"><input id="apikey" title="apikey" value="0-0-0-0"></td>
+					<td align="right">
+					<button id="btnLogin" onclick="login()">Login</button>
+					<script>
+						function login()
+						{
+							$(elementTabs).tabs("option", "active", 1);
+							$('#btnLogin').button("disable");
+							$(elementUploadBaseTestrigBtn).button("enable");
+						}
+					</script>
+					</td>	
+				</tr>
+				</table>
+		</div>
+		
+		
+		<div id="upload">
+			<table>
+				<tr>
+					<td>
+						<table>
+							<tr>
+								<td>
+									<select id="configSelect" onchange="loadText(elementConfigSelect, elementConfigText, elementTestrigFile)">
+										<option disabled selected>-- select a sample config -- </option>
+										<option value="samples/as1border1.cfg.txt">Example border router</option>
+										<option value="samples/as1core1.cfg.txt">Example core router</option>
+										<option value="samples/example.zip">Example base testrig</option>
+									</select>
+									&nbsp or &nbsp
+									<input type="file" id="fileConfig" size="20"/> 
+									<script>
+									jQuery('#fileConfig').change({
+										testrigFile : elementTestrigFile,
+										configText : elementConfigText,
+										configSelect : elementConfigSelect
+									}, loadConfigText);
+									</script>
+								</td>
+							</tr>
+							<tr>
+								<td colspan> <textarea id="txtConfig">--config--</textarea></td>
+							</tr>
+							<tr>
+								<td>
+									<button id="btnUploadConfig" disabled
+										onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::drawtopology::posttestriginit')">
+										Process base configuration
+									</button>
+								</td>
+							</tr>
+						</table>			
+					</td>
+					<td>
+						<table>
+							<tr>
+								<td>
+									<select id="deltaConfigSelect" onchange="loadText(elementDeltaConfigSelect, elementDeltaConfigText, elementDeltaTestrigFile)">
+										<option disabled selected>-- select a sample delta config -- </option>
+										<option value="samples/delta.zip">Example delta testrig</option>
+									</select>
+									&nbsp or &nbsp
+									<input type="file" id="deltaFileConfig" />
+									<script>
+										jQuery('#deltaFileConfig').change({
+											testrigFile : elementDeltaTestrigFile,
+											configText : elementDeltaConfigText,
+											configSelect : elementDeltaConfigSelect
+										}, loadConfigText);
+									</script>						
+								</td>
+							</tr>
+							<tr>
+								<td> <textarea id="deltaTxtConfig">--delta config--</textarea></td>
+							</tr>
+							<tr>
+								<td>
+									<button id="btnUploadDiffEnv" disabled 
+									onclick="startCalls('btnUploadConfigText', 'uploaddiffenvsmart::generatediffdataplane::getdiffdataplane::postdiffenvinit')">
+										Process delta configuration
+									</button>	
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>	
+		</div>
+		
+		<div id="topology">
+			<table>
+				<tr>
+					<td>
+						<table>
+							<tr>
+								<td colspan="2"><div id="cy"></div></td>
+							</tr>
+							<tr>
+								<td>
+									<button id="btnSaveLayout" onclick="SaveLayout()" disabled>
+										Save Layout
+									</button>
+									<button id="btnAutoLayout" onclick="DoAutoLayout()" disabled>
+										Auto Layout
+									</button>
+									<td><div data-role="content">&nbsp;</div>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td valign="top">
+						<table>
+							<tr>
+								<td> <textarea id="txtOutput" readonly>--output--</textarea> </td>			
+							</tr>
+							<tr>
+								<td>&nbsp</td>
+							</tr>
+							<tr>
+								<td>
+									<select id="questionSelect" onchange="loadText(elementQuestionSelect, elementQuestionText, elementQuestionFile)">
+										<option disabled selected>-- select a sample question -- </option>
+										<option value="samples/unique-ip-assignments.q.txt">Unique IP assignments</option>
+										<option value="samples/print-ebgp-nodes.q.txt">List EBGP nodes</option>
+										<option value="samples/ospf-loopbacks.q.txt">OSPF loopback announcements</option>
+										<option value="samples/traceroute.q.txt">Traceroute</option>
+										<option value="samples/multipath.q.txt">Multipath consistency</option>
+										<option value="samples/reachability.q.txt">Reachability between devices</option>
+										<option value="samples/failure.q.txt">Base vs delta reachability</option>
+									</select>
+									&nbsp or &nbsp 
+									<select id="prevQuestions" onchange="showOldQuestion(elementPrevQuestionSelect)" style="width:250px">
+										<option disabled selected>-- select a previously answered question --</option>
+									</select>
+									&nbsp or &nbsp
+									<input type="file" id="fileQuestion" size="20"/>	
+									</td>		
+								
+							</tr>
+							<tr>
+								<td><textarea id="txtQuestion" tabindex="0">--question--</textarea></td>
+							</tr>
+							<tr>
+								<td>
+									<button id="btnAnswerQuestion" onclick="startCalls('btnAnswerQuestion', 'uploadquestiontext::answerquestion')" disabled>
+									Answer about base
+									</button>
+									&nbsp
+									<button id="btnAnswerDiffQuestion" onclick="startCalls('btnAnswerDiffQuestion', 'uploadquestiontext::answerdiffquestion')" disabled>
+									Answer about delta
+									</button>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</div>
+	
+		<div id="debug">
+			<textarea id="txtDebug" readonly>&nbsp;</textarea>
+		</div>
+		
+	</div>
+				
+	<script>
+		//$("select").selectmenu();
+		$("button").button();
+		//$("#btnUploadConfig").button();
+		//$("#btnUploadDiffEnv").button();
+		//$("#btnAnswerQuestion").button();
+		//$("#btnAnswerDiffQuestion").button();
+		$("#tabs").tabs({
+			hide: 'fade', 
+			show: 'fade',
+			activate : function(event, ui) {
+				if (ui.newPanel.attr('id') == 'topology') {
+					Resize();
+				}
+			},
+		});
+		jQuery('#fileQuestion').change(loadQuestionText);
+		/*
+		$(function() {
+			$("#questions").dialog({
+				autoOpen: false,
+				width: "auto",
+				height: "auto",
+				title: 'Enter question [Choose your file, type the question, or select from our samples]'
+				
+			}).dialogExtend({
+				minimizable: false
+			});
+			$('#txtQuestion').focus();
+			
+			$("#uploadDeltaConfig").dialog({
+				autoOpen: false,
+				width: "auto",
+				height: "auto",
+				title: 'Enter delta Config [Choose your file, type the question, or select from our samples]'
+				
+			}).dialogExtend({
+				minimizable: false
+			});
+			$('#txtDeltaConfig').focus();
+		});
+		function ShowQuestions() {
+			//$("#questions").dialog("open");
+			$(elementTabs).tabs("option", "active", 2);
+		}
+		function ShowUploadDeltaConfig() {
+			$("#uploadDeltaConfig").dialog("open");
+		}
+		*/
+	</script>
+    
 </body>
+
 </html>

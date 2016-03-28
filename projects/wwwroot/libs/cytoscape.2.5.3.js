@@ -1,24 +1,19 @@
 /*!
-Copyright (c) 2016 The Cytoscape Consortium
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the “Software”), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+ * This file is part of Cytoscape.js 2.5.1.
+ *
+ * Cytoscape.js is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Cytoscape.js is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along with
+ * Cytoscape.js. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.cytoscape = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 'use strict';
@@ -1651,7 +1646,7 @@ var elesfn = ({
                       edgeNext);
 
         return cy.collection( pathArr );
-      }
+      },
     };
 
     return res;
@@ -2054,7 +2049,7 @@ var elesfn = ({
   clearQueue: define.clearQueue(),
   delay: define.delay(),
   delayAnimation: define.delayAnimation(),
-  stop: define.stop()
+  stop: define.stop(),
 });
 
 module.exports = elesfn;
@@ -2755,7 +2750,7 @@ fn = elesfn = ({
           } else if( ppos !== undefined ){ // set whole position
             ele._private.position = {
               x: ppos.x + origin.x,
-              y: ppos.y + origin.y
+              y: ppos.y + origin.y,
             };
           }
         }
@@ -5620,11 +5615,7 @@ util.extend(elesfn, {
     } while( unvisited.length > 0 );
 
     return components.map(function( component ){
-      var connectedEdges = component.connectedEdges().stdFilter(function( edge ){
-        return component.anySame( edge.source() ) && component.anySame( edge.target() );
-      });
-
-      return component.union( connectedEdges );
+      return component.closedNeighborhood(); // add the edges
     });
   }
 });
@@ -6179,7 +6170,7 @@ var corefn = ({
       };
     }
 
-    /*! Runge-Kutta spring physics function generator. Adapted from Framer.js, copyright Koen Bok. MIT License: http://en.wikipedia.org/wiki/MIT_License */
+    /* Runge-Kutta spring physics function generator. Adapted from Framer.js, copyright Koen Bok. MIT License: http://en.wikipedia.org/wiki/MIT_License */
     /* Given a tension, friction, and duration, a simulation at 60FPS will first run without a defined duration in order to calculate the full path. A second pass
        then adjusts the time delta -- using the relation between actual time and duration -- to calculate the path for the duration-constrained animation. */
     var generateSpringRK4 = (function () {
@@ -6316,10 +6307,6 @@ var corefn = ({
       // user param easings...
 
       'spring': function( tension, friction, duration ){
-        if( duration === 0 ){ // can't get a spring w/ duration 0
-          return easings.linear; // duration 0 => jump to end so impl doesn't matter
-        }
-
         var spring = generateSpringRK4( tension, friction, duration );
 
         return function( start, end, percent ){
@@ -6570,7 +6557,7 @@ var Core = function( opts ){
     wheelSensitivity: is.number(options.wheelSensitivity) && options.wheelSensitivity > 0 ? options.wheelSensitivity : 1,
     motionBlur: options.motionBlur === undefined ? true : options.motionBlur, // on by default
     motionBlurOpacity: options.motionBlurOpacity === undefined ? 0.05 : options.motionBlurOpacity,
-    pixelRatio: is.number(options.pixelRatio) && options.pixelRatio > 0 ? options.pixelRatio : undefined,
+    pixelRatio: is.number(options.pixelRatio) && options.pixelRatio > 0 ? options.pixelRatio : (options.pixelRatio === 'auto' ? undefined : 1),
     desktopTapThreshold: options.desktopTapThreshold === undefined ? 4 : options.desktopTapThreshold,
     touchTapThreshold: options.touchTapThreshold === undefined ? 8 : options.touchTapThreshold
   }, options.renderer) );
@@ -7781,7 +7768,7 @@ var corefn = ({
       x1: ( rb.x1 - pan.x )/zoom,
       x2: ( rb.x2 - pan.x )/zoom,
       y1: ( rb.y1 - pan.y )/zoom,
-      y2: ( rb.y2 - pan.y )/zoom
+      y2: ( rb.y2 - pan.y )/zoom,
     };
 
     b.w = b.x2 - b.x1;
@@ -8627,13 +8614,8 @@ module.exports = define;
 },{"./animation":1,"./event":42,"./is":77,"./promise":80,"./selector":81,"./util":94}],42:[function(_dereq_,module,exports){
 'use strict';
 
-/*!
-Event object based on jQuery events, MIT license
-
-https://jquery.org/license/
-https://tldrlegal.com/license/mit-license
-https://github.com/jquery/jquery/blob/master/src/event.js
-*/
+// ref
+// https://github.com/jquery/jquery/blob/master/src/event.js
 
 var Event = function( src, props ) {
   // Allow instantiation without the 'new' keyword
@@ -9812,7 +9794,7 @@ CoseLayout.prototype.run = function() {
   var refresh = function( rOpts ){
     rOpts = rOpts || {};
 
-    if( refreshRequested && !rOpts.next ){
+    if( refreshRequested ){
       return;
     }
 
@@ -9831,8 +9813,6 @@ CoseLayout.prototype.run = function() {
       }
 
       refreshRequested = false;
-
-      if( rOpts.next ){ rOpts.next(); }
     });
   };
 
@@ -10537,14 +10517,11 @@ CoseLayout.prototype.run = function() {
   });
 
   var done = function(){
-    refresh({ 
-      force: true,
-      next: function(){
-        // Layout has finished
-        layout.one('layoutstop', options.stop);
-        layout.trigger({ type: 'layoutstop', layout: layout });
-      }
-    });
+    refresh({ force: true });
+
+    // Layout has finished
+    layout.one('layoutstop', options.stop);
+    layout.trigger({ type: 'layoutstop', layout: layout });
   };
 
   return this; // chaining
@@ -11621,7 +11598,7 @@ BRp.registerArrowShapes = function(){
       -0.15, -0.3,
       0, 0,
       0.15, -0.3,
-      0, -0.15
+      0, -0.15,
     ],
 
     gap: function( edge ){
@@ -11658,7 +11635,7 @@ BRp.registerArrowShapes = function(){
     spacing: function( edge ){
       return renderer.getArrowWidth(edge._private.style['width'].pfValue)
         * this.radius;
-    }
+    },
   } );
 
   defineArrowShape( 'inhibitor', {
@@ -12341,7 +12318,7 @@ BRp.getLabelText = function( ele ){
     //console.log('wrap');
 
     // save recalc if the label is the same as before
-    if( rscratch.labelWrapKey && rscratch.labelWrapKey === rscratch.labelKey ){
+    if( rscratch.labelWrapKey === rscratch.labelKey ){
       // console.log('wrap cache hit');
       return rscratch.labelWrapCachedText;
     }
@@ -14113,11 +14090,7 @@ BRp.load = function() {
 
     var multSelKeyDown = isMultSelKeyDown( e );
 
-    var isOverThresholdDrag = rdist2 >= r.desktopTapThreshold2;
-
-    if (isOverThresholdDrag) {
-      r.hoverData.tapholdCancelled = true;
-    }
+    r.hoverData.tapholdCancelled = true;
 
     var updateDragDelta = function(){
       var dragDelta = r.hoverData.dragDelta = r.hoverData.dragDelta || [];
@@ -14140,40 +14113,37 @@ BRp.load = function() {
 
     // trigger context drag if rmouse down
     if( r.hoverData.which === 3 ){
-      // but only if over threshold
-      if( isOverThresholdDrag ){
-        var cxtEvt = Event( e, {
-          type: 'cxtdrag',
-          cyPosition: { x: pos[0], y: pos[1] }
-        } );
+      var cxtEvt = Event(e, {
+        type: 'cxtdrag',
+        cyPosition: { x: pos[0], y: pos[1] }
+      });
 
-        if( down ){
-          down.trigger( cxtEvt );
-        } else{
-          cy.trigger( cxtEvt );
+      if( down ){
+        down.trigger( cxtEvt );
+      } else {
+        cy.trigger( cxtEvt );
+      }
+
+      r.hoverData.cxtDragged = true;
+
+      if( !r.hoverData.cxtOver || near !== r.hoverData.cxtOver ){
+
+        if( r.hoverData.cxtOver ){
+          r.hoverData.cxtOver.trigger( Event(e, {
+            type: 'cxtdragout',
+            cyPosition: { x: pos[0], y: pos[1] }
+          }) );
         }
 
-        r.hoverData.cxtDragged = true;
+        r.hoverData.cxtOver = near;
 
-        if( !r.hoverData.cxtOver || near !== r.hoverData.cxtOver ){
-
-          if( r.hoverData.cxtOver ){
-            r.hoverData.cxtOver.trigger( Event( e, {
-              type: 'cxtdragout',
-              cyPosition: { x: pos[0], y: pos[1] }
-            } ) );
-          }
-
-          r.hoverData.cxtOver = near;
-
-          if( near ){
-            near.trigger( Event( e, {
-              type: 'cxtdragover',
-              cyPosition: { x: pos[0], y: pos[1] }
-            } ) );
-          }
-
+        if( near ){
+          near.trigger( Event(e, {
+            type: 'cxtdragover',
+            cyPosition: { x: pos[0], y: pos[1] }
+          }) );
         }
+
       }
 
     // Check if we are drag panning the entire graph
@@ -14259,7 +14229,7 @@ BRp.load = function() {
 
       if( down && down.isNode() && r.nodeIsDraggable(down) ){
 
-        if( isOverThresholdDrag ){ // then drag
+        if( rdist2 >= r.desktopTapThreshold2 ){ // then drag
 
           var justStartedDrag = !r.dragData.didDrag;
 
@@ -14782,7 +14752,6 @@ BRp.load = function() {
         if(
             r.touchData.singleTouchMoved === false
             && !r.pinching // if pinching, then taphold unselect shouldn't take effect
-            && !r.touchData.selecting // box selection shouldn't allow taphold through
         ){
           triggerEvents( r.touchData.start, ['taphold'], e, {
             cyPosition: { x: now[0], y: now[1] }
@@ -14819,8 +14788,6 @@ BRp.load = function() {
     var dy2 = dy * dy;
     var dist2 = dx2 + dy2;
     var rdist2 = dist2 * zoom * zoom;
-
-    var isOverThresholdDrag = rdist2 >= r.touchTapThreshold2;
 
     // context swipe cancelling
     if( capture && r.touchData.cxt ){
@@ -15043,7 +15010,7 @@ BRp.load = function() {
       // dragging nodes
       if( start != null && start._private.group == 'nodes' && r.nodeIsDraggable(start) ){
 
-        if( isOverThresholdDrag ){ // then dragging can happen
+        if( rdist2 >= r.touchTapThreshold2 ){ // then dragging can happen
           var draggedEles = r.dragData.touchDragEles;
           var justStartedDrag = !r.dragData.didDrag;
 
@@ -15127,7 +15094,7 @@ BRp.load = function() {
       for (var i=0;i<now.length;i++) {
         if( now[i]
           && r.touchData.startPosition[i]
-          && isOverThresholdDrag ){
+          && rdist2 > r.touchTapThreshold2 ){
 
           r.touchData.singleTouchMoved = true;
         }
@@ -15148,7 +15115,7 @@ BRp.load = function() {
             y: disp[1] * zoom
           });
 
-        } else if( isOverThresholdDrag ){
+        } else if( rdist2 >= r.touchTapThreshold2 ){
           r.swipePanning = true;
 
           cy.panBy({
@@ -15468,12 +15435,8 @@ BRp.load = function() {
       });
     };
 
-    var pointerIsMouse = function( e ){
-      return e.pointerType === 'mouse' || e.pointerType === 4;
-    };
-
     r.registerBinding(r.container, 'pointerdown', function(e){
-      if( pointerIsMouse(e) ){ return; } // mouse already handled
+      if( e.pointerType === 'mouse' ){ return; } // mouse already handled
 
       e.preventDefault();
 
@@ -15484,7 +15447,7 @@ BRp.load = function() {
     });
 
     r.registerBinding(r.container, 'pointerup', function(e){
-      if( pointerIsMouse(e) ){ return; } // mouse already handled
+      if( e.pointerType === 'mouse' ){ return; } // mouse already handled
 
       removePointer( e );
 
@@ -15493,7 +15456,7 @@ BRp.load = function() {
     });
 
     r.registerBinding(r.container, 'pointercancel', function(e){
-      if( pointerIsMouse(e) ){ return; } // mouse already handled
+      if( e.pointerType === 'mouse' ){ return; } // mouse already handled
 
       removePointer( e );
 
@@ -15502,7 +15465,7 @@ BRp.load = function() {
     });
 
     r.registerBinding(r.container, 'pointermove', function(e){
-      if( pointerIsMouse(e) ){ return; } // mouse already handled
+      if( e.pointerType === 'mouse' ){ return; } // mouse already handled
 
       e.preventDefault();
 
@@ -15788,24 +15751,19 @@ BRp.redraw = function( options ){
   var callAfterLimit = timeElapsed >= redrawLimit;
 
   if( !forcedContext ){
-    if( !callAfterLimit ){
+    if( !callAfterLimit || r.currentlyDrawing ){
       r.skipFrame = true;
       return;
     }
   }
 
   r.requestedFrame = true;
+  r.currentlyDrawing = true;
   r.renderOptions = options;
 };
 
 BRp.startRenderLoop = function(){
   var r = this;
-
-  if( r.renderLoopStarted ){
-    return;
-  } else {
-    r.renderLoopStarted = true;
-  }
 
   var renderFn = function(){
     if( r.destroyed ){ return; }
@@ -17262,18 +17220,6 @@ CRp.render = function( options ) {
   motionBlur = motionBlur && !forcedContext && r.motionBlurEnabled && !inBoxSelection;
   var motionBlurFadeEffect = motionBlur;
 
-  if( !forcedContext ){
-    if( r.prevPxRatio !== pixelRatio ){
-      r.invalidateContainerClientCoordsCache();
-      r.matchCanvasSize( r.container );
-
-      r.redrawHint('eles', true);
-      r.redrawHint('drag', true);
-    }
-
-    r.prevPxRatio = pixelRatio;
-  }
-
   if( !forcedContext && r.motionBlurTimeout ){
     clearTimeout( r.motionBlurTimeout );
   }
@@ -17689,6 +17635,8 @@ CRp.render = function( options ) {
       needDraw[r.DRAG] = false;
     }
   }
+
+  r.currentlyDrawing = false;
 
   r.prevViewport = vp;
 
@@ -18111,8 +18059,6 @@ NullRenderer.prototype = {
 module.exports = NullRenderer;
 
 },{}],74:[function(_dereq_,module,exports){
-/*! Weaver licensed under MIT (https://tldrlegal.com/license/mit-license), copyright Max Franz */
-
 'use strict';
 
 var is = _dereq_('./is');
@@ -18436,21 +18382,6 @@ define.eventAliasesOn( fabfn );
 module.exports = Fabric;
 
 },{"./define":41,"./is":77,"./promise":80,"./thread":92,"./util":94,"os":undefined}],75:[function(_dereq_,module,exports){
-/*!
-Ported by Xueqiao Xu <xueqiaoxu@gmail.com>;
-
-PSF LICENSE AGREEMENT FOR PYTHON 2.7.2
-
-1. This LICENSE AGREEMENT is between the Python Software Foundation (“PSF”), and the Individual or Organization (“Licensee”) accessing and otherwise using Python 2.7.2 software in source or binary form and its associated documentation.
-2. Subject to the terms and conditions of this License Agreement, PSF hereby grants Licensee a nonexclusive, royalty-free, world-wide license to reproduce, analyze, test, perform and/or display publicly, prepare derivative works, distribute, and otherwise use Python 2.7.2 alone or in any derivative version, provided, however, that PSF’s License Agreement and PSF’s notice of copyright, i.e., “Copyright © 2001-2012 Python Software Foundation; All Rights Reserved” are retained in Python 2.7.2 alone or in any derivative version prepared by Licensee.
-3. In the event Licensee prepares a derivative work that is based on or incorporates Python 2.7.2 or any part thereof, and wants to make the derivative work available to others as provided herein, then Licensee hereby agrees to include in any such work a brief summary of the changes made to Python 2.7.2.
-4. PSF is making Python 2.7.2 available to Licensee on an “AS IS” basis. PSF MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED. BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND DISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON 2.7.2 WILL NOT INFRINGE ANY THIRD PARTY RIGHTS.
-5. PSF SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON 2.7.2 FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS AS A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON 2.7.2, OR ANY DERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.
-6. This License Agreement will automatically terminate upon a material breach of its terms and conditions.
-7. Nothing in this License Agreement shall be deemed to create any relationship of agency, partnership, or joint venture between PSF and Licensee. This License Agreement does not grant permission to use PSF trademarks or trade name in a trademark sense to endorse or promote products or services of Licensee, or any third party.
-8. By copying, installing or otherwise using Python 2.7.2, Licensee agrees to be bound by the terms and conditions of this License Agreement.
-*/
-
 'use strict';
 /* jshint ignore:start */
 
@@ -18862,7 +18793,7 @@ var cytoscape = function( options ){ // jshint ignore:line
 };
 
 // replaced by build system
-cytoscape.version = '2.6.6';
+cytoscape.version = '2.5.1';
 
 // try to register w/ jquery
 if( window && window.jQuery ){
@@ -20034,11 +19965,8 @@ math.getRoundRectangleRadius = function(width, height) {
 module.exports = math;
 
 },{}],80:[function(_dereq_,module,exports){
-/*!
-Embeddable Minimum Strictly-Compliant Promises/A+ 1.1.1 Thenable
-Copyright (c) 2013-2014 Ralf S. Engelschall (http://engelschall.com)
-Licensed under The MIT License (http://opensource.org/licenses/MIT)
-*/
+// internal, minimal Promise impl s.t. apis can return promises in old envs
+// based on thenable (http://github.com/rse/thenable)
 
 'use strict';
 
@@ -21383,10 +21311,8 @@ styfn.updateStyleHints = function(ele){
     var cpd = style['control-point-distances'] ? style['control-point-distances'].pfValue.join('_') : undefined;
     var cpw = style['control-point-weights'].value.join('_');
     var curve = style['curve-style'].strValue;
-    var sd = style['segment-distances'] ? style['segment-distances'].pfValue.join('_') : undefined;
-    var sw = style['segment-weights'].value.join('_');
 
-    _p.boundingBoxKey += '$'+ cpss +'$'+ cpd +'$'+ cpw +'$'+ sd +'$'+ sw +'$'+ curve;
+    _p.boundingBoxKey += '$'+ cpss +'$'+ cpd +'$'+ cpw +'$'+ curve;
   }
 
   _p.styleKey = Date.now();
@@ -22456,7 +22382,7 @@ var parseImpl = function( name, value, propIsBypass, propIsFlat ){
     };
   }
 
-  if( type.multiple && propIsFlat !== 'multiple' ){
+  if( type.multiple && !propIsFlat ){
     var vals;
 
     if( valueIsString ){
@@ -22470,7 +22396,7 @@ var parseImpl = function( name, value, propIsBypass, propIsFlat ){
     if( type.evenMultiple && vals.length % 2 !== 0 ){ return null; }
 
     var valArr = vals.map(function( v ){
-      var p = self.parse( name, v, propIsBypass, 'multiple' );
+      var p = self.parse( name, v, propIsBypass, true );
 
       if( p.pfValue != null ){
         return p.pfValue;
@@ -23039,7 +22965,7 @@ styfn.addDefaultStylesheet = function(){
         'padding-left': 0,
         'padding-right': 0,
         'position': 'origin',
-        'compound-sizing-wrt-labels': 'include'
+        'compound-sizing-wrt-labels': 'include',
       }, {
         // node pie bg
         'pie-size': '100%'
@@ -23062,7 +22988,7 @@ styfn.addDefaultStylesheet = function(){
         'line-color': '#ddd',
         'control-point-step-size': 40,
         'control-point-weights': 0.5,
-        'segment-weights': 0.5,
+        'segment-weights': 0.25,
         'segment-distances': 20,
         'curve-style': 'bezier',
         'haystack-radius': 0.8
@@ -23355,8 +23281,6 @@ sheetfn.generateStyle = function( cy ){
 module.exports = Stylesheet;
 
 },{"./is":77,"./style":86,"./util":94}],92:[function(_dereq_,module,exports){
-/*! Weaver licensed under MIT (https://tldrlegal.com/license/mit-license), copyright Max Franz */
-
 // cross-env thread/worker
 // NB : uses (heavyweight) processes on nodejs so best not to create too many threads
 
@@ -23393,7 +23317,7 @@ var Thread = function( opts ){
 var thdfn = Thread.prototype; // short alias
 
 var stringifyFieldVal = function( val ){
-  var valStr = is.fn( val ) ? val.toString() : "JSON.parse('" + JSON.stringify(val) + "')";
+  var valStr = is.fn( val ) ? val.toString() : 'JSON.parse("' + JSON.stringify(val) + '")';
 
   return valStr;
 };

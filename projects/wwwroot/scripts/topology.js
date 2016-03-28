@@ -1,14 +1,15 @@
 'use strict';
 
+var cy;
 var previousView = "";
 var layoutData;
 var view;
+var nodesAdded = 0;
+var linksAdded = 0;
 
 $(document).ready(function() {
 	SetupCy();
 });
-
-
 
 //-----------------------------------------------------------------------------
 
@@ -167,7 +168,7 @@ function SetupHighlightsMenu(data) {
 			}
 
 			// Add handler
-			$('select').selectmenu({
+			$('#hs').selectmenu({
 				select : function(event, ui) {
 					console.log(ui.item.value);
 					HighlightView(previousView, "off");
@@ -197,7 +198,8 @@ function SaveLayout () {
 		nodePositions[nodes[index].id()] = nodes[index].position();
 	}
 	bfPutObject(containerName, testrigName, layoutPath, JSON.stringify(nodePositions), testMeSuccess_cb, testMeFailure_cb, "testme", []);
-	console.log(JSON.stringify(nodePositions));
+	document.getElementById("txtOutput").value = JSON.stringify(nodePositions);
+	//console.log(JSON.stringify(nodePositions));
 }
 
 function DoLayout()
@@ -306,7 +308,6 @@ function AddLink(link) {
 				vtt : ''
 			}
 		});
-		linksAdded++;
 	}
 }
 
@@ -315,32 +316,42 @@ function ParseTopology(dataRaw) {
 		var data = JSON.parse(dataRaw);
 		var edges = data.topology.edges;
 		cy.ready(function() {
-			var index;
-			for ( index = 0; index < edges.length; index++) {
-				AddLink(edges[index]);
-			}
-			SetupToolTips();
-			DoLayout();
+			cy.batch(function() {
+				var index;
+				for ( index = 0; index < edges.length; index++) {
+					AddLink(edges[index]);
+					linksAdded++;
+					if (linksAdded % 100 == 0) {
+						console.log(linksAdded + " of " + edges.length);
+					}
+				}
+			});
+			SetupToolTips(); 
+			DoAutoLayout();
 			cy.center();
 		});
+
 	} catch (e) {
 		return false;
 	}
 	return true;
 }
 
+
 function SetupCy() {
 	cy = cytoscape({
 		container : document.getElementById('cy'), // container to render in
+		hideEdgesOnViewport: true,
+  		hideLabelsOnViewport: true,
 		elements : [],
 		style : [// the stylesheet for the graph
 		{
 			selector : 'node',
 			css : {
 				'width' : 80,
-				'height' : 80,
-				'background-color' : '#888',
-				'label' : 'data(id)'
+				'height' :80,
+				'background-color' : '#888'
+				//'label' : 'data(id)'
 			}
 		}, {
 			selector : 'edge',
@@ -352,6 +363,12 @@ function SetupCy() {
 	});
 }
 
+function Resize() {
+	cy.ready(function() {
+		cy.resize();
+		cy.center();
+	});
+}
 //----------------------------------
 
 /*

@@ -7,6 +7,7 @@ var epCurrWorkChecker = new Object();
 var epWorkGuid = new Object();
 var epOutput = new Object();
 var epQuestionName = new Object();
+var epHighlights = new Object();
 
 function checkWork(entryPoint, remainingCalls) {
    // delete any old work checker
@@ -32,8 +33,9 @@ function checkWork_cb(response, entryPoint, remainingCalls) {
     switch (status) {
         case "TERMINATEDNORMALLY":
             getLog(entryPoint, remainingCalls);
-            if (remainingCalls[0] == "answerquestion" || remainingCalls[0] == "answerdiffquestion")
+            if (remainingCalls[0] == "answerquestion" || remainingCalls[0] == "answerdiffquestion"){
                 getAnsJson(entryPoint, remainingCalls);
+        	}
             delete epCurrWorkChecker[entryPoint];
             delete epWorkGuid[entryPoint];
             break;
@@ -75,11 +77,12 @@ function finishEntryPoint(entryPoint, remainingCalls) {
     bfUpdateOutput(epOutput[entryPoint]);
 
     jQuery(elementSpinDiv).spin(false);
-
+    
     delete epCurrWorkChecker[entryPoint];
     delete epOutput[entryPoint];
     delete epWorkGuid[entryPoint];
     delete epQuestionName[entryPoint];
+    delete epHighlights[entryPoint];
 }
 
 function getAnsJson(entryPoint, remainingCalls) {
@@ -94,9 +97,14 @@ function getAnsJson(entryPoint, remainingCalls) {
 }
 
 function getAnsJson_cb(responseObject, entryPoint, remainingCalls) {
-    if (fnShowHighlights != undefined)
-        if (!fnShowHighlights(responseObject))
-            finishEntryPoint(entryPoint, remainingCalls);
+	if (defined(fnSaveQuestion)) {
+		fnSaveQuestion(entryPoint, null, responseObject);
+	}
+	if (fnShowHighlights != undefined) {
+		if (!fnShowHighlights(responseObject)) {
+			finishEntryPoint(entryPoint, remainingCalls);
+		}
+	}
 }
 
 function getLog(entryPoint, remainingCalls) {
@@ -117,6 +125,13 @@ function getLog_cb(responseObject, entryPoint, remainingCalls) {
                 if (!fnDrawTopology(responseObject))
                     finishEntryPoint(entryPoint, remainingCalls);
             break;
+        case "answerquestion":
+        case "answerdiffquestion":
+        	if (defined(fnSaveQuestion)) {
+				fnSaveQuestion(entryPoint, responseObject, null);
+			}
+			epOutput[entryPoint] += responseObject;
+			break;
         default:
             epOutput[entryPoint] += responseObject;
     }
@@ -206,39 +221,38 @@ function makeNextCall(entryPoint, callList) {
             case "posttestriginit":
                 postTestrigInit(entryPoint, callList);
                 break;
+            case "updateui":
+           		if (defined(fnUpdateUI)) {
+            		fnUpdateUI(entryPoint, callList);
+            	}
+            	break;
             default:
                 alert("Unsupported call", nextCall);
         }
     }
 }
 
-function postDiffEnvInit(entryPoint, remainingCalls) {
-    if (errorCheck((typeof elementAnswerDiffQuestionBtn === 'undefined' || bfIsInvalidElement(elementAnswerDiffQuestionBtn)),
-                "Answer diff question button element (elementAnswerDiffQuestionBtn) is not configured in the HTML header",
-                entryPoint))
-        return;
-
-    jQuery(elementAnswerDiffQuestionBtn).prop('disabled', false);
-
+function postTestrigInit(entryPoint, remainingCalls) {
+	
+	// Disable the test button, ad enable sunsequent ones. 
+	// This is probably the wrong place to do this - ideally,
+	// we should wait for the call to suuceed. 
+	 
+    $(elementUploadBaseTestrigBtn).button('disable');
+    $(elementBtnSaveLayout).button('enable');
+    $(elementBtnAutoLayout).button('enable');
+	$(elementAnswerQuestionBtn).button("enable");
+	$(elementUploadDiffEnvBtn).button("enable");
+  	$(elementTabs).tabs("option", "active", 2);
+  	
     makeNextCall(entryPoint, remainingCalls);
 }
 
-function postTestrigInit(entryPoint, remainingCalls) {
-    if (errorCheck((typeof elementUploadBaseTestrigBtn === 'undefined' || bfIsInvalidElement(elementUploadBaseTestrigBtn)),
-                "Upload base config button element (elementUploadBaseTestrigBtn) is not configured in the HTML header",
-                entryPoint) ||
-        errorCheck((typeof elementUploadDiffEnvBtn === 'undefined' || bfIsInvalidElement(elementUploadDiffEnvBtn)),
-                "Upload differential config button element (elementUploadDiffEnvBtn) is not configured in the HTML header",
-                entryPoint) ||
-        errorCheck((typeof elementAnswerQuestionBtn === 'undefined' || bfIsInvalidElement(elementAnswerQuestionBtn)),
-                "Answer question button element (elementAnswerQuestionBtn) is not configured in the HTML header",
-                entryPoint))
-        return;
-
-    jQuery(elementUploadBaseTestrigBtn).prop('disabled', true);
-    jQuery(elementUploadDiffEnvBtn).prop('disabled', false);
-    jQuery(elementAnswerQuestionBtn).prop('disabled', false);
-
+function postDiffEnvInit(entryPoint, remainingCalls) {
+	console.log("here");
+	deltaConfigUploaded = true;
+    $(elementAnswerDiffQuestionBtn).button('enable');
+    $(elementTabs).tabs("option", "active", 2);
     makeNextCall(entryPoint, remainingCalls);
 }
 

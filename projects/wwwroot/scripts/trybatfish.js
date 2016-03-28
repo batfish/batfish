@@ -24,40 +24,68 @@ var spinOpts = {
 , position: 'absolute' // Element positioning
 };
 
+var questions = [];
+
+function questionInfo(_id, _questionText, _output, _highlights) {
+	this.id = _id;
+	this.questionText = _questionText;
+	this.output = _output;
+	this.highlights = _highlights;
+}
+
+function showOldQuestion(dropDownId) {
+	console.log(jQuery(dropDownId).val());
+	var index = jQuery(dropDownId).val();
+	jQuery(elementQuestionText).val(questions[index].questionText);
+	jQuery(elementOutputText).val(questions[index].output);
+	if (fnShowHighlights != undefined) {
+		fnShowHighlights(questions[index].highlights);
+	}
+}
+
+
+// This function is called just before showing highlights and outout. This is a bad hack. 
+// By the time we come here, there is no
+// guarantee that question text has stayed intact (the user can play with it). 
+// The right thing to do is to make a call to the server.
+// Until we implement that, we assume that the user does not do all this.
+
+function saveQuestion(entryPoint, output, highlights) {
+	if (!( entryPoint in questions)) {
+		qi = new questionInfo(questions.length, $(elementQuestionText).val(), 0, 0);
+		questions[entryPoint] = qi;
+		$('#prevQuestions').append($('<option/>', {
+			value : entryPoint,
+			text : entryPoint
+		}));
+	}
+	if (output != null)
+		questions[entryPoint].output = output;
+	if (highlights != null)
+		questions[entryPoint].highlights = JSON.parse(JSON.stringify(highlights));
+}
+
 //this function populates the config text box with the chosen file
-function loadConfigText() {
-
-    //sanity check HTML configuration elements
-    if (errorCheck(typeof elementTestrigFile === 'undefined' || bfIsInvalidElement(elementTestrigFile),
-           "Testrig file element (elementTestrigFile) is not configured in the HTML header",
-            "loadconfigtext") ||
-        errorCheck(typeof elementConfigText === 'undefined' || bfIsInvalidElement(elementConfigText),
-           "Config text (elementConfigText) is not configured in the HTML header",
-            "loadconfigtext") ||
-        errorCheck(typeof elementConfigSelect === 'undefined' || bfIsInvalidElement(elementConfigSelect),
-            "Config select element (elementConfigSelect) is not configured in te HTML header",
-            "loadconfigtext"))
-        return;
-
-    var configFile = jQuery(elementTestrigFile).get(0).files[0];
-
-    if (configFile.type && (configFile.type == 'application/x-zip-compressed' || configFile.type == 'application/zip')) {
+function loadConfigText(event) {
+ 	console.log(event.data);
+	file = jQuery(event.data.testrigFile).get(0).files[0];
+    if (file.type && (file.type == 'application/x-zip-compressed' || file.type == 'application/zip')) {
         var reader = new FileReader();
         reader.onload = function (e) {
             try {
                 testrigZip = new JSZip(e.target.result);
-                jQuery(elementConfigText).val("Packaged testrig contents:\n" + zipToOverviewText(testrigZip, "    "));
+                jQuery(event.data.configText).val("Packaged testrig contents:\n" + zipToOverviewText(testrigZip, "    "));
             }
             catch (e) {
                 errorCheck(true, "Looks like a bad zip file: " + e.message, "loadconfigtext");
 
                 //empty the textbox and the file chooser
-                jQuery(elementConfigText).val("");
-                jQuery(elementTestrigFile).val('');
+                jQuery(event.data.configText).val("");
+                jQuery(event.data.testrigFile).val('');
             }
 
         };
-        reader.readAsArrayBuffer(configFile);
+        reader.readAsArrayBuffer(file);
     }
     else {
         //empty testrigZip
@@ -66,14 +94,14 @@ function loadConfigText() {
         var r = new FileReader();
         r.onload = function (e) {
             var contents = e.target.result;
-            jQuery(elementConfigText).val(contents);
+            jQuery(event.data.configText).val(contents);
         };
-        r.readAsText(configFile);
+        r.readAsText(file);
     }
 
     //if a config had been selected from the drop down menu, remove it
     //so that only one type of input is active
-    jQuery(elementConfigSelect).prop('selectedIndex', 0);
+    jQuery(event.data.configSelect).prop('selectedIndex', 0);
 }
 
 //this function populates the question text box with the chosen file
@@ -103,6 +131,9 @@ function loadQuestionText() {
     //if a question had been selected from the drop down menu, remove it
     //so that only one type of input is active
     jQuery(elementQuestionSelect).prop('selectedIndex', 0);
+    
+    // also reset prev question menu.
+    jQuery(elementPrevQuestionSelect).prop('selectedIndex', 0);
 }
 
 //loads the content behind selected value of dropdownId into dstTextBox
@@ -169,6 +200,9 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
     //if a local file had been chosen, cancel that 
     //so that only one type of input is active
     jQuery(elementLocalFile).val('');
+    
+    // also reset prev question menu.
+    jQuery(elementPrevQuestionSelect).prop('selectedIndex', 0);
 }
 
 // this is a test function whose contents change based on what we want to test
