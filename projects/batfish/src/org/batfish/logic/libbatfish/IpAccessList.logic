@@ -37,6 +37,16 @@ IpAccessListMatchDstPort(list, line, flow) ->
    int(line),
    Flow(flow).
 
+IpAccessListMatchIcmpCode(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
+IpAccessListMatchIcmpType(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
 IpAccessListMatchProtocol(list, line, flow) ->
    IpAccessList(list),
    int(line),
@@ -48,6 +58,11 @@ IpAccessListMatchSrcIp(list, line, flow) ->
    Flow(flow).
 
 IpAccessListMatchSrcPort(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
+IpAccessListMatchTcpFlags(list, line, flow) ->
    IpAccessList(list),
    int(line),
    Flow(flow).

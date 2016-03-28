@@ -113,13 +113,16 @@ FlowNullRouted(flow, node) ->
    Flow(flow),
    Node(node).
 
-FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol, tag] = flow ->
+FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol, icmpType, icmpCode, tcpFlags, tag] = flow ->
    Node(node),
    Ip(srcIp),
    Ip(dstIp),
    int(srcPort),
    int(dstPort),
    IpProtocol(protocol),
+   int(icmpType),
+   int(icmpCode),
+   int(tcpFlags),
    FlowTag(tag),
    Flow(flow).
 
@@ -329,13 +332,16 @@ FlowSameHeader(flow1, flow2) ->
    Flow(flow1),
    Flow(flow2).
 
-SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol, tag) ->
+SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol, icmpType, icmpCode, tcpFlags, tag) ->
    Node(node),
    Ip(srcIp),
    Ip(dstIp),
    int(srcPort),
    int(dstPort),
    IpProtocol(protocol),
+   int(icmpType),
+   int(icmpCode),
+   int(tcpFlags),
    FlowTag(tag).
 
 FlowDeniedInCrossZoneFilter(flow, node, interface, filter, line) ->
