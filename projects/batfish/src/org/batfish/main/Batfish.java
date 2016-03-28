@@ -1165,8 +1165,8 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void checkComputeNxtnetRelations() {
-      checkControlPlaneFacts();
+   private void checkComputeNxtnetRelations(EnvironmentSettings envSettings) {
+      checkControlPlaneFacts(envSettings);
    }
 
    private void checkConfigurations() {
@@ -1181,10 +1181,6 @@ public class Batfish implements AutoCloseable {
          throw new CleanBatfishException(
                "Nothing to do: Set of vendor-independent configurations for this test-rig is empty\n");
       }
-   }
-
-   private void checkControlPlaneFacts() {
-      checkControlPlaneFacts(_envSettings);
    }
 
    private void checkControlPlaneFacts(EnvironmentSettings envSettings) {
@@ -1307,7 +1303,8 @@ public class Batfish implements AutoCloseable {
       return flows;
    }
 
-   private void computeControlPlaneFacts(Map<String, StringBuilder> cpFactBins) {
+   private void computeControlPlaneFacts(Map<String, StringBuilder> cpFactBins,
+         boolean differentialContext, EnvironmentSettings envSettings) {
       checkComputeControlPlaneFacts();
       if (_settings.getUsePrecomputedRoutes()) {
          List<String> precomputedRoutesPaths = _settings
@@ -1322,17 +1319,16 @@ public class Batfish implements AutoCloseable {
          populatePrecomputedBgpAdvertisements(
                _settings.getPrecomputedBgpAdvertisementsPath(), cpFactBins);
       }
-      boolean differentialContext = _settings.getDiffActive();
-      Map<String, Configuration> configurations = loadConfigurations();
+      Map<String, Configuration> configurations = loadConfigurations(envSettings);
       Topology topology = computeTopology(_settings.getTestRigPath(),
             configurations, cpFactBins);
-      String edgeBlacklistPath = _envSettings.getEdgeBlacklistPath();
-      String serializedTopologyPath = _envSettings.getSerializedTopologyPath();
+      String edgeBlacklistPath = envSettings.getEdgeBlacklistPath();
+      String serializedTopologyPath = envSettings.getSerializedTopologyPath();
       InterfaceSet flowSinks = null;
       if (differentialContext) {
          flowSinks = getFlowSinkSet(_baseEnvSettings.getDataPlanePath());
       }
-      EdgeSet blacklistEdges = getEdgeBlacklist(_envSettings);
+      EdgeSet blacklistEdges = getEdgeBlacklist(envSettings);
       if (edgeBlacklistPath != null) {
          File edgeBlacklistPathAsFile = new File(edgeBlacklistPath);
          if (edgeBlacklistPathAsFile.exists()) {
@@ -1340,7 +1336,7 @@ public class Batfish implements AutoCloseable {
             edges.removeAll(blacklistEdges);
          }
       }
-      NodeSet blacklistNodes = getNodeBlacklist(_envSettings);
+      NodeSet blacklistNodes = getNodeBlacklist(envSettings);
       if (blacklistNodes != null) {
          if (differentialContext) {
             flowSinks.removeNodes(blacklistNodes);
@@ -1349,7 +1345,7 @@ public class Batfish implements AutoCloseable {
             topology.removeNode(blacklistNode);
          }
       }
-      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(_envSettings);
+      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(envSettings);
       if (blacklistInterfaces != null) {
          for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
             topology.removeInterface(blacklistInterface);
@@ -1368,7 +1364,7 @@ public class Batfish implements AutoCloseable {
          _logger.output("Facts generated successfully.\n");
       }
       if (_settings.getDumpControlPlaneFacts()) {
-         dumpControlPlaneFacts(cpFactBins);
+         dumpControlPlaneFacts(envSettings, cpFactBins);
       }
       // serialize topology
       File topologyPath = new File(serializedTopologyPath);
@@ -1388,23 +1384,24 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException("Missing path to data plane");
       }
       File dataPlanePathAsFile = new File(dataPlanePath);
-      computeDataPlane(dataPlanePathAsFile);
+      computeDataPlane(dataPlanePathAsFile, envSettings);
    }
 
-   private void computeDataPlane(File dataPlanePath) {
+   private void computeDataPlane(File dataPlanePath,
+         EnvironmentSettings envSettings) {
       _logger.info("\n*** COMPUTING DATA PLANE STRUCTURES ***\n");
       resetTimer();
 
       _logger.info("Retrieving flow sink information...");
-      InterfaceSet flowSinks = getFlowSinkSet();
+      InterfaceSet flowSinks = getFlowSinkSet(envSettings);
       _logger.info("OK\n");
 
-      Topology topology = loadTopology();
+      Topology topology = loadTopology(envSettings);
       EdgeSet topologyEdges = topology.getEdges();
 
       _logger.info("Caclulating forwarding rules...");
-      FibMap fibs = getRouteForwardingRules();
-      PolicyRouteFibNodeMap policyRouteFibNodeMap = getPolicyRouteFibNodeMap();
+      FibMap fibs = getRouteForwardingRules(envSettings);
+      PolicyRouteFibNodeMap policyRouteFibNodeMap = getPolicyRouteFibNodeMap(envSettings);
       _logger.info("OK\n");
       DataPlane dataPlane = new DataPlane(flowSinks, topologyEdges, fibs,
             policyRouteFibNodeMap);
@@ -1611,10 +1608,6 @@ public class Batfish implements AutoCloseable {
          Map<String, StringBuilder> factBins) {
       _logger.info("\n*** DUMPING CONTROL PLANE FACTS ***\n");
       dumpFacts(factBins, envSettings.getControlPlaneFactsDir());
-   }
-
-   private void dumpControlPlaneFacts(Map<String, StringBuilder> factBins) {
-      dumpControlPlaneFacts(_envSettings, factBins);
    }
 
    private void dumpFacts(Map<String, StringBuilder> factBins, String factsDir) {
@@ -2030,10 +2023,6 @@ public class Batfish implements AutoCloseable {
       return seconds;
    }
 
-   private InterfaceSet getFlowSinkSet() {
-      return getFlowSinkSet(_envSettings);
-   }
-
    private InterfaceSet getFlowSinkSet(EnvironmentSettings envSettings) {
       InterfaceSet flowSinks = new InterfaceSet();
       Relation relation = getRelation(envSettings, FLOW_SINK_PREDICATE_NAME);
@@ -2211,10 +2200,6 @@ public class Batfish implements AutoCloseable {
       return content;
    }
 
-   private PolicyRouteFibNodeMap getPolicyRouteFibNodeMap() {
-      return getPolicyRouteFibNodeMap(_envSettings);
-   }
-
    private PolicyRouteFibNodeMap getPolicyRouteFibNodeMap(
          EnvironmentSettings envSettings) {
       PolicyRouteFibNodeMap nodeMap = new PolicyRouteFibNodeMap();
@@ -2272,10 +2257,6 @@ public class Batfish implements AutoCloseable {
       return relation;
    }
 
-   private FibMap getRouteForwardingRules() {
-      return getRouteForwardingRules(_envSettings);
-   }
-
    private FibMap getRouteForwardingRules(EnvironmentSettings envSettings) {
       FibMap fibs = new FibMap();
       Relation relation = getRelation(envSettings, FIB_PREDICATE_NAME);
@@ -2317,12 +2298,8 @@ public class Batfish implements AutoCloseable {
       return fibs;
    }
 
-   private RouteSet getRoutes() {
-      return getRoutes(_envSettings);
-   }
-
    private RouteSet getRoutes(EnvironmentSettings envSettings) {
-      checkDataPlaneFacts(_envSettings);
+      checkDataPlaneFacts(envSettings);
       RouteSet routes = new RouteSet();
       EntityTable entityTable = initEntityTable(envSettings);
       Relation relation = getRelation(envSettings,
@@ -2418,7 +2395,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void initQuestionEnvironment(EnvironmentSettings envSettings,
-         Question question, boolean dp) {
+         Question question, boolean dp, boolean differentialContext) {
       if (!environmentExists(envSettings)) {
          File envPath = new File(envSettings.getEnvPath());
          // create environment required folders
@@ -2450,10 +2427,11 @@ public class Batfish implements AutoCloseable {
          Map<String, StringBuilder> cpFactBins = new LinkedHashMap<String, StringBuilder>();
          initControlPlaneFactBins(cpFactBins, !usePrecomputedFacts);
          if (!usePrecomputedFacts) {
-            computeControlPlaneFacts(cpFactBins);
+            computeControlPlaneFacts(cpFactBins, differentialContext,
+                  envSettings);
          }
          nxtnetDataPlane(envSettings);
-         writeRoutes(envSettings.getPrecomputedRoutesPath());
+         writeRoutes(envSettings.getPrecomputedRoutesPath(), envSettings);
          computeDataPlane(envSettings);
          _entityTables.clear();
       }
@@ -2462,7 +2440,7 @@ public class Batfish implements AutoCloseable {
    private void initQuestionEnvironments(Question question, boolean diff,
          boolean diffActive, boolean dp) {
       if (diff || !diffActive) {
-         initQuestionEnvironment(_baseEnvSettings, question, dp);
+         initQuestionEnvironment(_baseEnvSettings, question, dp, false);
       }
       if (diff || diffActive) {
          if (_settings.getDiffEnvironmentName() == null
@@ -2472,7 +2450,7 @@ public class Batfish implements AutoCloseable {
             applyAutoBaseDir(_settings);
             _envSettings = _diffEnvSettings;
          }
-         initQuestionEnvironment(_diffEnvSettings, question, dp);
+         initQuestionEnvironment(_diffEnvSettings, question, dp, true);
       }
    }
 
@@ -2531,10 +2509,6 @@ public class Batfish implements AutoCloseable {
       return configurations;
    }
 
-   private Topology loadTopology() {
-      return loadTopology(_envSettings);
-   }
-
    private Topology loadTopology(EnvironmentSettings envSettings) {
       String topologyPath = envSettings.getSerializedTopologyPath();
       File topologyPathFile = new File(topologyPath);
@@ -2544,17 +2518,12 @@ public class Batfish implements AutoCloseable {
       return topology;
    }
 
-   private void nxtnetDataPlane() {
-      nxtnetDataPlane(_envSettings);
-      writeRoutes(_envSettings.getPrecomputedRoutesPath());
-   }
-
    private void nxtnetDataPlane(EnvironmentSettings envSettings) {
       Map<String, String> inputFacts = readFacts(
             envSettings.getControlPlaneFactsDir(),
             NxtnetConstants.NXTNET_DATA_PLANE_COMPUTATION_FACTS);
       writeNxtnetInput(NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS,
-            inputFacts, envSettings.getNxtnetDataPlaneInputFile());
+            inputFacts, envSettings.getNxtnetDataPlaneInputFile(), envSettings);
       runNxtnet(envSettings.getNxtnetDataPlaneInputFile(),
             envSettings.getNxtnetDataPlaneOutputDir());
    }
@@ -2581,7 +2550,7 @@ public class Batfish implements AutoCloseable {
       inputFacts.putAll(inputControlPlaneFacts);
       inputFacts.putAll(inputFlowFacts);
       writeNxtnetInput(NxtnetConstants.NXTNET_TRAFFIC_OUTPUT_SYMBOLS,
-            inputFacts, envSettings.getNxtnetTrafficInputFile());
+            inputFacts, envSettings.getNxtnetTrafficInputFile(), envSettings);
       runNxtnet(envSettings.getNxtnetTrafficInputFile(),
             envSettings.getNxtnetTrafficOutputDir());
    }
@@ -3429,13 +3398,14 @@ public class Batfish implements AutoCloseable {
          cpFactBins = new LinkedHashMap<String, StringBuilder>();
          initControlPlaneFactBins(cpFactBins, !usePrecomputedFacts);
          if (!usePrecomputedFacts) {
-            computeControlPlaneFacts(cpFactBins);
+            computeControlPlaneFacts(cpFactBins, _settings.getDiffActive(),
+                  _envSettings);
          }
          action = true;
       }
 
       if (_settings.getNxtnetDataPlane()) {
-         nxtnetDataPlane();
+         nxtnetDataPlane(_envSettings);
          action = true;
       }
 
@@ -3482,7 +3452,7 @@ public class Batfish implements AutoCloseable {
       }
 
       if (_settings.getWriteRoutes()) {
-         writeRoutes(_settings.getPrecomputedRoutesPath());
+         writeRoutes(_settings.getPrecomputedRoutesPath(), _envSettings);
          action = true;
       }
 
@@ -3871,8 +3841,9 @@ public class Batfish implements AutoCloseable {
    }
 
    private void writeNxtnetInput(Set<String> outputSymbols,
-         Map<String, String> inputFacts, String nxtnetInputFile) {
-      checkComputeNxtnetRelations();
+         Map<String, String> inputFacts, String nxtnetInputFile,
+         EnvironmentSettings envSettings) {
+      checkComputeNxtnetRelations(envSettings);
       StringBuilder sb = new StringBuilder();
       sb.append("output_symbols([");
       List<String> outputSymbolsList = new ArrayList<String>();
@@ -3965,8 +3936,9 @@ public class Batfish implements AutoCloseable {
       dumpFacts(prFactBins, envSettings.getTrafficFactsDir());
    }
 
-   private void writeRoutes(String writeRoutesPath) {
-      RouteSet routes = getRoutes();
+   private void writeRoutes(String writeRoutesPath,
+         EnvironmentSettings envSettings) {
+      RouteSet routes = getRoutes(envSettings);
       File routesFile = new File(writeRoutesPath);
       File parentDir = routesFile.getParentFile();
       if (parentDir != null) {
