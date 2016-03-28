@@ -708,26 +708,39 @@ public class Batfish implements AutoCloseable {
                boolean sat = e.getValue();
                String hostname = aclLine.getHostname();
                String aclName = aclLine.getAclName();
-               int line = aclLine.getLine();
-               JSONObject node;
-               if (nodeObjects.containsKey(hostname)) {
-                  node = nodes.getJSONObject(hostname);
-               }
-               else {
-                  node = new JSONObject();
-                  nodes.put(hostname, node);
-                  node.put("name", hostname);
-                  node.put("type", "node");
-                  StringBuilder nodeDescriptionBuilder = new StringBuilder();
-                  nodeObjects.put(hostname, node);
-                  nodeDescriptions.put(hostname, nodeDescriptionBuilder);
-               }
-               StringBuilder nodeDescriptionBuilder = nodeDescriptions
-                     .get(hostname);
-               if (!sat) {
-                  nodeDescriptionBuilder.append(String.format(
-                        "ACL: \"%s\", line: %d is UNREACHABLE<br>", aclName,
-                        line));
+               Pair<String, String> qualifiedAclName = new Pair<String, String>(
+                     hostname, aclName);
+               if (aclsWithUnreachableLines.contains(qualifiedAclName)) {
+                  int line = aclLine.getLine();
+                  JSONObject node;
+                  if (nodeObjects.containsKey(hostname)) {
+                     node = nodes.getJSONObject(hostname);
+                  }
+                  else {
+                     node = new JSONObject();
+                     nodes.put(hostname, node);
+                     node.put("name", hostname);
+                     node.put("type", "node");
+                     StringBuilder nodeDescriptionBuilder = new StringBuilder();
+                     nodeObjects.put(hostname, node);
+                     nodeDescriptions.put(hostname, nodeDescriptionBuilder);
+                  }
+                  StringBuilder nodeDescriptionBuilder = nodeDescriptions
+                        .get(hostname);
+                  if (!sat) {
+                     Configuration c = configurations
+                           .get(aclLine.getHostname());
+                     IpAccessList acl = c.getIpAccessLists().get(
+                           aclLine.getAclName());
+                     IpAccessListLine ipAccessListLine = acl.getLines().get(
+                           line);
+                     nodeDescriptionBuilder
+                           .append(String
+                                 .format(
+                                       "ACL: \"%s\", line: %d is UNREACHABLE<br>&nbsp;%s<br>",
+                                       aclName, line,
+                                       ipAccessListLine.toString()));
+                  }
                }
             }
             for (String hostname : nodeObjects.keySet()) {
