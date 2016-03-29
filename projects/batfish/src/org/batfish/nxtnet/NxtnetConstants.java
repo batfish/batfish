@@ -193,8 +193,13 @@ public class NxtnetConstants {
             "BgpAdvertisement_type",
             // BEGIN DEBUG SYMBOLS
             "BgpNeighbors",
+            "PolicyMapClauseMatchRoute",
             "PolicyMapDenyAdvert",
+            "PolicyMapDenyRoute",
             "PolicyMapPermitAdvert",
+            "PolicyMapPermitRoute",
+            "SetPolicyMapClauseMatchInterface",
+            "SetPolicyMapClauseMatchProtocol",
             // END DEBUG SYMBOLS
             "FibForwardPolicyRouteNextHopIp",
             "FibNetwork",

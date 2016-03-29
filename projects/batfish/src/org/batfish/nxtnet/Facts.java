@@ -72,7 +72,7 @@ public class Facts {
       map.put("SetPolicyMapClauseMatchAsPath", "MAP|CLAUSE|ASPATH");
       map.put("SetPolicyMapClauseMatchColor", "MAP|CLAUSE|COLOR");
       map.put("SetPolicyMapClauseMatchCommunityList", "MAP|CLAUSE|LIST");
-      map.put("SetPolicyMapClauseMatchInterface", "MAP|CLAUSE|INTERFACE");
+      map.put("SetPolicyMapClauseMatchInterface", "MAP|CLAUSE|NODE|INTERFACE");
       map.put("SetPolicyMapClauseMatchNeighbor", "MAP|CLAUSE|NEIGHBORIP");
       map.put("SetPolicyMapClauseMatchPolicy", "MAP|CLAUSE|POLICY");
       map.put("SetPolicyMapClauseMatchProtocol", "MAP|CLAUSE|PROTOCOL");

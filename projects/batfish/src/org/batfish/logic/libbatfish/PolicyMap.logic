@@ -134,9 +134,10 @@ SetPolicyMapClauseMatchCommunityList(map, clause, list) ->
    int(clause),
    CommunityList(list).
 
-SetPolicyMapClauseMatchInterface(map, clause, interface) ->
+SetPolicyMapClauseMatchInterface(map, clause, node, interface) ->
    PolicyMap(map),
    int(clause),
+   Node(node),
    Interface(interface).
 
 SetPolicyMapClauseMatchNeighbor(map, clause, neighborIp) ->

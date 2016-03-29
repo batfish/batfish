@@ -958,7 +958,7 @@ public class ConfigurationFactExtractor {
                   PolicyMapClauseMatchInterfaceLine pmmil = (PolicyMapClauseMatchInterfaceLine) matchLine;
                   String ifaceName = pmmil.getName();
                   wSetPolicyMapClauseMatchInterface.append(mapName + "|" + i
-                        + "|" + ifaceName + "\n");
+                        + "|" + hostname + "|" + ifaceName + "\n");
                   break;
 
                default:

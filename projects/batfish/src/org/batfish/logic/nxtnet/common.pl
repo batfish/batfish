@@ -2364,7 +2364,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'SetPolicyMapClauseMatchCommunityList'(Map, Clause, List).
 
 'PolicyMap'(Map) :-
-   'SetPolicyMapClauseMatchInterface'(Map, Clause, Interface).
+   'SetPolicyMapClauseMatchInterface'(Map, Clause, Node, Interface).
 
 'PolicyMap'(Map),
 'Ip'(NeighborIp)
@@ -2505,6 +2505,15 @@ need_RouteFilterMatchNetwork(List, Network) :-
       (
          'Route_protocol'(Route, Protocol) /*fn*/,
          'SetPolicyMapClauseMatchProtocol'(Map, Clause, Protocol)
+      )
+   ),
+   % interface
+   (
+      \+ 'SetPolicyMapClauseMatchInterface'(Map, Clause, _, _) ;
+      (
+         'Route_network'(Route, Network) /*fn*/,
+         'ConnectedRoute'(Node, Network, Interface),
+         'SetPolicyMapClauseMatchInterface'(Map, Clause, Node, Interface)
       )
    ),
    % RouteFilter
