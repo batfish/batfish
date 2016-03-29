@@ -1251,6 +1251,11 @@ INCOMPLETE
    'incomplete'
 ;
 
+INDIRECT_NEXT_HOP
+:
+   'indirect-next-hop'
+;
+
 INET
 :
    'inet'

@@ -21,6 +21,8 @@ public class RoutingInstance implements Serializable {
 
    private Integer _as;
 
+   private String _forwardingTableExportPolicy;
+
    private final Interface _globalMasterInterface;
 
    private String _hostname;
@@ -82,6 +84,10 @@ public class RoutingInstance implements Serializable {
 
    public Integer getAs() {
       return _as;
+   }
+
+   public String getForwardingTableExportPolicy() {
+      return _forwardingTableExportPolicy;
    }
 
    public Interface getGlobalMasterInterface() {
@@ -146,6 +152,10 @@ public class RoutingInstance implements Serializable {
 
    public void setAs(int as) {
       _as = as;
+   }
+
+   public void setForwardingTableExportPolicy(String forwardingTableExportPolicy) {
+      _forwardingTableExportPolicy = forwardingTableExportPolicy;
    }
 
    public void setHostname(String hostname) {

@@ -268,6 +268,19 @@ roast_loops
    LOOPS DEC
 ;
 
+roftt_export
+:
+   EXPORT name = variable
+;
+
+roftt_null
+:
+   (
+      INDIRECT_NEXT_HOP
+   )
+   s_null_filler
+;
+
 rot_aggregate
 :
    AGGREGATE ROUTE IP_PREFIX
@@ -318,6 +331,17 @@ rot_bmp_tail
    | bmpt_station_port
 ;
 
+rot_forwarding_table
+:
+   FORWARDING_TABLE rot_forwarding_table_tail
+;
+
+rot_forwarding_table_tail
+:
+   roftt_export
+   | roftt_null
+;
+
 rot_generate
 :
    GENERATE ROUTE
@@ -348,8 +372,7 @@ rot_interface_routes_tail
 rot_null
 :
    (
-      FORWARDING_TABLE
-      | GRACEFUL_RESTART
+      GRACEFUL_RESTART
       | MULTICAST
       | MULTIPATH
       | NONSTOP_ROUTING
@@ -459,6 +482,7 @@ s_routing_options_tail
    | rot_auto_export
    | rot_autonomous_system
    | rot_bmp
+   | rot_forwarding_table
    | rot_generate
    | rot_interface_routes
    | rot_martians
@@ -542,7 +566,10 @@ srt_install
 
 srt_metric
 :
-   METRIC metric = DEC (TYPE DEC)?
+   METRIC metric = DEC
+   (
+      TYPE DEC
+   )?
 ;
 
 srt_next_hop

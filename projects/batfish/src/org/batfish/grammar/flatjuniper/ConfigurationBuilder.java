@@ -2905,6 +2905,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitRoftt_export(Roftt_exportContext ctx) {
+      String name = ctx.name.getText();
+      _configuration.getDefaultRoutingInstance()
+            .setForwardingTableExportPolicy(name);
+   }
+
+   @Override
    public void exitRot_autonomous_system(Rot_autonomous_systemContext ctx) {
       int as = toInt(ctx.as);
       _currentRoutingInstance.setAs(as);

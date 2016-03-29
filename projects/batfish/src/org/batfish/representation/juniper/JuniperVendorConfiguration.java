@@ -1035,6 +1035,22 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          _c.setBgpProcess(proc);
       }
 
+      // mark forwarding table export policy if it exists
+      String forwardingTableExportPolicyName = _defaultRoutingInstance
+            .getForwardingTableExportPolicy();
+      if (forwardingTableExportPolicyName != null) {
+         PolicyStatement forwardingTableExportPolicy = _policyStatements
+               .get(forwardingTableExportPolicyName);
+         if (forwardingTableExportPolicy != null) {
+            forwardingTableExportPolicy.getReferers().put(
+                  _defaultRoutingInstance, "Forwarding-table export policy");
+         }
+         else {
+            _w.redFlag("undefined reference to forwarding-table export policy: \""
+                  + forwardingTableExportPolicyName + "\"");
+         }
+      }
+
       // warn about unreferenced data structures
       warnUnreferencedPolicyStatements();
       warnUnreferencedFirewallFilters();
