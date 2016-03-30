@@ -1501,12 +1501,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIp_access_group_if_stanza(
          Ip_access_group_if_stanzaContext ctx) {
       String name = ctx.name.getText();
-      if (ctx.IN() != null) {
+      if (ctx.IN() != null || ctx.INGRESS() != null) {
          for (Interface currentInterface : _currentInterfaces) {
             currentInterface.setIncomingFilter(name);
          }
       }
-      else if (ctx.OUT() != null) {
+      else if (ctx.OUT() != null || ctx.EGRESS() != null) {
          for (Interface currentInterface : _currentInterfaces) {
             currentInterface.setOutgoingFilter(name);
          }
