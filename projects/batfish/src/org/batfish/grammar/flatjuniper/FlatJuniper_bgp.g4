@@ -23,7 +23,10 @@ bfi6t_any
 
 bfi6t_null
 :
-   LABELED_UNICAST s_null_filler
+   (
+      LABELED_UNICAST
+      | MULTICAST
+   ) s_null_filler
 ;
 
 bfi6t_unicast
@@ -341,6 +344,7 @@ bt_null
    (
       AUTHENTICATION_KEY
       | BFD_LIVENESS_DETECTION
+      | GRACEFUL_RESTART
       | HOLD_TIME
       | KEEP
       | LOG_UPDOWN

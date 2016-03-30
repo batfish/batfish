@@ -1969,6 +1969,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          }
       }
       else if (ctx.IPV6_PREFIX() != null) {
+         // dummy generated route not added to configuration
+         _currentGeneratedRoute = new GeneratedRoute(null);
          todo(ctx, F_IPV6);
       }
    }

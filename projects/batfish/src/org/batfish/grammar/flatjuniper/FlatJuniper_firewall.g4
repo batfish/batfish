@@ -94,7 +94,10 @@ fwfromt_next_header
 
 fwfromt_null
 :
-   IS_FRAGMENT s_null_filler
+   (
+      IS_FRAGMENT
+      | PAYLOAD_PROTOCOL
+   ) s_null_filler
 ;
 
 fwfromt_port

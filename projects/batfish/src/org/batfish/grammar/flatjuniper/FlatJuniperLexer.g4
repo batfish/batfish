@@ -3191,6 +3191,11 @@ PATH_SELECTION
    'path-selection'
 ;
 
+PAYLOAD_PROTOCOL
+:
+   'payload-protocol'
+;
+
 PEER_ADDRESS
 :
    'peer-address'
