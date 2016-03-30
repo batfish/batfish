@@ -16,6 +16,8 @@ public final class FirewallFilter extends ReferenceCountedStructure {
 
    private final String _name;
 
+   private boolean _routingPolicy;
+
    private final Map<String, FwTerm> _terms;
 
    public FirewallFilter(String name, Family family) {
@@ -32,8 +34,16 @@ public final class FirewallFilter extends ReferenceCountedStructure {
       return _name;
    }
 
+   public boolean getRoutingPolicy() {
+      return _routingPolicy;
+   }
+
    public Map<String, FwTerm> getTerms() {
       return _terms;
+   }
+
+   public void setRoutingPolicy(boolean routingPolicy) {
+      _routingPolicy = routingPolicy;
    }
 
 }

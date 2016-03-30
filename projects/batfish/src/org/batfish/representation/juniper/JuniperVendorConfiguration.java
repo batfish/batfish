@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.batfish.collections.RoleSet;
@@ -34,8 +35,10 @@ import org.batfish.representation.OspfProcess;
 import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapAction;
 import org.batfish.representation.PolicyMapClause;
+import org.batfish.representation.PolicyMapMatchIpAccessListLine;
 import org.batfish.representation.PolicyMapMatchLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
+import org.batfish.representation.PolicyMapSetNextHopLine;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.VendorConfiguration;
@@ -541,9 +544,14 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             _w.redFlag("missing incoming acl: \"" + inAclName + "\"");
          }
          else {
-            _filters.get(inAclName).getReferers()
-                  .put(iface, "Incoming ACL for interface: " + iface.getName());
+            FirewallFilter inFilter = _filters.get(inAclName);
+            inFilter.getReferers().put(iface,
+                  "Incoming ACL for interface: " + iface.getName());
             newIface.setIncomingFilter(inAcl);
+            if (inFilter.getRoutingPolicy()) {
+               PolicyMap routingPolicy = _c.getPolicyMaps().get(inAclName);
+               newIface.setRoutingPolicy(routingPolicy);
+            }
          }
       }
       String outAclName = iface.getOutgoingFilter();
@@ -809,6 +817,92 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return map;
    }
 
+   private PolicyMap toRoutingPolicy(FirewallFilter filter) {
+      String name = filter.getName();
+      PolicyMap routingPolicy = new PolicyMap(name);
+      for (Entry<String, FwTerm> e : filter.getTerms().entrySet()) {
+         String termName = e.getKey();
+         FwTerm term = e.getValue();
+         PolicyMapClause clause = new PolicyMapClause();
+         clause.setName(termName);
+         routingPolicy.getClauses().add(clause);
+         Set<Prefix> destinationPrefixes = new TreeSet<Prefix>();
+         ;
+         List<SubRange> destinationPortRanges = new ArrayList<SubRange>();
+         Set<Prefix> sourcePrefixes = new TreeSet<Prefix>();
+         List<SubRange> sourcePortRanges = new ArrayList<SubRange>();
+
+         for (FwFrom from : term.getFroms()) {
+            if (from instanceof FwFromDestinationAddress) {
+               FwFromDestinationAddress fromDestinationAddress = (FwFromDestinationAddress) from;
+               Prefix destinationPrefix = fromDestinationAddress.getPrefix();
+               destinationPrefixes.add(destinationPrefix);
+            }
+            if (from instanceof FwFromDestinationPort) {
+               FwFromDestinationPort fromDestinationPort = (FwFromDestinationPort) from;
+               SubRange destinationPortRange = fromDestinationPort
+                     .getPortRange();
+               destinationPortRanges.add(destinationPortRange);
+            }
+            else if (from instanceof FwFromSourceAddress) {
+               FwFromSourceAddress fromSourceAddress = (FwFromSourceAddress) from;
+               Prefix sourcePrefix = fromSourceAddress.getPrefix();
+               sourcePrefixes.add(sourcePrefix);
+            }
+            if (from instanceof FwFromSourcePort) {
+               FwFromSourcePort fromSourcePort = (FwFromSourcePort) from;
+               SubRange sourcePortRange = fromSourcePort.getPortRange();
+               sourcePortRanges.add(sourcePortRange);
+            }
+         }
+         if (!destinationPrefixes.isEmpty() || !destinationPortRanges.isEmpty()
+               || !sourcePrefixes.isEmpty() || !sourcePortRanges.isEmpty()) {
+            String termIpAccessListName = "~" + name + ":" + termName + "~";
+            IpAccessListLine line = new IpAccessListLine();
+            line.getDestinationIpRanges().addAll(destinationPrefixes);
+            line.getDstPortRanges().addAll(destinationPortRanges);
+            line.getSourceIpRanges().addAll(sourcePrefixes);
+            line.getDstPortRanges().addAll(sourcePortRanges);
+            line.setAction(LineAction.ACCEPT);
+            IpAccessList termIpAccessList = new IpAccessList(
+                  termIpAccessListName, Collections.singletonList(line));
+            _c.getIpAccessLists().put(termIpAccessListName, termIpAccessList);
+            PolicyMapMatchIpAccessListLine matchListLine = new PolicyMapMatchIpAccessListLine(
+                  Collections.singleton(termIpAccessList));
+            clause.getMatchLines().add(matchListLine);
+         }
+         List<Prefix> nextPrefixes = new ArrayList<Prefix>();
+         for (FwThen then : term.getThens()) {
+            if (then instanceof FwThenNextIp) {
+               FwThenNextIp thenNextIp = (FwThenNextIp) then;
+               Prefix nextIp = thenNextIp.getNextPrefix();
+               nextPrefixes.add(nextIp);
+            }
+            else if (then == FwThenDiscard.INSTANCE) {
+               clause.setAction(PolicyMapAction.DENY);
+            }
+            else if (then == FwThenAccept.INSTANCE) {
+               clause.setAction(PolicyMapAction.PERMIT);
+            }
+         }
+         if (!nextPrefixes.isEmpty()) {
+            List<Ip> nextHopIps = new ArrayList<Ip>();
+            for (Prefix nextPrefix : nextPrefixes) {
+               nextHopIps.add(nextPrefix.getAddress());
+               int prefixLength = nextPrefix.getPrefixLength();
+               if (prefixLength != 32) {
+                  _w.redFlag("Not sure how to interpret nextIp with prefix-length not equal to 32: "
+                        + prefixLength);
+               }
+            }
+            PolicyMapSetNextHopLine setNextHop = new PolicyMapSetNextHopLine(
+                  nextHopIps);
+            clause.getSetLines().add(setNextHop);
+         }
+      }
+      return routingPolicy;
+   }
+
    private org.batfish.representation.StaticRoute toStaticRoute(
          StaticRoute route) {
       Prefix prefix = route.getPrefix();
@@ -884,6 +978,20 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          }
          IpAccessList list = toIpAccessList(filter);
          _c.getIpAccessLists().put(name, list);
+      }
+
+      // convert firewall filters implementing routing policy to policymaps
+      for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
+         String name = e.getKey();
+         FirewallFilter filter = e.getValue();
+         if (filter.getRoutingPolicy()) {
+            // TODO: support other filter families
+            if (filter.getFamily() != Family.INET) {
+               continue;
+            }
+            PolicyMap routingPolicy = toRoutingPolicy(filter);
+            _c.getPolicyMaps().put(name, routingPolicy);
+         }
       }
 
       // convert route filters to route filter lists

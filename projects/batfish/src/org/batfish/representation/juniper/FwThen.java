@@ -1,4 +1,6 @@
 package org.batfish.representation.juniper;
 
-public interface FwThen {
+import java.io.Serializable;
+
+public interface FwThen extends Serializable {
 }

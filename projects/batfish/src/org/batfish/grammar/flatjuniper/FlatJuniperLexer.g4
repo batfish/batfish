@@ -2941,6 +2941,16 @@ NEXT_HOP
    'next-hop'
 ;
 
+NEXT_IP
+:
+   'next-ip'
+;
+
+NEXT_IP6
+:
+   'next-ip6'
+;
+
 NEXT_TABLE
 :
    'next-table'

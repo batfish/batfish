@@ -251,6 +251,15 @@ fwthent_loss_priority
    )
 ;
 
+fwthent_next_ip
+:
+   NEXT_IP
+   (
+      ip = IP_ADDRESS
+      | prefix = IP_PREFIX
+   )
+;
+
 fwthent_next_term
 :
    NEXT TERM
@@ -263,6 +272,7 @@ fwthent_nop
       | DSCP
       | FORWARDING_CLASS
       | LOG
+      | NEXT_IP6
       | POLICER
       | SAMPLE
       | SYSLOG
@@ -329,6 +339,7 @@ fwtt_then_tail
    fwthent_accept
    | fwthent_discard
    | fwthent_loss_priority
+   | fwthent_next_ip
    | fwthent_next_term
    | fwthent_nop
    | fwthent_port_mirror

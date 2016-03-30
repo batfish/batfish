@@ -65,6 +65,7 @@ import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.FwFromHostProtocol;
 import org.batfish.representation.juniper.FwFromHostService;
 import org.batfish.representation.juniper.FwFromSourcePrefixList;
+import org.batfish.representation.juniper.FwThenNextIp;
 import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
 import org.batfish.representation.juniper.IpsecVpn;
@@ -2453,6 +2454,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitFwthent_discard(Fwthent_discardContext ctx) {
       _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
+   }
+
+   @Override
+   public void exitFwthent_next_ip(Fwthent_next_ipContext ctx) {
+      Prefix nextPrefix;
+      if (ctx.ip != null) {
+         Ip nextIp = new Ip(ctx.ip.getText());
+         nextPrefix = new Prefix(nextIp, 32);
+      }
+      else {
+         nextPrefix = new Prefix(ctx.prefix.getText());
+      }
+      FwThenNextIp then = new FwThenNextIp(nextPrefix);
+      _currentFwTerm.getThens().add(then);
+      _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
+      _currentFilter.setRoutingPolicy(true);
    }
 
    @Override
