@@ -727,6 +727,6 @@ update_source_bgp_tail
 
 use_neighbor_group_bgp_tail
 :
-   USE NEIGHBOR_GROUP VARIABLE NEWLINE
+   USE NEIGHBOR_GROUP name = VARIABLE NEWLINE
 ;
 

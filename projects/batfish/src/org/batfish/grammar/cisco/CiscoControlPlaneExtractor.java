@@ -2078,6 +2078,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitUse_neighbor_group_bgp_tail(
+         Use_neighbor_group_bgp_tailContext ctx) {
+      String groupName = ctx.name.getText();
+      if (_currentIpPeerGroup != null) {
+         _currentIpPeerGroup.setGroupName(groupName);
+      }
+      else if (_currentIpv6PeerGroup != null) {
+         todo(ctx, F_IPV6);
+      }
+      else {
+         throw new BatfishException("Unexpected context for use neighbor group");
+      }
+   }
+
+   @Override
    public void exitPeer_group_assignment_rb_stanza(
          Peer_group_assignment_rb_stanzaContext ctx) {
       if (ctx.address != null) {
