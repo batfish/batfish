@@ -68,6 +68,7 @@ public class BfConsts {
    public static final String RELPATH_ENV_DIR = "env";
    public static final String RELPATH_ENV_NODE_SET = "env-node-set";
    public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
+   public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements";
    public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
    public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
    public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";

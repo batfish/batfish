@@ -310,6 +310,8 @@ public class Batfish implements AutoCloseable {
                   BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
             envSettings.setPrecomputedRoutesPath(envPath.resolve(
                   BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
+            envSettings.setExternalBgpAnnouncementsPath(envPath.resolve(
+                  BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS).toString());
          }
          String diffEnvName = settings.getDiffEnvironmentName();
          if (diffEnvName != null) {
@@ -338,6 +340,9 @@ public class Batfish implements AutoCloseable {
                   BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
             diffEnvSettings.setPrecomputedRoutesPath(diffEnvPath.resolve(
                   BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
+            diffEnvSettings.setExternalBgpAnnouncementsPath(diffEnvPath
+                  .resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS)
+                  .toString());
             if (settings.getDiffActive()) {
                settings.setActiveEnvironmentSettings(diffEnvSettings);
             }
@@ -1333,6 +1338,7 @@ public class Batfish implements AutoCloseable {
                _settings.getPrecomputedBgpAdvertisementsPath(), cpFactBins);
       }
       Map<String, Configuration> configurations = loadConfigurations(envSettings);
+      processExternalBgpAnnouncements(configurations, envSettings, cpFactBins);
       Topology topology = computeTopology(_settings.getTestRigPath(),
             configurations, cpFactBins);
       String edgeBlacklistPath = envSettings.getEdgeBlacklistPath();
@@ -2871,9 +2877,7 @@ public class Batfish implements AutoCloseable {
    }
 
    private void populatePrecomputedBgpAdvertisements(
-         String precomputedBgpAdvertisementsPath,
-         Map<String, StringBuilder> cpFactBins) {
-      File inputFile = new File(precomputedBgpAdvertisementsPath);
+         AdvertisementSet advertSet, Map<String, StringBuilder> cpFactBins) {
       StringBuilder adverts = cpFactBins
             .get(PRECOMPUTED_BGP_ADVERTISEMENTS_PREDICATE_NAME);
       StringBuilder advertCommunities = cpFactBins
@@ -2882,7 +2886,6 @@ public class Batfish implements AutoCloseable {
             .get(PRECOMPUTED_BGP_ADVERTISEMENT_AS_PATH_PREDICATE_NAME);
       StringBuilder advertPathLengths = cpFactBins
             .get(PRECOMPUTED_BGP_ADVERTISEMENT_AS_PATH_LENGTH_PREDICATE_NAME);
-      AdvertisementSet advertSet = (AdvertisementSet) deserializeObject(inputFile);
       StringBuilder wNetworks = cpFactBins.get(NETWORKS_PREDICATE_NAME);
       Set<Prefix> networks = new HashSet<Prefix>();
       int pcIndex = 0;
@@ -2938,6 +2941,14 @@ public class Batfish implements AutoCloseable {
          wNetworks.append(networkStart + "|" + networkStart + "|" + networkEnd
                + "|" + prefixLength + "\n");
       }
+   }
+
+   private void populatePrecomputedBgpAdvertisements(
+         String precomputedBgpAdvertisementsPath,
+         Map<String, StringBuilder> cpFactBins) {
+      File inputFile = new File(precomputedBgpAdvertisementsPath);
+      AdvertisementSet advertSet = (AdvertisementSet) deserializeObject(inputFile);
+      populatePrecomputedBgpAdvertisements(advertSet, cpFactBins);
    }
 
    private void populatePrecomputedFacts(String precomputedFactsPath,
@@ -3127,6 +3138,37 @@ public class Batfish implements AutoCloseable {
       Map<String, Configuration> deltaConfigurations = getDeltaConfigurations(envSettings);
       configurations.putAll(deltaConfigurations);
       // TODO: deal with topological changes
+   }
+
+   /**
+    * Reads the external bgp announcement specified in the environment, and
+    * populates the vendor-independent configurations with data about those
+    * announcements
+    *
+    * @param configurations
+    *           The vendor-independent configurations to be modified
+    * @param envSettings
+    *           The settings for the environment, containing e.g. the path to
+    *           the external announcements file
+    * @param cpFactBins The container for nxtnet facts
+    */
+   private void processExternalBgpAnnouncements(
+         Map<String, Configuration> configurations,
+         EnvironmentSettings envSettings, Map<String, StringBuilder> cpFactBins) {
+      AdvertisementSet advertSet = new AdvertisementSet();
+      String externalBgpAnnouncementsPath = envSettings
+            .getExternalBgpAnnouncementsPath();
+      File externalBgpAnnouncementsFile = new File(externalBgpAnnouncementsPath);
+      if (externalBgpAnnouncementsFile.exists()) {
+         String externalBgpAnnouncementsFileContents = Util
+               .readFile(externalBgpAnnouncementsFile);
+         // TODO: RATUL_BGP
+         // It is your job to populate advertSet with BgpAdvertisements that
+         // gets passed to populatePrecomputedBgpAdvertisements.
+         // See populatePrecomputedBgpAdvertisements for the things that get
+         // extracted from these advertisements.
+         populatePrecomputedBgpAdvertisements(advertSet, cpFactBins);
+      }
    }
 
    private void processInterfaceBlacklist(

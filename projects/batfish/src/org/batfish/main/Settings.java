@@ -23,6 +23,8 @@ public final class Settings extends BaseSettings {
 
       private String _envPath;
 
+      private String _externalBgpAnnouncementsPath;
+
       private String _interfaceBlacklistPath;
 
       private String _name;
@@ -61,6 +63,10 @@ public final class Settings extends BaseSettings {
 
       public String getEnvPath() {
          return _envPath;
+      }
+
+      public String getExternalBgpAnnouncementsPath() {
+         return _externalBgpAnnouncementsPath;
       }
 
       public String getInterfaceBlacklistPath() {
@@ -121,6 +127,10 @@ public final class Settings extends BaseSettings {
 
       public void setEnvPath(String envPath) {
          _envPath = envPath;
+      }
+
+      public void setExternalBgpAnnouncementsPath(String externalBgpAnnouncementsPath) {
+         _externalBgpAnnouncementsPath = externalBgpAnnouncementsPath;
       }
 
       public void setInterfaceBlacklistPath(String interfaceBlacklistPath) {
