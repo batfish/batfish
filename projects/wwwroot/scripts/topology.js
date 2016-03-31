@@ -350,8 +350,10 @@ function SetupCy() {
 			css : {
 				'width' : 80,
 				'height' :80,
-				'background-color' : '#888'
-				//'label' : 'data(id)'
+				'background-color' : '#888',
+				'label' : 'data(id)',
+				"text-valign" : "center",
+				"text-halign" : "center"
 			}
 		}, {
 			selector : 'edge',
