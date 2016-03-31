@@ -300,13 +300,19 @@
 								<td>
 									<select id="questionSelect" onchange="loadText(elementQuestionSelect, elementQuestionText, elementQuestionFile)">
 										<option disabled selected>-- select a sample question -- </option>
-										<option value="samples/unique-ip-assignments.q.txt">Unique IP assignments</option>
-										<option value="samples/print-ebgp-nodes.q.txt">List EBGP nodes</option>
-										<option value="samples/ospf-loopbacks.q.txt">OSPF loopback announcements</option>
+										<option value="samples/acl_reachability.q.txt">Reachability of ACL lines</option>
+										<option value="samples/bgp_session_check.q.txt">BGP session check</option>
+										<option value="samples/ipsec_vpn_check.q.txt">IPSEC VPN check</option>
+										<option value="samples/isis_loopbacks.q.txt">IS-IS loopback announcements</option>
+										<option value="samples/no_self_adjacencies.q.txt">No self-adjacencies</option>
+										<option value="samples/print_ebgp_nodes.q.txt">List EBGP nodes</option>
+										<option value="samples/ospf_loopbacks.q.txt">OSPF loopback announcements</option>
 										<option value="samples/traceroute.q.txt">Traceroute</option>
 										<option value="samples/multipath.q.txt">Multipath consistency</option>
 										<option value="samples/reachability.q.txt">Reachability between devices</option>
-										<option value="samples/failure.q.txt">Base vs delta reachability</option>
+										<option value="samples/reduced_reachability.q.txt">Base vs delta reduced reachability</option>
+										<option value="samples/unique_bgp_prefix_origination.q.txt">Unique BGP prefix origination (overapproximation)</option>
+										<option value="samples/unique_ip_assignments.q.txt">Unique IP assignments</option>
 									</select>
 									&nbsp or &nbsp 
 									<select id="prevQuestions" onchange="showOldQuestion(elementPrevQuestionSelect)" style="width:250px">
