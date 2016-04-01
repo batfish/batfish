@@ -92,7 +92,9 @@ public class FlowHistory {
                         + "<br>" + trace.getNotes());
                   view.put("color", color);
                   JSONArray links = new JSONArray();
-                  view.put("links", links);
+                  JSONObject path = new JSONObject();
+                  view.put("path", path);
+                  path.put("links", links);
                   int hopNum = 0;
                   for (Edge edge : trace.getHops()) {
                      hopNum++;
