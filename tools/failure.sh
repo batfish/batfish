@@ -149,9 +149,12 @@ batfish_answer_failure() {
    local QUESTION_SRC=$BATFISH_ROOT/example_questions/reduced_reachability.q
    local QUESTION_DST_DIR=$BASE/questions/$QUESTIONNAME
    local QUESTION_DST=$QUESTION_DST_DIR/question
+   local QUESTION_PARAMETERS=$QUESTION_DST_DIR/parameters
    mkdir -p $QUESTION_DST_DIR
-   cp $QUESTION_SRC $QUESTION_DST
-   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -answer -questionname $QUESTIONNAME
+   cp $QUESTION_SRC $QUESTION_DST || return 1
+   touch $QUESTION_PARAMETERS || return 1
+   echo "batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -answer -questionname $QUESTIONNAME || return 1"
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -answer -questionname $QUESTIONNAME || return 1
    batfish_date
    echo ": END: Answer failure consistency question"
 }
