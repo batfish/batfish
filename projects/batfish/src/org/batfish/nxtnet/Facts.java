@@ -108,6 +108,8 @@ public class Facts {
       map.put(
             "SetBgpNeighborGeneratedRoutePolicy_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
+      map.put("SetBgpMultihopNeighborNetwork_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH");
       map.put("SetBgpNeighborNetwork_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH");
       map.put("SetBgpNeighborSendCommunity_flat",

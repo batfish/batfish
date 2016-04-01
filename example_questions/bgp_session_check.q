@@ -43,6 +43,8 @@ verify {
    $num_ebgp_local_ip_on_loopback := 0;
    $num_ebgp_remote_ip_on_loopback := 0;
    $num_ebgp_remote_ip_unknown := 0;
+   $num_ebgp_single_hop_local_ip_neighbors := 0;
+   $num_ebgp_single_hop_remote_ip_neighbors := 0;
    $num_half_open := 0;
    $num_half_open_candidates := 0;
    $num_ibgp_local_ip_on_non_loopback := 0;
@@ -83,38 +85,40 @@ verify {
          /* eBGP checks */
          if (bgp_neighbor.remote_as != bgp_neighbor.local_as) {
             $num_ebgp_neighbors++;
-            /* Assert that local address reported to eBGP neighbor is NOT that of a loopback interface */
-            assert {
-               not {
-                  $loopbackips.contains(bgp_neighbor.local_ip)
+            if (not{bgp_neighbor.ebgp_multihop}) {
+               $num_ebgp_single_hop_local_ip_neighbors++;
+               /* Assert that local address reported to eBGP neighbor is NOT that of a loopback interface */
+               assert {
+                  not {
+                     $loopbackips.contains(bgp_neighbor.local_ip)
+                  }
+               }
+               onfailure {
+                  $num_ebgp_local_ip_on_loopback++;
+                  $view_name := "EBGP_LOCAL_IP_ON_LOOPBACK";
+                  $base_msg := format("Local IP %s of eBGP session configured with remote IP %s, local AS %s, remote AS %s, group '%s', and description '%s' identified as the address of a loopback interface.",
+                     bgp_neighbor.local_ip,
+                     bgp_neighbor.remote_ip,
+                     bgp_neighbor.local_as,
+                     bgp_neighbor.remote_as,
+                     bgp_neighbor.group,
+                     bgp_neighbor.description);
+                  printf("%s: %s: %s\n",
+                     $view_name,
+                     node.name,
+                     $base_msg);
+                  $view := $views.get_map($view_name);
+                  $view.set("name", $view_name);
+                  $view.set("type", "view");
+                  $n := $view.get_map("nodes").get_map(node.name);
+                  $n.set("name", node.name);
+                  $n.set("type", "node");
+                  $description := format("%s%s<br>",
+                     $n.get("description"),
+                     $base_msg);
+                  $n.set("description", $description);
                }
             }
-            onfailure {
-               $num_ebgp_local_ip_on_loopback++;
-               $view_name := "EBGP_LOCAL_IP_ON_LOOPBACK";
-               $base_msg := format("Local IP %s of eBGP session configured with remote IP %s, local AS %s, remote AS %s, group '%s', and description '%s' identified as the address of a loopback interface.",
-                  bgp_neighbor.local_ip,
-                  bgp_neighbor.remote_ip,
-                  bgp_neighbor.local_as,
-                  bgp_neighbor.remote_as,
-                  bgp_neighbor.group,
-                  bgp_neighbor.description);
-               printf("%s: %s: %s\n",
-                  $view_name,
-                  node.name,
-                  $base_msg);
-               $view := $views.get_map($view_name);
-               $view.set("name", $view_name);
-               $view.set("type", "view");
-               $n := $view.get_map("nodes").get_map(node.name);
-               $n.set("name", node.name);
-               $n.set("type", "node");
-               $description := format("%s%s<br>",
-                  $n.get("description"),
-                  $base_msg);
-               $n.set("description", $description);
-            }
-
          }
          /* iBGP checks */
          else {
@@ -193,34 +197,37 @@ verify {
                /* If in fact the remote address of the eBGP neighbor is known, do the included check */
                if ($allinterfaceips.contains(bgp_neighbor.remote_ip)) {
                   /* Assert that remote address of the eBGP neighbor is NOT that of a loopback interface */
-                  assert {
-                     not {
-                        $loopbackips.contains(bgp_neighbor.remote_ip)
+                  if (not{bgp_neighbor.ebgp_multihop}) {
+                     $num_ebgp_single_hop_remote_ip_neighbors++;
+                     assert {
+                        not {
+                           $loopbackips.contains(bgp_neighbor.remote_ip)
+                        }
                      }
-                  }
-                  onfailure {
-                     $num_ebgp_remote_ip_on_loopback++;
-                     $view_name := "EBGP_REMOTE_IP_ON_LOOPBACK";
-                     $base_msg := format("Remote IP %s of eBGP session configured with local AS %s, remote AS %s, group '%s', and description '%s' identified as the address of a loopback interface.",
-                        bgp_neighbor.remote_ip,
-                        bgp_neighbor.local_as,
-                        bgp_neighbor.remote_as,
-                        bgp_neighbor.group,
-                        bgp_neighbor.description);
-                     printf("%s: %s: %s\n",
-                        $view_name,
-                        node.name,
-                        $base_msg);
-                     $view := $views.get_map($view_name);
-                     $view.set("name", $view_name);
-                     $view.set("type", "view");
-                     $n := $view.get_map("nodes").get_map(node.name);
-                     $n.set("name", node.name);
-                     $n.set("type", "node");
-                     $description := format("%s%s<br>",
-                        $n.get("description"),
-                        $base_msg);
-                     $n.set("description", $description);
+                     onfailure {
+                        $num_ebgp_remote_ip_on_loopback++;
+                        $view_name := "EBGP_REMOTE_IP_ON_LOOPBACK";
+                        $base_msg := format("Remote IP %s of eBGP session configured with local AS %s, remote AS %s, group '%s', and description '%s' identified as the address of a loopback interface.",
+                           bgp_neighbor.remote_ip,
+                           bgp_neighbor.local_as,
+                           bgp_neighbor.remote_as,
+                           bgp_neighbor.group,
+                           bgp_neighbor.description);
+                        printf("%s: %s: %s\n",
+                           $view_name,
+                           node.name,
+                           $base_msg);
+                        $view := $views.get_map($view_name);
+                        $view.set("name", $view_name);
+                        $view.set("type", "view");
+                        $n := $view.get_map("nodes").get_map(node.name);
+                        $n.set("name", node.name);
+                        $n.set("type", "node");
+                        $description := format("%s%s<br>",
+                           $n.get("description"),
+                           $base_msg);
+                        $n.set("description", $description);
+                     }
                   }
                }
             }
@@ -419,10 +426,10 @@ verify {
       printf("IGNORED_FOREIGN_ENDPOINT: %s/%s\n", $num_ignored_foreign_bgp_neighbors, $total_num_bgp_neighbors);
    }
    unless ($no_check_ebgp_local_ip_on_loopback){
-      printf("EBGP_LOCAL_IP_ON_LOOPBACK: %s/%s\n", $num_ebgp_local_ip_on_loopback, $num_ebgp_neighbors);
+      printf("EBGP_LOCAL_IP_ON_LOOPBACK: %s/%s\n", $num_ebgp_local_ip_on_loopback, $num_ebgp_single_hop_local_ip_neighbors);
    }
    unless ($no_check_ebgp_remote_ip_on_loopback){
-      printf("EBGP_REMOTE_IP_ON_LOOPBACK: %s/%s\n", $num_ebgp_remote_ip_on_loopback, $num_ebgp_neighbors);
+      printf("EBGP_REMOTE_IP_ON_LOOPBACK: %s/%s\n", $num_ebgp_remote_ip_on_loopback, $num_ebgp_single_hop_remote_ip_neighbors);
    }
    unless ($no_check_ebgp_remote_ip_unknown){
       printf("BROKEN_EBGP_REMOTE_IP_UNKNOWN: %s/%s\n", $num_ebgp_remote_ip_unknown, $num_non_foreign_ebgp_neighbors);

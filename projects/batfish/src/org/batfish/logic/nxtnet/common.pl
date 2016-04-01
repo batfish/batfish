@@ -792,6 +792,7 @@ need_PolicyMapMatchAdvert(Map, Advert)
    'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
    'BgpAdvertisement_type'(Advert, Type) /*fn*/,
    'BgpImportPolicy'(DstNode, SrcIp, Map).
+
 'IbgpNeighborTo'(Node, Neighbor, NeighborIp) :-
    'NetworkOf'(NeighborIp, Prefix_length, NeighborNetwork) /*fn*/,
    'InstalledRoute'(Route),
@@ -804,6 +805,7 @@ need_PolicyMapMatchAdvert(Map, Advert)
 'IbgpNeighbors'(Node1, Ip1, Node2, Ip2) :-
    'IbgpNeighborTo'(Node1, Node2, Ip2),
    'IbgpNeighborTo'(Node2, Node1, Ip1).
+
 % outgoing transformation
 'AdvertisementCommunity'(Advert, Community) :-
    PriorType = 'ibgp',
@@ -1041,16 +1043,34 @@ need_PolicyMapMatchAdvert(Map, Advert)
    'SetBgpNeighborDefaultMetric'(Node, NeighborNetwork, Metric),
    'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
 
+'BgpMultihopNeighborIp'(Node, NeighborIp) :-
+   'SetBgpMultihopNeighborNetwork'(Node, NeighborNetwork),
+   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+
 'BgpNeighborIp'(Node, NeighborIp) :-
    'SetBgpNeighborNetwork'(Node, NeighborNetwork),
    'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
 
+'BgpNeighbors'(Node1, Ip1, Node2, Ip2) :-
+   'BgpMultihopNeighborTo'(Node1, Node2, Ip2),
+   'BgpMultihopNeighborTo'(Node2, Node1, Ip1).
 'BgpNeighbors'(Node1, Ip1, Node2, Ip2) :-
    'IpReadyInt'(Node1, Int1, Ip1, _),
    'IpReadyInt'(Node2, Int2, Ip2, _),
    'LanAdjacent'(Node1, Int1, Node2, Int2),
    'BgpNeighborIp'(Node1, Ip2),
    'BgpNeighborIp'(Node2, Ip1).
+
+'BgpMultihopNeighborTo'(Node, Neighbor, NeighborIp) :-
+   'NetworkOf'(NeighborIp, Prefix_length, NeighborNetwork) /*fn*/,
+   'InstalledRoute'(Route),
+   'Route_network'(Route, NeighborNetwork) /*fn*/,
+   'Route_node'(Route, Node) /*fn*/,
+   'IpReadyInt'(Neighbor, _, NeighborIp, Prefix_length),
+   'BgpMultihopNeighborIp'(Node, NeighborIp),
+   'RemoteAs'(Node, NeighborIp, RemoteAs),
+   'LocalAs'(Node, NeighborIp, LocalAs),
+   LocalAs \==  RemoteAs .
 
 'BgpNeighborSendCommunity'(Node, NeighborIp) :-
    'SetBgpNeighborSendCommunity'(Node, NeighborNetwork),
@@ -1127,6 +1147,10 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 'SetBgpNeighborDefaultMetric'(Node, NeighborNetwork, Metric) :-
    'SetBgpNeighborDefaultMetric_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Metric),
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
+
+'SetBgpMultihopNeighborNetwork'(Node, NeighborNetwork) :-
+   'SetBgpMultihopNeighborNetwork_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length),
    'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
 
 'SetBgpNeighborNetwork'(Node, NeighborNetwork) :-

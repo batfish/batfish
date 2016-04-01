@@ -141,6 +141,11 @@ DST_PORT
    'dst_port'
 ;
 
+EBGP_MULTIHOP
+:
+   'ebgp_multihop'
+;
+
 ELSE
 :
    'else'

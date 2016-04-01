@@ -96,6 +96,11 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          IpBgpGroup ig = e.getValue();
          ig.cascadeInheritance();
          BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
+         Boolean ebgpMultihop = ig.getEbgpMultihop();
+         if (ebgpMultihop == null) {
+            ebgpMultihop = false;
+         }
+         neighbor.setEbgpMultihop(ebgpMultihop);
          neighbor.setGroupName(ig.getGroupName());
          // import policies
          for (String importPolicyName : ig.getImportPolicies()) {

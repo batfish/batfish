@@ -14,6 +14,7 @@ public abstract class BgpPeerGroup implements Serializable {
    protected Boolean _defaultOriginate;
    protected String _defaultOriginateMap;
    protected String _description;
+   private Boolean _ebgpMultihop;
    protected String _inboundPrefixList;
    protected String _inboundRouteMap;
    protected String _outboundPrefixList;
@@ -51,6 +52,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public String getDescription() {
       return _description;
+   }
+
+   public Boolean getEbgpMultihop() {
+      return _ebgpMultihop;
    }
 
    public String getInboundPrefixList() {
@@ -111,6 +116,9 @@ public abstract class BgpPeerGroup implements Serializable {
       if (_description == null) {
          _description = pg.getDescription();
       }
+      if (_ebgpMultihop == null) {
+         _ebgpMultihop = pg.getEbgpMultihop();
+      }
       if (_inboundPrefixList == null) {
          _inboundPrefixList = pg.getInboundPrefixList();
       }
@@ -166,6 +174,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public void setDescription(String description) {
       _description = description;
+   }
+
+   public void setEbgpMultihop(boolean ebgpMultihop) {
+      _ebgpMultihop = ebgpMultihop;
    }
 
    public void setInboundPrefixList(String inboundPrefixList) {

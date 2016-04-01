@@ -2252,6 +2252,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitBt_multihop(Bt_multihopContext ctx) {
+      _currentBgpGroup.setEbgpMultihop(true);
+   }
+
+   @Override
    public void exitBt_remove_private(Bt_remove_privateContext ctx) {
       _currentBgpGroup.setRemovePrivate(true);
    }

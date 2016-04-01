@@ -658,6 +658,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          boolean sendCommunity = lpg.getSendCommunity();
+         Boolean ebgpMultihop = lpg.getEbgpMultihop();
+         if (ebgpMultihop == null) {
+            ebgpMultihop = false;
+         }
          String description = lpg.getDescription();
          if (lpg.getActive() && !lpg.getShutdown()) {
             if (lpg.getRemoteAS() == null) {
@@ -705,6 +709,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             newNeighbor.setSendCommunity(sendCommunity);
             newNeighbor.setDefaultMetric(defaultMetric);
             newNeighbor.setDescription(description);
+            newNeighbor.setEbgpMultihop(ebgpMultihop);
          }
       }
       return newBgpProcess;

@@ -253,13 +253,15 @@ public class ConfigurationFactExtractor {
    }
 
    private void writeBgpNeighbors() {
-      StringBuilder wSetBgpNeighborIp = _factBins
+      StringBuilder wSetBgpNeighborNetwork_flat = _factBins
             .get("SetBgpNeighborNetwork_flat");
-      StringBuilder wSetLocalAs = _factBins.get("SetLocalAs_flat");
-      StringBuilder wSetRemoteAs = _factBins.get("SetRemoteAs_flat");
-      StringBuilder wSetBgpNeighborDefaultMetric = _factBins
+      StringBuilder wSetBgpMultihopNeighborNetwork_flat = _factBins
+            .get("SetBgpMultihopNeighborNetwork_flat");
+      StringBuilder wSetLocalAs_flat = _factBins.get("SetLocalAs_flat");
+      StringBuilder wSetRemoteAs_flat = _factBins.get("SetRemoteAs_flat");
+      StringBuilder wSetBgpNeighborDefaultMetric_flat = _factBins
             .get("SetBgpNeighborDefaultMetric_flat");
-      StringBuilder wSetBgpNeighborSendCommunity = _factBins
+      StringBuilder wSetBgpNeighborSendCommunity_flat = _factBins
             .get("SetBgpNeighborSendCommunity_flat");
       String hostname = _configuration.getHostname();
       BgpProcess proc = _configuration.getBgpProcess();
@@ -272,19 +274,25 @@ public class ConfigurationFactExtractor {
             long neighborPrefixStart = neighborPrefix.getAddress().asLong();
             long neighborPrefixEnd = neighborPrefix.getEndAddress().asLong();
             int neighborPrefixLength = neighborPrefix.getPrefixLength();
-            wSetBgpNeighborIp.append(hostname + "|" + neighborPrefixStart + "|"
-                  + neighborPrefixEnd + "|" + neighborPrefixLength + "\n");
-            wSetLocalAs.append(hostname + "|" + neighborPrefixStart + "|"
+            wSetBgpNeighborNetwork_flat.append(hostname + "|"
+                  + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                  + neighborPrefixLength + "\n");
+            if (neighbor.getEbgpMultihop()) {
+               wSetBgpMultihopNeighborNetwork_flat.append(hostname + "|"
+                     + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                     + neighborPrefixLength + "\n");
+            }
+            wSetLocalAs_flat.append(hostname + "|" + neighborPrefixStart + "|"
                   + neighborPrefixEnd + "|" + neighborPrefixLength + "|"
                   + localAs + "\n");
-            wSetRemoteAs.append(hostname + "|" + neighborPrefixStart + "|"
+            wSetRemoteAs_flat.append(hostname + "|" + neighborPrefixStart + "|"
                   + neighborPrefixEnd + "|" + neighborPrefixLength + "|"
                   + remoteAs + "\n");
-            wSetBgpNeighborDefaultMetric.append(hostname + "|"
+            wSetBgpNeighborDefaultMetric_flat.append(hostname + "|"
                   + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                   + neighborPrefixLength + "|" + defaultMetric + "\n");
             if (neighbor.getSendCommunity()) {
-               wSetBgpNeighborSendCommunity.append(hostname + "|"
+               wSetBgpNeighborSendCommunity_flat.append(hostname + "|"
                      + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                      + neighborPrefixLength + "\n");
             }

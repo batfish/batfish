@@ -20,6 +20,8 @@ public class BgpGroup implements Serializable {
 
    private String _description;
 
+   private Boolean _ebgpMultihop;
+
    private final List<String> _exportPolicies;
 
    protected String _groupName;
@@ -55,6 +57,9 @@ public class BgpGroup implements Serializable {
          if (_description == null) {
             _description = _parent._description;
          }
+         if (_ebgpMultihop == null) {
+            _ebgpMultihop = _parent._ebgpMultihop;
+         }
          if (_exportPolicies.size() == 0) {
             _exportPolicies.addAll(_parent._exportPolicies);
          }
@@ -81,6 +86,10 @@ public class BgpGroup implements Serializable {
 
    public final String getDescription() {
       return _description;
+   }
+
+   public Boolean getEbgpMultihop() {
+      return _ebgpMultihop;
    }
 
    public final List<String> getExportPolicies() {
@@ -121,6 +130,10 @@ public class BgpGroup implements Serializable {
 
    public final void setDescription(String description) {
       _description = description;
+   }
+
+   public void setEbgpMultihop(boolean ebgpMultihop) {
+      _ebgpMultihop = ebgpMultihop;
    }
 
    public final void setLocalAddress(Ip localAddress) {

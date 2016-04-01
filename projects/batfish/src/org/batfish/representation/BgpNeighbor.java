@@ -34,6 +34,8 @@ public final class BgpNeighbor implements Serializable {
 
    private String _description;
 
+   private boolean _ebgpMultihop;
+
    /**
     * The set of generated and/or aggregate routes to be potentially sent to
     * this peer before outbound policies are taken into account
@@ -179,6 +181,10 @@ public final class BgpNeighbor implements Serializable {
       return _description;
    }
 
+   public boolean getEbgpMultihop() {
+      return _ebgpMultihop;
+   }
+
    /**
     * @return {@link #_generatedRoutes}
     */
@@ -286,6 +292,10 @@ public final class BgpNeighbor implements Serializable {
 
    public void setDescription(String description) {
       _description = description;
+   }
+
+   public void setEbgpMultihop(boolean ebgpMultihop) {
+      _ebgpMultihop = ebgpMultihop;
    }
 
    /**

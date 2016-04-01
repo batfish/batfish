@@ -51,6 +51,15 @@ BgpImportPolicy(node, neighborIp, map) ->
    Ip(neighborIp),
    PolicyMap(map).
 
+BgpMultihopNeighborIp(node, neighborIp) ->
+   Node(node),
+   Ip(neighborIp).
+
+BgpMultihopNeighborTo(node, neighbor, neighborIp) ->
+   Node(node),
+   Node(neighbor),
+   Ip(neighborIp).
+
 BgpNeighborDefaultMetric(node, neighborIp, metric) ->
    Node(node),
    Ip(neighborIp),
@@ -229,6 +238,16 @@ SetBgpImportPolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighb
    int(neighborNetwork_end),
    int(neighborNetwork_prefix_length),
    PolicyMap(map).
+
+SetBgpMultihopNeighborNetwork(node, neighborNetwork) ->
+   Node(node),
+   Network(neighborNetwork).
+
+SetBgpMultihopNeighborNetwork_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length) ->
+   Node(node),
+   int(neighborNetwork_start),
+   int(neighborNetwork_end),
+   int(neighborNetwork_prefix_length).
 
 SetBgpNeighborDefaultMetric(node, neighborNetwork, metric) ->
    Node(node),
