@@ -3167,6 +3167,23 @@ public class Batfish implements AutoCloseable {
          // gets passed to populatePrecomputedBgpAdvertisements.
          // See populatePrecomputedBgpAdvertisements for the things that get
          // extracted from these advertisements.
+         
+         try {
+            JSONObject jsonObj = new JSONObject(externalBgpAnnouncementsFileContents);
+            
+            JSONArray announcements = jsonObj.getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENTS);
+            
+            for (int index = 0; index < announcements.length(); index++) {
+               JSONObject announcement = announcements.getJSONObject(index);
+               advertSet.add(new BgpAdvertisement(announcement));
+            }
+            
+         }
+         catch (JSONException e) {
+               throw new BatfishException("Problems parsing JSON in "
+                     + externalBgpAnnouncementsFile.toString(), e);
+         }
+         
          populatePrecomputedBgpAdvertisements(advertSet, cpFactBins);
       }
    }

@@ -102,4 +102,19 @@ public class BfConsts {
    public static final String SVC_TASK_KEY = "task";
    public static final String SVC_TASKID_KEY = "taskid";
 
+   public static final String KEY_BGP_ANNOUNCEMENTS = "Announcements";
+   public static final String KEY_BGP_ANNOUNCEMENT_AS_PATH = "AsPath";
+   public static final String KEY_BGP_ANNOUNCEMENT_COMMUNITIES = "Communities";
+   public static final String KEY_BGP_ANNOUNCEMENT_DST_IP = "DstIp";
+   public static final String KEY_BGP_ANNOUNCEMENT_DST_NODE = "DstNode";
+   public static final String KEY_BGP_ANNOUNCEMENT_LOCAL_PREF = "LocalPref";
+   public static final String KEY_BGP_ANNOUNCEMENT_MED = "Med";
+   public static final String KEY_BGP_ANNOUNCEMENT_NEXT_HOP_IP = "NextHopIp";
+   public static final String KEY_BGP_ANNOUNCEMENT_ORIGINATOR_IP = "OriginatorIp";
+   public static final String KEY_BGP_ANNOUNCEMENT_ORIGIN_TYPE = "OriginType";
+   public static final String KEY_BGP_ANNOUNCEMENT_PREFIX = "Prefix";
+   public static final String KEY_BGP_ANNOUNCEMENT_SRC_IP = "SrcIp";
+   public static final String KEY_BGP_ANNOUNCEMENT_SRC_NODE = "SrcNode";
+   public static final String KEY_BGP_ANNOUNCEMENT_SRC_PROTOCOL = "SrcProtocol";
+   public static final String KEY_BGP_ANNOUNCEMENT_TYPE = "Type";
 }
