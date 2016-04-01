@@ -13,7 +13,6 @@
  * @param no_check_ibgp_remote_ip_unknown If set to true, don't check for unknown iBGP remote IPs
  * @param no_check_unique If set to true, don't check for UNIQUE matching BGP neighbor definitions
  * @param no_print_broken_total If set to true, don't print total broken sessions (including eBGP and iBGP)
-
  */
 defaults {
    $no_check_ebgp_local_ip_on_loopback=false;
