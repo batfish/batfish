@@ -56,7 +56,7 @@ function checkWork_cb(response, entryPoint, remainingCalls) {
             }, 2 * 1000);
             break;
         default:
-            bfUpdateDebugInfo("Got unknown work status: ", status);
+            bfUpdateDebugInfo("Got unknown work status: " + status);
     }
 }
 
