@@ -321,6 +321,11 @@ set_community_rm_stanza
    )+ NEWLINE
 ;
 
+set_community_rp_stanza
+:
+   SET COMMUNITY rp_community_set ADDITIVE? NEWLINE
+;
+
 set_extcomm_list_rm_stanza
 :
    SET EXTCOMM_LIST
@@ -451,7 +456,8 @@ set_rm_stanza
 
 set_rp_stanza
 :
-  set_local_preference_rp_stanza
+  set_community_rp_stanza
+  | set_local_preference_rp_stanza
   | set_med_rp_stanza
   | set_next_hop_rp_stanza
 ;
