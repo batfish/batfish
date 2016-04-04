@@ -249,6 +249,11 @@ ALIAS
    'alias'
 ;
 
+ALL
+:
+  'all'
+;
+
 ALLOCATE
 :
    'allocate'
@@ -279,6 +284,11 @@ ALWAYS_COMPARE_MED
    'always-compare-med'
 ;
 
+AND
+:
+   'and'
+;
+
 ANY
 :
    'any'
@@ -302,6 +312,11 @@ AOL
 AP
 :
    'ap'
+;
+
+APPLY
+:
+   'apply'
 ;
 
 AQM_REGISTER_FNF
@@ -1171,6 +1186,11 @@ DESTINATION
    'destination'
 ;
 
+DESTINATION_VRF
+:
+   'destination-vrf'
+;
+
 DETAIL
 :
    'detail'
@@ -1306,6 +1326,11 @@ DOMAIN_NAME
    'domain-name'
 ;
 
+DONE
+:
+  'done'
+;
+
 DONT_CAPABILITY_NEGOTIATE
 :
    'dont-capability-negotiate'
@@ -1411,6 +1436,16 @@ EIGRP
    'eigrp'
 ;
 
+ELSE
+:
+   'else'
+;
+
+ELSEIF
+:
+   'elseif'
+;
+
 EMPTY
 :
    'empty'
@@ -1439,6 +1474,11 @@ ENCRYPTION
 END
 :
    'end'
+;
+
+ENDIF
+:
+   'endif'
 ;
 
 END_CLASS_MAP
@@ -2088,6 +2128,11 @@ IDLE
 IDLE_TIMEOUT
 :
    'idle-timeout'
+;
+
+IF
+:
+   'if'
 ;
 
 IGMP
@@ -2742,6 +2787,16 @@ MATCH
    'match'
 ;
 
+MATCHES_ANY
+:
+   'matches-any'
+;
+
+MATCHES_EVERY
+:
+   'matches-every'
+;
+
 MAX_LSA
 :
    'max-lsa'
@@ -2790,6 +2845,11 @@ MDIX
 MDT
 :
    'mdt'
+;
+
+MED
+:
+  'med'
 ;
 
 MEDIA_TERMINATION
@@ -3257,6 +3317,11 @@ NONEGOTIATE
    'nonegotiate'
 ;
 
+NOT
+:
+   'not'
+;
+
 NOT_ADVERTISE
 :
    'not-advertise'
@@ -3325,6 +3390,11 @@ OPENFLOW
 OPS
 :
    'ops'
+;
+
+OR
+:
+   'or'
 ;
 
 ORIGIN
@@ -3412,6 +3482,11 @@ PARTICIPATE
    'participate'
 ;
 
+PASS
+:
+   'pass'
+;
+
 PASSIVE
 :
    'passive'
@@ -3467,6 +3542,11 @@ PEER
    'peer'
 ;
 
+PEER_ADDRESS
+:
+   'peer-address'
+;
+
 PEER_CONFIG_CHECK_BYPASS
 :
    'peer-config-check-bypass'
@@ -3475,16 +3555,6 @@ PEER_CONFIG_CHECK_BYPASS
 PEER_GROUP
 :
    'peer-group' -> pushMode(M_NEIGHBOR)
-;
-
-PERMANENT
-:
-   'permanent'
-;
-
-PEER_ADDRESS
-:
-   'peer-address'
 ;
 
 PEER_GATEWAY
@@ -3505,6 +3575,11 @@ PEER_LINK
 PEER_SESSION
 :
    'peer-session'
+;
+
+PERMANENT
+:
+   'permanent'
 ;
 
 PERMIT
@@ -4072,6 +4147,11 @@ RFC1583COMPATIBILITY
    'rfc1583compatibility'
 ;
 
+RIB_HAS_ROUTE
+:
+  'rib-has-route'
+;
+
 RING
 :
    'ring'
@@ -4265,6 +4345,11 @@ SECURITY
 SECURITY_LEVEL
 :
    'security-level'
+;
+
+SELF
+:
+  'self'
 ;
 
 SEND_COMMUNITY
@@ -4872,6 +4957,11 @@ TFTP
 TFTP_SERVER
 :
    'tftp-server'
+;
+
+THEN
+:
+  'then'
 ;
 
 THREAT_DETECTION
@@ -5945,13 +6035,13 @@ F_UpperCaseLetter
 fragment
 F_Variable_RequiredVarChar
 :
-   ~( '0' .. '9' | [ \t\n\r/.,-] )
+   ~( '0' .. '9' | [ \t\n\r/.,-,()] )
 ;
 
 fragment
 F_Variable_RequiredVarChar_Ipv6
 :
-   ~( '0' .. '9' | [ \t\n\r/.,-:] )
+   ~( '0' .. '9' | [ \t\n\r/.,-:()] )
 ;
 
 fragment
