@@ -440,6 +440,46 @@ public class WorkMgrService {
    }
 
    /**
+    * Check if an API key is valid
+    *
+    * @param apiKey
+    * @return
+    */
+   @POST
+   @Path(CoordConsts.SVC_CHECK_API_KEY_RSC)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray checkApiKey(
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey) {
+      try {
+         _logger.info("WMS:checkApiKey " + apiKey + "\n");
+
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         if (Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, 
+                  new JSONObject().put(CoordConsts.SVC_API_KEY, true)));
+         }
+         else 
+         {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, 
+                  new JSONObject().put(CoordConsts.SVC_API_KEY, false)));
+         }
+      }
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
+         _logger.error("WMS:initContainer exception: " + e.getMessage() + "\n");
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:initContainer exception: " + stackTrace);
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+   }
+   
+   /**
     * List the containers that the specified API key can access
     *
     * @param apiKey

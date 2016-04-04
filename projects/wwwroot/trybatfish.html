@@ -114,6 +114,9 @@
         //this variable holds the zip'd contents or base or differential testrig
         var testrigZip = "";
 
+		// ........... api key
+		var elementApiKey = "#apiKey";
+		
 		// ........... tabs
 		var elementTabs = '#tabs';
 		
@@ -176,12 +179,13 @@
 			<table>
 				<tr>
 					<td align="left">API Key</td>
-					<td align="right"><input id="apikey" title="apikey" value="00000000000000000000000000000000"></td>
+					<td align="right"><input id="apiKey" title="apiKey" value="00000000000000000000000000000000"></td>
 					<td align="right">
 					<button id="btnLogin" onclick="login()">Login</button>
 					<script>
 						function login()
 						{
+							apiKey = $(elementApiKey).val();
 							$(elementTabs).tabs("option", "active", 1);
 							$('#btnLogin').button("disable");
 							$(elementUploadBaseTestrigBtn).button("enable");
@@ -189,6 +193,29 @@
 					</script>
 					</td>	
 				</tr>
+				<tr>
+					<td>&nbsp</td>
+				</tr>
+				<tr>
+					<td colspan="3">-- or -- </td>
+				</tr>
+					<tr>
+					<td>&nbsp</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+					<button id="btnGuest" onclick="guest()">Continue as guest</button>
+					<script>
+						function guest()
+						{
+							$(elementTabs).tabs("option", "active", 1);
+							$('#btnLogin').button("disable");
+							$(elementUploadBaseTestrigBtn).button("enable");
+						}
+					</script>
+					</td>
+				</tr>
+				
 				</table>
 		</div>
 		

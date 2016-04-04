@@ -404,6 +404,31 @@ public class BfCoordWorkHelper {
       }
    }
 
+   public String checkApiKey() {
+      try {
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_CHECK_API_KEY_RSC);
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
+               _settings.getApiKey());
+         
+         JSONObject jObj = postData(webTarget, multiPart);
+         if (jObj == null) {
+            return null;
+         }
+         return Boolean.toString(jObj.getBoolean(CoordConsts.SVC_API_KEY));
+      }
+      catch (Exception e) {
+         _logger.errorf("exception: ");
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+         return null;
+      }
+   }
+   
    public String initContainer(String containerPrefix) {
       try {
          Client client = getClientBuilder().build();
