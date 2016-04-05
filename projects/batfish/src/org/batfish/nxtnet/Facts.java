@@ -75,6 +75,7 @@ public class Facts {
       map.put("SetPolicyMapClauseMatchInterface", "MAP|CLAUSE|NODE|INTERFACE");
       map.put("SetPolicyMapClauseMatchNeighbor", "MAP|CLAUSE|NEIGHBORIP");
       map.put("SetPolicyMapClauseMatchPolicy", "MAP|CLAUSE|POLICY");
+      map.put("SetPolicyMapClauseMatchPolicyConjunction", "MAP|CLAUSE|POLICY");
       map.put("SetPolicyMapClauseMatchProtocol", "MAP|CLAUSE|PROTOCOL");
       map.put("SetPolicyMapClauseMatchRouteFilter", "MAP|CLAUSE|LIST");
       map.put("SetPolicyMapClauseMatchTag", "MAP|CLAUSE|TAG");

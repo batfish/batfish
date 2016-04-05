@@ -1122,6 +1122,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   case POLICY:
                   case COLOR:
                   case INTERFACE:
+                  case POLICY_CONJUNCTION:
                   default:
                      // note: don't allow ip access lists in policies that
                      // are for prefix matching
@@ -1426,6 +1427,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   case POLICY:
                   case COLOR:
                   case INTERFACE:
+                  case POLICY_CONJUNCTION:
                   default:
                      // note: don't allow ip access lists in policies that
                      // are for prefix matching

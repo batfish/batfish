@@ -12,6 +12,8 @@ public final class PolicyStatement extends ReferenceCountedStructure {
     */
    private static final long serialVersionUID = 1L;
 
+   private boolean _ipv6;
+
    private final String _name;
 
    private final PsTerm _singletonTerm;
@@ -25,6 +27,10 @@ public final class PolicyStatement extends ReferenceCountedStructure {
       _terms = new LinkedHashMap<String, PsTerm>();
    }
 
+   public boolean getIpv6() {
+      return _ipv6;
+   }
+
    public String getName() {
       return _name;
    }
@@ -35,6 +41,10 @@ public final class PolicyStatement extends ReferenceCountedStructure {
 
    public Map<String, PsTerm> getTerms() {
       return _terms;
+   }
+
+   public void setIpv6(boolean ipv6) {
+      _ipv6 = ipv6;
    }
 
 }

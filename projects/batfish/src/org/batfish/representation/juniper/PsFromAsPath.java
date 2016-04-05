@@ -18,8 +18,8 @@ public class PsFromAsPath extends PsFrom {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c,
-         Warnings warnings) {
+   public void applyTo(PolicyMapClause clause, PolicyStatement ps,
+         JuniperConfiguration jc, Configuration c, Warnings warnings) {
       // throw new
       // UnsupportedOperationException("no implementation for generated method");
       // TODO Auto-generated method stub

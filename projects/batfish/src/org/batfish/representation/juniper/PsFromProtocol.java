@@ -20,8 +20,8 @@ public final class PsFromProtocol extends PsFrom {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c,
-         Warnings warnings) {
+   public void applyTo(PolicyMapClause clause, PolicyStatement ps,
+         JuniperConfiguration jc, Configuration c, Warnings warnings) {
       clause.getMatchLines().add(new PolicyMapMatchProtocolLine(_protocol));
    }
 

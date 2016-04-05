@@ -2448,9 +2448,17 @@ need_PolicyMapMatchAdvert(Map, Advert) :-
    need_PolicyMapMatchAdvert(ReferringMap, Advert),
    'SetPolicyMapClauseMatchPolicy'(ReferringMap, _, Map).
 
+need_PolicyMapMatchAdvert(Map, Advert) :-
+   need_PolicyMapMatchAdvert(ReferringMap, Advert),
+   'SetPolicyMapClauseMatchPolicyConjunction'(ReferringMap, _, Map).
+
 need_PolicyMapMatchRoute(Map, Route) :-
    need_PolicyMapMatchRoute(ReferringMap, Route),
    'SetPolicyMapClauseMatchPolicy'(ReferringMap, _, Map).
+
+need_PolicyMapMatchRoute(Map, Route) :-
+   need_PolicyMapMatchRoute(ReferringMap, Route),
+   'SetPolicyMapClauseMatchPolicyConjunction'(ReferringMap, _, Map).
 
 % policy maps for advertisements
 need_RouteFilterMatchNetwork(List, Network) :-
@@ -2499,6 +2507,13 @@ need_RouteFilterMatchNetwork(List, Network) :-
       )
    ),
    (
+      \+ 'SetPolicyMapClauseMatchPolicyConjunction'(Map, Clause, _) ;
+      (
+         'SetPolicyMapClauseMatchPolicyConjunction'(Map, Clause, Policy),
+         \+ 'PolicyMapConjunctionDenyAdvert'(Policy, Advert)
+      )
+   ),
+   (
       \+ 'SetPolicyMapClauseMatchCommunityList'(Map, Clause, _) ;
       (
          'SetPolicyMapClauseMatchCommunityList'(Map, Clause, CommunityList),
@@ -2507,6 +2522,16 @@ need_RouteFilterMatchNetwork(List, Network) :-
       )
    ).
    %TODO: Finish definition and replace underscores at top of rule
+
+'PolicyMapConjunctionDenyAdvert'(Policy, Advert) :-
+   need_PolicyMapMatchAdvert(Map, Advert),
+   'SetPolicyMapClauseMatchPolicyConjunction'(Map, _, Policy),
+   'PolicyMapDenyAdvert'(Policy, Advert).
+
+'PolicyMapConjunctionDenyRoute'(Policy, Route) :-
+   need_PolicyMapMatchRoute(Map, Route),
+   'SetPolicyMapClauseMatchPolicyConjunction'(Map, _, Policy),
+   'PolicyMapDenyRoute'(Policy, Route).
 
 'PolicyMapClauseMatchFlow'(Map, Clause, Flow) :-
    need_PolicyMapMatchFlow(Map, Flow),
@@ -2538,6 +2563,22 @@ need_RouteFilterMatchNetwork(List, Network) :-
          'Route_network'(Route, Network) /*fn*/,
          'ConnectedRoute'(Node, Network, Interface),
          'SetPolicyMapClauseMatchInterface'(Map, Clause, Node, Interface)
+      )
+   ),
+   % policy
+   (
+      \+ 'SetPolicyMapClauseMatchPolicy'(Map, Clause, _) ;
+      (
+         'SetPolicyMapClauseMatchPolicy'(Map, Clause, Policy),
+         'PolicyMapPermitRoute'(Policy, _, Route)
+      )
+   ),
+   % policy conjunction
+   (
+      \+ 'SetPolicyMapClauseMatchPolicyConjunction'(Map, Clause, _) ;
+      (
+         'SetPolicyMapClauseMatchPolicyConjunction'(Map, Clause, Policy),
+         \+ 'PolicyMapConjunctionDenyRoute'(Policy, Route)
       )
    ),
    % RouteFilter

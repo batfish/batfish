@@ -19,8 +19,8 @@ public final class PsFromColor extends PsFrom {
    }
 
    @Override
-   public void applyTo(PolicyMapClause clause, Configuration c,
-         Warnings warnings) {
+   public void applyTo(PolicyMapClause clause, PolicyStatement ps,
+         JuniperConfiguration jc, Configuration c, Warnings warnings) {
       PolicyMapMatchColorLine line = new PolicyMapMatchColorLine(_color);
       clause.getMatchLines().add(line);
    }

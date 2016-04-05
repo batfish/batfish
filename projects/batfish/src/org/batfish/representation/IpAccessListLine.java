@@ -44,6 +44,21 @@ public final class IpAccessListLine implements Serializable {
       _tcpFlags = TcpFlags.UNSET;
    }
 
+   public IpAccessListLine copy() {
+      IpAccessListLine line = new IpAccessListLine();
+      line._action = _action;
+      line._dstIpRanges.addAll(_dstIpRanges);
+      line._dstPortRanges.addAll(_dstPortRanges);
+      line._icmpCode = _icmpCode;
+      line._icmpType = _icmpType;
+      line._invalidMessage = _invalidMessage;
+      line._protocols.addAll(_protocols);
+      line._srcIpRanges.addAll(_srcIpRanges);
+      line._srcPortRanges.addAll(_srcPortRanges);
+      line._tcpFlags = _tcpFlags;
+      return line;
+   }
+
    public LineAction getAction() {
       return _action;
    }

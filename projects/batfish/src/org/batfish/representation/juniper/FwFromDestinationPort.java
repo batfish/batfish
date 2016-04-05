@@ -23,7 +23,8 @@ public final class FwFromDestinationPort extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line, Warnings w, Configuration c) {
+   public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
+         Warnings w, Configuration c) {
       line.getDstPortRanges().add(_portRange);
    }
 

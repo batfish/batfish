@@ -62,8 +62,10 @@ import org.batfish.representation.juniper.AddressSetEntry;
 import org.batfish.representation.juniper.Application;
 import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.BaseApplication.Term;
+import org.batfish.representation.juniper.FwFromDestinationPrefixList;
 import org.batfish.representation.juniper.FwFromHostProtocol;
 import org.batfish.representation.juniper.FwFromHostService;
+import org.batfish.representation.juniper.FwFromPrefixList;
 import org.batfish.representation.juniper.FwFromSourcePrefixList;
 import org.batfish.representation.juniper.FwThenNextIp;
 import org.batfish.representation.juniper.HostProtocol;
@@ -86,7 +88,10 @@ import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCommunity;
 import org.batfish.representation.juniper.FwFromDestinationAddressBookEntry;
 import org.batfish.representation.juniper.PsFromInterface;
+import org.batfish.representation.juniper.PsFromPolicyStatement;
+import org.batfish.representation.juniper.PsFromPolicyStatementConjunction;
 import org.batfish.representation.juniper.PsFromPrefixList;
+import org.batfish.representation.juniper.PsFromPrefixListFilterOrLonger;
 import org.batfish.representation.juniper.PsFromProtocol;
 import org.batfish.representation.juniper.PsFromRouteFilter;
 import org.batfish.representation.juniper.FwFromSourceAddressBookEntry;
@@ -131,9 +136,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private static final String F_BGP_LOCAL_AS_PRIVATE = "protocols - bgp - group? - local-as - private";
 
-   private static final String F_COMPLEX_POLICY = "boolean combination of policy-statements";
-
    private static final String F_FIREWALL_TERM_THEN_ROUTING_INSTANCE = "firewall - filter - term - then - routing-instance";
+
+   private static final String F_FROM_DESTINATION_PREFIX_LIST_EXCEPT = "from destination prefix-list except";
 
    private static final String F_IPV6 = "ipv6 - other";
 
@@ -1328,6 +1333,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private JuniperVendorConfiguration _configuration;
 
+   private int _conjunctionPolicyIndex;
+
    private AddressBook _currentAddressBook;
 
    private AddressSetAddressBookEntry _currentAddressSetAddressBookEntry;
@@ -1408,6 +1415,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private Interface _currentZoneInterface;
 
+   private int _disjunctionPolicyIndex;
+
    private FlatJuniperCombinedParser _parser;
 
    private final Map<PsTerm, RouteFilter> _termRouteFilters;
@@ -1427,6 +1436,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _termRouteFilters = new HashMap<PsTerm, RouteFilter>();
       _unimplementedFeatures = unimplementedFeatures;
       _w = warnings;
+      _conjunctionPolicyIndex = 0;
+      _disjunctionPolicyIndex = 0;
    }
 
    @Override
@@ -1562,6 +1573,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             PsFromRouteFilter from = new PsFromRouteFilter(rfName);
             _currentPsTerm.getFroms().add(from);
          }
+      }
+      else if (ctx.IPV6_PREFIX() != null) {
+         _currentPolicyStatement.setIpv6(true);
       }
    }
 
@@ -2222,25 +2236,27 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitBt_export(Bt_exportContext ctx) {
       Policy_expressionContext expr = ctx.expr;
+      String name;
       if (expr.variable() != null) {
-         String name = expr.variable().getText();
-         _currentBgpGroup.getExportPolicies().add(name);
+         name = expr.variable().getText();
       }
       else {
-         todo(ctx, F_COMPLEX_POLICY);
+         name = toComplexPolicyStatement(expr);
       }
+      _currentBgpGroup.getExportPolicies().add(name);
    }
 
    @Override
    public void exitBt_import(Bt_importContext ctx) {
       Policy_expressionContext expr = ctx.expr;
+      String name;
       if (expr.variable() != null) {
-         String name = expr.variable().getText();
-         _currentBgpGroup.getImportPolicies().add(name);
+         name = expr.variable().getText();
       }
       else {
-         todo(ctx, F_COMPLEX_POLICY);
+         name = toComplexPolicyStatement(expr);
       }
+      _currentBgpGroup.getImportPolicies().add(name);
    }
 
    @Override
@@ -2357,6 +2373,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitFromt_prefix_list_filter(Fromt_prefix_list_filterContext ctx) {
+      String name = ctx.name.getText();
+      if (ctx.fromt_prefix_list_filter_tail().plft_orlonger() != null) {
+         PsFrom from = new PsFromPrefixListFilterOrLonger(name);
+         _currentPsTerm.getFroms().add(from);
+      }
+   }
+
+   @Override
    public void exitFromt_protocol(Fromt_protocolContext ctx) {
       RoutingProtocol protocol = toRoutingProtocol(ctx.protocol);
       PsFromProtocol fromProtocol = new PsFromProtocol(protocol);
@@ -2403,6 +2428,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitFwfromt_destination_prefix_list(
+         Fwfromt_destination_prefix_listContext ctx) {
+      if (ctx.EXCEPT() != null) {
+         todo(ctx, F_FROM_DESTINATION_PREFIX_LIST_EXCEPT);
+      }
+      String name = ctx.name.getText();
+      // temporary
+      if (_currentFilter.getFamily() != Family.INET) {
+         _configuration.getIgnoredPrefixLists().add(name);
+      }
+      FwFrom from = new FwFromDestinationPrefixList(name);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_prefix_list(Fwfromt_prefix_listContext ctx) {
+      String name = ctx.name.getText();
+      // temporary
+      if (_currentFilter.getFamily() != Family.INET) {
+         _configuration.getIgnoredPrefixLists().add(name);
+      }
+      FwFromPrefixList from = new FwFromPrefixList(name);
+      _currentFwTerm.getFromPrefixLists().add(from);
+   }
+
+   @Override
    public void exitFwfromt_protocol(Fwfromt_protocolContext ctx) {
       IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
       FwFrom from = new FwFromProtocol(protocol);
@@ -2439,6 +2490,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitFwfromt_source_prefix_list(
          Fwfromt_source_prefix_listContext ctx) {
       String name = ctx.name.getText();
+      // temporary
+      if (_currentFilter.getFamily() != Family.INET) {
+         _configuration.getIgnoredPrefixLists().add(name);
+      }
       FwFrom from = new FwFromSourcePrefixList(name);
       _currentFwTerm.getFroms().add(from);
    }
@@ -2892,9 +2947,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitPlt_ip6(Plt_ip6Context ctx) {
+      _currentPrefixList.setIpv6(true);
+      todo(ctx, F_IPV6);
+   }
+
+   @Override
    public void exitPlt_network(Plt_networkContext ctx) {
       Prefix prefix = new Prefix(ctx.network.getText());
       _currentPrefixList.getPrefixes().add(prefix);
+   }
+
+   @Override
+   public void exitPlt_network6(Plt_network6Context ctx) {
+      _currentPrefixList.setIpv6(true);
+      todo(ctx, F_IPV6);
    }
 
    @Override
@@ -3351,6 +3418,62 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       else {
          throw new BatfishException("invalid extended community");
+      }
+   }
+
+   private String toComplexPolicyStatement(Policy_expressionContext expr) {
+      if (expr.pe_nested() != null) {
+         return toComplexPolicyStatement(expr.pe_nested().policy_expression());
+      }
+      else if (expr.variable() != null) {
+         String name = expr.variable().getText();
+         return name;
+      }
+      else if (expr.pe_conjunction() != null) {
+         Set<String> conjuncts = new LinkedHashSet<String>();
+         for (Policy_expressionContext conjunctCtx : expr.pe_conjunction()
+               .policy_expression()) {
+            String conjunctName = toComplexPolicyStatement(conjunctCtx);
+            conjuncts.add(conjunctName);
+         }
+         String conjunctionPolicyName = "~CONJUNCTION_POLICY_"
+               + _conjunctionPolicyIndex + "~";
+         _conjunctionPolicyIndex++;
+         PolicyStatement conjunctionPolicy = new PolicyStatement(
+               conjunctionPolicyName);
+         PsTerm conjunctionPolicyTerm = conjunctionPolicy.getSingletonTerm();
+         PsFromPolicyStatementConjunction from = new PsFromPolicyStatementConjunction(
+               conjuncts);
+         conjunctionPolicyTerm.getFroms().add(from);
+         conjunctionPolicyTerm.getThens().add(PsThenAccept.INSTANCE);
+         _configuration.getPolicyStatements().put(conjunctionPolicyName,
+               conjunctionPolicy);
+         return conjunctionPolicyName;
+      }
+      else if (expr.pe_disjunction() != null) {
+         Set<String> disjuncts = new LinkedHashSet<String>();
+         for (Policy_expressionContext disjunctCtx : expr.pe_disjunction()
+               .policy_expression()) {
+            String disjunctName = toComplexPolicyStatement(disjunctCtx);
+            disjuncts.add(disjunctName);
+         }
+         String disjunctionPolicyName = "~DISJUNCTION_POLICY_"
+               + _disjunctionPolicyIndex + "~";
+         _disjunctionPolicyIndex++;
+         PolicyStatement disjunctionPolicy = new PolicyStatement(
+               disjunctionPolicyName);
+         PsTerm disjunctionPolicyTerm = disjunctionPolicy.getSingletonTerm();
+         for (String disjunct : disjuncts) {
+            PsFromPolicyStatement from = new PsFromPolicyStatement(disjunct);
+            disjunctionPolicyTerm.getFroms().add(from);
+         }
+         disjunctionPolicyTerm.getThens().add(PsThenAccept.INSTANCE);
+         _configuration.getPolicyStatements().put(disjunctionPolicyName,
+               disjunctionPolicy);
+         return disjunctionPolicyName;
+      }
+      else {
+         throw new BatfishException("Invalid policy expression");
       }
    }
 

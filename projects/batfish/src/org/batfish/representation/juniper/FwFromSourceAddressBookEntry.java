@@ -25,7 +25,8 @@ public final class FwFromSourceAddressBookEntry extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line, Warnings w, Configuration c) {
+   public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
+         Warnings w, Configuration c) {
       Set<Prefix> prefixes = _localAddressBook.getPrefixes(
             _addressBookEntryName, w);
       line.getSourceIpRanges().addAll(prefixes);

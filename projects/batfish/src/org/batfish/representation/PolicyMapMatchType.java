@@ -8,6 +8,7 @@ public enum PolicyMapMatchType {
    IP_ACCESS_LIST,
    NEIGHBOR,
    POLICY,
+   POLICY_CONJUNCTION,
    PROTOCOL,
    ROUTE_FILTER_LIST,
    TAG

@@ -42,6 +42,7 @@ import org.batfish.representation.PolicyMapMatchCommunityListLine;
 import org.batfish.representation.PolicyMapMatchIpAccessListLine;
 import org.batfish.representation.PolicyMapMatchLine;
 import org.batfish.representation.PolicyMapMatchNeighborLine;
+import org.batfish.representation.PolicyMapMatchPolicyConjunctionLine;
 import org.batfish.representation.PolicyMapMatchPolicyLine;
 import org.batfish.representation.PolicyMapMatchProtocolLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
@@ -835,6 +836,8 @@ public class ConfigurationFactExtractor {
             .get("SetPolicyMapClauseMatchNeighbor");
       StringBuilder wSetPolicyMapClauseMatchPolicy = _factBins
             .get("SetPolicyMapClauseMatchPolicy");
+      StringBuilder wSetPolicyMapClauseMatchPolicyConjunction = _factBins
+            .get("SetPolicyMapClauseMatchPolicyConjunction");
       StringBuilder wSetPolicyMapClauseMatchProtocol = _factBins
             .get("SetPolicyMapClauseMatchProtocol");
       StringBuilder wSetPolicyMapClauseMatchRouteFilter = _factBins
@@ -889,7 +892,7 @@ public class ConfigurationFactExtractor {
             for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
                switch (matchLine.getType()) {
 
-               case AS_PATH_ACCESS_LIST:
+               case AS_PATH_ACCESS_LIST: {
                   PolicyMapMatchAsPathAccessListLine matchAsPathLine = (PolicyMapMatchAsPathAccessListLine) matchLine;
                   for (AsPathAccessList asPath : matchAsPathLine.getLists()) {
                      String asPathName = hostname + ":" + asPath.getName();
@@ -897,8 +900,9 @@ public class ConfigurationFactExtractor {
                            + "|" + asPathName + "\n");
                   }
                   break;
+               }
 
-               case COMMUNITY_LIST:
+               case COMMUNITY_LIST: {
                   PolicyMapMatchCommunityListLine mclLine = (PolicyMapMatchCommunityListLine) matchLine;
                   for (CommunityList cList : mclLine.getLists()) {
                      String cListName = hostname + ":" + cList.getName();
@@ -906,8 +910,9 @@ public class ConfigurationFactExtractor {
                            + i + "|" + cListName + "\n");
                   }
                   break;
+               }
 
-               case IP_ACCESS_LIST:
+               case IP_ACCESS_LIST: {
                   PolicyMapMatchIpAccessListLine mialLine = (PolicyMapMatchIpAccessListLine) matchLine;
                   for (IpAccessList list : mialLine.getLists()) {
                      String listName = hostname + ":" + list.getName();
@@ -915,30 +920,46 @@ public class ConfigurationFactExtractor {
                            + listName + "\n");
                   }
                   break;
+               }
 
-               case NEIGHBOR:
+               case NEIGHBOR: {
                   PolicyMapMatchNeighborLine pmmnl = (PolicyMapMatchNeighborLine) matchLine;
                   long neighborIp = pmmnl.getNeighborIp().asLong();
                   wSetPolicyMapClauseMatchNeighbor.append(mapName + "|" + i
                         + "|" + neighborIp + "\n");
                   break;
+               }
 
-               case POLICY:
+               case POLICY: {
                   PolicyMapMatchPolicyLine matchPolicyLine = (PolicyMapMatchPolicyLine) matchLine;
                   PolicyMap policy = matchPolicyLine.getPolicy();
                   String policyName = hostname + ":" + policy.getMapName();
                   wSetPolicyMapClauseMatchPolicy.append(mapName + "|" + i + "|"
                         + policyName + "\n");
                   break;
+               }
 
-               case PROTOCOL:
+               case POLICY_CONJUNCTION: {
+                  PolicyMapMatchPolicyConjunctionLine matchPolicyConjunctionLine = (PolicyMapMatchPolicyConjunctionLine) matchLine;
+                  Set<PolicyMap> policies = matchPolicyConjunctionLine
+                        .getConjuncts();
+                  for (PolicyMap policy : policies) {
+                     String policyName = hostname + ":" + policy.getMapName();
+                     wSetPolicyMapClauseMatchPolicyConjunction.append(mapName
+                           + "|" + i + "|" + policyName + "\n");
+                  }
+                  break;
+               }
+
+               case PROTOCOL: {
                   PolicyMapMatchProtocolLine pmmpl = (PolicyMapMatchProtocolLine) matchLine;
                   RoutingProtocol prot = pmmpl.getProtocol();
                   wSetPolicyMapClauseMatchProtocol.append(mapName + "|" + i
                         + "|" + prot.protocolName() + "\n");
                   break;
+               }
 
-               case ROUTE_FILTER_LIST:
+               case ROUTE_FILTER_LIST: {
                   PolicyMapMatchRouteFilterListLine mrfLine = (PolicyMapMatchRouteFilterListLine) matchLine;
                   for (RouteFilterList rfList : mrfLine.getLists()) {
                      String rflName = hostname + ":" + rfList.getName();
@@ -946,28 +967,32 @@ public class ConfigurationFactExtractor {
                            + i + "|" + rflName + "\n");
                   }
                   break;
+               }
 
-               case TAG:
+               case TAG: {
                   PolicyMapMatchTagLine pmmtl = (PolicyMapMatchTagLine) matchLine;
                   for (Integer tag : pmmtl.getTags()) {
                      wSetPolicyMapClauseMatchTag.append(mapName + "|" + i + "|"
                            + tag + "\n");
                   }
                   break;
+               }
 
-               case COLOR:
+               case COLOR: {
                   PolicyMapMatchColorLine pmmcl = (PolicyMapMatchColorLine) matchLine;
                   int color = pmmcl.getColor();
                   wSetPolicyMapClauseMatchColor.append(mapName + "|" + i + "|"
                         + color + "\n");
                   break;
+               }
 
-               case INTERFACE:
+               case INTERFACE: {
                   PolicyMapClauseMatchInterfaceLine pmmil = (PolicyMapClauseMatchInterfaceLine) matchLine;
                   String ifaceName = pmmil.getName();
                   wSetPolicyMapClauseMatchInterface.append(mapName + "|" + i
                         + "|" + hostname + "|" + ifaceName + "\n");
                   break;
+               }
 
                default:
                   throw new BatfishException("invalid match type");

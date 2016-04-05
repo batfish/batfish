@@ -54,6 +54,14 @@ PolicyMapClauseTransformAdvert(map, clause, prevAdvert, nextHopIp, localPref, or
    int(med),
    RoutingProtocol(srcProtocol).
 
+PolicyMapConjunctionDenyAdvert(map, advert) ->
+   PolicyMap(map),
+   BgpAdvertisement(advert).
+
+PolicyMapConjunctionDenyRoute(map, route) ->
+   PolicyMap(map),
+   Route(route).
+
 PolicyMapDenyAdvert(map, advert) ->
    PolicyMap(map),
    BgpAdvertisement(advert).
@@ -146,6 +154,11 @@ SetPolicyMapClauseMatchNeighbor(map, clause, neighborIp) ->
    Ip(neighborIp).
 
 SetPolicyMapClauseMatchPolicy(map, clause, policy) ->
+   PolicyMap(map),
+   int(clause),
+   PolicyMap(policy).
+
+SetPolicyMapClauseMatchPolicyConjunction(map, clause, policy) ->
    PolicyMap(map),
    int(clause),
    PolicyMap(policy).

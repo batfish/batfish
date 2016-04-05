@@ -8,7 +8,7 @@ import org.batfish.representation.LineAction;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 
-public final class FwFromSourcePrefixList extends FwFrom {
+public final class FwFromDestinationPrefixList extends FwFrom {
 
    /**
     *
@@ -17,7 +17,7 @@ public final class FwFromSourcePrefixList extends FwFrom {
 
    private final String _name;
 
-   public FwFromSourcePrefixList(String name) {
+   public FwFromDestinationPrefixList(String name) {
       _name = name;
    }
 
@@ -26,18 +26,19 @@ public final class FwFromSourcePrefixList extends FwFrom {
          Warnings w, Configuration c) {
       PrefixList pl = jc.getPrefixLists().get(_name);
       if (pl != null) {
-         pl.getReferers().put(this, "firewall from source-prefix-list");
+         pl.getReferers().put(this, "firewall from destination-prefix-list");
          if (pl.getIpv6()) {
             return;
          }
-         RouteFilterList sourcePrefixList = c.getRouteFilterLists().get(_name);
-         for (RouteFilterLine rfLine : sourcePrefixList.getLines()) {
+         RouteFilterList destinationPrefixList = c.getRouteFilterLists().get(
+               _name);
+         for (RouteFilterLine rfLine : destinationPrefixList.getLines()) {
             if (rfLine.getAction() != LineAction.ACCEPT) {
                throw new BatfishException(
                      "Expected accept action for routerfilterlist from juniper");
             }
             else {
-               line.getSourceIpRanges().add(rfLine.getPrefix());
+               line.getDestinationIpRanges().add(rfLine.getPrefix());
             }
          }
       }

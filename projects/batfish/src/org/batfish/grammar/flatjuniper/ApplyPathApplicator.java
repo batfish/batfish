@@ -78,9 +78,9 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
                + pathQuoted
                + ": make sure path is terminated by wildcard (e.g. <*>) representing ip(v6) addresses or prefixes");
       }
-      _newConfigurationLines.remove(_currentSetLine);
+      // _newConfigurationLines.remove(_currentSetLine);
       if (newLines != null) {
-         _newConfigurationLines.addAll(insertionIndex, newLines);
+         _newConfigurationLines.addAll(insertionIndex + 1, newLines);
       }
    }
 

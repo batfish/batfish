@@ -44,7 +44,7 @@ fwfromt_destination_port_except
 
 fwfromt_destination_prefix_list
 :
-   DESTINATION_PREFIX_LIST variable EXCEPT?
+   DESTINATION_PREFIX_LIST name = variable EXCEPT?
 ;
 
 fwfromt_dscp
@@ -116,7 +116,7 @@ fwfromt_precedence
 
 fwfromt_prefix_list
 :
-   PREFIX_LIST variable
+   PREFIX_LIST name = variable
 ;
 
 fwfromt_protocol
