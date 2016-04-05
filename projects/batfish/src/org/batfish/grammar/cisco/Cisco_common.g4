@@ -191,6 +191,29 @@ port
    | XDMCP
 ;
 
+prefix_set_elem
+:
+   (
+      ipa = IP_ADDRESS
+      | prefix = IP_PREFIX
+      | ipv6a = IPV6_ADDRESS
+      | ipv6_prefix = IPV6_PREFIX
+   )
+   (
+      (
+         GE minpl = DEC
+      )
+      |
+      (
+         LE maxpl = DEC
+      )
+      |
+      (
+         EQ eqpl = DEC
+      )
+   )*
+;
+
 protocol
 :
    AHP

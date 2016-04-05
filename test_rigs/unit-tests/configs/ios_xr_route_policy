@@ -1,0 +1,48 @@
+!
+hostname rP
+!
+route-policy hpr_blackhole
+  if destination in ucla_blackhole_routes and community matches-any hpr_blackhole_community then
+    set next-hop 192.0.2.1
+    pass
+  endif
+end-policy
+route-policy hpr_to_ucla_ipv4
+  apply default_route_filter
+  apply inbound_route_filter
+  apply drop_community_52
+  if community matches-any hpr_routes_community then
+    set local-preference 350
+  endif
+end-policy
+route-policy hpr_to_ucla_ipv6
+  if destination in ucla_networks_ipv6 or destination in (::/0) then
+    drop
+  else
+    set local-preference 350
+  endif
+end-policy
+route-policy drop_community_52
+  if community matches-any community_52 then
+    delete community in community_52
+    pass
+  endif
+end-policy
+route-policy ospf_default_ipv4
+  if rib-has-route in (198.32.248.0/24) then
+    pass
+  endif
+end-policy
+route-policy perfsonar_andsn_ipv4
+  if destination in perfsonar_andsn_network_ipv4 then
+    set med 25
+    done
+  endif
+end-policy
+route-policy ucla_to_hpr_community_ipv4
+  if destination in ucla_networks_ipv4 or destination in ucla_blackhole_routes or destination in perfsonar_andsn_network_ipv4 then
+    set community ucla_to_hpr_community_ipv4 additive
+    pass
+  endif
+end-policy
+end
