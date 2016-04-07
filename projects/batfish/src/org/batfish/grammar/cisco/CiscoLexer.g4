@@ -1131,6 +1131,11 @@ DEFINITION
    'definition'
 ;
 
+DEL
+:
+   'Del'
+;
+
 DELAY
 :
    'delay'
