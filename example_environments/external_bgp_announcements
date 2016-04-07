@@ -1,0 +1,20 @@
+{
+	"Announcements": [
+		{
+			"Prefix" : "10.10.10.10/32",
+			"NextHopIp" : "1.1.1.1",
+			"SrcNode" : "neighbor",
+			"SrcIp" : "2.2.2.2",
+			"DstNode" : "me",
+			"DstIp" : "3.3.3.3",
+			"SrcProtocol" : "BGP",
+			"OriginType" : "EGP",
+			"LocalPref" : 100,
+			"Med" : 20,
+			"OriginatorIp" : "4.4.4.4",
+			"Communities" : [420, 421],
+			"AsPath" : [[1239], [7018,7019]],
+			"Type" : "type"
+		}
+	]
+}

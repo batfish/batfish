@@ -405,7 +405,14 @@ locals [boolean again]
 
 ip_prefix_list_null_tail
 :
-   description_line
+   (
+      description_line
+   )
+   |
+   (
+       NO SEQ DEC NEWLINE
+   )
+   
 ;
 
 ip_prefix_list_tail

@@ -99,6 +99,11 @@ cisco_configuration
    )+ COLON? NEWLINE? EOF
 ;
 
+del_stanza
+:
+   DEL ~NEWLINE* NEWLINE
+;
+   
 hostname_stanza
 :
    (
@@ -224,6 +229,7 @@ null_stanza
 :
    banner_stanza
    | certificate_stanza
+   | del_stanza
    | macro_stanza
    | management_plane_stanza
    | no_ip_access_list_stanza
