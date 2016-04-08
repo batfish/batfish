@@ -86,13 +86,13 @@ function_sig('RouteDetails_nextHop', 2).
 
 
 'AsPathDenyAdvert'(AsPath, Advert) :-
-   'AsPathFirstMatchAdvert'(AsPath, Advert, Line) /*fn*/,
+   'AsPathFirstMatchAdvert'(AsPath, Advert, Line),
    'SetAsPathLineDeny'(AsPath, Line).
 'AsPathDenyAdvert'(AsPath, Advert) :-
    need_AsPathMatchAdvert(AsPath, Advert),
    \+ 'AsPathLineMatchAdvert'(AsPath, _, Advert).
 
-'AsPathFirstMatchAdvert'(AsPath, Advert, MatchLine ) /*fn*/:-
+'AsPathFirstMatchAdvert'(AsPath, Advert, MatchLine ):-
    agg(MatchLine = min(Line),(
       'AsPathLineMatchAdvert'(AsPath, Line, Advert))).
 
@@ -116,7 +116,7 @@ function_sig('RouteDetails_nextHop', 2).
    'AdvertisementPath'(Advert, Index, As),
    AsLow =< As,
    As =< AsHigh,
-   'AdvertisementPathSize'(Advert, Size) /*fn*/,
+   'AdvertisementPathSize'(Advert, Size),
    Index = Size - 1.
 
 'AsPathLineMatchAsPair'(AsPath, Line, Advert) :-
@@ -140,73 +140,73 @@ function_sig('RouteDetails_nextHop', 2).
    As2Low =< As2,
    As2 =< As2High,
    Index2 = Index1 + 1,
-   'AdvertisementPathSize'(Advert, Size) /*fn*/,
+   'AdvertisementPathSize'(Advert, Size),
    Index1 = Size - 1.
 
 'AsPathLineMatchEmpty'(AsPath, Line, Advert) :-
    need_AsPathMatchAdvert(AsPath, Advert),
    'SetAsPathLineMatchEmpty'(AsPath, Line),
-   'AdvertisementPathSize'(Advert, Size) /*fn*/,
+   'AdvertisementPathSize'(Advert, Size),
    Size = 0.
 
 'AsPathPermitAdvert'(AsPath, Advert) :-
-   'AsPathFirstMatchAdvert'(AsPath, Advert, Line) /*fn*/,
+   'AsPathFirstMatchAdvert'(AsPath, Advert, Line),
    'SetAsPathLinePermit'(AsPath, Line).
-'AdministrativeDistance'('arista', 'bgp', 200) /*fn*/.
-'AdministrativeDistance'('arista', 'ibgp', 200) /*fn*/.
-'AdministrativeDistance'('arista', 'connected', 0) /*fn*/.
-'AdministrativeDistance'('arista', 'ospf', 110) /*fn*/.
-'AdministrativeDistance'('arista', 'ospfIA', 110) /*fn*/.
-'AdministrativeDistance'('arista', 'ospfE1', 110) /*fn*/.
-'AdministrativeDistance'('arista', 'ospfE2', 110) /*fn*/.
+'AdministrativeDistance'('arista', 'bgp', 200).
+'AdministrativeDistance'('arista', 'ibgp', 200).
+'AdministrativeDistance'('arista', 'connected', 0).
+'AdministrativeDistance'('arista', 'ospf', 110).
+'AdministrativeDistance'('arista', 'ospfIA', 110).
+'AdministrativeDistance'('arista', 'ospfE1', 110).
+'AdministrativeDistance'('arista', 'ospfE2', 110).
 
-'AdministrativeDistance'('aws_vpc', 'bgp', 20) /*fn*/.
-'AdministrativeDistance'('aws_vpc', 'ibgp', 200) /*fn*/.
-'AdministrativeDistance'('aws_vpc', 'connected', 0) /*fn*/.
-'AdministrativeDistance'('aws_vpc', 'isisL1', 115) /*fn*/.
-'AdministrativeDistance'('aws_vpc', 'isisL2', 115) /*fn*/.
-'AdministrativeDistance'('aws_vpc', 'isisEL1', 115) /*fn*/.
-'AdministrativeDistance'('aws_vpc', 'isisEL2', 115) /*fn*/.
-'AdministrativeDistance'('aws_vpc', 'ospf', 110) /*fn*/.
-'AdministrativeDistance'('aws_vpc', 'ospfIA', 110) /*fn*/.
-'AdministrativeDistance'('aws_vpc', 'ospfE1', 110) /*fn*/.
-'AdministrativeDistance'('aws_vpc', 'ospfE2', 110) /*fn*/.
+'AdministrativeDistance'('aws_vpc', 'bgp', 20).
+'AdministrativeDistance'('aws_vpc', 'ibgp', 200).
+'AdministrativeDistance'('aws_vpc', 'connected', 0).
+'AdministrativeDistance'('aws_vpc', 'isisL1', 115).
+'AdministrativeDistance'('aws_vpc', 'isisL2', 115).
+'AdministrativeDistance'('aws_vpc', 'isisEL1', 115).
+'AdministrativeDistance'('aws_vpc', 'isisEL2', 115).
+'AdministrativeDistance'('aws_vpc', 'ospf', 110).
+'AdministrativeDistance'('aws_vpc', 'ospfIA', 110).
+'AdministrativeDistance'('aws_vpc', 'ospfE1', 110).
+'AdministrativeDistance'('aws_vpc', 'ospfE2', 110).
 
-'AdministrativeDistance'('cisco', 'bgp', 20) /*fn*/.
-'AdministrativeDistance'('cisco', 'ibgp', 200) /*fn*/.
-'AdministrativeDistance'('cisco', 'connected', 0) /*fn*/.
-'AdministrativeDistance'('cisco', 'isisL1', 115) /*fn*/.
-'AdministrativeDistance'('cisco', 'isisL2', 115) /*fn*/.
-'AdministrativeDistance'('cisco', 'isisEL1', 115) /*fn*/.
-'AdministrativeDistance'('cisco', 'isisEL2', 115) /*fn*/.
-'AdministrativeDistance'('cisco', 'ospf', 110) /*fn*/.
-'AdministrativeDistance'('cisco', 'ospfIA', 110) /*fn*/.
-'AdministrativeDistance'('cisco', 'ospfE1', 110) /*fn*/.
-'AdministrativeDistance'('cisco', 'ospfE2', 110) /*fn*/.
+'AdministrativeDistance'('cisco', 'bgp', 20).
+'AdministrativeDistance'('cisco', 'ibgp', 200).
+'AdministrativeDistance'('cisco', 'connected', 0).
+'AdministrativeDistance'('cisco', 'isisL1', 115).
+'AdministrativeDistance'('cisco', 'isisL2', 115).
+'AdministrativeDistance'('cisco', 'isisEL1', 115).
+'AdministrativeDistance'('cisco', 'isisEL2', 115).
+'AdministrativeDistance'('cisco', 'ospf', 110).
+'AdministrativeDistance'('cisco', 'ospfIA', 110).
+'AdministrativeDistance'('cisco', 'ospfE1', 110).
+'AdministrativeDistance'('cisco', 'ospfE2', 110).
 
-'AdministrativeDistance'('juniper', 'bgp', 170) /*fn*/.
-'AdministrativeDistance'('juniper', 'ibgp', 170) /*fn*/.
-'AdministrativeDistance'('juniper', 'connected', 0) /*fn*/.
-'AdministrativeDistance'('juniper', 'isisL1', 15) /*fn*/.
-'AdministrativeDistance'('juniper', 'isisL2', 18) /*fn*/.
-'AdministrativeDistance'('juniper', 'isisEL1', 160) /*fn*/.
-'AdministrativeDistance'('juniper', 'isisEL2', 165) /*fn*/.
-'AdministrativeDistance'('juniper', 'ospf', 10) /*fn*/.
-'AdministrativeDistance'('juniper', 'ospfIA', 10) /*fn*/.
-'AdministrativeDistance'('juniper', 'ospfE1', 150) /*fn*/.
-'AdministrativeDistance'('juniper', 'ospfE2', 150) /*fn*/.
+'AdministrativeDistance'('juniper', 'bgp', 170).
+'AdministrativeDistance'('juniper', 'ibgp', 170).
+'AdministrativeDistance'('juniper', 'connected', 0).
+'AdministrativeDistance'('juniper', 'isisL1', 15).
+'AdministrativeDistance'('juniper', 'isisL2', 18).
+'AdministrativeDistance'('juniper', 'isisEL1', 160).
+'AdministrativeDistance'('juniper', 'isisEL2', 165).
+'AdministrativeDistance'('juniper', 'ospf', 10).
+'AdministrativeDistance'('juniper', 'ospfIA', 10).
+'AdministrativeDistance'('juniper', 'ospfE1', 150).
+'AdministrativeDistance'('juniper', 'ospfE2', 150).
 
-'AdministrativeDistance'('vyos', 'bgp', 20) /*fn*/.
-'AdministrativeDistance'('vyos', 'ibgp', 200) /*fn*/.
-'AdministrativeDistance'('vyos', 'connected', 0) /*fn*/.
-'AdministrativeDistance'('vyos', 'isisL1', 115) /*fn*/.
-'AdministrativeDistance'('vyos', 'isisL2', 115) /*fn*/.
-'AdministrativeDistance'('vyos', 'isisEL1', 115) /*fn*/.
-'AdministrativeDistance'('vyos', 'isisEL2', 115) /*fn*/.
-'AdministrativeDistance'('vyos', 'ospf', 110) /*fn*/.
-'AdministrativeDistance'('vyos', 'ospfIA', 110) /*fn*/.
-'AdministrativeDistance'('vyos', 'ospfE1', 110) /*fn*/.
-'AdministrativeDistance'('vyos', 'ospfE2', 110) /*fn*/.
+'AdministrativeDistance'('vyos', 'bgp', 20).
+'AdministrativeDistance'('vyos', 'ibgp', 200).
+'AdministrativeDistance'('vyos', 'connected', 0).
+'AdministrativeDistance'('vyos', 'isisL1', 115).
+'AdministrativeDistance'('vyos', 'isisL2', 115).
+'AdministrativeDistance'('vyos', 'isisEL1', 115).
+'AdministrativeDistance'('vyos', 'isisEL2', 115).
+'AdministrativeDistance'('vyos', 'ospf', 110).
+'AdministrativeDistance'('vyos', 'ospfIA', 110).
+'AdministrativeDistance'('vyos', 'ospfE1', 110).
+'AdministrativeDistance'('vyos', 'ospfE2', 110).
 
 'PolicyMap'(Map) :-
    'SetBgpExportPolicy_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Map).
@@ -224,33 +224,33 @@ function_sig('RouteDetails_nextHop', 2).
    'SetBgpOriginationPolicy_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Map).
 % advertise a transit route received through ibgp or ebgp
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
-'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
-'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-'BgpAdvertisement_localPref'(Advert, LocalPref) /*fn*/,
-'BgpAdvertisement_med'(Advert, Med) /*fn*/,
-'BgpAdvertisement_network'(Advert, DstIpBlock) /*fn*/,
-'BgpAdvertisement_nextHopIp'(Advert, NextHopIp) /*fn*/,
-'BgpAdvertisement_originatorIp'(Advert, OriginatorIp) /*fn*/,
-'BgpAdvertisement_originType'(Advert, OriginType) /*fn*/,
-'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
-'BgpAdvertisement_srcNode'(Advert, SrcNode) /*fn*/,
-'BgpAdvertisement_srcProtocol'(Advert, SrcProtocol) /*fn*/,
-'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert),
+'BgpAdvertisement_dstIp'(Advert, DstIp),
+'BgpAdvertisement_dstNode'(Advert, DstNode),
+'BgpAdvertisement_localPref'(Advert, LocalPref),
+'BgpAdvertisement_med'(Advert, Med),
+'BgpAdvertisement_network'(Advert, DstIpBlock),
+'BgpAdvertisement_nextHopIp'(Advert, NextHopIp),
+'BgpAdvertisement_originatorIp'(Advert, OriginatorIp),
+'BgpAdvertisement_originType'(Advert, OriginType),
+'BgpAdvertisement_srcIp'(Advert, SrcIp),
+'BgpAdvertisement_srcNode'(Advert, SrcNode),
+'BgpAdvertisement_srcProtocol'(Advert, SrcProtocol),
+'BgpAdvertisement_type'(Advert, Type),
 'ParentAdvertisement'(PrevAdvert, Advert),
-'AdvertisementPathSize'(Advert, PathSize) /*fn*/
+'AdvertisementPathSize'(Advert, PathSize)
 :-
    Type = 'bgp',
    'Ip_NONE'(OriginatorIp),
    (
-      'BgpAdvertisement_type'(PrevAdvert, 'bgp_ti' ) /*fn*/;
-      'BgpAdvertisement_type'(PrevAdvert, 'ibgp_ti') /*fn*/
+      'BgpAdvertisement_type'(PrevAdvert, 'bgp_ti' );
+      'BgpAdvertisement_type'(PrevAdvert, 'ibgp_ti')
    ),
-   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock) /*fn*/,
-   'BgpAdvertisement_nextHopIp'(PrevAdvert, OrigNextHopIp) /*fn*/,
-   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol) /*fn*/,
-   'BgpAdvertisement_dstNode'(PrevAdvert, SrcNode) /*fn*/,
-   'AdvertisementPathSize'(PrevAdvert, PrevPathSize) /*fn*/,
+   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock),
+   'BgpAdvertisement_nextHopIp'(PrevAdvert, OrigNextHopIp),
+   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol),
+   'BgpAdvertisement_dstNode'(PrevAdvert, SrcNode),
+   'AdvertisementPathSize'(PrevAdvert, PrevPathSize),
    'InstalledBgpAdvertisement'(PrevAdvert),
    PathSize = PrevPathSize,
    'BestBgpAdvertisement'(PrevAdvert),
@@ -268,20 +268,20 @@ function_sig('RouteDetails_nextHop', 2).
    'BgpNeighbors'(SrcNode, SrcIp, DstNode, DstIp).
 % advertise an internally received route
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, Network, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
-'AdvertisementPathSize'(Advert, PathSize) /*fn*/,
-'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
-'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-'BgpAdvertisement_localPref'(Advert, LocalPref) /*fn*/,
-'BgpAdvertisement_med'(Advert, Med) /*fn*/,
-'BgpAdvertisement_network'(Advert, Network) /*fn*/,
-'BgpAdvertisement_nextHopIp'(Advert, NextHopIp) /*fn*/,
-'BgpAdvertisement_originatorIp'(Advert, OriginatorIp) /*fn*/,
-'BgpAdvertisement_originType'(Advert, OriginType) /*fn*/,
-'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
-'BgpAdvertisement_srcNode'(Advert, SrcNode) /*fn*/,
-'BgpAdvertisement_srcProtocol'(Advert, SrcProtocol) /*fn*/,
-'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+'BgpAdvertisement_constructor'(Type, Network, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert),
+'AdvertisementPathSize'(Advert, PathSize),
+'BgpAdvertisement_dstIp'(Advert, DstIp),
+'BgpAdvertisement_dstNode'(Advert, DstNode),
+'BgpAdvertisement_localPref'(Advert, LocalPref),
+'BgpAdvertisement_med'(Advert, Med),
+'BgpAdvertisement_network'(Advert, Network),
+'BgpAdvertisement_nextHopIp'(Advert, NextHopIp),
+'BgpAdvertisement_originatorIp'(Advert, OriginatorIp),
+'BgpAdvertisement_originType'(Advert, OriginType),
+'BgpAdvertisement_srcIp'(Advert, SrcIp),
+'BgpAdvertisement_srcNode'(Advert, SrcNode),
+'BgpAdvertisement_srcProtocol'(Advert, SrcProtocol),
+'BgpAdvertisement_type'(Advert, Type),
 'OriginalBgpAdvertisementRoute'(Advert, Route),
 'OriginatedBgpNetwork'(SrcNode, Network)
 :-
@@ -300,9 +300,9 @@ function_sig('RouteDetails_nextHop', 2).
          LocalPref = 100
       )
    ),
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_protocol'(Route, SrcProtocol) /*fn*/,
-   'Route_node'(Route, SrcNode) /*fn*/,
+   'Route_network'(Route, Network),
+   'Route_protocol'(Route, SrcProtocol),
+   'Route_node'(Route, SrcNode),
    (
       (
          'ActiveGeneratedRoute'(Route),
@@ -311,7 +311,7 @@ function_sig('RouteDetails_nextHop', 2).
       (
          'ActiveGeneratedRoute'(Route),
          'BgpNeighborGeneratedRoute'(Route),
-         'BgpNeighborGeneratedRoute_neighborIp'(Route, DstIp) /*fn*/
+         'BgpNeighborGeneratedRoute_neighborIp'(Route, DstIp)
       ) ;
       (
          'InstalledRoute'(Route),
@@ -333,19 +333,19 @@ need_PolicyMapMatchRoute(Map, Route) :-
       'BgpGeneratedRoute'(Route) ;
       (
          'BgpNeighborGeneratedRoute'(Route),
-         'BgpNeighborGeneratedRoute_neighborIp'(Route, NeighborIp) /*fn*/
+         'BgpNeighborGeneratedRoute_neighborIp'(Route, NeighborIp)
       )
    ),
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_node'(Route, Node),
    'BgpOriginationPolicy'(Node, NeighborIp, Map),
    'BgpNeighbors'(Node, _, _, NeighborIp).
 % incoming transformation
 'AdvertisementCommunity'(Advert, Community) :-
    PriorType = 'bgp_to',
    'BgpNeighborSendCommunity'(DstNode, SrcIp),
-   'BgpAdvertisement_type'(PrevAdvert, PriorType) /*fn*/,
-   'BgpAdvertisement_dstNode'(PrevAdvert, DstNode) /*fn*/,
-   'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp) /*fn*/,
+   'BgpAdvertisement_type'(PrevAdvert, PriorType),
+   'BgpAdvertisement_dstNode'(PrevAdvert, DstNode),
+   'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp),
    'ParentAdvertisement'(PrevAdvert, Advert),
    (
       (
@@ -376,63 +376,63 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'BestBgpRoute'(Route),
    'Route'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
    'BestBgpRouteNetwork'(Node, Network),
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/,
-   'BgpAdvertisementRoute'(Advert, Route) /*fn*/
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol),
+   'BgpAdvertisementRoute'(Advert, Route)
 :-
    Type = 'bgp_ti',
    Protocol = 'bgp',
-   'BgpAdvertisement_type'(Advert, Type) /*fn*/,
-   'BgpAdvertisement_network'(Advert, Network) /*fn*/,
-   'BgpAdvertisement_nextHopIp'(Advert, NextHopIp) /*fn*/,
-   'BgpAdvertisement_dstNode'(Advert, Node) /*fn*/,
-   'BgpAdvertisement_med'(Advert, Cost) /*fn*/,
+   'BgpAdvertisement_type'(Advert, Type),
+   'BgpAdvertisement_network'(Advert, Network),
+   'BgpAdvertisement_nextHopIp'(Advert, NextHopIp),
+   'BgpAdvertisement_dstNode'(Advert, Node),
+   'BgpAdvertisement_med'(Advert, Cost),
    'BestBgpAdvertisement'(Advert),
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 
 % ebgp transformed incoming
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, TLocalPref, TMed, Advert) /*fn*/,
-'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
-'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-'BgpAdvertisement_localPref'(Advert, TLocalPref) /*fn*/,
-'BgpAdvertisement_med'(Advert, TMed) /*fn*/,
-'BgpAdvertisement_network'(Advert, DstIpBlock) /*fn*/,
-'BgpAdvertisement_nextHopIp'(Advert, TNextHopIp) /*fn*/,
-'BgpAdvertisement_originatorIp'(Advert, OriginatorIp) /*fn*/,
-'BgpAdvertisement_originType'(Advert, TOriginType) /*fn*/,
-'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
-'BgpAdvertisement_srcNode'(Advert, SrcNode) /*fn*/,
-'BgpAdvertisement_srcProtocol'(Advert, TSrcProtocol) /*fn*/,
-'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, TLocalPref, TMed, Advert),
+'BgpAdvertisement_dstIp'(Advert, DstIp),
+'BgpAdvertisement_dstNode'(Advert, DstNode),
+'BgpAdvertisement_localPref'(Advert, TLocalPref),
+'BgpAdvertisement_med'(Advert, TMed),
+'BgpAdvertisement_network'(Advert, DstIpBlock),
+'BgpAdvertisement_nextHopIp'(Advert, TNextHopIp),
+'BgpAdvertisement_originatorIp'(Advert, OriginatorIp),
+'BgpAdvertisement_originType'(Advert, TOriginType),
+'BgpAdvertisement_srcIp'(Advert, SrcIp),
+'BgpAdvertisement_srcNode'(Advert, SrcNode),
+'BgpAdvertisement_srcProtocol'(Advert, TSrcProtocol),
+'BgpAdvertisement_type'(Advert, Type),
 'ParentAdvertisement'(PrevAdvert, Advert),
-'AdvertisementPathSize'(Advert, PathSize) /*fn*/
+'AdvertisementPathSize'(Advert, PathSize)
 :-
    Type = 'bgp_ti',
    PriorType = 'bgp_to',
    \+ 'HasIp'(DstNode, OriginatorIp),
    'LocalAs'(DstNode, SrcIp, ReceiverAs),
    \+ 'AdvertisementPath'(PrevAdvert, _, ReceiverAs),
-   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp) /*fn*/,
-   'BgpAdvertisement_dstNode'(PrevAdvert, DstNode) /*fn*/,
-   'BgpAdvertisement_localPref'(PrevAdvert, LocalPref) /*fn*/,
-   'BgpAdvertisement_med'(PrevAdvert, Med) /*fn*/,
-   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock) /*fn*/,
-   'BgpAdvertisement_nextHopIp'(PrevAdvert, NextHopIp) /*fn*/,
-   'BgpAdvertisement_originatorIp'(PrevAdvert, OriginatorIp) /*fn*/,
-   'BgpAdvertisement_originType'(PrevAdvert, OriginType) /*fn*/,
-   'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp) /*fn*/,
-   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode) /*fn*/,
-   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol) /*fn*/,
-   'BgpAdvertisement_type'(PrevAdvert, PriorType) /*fn*/,
-   'AdvertisementPathSize'(PrevAdvert, PathSize) /*fn*/,
+   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp),
+   'BgpAdvertisement_dstNode'(PrevAdvert, DstNode),
+   'BgpAdvertisement_localPref'(PrevAdvert, LocalPref),
+   'BgpAdvertisement_med'(PrevAdvert, Med),
+   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock),
+   'BgpAdvertisement_nextHopIp'(PrevAdvert, NextHopIp),
+   'BgpAdvertisement_originatorIp'(PrevAdvert, OriginatorIp),
+   'BgpAdvertisement_originType'(PrevAdvert, OriginType),
+   'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp),
+   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode),
+   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol),
+   'BgpAdvertisement_type'(PrevAdvert, PriorType),
+   'AdvertisementPathSize'(PrevAdvert, PathSize),
    'BgpNeighborIp'(DstNode, SrcIp),
    (
       (
@@ -454,18 +454,18 @@ need_PolicyMapMatchRoute(Map, Route) :-
 need_PolicyMapMatchAdvert(Map, Advert)
 :-
    Type = 'bgp_to',
-   'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-   'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
-   'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+   'BgpAdvertisement_dstNode'(Advert, DstNode),
+   'BgpAdvertisement_srcIp'(Advert, SrcIp),
+   'BgpAdvertisement_type'(Advert, Type),
    'BgpImportPolicy'(DstNode, SrcIp, Map).
 % append as to path for bgp route advertisement
 'AdvertisementPath'(Advert, Index, As) :-
-   'BgpAdvertisement_type'(Advert, Type) /*fn*/,
-   'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-   'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
+   'BgpAdvertisement_type'(Advert, Type),
+   'BgpAdvertisement_dstNode'(Advert, DstNode),
+   'BgpAdvertisement_srcIp'(Advert, SrcIp),
    Type = 'bgp_to',
    'ParentAdvertisement'(PrevAdvert, Advert),
-   'AdvertisementPathSize'(PrevAdvert, PrevPathSize) /*fn*/,
+   'AdvertisementPathSize'(PrevAdvert, PrevPathSize),
    Index = PrevPathSize,
    'RemoteAs'(DstNode, SrcIp, As).
 
@@ -473,9 +473,9 @@ need_PolicyMapMatchAdvert(Map, Advert)
 'AdvertisementCommunity'(Advert, Community) :-
    PriorType = 'bgp',
    'BgpNeighborSendCommunity'(SrcNode, DstIp),
-   'BgpAdvertisement_type'(PrevAdvert, PriorType) /*fn*/,
-   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode) /*fn*/,
-   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp) /*fn*/,
+   'BgpAdvertisement_type'(PrevAdvert, PriorType),
+   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode),
+   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp),
    'ParentAdvertisement'(PrevAdvert, Advert),
    (
       (
@@ -517,38 +517,38 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 % ebgp transformed outgoing
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, TLocalPref, TMed, Advert) /*fn*/,
-'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
-'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-'BgpAdvertisement_localPref'(Advert, TLocalPref) /*fn*/,
-'BgpAdvertisement_med'(Advert, TMed) /*fn*/,
-'BgpAdvertisement_network'(Advert, DstIpBlock) /*fn*/,
-'BgpAdvertisement_nextHopIp'(Advert, TNextHopIp) /*fn*/,
-'BgpAdvertisement_originatorIp'(Advert, OriginatorIp) /*fn*/,
-'BgpAdvertisement_originType'(Advert, TOriginType) /*fn*/,
-'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
-'BgpAdvertisement_srcNode'(Advert, SrcNode) /*fn*/,
-'BgpAdvertisement_srcProtocol'(Advert, TSrcProtocol) /*fn*/,
-'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, TLocalPref, TMed, Advert),
+'BgpAdvertisement_dstIp'(Advert, DstIp),
+'BgpAdvertisement_dstNode'(Advert, DstNode),
+'BgpAdvertisement_localPref'(Advert, TLocalPref),
+'BgpAdvertisement_med'(Advert, TMed),
+'BgpAdvertisement_network'(Advert, DstIpBlock),
+'BgpAdvertisement_nextHopIp'(Advert, TNextHopIp),
+'BgpAdvertisement_originatorIp'(Advert, OriginatorIp),
+'BgpAdvertisement_originType'(Advert, TOriginType),
+'BgpAdvertisement_srcIp'(Advert, SrcIp),
+'BgpAdvertisement_srcNode'(Advert, SrcNode),
+'BgpAdvertisement_srcProtocol'(Advert, TSrcProtocol),
+'BgpAdvertisement_type'(Advert, Type),
 'ParentAdvertisement'(PrevAdvert, Advert),
-'AdvertisementPathSize'(Advert, PathSize) /*fn*/
+'AdvertisementPathSize'(Advert, PathSize)
 :-
    Type = 'bgp_to',
    PriorType = 'bgp',
    PathSize = PrevPathSize + 1,
-   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp) /*fn*/,
-   'BgpAdvertisement_dstNode'(PrevAdvert, DstNode) /*fn*/,
-   'BgpAdvertisement_localPref'(PrevAdvert, LocalPref) /*fn*/,
-   'BgpAdvertisement_med'(PrevAdvert, Med) /*fn*/,
-   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock) /*fn*/,
-   'BgpAdvertisement_nextHopIp'(PrevAdvert, NextHopIp) /*fn*/,
-   'BgpAdvertisement_originatorIp'(PrevAdvert, OriginatorIp) /*fn*/,
-   'BgpAdvertisement_originType'(PrevAdvert, OriginType) /*fn*/,
-   'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp) /*fn*/,
-   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode) /*fn*/,
-   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol) /*fn*/,
-   'BgpAdvertisement_type'(PrevAdvert, PriorType) /*fn*/,
-   'AdvertisementPathSize'(PrevAdvert, PrevPathSize) /*fn*/,
+   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp),
+   'BgpAdvertisement_dstNode'(PrevAdvert, DstNode),
+   'BgpAdvertisement_localPref'(PrevAdvert, LocalPref),
+   'BgpAdvertisement_med'(PrevAdvert, Med),
+   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock),
+   'BgpAdvertisement_nextHopIp'(PrevAdvert, NextHopIp),
+   'BgpAdvertisement_originatorIp'(PrevAdvert, OriginatorIp),
+   'BgpAdvertisement_originType'(PrevAdvert, OriginType),
+   'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp),
+   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode),
+   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol),
+   'BgpAdvertisement_type'(PrevAdvert, PriorType),
+   'AdvertisementPathSize'(PrevAdvert, PrevPathSize),
    'BgpNeighborIp'(SrcNode, DstIp),
    (
       (
@@ -579,12 +579,12 @@ need_PolicyMapMatchAdvert(Map, Advert)
    ).
 'BgpGeneratedRoute'(Route),
    'Route'(Route),
-   'GeneratedRoute_constructor'(Node, Network, Type, Route) /*fn*/,
+   'GeneratedRoute_constructor'(Node, Network, Type, Route),
    'GeneratedRoute'(Route),
-   'GeneratedRoute_type'(Route, Type) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'GeneratedRoute_type'(Route, Type),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    'SetBgpGeneratedRoute'(Node, Network),
    Type = 'GeneratedRouteType_BGP',
@@ -592,13 +592,13 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 'BgpNeighborGeneratedRoute'(Route),
    'Route'(Route),
-   'BgpNeighborGeneratedRoute_constructor'(Node, Network, NeighborIp, Route) /*fn*/,
-   'BgpNeighborGeneratedRoute_neighborIp'(Route, NeighborIp) /*fn*/,
+   'BgpNeighborGeneratedRoute_constructor'(Node, Network, NeighborIp, Route),
+   'BgpNeighborGeneratedRoute_neighborIp'(Route, NeighborIp),
    'GeneratedRoute'(Route),
-   'GeneratedRoute_type'(Route, Type) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'GeneratedRoute_type'(Route, Type),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    'BgpNeighborIpGeneratedRoute'(Node, NeighborIp, Network),
    Type = 'GeneratedRouteType_BGP_NEIGHBOR',
@@ -606,27 +606,27 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 'BgpNeighborIpGeneratedRoute'(Node, NeighborIp, Network) :-
    'SetBgpNeighborGeneratedRoute'(Node, NeighborNetwork, Network),
-   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
 'BgpNeighborGeneratedRoutePolicy'(Node, NeighborIp, Network, Map) :-
    'SetBgpNeighborGeneratedRoutePolicy'(Node, NeighborNetwork, Network, Map),
-   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
 'GeneratedRoutePolicy'(Route, Policy) :-
    'BgpGeneratedRoute'(Route),
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
    'SetBgpGeneratedRoutePolicy'(Node, Network, Policy).
 'GeneratedRoutePolicy'(Route, Policy) :-
    'BgpNeighborGeneratedRoute'(Route),
-   'BgpNeighborGeneratedRoute_neighborIp'(Route, NeighborIp) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
+   'BgpNeighborGeneratedRoute_neighborIp'(Route, NeighborIp),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
    'BgpNeighborGeneratedRoutePolicy'(Node, NeighborIp, Network, Policy).
 
 need_PolicyMapMatchRoute(Map, Route) :-
    'InstalledRoute'(Route),
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_node'(Route, Node),
    (
       'SetBgpGeneratedRoutePolicy'(Node, _, Map) ;
       'BgpNeighborGeneratedRoutePolicy'(Node, _, _, Map)
@@ -634,70 +634,70 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'SetBgpGeneratedRoute'(Node, Network) :-
    'SetBgpGeneratedRoute_flat'(Node, Network_start, Network_end, Prefix_length),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
 'SetBgpGeneratedRoutePolicy'(Node, Network, Map) :-
    'SetBgpGeneratedRoutePolicy_flat'(Node, Network_start, Network_end, Prefix_length, Map),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
 'SetBgpNeighborGeneratedRoute'(Node, NeighborNetwork, Network) :-
    'SetBgpNeighborGeneratedRoute_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Network_start, Network_end, Prefix_length),
-   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/,
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork),
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
 'SetBgpNeighborGeneratedRoutePolicy'(Node, NeighborNetwork, Network, Map) :-
    'SetBgpNeighborGeneratedRoutePolicy_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Network_start, Network_end, Prefix_length, Map),
-   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/,
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork),
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 % ibgp advertisement from bgp
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
-'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
-'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-'BgpAdvertisement_localPref'(Advert, LocalPref) /*fn*/,
-'BgpAdvertisement_med'(Advert, Med) /*fn*/,
-'BgpAdvertisement_network'(Advert, DstIpBlock) /*fn*/,
-'BgpAdvertisement_nextHopIp'(Advert, NextHopIp) /*fn*/,
-'BgpAdvertisement_originatorIp'(Advert, OriginatorIp) /*fn*/,
-'BgpAdvertisement_originType'(Advert, OriginType) /*fn*/,
-'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
-'BgpAdvertisement_srcNode'(Advert, SrcNode) /*fn*/,
-'BgpAdvertisement_srcProtocol'(Advert, SrcProtocol) /*fn*/,
-'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert),
+'BgpAdvertisement_dstIp'(Advert, DstIp),
+'BgpAdvertisement_dstNode'(Advert, DstNode),
+'BgpAdvertisement_localPref'(Advert, LocalPref),
+'BgpAdvertisement_med'(Advert, Med),
+'BgpAdvertisement_network'(Advert, DstIpBlock),
+'BgpAdvertisement_nextHopIp'(Advert, NextHopIp),
+'BgpAdvertisement_originatorIp'(Advert, OriginatorIp),
+'BgpAdvertisement_originType'(Advert, OriginType),
+'BgpAdvertisement_srcIp'(Advert, SrcIp),
+'BgpAdvertisement_srcNode'(Advert, SrcNode),
+'BgpAdvertisement_srcProtocol'(Advert, SrcProtocol),
+'BgpAdvertisement_type'(Advert, Type),
 'ParentAdvertisement'(PrevAdvert, Advert),
-'AdvertisementPathSize'(Advert, PathSize) /*fn*/
+'AdvertisementPathSize'(Advert, PathSize)
 :-
    Type = 'ibgp',
    PriorType = 'bgp_ti',
    'Ip_NONE'(OriginatorIp),
-   'BgpAdvertisement_dstNode'(PrevAdvert, SrcNode) /*fn*/,
-   'BgpAdvertisement_localPref'(PrevAdvert, LocalPref) /*fn*/,
-   'BgpAdvertisement_med'(PrevAdvert, Med) /*fn*/,
-   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock) /*fn*/,
-   'BgpAdvertisement_nextHopIp'(PrevAdvert, NextHopIp) /*fn*/,
-   'BgpAdvertisement_originType'(PrevAdvert, OriginType) /*fn*/,
-   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol) /*fn*/,
-   'BgpAdvertisement_type'(PrevAdvert, PriorType) /*fn*/,
-   'AdvertisementPathSize'(PrevAdvert, PathSize) /*fn*/,
+   'BgpAdvertisement_dstNode'(PrevAdvert, SrcNode),
+   'BgpAdvertisement_localPref'(PrevAdvert, LocalPref),
+   'BgpAdvertisement_med'(PrevAdvert, Med),
+   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock),
+   'BgpAdvertisement_nextHopIp'(PrevAdvert, NextHopIp),
+   'BgpAdvertisement_originType'(PrevAdvert, OriginType),
+   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol),
+   'BgpAdvertisement_type'(PrevAdvert, PriorType),
+   'AdvertisementPathSize'(PrevAdvert, PathSize),
    'BestBgpAdvertisement'(PrevAdvert),
    'InstalledBgpAdvertisement'(PrevAdvert),
    'IbgpNeighbors'(SrcNode, SrcIp, DstNode, DstIp).
 % advertise an internally received route
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, Network, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
-'AdvertisementPathSize'(Advert, PathSize) /*fn*/,
-'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
-'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-'BgpAdvertisement_localPref'(Advert, LocalPref) /*fn*/,
-'BgpAdvertisement_med'(Advert, Med) /*fn*/,
-'BgpAdvertisement_network'(Advert, Network) /*fn*/,
-'BgpAdvertisement_nextHopIp'(Advert, NextHopIp) /*fn*/,
-'BgpAdvertisement_originatorIp'(Advert, OriginatorIp) /*fn*/,
-'BgpAdvertisement_originType'(Advert, OriginType) /*fn*/,
-'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
-'BgpAdvertisement_srcNode'(Advert, SrcNode) /*fn*/,
-'BgpAdvertisement_srcProtocol'(Advert, SrcProtocol) /*fn*/,
-'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+'BgpAdvertisement_constructor'(Type, Network, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert),
+'AdvertisementPathSize'(Advert, PathSize),
+'BgpAdvertisement_dstIp'(Advert, DstIp),
+'BgpAdvertisement_dstNode'(Advert, DstNode),
+'BgpAdvertisement_localPref'(Advert, LocalPref),
+'BgpAdvertisement_med'(Advert, Med),
+'BgpAdvertisement_network'(Advert, Network),
+'BgpAdvertisement_nextHopIp'(Advert, NextHopIp),
+'BgpAdvertisement_originatorIp'(Advert, OriginatorIp),
+'BgpAdvertisement_originType'(Advert, OriginType),
+'BgpAdvertisement_srcIp'(Advert, SrcIp),
+'BgpAdvertisement_srcNode'(Advert, SrcNode),
+'BgpAdvertisement_srcProtocol'(Advert, SrcProtocol),
+'BgpAdvertisement_type'(Advert, Type),
 'OriginalBgpAdvertisementRoute'(Advert, Route),
 'OriginatedBgpNetwork'(SrcNode, Network)
 :-
@@ -716,9 +716,9 @@ need_PolicyMapMatchRoute(Map, Route) :-
          LocalPref = 100
       )
    ),
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_protocol'(Route, SrcProtocol) /*fn*/,
-   'Route_node'(Route, SrcNode) /*fn*/,
+   'Route_network'(Route, Network),
+   'Route_protocol'(Route, SrcProtocol),
+   'Route_node'(Route, SrcNode),
    (
       (
          'ActiveGeneratedRoute'(Route),
@@ -727,7 +727,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
       (
          'ActiveGeneratedRoute'(Route),
          'BgpNeighborGeneratedRoute'(Route),
-         'BgpNeighborGeneratedRoute_neighborIp'(Route, DstIp) /*fn*/
+         'BgpNeighborGeneratedRoute_neighborIp'(Route, DstIp)
       ) ;
       (
          'InstalledRoute'(Route),
@@ -749,19 +749,19 @@ need_PolicyMapMatchRoute(Map, Route) :-
       'BgpGeneratedRoute'(Route) ;
       (
          'BgpNeighborGeneratedRoute'(Route),
-         'BgpNeighborGeneratedRoute_neighborIp'(Route, NeighborIp) /*fn*/
+         'BgpNeighborGeneratedRoute_neighborIp'(Route, NeighborIp)
       )
    ),
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_node'(Route, Node),
    'BgpOriginationPolicy'(Node, NeighborIp, Map),
    'IbgpNeighbors'(Node, _, _, NeighborIp).
 % incoming transformation
 'AdvertisementCommunity'(Advert, Community) :-
    PriorType = 'ibgp_to',
    'BgpNeighborSendCommunity'(DstNode, SrcIp),
-   'BgpAdvertisement_type'(PrevAdvert, PriorType) /*fn*/,
-   'BgpAdvertisement_dstNode'(PrevAdvert, DstNode) /*fn*/,
-   'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp) /*fn*/,
+   'BgpAdvertisement_type'(PrevAdvert, PriorType),
+   'BgpAdvertisement_dstNode'(PrevAdvert, DstNode),
+   'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp),
    'ParentAdvertisement'(PrevAdvert, Advert),
    (
       (
@@ -792,44 +792,44 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'BestIbgpRoute'(Route),
    'Route'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/,
-   'BgpAdvertisementRoute'(Advert, Route) /*fn*/
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol),
+   'BgpAdvertisementRoute'(Advert, Route)
 :-
    Type = 'ibgp_ti',
    Protocol = 'ibgp',
-   'BgpAdvertisement_type'(Advert, Type) /*fn*/,
-   'BgpAdvertisement_network'(Advert, Network) /*fn*/,
-   'BgpAdvertisement_nextHopIp'(Advert, NextHopIp) /*fn*/,
-   'BgpAdvertisement_dstNode'(Advert, Node) /*fn*/,
-   'BgpAdvertisement_med'(Advert, Cost) /*fn*/,
+   'BgpAdvertisement_type'(Advert, Type),
+   'BgpAdvertisement_network'(Advert, Network),
+   'BgpAdvertisement_nextHopIp'(Advert, NextHopIp),
+   'BgpAdvertisement_dstNode'(Advert, Node),
+   'BgpAdvertisement_med'(Advert, Cost),
    'BestBgpAdvertisement'(Advert),
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/,
+   'AdministrativeDistance'(Vendor, Protocol, Admin),
    \+ 'BestBgpRouteNetwork'(Node, Network).
 
 % ibgp transformed incoming
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, TLocalPref, TMed, Advert) /*fn*/,
-'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
-'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-'BgpAdvertisement_localPref'(Advert, TLocalPref) /*fn*/,
-'BgpAdvertisement_med'(Advert, TMed) /*fn*/,
-'BgpAdvertisement_network'(Advert, DstIpBlock) /*fn*/,
-'BgpAdvertisement_nextHopIp'(Advert, TNextHopIp) /*fn*/,
-'BgpAdvertisement_originatorIp'(Advert, OriginatorIp) /*fn*/,
-'BgpAdvertisement_originType'(Advert, TOriginType) /*fn*/,
-'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
-'BgpAdvertisement_srcNode'(Advert, SrcNode) /*fn*/,
-'BgpAdvertisement_srcProtocol'(Advert, TSrcProtocol) /*fn*/,
-'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, TLocalPref, TMed, Advert),
+'BgpAdvertisement_dstIp'(Advert, DstIp),
+'BgpAdvertisement_dstNode'(Advert, DstNode),
+'BgpAdvertisement_localPref'(Advert, TLocalPref),
+'BgpAdvertisement_med'(Advert, TMed),
+'BgpAdvertisement_network'(Advert, DstIpBlock),
+'BgpAdvertisement_nextHopIp'(Advert, TNextHopIp),
+'BgpAdvertisement_originatorIp'(Advert, OriginatorIp),
+'BgpAdvertisement_originType'(Advert, TOriginType),
+'BgpAdvertisement_srcIp'(Advert, SrcIp),
+'BgpAdvertisement_srcNode'(Advert, SrcNode),
+'BgpAdvertisement_srcProtocol'(Advert, TSrcProtocol),
+'BgpAdvertisement_type'(Advert, Type),
 'ParentAdvertisement'(PrevAdvert, Advert),
-'AdvertisementPathSize'(Advert, PathSize) /*fn*/
+'AdvertisementPathSize'(Advert, PathSize)
 :-
    Type = 'ibgp_ti',
    PriorType = 'ibgp_to',
@@ -841,19 +841,19 @@ need_PolicyMapMatchRoute(Map, Route) :-
       )
    ),
    \+ 'HasIp'(DstNode, OriginatorIp),
-   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp) /*fn*/,
-   'BgpAdvertisement_dstNode'(PrevAdvert, DstNode) /*fn*/,
-   'BgpAdvertisement_localPref'(PrevAdvert, LocalPref) /*fn*/,
-   'BgpAdvertisement_med'(PrevAdvert, Med) /*fn*/,
-   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock) /*fn*/,
-   'BgpAdvertisement_nextHopIp'(PrevAdvert, NextHopIp) /*fn*/,
-   'BgpAdvertisement_originatorIp'(PrevAdvert, OriginatorIp) /*fn*/,
-   'BgpAdvertisement_originType'(PrevAdvert, OriginType) /*fn*/,
-   'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp) /*fn*/,
-   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode) /*fn*/,
-   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol) /*fn*/,
-   'BgpAdvertisement_type'(PrevAdvert, PriorType) /*fn*/,
-   'AdvertisementPathSize'(PrevAdvert, PathSize) /*fn*/,
+   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp),
+   'BgpAdvertisement_dstNode'(PrevAdvert, DstNode),
+   'BgpAdvertisement_localPref'(PrevAdvert, LocalPref),
+   'BgpAdvertisement_med'(PrevAdvert, Med),
+   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock),
+   'BgpAdvertisement_nextHopIp'(PrevAdvert, NextHopIp),
+   'BgpAdvertisement_originatorIp'(PrevAdvert, OriginatorIp),
+   'BgpAdvertisement_originType'(PrevAdvert, OriginType),
+   'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp),
+   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode),
+   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol),
+   'BgpAdvertisement_type'(PrevAdvert, PriorType),
+   'AdvertisementPathSize'(PrevAdvert, PathSize),
    'BgpNeighborIp'(DstNode, SrcIp),
    (
       (
@@ -875,16 +875,16 @@ need_PolicyMapMatchRoute(Map, Route) :-
 need_PolicyMapMatchAdvert(Map, Advert)
 :-
    Type = 'ibgp_to',
-   'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-   'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
-   'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+   'BgpAdvertisement_dstNode'(Advert, DstNode),
+   'BgpAdvertisement_srcIp'(Advert, SrcIp),
+   'BgpAdvertisement_type'(Advert, Type),
    'BgpImportPolicy'(DstNode, SrcIp, Map).
 
 'IbgpNeighborTo'(Node, Neighbor, NeighborIp) :-
-   'NetworkOf'(NeighborIp, Prefix_length, NeighborNetwork) /*fn*/,
+   'NetworkOf'(NeighborIp, Prefix_length, NeighborNetwork),
    'InstalledRoute'(Route),
-   'Route_network'(Route, NeighborNetwork) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_network'(Route, NeighborNetwork),
+   'Route_node'(Route, Node),
    'IpReadyInt'(Neighbor, _, NeighborIp, Prefix_length),
    'RemoteAs'(Node, NeighborIp, As),
    'LocalAs'(Node, NeighborIp, As).
@@ -897,9 +897,9 @@ need_PolicyMapMatchAdvert(Map, Advert)
 'AdvertisementCommunity'(Advert, Community) :-
    PriorType = 'ibgp',
    'BgpNeighborSendCommunity'(SrcNode, DstIp),
-   'BgpAdvertisement_type'(PrevAdvert, PriorType) /*fn*/,
-   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode) /*fn*/,
-   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp) /*fn*/,
+   'BgpAdvertisement_type'(PrevAdvert, PriorType),
+   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode),
+   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp),
    'ParentAdvertisement'(PrevAdvert, Advert),
    (
       (
@@ -941,37 +941,37 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 % ibgp transformed outgoing
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, TLocalPref, TMed, Advert) /*fn*/,
-'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
-'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-'BgpAdvertisement_localPref'(Advert, TLocalPref) /*fn*/,
-'BgpAdvertisement_med'(Advert, TMed) /*fn*/,
-'BgpAdvertisement_network'(Advert, DstIpBlock) /*fn*/,
-'BgpAdvertisement_nextHopIp'(Advert, TNextHopIp) /*fn*/,
-'BgpAdvertisement_originatorIp'(Advert, OriginatorIp) /*fn*/,
-'BgpAdvertisement_originType'(Advert, TOriginType) /*fn*/,
-'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
-'BgpAdvertisement_srcNode'(Advert, SrcNode) /*fn*/,
-'BgpAdvertisement_srcProtocol'(Advert, TSrcProtocol) /*fn*/,
-'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, TNextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, TOriginType, TLocalPref, TMed, Advert),
+'BgpAdvertisement_dstIp'(Advert, DstIp),
+'BgpAdvertisement_dstNode'(Advert, DstNode),
+'BgpAdvertisement_localPref'(Advert, TLocalPref),
+'BgpAdvertisement_med'(Advert, TMed),
+'BgpAdvertisement_network'(Advert, DstIpBlock),
+'BgpAdvertisement_nextHopIp'(Advert, TNextHopIp),
+'BgpAdvertisement_originatorIp'(Advert, OriginatorIp),
+'BgpAdvertisement_originType'(Advert, TOriginType),
+'BgpAdvertisement_srcIp'(Advert, SrcIp),
+'BgpAdvertisement_srcNode'(Advert, SrcNode),
+'BgpAdvertisement_srcProtocol'(Advert, TSrcProtocol),
+'BgpAdvertisement_type'(Advert, Type),
 'ParentAdvertisement'(PrevAdvert, Advert),
-'AdvertisementPathSize'(Advert, PathSize) /*fn*/
+'AdvertisementPathSize'(Advert, PathSize)
 :-
    Type = 'ibgp_to',
    PriorType = 'ibgp',
-   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp) /*fn*/,
-   'BgpAdvertisement_dstNode'(PrevAdvert, DstNode) /*fn*/,
-   'BgpAdvertisement_localPref'(PrevAdvert, LocalPref) /*fn*/,
-   'BgpAdvertisement_med'(PrevAdvert, Med) /*fn*/,
-   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock) /*fn*/,
-   'BgpAdvertisement_nextHopIp'(PrevAdvert, NextHopIp) /*fn*/,
-   'BgpAdvertisement_originatorIp'(PrevAdvert, OriginatorIp) /*fn*/,
-   'BgpAdvertisement_originType'(PrevAdvert, OriginType) /*fn*/,
-   'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp) /*fn*/,
-   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode) /*fn*/,
-   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol) /*fn*/,
-   'BgpAdvertisement_type'(PrevAdvert, PriorType) /*fn*/,
-   'AdvertisementPathSize'(PrevAdvert, PathSize) /*fn*/,
+   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp),
+   'BgpAdvertisement_dstNode'(PrevAdvert, DstNode),
+   'BgpAdvertisement_localPref'(PrevAdvert, LocalPref),
+   'BgpAdvertisement_med'(PrevAdvert, Med),
+   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock),
+   'BgpAdvertisement_nextHopIp'(PrevAdvert, NextHopIp),
+   'BgpAdvertisement_originatorIp'(PrevAdvert, OriginatorIp),
+   'BgpAdvertisement_originType'(PrevAdvert, OriginType),
+   'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp),
+   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode),
+   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol),
+   'BgpAdvertisement_type'(PrevAdvert, PriorType),
+   'AdvertisementPathSize'(PrevAdvert, PathSize),
    'BgpNeighborIp'(SrcNode, DstIp),
    (
       (
@@ -1002,75 +1002,75 @@ need_PolicyMapMatchAdvert(Map, Advert)
    ).
 'BgpOriginationPolicy'(Node, NeighborIp, Map) :-
    'SetBgpOriginationPolicy'(Node, NeighborNetwork, Map),
-   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
 'SetBgpOriginationPolicy'(Node, NeighborNetwork, Map) :-
    'SetBgpOriginationPolicy_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Map),
-   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 'BgpImportPolicy'(Node, NeighborIp, Map) :-
    'SetBgpImportPolicy'(Node, NeighborNetwork, Map),
-   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
 'SetBgpImportPolicy'(Node, NeighborNetwork, Map) :-
    'SetBgpImportPolicy_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Map),
-   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 'BgpExportPolicy'(Node, NeighborIp, Map) :-
    'SetBgpExportPolicy'(Node, NeighborNetwork, Map),
-   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
 'SetBgpExportPolicy'(Node, NeighborNetwork, Map) :-
    'SetBgpExportPolicy_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Map),
-   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 'AdvertisementClusterId'(Advert, ClusterId) :-
    (
       PriorType = 'ibgp' ;
       PriorType = 'ibgp_ti' ;
       PriorType = 'ibgp_to'
    ),
-   'BgpAdvertisement_type'(PrevAdvert, PriorType) /*fn*/,
+   'BgpAdvertisement_type'(PrevAdvert, PriorType),
    'ParentAdvertisement'(PrevAdvert, Advert),
    'AdvertisementClusterId'(PrevAdvert, ClusterId).
 'AdvertisementClusterId'(Advert, ClusterId) :-
    Type = 'ibgp',
-   'BgpAdvertisement_type'(Advert, Type) /*fn*/,
-   'BgpAdvertisement_originatorIp'(Advert, OriginatorIp) /*fn*/,
-   'BgpAdvertisement_srcNode'(Advert, SrcNode) /*fn*/,
-   'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
+   'BgpAdvertisement_type'(Advert, Type),
+   'BgpAdvertisement_originatorIp'(Advert, OriginatorIp),
+   'BgpAdvertisement_srcNode'(Advert, SrcNode),
+   'BgpAdvertisement_dstIp'(Advert, DstIp),
    'Ip_NONE'(IpNone),
    OriginatorIp \== IpNone,
    'RouteReflectorClient'(SrcNode, DstIp, ClusterId).
 
 % ibgp route reflection
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
-'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
-'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-'BgpAdvertisement_localPref'(Advert, LocalPref) /*fn*/,
-'BgpAdvertisement_med'(Advert, Med) /*fn*/,
-'BgpAdvertisement_network'(Advert, DstIpBlock) /*fn*/,
-'BgpAdvertisement_nextHopIp'(Advert, NextHopIp) /*fn*/,
-'BgpAdvertisement_originatorIp'(Advert, OriginatorIp) /*fn*/,
-'BgpAdvertisement_originType'(Advert, OriginType) /*fn*/,
-'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
-'BgpAdvertisement_srcNode'(Advert, SrcNode) /*fn*/,
-'BgpAdvertisement_srcProtocol'(Advert, SrcProtocol) /*fn*/,
-'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert),
+'BgpAdvertisement_dstIp'(Advert, DstIp),
+'BgpAdvertisement_dstNode'(Advert, DstNode),
+'BgpAdvertisement_localPref'(Advert, LocalPref),
+'BgpAdvertisement_med'(Advert, Med),
+'BgpAdvertisement_network'(Advert, DstIpBlock),
+'BgpAdvertisement_nextHopIp'(Advert, NextHopIp),
+'BgpAdvertisement_originatorIp'(Advert, OriginatorIp),
+'BgpAdvertisement_originType'(Advert, OriginType),
+'BgpAdvertisement_srcIp'(Advert, SrcIp),
+'BgpAdvertisement_srcNode'(Advert, SrcNode),
+'BgpAdvertisement_srcProtocol'(Advert, SrcProtocol),
+'BgpAdvertisement_type'(Advert, Type),
 'ParentAdvertisement'(PrevAdvert, Advert),
-'AdvertisementPathSize'(Advert, PathSize) /*fn*/
+'AdvertisementPathSize'(Advert, PathSize)
 :-
    Type = 'ibgp',
    PriorType = 'ibgp_ti',
-   'BgpAdvertisement_dstNode'(PrevAdvert, SrcNode) /*fn*/,
-   'BgpAdvertisement_localPref'(PrevAdvert, LocalPref) /*fn*/,
-   'BgpAdvertisement_med'(PrevAdvert, Med) /*fn*/,
-   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock) /*fn*/,
-   'BgpAdvertisement_nextHopIp'(PrevAdvert, NextHopIp) /*fn*/,
-   'BgpAdvertisement_originatorIp'(PrevAdvert, PrevOriginatorIp) /*fn*/,
-   'BgpAdvertisement_originType'(PrevAdvert, OriginType) /*fn*/,
-   'BgpAdvertisement_srcIp'(PrevAdvert, SenderIp) /*fn*/,
-   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol) /*fn*/,
-   'BgpAdvertisement_type'(PrevAdvert, PriorType) /*fn*/,
-   'AdvertisementPathSize'(PrevAdvert, PathSize) /*fn*/,
+   'BgpAdvertisement_dstNode'(PrevAdvert, SrcNode),
+   'BgpAdvertisement_localPref'(PrevAdvert, LocalPref),
+   'BgpAdvertisement_med'(PrevAdvert, Med),
+   'BgpAdvertisement_network'(PrevAdvert, DstIpBlock),
+   'BgpAdvertisement_nextHopIp'(PrevAdvert, NextHopIp),
+   'BgpAdvertisement_originatorIp'(PrevAdvert, PrevOriginatorIp),
+   'BgpAdvertisement_originType'(PrevAdvert, OriginType),
+   'BgpAdvertisement_srcIp'(PrevAdvert, SenderIp),
+   'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol),
+   'BgpAdvertisement_type'(PrevAdvert, PriorType),
+   'AdvertisementPathSize'(PrevAdvert, PathSize),
    'InstalledBgpAdvertisement'(PrevAdvert),
    'BestBgpAdvertisement'(PrevAdvert),
    (
@@ -1095,11 +1095,11 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 'RouteReflectorClient'(Node, NeighborIp, ClusterId) :-
    'SetRouteReflectorClient'(Node, NeighborNetwork, ClusterId),
-   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
 'SetRouteReflectorClient'(Node, NeighborNetwork, ClusterId) :-
    'SetRouteReflectorClient_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, ClusterId),
-   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 % copy old path elements
 'AdvertisementPath'(Advert, Index, As) :-
    'ParentAdvertisement'(PrevAdvert, Advert),
@@ -1112,7 +1112,7 @@ need_PolicyMapMatchAdvert(Map, Advert)
       PriorType = 'ibgp_ti'
    ),
    'AdvertisementCommunity'(PrevAdvert, Community),
-   'BgpAdvertisement_type'(PrevAdvert, PriorType) /*fn*/,
+   'BgpAdvertisement_type'(PrevAdvert, PriorType),
    'ParentAdvertisement'(PrevAdvert, Advert).
 
 'BestBgpAdvertisement'(Advert) :-
@@ -1124,19 +1124,19 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 'BgpDefaultLocalPref'(Node, NeighborIp, LocalPref) :-
    'SetBgpDefaultLocalPref'(Node, NeighborNetwork, LocalPref),
-   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
 'BgpNeighborDefaultMetric'(Node, NeighborIp, Metric) :-
    'SetBgpNeighborDefaultMetric'(Node, NeighborNetwork, Metric),
-   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
 'BgpMultihopNeighborIp'(Node, NeighborIp) :-
    'SetBgpMultihopNeighborNetwork'(Node, NeighborNetwork),
-   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
 'BgpNeighborIp'(Node, NeighborIp) :-
    'SetBgpNeighborNetwork'(Node, NeighborNetwork),
-   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
 'BgpNeighbors'(Node1, Ip1, Node2, Ip2) :-
    'BgpMultihopNeighborTo'(Node1, Node2, Ip2),
@@ -1149,10 +1149,10 @@ need_PolicyMapMatchAdvert(Map, Advert)
    'BgpNeighborIp'(Node2, Ip1).
 
 'BgpMultihopNeighborTo'(Node, Neighbor, NeighborIp) :-
-   'NetworkOf'(NeighborIp, Prefix_length, NeighborNetwork) /*fn*/,
+   'NetworkOf'(NeighborIp, Prefix_length, NeighborNetwork),
    'InstalledRoute'(Route),
-   'Route_network'(Route, NeighborNetwork) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_network'(Route, NeighborNetwork),
+   'Route_node'(Route, Node),
    'IpReadyInt'(Neighbor, _, NeighborIp, Prefix_length),
    'BgpMultihopNeighborIp'(Node, NeighborIp),
    'RemoteAs'(Node, NeighborIp, RemoteAs),
@@ -1161,47 +1161,47 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 'BgpNeighborSendCommunity'(Node, NeighborIp) :-
    'SetBgpNeighborSendCommunity'(Node, NeighborNetwork),
-   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
 'InstalledBgpAdvertisement'(Advert) :-
-   'InstalledBgpAdvertisementRoute'(Advert, _) /*fn*/.
+   'InstalledBgpAdvertisementRoute'(Advert, _).
 
-'InstalledBgpAdvertisementRoute'(Advert, Route ) /*fn*/:-
-   'BgpAdvertisementRoute'(Advert, Route) /*fn*/,
+'InstalledBgpAdvertisementRoute'(Advert, Route ):-
+   'BgpAdvertisementRoute'(Advert, Route),
    'InstalledRoute'(Route).
 
 'LocalAs'(Node, NeighborIp, LocalAs) :-
    'SetLocalAs'(Node, NeighborNetwork, LocalAs),
-   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
-'MaxLocalPref'(Node, Network, MaxLocalPref ) /*fn*/:-
+'MaxLocalPref'(Node, Network, MaxLocalPref ):-
    agg(MaxLocalPref = max(LocalPref),(
       'ReceivedBgpAdvertisement'(Advert),
-      'BgpAdvertisement_dstNode'(Advert, Node) /*fn*/,
-      'BgpAdvertisement_localPref'(Advert, LocalPref) /*fn*/,
-      'BgpAdvertisement_network'(Advert, Network) /*fn*/)).
+      'BgpAdvertisement_dstNode'(Advert, Node),
+      'BgpAdvertisement_localPref'(Advert, LocalPref),
+      'BgpAdvertisement_network'(Advert, Network))).
 
 'MaxLocalPrefBgpAdvertisement'(Advert) :-
    'ReceivedBgpAdvertisement'(Advert),
    \+ 'OriginatedBgpNetwork'(Node, Network),
-   'BgpAdvertisement_dstNode'(Advert, Node) /*fn*/,
-   'BgpAdvertisement_localPref'(Advert, LocalPref) /*fn*/,
-   'BgpAdvertisement_network'(Advert, Network) /*fn*/,
-   'MaxLocalPref'(Node, Network, LocalPref) /*fn*/.
+   'BgpAdvertisement_dstNode'(Advert, Node),
+   'BgpAdvertisement_localPref'(Advert, LocalPref),
+   'BgpAdvertisement_network'(Advert, Network),
+   'MaxLocalPref'(Node, Network, LocalPref).
 
 'MinAsPathLengthBgpAdvertisement'(Advert) :-
    'MaxLocalPrefBgpAdvertisement'(Advert),
-   'BgpAdvertisement_dstNode'(Advert, Node) /*fn*/,
-   'BgpAdvertisement_network'(Advert, Network) /*fn*/,
-   'AdvertisementPathSize'(Advert, BestAsPathSize) /*fn*/,
-   'MinAsPathSize'(Node, Network, BestAsPathSize) /*fn*/.
+   'BgpAdvertisement_dstNode'(Advert, Node),
+   'BgpAdvertisement_network'(Advert, Network),
+   'AdvertisementPathSize'(Advert, BestAsPathSize),
+   'MinAsPathSize'(Node, Network, BestAsPathSize).
 
-'MinAsPathSize'(Node, Network, MinSize ) /*fn*/:-
+'MinAsPathSize'(Node, Network, MinSize ):-
    agg(MinSize = min(Size),(
       'MaxLocalPrefBgpAdvertisement'(Advert),
-      'BgpAdvertisement_dstNode'(Advert, Node) /*fn*/,
-      'BgpAdvertisement_network'(Advert, Network) /*fn*/,
-      'AdvertisementPathSize'(Advert, Size) /*fn*/)).
+      'BgpAdvertisement_dstNode'(Advert, Node),
+      'BgpAdvertisement_network'(Advert, Network),
+      'AdvertisementPathSize'(Advert, Size))).
 
 need_PolicyMapMatchAdvert(Map, Advert)
 :-
@@ -1209,16 +1209,16 @@ need_PolicyMapMatchAdvert(Map, Advert)
       Type = 'bgp' ;
       Type = 'ibgp'
    ),
-   'BgpAdvertisement_srcNode'(Advert, SrcNode) /*fn*/,
-   'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
-   'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+   'BgpAdvertisement_srcNode'(Advert, SrcNode),
+   'BgpAdvertisement_dstIp'(Advert, DstIp),
+   'BgpAdvertisement_type'(Advert, Type),
    'BgpExportPolicy'(SrcNode, DstIp, Map).
 
 'OriginalBgpAdvertisement'(Advert) :-
    'OriginalBgpAdvertisementRoute'(Advert, _).
 
 'ReceivedBgpAdvertisement'(Advert) :-
-   'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+   'BgpAdvertisement_type'(Advert, Type),
    (
       Type = 'bgp_ti' ;
       Type = 'ibgp_ti'
@@ -1226,42 +1226,42 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 'RemoteAs'(Node, NeighborIp, RemoteAs) :-
    'SetRemoteAs'(Node, NeighborNetwork, RemoteAs),
-   'NetworkOf'(NeighborIp, _, NeighborNetwork) /*fn*/.
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
 'SetBgpDefaultLocalPref'(Node, NeighborNetwork, LocalPref) :-
    'SetBgpDefaultLocalPref_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, LocalPref),
-   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 
 'SetBgpNeighborDefaultMetric'(Node, NeighborNetwork, Metric) :-
    'SetBgpNeighborDefaultMetric_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Metric),
-   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 
 'SetBgpMultihopNeighborNetwork'(Node, NeighborNetwork) :-
    'SetBgpMultihopNeighborNetwork_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length),
-   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 
 'SetBgpNeighborNetwork'(Node, NeighborNetwork) :-
    'SetBgpNeighborNetwork_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length),
-   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 
 'SetBgpNeighborSendCommunity'(Node, NeighborNetwork) :-
    'SetBgpNeighborSendCommunity_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length),
-   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 
 'SetLocalAs'(Node, NeighborNetwork, LocalAs) :-
    'SetLocalAs_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, LocalAs),
-   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 
 'SetRemoteAs'(Node, NeighborNetwork, RemoteAs) :-
    'SetRemoteAs_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, RemoteAs),
-   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork) /*fn*/.
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 
 'BgpAdvertisement_details'(Type, DstIpBlock, NextHopIp, SrcIp, DstIp, SrcProtocol, SrcNode, DstNode, LocalPref, Med, OriginatorIp, OriginType)
 :-
-   'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
-   'BgpAdvertisement_originatorIp'(Advert, OriginatorIp) /*fn*/.
+   'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert),
+   'BgpAdvertisement_originatorIp'(Advert, OriginatorIp).
 
-'CommunityListFirstMatch'(List, Community, FirstLine ) /*fn*/:-
+'CommunityListFirstMatch'(List, Community, FirstLine ):-
    agg(FirstLine = min(Line),( 'CommunityListMatch'(List, Line, Community))).
 
 'CommunityListMatch'(List, Line, Community) :-
@@ -1269,7 +1269,7 @@ need_PolicyMapMatchAdvert(Map, Advert)
    %'Pneed_CommunityListMatch'(List, Line, Community). %TODO: Implement this
 
 'CommunityListPermit'(List, Line, Community) :-
-   'CommunityListFirstMatch'(List, Community, Line) /*fn*/,
+   'CommunityListFirstMatch'(List, Community, Line),
    'SetCommunityListLinePermit'(List, Line).
 % ip is that of a connected neighbor
 'Fib'(Node, Ip, Prefix_length, Interface, NextHop, NextHopInt, NextHopIp),
@@ -1289,9 +1289,9 @@ need_PolicyMapMatchAdvert(Map, Advert)
    Prefix_length < 32,
    'BestConnectedRoute'(Route),
    'ConnectedRoute'(Node, MatchNet, RouteInterface),
-   'Route_network'(Route, MatchNet) /*fn*/,
-   'Network_prefix_length'(MatchNet, Prefix_length) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_network'(Route, MatchNet),
+   'Network_prefix_length'(MatchNet, Prefix_length),
+   'Route_node'(Route, Node),
    NextHop = '(none)',
    (
       (
@@ -1314,12 +1314,12 @@ need_PolicyMapMatchAdvert(Map, Advert)
    'LongestPrefixNetworkMatch'(Node, Ip, MatchNet),
    'InstalledRoute'(Route),
    'StaticIntRoute'(Route),
-   'Route_network'(Route, MatchNet) /*fn*/,
-   'Network_prefix_length'(MatchNet, Prefix_length) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_nextHopIp'(Route, RouteNextHopIp) /*fn*/,
+   'Route_network'(Route, MatchNet),
+   'Network_prefix_length'(MatchNet, Prefix_length),
+   'Route_node'(Route, Node),
+   'Route_nextHopIp'(Route, RouteNextHopIp),
    'Ip_NONE'(RouteNextHopIp),
-   'InterfaceRoute_nextHopInt'(Route, Interface) /*fn*/,
+   'InterfaceRoute_nextHopInt'(Route, Interface),
    Interface \== 'null_interface',
    'LanAdjacent'(Node, Interface, NextHop, NextHopInt),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
@@ -1338,13 +1338,13 @@ need_PolicyMapMatchAdvert(Map, Advert)
    'LongestPrefixNetworkMatch'(Node, Ip, MatchNet),
    'InstalledRoute'(Route),
    'StaticIntRoute'(Route),
-   'Route_network'(Route, MatchNet) /*fn*/,
-   'Network_prefix_length'(MatchNet, Prefix_length) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
+   'Route_network'(Route, MatchNet),
+   'Network_prefix_length'(MatchNet, Prefix_length),
+   'Route_node'(Route, Node),
+   'Route_nextHopIp'(Route, NextHopIp),
    NextHop = '(none)',
    'Ip_NONE'(NextHopIp),
-   'InterfaceRoute_nextHopInt'(Route, Interface) /*fn*/,
+   'InterfaceRoute_nextHopInt'(Route, Interface),
    Interface = 'null_interface',
    NextHopInt = 'null_interface'.
 % static non-null interface+NextHopIp route -- send to all adjacent neighbors who would route
@@ -1354,13 +1354,13 @@ need_PolicyMapMatchAdvert(Map, Advert)
    'LongestPrefixNetworkMatch'(Node, Ip, MatchNet),
    'InstalledRoute'(Route),
    'StaticIntRoute'(Route),
-   'Route_network'(Route, MatchNet) /*fn*/,
-   'Network_prefix_length'(MatchNet, Prefix_length) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_nextHopIp'(Route, RouteNextHopIp) /*fn*/,
+   'Route_network'(Route, MatchNet),
+   'Network_prefix_length'(MatchNet, Prefix_length),
+   'Route_node'(Route, Node),
+   'Route_nextHopIp'(Route, RouteNextHopIp),
    'Ip_NONE'(IpNone),
    NextHopIp \== IpNone,
-   'InterfaceRoute_nextHopInt'(Route, Interface) /*fn*/,
+   'InterfaceRoute_nextHopInt'(Route, Interface),
    'LanAdjacent'(Node, Interface, NextHop, NextHopInt),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    (
@@ -1378,9 +1378,9 @@ need_PolicyMapMatchAdvert(Map, Advert)
    'LongestPrefixNetworkMatch'(Node, Ip, MatchNet),
    'InstalledRoute'(Route),
    \+ 'InterfaceRoute'(Route),
-   'Route_network'(Route, MatchNet) /*fn*/,
-   'Network_prefix_length'(MatchNet, Prefix_length) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_network'(Route, MatchNet),
+   'Network_prefix_length'(MatchNet, Prefix_length),
+   'Route_node'(Route, Node),
    /*(
       NextHopInt = 'flow_sink_termination' ;
       (
@@ -1388,23 +1388,23 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
       )
    ),*/
-   'Route_nextHopIp'(Route, RouteNextHopIp) /*fn*/,
+   'Route_nextHopIp'(Route, RouteNextHopIp),
    'Fib'(Node, RouteNextHopIp, _, Interface, NextHop, NextHopInt, NextHopIp).
 
 'FibNetwork'(Node, Network, Interface, NextHop, NextHopInt) :-
    'Fib'(Node, Ip, Prefix_length, Interface, NextHop, NextHopInt, _),
    'InstalledRoute'(Route),
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Network_address'(Network, Network_address) /*fn*/,
+   'Route_node'(Route, Node),
+   'Route_network'(Route, Network),
+   'Network_address'(Network, Network_address),
    'Ip_address'(Ip:Network_address),
-   'NetworkOf'(Ip, Prefix_length, Network) /*fn*/.
+   'NetworkOf'(Ip, Prefix_length, Network).
 'FibNetwork'(Node, Network, Interface, NextHop, NextHopInt) :-
    'Fib'(Node, Ip, Prefix_length, Interface, NextHop, NextHopInt, _),
    'FibNeighborIp'(Node, Ip),
-   'Network_address'(Network, Network_address) /*fn*/,
+   'Network_address'(Network, Network_address),
    'Ip_address'(Ip:Network_address),
-   'NetworkOf'(Ip, Prefix_length, Network) /*fn*/.
+   'NetworkOf'(Ip, Prefix_length, Network).
 
 'FibDrop'(Node, Ip) :-
    'Fib'(Node, Ip, _, DropInterface, _, _, _),
@@ -1432,13 +1432,13 @@ need_PolicyMapMatchAdvert(Map, Advert)
 :-
    'GeneratedRoute'(Route),
    'InstalledRoute'(ContributingRoute),
-   'Route_network'(ContributingRoute, ContributingNetwork) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(ContributingRoute, Node) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Network_address'(ContributingNetwork, ContributingAddress) /*fn*/,
-   'Network_address'(Network, StartAddress) /*fn*/,
-   'Network_end'(Network, EndAddress) /*fn*/,
+   'Route_network'(ContributingRoute, ContributingNetwork),
+   'Route_network'(Route, Network),
+   'Route_node'(ContributingRoute, Node),
+   'Route_node'(Route, Node),
+   'Network_address'(ContributingNetwork, ContributingAddress),
+   'Network_address'(Network, StartAddress),
+   'Network_end'(Network, EndAddress),
    StartAddress < ContributingAddress,
    ContributingAddress =< EndAddress,
    (
@@ -1451,44 +1451,44 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 'BestGlobalGeneratedRoute'(Route),
    'InterfaceRoute'(Route),
-   'InterfaceRoute_nextHopInt'(Route, NextHopInt) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/
+   'InterfaceRoute_nextHopInt'(Route, NextHopInt),
+   'Route_nextHopIp'(Route, NextHopIp)
 :-
    'MinAdminContributingRoute'(Route, ContributingRoute),
    'SetGeneratedRouteDiscard'(Node, Network),
    NextHopInt = 'null_interface',
    'Ip_NONE'(NextHopIp),
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_network'(ContributingRoute, ContributingNetwork) /*fn*/,
-   'Network_address'(ContributingNetwork, ContributingAddress) /*fn*/,
-   'MinContributingRouteAddress'(Route, ContributingAddress) /*fn*/.
+   'Route_node'(Route, Node),
+   'Route_network'(Route, Network),
+   'Route_network'(ContributingRoute, ContributingNetwork),
+   'Network_address'(ContributingNetwork, ContributingAddress),
+   'MinContributingRouteAddress'(Route, ContributingAddress).
 
 'BestGlobalGeneratedRoute'(Route),
    'BestGlobalGeneratedRoute_nextHopIp'(Route, NextHopIp)
 :-
    'MinAdminContributingRoute'(Route, ContributingRoute),
    \+ 'SetGeneratedRouteDiscard'(Node, Network),
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_network'(ContributingRoute, ContributingNetwork) /*fn*/,
-   'Route_nextHopIp'(ContributingRoute, NextHopIp) /*fn*/,
-   'Network_address'(ContributingNetwork, ContributingAddress) /*fn*/,
-   'MinContributingRouteAddress'(Route, ContributingAddress) /*fn*/.
+   'Route_node'(Route, Node),
+   'Route_network'(Route, Network),
+   'Route_network'(ContributingRoute, ContributingNetwork),
+   'Route_nextHopIp'(ContributingRoute, NextHopIp),
+   'Network_address'(ContributingNetwork, ContributingAddress),
+   'MinContributingRouteAddress'(Route, ContributingAddress).
 
 'BestPerProtocolRoute'(Route) :-
    'BestGlobalGeneratedRoute'(Route).
 
 'GlobalGeneratedRoute'(Route),
    'Route'(Route),
-   'GeneratedRoute_constructor'(Node, Network, Type, Route) /*fn*/,
+   'GeneratedRoute_constructor'(Node, Network, Type, Route),
    'GeneratedRoute'(Route),
-   'GeneratedRoute_type'(Route, Type) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'GeneratedRoute_type'(Route, Type),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    'SetGeneratedRoute'(Node, Network, Admin),
    Type = 'GeneratedRouteType_GLOBAL',
@@ -1503,57 +1503,57 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 'GeneratedRoutePolicy'(Route, Policy) :-
    'GeneratedRoute'(Route),
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
    'SetGeneratedRoutePolicy'(Node, Network, Policy).
 
 'MinAdminContributingRoute'(Route, ContributingRoute) :-
    'ActiveGeneratedRouteContributor'(Route, ContributingRoute),
    'GlobalGeneratedRoute'(Route),
-   'Route_admin'(ContributingRoute, Admin) /*fn*/,
-   'MinContributingRouteAdmin'(Route, Admin) /*fn*/.
+   'Route_admin'(ContributingRoute, Admin),
+   'MinContributingRouteAdmin'(Route, Admin).
 
-'MinBestGlobalGeneratedRoute_nextHopIpInt'(Route, MinNextHopIpInt ) /*fn*/:-
+'MinBestGlobalGeneratedRoute_nextHopIpInt'(Route, MinNextHopIpInt ):-
    agg(MinNextHopIpInt = min(NextHopIpInt),(
       'BestGlobalGeneratedRoute_nextHopIp'(Route, NextHopIp),
       'Ip_address'(NextHopIp:NextHopIpInt))).
 
-'MinContributingRouteAddress'(Route, MinAddress ) /*fn*/:-
+'MinContributingRouteAddress'(Route, MinAddress ):-
    agg(MinAddress = min(Address),(
       'MinAdminContributingRoute'(Route, ContributingRoute),
-      'Route_network'(ContributingRoute, Network) /*fn*/,
-      'Network_address'(Network, Address) /*fn*/)).
+      'Route_network'(ContributingRoute, Network),
+      'Network_address'(Network, Address))).
 
-'MinContributingRouteAdmin'(Route, MinAdmin ) /*fn*/:-
+'MinContributingRouteAdmin'(Route, MinAdmin ):-
    agg(MinAdmin = min(Admin),(
       'ActiveGeneratedRouteContributor'(Route, ContributingRoute),
       'GlobalGeneratedRoute'(Route),
-      'Route_admin'(ContributingRoute, Admin) /*fn*/)).
+      'Route_admin'(ContributingRoute, Admin))).
 
 need_PolicyMapMatchRoute(Map, Route) :-
    'SetGeneratedRoutePolicy'(Node, _, Map),
    'InstalledRoute'(Route),
-   'Route_node'(Route, Node) /*fn*/.
+   'Route_node'(Route, Node).
 
-'Route_nextHopIp'(Route, NextHopIp ) /*fn*/:-
-   'MinBestGlobalGeneratedRoute_nextHopIpInt'(Route, NextHopIpInt) /*fn*/,
+'Route_nextHopIp'(Route, NextHopIp ):-
+   'MinBestGlobalGeneratedRoute_nextHopIpInt'(Route, NextHopIpInt),
    'Ip_address'(NextHopIp:NextHopIpInt).
 
 'SetGeneratedRoute'(Node, Network, Admin) :-
    'SetGeneratedRoute_flat'(Node, Network_start, Network_end, Prefix_length, Admin),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
 'SetGeneratedRouteDiscard'(Node, Network) :-
    'SetGeneratedRouteDiscard_flat'(Node, Network_start, Network_end, Prefix_length),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
 'SetGeneratedRouteMetric'(Node, Network, Metric) :-
    'SetGeneratedRouteMetric_flat'(Node, Network_start, Network_end, Prefix_length, Metric),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
 'SetGeneratedRoutePolicy'(Node, Network, Map) :-
    'SetGeneratedRoutePolicy_flat'(Node, Network_start, Network_end, Prefix_length, Map),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 'Ip'(Ip) :-
    'SetIpInt'(Node, Interface, Ip, Prefix_length).
 'HasIp'(Node, Ip) :-
@@ -1561,18 +1561,18 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'HasNetwork'(Node, Network) :-
    'IpReadyInt'(Node, _, Ip, Prefix_length),
-   'NetworkOf'(Ip, Prefix_length, Network) /*fn*/.
+   'NetworkOf'(Ip, Prefix_length, Network).
 
-'IpCount'(Ip, Cnt ) /*fn*/:-
+'IpCount'(Ip, Cnt ):-
    agg(Cnt = count,
       'HasIp'(_, Ip)).
 
 'Network'(Network),
-   'Network_address'(Network, Network_start) /*fn*/,
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/,
+   'Network_address'(Network, Network_start),
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network),
    'Network_index'(Network, Network_start, Network_end, Prefix_length),
-   'Network_end'(Network, Network_end) /*fn*/,
-   'Network_prefix_length'(Network, Prefix_length) /*fn*/
+   'Network_end'(Network, Network_end),
+   'Network_prefix_length'(Network, Prefix_length)
 :-
    'IpReadyInt'(_, _, Ip, _),
    'Ip_address'(Ip:Network_start),
@@ -1597,37 +1597,37 @@ need_PolicyMapMatchRoute(Map, Route) :-
 'Ip_ZERO'(0).
 
 'Network'(Network),
-'Network_address'(Network, Network_start) /*fn*/,
-'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/,
+'Network_address'(Network, Network_start),
+'Network_constructor'(Network_start, Network_end, Prefix_length, Network),
 'Network_index'(Network, Network_start, Network_end, Prefix_length),
-'Network_end'(Network, Network_end) /*fn*/,
-'Network_prefix_length'(Network, Prefix_length) /*fn*/
+'Network_end'(Network, Network_end),
+'Network_prefix_length'(Network, Prefix_length)
 :-
    'SetNetwork'(_, Network_start, Network_end, Prefix_length).
 
-'NetworkOf'(Ip, Prefix_length, Network ) /*fn*/:-
+'NetworkOf'(Ip, Prefix_length, Network ):-
    'Ip_address'(Ip:Ip_int),
    Network_start =< Ip_int,
    Ip_int =< Network_end,
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 'IpAccessListDeny'(List, Line, Flow) :-
    'SetIpAccessListLine_deny'(List, Line),
-   'IpAccessListFirstMatch'(List, Flow, Line) /*fn*/.
+   'IpAccessListFirstMatch'(List, Flow, Line).
 'IpAccessListExists'(List) :-
    'SetIpAccessListLine_permit'(List, _).
 'IpAccessListExists'(List) :-
    'SetIpAccessListLine_deny'(List, _).
 
 'IpAccessListDeny'(List, -1, Flow) :-
-   \+ 'IpAccessListMatch'(List, _, Flow) /*fn*/,
+   \+ 'IpAccessListMatch'(List, _, Flow),
    'IpAccessListExists'(List),
    'Flow'(Flow).
 
 'IpAccessListPermit'(List, Line, Flow) :-
    'SetIpAccessListLine_permit'(List, Line),
-   'IpAccessListFirstMatch'(List, Flow, Line) /*fn*/.
+   'IpAccessListFirstMatch'(List, Flow, Line).
 
-'IpAccessListFirstMatch'(List, Flow, FirstMatchLine ) /*fn*/:-
+'IpAccessListFirstMatch'(List, Flow, FirstMatchLine ):-
    agg(FirstMatchLine = min(Line),(
       'IpAccessListMatch'(List, Line, Flow))).
 
@@ -1647,7 +1647,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'IpAccessListMatchDstIp'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
-   'Flow_dstIp'(Flow, DstIp) /*fn*/,
+   'Flow_dstIp'(Flow, DstIp),
    (
       \+ 'SetIpAccessListLine_dstIpRange'(List, Line, _, _) ;
       (
@@ -1660,7 +1660,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'IpAccessListMatchDstPort'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
-   'Flow_dstPort'(Flow, DstPort) /*fn*/,
+   'Flow_dstPort'(Flow, DstPort),
    (
       \+ 'SetIpAccessListLine_dstPortRange'(List, Line, _, _) ;
       (
@@ -1672,7 +1672,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'IpAccessListMatchIcmpCode'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
-   'Flow_icmpCode'(Flow, IcmpCode) /*fn*/,
+   'Flow_icmpCode'(Flow, IcmpCode),
    (
       \+ 'SetIpAccessListLine_icmpCode'(List, Line, _) ;
       'SetIpAccessListLine_icmpCode'(List, Line, IcmpCode)
@@ -1680,7 +1680,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'IpAccessListMatchIcmpType'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
-   'Flow_icmpType'(Flow, IcmpType) /*fn*/,
+   'Flow_icmpType'(Flow, IcmpType),
    (
       \+ 'SetIpAccessListLine_icmpType'(List, Line, _) ;
       'SetIpAccessListLine_icmpType'(List, Line, IcmpType)
@@ -1688,7 +1688,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'IpAccessListMatchProtocol'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
-   'Flow_ipProtocol'(Flow, Protocol) /*fn*/,
+   'Flow_ipProtocol'(Flow, Protocol),
    (
       \+ 'SetIpAccessListLine_protocol'(List, Line, _) ;
       'SetIpAccessListLine_protocol'(List, Line, Protocol)
@@ -1696,7 +1696,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'IpAccessListMatchSrcIp'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
-   'Flow_srcIp'(Flow, SrcIp) /*fn*/,
+   'Flow_srcIp'(Flow, SrcIp),
    (
       \+ 'SetIpAccessListLine_srcIpRange'(List, Line, _, _) ;
       (
@@ -1709,7 +1709,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'IpAccessListMatchSrcPort'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
-   'Flow_srcPort'(Flow, SrcPort) /*fn*/,
+   'Flow_srcPort'(Flow, SrcPort),
    (
       \+ 'SetIpAccessListLine_srcPortRange'(List, Line, _, _) ;
       (
@@ -1721,7 +1721,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'IpAccessListMatchTcpFlags'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
-   'Flow_tcpFlags'(Flow, TcpFlags) /*fn*/,
+   'Flow_tcpFlags'(Flow, TcpFlags),
    (
       \+ 'SetIpAccessListLine_tcpFlags'(List, Line, _) ;
       'SetIpAccessListLine_tcpFlags'(List, Line, TcpFlags)
@@ -1729,18 +1729,18 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'GeneratedRoutePolicy'(Route, Policy) :-
    'IsisGeneratedRoute'(Route),
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
    'SetIsisGeneratedRoutePolicy'(Node, Network, Policy).
 
 'IsisGeneratedRoute'(Route),
    'Route'(Route),
-   'GeneratedRoute_constructor'(Node, Network, Type, Route) /*fn*/,
+   'GeneratedRoute_constructor'(Node, Network, Type, Route),
    'GeneratedRoute'(Route),
-   'GeneratedRoute_type'(Route, Type) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'GeneratedRoute_type'(Route, Type),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    'SetIsisGeneratedRoute'(Node, Network),
    Type = 'GeneratedRouteType_ISIS',
@@ -1749,26 +1749,26 @@ need_PolicyMapMatchRoute(Map, Route) :-
 need_PolicyMapMatchRoute(Map, Route) :-
    'SetIsisGeneratedRoutePolicy'(Node, _, Map),
    'InstalledRoute'(Route),
-   'Route_node'(Route, Node) /*fn*/.
+   'Route_node'(Route, Node).
 
 'SetIsisGeneratedRoute'(Node, Network) :-
    'SetIsisGeneratedRoute_flat'(Node, Network_start, Network_end, Prefix_length),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
 'SetIsisGeneratedRoutePolicy'(Node, Network, Map) :-
    'SetIsisGeneratedRoutePolicy_flat'(Node, Network_start, Network_end, Prefix_length, Map),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 % (Base case - import routes exported into L1 by L1 neighbors
 'IsisL1Route'(Route),
    'Route'(Route),
    'NonIsisExportableRoute'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _),
    'IsisL1Neighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _),
@@ -1778,15 +1778,15 @@ need_PolicyMapMatchRoute(Map, Route) :-
    Cost = ExportCost + NodeIntCost,
    Protocol = 'isisL1',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 'BestIsisL1Route'(Route),
    'IsisL1Network'(Node, Network)
 :-
    'IsisL1Route'(Route),
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'MinIsisL1RouteCost'(Node, Network, Cost) /*fn*/.
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'MinIsisL1RouteCost'(Node, Network, Cost).
 
 'IsisL1EnabledInterface'(Node, Interface) :-
    'SetIsisL1ActiveInterface'(Node, Interface) ;
@@ -1807,69 +1807,69 @@ need_PolicyMapMatchRoute(Map, Route) :-
 'IsisL1Route'(Route),
    'Route'(Route),
    'NonIsisExportableRoute'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
    'IsisL1Neighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    'ConnectedRoute'(NextHop, Network, NextHopConnectedInt),
    'IsisL1EnabledInterface'(NextHop, NextHopConnectedInt),
-   'SetIsisInterfaceCost'(NextHop, NextHopConnectedInt, NextHopIntCost) /*fn*/,
+   'SetIsisInterfaceCost'(NextHop, NextHopConnectedInt, NextHopIntCost),
    Cost = NodeIntCost + NextHopIntCost,
    Protocol = 'isisL1',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 % (Recursive case)
 'IsisL1Route'(Route),
    'Route'(Route),
    'NonIsisExportableRoute'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _),
    'IsisL1Neighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    'IsisL1Neighbors'(NextHop, _, _, SecondHop, _, _),
    'BestIsisL1Route'(SubRoute),
-   'Route_cost'(SubRoute, SubCost) /*fn*/,
-   'Route_network'(SubRoute, Network) /*fn*/,
-   'Route_nextHopIp'(SubRoute, SecondHopIp) /*fn*/,
-   'Route_node'(SubRoute, NextHop) /*fn*/,
+   'Route_cost'(SubRoute, SubCost),
+   'Route_network'(SubRoute, Network),
+   'Route_nextHopIp'(SubRoute, SecondHopIp),
+   'Route_node'(SubRoute, NextHop),
    'HasIp'(SecondHop, SecondHopIp),
    Node \== SecondHop,
    Cost = SubCost + NodeIntCost,
    Protocol = 'isisL1',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 
-'MinIsisL1RouteCost'(Node, Network, MinCost ) /*fn*/:-
+'MinIsisL1RouteCost'(Node, Network, MinCost ):-
    agg(MinCost = min(Cost),(
       'IsisL1Route'(Route),
-      'Route_cost'(Route, Cost) /*fn*/,
-      'Route_network'(Route, Network) /*fn*/,
-      'Route_node'(Route, Node) /*fn*/)).
+      'Route_cost'(Route, Cost),
+      'Route_network'(Route, Network),
+      'Route_node'(Route, Node))).
 % (Base case - import routes exported into L2 by L2 neighbors
 'IsisL2Route'(Route),
    'Route'(Route),
    'NonIsisExportableRoute'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _),
    'IsisL2Neighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _),
@@ -1879,15 +1879,15 @@ need_PolicyMapMatchRoute(Map, Route) :-
    Cost = ExportCost + NodeIntCost,
    Protocol = 'isisL2',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 'BestIsisL2Route'(Route),
    'IsisL2Network'(Node, Network)
 :-
    'IsisL2Route'(Route),
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'MinIsisL2RouteCost'(Node, Network, Cost) /*fn*/,
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'MinIsisL2RouteCost'(Node, Network, Cost),
    \+ 'IsisL1Network'(Node, Network).
 
 'IsisL2EnabledInterface'(Node, Interface) :-
@@ -1909,58 +1909,58 @@ need_PolicyMapMatchRoute(Map, Route) :-
 'IsisL2Route'(Route),
    'Route'(Route),
    'NonIsisExportableRoute'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
    'IsisL2Neighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    'ConnectedRoute'(NextHop, Network, NextHopConnectedInt),
    'IsisL2EnabledInterface'(NextHop, NextHopConnectedInt),
-   'SetIsisInterfaceCost'(NextHop, NextHopConnectedInt, NextHopIntCost) /*fn*/,
+   'SetIsisInterfaceCost'(NextHop, NextHopConnectedInt, NextHopIntCost),
    Cost = NodeIntCost + NextHopIntCost,
    Protocol = 'isisL2',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 % (Recursive (Forward L2 Routes)
 'IsisL2Route'(Route),
    'Route'(Route),
    'NonIsisExportableRoute'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _),
    'IsisL2Neighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    'IsisL2Neighbors'(NextHop, _, _, SecondHop, _, _),
    'BestIsisL2Route'(SubRoute),
-   'Route_cost'(SubRoute, SubCost) /*fn*/,
-   'Route_network'(SubRoute, Network) /*fn*/,
-   'Route_nextHopIp'(SubRoute, SecondHopIp) /*fn*/,
-   'Route_node'(SubRoute, NextHop) /*fn*/,
+   'Route_cost'(SubRoute, SubCost),
+   'Route_network'(SubRoute, Network),
+   'Route_nextHopIp'(SubRoute, SecondHopIp),
+   'Route_node'(SubRoute, NextHop),
    'HasIp'(SecondHop, SecondHopIp),
    Node \== SecondHop,
    Cost = SubCost + NodeIntCost,
    Protocol = 'isisL2',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 
-'MinIsisL2RouteCost'(Node, Network, MinCost ) /*fn*/:-
+'MinIsisL2RouteCost'(Node, Network, MinCost ):-
    agg(MinCost = min(Cost),(
       'IsisL2Route'(Route),
-      'Route_cost'(Route, Cost) /*fn*/,
-      'Route_network'(Route, Network) /*fn*/,
-      'Route_node'(Route, Node) /*fn*/)).
+      'Route_cost'(Route, Cost),
+      'Route_network'(Route, Network),
+      'Route_node'(Route, Node))).
 % (Route redistribution)
 'IsisExport'(Node, Network, NewCost, Protocol) :-
    (
@@ -1971,8 +1971,8 @@ need_PolicyMapMatchRoute(Map, Route) :-
       )
    ),
    \+ 'NonIsisExportableRoute'(Route),
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
    'SetIsisOutboundPolicyMap'(Node, Map),
    (
       'SetPolicyMapIsisExternalRouteType'(Map, Protocol) ;
@@ -1986,20 +1986,20 @@ need_PolicyMapMatchRoute(Map, Route) :-
       'SetPolicyMapClauseSetMetric'(Map, Clause, NewCost) ;
       (
          \+ 'SetPolicyMapClauseSetMetric'(Map, Clause, _),
-         'Route_cost'(Route, NewCost) /*fn*/
+         'Route_cost'(Route, NewCost)
       )
    ),
    (
       \+ 'ConnectedRoute'(Node, Network, _) ;
       (
          'ConnectedRoute'(Node, Network, Interface),
-         \+ 'SetIsisInterfaceCost'(Node, Interface, _) /*fn*/
+         \+ 'SetIsisInterfaceCost'(Node, Interface, _)
       )
    ).
 
 need_PolicyMapMatchRoute(Map, Route) :-
    'SetIsisOutboundPolicyMap'(Node, Map),
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_node'(Route, Node),
    (
       'InstalledRoute'(Route) ;
       (
@@ -2089,32 +2089,32 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'OspfE1Network'(Node, Network)
 :-
    'OspfE1Route'(Route),
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'MinOspfE1RouteCost'(Node, Network, Cost) /*fn*/,
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'MinOspfE1RouteCost'(Node, Network, Cost),
    \+ 'OspfNetwork'(Node, Network),
    \+ 'OspfIANetwork'(Node, Network).
 
-'MinOspfE1RouteCost'(Node, Network, MinCost ) /*fn*/:-
+'MinOspfE1RouteCost'(Node, Network, MinCost ):-
    agg(MinCost = min(Cost),(
       'OspfE1Route'(Route),
-      'Route_cost'(Route, Cost) /*fn*/,
-      'Route_network'(Route, Network) /*fn*/,
-      'Route_node'(Route, Node) /*fn*/)).
+      'Route_cost'(Route, Cost),
+      'Route_network'(Route, Network),
+      'Route_node'(Route, Node))).
 
 % (Base case) Import ospfE1 routes exported by ospf neighbors
 'OspfE1Route'(Route),
    'Route'(Route),
    'NonOspfExportableRoute'(Route),
-   'OspfE1Route_constructor'(Advertiser, Node, Network, NextHopIp, Route) /*fn*/,
-   'OspfRoute_advertiser'(Route, Advertiser) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'OspfE1Route_constructor'(Advertiser, Node, Network, NextHopIp, Route),
+   'OspfRoute_advertiser'(Route, Advertiser),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    Cost = ExportCost + CostToAdvertiser,
    \+ 'ConnectedRoute'(Node, Network, _),
@@ -2126,68 +2126,68 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'OspfExport'(Advertiser, Network, ExportCost, Protocol),
    Protocol = 'ospfE1',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 % (Recursive case) Propagate ospfE1 over ospf
 'OspfE1Route'(Route),
    'Route'(Route),
    'NonOspfExportableRoute'(Route),
-   'OspfE1Route_constructor'(Advertiser, Node, Network, NextHopIp, Route) /*fn*/,
-   'OspfRoute_advertiser'(Route, Advertiser) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'OspfE1Route_constructor'(Advertiser, Node, Network, NextHopIp, Route),
+   'OspfRoute_advertiser'(Route, Advertiser),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
    'OspfNeighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _, _, Area),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    'OspfNeighbors'(NextHop, _, _, SecondHop, _, _, _, Area),
    'BestOspfE1Route'(SubRoute),
-   'OspfRoute_advertiser'(SubRoute, Advertiser) /*fn*/,
-   'Route_cost'(SubRoute, SubCost) /*fn*/,
-   'Route_network'(SubRoute, Network) /*fn*/,
-   'Route_nextHopIp'(SubRoute, SecondHopIp) /*fn*/,
-   'Route_node'(SubRoute, NextHop) /*fn*/,
+   'OspfRoute_advertiser'(SubRoute, Advertiser),
+   'Route_cost'(SubRoute, SubCost),
+   'Route_network'(SubRoute, Network),
+   'Route_nextHopIp'(SubRoute, SecondHopIp),
+   'Route_node'(SubRoute, NextHop),
    'HasIp'(SecondHop, SecondHopIp),
    Node \== SecondHop,
    Node \== Advertiser,
    Cost = SubCost + NodeIntCost,
    Protocol = 'ospfE1',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 'BestOspfE2Route'(Route) :-
    'OspfE2Route'(Route),
-   'OspfRoute_costToAdvertiser'(Route, CostToAdvertiser) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'MinOspfE2RouteCostToAdvertiser'(Node, Network, CostToAdvertiser) /*fn*/,
+   'OspfRoute_costToAdvertiser'(Route, CostToAdvertiser),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'MinOspfE2RouteCostToAdvertiser'(Node, Network, CostToAdvertiser),
    \+ 'OspfE1Network'(Node, Network),
    \+ 'OspfNetwork'(Node, Network),
    \+ 'OspfIANetwork'(Node, Network).
 
-'MinOspfE2RouteCostToAdvertiser'(Node, Network, MinCostToAdvertiser ) /*fn*/:-
+'MinOspfE2RouteCostToAdvertiser'(Node, Network, MinCostToAdvertiser ):-
    agg(MinCostToAdvertiser = min(CostToAdvertiser),(
       'OspfE2Route'(Route),
-      'OspfRoute_costToAdvertiser'(Route, CostToAdvertiser) /*fn*/,
-      'Route_network'(Route, Network) /*fn*/,
-      'Route_node'(Route, Node) /*fn*/)).   
+      'OspfRoute_costToAdvertiser'(Route, CostToAdvertiser),
+      'Route_network'(Route, Network),
+      'Route_node'(Route, Node))).   
 
 % (Base case) Import ospfE2 routes exported by ospf neighbors
 'OspfE2Route'(Route),
    'Route'(Route),
    'NonOspfExportableRoute'(Route),
-   'OspfE2Route_constructor'(Advertiser, CostToAdvertiser, Node, Network, NextHopIp, Route) /*fn*/,
-   'OspfRoute_advertiser'(Route, Advertiser) /*fn*/,
-   'OspfRoute_advertiserIp'(Route, AdvertiserIp) /*fn*/,
-   'OspfRoute_costToAdvertiser'(Route, CostToAdvertiser) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'OspfE2Route_constructor'(Advertiser, CostToAdvertiser, Node, Network, NextHopIp, Route),
+   'OspfRoute_advertiser'(Route, Advertiser),
+   'OspfRoute_advertiserIp'(Route, AdvertiserIp),
+   'OspfRoute_costToAdvertiser'(Route, CostToAdvertiser),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _),
    'OspfNeighbors'(Node, _, CostToAdvertiser, NextHop, NextHopInt, _, _, _),
@@ -2199,44 +2199,44 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'OspfExport'(Advertiser, Network, Cost, Protocol),
    Protocol = 'ospfE2',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 % (Recursive case) Propagate ospfE2 over ospf
 'OspfE2Route'(Route),
    'Route'(Route),
    'NonOspfExportableRoute'(Route),
-   'OspfE2Route_constructor'(Advertiser, CostToAdvertiser, Node, Network, NextHopIp, Route) /*fn*/,
-   'OspfRoute_advertiser'(Route, Advertiser) /*fn*/,
-   'OspfRoute_advertiserIp'(Route, AdvertiserIp) /*fn*/,
-   'OspfRoute_costToAdvertiser'(Route, CostToAdvertiser) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'OspfE2Route_constructor'(Advertiser, CostToAdvertiser, Node, Network, NextHopIp, Route),
+   'OspfRoute_advertiser'(Route, Advertiser),
+   'OspfRoute_advertiserIp'(Route, AdvertiserIp),
+   'OspfRoute_costToAdvertiser'(Route, CostToAdvertiser),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
    'OspfNeighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _, _, Area),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    'OspfNeighbors'(NextHop, _, _, SecondHop, _, _, _, Area),
    'BestOspfE2Route'(SubRoute),
-   'Route_cost'(SubRoute, Cost) /*fn*/,
-   'Route_network'(SubRoute, Network) /*fn*/,
-   'Route_nextHopIp'(SubRoute, SecondHopIp) /*fn*/,
-   'Route_node'(SubRoute, NextHop) /*fn*/,
-   'OspfRoute_advertiser'(SubRoute, Advertiser) /*fn*/,
-   'OspfRoute_advertiserIp'(SubRoute, AdvertiserIp) /*fn*/,
-   'OspfRoute_costToAdvertiser'(SubRoute, SubCost) /*fn*/,
+   'Route_cost'(SubRoute, Cost),
+   'Route_network'(SubRoute, Network),
+   'Route_nextHopIp'(SubRoute, SecondHopIp),
+   'Route_node'(SubRoute, NextHop),
+   'OspfRoute_advertiser'(SubRoute, Advertiser),
+   'OspfRoute_advertiserIp'(SubRoute, AdvertiserIp),
+   'OspfRoute_costToAdvertiser'(SubRoute, SubCost),
    'HasIp'(SecondHop, SecondHopIp),
    Node \== SecondHop,
    Node \== Advertiser,
    CostToAdvertiser = SubCost + NodeIntCost,
    Protocol = 'ospfE2',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 need_PolicyMapMatchRoute(Map, Route) :-
    'SetOspfOutboundPolicyMap'(Node, Map),
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_node'(Route, Node),
    (
       'InstalledRoute'(Route) ;
       (
@@ -2254,8 +2254,8 @@ need_PolicyMapMatchRoute(Map, Route) :-
       )
    ),
    \+ 'NonOspfExportableRoute'(Route),
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
    'SetOspfOutboundPolicyMap'(Node, Map),
    'SetPolicyMapOspfExternalRouteType'(Map, Protocol),
    'PolicyMapPermitRoute'(Map, Clause, Route),
@@ -2273,23 +2273,23 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'SetPolicyMapClauseSetMetric'(Map, Clause, Metric).
 'GeneratedRoutePolicy'(Route, Policy) :-
    'OspfGeneratedRoute'(Route),
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
    'SetOspfGeneratedRoutePolicy'(Node, Network, Policy).
 
 need_PolicyMapMatchRoute(Map, Route) :-
    'SetOspfGeneratedRoutePolicy'(Node, _, Map),
    'InstalledRoute'(Route),
-   'Route_node'(Route, Node) /*fn*/.
+   'Route_node'(Route, Node).
 
 'OspfGeneratedRoute'(Route),
    'Route'(Route),
-   'GeneratedRoute_constructor'(Node, Network, Type, Route) /*fn*/,
+   'GeneratedRoute_constructor'(Node, Network, Type, Route),
    'GeneratedRoute'(Route),
-   'GeneratedRoute_type'(Route, Type) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'GeneratedRoute_type'(Route, Type),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    'SetOspfGeneratedRoute'(Node, Network),
    Type = 'GeneratedRouteType_OSPF',
@@ -2297,39 +2297,39 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'SetOspfGeneratedRoute'(Node, Network) :-
    'SetOspfGeneratedRoute_flat'(Node, Network_start, Network_end, Prefix_length),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
 'SetOspfGeneratedRoutePolicy'(Node, Network, Map) :-
    'SetOspfGeneratedRoutePolicy_flat'(Node, Network_start, Network_end, Prefix_length, Map),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 'BestOspfIARoute'(Route),
    'OspfIANetwork'(Node, Network)
 :-
    'OspfIARoute'(Route),
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'MinOspfIARouteCost'(Node, Network, Cost) /*fn*/,
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'MinOspfIARouteCost'(Node, Network, Cost),
    \+ 'OspfNetwork'(Node, Network).
 
-'MinOspfIARouteCost'(Node, Network, MinCost ) /*fn*/:-
+'MinOspfIARouteCost'(Node, Network, MinCost ):-
    agg(MinCost = min(Cost),(
       'OspfIARoute'(Route),
-      'Route_cost'(Route, Cost) /*fn*/,
-      'Route_network'(Route, Network) /*fn*/,
-      'Route_node'(Route, Node) /*fn*/)).
+      'Route_cost'(Route, Cost),
+      'Route_network'(Route, Network),
+      'Route_node'(Route, Node))).
 
 % distribute connected routes from another area into backbone area
 'OspfIARoute'(Route),
    'Route'(Route),
    'NonOspfExportableRoute'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
    'OspfNeighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _, _, 0),
@@ -2337,106 +2337,106 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'ConnectedRoute'(NextHop, Network, NextHopConnectedInt),
    'SetOspfInterface'(NextHop, NextHopConnectedInt, Area),
    Area \== 0,
-   'SetOspfInterfaceCost'(NextHop, NextHopConnectedInt, NextHopIntCost) /*fn*/,
+   'SetOspfInterfaceCost'(NextHop, NextHopConnectedInt, NextHopIntCost),
    Cost = NodeIntCost + NextHopIntCost,
    Protocol = 'ospfIA',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 % propagate ospf ia routes through backbone area
 'OspfIARoute'(Route),
    'Route'(Route),
    'NonOspfExportableRoute'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
    'OspfNeighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _, _, Area),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    'OspfNeighbors'(NextHop, _, _, SecondHop, _, _, _, Area),
    'BestOspfIARoute'(SubRoute),
-   'Route_cost'(SubRoute, SubCost) /*fn*/,
-   'Route_network'(SubRoute, Network) /*fn*/,
-   'Route_nextHopIp'(SubRoute, SecondHopIp) /*fn*/,
-   'Route_node'(SubRoute, NextHop) /*fn*/,
+   'Route_cost'(SubRoute, SubCost),
+   'Route_network'(SubRoute, Network),
+   'Route_nextHopIp'(SubRoute, SecondHopIp),
+   'Route_node'(SubRoute, NextHop),
    'HasIp'(SecondHop, SecondHopIp),
    Area = 0,
    Node \== SecondHop,
    Cost = SubCost + NodeIntCost,
    Protocol = 'ospfIA',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 
 %TODO: OSPF IA Routes propagated from OSPF routes (Not just connected routes) In another area
 'BestOspfRoute'(Route),
    'OspfNetwork'(Node, Network)
 :-
    'OspfRoute'(Route),
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'MinOspfRouteCost'(Node, Network, Cost) /*fn*/.
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'MinOspfRouteCost'(Node, Network, Cost).
 
-'MinOspfRouteCost'(Node, Network, MinCost ) /*fn*/:-
+'MinOspfRouteCost'(Node, Network, MinCost ):-
    agg(MinCost = min(Cost),(
       'OspfRoute'(Route),
-      'Route_cost'(Route, Cost) /*fn*/,
-      'Route_network'(Route, Network) /*fn*/,
-      'Route_node'(Route, Node) /*fn*/)).
+      'Route_cost'(Route, Cost),
+      'Route_network'(Route, Network),
+      'Route_node'(Route, Node))).
 
 % (Base case) Connected route on ospf-enabled interface
 'OspfRoute'(Route),
    'Route'(Route),
    'NonOspfExportableRoute'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
    'OspfNeighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _, _, Area),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    'ConnectedRoute'(NextHop, Network, NextHopConnectedInt),
    'SetOspfInterface'(NextHop, NextHopConnectedInt, Area),
-   'SetOspfInterfaceCost'(NextHop, NextHopConnectedInt, NextHopIntCost) /*fn*/,
+   'SetOspfInterfaceCost'(NextHop, NextHopConnectedInt, NextHopIntCost),
    Cost = NodeIntCost + NextHopIntCost,
    Protocol = 'ospf',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 % (Recursive case) Propagate ospf over ospf
 'OspfRoute'(Route),
    'Route'(Route),
    'NonOspfExportableRoute'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
    'OspfNeighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _, _, Area),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    'OspfNeighbors'(NextHop, _, _, SecondHop, _, _, _, Area),
    'BestOspfRoute'(SubRoute),
-   'Route_cost'(SubRoute, SubCost) /*fn*/,
-   'Route_network'(SubRoute, Network) /*fn*/,
-   'Route_nextHopIp'(SubRoute, SecondHopIp) /*fn*/,
-   'Route_node'(SubRoute, NextHop) /*fn*/,
+   'Route_cost'(SubRoute, SubCost),
+   'Route_network'(SubRoute, Network),
+   'Route_nextHopIp'(SubRoute, SecondHopIp),
+   'Route_node'(SubRoute, NextHop),
    'HasIp'(SecondHop, SecondHopIp),
    Node \== SecondHop,
    Cost = SubCost + NodeIntCost,
    Protocol = 'ospf',
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/.
+   'AdministrativeDistance'(Vendor, Protocol, Admin).
 'BestPerProtocolRoute'(Route) :-
    'BestOspfRoute'(Route) ;
    'BestOspfE1Route'(Route) ;
@@ -2450,9 +2450,9 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'OspfNode'(Node, Interface, Cost, Network, Area) :-
    'IpReadyInt'(Node, Interface, Ip, Prefix_length),
-   'SetOspfInterfaceCost'(Node, Interface, Cost) /*fn*/,
+   'SetOspfInterfaceCost'(Node, Interface, Cost),
    'SetOspfInterface'(Node, Interface, Area),
-   'NetworkOf'(Ip, Prefix_length, Network) /*fn*/.
+   'NetworkOf'(Ip, Prefix_length, Network).
 'PolicyMap'(Map) :-
    'SetPolicyMapClauseAddCommunity'(Map, Clause, Community).
 
@@ -2550,12 +2550,12 @@ need_PolicyMapMatchRoute(Map, Route) :-
 % policy maps for advertisements
 need_RouteFilterMatchNetwork(List, Network) :-
    need_PolicyMapMatchAdvert(Map, Advert),
-   'BgpAdvertisement_network'(Advert, Network) /*fn*/,
+   'BgpAdvertisement_network'(Advert, Network),
    'SetPolicyMapClauseMatchRouteFilter'(Map, _, List).
 % policy maps for routes
 need_RouteFilterMatchNetwork(List, Network) :-
    need_PolicyMapMatchRoute(Map, Route),
-   'Route_network'(Route, Network) /*fn*/,
+   'Route_network'(Route, Network),
    'SetPolicyMapClauseMatchRouteFilter'(Map, _, List).
 
 'PolicyMapClauseMatchAdvert'(Map, Clause, Advert) :-
@@ -2572,7 +2572,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
       \+ 'SetPolicyMapClauseMatchRouteFilter'(Map, Clause, _) ;
       (
          'SetPolicyMapClauseMatchRouteFilter'(Map, Clause, Filter),
-         'BgpAdvertisement_network'(Advert, DstIpBlock) /*fn*/,
+         'BgpAdvertisement_network'(Advert, DstIpBlock),
          'RouteFilterPermitNetwork'(Filter, DstIpBlock) 
       )
    ),
@@ -2581,8 +2581,8 @@ need_RouteFilterMatchNetwork(List, Network) :-
       (
          'SetPolicyMapClauseMatchNeighbor'(Map, Clause, NeighborIp),
          (
-            'BgpAdvertisement_srcIp'(Advert, NeighborIp ) /*fn*/;
-            'BgpAdvertisement_dstIp'(Advert, NeighborIp) /*fn*/
+            'BgpAdvertisement_srcIp'(Advert, NeighborIp );
+            'BgpAdvertisement_dstIp'(Advert, NeighborIp)
          )
       )
    ),
@@ -2639,7 +2639,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
    (
       \+ 'SetPolicyMapClauseMatchProtocol'(Map, Clause, _) ;
       (
-         'Route_protocol'(Route, Protocol) /*fn*/,
+         'Route_protocol'(Route, Protocol),
          'SetPolicyMapClauseMatchProtocol'(Map, Clause, Protocol)
       )
    ),
@@ -2647,7 +2647,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
    (
       \+ 'SetPolicyMapClauseMatchInterface'(Map, Clause, _, _) ;
       (
-         'Route_network'(Route, Network) /*fn*/,
+         'Route_network'(Route, Network),
          'ConnectedRoute'(Node, Network, Interface),
          'SetPolicyMapClauseMatchInterface'(Map, Clause, Node, Interface)
       )
@@ -2673,7 +2673,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
       \+ 'SetPolicyMapClauseMatchRouteFilter'(Map, Clause, _);
       (
          'SetPolicyMapClauseMatchRouteFilter'(Map, Clause, Filter),
-         'Route_network'(Route, Network) /*fn*/,
+         'Route_network'(Route, Network),
          'RouteFilterPermitNetwork'(Filter, Network)
       )
    ),
@@ -2682,18 +2682,18 @@ need_RouteFilterMatchNetwork(List, Network) :-
       \+ 'SetPolicyMapClauseMatchTag'(Map, Clause, _);
       (
          'SetPolicyMapClauseMatchTag'(Map, Clause, Tag),
-         'Route_tag'(Route, Tag) /*fn*/
+         'Route_tag'(Route, Tag)
       )
    ).
 
 'PolicyMapClauseTransformAdvert'(Map, Clause, PrevAdvert, NextHopIp, LocalPref, OriginType, Med, SrcProtocol)
 :-
    'PolicyMapPermitAdvert'(Map, Clause, PrevAdvert),
-   'BgpAdvertisement_nextHopIp'(PrevAdvert, PrevNextHopIp ) /*fn*/,
-   'BgpAdvertisement_localPref'(PrevAdvert, PrevLocalPref) /*fn*/, 
-   'BgpAdvertisement_originType'(PrevAdvert, PrevOriginType) /*fn*/,
-   'BgpAdvertisement_med'(PrevAdvert, PrevMed) /*fn*/,
-   'BgpAdvertisement_srcProtocol'(PrevAdvert, PrevSrcProtocol) /*fn*/,
+   'BgpAdvertisement_nextHopIp'(PrevAdvert, PrevNextHopIp ),
+   'BgpAdvertisement_localPref'(PrevAdvert, PrevLocalPref), 
+   'BgpAdvertisement_originType'(PrevAdvert, PrevOriginType),
+   'BgpAdvertisement_med'(PrevAdvert, PrevMed),
+   'BgpAdvertisement_srcProtocol'(PrevAdvert, PrevSrcProtocol),
    %TODO: Complete untransformed cases
    (
       'SetPolicyMapClauseSetNextHopIp'(Map, Clause, NextHopIp);
@@ -2726,37 +2726,37 @@ need_RouteFilterMatchNetwork(List, Network) :-
    PrevSrcProtocol = SrcProtocol.
 
 'PolicyMapDenyAdvert'(Map, Advert) :-
-   'PolicyMapFirstMatchAdvert'(Map, Advert, Clause) /*fn*/,
+   'PolicyMapFirstMatchAdvert'(Map, Advert, Clause),
    \+ 'SetPolicyMapClausePermit'(Map, Clause).
 'PolicyMapDenyAdvert'(Map, Advert) :-
    need_PolicyMapMatchAdvert(Map, Advert),
    \+ 'PolicyMapClauseMatchAdvert'(Map, _, Advert).
 
 'PolicyMapDenyFlow'(Map, Flow) :-
-   'PolicyMapFirstMatchFlow'(Map, Flow, Clause) /*fn*/,
+   'PolicyMapFirstMatchFlow'(Map, Flow, Clause),
    \+ 'SetPolicyMapClausePermit'(Map, Clause).
 'PolicyMapDenyFlow'(Map, Flow) :-
    need_PolicyMapMatchFlow(Map, Flow),
    \+ 'PolicyMapClauseMatchFlow'(Map, _, Flow).
 
 'PolicyMapDenyRoute'(Map, Route) :-
-   'PolicyMapFirstMatchRoute'(Map, Route, Clause) /*fn*/,
+   'PolicyMapFirstMatchRoute'(Map, Route, Clause),
    \+ 'SetPolicyMapClausePermit'(Map, Clause).
 'PolicyMapDenyRoute'(Map, Route) :-
    need_PolicyMapMatchRoute(Map, Route),
    \+ 'PolicyMapClauseMatchRoute'(Map, _, Route).
 
-'PolicyMapFirstMatchAdvert'(Map, Advert, FirstClause) /*fn*/
+'PolicyMapFirstMatchAdvert'(Map, Advert, FirstClause)
 :-
    agg(FirstClause = min(Clause),(
       'PolicyMapClauseMatchAdvert'(Map, Clause, Advert))).
 
-'PolicyMapFirstMatchFlow'(Map, Flow, FirstClause) /*fn*/
+'PolicyMapFirstMatchFlow'(Map, Flow, FirstClause)
 :-
    agg(FirstClause = min(Clause),(
       'PolicyMapClauseMatchFlow'(Map, Clause, Flow))).
 
-'PolicyMapFirstMatchRoute'(Map, Route, FirstClause ) /*fn*/:-
+'PolicyMapFirstMatchRoute'(Map, Route, FirstClause ):-
    agg(FirstClause = min(Clause),(
       'PolicyMapClauseMatchRoute'(Map, Clause, Route))).
 
@@ -2765,15 +2765,15 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'SetPolicyMapClausePermit'(Map, Clause).
 
 'PolicyMapPermitAdvert'(Map, Clause, Advert) :-
-   'PolicyMapFirstMatchAdvert'(Map, Advert, Clause) /*fn*/,
+   'PolicyMapFirstMatchAdvert'(Map, Advert, Clause),
    'SetPolicyMapClausePermit'(Map, Clause).
 
 'PolicyMapPermitFlow'(Map, Clause, Flow) :-
-   'PolicyMapFirstMatchFlow'(Map, Flow, Clause) /*fn*/,
+   'PolicyMapFirstMatchFlow'(Map, Flow, Clause),
    'SetPolicyMapClausePermit'(Map, Clause).
 
 'PolicyMapPermitRoute'(Map, Clause, Route) :-
-   'PolicyMapFirstMatchRoute'(Map, Route, Clause) /*fn*/,
+   'PolicyMapFirstMatchRoute'(Map, Route, Clause),
    'SetPolicyMapClausePermit'(Map, Clause).
 'Ip'(NextHopIp),
 'Ip'(SrcIp),
@@ -2794,23 +2794,23 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'PrecomputedAdvertisement_index'(Advert, PcIndex).
 
 'BgpAdvertisement'(Advert),
-'BgpAdvertisement_constructor'(Type, Network, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert) /*fn*/,
-'BgpAdvertisement_dstIp'(Advert, DstIp) /*fn*/,
-'BgpAdvertisement_dstNode'(Advert, DstNode) /*fn*/,
-'BgpAdvertisement_localPref'(Advert, LocalPref) /*fn*/,
-'BgpAdvertisement_med'(Advert, Med) /*fn*/,
-'BgpAdvertisement_network'(Advert, Network) /*fn*/,
-'BgpAdvertisement_nextHopIp'(Advert, NextHopIp) /*fn*/,
-'BgpAdvertisement_originatorIp'(Advert, OriginatorIp) /*fn*/,
-'BgpAdvertisement_originType'(Advert, OriginType) /*fn*/,
-'BgpAdvertisement_srcIp'(Advert, SrcIp) /*fn*/,
-'BgpAdvertisement_srcNode'(Advert, SrcNode) /*fn*/,
-'BgpAdvertisement_srcProtocol'(Advert, SrcProtocol) /*fn*/,
-'BgpAdvertisement_type'(Advert, Type) /*fn*/,
+'BgpAdvertisement_constructor'(Type, Network, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert),
+'BgpAdvertisement_dstIp'(Advert, DstIp),
+'BgpAdvertisement_dstNode'(Advert, DstNode),
+'BgpAdvertisement_localPref'(Advert, LocalPref),
+'BgpAdvertisement_med'(Advert, Med),
+'BgpAdvertisement_network'(Advert, Network),
+'BgpAdvertisement_nextHopIp'(Advert, NextHopIp),
+'BgpAdvertisement_originatorIp'(Advert, OriginatorIp),
+'BgpAdvertisement_originType'(Advert, OriginType),
+'BgpAdvertisement_srcIp'(Advert, SrcIp),
+'BgpAdvertisement_srcNode'(Advert, SrcNode),
+'BgpAdvertisement_srcProtocol'(Advert, SrcProtocol),
+'BgpAdvertisement_type'(Advert, Type),
 'PrecomputedAdvertisement_index'(Advert, PcIndex)
 :-
    'SetBgpAdvertisement_flat'(PcIndex, Type, Network_start, Network_end, Prefix_length, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, OriginatorIp),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
 'AdvertisementCommunity'(Advert, Community) :-
    'SetBgpAdvertisementCommunity'(PcIndex, Community),
@@ -2820,7 +2820,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'SetBgpAdvertisementPath'(PcIndex, Index, As),
    'PrecomputedAdvertisement_index'(Advert, PcIndex).
 
-'AdvertisementPathSize'(Advert, Size ) /*fn*/:-
+'AdvertisementPathSize'(Advert, Size ):-
    'SetBgpAdvertisementPathSize'(PcIndex, Size),
    'PrecomputedAdvertisement_index'(Advert, PcIndex).
 
@@ -2832,19 +2832,19 @@ need_RouteFilterMatchNetwork(List, Network) :-
 
 'SetPrecomputedRoute'(Node, Network, NextHopIp, Admin, Cost, Protocol, Tag) :-
    'SetPrecomputedRoute_flat'(Node, Network_start, Network_end, Prefix_length, NextHopIp, Admin, Cost, Protocol, Tag),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
 % Precomputed route with next hop ip
 'PrecomputedRoute'(Route),
    'Route'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/,
-   'Route_tag'(Route, Tag) /*fn*/
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol),
+   'Route_tag'(Route, Tag)
 :-
    'SetPrecomputedRoute'(Node, Network, NextHopIp, Admin, Cost, Protocol, Tag).
 'Ip'(NextHopIp) :-
@@ -2855,18 +2855,18 @@ need_RouteFilterMatchNetwork(List, Network) :-
 %'BestConnectedRoute'(Node, Network, NextHop, NextHopIp, Admin, Cost, Protocol) :-
 'BestConnectedRoute'(Route),
    'Route'(Route),
-   'InterfaceRoute_constructor'(Node, Network, NextHopInt, Protocol, Route) /*fn*/,
+   'InterfaceRoute_constructor'(Node, Network, NextHopInt, Protocol, Route),
    'InterfaceRoute'(Route),
-   'InterfaceRoute_nextHopInt'(Route, NextHopInt) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/
+   'InterfaceRoute_nextHopInt'(Route, NextHopInt),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol)
 :-
    'ConnectedRoute'(Node, Network, NextHopInt),
    'SetNodeVendor'(Node, Vendor),
-   'AdministrativeDistance'(Vendor, Protocol, Admin) /*fn*/, 
+   'AdministrativeDistance'(Vendor, Protocol, Admin), 
    Cost = 0,
    Protocol = 'connected'.
 
@@ -2880,83 +2880,83 @@ need_RouteFilterMatchNetwork(List, Network) :-
 
 'ConnectedRoute'(Node, Network, Interface) :-
    'IpReadyInt'(Node, Interface, Ip, Prefix_length),
-   'NetworkOf'(Ip, Prefix_length, Network) /*fn*/.
+   'NetworkOf'(Ip, Prefix_length, Network).
 
 'InstalledRoute'(Route) :-
    'MinCostRoute'(Route).
 
 'LongestPrefixNetworkMatch'(Node, Ip, MatchNet) :-
-   'LongestPrefixNetworkMatchPrefixLength'(Node, Ip, MaxLength) /*fn*/,
+   'LongestPrefixNetworkMatchPrefixLength'(Node, Ip, MaxLength),
    'NetworkMatch'(Node, Ip, MatchNet, MaxLength).
 
-'LongestPrefixNetworkMatchPrefixLength'(Node, Ip, MaxLength ) /*fn*/:-
+'LongestPrefixNetworkMatchPrefixLength'(Node, Ip, MaxLength ):-
    agg(MaxLength = max(MatchLength),(
       'NetworkMatch'(Node, Ip, _, MatchLength))).
 
-'MinAdmin'(Node, Network, MinAdmin ) /*fn*/:-
+'MinAdmin'(Node, Network, MinAdmin ):-
    agg(MinAdmin = min(Admin),(
       'BestPerProtocolRoute'(Route),
-      'Route_admin'(Route, Admin) /*fn*/,
-      'Route_network'(Route, Network) /*fn*/,
-      'Route_node'(Route, Node) /*fn*/)).
+      'Route_admin'(Route, Admin),
+      'Route_network'(Route, Network),
+      'Route_node'(Route, Node))).
 
 'MinAdminRoute'(Route) :-
    'MinAdmin'(Node, Network, MinAdmin),
    'BestPerProtocolRoute'(Route),
-   'Route_admin'(Route, MinAdmin) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/.
+   'Route_admin'(Route, MinAdmin),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node).
 
-'MinCost'(Node, Network, MinCost ) /*fn*/:-
+'MinCost'(Node, Network, MinCost ):-
    agg(MinCost = min(Cost),(
       'MinAdminRoute'(Route),
-      'Route_cost'(Route, Cost) /*fn*/,
-      'Route_network'(Route, Network) /*fn*/,
-      'Route_node'(Route, Node) /*fn*/)).
+      'Route_cost'(Route, Cost),
+      'Route_network'(Route, Network),
+      'Route_node'(Route, Node))).
 
 'MinCostRoute'(Route) :-
    'MinAdminRoute'(Route),
    'MinCost'(Node, Network, MinCost),
-   'Route_cost'(Route, MinCost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/.
+   'Route_cost'(Route, MinCost),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node).
 
 'NetworkMatch'(Node, Ip, MatchNet, MatchLength) :-
    'Ip_address'(Ip:Address),
-   'Network_address'(MatchNet, MatchNet_start) /*fn*/,
-   'Network_prefix_length'(MatchNet, MatchLength) /*fn*/,
-   'Network_end'(MatchNet, MatchNet_end) /*fn*/,
+   'Network_address'(MatchNet, MatchNet_start),
+   'Network_prefix_length'(MatchNet, MatchLength),
+   'Network_end'(MatchNet, MatchNet_end),
    'InstalledRoute'(Route),
-   'Route_network'(Route, MatchNet) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
+   'Route_network'(Route, MatchNet),
+   'Route_node'(Route, Node),
    MatchNet_start =< Address,
    Address =< MatchNet_end.
 
-'RouteDetails_admin'(Route, Admin ) /*fn*/:-
-   'Route_admin'(Route, Admin) /*fn*/.
-'RouteDetails_admin'(Route, Admin ) /*fn*/:-
+'RouteDetails_admin'(Route, Admin ):-
+   'Route_admin'(Route, Admin).
+'RouteDetails_admin'(Route, Admin ):-
    'Route'(Route),
-   \+ ('Route_admin'(Route, _) /*fn*/),
+   \+ ('Route_admin'(Route, _)),
    Admin = -1.
 
-'RouteDetails_cost'(Route, Cost ) /*fn*/:-
-   'Route_cost'(Route, Cost) /*fn*/.
-'RouteDetails_cost'(Route, Cost ) /*fn*/:-
+'RouteDetails_cost'(Route, Cost ):-
+   'Route_cost'(Route, Cost).
+'RouteDetails_cost'(Route, Cost ):-
    'Route'(Route),
-   \+ ('Route_cost'(Route, _) /*fn*/),
+   \+ ('Route_cost'(Route, _)),
    Cost = -1.
 
-'RouteDetails_nextHop'(Route, NextHop ) /*fn*/:-
+'RouteDetails_nextHop'(Route, NextHop ):-
    'Route'(Route),
-   'RouteDetails_nextHopIp'(Route, NextHopIp) /*fn*/,
+   'RouteDetails_nextHopIp'(Route, NextHopIp),
    (
       (
-         'IpCount'(NextHopIp, IpCountOne) /*fn*/,
+         'IpCount'(NextHopIp, IpCountOne),
          'HasIp'(NextHop, NextHopIp),
          IpCountOne = 1
       ) ;
       (
-         'IpCount'(NextHopIp, IpCount) /*fn*/,
+         'IpCount'(NextHopIp, IpCount),
          IpCount > 1,
          NextHop = '(ambiguous)'
       ) ;
@@ -2965,71 +2965,71 @@ need_RouteFilterMatchNetwork(List, Network) :-
          \+ 'HasIp'(_, NextHopIp)
       )
    ).
-'RouteDetails_nextHop'(Route, NextHop ) /*fn*/:-
+'RouteDetails_nextHop'(Route, NextHop ):-
    'Route'(Route),
    'Ip_NONE'(Ip),
-   'RouteDetails_nextHopIp'(Route, Ip) /*fn*/,
+   'RouteDetails_nextHopIp'(Route, Ip),
    NextHop = '(none)'.
 
-'RouteDetails_nextHopInt'(Route, NextHopInt ) /*fn*/:-
-   'InterfaceRoute_nextHopInt'(Route, NextHopInt) /*fn*/.
-'RouteDetails_nextHopInt'(Route, NextHopInt ) /*fn*/:-
+'RouteDetails_nextHopInt'(Route, NextHopInt ):-
+   'InterfaceRoute_nextHopInt'(Route, NextHopInt).
+'RouteDetails_nextHopInt'(Route, NextHopInt ):-
    'Route'(Route),
-   \+ ('InterfaceRoute_nextHopInt'(Route, _) /*fn*/),
+   \+ ('InterfaceRoute_nextHopInt'(Route, _)),
    NextHopInt = 'dynamic'.
 
-'RouteDetails_nextHopIp'(Route, NextHopIp ) /*fn*/:-
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/.
-'RouteDetails_nextHopIp'(Route, NextHopIp ) /*fn*/:-
+'RouteDetails_nextHopIp'(Route, NextHopIp ):-
+   'Route_nextHopIp'(Route, NextHopIp).
+'RouteDetails_nextHopIp'(Route, NextHopIp ):-
    'Route'(Route),
-   \+ ('Route_nextHopIp'(Route, _) /*fn*/),
+   \+ ('Route_nextHopIp'(Route, _)),
    'Ip_NONE'(NextHopIp).
 
-'RouteDetails_tag'(Route, Tag ) /*fn*/:-
-   'Route_tag'(Route, Tag) /*fn*/.
-'RouteDetails_tag'(Route, Tag ) /*fn*/:-
+'RouteDetails_tag'(Route, Tag ):-
+   'Route_tag'(Route, Tag).
+'RouteDetails_tag'(Route, Tag ):-
    'Route'(Route),
-   \+ ('Route_tag'(Route, _) /*fn*/),
+   \+ ('Route_tag'(Route, _)),
    Tag = -1.
 'RouteFilterDenyNetwork'(List, Network) :-
-   'RouteFilterFirstMatch'(List, Network, Line) /*fn*/,
+   'RouteFilterFirstMatch'(List, Network, Line),
    \+ 'SetRouteFilterPermitLine'(List, Line).
 'RouteFilterDenyNetwork'(List, Network) :-
    need_RouteFilterMatchNetwork(List, Network),
    \+ 'RouteFilterMatch'(List, Network, _).
 
-'RouteFilterFirstMatch'(List, Network, MatchLine ) /*fn*/:-
+'RouteFilterFirstMatch'(List, Network, MatchLine ):-
    agg(MatchLine = min(Line),( 'RouteFilterMatch'(List, Network, Line))).
 
 'RouteFilterMatch'(List, Network, Line) :-
    need_RouteFilterMatchNetwork(List, Network),
    'SetRouteFilterLine'(List, Line, Line_network_start, Line_network_end, Min_prefix, Max_prefix),
-   'Network_constructor'(Network_start, _, Prefix_length, Network) /*fn*/,
+   'Network_constructor'(Network_start, _, Prefix_length, Network),
    Network_start >= Line_network_start,
    Network_start =< Line_network_end,
    Prefix_length >= Min_prefix,
    Prefix_length =< Max_prefix.
 
 'RouteFilterPermitNetwork'(List, Network) :-
-   'RouteFilterFirstMatch'(List, Network, Line) /*fn*/,
+   'RouteFilterFirstMatch'(List, Network, Line),
    'SetRouteFilterPermitLine'(List, Line).
 'SetStaticIntRoute'(Node, Network, NextHopIp, NextHopInt, Admin, Tag) :-
    'SetStaticIntRoute_flat'(Node, Network_start, Network_end, Prefix_length, NextHopIp, NextHopInt, Admin, Tag),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
 % static route with next hop interface
 'StaticIntRoute'(Route),
    'Route'(Route),
-   'InterfaceRoute_constructor'(Node, Network, NextHopInt, Protocol, Route) /*fn*/,
+   'InterfaceRoute_constructor'(Node, Network, NextHopInt, Protocol, Route),
    'InterfaceRoute'(Route),
-   'InterfaceRoute_nextHopInt'(Route, NextHopInt) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/,
-   'Route_tag'(Route, Tag) /*fn*/
+   'InterfaceRoute_nextHopInt'(Route, NextHopInt),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol),
+   'Route_tag'(Route, Tag)
 :-
    'SetStaticIntRoute'(Node, Network, ConfiguredNextHopIp, NextHopInt, Admin, Tag),
    (
@@ -3047,25 +3047,25 @@ need_RouteFilterMatchNetwork(List, Network) :-
    Protocol = 'static'.
 'SetStaticRoute'(Node, Network, NextHopIp, Admin, Tag) :-
    'SetStaticRoute_flat'(Node, Network_start, Network_end, Prefix_length, NextHopIp, Admin, Tag),
-   'Network_constructor'(Network_start, Network_end, Prefix_length, Network) /*fn*/.
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
 % static route with next hop ip
 'StaticRoute'(Route),
    'Route'(Route),
-   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route) /*fn*/,
-   'Route_admin'(Route, Admin) /*fn*/,
-   'Route_cost'(Route, Cost) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/,
-   'Route_nextHopIp'(Route, NextHopIp) /*fn*/,
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_protocol'(Route, Protocol) /*fn*/,
-   'Route_tag'(Route, Tag) /*fn*/
+   'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
+   'Route_admin'(Route, Admin),
+   'Route_cost'(Route, Cost),
+   'Route_network'(Route, Network),
+   'Route_nextHopIp'(Route, NextHopIp),
+   'Route_node'(Route, Node),
+   'Route_protocol'(Route, Protocol),
+   'Route_tag'(Route, Tag)
 :-
    'LongestPrefixNetworkMatch'(Node, NextHopIp, MatchNet),
-   'Network_address'(MatchNet, MatchNet_start) /*fn*/,
-   'Network_end'(MatchNet, MatchNet_end) /*fn*/,
-   'Network_address'(Network, Network_start) /*fn*/,
-   'Network_end'(Network, Network_end) /*fn*/,
+   'Network_address'(MatchNet, MatchNet_start),
+   'Network_end'(MatchNet, MatchNet_end),
+   'Network_address'(Network, Network_start),
+   'Network_end'(Network, Network_end),
    'SetStaticRoute'(Node, Network, NextHopIp, Admin, Tag),
    Cost = 0,
    Protocol = 'static',
@@ -3082,7 +3082,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
 /*owner accept*/
 'FlowAccepted'(Flow, Node) :-
    'FlowReachPostIn'(Flow, Node),
-   'Flow_dstIp'(Flow, DstIp) /*fn*/,
+   'Flow_dstIp'(Flow, DstIp),
    'HasIp'(Node, DstIp).
 /*flow sink accept*/
 'FlowAccepted'(Flow, Node) :-
@@ -3267,7 +3267,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
 'FlowDeniedOutHostOut'(Flow, Node, Interface, FromHostFilter, Line) :-
    'FlowReachPreOutInterface'(Flow, Node, Interface),
    'FlowReachPostOutgoingInterfaceAcl'(Flow, Node, Interface),
-   'Flow_node'(Flow, Node) /*fn*/,
+   'Flow_node'(Flow, Node),
    'SetInterfaceZone'(Node, Interface, DstZone),
    'SetZoneFromHostFilter'(Node, DstZone, FromHostFilter),
    'IpAccessListDeny'(FromHostFilter, Line, Flow).
@@ -3294,7 +3294,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
          )
       ) ;
       ( /*the packet is original*/
-         'Flow_node'(Flow, Node) /*fn*/,
+         'Flow_node'(Flow, Node),
          (
             \+ 'SetInterfaceZone'(Node, Interface, _) ; /*no policy because no dst zone*/
             ( /*there is a destination zone but no from-host filter*/
@@ -3342,7 +3342,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'FlowMatchInterface'(Flow, Node, InboundInt).
 
 'FlowNeighborUnreachable'(Flow, Node, NeighborIp) :-
-   'Flow_dstIp'(Flow, DstIp) /*fn*/,
+   'Flow_dstIp'(Flow, DstIp),
    'FlowReachPreOut'(Flow, Node),
    'FibNeighborUnreachable'(Node, DstIp, NeighborIp).
 
@@ -3358,20 +3358,20 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'FlowLoop'(Flow, _, _).
 
 'FlowMatchInterface'(Flow, Node, Int) :-
-   'Flow_dstIp'(Flow, DstIp) /*fn*/,
+   'Flow_dstIp'(Flow, DstIp),
    'IpReadyInt'(Node, Int, DstIp, _).
 
 'FlowMatchRoute'(Flow, Route) :-
-   'Flow_dstIp'(Flow, DstIp) /*fn*/,
+   'Flow_dstIp'(Flow, DstIp),
    'FlowReachPostIn'(Flow, Node),
    'LongestPrefixNetworkMatch'(Node, DstIp, Network),
    'InstalledRoute'(Route),
-   'Route_node'(Route, Node) /*fn*/,
-   'Route_network'(Route, Network) /*fn*/.
+   'Route_node'(Route, Node),
+   'Route_network'(Route, Network).
 
 'FlowNoRoute'(Flow, Node) :-
    'FlowReachPreOut'(Flow, Node),
-   'Flow_dstIp'(Flow, DstIp) /*fn*/,
+   'Flow_dstIp'(Flow, DstIp),
    \+ 'FibRoute'(Node, DstIp).
 
 'FlowNonInboundNullSrcZone'(Flow, Node) :-
@@ -3387,37 +3387,37 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'SetInterfaceZone'(Node, SrcInt, SrcZone).
 
 'FlowNullRouted'(Flow, Node) :-
-   'Flow_dstIp'(Flow, DstIp) /*fn*/,
+   'Flow_dstIp'(Flow, DstIp),
    'FlowReachPreOut'(Flow, Node),
    'FibDrop'(Node, DstIp),
    \+ 'FibNeighborUnreachable'(Node, DstIp, _).
 
-'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag, Flow) /*fn*/,
+'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag, Flow),
 'Flow'(Flow),
-'Flow_dstIp'(Flow, DstIp) /*fn*/,
-'Flow_dstPort'(Flow, DstPort) /*fn*/,
-'Flow_icmpCode'(Flow, IcmpCode) /*fn*/,
-'Flow_icmpType'(Flow, IcmpType) /*fn*/,
-'Flow_ipProtocol'(Flow, Protocol) /*fn*/,
-'Flow_node'(Flow, Node) /*fn*/,
-'Flow_srcIp'(Flow, SrcIp) /*fn*/,
-'Flow_srcPort'(Flow, SrcPort) /*fn*/,
-'Flow_tcpFlags'(Flow, TcpFlags) /*fn*/,
-'Flow_tag'(Flow, Tag) /*fn*/
+'Flow_dstIp'(Flow, DstIp),
+'Flow_dstPort'(Flow, DstPort),
+'Flow_icmpCode'(Flow, IcmpCode),
+'Flow_icmpType'(Flow, IcmpType),
+'Flow_ipProtocol'(Flow, Protocol),
+'Flow_node'(Flow, Node),
+'Flow_srcIp'(Flow, SrcIp),
+'Flow_srcPort'(Flow, SrcPort),
+'Flow_tcpFlags'(Flow, TcpFlags),
+'Flow_tag'(Flow, Tag)
 :-
    'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag).
-'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag, Flow) /*fn*/,
+'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag, Flow),
 'Flow'(Flow),
-'Flow_dstIp'(Flow, DstIp) /*fn*/,
-'Flow_dstPort'(Flow, DstPort) /*fn*/,
-'Flow_icmpCode'(Flow, IcmpCode) /*fn*/,
-'Flow_icmpType'(Flow, IcmpType) /*fn*/,
-'Flow_ipProtocol'(Flow, Protocol) /*fn*/,
-'Flow_node'(Flow, Node) /*fn*/,
-'Flow_srcIp'(Flow, SrcIp) /*fn*/,
-'Flow_srcPort'(Flow, SrcPort) /*fn*/,
-'Flow_tcpFlags'(Flow, TcpFlags) /*fn*/,
-'Flow_tag'(Flow, Tag) /*fn*/
+'Flow_dstIp'(Flow, DstIp),
+'Flow_dstPort'(Flow, DstPort),
+'Flow_icmpCode'(Flow, IcmpCode),
+'Flow_icmpType'(Flow, IcmpType),
+'Flow_ipProtocol'(Flow, Protocol),
+'Flow_node'(Flow, Node),
+'Flow_srcIp'(Flow, SrcIp),
+'Flow_srcPort'(Flow, SrcPort),
+'Flow_tcpFlags'(Flow, TcpFlags),
+'Flow_tag'(Flow, Tag)
 :-
    'DuplicateRoleFlows'(_),
    'SetFlowOriginate'(AcceptNode, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag),
@@ -3440,12 +3440,12 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'SetInterfaceRoutingPolicy'(Node, Interface, Policy).
 
 'FlowReachPostIn'(Flow, Node) :-
-   'Flow_node'(Flow, Node) /*fn*/.   
+   'Flow_node'(Flow, Node).   
 'FlowReachPostIn'(Flow, Node) :-
    'FlowReachPostHostInFilter'(Flow, Node, _).
 'FlowReachPostIn'(Flow, Node) :-
    'FlowReachPostIncomingInterfaceAcl'(Flow, Node, _),
-   'Flow_dstIp'(Flow, DstIp) /*fn*/,
+   'Flow_dstIp'(Flow, DstIp),
    \+ 'HasIp'(Node, DstIp).
 
 'FlowReachPostInInterface'(Flow, Node, Interface) :-
@@ -3462,7 +3462,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
 
 'FlowReachPreOut'(Flow, Node) :-
    'FlowReachPostIn'(Flow, Node),
-   'Flow_dstIp'(Flow, DstIp) /*fn*/,
+   'Flow_dstIp'(Flow, DstIp),
    \+ 'HasIp'(Node, DstIp).
 
 'FlowReachPreOutInterface'(Flow, Node, Interface) :-
@@ -3476,9 +3476,9 @@ need_RouteFilterMatchNetwork(List, Network) :-
 'FlowReachPreOutEdgeOrigin'(Flow, Node, ReceivedInt, OutInt, NextHop, NextHopInt) :-
    'FlowReachPreOut'(Flow, Node),
    ReceivedInt = 'null_interface',
-   'Flow_dstIp'(Flow, DstIp) /*fn*/,
+   'Flow_dstIp'(Flow, DstIp),
    'FibForward'(Node, DstIp, OutInt, NextHop, NextHopInt),
-   'Flow_node'(Flow, Node) /*fn*/.
+   'Flow_node'(Flow, Node).
 
 'FlowReachPreOutEdgePolicyRoute'(Flow, Node, ReceivedInt, Interface, NextHop, NextHopInt) :-
    'FlowReachPostInInterface'(Flow, Node, ReceivedInt),
@@ -3490,7 +3490,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
 
 'FlowReachPreOutEdgeStandard'(Flow, Node, ReceivedInt, OutInt, NextHop, NextHopInt) :-
    'FlowReachPreOut'(Flow, Node),
-   'Flow_dstIp'(Flow, DstIp) /*fn*/,
+   'Flow_dstIp'(Flow, DstIp),
    'FibForward'(Node, DstIp, OutInt, NextHop, NextHopInt),
    'FlowReachPostInInterface'(Flow, Node, ReceivedInt),
    (
@@ -3520,7 +3520,7 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    (
       (
          'FlowAccepted'(Flow, Node2),
-         'Flow_dstIp'(Flow, DstIp) /*fn*/,
+         'Flow_dstIp'(Flow, DstIp),
          'HasIp'(Node2, DstIp)
       ) ;
       (
@@ -3546,7 +3546,7 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
          History = [OldHistory, ';', CurrentHistory]
       ) ;
       (
-         'Flow_node'(Flow, Node1) /*fn*/,
+         'Flow_node'(Flow, Node1),
          I = 0,
          ReceivedInt = 'null_interface',
          History = CurrentHistory
@@ -3576,7 +3576,7 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
          History = [OldHistory, ';', CurrentHistory]
       ) ;
       (
-         'Flow_node'(Flow, Node1) /*fn*/,
+         'Flow_node'(Flow, Node1),
          I = 0,
          ReceivedInt = 'null_interface',
          History = CurrentHistory
@@ -3689,8 +3689,8 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
 
 'FlowRoleInconsistent'(TransmittingRole, AcceptedFlow, MissingFlow, ReceivingRole) :-
    'FlowSameHeader'(AcceptedFlow, MissingFlow),
-   'Flow_node'(AcceptedFlow, Node1) /*fn*/,
-   'Flow_node'(MissingFlow, Node2) /*fn*/,
+   'Flow_node'(AcceptedFlow, Node1),
+   'Flow_node'(MissingFlow, Node2),
    'SetNodeRole'(Node1, TransmittingRole),
    'SetNodeRole'(Node2, TransmittingRole),
    'FlowRoleAccepted'(AcceptedFlow, ReceivingRole),
@@ -3704,7 +3704,7 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    \+ 'FlowSameHeaderRoleTransitNode'(Flow, _, NonTransitNode).
 
 'FlowRoleTransitNode'(Flow, SrcRole, TransitNode) :-
-   'Flow_node'(Flow, SrcNode) /*fn*/,
+   'Flow_node'(Flow, SrcNode),
    'SetNodeRole'(SrcNode, SrcRole),
    'SetNodeRole'(TransitNode, TransitRole),
    SrcRole \== TransitRole,
@@ -3715,13 +3715,13 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    'FlowRoleTransitNode'(Flow, _, TransitNode).
 'FlowSameHeaderRoleTransitNode'(Flow, SimilarFlow, TransitNode) :-
    'FlowRoleTransitNode'(Flow, SrcRole, TransitNode),
-   'Flow_node'(SimilarFlow, SrcNode) /*fn*/,
+   'Flow_node'(SimilarFlow, SrcNode),
    'SetNodeRole'(SrcNode, SrcRole),
    'SetNodeRole'(TransitNode, TransitRole),
    SrcRole \== TransitRole,
    'FlowSameHeader'(Flow, SimilarFlow).
 
 'FlowSameHeader'(Flow1, Flow2) :-
-   'FlowOriginate'(Node1, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag, Flow1) /*fn*/,
-   'FlowOriginate'(Node2, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag, Flow2) /*fn*/,
+   'FlowOriginate'(Node1, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag, Flow1),
+   'FlowOriginate'(Node2, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag, Flow2),
    Node1 \== Node2.
