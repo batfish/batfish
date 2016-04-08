@@ -1396,14 +1396,13 @@ need_PolicyMapMatchAdvert(Map, Advert)
    'InstalledRoute'(Route),
    'Route_node'(Route, Node),
    'Route_network'(Route, Network),
-   'Network_address'(Network, Network_address),
-   'Ip_address'(Ip:Network_address),
+   'Network_address'(Network, Ip),
    'NetworkOf'(Ip, Prefix_length, Network).
+
 'FibNetwork'(Node, Network, Interface, NextHop, NextHopInt) :-
    'Fib'(Node, Ip, Prefix_length, Interface, NextHop, NextHopInt, _),
    'FibNeighborIp'(Node, Ip),
-   'Network_address'(Network, Network_address),
-   'Ip_address'(Ip:Network_address),
+   'Network_address'(Network, Ip),
    'NetworkOf'(Ip, Prefix_length, Network).
 
 'FibDrop'(Node, Ip) :-
@@ -1513,10 +1512,9 @@ need_PolicyMapMatchAdvert(Map, Advert)
    'Route_admin'(ContributingRoute, Admin),
    'MinContributingRouteAdmin'(Route, Admin).
 
-'MinBestGlobalGeneratedRoute_nextHopIpInt'(Route, MinNextHopIpInt ):-
-   agg(MinNextHopIpInt = min(NextHopIpInt),(
-      'BestGlobalGeneratedRoute_nextHopIp'(Route, NextHopIp),
-      'Ip_address'(NextHopIp:NextHopIpInt))).
+'MinBestGlobalGeneratedRoute_nextHopIpInt'(Route, MinNextHopIpInt) :-
+   agg(MinNextHopIpInt = min(NextHopIp),
+      'BestGlobalGeneratedRoute_nextHopIp'(Route, NextHopIp)).
 
 'MinContributingRouteAddress'(Route, MinAddress ):-
    agg(MinAddress = min(Address),(
@@ -1535,9 +1533,8 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'InstalledRoute'(Route),
    'Route_node'(Route, Node).
 
-'Route_nextHopIp'(Route, NextHopIp ):-
-   'MinBestGlobalGeneratedRoute_nextHopIpInt'(Route, NextHopIpInt),
-   'Ip_address'(NextHopIp:NextHopIpInt).
+'Route_nextHopIp'(Route, NextHopIp) :-
+   'MinBestGlobalGeneratedRoute_nextHopIpInt'(Route, NextHopIp).
 
 'SetGeneratedRoute'(Node, Network, Admin) :-
    'SetGeneratedRoute_flat'(Node, Network_start, Network_end, Prefix_length, Admin),
@@ -1554,6 +1551,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
 'SetGeneratedRoutePolicy'(Node, Network, Map) :-
    'SetGeneratedRoutePolicy_flat'(Node, Network_start, Network_end, Prefix_length, Map),
    'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
+
 'Ip'(Ip) :-
    'SetIpInt'(Node, Interface, Ip, Prefix_length).
 'HasIp'(Node, Ip) :-
@@ -1574,16 +1572,13 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Network_end'(Network, Network_end),
    'Network_prefix_length'(Network, Prefix_length)
 :-
-   'IpReadyInt'(_, _, Ip, _),
-   'Ip_address'(Ip:Network_start),
+   'IpReadyInt'(_, _, Network_start, _),
    Network_end = Network_start,
    Prefix_length = 32.
 
 'IpReadyInt'(Node, Interface, Ip, Prefix_length) :-
    'SetIpInt'(Node, Interface, Ip, Prefix_length),
    'SetActiveInt'(Node, Interface).
-'Ip_address'(N:N) :-
-   'Ip'(N).
 
 'Ip'(X) :-
    'Ip_NONE'(X).
@@ -1593,6 +1588,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'Ip'(NetworkIp) :-
    'SetNetwork'(NetworkIp, Network_start, Network_end, Prefix_length).
+
 'Ip_NONE'(-1).
 'Ip_ZERO'(0).
 
@@ -1606,10 +1602,11 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'SetNetwork'(_, Network_start, Network_end, Prefix_length).
 
 'NetworkOf'(Ip, Prefix_length, Network ):-
-   'Ip_address'(Ip:Ip_int),
-   Network_start =< Ip_int,
-   Ip_int =< Network_end,
+   'Ip'(Ip),
+   Network_start =< Ip,
+   Ip =< Network_end,
    'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
+
 'IpAccessListDeny'(List, Line, Flow) :-
    'SetIpAccessListLine_deny'(List, Line),
    'IpAccessListFirstMatch'(List, Flow, Line).
@@ -1652,9 +1649,8 @@ need_PolicyMapMatchRoute(Map, Route) :-
       \+ 'SetIpAccessListLine_dstIpRange'(List, Line, _, _) ;
       (
          'SetIpAccessListLine_dstIpRange'(List, Line, DstIp_start, DstIp_end),
-         'Ip_address'(DstIp:DstIpNum),
-         DstIp_start =< DstIpNum,
-         DstIpNum =< DstIp_end
+         DstIp_start =< DstIp,
+         DstIp =< DstIp_end
       )
    ).
 
@@ -1701,9 +1697,8 @@ need_PolicyMapMatchRoute(Map, Route) :-
       \+ 'SetIpAccessListLine_srcIpRange'(List, Line, _, _) ;
       (
          'SetIpAccessListLine_srcIpRange'(List, Line, SrcIp_start, SrcIp_end),
-         'Ip_address'(SrcIp:SrcIpNum),
-         SrcIp_start =< SrcIpNum,
-         SrcIpNum =< SrcIp_end
+         SrcIp_start =< SrcIp,
+         SrcIp =< SrcIp_end
       )
    ).
 
@@ -2922,15 +2917,15 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'Route_node'(Route, Node).
 
 'NetworkMatch'(Node, Ip, MatchNet, MatchLength) :-
-   'Ip_address'(Ip:Address),
+   'Ip'(Ip),
    'Network_address'(MatchNet, MatchNet_start),
    'Network_prefix_length'(MatchNet, MatchLength),
    'Network_end'(MatchNet, MatchNet_end),
    'InstalledRoute'(Route),
    'Route_network'(Route, MatchNet),
    'Route_node'(Route, Node),
-   MatchNet_start =< Address,
-   Address =< MatchNet_end.
+   MatchNet_start =< Ip,
+   Ip =< MatchNet_end.
 
 'RouteDetails_admin'(Route, Admin ):-
    'Route_admin'(Route, Admin).
