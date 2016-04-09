@@ -129,7 +129,8 @@ public final class Settings extends BaseSettings {
          _envPath = envPath;
       }
 
-      public void setExternalBgpAnnouncementsPath(String externalBgpAnnouncementsPath) {
+      public void setExternalBgpAnnouncementsPath(
+            String externalBgpAnnouncementsPath) {
          _externalBgpAnnouncementsPath = externalBgpAnnouncementsPath;
       }
 

@@ -2603,7 +2603,6 @@ need_RouteFilterMatchNetwork(List, Network) :-
          'CommunityListPermit'(CommunityList, _, Community) 
       )
    ).
-   %TODO: Finish definition and replace underscores at top of rule
 
 'PolicyMapConjunctionDenyAdvert'(Policy, Advert) :-
    need_PolicyMapMatchAdvert(Map, Advert),
@@ -2770,10 +2769,26 @@ need_RouteFilterMatchNetwork(List, Network) :-
 'PolicyMapPermitRoute'(Map, Clause, Route) :-
    'PolicyMapFirstMatchRoute'(Map, Route, Clause),
    'SetPolicyMapClausePermit'(Map, Clause).
-'Ip'(NextHopIp),
-'Ip'(SrcIp),
-'Ip'(DstIp),
-'Ip'(OriginatorIp)
+
+'Ip'(Ip) :-
+   'SetBgpAdvertisementIp'(Ip).
+
+'Network'(Network),
+'Network_address'(Network, Network_start),
+'Network_constructor'(Network_start, Network_end, Prefix_length, Network),
+'Network_index'(Network, Network_start, Network_end, Prefix_length),
+'Network_end'(Network, Network_end),
+'Network_prefix_length'(Network, Prefix_length)
+:-
+   'SetBgpAdvertisementIp'(Ip),
+   Network_start = Ip,
+   Network_end = Ip,
+   Prefix_length = 32.
+
+'SetBgpAdvertisementIp'(NextHopIp),
+'SetBgpAdvertisementIp'(SrcIp),
+'SetBgpAdvertisementIp'(DstIp),
+'SetBgpAdvertisementIp'(OriginatorIp)
 :-
    'SetBgpAdvertisement_flat'(PcIndex, Type, Network_start, Network_end, Prefix_length, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, OriginatorIp).
 
@@ -2784,6 +2799,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
 
 'Ip'(NextHopIp) :-
    'SetPrecomputedRoute_flat'(Node, Network_start, Network_end, Prefix_length, NextHopIp, Admin, Cost, Protocol, Tag).
+
 'AdvertisementClusterId'(Advert, ClusterId) :-
    'SetBgpAdvertisementClusterId'(PcIndex, ClusterId),
    'PrecomputedAdvertisement_index'(Advert, PcIndex).

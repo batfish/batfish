@@ -44,6 +44,7 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.collections.AdvertisementSet;
+import org.batfish.collections.CommunitySet;
 import org.batfish.collections.EdgeSet;
 import org.batfish.collections.FibMap;
 import org.batfish.collections.FibRow;
@@ -308,10 +309,10 @@ public class Batfish implements AutoCloseable {
                   BfConsts.RELPATH_TOPOLOGY_FILE).toString());
             envSettings.setDeltaConfigurationsDir(envDirPath.resolve(
                   BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
+            envSettings.setExternalBgpAnnouncementsPath(envDirPath.resolve(
+                  BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS).toString());
             envSettings.setPrecomputedRoutesPath(envPath.resolve(
                   BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
-            envSettings.setExternalBgpAnnouncementsPath(envPath.resolve(
-                  BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS).toString());
          }
          String diffEnvName = settings.getDiffEnvironmentName();
          if (diffEnvName != null) {
@@ -338,11 +339,11 @@ public class Batfish implements AutoCloseable {
                   BfConsts.RELPATH_TOPOLOGY_FILE).toString());
             diffEnvSettings.setDeltaConfigurationsDir(diffEnvDirPath.resolve(
                   BfConsts.RELPATH_CONFIGURATIONS_DIR).toString());
-            diffEnvSettings.setPrecomputedRoutesPath(diffEnvPath.resolve(
-                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
-            diffEnvSettings.setExternalBgpAnnouncementsPath(diffEnvPath
+            diffEnvSettings.setExternalBgpAnnouncementsPath(diffEnvDirPath
                   .resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS)
                   .toString());
+            diffEnvSettings.setPrecomputedRoutesPath(diffEnvPath.resolve(
+                  BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
             if (settings.getDiffActive()) {
                settings.setActiveEnvironmentSettings(diffEnvSettings);
             }
@@ -1338,7 +1339,9 @@ public class Batfish implements AutoCloseable {
                _settings.getPrecomputedBgpAdvertisementsPath(), cpFactBins);
       }
       Map<String, Configuration> configurations = loadConfigurations(envSettings);
-      processExternalBgpAnnouncements(configurations, envSettings, cpFactBins);
+      CommunitySet allCommunities = new CommunitySet();
+      processExternalBgpAnnouncements(configurations, envSettings, cpFactBins,
+            allCommunities);
       Topology topology = computeTopology(_settings.getTestRigPath(),
             configurations, cpFactBins);
       String edgeBlacklistPath = envSettings.getEdgeBlacklistPath();
@@ -1377,7 +1380,8 @@ public class Batfish implements AutoCloseable {
          flowSinks = computeFlowSinks(configurations, topology);
       }
       writeTopologyFacts(topology, cpFactBins);
-      writeConfigurationFacts(configurations, cpFactBins);
+      populateConfigurationFactBins(configurations.values(), allCommunities,
+            cpFactBins);
       writeFlowSinkFacts(flowSinks, cpFactBins);
       if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
          _logger.output("Facts generated successfully.\n");
@@ -2802,14 +2806,13 @@ public class Batfish implements AutoCloseable {
    }
 
    private void populateConfigurationFactBins(
-         Collection<Configuration> configurations,
+         Collection<Configuration> configurations, CommunitySet allCommunities,
          Map<String, StringBuilder> factBins) {
       _logger
             .info("\n*** EXTRACTING LOGICBLOX FACTS FROM CONFIGURATIONS ***\n");
       resetTimer();
-      Set<Long> communities = new LinkedHashSet<Long>();
       for (Configuration c : configurations) {
-         communities.addAll(c.getCommunities());
+         allCommunities.addAll(c.getCommunities());
       }
       boolean pedanticAsError = _settings.getPedanticAsError();
       boolean pedanticRecord = _settings.getPedanticRecord();
@@ -2826,7 +2829,7 @@ public class Batfish implements AutoCloseable {
                unimplementedRecord, false);
          try {
             ConfigurationFactExtractor cfe = new ConfigurationFactExtractor(c,
-                  communities, factBins, warnings);
+                  allCommunities, factBins, warnings);
             cfe.writeFacts();
             _logger.debug("...OK\n");
          }
@@ -2892,15 +2895,6 @@ public class Batfish implements AutoCloseable {
       int pcIndex = 0;
       for (BgpAdvertisement advert : advertSet) {
          String type = advert.getType();
-         switch (type) {
-         case "ibgp_ti":
-         case "bgp_ti":
-            break;
-
-         default:
-            continue;
-         }
-
          Prefix network = advert.getNetwork();
          networks.add(network);
          long networkStart = network.getAddress().asLong();
@@ -2948,8 +2942,21 @@ public class Batfish implements AutoCloseable {
          String precomputedBgpAdvertisementsPath,
          Map<String, StringBuilder> cpFactBins) {
       File inputFile = new File(precomputedBgpAdvertisementsPath);
-      AdvertisementSet advertSet = (AdvertisementSet) deserializeObject(inputFile);
-      populatePrecomputedBgpAdvertisements(advertSet, cpFactBins);
+      AdvertisementSet rawAdvertSet = (AdvertisementSet) deserializeObject(inputFile);
+      AdvertisementSet incomingAdvertSet = new AdvertisementSet();
+      for (BgpAdvertisement advert : rawAdvertSet) {
+         String type = advert.getType();
+         switch (type) {
+         case "ibgp_ti":
+         case "bgp_ti":
+            incomingAdvertSet.add(advert);
+            break;
+
+         default:
+            continue;
+         }
+      }
+      populatePrecomputedBgpAdvertisements(incomingAdvertSet, cpFactBins);
    }
 
    private void populatePrecomputedFacts(String precomputedFactsPath,
@@ -3087,23 +3094,15 @@ public class Batfish implements AutoCloseable {
       _logger.output(sb.toString());
    }
 
-   private void printPredicate(String predicateName) {
-      printPredicate(_envSettings, predicateName);
-   }
-
    public void printPredicates(EnvironmentSettings envSettings,
          Set<String> predicateNames) {
       // Print predicate(s) here
       _logger.info("\n*** SUBMITTING QUERY(IES) ***\n");
       resetTimer();
       for (String predicateName : predicateNames) {
-         printPredicate(predicateName);
+         printPredicate(envSettings, predicateName);
       }
       printElapsedTime();
-   }
-
-   public void printPredicates(Set<String> predicateNames) {
-      printPredicates(_envSettings, predicateNames);
    }
 
    private void printPredicateSemantics(String predicateName) {
@@ -3151,11 +3150,14 @@ public class Batfish implements AutoCloseable {
     * @param envSettings
     *           The settings for the environment, containing e.g. the path to
     *           the external announcements file
-    * @param cpFactBins The container for nxtnet facts
+    * @param cpFactBins
+    *           The container for nxtnet facts
+    * @param allCommunities
     */
    private void processExternalBgpAnnouncements(
          Map<String, Configuration> configurations,
-         EnvironmentSettings envSettings, Map<String, StringBuilder> cpFactBins) {
+         EnvironmentSettings envSettings,
+         Map<String, StringBuilder> cpFactBins, CommunitySet allCommunities) {
       AdvertisementSet advertSet = new AdvertisementSet();
       String externalBgpAnnouncementsPath = envSettings
             .getExternalBgpAnnouncementsPath();
@@ -3163,28 +3165,32 @@ public class Batfish implements AutoCloseable {
       if (externalBgpAnnouncementsFile.exists()) {
          String externalBgpAnnouncementsFileContents = Util
                .readFile(externalBgpAnnouncementsFile);
-         // TODO: RATUL_BGP
-         // It is your job to populate advertSet with BgpAdvertisements that
+         // Populate advertSet with BgpAdvertisements that
          // gets passed to populatePrecomputedBgpAdvertisements.
          // See populatePrecomputedBgpAdvertisements for the things that get
          // extracted from these advertisements.
-         
+
          try {
-            JSONObject jsonObj = new JSONObject(externalBgpAnnouncementsFileContents);
-            
-            JSONArray announcements = jsonObj.getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENTS);
-            
+            JSONObject jsonObj = new JSONObject(
+                  externalBgpAnnouncementsFileContents);
+
+            JSONArray announcements = jsonObj
+                  .getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENTS);
+
             for (int index = 0; index < announcements.length(); index++) {
                JSONObject announcement = announcements.getJSONObject(index);
-               advertSet.add(new BgpAdvertisement(announcement));
+               BgpAdvertisement bgpAdvertisement = new BgpAdvertisement(
+                     announcement);
+               allCommunities.addAll(bgpAdvertisement.getCommunities());
+               advertSet.add(bgpAdvertisement);
             }
-            
+
          }
          catch (JSONException e) {
-               throw new BatfishException("Problems parsing JSON in "
-                     + externalBgpAnnouncementsFile.toString(), e);
+            throw new BatfishException("Problems parsing JSON in "
+                  + externalBgpAnnouncementsFile.toString(), e);
          }
-         
+
          populatePrecomputedBgpAdvertisements(advertSet, cpFactBins);
       }
    }
@@ -3230,7 +3236,7 @@ public class Batfish implements AutoCloseable {
          predicateNames.addAll(_settings.getPredicates());
       }
       checkQuery(_envSettings, predicateNames);
-      printPredicates(predicateNames);
+      printPredicates(_envSettings, predicateNames);
    }
 
    private Map<File, String> readConfigurationFiles(String testRigPath,
@@ -3853,12 +3859,6 @@ public class Batfish implements AutoCloseable {
             + "\"...");
       serializeObject(adverts, advertsFile);
       _logger.info("OK\n");
-   }
-
-   public void writeConfigurationFacts(
-         Map<String, Configuration> configurations,
-         Map<String, StringBuilder> factBins) {
-      populateConfigurationFactBins(configurations.values(), factBins);
    }
 
    private void writeFlowSinkFacts(InterfaceSet flowSinks,

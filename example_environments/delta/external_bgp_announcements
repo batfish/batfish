@@ -1,0 +1,20 @@
+{
+	"Announcements": [
+		{
+			"Prefix" : "4.0.0.0/8",
+			"NextHopIp" : "10.14.22.4",
+			"SrcNode" : "neighbor",
+			"SrcIp" : "10.14.22.4",
+			"DstNode" : "as1border2",
+			"DstIp" : "10.14.22.1",
+			"SrcProtocol" : "aggregate",
+			"OriginType" : "egp",
+			"LocalPref" : 0,
+			"Med" : 20,
+			"OriginatorIp" : "0.0.0.0",
+			"Communities" : ["4:1"],
+			"AsPath" : [[1239], [7018,7019]],
+			"Type" : "bgp_to"
+		}
+	]
+}
