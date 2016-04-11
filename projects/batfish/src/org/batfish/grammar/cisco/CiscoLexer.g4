@@ -376,6 +376,11 @@ ASDM
    'asdm'
 ;
 
+ASN
+:
+   'asn'
+;
+
 ASSEMBLER
 :
    'assembler'
@@ -4032,6 +4037,11 @@ REFLECT
    'reflect'
 ;
 
+REGEX_MODE
+:
+   'regex-mode'
+;
+
 RELOAD
 :
    'reload'
@@ -4737,6 +4747,11 @@ STORM_CONTROL
 STP
 :
    'stp'
+;
+
+STRING
+:
+   'string'
 ;
 
 STUB
@@ -6084,6 +6099,11 @@ M_AsPath_DEC
 M_AsPath_PREPEND
 :
    'prepend' -> type(PREPEND), popMode
+;
+
+M_AsPath_REGEX_MODE
+:
+   'regex-mode' -> type(REGEX_MODE), popMode
 ;
 
 M_AsPath_VARIABLE

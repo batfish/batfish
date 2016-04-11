@@ -143,6 +143,15 @@ interface_multicast_stanza
    (ENABLE NEWLINE)?
 ;
 
+ip_as_path_regex_mode_stanza
+:
+   IP AS_PATH REGEX_MODE
+   (
+      ASN
+      | STRING
+   ) NEWLINE
+;
+
 ip_default_gateway_stanza
 :
    IP DEFAULT_GATEWAY gateway = IP_ADDRESS NEWLINE
@@ -313,6 +322,7 @@ stanza
    | hostname_stanza
    | interface_stanza
    | ip_as_path_access_list_stanza
+   | ip_as_path_regex_mode_stanza
    | ip_community_list_expanded_stanza
    | ip_community_list_standard_stanza
    | ip_default_gateway_stanza
