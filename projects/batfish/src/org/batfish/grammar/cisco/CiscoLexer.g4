@@ -6145,6 +6145,11 @@ M_AsPathAccessList_WS
 
 mode M_AsPathRegex;
 
+M_AsPathRegex_ANY
+:
+   'any' -> type(ANY)
+;
+
 M_AsPathRegex_ASTERISK
 :
    '*' -> type(ASTERISK)
