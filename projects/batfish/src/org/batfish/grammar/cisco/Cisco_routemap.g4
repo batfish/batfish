@@ -211,41 +211,10 @@ rm_stanza
    | set_rm_stanza
 ;
 
-route_map_named_stanza
-locals [boolean again]
-:
-   ROUTE_MAP name = ~NEWLINE route_map_tail
-   {
-		$again = _input.LT(1).getType() == ROUTE_MAP &&
-		_input.LT(2).getType() != NEWLINE &&
-		_input.LT(2).getText().equals($name.text);
-	}
-
-   (
-      {$again}?
-
-      route_map_named_stanza
-      |
-      {!$again}?
-
-   )
-;
-
 route_map_stanza
 :
-   named = route_map_named_stanza
-;
-
-route_map_tail
-:
-   rmt = access_list_action num = DEC NEWLINE route_map_tail_tail
-;
-
-route_map_tail_tail
-:
-   (
-      rms_list += rm_stanza
-   )*
+   ROUTE_MAP name = variable rmt = access_list_action num = DEC NEWLINE
+   rm_stanza*
 ;
 
 route_policy_stanza

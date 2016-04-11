@@ -1066,13 +1066,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterRoute_map_stanza(Route_map_stanzaContext ctx) {
-      String name = ctx.named.name.getText();
-      _currentRouteMap = new RouteMap(name);
-      _configuration.getRouteMaps().put(name, _currentRouteMap);
-   }
-
-   @Override
-   public void enterRoute_map_tail(Route_map_tailContext ctx) {
+      String name = ctx.name.getText();
+      _currentRouteMap = _configuration.getRouteMaps().get(name);
+      if (_currentRouteMap == null) {
+         _currentRouteMap = new RouteMap(name);
+         _configuration.getRouteMaps().put(name, _currentRouteMap);
+      }
       int num = toInteger(ctx.num);
       LineAction action = getAccessListAction(ctx.rmt);
       _currentRouteMapClause = new RouteMapClause(action,
@@ -2397,10 +2396,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitRoute_map_stanza(Route_map_stanzaContext ctx) {
       _currentRouteMap = null;
-   }
-
-   @Override
-   public void exitRoute_map_tail(Route_map_tailContext ctx) {
       _currentRouteMapClause = null;
    }
 
