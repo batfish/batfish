@@ -20,26 +20,6 @@ access_list_ip_range
    | ipv6_prefix = IPV6_PREFIX
 ;
 
-appletalk_access_list_numbered_stanza
-locals [boolean again]
-:
-   ACCESS_LIST name = ACL_NUM_APPLETALK appletalk_access_list_null_tail
-   {
-		$again = _input.LT(1).getType() == ACCESS_LIST &&
-		_input.LT(2).getType() == ACL_NUM_APPLETALK &&
-		_input.LT(2).getText().equals($name.text);
-	}
-
-   (
-      {$again}?
-
-      appletalk_access_list_numbered_stanza
-      |
-      {!$again}?
-
-   )
-;
-
 appletalk_access_list_null_tail
 :
    action = access_list_action
@@ -53,7 +33,7 @@ appletalk_access_list_null_tail
 
 appletalk_access_list_stanza
 :
-   numbered = appletalk_access_list_numbered_stanza
+   ACCESS_LIST name = ACL_NUM_APPLETALK appletalk_access_list_null_tail
 ;
 
 as_path_regex
@@ -137,17 +117,11 @@ extended_access_list_additional_feature
    )
 ;
 
-extended_access_list_named_stanza
-:
-   IP ACCESS_LIST EXTENDED name = ~NEWLINE NEWLINE
-   (
-      extended_access_list_tail
-      | extended_access_list_null_tail
-   )*
-;
-
 extended_access_list_null_tail
 :
+   (
+      SEQ? num = DEC
+   )?
    (
       (
          access_list_action protocol access_list_ip_range port_specifier?
@@ -156,43 +130,49 @@ extended_access_list_null_tail
       | DYNAMIC
       | EVALUATE
       | REMARK
+      | STATISTICS
    ) ~NEWLINE* NEWLINE
-;
-
-extended_access_list_numbered_stanza
-locals [boolean again]
-:
-   ACCESS_LIST name = ACL_NUM_EXTENDED
-   (
-      extended_access_list_tail
-      | extended_access_list_null_tail
-   )
-   {
-		$again = _input.LT(1).getType() == ACCESS_LIST &&
-		_input.LT(2).getType() == ACL_NUM_EXTENDED &&
-		_input.LT(2).getText().equals($name.text);
-	}
-
-   (
-      {$again}?
-
-      extended_access_list_numbered_stanza
-      |
-      {!$again}?
-
-   )
 ;
 
 extended_access_list_stanza
 :
-   named = extended_access_list_named_stanza
-   | numbered = extended_access_list_numbered_stanza
+   (
+      (
+         IP ACCESS_LIST EXTENDED name = variable
+      )
+      |
+      (
+         ACCESS_LIST num = ACL_NUM_EXTENDED
+      )
+      |
+      (
+         (
+            IP
+            | IPV4
+            | IPV6
+         ) ACCESS_LIST name = variable
+      )
+   )
+   (
+      (
+         NEWLINE
+         (
+            extended_access_list_tail
+            | extended_access_list_null_tail
+         )*
+      )
+      |
+      (
+         extended_access_list_tail
+         | extended_access_list_null_tail
+      )
+   ) exit_line?
 ;
 
 extended_access_list_tail
 :
    (
-      SEQ? DEC
+      SEQ? num = DEC
    )? ala = access_list_action prot = protocol srcipr = access_list_ip_range
    (
       alps_src = port_specifier
@@ -215,27 +195,13 @@ interface_rs_stanza
 
 ip_as_path_access_list_stanza
 :
-   numbered = ip_as_path_numbered_stanza
-;
-
-ip_as_path_numbered_stanza
-locals [boolean again]
-:
-   IP AS_PATH ACCESS_LIST name = . ip_as_path_access_list_tail
-   {
-		$again = _input.LT(1).getType() == IP &&
-		_input.LT(2).getType() == AS_PATH &&
-		_input.LT(3).getType() == ACCESS_LIST &&
-		_input.LT(4).getText().equals($name.text);
-	}
-
+   IP AS_PATH ACCESS_LIST name = variable
    (
-      {$again}?
-
-      ip_as_path_numbered_stanza
+      ip_as_path_access_list_tail
       |
-      {!$again}?
-
+      (
+         NEWLINE ip_as_path_access_list_tail*
+      )
    )
 ;
 
@@ -250,57 +216,24 @@ ip_as_path_access_list_tail
 
 ip_community_list_expanded_stanza
 :
-   numbered = ip_community_list_expanded_numbered_stanza
-   | named = ip_community_list_expanded_named_stanza
-   | block = ip_community_list_expanded_block_stanza
-;
-
-ip_community_list_expanded_block_stanza
-:
-   IP COMMUNITY_LIST name = variable NEWLINE ip_community_list_expanded_tail*
-;
-
-ip_community_list_expanded_named_stanza
-locals [boolean again]
-:
-   IP COMMUNITY_LIST EXPANDED name = variable ip_community_list_expanded_tail
-   {
-		$again = _input.LT(1).getType() == IP &&
-		_input.LT(2).getType() == COMMUNITY_LIST &&
-		_input.LT(3).getType() == EXPANDED &&
-		_input.LT(4).getType() == VARIABLE &&
-		_input.LT(4).getText().equals($name.text);
-	}
-
    (
-      {$again}?
-
-      ip_community_list_expanded_named_stanza
+      (
+         IP COMMUNITY_LIST name = variable NEWLINE
+      )
       |
-      {!$again}?
-
+      (
+         IP COMMUNITY_LIST EXPANDED name = variable
+      )
+      |
+      (
+         IP COMMUNITY_LIST num = COMMUNITY_LIST_NUM_EXPANDED
+      )
    )
-;
-
-ip_community_list_expanded_numbered_stanza
-locals [boolean again]
-:
-   IP COMMUNITY_LIST name = COMMUNITY_LIST_NUM_EXPANDED
-   ip_community_list_expanded_tail
-   {
-		$again = _input.LT(1).getType() == IP &&
-		_input.LT(2).getType() == COMMUNITY_LIST &&
-		_input.LT(3).getType() == COMMUNITY_LIST_NUM_EXPANDED &&
-		_input.LT(3).getText().equals($name.text);
-	}
-
    (
-      {$again}?
-
-      ip_community_list_expanded_numbered_stanza
-      |
-      {!$again}?
-
+      (
+         NEWLINE ip_community_list_expanded_tail*
+      )
+      | ip_community_list_expanded_tail
    )
 ;
 
@@ -314,51 +247,20 @@ ip_community_list_expanded_tail
 
 ip_community_list_standard_stanza
 :
-   named = ip_community_list_standard_named_stanza
-   | numbered = ip_community_list_standard_numbered_stanza
-;
-
-ip_community_list_standard_named_stanza
-locals [boolean again]
-:
-   IP COMMUNITY_LIST STANDARD name = VARIABLE ip_community_list_standard_tail
-   {
-		$again = _input.LT(1).getType() == IP &&
-		_input.LT(2).getType() == COMMUNITY_LIST &&
-		_input.LT(3).getType() == STANDARD &&
-		_input.LT(4).getType() == VARIABLE &&
-		_input.LT(4).getText().equals($name.text);
-	}
-
    (
-      {$again}?
-
-      ip_community_list_standard_named_stanza
+      (
+         IP COMMUNITY_LIST STANDARD name = variable
+      )
       |
-      {!$again}?
-
+      (
+         IP COMMUNITY_LIST num = COMMUNITY_LIST_NUM_STANDARD
+      )
    )
-;
-
-ip_community_list_standard_numbered_stanza
-locals [boolean again]
-:
-   IP COMMUNITY_LIST name = COMMUNITY_LIST_NUM_STANDARD
-   ip_community_list_standard_tail
-   {
-		$again = _input.LT(1).getType() == IP &&
-		_input.LT(2).getType() == COMMUNITY_LIST &&
-		_input.LT(3).getType() == COMMUNITY_LIST_NUM_STANDARD &&
-		_input.LT(3).getText().equals($name.text);
-	}
-
    (
-      {$again}?
-
-      ip_community_list_standard_numbered_stanza
-      |
-      {!$again}?
-
+      (
+         NEWLINE ip_community_list_standard_tail*
+      )
+      | ip_community_list_standard_tail
    )
 ;
 
@@ -372,34 +274,23 @@ ip_community_list_standard_tail
 
 ip_prefix_list_stanza
 :
-   named = ip_prefix_list_named_stanza
-;
-
-ip_prefix_list_named_stanza
-locals [boolean again]
-:
    (
       IP
       | IPV6
-   ) PREFIX_LIST name = ~NEWLINE
+   ) PREFIX_LIST name = variable
    (
-      ip_prefix_list_tail
-      | ip_prefix_list_null_tail
-   )
-   {
-		$again = (_input.LT(1).getType() == IP || _input.LT(1).getType() == IPV6) &&
-		_input.LT(2).getType() == PREFIX_LIST &&
-		_input.LT(3).getType() != NEWLINE &&
-		_input.LT(3).getText().equals($name.text);
-	}
-
-   (
-      {$again}?
-
-      ip_prefix_list_named_stanza
+      (
+         NEWLINE
+         (
+            ip_prefix_list_null_tail
+            | ip_prefix_list_tail
+         )*
+      )
       |
-      {!$again}?
-
+      (
+         ip_prefix_list_tail
+         | ip_prefix_list_null_tail
+      )
    )
 ;
 
@@ -410,9 +301,8 @@ ip_prefix_list_null_tail
    )
    |
    (
-       NO SEQ DEC NEWLINE
+      NO SEQ DEC NEWLINE
    )
-   
 ;
 
 ip_prefix_list_tail
@@ -439,26 +329,6 @@ ip_prefix_list_tail
    )* NEWLINE
 ;
 
-ipx_sap_access_list_numbered_stanza
-locals [boolean again]
-:
-   ACCESS_LIST name = ACL_NUM_IPX_SAP ipx_sap_access_list_null_tail
-   {
-		$again = _input.LT(1).getType() == ACCESS_LIST &&
-		_input.LT(2).getType() == ACL_NUM_IPX_SAP &&
-		_input.LT(2).getText().equals($name.text);
-	}
-
-   (
-      {$again}?
-
-      ipx_sap_access_list_numbered_stanza
-      |
-      {!$again}?
-
-   )
-;
-
 ipx_sap_access_list_null_tail
 :
    action = access_list_action ~NEWLINE* NEWLINE
@@ -466,55 +336,12 @@ ipx_sap_access_list_null_tail
 
 ipx_sap_access_list_stanza
 :
-   numbered = ipx_sap_access_list_numbered_stanza
+   ACCESS_LIST name = ACL_NUM_IPX_SAP ipx_sap_access_list_null_tail
 ;
 
 irs_stanza
 :
    bandwidth_irs_stanza
-;
-
-nexus_access_list_null_tail
-:
-   (
-      num = DEC
-   )?
-   (
-      REMARK
-      | STATISTICS
-   ) ~NEWLINE* NEWLINE
-;
-
-nexus_access_list_stanza
-:
-   (
-      IP
-      | IPV4
-      | IPV6
-   ) ACCESS_LIST name = ~NEWLINE NEWLINE
-   (
-      nexus_access_list_tail
-      | nexus_access_list_null_tail
-   )* exit_line?
-;
-
-nexus_access_list_tail
-:
-   (
-      SEQ? num = DEC
-   )? extended_access_list_tail
-;
-
-nexus_prefix_list_stanza
-:
-   (
-      IP
-      | IPV6
-   ) PREFIX_LIST name = variable NEWLINE
-   (
-      ip_prefix_list_null_tail
-      | ip_prefix_list_tail
-   )*
 ;
 
 null_as_path_regex
@@ -548,27 +375,6 @@ prefix_set_elem_list
    )* prefix_set_elem NEWLINE
 ;
 
-protocol_type_code_access_list_numbered_stanza
-locals [boolean again]
-:
-   ACCESS_LIST name = ACL_NUM_PROTOCOL_TYPE_CODE
-   protocol_type_code_access_list_null_tail
-   {
-		$again = _input.LT(1).getType() == ACCESS_LIST &&
-		_input.LT(2).getType() == ACL_NUM_PROTOCOL_TYPE_CODE &&
-		_input.LT(2).getText().equals($name.text);
-	}
-
-   (
-      {$again}?
-
-      protocol_type_code_access_list_numbered_stanza
-      |
-      {!$again}?
-
-   )
-;
-
 protocol_type_code_access_list_null_tail
 :
    action = access_list_action ~NEWLINE* NEWLINE
@@ -576,7 +382,8 @@ protocol_type_code_access_list_null_tail
 
 protocol_type_code_access_list_stanza
 :
-   numbered = protocol_type_code_access_list_numbered_stanza
+   ACCESS_LIST name = ACL_NUM_PROTOCOL_TYPE_CODE
+   protocol_type_code_access_list_null_tail
 ;
 
 rs_stanza
@@ -593,47 +400,40 @@ rsvp_stanza
 standard_access_list_null_tail
 :
    (
+      SEQ? num = DEC
+   )?
+   (
       REMARK remark = M_REMARK_REMARK NEWLINE
-   )
-;
-
-standard_access_list_named_stanza
-:
-   IP ACCESS_LIST STANDARD name = variable NEWLINE
-   (
-      standard_access_list_tail
-      | standard_access_list_null_tail
-   )*
-;
-
-standard_access_list_numbered_stanza
-locals [boolean again]
-:
-   ACCESS_LIST name = ACL_NUM_STANDARD
-   (
-      standard_access_list_tail
-      | standard_access_list_null_tail
-   )
-   {
-		$again = _input.LT(1).getType() == ACCESS_LIST &&
-		_input.LT(2).getType() == ACL_NUM_STANDARD &&
-		_input.LT(2).getText().equals($name.text);
-	}
-
-   (
-      {$again}?
-
-      standard_access_list_numbered_stanza
-      |
-      {!$again}?
-
    )
 ;
 
 standard_access_list_stanza
 :
-   named = standard_access_list_named_stanza
-   | numbered = standard_access_list_numbered_stanza
+   (
+      (
+         IP ACCESS_LIST STANDARD name = variable
+      )
+      |
+      (
+         ACCESS_LIST num = ACL_NUM_STANDARD
+      )
+   )
+   (
+      (
+         NEWLINE
+         (
+            standard_access_list_tail
+            | standard_access_list_null_tail
+         )*
+      )
+      |
+      (
+         (
+            standard_access_list_tail
+            | standard_access_list_null_tail
+         )
+      )
+   )
 ;
 
 standard_access_list_tail

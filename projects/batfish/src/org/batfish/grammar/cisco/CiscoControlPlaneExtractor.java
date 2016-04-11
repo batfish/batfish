@@ -775,15 +775,27 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterExtended_access_list_stanza(
          Extended_access_list_stanzaContext ctx) {
+      boolean ipv6 = (ctx.IPV6() != null);
+
+      if (ipv6) {
+         todo(ctx, F_IPV6);
+      }
+
       String name;
-      if (ctx.named != null) {
-         name = ctx.named.name.getText();
+      if (ctx.name != null) {
+         name = ctx.name.getText();
+      }
+      else if (ctx.num != null) {
+         name = ctx.num.getText();
       }
       else {
-         name = ctx.numbered.name.getText();
+         throw new BatfishException("Could not determine acl name");
       }
-      _currentExtendedAcl = new ExtendedAccessList(name);
-      _configuration.getExtendedAcls().put(name, _currentExtendedAcl);
+      _currentExtendedAcl = _configuration.getExtendedAcls().get(name);
+      if (_currentExtendedAcl == null) {
+         _currentExtendedAcl = new ExtendedAccessList(name, ipv6);
+         _configuration.getExtendedAcls().put(name, _currentExtendedAcl);
+      }
    }
 
    @Override
@@ -835,56 +847,73 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterIp_as_path_access_list_stanza(
          Ip_as_path_access_list_stanzaContext ctx) {
-      String name = ctx.numbered.name.getText();
-      _currentAsPathAcl = new IpAsPathAccessList(name);
-      _configuration.getAsPathAccessLists().put(name, _currentAsPathAcl);
+      String name = ctx.name.getText();
+      _currentAsPathAcl = _configuration.getAsPathAccessLists().get(name);
+      if (_currentAsPathAcl == null) {
+         _currentAsPathAcl = new IpAsPathAccessList(name);
+         _configuration.getAsPathAccessLists().put(name, _currentAsPathAcl);
+      }
    }
 
    @Override
    public void enterIp_community_list_expanded_stanza(
          Ip_community_list_expanded_stanzaContext ctx) {
       String name;
-      if (ctx.numbered != null) {
-         name = ctx.numbered.name.getText();
+      if (ctx.num != null) {
+         name = ctx.num.getText();
       }
-      else if (ctx.block != null) {
-         name = ctx.block.name.getText();
+      else if (ctx.name != null) {
+         name = ctx.name.getText();
       }
       else {
-         name = ctx.named.name.getText();
+         throw new BatfishException("Invalid community-list name");
       }
-      _currentExpandedCommunityList = new ExpandedCommunityList(name);
-      _configuration.getExpandedCommunityLists().put(name,
-            _currentExpandedCommunityList);
+      _currentExpandedCommunityList = _configuration
+            .getExpandedCommunityLists().get(name);
+      if (_currentExpandedCommunityList == null) {
+         _currentExpandedCommunityList = new ExpandedCommunityList(name);
+         _configuration.getExpandedCommunityLists().put(name,
+               _currentExpandedCommunityList);
+      }
    }
 
    @Override
    public void enterIp_community_list_standard_stanza(
          Ip_community_list_standard_stanzaContext ctx) {
       String name;
-      if (ctx.numbered != null) {
-         name = ctx.numbered.name.getText();
+      if (ctx.num != null) {
+         name = ctx.num.getText();
+      }
+      else if (ctx.name != null) {
+         name = ctx.name.getText();
       }
       else {
-         name = ctx.named.name.getText();
+         throw new BatfishException("Invalid standard community-list name");
       }
-      _currentStandardCommunityList = new StandardCommunityList(name);
-      _configuration.getStandardCommunityLists().put(name,
-            _currentStandardCommunityList);
+      _currentStandardCommunityList = _configuration
+            .getStandardCommunityLists().get(name);
+      if (_currentStandardCommunityList == null) {
+         _currentStandardCommunityList = new StandardCommunityList(name);
+         _configuration.getStandardCommunityLists().put(name,
+               _currentStandardCommunityList);
+      }
    }
 
    @Override
    public void enterIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
 
-      boolean isIpV6 = (ctx.named.IPV6() != null);
+      boolean isIpv6 = (ctx.IPV6() != null);
 
-      if (isIpV6) {
+      if (isIpv6) {
          todo(ctx, F_IPV6);
       }
 
-      String name = ctx.named.name.getText();
-      _currentPrefixList = new PrefixList(name, isIpV6);
-      _configuration.getPrefixLists().put(name, _currentPrefixList);
+      String name = ctx.name.getText();
+      _currentPrefixList = _configuration.getPrefixLists().get(name);
+      if (_currentPrefixList == null) {
+         _currentPrefixList = new PrefixList(name, isIpv6);
+         _configuration.getPrefixLists().put(name, _currentPrefixList);
+      }
    }
 
    @Override
@@ -985,21 +1014,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void enterNexus_access_list_stanza(Nexus_access_list_stanzaContext ctx) {
-
-      boolean ipV6 = (ctx.IPV6() != null);
-
-      if (ipV6) {
-         todo(ctx, F_IPV6);
-      }
-
-      String name = ctx.name.getText();
-
-      _currentExtendedAcl = new ExtendedAccessList(name, ipV6);
-      _configuration.getExtendedAcls().put(name, _currentExtendedAcl);
-   }
-
-   @Override
    public void enterNexus_neighbor_rb_stanza(Nexus_neighbor_rb_stanzaContext ctx) {
       // do no further processing for unsupported address families / containers
       if (_currentPeerGroup == _dummyPeerGroup) {
@@ -1039,14 +1053,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       // TODO: verify if this is correct for nexus
       _currentPeerGroup.setActive(true);
       _currentPeerGroup.setShutdown(false);
-   }
-
-   @Override
-   public void enterNexus_prefix_list_stanza(Nexus_prefix_list_stanzaContext ctx) {
-      boolean isIpv6 = ctx.IPV6() != null;
-      String name = ctx.name.getText();
-      _currentPrefixList = new PrefixList(name, isIpv6);
-      _configuration.getPrefixLists().put(name, _currentPrefixList);
    }
 
    @Override
@@ -1119,14 +1125,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void enterStandard_access_list_stanza(
          Standard_access_list_stanzaContext ctx) {
       String name;
-      if (ctx.named != null) {
-         name = ctx.named.name.getText();
+      if (ctx.name != null) {
+         name = ctx.name.getText();
+      }
+      else if (ctx.num != null) {
+         name = ctx.num.getText();
       }
       else {
-         name = ctx.numbered.name.getText();
+         throw new BatfishException("Invalid standard access-list name");
       }
-      _currentStandardAcl = new StandardAccessList(name);
-      _configuration.getStandardAcls().put(name, _currentStandardAcl);
+      _currentStandardAcl = _configuration.getStandardAcls().get(name);
+      if (_currentStandardAcl == null) {
+         _currentStandardAcl = new StandardAccessList(name);
+         _configuration.getStandardAcls().put(name, _currentStandardAcl);
+      }
    }
 
    @Override
@@ -1946,11 +1958,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentIpv6PeerGroup = null;
       _currentNamedPeerGroup = null;
       popPeer();
-   }
-
-   @Override
-   public void exitNexus_prefix_list_stanza(Nexus_prefix_list_stanzaContext ctx) {
-      _currentPrefixList = null;
    }
 
    @Override

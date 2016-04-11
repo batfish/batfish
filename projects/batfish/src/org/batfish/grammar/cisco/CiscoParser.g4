@@ -23,16 +23,15 @@ address_family_multicast_stanza
    (
       IPV4
       | IPV6
-   ) NEWLINE
-   address_family_multicast_tail
+   ) NEWLINE address_family_multicast_tail
 ;
 
 address_family_multicast_tail
 :
-  (
-     MULTIPATH NEWLINE
-  |  interface_multicast_stanza
-  )*
+   (
+      MULTIPATH NEWLINE
+      | interface_multicast_stanza
+   )*
 ;
 
 address_family_vrfd_stanza
@@ -103,7 +102,7 @@ del_stanza
 :
    DEL ~NEWLINE* NEWLINE
 ;
-   
+
 hostname_stanza
 :
    (
@@ -138,9 +137,13 @@ interface_imgp_stanza
 
 interface_multicast_stanza
 :
- INTERFACE ~NEWLINE* NEWLINE
-   (BSR_BORDER NEWLINE)?
-   (ENABLE NEWLINE)?
+   INTERFACE ~NEWLINE* NEWLINE
+   (
+      BSR_BORDER NEWLINE
+   )?
+   (
+      ENABLE NEWLINE
+   )?
 ;
 
 ip_as_path_regex_mode_stanza
@@ -201,8 +204,7 @@ ip_route_vrfc_stanza
 
 l2vpn_stanza
 :
-  L2VPN NEWLINE
-    xconnect_stanza*
+   L2VPN NEWLINE xconnect_stanza*
 ;
 
 macro_stanza
@@ -222,12 +224,11 @@ mgp_stanza
 
 multicast_routing_stanza
 :
-  MULTICAST_ROUTING NEWLINE
-  (
-    address_family_multicast_stanza
+   MULTICAST_ROUTING NEWLINE
+   (
+      address_family_multicast_stanza
    )*
 ;
-
 
 no_ip_access_list_stanza
 :
@@ -270,34 +271,36 @@ null_vrfd_stanza
 
 peer_stanza
 :
-  PEER IP_ADDRESS NEWLINE
-  (
-     null_block_substanza
-  )*
+   PEER IP_ADDRESS NEWLINE
+   (
+      null_block_substanza
+   )*
 ;
 
 p2p_stanza
 :
-  P2P VARIABLE NEWLINE
-    INTERFACE ~NEWLINE* NEWLINE
-    INTERFACE ~NEWLINE* NEWLINE
+   P2P VARIABLE NEWLINE INTERFACE ~NEWLINE* NEWLINE INTERFACE ~NEWLINE* NEWLINE
 ;
 
 router_multicast_stanza
 :
-  ROUTER (IGMP | MLD | MSDP | PIM) NEWLINE
-  router_multicast_tail
+   ROUTER
+   (
+      IGMP
+      | MLD
+      | MSDP
+      | PIM
+   ) NEWLINE router_multicast_tail
 ;
 
 router_multicast_tail
 :
-  (
-    address_family_multicast_stanza
-  | null_block_substanza
-  | peer_stanza
-  )*
-;  
-
+   (
+      address_family_multicast_stanza
+      | null_block_substanza
+      | peer_stanza
+   )*
+;
 
 srlg_interface_numeric_stanza
 :
@@ -334,8 +337,6 @@ stanza
    | multicast_routing_stanza
    | mpls_ldp_stanza
    | mpls_traffic_eng_stanza
-   | nexus_access_list_stanza
-   | nexus_prefix_list_stanza
    | null_stanza
    | prefix_set_stanza
    | protocol_type_code_access_list_stanza
@@ -383,6 +384,5 @@ vrfd_stanza
 
 xconnect_stanza
 :
-   XCONNECT GROUP VARIABLE NEWLINE
-     p2p_stanza*
+   XCONNECT GROUP VARIABLE NEWLINE p2p_stanza*
 ;
