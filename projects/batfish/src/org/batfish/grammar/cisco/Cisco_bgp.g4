@@ -34,7 +34,10 @@ address_family_header
 address_family_footer
 :
    (
-      EXIT_ADDRESS_FAMILY NEWLINE
+      (
+         EXIT_ADDRESS_FAMILY
+         | EXIT
+      ) NEWLINE
    )?
 ;
 
@@ -122,6 +125,7 @@ bgp_tail
    | network_bgp_tail
    | network6_bgp_tail
    | next_hop_self_bgp_tail
+   | no_network_bgp_tail
    | null_bgp_tail
    | prefix_list_bgp_tail
    | redistribute_aggregate_bgp_tail
@@ -402,6 +406,11 @@ no_neighbor_shutdown_rb_stanza
          | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
       ) NO SHUTDOWN NEWLINE
    )
+;
+
+no_network_bgp_tail
+:
+   NO NETWORK ~NEWLINE* NEWLINE
 ;
 
 no_redistribute_connected_rb_stanza
