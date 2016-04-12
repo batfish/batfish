@@ -50,6 +50,7 @@ address_family_rb_stanza
       | neighbor_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
+      | null_disable_peer_as_check_stanza
       | null_no_neighbor_rb_stanza
       | peer_group_assignment_rb_stanza
       | peer_group_creation_rb_stanza
@@ -465,6 +466,7 @@ null_bgp_tail
       | DONT_CAPABILITY_NEGOTIATE
       | EVENT_HISTORY
       | FALL_OVER
+      | LOCAL_V6_ADDR
       | LOG_NEIGHBOR_CHANGES
       | MAXIMUM_PATHS
       | MAXIMUM_PREFIX
@@ -486,6 +488,11 @@ null_bgp_tail
       | TRANSPORT
       | VERSION
    ) ~NEWLINE* NEWLINE
+;
+
+null_disable_peer_as_check_stanza
+:
+   DISABLE_PEER_AS_CHECK NEWLINE
 ;
 
 null_no_neighbor_rb_stanza

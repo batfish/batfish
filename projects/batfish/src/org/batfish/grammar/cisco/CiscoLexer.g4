@@ -1221,6 +1221,11 @@ DEVICE_SENSOR
    'device-sensor'
 ;
 
+DISABLE_PEER_AS_CHECK
+:
+   'disable-peer-as-check'
+;
+
 DF
 :
    'df'
@@ -2635,6 +2640,11 @@ LOCAL_PORT
 LOCAL_PREFERENCE
 :
    'local-preference'
+;
+
+LOCAL_V6_ADDR
+:
+   'local-v6-addr'
 ;
 
 LOCATION
