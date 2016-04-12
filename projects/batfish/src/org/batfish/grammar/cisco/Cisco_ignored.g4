@@ -119,8 +119,10 @@ null_block_stanza
       | ONE
       | OPENFLOW
       | PLAT
+      | PLATFORM
       | POLICY_MAP
       | POWEROFF
+      | PRIORITY_FLOW_CONTROL
       | PROTOCOL
       | PSEUDOWIRE_CLASS
       | PTP
@@ -247,6 +249,7 @@ null_block_substanza
          | DS0_GROUP
          | DOMAIN_NAME
          | ECHO
+         | EGRESS
          | ENCAPSULATION
          | ENCRYPTION
          | END_CLASS_MAP
@@ -293,6 +296,7 @@ null_block_substanza
          | IDLE
          | IDLE_TIMEOUT
          | IMPORT
+         | INGRESS
          | INSERVICE
          | INSPECT
          | INSTANCE
