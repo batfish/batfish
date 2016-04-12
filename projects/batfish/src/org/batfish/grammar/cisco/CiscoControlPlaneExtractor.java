@@ -3,6 +3,7 @@ package org.batfish.grammar.cisco;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -69,8 +70,10 @@ import org.batfish.representation.cisco.RouteMapMatchIpAccessListLine;
 import org.batfish.representation.cisco.RouteMapMatchIpPrefixListLine;
 import org.batfish.representation.cisco.RouteMapMatchTagLine;
 import org.batfish.representation.cisco.RouteMapSetAdditiveCommunityLine;
+import org.batfish.representation.cisco.RouteMapSetAdditiveCommunityListLine;
 import org.batfish.representation.cisco.RouteMapSetAsPathPrependLine;
 import org.batfish.representation.cisco.RouteMapSetCommunityLine;
+import org.batfish.representation.cisco.RouteMapSetCommunityListLine;
 import org.batfish.representation.cisco.RouteMapSetCommunityNoneLine;
 import org.batfish.representation.cisco.RouteMapSetDeleteCommunityLine;
 import org.batfish.representation.cisco.RouteMapSetLine;
@@ -2465,12 +2468,37 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitSet_community_additive_rm_stanza(
          Set_community_additive_rm_stanzaContext ctx) {
       List<Long> commList = new ArrayList<Long>();
-      for (CommunityContext c : ctx.comm_list) {
+      for (CommunityContext c : ctx.communities) {
          long community = toLong(c);
          commList.add(community);
       }
       RouteMapSetAdditiveCommunityLine line = new RouteMapSetAdditiveCommunityLine(
             commList);
+      _currentRouteMapClause.addSetLine(line);
+   }
+
+   @Override
+   public void exitSet_community_list_additive_rm_stanza(
+         Set_community_list_additive_rm_stanzaContext ctx) {
+      Set<String> communityLists = new LinkedHashSet<String>();
+      for (VariableContext comm_list : ctx.comm_lists) {
+         String communityList = comm_list.getText();
+         communityLists.add(communityList);
+      }
+      RouteMapSetAdditiveCommunityListLine line = new RouteMapSetAdditiveCommunityListLine(
+            communityLists);
+      _currentRouteMapClause.addSetLine(line);
+   }
+
+   @Override
+   public void exitSet_community_list_rm_stanza(
+         Set_community_list_rm_stanzaContext ctx) {
+      Set<String> communityLists = new LinkedHashSet<String>();
+      for (VariableContext comm_list : ctx.comm_lists) {
+         String communityList = comm_list.getText();
+         communityLists.add(communityList);
+      }
+      RouteMapSetCommunityListLine line = new RouteMapSetCommunityListLine(communityLists);
       _currentRouteMapClause.addSetLine(line);
    }
 
@@ -2484,7 +2512,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitSet_community_rm_stanza(Set_community_rm_stanzaContext ctx) {
       List<Long> commList = new ArrayList<Long>();
-      for (CommunityContext c : ctx.comm_list) {
+      for (CommunityContext c : ctx.communities) {
          long community = toLong(c);
          commList.add(community);
       }

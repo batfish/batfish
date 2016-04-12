@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapSetLine;
 import org.batfish.representation.PolicyMapSetLocalPreferenceLine;
@@ -24,7 +25,7 @@ public class RouteMapSetLocalPreferenceLine extends RouteMapSetLine {
    }
 
    @Override
-   public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
+   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v, Configuration c, Warnings w) {
       return new PolicyMapSetLocalPreferenceLine(_localPreference);
    }
 

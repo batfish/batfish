@@ -1537,7 +1537,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       }
       Set<PolicyMapSetLine> setLines = pmClause.getSetLines();
       for (RouteMapSetLine rmSetLine : clause.getSetList()) {
-         setLines.add(rmSetLine.toPolicyMapSetLine(c));
+         setLines.add(rmSetLine.toPolicyMapSetLine(this, c, _w));
       }
       return pmClause;
    }

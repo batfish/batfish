@@ -7,6 +7,6 @@ ip community-list standard COMM_LIST_NAME permit 75:42
 !
 route-map TO_NEIGHBOR permit 30
   match ip address prefix-list PFX_LIST
-  set community community-list COMM_LIST additive
+  set community community-list COMM_LIST_NAME additive
 !
 

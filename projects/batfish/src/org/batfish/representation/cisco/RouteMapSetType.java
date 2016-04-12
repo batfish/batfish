@@ -2,9 +2,11 @@ package org.batfish.representation.cisco;
 
 public enum RouteMapSetType {
    ADDITIVE_COMMUNITY,
+   ADDITIVE_COMMUNITY_LIST,
    AS_PATH,
    AS_PATH_PREPEND,
    COMMUNITY,
+   COMMUNITY_LIST,
    COMMUNITY_NONE,
    DELETE_COMMUNITY,
    LOCAL_PREFERENCE,

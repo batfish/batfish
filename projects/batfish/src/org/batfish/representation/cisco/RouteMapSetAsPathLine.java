@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import java.util.List;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapSetLine;
 
@@ -21,7 +22,7 @@ public class RouteMapSetAsPathLine extends RouteMapSetLine {
    }
 
    @Override
-   public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
+   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v, Configuration c, Warnings w) {
       // TODO Auto-generated method stub
       return null;
    }

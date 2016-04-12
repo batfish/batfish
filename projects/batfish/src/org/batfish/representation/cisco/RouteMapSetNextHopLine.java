@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.Ip;
 import org.batfish.representation.PolicyMapSetLine;
@@ -29,7 +30,7 @@ public class RouteMapSetNextHopLine extends RouteMapSetLine {
    }
 
    @Override
-   public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
+   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v, Configuration c, Warnings w) {
       // TODO: change to set in PolicyMapSetNextHopLine if possible
       List<Ip> nextHopList = new ArrayList<Ip>();
       nextHopList.addAll(_nextHops);
