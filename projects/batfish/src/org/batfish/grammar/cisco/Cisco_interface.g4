@@ -246,6 +246,7 @@ null_block_if_stanza
       )
       | DUPLEX
       | ENCAPSULATION
+      | EXIT
       | FAIR_QUEUE
       | FAST_REROUTE
       | FLOW
