@@ -531,7 +531,7 @@ remove_private_as_bgp_tail
    (
       REMOVE_PRIVATE_AS
       | REMOVE_PRIVATE_CAP_A_CAP_S
-   ) NEWLINE
+   ) ALL? NEWLINE
 ;
 
 route_map_bgp_tail
