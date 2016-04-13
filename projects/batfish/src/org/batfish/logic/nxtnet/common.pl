@@ -1130,6 +1130,10 @@ need_PolicyMapMatchAdvert(Map, Advert)
    'SetBgpNeighborDefaultMetric'(Node, NeighborNetwork, Metric),
    'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
+'BgpNeighborLocalIp'(Node, NeighborIp, LocalIp) :-
+   'SetBgpNeighborLocalIp'(Node, NeighborNetwork, LocalIp),
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
+
 'BgpMultihopNeighborIp'(Node, NeighborIp) :-
    'SetBgpMultihopNeighborNetwork'(Node, NeighborNetwork),
    'NetworkOf'(NeighborIp, _, NeighborNetwork).
@@ -1138,6 +1142,10 @@ need_PolicyMapMatchAdvert(Map, Advert)
    'SetBgpNeighborNetwork'(Node, NeighborNetwork),
    'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
+'BgpNeighbors'(Node1, Ip1, Node2, Ip2) :-
+   'SetExternalBgpRemoteIp'(Node2, Ip2),
+   'BgpNeighborLocalIp'(Node1, Ip2, Ip1),
+   'BgpNeighborIp'(Node1, Ip2).
 'BgpNeighbors'(Node1, Ip1, Node2, Ip2) :-
    'BgpMultihopNeighborTo'(Node1, Node2, Ip2),
    'BgpMultihopNeighborTo'(Node2, Node1, Ip1).
@@ -1238,6 +1246,10 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 'SetBgpMultihopNeighborNetwork'(Node, NeighborNetwork) :-
    'SetBgpMultihopNeighborNetwork_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length),
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
+
+'SetBgpNeighborLocalIp'(Node, NeighborNetwork, LocalIp) :-
+   'SetBgpNeighborLocalIp_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, LocalIp),
    'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 
 'SetBgpNeighborNetwork'(Node, NeighborNetwork) :-

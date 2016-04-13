@@ -166,6 +166,10 @@ public class Facts {
       map.put("SetInboundInterfaceFilter", "NODE|INTERFACE|FILTER");
       map.put("SetZoneFromHostFilter", "NODE|ZONE|FILTER");
       map.put("SetZoneToHostFilter", "NODE|ZONE|FILTER");
+      map.put("SetExternalBgpRemoteIp", "NODE|REMOTEIP");
+      map.put(
+            "SetBgpNeighborLocalIp_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|LOCALIP");
       return Collections.unmodifiableMap(map);
    }
 

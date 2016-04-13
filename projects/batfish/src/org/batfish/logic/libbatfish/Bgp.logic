@@ -102,6 +102,11 @@ BgpNeighbors(node1, ip1, node2, ip2) ->
    Node(node2),
    Ip(ip2).
 
+BgpNeighborLocalIp(node, neighborIp, localIp) ->
+   Node(node),
+   Ip(neighborIp),
+   Ip(localIp).
+
 BgpNeighborSendCommunity(node, neighborIp) ->
    Node(node),
    Ip(neighborIp).
@@ -291,6 +296,18 @@ SetBgpNeighborGeneratedRoutePolicy_flat(node, neighborNetwork_start, neighborNet
    int(prefix_length),
    PolicyMap(map).
 
+SetBgpNeighborLocalIp(node, neighborNetwork, localIp) ->
+   Node(node),
+   Network(neighborNetwork),
+   Ip(localIp).
+
+SetBgpNeighborLocalIp_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, localIp) ->
+   Node(node),
+   Ip(neighborNetwork_start),
+   Ip(neighborNetwork_end),
+   int(neighborNetwork_prefix_length),
+   Ip(localIp).
+
 SetBgpNeighborNetwork(node, neighborNetwork) ->
    Node(node),
    Network(neighborNetwork).
@@ -323,6 +340,10 @@ SetBgpOriginationPolicy_flat(node, neighborNetwork_start, neighborNetwork_end, n
    int(neighborNetwork_prefix_length),
    PolicyMap(map).
 
+SetExternalBgpRemoteIp(node, remoteIp) ->
+   Node(node),
+   Ip(remoteIp).
+   
 SetLocalAs(node, neighborNetwork, localAs) ->
    Node(node),
    Network(neighborNetwork),

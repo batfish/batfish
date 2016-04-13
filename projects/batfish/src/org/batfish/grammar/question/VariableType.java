@@ -7,6 +7,7 @@ import org.batfish.common.BatfishException;
 
 public enum VariableType {
    ACTION("action"),
+   BGP_ADVERTISEMENT("bgp_advertisement"),
    BGP_NEIGHBOR("bgp_neighbor"),
    BOOLEAN("boolean"),
    GENERATED_ROUTE("generated_route"),
@@ -23,8 +24,10 @@ public enum VariableType {
    PROTOCOL("protocol"),
    RANGE("range"),
    REGEX("regex"),
+   ROUTE("route"),
    ROUTE_FILTER("route_filter"),
    ROUTE_FILTER_LINE("route_filter_line"),
+   SET_BGP_ADVERTISEMENT("set<bgp_advertisement>"),
    SET_BGP_NEIGHBOR("set<bgp_neighbor>"),
    SET_INT("set<int>"),
    SET_INTERFACE("set<integer>"),
@@ -35,6 +38,7 @@ public enum VariableType {
    SET_POLICY_MAP_CLAUSE("set<policy_map_clause>"),
    SET_PREFIX("set<prefix>"),
    SET_PREFIX_SPACE("set<prefix_space>"),
+   SET_ROUTE("set<route>"),
    SET_ROUTE_FILTER("set<route_filter>"),
    SET_ROUTE_FILTER_LINE("set<route_filter_line>"),
    SET_STATIC_ROUTE("set<static_route>"),

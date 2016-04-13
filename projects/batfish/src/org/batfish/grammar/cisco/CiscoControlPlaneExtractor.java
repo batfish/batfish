@@ -2498,7 +2498,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          String communityList = comm_list.getText();
          communityLists.add(communityList);
       }
-      RouteMapSetCommunityListLine line = new RouteMapSetCommunityListLine(communityLists);
+      RouteMapSetCommunityListLine line = new RouteMapSetCommunityListLine(
+            communityLists);
       _currentRouteMapClause.addSetLine(line);
    }
 

@@ -76,6 +76,11 @@ BGP
    'bgp'
 ;
 
+BGP_ADVERTISEMENT
+:
+   'bgp_advertisement'
+;
+
 BGP_NEIGHBOR
 :
    'bgp_neighbor'
@@ -114,6 +119,11 @@ CONFIGURED
 CONTAINS
 :
    'contains'
+;
+
+COST
+:
+   'cost'
 ;
 
 DEFAULTS
@@ -401,6 +411,16 @@ NAME
    'name'
 ;
 
+NETWORK
+:
+   'network'
+;
+
+NEXT_HOP
+:
+   'next_hop'
+;
+
 NEXT_HOP_INTERFACE
 :
    'next_hop_interface'
@@ -536,6 +556,11 @@ REMOTE_IPSEC_VPN
    'remote_ipsec_vpn'
 ;
 
+ROUTE
+:
+   'route'
+;
+
 ROUTE_FILTER
 :
    'route_filter'
@@ -574,6 +599,11 @@ STATIC_ROUTE
 SUBNET
 :
    'subnet'
+;
+
+TAG
+:
+   'tag'
 ;
 
 TCP_FLAGS

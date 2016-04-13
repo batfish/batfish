@@ -9,6 +9,7 @@ import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;
 import org.batfish.question.QMap;
+import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
@@ -17,6 +18,7 @@ import org.batfish.representation.Ip;
 import org.batfish.representation.IpsecVpn;
 import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapClause;
+import org.batfish.representation.PrecomputedRoute;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.PrefixSpace;
 import org.batfish.representation.RouteFilterLine;
@@ -44,6 +46,11 @@ public class Assignment implements Statement {
          Settings settings) {
       Object value = _expr.evaluate(environment);
       switch (_type) {
+
+      case BGP_ADVERTISEMENT:
+         environment.getBgpAdvertisements().put(_variable,
+               (BgpAdvertisement) value);
+         break;
 
       case BGP_NEIGHBOR:
          environment.getBgpNeighbors().put(_variable, (BgpNeighbor) value);
@@ -103,6 +110,10 @@ public class Assignment implements Statement {
          environment.getProtocols().put(_variable, (RoutingProtocol) value);
          break;
 
+      case ROUTE:
+         environment.getRoutes().put(_variable, (PrecomputedRoute) value);
+         break;
+
       case ROUTE_FILTER:
          environment.getRouteFilters().put(_variable, (RouteFilterList) value);
          break;
@@ -131,6 +142,7 @@ public class Assignment implements Statement {
       case ACTION:
       case RANGE:
       case REGEX:
+      case SET_BGP_ADVERTISEMENT:
       case SET_BGP_NEIGHBOR:
       case SET_INT:
       case SET_INTERFACE:
@@ -140,6 +152,7 @@ public class Assignment implements Statement {
       case SET_POLICY_MAP:
       case SET_POLICY_MAP_CLAUSE:
       case SET_PREFIX_SPACE:
+      case SET_ROUTE:
       case SET_ROUTE_FILTER:
       case SET_ROUTE_FILTER_LINE:
       case SET_STATIC_ROUTE:

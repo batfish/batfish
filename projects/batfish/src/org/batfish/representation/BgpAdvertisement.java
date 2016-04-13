@@ -1,6 +1,9 @@
 package org.batfish.representation;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.batfish.collections.CommunitySet;
 import org.batfish.common.BatfishException;
@@ -19,6 +22,48 @@ import org.codehaus.jettison.json.JSONObject;
  */
 
 public class BgpAdvertisement implements Serializable {
+
+   public enum BgpAdvertisementType {
+      EBGP_ORIGINATED("bgp"),
+      EBGP_RECEIVED("bgp_ti"),
+      EBGP_SENT("bgp_to"),
+      IBGP_ORIGINATED("ibgp"),
+      IBGP_RECEIVED("ibgp_ti"),
+      IBGP_SENT("ibgp_to");
+
+      private final static Map<String, BgpAdvertisementType> _map = buildMap();
+
+      private static Map<String, BgpAdvertisementType> buildMap() {
+         Map<String, BgpAdvertisementType> map = new HashMap<String, BgpAdvertisementType>();
+         for (BgpAdvertisementType bgpAdvertisementType : BgpAdvertisementType
+               .values()) {
+            String nxtnetTypeName = bgpAdvertisementType._nxtnetTypeName;
+            map.put(nxtnetTypeName, bgpAdvertisementType);
+         }
+         return Collections.unmodifiableMap(map);
+      }
+
+      public static BgpAdvertisementType fromNxtnetTypeName(
+            String nxtnetTypeName) {
+         BgpAdvertisementType bgpAdvertisementType = _map.get(nxtnetTypeName);
+         if (bgpAdvertisementType == null) {
+            throw new BatfishException("Invalid nxtnetTypeName: \""
+                  + nxtnetTypeName + "\"");
+         }
+         return bgpAdvertisementType;
+      }
+
+      private String _nxtnetTypeName;
+
+      private BgpAdvertisementType(String nxtnetTypeName) {
+         _nxtnetTypeName = nxtnetTypeName;
+      }
+
+      public String getNxtnetTypeName() {
+         return _nxtnetTypeName;
+      }
+
+   }
 
    /**
     *

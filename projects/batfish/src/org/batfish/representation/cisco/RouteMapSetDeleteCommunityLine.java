@@ -26,7 +26,8 @@ public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
    }
 
    @Override
-   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v, Configuration c, Warnings w) {
+   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
+         Configuration c, Warnings w) {
       CommunityList dcList = c.getCommunityLists().get(_listName);
       return new PolicyMapSetDeleteCommunityLine(dcList);
    }

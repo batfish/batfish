@@ -214,7 +214,7 @@ bgp_neighbor_expr
    |
    {v(VariableType.BGP_NEIGHBOR)}?
 
-   var_bgp_neighbor_expr
+   variable
 ;
 
 bgp_neighbor_group_string_expr
@@ -328,7 +328,7 @@ boolean_expr
    |
    {v(VariableType.BOOLEAN)}?
 
-   var_boolean_expr
+   variable
    | lhs = boolean_expr
    (
       DOUBLE_EQUALS
@@ -627,6 +627,12 @@ locals [VariableType varType, String newScope]
    (
       {$scope.equals("node")}?
 
+      BGP_ADVERTISEMENT
+      {$varType = VariableType.ROUTE; $newScope = "bgp_advertisement";}
+
+      |
+      {$scope.equals("node")}?
+
       BGP_NEIGHBOR
       {$varType = VariableType.BGP_NEIGHBOR; $newScope = "bgp_neighbor";}
 
@@ -707,6 +713,12 @@ locals [VariableType varType, String newScope]
 
       REMOTE_IPSEC_VPN
       {$varType = VariableType.IPSEC_VPN; $newScope = "remote_ipsec_vpn";}
+
+      |
+      {$scope.equals("node")}?
+
+      ROUTE
+      {$varType = VariableType.ROUTE; $newScope = "route";}
 
       |
       {$scope.equals("match_route_filter")}?
@@ -863,7 +875,7 @@ interface_expr
    |
    {v(VariableType.INTERFACE)}?
 
-   var_interface_expr
+   variable
 ;
 
 interface_has_ip_boolean_expr
@@ -1000,12 +1012,13 @@ ip_expr
    | interface_ip_expr
    | ipsec_vpn_ip_expr
    | prefix_ip_expr
+   | route_ip_expr
    | static_route_ip_expr
    | IP_ADDRESS
    |
    {v(VariableType.IP)}?
 
-   var_ip_expr
+   variable
 ;
 
 ipsec_vpn_boolean_expr
@@ -1038,7 +1051,7 @@ ipsec_vpn_expr
    |
    {v(VariableType.IPSEC_VPN)}?
 
-   var_ipsec_vpn_expr
+   variable
 ;
 
 ipsec_vpn_has_remote_ip_boolean_expr
@@ -1181,7 +1194,7 @@ map_expr
    |
    {v(VariableType.MAP)}?
 
-   var_map_expr
+   variable
 ;
 
 map_get_map_map_expr
@@ -1305,7 +1318,7 @@ node_expr
    |
    {v(VariableType.NODE)}?
 
-   var_node_expr
+   variable
 ;
 
 node_has_generated_route_boolean_expr
@@ -1388,7 +1401,7 @@ policy_map_clause_expr
    |
    {v(VariableType.POLICY_MAP_CLAUSE)}?
 
-   var_policy_map_clause_expr
+   variable
 ;
 
 policy_map_clause_permit_boolean_expr
@@ -1400,7 +1413,7 @@ policy_map_expr
 :
    {v(VariableType.POLICY_MAP)}?
 
-   var_policy_map_expr
+   variable
 ;
 
 prefix_address_ip_expr
@@ -1412,11 +1425,12 @@ prefix_expr
 :
    generated_route_prefix_expr
    | interface_prefix_expr
+   | route_prefix_expr
    | static_route_prefix_expr
    |
    {v(VariableType.PREFIX)}?
 
-   var_prefix_expr
+   variable
 ;
 
 prefix_ip_expr
@@ -1439,7 +1453,7 @@ prefix_space_expr
    |
    {v(VariableType.PREFIX_SPACE)}?
 
-   var_prefix_space_expr
+   variable
 ;
 
 prefix_space_intersection_prefix_space_expr
@@ -1501,7 +1515,7 @@ protocol_expr
    |
    {v(VariableType.PROTOCOL)}?
 
-   var_protocol_expr
+   variable
 ;
 
 protocol_name_string_expr
@@ -1627,13 +1641,72 @@ reduced_reachability_question
    REDUCED_REACHABILITY
 ;
 
+route_administrative_cost_int_expr
+:
+   ADMINISTRATIVE_COST
+;
+
+route_cost_int_expr
+:
+   COST
+;
+
+route_expr
+:
+   ROUTE
+   |
+   {v(VariableType.ROUTE)}?
+
+   variable
+;
+
+route_int_expr
+:
+   caller = route_expr PERIOD (route_administrative_cost_int_expr|route_cost_int_expr| route_tag_int_expr)
+;
+
+route_ip_expr
+:
+   caller = route_expr PERIOD (route_next_hop_ip_ip_expr)
+;
+
+route_next_hop_interface_string_expr
+:
+   NEXT_HOP_INTERFACE
+;
+
+route_next_hop_ip_ip_expr
+:
+   NEXT_HOP_IP
+;
+
+route_next_hop_string_expr
+:
+   NEXT_HOP
+;
+
+route_protocol_string_expr
+:
+   PROTOCOL
+;
+
+route_string_expr
+:
+   caller = route_expr PERIOD (route_next_hop_interface_string_expr | route_next_hop_string_expr|route_protocol_string_expr)
+;
+
+route_tag_int_expr
+:
+   TAG
+;
+
 route_filter_expr
 :
    route_filter_route_filter_expr
    |
    {v(VariableType.ROUTE_FILTER)}?
 
-   var_route_filter_expr
+   variable
 ;
 
 route_filter_line_expr
@@ -1642,7 +1715,7 @@ route_filter_line_expr
    |
    {v(VariableType.ROUTE_FILTER)}?
 
-   var_route_filter_line_expr
+   variable
 ;
 
 route_filter_line_line_expr
@@ -1663,6 +1736,19 @@ route_filter_route_filter_expr
 route_filter_string_expr
 :
    caller = route_filter_expr PERIOD route_filter_name_string_expr
+;
+
+route_network_prefix_expr
+:
+   NETWORK
+;
+
+route_prefix_expr
+:
+   caller = route_expr PERIOD
+   (
+      route_network_prefix_expr
+   )
 ;
 
 set_add_method [VariableType type, String caller]
@@ -1834,7 +1920,7 @@ set_ip_expr
 :
    {v(VariableType.SET_IP)}?
 
-   | var_set_ip_expr
+   | variable
 ;
 
 set_prefix_expr
@@ -1843,7 +1929,7 @@ set_prefix_expr
    |
    {v(VariableType.SET_PREFIX)}?
 
-   | var_set_prefix_expr
+   | variable
 ;
 
 set_size_int_expr
@@ -1895,7 +1981,7 @@ static_route_expr
    |
    {v(VariableType.STATIC_ROUTE)}?
 
-   var_static_route_expr
+   variable
 ;
 
 static_route_has_next_hop_interface_boolean_expr
@@ -1953,12 +2039,13 @@ base_string_expr
    | map_string_expr
    | node_string_expr
    | protocol_string_expr
+   | route_string_expr
    | route_filter_string_expr
    | static_route_string_expr
    |
    {v(VariableType.STRING)}?
 
-   var_string_expr
+   variable
 ;
 
 string_expr
@@ -2024,112 +2111,18 @@ val_int_expr
 :
    bgp_neighbor_int_expr
    | literal_int_expr
+   | route_int_expr
    | set_size_int_expr
    | static_route_int_expr
    |
    {v(VariableType.INT)}?
 
-   var_int_expr
+   variable
 ;
 
-var_bgp_neighbor_expr
+variable
 :
    var = VARIABLE
-;
-
-var_boolean_expr
-:
-   var = VARIABLE
-;
-
-var_int_expr
-:
-   VARIABLE
-;
-
-var_interface_expr
-:
-   VARIABLE
-;
-
-var_ip_expr
-:
-   VARIABLE
-;
-
-var_ipsec_vpn_expr
-:
-   var = VARIABLE
-;
-
-var_list_expr
-:
-   VARIABLE
-;
-
-var_map_expr
-:
-   VARIABLE
-;
-
-var_node_expr
-:
-   VARIABLE
-;
-
-var_policy_map_clause_expr
-:
-   VARIABLE
-;
-
-var_policy_map_expr
-:
-   VARIABLE
-;
-
-var_prefix_expr
-:
-   VARIABLE
-;
-
-var_prefix_space_expr
-:
-   VARIABLE
-;
-
-var_protocol_expr
-:
-   VARIABLE
-;
-
-var_route_filter_expr
-:
-   VARIABLE
-;
-
-var_route_filter_line_expr
-:
-   VARIABLE
-;
-
-var_set_ip_expr
-:
-   VARIABLE
-;
-
-var_set_prefix_expr
-:
-   VARIABLE
-;
-
-var_static_route_expr
-:
-   VARIABLE
-;
-
-var_string_expr
-:
-   VARIABLE
 ;
 
 verify_question

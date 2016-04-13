@@ -27,7 +27,8 @@ public class RouteMapSetAdditiveCommunityLine extends RouteMapSetLine {
    }
 
    @Override
-   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v, Configuration c, Warnings w) {
+   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
+         Configuration c, Warnings w) {
       return new PolicyMapSetAddCommunityLine(_communities);
    }
 

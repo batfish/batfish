@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.batfish.collections.AdvertisementSet;
+import org.batfish.collections.RouteSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.main.Settings;
@@ -11,6 +13,12 @@ import org.batfish.question.statement.Statement;
 import org.batfish.representation.Configuration;
 
 public class VerifyProgram {
+
+   private boolean _dataPlane;
+
+   private boolean _dataPlaneBgpAdvertisements;
+
+   private boolean _dataPlaneRoutes;
 
    private Environment _environment;
 
@@ -39,6 +47,18 @@ public class VerifyProgram {
       return _environment.getAssertions();
    }
 
+   public boolean getDataPlane() {
+      return _dataPlane;
+   }
+
+   public boolean getDataPlaneBgpAdvertisements() {
+      return _dataPlaneBgpAdvertisements;
+   }
+
+   public boolean getDataPlaneRoutes() {
+      return _dataPlaneRoutes;
+   }
+
    public int getFailedAssertions() {
       return _environment.getFailedAssertions();
    }
@@ -58,6 +78,26 @@ public class VerifyProgram {
 
    public boolean getUnsafe() {
       return _environment.getUnsafe();
+   }
+
+   public void setBgpAdvertisements(AdvertisementSet bgpAdvertisements) {
+      _environment.setGlobalBgpAdvertisements(bgpAdvertisements);
+   }
+
+   public void setDataPlane(boolean dataPlane) {
+      _dataPlane = dataPlane;
+   }
+
+   public void setDataPlaneBgpAdvertisements(boolean dataPlaneBgpAdvertisements) {
+      _dataPlaneBgpAdvertisements = dataPlaneBgpAdvertisements;
+   }
+
+   public void setDataPlaneRoutes(boolean dataPlaneRoutes) {
+      _dataPlaneRoutes = dataPlaneRoutes;
+   }
+
+   public void setRoutes(RouteSet routes) {
+      _environment.setGlobalRoutes(routes);
    }
 
 }

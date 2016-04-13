@@ -188,7 +188,10 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
  */
 public class Batfish implements AutoCloseable {
 
-   private static final String BGP_ADVERTISEMENT_ROUTE_PREDICATE_NAME = "BgpAdvertisementRoute";
+   // private static final String BGP_ADVERTISEMENT_ROUTE_PREDICATE_NAME =
+   // "BgpAdvertisementRoute";
+
+   private static final String BGP_ADVERTISEMENT_PREDICATE_NAME = "BgpAdvertisement";
 
    /**
     * Name of the LogiQL data-plane predicate containing next hop information
@@ -1068,6 +1071,16 @@ public class Batfish implements AutoCloseable {
       checkConfigurations();
       Map<String, Configuration> configurations = loadConfigurations();
       VerifyProgram program = question.getProgram();
+      if (program.getDataPlane()) {
+         if (program.getDataPlaneBgpAdvertisements()) {
+            AdvertisementSet bgpAdvertisements = getAdvertisements(_envSettings);
+            program.setBgpAdvertisements(bgpAdvertisements);
+         }
+         if (program.getDataPlaneRoutes()) {
+            RouteSet routes = getRoutes(_envSettings);
+            program.setRoutes(routes);
+         }
+      }
       program.execute(configurations, _logger, _settings);
       if (program.getAssertions()) {
          int totalAssertions = program.getTotalAssertions();
@@ -1974,16 +1987,12 @@ public class Batfish implements AutoCloseable {
 
    }
 
-   private AdvertisementSet getAdvertisements() {
-      return getAdvertisements(_envSettings);
-   }
-
    private AdvertisementSet getAdvertisements(EnvironmentSettings envSettings) {
       checkDataPlaneFacts(_envSettings);
       AdvertisementSet adverts = new AdvertisementSet();
       EntityTable entityTable = initEntityTable(envSettings);
       Relation relation = getRelation(envSettings,
-            BGP_ADVERTISEMENT_ROUTE_PREDICATE_NAME);
+            BGP_ADVERTISEMENT_PREDICATE_NAME);
       List<BgpAdvertisement> advertList = relation.getColumns().get(0)
             .asBgpAdvertisementList(entityTable);
       adverts.addAll(advertList);
@@ -3536,7 +3545,8 @@ public class Batfish implements AutoCloseable {
       }
 
       if (_settings.getWriteBgpAdvertisements()) {
-         writeBgpAdvertisements(_settings.getPrecomputedBgpAdvertisementsPath());
+         writeBgpAdvertisements(
+               _settings.getPrecomputedBgpAdvertisementsPath(), _envSettings);
          action = true;
       }
 
@@ -3848,8 +3858,9 @@ public class Batfish implements AutoCloseable {
       return edges;
    }
 
-   private void writeBgpAdvertisements(String writeAdvertsPath) {
-      AdvertisementSet adverts = getAdvertisements();
+   private void writeBgpAdvertisements(String writeAdvertsPath,
+         EnvironmentSettings envSettings) {
+      AdvertisementSet adverts = getAdvertisements(envSettings);
       File advertsFile = new File(writeAdvertsPath);
       File parentDir = advertsFile.getParentFile();
       if (parentDir != null) {

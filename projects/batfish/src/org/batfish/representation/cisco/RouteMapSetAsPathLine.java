@@ -22,7 +22,8 @@ public class RouteMapSetAsPathLine extends RouteMapSetLine {
    }
 
    @Override
-   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v, Configuration c, Warnings w) {
+   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
+         Configuration c, Warnings w) {
       // TODO Auto-generated method stub
       return null;
    }

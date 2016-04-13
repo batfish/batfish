@@ -25,7 +25,8 @@ public class RouteMapSetMetricLine extends RouteMapSetLine {
    }
 
    @Override
-   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v, Configuration c, Warnings w) {
+   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
+         Configuration c, Warnings w) {
       return new PolicyMapSetMetricLine(_metric);
    }
 

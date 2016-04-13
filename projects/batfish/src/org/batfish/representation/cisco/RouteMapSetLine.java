@@ -12,6 +12,7 @@ public abstract class RouteMapSetLine implements Serializable {
 
    public abstract RouteMapSetType getType();
 
-   public abstract PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v, Configuration c, Warnings w);
+   public abstract PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
+         Configuration c, Warnings w);
 
 }

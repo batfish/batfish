@@ -27,7 +27,8 @@ public class RouteMapSetAsPathPrependLine extends RouteMapSetLine {
    }
 
    @Override
-   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v, Configuration c, Warnings w) {
+   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
+         Configuration c, Warnings w) {
       return new PolicyMapSetAsPathPrependLine(_asList);
    }
 

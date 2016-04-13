@@ -30,7 +30,8 @@ public class RouteMapSetNextHopLine extends RouteMapSetLine {
    }
 
    @Override
-   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v, Configuration c, Warnings w) {
+   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
+         Configuration c, Warnings w) {
       // TODO: change to set in PolicyMapSetNextHopLine if possible
       List<Ip> nextHopList = new ArrayList<Ip>();
       nextHopList.addAll(_nextHops);
