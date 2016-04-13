@@ -553,7 +553,8 @@ public class Batfish implements AutoCloseable {
             .getDiffActive()) && !diff;
       _settings.setDiffActive(diffActive);
       _settings.setDiffQuestion(diff);
-      if (!dp) {
+      // TODO: fix hack for verify questions
+      if (!dp || question instanceof VerifyQuestion) {
          _settings.setNxtnetTraffic(false);
          _settings.setHistory(false);
       }

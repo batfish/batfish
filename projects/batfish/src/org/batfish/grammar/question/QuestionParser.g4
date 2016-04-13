@@ -15,6 +15,8 @@ package org.batfish.grammar.question;
     
    private java.util.Set<String> _immutableVars = new java.util.HashSet<String>();
 
+   private java.util.Set<String> _iterators = new java.util.HashSet<String>();
+
    private String getParserPosition() {
       return "" + _ctx.start.getLine() + ":" + _ctx.start.getCharPositionInLine();
    }
@@ -41,6 +43,22 @@ package org.batfish.grammar.question;
       }
    }
 
+   private void createIteratorTypeBinding(String var, VariableType type) {
+      VariableType oldType = _typeBindings.get(var);
+      if (oldType != null) {
+         if (!_iterators.contains(var)) {
+            throw new org.batfish.common.BatfishException(getParserPosition() + ": Attempt to create iterator variable \"" + var + "\" with value of type: \"" + type + "\", but it has previously been assigned to a non-iterator of type: \"" + oldType + "\"");
+         }
+         else if (oldType != type) {
+            throw new org.batfish.common.BatfishException(getParserPosition() + ": Attempt to create iterator variable \"" + var + "\" with value of type: \"" + type + "\", but it has previously assigned type: \"" + oldType + "\"");
+         }
+      }
+      else {
+         _iterators.add(var);
+         _typeBindings.put(var, type);
+      }
+   }
+    
    private void createTypeBinding(String var, VariableType type) {
       assertMutable(var);
       VariableType oldType = _typeBindings.get(var);
@@ -128,7 +146,10 @@ assignment
 :
    var = VARIABLE COLON_EQUALS
    (
-      bgp_neighbor_expr
+      bgp_advertisement_expr
+      {createOrVerifyTypeBinding($var.getText(), VariableType.BGP_ADVERTISEMENT);}
+
+      | bgp_neighbor_expr
       {createOrVerifyTypeBinding($var.getText(), VariableType.BGP_NEIGHBOR);}
 
       | boolean_expr
@@ -164,6 +185,9 @@ assignment
       | prefix_space_expr
       {createOrVerifyTypeBinding($var.getText(), VariableType.PREFIX_SPACE);}
 
+      | route_expr
+      {createOrVerifyTypeBinding($var.getText(), VariableType.ROUTE);}
+
       | route_filter_expr
       {createOrVerifyTypeBinding($var.getText(), VariableType.ROUTE_FILTER);}
 
@@ -183,6 +207,114 @@ assignment
       {createOrVerifyTypeBinding($var.getText(), VariableType.STRING);}
 
    ) SEMICOLON
+;
+
+bgp_advertisement_as_path_string_expr
+:
+   AS_PATH
+;
+
+bgp_advertisement_communities_set_string_expr
+:
+   COMMUNITIES
+;
+
+bgp_advertisement_dst_ip_ip_expr
+:
+   DST_IP
+;
+
+bgp_advertisement_dst_node_string_expr
+:
+   DST_NODE
+;
+
+bgp_advertisement_expr
+:
+   BGP_ADVERTISEMENT
+   | RECEIVED_EBGP_ADVERTISEMENT
+   | RECEIVED_IBGP_ADVERTISEMENT
+   | SENT_EBGP_ADVERTISEMENT
+   | SENT_IBGP_ADVERTISEMENT
+   |
+   {v(VariableType.BGP_ADVERTISEMENT)}?
+
+   variable
+;
+
+bgp_advertisement_int_expr
+:
+   caller = bgp_advertisement_expr PERIOD
+   (
+      bgp_advertisement_local_preference_int_expr
+      | bgp_advertisement_med_int_expr
+   )
+;
+
+bgp_advertisement_ip_expr
+:
+   caller = bgp_advertisement_expr PERIOD
+   (
+      bgp_advertisement_dst_ip_ip_expr
+      | bgp_advertisement_next_hop_ip_ip_expr
+      | bgp_advertisement_src_ip_ip_expr
+   )
+;
+
+bgp_advertisement_local_preference_int_expr
+:
+   LOCAL_PREFERENCE
+;
+
+bgp_advertisement_med_int_expr
+:
+   MED
+;
+
+bgp_advertisement_network_prefix_expr
+:
+   NETWORK
+;
+
+bgp_advertisement_next_hop_ip_ip_expr
+:
+   NEXT_HOP_IP
+;
+
+bgp_advertisement_prefix_expr
+:
+   caller = bgp_advertisement_expr PERIOD
+   (
+      bgp_advertisement_network_prefix_expr
+   )
+;
+
+bgp_advertisement_set_string_expr
+:
+   caller = bgp_advertisement_expr PERIOD
+   (
+      bgp_advertisement_communities_set_string_expr
+   )
+;
+
+bgp_advertisement_src_ip_ip_expr
+:
+   SRC_IP
+;
+
+bgp_advertisement_src_node_string_expr
+:
+   SRC_NODE
+;
+
+bgp_advertisement_string_expr
+:
+   caller = bgp_advertisement_expr PERIOD
+   (
+      bgp_advertisement_as_path_string_expr
+      | bgp_advertisement_dst_node_string_expr
+      | bgp_advertisement_src_node_string_expr
+   )
 ;
 
 bgp_neighbor_boolean_expr
@@ -615,7 +747,7 @@ foreach_in_set_statement [String scope]
 locals [VariableType setVarType]
 :
    FOREACH v = VARIABLE COLON set_var = VARIABLE
-   {$setVarType = retrieveTypeBinding($set_var.getText()); createTypeBinding($v.getText(), $setVarType.elementType()); _immutableVars.add($v.getText());}
+   {$setVarType = retrieveTypeBinding($set_var.getText()); createIteratorTypeBinding($v.getText(), $setVarType.elementType()); _immutableVars.add($v.getText());}
 
    OPEN_BRACE statement [scope]+ CLOSE_BRACE
 ;
@@ -628,7 +760,7 @@ locals [VariableType varType, String newScope]
       {$scope.equals("node")}?
 
       BGP_ADVERTISEMENT
-      {$varType = VariableType.ROUTE; $newScope = "bgp_advertisement";}
+      {$varType = VariableType.BGP_ADVERTISEMENT; $newScope = "bgp_advertisement";}
 
       |
       {$scope.equals("node")}?
@@ -703,6 +835,18 @@ locals [VariableType varType, String newScope]
       {$varType = null; $newScope = "protocol";}
 
       |
+      {$scope.equals("node")}?
+
+      RECEIVED_EBGP_ADVERTISEMENT
+      {$varType = VariableType.BGP_ADVERTISEMENT; $newScope = "bgp_advertisement";}
+
+      |
+      {$scope.equals("node")}?
+
+      RECEIVED_IBGP_ADVERTISEMENT
+      {$varType = VariableType.BGP_ADVERTISEMENT; $newScope = "bgp_advertisement";}
+
+      |
       {$scope.equals("bgp_neighbor")}?
 
       REMOTE_BGP_NEIGHBOR
@@ -725,6 +869,18 @@ locals [VariableType varType, String newScope]
 
       ROUTE_FILTER
       {$varType = VariableType.ROUTE_FILTER; $newScope = "route_filter";}
+
+      |
+      {$scope.equals("node")}?
+
+      SENT_EBGP_ADVERTISEMENT
+      {$varType = VariableType.BGP_ADVERTISEMENT; $newScope = "bgp_advertisement";}
+
+      |
+      {$scope.equals("node")}?
+
+      SENT_IBGP_ADVERTISEMENT
+      {$varType = VariableType.BGP_ADVERTISEMENT; $newScope = "bgp_advertisement";}
 
       |
       {$scope.equals("node")}?
@@ -1008,7 +1164,8 @@ ip_constraint_simple
 
 ip_expr
 :
-   bgp_neighbor_ip_expr
+   bgp_advertisement_ip_expr
+   | bgp_neighbor_ip_expr
    | interface_ip_expr
    | ipsec_vpn_ip_expr
    | prefix_ip_expr
@@ -1423,7 +1580,8 @@ prefix_address_ip_expr
 
 prefix_expr
 :
-   generated_route_prefix_expr
+   bgp_advertisement_prefix_expr
+   | generated_route_prefix_expr
    | interface_prefix_expr
    | route_prefix_expr
    | static_route_prefix_expr
@@ -1662,12 +1820,20 @@ route_expr
 
 route_int_expr
 :
-   caller = route_expr PERIOD (route_administrative_cost_int_expr|route_cost_int_expr| route_tag_int_expr)
+   caller = route_expr PERIOD
+   (
+      route_administrative_cost_int_expr
+      | route_cost_int_expr
+      | route_tag_int_expr
+   )
 ;
 
 route_ip_expr
 :
-   caller = route_expr PERIOD (route_next_hop_ip_ip_expr)
+   caller = route_expr PERIOD
+   (
+      route_next_hop_ip_ip_expr
+   )
 ;
 
 route_next_hop_interface_string_expr
@@ -1692,7 +1858,12 @@ route_protocol_string_expr
 
 route_string_expr
 :
-   caller = route_expr PERIOD (route_next_hop_interface_string_expr | route_next_hop_string_expr|route_protocol_string_expr)
+   caller = route_expr PERIOD
+   (
+      route_next_hop_interface_string_expr
+      | route_next_hop_string_expr
+      | route_protocol_string_expr
+   )
 ;
 
 route_tag_int_expr
@@ -1943,7 +2114,8 @@ locals [VariableType type]
 
 set_string_expr
 :
-   map_set_string_expr
+   bgp_advertisement_set_string_expr
+   | map_set_string_expr
 ;
 
 statement [String scope]
@@ -2032,7 +2204,8 @@ static_route_string_expr
 
 base_string_expr
 :
-   bgp_neighbor_string_expr
+   bgp_advertisement_string_expr
+   | bgp_neighbor_string_expr
    | format_string_expr
    | interface_string_expr
    | ipsec_vpn_string_expr
@@ -2109,7 +2282,8 @@ unless_statement [String scope]
 
 val_int_expr
 :
-   bgp_neighbor_int_expr
+   bgp_advertisement_int_expr
+   | bgp_neighbor_int_expr
    | literal_int_expr
    | route_int_expr
    | set_size_int_expr

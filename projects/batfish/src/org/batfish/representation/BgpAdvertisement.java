@@ -21,7 +21,8 @@ import org.codehaus.jettison.json.JSONObject;
  *
  */
 
-public class BgpAdvertisement implements Serializable {
+public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
+      Serializable {
 
    public enum BgpAdvertisementType {
       EBGP_ORIGINATED("bgp"),
@@ -182,6 +183,111 @@ public class BgpAdvertisement implements Serializable {
       _communities = communities;
    }
 
+   @Override
+   public int compareTo(BgpAdvertisement rhs) {
+      int ret;
+      ret = _type.compareTo(rhs._type);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _srcNode.compareTo(rhs._srcNode);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _dstNode.compareTo(rhs._dstNode);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _network.compareTo(rhs._network);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_localPreference, rhs._localPreference);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_med, rhs._med);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _nextHopIp.compareTo(rhs._nextHopIp);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _originatorIp.compareTo(rhs._originatorIp);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _originType.compareTo(rhs._originType);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _srcProtocol.compareTo(rhs._srcProtocol);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _asPath.toString().compareTo(rhs._asPath.toString());
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _communities.toString().compareTo(rhs._communities.toString());
+      if (ret != 0) {
+         return ret;
+      }
+      return 0;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      BgpAdvertisement other = (BgpAdvertisement) obj;
+      if (!_network.equals(other._network)) {
+         return false;
+      }
+      if (!_asPath.toString().equals(other._asPath.toString())) {
+         return false;
+      }
+      if (!_communities.toString().equals(other._communities.toString())) {
+         return false;
+      }
+      if (!_dstIp.equals(other._dstIp)) {
+         return false;
+      }
+      if (!_dstNode.equals(other._dstNode)) {
+         return false;
+      }
+      if (_localPreference != other._localPreference) {
+         return false;
+      }
+      if (_med != other._med) {
+         return false;
+      }
+      if (!_nextHopIp.equals(other._nextHopIp)) {
+         return false;
+      }
+      if (_originType != other._originType) {
+         return false;
+      }
+      if (!_originatorIp.equals(other._originatorIp)) {
+         return false;
+      }
+      if (!_srcIp.equals(other._srcIp)) {
+         return false;
+      }
+      if (!_srcNode.equals(other._srcNode)) {
+         return false;
+      }
+      if (_srcProtocol != other._srcProtocol) {
+         return false;
+      }
+      if (!_type.equals(other._type)) {
+         return false;
+      }
+      return true;
+   }
+
    public AsPath getAsPath() {
       return _asPath;
    }
@@ -236,6 +342,27 @@ public class BgpAdvertisement implements Serializable {
 
    public String getType() {
       return _type;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + _asPath.hashCode();
+      result = prime * result + _communities.hashCode();
+      result = prime * result + _dstIp.hashCode();
+      result = prime * result + _dstNode.hashCode();
+      result = prime * result + _localPreference;
+      result = prime * result + _med;
+      result = prime * result + _network.hashCode();
+      result = prime * result + _nextHopIp.hashCode();
+      result = prime * result + _originType.hashCode();
+      result = prime * result + _originatorIp.hashCode();
+      result = prime * result + _srcIp.hashCode();
+      result = prime * result + _srcNode.hashCode();
+      result = prime * result + _srcProtocol.hashCode();
+      result = prime * result + _type.hashCode();
+      return result;
    }
 
    @Override

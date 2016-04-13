@@ -66,6 +66,11 @@ AND
    'and'
 ;
 
+AS_PATH
+:
+   'as_path'
+;
+
 ASSERT
 :
    'assert'
@@ -99,6 +104,11 @@ CLAUSE
 CLEAR
 :
    'clear'
+;
+
+COMMUNITIES
+:
+   'communities'
 ;
 
 COMPATIBLE_IKE_PROPOSALS
@@ -144,6 +154,11 @@ DROP
 DST_IP
 :
    'dst_ip'
+;
+
+DST_NODE
+:
+   'dst_node'
 ;
 
 DST_PORT
@@ -391,6 +406,11 @@ LOCAL_PATH
    'local_path'
 ;
 
+LOCAL_PREFERENCE
+:
+   'local_preference'
+;
+
 MATCH_PROTOCOL
 :
    'match_protocol'
@@ -399,6 +419,11 @@ MATCH_PROTOCOL
 MATCH_ROUTE_FILTER
 :
    'match_route_filter'
+;
+
+MED
+:
+   'med'
 ;
 
 MULTIPATH
@@ -531,6 +556,16 @@ REACHABILITY
    'reachability'
 ;
 
+RECEIVED_EBGP_ADVERTISEMENT
+:
+   'received_ebgp_advertisement'
+;
+
+RECEIVED_IBGP_ADVERTISEMENT
+:
+   'received_ibgp_advertisement'
+;
+
 REDUCED_REACHABILITY
 :
    'reduced_reachability'
@@ -566,6 +601,16 @@ ROUTE_FILTER
    'route_filter'
 ;
 
+SENT_EBGP_ADVERTISEMENT
+:
+   'sent_ebgp_advertisement'
+;
+
+SENT_IBGP_ADVERTISEMENT
+:
+   'sent_ibgp_advertisement'
+;
+
 SET
 :
    'set' -> pushMode ( M_Set )
@@ -579,6 +624,11 @@ SIZE
 SRC_IP
 :
    'src_ip'
+;
+
+SRC_NODE
+:
+   'src_node'
 ;
 
 SRC_PORT

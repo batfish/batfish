@@ -144,6 +144,10 @@ public class Environment {
 
    private QMap _query;
 
+   private BgpAdvertisement _receivedEbgpAdvertisement;
+
+   private BgpAdvertisement _receivedIbgpAdvertisement;
+
    private BgpNeighbor _remoteBgpNeighbor;
 
    private boolean[] _remoteBgpNeighborsInitialized;
@@ -173,6 +177,10 @@ public class Environment {
    private Map<String, Set<PrecomputedRoute>> _routeSets;
 
    private boolean[] _routesInitialized;
+
+   private BgpAdvertisement _sentEbgpAdvertisement;
+
+   private BgpAdvertisement _sentIbgpAdvertisement;
 
    private StaticRoute _staticRoute;
 
@@ -359,6 +367,8 @@ public class Environment {
       copy._protocolDependencyAnalysis = _protocolDependencyAnalysis;
       copy._protocols = _protocols;
       copy._query = _query;
+      copy._receivedEbgpAdvertisement = _receivedEbgpAdvertisement;
+      copy._receivedIbgpAdvertisement = _receivedIbgpAdvertisement;
       copy._remoteBgpNeighbor = _remoteBgpNeighbor;
       copy._remoteBgpNeighborsInitialized = _remoteBgpNeighborsInitialized;
       copy._remoteIpsecVpn = _remoteIpsecVpn;
@@ -374,6 +384,8 @@ public class Environment {
       copy._routeFilterLine = _routeFilterLine;
       copy._routeFilterLines = _routeFilterLines;
       copy._routeFilterLineSets = _routeFilterLineSets;
+      copy._sentEbgpAdvertisement = _sentEbgpAdvertisement;
+      copy._sentIbgpAdvertisement = _sentIbgpAdvertisement;
       copy._staticRoute = _staticRoute;
       copy._staticRoutes = _staticRoutes;
       copy._staticRouteSets = _staticRouteSets;
@@ -564,6 +576,14 @@ public class Environment {
       return _query;
    }
 
+   public BgpAdvertisement getReceivedEbgpAdvertisement() {
+      return _receivedEbgpAdvertisement;
+   }
+
+   public BgpAdvertisement getReceivedIbgpAdvertisement() {
+      return _receivedIbgpAdvertisement;
+   }
+
    public BgpNeighbor getRemoteBgpNeighbor() {
       return _remoteBgpNeighbor;
    }
@@ -610,6 +630,14 @@ public class Environment {
 
    public Map<String, Set<PrecomputedRoute>> getRouteSets() {
       return _routeSets;
+   }
+
+   public BgpAdvertisement getSentEbgpAdvertisement() {
+      return _sentEbgpAdvertisement;
+   }
+
+   public BgpAdvertisement getSentIbgpAdvertisement() {
+      return _sentIbgpAdvertisement;
    }
 
    public StaticRoute getStaticRoute() {
@@ -1052,6 +1080,14 @@ public class Environment {
       _currentProtocols = currentProtocols;
    }
 
+   public void setReceivedEbgpAdvertisement(BgpAdvertisement t) {
+      _receivedEbgpAdvertisement = t;
+   }
+
+   public void setReceivedIbgpAdvertisement(BgpAdvertisement t) {
+      _receivedIbgpAdvertisement = t;
+   }
+
    public void setRemoteBgpNeighbor(BgpNeighbor remoteBgpNeighbor) {
       _remoteBgpNeighbor = remoteBgpNeighbor;
    }
@@ -1078,6 +1114,14 @@ public class Environment {
 
    public void setRoutingProtocol(RoutingProtocol protocol) {
       _protocol = protocol;
+   }
+
+   public void setSentEbgpAdvertisement(BgpAdvertisement t) {
+      _sentEbgpAdvertisement = t;
+   }
+
+   public void setSentIbgpAdvertisement(BgpAdvertisement t) {
+      _sentIbgpAdvertisement = t;
    }
 
    public void setStaticRoute(StaticRoute staticRoute) {
