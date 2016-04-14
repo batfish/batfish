@@ -1886,9 +1886,8 @@ need_PolicyMapMatchRoute(Map, Route) :-
    Protocol = 'isisL2',
    'SetNodeVendor'(Node, Vendor),
    'AdministrativeDistance'(Vendor, Protocol, Admin).
-'BestIsisL2Route'(Route),
-   'IsisL2Network'(Node, Network)
-:-
+
+'BestIsisL2Route'(Route) :-
    'IsisL2Route'(Route),
    'Route_cost'(Route, Cost),
    'Route_network'(Route, Network),
