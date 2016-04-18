@@ -228,6 +228,8 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_NO_SHUFFLE = "noshuffle";
 
+   private static final String ARG_NXTNET_DEBUG_SYMBOLS = "nxtnetdebugsymbols";
+
    private static final String ARG_PRECOMPUTED_ADVERTISEMENTS_PATH = "precomputedadvertisementspath";
 
    private static final String ARG_PRECOMPUTED_FACTS_PATH = "precomputedfactspath";
@@ -384,6 +386,8 @@ public final class Settings extends BaseSettings {
    private boolean _noOutput;
 
    private boolean _nxtnetDataPlane;
+
+   private boolean _nxtnetDebugSymbols;
 
    private boolean _nxtnetTraffic;
 
@@ -675,6 +679,10 @@ public final class Settings extends BaseSettings {
       return _nxtnetDataPlane;
    }
 
+   public boolean getNxtnetDebugSymbols() {
+      return _nxtnetDebugSymbols;
+   }
+
    public boolean getNxtnetTraffic() {
       return _nxtnetTraffic;
    }
@@ -905,6 +913,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
       setDefaultProperty(ARG_NO_OUTPUT, false);
       setDefaultProperty(ARG_NO_SHUFFLE, false);
+      setDefaultProperty(ARG_NXTNET_DEBUG_SYMBOLS, false);
       setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
@@ -1060,6 +1069,9 @@ public final class Settings extends BaseSettings {
       addBooleanOption(ARG_NO_OUTPUT, "do not produce output files");
 
       addBooleanOption(ARG_NO_SHUFFLE, "do not shuffle parallel jobs");
+
+      addBooleanOption(ARG_NXTNET_DEBUG_SYMBOLS,
+            "compute/display nxtnet debug symbols for querying");
 
       addOption(BfConsts.ARG_OUTPUT_ENV, "name of output environment",
             ARGNAME_NAME);
@@ -1258,6 +1270,7 @@ public final class Settings extends BaseSettings {
       _noOutput = getBooleanOptionValue(ARG_NO_OUTPUT);
       _nxtnetDataPlane = getBooleanOptionValue(BfConsts.COMMAND_NXTNET_DATA_PLANE);
       _nxtnetTraffic = getBooleanOptionValue(BfConsts.COMMAND_NXTNET_TRAFFIC);
+      _nxtnetDebugSymbols = getBooleanOptionValue(ARG_NXTNET_DEBUG_SYMBOLS);
       _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
       _pedanticAsError = getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
       _pedanticRecord = !getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);

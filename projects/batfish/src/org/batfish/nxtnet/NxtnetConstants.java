@@ -11,6 +11,8 @@ public class NxtnetConstants {
 
    public static final Set<String> NXTNET_DATA_PLANE_ENTITY_SYMBOLS = initNxtnetDataPlaneEntitySymbols();
 
+   public static final Set<String> NXTNET_DATA_PLANE_OUTPUT_DEBUG_SYMBOLS = initNxtnetDataPlaneOutputDebugSymbols();
+
    public static final Set<String> NXTNET_DATA_PLANE_OUTPUT_SYMBOLS = initNxtnetDataPlaneOutputSymbols();
 
    public static final Set<String> NXTNET_TRAFFIC_COMPUTATION_CONTROL_PLANE_FACTS = initNxtnetTrafficComputationControlPlaneFacts();
@@ -18,6 +20,8 @@ public class NxtnetConstants {
    public static final Set<String> NXTNET_TRAFFIC_COMPUTATION_FLOW_FACTS = initNxtnetTrafficComputationFlowFacts();
 
    public static final Set<String> NXTNET_TRAFFIC_ENTITY_SYMBOLS = initNxtnetTrafficEntitySymbols();
+
+   public static final Set<String> NXTNET_TRAFFIC_OUTPUT_DEBUG_SYMBOLS = initNxtnetTrafficOutputDebugSymbols();
 
    public static final Set<String> NXTNET_TRAFFIC_OUTPUT_SYMBOLS = initNxtnetTrafficOutputSymbols();
 
@@ -177,6 +181,47 @@ public class NxtnetConstants {
       return Collections.unmodifiableSet(factSet);
    }
 
+   private static final Set<String> initNxtnetDataPlaneOutputDebugSymbols() {
+      Set<String> factSet = new HashSet<String>();
+      String[] facts = new String[] {
+            "BgpImportPolicy",
+            "BgpMultihopNeighborIp",
+            "BgpMultihopNeighborTo",
+            "BgpNeighborIp",
+            "BgpNeighbors",
+            "Ip",
+            "IsisExport",
+            "IsisL2EnabledInterface",
+            "LocalAs",
+            "NetworkOf",
+            "need_PolicyMapMatchAdvert",
+            "PolicyMapClauseMatchAdvert",
+            "PolicyMapClauseMatchRoute",
+            "PolicyMapClauseTransformAdvert",
+            "PolicyMapConjunctionDenyAdvert",
+            "PolicyMapConjunctionDenyRoute",
+            "PolicyMapDenyAdvert",
+            "PolicyMapDenyRoute",
+            "PolicyMapPermitAdvert",
+            "PolicyMapPermitRoute",
+            "SetBgpAdvertisement_flat",
+            "SetBgpMultihopNeighborNetwork",
+            "SetBgpMultihopNeighborNetwork_flat",
+            "SetBgpNeighborNetwork",
+            "SetBgpNeighborNetwork_flat",
+            "SetExternalBgpRemoteIp",
+            "SetIsisOutboundPolicyMap",
+            "SetLocalAs",
+            "SetLocalAs_flat",
+            "SetNetwork",
+            "SetPolicyMapClauseMatchInterface",
+            "SetPolicyMapClauseMatchPolicy",
+            "SetPolicyMapClauseMatchPolicyConjunction",
+            "SetPolicyMapClauseMatchProtocol", };
+      factSet.addAll(Arrays.asList(facts));
+      return Collections.unmodifiableSet(factSet);
+   }
+
    private static final Set<String> initNxtnetDataPlaneOutputSymbols() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
@@ -196,39 +241,6 @@ public class NxtnetConstants {
             "BgpAdvertisement_srcNode",
             "BgpAdvertisement_srcProtocol",
             "BgpAdvertisement_type",
-            // BEGIN DEBUG SYMBOLS
-            "BgpImportPolicy",
-            "BgpMultihopNeighborIp",
-            "BgpMultihopNeighborTo",
-            "BgpNeighborIp",
-            "BgpNeighbors",
-            "Ip",
-            "LocalAs",
-            "NetworkOf",
-            "need_PolicyMapMatchAdvert",
-            "PolicyMapClauseMatchAdvert",
-            "PolicyMapClauseMatchRoute",
-            "PolicyMapClauseTransformAdvert",
-            "PolicyMapConjunctionDenyAdvert",
-            "PolicyMapConjunctionDenyRoute",
-            "PolicyMapDenyAdvert",
-            "PolicyMapDenyRoute",
-            "PolicyMapPermitAdvert",
-            "PolicyMapPermitRoute",
-            "SetBgpAdvertisement_flat",
-            "SetBgpMultihopNeighborNetwork",
-            "SetBgpMultihopNeighborNetwork_flat",
-            "SetBgpNeighborNetwork",
-            "SetBgpNeighborNetwork_flat",
-            "SetExternalBgpRemoteIp",
-            "SetLocalAs",
-            "SetLocalAs_flat",
-            "SetNetwork",
-            "SetPolicyMapClauseMatchInterface",
-            "SetPolicyMapClauseMatchPolicy",
-            "SetPolicyMapClauseMatchPolicyConjunction",
-            "SetPolicyMapClauseMatchProtocol",
-            // END DEBUG SYMBOLS
             "FibForwardPolicyRouteNextHopIp",
             "FibNetwork",
             "InstalledRoute",
@@ -357,20 +369,9 @@ public class NxtnetConstants {
       return Collections.unmodifiableSet(factSet);
    }
 
-   private static final Set<String> initNxtnetTrafficOutputSymbols() {
+   private static final Set<String> initNxtnetTrafficOutputDebugSymbols() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
-            "Flow_dstIp",
-            "Flow_dstPort",
-            "Flow_icmpCode",
-            "Flow_icmpType",
-            "Flow_ipProtocol",
-            "Flow_node",
-            "Flow_srcIp",
-            "Flow_srcPort",
-            "Flow_tcpFlags",
-            "Flow_tag",
-            // BEGIN DEBUG SYMBOLS
             "FlowAccepted",
             "FlowDeniedIn",
             "FlowDeniedInCrossZoneFilter",
@@ -400,8 +401,24 @@ public class NxtnetConstants {
             "FlowReachPostOutInterface",
             "FlowUnknown",
             "IpAccessListDeny",
-            "IpAccessListMatch",
-            // END DEBUG SYMBOLS
+            "IpAccessListMatch" };
+      factSet.addAll(Arrays.asList(facts));
+      return Collections.unmodifiableSet(factSet);
+   }
+
+   private static final Set<String> initNxtnetTrafficOutputSymbols() {
+      Set<String> factSet = new HashSet<String>();
+      String[] facts = new String[] {
+            "Flow_dstIp",
+            "Flow_dstPort",
+            "Flow_icmpCode",
+            "Flow_icmpType",
+            "Flow_ipProtocol",
+            "Flow_node",
+            "Flow_srcIp",
+            "Flow_srcPort",
+            "Flow_tcpFlags",
+            "Flow_tag",
             "FlowPathAcceptedEdge",
             "FlowPathDeniedInEdge",
             "FlowPathDeniedOutEdge",

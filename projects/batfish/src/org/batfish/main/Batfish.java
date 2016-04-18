@@ -1286,13 +1286,13 @@ public class Batfish implements AutoCloseable {
          Set<String> predicateNames) {
       Set<String> dpIntersect = new HashSet<String>();
       dpIntersect.addAll(predicateNames);
-      dpIntersect.retainAll(NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS);
+      dpIntersect.retainAll(getNxtnetDataPlaneOutputSymbols());
       if (dpIntersect.size() > 0) {
          checkDataPlaneFacts(envSettings);
       }
       Set<String> trafficIntersect = new HashSet<String>();
       trafficIntersect.addAll(predicateNames);
-      trafficIntersect.retainAll(NxtnetConstants.NXTNET_TRAFFIC_OUTPUT_SYMBOLS);
+      trafficIntersect.retainAll(getNxtnetTrafficOutputSymbols());
       if (trafficIntersect.size() > 0) {
          checkTrafficFacts(envSettings);
       }
@@ -2186,6 +2186,15 @@ public class Batfish implements AutoCloseable {
       return blacklistNodes;
    }
 
+   private Set<String> getNxtnetDataPlaneOutputSymbols() {
+      Set<String> symbols = new HashSet<String>();
+      symbols.addAll(NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS);
+      if (_settings.getNxtnetDebugSymbols()) {
+         symbols.addAll(NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_DEBUG_SYMBOLS);
+      }
+      return symbols;
+   }
+
    private String[] getNxtnetLogicFilenames(File logicDir) {
       final Set<String> filenames = new TreeSet<String>();
       Path logicDirPath = Paths.get(logicDir.toString());
@@ -2212,12 +2221,10 @@ public class Batfish implements AutoCloseable {
    private String getNxtnetText(EnvironmentSettings envSettings,
          String relationName) {
       String nxtnetOutputDir;
-      if (NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS
-            .contains(relationName)) {
+      if (getNxtnetDataPlaneOutputSymbols().contains(relationName)) {
          nxtnetOutputDir = envSettings.getNxtnetDataPlaneOutputDir();
       }
-      else if (NxtnetConstants.NXTNET_TRAFFIC_OUTPUT_SYMBOLS
-            .contains(relationName)) {
+      else if (getNxtnetTrafficOutputSymbols().contains(relationName)) {
          nxtnetOutputDir = envSettings.getNxtnetTrafficOutputDir();
       }
       else {
@@ -2231,6 +2238,15 @@ public class Batfish implements AutoCloseable {
       File relationFile = Paths.get(nxtnetOutputDir, relationName).toFile();
       String content = Util.readFile(relationFile);
       return content;
+   }
+
+   private Set<String> getNxtnetTrafficOutputSymbols() {
+      Set<String> symbols = new HashSet<String>();
+      symbols.addAll(NxtnetConstants.NXTNET_TRAFFIC_OUTPUT_SYMBOLS);
+      if (_settings.getNxtnetDebugSymbols()) {
+         symbols.addAll(NxtnetConstants.NXTNET_TRAFFIC_OUTPUT_DEBUG_SYMBOLS);
+      }
+      return symbols;
    }
 
    private PolicyRouteFibNodeMap getPolicyRouteFibNodeMap(
@@ -2554,8 +2570,8 @@ public class Batfish implements AutoCloseable {
       Map<String, String> inputFacts = readFacts(
             envSettings.getControlPlaneFactsDir(),
             NxtnetConstants.NXTNET_DATA_PLANE_COMPUTATION_FACTS);
-      writeNxtnetInput(NxtnetConstants.NXTNET_DATA_PLANE_OUTPUT_SYMBOLS,
-            inputFacts, envSettings.getNxtnetDataPlaneInputFile(), envSettings);
+      writeNxtnetInput(getNxtnetDataPlaneOutputSymbols(), inputFacts,
+            envSettings.getNxtnetDataPlaneInputFile(), envSettings);
       runNxtnet(envSettings.getNxtnetDataPlaneInputFile(),
             envSettings.getNxtnetDataPlaneOutputDir());
       writeRoutes(envSettings.getPrecomputedRoutesPath(), envSettings);
@@ -2582,8 +2598,8 @@ public class Batfish implements AutoCloseable {
       Map<String, String> inputFacts = new TreeMap<String, String>();
       inputFacts.putAll(inputControlPlaneFacts);
       inputFacts.putAll(inputFlowFacts);
-      writeNxtnetInput(NxtnetConstants.NXTNET_TRAFFIC_OUTPUT_SYMBOLS,
-            inputFacts, envSettings.getNxtnetTrafficInputFile(), envSettings);
+      writeNxtnetInput(getNxtnetTrafficOutputSymbols(), inputFacts,
+            envSettings.getNxtnetTrafficInputFile(), envSettings);
       runNxtnet(envSettings.getNxtnetTrafficInputFile(),
             envSettings.getNxtnetTrafficOutputDir());
    }
