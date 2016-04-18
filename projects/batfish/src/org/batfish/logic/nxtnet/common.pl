@@ -1866,6 +1866,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
       'Route_cost'(Route, Cost),
       'Route_network'(Route, Network),
       'Route_node'(Route, Node))).
+
 % (Base case - import routes exported into L2 by L2 neighbors
 'IsisL2Route'(Route),
    'Route'(Route),

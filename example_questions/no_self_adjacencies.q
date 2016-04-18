@@ -14,11 +14,11 @@ verify {
       $assigned_subnets.clear;
       $dual_assigned_subnets.clear;
       foreach interface {
-         if (interface.has_ip) then {
+         if (interface.has_ip) {
             unless (and{interface.is_loopback, interface.ip == $loopbackip}) {
                $prev_num_subnet_assignments := $assigned_subnets.size;
                $assigned_subnets.add(interface.subnet);
-               if ($assigned_subnets.size == $prev_num_subnet_assignments) then {
+               if ($assigned_subnets.size == $prev_num_subnet_assignments) {
                   $dual_assigned_subnets.add(interface.subnet);
                }
             }
@@ -26,7 +26,7 @@ verify {
       }
       $interface_addresses := new_map;
       foreach interface {
-         if (interface.has_ip) then {
+         if (interface.has_ip) {
             unless (and{interface.is_loopback, interface.ip == $loopbackip}) {
                assert {
                   not {
@@ -41,7 +41,7 @@ verify {
                      interface.name,
                      node.name,
                      interface.subnet);
-                  if (not {interface.enabled}) then {
+                  if (not {interface.enabled}) {
                      printf(" (interface is DISABLED)");
                   }
                   printf("\n");
