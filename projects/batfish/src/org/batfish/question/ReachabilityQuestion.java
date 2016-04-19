@@ -10,7 +10,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.representation.IcmpCode;
 import org.batfish.representation.IcmpType;
 import org.batfish.representation.Prefix;
-import org.batfish.representation.TcpFlags;
 import org.batfish.util.SubRange;
 
 public class ReachabilityQuestion extends Question {
@@ -35,7 +34,7 @@ public class ReachabilityQuestion extends Question {
 
    private Set<Prefix> _srcPrefixes;
 
-   private int _tcpFlags;
+   // private int _tcpFlags;
 
    public ReachabilityQuestion(QuestionParameters parameters) {
       super(QuestionType.REACHABILITY, parameters);
@@ -50,7 +49,8 @@ public class ReachabilityQuestion extends Question {
       _srcPrefixes = new TreeSet<Prefix>();
       _icmpType = IcmpType.UNSET;
       _icmpCode = IcmpCode.UNSET;
-      _tcpFlags = TcpFlags.UNSET;
+      // TODO: allow constraining tcpFlags
+      // _tcpFlags = TcpFlags.UNSET;
    }
 
    public Set<ForwardingAction> getActions() {
@@ -103,9 +103,9 @@ public class ReachabilityQuestion extends Question {
       return _srcPrefixes;
    }
 
-   public int getTcpFlags() {
-      return _tcpFlags;
-   }
+   // public int getTcpFlags() {
+   // return _tcpFlags;
+   // }
 
    public void setFinalNodeRegex(String regex) {
       try {
@@ -137,8 +137,8 @@ public class ReachabilityQuestion extends Question {
       }
    }
 
-   public void setTcpFlags(int tcpFlags) {
-      _tcpFlags = tcpFlags;
-   }
+   // public void setTcpFlags(int tcpFlags) {
+   // _tcpFlags = tcpFlags;
+   // }
 
 }

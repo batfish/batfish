@@ -1770,11 +1770,81 @@ need_PolicyMapMatchRoute(Map, Route) :-
    ).
 
 'IpAccessListMatchTcpFlags'(List, Line, Flow) :-
-   'IpAccessListLine'(List, Line),
-   'Flow_tcpFlags'(Flow, TcpFlags),
+   \+ 'SetIpAccessListLine_tcpFlags'(List, Line, _) ;
    (
-      \+ 'SetIpAccessListLine_tcpFlags'(List, Line, _) ;
-      'SetIpAccessListLine_tcpFlags'(List, Line, TcpFlags)
+      'SetIpAccessListLine_tcpFlags'(List, Line, Alternative),
+      'IpAccessListMatchTcpFlagsCWR'(List, Line, Alternative, Flow),
+      'IpAccessListMatchTcpFlagsECE'(List, Line, Alternative, Flow),
+      'IpAccessListMatchTcpFlagsURG'(List, Line, Alternative, Flow),
+      'IpAccessListMatchTcpFlagsACK'(List, Line, Alternative, Flow),
+      'IpAccessListMatchTcpFlagsPSH'(List, Line, Alternative, Flow),
+      'IpAccessListMatchTcpFlagsRST'(List, Line, Alternative, Flow),
+      'IpAccessListMatchTcpFlagsSYN'(List, Line, Alternative, Flow),
+      'IpAccessListMatchTcpFlagsFIN'(List, Line, Alternative, Flow)
+   ).
+
+'IpAccessListMatchTcpFlagsCWR'(List, Line, Alternative, Flow) :-
+   'SetIpAccessListLine_tcpFlags'(List, Line, Alternative),
+   'Flow_tcpFlagsCWR'(Flow, Bit),
+   (
+      \+ 'SetIpAccessListLine_tcpFlagsCWR'(List, Line, Alternative, _) ;
+      'SetIpAccessListLine_tcpFlagsCWR'(List, Line, Alternative, Bit)
+   ).
+
+'IpAccessListMatchTcpFlagsECE'(List, Line, Alternative, Flow) :-
+   'SetIpAccessListLine_tcpFlags'(List, Line, Alternative),
+   'Flow_tcpFlagsECE'(Flow, Bit),
+   (
+      \+ 'SetIpAccessListLine_tcpFlagsECE'(List, Line, Alternative, _) ;
+      'SetIpAccessListLine_tcpFlagsECE'(List, Line, Alternative, Bit)
+   ).
+
+'IpAccessListMatchTcpFlagsURG'(List, Line, Alternative, Flow) :-
+   'SetIpAccessListLine_tcpFlags'(List, Line, Alternative),
+   'Flow_tcpFlagsURG'(Flow, Bit),
+   (
+      \+ 'SetIpAccessListLine_tcpFlagsURG'(List, Line, Alternative, _) ;
+      'SetIpAccessListLine_tcpFlagsURG'(List, Line, Alternative, Bit)
+   ).
+
+'IpAccessListMatchTcpFlagsACK'(List, Line, Alternative, Flow) :-
+   'SetIpAccessListLine_tcpFlags'(List, Line, Alternative),
+   'Flow_tcpFlagsACK'(Flow, Bit),
+   (
+      \+ 'SetIpAccessListLine_tcpFlagsACK'(List, Line, Alternative, _) ;
+      'SetIpAccessListLine_tcpFlagsACK'(List, Line, Alternative, Bit)
+   ).
+
+'IpAccessListMatchTcpFlagsPSH'(List, Line, Alternative, Flow) :-
+   'SetIpAccessListLine_tcpFlags'(List, Line, Alternative),
+   'Flow_tcpFlagsPSH'(Flow, Bit),
+   (
+      \+ 'SetIpAccessListLine_tcpFlagsPSH'(List, Line, Alternative, _) ;
+      'SetIpAccessListLine_tcpFlagsPSH'(List, Line, Alternative, Bit)
+   ).
+
+'IpAccessListMatchTcpFlagsRST'(List, Line, Alternative, Flow) :-
+   'SetIpAccessListLine_tcpFlags'(List, Line, Alternative),
+   'Flow_tcpFlagsRST'(Flow, Bit),
+   (
+      \+ 'SetIpAccessListLine_tcpFlagsRST'(List, Line, Alternative, _) ;
+      'SetIpAccessListLine_tcpFlagsRST'(List, Line, Alternative, Bit)
+   ).
+
+'IpAccessListMatchTcpFlagsSYN'(List, Line, Alternative, Flow) :-
+   'SetIpAccessListLine_tcpFlags'(List, Line, Alternative),
+   'Flow_tcpFlagsSYN'(Flow, Bit),
+   (
+      \+ 'SetIpAccessListLine_tcpFlagsSYN'(List, Line, Alternative, _) ;
+      'SetIpAccessListLine_tcpFlagsSYN'(List, Line, Alternative, Bit)
+   ).
+
+'IpAccessListMatchTcpFlagsFIN'(List, Line, Alternative, Flow) :-
+   'SetIpAccessListLine_tcpFlags'(List, Line, Alternative),
+   'Flow_tcpFlagsFIN'(Flow, Bit),
+   (
+      \+ 'SetIpAccessListLine_tcpFlagsFIN'(List, Line, Alternative, _) ;
+      'SetIpAccessListLine_tcpFlagsFIN'(List, Line, Alternative, Bit)
    ).
 
 'GeneratedRoutePolicy'(Route, Policy) :-
@@ -3469,11 +3539,19 @@ need_RouteFilterMatchNetwork(List, Network) :-
 'Flow_node'(Flow, Node),
 'Flow_srcIp'(Flow, SrcIp),
 'Flow_srcPort'(Flow, SrcPort),
-'Flow_tcpFlags'(Flow, TcpFlags),
+'Flow_tcpFlagsCWR'(Flow, CWR),
+'Flow_tcpFlagsECE'(Flow, ECE),
+'Flow_tcpFlagsURG'(Flow, URG),
+'Flow_tcpFlagsACK'(Flow, ACK),
+'Flow_tcpFlagsPSH'(Flow, PSH),
+'Flow_tcpFlagsRST'(Flow, RST),
+'Flow_tcpFlagsSYN'(Flow, SYN),
+'Flow_tcpFlagsFIN'(Flow, FIN),
 'Flow_tag'(Flow, Tag)
 :-
-   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag).
-'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag, Flow),
+   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag).
+
+'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
 'Flow'(Flow),
 'Flow_dstIp'(Flow, DstIp),
 'Flow_dstPort'(Flow, DstPort),
@@ -3483,11 +3561,18 @@ need_RouteFilterMatchNetwork(List, Network) :-
 'Flow_node'(Flow, Node),
 'Flow_srcIp'(Flow, SrcIp),
 'Flow_srcPort'(Flow, SrcPort),
-'Flow_tcpFlags'(Flow, TcpFlags),
+'Flow_tcpFlagsCWR'(Flow, CWR),
+'Flow_tcpFlagsECE'(Flow, ECE),
+'Flow_tcpFlagsURG'(Flow, URG),
+'Flow_tcpFlagsACK'(Flow, ACK),
+'Flow_tcpFlagsPSH'(Flow, PSH),
+'Flow_tcpFlagsRST'(Flow, RST),
+'Flow_tcpFlagsSYN'(Flow, SYN),
+'Flow_tcpFlagsFIN'(Flow, FIN),
 'Flow_tag'(Flow, Tag)
 :-
    'DuplicateRoleFlows'(_),
-   'SetFlowOriginate'(AcceptNode, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag),
+   'SetFlowOriginate'(AcceptNode, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag),
    'SetNodeRole'(AcceptNode, Role),
    'SetNodeRole'(Node, Role).
 
@@ -3789,6 +3874,6 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    'FlowSameHeader'(Flow, SimilarFlow).
 
 'FlowSameHeader'(Flow1, Flow2) :-
-   'FlowOriginate'(Node1, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag, Flow1),
-   'FlowOriginate'(Node2, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag, Flow2),
+   'FlowOriginate'(Node1, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow1),
+   'FlowOriginate'(Node2, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow2),
    Node1 \== Node2.

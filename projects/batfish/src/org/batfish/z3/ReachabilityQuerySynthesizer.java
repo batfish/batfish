@@ -9,7 +9,6 @@ import org.batfish.question.ForwardingAction;
 import org.batfish.representation.IcmpCode;
 import org.batfish.representation.IcmpType;
 import org.batfish.representation.Prefix;
-import org.batfish.representation.TcpFlags;
 import org.batfish.util.SubRange;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AndExpr;
@@ -54,7 +53,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
 
    private Set<SubRange> _srcPortRange;
 
-   private int _tcpFlags;
+   // private int _tcpFlags;
 
    public ReachabilityQuerySynthesizer(Set<ForwardingAction> actions,
          Set<Prefix> dstIpPrefixes, Set<SubRange> dstPortRange,
@@ -71,7 +70,8 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
       _srcPortRange = srcPortRange;
       _icmpType = icmpType;
       _icmpCode = icmpCode;
-      _tcpFlags = tcpFlags;
+      // TODO: allow constraining tcpFlags
+      // _tcpFlags = tcpFlags;
    }
 
    @Override
@@ -193,14 +193,14 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
          queryConditions.addConjunct(exactMatch);
       }
 
-      // add tcp-flags constraints
-      if (_tcpFlags != TcpFlags.UNSET) {
-         EqExpr exactMatch = new EqExpr(new VarIntExpr(
-               Synthesizer.TCP_FLAGS_VAR), new LitIntExpr(_tcpFlags,
-               Synthesizer.TCP_FLAGS_BITS));
-         queryConditions.addConjunct(exactMatch);
-      }
-
+      // // add tcp-flags constraints
+      // if (_tcpFlags != TcpFlags.UNSET) {
+      // EqExpr exactMatch = new EqExpr(new VarIntExpr(
+      // Synthesizer.TCP_FLAGS_VAR), new LitIntExpr(_tcpFlags,
+      // Synthesizer.TCP_FLAGS_BITS));
+      // queryConditions.addConjunct(exactMatch);
+      // }
+      //
       RuleExpr queryRule = new RuleExpr(queryConditions,
             QueryRelationExpr.INSTANCE);
       List<BoolExpr> rules = program.getRules();

@@ -16,7 +16,6 @@ import org.batfish.representation.IcmpCode;
 import org.batfish.representation.IcmpType;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
-import org.batfish.representation.TcpFlags;
 
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BitVecNum;
@@ -41,7 +40,14 @@ public final class NodJob extends BatfishJob<NodJobResult> {
       long dst_port = 0;
       long icmp_type = IcmpType.UNSET;
       long icmp_code = IcmpCode.UNSET;
-      long tcp_flags = TcpFlags.UNSET;
+      long tcp_flags_cwr = 0;
+      long tcp_flags_ece = 0;
+      long tcp_flags_urg = 0;
+      long tcp_flags_ack = 0;
+      long tcp_flags_psh = 0;
+      long tcp_flags_rst = 0;
+      long tcp_flags_syn = 0;
+      long tcp_flags_fin = 0;
       long protocol = IpProtocol.IP.number();
       for (String varName : constraints.keySet()) {
          Long value = constraints.get(varName);
@@ -74,8 +80,36 @@ public final class NodJob extends BatfishJob<NodJobResult> {
             icmp_code = value;
             break;
 
-         case Synthesizer.TCP_FLAGS_VAR:
-            tcp_flags = value;
+         case Synthesizer.TCP_FLAGS_CWR_VAR:
+            tcp_flags_cwr = value;
+            break;
+
+         case Synthesizer.TCP_FLAGS_ECE_VAR:
+            tcp_flags_ece = value;
+            break;
+
+         case Synthesizer.TCP_FLAGS_URG_VAR:
+            tcp_flags_urg = value;
+            break;
+
+         case Synthesizer.TCP_FLAGS_ACK_VAR:
+            tcp_flags_ack = value;
+            break;
+
+         case Synthesizer.TCP_FLAGS_PSH_VAR:
+            tcp_flags_psh = value;
+            break;
+
+         case Synthesizer.TCP_FLAGS_RST_VAR:
+            tcp_flags_rst = value;
+            break;
+
+         case Synthesizer.TCP_FLAGS_SYN_VAR:
+            tcp_flags_syn = value;
+            break;
+
+         case Synthesizer.TCP_FLAGS_FIN_VAR:
+            tcp_flags_fin = value;
             break;
 
          default:
@@ -84,7 +118,10 @@ public final class NodJob extends BatfishJob<NodJobResult> {
       }
       return new Flow(node, new Ip(src_ip), new Ip(dst_ip), (int) src_port,
             (int) dst_port, IpProtocol.fromNumber((int) protocol),
-            (int) icmp_type, (int) icmp_code, (int) tcp_flags, tag);
+            (int) icmp_type, (int) icmp_code, (int) tcp_flags_cwr,
+            (int) tcp_flags_ece, (int) tcp_flags_urg, (int) tcp_flags_ack,
+            (int) tcp_flags_psh, (int) tcp_flags_rst, (int) tcp_flags_syn,
+            (int) tcp_flags_fin, tag);
    }
 
    private Synthesizer _dataPlaneSynthesizer;

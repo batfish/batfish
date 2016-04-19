@@ -1390,12 +1390,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             : Collections.<SubRange> emptyList();
       Integer icmpType = null;
       Integer icmpCode = null;
-      Integer tcpFlags = null;
-      int tcpFlagsByte = 0;
+      List<TcpFlags> tcpFlags = new ArrayList<TcpFlags>();
       for (Extended_access_list_additional_featureContext feature : ctx.features) {
          if (feature.ACK() != null) {
-            tcpFlagsByte |= TcpFlags.ACK;
-            tcpFlags = tcpFlagsByte;
+            TcpFlags alt = new TcpFlags();
+            alt.setUseAck(true);
+            alt.setAck(true);
+            tcpFlags.add(alt);
          }
          if (feature.ECHO_REPLY() != null) {
             icmpType = IcmpType.ECHO_REPLY;
@@ -1406,9 +1407,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             icmpCode = IcmpCode.ECHO_REQUEST;
          }
          if (feature.ESTABLISHED() != null) {
-            // TODO: for now, just expect tcp-flags to be 0
-            tcpFlagsByte &= 0;
-            tcpFlags = tcpFlagsByte;
+            // must contain ACK or RST
+            TcpFlags alt1 = new TcpFlags();
+            TcpFlags alt2 = new TcpFlags();
+            alt1.setUseAck(true);
+            alt1.setAck(true);
+            alt2.setUseRst(true);
+            alt2.setRst(true);
+            tcpFlags.add(alt1);
+            tcpFlags.add(alt2);
          }
          if (feature.FRAGMENTS() != null) {
             todo(ctx, F_FRAGMENTS);
@@ -1444,8 +1451,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             icmpType = IcmpType.REDIRECT_MESSAGE;
          }
          if (feature.RST() != null) {
-            tcpFlagsByte |= TcpFlags.RESET;
-            tcpFlags = tcpFlagsByte;
+            TcpFlags alt = new TcpFlags();
+            alt.setUseRst(true);
+            alt.setRst(true);
+            tcpFlags.add(alt);
          }
          if (feature.SOURCE_QUENCH() != null) {
             icmpType = IcmpType.SOURCE_QUENCH;

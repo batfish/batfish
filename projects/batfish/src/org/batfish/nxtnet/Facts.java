@@ -30,7 +30,15 @@ public class Facts {
             "LIST|LINE|DSTPORTSTART|DSTPORTEND");
       map.put("SetIpAccessListLine_icmpCode", "LIST|LINE|ICMPCODE");
       map.put("SetIpAccessListLine_icmpType", "LIST|LINE|ICMPTYPE");
-      map.put("SetIpAccessListLine_tcpFlags", "LIST|LINE|TCPFLAGS");
+      map.put("SetIpAccessListLine_tcpFlags", "LIST|LINE|ALTERNATIVE");
+      map.put("SetIpAccessListLine_tcpFlagsCWR", "LIST|LINE|ALTERNATIVE|BIT");
+      map.put("SetIpAccessListLine_tcpFlagsECE", "LIST|LINE|ALTERNATIVE|BIT");
+      map.put("SetIpAccessListLine_tcpFlagsURG", "LIST|LINE|ALTERNATIVE|BIT");
+      map.put("SetIpAccessListLine_tcpFlagsACK", "LIST|LINE|ALTERNATIVE|BIT");
+      map.put("SetIpAccessListLine_tcpFlagsPSH", "LIST|LINE|ALTERNATIVE|BIT");
+      map.put("SetIpAccessListLine_tcpFlagsRST", "LIST|LINE|ALTERNATIVE|BIT");
+      map.put("SetIpAccessListLine_tcpFlagsSYN", "LIST|LINE|ALTERNATIVE|BIT");
+      map.put("SetIpAccessListLine_tcpFlagsFIN", "LIST|LINE|ALTERNATIVE|BIT");
       map.put("SetIpAccessListLine_permit", "LIST|LINE");
       map.put("SetIpAccessListLine_protocol", "LIST|LINE|PROTOCOL");
       map.put("SetIpAccessListLine_srcIpRange", "LIST|LINE|SRCIPSTART|SRCIPEND");

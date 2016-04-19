@@ -141,10 +141,58 @@ SetIpAccessListLine_srcPortRange(list, line, srcPort_start, srcPort_end) ->
    int(srcPort_start),
    int(srcPort_end).
 
-SetIpAccessListLine_tcpFlags(list, line, tcpFlags) ->
+SetIpAccessListLine_tcpFlags(list, line, alternative) ->
    IpAccessList(list),
    int(line),
-   int(tcpFlags).
+   int(alternative).
+
+SetIpAccessListLine_tcpFlagsCWR(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsECE(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsURG(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsACK(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsPSH(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsRST(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsSYN(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsFIN(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
 
 SetCrossZoneFilter(node, srcZone, dstZone, filter) ->
    Node(node),

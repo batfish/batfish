@@ -51,6 +51,7 @@ import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.SwitchportEncapsulationType;
+import org.batfish.representation.TcpFlags;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.VendorConversionException;
 import org.batfish.util.SubRange;
@@ -873,10 +874,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (icmpCode != null) {
             newLine.setIcmpCode(icmpCode);
          }
-         Integer tcpFlags = fromLine.getTcpFlags();
-         if (tcpFlags != null) {
-            newLine.setTcpFlags(tcpFlags);
-         }
+         List<TcpFlags> tcpFlags = fromLine.getTcpFlags();
+         newLine.getTcpFlags().addAll(tcpFlags);
          lines.add(newLine);
       }
       return new IpAccessList(name, lines);

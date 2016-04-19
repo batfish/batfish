@@ -25,9 +25,37 @@ Flow_icmpType[flow] = icmpType ->
    Flow(flow),
    int(icmpType).
 
-Flow_tcpFlags[flow] = tcpFlags ->
+Flow_tcpFlagsCWR[flow] = bit ->
    Flow(flow),
-   int(tcpFlags).
+   int(bit).
+
+Flow_tcpFlagsECE[flow] = bit ->
+   Flow(flow),
+   int(bit).
+
+Flow_tcpFlagsURG[flow] = bit ->
+   Flow(flow),
+   int(bit).
+
+Flow_tcpFlagsACK[flow] = bit ->
+   Flow(flow),
+   int(bit).
+
+Flow_tcpFlagsPSH[flow] = bit ->
+   Flow(flow),
+   int(bit).
+
+Flow_tcpFlagsRST[flow] = bit ->
+   Flow(flow),
+   int(bit).
+
+Flow_tcpFlagsSYN[flow] = bit ->
+   Flow(flow),
+   int(bit).
+
+Flow_tcpFlagsFIN[flow] = bit ->
+   Flow(flow),
+   int(bit).
 
 Flow_ipProtocol[flow] = protocol ->
    Flow(flow),
