@@ -4677,7 +4677,7 @@ IPV6_PREFIX
 
 LINE_COMMENT
 :
-   '#' F_NonNewlineChar* F_NewlineChar+
+   ('#'|'!') F_NonNewlineChar* F_NewlineChar+
    {enableIPV6_ADDRESS = true;}
 
    -> channel ( HIDDEN )

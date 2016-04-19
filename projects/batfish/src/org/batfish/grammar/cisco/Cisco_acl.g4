@@ -6,6 +6,22 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+access_list_ip_flag
+:
+   (
+        DSCP val = DEC
+      | ECN val = DEC
+   )
+
+;
+
+access_list_ip_flags
+:
+   (
+      flag += access_list_ip_flag
+   )+
+;
+
 access_list_ip_range
 :
    (
@@ -440,6 +456,6 @@ standard_access_list_tail
 :
    (
       SEQ? num = DEC
-   )? ala = access_list_action ipr = access_list_ip_range LOG? NEWLINE
+   )? ala = access_list_action ipr = access_list_ip_range access_list_ip_flags? LOG? NEWLINE
 ;
 
