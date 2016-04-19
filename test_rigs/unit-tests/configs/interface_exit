@@ -1,0 +1,24 @@
+!
+hostname interface_exit
+!
+interface Vlan803
+  ip address 10.12.12.1/23
+  no ip redirects
+  no autostate
+  ipv6 address 2222:2222:222:222::1/64
+  ipv6 nd suppress-ra
+  ipv6 nd prefix 2222:2222:222:222::/64 infinite infinite no-autoconfig
+  ipv6 nd managed-config-flag
+  ip dhcp relay address 10.22.33.111
+  ip dhcp relay address 10.22.33.112
+  no shutdown
+  mtu 9100
+  exit
+interface Vlan303
+  ip address 10.22.33.10/29
+  no ip redirects
+  no autostate
+  no shutdown
+  mtu 9100
+  exit
+!
