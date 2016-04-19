@@ -782,11 +782,14 @@ public class Synthesizer {
                }
 
                Set<Prefix> srcIpRanges = line.getSourceIpRanges();
+               Set<Prefix> srcOrDstIpRanges = line.getSrcOrDstIpRanges();
                Set<Prefix> dstIpRanges = line.getDestinationIpRanges();
 
                Set<IpProtocol> protocols = line.getProtocols();
                Set<SubRange> srcPortRanges = new LinkedHashSet<SubRange>();
                srcPortRanges.addAll(line.getSrcPortRanges());
+               Set<SubRange> srcOrDstPortRanges = new LinkedHashSet<SubRange>();
+               srcOrDstPortRanges.addAll(line.getSrcOrDstPortRanges());
                Set<SubRange> dstPortRanges = new LinkedHashSet<SubRange>();
                dstPortRanges.addAll(line.getDstPortRanges());
                int icmpType = line.getIcmpType();
@@ -843,6 +846,37 @@ public class Synthesizer {
                   matchLineCriteria.addConjunct(matchSomeSrcIpRange);
                }
 
+               // match srcOrDstIp
+               if (srcOrDstIpRanges.size() > 0) {
+                  OrExpr matchSomeSrcOrDstIpRange = new OrExpr();
+                  for (Prefix srcOrDstPrefix : srcOrDstIpRanges) {
+                     long srcOrDstIp = srcOrDstPrefix.getAddress().asLong();
+
+                     int srcOrDstIpWildcardBits = IP_BITS
+                           - srcOrDstPrefix.getPrefixLength();
+                     int srcOrDstIpStart = srcOrDstIpWildcardBits;
+                     int srcOrDstIpEnd = IP_BITS - 1;
+                     if (srcOrDstIpStart < IP_BITS) {
+                        IntExpr extractSrcIp = newExtractExpr(SRC_IP_VAR,
+                              srcOrDstIpStart, srcOrDstIpEnd);
+                        IntExpr extractDstIp = newExtractExpr(DST_IP_VAR,
+                              srcOrDstIpStart, srcOrDstIpEnd);
+                        LitIntExpr srcOrDstIpMatchLit = new LitIntExpr(
+                              srcOrDstIp, srcOrDstIpStart, srcOrDstIpEnd);
+                        EqExpr matchSrcIp = new EqExpr(extractSrcIp,
+                              srcOrDstIpMatchLit);
+                        EqExpr matchDstIp = new EqExpr(extractDstIp,
+                              srcOrDstIpMatchLit);
+                        matchSomeSrcOrDstIpRange.addDisjunct(matchSrcIp);
+                        matchSomeSrcOrDstIpRange.addDisjunct(matchDstIp);
+                     }
+                     else {
+                        matchSomeSrcOrDstIpRange.addDisjunct(TrueExpr.INSTANCE);
+                     }
+                  }
+                  matchLineCriteria.addConjunct(matchSomeSrcOrDstIpRange);
+               }
+
                // match dstIp
                if (dstIpRanges.size() > 0) {
                   OrExpr matchSomeDstIpRange = new OrExpr();
@@ -869,14 +903,26 @@ public class Synthesizer {
                   matchLineCriteria.addConjunct(matchSomeDstIpRange);
                }
 
-               // match srcport
+               // match srcPort
                if (srcPortRanges != null && srcPortRanges.size() > 0) {
                   BooleanExpr matchSrcPort = getMatchAclRules_portHelper(
                         srcPortRanges, SRC_PORT_VAR);
                   matchLineCriteria.addConjunct(matchSrcPort);
                }
 
-               // matchdstport
+               // match srcOrDstPort
+               if (srcOrDstPortRanges != null && srcOrDstPortRanges.size() > 0) {
+                  BooleanExpr matchSrcPort = getMatchAclRules_portHelper(
+                        srcOrDstPortRanges, SRC_PORT_VAR);
+                  BooleanExpr matchDstPort = getMatchAclRules_portHelper(
+                        srcOrDstPortRanges, DST_PORT_VAR);
+                  OrExpr matchSrcOrDstPort = new OrExpr();
+                  matchSrcOrDstPort.addDisjunct(matchSrcPort);
+                  matchSrcOrDstPort.addDisjunct(matchDstPort);
+                  matchLineCriteria.addConjunct(matchSrcOrDstPort);
+               }
+
+               // match dstPort
                if (dstPortRanges != null && dstPortRanges.size() > 0) {
                   BooleanExpr matchDstPort = getMatchAclRules_portHelper(
                         dstPortRanges, DST_PORT_VAR);

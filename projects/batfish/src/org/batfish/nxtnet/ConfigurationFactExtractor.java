@@ -496,6 +496,10 @@ public class ConfigurationFactExtractor {
             .get("SetIpAccessListLine_protocol");
       StringBuilder wSetIpAccessListLine_srcIpRange = _factBins
             .get("SetIpAccessListLine_srcIpRange");
+      StringBuilder wSetIpAccessListLine_srcOrDstIpRange = _factBins
+            .get("SetIpAccessListLine_srcOrDstIpRange");
+      StringBuilder wSetIpAccessListLine_srcOrDstPortRange = _factBins
+            .get("SetIpAccessListLine_srcOrDstPortRange");
       StringBuilder wSetIpAccessListLine_srcPortRange = _factBins
             .get("SetIpAccessListLine_srcPortRange");
       for (IpAccessList ipAccessList : _configuration.getIpAccessLists()
@@ -552,6 +556,24 @@ public class ConfigurationFactExtractor {
                long srcIpEnd = srcIpRange.getEndAddress().asLong();
                wSetIpAccessListLine_srcIpRange.append(name + "|" + i + "|"
                      + srcIpStart + "|" + srcIpEnd + "\n");
+            }
+            for (Prefix srcOrDstIpRange : line.getSrcOrDstIpRanges()) {
+               long srcOrDstIpStart = srcOrDstIpRange.getAddress().asLong();
+               long srcOrDstIpEnd = srcOrDstIpRange.getEndAddress().asLong();
+               wSetIpAccessListLine_srcOrDstIpRange.append(name + "|" + i + "|"
+                     + srcOrDstIpStart + "|" + srcOrDstIpEnd + "\n");
+            }
+            for (SubRange srcOrDstPortRange : line.getSrcOrDstPortRanges()) {
+               long startPort = srcOrDstPortRange.getStart();
+               long endPort = srcOrDstPortRange.getEnd();
+               wSetIpAccessListLine_srcOrDstPortRange.append(name + "|" + i
+                     + "|" + startPort + "|" + endPort + "\n");
+            }
+            for (SubRange srcPortRange : line.getSrcPortRanges()) {
+               long startPort = srcPortRange.getStart();
+               long endPort = srcPortRange.getEnd();
+               wSetIpAccessListLine_srcPortRange.append(name + "|" + i + "|"
+                     + startPort + "|" + endPort + "\n");
             }
             for (SubRange srcPortRange : line.getSrcPortRanges()) {
                long startPort = srcPortRange.getStart();

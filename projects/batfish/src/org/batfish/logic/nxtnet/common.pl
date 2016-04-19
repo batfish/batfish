@@ -1651,6 +1651,8 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'IpAccessListMatchIcmpType'(List, Line, Flow),
    'IpAccessListMatchProtocol'(List, Line, Flow),
    'IpAccessListMatchSrcIp'(List, Line, Flow),
+   'IpAccessListMatchSrcOrDstIp'(List, Line, Flow),
+   'IpAccessListMatchSrcOrDstPort'(List, Line, Flow),
    'IpAccessListMatchSrcPort'(List, Line, Flow),
    'IpAccessListMatchTcpFlags'(List, Line, Flow).
 
@@ -1711,6 +1713,47 @@ need_PolicyMapMatchRoute(Map, Route) :-
          'SetIpAccessListLine_srcIpRange'(List, Line, SrcIp_start, SrcIp_end),
          SrcIp_start =< SrcIp,
          SrcIp =< SrcIp_end
+      )
+   ).
+
+'IpAccessListMatchSrcOrDstIp'(List, Line, Flow) :-
+   'IpAccessListLine'(List, Line),
+   'Flow_srcIp'(Flow, SrcIp),
+   'Flow_dstIp'(Flow, DstIp),
+   (
+      \+ 'SetIpAccessListLine_srcOrDstIpRange'(List, Line, _, _) ;
+      (
+         'SetIpAccessListLine_srcOrDstIpRange'(List, Line, SrcOrDstIp_start, SrcOrDstIp_end),
+         (
+            (
+               SrcOrDstIp_start =< SrcIp,
+               SrcIp =< SrcOrDstIp_end
+            ) ;
+            (
+               SrcOrDstIp_start =< DstIp,
+               DstIp =< SrcOrDstIp_end
+            )
+      )
+   ).
+
+'IpAccessListMatchSrcOrDstPort'(List, Line, Flow) :-
+   'IpAccessListLine'(List, Line),
+   'Flow_srcPort'(Flow, SrcPort),
+   'Flow_dstPort'(Flow, DstPort),
+   (
+      \+ 'SetIpAccessListLine_srcOrDstPortRange'(List, Line, _, _) ;
+      (
+         'SetIpAccessListLine_srcOrDstPortRange'(List, Line, SrcOrDstPort_start, SrcOrDstPort_end),
+         (
+            (
+               SrcOrDstPort_start =< SrcPort,
+               SrcPort =< SrcOrDstPort_end
+            ) ;
+            (
+               SrcOrDstPort_start =< DstPort,
+               DstPort =< SrcOrDstPort_end
+            )
+         )
       )
    ).
 

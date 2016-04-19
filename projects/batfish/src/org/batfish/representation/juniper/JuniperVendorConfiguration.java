@@ -693,8 +693,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          }
          boolean addLine = term.getFromApplications().isEmpty()
                && term.getFromHostProtocols().isEmpty()
-               && term.getFromHostServices().isEmpty()
-               && term.getFromPrefixLists().isEmpty();
+               && term.getFromHostServices().isEmpty();
          for (FwFromHostProtocol from : term.getFromHostProtocols()) {
             from.applyTo(lines, _w);
          }
@@ -703,9 +702,6 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          }
          for (FwFromApplication fromApplication : term.getFromApplications()) {
             fromApplication.applyTo(line, lines, _w);
-         }
-         for (FwFromPrefixList fromPrefixList : term.getFromPrefixLists()) {
-            fromPrefixList.applyTo(line, lines, this, _c, _w);
          }
          if (addLine) {
             lines.add(line);

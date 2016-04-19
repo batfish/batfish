@@ -65,6 +65,7 @@ import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.FwFromDestinationPrefixList;
 import org.batfish.representation.juniper.FwFromHostProtocol;
 import org.batfish.representation.juniper.FwFromHostService;
+import org.batfish.representation.juniper.FwFromPort;
 import org.batfish.representation.juniper.FwFromPrefixList;
 import org.batfish.representation.juniper.FwFromSourcePrefixList;
 import org.batfish.representation.juniper.FwThenNextIp;
@@ -2443,6 +2444,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitFwfromt_port(Fwfromt_portContext ctx) {
+      if (ctx.port() != null) {
+         int port = getPortNumber(ctx.port());
+         SubRange subrange = new SubRange(port, port);
+         FwFrom from = new FwFromPort(subrange);
+         _currentFwTerm.getFroms().add(from);
+      }
+      else if (ctx.range() != null) {
+         for (SubrangeContext subrangeContext : ctx.range().range_list) {
+            SubRange subrange = toSubRange(subrangeContext);
+            FwFrom from = new FwFromPort(subrange);
+            _currentFwTerm.getFroms().add(from);
+         }
+      }
+   }
+
+   @Override
    public void exitFwfromt_prefix_list(Fwfromt_prefix_listContext ctx) {
       String name = ctx.name.getText();
       // temporary
@@ -2450,7 +2468,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _configuration.getIgnoredPrefixLists().add(name);
       }
       FwFromPrefixList from = new FwFromPrefixList(name);
-      _currentFwTerm.getFromPrefixLists().add(from);
+      _currentFwTerm.getFroms().add(from);
    }
 
    @Override

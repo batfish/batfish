@@ -57,6 +57,16 @@ IpAccessListMatchSrcIp(list, line, flow) ->
    int(line),
    Flow(flow).
 
+IpAccessListMatchSrcOrDstIp(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
+IpAccessListMatchSrcOrDstPort(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
 IpAccessListMatchSrcPort(list, line, flow) ->
    IpAccessList(list),
    int(line),
@@ -112,6 +122,18 @@ SetIpAccessListLine_srcIpRange(list, line, srcIp_start, srcIp_end) ->
    int(line),
    int(srcIp_start),
    int(srcIp_end).
+
+SetIpAccessListLine_srcOrDstIpRange(list, line, srcOrDstIp_start, srcOrDstIp_end) ->
+   IpAccessList(list),
+   int(line),
+   int(srcOrDstIp_start),
+   int(srcOrDstIp_end).
+
+SetIpAccessListLine_srcOrDstPortRange(list, line, srcPort_start, srcPort_end) ->
+   IpAccessList(list),
+   int(line),
+   int(srcOrDstPort_start),
+   int(srcOrDstPort_end).
 
 SetIpAccessListLine_srcPortRange(list, line, srcPort_start, srcPort_end) ->
    IpAccessList(list),

@@ -17,8 +17,6 @@ public final class FwTerm implements Serializable {
 
    private final Set<FwFromHostService> _fromHostServices;
 
-   private final Set<FwFromPrefixList> _fromPrefixLists;
-
    private final Set<FwFrom> _froms;
 
    private boolean _ipv6;
@@ -32,7 +30,6 @@ public final class FwTerm implements Serializable {
       _fromApplications = new HashSet<FwFromApplication>();
       _fromHostProtocols = new HashSet<FwFromHostProtocol>();
       _fromHostServices = new HashSet<FwFromHostService>();
-      _fromPrefixLists = new HashSet<FwFromPrefixList>();
       _name = name;
       _thens = new HashSet<FwThen>();
    }
@@ -47,10 +44,6 @@ public final class FwTerm implements Serializable {
 
    public Set<FwFromHostService> getFromHostServices() {
       return _fromHostServices;
-   }
-
-   public Set<FwFromPrefixList> getFromPrefixLists() {
-      return _fromPrefixLists;
    }
 
    public Set<FwFrom> getFroms() {

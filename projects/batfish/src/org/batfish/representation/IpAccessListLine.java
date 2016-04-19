@@ -29,6 +29,10 @@ public final class IpAccessListLine implements Serializable {
 
    private Set<Prefix> _srcIpRanges;
 
+   private Set<Prefix> _srcOrDstIpRanges;
+
+   private List<SubRange> _srcOrDstPortRanges;
+
    private List<SubRange> _srcPortRanges;
 
    private int _tcpFlags;
@@ -38,6 +42,8 @@ public final class IpAccessListLine implements Serializable {
       _dstIpRanges = new TreeSet<Prefix>();
       _dstPortRanges = new ArrayList<SubRange>();
       _srcIpRanges = new TreeSet<Prefix>();
+      _srcOrDstIpRanges = new TreeSet<Prefix>();
+      _srcOrDstPortRanges = new ArrayList<SubRange>();
       _srcPortRanges = new ArrayList<SubRange>();
       _icmpType = IcmpType.UNSET;
       _icmpCode = IcmpCode.UNSET;
@@ -54,6 +60,8 @@ public final class IpAccessListLine implements Serializable {
       line._invalidMessage = _invalidMessage;
       line._protocols.addAll(_protocols);
       line._srcIpRanges.addAll(_srcIpRanges);
+      line._srcOrDstIpRanges.addAll(_srcOrDstIpRanges);
+      line._srcOrDstPortRanges.addAll(_srcOrDstPortRanges);
       line._srcPortRanges.addAll(_srcPortRanges);
       line._tcpFlags = _tcpFlags;
       return line;
@@ -91,6 +99,14 @@ public final class IpAccessListLine implements Serializable {
       return _srcIpRanges;
    }
 
+   public Set<Prefix> getSrcOrDstIpRanges() {
+      return _srcOrDstIpRanges;
+   }
+
+   public List<SubRange> getSrcOrDstPortRanges() {
+      return _srcOrDstPortRanges;
+   }
+
    public List<SubRange> getSrcPortRanges() {
       return _srcPortRanges;
    }
@@ -123,9 +139,11 @@ public final class IpAccessListLine implements Serializable {
    public String toString() {
       return "[Action:" + _action + ", Protocols:" + _protocols.toString()
             + ", SourceIpRanges:" + _srcIpRanges + ", DestinationIpRanges:"
-            + _dstIpRanges + ", SrcPortRanges:" + _srcPortRanges
-            + ", DstPortRanges:" + _dstPortRanges + ", IcmpType:" + _icmpType
-            + ", IcmpCode:" + _icmpCode + ", TcpFlags:" + _tcpFlags + "]";
+            + _dstIpRanges + ", SrcOrDstIpRanges:" + _srcOrDstIpRanges
+            + ", SrcPortRanges:" + _srcPortRanges + ", DstPortRanges:"
+            + _dstPortRanges + ", SrcOrDstPortRanges:" + _srcOrDstPortRanges
+            + ", IcmpType:" + _icmpType + ", IcmpCode:" + _icmpCode
+            + ", TcpFlags:" + _tcpFlags + "]";
    }
 
 }
