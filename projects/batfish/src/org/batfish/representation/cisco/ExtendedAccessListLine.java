@@ -6,6 +6,7 @@ import java.util.List;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 import org.batfish.representation.LineAction;
+import org.batfish.representation.TcpFlags;
 import org.batfish.util.SubRange;
 
 public class ExtendedAccessListLine implements Serializable {
@@ -32,12 +33,12 @@ public class ExtendedAccessListLine implements Serializable {
 
    private Ip _srcWildcard;
 
-   private Integer _tcpFlags;
+   private List<TcpFlags> _tcpFlags;
 
    public ExtendedAccessListLine(LineAction action, IpProtocol protocol,
          Ip srcIp, Ip srcWildcard, Ip dstIp, Ip dstWildcard,
          List<SubRange> srcPortRanges, List<SubRange> dstPortRanges,
-         Integer icmpType, Integer icmpCode, Integer tcpFlags) {
+         Integer icmpType, Integer icmpCode, List<TcpFlags> tcpFlags) {
       _action = action;
       _protocol = protocol;
       _srcIp = srcIp;
@@ -91,7 +92,7 @@ public class ExtendedAccessListLine implements Serializable {
       return _srcPortRanges;
    }
 
-   public Integer getTcpFlags() {
+   public List<TcpFlags> getTcpFlags() {
       return _tcpFlags;
    }
 

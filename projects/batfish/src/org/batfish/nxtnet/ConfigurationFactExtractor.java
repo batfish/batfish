@@ -488,8 +488,6 @@ public class ConfigurationFactExtractor {
             .get("SetIpAccessListLine_icmpCode");
       StringBuilder wSetIpAccessListLine_icmpType = _factBins
             .get("SetIpAccessListLine_icmpType");
-      StringBuilder wSetIpAccessListLine_tcpFlags = _factBins
-            .get("SetIpAccessListLine_tcpFlags");
       StringBuilder wSetIpAccessListLine_permit = _factBins
             .get("SetIpAccessListLine_permit");
       StringBuilder wSetIpAccessListLine_protocol = _factBins
@@ -502,6 +500,24 @@ public class ConfigurationFactExtractor {
             .get("SetIpAccessListLine_srcOrDstPortRange");
       StringBuilder wSetIpAccessListLine_srcPortRange = _factBins
             .get("SetIpAccessListLine_srcPortRange");
+      StringBuilder wSetIpAccessListLine_tcpFlags = _factBins
+            .get("SetIpAccessListLine_tcpFlags");
+      StringBuilder wSetIpAccessListLine_tcpFlagsCWR = _factBins
+            .get("SetIpAccessListLine_tcpFlagsCWR");
+      StringBuilder wSetIpAccessListLine_tcpFlagsECE = _factBins
+            .get("SetIpAccessListLine_tcpFlagsECE");
+      StringBuilder wSetIpAccessListLine_tcpFlagsURG = _factBins
+            .get("SetIpAccessListLine_tcpFlagsURG");
+      StringBuilder wSetIpAccessListLine_tcpFlagsACK = _factBins
+            .get("SetIpAccessListLine_tcpFlagsACK");
+      StringBuilder wSetIpAccessListLine_tcpFlagsPSH = _factBins
+            .get("SetIpAccessListLine_tcpFlagsPSH");
+      StringBuilder wSetIpAccessListLine_tcpFlagsRST = _factBins
+            .get("SetIpAccessListLine_tcpFlagsRST");
+      StringBuilder wSetIpAccessListLine_tcpFlagsSYN = _factBins
+            .get("SetIpAccessListLine_tcpFlagsSYN");
+      StringBuilder wSetIpAccessListLine_tcpFlagsFIN = _factBins
+            .get("SetIpAccessListLine_tcpFlagsFIN");
       for (IpAccessList ipAccessList : _configuration.getIpAccessLists()
             .values()) {
          String name = _configuration.getHostname() + ":"
@@ -581,9 +597,50 @@ public class ConfigurationFactExtractor {
                wSetIpAccessListLine_srcPortRange.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
             }
-            if (line.getTcpFlags() != TcpFlags.UNSET) {
-               wSetIpAccessListLine_tcpFlags.append(name + "|" + i + "|"
-                     + line.getTcpFlags() + "\n");
+            for (int alt = 0; alt < line.getTcpFlags().size(); alt++) {
+               TcpFlags tcpFlags = line.getTcpFlags().get(alt);
+               wSetIpAccessListLine_tcpFlags.append(name + "|" + i + "|" + alt
+                     + "\n");
+               if (tcpFlags.getUseCwr()) {
+                  int bit = tcpFlags.getCwr() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsCWR.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUseEce()) {
+                  int bit = tcpFlags.getEce() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsECE.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUseUrg()) {
+                  int bit = tcpFlags.getUrg() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsURG.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUseAck()) {
+                  int bit = tcpFlags.getAck() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsACK.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUsePsh()) {
+                  int bit = tcpFlags.getPsh() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsPSH.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUseRst()) {
+                  int bit = tcpFlags.getRst() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsRST.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUseSyn()) {
+                  int bit = tcpFlags.getSyn() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsSYN.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUseFin()) {
+                  int bit = tcpFlags.getFin() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsFIN.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
             }
          }
       }

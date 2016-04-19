@@ -570,8 +570,11 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    @Override
    public void enterReachability_constraint_tcp_flags(
          Reachability_constraint_tcp_flagsContext ctx) {
-      int tcpFlags = toInt(ctx.int_constraint());
-      _reachabilityQuestion.setTcpFlags(tcpFlags);
+      // TODO: allow constraining tcpFlags
+      /*
+       * int tcpFlags = toInt(ctx.int_constraint());
+       * _reachabilityQuestion.setTcpFlags(tcpFlags);
+       */
    }
 
    @Override

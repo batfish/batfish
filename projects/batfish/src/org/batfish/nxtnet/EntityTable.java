@@ -233,8 +233,29 @@ public class EntityTable {
       currentFlowProperty = _relations.get("Flow_icmpCode");
       List<Long> flowIcmpCodes = getLongColumn(currentFlowProperty, 1);
 
-      currentFlowProperty = _relations.get("Flow_tcpFlags");
-      List<Long> flowTcpFlags = getLongColumn(currentFlowProperty, 1);
+      currentFlowProperty = _relations.get("Flow_tcpFlagsCwr");
+      List<Long> flowTcpFlagsCwr = getLongColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = _relations.get("Flow_tcpFlagsEce");
+      List<Long> flowTcpFlagsEce = getLongColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = _relations.get("Flow_tcpFlagsUrg");
+      List<Long> flowTcpFlagsUrg = getLongColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = _relations.get("Flow_tcpFlagsAck");
+      List<Long> flowTcpFlagsAck = getLongColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = _relations.get("Flow_tcpFlagsPsh");
+      List<Long> flowTcpFlagsPsh = getLongColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = _relations.get("Flow_tcpFlagsRst");
+      List<Long> flowTcpFlagsRst = getLongColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = _relations.get("Flow_tcpFlagsSyn");
+      List<Long> flowTcpFlagsSyn = getLongColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = _relations.get("Flow_tcpFlagsFin");
+      List<Long> flowTcpFlagsFin = getLongColumn(currentFlowProperty, 1);
 
       currentFlowProperty = _relations.get("Flow_tag");
       List<String> flowTags = getStringColumn(currentFlowProperty, 1);
@@ -254,10 +275,19 @@ public class EntityTable {
          int srcPort = flowSrcPorts.get(i).intValue();
          int icmpType = flowIcmpTypes.get(i).intValue();
          int icmpCode = flowIcmpCodes.get(i).intValue();
-         int tcpFlags = flowTcpFlags.get(i).intValue();
+         int tcpFlagsCwr = flowTcpFlagsCwr.get(i).intValue();
+         int tcpFlagsEce = flowTcpFlagsEce.get(i).intValue();
+         int tcpFlagsUrg = flowTcpFlagsUrg.get(i).intValue();
+         int tcpFlagsAck = flowTcpFlagsAck.get(i).intValue();
+         int tcpFlagsPsh = flowTcpFlagsPsh.get(i).intValue();
+         int tcpFlagsRst = flowTcpFlagsRst.get(i).intValue();
+         int tcpFlagsSyn = flowTcpFlagsSyn.get(i).intValue();
+         int tcpFlagsFin = flowTcpFlagsFin.get(i).intValue();
          String tag = flowTags.get(i);
          Flow flow = new Flow(node, srcIp, dstIp, srcPort, dstPort, protocol,
-               icmpType, icmpCode, tcpFlags, tag);
+               icmpType, icmpCode, tcpFlagsCwr, tcpFlagsEce, tcpFlagsUrg,
+               tcpFlagsAck, tcpFlagsPsh, tcpFlagsRst, tcpFlagsSyn, tcpFlagsFin,
+               tag);
          _flows.put(flowIndex, flow);
       }
    }

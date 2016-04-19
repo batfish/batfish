@@ -966,7 +966,10 @@ public class Batfish implements AutoCloseable {
                Collections.singleton(ingressNode),
                question.getIpProtocolRange(), question.getSrcPrefixes(),
                question.getSrcPortRange(), question.getIcmpType(),
-               question.getIcmpCode(), question.getTcpFlags());
+               question.getIcmpCode(), 0 /*
+                                          * TODO: allow constraining tcpFlags
+                                          * question.getTcpFlags()
+                                          */);
          NodeSet nodes = new NodeSet();
          nodes.add(ingressNode);
          NodJob job = new NodJob(dataPlaneSynthesizer, query, nodes, tag);

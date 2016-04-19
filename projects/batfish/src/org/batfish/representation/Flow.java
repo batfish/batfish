@@ -22,11 +22,27 @@ public class Flow implements Comparable<Flow> {
 
    private final String _tag;
 
-   private final Integer _tcpFlags;
+   private final int _tcpFlagsAck;
+
+   private final int _tcpFlagsCwr;
+
+   private final int _tcpFlagsEce;
+
+   private final int _tcpFlagsFin;
+
+   private final int _tcpFlagsPsh;
+
+   private final int _tcpFlagsRst;
+
+   private final int _tcpFlagsSyn;
+
+   private final int _tcpFlagsUrg;
 
    public Flow(String ingressNode, Ip srcIp, Ip dstIp, Integer srcPort,
          Integer dstPort, IpProtocol ipProtocol, int icmpType, int icmpCode,
-         int tcpFlags, String tag) {
+         int tcpFlagsCwr, int tcpFlagsEce, int tcpFlagsUrg, int tcpFlagsAck,
+         int tcpFlagsPsh, int tcpFlagsRst, int tcpFlagsSyn, int tcpFlagsFin,
+         String tag) {
       _ingressNode = ingressNode;
       _srcIp = srcIp;
       _dstIp = dstIp;
@@ -35,7 +51,14 @@ public class Flow implements Comparable<Flow> {
       _ipProtocol = ipProtocol;
       _icmpType = icmpType;
       _icmpCode = icmpCode;
-      _tcpFlags = tcpFlags;
+      _tcpFlagsCwr = tcpFlagsCwr;
+      _tcpFlagsEce = tcpFlagsEce;
+      _tcpFlagsUrg = tcpFlagsUrg;
+      _tcpFlagsAck = tcpFlagsAck;
+      _tcpFlagsPsh = tcpFlagsPsh;
+      _tcpFlagsRst = tcpFlagsRst;
+      _tcpFlagsSyn = tcpFlagsSyn;
+      _tcpFlagsFin = tcpFlagsFin;
       _tag = tag;
       if ((srcPort == null || dstPort == null)
             && (srcPort != null || dstPort != null)) {
@@ -82,7 +105,35 @@ public class Flow implements Comparable<Flow> {
       if (ret != 0) {
          return ret;
       }
-      return _tcpFlags.compareTo(rhs._tcpFlags);
+      ret = Integer.compare(_tcpFlagsCwr, rhs._tcpFlagsCwr);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_tcpFlagsEce, rhs._tcpFlagsEce);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_tcpFlagsUrg, rhs._tcpFlagsUrg);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_tcpFlagsAck, rhs._tcpFlagsAck);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_tcpFlagsPsh, rhs._tcpFlagsPsh);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_tcpFlagsRst, rhs._tcpFlagsRst);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_tcpFlagsSyn, rhs._tcpFlagsSyn);
+      if (ret != 0) {
+         return ret;
+      }
+      return Integer.compare(_tcpFlagsFin, rhs._tcpFlagsFin);
    }
 
    @Override
@@ -132,12 +183,28 @@ public class Flow implements Comparable<Flow> {
       else if (!_icmpCode.equals(other._icmpCode)) {
          return false;
       }
-      if (_tcpFlags == null) {
-         if (other._tcpFlags != null) {
-            return false;
-         }
+      if (_tcpFlagsCwr != other._tcpFlagsCwr) {
+         return false;
       }
-      else if (!_tcpFlags.equals(other._tcpFlags)) {
+      if (_tcpFlagsEce != other._tcpFlagsEce) {
+         return false;
+      }
+      if (_tcpFlagsUrg != other._tcpFlagsUrg) {
+         return false;
+      }
+      if (_tcpFlagsAck != other._tcpFlagsAck) {
+         return false;
+      }
+      if (_tcpFlagsPsh != other._tcpFlagsPsh) {
+         return false;
+      }
+      if (_tcpFlagsRst != other._tcpFlagsRst) {
+         return false;
+      }
+      if (_tcpFlagsSyn != other._tcpFlagsSyn) {
+         return false;
+      }
+      if (_tcpFlagsFin != other._tcpFlagsFin) {
          return false;
       }
       return _tag.equals(other._tag);
@@ -179,10 +246,6 @@ public class Flow implements Comparable<Flow> {
       return _tag;
    }
 
-   public Integer getTcpFlags() {
-      return _tcpFlags;
-   }
-
    @Override
    public int hashCode() {
       final int prime = 31;
@@ -198,8 +261,14 @@ public class Flow implements Comparable<Flow> {
             + ((_icmpType == null) ? 0 : _icmpType.hashCode());
       result = prime * result
             + ((_icmpCode == null) ? 0 : _icmpCode.hashCode());
-      result = prime * result
-            + ((_tcpFlags == null) ? 0 : _tcpFlags.hashCode());
+      result = prime * result + _tcpFlagsCwr;
+      result = prime * result + _tcpFlagsEce;
+      result = prime * result + _tcpFlagsUrg;
+      result = prime * result + _tcpFlagsAck;
+      result = prime * result + _tcpFlagsPsh;
+      result = prime * result + _tcpFlagsRst;
+      result = prime * result + _tcpFlagsSyn;
+      result = prime * result + _tcpFlagsFin;
       return result;
    }
 
@@ -211,10 +280,11 @@ public class Flow implements Comparable<Flow> {
       long protocol = _ipProtocol.number();
       long icmpType = _icmpType == null ? IcmpType.UNSET : _icmpType;
       long icmpCode = _icmpCode == null ? IcmpCode.UNSET : _icmpCode;
-      long tcpFlags = _tcpFlags == null ? TcpFlags.UNSET : _tcpFlags;
       String line = _ingressNode + "|" + src_ip + "|" + dst_ip + "|" + src_port
             + "|" + dst_port + "|" + protocol + "|" + icmpType + "|" + icmpCode
-            + "|" + tcpFlags + "|" + _tag + "\n";
+            + "|" + _tcpFlagsCwr + "|" + _tcpFlagsEce + "|" + _tcpFlagsUrg
+            + "|" + _tcpFlagsAck + "|" + _tcpFlagsPsh + "|" + _tcpFlagsRst
+            + "|" + _tcpFlagsSyn + "|" + _tcpFlagsFin + "|" + _tag + "\n";
       return line;
    }
 
@@ -237,7 +307,9 @@ public class Flow implements Comparable<Flow> {
          dstPort = "N/A";
       }
       if (tcp) {
-         tcpFlags = _tcpFlags.toString();
+         tcpFlags = String.format("%d%d%d%d%d%d%d%d", _tcpFlagsCwr,
+               _tcpFlagsEce, _tcpFlagsUrg, _tcpFlagsAck, _tcpFlagsPsh,
+               _tcpFlagsRst, _tcpFlagsSyn, _tcpFlagsFin);
       }
       else {
          tcpFlags = "N/A";

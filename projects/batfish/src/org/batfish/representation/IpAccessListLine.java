@@ -35,7 +35,7 @@ public final class IpAccessListLine implements Serializable {
 
    private List<SubRange> _srcPortRanges;
 
-   private int _tcpFlags;
+   private List<TcpFlags> _tcpFlags;
 
    public IpAccessListLine() {
       _protocols = EnumSet.noneOf(IpProtocol.class);
@@ -47,7 +47,7 @@ public final class IpAccessListLine implements Serializable {
       _srcPortRanges = new ArrayList<SubRange>();
       _icmpType = IcmpType.UNSET;
       _icmpCode = IcmpCode.UNSET;
-      _tcpFlags = TcpFlags.UNSET;
+      _tcpFlags = new ArrayList<TcpFlags>();
    }
 
    public IpAccessListLine copy() {
@@ -63,7 +63,7 @@ public final class IpAccessListLine implements Serializable {
       line._srcOrDstIpRanges.addAll(_srcOrDstIpRanges);
       line._srcOrDstPortRanges.addAll(_srcOrDstPortRanges);
       line._srcPortRanges.addAll(_srcPortRanges);
-      line._tcpFlags = _tcpFlags;
+      line._tcpFlags.addAll(_tcpFlags);
       return line;
    }
 
@@ -111,7 +111,7 @@ public final class IpAccessListLine implements Serializable {
       return _srcPortRanges;
    }
 
-   public int getTcpFlags() {
+   public List<TcpFlags> getTcpFlags() {
       return _tcpFlags;
    }
 
@@ -131,10 +131,6 @@ public final class IpAccessListLine implements Serializable {
       _invalidMessage = invalidMessage;
    }
 
-   public void setTcpFlags(int tcpFlags) {
-      _tcpFlags = tcpFlags;
-   }
-
    @Override
    public String toString() {
       return "[Action:" + _action + ", Protocols:" + _protocols.toString()
@@ -143,7 +139,7 @@ public final class IpAccessListLine implements Serializable {
             + ", SrcPortRanges:" + _srcPortRanges + ", DstPortRanges:"
             + _dstPortRanges + ", SrcOrDstPortRanges:" + _srcOrDstPortRanges
             + ", IcmpType:" + _icmpType + ", IcmpCode:" + _icmpCode
-            + ", TcpFlags:" + _tcpFlags + "]";
+            + ", TcpFlags:" + _tcpFlags.toString() + "]";
    }
 
 }
