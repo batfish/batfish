@@ -1,8 +1,10 @@
 package org.batfish.grammar.flatjuniper;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,6 +12,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.main.Warnings;
@@ -29,6 +32,7 @@ import org.batfish.representation.LineAction;
 import org.batfish.representation.NamedPort;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.RoutingProtocol;
+import org.batfish.representation.TcpFlags;
 import org.batfish.representation.juniper.AggregateRoute;
 import org.batfish.representation.juniper.BgpGroup;
 import org.batfish.representation.juniper.CommunityList;
@@ -68,6 +72,7 @@ import org.batfish.representation.juniper.FwFromHostService;
 import org.batfish.representation.juniper.FwFromPort;
 import org.batfish.representation.juniper.FwFromPrefixList;
 import org.batfish.representation.juniper.FwFromSourcePrefixList;
+import org.batfish.representation.juniper.FwFromTcpFlags;
 import org.batfish.representation.juniper.FwThenNextIp;
 import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
@@ -1317,6 +1322,40 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return new SubRange(low, high);
    }
 
+   private static TcpFlags toTcpFlags(Tcp_flags_alternativeContext ctx) {
+      TcpFlags tcpFlags = new TcpFlags();
+      for (Tcp_flags_literalContext literalCtx : ctx.literals) {
+         boolean value = literalCtx.BANG() == null;
+         Tcp_flags_atomContext atom = literalCtx.tcp_flags_atom();
+         if (atom.ACK() != null) {
+            tcpFlags.setUseAck(true);
+            tcpFlags.setAck(value);
+         }
+         else if (atom.FIN() != null) {
+            tcpFlags.setUseFin(true);
+            tcpFlags.setFin(value);
+         }
+         else if (atom.RST() != null) {
+            tcpFlags.setUseRst(true);
+            tcpFlags.setRst(value);
+         }
+         else if (atom.SYN() != null) {
+            tcpFlags.setUseSyn(true);
+            tcpFlags.setSyn(value);
+         }
+      }
+      return tcpFlags;
+   }
+
+   private static List<TcpFlags> toTcpFlags(Tcp_flagsContext ctx) {
+      List<TcpFlags> tcpFlagsList = new ArrayList<TcpFlags>();
+      for (Tcp_flags_alternativeContext alternativeCtx : ctx.alternatives) {
+         TcpFlags tcpFlags = toTcpFlags(alternativeCtx);
+         tcpFlagsList.add(tcpFlags);
+      }
+      return tcpFlagsList;
+   }
+
    private static String unquote(String text) {
       if (text.length() == 0) {
          return text;
@@ -2514,6 +2553,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       FwFrom from = new FwFromSourcePrefixList(name);
       _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_tcp_established(Fwfromt_tcp_establishedContext ctx) {
+      todo(ctx, "firewall from tcp established");
+   }
+
+   @Override
+   public void exitFwfromt_tcp_flags(Fwfromt_tcp_flagsContext ctx) {
+      List<TcpFlags> tcpFlags = toTcpFlags(ctx.tcp_flags());
+      FwFrom from = new FwFromTcpFlags(tcpFlags);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_tcp_initial(Fwfromt_tcp_initialContext ctx) {
+      todo(ctx, "firewall from tcp initial");
    }
 
    @Override
