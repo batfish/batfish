@@ -1,0 +1,10 @@
+!
+hostname cisco_platform
+!
+platform trident mmu queue profile StorageProfile
+  ingress threshold 1/16
+  egress unicast queue 3 threshold 8
+  egress unicast queue 4 threshold 8
+!
+platform trident mmu queue profile StorageProfile apply
+!
