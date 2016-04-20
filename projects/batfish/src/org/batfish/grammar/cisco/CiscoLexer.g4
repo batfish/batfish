@@ -104,6 +104,11 @@ ACCESS_LOG
    'access-log'
 ;
 
+ACCESS_MAP
+:
+   'access-map'
+;
+
 ACCOUNTING
 :
    'accounting'
@@ -536,6 +541,11 @@ BANDWIDTH
    'bandwidth'
 ;
 
+BANDWIDTH_PERCENTAGE
+:
+   'bandwidth-percentage'
+;
+
 BANNER
 :
    'banner' ' '+
@@ -694,6 +704,11 @@ CALL_HOME
 CALLER_ID
 :
    'caller-id'
+;
+
+CAM_ACL
+:
+   'cam-acl'
 ;
 
 CAM_PROFILE
@@ -1046,6 +1061,11 @@ CTS
    'cts'
 ;
 
+DAEMON
+:
+   'daemon'
+;
+
 DAMPENING
 :
    'dampening'
@@ -1069,6 +1089,16 @@ DBL
 DCB
 :
    'dcb'
+;
+
+DCB_BUFFER_THRESHOLD
+:
+   'dcb-buffer-threshold'
+;
+
+DCB_POLICY
+:
+   'dcb-policy'
 ;
 
 DCBX
@@ -1276,6 +1306,11 @@ DISABLE
    'disable'
 ;
 
+DISABLE_ADVERTISEMENT
+:
+   'disable-advertisement'
+;
+
 DISCARD
 :
    'discard'
@@ -1314,6 +1349,11 @@ DNS_SERVER
 DNSIX
 :
    'dnsix'
+;
+
+DO
+:
+   'do'
 ;
 
 DOMAIN
@@ -1434,6 +1474,16 @@ ECHO
 ECHO_REPLY
 :
    'echo-reply'
+;
+
+ECMP_GROUP
+:
+   'ecmp-group'
+;
+
+ECN
+:
+   'ecn'
 ;
 
 EGP
@@ -1990,6 +2040,11 @@ HASH
    'hash'
 ;
 
+HASH_ALGORITHM
+:
+   'hash-algorithm'
+;
+
 HEARTBEAT_INTERVAL
 :
    'heartbeat-interval'
@@ -2118,6 +2173,11 @@ ICMP
 ICMP_ECHO
 :
    'icmp-echo'
+;
+
+ICMP_ERRORS
+:
+   'icmp-errors'
 ;
 
 ICMP_OBJECT
@@ -3082,6 +3142,11 @@ MULTIPOINT
    'multipoint'
 ;
 
+MULTI_CONFIG
+:
+   'multi-config'
+;
+
 MVR
 :
    'mvr'
@@ -3327,6 +3392,11 @@ NON_BROADCAST
    'non-broadcast'
 ;
 
+NON_DETERMINISTIC_MED
+:
+   'non-deterministic-med'
+;
+
 NONE
 :
    'none'
@@ -3410,6 +3480,16 @@ OPENFLOW
 OPS
 :
    'ops'
+;
+
+OPTIMIZED
+:
+   'optimized'
+;
+
+OPTION
+:
+   'option'
 ;
 
 OR
@@ -3612,6 +3692,11 @@ PERSISTENT
    'persistent'
 ;
 
+PFC
+:
+   'pfc'
+;
+
 PHONE_PROXY
 :
    'phone-proxy'
@@ -3685,6 +3770,16 @@ POLICY_LIST
 POLICY_MAP
 :
    'policy-map'
+;
+
+POLICY_MAP_INPUT
+:
+   'policy-map-input'
+;
+
+POLICY_MAP_OUTPUT
+:
+   'policy-map-output'
 ;
 
 POP2
@@ -3901,6 +3996,11 @@ QOS
 :
    'qos'
 ;
+
+QOS_POLICY_OUTPUT
+:
+   'qos-policy-output'
+; 
 
 QUEUE_BUFFERS
 :
@@ -4467,6 +4567,11 @@ SERVICE_POLICY
    'service-policy'
 ;
 
+SERVICE_QUEUE
+:
+   'service-queue'
+;
+
 SERVICE_TYPE
 :
    'service-type'
@@ -4742,6 +4847,11 @@ STCAPP
 STICKY
 :
    'sticky'
+;
+
+STOP
+:
+   'stop'
 ;
 
 STOPBITS
@@ -5184,6 +5294,11 @@ UC_TX_QUEUE
    'uc-tx-queue'
 ;
 
+UDF
+:
+   'udf'
+;
+
 UDLD
 :
    'udld'
@@ -5509,6 +5624,11 @@ WITHOUT_CSD
 WLAN
 :
    'wlan'
+;
+
+WRED
+:
+   'wred'
 ;
 
 WRED_PROFILE

@@ -140,6 +140,7 @@ bgp_tail
    | router_id_bgp_tail
    | send_community_bgp_tail
    | shutdown_bgp_tail
+   | subnet_bgp_tail
    | update_source_bgp_tail
 ;
 
@@ -460,11 +461,13 @@ null_bgp_tail
             | LOG
             | LOG_NEIGHBOR_CHANGES
             | NEXTHOP
+            | NON_DETERMINISTIC_MED
          )
       )
       | DESCRIPTION
       | DONT_CAPABILITY_NEGOTIATE
       | EVENT_HISTORY
+      | EXIT
       | FALL_OVER
       | LOCAL_V6_ADDR
       | LOG_NEIGHBOR_CHANGES
@@ -516,7 +519,7 @@ peer_group_assignment_rb_stanza
 
 peer_group_creation_rb_stanza
 :
-   NEIGHBOR name = VARIABLE PEER_GROUP NEWLINE
+   NEIGHBOR name = VARIABLE (PEER_GROUP) PASSIVE? NEWLINE
 ;
 
 prefix_list_bgp_tail
@@ -670,6 +673,15 @@ send_community_bgp_tail
 shutdown_bgp_tail
 :
    SHUTDOWN NEWLINE
+;
+
+subnet_bgp_tail
+:
+   SUBNET 
+   (
+      prefix = IP_PREFIX
+      | ipv6_prefix = IPV6_PREFIX      
+   ) NEWLINE
 ;
 
 template_peer_address_family

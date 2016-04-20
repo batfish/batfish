@@ -16,21 +16,27 @@ null_block_stanza
       | ATM
       | BASH
       | BFD
+      | BGP DISABLE_ADVERTISEMENT
       | BSD_USERNAME
+      | CAM_ACL
       | CAM_PROFILE
       | CEF
       | CHAT_SCRIPT
       | CLASS_MAP
       | CLI
+      | CLOCK
       | CONFDCONFIG
       | CONFIGURATION
       | CONTROL_PLANE
       | CONTROLLER
       | COPY
       | CRYPTO
+      | DAEMON
       | DCB
+      | DCB_BUFFER_THRESHOLD
       | DIAL_PEER
       | DOMAIN
+      | DO STOP
       | END
       | EVENT_HANDLER
       | FEX
@@ -40,6 +46,7 @@ null_block_stanza
       | GATEWAY
       | GROUP
       | GROUP_POLICY
+      | HASH_ALGORITHM
       |
       (
          IP
@@ -51,7 +58,9 @@ null_block_stanza
             | ACCOUNTING_THRESHOLD
             | DECAP_GROUP
             | DHCP
+            | ECMP_GROUP
             | FLOW_TOP_TALKERS
+            | ICMP_ERRORS
             | INSPECT
             |
             (
@@ -100,6 +109,7 @@ null_block_stanza
       | MANAGEMENT
       | MAP_CLASS
       | MAP_LIST
+      | MAXIMUM_PATHS
       | MLAG
       | MODULE
       | MONITOR
@@ -113,6 +123,7 @@ null_block_stanza
             | OAM
          )
       )
+      | MULTI_CONFIG
       | NO_BANNER
       | NSR
       | NTP
@@ -121,11 +132,14 @@ null_block_stanza
       | PLAT
       | PLATFORM
       | POLICY_MAP
+      | POLICY_MAP_INPUT
+      | POLICY_MAP_OUTPUT
       | POWEROFF
       | PRIORITY_FLOW_CONTROL
       | PROTOCOL
       | PSEUDOWIRE_CLASS
       | PTP
+      | QOS_POLICY_OUTPUT
       | REDUNDANCY
       | RELOAD_TYPE
       | RMON
@@ -149,11 +163,16 @@ null_block_stanza
       | TRACE
       | TRACK
       | TRANSCEIVER
+      | UDF
       | USERGROUP
       | VDC
       |
       (
-         VLAN DEC
+         VLAN 
+         (
+            DEC
+            | ACCESS_MAP
+         )
       )
       | VLT
       | VOICE
@@ -204,6 +223,7 @@ null_block_substanza
          | BACKGROUND_ROUTES_ENABLE
          | BACKUPCRF
          | BANDWIDTH
+         | BANDWIDTH_PERCENTAGE
          | BANNER
          | BIND
          | BRIDGE
@@ -362,6 +382,7 @@ null_block_substanza
          | NOTIFY
          | OBJECT
          | OPEN
+         | OPTION
          | OPS
          | PARAMETERS
          | PARENT
@@ -437,6 +458,7 @@ null_block_substanza
          | SERVER_PRIVATE
          | SERVICE
          | SERVICE_POLICY
+         | SERVICE_QUEUE
          | SERVICE_TYPE
          | SESSION_DISCONNECT_WARNING
          | SESSION_LIMIT
@@ -502,6 +524,7 @@ null_block_substanza
          | WEBVPN
          | WINS_SERVER
          | WITHOUT_CSD
+         | WRED
          | XML_CONFIG
       )
       (

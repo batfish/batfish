@@ -99,7 +99,7 @@ ip_access_group_if_stanza
       | IN
       | INGRESS
       | OUT
-   ) NEWLINE
+   ) OPTIMIZED? NEWLINE
 ;
 
 ip_address_hsrpc_stanza
@@ -238,7 +238,9 @@ null_block_if_stanza
       | CRC
       | CRYPTO
       | DAMPENING
+      | DCB
       | DCBX
+      | DCB_POLICY
       | DESTINATION
       |
       (
@@ -370,6 +372,7 @@ null_block_if_stanza
       )
       | PATH_OPTION
       | PEER
+      | PFC PRIORITY
       | PHYSICAL_LAYER
       | PORT_CHANNEL
       | PORT_CHANNEL_PROTOCOL
