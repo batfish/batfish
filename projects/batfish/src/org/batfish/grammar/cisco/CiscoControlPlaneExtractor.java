@@ -750,6 +750,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _peerGroupStack = new ArrayList<BgpPeerGroup>();
    }
 
+   private void addInterface(String vrf, double bandwidth, String name) {
+      Interface newInterface = _configuration.getInterfaces().get(name);
+      if (newInterface == null) {
+         newInterface = new Interface(name);
+         _configuration.getInterfaces().put(name, newInterface);
+      }
+      else {
+         _w.pedantic("Interface: \"" + name + "\" altered more than once");
+      }
+      _currentInterfaces.add(newInterface);
+      newInterface.setBandwidth(bandwidth);
+      newInterface.setVrf(vrf);
+   }
+
    @Override
    public void enterAddress_family_header(Address_family_headerContext ctx) {
       if (ctx.VPNV4() != null || ctx.VPNV6() != null || ctx.IPV6() != null
@@ -828,22 +842,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          namePrefix += part.getText();
       }
       _currentInterfaces = new ArrayList<Interface>();
-      List<SubRange> ranges = toRange(ctx.iname.range());
-      for (SubRange range : ranges) {
-         for (int i = range.getStart(); i <= range.getEnd(); i++) {
-            String name = namePrefix + i;
-            Interface newInterface = _configuration.getInterfaces().get(name);
-            if (newInterface == null) {
-               newInterface = new Interface(name);
-               _configuration.getInterfaces().put(name, newInterface);
+      if (ctx.iname.range() != null) {
+         List<SubRange> ranges = toRange(ctx.iname.range());
+         for (SubRange range : ranges) {
+            for (int i = range.getStart(); i <= range.getEnd(); i++) {
+               String name = namePrefix + i;
+               addInterface(vrf, bandwidth, name);
             }
-            else {
-               _w.pedantic("Interface: \"" + name + "\" altered more than once");
-            }
-            _currentInterfaces.add(newInterface);
-            newInterface.setBandwidth(bandwidth);
-            newInterface.setVrf(vrf);
          }
+      }
+      else {
+         String name = namePrefix;
+         addInterface(vrf, bandwidth, name);
       }
       if (ctx.MULTIPOINT() != null) {
          todo(ctx, F_INTERFACE_MULTIPOINT);

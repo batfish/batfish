@@ -66,7 +66,7 @@ interface_name
             )
          )*
          | name_middle_parts += MODULE
-      ) range
+      ) range?
    )
    |
    (

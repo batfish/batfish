@@ -261,7 +261,7 @@ ALIAS
 
 ALL
 :
-  'all'
+   'all'
 ;
 
 ALLOCATE
@@ -373,7 +373,7 @@ AS_OVERRIDE
 
 AS_PATH
 :
-   'as-path' -> pushMode(M_AsPath)
+   'as-path' -> pushMode ( M_AsPath )
 ;
 
 AS_SET
@@ -563,7 +563,7 @@ BANNER
       'exec'
       | 'login'
       | 'motd'
-   ) -> pushMode(M_BANNER)
+   ) -> pushMode ( M_BANNER )
 ;
 
 BASH
@@ -688,7 +688,7 @@ CABLE_RANGE
 
 CABLELENGTH
 :
-   'cablelength' -> pushMode(M_COMMENT)
+   'cablelength' -> pushMode ( M_COMMENT )
 ;
 
 CACHE
@@ -768,7 +768,7 @@ CEF
 
 CERTIFICATE
 :
-   'certificate' -> pushMode(M_CERTIFICATE)
+   'certificate' -> pushMode ( M_CERTIFICATE )
 ;
 
 CFS
@@ -996,6 +996,11 @@ CONTEXT
    'context'
 ;
 
+CONTROL_APPS_USE_MGMT_PORT
+:
+   'control-apps-use-mgmt-port'
+;
+
 CONTROL_PLANE
 :
    'control-plane'
@@ -1213,7 +1218,7 @@ DENY
 
 DES
 :
-   'des' -> pushMode(M_DES)
+   'des' -> pushMode ( M_DES )
 ;
 
 DES_SHA1
@@ -1223,7 +1228,7 @@ DES_SHA1
 
 DESCRIPTION
 :
-   'description' -> pushMode(M_DESCRIPTION)
+   'description' -> pushMode ( M_DESCRIPTION )
 ;
 
 DESIRABLE
@@ -1393,7 +1398,7 @@ DOMAIN_NAME
 
 DONE
 :
-  'done'
+   'done'
 ;
 
 DONT_CAPABILITY_NEGOTIATE
@@ -1583,7 +1588,7 @@ ENFORCE_FIRST_AS
 
 ENGINEID
 :
-   'engineid' -> pushMode(M_COMMENT)
+   'engineid' -> pushMode ( M_COMMENT )
 ;
 
 ENROLLMENT
@@ -1728,7 +1733,7 @@ EXTCOMM_LIST
 
 EXTCOMMUNITY
 :
-   'extcommunity' -> pushMode(M_Extcommunity)
+   'extcommunity' -> pushMode ( M_Extcommunity )
 ;
 
 EXTCOMMUNITY_LIST
@@ -1853,6 +1858,11 @@ FLOW
 FLOW_CACHE
 :
    'flow-cache'
+;
+
+FLOW_CONTROL
+:
+   'flow-control'
 ;
 
 FLOW_EXPORT
@@ -2314,7 +2324,8 @@ INTERFACE
 :
    'interface'
    { enableIPV6_ADDRESS = false; }
-   -> pushMode(M_Interface)
+
+   -> pushMode ( M_Interface )
 ;
 
 INTERNAL
@@ -2454,7 +2465,7 @@ KERBEROS
 
 KEY
 :
-   'key' -> pushMode(M_Key)
+   'key' -> pushMode ( M_Key )
 ;
 
 KEY_SOURCE
@@ -2719,7 +2730,7 @@ LOCAL_V6_ADDR
 
 LOCATION
 :
-   'location' -> pushMode(M_COMMENT)
+   'location' -> pushMode ( M_COMMENT )
 ;
 
 LOG
@@ -2804,7 +2815,7 @@ MAC
 
 MAC_ADDRESS
 :
-   'mac-address' -> pushMode(M_COMMENT)
+   'mac-address' -> pushMode ( M_COMMENT )
 ;
 
 MAC_ADDRESS_TABLE
@@ -2939,7 +2950,7 @@ MDT
 
 MED
 :
-  'med'
+   'med'
 ;
 
 MEDIA_TERMINATION
@@ -3184,7 +3195,7 @@ NAMESPACE
 
 NAME
 :
-   'name' -> pushMode(M_NAME)
+   'name' -> pushMode ( M_NAME )
 ;
 
 NAMES
@@ -3244,12 +3255,12 @@ NEGOTIATION
 
 NEIGHBOR
 :
-   'neighbor' -> pushMode(M_NEIGHBOR)
+   'neighbor' -> pushMode ( M_NEIGHBOR )
 ;
 
 NEIGHBOR_GROUP
 :
-   'neighbor-group' 
+   'neighbor-group'
 ;
 
 NEQ
@@ -3259,7 +3270,7 @@ NEQ
 
 NET
 :
-   'net' -> pushMode(M_ISO_Address)
+   'net' -> pushMode ( M_ISO_Address )
 ;
 
 NET_UNREACHABLE
@@ -3534,7 +3545,7 @@ OTHER_ACCESS
 
 OUI
 :
-   'oui' -> pushMode(M_COMMENT)
+   'oui' -> pushMode ( M_COMMENT )
 ;
 
 OUT
@@ -3614,7 +3625,7 @@ PASSIVE_ONLY
 
 PASSWORD
 :
-   'password' -> pushMode(M_COMMENT)
+   'password' -> pushMode ( M_COMMENT )
 ;
 
 PASSWORD_STORAGE
@@ -3664,7 +3675,7 @@ PEER_CONFIG_CHECK_BYPASS
 
 PEER_GROUP
 :
-   'peer-group' -> pushMode(M_NEIGHBOR)
+   'peer-group' -> pushMode ( M_NEIGHBOR )
 ;
 
 PEER_GATEWAY
@@ -4010,7 +4021,7 @@ QOS
 QOS_POLICY_OUTPUT
 :
    'qos-policy-output'
-; 
+;
 
 QUEUE_BUFFERS
 :
@@ -4179,7 +4190,7 @@ RELOAD_TYPE
 
 REMARK
 :
-   'remark' -> pushMode(M_REMARK)
+   'remark' -> pushMode ( M_REMARK )
 ;
 
 REMOTE_AS
@@ -4284,7 +4295,7 @@ RFC1583COMPATIBILITY
 
 RIB_HAS_ROUTE
 :
-  'rib-has-route'
+   'rib-has-route'
 ;
 
 RING
@@ -4384,7 +4395,7 @@ RT
 
 RULE
 :
-   'rule' -> pushMode(M_Rule)
+   'rule' -> pushMode ( M_Rule )
 ;
 
 SAME_SECURITY_TRAFFIC
@@ -4484,7 +4495,7 @@ SECURITY_LEVEL
 
 SELF
 :
-  'self'
+   'self'
 ;
 
 SEND_COMMUNITY
@@ -4589,7 +4600,7 @@ SERVICE_TYPE
 
 SESSION_DISCONNECT_WARNING
 :
-   'session-disconnect-warning' -> pushMode(M_COMMENT)
+   'session-disconnect-warning' -> pushMode ( M_COMMENT )
 ;
 
 SESSION_LIMIT
@@ -4634,7 +4645,7 @@ SFLOW
 
 SHA1
 :
-   'sha1' -> pushMode(M_SHA1)
+   'sha1' -> pushMode ( M_SHA1 )
 ;
 
 SHAPE
@@ -5111,7 +5122,7 @@ TFTP_SERVER
 
 THEN
 :
-  'then'
+   'then'
 ;
 
 THREAT_DETECTION
@@ -5371,7 +5382,7 @@ UPDATE_CALENDAR
 
 UPDATE_SOURCE
 :
-   'update-source' -> pushMode(M_Interface)
+   'update-source' -> pushMode ( M_Interface )
 ;
 
 UPGRADE
@@ -5700,7 +5711,8 @@ XML_CONFIG
 
 MULTICONFIGPART
 :
-   '############ MultiConfigPart' F_NonNewline* F_Newline+ -> channel(HIDDEN)
+   '############ MultiConfigPart' F_NonNewline* F_Newline+ -> channel ( HIDDEN
+   )
 ;
 
 COMMUNITY_NUMBER
@@ -5885,17 +5897,24 @@ COMMUNITY_LIST_NUM
 
 COMMUNITY_SET_REGEX
 :
-	SINGLE_QUOTE ~[':&<> ]* COLON ~[':&<> ]* SINGLE_QUOTE
+   SINGLE_QUOTE ~[':&<> ]* COLON ~[':&<> ]* SINGLE_QUOTE
 ;
 
 COMMUNITY_SET_VALUE
 :
-	(F_Dec16 | ASTERISK) COLON (F_Dec16 | ASTERISK)
+   (
+      F_Dec16
+      | ASTERISK
+   ) COLON
+   (
+      F_Dec16
+      | ASTERISK
+   )
 ;
 
 COMMENT_LINE
 :
-   '!' F_NonNewline* F_Newline+ -> channel(HIDDEN)
+   '!' F_NonNewline* F_Newline+ -> channel ( HIDDEN )
 ;
 
 DASH
@@ -6084,7 +6103,7 @@ UNDERSCORE
 
 WS
 :
-   F_Whitespace+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 // Fragments
@@ -6171,6 +6190,11 @@ F_NonNewline
 ;
 
 fragment
+F_NonWhitespace
+:
+   ~( ' ' | '\t' | '\u000C' )
+;
+
 F_PositiveHexDigit
 :
    (
@@ -6228,189 +6252,193 @@ mode M_AsPath;
 
 M_AsPath_ACCESS_LIST
 :
-   'access-list' -> type(ACCESS_LIST), mode(M_AsPathAccessList)
+   'access-list' -> type ( ACCESS_LIST ) , mode ( M_AsPathAccessList )
 ;
 
 M_AsPath_DEC
 :
-   F_Digit+ -> type(DEC), popMode
+   F_Digit+ -> type ( DEC ) , popMode
 ;
 
 M_AsPath_PREPEND
 :
-   'prepend' -> type(PREPEND), popMode
+   'prepend' -> type ( PREPEND ) , popMode
 ;
 
 M_AsPath_REGEX_MODE
 :
-   'regex-mode' -> type(REGEX_MODE), popMode
+   'regex-mode' -> type ( REGEX_MODE ) , popMode
 ;
 
 M_AsPath_VARIABLE
 :
-   F_Variable_RequiredVarChar F_Variable_VarChar* -> type(VARIABLE), popMode
+   F_Variable_RequiredVarChar F_Variable_VarChar* -> type ( VARIABLE ) ,
+   popMode
 ;
 
 M_AsPath_WS
 :
-   F_Whitespace+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_AsPathAccessList;
 
 M_AsPathAccessList_DEC
 :
-   F_Digit+ -> type(DEC)
+   F_Digit+ -> type ( DEC )
 ;
 
 M_AsPathAccessList_DENY
 :
-   'deny' -> type(DENY), mode(M_AsPathRegex)
+   'deny' -> type ( DENY ) , mode ( M_AsPathRegex )
 ;
 
 M_AsPathAccessList_PERMIT
 :
-   'permit' -> type(PERMIT), mode(M_AsPathRegex)
+   'permit' -> type ( PERMIT ) , mode ( M_AsPathRegex )
 ;
 
 M_AsPathAccessList_VARIABLE
 :
-   F_Variable_RequiredVarChar F_Variable_VarChar* -> type(VARIABLE)
+   F_Variable_RequiredVarChar F_Variable_VarChar* -> type ( VARIABLE )
 ;
 
 M_AsPathAccessList_WS
 :
-   F_Whitespace+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_AsPathRegex;
 
 M_AsPathRegex_ANY
 :
-   'any' -> type(ANY)
+   'any' -> type ( ANY )
 ;
 
 M_AsPathRegex_ASTERISK
 :
-   '*' -> type(ASTERISK)
+   '*' -> type ( ASTERISK )
 ;
 
 M_AsPathRegex_BRACKET_LEFT
 :
-   '[' -> type(BRACKET_LEFT)
+   '[' -> type ( BRACKET_LEFT )
 ;
 
 M_AsPathRegex_BRACKET_RIGHT
 :
-   ']' -> type(BRACKET_RIGHT)
+   ']' -> type ( BRACKET_RIGHT )
 ;
 
 M_AsPathRegex_CARAT
 :
-   '^' -> type(CARAT)
+   '^' -> type ( CARAT )
 ;
 
 M_AsPathRegex_DASH
 :
-   '-' -> type(DASH)
+   '-' -> type ( DASH )
 ;
 
 M_AsPathRegex_DEC
 :
-   F_Digit+ -> type(DEC)
+   F_Digit+ -> type ( DEC )
 ;
 
 M_AsPathRegex_DOLLAR
 :
-   '$' -> type(DOLLAR)
+   '$' -> type ( DOLLAR )
 ;
 
 M_AsPathRegex_DOUBLE_QUOTE
 :
-   '"' -> channel(HIDDEN)
+   '"' -> channel ( HIDDEN )
 ;
 
 M_AsPathRegex_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 M_AsPathRegex_PAREN_LEFT
 :
-   '(' -> type(PAREN_LEFT)
+   '(' -> type ( PAREN_LEFT )
 ;
 
 M_AsPathRegex_PAREN_LEFT_LITERAL
 :
-   '\\(' -> type(PAREN_LEFT_LITERAL)
+   '\\(' -> type ( PAREN_LEFT_LITERAL )
 ;
 
 M_AsPathRegex_PAREN_RIGHT
 :
-   ')' -> type(PAREN_RIGHT)
+   ')' -> type ( PAREN_RIGHT )
 ;
 
 M_AsPathRegex_PAREN_RIGHT_LITERAL
 :
-   '\\)' -> type(PAREN_RIGHT_LITERAL)
+   '\\)' -> type ( PAREN_RIGHT_LITERAL )
 ;
 
 M_AsPathRegex_PERIOD
 :
-   '.' -> type(PERIOD)
+   '.' -> type ( PERIOD )
 ;
 
 M_AsPathRegex_PIPE
 :
-   '|' -> type(PIPE)
+   '|' -> type ( PIPE )
 ;
 
 M_AsPathRegex_PLUS
 :
-   '+' -> type(PLUS)
+   '+' -> type ( PLUS )
 ;
 
 M_AsPathRegex_UNDERSCORE
 :
-   '_' -> channel(HIDDEN)
+   '_' -> channel ( HIDDEN )
 ;
 
 M_AsPathRegex_WS
 :
-   F_Whitespace+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_BANNER;
 
 M_BANNER_WS
 :
-   F_Whitespace+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 M_BANNER_ESCAPE_C
 :
    (
       '^C'
-      | ('^' F_Newline+)
+      |
+      (
+         '^' F_Newline+
+      )
       | '\u0003'
-   ) -> type(ESCAPE_C), mode(M_MOTD_C)
+   ) -> type ( ESCAPE_C ) , mode ( M_MOTD_C )
 ;
 
 M_BANNER_HASH
 :
-   '#' -> type(POUND), mode(M_MOTD_HASH)
+   '#' -> type ( POUND ) , mode ( M_MOTD_HASH )
 ;
 
 M_BANNER_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), mode(M_MOTD_EOF)
+   F_Newline+ -> type ( NEWLINE ) , mode ( M_MOTD_EOF )
 ;
 
 mode M_CERTIFICATE;
 
 M_CERTIFICATE_QUIT
 :
-   'quit' -> type(QUIT), popMode
+   'quit' -> type ( QUIT ) , popMode
 ;
 
 M_CERTIFICATE_TEXT
@@ -6436,7 +6464,7 @@ mode M_COMMENT;
 
 M_COMMENT_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 M_COMMENT_NON_NEWLINE
@@ -6458,14 +6486,14 @@ M_DES_HEX_PART
 
 M_DES_WS
 :
-   F_Whitespace+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_DESCRIPTION;
 
 M_DESCRIPTION_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 M_DESCRIPTION_NON_NEWLINE
@@ -6477,128 +6505,135 @@ mode M_Extcommunity;
 
 M_Extcommunity_COLON
 :
-   ':' -> type(COLON)
+   ':' -> type ( COLON )
 ;
 
 M_Extcommunity_DEC
 :
-   F_Digit+ -> type(DEC)
+   F_Digit+ -> type ( DEC )
 ;
 
 M_ExtCommunity_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 M_Extcommunity_RT
 :
-   'rt' -> type(RT)
+   'rt' -> type ( RT )
 ;
 
 M_Extcommunity_WS
 :
-   F_Whitespace+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_Interface;
 
 M_Interface_DOLLAR
 :
-   '$' -> type(DOLLAR), popMode
+   '$' -> type ( DOLLAR ) , popMode
 ;
 
 M_Interface_POINT_TO_POINT
 :
-   'point-to-point' -> type(POINT_TO_POINT), popMode
+   'point-to-point' -> type ( POINT_TO_POINT ) , popMode
 ;
 
 M_Interface_POLICY
 :
-   'policy' -> type(POLICY), popMode
+   'policy' -> type ( POLICY ) , popMode
 ;
 
 M_Interface_L2TRANSPORT
 :
-   'l2transport' -> type(L2TRANSPORT), popMode
+   'l2transport' -> type ( L2TRANSPORT ) , popMode
 ;
 
 M_Interface_MODULE
 :
-   'module' -> type(MODULE)
+   'module' -> type ( MODULE )
 ;
 
 M_Interface_MULTIPOINT
 :
-   'multipoint' -> type(MULTIPOINT), popMode
+   'multipoint' -> type ( MULTIPOINT ) , popMode
 ;
 
 M_Interface_COLON
 :
-   ':' -> type(COLON)
+   ':' -> type ( COLON )
 ;
 
 M_Interface_COMMA
 :
-   ',' -> type(COMMA)
+   ',' -> type ( COMMA )
 ;
 
 M_Interface_DASH
 :
-   '-' -> type(DASH)
+   '-' -> type ( DASH )
 ;
 
 M_Interface_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 M_Interface_NUMBER
 :
-   DEC -> type(DEC)
+   DEC -> type ( DEC )
 ;
 
 M_Interface_PERIOD
 :
-   '.' -> type(PERIOD)
+   '.' -> type ( PERIOD )
 ;
 
 M_Interface_PRECFONFIGURE
 :
-   'preconfigure' -> type(PRECONFIGURE)
+   'preconfigure' -> type ( PRECONFIGURE )
 ;
 
 M_Interface_PREFIX
 :
-   F_Letter (F_Letter | '-')*
+   F_Letter
+   (
+      F_Letter
+      | '-'
+   )*
 ;
 
 M_Interface_SLASH
 :
-   '/' -> type(FORWARD_SLASH)
+   '/' -> type ( FORWARD_SLASH )
 ;
 
 M_Interface_WS
 :
-   F_Whitespace+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_ISO_Address;
 
 M_ISO_Address_ISO_ADDRESS
 :
-   F_HexDigit+ ('.' F_HexDigit+)+ -> type(ISO_ADDRESS), popMode
+   F_HexDigit+
+   (
+      '.' F_HexDigit+
+   )+ -> type ( ISO_ADDRESS ) , popMode
 ;
 
 M_ISO_Address_WS
 :
-   F_Whitespace+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_Key;
 
 M_Key_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 M_Key_NON_NEWLINE
@@ -6612,10 +6647,13 @@ M_MOTD_C_ESCAPE_C
 :
    (
       '^C'
-      | ('^' F_Newline)
+      |
+      (
+         '^' F_Newline
+      )
       | 'cC'
       | '\u0003'
-   ) -> type(ESCAPE_C), mode(DEFAULT_MODE)
+   ) -> type ( ESCAPE_C ) , mode ( DEFAULT_MODE )
 ;
 
 M_MOTD_C_MOTD
@@ -6636,7 +6674,7 @@ mode M_MOTD_EOF;
 
 M_MOTD_EOF_EOF
 :
-   'EOF' -> type(EOF_LITERAL), mode(DEFAULT_MODE)
+   'EOF' -> type ( EOF_LITERAL ) , mode ( DEFAULT_MODE )
 ;
 
 M_MOTD_EOF_MOTD
@@ -6658,7 +6696,7 @@ mode M_MOTD_HASH;
 
 M_MOTD_HASH_HASH
 :
-   '#' -> type(POUND), mode(DEFAULT_MODE)
+   '#' -> type ( POUND ) , mode ( DEFAULT_MODE )
 ;
 
 M_MOTD_HASH_MOTD
@@ -6670,26 +6708,26 @@ mode M_NAME;
 
 M_NAME_WS
 :
-   F_Whitespace+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 M_NAME_NAME
 :
-   F_NonNewline+ -> popMode
+   F_NonWhitespace+ -> type ( VARIABLE ) , popMode
 ;
 
 mode M_NEIGHBOR;
 
 M_NEIGHBOR_IP_ADDRESS
 :
-   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type(IP_ADDRESS),
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type ( IP_ADDRESS ) ,
    popMode
 ;
 
 M_NEIGHBOR_IP_PREFIX
 :
    F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit? ->
-   type(IP_PREFIX), popMode
+   type ( IP_PREFIX ) , popMode
 ;
 
 M_NEIGHBOR_IPV6_ADDRESS
@@ -6712,7 +6750,7 @@ M_NEIGHBOR_IPV6_ADDRESS
       (
          F_HexDigit+
       )?
-   ) -> type ( IPV6_ADDRESS ), popMode
+   ) -> type ( IPV6_ADDRESS ) , popMode
 ;
 
 M_NEIGHBOR_IPV6_PREFIX
@@ -6733,34 +6771,34 @@ M_NEIGHBOR_IPV6_PREFIX
       (
          F_HexDigit+
       )? '/' F_DecByte
-   ) -> type ( IPV6_PREFIX ), popMode
+   ) -> type ( IPV6_PREFIX ) , popMode
 ;
 
 M_NEIGHBOR_PASSIVE
 :
-   'passive' -> type(PASSIVE), popMode
+   'passive' -> type ( PASSIVE ) , popMode
 ;
 
 M_Neighbor_VARIABLE
 :
-   F_Variable_VarChar+ -> type(VARIABLE), popMode
+   F_Variable_VarChar+ -> type ( VARIABLE ) , popMode
 ;
 
 M_NEIGHBOR_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 M_NEIGHBOR_WS
 :
-   F_Whitespace+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_REMARK;
 
 M_REMARK_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 M_REMARK_REMARK
@@ -6777,7 +6815,7 @@ M_Rule_LINE
 
 M_Rule_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 mode M_SHA1;
@@ -6794,5 +6832,5 @@ M_SHA1_HEX_PART
 
 M_SHA1_WS
 :
-   F_Whitespace+ -> channel(HIDDEN)
+   F_Whitespace+ -> channel ( HIDDEN )
 ;

@@ -93,9 +93,17 @@ interface_stanza_tail
 ip_access_group_if_stanza
 :
    (
-      IP
-      | IPV4
-   ) PORT? ACCESS_GROUP name = .
+      (
+         (
+            IP
+            | IPV4
+         ) PORT? ACCESS_GROUP
+      )
+      |
+      (
+         ACCESS_LIST NAME
+      )
+   ) name = variable
    (
       EGRESS
       | IN
@@ -264,6 +272,7 @@ null_block_if_stanza
       | FAIR_QUEUE
       | FAST_REROUTE
       | FLOW
+      | FLOW_CONTROL
       | FLOWCONTROL
       | FORWARDER
       | FRAME_RELAY
@@ -286,6 +295,7 @@ null_block_if_stanza
             | ARP
             | BROADCAST_ADDRESS
             | CGMP
+            | CONTROL_APPS_USE_MGMT_PORT
             | DHCP
             | DVMRP
             |
