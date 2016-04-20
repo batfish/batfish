@@ -1166,16 +1166,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       int num = toInteger(ctx.num);
       LineAction action = getAccessListAction(ctx.rmt);
-      _currentRouteMapClause = new RouteMapClause(action,
-            _currentRouteMap.getMapName(), num);
-      Map<Integer, RouteMapClause> clauses = _currentRouteMap.getClauses();
-      if (clauses.containsKey(num)) {
-         throw new BatfishException("Route map '"
-               + _currentRouteMap.getMapName()
-               + "' already contains clause numbered '" + num + "'");
+      _currentRouteMapClause = _currentRouteMap.getClauses().get(num);
+      if (_currentRouteMapClause == null) {
+         _currentRouteMapClause = new RouteMapClause(action,
+               _currentRouteMap.getMapName(), num);
+         _currentRouteMap.getClauses().put(num, _currentRouteMapClause);
       }
       else {
-         clauses.put(num, _currentRouteMapClause);
+         _w.redFlag("Route map '" + _currentRouteMap.getMapName()
+               + "' already contains clause numbered '" + num
+               + "'. Duplicate clause will be merged with original clause.");
       }
    }
 
