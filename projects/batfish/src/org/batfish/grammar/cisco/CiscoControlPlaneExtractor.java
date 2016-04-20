@@ -2127,6 +2127,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (proc.getNamedPeerGroups().get(name) == null) {
          proc.addNamedPeerGroup(name);
+         if (ctx.PASSIVE() != null) {
+            // dell: won't otherwise specify activation so just activate here
+            NamedBgpPeerGroup npg = proc.getNamedPeerGroups().get(name);
+            npg.setActive(true);
+         }
       }
    }
 
@@ -2637,6 +2642,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       StandardAccessListLine line = new StandardAccessListLine(action, srcIp,
             srcWildcard);
       _currentStandardAcl.addLine(line);
+   }
+
+   @Override
+   public void exitSubnet_bgp_tail(Subnet_bgp_tailContext ctx) {
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
+      if (ctx.IP_PREFIX() != null) {
+         Ip ip = getPrefixIp(ctx.IP_PREFIX().getSymbol());
+         int prefixLength = getPrefixLength(ctx.IP_PREFIX().getSymbol());
+         Prefix prefix = new Prefix(ip, prefixLength);
+         NamedBgpPeerGroup namedGroup = _currentNamedPeerGroup;
+         namedGroup.addNeighborPrefix(prefix);
+         DynamicBgpPeerGroup pg = proc.addDynamicPeerGroup(prefix);
+         pg.setGroupName(namedGroup.getName());
+      }
+      else if (ctx.IPV6_PREFIX() != null) {
+         todo(ctx, F_IPV6);
+      }
    }
 
    @Override
