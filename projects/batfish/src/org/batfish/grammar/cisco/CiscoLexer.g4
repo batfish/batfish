@@ -6726,6 +6726,11 @@ M_NEIGHBOR_IPV6_PREFIX
    ) -> type ( IPV6_PREFIX ), popMode
 ;
 
+M_NEIGHBOR_PASSIVE
+:
+   'passive' -> type(PASSIVE), popMode
+;
+
 M_Neighbor_VARIABLE
 :
    F_Variable_VarChar+ -> type(VARIABLE), popMode

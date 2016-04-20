@@ -3,7 +3,7 @@ function_sig('BgpAdvertisement_nextHopIp', 2).
 function_sig('BgpNeighborGeneratedRoute_constructor', 4).
 function_sig('Flow_tag', 2).
 function_sig('AdministrativeDistance', 3).
-function_sig('FlowOriginate', 8).
+function_sig('FlowOriginate', 18).
 function_sig('RouteFilterFirstMatch', 3).
 function_sig('MaxLocalPref', 3).
 function_sig('Flow_srcIp', 2).
@@ -1733,6 +1733,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
                SrcOrDstIp_start =< DstIp,
                DstIp =< SrcOrDstIp_end
             )
+         )
       )
    ).
 
@@ -3214,7 +3215,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
 'Ip'(SrcIp),
 'Ip'(DstIp)
 :-
-   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag).
+   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlagsCWR, TcpFlagsECE, TcpFlagsURG, TcpFlagsACK, TcpFlagsPSH, TcpFlagsRST, TcpFlagsSYN, TcpFlagsFIN, Tag).
 
 /*owner accept*/
 'FlowAccepted'(Flow, Node) :-
@@ -3529,7 +3530,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'FibDrop'(Node, DstIp),
    \+ 'FibNeighborUnreachable'(Node, DstIp, _).
 
-'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlags, Tag, Flow),
+'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
 'Flow'(Flow),
 'Flow_dstIp'(Flow, DstIp),
 'Flow_dstPort'(Flow, DstPort),

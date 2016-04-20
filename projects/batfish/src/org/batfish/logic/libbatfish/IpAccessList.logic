@@ -129,7 +129,7 @@ SetIpAccessListLine_srcOrDstIpRange(list, line, srcOrDstIp_start, srcOrDstIp_end
    int(srcOrDstIp_start),
    int(srcOrDstIp_end).
 
-SetIpAccessListLine_srcOrDstPortRange(list, line, srcPort_start, srcPort_end) ->
+SetIpAccessListLine_srcOrDstPortRange(list, line, srcOrDstPort_start, srcOrDstPort_end) ->
    IpAccessList(list),
    int(line),
    int(srcOrDstPort_start),

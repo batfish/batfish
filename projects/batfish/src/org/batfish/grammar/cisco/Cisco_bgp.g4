@@ -519,7 +519,7 @@ peer_group_assignment_rb_stanza
 
 peer_group_creation_rb_stanza
 :
-   NEIGHBOR name = VARIABLE (PEER_GROUP) PASSIVE? NEWLINE
+   NEIGHBOR name = VARIABLE PEER_GROUP PASSIVE? NEWLINE
 ;
 
 prefix_list_bgp_tail

@@ -6,6 +6,7 @@ import java.util.Collections;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 import org.batfish.representation.LineAction;
+import org.batfish.representation.TcpFlags;
 import org.batfish.util.SubRange;
 
 public class StandardAccessListLine implements Serializable {
@@ -37,7 +38,8 @@ public class StandardAccessListLine implements Serializable {
    public ExtendedAccessListLine toExtendedAccessListLine() {
       return new ExtendedAccessListLine(_action, IpProtocol.IP, _ip, _wildcard,
             Ip.ZERO, Ip.MAX, Collections.<SubRange> emptyList(),
-            Collections.<SubRange> emptyList(), null, null, null);
+            Collections.<SubRange> emptyList(), null, null,
+            Collections.<TcpFlags> emptyList());
    }
 
 }

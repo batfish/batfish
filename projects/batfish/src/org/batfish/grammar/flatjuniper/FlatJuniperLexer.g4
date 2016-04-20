@@ -25,8 +25,13 @@ public String printStateVariables() {
 }
 
 tokens {
+   ACK,
+   BANG,
+   FIN,
    ISO_ADDRESS,
    PIPE,
+   RST,
+   SYN,
    VERSION_STRING
 }
 
@@ -4123,7 +4128,7 @@ TCP_ESTABLISHED
 
 TCP_FLAGS
 :
-   'tcp-flags'
+   'tcp-flags' -> pushMode ( M_TcpFlags )
 ;
 
 TCP_INITIAL
@@ -5175,7 +5180,7 @@ M_Members_COLON
 
 M_Members_COMMA
 :
-   ',' -> type(COMMA)
+   ',' -> type ( COMMA )
 ;
 
 M_Members_DASH
@@ -5269,6 +5274,75 @@ M_PrefixLsitName_VARIABLE
 ;
 
 M_PrefixListName_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_TcpFlags;
+
+M_TcpFlags_DOUBLE_QUOTE
+:
+   '"' -> channel ( HIDDEN ) , pushMode ( M_TcpFlags2 )
+;
+
+M_TcpFlags_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_TcpFlags2;
+
+M_TcpFlags2_ACK
+:
+   'ack' -> type ( ACK )
+;
+
+M_TcpFlags2_AMPERSAND
+:
+   '&' -> type ( AMPERSAND )
+;
+
+M_TcpFlags2_BANG
+:
+   '!' -> type ( BANG )
+;
+
+M_TcpFlags2_CLOSE_PAREN
+:
+   ')' -> type ( CLOSE_PAREN )
+;
+
+M_TcpFlags2_FIN
+:
+   'fin' -> type ( FIN )
+;
+
+M_TcpFlags2_OPEN_PAREN
+:
+   '(' -> type ( OPEN_PAREN )
+;
+
+M_TcpFlags2_PIPE
+:
+   '|' -> type ( PIPE )
+;
+
+M_TcpFlags2_RST
+:
+   'rst' -> type ( RST )
+;
+
+M_TcpFlags2_SYN
+:
+   'syn' -> type ( SYN )
+;
+
+M_TcpFlags2_DOUBLE_QUOTE
+:
+   '"' -> channel ( HIDDEN ) , mode ( DEFAULT_MODE )
+;
+
+M_TcpFlags2_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
