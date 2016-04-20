@@ -86,6 +86,7 @@ is_type_is_stanza
    IS_TYPE
    (
       LEVEL_1
+      | LEVEL_2
       | LEVEL_2_ONLY
    ) NEWLINE
 ;

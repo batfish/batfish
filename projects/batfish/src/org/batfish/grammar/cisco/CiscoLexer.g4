@@ -209,6 +209,16 @@ ADVERTISE
    'advertise'
 ;
 
+ADVERTISEMENT_INTERVAL
+:
+   'advertisement-interval'
+;
+
+ADVERTISE_INACTIVE
+:
+   'advertise-inactive'
+;
+
 AES128_SHA1
 :
    'aes128-sha1'
@@ -429,6 +439,11 @@ ATM
 ATTRIBUTE_DOWNLOAD
 :
    'attribute-download'
+;
+
+ATTRIBUTE_MAP
+:
+   'attribute-map'
 ;
 
 ATTRIBUTE_NAMES
@@ -1124,6 +1139,11 @@ DCBX
 DEAD_INTERVAL
 :
    'dead-interval'
+;
+
+DEBUG
+:
+   'debug'
 ;
 
 DECAP_GROUP
@@ -2918,6 +2938,11 @@ MAXIMUM
    'maximum'
 ;
 
+MAXIMUM_ACCEPTED_ROUTES
+:
+   'maximum-accepted-routes'
+;
+
 MAXIMUM_PATHS
 :
    'maximum-paths'
@@ -4421,6 +4446,11 @@ SAP
 SA_FILTER
 :
    'sa-filter'
+;
+
+SCAN_TIME
+:
+   'scan-time'
 ;
 
 SCCP
