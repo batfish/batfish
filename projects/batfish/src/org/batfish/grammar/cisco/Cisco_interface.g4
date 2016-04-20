@@ -52,8 +52,10 @@ if_stanza
    | ip_policy_if_stanza
    | ip_router_isis_if_stanza
    | isis_circuit_type_if_stanza
+   | isis_enable_if_stanza
    | isis_metric_if_stanza
    | isis_network_if_stanza
+   | isis_passive_if_stanza
    | isis_tag_if_stanza
    | no_ip_address_if_stanza
    | null_if_stanza
@@ -180,6 +182,11 @@ isis_circuit_type_if_stanza
    ISIS CIRCUIT_TYPE LEVEL_2_ONLY NEWLINE
 ;
 
+isis_enable_if_stanza
+:
+   ISIS ENABLE num = DEC NEWLINE
+;
+
 isis_metric_if_stanza
 :
    ISIS METRIC metric = DEC NEWLINE
@@ -188,6 +195,11 @@ isis_metric_if_stanza
 isis_network_if_stanza
 :
    ISIS NETWORK POINT_TO_POINT NEWLINE
+;
+
+isis_passive_if_stanza
+:
+   ISIS PASSIVE NEWLINE
 ;
 
 isis_tag_if_stanza

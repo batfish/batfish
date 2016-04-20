@@ -12,6 +12,7 @@ null_block_stanza
    (
       AAA
       | ACCESS_GROUP
+      | ADMIN
       | ARCHIVE
       | ATM
       | BASH
@@ -60,6 +61,7 @@ null_block_stanza
             | DHCP
             | ECMP_GROUP
             | FLOW_TOP_TALKERS
+            | HARDWARE
             | ICMP_ERRORS
             | INSPECT
             |
@@ -207,6 +209,7 @@ null_block_substanza
          | ADVERTISE
          | AESA
          | ANYCONNECT
+         | APPLICATION
          | ARCHIVE_LENGTH
          | ARCHIVE_SIZE
          | ASSOCIATE

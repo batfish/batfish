@@ -189,6 +189,11 @@ ADJACENCY
    'adjacency'
 ;
 
+ADMIN
+:
+   'admin'
+;
+
 ADMINISTRATIVE_WEIGHT
 :
    'administrative-weight'
@@ -317,6 +322,11 @@ AOL
 AP
 :
    'ap'
+;
+
+APPLICATION
+:
+   'application'
 ;
 
 APPLY

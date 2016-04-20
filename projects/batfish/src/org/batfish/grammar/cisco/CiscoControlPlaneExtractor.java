@@ -591,6 +591,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else if (ctx.IPV4() != null) {
          return IpProtocol.IP;
       }
+      else if (ctx.IPV6() != null) {
+         return IpProtocol.IPv6;
+      }
       else if (ctx.OSPF() != null) {
          return IpProtocol.OSPF;
       }
