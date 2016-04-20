@@ -20,6 +20,7 @@ import org.batfish.grammar.cisco.CiscoParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.main.RedFlagBatfishException;
 import org.batfish.main.Warnings;
+import org.batfish.representation.DscpType;
 import org.batfish.representation.IcmpCode;
 import org.batfish.representation.IcmpType;
 import org.batfish.representation.Ip;
@@ -525,6 +526,81 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          throw new BatfishException("bad extended ip access list ip range");
       }
+   }
+
+   private static int toDscpType(Dscp_typeContext ctx) {
+      int val;
+      if (ctx.DEC() != null) {
+         val = toInteger(ctx.DEC());
+      }
+      else if (ctx.AF11() != null) {
+         val = DscpType.AF11.number();
+      }
+      else if (ctx.AF12() != null) {
+         val = DscpType.AF12.number();
+      }
+      else if (ctx.AF13() != null) {
+         val = DscpType.AF13.number();
+      }
+      else if (ctx.AF21() != null) {
+         val = DscpType.AF21.number();
+      }
+      else if (ctx.AF22() != null) {
+         val = DscpType.AF22.number();
+      }
+      else if (ctx.AF23() != null) {
+         val = DscpType.AF23.number();
+      }
+      else if (ctx.AF31() != null) {
+         val = DscpType.AF31.number();
+      }
+      else if (ctx.AF32() != null) {
+         val = DscpType.AF32.number();
+      }
+      else if (ctx.AF33() != null) {
+         val = DscpType.AF33.number();
+      }
+      else if (ctx.AF41() != null) {
+         val = DscpType.AF41.number();
+      }
+      else if (ctx.AF42() != null) {
+         val = DscpType.AF42.number();
+      }
+      else if (ctx.AF43() != null) {
+         val = DscpType.AF43.number();
+      }
+      else if (ctx.CS1() != null) {
+         val = DscpType.CS1.number();
+      }
+      else if (ctx.CS2() != null) {
+         val = DscpType.CS2.number();
+      }
+      else if (ctx.CS3() != null) {
+         val = DscpType.CS3.number();
+      }
+      else if (ctx.CS4() != null) {
+         val = DscpType.CS4.number();
+      }
+      else if (ctx.CS5() != null) {
+         val = DscpType.CS5.number();
+      }
+      else if (ctx.CS6() != null) {
+         val = DscpType.CS6.number();
+      }
+      else if (ctx.CS7() != null) {
+         val = DscpType.CS7.number();
+      }
+      else if (ctx.DEFAULT() != null) {
+         val = DscpType.DEFAULT.number();
+      }
+      else if (ctx.EF() != null) {
+         val = DscpType.EF.number();
+      }
+      else {
+         throw new BatfishException("Unhandled dscp type: \"" + ctx.getText()
+               + "\"");
+      }
+      return val;
    }
 
    public static int toInteger(TerminalNode t) {
@@ -1404,12 +1480,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Integer icmpType = null;
       Integer icmpCode = null;
       List<TcpFlags> tcpFlags = new ArrayList<TcpFlags>();
+      Set<Integer> dscps = new TreeSet<Integer>();
+      Set<Integer> ecns = new TreeSet<Integer>();
       for (Extended_access_list_additional_featureContext feature : ctx.features) {
          if (feature.ACK() != null) {
             TcpFlags alt = new TcpFlags();
             alt.setUseAck(true);
             alt.setAck(true);
             tcpFlags.add(alt);
+         }
+         if (feature.DSCP() != null) {
+            int dscpType = toDscpType(feature.dscp_type());
+            dscps.add(dscpType);
          }
          if (feature.ECHO_REPLY() != null) {
             icmpType = IcmpType.ECHO_REPLY;
@@ -1418,6 +1500,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          if (feature.ECHO() != null) {
             icmpType = IcmpType.ECHO_REQUEST;
             icmpCode = IcmpCode.ECHO_REQUEST;
+         }
+         if (feature.ECN() != null) {
+            int ecn = toInteger(feature.ecn);
+            ecns.add(ecn);
          }
          if (feature.ESTABLISHED() != null) {
             // must contain ACK or RST
@@ -1493,7 +1579,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       ExtendedAccessListLine line = new ExtendedAccessListLine(action,
             protocol, srcIp, srcWildcard, dstIp, dstWildcard, srcPortRanges,
-            dstPortRanges, icmpType, icmpCode, tcpFlags);
+            dstPortRanges, dscps, ecns, icmpType, icmpCode, tcpFlags);
       _currentExtendedAcl.addLine(line);
    }
 
@@ -2639,8 +2725,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       LineAction action = getAccessListAction(ctx.ala);
       Ip srcIp = getIp(ctx.ipr);
       Ip srcWildcard = getWildcard(ctx.ipr);
+      Set<Integer> dscps = new TreeSet<Integer>();
+      Set<Integer> ecns = new TreeSet<Integer>();
+      for (Standard_access_list_additional_featureContext feature : ctx.features) {
+         if (feature.DSCP() != null) {
+            int dscpType = toDscpType(feature.dscp_type());
+            dscps.add(dscpType);
+         }
+         else if (feature.ECN() != null) {
+            int ecn = toInteger(feature.ecn);
+            ecns.add(ecn);
+         }
+      }
       StandardAccessListLine line = new StandardAccessListLine(action, srcIp,
-            srcWildcard);
+            srcWildcard, dscps, ecns);
       _currentStandardAcl.addLine(line);
    }
 

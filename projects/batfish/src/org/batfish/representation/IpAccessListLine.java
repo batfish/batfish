@@ -15,9 +15,13 @@ public final class IpAccessListLine implements Serializable {
 
    private LineAction _action;
 
-   private Set<Prefix> _dstIpRanges;
+   private final Set<Integer> _dscps;
 
-   private List<SubRange> _dstPortRanges;
+   private final Set<Prefix> _dstIpRanges;
+
+   private final List<SubRange> _dstPortRanges;
+
+   private final Set<Integer> _ecns;
 
    private int _icmpCode;
 
@@ -25,22 +29,24 @@ public final class IpAccessListLine implements Serializable {
 
    private String _invalidMessage;
 
-   private Set<IpProtocol> _protocols;
+   private final Set<IpProtocol> _protocols;
 
-   private Set<Prefix> _srcIpRanges;
+   private final Set<Prefix> _srcIpRanges;
 
-   private Set<Prefix> _srcOrDstIpRanges;
+   private final Set<Prefix> _srcOrDstIpRanges;
 
-   private List<SubRange> _srcOrDstPortRanges;
+   private final List<SubRange> _srcOrDstPortRanges;
 
-   private List<SubRange> _srcPortRanges;
+   private final List<SubRange> _srcPortRanges;
 
-   private List<TcpFlags> _tcpFlags;
+   private final List<TcpFlags> _tcpFlags;
 
    public IpAccessListLine() {
+      _dscps = new TreeSet<Integer>();
       _protocols = EnumSet.noneOf(IpProtocol.class);
       _dstIpRanges = new TreeSet<Prefix>();
       _dstPortRanges = new ArrayList<SubRange>();
+      _ecns = new TreeSet<Integer>();
       _srcIpRanges = new TreeSet<Prefix>();
       _srcOrDstIpRanges = new TreeSet<Prefix>();
       _srcOrDstPortRanges = new ArrayList<SubRange>();
@@ -53,8 +59,10 @@ public final class IpAccessListLine implements Serializable {
    public IpAccessListLine copy() {
       IpAccessListLine line = new IpAccessListLine();
       line._action = _action;
+      line._dscps.addAll(_dscps);
       line._dstIpRanges.addAll(_dstIpRanges);
       line._dstPortRanges.addAll(_dstPortRanges);
+      line._ecns.addAll(_ecns);
       line._icmpCode = _icmpCode;
       line._icmpType = _icmpType;
       line._invalidMessage = _invalidMessage;
@@ -75,8 +83,16 @@ public final class IpAccessListLine implements Serializable {
       return _dstIpRanges;
    }
 
+   public Set<Integer> getDscps() {
+      return _dscps;
+   }
+
    public List<SubRange> getDstPortRanges() {
       return _dstPortRanges;
+   }
+
+   public Set<Integer> getEcns() {
+      return _ecns;
    }
 
    public int getIcmpCode() {
@@ -138,8 +154,9 @@ public final class IpAccessListLine implements Serializable {
             + _dstIpRanges + ", SrcOrDstIpRanges:" + _srcOrDstIpRanges
             + ", SrcPortRanges:" + _srcPortRanges + ", DstPortRanges:"
             + _dstPortRanges + ", SrcOrDstPortRanges:" + _srcOrDstPortRanges
-            + ", IcmpType:" + _icmpType + ", IcmpCode:" + _icmpCode
-            + ", TcpFlags:" + _tcpFlags.toString() + "]";
+            + ", Dscps: " + _dscps.toString() + ", IcmpType:" + _icmpType
+            + ", IcmpCode:" + _icmpCode + ", TcpFlags:" + _tcpFlags.toString()
+            + "]";
    }
 
 }

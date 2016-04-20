@@ -3,7 +3,7 @@ function_sig('BgpAdvertisement_nextHopIp', 2).
 function_sig('BgpNeighborGeneratedRoute_constructor', 4).
 function_sig('Flow_tag', 2).
 function_sig('AdministrativeDistance', 3).
-function_sig('FlowOriginate', 18).
+function_sig('FlowOriginate', 20).
 function_sig('RouteFilterFirstMatch', 3).
 function_sig('MaxLocalPref', 3).
 function_sig('Flow_srcIp', 2).
@@ -1645,8 +1645,10 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'SetIpAccessListLine_permit'(List, Line).
 
 'IpAccessListMatch'(List, Line, Flow) :-
+   'IpAccessListMatchDscp'(List, Line, Flow),
    'IpAccessListMatchDstIp'(List, Line, Flow),
    'IpAccessListMatchDstPort'(List, Line, Flow),
+   'IpAccessListMatchEcn'(List, Line, Flow),
    'IpAccessListMatchIcmpCode'(List, Line, Flow),
    'IpAccessListMatchIcmpType'(List, Line, Flow),
    'IpAccessListMatchProtocol'(List, Line, Flow),
@@ -1655,6 +1657,14 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'IpAccessListMatchSrcOrDstPort'(List, Line, Flow),
    'IpAccessListMatchSrcPort'(List, Line, Flow),
    'IpAccessListMatchTcpFlags'(List, Line, Flow).
+
+'IpAccessListMatchDscp'(List, Line, Flow) :-
+   'IpAccessListLine'(List, Line),
+   'Flow_dscp'(Flow, Dscp),
+   (
+      \+ 'SetIpAccessListLine_dscp'(List, Line, _) ;
+      'SetIpAccessListLine_dscp'(List, Line, Dscp)
+   ).
 
 'IpAccessListMatchDstIp'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
@@ -1678,6 +1688,14 @@ need_PolicyMapMatchRoute(Map, Route) :-
          DstPort_start =< DstPort,
          DstPort =< DstPort_end
       )
+   ).
+
+'IpAccessListMatchEcn'(List, Line, Flow) :-
+   'IpAccessListLine'(List, Line),
+   'Flow_ecn'(Flow, Ecn),
+   (
+      \+ 'SetIpAccessListLine_ecn'(List, Line, _) ;
+      'SetIpAccessListLine_ecn'(List, Line, Ecn)
    ).
 
 'IpAccessListMatchIcmpCode'(List, Line, Flow) :-
@@ -3218,7 +3236,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
 'Ip'(SrcIp),
 'Ip'(DstIp)
 :-
-   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, TcpFlagsCWR, TcpFlagsECE, TcpFlagsURG, TcpFlagsACK, TcpFlagsPSH, TcpFlagsRST, TcpFlagsSYN, TcpFlagsFIN, Tag).
+   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, TcpFlagsCWR, TcpFlagsECE, TcpFlagsURG, TcpFlagsACK, TcpFlagsPSH, TcpFlagsRST, TcpFlagsSYN, TcpFlagsFIN, Tag).
 
 /*owner accept*/
 'FlowAccepted'(Flow, Node) :-
@@ -3533,10 +3551,12 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'FibDrop'(Node, DstIp),
    \+ 'FibNeighborUnreachable'(Node, DstIp, _).
 
-'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
+'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
 'Flow'(Flow),
+'Flow_dscp'(Flow, Dscp),
 'Flow_dstIp'(Flow, DstIp),
 'Flow_dstPort'(Flow, DstPort),
+'Flow_ecn'(Flow, Ecn),
 'Flow_icmpCode'(Flow, IcmpCode),
 'Flow_icmpType'(Flow, IcmpType),
 'Flow_ipProtocol'(Flow, Protocol),
@@ -3553,12 +3573,14 @@ need_RouteFilterMatchNetwork(List, Network) :-
 'Flow_tcpFlagsFIN'(Flow, FIN),
 'Flow_tag'(Flow, Tag)
 :-
-   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag).
+   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag).
 
-'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
+'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
 'Flow'(Flow),
+'Flow_dscp'(Flow, Dscp),
 'Flow_dstIp'(Flow, DstIp),
 'Flow_dstPort'(Flow, DstPort),
+'Flow_ecn'(Flow, Ecn),
 'Flow_icmpCode'(Flow, IcmpCode),
 'Flow_icmpType'(Flow, IcmpType),
 'Flow_ipProtocol'(Flow, Protocol),
@@ -3576,7 +3598,7 @@ need_RouteFilterMatchNetwork(List, Network) :-
 'Flow_tag'(Flow, Tag)
 :-
    'DuplicateRoleFlows'(_),
-   'SetFlowOriginate'(AcceptNode, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag),
+   'SetFlowOriginate'(AcceptNode, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag),
    'SetNodeRole'(AcceptNode, Role),
    'SetNodeRole'(Node, Role).
 
@@ -3878,6 +3900,6 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    'FlowSameHeader'(Flow, SimilarFlow).
 
 'FlowSameHeader'(Flow1, Flow2) :-
-   'FlowOriginate'(Node1, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow1),
-   'FlowOriginate'(Node2, SrcIp, DstIp, SrcPort, DstPort, Protocol, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow2),
+   'FlowOriginate'(Node1, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow1),
+   'FlowOriginate'(Node2, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow2),
    Node1 \== Node2.

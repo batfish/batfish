@@ -25,9 +25,11 @@ public class Facts {
       map.put("SetInterfaceRoutingPolicy", "NODE|INTERFACE|POLICY");
       map.put("SetNetwork", "STARTIP|START|END|PREFIXLENGTH");
       map.put("SetIpAccessListLine_deny", "LIST|LINE");
+      map.put("SetIpAccessListLine_dscp", "LIST|LINE|DSCP");
       map.put("SetIpAccessListLine_dstIpRange", "LIST|LINE|DSTIPSTART|DSTIPEND");
       map.put("SetIpAccessListLine_dstPortRange",
             "LIST|LINE|DSTPORTSTART|DSTPORTEND");
+      map.put("SetIpAccessListLine_ecn", "LIST|LINE|ECN");
       map.put("SetIpAccessListLine_icmpCode", "LIST|LINE|ICMPCODE");
       map.put("SetIpAccessListLine_icmpType", "LIST|LINE|ICMPTYPE");
       map.put("SetIpAccessListLine_tcpFlags", "LIST|LINE|ALTERNATIVE");
@@ -188,8 +190,9 @@ public class Facts {
    private static Map<String, String> getTrafficFactColumnHeaders() {
       Map<String, String> map = new TreeMap<String, String>();
       map.put("DuplicateRoleFlows", "DUMMY");
-      map.put("SetFlowOriginate",
-            "NODE|SRCIP|DSTIP|SRCPORT|DSTPORT|IPPROTOCOL|TAG");
+      map.put(
+            "SetFlowOriginate",
+            "NODE|SRCIP|DSTIP|SRCPORT|DSTPORT|IPPROTOCOL|DSCP|ECN|ICMPTYPE|ICMPCODE|CWR|ECE|URG|ACK|PSH|RST|SYN|FIN|TAG");
       return Collections.unmodifiableMap(map);
    }
 

@@ -27,12 +27,22 @@ IpAccessListMatch(list, line, flow) ->
    int(line),
    Flow(flow).
 
+IpAccessListMatchDscp(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
 IpAccessListMatchDstIp(list, line, flow) ->
    IpAccessList(list),
    int(line),
    Flow(flow).
 
 IpAccessListMatchDstPort(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
+IpAccessListMatchEcn(list, line, flow) ->
    IpAccessList(list),
    int(line),
    Flow(flow).
@@ -85,6 +95,16 @@ IpAccessListPermit(list, line, flow) ->
 SetIpAccessListLine_deny(list, line) ->
    IpAccessList(list),
    int(line).
+
+SetIpAccessListLine_dscp(list, line, dscp) ->
+   IpAccessList(list),
+   int(line),
+   int(dscp).
+
+SetIpAccessListLine_ecn(list, line, ecn) ->
+   IpAccessList(list),
+   int(line),
+   int(ecn).
 
 SetIpAccessListLine_dstIpRange(list, line, dstIp_start, dstIp_end) ->
    IpAccessList(list),

@@ -6,22 +6,6 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-access_list_ip_flag
-:
-   (
-        DSCP val = DEC
-      | ECN val = DEC
-   )
-
-;
-
-access_list_ip_flags
-:
-   (
-      flag += access_list_ip_flag
-   )+
-;
-
 access_list_ip_range
 :
    (
@@ -99,38 +83,40 @@ community_set_elem
 
 extended_access_list_additional_feature
 :
+   ACK
+   | COUNT
+   |
    (
-      ACK
-      | COUNT
-      |
-      (
-         DSCP variable
-      )
-      | ECHO_REPLY
-      | ECHO
-      | ESTABLISHED
-      | FRAGMENTS
-      | HOST_UNKNOWN
-      | HOST_UNREACHABLE
-      | LOG
-      | LOG_INPUT
-      | ND_NA
-      | ND_NS
-      | NETWORK_UNKNOWN
-      | NET_UNREACHABLE
-      | PACKET_TOO_BIG
-      | PARAMETER_PROBLEM
-      | PORT_UNREACHABLE
-      | REDIRECT
-      | RST
-      | SOURCE_QUENCH
-      | TIME_EXCEEDED
-      | TRACEROUTE
-      | TRACKED
-      | TTL_EXCEEDED
-      | TTL EQ DEC
-      | UNREACHABLE
+      DSCP dscp_type
    )
+   | ECHO_REPLY
+   | ECHO
+   |
+   (
+      ECN ecn = DEC
+   )
+   | ESTABLISHED
+   | FRAGMENTS
+   | HOST_UNKNOWN
+   | HOST_UNREACHABLE
+   | LOG
+   | LOG_INPUT
+   | ND_NA
+   | ND_NS
+   | NETWORK_UNKNOWN
+   | NET_UNREACHABLE
+   | PACKET_TOO_BIG
+   | PARAMETER_PROBLEM
+   | PORT_UNREACHABLE
+   | REDIRECT
+   | RST
+   | SOURCE_QUENCH
+   | TIME_EXCEEDED
+   | TRACEROUTE
+   | TRACKED
+   | TTL_EXCEEDED
+   | TTL EQ DEC
+   | UNREACHABLE
 ;
 
 extended_access_list_null_tail
@@ -413,6 +399,18 @@ rsvp_stanza
    RSVP NEWLINE rs_stanza*
 ;
 
+standard_access_list_additional_feature
+:
+   (
+      DSCP dscp_type
+   )
+   |
+   (
+      ECN ecn = DEC
+   )
+   | LOG
+;
+
 standard_access_list_null_tail
 :
    (
@@ -456,6 +454,9 @@ standard_access_list_tail
 :
    (
       SEQ? num = DEC
-   )? ala = access_list_action ipr = access_list_ip_range access_list_ip_flags? LOG? NEWLINE
+   )? ala = access_list_action ipr = access_list_ip_range
+   (
+      features += standard_access_list_additional_feature
+   )* NEWLINE
 ;
 

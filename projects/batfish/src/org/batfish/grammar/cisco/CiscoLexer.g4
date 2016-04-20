@@ -224,6 +224,66 @@ AESA
    'aesa'
 ;
 
+AF11
+:
+   'af11'
+;
+
+AF12
+:
+   'af12'
+;
+
+AF13
+:
+   'af13'
+;
+
+AF21
+:
+   'af21'
+;
+
+AF22
+:
+   'af22'
+;
+
+AF23
+:
+   'af23'
+;
+
+AF31
+:
+   'af31'
+;
+
+AF32
+:
+   'af32'
+;
+
+AF33
+:
+   'af33'
+;
+
+AF41
+:
+   'af41'
+;
+
+AF42
+:
+   'af42'
+;
+
+AF43
+:
+   'af43'
+;
+
 AFFINITY
 :
    'affinity'
@@ -1061,6 +1121,41 @@ CRL
    'crl'
 ;
 
+CS1
+:
+   'cs1'
+;
+
+CS2
+:
+   'cs2'
+;
+
+CS3
+:
+   'cs3'
+;
+
+CS4
+:
+   'cs4'
+;
+
+CS5
+:
+   'cs5'
+;
+
+CS6
+:
+   'cs6'
+;
+
+CS7
+:
+   'cs7'
+;
+
 CTIQBE
 :
    'ctiqbe'
@@ -1499,6 +1594,11 @@ ECMP_GROUP
 ECN
 :
    'ecn'
+;
+
+EF
+:
+   'ef'
 ;
 
 EGP

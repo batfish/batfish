@@ -877,6 +877,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          List<TcpFlags> tcpFlags = fromLine.getTcpFlags();
          newLine.getTcpFlags().addAll(tcpFlags);
+         Set<Integer> dscps = fromLine.getDscps();
+         newLine.getDscps().addAll(dscps);
+         Set<Integer> ecns = fromLine.getEcns();
+         newLine.getEcns().addAll(ecns);
          lines.add(newLine);
       }
       return new IpAccessList(name, lines);

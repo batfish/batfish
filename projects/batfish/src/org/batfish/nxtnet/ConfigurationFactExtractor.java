@@ -484,6 +484,10 @@ public class ConfigurationFactExtractor {
             .get("SetIpAccessListLine_dstIpRange");
       StringBuilder wSetIpAccessListLine_dstPortRange = _factBins
             .get("SetIpAccessListLine_dstPortRange");
+      StringBuilder wSetIpAccessListLine_dscp = _factBins
+            .get("SetIpAccessListLine_dscp");
+      StringBuilder wSetIpAccessListLine_ecn = _factBins
+            .get("SetIpAccessListLine_ecn");
       StringBuilder wSetIpAccessListLine_icmpCode = _factBins
             .get("SetIpAccessListLine_icmpCode");
       StringBuilder wSetIpAccessListLine_icmpType = _factBins
@@ -641,6 +645,14 @@ public class ConfigurationFactExtractor {
                   wSetIpAccessListLine_tcpFlagsFIN.append(name + "|" + i + "|"
                         + alt + "|" + bit + "\n");
                }
+            }
+            for (int dscp : line.getDscps()) {
+               wSetIpAccessListLine_dscp.append(name + "|" + i + "|" + dscp
+                     + "\n");
+            }
+            for (int ecn : line.getEcns()) {
+               wSetIpAccessListLine_ecn.append(name + "|" + i + "|" + ecn
+                     + "\n");
             }
          }
       }

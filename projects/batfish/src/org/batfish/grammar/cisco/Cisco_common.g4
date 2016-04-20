@@ -25,6 +25,32 @@ description_line
    DESCRIPTION text = M_DESCRIPTION_NON_NEWLINE? NEWLINE
 ;
 
+dscp_type
+:
+   DEC
+   | AF11
+   | AF12
+   | AF13
+   | AF21
+   | AF22
+   | AF23
+   | AF31
+   | AF32
+   | AF33
+   | AF41
+   | AF42
+   | AF43
+   | CS1
+   | CS2
+   | CS3
+   | CS4
+   | CS5
+   | CS6
+   | CS7
+   | DEFAULT
+   | EF
+;
+
 ec_literal
 :
    DEC COLON DEC

@@ -1,16 +1,18 @@
 package org.batfish.representation;
 
-import org.batfish.common.BatfishException;
+public final class Flow implements Comparable<Flow> {
 
-public class Flow implements Comparable<Flow> {
+   private final int _dscp;
 
    private final Ip _dstIp;
 
-   private final Integer _dstPort;
+   private final int _dstPort;
 
-   private final Integer _icmpCode;
+   private final int _ecn;
 
-   private final Integer _icmpType;
+   private final int _icmpCode;
+
+   private final int _icmpType;
 
    private final String _ingressNode;
 
@@ -18,7 +20,7 @@ public class Flow implements Comparable<Flow> {
 
    private final Ip _srcIp;
 
-   private final Integer _srcPort;
+   private final int _srcPort;
 
    private final String _tag;
 
@@ -38,8 +40,8 @@ public class Flow implements Comparable<Flow> {
 
    private final int _tcpFlagsUrg;
 
-   public Flow(String ingressNode, Ip srcIp, Ip dstIp, Integer srcPort,
-         Integer dstPort, IpProtocol ipProtocol, int icmpType, int icmpCode,
+   Flow(String ingressNode, Ip srcIp, Ip dstIp, int srcPort, int dstPort,
+         IpProtocol ipProtocol, int dscp, int ecn, int icmpType, int icmpCode,
          int tcpFlagsCwr, int tcpFlagsEce, int tcpFlagsUrg, int tcpFlagsAck,
          int tcpFlagsPsh, int tcpFlagsRst, int tcpFlagsSyn, int tcpFlagsFin,
          String tag) {
@@ -49,6 +51,8 @@ public class Flow implements Comparable<Flow> {
       _srcPort = srcPort;
       _dstPort = dstPort;
       _ipProtocol = ipProtocol;
+      _dscp = dscp;
+      _ecn = ecn;
       _icmpType = icmpType;
       _icmpCode = icmpCode;
       _tcpFlagsCwr = tcpFlagsCwr;
@@ -60,11 +64,6 @@ public class Flow implements Comparable<Flow> {
       _tcpFlagsSyn = tcpFlagsSyn;
       _tcpFlagsFin = tcpFlagsFin;
       _tag = tag;
-      if ((srcPort == null || dstPort == null)
-            && (srcPort != null || dstPort != null)) {
-         throw new BatfishException(
-               "Invalid flow: exactly one of srcPort and DstPort is null");
-      }
    }
 
    @Override
@@ -86,22 +85,27 @@ public class Flow implements Comparable<Flow> {
       if (ret != 0) {
          return ret;
       }
-      if (_srcPort == null) {
-         return 0;
-      }
-      ret = _srcPort.compareTo(rhs._srcPort);
+      ret = Integer.compare(_srcPort, rhs._srcPort);
       if (ret != 0) {
          return ret;
       }
-      ret = _dstPort.compareTo(rhs._dstPort);
+      ret = Integer.compare(_dstPort, rhs._dstPort);
       if (ret != 0) {
          return ret;
       }
-      ret = _icmpType.compareTo(rhs._icmpType);
+      ret = Integer.compare(_dscp, rhs._dscp);
       if (ret != 0) {
          return ret;
       }
-      ret = _icmpCode.compareTo(rhs._icmpCode);
+      ret = Integer.compare(_ecn, rhs._ecn);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_icmpType, rhs._icmpType);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_icmpCode, rhs._icmpCode);
       if (ret != 0) {
          return ret;
       }
@@ -139,15 +143,16 @@ public class Flow implements Comparable<Flow> {
    @Override
    public boolean equals(Object obj) {
       Flow other = (Flow) obj;
+      if (_dscp != other._dscp) {
+         return false;
+      }
       if (!_dstIp.equals(other._dstIp)) {
          return false;
       }
-      if (_dstPort == null) {
-         if (other._dstPort != null) {
-            return false;
-         }
+      if (_dstPort != other._dstPort) {
+         return false;
       }
-      else if (!_dstPort.equals(other._dstPort)) {
+      if (_ecn != other._ecn) {
          return false;
       }
       if (!_ingressNode.equals(other._ingressNode)) {
@@ -159,28 +164,13 @@ public class Flow implements Comparable<Flow> {
       if (!_srcIp.equals(other._srcIp)) {
          return false;
       }
-      if (_srcPort == null) {
-         if (other._srcPort != null) {
-            return false;
-         }
-      }
-      else if (!_srcPort.equals(other._srcPort)) {
+      if (_srcPort != other._srcPort) {
          return false;
       }
-      if (_icmpType == null) {
-         if (other._icmpType != null) {
-            return false;
-         }
-      }
-      else if (!_icmpType.equals(other._icmpType)) {
+      if (_icmpType != other._icmpType) {
          return false;
       }
-      if (_icmpCode == null) {
-         if (other._icmpCode != null) {
-            return false;
-         }
-      }
-      else if (!_icmpCode.equals(other._icmpCode)) {
+      if (_icmpCode != other._icmpCode) {
          return false;
       }
       if (_tcpFlagsCwr != other._tcpFlagsCwr) {
@@ -208,6 +198,10 @@ public class Flow implements Comparable<Flow> {
          return false;
       }
       return _tag.equals(other._tag);
+   }
+
+   public int getDscp() {
+      return _dscp;
    }
 
    public Ip getDstIp() {
@@ -250,17 +244,17 @@ public class Flow implements Comparable<Flow> {
    public int hashCode() {
       final int prime = 31;
       int result = 1;
+      result = prime * result + _dscp;
       result = prime * result + _dstIp.hashCode();
-      result = prime * result + ((_dstPort == null) ? 0 : _dstPort.hashCode());
+      result = prime * result + _dstPort;
+      result = prime * result + _ecn;
       result = prime * result + _ingressNode.hashCode();
       result = prime * result + _ipProtocol.hashCode();
       result = prime * result + _srcIp.hashCode();
-      result = prime * result + ((_srcPort == null) ? 0 : _srcPort.hashCode());
+      result = prime * result + _srcPort;
       result = prime * result + _tag.hashCode();
-      result = prime * result
-            + ((_icmpType == null) ? 0 : _icmpType.hashCode());
-      result = prime * result
-            + ((_icmpCode == null) ? 0 : _icmpCode.hashCode());
+      result = prime * result + _icmpType;
+      result = prime * result + _icmpCode;
       result = prime * result + _tcpFlagsCwr;
       result = prime * result + _tcpFlagsEce;
       result = prime * result + _tcpFlagsUrg;
@@ -275,16 +269,17 @@ public class Flow implements Comparable<Flow> {
    public String toLBLine() {
       long src_ip = _srcIp.asLong();
       long dst_ip = _dstIp.asLong();
-      long src_port = _srcPort == null ? 0 : _srcPort;
-      long dst_port = _dstPort == null ? 0 : _dstPort;
+      long src_port = _srcPort;
+      long dst_port = _dstPort;
       long protocol = _ipProtocol.number();
-      long icmpType = _icmpType == null ? IcmpType.UNSET : _icmpType;
-      long icmpCode = _icmpCode == null ? IcmpCode.UNSET : _icmpCode;
+      long icmpType = _icmpType;
+      long icmpCode = _icmpCode;
       String line = _ingressNode + "|" + src_ip + "|" + dst_ip + "|" + src_port
-            + "|" + dst_port + "|" + protocol + "|" + icmpType + "|" + icmpCode
-            + "|" + _tcpFlagsCwr + "|" + _tcpFlagsEce + "|" + _tcpFlagsUrg
-            + "|" + _tcpFlagsAck + "|" + _tcpFlagsPsh + "|" + _tcpFlagsRst
-            + "|" + _tcpFlagsSyn + "|" + _tcpFlagsFin + "|" + _tag + "\n";
+            + "|" + dst_port + "|" + protocol + "|" + _dscp + "|" + _ecn + "|"
+            + icmpType + "|" + icmpCode + "|" + _tcpFlagsCwr + "|"
+            + _tcpFlagsEce + "|" + _tcpFlagsUrg + "|" + _tcpFlagsAck + "|"
+            + _tcpFlagsPsh + "|" + _tcpFlagsRst + "|" + _tcpFlagsSyn + "|"
+            + _tcpFlagsFin + "|" + _tag + "\n";
       return line;
    }
 
@@ -315,8 +310,8 @@ public class Flow implements Comparable<Flow> {
          tcpFlags = "N/A";
       }
       if (icmp) {
-         icmpCode = _icmpCode.toString();
-         icmpType = _icmpType.toString();
+         icmpCode = Integer.toString(_icmpCode);
+         icmpType = Integer.toString(_icmpType);
       }
       else {
          icmpCode = "N/A";
@@ -324,9 +319,10 @@ public class Flow implements Comparable<Flow> {
       }
       return "Flow<ingress_node:" + _ingressNode + ", src_ip:" + _srcIp
             + ", dst_ip:" + _dstIp + ", ip_protocol:" + _ipProtocol
-            + ", src_port:" + srcPort + ", dst_port:" + dstPort
-            + ", icmp_type:" + icmpType + ", icmp_code:" + icmpCode
-            + ", tcp_flags:" + tcpFlags + ", tag:" + _tag + ">";
+            + ", src_port:" + srcPort + ", dst_port:" + dstPort + ", dscp: "
+            + _dscp + ", ecn:" + _ecn + ", icmp_type:" + icmpType
+            + ", icmp_code:" + icmpCode + ", tcp_flags:" + tcpFlags + ", tag:"
+            + _tag + ">";
    }
 
 }

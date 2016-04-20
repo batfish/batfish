@@ -9,6 +9,7 @@ import org.batfish.collections.CommunitySet;
 import org.batfish.representation.AsPath;
 import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.Flow;
+import org.batfish.representation.FlowBuilder;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 import org.batfish.representation.OriginType;
@@ -206,14 +207,20 @@ public class EntityTable {
 
    private void populateFlows() {
       Relation currentFlowProperty;
-      currentFlowProperty = _relations.get("Flow_dstIp");
+      currentFlowProperty = _relations.get("Flow_dscp");
       if (currentFlowProperty == null) {
          return;
       }
+      List<Long> flowDscps = getLongColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = _relations.get("Flow_dstIp");
       List<Long> flowDstIps = getLongColumn(currentFlowProperty, 1);
 
       currentFlowProperty = _relations.get("Flow_dstPort");
       List<Long> flowDstPorts = getLongColumn(currentFlowProperty, 1);
+
+      currentFlowProperty = _relations.get("Flow_ecn");
+      List<Long> flowEcns = getLongColumn(currentFlowProperty, 1);
 
       currentFlowProperty = _relations.get("Flow_node");
       List<String> flowNodes = getStringColumn(currentFlowProperty, 1);
@@ -265,29 +272,29 @@ public class EntityTable {
 
       int numFlows = flowIndices.size();
       for (int i = 0; i < numFlows; i++) {
+         FlowBuilder flowBuilder = new FlowBuilder();
          Long flowIndex = flowIndices.get(i);
-         Ip dstIp = new Ip(flowDstIps.get(i));
-         int dstPort = flowDstPorts.get(i).intValue();
-         String node = flowNodes.get(i);
-         IpProtocol protocol = IpProtocol.fromNumber(flowProtocols.get(i)
-               .intValue());
-         Ip srcIp = new Ip(flowSrcIps.get(i));
-         int srcPort = flowSrcPorts.get(i).intValue();
-         int icmpType = flowIcmpTypes.get(i).intValue();
-         int icmpCode = flowIcmpCodes.get(i).intValue();
-         int tcpFlagsCwr = flowTcpFlagsCwr.get(i).intValue();
-         int tcpFlagsEce = flowTcpFlagsEce.get(i).intValue();
-         int tcpFlagsUrg = flowTcpFlagsUrg.get(i).intValue();
-         int tcpFlagsAck = flowTcpFlagsAck.get(i).intValue();
-         int tcpFlagsPsh = flowTcpFlagsPsh.get(i).intValue();
-         int tcpFlagsRst = flowTcpFlagsRst.get(i).intValue();
-         int tcpFlagsSyn = flowTcpFlagsSyn.get(i).intValue();
-         int tcpFlagsFin = flowTcpFlagsFin.get(i).intValue();
-         String tag = flowTags.get(i);
-         Flow flow = new Flow(node, srcIp, dstIp, srcPort, dstPort, protocol,
-               icmpType, icmpCode, tcpFlagsCwr, tcpFlagsEce, tcpFlagsUrg,
-               tcpFlagsAck, tcpFlagsPsh, tcpFlagsRst, tcpFlagsSyn, tcpFlagsFin,
-               tag);
+         flowBuilder.setDscp(flowDscps.get(i).intValue());
+         flowBuilder.setDstIp(new Ip(flowDstIps.get(i)));
+         flowBuilder.setDstPort(flowDstPorts.get(i).intValue());
+         flowBuilder.setEcn(flowEcns.get(i).intValue());
+         flowBuilder.setIngressNode(flowNodes.get(i));
+         flowBuilder.setIpProtocol(IpProtocol.fromNumber(flowProtocols.get(i)
+               .intValue()));
+         flowBuilder.setSrcIp(new Ip(flowSrcIps.get(i)));
+         flowBuilder.setSrcPort(flowSrcPorts.get(i).intValue());
+         flowBuilder.setIcmpType(flowIcmpTypes.get(i).intValue());
+         flowBuilder.setIcmpCode(flowIcmpCodes.get(i).intValue());
+         flowBuilder.setTcpFlagsCwr(flowTcpFlagsCwr.get(i).intValue());
+         flowBuilder.setTcpFlagsEce(flowTcpFlagsEce.get(i).intValue());
+         flowBuilder.setTcpFlagsUrg(flowTcpFlagsUrg.get(i).intValue());
+         flowBuilder.setTcpFlagsAck(flowTcpFlagsAck.get(i).intValue());
+         flowBuilder.setTcpFlagsPsh(flowTcpFlagsPsh.get(i).intValue());
+         flowBuilder.setTcpFlagsRst(flowTcpFlagsRst.get(i).intValue());
+         flowBuilder.setTcpFlagsSyn(flowTcpFlagsSyn.get(i).intValue());
+         flowBuilder.setTcpFlagsFin(flowTcpFlagsFin.get(i).intValue());
+         flowBuilder.setTag(flowTags.get(i));
+         Flow flow = flowBuilder.build();
          _flows.put(flowIndex, flow);
       }
    }

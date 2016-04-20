@@ -4,9 +4,13 @@ import org.batfish.common.BatfishException;
 
 public class FlowBuilder {
 
+   private Integer _dscp;
+
    private Ip _dstIp;
 
    private Integer _dstPort;
+
+   private Integer _ecn;
 
    private Integer _icmpCode;
 
@@ -39,9 +43,11 @@ public class FlowBuilder {
    private Integer _tcpFlagsUrg;
 
    public FlowBuilder() {
+      _dscp = 0;
       _dstIp = Ip.ZERO;
       _dstPort = 0;
-      _ipProtocol = IpProtocol.fromNumber(0);
+      _ecn = 0;
+      _ipProtocol = IpProtocol.IP;
       _srcIp = Ip.ZERO;
       _srcPort = 0;
       _icmpType = IcmpType.UNSET;
@@ -65,9 +71,13 @@ public class FlowBuilder {
          throw new BatfishException("Cannot build flow without specifying tag");
       }
       return new Flow(_ingressNode, _srcIp, _dstIp, _srcPort, _dstPort,
-            _ipProtocol, _icmpType, _icmpCode, _tcpFlagsCwr, _tcpFlagsEce,
-            _tcpFlagsUrg, _tcpFlagsAck, _tcpFlagsPsh, _tcpFlagsRst,
-            _tcpFlagsSyn, _tcpFlagsFin, _tag);
+            _ipProtocol, _dscp, _ecn, _icmpType, _icmpCode, _tcpFlagsCwr,
+            _tcpFlagsEce, _tcpFlagsUrg, _tcpFlagsAck, _tcpFlagsPsh,
+            _tcpFlagsRst, _tcpFlagsSyn, _tcpFlagsFin, _tag);
+   }
+
+   public void setDscp(Integer dscp) {
+      _dscp = dscp;
    }
 
    public void setDstIp(Ip dstIp) {
@@ -76,6 +86,10 @@ public class FlowBuilder {
 
    public void setDstPort(int dstPort) {
       _dstPort = dstPort;
+   }
+
+   public void setEcn(Integer ecn) {
+      _ecn = ecn;
    }
 
    public void setIcmpCode(Integer icmpCode) {

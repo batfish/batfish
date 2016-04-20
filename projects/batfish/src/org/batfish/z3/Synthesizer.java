@@ -107,8 +107,12 @@ import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Z3Exception;
 
 public class Synthesizer {
+   public static final int DSCP_BITS = 6;
+   public static final String DSCP_VAR = "dscp";
    public static final String DST_IP_VAR = "dst_ip";
    public static final String DST_PORT_VAR = "dst_port";
+   public static final int ECN_BITS = 2;
+   public static final String ECN_VAR = "ecn";
    public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
    public static final int ICMP_CODE_BITS = 8;
    public static final String ICMP_CODE_VAR = "icmp_code";
@@ -153,6 +157,8 @@ public class Synthesizer {
       vars.add(SRC_PORT_VAR);
       vars.add(DST_PORT_VAR);
       vars.add(IP_PROTOCOL_VAR);
+      vars.add(DSCP_VAR);
+      vars.add(ECN_VAR);
       vars.add(ICMP_TYPE_VAR);
       vars.add(ICMP_CODE_VAR);
       vars.add(TCP_FLAGS_CWR_VAR);
@@ -209,6 +215,8 @@ public class Synthesizer {
       varSizes.put(SRC_PORT_VAR, PORT_BITS);
       varSizes.put(DST_PORT_VAR, PORT_BITS);
       varSizes.put(IP_PROTOCOL_VAR, PROTOCOL_BITS);
+      varSizes.put(DSCP_VAR, DSCP_BITS);
+      varSizes.put(ECN_VAR, ECN_BITS);
       varSizes.put(ICMP_TYPE_VAR, ICMP_TYPE_BITS);
       varSizes.put(ICMP_CODE_VAR, ICMP_CODE_BITS);
       varSizes.put(TCP_FLAGS_CWR_VAR, TCP_FLAGS_CWR_BITS);
@@ -823,6 +831,8 @@ public class Synthesizer {
                int icmpType = line.getIcmpType();
                int icmpCode = line.getIcmpCode();
                List<TcpFlags> tcpFlags = line.getTcpFlags();
+               Set<Integer> dscps = line.getDscps();
+               Set<Integer> ecns = line.getEcns();
 
                AndExpr matchConditions = new AndExpr();
 
@@ -962,6 +972,29 @@ public class Synthesizer {
                RuleExpr matchRule = new RuleExpr(valid ? matchConditions
                      : FalseExpr.INSTANCE, match);
                statements.add(matchRule);
+
+               // match dscp
+               if (!dscps.isEmpty()) {
+                  OrExpr matchSomeDscp = new OrExpr();
+                  matchLineCriteria.addConjunct(matchSomeDscp);
+                  for (int dscp : dscps) {
+                     EqExpr matchCurrentDscp = new EqExpr(new VarIntExpr(
+                           DSCP_VAR), new LitIntExpr(dscp, DSCP_BITS));
+                     matchSomeDscp.addDisjunct(matchCurrentDscp);
+                  }
+               }
+
+               // match ecn
+               if (!ecns.isEmpty()) {
+                  OrExpr matchSomeEcn = new OrExpr();
+                  matchLineCriteria.addConjunct(matchSomeEcn);
+                  for (int ecn : ecns) {
+                     EqExpr matchCurrentEcn = new EqExpr(
+                           new VarIntExpr(ECN_VAR), new LitIntExpr(ecn,
+                                 ECN_BITS));
+                     matchSomeEcn.addDisjunct(matchCurrentEcn);
+                  }
+               }
 
                // match icmp-type
                if (icmpType != IcmpType.UNSET) {

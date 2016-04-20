@@ -9,6 +9,10 @@ block(`Flow) {
 ///   [x] is a traffic flow.
 Flow(x) -> .
 
+Flow_dscp[flow] = dscp ->
+   Flow(flow),
+   int(dscp).
+
 Flow_dstIp[flow] = dstIp ->
    Flow(flow),
    Ip(dstIp).
@@ -16,6 +20,10 @@ Flow_dstIp[flow] = dstIp ->
 Flow_dstPort[flow] = dstPort ->
    Flow(flow),
    int(dstPort).
+
+Flow_ecn[flow] = ecn ->
+   Flow(flow),
+   int(ecn).
 
 Flow_icmpCode[flow] = icmpCode ->
    Flow(flow),

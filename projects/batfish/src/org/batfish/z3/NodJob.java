@@ -12,8 +12,7 @@ import org.batfish.collections.NodeSet;
 import org.batfish.job.BatfishJob;
 import org.batfish.common.BatfishException;
 import org.batfish.representation.Flow;
-import org.batfish.representation.IcmpCode;
-import org.batfish.representation.IcmpType;
+import org.batfish.representation.FlowBuilder;
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
 
@@ -34,94 +33,85 @@ public final class NodJob extends BatfishJob<NodJobResult> {
 
    public static Flow createFlow(String node, Map<String, Long> constraints,
          String tag) {
-      long src_ip = 0;
-      long dst_ip = 0;
-      long src_port = 0;
-      long dst_port = 0;
-      long icmp_type = IcmpType.UNSET;
-      long icmp_code = IcmpCode.UNSET;
-      long tcp_flags_cwr = 0;
-      long tcp_flags_ece = 0;
-      long tcp_flags_urg = 0;
-      long tcp_flags_ack = 0;
-      long tcp_flags_psh = 0;
-      long tcp_flags_rst = 0;
-      long tcp_flags_syn = 0;
-      long tcp_flags_fin = 0;
-      long protocol = IpProtocol.IP.number();
+      FlowBuilder flowBuilder = new FlowBuilder();
+      flowBuilder.setIngressNode(node);
+      flowBuilder.setTag(tag);
       for (String varName : constraints.keySet()) {
          Long value = constraints.get(varName);
          switch (varName) {
          case Synthesizer.SRC_IP_VAR:
-            src_ip = value;
+            flowBuilder.setSrcIp(new Ip(value));
             break;
 
          case Synthesizer.DST_IP_VAR:
-            dst_ip = value;
+            flowBuilder.setDstIp(new Ip(value));
             break;
 
          case Synthesizer.SRC_PORT_VAR:
-            src_port = value;
+            flowBuilder.setSrcPort(value.intValue());
             break;
 
          case Synthesizer.DST_PORT_VAR:
-            dst_port = value;
+            flowBuilder.setDstPort(value.intValue());
             break;
 
          case Synthesizer.IP_PROTOCOL_VAR:
-            protocol = value;
+            flowBuilder.setIpProtocol(IpProtocol.fromNumber(value.intValue()));
+            break;
+
+         case Synthesizer.DSCP_VAR:
+            flowBuilder.setDscp(value.intValue());
+            break;
+
+         case Synthesizer.ECN_VAR:
+            flowBuilder.setEcn(value.intValue());
             break;
 
          case Synthesizer.ICMP_TYPE_VAR:
-            icmp_type = value;
+            flowBuilder.setIcmpType(value.intValue());
             break;
 
          case Synthesizer.ICMP_CODE_VAR:
-            icmp_code = value;
+            flowBuilder.setIcmpCode(value.intValue());
             break;
 
          case Synthesizer.TCP_FLAGS_CWR_VAR:
-            tcp_flags_cwr = value;
+            flowBuilder.setTcpFlagsCwr(value.intValue());
             break;
 
          case Synthesizer.TCP_FLAGS_ECE_VAR:
-            tcp_flags_ece = value;
+            flowBuilder.setTcpFlagsEce(value.intValue());
             break;
 
          case Synthesizer.TCP_FLAGS_URG_VAR:
-            tcp_flags_urg = value;
+            flowBuilder.setTcpFlagsUrg(value.intValue());
             break;
 
          case Synthesizer.TCP_FLAGS_ACK_VAR:
-            tcp_flags_ack = value;
+            flowBuilder.setTcpFlagsAck(value.intValue());
             break;
 
          case Synthesizer.TCP_FLAGS_PSH_VAR:
-            tcp_flags_psh = value;
+            flowBuilder.setTcpFlagsPsh(value.intValue());
             break;
 
          case Synthesizer.TCP_FLAGS_RST_VAR:
-            tcp_flags_rst = value;
+            flowBuilder.setTcpFlagsRst(value.intValue());
             break;
 
          case Synthesizer.TCP_FLAGS_SYN_VAR:
-            tcp_flags_syn = value;
+            flowBuilder.setTcpFlagsSyn(value.intValue());
             break;
 
          case Synthesizer.TCP_FLAGS_FIN_VAR:
-            tcp_flags_fin = value;
+            flowBuilder.setTcpFlagsFin(value.intValue());
             break;
 
          default:
-            throw new Error("invalid variable name");
+            throw new BatfishException("invalid variable name");
          }
       }
-      return new Flow(node, new Ip(src_ip), new Ip(dst_ip), (int) src_port,
-            (int) dst_port, IpProtocol.fromNumber((int) protocol),
-            (int) icmp_type, (int) icmp_code, (int) tcp_flags_cwr,
-            (int) tcp_flags_ece, (int) tcp_flags_urg, (int) tcp_flags_ack,
-            (int) tcp_flags_psh, (int) tcp_flags_rst, (int) tcp_flags_syn,
-            (int) tcp_flags_fin, tag);
+      return flowBuilder.build();
    }
 
    private Synthesizer _dataPlaneSynthesizer;
