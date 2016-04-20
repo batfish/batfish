@@ -1771,17 +1771,20 @@ need_PolicyMapMatchRoute(Map, Route) :-
    ).
 
 'IpAccessListMatchTcpFlags'(List, Line, Flow) :-
-   \+ 'SetIpAccessListLine_tcpFlags'(List, Line, _) ;
+   'Flow'(flow),
    (
-      'SetIpAccessListLine_tcpFlags'(List, Line, Alternative),
-      'IpAccessListMatchTcpFlagsCWR'(List, Line, Alternative, Flow),
-      'IpAccessListMatchTcpFlagsECE'(List, Line, Alternative, Flow),
-      'IpAccessListMatchTcpFlagsURG'(List, Line, Alternative, Flow),
-      'IpAccessListMatchTcpFlagsACK'(List, Line, Alternative, Flow),
-      'IpAccessListMatchTcpFlagsPSH'(List, Line, Alternative, Flow),
-      'IpAccessListMatchTcpFlagsRST'(List, Line, Alternative, Flow),
-      'IpAccessListMatchTcpFlagsSYN'(List, Line, Alternative, Flow),
-      'IpAccessListMatchTcpFlagsFIN'(List, Line, Alternative, Flow)
+      \+ 'SetIpAccessListLine_tcpFlags'(List, Line, _) ;
+      (
+         'SetIpAccessListLine_tcpFlags'(List, Line, Alternative),
+         'IpAccessListMatchTcpFlagsCWR'(List, Line, Alternative, Flow),
+         'IpAccessListMatchTcpFlagsECE'(List, Line, Alternative, Flow),
+         'IpAccessListMatchTcpFlagsURG'(List, Line, Alternative, Flow),
+         'IpAccessListMatchTcpFlagsACK'(List, Line, Alternative, Flow),
+         'IpAccessListMatchTcpFlagsPSH'(List, Line, Alternative, Flow),
+         'IpAccessListMatchTcpFlagsRST'(List, Line, Alternative, Flow),
+         'IpAccessListMatchTcpFlagsSYN'(List, Line, Alternative, Flow),
+         'IpAccessListMatchTcpFlagsFIN'(List, Line, Alternative, Flow)
+      )
    ).
 
 'IpAccessListMatchTcpFlagsCWR'(List, Line, Alternative, Flow) :-
