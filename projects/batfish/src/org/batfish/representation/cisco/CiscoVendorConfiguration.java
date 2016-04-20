@@ -166,16 +166,17 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       if (mapName != null) {
          RouteMap currentMap = _routeMaps.get(mapName);
          if (currentMap == null) {
-            throw new VendorConversionException(
-                  "undefined reference to routemap: " + mapName);
+            _w.redFlag("Undefined reference to route-map: " + mapName);
          }
-         for (RouteMapClause clause : currentMap.getClauses().values()) {
-            for (RouteMapMatchLine matchLine : clause.getMatchList()) {
-               if (matchLine.getType() == RouteMapMatchType.IP_ACCESS_LIST) {
-                  RouteMapMatchIpAccessListLine ipall = (RouteMapMatchIpAccessListLine) matchLine;
-                  for (String listName : ipall.getListNames()) {
-                     if (eaListName.equals(listName)) {
-                        return true;
+         else {
+            for (RouteMapClause clause : currentMap.getClauses().values()) {
+               for (RouteMapMatchLine matchLine : clause.getMatchList()) {
+                  if (matchLine.getType() == RouteMapMatchType.IP_ACCESS_LIST) {
+                     RouteMapMatchIpAccessListLine ipall = (RouteMapMatchIpAccessListLine) matchLine;
+                     for (String listName : ipall.getListNames()) {
+                        if (eaListName.equals(listName)) {
+                           return true;
+                        }
                      }
                   }
                }
