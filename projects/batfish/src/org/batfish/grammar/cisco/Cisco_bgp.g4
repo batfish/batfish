@@ -680,7 +680,11 @@ send_community_bgp_tail
 
 shutdown_bgp_tail
 :
-   SHUTDOWN NEWLINE
+   (
+      SHUTDOWN 
+      | SHUT
+   ) 
+   NEWLINE
 ;
 
 subnet_bgp_tail

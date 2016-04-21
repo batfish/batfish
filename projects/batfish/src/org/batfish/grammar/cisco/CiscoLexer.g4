@@ -716,6 +716,11 @@ BOTH
    'both'
 ;
 
+BREAKOUT
+:
+   'breakout'
+;
+
 BRIDGE
 :
    'bridge'
@@ -3636,6 +3641,11 @@ OPTIMIZED
 OPTION
 :
    'option'
+;
+
+OPTIONS
+:
+   'options'
 ;
 
 OR
