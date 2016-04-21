@@ -1021,7 +1021,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.LEVEL_1() != null) {
          proc.setLevel(IsisLevel.LEVEL_1);
       }
-      else if (ctx.LEVEL_2_ONLY() != null) {
+      else if (ctx.LEVEL_2_ONLY() != null || ctx.LEVEL_2() != null) {
          proc.setLevel(IsisLevel.LEVEL_2);
       }
       else {
