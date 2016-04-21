@@ -66,7 +66,11 @@ aggregate_address_rb_stanza
       )
       | prefix = IP_PREFIX
       | ipv6_prefix = IPV6_PREFIX
-   ) AS_SET? SUMMARY_ONLY? NEWLINE
+   ) 
+   AS_SET? 
+   SUMMARY_ONLY?
+   (ATTRIBUTE_MAP mapname = VARIABLE)?
+   NEWLINE
 ;
 
 allowas_in_bgp_tail
@@ -433,7 +437,8 @@ null_bgp_tail
 :
    NO?
    (
-      AUTO_SUMMARY
+      ADVERTISEMENT_INTERVAL
+      | AUTO_SUMMARY
       |
       (
          AGGREGATE_ADDRESS
@@ -448,7 +453,8 @@ null_bgp_tail
       (
          BGP
          (
-            ATTRIBUTE_DOWNLOAD
+            ADVERTISE_INACTIVE
+            | ATTRIBUTE_DOWNLOAD
             | BESTPATH
             | DAMPENING
             | DEFAULT
@@ -462,6 +468,7 @@ null_bgp_tail
             | LOG_NEIGHBOR_CHANGES
             | NEXTHOP
             | NON_DETERMINISTIC_MED
+            | SCAN_TIME
          )
       )
       | DESCRIPTION
@@ -474,6 +481,7 @@ null_bgp_tail
       | MAXIMUM_PATHS
       | MAXIMUM_PREFIX
       | MAXIMUM_PREFIX
+      | MAXIMUM_ACCEPTED_ROUTES
       | MAXIMUM_ROUTES
       |
       (

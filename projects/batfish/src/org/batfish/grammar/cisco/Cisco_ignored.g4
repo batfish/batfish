@@ -35,6 +35,7 @@ null_block_stanza
       | DAEMON
       | DCB
       | DCB_BUFFER_THRESHOLD
+      | DEBUG
       | DIAL_PEER
       | DOMAIN
       | DO STOP
@@ -120,7 +121,8 @@ null_block_stanza
          MPLS
          (
             (
-               LDP ~NEWLINE
+               IP
+               | LDP ~NEWLINE
             )
             | OAM
          )
@@ -146,6 +148,7 @@ null_block_stanza
       | RELOAD_TYPE
       | RMON
       | ROLE
+      | ROUTER LOG
       | SAMPLER
       | SAMPLER_MAP
       | SCCP
