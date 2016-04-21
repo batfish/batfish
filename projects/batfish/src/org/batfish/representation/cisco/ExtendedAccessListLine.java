@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 import org.batfish.representation.Ip;
 import org.batfish.representation.IpProtocol;
@@ -15,11 +16,15 @@ public class ExtendedAccessListLine implements Serializable {
 
    private LineAction _action;
 
+   private Set<Integer> _dscps;
+
    private Ip _dstIp;
 
    private List<SubRange> _dstPortRanges;
 
    private Ip _dstWildcard;
+
+   private Set<Integer> _ecns;
 
    private Integer _icmpCode;
 
@@ -38,13 +43,16 @@ public class ExtendedAccessListLine implements Serializable {
    public ExtendedAccessListLine(LineAction action, IpProtocol protocol,
          Ip srcIp, Ip srcWildcard, Ip dstIp, Ip dstWildcard,
          List<SubRange> srcPortRanges, List<SubRange> dstPortRanges,
-         Integer icmpType, Integer icmpCode, List<TcpFlags> tcpFlags) {
+         Set<Integer> dscps, Set<Integer> ecns, Integer icmpType,
+         Integer icmpCode, List<TcpFlags> tcpFlags) {
       _action = action;
       _protocol = protocol;
       _srcIp = srcIp;
       _srcWildcard = srcWildcard;
+      _dscps = dscps;
       _dstIp = dstIp;
       _dstWildcard = dstWildcard;
+      _ecns = ecns;
       _srcPortRanges = srcPortRanges;
       _dstPortRanges = dstPortRanges;
       _icmpType = icmpType;
@@ -64,8 +72,16 @@ public class ExtendedAccessListLine implements Serializable {
       return _dstWildcard;
    }
 
+   public Set<Integer> getDscps() {
+      return _dscps;
+   }
+
    public List<SubRange> getDstPortRanges() {
       return _dstPortRanges;
+   }
+
+   public Set<Integer> getEcns() {
+      return _ecns;
    }
 
    public Integer getIcmpCode() {
