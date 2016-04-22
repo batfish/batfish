@@ -49,6 +49,7 @@ null_block_stanza
       | GROUP
       | GROUP_POLICY
       | HASH_ALGORITHM
+      | INTERFACE BREAKOUT
       |
       (
          IP
@@ -389,6 +390,7 @@ null_block_substanza
          | OBJECT
          | OPEN
          | OPTION
+         | OPTIONS
          | OPS
          | PARAMETERS
          | PARENT
