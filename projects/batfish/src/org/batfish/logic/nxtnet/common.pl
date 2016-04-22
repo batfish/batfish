@@ -3080,16 +3080,19 @@ need_RouteFilterMatchNetwork(List, Network) :-
    'Route_network'(Route, Network),
    'Route_node'(Route, Node).
 
-'NetworkMatch'(Node, Ip, MatchNet, MatchLength) :-
+net_ips(MatchNet, Ip) :-
    'Ip'(Ip),
    'Network_address'(MatchNet, MatchNet_start),
-   'Network_prefix_length'(MatchNet, MatchLength),
    'Network_end'(MatchNet, MatchNet_end),
+   MatchNet_start =< Ip,
+   Ip =< MatchNet_end.
+
+'NetworkMatch'(Node, Ip, MatchNet, MatchLength) :-
    'InstalledRoute'(Route),
    'Route_network'(Route, MatchNet),
    'Route_node'(Route, Node),
-   MatchNet_start =< Ip,
-   Ip =< MatchNet_end.
+   'Network_prefix_length'(MatchNet, MatchLength),
+   net_ips(MatchNet, Ip).
 
 'RouteDetails_admin'(Route, Admin ):-
    'Route_admin'(Route, Admin).
