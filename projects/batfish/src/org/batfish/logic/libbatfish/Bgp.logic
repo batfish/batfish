@@ -78,6 +78,12 @@ BgpNeighborGeneratedRoute_neighborIp[route] = neighborIp ->
    Route(route),
    Ip(neighborIp).
 
+BgpNeighborGeneratedRouteAttributePolicy(node, neighborIp, network, map) ->
+   Node(node),
+   Ip(neighborIp),
+   Network(network),
+   PolicyMap(map).
+
 BgpNeighborGeneratedRoutePolicy(node, neighborIp, network, map) ->
    Node(node),
    Ip(neighborIp),
@@ -220,6 +226,18 @@ SetBgpGeneratedRoute_flat(node, network_start, network_end, prefix_length) ->
    Ip(neighborNetwork_end),
    int(prefix_length).
 
+SetBgpGeneratedRouteAttributePolicy(node, network, map) ->
+   Node(node),
+   Network(network),
+   PolicyMap(map).
+
+SetBgpGeneratedRouteAttributePolicy_flat(node, network_start, network_end, prefix_length, map) ->
+   Node(node),
+   Ip(neighborNetwork_start),
+   Ip(neighborNetwork_end),
+   int(prefix_length),
+   PolicyMap(map).
+
 SetBgpGeneratedRoutePolicy(node, network, map) ->
    Node(node),
    Network(network),
@@ -279,6 +297,22 @@ SetBgpNeighborGeneratedRoute_flat(node, neighborNetwork_start, neighborNetwork_e
    Ip(network_start),
    Ip(network_end),
    int(prefix_length).
+
+SetBgpNeighborGeneratedRouteAttributePolicy(node, neighborNetwork, network, map) ->
+   Node(node),
+   Network(neighborNetwork),
+   Network(network),
+   PolicyMap(map).
+
+SetBgpNeighborGeneratedRouteAttributePolicy_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length, network_start, network_end, prefix_length, map) ->
+   Node(node),
+   Ip(neighborNetwork_start),
+   Ip(neighborNetwork_end),
+   int(neighborNetwork_prefix_length),
+   Ip(network_start),
+   Ip(network_end),
+   int(prefix_length),
+   PolicyMap(map).
 
 SetBgpNeighborGeneratedRoutePolicy(node, neighborNetwork, network, map) ->
    Node(node),

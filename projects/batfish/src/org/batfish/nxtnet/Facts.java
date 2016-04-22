@@ -110,6 +110,8 @@ public class Facts {
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|MAP");
       map.put("SetBgpGeneratedRoute_flat",
             "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
+      map.put("SetBgpGeneratedRouteAttributePolicy_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
       map.put("SetBgpGeneratedRoutePolicy_flat",
             "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
       map.put("SetBgpImportPolicy_flat",
@@ -120,6 +122,9 @@ public class Facts {
       map.put(
             "SetBgpNeighborGeneratedRoute_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
+      map.put(
+            "SetBgpNeighborGeneratedRouteAttributePolicy_flat",
+            "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
       map.put(
             "SetBgpNeighborGeneratedRoutePolicy_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");

@@ -608,9 +608,25 @@ need_PolicyMapMatchAdvert(Map, Advert)
    'SetBgpNeighborGeneratedRoute'(Node, NeighborNetwork, Network),
    'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
+'BgpNeighborGeneratedRouteAttributePolicy'(Node, NeighborIp, Network, Map) :-
+   'SetBgpNeighborGeneratedRouteAttributePolicy'(Node, NeighborNetwork, Network, Map),
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
+
 'BgpNeighborGeneratedRoutePolicy'(Node, NeighborIp, Network, Map) :-
    'SetBgpNeighborGeneratedRoutePolicy'(Node, NeighborNetwork, Network, Map),
    'NetworkOf'(NeighborIp, _, NeighborNetwork).
+
+'GeneratedRouteAttributePolicy'(Route, Policy) :-
+   'BgpGeneratedRoute'(Route),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'SetBgpGeneratedRouteAttributePolicy'(Node, Network, Policy).
+'GeneratedRouteAttributePolicy'(Route, Policy) :-
+   'BgpNeighborGeneratedRoute'(Route),
+   'BgpNeighborGeneratedRoute_neighborIp'(Route, NeighborIp),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'BgpNeighborGeneratedRouteAttributePolicy'(Node, NeighborIp, Network, Policy).
 
 'GeneratedRoutePolicy'(Route, Policy) :-
    'BgpGeneratedRoute'(Route),
@@ -645,10 +661,16 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork),
    'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
+'SetBgpNeighborGeneratedRouteAttributePolicy'(Node, NeighborNetwork, Network, Map) :-
+   'SetBgpNeighborGeneratedRouteAttributePolicy_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Network_start, Network_end, Prefix_length, Map),
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork),
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
+
 'SetBgpNeighborGeneratedRoutePolicy'(Node, NeighborNetwork, Network, Map) :-
    'SetBgpNeighborGeneratedRoutePolicy_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Network_start, Network_end, Prefix_length, Map),
    'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork),
    'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
+
 % ibgp advertisement from bgp
 'BgpAdvertisement'(Advert),
 'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert),

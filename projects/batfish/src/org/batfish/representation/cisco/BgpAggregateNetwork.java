@@ -10,6 +10,8 @@ public class BgpAggregateNetwork implements Serializable {
 
    private boolean _asSet;
 
+   private String _attributeMap;
+
    private Prefix _prefix;
 
    private boolean _summaryOnly;
@@ -28,6 +30,10 @@ public class BgpAggregateNetwork implements Serializable {
       return _asSet;
    }
 
+   public String getAttributeMap() {
+      return _attributeMap;
+   }
+
    public Prefix getPrefix() {
       return _prefix;
    }
@@ -43,6 +49,10 @@ public class BgpAggregateNetwork implements Serializable {
 
    public void setAsSet(boolean asSet) {
       _asSet = asSet;
+   }
+
+   public void setAttributeMap(String attributeMap) {
+      _attributeMap = attributeMap;
    }
 
    public void setSummaryOnly(boolean summaryOnly) {

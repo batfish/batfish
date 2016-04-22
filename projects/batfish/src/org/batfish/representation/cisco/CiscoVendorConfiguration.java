@@ -363,6 +363,20 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                CISCO_AGGREGATE_ROUTE_ADMIN_COST, generationPolicies);
          gr.setDiscard(true);
          c.getGeneratedRoutes().add(gr);
+
+         // set attribute map for aggregate network
+         String attributeMapName = aggNet.getAttributeMap();
+         RouteMap attributeMap = _routeMaps.get(attributeMapName);
+         if (attributeMap != null) {
+            attributeMap.getReferers().put(aggNet,
+                  "attribute-map of aggregate route: " + prefix.toString());
+            PolicyMap attributePolicy = c.getPolicyMaps().get(attributeMapName);
+            gr.getAttributePolicies().put(attributeMapName, attributePolicy);
+         }
+         else {
+            _w.redFlag("Reference to undefined route-map used as attribute-map: \""
+                  + attributeMapName + "\"");
+         }
       }
 
       // create policy for denying suppressed summary-only networks

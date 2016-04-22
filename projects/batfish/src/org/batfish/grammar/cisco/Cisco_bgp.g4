@@ -66,11 +66,14 @@ aggregate_address_rb_stanza
       )
       | prefix = IP_PREFIX
       | ipv6_prefix = IPV6_PREFIX
-   ) 
-   AS_SET? 
-   SUMMARY_ONLY?
-   (ATTRIBUTE_MAP mapname = VARIABLE)?
-   NEWLINE
+   )
+   (
+      as_set = AS_SET
+      | summary_only = SUMMARY_ONLY
+      (
+         ATTRIBUTE_MAP mapname = variable
+      )
+   )* NEWLINE
 ;
 
 allowas_in_bgp_tail
@@ -685,10 +688,10 @@ shutdown_bgp_tail
 
 subnet_bgp_tail
 :
-   SUBNET 
+   SUBNET
    (
       prefix = IP_PREFIX
-      | ipv6_prefix = IPV6_PREFIX      
+      | ipv6_prefix = IPV6_PREFIX
    ) NEWLINE
 ;
 

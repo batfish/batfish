@@ -166,6 +166,8 @@ public class ConfigurationFactExtractor {
       BgpProcess proc = _configuration.getBgpProcess();
       StringBuilder wSetBgpGeneratedRoute_flat = _factBins
             .get("SetBgpGeneratedRoute_flat");
+      StringBuilder wSetBgpGeneratedRouteAttributePolicy_flat = _factBins
+            .get("SetBgpGeneratedRouteAttributePolicy_flat");
       StringBuilder wSetBgpGeneratedRoutePolicy_flat = _factBins
             .get("SetBgpGeneratedRoutePolicy_flat");
       StringBuilder wSetNetwork = _factBins.get("SetNetwork");
@@ -178,6 +180,12 @@ public class ConfigurationFactExtractor {
                   + "|" + network_end + "|" + prefix_length + "\n");
             wSetNetwork.append(network_start + "|" + network_start + "|"
                   + network_end + "|" + prefix_length + "\n");
+            for (PolicyMap attributePolicy : gr.getAttributePolicies().values()) {
+               String apName = hostname + ":" + attributePolicy.getMapName();
+               wSetBgpGeneratedRouteAttributePolicy_flat.append(hostname + "|"
+                     + network_start + "|" + network_end + "|" + prefix_length
+                     + "|" + apName + "\n");
+            }
             for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
                String gpName = hostname + ":" + generationPolicy.getMapName();
                wSetBgpGeneratedRoutePolicy_flat.append(hostname + "|"
@@ -193,6 +201,8 @@ public class ConfigurationFactExtractor {
       BgpProcess proc = _configuration.getBgpProcess();
       StringBuilder wSetBgpNeighborGeneratedRoute_flat = _factBins
             .get("SetBgpNeighborGeneratedRoute_flat");
+      StringBuilder wSetBgpNeighborGeneratedRouteAttributePolicy_flat = _factBins
+            .get("SetBgpNeighborGeneratedRouteAttributePolicy_flat");
       StringBuilder wSetBgpNeighborGeneratedRoutePolicy_flat = _factBins
             .get("SetBgpNeighborGeneratedRoutePolicy_flat");
       if (proc != null) {
@@ -209,6 +219,15 @@ public class ConfigurationFactExtractor {
                      + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                      + neighborPrefixLength + "|" + network_start + "|"
                      + network_end + "|" + prefix_length + "\n");
+               for (PolicyMap attributePolicy : gr.getAttributePolicies()
+                     .values()) {
+                  String apName = hostname + ":" + attributePolicy.getMapName();
+                  wSetBgpNeighborGeneratedRouteAttributePolicy_flat
+                        .append(hostname + "|" + neighborPrefixStart + "|"
+                              + neighborPrefixEnd + "|" + neighborPrefixLength
+                              + "|" + network_start + "|" + network_end + "|"
+                              + prefix_length + "|" + apName + "\n");
+               }
                for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
                   String gpName = hostname + ":"
                         + generationPolicy.getMapName();

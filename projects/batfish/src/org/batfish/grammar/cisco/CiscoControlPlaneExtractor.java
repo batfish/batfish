@@ -1287,8 +1287,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Aggregate_address_rb_stanzaContext ctx) {
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-         boolean summaryOnly = ctx.SUMMARY_ONLY() != null;
-         boolean asSet = ctx.AS_SET() != null;
+         boolean summaryOnly = ctx.summary_only != null;
+         boolean asSet = ctx.as_set != null;
          if (ctx.network != null || ctx.prefix != null) {
             // ipv4
             Prefix prefix;
@@ -1305,6 +1305,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             BgpAggregateNetwork net = new BgpAggregateNetwork(prefix);
             net.setAsSet(asSet);
             net.setSummaryOnly(summaryOnly);
+            if (ctx.mapname != null) {
+               String mapName = ctx.mapname.getText();
+               net.setAttributeMap(mapName);
+            }
             proc.getAggregateNetworks().put(prefix, net);
          }
          else if (ctx.ipv6_prefix != null) {
