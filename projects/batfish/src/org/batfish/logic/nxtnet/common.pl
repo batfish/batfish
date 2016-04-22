@@ -1967,6 +1967,14 @@ need_PolicyMapMatchRoute(Map, Route) :-
    Protocol = 'isisL1',
    'SetNodeVendor'(Node, Vendor),
    'AdministrativeDistance'(Vendor, Protocol, Admin).
+
+'IsisL1CrossNeighbors'(NextHop, SecondHopIp, Node, NodeIntCost, NextHopIp) :-
+   'IsisL1Neighbors'(Node, NodeIntCost, NextHop, NextHopInt),
+   'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
+   'IsisL1Neighbors'(NextHop, _, SecondHop, _),
+   'HasIp'(SecondHop, SecondHopIp),
+    Node \== SecondHop.
+
 % (Recursive case)
 'IsisL1Route'(Route),
    'Route'(Route),
@@ -1980,16 +1988,12 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _),
-   'IsisL1Neighbors'(Node, NodeIntCost, NextHop, NextHopInt),
-   'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
-   'IsisL1Neighbors'(NextHop, _, SecondHop, _),
+   'IsisL1CrossNeighbors'(NextHop, SecondHopIp, Node, NodeIntCost, NextHopIp),
    'BestIsisL1Route'(SubRoute),
    'Route_cost'(SubRoute, SubCost),
    'Route_network'(SubRoute, Network),
    'Route_nextHopIp'(SubRoute, SecondHopIp),
    'Route_node'(SubRoute, NextHop),
-   'HasIp'(SecondHop, SecondHopIp),
-   Node \== SecondHop,
    Cost = SubCost + NodeIntCost,
    Protocol = 'isisL1',
    'SetNodeVendor'(Node, Vendor),
@@ -2068,6 +2072,14 @@ need_PolicyMapMatchRoute(Map, Route) :-
    Protocol = 'isisL2',
    'SetNodeVendor'(Node, Vendor),
    'AdministrativeDistance'(Vendor, Protocol, Admin).
+
+'IsisL2CrossNeighbors'(NextHop, SecondHopIp, Node, NodeIntCost, NextHopIp) :-
+   'IsisL2Neighbors'(Node, NodeIntCost, NextHop, NextHopInt),
+   'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
+   'IsisL2Neighbors'(NextHop, _, SecondHop, _),
+   'HasIp'(SecondHop, SecondHopIp),
+    Node \== SecondHop.
+
 % (Recursive (Forward L2 Routes)
 'IsisL2Route'(Route),
    'Route'(Route),
@@ -2081,16 +2093,12 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _),
-   'IsisL2Neighbors'(Node, NodeIntCost, NextHop, NextHopInt),
-   'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
-   'IsisL2Neighbors'(NextHop, _, SecondHop, _),
+   'IsisL2CrossNeighbors'(NextHop, SecondHopIp, Node, NodeIntCost, NextHopIp),
    'BestIsisL2Route'(SubRoute),
    'Route_cost'(SubRoute, SubCost),
    'Route_network'(SubRoute, Network),
    'Route_nextHopIp'(SubRoute, SecondHopIp),
    'Route_node'(SubRoute, NextHop),
-   'HasIp'(SecondHop, SecondHopIp),
-   Node \== SecondHop,
    Cost = SubCost + NodeIntCost,
    Protocol = 'isisL2',
    'SetNodeVendor'(Node, Vendor),
