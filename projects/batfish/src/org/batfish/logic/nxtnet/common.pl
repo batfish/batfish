@@ -1913,7 +1913,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _),
-   'IsisL1Neighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _),
+   'IsisL1Neighbors'(Node, NodeIntCost, NextHop, NextHopInt),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    Node \== NextHop,
    'IsisExport'(NextHop, Network, ExportCost, Protocol),
@@ -1934,14 +1934,13 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'SetIsisL1ActiveInterface'(Node, Interface) ;
    'SetIsisL1PassiveInterface'(Node, Interface).
    
-'IsisL1Neighbors'(Node1, Int1, Cost1, Node2, Int2, Cost2) :-
+'IsisL1Neighbors'(Node1, Cost1, Node2, Int2) :-
    'SetIsisL1Node'(Node1),
    'SetIsisL1Node'(Node2),
    'SetIsisArea'(Node1, Area),
    'SetIsisArea'(Node2, Area),
    'LanAdjacent'(Node1, Int1, Node2, Int2),
    'SetIsisInterfaceCost'(Node1, Int1, Cost1),
-   'SetIsisInterfaceCost'(Node2, Int2, Cost2),
    'SetIsisL1ActiveInterface'(Node1, Int1),
    'SetIsisL1ActiveInterface'(Node2, Int2).
 
@@ -1958,7 +1957,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
-   'IsisL1Neighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _),
+   'IsisL1Neighbors'(Node, NodeIntCost, NextHop, NextHopInt),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    'ConnectedRoute'(NextHop, Network, NextHopConnectedInt),
    'IsisL1EnabledInterface'(NextHop, NextHopConnectedInt),
@@ -1980,9 +1979,9 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _),
-   'IsisL1Neighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _),
+   'IsisL1Neighbors'(Node, NodeIntCost, NextHop, NextHopInt),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
-   'IsisL1Neighbors'(NextHop, _, _, SecondHop, _, _),
+   'IsisL1Neighbors'(NextHop, _, SecondHop, _),
    'BestIsisL1Route'(SubRoute),
    'Route_cost'(SubRoute, SubCost),
    'Route_network'(SubRoute, Network),
@@ -2015,7 +2014,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _),
-   'IsisL2Neighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _),
+   'IsisL2Neighbors'(Node, NodeIntCost, NextHop, NextHopInt),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    Node \== NextHop,
    'IsisExport'(NextHop, Network, ExportCost, Protocol),
@@ -2023,9 +2022,8 @@ need_PolicyMapMatchRoute(Map, Route) :-
    Protocol = 'isisL2',
    'SetNodeVendor'(Node, Vendor),
    'AdministrativeDistance'(Vendor, Protocol, Admin).
-'BestIsisL2Route'(Route),
-   'IsisL2Network'(Node, Network)
-:-
+
+'BestIsisL2Route'(Route) :-
    'IsisL2Route'(Route),
    'Route_cost'(Route, Cost),
    'Route_network'(Route, Network),
@@ -2037,14 +2035,13 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'SetIsisL2ActiveInterface'(Node, Interface) ;
    'SetIsisL2PassiveInterface'(Node, Interface).
    
-'IsisL2Neighbors'(Node1, Int1, Cost1, Node2, Int2, Cost2) :-
+'IsisL2Neighbors'(Node1, Cost1, Node2, Int2) :-
    'SetIsisL2Node'(Node1),
    'SetIsisL2Node'(Node2),
    'SetIsisArea'(Node1, _),
    'SetIsisArea'(Node2, _),
    'LanAdjacent'(Node1, Int1, Node2, Int2),
    'SetIsisInterfaceCost'(Node1, Int1, Cost1),
-   'SetIsisInterfaceCost'(Node2, Int2, Cost2),
    'SetIsisL2ActiveInterface'(Node1, Int1),
    'SetIsisL2ActiveInterface'(Node2, Int2).
 
@@ -2061,7 +2058,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
-   'IsisL2Neighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _),
+   'IsisL2Neighbors'(Node, NodeIntCost, NextHop, NextHopInt),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    'ConnectedRoute'(NextHop, Network, NextHopConnectedInt),
    'IsisL2EnabledInterface'(NextHop, NextHopConnectedInt),
@@ -2083,9 +2080,9 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _),
-   'IsisL2Neighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _),
+   'IsisL2Neighbors'(Node, NodeIntCost, NextHop, NextHopInt),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
-   'IsisL2Neighbors'(NextHop, _, _, SecondHop, _, _),
+   'IsisL2Neighbors'(NextHop, _, SecondHop, _),
    'BestIsisL2Route'(SubRoute),
    'Route_cost'(SubRoute, SubCost),
    'Route_network'(SubRoute, Network),
@@ -2261,7 +2258,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
 :-
    Cost = ExportCost + CostToAdvertiser,
    \+ 'ConnectedRoute'(Node, Network, _),
-   'OspfNeighbors'(Node, _, CostToAdvertiser, NextHop, NextHopInt, _, _, _),
+   'OspfNeighbors'(Node, CostToAdvertiser, NextHop, NextHopInt, _),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    Node \== Advertiser,
    Node \== NextHop,
@@ -2284,9 +2281,9 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
-   'OspfNeighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _, _, Area),
+   'OspfNeighbors'(Node, NodeIntCost, NextHop, NextHopInt, Area),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
-   'OspfNeighbors'(NextHop, _, _, SecondHop, _, _, _, Area),
+   'OspfNeighbors'(NextHop, _, SecondHop, _, Area),
    'BestOspfE1Route'(SubRoute),
    'OspfRoute_advertiser'(SubRoute, Advertiser),
    'Route_cost'(SubRoute, SubCost),
@@ -2333,7 +2330,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _),
-   'OspfNeighbors'(Node, _, CostToAdvertiser, NextHop, NextHopInt, _, _, _),
+   'OspfNeighbors'(Node, CostToAdvertiser, NextHop, NextHopInt, _),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    Node \== Advertiser,
    Node \== NextHop,
@@ -2359,9 +2356,9 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
-   'OspfNeighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _, _, Area),
+   'OspfNeighbors'(Node, NodeIntCost, NextHop, NextHopInt, Area),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
-   'OspfNeighbors'(NextHop, _, _, SecondHop, _, _, _, Area),
+   'OspfNeighbors'(NextHop, _, SecondHop, _, Area),
    'BestOspfE2Route'(SubRoute),
    'Route_cost'(SubRoute, Cost),
    'Route_network'(SubRoute, Network),
@@ -2475,7 +2472,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
-   'OspfNeighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _, _, 0),
+   'OspfNeighbors'(Node, NodeIntCost, NextHop, NextHopInt, 0),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    'ConnectedRoute'(NextHop, Network, NextHopConnectedInt),
    'SetOspfInterface'(NextHop, NextHopConnectedInt, Area),
@@ -2498,9 +2495,9 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
-   'OspfNeighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _, _, Area),
+   'OspfNeighbors'(Node, NodeIntCost, NextHop, NextHopInt, Area),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
-   'OspfNeighbors'(NextHop, _, _, SecondHop, _, _, _, Area),
+   'OspfNeighbors'(NextHop, _, SecondHop, _, Area),
    'BestOspfIARoute'(SubRoute),
    'Route_cost'(SubRoute, SubCost),
    'Route_network'(SubRoute, Network),
@@ -2544,7 +2541,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
-   'OspfNeighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _, _, Area),
+   'OspfNeighbors'(Node, NodeIntCost, NextHop, NextHopInt, Area),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
    'ConnectedRoute'(NextHop, Network, NextHopConnectedInt),
    'SetOspfInterface'(NextHop, NextHopConnectedInt, Area),
@@ -2566,9 +2563,9 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_protocol'(Route, Protocol)
 :-
    \+ 'ConnectedRoute'(Node, Network, _), % is this necessary?
-   'OspfNeighbors'(Node, _, NodeIntCost, NextHop, NextHopInt, _, _, Area),
+   'OspfNeighbors'(Node, NodeIntCost, NextHop, NextHopInt, Area),
    'IpReadyInt'(NextHop, NextHopInt, NextHopIp, _),
-   'OspfNeighbors'(NextHop, _, _, SecondHop, _, _, _, Area),
+   'OspfNeighbors'(NextHop, _, SecondHop, _, Area),
    'BestOspfRoute'(SubRoute),
    'Route_cost'(SubRoute, SubCost),
    'Route_network'(SubRoute, Network),
@@ -2586,7 +2583,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'BestOspfE2Route'(Route) ;
    'BestOspfIARoute'(Route).
 
-'OspfNeighbors'(Node1, Int1, Cost1, Node2, Int2, Cost2, Network, Area) :-
+'OspfNeighbors'(Node1, Cost1, Node2, Int2, Area) :-
    'OspfNode'(Node1, Int1, Cost1, Network, Area),
    'OspfNode'(Node2, Int2, Cost2, Network, Area),
    'LanAdjacent'(Node1, Int1, Node2, Int2).
