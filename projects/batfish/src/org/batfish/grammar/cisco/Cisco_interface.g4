@@ -289,6 +289,10 @@ null_block_if_stanza
       | IGNORE
       |
       (
+         INTERFACE BREAKOUT
+      )
+      |
+      (
          IP
          (
             ACCOUNTING

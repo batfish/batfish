@@ -6670,6 +6670,11 @@ M_Extcommunity_WS
 
 mode M_Interface;
 
+M_Interface_BREAKOUT
+:
+   'breakout' -> type ( BREAKOUT ) , popMode
+;
+
 M_Interface_DOLLAR
 :
    '$' -> type ( DOLLAR ) , popMode
