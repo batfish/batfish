@@ -60,6 +60,8 @@ public class Facts {
             "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
       map.put("SetGeneratedRouteMetric_flat",
             "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|METRIC");
+      map.put("SetGeneratedRouteAttributePolicy_flat",
+            "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
       map.put("SetGeneratedRoutePolicy_flat",
             "NODE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
       map.put("SetStaticRoute_flat",

@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.batfish.collections.RoleSet;
+import org.batfish.common.BatfishException;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 import org.batfish.representation.AsPathAccessList;
@@ -1824,7 +1825,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                case LEVEL:
                   break;
                default:
-                  throw new Error("bad set type");
+                  throw new BatfishException("bad set type");
                }
             }
          }

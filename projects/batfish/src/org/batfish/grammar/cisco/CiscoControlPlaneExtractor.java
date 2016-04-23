@@ -85,6 +85,7 @@ import org.batfish.representation.cisco.RouteMapSetOriginTypeLine;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
 import org.batfish.representation.cisco.StandardCommunityList;
+import org.batfish.representation.cisco.StandardCommunityListLine;
 import org.batfish.representation.cisco.StaticRoute;
 import org.batfish.util.SubRange;
 
@@ -195,6 +196,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
       prefixes.put("TenGigE", "TenGigE");
       prefixes.put("te", "TenGigabitEthernet");
+      prefixes.put("trunk", "trunk");
       prefixes.put("Tunnel", "Tunnel");
       prefixes.put("tunnel-te", "tunnel-te");
       prefixes.put("Vlan", "Vlan");
@@ -1738,6 +1740,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIp_community_list_standard_stanza(
          Ip_community_list_standard_stanzaContext ctx) {
       _currentStandardCommunityList = null;
+   }
+
+   @Override
+   public void exitIp_community_list_standard_tail(
+         Ip_community_list_standard_tailContext ctx) {
+      LineAction action = getAccessListAction(ctx.ala);
+      List<Long> communities = new ArrayList<Long>();
+      for (CommunityContext communityCtx : ctx.communities) {
+         long community = toLong(communityCtx);
+         communities.add(community);
+      }
+      StandardCommunityListLine line = new StandardCommunityListLine(action,
+            communities);
+      _currentStandardCommunityList.getLines().add(line);
    }
 
    @Override

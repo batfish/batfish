@@ -222,6 +222,7 @@ function_sig('RouteDetails_nextHop', 2).
 
 'PolicyMap'(Map) :-
    'SetBgpOriginationPolicy_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, Map).
+
 % advertise a transit route received through ibgp or ebgp
 'BgpAdvertisement'(Advert),
 'BgpAdvertisement_constructor'(Type, DstIpBlock, NextHopIp, SrcNode, SrcIp, DstNode, DstIp, SrcProtocol, OriginType, LocalPref, Med, Advert),
@@ -287,19 +288,71 @@ function_sig('RouteDetails_nextHop', 2).
 :-
    Type = 'bgp',
    PathSize = 0,
-   NextHopIp = SrcIp,
+   DefaultNextHopIp = SrcIp,
    'Ip_NONE'(OriginatorIp),
    'BgpNeighbors'(SrcNode, SrcIp, DstNode, DstIp),
    'BgpNeighborIp'(SrcNode, DstIp),
-   OriginType = 'igp',
-   'BgpNeighborDefaultMetric'(SrcNode, DstIp, Med),
+   DefaultOriginType = 'igp',
    (
-      'BgpDefaultLocalPref'(SrcNode, DstIp, LocalPref) ;
       (
-         \+ 'BgpDefaultLocalPref'(SrcNode, DstIp, _),
-         LocalPref = 100
+         \+ 'GeneratedRouteAttributePolicy'(Route, _),
+         LocalPref = DefaultLocalPref,
+         Med = DefaultMed,
+         NextHopIp = DefaultNextHopIp,
+         OriginType = DefaultOriginType
+      ) ;
+      (
+         'GeneratedRouteAttributePolicy'(Route, AttributePolicy),
+         (
+            (
+               \+ 'PolicyMapPermitRoute'(AttributePolicy, _, Route),
+               LocalPref = DefaultLocalPref,
+               Med = DefaultMed,
+               NextHopIp = DefaultNextHopIp,
+               OriginType = DefaultOriginType
+            ) ;
+            (
+               'PolicyMapPermitRoute'(AttributePolicy, AttributeClause, Route),
+               (
+                  'SetPolicyMapClauseSetLocalPreference'(AttributePolicy, AttributeClause, LocalPref) ;
+                  (
+                     \+ 'SetPolicyMapClauseSetLocalPreference'(AttributePolicy, AttributeClause, _),
+                     LocalPref = DefaultLocalPref
+                  )
+               ),
+               (
+                  'SetPolicyMapClauseSetMetric'(AttributePolicy, AttributeClause, Med) ;
+                  (
+                     \+ 'SetPolicyMapClauseSetMetric'(AttributePolicy, AttributeClause, _),
+                     Med = DefaultMed
+                  )
+               ),
+               (
+                  'SetPolicyMapClauseSetNextHopIp'(AttributePolicy, AttributeClause, NextHopIp);
+                  (
+                     \+ 'SetPolicyMapClauseSetNextHopIp'(AttributePolicy, AttributeClause, _),
+                     NextHopIp = DefaultNextHopIp
+                  )
+               ),
+               (
+                  'SetPolicyMapClauseSetOriginType'(AttributePolicy, AttributeClause, OriginType);
+                  (
+                     \+ 'SetPolicyMapClauseSetOriginType'(AttributePolicy, AttributeClause, _),
+                     OriginType = DefaultOriginType
+                  )
+               )
+            )
+         )
       )
    ),
+   (
+      'BgpDefaultLocalPref'(SrcNode, DstIp, DefaultLocalPref) ;
+      (
+         \+ 'BgpDefaultLocalPref'(SrcNode, DstIp, _),
+         DefaultLocalPref = 100
+      )
+   ),
+   'BgpNeighborDefaultMetric'(SrcNode, DstIp, DefaultMed),
    'Route_network'(Route, Network),
    'Route_protocol'(Route, SrcProtocol),
    'Route_node'(Route, SrcNode),
@@ -342,7 +395,6 @@ need_PolicyMapMatchRoute(Map, Route) :-
 % incoming transformation
 'AdvertisementCommunity'(Advert, Community) :-
    PriorType = 'bgp_to',
-   'BgpNeighborSendCommunity'(DstNode, SrcIp),
    'BgpAdvertisement_type'(PrevAdvert, PriorType),
    'BgpAdvertisement_dstNode'(PrevAdvert, DstNode),
    'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp),
@@ -469,6 +521,23 @@ need_PolicyMapMatchAdvert(Map, Advert)
    Index = PrevPathSize,
    'RemoteAs'(DstNode, SrcIp, As).
 
+% generated route community from attribute policy
+'AdvertisementCommunity'(Advert, Community) :-
+   'BgpAdvertisement_type'(Advert, AdvertType),
+   (
+      AdvertType = 'bgp' ;
+      AdvertType = 'ibgp'
+   ),
+   'BgpNeighborSendCommunity'(SrcNode, DstIp),
+   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode),
+   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp),
+   'OriginalBgpAdvertisementRoute'(Advert, Route),
+   'GeneratedRouteAttributePolicy'(Route, Policy),
+   'PolicyMapClauseMatchRoute'(Policy, Clause, Route),
+   (
+      'SetPolicyMapClauseSetCommunity'(Policy, Clause, Community) ;
+      'SetPolicyMapClauseAddCommunity'(Policy, Clause, Community)
+   ).
 % outgoing transformation
 'AdvertisementCommunity'(Advert, Community) :-
    PriorType = 'bgp',
@@ -725,19 +794,71 @@ need_PolicyMapMatchRoute(Map, Route) :-
 :-
    Type = 'ibgp',
    PathSize = 0,
-   NextHopIp = SrcIp,
+   DefaultNextHopIp = SrcIp,
    OriginatorIp = SrcIp,
    'IbgpNeighbors'(SrcNode, SrcIp, DstNode, DstIp),
    'BgpNeighborIp'(SrcNode, DstIp),
-   OriginType = 'igp',
-   'BgpNeighborDefaultMetric'(SrcNode, DstIp, Med),
+   DefaultOriginType = 'igp',
    (
-      'BgpDefaultLocalPref'(SrcNode, DstIp, LocalPref) ;
       (
-         \+ 'BgpDefaultLocalPref'(SrcNode, DstIp, _),
-         LocalPref = 100
+         \+ 'GeneratedRouteAttributePolicy'(Route, _),
+         LocalPref = DefaultLocalPref,
+         Med = DefaultMed,
+         NextHopIp = DefaultNextHopIp,
+         OriginType = DefaultOriginType
+      ) ;
+      (
+         'GeneratedRouteAttributePolicy'(Route, AttributePolicy),
+         (
+            (
+               \+ 'PolicyMapPermitRoute'(AttributePolicy, _, Route),
+               LocalPref = DefaultLocalPref,
+               Med = DefaultMed,
+               NextHopIp = DefaultNextHopIp,
+               OriginType = DefaultOriginType
+            ) ;
+            (
+               'PolicyMapPermitRoute'(AttributePolicy, AttributeClause, Route),
+               (
+                  'SetPolicyMapClauseSetLocalPreference'(AttributePolicy, AttributeClause, LocalPref) ;
+                  (
+                     \+ 'SetPolicyMapClauseSetLocalPreference'(AttributePolicy, AttributeClause, _),
+                     LocalPref = DefaultLocalPref
+                  )
+               ),
+               (
+                  'SetPolicyMapClauseSetMetric'(AttributePolicy, AttributeClause, Med) ;
+                  (
+                     \+ 'SetPolicyMapClauseSetMetric'(AttributePolicy, AttributeClause, _),
+                     Med = DefaultMed
+                  )
+               ),
+               (
+                  'SetPolicyMapClauseSetNextHopIp'(AttributePolicy, AttributeClause, NextHopIp);
+                  (
+                     \+ 'SetPolicyMapClauseSetNextHopIp'(AttributePolicy, AttributeClause, _),
+                     NextHopIp = DefaultNextHopIp
+                  )
+               ),
+               (
+                  'SetPolicyMapClauseSetOriginType'(AttributePolicy, AttributeClause, OriginType);
+                  (
+                     \+ 'SetPolicyMapClauseSetOriginType'(AttributePolicy, AttributeClause, _),
+                     OriginType = DefaultOriginType
+                  )
+               )
+            )
+         )
       )
    ),
+   (
+      'BgpDefaultLocalPref'(SrcNode, DstIp, DefaultLocalPref) ;
+      (
+         \+ 'BgpDefaultLocalPref'(SrcNode, DstIp, _),
+         DefaultLocalPref = 100
+      )
+   ),
+   'BgpNeighborDefaultMetric'(SrcNode, DstIp, DefaultMed),
    'Route_network'(Route, Network),
    'Route_protocol'(Route, SrcProtocol),
    'Route_node'(Route, SrcNode),
@@ -777,10 +898,10 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_node'(Route, Node),
    'BgpOriginationPolicy'(Node, NeighborIp, Map),
    'IbgpNeighbors'(Node, _, _, NeighborIp).
+
 % incoming transformation
 'AdvertisementCommunity'(Advert, Community) :-
    PriorType = 'ibgp_to',
-   'BgpNeighborSendCommunity'(DstNode, SrcIp),
    'BgpAdvertisement_type'(PrevAdvert, PriorType),
    'BgpAdvertisement_dstNode'(PrevAdvert, DstNode),
    'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp),
@@ -1534,6 +1655,12 @@ need_PolicyMapMatchAdvert(Map, Advert)
       )
    ).
 
+'GeneratedRouteAttributePolicy'(Route, Policy) :-
+   'GeneratedRoute'(Route),
+   'Route_network'(Route, Network),
+   'Route_node'(Route, Node),
+   'SetGeneratedRouteAttributePolicy'(Node, Network, Policy).
+
 'GeneratedRoutePolicy'(Route, Policy) :-
    'GeneratedRoute'(Route),
    'Route_network'(Route, Network),
@@ -1563,6 +1690,10 @@ need_PolicyMapMatchAdvert(Map, Advert)
       'Route_admin'(ContributingRoute, Admin))).
 
 need_PolicyMapMatchRoute(Map, Route) :-
+   'SetGeneratedRouteAttributePolicy'(Node, _, Map),
+   'InstalledRoute'(Route),
+   'Route_node'(Route, Node).
+need_PolicyMapMatchRoute(Map, Route) :-
    'SetGeneratedRoutePolicy'(Node, _, Map),
    'InstalledRoute'(Route),
    'Route_node'(Route, Node).
@@ -1580,6 +1711,10 @@ need_PolicyMapMatchRoute(Map, Route) :-
 
 'SetGeneratedRouteMetric'(Node, Network, Metric) :-
    'SetGeneratedRouteMetric_flat'(Node, Network_start, Network_end, Prefix_length, Metric),
+   'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
+
+'SetGeneratedRouteAttributePolicy'(Node, Network, Map) :-
+   'SetGeneratedRouteAttributePolicy_flat'(Node, Network_start, Network_end, Prefix_length, Map),
    'Network_constructor'(Network_start, Network_end, Prefix_length, Network).
 
 'SetGeneratedRoutePolicy'(Node, Network, Map) :-

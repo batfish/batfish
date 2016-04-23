@@ -67,6 +67,7 @@ public class NxtnetConstants {
             "SetGeneratedRouteDiscard_flat",
             "SetGeneratedRoute_flat",
             "SetGeneratedRouteMetric_flat",
+            "SetGeneratedRouteAttributePolicy_flat",
             "SetGeneratedRoutePolicy_flat",
             "SetIbgpNeighbors",
             "SetInboundInterfaceFilter",
@@ -205,6 +206,8 @@ public class NxtnetConstants {
             "BgpNeighborGeneratedRoutePolicy",
             "BgpNeighborIp",
             "BgpNeighbors",
+            "BgpNeighborSendCommunity",
+            "GeneratedRouteAttributePolicy",
             "Ip",
             "IpAccessListMatchDscp",
             "IpAccessListMatchEcn",
@@ -222,6 +225,7 @@ public class NxtnetConstants {
             "LocalAs",
             "NetworkOf",
             "need_PolicyMapMatchAdvert",
+            "OriginalBgpAdvertisementRoute",
             "PolicyMapClauseMatchAdvert",
             "PolicyMapClauseMatchRoute",
             "PolicyMapClauseTransformAdvert",
@@ -239,6 +243,8 @@ public class NxtnetConstants {
             "SetBgpNeighborNetwork",
             "SetBgpNeighborNetwork_flat",
             "SetExternalBgpRemoteIp",
+            "SetGeneratedRouteAttributePolicy",
+            "SetGeneratedRouteAttributePolicy_flat",
             "SetIpAccessListLine_dscp",
             "SetIpAccessListLine_ecn",
             "SetIpAccessListLine_tcpFlags",
@@ -257,7 +263,11 @@ public class NxtnetConstants {
             "SetPolicyMapClauseMatchInterface",
             "SetPolicyMapClauseMatchPolicy",
             "SetPolicyMapClauseMatchPolicyConjunction",
-            "SetPolicyMapClauseMatchProtocol", };
+            "SetPolicyMapClauseMatchProtocol",
+            "SetPolicyMapClauseAddCommunity",
+            "SetPolicyMapClauseSetCommunity",
+            "SetPolicyMapClauseSetLocalPreference",
+            "SetPolicyMapClauseSetMetric" };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }
