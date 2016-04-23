@@ -279,6 +279,8 @@ public class ConfigurationFactExtractor {
             .get("SetBgpMultihopNeighborNetwork_flat");
       StringBuilder wSetLocalAs_flat = _factBins.get("SetLocalAs_flat");
       StringBuilder wSetRemoteAs_flat = _factBins.get("SetRemoteAs_flat");
+      StringBuilder wSetBgpNeighborAdvertiseInactive_flat = _factBins
+            .get("SetBgpNeighborAdvertiseInactive_flat");
       StringBuilder wSetBgpNeighborDefaultMetric_flat = _factBins
             .get("SetBgpNeighborDefaultMetric_flat");
       StringBuilder wSetBgpNeighborSendCommunity_flat = _factBins
@@ -299,6 +301,11 @@ public class ConfigurationFactExtractor {
                   + neighborPrefixLength + "\n");
             if (neighbor.getEbgpMultihop()) {
                wSetBgpMultihopNeighborNetwork_flat.append(hostname + "|"
+                     + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                     + neighborPrefixLength + "\n");
+            }
+            if (neighbor.getAdvertiseInactive()) {
+               wSetBgpNeighborAdvertiseInactive_flat.append(hostname + "|"
                      + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                      + neighborPrefixLength + "\n");
             }

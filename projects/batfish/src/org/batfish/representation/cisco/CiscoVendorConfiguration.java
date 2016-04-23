@@ -675,6 +675,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          boolean sendCommunity = lpg.getSendCommunity();
+         Boolean advertiseInactive = lpg.getAdvertiseInactive();
+         if (advertiseInactive == null) {
+            advertiseInactive = false;
+         }
          Boolean ebgpMultihop = lpg.getEbgpMultihop();
          if (ebgpMultihop == null) {
             ebgpMultihop = false;
@@ -719,6 +723,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             if (defaultRoute != null) {
                newNeighbor.getGeneratedRoutes().add(defaultRoute);
             }
+            newNeighbor.setAdvertiseInactive(advertiseInactive);
             newNeighbor.setRemoteAs(lpg.getRemoteAS());
             newNeighbor.setLocalAs(proc.getPid());
             newNeighbor.setLocalIp(updateSource);

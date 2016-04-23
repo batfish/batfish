@@ -20,6 +20,8 @@ public final class BgpNeighbor implements Serializable {
     */
    private Ip _address;
 
+   private boolean _advertiseInactive;
+
    private transient Set<BgpNeighbor> _candidateRemoteBgpNeighbors;
 
    /**
@@ -159,6 +161,10 @@ public final class BgpNeighbor implements Serializable {
       return _address;
    }
 
+   public boolean getAdvertiseInactive() {
+      return _advertiseInactive;
+   }
+
    public Set<BgpNeighbor> getCandidateRemoteBgpNeighbors() {
       return _candidateRemoteBgpNeighbors;
    }
@@ -270,6 +276,10 @@ public final class BgpNeighbor implements Serializable {
 
    public void initCandidateRemoteBgpNeighbors() {
       _candidateRemoteBgpNeighbors = new LinkedHashSet<BgpNeighbor>();
+   }
+
+   public void setAdvertiseInactive(boolean advertiseInactive) {
+      _advertiseInactive = advertiseInactive;
    }
 
    /**

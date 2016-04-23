@@ -1358,6 +1358,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitBgp_advertise_inactive_rb_stanza(
+         Bgp_advertise_inactive_rb_stanzaContext ctx) {
+      _currentPeerGroup.setAdvertiseInactive(true);
+   }
+
+   @Override
    public void exitBgp_listen_range_rb_stanza(
          Bgp_listen_range_rb_stanzaContext ctx) {
       String name = ctx.name.getText();

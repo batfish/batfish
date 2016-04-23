@@ -252,7 +252,10 @@ function_sig('RouteDetails_nextHop', 2).
    'BgpAdvertisement_srcProtocol'(PrevAdvert, SrcProtocol),
    'BgpAdvertisement_dstNode'(PrevAdvert, SrcNode),
    'AdvertisementPathSize'(PrevAdvert, PrevPathSize),
-   'InstalledBgpAdvertisement'(PrevAdvert),
+   (
+      'InstalledBgpAdvertisement'(PrevAdvert) ;
+      'BgpNeighborAdvertiseInactive'(SrcNode, DstIp)
+   ),
    PathSize = PrevPathSize,
    'BestBgpAdvertisement'(PrevAdvert),
    (
@@ -659,6 +662,10 @@ need_PolicyMapMatchAdvert(Map, Advert)
    Type = 'GeneratedRouteType_BGP',
    Protocol = 'aggregate'.
 
+'BgpNeighborAdvertiseInactive'(Node, NeighborIp) :-
+   'SetBgpNeighborAdvertiseInactive'(Node, NeighborNetwork),
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
+
 'BgpNeighborGeneratedRoute'(Route),
    'Route'(Route),
    'BgpNeighborGeneratedRoute_constructor'(Node, Network, NeighborIp, Route),
@@ -771,7 +778,10 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'BgpAdvertisement_type'(PrevAdvert, PriorType),
    'AdvertisementPathSize'(PrevAdvert, PathSize),
    'BestBgpAdvertisement'(PrevAdvert),
-   'InstalledBgpAdvertisement'(PrevAdvert),
+   (
+      'InstalledBgpAdvertisement'(PrevAdvert) ;
+      'BgpNeighborAdvertiseInactive'(SrcNode, DstIp)
+   ),
    'IbgpNeighbors'(SrcNode, SrcIp, DstNode, DstIp).
 % advertise an internally received route
 'BgpAdvertisement'(Advert),
@@ -1381,6 +1391,10 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 'SetBgpDefaultLocalPref'(Node, NeighborNetwork, LocalPref) :-
    'SetBgpDefaultLocalPref_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, LocalPref),
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
+
+'SetBgpNeighborAdvertiseInactive'(Node, NeighborNetwork) :-
+   'SetBgpNeighborAdvertiseInactive_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length),
    'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 
 'SetBgpNeighborDefaultMetric'(Node, NeighborNetwork, Metric) :-

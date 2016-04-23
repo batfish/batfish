@@ -60,6 +60,10 @@ BgpMultihopNeighborTo(node, neighbor, neighborIp) ->
    Node(neighbor),
    Ip(neighborIp).
 
+BgpNeighborAdvertiseInactive(node, neighborIp) ->
+   Node(node),
+   Ip(neighborIp).
+
 BgpNeighborDefaultMetric(node, neighborIp, metric) ->
    Node(node),
    Ip(neighborIp),
@@ -267,6 +271,16 @@ SetBgpMultihopNeighborNetwork(node, neighborNetwork) ->
    Network(neighborNetwork).
 
 SetBgpMultihopNeighborNetwork_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length) ->
+   Node(node),
+   Ip(neighborNetwork_start),
+   Ip(neighborNetwork_end),
+   int(neighborNetwork_prefix_length).
+
+SetBgpNeighborAdvertiseInactive(node, neighborNetwork) ->
+   Node(node),
+   Network(neighborNetwork).
+
+SetBgpNeighborAdvertiseInactive_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length) ->
    Node(node),
    Ip(neighborNetwork_start),
    Ip(neighborNetwork_end),

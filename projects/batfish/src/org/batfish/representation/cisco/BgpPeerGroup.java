@@ -8,6 +8,7 @@ public abstract class BgpPeerGroup implements Serializable {
 
    private static final long serialVersionUID = 1L;
    protected Boolean _active;
+   private Boolean _advertiseInactive;
    protected Boolean _allowAsIn;
    protected Ip _clusterId;
    protected Integer _defaultMetric;
@@ -32,6 +33,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public Boolean getActive() {
       return _active;
+   }
+
+   public Boolean getAdvertiseInactive() {
+      return _advertiseInactive;
    }
 
    public Ip getClusterId() {
@@ -104,6 +109,9 @@ public abstract class BgpPeerGroup implements Serializable {
       if (_active == null) {
          _active = pg.getActive();
       }
+      if (_advertiseInactive == null) {
+         _advertiseInactive = pg.getAdvertiseInactive();
+      }
       if (_clusterId == null) {
          _clusterId = pg.getClusterId();
       }
@@ -150,6 +158,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public void setActive(boolean active) {
       _active = active;
+   }
+
+   public void setAdvertiseInactive(boolean advertiseInactive) {
+      _advertiseInactive = advertiseInactive;
    }
 
    public void SetAllowAsIn(boolean b) {

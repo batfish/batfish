@@ -99,6 +99,11 @@ auto_summary_bgp_tail
    NO? AUTO_SUMMARY NEWLINE
 ;
 
+bgp_advertise_inactive_rb_stanza
+:
+   BGP ADVERTISE_INACTIVE NEWLINE
+;
+
 bgp_listen_range_rb_stanza
 :
    BGP LISTEN RANGE
@@ -456,8 +461,7 @@ null_bgp_tail
       (
          BGP
          (
-            ADVERTISE_INACTIVE
-            | ATTRIBUTE_DOWNLOAD
+            ATTRIBUTE_DOWNLOAD
             | BESTPATH
             | DAMPENING
             | DEFAULT
@@ -640,6 +644,7 @@ router_bgp_stanza
       address_family_rb_stanza
       | aggregate_address_rb_stanza
       | always_compare_med_rb_stanza
+      | bgp_advertise_inactive_rb_stanza
       | bgp_listen_range_rb_stanza
       | bgp_redistribute_internal_rb_stanza
       | bgp_tail
