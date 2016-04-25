@@ -33,6 +33,7 @@ import org.batfish.representation.NamedPort;
 import org.batfish.representation.OriginType;
 import org.batfish.representation.OspfMetricType;
 import org.batfish.representation.Prefix;
+import org.batfish.representation.Prefix6;
 import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.SwitchportMode;
@@ -995,18 +996,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
-
-      boolean isIpv6 = (ctx.IPV6() != null);
-
-      if (isIpv6) {
-         todo(ctx, F_IPV6);
-      }
-
       String name = ctx.name.getText();
-      _currentPrefixList = _configuration.getPrefixLists().get(name);
-      if (_currentPrefixList == null) {
-         _currentPrefixList = new PrefixList(name, isIpv6);
-         _configuration.getPrefixLists().put(name, _currentPrefixList);
+      boolean isIpv6 = (ctx.IPV6() != null);
+      if (isIpv6) {
+         _currentPrefixList = null;
+         todo(ctx, F_IPV6);
+         return;
+      }
+      else {
+         _currentPrefixList = _configuration.getPrefixLists().get(name);
+         if (_currentPrefixList == null) {
+            _currentPrefixList = new PrefixList(name);
+            _configuration.getPrefixLists().put(name, _currentPrefixList);
+         }
       }
    }
 
@@ -1811,22 +1813,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitIp_prefix_list_tail(Ip_prefix_list_tailContext ctx) {
-      /*
-       * if (ctx.seqnum != null) { int seqnum = toInteger(ctx.seqnum); }
-       */
-
-      if (_currentPrefixList.isIpV6()) {
-         return;
-      }
-
+      boolean ipv6 = ctx.ipv6_prefix != null;
       LineAction action = getAccessListAction(ctx.action);
-      Prefix prefix = new Prefix(ctx.prefix.getText());
-      int prefixLength = prefix.getPrefixLength();
+      Prefix prefix = null;
+      Prefix6 prefix6 = null;
+      int prefixLength;
+      if (ipv6) {
+         prefix6 = new Prefix6(ctx.ipv6_prefix.getText());
+         prefixLength = prefix6.getPrefixLength();
+      }
+      else {
+         prefix = new Prefix(ctx.prefix.getText());
+         prefixLength = prefix.getPrefixLength();
+      }
       int minLen = prefixLength;
       int maxLen = prefixLength;
       if (ctx.minpl != null) {
          minLen = toInteger(ctx.minpl);
-         maxLen = 32;
+         maxLen = ipv6 ? 128 : 32;
       }
       if (ctx.maxpl != null) {
          maxLen = toInteger(ctx.maxpl);
@@ -1836,8 +1840,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          maxLen = toInteger(ctx.eqpl);
       }
       SubRange lengthRange = new SubRange(minLen, maxLen);
-      PrefixListLine line = new PrefixListLine(action, prefix, lengthRange);
-      _currentPrefixList.addLine(line);
+      if (ipv6) {
+         todo(ctx, F_IPV6);
+      }
+      else {
+         PrefixListLine line = new PrefixListLine(action, prefix, lengthRange);
+         _currentPrefixList.addLine(line);
+      }
    }
 
    @Override
