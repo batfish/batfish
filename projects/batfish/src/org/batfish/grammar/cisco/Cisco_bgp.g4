@@ -70,6 +70,7 @@ aggregate_address_rb_stanza
    (
       as_set = AS_SET
       | summary_only = SUMMARY_ONLY
+      |
       (
          ATTRIBUTE_MAP mapname = variable
       )
