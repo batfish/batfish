@@ -658,6 +658,7 @@ need_PolicyMapMatchAdvert(Map, Advert)
          TSrcProtocol = SrcProtocol
       )
    ).
+
 'BgpGeneratedRoute'(Route),
    'Route'(Route),
    'GeneratedRoute_constructor'(Node, Network, Type, Route),

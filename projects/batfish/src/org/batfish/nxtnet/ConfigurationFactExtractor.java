@@ -71,13 +71,13 @@ public class ConfigurationFactExtractor {
 
    private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
 
-   private Set<Long> _allCommunities;
+   private final Set<Long> _allCommunities;
 
-   private Configuration _configuration;
+   private final Configuration _configuration;
 
-   private Map<String, StringBuilder> _factBins;
+   private final Map<String, StringBuilder> _factBins;
 
-   private Warnings _w;
+   private final Warnings _w;
 
    public ConfigurationFactExtractor(Configuration c, Set<Long> allCommunities,
          Map<String, StringBuilder> factBins, Warnings warnings) {
@@ -273,6 +273,8 @@ public class ConfigurationFactExtractor {
    }
 
    private void writeBgpNeighbors() {
+      StringBuilder wSetBgpNeighborLocalIp_flat = _factBins
+            .get("SetBgpNeighborLocalIp_flat");
       StringBuilder wSetBgpNeighborNetwork_flat = _factBins
             .get("SetBgpNeighborNetwork_flat");
       StringBuilder wSetBgpMultihopNeighborNetwork_flat = _factBins
@@ -303,6 +305,13 @@ public class ConfigurationFactExtractor {
             wSetBgpNeighborNetwork_flat.append(hostname + "|"
                   + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                   + neighborPrefixLength + "\n");
+            Ip localIp = neighbor.getLocalIp();
+            if (localIp != null) {
+               long localIpAsLong = localIp.asLong();
+               wSetBgpNeighborLocalIp_flat.append(hostname + "|"
+                     + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                     + neighborPrefixLength + "|" + localIpAsLong + "\n");
+            }
             if (neighbor.getEbgpMultihop()) {
                wSetBgpMultihopNeighborNetwork_flat.append(hostname + "|"
                      + neighborPrefixStart + "|" + neighborPrefixEnd + "|"

@@ -202,6 +202,7 @@ public class NxtnetConstants {
    private static final Set<String> initNxtnetDataPlaneOutputDebugSymbols() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
+            "BgpExportPolicy",
             "BgpImportPolicy",
             "BgpMultihopNeighborIp",
             "BgpMultihopNeighborTo",
@@ -211,6 +212,7 @@ public class NxtnetConstants {
             "BgpNeighborGeneratedRouteAttributePolicy",
             "BgpNeighborGeneratedRoutePolicy",
             "BgpNeighborIp",
+            "BgpNeighborLocalIp",
             "BgpNeighbors",
             "BgpNeighborSendCommunity",
             "GeneratedRouteAttributePolicy",
@@ -252,6 +254,8 @@ public class NxtnetConstants {
             "SetBgpNeighborAllowLocalAsIn_flat",
             "SetBgpNeighborAllowRemoteAsOut",
             "SetBgpNeighborAllowRemoteAsOut_flat",
+            "SetBgpNeighborLocalIp",
+            "SetBgpNeighborLocalIp_flat",
             "SetBgpNeighborNetwork",
             "SetBgpNeighborNetwork_flat",
             "SetExternalBgpRemoteIp",
