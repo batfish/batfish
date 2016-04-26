@@ -13,6 +13,7 @@ null_block_stanza
       AAA
       | ACCESS_GROUP
       | ADMIN
+      | ALLOW
       | ARCHIVE
       | ATM
       | BASH
