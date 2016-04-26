@@ -36,9 +36,10 @@ verify {
                onfailure {
                   $subnet_interfaces.get_map(interface.subnet).get_map("interfaces").set(interface.name, interface.all_prefixes);
                   $interface_addresses.set(interface.name, interface.ip);
-                  printf("'%s':'%s' is one of multiple interfaces on '%s' assigned to subnet '%s'",
+                  printf("'%s':'%s' with description: '%s' is one of multiple interfaces on '%s' assigned to subnet '%s'",
                      node.name,
                      interface.name,
+                     interface.description,
                      node.name,
                      interface.subnet);
                   if (not {interface.enabled}) {

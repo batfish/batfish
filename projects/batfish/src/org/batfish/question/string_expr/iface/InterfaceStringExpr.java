@@ -1,30 +1,14 @@
 package org.batfish.question.string_expr.iface;
 
-import org.batfish.common.BatfishException;
-import org.batfish.question.Environment;
+import org.batfish.question.interface_expr.InterfaceExpr;
 import org.batfish.question.string_expr.BaseStringExpr;
-import org.batfish.question.string_expr.StringExpr;
-import org.batfish.representation.Interface;
 
-public enum InterfaceStringExpr implements StringExpr {
-   INTERFACE_NAME;
+public abstract class InterfaceStringExpr extends BaseStringExpr {
 
-   @Override
-   public String evaluate(Environment environment) {
-      Interface iface = environment.getInterface();
-      switch (this) {
+   protected final InterfaceExpr _caller;
 
-      case INTERFACE_NAME:
-         return iface.getName();
-
-      default:
-         throw new BatfishException("invalid interface string expr");
-      }
-   }
-
-   @Override
-   public String print(Environment environment) {
-      return BaseStringExpr.print(this, environment);
+   public InterfaceStringExpr(InterfaceExpr caller) {
+      _caller = caller;
    }
 
 }

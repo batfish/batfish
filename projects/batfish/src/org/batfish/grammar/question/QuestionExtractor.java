@@ -213,7 +213,8 @@ import org.batfish.question.string_expr.bgp_neighbor.BgpNeighborStringExpr;
 import org.batfish.question.string_expr.bgp_neighbor.DescriptionBgpNeighborStringExpr;
 import org.batfish.question.string_expr.bgp_neighbor.GroupBgpNeighborStringExpr;
 import org.batfish.question.string_expr.bgp_neighbor.NameBgpNeighborStringExpr;
-import org.batfish.question.string_expr.iface.InterfaceStringExpr;
+import org.batfish.question.string_expr.iface.DescriptionInterfaceStringExpr;
+import org.batfish.question.string_expr.iface.NameInterfaceStringExpr;
 import org.batfish.question.string_expr.ipsec_vpn.IkeGatewayNameIpsecVpnStringExpr;
 import org.batfish.question.string_expr.ipsec_vpn.IkePolicyNameIpsecVpnStringExpr;
 import org.batfish.question.string_expr.ipsec_vpn.IpsecPolicyNameIpsecVpnStringExpr;
@@ -2465,8 +2466,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private StringExpr toStringExpr(Interface_string_exprContext ctx) {
-      if (ctx.interface_name_string_expr() != null) {
-         return InterfaceStringExpr.INTERFACE_NAME;
+      InterfaceExpr caller = toInterfaceExpr(ctx.caller);
+      if (ctx.interface_description_string_expr() != null) {
+         return new NameInterfaceStringExpr(caller);
+      }
+      else if (ctx.interface_name_string_expr() != null) {
+         return new DescriptionInterfaceStringExpr(caller);
       }
       else {
          throw conversionError(ERR_CONVERT_STRING, ctx);

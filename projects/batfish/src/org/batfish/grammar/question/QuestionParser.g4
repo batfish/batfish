@@ -1019,6 +1019,11 @@ interface_boolean_expr
    )
 ;
 
+interface_description_string_expr
+:
+   DESCRIPTION
+;
+
 interface_enabled_boolean_expr
 :
    ENABLED
@@ -1133,7 +1138,11 @@ interface_set_prefix_expr
 
 interface_string_expr
 :
-   caller = interface_expr PERIOD interface_name_string_expr
+   caller = interface_expr PERIOD
+   (
+      interface_description_string_expr
+      | interface_name_string_expr
+   )
 ;
 
 interface_subnet_prefix_expr
