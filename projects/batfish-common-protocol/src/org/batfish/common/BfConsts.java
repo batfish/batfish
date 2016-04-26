@@ -35,6 +35,7 @@ public class BfConsts {
    public static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
    public static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
    public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
+   public static final String ARG_UNRECOGNIZED_AS_RED_FLAG = "urf";
    public static final String ARG_USE_PRECOMPUTED_ADVERTISEMENTS = "useprecomputedadvertisements";
    public static final String ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS = "useprecomputedibgpneighbors";
    public static final String ARG_USE_PRECOMPUTED_ROUTES = "useprecomputedroutes";

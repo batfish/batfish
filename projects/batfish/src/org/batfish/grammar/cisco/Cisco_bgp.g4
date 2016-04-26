@@ -667,6 +667,7 @@ router_bgp_stanza
       | template_peer_rb_stanza
       | template_peer_session_rb_stanza
       | nexus_vrf_rb_stanza
+      | unrecognized_line
    )+
 ;
 

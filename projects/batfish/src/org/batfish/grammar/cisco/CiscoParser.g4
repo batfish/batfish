@@ -352,6 +352,7 @@ stanza
    | rsvp_stanza
    | standard_access_list_stanza
    | switching_mode_stanza
+   | unrecognized_block_stanza
    | vrf_context_stanza
    | vrf_definition_stanza
 ;

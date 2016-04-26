@@ -473,6 +473,8 @@ public final class Settings extends BaseSettings {
 
    private boolean _unimplementedRecord;
 
+   private boolean _unrecognizedAsRedFlag;
+
    private boolean _usePrecomputedAdvertisements;
 
    private boolean _usePrecomputedFacts;
@@ -843,6 +845,10 @@ public final class Settings extends BaseSettings {
       return _unimplementedRecord;
    }
 
+   public boolean getUnrecognizedAsRedFlag() {
+      return _unrecognizedAsRedFlag;
+   }
+
    public boolean getUsePrecomputedBgpAdvertisements() {
       return _usePrecomputedAdvertisements;
    }
@@ -942,6 +948,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, false);
       setDefaultProperty(ARG_TIMESTAMP, false);
       setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, true);
+      setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS, false);
       setDefaultProperty(ARG_USE_PRECOMPUTED_FACTS, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS, false);
@@ -1162,6 +1169,10 @@ public final class Settings extends BaseSettings {
       addBooleanOption(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS,
             "suppresses warnings about unimplemented configuration directives");
 
+      addBooleanOption(
+            BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG,
+            "treat unrecognized configuration directives as red flags instead of force-crashing");
+
       addBooleanOption(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS,
             "add precomputed bgp advertisements to data plane model");
 
@@ -1305,6 +1316,7 @@ public final class Settings extends BaseSettings {
       _trustAllSslCerts = getBooleanOptionValue(ARG_TRUST_ALL_SSL_CERTS);
       _unimplementedAsError = getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
       _unimplementedRecord = !getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
+      _unrecognizedAsRedFlag = getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
       _usePrecomputedAdvertisements = getBooleanOptionValue(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS);
       _usePrecomputedFacts = getBooleanOptionValue(ARG_USE_PRECOMPUTED_FACTS);
       _usePrecomputedIbgpNeighbors = getBooleanOptionValue(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS);

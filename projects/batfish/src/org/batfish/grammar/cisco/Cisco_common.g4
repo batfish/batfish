@@ -287,6 +287,11 @@ switchport_trunk_encapsulation
    | NEGOTIATE
 ;
 
+unrecognized_line
+:
+   NO? VARIABLE ~NEWLINE* NEWLINE
+;
+
 variable
 :
    ~NEWLINE

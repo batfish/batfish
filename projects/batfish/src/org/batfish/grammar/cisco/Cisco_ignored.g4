@@ -174,7 +174,7 @@ null_block_stanza
       | VDC
       |
       (
-         VLAN 
+         VLAN
          (
             DEC
             | ACCESS_MAP
@@ -191,6 +191,7 @@ null_block_stanza
       description_line
       | null_block_substanza
       | null_block_substanza_full
+      | unrecognized_line
    )*
 ;
 
@@ -251,7 +252,7 @@ null_block_substanza
          | COMMAND
          | CONFORM_ACTION
          | CONGESTION_CONTROL
-	 | CONNECT_SOURCE
+         | CONNECT_SOURCE
          | CONTEXT
          | CPTONE
          | CREDENTIALS
@@ -373,7 +374,7 @@ null_block_substanza
          | MAIN_CPU
          | MATCH
          | MAXIMUM
-	 | MESH_GROUP
+         | MESH_GROUP
          | MESSAGE_LENGTH
          | MODE
          | MODEM
@@ -438,7 +439,7 @@ null_block_substanza
          | RELOAD
          | RELOAD_DELAY
          | REMARK
-	 | REMOTE_AS
+         | REMOTE_AS
          | REMOTE_IP
          | REMOTE_PORT
          | REMOTE_SPAN
@@ -456,7 +457,7 @@ null_block_substanza
          | ROUTE
          | ROUTE_TARGET
          | RULE
-	 | SA_FILTER
+         | SA_FILTER
          | SCHEME
          | SECRET
          | SEND_LIFETIME
@@ -518,7 +519,7 @@ null_block_substanza
          | UPDATE_CALENDAR
          | USE_VRF
          | USERS
-	 | VERSION
+         | VERSION
          | VIOLATE_ACTION
          | VIRTUAL
          | VIRTUAL_TEMPLATE
@@ -897,4 +898,9 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
    (
       remaining_tokens += ~NEWLINE
    )* NEWLINE
+;
+
+unrecognized_block_stanza
+:
+   unrecognized_line null_block_substanza*
 ;
