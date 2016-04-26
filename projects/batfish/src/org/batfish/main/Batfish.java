@@ -2837,11 +2837,40 @@ public class Batfish implements AutoCloseable {
    private void populateConfigurationFactBins(
          Collection<Configuration> configurations, CommunitySet allCommunities,
          Map<String, StringBuilder> factBins) {
-      _logger
-            .info("\n*** EXTRACTING LOGICBLOX FACTS FROM CONFIGURATIONS ***\n");
+      _logger.info("\n*** EXTRACTING FACTS FROM CONFIGURATIONS ***\n");
       resetTimer();
       for (Configuration c : configurations) {
          allCommunities.addAll(c.getCommunities());
+      }
+      Set<Ip> interfaceIps = new HashSet<Ip>();
+      Set<Ip> externalBgpRemoteIps = new TreeSet<Ip>();
+      for (Configuration c : configurations) {
+         for (Interface i : c.getInterfaces().values()) {
+            for (Prefix p : i.getAllPrefixes()) {
+               Ip ip = p.getAddress();
+               interfaceIps.add(ip);
+            }
+         }
+         BgpProcess proc = c.getBgpProcess();
+         if (proc != null) {
+            for (Prefix neighborPrefix : proc.getNeighbors().keySet()) {
+               if (neighborPrefix.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
+                  Ip neighborAddress = neighborPrefix.getAddress();
+                  externalBgpRemoteIps.add(neighborAddress);
+               }
+            }
+         }
+      }
+      externalBgpRemoteIps.removeAll(interfaceIps);
+      StringBuilder wSetExternalBgpRemoteIp = factBins
+            .get("SetExternalBgpRemoteIp");
+      StringBuilder wSetNetwork = factBins.get("SetNetwork");
+      for (Ip ip : externalBgpRemoteIps) {
+         String node = ip.toString();
+         long ipAsLong = ip.asLong();
+         wSetExternalBgpRemoteIp.append(node + "|" + ipAsLong + "\n");
+         wSetNetwork.append(ipAsLong + "|" + ipAsLong + "|" + ipAsLong + "|"
+               + Prefix.MAX_PREFIX_LENGTH + "\n");
       }
       boolean pedanticAsError = _settings.getPedanticAsError();
       boolean pedanticRecord = _settings.getPedanticRecord();

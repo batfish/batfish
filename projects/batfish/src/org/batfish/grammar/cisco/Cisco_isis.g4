@@ -79,6 +79,7 @@ is_stanza
    address_family_is_stanza
    | common_is_stanza
    | interface_is_stanza
+   | unrecognized_line
 ;
 
 is_type_is_stanza

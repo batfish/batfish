@@ -72,7 +72,7 @@ public class ParseVendorConfigurationJob extends
                _settings.getThrowOnLexerError());
          combinedParser = ciscoParser;
          extractor = new CiscoControlPlaneExtractor(_fileText, ciscoParser,
-               _warnings);
+               _warnings, _settings.getUnrecognizedAsRedFlag());
          break;
 
       case VYOS:

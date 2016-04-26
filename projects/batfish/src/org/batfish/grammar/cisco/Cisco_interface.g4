@@ -68,6 +68,7 @@ if_stanza
    | switchport_mode_dynamic_auto_stanza
    | switchport_mode_dynamic_desirable_stanza
    | switchport_mode_trunk_stanza
+   | unrecognized_line
    | vrf_forwarding_if_stanza
    | vrf_if_stanza
    | vrf_member_if_stanza

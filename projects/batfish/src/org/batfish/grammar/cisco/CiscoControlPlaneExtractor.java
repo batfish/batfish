@@ -818,15 +818,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private final Set<String> _unimplementedFeatures;
 
+   private final boolean _unrecognizedAsRedFlag;
+
    private final Warnings _w;
 
    public CiscoControlPlaneExtractor(String text,
-         BatfishCombinedParser<?, ?> parser, Warnings warnings) {
+         BatfishCombinedParser<?, ?> parser, Warnings warnings,
+         boolean unrecognizedAsRedFlag) {
       _text = text;
       _parser = parser;
       _unimplementedFeatures = new TreeSet<String>();
       _w = warnings;
       _peerGroupStack = new ArrayList<BgpPeerGroup>();
+      _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
    }
 
    private void addInterface(String vrf, double bandwidth, String name) {
@@ -2924,6 +2928,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentNamedPeerGroup = null;
       _currentPeerSession = null;
       popPeer();
+   }
+
+   @Override
+   public void exitUnrecognized_line(Unrecognized_lineContext ctx) {
+      String line = _text.substring(ctx.start.getStartIndex(),
+            ctx.stop.getStopIndex());
+      String msg = String.format("Line %d unrecognized: %s",
+            ctx.start.getLine(), line);
+      if (_unrecognizedAsRedFlag) {
+         _w.redFlag(msg);
+      }
+      else {
+         throw new BatfishException(msg);
+      }
    }
 
    @Override

@@ -172,6 +172,7 @@ null_ro_stanza
 null_rov3_stanza
 :
    null_standalone_rov3_stanza
+   | unrecognized_line
 ;
 
 null_standalone_ro_stanza
@@ -332,6 +333,7 @@ ro_stanza
    | redistribute_static_ro_stanza
    | router_id_ro_stanza
    | summary_address_ro_stanza
+   | unrecognized_line
 ;
 
 router_id_ipv6_ro_stanza
